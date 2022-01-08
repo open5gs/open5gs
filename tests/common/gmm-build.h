@@ -25,14 +25,16 @@ extern "C" {
 #endif
 
 ogs_pkbuf_t *testgmm_build_registration_request(
-        test_ue_t *test_ue, ogs_pkbuf_t *nasbuf);
+        test_ue_t *test_ue, ogs_pkbuf_t *nasbuf,
+        bool integrity_protected, bool ciphered);
 ogs_pkbuf_t *testgmm_build_registration_complete(test_ue_t *test_ue);
 
 ogs_pkbuf_t *testgmm_build_service_request(
-        test_ue_t *test_ue, uint8_t service_type, ogs_pkbuf_t *nasbuf);
-
+        test_ue_t *test_ue, uint8_t service_type, ogs_pkbuf_t *nasbuf,
+        bool integrity_protected, bool ciphered);
 ogs_pkbuf_t *testgmm_build_de_registration_request(
-        test_ue_t *test_ue, bool switch_off);
+        test_ue_t *test_ue, bool switch_off,
+        bool integrity_protected, bool ciphered);
 
 ogs_pkbuf_t *testgmm_build_identity_response(test_ue_t *test_ue);
 ogs_pkbuf_t *testgmm_build_authentication_response(test_ue_t *test_ue);

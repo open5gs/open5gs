@@ -195,7 +195,9 @@ void tests1ap_send_to_nas(test_ue_t *test_ue, S1AP_NAS_PDU_t *nasPdu)
     h = (ogs_nas_emm_header_t *)nasbuf->data;
     ogs_assert(h);
 
-    if (h->message_type == OGS_NAS_EPS_SECURITY_MODE_COMMAND) {
+    if (sh->security_header_type ==
+        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT &&
+        h->message_type == OGS_NAS_EPS_SECURITY_MODE_COMMAND) {
         ogs_nas_eps_message_t message;
         int rv;
 

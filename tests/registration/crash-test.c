@@ -95,7 +95,7 @@ static void test1_func(abts_case *tc, void *data)
 
     /* Send Registration request */
     test_ue->registration_request_param.guti = 1;
-    gmmbuf = testgmm_build_registration_request(test_ue, NULL);
+    gmmbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
     test_ue->registration_request_param.gmm_capability = 1;
@@ -103,7 +103,7 @@ static void test1_func(abts_case *tc, void *data)
     test_ue->registration_request_param.requested_nssai = 1;
     test_ue->registration_request_param.last_visited_registered_tai = 1;
     test_ue->registration_request_param.ue_usage_setting = 1;
-    nasbuf = testgmm_build_registration_request(test_ue, NULL);
+    nasbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
     sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, false, true);
@@ -455,7 +455,7 @@ static void test2_func(abts_case *tc, void *data)
 
     /* Send Registration request */
     test_ue->registration_request_param.guti = 1;
-    gmmbuf = testgmm_build_registration_request(test_ue, NULL);
+    gmmbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
     test_ue->registration_request_param.gmm_capability = 1;
@@ -463,7 +463,7 @@ static void test2_func(abts_case *tc, void *data)
     test_ue->registration_request_param.requested_nssai = 1;
     test_ue->registration_request_param.last_visited_registered_tai = 1;
     test_ue->registration_request_param.ue_usage_setting = 1;
-    nasbuf = testgmm_build_registration_request(test_ue, NULL);
+    nasbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
     sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, false, true);
@@ -820,7 +820,7 @@ static void test3_func(abts_case *tc, void *data)
 
     /* Send Registration request */
     test_ue->registration_request_param.guti = 1;
-    gmmbuf = testgmm_build_registration_request(test_ue, NULL);
+    gmmbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
     test_ue->registration_request_param.gmm_capability = 1;
@@ -828,7 +828,7 @@ static void test3_func(abts_case *tc, void *data)
     test_ue->registration_request_param.requested_nssai = 1;
     test_ue->registration_request_param.last_visited_registered_tai = 1;
     test_ue->registration_request_param.ue_usage_setting = 1;
-    nasbuf = testgmm_build_registration_request(test_ue, NULL);
+    nasbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
     sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, false, true);

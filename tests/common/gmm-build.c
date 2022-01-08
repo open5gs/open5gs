@@ -20,7 +20,8 @@
 #include "test-common.h"
 
 ogs_pkbuf_t *testgmm_build_registration_request(
-        test_ue_t *test_ue, ogs_pkbuf_t *nasbuf)
+        test_ue_t *test_ue, ogs_pkbuf_t *nasbuf,
+        bool integrity_protected, bool ciphered)
 {
     int i;
     uint16_t psimask = 0;
@@ -60,8 +61,8 @@ ogs_pkbuf_t *testgmm_build_registration_request(
     ogs_assert(test_ue);
 
     memset(&message, 0, sizeof(message));
-    if (test_ue->registration_request_param.integrity_protected) {
-        if (test_ue->registration_request_param.ciphered)
+    if (integrity_protected) {
+        if (ciphered)
             message.h.security_header_type =
                 OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
         else
@@ -216,7 +217,7 @@ ogs_pkbuf_t *testgmm_build_registration_request(
         ogs_pkbuf_free(nasbuf);
     }
 
-    if (test_ue->registration_request_param.integrity_protected)
+    if (integrity_protected)
         return test_nas_5gs_security_encode(test_ue, &message);
     else
         return ogs_nas_5gs_plain_encode(&message);
@@ -245,7 +246,8 @@ ogs_pkbuf_t *testgmm_build_registration_complete(test_ue_t *test_ue)
 }
 
 ogs_pkbuf_t *testgmm_build_service_request(
-        test_ue_t *test_ue, uint8_t service_type, ogs_pkbuf_t *nasbuf)
+        test_ue_t *test_ue, uint8_t service_type, ogs_pkbuf_t *nasbuf,
+        bool integrity_protected, bool ciphered)
 {
     ogs_nas_5gs_message_t message;
     ogs_pkbuf_t *pkbuf = NULL;
@@ -266,11 +268,11 @@ ogs_pkbuf_t *testgmm_build_service_request(
     uplink_data_status = &service_request->uplink_data_status;
 
     memset(&message, 0, sizeof(message));
-    if (test_ue->service_request_param.integrity_protected) {
+    if (integrity_protected) {
         message.h.extended_protocol_discriminator =
             OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
 
-        if (test_ue->service_request_param.ciphered)
+        if (ciphered)
             message.h.security_header_type =
                 OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
         else
@@ -364,14 +366,15 @@ ogs_pkbuf_t *testgmm_build_service_request(
             service_request_param.psimask.allowed_pdu_session_status >> 8;
     }
 
-    if (test_ue->service_request_param.integrity_protected)
+    if (integrity_protected)
         return test_nas_5gs_security_encode(test_ue, &message);
     else
         return ogs_nas_5gs_plain_encode(&message);
 }
 
 ogs_pkbuf_t *testgmm_build_de_registration_request(
-        test_ue_t *test_ue, bool switch_off)
+        test_ue_t *test_ue, bool switch_off,
+        bool integrity_protected, bool ciphered)
 {
     ogs_nas_5gs_message_t message;
     ogs_pkbuf_t *pkbuf = NULL;
@@ -385,13 +388,18 @@ ogs_pkbuf_t *testgmm_build_de_registration_request(
     ogs_assert(test_ue);
 
     memset(&message, 0, sizeof(message));
-    message.h.security_header_type =
-        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
-    message.h.extended_protocol_discriminator =
-        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
-
+    if (integrity_protected) {
+        if (ciphered)
+            message.h.security_header_type =
+                OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+        else
+            message.h.security_header_type =
+                OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED;
+        message.h.extended_protocol_discriminator =
+            OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
+    }
     message.gmm.h.extended_protocol_discriminator =
-        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
+            OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
     message.gmm.h.message_type = OGS_NAS_5GS_DEREGISTRATION_REQUEST;
 
     de_registration_type->ksi = test_ue->nas.ksi;
@@ -412,7 +420,10 @@ ogs_pkbuf_t *testgmm_build_de_registration_request(
             &test_ue->mobile_identity_suci;
     }
 
-    return test_nas_5gs_security_encode(test_ue, &message);
+    if (integrity_protected)
+        return test_nas_5gs_security_encode(test_ue, &message);
+    else
+        return ogs_nas_5gs_plain_encode(&message);
 }
 
 ogs_pkbuf_t *testgmm_build_identity_response(test_ue_t *test_ue)

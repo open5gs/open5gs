@@ -25,7 +25,8 @@ extern "C" {
 #endif
 
 ogs_pkbuf_t *testemm_build_attach_request(
-        test_ue_t *test_ue, ogs_pkbuf_t *esmbuf);
+        test_ue_t *test_ue, ogs_pkbuf_t *esmbuf,
+        bool integrity_protected, bool ciphered);
 ogs_pkbuf_t *testemm_build_identity_response(test_ue_t *test_ue);
 ogs_pkbuf_t *testemm_build_authentication_response(test_ue_t *test_ue);
 ogs_pkbuf_t *testemm_build_authentication_failure(
@@ -35,16 +36,20 @@ ogs_pkbuf_t *testemm_build_attach_complete(
         test_ue_t *test_ue, ogs_pkbuf_t *esmbuf);
 ogs_pkbuf_t *testemm_build_tau_complete(test_ue_t *test_ue);
 
-ogs_pkbuf_t *testemm_build_detach_request(test_ue_t *test_ue, bool switch_off);
+ogs_pkbuf_t *testemm_build_detach_request(
+        test_ue_t *test_ue, bool switch_off,
+        bool integrity_protected, bool ciphered);
 
 ogs_pkbuf_t *testemm_build_service_request(test_ue_t *test_ue);
 ogs_pkbuf_t *testemm_build_tau_request(
-        test_ue_t *test_ue, bool active_flag, uint8_t update_type);
+        test_ue_t *test_ue, bool active_flag, uint8_t update_type,
+        bool integrity_protected, bool ciphered);
 ogs_pkbuf_t *testemm_build_emm_status(
         test_ue_t *test_ue, ogs_nas_emm_cause_t emm_cause);
 
 ogs_pkbuf_t *testemm_build_extended_service_request(
-        test_ue_t *test_ue, uint8_t type);
+        test_ue_t *test_ue, uint8_t type,
+        bool integrity_protected, bool ciphered);
 
 ogs_pkbuf_t *testemm_build_uplink_nas_transport(test_ue_t *test_ue);
 

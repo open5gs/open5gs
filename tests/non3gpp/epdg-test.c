@@ -448,7 +448,7 @@ static void test3_func(abts_case *tc, void *data)
     sess->pdn_connectivity_param.pco = 1;
     sess->pdn_connectivity_param.request_type =
         OGS_NAS_EPS_REQUEST_TYPE_HANDOVER;
-    esmbuf = testesm_build_pdn_connectivity_request(sess);
+    esmbuf = testesm_build_pdn_connectivity_request(sess, false);
     ABTS_PTR_NOTNULL(tc, esmbuf);
 
     memset(&test_ue->attach_request_param,
@@ -458,7 +458,7 @@ static void test3_func(abts_case *tc, void *data)
     test_ue->attach_request_param.mobile_station_classmark_2 = 1;
     test_ue->attach_request_param.additional_update_type = 1;
     test_ue->attach_request_param.ue_usage_setting = 1;
-    emmbuf = testemm_build_attach_request(test_ue, esmbuf);
+    emmbuf = testemm_build_attach_request(test_ue, esmbuf, false, false);
     ABTS_PTR_NOTNULL(tc, emmbuf);
 
     memset(&test_ue->initial_ue_param, 0, sizeof(test_ue->initial_ue_param));
@@ -568,12 +568,11 @@ static void test3_func(abts_case *tc, void *data)
     ogs_assert(sess);
     sess->pti = 5;
 
-    sess->pdn_connectivity_param.integrity_protected = 1;
     sess->pdn_connectivity_param.apn = 1;
     sess->pdn_connectivity_param.pco = 1;
     sess->pdn_connectivity_param.request_type =
         OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
-    esmbuf = testesm_build_pdn_connectivity_request(sess);
+    esmbuf = testesm_build_pdn_connectivity_request(sess, true);
     ABTS_PTR_NOTNULL(tc, esmbuf);
     sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, esmbuf);
     ABTS_PTR_NOTNULL(tc, sendbuf);
@@ -669,12 +668,11 @@ static void test3_func(abts_case *tc, void *data)
     sess = test_sess_add_by_apn(test_ue, "wlan", OGS_GTP_RAT_TYPE_EUTRAN);
     ogs_assert(sess);
 
-    sess->pdn_connectivity_param.integrity_protected = 1;
     sess->pdn_connectivity_param.apn = 1;
     sess->pdn_connectivity_param.pco = 1;
     sess->pdn_connectivity_param.request_type =
         OGS_NAS_EPS_REQUEST_TYPE_HANDOVER;
-    esmbuf = testesm_build_pdn_connectivity_request(sess);
+    esmbuf = testesm_build_pdn_connectivity_request(sess, true);
     ABTS_PTR_NOTNULL(tc, esmbuf);
     sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, esmbuf);
     ABTS_PTR_NOTNULL(tc, sendbuf);

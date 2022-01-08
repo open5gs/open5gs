@@ -94,7 +94,7 @@ static void cm_idle_paging_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, test_db_insert_ue(test_ue, doc));
 
     /* Send Registration request */
-    gmmbuf = testgmm_build_registration_request(test_ue, NULL);
+    gmmbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
     test_ue->registration_request_param.gmm_capability = 1;
@@ -102,7 +102,7 @@ static void cm_idle_paging_func(abts_case *tc, void *data)
     test_ue->registration_request_param.requested_nssai = 1;
     test_ue->registration_request_param.last_visited_registered_tai = 1;
     test_ue->registration_request_param.ue_usage_setting = 1;
-    nasbuf = testgmm_build_registration_request(test_ue, NULL);
+    nasbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
     sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, false, true);
@@ -269,17 +269,17 @@ static void cm_idle_paging_func(abts_case *tc, void *data)
      *  - Type: Mobile terminated services(2)
      *  - PDU Session Status
      */
-    test_ue->service_request_param.integrity_protected = 0;
     test_ue->service_request_param.pdu_session_status = 1;
     test_ue->service_request_param.psimask.pdu_session_status = 1 << sess->psi;
     nasbuf = testgmm_build_service_request(
-            test_ue, OGS_NAS_SERVICE_TYPE_MOBILE_TERMINATED_SERVICES, NULL);
+            test_ue, OGS_NAS_SERVICE_TYPE_MOBILE_TERMINATED_SERVICES,
+            NULL, false, false);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
-    test_ue->service_request_param.integrity_protected = 1;
     test_ue->service_request_param.pdu_session_status = 0;
     gmmbuf = testgmm_build_service_request(
-            test_ue, OGS_NAS_SERVICE_TYPE_MOBILE_TERMINATED_SERVICES, nasbuf);
+            test_ue, OGS_NAS_SERVICE_TYPE_MOBILE_TERMINATED_SERVICES,
+            nasbuf, true, false);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
     sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, true, true);
@@ -394,18 +394,16 @@ static void cm_idle_paging_func(abts_case *tc, void *data)
      *  - Type: Signalling
      *  - Uplink Data Status
      */
-    test_ue->service_request_param.integrity_protected = 0;
     test_ue->service_request_param.uplink_data_status = 0;
     test_ue->service_request_param.pdu_session_status = 0;
     nasbuf = testgmm_build_service_request(
-            test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, NULL);
+            test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
-    test_ue->service_request_param.integrity_protected = 1;
     test_ue->service_request_param.uplink_data_status = 0;
     test_ue->service_request_param.pdu_session_status = 0;
     gmmbuf = testgmm_build_service_request(
-            test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, nasbuf);
+            test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, nasbuf, true, false);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
     sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, true, true);
@@ -484,19 +482,17 @@ static void cm_idle_paging_func(abts_case *tc, void *data)
      *  - Type: Data
      *  - Uplink Data Status
      */
-    test_ue->service_request_param.integrity_protected = 0;
     test_ue->service_request_param.uplink_data_status = 1;
     test_ue->service_request_param.psimask.uplink_data_status = 1 << sess->psi;
     test_ue->service_request_param.pdu_session_status = 0;
     nasbuf = testgmm_build_service_request(
-            test_ue, OGS_NAS_SERVICE_TYPE_DATA, NULL);
+            test_ue, OGS_NAS_SERVICE_TYPE_DATA, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
-    test_ue->service_request_param.integrity_protected = 1;
     test_ue->service_request_param.uplink_data_status = 0;
     test_ue->service_request_param.pdu_session_status = 0;
     gmmbuf = testgmm_build_service_request(
-            test_ue, OGS_NAS_SERVICE_TYPE_DATA, nasbuf);
+            test_ue, OGS_NAS_SERVICE_TYPE_DATA, nasbuf, true, false);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
     sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, true, true);
@@ -660,7 +656,7 @@ static void cm_connected_paging_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, test_db_insert_ue(test_ue, doc));
 
     /* Send Registration request */
-    gmmbuf = testgmm_build_registration_request(test_ue, NULL);
+    gmmbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
     test_ue->registration_request_param.gmm_capability = 1;
@@ -668,7 +664,7 @@ static void cm_connected_paging_func(abts_case *tc, void *data)
     test_ue->registration_request_param.requested_nssai = 1;
     test_ue->registration_request_param.last_visited_registered_tai = 1;
     test_ue->registration_request_param.ue_usage_setting = 1;
-    nasbuf = testgmm_build_registration_request(test_ue, NULL);
+    nasbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
     sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, false, true);
@@ -822,20 +818,20 @@ static void cm_connected_paging_func(abts_case *tc, void *data)
      *  - Uplink Data Status
      *  - PDU Session Status
      */
-    test_ue->service_request_param.integrity_protected = 0;
     test_ue->service_request_param.uplink_data_status = 1;
     test_ue->service_request_param.psimask.uplink_data_status = 1 << sess->psi;
     test_ue->service_request_param.pdu_session_status = 1;
     test_ue->service_request_param.psimask.pdu_session_status = 1 << sess->psi;
     nasbuf = testgmm_build_service_request(
-            test_ue, OGS_NAS_SERVICE_TYPE_HIGH_PRIORITY_ACCESS, NULL);
+            test_ue, OGS_NAS_SERVICE_TYPE_HIGH_PRIORITY_ACCESS,
+            NULL, false, false);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
-    test_ue->service_request_param.integrity_protected = 1;
     test_ue->service_request_param.uplink_data_status = 0;
     test_ue->service_request_param.pdu_session_status = 0;
     gmmbuf = testgmm_build_service_request(
-            test_ue, OGS_NAS_SERVICE_TYPE_HIGH_PRIORITY_ACCESS, nasbuf);
+            test_ue, OGS_NAS_SERVICE_TYPE_HIGH_PRIORITY_ACCESS,
+            nasbuf, true, false);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
     sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, true, true);
@@ -1003,7 +999,7 @@ static void cm_idle_error_indication_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, test_db_insert_ue(test_ue, doc));
 
     /* Send Registration request */
-    gmmbuf = testgmm_build_registration_request(test_ue, NULL);
+    gmmbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
     test_ue->registration_request_param.gmm_capability = 1;
@@ -1011,7 +1007,7 @@ static void cm_idle_error_indication_func(abts_case *tc, void *data)
     test_ue->registration_request_param.requested_nssai = 1;
     test_ue->registration_request_param.last_visited_registered_tai = 1;
     test_ue->registration_request_param.ue_usage_setting = 1;
-    nasbuf = testgmm_build_registration_request(test_ue, NULL);
+    nasbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
     sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, false, true);
@@ -1178,16 +1174,16 @@ static void cm_idle_error_indication_func(abts_case *tc, void *data)
      *  - Type: Mobile terminated services(2)
      *  - PDU Session Status
      */
-    test_ue->service_request_param.integrity_protected = 0;
     test_ue->service_request_param.pdu_session_status = 0;
     nasbuf = testgmm_build_service_request(
-            test_ue, OGS_NAS_SERVICE_TYPE_MOBILE_TERMINATED_SERVICES, NULL);
+            test_ue, OGS_NAS_SERVICE_TYPE_MOBILE_TERMINATED_SERVICES,
+            NULL, false, false);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
-    test_ue->service_request_param.integrity_protected = 1;
     test_ue->service_request_param.pdu_session_status = 0;
     gmmbuf = testgmm_build_service_request(
-            test_ue, OGS_NAS_SERVICE_TYPE_MOBILE_TERMINATED_SERVICES, nasbuf);
+            test_ue, OGS_NAS_SERVICE_TYPE_MOBILE_TERMINATED_SERVICES,
+            nasbuf, true, false);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
     sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, true, true);
@@ -1348,7 +1344,7 @@ static void cm_connected_error_indication_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, test_db_insert_ue(test_ue, doc));
 
     /* Send Registration request */
-    gmmbuf = testgmm_build_registration_request(test_ue, NULL);
+    gmmbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
     test_ue->registration_request_param.gmm_capability = 1;
@@ -1356,7 +1352,7 @@ static void cm_connected_error_indication_func(abts_case *tc, void *data)
     test_ue->registration_request_param.requested_nssai = 1;
     test_ue->registration_request_param.last_visited_registered_tai = 1;
     test_ue->registration_request_param.ue_usage_setting = 1;
-    nasbuf = testgmm_build_registration_request(test_ue, NULL);
+    nasbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
     sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, false, true);
@@ -1631,7 +1627,7 @@ static void vonr_qos_flow_test1_func(abts_case *tc, void *data)
 
     /* Send Registration request */
     test_ue->registration_request_param.guti = 1;
-    gmmbuf = testgmm_build_registration_request(test_ue, NULL);
+    gmmbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
     test_ue->registration_request_param.gmm_capability = 1;
@@ -1639,7 +1635,7 @@ static void vonr_qos_flow_test1_func(abts_case *tc, void *data)
     test_ue->registration_request_param.requested_nssai = 1;
     test_ue->registration_request_param.last_visited_registered_tai = 1;
     test_ue->registration_request_param.ue_usage_setting = 1;
-    nasbuf = testgmm_build_registration_request(test_ue, NULL);
+    nasbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
     sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, false, true);
@@ -1841,19 +1837,17 @@ static void vonr_qos_flow_test1_func(abts_case *tc, void *data)
      * Service request
      *  - Uplink Data Status
      */
-    test_ue->service_request_param.integrity_protected = 0;
     test_ue->service_request_param.uplink_data_status = 1;
     test_ue->service_request_param.psimask.uplink_data_status = 1 << sess->psi;
     test_ue->service_request_param.pdu_session_status = 0;
     nasbuf = testgmm_build_service_request(
-            test_ue, OGS_NAS_SERVICE_TYPE_DATA, NULL);
+            test_ue, OGS_NAS_SERVICE_TYPE_DATA, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
-    test_ue->service_request_param.integrity_protected = 1;
     test_ue->service_request_param.uplink_data_status = 0;
     test_ue->service_request_param.pdu_session_status = 0;
     gmmbuf = testgmm_build_service_request(
-            test_ue, OGS_NAS_SERVICE_TYPE_DATA, nasbuf);
+            test_ue, OGS_NAS_SERVICE_TYPE_DATA, nasbuf, true, false);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
     sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, true, true);
@@ -1914,7 +1908,7 @@ static void vonr_qos_flow_test1_func(abts_case *tc, void *data)
     ogs_msleep(100);
 
     /* Send De-registration request */
-    gmmbuf = testgmm_build_de_registration_request(test_ue, 1);
+    gmmbuf = testgmm_build_de_registration_request(test_ue, 1, true, true);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
     sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
     ABTS_PTR_NOTNULL(tc, sendbuf);
@@ -2031,7 +2025,7 @@ static void vonr_session_test2_func(abts_case *tc, void *data)
 
     /* Send Registration request */
     test_ue->registration_request_param.guti = 1;
-    gmmbuf = testgmm_build_registration_request(test_ue, NULL);
+    gmmbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
     test_ue->registration_request_param.gmm_capability = 1;
@@ -2039,7 +2033,7 @@ static void vonr_session_test2_func(abts_case *tc, void *data)
     test_ue->registration_request_param.requested_nssai = 1;
     test_ue->registration_request_param.last_visited_registered_tai = 1;
     test_ue->registration_request_param.ue_usage_setting = 1;
-    nasbuf = testgmm_build_registration_request(test_ue, NULL);
+    nasbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
     sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, false, true);
@@ -2282,20 +2276,18 @@ static void vonr_session_test2_func(abts_case *tc, void *data)
      * Send Service request Using InitialUEMessage
      *  - Uplink Data Status
      */
-    test_ue->service_request_param.integrity_protected = 0;
     test_ue->service_request_param.uplink_data_status = 1;
     test_ue->service_request_param.
         psimask.uplink_data_status = (1 << 5 | 1 << 6);
     test_ue->service_request_param.pdu_session_status = 0;
     nasbuf = testgmm_build_service_request(
-            test_ue, OGS_NAS_SERVICE_TYPE_DATA, NULL);
+            test_ue, OGS_NAS_SERVICE_TYPE_DATA, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
-    test_ue->service_request_param.integrity_protected = 1;
     test_ue->service_request_param.uplink_data_status = 0;
     test_ue->service_request_param.pdu_session_status = 0;
     gmmbuf = testgmm_build_service_request(
-            test_ue, OGS_NAS_SERVICE_TYPE_DATA, nasbuf);
+            test_ue, OGS_NAS_SERVICE_TYPE_DATA, nasbuf, true, false);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
     sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, true, true);
@@ -2519,7 +2511,7 @@ static void registration_ue_context_test4_func(abts_case *tc, void *data)
 
     /* Send Registration request */
     test_ue->registration_request_param.guti = 1;
-    gmmbuf = testgmm_build_registration_request(test_ue, NULL);
+    gmmbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
     test_ue->registration_request_param.gmm_capability = 1;
@@ -2527,7 +2519,7 @@ static void registration_ue_context_test4_func(abts_case *tc, void *data)
     test_ue->registration_request_param.requested_nssai = 1;
     test_ue->registration_request_param.last_visited_registered_tai = 1;
     test_ue->registration_request_param.ue_usage_setting = 1;
-    nasbuf = testgmm_build_registration_request(test_ue, NULL);
+    nasbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
     sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, false, false);
@@ -2678,17 +2670,15 @@ static void registration_ue_context_test4_func(abts_case *tc, void *data)
      * Service request
      *  - PDU Session Status
      */
-    test_ue->service_request_param.integrity_protected = 0;
     test_ue->service_request_param.pdu_session_status = 1;
     test_ue->service_request_param.psimask.pdu_session_status = 1 << sess->psi;
     nasbuf = testgmm_build_service_request(
-            test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, NULL);
+            test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
-    test_ue->service_request_param.integrity_protected = 1;
     test_ue->service_request_param.pdu_session_status = 0;
     gmmbuf = testgmm_build_service_request(
-            test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, nasbuf);
+            test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, nasbuf, true, false);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
     sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, true, false);
@@ -2733,19 +2723,17 @@ static void registration_ue_context_test4_func(abts_case *tc, void *data)
      * Service request
      *  - Uplink Data Status
      */
-    test_ue->service_request_param.integrity_protected = 0;
     test_ue->service_request_param.uplink_data_status = 1;
     test_ue->service_request_param.psimask.uplink_data_status = 1 << sess->psi;
     test_ue->service_request_param.pdu_session_status = 0;
     nasbuf = testgmm_build_service_request(
-            test_ue, OGS_NAS_SERVICE_TYPE_DATA, NULL);
+            test_ue, OGS_NAS_SERVICE_TYPE_DATA, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
-    test_ue->service_request_param.integrity_protected = 1;
     test_ue->service_request_param.uplink_data_status = 0;
     test_ue->service_request_param.pdu_session_status = 0;
     gmmbuf = testgmm_build_service_request(
-            test_ue, OGS_NAS_SERVICE_TYPE_DATA, nasbuf);
+            test_ue, OGS_NAS_SERVICE_TYPE_DATA, nasbuf, true, false);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
     sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, true, false);
@@ -2913,7 +2901,7 @@ static void registration_idle_test1_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, test_db_insert_ue(test_ue, doc));
 
     /* Send Registration request */
-    gmmbuf = testgmm_build_registration_request(test_ue, NULL);
+    gmmbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
     test_ue->registration_request_param.gmm_capability = 1;
@@ -2921,7 +2909,7 @@ static void registration_idle_test1_func(abts_case *tc, void *data)
     test_ue->registration_request_param.requested_nssai = 1;
     test_ue->registration_request_param.last_visited_registered_tai = 1;
     test_ue->registration_request_param.ue_usage_setting = 1;
-    nasbuf = testgmm_build_registration_request(test_ue, NULL);
+    nasbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
     sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, false, true);
@@ -3074,17 +3062,15 @@ static void registration_idle_test1_func(abts_case *tc, void *data)
      * Service request
      *  - PDU Session Status
      */
-    test_ue->service_request_param.integrity_protected = 0;
     test_ue->service_request_param.pdu_session_status = 1;
     test_ue->service_request_param.psimask.pdu_session_status = 1 << sess->psi;
     nasbuf = testgmm_build_service_request(
-            test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, NULL);
+            test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
-    test_ue->service_request_param.integrity_protected = 1;
     test_ue->service_request_param.pdu_session_status = 0;
     gmmbuf = testgmm_build_service_request(
-            test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, nasbuf);
+            test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, nasbuf, true, false);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
     sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, true, true);
@@ -3168,19 +3154,17 @@ static void registration_idle_test1_func(abts_case *tc, void *data)
      * Service request
      *  - Uplink Data Status
      */
-    test_ue->service_request_param.integrity_protected = 0;
     test_ue->service_request_param.uplink_data_status = 1;
     test_ue->service_request_param.psimask.uplink_data_status = 1 << sess->psi;
     test_ue->service_request_param.pdu_session_status = 0;
     nasbuf = testgmm_build_service_request(
-            test_ue, OGS_NAS_SERVICE_TYPE_DATA, NULL);
+            test_ue, OGS_NAS_SERVICE_TYPE_DATA, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
-    test_ue->service_request_param.integrity_protected = 1;
     test_ue->service_request_param.uplink_data_status = 0;
     test_ue->service_request_param.pdu_session_status = 0;
     gmmbuf = testgmm_build_service_request(
-            test_ue, OGS_NAS_SERVICE_TYPE_DATA, nasbuf);
+            test_ue, OGS_NAS_SERVICE_TYPE_DATA, nasbuf, true, false);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
     sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, true, true);

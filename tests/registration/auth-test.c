@@ -93,7 +93,7 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, test_db_insert_ue(test_ue, doc));
 
     /* Send Registration request */
-    gmmbuf = testgmm_build_registration_request(test_ue, NULL);
+    gmmbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
     sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, false, true);
     ABTS_PTR_NOTNULL(tc, sendbuf);
@@ -142,7 +142,7 @@ static void test1_func(abts_case *tc, void *data)
             test_ue->ngap_procedure_code);
 
     /* Send Registration request */
-    gmmbuf = testgmm_build_registration_request(test_ue, NULL);
+    gmmbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
     sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, false, true);
     ABTS_PTR_NOTNULL(tc, sendbuf);

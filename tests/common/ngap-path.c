@@ -192,7 +192,9 @@ void testngap_send_to_nas(test_ue_t *test_ue, NGAP_NAS_PDU_t *nasPdu)
     h = (ogs_nas_5gmm_header_t *)nasbuf->data;
     ogs_assert(h);
 
-    if (h->message_type == OGS_NAS_5GS_SECURITY_MODE_COMMAND) {
+    if (sh->security_header_type ==
+        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT &&
+        h->message_type == OGS_NAS_5GS_SECURITY_MODE_COMMAND) {
         ogs_nas_5gs_message_t message;
         int rv;
 

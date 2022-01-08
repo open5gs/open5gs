@@ -255,8 +255,7 @@ ogs_pkbuf_t *test_nas_eps_security_encode(
         /* encrypt NAS message */
         ogs_nas_encrypt(test_ue->selected_enc_algorithm,
             test_ue->knas_enc, test_ue->ul_count,
-            test_ue->nas.access_type,
-            OGS_NAS_SECURITY_UPLINK_DIRECTION, new);
+            NAS_SECURITY_BEARER, OGS_NAS_SECURITY_UPLINK_DIRECTION, new);
     }
 
     /* encode sequence number */
@@ -348,7 +347,7 @@ int test_nas_eps_security_decode(test_ue_t *test_ue,
             /* decrypt NAS message */
             ogs_nas_encrypt(test_ue->selected_enc_algorithm,
                 test_ue->knas_enc, test_ue->dl_count.i32,
-                test_ue->nas.access_type,
+                NAS_SECURITY_BEARER,
                 OGS_NAS_SECURITY_DOWNLINK_DIRECTION, pkbuf);
         }
     }

@@ -101,12 +101,11 @@ static void test1_func(abts_case *tc, void *data)
     sess->pdn_connectivity_param.pco = 1;
     sess->pdn_connectivity_param.request_type =
         OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
-    esmbuf = testesm_build_pdn_connectivity_request(sess);
+    esmbuf = testesm_build_pdn_connectivity_request(sess, false);
     ABTS_PTR_NOTNULL(tc, esmbuf);
 
     memset(&test_ue->attach_request_param,
             0, sizeof(test_ue->attach_request_param));
-    test_ue->attach_request_param.integrity_protected = 1;
     test_ue->attach_request_param.guti = 1;
     test_ue->attach_request_param.last_visited_registered_tai = 1;
     test_ue->attach_request_param.drx_parameter = 1;
@@ -118,7 +117,7 @@ static void test1_func(abts_case *tc, void *data)
     test_ue->attach_request_param.ue_usage_setting = 1;
     test_ue->attach_request_param.old_guti_type = 1;
     test_ue->attach_request_param.ms_network_feature_support = 1;
-    emmbuf = testemm_build_attach_request(test_ue, esmbuf);
+    emmbuf = testemm_build_attach_request(test_ue, esmbuf, true, false);
     ABTS_PTR_NOTNULL(tc, emmbuf);
 
     memset(&test_ue->initial_ue_param, 0, sizeof(test_ue->initial_ue_param));

@@ -20,7 +20,8 @@
 #include "test-common.h"
 
 ogs_pkbuf_t *testemm_build_attach_request(
-        test_ue_t *test_ue, ogs_pkbuf_t *esmbuf)
+        test_ue_t *test_ue, ogs_pkbuf_t *esmbuf,
+        bool integrity_protected, bool ciphered)
 {
     int i;
     uint16_t psimask = 0;
@@ -71,8 +72,8 @@ ogs_pkbuf_t *testemm_build_attach_request(
     ogs_assert(esmbuf);
 
     memset(&message, 0, sizeof(message));
-    if (test_ue->attach_request_param.integrity_protected) {
-        if (test_ue->attach_request_param.ciphered)
+    if (integrity_protected) {
+        if (ciphered)
             message.h.security_header_type =
                 OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
         else
@@ -80,8 +81,7 @@ ogs_pkbuf_t *testemm_build_attach_request(
                 OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED;
         message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
     }
-    message.emm.h.protocol_discriminator =
-            OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = OGS_NAS_EPS_ATTACH_REQUEST;
 
     esm_message_container->length = esmbuf->len;
@@ -237,7 +237,7 @@ ogs_pkbuf_t *testemm_build_attach_request(
         ue_additional_security_capability->nia = 0xf0;
     }
 
-    if (test_ue->attach_request_param.integrity_protected)
+    if (integrity_protected)
         return test_nas_eps_security_encode(test_ue, &message);
     else
         return ogs_nas_eps_plain_encode(&message);
@@ -375,7 +375,7 @@ ogs_pkbuf_t *testemm_build_security_mode_complete(test_ue_t *test_ue)
 
     memset(&message, 0, sizeof(message));
     message.h.security_header_type =
-        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHTERD_WITH_NEW_INTEGRITY_CONTEXT;
     message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
 
     message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
@@ -439,7 +439,9 @@ ogs_pkbuf_t *testemm_build_tau_complete(test_ue_t *test_ue)
     return test_nas_eps_security_encode(test_ue, &message);
 }
 
-ogs_pkbuf_t *testemm_build_detach_request(test_ue_t *test_ue, bool switch_off)
+ogs_pkbuf_t *testemm_build_detach_request(
+        test_ue_t *test_ue, bool switch_off,
+        bool integrity_protected, bool ciphered)
 {
     ogs_nas_eps_message_t message;
     ogs_nas_eps_detach_request_from_ue_t *detach_request =
@@ -452,10 +454,15 @@ ogs_pkbuf_t *testemm_build_detach_request(test_ue_t *test_ue, bool switch_off)
     ogs_assert(test_ue);
 
     memset(&message, 0, sizeof(message));
-    message.h.security_header_type =
-        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
-    message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
-
+    if (integrity_protected) {
+        if (ciphered)
+            message.h.security_header_type =
+                OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+        else
+            message.h.security_header_type =
+                OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED;
+        message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    }
     message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = OGS_NAS_EPS_DETACH_REQUEST;
 
@@ -480,7 +487,10 @@ ogs_pkbuf_t *testemm_build_detach_request(test_ue_t *test_ue, bool switch_off)
                 &test_ue->mobile_identity_imsi, eps_mobile_identity->length);
     }
 
-    return test_nas_eps_security_encode(test_ue, &message);
+    if (integrity_protected)
+        return test_nas_eps_security_encode(test_ue, &message);
+    else
+        return ogs_nas_eps_plain_encode(&message);
 }
 
 ogs_pkbuf_t *testemm_build_service_request(test_ue_t *test_ue)
@@ -527,7 +537,8 @@ ogs_pkbuf_t *testemm_build_service_request(test_ue_t *test_ue)
 }
 
 ogs_pkbuf_t *testemm_build_tau_request(
-        test_ue_t *test_ue, bool active_flag, uint8_t update_type)
+        test_ue_t *test_ue, bool active_flag, uint8_t update_type,
+        bool integrity_protected, bool ciphered)
 {
     ogs_nas_eps_message_t message;
     ogs_nas_eps_tracking_area_update_request_t *tau_request =
@@ -573,8 +584,8 @@ ogs_pkbuf_t *testemm_build_tau_request(
     ogs_assert(test_ue);
 
     memset(&message, 0, sizeof(message));
-    if (test_ue->tau_request_param.integrity_protected) {
-        if (test_ue->tau_request_param.ciphered) {
+    if (integrity_protected) {
+        if (ciphered) {
             message.h.security_header_type =
                 OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
         } else {
@@ -755,7 +766,7 @@ ogs_pkbuf_t *testemm_build_tau_request(
             OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_DEVICE_PROPERTIES_PRESENT;
     }
 
-    if (test_ue->tau_request_param.integrity_protected)
+    if (integrity_protected)
         return test_nas_eps_security_encode(test_ue, &message);
     else
         return ogs_nas_eps_plain_encode(&message);
@@ -783,7 +794,8 @@ ogs_pkbuf_t *testemm_build_emm_status(
 }
 
 ogs_pkbuf_t *testemm_build_extended_service_request(
-        test_ue_t *test_ue, uint8_t type)
+        test_ue_t *test_ue, uint8_t type,
+        bool integrity_protected, bool ciphered)
 {
     ogs_nas_eps_message_t message;
     ogs_nas_eps_extended_service_request_t *extended_service_request =
@@ -801,15 +813,15 @@ ogs_pkbuf_t *testemm_build_extended_service_request(
     ogs_assert(test_ue);
 
     memset(&message, 0, sizeof(message));
-    if (test_ue->extended_service_request_param.ciphered)
-        message.h.security_header_type =
-            OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
-    else
-        message.h.security_header_type =
-            OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED;
-
-    message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
-
+    if (integrity_protected) {
+        if (ciphered)
+            message.h.security_header_type =
+                OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+        else
+            message.h.security_header_type =
+                OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED;
+        message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    }
     message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = OGS_NAS_EPS_EXTENDED_SERVICE_REQUEST;
 
@@ -842,7 +854,10 @@ ogs_pkbuf_t *testemm_build_extended_service_request(
         }
     }
 
-    return test_nas_eps_security_encode(test_ue, &message);
+    if (integrity_protected)
+        return test_nas_eps_security_encode(test_ue, &message);
+    else
+        return ogs_nas_eps_plain_encode(&message);
 }
 
 ogs_pkbuf_t *testemm_build_uplink_nas_transport(test_ue_t *test_ue)

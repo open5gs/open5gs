@@ -24,7 +24,8 @@
 extern "C" {
 #endif
 
-ogs_pkbuf_t *testesm_build_pdn_connectivity_request(test_sess_t *sess);
+ogs_pkbuf_t *testesm_build_pdn_connectivity_request(
+        test_sess_t *sess, bool integrity_protected);
 ogs_pkbuf_t *testesm_build_pdn_disconnect_request(test_sess_t *sess);
 ogs_pkbuf_t *testesm_build_esm_information_response(test_sess_t *sess);
 ogs_pkbuf_t *testesm_build_activate_default_eps_bearer_context_accept(

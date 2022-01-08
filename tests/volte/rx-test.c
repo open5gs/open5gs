@@ -104,18 +104,17 @@ static void test1_func(abts_case *tc, void *data)
     sess->pdn_connectivity_param.eit = 1;
     sess->pdn_connectivity_param.request_type =
         OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
-    esmbuf = testesm_build_pdn_connectivity_request(sess);
+    esmbuf = testesm_build_pdn_connectivity_request(sess, false);
     ABTS_PTR_NOTNULL(tc, esmbuf);
 
     memset(&test_ue->attach_request_param,
             0, sizeof(test_ue->attach_request_param));
-    test_ue->attach_request_param.integrity_protected = 1;
     test_ue->attach_request_param.drx_parameter = 1;
     test_ue->attach_request_param.ms_network_capability = 1;
     test_ue->attach_request_param.tmsi_status = 1;
     test_ue->attach_request_param.mobile_station_classmark_2 = 1;
     test_ue->attach_request_param.ue_usage_setting = 1;
-    emmbuf = testemm_build_attach_request(test_ue, esmbuf);
+    emmbuf = testemm_build_attach_request(test_ue, esmbuf, true, false);
     ABTS_PTR_NOTNULL(tc, emmbuf);
 
     memset(&test_ue->initial_ue_param, 0, sizeof(test_ue->initial_ue_param));
@@ -218,12 +217,11 @@ static void test1_func(abts_case *tc, void *data)
     ogs_assert(sess);
     sess->pti = 5;
 
-    sess->pdn_connectivity_param.integrity_protected = 1;
     sess->pdn_connectivity_param.apn = 1;
     sess->pdn_connectivity_param.pco = 1;
     sess->pdn_connectivity_param.request_type =
         OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
-    esmbuf = testesm_build_pdn_connectivity_request(sess);
+    esmbuf = testesm_build_pdn_connectivity_request(sess, true);
     ABTS_PTR_NOTNULL(tc, esmbuf);
     sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, esmbuf);
     ABTS_PTR_NOTNULL(tc, sendbuf);
@@ -492,7 +490,7 @@ static void test1_func(abts_case *tc, void *data)
     test_bearer_remove(bearer);
 
     /* Send Detach Request */
-    emmbuf = testemm_build_detach_request(test_ue, 1);
+    emmbuf = testemm_build_detach_request(test_ue, 1, true, false);
     ABTS_PTR_NOTNULL(tc, emmbuf);
     sendbuf = test_s1ap_build_initial_ue_message(
             test_ue, emmbuf, S1AP_RRC_Establishment_Cause_mo_Signalling, true);
@@ -621,18 +619,17 @@ static void test2_func(abts_case *tc, void *data)
     sess->pdn_connectivity_param.eit = 1;
     sess->pdn_connectivity_param.request_type =
         OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
-    esmbuf = testesm_build_pdn_connectivity_request(sess);
+    esmbuf = testesm_build_pdn_connectivity_request(sess, false);
     ABTS_PTR_NOTNULL(tc, esmbuf);
 
     memset(&test_ue->attach_request_param,
             0, sizeof(test_ue->attach_request_param));
-    test_ue->attach_request_param.integrity_protected = 1;
     test_ue->attach_request_param.drx_parameter = 1;
     test_ue->attach_request_param.ms_network_capability = 1;
     test_ue->attach_request_param.tmsi_status = 1;
     test_ue->attach_request_param.mobile_station_classmark_2 = 1;
     test_ue->attach_request_param.ue_usage_setting = 1;
-    emmbuf = testemm_build_attach_request(test_ue, esmbuf);
+    emmbuf = testemm_build_attach_request(test_ue, esmbuf, true, false);
     ABTS_PTR_NOTNULL(tc, emmbuf);
 
     memset(&test_ue->initial_ue_param, 0, sizeof(test_ue->initial_ue_param));
@@ -726,12 +723,11 @@ static void test2_func(abts_case *tc, void *data)
     ogs_assert(sess);
     sess->pti = 5;
 
-    sess->pdn_connectivity_param.integrity_protected = 1;
     sess->pdn_connectivity_param.apn = 1;
     sess->pdn_connectivity_param.pco = 1;
     sess->pdn_connectivity_param.request_type =
         OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
-    esmbuf = testesm_build_pdn_connectivity_request(sess);
+    esmbuf = testesm_build_pdn_connectivity_request(sess, true);
     ABTS_PTR_NOTNULL(tc, esmbuf);
     sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, esmbuf);
     ABTS_PTR_NOTNULL(tc, sendbuf);
@@ -974,18 +970,17 @@ static void test3_func(abts_case *tc, void *data)
     sess->pdn_connectivity_param.eit = 1;
     sess->pdn_connectivity_param.request_type =
         OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
-    esmbuf = testesm_build_pdn_connectivity_request(sess);
+    esmbuf = testesm_build_pdn_connectivity_request(sess, false);
     ABTS_PTR_NOTNULL(tc, esmbuf);
 
     memset(&test_ue->attach_request_param,
             0, sizeof(test_ue->attach_request_param));
-    test_ue->attach_request_param.integrity_protected = 1;
     test_ue->attach_request_param.drx_parameter = 1;
     test_ue->attach_request_param.ms_network_capability = 1;
     test_ue->attach_request_param.tmsi_status = 1;
     test_ue->attach_request_param.mobile_station_classmark_2 = 1;
     test_ue->attach_request_param.ue_usage_setting = 1;
-    emmbuf = testemm_build_attach_request(test_ue, esmbuf);
+    emmbuf = testemm_build_attach_request(test_ue, esmbuf, true, false);
     ABTS_PTR_NOTNULL(tc, emmbuf);
 
     memset(&test_ue->initial_ue_param, 0, sizeof(test_ue->initial_ue_param));
@@ -1088,12 +1083,11 @@ static void test3_func(abts_case *tc, void *data)
     ogs_assert(sess);
     sess->pti = 37;
 
-    sess->pdn_connectivity_param.integrity_protected = 1;
     sess->pdn_connectivity_param.apn = 1;
     sess->pdn_connectivity_param.pco = 1;
     sess->pdn_connectivity_param.request_type =
         OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
-    esmbuf = testesm_build_pdn_connectivity_request(sess);
+    esmbuf = testesm_build_pdn_connectivity_request(sess, true);
     ABTS_PTR_NOTNULL(tc, esmbuf);
     sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, esmbuf);
     ABTS_PTR_NOTNULL(tc, sendbuf);
@@ -1174,12 +1168,11 @@ static void test3_func(abts_case *tc, void *data)
     ogs_assert(sess);
     sess->pti = 39;
 
-    sess->pdn_connectivity_param.integrity_protected = 1;
     sess->pdn_connectivity_param.apn = 1;
     sess->pdn_connectivity_param.pco = 1;
     sess->pdn_connectivity_param.request_type =
         OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
-    esmbuf = testesm_build_pdn_connectivity_request(sess);
+    esmbuf = testesm_build_pdn_connectivity_request(sess, true);
     ABTS_PTR_NOTNULL(tc, esmbuf);
     sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, esmbuf);
     ABTS_PTR_NOTNULL(tc, sendbuf);
@@ -1222,7 +1215,7 @@ static void test3_func(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     /* Send Detach Request */
-    emmbuf = testemm_build_detach_request(test_ue, 1);
+    emmbuf = testemm_build_detach_request(test_ue, 1, true, false);
     ABTS_PTR_NOTNULL(tc, emmbuf);
     sendbuf = test_s1ap_build_initial_ue_message(
             test_ue, emmbuf, S1AP_RRC_Establishment_Cause_mo_Signalling, true);
@@ -1354,18 +1347,17 @@ static void test4_func(abts_case *tc, void *data)
     sess->pdn_connectivity_param.eit = 1;
     sess->pdn_connectivity_param.request_type =
         OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
-    esmbuf = testesm_build_pdn_connectivity_request(sess);
+    esmbuf = testesm_build_pdn_connectivity_request(sess, false);
     ABTS_PTR_NOTNULL(tc, esmbuf);
 
     memset(&test_ue->attach_request_param,
             0, sizeof(test_ue->attach_request_param));
-    test_ue->attach_request_param.integrity_protected = 1;
     test_ue->attach_request_param.drx_parameter = 1;
     test_ue->attach_request_param.ms_network_capability = 1;
     test_ue->attach_request_param.tmsi_status = 1;
     test_ue->attach_request_param.mobile_station_classmark_2 = 1;
     test_ue->attach_request_param.ue_usage_setting = 1;
-    emmbuf = testemm_build_attach_request(test_ue, esmbuf);
+    emmbuf = testemm_build_attach_request(test_ue, esmbuf, true, false);
     ABTS_PTR_NOTNULL(tc, emmbuf);
 
     memset(&test_ue->initial_ue_param, 0, sizeof(test_ue->initial_ue_param));
@@ -1468,12 +1460,11 @@ static void test4_func(abts_case *tc, void *data)
     ogs_assert(sess);
     sess->pti = 7;
 
-    sess->pdn_connectivity_param.integrity_protected = 1;
     sess->pdn_connectivity_param.apn = 1;
     sess->pdn_connectivity_param.pco = 1;
     sess->pdn_connectivity_param.request_type =
         OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
-    esmbuf = testesm_build_pdn_connectivity_request(sess);
+    esmbuf = testesm_build_pdn_connectivity_request(sess, true);
     ABTS_PTR_NOTNULL(tc, esmbuf);
     sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, esmbuf);
     ABTS_PTR_NOTNULL(tc, sendbuf);
@@ -1552,12 +1543,11 @@ static void test4_func(abts_case *tc, void *data)
     ogs_assert(sess);
     sess->pti = 9;
 
-    sess->pdn_connectivity_param.integrity_protected = 1;
     sess->pdn_connectivity_param.apn = 1;
     sess->pdn_connectivity_param.pco = 1;
     sess->pdn_connectivity_param.request_type =
         OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
-    esmbuf = testesm_build_pdn_connectivity_request(sess);
+    esmbuf = testesm_build_pdn_connectivity_request(sess, true);
     ABTS_PTR_NOTNULL(tc, esmbuf);
     sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, esmbuf);
     ABTS_PTR_NOTNULL(tc, sendbuf);
@@ -1693,12 +1683,11 @@ static void test4_func(abts_case *tc, void *data)
     sess->pdn_connectivity_param.eit = 1;
     sess->pdn_connectivity_param.request_type =
         OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
-    esmbuf = testesm_build_pdn_connectivity_request(sess);
+    esmbuf = testesm_build_pdn_connectivity_request(sess, false);
     ABTS_PTR_NOTNULL(tc, esmbuf);
 
     memset(&test_ue->attach_request_param,
             0, sizeof(test_ue->attach_request_param));
-    test_ue->attach_request_param.integrity_protected = 1;
     test_ue->attach_request_param.guti = 1;
     test_ue->attach_request_param.last_visited_registered_tai = 1;
     test_ue->attach_request_param.drx_parameter = 1;
@@ -1710,7 +1699,7 @@ static void test4_func(abts_case *tc, void *data)
     test_ue->attach_request_param.ue_usage_setting = 1;
     test_ue->attach_request_param.old_guti_type = 1;
     test_ue->attach_request_param.ms_network_feature_support = 1;
-    emmbuf = testemm_build_attach_request(test_ue, esmbuf);
+    emmbuf = testemm_build_attach_request(test_ue, esmbuf, true, false);
     ABTS_PTR_NOTNULL(tc, emmbuf);
 
     memset(&test_ue->initial_ue_param, 0, sizeof(test_ue->initial_ue_param));
@@ -1887,18 +1876,17 @@ static void test5_func(abts_case *tc, void *data)
     sess->pdn_connectivity_param.eit = 1;
     sess->pdn_connectivity_param.request_type =
         OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
-    esmbuf = testesm_build_pdn_connectivity_request(sess);
+    esmbuf = testesm_build_pdn_connectivity_request(sess, false);
     ABTS_PTR_NOTNULL(tc, esmbuf);
 
     memset(&test_ue->attach_request_param,
             0, sizeof(test_ue->attach_request_param));
-    test_ue->attach_request_param.integrity_protected = 1;
     test_ue->attach_request_param.drx_parameter = 1;
     test_ue->attach_request_param.ms_network_capability = 1;
     test_ue->attach_request_param.tmsi_status = 1;
     test_ue->attach_request_param.mobile_station_classmark_2 = 1;
     test_ue->attach_request_param.ue_usage_setting = 1;
-    emmbuf = testemm_build_attach_request(test_ue, esmbuf);
+    emmbuf = testemm_build_attach_request(test_ue, esmbuf, true, false);
     ABTS_PTR_NOTNULL(tc, emmbuf);
 
     memset(&test_ue->initial_ue_param, 0, sizeof(test_ue->initial_ue_param));
@@ -2001,12 +1989,11 @@ static void test5_func(abts_case *tc, void *data)
     ogs_assert(sess);
     sess->pti = 7;
 
-    sess->pdn_connectivity_param.integrity_protected = 1;
     sess->pdn_connectivity_param.apn = 1;
     sess->pdn_connectivity_param.pco = 1;
     sess->pdn_connectivity_param.request_type =
         OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
-    esmbuf = testesm_build_pdn_connectivity_request(sess);
+    esmbuf = testesm_build_pdn_connectivity_request(sess, true);
     ABTS_PTR_NOTNULL(tc, esmbuf);
     sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, esmbuf);
     ABTS_PTR_NOTNULL(tc, sendbuf);
@@ -2395,18 +2382,17 @@ static void test6_func(abts_case *tc, void *data)
     sess->pdn_connectivity_param.eit = 1;
     sess->pdn_connectivity_param.request_type =
         OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
-    esmbuf = testesm_build_pdn_connectivity_request(sess);
+    esmbuf = testesm_build_pdn_connectivity_request(sess, false);
     ABTS_PTR_NOTNULL(tc, esmbuf);
 
     memset(&test_ue->attach_request_param,
             0, sizeof(test_ue->attach_request_param));
-    test_ue->attach_request_param.integrity_protected = 1;
     test_ue->attach_request_param.drx_parameter = 1;
     test_ue->attach_request_param.ms_network_capability = 1;
     test_ue->attach_request_param.tmsi_status = 1;
     test_ue->attach_request_param.mobile_station_classmark_2 = 1;
     test_ue->attach_request_param.ue_usage_setting = 1;
-    emmbuf = testemm_build_attach_request(test_ue, esmbuf);
+    emmbuf = testemm_build_attach_request(test_ue, esmbuf, true, false);
     ABTS_PTR_NOTNULL(tc, emmbuf);
 
     memset(&test_ue->initial_ue_param, 0, sizeof(test_ue->initial_ue_param));
@@ -2509,12 +2495,11 @@ static void test6_func(abts_case *tc, void *data)
     ogs_assert(sess);
     sess->pti = 5;
 
-    sess->pdn_connectivity_param.integrity_protected = 1;
     sess->pdn_connectivity_param.apn = 1;
     sess->pdn_connectivity_param.pco = 1;
     sess->pdn_connectivity_param.request_type =
         OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
-    esmbuf = testesm_build_pdn_connectivity_request(sess);
+    esmbuf = testesm_build_pdn_connectivity_request(sess, true);
     ABTS_PTR_NOTNULL(tc, esmbuf);
     sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, esmbuf);
     ABTS_PTR_NOTNULL(tc, sendbuf);
@@ -2689,7 +2674,7 @@ static void test6_func(abts_case *tc, void *data)
     test_bearer_remove(bearer);
 
     /* Send Detach Request */
-    emmbuf = testemm_build_detach_request(test_ue, 1);
+    emmbuf = testemm_build_detach_request(test_ue, 1, true, false);
     ABTS_PTR_NOTNULL(tc, emmbuf);
     sendbuf = test_s1ap_build_initial_ue_message(
             test_ue, emmbuf, S1AP_RRC_Establishment_Cause_mo_Signalling, true);
@@ -2822,18 +2807,17 @@ static void test7_func(abts_case *tc, void *data)
     sess->pdn_connectivity_param.eit = 1;
     sess->pdn_connectivity_param.request_type =
         OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
-    esmbuf = testesm_build_pdn_connectivity_request(sess);
+    esmbuf = testesm_build_pdn_connectivity_request(sess, false);
     ABTS_PTR_NOTNULL(tc, esmbuf);
 
     memset(&test_ue->attach_request_param,
             0, sizeof(test_ue->attach_request_param));
-    test_ue->attach_request_param.integrity_protected = 1;
     test_ue->attach_request_param.drx_parameter = 1;
     test_ue->attach_request_param.ms_network_capability = 1;
     test_ue->attach_request_param.tmsi_status = 1;
     test_ue->attach_request_param.mobile_station_classmark_2 = 1;
     test_ue->attach_request_param.ue_usage_setting = 1;
-    emmbuf = testemm_build_attach_request(test_ue, esmbuf);
+    emmbuf = testemm_build_attach_request(test_ue, esmbuf, true, false);
     ABTS_PTR_NOTNULL(tc, emmbuf);
 
     memset(&test_ue->initial_ue_param, 0, sizeof(test_ue->initial_ue_param));
@@ -2936,12 +2920,11 @@ static void test7_func(abts_case *tc, void *data)
     ogs_assert(sess);
     sess->pti = 5;
 
-    sess->pdn_connectivity_param.integrity_protected = 1;
     sess->pdn_connectivity_param.apn = 1;
     sess->pdn_connectivity_param.pco = 1;
     sess->pdn_connectivity_param.request_type =
         OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
-    esmbuf = testesm_build_pdn_connectivity_request(sess);
+    esmbuf = testesm_build_pdn_connectivity_request(sess, true);
     ABTS_PTR_NOTNULL(tc, esmbuf);
     sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, esmbuf);
     ABTS_PTR_NOTNULL(tc, sendbuf);
@@ -3096,7 +3079,7 @@ static void test7_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Send Detach Request */
-    emmbuf = testemm_build_detach_request(test_ue, 1);
+    emmbuf = testemm_build_detach_request(test_ue, 1, true, false);
     ABTS_PTR_NOTNULL(tc, emmbuf);
     sendbuf = test_s1ap_build_initial_ue_message(
             test_ue, emmbuf, S1AP_RRC_Establishment_Cause_mo_Signalling, true);
