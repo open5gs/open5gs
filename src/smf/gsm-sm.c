@@ -190,15 +190,8 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                     smf_ue->supi, sess->psi,
                                     sbi_message->res_status);
                             ogs_assert(strerror);
-
                             ogs_error("%s", strerror);
-                            if (stream)
-                                ogs_assert(true ==
-                                    ogs_sbi_server_send_error(stream,
-                                        sbi_message->res_status,
-                                        sbi_message, strerror, NULL));
                             ogs_free(strerror);
-                            break;
                         }
 
                         smf_npcf_smpolicycontrol_handle_delete(

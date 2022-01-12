@@ -748,7 +748,7 @@ static int flow_rx_to_gx(ogs_flow_t *rx_flow, ogs_flow_t *gx_flow)
         /* 'permit in' should be changed
          * 'permit out' in Gx Diameter */
         len = strlen(rx_flow->description)+2;
-        gx_flow->description = ogs_malloc(len);
+        gx_flow->description = ogs_calloc(1, len);
         ogs_assert(gx_flow->description);
         strcpy(gx_flow->description, "permit out");
         from_str = strstr(&rx_flow->description[strlen("permit in")], "from");

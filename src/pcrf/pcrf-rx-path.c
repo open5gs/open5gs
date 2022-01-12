@@ -323,26 +323,27 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
                                         "permit out", strlen("permit out"))) {
 
                                     to_ip = strstr(to_str, " ");
-                                    if (to_ip != NULL) {
-                                        // Exclude the starting whitespace
-                                        to_ip += 1;
+                                    ogs_assert(to_ip);
 
-                                        to_port = strstr(to_ip, " ");
-                                        // Test for no port
-                                        if (to_port != NULL) {
-                                            flow->description = ogs_malloc(len
-                                                - strlen(to_str) +
-                                                strlen("to any")
-                                                + strlen(to_port) + 1);
-                                            ogs_assert(flow->description);
-                                        } else {
-                                            flow->description = ogs_malloc(len
-                                                - strlen(to_str) +
-                                                strlen("to any") + 1);
-                                            ogs_assert(flow->description);
-                                        }
+                                    // Exclude the starting whitespace
+                                    to_ip += 1;
+
+                                    to_port = strstr(to_ip, " ");
+                                    // Test for no port
+                                    if (to_port != NULL) {
+                                        flow->description = ogs_calloc(1,
+                                            len - strlen(to_str) +
+                                            strlen("to any")
+                                            + strlen(to_port) + 1);
+                                        ogs_assert(flow->description);
+                                    } else {
+                                        flow->description = ogs_calloc(1,
+                                            len - strlen(to_str) +
+                                            strlen("to any") + 1);
+                                        ogs_assert(flow->description);
                                     }
 
+                                    ogs_assert(flow->description);
                                     strncat(flow->description,
                                         rx_flow,
                                         len - strlen(to_str));
@@ -355,32 +356,33 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
                                             "permit in", strlen("permit in"))) {
 
                                     from_ip = strstr(from_str, " ");
-                                    if (from_ip != NULL) {
-                                        /* Exclude the starting whitespace */
-                                        from_ip += 1;
+                                    ogs_assert(from_ip);
 
-                                        from_port = strstr(from_ip, " ");
-                                        /* Test for no port +
-                                         * whether from_port is at "to"
-                                         * without any from port */
-                                        if (from_port != NULL &&
-                                            strncmp(from_port, " to", 3)) {
-                                            flow->description = ogs_malloc(
-                                                len - strlen(from_str) +
-                                                strlen(to_str)
-                                                + strlen("from any") + 1
-                                                + (strlen(from_port) -
-                                                    strlen(to_str)));
-                                            ogs_assert(flow->description);
-                                        } else {
-                                            flow->description = ogs_malloc(
-                                                len - strlen(from_str) +
-                                                strlen(to_str)
-                                                + strlen("from any ") + 1);
-                                            ogs_assert(flow->description);
-                                        }
+                                    /* Exclude the starting whitespace */
+                                    from_ip += 1;
+
+                                    from_port = strstr(from_ip, " ");
+                                    /* Test for no port +
+                                     * whether from_port is at "to"
+                                     * without any from port */
+                                    if (from_port != NULL &&
+                                        strncmp(from_port, " to", 3)) {
+                                        flow->description = ogs_calloc(1,
+                                            len - strlen(from_str) +
+                                            strlen(to_str)
+                                            + strlen("from any") + 1
+                                            + (strlen(from_port) -
+                                                strlen(to_str)));
+                                        ogs_assert(flow->description);
+                                    } else {
+                                        flow->description = ogs_calloc(1,
+                                            len - strlen(from_str) +
+                                            strlen(to_str)
+                                            + strlen("from any ") + 1);
+                                        ogs_assert(flow->description);
                                     }
 
+                                    ogs_assert(flow->description);
                                     strncat(flow->description,
                                         rx_flow,
                                         len - strlen(from_str));

@@ -363,8 +363,8 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
         if (rule->fd) {
             char *flow_description = NULL;
 
-            flow_description = ogs_malloc(
-                    sdf_filter.flow_description_len+1);
+            flow_description = ogs_calloc(
+                    1, sdf_filter.flow_description_len+1);
             ogs_assert(flow_description);
             ogs_cpystrn(flow_description,
                     sdf_filter.flow_description,
@@ -616,8 +616,8 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_update_pdr(ogs_pfcp_sess_t *sess,
             if (rule->fd) {
                 char *flow_description = NULL;
 
-                flow_description = ogs_malloc(
-                        sdf_filter.flow_description_len+1);
+                flow_description = ogs_calloc(
+                        1, sdf_filter.flow_description_len+1);
                 ogs_assert(flow_description);
                 ogs_cpystrn(flow_description,
                         sdf_filter.flow_description,
