@@ -318,8 +318,8 @@ void smf_bearer_binding(smf_sess_t *sess)
             if (bearer_created == false &&
                 qos_presence == false &&
                 ogs_list_count(&bearer->pf_to_add_list) == 0) {
-                ogs_error("No need to send 'Update Bearer Request'");
-                ogs_error("bearer_created:%d, qos_presence:%d, rule_count:%d",
+                ogs_warn("No need to send 'Update Bearer Request'");
+                ogs_warn("bearer_created:%d, qos_presence:%d, rule_count:%d",
                     bearer_created, qos_presence,
                     ogs_list_count(&bearer->pf_to_add_list));
                 continue;
@@ -612,8 +612,8 @@ void smf_qos_flow_binding(smf_sess_t *sess)
             if (qos_flow_created == false &&
                 qos_presence == false &&
                 ogs_list_count(&qos_flow->pf_to_add_list) == 0) {
-                ogs_error("No need to send 'Session Modification Request'");
-                ogs_error("qos_flow_created:%d, qos_presence:%d, rule_count:%d",
+                ogs_warn("No need to send 'Session Modification Request'");
+                ogs_warn("qos_flow_created:%d, qos_presence:%d, rule_count:%d",
                     qos_flow_created, qos_presence,
                     ogs_list_count(&qos_flow->pf_to_add_list));
                 continue;
