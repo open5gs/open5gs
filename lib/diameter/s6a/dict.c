@@ -484,7 +484,11 @@ int ogs_dict_s6a_entry(char *conffile)
                 {  {                      .avp_name = "Destination-Realm" }, RULE_REQUIRED, -1, 1 },
                 {  {                      .avp_name = "User-Name" }, RULE_REQUIRED, -1, 1 },
                 {  { .avp_vendor = 10415, .avp_name = "Supported-Features" }, RULE_OPTIONAL, -1, -1 },
+#if 0 /* modified by acetcom */
                 {  { .avp_vendor = 10415, .avp_name = "PUR-Flags" }, RULE_REQUIRED, -1, 1 },
+#else
+                {  { .avp_vendor = 10415, .avp_name = "PUR-Flags" }, RULE_OPTIONAL, -1, 1 },
+#endif
                 {  {                      .avp_name = "Proxy-Info" }, RULE_OPTIONAL, -1, -1 },
                 {  {                      .avp_name = "Route-Record" }, RULE_OPTIONAL, -1, -1 },
 			};
