@@ -118,7 +118,7 @@ logger:
 #  o IPv4/IPv6 Pool
 #    subnet:
 #      - addr: 10.45.0.1/16
-#      - addr: 2001:230:cafe::1/48
+#      - addr: 2001:db8:cafe::1/48
 #
 #
 #  o Specific DNN/APN(e.g 'ims') uses 10.46.0.1/16, 2001:230:babe::1/48
@@ -127,7 +127,7 @@ logger:
 #    subnet:
 #      - addr: 10.45.0.1/16
 #        dnn: internet
-#      - addr: 2001:230:cafe::1/48
+#      - addr: 2001:db8:cafe::1/48
 #        dnn: internet
 #      - addr: 10.46.0.1/16
 #        dnn: ims
@@ -166,10 +166,10 @@ logger:
 #        range:
 #          - 10.45.0.100-10.45.0.200
 #          - 10.45.1.100-10.45.1.200
-#      - addr: 2001:230:cafe::1/48
+#      - addr: 2001:db8:cafe::1/48
 #        range:
-#          - 2001:230:cafe:a0::0-2001:230:cafe:b0::0
-#          - 2001:230:cafe:c0::0-2001:230:cafe:d0::0
+#          - 2001:db8:cafe:a0::0-2001:db8:cafe:b0::0
+#          - 2001:db8:cafe:c0::0-2001:db8:cafe:d0::0
 #
 #  <Domain Name Server>
 #
@@ -342,7 +342,7 @@ smf:
       - addr: ::1
     subnet:
       - addr: 10.45.0.1/16
-      - addr: 2001:230:cafe::1/48
+      - addr: 2001:db8:cafe::1/48
     dns:
       - 8.8.8.8
       - 8.8.4.4

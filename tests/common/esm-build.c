@@ -459,7 +459,7 @@ ogs_pkbuf_t *testesm_build_bearer_resource_modification_request(
         tft.pf[0].identifier = 4;
         tft.pf[0].precedence = 0x0f;
 
-        rv = ogs_ipsubnet(&ipsubnet, "2001:230:cafe::9", "120");
+        rv = ogs_ipsubnet(&ipsubnet, "2001:db8:cafe::9", "120");
         ogs_assert(rv == OGS_OK);
 #if 1
         tft.pf[0].content.length = 18;

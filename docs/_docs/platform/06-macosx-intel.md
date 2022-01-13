@@ -76,7 +76,7 @@ Enable IP forwarding & Masquerading
 $ sudo sysctl -w net.inet.ip.forwarding=1
 $ sudo sysctl -w net.inet6.ip6.forwarding=1
 $ sudo sh -c "echo 'nat on {en0} from 10.45.0.0/16 to any -> {en0}' > /etc/pf.anchors/org.open5gs"
-$ sudo sh -c "echo 'nat on {en0} from 2001:230:cafe::1/48 to any -> {en0}' > /etc/pf.anchors/org.open5gs"
+$ sudo sh -c "echo 'nat on {en0} from 2001:db8:cafe::1/48 to any -> {en0}' > /etc/pf.anchors/org.open5gs"
 $ sudo pfctl -e -f /etc/pf.anchors/org.open5gs
 ```
 

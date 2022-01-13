@@ -80,7 +80,7 @@ smf:
       - addr: ::1
     subnet:
       - addr: 10.45.0.1/16
-      - addr: 2001:230:cafe::1/48
+      - addr: 2001:db8:cafe::1/48
     dns:
       - 8.8.8.8
       - 8.8.4.4
@@ -148,7 +148,7 @@ upf:
       - addr: 127.0.0.7
     subnet:
       - addr: 10.45.0.1/16
-      - addr: 2001:230:cafe::1/48
+      - addr: 2001:db8:cafe::1/48
 
 hss:
     freeDiameter:

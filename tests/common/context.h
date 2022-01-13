@@ -34,7 +34,7 @@ extern "C" {
 #define TEST_GNB_IPV4           TEST_ENB_IPV4
 
 #define TEST_PING_IPV4          "10.45.0.1"
-#define TEST_PING_IPV6          "2001:230:cafe::1"
+#define TEST_PING_IPV6          "2001:db8:cafe::1"
 
 #define MAX_NUM_OF_SERVED_GUAMI     8
 
