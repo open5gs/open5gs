@@ -1,0 +1,17 @@
+ies = []
+ies.append({ "ie_value" : "Cause", "presence" : "Mandatory", "reference" : "7.7.1"})
+ies.append({ "ie_value" : "Tunnel Endpoint Identifier Control Plane", "presence" : "Conditional", "reference" : "7.7.14"})
+ies.append({ "ie_value" : "Tunnel Endpoint Identifier Data II", "presence" : "Optional ", "reference" : "7.7.15"})
+ies.append({ "ie_value" : "RANAP Cause", "presence" : "Conditional", "reference" : "7.7.18"})
+ies.append({ "ie_value" : "SGSN Address for Control plane", "presence" : "Conditional", "reference" : "7.7.32"})
+ies.append({ "ie_value" : "SGSN Address for User Traffic", "presence" : "Optional", "reference" : "7.7.32"})
+ies.append({ "ie_value" : "UTRAN transparent container", "presence" : "Optional", "reference" : "7.7.38"})
+ies.append({ "ie_value" : "RAB Setup Information", "presence" : "Conditional", "reference" : "7.7.39"})
+ies.append({ "ie_value" : "Additional RAB Setup Information", "presence" : "Conditional", "reference" : "7.7.45A"})
+ies.append({ "ie_value" : "SGSN Number", "presence" : "Optional", "reference" : "7.7.47"})
+ies.append({ "ie_value" : "BSS Container", "presence" : "Optional", "reference" : "7.7.72"})
+ies.append({ "ie_value" : "BSSGP Cause", "presence" : "Optional ", "reference" : "7.7.75"})
+ies.append({ "ie_value" : "List of set-up PFCs", "presence" : "Optional", "reference" : "7.7.78"})
+ies.append({ "ie_value" : "Extended RANAP Cause", "presence" : "Optional", "reference" : "7.7.111"})
+ies.append({ "ie_value" : "Node Identfiier", "presence" : "Optional", "reference" : "7.7.119"})
+msg_list[key]["ies"] = ies
