@@ -189,7 +189,7 @@ static void app_context_prepare(void)
     self.sockopt.no_delay = true;
 
 #define MAX_NUM_OF_UE               1024    /* Num of UE per AMF/MME */
-#define MAX_NUM_OF_GNB              32      /* Num of gNB per AMF/MME */
+#define MAX_NUM_OF_GNB              64      /* Num of gNB per AMF/MME */
 
     self.max.gnb = MAX_NUM_OF_GNB;
     self.max.ue = MAX_NUM_OF_UE;
