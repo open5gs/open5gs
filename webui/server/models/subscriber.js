@@ -22,6 +22,8 @@ const Subscriber = new Schema({
     sqn: Schema.Types.Long
   },
 
+  network_access_mode: { value: Number },
+
   ambr: {
     downlink: { value: Number, unit: Number },
     uplink: { value: Number, unit: Number }
@@ -86,10 +88,6 @@ const Subscriber = new Schema({
   subscriber_status: {
     $type: Number,
     default: 0  // Service Granted
-  },
-  network_access_mode: {
-    $type: Number,
-    default: 2 // Only Packet
   },
   subscribed_rau_tau_timer: {
     $type: Number,

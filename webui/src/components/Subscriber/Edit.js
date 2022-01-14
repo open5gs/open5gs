@@ -38,6 +38,14 @@ const schema = {
         }
       }
     },
+    "network_access_mode": {
+      "type": "number",
+      "title": "Network Access Mode*",
+      "enum": [ 0, 2 ],
+      "enumNames": ["Packet and Circuit", "Only Packet"],
+      "required": true,
+      "default": 2
+    },
     "security": {
       "title": "",
       "type": "object",
@@ -481,6 +489,9 @@ const uiSchema = {
     "op_value" : {
       classNames: "col-xs-8",
     },
+  },
+  "network_access_mode" : {
+    classNames: "col-xs-3",
   },
   "ambr" : {
     classNames: "col-xs-12",

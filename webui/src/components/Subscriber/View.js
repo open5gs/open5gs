@@ -161,6 +161,7 @@ const Pdn = styled.div`
 `
 const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, onHide }) => {
   const imsi = (subscriber || {}).imsi;
+  const network_access_mode = (subscriber || {}).network_access_mode;
   const msisdn_list = ((subscriber || {}).msisdn || []);
   const security = ((subscriber || {}).security || {});
   const ambr = ((subscriber || {}).ambr || {});
@@ -245,6 +246,12 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
                   <PdnIcon/>
                 </div>
                 <div className="right">
+                  <div className="data">
+                    {network_access_mode === 0 ? "Packet and Circuit" :
+                      network_access_mode === 2 ? "Only Packet" :
+                        "Unknown" }
+                    <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>Network Access Mode</span>
+                  </div>
                   <div className="data">
                     {ambr['downlink'] === undefined ? "unlimited" :
                       ambr.downlink['value'] === undefined ? "unlimited" :
