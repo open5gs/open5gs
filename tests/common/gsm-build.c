@@ -150,7 +150,7 @@ ogs_pkbuf_t *testgsm_build_pdu_session_modification_request(
             qos_rule[0].pf[0].content.component[0].type =
                 OGS_PACKET_FILTER_IPV6_LOCAL_ADDRESS_PREFIX_LENGTH_TYPE;
 
-            rv = ogs_ipsubnet(&ipsubnet, "2001:230:cafe::9", "120");
+            rv = ogs_ipsubnet(&ipsubnet, "2001:db8:cafe::9", "120");
             ogs_assert(rv == OGS_OK);
 
             memcpy(qos_rule[0].pf[0].content.component[0].ipv6.addr,

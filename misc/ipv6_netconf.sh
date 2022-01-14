@@ -8,8 +8,8 @@ if [ "$SYSTEM" = "Linux" ]; then
     fi
     ip addr del 10.45.0.1/16 dev ogstun 2> /dev/null
     ip addr add 10.45.0.1/16 dev ogstun
-    ip addr del 2001:230:cafe::1/48 dev ogstun 2> /dev/null
-    ip addr add 2001:230:cafe::1/48 dev ogstun
+    ip addr del 2001:db8:cafe::1/48 dev ogstun 2> /dev/null
+    ip addr add 2001:db8:cafe::1/48 dev ogstun
     ip link set ogstun up
     ip addr del fd69:f21d:873c:fa::1 dev lo 2> /dev/null
     ip addr del fd69:f21d:873c:fa::2 dev lo 2> /dev/null
@@ -120,7 +120,7 @@ else
     if [ "$SYSTEM" = "Darwin" ]; then
         if ! test -f /etc/pf.anchors/org.open5gs; then
             sudo sh -c "echo 'nat on {en0} from 10.45.0.0/16 to any -> {en0}' > /etc/pf.anchors/org.open5gs"
-            sudo sh -c "echo 'nat on {en0} from 2001:230:cafe::1/48 to any -> {en0}' > /etc/pf.anchors/org.open5gs"
+            sudo sh -c "echo 'nat on {en0} from 2001:db8:cafe::1/48 to any -> {en0}' > /etc/pf.anchors/org.open5gs"
         fi
         pfctl -e -f /etc/pf.anchors/org.open5gs
     fi

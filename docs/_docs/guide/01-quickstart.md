@@ -343,7 +343,7 @@ upf:
 +      - addr: 10.11.0.7 # for external gNB - a local address that can be reached by the gNB
      subnet:
        - addr: 10.45.0.1/16
-       - addr: 2001:230:cafe::1/48
+       - addr: 2001:db8:cafe::1/48
 
 ```
 
@@ -423,7 +423,7 @@ $ sudo sysctl -w net.ipv6.conf.all.forwarding=1
 
 ### Add NAT Rule
 $ sudo iptables -t nat -A POSTROUTING -s 10.45.0.0/16 ! -o ogstun -j MASQUERADE
-$ sudo ip6tables -t nat -A POSTROUTING -s 2001:230:cafe::/48 ! -o ogstun -j MASQUERADE
+$ sudo ip6tables -t nat -A POSTROUTING -s 2001:db8:cafe::/48 ! -o ogstun -j MASQUERADE
 ```
 
 

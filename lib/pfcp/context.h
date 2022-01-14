@@ -315,8 +315,8 @@ typedef struct ogs_pfcp_dev_s {
 typedef struct ogs_pfcp_subnet_s {
     ogs_lnode_t     lnode;
 
-    ogs_ipsubnet_t  sub;                    /* Subnet : 2001:230:cafe::0/48 */
-    ogs_ipsubnet_t  gw;                     /* Gateway : 2001:230:cafe::1 */
+    ogs_ipsubnet_t  sub;                    /* Subnet : 2001:db8:cafe::0/48 */
+    ogs_ipsubnet_t  gw;                     /* Gateway : 2001:db8:cafe::1 */
     char            dnn[OGS_MAX_DNN_LEN+1]; /* DNN : "internet", "volte", .. */
 
 #define OGS_MAX_NUM_OF_SUBNET_RANGE 16

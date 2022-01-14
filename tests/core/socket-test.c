@@ -417,13 +417,13 @@ static void test8_func(abts_case *tc, void *data)
     rv = ogs_ipsubnet(&ipsub, "172.16.0.1", "16");
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    rv = ogs_ipsubnet(&ipsub, "2001:230:cafe::1", "64");
+    rv = ogs_ipsubnet(&ipsub, "2001:db8:cafe::1", "64");
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     rv = ogs_ipsubnet(&ipsub, "172.16.0.1", NULL);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    rv = ogs_ipsubnet(&ipsub, "2001:230:cafe::1", NULL);
+    rv = ogs_ipsubnet(&ipsub, "2001:db8:cafe::1", NULL);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 }
 

@@ -124,7 +124,7 @@ $ diff -u /etc/open5gs/smf.yaml.old /etc/open5gs/smf.yaml
 +      - addr: 10.10.0.4
      subnet:
        - addr: 10.45.0.1/16
-       - addr: 2001:230:cafe::1/48
+       - addr: 2001:db8:cafe::1/48
 @@ -282,7 +281,7 @@
  #
  upf:
@@ -217,7 +217,7 @@ $ diff -u /etc/open5gs/upf.yaml.old /etc/open5gs/upf.yaml
 +      - addr: 10.11.0.7
      subnet:
        - addr: 10.45.0.1/16
-       - addr: 2001:230:cafe::1/48
+       - addr: 2001:db8:cafe::1/48
 ```
 
 After changing conf files, please restart Open5GS daemons.
