@@ -111,6 +111,7 @@ https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbunt
 https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_20.04/
 https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_20.10/
 https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_21.04/
+https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_21.10/
 ```
 
 #### openSUSE
@@ -147,6 +148,7 @@ https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_18.
 https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_20.04/
 https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_20.10/
 https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_21.04/
+https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_21.10/
 ```
 
 
