@@ -808,11 +808,6 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
             ret = fd_msg_avp_hdr(avpch1, &hdr);
             ogs_assert(ret == 0);
             mme_ue->network_access_mode = hdr->avp_value->i32;
-            if (mme_ue->network_access_mode !=
-                    OGS_NETWORK_ACCESS_MODE_PACKET_AND_CIRCUIT &&
-                    mme_ue->network_access_mode !=
-                    OGS_NETWORK_ACCESS_MODE_ONLY_PACKET){
-            }
         } else {
             ogs_error("no_Network-Access-Mode");
             error++;
