@@ -904,19 +904,19 @@ The IP address of the UE can also use a different UE pool depending on the DNN/A
 #      - addr: 2001:db8:cafe::1/48
 #
 #
-#  o Specific DNN/APN(e.g 'volte') uses 10.46.0.1/16, 2001:230:babe::1/48
+#  o Specific DNN/APN(e.g 'volte') uses 10.46.0.1/16, 2001:db8:babe::1/48
 #    All other DNNs/APNs use 10.45.0.1/16, 2001:db8:cafe::1/48
 #    $ sudo ip addr add 10.45.0.1/16 dev ogstun
 #    $ sudo ip addr add 10.46.0.1/16 dev ogstun
 #    $ sudo ip addr add 2001:db8:cafe::1/48 dev ogstun
-#    $ sudo ip addr add 2001:230:babe::1/48 dev ogstun
+#    $ sudo ip addr add 2001:db8:babe::1/48 dev ogstun
 #
 #    subnet:
 #      - addr: 10.45.0.1/16
 #      - addr: 2001:db8:cafe::1/48
 #      - addr: 10.46.0.1/16
 #        dnn: volte
-#      - addr: 2001:230:babe::1/48
+#      - addr: 2001:db8:babe::1/48
 #        dnn: volte
 #
 #  o Pool Range Sample

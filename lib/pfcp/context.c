@@ -1629,7 +1629,7 @@ ogs_pfcp_ue_ip_t *ogs_pfcp_ue_ip_alloc(
         if (family == AF_INET)
             ogs_error("     - addr: 10.50.0.1/16");
         else if (family == AF_INET6)
-            ogs_error("     - addr: 2001:230:abcd::1/48");
+            ogs_error("     - addr: 2001:db8:abcd::1/48");
 
         *cause_value = OGS_PFCP_CAUSE_SYSTEM_FAILURE;
         return NULL;
