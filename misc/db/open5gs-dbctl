@@ -54,7 +54,7 @@ if [ "$1" = "add" ]; then
 				{ 
 					\"imsi\" : \"$IMSI\", 
 					\"subscribed_rau_tau_timer\" : NumberInt(12), 
-					\"network_access_mode\" : NumberInt(2), 
+					\"network_access_mode\" : NumberInt(0), 
 					\"subscriber_status\" : NumberInt(0), 
 					\"access_restriction_data\" : NumberInt(32), 
 					\"slice\" : 
@@ -115,7 +115,7 @@ if [ "$1" = "add" ]; then
 				{ 
 					\"imsi\" : \"$IMSI\", 
 					\"subscribed_rau_tau_timer\" : NumberInt(12), 
-					\"network_access_mode\" : NumberInt(2), 
+					\"network_access_mode\" : NumberInt(0), 
 					\"subscriber_status\" : NumberInt(0), 
 					\"access_restriction_data\" : NumberInt(32), 
 					\"slice\" : 
@@ -184,7 +184,7 @@ if [ "$1" = "addT1" ]; then
 				{ 
 					\"imsi\" : \"$IMSI\", 
 					\"subscribed_rau_tau_timer\" : NumberInt(12), 
-					\"network_access_mode\" : NumberInt(2), 
+					\"network_access_mode\" : NumberInt(0), 
 					\"subscriber_status\" : NumberInt(0), 
 					\"access_restriction_data\" : NumberInt(32), 
 					\"slice\" : 
@@ -285,7 +285,7 @@ if [ "$1" = "addT1" ]; then
 				{ 
 					\"imsi\" : \"$IMSI\", 
 					\"subscribed_rau_tau_timer\" : NumberInt(12), 
-					\"network_access_mode\" : NumberInt(2), 
+					\"network_access_mode\" : NumberInt(0), 
 					\"subscriber_status\" : NumberInt(0), 
 					\"access_restriction_data\" : NumberInt(32), 
 					\"slice\" : 

@@ -44,7 +44,7 @@ const schema = {
       "enum": [ 0, 2 ],
       "enumNames": ["Packet and Circuit", "Only Packet"],
       "required": true,
-      "default": 2
+      "default": 0
     },
     "security": {
       "title": "",

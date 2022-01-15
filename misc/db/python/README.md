@@ -37,7 +37,7 @@ slice_data = [
 sub_data = {
   "imsi": "001010000000004",
   "subscribed_rau_tau_timer": 12,
-  "network_access_mode": 2,
+  "network_access_mode": 0,
   "subscriber_status": 0,
   "access_restriction_data": 32,
   "slice" : slice_data,
