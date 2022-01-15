@@ -62,8 +62,15 @@ ogs_pkbuf_t *emm_build_attach_accept(
      *   //eps_attach_result->result = mme_ue->nas_eps.attach.value;
      *
      * NOW: set attach accept EPS_ATTACH_TYPE from HSS "Network-Access-Mode"
-     *   HSS IMSI[x] Network-Access-Mode[2] > serve EPS_ONLY_ATTACH[1]
-     *   HSS IMSI[x] Network-Access-Mode[0] > serve COMBINED_EPS_IMSI_ATTACH[2]
+     *
+     *   HSS IMSI[x] Network-Access-Mode[2]  > serve EPS_ONLY_ATTACH[1]
+     *
+     *   HSS IMSI[x] Network-Access-Mode[0] && request EPS_ONLY_ATTACH[1] 
+     *       > serve EPS_ONLY_ATTACH[1]
+     *
+     *   HSS IMSI[x] Network-Access-Mode[0] && request COMBINED_EPS_IMSI_ATTACH[2]
+     *       > serve COMBINED_EPS_IMSI_ATTACH[2]
+     *
      * EXCEPTIONS:
      *   request EPS_EMERGENCY_ATTACH[3] > serve EPS_EMERGENCY_ATTACH[3]
      *   HSS IMSI[x] Network-Access-Mode[invalid] > serve as requested
@@ -74,9 +81,15 @@ ogs_pkbuf_t *emm_build_attach_accept(
     } else {
         switch(mme_ue->network_access_mode){
             case OGS_NETWORK_ACCESS_MODE_PACKET_AND_CIRCUIT:
-                eps_attach_result->result = OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH;
+                // permit either attach type
+                if (mme_ue->nas_eps.attach.value == OGS_NAS_ATTACH_TYPE_EPS_ATTACH){
+                    eps_attach_result->result = OGS_NAS_ATTACH_TYPE_EPS_ATTACH;
+                } else {
+                    eps_attach_result->result = OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH;
+                }
                 break;
             case OGS_NETWORK_ACCESS_MODE_ONLY_PACKET:
+                // permit only EPS_ATTACH
                 eps_attach_result->result = OGS_NAS_ATTACH_TYPE_EPS_ATTACH;
                 break;
             default:
