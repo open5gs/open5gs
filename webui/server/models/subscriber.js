@@ -89,7 +89,7 @@ const Subscriber = new Schema({
   },
   network_access_mode: {
     $type: Number,
-    default: 2 // Only Packet
+    default: 0 // Packet and Circuit
   },
   subscribed_rau_tau_timer: {
     $type: Number,

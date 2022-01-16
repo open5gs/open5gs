@@ -1312,7 +1312,7 @@ bson_t *test_db_new_simple(test_ue_t *test_ue)
                 "sqn", BCON_INT64(64),
             "}",
             "subscribed_rau_tau_timer", BCON_INT32(12),
-            "network_access_mode", BCON_INT32(2),
+            "network_access_mode", BCON_INT32(0),
             "subscriber_status", BCON_INT32(0),
             "access_restriction_data", BCON_INT32(32)
           );
@@ -1412,7 +1412,7 @@ bson_t *test_db_new_qos_flow(test_ue_t *test_ue)
                 "sqn", BCON_INT64(64),
             "}",
             "subscribed_rau_tau_timer", BCON_INT32(12),
-            "network_access_mode", BCON_INT32(2),
+            "network_access_mode", BCON_INT32(0),
             "subscriber_status", BCON_INT32(0),
             "access_restriction_data", BCON_INT32(32)
           );
@@ -1536,7 +1536,7 @@ bson_t *test_db_new_session(test_ue_t *test_ue)
                 "sqn", BCON_INT64(64),
             "}",
             "subscribed_rau_tau_timer", BCON_INT32(12),
-            "network_access_mode", BCON_INT32(2),
+            "network_access_mode", BCON_INT32(0),
             "subscriber_status", BCON_INT32(0),
             "access_restriction_data", BCON_INT32(32)
           );
@@ -1686,7 +1686,7 @@ bson_t *test_db_new_ims(test_ue_t *test_ue)
                 "sqn", BCON_INT64(64),
             "}",
             "subscribed_rau_tau_timer", BCON_INT32(12),
-            "network_access_mode", BCON_INT32(2),
+            "network_access_mode", BCON_INT32(0),
             "subscriber_status", BCON_INT32(0),
             "access_restriction_data", BCON_INT32(32)
           );
@@ -2059,7 +2059,7 @@ bson_t *test_db_new_slice(test_ue_t *test_ue)
                 "sqn", BCON_INT64(64),
             "}",
             "subscribed_rau_tau_timer", BCON_INT32(12),
-            "network_access_mode", BCON_INT32(2),
+            "network_access_mode", BCON_INT32(0),
             "subscriber_status", BCON_INT32(0),
             "access_restriction_data", BCON_INT32(32)
           );
@@ -2213,7 +2213,7 @@ bson_t *test_db_new_non3gpp(test_ue_t *test_ue)
                 "sqn", BCON_INT64(64),
             "}",
             "subscribed_rau_tau_timer", BCON_INT32(12),
-            "network_access_mode", BCON_INT32(2),
+            "network_access_mode", BCON_INT32(0),
             "subscriber_status", BCON_INT32(0),
             "access_restriction_data", BCON_INT32(32)
           );

@@ -64,13 +64,27 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
     /* HashMME */
     ogs_kdf_hash_mme(pkbuf->data, pkbuf->len, mme_ue->hash_mme);
 
-    /* Set EPS Attach Type */
+    /* Set EPS Attach Request Type */
     memcpy(&mme_ue->nas_eps.attach, eps_attach_type,
             sizeof(ogs_nas_eps_attach_type_t));
     mme_ue->nas_eps.type = MME_EPS_TYPE_ATTACH_REQUEST;
     mme_ue->nas_eps.ksi = eps_attach_type->nas_key_set_identifier;
     ogs_debug("    OGS_NAS_EPS TYPE[%d] KSI[%d] ATTACH[0x%x]",
             mme_ue->nas_eps.type, mme_ue->nas_eps.ksi, mme_ue->nas_eps.data);
+    switch(mme_ue->nas_eps.attach.value){
+        case OGS_NAS_ATTACH_TYPE_EPS_ATTACH:
+            ogs_debug("    Requested EPS_ATTACH_TYPE[1, EPS_ATTACH]");
+            break;
+        case OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH:
+            ogs_debug("    Requested EPS_ATTACH_TYPE[2, COMBINED_EPS_IMSI_ATTACH]");
+            break;
+        case OGS_NAS_ATTACH_TYPE_EPS_EMERGENCY_ATTACH:
+            ogs_debug("    Requested EPS_ATTACH_TYPE[3, EPS_EMERGENCY_ATTACH]");
+            break;
+        default:
+            ogs_error("    Invalid Requested EPS_ATTACH_TYPE[%d]",
+                mme_ue->nas_eps.attach.value);
+    }
     /*
      * ATTACH_REQUEST
      * TAU_REQUEST

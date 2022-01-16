@@ -1,11 +1,11 @@
 {
   "name": "open5gs",
-  "version": "2.2.8",
+  "version": "2.4.3",
   "description": "Open5gs",
   "main": "index.js",
   "repository": "https://github.com/open5gs/open5gs/webui",
   "author": "Open5gs Group",
-  "license": "GPL-3.0",
+  "license": "AGPL-3.0",
   "dependencies": {
     "axios": "^0.16.2",
     "babel-plugin-polished": "^1.1.0",

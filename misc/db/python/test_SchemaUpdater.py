@@ -12,7 +12,7 @@ class TestSchemaUpdater(unittest.TestCase):
                 'downlink': 1024000,
                 'uplink': 1024000
             },
-            'network_access_mode': 2,
+            'network_access_mode': 0,
             'pdn': [
                 {
                     'apn': 'internet',

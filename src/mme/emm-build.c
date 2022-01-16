@@ -53,8 +53,81 @@ ogs_pkbuf_t *emm_build_attach_accept(
     message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = OGS_NAS_EPS_ATTACH_ACCEPT;
 
+    /* Set EPS Attach Accept Type
+     *
+     * BEFORE: set attach accept EPS_ATTACH_TYPE from requested EPS_ATTACH_TYPE
+     *   request EPS_ONLY_ATTACH[1] > serve EPS_ONLY_ATTACH[1]
+     *   request COMBINED_EPS_IMSI_ATTACH[2] > serve COMBINED_EPS_IMSI_ATTACH[2]
+     *   request EPS_EMERGENCY_ATTACH[3] > serve EPS_EMERGENCY_ATTACH[3]
+     *
+     *   ==> eps_attach_result->result = mme_ue->nas_eps.attach.value;
+     *
+     * NOW: set attach accept EPS_ATTACH_TYPE from HSS "Network-Access-Mode"
+     *
+     *   HSS IMSI[x] Network-Access-Mode[2]  > serve EPS_ONLY_ATTACH[1]
+     *
+     *   HSS IMSI[x] Network-Access-Mode[0] && request EPS_ONLY_ATTACH[1] 
+     *       > serve EPS_ONLY_ATTACH[1]
+     *
+     *   HSS IMSI[x] Network-Access-Mode[0] &&
+     *   request COMBINED_EPS_IMSI_ATTACH[2]
+     *       > serve COMBINED_EPS_IMSI_ATTACH[2]
+     *
+     * EXCEPTIONS:
+     *   request EPS_EMERGENCY_ATTACH[3] > serve EPS_EMERGENCY_ATTACH[3]
+     *   HSS IMSI[x] Network-Access-Mode[invalid] > serve as requested
+     */
+
+    if (mme_ue->network_access_mode == OGS_NETWORK_ACCESS_MODE_ONLY_PACKET) {
+        /* permit only EPS_ATTACH */
+        eps_attach_result->result = OGS_NAS_ATTACH_TYPE_EPS_ATTACH;
+    } else {
+        eps_attach_result->result = mme_ue->nas_eps.attach.value;
+    }
+
+    if (mme_ue->nas_eps.attach.value != eps_attach_result->result) {
+        /* print warning if difference in requested/served EPS_ATTACH_TYPE */
+        switch (mme_ue->nas_eps.attach.value){
+            case OGS_NAS_ATTACH_TYPE_EPS_ATTACH:
+                ogs_warn("  Requested EPS_ATTACH_TYPE[1, EPS_ATTACH]");
+                break;
+            case OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH:
+                ogs_warn("  Requested EPS_ATTACH_TYPE[2, "
+                            "COMBINED_EPS_IMSI_ATTACH]");
+                break;
+            case OGS_NAS_ATTACH_TYPE_EPS_EMERGENCY_ATTACH:
+                ogs_warn("  Requested EPS_ATTACH_TYPE[3, "
+                            "EPS_EMERGENCY_ATTACH]");
+                break;
+        }
+        switch (eps_attach_result->result) {
+            case OGS_NAS_ATTACH_TYPE_EPS_ATTACH:
+                ogs_warn("  Permitted EPS_ATTACH_TYPE[1, EPS_ATTACH]");
+                break;
+            case OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH:
+                ogs_warn("  Permitted EPS_ATTACH_TYPE[2, "
+                            "COMBINED_EPS_IMSI_ATTACH]");
+                break;
+            case OGS_NAS_ATTACH_TYPE_EPS_EMERGENCY_ATTACH:
+                ogs_warn("  Permitted EPS_ATTACH_TYPE[3, "
+                            "EPS_EMERGENCY_ATTACH]");
+                break;
+        }
+    } else {
+        switch (eps_attach_result->result) {
+            case OGS_NAS_ATTACH_TYPE_EPS_ATTACH:
+                ogs_debug("    EPS_ATTACH_TYPE[1, EPS_ATTACH]");
+                break;
+            case OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH:
+                ogs_debug("    EPS_ATTACH_TYPE[2, COMBINED_EPS_IMSI_ATTACH]");
+                break;
+            case OGS_NAS_ATTACH_TYPE_EPS_EMERGENCY_ATTACH:
+                ogs_debug("    EPS_ATTACH_TYPE[3, EPS_EMERGENCY_ATTACH]");
+                break;
+        }
+    }
+
     /* Set T3412 */
-    eps_attach_result->result = mme_ue->nas_eps.attach.value;
     t3412_value->unit = OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH;
     t3412_value->value = 9;
 
@@ -79,7 +152,7 @@ ogs_pkbuf_t *emm_build_attach_accept(
     if (mme_ue->next.m_tmsi) {
         attach_accept->presencemask |= OGS_NAS_EPS_ATTACH_ACCEPT_GUTI_PRESENT;
 
-        ogs_debug("[%s]    GUTI[G:%d,C:%d,M_TMSI:0x%x]",
+        ogs_debug("    [%s]    GUTI[G:%d,C:%d,M_TMSI:0x%x]",
                 mme_ue->imsi_bcd,
                 mme_ue->next.guti.mme_gid, mme_ue->next.guti.mme_code,
                 mme_ue->next.guti.m_tmsi);
@@ -100,8 +173,10 @@ ogs_pkbuf_t *emm_build_attach_accept(
 #endif
 
     /* Set T3423 */
-    attach_accept->presencemask |= OGS_NAS_EPS_ATTACH_ACCEPT_T3423_VALUE_PRESENT;
-    attach_accept->t3423_value.unit = OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH;
+    attach_accept->presencemask |=
+        OGS_NAS_EPS_ATTACH_ACCEPT_T3423_VALUE_PRESENT;
+    attach_accept->t3423_value.unit =
+        OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH;
     attach_accept->t3423_value.value = 9;
 
     attach_accept->presencemask |= 
@@ -125,7 +200,8 @@ ogs_pkbuf_t *emm_build_attach_accept(
         ogs_debug("    LAI[PLMN_ID:%06x,LAC:%d]",
                 ogs_plmn_id_hexdump(&lai->nas_plmn_id), lai->lac);
 
-        attach_accept->presencemask |= OGS_NAS_EPS_ATTACH_ACCEPT_MS_IDENTITY_PRESENT;
+        attach_accept->presencemask |=
+            OGS_NAS_EPS_ATTACH_ACCEPT_MS_IDENTITY_PRESENT;
         ms_identity->length = 5;
         tmsi->spare = 0xf;
         tmsi->odd_even = 0;

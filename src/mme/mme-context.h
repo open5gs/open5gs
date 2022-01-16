@@ -390,6 +390,7 @@ struct mme_ue_s {
 
     /* HSS Info */
     ogs_bitrate_t   ambr; /* UE-AMBR */
+    uint32_t        network_access_mode; /* Permitted EPS Attach Type */
 
     uint32_t        context_identifier; /* default APN */
 
