@@ -111,30 +111,6 @@ void smf_s5c_handle_create_session_request(
         cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
     }
 
-    switch (sess->gtp_rat_type) {
-    case OGS_GTP_RAT_TYPE_EUTRAN:
-        if (req->bearer_contexts_to_be_created.
-                s5_s8_u_sgw_f_teid.presence == 0) {
-            ogs_error("No S5/S8 SGW GTP-U TEID");
-            cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
-        }
-        if (req->user_location_information.presence == 0) {
-            ogs_error("No UE Location Information");
-            cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
-        }
-        break;
-    case OGS_GTP_RAT_TYPE_WLAN:
-        if (req->bearer_contexts_to_be_created.
-                s2b_u_epdg_f_teid_5.presence == 0) {
-            ogs_error("No S2b ePDG GTP-U TEID");
-            cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
-        }
-        break;
-    default:
-        ogs_error("Unknown RAT Type [%d]", req->rat_type.u8);
-        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
-    }
-
     if (!sess) {
         ogs_error("No Context");
         cause_value = OGS_GTP_CAUSE_CONTEXT_NOT_FOUND;
@@ -143,12 +119,32 @@ void smf_s5c_handle_create_session_request(
             ogs_error("No Gx Diameter Peer");
             cause_value = OGS_GTP_CAUSE_REMOTE_PEER_NOT_RESPONDING;
         }
-
-        if (sess->gtp_rat_type == OGS_GTP_RAT_TYPE_WLAN) {
+        switch (sess->gtp_rat_type) {
+        case OGS_GTP_RAT_TYPE_EUTRAN:
+            if (req->bearer_contexts_to_be_created.
+                    s5_s8_u_sgw_f_teid.presence == 0) {
+                ogs_error("No S5/S8 SGW GTP-U TEID");
+                cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+            }
+            if (req->user_location_information.presence == 0) {
+                ogs_error("No UE Location Information");
+                cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+            }
+            break;
+        case OGS_GTP_RAT_TYPE_WLAN:
             if (!ogs_diam_app_connected(OGS_DIAM_S6B_APPLICATION_ID)) {
                 ogs_error("No S6b Diameter Peer");
                 cause_value = OGS_GTP_CAUSE_REMOTE_PEER_NOT_RESPONDING;
             }
+            if (req->bearer_contexts_to_be_created.
+                    s2b_u_epdg_f_teid_5.presence == 0) {
+                ogs_error("No S2b ePDG GTP-U TEID");
+                cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+            }
+            break;
+        default:
+            ogs_error("Unknown RAT Type [%d]", req->rat_type.u8);
+            cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
         }
     }
 
