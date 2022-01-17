@@ -73,8 +73,8 @@ typedef struct ogs_gtp_node_s {
 
     ogs_ip_t        ip;             /* F-TEID IP Address Duplicate Check */
 
-    ogs_list_t      local_list;    
-    ogs_list_t      remote_list;   
+    ogs_list_t      local_list;
+    ogs_list_t      remote_list;
 } ogs_gtp_node_t;
 
 typedef struct ogs_gtpu_resource_s {

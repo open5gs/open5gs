@@ -240,7 +240,7 @@ int smf_gtp_open(void)
     ogs_list_for_each(&ogs_gtp_self()->gtpc_list, node) {
         sock = ogs_gtp_server(node);
         if (!sock) return OGS_ERROR;
-        
+
         node->poll = ogs_pollset_add(ogs_app()->pollset,
                 OGS_POLLIN, sock->fd, _gtpv2_c_recv_cb, sock);
         ogs_assert(node->poll);

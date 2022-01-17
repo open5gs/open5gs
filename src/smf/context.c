@@ -191,7 +191,7 @@ int smf_context_parse_config(void)
                 const char *smf_key = ogs_yaml_iter_key(&smf_iter);
                 ogs_assert(smf_key);
                 if (!strcmp(smf_key, "freeDiameter")) {
-                    yaml_node_t *node = 
+                    yaml_node_t *node =
                         yaml_document_get_node(document, smf_iter.pair->value);
                     ogs_assert(node);
                     if (node->type == YAML_SCALAR_NODE) {
@@ -204,10 +204,10 @@ int smf_context_parse_config(void)
                             const char *fd_key = ogs_yaml_iter_key(&fd_iter);
                             ogs_assert(fd_key);
                             if (!strcmp(fd_key, "identity")) {
-                                self.diam_config->cnf_diamid = 
+                                self.diam_config->cnf_diamid =
                                     ogs_yaml_iter_value(&fd_iter);
                             } else if (!strcmp(fd_key, "realm")) {
-                                self.diam_config->cnf_diamrlm = 
+                                self.diam_config->cnf_diamrlm =
                                     ogs_yaml_iter_value(&fd_iter);
                             } else if (!strcmp(fd_key, "port")) {
                                 const char *v = ogs_yaml_iter_value(&fd_iter);
@@ -216,7 +216,7 @@ int smf_context_parse_config(void)
                                 const char *v = ogs_yaml_iter_value(&fd_iter);
                                 if (v) self.diam_config->cnf_port_tls = atoi(v);
                             } else if (!strcmp(fd_key, "listen_on")) {
-                                self.diam_config->cnf_addr = 
+                                self.diam_config->cnf_addr =
                                     ogs_yaml_iter_value(&fd_iter);
                             } else if (!strcmp(fd_key, "no_fwd")) {
                                 self.diam_config->cnf_flags.no_fwd =
@@ -299,7 +299,7 @@ int smf_context_parse_config(void)
                                             ogs_yaml_iter_key(&conn_iter);
                                         ogs_assert(conn_key);
                                         if (!strcmp(conn_key, "identity")) {
-                                            identity = 
+                                            identity =
                                                 ogs_yaml_iter_value(&conn_iter);
                                         } else if (!strcmp(conn_key, "addr")) {
                                             addr =
@@ -1041,7 +1041,7 @@ smf_sess_t *smf_sess_add_by_gtp_message(ogs_gtp_message_t *message)
 
     ogs_trace("smf_sess_add_by_message() [APN:%s]", apn);
 
-    /* 
+    /*
      * 7.2.1 in 3GPP TS 29.274 Release 15
      *
      * If the new Create Session Request received by the SMF collides with
@@ -1396,14 +1396,14 @@ void smf_sess_remove(smf_sess_t *sess)
     int i;
     smf_ue_t *smf_ue = NULL;
     smf_event_t e;
-    
+
     char buf1[OGS_ADDRSTRLEN];
     char buf2[OGS_ADDRSTRLEN];
 
     ogs_assert(sess);
     smf_ue = sess->smf_ue;
     ogs_assert(smf_ue);
-   
+
     ogs_info("Removed Session: UE IMSI:[%s] DNN:[%s:%d] IPv4:[%s] IPv6:[%s]",
             smf_ue->supi ? smf_ue->supi : smf_ue->imsi_bcd,
             sess->session.name, sess->psi,
@@ -2106,7 +2106,7 @@ smf_bearer_t *smf_bearer_find_by_pgw_s5u_teid(
 smf_bearer_t *smf_bearer_find_by_ebi(smf_sess_t *sess, uint8_t ebi)
 {
     smf_bearer_t *bearer = NULL;
-    
+
     ogs_assert(sess);
 
     ogs_list_for_each(&sess->bearer_list, bearer) {
@@ -2121,7 +2121,7 @@ smf_bearer_t *smf_bearer_find_by_pcc_rule_name(
         smf_sess_t *sess, char *pcc_rule_name)
 {
     smf_bearer_t *bearer = NULL;
-    
+
     ogs_assert(sess);
     ogs_assert(pcc_rule_name);
 
@@ -2333,7 +2333,7 @@ void smf_pf_remove_all(smf_bearer_t *bearer)
 smf_pf_t *smf_pf_find_by_id(smf_bearer_t *bearer, uint8_t id)
 {
     smf_pf_t *pf = NULL;
-    
+
     ogs_list_for_each(&bearer->pf_list, pf) {
         if (pf->identifier == id) return pf;
     }

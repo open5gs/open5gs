@@ -28,9 +28,9 @@
 extern "C" {
 #endif
 
-/* 
+/*
  * p225-226 Chapter 7.6 in TS 29.274 V15.9.0
- * 
+ *
  * A Sequence Number used for a Command message shall have the most significant
  * bit set to 1. A Sequence Number in a message, which was triggered by
  * a Command message, as well as respective Triggered Reply message
@@ -54,10 +54,10 @@ extern "C" {
 typedef struct ogs_gtp_xact_s {
     ogs_lnode_t     node;           /**< A node of list */
     ogs_index_t     index;
-    
+
 #define OGS_GTP_LOCAL_ORIGINATOR  0
 #define OGS_GTP_REMOTE_ORIGINATOR 1
-    uint8_t         org;            /**< Transaction' originator. 
+    uint8_t         org;            /**< Transaction' originator.
                                          local or remote */
 
     uint32_t        xid;            /**< Transaction ID */
@@ -67,8 +67,8 @@ typedef struct ogs_gtp_xact_s {
     void            *data;          /**< Transaction Data */
 
     int             step;           /**< Current step in the sequence.
-                                         1 : Initial 
-                                         2 : Triggered 
+                                         1 : Initial
+                                         2 : Triggered
                                          3 : Triggered-Reply */
     struct {
         uint8_t     type;           /**< Message type history */
