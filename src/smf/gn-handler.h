@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
  *
  * This file is part of Open5GS.
  *
@@ -17,47 +18,32 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef OGS_GTP_H
-#define OGS_GTP_H
+#ifndef SMF_GN_HANDLER_H
+#define SMF_GN_HANDLER_H
 
-#include "ogs-core.h"
-#include "ipfw/ogs-ipfw.h"
-#include "ogs-app.h"
-#include "ogs-nas-common.h"
-
-#define OGS_GTPV1_U_UDP_PORT            2152
-#define OGS_GTPV2_C_UDP_PORT            2123
-
-#define OGS_GTP_INSIDE
-
-#include "gtp/v1/message.h"
-#include "gtp/v2/message.h"
-#include "gtp/v1/types.h"
-#include "gtp/v2/types.h"
-#include "gtp/v1/conv.h"
-#include "gtp/v2/conv.h"
-#include "gtp/context.h"
-#include "gtp/v1/build.h"
-#include "gtp/v2/build.h"
-#include "gtp/v1/path.h"
-#include "gtp/v2/path.h"
-#include "gtp/path.h"
-#include "gtp/xact.h"
-#include "gtp/util.h"
+#include "context.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#undef OGS_GTP_INSIDE
+void smf_gn_handle_echo_request(
+        ogs_gtp_xact_t *xact, ogs_gtp1_echo_request_t *req);
+void smf_gn_handle_echo_response(
+        ogs_gtp_xact_t *xact, ogs_gtp1_echo_response_t *req);
 
-extern int __ogs_gtp_domain;
-
-#undef OGS_LOG_DOMAIN
-#define OGS_LOG_DOMAIN __ogs_gtp_domain
+void smf_gn_handle_create_pdp_context_request(
+        smf_sess_t *sess, ogs_gtp_xact_t *xact,
+        ogs_gtp1_create_pdp_context_request_t *req);
+void smf_gn_handle_delete_pdp_context_request(
+        smf_sess_t *sess, ogs_gtp_xact_t *xact,
+        ogs_gtp1_delete_pdp_context_request_t *req);
+void smf_gn_handle_update_pdp_context_request(
+        smf_sess_t *sess, ogs_gtp_xact_t *xact,
+        ogs_gtp1_update_pdp_context_request_t *req);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* OGS_GTP_H */
+#endif /* SMF_GN_HANDLER_H */

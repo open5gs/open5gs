@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
  *
  * This file is part of Open5GS.
  *
@@ -21,32 +21,31 @@
 #error "This header cannot be included directly."
 #endif
 
-#ifndef OGS_GTP2_PATH_H
-#define OGS_GTP2_PATH_H
+#ifndef OGS_GTP1_CONV_H
+#define OGS_GTP1_CONV_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct ogs_gtp_xact_s ogs_gtp_xact_t;
+int ogs_gtp1_gsn_addr_to_sockaddr(const ogs_gtp1_gsn_addr_t *gsnaddr,
+        uint16_t gsnaddr_len, uint16_t port, ogs_sockaddr_t **list);
+int ogs_gtp1_sockaddr_to_gsn_addr(const ogs_sockaddr_t *addr,
+        const ogs_sockaddr_t *addr6, ogs_gtp1_gsn_addr_t *gsnaddr, int *len);
+int ogs_gtp1_gsn_addr_to_ip(const ogs_gtp1_gsn_addr_t *gsnaddr, uint16_t gsnaddr_len,
+        ogs_ip_t *ip);
 
+int ogs_gtp1_eua_to_ip(const ogs_eua_t *eua, uint16_t eua_len, ogs_ip_t *ip,
+        uint8_t *pdu_session_type);
 
-int ogs_gtp_send_user_plane(
-        ogs_gtp_node_t *gnode,
-        ogs_gtp_header_t *gtp_hdesc, ogs_gtp_extension_header_t *ext_hdesc,
-        ogs_pkbuf_t *pkbuf);
+int ogs_gtp1_ip_to_eua(uint8_t pdu_session_type, const ogs_ip_t *ip,
+        ogs_eua_t *eua, uint8_t *eua_len);
 
-ogs_pkbuf_t *ogs_gtp_handle_echo_req(ogs_pkbuf_t *pkt);
-void ogs_gtp2_send_error_message(
-        ogs_gtp_xact_t *xact, uint32_t teid, uint8_t type, uint8_t cause_value);
-
-void ogs_gtp_send_echo_request(
-        ogs_gtp_node_t *gnode, uint8_t recovery, uint8_t features);
-void ogs_gtp_send_echo_response(ogs_gtp_xact_t *xact,
-        uint8_t recovery, uint8_t features);
+int ogs_gtp1_qos_profile_to_qci(const ogs_gtp1_qos_profile_decoded_t *decoded,
+        uint8_t *qci);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* OGS_GTP2_PATH_H */
+#endif

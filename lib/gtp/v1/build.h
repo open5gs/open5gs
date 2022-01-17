@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
  *
  * This file is part of Open5GS.
  *
@@ -17,47 +18,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef OGS_GTP_H
-#define OGS_GTP_H
+#if !defined(OGS_GTP_INSIDE) && !defined(OGS_GTP_COMPILATION)
+#error "This header cannot be included directly."
+#endif
 
-#include "ogs-core.h"
-#include "ipfw/ogs-ipfw.h"
-#include "ogs-app.h"
-#include "ogs-nas-common.h"
-
-#define OGS_GTPV1_U_UDP_PORT            2152
-#define OGS_GTPV2_C_UDP_PORT            2123
-
-#define OGS_GTP_INSIDE
-
-#include "gtp/v1/message.h"
-#include "gtp/v2/message.h"
-#include "gtp/v1/types.h"
-#include "gtp/v2/types.h"
-#include "gtp/v1/conv.h"
-#include "gtp/v2/conv.h"
-#include "gtp/context.h"
-#include "gtp/v1/build.h"
-#include "gtp/v2/build.h"
-#include "gtp/v1/path.h"
-#include "gtp/v2/path.h"
-#include "gtp/path.h"
-#include "gtp/xact.h"
-#include "gtp/util.h"
+#ifndef OGS_GTP1_BUILD_H
+#define OGS_GTP1_BUILD_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#undef OGS_GTP_INSIDE
-
-extern int __ogs_gtp_domain;
-
-#undef OGS_LOG_DOMAIN
-#define OGS_LOG_DOMAIN __ogs_gtp_domain
-
+ogs_pkbuf_t *ogs_gtp1_build_echo_request(uint8_t type);
+ogs_pkbuf_t *ogs_gtp1_build_echo_response(uint8_t type, uint8_t recovery);
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* OGS_GTP_H */
+#endif /* OGS_GTP1_BUILD_H */

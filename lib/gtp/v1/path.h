@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
+ * Author: Pau Espin Pedrol <pespin@sysmocom.de>
  *
  * This file is part of Open5GS.
  *
@@ -21,8 +22,8 @@
 #error "This header cannot be included directly."
 #endif
 
-#ifndef OGS_GTP2_PATH_H
-#define OGS_GTP2_PATH_H
+#ifndef OGS_GTP1_PATH_H
+#define OGS_GTP1_PATH_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -31,22 +32,15 @@ extern "C" {
 typedef struct ogs_gtp_xact_s ogs_gtp_xact_t;
 
 
-int ogs_gtp_send_user_plane(
-        ogs_gtp_node_t *gnode,
-        ogs_gtp_header_t *gtp_hdesc, ogs_gtp_extension_header_t *ext_hdesc,
-        ogs_pkbuf_t *pkbuf);
-
-ogs_pkbuf_t *ogs_gtp_handle_echo_req(ogs_pkbuf_t *pkt);
-void ogs_gtp2_send_error_message(
+ogs_pkbuf_t *ogs_gtp1_handle_echo_req(ogs_pkbuf_t *pkt);
+void ogs_gtp1_send_error_message(
         ogs_gtp_xact_t *xact, uint32_t teid, uint8_t type, uint8_t cause_value);
 
-void ogs_gtp_send_echo_request(
-        ogs_gtp_node_t *gnode, uint8_t recovery, uint8_t features);
-void ogs_gtp_send_echo_response(ogs_gtp_xact_t *xact,
-        uint8_t recovery, uint8_t features);
+void ogs_gtp1_send_echo_request(ogs_gtp_node_t *gnode);
+void ogs_gtp1_send_echo_response(ogs_gtp_xact_t *xact, uint8_t recovery);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* OGS_GTP2_PATH_H */
+#endif /* OGS_GTP1_PATH_H */

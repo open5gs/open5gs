@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
  *
  * This file is part of Open5GS.
  *
@@ -17,35 +18,30 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef SMF_GTP_PATH_H
-#define SMF_GTP_PATH_H
-
 #include "ogs-gtp.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+ogs_pkbuf_t *ogs_gtp1_build_echo_request(uint8_t type)
+{
+    ogs_gtp1_message_t gtp1_message;
 
-int smf_gtp_open(void);
-void smf_gtp_close(void);
+    memset(&gtp1_message, 0, sizeof(ogs_gtp1_message_t));
 
-int smf_gtp1_send_create_pdp_context_response(
-        smf_sess_t *sess, ogs_gtp_xact_t *xact);
-int smf_gtp1_send_delete_pdp_context_response(
-        smf_sess_t *sess, ogs_gtp_xact_t *xact);
-int smf_gtp_send_update_pdp_context_request(
-        smf_bearer_t *bearer, uint8_t pti, uint8_t cause_value);
-
-int smf_gtp_send_create_session_response(
-        smf_sess_t *sess, ogs_gtp_xact_t *xact);
-int smf_gtp_send_delete_session_response(
-        smf_sess_t *sess, ogs_gtp_xact_t *xact);
-
-int smf_gtp_send_delete_bearer_request(
-        smf_bearer_t *bearer, uint8_t pti, uint8_t cause_value);
-
-#ifdef __cplusplus
+    gtp1_message.h.type = type;
+    return ogs_gtp1_build_msg(&gtp1_message);
 }
-#endif
 
-#endif /* SMF_GTP_PATH_H */
+ogs_pkbuf_t *ogs_gtp1_build_echo_response(
+        uint8_t type, uint8_t recovery)
+{
+    ogs_gtp1_message_t gtp1_message;
+    ogs_gtp1_echo_response_t *rsp = NULL;
+
+    rsp = &gtp1_message.echo_response;
+    memset(&gtp1_message, 0, sizeof(ogs_gtp1_message_t));
+
+    rsp->recovery.presence = 1;
+    rsp->recovery.u8 = recovery;
+
+    gtp1_message.h.type = type;
+    return ogs_gtp1_build_msg(&gtp1_message);
+}

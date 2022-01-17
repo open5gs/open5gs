@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
  *
  * This file is part of Open5GS.
  *
@@ -48,12 +49,17 @@ extern "C" {
 #define OGS_GTP_MIN_XACT_ID             1
 #define OGS_GTP_CMD_XACT_ID             0x800000
 
+#define OGS_GTP1_MIN_XACT_ID             0
+#define OGS_GTP1_MAX_XACT_ID             65535
+
 /**
  * Transaction context
  */
 typedef struct ogs_gtp_xact_s {
     ogs_lnode_t     node;           /**< A node of list */
     ogs_index_t     index;
+
+    uint8_t gtp_version;            /**< 1 or 2 */
 
 #define OGS_GTP_LOCAL_ORIGINATOR  0
 #define OGS_GTP_REMOTE_ORIGINATOR 1
@@ -109,17 +115,25 @@ typedef struct ogs_gtp_xact_s {
 int ogs_gtp_xact_init(void);
 void ogs_gtp_xact_final(void);
 
+ogs_gtp_xact_t *ogs_gtp1_xact_local_create(ogs_gtp_node_t *gnode,
+        ogs_gtp1_header_t *hdesc, ogs_pkbuf_t *pkbuf,
+        void (*cb)(ogs_gtp_xact_t *xact, void *data), void *data);
 ogs_gtp_xact_t *ogs_gtp_xact_local_create(ogs_gtp_node_t *gnode,
         ogs_gtp_header_t *hdesc, ogs_pkbuf_t *pkbuf,
         void (*cb)(ogs_gtp_xact_t *xact, void *data), void *data);
+
 ogs_gtp_xact_t *ogs_gtp_xact_cycle(ogs_gtp_xact_t *xact);
 void ogs_gtp_xact_delete_all(ogs_gtp_node_t *gnode);
 
+int ogs_gtp1_xact_update_tx(ogs_gtp_xact_t *xact,
+        ogs_gtp1_header_t *hdesc, ogs_pkbuf_t *pkbuf);
 int ogs_gtp_xact_update_tx(ogs_gtp_xact_t *xact,
         ogs_gtp_header_t *hdesc, ogs_pkbuf_t *pkbuf);
 
 int ogs_gtp_xact_commit(ogs_gtp_xact_t *xact);
 
+int ogs_gtp1_xact_receive(ogs_gtp_node_t *gnode,
+        ogs_gtp1_header_t *h, ogs_gtp_xact_t **xact);
 int ogs_gtp_xact_receive(ogs_gtp_node_t *gnode,
         ogs_gtp_header_t *h, ogs_gtp_xact_t **xact);
 

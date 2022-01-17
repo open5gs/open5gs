@@ -198,7 +198,7 @@ ogs_pkbuf_t *ogs_gtp_handle_echo_req(ogs_pkbuf_t *pkb)
     return pkb_resp;
 }
 
-void ogs_gtp_send_error_message(
+void ogs_gtp2_send_error_message(
         ogs_gtp_xact_t *xact, uint32_t teid, uint8_t type, uint8_t cause_value)
 {
     int rv;

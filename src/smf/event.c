@@ -64,6 +64,8 @@ const char *smf_event_get_name(smf_event_t *e)
 
     case SMF_EVT_S5C_MESSAGE:
         return "SMF_EVT_S5C_MESSAGE";
+    case SMF_EVT_GN_MESSAGE:
+        return "SMF_EVT_GN_MESSAGE";
     case SMF_EVT_GX_MESSAGE:
         return "SMF_EVT_GX_MESSAGE";
     case SMF_EVT_N4_MESSAGE:

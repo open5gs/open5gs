@@ -39,13 +39,14 @@
 #include "gtp-path.h"
 #include "pfcp-path.h"
 #include "s5c-build.h"
+#include "gn-build.h"
 
 static bool check_if_router_solicit(ogs_pkbuf_t *pkbuf);
 static void send_router_advertisement(smf_sess_t *sess, uint8_t *ip6_dst);
 
 static void bearer_timeout(ogs_gtp_xact_t *xact, void *data);
 
-static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
+static void _gtpv1v2_c_recv_cb(short when, ogs_socket_t fd, void *data)
 {
     smf_event_t *e = NULL;
     int rv;
@@ -53,6 +54,7 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_sockaddr_t from;
     ogs_gtp_node_t *gnode = NULL;
+    uint8_t gtp_ver;
 
     ogs_assert(fd != INVALID_SOCKET);
 
@@ -70,7 +72,20 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
 
     ogs_pkbuf_trim(pkbuf, size);
 
-    e = smf_event_new(SMF_EVT_S5C_MESSAGE);
+    gtp_ver = ((ogs_gtp_header_t *)pkbuf->data)->version;
+    switch (gtp_ver) {
+    case 1:
+        e = smf_event_new(SMF_EVT_GN_MESSAGE);
+        break;
+    case 2:
+        e = smf_event_new(SMF_EVT_S5C_MESSAGE);
+        break;
+    default:
+        ogs_warn("Rx unexpected GTP version %u", gtp_ver);
+        ogs_pkbuf_free(pkbuf);
+        return;
+    }
+
     gnode = ogs_gtp_node_find_by_addr(&smf_self()->sgw_s5c_list, &from);
     if (!gnode) {
         gnode = ogs_gtp_node_add_by_addr(&smf_self()->sgw_s5c_list, &from);
@@ -242,7 +257,7 @@ int smf_gtp_open(void)
         if (!sock) return OGS_ERROR;
 
         node->poll = ogs_pollset_add(ogs_app()->pollset,
-                OGS_POLLIN, sock->fd, _gtpv2_c_recv_cb, sock);
+                OGS_POLLIN, sock->fd, _gtpv1v2_c_recv_cb, sock);
         ogs_assert(node->poll);
     }
     ogs_list_for_each(&ogs_gtp_self()->gtpc_list6, node) {
@@ -250,7 +265,7 @@ int smf_gtp_open(void)
         if (!sock) return OGS_ERROR;
 
         node->poll = ogs_pollset_add(ogs_app()->pollset,
-                OGS_POLLIN, sock->fd, _gtpv2_c_recv_cb, sock);
+                OGS_POLLIN, sock->fd, _gtpv1v2_c_recv_cb, sock);
         ogs_assert(node->poll);
     }
 
@@ -292,6 +307,93 @@ void smf_gtp_close(void)
 
     ogs_socknode_remove_all(&ogs_gtp_self()->gtpu_list);
 }
+
+int smf_gtp1_send_create_pdp_context_response(
+        smf_sess_t *sess, ogs_gtp_xact_t *xact)
+{
+    int rv;
+    ogs_gtp1_header_t h;
+    ogs_pkbuf_t *pkbuf = NULL;
+
+    ogs_assert(sess);
+    ogs_assert(xact);
+
+    memset(&h, 0, sizeof(ogs_gtp1_header_t));
+    h.type = OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE;
+    h.teid = sess->sgw_s5c_teid;
+
+    pkbuf = smf_gn_build_create_pdp_context_response(h.type, sess);
+    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
+
+    rv = ogs_gtp1_xact_update_tx(xact, &h, pkbuf);
+    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
+
+    rv = ogs_gtp_xact_commit(xact);
+    ogs_expect(rv == OGS_OK);
+
+    return rv;
+}
+
+int smf_gtp1_send_delete_pdp_context_response(
+        smf_sess_t *sess, ogs_gtp_xact_t *xact)
+{
+    int rv;
+    ogs_gtp1_header_t h;
+    ogs_pkbuf_t *pkbuf = NULL;
+
+    ogs_assert(sess);
+    ogs_assert(xact);
+
+    memset(&h, 0, sizeof(ogs_gtp1_header_t));
+    h.type = OGS_GTP1_DELETE_PDP_CONTEXT_RESPONSE_TYPE;
+    h.teid = sess->sgw_s5c_teid;
+
+    pkbuf = smf_gn_build_delete_pdp_context_response(h.type, sess);
+    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
+
+    rv = ogs_gtp1_xact_update_tx(xact, &h, pkbuf);
+    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
+
+    rv = ogs_gtp_xact_commit(xact);
+    ogs_expect(rv == OGS_OK);
+
+    return rv;
+}
+
+#if 0
+int smf_gtp_send_update_pdp_context_request(
+        smf_bearer_t *bearer, uint8_t pti, uint8_t cause_value)
+{
+    int rv;
+
+    ogs_gtp_xact_t *xact = NULL;
+    ogs_gtp1_header_t h;
+    ogs_pkbuf_t *pkbuf = NULL;
+
+    smf_sess_t *sess = NULL;
+
+    ogs_assert(bearer);
+    sess = bearer->sess;
+    ogs_assert(sess);
+
+    memset(&h, 0, sizeof(ogs_gtp_header_t));
+    h.type = OGS_GTP1_UPDATE_PDP_CONTEXT_REQUEST_TYPE;
+    h.teid = sess->sgw_s5c_teid;
+
+    pkbuf = smf_gn_build_update_pdp_context_request(
+                h.type, bearer, pti, cause_value);
+    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
+
+    xact = ogs_gtp1_xact_local_create(
+            sess->gnode, &h, pkbuf, bearer_timeout, bearer);
+    ogs_expect_or_return_val(xact, OGS_ERROR);
+
+    rv = ogs_gtp_xact_commit(xact);
+    ogs_expect(rv == OGS_OK);
+
+    return rv;
+}
+#endif
 
 int smf_gtp_send_create_session_response(
         smf_sess_t *sess, ogs_gtp_xact_t *xact)

@@ -22,6 +22,11 @@ libgtp_sources = files('''
     path.h
     util.h
     xact.h
+    v1/build.h
+    v1/conv.h
+    v1/message.h
+    v1/path.h
+    v1/types.h
     v2/build.h
     v2/conv.h
     v2/message.h
@@ -32,6 +37,11 @@ libgtp_sources = files('''
     path.c
     util.c
     xact.c
+    v1/build.c
+    v1/conv.c
+    v1/message.c
+    v1/path.c
+    v1/types.c
     v2/build.c
     v2/conv.c
     v2/message.c

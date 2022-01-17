@@ -23,6 +23,7 @@
 #include "pfcp-path.h"
 #include "sbi-path.h"
 #include "s5c-handler.h"
+#include "gn-handler.h"
 #include "gx-handler.h"
 #include "nnrf-handler.h"
 #include "namf-handler.h"
@@ -56,6 +57,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
     ogs_gtp_node_t *gnode = NULL;
     ogs_gtp_xact_t *gtp_xact = NULL;
     ogs_gtp_message_t gtp_message;
+    ogs_gtp1_message_t gtp1_message;
 
     ogs_diam_gx_message_t *gx_message = NULL;
 
@@ -158,6 +160,71 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
         default:
             ogs_warn("Not implmeneted(type:%d)", gtp_message.h.type);
+            break;
+        }
+        ogs_pkbuf_free(recvbuf);
+        break;
+
+    case SMF_EVT_GN_MESSAGE:
+        ogs_assert(e);
+        recvbuf = e->pkbuf;
+        ogs_assert(recvbuf);
+
+        if (ogs_gtp1_parse_msg(&gtp1_message, recvbuf) != OGS_OK) {
+            ogs_error("ogs_gtp_parse_msg() failed");
+            ogs_pkbuf_free(recvbuf);
+            break;
+        }
+
+        if (gtp1_message.h.teid != 0) {
+            sess = smf_sess_find_by_teid(gtp1_message.h.teid);
+        }
+
+        if (sess) {
+            gnode = sess->gnode;
+            ogs_assert(gnode);
+        } else {
+            gnode = e->gnode;
+            ogs_assert(gnode);
+        }
+
+        rv = ogs_gtp1_xact_receive(gnode, &gtp1_message.h, &gtp_xact);
+        if (rv != OGS_OK) {
+            ogs_pkbuf_free(recvbuf);
+            break;
+        }
+
+        switch(gtp1_message.h.type) {
+        case OGS_GTP1_ECHO_REQUEST_TYPE:
+            smf_gn_handle_echo_request(gtp_xact, &gtp1_message.echo_request);
+            break;
+        case OGS_GTP1_ECHO_RESPONSE_TYPE:
+            smf_gn_handle_echo_response(gtp_xact, &gtp1_message.echo_response);
+            break;
+        case OGS_GTP1_CREATE_PDP_CONTEXT_REQUEST_TYPE:
+            if (gtp1_message.h.teid == 0) {
+                ogs_expect(!sess);
+                sess = smf_sess_add_by_gtp1_message(&gtp1_message);
+                if (sess)
+                    OGS_SETUP_GTP_NODE(sess, gnode);
+            }
+            smf_gn_handle_create_pdp_context_request(
+                sess, gtp_xact, &gtp1_message.create_pdp_context_request);
+            break;
+        case OGS_GTP1_DELETE_PDP_CONTEXT_REQUEST_TYPE:
+            smf_gn_handle_delete_pdp_context_request(
+                sess, gtp_xact, &gtp1_message.delete_pdp_context_request);
+            break;
+        case OGS_GTP1_UPDATE_PDP_CONTEXT_REQUEST_TYPE:
+            smf_gn_handle_update_pdp_context_request(
+                sess, gtp_xact, &gtp1_message.update_pdp_context_request);
+            break;
+        case OGS_GTP1_ERROR_INDICATION_TYPE:
+            /* TS 29.060 10.1.1.4 dst port shall be the user plane port (2152) */
+            ogs_error("Rx unexpected Error Indication in GTPC port");
+            break;
+        default:
+            ogs_warn("Not implmeneted(type:%d)", gtp1_message.h.type);
             break;
         }
         ogs_pkbuf_free(recvbuf);
