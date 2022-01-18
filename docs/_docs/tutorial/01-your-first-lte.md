@@ -131,6 +131,17 @@ After installing, you need to download the FPGA images packages by running _uhd 
 $ sudo /usr/lib/uhd/utils/uhd_images_downloader.py
 ```
 
+The Laptop then needs to reboot, with the USRP unplugged. Only plug in the USRP after booting is done.
+
+```bash
+$ cd /usr/share/uhd/images/
+$ sudo uhd_usrp_probe
+```
+
+If Issues akin to `IOError: Could not find path for image: usrp_b200_fw.hex` come up and you can not start execution from the `/usr/share/uhd/iamges` path, copy `/usr/share/uhd/images/usrp_b200_fw.hex` & `/usr/share/uhd/images/usrp_b210_fpga.bin` or the matching files for your usrp to the execution directory
+
+Furter execution should work even without sudo
+
 #### 2. srsRAN
 
 ```bash
