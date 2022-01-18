@@ -122,7 +122,7 @@ Most Linux distributions provide UHD as part of their package management. On *De
 ```bash
 $ sudo add-apt-repository ppa:ettusresearch/uhd
 $ sudo apt update
-$ sudo apt install libuhd-dev libuhd003 uhd-host
+$ sudo apt install libuhd-dev uhd-host
 ```
 
 After installing, you need to download the FPGA images packages by running _uhd images downloader_ on the command line (the actual path may differ based on your installation):
@@ -133,25 +133,10 @@ $ sudo /usr/lib/uhd/utils/uhd_images_downloader.py
 
 #### 2. srsRAN
 
-On *Ubuntu 20.04(focal)*, one can install the required libraries with:
-
 ```bash
-$ sudo apt install cmake libfftw3-dev libmbedtls-dev libboost-program-options-dev libconfig++-dev libsctp-dev
-```
-
-Download and build srsLTE:
-
-```bash
-$ git clone https://github.com/srsRAN/srsRAN.git
-$ cd srsRAN
-$ git checkout release_21_04
-$ git rev-parse HEAD
-1c6dd8c4adc8419d4a431f382283539f1719582a
-$ mkdir build
-$ cd build
-$ cmake ../
-$ make
-$ make test
+$ sudo add-apt-repository ppa:softwareradiosystems/srsran
+$ sudo apt-get update
+$ sudo apt-get install srsran
 ```
 
 #### 3. Open5GS
@@ -321,14 +306,19 @@ $ sudo ip6tables -t nat -A POSTROUTING -s 2001:db8:cafe::/48 ! -o ogstun -j MASQ
 {: .notice--danger}
 
 #### 2. srsRAN
-Change back to the srsRAN source directory and copy the main config example as well as all additional config files for RR, SIB and DRB.
 
 ```bash
-$ cp srsenb/enb.conf.example srsenb/enb.conf
-$ cp srsenb/rr.conf.example srsenb/rr.conf
-$ cp srsenb/drb.conf.example srsenb/drb.conf
-$ cp srsenb/sib.conf.example srsenb/sib.conf
-$ cp srsenb/sib.conf.mbsfn.example srsenb/sib.conf.mbsfn
+$ mkdir srsenb; cd srsenb
+$ wget https://raw.githubusercontent.com/srsran/srsRAN/master/srsenb/enb.conf.example
+$ wget https://raw.githubusercontent.com/srsran/srsRAN/master/srsenb/rb.conf.example
+$ wget https://raw.githubusercontent.com/srsran/srsRAN/master/srsenb/rr.conf.example
+$ wget https://raw.githubusercontent.com/srsran/srsRAN/master/srsenb/sib.conf.example
+$ wget https://raw.githubusercontent.com/srsran/srsRAN/master/srsenb/sib.conf.mbsfn.example
+$ mv enb.conf.example enb.conf
+$ mv rr.conf.example rr.conf
+$ mv rb.conf.example rb.conf
+$ mv sib.conf.example sib.conf
+$ mv sib.conf.mbsfn.example sib.conf.mbsfn
 ```
 
 You should check your phone frequency. If your phone does not support Band-3, you should use a different DL EARFCN value.
@@ -368,6 +358,21 @@ $ diff -u enb.conf.example enb.conf
  #####################################################################
 ```
 
+If you do not use the GPS-DO, you should use:
+```diff
+$ diff -u enb.conf.example enb.conf
+--- enb.conf.example	2021-08-23 14:32:35.585438813 +0900
++++ enb.conf	2021-08-23 14:32:08.350450409 +0900
+@@ -82,7 +82,6 @@
+ # Example for ZMQ-based operation with TCP transport for I/Q samples
+ #device_name = zmq
+ #device_args = fail_on_disconnect=true,tx_port=tcp://*:2000,rx_port=tcp://localhost:2001,id=enb,base_srate=23.04e6
+-device_args = clock=external
+
+ #####################################################################
+ # Packet capture configuration
+```
+
 ```diff
 $ diff -u rr.conf.example rr.conf
 diff rr.conf.example rr.conf
@@ -386,28 +391,10 @@ DL EARFCN : Band-3 - from your Phone
 Device Argument : Clock source from external GPS-DO
 ```
 
-If you do not use the GPS-DO, you should use:
-```diff
-$ diff -u enb.conf.example enb.conf
---- enb.conf.example	2021-08-23 14:32:35.585438813 +0900
-+++ enb.conf	2021-08-23 14:32:08.350450409 +0900
-@@ -82,7 +82,6 @@
- # Example for ZMQ-based operation with TCP transport for I/Q samples
- #device_name = zmq
- #device_args = fail_on_disconnect=true,tx_port=tcp://*:2000,rx_port=tcp://localhost:2001,id=enb,base_srate=23.04e6
--device_args = clock=external
-
- #####################################################################
- # Packet capture configuration
-```
-
 Now, run the srsRAN as follows:
 
 ```bash
-$ cd srsenb/
-$ sudo ../build/srsenb/src/srsenb ./enb.conf
-
-Built in Release mode using commit d045213fb on branch HEAD.
+$ sudo srsenb ~/srsenb/enb.conf
 
 ---  Software Radio Systems LTE eNodeB  ---
 
