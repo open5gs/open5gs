@@ -75,11 +75,11 @@ libsmf_sources = files('''
     pfcp-sm.c
     gtp-path.c
     s5c-build.c
-    s5c-handler.c 
+    s5c-handler.c
     fd-path.c
     gx-path.c
     s6b-path.c
-    gx-handler.c 
+    gx-handler.c
     pfcp-path.c
     n4-build.c
     n4-handler.c
