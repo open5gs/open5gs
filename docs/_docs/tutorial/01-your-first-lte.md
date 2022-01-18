@@ -253,27 +253,10 @@ $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
          ciphering_order : [ EEA0, EEA1, EEA2 ]
 ```
 
-Modify [install/etc/open5gs/sgwu.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/sgwu.yaml.in) to set the GTP-U IP address.
-```diff
-$ diff -u /etc/open5gs/sgwu.yaml.old /etc/open5gs/sgwu.yaml
---- sgwu.yaml.old	2020-08-22 12:08:44.782880778 -0400
-+++ sgwu.yaml	2020-08-22 12:06:49.809299514 -0400
-@@ -51,7 +51,7 @@
- #
- sgwu:
-     gtpu:
--      addr: 10.11.0.6
-+      addr: 127.0.0.6
-     pfcp:
-       addr: 127.0.0.6
-```
-
-
 After changing conf files, please restart Open5GS daemons.
 
 ```bash
 $ sudo systemctl restart open5gs-mmed.service
-$ sudo systemctl restart open5gs-sgwud.service
 ```
 
 If your phone can connect to internet, you must run the following command in Open5GS-PGW installed host. 
