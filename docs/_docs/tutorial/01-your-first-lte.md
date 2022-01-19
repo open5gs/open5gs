@@ -355,6 +355,13 @@ $ diff -u /root/.config/srsran/enb.conf.old /root/.config/srsran/enb.conf
 
  # For best performance in 2x2 MIMO and >= 15 MHz use the following device_args settings:
  #     USRP B210: num_recv_frames=64,num_send_frames=64
+```
+
+If you use the GPS-DO, you should use:
+```diff
+$ diff -u /root/.config/srsran/enb.conf.old /root/.config/srsran/enb.conf
+--- enb.conf.old	2021-08-23 14:32:35.585438813 +0900
++++ enb.conf	2021-08-23 14:32:08.350450409 +0900
  @@ -80,6 +82,7 @@
  # Example for ZMQ-based operation with TCP transport for I/Q samples
  #device_name = zmq
@@ -362,21 +369,6 @@ $ diff -u /root/.config/srsran/enb.conf.old /root/.config/srsran/enb.conf
 +device_args = clock=external
 
  #####################################################################
-```
-
-If you do not use the GPS-DO, you should use:
-```diff
-$ diff -u /root/.config/srsran/enb.conf.old /root/.config/srsran/enb.conf
---- enb.conf.old	2021-08-23 14:32:35.585438813 +0900
-+++ enb.conf	2021-08-23 14:32:08.350450409 +0900
-@@ -82,7 +82,6 @@
- # Example for ZMQ-based operation with TCP transport for I/Q samples
- #device_name = zmq
- #device_args = fail_on_disconnect=true,tx_port=tcp://*:2000,rx_port=tcp://localhost:2001,id=enb,base_srate=23.04e6
--device_args = clock=external
-
- #####################################################################
- # Packet capture configuration
 ```
 
 ```diff
