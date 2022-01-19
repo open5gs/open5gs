@@ -152,16 +152,10 @@ $ sudo apt-get install srsran
 
 #### 3. Open5GS
 
-The Open5GS package is available on the recent versions of *Ubuntu*.
+See also [Quickstart Guide: Install Open5GS with a package manager](https://open5gs.org/open5gs/docs/guide/01-quickstart/#2-install-open5gs-with-a-package-manager)
 
 ```bash
-# Getting the authentication key
-$ sudo apt install wget
-$ wget https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_20.04/Release.key
-$ sudo apt-key add Release.key
-
-# Installing Open5GS
-$ sudo sh -c "echo 'deb https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_20.04/ ./' > /etc/apt/sources.list.d/open5gs.list"
+$ sudo add-apt-repository ppa:open5gs/latest
 $ sudo apt update
 $ sudo apt install open5gs
 ```
