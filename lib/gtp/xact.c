@@ -32,8 +32,13 @@ static uint32_t g_xact_id = 0;
 
 static OGS_POOL(pool, ogs_gtp_xact_t);
 
+static ogs_gtp_xact_t *ogs_gtp_xact_remote_create(
+        ogs_gtp_node_t *gnode, uint32_t sqn);
 static ogs_gtp_xact_stage_t ogs_gtp_xact_get_stage(uint8_t type, uint32_t sqn);
 static int ogs_gtp_xact_delete(ogs_gtp_xact_t *xact);
+static int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type);
+static ogs_gtp_xact_t *ogs_gtp_xact_find_by_xid(
+        ogs_gtp_node_t *gnode, uint8_t type, uint32_t xid);
 
 static void response_timeout(void *data);
 static void holding_timeout(void *data);
@@ -98,7 +103,7 @@ ogs_gtp_xact_t *ogs_gtp_xact_local_create(ogs_gtp_node_t *gnode,
     ogs_assert(xact->tm_holding);
     xact->holding_rcount = ogs_app()->time.message.gtp.n3_holding_rcount,
 
-    ogs_list_add(xact->org == OGS_GTP_LOCAL_ORIGINATOR ?  
+    ogs_list_add(xact->org == OGS_GTP_LOCAL_ORIGINATOR ?
             &xact->gnode->local_list : &xact->gnode->remote_list, xact);
 
     rv = ogs_gtp_xact_update_tx(xact, hdesc, pkbuf);
@@ -117,7 +122,8 @@ ogs_gtp_xact_t *ogs_gtp_xact_local_create(ogs_gtp_node_t *gnode,
     return xact;
 }
 
-ogs_gtp_xact_t *ogs_gtp_xact_remote_create(ogs_gtp_node_t *gnode, uint32_t sqn)
+static ogs_gtp_xact_t *ogs_gtp_xact_remote_create(
+        ogs_gtp_node_t *gnode, uint32_t sqn)
 {
     char buf[OGS_ADDRSTRLEN];
     ogs_gtp_xact_t *xact = NULL;
@@ -143,7 +149,7 @@ ogs_gtp_xact_t *ogs_gtp_xact_remote_create(ogs_gtp_node_t *gnode, uint32_t sqn)
     ogs_assert(xact->tm_holding);
     xact->holding_rcount = ogs_app()->time.message.gtp.n3_holding_rcount,
 
-    ogs_list_add(xact->org == OGS_GTP_LOCAL_ORIGINATOR ?  
+    ogs_list_add(xact->org == OGS_GTP_LOCAL_ORIGINATOR ?
             &xact->gnode->local_list : &xact->gnode->remote_list, xact);
 
     ogs_debug("[%d] %s Create  peer [%s]:%d",
@@ -177,7 +183,7 @@ int ogs_gtp_xact_update_tx(ogs_gtp_xact_t *xact,
     ogs_gtp_xact_stage_t stage;
     ogs_gtp_header_t *h = NULL;
     int gtp_hlen = 0;
-    
+
     ogs_assert(xact);
     ogs_assert(xact->gnode);
     ogs_assert(hdesc);
@@ -278,7 +284,7 @@ int ogs_gtp_xact_update_tx(ogs_gtp_xact_t *xact,
     return OGS_OK;
 }
 
-int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
+static int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
 {
     int rv = OGS_OK;
     char buf[OGS_ADDRSTRLEN];
@@ -460,7 +466,7 @@ int ogs_gtp_xact_commit(ogs_gtp_xact_t *xact)
     uint8_t type;
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_gtp_xact_stage_t stage;
-    
+
     ogs_assert(xact);
     ogs_assert(xact->gnode);
 
@@ -685,11 +691,6 @@ int ogs_gtp_xact_receive(
     return rv;
 }
 
-ogs_gtp_xact_t *ogs_gtp_xact_find(ogs_index_t index)
-{
-    return ogs_pool_find(&pool, index);
-}
-
 static ogs_gtp_xact_stage_t ogs_gtp_xact_get_stage(uint8_t type, uint32_t xid)
 {
     ogs_gtp_xact_stage_t stage = GTP_XACT_UNKNOWN_STAGE;
@@ -741,7 +742,7 @@ static ogs_gtp_xact_stage_t ogs_gtp_xact_get_stage(uint8_t type, uint32_t xid)
     return stage;
 }
 
-ogs_gtp_xact_t *ogs_gtp_xact_find_by_xid(
+static ogs_gtp_xact_t *ogs_gtp_xact_find_by_xid(
         ogs_gtp_node_t *gnode, uint8_t type, uint32_t xid)
 {
     char buf[OGS_ADDRSTRLEN];
@@ -849,4 +850,3 @@ static int ogs_gtp_xact_delete(ogs_gtp_xact_t *xact)
 
     return OGS_OK;
 }
-

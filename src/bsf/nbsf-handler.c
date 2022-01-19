@@ -227,8 +227,9 @@ bool bsf_nbsf_management_handle_pcf_binding(
                     memset(fqdn, 0, sizeof(fqdn));
                     fqdn_len = ogs_fqdn_build(fqdn,
                             sess->pcf_fqdn, strlen(sess->pcf_fqdn));
-                    SendPcfBinding.pcf_fqdn = ogs_memdup(fqdn, fqdn_len);
+                    SendPcfBinding.pcf_fqdn = ogs_memdup(fqdn, fqdn_len+1);
                     ogs_assert(SendPcfBinding.pcf_fqdn);
+                    SendPcfBinding.pcf_fqdn[fqdn_len] = 0;
                 }
 
                 for (i = 0; i < sess->num_of_pcf_ip; i++) {

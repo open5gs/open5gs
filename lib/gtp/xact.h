@@ -111,23 +111,17 @@ void ogs_gtp_xact_final(void);
 ogs_gtp_xact_t *ogs_gtp_xact_local_create(ogs_gtp_node_t *gnode,
         ogs_gtp_header_t *hdesc, ogs_pkbuf_t *pkbuf,
         void (*cb)(ogs_gtp_xact_t *xact, void *data), void *data);
-ogs_gtp_xact_t *ogs_gtp_xact_remote_create(
-        ogs_gtp_node_t *gnode, uint32_t sqn);
 ogs_gtp_xact_t *ogs_gtp_xact_cycle(ogs_gtp_xact_t *xact);
 void ogs_gtp_xact_delete_all(ogs_gtp_node_t *gnode);
 
 int ogs_gtp_xact_update_tx(ogs_gtp_xact_t *xact,
         ogs_gtp_header_t *hdesc, ogs_pkbuf_t *pkbuf);
-int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type);
 
 int ogs_gtp_xact_commit(ogs_gtp_xact_t *xact);
 
 int ogs_gtp_xact_receive(ogs_gtp_node_t *gnode,
         ogs_gtp_header_t *h, ogs_gtp_xact_t **xact);
 
-ogs_gtp_xact_t *ogs_gtp_xact_find(ogs_index_t index);
-ogs_gtp_xact_t *ogs_gtp_xact_find_by_xid(
-        ogs_gtp_node_t *gnode, uint8_t type, uint32_t xid);
 void ogs_gtp_xact_associate(ogs_gtp_xact_t *xact1, ogs_gtp_xact_t *xact2);
 void ogs_gtp_xact_deassociate(ogs_gtp_xact_t *xact1, ogs_gtp_xact_t *xact2);
 

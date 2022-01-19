@@ -216,7 +216,7 @@ Modify [install/etc/open5gs/mme.yaml](https://github.com/{{ site.github_username
 
 ```diff
 $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
---- ./examples/mme.yaml 2022-01-19 10:36:02.462763600 +0100
+--- mme.yaml.old 2022-01-19 10:36:02.462763600 +0100
 +++ mme.yaml    2022-01-19 10:37:21.862156800 +0100
 @@ -213,14 +213,14 @@
        - addr: 127.0.0.2
@@ -241,7 +241,7 @@ $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
 
 ```diff
 $ diff -u ./examples/amf.yaml amf.yaml
---- ./examples/amf.yaml 2022-01-19 10:35:48.457438300 +0100
+--- amf.yaml.old 2022-01-19 10:35:48.457438300 +0100
 +++ amf.yaml    2022-01-19 10:38:14.523755800 +0100
 @@ -183,20 +183,20 @@
        - addr: 127.0.0.5
@@ -351,7 +351,7 @@ $ diff -u /root/.config/srsran/enb.conf.old /root/.config/srsran/enb.conf
  #     USRP B210: num_recv_frames=64,num_send_frames=64
 ```
 
-If you use the GPS-DO, you should use:
+If you use the GPS-DO, you should also set
 ```diff
 $ diff -u /root/.config/srsran/enb.conf.old /root/.config/srsran/enb.conf
 --- enb.conf.old	2021-08-23 14:32:35.585438813 +0900
@@ -359,10 +359,11 @@ $ diff -u /root/.config/srsran/enb.conf.old /root/.config/srsran/enb.conf
  @@ -80,6 +82,7 @@
  # Example for ZMQ-based operation with TCP transport for I/Q samples
  #device_name = zmq
- #device_args = fail_on_disconnect=true,tx_port=tcp://*:2000,rx_port=tcp://localhost:2001,id=enb,base_srate=23.04e6
+-#device_args = fail_on_disconnect=true,tx_port=tcp://*:2000,rx_port=tcp://localhost:2001,id=enb,base_srate=23.04e6
 +device_args = clock=external
 
  #####################################################################
+ # Packet capture configuration
 ```
 
 ```diff
@@ -384,9 +385,11 @@ $ diff -u /root/.config/srsran/rr.conf.old /root/.config/srsran/rr.conf
      //meas_gap_period = 0; // 0 (inactive), 40 or 80
 ```
 
-PLMN ID, DL EARFCN, and Device Argument are updated as belows.
+MME Address, TAC, PLMN ID, DL EARFCN, and Device Argument are updated as belows.
 
 ```
+MME Address : 127.0.1.2
+TAC : 2
 PLMN ID : MNC(310), MCC(789) programmed USIM with a card reader
 DL EARFCN : Band-3 - from your Phone
 Device Argument : Clock source from external GPS-DO
@@ -400,10 +403,19 @@ $ sudo srsenb
 ---  Software Radio Systems LTE eNodeB  ---
 
 Reading configuration file ./enb.conf...
-Opening 1 RF devices with 1 RF channels...
-[INFO] [UHD] linux; GNU C++ version 7.4.0; Boost_106501; UHD_3.14.1.1-release
+WARNING: cpu0 scaling governor is not set to performance mode. Realtime processing could be compromised. Consider setting it to performance mode before running the application.
+
+Built in Release mode using commit 5275f3336 on branch HEAD.
+
+connect(): Connection refused
+Failed to initiate S1 connection. Attempting reconnection in 10 seconds
+Opening 1 channels in RF device=default with args=default
+Available RF device list: UHD
+Trying to open RF device 'UHD'
+[INFO] [UHD] linux; GNU C++ version 9.3.0; Boost_107100; UHD_4.1.0.4-release
 [INFO] [LOGGING] Fastpath logging disabled at runtime.
-Opening USRP with args: type=b200,master_clock_rate=23.04e6
+Opening USRP channels=1, args: type=b200,master_clock_rate=23.04e6
+[INFO] [UHD RF] RF UHD Generic instance constructed
 [INFO] [B200] Detected Device: B200
 [INFO] [B200] Operating over USB 3.
 [INFO] [B200] Initialize CODEC control...
@@ -412,8 +424,7 @@ Opening USRP with args: type=b200,master_clock_rate=23.04e6
 [INFO] [B200] Register loopback test passed
 [INFO] [B200] Asking for clock rate 23.040000 MHz...
 [INFO] [B200] Actually got clock rate 23.040000 MHz.
-Setting frequency: DL=1845.0 Mhz, UL=1750.0 MHz
-Setting Sampling frequency 11.52 MHz
+RF device 'UHD' successfully opened
 
 ==== eNodeB started ===
 Type <t> to view trace
