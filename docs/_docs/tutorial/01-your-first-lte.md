@@ -222,41 +222,67 @@ Modify [install/etc/open5gs/mme.yaml](https://github.com/{{ site.github_username
 
 ```diff
 $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
---- mme.yaml.old	2020-08-22 12:07:32.755250028 -0400
-+++ mme.yaml	2020-08-22 12:08:17.309320211 -0400
-@@ -204,20 +204,20 @@
- mme:
-     freeDiameter: /home/acetcom/Documents/git/open5gs/install/etc/freeDiameter/mme.conf
-     s1ap:
--      addr: 127.0.0.2
-+      addr: 127.0.1.100
-     gtpc:
-       addr: 127.0.0.2
+--- ./examples/mme.yaml 2022-01-19 10:36:02.462763600 +0100
++++ mme.yaml    2022-01-19 10:37:21.862156800 +0100
+@@ -213,14 +213,14 @@
+       - addr: 127.0.0.2
      gummei:
        plmn_id:
 -        mcc: 901
 -        mnc: 70
-+        mcc: 310
-+        mnc: 789
++        mcc: 999
++        mnc: 99
        mme_gid: 2
        mme_code: 1
      tai:
        plmn_id:
 -        mcc: 901
 -        mnc: 70
--      tac: 1
-+        mcc: 310
-+        mnc: 789
-+      tac: 7
++        mcc: 999
++        mnc: 99
+       tac: 1
      security:
-         integrity_order : [ EIA1, EIA2, EIA0 ]
-         ciphering_order : [ EEA0, EEA1, EEA2 ]
+         integrity_order : [ EIA2, EIA1, EIA0 ]
+```
+
+```diff
+$ diff -u ./examples/amf.yaml amf.yaml
+--- ./examples/amf.yaml 2022-01-19 10:35:48.457438300 +0100
++++ amf.yaml    2022-01-19 10:38:14.523755800 +0100
+@@ -183,20 +183,20 @@
+       - addr: 127.0.0.5
+     guami:
+       - plmn_id:
+-          mcc: 901
+-          mnc: 70
++          mcc: 999
++          mnc: 99
+         amf_id:
+           region: 2
+           set: 1
+     tai:
+       - plmn_id:
+-          mcc: 901
+-          mnc: 70
++          mcc: 999
++          mnc: 99
+         tac: 1
+     plmn_support:
+       - plmn_id:
+-          mcc: 901
+-          mnc: 70
++          mcc: 999
++          mnc: 99
+         s_nssai:
+           - sst: 1
+     security:
 ```
 
 After changing conf files, please restart Open5GS daemons.
 
 ```bash
 $ sudo systemctl restart open5gs-mmed.service
+$ sudo systemctl restart open5gs-amfd.service
 ```
 
 If your phone can connect to internet, you must run the following command in Open5GS-PGW installed host. 
@@ -301,40 +327,26 @@ $ sudo ip6tables -t nat -A POSTROUTING -s 2001:db8:cafe::/48 ! -o ogstun -j MASQ
 
 #### 2. srsRAN
 
-```bash
-$ mkdir srsenb; cd srsenb
-$ wget https://raw.githubusercontent.com/srsran/srsRAN/master/srsenb/enb.conf.example
-$ wget https://raw.githubusercontent.com/srsran/srsRAN/master/srsenb/rb.conf.example
-$ wget https://raw.githubusercontent.com/srsran/srsRAN/master/srsenb/rr.conf.example
-$ wget https://raw.githubusercontent.com/srsran/srsRAN/master/srsenb/sib.conf.example
-$ wget https://raw.githubusercontent.com/srsran/srsRAN/master/srsenb/sib.conf.mbsfn.example
-$ mv enb.conf.example enb.conf
-$ mv rr.conf.example rr.conf
-$ mv rb.conf.example rb.conf
-$ mv sib.conf.example sib.conf
-$ mv sib.conf.mbsfn.example sib.conf.mbsfn
-```
-
 You should check your phone frequency. If your phone does not support Band-3, you should use a different DL EARFCN value.
 
 ```diff
-$ diff -u enb.conf.example enb.conf
---- enb.conf.example	2021-08-23 12:00:03.975297244 +0900
-+++ enb.conf	2021-08-23 14:34:01.794290668 +0900
-@@ -19,8 +19,10 @@
+$ diff -u /root/.config/srsran/enb.conf.old /root/.config/srsran/enb.conf
+--- enb.conf.example 2022-01-19 09:56:18.317977900 +0100
++++ enb.conf    2022-01-19 10:07:28.943500800 +0100
+@@ -20,9 +20,9 @@
  #####################################################################
  [enb]
  enb_id = 0x19B
 -mcc = 001
 -mnc = 01
-+#mcc = 001
-+#mnc = 01
-+mcc = 901
-+mnc = 70
- mme_addr = 127.0.1.100
+-mme_addr = 127.0.1.100
++mcc = 999
++mnc = 99
++mme_addr = 127.0.0.2
  gtp_bind_addr = 127.0.1.1
  s1c_bind_addr = 127.0.1.1
-@@ -65,7 +67,7 @@
+ s1c_bind_port = 0
+@@ -67,7 +67,7 @@
  tx_gain = 80
  rx_gain = 40
 
@@ -343,7 +355,7 @@ $ diff -u enb.conf.example enb.conf
 
  # For best performance in 2x2 MIMO and >= 15 MHz use the following device_args settings:
  #     USRP B210: num_recv_frames=64,num_send_frames=64
-@@ -80,6 +82,7 @@
+ @@ -80,6 +82,7 @@
  # Example for ZMQ-based operation with TCP transport for I/Q samples
  #device_name = zmq
  #device_args = fail_on_disconnect=true,tx_port=tcp://*:2000,rx_port=tcp://localhost:2001,id=enb,base_srate=23.04e6
@@ -354,8 +366,8 @@ $ diff -u enb.conf.example enb.conf
 
 If you do not use the GPS-DO, you should use:
 ```diff
-$ diff -u enb.conf.example enb.conf
---- enb.conf.example	2021-08-23 14:32:35.585438813 +0900
+$ diff -u /root/.config/srsran/enb.conf.old /root/.config/srsran/enb.conf
+--- enb.conf.old	2021-08-23 14:32:35.585438813 +0900
 +++ enb.conf	2021-08-23 14:32:08.350450409 +0900
 @@ -82,7 +82,6 @@
  # Example for ZMQ-based operation with TCP transport for I/Q samples
@@ -368,13 +380,22 @@ $ diff -u enb.conf.example enb.conf
 ```
 
 ```diff
-$ diff -u rr.conf.example rr.conf
-diff rr.conf.example rr.conf
-61c61,62
-<     dl_earfcn = 3350;
----
->     // dl_earfcn = 3350;
->     dl_earfcn = 1600;
+$ diff -u /root/.config/srsran/rr.conf.old /root/.config/srsran/rr.conf
+--- rr.conf.old  2022-01-19 10:01:43.027197000 +0100
++++ rr.conf     2022-01-19 10:01:43.042255800 +0100
+@@ -55,10 +55,10 @@
+   {
+     // rf_port = 0;
+     cell_id = 0x01;
+-    tac = 0x0007;
++    tac = 0x0001;
+     pci = 1;
+     // root_seq_idx = 204;
+-    dl_earfcn = 3350;
++    dl_earfcn = 1600;
+     //ul_earfcn = 21400;
+     ho_active = false;
+     //meas_gap_period = 0; // 0 (inactive), 40 or 80
 ```
 
 PLMN ID, DL EARFCN, and Device Argument are updated as belows.
@@ -388,7 +409,7 @@ Device Argument : Clock source from external GPS-DO
 Now, run the srsRAN as follows:
 
 ```bash
-$ sudo srsenb ~/srsenb/enb.conf
+$ sudo srsenb
 
 ---  Software Radio Systems LTE eNodeB  ---
 
