@@ -144,9 +144,9 @@ Download and build srsLTE:
 ```bash
 $ git clone https://github.com/srsRAN/srsRAN.git
 $ cd srsRAN
-$ git checkout release_21_04
+$ git checkout release_21_10
 $ git rev-parse HEAD
-1c6dd8c4adc8419d4a431f382283539f1719582a
+5275f33360f1b3f1ee8d1c4d9ae951ac7c4ecd4e
 $ mkdir build
 $ cd build
 $ cmake ../
@@ -228,12 +228,12 @@ Modify [install/etc/open5gs/mme.yaml](https://github.com/{{ site.github_username
 $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
 --- mme.yaml.old	2020-08-22 12:07:32.755250028 -0400
 +++ mme.yaml	2020-08-22 12:08:17.309320211 -0400
-@@ -204,20 +204,20 @@
+@@ -208,20 +208,20 @@
  mme:
      freeDiameter: /home/acetcom/Documents/git/open5gs/install/etc/freeDiameter/mme.conf
      s1ap:
 -      addr: 127.0.0.2
-+      addr: 127.0.1.100
++      addr: 127.0.1.2
      gtpc:
        addr: 127.0.0.2
      gummei:
@@ -251,7 +251,7 @@ $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
 -      tac: 1
 +        mcc: 310
 +        mnc: 789
-+      tac: 7
++      tac: 2
      security:
          integrity_order : [ EIA1, EIA2, EIA0 ]
          ciphering_order : [ EEA0, EEA1, EEA2 ]
@@ -262,7 +262,7 @@ Modify [install/etc/open5gs/sgwu.yaml](https://github.com/{{ site.github_usernam
 $ diff -u /etc/open5gs/sgwu.yaml.old /etc/open5gs/sgwu.yaml
 --- sgwu.yaml.old	2020-08-22 12:08:44.782880778 -0400
 +++ sgwu.yaml	2020-08-22 12:06:49.809299514 -0400
-@@ -51,7 +51,7 @@
+@@ -82,7 +82,7 @@
  #
  sgwu:
      gtpu:
@@ -335,22 +335,22 @@ You should check your phone frequency. If your phone does not support Band-3, yo
 
 ```diff
 $ diff -u enb.conf.example enb.conf
---- enb.conf.example	2021-08-23 12:00:03.975297244 +0900
-+++ enb.conf	2021-08-23 14:34:01.794290668 +0900
-@@ -19,8 +19,10 @@
+-- enb.conf.example	2022-01-19 20:30:13.612993155 +0900
++++ enb.conf	2022-01-19 21:04:15.674419300 +0900
+@@ -20,9 +20,9 @@
  #####################################################################
  [enb]
  enb_id = 0x19B
 -mcc = 001
 -mnc = 01
-+#mcc = 001
-+#mnc = 01
-+mcc = 901
-+mnc = 70
- mme_addr = 127.0.1.100
+-mme_addr = 127.0.1.100
++mcc = 310
++mnc = 789
++mme_addr = 127.0.1.2
  gtp_bind_addr = 127.0.1.1
  s1c_bind_addr = 127.0.1.1
-@@ -65,7 +67,7 @@
+ s1c_bind_port = 0
+@@ -67,7 +67,7 @@
  tx_gain = 80
  rx_gain = 40
 
@@ -359,43 +359,61 @@ $ diff -u enb.conf.example enb.conf
 
  # For best performance in 2x2 MIMO and >= 15 MHz use the following device_args settings:
  #     USRP B210: num_recv_frames=64,num_send_frames=64
-@@ -80,6 +82,7 @@
+@@ -81,7 +81,7 @@
+
  # Example for ZMQ-based operation with TCP transport for I/Q samples
  #device_name = zmq
- #device_args = fail_on_disconnect=true,tx_port=tcp://*:2000,rx_port=tcp://localhost:2001,id=enb,base_srate=23.04e6
+-#device_args = fail_on_disconnect=true,tx_port=tcp://*:2000,rx_port=tcp://localhost:2001,id=enb,base_srate=23.04e6
 +device_args = clock=external
 
  #####################################################################
+ # Packet capture configuration
 ```
 
 ```diff
 $ diff -u rr.conf.example rr.conf
-diff rr.conf.example rr.conf
-61c61,62
-<     dl_earfcn = 3350;
----
->     // dl_earfcn = 3350;
->     dl_earfcn = 1600;
+-- rr.conf.example	2022-01-19 20:30:13.620992794 +0900
++++ rr.conf	2022-01-19 21:05:21.959044145 +0900
+@@ -55,10 +55,10 @@
+   {
+     // rf_port = 0;
+     cell_id = 0x01;
+-    tac = 0x0007;
++    tac = 0x0002;
+     pci = 1;
+     // root_seq_idx = 204;
+-    dl_earfcn = 3350;
++    dl_earfcn = 1600;
+     //ul_earfcn = 21400;
+     ho_active = false;
+     //meas_gap_period = 0; // 0 (inactive), 40 or 80
+@@ -114,4 +114,4 @@
+ nr_cell_list =
+ (
+   // no NR cells
 ```
 
-PLMN ID, DL EARFCN, and Device Argument are updated as belows.
+MME Address, TAC, PLMN ID, DL EARFCN, and Device Argument are updated as belows.
 
 ```
+MME Address : 127.0.1.2
+TAC : 2
 PLMN ID : MNC(310), MCC(789) programmed USIM with a card reader
 DL EARFCN : Band-3 - from your Phone
 Device Argument : Clock source from external GPS-DO
 ```
 
-If you do not use the GPS-DO, you should use:
+If you are not using GPS-DO, you can just comment out `device_args` as shown below.
 ```diff
-$ diff -u enb.conf.example enb.conf
---- enb.conf.example	2021-08-23 14:32:35.585438813 +0900
-+++ enb.conf	2021-08-23 14:32:08.350450409 +0900
-@@ -82,7 +82,6 @@
+$ diff -u enb.conf enb.conf.no_gps_do
+--- enb.conf	2022-01-19 21:08:32.941527373 +0900
++++ enb.conf.no_gps_do	2022-01-19 21:10:18.612581261 +0900
+@@ -81,7 +81,7 @@
+
  # Example for ZMQ-based operation with TCP transport for I/Q samples
  #device_name = zmq
- #device_args = fail_on_disconnect=true,tx_port=tcp://*:2000,rx_port=tcp://localhost:2001,id=enb,base_srate=23.04e6
 -device_args = clock=external
++#device_args = fail_on_disconnect=true,tx_port=tcp://*:2000,rx_port=tcp://localhost:2001,id=enb,base_srate=23.04e6
 
  #####################################################################
  # Packet capture configuration
@@ -405,17 +423,23 @@ Now, run the srsRAN as follows:
 
 ```bash
 $ cd srsenb/
-$ sudo ../build/srsenb/src/srsenb ./enb.conf
-
-Built in Release mode using commit d045213fb on branch HEAD.
-
+$ sudo UHD_IMAGES_DIR=/usr/share/uhd/images ../build/srsenb/src/srsenb ./enb.conf
 ---  Software Radio Systems LTE eNodeB  ---
 
 Reading configuration file ./enb.conf...
-Opening 1 RF devices with 1 RF channels...
-[INFO] [UHD] linux; GNU C++ version 7.4.0; Boost_106501; UHD_3.14.1.1-release
+WARNING: cpu0 scaling governor is not set to performance mode. Realtime processing could be compromised. Consider setting it to performance mode before running the application.
+
+Built in Release mode using commit 5275f3336 on branch HEAD.
+
+connect(): Connection refused
+Failed to initiate S1 connection. Attempting reconnection in 10 seconds
+Opening 1 channels in RF device=default with args=default
+Available RF device list: UHD
+Trying to open RF device 'UHD'
+[INFO] [UHD] linux; GNU C++ version 9.3.0; Boost_107100; UHD_4.1.0.4-release
 [INFO] [LOGGING] Fastpath logging disabled at runtime.
-Opening USRP with args: type=b200,master_clock_rate=23.04e6
+Opening USRP channels=1, args: type=b200,master_clock_rate=23.04e6
+[INFO] [UHD RF] RF UHD Generic instance constructed
 [INFO] [B200] Detected Device: B200
 [INFO] [B200] Operating over USB 3.
 [INFO] [B200] Initialize CODEC control...
@@ -424,8 +448,7 @@ Opening USRP with args: type=b200,master_clock_rate=23.04e6
 [INFO] [B200] Register loopback test passed
 [INFO] [B200] Asking for clock rate 23.040000 MHz...
 [INFO] [B200] Actually got clock rate 23.040000 MHz.
-Setting frequency: DL=1845.0 Mhz, UL=1750.0 MHz
-Setting Sampling frequency 11.52 MHz
+RF device 'UHD' successfully opened
 
 ==== eNodeB started ===
 Type <t> to view trace
