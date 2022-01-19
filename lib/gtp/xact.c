@@ -690,11 +690,6 @@ int ogs_gtp_xact_receive(
     return rv;
 }
 
-static ogs_gtp_xact_t *ogs_gtp_xact_find(ogs_index_t index)
-{
-    return ogs_pool_find(&pool, index);
-}
-
 static ogs_gtp_xact_stage_t ogs_gtp_xact_get_stage(uint8_t type, uint32_t xid)
 {
     ogs_gtp_xact_stage_t stage = GTP_XACT_UNKNOWN_STAGE;
