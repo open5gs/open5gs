@@ -69,8 +69,9 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
         memset(fqdn, 0, sizeof(fqdn));
         fqdn_len = ogs_fqdn_build(fqdn,
                 nf_service->fqdn, strlen(nf_service->fqdn));
-        PcfBinding.pcf_fqdn = ogs_memdup(fqdn, fqdn_len);
+        PcfBinding.pcf_fqdn = ogs_memdup(fqdn, fqdn_len+1);
         ogs_expect_or_return_val(PcfBinding.pcf_fqdn, NULL);
+        PcfBinding.pcf_fqdn[fqdn_len] = 0;
     }
 
     PcfIpEndPointList = OpenAPI_list_create();
