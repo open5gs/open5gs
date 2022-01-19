@@ -88,7 +88,7 @@ SMSP: ffffffffffffffffffffffffffffffffffffffffffffffffe1ffffffffffffffffffffffff
 
 ###### Program your SIM card like the followings:
 ```
-./pySim-prog.py -p 0 -n Open5GS -a 62416296 -s 8988211000000213010 -i 310789012345301 -x 310 -y 789 -k 82E9053A1882085FF2C020359938DAE9 -o BFD5771AAF4F6728E9BC6EF2C2533BDB
+./pySim-prog.py -p 0 -n Open5GS -a 62416296 -s 8988211000000213010 -i 310789012345301 -x 999 -y 99 -k 82E9053A1882085FF2C020359938DAE9 -o BFD5771AAF4F6728E9BC6EF2C2533BDB
 Using PC/SC reader (dev=0) interface
 Insert card now (or CTRL-C to cancel)
 Autodetected card type: sysmoUSIM-SJS1
@@ -96,7 +96,7 @@ Generated card parameters :
  > Name    : Open5GS
  > SMSP    : e1ffffffffffffffffffffffff0581005155f5ffffffffffff000000
  > ICCID   : 8988211000000213010
- > MCC/MNC : 310/789
+ > MCC/MNC : 999/99
  > IMSI    : 310789012345301
  > Ki      : 82E9053A1882085FF2C020359938DAE9
  > OPC     : BFD5771AAF4F6728E9BC6EF2C2533BDB
@@ -194,7 +194,7 @@ OPc : 625150E2A943E3353DD23554101CAFD4
 
 If you programmed USIM using a card reader like me, you should use your SIM information.
 ```
-MCC/MNC : 310/789
+MCC/MNC : 999/99
 IMSI : 310789012345301
 K : 82E9053A1882085FF2C020359938DAE9
 OPc : BFD5771AAF4F6728E9BC6EF2C2533BDB  
@@ -388,9 +388,9 @@ $ diff -u /root/.config/srsran/rr.conf.old /root/.config/srsran/rr.conf
 MME Address, TAC, PLMN ID, DL EARFCN, and Device Argument are updated as belows.
 
 ```
-MME Address : 127.0.1.2
-TAC : 2
-PLMN ID : MNC(310), MCC(789) programmed USIM with a card reader
+MME Address : 127.0.0.2
+TAC : 1
+PLMN ID : MNC(999), MCC(99) programmed USIM with a card reader
 DL EARFCN : Band-3 - from your Phone
 Device Argument : Clock source from external GPS-DO
 ```
