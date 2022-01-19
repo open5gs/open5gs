@@ -321,8 +321,6 @@ $ sudo ip6tables -t nat -A POSTROUTING -s 2001:db8:cafe::/48 ! -o ogstun -j MASQ
 
 #### 2. srsRAN
 
-You should check your phone frequency. If your phone does not support Band-3, you should use a different DL EARFCN value.
-
 ```diff
 $ diff -u /root/.config/srsran/enb.conf.old /root/.config/srsran/enb.conf
 --- enb.conf.example 2022-01-19 09:56:18.317977900 +0100
@@ -366,11 +364,13 @@ $ diff -u /root/.config/srsran/enb.conf.old /root/.config/srsran/enb.conf
  # Packet capture configuration
 ```
 
+You should check your phone frequency. This example uses Band-3.
+
 ```diff
-$ diff -u /root/.config/srsran/rr.conf.old /root/.config/srsran/rr.conf
+$ diff -u /root/.config/srsran/rr.conf.old /root/.config/srsran/rr.conf                                                                   
 --- rr.conf.old  2022-01-19 10:01:43.027197000 +0100
-+++ rr.conf     2022-01-19 10:01:43.042255800 +0100
-@@ -55,10 +55,10 @@
++++ rr.conf     2022-01-19 16:14:20.490827200 +0100
+@@ -55,11 +55,11 @@
    {
      // rf_port = 0;
      cell_id = 0x01;
@@ -379,10 +379,12 @@ $ diff -u /root/.config/srsran/rr.conf.old /root/.config/srsran/rr.conf
      pci = 1;
      // root_seq_idx = 204;
 -    dl_earfcn = 3350;
-+    dl_earfcn = 1600;
-     //ul_earfcn = 21400;
+-    //ul_earfcn = 21400;
++    dl_earfcn = 1300;
++    ul_earfcn = 19300;
      ho_active = false;
      //meas_gap_period = 0; // 0 (inactive), 40 or 80
+     //meas_gap_offset_subframe = [6, 12, 18, 24, 30]
 ```
 
 MME Address, TAC, PLMN ID, DL EARFCN, and Device Argument are updated as belows.
