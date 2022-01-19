@@ -115,24 +115,17 @@ void ogs_pfcp_xact_final(void);
 ogs_pfcp_xact_t *ogs_pfcp_xact_local_create(ogs_pfcp_node_t *node,
         ogs_pfcp_header_t *hdesc, ogs_pkbuf_t *pkbuf,
         void (*cb)(ogs_pfcp_xact_t *xact, void *data), void *data);
-ogs_pfcp_xact_t *ogs_pfcp_xact_remote_create(
-        ogs_pfcp_node_t *node, uint32_t sqn);
 ogs_pfcp_xact_t *ogs_pfcp_xact_cycle(ogs_pfcp_xact_t *xact);
 void ogs_pfcp_xact_delete_all(ogs_pfcp_node_t *node);
 
 int ogs_pfcp_xact_update_tx(ogs_pfcp_xact_t *xact,
         ogs_pfcp_header_t *hdesc, ogs_pkbuf_t *pkbuf);
-int ogs_pfcp_xact_update_rx(ogs_pfcp_xact_t *xact, uint8_t type);
 
 int ogs_pfcp_xact_commit(ogs_pfcp_xact_t *xact);
 void ogs_pfcp_xact_delayed_commit(ogs_pfcp_xact_t *xact, ogs_time_t duration);
 
 int ogs_pfcp_xact_receive(ogs_pfcp_node_t *node,
         ogs_pfcp_header_t *h, ogs_pfcp_xact_t **xact);
-
-ogs_pfcp_xact_t *ogs_pfcp_xact_find(ogs_index_t index);
-ogs_pfcp_xact_t *ogs_pfcp_xact_find_by_xid(
-        ogs_pfcp_node_t *node, uint8_t type, uint32_t xid);
 
 #ifdef __cplusplus
 }
