@@ -10,7 +10,7 @@
 #
 
 PACKAGE="open5gs"
-VERSION="2.2.8"
+VERSION="2.4.3"
 
 print_status() {
     echo
