@@ -33,6 +33,7 @@ extern "C" {
 #define OGS_TLV_MODE_T1_L2              2
 #define OGS_TLV_MODE_T1_L2_I1           3
 #define OGS_TLV_MODE_T2_L2              4
+#define OGS_TLV_MODE_T1                 5
 
 /* ogs_tlv_t struncture */
 
@@ -88,6 +89,8 @@ ogs_tlv_t *ogs_tlv_embed(ogs_tlv_t *parent, uint8_t mode,
 uint32_t ogs_tlv_render(ogs_tlv_t *root, void *data, uint32_t length);
 
 /* ogs_tlv_t parsing functions */
+uint8_t *tlv_get_element(ogs_tlv_t *tlv, uint8_t *blk, uint8_t mode);
+uint8_t *tlv_get_element_fixed(ogs_tlv_t *tlv, uint8_t *blk, uint8_t mode, uint32_t fixed_length);
 ogs_tlv_t *ogs_tlv_parse_block(uint32_t length, void *data, uint8_t mode);
 ogs_tlv_t *ogs_tlv_parse_embedded_block(ogs_tlv_t *tlv, uint8_t mode);
 

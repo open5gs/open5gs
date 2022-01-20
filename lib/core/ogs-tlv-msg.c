@@ -37,38 +37,89 @@ ogs_tlv_desc_t ogs_tlv_desc_more7 = {
 ogs_tlv_desc_t ogs_tlv_desc_more8 = {
     OGS_TLV_MORE, "More", 0, 8, 0, 0, { NULL } };
 
-static ogs_tlv_t *tlv_add_leaf(
-        ogs_tlv_t *parent_tlv, ogs_tlv_t *tlv, ogs_tlv_desc_t *desc, void *msg, uint8_t mode)
+/* Return specific TLV mode based on its TLV description type and the msg
+ * provided mode (used to know the type length) */
+static uint8_t tlv_ctype2mode(ogs_tlv_type_e ctype, uint8_t msg_mode)
 {
+    switch(ctype) {
+    case OGS_TLV_UINT8:
+    case OGS_TLV_UINT16:
+    case OGS_TLV_UINT24:
+    case OGS_TLV_UINT32:
+    case OGS_TLV_INT8:
+    case OGS_TLV_INT16:
+    case OGS_TLV_INT24:
+    case OGS_TLV_INT32:
+    case OGS_TLV_FIXED_STR:
+    case OGS_TLV_VAR_STR:
+    case OGS_TLV_NULL:
+    case OGS_TLV_MORE:
+    case OGS_TLV_COMPOUND:
+    case OGS_TLV_MESSAGE:
+        return msg_mode;
+    case OGS_TV_UINT8:
+    case OGS_TV_UINT16:
+    case OGS_TV_UINT24:
+    case OGS_TV_UINT32:
+    case OGS_TV_INT8:
+    case OGS_TV_INT16:
+    case OGS_TV_INT24:
+    case OGS_TV_INT32:
+    case OGS_TV_FIXED_STR:
+    case OGS_TV_VAR_STR:
+    case OGS_TV_NULL:
+    case OGS_TV_MORE:
+        if (msg_mode == OGS_TLV_MODE_T2_L2)
+            return OGS_TLV_MODE_T1; /* Here return OGS_TLV_MODE_T2 if ever existing */
+        else
+            return OGS_TLV_MODE_T1;
+    default:
+        ogs_assert_if_reached();
+        break;
+    }
+}
+
+static ogs_tlv_t *tlv_add_leaf(
+        ogs_tlv_t *parent_tlv, ogs_tlv_t *tlv, ogs_tlv_desc_t *desc, void *msg, uint8_t msg_mode)
+{
+    uint8_t tlv_mode = tlv_ctype2mode(desc->ctype, msg_mode);
+
     switch (desc->ctype) {
     case OGS_TLV_UINT8:
     case OGS_TLV_INT8:
+    case OGS_TV_UINT8:
+    case OGS_TV_INT8:
     {
         ogs_tlv_uint8_t *v = (ogs_tlv_uint8_t *)msg;
         if (parent_tlv)
-            tlv = ogs_tlv_embed(parent_tlv, mode,
+            tlv = ogs_tlv_embed(parent_tlv, tlv_mode,
                     desc->type, 1, desc->instance, &v->u8);
         else
-            tlv = ogs_tlv_add(tlv, mode, desc->type, 1, desc->instance, &v->u8);
+            tlv = ogs_tlv_add(tlv, tlv_mode, desc->type, 1, desc->instance, &v->u8);
         ogs_expect_or_return_val(tlv, NULL);
         break;
     }
     case OGS_TLV_UINT16:
+    case OGS_TLV_INT16:
+    case OGS_TV_UINT16:
+    case OGS_TV_INT16:
     {
         ogs_tlv_uint16_t *v = (ogs_tlv_uint16_t *)msg;
 
         v->u16 = htobe16(v->u16);
 
         if (parent_tlv)
-            tlv = ogs_tlv_embed(parent_tlv, mode,
+            tlv = ogs_tlv_embed(parent_tlv, tlv_mode,
                     desc->type, 2, desc->instance, &v->u16);
         else
-            tlv = ogs_tlv_add(tlv, mode, desc->type, 2, desc->instance, &v->u16);
+            tlv = ogs_tlv_add(tlv, tlv_mode, desc->type, 2, desc->instance, &v->u16);
         ogs_expect_or_return_val(tlv, NULL);
         break;
     }
     case OGS_TLV_UINT24:
     case OGS_TLV_INT24:
+    case OGS_TV_UINT24:
+    case OGS_TV_INT24:
     {
         ogs_tlv_uint24_t *v = (ogs_tlv_uint24_t *)msg;
 
@@ -76,38 +127,41 @@ static ogs_tlv_t *tlv_add_leaf(
         v->u24 = htobe32(v->u24);
 
         if (parent_tlv)
-            tlv = ogs_tlv_embed(parent_tlv, mode,
+            tlv = ogs_tlv_embed(parent_tlv, tlv_mode,
                     desc->type, 3, desc->instance, &v->u24);
         else
-            tlv = ogs_tlv_add(tlv, mode, desc->type, 3, desc->instance, &v->u24);
+            tlv = ogs_tlv_add(tlv, tlv_mode, desc->type, 3, desc->instance, &v->u24);
         ogs_expect_or_return_val(tlv, NULL);
         break;
     }
     case OGS_TLV_UINT32:
     case OGS_TLV_INT32:
+    case OGS_TV_UINT32:
+    case OGS_TV_INT32:
     {
         ogs_tlv_uint32_t *v = (ogs_tlv_uint32_t *)msg;
 
         v->u32 = htobe32(v->u32);
 
         if (parent_tlv)
-            tlv = ogs_tlv_embed(parent_tlv, mode,
+            tlv = ogs_tlv_embed(parent_tlv, tlv_mode,
                     desc->type, 4, desc->instance, &v->u32);
         else
-            tlv = ogs_tlv_add(tlv, mode,
+            tlv = ogs_tlv_add(tlv, tlv_mode,
                     desc->type, 4, desc->instance, &v->u32);
         ogs_expect_or_return_val(tlv, NULL);
         break;
     }
     case OGS_TLV_FIXED_STR:
+    case OGS_TV_FIXED_STR:
     {
         ogs_tlv_octet_t *v = (ogs_tlv_octet_t *)msg;
 
         if (parent_tlv)
-            tlv = ogs_tlv_embed(parent_tlv, mode,
+            tlv = ogs_tlv_embed(parent_tlv, tlv_mode,
                     desc->type, desc->length, desc->instance, v->data);
         else
-            tlv = ogs_tlv_add(tlv, mode,
+            tlv = ogs_tlv_add(tlv, tlv_mode,
                     desc->type, desc->length, desc->instance, v->data);
         ogs_expect_or_return_val(tlv, NULL);
         break;
@@ -123,21 +177,22 @@ static ogs_tlv_t *tlv_add_leaf(
         }
 
         if (parent_tlv)
-            tlv = ogs_tlv_embed(parent_tlv, mode,
+            tlv = ogs_tlv_embed(parent_tlv, tlv_mode,
                     desc->type, v->len, desc->instance, v->data);
         else
-            tlv = ogs_tlv_add(tlv, mode,
+            tlv = ogs_tlv_add(tlv, tlv_mode,
                     desc->type, v->len, desc->instance, v->data);
         ogs_expect_or_return_val(tlv, NULL);
         break;
     }
     case OGS_TLV_NULL:
+    case OGS_TV_NULL:
     {
         if (parent_tlv)
-            tlv = ogs_tlv_embed(parent_tlv, mode,
+            tlv = ogs_tlv_embed(parent_tlv, tlv_mode,
                     desc->type, 0, desc->instance, NULL);
         else
-            tlv = ogs_tlv_add(tlv, mode,
+            tlv = ogs_tlv_add(tlv, tlv_mode,
                     desc->type, 0, desc->instance, NULL);
         ogs_expect_or_return_val(tlv, NULL);
         break;
@@ -187,10 +242,10 @@ static uint32_t tlv_add_compound(ogs_tlv_t **root, ogs_tlv_t *parent_tlv,
                             desc->vsize, p + offset2);
 
                     if (parent_tlv)
-                        tlv = ogs_tlv_embed(parent_tlv, mode,
+                        tlv = ogs_tlv_embed(parent_tlv, tlv_ctype2mode(desc->ctype, mode),
                                 desc->type, 0, desc->instance, NULL);
                     else
-                        tlv = ogs_tlv_add(tlv, mode,
+                        tlv = ogs_tlv_add(tlv, tlv_ctype2mode(desc->ctype, mode),
                                 desc->type, 0, desc->instance, NULL);
 
                     r = tlv_add_compound(&emb_tlv, tlv, desc,
@@ -227,10 +282,10 @@ static uint32_t tlv_add_compound(ogs_tlv_t **root, ogs_tlv_t *parent_tlv,
                             desc->vsize, p + offset);
 
                     if (parent_tlv)
-                        tlv = ogs_tlv_embed(parent_tlv, mode,
+                        tlv = ogs_tlv_embed(parent_tlv, tlv_ctype2mode(desc->ctype, mode),
                                 desc->type, 0, desc->instance, NULL);
                     else
-                        tlv = ogs_tlv_add(tlv, mode,
+                        tlv = ogs_tlv_add(tlv, tlv_ctype2mode(desc->ctype, mode),
                                 desc->type, 0, desc->instance, NULL);
 
                     r = tlv_add_compound(&emb_tlv, tlv, desc,
@@ -294,18 +349,17 @@ ogs_pkbuf_t *ogs_tlv_build_msg(ogs_tlv_desc_t *desc, void *msg, int mode)
     return pkbuf;
 }
 
-static ogs_tlv_desc_t* tlv_find_desc(uint8_t *desc_index,
-        uint32_t *tlv_offset, ogs_tlv_desc_t *parent_desc, ogs_tlv_t *tlv)
+static ogs_tlv_desc_t* tlv_find_desc_by_type_inst(uint8_t *desc_index,
+        uint32_t *tlv_offset, ogs_tlv_desc_t *parent_desc, uint16_t match_type, uint8_t match_instance)
 {
     ogs_tlv_desc_t *prev_desc = NULL, *desc = NULL;
     int i, offset = 0;
 
     ogs_assert(parent_desc);
-    ogs_assert(tlv);
 
     for (i = 0, desc = parent_desc->child_descs[i]; desc != NULL;
             i++, desc = parent_desc->child_descs[i]) {
-        if (desc->type == tlv->type && desc->instance == tlv->instance) {
+        if (desc->type == match_type && desc->instance == match_instance) {
             *desc_index = i;
             *tlv_offset = offset;
             break;
@@ -324,6 +378,13 @@ static ogs_tlv_desc_t* tlv_find_desc(uint8_t *desc_index,
     return desc;
 }
 
+static ogs_tlv_desc_t* tlv_find_desc(uint8_t *desc_index,
+        uint32_t *tlv_offset, ogs_tlv_desc_t *parent_desc, ogs_tlv_t *tlv)
+{
+    ogs_assert(tlv);
+    return tlv_find_desc_by_type_inst(desc_index, tlv_offset, parent_desc, tlv->type, tlv->instance);
+}
+
 static int tlv_parse_leaf(void *msg, ogs_tlv_desc_t *desc, ogs_tlv_t *tlv)
 {
     ogs_assert(msg);
@@ -331,6 +392,8 @@ static int tlv_parse_leaf(void *msg, ogs_tlv_desc_t *desc, ogs_tlv_t *tlv)
     ogs_assert(tlv);
 
     switch (desc->ctype) {
+    case OGS_TV_UINT8:
+    case OGS_TV_INT8:
     case OGS_TLV_UINT8:
     case OGS_TLV_INT8:
     {
@@ -344,6 +407,8 @@ static int tlv_parse_leaf(void *msg, ogs_tlv_desc_t *desc, ogs_tlv_t *tlv)
         v->u8 = *(uint8_t*)(tlv->value);
         break;
     }
+    case OGS_TV_UINT16:
+    case OGS_TV_INT16:
     case OGS_TLV_UINT16:
     case OGS_TLV_INT16:
     {
@@ -358,6 +423,8 @@ static int tlv_parse_leaf(void *msg, ogs_tlv_desc_t *desc, ogs_tlv_t *tlv)
                ((((uint8_t*)tlv->value)[1]    )&0x00ff);
         break;
     }
+    case OGS_TV_UINT24:
+    case OGS_TV_INT24:
     case OGS_TLV_UINT24:
     case OGS_TLV_INT24:
     {
@@ -373,6 +440,8 @@ static int tlv_parse_leaf(void *msg, ogs_tlv_desc_t *desc, ogs_tlv_t *tlv)
                ((((uint8_t*)tlv->value)[2]    )&0x000000ff);
         break;
     }
+    case OGS_TV_UINT32:
+    case OGS_TV_INT32:
     case OGS_TLV_UINT32:
     case OGS_TLV_INT32:
     {
@@ -389,6 +458,7 @@ static int tlv_parse_leaf(void *msg, ogs_tlv_desc_t *desc, ogs_tlv_t *tlv)
                ((((uint8_t*)tlv->value)[3]    )&0x000000ff);
         break;
     }
+    case OGS_TV_FIXED_STR:
     case OGS_TLV_FIXED_STR:
     {
         ogs_tlv_octet_t *v = (ogs_tlv_octet_t *)msg;
@@ -412,6 +482,7 @@ static int tlv_parse_leaf(void *msg, ogs_tlv_desc_t *desc, ogs_tlv_t *tlv)
         v->len = tlv->length;
         break;
     }
+    case OGS_TV_NULL:
     case OGS_TLV_NULL:
     {
         if (tlv->length != 0) {
@@ -540,6 +611,118 @@ int ogs_tlv_parse_msg(void *msg, ogs_tlv_desc_t *desc, ogs_pkbuf_t *pkbuf,
     }
 
     rv = tlv_parse_compound(msg, desc, root, 0, mode);
+
+    ogs_tlv_free_all(root);
+
+    return rv;
+}
+
+static uint16_t parse_get_element_type(uint8_t *pos, uint8_t mode)
+{
+    uint16_t type;
+
+    switch(mode) {
+    case OGS_TLV_MODE_T1_L1:
+    case OGS_TLV_MODE_T1_L2:
+    case OGS_TLV_MODE_T1_L2_I1:
+    case OGS_TLV_MODE_T1:
+        type = *pos;
+        break;
+    case OGS_TLV_MODE_T2_L2:
+        type = *(pos++) << 8;
+        type += *(pos++);
+        break;
+    default:
+        ogs_assert_if_reached();
+        break;
+    }
+
+    return type;
+}
+
+/* Get TLV element taking into account msg_mode (to know TLV tag length) +
+ * specific TLV information from "desc" (to know whether the specific IE is TLV
+ * or TV, and its expected length in the later case). */
+static uint8_t *tlv_get_element_desc(ogs_tlv_t *tlv, uint8_t *blk, uint8_t msg_mode, ogs_tlv_desc_t *desc)
+{
+    uint8_t instance;
+    uint8_t desc_index = 0;
+    uint32_t tlv_offset = 0;
+    uint16_t tlv_tag;
+    uint8_t tlv_mode;
+    static ogs_tlv_desc_t* tlv_desc;
+
+    tlv_tag = parse_get_element_type(blk, msg_mode);
+    instance = 0;  /* TODO: support instance != 0 if ever really needed by looking it up in pos */
+    tlv_desc = tlv_find_desc_by_type_inst(&desc_index, &tlv_offset, desc, tlv_tag, instance);
+    if (!tlv_desc) {
+        ogs_error("Can't parse find TLV description for type %u", tlv_tag);
+        return NULL;
+    }
+    tlv_mode = tlv_ctype2mode(tlv_desc->ctype, msg_mode);
+
+    if (tlv_mode == OGS_TLV_MODE_T1)
+        return tlv_get_element_fixed(tlv, blk, tlv_mode, tlv_desc->length);
+    return tlv_get_element(tlv, blk, tlv_mode);
+}
+
+/* Similar to ogs_tlv_parse_block(), but taking into account each TLV format from "desc". */
+static ogs_tlv_t *ogs_tlv_parse_block_desc(uint32_t length, void *data, uint8_t msg_mode, ogs_tlv_desc_t *desc)
+{
+    uint8_t *pos = data;
+    uint8_t *blk = data;
+
+    ogs_tlv_t *root = NULL;
+    ogs_tlv_t *prev = NULL;
+    ogs_tlv_t *curr = NULL;
+
+    root = curr = ogs_tlv_get();
+
+    ogs_assert(curr);
+
+    pos = tlv_get_element_desc(curr, pos, msg_mode, desc);
+
+    ogs_assert(pos);
+
+    while(pos - blk < length) {
+        prev = curr;
+
+        curr = ogs_tlv_get();
+        ogs_assert(curr);
+        prev->next = curr;
+
+        pos = tlv_get_element_desc(curr, pos, msg_mode, desc);
+        ogs_assert(pos);
+    }
+
+    ogs_assert(length == (pos - blk));
+
+    return root;
+}
+
+/* Similar to ogs_tlv_parse_msg(), but takes each TLV type from the desc
+ * defintion. This allows parsing messages which have different types of TLVs in
+ * it (for instance GTPv1-C). */
+int ogs_tlv_parse_msg_desc(
+        void *msg, ogs_tlv_desc_t *desc, ogs_pkbuf_t *pkbuf, int msg_mode)
+{
+    int rv;
+    ogs_tlv_t *root;
+
+    ogs_assert(msg);
+    ogs_assert(desc);
+    ogs_assert(pkbuf);
+
+    ogs_assert(desc->ctype == OGS_TLV_MESSAGE);
+    ogs_assert(desc->child_descs[0]);
+
+    root = ogs_tlv_parse_block_desc(pkbuf->len, pkbuf->data, msg_mode, desc);
+    if (root == NULL) {
+        ogs_error("Can't parse TLV message");
+        return OGS_ERROR;
+    }
+
+    rv = tlv_parse_compound(msg, desc, root, 0, msg_mode);
 
     ogs_tlv_free_all(root);
 

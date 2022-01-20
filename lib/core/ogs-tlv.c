@@ -124,6 +124,9 @@ uint32_t ogs_tlv_calc_length(ogs_tlv_t *tlv)
         case OGS_TLV_MODE_T2_L2:
             length += 4;
             break;
+        case OGS_TLV_MODE_T1:
+            length += 1;
+            break;
         default:
             ogs_assert_if_reached();
             break;
@@ -164,6 +167,7 @@ static uint8_t *tlv_put_type(uint32_t type, uint8_t *pos, uint8_t mode)
     case OGS_TLV_MODE_T1_L1:
     case OGS_TLV_MODE_T1_L2:
     case OGS_TLV_MODE_T1_L2_I1:
+    case OGS_TLV_MODE_T1:
         *(pos++) = type & 0xFF;
         break;
     case OGS_TLV_MODE_T2_L2:
@@ -189,6 +193,8 @@ static uint8_t *tlv_put_length(uint32_t length, uint8_t *pos, uint8_t mode)
         *(pos++) = (length >> 8) & 0xFF;
         *(pos++) = length & 0xFF;
         break;
+    case OGS_TLV_MODE_T1:
+        break;
     default:
         ogs_assert_if_reached();
         break;
@@ -210,7 +216,7 @@ static uint8_t *tlv_put_instance(uint8_t instance, uint8_t *pos, uint8_t mode)
     return pos;
 }
 
-static uint8_t *tlv_get_element(ogs_tlv_t *tlv, uint8_t *blk, uint8_t mode)
+uint8_t *tlv_get_element(ogs_tlv_t *tlv, uint8_t *blk, uint8_t mode)
 {
     uint8_t *pos = blk;
 
@@ -237,6 +243,29 @@ static uint8_t *tlv_get_element(ogs_tlv_t *tlv, uint8_t *blk, uint8_t mode)
         tlv->type += *(pos++);
         tlv->length = *(pos++) << 8;
         tlv->length += *(pos++);
+        break;
+    case OGS_TLV_MODE_T1:
+        tlv->type = *(pos++);
+        tlv->length = 0;
+        break;
+    default:
+        ogs_assert_if_reached();
+        break;
+    }
+
+    tlv->value = pos;
+
+    return (pos + ogs_tlv_length(tlv));
+}
+
+uint8_t *tlv_get_element_fixed(ogs_tlv_t *tlv, uint8_t *blk, uint8_t mode, uint32_t fixed_length)
+{
+    uint8_t *pos = blk;
+
+    switch(mode) {
+    case OGS_TLV_MODE_T1:
+        tlv->type = *(pos++);
+        tlv->length = fixed_length;
         break;
     default:
         ogs_assert_if_reached();
