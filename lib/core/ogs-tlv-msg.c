@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
  *
  * This file is part of Open5GS.
  *
@@ -37,7 +38,7 @@ ogs_tlv_desc_t ogs_tlv_desc_more8 = {
     OGS_TLV_MORE, "More", 0, 8, 0, 0, { NULL } };
 
 static ogs_tlv_t *tlv_add_leaf(
-        ogs_tlv_t *parent_tlv, ogs_tlv_t *tlv, ogs_tlv_desc_t *desc, void *msg)
+        ogs_tlv_t *parent_tlv, ogs_tlv_t *tlv, ogs_tlv_desc_t *desc, void *msg, uint8_t mode)
 {
     switch (desc->ctype) {
     case OGS_TLV_UINT8:
@@ -45,10 +46,10 @@ static ogs_tlv_t *tlv_add_leaf(
     {
         ogs_tlv_uint8_t *v = (ogs_tlv_uint8_t *)msg;
         if (parent_tlv)
-            tlv = ogs_tlv_embed(parent_tlv,
+            tlv = ogs_tlv_embed(parent_tlv, mode,
                     desc->type, 1, desc->instance, &v->u8);
         else
-            tlv = ogs_tlv_add(tlv, desc->type, 1, desc->instance, &v->u8);
+            tlv = ogs_tlv_add(tlv, mode, desc->type, 1, desc->instance, &v->u8);
         ogs_expect_or_return_val(tlv, NULL);
         break;
     }
@@ -59,10 +60,10 @@ static ogs_tlv_t *tlv_add_leaf(
         v->u16 = htobe16(v->u16);
 
         if (parent_tlv)
-            tlv = ogs_tlv_embed(parent_tlv,
+            tlv = ogs_tlv_embed(parent_tlv, mode,
                     desc->type, 2, desc->instance, &v->u16);
         else
-            tlv = ogs_tlv_add(tlv, desc->type, 2, desc->instance, &v->u16);
+            tlv = ogs_tlv_add(tlv, mode, desc->type, 2, desc->instance, &v->u16);
         ogs_expect_or_return_val(tlv, NULL);
         break;
     }
@@ -75,10 +76,10 @@ static ogs_tlv_t *tlv_add_leaf(
         v->u24 = htobe32(v->u24);
 
         if (parent_tlv)
-            tlv = ogs_tlv_embed(parent_tlv,
+            tlv = ogs_tlv_embed(parent_tlv, mode,
                     desc->type, 3, desc->instance, &v->u24);
         else
-            tlv = ogs_tlv_add(tlv, desc->type, 3, desc->instance, &v->u24);
+            tlv = ogs_tlv_add(tlv, mode, desc->type, 3, desc->instance, &v->u24);
         ogs_expect_or_return_val(tlv, NULL);
         break;
     }
@@ -90,10 +91,10 @@ static ogs_tlv_t *tlv_add_leaf(
         v->u32 = htobe32(v->u32);
 
         if (parent_tlv)
-            tlv = ogs_tlv_embed(parent_tlv,
+            tlv = ogs_tlv_embed(parent_tlv, mode,
                     desc->type, 4, desc->instance, &v->u32);
         else
-            tlv = ogs_tlv_add(tlv,
+            tlv = ogs_tlv_add(tlv, mode,
                     desc->type, 4, desc->instance, &v->u32);
         ogs_expect_or_return_val(tlv, NULL);
         break;
@@ -103,10 +104,10 @@ static ogs_tlv_t *tlv_add_leaf(
         ogs_tlv_octet_t *v = (ogs_tlv_octet_t *)msg;
 
         if (parent_tlv)
-            tlv = ogs_tlv_embed(parent_tlv,
+            tlv = ogs_tlv_embed(parent_tlv, mode,
                     desc->type, desc->length, desc->instance, v->data);
         else
-            tlv = ogs_tlv_add(tlv,
+            tlv = ogs_tlv_add(tlv, mode,
                     desc->type, desc->length, desc->instance, v->data);
         ogs_expect_or_return_val(tlv, NULL);
         break;
@@ -122,10 +123,10 @@ static ogs_tlv_t *tlv_add_leaf(
         }
 
         if (parent_tlv)
-            tlv = ogs_tlv_embed(parent_tlv,
+            tlv = ogs_tlv_embed(parent_tlv, mode,
                     desc->type, v->len, desc->instance, v->data);
         else
-            tlv = ogs_tlv_add(tlv,
+            tlv = ogs_tlv_add(tlv, mode,
                     desc->type, v->len, desc->instance, v->data);
         ogs_expect_or_return_val(tlv, NULL);
         break;
@@ -133,10 +134,10 @@ static ogs_tlv_t *tlv_add_leaf(
     case OGS_TLV_NULL:
     {
         if (parent_tlv)
-            tlv = ogs_tlv_embed(parent_tlv,
+            tlv = ogs_tlv_embed(parent_tlv, mode,
                     desc->type, 0, desc->instance, NULL);
         else
-            tlv = ogs_tlv_add(tlv,
+            tlv = ogs_tlv_add(tlv, mode,
                     desc->type, 0, desc->instance, NULL);
         ogs_expect_or_return_val(tlv, NULL);
         break;
@@ -150,7 +151,7 @@ static ogs_tlv_t *tlv_add_leaf(
 }
 
 static uint32_t tlv_add_compound(ogs_tlv_t **root, ogs_tlv_t *parent_tlv,
-        ogs_tlv_desc_t *parent_desc, void *msg, int depth)
+        ogs_tlv_desc_t *parent_desc, void *msg, int depth, uint8_t mode)
 {
     ogs_tlv_presence_t *presence_p;
     ogs_tlv_desc_t *desc = NULL, *next_desc = NULL;
@@ -186,15 +187,15 @@ static uint32_t tlv_add_compound(ogs_tlv_t **root, ogs_tlv_t *parent_tlv,
                             desc->vsize, p + offset2);
 
                     if (parent_tlv)
-                        tlv = ogs_tlv_embed(parent_tlv,
+                        tlv = ogs_tlv_embed(parent_tlv, mode,
                                 desc->type, 0, desc->instance, NULL);
                     else
-                        tlv = ogs_tlv_add(tlv,
+                        tlv = ogs_tlv_add(tlv, mode,
                                 desc->type, 0, desc->instance, NULL);
 
                     r = tlv_add_compound(&emb_tlv, tlv, desc,
                             p + offset2 + sizeof(ogs_tlv_presence_t),
-                            depth + 1);
+                            depth + 1, mode);
                     ogs_expect_or_return_val(r > 0 && emb_tlv, 0);
                     count += 1 + r;
                 } else {
@@ -204,7 +205,7 @@ static uint32_t tlv_add_compound(ogs_tlv_t **root, ogs_tlv_t *parent_tlv,
                             desc->instance, desc->ctype, desc->vsize,
                             p + offset2);
 
-                    tlv = tlv_add_leaf(parent_tlv, tlv, desc, p + offset2);
+                    tlv = tlv_add_leaf(parent_tlv, tlv, desc, p + offset2, mode);
                     ogs_expect_or_return_val(tlv, 0);
                     count++;
                 }
@@ -226,15 +227,15 @@ static uint32_t tlv_add_compound(ogs_tlv_t **root, ogs_tlv_t *parent_tlv,
                             desc->vsize, p + offset);
 
                     if (parent_tlv)
-                        tlv = ogs_tlv_embed(parent_tlv,
+                        tlv = ogs_tlv_embed(parent_tlv, mode,
                                 desc->type, 0, desc->instance, NULL);
                     else
-                        tlv = ogs_tlv_add(tlv,
+                        tlv = ogs_tlv_add(tlv, mode,
                                 desc->type, 0, desc->instance, NULL);
 
                     r = tlv_add_compound(&emb_tlv, tlv, desc,
                             p + offset + sizeof(ogs_tlv_presence_t),
-                            depth + 1);
+                            depth + 1, mode);
                     ogs_expect_or_return_val(r > 0 && emb_tlv, 0);
                     count += 1 + r;
                 } else {
@@ -244,7 +245,7 @@ static uint32_t tlv_add_compound(ogs_tlv_t **root, ogs_tlv_t *parent_tlv,
                             desc->instance, desc->ctype, desc->vsize,
                             p + offset);
 
-                    tlv = tlv_add_leaf(parent_tlv, tlv, desc, p + offset);
+                    tlv = tlv_add_leaf(parent_tlv, tlv, desc, p + offset, mode);
                     ogs_expect_or_return_val(tlv, 0);
                     count++;
                 }
@@ -271,10 +272,10 @@ ogs_pkbuf_t *ogs_tlv_build_msg(ogs_tlv_desc_t *desc, void *msg, int mode)
     ogs_assert(desc->ctype == OGS_TLV_MESSAGE);
 
     if (desc->child_descs[0]) {
-        r = tlv_add_compound(&root, NULL, desc, msg, 0);
+        r = tlv_add_compound(&root, NULL, desc, msg, 0, mode);
         ogs_expect_or_return_val(r > 0 && root, NULL);
 
-        length = ogs_tlv_calc_length(root, mode);
+        length = ogs_tlv_calc_length(root);
     } else {
         length = 0;
     }
@@ -284,7 +285,7 @@ ogs_pkbuf_t *ogs_tlv_build_msg(ogs_tlv_desc_t *desc, void *msg, int mode)
     ogs_pkbuf_put(pkbuf, length);
 
     if (desc->child_descs[0]) {
-        rendlen = ogs_tlv_render(root, pkbuf->data, length, mode);
+        rendlen = ogs_tlv_render(root, pkbuf->data, length);
         ogs_expect_or_return_val(rendlen == length, NULL);
 
         ogs_tlv_free_all(root);

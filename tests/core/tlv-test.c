@@ -98,7 +98,7 @@ void ogs_tlv_test_check_embed_ogs_tlv_test(abts_case *tc, ogs_tlv_t *root_tlv, i
     memset(parent_block, 0x00, sizeof(parent_block));
 
     parent_block_len = ogs_tlv_render(root_tlv, parent_block,
-        sizeof(parent_block), mode);
+        sizeof(parent_block));
 
     ogs_tlv_free_all(root_tlv);
     ABTS_INT_EQUAL(tc, ogs_tlv_pool_avail(), ogs_core()->tlv.pool);
@@ -320,18 +320,18 @@ static void test1_func(abts_case *tc, void *data)
     ogs_tlv_test_set_ogs_tlv_value();
 
     /* tlv encoding for test */
-    root_tlv = ogs_tlv_add(NULL,tlv_element[0].type,
+    root_tlv = ogs_tlv_add(NULL, mode, tlv_element[0].type,
         tlv_element[0].length, tlv_element[0].instance, tlv_element[0].value);
 
     for (idx = 1; idx < 4; idx++) {
-        ogs_tlv_add(root_tlv, tlv_element[idx].type,
+        ogs_tlv_add(root_tlv, mode, tlv_element[idx].type,
             tlv_element[idx].length, tlv_element[idx].instance,
             tlv_element[idx].value);
     }
 
     memset(parent_block, 0x00, sizeof(parent_block));
     parent_block_len = ogs_tlv_render(root_tlv, parent_block,
-        sizeof(parent_block), mode);
+        sizeof(parent_block));
 
     switch (mode) {
     case OGS_TLV_MODE_T2_L2:
@@ -434,13 +434,13 @@ static void test2_func(abts_case *tc, void *data)
     ogs_tlv_test_set_ogs_tlv_value();
 
     /* Tlv Encoding for embeded ogs_tlv_t */
-    embed_tlv = ogs_tlv_add(NULL, tlv_element[2].type,
+    embed_tlv = ogs_tlv_add(NULL, mode, tlv_element[2].type,
         tlv_element[2].length, tlv_element[2].instance, tlv_element[2].value);
-    ogs_tlv_add(embed_tlv,tlv_element[3].type,
+    ogs_tlv_add(embed_tlv, mode, tlv_element[3].type,
         tlv_element[3].length, tlv_element[3].instance, tlv_element[3].value);
 
     embed_block_len = ogs_tlv_render(embed_tlv, embed_block,
-        sizeof(embed_block), mode);
+        sizeof(embed_block));
     switch (mode) {
     case OGS_TLV_MODE_T2_L2:
     case OGS_TLV_MODE_T1_L2_I1:
@@ -457,12 +457,12 @@ static void test2_func(abts_case *tc, void *data)
     ogs_tlv_free_all(embed_tlv);
     ABTS_INT_EQUAL(tc, ogs_tlv_pool_avail(), ogs_core()->tlv.pool);
 
-    root_tlv = ogs_tlv_add(NULL,tlv_element[0].type,
+    root_tlv = ogs_tlv_add(NULL, mode, tlv_element[0].type,
         tlv_element[0].length, tlv_element[0].instance, tlv_element[0].value);
 
-    ogs_tlv_add(root_tlv, EMBED_TLV_TYPE, embed_block_len,
+    ogs_tlv_add(root_tlv, mode, EMBED_TLV_TYPE, embed_block_len,
             EMBED_TLV_INSTANCE, embed_block);
-    ogs_tlv_add(root_tlv,tlv_element[4].type,
+    ogs_tlv_add(root_tlv, mode, tlv_element[4].type,
         tlv_element[4].length, tlv_element[4].instance, tlv_element[4].value);
 
     ogs_tlv_test_check_embed_ogs_tlv_test(tc, root_tlv, mode);
@@ -482,15 +482,15 @@ static void test3_func(abts_case *tc, void *data)
     ogs_tlv_test_set_ogs_tlv_value();
 
     /* Tlv Encoding for embeded ogs_tlv_t */
-    root_tlv = ogs_tlv_add(NULL,tlv_element[0].type,
+    root_tlv = ogs_tlv_add(NULL, mode, tlv_element[0].type,
         tlv_element[0].length, tlv_element[0].instance, tlv_element[0].value);
-    parent_tlv= ogs_tlv_add(root_tlv, EMBED_TLV_TYPE, 0, EMBED_TLV_INSTANCE, NULL);
-    ogs_tlv_add(root_tlv,tlv_element[4].type,
+    parent_tlv= ogs_tlv_add(root_tlv, mode, EMBED_TLV_TYPE, 0, EMBED_TLV_INSTANCE, NULL);
+    ogs_tlv_add(root_tlv, mode, tlv_element[4].type,
         tlv_element[4].length, tlv_element[4].instance, tlv_element[4].value);
 
-    ogs_tlv_embed(parent_tlv,tlv_element[2].type,
+    ogs_tlv_embed(parent_tlv, mode, tlv_element[2].type,
         tlv_element[2].length, tlv_element[2].instance, tlv_element[2].value);
-    ogs_tlv_embed(parent_tlv,tlv_element[3].type,
+    ogs_tlv_embed(parent_tlv, mode, tlv_element[3].type,
         tlv_element[3].length, tlv_element[3].instance, tlv_element[3].value);
 
     ogs_tlv_test_check_embed_ogs_tlv_test(tc, root_tlv, mode);
@@ -512,16 +512,17 @@ static void test4_func(abts_case *tc, void *data)
 
     ogs_tlv_test_set_ogs_tlv_value();
 
-    root_tlv = ogs_tlv_copy(tlv_buff, sizeof(tlv_buff),
+    root_tlv = ogs_tlv_copy(tlv_buff, sizeof(tlv_buff), mode,
         tlv_element[0].type, tlv_element[0].length,
         tlv_element[0].instance, tlv_element[0].value);
-    parent_tlv = ogs_tlv_add(root_tlv, EMBED_TLV_TYPE, 0, EMBED_TLV_INSTANCE, NULL);
-    ogs_tlv_add(root_tlv, tlv_element[4].type, tlv_element[4].length,
+    parent_tlv = ogs_tlv_add(root_tlv, mode, EMBED_TLV_TYPE, 0,
+                        EMBED_TLV_INSTANCE, NULL);
+    ogs_tlv_add(root_tlv, mode, tlv_element[4].type, tlv_element[4].length,
         tlv_element[4].instance, tlv_element[4].value);
 
-    ogs_tlv_embed(parent_tlv,tlv_element[2].type,
+    ogs_tlv_embed(parent_tlv, mode, tlv_element[2].type,
         tlv_element[2].length, tlv_element[2].instance, tlv_element[2].value);
-    ogs_tlv_embed(parent_tlv,tlv_element[3].type,
+    ogs_tlv_embed(parent_tlv, mode, tlv_element[3].type,
         tlv_element[3].length, tlv_element[3].instance, tlv_element[3].value);
 
     memset(tlv_element[2].value, 0x00, tlv_element[2].length);
@@ -545,13 +546,13 @@ static void test5_func(abts_case *tc, void *data)
 
     /* tlv encoding for test */
     c_16 = htobe16(c_16);
-    root_tlv = ogs_tlv_add(NULL, 10, 2, 0, (uint8_t*)&c_16);
+    root_tlv = ogs_tlv_add(NULL, mode, 10, 2, 0, (uint8_t*)&c_16);
     c_32 = htobe32(c_32);
-    ogs_tlv_add(root_tlv, 20, 4, 0, (uint8_t*)&c_32);
+    ogs_tlv_add(root_tlv, mode, 20, 4, 0, (uint8_t*)&c_32);
 
     memset(parent_block, 0x00, sizeof(parent_block));
     parent_block_len = ogs_tlv_render(root_tlv, parent_block,
-        sizeof(parent_block), mode);
+        sizeof(parent_block));
 
     ogs_tlv_free_all(root_tlv);
     ABTS_INT_EQUAL(tc, ogs_tlv_pool_avail(), ogs_core()->tlv.pool);
