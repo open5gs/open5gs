@@ -158,7 +158,7 @@ uint32_t ogs_tlv_calc_count(ogs_tlv_t *tlv)
 }
 
 static uint8_t *tlv_put_type(uint32_t type, uint8_t *pos, uint8_t mode)
-{    
+{
     switch(mode) {
     case OGS_TLV_MODE_T1_L1:
     case OGS_TLV_MODE_T1_L2:
@@ -268,7 +268,7 @@ ogs_tlv_t *ogs_tlv_find_root(ogs_tlv_t *tlv)
     return head;
 }
 
-ogs_tlv_t *ogs_tlv_add(ogs_tlv_t *head, 
+ogs_tlv_t *ogs_tlv_add(ogs_tlv_t *head,
     uint32_t type, uint32_t length, uint8_t instance, void *value)
 {
     ogs_tlv_t *curr = head;
@@ -327,7 +327,7 @@ ogs_tlv_t *ogs_tlv_copy(void *buff, uint32_t buff_len,
     return new;
 }
 
-ogs_tlv_t *ogs_tlv_embed(ogs_tlv_t *parent, 
+ogs_tlv_t *ogs_tlv_embed(ogs_tlv_t *parent,
     uint32_t type, uint32_t length, uint8_t instance, void *value)
 {
     ogs_tlv_t *new = NULL, *root = NULL;
@@ -364,7 +364,7 @@ ogs_tlv_t *ogs_tlv_embed(ogs_tlv_t *parent,
     return new;
 }
 
-uint32_t ogs_tlv_render(ogs_tlv_t *root, 
+uint32_t ogs_tlv_render(ogs_tlv_t *root,
     void *data, uint32_t length, uint8_t mode)
 {
     ogs_tlv_t *curr = root;

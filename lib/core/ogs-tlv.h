@@ -74,11 +74,11 @@ void ogs_tlv_final(void);
 uint32_t ogs_tlv_pool_avail(void);
 
 /* ogs_tlv_t encoding functions */
-ogs_tlv_t *ogs_tlv_add(ogs_tlv_t *head, 
+ogs_tlv_t *ogs_tlv_add(ogs_tlv_t *head,
     uint32_t type, uint32_t length, uint8_t instance, void *value);
 ogs_tlv_t *ogs_tlv_copy(void *buff, uint32_t buff_len,
     uint32_t type, uint32_t length, uint8_t instance, void *value);
-ogs_tlv_t *ogs_tlv_embed(ogs_tlv_t *parent, 
+ogs_tlv_t *ogs_tlv_embed(ogs_tlv_t *parent,
     uint32_t type, uint32_t length, uint8_t instance, void *value);
 
 uint32_t ogs_tlv_render(
