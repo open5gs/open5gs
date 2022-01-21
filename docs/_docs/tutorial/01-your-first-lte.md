@@ -19,6 +19,10 @@ This document will be described with the following equipment.
  - sysmoUSIM-SJS1
  - 10Mhz GPS-DO(Optional)
 
+This tutorial uses PLMN 901/70 (MCC 901 and MNC 70) to match the Sysmocom SIM Cards default values.
+If you are planning on operating a network beyond a lab, you will need a PLMN of your own.
+The ITU has allocated PLMN 999/99 for Private Networks, and 001/01 for test networks, however it is worth noting many devices will not attach to networks using these PLMNs.
+
 ### Overall Physical Setup
 ---
 
@@ -88,7 +92,7 @@ SMSP: ffffffffffffffffffffffffffffffffffffffffffffffffe1ffffffffffffffffffffffff
 
 ###### Program your SIM card like the followings:
 ```
-./pySim-prog.py -p 0 -n Open5GS -a 62416296 -s 8988211000000213010 -i 310789012345301 -x 999 -y 99 -k 82E9053A1882085FF2C020359938DAE9 -o BFD5771AAF4F6728E9BC6EF2C2533BDB
+./pySim-prog.py -p 0 -n Open5GS -a 62416296 -s 8988211000000213010 -i 310789012345301 -x 901 -y 70 -k 82E9053A1882085FF2C020359938DAE9 -o BFD5771AAF4F6728E9BC6EF2C2533BDB
 Using PC/SC reader (dev=0) interface
 Insert card now (or CTRL-C to cancel)
 Autodetected card type: sysmoUSIM-SJS1
@@ -96,9 +100,9 @@ Generated card parameters :
  > Name    : Open5GS
  > SMSP    : e1ffffffffffffffffffffffff0581005155f5ffffffffffff000000
  > ICCID   : 8988211000000213010
- > MCC/MNC : 999/99
+ > MCC/MNC : 901/70
  > IMSI    : 310789012345301
- > Ki      : 82E9053A1882085FF2C020359938DAE9
+ > Ki      : 82E9053A1882085FF2C020357038DAE9
  > OPC     : BFD5771AAF4F6728E9BC6EF2C2533BDB
  > ACC     : None
 
@@ -194,7 +198,7 @@ OPc : 625150E2A943E3353DD23554101CAFD4
 
 If you programmed USIM using a card reader like me, you should use your SIM information.
 ```
-MCC/MNC : 999/99
+MCC/MNC : 901/70
 IMSI : 310789012345301
 K : 82E9053A1882085FF2C020359938DAE9
 OPc : BFD5771AAF4F6728E9BC6EF2C2533BDB  
@@ -224,16 +228,16 @@ $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
        plmn_id:
 -        mcc: 901
 -        mnc: 70
-+        mcc: 999
-+        mnc: 99
++        mcc: 901
++        mnc: 70
        mme_gid: 2
        mme_code: 1
      tai:
        plmn_id:
 -        mcc: 901
 -        mnc: 70
-+        mcc: 999
-+        mnc: 99
++        mcc: 901
++        mnc: 70
        tac: 1
      security:
          integrity_order : [ EIA2, EIA1, EIA0 ]
@@ -249,8 +253,8 @@ $ diff -u ./examples/amf.yaml amf.yaml
        - plmn_id:
 -          mcc: 901
 -          mnc: 70
-+          mcc: 999
-+          mnc: 99
++          mcc: 901
++          mnc: 70
          amf_id:
            region: 2
            set: 1
@@ -258,15 +262,15 @@ $ diff -u ./examples/amf.yaml amf.yaml
        - plmn_id:
 -          mcc: 901
 -          mnc: 70
-+          mcc: 999
-+          mnc: 99
++          mcc: 901
++          mnc: 70
          tac: 1
      plmn_support:
        - plmn_id:
 -          mcc: 901
 -          mnc: 70
-+          mcc: 999
-+          mnc: 99
++          mcc: 901
++          mnc: 70
          s_nssai:
            - sst: 1
      security:
@@ -332,8 +336,8 @@ $ diff -u /root/.config/srsran/enb.conf.old /root/.config/srsran/enb.conf
 -mcc = 001
 -mnc = 01
 -mme_addr = 127.0.1.100
-+mcc = 999
-+mnc = 99
++mcc = 901
++mnc = 70
 +mme_addr = 127.0.0.2
  gtp_bind_addr = 127.0.1.1
  s1c_bind_addr = 127.0.1.1
@@ -392,7 +396,7 @@ MME Address, TAC, PLMN ID, DL EARFCN, and Device Argument are updated as belows.
 ```
 MME Address : 127.0.0.2
 TAC : 1
-PLMN ID : MNC(999), MCC(99) programmed USIM with a card reader
+PLMN ID : MNC(901), MCC(70) programmed USIM with a card reader
 DL EARFCN : Band-3 - from your Phone
 Device Argument : Clock source from external GPS-DO
 ```
