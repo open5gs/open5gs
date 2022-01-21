@@ -324,7 +324,7 @@ int ogs_fqdn_parse(char *dst, char *src, int length)
     int i = 0, j = 0;
     uint8_t len = 0;
 
-    while (i < length) {
+    while (i+1 < length) {
         len = src[i++];
         if ((j + len + 1) > length) {
             ogs_error("Invalid APN encoding[len:%d] + 1 > length[%d]",
@@ -336,7 +336,7 @@ int ogs_fqdn_parse(char *dst, char *src, int length)
         i += len;
         j += len;
         
-        if (i < length)
+        if (i+1 < length)
             dst[j++] = '.';
         else
             dst[j] = 0;
