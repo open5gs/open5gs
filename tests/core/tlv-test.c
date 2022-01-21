@@ -122,7 +122,7 @@ void ogs_tlv_test_check_embed_ogs_tlv_test(abts_case *tc, ogs_tlv_t *root_tlv, i
 
         /* embedded ogs_tlv_t */
         ABTS_INT_EQUAL(tc, *(pos++), tlv_element[2].type >> 8);
-        ABTS_INT_EQUAL(tc, *(pos++), tlv_element[2].type & 0xFF);    
+        ABTS_INT_EQUAL(tc, *(pos++), tlv_element[2].type & 0xFF);
         ABTS_INT_EQUAL(tc, *(pos++), tlv_element[2].length >> 8);
         ABTS_INT_EQUAL(tc, *(pos++), tlv_element[2].length & 0xFF);
         for(m = 0; m < tlv_element[2].length; m++)
@@ -130,7 +130,7 @@ void ogs_tlv_test_check_embed_ogs_tlv_test(abts_case *tc, ogs_tlv_t *root_tlv, i
 
 
         ABTS_INT_EQUAL(tc, *(pos++), tlv_element[3].type >> 8);
-        ABTS_INT_EQUAL(tc, *(pos++), tlv_element[3].type & 0xFF);    
+        ABTS_INT_EQUAL(tc, *(pos++), tlv_element[3].type & 0xFF);
         ABTS_INT_EQUAL(tc, *(pos++), tlv_element[3].length >> 8);
         ABTS_INT_EQUAL(tc, *(pos++), tlv_element[3].length & 0xFF);
         for(m = 0; m < tlv_element[3].length; m++)
@@ -158,14 +158,14 @@ void ogs_tlv_test_check_embed_ogs_tlv_test(abts_case *tc, ogs_tlv_t *root_tlv, i
         ABTS_INT_EQUAL(tc, *(pos++), 306 & 0xFF);
 
         /* embedded ogs_tlv_t */
-        ABTS_INT_EQUAL(tc, *(pos++), tlv_element[2].type & 0xFF);    
+        ABTS_INT_EQUAL(tc, *(pos++), tlv_element[2].type & 0xFF);
         ABTS_INT_EQUAL(tc, *(pos++), tlv_element[2].length >> 8);
         ABTS_INT_EQUAL(tc, *(pos++), tlv_element[2].length & 0xFF);
         for(m = 0; m < tlv_element[2].length; m++)
             ABTS_INT_EQUAL(tc, *(pos++), tlv_element[2].val_char);
 
 
-        ABTS_INT_EQUAL(tc, *(pos++), tlv_element[3].type & 0xFF);    
+        ABTS_INT_EQUAL(tc, *(pos++), tlv_element[3].type & 0xFF);
         ABTS_INT_EQUAL(tc, *(pos++), tlv_element[3].length >> 8);
         ABTS_INT_EQUAL(tc, *(pos++), tlv_element[3].length & 0xFF);
         for(m = 0; m < tlv_element[3].length; m++)
@@ -194,18 +194,18 @@ void ogs_tlv_test_check_embed_ogs_tlv_test(abts_case *tc, ogs_tlv_t *root_tlv, i
         ABTS_INT_EQUAL(tc, *(pos++), EMBED_TLV_INSTANCE);
 
         /* embedded ogs_tlv_t */
-        ABTS_INT_EQUAL(tc, *(pos++), tlv_element[2].type & 0xFF);    
+        ABTS_INT_EQUAL(tc, *(pos++), tlv_element[2].type & 0xFF);
         ABTS_INT_EQUAL(tc, *(pos++), tlv_element[2].length >> 8);
         ABTS_INT_EQUAL(tc, *(pos++), tlv_element[2].length & 0xFF);
-        ABTS_INT_EQUAL(tc, *(pos++), tlv_element[2].instance & 0xFF);    
+        ABTS_INT_EQUAL(tc, *(pos++), tlv_element[2].instance & 0xFF);
         for(m = 0; m < tlv_element[2].length; m++)
             ABTS_INT_EQUAL(tc, *(pos++), tlv_element[2].val_char);
 
 
-        ABTS_INT_EQUAL(tc, *(pos++), tlv_element[3].type & 0xFF);    
+        ABTS_INT_EQUAL(tc, *(pos++), tlv_element[3].type & 0xFF);
         ABTS_INT_EQUAL(tc, *(pos++), tlv_element[3].length >> 8);
         ABTS_INT_EQUAL(tc, *(pos++), tlv_element[3].length & 0xFF);
-        ABTS_INT_EQUAL(tc, *(pos++), tlv_element[3].instance & 0xFF);    
+        ABTS_INT_EQUAL(tc, *(pos++), tlv_element[3].instance & 0xFF);
         for(m = 0; m < tlv_element[3].length; m++)
             ABTS_INT_EQUAL(tc, *(pos++), tlv_element[3].val_char);
 
@@ -304,7 +304,7 @@ void ogs_tlv_test_check_embed_ogs_tlv_test(abts_case *tc, ogs_tlv_t *root_tlv, i
 
     ogs_tlv_free_all(parsed_tlv);
     ABTS_INT_EQUAL(tc, ogs_tlv_pool_avail(), ogs_core()->tlv.pool);
-	
+
 	return;
 }
 
@@ -417,7 +417,7 @@ static void test1_func(abts_case *tc, void *data)
 
     ogs_tlv_free_all(parsed_tlv);
     ABTS_INT_EQUAL(tc, ogs_tlv_pool_avail(), ogs_core()->tlv.pool);
-    
+
     return;
 }
 
@@ -460,7 +460,7 @@ static void test2_func(abts_case *tc, void *data)
     root_tlv = ogs_tlv_add(NULL,tlv_element[0].type,
         tlv_element[0].length, tlv_element[0].instance, tlv_element[0].value);
 
-    ogs_tlv_add(root_tlv, EMBED_TLV_TYPE, embed_block_len, 
+    ogs_tlv_add(root_tlv, EMBED_TLV_TYPE, embed_block_len,
             EMBED_TLV_INSTANCE, embed_block);
     ogs_tlv_add(root_tlv,tlv_element[4].type,
         tlv_element[4].length, tlv_element[4].instance, tlv_element[4].value);
@@ -513,10 +513,10 @@ static void test4_func(abts_case *tc, void *data)
     ogs_tlv_test_set_ogs_tlv_value();
 
     root_tlv = ogs_tlv_copy(tlv_buff, sizeof(tlv_buff),
-        tlv_element[0].type, tlv_element[0].length, 
+        tlv_element[0].type, tlv_element[0].length,
         tlv_element[0].instance, tlv_element[0].value);
     parent_tlv = ogs_tlv_add(root_tlv, EMBED_TLV_TYPE, 0, EMBED_TLV_INSTANCE, NULL);
-    ogs_tlv_add(root_tlv, tlv_element[4].type, tlv_element[4].length, 
+    ogs_tlv_add(root_tlv, tlv_element[4].type, tlv_element[4].length,
         tlv_element[4].instance, tlv_element[4].value);
 
     ogs_tlv_embed(parent_tlv,tlv_element[2].type,
@@ -679,7 +679,7 @@ typedef struct _tlv_attach_req {
 extern tlv_desc_t tlv_desc_attach_req;
 
 /* Sample source for tlv_msg */
-tlv_desc_t tlv_desc_authorization_policy_support0 = 
+tlv_desc_t tlv_desc_authorization_policy_support0 =
 {
     TLV_UINT8,
     "Auth Policy0",
@@ -689,7 +689,7 @@ tlv_desc_t tlv_desc_authorization_policy_support0 =
     sizeof(tlv_authorization_policy_support_t),
     { NULL }
 };
-tlv_desc_t tlv_desc_authorization_policy_support2 = 
+tlv_desc_t tlv_desc_authorization_policy_support2 =
 {
     TLV_UINT8,
     "Auth Policy2",
@@ -700,13 +700,13 @@ tlv_desc_t tlv_desc_authorization_policy_support2 =
     { NULL }
 };
 
-tlv_desc_t tlv_desc_client_security_history = 
+tlv_desc_t tlv_desc_client_security_history =
 {
     TLV_COMPOUND,
     "Sec History",
     TLV_CLIENT_SECURITY_HISTORY_TYPE,
     TLV_CLIENT_SECURITY_HISTORY_LEN,
-    0, 
+    0,
     sizeof(tlv_client_security_history_t),
     {
         &tlv_desc_authorization_policy_support0,
@@ -715,13 +715,13 @@ tlv_desc_t tlv_desc_client_security_history =
     }
 };
 
-tlv_desc_t tlv_desc_client_info = 
+tlv_desc_t tlv_desc_client_info =
 {
     TLV_COMPOUND,
     "Client Info",
     TLV_CLIENT_INFO_TYPE,
     TLV_CLIENT_INFO_LEN,
-    0, 
+    0,
     sizeof(tlv_client_info_t),
     {
         &tlv_desc_client_security_history,
@@ -729,24 +729,24 @@ tlv_desc_t tlv_desc_client_info =
     }
 };
 
-tlv_desc_t tlv_desc_server_name = 
+tlv_desc_t tlv_desc_server_name =
 {
     TLV_VAR_STR,
     "Server Name",
     TLV_SERVER_NAME_TYPE,
     TLV_SERVER_NAME_LEN,
-    0, 
+    0,
     sizeof(tlv_server_name_t),
     { NULL }
 };
 
-tlv_desc_t tlv_desc_server_info = 
+tlv_desc_t tlv_desc_server_info =
 {
     TLV_COMPOUND,
     "Server Info",
     TLV_SERVER_INFO_TYPE,
     TLV_SERVER_INFO_LEN,
-    0, 
+    0,
     sizeof(tlv_server_info_t),
     {
         &tlv_desc_server_name, &tlv_desc_more2,
@@ -783,16 +783,16 @@ static void test6_func(abts_case *tc, void *data)
             authorization_policy_support2.presence = 1;
     reqv.client_info.client_security_history.
             authorization_policy_support2.u8 = 0x9;
-   
+
     reqv.server_info.presence = 1;
     reqv.server_info.server_name[0].presence = 1;
-    reqv.server_info.server_name[0].data = 
+    reqv.server_info.server_name[0].data =
         (uint8_t*)"\x11\x22\x33\x44\x55\x66";
     reqv.server_info.server_name[0].len = 6;
 
     reqv.server_info.presence = 1;
     reqv.server_info.server_name[1].presence = 1;
-    reqv.server_info.server_name[1].data = 
+    reqv.server_info.server_name[1].data =
         (uint8_t*)"\xaa\xbb\xcc\xdd\xee\xff";
     reqv.server_info.server_name[1].len = 6;
 
@@ -804,8 +804,8 @@ static void test6_func(abts_case *tc, void *data)
     "19000600 aabbccdd eeff"
 
     ABTS_INT_EQUAL(tc, 42, req->len);
-    ABTS_TRUE(tc, memcmp(req->payload, 
-        CORE_HEX(TEST_TLV_BUILD_MSG, strlen(TEST_TLV_BUILD_MSG), testbuf), 
+    ABTS_TRUE(tc, memcmp(req->payload,
+        CORE_HEX(TEST_TLV_BUILD_MSG, strlen(TEST_TLV_BUILD_MSG), testbuf),
         req->len) == 0);
 
     /* Initialize message value structure */
@@ -816,14 +816,14 @@ static void test6_func(abts_case *tc, void *data)
             OGS_TLV_MODE_T1_L2_I1);
 
     ABTS_INT_EQUAL(tc, 1, reqv2.client_info.presence);
-    ABTS_INT_EQUAL(tc, 1, 
+    ABTS_INT_EQUAL(tc, 1,
             reqv2.client_info.client_security_history.presence);
-    ABTS_INT_EQUAL(tc, 1, 
+    ABTS_INT_EQUAL(tc, 1,
             reqv2.client_info.client_security_history.
                         authorization_policy_support0.presence);
     ABTS_INT_EQUAL(tc, 0x3, reqv2.client_info.
             client_security_history.authorization_policy_support0.u8);
-    ABTS_INT_EQUAL(tc, 1, 
+    ABTS_INT_EQUAL(tc, 1,
             reqv2.client_info.client_security_history.
                         authorization_policy_support2.presence);
     ABTS_INT_EQUAL(tc, 0x9, reqv2.client_info.
@@ -833,10 +833,10 @@ static void test6_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 1, reqv2.server_info.server_name[0].presence);
     ABTS_INT_EQUAL(tc, 1, reqv2.server_info.server_name[1].presence);
     ABTS_INT_EQUAL(tc, 6, reqv2.server_info.server_name[0].len);
-    ABTS_TRUE(tc, memcmp(reqv2.server_info.server_name[0].data, 
+    ABTS_TRUE(tc, memcmp(reqv2.server_info.server_name[0].data,
                 (uint8_t*)"\x11\x22\x33\x44\x55\x66", 6) == 0);
     ABTS_INT_EQUAL(tc, 6, reqv2.server_info.server_name[1].len);
-    ABTS_TRUE(tc, memcmp(reqv2.server_info.server_name[1].data, 
+    ABTS_TRUE(tc, memcmp(reqv2.server_info.server_name[1].data,
                 (uint8_t*)"\xaa\xbb\xcc\xdd\xee\xff", 6) == 0);
 
     pkbuf_free(req);
