@@ -28,7 +28,7 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2021-11-15 15:24:45.969895 by acetcom
+ * Created on: 2022-01-22 09:24:28.368722 by acetcom
  * from 24301-g40.docx
  ******************************************************************************/
 
@@ -3014,7 +3014,7 @@ int ogs_nas_eps_decode_access_point_name(ogs_nas_access_point_name_t *access_poi
 
     {
         char apn[OGS_MAX_APN_LEN+1];
-        access_point_name->length = ogs_fqdn_parse(apn, access_point_name->apn, ogs_min(access_point_name->length, OGS_MAX_APN_LEN+1));
+        access_point_name->length = ogs_fqdn_parse(apn, access_point_name->apn, ogs_min(access_point_name->length, OGS_MAX_APN_LEN));
         if (access_point_name->length > 0) {
             ogs_cpystrn(access_point_name->apn, apn, ogs_min(access_point_name->length, OGS_MAX_APN_LEN)+1);
         } else {

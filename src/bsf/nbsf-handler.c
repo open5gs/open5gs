@@ -104,7 +104,7 @@ bool bsf_nbsf_management_handle_pcf_binding(
                 ogs_assert(0 < ogs_fqdn_parse(
                     fqdn, RecvPcfBinding->pcf_fqdn,
                     ogs_min(strlen(RecvPcfBinding->pcf_fqdn),
-                        OGS_MAX_FQDN_LEN+1)));
+                        OGS_MAX_FQDN_LEN)));
 
                 if (sess->pcf_fqdn)
                     ogs_free(sess->pcf_fqdn);

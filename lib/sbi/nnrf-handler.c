@@ -247,10 +247,16 @@ bool ogs_sbi_nnrf_handle_nf_profile(ogs_sbi_nf_instance_t *nf_instance,
     if (NFProfile->is_heart_beat_timer == true)
         nf_instance->time.heartbeat_interval = NFProfile->heart_beat_timer;
 
-    if (NFProfile->fqdn)
-        ogs_assert(0 < ogs_fqdn_parse(
+    if (NFProfile->fqdn) {
+        if (ogs_fqdn_parse(
                 nf_instance->fqdn, NFProfile->fqdn,
-                ogs_min(strlen(NFProfile->fqdn), OGS_MAX_FQDN_LEN+1)));
+                ogs_min(strlen(NFProfile->fqdn), OGS_MAX_FQDN_LEN)) > 0) {
+            /* Nothing : succeeded to parse FQDN */
+        } else {
+            ogs_error("ogs_fqdn_parse() failed[%s]", NFProfile->fqdn);
+            return false;
+        }
+    }
 
     if (NFProfile->is_priority == true)
         nf_instance->priority = NFProfile->priority;
@@ -328,10 +334,16 @@ bool ogs_sbi_nnrf_handle_nf_profile(ogs_sbi_nf_instance_t *nf_instance,
                         NFServiceVersion->expiry);
         }
 
-        if (NFService->fqdn)
-            ogs_assert(0 < ogs_fqdn_parse(
-                nf_service->fqdn, NFService->fqdn,
-                ogs_min(strlen(NFService->fqdn), OGS_MAX_FQDN_LEN+1)));
+        if (NFService->fqdn) {
+            if (ogs_fqdn_parse(
+                    nf_service->fqdn, NFService->fqdn,
+                    ogs_min(strlen(NFService->fqdn), OGS_MAX_FQDN_LEN)) > 0) {
+                /* Nothing : succeeded to parse FQDN */
+            } else {
+                ogs_error("ogs_fqdn_parse() failed[%s]", NFService->fqdn);
+                return false;
+            }
+        }
 
         OpenAPI_list_for_each(IpEndPointList, node2) {
             OpenAPI_ip_end_point_t *IpEndPoint = node2->data;

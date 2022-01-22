@@ -327,8 +327,9 @@ int ogs_fqdn_parse(char *dst, char *src, int length)
     while (i+1 < length) {
         len = src[i++];
         if ((j + len + 1) > length) {
-            ogs_error("Invalid APN encoding[len:%d] + 1 > length[%d]",
+            ogs_error("Invalid FQDN encoding[len:%d] + 1 > length[%d]",
                     len, length);
+            ogs_log_hexdump(OGS_LOG_ERROR, (unsigned char *)src, length);
             return 0;
         }
         memcpy(&dst[j], &src[i], len);

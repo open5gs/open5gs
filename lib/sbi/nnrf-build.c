@@ -68,7 +68,9 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
         ogs_expect_or_return_val(NFProfile->fqdn, NULL);
         NFProfile->fqdn[fqdn_len] = 0;
 
-        ogs_trace("FQDN[%s]", nf_instance->fqdn);
+        ogs_debug("NFInstance-FQDN[%s]", nf_instance->fqdn);
+        ogs_log_hexdump(OGS_LOG_DEBUG,
+                (unsigned char *)NFProfile->fqdn, fqdn_len);
     }
 
     NFProfile->is_priority = true;
@@ -188,6 +190,10 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
             NFService->fqdn = ogs_memdup(fqdn, fqdn_len+1);
             ogs_expect_or_return_val(NFService->fqdn, NULL);
             NFService->fqdn[fqdn_len] = 0;
+
+            ogs_debug("NFService-FQDN[%s]", nf_service->fqdn);
+            ogs_log_hexdump(OGS_LOG_DEBUG,
+                    (unsigned char *)NFService->fqdn, fqdn_len);
         }
 
         IpEndPointList = OpenAPI_list_create();
