@@ -32,8 +32,10 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
     OpenAPI_list_t *NFServiceList = NULL;
 
     int i = 0;
+#if SBI_FQDN_WITH_ONE_OCTET_LENGTH
     int fqdn_len;
     char fqdn[OGS_MAX_FQDN_LEN];
+#endif
 
     char *ipstr = NULL;
 
@@ -60,7 +62,8 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
     NFProfile->is_nf_profile_changes_support_ind = true;
     NFProfile->nf_profile_changes_support_ind = true;
 
-    if (strlen(nf_instance->fqdn)) {
+    if (nf_instance->fqdn) {
+#if SBI_FQDN_WITH_ONE_OCTET_LENGTH
         memset(fqdn, 0, sizeof(fqdn));
         fqdn_len = ogs_fqdn_build(fqdn,
                 nf_instance->fqdn, strlen(nf_instance->fqdn));
@@ -71,6 +74,9 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
         ogs_debug("NFInstance-FQDN[%s]", nf_instance->fqdn);
         ogs_log_hexdump(OGS_LOG_DEBUG,
                 (unsigned char *)NFProfile->fqdn, fqdn_len);
+#else
+        NFProfile->fqdn = ogs_strdup(nf_instance->fqdn);
+#endif
     }
 
     NFProfile->is_priority = true;
@@ -183,7 +189,8 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
         NFService->scheme = nf_service->scheme;
         NFService->nf_service_status = nf_service->status;
 
-        if (strlen(nf_service->fqdn)) {
+        if (nf_service->fqdn) {
+#if SBI_FQDN_WITH_ONE_OCTET_LENGTH
             memset(fqdn, 0, sizeof(fqdn));
             fqdn_len = ogs_fqdn_build(fqdn,
                     nf_service->fqdn, strlen(nf_service->fqdn));
@@ -194,6 +201,9 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
             ogs_debug("NFService-FQDN[%s]", nf_service->fqdn);
             ogs_log_hexdump(OGS_LOG_DEBUG,
                     (unsigned char *)NFService->fqdn, fqdn_len);
+#else
+            NFService->fqdn = ogs_strdup(nf_service->fqdn);
+#endif
         }
 
         IpEndPointList = OpenAPI_list_create();

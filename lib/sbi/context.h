@@ -86,7 +86,7 @@ typedef struct ogs_sbi_nf_instance_s {
     OpenAPI_nf_type_e nf_type;
     OpenAPI_nf_status_e nf_status;
 
-    char fqdn[OGS_MAX_FQDN_LEN];
+    char *fqdn;
 
 #define OGS_SBI_MAX_NUM_OF_IP_ADDRESS 8
     int num_of_ipv4;
@@ -173,7 +173,7 @@ typedef struct ogs_sbi_nf_service_s {
         char *expiry;
     } versions[OGS_SBI_MAX_NUM_OF_SERVICE_VERSION];
 
-    char fqdn[OGS_MAX_FQDN_LEN];
+    char *fqdn;
     int num_of_addr;
     struct {
         ogs_sockaddr_t *ipv4;

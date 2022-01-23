@@ -542,6 +542,9 @@ void ogs_sbi_nf_instance_clear(ogs_sbi_nf_instance_t *nf_instance)
 
     ogs_assert(nf_instance);
 
+    if (nf_instance->fqdn)
+        ogs_free(nf_instance->fqdn);
+
     for (i = 0; i < nf_instance->num_of_ipv4; i++) {
         if (nf_instance->ipv4[i])
             ogs_freeaddrinfo(nf_instance->ipv4[i]);
@@ -697,6 +700,9 @@ void ogs_sbi_nf_service_clear(ogs_sbi_nf_service_t *nf_service)
     ogs_assert(nf_service);
     nf_instance = nf_service->nf_instance;
     ogs_assert(nf_instance);
+
+    if (nf_service->fqdn)
+        ogs_free(nf_service->fqdn);
 
     for (i = 0; i < nf_service->num_of_version; i++) {
         if (nf_service->versions[i].in_uri)
@@ -897,8 +903,10 @@ void ogs_sbi_nf_instance_build_default(
         }
     }
 
-    if (hostname)
-        strcpy(nf_instance->fqdn, hostname);
+    if (hostname) {
+        nf_instance->fqdn = ogs_strdup(hostname);
+        ogs_assert(nf_instance->fqdn);
+    }
 
     nf_instance->time.heartbeat_interval =
             ogs_app()->time.nf_instance.heartbeat_interval;
@@ -970,8 +978,10 @@ ogs_sbi_nf_service_t *ogs_sbi_nf_service_build_default(
         }
     }
 
-    if (hostname)
-        strcpy(nf_service->fqdn, hostname);
+    if (hostname) {
+        nf_service->fqdn = ogs_strdup(hostname);
+        ogs_assert(nf_service->fqdn);
+    }
 
     return nf_service;
 }
@@ -1006,7 +1016,7 @@ static ogs_sbi_client_t *nf_instance_find_client(
     ogs_sbi_client_t *client = NULL;
     ogs_sockaddr_t *addr = NULL;
 
-    if (strlen(nf_instance->fqdn))
+    if (nf_instance->fqdn)
         client = find_client_by_fqdn(nf_instance->fqdn, 0);
 
     if (!client) {
@@ -1031,7 +1041,7 @@ static void nf_service_associate_client(ogs_sbi_nf_service_t *nf_service)
     ogs_sbi_client_t *client = NULL;
     ogs_sockaddr_t *addr = NULL;
 
-    if (strlen(nf_service->fqdn))
+    if (nf_service->fqdn)
         client = find_client_by_fqdn(nf_service->fqdn, 0);
 
     if (!client) {

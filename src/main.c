@@ -64,6 +64,16 @@ static int check_signal(int signum)
                 signum, ogs_signal_description_get(signum));
         break;
     case SIGUSR1:
+        fprintf(stderr,
+                "%*s%-30s contains %6lu bytes in %3lu blocks (ref %d) %p\n",
+                0, "", "core",
+                (unsigned long)talloc_total_size(__ogs_talloc_core),
+                (unsigned long)talloc_total_blocks(__ogs_talloc_core),
+                (int)talloc_reference_count(__ogs_talloc_core),
+                __ogs_talloc_core);
+        break;
+
+    case SIGUSR2:
         talloc_report_full(__ogs_talloc_core, stderr);
         break;
 
