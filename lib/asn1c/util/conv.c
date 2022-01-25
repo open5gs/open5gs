@@ -171,8 +171,10 @@ int ogs_asn_BIT_STRING_to_ip(BIT_STRING_t *bit_string, ogs_ip_t *ip)
         ip->ipv6 = 1;
         memcpy(&ip->addr6, bit_string->buf, OGS_IPV6_LEN);
         ogs_debug("    IPv6[%s]", OGS_INET_NTOP(&ip->addr6, buf));
-    } else
-        ogs_assert_if_reached();
+    } else {
+        ogs_error("ogs_asn_BIT_STRING_to_ip(size=%d) failed", bit_string->size);
+        return OGS_ERROR;
+    }
 
     ip->len = bit_string->size;
 

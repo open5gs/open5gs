@@ -730,7 +730,15 @@ void s1ap_handle_initial_context_setup_response(
             bearer->enb_s1u_teid = be32toh(bearer->enb_s1u_teid);
             rv = ogs_asn_BIT_STRING_to_ip(
                     &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
-            ogs_assert(rv == OGS_OK);
+            if (rv != OGS_OK) {
+                ogs_error("No transportLayerAddress [%d]",
+                        (int)e_rab->e_RAB_ID);
+                ogs_assert(OGS_OK ==
+                    s1ap_send_error_indication2(mme_ue,
+                        S1AP_Cause_PR_protocol,
+                        S1AP_CauseProtocol_abstract_syntax_error_falsely_constructed_message));
+                return;
+            }
 
             ogs_debug("    EBI[%d] ENB-S1U-TEID[%d]",
                     bearer->ebi, bearer->enb_s1u_teid);
@@ -1186,8 +1194,16 @@ void s1ap_handle_e_rab_setup_response(
                 sizeof(bearer->enb_s1u_teid));
             bearer->enb_s1u_teid = be32toh(bearer->enb_s1u_teid);
             rv = ogs_asn_BIT_STRING_to_ip(
-                &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
-            ogs_assert(rv == OGS_OK);
+                    &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
+            if (rv != OGS_OK) {
+                ogs_error("No transportLayerAddress [%d]",
+                        (int)e_rab->e_RAB_ID);
+                ogs_assert(OGS_OK ==
+                    s1ap_send_error_indication2(mme_ue,
+                        S1AP_Cause_PR_protocol,
+                        S1AP_CauseProtocol_abstract_syntax_error_falsely_constructed_message));
+                return;
+            }
 
             ogs_debug("    EBI[%d]", bearer->ebi);
 
@@ -1661,7 +1677,15 @@ void s1ap_handle_e_rab_modification_indication(
         bearer->enb_s1u_teid = be32toh(bearer->enb_s1u_teid);
         rv = ogs_asn_BIT_STRING_to_ip(
                 &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
-        ogs_expect(rv == OGS_OK);
+        if (rv != OGS_OK) {
+            ogs_error("No transportLayerAddress [%d]",
+                    (int)e_rab->e_RAB_ID);
+            ogs_assert(OGS_OK ==
+                s1ap_send_error_indication2(mme_ue,
+                    S1AP_Cause_PR_protocol,
+                    S1AP_CauseProtocol_abstract_syntax_error_falsely_constructed_message));
+            return;
+        }
 
         GTP_COUNTER_INCREMENT(
                 mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_E_RAB_MODIFICATION);
@@ -1925,7 +1949,15 @@ void s1ap_handle_path_switch_request(
         bearer->enb_s1u_teid = be32toh(bearer->enb_s1u_teid);
         rv = ogs_asn_BIT_STRING_to_ip(
                 &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
-        ogs_expect(rv == OGS_OK);
+        if (rv != OGS_OK) {
+            ogs_error("No transportLayerAddress [%d]",
+                    (int)e_rab->e_RAB_ID);
+            ogs_assert(OGS_OK ==
+                s1ap_send_error_indication2(mme_ue,
+                    S1AP_Cause_PR_protocol,
+                    S1AP_CauseProtocol_abstract_syntax_error_falsely_constructed_message));
+            return;
+        }
 
         GTP_COUNTER_INCREMENT(
                 mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_PATH_SWITCH);
@@ -2352,7 +2384,15 @@ void s1ap_handle_handover_request_ack(
         bearer->target_s1u_teid = be32toh(bearer->target_s1u_teid);
         rv = ogs_asn_BIT_STRING_to_ip(
                 &e_rab->transportLayerAddress, &bearer->target_s1u_ip);
-        ogs_assert(rv == OGS_OK);
+        if (rv != OGS_OK) {
+            ogs_error("No transportLayerAddress [%d]",
+                    (int)e_rab->e_RAB_ID);
+            ogs_assert(OGS_OK ==
+                s1ap_send_error_indication2(mme_ue,
+                    S1AP_Cause_PR_protocol,
+                    S1AP_CauseProtocol_abstract_syntax_error_falsely_constructed_message));
+            return;
+        }
 
         if (e_rab->dL_transportLayerAddress && e_rab->dL_gTP_TEID) {
             ogs_assert(e_rab->dL_gTP_TEID->buf);
@@ -2362,7 +2402,15 @@ void s1ap_handle_handover_request_ack(
             bearer->enb_dl_teid = be32toh(bearer->enb_dl_teid);
             rv = ogs_asn_BIT_STRING_to_ip(
                     e_rab->dL_transportLayerAddress, &bearer->enb_dl_ip);
-            ogs_assert(rv == OGS_OK);
+            if (rv != OGS_OK) {
+                ogs_error("No dL_transportLayerAddress [%d]",
+                        (int)e_rab->e_RAB_ID);
+                ogs_assert(OGS_OK ==
+                    s1ap_send_error_indication2(mme_ue,
+                        S1AP_Cause_PR_protocol,
+                        S1AP_CauseProtocol_abstract_syntax_error_falsely_constructed_message));
+                return;
+            }
         }
 
         if (e_rab->uL_TransportLayerAddress && e_rab->uL_GTP_TEID) {
@@ -2373,7 +2421,15 @@ void s1ap_handle_handover_request_ack(
             bearer->enb_ul_teid = be32toh(bearer->enb_ul_teid);
             rv = ogs_asn_BIT_STRING_to_ip(
                     e_rab->uL_TransportLayerAddress, &bearer->enb_ul_ip);
-            ogs_assert(rv == OGS_OK);
+            if (rv != OGS_OK) {
+                ogs_error("No uL_transportLayerAddress [%d]",
+                        (int)e_rab->e_RAB_ID);
+                ogs_assert(OGS_OK ==
+                    s1ap_send_error_indication2(mme_ue,
+                        S1AP_Cause_PR_protocol,
+                        S1AP_CauseProtocol_abstract_syntax_error_falsely_constructed_message));
+                return;
+            }
         }
     }
 

@@ -91,8 +91,15 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
         goto cleanup;
     }
 
-    ogs_asn_BIT_STRING_to_ip(
+    rv = ogs_asn_BIT_STRING_to_ip(
             &gTPTunnel->transportLayerAddress, &gnb_n3_ip);
+    if (rv != OGS_OK) {
+        ogs_error("[%s:%d] No transportLayerAddress", smf_ue->supi, sess->psi);
+        smf_sbi_send_sm_context_update_error(stream,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                "No transportLayerAddress", smf_ue->supi, NULL, NULL);
+        goto cleanup;
+    }
     ogs_asn_OCTET_STRING_to_uint32(&gTPTunnel->gTP_TEID, &gnb_n3_teid);
 
     /* Need to Update? */
@@ -406,7 +413,15 @@ int ngap_handle_path_switch_request_transfer(
         goto cleanup;
     }
 
-    ogs_asn_BIT_STRING_to_ip(&gTPTunnel->transportLayerAddress, &gnb_n3_ip);
+    rv = ogs_asn_BIT_STRING_to_ip(
+            &gTPTunnel->transportLayerAddress, &gnb_n3_ip);
+    if (rv != OGS_OK) {
+        ogs_error("[%s:%d] No transportLayerAddress", smf_ue->supi, sess->psi);
+        smf_sbi_send_sm_context_update_error(stream,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                "No transportLayerAddress", smf_ue->supi, NULL, NULL);
+        goto cleanup;
+    }
     ogs_asn_OCTET_STRING_to_uint32(&gTPTunnel->gTP_TEID, &gnb_n3_teid);
 
     /* Need to Update? */
@@ -578,8 +593,15 @@ int ngap_handle_handover_request_ack(
         goto cleanup;
     }
 
-    ogs_asn_BIT_STRING_to_ip(&gTPTunnel->transportLayerAddress,
+    rv = ogs_asn_BIT_STRING_to_ip(&gTPTunnel->transportLayerAddress,
             &sess->handover.gnb_n3_ip);
+    if (rv != OGS_OK) {
+        ogs_error("[%s:%d] No transportLayerAddress", smf_ue->supi, sess->psi);
+        smf_sbi_send_sm_context_update_error(stream,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                "No transportLayerAddress", smf_ue->supi, NULL, NULL);
+        goto cleanup;
+    }
     ogs_asn_OCTET_STRING_to_uint32(&gTPTunnel->gTP_TEID,
             &sess->handover.gnb_n3_teid);
 
@@ -630,8 +652,16 @@ int ngap_handle_handover_request_ack(
             goto cleanup;
         }
 
-        ogs_asn_BIT_STRING_to_ip(&gTPTunnel->transportLayerAddress,
+        rv = ogs_asn_BIT_STRING_to_ip(&gTPTunnel->transportLayerAddress,
                 &sess->handover.gnb_dl_ip);
+        if (rv != OGS_OK) {
+            ogs_error("[%s:%d] No transportLayerAddress",
+                    smf_ue->supi, sess->psi);
+            smf_sbi_send_sm_context_update_error(stream,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    "No transportLayerAddress", smf_ue->supi, NULL, NULL);
+            goto cleanup;
+        }
         ogs_asn_OCTET_STRING_to_uint32(&gTPTunnel->gTP_TEID,
                 &sess->handover.gnb_dl_teid);
 
