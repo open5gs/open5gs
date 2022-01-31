@@ -108,7 +108,8 @@ bool nrf_nnrf_nfm_send_nf_status_notify_all(
 
     ogs_list_for_each(&ogs_sbi_self()->subscription_list, subscription) {
 
-        if (strcmp(subscription->req_nf_instance_id, nf_instance->id) == 0)
+        if (subscription->req_nf_instance_id &&
+            strcmp(subscription->req_nf_instance_id, nf_instance->id) == 0)
             continue;
 
         if (subscription->subscr_cond.nf_type &&
