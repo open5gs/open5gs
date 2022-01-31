@@ -406,6 +406,12 @@ void mme_s11_handle_delete_session_response(
             }
         }
 
+    } else if (action == OGS_GTP_DELETE_UE_CONTEXT_REMOVE) {
+
+        /* Remove MME-UE Context with Session Context since IMSI duplicated */
+        mme_ue_remove(mme_ue);
+        return;
+
     } else {
         ogs_fatal("Invalid action = %d", action);
         ogs_assert_if_reached();

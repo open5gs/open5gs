@@ -1210,6 +1210,10 @@ void ogs_pfcp_far_remove(ogs_pfcp_far_t *far)
 
     ogs_list_remove(&sess->far_list, far);
 
+    if (far->hash.teid.len)
+        ogs_hash_set(self.far_teid_hash,
+                &far->hash.teid.key, far->hash.teid.len, NULL);
+
     if (far->hash.f_teid.len)
         ogs_hash_set(self.far_f_teid_hash,
                 &far->hash.f_teid.key, far->hash.f_teid.len, NULL);

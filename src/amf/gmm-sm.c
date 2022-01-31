@@ -261,7 +261,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
             }
 
             amf_sbi_send_release_all_sessions(
-                        amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+                    amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
             if (amf_sess_xact_count(amf_ue) == xact_count) {
                 ogs_assert(true ==
                     amf_ue_sbi_discover_and_send(
@@ -1135,7 +1135,7 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
             }
 
             amf_sbi_send_release_all_sessions(
-                        amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+                    amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
             if (amf_sess_xact_count(amf_ue) == xact_count) {
                 ogs_assert(true ==
                     amf_ue_sbi_discover_and_send(

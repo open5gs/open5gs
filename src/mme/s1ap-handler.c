@@ -1477,6 +1477,8 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
         ogs_debug("    Action: UE context remove");
         enb_ue_remove(enb_ue);
         ogs_expect_or_return(mme_ue);
+
+        mme_ue_hash_remove(mme_ue);
         mme_ue_remove(mme_ue);
         break;
     case S1AP_UE_CTX_REL_S1_HANDOVER_COMPLETE:

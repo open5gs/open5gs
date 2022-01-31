@@ -26,6 +26,7 @@
 #include "s1ap-path.h"
 #include "s1ap-handler.h"
 #include "mme-sm.h"
+#include "mme-gtp-path.h"
 
 #define MAX_CELL_PER_ENB            8
 
@@ -1870,6 +1871,8 @@ int mme_enb_set_enb_id(mme_enb_t *enb, uint32_t enb_id)
 {
     ogs_assert(enb);
 
+    ogs_hash_set(self.enb_id_hash, &enb_id, sizeof(enb_id), NULL);
+
     enb->enb_id = enb_id;
     ogs_hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), enb);
 
@@ -2151,6 +2154,19 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
     return mme_ue;
 }
 
+void mme_ue_hash_remove(mme_ue_t *mme_ue)
+{
+    ogs_assert(mme_ue);
+
+    if (mme_ue->imsi_len != 0)
+        ogs_hash_set(mme_self()->imsi_ue_hash,
+                mme_ue->imsi, mme_ue->imsi_len, NULL);
+
+    if (mme_ue->current.m_tmsi)
+        ogs_hash_set(self.guti_ue_hash,
+                &mme_ue->current.guti, sizeof(ogs_nas_eps_guti_t), NULL);
+}
+
 void mme_ue_remove(mme_ue_t *mme_ue)
 {
     ogs_assert(mme_ue);
@@ -2159,17 +2175,12 @@ void mme_ue_remove(mme_ue_t *mme_ue)
 
     mme_ue_fsm_fini(mme_ue);
 
-    if (mme_ue->current.m_tmsi) {
-        ogs_hash_set(self.guti_ue_hash,
-                &mme_ue->current.guti, sizeof(ogs_nas_eps_guti_t), NULL);
+    if (mme_ue->current.m_tmsi)
         ogs_assert(mme_m_tmsi_free(mme_ue->current.m_tmsi) == OGS_OK);
-    }
-    if (mme_ue->next.m_tmsi) {
+
+    if (mme_ue->next.m_tmsi)
         ogs_assert(mme_m_tmsi_free(mme_ue->next.m_tmsi) == OGS_OK);
-    }
-    if (mme_ue->imsi_len != 0)
-        ogs_hash_set(self.imsi_ue_hash, mme_ue->imsi, mme_ue->imsi_len, NULL);
-    
+
     /* Clear the saved PDN Connectivity Request */
     OGS_NAS_CLEAR_DATA(&mme_ue->pdn_connectivity_request);
 
@@ -2212,6 +2223,7 @@ void mme_ue_remove_all(void)
 
         if (enb_ue) enb_ue_remove(enb_ue);
 
+        mme_ue_hash_remove(mme_ue);
         mme_ue_remove(mme_ue);
     }
 }
@@ -2463,9 +2475,33 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd)
                         old_mme_ue->enb_ue->mme_ue_s1ap_id);
                 enb_ue_remove(old_mme_ue->enb_ue);
             }
-            mme_ue_remove(old_mme_ue);
+
+    /*
+     * We should delete the MME-Session Context in the MME-UE Context.
+     * Otherwise, all unnecessary SESSIONs remain in SMF/SGW-C/SGW-U/UPF.
+     *
+     * Hash deletion is separated from mme_ue_remove(). Otherwise,
+     * hash deletion occurs simultaneously in mme_ue_remove()
+     * after mme_gtp_send_delete_all_session(). This will delete the Hash
+     * we added immediately below, so we can't find this IMSI.
+     *
+     * Note that we should not use the session movement method in AMF.
+     * This is because the MME-S11-TEID in the Delete Session Response
+     * uses the OLD MME.
+     */
+            mme_ue_hash_remove(old_mme_ue);
+
+            if (SESSION_CONTEXT_IS_AVAILABLE(old_mme_ue)) {
+                ogs_warn("[%s] Trigger OLD Session Remove", mme_ue->imsi_bcd);
+                mme_gtp_send_delete_all_sessions(old_mme_ue,
+                        OGS_GTP_DELETE_UE_CONTEXT_REMOVE);
+            }
         }
     }
+
+    if (mme_ue->imsi_len != 0)
+        ogs_hash_set(mme_self()->imsi_ue_hash,
+                mme_ue->imsi, mme_ue->imsi_len, NULL);
 
     ogs_hash_set(self.imsi_ue_hash, mme_ue->imsi, mme_ue->imsi_len, mme_ue);
 

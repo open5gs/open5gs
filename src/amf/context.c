@@ -924,6 +924,8 @@ int amf_gnb_set_gnb_id(amf_gnb_t *gnb, uint32_t gnb_id)
 {
     ogs_assert(gnb);
 
+    ogs_hash_set(self.gnb_id_hash, &gnb_id, sizeof(gnb_id), NULL);
+
     gnb->gnb_id = gnb_id;
     ogs_hash_set(self.gnb_id_hash, &gnb->gnb_id, sizeof(gnb->gnb_id), gnb);
 
@@ -1508,6 +1510,7 @@ void amf_ue_set_suci(amf_ue_t *amf_ue,
         ogs_nas_5gs_mobile_identity_t *mobile_identity)
 {
     amf_ue_t *old_amf_ue = NULL;
+    amf_sess_t *old_sess = NULL;
     char *suci = NULL;
 
     ogs_assert(amf_ue);
@@ -1531,6 +1534,31 @@ void amf_ue_set_suci(amf_ue_t *amf_ue,
                         (long long)old_amf_ue->ran_ue->amf_ue_ngap_id);
                 ran_ue_remove(old_amf_ue->ran_ue);
             }
+
+    /*
+     * We should delete the AMF-Session Context in the AMF-UE Context.
+     * Otherwise, all unnecessary SESSIONs remain in SMF/UPF.
+     *
+     * In order to do this, AMF-Session Context should be moved
+     * from OLD AMF-UE Context to NEW AMF-UE Context.
+     *
+     * If needed, The Session deletion process in NEW-AMF UE context will work.
+     *
+     * Note that we should not send Session-Release to the SMF at this point.
+     * Another SBI Transaction can cause fatal errors.
+     */
+
+            /* Phase-1 : Change AMF-UE Context in Session Context */
+            ogs_list_for_each(&old_amf_ue->sess_list, old_sess)
+                old_sess->amf_ue = amf_ue;
+
+            /* Phase-2 : Move Session Context from OLD to NEW AMF-UE Context */
+            memcpy(&amf_ue->sess_list,
+                    &old_amf_ue->sess_list, sizeof(amf_ue->sess_list));
+
+            /* Phase-3 : Clear Session Context in OLD AMF-UE Context */
+            memset(&old_amf_ue->sess_list, 0, sizeof(old_amf_ue->sess_list));
+
             amf_ue_remove(old_amf_ue);
         }
     }
