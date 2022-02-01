@@ -277,8 +277,7 @@ static void test_cx_uaa_cb(void *data, struct msg **msg)
         }
     }
 
-    ogs_assert(!err && exp_err &&
-            result_code == OGS_DIAM_CX_FIRST_REGISTRATION);
+    ogs_assert(!err && exp_err);
 
     /* Free the message */
     ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
