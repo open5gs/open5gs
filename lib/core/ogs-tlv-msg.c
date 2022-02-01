@@ -350,19 +350,23 @@ ogs_pkbuf_t *ogs_tlv_build_msg(ogs_tlv_desc_t *desc, void *msg, int mode)
 }
 
 static ogs_tlv_desc_t* tlv_find_desc_by_type_inst(uint8_t *desc_index,
-        uint32_t *tlv_offset, ogs_tlv_desc_t *parent_desc, uint16_t match_type, uint8_t match_instance)
+        uint32_t *tlv_offset, ogs_tlv_desc_t *parent_desc, uint16_t match_type, uint8_t match_instance, uint8_t match_type_pos)
 {
     ogs_tlv_desc_t *prev_desc = NULL, *desc = NULL;
     int i, offset = 0;
+    unsigned match_i = 0;
 
     ogs_assert(parent_desc);
 
     for (i = 0, desc = parent_desc->child_descs[i]; desc != NULL;
             i++, desc = parent_desc->child_descs[i]) {
         if (desc->type == match_type && desc->instance == match_instance) {
-            *desc_index = i;
-            *tlv_offset = offset;
-            break;
+            if (match_i == match_type_pos) {
+                *desc_index = i;
+                *tlv_offset = offset;
+                break;
+            }
+            match_i++;
         }
 
         if (desc->ctype == OGS_TLV_MORE) {
@@ -376,13 +380,6 @@ static ogs_tlv_desc_t* tlv_find_desc_by_type_inst(uint8_t *desc_index,
     }
 
     return desc;
-}
-
-static ogs_tlv_desc_t* tlv_find_desc(uint8_t *desc_index,
-        uint32_t *tlv_offset, ogs_tlv_desc_t *parent_desc, ogs_tlv_t *tlv)
-{
-    ogs_assert(tlv);
-    return tlv_find_desc_by_type_inst(desc_index, tlv_offset, parent_desc, tlv->type, tlv->instance);
 }
 
 static int tlv_parse_leaf(void *msg, ogs_tlv_desc_t *desc, ogs_tlv_t *tlv)
@@ -499,6 +496,50 @@ static int tlv_parse_leaf(void *msg, ogs_tlv_desc_t *desc, ogs_tlv_t *tlv)
     return OGS_OK;
 }
 
+/* rbtree structure used to keep track count of TLVs with given <type,instance>
+ * while parsing. This is used to link it to the matching nth field in a
+ * ogs_tlv_desc_t struct */
+typedef struct tlv_count_node_s {
+    ogs_rbnode_t node;
+    uint32_t key; /* type<<8 + instance */
+    unsigned count;
+} tlv_count_node_t;
+
+static tlv_count_node_t *tlv_count_node_find(ogs_rbtree_t *tree, tlv_count_node_t *count_node_arr, unsigned count_node_arr_len,
+        unsigned *count_alloc_next, uint16_t type, uint8_t instance)
+{
+    ogs_rbnode_t **new = NULL;
+    ogs_rbnode_t *parent = NULL;
+    tlv_count_node_t *this;
+
+    uint64_t key = (((uint32_t)type)<<8) | instance;
+
+    new = &tree->root;
+    while (*new) {
+        this = ogs_rb_entry(*new, tlv_count_node_t, node);
+        parent = *new;
+        if (key < this->key) {
+            new = &(*new)->left;
+        } else if (key > this->key) {
+            new = &(*new)->right;
+        } else { /* found entry: */
+            return this;
+        }
+    }
+
+    /* No entry, need to add one: */
+    if (*count_alloc_next == count_node_arr_len) {
+        ogs_error("This TLV has to many entries, can't parse");
+        return NULL;
+    }
+    this = &count_node_arr[(*count_alloc_next)++];
+    this->key = key;
+    this->count = 0;
+    ogs_rbtree_link_node(&this->node, parent, new);
+    ogs_rbtree_insert_color(tree, &this->node);
+    return this;
+}
+
 static int tlv_parse_compound(void *msg, ogs_tlv_desc_t *parent_desc,
         ogs_tlv_t *parent_tlv, int depth, int mode)
 {
@@ -510,6 +551,9 @@ static int tlv_parse_compound(void *msg, ogs_tlv_desc_t *parent_desc,
     uint32_t offset = 0;
     uint8_t index = 0;
     int i = 0, j;
+    OGS_RBTREE(tree);
+    tlv_count_node_t count_node[OGS_TLV_MAX_CHILD_DESC];
+    unsigned count_node_alloc_next = 0;
     char indent[17] = "                "; /* 16 spaces */
 
     ogs_assert(msg);
@@ -521,7 +565,11 @@ static int tlv_parse_compound(void *msg, ogs_tlv_desc_t *parent_desc,
 
     tlv = parent_tlv;
     while (tlv) {
-        desc = tlv_find_desc(&index, &offset, parent_desc, tlv);
+        tlv_count_node_t *curr_count = tlv_count_node_find(&tree, &count_node[0],
+                OGS_ARRAY_SIZE(count_node), &count_node_alloc_next, tlv->type, tlv->instance);
+        if (!curr_count)
+            return OGS_ERROR;
+        desc = tlv_find_desc_by_type_inst(&index, &offset, parent_desc, tlv->type, tlv->instance, curr_count->count);
         if (desc == NULL) {
             ogs_warn("Unknown TLV type [%d]", tlv->type);
             tlv = tlv->next;
@@ -547,6 +595,8 @@ static int tlv_parse_compound(void *msg, ogs_tlv_desc_t *parent_desc,
                 tlv = tlv->next;
                 continue;
             }
+        } else {
+            curr_count->count++;
         }
 
         if (desc->ctype == OGS_TLV_COMPOUND) {
@@ -646,6 +696,7 @@ static uint16_t parse_get_element_type(uint8_t *pos, uint8_t mode)
 static uint8_t *tlv_get_element_desc(ogs_tlv_t *tlv, uint8_t *blk, uint8_t msg_mode, ogs_tlv_desc_t *desc)
 {
     uint8_t instance;
+    unsigned tlv_tag_pos;
     uint8_t desc_index = 0;
     uint32_t tlv_offset = 0;
     uint16_t tlv_tag;
@@ -654,7 +705,8 @@ static uint8_t *tlv_get_element_desc(ogs_tlv_t *tlv, uint8_t *blk, uint8_t msg_m
 
     tlv_tag = parse_get_element_type(blk, msg_mode);
     instance = 0;  /* TODO: support instance != 0 if ever really needed by looking it up in pos */
-    tlv_desc = tlv_find_desc_by_type_inst(&desc_index, &tlv_offset, desc, tlv_tag, instance);
+    tlv_tag_pos = 0; /* All tags with same instance should use the same tlv_desc, so take the first one */
+    tlv_desc = tlv_find_desc_by_type_inst(&desc_index, &tlv_offset, desc, tlv_tag, instance, tlv_tag_pos);
     if (!tlv_desc) {
         ogs_error("Can't parse find TLV description for type %u", tlv_tag);
         return NULL;
