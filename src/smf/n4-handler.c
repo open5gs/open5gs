@@ -117,6 +117,8 @@ void smf_5gc_n4_handle_session_establishment_response(
     ogs_assert(xact);
     ogs_assert(rsp);
 
+    ogs_debug("Session Establishment Response [5gc]");
+
     stream = xact->assoc_stream;
     ogs_assert(stream);
 
@@ -224,6 +226,8 @@ void smf_5gc_n4_handle_session_modification_response(
 
     ogs_assert(xact);
     ogs_assert(rsp);
+
+    ogs_debug("Session Modification Response [5gc]");
 
     flags = xact->modify_flags;
     ogs_assert(flags);
@@ -578,6 +582,8 @@ void smf_5gc_n4_handle_session_deletion_response(
     ogs_assert(xact);
     ogs_assert(rsp);
 
+    ogs_debug("Session Deletion Response [5gc]");
+
     stream = xact->assoc_stream;
     trigger = xact->delete_trigger;
     ogs_assert(trigger);
@@ -689,6 +695,8 @@ void smf_epc_n4_handle_session_establishment_response(
 
     ogs_assert(xact);
     ogs_assert(rsp);
+
+    ogs_debug("Session Establishment Response [epc]");
 
     gtp_xact = xact->assoc_xact;
     ogs_assert(gtp_xact);
@@ -848,6 +856,8 @@ void smf_epc_n4_handle_session_modification_response(
 
     ogs_assert(xact);
     ogs_assert(rsp);
+
+    ogs_debug("Session Modification Response [epc]");
 
     if (flags & OGS_PFCP_MODIFY_SESSION) {
         /* If smf_epc_pfcp_send_session_modification_request() is called */
@@ -1043,6 +1053,8 @@ void smf_epc_n4_handle_session_deletion_response(
     ogs_assert(xact);
     ogs_assert(rsp);
 
+    ogs_debug("Session Deletion Response [epc]");
+
     gtp_xact = xact->assoc_xact;
 
     ogs_pfcp_xact_commit(xact);
@@ -1112,6 +1124,8 @@ void smf_n4_handle_session_report_request(
 
     ogs_assert(pfcp_xact);
     ogs_assert(pfcp_req);
+
+    ogs_debug("Session Report Request");
 
     cause_value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
 

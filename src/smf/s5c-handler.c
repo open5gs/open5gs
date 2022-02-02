@@ -69,7 +69,7 @@ void smf_s5c_handle_create_session_request(
     ogs_assert(xact);
     ogs_assert(req);
 
-    ogs_debug("Create Session Reqeust");
+    ogs_debug("Create Session Request");
 
     cause_value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
 
