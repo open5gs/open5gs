@@ -1129,7 +1129,7 @@ ogs_pfcp_urr_t *ogs_pfcp_handle_create_urr(ogs_pfcp_sess_t *sess,
     urr->rep_triggers.reptri_7 = message->reporting_triggers.u24 & 0xFF;
 
     if (message->measurement_period.presence) {
-        urr->meas_period = be32toh(message->measurement_period.u32);
+        urr->meas_period = message->measurement_period.u32;
     }
 
     if (message->volume_threshold.presence &&
@@ -1144,26 +1144,26 @@ ogs_pfcp_urr_t *ogs_pfcp_handle_create_urr(ogs_pfcp_sess_t *sess,
 
     if (message->event_threshold.presence &&
         (urr->meas_method & OGS_PFCP_MEASUREMENT_METHOD_EVENT)) {
-        urr->event_threshold = be32toh(message->event_threshold.u32);
+        urr->event_threshold = message->event_threshold.u32;
     }
 
     if (message->event_quota.presence &&
         (urr->meas_method & OGS_PFCP_MEASUREMENT_METHOD_EVENT)) {
-        urr->event_quota = be32toh(message->event_quota.u32);
+        urr->event_quota = message->event_quota.u32;
     }
 
     if (message->time_threshold.presence &&
         (urr->meas_method & OGS_PFCP_MEASUREMENT_METHOD_DURATION)) {
-        urr->time_threshold = be32toh(message->time_threshold.u32);
+        urr->time_threshold = message->time_threshold.u32;
     }
 
     if (message->time_quota.presence &&
         (urr->meas_method & OGS_PFCP_MEASUREMENT_METHOD_DURATION)) {
-        urr->time_quota = be32toh(message->time_quota.u32);
+        urr->time_quota = message->time_quota.u32;
     }
 
     if (message->quota_holding_time.presence) {
-        urr->quota_holding_time = be32toh(message->quota_holding_time.u32);
+        urr->quota_holding_time = message->quota_holding_time.u32;
     }
 
     if (message->dropped_dl_traffic_threshold.presence) {
@@ -1173,7 +1173,7 @@ ogs_pfcp_urr_t *ogs_pfcp_handle_create_urr(ogs_pfcp_sess_t *sess,
     }
 
     if (message->quota_validity_time.presence) {
-        urr->quota_validity_time = be32toh(message->quota_validity_time.u32);
+        urr->quota_validity_time = message->quota_validity_time.u32;
     }
 
     return urr;
@@ -1226,7 +1226,7 @@ ogs_pfcp_urr_t *ogs_pfcp_handle_update_urr(ogs_pfcp_sess_t *sess,
     urr->rep_triggers.reptri_7 = (message->reporting_triggers.u24 >> 16) & 0xFF;
 
     if (message->measurement_period.presence) {
-        urr->meas_period = be32toh(message->measurement_period.u32);
+        urr->meas_period = message->measurement_period.u32;
     }
 
     if (message->volume_threshold.presence &&
@@ -1241,26 +1241,26 @@ ogs_pfcp_urr_t *ogs_pfcp_handle_update_urr(ogs_pfcp_sess_t *sess,
 
     if (message->event_threshold.presence &&
         (urr->meas_method & OGS_PFCP_MEASUREMENT_METHOD_EVENT)) {
-        urr->event_threshold = be32toh(message->event_threshold.u32);
+        urr->event_threshold = message->event_threshold.u32;
     }
 
     if (message->event_quota.presence &&
         (urr->meas_method & OGS_PFCP_MEASUREMENT_METHOD_EVENT)) {
-        urr->event_quota = be32toh(message->event_quota.u32);
+        urr->event_quota = message->event_quota.u32;
     }
 
     if (message->time_threshold.presence &&
         (urr->meas_method & OGS_PFCP_MEASUREMENT_METHOD_DURATION)) {
-        urr->time_threshold = be32toh(message->time_threshold.u32);
+        urr->time_threshold = message->time_threshold.u32;
     }
 
     if (message->time_quota.presence &&
         (urr->meas_method & OGS_PFCP_MEASUREMENT_METHOD_DURATION)) {
-        urr->time_quota = be32toh(message->time_quota.u32);
+        urr->time_quota = message->time_quota.u32;
     }
 
     if (message->quota_holding_time.presence) {
-        urr->quota_holding_time = be32toh(message->quota_holding_time.u32);
+        urr->quota_holding_time = message->quota_holding_time.u32;
     }
 
     if (message->dropped_dl_traffic_threshold.presence) {
@@ -1270,7 +1270,7 @@ ogs_pfcp_urr_t *ogs_pfcp_handle_update_urr(ogs_pfcp_sess_t *sess,
     }
 
     if (message->quota_validity_time.presence) {
-        urr->quota_validity_time = be32toh(message->quota_validity_time.u32);
+        urr->quota_validity_time = message->quota_validity_time.u32;
     }
 
     return urr;
