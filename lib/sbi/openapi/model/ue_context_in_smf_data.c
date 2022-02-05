@@ -159,6 +159,12 @@ OpenAPI_ue_context_in_smf_data_t *OpenAPI_ue_context_in_smf_data_parseFromJSON(c
         }
         OpenAPI_pgw_info_t *pgw_infoItem = OpenAPI_pgw_info_parseFromJSON(pgw_info_local_nonprimitive);
 
+        if (!pgw_infoItem) {
+            ogs_error("No pgw_infoItem");
+            OpenAPI_list_free(pgw_infoList);
+            goto end;
+        }
+
         OpenAPI_list_add(pgw_infoList, pgw_infoItem);
     }
     }

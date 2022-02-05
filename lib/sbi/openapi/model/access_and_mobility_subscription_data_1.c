@@ -855,6 +855,12 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
         }
         OpenAPI_area_1_t *forbidden_areasItem = OpenAPI_area_1_parseFromJSON(forbidden_areas_local_nonprimitive);
 
+        if (!forbidden_areasItem) {
+            ogs_error("No forbidden_areasItem");
+            OpenAPI_list_free(forbidden_areasList);
+            goto end;
+        }
+
         OpenAPI_list_add(forbidden_areasList, forbidden_areasItem);
     }
     }
@@ -1228,6 +1234,12 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
         }
         OpenAPI_edrx_parameters_1_t *edrx_parameters_listItem = OpenAPI_edrx_parameters_1_parseFromJSON(edrx_parameters_list_local_nonprimitive);
 
+        if (!edrx_parameters_listItem) {
+            ogs_error("No edrx_parameters_listItem");
+            OpenAPI_list_free(edrx_parameters_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(edrx_parameters_listList, edrx_parameters_listItem);
     }
     }
@@ -1250,6 +1262,12 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
             goto end;
         }
         OpenAPI_ptw_parameters_1_t *ptw_parameters_listItem = OpenAPI_ptw_parameters_1_parseFromJSON(ptw_parameters_list_local_nonprimitive);
+
+        if (!ptw_parameters_listItem) {
+            ogs_error("No ptw_parameters_listItem");
+            OpenAPI_list_free(ptw_parameters_listList);
+            goto end;
+        }
 
         OpenAPI_list_add(ptw_parameters_listList, ptw_parameters_listItem);
     }
@@ -1282,6 +1300,12 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
             goto end;
         }
         OpenAPI_wireline_area_1_t *wireline_forbidden_areasItem = OpenAPI_wireline_area_1_parseFromJSON(wireline_forbidden_areas_local_nonprimitive);
+
+        if (!wireline_forbidden_areasItem) {
+            ogs_error("No wireline_forbidden_areasItem");
+            OpenAPI_list_free(wireline_forbidden_areasList);
+            goto end;
+        }
 
         OpenAPI_list_add(wireline_forbidden_areasList, wireline_forbidden_areasItem);
     }

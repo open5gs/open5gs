@@ -103,6 +103,12 @@ OpenAPI_access_net_charging_identifier_t *OpenAPI_access_net_charging_identifier
         }
         OpenAPI_flows_t *flowsItem = OpenAPI_flows_parseFromJSON(flows_local_nonprimitive);
 
+        if (!flowsItem) {
+            ogs_error("No flowsItem");
+            OpenAPI_list_free(flowsList);
+            goto end;
+        }
+
         OpenAPI_list_add(flowsList, flowsItem);
     }
     }

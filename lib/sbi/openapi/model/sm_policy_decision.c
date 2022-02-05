@@ -936,6 +936,12 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_parseFromJSON(cJSON *sm
         }
         OpenAPI_requested_rule_data_t *last_req_rule_dataItem = OpenAPI_requested_rule_data_parseFromJSON(last_req_rule_data_local_nonprimitive);
 
+        if (!last_req_rule_dataItem) {
+            ogs_error("No last_req_rule_dataItem");
+            OpenAPI_list_free(last_req_rule_dataList);
+            goto end;
+        }
+
         OpenAPI_list_add(last_req_rule_dataList, last_req_rule_dataItem);
     }
     }
@@ -1054,6 +1060,12 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_parseFromJSON(cJSON *sm
             goto end;
         }
         OpenAPI_port_management_container_t *tsn_port_man_cont_nwttsItem = OpenAPI_port_management_container_parseFromJSON(tsn_port_man_cont_nwtts_local_nonprimitive);
+
+        if (!tsn_port_man_cont_nwttsItem) {
+            ogs_error("No tsn_port_man_cont_nwttsItem");
+            OpenAPI_list_free(tsn_port_man_cont_nwttsList);
+            goto end;
+        }
 
         OpenAPI_list_add(tsn_port_man_cont_nwttsList, tsn_port_man_cont_nwttsItem);
     }

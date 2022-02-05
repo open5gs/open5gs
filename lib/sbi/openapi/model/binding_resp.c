@@ -104,6 +104,12 @@ OpenAPI_binding_resp_t *OpenAPI_binding_resp_parseFromJSON(cJSON *binding_respJS
         }
         OpenAPI_ip_end_point_t *pcf_sm_ip_end_pointsItem = OpenAPI_ip_end_point_parseFromJSON(pcf_sm_ip_end_points_local_nonprimitive);
 
+        if (!pcf_sm_ip_end_pointsItem) {
+            ogs_error("No pcf_sm_ip_end_pointsItem");
+            OpenAPI_list_free(pcf_sm_ip_end_pointsList);
+            goto end;
+        }
+
         OpenAPI_list_add(pcf_sm_ip_end_pointsList, pcf_sm_ip_end_pointsItem);
     }
     }

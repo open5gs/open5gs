@@ -149,6 +149,12 @@ OpenAPI_lmf_info_t *OpenAPI_lmf_info_parseFromJSON(cJSON *lmf_infoJSON)
         }
         OpenAPI_external_client_type_t *serving_client_typesItem = OpenAPI_external_client_type_parseFromJSON(serving_client_types_local_nonprimitive);
 
+        if (!serving_client_typesItem) {
+            ogs_error("No serving_client_typesItem");
+            OpenAPI_list_free(serving_client_typesList);
+            goto end;
+        }
+
         OpenAPI_list_add(serving_client_typesList, serving_client_typesItem);
     }
     }

@@ -1437,6 +1437,12 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON)
         }
         OpenAPI_plmn_id_t *plmn_listItem = OpenAPI_plmn_id_parseFromJSON(plmn_list_local_nonprimitive);
 
+        if (!plmn_listItem) {
+            ogs_error("No plmn_listItem");
+            OpenAPI_list_free(plmn_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(plmn_listList, plmn_listItem);
     }
     }
@@ -1459,6 +1465,12 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON)
             goto end;
         }
         OpenAPI_plmn_id_nid_t *snpn_listItem = OpenAPI_plmn_id_nid_parseFromJSON(snpn_list_local_nonprimitive);
+
+        if (!snpn_listItem) {
+            ogs_error("No snpn_listItem");
+            OpenAPI_list_free(snpn_listList);
+            goto end;
+        }
 
         OpenAPI_list_add(snpn_listList, snpn_listItem);
     }
@@ -1483,6 +1495,12 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON)
         }
         OpenAPI_ext_snssai_t *s_nssaisItem = OpenAPI_ext_snssai_parseFromJSON(s_nssais_local_nonprimitive);
 
+        if (!s_nssaisItem) {
+            ogs_error("No s_nssaisItem");
+            OpenAPI_list_free(s_nssaisList);
+            goto end;
+        }
+
         OpenAPI_list_add(s_nssaisList, s_nssaisItem);
     }
     }
@@ -1505,6 +1523,12 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON)
             goto end;
         }
         OpenAPI_plmn_snssai_t *per_plmn_snssai_listItem = OpenAPI_plmn_snssai_parseFromJSON(per_plmn_snssai_list_local_nonprimitive);
+
+        if (!per_plmn_snssai_listItem) {
+            ogs_error("No per_plmn_snssai_listItem");
+            OpenAPI_list_free(per_plmn_snssai_listList);
+            goto end;
+        }
 
         OpenAPI_list_add(per_plmn_snssai_listList, per_plmn_snssai_listItem);
     }
@@ -1607,6 +1631,12 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON)
         }
         OpenAPI_plmn_id_t *allowed_plmnsItem = OpenAPI_plmn_id_parseFromJSON(allowed_plmns_local_nonprimitive);
 
+        if (!allowed_plmnsItem) {
+            ogs_error("No allowed_plmnsItem");
+            OpenAPI_list_free(allowed_plmnsList);
+            goto end;
+        }
+
         OpenAPI_list_add(allowed_plmnsList, allowed_plmnsItem);
     }
     }
@@ -1629,6 +1659,12 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON)
             goto end;
         }
         OpenAPI_plmn_id_nid_t *allowed_snpnsItem = OpenAPI_plmn_id_nid_parseFromJSON(allowed_snpns_local_nonprimitive);
+
+        if (!allowed_snpnsItem) {
+            ogs_error("No allowed_snpnsItem");
+            OpenAPI_list_free(allowed_snpnsList);
+            goto end;
+        }
 
         OpenAPI_list_add(allowed_snpnsList, allowed_snpnsItem);
     }
@@ -1694,6 +1730,12 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON)
             goto end;
         }
         OpenAPI_ext_snssai_t *allowed_nssaisItem = OpenAPI_ext_snssai_parseFromJSON(allowed_nssais_local_nonprimitive);
+
+        if (!allowed_nssaisItem) {
+            ogs_error("No allowed_nssaisItem");
+            OpenAPI_list_free(allowed_nssaisList);
+            goto end;
+        }
 
         OpenAPI_list_add(allowed_nssaisList, allowed_nssaisItem);
     }
@@ -2191,6 +2233,12 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON)
         }
         OpenAPI_nf_service_t *nf_servicesItem = OpenAPI_nf_service_parseFromJSON(nf_services_local_nonprimitive);
 
+        if (!nf_servicesItem) {
+            ogs_error("No nf_servicesItem");
+            OpenAPI_list_free(nf_servicesList);
+            goto end;
+        }
+
         OpenAPI_list_add(nf_servicesList, nf_servicesItem);
     }
     }
@@ -2257,6 +2305,12 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON)
             goto end;
         }
         OpenAPI_default_notification_subscription_t *default_notification_subscriptionsItem = OpenAPI_default_notification_subscription_parseFromJSON(default_notification_subscriptions_local_nonprimitive);
+
+        if (!default_notification_subscriptionsItem) {
+            ogs_error("No default_notification_subscriptionsItem");
+            OpenAPI_list_free(default_notification_subscriptionsList);
+            goto end;
+        }
 
         OpenAPI_list_add(default_notification_subscriptionsList, default_notification_subscriptionsItem);
     }

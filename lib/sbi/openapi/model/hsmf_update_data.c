@@ -1001,6 +1001,12 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_parseFromJSON(cJSON *hsmf_u
         }
         OpenAPI_qos_flow_item_t *qos_flows_rel_notify_listItem = OpenAPI_qos_flow_item_parseFromJSON(qos_flows_rel_notify_list_local_nonprimitive);
 
+        if (!qos_flows_rel_notify_listItem) {
+            ogs_error("No qos_flows_rel_notify_listItem");
+            OpenAPI_list_free(qos_flows_rel_notify_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(qos_flows_rel_notify_listList, qos_flows_rel_notify_listItem);
     }
     }
@@ -1024,6 +1030,12 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_parseFromJSON(cJSON *hsmf_u
         }
         OpenAPI_qos_flow_notify_item_t *qos_flows_notify_listItem = OpenAPI_qos_flow_notify_item_parseFromJSON(qos_flows_notify_list_local_nonprimitive);
 
+        if (!qos_flows_notify_listItem) {
+            ogs_error("No qos_flows_notify_listItem");
+            OpenAPI_list_free(qos_flows_notify_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(qos_flows_notify_listList, qos_flows_notify_listItem);
     }
     }
@@ -1046,6 +1058,12 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_parseFromJSON(cJSON *hsmf_u
             goto end;
         }
         OpenAPI_pdu_session_notify_item_t *notify_listItem = OpenAPI_pdu_session_notify_item_parseFromJSON(notify_list_local_nonprimitive);
+
+        if (!notify_listItem) {
+            ogs_error("No notify_listItem");
+            OpenAPI_list_free(notify_listList);
+            goto end;
+        }
 
         OpenAPI_list_add(notify_listList, notify_listItem);
     }
@@ -1166,6 +1184,12 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_parseFromJSON(cJSON *hsmf_u
         }
         OpenAPI_secondary_rat_usage_report_t *secondary_rat_usage_reportItem = OpenAPI_secondary_rat_usage_report_parseFromJSON(secondary_rat_usage_report_local_nonprimitive);
 
+        if (!secondary_rat_usage_reportItem) {
+            ogs_error("No secondary_rat_usage_reportItem");
+            OpenAPI_list_free(secondary_rat_usage_reportList);
+            goto end;
+        }
+
         OpenAPI_list_add(secondary_rat_usage_reportList, secondary_rat_usage_reportItem);
     }
     }
@@ -1188,6 +1212,12 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_parseFromJSON(cJSON *hsmf_u
             goto end;
         }
         OpenAPI_secondary_rat_usage_info_t *secondary_rat_usage_infoItem = OpenAPI_secondary_rat_usage_info_parseFromJSON(secondary_rat_usage_info_local_nonprimitive);
+
+        if (!secondary_rat_usage_infoItem) {
+            ogs_error("No secondary_rat_usage_infoItem");
+            OpenAPI_list_free(secondary_rat_usage_infoList);
+            goto end;
+        }
 
         OpenAPI_list_add(secondary_rat_usage_infoList, secondary_rat_usage_infoItem);
     }
@@ -1260,6 +1290,12 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_parseFromJSON(cJSON *hsmf_u
             goto end;
         }
         OpenAPI_psa_information_t *psa_infoItem = OpenAPI_psa_information_parseFromJSON(psa_info_local_nonprimitive);
+
+        if (!psa_infoItem) {
+            ogs_error("No psa_infoItem");
+            OpenAPI_list_free(psa_infoList);
+            goto end;
+        }
 
         OpenAPI_list_add(psa_infoList, psa_infoItem);
     }

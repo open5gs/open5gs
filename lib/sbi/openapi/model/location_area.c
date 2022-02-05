@@ -127,6 +127,12 @@ OpenAPI_location_area_t *OpenAPI_location_area_parseFromJSON(cJSON *location_are
         }
         OpenAPI_geographic_area_t *geographic_areasItem = OpenAPI_geographic_area_parseFromJSON(geographic_areas_local_nonprimitive);
 
+        if (!geographic_areasItem) {
+            ogs_error("No geographic_areasItem");
+            OpenAPI_list_free(geographic_areasList);
+            goto end;
+        }
+
         OpenAPI_list_add(geographic_areasList, geographic_areasItem);
     }
     }
@@ -149,6 +155,12 @@ OpenAPI_location_area_t *OpenAPI_location_area_parseFromJSON(cJSON *location_are
             goto end;
         }
         OpenAPI_civic_address_t *civic_addressesItem = OpenAPI_civic_address_parseFromJSON(civic_addresses_local_nonprimitive);
+
+        if (!civic_addressesItem) {
+            ogs_error("No civic_addressesItem");
+            OpenAPI_list_free(civic_addressesList);
+            goto end;
+        }
 
         OpenAPI_list_add(civic_addressesList, civic_addressesItem);
     }

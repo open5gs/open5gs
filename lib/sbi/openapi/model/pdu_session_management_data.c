@@ -279,6 +279,12 @@ OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_parse
         }
         OpenAPI_route_to_location_t *n6_traffic_routing_infoItem = OpenAPI_route_to_location_parseFromJSON(n6_traffic_routing_info_local_nonprimitive);
 
+        if (!n6_traffic_routing_infoItem) {
+            ogs_error("No n6_traffic_routing_infoItem");
+            OpenAPI_list_free(n6_traffic_routing_infoList);
+            goto end;
+        }
+
         OpenAPI_list_add(n6_traffic_routing_infoList, n6_traffic_routing_infoItem);
     }
     }

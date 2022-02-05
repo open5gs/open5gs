@@ -114,6 +114,12 @@ OpenAPI_upu_data_2_t *OpenAPI_upu_data_2_parseFromJSON(cJSON *upu_data_2JSON)
         }
         OpenAPI_snssai_t *default_conf_nssaiItem = OpenAPI_snssai_parseFromJSON(default_conf_nssai_local_nonprimitive);
 
+        if (!default_conf_nssaiItem) {
+            ogs_error("No default_conf_nssaiItem");
+            OpenAPI_list_free(default_conf_nssaiList);
+            goto end;
+        }
+
         OpenAPI_list_add(default_conf_nssaiList, default_conf_nssaiItem);
     }
     }

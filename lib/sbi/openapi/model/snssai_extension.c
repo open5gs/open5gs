@@ -96,6 +96,12 @@ OpenAPI_snssai_extension_t *OpenAPI_snssai_extension_parseFromJSON(cJSON *snssai
         }
         OpenAPI_sd_range_t *sd_rangesItem = OpenAPI_sd_range_parseFromJSON(sd_ranges_local_nonprimitive);
 
+        if (!sd_rangesItem) {
+            ogs_error("No sd_rangesItem");
+            OpenAPI_list_free(sd_rangesList);
+            goto end;
+        }
+
         OpenAPI_list_add(sd_rangesList, sd_rangesItem);
     }
     }

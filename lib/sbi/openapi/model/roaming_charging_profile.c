@@ -101,6 +101,12 @@ OpenAPI_roaming_charging_profile_t *OpenAPI_roaming_charging_profile_parseFromJS
         }
         OpenAPI_trigger_t *triggersItem = OpenAPI_trigger_parseFromJSON(triggers_local_nonprimitive);
 
+        if (!triggersItem) {
+            ogs_error("No triggersItem");
+            OpenAPI_list_free(triggersList);
+            goto end;
+        }
+
         OpenAPI_list_add(triggersList, triggersItem);
     }
     }

@@ -237,6 +237,12 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_parseFr
         }
         OpenAPI_amf_event_t *event_listItem = OpenAPI_amf_event_parseFromJSON(event_list_local_nonprimitive);
 
+        if (!event_listItem) {
+            ogs_error("No event_listItem");
+            OpenAPI_list_free(event_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(event_listList, event_listItem);
     }
 

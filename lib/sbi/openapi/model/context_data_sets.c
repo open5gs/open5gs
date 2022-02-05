@@ -257,6 +257,12 @@ OpenAPI_context_data_sets_t *OpenAPI_context_data_sets_parseFromJSON(cJSON *cont
         }
         OpenAPI_sdm_subscription_t *sdm_subscriptionsItem = OpenAPI_sdm_subscription_parseFromJSON(sdm_subscriptions_local_nonprimitive);
 
+        if (!sdm_subscriptionsItem) {
+            ogs_error("No sdm_subscriptionsItem");
+            OpenAPI_list_free(sdm_subscriptionsList);
+            goto end;
+        }
+
         OpenAPI_list_add(sdm_subscriptionsList, sdm_subscriptionsItem);
     }
     }
@@ -279,6 +285,12 @@ OpenAPI_context_data_sets_t *OpenAPI_context_data_sets_parseFromJSON(cJSON *cont
             goto end;
         }
         OpenAPI_ee_subscription_t *ee_subscriptionsItem = OpenAPI_ee_subscription_parseFromJSON(ee_subscriptions_local_nonprimitive);
+
+        if (!ee_subscriptionsItem) {
+            ogs_error("No ee_subscriptionsItem");
+            OpenAPI_list_free(ee_subscriptionsList);
+            goto end;
+        }
 
         OpenAPI_list_add(ee_subscriptionsList, ee_subscriptionsItem);
     }
@@ -317,6 +329,12 @@ OpenAPI_context_data_sets_t *OpenAPI_context_data_sets_parseFromJSON(cJSON *cont
         }
         OpenAPI_subscription_data_subscriptions_t *subscription_data_subscriptionsItem = OpenAPI_subscription_data_subscriptions_parseFromJSON(subscription_data_subscriptions_local_nonprimitive);
 
+        if (!subscription_data_subscriptionsItem) {
+            ogs_error("No subscription_data_subscriptionsItem");
+            OpenAPI_list_free(subscription_data_subscriptionsList);
+            goto end;
+        }
+
         OpenAPI_list_add(subscription_data_subscriptionsList, subscription_data_subscriptionsItem);
     }
     }
@@ -339,6 +357,12 @@ OpenAPI_context_data_sets_t *OpenAPI_context_data_sets_parseFromJSON(cJSON *cont
             goto end;
         }
         OpenAPI_smf_registration_t *smf_registrationsItem = OpenAPI_smf_registration_parseFromJSON(smf_registrations_local_nonprimitive);
+
+        if (!smf_registrationsItem) {
+            ogs_error("No smf_registrationsItem");
+            OpenAPI_list_free(smf_registrationsList);
+            goto end;
+        }
 
         OpenAPI_list_add(smf_registrationsList, smf_registrationsItem);
     }

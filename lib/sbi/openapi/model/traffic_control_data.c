@@ -288,6 +288,12 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
         }
         OpenAPI_redirect_information_t *add_redirect_infoItem = OpenAPI_redirect_information_parseFromJSON(add_redirect_info_local_nonprimitive);
 
+        if (!add_redirect_infoItem) {
+            ogs_error("No add_redirect_infoItem");
+            OpenAPI_list_free(add_redirect_infoList);
+            goto end;
+        }
+
         OpenAPI_list_add(add_redirect_infoList, add_redirect_infoItem);
     }
     }
@@ -337,6 +343,12 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
             goto end;
         }
         OpenAPI_route_to_location_t *route_to_locsItem = OpenAPI_route_to_location_parseFromJSON(route_to_locs_local_nonprimitive);
+
+        if (!route_to_locsItem) {
+            ogs_error("No route_to_locsItem");
+            OpenAPI_list_free(route_to_locsList);
+            goto end;
+        }
 
         OpenAPI_list_add(route_to_locsList, route_to_locsItem);
     }

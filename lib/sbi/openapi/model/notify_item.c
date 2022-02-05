@@ -105,6 +105,12 @@ OpenAPI_notify_item_t *OpenAPI_notify_item_parseFromJSON(cJSON *notify_itemJSON)
         }
         OpenAPI_change_item_t *changesItem = OpenAPI_change_item_parseFromJSON(changes_local_nonprimitive);
 
+        if (!changesItem) {
+            ogs_error("No changesItem");
+            OpenAPI_list_free(changesList);
+            goto end;
+        }
+
         OpenAPI_list_add(changesList, changesItem);
     }
 

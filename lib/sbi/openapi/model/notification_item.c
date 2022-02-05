@@ -105,6 +105,12 @@ OpenAPI_notification_item_t *OpenAPI_notification_item_parseFromJSON(cJSON *noti
         }
         OpenAPI_updated_item_t *notif_itemsItem = OpenAPI_updated_item_parseFromJSON(notif_items_local_nonprimitive);
 
+        if (!notif_itemsItem) {
+            ogs_error("No notif_itemsItem");
+            OpenAPI_list_free(notif_itemsList);
+            goto end;
+        }
+
         OpenAPI_list_add(notif_itemsList, notif_itemsItem);
     }
 

@@ -817,6 +817,12 @@ OpenAPI_sm_context_t *OpenAPI_sm_context_parseFromJSON(cJSON *sm_contextJSON)
         }
         OpenAPI_qos_flow_setup_item_t *qos_flows_listItem = OpenAPI_qos_flow_setup_item_parseFromJSON(qos_flows_list_local_nonprimitive);
 
+        if (!qos_flows_listItem) {
+            ogs_error("No qos_flows_listItem");
+            OpenAPI_list_free(qos_flows_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(qos_flows_listList, qos_flows_listItem);
     }
 
@@ -919,6 +925,12 @@ OpenAPI_sm_context_t *OpenAPI_sm_context_parseFromJSON(cJSON *sm_contextJSON)
             goto end;
         }
         OpenAPI_eps_bearer_info_t *eps_bearer_infoItem = OpenAPI_eps_bearer_info_parseFromJSON(eps_bearer_info_local_nonprimitive);
+
+        if (!eps_bearer_infoItem) {
+            ogs_error("No eps_bearer_infoItem");
+            OpenAPI_list_free(eps_bearer_infoList);
+            goto end;
+        }
 
         OpenAPI_list_add(eps_bearer_infoList, eps_bearer_infoItem);
     }
@@ -1075,6 +1087,12 @@ OpenAPI_sm_context_t *OpenAPI_sm_context_parseFromJSON(cJSON *sm_contextJSON)
         }
         OpenAPI_qos_flow_tunnel_t *add_ran_tunnel_infoItem = OpenAPI_qos_flow_tunnel_parseFromJSON(add_ran_tunnel_info_local_nonprimitive);
 
+        if (!add_ran_tunnel_infoItem) {
+            ogs_error("No add_ran_tunnel_infoItem");
+            OpenAPI_list_free(add_ran_tunnel_infoList);
+            goto end;
+        }
+
         OpenAPI_list_add(add_ran_tunnel_infoList, add_ran_tunnel_infoItem);
     }
     }
@@ -1104,6 +1122,12 @@ OpenAPI_sm_context_t *OpenAPI_sm_context_parseFromJSON(cJSON *sm_contextJSON)
             goto end;
         }
         OpenAPI_qos_flow_tunnel_t *add_red_ran_tunnel_infoItem = OpenAPI_qos_flow_tunnel_parseFromJSON(add_red_ran_tunnel_info_local_nonprimitive);
+
+        if (!add_red_ran_tunnel_infoItem) {
+            ogs_error("No add_red_ran_tunnel_infoItem");
+            OpenAPI_list_free(add_red_ran_tunnel_infoList);
+            goto end;
+        }
 
         OpenAPI_list_add(add_red_ran_tunnel_infoList, add_red_ran_tunnel_infoItem);
     }

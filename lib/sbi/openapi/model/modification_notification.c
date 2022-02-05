@@ -86,6 +86,12 @@ OpenAPI_modification_notification_t *OpenAPI_modification_notification_parseFrom
         }
         OpenAPI_notify_item_t *notify_itemsItem = OpenAPI_notify_item_parseFromJSON(notify_items_local_nonprimitive);
 
+        if (!notify_itemsItem) {
+            ogs_error("No notify_itemsItem");
+            OpenAPI_list_free(notify_itemsList);
+            goto end;
+        }
+
         OpenAPI_list_add(notify_itemsList, notify_itemsItem);
     }
 

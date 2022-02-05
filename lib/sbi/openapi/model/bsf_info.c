@@ -195,6 +195,12 @@ OpenAPI_bsf_info_t *OpenAPI_bsf_info_parseFromJSON(cJSON *bsf_infoJSON)
         }
         OpenAPI_ipv4_address_range_t *ipv4_address_rangesItem = OpenAPI_ipv4_address_range_parseFromJSON(ipv4_address_ranges_local_nonprimitive);
 
+        if (!ipv4_address_rangesItem) {
+            ogs_error("No ipv4_address_rangesItem");
+            OpenAPI_list_free(ipv4_address_rangesList);
+            goto end;
+        }
+
         OpenAPI_list_add(ipv4_address_rangesList, ipv4_address_rangesItem);
     }
     }
@@ -217,6 +223,12 @@ OpenAPI_bsf_info_t *OpenAPI_bsf_info_parseFromJSON(cJSON *bsf_infoJSON)
             goto end;
         }
         OpenAPI_ipv6_prefix_range_t *ipv6_prefix_rangesItem = OpenAPI_ipv6_prefix_range_parseFromJSON(ipv6_prefix_ranges_local_nonprimitive);
+
+        if (!ipv6_prefix_rangesItem) {
+            ogs_error("No ipv6_prefix_rangesItem");
+            OpenAPI_list_free(ipv6_prefix_rangesList);
+            goto end;
+        }
 
         OpenAPI_list_add(ipv6_prefix_rangesList, ipv6_prefix_rangesItem);
     }

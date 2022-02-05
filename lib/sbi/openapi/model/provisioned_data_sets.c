@@ -250,6 +250,12 @@ OpenAPI_provisioned_data_sets_t *OpenAPI_provisioned_data_sets_parseFromJSON(cJS
         }
         OpenAPI_session_management_subscription_data_t *sm_dataItem = OpenAPI_session_management_subscription_data_parseFromJSON(sm_data_local_nonprimitive);
 
+        if (!sm_dataItem) {
+            ogs_error("No sm_dataItem");
+            OpenAPI_list_free(sm_dataList);
+            goto end;
+        }
+
         OpenAPI_list_add(sm_dataList, sm_dataItem);
     }
     }

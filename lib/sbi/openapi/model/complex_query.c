@@ -110,6 +110,12 @@ OpenAPI_complex_query_t *OpenAPI_complex_query_parseFromJSON(cJSON *complex_quer
         }
         OpenAPI_cnf_unit_t *cnf_unitsItem = OpenAPI_cnf_unit_parseFromJSON(cnf_units_local_nonprimitive);
 
+        if (!cnf_unitsItem) {
+            ogs_error("No cnf_unitsItem");
+            OpenAPI_list_free(cnf_unitsList);
+            goto end;
+        }
+
         OpenAPI_list_add(cnf_unitsList, cnf_unitsItem);
     }
 
@@ -134,6 +140,12 @@ OpenAPI_complex_query_t *OpenAPI_complex_query_parseFromJSON(cJSON *complex_quer
             goto end;
         }
         OpenAPI_dnf_unit_t *dnf_unitsItem = OpenAPI_dnf_unit_parseFromJSON(dnf_units_local_nonprimitive);
+
+        if (!dnf_unitsItem) {
+            ogs_error("No dnf_unitsItem");
+            OpenAPI_list_free(dnf_unitsList);
+            goto end;
+        }
 
         OpenAPI_list_add(dnf_unitsList, dnf_unitsItem);
     }

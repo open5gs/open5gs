@@ -156,6 +156,12 @@ OpenAPI_notification_data_t *OpenAPI_notification_data_parseFromJSON(cJSON *noti
         }
         OpenAPI_change_item_t *profile_changesItem = OpenAPI_change_item_parseFromJSON(profile_changes_local_nonprimitive);
 
+        if (!profile_changesItem) {
+            ogs_error("No profile_changesItem");
+            OpenAPI_list_free(profile_changesList);
+            goto end;
+        }
+
         OpenAPI_list_add(profile_changesList, profile_changesItem);
     }
     }

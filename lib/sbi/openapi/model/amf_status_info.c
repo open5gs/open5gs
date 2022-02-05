@@ -113,6 +113,12 @@ OpenAPI_amf_status_info_t *OpenAPI_amf_status_info_parseFromJSON(cJSON *amf_stat
         }
         OpenAPI_guami_t *guami_listItem = OpenAPI_guami_parseFromJSON(guami_list_local_nonprimitive);
 
+        if (!guami_listItem) {
+            ogs_error("No guami_listItem");
+            OpenAPI_list_free(guami_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(guami_listList, guami_listItem);
     }
 

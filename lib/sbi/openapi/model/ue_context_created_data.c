@@ -179,6 +179,12 @@ OpenAPI_ue_context_created_data_t *OpenAPI_ue_context_created_data_parseFromJSON
         }
         OpenAPI_n2_sm_information_t *pdu_session_listItem = OpenAPI_n2_sm_information_parseFromJSON(pdu_session_list_local_nonprimitive);
 
+        if (!pdu_session_listItem) {
+            ogs_error("No pdu_session_listItem");
+            OpenAPI_list_free(pdu_session_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(pdu_session_listList, pdu_session_listItem);
     }
 
@@ -200,6 +206,12 @@ OpenAPI_ue_context_created_data_t *OpenAPI_ue_context_created_data_parseFromJSON
             goto end;
         }
         OpenAPI_n2_sm_information_t *failed_session_listItem = OpenAPI_n2_sm_information_parseFromJSON(failed_session_list_local_nonprimitive);
+
+        if (!failed_session_listItem) {
+            ogs_error("No failed_session_listItem");
+            OpenAPI_list_free(failed_session_listList);
+            goto end;
+        }
 
         OpenAPI_list_add(failed_session_listList, failed_session_listItem);
     }

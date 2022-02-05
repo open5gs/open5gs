@@ -282,6 +282,12 @@ OpenAPI_data_filter_t *OpenAPI_data_filter_parseFromJSON(cJSON *data_filterJSON)
         }
         OpenAPI_snssai_t *snssaisItem = OpenAPI_snssai_parseFromJSON(snssais_local_nonprimitive);
 
+        if (!snssaisItem) {
+            ogs_error("No snssaisItem");
+            OpenAPI_list_free(snssaisList);
+            goto end;
+        }
+
         OpenAPI_list_add(snssaisList, snssaisItem);
     }
     }

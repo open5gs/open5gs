@@ -131,6 +131,12 @@ OpenAPI_lcs_privacy_data_t *OpenAPI_lcs_privacy_data_parseFromJSON(cJSON *lcs_pr
         }
         OpenAPI_plmn_operator_class_t *plmn_operator_classesItem = OpenAPI_plmn_operator_class_parseFromJSON(plmn_operator_classes_local_nonprimitive);
 
+        if (!plmn_operator_classesItem) {
+            ogs_error("No plmn_operator_classesItem");
+            OpenAPI_list_free(plmn_operator_classesList);
+            goto end;
+        }
+
         OpenAPI_list_add(plmn_operator_classesList, plmn_operator_classesItem);
     }
     }

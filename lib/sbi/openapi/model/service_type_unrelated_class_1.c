@@ -159,6 +159,12 @@ OpenAPI_service_type_unrelated_class_1_t *OpenAPI_service_type_unrelated_class_1
         }
         OpenAPI_geographic_area_t *allowed_geographic_areaItem = OpenAPI_geographic_area_parseFromJSON(allowed_geographic_area_local_nonprimitive);
 
+        if (!allowed_geographic_areaItem) {
+            ogs_error("No allowed_geographic_areaItem");
+            OpenAPI_list_free(allowed_geographic_areaList);
+            goto end;
+        }
+
         OpenAPI_list_add(allowed_geographic_areaList, allowed_geographic_areaItem);
     }
     }

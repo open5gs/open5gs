@@ -165,6 +165,12 @@ OpenAPI_pws_information_t *OpenAPI_pws_information_parseFromJSON(cJSON *pws_info
         }
         OpenAPI_global_ran_node_id_t *bc_empty_area_listItem = OpenAPI_global_ran_node_id_parseFromJSON(bc_empty_area_list_local_nonprimitive);
 
+        if (!bc_empty_area_listItem) {
+            ogs_error("No bc_empty_area_listItem");
+            OpenAPI_list_free(bc_empty_area_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(bc_empty_area_listList, bc_empty_area_listItem);
     }
     }

@@ -252,6 +252,12 @@ OpenAPI_problem_details_t *OpenAPI_problem_details_parseFromJSON(cJSON *problem_
         }
         OpenAPI_invalid_param_t *invalid_paramsItem = OpenAPI_invalid_param_parseFromJSON(invalid_params_local_nonprimitive);
 
+        if (!invalid_paramsItem) {
+            ogs_error("No invalid_paramsItem");
+            OpenAPI_list_free(invalid_paramsList);
+            goto end;
+        }
+
         OpenAPI_list_add(invalid_paramsList, invalid_paramsItem);
     }
     }

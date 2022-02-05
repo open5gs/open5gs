@@ -129,6 +129,12 @@ OpenAPI_datalink_reporting_configuration_t *OpenAPI_datalink_reporting_configura
         }
         OpenAPI_ddd_traffic_descriptor_t *ddd_traffic_desItem = OpenAPI_ddd_traffic_descriptor_parseFromJSON(ddd_traffic_des_local_nonprimitive);
 
+        if (!ddd_traffic_desItem) {
+            ogs_error("No ddd_traffic_desItem");
+            OpenAPI_list_free(ddd_traffic_desList);
+            goto end;
+        }
+
         OpenAPI_list_add(ddd_traffic_desList, ddd_traffic_desItem);
     }
     }

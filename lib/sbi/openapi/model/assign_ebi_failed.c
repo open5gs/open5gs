@@ -103,6 +103,12 @@ OpenAPI_assign_ebi_failed_t *OpenAPI_assign_ebi_failed_parseFromJSON(cJSON *assi
         }
         OpenAPI_arp_t *failed_arp_listItem = OpenAPI_arp_parseFromJSON(failed_arp_list_local_nonprimitive);
 
+        if (!failed_arp_listItem) {
+            ogs_error("No failed_arp_listItem");
+            OpenAPI_list_free(failed_arp_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(failed_arp_listList, failed_arp_listItem);
     }
     }

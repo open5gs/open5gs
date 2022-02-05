@@ -881,6 +881,12 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
         }
         OpenAPI_acc_net_ch_id_t *acc_net_ch_idsItem = OpenAPI_acc_net_ch_id_parseFromJSON(acc_net_ch_ids_local_nonprimitive);
 
+        if (!acc_net_ch_idsItem) {
+            ogs_error("No acc_net_ch_idsItem");
+            OpenAPI_list_free(acc_net_ch_idsList);
+            goto end;
+        }
+
         OpenAPI_list_add(acc_net_ch_idsList, acc_net_ch_idsItem);
     }
     }
@@ -1083,6 +1089,12 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
         }
         OpenAPI_accu_usage_report_t *accu_usage_reportsItem = OpenAPI_accu_usage_report_parseFromJSON(accu_usage_reports_local_nonprimitive);
 
+        if (!accu_usage_reportsItem) {
+            ogs_error("No accu_usage_reportsItem");
+            OpenAPI_list_free(accu_usage_reportsList);
+            goto end;
+        }
+
         OpenAPI_list_add(accu_usage_reportsList, accu_usage_reportsItem);
     }
     }
@@ -1115,6 +1127,12 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
         }
         OpenAPI_app_detection_info_t *app_detection_infosItem = OpenAPI_app_detection_info_parseFromJSON(app_detection_infos_local_nonprimitive);
 
+        if (!app_detection_infosItem) {
+            ogs_error("No app_detection_infosItem");
+            OpenAPI_list_free(app_detection_infosList);
+            goto end;
+        }
+
         OpenAPI_list_add(app_detection_infosList, app_detection_infosItem);
     }
     }
@@ -1137,6 +1155,12 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
             goto end;
         }
         OpenAPI_rule_report_t *rule_reportsItem = OpenAPI_rule_report_parseFromJSON(rule_reports_local_nonprimitive);
+
+        if (!rule_reportsItem) {
+            ogs_error("No rule_reportsItem");
+            OpenAPI_list_free(rule_reportsList);
+            goto end;
+        }
 
         OpenAPI_list_add(rule_reportsList, rule_reportsItem);
     }
@@ -1161,6 +1185,12 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
         }
         OpenAPI_session_rule_report_t *sess_rule_reportsItem = OpenAPI_session_rule_report_parseFromJSON(sess_rule_reports_local_nonprimitive);
 
+        if (!sess_rule_reportsItem) {
+            ogs_error("No sess_rule_reportsItem");
+            OpenAPI_list_free(sess_rule_reportsList);
+            goto end;
+        }
+
         OpenAPI_list_add(sess_rule_reportsList, sess_rule_reportsItem);
     }
     }
@@ -1184,6 +1214,12 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
         }
         OpenAPI_qos_notification_control_info_t *qnc_reportsItem = OpenAPI_qos_notification_control_info_parseFromJSON(qnc_reports_local_nonprimitive);
 
+        if (!qnc_reportsItem) {
+            ogs_error("No qnc_reportsItem");
+            OpenAPI_list_free(qnc_reportsList);
+            goto end;
+        }
+
         OpenAPI_list_add(qnc_reportsList, qnc_reportsItem);
     }
     }
@@ -1206,6 +1242,12 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
             goto end;
         }
         OpenAPI_qos_monitoring_report_t *qos_mon_reportsItem = OpenAPI_qos_monitoring_report_parseFromJSON(qos_mon_reports_local_nonprimitive);
+
+        if (!qos_mon_reportsItem) {
+            ogs_error("No qos_mon_reportsItem");
+            OpenAPI_list_free(qos_mon_reportsList);
+            goto end;
+        }
 
         OpenAPI_list_add(qos_mon_reportsList, qos_mon_reportsItem);
     }
@@ -1356,6 +1398,12 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
         }
         OpenAPI_port_management_container_t *tsn_port_man_cont_nwttsItem = OpenAPI_port_management_container_parseFromJSON(tsn_port_man_cont_nwtts_local_nonprimitive);
 
+        if (!tsn_port_man_cont_nwttsItem) {
+            ogs_error("No tsn_port_man_cont_nwttsItem");
+            OpenAPI_list_free(tsn_port_man_cont_nwttsList);
+            goto end;
+        }
+
         OpenAPI_list_add(tsn_port_man_cont_nwttsList, tsn_port_man_cont_nwttsItem);
     }
     }
@@ -1378,6 +1426,12 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
             goto end;
         }
         OpenAPI_ip_multicast_address_info_t *mul_addr_infosItem = OpenAPI_ip_multicast_address_info_parseFromJSON(mul_addr_infos_local_nonprimitive);
+
+        if (!mul_addr_infosItem) {
+            ogs_error("No mul_addr_infosItem");
+            OpenAPI_list_free(mul_addr_infosList);
+            goto end;
+        }
 
         OpenAPI_list_add(mul_addr_infosList, mul_addr_infosItem);
     }
@@ -1423,6 +1477,12 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
             goto end;
         }
         OpenAPI_ddd_traffic_descriptor_t *traffic_descriptorsItem = OpenAPI_ddd_traffic_descriptor_parseFromJSON(traffic_descriptors_local_nonprimitive);
+
+        if (!traffic_descriptorsItem) {
+            ogs_error("No traffic_descriptorsItem");
+            OpenAPI_list_free(traffic_descriptorsList);
+            goto end;
+        }
 
         OpenAPI_list_add(traffic_descriptorsList, traffic_descriptorsItem);
     }

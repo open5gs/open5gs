@@ -182,6 +182,12 @@ OpenAPI_media_sub_component_rm_t *OpenAPI_media_sub_component_rm_parseFromJSON(c
         }
         OpenAPI_eth_flow_description_t *ethf_descsItem = OpenAPI_eth_flow_description_parseFromJSON(ethf_descs_local_nonprimitive);
 
+        if (!ethf_descsItem) {
+            ogs_error("No ethf_descsItem");
+            OpenAPI_list_free(ethf_descsList);
+            goto end;
+        }
+
         OpenAPI_list_add(ethf_descsList, ethf_descsItem);
     }
     }

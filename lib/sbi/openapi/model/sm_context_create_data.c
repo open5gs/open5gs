@@ -1433,6 +1433,12 @@ OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_parseFromJSON(c
         }
         OpenAPI_backup_amf_info_t *backup_amf_infoItem = OpenAPI_backup_amf_info_parseFromJSON(backup_amf_info_local_nonprimitive);
 
+        if (!backup_amf_infoItem) {
+            ogs_error("No backup_amf_infoItem");
+            OpenAPI_list_free(backup_amf_infoList);
+            goto end;
+        }
+
         OpenAPI_list_add(backup_amf_infoList, backup_amf_infoItem);
     }
     }

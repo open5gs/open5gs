@@ -174,6 +174,12 @@ OpenAPI_events_subsc_req_data_t *OpenAPI_events_subsc_req_data_parseFromJSON(cJS
         }
         OpenAPI_af_event_subscription_t *eventsItem = OpenAPI_af_event_subscription_parseFromJSON(events_local_nonprimitive);
 
+        if (!eventsItem) {
+            ogs_error("No eventsItem");
+            OpenAPI_list_free(eventsList);
+            goto end;
+        }
+
         OpenAPI_list_add(eventsList, eventsItem);
     }
 

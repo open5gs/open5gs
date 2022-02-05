@@ -475,6 +475,12 @@ OpenAPI_vsmf_update_data_t *OpenAPI_vsmf_update_data_parseFromJSON(cJSON *vsmf_u
         }
         OpenAPI_qos_flow_add_modify_request_item_t *qos_flows_add_mod_request_listItem = OpenAPI_qos_flow_add_modify_request_item_parseFromJSON(qos_flows_add_mod_request_list_local_nonprimitive);
 
+        if (!qos_flows_add_mod_request_listItem) {
+            ogs_error("No qos_flows_add_mod_request_listItem");
+            OpenAPI_list_free(qos_flows_add_mod_request_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(qos_flows_add_mod_request_listList, qos_flows_add_mod_request_listItem);
     }
     }
@@ -497,6 +503,12 @@ OpenAPI_vsmf_update_data_t *OpenAPI_vsmf_update_data_parseFromJSON(cJSON *vsmf_u
             goto end;
         }
         OpenAPI_qos_flow_release_request_item_t *qos_flows_rel_request_listItem = OpenAPI_qos_flow_release_request_item_parseFromJSON(qos_flows_rel_request_list_local_nonprimitive);
+
+        if (!qos_flows_rel_request_listItem) {
+            ogs_error("No qos_flows_rel_request_listItem");
+            OpenAPI_list_free(qos_flows_rel_request_listList);
+            goto end;
+        }
 
         OpenAPI_list_add(qos_flows_rel_request_listList, qos_flows_rel_request_listItem);
     }
@@ -521,6 +533,12 @@ OpenAPI_vsmf_update_data_t *OpenAPI_vsmf_update_data_parseFromJSON(cJSON *vsmf_u
         }
         OpenAPI_eps_bearer_info_t *eps_bearer_infoItem = OpenAPI_eps_bearer_info_parseFromJSON(eps_bearer_info_local_nonprimitive);
 
+        if (!eps_bearer_infoItem) {
+            ogs_error("No eps_bearer_infoItem");
+            OpenAPI_list_free(eps_bearer_infoList);
+            goto end;
+        }
+
         OpenAPI_list_add(eps_bearer_infoList, eps_bearer_infoItem);
     }
     }
@@ -543,6 +561,12 @@ OpenAPI_vsmf_update_data_t *OpenAPI_vsmf_update_data_parseFromJSON(cJSON *vsmf_u
             goto end;
         }
         OpenAPI_arp_t *assign_ebi_listItem = OpenAPI_arp_parseFromJSON(assign_ebi_list_local_nonprimitive);
+
+        if (!assign_ebi_listItem) {
+            ogs_error("No assign_ebi_listItem");
+            OpenAPI_list_free(assign_ebi_listList);
+            goto end;
+        }
 
         OpenAPI_list_add(assign_ebi_listList, assign_ebi_listItem);
     }
@@ -586,6 +610,12 @@ OpenAPI_vsmf_update_data_t *OpenAPI_vsmf_update_data_parseFromJSON(cJSON *vsmf_u
             goto end;
         }
         OpenAPI_ebi_arp_mapping_t *modified_ebi_listItem = OpenAPI_ebi_arp_mapping_parseFromJSON(modified_ebi_list_local_nonprimitive);
+
+        if (!modified_ebi_listItem) {
+            ogs_error("No modified_ebi_listItem");
+            OpenAPI_list_free(modified_ebi_listList);
+            goto end;
+        }
 
         OpenAPI_list_add(modified_ebi_listList, modified_ebi_listItem);
     }

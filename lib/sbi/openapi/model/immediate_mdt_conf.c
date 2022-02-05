@@ -526,6 +526,12 @@ OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_parseFromJSON(cJSON *im
         }
         OpenAPI_plmn_id_t *mdt_allowed_plmn_id_listItem = OpenAPI_plmn_id_parseFromJSON(mdt_allowed_plmn_id_list_local_nonprimitive);
 
+        if (!mdt_allowed_plmn_id_listItem) {
+            ogs_error("No mdt_allowed_plmn_id_listItem");
+            OpenAPI_list_free(mdt_allowed_plmn_id_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(mdt_allowed_plmn_id_listList, mdt_allowed_plmn_id_listItem);
     }
     }

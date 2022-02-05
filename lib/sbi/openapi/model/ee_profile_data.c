@@ -119,6 +119,12 @@ OpenAPI_ee_profile_data_t *OpenAPI_ee_profile_data_parseFromJSON(cJSON *ee_profi
         }
         OpenAPI_event_type_t *restricted_event_typesItem = OpenAPI_event_type_parseFromJSON(restricted_event_types_local_nonprimitive);
 
+        if (!restricted_event_typesItem) {
+            ogs_error("No restricted_event_typesItem");
+            OpenAPI_list_free(restricted_event_typesList);
+            goto end;
+        }
+
         OpenAPI_list_add(restricted_event_typesList, restricted_event_typesItem);
     }
     }

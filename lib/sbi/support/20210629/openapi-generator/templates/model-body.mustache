@@ -737,6 +737,14 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_parseFromJSON(cJSON *{{classname}
         }
         {{#isEnum}}{{#items}}{{datatypeWithEnum}}_e {{/items}}{{/isEnum}}{{^isEnum}}OpenAPI_{{complexType}}_t *{{/isEnum}}{{{name}}}Item = OpenAPI_{{complexType}}_parseFromJSON({{{name}}}_local_nonprimitive);
 
+        {{^isEnum}}
+        if (!{{{name}}}Item) {
+            ogs_error("No {{{name}}}Item");
+            OpenAPI_list_free({{{name}}}List);
+            goto end;
+        }
+        {{/isEnum}}
+
         OpenAPI_list_add({{{name}}}List, {{#isEnum}}{{#items}}(void *){{/items}}{{/isEnum}}{{{name}}}Item);
     }
                 {{/isEnum}}

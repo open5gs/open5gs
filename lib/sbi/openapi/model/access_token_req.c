@@ -394,6 +394,12 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
         }
         OpenAPI_plmn_id_t *requester_plmn_listItem = OpenAPI_plmn_id_parseFromJSON(requester_plmn_list_local_nonprimitive);
 
+        if (!requester_plmn_listItem) {
+            ogs_error("No requester_plmn_listItem");
+            OpenAPI_list_free(requester_plmn_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(requester_plmn_listList, requester_plmn_listItem);
     }
     }
@@ -416,6 +422,12 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
             goto end;
         }
         OpenAPI_snssai_t *requester_snssai_listItem = OpenAPI_snssai_parseFromJSON(requester_snssai_list_local_nonprimitive);
+
+        if (!requester_snssai_listItem) {
+            ogs_error("No requester_snssai_listItem");
+            OpenAPI_list_free(requester_snssai_listList);
+            goto end;
+        }
 
         OpenAPI_list_add(requester_snssai_listList, requester_snssai_listItem);
     }
@@ -449,6 +461,12 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
         }
         OpenAPI_plmn_id_nid_t *requester_snpn_listItem = OpenAPI_plmn_id_nid_parseFromJSON(requester_snpn_list_local_nonprimitive);
 
+        if (!requester_snpn_listItem) {
+            ogs_error("No requester_snpn_listItem");
+            OpenAPI_list_free(requester_snpn_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(requester_snpn_listList, requester_snpn_listItem);
     }
     }
@@ -478,6 +496,12 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
             goto end;
         }
         OpenAPI_snssai_t *target_snssai_listItem = OpenAPI_snssai_parseFromJSON(target_snssai_list_local_nonprimitive);
+
+        if (!target_snssai_listItem) {
+            ogs_error("No target_snssai_listItem");
+            OpenAPI_list_free(target_snssai_listList);
+            goto end;
+        }
 
         OpenAPI_list_add(target_snssai_listList, target_snssai_listItem);
     }

@@ -361,6 +361,12 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
         }
         OpenAPI_rm_info_t *reg_statesItem = OpenAPI_rm_info_parseFromJSON(reg_states_local_nonprimitive);
 
+        if (!reg_statesItem) {
+            ogs_error("No reg_statesItem");
+            OpenAPI_list_free(reg_statesList);
+            goto end;
+        }
+
         OpenAPI_list_add(reg_statesList, reg_statesItem);
     }
     }
@@ -392,6 +398,12 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
             goto end;
         }
         OpenAPI_cm_info_t *conn_statesItem = OpenAPI_cm_info_parseFromJSON(conn_states_local_nonprimitive);
+
+        if (!conn_statesItem) {
+            ogs_error("No conn_statesItem");
+            OpenAPI_list_free(conn_statesList);
+            goto end;
+        }
 
         OpenAPI_list_add(conn_statesList, conn_statesItem);
     }

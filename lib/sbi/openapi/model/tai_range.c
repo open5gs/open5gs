@@ -119,6 +119,12 @@ OpenAPI_tai_range_t *OpenAPI_tai_range_parseFromJSON(cJSON *tai_rangeJSON)
         }
         OpenAPI_tac_range_t *tac_range_listItem = OpenAPI_tac_range_parseFromJSON(tac_range_list_local_nonprimitive);
 
+        if (!tac_range_listItem) {
+            ogs_error("No tac_range_listItem");
+            OpenAPI_list_free(tac_range_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(tac_range_listList, tac_range_listItem);
     }
 

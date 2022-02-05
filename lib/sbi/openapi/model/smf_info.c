@@ -188,6 +188,12 @@ OpenAPI_smf_info_t *OpenAPI_smf_info_parseFromJSON(cJSON *smf_infoJSON)
         }
         OpenAPI_snssai_smf_info_item_t *s_nssai_smf_info_listItem = OpenAPI_snssai_smf_info_item_parseFromJSON(s_nssai_smf_info_list_local_nonprimitive);
 
+        if (!s_nssai_smf_info_listItem) {
+            ogs_error("No s_nssai_smf_info_listItem");
+            OpenAPI_list_free(s_nssai_smf_info_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(s_nssai_smf_info_listList, s_nssai_smf_info_listItem);
     }
 
@@ -209,6 +215,12 @@ OpenAPI_smf_info_t *OpenAPI_smf_info_parseFromJSON(cJSON *smf_infoJSON)
             goto end;
         }
         OpenAPI_tai_t *tai_listItem = OpenAPI_tai_parseFromJSON(tai_list_local_nonprimitive);
+
+        if (!tai_listItem) {
+            ogs_error("No tai_listItem");
+            OpenAPI_list_free(tai_listList);
+            goto end;
+        }
 
         OpenAPI_list_add(tai_listList, tai_listItem);
     }
@@ -232,6 +244,12 @@ OpenAPI_smf_info_t *OpenAPI_smf_info_parseFromJSON(cJSON *smf_infoJSON)
             goto end;
         }
         OpenAPI_tai_range_t *tai_range_listItem = OpenAPI_tai_range_parseFromJSON(tai_range_list_local_nonprimitive);
+
+        if (!tai_range_listItem) {
+            ogs_error("No tai_range_listItem");
+            OpenAPI_list_free(tai_range_listList);
+            goto end;
+        }
 
         OpenAPI_list_add(tai_range_listList, tai_range_listItem);
     }

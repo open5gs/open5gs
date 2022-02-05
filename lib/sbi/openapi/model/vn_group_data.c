@@ -150,6 +150,12 @@ OpenAPI_vn_group_data_t *OpenAPI_vn_group_data_parseFromJSON(cJSON *vn_group_dat
         }
         OpenAPI_app_descriptor_t *app_descriptorsItem = OpenAPI_app_descriptor_parseFromJSON(app_descriptors_local_nonprimitive);
 
+        if (!app_descriptorsItem) {
+            ogs_error("No app_descriptorsItem");
+            OpenAPI_list_free(app_descriptorsList);
+            goto end;
+        }
+
         OpenAPI_list_add(app_descriptorsList, app_descriptorsItem);
     }
     }

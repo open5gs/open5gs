@@ -592,6 +592,12 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
         }
         OpenAPI_qos_flow_setup_item_t *qos_flows_setup_listItem = OpenAPI_qos_flow_setup_item_parseFromJSON(qos_flows_setup_list_local_nonprimitive);
 
+        if (!qos_flows_setup_listItem) {
+            ogs_error("No qos_flows_setup_listItem");
+            OpenAPI_list_free(qos_flows_setup_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(qos_flows_setup_listList, qos_flows_setup_listItem);
     }
     }
@@ -689,6 +695,12 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
             goto end;
         }
         OpenAPI_eps_bearer_info_t *eps_bearer_infoItem = OpenAPI_eps_bearer_info_parseFromJSON(eps_bearer_info_local_nonprimitive);
+
+        if (!eps_bearer_infoItem) {
+            ogs_error("No eps_bearer_infoItem");
+            OpenAPI_list_free(eps_bearer_infoList);
+            goto end;
+        }
 
         OpenAPI_list_add(eps_bearer_infoList, eps_bearer_infoItem);
     }

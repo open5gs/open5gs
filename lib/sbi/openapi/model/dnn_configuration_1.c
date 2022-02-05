@@ -405,6 +405,12 @@ OpenAPI_dnn_configuration_1_t *OpenAPI_dnn_configuration_1_parseFromJSON(cJSON *
         }
         OpenAPI_ip_address_1_t *static_ip_addressItem = OpenAPI_ip_address_1_parseFromJSON(static_ip_address_local_nonprimitive);
 
+        if (!static_ip_addressItem) {
+            ogs_error("No static_ip_addressItem");
+            OpenAPI_list_free(static_ip_addressList);
+            goto end;
+        }
+
         OpenAPI_list_add(static_ip_addressList, static_ip_addressItem);
     }
     }
@@ -478,6 +484,12 @@ OpenAPI_dnn_configuration_1_t *OpenAPI_dnn_configuration_1_parseFromJSON(cJSON *
         }
         OpenAPI_frame_route_info_1_t *ipv4_frame_route_listItem = OpenAPI_frame_route_info_1_parseFromJSON(ipv4_frame_route_list_local_nonprimitive);
 
+        if (!ipv4_frame_route_listItem) {
+            ogs_error("No ipv4_frame_route_listItem");
+            OpenAPI_list_free(ipv4_frame_route_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(ipv4_frame_route_listList, ipv4_frame_route_listItem);
     }
     }
@@ -500,6 +512,12 @@ OpenAPI_dnn_configuration_1_t *OpenAPI_dnn_configuration_1_parseFromJSON(cJSON *
             goto end;
         }
         OpenAPI_frame_route_info_1_t *ipv6_frame_route_listItem = OpenAPI_frame_route_info_1_parseFromJSON(ipv6_frame_route_list_local_nonprimitive);
+
+        if (!ipv6_frame_route_listItem) {
+            ogs_error("No ipv6_frame_route_listItem");
+            OpenAPI_list_free(ipv6_frame_route_listList);
+            goto end;
+        }
 
         OpenAPI_list_add(ipv6_frame_route_listList, ipv6_frame_route_listItem);
     }

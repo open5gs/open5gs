@@ -751,6 +751,12 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_parseFromJSON(c
         }
         OpenAPI_backup_amf_info_t *backup_amf_infoItem = OpenAPI_backup_amf_info_parseFromJSON(backup_amf_info_local_nonprimitive);
 
+        if (!backup_amf_infoItem) {
+            ogs_error("No backup_amf_infoItem");
+            OpenAPI_list_free(backup_amf_infoList);
+            goto end;
+        }
+
         OpenAPI_list_add(backup_amf_infoList, backup_amf_infoItem);
     }
     }
@@ -958,6 +964,12 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_parseFromJSON(c
         }
         OpenAPI_indirect_data_forwarding_tunnel_info_t *n9_dl_forwarding_tnl_listItem = OpenAPI_indirect_data_forwarding_tunnel_info_parseFromJSON(n9_dl_forwarding_tnl_list_local_nonprimitive);
 
+        if (!n9_dl_forwarding_tnl_listItem) {
+            ogs_error("No n9_dl_forwarding_tnl_listItem");
+            OpenAPI_list_free(n9_dl_forwarding_tnl_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(n9_dl_forwarding_tnl_listList, n9_dl_forwarding_tnl_listItem);
     }
     }
@@ -980,6 +992,12 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_parseFromJSON(c
             goto end;
         }
         OpenAPI_indirect_data_forwarding_tunnel_info_t *n9_ul_forwarding_tnl_listItem = OpenAPI_indirect_data_forwarding_tunnel_info_parseFromJSON(n9_ul_forwarding_tnl_list_local_nonprimitive);
+
+        if (!n9_ul_forwarding_tnl_listItem) {
+            ogs_error("No n9_ul_forwarding_tnl_listItem");
+            OpenAPI_list_free(n9_ul_forwarding_tnl_listList);
+            goto end;
+        }
 
         OpenAPI_list_add(n9_ul_forwarding_tnl_listList, n9_ul_forwarding_tnl_listItem);
     }

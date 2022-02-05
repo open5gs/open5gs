@@ -472,6 +472,12 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
         }
         OpenAPI_snssai_t *allowed_nssaiItem = OpenAPI_snssai_parseFromJSON(allowed_nssai_local_nonprimitive);
 
+        if (!allowed_nssaiItem) {
+            ogs_error("No allowed_nssaiItem");
+            OpenAPI_list_free(allowed_nssaiList);
+            goto end;
+        }
+
         OpenAPI_list_add(allowed_nssaiList, allowed_nssaiItem);
     }
     }
@@ -495,6 +501,12 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
         }
         OpenAPI_nssai_mapping_t *nssai_mapping_listItem = OpenAPI_nssai_mapping_parseFromJSON(nssai_mapping_list_local_nonprimitive);
 
+        if (!nssai_mapping_listItem) {
+            ogs_error("No nssai_mapping_listItem");
+            OpenAPI_list_free(nssai_mapping_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(nssai_mapping_listList, nssai_mapping_listItem);
     }
     }
@@ -517,6 +529,12 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
             goto end;
         }
         OpenAPI_snssai_t *allowed_home_nssaiItem = OpenAPI_snssai_parseFromJSON(allowed_home_nssai_local_nonprimitive);
+
+        if (!allowed_home_nssaiItem) {
+            ogs_error("No allowed_home_nssaiItem");
+            OpenAPI_list_free(allowed_home_nssaiList);
+            goto end;
+        }
 
         OpenAPI_list_add(allowed_home_nssaiList, allowed_home_nssaiItem);
     }
@@ -632,6 +650,12 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
         }
         OpenAPI_nssaa_status_t *nssaa_status_listItem = OpenAPI_nssaa_status_parseFromJSON(nssaa_status_list_local_nonprimitive);
 
+        if (!nssaa_status_listItem) {
+            ogs_error("No nssaa_status_listItem");
+            OpenAPI_list_free(nssaa_status_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(nssaa_status_listList, nssaa_status_listItem);
     }
     }
@@ -654,6 +678,12 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
             goto end;
         }
         OpenAPI_nssai_mapping_t *pending_nssai_mapping_listItem = OpenAPI_nssai_mapping_parseFromJSON(pending_nssai_mapping_list_local_nonprimitive);
+
+        if (!pending_nssai_mapping_listItem) {
+            ogs_error("No pending_nssai_mapping_listItem");
+            OpenAPI_list_free(pending_nssai_mapping_listList);
+            goto end;
+        }
 
         OpenAPI_list_add(pending_nssai_mapping_listList, pending_nssai_mapping_listItem);
     }

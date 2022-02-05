@@ -261,6 +261,12 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_p
         }
         OpenAPI_allowed_nssai_t *allowed_nssai_listItem = OpenAPI_allowed_nssai_parseFromJSON(allowed_nssai_list_local_nonprimitive);
 
+        if (!allowed_nssai_listItem) {
+            ogs_error("No allowed_nssai_listItem");
+            OpenAPI_list_free(allowed_nssai_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(allowed_nssai_listList, allowed_nssai_listItem);
     }
     }
@@ -283,6 +289,12 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_p
             goto end;
         }
         OpenAPI_configured_snssai_t *configured_nssaiItem = OpenAPI_configured_snssai_parseFromJSON(configured_nssai_local_nonprimitive);
+
+        if (!configured_nssaiItem) {
+            ogs_error("No configured_nssaiItem");
+            OpenAPI_list_free(configured_nssaiList);
+            goto end;
+        }
 
         OpenAPI_list_add(configured_nssaiList, configured_nssaiItem);
     }
@@ -336,6 +348,12 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_p
         }
         OpenAPI_snssai_t *rejected_nssai_in_plmnItem = OpenAPI_snssai_parseFromJSON(rejected_nssai_in_plmn_local_nonprimitive);
 
+        if (!rejected_nssai_in_plmnItem) {
+            ogs_error("No rejected_nssai_in_plmnItem");
+            OpenAPI_list_free(rejected_nssai_in_plmnList);
+            goto end;
+        }
+
         OpenAPI_list_add(rejected_nssai_in_plmnList, rejected_nssai_in_plmnItem);
     }
     }
@@ -358,6 +376,12 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_p
             goto end;
         }
         OpenAPI_snssai_t *rejected_nssai_in_taItem = OpenAPI_snssai_parseFromJSON(rejected_nssai_in_ta_local_nonprimitive);
+
+        if (!rejected_nssai_in_taItem) {
+            ogs_error("No rejected_nssai_in_taItem");
+            OpenAPI_list_free(rejected_nssai_in_taList);
+            goto end;
+        }
 
         OpenAPI_list_add(rejected_nssai_in_taList, rejected_nssai_in_taItem);
     }

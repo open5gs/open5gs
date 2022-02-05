@@ -127,6 +127,12 @@ OpenAPI_service_area_restriction_t *OpenAPI_service_area_restriction_parseFromJS
         }
         OpenAPI_area_t *areasItem = OpenAPI_area_parseFromJSON(areas_local_nonprimitive);
 
+        if (!areasItem) {
+            ogs_error("No areasItem");
+            OpenAPI_list_free(areasList);
+            goto end;
+        }
+
         OpenAPI_list_add(areasList, areasItem);
     }
     }

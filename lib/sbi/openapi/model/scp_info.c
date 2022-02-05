@@ -395,6 +395,12 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
         }
         OpenAPI_ipv4_address_range_t *ipv4_addr_rangesItem = OpenAPI_ipv4_address_range_parseFromJSON(ipv4_addr_ranges_local_nonprimitive);
 
+        if (!ipv4_addr_rangesItem) {
+            ogs_error("No ipv4_addr_rangesItem");
+            OpenAPI_list_free(ipv4_addr_rangesList);
+            goto end;
+        }
+
         OpenAPI_list_add(ipv4_addr_rangesList, ipv4_addr_rangesItem);
     }
     }
@@ -417,6 +423,12 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
             goto end;
         }
         OpenAPI_ipv6_prefix_range_t *ipv6_prefix_rangesItem = OpenAPI_ipv6_prefix_range_parseFromJSON(ipv6_prefix_ranges_local_nonprimitive);
+
+        if (!ipv6_prefix_rangesItem) {
+            ogs_error("No ipv6_prefix_rangesItem");
+            OpenAPI_list_free(ipv6_prefix_rangesList);
+            goto end;
+        }
 
         OpenAPI_list_add(ipv6_prefix_rangesList, ipv6_prefix_rangesItem);
     }
@@ -460,6 +472,12 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
             goto end;
         }
         OpenAPI_plmn_id_t *remote_plmn_listItem = OpenAPI_plmn_id_parseFromJSON(remote_plmn_list_local_nonprimitive);
+
+        if (!remote_plmn_listItem) {
+            ogs_error("No remote_plmn_listItem");
+            OpenAPI_list_free(remote_plmn_listList);
+            goto end;
+        }
 
         OpenAPI_list_add(remote_plmn_listList, remote_plmn_listItem);
     }

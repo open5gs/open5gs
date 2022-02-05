@@ -96,6 +96,12 @@ OpenAPI_pc5_qo_s_para_t *OpenAPI_pc5_qo_s_para_parseFromJSON(cJSON *pc5_qo_s_par
         }
         OpenAPI_pc5_qos_flow_item_t *pc5_qos_flow_listItem = OpenAPI_pc5_qos_flow_item_parseFromJSON(pc5_qos_flow_list_local_nonprimitive);
 
+        if (!pc5_qos_flow_listItem) {
+            ogs_error("No pc5_qos_flow_listItem");
+            OpenAPI_list_free(pc5_qos_flow_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(pc5_qos_flow_listList, pc5_qos_flow_listItem);
     }
 

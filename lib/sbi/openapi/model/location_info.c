@@ -134,6 +134,12 @@ OpenAPI_location_info_t *OpenAPI_location_info_parseFromJSON(cJSON *location_inf
         }
         OpenAPI_registration_location_info_t *registration_location_info_listItem = OpenAPI_registration_location_info_parseFromJSON(registration_location_info_list_local_nonprimitive);
 
+        if (!registration_location_info_listItem) {
+            ogs_error("No registration_location_info_listItem");
+            OpenAPI_list_free(registration_location_info_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(registration_location_info_listList, registration_location_info_listItem);
     }
 

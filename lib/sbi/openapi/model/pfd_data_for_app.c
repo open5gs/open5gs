@@ -115,6 +115,12 @@ OpenAPI_pfd_data_for_app_t *OpenAPI_pfd_data_for_app_parseFromJSON(cJSON *pfd_da
         }
         OpenAPI_pfd_content_t *pfdsItem = OpenAPI_pfd_content_parseFromJSON(pfds_local_nonprimitive);
 
+        if (!pfdsItem) {
+            ogs_error("No pfdsItem");
+            OpenAPI_list_free(pfdsList);
+            goto end;
+        }
+
         OpenAPI_list_add(pfdsList, pfdsItem);
     }
 

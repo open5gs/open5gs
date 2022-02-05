@@ -568,6 +568,12 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_parseFromJSON(cJSON *nf_serviceJSON)
         }
         OpenAPI_nf_service_version_t *versionsItem = OpenAPI_nf_service_version_parseFromJSON(versions_local_nonprimitive);
 
+        if (!versionsItem) {
+            ogs_error("No versionsItem");
+            OpenAPI_list_free(versionsList);
+            goto end;
+        }
+
         OpenAPI_list_add(versionsList, versionsItem);
     }
 
@@ -634,6 +640,12 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_parseFromJSON(cJSON *nf_serviceJSON)
         }
         OpenAPI_ip_end_point_t *ip_end_pointsItem = OpenAPI_ip_end_point_parseFromJSON(ip_end_points_local_nonprimitive);
 
+        if (!ip_end_pointsItem) {
+            ogs_error("No ip_end_pointsItem");
+            OpenAPI_list_free(ip_end_pointsList);
+            goto end;
+        }
+
         OpenAPI_list_add(ip_end_pointsList, ip_end_pointsItem);
     }
     }
@@ -666,6 +678,12 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_parseFromJSON(cJSON *nf_serviceJSON)
         }
         OpenAPI_default_notification_subscription_t *default_notification_subscriptionsItem = OpenAPI_default_notification_subscription_parseFromJSON(default_notification_subscriptions_local_nonprimitive);
 
+        if (!default_notification_subscriptionsItem) {
+            ogs_error("No default_notification_subscriptionsItem");
+            OpenAPI_list_free(default_notification_subscriptionsList);
+            goto end;
+        }
+
         OpenAPI_list_add(default_notification_subscriptionsList, default_notification_subscriptionsItem);
     }
     }
@@ -689,6 +707,12 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_parseFromJSON(cJSON *nf_serviceJSON)
         }
         OpenAPI_plmn_id_t *allowed_plmnsItem = OpenAPI_plmn_id_parseFromJSON(allowed_plmns_local_nonprimitive);
 
+        if (!allowed_plmnsItem) {
+            ogs_error("No allowed_plmnsItem");
+            OpenAPI_list_free(allowed_plmnsList);
+            goto end;
+        }
+
         OpenAPI_list_add(allowed_plmnsList, allowed_plmnsItem);
     }
     }
@@ -711,6 +735,12 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_parseFromJSON(cJSON *nf_serviceJSON)
             goto end;
         }
         OpenAPI_plmn_id_nid_t *allowed_snpnsItem = OpenAPI_plmn_id_nid_parseFromJSON(allowed_snpns_local_nonprimitive);
+
+        if (!allowed_snpnsItem) {
+            ogs_error("No allowed_snpnsItem");
+            OpenAPI_list_free(allowed_snpnsList);
+            goto end;
+        }
 
         OpenAPI_list_add(allowed_snpnsList, allowed_snpnsItem);
     }
@@ -776,6 +806,12 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_parseFromJSON(cJSON *nf_serviceJSON)
             goto end;
         }
         OpenAPI_ext_snssai_t *allowed_nssaisItem = OpenAPI_ext_snssai_parseFromJSON(allowed_nssais_local_nonprimitive);
+
+        if (!allowed_nssaisItem) {
+            ogs_error("No allowed_nssaisItem");
+            OpenAPI_list_free(allowed_nssaisList);
+            goto end;
+        }
 
         OpenAPI_list_add(allowed_nssaisList, allowed_nssaisItem);
     }
@@ -908,6 +944,12 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_parseFromJSON(cJSON *nf_serviceJSON)
         }
         OpenAPI_ext_snssai_t *s_nssaisItem = OpenAPI_ext_snssai_parseFromJSON(s_nssais_local_nonprimitive);
 
+        if (!s_nssaisItem) {
+            ogs_error("No s_nssaisItem");
+            OpenAPI_list_free(s_nssaisList);
+            goto end;
+        }
+
         OpenAPI_list_add(s_nssaisList, s_nssaisItem);
     }
     }
@@ -930,6 +972,12 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_parseFromJSON(cJSON *nf_serviceJSON)
             goto end;
         }
         OpenAPI_plmn_snssai_t *per_plmn_snssai_listItem = OpenAPI_plmn_snssai_parseFromJSON(per_plmn_snssai_list_local_nonprimitive);
+
+        if (!per_plmn_snssai_listItem) {
+            ogs_error("No per_plmn_snssai_listItem");
+            OpenAPI_list_free(per_plmn_snssai_listList);
+            goto end;
+        }
 
         OpenAPI_list_add(per_plmn_snssai_listList, per_plmn_snssai_listItem);
     }

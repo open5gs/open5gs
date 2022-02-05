@@ -161,6 +161,12 @@ OpenAPI_ue_initiated_resource_request_t *OpenAPI_ue_initiated_resource_request_p
         }
         OpenAPI_packet_filter_info_t *pack_filt_infoItem = OpenAPI_packet_filter_info_parseFromJSON(pack_filt_info_local_nonprimitive);
 
+        if (!pack_filt_infoItem) {
+            ogs_error("No pack_filt_infoItem");
+            OpenAPI_list_free(pack_filt_infoList);
+            goto end;
+        }
+
         OpenAPI_list_add(pack_filt_infoList, pack_filt_infoItem);
     }
 

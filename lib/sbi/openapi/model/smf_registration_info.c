@@ -86,6 +86,12 @@ OpenAPI_smf_registration_info_t *OpenAPI_smf_registration_info_parseFromJSON(cJS
         }
         OpenAPI_smf_registration_t *smf_registration_listItem = OpenAPI_smf_registration_parseFromJSON(smf_registration_list_local_nonprimitive);
 
+        if (!smf_registration_listItem) {
+            ogs_error("No smf_registration_listItem");
+            OpenAPI_list_free(smf_registration_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(smf_registration_listList, smf_registration_listItem);
     }
 

@@ -488,6 +488,12 @@ OpenAPI_registration_context_container_t *OpenAPI_registration_context_container
         }
         OpenAPI_configured_snssai_t *configured_nssaiItem = OpenAPI_configured_snssai_parseFromJSON(configured_nssai_local_nonprimitive);
 
+        if (!configured_nssaiItem) {
+            ogs_error("No configured_nssaiItem");
+            OpenAPI_list_free(configured_nssaiList);
+            goto end;
+        }
+
         OpenAPI_list_add(configured_nssaiList, configured_nssaiItem);
     }
     }
@@ -511,6 +517,12 @@ OpenAPI_registration_context_container_t *OpenAPI_registration_context_container
         }
         OpenAPI_snssai_t *rejected_nssai_in_plmnItem = OpenAPI_snssai_parseFromJSON(rejected_nssai_in_plmn_local_nonprimitive);
 
+        if (!rejected_nssai_in_plmnItem) {
+            ogs_error("No rejected_nssai_in_plmnItem");
+            OpenAPI_list_free(rejected_nssai_in_plmnList);
+            goto end;
+        }
+
         OpenAPI_list_add(rejected_nssai_in_plmnList, rejected_nssai_in_plmnItem);
     }
     }
@@ -533,6 +545,12 @@ OpenAPI_registration_context_container_t *OpenAPI_registration_context_container
             goto end;
         }
         OpenAPI_snssai_t *rejected_nssai_in_taItem = OpenAPI_snssai_parseFromJSON(rejected_nssai_in_ta_local_nonprimitive);
+
+        if (!rejected_nssai_in_taItem) {
+            ogs_error("No rejected_nssai_in_taItem");
+            OpenAPI_list_free(rejected_nssai_in_taList);
+            goto end;
+        }
 
         OpenAPI_list_add(rejected_nssai_in_taList, rejected_nssai_in_taItem);
     }

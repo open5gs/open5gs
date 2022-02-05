@@ -138,6 +138,12 @@ OpenAPI_non_ue_n2_info_subscription_create_data_t *OpenAPI_non_ue_n2_info_subscr
         }
         OpenAPI_global_ran_node_id_t *global_ran_node_listItem = OpenAPI_global_ran_node_id_parseFromJSON(global_ran_node_list_local_nonprimitive);
 
+        if (!global_ran_node_listItem) {
+            ogs_error("No global_ran_node_listItem");
+            OpenAPI_list_free(global_ran_node_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(global_ran_node_listList, global_ran_node_listItem);
     }
     }

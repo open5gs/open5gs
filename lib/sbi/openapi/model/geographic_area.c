@@ -233,6 +233,12 @@ OpenAPI_geographic_area_t *OpenAPI_geographic_area_parseFromJSON(cJSON *geograph
         }
         OpenAPI_geographical_coordinates_t *point_listItem = OpenAPI_geographical_coordinates_parseFromJSON(point_list_local_nonprimitive);
 
+        if (!point_listItem) {
+            ogs_error("No point_listItem");
+            OpenAPI_list_free(point_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(point_listList, point_listItem);
     }
 

@@ -138,6 +138,12 @@ OpenAPI_scp_domain_info_t *OpenAPI_scp_domain_info_parseFromJSON(cJSON *scp_doma
         }
         OpenAPI_ip_end_point_t *scp_ip_end_pointsItem = OpenAPI_ip_end_point_parseFromJSON(scp_ip_end_points_local_nonprimitive);
 
+        if (!scp_ip_end_pointsItem) {
+            ogs_error("No scp_ip_end_pointsItem");
+            OpenAPI_list_free(scp_ip_end_pointsList);
+            goto end;
+        }
+
         OpenAPI_list_add(scp_ip_end_pointsList, scp_ip_end_pointsItem);
     }
     }

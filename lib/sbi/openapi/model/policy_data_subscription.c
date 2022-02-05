@@ -185,6 +185,12 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_parseFromJS
         }
         OpenAPI_resource_item_t *mon_res_itemsItem = OpenAPI_resource_item_parseFromJSON(mon_res_items_local_nonprimitive);
 
+        if (!mon_res_itemsItem) {
+            ogs_error("No mon_res_itemsItem");
+            OpenAPI_list_free(mon_res_itemsList);
+            goto end;
+        }
+
         OpenAPI_list_add(mon_res_itemsList, mon_res_itemsItem);
     }
     }

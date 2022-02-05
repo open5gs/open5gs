@@ -298,6 +298,12 @@ OpenAPI_sm_context_created_data_t *OpenAPI_sm_context_created_data_parseFromJSON
         }
         OpenAPI_ebi_arp_mapping_t *allocated_ebi_listItem = OpenAPI_ebi_arp_mapping_parseFromJSON(allocated_ebi_list_local_nonprimitive);
 
+        if (!allocated_ebi_listItem) {
+            ogs_error("No allocated_ebi_listItem");
+            OpenAPI_list_free(allocated_ebi_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(allocated_ebi_listList, allocated_ebi_listItem);
     }
     }

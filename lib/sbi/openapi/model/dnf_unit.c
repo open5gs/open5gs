@@ -86,6 +86,12 @@ OpenAPI_dnf_unit_t *OpenAPI_dnf_unit_parseFromJSON(cJSON *dnf_unitJSON)
         }
         OpenAPI_atom_t *dnf_unitItem = OpenAPI_atom_parseFromJSON(dnf_unit_local_nonprimitive);
 
+        if (!dnf_unitItem) {
+            ogs_error("No dnf_unitItem");
+            OpenAPI_list_free(dnf_unitList);
+            goto end;
+        }
+
         OpenAPI_list_add(dnf_unitList, dnf_unitItem);
     }
 

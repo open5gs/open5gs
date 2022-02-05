@@ -105,6 +105,12 @@ OpenAPI_af_event_notification_t *OpenAPI_af_event_notification_parseFromJSON(cJS
         }
         OpenAPI_flows_t *flowsItem = OpenAPI_flows_parseFromJSON(flows_local_nonprimitive);
 
+        if (!flowsItem) {
+            ogs_error("No flowsItem");
+            OpenAPI_list_free(flowsList);
+            goto end;
+        }
+
         OpenAPI_list_add(flowsList, flowsItem);
     }
     }

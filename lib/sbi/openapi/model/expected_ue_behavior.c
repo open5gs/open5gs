@@ -94,6 +94,12 @@ OpenAPI_expected_ue_behavior_t *OpenAPI_expected_ue_behavior_parseFromJSON(cJSON
         }
         OpenAPI_user_location_t *exp_move_trajectoryItem = OpenAPI_user_location_parseFromJSON(exp_move_trajectory_local_nonprimitive);
 
+        if (!exp_move_trajectoryItem) {
+            ogs_error("No exp_move_trajectoryItem");
+            OpenAPI_list_free(exp_move_trajectoryList);
+            goto end;
+        }
+
         OpenAPI_list_add(exp_move_trajectoryList, exp_move_trajectoryItem);
     }
 

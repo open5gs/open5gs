@@ -283,6 +283,12 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_parseFromJSON(cJS
         }
         OpenAPI_location_area_t *expected_umtsItem = OpenAPI_location_area_parseFromJSON(expected_umts_local_nonprimitive);
 
+        if (!expected_umtsItem) {
+            ogs_error("No expected_umtsItem");
+            OpenAPI_list_free(expected_umtsList);
+            goto end;
+        }
+
         OpenAPI_list_add(expected_umtsList, expected_umtsItem);
     }
     }

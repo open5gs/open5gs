@@ -106,6 +106,12 @@ OpenAPI_secondary_rat_usage_report_t *OpenAPI_secondary_rat_usage_report_parseFr
         }
         OpenAPI_qos_flow_usage_report_t *qos_flows_usage_dataItem = OpenAPI_qos_flow_usage_report_parseFromJSON(qos_flows_usage_data_local_nonprimitive);
 
+        if (!qos_flows_usage_dataItem) {
+            ogs_error("No qos_flows_usage_dataItem");
+            OpenAPI_list_free(qos_flows_usage_dataList);
+            goto end;
+        }
+
         OpenAPI_list_add(qos_flows_usage_dataList, qos_flows_usage_dataItem);
     }
 

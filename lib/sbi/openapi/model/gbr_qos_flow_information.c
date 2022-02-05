@@ -221,6 +221,12 @@ OpenAPI_gbr_qos_flow_information_t *OpenAPI_gbr_qos_flow_information_parseFromJS
         }
         OpenAPI_alternative_qos_profile_t *alternative_qos_profile_listItem = OpenAPI_alternative_qos_profile_parseFromJSON(alternative_qos_profile_list_local_nonprimitive);
 
+        if (!alternative_qos_profile_listItem) {
+            ogs_error("No alternative_qos_profile_listItem");
+            OpenAPI_list_free(alternative_qos_profile_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(alternative_qos_profile_listList, alternative_qos_profile_listItem);
     }
     }

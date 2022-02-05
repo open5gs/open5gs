@@ -123,6 +123,12 @@ OpenAPI_app_detection_info_t *OpenAPI_app_detection_info_parseFromJSON(cJSON *ap
         }
         OpenAPI_flow_information_t *sdf_descriptionsItem = OpenAPI_flow_information_parseFromJSON(sdf_descriptions_local_nonprimitive);
 
+        if (!sdf_descriptionsItem) {
+            ogs_error("No sdf_descriptionsItem");
+            OpenAPI_list_free(sdf_descriptionsList);
+            goto end;
+        }
+
         OpenAPI_list_add(sdf_descriptionsList, sdf_descriptionsItem);
     }
     }

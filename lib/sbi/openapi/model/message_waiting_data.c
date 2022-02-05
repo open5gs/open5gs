@@ -85,6 +85,12 @@ OpenAPI_message_waiting_data_t *OpenAPI_message_waiting_data_parseFromJSON(cJSON
         }
         OpenAPI_smsc_data_t *mwd_listItem = OpenAPI_smsc_data_parseFromJSON(mwd_list_local_nonprimitive);
 
+        if (!mwd_listItem) {
+            ogs_error("No mwd_listItem");
+            OpenAPI_list_free(mwd_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(mwd_listList, mwd_listItem);
     }
     }

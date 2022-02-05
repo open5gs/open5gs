@@ -86,6 +86,12 @@ OpenAPI_snssai_info_t *OpenAPI_snssai_info_parseFromJSON(cJSON *snssai_infoJSON)
         }
         OpenAPI_dnn_info_t *dnn_infosItem = OpenAPI_dnn_info_parseFromJSON(dnn_infos_local_nonprimitive);
 
+        if (!dnn_infosItem) {
+            ogs_error("No dnn_infosItem");
+            OpenAPI_list_free(dnn_infosList);
+            goto end;
+        }
+
         OpenAPI_list_add(dnn_infosList, dnn_infosItem);
     }
 

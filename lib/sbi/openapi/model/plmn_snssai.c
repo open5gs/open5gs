@@ -119,6 +119,12 @@ OpenAPI_plmn_snssai_t *OpenAPI_plmn_snssai_parseFromJSON(cJSON *plmn_snssaiJSON)
         }
         OpenAPI_ext_snssai_t *s_nssai_listItem = OpenAPI_ext_snssai_parseFromJSON(s_nssai_list_local_nonprimitive);
 
+        if (!s_nssai_listItem) {
+            ogs_error("No s_nssai_listItem");
+            OpenAPI_list_free(s_nssai_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(s_nssai_listList, s_nssai_listItem);
     }
 

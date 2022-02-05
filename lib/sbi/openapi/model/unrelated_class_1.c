@@ -131,6 +131,12 @@ OpenAPI_unrelated_class_1_t *OpenAPI_unrelated_class_1_parseFromJSON(cJSON *unre
         }
         OpenAPI_service_type_unrelated_class_1_t *service_type_unrelated_classesItem = OpenAPI_service_type_unrelated_class_1_parseFromJSON(service_type_unrelated_classes_local_nonprimitive);
 
+        if (!service_type_unrelated_classesItem) {
+            ogs_error("No service_type_unrelated_classesItem");
+            OpenAPI_list_free(service_type_unrelated_classesList);
+            goto end;
+        }
+
         OpenAPI_list_add(service_type_unrelated_classesList, service_type_unrelated_classesItem);
     }
     }

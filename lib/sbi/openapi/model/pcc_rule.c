@@ -426,6 +426,12 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
         }
         OpenAPI_flow_information_t *flow_infosItem = OpenAPI_flow_information_parseFromJSON(flow_infos_local_nonprimitive);
 
+        if (!flow_infosItem) {
+            ogs_error("No flow_infosItem");
+            OpenAPI_list_free(flow_infosList);
+            goto end;
+        }
+
         OpenAPI_list_add(flow_infosList, flow_infosItem);
     }
     }

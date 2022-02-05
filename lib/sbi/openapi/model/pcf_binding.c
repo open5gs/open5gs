@@ -500,6 +500,12 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
         }
         OpenAPI_ip_end_point_t *pcf_ip_end_pointsItem = OpenAPI_ip_end_point_parseFromJSON(pcf_ip_end_points_local_nonprimitive);
 
+        if (!pcf_ip_end_pointsItem) {
+            ogs_error("No pcf_ip_end_pointsItem");
+            OpenAPI_list_free(pcf_ip_end_pointsList);
+            goto end;
+        }
+
         OpenAPI_list_add(pcf_ip_end_pointsList, pcf_ip_end_pointsItem);
     }
     }
@@ -549,6 +555,12 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
             goto end;
         }
         OpenAPI_ip_end_point_t *pcf_sm_ip_end_pointsItem = OpenAPI_ip_end_point_parseFromJSON(pcf_sm_ip_end_points_local_nonprimitive);
+
+        if (!pcf_sm_ip_end_pointsItem) {
+            ogs_error("No pcf_sm_ip_end_pointsItem");
+            OpenAPI_list_free(pcf_sm_ip_end_pointsList);
+            goto end;
+        }
 
         OpenAPI_list_add(pcf_sm_ip_end_pointsList, pcf_sm_ip_end_pointsItem);
     }

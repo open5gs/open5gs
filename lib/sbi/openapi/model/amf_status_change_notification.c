@@ -86,6 +86,12 @@ OpenAPI_amf_status_change_notification_t *OpenAPI_amf_status_change_notification
         }
         OpenAPI_amf_status_info_t *amf_status_info_listItem = OpenAPI_amf_status_info_parseFromJSON(amf_status_info_list_local_nonprimitive);
 
+        if (!amf_status_info_listItem) {
+            ogs_error("No amf_status_info_listItem");
+            OpenAPI_list_free(amf_status_info_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(amf_status_info_listList, amf_status_info_listItem);
     }
 

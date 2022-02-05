@@ -144,6 +144,12 @@ OpenAPI_n2_information_transfer_req_data_t *OpenAPI_n2_information_transfer_req_
         }
         OpenAPI_tai_t *tai_listItem = OpenAPI_tai_parseFromJSON(tai_list_local_nonprimitive);
 
+        if (!tai_listItem) {
+            ogs_error("No tai_listItem");
+            OpenAPI_list_free(tai_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(tai_listList, tai_listItem);
     }
     }
@@ -177,6 +183,12 @@ OpenAPI_n2_information_transfer_req_data_t *OpenAPI_n2_information_transfer_req_
             goto end;
         }
         OpenAPI_global_ran_node_id_t *global_ran_node_listItem = OpenAPI_global_ran_node_id_parseFromJSON(global_ran_node_list_local_nonprimitive);
+
+        if (!global_ran_node_listItem) {
+            ogs_error("No global_ran_node_listItem");
+            OpenAPI_list_free(global_ran_node_listList);
+            goto end;
+        }
 
         OpenAPI_list_add(global_ran_node_listList, global_ran_node_listItem);
     }

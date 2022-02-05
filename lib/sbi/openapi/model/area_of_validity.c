@@ -86,6 +86,12 @@ OpenAPI_area_of_validity_t *OpenAPI_area_of_validity_parseFromJSON(cJSON *area_o
         }
         OpenAPI_tai_t *tai_listItem = OpenAPI_tai_parseFromJSON(tai_list_local_nonprimitive);
 
+        if (!tai_listItem) {
+            ogs_error("No tai_listItem");
+            OpenAPI_list_free(tai_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(tai_listList, tai_listItem);
     }
 

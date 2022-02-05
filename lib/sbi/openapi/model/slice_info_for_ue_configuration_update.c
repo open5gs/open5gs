@@ -180,6 +180,12 @@ OpenAPI_slice_info_for_ue_configuration_update_t *OpenAPI_slice_info_for_ue_conf
         }
         OpenAPI_subscribed_snssai_t *subscribed_nssaiItem = OpenAPI_subscribed_snssai_parseFromJSON(subscribed_nssai_local_nonprimitive);
 
+        if (!subscribed_nssaiItem) {
+            ogs_error("No subscribed_nssaiItem");
+            OpenAPI_list_free(subscribed_nssaiList);
+            goto end;
+        }
+
         OpenAPI_list_add(subscribed_nssaiList, subscribed_nssaiItem);
     }
     }
@@ -226,6 +232,12 @@ OpenAPI_slice_info_for_ue_configuration_update_t *OpenAPI_slice_info_for_ue_conf
         }
         OpenAPI_snssai_t *requested_nssaiItem = OpenAPI_snssai_parseFromJSON(requested_nssai_local_nonprimitive);
 
+        if (!requested_nssaiItem) {
+            ogs_error("No requested_nssaiItem");
+            OpenAPI_list_free(requested_nssaiList);
+            goto end;
+        }
+
         OpenAPI_list_add(requested_nssaiList, requested_nssaiItem);
     }
     }
@@ -248,6 +260,12 @@ OpenAPI_slice_info_for_ue_configuration_update_t *OpenAPI_slice_info_for_ue_conf
             goto end;
         }
         OpenAPI_mapping_of_snssai_t *mapping_of_nssaiItem = OpenAPI_mapping_of_snssai_parseFromJSON(mapping_of_nssai_local_nonprimitive);
+
+        if (!mapping_of_nssaiItem) {
+            ogs_error("No mapping_of_nssaiItem");
+            OpenAPI_list_free(mapping_of_nssaiList);
+            goto end;
+        }
 
         OpenAPI_list_add(mapping_of_nssaiList, mapping_of_nssaiItem);
     }

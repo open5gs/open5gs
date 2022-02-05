@@ -128,6 +128,12 @@ OpenAPI_upu_info_t *OpenAPI_upu_info_parseFromJSON(cJSON *upu_infoJSON)
         }
         OpenAPI_upu_data_1_t *upu_data_listItem = OpenAPI_upu_data_1_parseFromJSON(upu_data_list_local_nonprimitive);
 
+        if (!upu_data_listItem) {
+            ogs_error("No upu_data_listItem");
+            OpenAPI_list_free(upu_data_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(upu_data_listList, upu_data_listItem);
     }
 

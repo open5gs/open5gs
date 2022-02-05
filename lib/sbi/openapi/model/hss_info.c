@@ -182,6 +182,12 @@ OpenAPI_hss_info_t *OpenAPI_hss_info_parseFromJSON(cJSON *hss_infoJSON)
         }
         OpenAPI_imsi_range_t *imsi_rangesItem = OpenAPI_imsi_range_parseFromJSON(imsi_ranges_local_nonprimitive);
 
+        if (!imsi_rangesItem) {
+            ogs_error("No imsi_rangesItem");
+            OpenAPI_list_free(imsi_rangesList);
+            goto end;
+        }
+
         OpenAPI_list_add(imsi_rangesList, imsi_rangesItem);
     }
     }
@@ -204,6 +210,12 @@ OpenAPI_hss_info_t *OpenAPI_hss_info_parseFromJSON(cJSON *hss_infoJSON)
             goto end;
         }
         OpenAPI_identity_range_t *ims_private_identity_rangesItem = OpenAPI_identity_range_parseFromJSON(ims_private_identity_ranges_local_nonprimitive);
+
+        if (!ims_private_identity_rangesItem) {
+            ogs_error("No ims_private_identity_rangesItem");
+            OpenAPI_list_free(ims_private_identity_rangesList);
+            goto end;
+        }
 
         OpenAPI_list_add(ims_private_identity_rangesList, ims_private_identity_rangesItem);
     }
@@ -228,6 +240,12 @@ OpenAPI_hss_info_t *OpenAPI_hss_info_parseFromJSON(cJSON *hss_infoJSON)
         }
         OpenAPI_identity_range_t *ims_public_identity_rangesItem = OpenAPI_identity_range_parseFromJSON(ims_public_identity_ranges_local_nonprimitive);
 
+        if (!ims_public_identity_rangesItem) {
+            ogs_error("No ims_public_identity_rangesItem");
+            OpenAPI_list_free(ims_public_identity_rangesList);
+            goto end;
+        }
+
         OpenAPI_list_add(ims_public_identity_rangesList, ims_public_identity_rangesItem);
     }
     }
@@ -250,6 +268,12 @@ OpenAPI_hss_info_t *OpenAPI_hss_info_parseFromJSON(cJSON *hss_infoJSON)
             goto end;
         }
         OpenAPI_identity_range_t *msisdn_rangesItem = OpenAPI_identity_range_parseFromJSON(msisdn_ranges_local_nonprimitive);
+
+        if (!msisdn_rangesItem) {
+            ogs_error("No msisdn_rangesItem");
+            OpenAPI_list_free(msisdn_rangesList);
+            goto end;
+        }
 
         OpenAPI_list_add(msisdn_rangesList, msisdn_rangesItem);
     }

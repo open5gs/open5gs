@@ -247,6 +247,12 @@ OpenAPI_presence_info_rm_t *OpenAPI_presence_info_rm_parseFromJSON(cJSON *presen
         }
         OpenAPI_tai_t *tracking_area_listItem = OpenAPI_tai_parseFromJSON(tracking_area_list_local_nonprimitive);
 
+        if (!tracking_area_listItem) {
+            ogs_error("No tracking_area_listItem");
+            OpenAPI_list_free(tracking_area_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(tracking_area_listList, tracking_area_listItem);
     }
     }
@@ -269,6 +275,12 @@ OpenAPI_presence_info_rm_t *OpenAPI_presence_info_rm_parseFromJSON(cJSON *presen
             goto end;
         }
         OpenAPI_ecgi_t *ecgi_listItem = OpenAPI_ecgi_parseFromJSON(ecgi_list_local_nonprimitive);
+
+        if (!ecgi_listItem) {
+            ogs_error("No ecgi_listItem");
+            OpenAPI_list_free(ecgi_listList);
+            goto end;
+        }
 
         OpenAPI_list_add(ecgi_listList, ecgi_listItem);
     }
@@ -293,6 +305,12 @@ OpenAPI_presence_info_rm_t *OpenAPI_presence_info_rm_parseFromJSON(cJSON *presen
         }
         OpenAPI_ncgi_t *ncgi_listItem = OpenAPI_ncgi_parseFromJSON(ncgi_list_local_nonprimitive);
 
+        if (!ncgi_listItem) {
+            ogs_error("No ncgi_listItem");
+            OpenAPI_list_free(ncgi_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(ncgi_listList, ncgi_listItem);
     }
     }
@@ -316,6 +334,12 @@ OpenAPI_presence_info_rm_t *OpenAPI_presence_info_rm_parseFromJSON(cJSON *presen
         }
         OpenAPI_global_ran_node_id_t *global_ran_node_id_listItem = OpenAPI_global_ran_node_id_parseFromJSON(global_ran_node_id_list_local_nonprimitive);
 
+        if (!global_ran_node_id_listItem) {
+            ogs_error("No global_ran_node_id_listItem");
+            OpenAPI_list_free(global_ran_node_id_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(global_ran_node_id_listList, global_ran_node_id_listItem);
     }
     }
@@ -338,6 +362,12 @@ OpenAPI_presence_info_rm_t *OpenAPI_presence_info_rm_parseFromJSON(cJSON *presen
             goto end;
         }
         OpenAPI_global_ran_node_id_t *globale_nb_id_listItem = OpenAPI_global_ran_node_id_parseFromJSON(globale_nb_id_list_local_nonprimitive);
+
+        if (!globale_nb_id_listItem) {
+            ogs_error("No globale_nb_id_listItem");
+            OpenAPI_list_free(globale_nb_id_listList);
+            goto end;
+        }
 
         OpenAPI_list_add(globale_nb_id_listList, globale_nb_id_listItem);
     }

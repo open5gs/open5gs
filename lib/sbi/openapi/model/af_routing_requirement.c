@@ -174,6 +174,12 @@ OpenAPI_af_routing_requirement_t *OpenAPI_af_routing_requirement_parseFromJSON(c
         }
         OpenAPI_route_to_location_t *route_to_locsItem = OpenAPI_route_to_location_parseFromJSON(route_to_locs_local_nonprimitive);
 
+        if (!route_to_locsItem) {
+            ogs_error("No route_to_locsItem");
+            OpenAPI_list_free(route_to_locsList);
+            goto end;
+        }
+
         OpenAPI_list_add(route_to_locsList, route_to_locsItem);
     }
     }
@@ -203,6 +209,12 @@ OpenAPI_af_routing_requirement_t *OpenAPI_af_routing_requirement_parseFromJSON(c
             goto end;
         }
         OpenAPI_temporal_validity_t *temp_valsItem = OpenAPI_temporal_validity_parseFromJSON(temp_vals_local_nonprimitive);
+
+        if (!temp_valsItem) {
+            ogs_error("No temp_valsItem");
+            OpenAPI_list_free(temp_valsList);
+            goto end;
+        }
 
         OpenAPI_list_add(temp_valsList, temp_valsItem);
     }

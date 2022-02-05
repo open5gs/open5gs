@@ -105,6 +105,12 @@ OpenAPI_wireline_service_area_restriction_t *OpenAPI_wireline_service_area_restr
         }
         OpenAPI_wireline_area_t *areasItem = OpenAPI_wireline_area_parseFromJSON(areas_local_nonprimitive);
 
+        if (!areasItem) {
+            ogs_error("No areasItem");
+            OpenAPI_list_free(areasList);
+            goto end;
+        }
+
         OpenAPI_list_add(areasList, areasItem);
     }
     }

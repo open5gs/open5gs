@@ -124,6 +124,12 @@ OpenAPI_allowed_snssai_t *OpenAPI_allowed_snssai_parseFromJSON(cJSON *allowed_sn
         }
         OpenAPI_nsi_information_t *nsi_information_listItem = OpenAPI_nsi_information_parseFromJSON(nsi_information_list_local_nonprimitive);
 
+        if (!nsi_information_listItem) {
+            ogs_error("No nsi_information_listItem");
+            OpenAPI_list_free(nsi_information_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(nsi_information_listList, nsi_information_listItem);
     }
     }

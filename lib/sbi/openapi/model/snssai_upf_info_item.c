@@ -120,6 +120,12 @@ OpenAPI_snssai_upf_info_item_t *OpenAPI_snssai_upf_info_item_parseFromJSON(cJSON
         }
         OpenAPI_dnn_upf_info_item_t *dnn_upf_info_listItem = OpenAPI_dnn_upf_info_item_parseFromJSON(dnn_upf_info_list_local_nonprimitive);
 
+        if (!dnn_upf_info_listItem) {
+            ogs_error("No dnn_upf_info_listItem");
+            OpenAPI_list_free(dnn_upf_info_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(dnn_upf_info_listList, dnn_upf_info_listItem);
     }
 

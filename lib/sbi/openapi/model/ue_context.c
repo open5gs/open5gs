@@ -1107,6 +1107,12 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         }
         OpenAPI_area_t *forbidden_area_listItem = OpenAPI_area_parseFromJSON(forbidden_area_list_local_nonprimitive);
 
+        if (!forbidden_area_listItem) {
+            ogs_error("No forbidden_area_listItem");
+            OpenAPI_list_free(forbidden_area_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(forbidden_area_listList, forbidden_area_listItem);
     }
     }
@@ -1159,6 +1165,12 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         }
         OpenAPI_ext_amf_event_subscription_t *event_subscription_listItem = OpenAPI_ext_amf_event_subscription_parseFromJSON(event_subscription_list_local_nonprimitive);
 
+        if (!event_subscription_listItem) {
+            ogs_error("No event_subscription_listItem");
+            OpenAPI_list_free(event_subscription_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(event_subscription_listList, event_subscription_listItem);
     }
     }
@@ -1182,6 +1194,12 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         }
         OpenAPI_mm_context_t *mm_context_listItem = OpenAPI_mm_context_parseFromJSON(mm_context_list_local_nonprimitive);
 
+        if (!mm_context_listItem) {
+            ogs_error("No mm_context_listItem");
+            OpenAPI_list_free(mm_context_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(mm_context_listList, mm_context_listItem);
     }
     }
@@ -1204,6 +1222,12 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
             goto end;
         }
         OpenAPI_pdu_session_context_t *session_context_listItem = OpenAPI_pdu_session_context_parseFromJSON(session_context_list_local_nonprimitive);
+
+        if (!session_context_listItem) {
+            ogs_error("No session_context_listItem");
+            OpenAPI_list_free(session_context_listList);
+            goto end;
+        }
 
         OpenAPI_list_add(session_context_listList, session_context_listItem);
     }
@@ -1285,6 +1309,12 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
             goto end;
         }
         OpenAPI_small_data_rate_status_info_t *small_data_rate_status_infosItem = OpenAPI_small_data_rate_status_info_parseFromJSON(small_data_rate_status_infos_local_nonprimitive);
+
+        if (!small_data_rate_status_infosItem) {
+            ogs_error("No small_data_rate_status_infosItem");
+            OpenAPI_list_free(small_data_rate_status_infosList);
+            goto end;
+        }
 
         OpenAPI_list_add(small_data_rate_status_infosList, small_data_rate_status_infosItem);
     }

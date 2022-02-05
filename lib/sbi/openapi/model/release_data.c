@@ -287,6 +287,12 @@ OpenAPI_release_data_t *OpenAPI_release_data_parseFromJSON(cJSON *release_dataJS
         }
         OpenAPI_secondary_rat_usage_report_t *secondary_rat_usage_reportItem = OpenAPI_secondary_rat_usage_report_parseFromJSON(secondary_rat_usage_report_local_nonprimitive);
 
+        if (!secondary_rat_usage_reportItem) {
+            ogs_error("No secondary_rat_usage_reportItem");
+            OpenAPI_list_free(secondary_rat_usage_reportList);
+            goto end;
+        }
+
         OpenAPI_list_add(secondary_rat_usage_reportList, secondary_rat_usage_reportItem);
     }
     }
@@ -309,6 +315,12 @@ OpenAPI_release_data_t *OpenAPI_release_data_parseFromJSON(cJSON *release_dataJS
             goto end;
         }
         OpenAPI_secondary_rat_usage_info_t *secondary_rat_usage_infoItem = OpenAPI_secondary_rat_usage_info_parseFromJSON(secondary_rat_usage_info_local_nonprimitive);
+
+        if (!secondary_rat_usage_infoItem) {
+            ogs_error("No secondary_rat_usage_infoItem");
+            OpenAPI_list_free(secondary_rat_usage_infoList);
+            goto end;
+        }
 
         OpenAPI_list_add(secondary_rat_usage_infoList, secondary_rat_usage_infoItem);
     }

@@ -96,6 +96,12 @@ OpenAPI_authorization_data_t *OpenAPI_authorization_data_parseFromJSON(cJSON *au
         }
         OpenAPI_user_identifier_t *authorization_dataItem = OpenAPI_user_identifier_parseFromJSON(authorization_data_local_nonprimitive);
 
+        if (!authorization_dataItem) {
+            ogs_error("No authorization_dataItem");
+            OpenAPI_list_free(authorization_dataList);
+            goto end;
+        }
+
         OpenAPI_list_add(authorization_dataList, authorization_dataItem);
     }
 

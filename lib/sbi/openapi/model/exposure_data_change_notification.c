@@ -149,6 +149,12 @@ OpenAPI_exposure_data_change_notification_t *OpenAPI_exposure_data_change_notifi
         }
         OpenAPI_pdu_session_management_data_t *pdu_session_management_dataItem = OpenAPI_pdu_session_management_data_parseFromJSON(pdu_session_management_data_local_nonprimitive);
 
+        if (!pdu_session_management_dataItem) {
+            ogs_error("No pdu_session_management_dataItem");
+            OpenAPI_list_free(pdu_session_management_dataList);
+            goto end;
+        }
+
         OpenAPI_list_add(pdu_session_management_dataList, pdu_session_management_dataItem);
     }
     }

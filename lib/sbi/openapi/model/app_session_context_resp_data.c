@@ -115,6 +115,12 @@ OpenAPI_app_session_context_resp_data_t *OpenAPI_app_session_context_resp_data_p
         }
         OpenAPI_ue_identity_info_t *ue_idsItem = OpenAPI_ue_identity_info_parseFromJSON(ue_ids_local_nonprimitive);
 
+        if (!ue_idsItem) {
+            ogs_error("No ue_idsItem");
+            OpenAPI_list_free(ue_idsList);
+            goto end;
+        }
+
         OpenAPI_list_add(ue_idsList, ue_idsItem);
     }
     }

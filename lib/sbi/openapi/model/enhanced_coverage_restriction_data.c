@@ -85,6 +85,12 @@ OpenAPI_enhanced_coverage_restriction_data_t *OpenAPI_enhanced_coverage_restrict
         }
         OpenAPI_plmn_ec_info_t *plmn_ec_info_listItem = OpenAPI_plmn_ec_info_parseFromJSON(plmn_ec_info_list_local_nonprimitive);
 
+        if (!plmn_ec_info_listItem) {
+            ogs_error("No plmn_ec_info_listItem");
+            OpenAPI_list_free(plmn_ec_info_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(plmn_ec_info_listList, plmn_ec_info_listItem);
     }
     }

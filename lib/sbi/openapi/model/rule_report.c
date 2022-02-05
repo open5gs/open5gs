@@ -232,6 +232,12 @@ OpenAPI_rule_report_t *OpenAPI_rule_report_parseFromJSON(cJSON *rule_reportJSON)
         }
         OpenAPI_ran_nas_rel_cause_t *ran_nas_rel_causesItem = OpenAPI_ran_nas_rel_cause_parseFromJSON(ran_nas_rel_causes_local_nonprimitive);
 
+        if (!ran_nas_rel_causesItem) {
+            ogs_error("No ran_nas_rel_causesItem");
+            OpenAPI_list_free(ran_nas_rel_causesList);
+            goto end;
+        }
+
         OpenAPI_list_add(ran_nas_rel_causesList, ran_nas_rel_causesItem);
     }
     }

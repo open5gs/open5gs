@@ -86,6 +86,12 @@ OpenAPI_cnf_t *OpenAPI_cnf_parseFromJSON(cJSON *cnfJSON)
         }
         OpenAPI_cnf_unit_t *cnf_unitsItem = OpenAPI_cnf_unit_parseFromJSON(cnf_units_local_nonprimitive);
 
+        if (!cnf_unitsItem) {
+            ogs_error("No cnf_unitsItem");
+            OpenAPI_list_free(cnf_unitsList);
+            goto end;
+        }
+
         OpenAPI_list_add(cnf_unitsList, cnf_unitsItem);
     }
 

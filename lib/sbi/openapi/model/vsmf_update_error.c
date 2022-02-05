@@ -278,6 +278,12 @@ OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_parseFromJSON(cJSON *vsmf
         }
         OpenAPI_arp_t *failed_to_assign_ebi_listItem = OpenAPI_arp_parseFromJSON(failed_to_assign_ebi_list_local_nonprimitive);
 
+        if (!failed_to_assign_ebi_listItem) {
+            ogs_error("No failed_to_assign_ebi_listItem");
+            OpenAPI_list_free(failed_to_assign_ebi_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(failed_to_assign_ebi_listList, failed_to_assign_ebi_listItem);
     }
     }

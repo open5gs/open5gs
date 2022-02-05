@@ -132,6 +132,12 @@ OpenAPI_ec_restriction_t *OpenAPI_ec_restriction_parseFromJSON(cJSON *ec_restric
         }
         OpenAPI_plmn_ec_info_t *plmn_ec_infosItem = OpenAPI_plmn_ec_info_parseFromJSON(plmn_ec_infos_local_nonprimitive);
 
+        if (!plmn_ec_infosItem) {
+            ogs_error("No plmn_ec_infosItem");
+            OpenAPI_list_free(plmn_ec_infosList);
+            goto end;
+        }
+
         OpenAPI_list_add(plmn_ec_infosList, plmn_ec_infosItem);
     }
     }

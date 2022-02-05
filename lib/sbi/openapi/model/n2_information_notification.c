@@ -281,6 +281,12 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_parse
         }
         OpenAPI_smf_change_info_t *smf_change_info_listItem = OpenAPI_smf_change_info_parseFromJSON(smf_change_info_list_local_nonprimitive);
 
+        if (!smf_change_info_listItem) {
+            ogs_error("No smf_change_info_listItem");
+            OpenAPI_list_free(smf_change_info_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(smf_change_info_listList, smf_change_info_listItem);
     }
     }

@@ -223,6 +223,12 @@ OpenAPI_ue_context_create_data_t *OpenAPI_ue_context_create_data_parseFromJSON(c
         }
         OpenAPI_n2_sm_information_t *pdu_session_listItem = OpenAPI_n2_sm_information_parseFromJSON(pdu_session_list_local_nonprimitive);
 
+        if (!pdu_session_listItem) {
+            ogs_error("No pdu_session_listItem");
+            OpenAPI_list_free(pdu_session_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(pdu_session_listList, pdu_session_listItem);
     }
 

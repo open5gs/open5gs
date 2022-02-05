@@ -93,6 +93,12 @@ OpenAPI_allowed_nssai_t *OpenAPI_allowed_nssai_parseFromJSON(cJSON *allowed_nssa
         }
         OpenAPI_allowed_snssai_t *allowed_snssai_listItem = OpenAPI_allowed_snssai_parseFromJSON(allowed_snssai_list_local_nonprimitive);
 
+        if (!allowed_snssai_listItem) {
+            ogs_error("No allowed_snssai_listItem");
+            OpenAPI_list_free(allowed_snssai_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(allowed_snssai_listList, allowed_snssai_listItem);
     }
 

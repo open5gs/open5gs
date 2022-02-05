@@ -123,6 +123,12 @@ OpenAPI_group_identifiers_t *OpenAPI_group_identifiers_parseFromJSON(cJSON *grou
         }
         OpenAPI_ue_id_t *ue_id_listItem = OpenAPI_ue_id_parseFromJSON(ue_id_list_local_nonprimitive);
 
+        if (!ue_id_listItem) {
+            ogs_error("No ue_id_listItem");
+            OpenAPI_list_free(ue_id_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(ue_id_listList, ue_id_listItem);
     }
     }

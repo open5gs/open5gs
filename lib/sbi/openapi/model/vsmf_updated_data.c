@@ -411,6 +411,12 @@ OpenAPI_vsmf_updated_data_t *OpenAPI_vsmf_updated_data_parseFromJSON(cJSON *vsmf
         }
         OpenAPI_qos_flow_item_t *qos_flows_add_mod_listItem = OpenAPI_qos_flow_item_parseFromJSON(qos_flows_add_mod_list_local_nonprimitive);
 
+        if (!qos_flows_add_mod_listItem) {
+            ogs_error("No qos_flows_add_mod_listItem");
+            OpenAPI_list_free(qos_flows_add_mod_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(qos_flows_add_mod_listList, qos_flows_add_mod_listItem);
     }
     }
@@ -433,6 +439,12 @@ OpenAPI_vsmf_updated_data_t *OpenAPI_vsmf_updated_data_parseFromJSON(cJSON *vsmf
             goto end;
         }
         OpenAPI_qos_flow_item_t *qos_flows_rel_listItem = OpenAPI_qos_flow_item_parseFromJSON(qos_flows_rel_list_local_nonprimitive);
+
+        if (!qos_flows_rel_listItem) {
+            ogs_error("No qos_flows_rel_listItem");
+            OpenAPI_list_free(qos_flows_rel_listList);
+            goto end;
+        }
 
         OpenAPI_list_add(qos_flows_rel_listList, qos_flows_rel_listItem);
     }
@@ -457,6 +469,12 @@ OpenAPI_vsmf_updated_data_t *OpenAPI_vsmf_updated_data_parseFromJSON(cJSON *vsmf
         }
         OpenAPI_qos_flow_item_t *qos_flows_failedto_add_mod_listItem = OpenAPI_qos_flow_item_parseFromJSON(qos_flows_failedto_add_mod_list_local_nonprimitive);
 
+        if (!qos_flows_failedto_add_mod_listItem) {
+            ogs_error("No qos_flows_failedto_add_mod_listItem");
+            OpenAPI_list_free(qos_flows_failedto_add_mod_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(qos_flows_failedto_add_mod_listList, qos_flows_failedto_add_mod_listItem);
     }
     }
@@ -479,6 +497,12 @@ OpenAPI_vsmf_updated_data_t *OpenAPI_vsmf_updated_data_parseFromJSON(cJSON *vsmf
             goto end;
         }
         OpenAPI_qos_flow_item_t *qos_flows_failedto_rel_listItem = OpenAPI_qos_flow_item_parseFromJSON(qos_flows_failedto_rel_list_local_nonprimitive);
+
+        if (!qos_flows_failedto_rel_listItem) {
+            ogs_error("No qos_flows_failedto_rel_listItem");
+            OpenAPI_list_free(qos_flows_failedto_rel_listList);
+            goto end;
+        }
 
         OpenAPI_list_add(qos_flows_failedto_rel_listList, qos_flows_failedto_rel_listItem);
     }
@@ -540,6 +564,12 @@ OpenAPI_vsmf_updated_data_t *OpenAPI_vsmf_updated_data_parseFromJSON(cJSON *vsmf
         }
         OpenAPI_ebi_arp_mapping_t *assigned_ebi_listItem = OpenAPI_ebi_arp_mapping_parseFromJSON(assigned_ebi_list_local_nonprimitive);
 
+        if (!assigned_ebi_listItem) {
+            ogs_error("No assigned_ebi_listItem");
+            OpenAPI_list_free(assigned_ebi_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(assigned_ebi_listList, assigned_ebi_listItem);
     }
     }
@@ -562,6 +592,12 @@ OpenAPI_vsmf_updated_data_t *OpenAPI_vsmf_updated_data_parseFromJSON(cJSON *vsmf
             goto end;
         }
         OpenAPI_arp_t *failed_to_assign_ebi_listItem = OpenAPI_arp_parseFromJSON(failed_to_assign_ebi_list_local_nonprimitive);
+
+        if (!failed_to_assign_ebi_listItem) {
+            ogs_error("No failed_to_assign_ebi_listItem");
+            OpenAPI_list_free(failed_to_assign_ebi_listList);
+            goto end;
+        }
 
         OpenAPI_list_add(failed_to_assign_ebi_listList, failed_to_assign_ebi_listItem);
     }
@@ -606,6 +642,12 @@ OpenAPI_vsmf_updated_data_t *OpenAPI_vsmf_updated_data_parseFromJSON(cJSON *vsmf
         }
         OpenAPI_secondary_rat_usage_report_t *secondary_rat_usage_reportItem = OpenAPI_secondary_rat_usage_report_parseFromJSON(secondary_rat_usage_report_local_nonprimitive);
 
+        if (!secondary_rat_usage_reportItem) {
+            ogs_error("No secondary_rat_usage_reportItem");
+            OpenAPI_list_free(secondary_rat_usage_reportList);
+            goto end;
+        }
+
         OpenAPI_list_add(secondary_rat_usage_reportList, secondary_rat_usage_reportItem);
     }
     }
@@ -628,6 +670,12 @@ OpenAPI_vsmf_updated_data_t *OpenAPI_vsmf_updated_data_parseFromJSON(cJSON *vsmf
             goto end;
         }
         OpenAPI_secondary_rat_usage_info_t *secondary_rat_usage_infoItem = OpenAPI_secondary_rat_usage_info_parseFromJSON(secondary_rat_usage_info_local_nonprimitive);
+
+        if (!secondary_rat_usage_infoItem) {
+            ogs_error("No secondary_rat_usage_infoItem");
+            OpenAPI_list_free(secondary_rat_usage_infoList);
+            goto end;
+        }
 
         OpenAPI_list_add(secondary_rat_usage_infoList, secondary_rat_usage_infoItem);
     }

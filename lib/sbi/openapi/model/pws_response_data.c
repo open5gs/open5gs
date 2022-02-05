@@ -139,6 +139,12 @@ OpenAPI_pws_response_data_t *OpenAPI_pws_response_data_parseFromJSON(cJSON *pws_
         }
         OpenAPI_tai_t *unknown_tai_listItem = OpenAPI_tai_parseFromJSON(unknown_tai_list_local_nonprimitive);
 
+        if (!unknown_tai_listItem) {
+            ogs_error("No unknown_tai_listItem");
+            OpenAPI_list_free(unknown_tai_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(unknown_tai_listList, unknown_tai_listItem);
     }
     }

@@ -109,6 +109,12 @@ OpenAPI_polygon_t *OpenAPI_polygon_parseFromJSON(cJSON *polygonJSON)
         }
         OpenAPI_geographical_coordinates_t *point_listItem = OpenAPI_geographical_coordinates_parseFromJSON(point_list_local_nonprimitive);
 
+        if (!point_listItem) {
+            ogs_error("No point_listItem");
+            OpenAPI_list_free(point_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(point_listList, point_listItem);
     }
 

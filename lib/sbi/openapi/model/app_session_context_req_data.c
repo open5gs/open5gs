@@ -719,6 +719,12 @@ OpenAPI_app_session_context_req_data_t *OpenAPI_app_session_context_req_data_par
         }
         OpenAPI_port_management_container_t *tsn_port_man_cont_nwttsItem = OpenAPI_port_management_container_parseFromJSON(tsn_port_man_cont_nwtts_local_nonprimitive);
 
+        if (!tsn_port_man_cont_nwttsItem) {
+            ogs_error("No tsn_port_man_cont_nwttsItem");
+            OpenAPI_list_free(tsn_port_man_cont_nwttsList);
+            goto end;
+        }
+
         OpenAPI_list_add(tsn_port_man_cont_nwttsList, tsn_port_man_cont_nwttsItem);
     }
     }

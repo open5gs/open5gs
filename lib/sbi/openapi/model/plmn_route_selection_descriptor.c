@@ -108,6 +108,12 @@ OpenAPI_plmn_route_selection_descriptor_t *OpenAPI_plmn_route_selection_descript
         }
         OpenAPI_snssai_route_selection_descriptor_t *snssai_route_sel_descsItem = OpenAPI_snssai_route_selection_descriptor_parseFromJSON(snssai_route_sel_descs_local_nonprimitive);
 
+        if (!snssai_route_sel_descsItem) {
+            ogs_error("No snssai_route_sel_descsItem");
+            OpenAPI_list_free(snssai_route_sel_descsList);
+            goto end;
+        }
+
         OpenAPI_list_add(snssai_route_sel_descsList, snssai_route_sel_descsItem);
     }
     }

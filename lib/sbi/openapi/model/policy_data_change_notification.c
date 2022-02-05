@@ -487,6 +487,12 @@ OpenAPI_policy_data_change_notification_t *OpenAPI_policy_data_change_notificati
         }
         OpenAPI_notification_item_t *reported_fragmentsItem = OpenAPI_notification_item_parseFromJSON(reported_fragments_local_nonprimitive);
 
+        if (!reported_fragmentsItem) {
+            ogs_error("No reported_fragmentsItem");
+            OpenAPI_list_free(reported_fragmentsList);
+            goto end;
+        }
+
         OpenAPI_list_add(reported_fragmentsList, reported_fragmentsItem);
     }
     }

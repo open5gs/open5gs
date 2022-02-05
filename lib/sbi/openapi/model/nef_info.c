@@ -198,6 +198,12 @@ OpenAPI_nef_info_t *OpenAPI_nef_info_parseFromJSON(cJSON *nef_infoJSON)
         }
         OpenAPI_identity_range_t *gpsi_rangesItem = OpenAPI_identity_range_parseFromJSON(gpsi_ranges_local_nonprimitive);
 
+        if (!gpsi_rangesItem) {
+            ogs_error("No gpsi_rangesItem");
+            OpenAPI_list_free(gpsi_rangesList);
+            goto end;
+        }
+
         OpenAPI_list_add(gpsi_rangesList, gpsi_rangesItem);
     }
     }
@@ -220,6 +226,12 @@ OpenAPI_nef_info_t *OpenAPI_nef_info_parseFromJSON(cJSON *nef_infoJSON)
             goto end;
         }
         OpenAPI_identity_range_t *external_group_identifiers_rangesItem = OpenAPI_identity_range_parseFromJSON(external_group_identifiers_ranges_local_nonprimitive);
+
+        if (!external_group_identifiers_rangesItem) {
+            ogs_error("No external_group_identifiers_rangesItem");
+            OpenAPI_list_free(external_group_identifiers_rangesList);
+            goto end;
+        }
 
         OpenAPI_list_add(external_group_identifiers_rangesList, external_group_identifiers_rangesItem);
     }

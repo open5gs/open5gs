@@ -141,6 +141,12 @@ OpenAPI_assign_ebi_data_t *OpenAPI_assign_ebi_data_parseFromJSON(cJSON *assign_e
         }
         OpenAPI_arp_t *arp_listItem = OpenAPI_arp_parseFromJSON(arp_list_local_nonprimitive);
 
+        if (!arp_listItem) {
+            ogs_error("No arp_listItem");
+            OpenAPI_list_free(arp_listList);
+            goto end;
+        }
+
         OpenAPI_list_add(arp_listList, arp_listItem);
     }
     }

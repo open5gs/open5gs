@@ -124,6 +124,12 @@ OpenAPI_application_data_subs_t *OpenAPI_application_data_subs_parseFromJSON(cJS
         }
         OpenAPI_data_filter_t *data_filtersItem = OpenAPI_data_filter_parseFromJSON(data_filters_local_nonprimitive);
 
+        if (!data_filtersItem) {
+            ogs_error("No data_filtersItem");
+            OpenAPI_list_free(data_filtersList);
+            goto end;
+        }
+
         OpenAPI_list_add(data_filtersList, data_filtersItem);
     }
     }

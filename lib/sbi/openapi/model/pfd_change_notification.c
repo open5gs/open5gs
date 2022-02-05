@@ -144,6 +144,12 @@ OpenAPI_pfd_change_notification_t *OpenAPI_pfd_change_notification_parseFromJSON
         }
         OpenAPI_pfd_content_t *pfdsItem = OpenAPI_pfd_content_parseFromJSON(pfds_local_nonprimitive);
 
+        if (!pfdsItem) {
+            ogs_error("No pfdsItem");
+            OpenAPI_list_free(pfdsList);
+            goto end;
+        }
+
         OpenAPI_list_add(pfdsList, pfdsItem);
     }
     }

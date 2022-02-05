@@ -1355,6 +1355,12 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_parseFromJSON
         }
         OpenAPI_secondary_rat_usage_info_t *secondary_rat_usage_infoItem = OpenAPI_secondary_rat_usage_info_parseFromJSON(secondary_rat_usage_info_local_nonprimitive);
 
+        if (!secondary_rat_usage_infoItem) {
+            ogs_error("No secondary_rat_usage_infoItem");
+            OpenAPI_list_free(secondary_rat_usage_infoList);
+            goto end;
+        }
+
         OpenAPI_list_add(secondary_rat_usage_infoList, secondary_rat_usage_infoItem);
     }
     }
