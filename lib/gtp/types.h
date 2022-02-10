@@ -246,8 +246,8 @@ ED8(uint8_t spare1:1;,
     uint8_t emergency_pdu_session_indication:1;)
 } __attribute__ ((packed)) ogs_gtp_indication_t;
 
-/* 8.13 Protocol Configuration Options (PCO) 
- * 10.5.6.3 Protocol configuration options in 3GPP TS 24.008 
+/* 8.13 Protocol Configuration Options (PCO)
+ * 10.5.6.3 Protocol configuration options in 3GPP TS 24.008
  * RFC 3232 [103]
  * RFC 1661 [102] */
 
@@ -256,9 +256,9 @@ ED8(uint8_t spare1:1;,
 typedef struct ogs_gtp_bearer_qos_s {
 ED5(uint8_t spare1:1;,
     /* See 3GPP TS 29.212[29], clause 5.3.46 Pre-emption-Capability AVP. */
-    uint8_t pre_emption_capability:1;, 
-    /* See 3GPP TS 29.212[29], clause 5.3.45 Priority-Level AVP. 
-     * PL encodes each priority level defined for the Priority-Level AVP 
+    uint8_t pre_emption_capability:1;,
+    /* See 3GPP TS 29.212[29], clause 5.3.45 Priority-Level AVP.
+     * PL encodes each priority level defined for the Priority-Level AVP
      * as the binary value of the priority level.  */
     uint8_t priority_level:4;,
     uint8_t spare2:1;,
@@ -272,7 +272,7 @@ ED5(uint8_t spare1:1;,
     uint64_t ul_gbr;
     uint64_t dl_gbr;
 
-    /* NOTE : The encoding in 3GPP TS 24.301 [23] and 3GPP TS 36.413 [10] 
+    /* NOTE : The encoding in 3GPP TS 24.301 [23] and 3GPP TS 36.413 [10]
      * is different from the encoding within this specification.  */
 } __attribute__ ((packed)) ogs_gtp_bearer_qos_t;
 
@@ -292,7 +292,7 @@ typedef struct ogs_gtp_flow_qos_s {
     uint64_t ul_gbr;
     uint64_t dl_gbr;
 
-    /* NOTE : The encoding in 3GPP TS 24.301 [23] and 3GPP TS 36.413 [10] 
+    /* NOTE : The encoding in 3GPP TS 24.301 [23] and 3GPP TS 36.413 [10]
      * is different from the encoding within this specification.  */
 } __attribute__ ((packed)) ogs_gtp_flow_qos_t;
 
@@ -316,7 +316,7 @@ int16_t ogs_gtp_build_flow_qos(ogs_tlv_octet_t *octet,
 #define OGS_GTP_RAT_TYPE_VIRTUAL                                7
 #define OGS_GTP_RAT_TYPE_EUTRAN_NB_IOT                          8
 
-/* 8.19 EPS Bearer Level Traffic Flow Template (Bearer TFT) 
+/* 8.19 EPS Bearer Level Traffic Flow Template (Bearer TFT)
  * See subclause 10.5.6.12 in 3GPP TS 24.008 [13]. */
 #define OGS_GTP_MAX_TRAFFIC_FLOW_TEMPLATE 255
 
@@ -482,15 +482,15 @@ ED3(uint8_t       ipv4:1;,
 #define OGS_GTP_UE_TIME_ZONE_1_HOUR_FOR_DAYLIGHT_SAVING_TIME        1
 #define OGS_GTP_UE_TIME_ZONE_2_HOUR_FOR_DAYLIGHT_SAVING_TIME        2
 /* Time Zone" IE in 3GPP TS 24.008 [5].
- * This field uses the same format as the Timezone field used in the 
- * TP-Service-Centre-Time-Stamp, which is defined in 3GPP TS 23.040 [90], 
+ * This field uses the same format as the Timezone field used in the
+ * TP-Service-Centre-Time-Stamp, which is defined in 3GPP TS 23.040 [90],
  * and its value shall be set as defined in 3GPP TS 22.042 */
 typedef struct ogs_gtp_ue_timezone_s {
 #define OGS_GTP_TIME_TO_BCD(x) OGS_TIME_TO_BCD(x)
     /* The Time Zone indicates the difference, expressed in quarters of an hour,
-     * between the local time and GMT. In the first of the two semi-octets, 
-     * the first bit (bit 3 of the seventh octet of 
-     * the TP-Service-Centre-Time-Stamp field) represents 
+     * between the local time and GMT. In the first of the two semi-octets,
+     * the first bit (bit 3 of the seventh octet of
+     * the TP-Service-Centre-Time-Stamp field) represents
      * the algebraic sign of this difference (0: positive, 1: negative). */
     uint8_t timezone;
 ED2(uint8_t spare:6;,
