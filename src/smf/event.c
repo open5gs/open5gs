@@ -57,9 +57,9 @@ const char *smf_event_get_name(smf_event_t *e)
         return OGS_FSM_NAME_INIT_SIG;
 
     switch (e->id) {
-    case OGS_FSM_ENTRY_SIG: 
+    case OGS_FSM_ENTRY_SIG:
         return OGS_FSM_NAME_ENTRY_SIG;
-    case OGS_FSM_EXIT_SIG: 
+    case OGS_FSM_EXIT_SIG:
         return OGS_FSM_NAME_EXIT_SIG;
 
     case SMF_EVT_S5C_MESSAGE:
@@ -90,7 +90,7 @@ const char *smf_event_get_name(smf_event_t *e)
     case SMF_EVT_5GSM_TIMER:
         return "SMF_EVT_5GSM_TIMER";
 
-    default: 
+    default:
        break;
     }
 

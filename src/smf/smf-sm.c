@@ -527,7 +527,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     ogs_assert_if_reached();
                 END
                 break;
-            
+
             DEFAULT
                 ogs_error("Invalid resource name [%s]",
                         sbi_message.h.resource.component[0]);
