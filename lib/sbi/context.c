@@ -98,7 +98,9 @@ static int ogs_sbi_context_prepare(void)
 {
     self.sbi_port = OGS_SBI_HTTP_PORT;
 
+#if ENABLE_ACCEPT_ENCODING
     self.content_encoding = "gzip";
+#endif
 
     return OGS_OK;
 }
