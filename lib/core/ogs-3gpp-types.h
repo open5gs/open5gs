@@ -121,7 +121,7 @@ uint16_t ogs_plmn_id_mcc(ogs_plmn_id_t *plmn_id);
 uint16_t ogs_plmn_id_mnc(ogs_plmn_id_t *plmn_id);
 uint16_t ogs_plmn_id_mnc_len(ogs_plmn_id_t *plmn_id);
 
-void *ogs_plmn_id_build(ogs_plmn_id_t *plmn_id, 
+void *ogs_plmn_id_build(ogs_plmn_id_t *plmn_id,
         uint16_t mcc, uint16_t mnc, uint16_t mnc_len);
 
 char *ogs_serving_network_name_from_plmn_id(ogs_plmn_id_t *plmn_id);
@@ -265,7 +265,7 @@ ED2(uint8_t spare:5;,
     uint8_t session_type:3;)
     union {
         /* PDU_SESSION_TYPE_IPV4 */
-        uint32_t addr;      
+        uint32_t addr;
 
         /* PDU_SESSION_TYPE_IPV6 */
         struct {
@@ -283,7 +283,7 @@ ED2(uint8_t spare:5;,
                 /* IPv6 Prefix and Interface Identifier */
                 uint8_t addr6[OGS_IPV6_LEN];
             };
-            uint32_t addr;      
+            uint32_t addr;
         } __attribute__ ((packed)) both;
     };
 } __attribute__ ((packed)) ogs_paa_t;
@@ -305,8 +305,8 @@ typedef struct ogs_qos_s {
 
     struct {
     /* Values 1 to 8 should only be assigned for services that are
-     * authorized to receive prioritized treatment within an operator domain. 
-     * Values 9 to 15 may be assigned to resources that are authorized 
+     * authorized to receive prioritized treatment within an operator domain.
+     * Values 9 to 15 may be assigned to resources that are authorized
      * by the home network and thus applicable when a UE is roaming. */
         uint8_t     priority_level;
 /*
@@ -370,7 +370,7 @@ typedef struct ogs_pcc_rule_s {
 
     int flow_status;
     uint32_t precedence;
-        
+
     ogs_qos_t  qos;
 } ogs_pcc_rule_t;
 
@@ -453,8 +453,8 @@ int ogs_fqdn_parse(char *dst, char *src, int len);
 
 /**************************************************
  * Protocol Configuration Options Structure
- * 8.13 Protocol Configuration Options (PCO) 
- * 10.5.6.3 Protocol configuration options in 3GPP TS 24.008 
+ * 8.13 Protocol Configuration Options (PCO)
+ * 10.5.6.3 Protocol configuration options in 3GPP TS 24.008
  * RFC 3232 [103]
  * RFC 1661 [102] */
 #define OGS_PCO_PPP_FOR_USE_WITH_IP_PDP_TYPE_OR_IP_PDN_TYPE 0

@@ -20,8 +20,8 @@
 #include "fd-path.h"
 
 static struct session_handler *smf_gx_reg = NULL;
-static struct disp_hdl *hdl_gx_fb = NULL; 
-static struct disp_hdl *hdl_gx_rar = NULL; 
+static struct disp_hdl *hdl_gx_fb = NULL;
+static struct disp_hdl *hdl_gx_rar = NULL;
 
 struct sess_state {
     os0_t       gx_sid;             /* Gx Session-Id */
@@ -118,7 +118,7 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
     } else {
         /* Create a new session */
         #define OGS_DIAM_GX_APP_SID_OPT  "app_gx"
-        ret = fd_msg_new_session(req, (os0_t)OGS_DIAM_GX_APP_SID_OPT, 
+        ret = fd_msg_new_session(req, (os0_t)OGS_DIAM_GX_APP_SID_OPT,
                 CONSTSTRLEN(OGS_DIAM_GX_APP_SID_OPT));
         ogs_assert(ret == 0);
         ret = fd_msg_sess_get(fd_g_config->cnf_dict, req, &session, NULL);
@@ -146,7 +146,7 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
     } else
         ogs_debug("    Retrieve session: [%s]", sess_data->gx_sid);
 
-    /* 
+    /*
      * 8.2.  CC-Request-Number AVP
      *
      *  The CC-Request-Number AVP (AVP Code 415) is of type Unsigned32 and
@@ -167,7 +167,7 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
     else
         sess_data->cc_request_number++;
 
-    ogs_debug("    CC Request Type[%d] Number[%d]", 
+    ogs_debug("    CC Request Type[%d] Number[%d]",
         sess_data->cc_request_type, sess_data->cc_request_number);
     ogs_assert(sess_data->cc_request_number <= MAX_CC_REQUEST_NUMBER);
 
@@ -178,7 +178,7 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
     /* Set Origin-Host & Origin-Realm */
     ret = fd_msg_add_origin(req, 0);
     ogs_assert(ret == 0);
-    
+
     /* Set the Destination-Realm AVP */
     ret = fd_msg_avp_new(ogs_diam_destination_realm, 0, &avp);
     ogs_assert(ret == 0);
@@ -298,7 +298,7 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
             ogs_assert(ret == 0);
             memcpy(&paa, &sess->session.paa, OGS_PAA_IPV6_LEN);
 #define FRAMED_IPV6_PREFIX_LENGTH 128  /* from spec document */
-            paa.len = FRAMED_IPV6_PREFIX_LENGTH; 
+            paa.len = FRAMED_IPV6_PREFIX_LENGTH;
             val.os.data = (uint8_t*)&paa;
             val.os.len = OGS_PAA_IPV6_LEN;
             ret = fd_msg_avp_setvalue(avp, &val);
@@ -364,7 +364,7 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
                 ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
                 ogs_assert(ret == 0);
             }
-            
+
             if (sess->session.ambr.downlink) {
                 ret = fd_msg_avp_new(
                         ogs_diam_gx_apn_aggregate_max_bitrate_dl, 0, &avpch1);
@@ -595,18 +595,18 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
         ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
         ogs_assert(ret == 0);
     }
-    
+
     ret = clock_gettime(CLOCK_REALTIME, &sess_data->ts);
-    
-    /* Keep a pointer to the session data for debug purpose, 
+
+    /* Keep a pointer to the session data for debug purpose,
      * in real life we would not need it */
     svg = sess_data;
-    
+
     /* Store this value in the session */
     ret = fd_sess_state_store(smf_gx_reg, session, &sess_data);
     ogs_assert(ret == 0);
     ogs_assert(sess_data == NULL);
-    
+
     /* Send the request */
     ret = fd_msg_send(&req, smf_gx_cca_cb, svg);
     ogs_assert(ret == 0);
@@ -640,7 +640,7 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
     uint32_t cc_request_number = 0;
 
     ogs_debug("[Credit-Control-Answer]");
-    
+
     ret = clock_gettime(CLOCK_REALTIME, &ts);
     ogs_assert(ret == 0);
 
@@ -650,7 +650,7 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
     ogs_assert(new == 0);
 
     ogs_debug("    Search the session");
-    
+
     ret = fd_sess_state_retrieve(smf_gx_reg, session, &sess_data);
     ogs_assert(ret == 0);
     ogs_assert(sess_data);
@@ -688,7 +688,7 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
     /* Set Credit Control Command */
     memset(gx_message, 0, gxbuf_len);
     gx_message->cmd_code = OGS_DIAM_GX_CMD_CODE_CREDIT_CONTROL;
-    
+
     /* Value of Result Code */
     ret = fd_msg_search_avp(*msg, ogs_diam_result_code, &avp);
     ogs_assert(ret == 0);
@@ -957,11 +957,11 @@ out:
 
     /* Free the message */
     ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
-    dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) + 
+    dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) +
         ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
     if (ogs_diam_logger_self()->stats.nb_recv) {
         /* Ponderate in the avg */
-        ogs_diam_logger_self()->stats.avg = (ogs_diam_logger_self()->stats.avg * 
+        ogs_diam_logger_self()->stats.avg = (ogs_diam_logger_self()->stats.avg *
             ogs_diam_logger_self()->stats.nb_recv + dur) /
             (ogs_diam_logger_self()->stats.nb_recv + 1);
         /* Min, max */
@@ -976,22 +976,22 @@ out:
     }
     if (error)
         ogs_diam_logger_self()->stats.nb_errs++;
-    else 
+    else
         ogs_diam_logger_self()->stats.nb_recv++;
 
     ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
-    
+
     /* Display how long it took */
     if (ts.tv_nsec > sess_data->ts.tv_nsec)
-        ogs_trace("in %d.%06ld sec", 
+        ogs_trace("in %d.%06ld sec",
                 (int)(ts.tv_sec - sess_data->ts.tv_sec),
                 (long)(ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
     else
-        ogs_trace("in %d.%06ld sec", 
+        ogs_trace("in %d.%06ld sec",
                 (int)(ts.tv_sec + 1 - sess_data->ts.tv_sec),
                 (long)(1000000000 + ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
 
-    ogs_debug("    CC-Request-Type[%d] Number[%d] in Session Data", 
+    ogs_debug("    CC-Request-Type[%d] Number[%d] in Session Data",
         sess_data->cc_request_type, sess_data->cc_request_number);
     ogs_debug("    Current CC-Request-Number[%d]", cc_request_number);
     if (sess_data->cc_request_type ==
@@ -1009,20 +1009,20 @@ out:
     ret = fd_msg_free(*msg);
     ogs_assert(ret == 0);
     *msg = NULL;
-    
+
     return;
 }
 
-static int smf_gx_fb_cb(struct msg **msg, struct avp *avp, 
+static int smf_gx_fb_cb(struct msg **msg, struct avp *avp,
         struct session *sess, void *opaque, enum disp_action *act)
 {
 	/* This CB should never be called */
 	ogs_warn("Unexpected message received!");
-	
+
 	return ENOTSUP;
 }
 
-static int smf_gx_rar_cb( struct msg **msg, struct avp *avp, 
+static int smf_gx_rar_cb( struct msg **msg, struct avp *avp,
         struct session *session, void *opaque, enum disp_action *act)
 {
     int rv;
@@ -1042,7 +1042,7 @@ static int smf_gx_rar_cb( struct msg **msg, struct avp *avp,
 
     uint32_t result_code = OGS_DIAM_UNKNOWN_SESSION_ID;
     int error = 0;
-	
+
     ogs_assert(msg);
 
     ogs_debug("Re-Auth-Request");
