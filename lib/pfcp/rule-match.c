@@ -113,7 +113,7 @@ ogs_pfcp_rule_t *ogs_pfcp_pdr_rule_find_by_packet(
                     ogs_pfcp_pdr_t *pdr, ogs_pkbuf_t *pkbuf)
 {
     struct ip *ip_h =  NULL;
-    struct ip6_hdr *ip6_h =  NULL;
+    struct ip6_hdr *ip6_h = NULL;
     uint32_t *src_addr = NULL;
     uint32_t *dst_addr = NULL;
     int addr_len = 0;

@@ -339,6 +339,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
     } else if (gtp_h->type == OGS_GTPU_MSGTYPE_GPDU) {
         struct ip *ip_h = NULL;
+        uint32_t *src_addr = NULL;
         ogs_pfcp_object_t *pfcp_object = NULL;
         ogs_pfcp_sess_t *pfcp_sess = NULL;
         ogs_pfcp_pdr_t *pdr = NULL;
@@ -413,11 +414,63 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
             uint16_t eth_type = 0;
 
             if (ip_h->ip_v == 4 && sess->ipv4) {
+                src_addr = &ip_h->ip_src.s_addr;
+                ogs_assert(src_addr);
+
+                if (src_addr[0] == sess->ipv4->addr[0]) {
+                    /* Source IP address should be matched in uplink */
+                } else {
+                    ogs_error("[DROP] Source IP Spoofing V:%d", ip_h->ip_v);
+                    ogs_error("       SRC:%08X, UE:%08X",
+                        be32toh(src_addr[0]), be32toh(sess->ipv4->addr[0]));
+                    ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
+
+                    goto cleanup;
+                }
+
                 subnet = sess->ipv4->subnet;
                 eth_type = ETHERTYPE_IP;
             } else if (ip_h->ip_v == 6 && sess->ipv6) {
+                struct ip6_hdr *ip6_h = (struct ip6_hdr *)pkbuf->data;
+                ogs_assert(ip6_h);
+                src_addr = (uint32_t *)ip6_h->ip6_src.s6_addr;
+                ogs_assert(src_addr);
+
+                if (IN6_IS_ADDR_LINKLOCAL(src_addr) &&
+                    src_addr[2] == sess->ipv6->addr[2] &&
+                    src_addr[3] == sess->ipv6->addr[3]) {
+                    /*
+                     * if Link-local address,
+                     * Interface Identifier should be matched
+                     */
+                } else if (src_addr[0] == sess->ipv6->addr[0] &&
+                            src_addr[1] == sess->ipv6->addr[1]) {
+                    /*
+                     * If Global address
+                     * 64 bit prefix should be matched
+                     */
+                } else {
+                    ogs_error("[DROP] Source IP Spoofing V:%d", ip_h->ip_v);
+                    ogs_error("SRC:%08x %08x %08x %08x",
+                            be32toh(src_addr[0]), be32toh(src_addr[1]),
+                            be32toh(src_addr[2]), be32toh(src_addr[3]));
+                    ogs_error("UE:%08x %08x %08x %08x",
+                            be32toh(sess->ipv6->addr[0]),
+                            be32toh(sess->ipv6->addr[1]),
+                            be32toh(sess->ipv6->addr[2]),
+                            be32toh(sess->ipv6->addr[3]));
+                    ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
+
+                    goto cleanup;
+                }
+
                 subnet = sess->ipv6->subnet;
                 eth_type = ETHERTYPE_IPV6;
+            } else {
+                ogs_error("Invalid packet [IP version:%d, Packet Length:%d]",
+                        ip_h->ip_v, pkbuf->len);
+                ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
+                goto cleanup;
             }
 
             if (!subnet) {
