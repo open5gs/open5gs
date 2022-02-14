@@ -338,6 +338,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
         }
 
     } else if (gtp_h->type == OGS_GTPU_MSGTYPE_GPDU) {
+        uint16_t eth_type = 0;
         struct ip *ip_h = NULL;
         uint32_t *src_addr = NULL;
         ogs_pfcp_object_t *pfcp_object = NULL;
@@ -410,31 +411,53 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
         far = pdr->far;
         ogs_assert(far);
 
-        if (far->dst_if == OGS_PFCP_INTERFACE_CORE) {
-            uint16_t eth_type = 0;
+        if (ip_h->ip_v == 4 && sess->ipv4) {
+            src_addr = &ip_h->ip_src.s_addr;
+            ogs_assert(src_addr);
 
-            if (ip_h->ip_v == 4 && sess->ipv4) {
-                src_addr = &ip_h->ip_src.s_addr;
-                ogs_assert(src_addr);
+            /*
+             * From Issue #1354
+             *
+             * Do not check Indirect Tunnel
+             *    pdr->dst_if = OGS_PFCP_INTERFACE_ACCESS;
+             *    far->dst_if = OGS_PFCP_INTERFACE_ACCESS;
+             */
+            if (far->dst_if != OGS_PFCP_INTERFACE_ACCESS) {
 
                 if (src_addr[0] == sess->ipv4->addr[0]) {
                     /* Source IP address should be matched in uplink */
                 } else {
-                    ogs_error("[DROP] Source IP Spoofing V:%d", ip_h->ip_v);
+                    ogs_error("[DROP] Source IP-%d Spoofing SrcIf:%d DstIf:%d",
+                                ip_h->ip_v, pdr->src_if, far->dst_if);
                     ogs_error("       SRC:%08X, UE:%08X",
                         be32toh(src_addr[0]), be32toh(sess->ipv4->addr[0]));
                     ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
 
                     goto cleanup;
                 }
+            }
 
-                subnet = sess->ipv4->subnet;
-                eth_type = ETHERTYPE_IP;
-            } else if (ip_h->ip_v == 6 && sess->ipv6) {
-                struct ip6_hdr *ip6_h = (struct ip6_hdr *)pkbuf->data;
-                ogs_assert(ip6_h);
-                src_addr = (uint32_t *)ip6_h->ip6_src.s6_addr;
-                ogs_assert(src_addr);
+            subnet = sess->ipv4->subnet;
+            eth_type = ETHERTYPE_IP;
+
+        } else if (ip_h->ip_v == 6 && sess->ipv6) {
+            struct ip6_hdr *ip6_h = (struct ip6_hdr *)pkbuf->data;
+            ogs_assert(ip6_h);
+            src_addr = (uint32_t *)ip6_h->ip6_src.s6_addr;
+            ogs_assert(src_addr);
+
+            /*
+             * From Issue #1354
+             *
+             * Do not check Router Advertisement
+             *    pdr->src_if = OGS_PFCP_INTERFACE_CP_FUNCTION;
+             *    far->dst_if = OGS_PFCP_INTERFACE_ACCESS;
+             *
+             * Do not check Indirect Tunnel
+             *    pdr->dst_if = OGS_PFCP_INTERFACE_ACCESS;
+             *    far->dst_if = OGS_PFCP_INTERFACE_ACCESS;
+             */
+            if (far->dst_if != OGS_PFCP_INTERFACE_ACCESS) {
 
                 if (IN6_IS_ADDR_LINKLOCAL(src_addr) &&
                     src_addr[2] == sess->ipv6->addr[2] &&
@@ -450,7 +473,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                      * 64 bit prefix should be matched
                      */
                 } else {
-                    ogs_error("[DROP] Source IP Spoofing V:%d", ip_h->ip_v);
+                    ogs_error("[DROP] Source IP-%d Spoofing SrcIf:%d DstIf:%d",
+                                ip_h->ip_v, pdr->src_if, far->dst_if);
                     ogs_error("SRC:%08x %08x %08x %08x",
                             be32toh(src_addr[0]), be32toh(src_addr[1]),
                             be32toh(src_addr[2]), be32toh(src_addr[3]));
@@ -463,15 +487,19 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
                     goto cleanup;
                 }
-
-                subnet = sess->ipv6->subnet;
-                eth_type = ETHERTYPE_IPV6;
-            } else {
-                ogs_error("Invalid packet [IP version:%d, Packet Length:%d]",
-                        ip_h->ip_v, pkbuf->len);
-                ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
-                goto cleanup;
             }
+
+            subnet = sess->ipv6->subnet;
+            eth_type = ETHERTYPE_IPV6;
+
+        } else {
+            ogs_error("Invalid packet [IP version:%d, Packet Length:%d]",
+                    ip_h->ip_v, pkbuf->len);
+            ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
+            goto cleanup;
+        }
+
+        if (far->dst_if == OGS_PFCP_INTERFACE_CORE) {
 
             if (!subnet) {
 #if 0 /* It's redundant log message */
@@ -684,7 +712,7 @@ void upf_gtp_close(void)
 static void upf_gtp_handle_multicast(ogs_pkbuf_t *recvbuf)
 {
     struct ip *ip_h =  NULL;
-    struct ip6_hdr *ip6_h =  NULL;
+    struct ip6_hdr *ip6_h = NULL;
     ogs_pfcp_user_plane_report_t report;
 
     ip_h = (struct ip *)recvbuf->data;
