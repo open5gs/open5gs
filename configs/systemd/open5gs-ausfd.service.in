@@ -1,6 +1,6 @@
 [Unit]
 Description=Open5GS AUSF Daemon
-After=networking.service
+After=network-online.target
 
 [Service]
 Type=simple
