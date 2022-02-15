@@ -1,7 +1,6 @@
 [Unit]
 Description=Open5GS SMF Daemon
 After=network-online.target
-Requires=systemd-networkd.service
 
 [Service]
 Type=simple
