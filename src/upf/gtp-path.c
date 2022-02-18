@@ -459,7 +459,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
              */
             if (far->dst_if != OGS_PFCP_INTERFACE_ACCESS) {
 
-                if (IN6_IS_ADDR_LINKLOCAL(src_addr) &&
+                if (IN6_IS_ADDR_LINKLOCAL((struct in6_addr *)src_addr) &&
                     src_addr[2] == sess->ipv6->addr[2] &&
                     src_addr[3] == sess->ipv6->addr[3]) {
                     /*
