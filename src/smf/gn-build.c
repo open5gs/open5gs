@@ -111,7 +111,8 @@ ogs_pkbuf_t *smf_gn_build_create_pdp_context_response(
     ogs_gtp1_create_pdp_context_response_t *rsp = NULL;
 
     ogs_gtp1_gsn_addr_t smf_gnc_gsnaddr, pgw_gnu_gsnaddr;
-    int len;
+    ogs_gtp1_gsn_addr_t smf_gnc_altgsnaddr, pgw_gnu_altgsnaddr;
+    int gsn_len, gsn_altlen;
     ogs_gtp1_apn_ambr_t ambr;
     ogs_ip_t ip_eua;
     ogs_eua_t eua;
@@ -177,25 +178,65 @@ ogs_pkbuf_t *smf_gn_build_create_pdp_context_response(
     }
 
     /* GGSN Address for Control Plane */
-    rv = ogs_gtp1_sockaddr_to_gsn_addr(
-            ogs_gtp_self()->gtpc_addr, ogs_gtp_self()->gtpc_addr6,
-            &smf_gnc_gsnaddr, &len);
-    ogs_expect_or_return_val(rv == OGS_OK, NULL);
+    /* Alternative GGSN Address for Control Plane */
+    if (ogs_gtp_self()->gtpc_addr && ogs_gtp_self()->gtpc_addr6) {
+        if (sess->sgw_s5c_ip.ipv4) {
+            rv = ogs_gtp1_sockaddr_to_gsn_addr(ogs_gtp_self()->gtpc_addr, NULL,
+                        &smf_gnc_gsnaddr, &gsn_len);
+            ogs_expect_or_return_val(rv == OGS_OK, NULL);
+            rv = ogs_gtp1_sockaddr_to_gsn_addr(NULL, ogs_gtp_self()->gtpc_addr6,
+                        &smf_gnc_altgsnaddr, &gsn_altlen);
+            ogs_expect_or_return_val(rv == OGS_OK, NULL);
+        } else {
+            rv = ogs_gtp1_sockaddr_to_gsn_addr(NULL, ogs_gtp_self()->gtpc_addr6,
+                        &smf_gnc_gsnaddr, &gsn_len);
+            rv = ogs_gtp1_sockaddr_to_gsn_addr(ogs_gtp_self()->gtpc_addr, NULL,
+                        &smf_gnc_altgsnaddr, &gsn_altlen);
+            ogs_expect_or_return_val(rv == OGS_OK, NULL);
+        }
+        rsp->alternative_ggsn_address_for_control_plane.presence = 1;
+        rsp->alternative_ggsn_address_for_control_plane.data = &smf_gnc_altgsnaddr;
+        rsp->alternative_ggsn_address_for_control_plane.len = gsn_altlen;
+        ogs_expect_or_return_val(rv == OGS_OK, NULL);
+    } else {
+        rv = ogs_gtp1_sockaddr_to_gsn_addr(
+                    ogs_gtp_self()->gtpc_addr, ogs_gtp_self()->gtpc_addr6,
+                    &smf_gnc_gsnaddr, &gsn_len);
+        ogs_expect_or_return_val(rv == OGS_OK, NULL);
+    }
     rsp->ggsn_address_for_control_plane.presence = 1;
     rsp->ggsn_address_for_control_plane.data = &smf_gnc_gsnaddr;
-    rsp->ggsn_address_for_control_plane.len = len;
+    rsp->ggsn_address_for_control_plane.len = gsn_len;
 
     /* GGSN Address for user traffic */
-    rv = ogs_gtp1_sockaddr_to_gsn_addr(
-            bearer->pgw_s5u_addr, bearer->pgw_s5u_addr6,
-            &pgw_gnu_gsnaddr, &len);
-    ogs_expect_or_return_val(rv == OGS_OK, NULL);
+    /* Alternative GGSN Address for user traffic */
+    if (bearer->pgw_s5u_addr && bearer->pgw_s5u_addr6) {
+        if (bearer->sgw_s5u_ip.ipv4) {
+            rv = ogs_gtp1_sockaddr_to_gsn_addr(bearer->pgw_s5u_addr, NULL,
+                        &pgw_gnu_gsnaddr, &gsn_len);
+            ogs_expect_or_return_val(rv == OGS_OK, NULL);
+            rv = ogs_gtp1_sockaddr_to_gsn_addr(NULL, bearer->pgw_s5u_addr6,
+                        &pgw_gnu_altgsnaddr, &gsn_altlen);
+            ogs_expect_or_return_val(rv == OGS_OK, NULL);
+        } else {
+            rv = ogs_gtp1_sockaddr_to_gsn_addr(NULL, bearer->pgw_s5u_addr6,
+                        &pgw_gnu_gsnaddr, &gsn_len);
+            rv = ogs_gtp1_sockaddr_to_gsn_addr(bearer->pgw_s5u_addr, NULL,
+                        &pgw_gnu_altgsnaddr, &gsn_altlen);
+            ogs_expect_or_return_val(rv == OGS_OK, NULL);
+        }
+        rsp->alternative_ggsn_address_for_user_traffic.presence = 1;
+        rsp->alternative_ggsn_address_for_user_traffic.data = &pgw_gnu_altgsnaddr;
+        rsp->alternative_ggsn_address_for_user_traffic.len = gsn_altlen;
+    } else {
+        rv = ogs_gtp1_sockaddr_to_gsn_addr(
+                bearer->pgw_s5u_addr, bearer->pgw_s5u_addr6,
+                &pgw_gnu_gsnaddr, &gsn_len);
+        ogs_expect_or_return_val(rv == OGS_OK, NULL);
+    }
     rsp->ggsn_address_for_user_traffic.presence = 1;
     rsp->ggsn_address_for_user_traffic.data = &pgw_gnu_gsnaddr;
-    rsp->ggsn_address_for_user_traffic.len = len;
-
-    /* TODO: Alternative GGSN Address for Control Plane */
-    /* TODO: Alternative GGSN Address for user traffic */
+    rsp->ggsn_address_for_user_traffic.len = gsn_len;
 
     /* QoS Profile: if PCRF changes Bearer QoS, this should be included. */
    if (sess->gtp.create_session_response_bearer_qos == true) {
