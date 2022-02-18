@@ -325,7 +325,7 @@ int ogs_gtp1_xact_update_tx(ogs_gtp_xact_t *xact,
         h->s = 1;
         h->sqn = OGS_GTP1_XID_TO_SQN(xact->xid);
     }
-    h->length = htobe16(pkbuf->len - 4);
+    h->length = htobe16(pkbuf->len - 8);
 
     /* Save Message type and packet of this step */
     xact->seq[xact->step].type = h->type;
