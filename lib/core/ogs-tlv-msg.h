@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
  *
  * This file is part of Open5GS.
  *
@@ -50,6 +51,18 @@ typedef enum {
     OGS_TLV_MORE,
     OGS_TLV_COMPOUND,
     OGS_TLV_MESSAGE,
+    OGS_TV_UINT8,
+    OGS_TV_UINT16,
+    OGS_TV_UINT24,
+    OGS_TV_UINT32,
+    OGS_TV_INT8,
+    OGS_TV_INT16,
+    OGS_TV_INT24,
+    OGS_TV_INT32,
+    OGS_TV_FIXED_STR,
+    OGS_TV_VAR_STR,
+    OGS_TV_NULL,
+    OGS_TV_MORE,
 } ogs_tlv_type_e;
 
 typedef struct ogs_tlv_desc_s {
@@ -158,6 +171,8 @@ typedef struct ogs_tlv_null_s {
 ogs_pkbuf_t *ogs_tlv_build_msg(ogs_tlv_desc_t *desc, void *msg, int mode);
 int ogs_tlv_parse_msg(
         void *msg, ogs_tlv_desc_t *desc, ogs_pkbuf_t *pkbuf, int mode);
+int ogs_tlv_parse_msg_desc(
+        void *msg, ogs_tlv_desc_t *desc, ogs_pkbuf_t *pkbuf, int msg_mode);
 
 #ifdef __cplusplus
 }

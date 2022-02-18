@@ -29,6 +29,13 @@ extern "C" {
 int smf_gtp_open(void);
 void smf_gtp_close(void);
 
+int smf_gtp1_send_create_pdp_context_response(
+        smf_sess_t *sess, ogs_gtp_xact_t *xact);
+int smf_gtp1_send_delete_pdp_context_response(
+        smf_sess_t *sess, ogs_gtp_xact_t *xact);
+int smf_gtp_send_update_pdp_context_request(
+        smf_bearer_t *bearer, uint8_t pti, uint8_t cause_value);
+
 int smf_gtp_send_create_session_response(
         smf_sess_t *sess, ogs_gtp_xact_t *xact);
 int smf_gtp_send_delete_session_response(

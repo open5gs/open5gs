@@ -18,23 +18,35 @@
 libgtp_sources = files('''
     ogs-gtp.h
 
-    message.h
-    types.h
-    conv.h
     context.h
-    build.h
     path.h
-    xact.h
     util.h
+    xact.h
+    v1/build.h
+    v1/conv.h
+    v1/message.h
+    v1/path.h
+    v1/types.h
+    v2/build.h
+    v2/conv.h
+    v2/message.h
+    v2/path.h
+    v2/types.h
 
-    message.c
-    types.c
-    conv.c
     context.c
-    build.c
     path.c
-    xact.c
     util.c
+    xact.c
+    v1/build.c
+    v1/conv.c
+    v1/message.c
+    v1/path.c
+    v1/types.c
+    v2/build.c
+    v2/conv.c
+    v2/message.c
+    v2/path.c
+    v2/types.c
 '''.split())
 
 libgtp_inc = include_directories('.')

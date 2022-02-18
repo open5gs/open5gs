@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
  *
  * This file is part of Open5GS.
  *
@@ -32,6 +33,7 @@ extern "C" {
 #define OGS_TLV_MODE_T1_L2              2
 #define OGS_TLV_MODE_T1_L2_I1           3
 #define OGS_TLV_MODE_T2_L2              4
+#define OGS_TLV_MODE_T1                 5
 
 /* ogs_tlv_t struncture */
 
@@ -44,6 +46,9 @@ typedef struct ogs_tlv_s
 
     struct ogs_tlv_s *parent;
     struct ogs_tlv_s *embedded;
+
+    /* tlv mode: defines exact meaning and (conditional) use of fields in next section */
+    uint8_t mode;
 
     /* tlv basic element */
     uint32_t type;
@@ -74,24 +79,25 @@ void ogs_tlv_final(void);
 uint32_t ogs_tlv_pool_avail(void);
 
 /* ogs_tlv_t encoding functions */
-ogs_tlv_t *ogs_tlv_add(ogs_tlv_t *head,
+ogs_tlv_t *ogs_tlv_add(ogs_tlv_t *head, uint8_t mode,
     uint32_t type, uint32_t length, uint8_t instance, void *value);
-ogs_tlv_t *ogs_tlv_copy(void *buff, uint32_t buff_len,
+ogs_tlv_t *ogs_tlv_copy(void *buff, uint32_t buff_len, uint8_t mode,
     uint32_t type, uint32_t length, uint8_t instance, void *value);
-ogs_tlv_t *ogs_tlv_embed(ogs_tlv_t *parent,
+ogs_tlv_t *ogs_tlv_embed(ogs_tlv_t *parent, uint8_t mode,
     uint32_t type, uint32_t length, uint8_t instance, void *value);
 
-uint32_t ogs_tlv_render(
-        ogs_tlv_t *root, void *data, uint32_t length, uint8_t mode);
+uint32_t ogs_tlv_render(ogs_tlv_t *root, void *data, uint32_t length);
 
 /* ogs_tlv_t parsing functions */
+uint8_t *tlv_get_element(ogs_tlv_t *tlv, uint8_t *blk, uint8_t mode);
+uint8_t *tlv_get_element_fixed(ogs_tlv_t *tlv, uint8_t *blk, uint8_t mode, uint32_t fixed_length);
 ogs_tlv_t *ogs_tlv_parse_block(uint32_t length, void *data, uint8_t mode);
 ogs_tlv_t *ogs_tlv_parse_embedded_block(ogs_tlv_t *tlv, uint8_t mode);
 
 /* tlv operation-related function */
 ogs_tlv_t *ogs_tlv_find(ogs_tlv_t *root, uint32_t type);
 ogs_tlv_t *ogs_tlv_find_root(ogs_tlv_t *tlv);
-uint32_t ogs_tlv_calc_length(ogs_tlv_t *tlv, uint8_t mode);
+uint32_t ogs_tlv_calc_length(ogs_tlv_t *tlv);
 uint32_t ogs_tlv_calc_count(ogs_tlv_t *tlv);
 uint8_t ogs_tlv_value_8(ogs_tlv_t *tlv);
 uint16_t ogs_tlv_value_16(ogs_tlv_t *tlv);

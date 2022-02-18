@@ -70,7 +70,11 @@ void smf_gx_handle_cca_initial_request(
         uint8_t cause_value = gtp_cause_from_diameter(
             gx_message->err, gx_message->exp_err);
 
-        ogs_gtp_send_error_message(gtp_xact, sess ? sess->sgw_s5c_teid : 0,
+        if (gtp_xact->gtp_version == 1)
+            ogs_gtp1_send_error_message(gtp_xact, sess ? sess->sgw_s5c_teid : 0,
+                OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE, cause_value);
+        else
+            ogs_gtp_send_error_message(gtp_xact, sess ? sess->sgw_s5c_teid : 0,
                 OGS_GTP_CREATE_SESSION_RESPONSE_TYPE, cause_value);
         return;
     }

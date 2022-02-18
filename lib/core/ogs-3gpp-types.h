@@ -250,7 +250,34 @@ int ogs_ipv6prefix_from_string(
         uint8_t *addr6, uint8_t *prefixlen, char *string);
 
 /**************************************************
- * 8.14 PDN Address Allocation (PAA) */
+ * GTPv1-C: TS 29.060 7.7.27 End User Address (EUA) */
+#define OGS_PDP_EUA_ORG_ETSI 0
+#define OGS_PDP_EUA_ORG_IETF 1
+#define OGS_PDP_EUA_ETSI_PPP 1
+#define OGS_PDP_EUA_IETF_IPV4 0x21
+#define OGS_PDP_EUA_IETF_IPV6 0x57
+#define OGS_PDP_EUA_IETF_IPV4V6 0x8D
+typedef struct ogs_eua_s {
+ED2(uint8_t spare:4;,
+    uint8_t organization:4;)
+    uint8_t type;
+    union {
+        /* PDU_SESSION_TYPE_IPV4 */
+        uint32_t addr;
+
+        /* PDU_SESSION_TYPE_IPV6 */
+        uint8_t addr6[OGS_IPV6_LEN];
+
+        /* PDU_SESSION_TYPE_IPV4V6 */
+        struct {
+            uint32_t addr;
+            uint8_t addr6[OGS_IPV6_LEN];
+        } __attribute__ ((packed)) both;
+    };
+} __attribute__ ((packed)) ogs_eua_t;
+
+/**************************************************
+ * GTPv2-C: TS 29.274 8.14 PDN Address Allocation (PAA) */
 #define OGS_PAA_IPV4_LEN                                5
 #define OGS_PAA_IPV6_LEN                                18
 #define OGS_PAA_IPV4V6_LEN                              22

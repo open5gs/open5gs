@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
  *
  * This file is part of Open5GS.
  *
@@ -105,14 +106,14 @@ uint32_t ogs_tlv_value_32(ogs_tlv_t *tlv)
     return u_32;
 }
 
-uint32_t ogs_tlv_calc_length(ogs_tlv_t *tlv, uint8_t mode)
+uint32_t ogs_tlv_calc_length(ogs_tlv_t *tlv)
 {
     ogs_tlv_t *iter = tlv;
     uint32_t length = 0;
 
     while(iter) {
         /* this is length for type field */
-        switch(mode) {
+        switch(iter->mode) {
         case OGS_TLV_MODE_T1_L1:
             length += 2;
             break;
@@ -123,6 +124,9 @@ uint32_t ogs_tlv_calc_length(ogs_tlv_t *tlv, uint8_t mode)
         case OGS_TLV_MODE_T2_L2:
             length += 4;
             break;
+        case OGS_TLV_MODE_T1:
+            length += 1;
+            break;
         default:
             ogs_assert_if_reached();
             break;
@@ -130,7 +134,7 @@ uint32_t ogs_tlv_calc_length(ogs_tlv_t *tlv, uint8_t mode)
 
         /* this is length for type field */
         if(iter->embedded != NULL) {
-            iter->length = ogs_tlv_calc_length(iter->embedded, mode);
+            iter->length = ogs_tlv_calc_length(iter->embedded);
         }
 
         /* this is length for value field */
@@ -163,6 +167,7 @@ static uint8_t *tlv_put_type(uint32_t type, uint8_t *pos, uint8_t mode)
     case OGS_TLV_MODE_T1_L1:
     case OGS_TLV_MODE_T1_L2:
     case OGS_TLV_MODE_T1_L2_I1:
+    case OGS_TLV_MODE_T1:
         *(pos++) = type & 0xFF;
         break;
     case OGS_TLV_MODE_T2_L2:
@@ -188,6 +193,8 @@ static uint8_t *tlv_put_length(uint32_t length, uint8_t *pos, uint8_t mode)
         *(pos++) = (length >> 8) & 0xFF;
         *(pos++) = length & 0xFF;
         break;
+    case OGS_TLV_MODE_T1:
+        break;
     default:
         ogs_assert_if_reached();
         break;
@@ -209,9 +216,11 @@ static uint8_t *tlv_put_instance(uint8_t instance, uint8_t *pos, uint8_t mode)
     return pos;
 }
 
-static uint8_t *tlv_get_element(ogs_tlv_t *tlv, uint8_t *blk, uint8_t mode)
+uint8_t *tlv_get_element(ogs_tlv_t *tlv, uint8_t *blk, uint8_t mode)
 {
     uint8_t *pos = blk;
+
+    tlv->mode = mode;
 
     switch(mode) {
     case OGS_TLV_MODE_T1_L1:
@@ -234,6 +243,29 @@ static uint8_t *tlv_get_element(ogs_tlv_t *tlv, uint8_t *blk, uint8_t mode)
         tlv->type += *(pos++);
         tlv->length = *(pos++) << 8;
         tlv->length += *(pos++);
+        break;
+    case OGS_TLV_MODE_T1:
+        tlv->type = *(pos++);
+        tlv->length = 0;
+        break;
+    default:
+        ogs_assert_if_reached();
+        break;
+    }
+
+    tlv->value = pos;
+
+    return (pos + ogs_tlv_length(tlv));
+}
+
+uint8_t *tlv_get_element_fixed(ogs_tlv_t *tlv, uint8_t *blk, uint8_t mode, uint32_t fixed_length)
+{
+    uint8_t *pos = blk;
+
+    switch(mode) {
+    case OGS_TLV_MODE_T1:
+        tlv->type = *(pos++);
+        tlv->length = fixed_length;
         break;
     default:
         ogs_assert_if_reached();
@@ -268,7 +300,7 @@ ogs_tlv_t *ogs_tlv_find_root(ogs_tlv_t *tlv)
     return head;
 }
 
-ogs_tlv_t *ogs_tlv_add(ogs_tlv_t *head,
+ogs_tlv_t *ogs_tlv_add(ogs_tlv_t *head, uint8_t mode,
     uint32_t type, uint32_t length, uint8_t instance, void *value)
 {
     ogs_tlv_t *curr = head;
@@ -279,6 +311,7 @@ ogs_tlv_t *ogs_tlv_add(ogs_tlv_t *head,
     if(length != 0)
         ogs_assert(value);
 
+    new->mode = mode;
     new->type = type;
     new->length = length;
     new->instance = instance;
@@ -304,7 +337,7 @@ ogs_tlv_t *ogs_tlv_add(ogs_tlv_t *head,
     return new;
 }
 
-ogs_tlv_t *ogs_tlv_copy(void *buff, uint32_t buff_len,
+ogs_tlv_t *ogs_tlv_copy(void *buff, uint32_t buff_len, uint8_t mode,
     uint32_t type, uint32_t length, uint8_t instance, void *value)
 {
     ogs_tlv_t *new = NULL;
@@ -312,6 +345,7 @@ ogs_tlv_t *ogs_tlv_copy(void *buff, uint32_t buff_len,
     new = ogs_tlv_get();
     ogs_assert(new);
 
+    new->mode = mode;
     new->type = type;
     new->length = length;
     new->instance = instance;
@@ -327,7 +361,7 @@ ogs_tlv_t *ogs_tlv_copy(void *buff, uint32_t buff_len,
     return new;
 }
 
-ogs_tlv_t *ogs_tlv_embed(ogs_tlv_t *parent,
+ogs_tlv_t *ogs_tlv_embed(ogs_tlv_t *parent, uint8_t mode,
     uint32_t type, uint32_t length, uint8_t instance, void *value)
 {
     ogs_tlv_t *new = NULL, *root = NULL;
@@ -337,6 +371,7 @@ ogs_tlv_t *ogs_tlv_embed(ogs_tlv_t *parent,
     new = ogs_tlv_get();
     ogs_assert(new);
 
+    new->mode = mode;
     new->type = type;
     new->length = length;
     new->instance = instance;
@@ -364,8 +399,7 @@ ogs_tlv_t *ogs_tlv_embed(ogs_tlv_t *parent,
     return new;
 }
 
-uint32_t ogs_tlv_render(ogs_tlv_t *root,
-    void *data, uint32_t length, uint8_t mode)
+uint32_t ogs_tlv_render(ogs_tlv_t *root, void *data, uint32_t length)
 {
     ogs_tlv_t *curr = root;
     uint8_t *pos = data;
@@ -373,11 +407,11 @@ uint32_t ogs_tlv_render(ogs_tlv_t *root,
     uint32_t embedded_len = 0;
 
     while(curr) {
-        pos = tlv_put_type(curr->type, pos, mode);
+        pos = tlv_put_type(curr->type, pos, curr->mode);
 
         if(curr->embedded == NULL) {
-            pos = tlv_put_length(curr->length, pos, mode);
-            pos = tlv_put_instance(curr->instance, pos, mode);
+            pos = tlv_put_length(curr->length, pos, curr->mode);
+            pos = tlv_put_instance(curr->instance, pos, curr->mode);
 
             if ((pos - blk) + ogs_tlv_length(curr) > length)
                 ogs_assert_if_reached();
@@ -385,11 +419,11 @@ uint32_t ogs_tlv_render(ogs_tlv_t *root,
             memcpy((char*)pos, (char*)curr->value, curr->length);
             pos += curr->length;
         } else {
-            embedded_len = ogs_tlv_calc_length(curr->embedded, mode);
-            pos = tlv_put_length(embedded_len, pos, mode);
-            pos = tlv_put_instance(curr->instance, pos, mode);
+            embedded_len = ogs_tlv_calc_length(curr->embedded);
+            pos = tlv_put_length(embedded_len, pos, curr->mode);
+            pos = tlv_put_instance(curr->instance, pos, curr->mode);
             ogs_tlv_render(curr->embedded,
-                pos, length - (uint32_t)(pos-blk), mode);
+                pos, length - (uint32_t)(pos-blk));
             pos += embedded_len;
         }
         curr = curr->next;

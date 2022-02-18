@@ -1015,6 +1015,82 @@ smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn, uint8_t rat_type)
     return sess;
 }
 
+smf_sess_t *smf_sess_add_by_gtp1_message(ogs_gtp1_message_t *message)
+{
+    smf_ue_t *smf_ue = NULL;
+    smf_sess_t *sess = NULL;
+    char apn[OGS_MAX_APN_LEN+1];
+
+    ogs_gtp1_create_pdp_context_request_t *req = &message->create_pdp_context_request;
+
+    if (req->imsi.presence == 0) {
+        ogs_error("No IMSI");
+        return NULL;
+    }
+    if (req->tunnel_endpoint_identifier_data_i.presence == 0) {
+        ogs_error("No Tunnel Endpoint Identifier Data I");
+        return NULL;
+    }
+    if (req->nsapi.presence == 0) {
+        ogs_error("No NSAPI");
+        return NULL;
+    }
+    if (req->access_point_name.presence == 0) {
+        ogs_error("No APN");
+        return NULL;
+    }
+    if (req->sgsn_address_for_signalling.presence == 0) {
+        ogs_error("No SGSN Address for signalling");
+        return NULL;
+    }
+    if (req->sgsn_address_for_user_traffic.presence == 0) {
+        ogs_error("No SGSN Address for user traffic");
+        return NULL;
+    }
+    if (req->quality_of_service_profile.presence == 0) {
+        ogs_error("No QoS Profile");
+        return NULL;
+    }
+    if (req->rat_type.presence == 0) {
+        ogs_error("No RAT Type");
+        return NULL;
+    }
+
+    if ((ogs_fqdn_parse(apn, req->access_point_name.data,
+            ogs_min(req->access_point_name.len, OGS_MAX_APN_LEN+1))) <= 0) {
+        ogs_error("No APN");
+        return NULL;
+    }
+
+    ogs_trace("smf_sess_add_by_message() [APN:%s]", apn);
+
+    /*
+     * 7.3.1 in 3GPP TS 29.060 Release 16
+     *
+     * If a new Create PDP Context Request is incoming on TEID 0 for an already
+     * active PDP context, this Create PDP Context Request must be considered
+     * related to a new session. The existing PDP context shall be torn down
+     * locally, and the associated PDP contexts deleted locally, before the new
+     * session is created.
+     */
+
+    smf_ue = smf_ue_find_by_imsi(req->imsi.data, req->imsi.len);
+    if (!smf_ue) {
+        smf_ue = smf_ue_add_by_imsi(req->imsi.data, req->imsi.len);
+        ogs_assert(smf_ue);
+    }
+
+    sess = smf_sess_find_by_apn(smf_ue, apn, req->rat_type.u8);
+    if (sess) {
+        ogs_warn("OLD Session Release [IMSI:%s,APN:%s]",
+                smf_ue->imsi_bcd, sess->session.name);
+        smf_sess_remove(sess);
+    }
+
+    sess = smf_sess_add_by_apn(smf_ue, apn, req->rat_type.u8);
+    return sess;
+}
+
 smf_sess_t *smf_sess_add_by_gtp_message(ogs_gtp_message_t *message)
 {
     smf_ue_t *smf_ue = NULL;

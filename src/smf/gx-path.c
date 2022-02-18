@@ -312,6 +312,9 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_assert(ret == 0);
 
         switch (sess->gtp_rat_type) {
+        case OGS_GTP_RAT_TYPE_UTRAN:
+        case OGS_GTP_RAT_TYPE_GERAN:
+        case OGS_GTP_RAT_TYPE_HSPA_EVOLUTION:
         case OGS_GTP_RAT_TYPE_EUTRAN:
             val.i32 = OGS_DIAM_GX_IP_CAN_TYPE_3GPP_EPS;
             break;
@@ -333,6 +336,15 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_assert(ret == 0);
 
         switch (sess->gtp_rat_type) {
+        case OGS_GTP_RAT_TYPE_UTRAN:
+            val.i32 = OGS_DIAM_RAT_TYPE_UTRAN;
+            break;
+        case OGS_GTP_RAT_TYPE_GERAN:
+            val.i32 = OGS_DIAM_RAT_TYPE_GERAN;
+            break;
+        case OGS_GTP_RAT_TYPE_HSPA_EVOLUTION:
+            val.i32 = OGS_DIAM_RAT_TYPE_HSPA_EVOLUTION;
+            break;
         case OGS_GTP_RAT_TYPE_EUTRAN:
             val.i32 = OGS_DIAM_RAT_TYPE_EUTRAN;
             break;

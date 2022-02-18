@@ -1,0 +1,17 @@
+ies = []
+ies.append({ "ie_value" : "Routeing Area Identity", "presence" : "Mandatory", "reference" : "7.7.3"})
+ies.append({ "ie_value" : "Recovery", "presence" : "Optional", "reference" : "7.7.11"})
+ies.append({ "ie_value" : "Tunnel Endpoint Identifier Control Plane", "presence" : "Conditional", "reference" : "7.7.14"})
+ies.append({ "ie_value" : "Trace Reference", "presence" : "Optional", "reference" : "7.7.24"})
+ies.append({ "ie_value" : "Trace Type", "presence" : "Optional", "reference" : "7.7.25"})
+ies.append({ "ie_value" : "SGSN Address for Control Plane", "presence" : "Mandatory", "reference" : "7.7.32"})
+ies.append({ "ie_value" : "Alternative SGSN Address for Control Plane", "presence" : "Conditional", "reference" : "7.7.32"})
+ies.append({ "ie_value" : "Trigger Id", "presence" : "Optional", "reference" : "7.7.41"})
+ies.append({ "ie_value" : "OMC Identity", "presence" : "Optional", "reference" : "7.7.42"})
+ies.append({ "ie_value" : "RAT Type", "presence" : "Optional", "reference" : "7.7.50"})
+ies.append({ "ie_value" : "User Location Information", "presence" : "Optional ", "reference" : "7.7.51"})
+ies.append({ "ie_value" : "MS Time Zone", "presence" : "Optional", "reference" : "7.7.52"})
+ies.append({ "ie_value" : "Additional Trace Info", "presence" : "Optional", "reference" : "7.7.62"})
+ies.append({ "ie_value" : "Enhanced NSAPI", "presence" : "Mandatory", "reference" : "7.7.67"})
+ies.append({ "ie_value" : "Additional MBMS Trace Info", "presence" : "Optional", "reference" : "7.7.68"})
+msg_list[key]["ies"] = ies

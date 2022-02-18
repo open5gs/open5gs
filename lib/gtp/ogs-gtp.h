@@ -30,11 +30,17 @@
 
 #define OGS_GTP_INSIDE
 
-#include "gtp/message.h"
-#include "gtp/types.h"
-#include "gtp/conv.h"
+#include "gtp/v1/message.h"
+#include "gtp/v2/message.h"
+#include "gtp/v1/types.h"
+#include "gtp/v2/types.h"
+#include "gtp/v1/conv.h"
+#include "gtp/v2/conv.h"
 #include "gtp/context.h"
-#include "gtp/build.h"
+#include "gtp/v1/build.h"
+#include "gtp/v2/build.h"
+#include "gtp/v1/path.h"
+#include "gtp/v2/path.h"
 #include "gtp/path.h"
 #include "gtp/xact.h"
 #include "gtp/util.h"
