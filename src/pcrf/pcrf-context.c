@@ -72,7 +72,7 @@ static int pcrf_context_prepare(void)
 {
     self.diam_config->cnf_port = DIAMETER_PORT;
     self.diam_config->cnf_port_tls = DIAMETER_SECURE_PORT;
-    
+
     return OGS_OK;
 }
 
@@ -113,7 +113,7 @@ int pcrf_context_parse_config(void)
                 const char *pcrf_key = ogs_yaml_iter_key(&pcrf_iter);
                 ogs_assert(pcrf_key);
                 if (!strcmp(pcrf_key, "freeDiameter")) {
-                    yaml_node_t *node = 
+                    yaml_node_t *node =
                         yaml_document_get_node(document, pcrf_iter.pair->value);
                     ogs_assert(node);
                     if (node->type == YAML_SCALAR_NODE) {
@@ -126,10 +126,10 @@ int pcrf_context_parse_config(void)
                             const char *fd_key = ogs_yaml_iter_key(&fd_iter);
                             ogs_assert(fd_key);
                             if (!strcmp(fd_key, "identity")) {
-                                self.diam_config->cnf_diamid = 
+                                self.diam_config->cnf_diamid =
                                     ogs_yaml_iter_value(&fd_iter);
                             } else if (!strcmp(fd_key, "realm")) {
-                                self.diam_config->cnf_diamrlm = 
+                                self.diam_config->cnf_diamrlm =
                                     ogs_yaml_iter_value(&fd_iter);
                             } else if (!strcmp(fd_key, "port")) {
                                 const char *v = ogs_yaml_iter_value(&fd_iter);
@@ -138,7 +138,7 @@ int pcrf_context_parse_config(void)
                                 const char *v = ogs_yaml_iter_value(&fd_iter);
                                 if (v) self.diam_config->cnf_port_tls = atoi(v);
                             } else if (!strcmp(fd_key, "listen_on")) {
-                                self.diam_config->cnf_addr = 
+                                self.diam_config->cnf_addr =
                                     ogs_yaml_iter_value(&fd_iter);
                             } else if (!strcmp(fd_key, "no_fwd")) {
                                 self.diam_config->cnf_flags.no_fwd =
@@ -326,7 +326,7 @@ uint8_t *pcrf_sess_find_by_ipv4(const void *key)
     sid = (uint8_t *)ogs_hash_get(self.ip_hash, key, OGS_IPV4_LEN);
 
     ogs_thread_mutex_unlock(&self.hash_lock);
-    
+
     return sid;
 }
 
@@ -344,4 +344,3 @@ uint8_t *pcrf_sess_find_by_ipv6(const void *key)
 
     return sid;
 }
-
