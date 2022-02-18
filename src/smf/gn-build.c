@@ -141,6 +141,8 @@ ogs_pkbuf_t *smf_gn_build_create_pdp_context_response(
 
     /* TODO: Reordering required: should be set based on Qos Profile
        delivery_order field, see TS 23.107 Table 7  */
+   rsp->reordering_required.presence = 1;
+   rsp->reordering_required.u8 = 0; /* No */
 
     /* TODO: Recovery */
 

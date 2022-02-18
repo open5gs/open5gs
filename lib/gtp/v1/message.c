@@ -21,7 +21,7 @@
 /*******************************************************************************
  * This file had been created by gtp1-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2022-02-02 10:05:26.214723 by pespin
+ * Created on: 2022-02-18 19:21:27.743742 by pespin
  * from 29060-g00.docx
  ******************************************************************************/
 
@@ -84,7 +84,7 @@ ogs_tlv_desc_t ogs_gtp1_tlv_desc_p_tmsi =
 
 ogs_tlv_desc_t ogs_gtp1_tlv_desc_reordering_required =
 {
-    OGS_TV_FIXED_STR,
+    OGS_TV_UINT8,
     "Reordering Required",
     OGS_GTP1_REORDERING_REQUIRED_TYPE,
     1,

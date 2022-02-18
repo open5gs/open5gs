@@ -314,6 +314,7 @@ set_c_type("Trace Reference", 'uint')
 set_c_type("Trace Type", 'uint')
 set_c_type("MS Not Reachable Reason", 'uint')
 set_c_type("Charging ID", 'uint')
+set_c_type("Reordering Required", 'uint')
 
 msg_list["Echo Request"]["table"] = 12
 msg_list["Echo Response"]["table"] = 13
