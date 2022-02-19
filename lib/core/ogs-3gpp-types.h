@@ -487,6 +487,7 @@ int ogs_fqdn_parse(char *dst, char *src, int len);
 #define OGS_PCO_PPP_FOR_USE_WITH_IP_PDP_TYPE_OR_IP_PDN_TYPE 0
 
 #define OGS_PCO_ID_INTERNET_PROTOCOL_CONTROL_PROTOCOL           0x8021
+#define OGS_PCO_ID_PASSWORD_AUTHENTICATION_PROTOCOL             0xc023
 #define OGS_PCO_ID_CHALLENGE_HANDSHAKE_AUTHENTICATION_PROTOCOL  0xc223
 #define OGS_PCO_ID_P_CSCF_IPV6_ADDRESS_REQUEST                  0x0001
 #define OGS_PCO_ID_DNS_SERVER_IPV6_ADDRESS_REQUEST              0x0003
@@ -497,6 +498,13 @@ int ogs_fqdn_parse(char *dst, char *src, int len);
 #define OGS_PCO_ID_IPV4_LINK_MTU_REQUEST                        0x0010
 #define OGS_PCO_ID_MS_SUPPORT_LOCAL_ADDR_TFT_INDICATOR          0x0011
 #define OGS_PCO_ID_P_CSCF_RE_SELECTION_SUPPORT                  0x0012
+
+enum ogs_pco_ipcp_options {
+    OGS_IPCP_OPT_IPADDR = 3,
+    OGS_IPCP_OPT_PRIMARY_DNS = 129,
+    OGS_IPCP_OPT_SECONDARY_DNS = 131,
+};
+
 typedef struct ogs_pco_ipcp_options_s {
     uint8_t type;
     uint8_t len;
@@ -510,6 +518,20 @@ typedef struct ogs_pco_ipcp_s {
     uint16_t len;
     ogs_pco_ipcp_options_t options[OGS_PCO_MAX_NUM_OF_IPCO_OPTIONS];
 } __attribute__ ((packed)) ogs_pco_ipcp_t;
+
+typedef struct ogs_pco_pap_s {
+    uint8_t code;
+    uint8_t identifier;
+    uint16_t len;
+    uint8_t welcome_len;
+    char welcome[255];
+} __attribute__ ((packed)) ogs_pco_pap_t;
+
+typedef struct ogs_pco_chap_s {
+    uint8_t code;
+    uint8_t identifier;
+    uint16_t len;
+} __attribute__ ((packed)) ogs_pco_chap_t;
 
 typedef struct ogs_pco_id_s {
     uint16_t id;

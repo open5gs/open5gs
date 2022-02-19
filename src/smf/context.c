@@ -2442,11 +2442,45 @@ smf_pf_t *smf_pf_next(smf_pf_t *pf)
     return ogs_list_next(pf);
 }
 
+/*
+ * The following code is stolen from osmo-ggsn.
+ * https://github.com/osmocom/osmo-ggsn/blob/master/ggsn/pco.c#L26-L43
+ */
+
+/* determine if IPCP contains given option */
+static const uint8_t *ipcp_contains_option(
+    const ogs_pco_ipcp_t *ipcp, size_t ipcp_len,
+    enum ogs_pco_ipcp_options opt, size_t opt_minlen)
+{
+	const uint8_t *cur_opt = (const uint8_t *)ipcp->options;
+
+	/* iterate over Options and check if protocol contained */
+	while (cur_opt + sizeof(struct ogs_pco_ipcp_options_s) <=
+            (uint8_t*)ipcp + ipcp_len) {
+		const struct ogs_pco_ipcp_options_s *cur_opt_hdr =
+            (const struct ogs_pco_ipcp_options_s *)cur_opt;
+		/* length value includes 2 bytes type/length */
+		if (cur_opt_hdr->len < 2)
+			return NULL;
+		if (cur_opt_hdr->type == opt &&
+		    cur_opt_hdr->len >= 2 + opt_minlen)
+			return cur_opt;
+		cur_opt += cur_opt_hdr->len;
+	}
+	return NULL;
+}
+
+#include "../version.h"
+static const char *pap_welcome = "Welcome to open5gs-smfd " OPEN5GS_VERSION;
+
 int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
 {
     int rv;
     ogs_pco_t ue, smf;
+    ogs_pco_pap_t pco_pap;
+    ogs_pco_chap_t pco_chap;
     ogs_pco_ipcp_t pco_ipcp;
+    int pco_size = 0;
     ogs_ipsubnet_t dns_primary, dns_secondary, dns6_primary, dns6_secondary;
     ogs_ipsubnet_t p_cscf, p_cscf6;
     int size = 0;
@@ -2467,52 +2501,95 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
     for (i = 0; i < ue.num_of_id; i++) {
         uint8_t *data = ue.ids[i].data;
         switch(ue.ids[i].id) {
+        case OGS_PCO_ID_PASSWORD_AUTHENTICATION_PROTOCOL:
+            if (data[0] == 1) { /* Code : Authenticate-Request */
+                memset(&pco_pap, 0, sizeof(ogs_pco_pap_t));
+
+                pco_pap.welcome_len = strlen(pap_welcome);
+                memcpy(pco_pap.welcome, pap_welcome, pco_pap.welcome_len);
+
+                pco_size =
+                    4 + /* sizeof(code+identifier+len) */
+                    1 + /* sizeof(welcome_len) */
+                    pco_pap.welcome_len;
+
+                pco_pap.code = 2; /* Code : Authenticate-Ack */
+                pco_pap.identifier = data[1]; /* Identifier */
+                pco_pap.len = htobe16(pco_size);
+
+                smf.ids[smf.num_of_id].id = ue.ids[i].id;
+                smf.ids[smf.num_of_id].len = pco_size;
+                smf.ids[smf.num_of_id].data = (uint8_t *)&pco_pap;
+                smf.num_of_id++;
+            }
+            break;
         case OGS_PCO_ID_CHALLENGE_HANDSHAKE_AUTHENTICATION_PROTOCOL:
             if (data[0] == 2) { /* Code : Response */
+                memset(&pco_chap, 0, sizeof(ogs_pco_chap_t));
+                pco_size = 4; /* sizeof(code+identifier+len) */
+
+                pco_chap.code = 3; /* Code : Success */
+                pco_chap.identifier = data[1]; /* Identifier */
+                pco_chap.len = htobe16(pco_size);
+
                 smf.ids[smf.num_of_id].id = ue.ids[i].id;
-                smf.ids[smf.num_of_id].len = 4;
-                smf.ids[smf.num_of_id].data =
-                    (uint8_t *)"\x03\x00\x00\x04"; /* Code : Success */
+                smf.ids[smf.num_of_id].len = pco_size;
+                smf.ids[smf.num_of_id].data = (uint8_t *)&pco_chap;
                 smf.num_of_id++;
             }
             break;
         case OGS_PCO_ID_INTERNET_PROTOCOL_CONTROL_PROTOCOL:
             if (data[0] == 1) { /* Code : Configuration Request */
-                uint16_t len = 0;
+                ogs_pco_ipcp_t *ipcp = (ogs_pco_ipcp_t *)data;
+                uint16_t in_len = 0;
+                uint16_t out_len = 0;
+                int num_of_option = 0;
 
                 ogs_assert(smf_self()->dns[0] || smf_self()->dns[1]);
 
+                ogs_assert(ipcp);
+                in_len = be16toh(ipcp->len);
+
                 memset(&pco_ipcp, 0, sizeof(ogs_pco_ipcp_t));
                 pco_ipcp.code = 2; /* Code : Configuration Ack */
-                pco_ipcp.len = htobe16(len);
 
-                len = 4;
+                out_len = 4;
                 /* Primary DNS Server IP Address */
-                if (smf_self()->dns[0]) {
+                if (smf_self()->dns[0] &&
+                    ipcp_contains_option(ipcp, in_len,
+                        OGS_IPCP_OPT_PRIMARY_DNS, 4)) {
                     rv = ogs_ipsubnet(
                             &dns_primary, smf_self()->dns[0], NULL);
                     ogs_assert(rv == OGS_OK);
-                    pco_ipcp.options[0].type = 129;
-                    pco_ipcp.options[0].len = 6;
-                    pco_ipcp.options[0].addr = dns_primary.sub[0];
-                    len += 6;
+                    pco_ipcp.options[num_of_option].type =
+                        OGS_IPCP_OPT_PRIMARY_DNS;
+                    pco_ipcp.options[num_of_option].len = 6;
+                    pco_ipcp.options[num_of_option].addr = dns_primary.sub[0];
+                    num_of_option++;
+
+                    out_len += 6;
                 }
 
                 /* Secondary DNS Server IP Address */
-                if (smf_self()->dns[1]) {
+                if (smf_self()->dns[1] &&
+                    ipcp_contains_option(ipcp, in_len,
+                        OGS_IPCP_OPT_SECONDARY_DNS, 4)) {
                     rv = ogs_ipsubnet(
                             &dns_secondary, smf_self()->dns[1], NULL);
                     ogs_assert(rv == OGS_OK);
-                    pco_ipcp.options[1].type = 131;
-                    pco_ipcp.options[1].len = 6;
-                    pco_ipcp.options[1].addr = dns_secondary.sub[0];
-                    len += 6;
+                    pco_ipcp.options[num_of_option].type =
+                        OGS_IPCP_OPT_SECONDARY_DNS;
+                    pco_ipcp.options[num_of_option].len = 6;
+                    pco_ipcp.options[num_of_option].addr = dns_secondary.sub[0];
+                    num_of_option++;
+
+                    out_len += 6;
                 }
 
-                pco_ipcp.len = htobe16(len);
+                pco_ipcp.len = htobe16(out_len);
 
                 smf.ids[smf.num_of_id].id = ue.ids[i].id;
-                smf.ids[smf.num_of_id].len = len;
+                smf.ids[smf.num_of_id].len = out_len;
                 smf.ids[smf.num_of_id].data = (uint8_t *)&pco_ipcp;
 
                 smf.num_of_id++;
