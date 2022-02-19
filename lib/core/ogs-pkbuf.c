@@ -210,8 +210,6 @@ ogs_pkbuf_t *ogs_pkbuf_alloc_debug(
 
     cluster->ref++;
 
-    ogs_thread_mutex_unlock(&pool->mutex);
-
     pkbuf->cluster = cluster;
 
     pkbuf->len = 0;
@@ -225,6 +223,8 @@ ogs_pkbuf_t *ogs_pkbuf_alloc_debug(
 
     pkbuf->pool = pool;
 
+    ogs_thread_mutex_unlock(&pool->mutex);
+
     return pkbuf;
 }
 
@@ -237,10 +237,10 @@ void ogs_pkbuf_free(ogs_pkbuf_t *pkbuf)
     pool = pkbuf->pool;
     ogs_assert(pool);
 
+    ogs_thread_mutex_lock(&pool->mutex);
+
     cluster = pkbuf->cluster;
     ogs_assert(cluster);
-
-    ogs_thread_mutex_lock(&pool->mutex);
 
     cluster->ref--;
     if (cluster->ref == 0)

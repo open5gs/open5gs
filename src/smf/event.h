@@ -31,6 +31,7 @@ typedef struct ogs_gtp_xact_s ogs_gtp_xact_t;
 typedef struct ogs_pfcp_node_s ogs_pfcp_node_t;
 typedef struct ogs_pfcp_xact_s ogs_pfcp_xact_t;
 typedef struct ogs_pfcp_message_s ogs_pfcp_message_t;
+typedef struct ogs_diam_gx_message_s ogs_diam_gx_message_t;
 typedef struct smf_sess_s smf_sess_t;
 typedef struct smf_upf_s smf_upf_t;
 typedef struct ogs_sbi_request_s ogs_sbi_request_t;
@@ -77,6 +78,8 @@ typedef struct smf_event_s {
     ogs_pfcp_node_t *pfcp_node;
     ogs_pfcp_xact_t *pfcp_xact;
     ogs_pfcp_message_t *pfcp_message;
+
+    ogs_diam_gx_message_t *gx_message;
 
     struct {
         ogs_sbi_request_t *request;

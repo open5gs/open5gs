@@ -200,10 +200,8 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
 
     mme_event_t *e = NULL;
     mme_ue_t *mme_ue = NULL;
-    ogs_pkbuf_t *s6abuf = NULL;
     ogs_diam_s6a_message_t *s6a_message = NULL;
     ogs_diam_s6a_aia_message_t *aia_message = NULL;
-    uint16_t s6abuf_len = 0;
     ogs_diam_e_utran_vector_t *e_utran_vector = NULL;
 
     ogs_debug("[MME] Authentication-Information-Answer");
@@ -224,16 +222,9 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     mme_ue = sess_data->mme_ue;
     ogs_assert(mme_ue);
 
-    s6abuf_len = sizeof(ogs_diam_s6a_message_t);
-    ogs_assert(s6abuf_len < 8192);
-    s6abuf = ogs_pkbuf_alloc(NULL, s6abuf_len);
-    ogs_assert(s6abuf);
-    ogs_pkbuf_put(s6abuf, s6abuf_len);
-    s6a_message = (ogs_diam_s6a_message_t *)s6abuf->data;
-    ogs_assert(s6a_message);
-
     /* Set Authentication-Information Command */
-    memset(s6a_message, 0, s6abuf_len);
+    s6a_message = ogs_calloc(1, sizeof(ogs_diam_s6a_message_t));
+    ogs_assert(s6a_message);
     s6a_message->cmd_code = OGS_DIAM_S6A_CMD_CODE_AUTHENTICATION_INFORMATION;
     aia_message = &s6a_message->aia_message;
     ogs_assert(aia_message);
@@ -385,11 +376,11 @@ out:
         e = mme_event_new(MME_EVT_S6A_MESSAGE);
         ogs_assert(e);
         e->mme_ue = mme_ue;
-        e->pkbuf = s6abuf;
+        e->s6a_message = s6a_message;
         rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
             ogs_error("ogs_queue_push() failed:%d", (int)rv);
-            ogs_pkbuf_free(e->pkbuf);
+            ogs_free(s6a_message);
             mme_event_free(e);
         } else {
             ogs_pollset_notify(ogs_app()->pollset);
@@ -615,11 +606,9 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
 
     mme_event_t *e = NULL;
     mme_ue_t *mme_ue = NULL;
-    ogs_pkbuf_t *s6abuf = NULL;
     ogs_diam_s6a_message_t *s6a_message = NULL;
     ogs_diam_s6a_ula_message_t *ula_message = NULL;
     ogs_subscription_data_t *subscription_data = NULL;
-    uint16_t s6abuf_len = 0;
 
     ogs_debug("[MME] Update-Location-Answer");
 
@@ -639,22 +628,15 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     mme_ue = sess_data->mme_ue;
     ogs_assert(mme_ue);
 
-    s6abuf_len = sizeof(ogs_diam_s6a_message_t);
-    ogs_assert(s6abuf_len < 8192);
-    s6abuf = ogs_pkbuf_alloc(NULL, s6abuf_len);
-    ogs_assert(s6abuf);
-    ogs_pkbuf_put(s6abuf, s6abuf_len);
-    s6a_message = (ogs_diam_s6a_message_t *)s6abuf->data;
-    ogs_assert(s6a_message);
-
     /* Set Authentication-Information Command */
-    memset(s6a_message, 0, s6abuf_len);
+    s6a_message = ogs_calloc(1, sizeof(ogs_diam_s6a_message_t));
+    ogs_assert(s6a_message);
     s6a_message->cmd_code = OGS_DIAM_S6A_CMD_CODE_UPDATE_LOCATION;
     ula_message = &s6a_message->ula_message;
     ogs_assert(ula_message);
     subscription_data = &ula_message->subscription_data;
     ogs_assert(subscription_data);
-    
+
     /* AVP: 'Result-Code'(268)
      * The Result-Code AVP indicates whether a particular request was completed
      * successfully or whether an error occurred. The Result-Code data field
@@ -1313,19 +1295,19 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
         e = mme_event_new(MME_EVT_S6A_MESSAGE);
         ogs_assert(e);
         e->mme_ue = mme_ue;
-        e->pkbuf = s6abuf;
+        e->s6a_message = s6a_message;
         rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
             ogs_error("ogs_queue_push() failed:%d", (int)rv);
             ogs_subscription_data_free(subscription_data);
-            ogs_pkbuf_free(e->pkbuf);
+            ogs_free(s6a_message);
             mme_event_free(e);
         } else {
             ogs_pollset_notify(ogs_app()->pollset);
         }
     } else {
         ogs_subscription_data_free(subscription_data);
-        ogs_pkbuf_free(s6abuf);
+        ogs_free(s6a_message);
     }
 
     /* Free the message */

@@ -232,9 +232,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
     case SMF_EVT_GX_MESSAGE:
         ogs_assert(e);
-        recvbuf = e->pkbuf;
-        ogs_assert(recvbuf);
-        gx_message = (ogs_diam_gx_message_t *)recvbuf->data;
+        gx_message = e->gx_message;
         ogs_assert(gx_message);
 
         sess = e->sess;
@@ -269,7 +267,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         }
 
         ogs_session_data_free(&gx_message->session_data);
-        ogs_pkbuf_free(recvbuf);
+        ogs_free(gx_message);
         break;
     case SMF_EVT_N4_MESSAGE:
         ogs_assert(e);

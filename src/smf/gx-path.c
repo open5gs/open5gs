@@ -646,9 +646,7 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
     smf_event_t *e = NULL;
     ogs_gtp_xact_t *xact = NULL;
     smf_sess_t *sess = NULL;
-    ogs_pkbuf_t *gxbuf = NULL;
     ogs_diam_gx_message_t *gx_message = NULL;
-    uint16_t gxbuf_len = 0;
     uint32_t cc_request_number = 0;
 
     ogs_debug("[Credit-Control-Answer]");
@@ -689,16 +687,10 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
     sess = sess_data->sess;
     ogs_assert(sess);
 
-    gxbuf_len = sizeof(ogs_diam_gx_message_t);
-    ogs_assert(gxbuf_len < 8192);
-    gxbuf = ogs_pkbuf_alloc(NULL, gxbuf_len);
-    ogs_assert(gxbuf);
-    ogs_pkbuf_put(gxbuf, gxbuf_len);
-    gx_message = (ogs_diam_gx_message_t *)gxbuf->data;
+    gx_message = ogs_calloc(1, sizeof(ogs_diam_gx_message_t));
     ogs_assert(gx_message);
 
     /* Set Credit Control Command */
-    memset(gx_message, 0, gxbuf_len);
     gx_message->cmd_code = OGS_DIAM_GX_CMD_CODE_CREDIT_CONTROL;
 
     /* Value of Result Code */
@@ -951,20 +943,20 @@ out:
         ogs_assert(e);
 
         e->sess = sess;
-        e->pkbuf = gxbuf;
+        e->gx_message = gx_message;
         e->gtp_xact = xact;
         rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
             ogs_warn("ogs_queue_push() failed:%d", (int)rv);
             ogs_session_data_free(&gx_message->session_data);
-            ogs_pkbuf_free(e->pkbuf);
+            ogs_free(gx_message);
             smf_event_free(e);
         } else {
             ogs_pollset_notify(ogs_app()->pollset);
         }
     } else {
         ogs_session_data_free(&gx_message->session_data);
-        ogs_pkbuf_free(gxbuf);
+        ogs_free(gx_message);
     }
 
     /* Free the message */
@@ -1047,8 +1039,6 @@ static int smf_gx_rar_cb( struct msg **msg, struct avp *avp,
     struct sess_state *sess_data = NULL;
 
     smf_event_t *e = NULL;
-    uint16_t gxbuf_len = 0;
-    ogs_pkbuf_t *gxbuf = NULL;
     smf_sess_t *sess = NULL;
     ogs_diam_gx_message_t *gx_message = NULL;
 
@@ -1059,16 +1049,10 @@ static int smf_gx_rar_cb( struct msg **msg, struct avp *avp,
 
     ogs_debug("Re-Auth-Request");
 
-    gxbuf_len = sizeof(ogs_diam_gx_message_t);
-    ogs_assert(gxbuf_len < 8192);
-    gxbuf = ogs_pkbuf_alloc(NULL, gxbuf_len);
-    ogs_assert(gxbuf);
-    ogs_pkbuf_put(gxbuf, gxbuf_len);
-    gx_message = (ogs_diam_gx_message_t *)gxbuf->data;
+    gx_message = ogs_calloc(1, sizeof(ogs_diam_gx_message_t));
     ogs_assert(gx_message);
 
     /* Set Credit Control Command */
-    memset(gx_message, 0, gxbuf_len);
     gx_message->cmd_code = OGS_DIAM_GX_CMD_RE_AUTH;
 
 	/* Create answer header */
@@ -1203,12 +1187,12 @@ static int smf_gx_rar_cb( struct msg **msg, struct avp *avp,
     ogs_assert(e);
 
     e->sess = sess;
-    e->pkbuf = gxbuf;
+    e->gx_message = gx_message;
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_warn("ogs_queue_push() failed:%d", (int)rv);
         ogs_session_data_free(&gx_message->session_data);
-        ogs_pkbuf_free(e->pkbuf);
+        ogs_free(gx_message);
         smf_event_free(e);
     } else {
         ogs_pollset_notify(ogs_app()->pollset);
@@ -1263,7 +1247,7 @@ out:
     ogs_assert(ret == 0);
 
     ogs_session_data_free(&gx_message->session_data);
-    ogs_pkbuf_free(gxbuf);
+    ogs_free(gx_message);
 
     return 0;
 }

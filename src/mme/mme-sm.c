@@ -119,7 +119,6 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
     mme_bearer_t *default_bearer = NULL;
     mme_sess_t *sess = NULL;
 
-    ogs_pkbuf_t *s6abuf = NULL;
     ogs_diam_s6a_message_t *s6a_message = NULL;
 
     ogs_gtp_node_t *gnode = NULL;
@@ -430,10 +429,11 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
     case MME_EVT_S6A_MESSAGE:
         mme_ue = e->mme_ue;
         ogs_assert(mme_ue);
-        s6abuf = e->pkbuf;
-        ogs_assert(s6abuf);
-        s6a_message = (ogs_diam_s6a_message_t *)s6abuf->data;
+        s6a_message = e->s6a_message;
         ogs_assert(s6a_message);
+
+    ogs_warn("%p, %d, %p, %p", s6a_message, s6a_message->result_code,
+            s6a_message->err, s6a_message->exp_err);
 
         enb_ue = enb_ue_cycle(mme_ue->enb_ue);
         if (!enb_ue) {
@@ -441,11 +441,13 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
             ogs_subscription_data_free(
                     &s6a_message->ula_message.subscription_data);
-            ogs_pkbuf_free(s6abuf);
+            ogs_free(s6a_message);
             break;
         }
 
         if (s6a_message->result_code != ER_DIAMETER_SUCCESS) {
+    ogs_warn("%p, %d, %p, %p", s6a_message, s6a_message->result_code,
+            s6a_message->err, s6a_message->exp_err);
             /* Unfortunately fd doesn't distinguish
              * between result-code and experimental-result-code.
              *
@@ -467,7 +469,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
             ogs_subscription_data_free(
                     &s6a_message->ula_message.subscription_data);
-            ogs_pkbuf_free(s6abuf);
+            ogs_free(s6a_message);
             break;
         }
 
@@ -507,7 +509,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             break;
         }
         ogs_subscription_data_free(&s6a_message->ula_message.subscription_data);
-        ogs_pkbuf_free(s6abuf);
+        ogs_free(s6a_message);
         break;
 
     case MME_EVT_S11_MESSAGE:

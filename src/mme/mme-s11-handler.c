@@ -77,7 +77,7 @@ void mme_s11_handle_echo_response(
 }
 
 void mme_s11_handle_create_session_response(
-        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue_from_teid,
         ogs_gtp_create_session_response_t *rsp)
 {
     int rv;
@@ -87,6 +87,7 @@ void mme_s11_handle_create_session_response(
 
     mme_bearer_t *bearer = NULL;
     mme_sess_t *sess = NULL;
+    mme_ue_t *mme_ue = mme_ue_from_teid;
     ogs_session_t *session = NULL;
     ogs_gtp_bearer_qos_t bearer_qos;
     ogs_gtp_ambr_t *ambr = NULL;
@@ -98,9 +99,6 @@ void mme_s11_handle_create_session_response(
     ogs_debug("Create Session Response");
 
     cause_value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
-
-    rv = ogs_gtp_xact_commit(xact);
-    ogs_expect_or_return(rv == OGS_OK);
 
     if (rsp->pdn_address_allocation.presence == 0) {
         ogs_error("No PDN Address Allocation");
@@ -131,6 +129,9 @@ void mme_s11_handle_create_session_response(
         mme_ue = sess->mme_ue;
         ogs_assert(mme_ue);
     }
+
+    rv = ogs_gtp_xact_commit(xact);
+    ogs_expect_or_return(rv == OGS_OK);
 
     if (rsp->cause.presence) {
         ogs_gtp_cause_t *cause = rsp->cause.data;
@@ -168,13 +169,15 @@ void mme_s11_handle_create_session_response(
     }
 
     if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
-        if (mme_ue && UE_CONTEXT_IN_ATTACH(mme_ue)) {
-            ogs_error("[%s] Attach reject", mme_ue->imsi_bcd);
-            ogs_assert(OGS_OK ==
-                nas_eps_send_attach_reject(mme_ue,
-                    EMM_CAUSE_NETWORK_FAILURE, ESM_CAUSE_NETWORK_FAILURE));
+        if (mme_ue_from_teid && mme_ue) {
+            if (UE_CONTEXT_IN_ATTACH(mme_ue)) {
+                ogs_error("[%s] Attach reject", mme_ue->imsi_bcd);
+                ogs_assert(OGS_OK ==
+                    nas_eps_send_attach_reject(mme_ue,
+                        EMM_CAUSE_NETWORK_FAILURE, ESM_CAUSE_NETWORK_FAILURE));
+            }
+            mme_send_delete_session_or_mme_ue_context_release(mme_ue);
         }
-        mme_send_delete_session_or_mme_ue_context_release(mme_ue);
         return;
     }
 
@@ -256,12 +259,13 @@ void mme_s11_handle_create_session_response(
 }
 
 void mme_s11_handle_modify_bearer_response(
-        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue_from_teid,
         ogs_gtp_modify_bearer_response_t *rsp)
 {
     int rv;
     uint8_t cause_value = 0;
 
+    mme_ue_t *mme_ue = mme_ue_from_teid;
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
 
@@ -272,9 +276,6 @@ void mme_s11_handle_modify_bearer_response(
 
     cause_value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
 
-    rv = ogs_gtp_xact_commit(xact);
-    ogs_expect_or_return(rv == OGS_OK);
-
     if (!mme_ue) {
         ogs_warn("No Context in TEID");
         bearer = xact->data;
@@ -284,6 +285,9 @@ void mme_s11_handle_modify_bearer_response(
         mme_ue = sess->mme_ue;
         ogs_assert(mme_ue);
     }
+
+    rv = ogs_gtp_xact_commit(xact);
+    ogs_expect_or_return(rv == OGS_OK);
 
     if (rsp->cause.presence) {
         ogs_gtp_cause_t *cause = rsp->cause.data;
@@ -298,7 +302,8 @@ void mme_s11_handle_modify_bearer_response(
     }
 
     if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
-        mme_send_delete_session_or_mme_ue_context_release(mme_ue);
+        if (mme_ue_from_teid && mme_ue)
+            mme_send_delete_session_or_mme_ue_context_release(mme_ue);
         return;
     }
 
@@ -317,12 +322,13 @@ void mme_s11_handle_modify_bearer_response(
 }
 
 void mme_s11_handle_delete_session_response(
-        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue_from_teid,
         ogs_gtp_delete_session_response_t *rsp)
 {
     int rv;
     uint8_t cause_value = 0;
     int action = 0;
+    mme_ue_t *mme_ue = mme_ue_from_teid;
     mme_sess_t *sess = NULL;
 
     ogs_assert(xact);
@@ -332,13 +338,13 @@ void mme_s11_handle_delete_session_response(
 
     ogs_debug("Delete Session Response");
 
-    rv = ogs_gtp_xact_commit(xact);
-    ogs_expect_or_return(rv == OGS_OK);
-
     sess = xact->data;
     ogs_assert(sess);
     mme_ue = sess->mme_ue;
     ogs_assert(mme_ue);
+
+    rv = ogs_gtp_xact_commit(xact);
+    ogs_expect_or_return(rv == OGS_OK);
 
     if (rsp->cause.presence) {
         ogs_gtp_cause_t *cause = rsp->cause.data;
@@ -771,7 +777,7 @@ void mme_s11_handle_delete_bearer_request(
 }
 
 void mme_s11_handle_release_access_bearers_response(
-        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue_from_teid,
         ogs_gtp_release_access_bearers_response_t *rsp)
 {
     int rv;
@@ -779,6 +785,7 @@ void mme_s11_handle_release_access_bearers_response(
     int action = 0;
     enb_ue_t *enb_ue = NULL;
 
+    mme_ue_t *mme_ue = mme_ue_from_teid;
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
 
@@ -807,6 +814,7 @@ void mme_s11_handle_release_access_bearers_response(
             ogs_warn("GTP Failed [CAUSE:%d]", cause_value);
     }
 
+    ogs_assert(mme_ue);
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
@@ -1037,11 +1045,12 @@ void mme_s11_handle_downlink_data_notification(
 }
 
 void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
-        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue_from_teid,
         ogs_gtp_create_indirect_data_forwarding_tunnel_response_t *rsp)
 {
     int rv;
     uint8_t cause_value = 0;
+    mme_ue_t *mme_ue = mme_ue_from_teid;
     mme_bearer_t *bearer = NULL;
     enb_ue_t *source_ue = NULL;
     int i;
@@ -1071,11 +1080,13 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
             ogs_warn("GTP Failed [CAUSE:%d]", cause_value);
     }
 
+    ogs_assert(mme_ue);
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
-        mme_send_delete_session_or_mme_ue_context_release(mme_ue);
+        if (mme_ue_from_teid && mme_ue)
+            mme_send_delete_session_or_mme_ue_context_release(mme_ue);
         return;
     }
 
@@ -1115,12 +1126,13 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
 }
 
 void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
-        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue_from_teid,
         ogs_gtp_delete_indirect_data_forwarding_tunnel_response_t *rsp)
 {
     int rv;
     uint8_t cause_value = 0;
     int action = 0;
+    mme_ue_t *mme_ue = mme_ue_from_teid;
 
     ogs_assert(xact);
     action = xact->delete_indirect_action;
@@ -1148,7 +1160,8 @@ void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
     }
 
     if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
-        mme_send_delete_session_or_mme_ue_context_release(mme_ue);
+        if (mme_ue_from_teid && mme_ue)
+            mme_send_delete_session_or_mme_ue_context_release(mme_ue);
         return;
     }
 
@@ -1169,7 +1182,7 @@ void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
 }
 
 void mme_s11_handle_bearer_resource_failure_indication(
-        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue_from_teid,
         ogs_gtp_bearer_resource_failure_indication_t *ind)
 {
     int rv;
@@ -1177,12 +1190,18 @@ void mme_s11_handle_bearer_resource_failure_indication(
 
     mme_bearer_t *bearer = NULL;
     mme_sess_t *sess = NULL;
+    mme_ue_t *mme_ue = mme_ue_from_teid;
 
     ogs_assert(xact);
     bearer = xact->data;
     ogs_assert(ind);
     sess = bearer->sess;
     ogs_assert(sess);
+    if (!mme_ue) {
+        ogs_warn("No Context in TEID");
+        mme_ue = sess->mme_ue;
+        ogs_assert(mme_ue);
+    }
 
     ogs_debug("Bearer Resource Failure Indication");
 
