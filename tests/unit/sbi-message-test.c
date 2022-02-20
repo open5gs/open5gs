@@ -489,6 +489,10 @@ static void sbi_message_test5(abts_case *tc, void *data)
     ABTS_STR_EQUAL(tc, "+08:00", str);
     ogs_free(str);
 
+    str = ogs_sbi_timezone_string(12600);
+    ABTS_STR_EQUAL(tc, "+03:30", str);
+    ogs_free(str);
+
     str = ogs_sbi_timezone_string(0);
     ABTS_STR_EQUAL(tc, "+00:00", str);
     ogs_free(str);
