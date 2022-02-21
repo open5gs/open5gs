@@ -418,6 +418,10 @@ void smf_s5c_handle_modify_bearer_request(
     ogs_debug("    SGW_S5C_TEID[0x%x] SMF_N4_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->smf_n4_teid);
 
+    /* TODO: Update remote GTP-U IP addr + TEID in the UPF through PFCP, similar
+     * to what is done in smf_gn_handle_update_pdp_context_request()
+     */
+
     memset(&h, 0, sizeof(ogs_gtp_header_t));
     h.type = OGS_GTP_MODIFY_BEARER_RESPONSE_TYPE;
     h.teid = sess->sgw_s5c_teid;
