@@ -1140,7 +1140,7 @@ void smf_epc_n4_handle_session_deletion_response(
     if (!sess) {
         ogs_warn("No Context");
         cause_value = (gtp_version == 1) ?
-                        OGS_GTP1_CAUSE_CONTEXT_NOT_FOUND :
+                        OGS_GTP1_CAUSE_NON_EXISTENT :
                         OGS_GTP_CAUSE_CONTEXT_NOT_FOUND;
     }
 

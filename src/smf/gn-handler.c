@@ -271,7 +271,7 @@ void smf_gn_handle_delete_pdp_context_request(
 
     if (!sess) {
         ogs_warn("No Context");
-        cause_value = OGS_GTP1_CAUSE_CONTEXT_NOT_FOUND;
+        cause_value = OGS_GTP1_CAUSE_NON_EXISTENT;
     } else {
         if (!ogs_diam_app_connected(OGS_DIAM_GX_APPLICATION_ID)) {
             ogs_error("No Gx Diameter Peer");
@@ -331,7 +331,7 @@ void smf_gn_handle_update_pdp_context_request(
 
     if (!sess) {
         ogs_warn("No Context");
-        cause_value = OGS_GTP1_CAUSE_CONTEXT_NOT_FOUND;
+        cause_value = OGS_GTP1_CAUSE_NON_EXISTENT;
     }
 
     if (cause_value != OGS_GTP1_CAUSE_REQUEST_ACCEPTED) {
@@ -355,7 +355,7 @@ void smf_gn_handle_update_pdp_context_request(
             ogs_warn("No bearer");
             ogs_gtp1_send_error_message(xact, sess->sgw_s5c_teid,
                     OGS_GTP1_UPDATE_PDP_CONTEXT_RESPONSE_TYPE,
-                    OGS_GTP1_CAUSE_CONTEXT_NOT_FOUND);
+                    OGS_GTP1_CAUSE_NON_EXISTENT);
         }
     }
 
