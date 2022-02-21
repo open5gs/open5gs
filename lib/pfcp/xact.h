@@ -34,10 +34,10 @@ extern "C" {
 typedef struct ogs_pfcp_xact_s {
     ogs_lnode_t     lnode;          /**< A node of list */
     ogs_index_t     index;
-    
+
 #define OGS_PFCP_LOCAL_ORIGINATOR  0
 #define OGS_PFCP_REMOTE_ORIGINATOR 1
-    uint8_t         org;            /**< Transaction' originator. 
+    uint8_t         org;            /**< Transaction' originator.
                                          local or remote */
 
     uint32_t        xid;            /**< Transaction ID */
@@ -48,8 +48,8 @@ typedef struct ogs_pfcp_xact_s {
     void            *data;
 
     int             step;           /**< Current step in the sequence.
-                                         1 : Initial 
-                                         2 : Triggered 
+                                         1 : Initial
+                                         2 : Triggered
                                          3 : Triggered-Reply */
     struct {
         uint8_t     type;           /**< Message type history */
