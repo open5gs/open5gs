@@ -361,7 +361,7 @@ int smf_gtp1_send_delete_pdp_context_response(
 }
 
 #if 0
-int smf_gtp_send_update_pdp_context_request(
+int smf_gtp1_send_update_pdp_context_request(
         smf_bearer_t *bearer, uint8_t pti, uint8_t cause_value)
 {
     int rv;
@@ -376,7 +376,7 @@ int smf_gtp_send_update_pdp_context_request(
     sess = bearer->sess;
     ogs_assert(sess);
 
-    memset(&h, 0, sizeof(ogs_gtp_header_t));
+    memset(&h, 0, sizeof(ogs_gtp1_header_t));
     h.type = OGS_GTP1_UPDATE_PDP_CONTEXT_REQUEST_TYPE;
     h.teid = sess->sgw_s5c_teid;
 
