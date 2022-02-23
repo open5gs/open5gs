@@ -138,7 +138,10 @@ ogs_pkbuf_t *smf_gn_build_create_pdp_context_response(
 
     /* Set Cause */
     rsp->cause.presence = 1;
-    rsp->cause.u8 = OGS_GTP1_CAUSE_REQUEST_ACCEPTED;
+    if (sess->ue_session_type == sess->session.session_type)
+        rsp->cause.u8 = OGS_GTP1_CAUSE_REQUEST_ACCEPTED;
+    else
+        rsp->cause.u8 = OGS_GTP1_CAUSE_NEW_PDP_TYPE_DUE_TO_NETWORK_PREFERENCE;
 
     /* TODO: Reordering required: should be set based on Qos Profile
        delivery_order field, see TS 23.107 Table 7  */

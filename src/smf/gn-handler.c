@@ -157,14 +157,15 @@ void smf_gn_handle_create_pdp_context_request(
     eua = req->end_user_address.data;
     ogs_assert(eua);
     rv = ogs_gtp1_eua_to_ip(eua, req->end_user_address.len, &sess->session.ue_ip,
-            &sess->session.session_type);
+            &sess->ue_session_type);
     if(rv != OGS_OK) {
         ogs_gtp1_send_error_message(xact, sess->sgw_s5c_teid,
                 OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE,
                 OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT);
         return;
     }
-
+    /* Initially Set Session Type from UE */
+    sess->session.session_type = sess->ue_session_type;
 
     ogs_assert(OGS_PFCP_CAUSE_REQUEST_ACCEPTED == smf_sess_set_ue_ip(sess));
 
