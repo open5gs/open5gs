@@ -53,7 +53,7 @@ int gsm_handle_pdu_session_establishment_request(
 
     if (pdu_session_establishment_request->presencemask &
         OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_PDU_SESSION_TYPE_PRESENT)
-        sess->ue_pdu_session_type = pdu_session_type->value;
+        sess->ue_session_type = pdu_session_type->value;
 
     if (pdu_session_establishment_request->presencemask &
         OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_SSC_MODE_PRESENT)

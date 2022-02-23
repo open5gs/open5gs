@@ -144,7 +144,12 @@ void sgwc_s5c_handle_create_session_response(
     sgwc_ue = sess->sgwc_ue;
     ogs_assert(sgwc_ue);
 
-    if (cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
+    if (cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED ||
+        cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED_PARTIALLY ||
+        cause_value ==
+            OGS_GTP_CAUSE_NEW_PDN_TYPE_DUE_TO_NETWORK_PREFERENCE ||
+        cause_value ==
+            OGS_GTP_CAUSE_NEW_PDN_TYPE_DUE_TO_SINGLE_ADDRESS_BEARER_ONLY) {
         bearer = sgwc_bearer_find_by_sess_ebi(sess,
                     rsp->bearer_contexts_created.eps_bearer_id.u8);
         if (!bearer)
@@ -161,7 +166,12 @@ void sgwc_s5c_handle_create_session_response(
         ogs_assert(cause);
 
         cause_value = cause->value;
-        if (cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
+        if (cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED ||
+            cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED_PARTIALLY ||
+            cause_value ==
+                OGS_GTP_CAUSE_NEW_PDN_TYPE_DUE_TO_NETWORK_PREFERENCE ||
+            cause_value ==
+                OGS_GTP_CAUSE_NEW_PDN_TYPE_DUE_TO_SINGLE_ADDRESS_BEARER_ONLY) {
             if (rsp->bearer_contexts_created.cause.presence) {
                 cause = rsp->bearer_contexts_created.cause.data;
                 ogs_assert(cause);
@@ -179,7 +189,12 @@ void sgwc_s5c_handle_create_session_response(
         cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
     }
 
-    if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
+    if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED &&
+        cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED_PARTIALLY &&
+        cause_value !=
+            OGS_GTP_CAUSE_NEW_PDN_TYPE_DUE_TO_NETWORK_PREFERENCE &&
+        cause_value !=
+            OGS_GTP_CAUSE_NEW_PDN_TYPE_DUE_TO_SINGLE_ADDRESS_BEARER_ONLY) {
         ogs_gtp_send_error_message(
                 s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
                 OGS_GTP_CREATE_SESSION_RESPONSE_TYPE, cause_value);

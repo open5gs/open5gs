@@ -32,6 +32,7 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
     ogs_gtp_create_session_response_t *rsp = NULL;
 
     ogs_gtp_cause_t cause;
+    ogs_gtp_cause_t bearer_cause;
     ogs_gtp_f_teid_t smf_s5c_teid, pgw_s5u_teid;
     ogs_gtp_ambr_t ambr;
     ogs_gtp_bearer_qos_t bearer_qos;
@@ -56,10 +57,13 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
 
     /* Set Cause */
     memset(&cause, 0, sizeof(cause));
-    cause.value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
     rsp->cause.presence = 1;
     rsp->cause.len = sizeof(cause);
     rsp->cause.data = &cause;
+
+    cause.value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
+    if (sess->ue_session_type != sess->session.session_type)
+        cause.value = OGS_GTP_CAUSE_NEW_PDN_TYPE_DUE_TO_NETWORK_PREFERENCE;
 
     /* Control Plane(UL) : SMF-S5C */
     memset(&smf_s5c_teid, 0, sizeof(ogs_gtp_f_teid_t));
@@ -139,9 +143,11 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
     rsp->bearer_contexts_created.eps_bearer_id.u8 = bearer->ebi;
 
     /* Bearer Cause */
+    memset(&bearer_cause, 0, sizeof(bearer_cause));
     rsp->bearer_contexts_created.cause.presence = 1;
-    rsp->bearer_contexts_created.cause.len = sizeof(cause);
-    rsp->bearer_contexts_created.cause.data = &cause;
+    rsp->bearer_contexts_created.cause.len = sizeof(bearer_cause);
+    rsp->bearer_contexts_created.cause.data = &bearer_cause;
+    bearer_cause.value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
 
     /* Bearer QoS
      * if PCRF changes Bearer QoS, this should be included. */

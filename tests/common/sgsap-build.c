@@ -183,14 +183,10 @@ ogs_pkbuf_t *test_sgsap_downlink_unitdata(int i)
     const char *payload[TEST_SGSAP_MAX_MESSAGE] = {
         "0701089910073746 0000061626090123 0100079144775810 0650001700048032"
         "2400009160404044 150009c8329bfd06 4d9b53",
-        "",
-        "",
 
     };
     uint16_t len[TEST_SGSAP_MAX_MESSAGE] = {
         51,
-        0,
-        0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
 
@@ -208,14 +204,10 @@ ogs_pkbuf_t *test_sgsap_mm_information_request(int i)
     const char *payload[TEST_SGSAP_MAX_MESSAGE] = {
         "1a01087942120000 0000301714430483 d46413450483d464 1347917071028401"
         "29",
-        "",
-        "",
 
     };
     uint16_t len[TEST_SGSAP_MAX_MESSAGE] = {
         33,
-        0,
-        0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
 

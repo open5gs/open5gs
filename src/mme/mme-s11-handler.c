@@ -138,7 +138,12 @@ void mme_s11_handle_create_session_response(
         ogs_assert(cause);
 
         cause_value = cause->value;
-        if (cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
+        if (cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED ||
+            cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED_PARTIALLY ||
+            cause_value ==
+                OGS_GTP_CAUSE_NEW_PDN_TYPE_DUE_TO_NETWORK_PREFERENCE ||
+            cause_value ==
+                OGS_GTP_CAUSE_NEW_PDN_TYPE_DUE_TO_SINGLE_ADDRESS_BEARER_ONLY) {
             if (rsp->bearer_contexts_created.cause.presence) {
                 cause = rsp->bearer_contexts_created.cause.data;
                 ogs_assert(cause);
@@ -168,7 +173,12 @@ void mme_s11_handle_create_session_response(
         }
     }
 
-    if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
+    if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED &&
+        cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED_PARTIALLY &&
+        cause_value !=
+            OGS_GTP_CAUSE_NEW_PDN_TYPE_DUE_TO_NETWORK_PREFERENCE &&
+        cause_value !=
+            OGS_GTP_CAUSE_NEW_PDN_TYPE_DUE_TO_SINGLE_ADDRESS_BEARER_ONLY) {
         if (mme_ue_from_teid && mme_ue) {
             if (UE_CONTEXT_IN_ATTACH(mme_ue)) {
                 ogs_error("[%s] Attach reject", mme_ue->imsi_bcd);

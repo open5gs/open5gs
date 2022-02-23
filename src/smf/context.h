@@ -269,7 +269,7 @@ typedef struct smf_sess_s {
 
     /* PDN Configuration */
     ogs_session_t session;
-    uint8_t ue_pdu_session_type;
+    uint8_t ue_session_type;
     uint8_t ue_ssc_mode;
 
     ogs_pfcp_ue_ip_t *ipv4;

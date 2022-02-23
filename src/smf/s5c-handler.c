@@ -210,7 +210,12 @@ void smf_s5c_handle_create_session_request(
     /* UE IP Address */
     paa = req->pdn_address_allocation.data;
     ogs_assert(paa);
-    sess->session.session_type = paa->session_type;
+
+    /* Store UE Session Type (IPv4, IPv6, IPv4v6) */
+    sess->ue_session_type = paa->session_type;
+
+    /* Initially Set Session Type from UE */
+    sess->session.session_type = sess->ue_session_type;
     rv = ogs_gtp_paa_to_ip(paa, &sess->session.ue_ip);
     ogs_assert(rv == OGS_OK);
 
