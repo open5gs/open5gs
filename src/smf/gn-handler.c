@@ -299,7 +299,7 @@ void smf_gn_handle_update_pdp_context_request(
     uint8_t cause_value = OGS_GTP1_CAUSE_REQUEST_ACCEPTED;
 
     ogs_gtp1_header_t h;
-    ogs_pkbuf_t *pkbuf = NULL;
+    ogs_pfcp_pdr_t *pdr = NULL;
     smf_bearer_t *bearer = NULL;
     smf_ue_t *smf_ue = NULL;
 
@@ -356,6 +356,7 @@ void smf_gn_handle_update_pdp_context_request(
             ogs_gtp1_send_error_message(xact, sess->sgw_s5c_teid,
                     OGS_GTP1_UPDATE_PDP_CONTEXT_RESPONSE_TYPE,
                     OGS_GTP1_CAUSE_NON_EXISTENT);
+            return;
         }
     }
 
@@ -386,12 +387,43 @@ void smf_gn_handle_update_pdp_context_request(
     h.type = OGS_GTP1_UPDATE_PDP_CONTEXT_RESPONSE_TYPE;
     h.teid = sess->sgw_s5c_teid;
 
-    pkbuf = smf_gn_build_update_pdp_context_response(h.type, sess, bearer);
-    ogs_expect_or_return(pkbuf);
+    /* Set bearer so it's accessible later when handling PFCP Session Modification Response */
+    xact->data = bearer;
 
-    rv = ogs_gtp1_xact_update_tx(xact, &h, pkbuf);
-    ogs_expect_or_return(rv == OGS_OK);
+    /* Update remote TEID and GTP-U IP address on the UPF. UpdatePDPContextResp
+     * will be sent when UPF answers back this request
+     */
+     ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {
+        ogs_pfcp_far_t *far = pdr->far;
+        ogs_assert(far);
 
-    rv = ogs_gtp_xact_commit(xact);
-    ogs_expect(rv == OGS_OK);
+        if (pdr->src_if != OGS_PFCP_INTERFACE_CORE ||
+            far->dst_if != OGS_PFCP_INTERFACE_ACCESS)
+            continue;
+        if (!(far->apply_action & OGS_PFCP_APPLY_ACTION_FORW))
+            continue;
+
+        if (pdr->id == bearer->dl_pdr->id) {
+            rv = ogs_pfcp_ip_to_outer_header_creation(&bearer->sgw_s5u_ip,
+                                                &far->outer_header_creation,
+                                                &far->outer_header_creation_len);
+            ogs_assert(rv == OGS_OK);
+            far->outer_header_creation.teid = bearer->sgw_s5u_teid;
+        }
+    }
+
+    rv = smf_epc_pfcp_send_session_modification_request(sess, xact,
+            OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE,
+            OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
+            OGS_GTP1_CAUSE_REACTIACTION_REQUESTED);
+    ogs_assert(rv == OGS_OK);
+
+    /* TODO: TS 29.061: Upon reception of an UpdatePDPContextRequest from the
+       SGSN, the GGSN may send an Accounting Request (Interim) to the Diameter
+       server to update the necessary information related to this PDP context. */
+    /* The P-GW need not wait for the Diameter Accounting Answer message from
+       the Diameter server before sending the response for the triggering
+       signalling message (e.g. Modify Bearer Response). The P-GW may delete the
+       bearer if the Accounting Answer is not received from the Diameter
+       server.*/
 }

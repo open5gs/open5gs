@@ -1105,7 +1105,13 @@ void smf_epc_n4_handle_session_modification_response(
         }
 
     } else if (flags & OGS_PFCP_MODIFY_ACTIVATE) {
-        /* Nothing */
+        /* SMF send Update PDP Context Response (GTPv1C) to SGSN */
+        if (gtp_xact->gtp_version == 1) {
+            bearer = gtp_xact->data;
+            smf_gtp1_send_update_pdp_context_response(bearer, gtp_xact);
+        } else {
+            /* TODO: SMF send Modify Bearer Response (GTPv2C) to SGWC */
+        }
     }
 }
 

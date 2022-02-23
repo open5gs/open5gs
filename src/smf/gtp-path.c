@@ -361,7 +361,7 @@ int smf_gtp1_send_delete_pdp_context_response(
 }
 
 #if 0
-int smf_gtp_send_update_pdp_context_request(
+int smf_gtp1_send_update_pdp_context_request(
         smf_bearer_t *bearer, uint8_t pti, uint8_t cause_value)
 {
     int rv;
@@ -376,7 +376,7 @@ int smf_gtp_send_update_pdp_context_request(
     sess = bearer->sess;
     ogs_assert(sess);
 
-    memset(&h, 0, sizeof(ogs_gtp_header_t));
+    memset(&h, 0, sizeof(ogs_gtp1_header_t));
     h.type = OGS_GTP1_UPDATE_PDP_CONTEXT_REQUEST_TYPE;
     h.teid = sess->sgw_s5c_teid;
 
@@ -394,6 +394,38 @@ int smf_gtp_send_update_pdp_context_request(
     return rv;
 }
 #endif
+
+int smf_gtp1_send_update_pdp_context_response(
+        smf_bearer_t *bearer, ogs_gtp_xact_t *xact)
+{
+    int rv;
+
+    ogs_gtp1_header_t h;
+    ogs_pkbuf_t *pkbuf = NULL;
+
+    smf_sess_t *sess = NULL;
+
+    ogs_assert(bearer);
+    ogs_assert(xact);
+    sess = bearer->sess;
+    ogs_assert(sess);
+
+    memset(&h, 0, sizeof(ogs_gtp1_header_t));
+    h.type = OGS_GTP1_UPDATE_PDP_CONTEXT_RESPONSE_TYPE;
+    h.teid = sess->sgw_s5c_teid;
+
+    pkbuf = smf_gn_build_update_pdp_context_response(
+                h.type, sess, bearer);
+    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
+
+    rv = ogs_gtp1_xact_update_tx(xact, &h, pkbuf);
+    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
+
+    rv = ogs_gtp_xact_commit(xact);
+    ogs_expect(rv == OGS_OK);
+
+    return rv;
+}
 
 int smf_gtp_send_create_session_response(
         smf_sess_t *sess, ogs_gtp_xact_t *xact)
