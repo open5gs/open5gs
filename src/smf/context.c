@@ -2479,7 +2479,9 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
     ogs_pco_t ue, smf;
     ogs_pco_pap_t pco_pap;
     ogs_pco_chap_t pco_chap;
-    ogs_pco_ipcp_t pco_ipcp;
+#define OGS_PCO_MAX_NUM_OF_IPCP 4
+    ogs_pco_ipcp_t pco_ipcp[OGS_PCO_MAX_NUM_OF_IPCP];
+    int num_of_ipcp;
     int pco_size = 0;
     ogs_ipsubnet_t dns_primary, dns_secondary, dns6_primary, dns6_secondary;
     ogs_ipsubnet_t p_cscf, p_cscf6;
@@ -2490,6 +2492,9 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
     ogs_assert(pco_buf);
     ogs_assert(buffer);
     ogs_assert(length);
+
+    num_of_ipcp = 0;
+    memset(&pco_ipcp, 0, sizeof(pco_ipcp));
 
     size = ogs_pco_parse(&ue, buffer, length);
     ogs_assert(size);
@@ -2550,8 +2555,8 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
                 ogs_assert(ipcp);
                 in_len = be16toh(ipcp->len);
 
-                memset(&pco_ipcp, 0, sizeof(ogs_pco_ipcp_t));
-                pco_ipcp.code = 2; /* Code : Configuration Ack */
+                ogs_assert(num_of_ipcp <= OGS_PCO_MAX_NUM_OF_IPCP);
+                pco_ipcp[num_of_ipcp].code = 2; /* Code : Configuration Ack */
 
                 out_len = 4;
                 /* Primary DNS Server IP Address */
@@ -2561,10 +2566,13 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
                     rv = ogs_ipsubnet(
                             &dns_primary, smf_self()->dns[0], NULL);
                     ogs_assert(rv == OGS_OK);
-                    pco_ipcp.options[num_of_option].type =
+                    ogs_assert(
+                            num_of_option <= OGS_PCO_MAX_NUM_OF_IPCP_OPTIONS);
+                    pco_ipcp[num_of_ipcp].options[num_of_option].type =
                         OGS_IPCP_OPT_PRIMARY_DNS;
-                    pco_ipcp.options[num_of_option].len = 6;
-                    pco_ipcp.options[num_of_option].addr = dns_primary.sub[0];
+                    pco_ipcp[num_of_ipcp].options[num_of_option].len = 6;
+                    pco_ipcp[num_of_ipcp].options[num_of_option].addr =
+                        dns_primary.sub[0];
                     num_of_option++;
 
                     out_len += 6;
@@ -2577,20 +2585,25 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
                     rv = ogs_ipsubnet(
                             &dns_secondary, smf_self()->dns[1], NULL);
                     ogs_assert(rv == OGS_OK);
-                    pco_ipcp.options[num_of_option].type =
+                    ogs_assert(
+                            num_of_option <= OGS_PCO_MAX_NUM_OF_IPCP_OPTIONS);
+                    pco_ipcp[num_of_ipcp].options[num_of_option].type =
                         OGS_IPCP_OPT_SECONDARY_DNS;
-                    pco_ipcp.options[num_of_option].len = 6;
-                    pco_ipcp.options[num_of_option].addr = dns_secondary.sub[0];
+                    pco_ipcp[num_of_ipcp].options[num_of_option].len = 6;
+                    pco_ipcp[num_of_ipcp].options[num_of_option].addr =
+                        dns_secondary.sub[0];
                     num_of_option++;
 
                     out_len += 6;
                 }
 
-                pco_ipcp.len = htobe16(out_len);
+                pco_ipcp[num_of_ipcp].len = htobe16(out_len);
 
                 smf.ids[smf.num_of_id].id = ue.ids[i].id;
                 smf.ids[smf.num_of_id].len = out_len;
-                smf.ids[smf.num_of_id].data = (uint8_t *)&pco_ipcp;
+                smf.ids[smf.num_of_id].data = (uint8_t *)&pco_ipcp[num_of_ipcp];
+
+                num_of_ipcp++;
 
                 smf.num_of_id++;
             }

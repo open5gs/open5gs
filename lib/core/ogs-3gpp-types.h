@@ -511,12 +511,12 @@ typedef struct ogs_pco_ipcp_options_s {
     uint32_t addr;
 } __attribute__ ((packed)) ogs_pco_ipcp_options_t;
 
-#define OGS_PCO_MAX_NUM_OF_IPCO_OPTIONS 4
+#define OGS_PCO_MAX_NUM_OF_IPCP_OPTIONS 4
 typedef struct ogs_pco_ipcp_s {
     uint8_t code;
     uint8_t identifier;
     uint16_t len;
-    ogs_pco_ipcp_options_t options[OGS_PCO_MAX_NUM_OF_IPCO_OPTIONS];
+    ogs_pco_ipcp_options_t options[OGS_PCO_MAX_NUM_OF_IPCP_OPTIONS];
 } __attribute__ ((packed)) ogs_pco_ipcp_t;
 
 typedef struct ogs_pco_pap_s {
