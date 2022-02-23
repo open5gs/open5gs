@@ -356,6 +356,7 @@ void smf_gn_handle_update_pdp_context_request(
             ogs_gtp1_send_error_message(xact, sess->sgw_s5c_teid,
                     OGS_GTP1_UPDATE_PDP_CONTEXT_RESPONSE_TYPE,
                     OGS_GTP1_CAUSE_NON_EXISTENT);
+            return;
         }
     }
 
