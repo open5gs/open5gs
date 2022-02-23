@@ -172,6 +172,7 @@ int ogs_gtp1_ip_to_eua(uint8_t pdu_session_type, const ogs_ip_t *ip,
 
     memset(eua, 0, sizeof *eua);
 
+    eua->spare = 0xf; /* TS 29.060 Figure 35 */
     eua->organization = OGS_PDP_EUA_ORG_IETF;
 
     switch (pdu_session_type)
