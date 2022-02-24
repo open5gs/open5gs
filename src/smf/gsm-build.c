@@ -282,7 +282,8 @@ static void encode_qos_rule_packet_filter(
             qos_rule->pf[i].identifier = pf->identifier;
 
             ogs_pf_content_from_ipfw_rule(
-                    pf->direction, &qos_rule->pf[i].content, &pf->ipfw_rule);
+                    pf->direction, &qos_rule->pf[i].content, &pf->ipfw_rule,
+                    ogs_app()->parameter.no_ipv4v6_local_addr_in_packet_filter);
             i++;
         }
         qos_rule->num_of_packet_filter = i;
