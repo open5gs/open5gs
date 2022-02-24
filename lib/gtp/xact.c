@@ -306,11 +306,8 @@ int ogs_gtp1_xact_update_tx(ogs_gtp_xact_t *xact,
         return OGS_ERROR;
     }
 
-    if (hdesc->type > OGS_GTP1_VERSION_NOT_SUPPORTED_TYPE) {
-        gtp_hlen = OGS_GTPV1C_HEADER_LEN;
-    } else {
-        gtp_hlen = OGS_GTPV1C_HEADER_LEN - 4;
-    }
+    gtp_hlen = OGS_GTPV1C_HEADER_LEN;
+
 
     ogs_pkbuf_push(pkbuf, gtp_hlen);
     h = (ogs_gtp1_header_t *)pkbuf->data;
@@ -321,10 +318,8 @@ int ogs_gtp1_xact_update_tx(ogs_gtp_xact_t *xact,
     h->pt = 1; /* GTP */
     h->teid = htobe32(hdesc->teid);
 
-    if (hdesc->type > OGS_GTP1_VERSION_NOT_SUPPORTED_TYPE) {
-        h->s = 1;
-        h->sqn = OGS_GTP1_XID_TO_SQN(xact->xid);
-    }
+    h->s = 1;
+    h->sqn = OGS_GTP1_XID_TO_SQN(xact->xid);
     h->length = htobe16(pkbuf->len - 8);
 
     /* Save Message type and packet of this step */
