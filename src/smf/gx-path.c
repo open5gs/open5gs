@@ -81,7 +81,7 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
     struct sess_state *sess_data = NULL, *svg;
     struct session *session = NULL;
     int new;
-    ogs_paa_t paa; /* For changing Framed-IPv6-Prefix Length to 128 */
+    ogs_paa_t paa; /* For changing Framed-IPv6-Prefix Length to 64 */
     char buf[OGS_PLMNIDSTRLEN];
     struct sockaddr_in sin;
     struct sockaddr_in6 sin6;
@@ -296,8 +296,30 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
         if (sess->ipv6) {
             ret = fd_msg_avp_new(ogs_diam_gx_framed_ipv6_prefix, 0, &avp);
             ogs_assert(ret == 0);
-            memcpy(&paa, &sess->session.paa, OGS_PAA_IPV6_LEN);
-#define FRAMED_IPV6_PREFIX_LENGTH 128  /* from spec document */
+            /* As per 3GPP TS 23.401 version 15.12.0, section 5.3.1.2.2
+             * The PDN GW allocates a globally unique /64
+             * IPv6 prefix via Router Advertisement to a given UE.
+             *
+             * After the UE has received the Router Advertisement message, it
+             * constructs a full IPv6 address via IPv6 Stateless Address
+             * autoconfiguration in accordance with RFC 4862 using the interface
+             * identifier assigned by PDN GW.
+             *
+             * For stateless address autoconfiguration however, the UE can
+             * choose any interface identifier to generate IPv6 addresses, other
+             * than link-local, without involving the network.
+             *
+             * And, from section 5.3.1.1, Both EPS network elements and UE shall
+             * support the following mechanisms:
+             *
+             * /64 IPv6 prefix allocation via IPv6 Stateless Address
+             * autoconfiguration according to RFC 4862 [18], if IPv6 is
+             * supported.
+             */
+            memset(&paa, 0 , sizeof(paa));
+            memcpy(&paa.addr6, &sess->ipv6->addr,
+                    OGS_IPV6_DEFAULT_PREFIX_LEN >> 3);
+#define FRAMED_IPV6_PREFIX_LENGTH 64  /* from spec document */
             paa.len = FRAMED_IPV6_PREFIX_LENGTH;
             val.os.data = (uint8_t*)&paa;
             val.os.len = OGS_PAA_IPV6_LEN;
