@@ -27,7 +27,7 @@
 #include "sbi-path.h"
 #include "ngap-path.h"
 
-static uint8_t gtp_cause_from_pfcp(uint8_t pfcp_cause, uint8_t gtp_version)
+uint8_t gtp_cause_from_pfcp(uint8_t pfcp_cause, uint8_t gtp_version)
 {
     switch (gtp_version) {
         case 1:
