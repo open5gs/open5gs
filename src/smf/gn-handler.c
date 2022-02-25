@@ -24,6 +24,7 @@
 #include "fd-path.h"
 #include "gn-build.h"
 #include "gn-handler.h"
+#include "n4-handler.h"
 #include "pfcp-path.h"
 
 #include "ipfw/ipfw2.h"
@@ -54,6 +55,7 @@ void smf_gn_handle_create_pdp_context_request(
 
     int rv;
     uint8_t cause_value = 0;
+    uint8_t pfcp_cause;
 
     ogs_gtp1_uli_t uli;
 
@@ -167,7 +169,13 @@ void smf_gn_handle_create_pdp_context_request(
     /* Initially Set Session Type from UE */
     sess->session.session_type = sess->ue_session_type;
 
-    ogs_assert(OGS_PFCP_CAUSE_REQUEST_ACCEPTED == smf_sess_set_ue_ip(sess));
+    if ((pfcp_cause = smf_sess_set_ue_ip(sess)) != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
+        cause_value = gtp_cause_from_pfcp(pfcp_cause, 1);
+        ogs_gtp1_send_error_message(xact, sess->sgw_s5c_teid,
+                OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE,
+                cause_value);
+        return;
+    }
 
     ogs_info("UE IMSI[%s] APN[%s] IPv4[%s] IPv6[%s]",
 	    smf_ue->imsi_bcd,
