@@ -92,8 +92,6 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
 {
     int rv;
     int ret;
-    int len;
-    char *from_str, *to_str, *rx_flow, *to_port, *to_ip, *from_ip, *from_port;
 
 	struct msg *ans, *qry;
     struct avp *avpch1, *avpch2, *avpch3;
@@ -295,117 +293,10 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
                             ogs_assert(sub->num_of_flow <
                                     OGS_MAX_NUM_OF_FLOW_IN_MEDIA_SUB_COMPONENT);
                             flow = &sub->flow[sub->num_of_flow];
-
-                            /* IE (IPV4-local-addr field ) is not supported on
-                             * the LTE pre release-11 UEs. In order for the call
-                             * to work the local address in packet filter must
-                             * be replaced by 'any local port'.
-                             */
-                            if (ogs_app()->
-                                parameter.no_ipv4v6_local_addr_in_packet_filter
-                                                                    == true) {
-                                rx_flow = NULL;
-                                rx_flow = (char*)hdr->avp_value->os.data;
-                                len = hdr->avp_value->os.len;
-
-                                from_str = NULL;
-                                to_str = NULL;
-                                to_ip = NULL;
-                                to_port = NULL;
-                                from_ip = NULL;
-                                from_port = NULL;
-                                from_str = strstr(rx_flow, "from");
-                                ogs_assert(from_str);
-                                to_str = strstr(rx_flow, "to");
-                                ogs_assert(to_str);
-
-                                if (!strncmp(rx_flow,
-                                        "permit out", strlen("permit out"))) {
-
-                                    to_ip = strstr(to_str, " ");
-                                    ogs_assert(to_ip);
-
-                                    // Exclude the starting whitespace
-                                    to_ip += 1;
-
-                                    to_port = strstr(to_ip, " ");
-                                    // Test for no port
-                                    if (to_port != NULL) {
-                                        flow->description = ogs_calloc(1,
-                                            len - strlen(to_str) +
-                                            strlen("to any")
-                                            + strlen(to_port) + 1);
-                                        ogs_assert(flow->description);
-                                    } else {
-                                        flow->description = ogs_calloc(1,
-                                            len - strlen(to_str) +
-                                            strlen("to any") + 1);
-                                        ogs_assert(flow->description);
-                                    }
-
-                                    ogs_assert(flow->description);
-                                    strncat(flow->description,
-                                        rx_flow,
-                                        len - strlen(to_str));
-                                    strcat(flow->description, "to any");
-                                    if (to_port != NULL) {
-                                        strncat(flow->description,
-                                            to_port, strlen(to_port));
-                                    }
-                                } else if (!strncmp(rx_flow,
-                                            "permit in", strlen("permit in"))) {
-
-                                    from_ip = strstr(from_str, " ");
-                                    ogs_assert(from_ip);
-
-                                    /* Exclude the starting whitespace */
-                                    from_ip += 1;
-
-                                    from_port = strstr(from_ip, " ");
-                                    /* Test for no port +
-                                     * whether from_port is at "to"
-                                     * without any from port */
-                                    if (from_port != NULL &&
-                                        strncmp(from_port, " to", 3)) {
-                                        flow->description = ogs_calloc(1,
-                                            len - strlen(from_str) +
-                                            strlen(to_str)
-                                            + strlen("from any") + 1
-                                            + (strlen(from_port) -
-                                                strlen(to_str)));
-                                        ogs_assert(flow->description);
-                                    } else {
-                                        flow->description = ogs_calloc(1,
-                                            len - strlen(from_str) +
-                                            strlen(to_str)
-                                            + strlen("from any ") + 1);
-                                        ogs_assert(flow->description);
-                                    }
-
-                                    ogs_assert(flow->description);
-                                    strncat(flow->description,
-                                        rx_flow,
-                                        len - strlen(from_str));
-                                    if (from_port != NULL &&
-                                        strncmp(from_port, " to", 3)) {
-                                        strcat(flow->description, "from any");
-                                        strncat(flow->description,
-                                            from_port,
-                                            strlen(from_port) - strlen(to_str));
-                                    } else {
-                                        strcat(flow->description, "from any ");
-                                    }
-                                    strncat(flow->description,
-                                        to_str,
-                                        strlen(to_str));
-                                }
-                            } else {
-                                flow->description = ogs_strndup(
+                            flow->description = ogs_strndup(
                                     (char*)hdr->avp_value->os.data,
                                     hdr->avp_value->os.len);
-                                ogs_assert(flow->description);
-                            }
-
+                            ogs_assert(flow->description);
                             sub->num_of_flow++;
                             break;
                         default:

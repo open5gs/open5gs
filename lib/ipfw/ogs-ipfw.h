@@ -130,7 +130,8 @@ typedef struct ogs_pf_content_s {
 } ogs_pf_content_t;
 
 void ogs_pf_content_from_ipfw_rule(
-        uint8_t direction, ogs_pf_content_t *content, ogs_ipfw_rule_t *rule);
+        uint8_t direction, ogs_pf_content_t *content, ogs_ipfw_rule_t *rule,
+        bool no_ipv4v6_local_addr_in_packet_filter);
 
 #ifdef __cplusplus
 }

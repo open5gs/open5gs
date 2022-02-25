@@ -365,7 +365,8 @@ void ogs_ipfw_rule_swap(ogs_ipfw_rule_t *ipfw_rule)
 }
 
 void ogs_pf_content_from_ipfw_rule(
-        uint8_t direction, ogs_pf_content_t *content, ogs_ipfw_rule_t *rule)
+        uint8_t direction, ogs_pf_content_t *content, ogs_ipfw_rule_t *rule,
+        bool no_ipv4v6_local_addr_in_packet_filter)
 {
     int j, len;
 
@@ -380,57 +381,112 @@ void ogs_pf_content_from_ipfw_rule(
         j++; len += 2;
     }
 
-    if (rule->ipv4_src) {
-        if (direction == OGS_FLOW_DOWNLINK_ONLY)
-            content->component[j].type =
-                OGS_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE;
-        else
-            content->component[j].type =
-                OGS_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE;
+    /*
+     * As per 3GPP TS 24.008, following Packet filter component type identifier
+     * are not supported on the LTE pre release-11 UEs:
+     *
+     * IPv4 local address type
+     * IPv6 remote address/prefix length type
+     * IPv6 local address/prefix length type
+     *
+     * And,
+     * IPv6 remote address/prefix length type and
+     * IPv6 local address/prefix length type shall be used when both MS and
+     * Network support Local Address in TFTs.
+     */
+
+    if (rule->ipv4_src && (direction == OGS_FLOW_DOWNLINK_ONLY)) {
+        content->component[j].type = OGS_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE;
         content->component[j].ipv4.addr = rule->ip.src.addr[0];
         content->component[j].ipv4.mask = rule->ip.src.mask[0];
         j++; len += 9;
     }
 
-    if (rule->ipv4_dst) {
-        if (direction == OGS_FLOW_DOWNLINK_ONLY)
-            content->component[j].type =
-                OGS_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE;
-        else
-            content->component[j].type =
-                OGS_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE;
+    if (rule->ipv4_src && (direction == OGS_FLOW_UPLINK_ONLY) &&
+        !no_ipv4v6_local_addr_in_packet_filter) {
+        content->component[j].type = OGS_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE;
+        content->component[j].ipv4.addr = rule->ip.src.addr[0];
+        content->component[j].ipv4.mask = rule->ip.src.mask[0];
+        j++; len += 9;
+    }
 
+    if (rule->ipv4_dst && (direction == OGS_FLOW_DOWNLINK_ONLY) &&
+        !no_ipv4v6_local_addr_in_packet_filter) {
+        content->component[j].type = OGS_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE;
         content->component[j].ipv4.addr = rule->ip.dst.addr[0];
         content->component[j].ipv4.mask = rule->ip.dst.mask[0];
         j++; len += 9;
     }
 
-    if (rule->ipv6_src) {
-        if (direction == OGS_FLOW_DOWNLINK_ONLY)
-            content->component[j].type =
-                OGS_PACKET_FILTER_IPV6_REMOTE_ADDRESS_PREFIX_LENGTH_TYPE;
-        else
-            content->component[j].type =
-                OGS_PACKET_FILTER_IPV6_LOCAL_ADDRESS_PREFIX_LENGTH_TYPE;
-        memcpy(content->component[j].ipv6.addr,
-                rule->ip.src.addr, sizeof rule->ip.src.addr);
-        content->component[j].ipv6.prefixlen =
-            contigmask((uint8_t *)rule->ip.src.mask, 128);
-        j++; len += 18;
+    if (rule->ipv4_dst && (direction == OGS_FLOW_UPLINK_ONLY)) {
+        content->component[j].type = OGS_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE;
+        content->component[j].ipv4.addr = rule->ip.dst.addr[0];
+        content->component[j].ipv4.mask = rule->ip.dst.mask[0];
+        j++; len += 9;
     }
 
-    if (rule->ipv6_dst) {
-        if (direction == OGS_FLOW_DOWNLINK_ONLY)
+    if (rule->ipv6_src && (direction == OGS_FLOW_DOWNLINK_ONLY)) {
+        if (no_ipv4v6_local_addr_in_packet_filter) {
             content->component[j].type =
-                OGS_PACKET_FILTER_IPV6_LOCAL_ADDRESS_PREFIX_LENGTH_TYPE;
-        else
+                OGS_PACKET_FILTER_IPV6_REMOTE_ADDRESS_TYPE;
+            memcpy(content->component[j].ipv6_mask.addr,
+                rule->ip.src.addr, sizeof rule->ip.src.addr);
+            memcpy(content->component[j].ipv6_mask.mask,
+                    rule->ip.src.mask, sizeof rule->ip.src.mask);
+            j++; len += 33;
+        } else {
             content->component[j].type =
                 OGS_PACKET_FILTER_IPV6_REMOTE_ADDRESS_PREFIX_LENGTH_TYPE;
-        memcpy(content->component[j].ipv6.addr,
+            memcpy(content->component[j].ipv6.addr,
+                rule->ip.src.addr, sizeof rule->ip.src.addr);
+            content->component[j].ipv6.prefixlen =
+                contigmask((uint8_t *)rule->ip.src.mask, 128);
+            j++; len += 18;
+        }
+    }
+
+    if (rule->ipv6_src && (direction == OGS_FLOW_UPLINK_ONLY)) {
+        if (!no_ipv4v6_local_addr_in_packet_filter) {
+            content->component[j].type =
+                OGS_PACKET_FILTER_IPV6_LOCAL_ADDRESS_PREFIX_LENGTH_TYPE;
+            memcpy(content->component[j].ipv6.addr,
+                    rule->ip.src.addr, sizeof rule->ip.src.addr);
+            content->component[j].ipv6.prefixlen =
+                contigmask((uint8_t *)rule->ip.src.mask, 128);
+            j++; len += 18;
+        }
+    }
+
+    if (rule->ipv6_dst && (direction == OGS_FLOW_DOWNLINK_ONLY)) {
+        if (!no_ipv4v6_local_addr_in_packet_filter) {
+            content->component[j].type =
+                OGS_PACKET_FILTER_IPV6_LOCAL_ADDRESS_PREFIX_LENGTH_TYPE;
+            memcpy(content->component[j].ipv6.addr,
                 rule->ip.dst.addr, sizeof rule->ip.dst.addr);
-        content->component[j].ipv6.prefixlen =
-            contigmask((uint8_t *)rule->ip.dst.mask, 128);
-        j++; len += 18;
+            content->component[j].ipv6.prefixlen =
+                contigmask((uint8_t *)rule->ip.dst.mask, 128);
+            j++; len += 18;
+        }
+    }
+
+    if (rule->ipv6_dst && (direction == OGS_FLOW_UPLINK_ONLY)) {
+        if (no_ipv4v6_local_addr_in_packet_filter) {
+            content->component[j].type =
+                    OGS_PACKET_FILTER_IPV6_REMOTE_ADDRESS_TYPE;
+            memcpy(content->component[j].ipv6_mask.addr,
+                    rule->ip.dst.addr, sizeof rule->ip.dst.addr);
+            memcpy(content->component[j].ipv6_mask.mask,
+                    rule->ip.dst.mask, sizeof rule->ip.dst.mask);
+            j++; len += 33;
+        } else {
+            content->component[j].type =
+                OGS_PACKET_FILTER_IPV6_REMOTE_ADDRESS_PREFIX_LENGTH_TYPE;
+            memcpy(content->component[j].ipv6.addr,
+                    rule->ip.dst.addr, sizeof rule->ip.dst.addr);
+            content->component[j].ipv6.prefixlen =
+                contigmask((uint8_t *)rule->ip.dst.mask, 128);
+            j++; len += 18;
+        }
     }
 
     if (rule->port.src.low) {
