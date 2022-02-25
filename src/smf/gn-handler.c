@@ -124,6 +124,15 @@ void smf_gn_handle_create_pdp_context_request(
     /* Store NSAPI */
     sess->gtp1.nsapi = req->nsapi.u8;
 
+    /* Control Plane(DL) : SGW-S5C */
+    sess->sgw_s5c_teid = req->tunnel_endpoint_identifier_control_plane.u32;
+    rv = ogs_gtp1_gsn_addr_to_ip(req->sgsn_address_for_signalling.data,
+                                 req->sgsn_address_for_signalling.len,
+                                  &sess->sgw_s5c_ip);
+    ogs_assert(rv == OGS_OK);
+    ogs_debug("    SGW_S5C_TEID[0x%x] SMF_N4_TEID[0x%x]",
+            sess->sgw_s5c_teid, sess->smf_n4_teid);
+
     if (ogs_gtp1_parse_uli(&uli, &req->user_location_information) == 0) {
         ogs_gtp1_send_error_message(xact, sess->sgw_s5c_teid,
                 OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE,
@@ -142,76 +151,6 @@ void smf_gn_handle_create_pdp_context_request(
         ogs_nas_to_plmn_id(&sess->plmn_id, &uli.rai.nas_plmn_id);
         break;
     }
-
-    /* Select PGW based on UE Location Information */
-    smf_sess_select_upf(sess);
-
-    /* Check if selected PGW is associated with SMF */
-    ogs_assert(sess->pfcp_node);
-    if (!OGS_FSM_CHECK(&sess->pfcp_node->sm, smf_pfcp_state_associated)) {
-        ogs_gtp1_send_error_message(xact, sess->sgw_s5c_teid,
-                OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE,
-                OGS_GTP1_CAUSE_NO_RESOURCES_AVAILABLE);
-        return;
-    }
-
-    /* UE IP Address */
-    eua = req->end_user_address.data;
-    ogs_assert(eua);
-    rv = ogs_gtp1_eua_to_ip(eua, req->end_user_address.len, &sess->session.ue_ip,
-            &sess->ue_session_type);
-    if(rv != OGS_OK) {
-        ogs_gtp1_send_error_message(xact, sess->sgw_s5c_teid,
-                OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE,
-                OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT);
-        return;
-    }
-    /* Initially Set Session Type from UE */
-    sess->session.session_type = sess->ue_session_type;
-
-    if ((pfcp_cause = smf_sess_set_ue_ip(sess)) != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
-        cause_value = gtp_cause_from_pfcp(pfcp_cause, 1);
-        ogs_gtp1_send_error_message(xact, sess->sgw_s5c_teid,
-                OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE,
-                cause_value);
-        return;
-    }
-
-    ogs_info("UE IMSI[%s] APN[%s] IPv4[%s] IPv6[%s]",
-	    smf_ue->imsi_bcd,
-	    sess->session.name,
-        sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
-        sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
-
-    /* Remove all previous bearer */
-    smf_bearer_remove_all(sess);
-
-    /* Setup Default Bearer */
-    bearer = smf_bearer_add(sess);
-    ogs_assert(bearer);
-
-    /* Set Bearer EBI */
-    /* 3GPP TS 23.060 clause 9.2.1A: "1:1 mapping between NSAPI and EPS Bearer ID" */
-    /* 3GPP TS 23.401 clause 5.2.1: "the same identity value is used for the EPS bearer ID and the NSAPI/RAB ID" */
-    bearer->ebi = req->nsapi.u8;
-
-    /* Control Plane(DL) : SGW-S5C */
-    sess->sgw_s5c_teid = req->tunnel_endpoint_identifier_control_plane.u32;
-    rv = ogs_gtp1_gsn_addr_to_ip(req->sgsn_address_for_signalling.data,
-                                 req->sgsn_address_for_signalling.len,
-                                  &sess->sgw_s5c_ip);
-    ogs_assert(rv == OGS_OK);
-    ogs_debug("    SGW_S5C_TEID[0x%x] SMF_N4_TEID[0x%x]",
-            sess->sgw_s5c_teid, sess->smf_n4_teid);
-
-    /* User Plane(DL) : SGW-S5C */
-    bearer->sgw_s5u_teid = req->tunnel_endpoint_identifier_data_i.u32;
-    rv = ogs_gtp1_gsn_addr_to_ip(req->sgsn_address_for_user_traffic.data,
-                                 req->sgsn_address_for_user_traffic.len,
-                                 &bearer->sgw_s5u_ip);
-    ogs_assert(rv == OGS_OK);
-    ogs_debug("    SGW_S5U_TEID[0x%x] PGW_S5U_TEID[0x%x]",
-            bearer->sgw_s5u_teid, bearer->pgw_s5u_teid);
 
     /* Set Bearer QoS */
     rv = ogs_gtp1_parse_qos_profile(&qos_pdec,
@@ -260,6 +199,67 @@ void smf_gn_handle_create_pdp_context_request(
         /* value part is compatible between UE Time Zone and MS Time Zone */
         OGS_TLV_STORE_DATA(&sess->gtp.ue_timezone, &req->ms_time_zone);
     }
+
+    /* UE IP Address */
+    eua = req->end_user_address.data;
+    ogs_assert(eua);
+    rv = ogs_gtp1_eua_to_ip(eua, req->end_user_address.len, &sess->session.ue_ip,
+            &sess->ue_session_type);
+    if(rv != OGS_OK) {
+        ogs_gtp1_send_error_message(xact, sess->sgw_s5c_teid,
+                OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE,
+                OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT);
+        return;
+    }
+    /* Initially Set Session Type from UE */
+    sess->session.session_type = sess->ue_session_type;
+
+    /* Remove all previous bearer */
+    smf_bearer_remove_all(sess);
+
+    /* Setup Default Bearer */
+    bearer = smf_bearer_add(sess);
+    ogs_assert(bearer);
+
+    /* Set Bearer EBI */
+    /* 3GPP TS 23.060 clause 9.2.1A: "1:1 mapping between NSAPI and EPS Bearer ID" */
+    /* 3GPP TS 23.401 clause 5.2.1: "the same identity value is used for the EPS bearer ID and the NSAPI/RAB ID" */
+    bearer->ebi = req->nsapi.u8;
+
+    /* User Plane(DL) : SGW-S5C */
+    bearer->sgw_s5u_teid = req->tunnel_endpoint_identifier_data_i.u32;
+    rv = ogs_gtp1_gsn_addr_to_ip(req->sgsn_address_for_user_traffic.data,
+                                 req->sgsn_address_for_user_traffic.len,
+                                 &bearer->sgw_s5u_ip);
+    ogs_assert(rv == OGS_OK);
+    ogs_debug("    SGW_S5U_TEID[0x%x] PGW_S5U_TEID[0x%x]",
+            bearer->sgw_s5u_teid, bearer->pgw_s5u_teid);
+
+    /* Select PGW based on UE Location Information */
+    smf_sess_select_upf(sess);
+
+    /* Check if selected PGW is associated with SMF */
+    ogs_assert(sess->pfcp_node);
+    if (!OGS_FSM_CHECK(&sess->pfcp_node->sm, smf_pfcp_state_associated)) {
+        ogs_gtp1_send_error_message(xact, sess->sgw_s5c_teid,
+                OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE,
+                OGS_GTP1_CAUSE_NO_RESOURCES_AVAILABLE);
+        return;
+    }
+
+    if ((pfcp_cause = smf_sess_set_ue_ip(sess)) != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
+        cause_value = gtp_cause_from_pfcp(pfcp_cause, 1);
+        ogs_gtp1_send_error_message(xact, sess->sgw_s5c_teid,
+                OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE,
+                cause_value);
+        return;
+    }
+
+    ogs_info("UE IMSI[%s] APN[%s] IPv4[%s] IPv6[%s]",
+	    smf_ue->imsi_bcd,
+	    sess->session.name,
+        sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
+        sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
 
     smf_gx_send_ccr(sess, xact,
         OGS_DIAM_GX_CC_REQUEST_TYPE_INITIAL_REQUEST);
