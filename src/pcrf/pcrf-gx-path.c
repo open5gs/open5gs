@@ -345,7 +345,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 
         paa = (ogs_paa_t *)hdr->avp_value->os.data;
         ogs_assert(paa);
-        ogs_assert(paa->len == OGS_IPV6_LEN * 8 /* 128bit */);
+        ogs_assert(paa->len == OGS_IPV6_DEFAULT_PREFIX_LEN /* 64bit */);
         memcpy(sess_data->addr6, paa->addr6, sizeof sess_data->addr6);
         pcrf_sess_set_ipv6(sess_data->addr6, sess_data->sid);
         sess_data->ipv6 = 1;
