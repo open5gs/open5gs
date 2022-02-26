@@ -117,3 +117,58 @@ OPEN_TYPE_encode_aper(const asn_TYPE_descriptor_t *td,
     er.encoded = 0;
     ASN__ENCODED_OK(er);
 }
+
+
+int OPEN_TYPE_aper_is_unknown_type(const asn_TYPE_descriptor_t *td, void *sptr, const asn_TYPE_member_t *elm) {
+    asn_type_selector_result_t selected;
+
+    if(!elm->type_selector) {
+        return 1;
+    }
+    else {
+        selected = elm->type_selector(td, sptr);
+        if(!selected.presence_index) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+asn_dec_rval_t
+OPEN_TYPE_aper_unknown_type_discard_bytes (asn_per_data_t *pd) {
+#define ASN_DUMMY_BYTES 256
+    unsigned char dummy[ASN_DUMMY_BYTES], *dummy_ptr = NULL;
+    ssize_t bytes;
+    int repeat;
+    asn_dec_rval_t rv;
+
+    rv.consumed = 0;
+    rv.code = RC_FAIL;
+
+    do {
+        bytes = aper_get_length(pd, -1, -1, &repeat);
+        if (bytes > 10 * ASN_DUMMY_BYTES)
+        {
+            return rv;
+        }
+        else if (bytes > ASN_DUMMY_BYTES)
+        {
+            dummy_ptr = CALLOC(1, bytes);
+            if (!dummy_ptr)
+                return rv;
+        }
+
+        per_get_many_bits(pd, (dummy_ptr ? dummy_ptr : dummy), 0, bytes << 3);
+
+        if (dummy_ptr)
+        {
+            FREEMEM(dummy_ptr);
+            dummy_ptr = NULL;
+        }
+    } while (repeat);
+
+     rv.code = RC_OK;
+     return rv;
+#undef ASN_DUMMY_BYTES
+}
+

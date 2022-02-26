@@ -94,6 +94,14 @@ asn_enc_rval_t OPEN_TYPE_encode_aper(
     const asn_TYPE_descriptor_t *type_descriptor,
     const asn_per_constraints_t *constraints, const void *struct_ptr,
     asn_per_outp_t *per_output);
+
+int OPEN_TYPE_aper_is_unknown_type(
+    const asn_TYPE_descriptor_t *td,
+    void *sptr,
+    const asn_TYPE_member_t *elm);
+
+asn_dec_rval_t OPEN_TYPE_aper_unknown_type_discard_bytes(
+    asn_per_data_t *pd);
 #endif  /* !defined(ASN_DISABLE_APER_SUPPORT) */
 
 extern asn_TYPE_operation_t asn_OP_OPEN_TYPE;

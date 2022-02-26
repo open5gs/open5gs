@@ -130,6 +130,11 @@ SEQUENCE_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
         ASN_DEBUG("Decoding member \"%s\" in %s", elm->name, td->name);
 
         if(elm->flags & ATF_OPEN_TYPE) {
+            if (OPEN_TYPE_aper_is_unknown_type(td, st, elm)) {
+                rv = OPEN_TYPE_aper_unknown_type_discard_bytes(pd);
+                FREEMEM(opres);
+                return rv;
+            }
             rv = OPEN_TYPE_aper_get(opt_codec_ctx, td, st, elm, pd);
         } else {
             rv = elm->type->op->aper_decoder(opt_codec_ctx, elm->type,

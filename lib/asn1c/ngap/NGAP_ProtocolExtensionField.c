@@ -49420,7 +49420,7 @@ static asn_TYPE_member_t asn_MBR_NGAP_extensionValue_648[] = {
 			0,
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-#if 0
+#if 0 /* modified by acetcom */
 			&asn_PER_memb_NGAP_OCTET_STRING_CONTAINING_PDUSessionResourceReleaseResponseTransfer__constr_47,
 #else
             0,

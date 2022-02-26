@@ -89,7 +89,7 @@ NativeEnumerated_encode_aper(const asn_TYPE_descriptor_t *td,
     asn_enc_rval_t er = {0,0,0};
     long native, value;
     const asn_per_constraint_t *ct;
-    int inext = 0;
+    int inext = 0, range_bits = 1;
     asn_INTEGER_enum_map_t key;
     asn_INTEGER_enum_map_t *kf;
 
@@ -126,12 +126,12 @@ NativeEnumerated_encode_aper(const asn_TYPE_descriptor_t *td,
     if(ct->flags & APC_EXTENSIBLE) {
         if(per_put_few_bits(po, inext, 1))
             ASN__ENCODE_FAILED;
-        if(inext) ct = 0;
+        if(inext) range_bits = 0;
     } else if(inext) {
         ASN__ENCODE_FAILED;
     }
 
-    if(ct && ct->range_bits >= 0) {
+    if(range_bits && ct && ct->range_bits >= 0) {
         if(per_put_few_bits(po, value, ct->range_bits))
             ASN__ENCODE_FAILED;
         ASN__ENCODED_OK(er);

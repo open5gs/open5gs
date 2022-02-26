@@ -1,15 +1,17 @@
 Use mounse07410(vlm_master) git's fork for asn1c
 
-commit dcf963c0e43196057a97feac16421fe79dc7d943 (HEAD -> vlm_master, origin/vlm_master, origin/HEAD)
-Merge: b33a84f9 c35ebd33
-Author: Mouse <mouse008@gmail.com>
-Date:   Sun Nov 1 08:58:12 2020 -0500
+commit c098de2086633d2027f1d117092541d8482c1c96 (HEAD -> vlm_master, origin/vlm_master, origin/HEAD)
+Author: Nikolaos Koutsianas <nkoutsianas@gmail.com>
+Date:   Fri Feb 25 13:18:01 2022 +0200
+
+    aper decoder can ignore unknown open types in a sequence and continue with next ones
+
 
 ===========================================
 user@host ~/Documents/git/my$ \
     git clone https://github.com/mouse07410/asn1c.git
 user@host ~/Documents/git/my$ \
-    git checkout 8282f80bc89cc773f9432cde56398a36f2683511
+    git checkout git checkout c098de2086633d2027f1d117092541d8482c1c96
 
 OR
 
@@ -175,24 +177,59 @@ Check common file
 user@host ~/Documents/git/open5gs/lib/asn1c/common$ \
     git diff asn_internal.h
 diff --git a/lib/asn1c/common/asn_internal.h b/lib/asn1c/common/asn_internal.h
-index 71397a62..0b673a46 100644
---- a/lib/asn1c/common/asn_internal.h
-+++ b/lib/asn1c/common/asn_internal.h
-@@ -34,18 +34,11 @@ extern "C" {
- #define        ASN1C_ENVIRONMENT_VERSION       923     /* Compile-time version */
- int get_asn1c_environment_version(void);       /* Run-time version */
+diff -u asn_internal.h ~/asn_internal.h
+--- asn_internal.h	2022-02-26 15:48:33.431509100 +0900
++++ /home/acetcom/asn_internal.h	2022-02-26 15:43:00.890972555 +0900
+@@ -34,10 +34,53 @@
+ #define	ASN1C_ENVIRONMENT_VERSION	923	/* Compile-time version */
+ int get_asn1c_environment_version(void);	/* Run-time version */
 
 +#if 0 /* modified by acetcom */
-+#define        CALLOC(nmemb, size)     calloc(nmemb, size)
-+#define        MALLOC(size)            malloc(size)
-+#define        REALLOC(oldptr, size)   realloc(oldptr, size)
-+#define        FREEMEM(ptr)            free(ptr)
+ #define	CALLOC(nmemb, size)	calloc(nmemb, size)
+ #define	MALLOC(size)		malloc(size)
+ #define	REALLOC(oldptr, size)	realloc(oldptr, size)
+ #define	FREEMEM(ptr)		free(ptr)
 +#else
- #include "ogs-core.h"
- #define        CALLOC(nmemb, size)     ogs_calloc(nmemb, size)
- #define        MALLOC(size)            ogs_malloc(size)
- #define        REALLOC(oldptr, size)   ogs_realloc(oldptr, size)
- #define        FREEMEM(ptr)            ogs_free(ptr)
++#include "ogs-core.h"
++
++static ogs_inline void *ogs_asn_malloc(size_t size, const char *file_line)
++{
++    void *ptr = ogs_malloc(size);
++    if (!ptr) {
++        ogs_fatal("asn_malloc() failed in `%s`", file_line);
++        ogs_assert_if_reached();
++    }
++
++    return ptr;
++}
++static ogs_inline void *ogs_asn_calloc(
++        size_t nmemb, size_t size, const char *file_line)
++{
++    void *ptr = ogs_calloc(nmemb, size);
++    if (!ptr) {
++        ogs_fatal("asn_calloc() failed in `%s`", file_line);
++        ogs_assert_if_reached();
++    }
++
++    return ptr;
++}
++static ogs_inline void *ogs_asn_realloc(
++        void *oldptr, size_t size, const char *file_line)
++{
++    void *ptr = ogs_realloc(oldptr, size);
++    if (!ptr) {
++        ogs_fatal("asn_realloc() failed in `%s`", file_line);
++        ogs_assert_if_reached();
++    }
++
++    return ptr;
++}
++
++#define CALLOC(nmemb, size) ogs_asn_calloc(nmemb, size, OGS_FILE_LINE)
++#define MALLOC(size) ogs_asn_malloc(size, OGS_FILE_LINE)
++#define REALLOC(oldptr, size) ogs_asn_realloc(oldptr, size, OGS_FILE_LINE)
++#define FREEMEM(ptr) ogs_free(ptr)
++
 +#endif
 
  #define        asn_debug_indent        0
