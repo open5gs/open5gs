@@ -779,7 +779,11 @@ smf_ue_t *smf_ue_add_by_supi(char *supi)
     ogs_assert(supi);
 
     ogs_pool_alloc(&smf_ue_pool, &smf_ue);
-    ogs_assert(smf_ue);
+    if (!smf_ue) {
+        ogs_error("Maximum number of smf_ue[%lld] reached",
+                    (long long)ogs_app()->max.ue);
+        return NULL;
+    }
     memset(smf_ue, 0, sizeof *smf_ue);
 
     ogs_list_init(&smf_ue->sess_list);
@@ -804,7 +808,11 @@ smf_ue_t *smf_ue_add_by_imsi(uint8_t *imsi, int imsi_len)
     ogs_assert(imsi_len);
 
     ogs_pool_alloc(&smf_ue_pool, &smf_ue);
-    ogs_assert(smf_ue);
+    if (!smf_ue) {
+        ogs_error("Maximum number of smf_ue[%lld] reached",
+                    (long long)ogs_app()->max.ue);
+        return NULL;
+    }
     memset(smf_ue, 0, sizeof *smf_ue);
 
     ogs_list_init(&smf_ue->sess_list);
@@ -1077,7 +1085,8 @@ smf_sess_t *smf_sess_add_by_gtp1_message(ogs_gtp1_message_t *message)
     smf_ue = smf_ue_find_by_imsi(req->imsi.data, req->imsi.len);
     if (!smf_ue) {
         smf_ue = smf_ue_add_by_imsi(req->imsi.data, req->imsi.len);
-        ogs_assert(smf_ue);
+        if (!smf_ue)
+            return NULL;
     }
 
     sess = smf_sess_find_by_apn(smf_ue, apn, req->rat_type.u8);
@@ -1139,7 +1148,8 @@ smf_sess_t *smf_sess_add_by_gtp_message(ogs_gtp_message_t *message)
     smf_ue = smf_ue_find_by_imsi(req->imsi.data, req->imsi.len);
     if (!smf_ue) {
         smf_ue = smf_ue_add_by_imsi(req->imsi.data, req->imsi.len);
-        ogs_assert(smf_ue);
+        if (!smf_ue)
+            return NULL;
     }
 
     sess = smf_sess_find_by_apn(smf_ue, apn, req->rat_type.u8);
@@ -1247,7 +1257,8 @@ smf_sess_t *smf_sess_add_by_sbi_message(ogs_sbi_message_t *message)
     smf_ue = smf_ue_find_by_supi(SmContextCreateData->supi);
     if (!smf_ue) {
         smf_ue = smf_ue_add_by_supi(SmContextCreateData->supi);
-        ogs_assert(smf_ue);
+        if (!smf_ue)
+            return NULL;
     }
 
     sess = smf_sess_find_by_psi(smf_ue, SmContextCreateData->pdu_session_id);
