@@ -331,3 +331,22 @@ int ogs_listen_reusable(ogs_socket_t fd)
 
     return OGS_OK;
 }
+
+int ogs_bind_to_device(ogs_socket_t fd, const char *device)
+{
+#if defined(SO_BINDTODEVICE) && !defined(_WIN32)
+    int rc;
+
+    ogs_assert(fd != INVALID_SOCKET);
+    rc = setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, device, strlen(device)+1);
+    if (rc != OGS_OK) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                "setsockopt(SOL_SOCKET, SO_BINDTODEVICE, %s) failed",
+                device);
+        return OGS_ERROR;
+    }
+    return OGS_OK;
+#else
+    return OGS_ERROR;
+#endif
+}

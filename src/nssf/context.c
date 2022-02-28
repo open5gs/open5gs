@@ -233,7 +233,7 @@ int nssf_context_parse_config(void)
                             rv = ogs_socknode_probe(
                                 ogs_app()->parameter.no_ipv4 ? NULL : &list,
                                 ogs_app()->parameter.no_ipv6 ? NULL : &list6,
-                                dev, port);
+                                dev, port, NULL);
                             ogs_assert(rv == OGS_OK);
                         }
 
