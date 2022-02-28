@@ -53,12 +53,12 @@ void ogs_socket_final(void)
 ogs_sock_t *ogs_sock_create(void)
 {
     ogs_sock_t *sock = NULL;
-    
+
     sock = ogs_calloc(1, sizeof(*sock));
     ogs_expect_or_return_val(sock, NULL);
 
     sock->fd = INVALID_SOCKET;
-    
+
     return sock;
 }
 
@@ -131,7 +131,7 @@ int ogs_sock_connect(ogs_sock_t *sock, ogs_sockaddr_t *addr)
     ogs_assert(addrlen);
 
     if (connect(sock->fd, &addr->sa, addrlen) != 0) {
-        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno, 
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
                 "socket connect[%s]:%d failed",
                 OGS_ADDR(addr, buf), OGS_PORT(addr));
         return OGS_ERROR;

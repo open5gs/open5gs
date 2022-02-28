@@ -184,7 +184,7 @@ int ogs_sbi_context_parse_config(const char *local, const char *remote)
                                     family != AF_INET && family != AF_INET6) {
                                     ogs_warn("Ignore family(%d) : "
                                         "AF_UNSPEC(%d), "
-                                        "AF_INET(%d), AF_INET6(%d) ", 
+                                        "AF_INET(%d), AF_INET6(%d) ",
                                         family, AF_UNSPEC, AF_INET, AF_INET6);
                                     family = AF_UNSPEC;
                                 }
@@ -205,7 +205,7 @@ int ogs_sbi_context_parse_config(const char *local, const char *remote)
                                     }
 
                                     ogs_assert(num < OGS_MAX_NUM_OF_HOSTNAME);
-                                    hostname[num++] = 
+                                    hostname[num++] =
                                         ogs_yaml_iter_value(&hostname_iter);
                                 } while (
                                     ogs_yaml_iter_type(&hostname_iter) ==
@@ -393,7 +393,7 @@ int ogs_sbi_context_parse_config(const char *local, const char *remote)
                                     family != AF_INET && family != AF_INET6) {
                                     ogs_warn("Ignore family(%d) : "
                                         "AF_UNSPEC(%d), "
-                                        "AF_INET(%d), AF_INET6(%d) ", 
+                                        "AF_INET(%d), AF_INET6(%d) ",
                                         family, AF_UNSPEC, AF_INET, AF_INET6);
                                     family = AF_UNSPEC;
                                 }
@@ -413,7 +413,7 @@ int ogs_sbi_context_parse_config(const char *local, const char *remote)
                                     }
 
                                     ogs_assert(num < OGS_MAX_NUM_OF_HOSTNAME);
-                                    hostname[num++] = 
+                                    hostname[num++] =
                                         ogs_yaml_iter_value(&hostname_iter);
                                 } while (
                                     ogs_yaml_iter_type(&hostname_iter) ==
@@ -675,7 +675,7 @@ void ogs_sbi_nf_service_add_version(ogs_sbi_nf_service_t *nf_service,
                 ogs_strdup(expiry);
             ogs_assert(
                 nf_service->versions[nf_service->num_of_version].expiry);
-                    
+
         }
         nf_service->num_of_version++;
     }
