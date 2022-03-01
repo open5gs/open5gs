@@ -180,6 +180,8 @@ bool udm_nnrf_handle_nf_status_notify(
             ogs_info("[%s] (NRF-notify) NF registered", nf_instance->id);
 
         } else {
+            nf_instance->reference_count++;
+
             OGS_FSM_TRAN(&nf_instance->sm, udm_nf_state_registered);
             ogs_fsm_dispatch(&nf_instance->sm, NULL);
 
@@ -283,6 +285,8 @@ void udm_nnrf_handle_nf_discover(
 
             ogs_info("[%s] (NF-discover) NF registered", nf_instance->id);
         } else {
+            nf_instance->reference_count++;
+
             OGS_FSM_TRAN(&nf_instance->sm, udm_nf_state_registered);
             ogs_fsm_dispatch(&nf_instance->sm, NULL);
 
