@@ -100,7 +100,7 @@ static int test_context_validation(void)
     if (snode) test_self()->ngap_addr6 = snode->addr;
 
     if (test_self()->e_served_tai[0].list2.num) {
-        memcpy(&test_self()->e_tai, 
+        memcpy(&test_self()->e_tai,
             &test_self()->e_served_tai[0].list2.tai[0], sizeof(ogs_5gs_tai_t));
     } else if (test_self()->e_served_tai[0].list0.tai[0].num) {
         test_self()->e_tai.tac =
@@ -111,7 +111,7 @@ static int test_context_validation(void)
     }
 
     if (test_self()->nr_served_tai[0].list2.num) {
-        memcpy(&test_self()->nr_tai, 
+        memcpy(&test_self()->nr_tai,
             &test_self()->nr_served_tai[0].list2.tai[0], sizeof(ogs_5gs_tai_t));
     } else if (test_self()->nr_served_tai[0].list0.tai[0].num) {
         test_self()->nr_tai.tac =

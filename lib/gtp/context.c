@@ -589,7 +589,7 @@ void ogs_gtp_node_remove(ogs_list_t *list, ogs_gtp_node_t *node)
 void ogs_gtp_node_remove_all(ogs_list_t *list)
 {
     ogs_gtp_node_t *node = NULL, *next_node = NULL;
-    
+
     ogs_list_for_each_safe(list, next_node, node)
         ogs_gtp_node_remove(list, node);
 }

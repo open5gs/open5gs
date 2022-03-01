@@ -48,9 +48,9 @@ void ogs_pfcp_context_init(void)
     /*
      * PFCP entity uses NTP timestamp(1900), but Open5GS uses UNIX(1970).
      *
-     * One is the offset between the two epochs. 
+     * One is the offset between the two epochs.
      * Unix uses an epoch located at 1/1/1970-00:00h (UTC) and
-     * NTP uses 1/1/1900-00:00h. This leads to an offset equivalent 
+     * NTP uses 1/1/1900-00:00h. This leads to an offset equivalent
      * to 70 years in seconds (there are 17 leap years
      * between the two dates so the offset is
      *
@@ -611,7 +611,7 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                         node->num_of_dnn = num_of_dnn;
                         if (num_of_dnn != 0)
                             memcpy(node->dnn, dnn, sizeof(node->dnn));
-                        
+
                         node->num_of_e_cell_id = num_of_e_cell_id;
                         if (num_of_e_cell_id != 0)
                             memcpy(node->e_cell_id, e_cell_id,
@@ -718,7 +718,7 @@ void ogs_pfcp_node_remove_all(ogs_list_t *list)
     ogs_pfcp_node_t *node = NULL, *next_node = NULL;
 
     ogs_assert(list);
-    
+
     ogs_list_for_each_safe(list, next_node, node)
         ogs_pfcp_node_remove(list, node);
 }

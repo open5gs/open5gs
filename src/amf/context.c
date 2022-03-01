@@ -697,22 +697,22 @@ int amf_context_parse_config(void)
 
                                 v = ogs_yaml_iter_value(&integrity_order_iter);
                                 if (v) {
-                                    int integrity_index = 
+                                    int integrity_index =
                                         self.num_of_integrity_order;
                                     if (strcmp(v, "NIA0") == 0) {
-                                        self.integrity_order[integrity_index] = 
+                                        self.integrity_order[integrity_index] =
                                         OGS_NAS_SECURITY_ALGORITHMS_NIA0;
                                         self.num_of_integrity_order++;
                                     } else if (strcmp(v, "NIA1") == 0) {
-                                        self.integrity_order[integrity_index] = 
+                                        self.integrity_order[integrity_index] =
                                         OGS_NAS_SECURITY_ALGORITHMS_128_NIA1;
                                         self.num_of_integrity_order++;
                                     } else if (strcmp(v, "NIA2") == 0) {
-                                        self.integrity_order[integrity_index] = 
+                                        self.integrity_order[integrity_index] =
                                         OGS_NAS_SECURITY_ALGORITHMS_128_NIA2;
                                         self.num_of_integrity_order++;
                                     } else if (strcmp(v, "NIA3") == 0) {
-                                        self.integrity_order[integrity_index] = 
+                                        self.integrity_order[integrity_index] =
                                         OGS_NAS_SECURITY_ALGORITHMS_128_NIA3;
                                         self.num_of_integrity_order++;
                                     }
@@ -739,22 +739,22 @@ int amf_context_parse_config(void)
 
                                 v = ogs_yaml_iter_value(&ciphering_order_iter);
                                 if (v) {
-                                    int ciphering_index = 
+                                    int ciphering_index =
                                         self.num_of_ciphering_order;
                                     if (strcmp(v, "NEA0") == 0) {
-                                        self.ciphering_order[ciphering_index] = 
+                                        self.ciphering_order[ciphering_index] =
                                             OGS_NAS_SECURITY_ALGORITHMS_NEA0;
                                         self.num_of_ciphering_order++;
                                     } else if (strcmp(v, "NEA1") == 0) {
-                                        self.ciphering_order[ciphering_index] = 
+                                        self.ciphering_order[ciphering_index] =
                                         OGS_NAS_SECURITY_ALGORITHMS_128_NEA1;
                                         self.num_of_ciphering_order++;
                                     } else if (strcmp(v, "NEA2") == 0) {
-                                        self.ciphering_order[ciphering_index] = 
+                                        self.ciphering_order[ciphering_index] =
                                         OGS_NAS_SECURITY_ALGORITHMS_128_NEA2;
                                         self.num_of_ciphering_order++;
                                     } else if (strcmp(v, "NEA3") == 0) {
-                                        self.ciphering_order[ciphering_index] = 
+                                        self.ciphering_order[ciphering_index] =
                                         OGS_NAS_SECURITY_ALGORITHMS_128_NEA3;
                                         self.num_of_ciphering_order++;
                                     }
@@ -772,7 +772,7 @@ int amf_context_parse_config(void)
                         const char *network_name_key =
                         ogs_yaml_iter_key(&network_name_iter);
                         ogs_assert(network_name_key);
-                        if (!strcmp(network_name_key, "full")) {  
+                        if (!strcmp(network_name_key, "full")) {
                             ogs_nas_network_name_t *network_full_name =
                                 &self.full_name;
                             const char *c_network_name =
@@ -968,7 +968,7 @@ ran_ue_t *ran_ue_add(amf_gnb_t *gnb, uint32_t ran_ue_ngap_id)
      * SCTP output stream identification
      * Default ogs_app()->parameter.sctp_streams : 30
      *   0 : Non UE signalling
-     *   1-29 : UE specific association 
+     *   1-29 : UE specific association
      */
     ran_ue->gnb_ostream_id =
         OGS_NEXT_ID(gnb->ostream_id, 1, gnb->max_num_of_ostreams-1);
@@ -1021,7 +1021,7 @@ ran_ue_t *ran_ue_find_by_ran_ue_ngap_id(
         amf_gnb_t *gnb, uint32_t ran_ue_ngap_id)
 {
     ran_ue_t *ran_ue = NULL;
-    
+
     ogs_list_for_each(&gnb->ran_ue_list, ran_ue) {
         if (ran_ue_ngap_id == ran_ue->ran_ue_ngap_id)
             break;
