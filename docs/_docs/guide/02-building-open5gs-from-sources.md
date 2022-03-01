@@ -210,7 +210,6 @@ If you modify the config files while Open5GS daemons are running, please restart
 ---
 
 ```bash
-$ cd install/bin/
 $ ./install/bin/open5gs-mmed
 Open5GS daemon v2.1.0
 
