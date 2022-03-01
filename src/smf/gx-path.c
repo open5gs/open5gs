@@ -322,7 +322,10 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
 #define FRAMED_IPV6_PREFIX_LENGTH 64  /* from spec document */
             paa.len = FRAMED_IPV6_PREFIX_LENGTH;
             val.os.data = (uint8_t*)&paa;
-            val.os.len = OGS_PAA_IPV6_LEN;
+            /* Reserved (1 byte) + Prefix length (1 byte) +
+             * IPv6 Prefix (8 bytes)
+             */
+            val.os.len = (OGS_IPV6_DEFAULT_PREFIX_LEN >> 3) + 2;
             ret = fd_msg_avp_setvalue(avp, &val);
             ogs_assert(ret == 0);
             ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
