@@ -125,6 +125,8 @@ static int epoll_add(ogs_poll_t *poll)
     if (poll->when & OGS_POLLOUT)
         map->write = poll;
 
+    memset(&ee, 0, sizeof ee);
+
     ee.events = 0;
     if (map->read)
         ee.events |= (EPOLLIN|EPOLLRDHUP);
@@ -163,6 +165,8 @@ static int epoll_remove(ogs_poll_t *poll)
         map->read = NULL;
     if (poll->when & OGS_POLLOUT)
         map->write = NULL;
+
+    memset(&ee, 0, sizeof ee);
 
     ee.events = 0;
     if (map->read)
