@@ -393,11 +393,6 @@ void sgwc_sxa_handle_session_modification_response(
 
         sgwc_ue = bearer->sgwc_ue;
         ogs_assert(sgwc_ue);
-
-        dl_tunnel = sgwc_dl_tunnel_in_bearer(bearer);
-        ogs_assert(dl_tunnel);
-        ul_tunnel = sgwc_ul_tunnel_in_bearer(bearer);
-        ogs_assert(ul_tunnel);
     }
 
     if (pfcp_rsp->cause.presence) {
@@ -517,6 +512,19 @@ void sgwc_sxa_handle_session_modification_response(
 
         ogs_pfcp_xact_commit(pfcp_xact);
         return;
+    }
+
+    if (flags & OGS_PFCP_MODIFY_SESSION) {
+
+        /* Nothing */
+
+    } else {
+        ogs_assert(bearer);
+
+        dl_tunnel = sgwc_dl_tunnel_in_bearer(bearer);
+        ogs_assert(dl_tunnel);
+        ul_tunnel = sgwc_ul_tunnel_in_bearer(bearer);
+        ogs_assert(ul_tunnel);
     }
 
     /*
@@ -672,6 +680,7 @@ void sgwc_sxa_handle_session_modification_response(
             gtp_rsp->bearer_contexts.s1_u_enodeb_f_teid.presence = 0;
 
             /* Data Plane(DL) : SGW-S5U */
+            ogs_assert(dl_tunnel);
             memset(&sgw_s5u_teid, 0, sizeof(ogs_gtp_f_teid_t));
             sgw_s5u_teid.interface_type = OGS_GTP_F_TEID_S5_S8_SGW_GTP_U;
             sgw_s5u_teid.teid = htobe32(dl_tunnel->local_teid);
@@ -685,6 +694,7 @@ void sgwc_sxa_handle_session_modification_response(
             gtp_rsp->bearer_contexts.s5_s8_u_sgw_f_teid.len = len;
 
             /* Data Plane(UL) : PGW-S5U */
+            ogs_assert(ul_tunnel);
             pgw_s5u_teid.interface_type = OGS_GTP_F_TEID_S5_S8_PGW_GTP_U;
             pgw_s5u_teid.teid = htobe32(ul_tunnel->remote_teid);
             rv = ogs_gtp_ip_to_f_teid(
@@ -861,6 +871,7 @@ void sgwc_sxa_handle_session_modification_response(
             gtp_rsp->sender_f_teid_for_control_plane.len = len;
 
             /* Send Data Plane(UL) : SGW-S1U */
+            ogs_assert(ul_tunnel);
             memset(&sgw_s1u_teid, 0, sizeof(ogs_gtp_f_teid_t));
             sgw_s1u_teid.interface_type = ul_tunnel->interface_type;
             sgw_s1u_teid.teid = htobe32(ul_tunnel->local_teid);
