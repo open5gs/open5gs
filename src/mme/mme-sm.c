@@ -432,9 +432,6 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         s6a_message = e->s6a_message;
         ogs_assert(s6a_message);
 
-    ogs_warn("%p, %d, %p, %p", s6a_message, s6a_message->result_code,
-            s6a_message->err, s6a_message->exp_err);
-
         enb_ue = enb_ue_cycle(mme_ue->enb_ue);
         if (!enb_ue) {
             ogs_error("S1 context has already been removed");
@@ -446,8 +443,6 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         }
 
         if (s6a_message->result_code != ER_DIAMETER_SUCCESS) {
-    ogs_warn("%p, %d, %p, %p", s6a_message, s6a_message->result_code,
-            s6a_message->err, s6a_message->exp_err);
             /* Unfortunately fd doesn't distinguish
              * between result-code and experimental-result-code.
              *
