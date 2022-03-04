@@ -454,6 +454,11 @@ void sgwc_s11_handle_delete_session_request(
         cause_value = OGS_GTP_CAUSE_CONTEXT_NOT_FOUND;
     }
 
+    if (!sess->gnode) {
+        ogs_error("No GTP Node");
+        cause_value = OGS_GTP_CAUSE_CONTEXT_NOT_FOUND;
+    }
+
     if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
         ogs_gtp_send_error_message(
                 s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
