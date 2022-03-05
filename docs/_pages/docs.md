@@ -46,3 +46,4 @@ head_inline: "<style> ul { padding-bottom: 1em; } </style>"
   - [Open5GS EPC & OpenAirInterface UE/RAN Sample configuration](https://github.com/s5uishida/open5gs_epc_oai_sample_config)
   - [Open5GS 5GC & UERANSIM UE/RAN Sample Configuration](https://github.com/s5uishida/open5gs_5gc_ueransim_sample_config)
   - [Open5GS & UERANSIM - Select nearby UPF according to the connected gNodeB](https://github.com/s5uishida/open5gs_5gc_ueransim_nearby_upf_sample_config)
+  - [VoLTE and SMS Configuration for docker_open5gs](https://github.com/s5uishida/docker_open5gs_volte_sms_config)
