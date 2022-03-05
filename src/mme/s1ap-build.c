@@ -285,7 +285,14 @@ ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
 
     ogs_assert(mme_ue);
     enb_ue = enb_ue_cycle(mme_ue->enb_ue);
-    ogs_assert(enb_ue);
+    if (!enb_ue) {
+        ogs_error("S1 context has already been removed");
+        if (emmbuf && emmbuf->len) {
+            ogs_error("NAS message is forcibly removed");
+            ogs_pkbuf_free(emmbuf);
+        }
+        return NULL;
+    }
 
     ogs_debug("InitialContextSetupRequest");
 
