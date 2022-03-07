@@ -396,7 +396,7 @@ static void test7_func(abts_case *tc, void *data)
 
     ogs_socknode_remove_all(&list);
 
-    rv = ogs_socknode_probe(&list, &list6, NULL, PORT);
+    rv = ogs_socknode_probe(&list, &list6, NULL, PORT, NULL);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_socknode_remove_all(&list);
