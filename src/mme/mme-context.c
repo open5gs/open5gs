@@ -506,7 +506,7 @@ int mme_context_parse_config()
                                         NULL : &self.s1ap_list,
                                     ogs_app()->parameter.no_ipv6 ?
                                         NULL : &self.s1ap_list6,
-                                    dev, port, NULL);
+                                    dev, port);
                             ogs_assert(rv == OGS_OK);
                         }
 
@@ -520,7 +520,7 @@ int mme_context_parse_config()
                                     NULL : &self.s1ap_list,
                                 ogs_app()->parameter.no_ipv6 ?
                                     NULL : &self.s1ap_list6,
-                                NULL, self.s1ap_port, NULL);
+                                NULL, self.s1ap_port);
                         ogs_assert(rv == OGS_OK);
                     }
                 } else if (!strcmp(mme_key, "gtpc")) {

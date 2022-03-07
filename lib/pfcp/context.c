@@ -274,7 +274,7 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                         NULL : &self.pfcp_list,
                                     ogs_app()->parameter.no_ipv6 ?
                                         NULL : &self.pfcp_list6,
-                                    dev, self.pfcp_port, NULL);
+                                    dev, self.pfcp_port);
                             ogs_assert(rv == OGS_OK);
                         }
 
@@ -288,7 +288,7 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                     NULL : &self.pfcp_list,
                                 ogs_app()->parameter.no_ipv6 ?
                                     NULL : &self.pfcp_list6,
-                                NULL, self.pfcp_port, NULL);
+                                NULL, self.pfcp_port);
                         ogs_assert(rv == OGS_OK);
                     }
                 } else if (!strcmp(local_key, "subnet")) {

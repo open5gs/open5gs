@@ -84,6 +84,7 @@ typedef struct ogs_app_context_s {
         int no_delay;
         int l_onoff;
         int l_linger;
+        int so_bindtodevice;
     } sockopt;
 
     struct {

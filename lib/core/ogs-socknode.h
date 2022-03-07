@@ -35,11 +35,11 @@ typedef struct ogs_socknode_s {
     ogs_lnode_t node;
 
     ogs_sockaddr_t *addr;
+    char *dev; /* !NULL: used with SO_BINDTODEVICE */
 
     ogs_sock_t *sock;
     void (*cleanup)(ogs_sock_t *sock);
     ogs_poll_t *poll;
-    char *bind_dev; /* !NULL: used with SO_BINDTODEVICE */
 } ogs_socknode_t;
 
 ogs_socknode_t *ogs_socknode_new(ogs_sockaddr_t *addr);
@@ -51,8 +51,7 @@ void ogs_socknode_remove(ogs_list_t *list, ogs_socknode_t *node);
 void ogs_socknode_remove_all(ogs_list_t *list);
 
 int ogs_socknode_probe(
-        ogs_list_t *list, ogs_list_t *list6, const char *dev, uint16_t port,
-        const char *bind_device);
+        ogs_list_t *list, ogs_list_t *list6, const char *dev, uint16_t port);
 int ogs_socknode_fill_scope_id_in_local(ogs_sockaddr_t *sa_list);
 
 void ogs_socknode_set_cleanup(

@@ -280,7 +280,7 @@ int ogs_sbi_context_parse_config(const char *local, const char *remote)
                             rv = ogs_socknode_probe(
                                 ogs_app()->parameter.no_ipv4 ? NULL : &list,
                                 ogs_app()->parameter.no_ipv6 ? NULL : &list6,
-                                dev, port, NULL);
+                                dev, port);
                             ogs_assert(rv == OGS_OK);
                         }
 
@@ -334,7 +334,7 @@ int ogs_sbi_context_parse_config(const char *local, const char *remote)
                         rv = ogs_socknode_probe(
                             ogs_app()->parameter.no_ipv4 ? NULL : &list,
                             ogs_app()->parameter.no_ipv6 ? NULL : &list6,
-                            NULL, self.sbi_port, NULL);
+                            NULL, self.sbi_port);
                         ogs_assert(rv == OGS_OK);
 
                         node = ogs_list_first(&list);

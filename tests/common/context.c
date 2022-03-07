@@ -244,7 +244,7 @@ int test_context_parse_config(void)
                                         NULL : &self.ngap_list,
                                     ogs_app()->parameter.no_ipv6 ?
                                         NULL : &self.ngap_list6,
-                                    dev, port, NULL);
+                                    dev, port);
                             ogs_assert(rv == OGS_OK);
                         }
 
@@ -258,7 +258,7 @@ int test_context_parse_config(void)
                                     NULL : &self.ngap_list,
                                 ogs_app()->parameter.no_ipv6 ?
                                     NULL : &self.ngap_list6,
-                                NULL, self.ngap_port, NULL);
+                                NULL, self.ngap_port);
                         ogs_assert(rv == OGS_OK);
                     }
                 } if (!strcmp(amf_key, "tai")) {
@@ -628,7 +628,7 @@ int test_context_parse_config(void)
                                         NULL : &self.s1ap_list,
                                     ogs_app()->parameter.no_ipv6 ?
                                         NULL : &self.s1ap_list6,
-                                    dev, port, NULL);
+                                    dev, port);
                             ogs_assert(rv == OGS_OK);
                         }
 
@@ -642,7 +642,7 @@ int test_context_parse_config(void)
                                     NULL : &self.s1ap_list,
                                 ogs_app()->parameter.no_ipv6 ?
                                     NULL : &self.s1ap_list6,
-                                NULL, self.s1ap_port, NULL);
+                                NULL, self.s1ap_port);
                         ogs_assert(rv == OGS_OK);
                     }
                 } else if (!strcmp(mme_key, "tai")) {

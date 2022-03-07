@@ -296,7 +296,7 @@ int amf_context_parse_config(void)
                                         NULL : &self.ngap_list,
                                     ogs_app()->parameter.no_ipv6 ?
                                         NULL : &self.ngap_list6,
-                                    dev, port, NULL);
+                                    dev, port);
                             ogs_assert(rv == OGS_OK);
                         }
 
@@ -310,7 +310,7 @@ int amf_context_parse_config(void)
                                     NULL : &self.ngap_list,
                                 ogs_app()->parameter.no_ipv6 ?
                                     NULL : &self.ngap_list6,
-                                NULL, self.ngap_port, NULL);
+                                NULL, self.ngap_port);
                         ogs_assert(rv == OGS_OK);
                     }
                 } else if (!strcmp(amf_key, "guami")) {

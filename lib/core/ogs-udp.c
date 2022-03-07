@@ -33,7 +33,7 @@ ogs_sock_t *ogs_udp_socket(int family, ogs_socknode_t *node)
     return sock;
 }
 
-ogs_sock_t *ogs_udp_server(ogs_socknode_t *node)
+ogs_sock_t *ogs_udp_server(ogs_socknode_t *node, bool so_bindtodevice)
 {
     ogs_sock_t *new = NULL;
     ogs_sockaddr_t *addr;
@@ -54,16 +54,15 @@ ogs_sock_t *ogs_udp_server(ogs_socknode_t *node)
             addr = addr->next;
             continue;
         }
-        ogs_debug("udp_server() [%s]:%d",
-                OGS_ADDR(addr, buf), OGS_PORT(addr));
-        if(node->bind_dev) {
-            if (ogs_bind_to_device(new->fd, node->bind_dev) != OGS_OK) {
+        ogs_debug("udp_server() [%s]:%d", OGS_ADDR(addr, buf), OGS_PORT(addr));
+        if (so_bindtodevice == true && node->dev) {
+            if (ogs_bind_to_device(new->fd, node->dev) != OGS_OK) {
                 ogs_sock_destroy(new);
                 addr = addr->next;
                 continue;
             }
             ogs_debug("udp_server() [%s]:%d bound to device %s",
-                    OGS_ADDR(addr, buf), OGS_PORT(addr), node->bind_dev);
+                    OGS_ADDR(addr, buf), OGS_PORT(addr), node->dev);
         }
         break;
     }

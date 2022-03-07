@@ -62,7 +62,7 @@ static void test1_func(abts_case *tc, void *data)
         ABTS_INT_EQUAL(tc, OGS_OK, rv);
         server[i] = ogs_socknode_new(addr);
         ABTS_PTR_NOTNULL(tc, server[i]);
-        ogs_udp_server(server[i]);
+        ogs_udp_server(server[i], false, false);
         ABTS_PTR_NOTNULL(tc, server[i]->sock);
         rv = ogs_getaddrinfo(&addr, AF_INET, "127.0.0.1", PORT+i, AI_PASSIVE);
         ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -293,7 +293,7 @@ static void test4_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     node = ogs_socknode_new(addr);
     ABTS_PTR_NOTNULL(tc, node);
-    udp = ogs_udp_server(node);
+    udp = ogs_udp_server(node, false);
     ABTS_PTR_NOTNULL(tc, udp);
     poll = ogs_pollset_add(pollset, OGS_POLLIN, udp->fd, test4_handler, tc);
 

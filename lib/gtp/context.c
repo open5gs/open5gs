@@ -103,9 +103,7 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
                         const char *hostname[OGS_MAX_NUM_OF_HOSTNAME];
                         uint16_t port = self.gtpc_port;
                         const char *dev = NULL;
-                        const char *bind_dev = NULL;
                         ogs_sockaddr_t *addr = NULL;
-                        ogs_socknode_t *node = NULL, *node6 = NULL;
 
                         if (ogs_yaml_iter_type(&gtpc_array) ==
                                 YAML_MAPPING_NODE) {
@@ -163,8 +161,6 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
                                 if (v) port = atoi(v);
                             } else if (!strcmp(gtpc_key, "dev")) {
                                 dev = ogs_yaml_iter_value(&gtpc_iter);
-                            } else if (!strcmp(gtpc_key, "bind_dev")) {
-                                bind_dev = ogs_yaml_iter_value(&gtpc_iter);
                             } else
                                 ogs_warn("unknown key `%s`", gtpc_key);
                         }
@@ -178,17 +174,11 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
 
                         if (addr) {
                             if (ogs_app()->parameter.no_ipv4 == 0)
-                                node = ogs_socknode_add(
+                                ogs_socknode_add(
                                         &self.gtpc_list, AF_INET, addr);
                             if (ogs_app()->parameter.no_ipv6 == 0)
-                                node6 = ogs_socknode_add(
+                                ogs_socknode_add(
                                         &self.gtpc_list6, AF_INET6, addr);
-                            if (bind_dev) {
-                                if (node)
-                                    node->bind_dev = ogs_strdup(bind_dev);
-                                if (node6)
-                                    node6->bind_dev = ogs_strdup(bind_dev);
-                            }
                             ogs_freeaddrinfo(addr);
                         }
 
@@ -198,7 +188,7 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
                                         NULL : &self.gtpc_list,
                                     ogs_app()->parameter.no_ipv6 ?
                                         NULL : &self.gtpc_list6,
-                                    dev, port, bind_dev);
+                                    dev, port);
                             ogs_assert(rv == OGS_OK);
                         }
 
@@ -212,7 +202,7 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
                                     NULL : &self.gtpc_list,
                                 ogs_app()->parameter.no_ipv6 ?
                                     NULL : &self.gtpc_list6,
-                                NULL, self.gtpc_port, NULL);
+                                NULL, self.gtpc_port);
                         ogs_assert(rv == OGS_OK);
                     }
                 } else if (!strcmp(local_key, "gtpu")) {
@@ -238,7 +228,6 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
                         const char *teid_range = NULL;
                         const char *network_instance = NULL;
                         const char *source_interface = NULL;
-                        const char *bind_dev = NULL;
 
                         if (ogs_yaml_iter_type(&gtpu_array) ==
                                 YAML_MAPPING_NODE) {
@@ -328,8 +317,6 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
                                 if (v) port = atoi(v);
                             } else if (!strcmp(gtpu_key, "dev")) {
                                 dev = ogs_yaml_iter_value(&gtpu_iter);
-                            } else if (!strcmp(gtpu_key, "bind_dev")) {
-                                bind_dev = ogs_yaml_iter_value(&gtpu_iter);
                             } else if (!strcmp(gtpu_key,
                                         "teid_range_indication")) {
                                 teid_range_indication =
@@ -361,15 +348,9 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
 
                         if (addr) {
                             if (ogs_app()->parameter.no_ipv4 == 0)
-                                node = ogs_socknode_add(&list, AF_INET, addr);
+                                ogs_socknode_add(&list, AF_INET, addr);
                             if (ogs_app()->parameter.no_ipv6 == 0)
-                                node6 = ogs_socknode_add(&list6, AF_INET6, addr);
-                            if (bind_dev) {
-                                if (node)
-                                    node->bind_dev = ogs_strdup(bind_dev);
-                                if (node6)
-                                    node6->bind_dev = ogs_strdup(bind_dev);
-                            }
+                                ogs_socknode_add(&list6, AF_INET6, addr);
                             ogs_freeaddrinfo(addr);
                         }
 
@@ -377,7 +358,7 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
                             rv = ogs_socknode_probe(
                                 ogs_app()->parameter.no_ipv4 ? NULL : &list,
                                 ogs_app()->parameter.no_ipv6 ? NULL : &list6,
-                                dev, port, bind_dev);
+                                dev, port);
                             ogs_assert(rv == OGS_OK);
                         }
 
@@ -473,7 +454,7 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
                         rv = ogs_socknode_probe(
                             ogs_app()->parameter.no_ipv4 ? NULL : &list,
                             ogs_app()->parameter.no_ipv6 ? NULL : &list6,
-                            NULL, self.gtpu_port, NULL);
+                            NULL, self.gtpu_port);
                         ogs_assert(rv == OGS_OK);
 
                         /*

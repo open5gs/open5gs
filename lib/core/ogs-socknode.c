@@ -51,8 +51,8 @@ void ogs_socknode_free(ogs_socknode_t *node)
     ogs_assert(node);
 
     ogs_freeaddrinfo(node->addr);
-    if (node->bind_dev)
-        ogs_free(node->bind_dev);
+    if (node->dev)
+        ogs_free(node->dev);
     if (node->poll)
         ogs_pollset_remove(node->poll);
     if (node->sock) {
@@ -103,8 +103,7 @@ void ogs_socknode_remove_all(ogs_list_t *list)
 }
 
 int ogs_socknode_probe(
-        ogs_list_t *list, ogs_list_t *list6, const char *dev, uint16_t port,
-        const char *bind_device)
+        ogs_list_t *list, ogs_list_t *list6, const char *dev, uint16_t port)
 {
 #if defined(HAVE_GETIFADDRS)
     ogs_socknode_t *node = NULL;
@@ -167,8 +166,8 @@ int ogs_socknode_probe(
 
         node = ogs_calloc(1, sizeof(ogs_socknode_t));
         node->addr = addr;
-        if (bind_device)
-            node->bind_dev = ogs_strdup(bind_device);
+        if (dev)
+            node->dev = ogs_strdup(dev);
 
         if (addr->ogs_sa_family == AF_INET) {
             ogs_assert(list);
