@@ -38,7 +38,7 @@ ogs_socknode_t *test_epdg_server(uint16_t port)
     node = ogs_socknode_new(addr);
     ogs_assert(node);
 
-    sock = ogs_udp_server(node);
+    sock = ogs_udp_server(node, false);
     ogs_assert(sock);
 
     return node;

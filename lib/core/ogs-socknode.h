@@ -35,6 +35,7 @@ typedef struct ogs_socknode_s {
     ogs_lnode_t node;
 
     ogs_sockaddr_t *addr;
+    char *dev; /* !NULL: used with SO_BINDTODEVICE */
 
     ogs_sock_t *sock;
     void (*cleanup)(ogs_sock_t *sock);

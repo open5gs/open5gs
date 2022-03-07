@@ -51,6 +51,8 @@ void ogs_socknode_free(ogs_socknode_t *node)
     ogs_assert(node);
 
     ogs_freeaddrinfo(node->addr);
+    if (node->dev)
+        ogs_free(node->dev);
     if (node->poll)
         ogs_pollset_remove(node->poll);
     if (node->sock) {
@@ -164,6 +166,8 @@ int ogs_socknode_probe(
 
         node = ogs_calloc(1, sizeof(ogs_socknode_t));
         node->addr = addr;
+        if (dev)
+            node->dev = ogs_strdup(dev);
 
         if (addr->ogs_sa_family == AF_INET) {
             ogs_assert(list);

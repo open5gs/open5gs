@@ -40,7 +40,7 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     node = ogs_socknode_new(addr);
     ABTS_PTR_NOTNULL(tc, node);
-    udp = ogs_udp_server(node);
+    udp = ogs_udp_server(node, false);
     ABTS_PTR_NOTNULL(tc, udp);
     ogs_socknode_free(node);
 
@@ -48,7 +48,7 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     node = ogs_socknode_new(addr);
     ABTS_PTR_NOTNULL(tc, node);
-    udp = ogs_udp_server(node);
+    udp = ogs_udp_server(node, false);
     ABTS_PTR_NOTNULL(tc, udp);
     ogs_socknode_free(node);
 
@@ -56,7 +56,7 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     node = ogs_socknode_new(addr);
     ABTS_PTR_NOTNULL(tc, node);
-    udp = ogs_udp_server(node);
+    udp = ogs_udp_server(node, false);
     ABTS_PTR_NOTNULL(tc, udp);
     ogs_socknode_free(node);
 }
@@ -154,7 +154,7 @@ static void test3_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     node = ogs_socknode_new(addr);
     ABTS_PTR_NOTNULL(tc, node);
-    udp = ogs_udp_server(node);
+    udp = ogs_udp_server(node, false);
     ABTS_PTR_NOTNULL(tc, udp);
 
     test3_thread = ogs_thread_create(test3_main, tc);
@@ -211,7 +211,7 @@ static void test4_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     node = ogs_socknode_new(addr);
     ABTS_PTR_NOTNULL(tc, node);
-    udp = ogs_udp_server(node);
+    udp = ogs_udp_server(node, false);
     ABTS_PTR_NOTNULL(tc, udp);
 
     test4_thread = ogs_thread_create(test4_main, tc);
@@ -244,7 +244,7 @@ static void test5_main(void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     node = ogs_socknode_new(addr);
     ABTS_PTR_NOTNULL(tc, node);
-    udp = ogs_udp_server(node);
+    udp = ogs_udp_server(node, false);
     ABTS_PTR_NOTNULL(tc, udp);
 
     rv = ogs_getaddrinfo(&addr, AF_INET6, NULL, PORT, 0);
@@ -277,7 +277,7 @@ static void test5_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     node = ogs_socknode_new(addr);
     ABTS_PTR_NOTNULL(tc, node);
-    udp = ogs_udp_server(node);
+    udp = ogs_udp_server(node, false);
     ABTS_PTR_NOTNULL(tc, udp);
 
     rv = ogs_getaddrinfo(&addr, AF_INET6, NULL, PORT2, 0);

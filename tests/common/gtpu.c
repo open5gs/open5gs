@@ -47,7 +47,7 @@ ogs_socknode_t *test_gtpu_server(int index, int family)
     node = ogs_socknode_new(addr);
     ogs_assert(node);
 
-    sock = ogs_udp_server(node);
+    sock = ogs_udp_server(node, false);
     ogs_assert(sock);
 
     return node;

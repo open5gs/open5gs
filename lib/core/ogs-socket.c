@@ -331,3 +331,26 @@ int ogs_listen_reusable(ogs_socket_t fd)
 
     return OGS_OK;
 }
+
+int ogs_bind_to_device(ogs_socket_t fd, const char *device)
+{
+#if defined(SO_BINDTODEVICE) && !defined(_WIN32)
+    int rc;
+
+    ogs_assert(fd != INVALID_SOCKET);
+    ogs_assert(device);
+    rc = setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, device, strlen(device)+1);
+    if (rc != OGS_OK) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                "setsockopt(SOL_SOCKET, SO_BINDTODEVICE, %s) failed", device);
+        ogs_error("You need to grant privileges to use SO_BINDTODEVICE.");
+        ogs_error("OR disable SO_BINDTODEVICE "
+                "in the configuration file as below.");
+        ogs_log_print(OGS_LOG_ERROR, "\nsockopt:\n");
+        ogs_log_print(OGS_LOG_ERROR, "   so_bindtodevice : false\n\n");
+        return OGS_ERROR;
+    }
+#endif
+
+    return OGS_OK;
+}

@@ -499,6 +499,12 @@ max:
 pool:
 
 #
+# sockopt:
+#    so_bindtodevice : true
+#
+sockopt:
+
+#
 # time:
 #
 #  o NF Instance Heartbeat (Default : 0)
