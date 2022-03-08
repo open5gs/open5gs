@@ -388,7 +388,7 @@ pool:
 #
 # sockopt:
 #    no_delay : true
-#    so_bindtodevice : true
+#    bindtodevice : false
 #
 sockopt:
 

@@ -187,7 +187,7 @@ static void app_context_prepare(void)
     self.sctp.max_initial_timeout = 8000;   /* 8 seconds */
 
     self.sockopt.no_delay = true;
-    self.sockopt.so_bindtodevice = true;
+    self.sockopt.bindtodevice = false;
 
 #define MAX_NUM_OF_UE               1024    /* Num of UE per AMF/MME */
 #define MAX_NUM_OF_GNB              64      /* Num of gNB per AMF/MME */
@@ -377,8 +377,8 @@ int ogs_app_context_parse_config(void)
                     const char *v = ogs_yaml_iter_value(&sockopt_iter);
                     if (v) self.sockopt.l_linger = atoi(v);
                     self.sockopt.l_onoff = true;
-                } else if (!strcmp(sockopt_key, "so_bindtodevice")) {
-                    self.sockopt.so_bindtodevice =
+                } else if (!strcmp(sockopt_key, "bindtodevice")) {
+                    self.sockopt.bindtodevice =
                         ogs_yaml_iter_bool(&sockopt_iter);
                 } else
                     ogs_warn("unknown key `%s`", sockopt_key);

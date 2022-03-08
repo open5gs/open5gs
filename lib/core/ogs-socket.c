@@ -347,7 +347,7 @@ int ogs_bind_to_device(ogs_socket_t fd, const char *device)
         ogs_error("OR disable SO_BINDTODEVICE "
                 "in the configuration file as below.");
         ogs_log_print(OGS_LOG_ERROR, "\nsockopt:\n");
-        ogs_log_print(OGS_LOG_ERROR, "   so_bindtodevice : false\n\n");
+        ogs_log_print(OGS_LOG_ERROR, "   bindtodevice : false\n\n");
         return OGS_ERROR;
     }
 #endif
