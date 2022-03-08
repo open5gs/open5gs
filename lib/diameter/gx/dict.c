@@ -87,6 +87,7 @@
  * uses some AVPs from the former, but not this one.
 */
 #include <freeDiameter/extension.h>
+#include "ogs-diameter-gx.h"
 
 
 /* The content of this file follows the same structure as dict_base_proto.c */
@@ -149,7 +150,7 @@ int ogs_dict_gx_entry(char *conffile)
   {
     struct dict_object * vendor;
     CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_VENDOR, VENDOR_BY_NAME, "3GPP", &vendor, ENOENT));
-    struct dict_application_data app_data = { 16777238, "Gx" };
+    struct dict_application_data app_data = { OGS_DIAM_GX_APPLICATION_ID, "Gx" };
     CHECK_FCT(fd_dict_new(fd_g_config->cnf_dict, DICT_APPLICATION, &app_data, vendor, NULL));
   }
 
