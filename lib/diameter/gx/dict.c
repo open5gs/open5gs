@@ -29,7 +29,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                                                             *
  *********************************************************************************************************/
 
-/* 
+/*
  * Dictionary definitions for objects specified for DCCA by 3GPP.
  *
  * This extensions contains a lot of AVPs from various 3GPP standards
@@ -145,7 +145,7 @@ struct local_rules_definition {
 int ogs_dict_gx_entry(char *conffile)
 {
   /* Applications section */
-  {    
+  {
   {
     struct dict_object * vendor;
     CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_VENDOR, VENDOR_BY_NAME, "3GPP", &vendor, ENOENT));
@@ -276,7 +276,7 @@ int ogs_dict_gx_entry(char *conffile)
     CHECK_dict_search( DICT_COMMAND, CMD_BY_NAME, "Credit-Control-Answer", &cmd);
     PARSE_loc_rules( rules, cmd );
   }
-  
+
   LOG_D( "Extension 'Dictionary definitions for DCCA 3GPP' initialized");
   return 0;
 }
