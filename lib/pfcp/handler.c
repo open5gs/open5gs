@@ -20,7 +20,7 @@
 #include "ogs-pfcp.h"
 
 bool ogs_pfcp_handle_heartbeat_request(
-        ogs_pfcp_node_t *node, ogs_pfcp_xact_t *xact, 
+        ogs_pfcp_node_t *node, ogs_pfcp_xact_t *xact,
         ogs_pfcp_heartbeat_request_t *req)
 {
     int rv;
@@ -33,7 +33,7 @@ bool ogs_pfcp_handle_heartbeat_request(
 }
 
 bool ogs_pfcp_handle_heartbeat_response(
-        ogs_pfcp_node_t *node, ogs_pfcp_xact_t *xact, 
+        ogs_pfcp_node_t *node, ogs_pfcp_xact_t *xact,
         ogs_pfcp_heartbeat_response_t *rsp)
 {
     ogs_assert(xact);
@@ -46,7 +46,7 @@ bool ogs_pfcp_handle_heartbeat_response(
 }
 
 bool ogs_pfcp_cp_handle_association_setup_request(
-        ogs_pfcp_node_t *node, ogs_pfcp_xact_t *xact, 
+        ogs_pfcp_node_t *node, ogs_pfcp_xact_t *xact,
         ogs_pfcp_association_setup_request_t *req)
 {
     int i;
@@ -93,7 +93,7 @@ bool ogs_pfcp_cp_handle_association_setup_request(
 }
 
 bool ogs_pfcp_cp_handle_association_setup_response(
-        ogs_pfcp_node_t *node, ogs_pfcp_xact_t *xact, 
+        ogs_pfcp_node_t *node, ogs_pfcp_xact_t *xact,
         ogs_pfcp_association_setup_response_t *rsp)
 {
     int i;
@@ -1087,7 +1087,7 @@ ogs_pfcp_urr_t *ogs_pfcp_handle_create_urr(ogs_pfcp_sess_t *sess,
         uint8_t *cause_value, uint8_t *offending_ie_value)
 {
     ogs_pfcp_urr_t *urr = NULL;
-    
+
     ogs_assert(message);
     ogs_assert(sess);
 
@@ -1184,7 +1184,7 @@ ogs_pfcp_urr_t *ogs_pfcp_handle_update_urr(ogs_pfcp_sess_t *sess,
         uint8_t *cause_value, uint8_t *offending_ie_value)
 {
     ogs_pfcp_urr_t *urr = NULL;
-    
+
     ogs_assert(message);
     ogs_assert(sess);
 
