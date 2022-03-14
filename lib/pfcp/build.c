@@ -573,7 +573,7 @@ void ogs_pfcp_build_create_urr(
                                     | (urr->rep_triggers.reptri_7);
     if (urr->meas_period) {
         message->measurement_period.presence = 1;
-        message->measurement_period.u32 = htobe32(urr->meas_period);
+        message->measurement_period.u32 = urr->meas_period;
     }
 
     if (urr->vol_threshold.flags) {
@@ -592,27 +592,27 @@ void ogs_pfcp_build_create_urr(
 
     if (urr->event_threshold) {
         message->event_threshold.presence = 1;
-        message->event_threshold.u32 = htobe32(urr->event_threshold);
+        message->event_threshold.u32 = urr->event_threshold;
     }
 
     if (urr->event_quota) {
         message->event_quota.presence = 1;
-        message->event_quota.u32 = htobe32(urr->event_quota);
+        message->event_quota.u32 = urr->event_quota;
     }
 
     if (urr->time_threshold) {
         message->time_threshold.presence = 1;
-        message->time_threshold.u32 = htobe32(urr->time_threshold);
+        message->time_threshold.u32 = urr->time_threshold;
     }
 
     if (urr->time_quota) {
         message->time_quota.presence = 1;
-        message->time_quota.u32 = htobe32(urr->time_quota);
+        message->time_quota.u32 = urr->time_quota;
     }
 
     if (urr->quota_holding_time) {
         message->quota_holding_time.presence = 1;
-        message->quota_holding_time.u32 = htobe32(urr->quota_holding_time);
+        message->quota_holding_time.u32 = urr->quota_holding_time;
     }
 
     if (urr->dropped_dl_traffic_threshold.flags) {
@@ -626,7 +626,7 @@ void ogs_pfcp_build_create_urr(
 
     if (urr->quota_validity_time) {
         message->quota_validity_time.presence = 1;
-        message->quota_validity_time.u32 = htobe32(urr->quota_validity_time);
+        message->quota_validity_time.u32 = urr->quota_validity_time;
     }
 }
 
