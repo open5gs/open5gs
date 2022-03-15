@@ -39,27 +39,12 @@ static OGS_POOL(ogs_pfcp_rule_pool, ogs_pfcp_rule_t);
 
 void ogs_pfcp_context_init(void)
 {
-    struct timeval tv;
     ogs_assert(context_initialized == 0);
 
     /* Initialize SMF context */
     memset(&self, 0, sizeof(ogs_pfcp_context_t));
 
-    /*
-     * PFCP entity uses NTP timestamp(1900), but Open5GS uses UNIX(1970).
-     *
-     * One is the offset between the two epochs.
-     * Unix uses an epoch located at 1/1/1970-00:00h (UTC) and
-     * NTP uses 1/1/1900-00:00h. This leads to an offset equivalent
-     * to 70 years in seconds (there are 17 leap years
-     * between the two dates so the offset is
-     *
-     *  (70*365 + 17)*86400 = 2208988800
-     *
-     * to be substracted from NTP time to get Unix struct timeval.
-     */
-    ogs_gettimeofday(&tv);
-    self.pfcp_started = tv.tv_sec + 2208988800;
+    self.pfcp_started = ogs_time_ntp32_now();
 
     ogs_log_install_domain(&__ogs_pfcp_domain, "pfcp", ogs_core()->log.level);
 

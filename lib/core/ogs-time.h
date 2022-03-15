@@ -99,6 +99,11 @@ ogs_time_t ogs_time_now(void); /* This returns GMT */
 int ogs_time_from_lt(ogs_time_t *t, struct tm *tm, int tm_usec);
 int ogs_time_from_gmt(ogs_time_t *t, struct tm *tm, int tm_usec);
 
+#define OGS_1970_1900_SEC_DIFF 2208988800UL /* 1970 - 1900 in seconds */
+uint32_t ogs_time_ntp32_now(void); /* This returns NTP timestamp (1900) */
+ogs_time_t ogs_time_from_ntp32(uint32_t ntp_timestamp);
+uint32_t ogs_time_to_ntp32(ogs_time_t time);
+
 /** @return number of microseconds since an arbitrary point */
 ogs_time_t ogs_get_monotonic_time(void);
 /** @return the GMT offset in seconds */

@@ -167,6 +167,40 @@ int ogs_time_from_gmt(ogs_time_t *t, struct tm *tm, int tm_usec)
     return status;
 }
 
+/* RFC 5905 A.1.1, A.4
+ * PFCP entity uses NTP timestamp(1900), but Open5GS uses UNIX(1970).
+ *
+ * One is the offset between the two epochs.
+ * Unix uses an epoch located at 1/1/1970-00:00h (UTC) and
+ * NTP uses 1/1/1900-00:00h. This leads to an offset equivalent
+ * to 70 years in seconds (there are 17 leap years
+ * between the two dates so the offset is
+ *
+ *  (70*365 + 17)*86400 = 2208988800
+ *
+ * to be substracted from NTP time to get Unix struct timeval.
+ */
+uint32_t ogs_time_ntp32_now(void)
+{
+	int rc;
+    struct timeval tv;
+
+    rc = ogs_gettimeofday(&tv);
+    ogs_assert(rc == 0);
+
+    return ogs_time_to_ntp32(tv.tv_sec * OGS_USEC_PER_SEC + tv.tv_usec);
+}
+ogs_time_t ogs_time_from_ntp32(uint32_t ntp_timestamp)
+{
+	if (ntp_timestamp < OGS_1970_1900_SEC_DIFF)
+		return 0;
+	return (ntp_timestamp - OGS_1970_1900_SEC_DIFF) * OGS_USEC_PER_SEC;
+}
+uint32_t ogs_time_to_ntp32(ogs_time_t time)
+{
+	return (time / OGS_USEC_PER_SEC) + OGS_1970_1900_SEC_DIFF;
+}
+
 int ogs_timezone(void)
 {
 #if defined(_WIN32)
