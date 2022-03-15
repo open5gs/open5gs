@@ -23,7 +23,7 @@
 #include "n4-handler.h"
 
 void upf_n4_handle_session_establishment_request(
-        upf_sess_t *sess, ogs_pfcp_xact_t *xact, 
+        upf_sess_t *sess, ogs_pfcp_xact_t *xact,
         ogs_pfcp_session_establishment_request_t *req)
 {
     ogs_pfcp_pdr_t *pdr = NULL;
@@ -178,7 +178,7 @@ cleanup:
 }
 
 void upf_n4_handle_session_modification_request(
-        upf_sess_t *sess, ogs_pfcp_xact_t *xact, 
+        upf_sess_t *sess, ogs_pfcp_xact_t *xact,
         ogs_pfcp_session_modification_request_t *req)
 {
     ogs_pfcp_pdr_t *pdr = NULL;
@@ -449,7 +449,7 @@ void upf_n4_handle_session_report_response(
 
     ogs_pfcp_xact_commit(xact);
 
-    ogs_debug("Session report resopnse");
+    ogs_debug("Session Report Response");
 
     cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 
