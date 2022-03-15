@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ogs-yaml.h"
+#include "ogs-app.h"
 
 void ogs_yaml_iter_init(ogs_yaml_iter_t *iter, yaml_document_t *document)
 {

@@ -161,6 +161,9 @@ int test_context_parse_config(void)
                         const char *dev = NULL;
                         ogs_sockaddr_t *addr = NULL;
 
+                        ogs_sockopt_t option;
+                        bool is_option = false;
+
                         if (ogs_yaml_iter_type(&ngap_array) ==
                                 YAML_MAPPING_NODE) {
                             memcpy(&ngap_iter, &ngap_array,
@@ -217,6 +220,11 @@ int test_context_parse_config(void)
                                 if (v) port = atoi(v);
                             } else if (!strcmp(ngap_key, "dev")) {
                                 dev = ogs_yaml_iter_value(&ngap_iter);
+                            } else if (!strcmp(ngap_key, "option")) {
+                                rv = ogs_app_config_parse_sockopt(
+                                        &ngap_iter, &option);
+                                if (rv != OGS_OK) return rv;
+                                is_option = true;
                             } else
                                 ogs_warn("unknown key `%s`", ngap_key);
                         }
@@ -231,10 +239,12 @@ int test_context_parse_config(void)
                         if (addr) {
                             if (ogs_app()->parameter.no_ipv4 == 0)
                                 ogs_socknode_add(
-                                        &self.ngap_list, AF_INET, addr);
+                                    &self.ngap_list, AF_INET, addr,
+                                    is_option ? &option : NULL);
                             if (ogs_app()->parameter.no_ipv6 == 0)
                                 ogs_socknode_add(
-                                        &self.ngap_list6, AF_INET6, addr);
+                                    &self.ngap_list6, AF_INET6, addr,
+                                    is_option ? &option : NULL);
                             ogs_freeaddrinfo(addr);
                         }
 
@@ -244,7 +254,8 @@ int test_context_parse_config(void)
                                         NULL : &self.ngap_list,
                                     ogs_app()->parameter.no_ipv6 ?
                                         NULL : &self.ngap_list6,
-                                    dev, port);
+                                    dev, port,
+                                    is_option ? &option : NULL);
                             ogs_assert(rv == OGS_OK);
                         }
 
@@ -258,7 +269,7 @@ int test_context_parse_config(void)
                                     NULL : &self.ngap_list,
                                 ogs_app()->parameter.no_ipv6 ?
                                     NULL : &self.ngap_list6,
-                                NULL, self.ngap_port);
+                                NULL, self.ngap_port, NULL);
                         ogs_assert(rv == OGS_OK);
                     }
                 } if (!strcmp(amf_key, "tai")) {
@@ -545,6 +556,9 @@ int test_context_parse_config(void)
                         const char *dev = NULL;
                         ogs_sockaddr_t *addr = NULL;
 
+                        ogs_sockopt_t option;
+                        bool is_option = false;
+
                         if (ogs_yaml_iter_type(&s1ap_array) ==
                                 YAML_MAPPING_NODE) {
                             memcpy(&s1ap_iter, &s1ap_array,
@@ -601,6 +615,11 @@ int test_context_parse_config(void)
                                 if (v) port = atoi(v);
                             } else if (!strcmp(s1ap_key, "dev")) {
                                 dev = ogs_yaml_iter_value(&s1ap_iter);
+                            } else if (!strcmp(s1ap_key, "option")) {
+                                rv = ogs_app_config_parse_sockopt(
+                                        &s1ap_iter, &option);
+                                if (rv != OGS_OK) return rv;
+                                is_option = true;
                             } else
                                 ogs_warn("unknown key `%s`", s1ap_key);
                         }
@@ -615,10 +634,12 @@ int test_context_parse_config(void)
                         if (addr) {
                             if (ogs_app()->parameter.no_ipv4 == 0)
                                 ogs_socknode_add(
-                                        &self.s1ap_list, AF_INET, addr);
+                                    &self.s1ap_list, AF_INET, addr,
+                                    is_option ? &option : NULL);
                             if (ogs_app()->parameter.no_ipv6 == 0)
                                 ogs_socknode_add(
-                                        &self.s1ap_list6, AF_INET6, addr);
+                                    &self.s1ap_list6, AF_INET6, addr,
+                                    is_option ? &option : NULL);
                             ogs_freeaddrinfo(addr);
                         }
 
@@ -628,7 +649,8 @@ int test_context_parse_config(void)
                                         NULL : &self.s1ap_list,
                                     ogs_app()->parameter.no_ipv6 ?
                                         NULL : &self.s1ap_list6,
-                                    dev, port);
+                                    dev, port,
+                                    is_option ? &option : NULL);
                             ogs_assert(rv == OGS_OK);
                         }
 
@@ -642,7 +664,7 @@ int test_context_parse_config(void)
                                     NULL : &self.s1ap_list,
                                 ogs_app()->parameter.no_ipv6 ?
                                     NULL : &self.s1ap_list6,
-                                NULL, self.s1ap_port);
+                                NULL, self.s1ap_port, NULL);
                         ogs_assert(rv == OGS_OK);
                     }
                 } else if (!strcmp(mme_key, "tai")) {

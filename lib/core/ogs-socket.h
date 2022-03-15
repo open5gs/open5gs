@@ -71,11 +71,6 @@ ssize_t ogs_recvfrom(ogs_socket_t fd,
 
 int ogs_closesocket(ogs_socket_t fd);
 
-int ogs_nonblocking(ogs_socket_t fd);
-int ogs_closeonexec(ogs_socket_t fd);
-int ogs_listen_reusable(ogs_socket_t fd);
-int ogs_bind_to_device(ogs_socket_t fd, const char *device);
-
 #ifdef __cplusplus
 }
 #endif

@@ -105,6 +105,9 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
                         const char *dev = NULL;
                         ogs_sockaddr_t *addr = NULL;
 
+                        ogs_sockopt_t option;
+                        bool is_option = false;
+
                         if (ogs_yaml_iter_type(&gtpc_array) ==
                                 YAML_MAPPING_NODE) {
                             memcpy(&gtpc_iter, &gtpc_array,
@@ -161,6 +164,11 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
                                 if (v) port = atoi(v);
                             } else if (!strcmp(gtpc_key, "dev")) {
                                 dev = ogs_yaml_iter_value(&gtpc_iter);
+                            } else if (!strcmp(gtpc_key, "option")) {
+                                rv = ogs_app_config_parse_sockopt(
+                                        &gtpc_iter, &option);
+                                if (rv != OGS_OK) return rv;
+                                is_option = true;
                             } else
                                 ogs_warn("unknown key `%s`", gtpc_key);
                         }
@@ -175,10 +183,12 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
                         if (addr) {
                             if (ogs_app()->parameter.no_ipv4 == 0)
                                 ogs_socknode_add(
-                                        &self.gtpc_list, AF_INET, addr);
+                                    &self.gtpc_list, AF_INET, addr,
+                                    is_option ? &option : NULL);
                             if (ogs_app()->parameter.no_ipv6 == 0)
                                 ogs_socknode_add(
-                                        &self.gtpc_list6, AF_INET6, addr);
+                                    &self.gtpc_list6, AF_INET6, addr,
+                                    is_option ? &option : NULL);
                             ogs_freeaddrinfo(addr);
                         }
 
@@ -188,7 +198,8 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
                                         NULL : &self.gtpc_list,
                                     ogs_app()->parameter.no_ipv6 ?
                                         NULL : &self.gtpc_list6,
-                                    dev, port);
+                                    dev, port,
+                                    is_option ? &option : NULL);
                             ogs_assert(rv == OGS_OK);
                         }
 
@@ -202,7 +213,7 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
                                     NULL : &self.gtpc_list,
                                 ogs_app()->parameter.no_ipv6 ?
                                     NULL : &self.gtpc_list6,
-                                NULL, self.gtpc_port);
+                                NULL, self.gtpc_port, NULL);
                         ogs_assert(rv == OGS_OK);
                     }
                 } else if (!strcmp(local_key, "gtpu")) {
@@ -228,6 +239,9 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
                         const char *teid_range = NULL;
                         const char *network_instance = NULL;
                         const char *source_interface = NULL;
+
+                        ogs_sockopt_t option;
+                        bool is_option = false;
 
                         if (ogs_yaml_iter_type(&gtpu_array) ==
                                 YAML_MAPPING_NODE) {
@@ -317,6 +331,11 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
                                 if (v) port = atoi(v);
                             } else if (!strcmp(gtpu_key, "dev")) {
                                 dev = ogs_yaml_iter_value(&gtpu_iter);
+                            } else if (!strcmp(gtpu_key, "option")) {
+                                rv = ogs_app_config_parse_sockopt(
+                                        &gtpu_iter, &option);
+                                if (rv != OGS_OK) return rv;
+                                is_option = true;
                             } else if (!strcmp(gtpu_key,
                                         "teid_range_indication")) {
                                 teid_range_indication =
@@ -348,9 +367,13 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
 
                         if (addr) {
                             if (ogs_app()->parameter.no_ipv4 == 0)
-                                ogs_socknode_add(&list, AF_INET, addr);
+                                ogs_socknode_add(
+                                    &list, AF_INET, addr,
+                                    is_option ? &option : NULL);
                             if (ogs_app()->parameter.no_ipv6 == 0)
-                                ogs_socknode_add(&list6, AF_INET6, addr);
+                                ogs_socknode_add(
+                                    &list6, AF_INET6, addr,
+                                    is_option ? &option : NULL);
                             ogs_freeaddrinfo(addr);
                         }
 
@@ -358,7 +381,8 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
                             rv = ogs_socknode_probe(
                                 ogs_app()->parameter.no_ipv4 ? NULL : &list,
                                 ogs_app()->parameter.no_ipv6 ? NULL : &list6,
-                                dev, port);
+                                dev, port,
+                                is_option ? &option : NULL);
                             ogs_assert(rv == OGS_OK);
                         }
 
@@ -452,9 +476,9 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
                         ogs_list_init(&list6);
 
                         rv = ogs_socknode_probe(
-                            ogs_app()->parameter.no_ipv4 ? NULL : &list,
-                            ogs_app()->parameter.no_ipv6 ? NULL : &list6,
-                            NULL, self.gtpu_port);
+                                ogs_app()->parameter.no_ipv4 ? NULL : &list,
+                                ogs_app()->parameter.no_ipv6 ? NULL : &list6,
+                                NULL, self.gtpu_port, NULL);
                         ogs_assert(rv == OGS_OK);
 
                         /*
@@ -544,8 +568,10 @@ ogs_gtp_node_t *ogs_gtp_node_add_by_f_teid(
             ogs_app()->parameter.prefer_ipv4);
     ogs_assert(addr);
 
+#if 0 /* deprecated */
     rv = ogs_socknode_fill_scope_id_in_local(addr);
     ogs_assert(rv == OGS_OK);
+#endif
 
     node = ogs_gtp_node_new(addr);
     ogs_assert(node);
@@ -652,8 +678,10 @@ ogs_gtp_node_t *ogs_gtp_node_add_by_ip(
             ogs_app()->parameter.prefer_ipv4);
     ogs_expect_or_return_val(addr, NULL);
 
+#if 0 /* deprecated */
     rv = ogs_socknode_fill_scope_id_in_local(addr);
     ogs_expect_or_return_val(rv == OGS_OK, NULL);
+#endif
 
     node = ogs_gtp_node_new(addr);
     ogs_expect_or_return_val(node, NULL);

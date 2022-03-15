@@ -241,6 +241,7 @@ libcore_sources = files('''
     ogs-process.h
     ogs-sockaddr.h
     ogs-socket.h
+    ogs-sockopt.h
     ogs-sockpair.h
     ogs-socknode.h
     ogs-udp.h
@@ -275,6 +276,7 @@ libcore_sources = files('''
     ogs-process.c
     ogs-sockaddr.c
     ogs-socket.c
+    ogs-sockopt.c
     ogs-sockpair.c
     ogs-socknode.c
     ogs-udp.c

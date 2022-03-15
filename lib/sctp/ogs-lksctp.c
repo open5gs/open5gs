@@ -23,10 +23,6 @@
 #define OGS_LOG_DOMAIN __ogs_sock_domain
 
 static int subscribe_to_events(ogs_sock_t *sock);
-static int set_paddrparams(ogs_sock_t *sock);
-static int set_rtoinfo(ogs_sock_t *sock);
-static int set_initmsg(ogs_sock_t *sock);
-static int set_nodelay(ogs_sock_t *sock, int on);
 
 void ogs_sctp_init(uint16_t port)
 {
@@ -36,51 +32,68 @@ void ogs_sctp_final(void)
 {
 }
 
-ogs_sock_t *ogs_sctp_socket(int family, int type, ogs_socknode_t *node)
+ogs_sock_t *ogs_sctp_socket(int family, int type)
 {
     ogs_sock_t *new = NULL;
     int rv;
 
     new = ogs_sock_socket(family, type, IPPROTO_SCTP);
-    ogs_assert(new);
+    if (!new) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                "ogs_sock_socket(faimly:%d type:%d) failed", family, type);
+        return NULL;
+    }
 
     rv = subscribe_to_events(new);
-    ogs_assert(rv == OGS_OK);
-
-    rv = set_paddrparams(new);
-    ogs_assert(rv == OGS_OK);
-
-    rv = set_rtoinfo(new);
-    ogs_assert(rv == OGS_OK);
-
-    rv = set_initmsg(new);
-    ogs_assert(rv == OGS_OK);
-
-    if (ogs_app()->sockopt.no_delay == true) {
-        rv = set_nodelay(new, true);
-        ogs_assert(rv == OGS_OK);
-    } else {
-        ogs_warn("SCTP NO_DELAY Disabled");
+    if (rv != OGS_OK) {
+        ogs_sock_destroy(new);
+        return NULL;
     }
 
     return new;
 }
 
-ogs_sock_t *ogs_sctp_server(int type, ogs_socknode_t *node)
+ogs_sock_t *ogs_sctp_server(
+        int type, ogs_sockaddr_t *sa_list, ogs_sockopt_t *socket_option)
 {
     int rv;
-    ogs_sock_t *new;
-    ogs_sockaddr_t *addr;
     char buf[OGS_ADDRSTRLEN];
 
-    ogs_assert(node);
-    ogs_assert(node->addr);
+    ogs_sock_t *new = NULL;
+    ogs_sockaddr_t *addr;
+    ogs_sockopt_t option;
 
-    addr = node->addr;
+    ogs_assert(sa_list);
+
+    ogs_sockopt_init(&option);
+    if (socket_option)
+        memcpy(&option, socket_option, sizeof option);
+
+    addr = sa_list;
     while (addr) {
-        new = ogs_sctp_socket(addr->ogs_sa_family, type, node);
+        new = ogs_sctp_socket(addr->ogs_sa_family, type);
         if (new) {
-            rv = ogs_listen_reusable(new->fd);
+            rv = ogs_sctp_peer_addr_params(new, &option);
+            ogs_assert(rv == OGS_OK);
+
+            rv = ogs_sctp_rto_info(new, &option);
+            ogs_assert(rv == OGS_OK);
+
+            rv = ogs_sctp_initmsg(new, &option);
+            ogs_assert(rv == OGS_OK);
+
+            if (option.sctp_nodelay == true) {
+                rv = ogs_sctp_nodelay(new, true);
+                ogs_assert(rv == OGS_OK);
+            } else
+                ogs_warn("SCTP NO_DELAY Disabled");
+
+            if (option.so_linger.l_onoff == true) {
+                rv = ogs_sctp_so_linger(new, option.so_linger.l_linger);
+                ogs_assert(rv == OGS_OK);
+            }
+
+            rv = ogs_listen_reusable(new->fd, true);
             ogs_assert(rv == OGS_OK);
 
             if (ogs_sock_bind(new, addr) == OGS_OK) {
@@ -98,31 +111,58 @@ ogs_sock_t *ogs_sctp_server(int type, ogs_socknode_t *node)
     if (addr == NULL) {
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
                 "sctp_server() [%s]:%d failed",
-                OGS_ADDR(node->addr, buf), OGS_PORT(node->addr));
+                OGS_ADDR(sa_list, buf), OGS_PORT(sa_list));
         return NULL;
     }
+
+    ogs_assert(new);
 
     rv = ogs_sock_listen(new);
     ogs_assert(rv == OGS_OK);
 
-    node->sock = new;
-
     return new;
 }
 
-ogs_sock_t *ogs_sctp_client(int type, ogs_socknode_t *node)
+ogs_sock_t *ogs_sctp_client(
+        int type, ogs_sockaddr_t *sa_list, ogs_sockopt_t *socket_option)
 {
-    ogs_sock_t *new = NULL;
-    ogs_sockaddr_t *addr;
+    int rv;
     char buf[OGS_ADDRSTRLEN];
 
-    ogs_assert(node);
-    ogs_assert(node->addr);
+    ogs_sock_t *new = NULL;
+    ogs_sockaddr_t *addr;
+    ogs_sockopt_t option;
 
-    addr = node->addr;
+    ogs_assert(sa_list);
+
+    ogs_sockopt_init(&option);
+    if (socket_option)
+        memcpy(&option, socket_option, sizeof option);
+
+    addr = sa_list;
     while (addr) {
-        new = ogs_sctp_socket(addr->ogs_sa_family, type, node);
+        new = ogs_sctp_socket(addr->ogs_sa_family, type);
         if (new) {
+            rv = ogs_sctp_peer_addr_params(new, &option);
+            ogs_assert(rv == OGS_OK);
+
+            rv = ogs_sctp_rto_info(new, &option);
+            ogs_assert(rv == OGS_OK);
+
+            rv = ogs_sctp_initmsg(new, &option);
+            ogs_assert(rv == OGS_OK);
+
+            if (option.sctp_nodelay == true) {
+                rv = ogs_sctp_nodelay(new, true);
+                ogs_assert(rv == OGS_OK);
+            } else
+                ogs_warn("SCTP NO_DELAY Disabled");
+
+            if (option.so_linger.l_onoff == true) {
+                rv = ogs_sctp_so_linger(new, option.so_linger.l_linger);
+                ogs_assert(rv == OGS_OK);
+            }
+
             if (ogs_sock_connect(new, addr) == OGS_OK) {
                 ogs_debug("sctp_client() [%s]:%d",
                         OGS_ADDR(addr, buf), OGS_PORT(addr));
@@ -138,11 +178,11 @@ ogs_sock_t *ogs_sctp_client(int type, ogs_socknode_t *node)
     if (addr == NULL) {
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
                 "sctp_client() [%s]:%d failed",
-                OGS_ADDR(node->addr, buf), OGS_PORT(node->addr));
+                OGS_ADDR(sa_list, buf), OGS_PORT(sa_list));
         return NULL;
     }
 
-    node->sock = new;
+    ogs_assert(new);
 
     return new;
 }
@@ -452,12 +492,13 @@ static int sctp_setsockopt_paddrparams_workaround(
     }
 }
 
-static int set_paddrparams(ogs_sock_t *sock)
+int ogs_sctp_peer_addr_params(ogs_sock_t *sock, ogs_sockopt_t *option)
 {
     struct sctp_paddrparams paddrparams;
     socklen_t socklen;
 
     ogs_assert(sock);
+    ogs_assert(option);
 
     memset(&paddrparams, 0, sizeof(paddrparams));
     socklen = sizeof(paddrparams);
@@ -481,9 +522,9 @@ static int set_paddrparams(ogs_sock_t *sock)
             paddrparams.spp_pathmaxrxt);
 #endif
 
-    paddrparams.spp_hbinterval = ogs_app()->sctp.heartbit_interval;
+    paddrparams.spp_hbinterval = option->sctp.spp_hbinterval;
 #if !defined(__FreeBSD__)
-    paddrparams.spp_sackdelay = ogs_app()->sctp.sack_delay;
+    paddrparams.spp_sackdelay = option->sctp.spp_sackdelay;
 #endif
 
 #ifdef DISABLE_SCTP_EVENT_WORKAROUND
@@ -516,12 +557,13 @@ static int set_paddrparams(ogs_sock_t *sock)
     return OGS_OK;
 }
 
-static int set_rtoinfo(ogs_sock_t *sock)
+int ogs_sctp_rto_info(ogs_sock_t *sock, ogs_sockopt_t *option)
 {
     struct sctp_rtoinfo rtoinfo;
     socklen_t socklen;
 
     ogs_assert(sock);
+    ogs_assert(option);
 
     memset(&rtoinfo, 0, sizeof(rtoinfo));
     socklen = sizeof(rtoinfo);
@@ -537,9 +579,9 @@ static int set_rtoinfo(ogs_sock_t *sock)
             rtoinfo.srto_max,
             rtoinfo.srto_min);
 
-    rtoinfo.srto_initial = ogs_app()->sctp.rto_initial;
-    rtoinfo.srto_min = ogs_app()->sctp.rto_min;
-    rtoinfo.srto_max = ogs_app()->sctp.rto_max;
+    rtoinfo.srto_initial = option->sctp.srto_initial;
+    rtoinfo.srto_min = option->sctp.srto_min;
+    rtoinfo.srto_max = option->sctp.srto_max;
 
     if (setsockopt(sock->fd, IPPROTO_SCTP, SCTP_RTOINFO,
                             &rtoinfo, sizeof(rtoinfo)) != 0) {
@@ -547,6 +589,7 @@ static int set_rtoinfo(ogs_sock_t *sock)
                 "setsockopt for SCTP_RTOINFO failed");
         return OGS_ERROR;
     }
+
     ogs_debug("New RTO (initial:%d max:%d min:%d)",
             rtoinfo.srto_initial,
             rtoinfo.srto_max,
@@ -555,13 +598,14 @@ static int set_rtoinfo(ogs_sock_t *sock)
     return OGS_OK;
 }
 
-static int set_initmsg(ogs_sock_t *sock)
+int ogs_sctp_initmsg(ogs_sock_t *sock, ogs_sockopt_t *option)
 {
     struct sctp_initmsg initmsg;
     socklen_t socklen;
 
     ogs_assert(sock);
-    ogs_assert(ogs_app()->sctp.max_num_of_ostreams > 1);
+    ogs_assert(option);
+    ogs_assert(option->sctp.sinit_num_ostreams > 1);
 
     memset(&initmsg, 0, sizeof(initmsg));
     socklen = sizeof(initmsg);
@@ -578,10 +622,10 @@ static int set_initmsg(ogs_sock_t *sock)
                 initmsg.sinit_max_attempts,
                 initmsg.sinit_max_init_timeo);
 
-    initmsg.sinit_num_ostreams = ogs_app()->sctp.max_num_of_ostreams;
-    initmsg.sinit_max_instreams = ogs_app()->sctp.max_num_of_istreams;
-    initmsg.sinit_max_attempts = ogs_app()->sctp.max_attempts;
-    initmsg.sinit_max_init_timeo = ogs_app()->sctp.max_initial_timeout;
+    initmsg.sinit_num_ostreams = option->sctp.sinit_num_ostreams;
+    initmsg.sinit_max_instreams = option->sctp.sinit_max_instreams;
+    initmsg.sinit_max_attempts = option->sctp.sinit_max_attempts;
+    initmsg.sinit_max_init_timeo = option->sctp.sinit_max_init_timeo;
 
     if (setsockopt(sock->fd, IPPROTO_SCTP, SCTP_INITMSG,
                             &initmsg, sizeof(initmsg)) != 0) {
@@ -599,7 +643,7 @@ static int set_initmsg(ogs_sock_t *sock)
     return OGS_OK;
 }
 
-static int set_nodelay(ogs_sock_t *sock, int on)
+int ogs_sctp_nodelay(ogs_sock_t *sock, int on)
 {
     ogs_assert(sock);
 
@@ -607,9 +651,15 @@ static int set_nodelay(ogs_sock_t *sock, int on)
     if (setsockopt(sock->fd, IPPROTO_SCTP, SCTP_NODELAY,
                 &on, sizeof(on)) != 0) {
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                "setsockopt for SCTP_NODELAY failed");
+                "setsockopt(IPPROTO_SCTP, SCTP_NODELAY) failed");
         return OGS_ERROR;
     }
 
     return OGS_OK;
+}
+
+int ogs_sctp_so_linger(ogs_sock_t *sock, int l_linger)
+{
+    ogs_assert(sock);
+    return ogs_so_linger(sock->fd, l_linger);
 }

@@ -35,24 +35,28 @@ typedef struct ogs_socknode_s {
     ogs_lnode_t node;
 
     ogs_sockaddr_t *addr;
-    char *dev; /* !NULL: used with SO_BINDTODEVICE */
+    char *dev;
 
     ogs_sock_t *sock;
     void (*cleanup)(ogs_sock_t *sock);
     ogs_poll_t *poll;
+
+    ogs_sockopt_t *option;
 } ogs_socknode_t;
 
 ogs_socknode_t *ogs_socknode_new(ogs_sockaddr_t *addr);
 void ogs_socknode_free(ogs_socknode_t *node);
 
-ogs_socknode_t *ogs_socknode_add(
-        ogs_list_t *list, int family, ogs_sockaddr_t *sa_list);
+ogs_socknode_t *ogs_socknode_add(ogs_list_t *list,
+        int family, ogs_sockaddr_t *addr, ogs_sockopt_t *option);
 void ogs_socknode_remove(ogs_list_t *list, ogs_socknode_t *node);
 void ogs_socknode_remove_all(ogs_list_t *list);
 
-int ogs_socknode_probe(
-        ogs_list_t *list, ogs_list_t *list6, const char *dev, uint16_t port);
+int ogs_socknode_probe(ogs_list_t *list, ogs_list_t *list6,
+        const char *dev, uint16_t port, ogs_sockopt_t *option);
+#if 0 /* deprecated */
 int ogs_socknode_fill_scope_id_in_local(ogs_sockaddr_t *sa_list);
+#endif
 
 void ogs_socknode_set_cleanup(
         ogs_socknode_t *node, void (*cleanup)(ogs_sock_t *));

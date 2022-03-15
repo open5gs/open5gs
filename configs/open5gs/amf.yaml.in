@@ -73,6 +73,18 @@ logger:
 #          - 127.0.0.99
 #          - ::1
 #
+#  o SBI Option (Default)
+#    - tcp_nodelay : true
+#    - so_linger.l_onoff : false
+#
+#    sbi:
+#      addr: 127.0.0.5
+#      option:
+#        tcp_nodelay: false
+#        so_linger:
+#          l_onoff: true
+#          l_linger: 10
+#
 #  <NGAP Server>>
 #
 #  o NGAP Server(all address avaiable)
@@ -95,6 +107,43 @@ logger:
 #  o NGAP Server(address avaiable in `eth0` interface)
 #    ngap:
 #      dev: eth0
+#
+#  o NGAP Option (Default)
+#    - sctp_nodelay : true
+#    - so_linger.l_onoff : false
+#
+#    ngap:
+#      addr: 127.0.0.5
+#      option:
+#        stcp_nodelay: false
+#        so_linger:
+#          l_onoff: true
+#          l_linger: 10
+#
+#  o NGAP SCTP Option (Default)
+#    - spp_hbinterval : 5000 (5secs)
+#    - spp_sackdelay : 200 (200ms)
+#    - srto_initial : 3000 (3secs)
+#    - srto_min : 1000 (1sec)
+#    - srto_max : 5000 (5secs)
+#    - sinit_num_ostreams : 30
+#    - sinit_max_instreams : 65535
+#    - sinit_max_attempts : 4
+#    - sinit_max_init_timeo : 8000(8secs)
+#
+#    ngap:
+#      addr: 127.0.0.5
+#      option:
+#        sctp:
+#          spp_hbinterval : 5000
+#          spp_sackdelay : 200
+#          srto_initial : 3000
+#          srto_min : 1000
+#          srto_max : 5000
+#          sinit_num_ostreams : 30
+#          sinit_max_instreams : 65535
+#          sinit_max_attempts : 4
+#          sinit_max_init_timeo : 8000
 #
 #  <GUAMI>
 #
@@ -232,6 +281,18 @@ amf:
 #        - 127.0.0.10
 #        - fd69:f21d:873c:fa::1
 #
+#  o SBI Option (Default)
+#    - tcp_nodelay : true
+#    - so_linger.l_onoff : false
+#
+#    sbi:
+#      addr: 127.0.0.10
+#      option:
+#        tcp_nodelay: false
+#        so_linger:
+#          l_onoff: true
+#          l_linger: 10
+#
 nrf:
     sbi:
       - addr:
@@ -288,26 +349,10 @@ max:
 pool:
 
 #
-# sockopt:
-#    no_delay : true
-#    bindtodevice : false
+# usrsctp:
+#    udp_port : 9899
 #
-sockopt:
-
-#
-# sctp:
-#    heartbit_interval : 5000 (5secs)
-#    sack_delay : 200 (200ms)
-#    rto_initial : 3000 (3secs)
-#    rto_min : 1000 (1sec)
-#    rto_max : 5000 (5secs)
-#    max_num_of_ostreams : 30
-#    max_num_of_istreams : 65535
-#    max_attempts : 4
-#    max_initial_timeout : 8000(8secs)
-#    usrsctp_udp_port : 9899
-#
-sctp:
+usrsctp:
 
 #
 # time:

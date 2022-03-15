@@ -47,6 +47,7 @@
 #include "core/ogs-signal.h"
 #include "core/ogs-sockaddr.h"
 #include "core/ogs-socket.h"
+#include "core/ogs-sockopt.h"
 #include "core/ogs-sockpair.h"
 #include "core/ogs-socknode.h"
 #include "core/ogs-udp.h"

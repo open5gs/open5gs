@@ -158,6 +158,9 @@ int ogs_sbi_context_parse_config(const char *local, const char *remote)
                         const char *dev = NULL;
                         ogs_sockaddr_t *addr = NULL;
 
+                        ogs_sockopt_t option;
+                        bool is_option = false;
+
                         if (ogs_yaml_iter_type(&sbi_array) ==
                                 YAML_MAPPING_NODE) {
                             memcpy(&sbi_iter, &sbi_array,
@@ -238,6 +241,11 @@ int ogs_sbi_context_parse_config(const char *local, const char *remote)
                                     port = atoi(v);
                             } else if (!strcmp(sbi_key, "dev")) {
                                 dev = ogs_yaml_iter_value(&sbi_iter);
+                            } else if (!strcmp(sbi_key, "option")) {
+                                rv = ogs_app_config_parse_sockopt(
+                                        &sbi_iter, &option);
+                                if (rv != OGS_OK) return rv;
+                                is_option = true;
                             } else if (!strcmp(sbi_key, "tls")) {
                                 ogs_yaml_iter_t tls_iter;
                                 ogs_yaml_iter_recurse(&sbi_iter, &tls_iter);
@@ -270,9 +278,11 @@ int ogs_sbi_context_parse_config(const char *local, const char *remote)
 
                         if (addr) {
                             if (ogs_app()->parameter.no_ipv4 == 0)
-                                ogs_socknode_add(&list, AF_INET, addr);
+                                ogs_socknode_add(
+                                    &list, AF_INET, addr, NULL);
                             if (ogs_app()->parameter.no_ipv6 == 0)
-                                ogs_socknode_add(&list6, AF_INET6, addr);
+                                ogs_socknode_add(
+                                    &list6, AF_INET6, addr, NULL);
                             ogs_freeaddrinfo(addr);
                         }
 
@@ -280,7 +290,7 @@ int ogs_sbi_context_parse_config(const char *local, const char *remote)
                             rv = ogs_socknode_probe(
                                 ogs_app()->parameter.no_ipv4 ? NULL : &list,
                                 ogs_app()->parameter.no_ipv6 ? NULL : &list6,
-                                dev, port);
+                                dev, port, NULL);
                             ogs_assert(rv == OGS_OK);
                         }
 
@@ -293,8 +303,8 @@ int ogs_sbi_context_parse_config(const char *local, const char *remote)
 
                         node = ogs_list_first(&list);
                         if (node) {
-                            ogs_sbi_server_t *server =
-                                ogs_sbi_server_add(node->addr);
+                            ogs_sbi_server_t *server = ogs_sbi_server_add(
+                                    node->addr, is_option ? &option : NULL);
                             ogs_assert(server);
 
                             if (addr && ogs_app()->parameter.no_ipv4 == 0)
@@ -306,8 +316,8 @@ int ogs_sbi_context_parse_config(const char *local, const char *remote)
                         }
                         node6 = ogs_list_first(&list6);
                         if (node6) {
-                            ogs_sbi_server_t *server =
-                                ogs_sbi_server_add(node6->addr);
+                            ogs_sbi_server_t *server = ogs_sbi_server_add(
+                                    node6->addr, is_option ? &option : NULL);
                             ogs_assert(server);
 
                             if (addr && ogs_app()->parameter.no_ipv6 == 0)
@@ -334,13 +344,13 @@ int ogs_sbi_context_parse_config(const char *local, const char *remote)
                         rv = ogs_socknode_probe(
                             ogs_app()->parameter.no_ipv4 ? NULL : &list,
                             ogs_app()->parameter.no_ipv6 ? NULL : &list6,
-                            NULL, self.sbi_port);
+                            NULL, self.sbi_port, NULL);
                         ogs_assert(rv == OGS_OK);
 
                         node = ogs_list_first(&list);
-                        if (node) ogs_sbi_server_add(node->addr);
+                        if (node) ogs_sbi_server_add(node->addr, NULL);
                         node6 = ogs_list_first(&list6);
-                        if (node6) ogs_sbi_server_add(node6->addr);
+                        if (node6) ogs_sbi_server_add(node6->addr, NULL);
 
                         ogs_socknode_remove_all(&list);
                         ogs_socknode_remove_all(&list6);

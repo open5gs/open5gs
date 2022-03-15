@@ -73,6 +73,18 @@ logger:
 #          - 127.0.0.99
 #          - ::1
 #
+#  o SBI Option (Default)
+#    - tcp_nodelay : true
+#    - so_linger.l_onoff : false
+#
+#    sbi:
+#      addr: 127.0.0.14
+#      option:
+#        tcp_nodelay: false
+#        so_linger:
+#          l_onoff: true
+#          l_linger: 10
+#
 #  <List of avaiable Network Slice Instance(NSI)>
 #
 #  o One NSI
@@ -110,6 +122,18 @@ logger:
 #        s_nssai:
 #          sst: 1
 #          sd: 009000
+#
+#  o NSI Option (Default)
+#    - tcp_nodelay : true
+#    - so_linger.l_onoff : false
+#
+#    nsi:
+#      addr: ::1
+#      option:
+#        tcp_nodelay: false
+#        so_linger:
+#          l_onoff: true
+#          l_linger: 10
 nssf:
     sbi:
       - addr: 127.0.0.14

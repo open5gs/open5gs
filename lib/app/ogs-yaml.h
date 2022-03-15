@@ -26,8 +26,6 @@
 
 #include <yaml.h>
 
-#include "ogs-app.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif

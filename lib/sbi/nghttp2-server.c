@@ -123,11 +123,13 @@ static int server_start(ogs_sbi_server_t *server,
     addr = server->node.addr;
     ogs_assert(addr);
 
-    sock = ogs_tcp_server(&server->node);
+    sock = ogs_tcp_server(addr, server->node.option);
     if (!sock) {
         ogs_error("Cannot start SBI server");
         return OGS_ERROR;
     }
+
+    server->node.sock = sock;
 
     /* Setup callback function */
     server->cb = cb;

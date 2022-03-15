@@ -73,6 +73,18 @@ logger:
 #          - 127.0.0.99
 #          - ::1
 #
+#  o SBI Option (Default)
+#    - tcp_nodelay : true
+#    - so_linger.l_onoff : false
+#
+#    sbi:
+#      addr: 127.0.0.4
+#      option:
+#        tcp_nodelay: false
+#        so_linger:
+#          l_onoff: true
+#          l_linger: 10
+#
 #  <PFCP Server>
 #
 #  o PFCP Server(127.0.0.4:8805, ::1:8805)
@@ -83,6 +95,14 @@ logger:
 #  o PFCP-U Server(127.0.0.1:2152, [::1]:2152)
 #    pfcp:
 #      name: localhost
+#
+#  o PFCP Option (Default)
+#    - so_bindtodevice : NULL
+#
+#    pfcp:
+#      addr: 127.0.0.4
+#      option:
+#        so_bindtodevice: vrf-blue
 #
 #  <GTP-C Server>
 #
@@ -98,6 +118,14 @@ logger:
 #      - addr: 127.0.0.4
 #      - addr: fd69:f21d:873c:fa::3
 #
+#  o GTP-C Option (Default)
+#    - so_bindtodevice : NULL
+#
+#    gtpc:
+#      addr: 127.0.0.4
+#      option:
+#        so_bindtodevice: vrf-blue
+#
 #  <GTP-U Server>>
 #
 #  o GTP-U Server(127.0.0.4:2152, [::1]:2152)
@@ -108,6 +136,14 @@ logger:
 #  o GTP-U Server(127.0.0.1:2152, [::1]:2152)
 #    gtpu:
 #      name: localhost
+#
+#  o GTP-U Option (Default)
+#    - so_bindtodevice : NULL
+#
+#    gtpu:
+#      addr: 127.0.0.4
+#      option:
+#        so_bindtodevice: vrf-blue
 #
 #  <Subnet for UE Pool>
 #
@@ -377,6 +413,18 @@ smf:
 #        - 127.0.0.10
 #        - fd69:f21d:873c:fa::1
 #
+#  o SBI Option (Default)
+#    - tcp_nodelay : true
+#    - so_linger.l_onoff : false
+#
+#    sbi:
+#      addr: 127.0.0.10
+#      option:
+#        tcp_nodelay: false
+#        so_linger:
+#          l_onoff: true
+#          l_linger: 10
+#
 nrf:
     sbi:
       - addr:
@@ -497,12 +545,6 @@ max:
 #    big:  8
 #
 pool:
-
-#
-# sockopt:
-#    bindtodevice : false
-#
-sockopt:
 
 #
 # time:

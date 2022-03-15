@@ -21,20 +21,48 @@
 #error "This header cannot be included directly."
 #endif
 
-#ifndef OGS_TCP_H
-#define OGS_TCP_H
+#ifndef OGS_SOCKOPT_H
+#define OGS_SOCKOPT_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-ogs_sock_t *ogs_tcp_server(
-        ogs_sockaddr_t *sa_list, ogs_sockopt_t *socket_option);
-ogs_sock_t *ogs_tcp_client(
-        ogs_sockaddr_t *sa_list, ogs_sockopt_t *socket_option);
+typedef struct ogs_sockopt_s {
+    struct {
+        uint32_t spp_hbinterval;
+        uint32_t spp_sackdelay;
+        uint32_t srto_initial;
+        uint32_t srto_min;
+        uint32_t srto_max;
+        uint16_t sinit_num_ostreams;
+        uint16_t sinit_max_instreams;
+        uint16_t sinit_max_attempts;
+        uint16_t sinit_max_init_timeo;
+    } sctp;
+
+    bool sctp_nodelay;
+    bool tcp_nodelay;
+
+    struct {
+        bool l_onoff;
+        int l_linger;
+    } so_linger;
+
+    const char *so_bindtodevice;
+} ogs_sockopt_t;
+
+void ogs_sockopt_init(ogs_sockopt_t *option);
+
+int ogs_nonblocking(ogs_socket_t fd);
+int ogs_closeonexec(ogs_socket_t fd);
+int ogs_listen_reusable(ogs_socket_t fd, int on);
+int ogs_tcp_nodelay(ogs_socket_t fd, int on);
+int ogs_so_linger(ogs_socket_t fd, int l_linger);
+int ogs_bind_to_device(ogs_socket_t fd, const char *device);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* OGS_TCP_H */
+#endif /* OGS_SOCKOPT_H */

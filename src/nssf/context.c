@@ -114,6 +114,9 @@ int nssf_context_parse_config(void)
                         const char *key = NULL, *pem = NULL;
                         const char *sst = NULL, *sd = NULL;
 
+                        ogs_sockopt_t option;
+                        bool is_option = false;
+
                         if (ogs_yaml_iter_type(&nsi_array) ==
                                 YAML_MAPPING_NODE) {
                             memcpy(&nsi_iter, &nsi_array,
@@ -173,6 +176,11 @@ int nssf_context_parse_config(void)
                                 }
                             } else if (!strcmp(nsi_key, "dev")) {
                                 dev = ogs_yaml_iter_value(&nsi_iter);
+                            } else if (!strcmp(nsi_key, "option")) {
+                                rv = ogs_app_config_parse_sockopt(
+                                        &nsi_iter, &option);
+                                if (rv != OGS_OK) return rv;
+                                is_option = true;
                             } else if (!strcmp(nsi_key, "tls")) {
                                 ogs_yaml_iter_t tls_iter;
                                 ogs_yaml_iter_recurse(&nsi_iter, &tls_iter);
@@ -223,9 +231,13 @@ int nssf_context_parse_config(void)
 
                         if (addr) {
                             if (ogs_app()->parameter.no_ipv4 == 0)
-                                ogs_socknode_add(&list, AF_INET, addr);
+                                ogs_socknode_add(
+                                    &list, AF_INET, addr,
+                                    is_option ? &option : NULL);
                             if (ogs_app()->parameter.no_ipv6 == 0)
-                                ogs_socknode_add(&list6, AF_INET6, addr);
+                                ogs_socknode_add(
+                                    &list6, AF_INET6, addr,
+                                    is_option ? &option : NULL);
                             ogs_freeaddrinfo(addr);
                         }
 
@@ -233,7 +245,8 @@ int nssf_context_parse_config(void)
                             rv = ogs_socknode_probe(
                                 ogs_app()->parameter.no_ipv4 ? NULL : &list,
                                 ogs_app()->parameter.no_ipv6 ? NULL : &list6,
-                                dev, port);
+                                dev, port,
+                                is_option ? &option : NULL);
                             ogs_assert(rv == OGS_OK);
                         }
 

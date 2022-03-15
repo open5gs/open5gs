@@ -184,6 +184,9 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                         const char *dev = NULL;
                         ogs_sockaddr_t *addr = NULL;
 
+                        ogs_sockopt_t option;
+                        bool is_option = false;
+
                         if (ogs_yaml_iter_type(&pfcp_array) ==
                                 YAML_MAPPING_NODE) {
                             memcpy(&pfcp_iter, &pfcp_array,
@@ -244,6 +247,11 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                 }
                             } else if (!strcmp(pfcp_key, "dev")) {
                                 dev = ogs_yaml_iter_value(&pfcp_iter);
+                            } else if (!strcmp(pfcp_key, "option")) {
+                                rv = ogs_app_config_parse_sockopt(
+                                        &pfcp_iter, &option);
+                                if (rv != OGS_OK) return rv;
+                                is_option = true;
                             } else if (!strcmp(pfcp_key, "apn") ||
                                         !strcmp(pfcp_key, "dnn")) {
                                 /* Skip */
@@ -261,10 +269,12 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                         if (addr) {
                             if (ogs_app()->parameter.no_ipv4 == 0)
                                 ogs_socknode_add(
-                                        &self.pfcp_list, AF_INET, addr);
+                                    &self.pfcp_list, AF_INET, addr,
+                                    is_option ? &option : NULL);
                             if (ogs_app()->parameter.no_ipv6 == 0)
                                 ogs_socknode_add(
-                                        &self.pfcp_list6, AF_INET6, addr);
+                                    &self.pfcp_list6, AF_INET6, addr,
+                                    is_option ? &option : NULL);
                             ogs_freeaddrinfo(addr);
                         }
 
@@ -274,7 +284,8 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                         NULL : &self.pfcp_list,
                                     ogs_app()->parameter.no_ipv6 ?
                                         NULL : &self.pfcp_list6,
-                                    dev, self.pfcp_port);
+                                    dev, self.pfcp_port,
+                                    is_option ? &option : NULL);
                             ogs_assert(rv == OGS_OK);
                         }
 
@@ -288,7 +299,7 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                     NULL : &self.pfcp_list,
                                 ogs_app()->parameter.no_ipv6 ?
                                     NULL : &self.pfcp_list6,
-                                NULL, self.pfcp_port);
+                                NULL, self.pfcp_port, NULL);
                         ogs_assert(rv == OGS_OK);
                     }
                 } else if (!strcmp(local_key, "subnet")) {

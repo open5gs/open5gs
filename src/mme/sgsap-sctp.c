@@ -35,19 +35,15 @@ static void recv_handler(ogs_sock_t *sock);
 ogs_sock_t *sgsap_client(mme_vlr_t *vlr)
 {
     char buf[OGS_ADDRSTRLEN];
-    ogs_socknode_t node;
     ogs_sock_t *sock = NULL;
 
     ogs_assert(vlr);
 
-    memset(&node, 0, sizeof node);
-    node.addr = vlr->sa_list;
-
-    sock = ogs_sctp_client(SOCK_SEQPACKET, &node);
+    sock = ogs_sctp_client(SOCK_SEQPACKET, vlr->sa_list, vlr->option);
     if (sock) {
         vlr->sock = sock;
 #if HAVE_USRSCTP
-        vlr->addr = node.addr;
+        vlr->addr = vlr->sa_list;
         usrsctp_set_non_blocking((struct socket *)sock, 1);
         usrsctp_set_upcall((struct socket *)sock, usrsctp_recv_handler, NULL);
 #else

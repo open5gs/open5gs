@@ -104,14 +104,22 @@ typedef struct ogs_sctp_info_s {
 void ogs_sctp_init(uint16_t port);
 void ogs_sctp_final(void);
 
-ogs_sock_t *ogs_sctp_socket(int family, int type, ogs_socknode_t *node);
+ogs_sock_t *ogs_sctp_socket(int family, int type);
 
-ogs_sock_t *ogs_sctp_server(int type, ogs_socknode_t *node);
-ogs_sock_t *ogs_sctp_client(int type, ogs_socknode_t *node);
+ogs_sock_t *ogs_sctp_server(
+        int type, ogs_sockaddr_t *sa_list, ogs_sockopt_t *socket_option);
+ogs_sock_t *ogs_sctp_client(
+        int type, ogs_sockaddr_t *sa_list, ogs_sockopt_t *socket_option);
 
 int ogs_sctp_bind(ogs_sock_t *sock, ogs_sockaddr_t *sa_list);
 int ogs_sctp_connect(ogs_sock_t *sock, ogs_sockaddr_t *sa_list);
 int ogs_sctp_listen(ogs_sock_t *sock);
+
+int ogs_sctp_peer_addr_params(ogs_sock_t *sock, ogs_sockopt_t *option);
+int ogs_sctp_rto_info(ogs_sock_t *sock, ogs_sockopt_t *option);
+int ogs_sctp_initmsg(ogs_sock_t *sock, ogs_sockopt_t *option);
+int ogs_sctp_nodelay(ogs_sock_t *sock, int on);
+int ogs_sctp_so_linger(ogs_sock_t *sock, int l_linger);
 
 int ogs_sctp_sendmsg(ogs_sock_t *sock, const void *msg, size_t len,
         ogs_sockaddr_t *to, uint32_t ppid, uint16_t stream_no);

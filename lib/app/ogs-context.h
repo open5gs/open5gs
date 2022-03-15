@@ -24,8 +24,6 @@
 #ifndef OGS_APP_CONTEXT_H
 #define OGS_APP_CONTEXT_H
 
-#include "ogs-app.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -84,7 +82,6 @@ typedef struct ogs_app_context_s {
         int no_delay;
         int l_onoff;
         int l_linger;
-        int bindtodevice;
     } sockopt;
 
     struct {

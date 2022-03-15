@@ -423,6 +423,9 @@ int mme_context_parse_config()
                         const char *dev = NULL;
                         ogs_sockaddr_t *addr = NULL;
 
+                        ogs_sockopt_t option;
+                        bool is_option = false;
+
                         if (ogs_yaml_iter_type(&s1ap_array) ==
                                 YAML_MAPPING_NODE) {
                             memcpy(&s1ap_iter, &s1ap_array,
@@ -479,6 +482,11 @@ int mme_context_parse_config()
                                 if (v) port = atoi(v);
                             } else if (!strcmp(s1ap_key, "dev")) {
                                 dev = ogs_yaml_iter_value(&s1ap_iter);
+                            } else if (!strcmp(s1ap_key, "option")) {
+                                rv = ogs_app_config_parse_sockopt(
+                                        &s1ap_iter, &option);
+                                if (rv != OGS_OK) return rv;
+                                is_option = true;
                             } else
                                 ogs_warn("unknown key `%s`", s1ap_key);
                         }
@@ -493,10 +501,12 @@ int mme_context_parse_config()
                         if (addr) {
                             if (ogs_app()->parameter.no_ipv4 == 0)
                                 ogs_socknode_add(
-                                        &self.s1ap_list, AF_INET, addr);
+                                    &self.s1ap_list, AF_INET, addr,
+                                    is_option ? &option : NULL);
                             if (ogs_app()->parameter.no_ipv6 == 0)
                                 ogs_socknode_add(
-                                        &self.s1ap_list6, AF_INET6, addr);
+                                    &self.s1ap_list6, AF_INET6, addr,
+                                    is_option ? &option : NULL);
                             ogs_freeaddrinfo(addr);
                         }
 
@@ -506,7 +516,8 @@ int mme_context_parse_config()
                                         NULL : &self.s1ap_list,
                                     ogs_app()->parameter.no_ipv6 ?
                                         NULL : &self.s1ap_list6,
-                                    dev, port);
+                                    dev, port,
+                                    is_option ? &option : NULL);
                             ogs_assert(rv == OGS_OK);
                         }
 
@@ -520,7 +531,7 @@ int mme_context_parse_config()
                                     NULL : &self.s1ap_list,
                                 ogs_app()->parameter.no_ipv6 ?
                                     NULL : &self.s1ap_list6,
-                                NULL, self.s1ap_port);
+                                NULL, self.s1ap_port, NULL);
                         ogs_assert(rv == OGS_OK);
                     }
                 } else if (!strcmp(mme_key, "gtpc")) {
@@ -965,6 +976,9 @@ int mme_context_parse_config()
                         const char *hostname[OGS_MAX_NUM_OF_HOSTNAME];
                         uint16_t port = self.sgsap_port;
 
+                        ogs_sockopt_t option;
+                        bool is_option = false;
+
                         if (ogs_yaml_iter_type(&sgsap_array) ==
                                 YAML_MAPPING_NODE) {
                             memcpy(&sgsap_iter, &sgsap_array,
@@ -1025,6 +1039,11 @@ int mme_context_parse_config()
                                     port = atoi(v);
                                     self.sgsap_port = port;
                                 }
+                            } else if (!strcmp(sgsap_key, "option")) {
+                                rv = ogs_app_config_parse_sockopt(
+                                        &sgsap_iter, &option);
+                                if (rv != OGS_OK) return rv;
+                                is_option = true;
                             } else if (!strcmp(sgsap_key, "map")) {
                                 ogs_yaml_iter_t map_iter;
                                 ogs_yaml_iter_recurse(&sgsap_iter, &map_iter);
@@ -1227,7 +1246,7 @@ int mme_context_parse_config()
 
                         if (addr == NULL) continue;
 
-                        vlr = mme_vlr_add(addr);
+                        vlr = mme_vlr_add(addr, is_option ? &option : NULL);
                         ogs_assert(vlr);
 
                         for (i = 0; i < map_num; i++) {
@@ -1632,7 +1651,7 @@ ogs_sockaddr_t *mme_pgw_addr_find_by_apn(
     return NULL;
 }
 
-mme_vlr_t *mme_vlr_add(ogs_sockaddr_t *sa_list)
+mme_vlr_t *mme_vlr_add(ogs_sockaddr_t *sa_list, ogs_sockopt_t *option)
 {
     mme_vlr_t *vlr = NULL;
 
@@ -1646,6 +1665,10 @@ mme_vlr_t *mme_vlr_add(ogs_sockaddr_t *sa_list)
     vlr->ostream_id = 0;
 
     vlr->sa_list = sa_list;
+    if (option) {
+        vlr->max_num_of_ostreams = option->sctp.sinit_num_ostreams;
+        vlr->option = ogs_memdup(option, sizeof *option);
+    }
 
     ogs_list_add(&self.vlr_list, vlr);
 
@@ -1661,6 +1684,8 @@ void mme_vlr_remove(mme_vlr_t *vlr)
     mme_vlr_close(vlr);
 
     ogs_freeaddrinfo(vlr->sa_list);
+    if (vlr->option)
+        ogs_free(vlr->option);
 
     ogs_pool_free(&mme_vlr_pool, vlr);
 }
@@ -1783,12 +1808,8 @@ mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
         ogs_list_init(&enb->sctp.write_queue);
     }
 
-    enb->max_num_of_ostreams = OGS_DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS;
+    enb->max_num_of_ostreams = 0;
     enb->ostream_id = 0;
-    if (ogs_app()->sctp.max_num_of_ostreams) {
-        enb->max_num_of_ostreams = ogs_app()->sctp.max_num_of_ostreams;
-        ogs_info("[ENB] max_num_of_ostreams : %d", enb->max_num_of_ostreams);
-    }
 
     ogs_list_init(&enb->enb_ue_list);
 
@@ -1917,6 +1938,7 @@ enb_ue_t *enb_ue_add(mme_enb_t *enb, uint32_t enb_ue_s1ap_id)
      *   0 : Non UE signalling
      *   1-29 : UE specific association
      */
+    ogs_assert((enb->max_num_of_ostreams-1) >= 1); /* NEXT_ID(MAX >= MIN) */
     enb_ue->enb_ostream_id =
         OGS_NEXT_ID(enb->ostream_id, 1, enb->max_num_of_ostreams-1);
 

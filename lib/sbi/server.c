@@ -53,7 +53,8 @@ void ogs_sbi_server_final(void)
     ogs_sbi_server_actions.cleanup();
 }
 
-ogs_sbi_server_t *ogs_sbi_server_add(ogs_sockaddr_t *addr)
+ogs_sbi_server_t *ogs_sbi_server_add(
+        ogs_sockaddr_t *addr, ogs_sockopt_t *option)
 {
     ogs_sbi_server_t *server = NULL;
 
@@ -64,6 +65,8 @@ ogs_sbi_server_t *ogs_sbi_server_add(ogs_sockaddr_t *addr)
     memset(server, 0, sizeof(ogs_sbi_server_t));
 
     ogs_assert(OGS_OK == ogs_copyaddrinfo(&server->node.addr, addr));
+    if (option)
+        server->node.option = ogs_memdup(option, sizeof *option);
 
     ogs_list_add(&ogs_sbi_self()->server_list, server);
 
@@ -78,6 +81,8 @@ void ogs_sbi_server_remove(ogs_sbi_server_t *server)
 
     ogs_assert(server->node.addr);
     ogs_freeaddrinfo(server->node.addr);
+    if (server->node.option)
+        ogs_free(server->node.option);
     if (server->advertise)
         ogs_freeaddrinfo(server->advertise);
 

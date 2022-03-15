@@ -62,13 +62,13 @@ static void test1_func(abts_case *tc, void *data)
         ABTS_INT_EQUAL(tc, OGS_OK, rv);
         server[i] = ogs_socknode_new(addr);
         ABTS_PTR_NOTNULL(tc, server[i]);
-        ogs_udp_server(server[i], false, false);
+        server[i]->sock = ogs_udp_server(server[i]->addr, NULL);
         ABTS_PTR_NOTNULL(tc, server[i]->sock);
         rv = ogs_getaddrinfo(&addr, AF_INET, "127.0.0.1", PORT+i, AI_PASSIVE);
         ABTS_INT_EQUAL(tc, OGS_OK, rv);
         client[i] = ogs_socknode_new(addr);
         ABTS_PTR_NOTNULL(tc, client[i]);
-        ogs_udp_client(client[i]);
+        client[i]->sock = ogs_udp_client(client[i]->addr, NULL);
         ABTS_PTR_NOTNULL(tc, client[i]->sock);
     }
 
@@ -132,8 +132,7 @@ static void test1_func(abts_case *tc, void *data)
 }
 #endif
 
-static ogs_socknode_t *test2_server, *test2_client;
-static ogs_sock_t *test2_accept;
+static ogs_sock_t *test2_client;
 static int test2_okay = 1;
 
 static void test2_handler(short when, ogs_socket_t fd, void *data)
@@ -147,7 +146,7 @@ static void test2_handler(short when, ogs_socket_t fd, void *data)
     len = ogs_send(fd, test, (int)strlen(test) + 1, 0);
 
     if (len > 0) {
-        ogs_socknode_free(test2_client);
+        ogs_sock_destroy(test2_client);
     }
 
     test2_okay = 0;
@@ -157,29 +156,30 @@ static void test2_func(abts_case *tc, void *data)
 {
     int rv;
     ogs_poll_t *poll;
+    ogs_sock_t *server, *client, *accept;
     ogs_sockaddr_t *addr;
     ogs_pollset_t *pollset = ogs_pollset_create(512);
     ABTS_PTR_NOTNULL(tc, pollset);
 
     rv = ogs_getaddrinfo(&addr, AF_INET, "127.0.0.1", PORT, AI_PASSIVE);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    test2_server = ogs_socknode_new(addr);
-    ABTS_PTR_NOTNULL(tc, test2_server);
-    ogs_tcp_server(test2_server);
-    ABTS_PTR_NOTNULL(tc, test2_server->sock);
+    server = ogs_tcp_server(addr, NULL);
+    ABTS_PTR_NOTNULL(tc, server);
+    rv = ogs_freeaddrinfo(addr);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     rv = ogs_getaddrinfo(&addr, AF_INET, "127.0.0.1", PORT, AI_PASSIVE);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    test2_client = ogs_socknode_new(addr);
+    test2_client = ogs_tcp_client(addr, NULL);
     ABTS_PTR_NOTNULL(tc, test2_client);
-    ogs_tcp_client(test2_client);
-    ABTS_PTR_NOTNULL(tc, test2_client->sock);
+    rv = ogs_freeaddrinfo(addr);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    test2_accept = ogs_sock_accept(test2_server->sock);
-    ABTS_PTR_NOTNULL(tc, test2_accept);
+    accept = ogs_sock_accept(server);
+    ABTS_PTR_NOTNULL(tc, accept);
 
     poll = ogs_pollset_add(pollset, OGS_POLLOUT,
-            test2_accept->fd, test2_handler, tc);
+            accept->fd, test2_handler, tc);
     ABTS_PTR_NOTNULL(tc, poll);
 
     rv = ogs_pollset_poll(pollset, OGS_INFINITE_TIME);
@@ -189,8 +189,8 @@ static void test2_func(abts_case *tc, void *data)
 
     ogs_pollset_remove(poll);
 
-    ogs_sock_destroy(test2_accept);
-    ogs_socknode_free(test2_server);
+    ogs_sock_destroy(accept);
+    ogs_sock_destroy(server);
 
     ogs_pollset_destroy(pollset);
 }
@@ -249,7 +249,7 @@ static void test4_main(void *data)
     ogs_sockaddr_t *sa;
     ssize_t size;
 
-    udp = ogs_udp_socket(AF_INET, NULL);
+    udp = ogs_sock_socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     ABTS_PTR_NOTNULL(tc, udp);
 
     rv = ogs_getaddrinfo(&sa, AF_INET, NULL, PORT, 0);
@@ -291,9 +291,7 @@ static void test4_func(abts_case *tc, void *data)
 
     rv = ogs_getaddrinfo(&addr, AF_INET, NULL, PORT, AI_PASSIVE);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    node = ogs_socknode_new(addr);
-    ABTS_PTR_NOTNULL(tc, node);
-    udp = ogs_udp_server(node, false);
+    udp = ogs_udp_server(addr, NULL);
     ABTS_PTR_NOTNULL(tc, udp);
     poll = ogs_pollset_add(pollset, OGS_POLLIN, udp->fd, test4_handler, tc);
 
@@ -306,7 +304,11 @@ static void test4_func(abts_case *tc, void *data)
     ogs_thread_destroy(test4_thread);
 
     ogs_pollset_remove(poll);
-    ogs_socknode_free(node);
+
+    ogs_sock_destroy(udp);
+
+    rv = ogs_freeaddrinfo(addr);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_pollset_destroy(pollset);
 }
@@ -460,57 +462,59 @@ static void test8_func(abts_case *tc, void *data)
 {
     int rv;
     ogs_poll_t *write1, *write2, *write3;
+    ogs_sock_t *server, *client1, *client2, *client3;
+    ogs_sock_t *accept1, *accept2, *accept3;
     ogs_sockaddr_t *addr;
     ogs_pollset_t *pollset = ogs_pollset_create(512);
     ABTS_PTR_NOTNULL(tc, pollset);
 
     rv = ogs_getaddrinfo(&addr, AF_INET, "127.0.0.1", PORT, AI_PASSIVE);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    test8_server = ogs_socknode_new(addr);
-    ABTS_PTR_NOTNULL(tc, test8_server);
-    ogs_tcp_server(test8_server);
-    ABTS_PTR_NOTNULL(tc, test8_server->sock);
+    server = ogs_tcp_server(addr, NULL);
+    ABTS_PTR_NOTNULL(tc, server);
+    rv = ogs_freeaddrinfo(addr);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     rv = ogs_getaddrinfo(&addr, AF_INET, "127.0.0.1", PORT, AI_PASSIVE);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    test8_client1 = ogs_socknode_new(addr);
-    ABTS_PTR_NOTNULL(tc, test8_client1);
-    ogs_tcp_client(test8_client1);
-    ABTS_PTR_NOTNULL(tc, test8_client1->sock);
+    client1 = ogs_tcp_client(addr, NULL);
+    ABTS_PTR_NOTNULL(tc, client1);
+    rv = ogs_freeaddrinfo(addr);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    test8_accept1 = ogs_sock_accept(test8_server->sock);
-    ABTS_PTR_NOTNULL(tc, test8_accept1);
+    accept1 = ogs_sock_accept(server);
+    ABTS_PTR_NOTNULL(tc, accept1);
 
     rv = ogs_getaddrinfo(&addr, AF_INET, "127.0.0.1", PORT, AI_PASSIVE);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    test8_client2 = ogs_socknode_new(addr);
-    ABTS_PTR_NOTNULL(tc, test8_client2);
-    ogs_tcp_client(test8_client2);
-    ABTS_PTR_NOTNULL(tc, test8_client2->sock);
+    client2 = ogs_tcp_client(addr, NULL);
+    ABTS_PTR_NOTNULL(tc, client2);
+    rv = ogs_freeaddrinfo(addr);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    test8_accept2 = ogs_sock_accept(test8_server->sock);
-    ABTS_PTR_NOTNULL(tc, test8_accept2);
+    accept2 = ogs_sock_accept(server);
+    ABTS_PTR_NOTNULL(tc, accept2);
 
     rv = ogs_getaddrinfo(&addr, AF_INET, "127.0.0.1", PORT, AI_PASSIVE);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    test8_client3 = ogs_socknode_new(addr);
-    ABTS_PTR_NOTNULL(tc, test8_client3);
-    ogs_tcp_client(test8_client3);
-    ABTS_PTR_NOTNULL(tc, test8_client3->sock);
+    client3 = ogs_tcp_client(addr, NULL);
+    ABTS_PTR_NOTNULL(tc, client3);
+    rv = ogs_freeaddrinfo(addr);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    test8_accept3 = ogs_sock_accept(test8_server->sock);
-    ABTS_PTR_NOTNULL(tc, test8_accept3);
+    accept3 = ogs_sock_accept(server);
+    ABTS_PTR_NOTNULL(tc, accept3);
 
     write1 = ogs_pollset_add(pollset, OGS_POLLOUT,
-            test8_accept1->fd, test8_handler, NULL);
+            accept1->fd, test8_handler, NULL);
     ABTS_PTR_NOTNULL(tc, write1);
 
     write2 = ogs_pollset_add(pollset, OGS_POLLOUT,
-            test8_accept2->fd, test8_handler, NULL);
+            accept2->fd, test8_handler, NULL);
     ABTS_PTR_NOTNULL(tc, write2);
 
     write3 = ogs_pollset_add(pollset, OGS_POLLOUT,
-            test8_accept3->fd, test8_handler, NULL);
+            accept3->fd, test8_handler, NULL);
     ABTS_PTR_NOTNULL(tc, write3);
 
     rv = ogs_pollset_poll(pollset, OGS_INFINITE_TIME);
@@ -523,11 +527,11 @@ static void test8_func(abts_case *tc, void *data)
     ogs_pollset_remove(write3);
 
     write2 = ogs_pollset_add(pollset, OGS_POLLOUT,
-            test8_accept2->fd, test8_handler, NULL);
+            accept2->fd, test8_handler, NULL);
     ABTS_PTR_NOTNULL(tc, write2);
 
     write3 = ogs_pollset_add(pollset, OGS_POLLOUT,
-            test8_accept3->fd, test8_handler, NULL);
+            accept3->fd, test8_handler, NULL);
     ABTS_PTR_NOTNULL(tc, write3);
 
     rv = ogs_pollset_poll(pollset, OGS_INFINITE_TIME);
@@ -539,7 +543,7 @@ static void test8_func(abts_case *tc, void *data)
     ogs_pollset_remove(write3);
 
     write3 = ogs_pollset_add(pollset, OGS_POLLOUT,
-            test8_accept3->fd, test8_handler, NULL);
+            accept3->fd, test8_handler, NULL);
     ABTS_PTR_NOTNULL(tc, write3);
 
     rv = ogs_pollset_poll(pollset, OGS_INFINITE_TIME);
@@ -550,17 +554,17 @@ static void test8_func(abts_case *tc, void *data)
     ogs_pollset_remove(write3);
 
     write1 = ogs_pollset_add(pollset, OGS_POLLOUT,
-            test8_accept1->fd, test8_handler_with_remove,
+            accept1->fd, test8_handler_with_remove,
             ogs_pollset_self_handler_data());
     ABTS_PTR_NOTNULL(tc, write1);
 
     write2 = ogs_pollset_add(pollset, OGS_POLLOUT,
-            test8_accept2->fd, test8_handler_with_remove,
+            accept2->fd, test8_handler_with_remove,
             ogs_pollset_self_handler_data());
     ABTS_PTR_NOTNULL(tc, write2);
 
     write3 = ogs_pollset_add(pollset, OGS_POLLOUT,
-            test8_accept3->fd, test8_handler_with_remove,
+            accept3->fd, test8_handler_with_remove,
             ogs_pollset_self_handler_data());
     ABTS_PTR_NOTNULL(tc, write3);
 
@@ -570,12 +574,12 @@ static void test8_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 10, test8_okay);
 
     write1 = ogs_pollset_add(pollset, OGS_POLLOUT,
-            test8_accept1->fd, test8_handler_with_remove,
+            accept1->fd, test8_handler_with_remove,
             ogs_pollset_self_handler_data());
     ABTS_PTR_NOTNULL(tc, write1);
 
     write2 = ogs_pollset_add(pollset, OGS_POLLOUT,
-            test8_accept2->fd, test8_handler_with_remove,
+            accept2->fd, test8_handler_with_remove,
             ogs_pollset_self_handler_data());
     ABTS_PTR_NOTNULL(tc, write2);
 
@@ -585,7 +589,7 @@ static void test8_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 12, test8_okay);
 
     write1 = ogs_pollset_add(pollset, OGS_POLLOUT,
-            test8_accept1->fd, test8_handler_with_remove,
+            accept1->fd, test8_handler_with_remove,
             ogs_pollset_self_handler_data());
     ABTS_PTR_NOTNULL(tc, write1);
 
@@ -595,17 +599,17 @@ static void test8_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 13, test8_okay);
 
     write1 = ogs_pollset_add(pollset, OGS_POLLIN|OGS_POLLOUT,
-            test8_accept1->fd, test8_handler_with_remove,
+            accept1->fd, test8_handler_with_remove,
             ogs_pollset_self_handler_data());
     ABTS_PTR_NOTNULL(tc, write1);
 
     write2 = ogs_pollset_add(pollset, OGS_POLLIN|OGS_POLLOUT,
-            test8_accept2->fd, test8_handler_with_remove,
+            accept2->fd, test8_handler_with_remove,
             ogs_pollset_self_handler_data());
     ABTS_PTR_NOTNULL(tc, write2);
 
     write3 = ogs_pollset_add(pollset, OGS_POLLIN|OGS_POLLOUT,
-            test8_accept3->fd, test8_handler_with_remove,
+            accept3->fd, test8_handler_with_remove,
             ogs_pollset_self_handler_data());
     ABTS_PTR_NOTNULL(tc, write3);
 
@@ -615,12 +619,12 @@ static void test8_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 16, test8_okay);
 
     write2 = ogs_pollset_add(pollset, OGS_POLLIN|OGS_POLLOUT,
-            test8_accept2->fd, test8_handler_with_remove,
+            accept2->fd, test8_handler_with_remove,
             ogs_pollset_self_handler_data());
     ABTS_PTR_NOTNULL(tc, write2);
 
     write3 = ogs_pollset_add(pollset, OGS_POLLIN|OGS_POLLOUT,
-            test8_accept3->fd, test8_handler_with_remove,
+            accept3->fd, test8_handler_with_remove,
             ogs_pollset_self_handler_data());
     ABTS_PTR_NOTNULL(tc, write3);
 
@@ -630,7 +634,7 @@ static void test8_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 18, test8_okay);
 
     write3 = ogs_pollset_add(pollset, OGS_POLLIN|OGS_POLLOUT,
-            test8_accept3->fd, test8_handler_with_remove,
+            accept3->fd, test8_handler_with_remove,
             ogs_pollset_self_handler_data());
     ABTS_PTR_NOTNULL(tc, write3);
 
@@ -639,16 +643,16 @@ static void test8_func(abts_case *tc, void *data)
 
     ABTS_INT_EQUAL(tc, 19, test8_okay);
 
-    ogs_socknode_free(test8_client1);
-    ogs_sock_destroy(test8_accept1);
+    ogs_sock_destroy(client1);
+    ogs_sock_destroy(accept1);
 
-    ogs_socknode_free(test8_client2);
-    ogs_sock_destroy(test8_accept2);
+    ogs_sock_destroy(client2);
+    ogs_sock_destroy(accept2);
 
-    ogs_socknode_free(test8_client3);
-    ogs_sock_destroy(test8_accept3);
+    ogs_sock_destroy(client3);
+    ogs_sock_destroy(accept3);
 
-    ogs_socknode_free(test8_server);
+    ogs_sock_destroy(server);
 
     ogs_pollset_destroy(pollset);
 }

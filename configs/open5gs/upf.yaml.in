@@ -35,6 +35,14 @@ logger:
 #    pfcp:
 #      name: localhost
 #
+#  o PFCP Option (Default)
+#    - so_bindtodevice : NULL
+#
+#    pfcp:
+#      addr: 127.0.0.7
+#      option:
+#        so_bindtodevice: vrf-blue
+#
 #  <GTP-U Server>>
 #
 #  o GTP-U Server(127.0.0.7:2152, [::1]:2152)
@@ -79,6 +87,14 @@ logger:
 #    gtpu:
 #      - dev: ens3
 #        advertise: upf1.5gc.mnc001.mcc001.3gppnetwork.org
+#
+#  o GTP-U Option (Default)
+#    - so_bindtodevice : NULL
+#
+#    gtpu:
+#      addr: 127.0.0.7
+#      option:
+#        so_bindtodevice: vrf-blue
 #
 #  <Subnet for UE network>
 #
@@ -219,12 +235,6 @@ max:
 #    big:  8
 #
 pool:
-
-#
-# sockopt:
-#    bindtodevice : false
-#
-sockopt:
 
 #
 # time:

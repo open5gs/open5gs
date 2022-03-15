@@ -184,6 +184,7 @@ typedef struct mme_vlr_s {
 
     ogs_sock_t      *sock;      /* VLR SGsAP Socket */
     ogs_sockaddr_t  *addr;      /* VLR SGsAP Connected Socket Address */
+    ogs_sockopt_t   *option;    /* VLR SGsAP Socket Option */
     ogs_poll_t      *poll;      /* VLR SGsAP Poll */
 } mme_vlr_t;
 
@@ -670,7 +671,7 @@ void mme_pgw_remove_all(void);
 ogs_sockaddr_t *mme_pgw_addr_find_by_apn(
         ogs_list_t *list, int family, char *apn);
 
-mme_vlr_t *mme_vlr_add(ogs_sockaddr_t *addr);
+mme_vlr_t *mme_vlr_add(ogs_sockaddr_t *addr, ogs_sockopt_t *option);
 void mme_vlr_remove(mme_vlr_t *vlr);
 void mme_vlr_remove_all(void);
 void mme_vlr_close(mme_vlr_t *vlr);

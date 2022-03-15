@@ -17,24 +17,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined(OGS_CORE_INSIDE) && !defined(OGS_CORE_COMPILATION)
+#if !defined(OGS_APP_INSIDE) && !defined(OGS_APP_COMPILATION)
 #error "This header cannot be included directly."
 #endif
 
-#ifndef OGS_TCP_H
-#define OGS_TCP_H
+#ifndef OGS_APP_CONFIG_H
+#define OGS_APP_CONFIG_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-ogs_sock_t *ogs_tcp_server(
-        ogs_sockaddr_t *sa_list, ogs_sockopt_t *socket_option);
-ogs_sock_t *ogs_tcp_client(
-        ogs_sockaddr_t *sa_list, ogs_sockopt_t *socket_option);
+int ogs_app_config_parse_sockopt(
+        ogs_yaml_iter_t *parent, ogs_sockopt_t *sockopt);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* OGS_TCP_H */
+#endif /* OGS_APP_CONFIG_H */

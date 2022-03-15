@@ -38,6 +38,14 @@ logger:
 #      - addr: 127.0.0.3
 #      - addr: fd69:f21d:873c:fa::2
 #
+#  o GTP-C Option (Default)
+#    - so_bindtodevice : NULL
+#
+#    gtpc:
+#      addr: 127.0.0.3
+#      option:
+#        so_bindtodevice: vrf-blue
+#
 #  <PFCP Server>
 #
 #  o PFCP Server(127.0.0.3:8805, ::1:8805)
@@ -48,6 +56,14 @@ logger:
 #  o PFCP-U Server(127.0.0.1:2152, [::1]:2152)
 #    pfcp:
 #      name: localhost
+#
+#  o PFCP Option (Default)
+#    - so_bindtodevice : NULL
+#
+#    pfcp:
+#      addr: 127.0.0.3
+#      option:
+#        so_bindtodevice: vrf-blue
 #
 sgwc:
     gtpc:
@@ -159,12 +175,6 @@ max:
 #    big:  8
 #
 pool:
-
-#
-# sockopt:
-#    bindtodevice : false
-#
-sockopt:
 
 #
 # time:

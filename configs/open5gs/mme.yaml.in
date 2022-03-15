@@ -47,6 +47,43 @@ logger:
 #    s1ap:
 #      dev: eth0
 #
+#  o S1AP Option (Default)
+#    - sctp_nodelay : true
+#    - so_linger.l_onoff : false
+#
+#    s1ap:
+#      addr: 127.0.0.2
+#      option:
+#        stcp_nodelay: false
+#        so_linger:
+#          l_onoff: true
+#          l_linger: 10
+#
+#  o S1AP SCTP Option (Default)
+#    - spp_hbinterval : 5000 (5secs)
+#    - spp_sackdelay : 200 (200ms)
+#    - srto_initial : 3000 (3secs)
+#    - srto_min : 1000 (1sec)
+#    - srto_max : 5000 (5secs)
+#    - sinit_num_ostreams : 30
+#    - sinit_max_instreams : 65535
+#    - sinit_max_attempts : 4
+#    - sinit_max_init_timeo : 8000(8secs)
+#
+#    s1ap:
+#      addr: 127.0.0.2
+#      option:
+#        sctp:
+#          spp_hbinterval : 5000
+#          spp_sackdelay : 200
+#          srto_initial : 3000
+#          srto_min : 1000
+#          srto_max : 5000
+#          sinit_num_ostreams : 30
+#          sinit_max_instreams : 65535
+#          sinit_max_attempts : 4
+#          sinit_max_init_timeo : 8000
+#
 #  <GTP-C Server>>
 #
 #  o GTP-C Server(all address avaiable)
@@ -386,26 +423,10 @@ max:
 pool:
 
 #
-# sockopt:
-#    no_delay : true
-#    bindtodevice : false
+# usrsctp:
+#    udp_port : 9899
 #
-sockopt:
-
-#
-# sctp:
-#    heartbit_interval : 5000 (5secs)
-#    sack_delay : 200 (200ms)
-#    rto_initial : 3000 (3secs)
-#    rto_min : 1000 (1sec)
-#    rto_max : 5000 (5secs)
-#    max_num_of_ostreams : 30
-#    max_num_of_istreams : 65535
-#    max_attempts : 4
-#    max_initial_timeout : 8000(8secs)
-#    usrsctp_udp_port : 9899
-#
-sctp:
+usrsctp:
 
 #
 # time:

@@ -20,10 +20,12 @@ libapp_sources = files('''
 
     ogs-yaml.h
     ogs-context.h
+    ogs-config.h
     ogs-init.h
 
     ogs-yaml.c
     ogs-context.c
+    ogs-config.c
     ogs-init.c
 '''.split())
 

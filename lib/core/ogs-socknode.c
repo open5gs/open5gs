@@ -61,11 +61,13 @@ void ogs_socknode_free(ogs_socknode_t *node)
         else
             ogs_sock_destroy(node->sock);
     }
+    if (node->option)
+        ogs_free(node->option);
     ogs_free(node);
 }
 
-ogs_socknode_t *ogs_socknode_add(
-        ogs_list_t *list, int family, ogs_sockaddr_t *addr)
+ogs_socknode_t *ogs_socknode_add(ogs_list_t *list,
+        int family, ogs_sockaddr_t *addr, ogs_sockopt_t *option)
 {
     ogs_socknode_t *node = NULL;
     ogs_sockaddr_t *dup = NULL;
@@ -81,6 +83,9 @@ ogs_socknode_t *ogs_socknode_add(
         node = ogs_socknode_new(dup);
         ogs_assert(node);
         ogs_list_add(list, node);
+
+        if (option)
+            node->option = ogs_memdup(option, sizeof *option);
     }
 
     return node;
@@ -102,8 +107,8 @@ void ogs_socknode_remove_all(ogs_list_t *list)
         ogs_socknode_remove(list, node);
 }
 
-int ogs_socknode_probe(
-        ogs_list_t *list, ogs_list_t *list6, const char *dev, uint16_t port)
+int ogs_socknode_probe(ogs_list_t *list, ogs_list_t *list6,
+        const char *dev, uint16_t port, ogs_sockopt_t *option)
 {
 #if defined(HAVE_GETIFADDRS)
     ogs_socknode_t *node = NULL;
@@ -177,6 +182,9 @@ int ogs_socknode_probe(
             ogs_list_add(list6, node);
         } else
             ogs_assert_if_reached();
+
+        if (option)
+            node->option = ogs_memdup(option, sizeof *option);
 	}
 
 	freeifaddrs(iflist);
@@ -190,6 +198,7 @@ int ogs_socknode_probe(
 
 }
 
+#if 0 /* deprecated */
 int ogs_socknode_fill_scope_id_in_local(ogs_sockaddr_t *sa_list)
 {
 #if defined(HAVE_GETIFADDRS)
@@ -247,6 +256,7 @@ int ogs_socknode_fill_scope_id_in_local(ogs_sockaddr_t *sa_list)
     return OGS_ERROR;
 #endif
 }
+#endif
 
 void ogs_socknode_set_cleanup(
         ogs_socknode_t *node, void (*cleanup)(ogs_sock_t *))

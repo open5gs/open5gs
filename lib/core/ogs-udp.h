@@ -28,9 +28,10 @@
 extern "C" {
 #endif
 
-ogs_sock_t *ogs_udp_socket(int family, ogs_socknode_t *node);
-ogs_sock_t *ogs_udp_server(ogs_socknode_t *node, bool bindtodevice);
-ogs_sock_t *ogs_udp_client(ogs_socknode_t *node);
+ogs_sock_t *ogs_udp_server(
+        ogs_sockaddr_t *sa_list, ogs_sockopt_t *socket_option);
+ogs_sock_t *ogs_udp_client(
+        ogs_sockaddr_t *sa_list, ogs_sockopt_t *socket_option);
 int ogs_udp_connect(ogs_sock_t *sock, ogs_sockaddr_t *sa_list);
 
 #ifdef __cplusplus

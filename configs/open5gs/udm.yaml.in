@@ -73,6 +73,18 @@ logger:
 #          - 127.0.0.99
 #          - ::1
 #
+#  o SBI Option (Default)
+#    - tcp_nodelay : true
+#    - so_linger.l_onoff : false
+#
+#    sbi:
+#      addr: 127.0.0.12
+#      option:
+#        tcp_nodelay: false
+#        so_linger:
+#          l_onoff: true
+#          l_linger: 10
+#
 udm:
     sbi:
       - addr: 127.0.0.12
@@ -103,6 +115,18 @@ udm:
 #      addr:
 #        - 127.0.0.10
 #        - fd69:f21d:873c:fa::1
+#
+#  o SBI Option (Default)
+#    - tcp_nodelay : true
+#    - so_linger.l_onoff : false
+#
+#    sbi:
+#      addr: 127.0.0.10
+#      option:
+#        tcp_nodelay: false
+#        so_linger:
+#          l_onoff: true
+#          l_linger: 10
 #
 nrf:
     sbi:

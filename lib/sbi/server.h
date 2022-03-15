@@ -62,7 +62,8 @@ typedef struct ogs_sbi_server_actions_s {
 void ogs_sbi_server_init(int num_of_session_pool, int num_of_stream_pool);
 void ogs_sbi_server_final(void);
 
-ogs_sbi_server_t *ogs_sbi_server_add(ogs_sockaddr_t *addr);
+ogs_sbi_server_t *ogs_sbi_server_add(
+        ogs_sockaddr_t *addr, ogs_sockopt_t *option);
 void ogs_sbi_server_remove(ogs_sbi_server_t *server);
 void ogs_sbi_server_remove_all(void);
 

@@ -649,10 +649,13 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             ogs_free(addr);
         }
 
-        gnb->max_num_of_ostreams =
-                ogs_min(max_num_of_ostreams, gnb->max_num_of_ostreams);
+        if (gnb->max_num_of_ostreams)
+            gnb->max_num_of_ostreams =
+                    ogs_min(max_num_of_ostreams, gnb->max_num_of_ostreams);
+        else
+            gnb->max_num_of_ostreams = max_num_of_ostreams;
 
-        ogs_debug("gNB-N2 SCTP_COMM_UP[%s] Max Num of Outbound Streams[%d]", 
+        ogs_info("gNB-N2[%s] max_num_of_ostreams : %d",
             OGS_ADDR(gnb->sctp.addr, buf), gnb->max_num_of_ostreams);
 
         break;

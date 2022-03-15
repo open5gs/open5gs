@@ -25,10 +25,12 @@ ogs_sock_t *ogs_pfcp_server(ogs_socknode_t *node)
     ogs_sock_t *pfcp;
     ogs_assert(node);
 
-    pfcp = ogs_udp_server(node, ogs_app()->sockopt.bindtodevice);
+    pfcp = ogs_udp_server(node->addr, node->option);
     if (pfcp) {
         ogs_info("pfcp_server() [%s]:%d",
                 OGS_ADDR(node->addr, buf), OGS_PORT(node->addr));
+
+        node->sock = pfcp;
     }
 
     return pfcp;

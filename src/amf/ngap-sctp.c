@@ -34,21 +34,29 @@ ogs_sock_t *ngap_server(ogs_socknode_t *node)
 {
     char buf[OGS_ADDRSTRLEN];
     ogs_sock_t *sock = NULL;
+#if !HAVE_USRSCTP
+    ogs_poll_t *poll = NULL;
+#endif
 
     ogs_assert(node);
 
 #if HAVE_USRSCTP
-    sock = ogs_sctp_server(SOCK_SEQPACKET, node);
+    sock = ogs_sctp_server(SOCK_SEQPACKET, node->addr, node->option);
     if (!sock) return NULL;
     usrsctp_set_non_blocking((struct socket *)sock, 1);
     usrsctp_set_upcall((struct socket *)sock, usrsctp_recv_handler, NULL);
 #else
-    sock = ogs_sctp_server(SOCK_STREAM, node);
+    sock = ogs_sctp_server(SOCK_STREAM, node->addr, node->option);
     if (!sock) return NULL;
-    node->poll = ogs_pollset_add(ogs_app()->pollset,
+    poll = ogs_pollset_add(ogs_app()->pollset,
             OGS_POLLIN, sock->fd, lksctp_accept_handler, sock);
-    ogs_assert(node->poll);
+    ogs_assert(node);
+
+    node->poll = poll;
 #endif
+
+    node->sock = sock;
+    node->cleanup = ogs_sctp_destroy;
 
     ogs_info("ngap_server() [%s]:%d",
             OGS_ADDR(node->addr, buf), OGS_PORT(node->addr));
