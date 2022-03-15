@@ -573,7 +573,7 @@ void ogs_pfcp_build_create_urr(
                                     | (urr->rep_triggers.reptri_7);
     if (urr->meas_period) {
         message->measurement_period.presence = 1;
-        message->measurement_period.u32 = htobe32(urr->meas_period);
+        message->measurement_period.u32 = urr->meas_period;
     }
 
     if (urr->vol_threshold.flags) {
@@ -592,27 +592,27 @@ void ogs_pfcp_build_create_urr(
 
     if (urr->event_threshold) {
         message->event_threshold.presence = 1;
-        message->event_threshold.u32 = htobe32(urr->event_threshold);
+        message->event_threshold.u32 = urr->event_threshold;
     }
-    
+
     if (urr->event_quota) {
         message->event_quota.presence = 1;
-        message->event_quota.u32 = htobe32(urr->event_quota);
+        message->event_quota.u32 = urr->event_quota;
     }
 
     if (urr->time_threshold) {
         message->time_threshold.presence = 1;
-        message->time_threshold.u32 = htobe32(urr->time_threshold);
+        message->time_threshold.u32 = urr->time_threshold;
     }
-    
+
     if (urr->time_quota) {
         message->time_quota.presence = 1;
-        message->time_quota.u32 = htobe32(urr->time_quota);
+        message->time_quota.u32 = urr->time_quota;
     }
 
     if (urr->quota_holding_time) {
         message->quota_holding_time.presence = 1;
-        message->quota_holding_time.u32 = htobe32(urr->quota_holding_time);
+        message->quota_holding_time.u32 = urr->quota_holding_time;
     }
 
     if (urr->dropped_dl_traffic_threshold.flags) {
@@ -626,7 +626,7 @@ void ogs_pfcp_build_create_urr(
 
     if (urr->quota_validity_time) {
         message->quota_validity_time.presence = 1;
-        message->quota_validity_time.u32 = htobe32(urr->quota_validity_time);
+        message->quota_validity_time.u32 = urr->quota_validity_time;
     }
 }
 
@@ -779,7 +779,7 @@ ogs_pkbuf_t *ogs_pfcp_build_session_report_request(
             (report->usage_report.rep_triggers.reptri_5 << 16)
             | (report->usage_report.rep_triggers.reptri_6 << 8)
             | (report->usage_report.rep_triggers.reptri_7);
-        
+
         if (report->usage_report.start_time) {
             req->usage_report.start_time.presence = 1;
             req->usage_report.start_time.u32 = report->usage_report.start_time;
@@ -804,7 +804,7 @@ ogs_pkbuf_t *ogs_pfcp_build_session_report_request(
             req->usage_report.duration_measurement.u32 =
                 report->usage_report.dur_measurement;
         }
-        
+
         if (report->usage_report.time_of_first_packet) {
             req->usage_report.time_of_first_packet.presence = 1;
             req->usage_report.time_of_first_packet.u32 =

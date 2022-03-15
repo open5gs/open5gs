@@ -87,8 +87,8 @@ typedef struct ogs_pfcp_node_s {
     ogs_sock_t      *sock;          /* Socket Instance */
     ogs_sockaddr_t  addr;           /* Remote Address */
 
-    ogs_list_t      local_list;    
-    ogs_list_t      remote_list;   
+    ogs_list_t      local_list;
+    ogs_list_t      remote_list;
 
     ogs_fsm_t       sm;             /* A state machine */
     ogs_timer_t     *t_association; /* timer to retry to associate peer node */
