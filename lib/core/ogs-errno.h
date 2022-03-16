@@ -32,6 +32,7 @@ extern "C" {
 
 typedef DWORD ogs_err_t;
 
+#define OGS_EPERM                   ERROR_ACCESS_DENIED
 #define OGS_ENOMEM                  ERROR_NOT_ENOUGH_MEMORY
 #define OGS_EACCES                  ERROR_ACCESS_DENIED
 #define OGS_EEXIST                  ERROR_ALREADY_EXISTS
@@ -51,6 +52,7 @@ typedef DWORD ogs_err_t;
 
 typedef int ogs_err_t;
 
+#define OGS_EPERM                   EPERM
 #define OGS_ENOMEM                  ENOMEM
 #define OGS_EACCES                  EACCES
 #define OGS_EEXIST                  EEXIST

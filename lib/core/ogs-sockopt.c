@@ -184,10 +184,10 @@ int ogs_bind_to_device(ogs_socket_t fd, const char *device)
     ogs_debug("SO_BINDTODEVICE:[%s]", device);
     rc = setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, device, strlen(device)+1);
     if (rc != OGS_OK) {
-        int err = errno;
+        int err = ogs_errno;
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
                 "setsockopt(SOL_SOCKET, SO_BINDTODEVICE, %s) failed", device);
-        if (err == EPERM)
+        if (err == OGS_EPERM)
             ogs_error("You need to grant CAP_NET_RAW privileges to use SO_BINDTODEVICE.");
         return OGS_ERROR;
     }
