@@ -643,7 +643,7 @@ int upf_gtp_open(void)
      *
      * $ sudo ip tuntap add name ogstun mode tun
      *
-     * Also, before running upf, assign the one IP from IP pool of UE 
+     * Also, before running upf, assign the one IP from IP pool of UE
      * to ogstun. The IP should not be assigned to UE
      *
      * $ sudo ifconfig ogstun 45.45.0.1/16 up
@@ -673,12 +673,12 @@ int upf_gtp_open(void)
         ogs_assert(dev->poll);
     }
 
-    /* 
-     * On Linux, it is possible to create a persistent tun/tap 
-     * interface which will continue to exist even if open5gs quit, 
-     * although this is normally not required. 
-     * It can be useful to set up a tun/tap interface owned 
-     * by a non-root user, so open5gs can be started without 
+    /*
+     * On Linux, it is possible to create a persistent tun/tap
+     * interface which will continue to exist even if open5gs quit,
+     * although this is normally not required.
+     * It can be useful to set up a tun/tap interface owned
+     * by a non-root user, so open5gs can be started without
      * needing any root privileges at all.
      */
 
