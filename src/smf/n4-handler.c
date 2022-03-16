@@ -1310,10 +1310,6 @@ void smf_n4_handle_session_report_request(
             return;
         }
 
-        ogs_assert(OGS_OK ==
-            smf_pfcp_send_session_report_response(
-                pfcp_xact, sess, OGS_PFCP_CAUSE_REQUEST_ACCEPTED));
-
         if (sess->paging.ue_requested_pdu_session_establishment_done == true) {
             smf_n1_n2_message_transfer_param_t param;
 
@@ -1327,28 +1323,31 @@ void smf_n4_handle_session_report_request(
 
             smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
         }
+    }
 
-    } else if (report_type.error_indication_report) {
+    if (report_type.error_indication_report) {
         smf_ue_t *smf_ue = sess->smf_ue;
         smf_sess_t *error_indication_session = NULL;
         ogs_assert(smf_ue);
 
-        ogs_assert(OGS_OK ==
-            smf_pfcp_send_session_report_response(
-                pfcp_xact, sess, OGS_PFCP_CAUSE_REQUEST_ACCEPTED));
-
         error_indication_session = smf_sess_find_by_error_indication_report(
                 smf_ue, &pfcp_req->error_indication_report);
 
-        if (!error_indication_session) return;
+        if (error_indication_session) {
+            ogs_assert(OGS_OK ==
+                smf_5gc_pfcp_send_session_modification_request(
+                    error_indication_session, NULL,
+                    OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE|
+                    OGS_PFCP_MODIFY_ERROR_INDICATION,
+                    0));
+        }
+    }
 
+    /* TS 29.244 sec 8.2.21: At least one bit shall be set to "1". Several bits may be set to "1". */
+    if (report_type.downlink_data_report || report_type.error_indication_report) {
         ogs_assert(OGS_OK ==
-            smf_5gc_pfcp_send_session_modification_request(
-                error_indication_session, NULL,
-                OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE|
-                OGS_PFCP_MODIFY_ERROR_INDICATION,
-                0));
-
+            smf_pfcp_send_session_report_response(
+                pfcp_xact, sess, OGS_PFCP_CAUSE_REQUEST_ACCEPTED));
     } else {
         ogs_error("Not supported Report Type[%d]", report_type.value);
         ogs_assert(OGS_OK ==
