@@ -427,8 +427,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                 if (src_addr[0] == sess->ipv4->addr[0]) {
                     /* Source IP address should be matched in uplink */
                 } else {
-                    ogs_error("[DROP] Source IP-%d Spoofing SrcIf:%d DstIf:%d",
-                                ip_h->ip_v, pdr->src_if, far->dst_if);
+                    ogs_error("[DROP] Source IP-%d Spoofing APN:%s SrcIf:%d DstIf:%d TEID:0x%x",
+                                ip_h->ip_v, pdr->dnn, pdr->src_if, far->dst_if, teid);
                     ogs_error("       SRC:%08X, UE:%08X",
                         be32toh(src_addr[0]), be32toh(sess->ipv4->addr[0]));
                     ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
@@ -473,8 +473,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                      * 64 bit prefix should be matched
                      */
                 } else {
-                    ogs_error("[DROP] Source IP-%d Spoofing SrcIf:%d DstIf:%d",
-                                ip_h->ip_v, pdr->src_if, far->dst_if);
+                    ogs_error("[DROP] Source IP-%d Spoofing APN:%s SrcIf:%d DstIf:%d TEID:0x%x",
+                                ip_h->ip_v, pdr->dnn, pdr->src_if, far->dst_if, teid);
                     ogs_error("SRC:%08x %08x %08x %08x",
                             be32toh(src_addr[0]), be32toh(src_addr[1]),
                             be32toh(src_addr[2]), be32toh(src_addr[3]));
@@ -643,7 +643,7 @@ int upf_gtp_open(void)
      *
      * $ sudo ip tuntap add name ogstun mode tun
      *
-     * Also, before running upf, assign the one IP from IP pool of UE 
+     * Also, before running upf, assign the one IP from IP pool of UE
      * to ogstun. The IP should not be assigned to UE
      *
      * $ sudo ifconfig ogstun 45.45.0.1/16 up
@@ -673,12 +673,12 @@ int upf_gtp_open(void)
         ogs_assert(dev->poll);
     }
 
-    /* 
-     * On Linux, it is possible to create a persistent tun/tap 
-     * interface which will continue to exist even if open5gs quit, 
-     * although this is normally not required. 
-     * It can be useful to set up a tun/tap interface owned 
-     * by a non-root user, so open5gs can be started without 
+    /*
+     * On Linux, it is possible to create a persistent tun/tap
+     * interface which will continue to exist even if open5gs quit,
+     * although this is normally not required.
+     * It can be useful to set up a tun/tap interface owned
+     * by a non-root user, so open5gs can be started without
      * needing any root privileges at all.
      */
 
