@@ -2756,23 +2756,6 @@ mme_sess_t *mme_sess_next(mme_sess_t *sess)
     return ogs_list_next(sess);
 }
 
-bool mme_ue_in_attach(mme_ue_t *mme_ue)
-{
-    ogs_assert(mme_ue);
-    return (ogs_list_count(&mme_ue->sess_list) <= 1);
-}
-
-bool mme_sess_in_attach(mme_sess_t *sess)
-{
-    mme_ue_t *mme_ue = NULL;
-
-    ogs_assert(sess);
-    mme_ue = sess->mme_ue;
-    ogs_assert(mme_ue);
-
-    return mme_ue_in_attach(mme_ue);
-}
-
 unsigned int mme_sess_count(mme_ue_t *mme_ue)
 {
     unsigned int count = 0;

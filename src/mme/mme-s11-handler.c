@@ -92,8 +92,10 @@ void mme_s11_handle_create_session_response(
     ogs_gtp_bearer_qos_t bearer_qos;
     ogs_gtp_ambr_t *ambr = NULL;
     uint16_t decoded = 0;
+    bool esm_piggybacked = false;
     
     ogs_assert(xact);
+    esm_piggybacked = xact->esm_piggybacked;
     ogs_assert(rsp);
 
     ogs_debug("Create Session Response");
@@ -180,7 +182,7 @@ void mme_s11_handle_create_session_response(
         cause_value !=
             OGS_GTP_CAUSE_NEW_PDN_TYPE_DUE_TO_SINGLE_ADDRESS_BEARER_ONLY) {
         if (mme_ue_from_teid && mme_ue) {
-            if (UE_CONTEXT_IN_ATTACH(mme_ue)) {
+            if (esm_piggybacked == true) {
                 ogs_error("[%s] Attach reject", mme_ue->imsi_bcd);
                 ogs_assert(OGS_OK ==
                     nas_eps_send_attach_reject(mme_ue,
@@ -245,7 +247,7 @@ void mme_s11_handle_create_session_response(
     rv = ogs_gtp_f_teid_to_ip(sgw_s1u_teid, &bearer->sgw_s1u_ip);
     ogs_assert(rv == OGS_OK);
 
-    if (SESSION_CONTEXT_IN_ATTACH(sess)) {
+    if (esm_piggybacked == true) {
         mme_csmap_t *csmap = mme_csmap_find_by_tai(&mme_ue->tai);
         mme_ue->csmap = csmap;
 

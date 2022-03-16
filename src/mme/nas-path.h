@@ -46,7 +46,7 @@ int nas_eps_send_security_mode_command(mme_ue_t *mme_ue);
 int nas_eps_send_detach_accept(mme_ue_t *mme_ue);
 
 int nas_eps_send_pdn_connectivity_reject(
-    mme_sess_t *sess, ogs_nas_esm_cause_t esm_cause);
+    mme_sess_t *sess, ogs_nas_esm_cause_t esm_cause, bool esm_piggybacked);
 int nas_eps_send_esm_information_request(mme_bearer_t *bearer);
 int nas_eps_send_activate_default_bearer_context_request(mme_bearer_t *bearer);
 int nas_eps_send_activate_dedicated_bearer_context_request(

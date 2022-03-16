@@ -199,7 +199,7 @@ void mme_gtp_close(void)
     ogs_socknode_remove_all(&ogs_gtp_self()->gtpc_list6);
 }
 
-int mme_gtp_send_create_session_request(mme_sess_t *sess)
+int mme_gtp_send_create_session_request(mme_sess_t *sess, bool esm_piggybacked)
 {
     int rv;
     ogs_gtp_header_t h;
@@ -219,6 +219,7 @@ int mme_gtp_send_create_session_request(mme_sess_t *sess)
 
     xact = ogs_gtp_xact_local_create(mme_ue->gnode, &h, pkbuf, timeout, sess);
     ogs_expect_or_return_val(xact, OGS_ERROR);
+    xact->esm_piggybacked = esm_piggybacked;
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);

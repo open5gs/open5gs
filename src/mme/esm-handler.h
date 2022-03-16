@@ -27,7 +27,8 @@ extern "C" {
 #endif
 
 int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
-        ogs_nas_eps_pdn_connectivity_request_t *pdn_connectivity_request);
+        ogs_nas_eps_pdn_connectivity_request_t *pdn_connectivity_request,
+        bool esm_piggybacked);
 int esm_handle_information_response(mme_sess_t *sess, 
         ogs_nas_eps_esm_information_response_t *bearer_information_response);
 int esm_handle_bearer_resource_allocation_request(

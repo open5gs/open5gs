@@ -110,6 +110,8 @@ typedef struct ogs_gtp_xact_s {
 #define OGS_GTP_DELETE_INDIRECT_HANDOVER_COMPLETE 1
 #define OGS_GTP_DELETE_INDIRECT_HANDOVER_CANCEL 2
     int             delete_indirect_action;
+
+    bool            esm_piggybacked;
 } ogs_gtp_xact_t;
 
 int ogs_gtp_xact_init(void);

@@ -27,12 +27,12 @@ extern "C" {
 #endif
 
 ogs_pkbuf_t *esm_build_pdn_connectivity_reject(
-                            mme_sess_t *sess, ogs_nas_esm_cause_t esm_cause);
+        mme_sess_t *sess, ogs_nas_esm_cause_t esm_cause, bool esm_piggybacked);
 ogs_pkbuf_t *esm_build_information_request(mme_bearer_t *bearer);
 ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(
-                            mme_sess_t *sess);
+        mme_sess_t *sess, bool esm_piggybacked);
 ogs_pkbuf_t *esm_build_activate_dedicated_bearer_context_request(
-                            mme_bearer_t *bearer);
+        mme_bearer_t *bearer);
 ogs_pkbuf_t *esm_build_modify_bearer_context_request(
         mme_bearer_t *bearer, int qos_presence, int tft_presence);
 ogs_pkbuf_t *esm_build_deactivate_bearer_context_request(
