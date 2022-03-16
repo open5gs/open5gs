@@ -427,8 +427,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                 if (src_addr[0] == sess->ipv4->addr[0]) {
                     /* Source IP address should be matched in uplink */
                 } else {
-                    ogs_error("[DROP] Source IP-%d Spoofing SrcIf:%d DstIf:%d",
-                                ip_h->ip_v, pdr->src_if, far->dst_if);
+                    ogs_error("[DROP] Source IP-%d Spoofing APN:%s SrcIf:%d DstIf:%d TEID:0x%x",
+                                ip_h->ip_v, pdr->dnn, pdr->src_if, far->dst_if, teid);
                     ogs_error("       SRC:%08X, UE:%08X",
                         be32toh(src_addr[0]), be32toh(sess->ipv4->addr[0]));
                     ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
@@ -473,8 +473,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                      * 64 bit prefix should be matched
                      */
                 } else {
-                    ogs_error("[DROP] Source IP-%d Spoofing SrcIf:%d DstIf:%d",
-                                ip_h->ip_v, pdr->src_if, far->dst_if);
+                    ogs_error("[DROP] Source IP-%d Spoofing APN:%s SrcIf:%d DstIf:%d TEID:0x%x",
+                                ip_h->ip_v, pdr->dnn, pdr->src_if, far->dst_if, teid);
                     ogs_error("SRC:%08x %08x %08x %08x",
                             be32toh(src_addr[0]), be32toh(src_addr[1]),
                             be32toh(src_addr[2]), be32toh(src_addr[3]));
