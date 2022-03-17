@@ -306,9 +306,6 @@ typedef struct smf_sess_s {
         char *n1n2message_location;
     } paging;
 
-    /* Release Holding timer of SMF session context */
-    ogs_timer_t     *t_release_holding;
-
     /* State */
 #define SMF_NGAP_STATE_NONE                                     0
 #define SMF_NGAP_STATE_DELETE_TRIGGER_UE_REQUESTED              1

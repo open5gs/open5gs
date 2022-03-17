@@ -721,16 +721,6 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             }
             break;
 
-        case SMF_TIMER_RELEASE_HOLDING:
-            sess = e->sbi.data;
-            ogs_assert(sess);
-            sess = smf_sess_cycle(sess);
-            ogs_assert(sess);
-
-            ogs_assert(true == smf_sbi_send_sm_context_status_notify(sess));
-            SMF_SESS_CLEAR(sess);
-            break;
-
         default:
             ogs_error("Unknown timer[%s:%d]",
                     smf_timer_get_name(e->timer_id), e->timer_id);
@@ -756,11 +746,19 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
         sess->pti = nas_message.gsm.h.procedure_transaction_identity;
 
-        e->nas.message = &nas_message;
-        ogs_fsm_dispatch(&sess->sm, e);
-        if (OGS_FSM_CHECK(&sess->sm, smf_gsm_state_exception)) {
-            ogs_error("State machine exception");
+        switch (nas_message.gsm.h.message_type) {
+        case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
+            ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
+            ogs_assert(true == smf_sbi_send_sm_context_status_notify(sess));
             SMF_SESS_CLEAR(sess);
+            break;
+        default:
+            e->nas.message = &nas_message;
+            ogs_fsm_dispatch(&sess->sm, e);
+            if (OGS_FSM_CHECK(&sess->sm, smf_gsm_state_exception)) {
+                ogs_error("State machine exception");
+                SMF_SESS_CLEAR(sess);
+            }
         }
 
         ogs_pkbuf_free(pkbuf);

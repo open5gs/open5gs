@@ -311,26 +311,6 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             }
             break;
 
-        case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
-            ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
-
-            /*
-             * Race condition for PDU session release complete
-             *  - CLIENT : /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
-             *  - SERVER : /namf-callback/v1/{supi}/sm-context-status/{psi})
-             *
-             * ogs_sbi_send_http_status_no_content(stream);
-             * smf_sbi_send_sm_context_status_notify(sess);
-             *
-             * When executed as above,
-             * NOTIFY transmits first, and Modify's Response transmits later.
-             *
-             * Use the Release Timer to send Notify
-             * later than Modify's Response.
-             */
-            ogs_timer_start(sess->t_release_holding, ogs_time_from_msec(1));
-            break;
-
         default:
             strerror = ogs_msprintf("Unknown message [%d]",
                     nas_message->gsm.h.message_type);

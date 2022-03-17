@@ -1005,10 +1005,6 @@ smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn, uint8_t rat_type)
     sess->gtp_rat_type = rat_type;
     ogs_assert(sess->gtp_rat_type);
 
-    /* Setup Timer */
-    sess->t_release_holding = ogs_timer_add(
-            ogs_app()->timer_mgr, smf_timer_release_holding_expire, sess);
-
     memset(&e, 0, sizeof(e));
     e.sess = sess;
     ogs_fsm_create(&sess->sm, smf_gsm_state_initial, smf_gsm_state_final);
@@ -1214,10 +1210,6 @@ smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi)
 
     /* Set Charging Id */
     sess->charging.id = sess->index;
-
-    /* Setup Timer */
-    sess->t_release_holding = ogs_timer_add(
-            ogs_app()->timer_mgr, smf_timer_release_holding_expire, sess);
 
     memset(&e, 0, sizeof(e));
     e.sess = sess;
@@ -1561,8 +1553,6 @@ void smf_sess_remove(smf_sess_t *sess)
 
     /* Free SBI object memory */
     ogs_sbi_object_free(&sess->sbi);
-
-    ogs_timer_delete(sess->t_release_holding);
 
     smf_bearer_remove_all(sess);
 
