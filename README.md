@@ -20,11 +20,6 @@ If you find Open5GS useful for work, please consider supporting this Open Source
   <tbody>
     <tr>
       <td align="center" valign="middle" width="222px">
-        <a href="https://www.auctionsoftware.com/" target="_blank">
-          <img src="https://open5gs.org/assets/img/asLogonew.png">
-        </a>
-      </td>
-      <td align="center" valign="middle" width="222px">
         <a href="https://nextepc.com/" target="_blank">
           <img src="https://open5gs.org/assets/img/nextepc_logo.jpg">
         </a>
@@ -34,13 +29,13 @@ If you find Open5GS useful for work, please consider supporting this Open Source
           <img src="https://open5gs.org/assets/img/triple_logo.png">
         </a>
       </td>
-    </tr>
-    <tr>
       <td align="center" valign="middle" width="222px">
         <a href="https://sdr.eee.strath.ac.uk/" target="_blank">
           <img src="https://open5gs.org/assets/img/strath.png">
         </a>
       </td>
+    </tr>
+    <tr>
       <td align="center" valign="middle" width="222px">
         <a href="https://skylarkwireless.com/" target="_blank">
           <img src="https://open5gs.org/assets/img/SkylarkWireless-420x78-Web2-R.png">
@@ -51,21 +46,16 @@ If you find Open5GS useful for work, please consider supporting this Open Source
           <img src="https://open5gs.org/assets/img/sysmocom-logo-only.png">
         </a>
       </td>
-    </tr>
-    <tr>
       <td align="center" valign="middle" width="222px">
         <a href="https://www.p1sec.com/" target="_blank">
           <img src="https://open5gs.org/assets/img/2021-logo-P1.svg">
         </a>
       </td>
+    </tr>
+    <tr>
       <td align="center" valign="middle" width="222px">
         <a href="https://www.ng-voice.com/" target="_blank">
           <img src="https://open5gs.org/assets/img/ng-voice-logo_color.png">
-        </a>
-      </td>
-      <td align="center" valign="middle" width="222px">
-        <a href="https://www.peratonlabs.com/" target="_blank">
-          <img src="https://open5gs.org/assets/img/peraton-labs-logo-full-color.png">
         </a>
       </td>
     </tr>

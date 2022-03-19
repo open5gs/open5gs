@@ -73,7 +73,7 @@ With the exception of the SMF and UPF, all config files for the 5G SA core funct
 
 #### Ubuntu
 
-*Ubuntu* makes it easy to install Open5GS as shown below,
+*Ubuntu* makes it easy to install Open5GS as shown below.
 
 ```bash
 $ sudo apt update
