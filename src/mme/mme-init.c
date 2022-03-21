@@ -75,6 +75,13 @@ int mme_initialize()
 
     initialized = 1;
 
+    ogs_write_file_start("mme_start_time");
+    char buffer[20];
+    sprintf(buffer, "%d\n", 0);
+    ogs_write_file_value("num_enbs", buffer);
+    ogs_write_file_value("enb_ues", buffer);
+    ogs_write_file_value("mme_sessions", buffer);
+
     return OGS_OK;
 }
 

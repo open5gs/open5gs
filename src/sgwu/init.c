@@ -64,6 +64,7 @@ int sgwu_initialize()
 
     initialized = 1;
 
+    ogs_write_file_start("sgwu_start_time");
     return OGS_OK;
 }
 

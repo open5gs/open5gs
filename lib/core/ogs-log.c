@@ -29,6 +29,14 @@
 
 #include "ogs-core.h"
 
+// BEGIN SPENCERS FILE-LOG SYSTEM
+#include <dirent.h>
+#include <errno.h>
+#include <sys/stat.h>
+#include <string.h>
+#include <time.h>
+// END SPENCERS FILE-LOG SYSTEM
+
 #define TA_NOR              "\033[0m"       /* all off */
 
 #define TA_FGC_BLACK        "\033[30m"      /* Black */
@@ -147,6 +155,40 @@ void ogs_log_cycle(void)
         }
     }
 }
+
+// BEGIN SPENCERS FILE-LOG SYSTEM
+#define BASEFILE "/tmp/open5gs"
+
+void ogs_write_file_value(const char *filename, const char *value) {
+    FILE * fp;
+    struct stat st = {0};
+    char filestring[256];
+
+    strcpy(filestring, BASEFILE);
+    strcat(filestring, "/");
+    strcat(filestring, filename);
+
+    if (stat(BASEFILE, &st) == -1) {
+        mkdir(BASEFILE, 0744);
+    }
+
+    if ( (fp = fopen(filestring, "w")) == NULL) {
+        fprintf(stderr, "warning: could not open file %s\n", filename);
+        return;
+    }
+
+    fprintf(fp, "%s", value);
+    fclose(fp);
+    return;
+}
+
+void ogs_write_file_start(const char *filename) {
+    char buf[256];
+    time_t mytime = time(NULL);
+    sprintf(buf, "%s%d\n", ctime(&mytime), (int)mytime);
+    ogs_write_file_value(filename, buf);
+}
+// END SPENCERS FILE-LOG SYSTEM
 
 ogs_log_t *ogs_log_add_stderr(void)
 {

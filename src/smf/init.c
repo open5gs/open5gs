@@ -81,6 +81,7 @@ int smf_initialize()
 
     initialized = 1;
 
+    ogs_write_file_start("smf_start_time");
     return OGS_OK;
 }
 

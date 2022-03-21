@@ -1,100 +1,17 @@
-<h1 align="center">Open5GS</h1>
+# What Is This Branch?
 
-If you find Open5GS useful for work, please consider supporting this Open Source project by [Becoming a sponsor](https://github.com/sponsors/acetcom). To manage the funding transactions transparently, you can donate through [OpenCollective](https://opencollective.com/open5gs).
+The [open5gs project](https://github.com/open5gs/open5gs) is currently in a holding pattern with respect to exporting system metrics (e.g. number of currently attached eNB/UE) for parsing/integration with other networking systems. Until the open5gs team is able to decide exactly how they want to export these metrics, and have the resources to maintain them, I (@spencersevilla) wrote my own simple version and will be maintaining it on this fork. Aside from my (very minor) changes, this fork is equivalent to the `main` branch of `open5gs`. I have only tested that it works for `apt` package installations for Ubuntu 20.04, but I believe it should be somewhat generalizeable.
 
-<h3 align="center">Platinum Sponsors</h3>
-<table align="center">
-  <tbody>
-    <tr>
-      <td align="center" valign="middle">
-  <a href="https://teletresearch.com/" target="_blank">
-    <img width="400px" src="https://open5gs.org/assets/img/Telet-logo-v2.png">
-  </a>
-      </td>
-    </tr>
-  </tbody>
-</table>
+## Metrics Exported
 
-<h3 align="center">Gold Sponsors</h3>
-<table align="center">
-  <tbody>
-    <tr>
-      <td align="center" valign="middle">
-  <a href="http://wavemobile.com/" target="_blank">
-    <img width="222px" src="https://open5gs.org/assets/img/Wavemobile-Logo-Mark-RGB.png">
-  </a>
-      </td>
-    </tr>
-  </tbody>
-</table>
+We export metrics the same basic way the Linux Kernel exposes information in `/proc`: by writing variables as named files under the directory `/tmp/open5gs/`, and overwriting/updating the files as these values change over time. Reading the content of these files should always give you the most up-to-date value of the variable in question.
 
-<h3 align="center">Silver Sponsors</h3>
-<table align="center">
-  <tbody>
-    <tr>
-      <td align="center" valign="middle" width="222px">
-        <a href="https://nextepc.com/" target="_blank">
-          <img src="https://open5gs.org/assets/img/nextepc_logo.jpg">
-        </a>
-      </td>
-      <td align="center" valign="middle" width="222px">
-        <a href="https://www.wearetriple.com/" target="_blank">
-          <img src="https://open5gs.org/assets/img/triple_logo.png">
-        </a>
-      </td>
-      <td align="center" valign="middle" width="222px">
-        <a href="https://sdr.eee.strath.ac.uk/" target="_blank">
-          <img src="https://open5gs.org/assets/img/strath.png">
-        </a>
-      </td>
-    </tr>
-    <tr>
-      <td align="center" valign="middle" width="222px">
-        <a href="https://skylarkwireless.com/" target="_blank">
-          <img src="https://open5gs.org/assets/img/SkylarkWireless-420x78-Web2-R.png">
-        </a>
-      </td>
-      <td align="center" valign="middle" width="222px">
-        <a href="https://sysmocom.de/" target="_blank">
-          <img src="https://open5gs.org/assets/img/sysmocom-logo-only.png">
-        </a>
-      </td>
-      <td align="center" valign="middle" width="222px">
-        <a href="https://www.p1sec.com/" target="_blank">
-          <img src="https://open5gs.org/assets/img/2021-logo-P1.svg">
-        </a>
-      </td>
-    </tr>
-    <tr>
-      <td align="center" valign="middle" width="222px">
-        <a href="https://www.ng-voice.com/" target="_blank">
-          <img src="https://open5gs.org/assets/img/ng-voice-logo_color.png">
-        </a>
-      </td>
-      <td align="center" valign="middle" width="222px">
-        <a href="http://www.bristol.ac.uk/engineering/research/smart/" target="_blank">
-          <img src="https://open5gs.org/assets/img/smart-internet-lab.png">
-        </a>
-      </td>
-    </tr>
-  </tbody>
-</table>
+The files `{service}_start_time` (e.g. `/tmp/open5gs/mme_start_time`) are comprised of two lines. The first line is the date-time parsed for human readibility (e.g. `Mon Jul 12 16:32:00 2021`) and the second line is the raw seconds since the Unix epoch (e.g. `1626107520`).
 
-## Documentation
+For now, the other files are `connected_enbs`, `connected_ues`, and `attached_ues`. They each contain a single number that corresponds to the static variable used for stats and seen in the log. I am planning on adding some additional information regarding sessions as well as UE-specific information (e.g. the IP address belonging to a UE).
 
-If you don't understand something about Open5GS, the [https://open5gs.org/open5gs/docs/](https://open5gs.org/open5gs/docs/) is a great place to look for answers.
+The reason I chose to use files is beacuse it's Unix-esque, it's completely agnostic to any specific network monitoring platform, and it should be easy to write a shim for whatever platform you want to integrate against. If you or your org have specific metrics you would like to see exposed, please reach out to me (or just issue a PR) and I will add them.
 
-## Community
+## Building and Installing
 
-- Problem with Open5GS can be filed as [issues](https://github.com/open5gs/open5gs/issues) in this repository.
-- Other topics related to this project are happening on the [discussions](https://github.com/open5gs/open5gs/discussions).
-- Voice and text chat are available in Open5GS's [Discord](https://discordapp.com/) workspace. Use [this link](https://discord.gg/GreNkuc) to get started.
-
-## Contributing
-
-If you're contributing through a pull request to Open5GS project on GitHub, please read the [Contributor License Agreement](https://open5gs.org/open5gs/cla/) in advance.
-
-## License
-
-- Open5GS Open Source files are made available under the terms of the GNU Affero General Public License ([GNU AGPL v3.0](https://www.gnu.org/licenses/agpl-3.0.html)).
-- [Commercial licenses](https://open5gs.org/open5gs/support/) are also available from [NextEPC, Inc.](https://nextepc.com)
+Building is identical to how you normally build open5gs, see https://open5gs.org/open5gs/docs/guide/02-building-open5gs-from-sources/. If you want to just download and install a package for Ubuntu 20.04, I will host it and provide a link to download soon.

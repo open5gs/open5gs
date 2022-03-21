@@ -71,6 +71,11 @@ void ogs_log_init(void);
 void ogs_log_final(void);
 void ogs_log_cycle(void);
 
+// BEGIN SPENCERS FILE-LOG SYSTEM
+void ogs_write_file_value(const char *filename, const char *value);
+void ogs_write_file_start(const char *filename);
+// END SPENCERS FILE-LOG SYSTEM
+
 ogs_log_t *ogs_log_add_stderr(void);
 ogs_log_t *ogs_log_add_file(const char *name);
 void ogs_log_remove(ogs_log_t *log);
