@@ -44,6 +44,8 @@ ogs_pkbuf_t *test_s1ap_build_ue_context_release_request(test_ue_t *test_ue,
 
 ogs_pkbuf_t *test_s1ap_build_ue_context_release_complete(test_ue_t *test_ue);
 ogs_pkbuf_t *test_s1ap_build_e_rab_setup_response(test_bearer_t *bearer);
+ogs_pkbuf_t *test_s1ap_build_e_rab_failed_setup_response(
+        test_bearer_t *bearer, S1AP_Cause_PR group, long cause);
 ogs_pkbuf_t *test_s1ap_build_e_rab_modify_response(test_bearer_t *bearer);
 ogs_pkbuf_t *test_s1ap_build_e_rab_release_response(test_bearer_t *bearer);
 

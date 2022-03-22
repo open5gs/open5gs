@@ -24,6 +24,7 @@ testapp_attach_sources = files('''
     emm-status-test.c
     reset-test.c
     ue-context-test.c
+    issues-test.c
 '''.split())
 
 testapp_attach_exe = executable('attach',

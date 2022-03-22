@@ -25,6 +25,7 @@ ogs_pkbuf_t *testemm_build_attach_request(
 {
     int i;
     uint16_t psimask = 0;
+    ogs_pkbuf_t *pkbuf = NULL;
 
     ogs_nas_eps_message_t message;
     ogs_nas_eps_attach_request_t *attach_request = &message.emm.attach_request;
@@ -86,7 +87,6 @@ ogs_pkbuf_t *testemm_build_attach_request(
 
     esm_message_container->length = esmbuf->len;
     esm_message_container->buffer = esmbuf->data;
-    ogs_pkbuf_free(esmbuf);
 
     memcpy(eps_attach_type, &test_ue->nas.data, sizeof(*eps_attach_type));
 
@@ -238,9 +238,13 @@ ogs_pkbuf_t *testemm_build_attach_request(
     }
 
     if (integrity_protected)
-        return test_nas_eps_security_encode(test_ue, &message);
+        pkbuf = test_nas_eps_security_encode(test_ue, &message);
     else
-        return ogs_nas_eps_plain_encode(&message);
+        pkbuf = ogs_nas_eps_plain_encode(&message);
+
+    ogs_pkbuf_free(esmbuf);
+
+    return pkbuf;
 }
 
 ogs_pkbuf_t *testemm_build_identity_response(test_ue_t *test_ue)
@@ -397,6 +401,7 @@ ogs_pkbuf_t *testemm_build_security_mode_complete(test_ue_t *test_ue)
 ogs_pkbuf_t *testemm_build_attach_complete(
         test_ue_t *test_ue, ogs_pkbuf_t *esmbuf)
 {
+    ogs_pkbuf_t *pkbuf = NULL;
     ogs_nas_eps_message_t message;
     ogs_nas_eps_attach_complete_t *attach_complete =
         &message.emm.attach_complete;
@@ -417,9 +422,12 @@ ogs_pkbuf_t *testemm_build_attach_complete(
 
     esm_message_container->length = esmbuf->len;
     esm_message_container->buffer = esmbuf->data;
+
+    pkbuf = test_nas_eps_security_encode(test_ue, &message);
+
     ogs_pkbuf_free(esmbuf);
 
-    return test_nas_eps_security_encode(test_ue, &message);
+    return pkbuf;
 }
 
 ogs_pkbuf_t *testemm_build_tau_complete(test_ue_t *test_ue)

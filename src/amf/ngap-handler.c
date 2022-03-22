@@ -955,6 +955,13 @@ void ngap_handle_initial_context_setup_response(
                     ogs_error("nas_5gs_send_to_gnb() failed");
                 }
 
+                /* n1buf is de-allocated
+                 * in gmm_build_dl_nas_transport() */
+                sess->gsm_message.n1buf = NULL;
+                /* n2buf is de-allocated
+                 * in ngap_build_pdu_session_resource_modify_request() */
+                sess->gsm_message.n2buf = NULL;
+
                 AMF_SESS_CLEAR_5GSM_MESSAGE(sess);
 
                 break;

@@ -214,13 +214,17 @@ ogs_pkbuf_t *testgmm_build_registration_request(
 
         nas_message_container->length = nasbuf->len;
         nas_message_container->buffer = nasbuf->data;
-        ogs_pkbuf_free(nasbuf);
     }
 
     if (integrity_protected)
-        return test_nas_5gs_security_encode(test_ue, &message);
+        pkbuf = test_nas_5gs_security_encode(test_ue, &message);
     else
-        return ogs_nas_5gs_plain_encode(&message);
+        pkbuf = ogs_nas_5gs_plain_encode(&message);
+
+    if (nasbuf)
+        ogs_pkbuf_free(nasbuf);
+
+    return pkbuf;
 }
 
 ogs_pkbuf_t *testgmm_build_registration_complete(test_ue_t *test_ue)
@@ -333,7 +337,6 @@ ogs_pkbuf_t *testgmm_build_service_request(
 
         nas_message_container->length = nasbuf->len;
         nas_message_container->buffer = nasbuf->data;
-        ogs_pkbuf_free(nasbuf);
     }
 
     if (test_ue->service_request_param.uplink_data_status) {
@@ -367,9 +370,14 @@ ogs_pkbuf_t *testgmm_build_service_request(
     }
 
     if (integrity_protected)
-        return test_nas_5gs_security_encode(test_ue, &message);
+        pkbuf = test_nas_5gs_security_encode(test_ue, &message);
     else
-        return ogs_nas_5gs_plain_encode(&message);
+        pkbuf = ogs_nas_5gs_plain_encode(&message);
+
+    if (nasbuf)
+        ogs_pkbuf_free(nasbuf);
+
+    return pkbuf;
 }
 
 ogs_pkbuf_t *testgmm_build_de_registration_request(
@@ -594,10 +602,14 @@ ogs_pkbuf_t *testgmm_build_security_mode_complete(
             OGS_NAS_5GS_SECURITY_MODE_COMPLETE_NAS_MESSAGE_CONTAINER_PRESENT;
         nas_message_container->length = nasbuf->len;
         nas_message_container->buffer = nasbuf->data;
-        ogs_pkbuf_free(nasbuf);
     }
 
-    return test_nas_5gs_security_encode(test_ue, &message);
+    pkbuf = test_nas_5gs_security_encode(test_ue, &message);
+
+    if (nasbuf)
+        ogs_pkbuf_free(nasbuf);
+
+    return pkbuf;
 }
 
 ogs_pkbuf_t *testgmm_build_configuration_update_complete(test_ue_t *test_ue)

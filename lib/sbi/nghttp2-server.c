@@ -484,8 +484,10 @@ static void session_remove(ogs_sbi_session_t *sbi_sess)
     if (sbi_sess->poll.write)
         ogs_pollset_remove(sbi_sess->poll.write);
 
-    ogs_list_for_each_safe(&sbi_sess->write_queue, next_pkbuf, pkbuf)
+    ogs_list_for_each_safe(&sbi_sess->write_queue, next_pkbuf, pkbuf) {
+        ogs_list_remove(&sbi_sess->write_queue, pkbuf);
         ogs_pkbuf_free(pkbuf);
+    }
 
     ogs_assert(sbi_sess->addr);
     ogs_free(sbi_sess->addr);

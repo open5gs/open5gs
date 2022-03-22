@@ -631,6 +631,7 @@ static void send_router_advertisement(smf_sess_t *sess, uint8_t *ip6_dst)
         if (pdr->src_if == OGS_PFCP_INTERFACE_CP_FUNCTION && pdr->gnode) {
             ogs_gtp_header_t gtp_hdesc;
             ogs_gtp_extension_header_t ext_hdesc;
+            ogs_pkbuf_t *newbuf = NULL;
 
             memset(&gtp_hdesc, 0, sizeof(gtp_hdesc));
             memset(&ext_hdesc, 0, sizeof(ext_hdesc));
@@ -638,7 +639,10 @@ static void send_router_advertisement(smf_sess_t *sess, uint8_t *ip6_dst)
             gtp_hdesc.type = OGS_GTPU_MSGTYPE_GPDU;
             gtp_hdesc.teid = pdr->f_teid.teid;
 
-            ogs_gtp_send_user_plane(pdr->gnode, &gtp_hdesc, &ext_hdesc, pkbuf);
+            newbuf = ogs_pkbuf_copy(pkbuf);
+            ogs_assert(newbuf);
+
+            ogs_gtp_send_user_plane(pdr->gnode, &gtp_hdesc, &ext_hdesc, newbuf);
 
             ogs_debug("      Send Router Advertisement");
             break;

@@ -56,8 +56,6 @@ static void s1setup_test1(abts_case *tc, void *data)
     for (i = 0; i < NUM_OF_TEST_DUPLICATED_ENB; i++) {
         testenb_s1ap_close(node[i]);
     }
-
-    ogs_pkbuf_free(recvbuf);
 }
 
 #define NUM_OF_TEST_ENB 4
@@ -97,8 +95,6 @@ static void s1setup_test2(abts_case *tc, void *data)
     for (i = 0; i < NUM_OF_TEST_ENB; i++) {
         testenb_s1ap_close(node[i]);
     }
-
-    ogs_pkbuf_free(recvbuf);
 }
 
 static void s1setup_test3(abts_case *tc, void *data)

@@ -128,7 +128,9 @@ void ogs_sctp_flush_and_destroy(ogs_sctp_sock_t *sctp)
 
         ogs_sctp_destroy(sctp->sock);
 
-        ogs_list_for_each_safe(&sctp->write_queue, next_pkbuf, pkbuf)
+        ogs_list_for_each_safe(&sctp->write_queue, next_pkbuf, pkbuf) {
+            ogs_list_remove(&sctp->write_queue, pkbuf);
             ogs_pkbuf_free(pkbuf);
+        }
     }
 }

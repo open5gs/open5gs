@@ -175,6 +175,17 @@ void mme_s11_handle_create_session_response(
         }
     }
 
+    if (mme_ue_from_teid && mme_ue &&
+        cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
+        bearer = mme_bearer_find_by_ue_ebi(mme_ue,
+                rsp->bearer_contexts_created.eps_bearer_id.u8);
+    }
+
+    if (!bearer) {
+        ogs_warn("No Context");
+        cause_value = OGS_GTP_CAUSE_CONTEXT_NOT_FOUND;
+    }
+
     if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED &&
         cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED_PARTIALLY &&
         cause_value !=
@@ -193,9 +204,7 @@ void mme_s11_handle_create_session_response(
         return;
     }
 
-    bearer = mme_bearer_find_by_ue_ebi(mme_ue, 
-            rsp->bearer_contexts_created.eps_bearer_id.u8);
-    ogs_expect_or_return(bearer);
+    ogs_assert(bearer);
     sess = bearer->sess;
     ogs_assert(sess);
     session = sess->session;

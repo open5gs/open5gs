@@ -200,7 +200,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             break;
 
         case OGS_NAS_EPS_ATTACH_REQUEST:
-            ogs_warn("[%s] Attach request", mme_ue->imsi_bcd);
+            ogs_info("[%s] Attach request", mme_ue->imsi_bcd);
             rv = emm_handle_attach_request(
                     mme_ue, &message->emm.attach_request, e->pkbuf);
             if (rv != OGS_OK) {
@@ -1153,14 +1153,14 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
                 emmbuf = mme_ue->t3450.pkbuf;
                 ogs_expect_or_return(emmbuf);
 
-                rv = nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
-                if (rv == OGS_OK) {
-                    mme_ue->t3450.pkbuf = ogs_pkbuf_copy(emmbuf);
-                    ogs_assert(mme_ue->t3450.pkbuf);
+                mme_ue->t3450.pkbuf = ogs_pkbuf_copy(emmbuf);
+                ogs_assert(mme_ue->t3450.pkbuf);
 
-                    ogs_timer_start(mme_ue->t3450.timer,
-                            mme_timer_cfg(MME_TIMER_T3450)->duration);
-                } else {
+                ogs_timer_start(mme_ue->t3450.timer,
+                        mme_timer_cfg(MME_TIMER_T3450)->duration);
+
+                rv = nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
+                if (rv != OGS_OK) {
                     ogs_error("nas_eps_send_to_downlink_nas_transport() "
                             "failed");
                     OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);

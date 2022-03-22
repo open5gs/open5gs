@@ -169,13 +169,13 @@ int nas_eps_send_identity_request(mme_ue_t *mme_ue)
         ogs_expect_or_return_val(emmbuf, OGS_ERROR);
     }
 
-    rv = nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
-    ogs_expect_or_return_val(rv == OGS_OK, rv);
-
     mme_ue->t3470.pkbuf = ogs_pkbuf_copy(emmbuf);
     ogs_expect_or_return_val(mme_ue->t3470.pkbuf, OGS_ERROR);
     ogs_timer_start(mme_ue->t3470.timer, 
             mme_timer_cfg(MME_TIMER_T3470)->duration);
+
+    rv = nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
+    ogs_expect_or_return_val(rv == OGS_OK, rv);
 
     return rv;
 }
@@ -197,13 +197,13 @@ int nas_eps_send_authentication_request(mme_ue_t *mme_ue)
         ogs_expect_or_return_val(emmbuf, OGS_ERROR);
     }
 
-    rv = nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
-    ogs_expect_or_return_val(rv == OGS_OK, rv);
-
     mme_ue->t3460.pkbuf = ogs_pkbuf_copy(emmbuf);
     ogs_expect_or_return_val(mme_ue->t3460.pkbuf, OGS_ERROR);
     ogs_timer_start(mme_ue->t3460.timer, 
             mme_timer_cfg(MME_TIMER_T3460)->duration);
+
+    rv = nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
+    ogs_expect_or_return_val(rv == OGS_OK, rv);
 
     return rv;
 }
@@ -225,13 +225,13 @@ int nas_eps_send_security_mode_command(mme_ue_t *mme_ue)
         ogs_expect_or_return_val(emmbuf, OGS_ERROR);
     }
 
-    rv = nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
-    ogs_expect_or_return_val(rv == OGS_OK, rv);
-
     mme_ue->t3460.pkbuf = ogs_pkbuf_copy(emmbuf);
     ogs_expect_or_return_val(mme_ue->t3460.pkbuf, OGS_ERROR);
     ogs_timer_start(mme_ue->t3460.timer, 
             mme_timer_cfg(MME_TIMER_T3460)->duration);
+
+    rv = nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
+    ogs_expect_or_return_val(rv == OGS_OK, rv);
 
     return rv;
 }
@@ -330,13 +330,13 @@ int nas_eps_send_esm_information_request(mme_bearer_t *bearer)
         ogs_expect_or_return_val(esmbuf, OGS_ERROR);
     }
 
-    rv = nas_eps_send_to_downlink_nas_transport(mme_ue, esmbuf);
-    ogs_expect_or_return_val(rv == OGS_OK, rv);
-
     bearer->t3489.pkbuf = ogs_pkbuf_copy(esmbuf);
     ogs_expect_or_return_val(bearer->t3489.pkbuf, OGS_ERROR);
     ogs_timer_start(bearer->t3489.timer, 
             mme_timer_cfg(MME_TIMER_T3489)->duration);
+
+    rv = nas_eps_send_to_downlink_nas_transport(mme_ue, esmbuf);
+    ogs_expect_or_return_val(rv == OGS_OK, rv);
 
     return rv;
 }
@@ -509,6 +509,14 @@ int nas_eps_send_tau_accept(
     emmbuf = emm_build_tau_accept(mme_ue);
     ogs_expect_or_return_val(emmbuf, OGS_ERROR);
 
+    if (mme_ue->next.m_tmsi) {
+        CLEAR_MME_UE_TIMER(mme_ue->t3450);
+        mme_ue->t3450.pkbuf = ogs_pkbuf_copy(emmbuf);
+        ogs_expect_or_return_val(mme_ue->t3450.pkbuf, OGS_ERROR);
+        ogs_timer_start(mme_ue->t3450.timer,
+                mme_timer_cfg(MME_TIMER_T3450)->duration);
+    }
+
     if (procedureCode == S1AP_ProcedureCode_id_InitialContextSetup) {
         ogs_pkbuf_t *s1apbuf = NULL;
         s1apbuf = s1ap_build_initial_context_setup_request(mme_ue, emmbuf);
@@ -521,14 +529,6 @@ int nas_eps_send_tau_accept(
         ogs_expect_or_return_val(rv == OGS_OK, rv);
     } else
         ogs_assert_if_reached();
-
-    if (mme_ue->next.m_tmsi) {
-        CLEAR_MME_UE_TIMER(mme_ue->t3450);
-        mme_ue->t3450.pkbuf = ogs_pkbuf_copy(emmbuf);
-        ogs_expect_or_return_val(mme_ue->t3450.pkbuf, OGS_ERROR);
-        ogs_timer_start(mme_ue->t3450.timer,
-                mme_timer_cfg(MME_TIMER_T3450)->duration);
-    }
 
     return rv;
 }

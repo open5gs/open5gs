@@ -111,8 +111,6 @@ void sgwc_state_operational(ogs_fsm_t *s, sgwc_event_t *e)
         e->gtp_message = NULL;
         if (pfcp_xact->gtpbuf) {
             rv = ogs_gtp_parse_msg(&gtp_message, pfcp_xact->gtpbuf);
-
-            ogs_pkbuf_free(pfcp_xact->gtpbuf);
             e->gtp_message = &gtp_message;
         }
 
@@ -121,6 +119,8 @@ void sgwc_state_operational(ogs_fsm_t *s, sgwc_event_t *e)
             ogs_error("PFCP state machine exception");
         }
 
+        if (pfcp_xact->gtpbuf)
+            ogs_pkbuf_free(pfcp_xact->gtpbuf);
         ogs_pkbuf_free(recvbuf);
         break;
 
