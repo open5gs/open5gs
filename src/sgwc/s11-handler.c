@@ -195,7 +195,7 @@ void sgwc_s11_handle_create_session_request(
     sess = sgwc_sess_find_by_ebi(sgwc_ue,
             req->bearer_contexts_to_be_created.eps_bearer_id.u8);
     if (sess) {
-        ogs_warn("OLD Session Release [IMSI:%s,APN:%s]",
+        ogs_info("OLD Session Release [IMSI:%s,APN:%s]",
                 sgwc_ue->imsi_bcd, sess->session.name);
         sgwc_sess_remove(sess);
     }

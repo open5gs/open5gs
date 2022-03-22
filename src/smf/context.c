@@ -1150,7 +1150,7 @@ smf_sess_t *smf_sess_add_by_gtp_message(ogs_gtp_message_t *message)
 
     sess = smf_sess_find_by_apn(smf_ue, apn, req->rat_type.u8);
     if (sess) {
-        ogs_warn("OLD Session Release [IMSI:%s,APN:%s]",
+        ogs_info("OLD Session Release [IMSI:%s,APN:%s]",
                 smf_ue->imsi_bcd, sess->session.name);
         smf_sess_remove(sess);
     }
