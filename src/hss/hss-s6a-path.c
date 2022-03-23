@@ -45,7 +45,7 @@ static int hss_ogs_diam_s6a_air_cb( struct msg **msg, struct avp *avp,
 {
     int ret;
 
-	struct msg *ans, *qry;
+    struct msg *ans, *qry;
     struct avp *avpch;
     struct avp *avp_e_utran_vector, *avp_xres, *avp_kasme, *avp_rand, *avp_autn;
     struct avp_hdr *hdr;
@@ -271,12 +271,14 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
         struct session *session, void *opaque, enum disp_action *act)
 {
     int ret;
-	struct msg *ans, *qry;
+    struct msg *ans, *qry;
 
     struct avp_hdr *hdr;
+    struct avp *avpch1;
     union avp_value val;
 
     char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
+    char imeisv_bcd[OGS_MAX_IMEISV_BCD_LEN+1];
 
     int rv;
     uint32_t result_code = 0;
@@ -293,9 +295,9 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
 
     memset(&subscription_data, 0, sizeof(ogs_subscription_data_t));
 
-	/* Create answer header */
-	qry = *msg;
-	ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
+    /* Create answer header */
+    qry = *msg;
+    ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
     ogs_assert(ret == 0);
     ans = *msg;
 
@@ -304,7 +306,7 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_avp_hdr(avp, &hdr);
     ogs_assert(ret == 0);
     ogs_cpystrn(imsi_bcd, (char*)hdr->avp_value->os.data,
-        ogs_min(hdr->avp_value->os.len, OGS_MAX_IMSI_BCD_LEN)+1);
+    ogs_min(hdr->avp_value->os.len, OGS_MAX_IMSI_BCD_LEN)+1);
 
     rv = hss_db_subscription_data(imsi_bcd, &subscription_data);
     if (rv != OGS_OK) {
@@ -313,14 +315,30 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
         goto out;
     }
 
+    ret = fd_msg_search_avp(qry, ogs_diam_s6a_terminal_information, &avp);
+    ogs_assert(ret == 0);
+    if (avp) {
+        ret = fd_avp_search_avp(avp, ogs_diam_s6a_imei, &avpch1);
+        ogs_assert(ret == 0);
+        if (avpch1) {
+            ret = fd_msg_avp_hdr(avpch1, &hdr);
+            ogs_assert(ret == 0);
+            if (hdr->avp_value->os.len) {
+                ogs_cpystrn(imeisv_bcd, (char*)hdr->avp_value->os.data,
+                    ogs_min(hdr->avp_value->os.len, OGS_MAX_IMEISV_BCD_LEN)+1);
+                hss_db_update_imei(imsi_bcd, imeisv_bcd);
+            }
+        }
+    }
+
     ret = fd_msg_search_avp(qry, ogs_diam_visited_plmn_id, &avp);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_hdr(avp, &hdr);
     ogs_assert(ret == 0);
     memcpy(&visited_plmn_id, hdr->avp_value->os.data, hdr->avp_value->os.len);
 
-	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
-	ret = fd_msg_rescode_set(ans, (char*)"DIAMETER_SUCCESS", NULL, NULL, 1);
+    /* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
+    ret = fd_msg_rescode_set(ans, (char*)"DIAMETER_SUCCESS", NULL, NULL, 1);
     ogs_assert(ret == 0);
 
     /* Set the Auth-Session-State AVP */
@@ -763,20 +781,20 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
             ans, OGS_DIAM_S6A_APPLICATION_ID);
     ogs_assert(ret == 0);
 
-	/* Send the answer */
-	ret = fd_msg_send(msg, NULL, NULL);
+    /* Send the answer */
+    ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
     ogs_debug("Update-Location-Answer");
-	
-	/* Add this value to the stats */
-	ogs_assert( pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
-	ogs_diam_logger_self()->stats.nb_echoed++;
-	ogs_assert( pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+
+    /* Add this value to the stats */
+    ogs_assert( pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_diam_logger_self()->stats.nb_echoed++;
+    ogs_assert( pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
 
     ogs_subscription_data_free(&subscription_data);
 
-	return 0;
+    return 0;
 
 out:
     ret = ogs_diam_message_experimental_rescode_set(ans, result_code);
@@ -796,7 +814,7 @@ out:
             ans, OGS_DIAM_S6A_APPLICATION_ID);
     ogs_assert(ret == 0);
 
-	ret = fd_msg_send(msg, NULL, NULL);
+    ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
     ogs_subscription_data_free(&subscription_data);
