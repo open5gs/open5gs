@@ -330,29 +330,6 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
         ogs_sbi_header_set(request->http.params, OGS_SBI_PARAM_SNSSAI, v);
         ogs_free(v);
     }
-    if (message->param.plmn_id_presence) {
-        OpenAPI_plmn_id_t plmn_id;
-
-        plmn_id.mnc = ogs_plmn_id_mnc_string(&message->param.plmn_id);
-        plmn_id.mcc = ogs_plmn_id_mcc_string(&message->param.plmn_id);
-
-        if (plmn_id.mnc && plmn_id.mcc) {
-            char *v = NULL;
-            cJSON *item = NULL;
-
-            item = OpenAPI_plmn_id_convertToJSON(&plmn_id);
-            ogs_expect_or_return_val(item, NULL);
-            if (plmn_id.mnc) ogs_free(plmn_id.mnc);
-            if (plmn_id.mcc) ogs_free(plmn_id.mcc);
-
-            v = cJSON_Print(item);
-            ogs_expect_or_return_val(v, NULL);
-            cJSON_Delete(item);
-
-            ogs_sbi_header_set(request->http.params, OGS_SBI_PARAM_PLMN_ID, v);
-            ogs_free(v);
-        }
-    }
     if (message->param.slice_info_request_for_pdu_session_presence) {
         OpenAPI_slice_info_for_pdu_session_t SliceInfoForPDUSession;
         OpenAPI_snssai_t sNSSAI;

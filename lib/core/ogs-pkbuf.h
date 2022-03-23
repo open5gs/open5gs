@@ -35,7 +35,11 @@ typedef struct ogs_cluster_s {
     unsigned int ref;
 } ogs_cluster_t;
 
+#if OGS_USE_TALLOC
+typedef void ogs_pkbuf_pool_t;
+#else
 typedef struct ogs_pkbuf_pool_s ogs_pkbuf_pool_t;
+#endif
 typedef struct ogs_pkbuf_s {
     ogs_lnode_t lnode;
 
@@ -158,15 +162,8 @@ static ogs_inline void *ogs_pkbuf_pull_inline(
 
 static ogs_inline void *ogs_pkbuf_pull(ogs_pkbuf_t *pkbuf, unsigned int len)
 {
-#if 0
-    if (ogs_unlikely(len > pkbuf->len))
-        ogs_assert_if_reached();
-
-    return ogs_pkbuf_pull_inline(pkbuf, len);
-#else
     return ogs_unlikely(len > pkbuf->len) ?
         NULL : ogs_pkbuf_pull_inline(pkbuf, len);
-#endif
 }
 
 static ogs_inline int ogs_pkbuf_trim(ogs_pkbuf_t *pkbuf, int len)

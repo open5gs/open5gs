@@ -28,7 +28,6 @@ ogs_pkbuf_t *ogs_tun_read(ogs_socket_t fd, ogs_pkbuf_pool_t *packet_pool)
     int n;
 
     ogs_assert(fd != INVALID_SOCKET);
-    ogs_assert(packet_pool);
 
     recvbuf = ogs_pkbuf_alloc(packet_pool, OGS_MAX_PKT_LEN);
     ogs_assert(recvbuf);

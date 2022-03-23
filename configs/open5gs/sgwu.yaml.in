@@ -142,30 +142,6 @@ parameter:
 max:
 
 #
-# pool:
-#
-# o The default memory pool size was set assuming 1024 UEs.
-#   To connect more UEs, you need to increase the size further.
-#
-#   - Pool-size 128         => 65536 Number
-#   - Pool-size 256         => 16384 Number
-#   - Pool-size 512         => 4096 Number
-#   - Pool-size 1024        => 1024 Number
-#   - Pool-size 2048        => 512 Number
-#   - Pool-size 8192        => 128 Number
-#   - Pool-size 1024*1024   => 8 Number
-#
-#    128:  65536
-#    256:  16384
-#    512:  4096
-#    1024: 1024
-#    2048: 512
-#    8192: 128
-#    big:  8
-#
-pool:
-
-#
 # time:
 #
 #  o Message Wait Duration (Default : 10,000 ms = 10 seconds)
