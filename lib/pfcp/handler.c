@@ -1206,24 +1206,14 @@ ogs_pfcp_urr_t *ogs_pfcp_handle_update_urr(ogs_pfcp_sess_t *sess,
         return NULL;
     }
 
-    if (message->measurement_method.presence == 0) {
-        ogs_error("No Measurement Method");
-        *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_MISSING;
-        *offending_ie_value = OGS_PFCP_MEASUREMENT_METHOD_TYPE;
-        return NULL;
-    }
+    if (message->measurement_method.presence)
+        urr->meas_method = message->measurement_method.u8;
 
-    if (message->reporting_triggers.presence == 0) {
-        ogs_error("No Reporting Triggers");
-        *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_MISSING;
-        *offending_ie_value = OGS_PFCP_REPORTING_TRIGGERS_TYPE;
-        return NULL;
+    if (message->reporting_triggers.presence) {
+        urr->rep_triggers.reptri_5 = message->reporting_triggers.u24 & 0xFF;
+        urr->rep_triggers.reptri_6 = (message->reporting_triggers.u24 >> 8) & 0xFF;
+        urr->rep_triggers.reptri_7 = (message->reporting_triggers.u24 >> 16) & 0xFF;
     }
-
-    urr->meas_method = message->measurement_method.u8;
-    urr->rep_triggers.reptri_5 = message->reporting_triggers.u24 & 0xFF;
-    urr->rep_triggers.reptri_6 = (message->reporting_triggers.u24 >> 8) & 0xFF;
-    urr->rep_triggers.reptri_7 = (message->reporting_triggers.u24 >> 16) & 0xFF;
 
     if (message->measurement_period.presence) {
         urr->meas_period = message->measurement_period.u32;
