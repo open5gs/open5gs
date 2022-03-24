@@ -233,19 +233,8 @@ static void issues_1431_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
     ABTS_INT_EQUAL(tc,
-            S1AP_ProcedureCode_id_E_RABSetup,
+            S1AP_ProcedureCode_id_downlinkNASTransport,
             test_ue->s1ap_procedure_code);
-
-    /* Send E-RABSetupResponse */
-    bearer = test_bearer_find_by_ue_ebi(test_ue, 5);
-    ogs_assert(bearer);
-    sendbuf = test_s1ap_build_e_rab_failed_setup_response(
-                bearer,
-                S1AP_Cause_PR_radioNetwork,
-                S1AP_CauseRadioNetwork_multiple_E_RAB_ID_instances);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testenb_s1ap_send(s1ap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Just Delay */
     ogs_msleep(100);

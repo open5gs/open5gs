@@ -374,9 +374,9 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             break;
         }
 
-        bearer = mme_bearer_find_or_add_by_message(mme_ue, &nas_message);
+        bearer = mme_bearer_find_or_add_by_message(
+                    mme_ue, &nas_message, e->esm_piggybacked);
         if (!bearer) {
-            ogs_error("mme_bearer_find_or_add_by_message() failed");
             ogs_pkbuf_free(pkbuf);
             break;
         }

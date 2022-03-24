@@ -2890,7 +2890,7 @@ mme_bearer_t *mme_bearer_find_by_ue_ebi(mme_ue_t *mme_ue, uint8_t ebi)
 }
 
 mme_bearer_t *mme_bearer_find_or_add_by_message(
-        mme_ue_t *mme_ue, ogs_nas_eps_message_t *message)
+        mme_ue_t *mme_ue, ogs_nas_eps_message_t *message, bool esm_piggybacked)
 {
     uint8_t pti = OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
     uint8_t ebi = OGS_NAS_EPS_BEARER_IDENTITY_UNASSIGNED;
@@ -2998,11 +2998,22 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
         ogs_nas_eps_pdn_connectivity_request_t *pdn_connectivity_request =
             &message->esm.pdn_connectivity_request;
         if (pdn_connectivity_request->presencemask &
-                OGS_NAS_EPS_PDN_CONNECTIVITY_REQUEST_ACCESS_POINT_NAME_PRESENT)
+            OGS_NAS_EPS_PDN_CONNECTIVITY_REQUEST_ACCESS_POINT_NAME_PRESENT) {
             sess = mme_sess_find_by_apn(mme_ue,
                     pdn_connectivity_request->access_point_name.apn);
-        else
+            if (sess && esm_piggybacked == false) {
+                ogs_assert(OGS_OK ==
+                    nas_eps_send_pdn_connectivity_reject(
+                        sess,
+                        ESM_CAUSE_MULTIPLE_PDN_CONNECTIONS_FOR_A_GIVEN_APN_NOT_ALLOWED,
+                        esm_piggybacked));
+                ogs_warn("APN duplicated [%s]",
+                    pdn_connectivity_request->access_point_name.apn);
+                return NULL;
+            }
+        } else {
             sess = mme_sess_first(mme_ue);
+        }
 
         if (!sess)
             sess = mme_sess_add(mme_ue, pti);

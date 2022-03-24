@@ -1163,7 +1163,7 @@ static void test3_func(abts_case *tc, void *data)
             S1AP_ProcedureCode_id_E_RABRelease,
             test_ue->s1ap_procedure_code);
 
-    /* Send PDN Connectivity Request */
+    /* Send PDN connectivity Request */
     sess = test_sess_add_by_apn(test_ue, "ims", OGS_GTP_RAT_TYPE_EUTRAN);
     ogs_assert(sess);
     sess->pti = 39;
@@ -1179,40 +1179,13 @@ static void test3_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive E-RABSetupRequest +
-     * Activate default EPS bearer context request */
+    /* Receive PDN connectivity reject */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
     ABTS_INT_EQUAL(tc,
-            S1AP_ProcedureCode_id_E_RABSetup,
+            S1AP_ProcedureCode_id_downlinkNASTransport,
             test_ue->s1ap_procedure_code);
-
-    /* Send E-RABSetupResponse */
-    bearer = test_bearer_find_by_ue_ebi(test_ue, 6);
-    ogs_assert(bearer);
-    sendbuf = test_s1ap_build_e_rab_setup_response(bearer);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testenb_s1ap_send(s1ap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Send Activate default EPS bearer context accept */
-    esmbuf = testesm_build_activate_default_eps_bearer_context_accept(
-            bearer, true);
-    ABTS_PTR_NOTNULL(tc, esmbuf);
-    sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, esmbuf);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testenb_s1ap_send(s1ap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Send GTP-U ICMP Packet */
-    rv = test_gtpu_send_ping(gtpu, bearer, TEST_PING_IPV4);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive GTP-U ICMP Packet */
-    recvbuf = test_gtpu_read(gtpu);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    ogs_pkbuf_free(recvbuf);
 
     /* Send Detach Request */
     emmbuf = testemm_build_detach_request(test_ue, 1, true, false);
