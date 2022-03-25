@@ -1255,6 +1255,23 @@ ED7(uint8_t spare:2;,
     uint64_t downlink_n_packets;
 } __attribute__ ((packed)) ogs_pfcp_volume_measurement_t;
 
+/*
+ * 8.2.68 Measurement Information
+ */
+typedef struct ogs_pfcp_measurement_information_s {
+    union {
+        struct {
+ED6(uint8_t spare:3;,
+    uint8_t mnop:1;,
+    uint8_t istm:1;,
+    uint8_t radi:1;,
+    uint8_t inam:1;,
+    uint8_t mbqe:1;)
+        };
+    uint8_t octet5;
+    };
+} __attribute__ ((packed)) ogs_pfcp_measurement_information_t;
+
 typedef struct ogs_pfcp_user_plane_report_s {
     ogs_pfcp_report_type_t type;
     struct {

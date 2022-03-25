@@ -1178,7 +1178,7 @@ ogs_pfcp_urr_t *ogs_pfcp_handle_create_urr(ogs_pfcp_sess_t *sess,
 
     if (message->measurement_information.presence &&
         message->measurement_information.len >= 1) {
-        urr->meas_info = *((unsigned char *)message->measurement_information.data);
+        urr->meas_info.octet5 = *((unsigned char *)message->measurement_information.data);
     }
 
     return urr;
@@ -1270,7 +1270,7 @@ ogs_pfcp_urr_t *ogs_pfcp_handle_update_urr(ogs_pfcp_sess_t *sess,
 
     if (message->measurement_information.presence &&
         message->measurement_information.len >= 1) {
-        urr->meas_info = *((unsigned char *)message->measurement_information.data);
+        urr->meas_info.octet5 = *((unsigned char *)message->measurement_information.data);
     }
 
     return urr;
