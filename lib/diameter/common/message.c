@@ -101,13 +101,13 @@ int ogs_diam_message_session_id_set(
 
 	/* Create an AVP to hold it */
 	CHECK_FCT( fd_msg_avp_new( ogs_diam_session_id, 0, &avp ) );
-	
+
 	/* Set its value */
 	memset(&val, 0, sizeof(val));
 	val.os.data = sid;
 	val.os.len  = sidlen;
 	CHECK_FCT( fd_msg_avp_setvalue( avp, &val ) );
-	
+
 	/* Add it to the message */
 	CHECK_FCT( fd_msg_avp_add( msg, MSG_BRW_FIRST_CHILD, avp ) );
 
@@ -162,7 +162,7 @@ int ogs_diam_message_vendor_specific_appid_set(struct msg *msg, uint32_t app_id)
     value.u32 = app_id;
     CHECK_FCT(
             fd_msg_avp_setvalue(avp_vendor_specific_application_id, &value) );
-    CHECK_FCT( fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, 
+    CHECK_FCT( fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD,
                 avp_vendor_specific_application_id) );
 
     CHECK_FCT( fd_msg_avp_add(msg, MSG_BRW_LAST_CHILD, avp) );
