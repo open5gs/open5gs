@@ -231,7 +231,7 @@ typedef struct ogs_pfcp_urr_s {
 
     ogs_pfcp_measurement_method_t meas_method;
     ogs_pfcp_reporting_triggers_t rep_triggers;
-
+    ogs_pfcp_measurement_information_t meas_info;
     ogs_pfcp_measurement_period_t meas_period;
 
     ogs_pfcp_volume_threshold_t vol_threshold;

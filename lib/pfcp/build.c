@@ -628,6 +628,12 @@ void ogs_pfcp_build_create_urr(
         message->quota_validity_time.presence = 1;
         message->quota_validity_time.u32 = urr->quota_validity_time;
     }
+
+    if (urr->meas_info.octet5) {
+        message->measurement_information.presence = 1;
+        message->measurement_information.data = &urr->meas_info.octet5;
+        message->measurement_information.len = 1;
+    }
 }
 
 static struct {
