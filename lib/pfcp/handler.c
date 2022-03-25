@@ -1176,11 +1176,6 @@ ogs_pfcp_urr_t *ogs_pfcp_handle_create_urr(ogs_pfcp_sess_t *sess,
         urr->quota_validity_time = message->quota_validity_time.u32;
     }
 
-    if (message->measurement_information.presence &&
-        message->measurement_information.len >= 1) {
-        urr->meas_info = *((unsigned char *)message->measurement_information.data);
-    }
-
     return urr;
 }
 
@@ -1266,11 +1261,6 @@ ogs_pfcp_urr_t *ogs_pfcp_handle_update_urr(ogs_pfcp_sess_t *sess,
 
     if (message->quota_validity_time.presence) {
         urr->quota_validity_time = message->quota_validity_time.u32;
-    }
-
-    if (message->measurement_information.presence &&
-        message->measurement_information.len >= 1) {
-        urr->meas_info = *((unsigned char *)message->measurement_information.data);
     }
 
     return urr;
