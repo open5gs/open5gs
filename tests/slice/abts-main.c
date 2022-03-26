@@ -19,12 +19,14 @@
 
 #include "test-app.h"
 
-abts_suite *test_nssai(abts_suite *suite);
+abts_suite *test_same_dnn(abts_suite *suite);
+abts_suite *test_different_dnn(abts_suite *suite);
 
 const struct testlist {
     abts_suite *(*func)(abts_suite *suite);
 } alltests[] = {
-    {test_nssai},
+    {test_same_dnn},
+    {test_different_dnn},
     {NULL},
 };
 

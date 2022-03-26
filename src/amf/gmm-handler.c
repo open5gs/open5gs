@@ -1001,6 +1001,19 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                 }
             }
 
+            if (ul_nas_transport->presencemask &
+                    OGS_NAS_5GS_UL_NAS_TRANSPORT_DNN_PRESENT) {
+                if (sess->dnn)
+                    ogs_free(sess->dnn);
+                sess->dnn = ogs_strdup(dnn->value);
+                ogs_assert(sess->dnn);
+
+                if (!selected_slice) {
+                    selected_slice = ogs_slice_find_by_dnn(
+                            amf_ue->slice, amf_ue->num_of_slice, sess->dnn);
+                }
+            }
+
             if (!selected_slice) {
                 int i;
                 for (i = 0; i < amf_ue->num_of_slice; i++) {
@@ -1022,14 +1035,6 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
             sess->s_nssai.sst = selected_slice->s_nssai.sst;
             sess->s_nssai.sd.v = selected_slice->s_nssai.sd.v;
 
-            if (ul_nas_transport->presencemask &
-                    OGS_NAS_5GS_UL_NAS_TRANSPORT_DNN_PRESENT) {
-                if (sess->dnn)
-                    ogs_free(sess->dnn);
-                sess->dnn = ogs_strdup(dnn->value);
-                ogs_assert(sess->dnn);
-            }
-
             if (!sess->dnn) {
                 if (selected_slice->num_of_session) {
                     sess->dnn = ogs_strdup(selected_slice->session[0].name);
@@ -1046,7 +1051,6 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
 
             ogs_info("UE SUPI[%s] DNN[%s] S_NSSAI[SST:%d SD:0x%x]",
                 amf_ue->supi, sess->dnn, sess->s_nssai.sst, sess->s_nssai.sd.v);
-
 
             if (!SESSION_CONTEXT_IN_SMF(sess)) {
                 ogs_sbi_nf_instance_t *nf_instance = NULL;

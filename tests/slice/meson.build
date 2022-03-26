@@ -17,7 +17,8 @@
 
 test5gc_slice_sources = files('''
     abts-main.c
-    nssai-test.c
+    same-dnn-test.c
+    different-dnn-test.c
 '''.split())
 
 test5gc_slice_exe = executable('slice',
