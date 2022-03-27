@@ -951,11 +951,6 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
 
     switch (payload_container_type->value) {
     case OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION:
-        nas_s_nssai = &ul_nas_transport->s_nssai;
-        ogs_assert(nas_s_nssai);
-        dnn = &ul_nas_transport->dnn;
-        ogs_assert(dnn);
-
         gsm_header = (ogs_nas_5gsm_header_t *)payload_container->buffer;
         ogs_assert(gsm_header);
 
@@ -991,63 +986,84 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
         if (gsm_header->message_type ==
                 OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST) {
 
-            if (ul_nas_transport->presencemask &
-                    OGS_NAS_5GS_UL_NAS_TRANSPORT_S_NSSAI_PRESENT) {
-                ogs_nas_s_nssai_ie_t ie;
-                if (ogs_nas_parse_s_nssai(&ie, nas_s_nssai) != 0) {
-                    selected_slice = ogs_slice_find_by_s_nssai(
-                                amf_ue->slice, amf_ue->num_of_slice,
-                                (ogs_s_nssai_t *)&ie);
+            int i, j, k;
+
+            nas_s_nssai = &ul_nas_transport->s_nssai;
+            ogs_assert(nas_s_nssai);
+            dnn = &ul_nas_transport->dnn;
+            ogs_assert(dnn);
+
+
+            for (i = 0; i < amf_ue->num_of_slice; i++) {
+                if (ul_nas_transport->presencemask &
+                        OGS_NAS_5GS_UL_NAS_TRANSPORT_S_NSSAI_PRESENT) {
+                    ogs_nas_s_nssai_ie_t ie;
+                    if (ogs_nas_parse_s_nssai(&ie, nas_s_nssai) != 0) {
+                        if (ie.sst == amf_ue->slice[i].s_nssai.sst &&
+                            ie.sd.v == amf_ue->slice[i].s_nssai.sd.v) {
+
+                            /* PASS */
+
+                        } else {
+                            continue;
+                        }
+                    }
                 }
-            }
+                for (j = 0; j < amf_ue->allowed_nssai.num_of_s_nssai; j++) {
+                    if (amf_ue->slice[i].s_nssai.sst ==
+                            amf_ue->allowed_nssai.s_nssai[j].sst &&
+                        amf_ue->slice[i].s_nssai.sd.v ==
+                            amf_ue->allowed_nssai.s_nssai[j].sd.v) {
 
-            if (ul_nas_transport->presencemask &
-                    OGS_NAS_5GS_UL_NAS_TRANSPORT_DNN_PRESENT) {
-                if (sess->dnn)
-                    ogs_free(sess->dnn);
-                sess->dnn = ogs_strdup(dnn->value);
-                ogs_assert(sess->dnn);
+                        if (ul_nas_transport->presencemask &
+                                OGS_NAS_5GS_UL_NAS_TRANSPORT_DNN_PRESENT) {
 
-                if (!selected_slice) {
-                    selected_slice = ogs_slice_find_by_dnn(
-                            amf_ue->slice, amf_ue->num_of_slice, sess->dnn);
-                }
-            }
+                            for (k = 0;
+                                    k < amf_ue->slice[i].num_of_session; k++) {
+                                if (!strcmp(dnn->value,
+                                            amf_ue->slice[i].session[k].name)) {
 
-            if (!selected_slice) {
-                int i;
-                for (i = 0; i < amf_ue->num_of_slice; i++) {
-                    if (amf_ue->slice[i].default_indicator == true) {
-                        selected_slice = &amf_ue->slice[i];
+                                    selected_slice = amf_ue->slice + i;
+                                    ogs_assert(selected_slice);
+
+                                    if (sess->dnn)
+                                        ogs_free(sess->dnn);
+                                    sess->dnn = ogs_strdup(dnn->value);
+                                    ogs_assert(sess->dnn);
+
+                                } else {
+                                    continue;
+                                }
+                            }
+
+                        } else {
+
+                            selected_slice = amf_ue->slice + i;
+                            ogs_assert(selected_slice);
+
+                            if (selected_slice->num_of_session) {
+                                if (sess->dnn)
+                                    ogs_free(sess->dnn);
+                                sess->dnn = ogs_strdup(
+                                        selected_slice->session[0].name);
+                                ogs_assert(sess->dnn);
+                            }
+                        }
                     }
                 }
             }
 
-            if (!selected_slice) {
-                ogs_error("[%s] No S-NSSAI", amf_ue->supi);
+            if (!selected_slice || !sess->dnn) {
+                ogs_warn("[%s] DNN Not Supporetd OR "
+                            "Not Subscribed in the Slice", amf_ue->supi);
                 ogs_assert(OGS_OK ==
-                    nas_5gs_send_gmm_status(amf_ue,
-                    OGS_5GMM_CAUSE_INSUFFICIENT_RESOURCES_FOR_SPECIFIC_SLICE));
+                    nas_5gs_send_gmm_status(amf_ue, OGS_5GMM_CAUSE_DNN_NOT_SUPPORTED_OR_NOT_SUBSCRIBED_IN_THE_SLICE));
                 return OGS_ERROR;
             }
 
             /* Store S-NSSAI */
             sess->s_nssai.sst = selected_slice->s_nssai.sst;
             sess->s_nssai.sd.v = selected_slice->s_nssai.sd.v;
-
-            if (!sess->dnn) {
-                if (selected_slice->num_of_session) {
-                    sess->dnn = ogs_strdup(selected_slice->session[0].name);
-                    ogs_assert(sess->dnn);
-                }
-            }
-
-            if (!sess->dnn) {
-                ogs_error("[%s] No DNN", amf_ue->supi);
-                ogs_assert(OGS_OK ==
-                    nas_5gs_send_gmm_status(amf_ue, OGS_5GMM_CAUSE_DNN_NOT_SUPPORTED_OR_NOT_SUBSCRIBED_IN_THE_SLICE));
-                return OGS_ERROR;
-            }
 
             ogs_info("UE SUPI[%s] DNN[%s] S_NSSAI[SST:%d SD:0x%x]",
                 amf_ue->supi, sess->dnn, sess->s_nssai.sst, sess->s_nssai.sd.v);

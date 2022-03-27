@@ -62,6 +62,8 @@ void testgmm_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
     case OGS_NAS_5GS_DL_NAS_TRANSPORT:
         testgmm_handle_dl_nas_transport(test_ue, &message.gmm.dl_nas_transport);
         break;
+    case OGS_NAS_5GS_5GMM_STATUS:
+        break;
     default:
         ogs_error("Unknown message[%d]", message.gmm.h.message_type);
         break;

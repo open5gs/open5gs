@@ -653,8 +653,6 @@ typedef struct ogs_slice_data_s {
 ogs_slice_data_t *ogs_slice_find_by_s_nssai(
         ogs_slice_data_t *slice_data, int num_of_slice_data,
         ogs_s_nssai_t *s_nssai);
-ogs_slice_data_t *ogs_slice_find_by_dnn(
-        ogs_slice_data_t *slice_data, int num_of_slice_data, char *dnn);
 
 typedef struct ogs_subscription_data_s {
 #define OGS_ACCESS_RESTRICTION_UTRAN_NOT_ALLOWED                (1)

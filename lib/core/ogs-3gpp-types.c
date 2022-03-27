@@ -669,26 +669,6 @@ ogs_slice_data_t *ogs_slice_find_by_s_nssai(
     return NULL;
 }
 
-ogs_slice_data_t *ogs_slice_find_by_dnn(
-        ogs_slice_data_t *slice_data, int num_of_slice_data, char *dnn)
-{
-    int i, j;
-
-    ogs_assert(slice_data);
-    ogs_assert(num_of_slice_data);
-    ogs_assert(dnn);
-
-    /* Compare DNN */
-    for (i = 0; i < num_of_slice_data; i++) {
-        for (j = 0; j < slice_data[i].num_of_session; j++) {
-            if (strcmp(slice_data[i].session[j].name, dnn) == 0)
-                return slice_data + i;
-        }
-    }
-
-    return NULL;
-}
-
 void ogs_subscription_data_free(ogs_subscription_data_t *subscription_data)
 {
     int i, j;

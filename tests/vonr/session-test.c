@@ -1923,10 +1923,16 @@ static void test5_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive PDU session establishment reject */
+    /* Receive 5GMM Status */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_DownlinkNASTransport,
+            test_ue->ngap_procedure_code);
+    ABTS_INT_EQUAL(tc,
+            OGS_NAS_5GS_5GMM_STATUS,
+            test_ue->gmm_message_type);
 
     /* Send De-registration request */
     gmmbuf = testgmm_build_de_registration_request(test_ue, 1, true, true);
@@ -2194,10 +2200,16 @@ static void test6_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive PDU session establishment reject */
+    /* Receive 5GMM Status */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_DownlinkNASTransport,
+            test_ue->ngap_procedure_code);
+    ABTS_INT_EQUAL(tc,
+            OGS_NAS_5GS_5GMM_STATUS,
+            test_ue->gmm_message_type);
 
     /* Remove All Test Session */
     test_sess_remove(sess6);
