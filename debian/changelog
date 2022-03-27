@@ -1,3 +1,27 @@
+open5gs (2.4.5) unstable; urgency=medium
+
+  * GTP-1C(GGSN) provided by sysmocom
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 27 Mar 2022 18:41:04 +0900
+
+open5gs (2.4.5~focal) focal; urgency=medium
+
+  * GTP-1C(GGSN) provided by sysmocom
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 27 Mar 2022 18:40:06 +0900
+
+open5gs (2.4.5~bionic) bionic; urgency=medium
+
+  * GTP-1C(GGSN) provided by sysmocom
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 27 Mar 2022 18:38:55 +0900
+
+open5gs (2.4.5~impish) impish; urgency=medium
+
+  * GTP-1C(GGSN) provided by sysmocom
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 27 Mar 2022 18:37:40 +0900
+
 open5gs (2.4.4) unstable; urgency=medium
 
   * Fixed Memory leak
