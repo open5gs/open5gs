@@ -26,6 +26,8 @@ static struct disp_hdl *hdl_gx_rar = NULL;
 struct sess_state {
     os0_t       gx_sid;             /* Gx Session-Id */
 
+    os0_t       peer_host;          /* Peer Host */
+
 #define MAX_CC_REQUEST_NUMBER 32
     smf_sess_t *sess;
     ogs_gtp_xact_t *xact[MAX_CC_REQUEST_NUMBER];
@@ -62,6 +64,9 @@ static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
 {
     if (sess_data->gx_sid)
         ogs_free(sess_data->gx_sid);
+
+    if (sess_data->peer_host)
+        ogs_free(sess_data->peer_host);
 
     ogs_thread_mutex_lock(&sess_state_mutex);
     ogs_pool_free(&sess_state_pool, sess_data);
@@ -214,6 +219,18 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
+
+    /* Set the Destination-Host AVP */
+    if (sess_data->peer_host) {
+        ret = fd_msg_avp_new(ogs_diam_destination_host, 0, &avp);
+        ogs_assert(ret == 0);
+        val.os.data = sess_data->peer_host;
+        val.os.len  = strlen((char *)sess_data->peer_host);
+        ret = fd_msg_avp_setvalue(avp, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+        ogs_assert(ret == 0);
+    }
 
     /* Set Subscription-Id */
     ret = fd_msg_avp_new(ogs_diam_subscription_id, 0, &avp);
@@ -893,6 +910,12 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
         switch (hdr->avp_code) {
         case AC_SESSION_ID:
         case AC_ORIGIN_HOST:
+            if (sess_data->peer_host)
+                ogs_free(sess_data->peer_host);
+            sess_data->peer_host =
+                (os0_t)ogs_strdup((char *)hdr->avp_value->os.data);
+            ogs_assert(sess_data->peer_host);
+            break;
         case AC_ORIGIN_REALM:
         case AC_DESTINATION_REALM:
         case AC_RESULT_CODE:
