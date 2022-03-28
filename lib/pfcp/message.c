@@ -2753,7 +2753,7 @@ int ogs_pfcp_parse_msg(ogs_pfcp_message_t *pfcp_message, ogs_pkbuf_t *pkbuf)
 
     h = (ogs_pfcp_header_t *)pkbuf->data;
     ogs_assert(h);
-    
+
     memset(pfcp_message, 0, sizeof(ogs_pfcp_message_t));
 
     if (h->seid_presence)

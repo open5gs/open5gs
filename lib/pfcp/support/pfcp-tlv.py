@@ -103,7 +103,7 @@ def get_cells(cells):
     comment = re.sub('\n|\"|\'|\\\\', '', comment);
     #print comment
     ie_type = re.sub('\s*$', '', re.sub('\'\s*\n*\s*\(NOTE.*\)*', '', cells[-1].text))
-    
+
     #if ie_type.find('Usage Report') != -1:
     if ie_type == 'Usage Report':
         if comment.find('Report Type') != -1:
@@ -114,7 +114,7 @@ def get_cells(cells):
             ie_type = "Usage Report Session Deletion Response"
         else:
              assert False, "Unknown IE type : [Usage Report]"
-    
+
     if ie_type == 'Update BAR':
         if comment.find('7.5.4.11-1') != -1:
             ie_type = "Update BAR Session Modification Request"
@@ -122,7 +122,7 @@ def get_cells(cells):
             ie_type = "Update BAR PFCP Session Report Response"
         else:
              assert False, "Unknown IE type : [Update BAR]"
-    
+
     if ie_type.find('PFD Contents') != -1:
         ie_type = 'PFD contents'
     elif ie_type.find('UE IP address') != -1:
@@ -193,7 +193,7 @@ for o, a in opts:
         sys.exit(2)
 
 if os.path.isfile(filename) and os.access(filename, os.R_OK):
-    file = open(filename, 'r') 
+    file = open(filename, 'r')
 else:
     d_error("Cannot find file : " + filename)
 
@@ -204,7 +204,7 @@ if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
     print("Read from " + cachefile)
 else:
     document = Document(filename)
-    f = open(cachefile, 'w') 
+    f = open(cachefile, 'w')
 
     msg_table = ""
     for i, table in enumerate(document.tables):
@@ -236,7 +236,7 @@ if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
     print("Read from " + cachefile)
 else:
     document = Document(filename)
-    f = open(cachefile, 'w') 
+    f = open(cachefile, 'w')
 
     ie_table = ""
     for i, table in enumerate(document.tables):
@@ -270,7 +270,7 @@ if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
     print("Read from " + cachefile)
 else:
     document = Document(filename)
-    f = open(cachefile, 'w') 
+    f = open(cachefile, 'w')
 
     for i, table in enumerate(document.tables):
         try:
@@ -309,18 +309,18 @@ else:
                 elif (int(ie_type) == 79):
                     ie_name =  "Usage Report Session Deletion Response"
                 elif (int(ie_type) == 80):
-                    ie_name =  "Usage Report Session Report Request"    
+                    ie_name =  "Usage Report Session Report Request"
                 elif (int(ie_type) == 86):
-                    ie_name =  "Update BAR Session Modification Request" 
+                    ie_name =  "Update BAR Session Modification Request"
                 elif (int(ie_type) == 12):
-                    ie_name =  "Update BAR PFCP Session Report Response" 
+                    ie_name =  "Update BAR PFCP Session Report Response"
 
                 if ie_name.find('Access Forwarding Action Information 2') != -1:
                     ie_idx = str(int(ie_type)+100)
                     group_list[ie_name] = { "index" : ie_idx, "type" : ie_type, "ies" : ies }
                     write_file(f, "group_list[\"" + ie_name + "\"] = { \"index\" : \"" + ie_idx + "\", \"type\" : \"" + ie_type + "\", \"ies\" : ies }\n")
                     continue
-                
+
                 if ie_name not in group_list.keys():
                     ies = []
                     write_file(f, "ies = []\n")
@@ -338,7 +338,7 @@ else:
     f.close()
 
 msg_list["PFCP Heartbeat Request"]["table"] = 7
-msg_list["PFCP Heartbeat Response"]["table"] = 8 
+msg_list["PFCP Heartbeat Response"]["table"] = 8
 msg_list["PFCP PFD Management Request"]["table"] = 9
 msg_list["PFCP PFD Management Response"]["table"] = 12
 msg_list["PFCP Association Setup Request"]["table"] = 13
@@ -370,7 +370,7 @@ for key in msg_list.keys():
             print("Read from " + cachefile)
         else:
             document = Document(filename)
-            f = open(cachefile, 'w') 
+            f = open(cachefile, 'w')
 
             table = document.tables[msg_list[key]["table"]]
             if key.find('Association') != -1:
@@ -379,7 +379,7 @@ for key in msg_list.keys():
                 start_i = 1
             else:
                 start_i = 2
-            
+
             ies = []
             write_file(f, "ies = []\n")
             if key != "PFCP Session Deletion Request" and key != "PFCP Version Not Supported Response":
@@ -700,7 +700,7 @@ f.write("""int ogs_pfcp_parse_msg(ogs_pfcp_message_t *pfcp_message, ogs_pkbuf_t 
 
     h = (ogs_pfcp_header_t *)pkbuf->data;
     ogs_assert(h);
-    
+
     memset(pfcp_message, 0, sizeof(ogs_pfcp_message_t));
 
     if (h->seid_presence)
