@@ -169,7 +169,10 @@ typedef struct ogs_pfcp_pdr_s {
     uint8_t                 qfi;
 
     ogs_pfcp_far_t          *far;
-    ogs_pfcp_urr_t          *urr;
+
+    int                     num_of_urr;
+    ogs_pfcp_urr_t          *urr[OGS_MAX_NUM_OF_URR];
+
     ogs_pfcp_qer_t          *qer;
 
     int                     num_of_flow;

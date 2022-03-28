@@ -471,12 +471,15 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
         ogs_pfcp_pdr_associate_far(pdr, far);
     }
 
-    pdr->urr = NULL;
-
-    if (message->urr_id.presence) {
-        urr = ogs_pfcp_urr_find_or_add(sess, message->urr_id.u32);
-        ogs_assert(urr);
-        ogs_pfcp_pdr_associate_urr(pdr,urr);
+    for (i = 0; i < OGS_ARRAY_SIZE(pdr->urr); i++)
+        pdr->urr[i] = NULL;
+    pdr->num_of_urr = 0;
+    for (i = 0; i < OGS_ARRAY_SIZE(message->urr_id); i++) {
+        if (message->urr_id[i].presence) {
+            urr = ogs_pfcp_urr_find_or_add(sess, message->urr_id[i].u32);
+            ogs_assert(urr);
+            ogs_pfcp_pdr_associate_urr(pdr,urr);
+        }
     }
 
     pdr->qer = NULL;

@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by pfcp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2021-10-04 22:09:12.899719 by acetcom
+ * Created on: 2022-03-28 12:29:26.101574 by pespin
  * from 29244-g10.docx
  ******************************************************************************/
 
@@ -654,7 +654,7 @@ typedef struct ogs_pfcp_tlv_create_pdr_s {
     ogs_pfcp_tlv_pdi_t pdi;
     ogs_pfcp_tlv_outer_header_removal_t outer_header_removal;
     ogs_pfcp_tlv_far_id_t far_id;
-    ogs_pfcp_tlv_urr_id_t urr_id;
+    ogs_pfcp_tlv_urr_id_t urr_id[8];
     ogs_pfcp_tlv_qer_id_t qer_id;
     ogs_pfcp_tlv_activate_predefined_rules_t activate_predefined_rules;
     ogs_pfcp_tlv_activation_time_t activation_time;
@@ -747,7 +747,7 @@ typedef struct ogs_pfcp_tlv_access_forwarding_action_information_1_s {
     ogs_pfcp_tlv_far_id_t far_id;
     ogs_pfcp_tlv_weight_t weight;
     ogs_pfcp_tlv_priority_t priority;
-    ogs_pfcp_tlv_urr_id_t urr_id;
+    ogs_pfcp_tlv_urr_id_t urr_id[8];
 } ogs_pfcp_tlv_access_forwarding_action_information_1_t;
 
 typedef struct ogs_pfcp_tlv_access_forwarding_action_information_2_s {
@@ -755,7 +755,7 @@ typedef struct ogs_pfcp_tlv_access_forwarding_action_information_2_s {
     ogs_pfcp_tlv_far_id_t far_id;
     ogs_pfcp_tlv_weight_t weight;
     ogs_pfcp_tlv_priority_t priority;
-    ogs_pfcp_tlv_urr_id_t urr_id;
+    ogs_pfcp_tlv_urr_id_t urr_id[8];
 } ogs_pfcp_tlv_access_forwarding_action_information_2_t;
 
 typedef struct ogs_pfcp_tlv_update_access_forwarding_action_information_1_s {
