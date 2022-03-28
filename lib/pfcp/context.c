@@ -969,8 +969,16 @@ void ogs_pfcp_pdr_associate_urr(ogs_pfcp_pdr_t *pdr, ogs_pfcp_urr_t *urr)
 {
     ogs_assert(pdr);
     ogs_assert(urr);
+    ogs_assert(pdr->num_of_urr < OGS_ARRAY_SIZE(pdr->urr));
+    int i;
 
-    pdr->urr = urr;
+    /* Avoid storing duplicate pointers */
+    for (i = 0; i < pdr->num_of_urr; i++) {
+        if (pdr->urr[i]->id == urr->id)
+            return;
+    }
+
+    pdr->urr[pdr->num_of_urr++] = urr;
 }
 void ogs_pfcp_pdr_associate_qer(ogs_pfcp_pdr_t *pdr, ogs_pfcp_qer_t *qer)
 {

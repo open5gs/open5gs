@@ -339,9 +339,10 @@ void ogs_pfcp_build_create_pdr(
         message->far_id.u32 = pdr->far->id;
     }
 
-    if (pdr->urr) {
-        message->urr_id[0].presence = 1;
-        message->urr_id[0].u32 = pdr->urr->id;
+    ogs_assert(pdr->num_of_urr <= OGS_ARRAY_SIZE(message->urr_id));
+    for (i = 0; i < pdr->num_of_urr; i++) {
+        message->urr_id[i].presence = 1;
+        message->urr_id[i].u32 = pdr->urr[i]->id;
     }
 
     if (pdr->qer) {
