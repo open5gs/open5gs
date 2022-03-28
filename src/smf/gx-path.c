@@ -52,6 +52,7 @@ static __inline__ struct sess_state *new_state(os0_t sid)
     ogs_thread_mutex_lock(&sess_state_mutex);
     ogs_pool_alloc(&sess_state_pool, &new);
     ogs_expect_or_return_val(new, NULL);
+    memset(new, 0, sizeof(*new));
     ogs_thread_mutex_unlock(&sess_state_mutex);
 
     new->gx_sid = (os0_t)ogs_strdup((char *)sid);
