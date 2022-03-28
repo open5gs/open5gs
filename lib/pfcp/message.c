@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by pfcp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2021-10-04 22:09:12.905975 by acetcom
+ * Created on: 2022-03-28 12:29:26.113044 by pespin
  * from 29244-g10.docx
  ******************************************************************************/
 
@@ -1575,6 +1575,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_create_pdr =
         &ogs_pfcp_tlv_desc_outer_header_removal,
         &ogs_pfcp_tlv_desc_far_id,
         &ogs_pfcp_tlv_desc_urr_id,
+        &ogs_tlv_desc_more8,
         &ogs_pfcp_tlv_desc_qer_id,
         &ogs_pfcp_tlv_desc_activate_predefined_rules,
         &ogs_pfcp_tlv_desc_activation_time,
@@ -1758,6 +1759,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_access_forwarding_action_information_1 =
         &ogs_pfcp_tlv_desc_weight,
         &ogs_pfcp_tlv_desc_priority,
         &ogs_pfcp_tlv_desc_urr_id,
+        &ogs_tlv_desc_more8,
         NULL,
     }
 };
@@ -1775,6 +1777,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_access_forwarding_action_information_2 =
         &ogs_pfcp_tlv_desc_weight,
         &ogs_pfcp_tlv_desc_priority,
         &ogs_pfcp_tlv_desc_urr_id,
+        &ogs_tlv_desc_more8,
         NULL,
     }
 };

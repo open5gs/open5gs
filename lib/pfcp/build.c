@@ -340,8 +340,8 @@ void ogs_pfcp_build_create_pdr(
     }
 
     if (pdr->urr) {
-        message->urr_id.presence = 1;
-        message->urr_id.u32 = pdr->urr->id;
+        message->urr_id[0].presence = 1;
+        message->urr_id[0].u32 = pdr->urr->id;
     }
 
     if (pdr->qer) {

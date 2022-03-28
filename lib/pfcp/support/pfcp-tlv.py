@@ -154,6 +154,8 @@ def get_cells(cells):
         tlv_more = "3"
     if ie_type == 'SDF Filter':
         tlv_more = "7"
+    if ie_type == 'URR ID' and comment.find('Several IEs within the same IE type may be present') != -1:
+        tlv_more = "7"
 
     if int(tlv_more) > int(type_list[ie_type]["max_tlv_more"]):
         type_list[ie_type]["max_tlv_more"] = tlv_more
@@ -579,7 +581,7 @@ for (k, v) in sorted_group_list:
     f.write("typedef struct ogs_pfcp_tlv_" + v_lower(k) + "_s {\n")
     f.write("    ogs_tlv_presence_t presence;\n")
     for ies in group_list[k]["ies"]:
-        if type_list[ies["ie_type"]]["max_tlv_more"] != "0":
+        if type_list[ies["ie_type"]]["max_tlv_more"] != "0" and ies["tlv_more"] != "0":
             f.write("    ogs_pfcp_tlv_" + v_lower(ies["ie_type"]) + "_t " + v_lower(ies["ie_value"]) + "[" + str(int(ies["tlv_more"])+1) + "];\n")
         else:
             f.write("    ogs_pfcp_tlv_" + v_lower(ies["ie_type"]) + "_t " + \
@@ -592,7 +594,7 @@ for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
         f.write("typedef struct ogs_" + v_lower(k) + "_s {\n")
         for ies in msg_list[k]["ies"]:
-            if type_list[ies["ie_type"]]["max_tlv_more"] != "0":
+            if type_list[ies["ie_type"]]["max_tlv_more"] != "0" and ies["tlv_more"] != "0":
                 f.write("    ogs_pfcp_tlv_" + v_lower(ies["ie_type"]) + "_t " + v_lower(ies["ie_value"]) + "[" + str(int(ies["tlv_more"])+1) + "];\n")
             else:
                 f.write("    ogs_pfcp_tlv_" + v_lower(ies["ie_type"]) + "_t " + v_lower(ies["ie_value"]) + ";\n")
@@ -667,7 +669,7 @@ for (k, v) in sorted_group_list:
     f.write("    {\n")
     for ies in group_list[k]["ies"]:
         f.write("        &ogs_pfcp_tlv_desc_%s,\n" % v_lower(ies["ie_type"]))
-        if type_list[ies["ie_type"]]["max_tlv_more"] != "0":
+        if type_list[ies["ie_type"]]["max_tlv_more"] != "0" and ies["tlv_more"] != "0":
             f.write("        &ogs_tlv_desc_more" + str(int(ies["tlv_more"])+1) + ",\n")
     f.write("        NULL,\n")
     f.write("    }\n")
@@ -682,7 +684,7 @@ for (k, v) in sorted_msg_list:
         f.write("    0, 0, 0, 0, {\n")
         for ies in msg_list[k]["ies"]:
             f.write("        &ogs_pfcp_tlv_desc_%s,\n" % v_lower(ies["ie_type"]))
-            if type_list[ies["ie_type"]]["max_tlv_more"] != "0":
+            if type_list[ies["ie_type"]]["max_tlv_more"] != "0" and ies["tlv_more"] != "0":
                 f.write("        &ogs_tlv_desc_more" + str(int(ies["tlv_more"])+1) + ",\n")
         f.write("    NULL,\n")
         f.write("}};\n\n")

@@ -473,8 +473,8 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
 
     pdr->urr = NULL;
 
-    if (message->urr_id.presence) {
-        urr = ogs_pfcp_urr_find_or_add(sess, message->urr_id.u32);
+    if (message->urr_id[0].presence) {
+        urr = ogs_pfcp_urr_find_or_add(sess, message->urr_id[0].u32);
         ogs_assert(urr);
         ogs_pfcp_pdr_associate_urr(pdr,urr);
     }
