@@ -439,6 +439,43 @@ int ogs_app_context_parse_config(void)
             }
 
             recalculate_pool_size();
+        } else if (!strcmp(root_key, "pool")) {
+            ogs_yaml_iter_t pool_iter;
+            ogs_yaml_iter_recurse(&root_iter, &pool_iter);
+            while (ogs_yaml_iter_next(&pool_iter)) {
+                const char *pool_key = ogs_yaml_iter_key(&pool_iter);
+                ogs_assert(pool_key);
+                if (!strcmp(pool_key, "128")) {
+                    const char *v = ogs_yaml_iter_value(&pool_iter);
+                    if (v)
+                        self.pool.defconfig.cluster_128_pool = atoi(v);
+                } else if (!strcmp(pool_key, "256")) {
+                    const char *v = ogs_yaml_iter_value(&pool_iter);
+                    if (v)
+                        self.pool.defconfig.cluster_256_pool = atoi(v);
+                } else if (!strcmp(pool_key, "512")) {
+                    const char *v = ogs_yaml_iter_value(&pool_iter);
+                    if (v)
+                        self.pool.defconfig.cluster_512_pool = atoi(v);
+                } else if (!strcmp(pool_key, "1024")) {
+                    const char *v = ogs_yaml_iter_value(&pool_iter);
+                    if (v)
+                        self.pool.defconfig.cluster_1024_pool = atoi(v);
+                } else if (!strcmp(pool_key, "2048")) {
+                    const char *v = ogs_yaml_iter_value(&pool_iter);
+                    if (v)
+                        self.pool.defconfig.cluster_2048_pool = atoi(v);
+                } else if (!strcmp(pool_key, "8192")) {
+                    const char *v = ogs_yaml_iter_value(&pool_iter);
+                    if (v)
+                        self.pool.defconfig.cluster_8192_pool = atoi(v);
+                } else if (!strcmp(pool_key, "big")) {
+                    const char *v = ogs_yaml_iter_value(&pool_iter);
+                    if (v)
+                        self.pool.defconfig.cluster_big_pool = atoi(v);
+                } else
+                    ogs_warn("unknown key `%s`", pool_key);
+            }
         } else if (!strcmp(root_key, "time")) {
             ogs_yaml_iter_t time_iter;
             ogs_yaml_iter_recurse(&root_iter, &time_iter);
