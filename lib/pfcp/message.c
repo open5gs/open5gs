@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by pfcp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2022-03-28 12:29:26.113044 by pespin
+ * Created on: 2022-03-30 17:00:53.610079 by pespin
  * from 29244-g10.docx
  ******************************************************************************/
 
@@ -2684,6 +2684,7 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_modification_response =
         &ogs_pfcp_tlv_desc_load_control_information,
         &ogs_pfcp_tlv_desc_overload_control_information,
         &ogs_pfcp_tlv_desc_usage_report_session_modification_response,
+        &ogs_tlv_desc_more8,
         &ogs_pfcp_tlv_desc_failed_rule_id,
         &ogs_pfcp_tlv_desc_additional_usage_reports_information,
         &ogs_pfcp_tlv_desc_created_traffic_endpoint,
@@ -2708,6 +2709,7 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_deletion_response =
         &ogs_pfcp_tlv_desc_load_control_information,
         &ogs_pfcp_tlv_desc_overload_control_information,
         &ogs_pfcp_tlv_desc_usage_report_session_deletion_response,
+        &ogs_tlv_desc_more8,
     NULL,
 }};
 
@@ -2719,6 +2721,7 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_report_request =
         &ogs_pfcp_tlv_desc_report_type,
         &ogs_pfcp_tlv_desc_downlink_data_report,
         &ogs_pfcp_tlv_desc_usage_report_session_report_request,
+        &ogs_tlv_desc_more8,
         &ogs_pfcp_tlv_desc_error_indication_report,
         &ogs_pfcp_tlv_desc_load_control_information,
         &ogs_pfcp_tlv_desc_overload_control_information,

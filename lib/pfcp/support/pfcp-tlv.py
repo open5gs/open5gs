@@ -154,6 +154,10 @@ def get_cells(cells):
         tlv_more = "3"
     if ie_type == 'SDF Filter':
         tlv_more = "7"
+    if (ie_type == 'Usage Report Session Report Request' or
+        ie_type == 'Usage Report Session Deletion Response' or
+        ie_type == 'Usage Report Session Modification Response'):
+        tlv_more = "7"
     if ie_type == 'URR ID' and comment.find('Several IEs within the same IE type may be present') != -1:
         tlv_more = "7"
 
