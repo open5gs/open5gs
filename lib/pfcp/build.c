@@ -731,7 +731,7 @@ ogs_pkbuf_t *ogs_pfcp_build_session_report_request(
     req->report_type.presence = 1;
     req->report_type.u8 = report->type.value;
 
-    if (report->downlink_data.pdr_id) {
+    if (report->type.downlink_data_report) {
         int info_len = 0;
 
         req->downlink_data_report.presence = 1;
