@@ -306,7 +306,7 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_avp_hdr(avp, &hdr);
     ogs_assert(ret == 0);
     ogs_cpystrn(imsi_bcd, (char*)hdr->avp_value->os.data,
-    ogs_min(hdr->avp_value->os.len, OGS_MAX_IMSI_BCD_LEN)+1);
+        ogs_min(hdr->avp_value->os.len, OGS_MAX_IMSI_BCD_LEN)+1);
 
     rv = hss_db_subscription_data(imsi_bcd, &subscription_data);
     if (rv != OGS_OK) {
