@@ -1,36 +1,31 @@
 name: Meson Continuous Integration
 on: [push, pull_request]
 jobs:
-#  macos-latest:
-#    name: Build and Test on MacOS Latest
-#    runs-on: macos-latest
-#    steps:
-#    - name: Install the dependencies for building the source code.
-#      run: |
-#          brew install mongo-c-driver gnutls libgcrypt libidn libyaml libmicrohttpd nghttp2 pkg-config bison libusrsctp libtins talloc meson
-#          brew list bison
-#    - name: Check out repository code
-#      uses: actions/checkout@v1
-#    - name: Setup Meson Build
-#      run: meson setup build
-#      env:
-#        CC: gcc
-#    - name : Build Open5GS
-#      run: |
-#          echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
-#          whereis bison
-#          ninja -C build
-#    - name: Test Open5GS
-#      run: meson test -C build -v core crypt sctp unit
+  macos-latest:
+    name: Build and Test on MacOS Latest
+    runs-on: macos-latest
+    steps:
+    - name: Install the dependencies for building the source code.
+      run: brew install mongo-c-driver libidn libmicrohttpd nghttp2 bison libusrsctp libtins talloc meson
+    - name: Check out repository code
+      uses: actions/checkout@v1
+    - name: Setup Meson Build
+      run: PATH="/usr/local/opt/bison/bin:$PATH" meson setup build
+      env:
+        CC: gcc
+    - name : Build Open5GS
+      run: ninja -C build
+    - name: Test Open5GS
+      run: meson test -C build -v core crypt unit
   ubuntu-latest:
-    name: Build and Test on Ubuntu/Debian Latest
+    name: Build and Test on Ubuntu Latest
     runs-on: ubuntu-latest
     services:
       mongodb:
         image: mongo
         ports:
           - 27017:27017
-   steps:
+    steps:
     - name: Create the TUN device with the interface name `ogstun`.
       run: |
           sudo ip tuntap add name ogstun mode tun
