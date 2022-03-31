@@ -455,6 +455,9 @@ static void test1_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /* Waiting for deleting PDU session */
+    ogs_msleep(100);
+
     /* Test Session Remove */
     test_sess_remove(sess);
 
