@@ -718,8 +718,8 @@ ogs_pkbuf_t *ogs_pfcp_build_session_report_request(
 {
     ogs_pfcp_message_t pfcp_message;
     ogs_pfcp_session_report_request_t *req = NULL;
-
     ogs_pfcp_downlink_data_service_information_t info;
+    unsigned int i;
 
     ogs_assert(report);
 
@@ -731,7 +731,7 @@ ogs_pkbuf_t *ogs_pfcp_build_session_report_request(
     req->report_type.presence = 1;
     req->report_type.u8 = report->type.value;
 
-    if (report->downlink_data.pdr_id) {
+    if (report->type.downlink_data_report) {
         int info_len = 0;
 
         req->downlink_data_report.presence = 1;
@@ -776,54 +776,56 @@ ogs_pkbuf_t *ogs_pfcp_build_session_report_request(
     }
 
     if (report->type.usage_report) {
-        req->usage_report.presence = 1;
-        req->usage_report.urr_id.presence = 1;
-        req->usage_report.urr_id.u32 = report->usage_report.id;
-        req->usage_report.ur_seqn.presence = 1;
-        req->usage_report.ur_seqn.u32 = report->usage_report.seqn;
-        req->usage_report.usage_report_trigger.presence = 1;
-        req->usage_report.usage_report_trigger.u24 =
-            (report->usage_report.rep_triggers.reptri_5 << 16)
-            | (report->usage_report.rep_triggers.reptri_6 << 8)
-            | (report->usage_report.rep_triggers.reptri_7);
+        ogs_assert(report->num_of_usage_report > 0);
+        for (i = 0; i < report->num_of_usage_report; i++) {
+            req->usage_report[i].presence = 1;
+            req->usage_report[i].urr_id.presence = 1;
+            req->usage_report[i].urr_id.u32 = report->usage_report[i].id;
+            req->usage_report[i].ur_seqn.presence = 1;
+            req->usage_report[i].ur_seqn.u32 = report->usage_report[i].seqn;
+            req->usage_report[i].usage_report_trigger.presence = 1;
+            req->usage_report[i].usage_report_trigger.u24 =
+                (report->usage_report[i].rep_triggers.reptri_5 << 16)
+                | (report->usage_report[i].rep_triggers.reptri_6 << 8)
+                | (report->usage_report[i].rep_triggers.reptri_7);
 
-        if (report->usage_report.start_time) {
-            req->usage_report.start_time.presence = 1;
-            req->usage_report.start_time.u32 = report->usage_report.start_time;
+            if (report->usage_report[i].start_time) {
+                req->usage_report[i].start_time.presence = 1;
+                req->usage_report[i].start_time.u32 = report->usage_report[i].start_time;
+            }
+
+            if (report->usage_report[i].end_time) {
+                req->usage_report[i].end_time.presence = 1;
+                req->usage_report[i].end_time.u32 = report->usage_report[i].end_time;
+            }
+
+            if (report->usage_report[i].vol_measurement.flags) {
+                req->usage_report[i].volume_measurement.presence = 1;
+                ogs_pfcp_build_volume_measurement(
+                        &req->usage_report[i].volume_measurement,
+                        &report->usage_report[i].vol_measurement,
+                        &usage_report_buf.vol_meas,
+                        sizeof(usage_report_buf.vol_meas));
+            }
+
+            if (report->usage_report[i].dur_measurement) {
+                req->usage_report[i].duration_measurement.presence = 1;
+                req->usage_report[i].duration_measurement.u32 =
+                    report->usage_report[i].dur_measurement;
+            }
+
+            if (report->usage_report[i].time_of_first_packet) {
+                req->usage_report[i].time_of_first_packet.presence = 1;
+                req->usage_report[i].time_of_first_packet.u32 =
+                    report->usage_report[i].time_of_first_packet;
+            }
+
+            if (report->usage_report[i].time_of_last_packet) {
+                req->usage_report[i].time_of_last_packet.presence = 1;
+                req->usage_report[i].time_of_last_packet.u32 =
+                    report->usage_report[i].time_of_last_packet;
+            }
         }
-
-        if (report->usage_report.end_time) {
-            req->usage_report.end_time.presence = 1;
-            req->usage_report.end_time.u32 = report->usage_report.end_time;
-        }
-
-        if (report->usage_report.vol_measurement.flags) {
-            req->usage_report.volume_measurement.presence = 1;
-            ogs_pfcp_build_volume_measurement(
-                    &req->usage_report.volume_measurement,
-                    &report->usage_report.vol_measurement,
-                    &usage_report_buf.vol_meas,
-                    sizeof(usage_report_buf.vol_meas));
-        }
-
-        if (report->usage_report.dur_measurement) {
-            req->usage_report.duration_measurement.presence = 1;
-            req->usage_report.duration_measurement.u32 =
-                report->usage_report.dur_measurement;
-        }
-
-        if (report->usage_report.time_of_first_packet) {
-            req->usage_report.time_of_first_packet.presence = 1;
-            req->usage_report.time_of_first_packet.u32 =
-                report->usage_report.time_of_first_packet;
-        }
-
-        if (report->usage_report.time_of_last_packet) {
-            req->usage_report.time_of_last_packet.presence = 1;
-            req->usage_report.time_of_last_packet.u32 =
-                report->usage_report.time_of_last_packet;
-        }
-
     }
 
     if (report->error_indication.remote_f_teid_len) {

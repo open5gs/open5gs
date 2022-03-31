@@ -1289,7 +1289,8 @@ typedef struct ogs_pfcp_user_plane_report_s {
         ogs_pfcp_duration_measurement_t dur_measurement;
         ogs_pfcp_time_of_first_packet_t time_of_first_packet;
         ogs_pfcp_time_of_last_packet_t time_of_last_packet;
-    } usage_report;
+    } usage_report [OGS_MAX_NUM_OF_URR];
+    unsigned int num_of_usage_report;
     struct {
         ogs_pfcp_f_teid_t remote_f_teid;
         int remote_f_teid_len;
