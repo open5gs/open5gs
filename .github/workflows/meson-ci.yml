@@ -8,6 +8,7 @@ jobs:
     - name: Install the dependencies for building the source code.
       run: |
           brew install mongo-c-driver gnutls libgcrypt libidn libyaml libmicrohttpd nghttp2 pkg-config bison libusrsctp libtins talloc meson
+          brew list bison
     - name: Check out repository code
       uses: actions/checkout@v1
     - name: Setup Meson Build
