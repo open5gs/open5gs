@@ -1,46 +1,14 @@
 name: Meson Continuous Integration
 on: [push, pull_request]
 jobs:
-  macos-latest:
-    name: Build and Test on MacOS Latest
-    runs-on: macos-latest
-    steps:
-    - name: Install the dependencies for building the source code.
-      run: |
-          brew install mongo-c-driver gnutls libgcrypt libidn libyaml libmicrohttpd nghttp2 pkg-config bison libusrsctp libtins talloc meson
-          brew list bison
-    - name: Check out repository code
-      uses: actions/checkout@v1
-    - name: Setup Meson Build
-      run: meson setup build
-      env:
-        CC: gcc
-    - name : Build Open5GS
-      run: |
-          echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
-          whereis bison
-          ninja -C build
-    - name: Test Open5GS
-      run: meson test -C build -v core crypt sctp unit
-#  ubuntu-latest:
-#    name: Build and Test on Ubuntu/Debian Latest
-#    runs-on: ubuntu-latest
-#    services:
-#      mongodb:
-#        image: mongo
-#        ports:
-#          - 27017:27017
+#  macos-latest:
+#    name: Build and Test on MacOS Latest
+#    runs-on: macos-latest
 #    steps:
-#    - name: Create the TUN device with the interface name `ogstun`.
-#      run: |
-#          sudo ip tuntap add name ogstun mode tun
-#          sudo ip addr add 10.45.0.1/16 dev ogstun
-#          sudo ip addr add 2001:db8:cafe::1/48 dev ogstun
-#          sudo ip link set ogstun up
 #    - name: Install the dependencies for building the source code.
 #      run: |
-#          sudo apt update
-#          sudo apt install python3-pip python3-setuptools python3-wheel ninja-build build-essential flex bison git libsctp-dev libgnutls28-dev libgcrypt-dev libssl-dev libidn11-dev libmongoc-dev libbson-dev libyaml-dev libnghttp2-dev libmicrohttpd-dev libcurl4-gnutls-dev libnghttp2-dev libtins-dev libtalloc-dev meson
+#          brew install mongo-c-driver gnutls libgcrypt libidn libyaml libmicrohttpd nghttp2 pkg-config bison libusrsctp libtins talloc meson
+#          brew list bison
 #    - name: Check out repository code
 #      uses: actions/checkout@v1
 #    - name: Setup Meson Build
@@ -48,6 +16,38 @@ jobs:
 #      env:
 #        CC: gcc
 #    - name : Build Open5GS
-#      run: ninja -C build
+#      run: |
+#          echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
+#          whereis bison
+#          ninja -C build
 #    - name: Test Open5GS
-#      run: meson test -C build -v
+#      run: meson test -C build -v core crypt sctp unit
+  ubuntu-latest:
+    name: Build and Test on Ubuntu/Debian Latest
+    runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo
+        ports:
+          - 27017:27017
+   steps:
+    - name: Create the TUN device with the interface name `ogstun`.
+      run: |
+          sudo ip tuntap add name ogstun mode tun
+          sudo ip addr add 10.45.0.1/16 dev ogstun
+          sudo ip addr add 2001:db8:cafe::1/48 dev ogstun
+          sudo ip link set ogstun up
+    - name: Install the dependencies for building the source code.
+      run: |
+          sudo apt update
+          sudo apt install python3-pip python3-setuptools python3-wheel ninja-build build-essential flex bison git libsctp-dev libgnutls28-dev libgcrypt-dev libssl-dev libidn11-dev libmongoc-dev libbson-dev libyaml-dev libnghttp2-dev libmicrohttpd-dev libcurl4-gnutls-dev libnghttp2-dev libtins-dev libtalloc-dev meson
+    - name: Check out repository code
+      uses: actions/checkout@v1
+    - name: Setup Meson Build
+      run: meson setup build
+      env:
+        CC: gcc
+    - name : Build Open5GS
+      run: ninja -C build
+    - name: Test Open5GS
+      run: meson test -C build -v
