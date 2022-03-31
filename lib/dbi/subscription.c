@@ -148,6 +148,46 @@ int ogs_dbi_update_sqn(char *supi, uint64_t sqn)
     return rv;
 }
 
+int ogs_dbi_update_imei(char *supi, char *imei)
+{
+    int rv = OGS_OK;
+    bson_t *query = NULL;
+    bson_t *update = NULL;
+    bson_error_t error;
+
+    char *supi_type = NULL;
+    char *supi_id = NULL;
+
+    ogs_assert(supi);
+
+    supi_type = ogs_id_get_type(supi);
+    ogs_assert(supi_type);
+    supi_id = ogs_id_get_value(supi);
+    ogs_assert(supi_id);
+
+    ogs_debug("SUPI type: %s, SUPI id: %s, imei: %s", supi_type, supi_id, imei);
+
+    query = BCON_NEW(supi_type, BCON_UTF8(supi_id));
+    update = BCON_NEW("$set",
+            "{",
+                "imei", BCON_UTF8(imei),
+            "}");
+    if (!mongoc_collection_update(ogs_mongoc()->collection.subscriber,
+            MONGOC_UPDATE_UPSERT, query, update, NULL, &error)) {
+        ogs_error("mongoc_collection_update() failure: %s", error.message);
+
+        rv = OGS_ERROR;
+    }
+
+    if (query) bson_destroy(query);
+    if (update) bson_destroy(update);
+
+    ogs_free(supi_type);
+    ogs_free(supi_id);
+
+    return rv;
+}
+
 int ogs_dbi_increment_sqn(char *supi)
 {
     int rv = OGS_OK;
