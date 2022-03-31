@@ -25,7 +25,7 @@
 #define TEST_DURATION           400000
 
 static uint8_t expire_check[TEST_DURATION/TEST_TIMER_PRECISION];
-static ogs_time_t timer_duration[] = { 500000, 50000, 200000, 190000, 800000 };
+static ogs_time_t timer_duration[] = { 500000, 50000, 200000, 90000, 800000 };
 
 void test_expire_func_1(void *data)
 {
