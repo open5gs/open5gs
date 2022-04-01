@@ -162,6 +162,7 @@ const Pdn = styled.div`
 const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, onHide }) => {
   const imsi = (subscriber || {}).imsi;
   const msisdn_list = ((subscriber || {}).msisdn || []);
+  const imei = (subscriber || {}).imei;
   const security = ((subscriber || {}).security || {});
   const ambr = ((subscriber || {}).ambr || {});
   const slice_list = ((subscriber || {}).slice || []);
@@ -192,7 +193,7 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
               <div className="header">
                 Subscriber Configuration
               </div>
-              {msisdn_list.length !== 0 &&
+              {(msisdn_list.length !== 0 || (imei && imei.length !== 0)) &&
                 <div className="body">
                   <div className="left">
                     <PhoneIcon/>
@@ -200,10 +201,16 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
                   <div className="right">
                     {msisdn_list.map((msisdn, index) =>
                       <div key={index} className="data">
-                          {msisdn}
-                          <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>MSISDN</span>
+                        {msisdn}
+                        <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>MSISDN</span>
                       </div>
                     )}
+                    {imei && imei.length !== 0 &&
+                      <div className="data">
+                        {imei}
+                        <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>IMEI</span>
+                      </div>
+                    }
                   </div>
                 </div>
               }

@@ -12,6 +12,7 @@ const Profile = new Schema({
   title: { $type: String, required: true },
 
   msisdn: [ String ],
+  imei: [ String ],
 
   security: {
     k: String,
