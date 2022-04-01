@@ -148,7 +148,7 @@ int ogs_dbi_update_sqn(char *supi, uint64_t sqn)
     return rv;
 }
 
-int ogs_dbi_update_imei(char *supi, char *imei)
+int ogs_dbi_update_imeisv(char *supi, char *imeisv)
 {
     int rv = OGS_OK;
     bson_t *query = NULL;
@@ -165,12 +165,13 @@ int ogs_dbi_update_imei(char *supi, char *imei)
     supi_id = ogs_id_get_value(supi);
     ogs_assert(supi_id);
 
-    ogs_debug("SUPI type: %s, SUPI id: %s, imei: %s", supi_type, supi_id, imei);
+    ogs_debug("SUPI type: %s, SUPI id: %s, imeisv: %s",
+            supi_type, supi_id, imeisv);
 
     query = BCON_NEW(supi_type, BCON_UTF8(supi_id));
     update = BCON_NEW("$set",
             "{",
-                "imei", BCON_UTF8(imei),
+                "imeisv", BCON_UTF8(imeisv),
             "}");
     if (!mongoc_collection_update(ogs_mongoc()->collection.subscriber,
             MONGOC_UPDATE_UPSERT, query, update, NULL, &error)) {

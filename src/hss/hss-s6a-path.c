@@ -318,17 +318,50 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_search_avp(qry, ogs_diam_s6a_terminal_information, &avp);
     ogs_assert(ret == 0);
     if (avp) {
+        char *p, *last;
+
+        p = imeisv_bcd;
+        last = imeisv_bcd + OGS_MAX_IMEISV_BCD_LEN + 1;
+
         ret = fd_avp_search_avp(avp, ogs_diam_s6a_imei, &avpch1);
         ogs_assert(ret == 0);
         if (avpch1) {
             ret = fd_msg_avp_hdr(avpch1, &hdr);
             ogs_assert(ret == 0);
             if (hdr->avp_value->os.len) {
-                ogs_cpystrn(imeisv_bcd, (char*)hdr->avp_value->os.data,
-                    ogs_min(hdr->avp_value->os.len, OGS_MAX_IMEISV_BCD_LEN)+1);
-                hss_db_update_imei(imsi_bcd, imeisv_bcd);
+                char *s = NULL;
+
+                ogs_assert(hdr->avp_value->os.data);
+                s = ogs_strndup(
+                        (const char *)hdr->avp_value->os.data,
+                        hdr->avp_value->os.len);
+                ogs_assert(s);
+                p = ogs_slprintf(p, last, "%s", s);
+
+                ogs_free(s);
             }
         }
+
+        ret = fd_avp_search_avp(avp, ogs_diam_s6a_software_version, &avpch1);
+        ogs_assert(ret == 0);
+        if (avpch1) {
+            ret = fd_msg_avp_hdr(avpch1, &hdr);
+            ogs_assert(ret == 0);
+            if (hdr->avp_value->os.len) {
+                char *s = NULL;
+
+                ogs_assert(hdr->avp_value->os.data);
+                s = ogs_strndup(
+                        (const char *)hdr->avp_value->os.data,
+                        hdr->avp_value->os.len);
+                ogs_assert(s);
+                p = ogs_slprintf(p, last, "%s", s);
+
+                ogs_free(s);
+            }
+        }
+
+        ogs_assert(OGS_OK == hss_db_update_imeisv(imsi_bcd, imeisv_bcd));
     }
 
     ret = fd_msg_search_avp(qry, ogs_diam_visited_plmn_id, &avp);

@@ -163,7 +163,7 @@ const View = ({ visible, disableOnClickOutside, profile, onEdit, onDelete, onHid
   const _id = (profile || {})._id;
   const title = (profile || {}).title;
   const msisdn_list = ((profile || {}).msisdn || []);
-  const imei = (profile || {}).imei;
+  const imeisv = (profile || {}).imeisv;
   const security = ((profile || {}).security || {});
   const ambr = ((profile || {}).ambr || {});
   const slice_list = ((profile || {}).slice || []);
@@ -194,7 +194,7 @@ const View = ({ visible, disableOnClickOutside, profile, onEdit, onDelete, onHid
               <div className="header">
                 Profile Configuration
               </div>
-              {(msisdn_list.length !== 0 || (imei && imei.length !== 0)) &&
+              {(msisdn_list.length !== 0 || (imeisv && imeisv.length !== 0)) &&
                 <div className="body">
                   <div className="left">
                     <PhoneIcon/>
@@ -206,10 +206,10 @@ const View = ({ visible, disableOnClickOutside, profile, onEdit, onDelete, onHid
                         <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>MSISDN</span>
                       </div>
                     )}
-                    {imei && imei.length !== 0 &&
+                    {imeisv && imeisv.length !== 0 &&
                       <div className="data">
-                        {imei}
-                        <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>IMEI</span>
+                        {imeisv}
+                        <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>IMEISV</span>
                       </div>
                     }
                   </div>

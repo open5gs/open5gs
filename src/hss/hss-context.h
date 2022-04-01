@@ -61,7 +61,7 @@ int hss_context_parse_config(void);
 int hss_db_auth_info(char *imsi_bcd, ogs_dbi_auth_info_t *auth_info);
 int hss_db_update_sqn(char *imsi_bcd, uint8_t *rand, uint64_t sqn);
 int hss_db_increment_sqn(char *imsi_bcd);
-int hss_db_update_imei(char *imsi_bcd, char *imei);
+int hss_db_update_imeisv(char *imsi_bcd, char *imeisv);
 
 int hss_db_subscription_data(
     char *imsi_bcd, ogs_subscription_data_t *subscription_data);

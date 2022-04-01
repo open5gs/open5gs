@@ -374,7 +374,7 @@ int hss_db_update_sqn(char *imsi_bcd, uint8_t *rand, uint64_t sqn)
     return rv;
 }
 
-int hss_db_update_imei(char *imsi_bcd, char *imei)
+int hss_db_update_imeisv(char *imsi_bcd, char *imeisv)
 {
     int rv;
     char *supi = NULL;
@@ -385,7 +385,7 @@ int hss_db_update_imei(char *imsi_bcd, char *imei)
     supi = ogs_msprintf("%s-%s", OGS_ID_SUPI_TYPE_IMSI, imsi_bcd);
     ogs_assert(supi);
 
-    rv = ogs_dbi_update_imei(supi, imei);
+    rv = ogs_dbi_update_imeisv(supi, imeisv);
 
     ogs_free(supi);
     ogs_thread_mutex_unlock(&self.db_lock);

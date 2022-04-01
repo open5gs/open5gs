@@ -41,7 +41,7 @@ typedef struct ogs_dbi_auth_info_s {
 int ogs_dbi_auth_info(char *supi, ogs_dbi_auth_info_t *auth_info);
 int ogs_dbi_update_sqn(char *supi, uint64_t sqn);
 int ogs_dbi_increment_sqn(char *supi);
-int ogs_dbi_update_imei(char *supi, char *imei);
+int ogs_dbi_update_imeisv(char *supi, char *imeisv);
 
 int ogs_dbi_subscription_data(char *supi,
         ogs_subscription_data_t *subscription_data);

@@ -106,9 +106,28 @@ bool pcf_npcf_am_policy_contrtol_handle_create(pcf_ue_t *pcf_ue,
 
     pcf_ue->access_type = PolicyAssociationRequest->access_type;
 
-    if (pcf_ue->pei)
-        ogs_free(pcf_ue->pei);
-    pcf_ue->pei = ogs_strdup(PolicyAssociationRequest->pei);
+    if (PolicyAssociationRequest->pei) {
+        char *type = NULL, *value = NULL;
+        if (pcf_ue->pei)
+            ogs_free(pcf_ue->pei);
+        pcf_ue->pei = ogs_strdup(PolicyAssociationRequest->pei);
+
+        type = ogs_id_get_type(pcf_ue->pei);
+        ogs_assert(type);
+        value = ogs_id_get_value(pcf_ue->pei);
+        ogs_assert(value);
+
+        if (strcmp(type, "imeisv") == 0) {
+            ogs_assert(OGS_OK == ogs_dbi_update_imeisv(pcf_ue->supi, value));
+        } else {
+            ogs_fatal("Unknown Type = %s", type);
+            ogs_assert_if_reached();
+        }
+
+
+        ogs_free(type);
+        ogs_free(value);
+    }
 
     Guami = PolicyAssociationRequest->guami;
     if (Guami && Guami->amf_id &&
