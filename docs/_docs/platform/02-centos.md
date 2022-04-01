@@ -3,10 +3,10 @@ title: CentOS
 head_inline: "<style> .blue { color: blue; } </style>"
 ---
 
-This guide is based on **CentOS 8** Distribution.
+This guide is based on **CentOS Stream 8** Distribution.
 {: .blue}
 
-## Install **CentOS 8** from Vagrant box (optional)
+## Install **CentOS Stream 8** from Vagrant box (optional)
 ---
 Vagrant provides a simple way to create and deploy Virtual Machines from
 pre-built images using VirtualBox, libvirt, or VMWare as a hypervisor engine.
@@ -20,13 +20,13 @@ The instructions to install Vagrant are provided at
 [vagrantup.com](https://www.vagrantup.com/).
 
 
-### Create a CentOS 8 Virtual Machine using Vagrant
+### Create a CentOS Stream 8 Virtual Machine using Vagrant
 ---
 
 Use the supplied `Vagrantfile` in the `vagrant` directory to create the
 virtual machine.
 
-Note that this Vagrantfile is identical to the base CentOS 8 box, with
+Note that this Vagrantfile is identical to the base CentOS Stream 8 box, with
 the exception that the amount of virtual memory has been increased to 1GB:
 
 ```bash
@@ -37,7 +37,7 @@ vagrant up --provider virtualbox
 ### Log into the newly created CentOS VM
 ---
 
-Use SSH to log into the CentOS 8 VM:
+Use SSH to log into the CentOS Stream 8 VM:
 
 ```bash
 vagrant ssh
@@ -45,15 +45,15 @@ vagrant ssh
 
 Note that the Open5GS source is *not* copied into the VM.  The instructions
 below provide the step by step instructions for setting up Open5GS for
-either a bare metal or virtual CentOS 8 system.
+either a bare metal or virtual CentOS Stream 8 system.
 
 The rest of the commands below are performed inside the CentOS VM as the
-user 'vagrant', or on your bare metal CentOS 8 system as any normal user.
+user 'vagrant', or on your bare metal CentOS Stream 8 system as any normal user.
 
 ## Install prerequisite packages to build and run Open5GS
 ---
 
-### Enable CentOS 8 PowerTools repository
+### Enable CentOS Stream 8 PowerTools repository
 ---
 
 ```bash
@@ -105,7 +105,7 @@ $ sudo dnf -y install mongodb-org
 ### Install the dependencies for building the source code.
 ---
 Open5GS requires several packages which are not installed by default in
-a base CentOS 8 installation.
+a base CentOS Stream 8 installation.
 
 
 ```bash
@@ -152,7 +152,7 @@ This is important when you try to load the SCTP kernel module later.
 ### Check the SCTP kernel module
 ---
 Open5GS requires the Linux SCTP kernel module to be loaded in the kernel.
-In the CentOS 8 Vagrant box SCTP is not loaded into the kernel automatically
+In the CentOS Stream 8 Vagrant box SCTP is not loaded into the kernel automatically
 so must be installed as follows:
 
 ```bash
