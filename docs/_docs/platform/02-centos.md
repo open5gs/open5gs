@@ -58,7 +58,7 @@ user 'vagrant', or on your bare metal CentOS 8 system as any normal user.
 
 ```bash
 $ sudo dnf install 'dnf-command(config-manager)'
-$ sudo dnf config-manager --set-enabled PowerTools
+$ sudo dnf config-manager --set-enabled powertools
 ```
 
 ### Enable the Extra Packages for Enterprise Linux
@@ -86,13 +86,13 @@ $ sudo dnf config-manager --set-enabled elrepo-testing
 Create a repository file to install the MongoDB packages:
 
 ```bash
-$ sudo sh -c 'cat << EOF > /etc/yum.repos.d/mongodb-org-3.4.repo
-[mongodb-org-3.4]
+$ sudo sh -c 'cat << EOF > /etc/yum.repos.d/mongodb-org-3.6.repo
+[mongodb-org-3.6]
 name=MongoDB Repository
-baseurl=https://repo.mongodb.org/yum/redhat/\$releasever/mongodb-org/3.4/x86_64/
+baseurl=https://repo.mongodb.org/yum/redhat/\$releasever/mongodb-org/3.6/x86_64/
 gpgcheck=1
 enabled=1
-gpgkey=https://www.mongodb.org/static/pgp/server-3.4.asc
+gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc
 EOF'
 ```
 
@@ -112,18 +112,20 @@ a base CentOS 8 installation.
 $ sudo dnf install python3 meson ninja-build gcc gcc-c++ flex bison git lksctp-tools-devel libidn-devel gnutls-devel libgcrypt-devel openssl-devel cyrus-sasl-devel libyaml-devel mongo-c-driver-devel libmicrohttpd-devel libcurl-devel libnghttp2-devel libtalloc-devel
 ```
 
-### Install the SCTP kernel module in kernel-modules-extra.
----
-
-```bash
-$ sudo dnf install kernel-modules-extra
-```
-
 ### Install iproute IP interface tools.
 ---
 
 ```bash
 $ sudo dnf install iproute
+```
+
+### Install the SCTP kernel module in kernel-modules-extra.
+---
+
+```bash
+$ sudo dnf install kernel-modules-extra
+$ sudo rm /etc/modprobe.d/sctp-blacklist.conf
+$ sudo rm /etc/modprobe.d/sctp_diag-blacklist.conf
 ```
 
 ### Update all installed packages to the latest versions.
@@ -141,9 +143,25 @@ after this step to ensure that you are running this new kernel version.
 This is important when you try to load the SCTP kernel module later.
 
 ```bash
-[vm] $ sudo reboot
+[host] $ vagrant halt
+[host] $ vagrant up --provider virtualbox
 [host] $ # ssh back into the VM after it reboots...
 [host] $ vagrant ssh
+```
+
+### Check the SCTP kernel module
+---
+Open5GS requires the Linux SCTP kernel module to be loaded in the kernel.
+In the CentOS 8 Vagrant box SCTP is not loaded into the kernel automatically
+so must be installed as follows:
+
+```bash
+$ checksctp
+SCTP supported
+$ sudo modprobe sctp
+$ # Check that SCTP was loaded successfully:
+$ sudo dmesg | grep sctp
+[  639.971360] sctp: Hash tables configured (bind 256/256)
 ```
 
 ## Build Open5GS from Source
@@ -251,19 +269,6 @@ site.github_username }}/open5gs/blob/main/misc/netconf.sh) makes it easy
 to configure the TUN device as follows:
 `$ sudo ./misc/netconf.sh`
 {: .notice--info}
-
-### Install the SCTP kernel module
----
-Open5GS requires the Linux SCTP kernel module to be loaded in the kernel.
-In the CentOS 8 Vagrant box SCTP is not loaded into the kernel automatically
-so must be installed as follows:
-
-```bash
-$ sudo modprobe sctp
-$ # Check that SCTP was loaded successfully:
-$ sudo dmesg | grep sctp
-[  639.971360] sctp: Hash tables configured (bind 256/256)
-```
 
 ## Testing Open5GS
 ---
