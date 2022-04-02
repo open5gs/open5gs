@@ -244,7 +244,14 @@ int sgwu_gtp_init(void)
 
     config.cluster_2048_pool = ogs_app()->pool.packet;
 
+#if OGS_USE_TALLOC
+    /* allocate a talloc pool for GTP to ensure it doesn't have to go back
+     * to the libc malloc all the time */
+    packet_pool = talloc_pool(__ogs_talloc_core, 1000*1024);
+    ogs_assert(packet_pool);
+#else
     packet_pool = ogs_pkbuf_pool_create(&config);
+#endif
 
     return OGS_OK;
 }

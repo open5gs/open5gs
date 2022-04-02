@@ -222,7 +222,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
     ogs_assert(fd != INVALID_SOCKET);
 
-    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_PKT_LEN);
+    pkbuf = ogs_pkbuf_alloc(packet_pool, OGS_MAX_PKT_LEN);
     ogs_assert(pkbuf);
     ogs_pkbuf_reserve(pkbuf, OGS_TUN_MAX_HEADROOM);
     ogs_pkbuf_put(pkbuf, OGS_MAX_PKT_LEN-OGS_TUN_MAX_HEADROOM);
@@ -579,7 +579,14 @@ int upf_gtp_init(void)
 
     config.cluster_2048_pool = ogs_app()->pool.packet;
 
+#if OGS_USE_TALLOC
+    /* allocate a talloc pool for GTP to ensure it doesn't have to go back
+     * to the libc malloc all the time */
+    packet_pool = talloc_pool(__ogs_talloc_core, 1000*1024);
+    ogs_assert(packet_pool);
+#else
     packet_pool = ogs_pkbuf_pool_create(&config);
+#endif
 
     return OGS_OK;
 }
