@@ -38,6 +38,9 @@ typedef struct ogs_diam_config_s {
     /* IP address of the local peer */
     const char *cnf_addr;
 
+    /* SMS Center IP*/
+    const char *cnf_smsip;
+
     /* the local port for legacy Diameter (default: 3868) in host byte order */
     uint16_t cnf_port;
     /* the local port for Diameter/TLS (default: 5658) in host byte order */
