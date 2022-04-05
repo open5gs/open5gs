@@ -199,10 +199,7 @@ int hss_context_parse_config(void)
                             } else if (!strcmp(fd_key, "realm")) {
                                 self.diam_config->cnf_diamrlm = 
                                     ogs_yaml_iter_value(&fd_iter);
-                            } else if (!strcmp(fd_key, "smsip")) {
-                                self.diam_config->cnf_smsip = 
-                                    ogs_yaml_iter_value(&fd_iter);
-                            }  else if (!strcmp(fd_key, "port")) {
+                            } else if (!strcmp(fd_key, "port")) {
                                 const char *v = ogs_yaml_iter_value(&fd_iter);
                                 if (v) self.diam_config->cnf_port = atoi(v);
                             } else if (!strcmp(fd_key, "sec_port")) {
@@ -326,6 +323,9 @@ int hss_context_parse_config(void)
                                 ogs_warn("unknown key `%s`", fd_key);
                         }
                     }
+                } else if (!strcmp(hss_key, "smsip")) {
+                            self.diam_config->cnf_smsip = 
+                                ogs_yaml_iter_value(&hss_iter);
                 } else
                     ogs_warn("unknown key `%s`", hss_key);
             }
