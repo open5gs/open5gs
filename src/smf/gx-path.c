@@ -691,7 +691,7 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
     unsigned long dur;
     int error = 0;
     int new;
-
+    struct msg *req = NULL;
     smf_event_t *e = NULL;
     ogs_gtp_xact_t *xact = NULL;
     smf_sess_t *sess = NULL;
@@ -701,6 +701,10 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
     ogs_debug("[Credit-Control-Answer]");
 
     ret = clock_gettime(CLOCK_REALTIME, &ts);
+    ogs_assert(ret == 0);
+
+    /* Get originating request of received message, if any */
+    ret = fd_msg_answ_getq(*msg, &req);
     ogs_assert(ret == 0);
 
     /* Search the session, retrieve its data */
@@ -720,14 +724,20 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
     /* Value of CC-Request-Number */
     ret = fd_msg_search_avp(*msg, ogs_diam_gx_cc_request_number, &avp);
     ogs_assert(ret == 0);
-    if (avp) {
-        ret = fd_msg_avp_hdr(avp, &hdr);
+    if (!avp && req) {
+        /* Attempt searching for CC-Request-* in original request. Error
+         * messages (like DIAMETER_UNABLE_TO_DELIVER) crafted internally may not
+         * have them. */
+        ret = fd_msg_search_avp(req, ogs_diam_gx_cc_request_number, &avp);
         ogs_assert(ret == 0);
-        cc_request_number = hdr->avp_value->i32;
-    } else {
+    }
+    if (!avp) {
         ogs_error("no_CC-Request-Number");
         ogs_assert_if_reached();
     }
+    ret = fd_msg_avp_hdr(avp, &hdr);
+    ogs_assert(ret == 0);
+    cc_request_number = hdr->avp_value->i32;
 
     ogs_debug("    CC-Request-Number[%d]", cc_request_number);
 
@@ -801,14 +811,20 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
     /* Value of CC-Request-Type */
     ret = fd_msg_search_avp(*msg, ogs_diam_gx_cc_request_type, &avp);
     ogs_assert(ret == 0);
-    if (avp) {
-        ret = fd_msg_avp_hdr(avp, &hdr);
+    if (!avp && req) {
+        /* Attempt searching for CC-Request-* in original request. Error
+         * messages (like DIAMETER_UNABLE_TO_DELIVER) crafted internally may not
+         * have them. */
+        ret = fd_msg_search_avp(req, ogs_diam_gx_cc_request_type, &avp);
         ogs_assert(ret == 0);
-        gx_message->cc_request_type = hdr->avp_value->i32;
-    } else {
-        ogs_error("no_CC-Request-Type");
+    }
+    if (!avp) {
+        ogs_error("no_CC-Request-Number");
         error++;
     }
+    ret = fd_msg_avp_hdr(avp, &hdr);
+    ogs_assert(ret == 0);
+    gx_message->cc_request_type = hdr->avp_value->i32;
 
     if (gx_message->result_code != ER_DIAMETER_SUCCESS) {
         ogs_warn("ERROR DIAMETER Result Code(%d)", gx_message->result_code);
