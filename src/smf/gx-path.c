@@ -105,6 +105,12 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
     /* Create the request */
     ret = fd_msg_new(ogs_diam_gx_cmd_ccr, MSGFL_ALLOC_ETEID, &req);
     ogs_assert(ret == 0);
+    {
+        struct msg_hdr *h;
+        ret = fd_msg_hdr(req, &h);
+        ogs_assert(ret == 0);
+        h->msg_appl = OGS_DIAM_GX_APPLICATION_ID;
+    }
 
     /* Find Diameter Gx Session */
     if (sess->gx_sid) {
