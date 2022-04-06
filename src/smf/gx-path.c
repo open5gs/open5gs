@@ -30,7 +30,7 @@ struct sess_state {
 
 #define MAX_CC_REQUEST_NUMBER 32
     smf_sess_t *sess;
-    ogs_gtp_xact_t *xact;
+    ogs_gtp_xact_t *xact[MAX_CC_REQUEST_NUMBER];
 
     uint32_t cc_request_type;
     uint32_t cc_request_number;
@@ -185,7 +185,7 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
 
     /* Update session state */
     sess_data->sess = sess;
-    sess_data->xact = xact;
+    sess_data->xact[sess_data->cc_request_number] = xact;
 
     /* Set Origin-Host & Origin-Realm */
     ret = fd_msg_add_origin(req, 0);
@@ -717,7 +717,21 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
 
     ogs_debug("    Retrieve its data: [%s]", sess_data->gx_sid);
 
-    xact = sess_data->xact;
+    /* Value of CC-Request-Number */
+    ret = fd_msg_search_avp(*msg, ogs_diam_gx_cc_request_number, &avp);
+    ogs_assert(ret == 0);
+    if (avp) {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        ogs_assert(ret == 0);
+        cc_request_number = hdr->avp_value->i32;
+    } else {
+        ogs_error("no_CC-Request-Number");
+        ogs_assert_if_reached();
+    }
+
+    ogs_debug("    CC-Request-Number[%d]", cc_request_number);
+
+    xact = sess_data->xact[cc_request_number];
     ogs_assert(xact);
     sess = sess_data->sess;
     ogs_assert(sess);
@@ -784,11 +798,6 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
         error++;
     }
 
-    if (gx_message->result_code != ER_DIAMETER_SUCCESS) {
-        ogs_warn("ERROR DIAMETER Result Code(%d)", gx_message->result_code);
-        goto out;
-    }
-
     /* Value of CC-Request-Type */
     ret = fd_msg_search_avp(*msg, ogs_diam_gx_cc_request_type, &avp);
     ogs_assert(ret == 0);
@@ -801,19 +810,10 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
         error++;
     }
 
-    /* Value of CC-Request-Number */
-    ret = fd_msg_search_avp(*msg, ogs_diam_gx_cc_request_number, &avp);
-    ogs_assert(ret == 0);
-    if (avp) {
-        ret = fd_msg_avp_hdr(avp, &hdr);
-        ogs_assert(ret == 0);
-        cc_request_number = hdr->avp_value->i32;
-    } else {
-        ogs_error("no_CC-Request-Number");
-        error++;
+    if (gx_message->result_code != ER_DIAMETER_SUCCESS) {
+        ogs_warn("ERROR DIAMETER Result Code(%d)", gx_message->result_code);
+        goto out;
     }
-
-    ogs_debug("    CC-Request-Number[%d]", cc_request_number);
 
     ret = fd_msg_search_avp(*msg, ogs_diam_gx_qos_information, &avp);
     ogs_assert(ret == 0);
