@@ -323,8 +323,8 @@ int hss_context_parse_config(void)
                                 ogs_warn("unknown key `%s`", fd_key);
                         }
                     }
-                } else if (!strcmp(hss_key, "smsip")) {
-                            self.diam_config->cnf_smsip = 
+                } else if (!strcmp(hss_key, "sms_over_ims")) {
+                            self.sms_over_ims = 
                                 ogs_yaml_iter_value(&hss_iter);
                 } else
                     ogs_warn("unknown key `%s`", hss_key);
@@ -956,7 +956,7 @@ char *hss_cx_download_user_data(
         }
 
         /* smsip: "sip:smsc.mnc001.mcc001.3gppnetwork.org:7060" */
-        if(self.diam_config->cnf_smsip) {
+        if(self.sms_over_ims) {
 
             user_data = ogs_mstrcatf(user_data, "%s", 
                         ogs_diam_cx_xml_ifc_s); 
@@ -1040,7 +1040,7 @@ char *hss_cx_download_user_data(
 
                 user_data = ogs_mstrcatf(user_data, "%s%s%s", 
                             ogs_diam_cx_xml_server_name_s, 
-                            self.diam_config->cnf_smsip, 
+                            self.sms_over_ims, 
                             ogs_diam_cx_xml_server_name_e); 
                 ogs_assert(user_data);
 
