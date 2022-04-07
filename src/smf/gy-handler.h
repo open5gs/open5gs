@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
  *
  * This file is part of Open5GS.
  *
@@ -17,8 +18,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef SMF_FD_PATH_H
-#define SMF_FD_PATH_H
+#ifndef SMF_GY_HANDLER_H
+#define SMF_GY_HANDLER_H
 
 #include "context.h"
 
@@ -26,28 +27,20 @@
 extern "C" {
 #endif
 
-typedef struct gtp_xact_s gtp_xact_t;
-
-int smf_fd_init(void);
-void smf_fd_final(void);
-
-int smf_gx_init(void);
-void smf_gx_final(void);
-int smf_gy_init(void);
-void smf_gy_final(void);
-int smf_s6b_init(void);
-void smf_s6b_final(void);
-
-void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
-        uint32_t cc_request_type);
-void smf_gy_send_ccr(smf_sess_t *sess, void *xact,
-        uint32_t cc_request_type);
-
-void smf_s6b_send_aar(smf_sess_t *sess, ogs_gtp_xact_t *xact);
-void smf_s6b_send_str(smf_sess_t *sess, ogs_gtp_xact_t *xact, uint32_t cause);
+void smf_gy_handle_cca_initial_request(
+        smf_sess_t *sess, ogs_diam_gy_message_t *gy_message,
+        ogs_gtp_xact_t *gtp_xact);
+void smf_gy_handle_cca_update_request(
+        smf_sess_t *sess, ogs_diam_gy_message_t *gy_message,
+        ogs_pfcp_xact_t *gtp_xact);
+void smf_gy_handle_cca_termination_request(
+        smf_sess_t *sess, ogs_diam_gy_message_t *gy_message,
+        ogs_gtp_xact_t *gtp_xact);
+void smf_gy_handle_re_auth_request(
+        smf_sess_t *sess, ogs_diam_gy_message_t *gy_message);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* SMF_FD_PATH_H */
+#endif /* SMF_GY_HANDLER_H */

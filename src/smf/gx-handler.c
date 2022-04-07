@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
  *
  * This file is part of Open5GS.
  *
@@ -20,6 +21,7 @@
 #include "context.h"
 #include "gtp-path.h"
 #include "pfcp-path.h"
+#include "fd-path.h"
 #include "gx-handler.h"
 #include "binding.h"
 
@@ -271,8 +273,29 @@ void smf_gx_handle_cca_initial_request(
         ogs_pfcp_pdr_associate_qer(ul_pdr, qer);
     }
 
-    ogs_assert(OGS_OK ==
-        smf_epc_pfcp_send_session_establishment_request(sess, gtp_xact));
+    switch(smf_use_gy_iface()) {
+    case 1:
+        /* Gy is available, set up session for the bearer before accepting it towards the UE */
+        smf_gy_send_ccr(sess, gtp_xact,
+            OGS_DIAM_GY_CC_REQUEST_TYPE_INITIAL_REQUEST);
+        return;
+    case 0:
+        /* Not using Gy, jump directly to PFCP Session Establishment Request */
+        ogs_assert(OGS_OK ==
+            smf_epc_pfcp_send_session_establishment_request(sess, gtp_xact));
+        return;
+    case -1:
+        ogs_error("No Gy Diameter Peer");
+        if (gtp_xact->gtp_version == 1)
+            ogs_gtp1_send_error_message(gtp_xact, sess ? sess->sgw_s5c_teid : 0,
+                OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE,
+                OGS_GTP1_CAUSE_NO_RESOURCES_AVAILABLE);
+        else
+            ogs_gtp2_send_error_message(gtp_xact, sess ? sess->sgw_s5c_teid : 0,
+                OGS_GTP_CREATE_SESSION_RESPONSE_TYPE,
+                OGS_GTP_CAUSE_UE_NOT_AUTHORISED_BY_OCS_OR_EXTERNAL_AAA_SERVER);
+        return;
+    }
 }
 
 void smf_gx_handle_cca_termination_request(

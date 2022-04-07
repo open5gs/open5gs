@@ -59,6 +59,8 @@ void ogs_pfcp_build_update_qer(
 
 void ogs_pfcp_build_create_urr(
     ogs_pfcp_tlv_create_urr_t *message, int i, ogs_pfcp_urr_t *urr);
+void ogs_pfcp_build_update_urr(
+    ogs_pfcp_tlv_update_urr_t *message, int i, ogs_pfcp_urr_t *urr, uint64_t modify_flags);
 
 void ogs_pfcp_build_create_bar(
     ogs_pfcp_tlv_create_bar_t *message, ogs_pfcp_bar_t *bar);

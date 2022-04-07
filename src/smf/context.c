@@ -38,6 +38,27 @@ static int num_of_smf_sess = 0;
 static void stats_add_smf_session(void);
 static void stats_remove_smf_session(void);
 
+int smf_ctf_config_init(smf_ctf_config_t *ctf_config)
+{
+    ctf_config->enabled = SMF_CTF_ENABLED_AUTO;
+    return OGS_OK;
+}
+
+/* Shall Gy session be used according to policy and state? 1: yes, 0: no, -1: reject */
+int smf_use_gy_iface()
+{
+    switch (smf_self()->ctf_config.enabled) {
+    case SMF_CTF_ENABLED_AUTO:
+        return ogs_diam_app_connected(OGS_DIAM_GY_APPLICATION_ID) ? 1 : 0;
+    case SMF_CTF_ENABLED_YES:
+        return ogs_diam_app_connected(OGS_DIAM_GY_APPLICATION_ID) ? 1 : -1;
+    case SMF_CTF_ENABLED_NO:
+        return 0;
+    default:
+        return -1;
+    }
+}
+
 void smf_context_init(void)
 {
     ogs_assert(context_initialized == 0);
@@ -47,6 +68,7 @@ void smf_context_init(void)
 
     /* Initialize SMF context */
     memset(&self, 0, sizeof(smf_context_t));
+    smf_ctf_config_init(&self.ctf_config);
     self.diam_config = &g_diam_conf;
 
     ogs_log_install_domain(&__ogs_ngap_domain, "ngap", ogs_core()->log.level);
@@ -330,6 +352,32 @@ int smf_context_parse_config(void)
                             } else
                                 ogs_warn("unknown key `%s`", fd_key);
                         }
+                    }
+                } else if (!strcmp(smf_key, "ctf")) {
+                    ogs_yaml_iter_t ctf_iter;
+                    yaml_node_t *node =
+                        yaml_document_get_node(document, smf_iter.pair->value);
+                    ogs_assert(node);
+                    ogs_assert(node->type == YAML_MAPPING_NODE);
+                    ogs_yaml_iter_recurse(&smf_iter, &ctf_iter);
+                    while (ogs_yaml_iter_next(&ctf_iter)) {
+                        const char *ctf_key = ogs_yaml_iter_key(&ctf_iter);
+                        ogs_assert(ctf_key);
+                        if (!strcmp(ctf_key, "enabled")) {
+                            yaml_node_t *ctf_node =
+                                yaml_document_get_node(document, ctf_iter.pair->value);
+                            ogs_assert(ctf_node->type == YAML_SCALAR_NODE);
+                            const char* enabled = ogs_yaml_iter_value(&ctf_iter);
+                            if (!strcmp(enabled, "auto"))
+                                self.ctf_config.enabled = SMF_CTF_ENABLED_AUTO;
+                            else if (!strcmp(enabled, "yes"))
+                                self.ctf_config.enabled = SMF_CTF_ENABLED_YES;
+                            else if (!strcmp(enabled, "no"))
+                                self.ctf_config.enabled = SMF_CTF_ENABLED_NO;
+                            else
+                                ogs_warn("unknown 'enabled' value `%s`", enabled);
+                        } else
+                            ogs_warn("unknown key `%s`", ctf_key);
                     }
                 } else if (!strcmp(smf_key, "gtpc")) {
                     /* handle config in gtp library */

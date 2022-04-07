@@ -114,6 +114,8 @@ ogs_pkbuf_t *smf_n4_build_session_modification_request(
         uint8_t type, smf_sess_t *sess, uint64_t modify_flags)
 {
     ogs_pfcp_pdr_t *pdr = NULL;
+    ogs_pfcp_urr_t *urr = NULL;
+    int i;
 
     ogs_pfcp_message_t pfcp_message;
     ogs_pfcp_session_modification_request_t *req = NULL;
@@ -201,13 +203,20 @@ ogs_pkbuf_t *smf_n4_build_session_modification_request(
                         &req->update_far[num_of_update_far],
                         num_of_update_far, far);
                 num_of_update_far++;
-            } else {
+            } else if (modify_flags == 0) {
                 ogs_fatal("Invalid modify_flags = %lld",
                         (long long)modify_flags);
                 ogs_assert_if_reached();
             }
         }
 
+    }
+
+    /* Update URR */
+    i = 0;
+    ogs_list_for_each(&sess->pfcp.urr_list, urr) {
+        ogs_pfcp_build_update_urr(&req->update_urr[i], i, urr, modify_flags);
+        i++;
     }
 
     pfcp_message.h.type = type;
