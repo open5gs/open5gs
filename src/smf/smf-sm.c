@@ -25,6 +25,7 @@
 #include "s5c-handler.h"
 #include "gn-handler.h"
 #include "gx-handler.h"
+#include "gy-handler.h"
 #include "nnrf-handler.h"
 #include "namf-handler.h"
 #include "npcf-handler.h"
@@ -60,6 +61,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
     ogs_gtp1_message_t gtp1_message;
 
     ogs_diam_gx_message_t *gx_message = NULL;
+    ogs_diam_gy_message_t *gy_message = NULL;
 
     ogs_pfcp_node_t *pfcp_node = NULL;
     ogs_pfcp_xact_t *pfcp_xact = NULL;
@@ -269,6 +271,50 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         ogs_session_data_free(&gx_message->session_data);
         ogs_free(gx_message);
         break;
+
+    case SMF_EVT_GY_MESSAGE:
+        ogs_assert(e);
+        gy_message = e->gy_message;
+        ogs_assert(gy_message);
+
+        sess = e->sess;
+        ogs_assert(sess);
+
+        switch(gy_message->cmd_code) {
+        case OGS_DIAM_GY_CMD_CODE_CREDIT_CONTROL:
+            switch(gy_message->cc_request_type) {
+            case OGS_DIAM_GY_CC_REQUEST_TYPE_INITIAL_REQUEST:
+                ogs_assert(e->gtp_xact);
+                smf_gy_handle_cca_initial_request(
+                        sess, gy_message, e->gtp_xact);
+                break;
+            case OGS_DIAM_GY_CC_REQUEST_TYPE_UPDATE_REQUEST:
+                    ogs_assert(e->pfcp_xact);
+                    smf_gy_handle_cca_update_request(
+                            sess, gy_message, e->pfcp_xact);
+            break;
+            case OGS_DIAM_GY_CC_REQUEST_TYPE_TERMINATION_REQUEST:
+                ogs_assert(e->gtp_xact);
+                smf_gy_handle_cca_termination_request(
+                        sess, gy_message, e->gtp_xact);
+                break;
+            default:
+                ogs_error("Not implemented(%d)", gy_message->cc_request_type);
+                break;
+            }
+
+            break;
+        case OGS_DIAM_GY_CMD_RE_AUTH:
+            smf_gy_handle_re_auth_request(sess, gy_message);
+            break;
+        default:
+            ogs_error("Invalid type(%d)", gy_message->cmd_code);
+            break;
+        }
+
+        ogs_free(gy_message);
+        break;
+
     case SMF_EVT_N4_MESSAGE:
         ogs_assert(e);
         recvbuf = e->pkbuf;
