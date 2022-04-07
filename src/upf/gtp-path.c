@@ -79,6 +79,7 @@ static void _gtpv1_tun_recv_common_cb(
     ogs_pfcp_pdr_t *fallback_pdr = NULL;
     ogs_pfcp_far_t *far = NULL;
     ogs_pfcp_user_plane_report_t report;
+    int i;
 
     recvbuf = ogs_tun_read(fd, packet_pool);
     if (!recvbuf) {
@@ -173,6 +174,10 @@ static void _gtpv1_tun_recv_common_cb(
         }
         goto cleanup;
     }
+
+    /* Increment total & dl octets + pkts */
+    for (i = 0; i < pdr->num_of_urr; i++)
+        upf_sess_urr_acc_add(sess, pdr->urr[i], recvbuf->len, false);
 
     ogs_assert(true == ogs_pfcp_up_handle_pdr(pdr, recvbuf, &report));
 
@@ -348,6 +353,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
         ogs_pfcp_subnet_t *subnet = NULL;
         ogs_pfcp_dev_t *dev = NULL;
+        int i;
 
         ip_h = (struct ip *)pkbuf->data;
         ogs_assert(ip_h);
@@ -512,6 +518,10 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
             dev = subnet->dev;
             ogs_assert(dev);
+
+            /* Increment total & ul octets + pkts */
+            for (i = 0; i < pdr->num_of_urr; i++)
+                upf_sess_urr_acc_add(sess, pdr->urr[i], pkbuf->len, true);
 
             if (dev->is_tap) {
                 ogs_assert(eth_type);

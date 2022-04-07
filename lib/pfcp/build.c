@@ -858,3 +858,72 @@ ogs_pkbuf_t *ogs_pfcp_build_session_report_response(
     pfcp_message.h.type = type;
     return ogs_pfcp_build_msg(&pfcp_message);
 }
+
+ogs_pkbuf_t *ogs_pfcp_build_session_deletion_response( uint8_t type, uint8_t cause,
+        ogs_pfcp_user_plane_report_t *report)
+{
+    ogs_pfcp_message_t pfcp_message;
+    ogs_pfcp_session_deletion_response_t *rsp = NULL;
+    unsigned int i;
+
+    ogs_debug("PFCP session deletion response");
+
+    rsp = &pfcp_message.pfcp_session_deletion_response;
+    memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
+
+    rsp->cause.presence = 1;
+    rsp->cause.u8 = cause;
+
+    if (report->type.usage_report) {
+        ogs_assert(report->num_of_usage_report > 0);
+        for (i = 0; i < report->num_of_usage_report; i++) {
+            rsp->usage_report[i].presence = 1;
+            rsp->usage_report[i].urr_id.presence = 1;
+            rsp->usage_report[i].urr_id.u32 = report->usage_report[i].id;
+            rsp->usage_report[i].ur_seqn.presence = 1;
+            rsp->usage_report[i].ur_seqn.u32 = report->usage_report[i].seqn;
+            rsp->usage_report[i].usage_report_trigger.presence = 1;
+            rsp->usage_report[i].usage_report_trigger.u24 =
+                (report->usage_report[i].rep_trigger.reptri_5 << 16)
+                | (report->usage_report[i].rep_trigger.reptri_6 << 8)
+                | (report->usage_report[i].rep_trigger.reptri_7);
+
+            if (report->usage_report[i].start_time) {
+                rsp->usage_report[i].start_time.presence = 1;
+                rsp->usage_report[i].start_time.u32 = report->usage_report[i].start_time;
+            }
+
+            if (report->usage_report[i].end_time) {
+                rsp->usage_report[i].end_time.presence = 1;
+                rsp->usage_report[i].end_time.u32 = report->usage_report[i].end_time;
+            }
+
+            if (report->usage_report[i].vol_measurement.flags) {
+                rsp->usage_report[i].volume_measurement.presence = 1;
+                ogs_pfcp_build_volume_measurement(
+                        &rsp->usage_report[i].volume_measurement,
+                        &report->usage_report[i].vol_measurement,
+                        &usage_report_buf.vol_meas,
+                        sizeof(usage_report_buf.vol_meas));
+            }
+
+            rsp->usage_report[i].duration_measurement.presence = 1;
+            rsp->usage_report[i].duration_measurement.u32 =
+                report->usage_report[i].dur_measurement;
+
+            if (report->usage_report[i].time_of_first_packet) {
+                rsp->usage_report[i].time_of_first_packet.presence = 1;
+                rsp->usage_report[i].time_of_first_packet.u32 =
+                    report->usage_report[i].time_of_first_packet;
+            }
+
+            if (report->usage_report[i].time_of_last_packet) {
+                rsp->usage_report[i].time_of_last_packet.presence = 1;
+                rsp->usage_report[i].time_of_last_packet.u32 =
+                    report->usage_report[i].time_of_last_packet;
+            }
+        }
+    }
+    pfcp_message.h.type = type;
+    return ogs_pfcp_build_msg(&pfcp_message);
+}

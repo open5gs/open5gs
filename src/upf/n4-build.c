@@ -111,18 +111,21 @@ ogs_pkbuf_t *upf_n4_build_session_modification_response(uint8_t type,
 ogs_pkbuf_t *upf_n4_build_session_deletion_response(uint8_t type,
         upf_sess_t *sess)
 {
-    ogs_pfcp_message_t pfcp_message;
-    ogs_pfcp_session_deletion_response_t *rsp = NULL;
-
+    ogs_pfcp_urr_t *urr = NULL;
+    ogs_pfcp_user_plane_report_t report;
+    size_t num_of_reports = 0;
     ogs_debug("Session Deletion Response");
 
-    rsp = &pfcp_message.pfcp_session_deletion_response;
-    memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
+    memset(&report, 0, sizeof(report));
+    ogs_list_for_each(&sess->pfcp.urr_list, urr) {
+        ogs_assert(num_of_reports < OGS_ARRAY_SIZE(report.usage_report));
+        upf_sess_urr_acc_fill_usage_report(sess, urr, &report, num_of_reports);
+        report.usage_report[num_of_reports].rep_trigger.termination_report = 1;
+        num_of_reports++;
+        upf_sess_urr_acc_snapshot(sess, urr);
+    }
+    report.num_of_usage_report = num_of_reports;
 
-    /* Cause */
-    rsp->cause.presence = 1;
-    rsp->cause.u8 = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
-
-    pfcp_message.h.type = type;
-    return ogs_pfcp_build_msg(&pfcp_message);
+    return ogs_pfcp_build_session_deletion_response(type, OGS_PFCP_CAUSE_REQUEST_ACCEPTED,
+                                                    &report);
 }

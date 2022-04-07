@@ -22,6 +22,30 @@
 #include "gtp-path.h"
 #include "n4-handler.h"
 
+static void upf_n4_handle_create_urr(upf_sess_t *sess, ogs_pfcp_tlv_create_urr_t *create_urr_arr,
+                              uint8_t *cause_value, uint8_t *offending_ie_value)
+{
+    int i;
+    ogs_pfcp_urr_t *urr;
+
+    *cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
+
+    for (i = 0; i < OGS_MAX_NUM_OF_URR; i++) {
+        urr = ogs_pfcp_handle_create_urr(&sess->pfcp, &create_urr_arr[i],
+                    cause_value, offending_ie_value);
+        if (!urr)
+            return;
+
+        /* TODO: here we should check for Reporting Triggers IMTH=1 instead? */
+        if ((urr->meas_method & OGS_PFCP_MEASUREMENT_METHOD_DURATION) && urr->time_threshold > 0) {
+            /* if ISTM bit set in Measurement Information: */
+            if (urr->meas_info.istm) {
+                upf_sess_urr_acc_time_threshold_setup(sess, urr);
+            } /* else: TODO: call upf_sess_urr_acc_time_threshold_setup() upon first pkt received */
+        }
+    }
+}
+
 void upf_n4_handle_session_establishment_request(
         upf_sess_t *sess, ogs_pfcp_xact_t *xact,
         ogs_pfcp_session_establishment_request_t *req)
@@ -67,11 +91,7 @@ void upf_n4_handle_session_establishment_request(
     if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
         goto cleanup;
 
-    for (i = 0; i < OGS_MAX_NUM_OF_URR; i++) {
-        if (ogs_pfcp_handle_create_urr(&sess->pfcp, &req->create_urr[i],
-                    &cause_value, &offending_ie_value) == NULL)
-            break;
-    }
+    upf_n4_handle_create_urr(sess, &req->create_urr[0], &cause_value, &offending_ie_value);
     if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
         goto cleanup;
 
@@ -272,11 +292,7 @@ void upf_n4_handle_session_modification_request(
     if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
         goto cleanup;
 
-    for (i = 0; i < OGS_MAX_NUM_OF_URR; i++) {
-        if (ogs_pfcp_handle_create_urr(&sess->pfcp, &req->create_urr[i],
-                    &cause_value, &offending_ie_value) == NULL)
-            break;
-    }
+    upf_n4_handle_create_urr(sess, &req->create_urr[0], &cause_value, &offending_ie_value);
     if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
         goto cleanup;
 
