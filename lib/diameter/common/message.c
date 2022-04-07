@@ -23,11 +23,14 @@
 	CHECK_FCT(  fd_dict_search( fd_g_config->cnf_dict, (_type), (_criteria), (_what), (_result), ENOENT) );
 
 struct dict_object *ogs_diam_session_id = NULL;
+struct dict_object *ogs_diam_termination_cause = NULL;
 struct dict_object *ogs_diam_origin_host = NULL;
 struct dict_object *ogs_diam_origin_realm = NULL;
 struct dict_object *ogs_diam_destination_host = NULL;
 struct dict_object *ogs_diam_destination_realm = NULL;
 struct dict_object *ogs_diam_user_name = NULL;
+struct dict_object *ogs_diam_origin_state_id = NULL;
+struct dict_object *ogs_diam_event_timestamp = NULL;
 struct dict_object *ogs_diam_subscription_id = NULL;
 struct dict_object *ogs_diam_subscription_id_type = NULL;
 struct dict_object *ogs_diam_subscription_id_data = NULL;
@@ -44,6 +47,7 @@ struct dict_object *ogs_diam_mip_home_agent_address = NULL;
 struct dict_object *ogs_diam_authorization_lifetime = NULL;
 struct dict_object *ogs_diam_auth_grace_period = NULL;
 struct dict_object *ogs_diam_session_timeout = NULL;
+struct dict_object *ogs_diam_service_context_id = NULL;
 struct dict_object *ogs_diam_rat_type = NULL;
 struct dict_object *ogs_diam_service_selection = NULL;
 struct dict_object *ogs_diam_visited_plmn_id = NULL;
@@ -64,11 +68,14 @@ int ogs_diam_message_init()
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Vendor-Id", &ogs_diam_vendor_id);
 
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Session-Id", &ogs_diam_session_id);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME, "Termination-Cause", &ogs_diam_termination_cause);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Origin-Host", &ogs_diam_origin_host);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Origin-Realm", &ogs_diam_origin_realm);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Destination-Host", &ogs_diam_destination_host);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Destination-Realm", &ogs_diam_destination_realm);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "User-Name", &ogs_diam_user_name);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME, "Origin-State-Id", &ogs_diam_origin_state_id);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME, "Event-Timestamp", &ogs_diam_event_timestamp);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Subscription-Id", &ogs_diam_subscription_id);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Subscription-Id-Type", &ogs_diam_subscription_id_type);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Subscription-Id-Data", &ogs_diam_subscription_id_data);
@@ -85,6 +92,7 @@ int ogs_diam_message_init()
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Authorization-Lifetime", &ogs_diam_authorization_lifetime);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Auth-Grace-Period", &ogs_diam_auth_grace_period);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Session-Timeout", &ogs_diam_session_timeout);
+    CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Service-Context-Id", &ogs_diam_service_context_id);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "RAT-Type", &ogs_diam_rat_type);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Service-Selection", &ogs_diam_service_selection);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Visited-PLMN-Id", &ogs_diam_visited_plmn_id);

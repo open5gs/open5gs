@@ -1,4 +1,5 @@
 # Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+# Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
 
 # This file is part of Open5GS.
 
@@ -15,11 +16,26 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-subdir('common')
-subdir('gx')
-subdir('gy')
-subdir('rx')
-subdir('s6a')
-subdir('cx')
-subdir('swx')
-subdir('s6b')
+libdiameter_gy_sources = files('''
+    ogs-diameter-gy.h
+
+    message.h
+
+    dict.c
+    message.c
+'''.split())
+
+libdiameter_gy_inc = include_directories('.')
+
+libdiameter_gy = library('ogsdiameter-gy',
+    sources : libdiameter_gy_sources,
+    version : libogslib_version,
+    c_args : libdiameter_common_cc_flags,
+    include_directories : libdiameter_gy_inc,
+    dependencies : libdiameter_common_dep,
+    install : true)
+
+libdiameter_gy_dep = declare_dependency(
+    link_with : libdiameter_gy,
+    include_directories : libdiameter_gy_inc,
+    dependencies : libdiameter_common_dep)
