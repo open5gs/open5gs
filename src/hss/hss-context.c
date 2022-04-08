@@ -956,20 +956,19 @@ char *hss_cx_download_user_data(
         }
 
         if(self.sms_over_ims) {
-
             user_data = ogs_mstrcatf(user_data, "%s", 
                         ogs_diam_cx_xml_ifc_s); 
             ogs_assert(user_data);
 
-            user_data = ogs_mstrcatf(user_data, "%s%s%s", 
-                        ogs_diam_cx_xml_priority_s,
-                        "2", 
-                        ogs_diam_cx_xml_priority_e); 
-            ogs_assert(user_data);
+              user_data = ogs_mstrcatf(user_data, "%s%s%s", 
+                          ogs_diam_cx_xml_priority_s,
+                          "2", 
+                          ogs_diam_cx_xml_priority_e); 
+              ogs_assert(user_data);
 
-            user_data = ogs_mstrcatf(user_data, "%s", 
-                        ogs_diam_cx_xml_tp_s); 
-            ogs_assert(user_data);
+              user_data = ogs_mstrcatf(user_data, "%s", 
+                          ogs_diam_cx_xml_tp_s); 
+              ogs_assert(user_data);
 
                 user_data = ogs_mstrcatf(user_data, "%s%s%s", 
                             ogs_diam_cx_xml_cnf_s, 
@@ -981,91 +980,37 @@ char *hss_cx_download_user_data(
                             ogs_diam_cx_xml_spt_s); 
                 ogs_assert(user_data);
 
-                user_data = ogs_mstrcatf(user_data, "%s%s%s", 
-                            ogs_diam_cx_xml_condition_negated_s, 
-                            "0", 
-                            ogs_diam_cx_xml_condition_negated_e); 
-                ogs_assert(user_data);
+                  user_data = ogs_mstrcatf(user_data, "%s%s%s", 
+                              ogs_diam_cx_xml_condition_negated_s, 
+                              "0", 
+                              ogs_diam_cx_xml_condition_negated_e); 
+                  ogs_assert(user_data);
 
-                user_data = ogs_mstrcatf(user_data, "%s%s%s", 
-                            ogs_diam_cx_xml_group_s, 
-                            "1", 
-                            ogs_diam_cx_xml_group_e); 
-                ogs_assert(user_data);
+                  user_data = ogs_mstrcatf(user_data, "%s%s%s", 
+                              ogs_diam_cx_xml_group_s, 
+                              "1", 
+                              ogs_diam_cx_xml_group_e); 
+                  ogs_assert(user_data);
 
-                user_data = ogs_mstrcatf(user_data, "%s%s%s", 
-                            ogs_diam_cx_xml_method_s, 
-                            "MESSAGE", 
-                            ogs_diam_cx_xml_method_e); 
-                ogs_assert(user_data);
+                  user_data = ogs_mstrcatf(user_data, "%s%s%s", 
+                              ogs_diam_cx_xml_method_s, 
+                              "MESSAGE", 
+                              ogs_diam_cx_xml_method_e); 
+                  ogs_assert(user_data);
 
-                user_data = ogs_mstrcatf(user_data, "%s", 
-                            ogs_diam_cx_xml_extension_s); 
-                ogs_assert(user_data);
+                  user_data = ogs_mstrcatf(user_data, "%s", 
+                              ogs_diam_cx_xml_extension_s); 
+                  ogs_assert(user_data);
 
-                user_data = ogs_mstrcatf(user_data, "%s%s%s", 
-                            ogs_diam_cx_xml_registration_type_s, 
-                            "0", 
-                            ogs_diam_cx_xml_registration_type_e); 
-                ogs_assert(user_data);
+                    user_data = ogs_mstrcatf(user_data, "%s%s%s", 
+                                ogs_diam_cx_xml_registration_type_s, 
+                                "0", 
+                                ogs_diam_cx_xml_registration_type_e); 
+                    ogs_assert(user_data);
 
-                user_data = ogs_mstrcatf(user_data, "%s", 
-                            ogs_diam_cx_xml_extension_e); 
-                ogs_assert(user_data);
-
-                user_data = ogs_mstrcatf(user_data, "%s", 
-                            ogs_diam_cx_xml_spt_e); 
-                ogs_assert(user_data);
-
-                user_data = ogs_mstrcatf(user_data, "%s", 
-                            ogs_diam_cx_xml_spt_s); 
-                ogs_assert(user_data);
-
-                user_data = ogs_mstrcatf(user_data, "%s%s%s", 
-                            ogs_diam_cx_xml_condition_negated_s, 
-                            "0", 
-                            ogs_diam_cx_xml_condition_negated_e); 
-                ogs_assert(user_data);
-
-                user_data = ogs_mstrcatf(user_data, "%s%s%s", 
-                            ogs_diam_cx_xml_group_s, 
-                            "2", 
-                            ogs_diam_cx_xml_group_e); 
-                ogs_assert(user_data);
-
-                user_data = ogs_mstrcatf(user_data, "%s", 
-                            ogs_diam_cx_xml_sip_hdr_s); 
-                ogs_assert(user_data);
-
-                user_data = ogs_mstrcatf(user_data, "%s%s%s", 
-                            ogs_diam_cx_xml_header_s, 
-                            "Content-Type", 
-                            ogs_diam_cx_xml_header_e); 
-                ogs_assert(user_data);
-
-                user_data = ogs_mstrcatf(user_data, "%s%s%s", 
-                            ogs_diam_cx_xml_content_s, 
-                            "application/vnd.3gpp.sms", 
-                            ogs_diam_cx_xml_content_e); 
-                ogs_assert(user_data);
-
-                user_data = ogs_mstrcatf(user_data, "%s", 
-                            ogs_diam_cx_xml_sip_hdr_e); 
-                ogs_assert(user_data);
-
-                user_data = ogs_mstrcatf(user_data, "%s", 
-                            ogs_diam_cx_xml_extension_s); 
-                ogs_assert(user_data);
-
-                user_data = ogs_mstrcatf(user_data, "%s%s%s", 
-                            ogs_diam_cx_xml_registration_type_s, 
-                            "0", 
-                            ogs_diam_cx_xml_registration_type_e); 
-                ogs_assert(user_data);
-
-                user_data = ogs_mstrcatf(user_data, "%s", 
-                            ogs_diam_cx_xml_extension_e); 
-                ogs_assert(user_data);
+                  user_data = ogs_mstrcatf(user_data, "%s", 
+                              ogs_diam_cx_xml_extension_e); 
+                  ogs_assert(user_data);
 
                 user_data = ogs_mstrcatf(user_data, "%s", 
                             ogs_diam_cx_xml_spt_e); 
@@ -1075,49 +1020,103 @@ char *hss_cx_download_user_data(
                             ogs_diam_cx_xml_spt_s); 
                 ogs_assert(user_data);
 
-                user_data = ogs_mstrcatf(user_data, "%s%s%s", 
-                            ogs_diam_cx_xml_condition_negated_s, 
-                            "0", 
-                            ogs_diam_cx_xml_condition_negated_e); 
-                ogs_assert(user_data);
+                  user_data = ogs_mstrcatf(user_data, "%s%s%s", 
+                              ogs_diam_cx_xml_condition_negated_s, 
+                              "0", 
+                              ogs_diam_cx_xml_condition_negated_e); 
+                  ogs_assert(user_data);
 
-                user_data = ogs_mstrcatf(user_data, "%s%s%s", 
-                            ogs_diam_cx_xml_group_s, 
-                            "3", 
-                            ogs_diam_cx_xml_group_e); 
-                ogs_assert(user_data);
+                  user_data = ogs_mstrcatf(user_data, "%s%s%s", 
+                              ogs_diam_cx_xml_group_s, 
+                              "2", 
+                              ogs_diam_cx_xml_group_e); 
+                  ogs_assert(user_data);
 
-                user_data = ogs_mstrcatf(user_data, "%s%s%s", 
-                            ogs_diam_cx_xml_session_case_s, 
-                            "0", 
-                            ogs_diam_cx_xml_session_case_e); 
-                ogs_assert(user_data);
+                  user_data = ogs_mstrcatf(user_data, "%s", 
+                              ogs_diam_cx_xml_sip_hdr_s); 
+                  ogs_assert(user_data);
 
-                user_data = ogs_mstrcatf(user_data, "%s", 
-                            ogs_diam_cx_xml_extension_s); 
-                ogs_assert(user_data);
+                    user_data = ogs_mstrcatf(user_data, "%s%s%s", 
+                                ogs_diam_cx_xml_header_s, 
+                                "Content-Type", 
+                                ogs_diam_cx_xml_header_e); 
+                    ogs_assert(user_data);
 
-                user_data = ogs_mstrcatf(user_data, "%s%s%s", 
-                            ogs_diam_cx_xml_registration_type_s, 
-                            "0", 
-                            ogs_diam_cx_xml_registration_type_e); 
-                ogs_assert(user_data);
+                    user_data = ogs_mstrcatf(user_data, "%s%s%s", 
+                                ogs_diam_cx_xml_content_s, 
+                                "application/vnd.3gpp.sms", 
+                                ogs_diam_cx_xml_content_e); 
+                    ogs_assert(user_data);
 
-                user_data = ogs_mstrcatf(user_data, "%s", 
-                            ogs_diam_cx_xml_extension_e); 
-                ogs_assert(user_data);
+                  user_data = ogs_mstrcatf(user_data, "%s", 
+                              ogs_diam_cx_xml_sip_hdr_e); 
+                  ogs_assert(user_data);
+
+                  user_data = ogs_mstrcatf(user_data, "%s", 
+                              ogs_diam_cx_xml_extension_s); 
+                  ogs_assert(user_data);
+
+                    user_data = ogs_mstrcatf(user_data, "%s%s%s", 
+                                ogs_diam_cx_xml_registration_type_s, 
+                                "0", 
+                                ogs_diam_cx_xml_registration_type_e); 
+                    ogs_assert(user_data);
+
+                  user_data = ogs_mstrcatf(user_data, "%s", 
+                              ogs_diam_cx_xml_extension_e); 
+                  ogs_assert(user_data);
 
                 user_data = ogs_mstrcatf(user_data, "%s", 
                             ogs_diam_cx_xml_spt_e); 
                 ogs_assert(user_data);
 
-            user_data = ogs_mstrcatf(user_data, "%s", 
-                        ogs_diam_cx_xml_tp_e); 
-            ogs_assert(user_data);
+                user_data = ogs_mstrcatf(user_data, "%s", 
+                            ogs_diam_cx_xml_spt_s); 
+                ogs_assert(user_data);
 
-            user_data = ogs_mstrcatf(user_data, "%s", 
-                        ogs_diam_cx_xml_app_server_s); 
-            ogs_assert(user_data);
+                  user_data = ogs_mstrcatf(user_data, "%s%s%s", 
+                              ogs_diam_cx_xml_condition_negated_s, 
+                              "0", 
+                              ogs_diam_cx_xml_condition_negated_e); 
+                  ogs_assert(user_data);
+
+                  user_data = ogs_mstrcatf(user_data, "%s%s%s", 
+                              ogs_diam_cx_xml_group_s, 
+                              "3", 
+                              ogs_diam_cx_xml_group_e); 
+                  ogs_assert(user_data);
+
+                  user_data = ogs_mstrcatf(user_data, "%s%s%s", 
+                              ogs_diam_cx_xml_session_case_s, 
+                              "0", 
+                              ogs_diam_cx_xml_session_case_e); 
+                  ogs_assert(user_data);
+
+                  user_data = ogs_mstrcatf(user_data, "%s", 
+                              ogs_diam_cx_xml_extension_s); 
+                  ogs_assert(user_data);
+
+                    user_data = ogs_mstrcatf(user_data, "%s%s%s", 
+                                ogs_diam_cx_xml_registration_type_s, 
+                                "0", 
+                                ogs_diam_cx_xml_registration_type_e); 
+                    ogs_assert(user_data);
+
+                  user_data = ogs_mstrcatf(user_data, "%s", 
+                              ogs_diam_cx_xml_extension_e); 
+                  ogs_assert(user_data);
+
+                user_data = ogs_mstrcatf(user_data, "%s", 
+                            ogs_diam_cx_xml_spt_e); 
+                ogs_assert(user_data);
+
+              user_data = ogs_mstrcatf(user_data, "%s", 
+                          ogs_diam_cx_xml_tp_e); 
+              ogs_assert(user_data);
+
+              user_data = ogs_mstrcatf(user_data, "%s", 
+                          ogs_diam_cx_xml_app_server_s); 
+              ogs_assert(user_data);
 
                 user_data = ogs_mstrcatf(user_data, "%s%s%s", 
                             ogs_diam_cx_xml_server_name_s, 
@@ -1131,9 +1130,9 @@ char *hss_cx_download_user_data(
                             ogs_diam_cx_xml_default_handling_e); 
                 ogs_assert(user_data);
 
-            user_data = ogs_mstrcatf(user_data, "%s", 
-                        ogs_diam_cx_xml_app_server_e); 
-            ogs_assert(user_data);
+              user_data = ogs_mstrcatf(user_data, "%s", 
+                          ogs_diam_cx_xml_app_server_e); 
+              ogs_assert(user_data);
 
             user_data = ogs_mstrcatf(user_data, "%s", 
                         ogs_diam_cx_xml_ifc_e);
