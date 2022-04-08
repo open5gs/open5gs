@@ -955,7 +955,6 @@ char *hss_cx_download_user_data(
             ogs_assert(user_data);
         }
 
-        /* smsip: "sip:smsc.mnc001.mcc001.3gppnetwork.org:7060" */
         if(self.sms_over_ims) {
 
             user_data = ogs_mstrcatf(user_data, "%s", 
@@ -981,7 +980,7 @@ char *hss_cx_download_user_data(
                 user_data = ogs_mstrcatf(user_data, "%s", 
                             ogs_diam_cx_xml_spt_s); 
                 ogs_assert(user_data);
-//1
+
                 user_data = ogs_mstrcatf(user_data, "%s%s%s", 
                             ogs_diam_cx_xml_condition_negated_s, 
                             "0", 
@@ -1017,7 +1016,7 @@ char *hss_cx_download_user_data(
                 user_data = ogs_mstrcatf(user_data, "%s", 
                             ogs_diam_cx_xml_spt_e); 
                 ogs_assert(user_data);
-//2
+
                 user_data = ogs_mstrcatf(user_data, "%s", 
                             ogs_diam_cx_xml_spt_s); 
                 ogs_assert(user_data);
@@ -1071,7 +1070,7 @@ char *hss_cx_download_user_data(
                 user_data = ogs_mstrcatf(user_data, "%s", 
                             ogs_diam_cx_xml_spt_e); 
                 ogs_assert(user_data);
-//3
+
                 user_data = ogs_mstrcatf(user_data, "%s", 
                             ogs_diam_cx_xml_spt_s); 
                 ogs_assert(user_data);
@@ -1111,7 +1110,7 @@ char *hss_cx_download_user_data(
                 user_data = ogs_mstrcatf(user_data, "%s", 
                             ogs_diam_cx_xml_spt_e); 
                 ogs_assert(user_data);
-//end 3
+
             user_data = ogs_mstrcatf(user_data, "%s", 
                         ogs_diam_cx_xml_tp_e); 
             ogs_assert(user_data);
