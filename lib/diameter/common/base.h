@@ -28,13 +28,13 @@
 extern "C" {
 #endif
 
-/* This is default diameter configuration if there is no config file 
+/* This is default diameter configuration if there is no config file
  * The Configuration : No TLS, Only TCP */
 typedef struct ogs_diam_config_s {
     /* Diameter Identity of the local peer (FQDN -- ASCII) */
-    const char *cnf_diamid; 
+    const char *cnf_diamid;
     /* Diameter realm of the local peer, default to realm part of cnf_diamid */
-    const char *cnf_diamrlm; 
+    const char *cnf_diamrlm;
     /* IP address of the local peer */
     const char *cnf_addr;
 
@@ -58,10 +58,10 @@ typedef struct ogs_diam_config_s {
     int num_of_ext;
 
 #define MAX_NUM_OF_FD_CONN 16
-    /* (supposedly) UTF-8, \0 terminated. 
+    /* (supposedly) UTF-8, \0 terminated.
      * The Diameter Identity of the remote peer. */
     struct {
-        const char *identity; 
+        const char *identity;
         const char *addr; /* IP address of the remote peer */
         uint16_t port; /* port to connect to. 0: default. */
     } conn[MAX_NUM_OF_FD_CONN];
@@ -75,7 +75,7 @@ void ogs_diam_final(void);
 int ogs_diam_config_init(ogs_diam_config_t *fd_config);
 bool ogs_diam_app_connected(uint32_t app_id);
 
-int fd_avp_search_avp ( struct avp * groupedavp, 
+int fd_avp_search_avp ( struct avp * groupedavp,
         struct dict_object * what, struct avp ** avp );
 
 #ifdef __cplusplus

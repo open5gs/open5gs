@@ -361,7 +361,7 @@ logger:
 #              mcc: 901
 #              mnc: 70
 #            tac: 99
-# 
+#
 
 smf:
     sbi:
@@ -438,7 +438,7 @@ nrf:
 #  <PFCP Client>>
 #
 #  o PFCP Client(127.0.0.7:8805)
-# 
+#
 #    pfcp:
 #      addr: 127.0.0.7
 #
