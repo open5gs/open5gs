@@ -233,6 +233,18 @@ logger:
 #      - 127.0.0.1
 #      - ::1
 #
+#  <CTF>
+#
+#  o Gy interface parameters towards OCS.
+#  o enabled:
+#    o auto: Default. Use Gy only if OCS available among Diameter peers
+#    o yes:  Use Gy always; reject subscribers if no OCS available among Diameter peers
+#    o no:   Don't use Gy interface if there is an OCS available
+#
+#    ctf:
+#      enabled: auto|yes|no
+#
+#
 #  <SMF Selection - 5G Core only>
 #  1. SMF sends SmfInfo(S-NSSAI, DNN, TAI) to the NRF
 #  2. NRF responds to AMF with SmfInfo during NF-Discovery.
@@ -385,6 +397,8 @@ smf:
       - 2001:4860:4860::8888
       - 2001:4860:4860::8844
     mtu: 1400
+    ctf:
+      enabled: auto
     freeDiameter: @sysconfdir@/freeDiameter/smf.conf
 
 #

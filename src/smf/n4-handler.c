@@ -26,6 +26,7 @@
 #include "binding.h"
 #include "sbi-path.h"
 #include "ngap-path.h"
+#include "fd-path.h"
 
 uint8_t gtp_cause_from_pfcp(uint8_t pfcp_cause, uint8_t gtp_version)
 {
@@ -927,7 +928,6 @@ void smf_epc_n4_handle_session_modification_response(
 
     if (flags & OGS_PFCP_MODIFY_SESSION) {
         /* If smf_epc_pfcp_send_session_modification_request() is called */
-
     } else {
         /* If smf_epc_pfcp_send_bearer_modification_request() is called */
         bearer = xact->data;
@@ -936,9 +936,14 @@ void smf_epc_n4_handle_session_modification_response(
     flags = xact->modify_flags;
     ogs_assert(flags);
 
-    gtp_xact = xact->assoc_xact;
-    gtp_pti = xact->gtp_pti;
-    gtp_cause = xact->gtp_cause;
+    /* OGS_PFCP_MODIFY_URR: Modification Response was originally triggered by
+       PFCP Session Report Request, xact->assoc_xact is not a gtp_xact. No
+       need to do anything. */
+    if (!(flags & OGS_PFCP_MODIFY_URR)) {
+        gtp_xact = xact->assoc_xact;
+        gtp_pti = xact->gtp_pti;
+        gtp_cause = xact->gtp_cause;
+    }
 
     ogs_pfcp_xact_commit(xact);
 
@@ -1126,6 +1131,8 @@ void smf_epc_n4_handle_session_deletion_response(
     uint8_t cause_value = 0;
     uint8_t resp_type = 0;
     ogs_gtp_xact_t *gtp_xact = NULL;
+    smf_bearer_t *bearer = NULL;
+    unsigned int i;
 
     ogs_assert(xact);
     ogs_assert(rsp);
@@ -1176,6 +1183,38 @@ void smf_epc_n4_handle_session_deletion_response(
 
     ogs_assert(sess);
 
+    bearer = smf_default_bearer_in_sess(sess);
+    for (i = 0; i < OGS_ARRAY_SIZE(rsp->usage_report); i++) {
+        ogs_pfcp_tlv_usage_report_session_deletion_response_t *use_rep = &rsp->usage_report[i];
+        uint32_t urr_id;
+        ogs_pfcp_volume_measurement_t volume;
+        if (use_rep->presence == 0)
+            break;
+        if (use_rep->urr_id.presence == 0)
+            continue;
+        urr_id = use_rep->urr_id.u32;
+        if (!bearer || !bearer->urr || bearer->urr->id != urr_id)
+            continue;
+        ogs_pfcp_parse_volume_measurement(&volume, &use_rep->volume_measurement);
+        if (volume.ulvol)
+            sess->gy.ul_octets += volume.uplink_volume;
+        if (volume.dlvol)
+            sess->gy.dl_octets += volume.downlink_volume;
+        sess->gy.duration += use_rep->duration_measurement.u32;
+    }
+
+    switch(smf_use_gy_iface()) {
+    case 1:
+        /* Gy is available, terminate the Gy session before terminating it towards the UE */
+        smf_gy_send_ccr(sess, gtp_xact,
+            OGS_DIAM_GY_CC_REQUEST_TYPE_TERMINATION_REQUEST);
+        return;
+    case -1:
+        ogs_error("No Gy Diameter Peer");
+        break; /* continue below */
+    /* default: continue below */
+    }
+
     if (gtp_xact) {
         /*
          * 1. MME sends Delete Session Request to SGW/SMF.
@@ -1213,11 +1252,13 @@ void smf_n4_handle_session_report_request(
         ogs_pfcp_session_report_request_t *pfcp_req)
 {
     smf_bearer_t *qos_flow = NULL;
+    smf_bearer_t *bearer = NULL;
     ogs_pfcp_pdr_t *pdr = NULL;
 
     ogs_pfcp_report_type_t report_type;
     uint8_t cause_value = 0;
     uint16_t pdr_id = 0;
+    unsigned int i;
 
     ogs_assert(pfcp_xact);
     ogs_assert(pfcp_req);
@@ -1343,8 +1384,42 @@ void smf_n4_handle_session_report_request(
         }
     }
 
+    if (report_type.usage_report) {
+        bearer = smf_default_bearer_in_sess(sess);
+        for (i = 0; i < OGS_ARRAY_SIZE(pfcp_req->usage_report); i++) {
+            ogs_pfcp_tlv_usage_report_session_report_request_t *use_rep = &pfcp_req->usage_report[i];
+            uint32_t urr_id;
+            ogs_pfcp_volume_measurement_t volume;
+            if (use_rep->presence == 0)
+                break;
+            if (use_rep->urr_id.presence == 0)
+                continue;
+            urr_id = use_rep->urr_id.u32;
+            if (!bearer || !bearer->urr || bearer->urr->id != urr_id)
+                continue;
+            ogs_pfcp_parse_volume_measurement(&volume, &use_rep->volume_measurement);
+            if (volume.ulvol)
+                sess->gy.ul_octets += volume.uplink_volume;
+            if (volume.dlvol)
+                sess->gy.dl_octets += volume.downlink_volume;
+            sess->gy.duration += use_rep->duration_measurement.u32;
+        }
+        switch(smf_use_gy_iface()) {
+        case 1:
+            smf_gy_send_ccr(sess, pfcp_xact, OGS_DIAM_GY_CC_REQUEST_TYPE_UPDATE_REQUEST);
+            break;
+        case -1:
+            ogs_error("No Gy Diameter Peer");
+            /* TODO: terminate connection */
+            break;
+        /* default: continue below */
+        }
+    }
+
     /* TS 29.244 sec 8.2.21: At least one bit shall be set to "1". Several bits may be set to "1". */
-    if (report_type.downlink_data_report || report_type.error_indication_report) {
+    if (report_type.downlink_data_report ||
+        report_type.error_indication_report ||
+        report_type.usage_report) {
         ogs_assert(OGS_OK ==
             smf_pfcp_send_session_report_response(
                 pfcp_xact, sess, OGS_PFCP_CAUSE_REQUEST_ACCEPTED));
