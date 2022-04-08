@@ -32,7 +32,6 @@ typedef struct ogs_pfcp_node_s ogs_pfcp_node_t;
 typedef struct ogs_pfcp_xact_s ogs_pfcp_xact_t;
 typedef struct ogs_pfcp_message_s ogs_pfcp_message_t;
 typedef struct ogs_diam_gx_message_s ogs_diam_gx_message_t;
-typedef struct ogs_diam_gy_message_s ogs_diam_gy_message_t;
 typedef struct smf_sess_s smf_sess_t;
 typedef struct smf_upf_s smf_upf_t;
 typedef struct ogs_sbi_request_s ogs_sbi_request_t;
@@ -49,7 +48,6 @@ typedef enum {
     SMF_EVT_S5C_MESSAGE,
     SMF_EVT_GN_MESSAGE,
     SMF_EVT_GX_MESSAGE,
-    SMF_EVT_GY_MESSAGE,
 
     SMF_EVT_N4_MESSAGE,
     SMF_EVT_N4_TIMER,
@@ -81,10 +79,7 @@ typedef struct smf_event_s {
     ogs_pfcp_xact_t *pfcp_xact;
     ogs_pfcp_message_t *pfcp_message;
 
-    union {
-        ogs_diam_gx_message_t *gx_message;
-        ogs_diam_gy_message_t *gy_message;
-    };
+    ogs_diam_gx_message_t *gx_message;
 
     struct {
         ogs_sbi_request_t *request;

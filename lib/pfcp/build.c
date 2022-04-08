@@ -637,51 +637,6 @@ void ogs_pfcp_build_create_urr(
     }
 }
 
-void ogs_pfcp_build_update_urr(
-    ogs_pfcp_tlv_update_urr_t *message, int i, ogs_pfcp_urr_t *urr, uint64_t modify_flags)
-{
-    ogs_assert(message);
-    ogs_assert(urr);
-
-    /* No change requested, skip. */
-    if (!(modify_flags & (OGS_PFCP_MODIFY_URR_MEAS_METHOD|
-                          OGS_PFCP_MODIFY_URR_REPORT_TRIGGER|
-                          OGS_PFCP_MODIFY_URR_VOLUME_THRESH|
-                          OGS_PFCP_MODIFY_URR_TIME_THRESH)))
-        return;
-
-    /* Change request: Send only changed IEs */
-    message->presence = 1;
-    message->urr_id.presence = 1;
-    message->urr_id.u32 = urr->id;
-    if (modify_flags & OGS_PFCP_MODIFY_URR_MEAS_METHOD) {
-        message->measurement_method.presence = 1;
-        message->measurement_method.u8 = urr->meas_method;
-    }
-    if (modify_flags & OGS_PFCP_MODIFY_URR_REPORT_TRIGGER) {
-        message->reporting_triggers.presence = 1;
-        message->reporting_triggers.u24 = (urr->rep_triggers.reptri_5 << 16)
-                                        | (urr->rep_triggers.reptri_6 << 8)
-                                        | (urr->rep_triggers.reptri_7);
-    }
-
-    if (modify_flags & OGS_PFCP_MODIFY_URR_VOLUME_THRESH) {
-        if (urr->vol_threshold.flags) {
-            message->volume_threshold.presence = 1;
-            ogs_pfcp_build_volume(
-                    &message->volume_threshold, &urr->vol_threshold,
-                    &urrbuf[i].vol_threshold, sizeof(urrbuf[i].vol_threshold));
-        }
-    }
-
-    if (modify_flags & OGS_PFCP_MODIFY_URR_TIME_THRESH) {
-        if (urr->time_threshold) {
-            message->time_threshold.presence = 1;
-            message->time_threshold.u32 = urr->time_threshold;
-        }
-    }
-}
-
 static struct {
     char mbr[OGS_PFCP_BITRATE_LEN];
     char gbr[OGS_PFCP_BITRATE_LEN];

@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
- * Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
  *
  * This file is part of Open5GS.
  *
@@ -21,7 +20,6 @@
 #include "context.h"
 #include "gtp-path.h"
 #include "pfcp-path.h"
-#include "fd-path.h"
 #include "gx-handler.h"
 #include "binding.h"
 
@@ -273,21 +271,8 @@ void smf_gx_handle_cca_initial_request(
         ogs_pfcp_pdr_associate_qer(ul_pdr, qer);
     }
 
-    /* if !Gy */
-    if (!ogs_diam_app_connected(OGS_DIAM_GY_APPLICATION_ID)) {
-        ogs_error("No Gy Diameter Peer");
-        //cause_value = OGS_GTP1_CAUSE_NO_RESOURCES_AVAILABLE;
-        /* FIXME: let's continue on now without Gy (charging features). Ideally
-         * it should be specified in the config the policy to use if Gy not
-         * present: either reject the context or continue nevertheless (default) */
-        ogs_assert(OGS_OK ==
-            smf_epc_pfcp_send_session_establishment_request(sess, gtp_xact));
-        return;
-    }
-
-    /* Gy is available, set up session for the bearer before accepting it towards the UE */
-    smf_gy_send_ccr(sess, gtp_xact,
-        OGS_DIAM_GY_CC_REQUEST_TYPE_INITIAL_REQUEST);
+    ogs_assert(OGS_OK ==
+        smf_epc_pfcp_send_session_establishment_request(sess, gtp_xact));
 }
 
 void smf_gx_handle_cca_termination_request(

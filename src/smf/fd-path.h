@@ -33,14 +33,10 @@ void smf_fd_final(void);
 
 int smf_gx_init(void);
 void smf_gx_final(void);
-int smf_gy_init(void);
-void smf_gy_final(void);
 int smf_s6b_init(void);
 void smf_s6b_final(void);
 
 void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
-        uint32_t cc_request_type);
-void smf_gy_send_ccr(smf_sess_t *sess, void *xact,
         uint32_t cc_request_type);
 
 void smf_s6b_send_aar(smf_sess_t *sess, ogs_gtp_xact_t *xact);
@@ -51,3 +47,4 @@ void smf_s6b_send_str(smf_sess_t *sess, ogs_gtp_xact_t *xact, uint32_t cause);
 #endif
 
 #endif /* SMF_FD_PATH_H */
+
