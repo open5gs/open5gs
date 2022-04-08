@@ -275,7 +275,7 @@ void smf_gx_handle_cca_initial_request(
 
     /* if !Gy */
     if (!ogs_diam_app_connected(OGS_DIAM_GY_APPLICATION_ID)) {
-        ogs_warn("No Gy Diameter Peer");
+        ogs_error("No Gy Diameter Peer");
         //cause_value = OGS_GTP1_CAUSE_NO_RESOURCES_AVAILABLE;
         /* FIXME: let's continue on now without Gy (charging features). Ideally
          * it should be specified in the config the policy to use if Gy not
