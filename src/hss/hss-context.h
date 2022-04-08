@@ -38,6 +38,7 @@ extern int __hss_log_domain;
 typedef struct _hss_context_t {
     const char          *diam_conf_path;/* HSS Diameter conf path */
     ogs_diam_config_t   *diam_config;   /* HSS Diameter config */
+    const char          *sms_over_ims;  /* SMS over IMS */
 
     ogs_thread_mutex_t  db_lock;
     ogs_thread_mutex_t  cx_lock;
