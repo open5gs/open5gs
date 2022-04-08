@@ -785,9 +785,9 @@ ogs_pkbuf_t *ogs_pfcp_build_session_report_request(
             req->usage_report[i].ur_seqn.u32 = report->usage_report[i].seqn;
             req->usage_report[i].usage_report_trigger.presence = 1;
             req->usage_report[i].usage_report_trigger.u24 =
-                (report->usage_report[i].rep_triggers.reptri_5 << 16)
-                | (report->usage_report[i].rep_triggers.reptri_6 << 8)
-                | (report->usage_report[i].rep_triggers.reptri_7);
+                (report->usage_report[i].rep_trigger.reptri_5 << 16)
+                | (report->usage_report[i].rep_trigger.reptri_6 << 8)
+                | (report->usage_report[i].rep_trigger.reptri_7);
 
             if (report->usage_report[i].start_time) {
                 req->usage_report[i].start_time.presence = 1;

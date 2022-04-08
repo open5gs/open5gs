@@ -845,6 +845,44 @@ ED3(uint8_t     spare:4;,
     };
 } __attribute__ ((packed)) ogs_pfcp_gate_status_t;
 
+/* 8.2.19 Reporting Triggers
+ */
+typedef struct ogs_pfcp_reporting_triggers_s {
+    union {
+        struct {
+ED8(uint8_t linked_usage_reporting:1;,
+    uint8_t dropped_dl_traffic_threshold:1;,
+    uint8_t stop_of_traffic:1;,
+    uint8_t start_of_traffic:1;,
+    uint8_t quota_holding_time:1;,
+    uint8_t time_threshold:1;,
+    uint8_t volume_threshold:1;,
+    uint8_t periodic_reporting:1;)
+        };
+        uint8_t reptri_5;
+    };
+    union {
+        struct {
+ED8(uint8_t quota_validity_time:1;,
+    uint8_t ip_multicast_join_leave:1;,
+    uint8_t event_quota:1;,
+    uint8_t event_threshold:1;,
+    uint8_t mac_addresses_reporting:1;,
+    uint8_t envelope_closure:1;,
+    uint8_t time_quota:1;,
+    uint8_t volume_quota:1;)
+        };
+        uint8_t reptri_6;
+    };
+    union {
+        struct {
+ED2(uint8_t spare:7;,
+    uint8_t report_the_end_marker_reception:1;)
+        };
+        uint8_t reptri_7;
+    };
+} __attribute__ ((packed)) ogs_pfcp_reporting_triggers_t;
+
 /*
  * 8.2.21 Report Type
  *
@@ -945,10 +983,10 @@ typedef uint8_t ogs_pfcp_measurement_method_t;
  * The Usage Report Trigger IE shall be encoded as shown in Figure 8.2.41-1.
  * It indicates the trigger of the usage report.
  */
-typedef struct ogs_pfcp_reporting_triggers_s {
+typedef struct ogs_pfcp_usage_report_trigger_s {
     union {
         struct {
-ED8(uint8_t linked_usage_reporting:1;,
+ED8(uint8_t immediate_report:1;;,
     uint8_t dropped_dl_traffic_threshold:1;,
     uint8_t stop_of_traffic:1;,
     uint8_t start_of_traffic:1;,
@@ -961,12 +999,12 @@ ED8(uint8_t linked_usage_reporting:1;,
     };
     union {
         struct {
-ED8(uint8_t quota_validity_time:1;,
-    uint8_t ip_multicast_join_leave:1;,
-    uint8_t event_quota:1;,
-    uint8_t event_threshold:1;,
+ED8(uint8_t event_threshold:1;,
     uint8_t mac_addresses_reporting:1;,
     uint8_t envelope_closure:1;,
+    uint8_t monitoring_time:1;,
+    uint8_t termination_report:1;,
+    uint8_t linked_usage_reporting:1;,
     uint8_t time_quota:1;,
     uint8_t volume_quota:1;)
         };
@@ -974,12 +1012,16 @@ ED8(uint8_t quota_validity_time:1;,
     };
     union {
         struct {
-ED2(uint8_t spare:7;,
-    uint8_t report_the_end_marker_reception:1;)
+ED6(uint8_t spare:3;,
+    uint8_t report_the_end_marker_reception:1;,
+    uint8_t quota_validity_time:1;,
+    uint8_t ip_multicast_join_leave:1;,
+    uint8_t termination_by_up_function_report:1;,
+    uint8_t event_quota:1;)
         };
         uint8_t reptri_7;
     };
-} __attribute__ ((packed)) ogs_pfcp_reporting_triggers_t;
+} __attribute__ ((packed)) ogs_pfcp_usage_report_trigger_t;
 
 /*
  * 8.2.42 Measurement Period
@@ -1282,7 +1324,7 @@ typedef struct ogs_pfcp_user_plane_report_s {
     struct {
         ogs_pfcp_urr_id_t id;
         ogs_pfcp_urr_ur_seqn_t seqn;
-        ogs_pfcp_reporting_triggers_t rep_triggers;
+        ogs_pfcp_usage_report_trigger_t rep_trigger;
         ogs_pfcp_start_time_t start_time;
         ogs_pfcp_end_time_t end_time;
         ogs_pfcp_volume_measurement_t vol_measurement;
