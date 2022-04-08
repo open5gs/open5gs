@@ -42,11 +42,22 @@ extern "C" {
 #define OGS_DIAM_INVALID_AVP_VALUE                  5005
 
 extern struct dict_object *ogs_diam_session_id;
+extern struct dict_object *ogs_diam_termination_cause;
+#define OGS_DIAM_TERMINATION_CAUSE_DIAMETER_LOGOUT                   1
+#define OGS_DIAM_TERMINATION_CAUSE_DIAMETER_SERVICE_NOT_PROVIDED     2
+#define OGS_DIAM_TERMINATION_CAUSE_DIAMETER_BAD_ANSWER               3
+#define OGS_DIAM_TERMINATION_CAUSE_DIAMETER_DIAMETER_ADMINISTRATIVE  4
+#define OGS_DIAM_TERMINATION_CAUSE_DIAMETER_LINK_BROKEN              5
+#define OGS_DIAM_TERMINATION_CAUSE_DIAMETER_AUTH_EXPIRED             6
+#define OGS_DIAM_TERMINATION_CAUSE_DIAMETER_USER_MOVED               7
+#define OGS_DIAM_TERMINATION_CAUSE_DIAMETER_SESSION_TIMEOUT          8
 extern struct dict_object *ogs_diam_origin_host;
 extern struct dict_object *ogs_diam_origin_realm;
 extern struct dict_object *ogs_diam_destination_host;
 extern struct dict_object *ogs_diam_destination_realm;
 extern struct dict_object *ogs_diam_user_name;
+extern struct dict_object *ogs_diam_origin_state_id;
+extern struct dict_object *ogs_diam_event_timestamp;
 extern struct dict_object *ogs_diam_subscription_id;
 #define OGS_DIAM_SUBSCRIPTION_ID_TYPE_END_USER_E164      0
 #define OGS_DIAM_SUBSCRIPTION_ID_TYPE_END_USER_IMSI      1
@@ -74,6 +85,7 @@ extern struct dict_object *ogs_diam_mip_home_agent_address;
 extern struct dict_object *ogs_diam_authorization_lifetime;
 extern struct dict_object *ogs_diam_auth_grace_period;
 extern struct dict_object *ogs_diam_session_timeout;
+extern struct dict_object *ogs_diam_service_context_id;
 #define OGS_DIAM_RAT_TYPE_WLAN                              0
 #define OGS_DIAM_RAT_TYPE_VIRTUAL                           1
 #define OGS_DIAM_RAT_TYPE_UTRAN                             1000
