@@ -24,6 +24,7 @@
 
 #include "ogs-gtp.h"
 #include "ogs-diameter-gx.h"
+#include "ogs-diameter-gy.h"
 #include "ogs-diameter-rx.h"
 #include "ogs-diameter-s6b.h"
 #include "ogs-pfcp.h"
@@ -217,6 +218,7 @@ typedef struct smf_sess_s {
     ogs_ip_t        gnb_n3_ip;      /* gNB-N3 IPv4/IPv6 */
 
     char            *gx_sid;        /* Gx Session ID */
+    char            *gy_sid;        /* Gx Session ID */
     char            *s6b_sid;       /* S6b Session ID */
 
     OGS_POOL(pf_precedence_pool, uint8_t);
@@ -290,6 +292,18 @@ typedef struct smf_sess_s {
     struct {
         uint8_t nsapi;
     } gtp1; /* GTPv1C specific fields */
+
+    struct {
+        uint64_t ul_octets;
+        uint64_t dl_octets;
+        ogs_time_t duration;
+        /* Snapshot of measurement when last report was sent: */
+        struct {
+            uint64_t ul_octets;
+            uint64_t dl_octets;
+            ogs_time_t duration;
+        } last_report;
+    } gy;
 
     struct {
         ogs_nas_extended_protocol_configuration_options_t ue_pco;
