@@ -52,15 +52,6 @@ typedef struct ogs_sbi_context_s {
     const char          *content_encoding;
 } ogs_sbi_context_t;
 
-#define OGS_SETUP_SBI_NF_INSTANCE(__cTX, __pNF_INSTANCE) \
-    do { \
-        ogs_assert((__pNF_INSTANCE)); \
-        if ((__cTX) != __pNF_INSTANCE) \
-            __pNF_INSTANCE->reference_count++; \
-        (__cTX) = __pNF_INSTANCE; \
-        ogs_trace("nf_instance->reference_count = %d", \
-                __pNF_INSTANCE->reference_count); \
-    } while(0)
 typedef struct ogs_sbi_nf_instance_s {
     ogs_lnode_t     lnode;
 
@@ -311,10 +302,7 @@ OpenAPI_uri_scheme_e ogs_sbi_default_uri_scheme(void);
                     OGS_SBI_NF_INSTANCE((__sBIObject), (__nFType))); \
         } \
         \
-        if (OGS_SBI_NF_INSTANCE( \
-                (__sBIObject), (__nFType)) != (__nFInstance)) { \
-            (__nFInstance)->reference_count++; \
-        } \
+        (__nFInstance)->reference_count++; \
         OGS_SBI_NF_INSTANCE((__sBIObject), (__nFType)) = (__nFInstance); \
         ogs_trace("nf_instance->reference_count = %d", \
                 (__nFInstance)->reference_count); \
