@@ -56,7 +56,6 @@ struct dict_object *ogs_diam_rx_framed_ip_address = NULL;
 struct dict_object *ogs_diam_rx_framed_ipv6_prefix = NULL;
 struct dict_object *ogs_diam_rx_ip_can_type = NULL;
 struct dict_object *ogs_diam_rx_abort_cause = NULL;
-struct dict_object *ogs_diam_rx_termination_cause = NULL;
 
 extern int ogs_dict_rx_entry(char *conffile);
 
@@ -100,7 +99,6 @@ int ogs_diam_rx_init(void)
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Framed-IPv6-Prefix", &ogs_diam_rx_framed_ipv6_prefix);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "IP-CAN-Type", &ogs_diam_rx_ip_can_type);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Abort-Cause", &ogs_diam_rx_abort_cause);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Termination-Cause", &ogs_diam_rx_termination_cause);
 
     return 0;
 }

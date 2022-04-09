@@ -1941,9 +1941,9 @@ void test_rx_send_str(uint8_t *rx_sid)
     ogs_assert(ret == 0);
 
     /* Set the Termination-Cause AVP */
-    ret = fd_msg_avp_new(ogs_diam_rx_termination_cause, 0, &avp);
+    ret = fd_msg_avp_new(ogs_diam_termination_cause, 0, &avp);
     ogs_assert(ret == 0);
-    val.i32 = OGS_DIAM_RX_TERMINATION_CAUSE_DIAMETER_LOGOUT;
+    val.i32 = OGS_DIAM_TERMINATION_CAUSE_DIAMETER_LOGOUT;
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);

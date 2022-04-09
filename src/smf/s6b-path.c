@@ -555,7 +555,7 @@ void smf_s6b_send_str(smf_sess_t *sess, ogs_gtp_xact_t *xact, uint32_t cause)
     ogs_assert(ret == 0);
 
     /* Set the Termination-Cause AVP */
-    ret = fd_msg_avp_new(ogs_diam_rx_termination_cause, 0, &avp);
+    ret = fd_msg_avp_new(ogs_diam_termination_cause, 0, &avp);
     ogs_assert(ret == 0);
     val.i32 = cause;
     ret = fd_msg_avp_setvalue(avp, &val);

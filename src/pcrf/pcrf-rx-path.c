@@ -653,14 +653,14 @@ static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
     ogs_assert(ret == 0);
 
     /* Get Termination-Cause */
-    ret = fd_msg_search_avp(qry, ogs_diam_rx_termination_cause, &avp);
+    ret = fd_msg_search_avp(qry, ogs_diam_termination_cause, &avp);
     ogs_assert(ret == 0);
     if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
         sess_data->termination_cause = hdr->avp_value->i32;
         switch (sess_data->termination_cause) {
-        case OGS_DIAM_RX_TERMINATION_CAUSE_DIAMETER_LOGOUT:
+        case OGS_DIAM_TERMINATION_CAUSE_DIAMETER_LOGOUT:
             break;
         default:
             ogs_error("Termination-Cause Error : [%d]",

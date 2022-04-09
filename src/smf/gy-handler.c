@@ -50,6 +50,7 @@ static void urr_enable_total_volume_threshold(smf_sess_t *sess, ogs_pfcp_urr_t *
     urr->rep_triggers.volume_threshold = 1;
     urr->vol_threshold.tovol = 1;
     urr->vol_threshold.total_volume = total_volume_threshold;
+    ogs_assert(sess->pfcp_node);
     if (sess->pfcp_node->up_function_features.mnop)
         urr->meas_info.mnop = 1;
 }

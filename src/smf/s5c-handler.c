@@ -376,7 +376,7 @@ void smf_s5c_handle_delete_session_request(
         break;
     case OGS_GTP_RAT_TYPE_WLAN:
         smf_s6b_send_str(sess, xact,
-            OGS_DIAM_RX_TERMINATION_CAUSE_DIAMETER_LOGOUT);
+            OGS_DIAM_TERMINATION_CAUSE_DIAMETER_LOGOUT);
         break;
     default:
         ogs_error("Unknown RAT Type [%d]", sess->gtp_rat_type);

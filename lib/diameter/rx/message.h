@@ -121,15 +121,6 @@ extern struct dict_object *ogs_diam_rx_ip_can_type;
 #define OGS_DIAM_RX_ABORT_CAUSE_PS_TO_CS_HANDOVER                       3
 #define OGS_DIAM_RX_ABORT_CAUSE_SPONSORED_DATA_CONNECTIVITY_DISALLOWED  4
 extern struct dict_object *ogs_diam_rx_abort_cause;
-#define OGS_DIAM_RX_TERMINATION_CAUSE_DIAMETER_LOGOUT                   1
-#define OGS_DIAM_RX_TERMINATION_CAUSE_DIAMETER_SERVICE_NOT_PROVIDED     2
-#define OGS_DIAM_RX_TERMINATION_CAUSE_DIAMETER_BAD_ANSWER               3
-#define OGS_DIAM_RX_TERMINATION_CAUSE_DIAMETER_DIAMETER_ADMINISTRATIVE  4
-#define OGS_DIAM_RX_TERMINATION_CAUSE_DIAMETER_LINK_BROKEN              5
-#define OGS_DIAM_RX_TERMINATION_CAUSE_DIAMETER_AUTH_EXPIRED             6
-#define OGS_DIAM_RX_TERMINATION_CAUSE_DIAMETER_USER_MOVED               7 
-#define OGS_DIAM_RX_TERMINATION_CAUSE_DIAMETER_SESSION_TIMEOUT          8
-extern struct dict_object *ogs_diam_rx_termination_cause;
 
 typedef struct ogs_diam_rx_message_s {
 #define OGS_DIAM_RX_CMD_CODE_AA                     265

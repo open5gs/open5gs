@@ -238,7 +238,8 @@ logger:
 #  o Gy interface parameters towards OCS.
 #  o enabled:
 #    o auto: Default. Use Gy only if OCS available among Diameter peers
-#    o yes:  Use Gy always; reject subscribers if no OCS available among Diameter peers
+#    o yes:  Use Gy always;
+#            reject subscribers if no OCS available among Diameter peers
 #    o no:   Don't use Gy interface if there is an OCS available
 #
 #    ctf:
