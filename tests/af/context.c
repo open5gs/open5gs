@@ -326,12 +326,6 @@ void af_sess_associate_pcf_client(af_sess_t *sess)
         }
     }
 
-    if (client) {
-        if (sess->pcf.client && sess->pcf.client != client) {
-            ogs_warn("PCF EndPoint updated");
-            ogs_sbi_client_remove(sess->pcf.client);
-        }
-
-        OGS_SETUP_SBI_CLIENT(&sess->pcf, client);
-    }
+    if (client)
+        OGS_SBI_SETUP_CLIENT(&sess->pcf, client);
 }

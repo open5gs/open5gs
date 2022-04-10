@@ -90,7 +90,7 @@ bool pcf_npcf_am_policy_contrtol_handle_create(pcf_ue_t *pcf_ue,
         client = ogs_sbi_client_add(addr);
         ogs_assert(client);
     }
-    OGS_SETUP_SBI_CLIENT(&pcf_ue->namf, client);
+    OGS_SBI_SETUP_CLIENT(&pcf_ue->namf, client);
 
     ogs_freeaddrinfo(addr);
 
@@ -274,7 +274,7 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
         client = ogs_sbi_client_add(addr);
         ogs_assert(client);
     }
-    OGS_SETUP_SBI_CLIENT(&sess->nsmf, client);
+    OGS_SBI_SETUP_CLIENT(&sess->nsmf, client);
 
     ogs_freeaddrinfo(addr);
 
@@ -562,7 +562,7 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
         client = ogs_sbi_client_add(addr);
         ogs_assert(client);
     }
-    OGS_SETUP_SBI_CLIENT(&app_session->naf, client);
+    OGS_SBI_SETUP_CLIENT(&app_session->naf, client);
 
     ogs_freeaddrinfo(addr);
 

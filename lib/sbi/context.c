@@ -474,7 +474,7 @@ int ogs_sbi_context_parse_config(const char *local, const char *remote)
                                 ogs_sbi_self()->nf_instance_id);
                         ogs_assert(nf_instance);
 
-                        OGS_SETUP_SBI_CLIENT(nf_instance, client);
+                        OGS_SBI_SETUP_CLIENT(nf_instance, client);
 
                         if (key) client->tls.key = key;
                         if (pem) client->tls.pem = pem;
@@ -947,7 +947,7 @@ ogs_sbi_nf_service_t *ogs_sbi_nf_service_build_default(
         (client->tls.key && client->tls.pem) ?
             OpenAPI_uri_scheme_https : OpenAPI_uri_scheme_http);
     ogs_assert(nf_service);
-    OGS_SETUP_SBI_CLIENT(nf_service, client);
+    OGS_SBI_SETUP_CLIENT(nf_service, client);
 
     hostname = NULL;
     ogs_list_for_each(&ogs_sbi_self()->server_list, server) {
@@ -1073,13 +1073,8 @@ static void nf_service_associate_client(ogs_sbi_nf_service_t *nf_service)
         }
     }
 
-    if (client) {
-        if (nf_service->client && nf_service->client != client) {
-            ogs_warn("NF EndPoint updated [%s]", nf_service->id);
-            ogs_sbi_client_remove(nf_service->client);
-        }
-        OGS_SETUP_SBI_CLIENT(nf_service, client);
-    }
+    if (client)
+        OGS_SBI_SETUP_CLIENT(nf_service, client);
 }
 
 static void nf_service_associate_client_all(ogs_sbi_nf_instance_t *nf_instance)
@@ -1131,12 +1126,7 @@ bool ogs_sbi_client_associate(ogs_sbi_nf_instance_t *nf_instance)
     client = nf_instance_find_client(nf_instance);
     if (!client) return false;
 
-    if (nf_instance->client && nf_instance->client != client) {
-        ogs_warn("NF EndPoint updated [%s]", nf_instance->id);
-        ogs_sbi_client_remove(nf_instance->client);
-    }
-
-    OGS_SETUP_SBI_CLIENT(nf_instance, client);
+    OGS_SBI_SETUP_CLIENT(nf_instance, client);
 
     nf_service_associate_client_all(nf_instance);
 

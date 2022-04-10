@@ -181,7 +181,7 @@ bool smf_nsmf_handle_create_sm_context(
         client = ogs_sbi_client_add(addr);
         ogs_assert(client);
     }
-    OGS_SETUP_SBI_CLIENT(&sess->namf, client);
+    OGS_SBI_SETUP_CLIENT(&sess->namf, client);
 
     ogs_freeaddrinfo(addr);
 

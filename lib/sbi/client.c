@@ -82,6 +82,8 @@ void ogs_sbi_client_init(int num_of_sockinfo_pool, int num_of_connection_pool)
 }
 void ogs_sbi_client_final(void)
 {
+    ogs_sbi_client_remove_all();
+
     ogs_pool_final(&client_pool);
     ogs_pool_final(&sockinfo_pool);
     ogs_pool_final(&connection_pool);
@@ -100,6 +102,7 @@ ogs_sbi_client_t *ogs_sbi_client_add(ogs_sockaddr_t *addr)
     ogs_assert(client);
     memset(client, 0, sizeof(ogs_sbi_client_t));
 
+    client->reference_count++;
     ogs_trace("ogs_sbi_client_add()");
 
     ogs_assert(OGS_OK == ogs_copyaddrinfo(&client->node.addr, addr));
@@ -149,6 +152,14 @@ void ogs_sbi_client_remove(ogs_sbi_client_t *client)
     ogs_freeaddrinfo(client->node.addr);
 
     ogs_pool_free(&client_pool, client);
+}
+
+void ogs_sbi_client_remove_all(void)
+{
+    ogs_sbi_client_t *client = NULL, *next_client = NULL;
+
+    ogs_list_for_each_safe(&ogs_sbi_self()->client_list, next_client, client)
+        ogs_sbi_client_remove(client);
 }
 
 ogs_sbi_client_t *ogs_sbi_client_find(ogs_sockaddr_t *addr)

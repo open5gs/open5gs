@@ -28,14 +28,29 @@
 extern "C" {
 #endif
 
-#define OGS_SETUP_SBI_CLIENT(__cTX, __pCLIENT) \
+#define OGS_SBI_SETUP_CLIENT(__cTX, __pClient) \
     do { \
         ogs_assert((__cTX)); \
-        ogs_assert((__pCLIENT)); \
-        if ((__cTX)->client != __pCLIENT) \
-            __pCLIENT->reference_count++; \
-        (__cTX)->client = __pCLIENT; \
-        ogs_trace("client->reference_count = %d", __pCLIENT->reference_count); \
+        ogs_assert((__pClient)); \
+        \
+        if ((__cTX)->client) { \
+            ogs_sbi_client_t *client = NULL; \
+            ogs_sockaddr_t *addr = NULL; \
+            char buf[OGS_ADDRSTRLEN]; \
+            \
+            client = ((__cTX)->client); \
+            ogs_assert(client); \
+            addr = client->node.addr; \
+            ogs_assert(addr); \
+            ogs_warn("NF EndPoint updated [%s:%d]", \
+                        OGS_ADDR(addr, buf), OGS_PORT(addr)); \
+            ogs_sbi_client_remove(client); \
+        } \
+        \
+        (__pClient)->reference_count++; \
+        ((__cTX)->client) = (__pClient); \
+        ogs_trace("client->reference_count = %d", \
+                (__pClient)->reference_count); \
     } while(0)
 
 typedef int (*ogs_sbi_client_cb_f)(ogs_sbi_response_t *response, void *data);
@@ -66,6 +81,7 @@ void ogs_sbi_client_final(void);
 
 ogs_sbi_client_t *ogs_sbi_client_add(ogs_sockaddr_t *addr);
 void ogs_sbi_client_remove(ogs_sbi_client_t *client);
+void ogs_sbi_client_remove_all(void);
 ogs_sbi_client_t *ogs_sbi_client_find(ogs_sockaddr_t *addr);
 
 bool ogs_sbi_client_send_request(

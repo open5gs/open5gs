@@ -163,7 +163,7 @@ bool ogs_nnrf_nfm_send_nf_status_subscribe(ogs_sbi_client_t *client,
     subscription = ogs_sbi_subscription_add();
     ogs_assert(subscription);
 
-    OGS_SETUP_SBI_CLIENT(subscription, client);
+    OGS_SBI_SETUP_CLIENT(subscription, client);
     subscription->req_nf_type = req_nf_type;
     if (req_nf_instance_id) {
         subscription->req_nf_instance_id = ogs_strdup(req_nf_instance_id);

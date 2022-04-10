@@ -245,7 +245,7 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
                     client = ogs_sbi_client_add(addr);
                     ogs_assert(client);
                 }
-                OGS_SETUP_SBI_CLIENT(&sess->paging, client);
+                OGS_SBI_SETUP_CLIENT(&sess->paging, client);
 
                 ogs_freeaddrinfo(addr);
 

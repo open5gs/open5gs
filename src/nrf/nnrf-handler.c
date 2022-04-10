@@ -245,7 +245,7 @@ bool nrf_nnrf_handle_nf_status_subscribe(
         client = ogs_sbi_client_add(addr);
         ogs_assert(client);
     }
-    OGS_SETUP_SBI_CLIENT(subscription, client);
+    OGS_SBI_SETUP_CLIENT(subscription, client);
 
     ogs_freeaddrinfo(addr);
 
