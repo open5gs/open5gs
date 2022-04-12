@@ -24,24 +24,6 @@
 #include "gy-handler.h"
 #include "binding.h"
 
-static uint8_t gtp_cause_from_diameter(
-        const uint32_t *dia_err, const uint32_t *dia_exp_err)
-{
-    if (dia_exp_err) {
-    }
-    if (dia_err) {
-        switch (*dia_err) {
-        case OGS_DIAM_UNKNOWN_SESSION_ID:
-            return OGS_GTP2_CAUSE_APN_ACCESS_DENIED_NO_SUBSCRIPTION;
-        }
-    }
-
-    ogs_error("Unexpected Diameter Result Code %d/%d, defaulting to severe "
-              "network failure",
-              dia_err ? *dia_err : -1, dia_exp_err ? *dia_exp_err : -1);
-    return OGS_GTP2_CAUSE_UE_NOT_AUTHORISED_BY_OCS_OR_EXTERNAL_AAA_SERVER;
-}
-
 static void urr_enable_total_volume_threshold(smf_sess_t *sess, ogs_pfcp_urr_t *urr,
                                               uint64_t total_volume_threshold)
 {
@@ -96,7 +78,8 @@ static void urr_update_time_threshold(ogs_pfcp_urr_t *urr, ogs_diam_gy_message_t
     }
 }
 
-void smf_gy_handle_cca_initial_request(
+/* Returns ER_DIAMETER_SUCCESS on success, Diameter error code on failue. */
+uint32_t smf_gy_handle_cca_initial_request(
         smf_sess_t *sess, ogs_diam_gy_message_t *gy_message,
         ogs_gtp_xact_t *gtp_xact)
 {
@@ -110,18 +93,9 @@ void smf_gy_handle_cca_initial_request(
     ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->smf_n4_teid);
 
-    if (gy_message->result_code != ER_DIAMETER_SUCCESS) {
-        uint8_t cause_value = gtp_cause_from_diameter(
-            gy_message->err, gy_message->exp_err);
-
-        if (gtp_xact->gtp_version == 1)
-            ogs_gtp1_send_error_message(gtp_xact, sess ? sess->sgw_s5c_teid : 0,
-                OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE, cause_value);
-        else
-            ogs_gtp2_send_error_message(gtp_xact, sess ? sess->sgw_s5c_teid : 0,
-                OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE, cause_value);
-        return;
-    }
+    if (gy_message->result_code != ER_DIAMETER_SUCCESS)
+        return gy_message->err ? *gy_message->err :
+                                 ER_DIAMETER_AUTHENTICATION_REJECTED;
 
     bearer = smf_default_bearer_in_sess(sess);
     ogs_assert(bearer);
@@ -137,9 +111,7 @@ void smf_gy_handle_cca_initial_request(
     /* Associate acconting URR each direction PDR: */
     ogs_pfcp_pdr_associate_urr(bearer->ul_pdr, bearer->urr);
     ogs_pfcp_pdr_associate_urr(bearer->dl_pdr, bearer->urr);
-
-    ogs_assert(OGS_OK ==
-        smf_epc_pfcp_send_session_establishment_request(sess, gtp_xact));
+    return ER_DIAMETER_SUCCESS;
 }
 
 void smf_gy_handle_cca_update_request(

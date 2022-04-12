@@ -17,7 +17,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "binding.h"
 #include "sbi-path.h"
+#include "gn-handler.h"
+#include "gx-handler.h"
+#include "gy-handler.h"
+#include "n4-handler.h"
+#include "s5c-handler.h"
 #include "nnrf-handler.h"
 #include "nsmf-handler.h"
 #include "nudm-handler.h"
@@ -25,18 +31,262 @@
 #include "namf-handler.h"
 #include "gsm-handler.h"
 #include "ngap-handler.h"
+#include "gtp-path.h"
 #include "pfcp-path.h"
 #include "ngap-path.h"
+#include "fd-path.h"
+
+static uint8_t gtp_cause_from_diameter(uint8_t gtp_version,
+        const uint32_t dia_err, const uint32_t *dia_exp_err)
+{
+    switch (gtp_version) {
+    case 1:
+        switch (dia_err) {
+        case OGS_DIAM_UNKNOWN_SESSION_ID:
+            return OGS_GTP1_CAUSE_APN_ACCESS_DENIED;
+        }
+        break;
+    case 2:
+        switch (dia_err) {
+        case OGS_DIAM_UNKNOWN_SESSION_ID:
+            return OGS_GTP2_CAUSE_APN_ACCESS_DENIED_NO_SUBSCRIPTION;
+        }
+        break;
+    }
+
+    ogs_error("Unexpected Diameter Result Code %d/%d, defaulting to severe "
+              "network failure",
+              dia_err, dia_exp_err ? *dia_exp_err : -1);
+    switch (gtp_version) {
+    case 1:
+        return OGS_GTP1_CAUSE_USER_AUTHENTICATION_FAILED;
+    case 2:
+    default:
+        return OGS_GTP2_CAUSE_UE_NOT_AUTHORISED_BY_OCS_OR_EXTERNAL_AAA_SERVER;
+    }
+}
+
+static void send_gtp_create_err_msg(const smf_sess_t *sess, ogs_gtp_xact_t *gtp_xact, uint8_t gtp_cause)
+{
+    if (gtp_xact->gtp_version == 1)
+        ogs_gtp1_send_error_message(gtp_xact, sess->sgw_s5c_teid,
+            OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE, gtp_cause);
+    else
+        ogs_gtp2_send_error_message(gtp_xact, sess->sgw_s5c_teid,
+            OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE, gtp_cause);
+}
 
 void smf_gsm_state_initial(ogs_fsm_t *s, smf_event_t *e)
 {
     ogs_assert(s);
+    ogs_assert(e && e->sess);
+    smf_sess_t *sess = e->sess;
+    uint8_t gtp1_cause, gtp2_cause;
 
-    OGS_FSM_TRAN(s, &smf_gsm_state_operational);
+    switch (e->id) {
+    case OGS_FSM_ENTRY_SIG:
+        if (!sess->gtp_rat_type) /* 5gc */
+            OGS_FSM_TRAN(s, &smf_gsm_state_operational);
+        break;
+
+    case SMF_EVT_GN_MESSAGE:
+        switch(e->gtp1_message->h.type) {
+        case OGS_GTP1_CREATE_PDP_CONTEXT_REQUEST_TYPE:
+            gtp1_cause = smf_gn_handle_create_pdp_context_request(sess,
+                            e->gtp_xact,
+                            &e->gtp1_message->create_pdp_context_request);
+            if (gtp1_cause != OGS_GTP1_CAUSE_REQUEST_ACCEPTED) {
+                send_gtp_create_err_msg(sess, e->gtp_xact, gtp1_cause);
+                return;
+            }
+            OGS_FSM_TRAN(s, &smf_gsm_state_initial_wait_auth);
+            smf_gx_send_ccr(sess, e->gtp_xact,
+                OGS_DIAM_GX_CC_REQUEST_TYPE_INITIAL_REQUEST);
+        }
+        break;
+
+    case SMF_EVT_S5C_MESSAGE:
+        switch(e->gtp2_message->h.type) {
+        case OGS_GTP2_CREATE_SESSION_REQUEST_TYPE:
+            gtp2_cause = smf_s5c_handle_create_session_request(sess,
+                            e->gtp_xact,
+                            &e->gtp2_message->create_session_request);
+            if (gtp2_cause != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
+                send_gtp_create_err_msg(sess, e->gtp_xact, gtp2_cause);
+                return;
+            }
+            OGS_FSM_TRAN(s, &smf_gsm_state_initial_wait_auth);
+            switch (sess->gtp_rat_type) {
+            case OGS_GTP2_RAT_TYPE_EUTRAN:
+                smf_gx_send_ccr(sess, e->gtp_xact,
+                    OGS_DIAM_GX_CC_REQUEST_TYPE_INITIAL_REQUEST);
+                break;
+            case OGS_GTP2_RAT_TYPE_WLAN:
+                smf_s6b_send_aar(sess, e->gtp_xact);
+                break;
+            default:
+                ogs_error("Unknown RAT Type [%d]", sess->gtp_rat_type);
+                ogs_assert_if_reached();
+            }
+            break;
+        }
+        break;
+    }
 }
 
-void smf_gsm_state_final(ogs_fsm_t *s, smf_event_t *e)
+void smf_gsm_state_initial_wait_auth(ogs_fsm_t *s, smf_event_t *e)
 {
+    ogs_assert(e && e->sess);
+    smf_sess_t *sess = e->sess;
+    uint32_t diam_err;
+    uint8_t gtp_cause;
+
+    switch (e->id) {
+    case SMF_EVT_GX_MESSAGE:
+        switch(e->gx_message->cmd_code) {
+        case OGS_DIAM_GX_CMD_CODE_CREDIT_CONTROL:
+            switch(e->gx_message->cc_request_type) {
+            case OGS_DIAM_GX_CC_REQUEST_TYPE_INITIAL_REQUEST:
+                ogs_assert(e->gtp_xact);
+                diam_err = smf_gx_handle_cca_initial_request(sess,
+                                e->gx_message, e->gtp_xact);
+                if (diam_err != ER_DIAMETER_SUCCESS) {
+                    uint8_t gtp_cause = gtp_cause_from_diameter(
+                                            e->gtp_xact->gtp_version,
+                                            diam_err, e->gx_message->exp_err);
+                    send_gtp_create_err_msg(sess, e->gtp_xact, gtp_cause);
+                    return;
+                }
+                switch(smf_use_gy_iface()) {
+                case 1:
+                    /* Gy is available, set up session for the bearer before accepting it towards the UE */
+                    /* OGS_FSM_TRAN: keep current state, we handle Gy here. */
+                    smf_gy_send_ccr(sess, e->gtp_xact,
+                        OGS_DIAM_GY_CC_REQUEST_TYPE_INITIAL_REQUEST);
+                    return;
+                case 0:
+                    /* Not using Gy, jump directly to PFCP Session Establishment Request */
+                    OGS_FSM_TRAN(s, &smf_gsm_state_initial_wait_pfcp_establishment);
+                    ogs_assert(OGS_OK ==
+                        smf_epc_pfcp_send_session_establishment_request(sess, e->gtp_xact));
+                    return;
+                case -1:
+                    ogs_error("No Gy Diameter Peer");
+                    /* TODO: drop Gx connection here, possibly move to another "releasing" state! */
+                    gtp_cause = (e->gtp_xact->gtp_version == 1) ?
+                                    OGS_GTP1_CAUSE_NO_RESOURCES_AVAILABLE :
+                                    OGS_GTP2_CAUSE_UE_NOT_AUTHORISED_BY_OCS_OR_EXTERNAL_AAA_SERVER;
+                    send_gtp_create_err_msg(sess, e->gtp_xact, gtp_cause);
+                    return;
+                }
+                break;
+            }
+            break;
+        }
+        break;
+
+    case SMF_EVT_GY_MESSAGE:
+        switch(e->gy_message->cmd_code) {
+        case OGS_DIAM_GY_CMD_CODE_CREDIT_CONTROL:
+            switch(e->gy_message->cc_request_type) {
+            case OGS_DIAM_GY_CC_REQUEST_TYPE_INITIAL_REQUEST:
+                ogs_assert(e->gtp_xact);
+                diam_err = smf_gy_handle_cca_initial_request(sess,
+                                e->gy_message, e->gtp_xact);
+                if (diam_err != ER_DIAMETER_SUCCESS) {
+                    /* FIXME: tear down Gx session */
+                    gtp_cause = gtp_cause_from_diameter(e->gtp_xact->gtp_version,
+                                    diam_err, e->gy_message->exp_err);
+                    send_gtp_create_err_msg(sess, e->gtp_xact, gtp_cause);
+                    return;
+                }
+                OGS_FSM_TRAN(s, &smf_gsm_state_initial_wait_pfcp_establishment);
+                ogs_assert(OGS_OK ==
+                    smf_epc_pfcp_send_session_establishment_request(sess, e->gtp_xact));
+                return;
+            }
+            break;
+        }
+        break;
+    }
+}
+
+void smf_gsm_state_initial_wait_pfcp_establishment(ogs_fsm_t *s, smf_event_t *e)
+{
+    ogs_assert(e && e->sess);
+    smf_sess_t *sess = e->sess;
+    uint8_t pfcp_cause, gtp_cause;
+
+    switch (e->id) {
+    case SMF_EVT_N4_MESSAGE:
+        switch (e->pfcp_message->h.type) {
+        case OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE:
+            if (e->pfcp_xact->epc) {
+                ogs_gtp_xact_t *gtp_xact = e->pfcp_xact->assoc_xact;
+                pfcp_cause = smf_epc_n4_handle_session_establishment_response(
+                                sess, e->pfcp_xact,
+                                &e->pfcp_message->pfcp_session_establishment_response);
+                if (pfcp_cause != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
+                    /* FIXME: tear down Gy and Gx */
+                    gtp_cause = gtp_cause_from_pfcp(pfcp_cause, gtp_xact->gtp_version);
+                    send_gtp_create_err_msg(sess, e->gtp_xact, gtp_cause);
+                    return;
+                }
+                switch (gtp_xact->gtp_version) {
+                case 1:
+                    ogs_assert(OGS_OK == smf_gtp1_send_create_pdp_context_response(sess, gtp_xact));
+                    break;
+                case 2:
+                    ogs_assert(OGS_OK == smf_gtp_send_create_session_response(sess, gtp_xact));
+                    break;
+                }
+                if (sess->gtp_rat_type == OGS_GTP2_RAT_TYPE_WLAN) {
+                    /*
+                     * TS23.214
+                     * 6.3.1.7 Procedures with modification of bearer
+                     * p50
+                     * 2.  ...
+                     * For "PGW/MME initiated bearer deactivation procedure",
+                     * PGW-C shall indicate PGW-U to stop counting and stop
+                     * forwarding downlink packets for the affected bearer(s).
+                     */
+                    ogs_assert(sess->smf_ue);
+                    smf_sess_t *eutran_sess = smf_sess_find_by_apn(
+                        sess->smf_ue, sess->session.name, OGS_GTP2_RAT_TYPE_EUTRAN);
+                    if (eutran_sess) {
+                        ogs_assert(OGS_OK ==
+                            smf_epc_pfcp_send_session_modification_request(
+                                eutran_sess, NULL,
+                                OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE,
+                                OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
+                                OGS_GTP2_CAUSE_RAT_CHANGED_FROM_3GPP_TO_NON_3GPP));
+                    }
+                }
+                smf_bearer_binding(sess);
+            } else {
+#if 0
+                /* This is currently not happening, since 5gc isn't yet properly integrated and moves directly to operational state */
+                smf_n1_n2_message_transfer_param_t param;
+                pfcp_cause = smf_5gc_n4_handle_session_establishment_response(
+                                sess, e->pfcp_xact,
+                                &e->pfcp_message->pfcp_session_establishment_response);
+                if (pfcp_cause != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
+                    return;
+                memset(&param, 0, sizeof(param));
+                param.state = SMF_UE_REQUESTED_PDU_SESSION_ESTABLISHMENT;
+                param.n1smbuf = gsm_build_pdu_session_establishment_accept(sess);
+                ogs_assert(param.n1smbuf);
+                param.n2smbuf = ngap_build_pdu_session_resource_setup_request_transfer(
+                                    sess);
+                ogs_assert(param.n2smbuf);
+                smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
+#endif
+            }
+            OGS_FSM_TRAN(s, &smf_gsm_state_operational);
+            break;
+        }
+        break;
+    }
 }
 
 void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
@@ -51,6 +301,9 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
     ogs_sbi_stream_t *stream = NULL;
     ogs_sbi_message_t *sbi_message = NULL;
+
+    smf_n1_n2_message_transfer_param_t param;
+    uint8_t pfcp_cause;
 
     int state = 0;
 
@@ -67,6 +320,30 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
         break;
 
     case OGS_FSM_EXIT_SIG:
+        break;
+
+    case SMF_EVT_N4_MESSAGE:
+        switch (e->pfcp_message->h.type) {
+        case OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE:
+            /* This is left here for 5gc sessions to properly receive messages,
+               since startup transitions are not implemented yet for 5gc
+               sessions. See #if0 in smf_gsm_state_initial_wait_pfcp_establishment() */
+            assert(!e->pfcp_xact->epc);
+            pfcp_cause = smf_5gc_n4_handle_session_establishment_response(
+                            sess, e->pfcp_xact,
+                            &e->pfcp_message->pfcp_session_establishment_response);
+            if (pfcp_cause != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
+                return;
+            memset(&param, 0, sizeof(param));
+            param.state = SMF_UE_REQUESTED_PDU_SESSION_ESTABLISHMENT;
+            param.n1smbuf = gsm_build_pdu_session_establishment_accept(sess);
+            ogs_assert(param.n1smbuf);
+            param.n2smbuf = ngap_build_pdu_session_resource_setup_request_transfer(
+                                sess);
+            ogs_assert(param.n2smbuf);
+            smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
+            break;
+        }
         break;
 
     case SMF_EVT_SBI_SERVER:
@@ -494,4 +771,8 @@ void smf_gsm_state_exception(ogs_fsm_t *s, smf_event_t *e)
         ogs_error("Unknown event %s", smf_event_get_name(e));
         break;
     }
+}
+
+void smf_gsm_state_final(ogs_fsm_t *s, smf_event_t *e)
+{
 }

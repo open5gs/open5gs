@@ -21,6 +21,7 @@
 #define SMF_EVENT_H
 
 #include "ogs-core.h"
+#include "ogs-gtp.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -80,6 +81,11 @@ typedef struct smf_event_s {
     ogs_pfcp_node_t *pfcp_node;
     ogs_pfcp_xact_t *pfcp_xact;
     ogs_pfcp_message_t *pfcp_message;
+
+    union {
+        ogs_gtp1_message_t *gtp1_message;
+        ogs_gtp2_message_t *gtp2_message;
+    };
 
     union {
         ogs_diam_gx_message_t *gx_message;

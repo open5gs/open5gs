@@ -32,7 +32,7 @@ void smf_gn_handle_echo_request(
 void smf_gn_handle_echo_response(
         ogs_gtp_xact_t *xact, ogs_gtp1_echo_response_t *req);
 
-void smf_gn_handle_create_pdp_context_request(
+uint8_t smf_gn_handle_create_pdp_context_request(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_gtp1_create_pdp_context_request_t *req);
 void smf_gn_handle_delete_pdp_context_request(
