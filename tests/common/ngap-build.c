@@ -2303,7 +2303,7 @@ static ogs_pkbuf_t *testngap_build_pdu_session_resource_setup_response_trasfer(
     int rv;
     test_bearer_t *qos_flow = NULL;
 
-    ogs_gtp_f_teid_t f_teid;
+    ogs_gtp2_f_teid_t f_teid;
     ogs_ip_t ip;
     int len;
 
@@ -2332,11 +2332,11 @@ static ogs_pkbuf_t *testngap_build_pdu_session_resource_setup_response_trasfer(
     uPTransportLayerInformation->choice.gTPTunnel = gTPTunnel;
 
     ogs_assert(sess->gnb_n3_addr || sess->gnb_n3_addr6);
-    rv = ogs_gtp_sockaddr_to_f_teid(
+    rv = ogs_gtp2_sockaddr_to_f_teid(
             sess->gnb_n3_addr, sess->gnb_n3_addr6, &f_teid, &len);
     ogs_assert(rv == OGS_OK);
 
-    rv = ogs_gtp_f_teid_to_ip(&f_teid, &ip);
+    rv = ogs_gtp2_f_teid_to_ip(&f_teid, &ip);
     ogs_assert(rv == OGS_OK);
 
     ogs_asn_ip_to_BIT_STRING(&ip, &gTPTunnel->transportLayerAddress);
@@ -2422,7 +2422,7 @@ static ogs_pkbuf_t *testngap_build_path_switch_request_trasfer(
 
     test_bearer_t *qos_flow = NULL;
 
-    ogs_gtp_f_teid_t f_teid;
+    ogs_gtp2_f_teid_t f_teid;
     ogs_ip_t ip;
     int len;
 
@@ -2446,11 +2446,11 @@ static ogs_pkbuf_t *testngap_build_path_switch_request_trasfer(
     dL_NGU_UP_TNLInformation->choice.gTPTunnel = gTPTunnel;
 
     ogs_assert(sess->gnb_n3_addr || sess->gnb_n3_addr6);
-    rv = ogs_gtp_sockaddr_to_f_teid(
+    rv = ogs_gtp2_sockaddr_to_f_teid(
             sess->gnb_n3_addr, sess->gnb_n3_addr6, &f_teid, &len);
     ogs_assert(rv == OGS_OK);
 
-    rv = ogs_gtp_f_teid_to_ip(&f_teid, &ip);
+    rv = ogs_gtp2_f_teid_to_ip(&f_teid, &ip);
     ogs_assert(rv == OGS_OK);
 
     ogs_asn_ip_to_BIT_STRING(&ip, &gTPTunnel->transportLayerAddress);
@@ -2476,7 +2476,7 @@ static ogs_pkbuf_t *testngap_build_handover_required_transfer(
 
     test_bearer_t *qos_flow = NULL;
 
-    ogs_gtp_f_teid_t f_teid;
+    ogs_gtp2_f_teid_t f_teid;
     ogs_ip_t ip;
     int len;
 
@@ -2507,7 +2507,7 @@ static ogs_pkbuf_t *testngap_build_handover_request_ack_transfer(
     int rv;
     test_bearer_t *qos_flow = NULL;
 
-    ogs_gtp_f_teid_t f_teid;
+    ogs_gtp2_f_teid_t f_teid;
     ogs_ip_t ip;
     int len;
 
@@ -2532,11 +2532,11 @@ static ogs_pkbuf_t *testngap_build_handover_request_ack_transfer(
     ogs_assert(gTPTunnel);
 
     ogs_assert(sess->gnb_n3_addr || sess->gnb_n3_addr6);
-    rv = ogs_gtp_sockaddr_to_f_teid(
+    rv = ogs_gtp2_sockaddr_to_f_teid(
             sess->gnb_n3_addr, sess->gnb_n3_addr6, &f_teid, &len);
     ogs_assert(rv == OGS_OK);
 
-    rv = ogs_gtp_f_teid_to_ip(&f_teid, &ip);
+    rv = ogs_gtp2_f_teid_to_ip(&f_teid, &ip);
     ogs_assert(rv == OGS_OK);
 
     ogs_asn_ip_to_BIT_STRING(&ip, &gTPTunnel->transportLayerAddress);

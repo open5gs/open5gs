@@ -422,7 +422,7 @@ ogs_pkbuf_t *testesm_build_bearer_resource_modification_request(
         &req->traffic_flow_aggregate;
     ogs_nas_eps_quality_of_service_t *qos = &req->required_traffic_flow_qos;
 
-    ogs_gtp_tft_t tft;
+    ogs_gtp2_tft_t tft;
     ogs_tlv_octet_t octet;
     ogs_ipsubnet_t ipsubnet;
 
@@ -451,7 +451,7 @@ ogs_pkbuf_t *testesm_build_bearer_resource_modification_request(
 
     memset(&tft, 0, sizeof tft);
     tft.code = tft_code;
-    if (tft.code == OGS_GTP_TFT_CODE_REPLACE_PACKET_FILTERS_IN_EXISTING) {
+    if (tft.code == OGS_GTP2_TFT_CODE_REPLACE_PACKET_FILTERS_IN_EXISTING) {
         tft.num_of_packet_filter = 1;
         tft.pf[0].direction = 1;
         tft.pf[0].identifier = 0;
@@ -465,7 +465,7 @@ ogs_pkbuf_t *testesm_build_bearer_resource_modification_request(
         tft.pf[0].content.component[0].ipv4.mask = ipsubnet.mask[0];
         tft.pf[0].content.num_of_component = 1;
     } else if (tft.code ==
-            OGS_GTP_TFT_CODE_ADD_PACKET_FILTERS_TO_EXISTING_TFT) {
+            OGS_GTP2_TFT_CODE_ADD_PACKET_FILTERS_TO_EXISTING_TFT) {
         tft.num_of_packet_filter = 1;
         tft.pf[0].direction = 2;
         tft.pf[0].identifier = 4;
@@ -491,7 +491,7 @@ ogs_pkbuf_t *testesm_build_bearer_resource_modification_request(
 #endif
         tft.pf[0].content.num_of_component = 1;
 
-    } else if (tft.code == OGS_GTP_TFT_CODE_CREATE_NEW_TFT) {
+    } else if (tft.code == OGS_GTP2_TFT_CODE_CREATE_NEW_TFT) {
         tft.num_of_packet_filter = 4;
 
         tft.pf[0].direction = 1;
@@ -590,15 +590,15 @@ ogs_pkbuf_t *testesm_build_bearer_resource_modification_request(
         tft.pf[3].content.component[3].port.low = 20361;
         tft.pf[3].content.num_of_component = 4;
     } else if (tft.code ==
-            OGS_GTP_TFT_CODE_DELETE_PACKET_FILTERS_FROM_EXISTING) {
+            OGS_GTP2_TFT_CODE_DELETE_PACKET_FILTERS_FROM_EXISTING) {
         tft.num_of_packet_filter = 4;
         tft.pf[0].identifier = 0;
         tft.pf[1].identifier = 1;
         tft.pf[2].identifier = 2;
         tft.pf[3].identifier = 3;
     }
-    tad->length = ogs_gtp_build_tft(&octet,
-            &tft, tad->buffer, OGS_GTP_MAX_TRAFFIC_FLOW_TEMPLATE);
+    tad->length = ogs_gtp2_build_tft(&octet,
+            &tft, tad->buffer, OGS_GTP2_MAX_TRAFFIC_FLOW_TEMPLATE);
 
     if (qci) {
         req->presencemask |=

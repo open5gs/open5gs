@@ -23,17 +23,17 @@
  * 10.5.6.3 Protocol configuration options in 3GPP TS 24.008 */
 
 /* 8.15 Bearer Quality of Service (Bearer QoS) */
-int16_t ogs_gtp_parse_bearer_qos(
-    ogs_gtp_bearer_qos_t *bearer_qos, ogs_tlv_octet_t *octet)
+int16_t ogs_gtp2_parse_bearer_qos(
+    ogs_gtp2_bearer_qos_t *bearer_qos, ogs_tlv_octet_t *octet)
 {
-    ogs_gtp_bearer_qos_t *source = (ogs_gtp_bearer_qos_t *)octet->data;
+    ogs_gtp2_bearer_qos_t *source = (ogs_gtp2_bearer_qos_t *)octet->data;
     int16_t size = 0;
 
     ogs_assert(bearer_qos);
     ogs_assert(octet);
-    ogs_assert(octet->len == GTP_BEARER_QOS_LEN);
+    ogs_assert(octet->len == GTP2_BEARER_QOS_LEN);
 
-    memset(bearer_qos, 0, sizeof(ogs_gtp_bearer_qos_t));
+    memset(bearer_qos, 0, sizeof(ogs_gtp2_bearer_qos_t));
 
     bearer_qos->pre_emption_capability = source->pre_emption_capability;
     bearer_qos->priority_level = source->priority_level;
@@ -66,19 +66,19 @@ int16_t ogs_gtp_parse_bearer_qos(
     
     return size;
 }
-int16_t ogs_gtp_build_bearer_qos(ogs_tlv_octet_t *octet,
-        ogs_gtp_bearer_qos_t *bearer_qos, void *data, int data_len)
+int16_t ogs_gtp2_build_bearer_qos(ogs_tlv_octet_t *octet,
+        ogs_gtp2_bearer_qos_t *bearer_qos, void *data, int data_len)
 {
-    ogs_gtp_bearer_qos_t target;
+    ogs_gtp2_bearer_qos_t target;
     int16_t size = 0;
 
     ogs_assert(bearer_qos);
     ogs_assert(octet);
     ogs_assert(data);
-    ogs_assert(data_len >= GTP_BEARER_QOS_LEN);
+    ogs_assert(data_len >= GTP2_BEARER_QOS_LEN);
 
     octet->data = data;
-    memcpy(&target, bearer_qos, sizeof(ogs_gtp_bearer_qos_t));
+    memcpy(&target, bearer_qos, sizeof(ogs_gtp2_bearer_qos_t));
 
     memcpy((unsigned char *)octet->data + size, &target, 2);
     size += 2;
@@ -108,7 +108,7 @@ int16_t ogs_gtp_build_bearer_qos(ogs_tlv_octet_t *octet,
 }
 
 /* 8.16 Flow Quality of Service (Flow QoS) */
-uint64_t ogs_gtp_qos_to_kbps(uint8_t br, uint8_t extended, uint8_t extended2)
+uint64_t ogs_gtp2_qos_to_kbps(uint8_t br, uint8_t extended, uint8_t extended2)
 {
     /*
      * Octet 12 : 00000000
@@ -198,17 +198,17 @@ uint64_t ogs_gtp_qos_to_kbps(uint8_t br, uint8_t extended, uint8_t extended2)
     return 0;
 }
 
-int16_t ogs_gtp_parse_flow_qos(
-    ogs_gtp_flow_qos_t *flow_qos, ogs_tlv_octet_t *octet)
+int16_t ogs_gtp2_parse_flow_qos(
+    ogs_gtp2_flow_qos_t *flow_qos, ogs_tlv_octet_t *octet)
 {
-    ogs_gtp_flow_qos_t *source = (ogs_gtp_flow_qos_t *)octet->data;
+    ogs_gtp2_flow_qos_t *source = (ogs_gtp2_flow_qos_t *)octet->data;
     int16_t size = 0;
 
     ogs_assert(flow_qos);
     ogs_assert(octet);
-    ogs_assert(octet->len == GTP_FLOW_QOS_LEN);
+    ogs_assert(octet->len == GTP2_FLOW_QOS_LEN);
 
-    memset(flow_qos, 0, sizeof(ogs_gtp_flow_qos_t));
+    memset(flow_qos, 0, sizeof(ogs_gtp2_flow_qos_t));
 
     flow_qos->qci = source->qci;
     size++;
@@ -236,19 +236,19 @@ int16_t ogs_gtp_parse_flow_qos(
     
     return size;
 }
-int16_t ogs_gtp_build_flow_qos(ogs_tlv_octet_t *octet,
-        ogs_gtp_flow_qos_t *flow_qos, void *data, int data_len)
+int16_t ogs_gtp2_build_flow_qos(ogs_tlv_octet_t *octet,
+        ogs_gtp2_flow_qos_t *flow_qos, void *data, int data_len)
 {
-    ogs_gtp_flow_qos_t target;
+    ogs_gtp2_flow_qos_t target;
     int16_t size = 0;
 
     ogs_assert(flow_qos);
     ogs_assert(octet);
     ogs_assert(data);
-    ogs_assert(data_len >= GTP_FLOW_QOS_LEN);
+    ogs_assert(data_len >= GTP2_FLOW_QOS_LEN);
 
     octet->data = data;
-    memcpy(&target, flow_qos, sizeof(ogs_gtp_flow_qos_t));
+    memcpy(&target, flow_qos, sizeof(ogs_gtp2_flow_qos_t));
 
     memcpy((unsigned char *)octet->data + size, &target, 2);
     size += 1;
@@ -279,7 +279,7 @@ int16_t ogs_gtp_build_flow_qos(ogs_tlv_octet_t *octet,
 
 /* 8.19 EPS Bearer Level Traffic Flow Template (Bearer TFT) 
  * See subclause 10.5.6.12 in 3GPP TS 24.008 [13]. */
-int16_t ogs_gtp_parse_tft(ogs_gtp_tft_t *tft, ogs_tlv_octet_t *octet)
+int16_t ogs_gtp2_parse_tft(ogs_gtp2_tft_t *tft, ogs_tlv_octet_t *octet)
 {
     int16_t size = 0;
     int i, j, len = 0;
@@ -287,19 +287,19 @@ int16_t ogs_gtp_parse_tft(ogs_gtp_tft_t *tft, ogs_tlv_octet_t *octet)
     ogs_assert(tft);
     ogs_assert(octet);
 
-    memset(tft, 0, sizeof(ogs_gtp_tft_t));
+    memset(tft, 0, sizeof(ogs_gtp2_tft_t));
 
     ogs_assert(size+sizeof(tft->flags) <= octet->len);
     memcpy(&tft->flags, (unsigned char *)octet->data+size, sizeof(tft->flags));
     size++;
 
-    if (tft->code == OGS_GTP_TFT_CODE_IGNORE_THIS_IE) {
+    if (tft->code == OGS_GTP2_TFT_CODE_IGNORE_THIS_IE) {
         ogs_error("Invalid TFT Code(Spare)");
         return size;
     }
 
-    if (tft->code == OGS_GTP_TFT_CODE_NO_TFT_OPERATION ||
-        tft->code == OGS_GTP_TFT_CODE_DELETE_EXISTING_TFT)
+    if (tft->code == OGS_GTP2_TFT_CODE_NO_TFT_OPERATION ||
+        tft->code == OGS_GTP2_TFT_CODE_DELETE_EXISTING_TFT)
         return size;
 
     for (i = 0; i < tft->num_of_packet_filter &&
@@ -309,7 +309,7 @@ int16_t ogs_gtp_parse_tft(ogs_gtp_tft_t *tft, ogs_tlv_octet_t *octet)
                 sizeof(tft->pf[i].flags));
         size += sizeof(tft->pf[i].flags);
 
-        if (tft->code == OGS_GTP_TFT_CODE_DELETE_PACKET_FILTERS_FROM_EXISTING)
+        if (tft->code == OGS_GTP2_TFT_CODE_DELETE_PACKET_FILTERS_FROM_EXISTING)
             continue;
 
         ogs_assert(size+sizeof(tft->pf[i].precedence) <= octet->len);
@@ -443,30 +443,30 @@ int16_t ogs_gtp_parse_tft(ogs_gtp_tft_t *tft, ogs_tlv_octet_t *octet)
 
     return size;
 }
-int16_t ogs_gtp_build_tft(
-    ogs_tlv_octet_t *octet, ogs_gtp_tft_t *tft, void *data, int data_len)
+int16_t ogs_gtp2_build_tft(
+    ogs_tlv_octet_t *octet, ogs_gtp2_tft_t *tft, void *data, int data_len)
 {
-    ogs_gtp_tft_t target;
+    ogs_gtp2_tft_t target;
     uint16_t size = 0;
     int i, j;
 
     ogs_assert(tft);
     ogs_assert(octet);
     ogs_assert(data);
-    ogs_assert(data_len >= OGS_GTP_MAX_TRAFFIC_FLOW_TEMPLATE);
+    ogs_assert(data_len >= OGS_GTP2_MAX_TRAFFIC_FLOW_TEMPLATE);
 
-    ogs_assert(tft->code != OGS_GTP_TFT_CODE_IGNORE_THIS_IE);
+    ogs_assert(tft->code != OGS_GTP2_TFT_CODE_IGNORE_THIS_IE);
 
     octet->data = data;
-    memcpy(&target, tft, sizeof(ogs_gtp_tft_t));
+    memcpy(&target, tft, sizeof(ogs_gtp2_tft_t));
 
     ogs_assert(size + sizeof(target.flags) <= data_len);
     memcpy((unsigned char *)octet->data + size, &target.flags,
             sizeof(target.flags));
     size += sizeof(target.flags);
 
-    if (tft->code == OGS_GTP_TFT_CODE_NO_TFT_OPERATION ||
-        tft->code == OGS_GTP_TFT_CODE_DELETE_EXISTING_TFT)
+    if (tft->code == OGS_GTP2_TFT_CODE_NO_TFT_OPERATION ||
+        tft->code == OGS_GTP2_TFT_CODE_DELETE_EXISTING_TFT)
         return size;
 
     for (i = 0; i < target.num_of_packet_filter &&
@@ -476,7 +476,7 @@ int16_t ogs_gtp_build_tft(
                 sizeof(target.pf[i].flags));
         size += sizeof(target.pf[i].flags);
 
-        if (tft->code == OGS_GTP_TFT_CODE_DELETE_PACKET_FILTERS_FROM_EXISTING)
+        if (tft->code == OGS_GTP2_TFT_CODE_DELETE_PACKET_FILTERS_FROM_EXISTING)
             continue;
 
         ogs_assert(size + sizeof(target.pf[i].precedence) <= data_len);
@@ -615,15 +615,15 @@ int16_t ogs_gtp_build_tft(
 
 
 /* 8.21 User Location Information (ULI) */
-int16_t ogs_gtp_parse_uli(ogs_gtp_uli_t *uli, ogs_tlv_octet_t *octet)
+int16_t ogs_gtp2_parse_uli(ogs_gtp2_uli_t *uli, ogs_tlv_octet_t *octet)
 {
-    ogs_gtp_uli_t *source = (ogs_gtp_uli_t *)octet->data;
+    ogs_gtp2_uli_t *source = (ogs_gtp2_uli_t *)octet->data;
     int16_t size = 0;
 
     ogs_assert(uli);
     ogs_assert(octet);
 
-    memset(uli, 0, sizeof(ogs_gtp_uli_t));
+    memset(uli, 0, sizeof(ogs_gtp2_uli_t));
 
     uli->flags = source->flags;
     size++;
@@ -678,10 +678,10 @@ int16_t ogs_gtp_parse_uli(ogs_gtp_uli_t *uli, ogs_tlv_octet_t *octet)
 
     return size;
 }
-int16_t ogs_gtp_build_uli(
-        ogs_tlv_octet_t *octet, ogs_gtp_uli_t *uli, void *data, int data_len)
+int16_t ogs_gtp2_build_uli(
+        ogs_tlv_octet_t *octet, ogs_gtp2_uli_t *uli, void *data, int data_len)
 {
-    ogs_gtp_uli_t target;
+    ogs_gtp2_uli_t target;
     int16_t size = 0;
 
     ogs_assert(uli);
@@ -690,7 +690,7 @@ int16_t ogs_gtp_build_uli(
     ogs_assert(data_len);
 
     octet->data = data;
-    memcpy(&target, uli, sizeof(ogs_gtp_uli_t));
+    memcpy(&target, uli, sizeof(ogs_gtp2_uli_t));
 
     ogs_assert(size + sizeof(target.flags) <= data_len);
     memcpy((unsigned char *)octet->data + size,

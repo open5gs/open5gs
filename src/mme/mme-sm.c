@@ -123,7 +123,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
     ogs_gtp_node_t *gnode = NULL;
     ogs_gtp_xact_t *xact = NULL;
-    ogs_gtp_message_t gtp_message;
+    ogs_gtp2_message_t gtp_message;
 
     mme_vlr_t *vlr = NULL;
 
@@ -243,7 +243,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             ogs_warn("Cannot decode S1AP message");
             ogs_assert(OGS_OK ==
                 s1ap_send_error_indication(
-                    enb, NULL, NULL, S1AP_Cause_PR_protocol, 
+                    enb, NULL, NULL, S1AP_Cause_PR_protocol,
                     S1AP_CauseProtocol_abstract_syntax_error_falsely_constructed_message));
         }
 
@@ -299,7 +299,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             } else {
                 /* Here, if the MME_UE Context is found,
                  * the integrity check is not performed
-                 * For example, ATTACH_REQUEST, 
+                 * For example, ATTACH_REQUEST,
                  * TRACKING_AREA_UPDATE_REQUEST message
                  *
                  * Now, We will check the MAC in the NAS message*/
@@ -307,7 +307,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                 h.type = e->nas_type;
                 if (h.integrity_protected) {
                     /* Decryption was performed in S1AP handler.
-                     * So, we disabled 'ciphered' 
+                     * So, we disabled 'ciphered'
                      * not to decrypt NAS message */
                     h.ciphered = 0;
                     if (nas_eps_security_decode(mme_ue, h, pkbuf) != OGS_OK) {
@@ -407,7 +407,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
         } else if (OGS_FSM_CHECK(&bearer->sm, esm_state_exception)) {
 
-            /* 
+            /*
              * The UE requested the wrong APN.
              *
              * From the Issues #568, MME need to accept further service request.
@@ -514,8 +514,8 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         pkbuf = e->pkbuf;
         ogs_assert(pkbuf);
 
-        if (ogs_gtp_parse_msg(&gtp_message, pkbuf) != OGS_OK) {
-            ogs_error("ogs_gtp_parse_msg() failed");
+        if (ogs_gtp2_parse_msg(&gtp_message, pkbuf) != OGS_OK) {
+            ogs_error("ogs_gtp2_parse_msg() failed");
             ogs_pkbuf_free(pkbuf);
             break;
         }
@@ -570,41 +570,41 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         }
 
         switch (gtp_message.h.type) {
-        case OGS_GTP_ECHO_REQUEST_TYPE:
+        case OGS_GTP2_ECHO_REQUEST_TYPE:
             mme_s11_handle_echo_request(xact, &gtp_message.echo_request);
             break;
-        case OGS_GTP_ECHO_RESPONSE_TYPE:
+        case OGS_GTP2_ECHO_RESPONSE_TYPE:
             mme_s11_handle_echo_response(xact, &gtp_message.echo_response);
             break;
-        case OGS_GTP_CREATE_SESSION_RESPONSE_TYPE:
+        case OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE:
             mme_s11_handle_create_session_response(
                 xact, mme_ue, &gtp_message.create_session_response);
             break;
-        case OGS_GTP_MODIFY_BEARER_RESPONSE_TYPE:
+        case OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE:
             mme_s11_handle_modify_bearer_response(
                 xact, mme_ue, &gtp_message.modify_bearer_response);
             break;
-        case OGS_GTP_DELETE_SESSION_RESPONSE_TYPE:
+        case OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE:
             mme_s11_handle_delete_session_response(
                 xact, mme_ue, &gtp_message.delete_session_response);
             break;
-        case OGS_GTP_CREATE_BEARER_REQUEST_TYPE:
+        case OGS_GTP2_CREATE_BEARER_REQUEST_TYPE:
             mme_s11_handle_create_bearer_request(
                 xact, mme_ue, &gtp_message.create_bearer_request);
             break;
-        case OGS_GTP_UPDATE_BEARER_REQUEST_TYPE:
+        case OGS_GTP2_UPDATE_BEARER_REQUEST_TYPE:
             mme_s11_handle_update_bearer_request(
                 xact, mme_ue, &gtp_message.update_bearer_request);
             break;
-        case OGS_GTP_DELETE_BEARER_REQUEST_TYPE:
+        case OGS_GTP2_DELETE_BEARER_REQUEST_TYPE:
             mme_s11_handle_delete_bearer_request(
                 xact, mme_ue, &gtp_message.delete_bearer_request);
             break;
-        case OGS_GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
+        case OGS_GTP2_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
             mme_s11_handle_release_access_bearers_response(
                 xact, mme_ue, &gtp_message.release_access_bearers_response);
             break;
-        case OGS_GTP_DOWNLINK_DATA_NOTIFICATION_TYPE:
+        case OGS_GTP2_DOWNLINK_DATA_NOTIFICATION_TYPE:
             if (!mme_ue) {
                 if (gtp_message.h.teid_presence)
                     ogs_warn("No Context : TEID[%d]", gtp_message.h.teid);
@@ -616,17 +616,17 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             mme_s11_handle_downlink_data_notification(
                 xact, mme_ue, &gtp_message.downlink_data_notification);
             break;
-        case OGS_GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
+        case OGS_GTP2_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
             mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
                 xact, mme_ue,
                 &gtp_message.create_indirect_data_forwarding_tunnel_response);
             break;
-        case OGS_GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
+        case OGS_GTP2_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
             mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
                 xact, mme_ue,
                 &gtp_message.delete_indirect_data_forwarding_tunnel_response);
             break;
-        case OGS_GTP_BEARER_RESOURCE_FAILURE_INDICATION_TYPE:
+        case OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE:
             mme_s11_handle_bearer_resource_failure_indication(
                 xact, mme_ue,
                 &gtp_message.bearer_resource_failure_indication);
@@ -658,7 +658,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         vlr->max_num_of_ostreams =
                 ogs_min(max_num_of_ostreams, vlr->max_num_of_ostreams);
 
-        ogs_debug("VLR-SGs SCTP_COMM_UP[%s] Max Num of Outbound Streams[%d]", 
+        ogs_debug("VLR-SGs SCTP_COMM_UP[%s] Max Num of Outbound Streams[%d]",
             OGS_ADDR(vlr->addr, buf), vlr->max_num_of_ostreams);
 
         e->vlr = vlr;
@@ -684,7 +684,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             e->vlr = vlr;
             ogs_fsm_dispatch(&vlr->sm, e);
 
-            ogs_info("VLR-SGs[%s] connection refused!!!", 
+            ogs_info("VLR-SGs[%s] connection refused!!!",
                     OGS_ADDR(vlr->addr, buf));
 
         } else {

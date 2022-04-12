@@ -92,7 +92,7 @@ ogs_gtp_node_t *ogs_gtp_node_new(ogs_sockaddr_t *sa_list);
 void ogs_gtp_node_free(ogs_gtp_node_t *node);
 
 ogs_gtp_node_t *ogs_gtp_node_add_by_f_teid(
-        ogs_list_t *list, ogs_gtp_f_teid_t *f_teid, uint16_t port);
+        ogs_list_t *list, ogs_gtp2_f_teid_t *f_teid, uint16_t port);
 ogs_gtp_node_t *ogs_gtp_node_add_by_addr(
         ogs_list_t *list, ogs_sockaddr_t *addr);
 void ogs_gtp_node_remove(ogs_list_t *list, ogs_gtp_node_t *node);
@@ -101,7 +101,7 @@ void ogs_gtp_node_remove_all(ogs_list_t *list);
 ogs_gtp_node_t *ogs_gtp_node_find_by_addr(
         ogs_list_t *list, ogs_sockaddr_t *addr);
 ogs_gtp_node_t *ogs_gtp_node_find_by_f_teid(
-        ogs_list_t *list, ogs_gtp_f_teid_t *f_teid);
+        ogs_list_t *list, ogs_gtp2_f_teid_t *f_teid);
 
 ogs_gtp_node_t *ogs_gtp_node_add_by_ip(
         ogs_list_t *list, ogs_ip_t *ip, uint16_t port);

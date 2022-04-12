@@ -70,43 +70,43 @@ uint8_t gtp_cause_from_pfcp(uint8_t pfcp_cause, uint8_t gtp_version)
         case 2:
             switch (pfcp_cause) {
             case OGS_PFCP_CAUSE_REQUEST_ACCEPTED:
-                return OGS_GTP_CAUSE_REQUEST_ACCEPTED;
+                return OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
             case OGS_PFCP_CAUSE_REQUEST_REJECTED:
-                return OGS_GTP_CAUSE_REQUEST_REJECTED_REASON_NOT_SPECIFIED;
+                return OGS_GTP2_CAUSE_REQUEST_REJECTED_REASON_NOT_SPECIFIED;
             case OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND:
-                return OGS_GTP_CAUSE_CONTEXT_NOT_FOUND;
+                return OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
             case OGS_PFCP_CAUSE_MANDATORY_IE_MISSING:
-                return OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+                return OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
             case OGS_PFCP_CAUSE_CONDITIONAL_IE_MISSING:
-                return OGS_GTP_CAUSE_CONDITIONAL_IE_MISSING;
+                return OGS_GTP2_CAUSE_CONDITIONAL_IE_MISSING;
             case OGS_PFCP_CAUSE_INVALID_LENGTH:
-                return OGS_GTP_CAUSE_INVALID_LENGTH;
+                return OGS_GTP2_CAUSE_INVALID_LENGTH;
             case OGS_PFCP_CAUSE_MANDATORY_IE_INCORRECT:
-                return OGS_GTP_CAUSE_MANDATORY_IE_INCORRECT;
+                return OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
             case OGS_PFCP_CAUSE_INVALID_FORWARDING_POLICY:
             case OGS_PFCP_CAUSE_INVALID_F_TEID_ALLOCATION_OPTION:
-                return OGS_GTP_CAUSE_INVALID_MESSAGE_FORMAT;
+                return OGS_GTP2_CAUSE_INVALID_MESSAGE_FORMAT;
             case OGS_PFCP_CAUSE_NO_ESTABLISHED_PFCP_ASSOCIATION:
-                return OGS_GTP_CAUSE_REMOTE_PEER_NOT_RESPONDING;
+                return OGS_GTP2_CAUSE_REMOTE_PEER_NOT_RESPONDING;
             case OGS_PFCP_CAUSE_RULE_CREATION_MODIFICATION_FAILURE:
-                return OGS_GTP_CAUSE_SEMANTIC_ERROR_IN_THE_TFT_OPERATION;
+                return OGS_GTP2_CAUSE_SEMANTIC_ERROR_IN_THE_TFT_OPERATION;
             case OGS_PFCP_CAUSE_PFCP_ENTITY_IN_CONGESTION:
-                return OGS_GTP_CAUSE_GTP_C_ENTITY_CONGESTION;
+                return OGS_GTP2_CAUSE_GTP_C_ENTITY_CONGESTION;
             case OGS_PFCP_CAUSE_NO_RESOURCES_AVAILABLE:
-                return OGS_GTP_CAUSE_NO_RESOURCES_AVAILABLE;
+                return OGS_GTP2_CAUSE_NO_RESOURCES_AVAILABLE;
             case OGS_PFCP_CAUSE_SERVICE_NOT_SUPPORTED:
-                return OGS_GTP_CAUSE_SERVICE_NOT_SUPPORTED;
+                return OGS_GTP2_CAUSE_SERVICE_NOT_SUPPORTED;
             case OGS_PFCP_CAUSE_SYSTEM_FAILURE:
-                return OGS_GTP_CAUSE_SYSTEM_FAILURE;
+                return OGS_GTP2_CAUSE_SYSTEM_FAILURE;
             case OGS_PFCP_CAUSE_ALL_DYNAMIC_ADDRESS_ARE_OCCUPIED:
-                return OGS_GTP_CAUSE_ALL_DYNAMIC_ADDRESSES_ARE_OCCUPIED;
+                return OGS_GTP2_CAUSE_ALL_DYNAMIC_ADDRESSES_ARE_OCCUPIED;
             default:
-                return OGS_GTP_CAUSE_SYSTEM_FAILURE;
+                return OGS_GTP2_CAUSE_SYSTEM_FAILURE;
             }
             break;
     }
 
-    return OGS_GTP_CAUSE_SYSTEM_FAILURE;
+    return OGS_GTP2_CAUSE_SYSTEM_FAILURE;
 }
 
 static int sbi_status_from_pfcp(uint8_t pfcp_cause)
@@ -749,29 +749,29 @@ void smf_epc_n4_handle_session_establishment_response(
         cause_value = OGS_GTP1_CAUSE_REQUEST_ACCEPTED;
         resp_type = OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE;
     } else {
-        cause_value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
-        resp_type = OGS_GTP_CREATE_SESSION_RESPONSE_TYPE;
+        cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
+        resp_type = OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE;
     }
 
     if (!sess) {
         ogs_warn("No Context");
         cause_value = (gtp_xact->gtp_version == 1) ?
                         OGS_GTP1_CAUSE_CONTEXT_NOT_FOUND :
-                        OGS_GTP_CAUSE_CONTEXT_NOT_FOUND;
+                        OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
     }
 
     if (rsp->up_f_seid.presence == 0) {
         ogs_error("No UP F-SEID");
         cause_value = (gtp_xact->gtp_version == 1) ?
                         OGS_GTP1_CAUSE_MANDATORY_IE_MISSING :
-                        OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+                        OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
     }
 
     if (rsp->created_pdr[0].presence == 0) {
         ogs_error("No Created PDR");
         cause_value = (gtp_xact->gtp_version == 1) ?
                         OGS_GTP1_CAUSE_MANDATORY_IE_MISSING :
-                        OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+                        OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
     }
 
     if (rsp->cause.presence) {
@@ -783,11 +783,11 @@ void smf_epc_n4_handle_session_establishment_response(
         ogs_error("No Cause");
         cause_value = (gtp_xact->gtp_version == 1) ?
                         OGS_GTP1_CAUSE_MANDATORY_IE_MISSING :
-                        OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+                        OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
     }
 
     if ((gtp_xact->gtp_version == 1 && cause_value == OGS_GTP1_CAUSE_REQUEST_ACCEPTED) ||
-        (gtp_xact->gtp_version == 2 && cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED)) {
+        (gtp_xact->gtp_version == 2 && cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED)) {
         int i;
 
         uint8_t pfcp_cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
@@ -842,7 +842,7 @@ void smf_epc_n4_handle_session_establishment_response(
 
 
     if ((gtp_xact->gtp_version == 1 && cause_value != OGS_GTP1_CAUSE_REQUEST_ACCEPTED) ||
-        (gtp_xact->gtp_version == 2 && cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED)) {
+        (gtp_xact->gtp_version == 2 && cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED)) {
         ogs_gtp_send_error_message(gtp_xact, sess ? sess->sgw_s5c_teid : 0,
                 resp_type, cause_value);
         return;
@@ -857,7 +857,7 @@ void smf_epc_n4_handle_session_establishment_response(
         ogs_gtp_send_error_message(gtp_xact, sess ? sess->sgw_s5c_teid : 0,
                 resp_type,
                 (gtp_xact->gtp_version == 1) ?
-                OGS_GTP1_CAUSE_CONTEXT_NOT_FOUND : OGS_GTP_CAUSE_GRE_KEY_NOT_FOUND);
+                OGS_GTP1_CAUSE_CONTEXT_NOT_FOUND : OGS_GTP2_CAUSE_GRE_KEY_NOT_FOUND);
         return;
     }
 
@@ -875,7 +875,7 @@ void smf_epc_n4_handle_session_establishment_response(
         break;
     }
 
-    if (sess->gtp_rat_type == OGS_GTP_RAT_TYPE_WLAN) {
+    if (sess->gtp_rat_type == OGS_GTP2_RAT_TYPE_WLAN) {
         /*
          * TS23.214
          * 6.3.1.7 Procedures with modification of bearer
@@ -892,14 +892,14 @@ void smf_epc_n4_handle_session_establishment_response(
         ogs_assert(smf_ue);
 
         eutran_sess = smf_sess_find_by_apn(
-            smf_ue, sess->session.name, OGS_GTP_RAT_TYPE_EUTRAN);
+            smf_ue, sess->session.name, OGS_GTP2_RAT_TYPE_EUTRAN);
         if (eutran_sess) {
             ogs_assert(OGS_OK ==
                 smf_epc_pfcp_send_session_modification_request(
                     eutran_sess, NULL,
                     OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE,
                     OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
-                    OGS_GTP_CAUSE_RAT_CHANGED_FROM_3GPP_TO_NON_3GPP));
+                    OGS_GTP2_CAUSE_RAT_CHANGED_FROM_3GPP_TO_NON_3GPP));
         }
     }
 
@@ -915,7 +915,7 @@ void smf_epc_n4_handle_session_modification_response(
     smf_bearer_t *bearer = NULL;
     ogs_gtp_xact_t *gtp_xact = NULL;
     uint8_t gtp_pti = OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
-    uint8_t gtp_cause = OGS_GTP_CAUSE_UNDEFINED_VALUE;
+    uint8_t gtp_cause = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
     uint64_t flags = 0;
 
     uint8_t pfcp_cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
@@ -1037,15 +1037,15 @@ void smf_epc_n4_handle_session_modification_response(
          * 2. SMF sends Delete Bearer Request(DEDICATED BEARER) to SGW/MME
          * 3. MME sends Delete Bearer Response(DEDICATED BEARER) to SGW/SMF
          */
-            ogs_gtp_header_t h;
+            ogs_gtp2_header_t h;
             ogs_pkbuf_t *pkbuf = NULL;
             int rv;
 
             ogs_assert(bearer);
 
-            memset(&h, 0, sizeof(ogs_gtp_header_t));
+            memset(&h, 0, sizeof(ogs_gtp2_header_t));
             h.teid = sess->sgw_s5c_teid;
-            h.type = OGS_GTP_DELETE_BEARER_REQUEST_TYPE;
+            h.type = OGS_GTP2_DELETE_BEARER_REQUEST_TYPE;
 
             pkbuf = smf_s5c_build_delete_bearer_request(
                     h.type, bearer, gtp_pti, gtp_cause);
@@ -1150,15 +1150,15 @@ void smf_epc_n4_handle_session_deletion_response(
         resp_type = OGS_GTP1_DELETE_PDP_CONTEXT_RESPONSE_TYPE;
         cause_value = OGS_GTP1_CAUSE_REQUEST_ACCEPTED;
     } else {
-        resp_type = OGS_GTP_DELETE_SESSION_RESPONSE_TYPE;
-        cause_value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
+        resp_type = OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE;
+        cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
     }
 
     if (!sess) {
         ogs_warn("No Context");
         cause_value = (gtp_version == 1) ?
                         OGS_GTP1_CAUSE_NON_EXISTENT :
-                        OGS_GTP_CAUSE_CONTEXT_NOT_FOUND;
+                        OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
     }
 
     if (rsp->cause.presence) {
@@ -1170,12 +1170,12 @@ void smf_epc_n4_handle_session_deletion_response(
         ogs_error("No Cause");
         cause_value = (gtp_xact->gtp_version == 1) ?
                         OGS_GTP1_CAUSE_MANDATORY_IE_MISSING :
-                        OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+                        OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
     }
 
     if (gtp_xact &&
         ((gtp_version == 1 && cause_value != OGS_GTP1_CAUSE_REQUEST_ACCEPTED) ||
-         (gtp_version == 2 && cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED))) {
+         (gtp_version == 2 && cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED))) {
         ogs_gtp_send_error_message(gtp_xact, sess->sgw_s5c_teid, resp_type,
                 cause_value);
         return;
@@ -1265,7 +1265,7 @@ void smf_n4_handle_session_report_request(
 
     ogs_debug("Session Report Request");
 
-    cause_value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
+    cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
 
     if (!sess) {
         ogs_warn("No Context");
@@ -1274,10 +1274,10 @@ void smf_n4_handle_session_report_request(
 
     if (pfcp_req->report_type.presence == 0) {
         ogs_error("No Report Type");
-        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+        cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
     }
 
-    if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
+    if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
         ogs_pfcp_send_error_message(pfcp_xact, 0,
                 OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE,
                 cause_value, 0);
@@ -1316,7 +1316,7 @@ void smf_n4_handle_session_report_request(
                                 "Paging Policy Indication Value");
                         ogs_pfcp_send_error_message(pfcp_xact, 0,
                                 OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE,
-                                OGS_GTP_CAUSE_SERVICE_NOT_SUPPORTED, 0);
+                                OGS_GTP2_CAUSE_SERVICE_NOT_SUPPORTED, 0);
                         return;
                     }
 

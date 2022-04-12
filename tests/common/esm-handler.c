@@ -41,7 +41,7 @@ void testesm_handle_activate_default_eps_bearer_context_request(
         &activate_default_eps_bearer_context_request->access_point_name;
 
     sess = test_sess_find_by_apn(
-            test_ue, access_point_name->apn, OGS_GTP_RAT_TYPE_EUTRAN);
+            test_ue, access_point_name->apn, OGS_GTP2_RAT_TYPE_EUTRAN);
     ogs_assert(sess);
     bearer = test_bearer_find_by_sess_ebi(
             sess, message->esm.h.eps_bearer_identity);

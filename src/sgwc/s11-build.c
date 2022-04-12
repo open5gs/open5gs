@@ -22,10 +22,10 @@
 ogs_pkbuf_t *sgwc_s11_build_downlink_data_notification(
         uint8_t cause_value, sgwc_bearer_t *bearer)
 {
-    ogs_gtp_message_t message;
-    ogs_gtp_downlink_data_notification_t *noti = NULL;
-    ogs_gtp_cause_t cause;
-    ogs_gtp_arp_t arp;
+    ogs_gtp2_message_t message;
+    ogs_gtp2_downlink_data_notification_t *noti = NULL;
+    ogs_gtp2_cause_t cause;
+    ogs_gtp2_arp_t arp;
     sgwc_sess_t *sess = NULL;
 
     ogs_assert(bearer);
@@ -34,7 +34,7 @@ ogs_pkbuf_t *sgwc_s11_build_downlink_data_notification(
 
     /* Build downlink notification message */
     noti = &message.downlink_data_notification;
-    memset(&message, 0, sizeof(ogs_gtp_message_t));
+    memset(&message, 0, sizeof(ogs_gtp2_message_t));
 
     /*
      * TS29.274 8.4 Cause Value
@@ -42,7 +42,7 @@ ogs_pkbuf_t *sgwc_s11_build_downlink_data_notification(
      * 0 : Reserved. Shall not be sent and
      *     if received the Cause shall be treated as an invalid IE
      */
-    if (cause_value != OGS_GTP_CAUSE_UNDEFINED_VALUE) {
+    if (cause_value != OGS_GTP2_CAUSE_UNDEFINED_VALUE) {
         memset(&cause, 0, sizeof(cause));
         cause.value = cause_value;
         noti->cause.presence = 1;
@@ -63,6 +63,6 @@ ogs_pkbuf_t *sgwc_s11_build_downlink_data_notification(
     noti->allocation_retention_priority.data = &arp;
     noti->allocation_retention_priority.len = sizeof(arp);
 
-    message.h.type = OGS_GTP_DOWNLINK_DATA_NOTIFICATION_TYPE;
-    return ogs_gtp_build_msg(&message);
+    message.h.type = OGS_GTP2_DOWNLINK_DATA_NOTIFICATION_TYPE;
+    return ogs_gtp2_build_msg(&message);
 }

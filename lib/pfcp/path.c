@@ -279,8 +279,8 @@ void ogs_pfcp_send_g_pdu(ogs_pfcp_pdr_t *pdr, ogs_pkbuf_t *sendbuf)
     ogs_gtp_node_t *gnode = NULL;
     ogs_pfcp_far_t *far = NULL;
 
-    ogs_gtp_header_t gtp_hdesc;
-    ogs_gtp_extension_header_t ext_hdesc;
+    ogs_gtp2_header_t gtp_hdesc;
+    ogs_gtp2_extension_header_t ext_hdesc;
 
     ogs_assert(pdr);
     ogs_assert(sendbuf);
@@ -310,7 +310,7 @@ void ogs_pfcp_send_g_pdu(ogs_pfcp_pdr_t *pdr, ogs_pkbuf_t *sendbuf)
     if (pdr->qer && pdr->qer->qfi)
         ext_hdesc.qos_flow_identifier = pdr->qer->qfi;
 
-    ogs_gtp_send_user_plane(gnode, &gtp_hdesc, &ext_hdesc, sendbuf);
+    ogs_gtp2_send_user_plane(gnode, &gtp_hdesc, &ext_hdesc, sendbuf);
 }
 
 int ogs_pfcp_send_end_marker(ogs_pfcp_pdr_t *pdr)
@@ -320,8 +320,8 @@ int ogs_pfcp_send_end_marker(ogs_pfcp_pdr_t *pdr)
 
     ogs_pkbuf_t *sendbuf = NULL;
 
-    ogs_gtp_header_t gtp_hdesc;
-    ogs_gtp_extension_header_t ext_hdesc;
+    ogs_gtp2_header_t gtp_hdesc;
+    ogs_gtp2_extension_header_t ext_hdesc;
 
     ogs_assert(pdr);
     far = pdr->far;
@@ -349,7 +349,7 @@ int ogs_pfcp_send_end_marker(ogs_pfcp_pdr_t *pdr)
     if (pdr->qer && pdr->qer->qfi)
         ext_hdesc.qos_flow_identifier = pdr->qer->qfi;
 
-    ogs_gtp_send_user_plane(gnode, &gtp_hdesc, &ext_hdesc, sendbuf);
+    ogs_gtp2_send_user_plane(gnode, &gtp_hdesc, &ext_hdesc, sendbuf);
 
     return OGS_OK;
 }

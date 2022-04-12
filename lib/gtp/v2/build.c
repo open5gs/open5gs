@@ -19,14 +19,14 @@
 
 #include "ogs-gtp.h"
 
-ogs_pkbuf_t *ogs_gtp_build_echo_request(
+ogs_pkbuf_t *ogs_gtp2_build_echo_request(
         uint8_t type, uint8_t recovery, uint8_t features)
 {
-    ogs_gtp_message_t gtp_message;
-    ogs_gtp_echo_request_t *req = NULL;
+    ogs_gtp2_message_t gtp_message;
+    ogs_gtp2_echo_request_t *req = NULL;
 
     req = &gtp_message.echo_request;
-    memset(&gtp_message, 0, sizeof(ogs_gtp_message_t));
+    memset(&gtp_message, 0, sizeof(ogs_gtp2_message_t));
 
     req->recovery.presence = 1;
     req->recovery.u8 = recovery;
@@ -35,17 +35,17 @@ ogs_pkbuf_t *ogs_gtp_build_echo_request(
     req->sending_node_features.u8 = features;
 
     gtp_message.h.type = type;
-    return ogs_gtp_build_msg(&gtp_message);
+    return ogs_gtp2_build_msg(&gtp_message);
 }
 
-ogs_pkbuf_t *ogs_gtp_build_echo_response(
+ogs_pkbuf_t *ogs_gtp2_build_echo_response(
         uint8_t type, uint8_t recovery, uint8_t features)
 {
-    ogs_gtp_message_t gtp_message;
-    ogs_gtp_echo_response_t *rsp = NULL;
+    ogs_gtp2_message_t gtp_message;
+    ogs_gtp2_echo_response_t *rsp = NULL;
 
     rsp = &gtp_message.echo_response;
-    memset(&gtp_message, 0, sizeof(ogs_gtp_message_t));
+    memset(&gtp_message, 0, sizeof(ogs_gtp2_message_t));
 
     rsp->recovery.presence = 1;
     rsp->recovery.u8 = recovery;
@@ -54,10 +54,10 @@ ogs_pkbuf_t *ogs_gtp_build_echo_response(
     rsp->sending_node_features.u8 = features;
 
     gtp_message.h.type = type;
-    return ogs_gtp_build_msg(&gtp_message);
+    return ogs_gtp2_build_msg(&gtp_message);
 }
 
-ogs_pkbuf_t *ogs_gtp_build_error_indication(
+ogs_pkbuf_t *ogs_gtp2_build_error_indication(
         uint32_t teid, ogs_sockaddr_t *addr)
 {
     ogs_pkbuf_t *pkbuf = NULL;

@@ -21,14 +21,14 @@
 
 int ogs_gtpu_header_len(ogs_pkbuf_t *pkbuf)
 {
-    ogs_gtp_header_t *gtp_h = NULL;
+    ogs_gtp2_header_t *gtp_h = NULL;
     uint8_t *ext_h = NULL;
     uint16_t len = 0;
 
     ogs_assert(pkbuf);
     ogs_assert(pkbuf->data);
 
-    gtp_h = (ogs_gtp_header_t *)pkbuf->data;
+    gtp_h = (ogs_gtp2_header_t *)pkbuf->data;
 
     len = OGS_GTPV1U_HEADER_LEN;
     if (pkbuf->len < len) return -1;

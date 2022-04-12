@@ -392,7 +392,7 @@ void smf_gn_handle_update_pdp_context_request(
      * https://github.com/open5gs/open5gs/issues/1367
      */
 
-    memset(&h, 0, sizeof(ogs_gtp_header_t));
+    memset(&h, 0, sizeof(ogs_gtp2_header_t));
     h.type = OGS_GTP1_UPDATE_PDP_CONTEXT_RESPONSE_TYPE;
     h.teid = sess->sgw_s5c_teid;
 

@@ -440,8 +440,8 @@ f.write("""#if !defined(OGS_GTP_INSIDE) && !defined(OGS_GTP_COMPILATION)
 #error "This header cannot be included directly."
 #endif
 
-#ifndef OGS_GTP_MESSAGE_H
-#define OGS_GTP_MESSAGE_H
+#ifndef OGS_GTP2_MESSAGE_H
+#define OGS_GTP2_MESSAGE_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -450,12 +450,12 @@ extern "C" {
 /* 5.1 General format */
 #define OGS_GTPV1U_HEADER_LEN   8
 #define OGS_GTPV2C_HEADER_LEN   12
-#define OGS_GTP_TEID_LEN        4
-typedef struct ogs_gtp_header_s {
+#define OGS_GTP2_TEID_LEN        4
+typedef struct ogs_gtp2_header_s {
     union {
         struct {
-#define OGS_GTP_VERSION_0 0
-#define OGS_GTP_VERSION_1 1
+#define OGS_GTP2_VERSION_0 0
+#define OGS_GTP2_VERSION_1 1
         ED4(uint8_t version:3;,
             uint8_t piggybacked:1;,
             uint8_t teid_presence:1;,
@@ -482,14 +482,14 @@ typedef struct ogs_gtp_header_s {
         struct {
             uint32_t teid;
             /* sqn : 31bit ~ 8bit, spare : 7bit ~ 0bit */
-#define OGS_GTP_XID_TO_SQN(__xid) htobe32(((__xid) << 8))
-#define OGS_GTP_SQN_TO_XID(__sqn) (be32toh(__sqn) >> 8)
+#define OGS_GTP2_XID_TO_SQN(__xid) htobe32(((__xid) << 8))
+#define OGS_GTP2_SQN_TO_XID(__sqn) (be32toh(__sqn) >> 8)
             uint32_t sqn;
         };
         /* sqn : 31bit ~ 8bit, spare : 7bit ~ 0bit */
         uint32_t sqn_only;
     };
-} __attribute__ ((packed)) ogs_gtp_header_t;
+} __attribute__ ((packed)) ogs_gtp2_header_t;
 
 /* GTPv2-C message type */
 """)
@@ -497,13 +497,13 @@ typedef struct ogs_gtp_header_s {
 tmp = [(k, v["type"]) for k, v in msg_list.items()]
 sorted_msg_list = sorted(tmp, key=lambda tup: int(tup[1]))
 for (k, v) in sorted_msg_list:
-    f.write("#define OGS_GTP_" + v_upper(k) + "_TYPE " + v + "\n")
+    f.write("#define OGS_GTP2_" + v_upper(k) + "_TYPE " + v + "\n")
 f.write("\n")
 
 tmp = [(k, v["type"]) for k, v in type_list.items()]
 sorted_type_list = sorted(tmp, key=lambda tup: int(tup[1]))
 for (k, v) in sorted_type_list:
-    f.write("#define OGS_GTP_" + v_upper(k) + "_TYPE " + v + "\n")
+    f.write("#define OGS_GTP2_" + v_upper(k) + "_TYPE " + v + "\n")
 f.write("\n")
 
 f.write("/* Information Element TLV Descriptor */\n")
@@ -511,7 +511,7 @@ for (k, v) in sorted_type_list:
     if k in group_list.keys():
         continue
     for instance in range(0, int(type_list[k]["max_instance"])+1):
-        f.write("extern ogs_tlv_desc_t ogs_gtp_tlv_desc_" + v_lower(k))
+        f.write("extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_" + v_lower(k))
         f.write("_" + str(instance) + ";\n")
 f.write("\n")
 
@@ -527,13 +527,13 @@ sorted_group_list = sorted(tmp, key=lambda tup: int(tup[1]))
 f.write("/* Group Information Element TLV Descriptor */\n")
 for (k, v) in sorted_group_list:
     for instance in range(0, int(type_list[k]["max_instance"])+1):
-        f.write("extern ogs_tlv_desc_t ogs_gtp_tlv_desc_" + v_lower(k))
+        f.write("extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_" + v_lower(k))
         f.write("_" + str(instance) + ";\n")
 f.write("\n")
 
 f.write("/* Message Descriptor */\n")
 for (k, v) in sorted_msg_list:
-    f.write("extern ogs_tlv_desc_t ogs_gtp_tlv_desc_" + v_lower(k) + ";\n")
+    f.write("extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_" + v_lower(k) + ";\n")
 f.write("\n")
 
 f.write("/* Structure for Information Element */\n")
@@ -542,25 +542,25 @@ for (k, v) in sorted_type_list:
         continue
     if "size" in type_list[k]:
         if type_list[k]["size"] == 1:
-            f.write("typedef ogs_tlv_uint8_t ogs_gtp_tlv_" + v_lower(k) + "_t;\n")
+            f.write("typedef ogs_tlv_uint8_t ogs_gtp2_tlv_" + v_lower(k) + "_t;\n")
         elif type_list[k]["size"] == 2:
-            f.write("typedef ogs_tlv_uint16_t ogs_gtp_tlv_" + v_lower(k) + "_t;\n")
+            f.write("typedef ogs_tlv_uint16_t ogs_gtp2_tlv_" + v_lower(k) + "_t;\n")
         elif type_list[k]["size"] == 3:
-            f.write("typedef ogs_tlv_uint24_t ogs_gtp_tlv_" + v_lower(k) + "_t;\n")
+            f.write("typedef ogs_tlv_uint24_t ogs_gtp2_tlv_" + v_lower(k) + "_t;\n")
         elif type_list[k]["size"] == 4:
-            f.write("typedef ogs_tlv_uint32_t ogs_gtp_tlv_" + v_lower(k) + "_t;\n")
+            f.write("typedef ogs_tlv_uint32_t ogs_gtp2_tlv_" + v_lower(k) + "_t;\n")
         else:
             assert False, "Unknown size = %d for key = %s" % (type_list[k]["size"], k)
     else:
-        f.write("typedef ogs_tlv_octet_t ogs_gtp_tlv_" + v_lower(k) + "_t;\n")
+        f.write("typedef ogs_tlv_octet_t ogs_gtp2_tlv_" + v_lower(k) + "_t;\n")
 f.write("\n")
 
 f.write("/* Structure for Group Information Element */\n")
 for (k, v) in sorted_group_list:
-    f.write("typedef struct ogs_gtp_tlv_" + v_lower(k) + "_s {\n")
+    f.write("typedef struct ogs_gtp2_tlv_" + v_lower(k) + "_s {\n")
     f.write("    ogs_tlv_presence_t presence;\n")
     for ies in group_list[k]["ies"]:
-        f.write("    ogs_gtp_tlv_" + v_lower(ies["ie_type"]) + "_t " + \
+        f.write("    ogs_gtp2_tlv_" + v_lower(ies["ie_type"]) + "_t " + \
                 v_lower(ies["ie_value"]))
         if ies["ie_type"] == "F-TEID":
             if ies["ie_value"] == "S2b-U ePDG F-TEID":
@@ -572,40 +572,40 @@ for (k, v) in sorted_group_list:
             f.write(" /* Instance : " + ies["instance"] + " */\n")
         else:
             f.write(";\n")
-    f.write("} ogs_gtp_tlv_" + v_lower(k) + "_t;\n")
+    f.write("} ogs_gtp2_tlv_" + v_lower(k) + "_t;\n")
     f.write("\n")
 
 f.write("/* Structure for Message */\n")
 for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
-        f.write("typedef struct ogs_gtp_" + v_lower(k) + "_s {\n")
+        f.write("typedef struct ogs_gtp2_" + v_lower(k) + "_s {\n")
         for ies in msg_list[k]["ies"]:
             if (k == 'Create Indirect Data Forwarding Tunnel Request' or k == 'Create Indirect Data Forwarding Tunnel Response') and ies["ie_value"] == 'Bearer Contexts':
-                f.write("    ogs_gtp_tlv_" + v_lower(ies["ie_type"]) + "_t " + \
+                f.write("    ogs_gtp2_tlv_" + v_lower(ies["ie_type"]) + "_t " + \
                         v_lower(ies["ie_value"]) + "[8];\n")
             else:
-                f.write("    ogs_gtp_tlv_" + v_lower(ies["ie_type"]) + "_t " + \
+                f.write("    ogs_gtp2_tlv_" + v_lower(ies["ie_type"]) + "_t " + \
                         v_lower(ies["ie_value"]) + ";\n")
-        f.write("} ogs_gtp_" + v_lower(k) + "_t;\n")
+        f.write("} ogs_gtp2_" + v_lower(k) + "_t;\n")
         f.write("\n")
 
-f.write("typedef struct ogs_gtp_message_s {\n")
-f.write("   ogs_gtp_header_t h;\n")
+f.write("typedef struct ogs_gtp2_message_s {\n")
+f.write("   ogs_gtp2_header_t h;\n")
 f.write("   union {\n")
 for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
-        f.write("        ogs_gtp_" + v_lower(k) + "_t " + v_lower(k) + ";\n");
+        f.write("        ogs_gtp2_" + v_lower(k) + "_t " + v_lower(k) + ";\n");
 f.write("   };\n");
-f.write("} ogs_gtp_message_t;\n\n")
+f.write("} ogs_gtp2_message_t;\n\n")
 
-f.write("""int ogs_gtp_parse_msg(ogs_gtp_message_t *gtp_message, ogs_pkbuf_t *pkbuf);
-ogs_pkbuf_t *ogs_gtp_build_msg(ogs_gtp_message_t *gtp_message);
+f.write("""int ogs_gtp2_parse_msg(ogs_gtp2_message_t *gtp_message, ogs_pkbuf_t *pkbuf);
+ogs_pkbuf_t *ogs_gtp2_build_msg(ogs_gtp2_message_t *gtp_message);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* OGS_GTP_MESSAGE_H */
+#endif /* OGS_GTP2_MESSAGE_H */
 """)
 f.close()
 
@@ -619,7 +619,7 @@ for (k, v) in sorted_type_list:
     if k in group_list.keys():
         continue
     for instance in range(0, int(type_list[k]["max_instance"])+1):
-        f.write("ogs_tlv_desc_t ogs_gtp_tlv_desc_%s_%d =\n" % (v_lower(k), instance))
+        f.write("ogs_tlv_desc_t ogs_gtp2_tlv_desc_%s_%d =\n" % (v_lower(k), instance))
         f.write("{\n")
         if "size" in type_list[k]:
             if type_list[k]["size"] == 1:
@@ -635,89 +635,89 @@ for (k, v) in sorted_type_list:
         else:
             f.write("    OGS_TLV_VAR_STR,\n")
         f.write("    \"%s\",\n" % k)
-        f.write("    OGS_GTP_%s_TYPE,\n" % v_upper(k))
+        f.write("    OGS_GTP2_%s_TYPE,\n" % v_upper(k))
         if "size" in type_list[k]:
             f.write("    %d,\n" % type_list[k]["size"])
         else:
             f.write("    0,\n")
         f.write("    %d,\n" % instance)
-        f.write("    sizeof(ogs_gtp_tlv_%s_t),\n" % v_lower(k))
+        f.write("    sizeof(ogs_gtp2_tlv_%s_t),\n" % v_lower(k))
         f.write("    { NULL }\n")
         f.write("};\n\n")
 
 for (k, v) in sorted_group_list:
     for instance in range(0, int(type_list[k]["max_instance"])+1):
-        f.write("ogs_tlv_desc_t ogs_gtp_tlv_desc_%s_%d =\n" % (v_lower(k), instance))
+        f.write("ogs_tlv_desc_t ogs_gtp2_tlv_desc_%s_%d =\n" % (v_lower(k), instance))
         f.write("{\n")
         f.write("    OGS_TLV_COMPOUND,\n")
         f.write("    \"%s\",\n" % k)
-        f.write("    OGS_GTP_%s_TYPE,\n" % v_upper(k))
+        f.write("    OGS_GTP2_%s_TYPE,\n" % v_upper(k))
         f.write("    0,\n")
         f.write("    %d,\n" % instance)
-        f.write("    sizeof(ogs_gtp_tlv_%s_t),\n" % v_lower(k))
+        f.write("    sizeof(ogs_gtp2_tlv_%s_t),\n" % v_lower(k))
         f.write("    {\n")
         for ies in group_list[k]["ies"]:
-                f.write("        &ogs_gtp_tlv_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), v_lower(ies["instance"])))
+                f.write("        &ogs_gtp2_tlv_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), v_lower(ies["instance"])))
         f.write("        NULL,\n")
         f.write("    }\n")
         f.write("};\n\n")
 
 for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
-        f.write("ogs_tlv_desc_t ogs_gtp_tlv_desc_%s =\n" % v_lower(k))
+        f.write("ogs_tlv_desc_t ogs_gtp2_tlv_desc_%s =\n" % v_lower(k))
         f.write("{\n")
         f.write("    OGS_TLV_MESSAGE,\n")
         f.write("    \"%s\",\n" % k)
         f.write("    0, 0, 0, 0, {\n")
         for ies in msg_list[k]["ies"]:
-            f.write("        &ogs_gtp_tlv_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), v_lower(ies["instance"])))
+            f.write("        &ogs_gtp2_tlv_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), v_lower(ies["instance"])))
             if (k == 'Create Indirect Data Forwarding Tunnel Request' or k == 'Create Indirect Data Forwarding Tunnel Response') and ies["ie_value"] == 'Bearer Contexts':
                 f.write("        &ogs_tlv_desc_more8,\n")
         f.write("    NULL,\n")
         f.write("}};\n\n")
 f.write("\n")
 
-f.write("""int ogs_gtp_parse_msg(ogs_gtp_message_t *gtp_message, ogs_pkbuf_t *pkbuf)
+f.write("""int ogs_gtp2_parse_msg(ogs_gtp2_message_t *gtp_message, ogs_pkbuf_t *pkbuf)
 {
     int rv = OGS_ERROR;
-    ogs_gtp_header_t *h = NULL;
+    ogs_gtp2_header_t *h = NULL;
     uint16_t size = 0;
 
-    ogs_assert(gtp_message);
+    ogs_assert(gtp2_message);
     ogs_assert(pkbuf);
     ogs_assert(pkbuf->len);
 
-    h = (ogs_gtp_header_t *)pkbuf->data;
+    h = (ogs_gtp2_header_t *)pkbuf->data;
     ogs_assert(h);
     
-    memset(gtp_message, 0, sizeof(ogs_gtp_message_t));
+    memset(gtp2_message, 0, sizeof(ogs_gtp2_message_t));
 
     if (h->teid_presence)
         size = OGS_GTPV2C_HEADER_LEN;
     else
-        size = OGS_GTPV2C_HEADER_LEN-OGS_GTP_TEID_LEN;
+        size = OGS_GTPV2C_HEADER_LEN-OGS_GTP2_TEID_LEN;
 
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
-    memcpy(&gtp_message->h, pkbuf->data - size, size);
+    memcpy(&gtp2_message->h, pkbuf->data - size, size);
 
     if (h->teid_presence)
-        gtp_message->h.teid = be32toh(gtp_message->h.teid);
+        gtp2_message->h.teid = be32toh(gtp_message->h.teid);
 
     if (pkbuf->len == 0) {
         ogs_assert(ogs_pkbuf_push(pkbuf, size));
         return OGS_OK;
     }
 
-    switch(gtp_message->h.type) {
+    switch(gtp2_message->h.type) {
 """)
 for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
-        f.write("    case OGS_GTP_%s_TYPE:\n" % v_upper(k))
-        f.write("        rv = ogs_tlv_parse_msg(&gtp_message->%s,\n" % v_lower(k))
-        f.write("                &ogs_gtp_tlv_desc_%s, pkbuf, OGS_TLV_MODE_T1_L2_I1);\n" % v_lower(k))
+        f.write("    case OGS_GTP2_%s_TYPE:\n" % v_upper(k))
+        f.write("        rv = ogs_tlv_parse_msg(&gtp2_message->%s,\n" % v_lower(k))
+        f.write("                &ogs_gtp2_tlv_desc_%s, pkbuf, OGS_TLV_MODE_T1_L2_I1);\n" % v_lower(k))
         f.write("        break;\n")
 f.write("""    default:
-        ogs_warn("Not implmeneted(type:%d)", gtp_message->h.type);
+        ogs_warn("Not implmeneted(type:%d)", gtp2_message->h.type);
         break;
     }
 
@@ -728,21 +728,21 @@ f.write("""    default:
 
 """)
 
-f.write("""ogs_pkbuf_t *ogs_gtp_build_msg(ogs_gtp_message_t *gtp_message)
+f.write("""ogs_pkbuf_t *ogs_gtp2_build_msg(ogs_gtp2_message_t *gtp_message)
 {
     ogs_pkbuf_t *pkbuf = NULL;
 
-    ogs_assert(gtp_message);
-    switch(gtp_message->h.type) {
+    ogs_assert(gtp2_message);
+    switch(gtp2_message->h.type) {
 """)
 for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
-        f.write("    case OGS_GTP_%s_TYPE:\n" % v_upper(k))
-        f.write("        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_%s,\n" % v_lower(k))
-        f.write("                &gtp_message->%s, OGS_TLV_MODE_T1_L2_I1);\n" % v_lower(k))
+        f.write("    case OGS_GTP2_%s_TYPE:\n" % v_upper(k))
+        f.write("        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_%s,\n" % v_lower(k))
+        f.write("                &gtp2_message->%s, OGS_TLV_MODE_T1_L2_I1);\n" % v_lower(k))
         f.write("        break;\n")
 f.write("""    default:
-        ogs_warn("Not implmeneted(type:%d)", gtp_message->h.type);
+        ogs_warn("Not implmeneted(type:%d)", gtp2_message->h.type);
         break;
     }
 

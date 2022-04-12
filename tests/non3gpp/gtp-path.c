@@ -79,15 +79,15 @@ ogs_pkbuf_t *test_epdg_read(ogs_socknode_t *node)
 void test_s2b_recv(test_sess_t *sess, ogs_pkbuf_t *pkbuf)
 {
     int rv;
-    ogs_gtp_message_t gtp_message;
+    ogs_gtp2_message_t gtp_message;
     ogs_gtp_xact_t *xact = NULL;
 
     ogs_assert(sess);
     ogs_assert(sess->gnode);
     ogs_assert(pkbuf);
 
-    if (ogs_gtp_parse_msg(&gtp_message, pkbuf) != OGS_OK) {
-        ogs_error("ogs_gtp_parse_msg() failed");
+    if (ogs_gtp2_parse_msg(&gtp_message, pkbuf) != OGS_OK) {
+        ogs_error("ogs_gtp2_parse_msg() failed");
         ogs_pkbuf_free(pkbuf);
         return;
     }
@@ -100,19 +100,19 @@ void test_s2b_recv(test_sess_t *sess, ogs_pkbuf_t *pkbuf)
     }
 
     switch (gtp_message.h.type) {
-        case OGS_GTP_CREATE_SESSION_RESPONSE_TYPE:
+        case OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE:
             test_s2b_handle_create_session_response(
                 xact, sess, &gtp_message.create_session_response);
             break;
-        case OGS_GTP_DELETE_SESSION_RESPONSE_TYPE:
+        case OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE:
             test_s2b_handle_delete_session_response(
                 xact, sess, &gtp_message.delete_session_response);
             break;
-        case OGS_GTP_CREATE_BEARER_REQUEST_TYPE:
+        case OGS_GTP2_CREATE_BEARER_REQUEST_TYPE:
             test_s2b_handle_create_bearer_request(
                 xact, sess, &gtp_message.create_bearer_request);
             break;
-        case OGS_GTP_DELETE_BEARER_REQUEST_TYPE:
+        case OGS_GTP2_DELETE_BEARER_REQUEST_TYPE:
             test_s2b_handle_delete_bearer_request(
                 xact, sess, &gtp_message.delete_bearer_request);
             break;
@@ -127,14 +127,14 @@ void test_s2b_recv(test_sess_t *sess, ogs_pkbuf_t *pkbuf)
 int test_s2b_send_create_session_request(test_sess_t *sess, bool handover_ind)
 {
     int rv;
-    ogs_gtp_header_t h;
+    ogs_gtp2_header_t h;
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_gtp_xact_t *xact = NULL;
 
     ogs_assert(sess);
 
-    memset(&h, 0, sizeof(ogs_gtp_header_t));
-    h.type = OGS_GTP_CREATE_SESSION_REQUEST_TYPE;
+    memset(&h, 0, sizeof(ogs_gtp2_header_t));
+    h.type = OGS_GTP2_CREATE_SESSION_REQUEST_TYPE;
     h.teid = sess->smf_s2b_c_teid;
 
     pkbuf = test_s2b_build_create_session_request(h.type, sess, handover_ind);
@@ -152,14 +152,14 @@ int test_s2b_send_create_session_request(test_sess_t *sess, bool handover_ind)
 int test_s2b_send_delete_session_request(test_sess_t *sess)
 {
     int rv;
-    ogs_gtp_header_t h;
+    ogs_gtp2_header_t h;
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_gtp_xact_t *xact = NULL;
 
     ogs_assert(sess);
 
-    memset(&h, 0, sizeof(ogs_gtp_header_t));
-    h.type = OGS_GTP_DELETE_SESSION_REQUEST_TYPE;
+    memset(&h, 0, sizeof(ogs_gtp2_header_t));
+    h.type = OGS_GTP2_DELETE_SESSION_REQUEST_TYPE;
     h.teid = sess->smf_s2b_c_teid;
 
     pkbuf = test_s2b_build_delete_session_request(h.type, sess);
@@ -178,7 +178,7 @@ int test_s2b_send_create_bearer_response(
         test_bearer_t *bearer, ogs_gtp_xact_t *xact)
 {
     int rv;
-    ogs_gtp_header_t h;
+    ogs_gtp2_header_t h;
     ogs_pkbuf_t *pkbuf = NULL;
     test_sess_t *sess = NULL;
 
@@ -187,8 +187,8 @@ int test_s2b_send_create_bearer_response(
     sess = bearer->sess;
     ogs_assert(sess);
 
-    memset(&h, 0, sizeof(ogs_gtp_header_t));
-    h.type = OGS_GTP_CREATE_BEARER_RESPONSE_TYPE;
+    memset(&h, 0, sizeof(ogs_gtp2_header_t));
+    h.type = OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE;
     h.teid = sess->smf_s2b_c_teid;
 
     pkbuf = test_s2b_build_create_bearer_response(h.type, bearer);
@@ -207,7 +207,7 @@ int test_s2b_send_delete_bearer_response(
         test_bearer_t *bearer, ogs_gtp_xact_t *xact)
 {
     int rv;
-    ogs_gtp_header_t h;
+    ogs_gtp2_header_t h;
     ogs_pkbuf_t *pkbuf = NULL;
     test_sess_t *sess = NULL;
 
@@ -216,8 +216,8 @@ int test_s2b_send_delete_bearer_response(
     sess = bearer->sess;
     ogs_assert(sess);
 
-    memset(&h, 0, sizeof(ogs_gtp_header_t));
-    h.type = OGS_GTP_DELETE_BEARER_RESPONSE_TYPE;
+    memset(&h, 0, sizeof(ogs_gtp2_header_t));
+    h.type = OGS_GTP2_DELETE_BEARER_RESPONSE_TYPE;
     h.teid = sess->smf_s2b_c_teid;
 
     pkbuf = test_s2b_build_delete_bearer_response(h.type, bearer);

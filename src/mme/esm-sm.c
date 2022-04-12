@@ -36,18 +36,18 @@ static uint8_t gtp_cause_from_esm(uint8_t esm_cause)
 {
     switch (esm_cause) {
     case ESM_CAUSE_SEMANTIC_ERROR_IN_THE_TFT_OPERATION:
-        return OGS_GTP_CAUSE_SEMANTIC_ERROR_IN_THE_TFT_OPERATION;
+        return OGS_GTP2_CAUSE_SEMANTIC_ERROR_IN_THE_TFT_OPERATION;
     case ESM_CAUSE_SYNTACTICAL_ERROR_IN_THE_TFT_OPERATION:
-        return OGS_GTP_CAUSE_SYNTACTIC_ERROR_IN_THE_TFT_OPERATION;
+        return OGS_GTP2_CAUSE_SYNTACTIC_ERROR_IN_THE_TFT_OPERATION;
     case ESM_CAUSE_SYNTACTICAL_ERROR_IN_PACKET_FILTERS:
-        return OGS_GTP_CAUSE_SYNTACTIC_ERRORS_IN_PACKET_FILTER;
+        return OGS_GTP2_CAUSE_SYNTACTIC_ERRORS_IN_PACKET_FILTER;
     case ESM_CAUSE_SEMANTIC_ERRORS_IN_PACKET_FILTERS:
-        return OGS_GTP_CAUSE_SEMANTIC_ERRORS_IN_PACKET_FILTER;
+        return OGS_GTP2_CAUSE_SEMANTIC_ERRORS_IN_PACKET_FILTER;
     default:
         break;
     }
 
-    return OGS_GTP_CAUSE_SYSTEM_FAILURE;
+    return OGS_GTP2_CAUSE_SYSTEM_FAILURE;
 }
 
 void esm_state_initial(ogs_fsm_t *s, mme_event_t *e)
@@ -195,7 +195,7 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
             if (MME_HAVE_ENB_S1U_PATH(bearer)) {
                 ogs_assert(OGS_OK ==
                     mme_gtp_send_create_bearer_response(
-                        bearer, OGS_GTP_CAUSE_REQUEST_ACCEPTED));
+                        bearer, OGS_GTP2_CAUSE_REQUEST_ACCEPTED));
             }
 
             OGS_FSM_TRAN(s, esm_state_active);
@@ -318,7 +318,7 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
 
             ogs_assert(OGS_OK ==
                 mme_gtp_send_update_bearer_response(
-                    bearer, OGS_GTP_CAUSE_REQUEST_ACCEPTED));
+                    bearer, OGS_GTP2_CAUSE_REQUEST_ACCEPTED));
             break;
         case OGS_NAS_EPS_DEACTIVATE_EPS_BEARER_CONTEXT_ACCEPT:
             ogs_debug("Deactivate EPS bearer "
@@ -327,7 +327,7 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
             ogs_assert(OGS_OK ==
                 mme_gtp_send_delete_bearer_response(
-                    bearer, OGS_GTP_CAUSE_REQUEST_ACCEPTED));
+                    bearer, OGS_GTP2_CAUSE_REQUEST_ACCEPTED));
             OGS_FSM_TRAN(s, esm_state_bearer_deactivated);
             break;
         case OGS_NAS_EPS_BEARER_RESOURCE_ALLOCATION_REQUEST:

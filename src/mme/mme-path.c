@@ -97,13 +97,13 @@ void mme_send_after_paging(mme_ue_t *mme_ue, uint8_t cause_value)
                 type = xact->seq[xact->step-1].type;
 
                 switch (type) {
-                case OGS_GTP_DOWNLINK_DATA_NOTIFICATION_TYPE:
+                case OGS_GTP2_DOWNLINK_DATA_NOTIFICATION_TYPE:
                     ogs_assert(OGS_OK ==
                         mme_gtp_send_downlink_data_notification_ack(
                             bearer, cause_value));
                     break;
-                case OGS_GTP_CREATE_BEARER_REQUEST_TYPE:
-                    if (cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
+                case OGS_GTP2_CREATE_BEARER_REQUEST_TYPE:
+                    if (cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
                         ogs_assert(OGS_OK ==
                         nas_eps_send_activate_dedicated_bearer_context_request(
                                 bearer));
@@ -113,8 +113,8 @@ void mme_send_after_paging(mme_ue_t *mme_ue, uint8_t cause_value)
                                 bearer, cause_value));
                     }
                     break;
-                case OGS_GTP_UPDATE_BEARER_REQUEST_TYPE:
-                    if (cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
+                case OGS_GTP2_UPDATE_BEARER_REQUEST_TYPE:
+                    if (cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
                         ogs_assert(OGS_OK ==
                             nas_eps_send_modify_bearer_context_request(bearer,
                                 (xact->update_flags &
@@ -127,8 +127,8 @@ void mme_send_after_paging(mme_ue_t *mme_ue, uint8_t cause_value)
                                 bearer, cause_value));
                     }
                     break;
-                case OGS_GTP_DELETE_BEARER_REQUEST_TYPE:
-                    if (cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
+                case OGS_GTP2_DELETE_BEARER_REQUEST_TYPE:
+                    if (cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
                         ogs_assert(OGS_OK ==
                         nas_eps_send_deactivate_bearer_context_request(bearer));
                     } else {

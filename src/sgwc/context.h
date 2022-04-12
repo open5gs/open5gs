@@ -142,7 +142,7 @@ sgwc_context_t *sgwc_self(void);
 
 int sgwc_context_parse_config(void);
 
-sgwc_ue_t *sgwc_ue_add_by_message(ogs_gtp_message_t *message);
+sgwc_ue_t *sgwc_ue_add_by_message(ogs_gtp2_message_t *message);
 sgwc_ue_t *sgwc_ue_find_by_imsi(uint8_t *imsi, int imsi_len);
 sgwc_ue_t *sgwc_ue_find_by_imsi_bcd(char *imsi_bcd);
 sgwc_ue_t *sgwc_ue_find_by_teid(uint32_t teid);

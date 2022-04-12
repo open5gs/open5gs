@@ -361,13 +361,13 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_assert(ret == 0);
 
         switch (sess->gtp_rat_type) {
-        case OGS_GTP_RAT_TYPE_UTRAN:
-        case OGS_GTP_RAT_TYPE_GERAN:
-        case OGS_GTP_RAT_TYPE_HSPA_EVOLUTION:
-        case OGS_GTP_RAT_TYPE_EUTRAN:
+        case OGS_GTP2_RAT_TYPE_UTRAN:
+        case OGS_GTP2_RAT_TYPE_GERAN:
+        case OGS_GTP2_RAT_TYPE_HSPA_EVOLUTION:
+        case OGS_GTP2_RAT_TYPE_EUTRAN:
             val.i32 = OGS_DIAM_GX_IP_CAN_TYPE_3GPP_EPS;
             break;
-        case OGS_GTP_RAT_TYPE_WLAN:
+        case OGS_GTP2_RAT_TYPE_WLAN:
             val.i32 = OGS_DIAM_GX_IP_CAN_TYPE_NON_3GPP_EPS;
             break;
         default:
@@ -385,19 +385,19 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_assert(ret == 0);
 
         switch (sess->gtp_rat_type) {
-        case OGS_GTP_RAT_TYPE_UTRAN:
+        case OGS_GTP2_RAT_TYPE_UTRAN:
             val.i32 = OGS_DIAM_RAT_TYPE_UTRAN;
             break;
-        case OGS_GTP_RAT_TYPE_GERAN:
+        case OGS_GTP2_RAT_TYPE_GERAN:
             val.i32 = OGS_DIAM_RAT_TYPE_GERAN;
             break;
-        case OGS_GTP_RAT_TYPE_HSPA_EVOLUTION:
+        case OGS_GTP2_RAT_TYPE_HSPA_EVOLUTION:
             val.i32 = OGS_DIAM_RAT_TYPE_HSPA_EVOLUTION;
             break;
-        case OGS_GTP_RAT_TYPE_EUTRAN:
+        case OGS_GTP2_RAT_TYPE_EUTRAN:
             val.i32 = OGS_DIAM_RAT_TYPE_EUTRAN;
             break;
-        case OGS_GTP_RAT_TYPE_WLAN:
+        case OGS_GTP2_RAT_TYPE_WLAN:
             val.i32 = OGS_DIAM_RAT_TYPE_WLAN;
             break;
         default:
@@ -489,12 +489,12 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
 
         /* Set 3GPP-User-Location-Info */
         if (sess->gtp.user_location_information.presence) {
-            ogs_gtp_uli_t uli;
+            ogs_gtp2_uli_t uli;
             int16_t uli_len;
 
-            uint8_t uli_buf[OGS_GTP_MAX_ULI_LEN];
+            uint8_t uli_buf[OGS_GTP2_MAX_ULI_LEN];
 
-            uli_len = ogs_gtp_parse_uli(
+            uli_len = ogs_gtp2_parse_uli(
                     &uli, &sess->gtp.user_location_information);
             ogs_assert(sess->gtp.user_location_information.len == uli_len);
 

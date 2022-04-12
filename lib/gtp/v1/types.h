@@ -192,9 +192,9 @@ int16_t ogs_gtp1_build_uli(ogs_tlv_octet_t *octet,
 #define OGS_GTP_GSN_ADDRESS_IPV6_LEN    OGS_IPV6_LEN
 typedef struct ogs_gtp1_gsn_addr_s {
     union {
-        /* OGS_GTP_F_TEID_IPV4 */
+        /* OGS_GTP2_F_TEID_IPV4 */
         uint32_t addr;
-        /* OGS_GTP_F_TEID_IPV6 */
+        /* OGS_GTP2_F_TEID_IPV6 */
         uint8_t addr6[OGS_IPV6_LEN];
     };
 } __attribute__ ((packed)) ogs_gtp1_gsn_addr_t;

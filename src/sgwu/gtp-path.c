@@ -35,7 +35,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_sockaddr_t from;
 
-    ogs_gtp_header_t *gtp_h = NULL;
+    ogs_gtp2_header_t *gtp_h = NULL;
     ogs_pfcp_user_plane_report_t report;
 
     uint32_t teid;
@@ -59,8 +59,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     ogs_assert(pkbuf);
     ogs_assert(pkbuf->len);
 
-    gtp_h = (ogs_gtp_header_t *)pkbuf->data;
-    if (gtp_h->version != OGS_GTP_VERSION_1) {
+    gtp_h = (ogs_gtp2_header_t *)pkbuf->data;
+    if (gtp_h->version != OGS_GTP2_VERSION_1) {
         ogs_error("[DROP] Invalid GTPU version [%d]", gtp_h->version);
         ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
         goto cleanup;
@@ -70,7 +70,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
         ogs_pkbuf_t *echo_rsp;
 
         ogs_debug("[RECV] Echo Request from [%s]", OGS_ADDR(&from, buf));
-        echo_rsp = ogs_gtp_handle_echo_req(pkbuf);
+        echo_rsp = ogs_gtp2_handle_echo_req(pkbuf);
         ogs_expect(echo_rsp);
         if (echo_rsp) {
             ssize_t sent;
@@ -103,13 +103,13 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
          * Note 4 : For a GTP-PDU with several Extension Headers, the PDU
          *          Session Container should be the first Extension Header
          */
-        ogs_gtp_extension_header_t *extension_header =
-            (ogs_gtp_extension_header_t *)(pkbuf->data + OGS_GTPV1U_HEADER_LEN);
+        ogs_gtp2_extension_header_t *extension_header =
+            (ogs_gtp2_extension_header_t *)(pkbuf->data + OGS_GTPV1U_HEADER_LEN);
         ogs_assert(extension_header);
         if (extension_header->type ==
-                OGS_GTP_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER) {
+                OGS_GTP2_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER) {
             if (extension_header->pdu_type ==
-                OGS_GTP_EXTENSION_HEADER_PDU_TYPE_UL_PDU_SESSION_INFORMATION) {
+                OGS_GTP2_EXTENSION_HEADER_PDU_TYPE_UL_PDU_SESSION_INFORMATION) {
                     ogs_debug("   QFI [0x%x]",
                             extension_header->qos_flow_identifier);
                     qfi = extension_header->qos_flow_identifier;

@@ -120,7 +120,7 @@ ogs_gtp_xact_t *ogs_gtp1_xact_local_create(ogs_gtp_node_t *gnode,
 }
 
 ogs_gtp_xact_t *ogs_gtp_xact_local_create(ogs_gtp_node_t *gnode,
-        ogs_gtp_header_t *hdesc, ogs_pkbuf_t *pkbuf,
+        ogs_gtp2_header_t *hdesc, ogs_pkbuf_t *pkbuf,
         void (*cb)(ogs_gtp_xact_t *xact, void *data), void *data)
 {
     int rv;
@@ -139,9 +139,9 @@ ogs_gtp_xact_t *ogs_gtp_xact_local_create(ogs_gtp_node_t *gnode,
     xact->org = OGS_GTP_LOCAL_ORIGINATOR;
     xact->xid = OGS_NEXT_ID(g_xact_id,
             OGS_GTP_MIN_XACT_ID, OGS_GTP_CMD_XACT_ID);
-    if (hdesc->type == OGS_GTP_MODIFY_BEARER_COMMAND_TYPE ||
-        hdesc->type == OGS_GTP_DELETE_BEARER_COMMAND_TYPE ||
-        hdesc->type == OGS_GTP_BEARER_RESOURCE_COMMAND_TYPE) {
+    if (hdesc->type == OGS_GTP2_MODIFY_BEARER_COMMAND_TYPE ||
+        hdesc->type == OGS_GTP2_DELETE_BEARER_COMMAND_TYPE ||
+        hdesc->type == OGS_GTP2_BEARER_RESOURCE_COMMAND_TYPE) {
         xact->xid |= OGS_GTP_CMD_XACT_ID;
     }
     xact->gnode = gnode;
@@ -191,7 +191,7 @@ static ogs_gtp_xact_t *ogs_gtp_xact_remote_create(ogs_gtp_node_t *gnode, uint8_t
 
     xact->gtp_version = gtp_version;
     xact->org = OGS_GTP_REMOTE_ORIGINATOR;
-    xact->xid = (gtp_version == 1) ? OGS_GTP1_SQN_TO_XID(sqn) : OGS_GTP_SQN_TO_XID(sqn);
+    xact->xid = (gtp_version == 1) ? OGS_GTP1_SQN_TO_XID(sqn) : OGS_GTP2_SQN_TO_XID(sqn);
     xact->gnode = gnode;
 
     xact->tm_response = ogs_timer_add(
@@ -333,11 +333,11 @@ int ogs_gtp1_xact_update_tx(ogs_gtp_xact_t *xact,
 }
 
 int ogs_gtp_xact_update_tx(ogs_gtp_xact_t *xact,
-        ogs_gtp_header_t *hdesc, ogs_pkbuf_t *pkbuf)
+        ogs_gtp2_header_t *hdesc, ogs_pkbuf_t *pkbuf)
 {
     char buf[OGS_ADDRSTRLEN];
     ogs_gtp_xact_stage_t stage;
-    ogs_gtp_header_t *h = NULL;
+    ogs_gtp2_header_t *h = NULL;
     int gtp_hlen = 0;
 
     ogs_assert(xact);
@@ -407,26 +407,26 @@ int ogs_gtp_xact_update_tx(ogs_gtp_xact_t *xact,
         return OGS_ERROR;
     }
 
-    if (hdesc->type > OGS_GTP_VERSION_NOT_SUPPORTED_INDICATION_TYPE) {
+    if (hdesc->type > OGS_GTP2_VERSION_NOT_SUPPORTED_INDICATION_TYPE) {
         gtp_hlen = OGS_GTPV2C_HEADER_LEN;
     } else {
-        gtp_hlen = OGS_GTPV2C_HEADER_LEN - OGS_GTP_TEID_LEN;
+        gtp_hlen = OGS_GTPV2C_HEADER_LEN - OGS_GTP2_TEID_LEN;
     }
 
     ogs_pkbuf_push(pkbuf, gtp_hlen);
-    h = (ogs_gtp_header_t *)pkbuf->data;
+    h = (ogs_gtp2_header_t *)pkbuf->data;
     memset(h, 0, gtp_hlen);
 
     h->version = 2;
     h->type = hdesc->type;
 
-    if (hdesc->type > OGS_GTP_VERSION_NOT_SUPPORTED_INDICATION_TYPE) {
+    if (hdesc->type > OGS_GTP2_VERSION_NOT_SUPPORTED_INDICATION_TYPE) {
         h->teid_presence = 1;
         h->teid = htobe32(hdesc->teid);
-        h->sqn = OGS_GTP_XID_TO_SQN(xact->xid);
+        h->sqn = OGS_GTP2_XID_TO_SQN(xact->xid);
     } else {
         h->teid_presence = 0;
-        h->sqn_only = OGS_GTP_XID_TO_SQN(xact->xid);
+        h->sqn_only = OGS_GTP2_XID_TO_SQN(xact->xid);
     }
     h->length = htobe16(pkbuf->len - 4);
 
@@ -857,7 +857,7 @@ int ogs_gtp1_xact_receive(
 }
 
 int ogs_gtp_xact_receive(
-        ogs_gtp_node_t *gnode, ogs_gtp_header_t *h, ogs_gtp_xact_t **xact)
+        ogs_gtp_node_t *gnode, ogs_gtp2_header_t *h, ogs_gtp_xact_t **xact)
 {
     char buf[OGS_ADDRSTRLEN];
     int rv;
@@ -870,7 +870,7 @@ int ogs_gtp_xact_receive(
     if (h->teid_presence) sqn = h->sqn;
     else sqn = h->sqn_only;
 
-    new = ogs_gtp_xact_find_by_xid(gnode, h->type, 2, OGS_GTP_SQN_TO_XID(sqn));
+    new = ogs_gtp_xact_find_by_xid(gnode, h->type, 2, OGS_GTP2_SQN_TO_XID(sqn));
     if (!new)
         new = ogs_gtp_xact_remote_create(gnode, 2, sqn);
     ogs_assert(new);
@@ -951,41 +951,41 @@ static ogs_gtp_xact_stage_t ogs_gtp_xact_get_stage(uint8_t type, uint32_t xid)
     ogs_gtp_xact_stage_t stage = GTP_XACT_UNKNOWN_STAGE;
 
     switch (type) {
-    case OGS_GTP_CREATE_SESSION_REQUEST_TYPE:
-    case OGS_GTP_MODIFY_BEARER_REQUEST_TYPE:
-    case OGS_GTP_DELETE_SESSION_REQUEST_TYPE:
-    case OGS_GTP_MODIFY_BEARER_COMMAND_TYPE:
-    case OGS_GTP_DELETE_BEARER_COMMAND_TYPE:
-    case OGS_GTP_BEARER_RESOURCE_COMMAND_TYPE:
-    case OGS_GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE:
-    case OGS_GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
-    case OGS_GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
-    case OGS_GTP_DOWNLINK_DATA_NOTIFICATION_TYPE:
-    case OGS_GTP_ECHO_REQUEST_TYPE:
+    case OGS_GTP2_CREATE_SESSION_REQUEST_TYPE:
+    case OGS_GTP2_MODIFY_BEARER_REQUEST_TYPE:
+    case OGS_GTP2_DELETE_SESSION_REQUEST_TYPE:
+    case OGS_GTP2_MODIFY_BEARER_COMMAND_TYPE:
+    case OGS_GTP2_DELETE_BEARER_COMMAND_TYPE:
+    case OGS_GTP2_BEARER_RESOURCE_COMMAND_TYPE:
+    case OGS_GTP2_RELEASE_ACCESS_BEARERS_REQUEST_TYPE:
+    case OGS_GTP2_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
+    case OGS_GTP2_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
+    case OGS_GTP2_DOWNLINK_DATA_NOTIFICATION_TYPE:
+    case OGS_GTP2_ECHO_REQUEST_TYPE:
         stage = GTP_XACT_INITIAL_STAGE;
         break;
-    case OGS_GTP_CREATE_BEARER_REQUEST_TYPE:
-    case OGS_GTP_UPDATE_BEARER_REQUEST_TYPE:
-    case OGS_GTP_DELETE_BEARER_REQUEST_TYPE:
+    case OGS_GTP2_CREATE_BEARER_REQUEST_TYPE:
+    case OGS_GTP2_UPDATE_BEARER_REQUEST_TYPE:
+    case OGS_GTP2_DELETE_BEARER_REQUEST_TYPE:
         if (xid & OGS_GTP_CMD_XACT_ID)
             stage = GTP_XACT_INTERMEDIATE_STAGE;
         else
             stage = GTP_XACT_INITIAL_STAGE;
         break;
-    case OGS_GTP_CREATE_SESSION_RESPONSE_TYPE:
-    case OGS_GTP_MODIFY_BEARER_RESPONSE_TYPE:
-    case OGS_GTP_DELETE_SESSION_RESPONSE_TYPE:
-    case OGS_GTP_MODIFY_BEARER_FAILURE_INDICATION_TYPE:
-    case OGS_GTP_DELETE_BEARER_FAILURE_INDICATION_TYPE:
-    case OGS_GTP_BEARER_RESOURCE_FAILURE_INDICATION_TYPE:
-    case OGS_GTP_CREATE_BEARER_RESPONSE_TYPE:
-    case OGS_GTP_UPDATE_BEARER_RESPONSE_TYPE:
-    case OGS_GTP_DELETE_BEARER_RESPONSE_TYPE:
-    case OGS_GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
-    case OGS_GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
-    case OGS_GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
-    case OGS_GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE:
-    case OGS_GTP_ECHO_RESPONSE_TYPE:
+    case OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE:
+    case OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE:
+    case OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE:
+    case OGS_GTP2_MODIFY_BEARER_FAILURE_INDICATION_TYPE:
+    case OGS_GTP2_DELETE_BEARER_FAILURE_INDICATION_TYPE:
+    case OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE:
+    case OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE:
+    case OGS_GTP2_UPDATE_BEARER_RESPONSE_TYPE:
+    case OGS_GTP2_DELETE_BEARER_RESPONSE_TYPE:
+    case OGS_GTP2_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
+    case OGS_GTP2_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
+    case OGS_GTP2_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
+    case OGS_GTP2_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE:
+    case OGS_GTP2_ECHO_RESPONSE_TYPE:
         stage = GTP_XACT_FINAL_STAGE;
         break;
 
@@ -1028,9 +1028,9 @@ static ogs_gtp_xact_t *ogs_gtp_xact_find_by_xid(
         case 2:
         default:
             if (xid & OGS_GTP_CMD_XACT_ID) {
-                if (type == OGS_GTP_MODIFY_BEARER_FAILURE_INDICATION_TYPE ||
-                    type == OGS_GTP_DELETE_BEARER_FAILURE_INDICATION_TYPE ||
-                    type == OGS_GTP_BEARER_RESOURCE_FAILURE_INDICATION_TYPE) {
+                if (type == OGS_GTP2_MODIFY_BEARER_FAILURE_INDICATION_TYPE ||
+                    type == OGS_GTP2_DELETE_BEARER_FAILURE_INDICATION_TYPE ||
+                    type == OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE) {
                     list = &gnode->local_list;
                 } else {
                     list = &gnode->remote_list;

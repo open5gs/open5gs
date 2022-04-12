@@ -27,7 +27,7 @@ extern "C" {
 #endif
 
 typedef struct ogs_gtp_node_s ogs_gtp_node_t;
-typedef struct ogs_gtp_message_s ogs_gtp_message_t;
+typedef struct ogs_gtp2_message_s ogs_gtp2_message_t;
 typedef struct ogs_pfcp_node_s ogs_pfcp_node_t;
 typedef struct ogs_pfcp_xact_s ogs_pfcp_xact_t;
 typedef struct ogs_pfcp_message_s ogs_pfcp_message_t;
@@ -53,7 +53,7 @@ typedef struct sgwc_event_s {
     int timer_id;
 
     ogs_gtp_node_t *gnode;
-    ogs_gtp_message_t *gtp_message;
+    ogs_gtp2_message_t *gtp_message;
 
     ogs_pfcp_node_t *pfcp_node;
     ogs_pfcp_xact_t *pfcp_xact;

@@ -115,7 +115,7 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, test_db_insert_ue(test_ue, doc));
 
     /* Setup WLAN Session */
-    sess = test_sess_add_by_apn(test_ue, "wlan", OGS_GTP_RAT_TYPE_WLAN);
+    sess = test_sess_add_by_apn(test_ue, "wlan", OGS_GTP2_RAT_TYPE_WLAN);
     ogs_assert(sess);
 
     OGS_SETUP_GTP_NODE(sess, ogs_list_first(&test_self()->gtpc_list));
@@ -261,7 +261,7 @@ static void test2_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, test_db_insert_ue(test_ue, doc));
 
     /* Setup WLAN Session */
-    sess = test_sess_add_by_apn(test_ue, "ims", OGS_GTP_RAT_TYPE_WLAN);
+    sess = test_sess_add_by_apn(test_ue, "ims", OGS_GTP2_RAT_TYPE_WLAN);
     ogs_assert(sess);
 
     OGS_SETUP_GTP_NODE(sess, ogs_list_first(&test_self()->gtpc_list));
@@ -412,7 +412,7 @@ static void test3_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, test_db_insert_ue(test_ue, doc));
 
     /* Setup WLAN Session */
-    sess = test_sess_add_by_apn(test_ue, "wlan", OGS_GTP_RAT_TYPE_WLAN);
+    sess = test_sess_add_by_apn(test_ue, "wlan", OGS_GTP2_RAT_TYPE_WLAN);
     ogs_assert(sess);
 
     OGS_SETUP_GTP_NODE(sess, ogs_list_first(&test_self()->gtpc_list));
@@ -438,7 +438,7 @@ static void test3_func(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     /* Setup EUTRAN Session */
-    sess = test_sess_add_by_apn(test_ue, "wlan", OGS_GTP_RAT_TYPE_EUTRAN);
+    sess = test_sess_add_by_apn(test_ue, "wlan", OGS_GTP2_RAT_TYPE_EUTRAN);
     ogs_assert(sess);
 
     /* Send Attach Request */
@@ -556,7 +556,7 @@ static void test3_func(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     /* Receive S2b Delete Session Response */
-    sess = test_sess_find_by_apn(test_ue, "wlan", OGS_GTP_RAT_TYPE_WLAN);
+    sess = test_sess_find_by_apn(test_ue, "wlan", OGS_GTP2_RAT_TYPE_WLAN);
     ogs_assert(sess);
 
     recvbuf = test_epdg_read(epdg_c);
@@ -564,7 +564,7 @@ static void test3_func(abts_case *tc, void *data)
     test_s2b_recv(sess, recvbuf);
 
     /* Send PDN Connectivity Request */
-    sess = test_sess_add_by_apn(test_ue, "internet", OGS_GTP_RAT_TYPE_EUTRAN);
+    sess = test_sess_add_by_apn(test_ue, "internet", OGS_GTP2_RAT_TYPE_EUTRAN);
     ogs_assert(sess);
     sess->pti = 5;
 
@@ -606,7 +606,7 @@ static void test3_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Setup WLAN Session */
-    sess = test_sess_add_by_apn(test_ue, "wlan", OGS_GTP_RAT_TYPE_WLAN);
+    sess = test_sess_add_by_apn(test_ue, "wlan", OGS_GTP2_RAT_TYPE_WLAN);
     ogs_assert(sess);
 
     OGS_SETUP_GTP_NODE(sess, ogs_list_first(&test_self()->gtpc_list));
@@ -641,7 +641,7 @@ static void test3_func(abts_case *tc, void *data)
             test_ue->s1ap_procedure_code);
 
     /* Send E-RABReleaseResponse */
-    sess = test_sess_find_by_apn(test_ue, "wlan", OGS_GTP_RAT_TYPE_EUTRAN);
+    sess = test_sess_find_by_apn(test_ue, "wlan", OGS_GTP2_RAT_TYPE_EUTRAN);
     ogs_assert(sess);
 
     bearer = test_bearer_find_by_sess_ebi(sess, 5);
@@ -665,7 +665,7 @@ static void test3_func(abts_case *tc, void *data)
     ogs_msleep(300);
 
     /* Setup EUTRAN Session */
-    sess = test_sess_add_by_apn(test_ue, "wlan", OGS_GTP_RAT_TYPE_EUTRAN);
+    sess = test_sess_add_by_apn(test_ue, "wlan", OGS_GTP2_RAT_TYPE_EUTRAN);
     ogs_assert(sess);
 
     sess->pdn_connectivity_param.apn = 1;
@@ -715,7 +715,7 @@ static void test3_func(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     /* Receive S2b Delete Session Response */
-    sess = test_sess_find_by_apn(test_ue, "wlan", OGS_GTP_RAT_TYPE_WLAN);
+    sess = test_sess_find_by_apn(test_ue, "wlan", OGS_GTP2_RAT_TYPE_WLAN);
     ogs_assert(sess);
 
     recvbuf = test_epdg_read(epdg_c);

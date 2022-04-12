@@ -28,17 +28,17 @@ extern "C" {
 
 void test_s2b_handle_create_session_response(
         ogs_gtp_xact_t *xact, test_sess_t *sess,
-        ogs_gtp_create_session_response_t *rsp);
+        ogs_gtp2_create_session_response_t *rsp);
 void test_s2b_handle_delete_session_response(
         ogs_gtp_xact_t *xact, test_sess_t *sess,
-        ogs_gtp_delete_session_response_t *rsp);
+        ogs_gtp2_delete_session_response_t *rsp);
 
 void test_s2b_handle_create_bearer_request(
         ogs_gtp_xact_t *xact, test_sess_t *sess,
-        ogs_gtp_create_bearer_request_t *req);
+        ogs_gtp2_create_bearer_request_t *req);
 void test_s2b_handle_delete_bearer_request(
         ogs_gtp_xact_t *xact, test_sess_t *sess,
-        ogs_gtp_delete_bearer_request_t *req);
+        ogs_gtp2_delete_bearer_request_t *req);
 
 #ifdef __cplusplus
 }

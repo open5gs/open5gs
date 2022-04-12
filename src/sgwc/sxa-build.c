@@ -141,16 +141,16 @@ ogs_pkbuf_t *sgwc_sxa_build_sess_modification_request(
                    OGS_PFCP_MODIFY_INDIRECT)) == 0) ||
 
                 ((modify_flags & OGS_PFCP_MODIFY_DL_ONLY) &&
-                 (tunnel->interface_type == OGS_GTP_F_TEID_S5_S8_SGW_GTP_U)) ||
+                 (tunnel->interface_type == OGS_GTP2_F_TEID_S5_S8_SGW_GTP_U)) ||
 
                 ((modify_flags & OGS_PFCP_MODIFY_UL_ONLY) &&
-                 (tunnel->interface_type == OGS_GTP_F_TEID_S1_U_SGW_GTP_U)) ||
+                 (tunnel->interface_type == OGS_GTP2_F_TEID_S1_U_SGW_GTP_U)) ||
 
                 (((modify_flags & OGS_PFCP_MODIFY_INDIRECT) &&
                   ((tunnel->interface_type ==
-                      OGS_GTP_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING) ||
+                      OGS_GTP2_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING) ||
                    (tunnel->interface_type ==
-                      OGS_GTP_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING))))) {
+                      OGS_GTP2_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING))))) {
 
                 if (modify_flags & OGS_PFCP_MODIFY_REMOVE) {
                     pdr = tunnel->pdr;
@@ -261,16 +261,16 @@ ogs_pkbuf_t *sgwc_sxa_build_bearer_modification_request(
                OGS_PFCP_MODIFY_INDIRECT)) == 0) ||
 
             ((modify_flags & OGS_PFCP_MODIFY_DL_ONLY) &&
-             (tunnel->interface_type == OGS_GTP_F_TEID_S5_S8_SGW_GTP_U)) ||
+             (tunnel->interface_type == OGS_GTP2_F_TEID_S5_S8_SGW_GTP_U)) ||
 
             ((modify_flags & OGS_PFCP_MODIFY_UL_ONLY) &&
-             (tunnel->interface_type == OGS_GTP_F_TEID_S1_U_SGW_GTP_U)) ||
+             (tunnel->interface_type == OGS_GTP2_F_TEID_S1_U_SGW_GTP_U)) ||
 
             (((modify_flags & OGS_PFCP_MODIFY_INDIRECT) &&
               ((tunnel->interface_type ==
-                  OGS_GTP_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING) ||
+                  OGS_GTP2_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING) ||
                (tunnel->interface_type ==
-                  OGS_GTP_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING))))) {
+                  OGS_GTP2_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING))))) {
 
             if (modify_flags & OGS_PFCP_MODIFY_REMOVE) {
                 pdr = tunnel->pdr;

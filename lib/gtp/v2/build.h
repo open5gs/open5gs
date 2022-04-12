@@ -21,23 +21,23 @@
 #error "This header cannot be included directly."
 #endif
 
-#ifndef OGS_GTP_BUILD_H
-#define OGS_GTP_BUILD_H
+#ifndef OGS_GTP2_BUILD_H
+#define OGS_GTP2_BUILD_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-ogs_pkbuf_t *ogs_gtp_build_echo_request(
+ogs_pkbuf_t *ogs_gtp2_build_echo_request(
         uint8_t type, uint8_t recovery, uint8_t features);
-ogs_pkbuf_t *ogs_gtp_build_echo_response(
+ogs_pkbuf_t *ogs_gtp2_build_echo_response(
         uint8_t type, uint8_t recovery, uint8_t features);
 
-ogs_pkbuf_t *ogs_gtp_build_error_indication(
+ogs_pkbuf_t *ogs_gtp2_build_error_indication(
         uint32_t teid, ogs_sockaddr_t *addr);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* OGS_GTP_BUILD_H */
+#endif /* OGS_GTP2_BUILD_H */
