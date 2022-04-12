@@ -757,7 +757,7 @@ void s1ap_handle_initial_context_setup_response(
     }
 
     if (mme_ue->nas_eps.type != MME_EPS_TYPE_ATTACH_REQUEST)
-        mme_send_after_paging(mme_ue, OGS_GTP_CAUSE_REQUEST_ACCEPTED);
+        mme_send_after_paging(mme_ue, OGS_GTP2_CAUSE_REQUEST_ACCEPTED);
 
     if (SMS_SERVICE_INDICATOR(mme_ue)) {
         ogs_assert(OGS_OK ==
@@ -1218,7 +1218,7 @@ void s1ap_handle_e_rab_setup_response(
                 } else {
                 ogs_assert(OGS_OK ==
                     mme_gtp_send_create_bearer_response(
-                        bearer, OGS_GTP_CAUSE_REQUEST_ACCEPTED));
+                        bearer, OGS_GTP2_CAUSE_REQUEST_ACCEPTED));
                 }
             }
         }

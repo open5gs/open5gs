@@ -24,7 +24,7 @@
 #include "pfcp-path.h"
 
 static void sgwc_handle_echo_request(
-        ogs_gtp_xact_t *xact, ogs_gtp_echo_request_t *req)
+        ogs_gtp_xact_t *xact, ogs_gtp2_echo_request_t *req)
 {
     ogs_assert(xact);
     ogs_assert(req);
@@ -32,11 +32,11 @@ static void sgwc_handle_echo_request(
     ogs_debug("[SGW] Receiving Echo Request");
     /* FIXME : Before implementing recovery counter correctly,
      *         I'll re-use the recovery value in request message */
-    ogs_gtp_send_echo_response(xact, req->recovery.u8, 0);
+    ogs_gtp2_send_echo_response(xact, req->recovery.u8, 0);
 }
 
 static void sgwc_handle_echo_response(
-        ogs_gtp_xact_t *s11_xact, ogs_gtp_echo_response_t *rsp)
+        ogs_gtp_xact_t *s11_xact, ogs_gtp2_echo_response_t *rsp)
 {
     /* Not Implemented */
 }
@@ -67,7 +67,7 @@ void sgwc_state_operational(ogs_fsm_t *s, sgwc_event_t *e)
     sgwc_sess_t *sess = NULL;
 
     ogs_gtp_xact_t *gtp_xact = NULL;
-    ogs_gtp_message_t gtp_message;
+    ogs_gtp2_message_t gtp_message;
     ogs_gtp_node_t *gnode = NULL;
 
     ogs_pfcp_node_t *pfcp_node = NULL;
@@ -110,7 +110,7 @@ void sgwc_state_operational(ogs_fsm_t *s, sgwc_event_t *e)
 
         e->gtp_message = NULL;
         if (pfcp_xact->gtpbuf) {
-            rv = ogs_gtp_parse_msg(&gtp_message, pfcp_xact->gtpbuf);
+            rv = ogs_gtp2_parse_msg(&gtp_message, pfcp_xact->gtpbuf);
             e->gtp_message = &gtp_message;
         }
 
@@ -139,8 +139,8 @@ void sgwc_state_operational(ogs_fsm_t *s, sgwc_event_t *e)
         recvbuf = e->pkbuf;
         ogs_assert(recvbuf);
 
-        if (ogs_gtp_parse_msg(&gtp_message, recvbuf) != OGS_OK) {
-            ogs_error("ogs_gtp_parse_msg() failed");
+        if (ogs_gtp2_parse_msg(&gtp_message, recvbuf) != OGS_OK) {
+            ogs_error("ogs_gtp2_parse_msg() failed");
             ogs_pkbuf_free(recvbuf);
             break;
         }
@@ -165,13 +165,13 @@ void sgwc_state_operational(ogs_fsm_t *s, sgwc_event_t *e)
         }
 
         switch(gtp_message.h.type) {
-        case OGS_GTP_ECHO_REQUEST_TYPE:
+        case OGS_GTP2_ECHO_REQUEST_TYPE:
             sgwc_handle_echo_request(gtp_xact, &gtp_message.echo_request);
             break;
-        case OGS_GTP_ECHO_RESPONSE_TYPE:
+        case OGS_GTP2_ECHO_RESPONSE_TYPE:
             sgwc_handle_echo_response(gtp_xact, &gtp_message.echo_response);
             break;
-        case OGS_GTP_CREATE_SESSION_REQUEST_TYPE:
+        case OGS_GTP2_CREATE_SESSION_REQUEST_TYPE:
             if (gtp_message.h.teid == 0) {
                 ogs_expect(!sgwc_ue);
                 sgwc_ue = sgwc_ue_add_by_message(&gtp_message);
@@ -181,43 +181,43 @@ void sgwc_state_operational(ogs_fsm_t *s, sgwc_event_t *e)
             sgwc_s11_handle_create_session_request(
                     sgwc_ue, gtp_xact, recvbuf, &gtp_message);
             break;
-        case OGS_GTP_MODIFY_BEARER_REQUEST_TYPE:
+        case OGS_GTP2_MODIFY_BEARER_REQUEST_TYPE:
             sgwc_s11_handle_modify_bearer_request(
                     sgwc_ue, gtp_xact, recvbuf, &gtp_message);
             break;
-        case OGS_GTP_DELETE_SESSION_REQUEST_TYPE:
+        case OGS_GTP2_DELETE_SESSION_REQUEST_TYPE:
             sgwc_s11_handle_delete_session_request(
                     sgwc_ue, gtp_xact, recvbuf, &gtp_message);
             break;
-        case OGS_GTP_CREATE_BEARER_RESPONSE_TYPE:
+        case OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE:
             sgwc_s11_handle_create_bearer_response(
                     sgwc_ue, gtp_xact, recvbuf, &gtp_message);
             break;
-        case OGS_GTP_UPDATE_BEARER_RESPONSE_TYPE:
+        case OGS_GTP2_UPDATE_BEARER_RESPONSE_TYPE:
             sgwc_s11_handle_update_bearer_response(
                     sgwc_ue, gtp_xact, recvbuf, &gtp_message);
             break;
-        case OGS_GTP_DELETE_BEARER_RESPONSE_TYPE:
+        case OGS_GTP2_DELETE_BEARER_RESPONSE_TYPE:
             sgwc_s11_handle_delete_bearer_response(
                     sgwc_ue, gtp_xact, recvbuf, &gtp_message);
             break;
-        case OGS_GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE:
+        case OGS_GTP2_RELEASE_ACCESS_BEARERS_REQUEST_TYPE:
             sgwc_s11_handle_release_access_bearers_request(
                     sgwc_ue, gtp_xact, recvbuf, &gtp_message);
             break;
-        case OGS_GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE:
+        case OGS_GTP2_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE:
             sgwc_s11_handle_downlink_data_notification_ack(
                     sgwc_ue, gtp_xact, recvbuf, &gtp_message);
             break;
-        case OGS_GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
+        case OGS_GTP2_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
             sgwc_s11_handle_create_indirect_data_forwarding_tunnel_request(
                     sgwc_ue, gtp_xact, recvbuf, &gtp_message);
             break;
-        case OGS_GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
+        case OGS_GTP2_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
             sgwc_s11_handle_delete_indirect_data_forwarding_tunnel_request(
                     sgwc_ue, gtp_xact, recvbuf, &gtp_message);
             break;
-        case OGS_GTP_BEARER_RESOURCE_COMMAND_TYPE:
+        case OGS_GTP2_BEARER_RESOURCE_COMMAND_TYPE:
             sgwc_s11_handle_bearer_resource_command(
                     sgwc_ue, gtp_xact, recvbuf, &gtp_message);
             break;
@@ -233,8 +233,8 @@ void sgwc_state_operational(ogs_fsm_t *s, sgwc_event_t *e)
         recvbuf = e->pkbuf;
         ogs_assert(recvbuf);
 
-        if (ogs_gtp_parse_msg(&gtp_message, recvbuf) != OGS_OK) {
-            ogs_error("ogs_gtp_parse_msg() failed");
+        if (ogs_gtp2_parse_msg(&gtp_message, recvbuf) != OGS_OK) {
+            ogs_error("ogs_gtp2_parse_msg() failed");
             ogs_pkbuf_free(recvbuf);
             break;
         }
@@ -258,37 +258,37 @@ void sgwc_state_operational(ogs_fsm_t *s, sgwc_event_t *e)
         }
 
         switch(gtp_message.h.type) {
-        case OGS_GTP_ECHO_REQUEST_TYPE:
+        case OGS_GTP2_ECHO_REQUEST_TYPE:
             sgwc_handle_echo_request(gtp_xact, &gtp_message.echo_request);
             break;
-        case OGS_GTP_ECHO_RESPONSE_TYPE:
+        case OGS_GTP2_ECHO_RESPONSE_TYPE:
             sgwc_handle_echo_response(gtp_xact, &gtp_message.echo_response);
             break;
-        case OGS_GTP_CREATE_SESSION_RESPONSE_TYPE:
+        case OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE:
             sgwc_s5c_handle_create_session_response(
                     sess, gtp_xact, recvbuf, &gtp_message);
             break;
-        case OGS_GTP_DELETE_SESSION_RESPONSE_TYPE:
+        case OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE:
             sgwc_s5c_handle_delete_session_response(
                     sess, gtp_xact, recvbuf, &gtp_message);
             break;
-        case OGS_GTP_MODIFY_BEARER_RESPONSE_TYPE:
+        case OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE:
             sgwc_s5c_handle_modify_bearer_response(
                     sess, gtp_xact, recvbuf, &gtp_message);
             break;
-        case OGS_GTP_CREATE_BEARER_REQUEST_TYPE:
+        case OGS_GTP2_CREATE_BEARER_REQUEST_TYPE:
             sgwc_s5c_handle_create_bearer_request(
                     sess, gtp_xact, recvbuf, &gtp_message);
             break;
-        case OGS_GTP_UPDATE_BEARER_REQUEST_TYPE:
+        case OGS_GTP2_UPDATE_BEARER_REQUEST_TYPE:
             sgwc_s5c_handle_update_bearer_request(
                     sess, gtp_xact, recvbuf, &gtp_message);
             break;
-        case OGS_GTP_DELETE_BEARER_REQUEST_TYPE:
+        case OGS_GTP2_DELETE_BEARER_REQUEST_TYPE:
             sgwc_s5c_handle_delete_bearer_request(
                     sess, gtp_xact, recvbuf, &gtp_message);
             break;
-        case OGS_GTP_BEARER_RESOURCE_FAILURE_INDICATION_TYPE:
+        case OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE:
             sgwc_s5c_handle_bearer_resource_failure_indication(
                     sess, gtp_xact, recvbuf, &gtp_message);
             break;

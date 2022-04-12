@@ -20,2565 +20,2565 @@
 /*******************************************************************************
  * This file had been created by gtp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2021-10-16 16:32:20.655097 by acetcom
+ * Created on: 2022-04-12 14:16:09.777673 by pespin
  * from 29274-g30.docx
  ******************************************************************************/
 
 #include "ogs-gtp.h"
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_imsi_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_imsi_0 =
 {
     OGS_TLV_VAR_STR,
     "IMSI",
-    OGS_GTP_IMSI_TYPE,
+    OGS_GTP2_IMSI_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_imsi_t),
+    sizeof(ogs_gtp2_tlv_imsi_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_cause_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_cause_0 =
 {
     OGS_TLV_VAR_STR,
     "Cause",
-    OGS_GTP_CAUSE_TYPE,
+    OGS_GTP2_CAUSE_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_cause_t),
+    sizeof(ogs_gtp2_tlv_cause_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_recovery_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_recovery_0 =
 {
     OGS_TLV_UINT8,
     "Recovery",
-    OGS_GTP_RECOVERY_TYPE,
+    OGS_GTP2_RECOVERY_TYPE,
     1,
     0,
-    sizeof(ogs_gtp_tlv_recovery_t),
+    sizeof(ogs_gtp2_tlv_recovery_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_stn_sr_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_stn_sr_0 =
 {
     OGS_TLV_VAR_STR,
     "STN-SR",
-    OGS_GTP_STN_SR_TYPE,
+    OGS_GTP2_STN_SR_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_stn_sr_t),
+    sizeof(ogs_gtp2_tlv_stn_sr_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_apn_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_apn_0 =
 {
     OGS_TLV_VAR_STR,
     "APN",
-    OGS_GTP_APN_TYPE,
+    OGS_GTP2_APN_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_apn_t),
+    sizeof(ogs_gtp2_tlv_apn_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_ambr_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_ambr_0 =
 {
     OGS_TLV_VAR_STR,
     "AMBR",
-    OGS_GTP_AMBR_TYPE,
+    OGS_GTP2_AMBR_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_ambr_t),
+    sizeof(ogs_gtp2_tlv_ambr_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_ebi_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_ebi_0 =
 {
     OGS_TLV_UINT8,
     "EBI",
-    OGS_GTP_EBI_TYPE,
+    OGS_GTP2_EBI_TYPE,
     1,
     0,
-    sizeof(ogs_gtp_tlv_ebi_t),
+    sizeof(ogs_gtp2_tlv_ebi_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_ebi_1 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_ebi_1 =
 {
     OGS_TLV_UINT8,
     "EBI",
-    OGS_GTP_EBI_TYPE,
+    OGS_GTP2_EBI_TYPE,
     1,
     1,
-    sizeof(ogs_gtp_tlv_ebi_t),
+    sizeof(ogs_gtp2_tlv_ebi_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_ip_address_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_ip_address_0 =
 {
     OGS_TLV_VAR_STR,
     "IP Address",
-    OGS_GTP_IP_ADDRESS_TYPE,
+    OGS_GTP2_IP_ADDRESS_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_ip_address_t),
+    sizeof(ogs_gtp2_tlv_ip_address_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_ip_address_1 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_ip_address_1 =
 {
     OGS_TLV_VAR_STR,
     "IP Address",
-    OGS_GTP_IP_ADDRESS_TYPE,
+    OGS_GTP2_IP_ADDRESS_TYPE,
     0,
     1,
-    sizeof(ogs_gtp_tlv_ip_address_t),
+    sizeof(ogs_gtp2_tlv_ip_address_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_ip_address_2 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_ip_address_2 =
 {
     OGS_TLV_VAR_STR,
     "IP Address",
-    OGS_GTP_IP_ADDRESS_TYPE,
+    OGS_GTP2_IP_ADDRESS_TYPE,
     0,
     2,
-    sizeof(ogs_gtp_tlv_ip_address_t),
+    sizeof(ogs_gtp2_tlv_ip_address_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_ip_address_3 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_ip_address_3 =
 {
     OGS_TLV_VAR_STR,
     "IP Address",
-    OGS_GTP_IP_ADDRESS_TYPE,
+    OGS_GTP2_IP_ADDRESS_TYPE,
     0,
     3,
-    sizeof(ogs_gtp_tlv_ip_address_t),
+    sizeof(ogs_gtp2_tlv_ip_address_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_mei_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_mei_0 =
 {
     OGS_TLV_VAR_STR,
     "MEI",
-    OGS_GTP_MEI_TYPE,
+    OGS_GTP2_MEI_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_mei_t),
+    sizeof(ogs_gtp2_tlv_mei_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_msisdn_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_msisdn_0 =
 {
     OGS_TLV_VAR_STR,
     "MSISDN",
-    OGS_GTP_MSISDN_TYPE,
+    OGS_GTP2_MSISDN_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_msisdn_t),
+    sizeof(ogs_gtp2_tlv_msisdn_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_indication_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_indication_0 =
 {
     OGS_TLV_VAR_STR,
     "Indication",
-    OGS_GTP_INDICATION_TYPE,
+    OGS_GTP2_INDICATION_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_indication_t),
+    sizeof(ogs_gtp2_tlv_indication_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_pco_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_pco_0 =
 {
     OGS_TLV_VAR_STR,
     "PCO",
-    OGS_GTP_PCO_TYPE,
+    OGS_GTP2_PCO_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_pco_t),
+    sizeof(ogs_gtp2_tlv_pco_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_paa_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_paa_0 =
 {
     OGS_TLV_VAR_STR,
     "PAA",
-    OGS_GTP_PAA_TYPE,
+    OGS_GTP2_PAA_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_paa_t),
+    sizeof(ogs_gtp2_tlv_paa_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_qos_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_bearer_qos_0 =
 {
     OGS_TLV_VAR_STR,
     "Bearer QoS",
-    OGS_GTP_BEARER_QOS_TYPE,
+    OGS_GTP2_BEARER_QOS_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_bearer_qos_t),
+    sizeof(ogs_gtp2_tlv_bearer_qos_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_flow_qos_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_flow_qos_0 =
 {
     OGS_TLV_VAR_STR,
     "Flow QoS",
-    OGS_GTP_FLOW_QOS_TYPE,
+    OGS_GTP2_FLOW_QOS_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_flow_qos_t),
+    sizeof(ogs_gtp2_tlv_flow_qos_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_rat_type_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_rat_type_0 =
 {
     OGS_TLV_UINT8,
     "RAT Type",
-    OGS_GTP_RAT_TYPE_TYPE,
+    OGS_GTP2_RAT_TYPE_TYPE,
     1,
     0,
-    sizeof(ogs_gtp_tlv_rat_type_t),
+    sizeof(ogs_gtp2_tlv_rat_type_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_serving_network_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_serving_network_0 =
 {
     OGS_TLV_VAR_STR,
     "Serving Network",
-    OGS_GTP_SERVING_NETWORK_TYPE,
+    OGS_GTP2_SERVING_NETWORK_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_serving_network_t),
+    sizeof(ogs_gtp2_tlv_serving_network_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_tft_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_bearer_tft_0 =
 {
     OGS_TLV_VAR_STR,
     "Bearer TFT",
-    OGS_GTP_BEARER_TFT_TYPE,
+    OGS_GTP2_BEARER_TFT_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_bearer_tft_t),
+    sizeof(ogs_gtp2_tlv_bearer_tft_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_tad_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_tad_0 =
 {
     OGS_TLV_VAR_STR,
     "TAD",
-    OGS_GTP_TAD_TYPE,
+    OGS_GTP2_TAD_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_tad_t),
+    sizeof(ogs_gtp2_tlv_tad_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_uli_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_uli_0 =
 {
     OGS_TLV_VAR_STR,
     "ULI",
-    OGS_GTP_ULI_TYPE,
+    OGS_GTP2_ULI_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_uli_t),
+    sizeof(ogs_gtp2_tlv_uli_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_uli_1 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_uli_1 =
 {
     OGS_TLV_VAR_STR,
     "ULI",
-    OGS_GTP_ULI_TYPE,
+    OGS_GTP2_ULI_TYPE,
     0,
     1,
-    sizeof(ogs_gtp_tlv_uli_t),
+    sizeof(ogs_gtp2_tlv_uli_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_f_teid_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_f_teid_0 =
 {
     OGS_TLV_VAR_STR,
     "F-TEID",
-    OGS_GTP_F_TEID_TYPE,
+    OGS_GTP2_F_TEID_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_f_teid_t),
+    sizeof(ogs_gtp2_tlv_f_teid_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_f_teid_1 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_f_teid_1 =
 {
     OGS_TLV_VAR_STR,
     "F-TEID",
-    OGS_GTP_F_TEID_TYPE,
+    OGS_GTP2_F_TEID_TYPE,
     0,
     1,
-    sizeof(ogs_gtp_tlv_f_teid_t),
+    sizeof(ogs_gtp2_tlv_f_teid_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_f_teid_2 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_f_teid_2 =
 {
     OGS_TLV_VAR_STR,
     "F-TEID",
-    OGS_GTP_F_TEID_TYPE,
+    OGS_GTP2_F_TEID_TYPE,
     0,
     2,
-    sizeof(ogs_gtp_tlv_f_teid_t),
+    sizeof(ogs_gtp2_tlv_f_teid_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_f_teid_3 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_f_teid_3 =
 {
     OGS_TLV_VAR_STR,
     "F-TEID",
-    OGS_GTP_F_TEID_TYPE,
+    OGS_GTP2_F_TEID_TYPE,
     0,
     3,
-    sizeof(ogs_gtp_tlv_f_teid_t),
+    sizeof(ogs_gtp2_tlv_f_teid_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_f_teid_4 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_f_teid_4 =
 {
     OGS_TLV_VAR_STR,
     "F-TEID",
-    OGS_GTP_F_TEID_TYPE,
+    OGS_GTP2_F_TEID_TYPE,
     0,
     4,
-    sizeof(ogs_gtp_tlv_f_teid_t),
+    sizeof(ogs_gtp2_tlv_f_teid_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_f_teid_5 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_f_teid_5 =
 {
     OGS_TLV_VAR_STR,
     "F-TEID",
-    OGS_GTP_F_TEID_TYPE,
+    OGS_GTP2_F_TEID_TYPE,
     0,
     5,
-    sizeof(ogs_gtp_tlv_f_teid_t),
+    sizeof(ogs_gtp2_tlv_f_teid_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_f_teid_6 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_f_teid_6 =
 {
     OGS_TLV_VAR_STR,
     "F-TEID",
-    OGS_GTP_F_TEID_TYPE,
+    OGS_GTP2_F_TEID_TYPE,
     0,
     6,
-    sizeof(ogs_gtp_tlv_f_teid_t),
+    sizeof(ogs_gtp2_tlv_f_teid_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_f_teid_7 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_f_teid_7 =
 {
     OGS_TLV_VAR_STR,
     "F-TEID",
-    OGS_GTP_F_TEID_TYPE,
+    OGS_GTP2_F_TEID_TYPE,
     0,
     7,
-    sizeof(ogs_gtp_tlv_f_teid_t),
+    sizeof(ogs_gtp2_tlv_f_teid_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_f_teid_8 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_f_teid_8 =
 {
     OGS_TLV_VAR_STR,
     "F-TEID",
-    OGS_GTP_F_TEID_TYPE,
+    OGS_GTP2_F_TEID_TYPE,
     0,
     8,
-    sizeof(ogs_gtp_tlv_f_teid_t),
+    sizeof(ogs_gtp2_tlv_f_teid_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_f_teid_9 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_f_teid_9 =
 {
     OGS_TLV_VAR_STR,
     "F-TEID",
-    OGS_GTP_F_TEID_TYPE,
+    OGS_GTP2_F_TEID_TYPE,
     0,
     9,
-    sizeof(ogs_gtp_tlv_f_teid_t),
+    sizeof(ogs_gtp2_tlv_f_teid_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_f_teid_10 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_f_teid_10 =
 {
     OGS_TLV_VAR_STR,
     "F-TEID",
-    OGS_GTP_F_TEID_TYPE,
+    OGS_GTP2_F_TEID_TYPE,
     0,
     10,
-    sizeof(ogs_gtp_tlv_f_teid_t),
+    sizeof(ogs_gtp2_tlv_f_teid_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_f_teid_11 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_f_teid_11 =
 {
     OGS_TLV_VAR_STR,
     "F-TEID",
-    OGS_GTP_F_TEID_TYPE,
+    OGS_GTP2_F_TEID_TYPE,
     0,
     11,
-    sizeof(ogs_gtp_tlv_f_teid_t),
+    sizeof(ogs_gtp2_tlv_f_teid_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_tmsi_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_tmsi_0 =
 {
     OGS_TLV_VAR_STR,
     "TMSI",
-    OGS_GTP_TMSI_TYPE,
+    OGS_GTP2_TMSI_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_tmsi_t),
+    sizeof(ogs_gtp2_tlv_tmsi_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_global_cn_id_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_global_cn_id_0 =
 {
     OGS_TLV_VAR_STR,
     "Global CN-Id",
-    OGS_GTP_GLOBAL_CN_ID_TYPE,
+    OGS_GTP2_GLOBAL_CN_ID_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_global_cn_id_t),
+    sizeof(ogs_gtp2_tlv_global_cn_id_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_s103pdf_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_s103pdf_0 =
 {
     OGS_TLV_VAR_STR,
     "S103PDF",
-    OGS_GTP_S103PDF_TYPE,
+    OGS_GTP2_S103PDF_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_s103pdf_t),
+    sizeof(ogs_gtp2_tlv_s103pdf_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_s1udf_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_s1udf_0 =
 {
     OGS_TLV_VAR_STR,
     "S1UDF",
-    OGS_GTP_S1UDF_TYPE,
+    OGS_GTP2_S1UDF_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_s1udf_t),
+    sizeof(ogs_gtp2_tlv_s1udf_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_delay_value_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_delay_value_0 =
 {
     OGS_TLV_UINT8,
     "Delay Value",
-    OGS_GTP_DELAY_VALUE_TYPE,
+    OGS_GTP2_DELAY_VALUE_TYPE,
     1,
     0,
-    sizeof(ogs_gtp_tlv_delay_value_t),
+    sizeof(ogs_gtp2_tlv_delay_value_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_charging_id_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_charging_id_0 =
 {
     OGS_TLV_UINT32,
     "Charging ID",
-    OGS_GTP_CHARGING_ID_TYPE,
+    OGS_GTP2_CHARGING_ID_TYPE,
     4,
     0,
-    sizeof(ogs_gtp_tlv_charging_id_t),
+    sizeof(ogs_gtp2_tlv_charging_id_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_charging_characteristics_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_charging_characteristics_0 =
 {
     OGS_TLV_VAR_STR,
     "Charging Characteristics",
-    OGS_GTP_CHARGING_CHARACTERISTICS_TYPE,
+    OGS_GTP2_CHARGING_CHARACTERISTICS_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_charging_characteristics_t),
+    sizeof(ogs_gtp2_tlv_charging_characteristics_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_trace_information_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_trace_information_0 =
 {
     OGS_TLV_VAR_STR,
     "Trace Information",
-    OGS_GTP_TRACE_INFORMATION_TYPE,
+    OGS_GTP2_TRACE_INFORMATION_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_trace_information_t),
+    sizeof(ogs_gtp2_tlv_trace_information_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_flags_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_bearer_flags_0 =
 {
     OGS_TLV_VAR_STR,
     "Bearer Flags",
-    OGS_GTP_BEARER_FLAGS_TYPE,
+    OGS_GTP2_BEARER_FLAGS_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_bearer_flags_t),
+    sizeof(ogs_gtp2_tlv_bearer_flags_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_pdn_type_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_pdn_type_0 =
 {
     OGS_TLV_UINT8,
     "PDN Type",
-    OGS_GTP_PDN_TYPE_TYPE,
+    OGS_GTP2_PDN_TYPE_TYPE,
     1,
     0,
-    sizeof(ogs_gtp_tlv_pdn_type_t),
+    sizeof(ogs_gtp2_tlv_pdn_type_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_pti_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_pti_0 =
 {
     OGS_TLV_UINT8,
     "PTI",
-    OGS_GTP_PTI_TYPE,
+    OGS_GTP2_PTI_TYPE,
     1,
     0,
-    sizeof(ogs_gtp_tlv_pti_t),
+    sizeof(ogs_gtp2_tlv_pti_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_mm_context_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_mm_context_0 =
 {
     OGS_TLV_VAR_STR,
     "MM Context",
-    OGS_GTP_MM_CONTEXT_TYPE,
+    OGS_GTP2_MM_CONTEXT_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_mm_context_t),
+    sizeof(ogs_gtp2_tlv_mm_context_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_pdu_numbers_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_pdu_numbers_0 =
 {
     OGS_TLV_VAR_STR,
     "PDU Numbers",
-    OGS_GTP_PDU_NUMBERS_TYPE,
+    OGS_GTP2_PDU_NUMBERS_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_pdu_numbers_t),
+    sizeof(ogs_gtp2_tlv_pdu_numbers_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_p_tmsi_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_p_tmsi_0 =
 {
     OGS_TLV_VAR_STR,
     "P-TMSI",
-    OGS_GTP_P_TMSI_TYPE,
+    OGS_GTP2_P_TMSI_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_p_tmsi_t),
+    sizeof(ogs_gtp2_tlv_p_tmsi_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_p_tmsi_signature_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_p_tmsi_signature_0 =
 {
     OGS_TLV_VAR_STR,
     "P-TMSI Signature",
-    OGS_GTP_P_TMSI_SIGNATURE_TYPE,
+    OGS_GTP2_P_TMSI_SIGNATURE_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_p_tmsi_signature_t),
+    sizeof(ogs_gtp2_tlv_p_tmsi_signature_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_hop_counter_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_hop_counter_0 =
 {
     OGS_TLV_VAR_STR,
     "Hop Counter",
-    OGS_GTP_HOP_COUNTER_TYPE,
+    OGS_GTP2_HOP_COUNTER_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_hop_counter_t),
+    sizeof(ogs_gtp2_tlv_hop_counter_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_ue_time_zone_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_ue_time_zone_0 =
 {
     OGS_TLV_VAR_STR,
     "UE Time Zone",
-    OGS_GTP_UE_TIME_ZONE_TYPE,
+    OGS_GTP2_UE_TIME_ZONE_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_ue_time_zone_t),
+    sizeof(ogs_gtp2_tlv_ue_time_zone_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_trace_reference_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_trace_reference_0 =
 {
     OGS_TLV_VAR_STR,
     "Trace Reference",
-    OGS_GTP_TRACE_REFERENCE_TYPE,
+    OGS_GTP2_TRACE_REFERENCE_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_trace_reference_t),
+    sizeof(ogs_gtp2_tlv_trace_reference_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_complete_request_message_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_complete_request_message_0 =
 {
     OGS_TLV_VAR_STR,
     "Complete Request Message",
-    OGS_GTP_COMPLETE_REQUEST_MESSAGE_TYPE,
+    OGS_GTP2_COMPLETE_REQUEST_MESSAGE_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_complete_request_message_t),
+    sizeof(ogs_gtp2_tlv_complete_request_message_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_guti_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_guti_0 =
 {
     OGS_TLV_VAR_STR,
     "GUTI",
-    OGS_GTP_GUTI_TYPE,
+    OGS_GTP2_GUTI_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_guti_t),
+    sizeof(ogs_gtp2_tlv_guti_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_f_container_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_f_container_0 =
 {
     OGS_TLV_VAR_STR,
     "F-Container",
-    OGS_GTP_F_CONTAINER_TYPE,
+    OGS_GTP2_F_CONTAINER_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_f_container_t),
+    sizeof(ogs_gtp2_tlv_f_container_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_f_cause_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_f_cause_0 =
 {
     OGS_TLV_VAR_STR,
     "F-Cause",
-    OGS_GTP_F_CAUSE_TYPE,
+    OGS_GTP2_F_CAUSE_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_f_cause_t),
+    sizeof(ogs_gtp2_tlv_f_cause_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_plmn_id_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_plmn_id_0 =
 {
     OGS_TLV_VAR_STR,
     "PLMN ID",
-    OGS_GTP_PLMN_ID_TYPE,
+    OGS_GTP2_PLMN_ID_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_plmn_id_t),
+    sizeof(ogs_gtp2_tlv_plmn_id_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_target_identification_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_target_identification_0 =
 {
     OGS_TLV_VAR_STR,
     "Target Identification",
-    OGS_GTP_TARGET_IDENTIFICATION_TYPE,
+    OGS_GTP2_TARGET_IDENTIFICATION_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_target_identification_t),
+    sizeof(ogs_gtp2_tlv_target_identification_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_packet_flow_id_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_packet_flow_id_0 =
 {
     OGS_TLV_VAR_STR,
     "Packet Flow ID",
-    OGS_GTP_PACKET_FLOW_ID_TYPE,
+    OGS_GTP2_PACKET_FLOW_ID_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_packet_flow_id_t),
+    sizeof(ogs_gtp2_tlv_packet_flow_id_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_rab_context_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_rab_context_0 =
 {
     OGS_TLV_VAR_STR,
     "RAB Context",
-    OGS_GTP_RAB_CONTEXT_TYPE,
+    OGS_GTP2_RAB_CONTEXT_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_rab_context_t),
+    sizeof(ogs_gtp2_tlv_rab_context_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_source_rnc_pdcp_context_info_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_source_rnc_pdcp_context_info_0 =
 {
     OGS_TLV_VAR_STR,
     "Source RNC PDCP Context Info",
-    OGS_GTP_SOURCE_RNC_PDCP_CONTEXT_INFO_TYPE,
+    OGS_GTP2_SOURCE_RNC_PDCP_CONTEXT_INFO_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_source_rnc_pdcp_context_info_t),
+    sizeof(ogs_gtp2_tlv_source_rnc_pdcp_context_info_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_port_number_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_port_number_0 =
 {
     OGS_TLV_UINT16,
     "Port Number",
-    OGS_GTP_PORT_NUMBER_TYPE,
+    OGS_GTP2_PORT_NUMBER_TYPE,
     2,
     0,
-    sizeof(ogs_gtp_tlv_port_number_t),
+    sizeof(ogs_gtp2_tlv_port_number_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_port_number_1 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_port_number_1 =
 {
     OGS_TLV_UINT16,
     "Port Number",
-    OGS_GTP_PORT_NUMBER_TYPE,
+    OGS_GTP2_PORT_NUMBER_TYPE,
     2,
     1,
-    sizeof(ogs_gtp_tlv_port_number_t),
+    sizeof(ogs_gtp2_tlv_port_number_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_port_number_2 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_port_number_2 =
 {
     OGS_TLV_UINT16,
     "Port Number",
-    OGS_GTP_PORT_NUMBER_TYPE,
+    OGS_GTP2_PORT_NUMBER_TYPE,
     2,
     2,
-    sizeof(ogs_gtp_tlv_port_number_t),
+    sizeof(ogs_gtp2_tlv_port_number_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_apn_restriction_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_apn_restriction_0 =
 {
     OGS_TLV_UINT8,
     "APN Restriction",
-    OGS_GTP_APN_RESTRICTION_TYPE,
+    OGS_GTP2_APN_RESTRICTION_TYPE,
     1,
     0,
-    sizeof(ogs_gtp_tlv_apn_restriction_t),
+    sizeof(ogs_gtp2_tlv_apn_restriction_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_selection_mode_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_selection_mode_0 =
 {
     OGS_TLV_UINT8,
     "Selection Mode",
-    OGS_GTP_SELECTION_MODE_TYPE,
+    OGS_GTP2_SELECTION_MODE_TYPE,
     1,
     0,
-    sizeof(ogs_gtp_tlv_selection_mode_t),
+    sizeof(ogs_gtp2_tlv_selection_mode_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_source_identification_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_source_identification_0 =
 {
     OGS_TLV_VAR_STR,
     "Source Identification",
-    OGS_GTP_SOURCE_IDENTIFICATION_TYPE,
+    OGS_GTP2_SOURCE_IDENTIFICATION_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_source_identification_t),
+    sizeof(ogs_gtp2_tlv_source_identification_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_change_reporting_action_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_change_reporting_action_0 =
 {
     OGS_TLV_VAR_STR,
     "Change Reporting Action",
-    OGS_GTP_CHANGE_REPORTING_ACTION_TYPE,
+    OGS_GTP2_CHANGE_REPORTING_ACTION_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_change_reporting_action_t),
+    sizeof(ogs_gtp2_tlv_change_reporting_action_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_fq_csid_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_fq_csid_0 =
 {
     OGS_TLV_VAR_STR,
     "FQ-CSID",
-    OGS_GTP_FQ_CSID_TYPE,
+    OGS_GTP2_FQ_CSID_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_fq_csid_t),
+    sizeof(ogs_gtp2_tlv_fq_csid_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_fq_csid_1 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_fq_csid_1 =
 {
     OGS_TLV_VAR_STR,
     "FQ-CSID",
-    OGS_GTP_FQ_CSID_TYPE,
+    OGS_GTP2_FQ_CSID_TYPE,
     0,
     1,
-    sizeof(ogs_gtp_tlv_fq_csid_t),
+    sizeof(ogs_gtp2_tlv_fq_csid_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_fq_csid_2 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_fq_csid_2 =
 {
     OGS_TLV_VAR_STR,
     "FQ-CSID",
-    OGS_GTP_FQ_CSID_TYPE,
+    OGS_GTP2_FQ_CSID_TYPE,
     0,
     2,
-    sizeof(ogs_gtp_tlv_fq_csid_t),
+    sizeof(ogs_gtp2_tlv_fq_csid_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_fq_csid_3 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_fq_csid_3 =
 {
     OGS_TLV_VAR_STR,
     "FQ-CSID",
-    OGS_GTP_FQ_CSID_TYPE,
+    OGS_GTP2_FQ_CSID_TYPE,
     0,
     3,
-    sizeof(ogs_gtp_tlv_fq_csid_t),
+    sizeof(ogs_gtp2_tlv_fq_csid_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_channel_needed_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_channel_needed_0 =
 {
     OGS_TLV_VAR_STR,
     "Channel needed",
-    OGS_GTP_CHANNEL_NEEDED_TYPE,
+    OGS_GTP2_CHANNEL_NEEDED_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_channel_needed_t),
+    sizeof(ogs_gtp2_tlv_channel_needed_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_emlpp_priority_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_emlpp_priority_0 =
 {
     OGS_TLV_VAR_STR,
     "eMLPP Priority",
-    OGS_GTP_EMLPP_PRIORITY_TYPE,
+    OGS_GTP2_EMLPP_PRIORITY_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_emlpp_priority_t),
+    sizeof(ogs_gtp2_tlv_emlpp_priority_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_node_type_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_node_type_0 =
 {
     OGS_TLV_UINT8,
     "Node Type",
-    OGS_GTP_NODE_TYPE_TYPE,
+    OGS_GTP2_NODE_TYPE_TYPE,
     1,
     0,
-    sizeof(ogs_gtp_tlv_node_type_t),
+    sizeof(ogs_gtp2_tlv_node_type_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_fqdn_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_fqdn_0 =
 {
     OGS_TLV_VAR_STR,
     "FQDN",
-    OGS_GTP_FQDN_TYPE,
+    OGS_GTP2_FQDN_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_fqdn_t),
+    sizeof(ogs_gtp2_tlv_fqdn_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_fqdn_1 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_fqdn_1 =
 {
     OGS_TLV_VAR_STR,
     "FQDN",
-    OGS_GTP_FQDN_TYPE,
+    OGS_GTP2_FQDN_TYPE,
     0,
     1,
-    sizeof(ogs_gtp_tlv_fqdn_t),
+    sizeof(ogs_gtp2_tlv_fqdn_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_ti_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_ti_0 =
 {
     OGS_TLV_VAR_STR,
     "TI",
-    OGS_GTP_TI_TYPE,
+    OGS_GTP2_TI_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_ti_t),
+    sizeof(ogs_gtp2_tlv_ti_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_mbms_session_duration_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_mbms_session_duration_0 =
 {
     OGS_TLV_VAR_STR,
     "MBMS Session Duration",
-    OGS_GTP_MBMS_SESSION_DURATION_TYPE,
+    OGS_GTP2_MBMS_SESSION_DURATION_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_mbms_session_duration_t),
+    sizeof(ogs_gtp2_tlv_mbms_session_duration_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_mbms_service_area_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_mbms_service_area_0 =
 {
     OGS_TLV_VAR_STR,
     "MBMS Service Area",
-    OGS_GTP_MBMS_SERVICE_AREA_TYPE,
+    OGS_GTP2_MBMS_SERVICE_AREA_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_mbms_service_area_t),
+    sizeof(ogs_gtp2_tlv_mbms_service_area_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_mbms_session_identifier_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_mbms_session_identifier_0 =
 {
     OGS_TLV_VAR_STR,
     "MBMS Session Identifier",
-    OGS_GTP_MBMS_SESSION_IDENTIFIER_TYPE,
+    OGS_GTP2_MBMS_SESSION_IDENTIFIER_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_mbms_session_identifier_t),
+    sizeof(ogs_gtp2_tlv_mbms_session_identifier_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_mbms_flow_identifier_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_mbms_flow_identifier_0 =
 {
     OGS_TLV_VAR_STR,
     "MBMS Flow Identifier",
-    OGS_GTP_MBMS_FLOW_IDENTIFIER_TYPE,
+    OGS_GTP2_MBMS_FLOW_IDENTIFIER_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_mbms_flow_identifier_t),
+    sizeof(ogs_gtp2_tlv_mbms_flow_identifier_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_mbms_ip_multicast_distribution_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_mbms_ip_multicast_distribution_0 =
 {
     OGS_TLV_VAR_STR,
     "MBMS IP Multicast Distribution",
-    OGS_GTP_MBMS_IP_MULTICAST_DISTRIBUTION_TYPE,
+    OGS_GTP2_MBMS_IP_MULTICAST_DISTRIBUTION_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_mbms_ip_multicast_distribution_t),
+    sizeof(ogs_gtp2_tlv_mbms_ip_multicast_distribution_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_mbms_distribution_acknowledge_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_mbms_distribution_acknowledge_0 =
 {
     OGS_TLV_VAR_STR,
     "MBMS Distribution Acknowledge",
-    OGS_GTP_MBMS_DISTRIBUTION_ACKNOWLEDGE_TYPE,
+    OGS_GTP2_MBMS_DISTRIBUTION_ACKNOWLEDGE_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_mbms_distribution_acknowledge_t),
+    sizeof(ogs_gtp2_tlv_mbms_distribution_acknowledge_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_rfsp_index_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_rfsp_index_0 =
 {
     OGS_TLV_VAR_STR,
     "RFSP Index",
-    OGS_GTP_RFSP_INDEX_TYPE,
+    OGS_GTP2_RFSP_INDEX_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_rfsp_index_t),
+    sizeof(ogs_gtp2_tlv_rfsp_index_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_uci_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_uci_0 =
 {
     OGS_TLV_VAR_STR,
     "UCI",
-    OGS_GTP_UCI_TYPE,
+    OGS_GTP2_UCI_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_uci_t),
+    sizeof(ogs_gtp2_tlv_uci_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_csg_information_reporting_action_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_csg_information_reporting_action_0 =
 {
     OGS_TLV_VAR_STR,
     "CSG Information Reporting Action",
-    OGS_GTP_CSG_INFORMATION_REPORTING_ACTION_TYPE,
+    OGS_GTP2_CSG_INFORMATION_REPORTING_ACTION_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_csg_information_reporting_action_t),
+    sizeof(ogs_gtp2_tlv_csg_information_reporting_action_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_csg_id_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_csg_id_0 =
 {
     OGS_TLV_VAR_STR,
     "CSG ID",
-    OGS_GTP_CSG_ID_TYPE,
+    OGS_GTP2_CSG_ID_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_csg_id_t),
+    sizeof(ogs_gtp2_tlv_csg_id_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_cmi_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_cmi_0 =
 {
     OGS_TLV_VAR_STR,
     "CMI",
-    OGS_GTP_CMI_TYPE,
+    OGS_GTP2_CMI_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_cmi_t),
+    sizeof(ogs_gtp2_tlv_cmi_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_service_indicator_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_service_indicator_0 =
 {
     OGS_TLV_VAR_STR,
     "Service indicator",
-    OGS_GTP_SERVICE_INDICATOR_TYPE,
+    OGS_GTP2_SERVICE_INDICATOR_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_service_indicator_t),
+    sizeof(ogs_gtp2_tlv_service_indicator_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_detach_type_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_detach_type_0 =
 {
     OGS_TLV_VAR_STR,
     "Detach Type",
-    OGS_GTP_DETACH_TYPE_TYPE,
+    OGS_GTP2_DETACH_TYPE_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_detach_type_t),
+    sizeof(ogs_gtp2_tlv_detach_type_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_ldn_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_ldn_0 =
 {
     OGS_TLV_VAR_STR,
     "LDN",
-    OGS_GTP_LDN_TYPE,
+    OGS_GTP2_LDN_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_ldn_t),
+    sizeof(ogs_gtp2_tlv_ldn_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_ldn_1 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_ldn_1 =
 {
     OGS_TLV_VAR_STR,
     "LDN",
-    OGS_GTP_LDN_TYPE,
+    OGS_GTP2_LDN_TYPE,
     0,
     1,
-    sizeof(ogs_gtp_tlv_ldn_t),
+    sizeof(ogs_gtp2_tlv_ldn_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_ldn_2 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_ldn_2 =
 {
     OGS_TLV_VAR_STR,
     "LDN",
-    OGS_GTP_LDN_TYPE,
+    OGS_GTP2_LDN_TYPE,
     0,
     2,
-    sizeof(ogs_gtp_tlv_ldn_t),
+    sizeof(ogs_gtp2_tlv_ldn_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_ldn_3 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_ldn_3 =
 {
     OGS_TLV_VAR_STR,
     "LDN",
-    OGS_GTP_LDN_TYPE,
+    OGS_GTP2_LDN_TYPE,
     0,
     3,
-    sizeof(ogs_gtp_tlv_ldn_t),
+    sizeof(ogs_gtp2_tlv_ldn_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_node_features_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_node_features_0 =
 {
     OGS_TLV_UINT8,
     "Node Features",
-    OGS_GTP_NODE_FEATURES_TYPE,
+    OGS_GTP2_NODE_FEATURES_TYPE,
     1,
     0,
-    sizeof(ogs_gtp_tlv_node_features_t),
+    sizeof(ogs_gtp2_tlv_node_features_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_mbms_time_to_data_transfer_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_mbms_time_to_data_transfer_0 =
 {
     OGS_TLV_VAR_STR,
     "MBMS Time to Data Transfer",
-    OGS_GTP_MBMS_TIME_TO_DATA_TRANSFER_TYPE,
+    OGS_GTP2_MBMS_TIME_TO_DATA_TRANSFER_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_mbms_time_to_data_transfer_t),
+    sizeof(ogs_gtp2_tlv_mbms_time_to_data_transfer_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_throttling_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_throttling_0 =
 {
     OGS_TLV_VAR_STR,
     "Throttling",
-    OGS_GTP_THROTTLING_TYPE,
+    OGS_GTP2_THROTTLING_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_throttling_t),
+    sizeof(ogs_gtp2_tlv_throttling_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_arp_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_arp_0 =
 {
     OGS_TLV_VAR_STR,
     "ARP",
-    OGS_GTP_ARP_TYPE,
+    OGS_GTP2_ARP_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_arp_t),
+    sizeof(ogs_gtp2_tlv_arp_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_epc_timer_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_epc_timer_0 =
 {
     OGS_TLV_VAR_STR,
     "EPC Timer",
-    OGS_GTP_EPC_TIMER_TYPE,
+    OGS_GTP2_EPC_TIMER_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_epc_timer_t),
+    sizeof(ogs_gtp2_tlv_epc_timer_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_signalling_priority_indication_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_signalling_priority_indication_0 =
 {
     OGS_TLV_VAR_STR,
     "Signalling Priority Indication",
-    OGS_GTP_SIGNALLING_PRIORITY_INDICATION_TYPE,
+    OGS_GTP2_SIGNALLING_PRIORITY_INDICATION_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_signalling_priority_indication_t),
+    sizeof(ogs_gtp2_tlv_signalling_priority_indication_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_tmgi_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_tmgi_0 =
 {
     OGS_TLV_VAR_STR,
     "TMGI",
-    OGS_GTP_TMGI_TYPE,
+    OGS_GTP2_TMGI_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_tmgi_t),
+    sizeof(ogs_gtp2_tlv_tmgi_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_additional_mm_context_for_srvcc_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_additional_mm_context_for_srvcc_0 =
 {
     OGS_TLV_VAR_STR,
     "Additional MM context for SRVCC",
-    OGS_GTP_ADDITIONAL_MM_CONTEXT_FOR_SRVCC_TYPE,
+    OGS_GTP2_ADDITIONAL_MM_CONTEXT_FOR_SRVCC_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_additional_mm_context_for_srvcc_t),
+    sizeof(ogs_gtp2_tlv_additional_mm_context_for_srvcc_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_additional_flags_for_srvcc_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_additional_flags_for_srvcc_0 =
 {
     OGS_TLV_VAR_STR,
     "Additional flags for SRVCC",
-    OGS_GTP_ADDITIONAL_FLAGS_FOR_SRVCC_TYPE,
+    OGS_GTP2_ADDITIONAL_FLAGS_FOR_SRVCC_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_additional_flags_for_srvcc_t),
+    sizeof(ogs_gtp2_tlv_additional_flags_for_srvcc_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_mdt_configuration_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_mdt_configuration_0 =
 {
     OGS_TLV_VAR_STR,
     "MDT Configuration",
-    OGS_GTP_MDT_CONFIGURATION_TYPE,
+    OGS_GTP2_MDT_CONFIGURATION_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_mdt_configuration_t),
+    sizeof(ogs_gtp2_tlv_mdt_configuration_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_apco_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_apco_0 =
 {
     OGS_TLV_VAR_STR,
     "APCO",
-    OGS_GTP_APCO_TYPE,
+    OGS_GTP2_APCO_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_apco_t),
+    sizeof(ogs_gtp2_tlv_apco_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_absolute_time_of_mbms_data_transfer_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_absolute_time_of_mbms_data_transfer_0 =
 {
     OGS_TLV_VAR_STR,
     "Absolute Time of MBMS Data Transfer",
-    OGS_GTP_ABSOLUTE_TIME_OF_MBMS_DATA_TRANSFER_TYPE,
+    OGS_GTP2_ABSOLUTE_TIME_OF_MBMS_DATA_TRANSFER_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_absolute_time_of_mbms_data_transfer_t),
+    sizeof(ogs_gtp2_tlv_absolute_time_of_mbms_data_transfer_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_enb_information_reporting_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_enb_information_reporting_0 =
 {
     OGS_TLV_VAR_STR,
     "eNB Information Reporting",
-    OGS_GTP_ENB_INFORMATION_REPORTING_TYPE,
+    OGS_GTP2_ENB_INFORMATION_REPORTING_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_enb_information_reporting_t),
+    sizeof(ogs_gtp2_tlv_enb_information_reporting_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_ip4cp_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_ip4cp_0 =
 {
     OGS_TLV_VAR_STR,
     "IP4CP",
-    OGS_GTP_IP4CP_TYPE,
+    OGS_GTP2_IP4CP_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_ip4cp_t),
+    sizeof(ogs_gtp2_tlv_ip4cp_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_change_to_report_flags_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_change_to_report_flags_0 =
 {
     OGS_TLV_VAR_STR,
     "Change to Report Flags",
-    OGS_GTP_CHANGE_TO_REPORT_FLAGS_TYPE,
+    OGS_GTP2_CHANGE_TO_REPORT_FLAGS_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_change_to_report_flags_t),
+    sizeof(ogs_gtp2_tlv_change_to_report_flags_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_action_indication_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_action_indication_0 =
 {
     OGS_TLV_VAR_STR,
     "Action Indication",
-    OGS_GTP_ACTION_INDICATION_TYPE,
+    OGS_GTP2_ACTION_INDICATION_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_action_indication_t),
+    sizeof(ogs_gtp2_tlv_action_indication_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_twan_identifier_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_twan_identifier_0 =
 {
     OGS_TLV_VAR_STR,
     "TWAN Identifier",
-    OGS_GTP_TWAN_IDENTIFIER_TYPE,
+    OGS_GTP2_TWAN_IDENTIFIER_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_twan_identifier_t),
+    sizeof(ogs_gtp2_tlv_twan_identifier_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_twan_identifier_1 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_twan_identifier_1 =
 {
     OGS_TLV_VAR_STR,
     "TWAN Identifier",
-    OGS_GTP_TWAN_IDENTIFIER_TYPE,
+    OGS_GTP2_TWAN_IDENTIFIER_TYPE,
     0,
     1,
-    sizeof(ogs_gtp_tlv_twan_identifier_t),
+    sizeof(ogs_gtp2_tlv_twan_identifier_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_uli_timestamp_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_uli_timestamp_0 =
 {
     OGS_TLV_VAR_STR,
     "ULI Timestamp",
-    OGS_GTP_ULI_TIMESTAMP_TYPE,
+    OGS_GTP2_ULI_TIMESTAMP_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_uli_timestamp_t),
+    sizeof(ogs_gtp2_tlv_uli_timestamp_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_mbms_flags_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_mbms_flags_0 =
 {
     OGS_TLV_VAR_STR,
     "MBMS Flags",
-    OGS_GTP_MBMS_FLAGS_TYPE,
+    OGS_GTP2_MBMS_FLAGS_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_mbms_flags_t),
+    sizeof(ogs_gtp2_tlv_mbms_flags_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_ran_nas_cause_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_ran_nas_cause_0 =
 {
     OGS_TLV_VAR_STR,
     "RAN/NAS Cause",
-    OGS_GTP_RAN_NAS_CAUSE_TYPE,
+    OGS_GTP2_RAN_NAS_CAUSE_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_ran_nas_cause_t),
+    sizeof(ogs_gtp2_tlv_ran_nas_cause_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_cn_operator_selection_entity_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_cn_operator_selection_entity_0 =
 {
     OGS_TLV_VAR_STR,
     "CN Operator Selection Entity",
-    OGS_GTP_CN_OPERATOR_SELECTION_ENTITY_TYPE,
+    OGS_GTP2_CN_OPERATOR_SELECTION_ENTITY_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_cn_operator_selection_entity_t),
+    sizeof(ogs_gtp2_tlv_cn_operator_selection_entity_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_twmi_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_twmi_0 =
 {
     OGS_TLV_VAR_STR,
     "TWMI",
-    OGS_GTP_TWMI_TYPE,
+    OGS_GTP2_TWMI_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_twmi_t),
+    sizeof(ogs_gtp2_tlv_twmi_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_node_number_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_node_number_0 =
 {
     OGS_TLV_VAR_STR,
     "Node Number",
-    OGS_GTP_NODE_NUMBER_TYPE,
+    OGS_GTP2_NODE_NUMBER_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_node_number_t),
+    sizeof(ogs_gtp2_tlv_node_number_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_node_identifier_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_node_identifier_0 =
 {
     OGS_TLV_VAR_STR,
     "Node Identifier",
-    OGS_GTP_NODE_IDENTIFIER_TYPE,
+    OGS_GTP2_NODE_IDENTIFIER_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_node_identifier_t),
+    sizeof(ogs_gtp2_tlv_node_identifier_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_presence_reporting_area_action_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_presence_reporting_area_action_0 =
 {
     OGS_TLV_VAR_STR,
     "Presence Reporting Area Action",
-    OGS_GTP_PRESENCE_REPORTING_AREA_ACTION_TYPE,
+    OGS_GTP2_PRESENCE_REPORTING_AREA_ACTION_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_presence_reporting_area_action_t),
+    sizeof(ogs_gtp2_tlv_presence_reporting_area_action_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_presence_reporting_area_information_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_presence_reporting_area_information_0 =
 {
     OGS_TLV_VAR_STR,
     "Presence Reporting Area Information",
-    OGS_GTP_PRESENCE_REPORTING_AREA_INFORMATION_TYPE,
+    OGS_GTP2_PRESENCE_REPORTING_AREA_INFORMATION_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_presence_reporting_area_information_t),
+    sizeof(ogs_gtp2_tlv_presence_reporting_area_information_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_twan_identifier_timestamp_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_twan_identifier_timestamp_0 =
 {
     OGS_TLV_VAR_STR,
     "TWAN Identifier Timestamp",
-    OGS_GTP_TWAN_IDENTIFIER_TIMESTAMP_TYPE,
+    OGS_GTP2_TWAN_IDENTIFIER_TIMESTAMP_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_twan_identifier_timestamp_t),
+    sizeof(ogs_gtp2_tlv_twan_identifier_timestamp_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_twan_identifier_timestamp_1 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_twan_identifier_timestamp_1 =
 {
     OGS_TLV_VAR_STR,
     "TWAN Identifier Timestamp",
-    OGS_GTP_TWAN_IDENTIFIER_TIMESTAMP_TYPE,
+    OGS_GTP2_TWAN_IDENTIFIER_TIMESTAMP_TYPE,
     0,
     1,
-    sizeof(ogs_gtp_tlv_twan_identifier_timestamp_t),
+    sizeof(ogs_gtp2_tlv_twan_identifier_timestamp_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_metric_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_metric_0 =
 {
     OGS_TLV_VAR_STR,
     "Metric",
-    OGS_GTP_METRIC_TYPE,
+    OGS_GTP2_METRIC_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_metric_t),
+    sizeof(ogs_gtp2_tlv_metric_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_sequence_number_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_sequence_number_0 =
 {
     OGS_TLV_VAR_STR,
     "Sequence Number",
-    OGS_GTP_SEQUENCE_NUMBER_TYPE,
+    OGS_GTP2_SEQUENCE_NUMBER_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_sequence_number_t),
+    sizeof(ogs_gtp2_tlv_sequence_number_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_apn_and_relative_capacity_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_apn_and_relative_capacity_0 =
 {
     OGS_TLV_VAR_STR,
     "APN and Relative Capacity",
-    OGS_GTP_APN_AND_RELATIVE_CAPACITY_TYPE,
+    OGS_GTP2_APN_AND_RELATIVE_CAPACITY_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_apn_and_relative_capacity_t),
+    sizeof(ogs_gtp2_tlv_apn_and_relative_capacity_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_wlan_offloadability_indication_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_wlan_offloadability_indication_0 =
 {
     OGS_TLV_VAR_STR,
     "WLAN Offloadability Indication",
-    OGS_GTP_WLAN_OFFLOADABILITY_INDICATION_TYPE,
+    OGS_GTP2_WLAN_OFFLOADABILITY_INDICATION_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_wlan_offloadability_indication_t),
+    sizeof(ogs_gtp2_tlv_wlan_offloadability_indication_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_paging_and_service_information_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_paging_and_service_information_0 =
 {
     OGS_TLV_VAR_STR,
     "Paging and Service Information",
-    OGS_GTP_PAGING_AND_SERVICE_INFORMATION_TYPE,
+    OGS_GTP2_PAGING_AND_SERVICE_INFORMATION_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_paging_and_service_information_t),
+    sizeof(ogs_gtp2_tlv_paging_and_service_information_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_integer_number_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_integer_number_0 =
 {
     OGS_TLV_VAR_STR,
     "Integer Number",
-    OGS_GTP_INTEGER_NUMBER_TYPE,
+    OGS_GTP2_INTEGER_NUMBER_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_integer_number_t),
+    sizeof(ogs_gtp2_tlv_integer_number_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_millisecond_time_stamp_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_millisecond_time_stamp_0 =
 {
     OGS_TLV_VAR_STR,
     "Millisecond Time Stamp",
-    OGS_GTP_MILLISECOND_TIME_STAMP_TYPE,
+    OGS_GTP2_MILLISECOND_TIME_STAMP_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_millisecond_time_stamp_t),
+    sizeof(ogs_gtp2_tlv_millisecond_time_stamp_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_monitoring_event_information_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_monitoring_event_information_0 =
 {
     OGS_TLV_VAR_STR,
     "Monitoring Event Information",
-    OGS_GTP_MONITORING_EVENT_INFORMATION_TYPE,
+    OGS_GTP2_MONITORING_EVENT_INFORMATION_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_monitoring_event_information_t),
+    sizeof(ogs_gtp2_tlv_monitoring_event_information_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_ecgi_list_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_ecgi_list_0 =
 {
     OGS_TLV_VAR_STR,
     "ECGI List",
-    OGS_GTP_ECGI_LIST_TYPE,
+    OGS_GTP2_ECGI_LIST_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_ecgi_list_t),
+    sizeof(ogs_gtp2_tlv_ecgi_list_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_remote_user_id_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_remote_user_id_0 =
 {
     OGS_TLV_VAR_STR,
     "Remote User ID",
-    OGS_GTP_REMOTE_USER_ID_TYPE,
+    OGS_GTP2_REMOTE_USER_ID_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_remote_user_id_t),
+    sizeof(ogs_gtp2_tlv_remote_user_id_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_remote_ue_ip_information_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_remote_ue_ip_information_0 =
 {
     OGS_TLV_VAR_STR,
     "Remote UE IP Information",
-    OGS_GTP_REMOTE_UE_IP_INFORMATION_TYPE,
+    OGS_GTP2_REMOTE_UE_IP_INFORMATION_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_remote_ue_ip_information_t),
+    sizeof(ogs_gtp2_tlv_remote_ue_ip_information_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_ciot_optimizations_support_indication_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_ciot_optimizations_support_indication_0 =
 {
     OGS_TLV_VAR_STR,
     "CIoT Optimizations Support Indication",
-    OGS_GTP_CIOT_OPTIMIZATIONS_SUPPORT_INDICATION_TYPE,
+    OGS_GTP2_CIOT_OPTIMIZATIONS_SUPPORT_INDICATION_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_ciot_optimizations_support_indication_t),
+    sizeof(ogs_gtp2_tlv_ciot_optimizations_support_indication_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_header_compression_configuration_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_header_compression_configuration_0 =
 {
     OGS_TLV_VAR_STR,
     "Header Compression Configuration",
-    OGS_GTP_HEADER_COMPRESSION_CONFIGURATION_TYPE,
+    OGS_GTP2_HEADER_COMPRESSION_CONFIGURATION_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_header_compression_configuration_t),
+    sizeof(ogs_gtp2_tlv_header_compression_configuration_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_epco_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_epco_0 =
 {
     OGS_TLV_VAR_STR,
     "ePCO",
-    OGS_GTP_EPCO_TYPE,
+    OGS_GTP2_EPCO_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_epco_t),
+    sizeof(ogs_gtp2_tlv_epco_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_serving_plmn_rate_control_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_serving_plmn_rate_control_0 =
 {
     OGS_TLV_VAR_STR,
     "Serving PLMN Rate Control",
-    OGS_GTP_SERVING_PLMN_RATE_CONTROL_TYPE,
+    OGS_GTP2_SERVING_PLMN_RATE_CONTROL_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_serving_plmn_rate_control_t),
+    sizeof(ogs_gtp2_tlv_serving_plmn_rate_control_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_counter_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_counter_0 =
 {
     OGS_TLV_VAR_STR,
     "Counter",
-    OGS_GTP_COUNTER_TYPE,
+    OGS_GTP2_COUNTER_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_counter_t),
+    sizeof(ogs_gtp2_tlv_counter_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_mapped_ue_usage_type_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_mapped_ue_usage_type_0 =
 {
     OGS_TLV_VAR_STR,
     "Mapped UE Usage Type",
-    OGS_GTP_MAPPED_UE_USAGE_TYPE_TYPE,
+    OGS_GTP2_MAPPED_UE_USAGE_TYPE_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_mapped_ue_usage_type_t),
+    sizeof(ogs_gtp2_tlv_mapped_ue_usage_type_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_secondary_rat_usage_data_report_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_secondary_rat_usage_data_report_0 =
 {
     OGS_TLV_VAR_STR,
     "Secondary RAT Usage Data Report",
-    OGS_GTP_SECONDARY_RAT_USAGE_DATA_REPORT_TYPE,
+    OGS_GTP2_SECONDARY_RAT_USAGE_DATA_REPORT_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_secondary_rat_usage_data_report_t),
+    sizeof(ogs_gtp2_tlv_secondary_rat_usage_data_report_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_up_function_selection_indication_flags_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_up_function_selection_indication_flags_0 =
 {
     OGS_TLV_VAR_STR,
     "UP Function Selection Indication Flags",
-    OGS_GTP_UP_FUNCTION_SELECTION_INDICATION_FLAGS_TYPE,
+    OGS_GTP2_UP_FUNCTION_SELECTION_INDICATION_FLAGS_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_up_function_selection_indication_flags_t),
+    sizeof(ogs_gtp2_tlv_up_function_selection_indication_flags_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_maximum_packet_loss_rate_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_maximum_packet_loss_rate_0 =
 {
     OGS_TLV_VAR_STR,
     "Maximum Packet Loss Rate",
-    OGS_GTP_MAXIMUM_PACKET_LOSS_RATE_TYPE,
+    OGS_GTP2_MAXIMUM_PACKET_LOSS_RATE_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_maximum_packet_loss_rate_t),
+    sizeof(ogs_gtp2_tlv_maximum_packet_loss_rate_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_apn_rate_control_status_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_apn_rate_control_status_0 =
 {
     OGS_TLV_VAR_STR,
     "APN Rate Control Status",
-    OGS_GTP_APN_RATE_CONTROL_STATUS_TYPE,
+    OGS_GTP2_APN_RATE_CONTROL_STATUS_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_apn_rate_control_status_t),
+    sizeof(ogs_gtp2_tlv_apn_rate_control_status_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_extended_trace_information_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_extended_trace_information_0 =
 {
     OGS_TLV_VAR_STR,
     "Extended Trace Information",
-    OGS_GTP_EXTENDED_TRACE_INFORMATION_TYPE,
+    OGS_GTP2_EXTENDED_TRACE_INFORMATION_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_extended_trace_information_t),
+    sizeof(ogs_gtp2_tlv_extended_trace_information_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_monitoring_event_extension_information_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_monitoring_event_extension_information_0 =
 {
     OGS_TLV_VAR_STR,
     "Monitoring Event Extension Information",
-    OGS_GTP_MONITORING_EVENT_EXTENSION_INFORMATION_TYPE,
+    OGS_GTP2_MONITORING_EVENT_EXTENSION_INFORMATION_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_monitoring_event_extension_information_t),
+    sizeof(ogs_gtp2_tlv_monitoring_event_extension_information_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_additional_rrm_policy_index_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_additional_rrm_policy_index_0 =
 {
     OGS_TLV_VAR_STR,
     "Additional RRM Policy Index",
-    OGS_GTP_ADDITIONAL_RRM_POLICY_INDEX_TYPE,
+    OGS_GTP2_ADDITIONAL_RRM_POLICY_INDEX_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_additional_rrm_policy_index_t),
+    sizeof(ogs_gtp2_tlv_additional_rrm_policy_index_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_services_authorized_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_services_authorized_0 =
 {
     OGS_TLV_VAR_STR,
     "Services Authorized",
-    OGS_GTP_SERVICES_AUTHORIZED_TYPE,
+    OGS_GTP2_SERVICES_AUTHORIZED_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_services_authorized_t),
+    sizeof(ogs_gtp2_tlv_services_authorized_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_services_authorized_1 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_services_authorized_1 =
 {
     OGS_TLV_VAR_STR,
     "Services Authorized",
-    OGS_GTP_SERVICES_AUTHORIZED_TYPE,
+    OGS_GTP2_SERVICES_AUTHORIZED_TYPE,
     0,
     1,
-    sizeof(ogs_gtp_tlv_services_authorized_t),
+    sizeof(ogs_gtp2_tlv_services_authorized_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_bit_rate_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_bit_rate_0 =
 {
     OGS_TLV_VAR_STR,
     "Bit Rate",
-    OGS_GTP_BIT_RATE_TYPE,
+    OGS_GTP2_BIT_RATE_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_bit_rate_t),
+    sizeof(ogs_gtp2_tlv_bit_rate_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_bit_rate_1 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_bit_rate_1 =
 {
     OGS_TLV_VAR_STR,
     "Bit Rate",
-    OGS_GTP_BIT_RATE_TYPE,
+    OGS_GTP2_BIT_RATE_TYPE,
     0,
     1,
-    sizeof(ogs_gtp_tlv_bit_rate_t),
+    sizeof(ogs_gtp2_tlv_bit_rate_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_pc5_qos_flow_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_pc5_qos_flow_0 =
 {
     OGS_TLV_VAR_STR,
     "PC5 QoS Flow",
-    OGS_GTP_PC5_QOS_FLOW_TYPE,
+    OGS_GTP2_PC5_QOS_FLOW_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_pc5_qos_flow_t),
+    sizeof(ogs_gtp2_tlv_pc5_qos_flow_t),
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_pc5_qos_parameters_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_pc5_qos_parameters_0 =
 {
     OGS_TLV_COMPOUND,
     "PC5 QoS Parameters",
-    OGS_GTP_PC5_QOS_PARAMETERS_TYPE,
+    OGS_GTP2_PC5_QOS_PARAMETERS_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_pc5_qos_parameters_t),
+    sizeof(ogs_gtp2_tlv_pc5_qos_parameters_t),
     {
-        &ogs_gtp_tlv_desc_pc5_qos_flow_0,
-        &ogs_gtp_tlv_desc_bit_rate_0,
+        &ogs_gtp2_tlv_desc_pc5_qos_flow_0,
+        &ogs_gtp2_tlv_desc_bit_rate_0,
         NULL,
     }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_remote_ue_context_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_remote_ue_context_0 =
 {
     OGS_TLV_COMPOUND,
     "Remote UE Context",
-    OGS_GTP_REMOTE_UE_CONTEXT_TYPE,
+    OGS_GTP2_REMOTE_UE_CONTEXT_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_remote_ue_context_t),
+    sizeof(ogs_gtp2_tlv_remote_ue_context_t),
     {
-        &ogs_gtp_tlv_desc_remote_user_id_0,
-        &ogs_gtp_tlv_desc_remote_ue_ip_information_0,
+        &ogs_gtp2_tlv_desc_remote_user_id_0,
+        &ogs_gtp2_tlv_desc_remote_ue_ip_information_0,
         NULL,
     }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_v2x_context_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_v2x_context_0 =
 {
     OGS_TLV_COMPOUND,
     "V2X Context",
-    OGS_GTP_V2X_CONTEXT_TYPE,
+    OGS_GTP2_V2X_CONTEXT_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_v2x_context_t),
+    sizeof(ogs_gtp2_tlv_v2x_context_t),
     {
-        &ogs_gtp_tlv_desc_services_authorized_0,
-        &ogs_gtp_tlv_desc_services_authorized_1,
-        &ogs_gtp_tlv_desc_bit_rate_0,
-        &ogs_gtp_tlv_desc_bit_rate_1,
-        &ogs_gtp_tlv_desc_pc5_qos_parameters_0,
+        &ogs_gtp2_tlv_desc_services_authorized_0,
+        &ogs_gtp2_tlv_desc_services_authorized_1,
+        &ogs_gtp2_tlv_desc_bit_rate_0,
+        &ogs_gtp2_tlv_desc_bit_rate_1,
+        &ogs_gtp2_tlv_desc_pc5_qos_parameters_0,
         NULL,
     }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_bearer_context_0 =
 {
     OGS_TLV_COMPOUND,
     "Bearer Context",
-    OGS_GTP_BEARER_CONTEXT_TYPE,
+    OGS_GTP2_BEARER_CONTEXT_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_bearer_context_t),
+    sizeof(ogs_gtp2_tlv_bearer_context_t),
     {
-        &ogs_gtp_tlv_desc_ebi_0,
-        &ogs_gtp_tlv_desc_bearer_tft_0,
-        &ogs_gtp_tlv_desc_f_teid_0,
-        &ogs_gtp_tlv_desc_f_teid_1,
-        &ogs_gtp_tlv_desc_f_teid_2,
-        &ogs_gtp_tlv_desc_f_teid_3,
-        &ogs_gtp_tlv_desc_f_teid_4,
-        &ogs_gtp_tlv_desc_f_teid_5,
-        &ogs_gtp_tlv_desc_f_teid_6,
-        &ogs_gtp_tlv_desc_bearer_qos_0,
-        &ogs_gtp_tlv_desc_f_teid_7,
-        &ogs_gtp_tlv_desc_cause_0,
-        &ogs_gtp_tlv_desc_charging_id_0,
-        &ogs_gtp_tlv_desc_bearer_flags_0,
-        &ogs_gtp_tlv_desc_pco_0,
-        &ogs_gtp_tlv_desc_epco_0,
-        &ogs_gtp_tlv_desc_maximum_packet_loss_rate_0,
-        &ogs_gtp_tlv_desc_f_teid_8,
-        &ogs_gtp_tlv_desc_f_teid_9,
-        &ogs_gtp_tlv_desc_f_teid_10,
-        &ogs_gtp_tlv_desc_f_teid_11,
-        &ogs_gtp_tlv_desc_ran_nas_cause_0,
-        &ogs_gtp_tlv_desc_apco_0,
-        &ogs_gtp_tlv_desc_f_container_0,
-        &ogs_gtp_tlv_desc_ti_0,
-        &ogs_gtp_tlv_desc_packet_flow_id_0,
+        &ogs_gtp2_tlv_desc_ebi_0,
+        &ogs_gtp2_tlv_desc_bearer_tft_0,
+        &ogs_gtp2_tlv_desc_f_teid_0,
+        &ogs_gtp2_tlv_desc_f_teid_1,
+        &ogs_gtp2_tlv_desc_f_teid_2,
+        &ogs_gtp2_tlv_desc_f_teid_3,
+        &ogs_gtp2_tlv_desc_f_teid_4,
+        &ogs_gtp2_tlv_desc_f_teid_5,
+        &ogs_gtp2_tlv_desc_f_teid_6,
+        &ogs_gtp2_tlv_desc_bearer_qos_0,
+        &ogs_gtp2_tlv_desc_f_teid_7,
+        &ogs_gtp2_tlv_desc_cause_0,
+        &ogs_gtp2_tlv_desc_charging_id_0,
+        &ogs_gtp2_tlv_desc_bearer_flags_0,
+        &ogs_gtp2_tlv_desc_pco_0,
+        &ogs_gtp2_tlv_desc_epco_0,
+        &ogs_gtp2_tlv_desc_maximum_packet_loss_rate_0,
+        &ogs_gtp2_tlv_desc_f_teid_8,
+        &ogs_gtp2_tlv_desc_f_teid_9,
+        &ogs_gtp2_tlv_desc_f_teid_10,
+        &ogs_gtp2_tlv_desc_f_teid_11,
+        &ogs_gtp2_tlv_desc_ran_nas_cause_0,
+        &ogs_gtp2_tlv_desc_apco_0,
+        &ogs_gtp2_tlv_desc_f_container_0,
+        &ogs_gtp2_tlv_desc_ti_0,
+        &ogs_gtp2_tlv_desc_packet_flow_id_0,
         NULL,
     }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_1 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_bearer_context_1 =
 {
     OGS_TLV_COMPOUND,
     "Bearer Context",
-    OGS_GTP_BEARER_CONTEXT_TYPE,
+    OGS_GTP2_BEARER_CONTEXT_TYPE,
     0,
     1,
-    sizeof(ogs_gtp_tlv_bearer_context_t),
+    sizeof(ogs_gtp2_tlv_bearer_context_t),
     {
-        &ogs_gtp_tlv_desc_ebi_0,
-        &ogs_gtp_tlv_desc_bearer_tft_0,
-        &ogs_gtp_tlv_desc_f_teid_0,
-        &ogs_gtp_tlv_desc_f_teid_1,
-        &ogs_gtp_tlv_desc_f_teid_2,
-        &ogs_gtp_tlv_desc_f_teid_3,
-        &ogs_gtp_tlv_desc_f_teid_4,
-        &ogs_gtp_tlv_desc_f_teid_5,
-        &ogs_gtp_tlv_desc_f_teid_6,
-        &ogs_gtp_tlv_desc_bearer_qos_0,
-        &ogs_gtp_tlv_desc_f_teid_7,
-        &ogs_gtp_tlv_desc_cause_0,
-        &ogs_gtp_tlv_desc_charging_id_0,
-        &ogs_gtp_tlv_desc_bearer_flags_0,
-        &ogs_gtp_tlv_desc_pco_0,
-        &ogs_gtp_tlv_desc_epco_0,
-        &ogs_gtp_tlv_desc_maximum_packet_loss_rate_0,
-        &ogs_gtp_tlv_desc_f_teid_8,
-        &ogs_gtp_tlv_desc_f_teid_9,
-        &ogs_gtp_tlv_desc_f_teid_10,
-        &ogs_gtp_tlv_desc_f_teid_11,
-        &ogs_gtp_tlv_desc_ran_nas_cause_0,
-        &ogs_gtp_tlv_desc_apco_0,
-        &ogs_gtp_tlv_desc_f_container_0,
-        &ogs_gtp_tlv_desc_ti_0,
-        &ogs_gtp_tlv_desc_packet_flow_id_0,
+        &ogs_gtp2_tlv_desc_ebi_0,
+        &ogs_gtp2_tlv_desc_bearer_tft_0,
+        &ogs_gtp2_tlv_desc_f_teid_0,
+        &ogs_gtp2_tlv_desc_f_teid_1,
+        &ogs_gtp2_tlv_desc_f_teid_2,
+        &ogs_gtp2_tlv_desc_f_teid_3,
+        &ogs_gtp2_tlv_desc_f_teid_4,
+        &ogs_gtp2_tlv_desc_f_teid_5,
+        &ogs_gtp2_tlv_desc_f_teid_6,
+        &ogs_gtp2_tlv_desc_bearer_qos_0,
+        &ogs_gtp2_tlv_desc_f_teid_7,
+        &ogs_gtp2_tlv_desc_cause_0,
+        &ogs_gtp2_tlv_desc_charging_id_0,
+        &ogs_gtp2_tlv_desc_bearer_flags_0,
+        &ogs_gtp2_tlv_desc_pco_0,
+        &ogs_gtp2_tlv_desc_epco_0,
+        &ogs_gtp2_tlv_desc_maximum_packet_loss_rate_0,
+        &ogs_gtp2_tlv_desc_f_teid_8,
+        &ogs_gtp2_tlv_desc_f_teid_9,
+        &ogs_gtp2_tlv_desc_f_teid_10,
+        &ogs_gtp2_tlv_desc_f_teid_11,
+        &ogs_gtp2_tlv_desc_ran_nas_cause_0,
+        &ogs_gtp2_tlv_desc_apco_0,
+        &ogs_gtp2_tlv_desc_f_container_0,
+        &ogs_gtp2_tlv_desc_ti_0,
+        &ogs_gtp2_tlv_desc_packet_flow_id_0,
         NULL,
     }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_pdn_connection_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_pdn_connection_0 =
 {
     OGS_TLV_COMPOUND,
     "PDN Connection",
-    OGS_GTP_PDN_CONNECTION_TYPE,
+    OGS_GTP2_PDN_CONNECTION_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_pdn_connection_t),
+    sizeof(ogs_gtp2_tlv_pdn_connection_t),
     {
-        &ogs_gtp_tlv_desc_apn_0,
-        &ogs_gtp_tlv_desc_apn_restriction_0,
-        &ogs_gtp_tlv_desc_selection_mode_0,
-        &ogs_gtp_tlv_desc_ip_address_0,
-        &ogs_gtp_tlv_desc_ip_address_1,
-        &ogs_gtp_tlv_desc_ebi_0,
-        &ogs_gtp_tlv_desc_f_teid_0,
-        &ogs_gtp_tlv_desc_fqdn_0,
-        &ogs_gtp_tlv_desc_bearer_context_0,
-        &ogs_gtp_tlv_desc_ambr_0,
-        &ogs_gtp_tlv_desc_charging_characteristics_0,
-        &ogs_gtp_tlv_desc_change_reporting_action_0,
-        &ogs_gtp_tlv_desc_csg_information_reporting_action_0,
-        &ogs_gtp_tlv_desc_enb_information_reporting_0,
-        &ogs_gtp_tlv_desc_indication_0,
-        &ogs_gtp_tlv_desc_signalling_priority_indication_0,
-        &ogs_gtp_tlv_desc_change_to_report_flags_0,
-        &ogs_gtp_tlv_desc_fqdn_1,
-        &ogs_gtp_tlv_desc_presence_reporting_area_action_0,
-        &ogs_gtp_tlv_desc_wlan_offloadability_indication_0,
-        &ogs_gtp_tlv_desc_remote_ue_context_0,
-        &ogs_gtp_tlv_desc_pdn_type_0,
-        &ogs_gtp_tlv_desc_header_compression_configuration_0,
+        &ogs_gtp2_tlv_desc_apn_0,
+        &ogs_gtp2_tlv_desc_apn_restriction_0,
+        &ogs_gtp2_tlv_desc_selection_mode_0,
+        &ogs_gtp2_tlv_desc_ip_address_0,
+        &ogs_gtp2_tlv_desc_ip_address_1,
+        &ogs_gtp2_tlv_desc_ebi_0,
+        &ogs_gtp2_tlv_desc_f_teid_0,
+        &ogs_gtp2_tlv_desc_fqdn_0,
+        &ogs_gtp2_tlv_desc_bearer_context_0,
+        &ogs_gtp2_tlv_desc_ambr_0,
+        &ogs_gtp2_tlv_desc_charging_characteristics_0,
+        &ogs_gtp2_tlv_desc_change_reporting_action_0,
+        &ogs_gtp2_tlv_desc_csg_information_reporting_action_0,
+        &ogs_gtp2_tlv_desc_enb_information_reporting_0,
+        &ogs_gtp2_tlv_desc_indication_0,
+        &ogs_gtp2_tlv_desc_signalling_priority_indication_0,
+        &ogs_gtp2_tlv_desc_change_to_report_flags_0,
+        &ogs_gtp2_tlv_desc_fqdn_1,
+        &ogs_gtp2_tlv_desc_presence_reporting_area_action_0,
+        &ogs_gtp2_tlv_desc_wlan_offloadability_indication_0,
+        &ogs_gtp2_tlv_desc_remote_ue_context_0,
+        &ogs_gtp2_tlv_desc_pdn_type_0,
+        &ogs_gtp2_tlv_desc_header_compression_configuration_0,
         NULL,
     }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_overload_control_information_0 =
 {
     OGS_TLV_COMPOUND,
     "Overload Control Information",
-    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    OGS_GTP2_OVERLOAD_CONTROL_INFORMATION_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_overload_control_information_t),
+    sizeof(ogs_gtp2_tlv_overload_control_information_t),
     {
-        &ogs_gtp_tlv_desc_sequence_number_0,
-        &ogs_gtp_tlv_desc_metric_0,
-        &ogs_gtp_tlv_desc_epc_timer_0,
-        &ogs_gtp_tlv_desc_apn_0,
+        &ogs_gtp2_tlv_desc_sequence_number_0,
+        &ogs_gtp2_tlv_desc_metric_0,
+        &ogs_gtp2_tlv_desc_epc_timer_0,
+        &ogs_gtp2_tlv_desc_apn_0,
         NULL,
     }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information_1 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_overload_control_information_1 =
 {
     OGS_TLV_COMPOUND,
     "Overload Control Information",
-    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    OGS_GTP2_OVERLOAD_CONTROL_INFORMATION_TYPE,
     0,
     1,
-    sizeof(ogs_gtp_tlv_overload_control_information_t),
+    sizeof(ogs_gtp2_tlv_overload_control_information_t),
     {
-        &ogs_gtp_tlv_desc_sequence_number_0,
-        &ogs_gtp_tlv_desc_metric_0,
-        &ogs_gtp_tlv_desc_epc_timer_0,
-        &ogs_gtp_tlv_desc_apn_0,
+        &ogs_gtp2_tlv_desc_sequence_number_0,
+        &ogs_gtp2_tlv_desc_metric_0,
+        &ogs_gtp2_tlv_desc_epc_timer_0,
+        &ogs_gtp2_tlv_desc_apn_0,
         NULL,
     }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information_2 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_overload_control_information_2 =
 {
     OGS_TLV_COMPOUND,
     "Overload Control Information",
-    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    OGS_GTP2_OVERLOAD_CONTROL_INFORMATION_TYPE,
     0,
     2,
-    sizeof(ogs_gtp_tlv_overload_control_information_t),
+    sizeof(ogs_gtp2_tlv_overload_control_information_t),
     {
-        &ogs_gtp_tlv_desc_sequence_number_0,
-        &ogs_gtp_tlv_desc_metric_0,
-        &ogs_gtp_tlv_desc_epc_timer_0,
-        &ogs_gtp_tlv_desc_apn_0,
+        &ogs_gtp2_tlv_desc_sequence_number_0,
+        &ogs_gtp2_tlv_desc_metric_0,
+        &ogs_gtp2_tlv_desc_epc_timer_0,
+        &ogs_gtp2_tlv_desc_apn_0,
         NULL,
     }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_load_control_information_0 =
 {
     OGS_TLV_COMPOUND,
     "Load Control Information",
-    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
+    OGS_GTP2_LOAD_CONTROL_INFORMATION_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_load_control_information_t),
+    sizeof(ogs_gtp2_tlv_load_control_information_t),
     {
-        &ogs_gtp_tlv_desc_sequence_number_0,
-        &ogs_gtp_tlv_desc_metric_0,
-        &ogs_gtp_tlv_desc_apn_and_relative_capacity_0,
+        &ogs_gtp2_tlv_desc_sequence_number_0,
+        &ogs_gtp2_tlv_desc_metric_0,
+        &ogs_gtp2_tlv_desc_apn_and_relative_capacity_0,
         NULL,
     }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information_1 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_load_control_information_1 =
 {
     OGS_TLV_COMPOUND,
     "Load Control Information",
-    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
+    OGS_GTP2_LOAD_CONTROL_INFORMATION_TYPE,
     0,
     1,
-    sizeof(ogs_gtp_tlv_load_control_information_t),
+    sizeof(ogs_gtp2_tlv_load_control_information_t),
     {
-        &ogs_gtp_tlv_desc_sequence_number_0,
-        &ogs_gtp_tlv_desc_metric_0,
-        &ogs_gtp_tlv_desc_apn_and_relative_capacity_0,
+        &ogs_gtp2_tlv_desc_sequence_number_0,
+        &ogs_gtp2_tlv_desc_metric_0,
+        &ogs_gtp2_tlv_desc_apn_and_relative_capacity_0,
         NULL,
     }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information_2 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_load_control_information_2 =
 {
     OGS_TLV_COMPOUND,
     "Load Control Information",
-    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
+    OGS_GTP2_LOAD_CONTROL_INFORMATION_TYPE,
     0,
     2,
-    sizeof(ogs_gtp_tlv_load_control_information_t),
+    sizeof(ogs_gtp2_tlv_load_control_information_t),
     {
-        &ogs_gtp_tlv_desc_sequence_number_0,
-        &ogs_gtp_tlv_desc_metric_0,
-        &ogs_gtp_tlv_desc_apn_and_relative_capacity_0,
+        &ogs_gtp2_tlv_desc_sequence_number_0,
+        &ogs_gtp2_tlv_desc_metric_0,
+        &ogs_gtp2_tlv_desc_apn_and_relative_capacity_0,
         NULL,
     }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_scef_pdn_connection_0 =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_scef_pdn_connection_0 =
 {
     OGS_TLV_COMPOUND,
     "SCEF PDN Connection",
-    OGS_GTP_SCEF_PDN_CONNECTION_TYPE,
+    OGS_GTP2_SCEF_PDN_CONNECTION_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_scef_pdn_connection_t),
+    sizeof(ogs_gtp2_tlv_scef_pdn_connection_t),
     {
-        &ogs_gtp_tlv_desc_apn_0,
-        &ogs_gtp_tlv_desc_ebi_0,
-        &ogs_gtp_tlv_desc_node_identifier_0,
+        &ogs_gtp2_tlv_desc_apn_0,
+        &ogs_gtp2_tlv_desc_ebi_0,
+        &ogs_gtp2_tlv_desc_node_identifier_0,
         NULL,
     }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_echo_request =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_echo_request =
 {
     OGS_TLV_MESSAGE,
     "Echo Request",
     0, 0, 0, 0, {
-        &ogs_gtp_tlv_desc_recovery_0,
-        &ogs_gtp_tlv_desc_node_features_0,
+        &ogs_gtp2_tlv_desc_recovery_0,
+        &ogs_gtp2_tlv_desc_node_features_0,
     NULL,
 }};
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_echo_response =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_echo_response =
 {
     OGS_TLV_MESSAGE,
     "Echo Response",
     0, 0, 0, 0, {
-        &ogs_gtp_tlv_desc_recovery_0,
-        &ogs_gtp_tlv_desc_node_features_0,
+        &ogs_gtp2_tlv_desc_recovery_0,
+        &ogs_gtp2_tlv_desc_node_features_0,
     NULL,
 }};
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_create_session_request =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_create_session_request =
 {
     OGS_TLV_MESSAGE,
     "Create Session Request",
     0, 0, 0, 0, {
-        &ogs_gtp_tlv_desc_imsi_0,
-        &ogs_gtp_tlv_desc_msisdn_0,
-        &ogs_gtp_tlv_desc_mei_0,
-        &ogs_gtp_tlv_desc_uli_0,
-        &ogs_gtp_tlv_desc_serving_network_0,
-        &ogs_gtp_tlv_desc_rat_type_0,
-        &ogs_gtp_tlv_desc_indication_0,
-        &ogs_gtp_tlv_desc_f_teid_0,
-        &ogs_gtp_tlv_desc_f_teid_1,
-        &ogs_gtp_tlv_desc_apn_0,
-        &ogs_gtp_tlv_desc_selection_mode_0,
-        &ogs_gtp_tlv_desc_pdn_type_0,
-        &ogs_gtp_tlv_desc_paa_0,
-        &ogs_gtp_tlv_desc_apn_restriction_0,
-        &ogs_gtp_tlv_desc_ambr_0,
-        &ogs_gtp_tlv_desc_ebi_0,
-        &ogs_gtp_tlv_desc_twmi_0,
-        &ogs_gtp_tlv_desc_pco_0,
-        &ogs_gtp_tlv_desc_bearer_context_0,
-        &ogs_gtp_tlv_desc_bearer_context_1,
-        &ogs_gtp_tlv_desc_trace_information_0,
-        &ogs_gtp_tlv_desc_recovery_0,
-        &ogs_gtp_tlv_desc_fq_csid_0,
-        &ogs_gtp_tlv_desc_fq_csid_1,
-        &ogs_gtp_tlv_desc_fq_csid_2,
-        &ogs_gtp_tlv_desc_fq_csid_3,
-        &ogs_gtp_tlv_desc_ue_time_zone_0,
-        &ogs_gtp_tlv_desc_uci_0,
-        &ogs_gtp_tlv_desc_charging_characteristics_0,
-        &ogs_gtp_tlv_desc_ldn_0,
-        &ogs_gtp_tlv_desc_ldn_1,
-        &ogs_gtp_tlv_desc_ldn_2,
-        &ogs_gtp_tlv_desc_ldn_3,
-        &ogs_gtp_tlv_desc_signalling_priority_indication_0,
-        &ogs_gtp_tlv_desc_ip_address_0,
-        &ogs_gtp_tlv_desc_port_number_0,
-        &ogs_gtp_tlv_desc_apco_0,
-        &ogs_gtp_tlv_desc_ip_address_1,
-        &ogs_gtp_tlv_desc_port_number_1,
-        &ogs_gtp_tlv_desc_ip_address_2,
-        &ogs_gtp_tlv_desc_twan_identifier_0,
-        &ogs_gtp_tlv_desc_ip_address_3,
-        &ogs_gtp_tlv_desc_cn_operator_selection_entity_0,
-        &ogs_gtp_tlv_desc_presence_reporting_area_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
-        &ogs_gtp_tlv_desc_overload_control_information_2,
-        &ogs_gtp_tlv_desc_millisecond_time_stamp_0,
-        &ogs_gtp_tlv_desc_integer_number_0,
-        &ogs_gtp_tlv_desc_twan_identifier_1,
-        &ogs_gtp_tlv_desc_twan_identifier_timestamp_0,
-        &ogs_gtp_tlv_desc_f_container_0,
-        &ogs_gtp_tlv_desc_remote_ue_context_0,
-        &ogs_gtp_tlv_desc_node_identifier_0,
-        &ogs_gtp_tlv_desc_epco_0,
-        &ogs_gtp_tlv_desc_serving_plmn_rate_control_0,
-        &ogs_gtp_tlv_desc_counter_0,
-        &ogs_gtp_tlv_desc_port_number_2,
-        &ogs_gtp_tlv_desc_mapped_ue_usage_type_0,
-        &ogs_gtp_tlv_desc_uli_1,
-        &ogs_gtp_tlv_desc_fqdn_0,
-        &ogs_gtp_tlv_desc_secondary_rat_usage_data_report_0,
-        &ogs_gtp_tlv_desc_up_function_selection_indication_flags_0,
-        &ogs_gtp_tlv_desc_apn_rate_control_status_0,
+        &ogs_gtp2_tlv_desc_imsi_0,
+        &ogs_gtp2_tlv_desc_msisdn_0,
+        &ogs_gtp2_tlv_desc_mei_0,
+        &ogs_gtp2_tlv_desc_uli_0,
+        &ogs_gtp2_tlv_desc_serving_network_0,
+        &ogs_gtp2_tlv_desc_rat_type_0,
+        &ogs_gtp2_tlv_desc_indication_0,
+        &ogs_gtp2_tlv_desc_f_teid_0,
+        &ogs_gtp2_tlv_desc_f_teid_1,
+        &ogs_gtp2_tlv_desc_apn_0,
+        &ogs_gtp2_tlv_desc_selection_mode_0,
+        &ogs_gtp2_tlv_desc_pdn_type_0,
+        &ogs_gtp2_tlv_desc_paa_0,
+        &ogs_gtp2_tlv_desc_apn_restriction_0,
+        &ogs_gtp2_tlv_desc_ambr_0,
+        &ogs_gtp2_tlv_desc_ebi_0,
+        &ogs_gtp2_tlv_desc_twmi_0,
+        &ogs_gtp2_tlv_desc_pco_0,
+        &ogs_gtp2_tlv_desc_bearer_context_0,
+        &ogs_gtp2_tlv_desc_bearer_context_1,
+        &ogs_gtp2_tlv_desc_trace_information_0,
+        &ogs_gtp2_tlv_desc_recovery_0,
+        &ogs_gtp2_tlv_desc_fq_csid_0,
+        &ogs_gtp2_tlv_desc_fq_csid_1,
+        &ogs_gtp2_tlv_desc_fq_csid_2,
+        &ogs_gtp2_tlv_desc_fq_csid_3,
+        &ogs_gtp2_tlv_desc_ue_time_zone_0,
+        &ogs_gtp2_tlv_desc_uci_0,
+        &ogs_gtp2_tlv_desc_charging_characteristics_0,
+        &ogs_gtp2_tlv_desc_ldn_0,
+        &ogs_gtp2_tlv_desc_ldn_1,
+        &ogs_gtp2_tlv_desc_ldn_2,
+        &ogs_gtp2_tlv_desc_ldn_3,
+        &ogs_gtp2_tlv_desc_signalling_priority_indication_0,
+        &ogs_gtp2_tlv_desc_ip_address_0,
+        &ogs_gtp2_tlv_desc_port_number_0,
+        &ogs_gtp2_tlv_desc_apco_0,
+        &ogs_gtp2_tlv_desc_ip_address_1,
+        &ogs_gtp2_tlv_desc_port_number_1,
+        &ogs_gtp2_tlv_desc_ip_address_2,
+        &ogs_gtp2_tlv_desc_twan_identifier_0,
+        &ogs_gtp2_tlv_desc_ip_address_3,
+        &ogs_gtp2_tlv_desc_cn_operator_selection_entity_0,
+        &ogs_gtp2_tlv_desc_presence_reporting_area_information_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_1,
+        &ogs_gtp2_tlv_desc_overload_control_information_2,
+        &ogs_gtp2_tlv_desc_millisecond_time_stamp_0,
+        &ogs_gtp2_tlv_desc_integer_number_0,
+        &ogs_gtp2_tlv_desc_twan_identifier_1,
+        &ogs_gtp2_tlv_desc_twan_identifier_timestamp_0,
+        &ogs_gtp2_tlv_desc_f_container_0,
+        &ogs_gtp2_tlv_desc_remote_ue_context_0,
+        &ogs_gtp2_tlv_desc_node_identifier_0,
+        &ogs_gtp2_tlv_desc_epco_0,
+        &ogs_gtp2_tlv_desc_serving_plmn_rate_control_0,
+        &ogs_gtp2_tlv_desc_counter_0,
+        &ogs_gtp2_tlv_desc_port_number_2,
+        &ogs_gtp2_tlv_desc_mapped_ue_usage_type_0,
+        &ogs_gtp2_tlv_desc_uli_1,
+        &ogs_gtp2_tlv_desc_fqdn_0,
+        &ogs_gtp2_tlv_desc_secondary_rat_usage_data_report_0,
+        &ogs_gtp2_tlv_desc_up_function_selection_indication_flags_0,
+        &ogs_gtp2_tlv_desc_apn_rate_control_status_0,
     NULL,
 }};
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_create_session_response =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_create_session_response =
 {
     OGS_TLV_MESSAGE,
     "Create Session Response",
     0, 0, 0, 0, {
-        &ogs_gtp_tlv_desc_cause_0,
-        &ogs_gtp_tlv_desc_change_reporting_action_0,
-        &ogs_gtp_tlv_desc_csg_information_reporting_action_0,
-        &ogs_gtp_tlv_desc_enb_information_reporting_0,
-        &ogs_gtp_tlv_desc_f_teid_0,
-        &ogs_gtp_tlv_desc_f_teid_1,
-        &ogs_gtp_tlv_desc_paa_0,
-        &ogs_gtp_tlv_desc_apn_restriction_0,
-        &ogs_gtp_tlv_desc_ambr_0,
-        &ogs_gtp_tlv_desc_ebi_0,
-        &ogs_gtp_tlv_desc_pco_0,
-        &ogs_gtp_tlv_desc_bearer_context_0,
-        &ogs_gtp_tlv_desc_bearer_context_1,
-        &ogs_gtp_tlv_desc_recovery_0,
-        &ogs_gtp_tlv_desc_fqdn_0,
-        &ogs_gtp_tlv_desc_ip_address_0,
-        &ogs_gtp_tlv_desc_fq_csid_0,
-        &ogs_gtp_tlv_desc_fq_csid_1,
-        &ogs_gtp_tlv_desc_ldn_0,
-        &ogs_gtp_tlv_desc_ldn_1,
-        &ogs_gtp_tlv_desc_epc_timer_0,
-        &ogs_gtp_tlv_desc_apco_0,
-        &ogs_gtp_tlv_desc_ip4cp_0,
-        &ogs_gtp_tlv_desc_indication_0,
-        &ogs_gtp_tlv_desc_presence_reporting_area_action_0,
-        &ogs_gtp_tlv_desc_load_control_information_0,
-        &ogs_gtp_tlv_desc_load_control_information_1,
-        &ogs_gtp_tlv_desc_load_control_information_2,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
-        &ogs_gtp_tlv_desc_f_container_0,
-        &ogs_gtp_tlv_desc_charging_id_0,
-        &ogs_gtp_tlv_desc_epco_0,
+        &ogs_gtp2_tlv_desc_cause_0,
+        &ogs_gtp2_tlv_desc_change_reporting_action_0,
+        &ogs_gtp2_tlv_desc_csg_information_reporting_action_0,
+        &ogs_gtp2_tlv_desc_enb_information_reporting_0,
+        &ogs_gtp2_tlv_desc_f_teid_0,
+        &ogs_gtp2_tlv_desc_f_teid_1,
+        &ogs_gtp2_tlv_desc_paa_0,
+        &ogs_gtp2_tlv_desc_apn_restriction_0,
+        &ogs_gtp2_tlv_desc_ambr_0,
+        &ogs_gtp2_tlv_desc_ebi_0,
+        &ogs_gtp2_tlv_desc_pco_0,
+        &ogs_gtp2_tlv_desc_bearer_context_0,
+        &ogs_gtp2_tlv_desc_bearer_context_1,
+        &ogs_gtp2_tlv_desc_recovery_0,
+        &ogs_gtp2_tlv_desc_fqdn_0,
+        &ogs_gtp2_tlv_desc_ip_address_0,
+        &ogs_gtp2_tlv_desc_fq_csid_0,
+        &ogs_gtp2_tlv_desc_fq_csid_1,
+        &ogs_gtp2_tlv_desc_ldn_0,
+        &ogs_gtp2_tlv_desc_ldn_1,
+        &ogs_gtp2_tlv_desc_epc_timer_0,
+        &ogs_gtp2_tlv_desc_apco_0,
+        &ogs_gtp2_tlv_desc_ip4cp_0,
+        &ogs_gtp2_tlv_desc_indication_0,
+        &ogs_gtp2_tlv_desc_presence_reporting_area_action_0,
+        &ogs_gtp2_tlv_desc_load_control_information_0,
+        &ogs_gtp2_tlv_desc_load_control_information_1,
+        &ogs_gtp2_tlv_desc_load_control_information_2,
+        &ogs_gtp2_tlv_desc_overload_control_information_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_1,
+        &ogs_gtp2_tlv_desc_f_container_0,
+        &ogs_gtp2_tlv_desc_charging_id_0,
+        &ogs_gtp2_tlv_desc_epco_0,
     NULL,
 }};
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_modify_bearer_request =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_modify_bearer_request =
 {
     OGS_TLV_MESSAGE,
     "Modify Bearer Request",
     0, 0, 0, 0, {
-        &ogs_gtp_tlv_desc_mei_0,
-        &ogs_gtp_tlv_desc_uli_0,
-        &ogs_gtp_tlv_desc_serving_network_0,
-        &ogs_gtp_tlv_desc_rat_type_0,
-        &ogs_gtp_tlv_desc_indication_0,
-        &ogs_gtp_tlv_desc_f_teid_0,
-        &ogs_gtp_tlv_desc_ambr_0,
-        &ogs_gtp_tlv_desc_delay_value_0,
-        &ogs_gtp_tlv_desc_bearer_context_0,
-        &ogs_gtp_tlv_desc_bearer_context_1,
-        &ogs_gtp_tlv_desc_recovery_0,
-        &ogs_gtp_tlv_desc_ue_time_zone_0,
-        &ogs_gtp_tlv_desc_fq_csid_0,
-        &ogs_gtp_tlv_desc_uci_0,
-        &ogs_gtp_tlv_desc_ip_address_1,
-        &ogs_gtp_tlv_desc_port_number_1,
-        &ogs_gtp_tlv_desc_ldn_0,
-        &ogs_gtp_tlv_desc_ldn_1,
-        &ogs_gtp_tlv_desc_ip_address_0,
-        &ogs_gtp_tlv_desc_port_number_0,
-        &ogs_gtp_tlv_desc_ip_address_2,
-        &ogs_gtp_tlv_desc_cn_operator_selection_entity_0,
-        &ogs_gtp_tlv_desc_presence_reporting_area_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
-        &ogs_gtp_tlv_desc_overload_control_information_2,
-        &ogs_gtp_tlv_desc_serving_plmn_rate_control_0,
-        &ogs_gtp_tlv_desc_counter_0,
-        &ogs_gtp_tlv_desc_imsi_0,
-        &ogs_gtp_tlv_desc_uli_1,
-        &ogs_gtp_tlv_desc_twan_identifier_0,
-        &ogs_gtp_tlv_desc_twan_identifier_timestamp_0,
-        &ogs_gtp_tlv_desc_secondary_rat_usage_data_report_0,
+        &ogs_gtp2_tlv_desc_mei_0,
+        &ogs_gtp2_tlv_desc_uli_0,
+        &ogs_gtp2_tlv_desc_serving_network_0,
+        &ogs_gtp2_tlv_desc_rat_type_0,
+        &ogs_gtp2_tlv_desc_indication_0,
+        &ogs_gtp2_tlv_desc_f_teid_0,
+        &ogs_gtp2_tlv_desc_ambr_0,
+        &ogs_gtp2_tlv_desc_delay_value_0,
+        &ogs_gtp2_tlv_desc_bearer_context_0,
+        &ogs_gtp2_tlv_desc_bearer_context_1,
+        &ogs_gtp2_tlv_desc_recovery_0,
+        &ogs_gtp2_tlv_desc_ue_time_zone_0,
+        &ogs_gtp2_tlv_desc_fq_csid_0,
+        &ogs_gtp2_tlv_desc_uci_0,
+        &ogs_gtp2_tlv_desc_ip_address_1,
+        &ogs_gtp2_tlv_desc_port_number_1,
+        &ogs_gtp2_tlv_desc_ldn_0,
+        &ogs_gtp2_tlv_desc_ldn_1,
+        &ogs_gtp2_tlv_desc_ip_address_0,
+        &ogs_gtp2_tlv_desc_port_number_0,
+        &ogs_gtp2_tlv_desc_ip_address_2,
+        &ogs_gtp2_tlv_desc_cn_operator_selection_entity_0,
+        &ogs_gtp2_tlv_desc_presence_reporting_area_information_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_1,
+        &ogs_gtp2_tlv_desc_overload_control_information_2,
+        &ogs_gtp2_tlv_desc_serving_plmn_rate_control_0,
+        &ogs_gtp2_tlv_desc_counter_0,
+        &ogs_gtp2_tlv_desc_imsi_0,
+        &ogs_gtp2_tlv_desc_uli_1,
+        &ogs_gtp2_tlv_desc_twan_identifier_0,
+        &ogs_gtp2_tlv_desc_twan_identifier_timestamp_0,
+        &ogs_gtp2_tlv_desc_secondary_rat_usage_data_report_0,
     NULL,
 }};
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_modify_bearer_response =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_modify_bearer_response =
 {
     OGS_TLV_MESSAGE,
     "Modify Bearer Response",
     0, 0, 0, 0, {
-        &ogs_gtp_tlv_desc_cause_0,
-        &ogs_gtp_tlv_desc_msisdn_0,
-        &ogs_gtp_tlv_desc_ebi_0,
-        &ogs_gtp_tlv_desc_apn_restriction_0,
-        &ogs_gtp_tlv_desc_pco_0,
-        &ogs_gtp_tlv_desc_bearer_context_0,
-        &ogs_gtp_tlv_desc_bearer_context_1,
-        &ogs_gtp_tlv_desc_change_reporting_action_0,
-        &ogs_gtp_tlv_desc_csg_information_reporting_action_0,
-        &ogs_gtp_tlv_desc_enb_information_reporting_0,
-        &ogs_gtp_tlv_desc_fqdn_0,
-        &ogs_gtp_tlv_desc_ip_address_0,
-        &ogs_gtp_tlv_desc_fq_csid_0,
-        &ogs_gtp_tlv_desc_fq_csid_1,
-        &ogs_gtp_tlv_desc_recovery_0,
-        &ogs_gtp_tlv_desc_ldn_0,
-        &ogs_gtp_tlv_desc_ldn_1,
-        &ogs_gtp_tlv_desc_indication_0,
-        &ogs_gtp_tlv_desc_presence_reporting_area_action_0,
-        &ogs_gtp_tlv_desc_load_control_information_0,
-        &ogs_gtp_tlv_desc_load_control_information_1,
-        &ogs_gtp_tlv_desc_load_control_information_2,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
-        &ogs_gtp_tlv_desc_charging_id_0,
+        &ogs_gtp2_tlv_desc_cause_0,
+        &ogs_gtp2_tlv_desc_msisdn_0,
+        &ogs_gtp2_tlv_desc_ebi_0,
+        &ogs_gtp2_tlv_desc_apn_restriction_0,
+        &ogs_gtp2_tlv_desc_pco_0,
+        &ogs_gtp2_tlv_desc_bearer_context_0,
+        &ogs_gtp2_tlv_desc_bearer_context_1,
+        &ogs_gtp2_tlv_desc_change_reporting_action_0,
+        &ogs_gtp2_tlv_desc_csg_information_reporting_action_0,
+        &ogs_gtp2_tlv_desc_enb_information_reporting_0,
+        &ogs_gtp2_tlv_desc_fqdn_0,
+        &ogs_gtp2_tlv_desc_ip_address_0,
+        &ogs_gtp2_tlv_desc_fq_csid_0,
+        &ogs_gtp2_tlv_desc_fq_csid_1,
+        &ogs_gtp2_tlv_desc_recovery_0,
+        &ogs_gtp2_tlv_desc_ldn_0,
+        &ogs_gtp2_tlv_desc_ldn_1,
+        &ogs_gtp2_tlv_desc_indication_0,
+        &ogs_gtp2_tlv_desc_presence_reporting_area_action_0,
+        &ogs_gtp2_tlv_desc_load_control_information_0,
+        &ogs_gtp2_tlv_desc_load_control_information_1,
+        &ogs_gtp2_tlv_desc_load_control_information_2,
+        &ogs_gtp2_tlv_desc_overload_control_information_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_1,
+        &ogs_gtp2_tlv_desc_charging_id_0,
     NULL,
 }};
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_delete_session_request =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_delete_session_request =
 {
     OGS_TLV_MESSAGE,
     "Delete Session Request",
     0, 0, 0, 0, {
-        &ogs_gtp_tlv_desc_cause_0,
-        &ogs_gtp_tlv_desc_ebi_0,
-        &ogs_gtp_tlv_desc_uli_0,
-        &ogs_gtp_tlv_desc_indication_0,
-        &ogs_gtp_tlv_desc_pco_0,
-        &ogs_gtp_tlv_desc_node_type_0,
-        &ogs_gtp_tlv_desc_f_teid_0,
-        &ogs_gtp_tlv_desc_ue_time_zone_0,
-        &ogs_gtp_tlv_desc_uli_timestamp_0,
-        &ogs_gtp_tlv_desc_ran_nas_cause_0,
-        &ogs_gtp_tlv_desc_twan_identifier_0,
-        &ogs_gtp_tlv_desc_twan_identifier_timestamp_0,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
-        &ogs_gtp_tlv_desc_overload_control_information_2,
-        &ogs_gtp_tlv_desc_twan_identifier_1,
-        &ogs_gtp_tlv_desc_twan_identifier_timestamp_1,
-        &ogs_gtp_tlv_desc_ip_address_0,
-        &ogs_gtp_tlv_desc_port_number_0,
-        &ogs_gtp_tlv_desc_epco_0,
-        &ogs_gtp_tlv_desc_port_number_1,
-        &ogs_gtp_tlv_desc_secondary_rat_usage_data_report_0,
+        &ogs_gtp2_tlv_desc_cause_0,
+        &ogs_gtp2_tlv_desc_ebi_0,
+        &ogs_gtp2_tlv_desc_uli_0,
+        &ogs_gtp2_tlv_desc_indication_0,
+        &ogs_gtp2_tlv_desc_pco_0,
+        &ogs_gtp2_tlv_desc_node_type_0,
+        &ogs_gtp2_tlv_desc_f_teid_0,
+        &ogs_gtp2_tlv_desc_ue_time_zone_0,
+        &ogs_gtp2_tlv_desc_uli_timestamp_0,
+        &ogs_gtp2_tlv_desc_ran_nas_cause_0,
+        &ogs_gtp2_tlv_desc_twan_identifier_0,
+        &ogs_gtp2_tlv_desc_twan_identifier_timestamp_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_1,
+        &ogs_gtp2_tlv_desc_overload_control_information_2,
+        &ogs_gtp2_tlv_desc_twan_identifier_1,
+        &ogs_gtp2_tlv_desc_twan_identifier_timestamp_1,
+        &ogs_gtp2_tlv_desc_ip_address_0,
+        &ogs_gtp2_tlv_desc_port_number_0,
+        &ogs_gtp2_tlv_desc_epco_0,
+        &ogs_gtp2_tlv_desc_port_number_1,
+        &ogs_gtp2_tlv_desc_secondary_rat_usage_data_report_0,
     NULL,
 }};
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_delete_session_response =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_delete_session_response =
 {
     OGS_TLV_MESSAGE,
     "Delete Session Response",
     0, 0, 0, 0, {
-        &ogs_gtp_tlv_desc_cause_0,
-        &ogs_gtp_tlv_desc_recovery_0,
-        &ogs_gtp_tlv_desc_pco_0,
-        &ogs_gtp_tlv_desc_indication_0,
-        &ogs_gtp_tlv_desc_load_control_information_0,
-        &ogs_gtp_tlv_desc_load_control_information_1,
-        &ogs_gtp_tlv_desc_load_control_information_2,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
-        &ogs_gtp_tlv_desc_epco_0,
-        &ogs_gtp_tlv_desc_apn_rate_control_status_0,
+        &ogs_gtp2_tlv_desc_cause_0,
+        &ogs_gtp2_tlv_desc_recovery_0,
+        &ogs_gtp2_tlv_desc_pco_0,
+        &ogs_gtp2_tlv_desc_indication_0,
+        &ogs_gtp2_tlv_desc_load_control_information_0,
+        &ogs_gtp2_tlv_desc_load_control_information_1,
+        &ogs_gtp2_tlv_desc_load_control_information_2,
+        &ogs_gtp2_tlv_desc_overload_control_information_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_1,
+        &ogs_gtp2_tlv_desc_epco_0,
+        &ogs_gtp2_tlv_desc_apn_rate_control_status_0,
     NULL,
 }};
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_modify_bearer_command =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_modify_bearer_command =
 {
     OGS_TLV_MESSAGE,
     "Modify Bearer Command",
     0, 0, 0, 0, {
-        &ogs_gtp_tlv_desc_ambr_0,
-        &ogs_gtp_tlv_desc_bearer_context_0,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
-        &ogs_gtp_tlv_desc_overload_control_information_2,
-        &ogs_gtp_tlv_desc_f_teid_0,
+        &ogs_gtp2_tlv_desc_ambr_0,
+        &ogs_gtp2_tlv_desc_bearer_context_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_1,
+        &ogs_gtp2_tlv_desc_overload_control_information_2,
+        &ogs_gtp2_tlv_desc_f_teid_0,
     NULL,
 }};
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_modify_bearer_failure_indication =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_modify_bearer_failure_indication =
 {
     OGS_TLV_MESSAGE,
     "Modify Bearer Failure Indication",
     0, 0, 0, 0, {
-        &ogs_gtp_tlv_desc_cause_0,
-        &ogs_gtp_tlv_desc_recovery_0,
-        &ogs_gtp_tlv_desc_indication_0,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
+        &ogs_gtp2_tlv_desc_cause_0,
+        &ogs_gtp2_tlv_desc_recovery_0,
+        &ogs_gtp2_tlv_desc_indication_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_1,
     NULL,
 }};
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_delete_bearer_command =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_delete_bearer_command =
 {
     OGS_TLV_MESSAGE,
     "Delete Bearer Command",
     0, 0, 0, 0, {
-        &ogs_gtp_tlv_desc_bearer_context_0,
-        &ogs_gtp_tlv_desc_uli_0,
-        &ogs_gtp_tlv_desc_uli_timestamp_0,
-        &ogs_gtp_tlv_desc_ue_time_zone_0,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
-        &ogs_gtp_tlv_desc_f_teid_0,
-        &ogs_gtp_tlv_desc_secondary_rat_usage_data_report_0,
+        &ogs_gtp2_tlv_desc_bearer_context_0,
+        &ogs_gtp2_tlv_desc_uli_0,
+        &ogs_gtp2_tlv_desc_uli_timestamp_0,
+        &ogs_gtp2_tlv_desc_ue_time_zone_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_1,
+        &ogs_gtp2_tlv_desc_f_teid_0,
+        &ogs_gtp2_tlv_desc_secondary_rat_usage_data_report_0,
     NULL,
 }};
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_delete_bearer_failure_indication =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_delete_bearer_failure_indication =
 {
     OGS_TLV_MESSAGE,
     "Delete Bearer Failure Indication",
     0, 0, 0, 0, {
-        &ogs_gtp_tlv_desc_cause_0,
-        &ogs_gtp_tlv_desc_bearer_context_0,
-        &ogs_gtp_tlv_desc_recovery_0,
-        &ogs_gtp_tlv_desc_indication_0,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
+        &ogs_gtp2_tlv_desc_cause_0,
+        &ogs_gtp2_tlv_desc_bearer_context_0,
+        &ogs_gtp2_tlv_desc_recovery_0,
+        &ogs_gtp2_tlv_desc_indication_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_1,
     NULL,
 }};
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_resource_command =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_bearer_resource_command =
 {
     OGS_TLV_MESSAGE,
     "Bearer Resource Command",
     0, 0, 0, 0, {
-        &ogs_gtp_tlv_desc_ebi_0,
-        &ogs_gtp_tlv_desc_pti_0,
-        &ogs_gtp_tlv_desc_flow_qos_0,
-        &ogs_gtp_tlv_desc_tad_0,
-        &ogs_gtp_tlv_desc_rat_type_0,
-        &ogs_gtp_tlv_desc_serving_network_0,
-        &ogs_gtp_tlv_desc_uli_0,
-        &ogs_gtp_tlv_desc_ebi_1,
-        &ogs_gtp_tlv_desc_indication_0,
-        &ogs_gtp_tlv_desc_f_teid_0,
-        &ogs_gtp_tlv_desc_f_teid_1,
-        &ogs_gtp_tlv_desc_pco_0,
-        &ogs_gtp_tlv_desc_signalling_priority_indication_0,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
-        &ogs_gtp_tlv_desc_f_container_0,
-        &ogs_gtp_tlv_desc_epco_0,
-        &ogs_gtp_tlv_desc_f_teid_2,
+        &ogs_gtp2_tlv_desc_ebi_0,
+        &ogs_gtp2_tlv_desc_pti_0,
+        &ogs_gtp2_tlv_desc_flow_qos_0,
+        &ogs_gtp2_tlv_desc_tad_0,
+        &ogs_gtp2_tlv_desc_rat_type_0,
+        &ogs_gtp2_tlv_desc_serving_network_0,
+        &ogs_gtp2_tlv_desc_uli_0,
+        &ogs_gtp2_tlv_desc_ebi_1,
+        &ogs_gtp2_tlv_desc_indication_0,
+        &ogs_gtp2_tlv_desc_f_teid_0,
+        &ogs_gtp2_tlv_desc_f_teid_1,
+        &ogs_gtp2_tlv_desc_pco_0,
+        &ogs_gtp2_tlv_desc_signalling_priority_indication_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_1,
+        &ogs_gtp2_tlv_desc_f_container_0,
+        &ogs_gtp2_tlv_desc_epco_0,
+        &ogs_gtp2_tlv_desc_f_teid_2,
     NULL,
 }};
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_resource_failure_indication =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_bearer_resource_failure_indication =
 {
     OGS_TLV_MESSAGE,
     "Bearer Resource Failure Indication",
     0, 0, 0, 0, {
-        &ogs_gtp_tlv_desc_cause_0,
-        &ogs_gtp_tlv_desc_ebi_0,
-        &ogs_gtp_tlv_desc_pti_0,
-        &ogs_gtp_tlv_desc_indication_0,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
-        &ogs_gtp_tlv_desc_recovery_0,
-        &ogs_gtp_tlv_desc_f_container_0,
+        &ogs_gtp2_tlv_desc_cause_0,
+        &ogs_gtp2_tlv_desc_ebi_0,
+        &ogs_gtp2_tlv_desc_pti_0,
+        &ogs_gtp2_tlv_desc_indication_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_1,
+        &ogs_gtp2_tlv_desc_recovery_0,
+        &ogs_gtp2_tlv_desc_f_container_0,
     NULL,
 }};
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_downlink_data_notification_failure_indication =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_downlink_data_notification_failure_indication =
 {
     OGS_TLV_MESSAGE,
     "Downlink Data Notification Failure Indication",
     0, 0, 0, 0, {
-        &ogs_gtp_tlv_desc_cause_0,
-        &ogs_gtp_tlv_desc_node_type_0,
-        &ogs_gtp_tlv_desc_imsi_0,
+        &ogs_gtp2_tlv_desc_cause_0,
+        &ogs_gtp2_tlv_desc_node_type_0,
+        &ogs_gtp2_tlv_desc_imsi_0,
     NULL,
 }};
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_create_bearer_request =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_create_bearer_request =
 {
     OGS_TLV_MESSAGE,
     "Create Bearer Request",
     0, 0, 0, 0, {
-        &ogs_gtp_tlv_desc_pti_0,
-        &ogs_gtp_tlv_desc_ebi_0,
-        &ogs_gtp_tlv_desc_pco_0,
-        &ogs_gtp_tlv_desc_bearer_context_0,
-        &ogs_gtp_tlv_desc_fq_csid_0,
-        &ogs_gtp_tlv_desc_fq_csid_1,
-        &ogs_gtp_tlv_desc_change_reporting_action_0,
-        &ogs_gtp_tlv_desc_csg_information_reporting_action_0,
-        &ogs_gtp_tlv_desc_enb_information_reporting_0,
-        &ogs_gtp_tlv_desc_presence_reporting_area_action_0,
-        &ogs_gtp_tlv_desc_indication_0,
-        &ogs_gtp_tlv_desc_load_control_information_0,
-        &ogs_gtp_tlv_desc_load_control_information_1,
-        &ogs_gtp_tlv_desc_load_control_information_2,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
-        &ogs_gtp_tlv_desc_f_container_0,
+        &ogs_gtp2_tlv_desc_pti_0,
+        &ogs_gtp2_tlv_desc_ebi_0,
+        &ogs_gtp2_tlv_desc_pco_0,
+        &ogs_gtp2_tlv_desc_bearer_context_0,
+        &ogs_gtp2_tlv_desc_fq_csid_0,
+        &ogs_gtp2_tlv_desc_fq_csid_1,
+        &ogs_gtp2_tlv_desc_change_reporting_action_0,
+        &ogs_gtp2_tlv_desc_csg_information_reporting_action_0,
+        &ogs_gtp2_tlv_desc_enb_information_reporting_0,
+        &ogs_gtp2_tlv_desc_presence_reporting_area_action_0,
+        &ogs_gtp2_tlv_desc_indication_0,
+        &ogs_gtp2_tlv_desc_load_control_information_0,
+        &ogs_gtp2_tlv_desc_load_control_information_1,
+        &ogs_gtp2_tlv_desc_load_control_information_2,
+        &ogs_gtp2_tlv_desc_overload_control_information_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_1,
+        &ogs_gtp2_tlv_desc_f_container_0,
     NULL,
 }};
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_create_bearer_response =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_create_bearer_response =
 {
     OGS_TLV_MESSAGE,
     "Create Bearer Response",
     0, 0, 0, 0, {
-        &ogs_gtp_tlv_desc_cause_0,
-        &ogs_gtp_tlv_desc_bearer_context_0,
-        &ogs_gtp_tlv_desc_recovery_0,
-        &ogs_gtp_tlv_desc_fq_csid_0,
-        &ogs_gtp_tlv_desc_fq_csid_2,
-        &ogs_gtp_tlv_desc_fq_csid_3,
-        &ogs_gtp_tlv_desc_pco_0,
-        &ogs_gtp_tlv_desc_ue_time_zone_0,
-        &ogs_gtp_tlv_desc_uli_0,
-        &ogs_gtp_tlv_desc_twan_identifier_0,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
-        &ogs_gtp_tlv_desc_presence_reporting_area_information_0,
-        &ogs_gtp_tlv_desc_ip_address_0,
-        &ogs_gtp_tlv_desc_overload_control_information_2,
-        &ogs_gtp_tlv_desc_twan_identifier_1,
-        &ogs_gtp_tlv_desc_twan_identifier_timestamp_1,
-        &ogs_gtp_tlv_desc_port_number_0,
-        &ogs_gtp_tlv_desc_f_container_0,
-        &ogs_gtp_tlv_desc_port_number_1,
+        &ogs_gtp2_tlv_desc_cause_0,
+        &ogs_gtp2_tlv_desc_bearer_context_0,
+        &ogs_gtp2_tlv_desc_recovery_0,
+        &ogs_gtp2_tlv_desc_fq_csid_0,
+        &ogs_gtp2_tlv_desc_fq_csid_2,
+        &ogs_gtp2_tlv_desc_fq_csid_3,
+        &ogs_gtp2_tlv_desc_pco_0,
+        &ogs_gtp2_tlv_desc_ue_time_zone_0,
+        &ogs_gtp2_tlv_desc_uli_0,
+        &ogs_gtp2_tlv_desc_twan_identifier_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_1,
+        &ogs_gtp2_tlv_desc_presence_reporting_area_information_0,
+        &ogs_gtp2_tlv_desc_ip_address_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_2,
+        &ogs_gtp2_tlv_desc_twan_identifier_1,
+        &ogs_gtp2_tlv_desc_twan_identifier_timestamp_1,
+        &ogs_gtp2_tlv_desc_port_number_0,
+        &ogs_gtp2_tlv_desc_f_container_0,
+        &ogs_gtp2_tlv_desc_port_number_1,
     NULL,
 }};
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_update_bearer_request =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_update_bearer_request =
 {
     OGS_TLV_MESSAGE,
     "Update Bearer Request",
     0, 0, 0, 0, {
-        &ogs_gtp_tlv_desc_bearer_context_0,
-        &ogs_gtp_tlv_desc_pti_0,
-        &ogs_gtp_tlv_desc_pco_0,
-        &ogs_gtp_tlv_desc_ambr_0,
-        &ogs_gtp_tlv_desc_change_reporting_action_0,
-        &ogs_gtp_tlv_desc_csg_information_reporting_action_0,
-        &ogs_gtp_tlv_desc_enb_information_reporting_0,
-        &ogs_gtp_tlv_desc_indication_0,
-        &ogs_gtp_tlv_desc_fq_csid_0,
-        &ogs_gtp_tlv_desc_fq_csid_1,
-        &ogs_gtp_tlv_desc_presence_reporting_area_action_0,
-        &ogs_gtp_tlv_desc_load_control_information_0,
-        &ogs_gtp_tlv_desc_load_control_information_1,
-        &ogs_gtp_tlv_desc_load_control_information_2,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
-        &ogs_gtp_tlv_desc_f_container_0,
+        &ogs_gtp2_tlv_desc_bearer_context_0,
+        &ogs_gtp2_tlv_desc_pti_0,
+        &ogs_gtp2_tlv_desc_pco_0,
+        &ogs_gtp2_tlv_desc_ambr_0,
+        &ogs_gtp2_tlv_desc_change_reporting_action_0,
+        &ogs_gtp2_tlv_desc_csg_information_reporting_action_0,
+        &ogs_gtp2_tlv_desc_enb_information_reporting_0,
+        &ogs_gtp2_tlv_desc_indication_0,
+        &ogs_gtp2_tlv_desc_fq_csid_0,
+        &ogs_gtp2_tlv_desc_fq_csid_1,
+        &ogs_gtp2_tlv_desc_presence_reporting_area_action_0,
+        &ogs_gtp2_tlv_desc_load_control_information_0,
+        &ogs_gtp2_tlv_desc_load_control_information_1,
+        &ogs_gtp2_tlv_desc_load_control_information_2,
+        &ogs_gtp2_tlv_desc_overload_control_information_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_1,
+        &ogs_gtp2_tlv_desc_f_container_0,
     NULL,
 }};
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_update_bearer_response =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_update_bearer_response =
 {
     OGS_TLV_MESSAGE,
     "Update Bearer Response",
     0, 0, 0, 0, {
-        &ogs_gtp_tlv_desc_cause_0,
-        &ogs_gtp_tlv_desc_bearer_context_0,
-        &ogs_gtp_tlv_desc_pco_0,
-        &ogs_gtp_tlv_desc_recovery_0,
-        &ogs_gtp_tlv_desc_fq_csid_0,
-        &ogs_gtp_tlv_desc_fq_csid_1,
-        &ogs_gtp_tlv_desc_fq_csid_2,
-        &ogs_gtp_tlv_desc_fq_csid_3,
-        &ogs_gtp_tlv_desc_indication_0,
-        &ogs_gtp_tlv_desc_ue_time_zone_0,
-        &ogs_gtp_tlv_desc_uli_0,
-        &ogs_gtp_tlv_desc_twan_identifier_0,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
-        &ogs_gtp_tlv_desc_presence_reporting_area_information_0,
-        &ogs_gtp_tlv_desc_ip_address_0,
-        &ogs_gtp_tlv_desc_overload_control_information_2,
-        &ogs_gtp_tlv_desc_twan_identifier_1,
-        &ogs_gtp_tlv_desc_twan_identifier_timestamp_1,
-        &ogs_gtp_tlv_desc_port_number_0,
-        &ogs_gtp_tlv_desc_f_container_0,
-        &ogs_gtp_tlv_desc_port_number_1,
+        &ogs_gtp2_tlv_desc_cause_0,
+        &ogs_gtp2_tlv_desc_bearer_context_0,
+        &ogs_gtp2_tlv_desc_pco_0,
+        &ogs_gtp2_tlv_desc_recovery_0,
+        &ogs_gtp2_tlv_desc_fq_csid_0,
+        &ogs_gtp2_tlv_desc_fq_csid_1,
+        &ogs_gtp2_tlv_desc_fq_csid_2,
+        &ogs_gtp2_tlv_desc_fq_csid_3,
+        &ogs_gtp2_tlv_desc_indication_0,
+        &ogs_gtp2_tlv_desc_ue_time_zone_0,
+        &ogs_gtp2_tlv_desc_uli_0,
+        &ogs_gtp2_tlv_desc_twan_identifier_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_1,
+        &ogs_gtp2_tlv_desc_presence_reporting_area_information_0,
+        &ogs_gtp2_tlv_desc_ip_address_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_2,
+        &ogs_gtp2_tlv_desc_twan_identifier_1,
+        &ogs_gtp2_tlv_desc_twan_identifier_timestamp_1,
+        &ogs_gtp2_tlv_desc_port_number_0,
+        &ogs_gtp2_tlv_desc_f_container_0,
+        &ogs_gtp2_tlv_desc_port_number_1,
     NULL,
 }};
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_delete_bearer_request =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_delete_bearer_request =
 {
     OGS_TLV_MESSAGE,
     "Delete Bearer Request",
     0, 0, 0, 0, {
-        &ogs_gtp_tlv_desc_ebi_0,
-        &ogs_gtp_tlv_desc_ebi_1,
-        &ogs_gtp_tlv_desc_bearer_context_0,
-        &ogs_gtp_tlv_desc_pti_0,
-        &ogs_gtp_tlv_desc_pco_0,
-        &ogs_gtp_tlv_desc_fq_csid_0,
-        &ogs_gtp_tlv_desc_fq_csid_1,
-        &ogs_gtp_tlv_desc_cause_0,
-        &ogs_gtp_tlv_desc_indication_0,
-        &ogs_gtp_tlv_desc_load_control_information_0,
-        &ogs_gtp_tlv_desc_load_control_information_1,
-        &ogs_gtp_tlv_desc_load_control_information_2,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
-        &ogs_gtp_tlv_desc_f_container_0,
-        &ogs_gtp_tlv_desc_apn_rate_control_status_0,
-        &ogs_gtp_tlv_desc_epco_0,
+        &ogs_gtp2_tlv_desc_ebi_0,
+        &ogs_gtp2_tlv_desc_ebi_1,
+        &ogs_gtp2_tlv_desc_bearer_context_0,
+        &ogs_gtp2_tlv_desc_pti_0,
+        &ogs_gtp2_tlv_desc_pco_0,
+        &ogs_gtp2_tlv_desc_fq_csid_0,
+        &ogs_gtp2_tlv_desc_fq_csid_1,
+        &ogs_gtp2_tlv_desc_cause_0,
+        &ogs_gtp2_tlv_desc_indication_0,
+        &ogs_gtp2_tlv_desc_load_control_information_0,
+        &ogs_gtp2_tlv_desc_load_control_information_1,
+        &ogs_gtp2_tlv_desc_load_control_information_2,
+        &ogs_gtp2_tlv_desc_overload_control_information_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_1,
+        &ogs_gtp2_tlv_desc_f_container_0,
+        &ogs_gtp2_tlv_desc_apn_rate_control_status_0,
+        &ogs_gtp2_tlv_desc_epco_0,
     NULL,
 }};
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_delete_bearer_response =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_delete_bearer_response =
 {
     OGS_TLV_MESSAGE,
     "Delete Bearer Response",
     0, 0, 0, 0, {
-        &ogs_gtp_tlv_desc_cause_0,
-        &ogs_gtp_tlv_desc_ebi_0,
-        &ogs_gtp_tlv_desc_bearer_context_0,
-        &ogs_gtp_tlv_desc_recovery_0,
-        &ogs_gtp_tlv_desc_fq_csid_0,
-        &ogs_gtp_tlv_desc_fq_csid_1,
-        &ogs_gtp_tlv_desc_fq_csid_2,
-        &ogs_gtp_tlv_desc_fq_csid_3,
-        &ogs_gtp_tlv_desc_pco_0,
-        &ogs_gtp_tlv_desc_ue_time_zone_0,
-        &ogs_gtp_tlv_desc_uli_0,
-        &ogs_gtp_tlv_desc_uli_timestamp_0,
-        &ogs_gtp_tlv_desc_twan_identifier_0,
-        &ogs_gtp_tlv_desc_twan_identifier_timestamp_0,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
-        &ogs_gtp_tlv_desc_ip_address_0,
-        &ogs_gtp_tlv_desc_overload_control_information_2,
-        &ogs_gtp_tlv_desc_twan_identifier_1,
-        &ogs_gtp_tlv_desc_twan_identifier_timestamp_1,
-        &ogs_gtp_tlv_desc_port_number_0,
-        &ogs_gtp_tlv_desc_f_container_0,
-        &ogs_gtp_tlv_desc_port_number_1,
-        &ogs_gtp_tlv_desc_secondary_rat_usage_data_report_0,
+        &ogs_gtp2_tlv_desc_cause_0,
+        &ogs_gtp2_tlv_desc_ebi_0,
+        &ogs_gtp2_tlv_desc_bearer_context_0,
+        &ogs_gtp2_tlv_desc_recovery_0,
+        &ogs_gtp2_tlv_desc_fq_csid_0,
+        &ogs_gtp2_tlv_desc_fq_csid_1,
+        &ogs_gtp2_tlv_desc_fq_csid_2,
+        &ogs_gtp2_tlv_desc_fq_csid_3,
+        &ogs_gtp2_tlv_desc_pco_0,
+        &ogs_gtp2_tlv_desc_ue_time_zone_0,
+        &ogs_gtp2_tlv_desc_uli_0,
+        &ogs_gtp2_tlv_desc_uli_timestamp_0,
+        &ogs_gtp2_tlv_desc_twan_identifier_0,
+        &ogs_gtp2_tlv_desc_twan_identifier_timestamp_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_1,
+        &ogs_gtp2_tlv_desc_ip_address_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_2,
+        &ogs_gtp2_tlv_desc_twan_identifier_1,
+        &ogs_gtp2_tlv_desc_twan_identifier_timestamp_1,
+        &ogs_gtp2_tlv_desc_port_number_0,
+        &ogs_gtp2_tlv_desc_f_container_0,
+        &ogs_gtp2_tlv_desc_port_number_1,
+        &ogs_gtp2_tlv_desc_secondary_rat_usage_data_report_0,
     NULL,
 }};
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_create_indirect_data_forwarding_tunnel_request =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_create_indirect_data_forwarding_tunnel_request =
 {
     OGS_TLV_MESSAGE,
     "Create Indirect Data Forwarding Tunnel Request",
     0, 0, 0, 0, {
-        &ogs_gtp_tlv_desc_imsi_0,
-        &ogs_gtp_tlv_desc_mei_0,
-        &ogs_gtp_tlv_desc_indication_0,
-        &ogs_gtp_tlv_desc_f_teid_0,
-        &ogs_gtp_tlv_desc_bearer_context_0,
+        &ogs_gtp2_tlv_desc_imsi_0,
+        &ogs_gtp2_tlv_desc_mei_0,
+        &ogs_gtp2_tlv_desc_indication_0,
+        &ogs_gtp2_tlv_desc_f_teid_0,
+        &ogs_gtp2_tlv_desc_bearer_context_0,
         &ogs_tlv_desc_more8,
-        &ogs_gtp_tlv_desc_recovery_0,
+        &ogs_gtp2_tlv_desc_recovery_0,
     NULL,
 }};
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_create_indirect_data_forwarding_tunnel_response =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_create_indirect_data_forwarding_tunnel_response =
 {
     OGS_TLV_MESSAGE,
     "Create Indirect Data Forwarding Tunnel Response",
     0, 0, 0, 0, {
-        &ogs_gtp_tlv_desc_cause_0,
-        &ogs_gtp_tlv_desc_f_teid_0,
-        &ogs_gtp_tlv_desc_bearer_context_0,
+        &ogs_gtp2_tlv_desc_cause_0,
+        &ogs_gtp2_tlv_desc_f_teid_0,
+        &ogs_gtp2_tlv_desc_bearer_context_0,
         &ogs_tlv_desc_more8,
-        &ogs_gtp_tlv_desc_recovery_0,
+        &ogs_gtp2_tlv_desc_recovery_0,
     NULL,
 }};
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_delete_indirect_data_forwarding_tunnel_request =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_delete_indirect_data_forwarding_tunnel_request =
 {
     OGS_TLV_MESSAGE,
     "Delete Indirect Data Forwarding Tunnel Request",
@@ -2586,124 +2586,124 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_delete_indirect_data_forwarding_tunnel_request =
     NULL,
 }};
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_delete_indirect_data_forwarding_tunnel_response =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_delete_indirect_data_forwarding_tunnel_response =
 {
     OGS_TLV_MESSAGE,
     "Delete Indirect Data Forwarding Tunnel Response",
     0, 0, 0, 0, {
-        &ogs_gtp_tlv_desc_cause_0,
-        &ogs_gtp_tlv_desc_recovery_0,
+        &ogs_gtp2_tlv_desc_cause_0,
+        &ogs_gtp2_tlv_desc_recovery_0,
     NULL,
 }};
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_release_access_bearers_request =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_release_access_bearers_request =
 {
     OGS_TLV_MESSAGE,
     "Release Access Bearers Request",
     0, 0, 0, 0, {
-        &ogs_gtp_tlv_desc_ebi_0,
-        &ogs_gtp_tlv_desc_node_type_0,
-        &ogs_gtp_tlv_desc_indication_0,
-        &ogs_gtp_tlv_desc_secondary_rat_usage_data_report_0,
+        &ogs_gtp2_tlv_desc_ebi_0,
+        &ogs_gtp2_tlv_desc_node_type_0,
+        &ogs_gtp2_tlv_desc_indication_0,
+        &ogs_gtp2_tlv_desc_secondary_rat_usage_data_report_0,
     NULL,
 }};
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_release_access_bearers_response =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_release_access_bearers_response =
 {
     OGS_TLV_MESSAGE,
     "Release Access Bearers Response",
     0, 0, 0, 0, {
-        &ogs_gtp_tlv_desc_cause_0,
-        &ogs_gtp_tlv_desc_recovery_0,
-        &ogs_gtp_tlv_desc_indication_0,
-        &ogs_gtp_tlv_desc_load_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
+        &ogs_gtp2_tlv_desc_cause_0,
+        &ogs_gtp2_tlv_desc_recovery_0,
+        &ogs_gtp2_tlv_desc_indication_0,
+        &ogs_gtp2_tlv_desc_load_control_information_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_0,
     NULL,
 }};
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_downlink_data_notification =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_downlink_data_notification =
 {
     OGS_TLV_MESSAGE,
     "Downlink Data Notification",
     0, 0, 0, 0, {
-        &ogs_gtp_tlv_desc_cause_0,
-        &ogs_gtp_tlv_desc_ebi_0,
-        &ogs_gtp_tlv_desc_arp_0,
-        &ogs_gtp_tlv_desc_imsi_0,
-        &ogs_gtp_tlv_desc_f_teid_0,
-        &ogs_gtp_tlv_desc_indication_0,
-        &ogs_gtp_tlv_desc_load_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_paging_and_service_information_0,
-        &ogs_gtp_tlv_desc_integer_number_0,
+        &ogs_gtp2_tlv_desc_cause_0,
+        &ogs_gtp2_tlv_desc_ebi_0,
+        &ogs_gtp2_tlv_desc_arp_0,
+        &ogs_gtp2_tlv_desc_imsi_0,
+        &ogs_gtp2_tlv_desc_f_teid_0,
+        &ogs_gtp2_tlv_desc_indication_0,
+        &ogs_gtp2_tlv_desc_load_control_information_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_0,
+        &ogs_gtp2_tlv_desc_paging_and_service_information_0,
+        &ogs_gtp2_tlv_desc_integer_number_0,
     NULL,
 }};
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_downlink_data_notification_acknowledge =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_downlink_data_notification_acknowledge =
 {
     OGS_TLV_MESSAGE,
     "Downlink Data Notification Acknowledge",
     0, 0, 0, 0, {
-        &ogs_gtp_tlv_desc_cause_0,
-        &ogs_gtp_tlv_desc_delay_value_0,
-        &ogs_gtp_tlv_desc_recovery_0,
-        &ogs_gtp_tlv_desc_throttling_0,
-        &ogs_gtp_tlv_desc_imsi_0,
-        &ogs_gtp_tlv_desc_epc_timer_0,
-        &ogs_gtp_tlv_desc_integer_number_0,
+        &ogs_gtp2_tlv_desc_cause_0,
+        &ogs_gtp2_tlv_desc_delay_value_0,
+        &ogs_gtp2_tlv_desc_recovery_0,
+        &ogs_gtp2_tlv_desc_throttling_0,
+        &ogs_gtp2_tlv_desc_imsi_0,
+        &ogs_gtp2_tlv_desc_epc_timer_0,
+        &ogs_gtp2_tlv_desc_integer_number_0,
     NULL,
 }};
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_modify_access_bearers_request =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_modify_access_bearers_request =
 {
     OGS_TLV_MESSAGE,
     "Modify Access Bearers Request",
     0, 0, 0, 0, {
-        &ogs_gtp_tlv_desc_indication_0,
-        &ogs_gtp_tlv_desc_f_teid_0,
-        &ogs_gtp_tlv_desc_delay_value_0,
-        &ogs_gtp_tlv_desc_bearer_context_0,
-        &ogs_gtp_tlv_desc_bearer_context_1,
-        &ogs_gtp_tlv_desc_recovery_0,
-        &ogs_gtp_tlv_desc_secondary_rat_usage_data_report_0,
+        &ogs_gtp2_tlv_desc_indication_0,
+        &ogs_gtp2_tlv_desc_f_teid_0,
+        &ogs_gtp2_tlv_desc_delay_value_0,
+        &ogs_gtp2_tlv_desc_bearer_context_0,
+        &ogs_gtp2_tlv_desc_bearer_context_1,
+        &ogs_gtp2_tlv_desc_recovery_0,
+        &ogs_gtp2_tlv_desc_secondary_rat_usage_data_report_0,
     NULL,
 }};
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_modify_access_bearers_response =
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_modify_access_bearers_response =
 {
     OGS_TLV_MESSAGE,
     "Modify Access Bearers Response",
     0, 0, 0, 0, {
-        &ogs_gtp_tlv_desc_cause_0,
-        &ogs_gtp_tlv_desc_bearer_context_0,
-        &ogs_gtp_tlv_desc_bearer_context_1,
-        &ogs_gtp_tlv_desc_recovery_0,
-        &ogs_gtp_tlv_desc_indication_0,
-        &ogs_gtp_tlv_desc_load_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
+        &ogs_gtp2_tlv_desc_cause_0,
+        &ogs_gtp2_tlv_desc_bearer_context_0,
+        &ogs_gtp2_tlv_desc_bearer_context_1,
+        &ogs_gtp2_tlv_desc_recovery_0,
+        &ogs_gtp2_tlv_desc_indication_0,
+        &ogs_gtp2_tlv_desc_load_control_information_0,
+        &ogs_gtp2_tlv_desc_overload_control_information_0,
     NULL,
 }};
 
 
-int ogs_gtp_parse_msg(ogs_gtp_message_t *gtp_message, ogs_pkbuf_t *pkbuf)
+int ogs_gtp2_parse_msg(ogs_gtp2_message_t *gtp_message, ogs_pkbuf_t *pkbuf)
 {
     int rv = OGS_ERROR;
-    ogs_gtp_header_t *h = NULL;
+    ogs_gtp2_header_t *h = NULL;
     uint16_t size = 0;
 
     ogs_assert(gtp_message);
     ogs_assert(pkbuf);
     ogs_assert(pkbuf->len);
 
-    h = (ogs_gtp_header_t *)pkbuf->data;
+    h = (ogs_gtp2_header_t *)pkbuf->data;
     ogs_assert(h);
-    
-    memset(gtp_message, 0, sizeof(ogs_gtp_message_t));
+
+    memset(gtp_message, 0, sizeof(ogs_gtp2_message_t));
 
     if (h->teid_presence)
         size = OGS_GTPV2C_HEADER_LEN;
     else
-        size = OGS_GTPV2C_HEADER_LEN-OGS_GTP_TEID_LEN;
+        size = OGS_GTPV2C_HEADER_LEN-OGS_GTP2_TEID_LEN;
 
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(&gtp_message->h, pkbuf->data - size, size);
@@ -2717,129 +2717,129 @@ int ogs_gtp_parse_msg(ogs_gtp_message_t *gtp_message, ogs_pkbuf_t *pkbuf)
     }
 
     switch(gtp_message->h.type) {
-    case OGS_GTP_ECHO_REQUEST_TYPE:
+    case OGS_GTP2_ECHO_REQUEST_TYPE:
         rv = ogs_tlv_parse_msg(&gtp_message->echo_request,
-                &ogs_gtp_tlv_desc_echo_request, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+                &ogs_gtp2_tlv_desc_echo_request, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_ECHO_RESPONSE_TYPE:
+    case OGS_GTP2_ECHO_RESPONSE_TYPE:
         rv = ogs_tlv_parse_msg(&gtp_message->echo_response,
-                &ogs_gtp_tlv_desc_echo_response, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+                &ogs_gtp2_tlv_desc_echo_response, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_CREATE_SESSION_REQUEST_TYPE:
+    case OGS_GTP2_CREATE_SESSION_REQUEST_TYPE:
         rv = ogs_tlv_parse_msg(&gtp_message->create_session_request,
-                &ogs_gtp_tlv_desc_create_session_request, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+                &ogs_gtp2_tlv_desc_create_session_request, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_CREATE_SESSION_RESPONSE_TYPE:
+    case OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE:
         rv = ogs_tlv_parse_msg(&gtp_message->create_session_response,
-                &ogs_gtp_tlv_desc_create_session_response, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+                &ogs_gtp2_tlv_desc_create_session_response, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_MODIFY_BEARER_REQUEST_TYPE:
+    case OGS_GTP2_MODIFY_BEARER_REQUEST_TYPE:
         rv = ogs_tlv_parse_msg(&gtp_message->modify_bearer_request,
-                &ogs_gtp_tlv_desc_modify_bearer_request, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+                &ogs_gtp2_tlv_desc_modify_bearer_request, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_MODIFY_BEARER_RESPONSE_TYPE:
+    case OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE:
         rv = ogs_tlv_parse_msg(&gtp_message->modify_bearer_response,
-                &ogs_gtp_tlv_desc_modify_bearer_response, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+                &ogs_gtp2_tlv_desc_modify_bearer_response, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_DELETE_SESSION_REQUEST_TYPE:
+    case OGS_GTP2_DELETE_SESSION_REQUEST_TYPE:
         rv = ogs_tlv_parse_msg(&gtp_message->delete_session_request,
-                &ogs_gtp_tlv_desc_delete_session_request, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+                &ogs_gtp2_tlv_desc_delete_session_request, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_DELETE_SESSION_RESPONSE_TYPE:
+    case OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE:
         rv = ogs_tlv_parse_msg(&gtp_message->delete_session_response,
-                &ogs_gtp_tlv_desc_delete_session_response, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+                &ogs_gtp2_tlv_desc_delete_session_response, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_MODIFY_BEARER_COMMAND_TYPE:
+    case OGS_GTP2_MODIFY_BEARER_COMMAND_TYPE:
         rv = ogs_tlv_parse_msg(&gtp_message->modify_bearer_command,
-                &ogs_gtp_tlv_desc_modify_bearer_command, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+                &ogs_gtp2_tlv_desc_modify_bearer_command, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_MODIFY_BEARER_FAILURE_INDICATION_TYPE:
+    case OGS_GTP2_MODIFY_BEARER_FAILURE_INDICATION_TYPE:
         rv = ogs_tlv_parse_msg(&gtp_message->modify_bearer_failure_indication,
-                &ogs_gtp_tlv_desc_modify_bearer_failure_indication, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+                &ogs_gtp2_tlv_desc_modify_bearer_failure_indication, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_DELETE_BEARER_COMMAND_TYPE:
+    case OGS_GTP2_DELETE_BEARER_COMMAND_TYPE:
         rv = ogs_tlv_parse_msg(&gtp_message->delete_bearer_command,
-                &ogs_gtp_tlv_desc_delete_bearer_command, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+                &ogs_gtp2_tlv_desc_delete_bearer_command, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_DELETE_BEARER_FAILURE_INDICATION_TYPE:
+    case OGS_GTP2_DELETE_BEARER_FAILURE_INDICATION_TYPE:
         rv = ogs_tlv_parse_msg(&gtp_message->delete_bearer_failure_indication,
-                &ogs_gtp_tlv_desc_delete_bearer_failure_indication, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+                &ogs_gtp2_tlv_desc_delete_bearer_failure_indication, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_BEARER_RESOURCE_COMMAND_TYPE:
+    case OGS_GTP2_BEARER_RESOURCE_COMMAND_TYPE:
         rv = ogs_tlv_parse_msg(&gtp_message->bearer_resource_command,
-                &ogs_gtp_tlv_desc_bearer_resource_command, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+                &ogs_gtp2_tlv_desc_bearer_resource_command, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_BEARER_RESOURCE_FAILURE_INDICATION_TYPE:
+    case OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE:
         rv = ogs_tlv_parse_msg(&gtp_message->bearer_resource_failure_indication,
-                &ogs_gtp_tlv_desc_bearer_resource_failure_indication, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+                &ogs_gtp2_tlv_desc_bearer_resource_failure_indication, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_DOWNLINK_DATA_NOTIFICATION_FAILURE_INDICATION_TYPE:
+    case OGS_GTP2_DOWNLINK_DATA_NOTIFICATION_FAILURE_INDICATION_TYPE:
         rv = ogs_tlv_parse_msg(&gtp_message->downlink_data_notification_failure_indication,
-                &ogs_gtp_tlv_desc_downlink_data_notification_failure_indication, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+                &ogs_gtp2_tlv_desc_downlink_data_notification_failure_indication, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_CREATE_BEARER_REQUEST_TYPE:
+    case OGS_GTP2_CREATE_BEARER_REQUEST_TYPE:
         rv = ogs_tlv_parse_msg(&gtp_message->create_bearer_request,
-                &ogs_gtp_tlv_desc_create_bearer_request, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+                &ogs_gtp2_tlv_desc_create_bearer_request, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_CREATE_BEARER_RESPONSE_TYPE:
+    case OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE:
         rv = ogs_tlv_parse_msg(&gtp_message->create_bearer_response,
-                &ogs_gtp_tlv_desc_create_bearer_response, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+                &ogs_gtp2_tlv_desc_create_bearer_response, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_UPDATE_BEARER_REQUEST_TYPE:
+    case OGS_GTP2_UPDATE_BEARER_REQUEST_TYPE:
         rv = ogs_tlv_parse_msg(&gtp_message->update_bearer_request,
-                &ogs_gtp_tlv_desc_update_bearer_request, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+                &ogs_gtp2_tlv_desc_update_bearer_request, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_UPDATE_BEARER_RESPONSE_TYPE:
+    case OGS_GTP2_UPDATE_BEARER_RESPONSE_TYPE:
         rv = ogs_tlv_parse_msg(&gtp_message->update_bearer_response,
-                &ogs_gtp_tlv_desc_update_bearer_response, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+                &ogs_gtp2_tlv_desc_update_bearer_response, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_DELETE_BEARER_REQUEST_TYPE:
+    case OGS_GTP2_DELETE_BEARER_REQUEST_TYPE:
         rv = ogs_tlv_parse_msg(&gtp_message->delete_bearer_request,
-                &ogs_gtp_tlv_desc_delete_bearer_request, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+                &ogs_gtp2_tlv_desc_delete_bearer_request, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_DELETE_BEARER_RESPONSE_TYPE:
+    case OGS_GTP2_DELETE_BEARER_RESPONSE_TYPE:
         rv = ogs_tlv_parse_msg(&gtp_message->delete_bearer_response,
-                &ogs_gtp_tlv_desc_delete_bearer_response, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+                &ogs_gtp2_tlv_desc_delete_bearer_response, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
+    case OGS_GTP2_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
         rv = ogs_tlv_parse_msg(&gtp_message->create_indirect_data_forwarding_tunnel_request,
-                &ogs_gtp_tlv_desc_create_indirect_data_forwarding_tunnel_request, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+                &ogs_gtp2_tlv_desc_create_indirect_data_forwarding_tunnel_request, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
+    case OGS_GTP2_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
         rv = ogs_tlv_parse_msg(&gtp_message->create_indirect_data_forwarding_tunnel_response,
-                &ogs_gtp_tlv_desc_create_indirect_data_forwarding_tunnel_response, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+                &ogs_gtp2_tlv_desc_create_indirect_data_forwarding_tunnel_response, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
+    case OGS_GTP2_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
         rv = ogs_tlv_parse_msg(&gtp_message->delete_indirect_data_forwarding_tunnel_request,
-                &ogs_gtp_tlv_desc_delete_indirect_data_forwarding_tunnel_request, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+                &ogs_gtp2_tlv_desc_delete_indirect_data_forwarding_tunnel_request, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
+    case OGS_GTP2_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
         rv = ogs_tlv_parse_msg(&gtp_message->delete_indirect_data_forwarding_tunnel_response,
-                &ogs_gtp_tlv_desc_delete_indirect_data_forwarding_tunnel_response, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+                &ogs_gtp2_tlv_desc_delete_indirect_data_forwarding_tunnel_response, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE:
+    case OGS_GTP2_RELEASE_ACCESS_BEARERS_REQUEST_TYPE:
         rv = ogs_tlv_parse_msg(&gtp_message->release_access_bearers_request,
-                &ogs_gtp_tlv_desc_release_access_bearers_request, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+                &ogs_gtp2_tlv_desc_release_access_bearers_request, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
+    case OGS_GTP2_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
         rv = ogs_tlv_parse_msg(&gtp_message->release_access_bearers_response,
-                &ogs_gtp_tlv_desc_release_access_bearers_response, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+                &ogs_gtp2_tlv_desc_release_access_bearers_response, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_DOWNLINK_DATA_NOTIFICATION_TYPE:
+    case OGS_GTP2_DOWNLINK_DATA_NOTIFICATION_TYPE:
         rv = ogs_tlv_parse_msg(&gtp_message->downlink_data_notification,
-                &ogs_gtp_tlv_desc_downlink_data_notification, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+                &ogs_gtp2_tlv_desc_downlink_data_notification, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE:
+    case OGS_GTP2_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE:
         rv = ogs_tlv_parse_msg(&gtp_message->downlink_data_notification_acknowledge,
-                &ogs_gtp_tlv_desc_downlink_data_notification_acknowledge, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+                &ogs_gtp2_tlv_desc_downlink_data_notification_acknowledge, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_MODIFY_ACCESS_BEARERS_REQUEST_TYPE:
+    case OGS_GTP2_MODIFY_ACCESS_BEARERS_REQUEST_TYPE:
         rv = ogs_tlv_parse_msg(&gtp_message->modify_access_bearers_request,
-                &ogs_gtp_tlv_desc_modify_access_bearers_request, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+                &ogs_gtp2_tlv_desc_modify_access_bearers_request, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_MODIFY_ACCESS_BEARERS_RESPONSE_TYPE:
+    case OGS_GTP2_MODIFY_ACCESS_BEARERS_RESPONSE_TYPE:
         rv = ogs_tlv_parse_msg(&gtp_message->modify_access_bearers_response,
-                &ogs_gtp_tlv_desc_modify_access_bearers_response, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+                &ogs_gtp2_tlv_desc_modify_access_bearers_response, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
     default:
         ogs_warn("Not implmeneted(type:%d)", gtp_message->h.type);
@@ -2851,134 +2851,134 @@ int ogs_gtp_parse_msg(ogs_gtp_message_t *gtp_message, ogs_pkbuf_t *pkbuf)
     return rv;
 }
 
-ogs_pkbuf_t *ogs_gtp_build_msg(ogs_gtp_message_t *gtp_message)
+ogs_pkbuf_t *ogs_gtp2_build_msg(ogs_gtp2_message_t *gtp_message)
 {
     ogs_pkbuf_t *pkbuf = NULL;
 
     ogs_assert(gtp_message);
     switch(gtp_message->h.type) {
-    case OGS_GTP_ECHO_REQUEST_TYPE:
-        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_echo_request,
+    case OGS_GTP2_ECHO_REQUEST_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_echo_request,
                 &gtp_message->echo_request, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_ECHO_RESPONSE_TYPE:
-        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_echo_response,
+    case OGS_GTP2_ECHO_RESPONSE_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_echo_response,
                 &gtp_message->echo_response, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_CREATE_SESSION_REQUEST_TYPE:
-        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_create_session_request,
+    case OGS_GTP2_CREATE_SESSION_REQUEST_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_create_session_request,
                 &gtp_message->create_session_request, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_CREATE_SESSION_RESPONSE_TYPE:
-        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_create_session_response,
+    case OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_create_session_response,
                 &gtp_message->create_session_response, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_MODIFY_BEARER_REQUEST_TYPE:
-        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_modify_bearer_request,
+    case OGS_GTP2_MODIFY_BEARER_REQUEST_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_modify_bearer_request,
                 &gtp_message->modify_bearer_request, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_MODIFY_BEARER_RESPONSE_TYPE:
-        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_modify_bearer_response,
+    case OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_modify_bearer_response,
                 &gtp_message->modify_bearer_response, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_DELETE_SESSION_REQUEST_TYPE:
-        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_delete_session_request,
+    case OGS_GTP2_DELETE_SESSION_REQUEST_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_delete_session_request,
                 &gtp_message->delete_session_request, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_DELETE_SESSION_RESPONSE_TYPE:
-        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_delete_session_response,
+    case OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_delete_session_response,
                 &gtp_message->delete_session_response, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_MODIFY_BEARER_COMMAND_TYPE:
-        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_modify_bearer_command,
+    case OGS_GTP2_MODIFY_BEARER_COMMAND_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_modify_bearer_command,
                 &gtp_message->modify_bearer_command, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_MODIFY_BEARER_FAILURE_INDICATION_TYPE:
-        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_modify_bearer_failure_indication,
+    case OGS_GTP2_MODIFY_BEARER_FAILURE_INDICATION_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_modify_bearer_failure_indication,
                 &gtp_message->modify_bearer_failure_indication, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_DELETE_BEARER_COMMAND_TYPE:
-        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_delete_bearer_command,
+    case OGS_GTP2_DELETE_BEARER_COMMAND_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_delete_bearer_command,
                 &gtp_message->delete_bearer_command, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_DELETE_BEARER_FAILURE_INDICATION_TYPE:
-        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_delete_bearer_failure_indication,
+    case OGS_GTP2_DELETE_BEARER_FAILURE_INDICATION_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_delete_bearer_failure_indication,
                 &gtp_message->delete_bearer_failure_indication, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_BEARER_RESOURCE_COMMAND_TYPE:
-        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_bearer_resource_command,
+    case OGS_GTP2_BEARER_RESOURCE_COMMAND_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_bearer_resource_command,
                 &gtp_message->bearer_resource_command, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_BEARER_RESOURCE_FAILURE_INDICATION_TYPE:
-        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_bearer_resource_failure_indication,
+    case OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_bearer_resource_failure_indication,
                 &gtp_message->bearer_resource_failure_indication, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_DOWNLINK_DATA_NOTIFICATION_FAILURE_INDICATION_TYPE:
-        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_downlink_data_notification_failure_indication,
+    case OGS_GTP2_DOWNLINK_DATA_NOTIFICATION_FAILURE_INDICATION_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_downlink_data_notification_failure_indication,
                 &gtp_message->downlink_data_notification_failure_indication, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_CREATE_BEARER_REQUEST_TYPE:
-        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_create_bearer_request,
+    case OGS_GTP2_CREATE_BEARER_REQUEST_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_create_bearer_request,
                 &gtp_message->create_bearer_request, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_CREATE_BEARER_RESPONSE_TYPE:
-        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_create_bearer_response,
+    case OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_create_bearer_response,
                 &gtp_message->create_bearer_response, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_UPDATE_BEARER_REQUEST_TYPE:
-        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_update_bearer_request,
+    case OGS_GTP2_UPDATE_BEARER_REQUEST_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_update_bearer_request,
                 &gtp_message->update_bearer_request, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_UPDATE_BEARER_RESPONSE_TYPE:
-        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_update_bearer_response,
+    case OGS_GTP2_UPDATE_BEARER_RESPONSE_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_update_bearer_response,
                 &gtp_message->update_bearer_response, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_DELETE_BEARER_REQUEST_TYPE:
-        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_delete_bearer_request,
+    case OGS_GTP2_DELETE_BEARER_REQUEST_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_delete_bearer_request,
                 &gtp_message->delete_bearer_request, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_DELETE_BEARER_RESPONSE_TYPE:
-        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_delete_bearer_response,
+    case OGS_GTP2_DELETE_BEARER_RESPONSE_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_delete_bearer_response,
                 &gtp_message->delete_bearer_response, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
-        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_create_indirect_data_forwarding_tunnel_request,
+    case OGS_GTP2_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_create_indirect_data_forwarding_tunnel_request,
                 &gtp_message->create_indirect_data_forwarding_tunnel_request, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
-        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_create_indirect_data_forwarding_tunnel_response,
+    case OGS_GTP2_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_create_indirect_data_forwarding_tunnel_response,
                 &gtp_message->create_indirect_data_forwarding_tunnel_response, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
-        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_delete_indirect_data_forwarding_tunnel_request,
+    case OGS_GTP2_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_delete_indirect_data_forwarding_tunnel_request,
                 &gtp_message->delete_indirect_data_forwarding_tunnel_request, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
-        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_delete_indirect_data_forwarding_tunnel_response,
+    case OGS_GTP2_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_delete_indirect_data_forwarding_tunnel_response,
                 &gtp_message->delete_indirect_data_forwarding_tunnel_response, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE:
-        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_release_access_bearers_request,
+    case OGS_GTP2_RELEASE_ACCESS_BEARERS_REQUEST_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_release_access_bearers_request,
                 &gtp_message->release_access_bearers_request, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
-        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_release_access_bearers_response,
+    case OGS_GTP2_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_release_access_bearers_response,
                 &gtp_message->release_access_bearers_response, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_DOWNLINK_DATA_NOTIFICATION_TYPE:
-        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_downlink_data_notification,
+    case OGS_GTP2_DOWNLINK_DATA_NOTIFICATION_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_downlink_data_notification,
                 &gtp_message->downlink_data_notification, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE:
-        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_downlink_data_notification_acknowledge,
+    case OGS_GTP2_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_downlink_data_notification_acknowledge,
                 &gtp_message->downlink_data_notification_acknowledge, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_MODIFY_ACCESS_BEARERS_REQUEST_TYPE:
-        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_modify_access_bearers_request,
+    case OGS_GTP2_MODIFY_ACCESS_BEARERS_REQUEST_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_modify_access_bearers_request,
                 &gtp_message->modify_access_bearers_request, OGS_TLV_MODE_T1_L2_I1);
         break;
-    case OGS_GTP_MODIFY_ACCESS_BEARERS_RESPONSE_TYPE:
-        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_modify_access_bearers_response,
+    case OGS_GTP2_MODIFY_ACCESS_BEARERS_RESPONSE_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_modify_access_bearers_response,
                 &gtp_message->modify_access_bearers_response, OGS_TLV_MODE_T1_L2_I1);
         break;
     default:
@@ -2988,4 +2988,3 @@ ogs_pkbuf_t *ogs_gtp_build_msg(ogs_gtp_message_t *gtp_message)
 
     return pkbuf;
 }
-

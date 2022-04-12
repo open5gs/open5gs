@@ -1175,7 +1175,7 @@ test_bearer_t *test_bearer_find_by_ue_ebi(test_ue_t *test_ue, uint8_t ebi)
     ogs_assert(test_ue);
 
     ogs_list_for_each(&test_ue->sess_list, sess) {
-        if (sess->gtp_rat_type != OGS_GTP_RAT_TYPE_EUTRAN)
+        if (sess->gtp_rat_type != OGS_GTP2_RAT_TYPE_EUTRAN)
             continue;
 
         bearer = test_bearer_find_by_sess_ebi(sess, ebi);

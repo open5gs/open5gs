@@ -19,8 +19,8 @@
 
 #include "ogs-gtp.h"
 
-int ogs_gtp_f_teid_to_sockaddr(
-    ogs_gtp_f_teid_t *f_teid, uint16_t port, ogs_sockaddr_t **list)
+int ogs_gtp2_f_teid_to_sockaddr(
+    ogs_gtp2_f_teid_t *f_teid, uint16_t port, ogs_sockaddr_t **list)
 {
     ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
 
@@ -64,8 +64,8 @@ int ogs_gtp_f_teid_to_sockaddr(
     return OGS_OK;
 }
 
-int ogs_gtp_sockaddr_to_f_teid(ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6,
-        ogs_gtp_f_teid_t *f_teid, int *len)
+int ogs_gtp2_sockaddr_to_f_teid(ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6,
+        ogs_gtp2_f_teid_t *f_teid, int *len)
 {
     ogs_assert(f_teid);
 
@@ -74,17 +74,17 @@ int ogs_gtp_sockaddr_to_f_teid(ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6,
         f_teid->both.addr = addr->sin.sin_addr.s_addr;
         f_teid->ipv6 = 1;
         memcpy(f_teid->both.addr6, addr6->sin6.sin6_addr.s6_addr, OGS_IPV6_LEN);
-        *len = OGS_GTP_F_TEID_IPV4V6_LEN;
+        *len = OGS_GTP2_F_TEID_IPV4V6_LEN;
     } else if (addr) {
         f_teid->ipv4 = 1;
         f_teid->ipv6 = 0;
         f_teid->addr = addr->sin.sin_addr.s_addr;
-        *len = OGS_GTP_F_TEID_IPV4_LEN;
+        *len = OGS_GTP2_F_TEID_IPV4_LEN;
     } else if (addr6) {
         f_teid->ipv4 = 0;
         f_teid->ipv6 = 1;
         memcpy(f_teid->addr6, addr6->sin6.sin6_addr.s6_addr, OGS_IPV6_LEN);
-        *len = OGS_GTP_F_TEID_IPV6_LEN;
+        *len = OGS_GTP2_F_TEID_IPV6_LEN;
     } else {
         ogs_error("No IPv4 or IPv6");
         return OGS_ERROR;
@@ -93,7 +93,7 @@ int ogs_gtp_sockaddr_to_f_teid(ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6,
     return OGS_OK;
 }
 
-int ogs_gtp_f_teid_to_ip(ogs_gtp_f_teid_t *f_teid, ogs_ip_t *ip)
+int ogs_gtp2_f_teid_to_ip(ogs_gtp2_f_teid_t *f_teid, ogs_ip_t *ip)
 {
     ogs_assert(ip);
     ogs_assert(f_teid);
@@ -121,7 +121,7 @@ int ogs_gtp_f_teid_to_ip(ogs_gtp_f_teid_t *f_teid, ogs_ip_t *ip)
     return OGS_OK;
 }
 
-int ogs_gtp_ip_to_f_teid(ogs_ip_t *ip, ogs_gtp_f_teid_t *f_teid, int *len)
+int ogs_gtp2_ip_to_f_teid(ogs_ip_t *ip, ogs_gtp2_f_teid_t *f_teid, int *len)
 {
     ogs_assert(ip);
     ogs_assert(f_teid);
@@ -132,13 +132,13 @@ int ogs_gtp_ip_to_f_teid(ogs_ip_t *ip, ogs_gtp_f_teid_t *f_teid, int *len)
     if (f_teid->ipv4 && f_teid->ipv6) {
         f_teid->both.addr = ip->addr;
         memcpy(f_teid->both.addr6, ip->addr6, OGS_IPV6_LEN);
-        *len = OGS_GTP_F_TEID_IPV4V6_LEN;
+        *len = OGS_GTP2_F_TEID_IPV4V6_LEN;
     } else if (f_teid->ipv4) {
         f_teid->addr = ip->addr;
-        *len = OGS_GTP_F_TEID_IPV4_LEN;
+        *len = OGS_GTP2_F_TEID_IPV4_LEN;
     } else if (f_teid->ipv6) {
         memcpy(f_teid->addr6, ip->addr6, OGS_IPV6_LEN);
-        *len = OGS_GTP_F_TEID_IPV6_LEN;
+        *len = OGS_GTP2_F_TEID_IPV6_LEN;
     } else {
         ogs_error("No IPv4 or IPv6");
         return OGS_ERROR;
@@ -147,7 +147,7 @@ int ogs_gtp_ip_to_f_teid(ogs_ip_t *ip, ogs_gtp_f_teid_t *f_teid, int *len)
     return OGS_OK;
 }
 
-int ogs_gtp_paa_to_ip(ogs_paa_t *paa, ogs_ip_t *ip)
+int ogs_gtp2_paa_to_ip(ogs_paa_t *paa, ogs_ip_t *ip)
 {
     ogs_assert(paa);
     ogs_assert(ip);

@@ -934,14 +934,14 @@ static bool compare_ue_info(ogs_pfcp_node_t *node, smf_sess_t *sess)
         if (ogs_strcasecmp(node->dnn[i], sess->session.name) == 0) return true;
 
     for (i = 0; i < node->num_of_e_cell_id; i++)
-        if (sess->gtp_rat_type == OGS_GTP_RAT_TYPE_EUTRAN &&
+        if (sess->gtp_rat_type == OGS_GTP2_RAT_TYPE_EUTRAN &&
                 node->e_cell_id[i] == sess->e_cgi.cell_id) return true;
 
     for (i = 0; i < node->num_of_nr_cell_id; i++)
         if (node->nr_cell_id[i] == sess->nr_cgi.cell_id) return true;
 
     for (i = 0; i < node->num_of_tac; i++)
-        if ((sess->gtp_rat_type == OGS_GTP_RAT_TYPE_EUTRAN &&
+        if ((sess->gtp_rat_type == OGS_GTP2_RAT_TYPE_EUTRAN &&
                 node->tac[i] == sess->e_tai.tac) ||
             (node->tac[i] == sess->nr_tai.tac.v)) return true;
 
@@ -1144,13 +1144,13 @@ smf_sess_t *smf_sess_add_by_gtp1_message(ogs_gtp1_message_t *message)
     return sess;
 }
 
-smf_sess_t *smf_sess_add_by_gtp_message(ogs_gtp_message_t *message)
+smf_sess_t *smf_sess_add_by_gtp_message(ogs_gtp2_message_t *message)
 {
     smf_ue_t *smf_ue = NULL;
     smf_sess_t *sess = NULL;
     char apn[OGS_MAX_APN_LEN+1];
 
-    ogs_gtp_create_session_request_t *req = &message->create_session_request;
+    ogs_gtp2_create_session_request_t *req = &message->create_session_request;
 
     if (req->imsi.presence == 0) {
         ogs_error("No IMSI");

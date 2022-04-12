@@ -22,14 +22,14 @@
 
 void test_s2b_handle_create_session_response(
         ogs_gtp_xact_t *xact, test_sess_t *sess,
-        ogs_gtp_create_session_response_t *rsp)
+        ogs_gtp2_create_session_response_t *rsp)
 {
     int rv;
     uint8_t cause_value;
 
     test_bearer_t *bearer = NULL;
-    ogs_gtp_f_teid_t *smf_s2b_c_teid = NULL;
-    ogs_gtp_f_teid_t *smf_s2b_u_teid = NULL;
+    ogs_gtp2_f_teid_t *smf_s2b_c_teid = NULL;
+    ogs_gtp2_f_teid_t *smf_s2b_u_teid = NULL;
     ogs_paa_t paa;
 
     ogs_assert(xact);
@@ -40,11 +40,11 @@ void test_s2b_handle_create_session_response(
     ogs_expect(rv == OGS_OK);
 
     if (rsp->cause.presence) {
-        ogs_gtp_cause_t *cause = rsp->cause.data;
+        ogs_gtp2_cause_t *cause = rsp->cause.data;
         ogs_assert(cause);
 
         cause_value = cause->value;
-        if (cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
+        if (cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
         } else {
             ogs_error("GTP Failed [CAUSE:%d]", cause_value);
             return;
@@ -92,7 +92,7 @@ void test_s2b_handle_create_session_response(
 
     bearer->sgw_s1u_teid = be32toh(smf_s2b_u_teid->teid);
     ogs_assert(OGS_OK ==
-            ogs_gtp_f_teid_to_ip(smf_s2b_u_teid, &bearer->sgw_s1u_ip));
+            ogs_gtp2_f_teid_to_ip(smf_s2b_u_teid, &bearer->sgw_s1u_ip));
 
     memcpy(&paa,
             rsp->pdn_address_allocation.data, rsp->pdn_address_allocation.len);
@@ -122,7 +122,7 @@ void test_s2b_handle_create_session_response(
 
 void test_s2b_handle_delete_session_response(
         ogs_gtp_xact_t *xact, test_sess_t *sess,
-        ogs_gtp_delete_session_response_t *rsp)
+        ogs_gtp2_delete_session_response_t *rsp)
 {
     int rv;
     uint8_t cause_value;
@@ -131,17 +131,17 @@ void test_s2b_handle_delete_session_response(
     ogs_assert(sess);
     ogs_assert(rsp);
 
-    cause_value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
+    cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
 
     if (rsp->cause.presence) {
-        ogs_gtp_cause_t *cause = rsp->cause.data;
+        ogs_gtp2_cause_t *cause = rsp->cause.data;
         ogs_assert(cause);
 
         cause_value = cause->value;
-        ogs_assert(cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED);
+        ogs_assert(cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED);
     }
 
     test_sess_remove(sess);
@@ -149,12 +149,12 @@ void test_s2b_handle_delete_session_response(
 
 void test_s2b_handle_create_bearer_request(
         ogs_gtp_xact_t *xact, test_sess_t *sess,
-        ogs_gtp_create_bearer_request_t *req)
+        ogs_gtp2_create_bearer_request_t *req)
 {
     int rv;
     test_bearer_t *linked_bearer = NULL;
     test_bearer_t *bearer = NULL;
-    ogs_gtp_f_teid_t *smf_s2b_u_teid = NULL;
+    ogs_gtp2_f_teid_t *smf_s2b_u_teid = NULL;
 
     ogs_assert(xact);
     ogs_assert(sess);
@@ -198,7 +198,7 @@ void test_s2b_handle_create_bearer_request(
     smf_s2b_u_teid = req->bearer_contexts.s4_u_sgsn_f_teid.data;
     ogs_assert(smf_s2b_u_teid);
     bearer->sgw_s1u_teid = be32toh(smf_s2b_u_teid->teid);
-    rv = ogs_gtp_f_teid_to_ip(smf_s2b_u_teid, &bearer->sgw_s1u_ip);
+    rv = ogs_gtp2_f_teid_to_ip(smf_s2b_u_teid, &bearer->sgw_s1u_ip);
     ogs_assert(rv == OGS_OK);
 
     ogs_assert(OGS_OK == test_s2b_send_create_bearer_response(bearer, xact));
@@ -206,10 +206,10 @@ void test_s2b_handle_create_bearer_request(
 
 void test_s2b_handle_delete_bearer_request(
         ogs_gtp_xact_t *xact, test_sess_t *sess,
-        ogs_gtp_delete_bearer_request_t *req)
+        ogs_gtp2_delete_bearer_request_t *req)
 {
     test_bearer_t *bearer = NULL;
-    ogs_gtp_cause_t *cause = NULL;
+    ogs_gtp2_cause_t *cause = NULL;
 
     ogs_assert(xact);
     ogs_assert(sess);
@@ -220,7 +220,7 @@ void test_s2b_handle_delete_bearer_request(
     ogs_assert(cause);
 
     ogs_assert(cause->value ==
-            OGS_GTP_CAUSE_ACCESS_CHANGED_FROM_NON_3GPP_TO_3GPP);
+            OGS_GTP2_CAUSE_ACCESS_CHANGED_FROM_NON_3GPP_TO_3GPP);
 
     ogs_assert(req->linked_eps_bearer_id.presence);
     bearer = test_bearer_find_by_sess_ebi(sess, req->linked_eps_bearer_id.u8);

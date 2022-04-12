@@ -57,7 +57,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
     ogs_gtp_node_t *gnode = NULL;
     ogs_gtp_xact_t *gtp_xact = NULL;
-    ogs_gtp_message_t gtp_message;
+    ogs_gtp2_message_t gtp_message;
     ogs_gtp1_message_t gtp1_message;
 
     ogs_diam_gx_message_t *gx_message = NULL;
@@ -95,8 +95,8 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         recvbuf = e->pkbuf;
         ogs_assert(recvbuf);
 
-        if (ogs_gtp_parse_msg(&gtp_message, recvbuf) != OGS_OK) {
-            ogs_error("ogs_gtp_parse_msg() failed");
+        if (ogs_gtp2_parse_msg(&gtp_message, recvbuf) != OGS_OK) {
+            ogs_error("ogs_gtp2_parse_msg() failed");
             ogs_pkbuf_free(recvbuf);
             break;
         }
@@ -120,13 +120,13 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         }
 
         switch(gtp_message.h.type) {
-        case OGS_GTP_ECHO_REQUEST_TYPE:
+        case OGS_GTP2_ECHO_REQUEST_TYPE:
             smf_s5c_handle_echo_request(gtp_xact, &gtp_message.echo_request);
             break;
-        case OGS_GTP_ECHO_RESPONSE_TYPE:
+        case OGS_GTP2_ECHO_RESPONSE_TYPE:
             smf_s5c_handle_echo_response(gtp_xact, &gtp_message.echo_response);
             break;
-        case OGS_GTP_CREATE_SESSION_REQUEST_TYPE:
+        case OGS_GTP2_CREATE_SESSION_REQUEST_TYPE:
             if (gtp_message.h.teid == 0) {
                 ogs_expect(!sess);
                 sess = smf_sess_add_by_gtp_message(&gtp_message);
@@ -136,27 +136,27 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             smf_s5c_handle_create_session_request(
                 sess, gtp_xact, &gtp_message.create_session_request);
             break;
-        case OGS_GTP_DELETE_SESSION_REQUEST_TYPE:
+        case OGS_GTP2_DELETE_SESSION_REQUEST_TYPE:
             smf_s5c_handle_delete_session_request(
                 sess, gtp_xact, &gtp_message.delete_session_request);
             break;
-        case OGS_GTP_MODIFY_BEARER_REQUEST_TYPE:
+        case OGS_GTP2_MODIFY_BEARER_REQUEST_TYPE:
             smf_s5c_handle_modify_bearer_request(
                 sess, gtp_xact, &gtp_message.modify_bearer_request);
             break;
-        case OGS_GTP_CREATE_BEARER_RESPONSE_TYPE:
+        case OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE:
             smf_s5c_handle_create_bearer_response(
                 sess, gtp_xact, &gtp_message.create_bearer_response);
             break;
-        case OGS_GTP_UPDATE_BEARER_RESPONSE_TYPE:
+        case OGS_GTP2_UPDATE_BEARER_RESPONSE_TYPE:
             smf_s5c_handle_update_bearer_response(
                 sess, gtp_xact, &gtp_message.update_bearer_response);
             break;
-        case OGS_GTP_DELETE_BEARER_RESPONSE_TYPE:
+        case OGS_GTP2_DELETE_BEARER_RESPONSE_TYPE:
             smf_s5c_handle_delete_bearer_response(
                 sess, gtp_xact, &gtp_message.delete_bearer_response);
             break;
-        case OGS_GTP_BEARER_RESOURCE_COMMAND_TYPE:
+        case OGS_GTP2_BEARER_RESOURCE_COMMAND_TYPE:
             smf_s5c_handle_bearer_resource_command(
                 sess, gtp_xact, &gtp_message.bearer_resource_command);
             break;
@@ -173,7 +173,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         ogs_assert(recvbuf);
 
         if (ogs_gtp1_parse_msg(&gtp1_message, recvbuf) != OGS_OK) {
-            ogs_error("ogs_gtp_parse_msg() failed");
+            ogs_error("ogs_gtp2_parse_msg() failed");
             ogs_pkbuf_free(recvbuf);
             break;
         }

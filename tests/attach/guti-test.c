@@ -67,7 +67,7 @@ static void test1_func(abts_case *tc, void *data)
     test_ue->k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
     test_ue->opc_string = "e8ed289deba952e4283b54e88e6183ca";
 
-    sess = test_sess_add_by_apn(test_ue, "internet", OGS_GTP_RAT_TYPE_EUTRAN);
+    sess = test_sess_add_by_apn(test_ue, "internet", OGS_GTP2_RAT_TYPE_EUTRAN);
     ogs_assert(sess);
 
     /* eNB connects to MME */
@@ -494,7 +494,7 @@ static void test2_func(abts_case *tc, void *data)
     test_ue->k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
     test_ue->opc_string = "e8ed289deba952e4283b54e88e6183ca";
 
-    sess = test_sess_add_by_apn(test_ue, "internet", OGS_GTP_RAT_TYPE_EUTRAN);
+    sess = test_sess_add_by_apn(test_ue, "internet", OGS_GTP2_RAT_TYPE_EUTRAN);
     ogs_assert(sess);
 
     /* eNB connects to MME */
@@ -913,7 +913,7 @@ static void test3_func(abts_case *tc, void *data)
     test_ue->k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
     test_ue->opc_string = "e8ed289deba952e4283b54e88e6183ca";
 
-    sess = test_sess_add_by_apn(test_ue, "internet", OGS_GTP_RAT_TYPE_EUTRAN);
+    sess = test_sess_add_by_apn(test_ue, "internet", OGS_GTP2_RAT_TYPE_EUTRAN);
     ogs_assert(sess);
 
     /* eNB connects to MME */
@@ -1249,7 +1249,7 @@ static void test4_func(abts_case *tc, void *data)
     test_ue->k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
     test_ue->opc_string = "e8ed289deba952e4283b54e88e6183ca";
 
-    sess = test_sess_add_by_apn(test_ue, "internet", OGS_GTP_RAT_TYPE_EUTRAN);
+    sess = test_sess_add_by_apn(test_ue, "internet", OGS_GTP2_RAT_TYPE_EUTRAN);
     ogs_assert(sess);
 
     /* eNB connects to MME */

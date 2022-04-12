@@ -194,10 +194,10 @@ void smf_s6b_send_aar(smf_sess_t *sess, ogs_gtp_xact_t *xact)
     ogs_assert(ret == 0);
 
     switch (sess->gtp_rat_type) {
-    case OGS_GTP_RAT_TYPE_EUTRAN:
+    case OGS_GTP2_RAT_TYPE_EUTRAN:
         val.i32 = OGS_DIAM_RAT_TYPE_EUTRAN;
         break;
-    case OGS_GTP_RAT_TYPE_WLAN:
+    case OGS_GTP2_RAT_TYPE_WLAN:
         val.i32 = OGS_DIAM_RAT_TYPE_WLAN;
         break;
     default:

@@ -587,7 +587,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                         mme_ue->imsi_bcd);
                 CLEAR_MME_UE_TIMER(mme_ue->t3413);
 
-                mme_send_after_paging(mme_ue, OGS_GTP_CAUSE_UNABLE_TO_PAGE_UE);
+                mme_send_after_paging(mme_ue, OGS_GTP2_CAUSE_UNABLE_TO_PAGE_UE);
 
                 if (CS_CALL_SERVICE_INDICATOR(mme_ue) ||
                     SMS_SERVICE_INDICATOR(mme_ue)) {

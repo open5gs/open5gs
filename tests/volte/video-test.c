@@ -68,7 +68,7 @@ static void test1_func(abts_case *tc, void *data)
     test_ue->k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
     test_ue->opc_string = "e8ed289deba952e4283b54e88e6183ca";
 
-    sess = test_sess_add_by_apn(test_ue, "internet", OGS_GTP_RAT_TYPE_EUTRAN);
+    sess = test_sess_add_by_apn(test_ue, "internet", OGS_GTP2_RAT_TYPE_EUTRAN);
     ogs_assert(sess);
 
     /* eNB connects to MME */
@@ -211,7 +211,7 @@ static void test1_func(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     /* Send PDN Connectivity Request */
-    sess = test_sess_add_by_apn(test_ue, "ims", OGS_GTP_RAT_TYPE_EUTRAN);
+    sess = test_sess_add_by_apn(test_ue, "ims", OGS_GTP2_RAT_TYPE_EUTRAN);
     ogs_assert(sess);
     sess->pti = 5;
 
@@ -346,7 +346,7 @@ static void test1_func(abts_case *tc, void *data)
     bearer = test_bearer_find_by_ue_ebi(test_ue, 7);
     ogs_assert(bearer);
     esmbuf = testesm_build_bearer_resource_modification_request(
-            bearer, OGS_GTP_TFT_CODE_DELETE_PACKET_FILTERS_FROM_EXISTING, 0,
+            bearer, OGS_GTP2_TFT_CODE_DELETE_PACKET_FILTERS_FROM_EXISTING, 0,
             ESM_CAUSE_REGULAR_DEACTIVATION);
     ABTS_PTR_NOTNULL(tc, esmbuf);
     sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, esmbuf);
@@ -508,7 +508,7 @@ static void test1_func(abts_case *tc, void *data)
     bearer = test_bearer_find_by_ue_ebi(test_ue, 9);
     ogs_assert(bearer);
     esmbuf = testesm_build_bearer_resource_modification_request(
-            bearer, OGS_GTP_TFT_CODE_DELETE_PACKET_FILTERS_FROM_EXISTING, 0,
+            bearer, OGS_GTP2_TFT_CODE_DELETE_PACKET_FILTERS_FROM_EXISTING, 0,
             ESM_CAUSE_REGULAR_DEACTIVATION);
     ABTS_PTR_NOTNULL(tc, esmbuf);
     sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, esmbuf);
@@ -670,7 +670,7 @@ static void test1_func(abts_case *tc, void *data)
     bearer = test_bearer_find_by_ue_ebi(test_ue, 11);
     ogs_assert(bearer);
     esmbuf = testesm_build_bearer_resource_modification_request(
-            bearer, OGS_GTP_TFT_CODE_DELETE_PACKET_FILTERS_FROM_EXISTING, 0,
+            bearer, OGS_GTP2_TFT_CODE_DELETE_PACKET_FILTERS_FROM_EXISTING, 0,
             ESM_CAUSE_REGULAR_DEACTIVATION);
     ABTS_PTR_NOTNULL(tc, esmbuf);
     sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, esmbuf);
@@ -832,7 +832,7 @@ static void test1_func(abts_case *tc, void *data)
     bearer = test_bearer_find_by_ue_ebi(test_ue, 13);
     ogs_assert(bearer);
     esmbuf = testesm_build_bearer_resource_modification_request(
-            bearer, OGS_GTP_TFT_CODE_DELETE_PACKET_FILTERS_FROM_EXISTING, 0,
+            bearer, OGS_GTP2_TFT_CODE_DELETE_PACKET_FILTERS_FROM_EXISTING, 0,
             ESM_CAUSE_REGULAR_DEACTIVATION);
     ABTS_PTR_NOTNULL(tc, esmbuf);
     sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, esmbuf);
@@ -994,7 +994,7 @@ static void test1_func(abts_case *tc, void *data)
     bearer = test_bearer_find_by_ue_ebi(test_ue, 15);
     ogs_assert(bearer);
     esmbuf = testesm_build_bearer_resource_modification_request(
-            bearer, OGS_GTP_TFT_CODE_DELETE_PACKET_FILTERS_FROM_EXISTING, 0,
+            bearer, OGS_GTP2_TFT_CODE_DELETE_PACKET_FILTERS_FROM_EXISTING, 0,
             ESM_CAUSE_REGULAR_DEACTIVATION);
     ABTS_PTR_NOTNULL(tc, esmbuf);
     sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, esmbuf);
@@ -1156,7 +1156,7 @@ static void test1_func(abts_case *tc, void *data)
     bearer = test_bearer_find_by_ue_ebi(test_ue, 8);
     ogs_assert(bearer);
     esmbuf = testesm_build_bearer_resource_modification_request(
-            bearer, OGS_GTP_TFT_CODE_DELETE_PACKET_FILTERS_FROM_EXISTING, 0,
+            bearer, OGS_GTP2_TFT_CODE_DELETE_PACKET_FILTERS_FROM_EXISTING, 0,
             ESM_CAUSE_REGULAR_DEACTIVATION);
     ABTS_PTR_NOTNULL(tc, esmbuf);
     sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, esmbuf);

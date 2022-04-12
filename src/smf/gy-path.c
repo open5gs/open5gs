@@ -526,12 +526,12 @@ void smf_gy_send_ccr(smf_sess_t *sess, void *xact,
 
     /* 3GPP-User-Location-Info */
     if (sess->gtp.user_location_information.presence) {
-        ogs_gtp_uli_t uli;
+        ogs_gtp2_uli_t uli;
         int16_t uli_len;
 
-        uint8_t uli_buf[OGS_GTP_MAX_ULI_LEN];
+        uint8_t uli_buf[OGS_GTP2_MAX_ULI_LEN];
 
-        uli_len = ogs_gtp_parse_uli(
+        uli_len = ogs_gtp2_parse_uli(
                 &uli, &sess->gtp.user_location_information);
         ogs_assert(sess->gtp.user_location_information.len == uli_len);
 

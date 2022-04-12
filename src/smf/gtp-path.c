@@ -72,7 +72,7 @@ static void _gtpv1v2_c_recv_cb(short when, ogs_socket_t fd, void *data)
 
     ogs_pkbuf_trim(pkbuf, size);
 
-    gtp_ver = ((ogs_gtp_header_t *)pkbuf->data)->version;
+    gtp_ver = ((ogs_gtp2_header_t *)pkbuf->data)->version;
     switch (gtp_ver) {
     case 1:
         e = smf_event_new(SMF_EVT_GN_MESSAGE);
@@ -113,7 +113,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_sockaddr_t from;
 
-    ogs_gtp_header_t *gtp_h = NULL;
+    ogs_gtp2_header_t *gtp_h = NULL;
 
     uint32_t teid;
     uint8_t qfi;
@@ -136,8 +136,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     ogs_assert(pkbuf);
     ogs_assert(pkbuf->len);
 
-    gtp_h = (ogs_gtp_header_t *)pkbuf->data;
-    if (gtp_h->version != OGS_GTP_VERSION_1) {
+    gtp_h = (ogs_gtp2_header_t *)pkbuf->data;
+    if (gtp_h->version != OGS_GTP2_VERSION_1) {
         ogs_error("[DROP] Invalid GTPU version [%d]", gtp_h->version);
         ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
         goto cleanup;
@@ -147,7 +147,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
         ogs_pkbuf_t *echo_rsp;
 
         ogs_debug("[RECV] Echo Request from [%s]", OGS_ADDR(&from, buf));
-        echo_rsp = ogs_gtp_handle_echo_req(pkbuf);
+        echo_rsp = ogs_gtp2_handle_echo_req(pkbuf);
         ogs_expect(echo_rsp);
         if (echo_rsp) {
             ssize_t sent;
@@ -180,13 +180,13 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
          * Note 4 : For a GTP-PDU with several Extension Headers, the PDU
          *          Session Container should be the first Extension Header
          */
-        ogs_gtp_extension_header_t *extension_header =
-            (ogs_gtp_extension_header_t *)(pkbuf->data + OGS_GTPV1U_HEADER_LEN);
+        ogs_gtp2_extension_header_t *extension_header =
+            (ogs_gtp2_extension_header_t *)(pkbuf->data + OGS_GTPV1U_HEADER_LEN);
         ogs_assert(extension_header);
         if (extension_header->type ==
-                OGS_GTP_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER) {
+                OGS_GTP2_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER) {
             if (extension_header->pdu_type ==
-                OGS_GTP_EXTENSION_HEADER_PDU_TYPE_UL_PDU_SESSION_INFORMATION) {
+                OGS_GTP2_EXTENSION_HEADER_PDU_TYPE_UL_PDU_SESSION_INFORMATION) {
                     ogs_debug("   QFI [0x%x]",
                             extension_header->qos_flow_identifier);
                     qfi = extension_header->qos_flow_identifier;
@@ -431,14 +431,14 @@ int smf_gtp_send_create_session_response(
         smf_sess_t *sess, ogs_gtp_xact_t *xact)
 {
     int rv;
-    ogs_gtp_header_t h;
+    ogs_gtp2_header_t h;
     ogs_pkbuf_t *pkbuf = NULL;
 
     ogs_assert(sess);
     ogs_assert(xact);
 
-    memset(&h, 0, sizeof(ogs_gtp_header_t));
-    h.type = OGS_GTP_CREATE_SESSION_RESPONSE_TYPE;
+    memset(&h, 0, sizeof(ogs_gtp2_header_t));
+    h.type = OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE;
     h.teid = sess->sgw_s5c_teid;
 
     pkbuf = smf_s5c_build_create_session_response(h.type, sess);
@@ -457,14 +457,14 @@ int smf_gtp_send_delete_session_response(
         smf_sess_t *sess, ogs_gtp_xact_t *xact)
 {
     int rv;
-    ogs_gtp_header_t h;
+    ogs_gtp2_header_t h;
     ogs_pkbuf_t *pkbuf = NULL;
 
     ogs_assert(xact);
     ogs_assert(sess);
 
-    memset(&h, 0, sizeof(ogs_gtp_header_t));
-    h.type = OGS_GTP_DELETE_SESSION_RESPONSE_TYPE;
+    memset(&h, 0, sizeof(ogs_gtp2_header_t));
+    h.type = OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE;
     h.teid = sess->sgw_s5c_teid;
 
     pkbuf = smf_s5c_build_delete_session_response(h.type, sess);
@@ -485,7 +485,7 @@ int smf_gtp_send_delete_bearer_request(
     int rv;
 
     ogs_gtp_xact_t *xact = NULL;
-    ogs_gtp_header_t h;
+    ogs_gtp2_header_t h;
     ogs_pkbuf_t *pkbuf = NULL;
 
     smf_sess_t *sess = NULL;
@@ -494,8 +494,8 @@ int smf_gtp_send_delete_bearer_request(
     sess = bearer->sess;
     ogs_assert(sess);
 
-    memset(&h, 0, sizeof(ogs_gtp_header_t));
-    h.type = OGS_GTP_DELETE_BEARER_REQUEST_TYPE;
+    memset(&h, 0, sizeof(ogs_gtp2_header_t));
+    h.type = OGS_GTP2_DELETE_BEARER_REQUEST_TYPE;
     h.teid = sess->sgw_s5c_teid;
 
     pkbuf = smf_s5c_build_delete_bearer_request(
@@ -629,8 +629,8 @@ static void send_router_advertisement(smf_sess_t *sess, uint8_t *ip6_dst)
 
     ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {
         if (pdr->src_if == OGS_PFCP_INTERFACE_CP_FUNCTION && pdr->gnode) {
-            ogs_gtp_header_t gtp_hdesc;
-            ogs_gtp_extension_header_t ext_hdesc;
+            ogs_gtp2_header_t gtp_hdesc;
+            ogs_gtp2_extension_header_t ext_hdesc;
             ogs_pkbuf_t *newbuf = NULL;
 
             memset(&gtp_hdesc, 0, sizeof(gtp_hdesc));
@@ -642,7 +642,7 @@ static void send_router_advertisement(smf_sess_t *sess, uint8_t *ip6_dst)
             newbuf = ogs_pkbuf_copy(pkbuf);
             ogs_assert(newbuf);
 
-            ogs_gtp_send_user_plane(pdr->gnode, &gtp_hdesc, &ext_hdesc, newbuf);
+            ogs_gtp2_send_user_plane(pdr->gnode, &gtp_hdesc, &ext_hdesc, newbuf);
 
             ogs_debug("      Send Router Advertisement");
             break;
@@ -668,7 +668,7 @@ static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
     type = xact->seq[0].type;
 
     switch (type) {
-    case OGS_GTP_DELETE_BEARER_REQUEST_TYPE:
+    case OGS_GTP2_DELETE_BEARER_REQUEST_TYPE:
         ogs_error("[%s] No Delete Bearer Response", smf_ue->imsi_bcd);
         if (!smf_bearer_cycle(bearer)) {
             ogs_warn("[%s] Bearer has already been removed", smf_ue->imsi_bcd);
@@ -679,7 +679,7 @@ static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
             smf_epc_pfcp_send_bearer_modification_request(
                 bearer, NULL, OGS_PFCP_MODIFY_REMOVE,
                 OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
-                OGS_GTP_CAUSE_UNDEFINED_VALUE));
+                OGS_GTP2_CAUSE_UNDEFINED_VALUE));
         break;
     default:
         ogs_error("GTP Timeout : IMSI[%s] Message-Type[%d]",

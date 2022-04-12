@@ -150,7 +150,7 @@ static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
     type = xact->seq[0].type;
 
     switch (type) {
-    case OGS_GTP_DOWNLINK_DATA_NOTIFICATION_TYPE:
+    case OGS_GTP2_DOWNLINK_DATA_NOTIFICATION_TYPE:
         ogs_warn("[%s] No Downlink Data Notification ACK", sgwc_ue->imsi_bcd);
         break;
     default:
@@ -170,7 +170,7 @@ int sgwc_gtp_send_downlink_data_notification(
     ogs_gtp_xact_t *gtp_xact = NULL;
 
     ogs_pkbuf_t *pkbuf = NULL;
-    ogs_gtp_header_t h;
+    ogs_gtp2_header_t h;
 
     ogs_assert(bearer);
 
@@ -184,8 +184,8 @@ int sgwc_gtp_send_downlink_data_notification(
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
         sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);
 
-    memset(&h, 0, sizeof(ogs_gtp_header_t));
-    h.type = OGS_GTP_DOWNLINK_DATA_NOTIFICATION_TYPE;
+    memset(&h, 0, sizeof(ogs_gtp2_header_t));
+    h.type = OGS_GTP2_DOWNLINK_DATA_NOTIFICATION_TYPE;
     h.teid = sgwc_ue->mme_s11_teid;
 
     pkbuf = sgwc_s11_build_downlink_data_notification(cause_value, bearer);

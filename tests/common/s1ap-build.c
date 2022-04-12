@@ -472,7 +472,7 @@ ogs_pkbuf_t *test_s1ap_build_initial_context_setup_response(test_ue_t *test_ue)
     test_sess_t *sess = NULL;
     test_bearer_t *bearer = NULL;
 
-    ogs_gtp_f_teid_t f_teid;
+    ogs_gtp2_f_teid_t f_teid;
     ogs_ip_t ip;
     int len;
 
@@ -553,11 +553,11 @@ ogs_pkbuf_t *test_s1ap_build_initial_context_setup_response(test_ue_t *test_ue)
 
         e_rab->e_RAB_ID = bearer->ebi;
 
-        rv = ogs_gtp_sockaddr_to_f_teid(
+        rv = ogs_gtp2_sockaddr_to_f_teid(
                 bearer->enb_s1u_addr, bearer->enb_s1u_addr6, &f_teid, &len);
         ogs_assert(rv == OGS_OK);
 
-        rv = ogs_gtp_f_teid_to_ip(&f_teid, &ip);
+        rv = ogs_gtp2_f_teid_to_ip(&f_teid, &ip);
         ogs_assert(rv == OGS_OK);
 
         rv = ogs_asn_ip_to_BIT_STRING(&ip, &e_rab->transportLayerAddress);
@@ -827,7 +827,7 @@ ogs_pkbuf_t *test_s1ap_build_e_rab_setup_response(test_bearer_t *bearer)
     S1AP_E_RABSetupItemBearerSUResIEs_t *item = NULL;
     S1AP_E_RABSetupItemBearerSURes_t *e_rab = NULL;
 
-    ogs_gtp_f_teid_t f_teid;
+    ogs_gtp2_f_teid_t f_teid;
     ogs_ip_t ip;
     int len;
 
@@ -893,11 +893,11 @@ ogs_pkbuf_t *test_s1ap_build_e_rab_setup_response(test_bearer_t *bearer)
 
     e_rab->e_RAB_ID = bearer->ebi;
 
-    rv = ogs_gtp_sockaddr_to_f_teid(
+    rv = ogs_gtp2_sockaddr_to_f_teid(
             bearer->enb_s1u_addr, bearer->enb_s1u_addr6, &f_teid, &len);
     ogs_assert(rv == OGS_OK);
 
-    rv = ogs_gtp_f_teid_to_ip(&f_teid, &ip);
+    rv = ogs_gtp2_f_teid_to_ip(&f_teid, &ip);
     ogs_assert(rv == OGS_OK);
 
     rv = ogs_asn_ip_to_BIT_STRING(&ip, &e_rab->transportLayerAddress);
@@ -1229,7 +1229,7 @@ ogs_pkbuf_t *test_s1ap_build_e_rab_modification_indication(test_ue_t *test_ue)
             S1AP_E_RABToBeModifiedItemBearerModIndIEs_t *item = NULL;
             S1AP_E_RABToBeModifiedItemBearerModInd_t *e_rab = NULL;
 
-            ogs_gtp_f_teid_t f_teid;
+            ogs_gtp2_f_teid_t f_teid;
             ogs_ip_t ip;
             int len;
 
@@ -1245,11 +1245,11 @@ ogs_pkbuf_t *test_s1ap_build_e_rab_modification_indication(test_ue_t *test_ue)
 
             e_rab->e_RAB_ID = bearer->ebi;
 
-            rv = ogs_gtp_sockaddr_to_f_teid(
+            rv = ogs_gtp2_sockaddr_to_f_teid(
                     bearer->enb_s1u_addr, bearer->enb_s1u_addr6, &f_teid, &len);
             ogs_assert(rv == OGS_OK);
 
-            rv = ogs_gtp_f_teid_to_ip(&f_teid, &ip);
+            rv = ogs_gtp2_f_teid_to_ip(&f_teid, &ip);
             ogs_assert(rv == OGS_OK);
 
             rv = ogs_asn_ip_to_BIT_STRING(&ip, &e_rab->transportLayerAddress);
@@ -1357,7 +1357,7 @@ ogs_pkbuf_t *test_s1ap_build_path_switch_request(test_ue_t *test_ue)
             S1AP_E_RABToBeSwitchedDLItemIEs_t *item = NULL;
             S1AP_E_RABToBeSwitchedDLItem_t *e_rab = NULL;
 
-            ogs_gtp_f_teid_t f_teid;
+            ogs_gtp2_f_teid_t f_teid;
             ogs_ip_t ip;
             int len;
 
@@ -1372,11 +1372,11 @@ ogs_pkbuf_t *test_s1ap_build_path_switch_request(test_ue_t *test_ue)
 
             e_rab->e_RAB_ID = bearer->ebi;
 
-            rv = ogs_gtp_sockaddr_to_f_teid(
+            rv = ogs_gtp2_sockaddr_to_f_teid(
                     bearer->enb_s1u_addr, bearer->enb_s1u_addr6, &f_teid, &len);
             ogs_assert(rv == OGS_OK);
 
-            rv = ogs_gtp_f_teid_to_ip(&f_teid, &ip);
+            rv = ogs_gtp2_f_teid_to_ip(&f_teid, &ip);
             ogs_assert(rv == OGS_OK);
 
             rv = ogs_asn_ip_to_BIT_STRING(&ip, &e_rab->transportLayerAddress);
@@ -1635,7 +1635,7 @@ ogs_pkbuf_t *test_s1ap_build_handover_request_ack(test_ue_t *test_ue)
             S1AP_E_RABAdmittedItemIEs_t *item = NULL;
             S1AP_E_RABAdmittedItem_t *e_rab = NULL;
 
-            ogs_gtp_f_teid_t f_teid;
+            ogs_gtp2_f_teid_t f_teid;
             ogs_ip_t ip;
             int len;
 
@@ -1651,11 +1651,11 @@ ogs_pkbuf_t *test_s1ap_build_handover_request_ack(test_ue_t *test_ue)
 
             e_rab->e_RAB_ID = bearer->ebi;
 
-            rv = ogs_gtp_sockaddr_to_f_teid(
+            rv = ogs_gtp2_sockaddr_to_f_teid(
                     bearer->enb_s1u_addr, bearer->enb_s1u_addr6, &f_teid, &len);
             ogs_assert(rv == OGS_OK);
 
-            rv = ogs_gtp_f_teid_to_ip(&f_teid, &ip);
+            rv = ogs_gtp2_f_teid_to_ip(&f_teid, &ip);
             ogs_assert(rv == OGS_OK);
 
             rv = ogs_asn_ip_to_BIT_STRING(&ip, &e_rab->transportLayerAddress);

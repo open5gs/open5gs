@@ -27,31 +27,31 @@ extern "C" {
 #endif
 
 void smf_s5c_handle_echo_request(
-        ogs_gtp_xact_t *xact, ogs_gtp_echo_request_t *req);
+        ogs_gtp_xact_t *xact, ogs_gtp2_echo_request_t *req);
 void smf_s5c_handle_echo_response(
-        ogs_gtp_xact_t *xact, ogs_gtp_echo_response_t *req);
+        ogs_gtp_xact_t *xact, ogs_gtp2_echo_response_t *req);
 
 void smf_s5c_handle_create_session_request(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
-        ogs_gtp_create_session_request_t *req);
+        ogs_gtp2_create_session_request_t *req);
 void smf_s5c_handle_delete_session_request(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
-        ogs_gtp_delete_session_request_t *req);
+        ogs_gtp2_delete_session_request_t *req);
 void smf_s5c_handle_modify_bearer_request(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
-        ogs_gtp_modify_bearer_request_t *req);
+        ogs_gtp2_modify_bearer_request_t *req);
 void smf_s5c_handle_create_bearer_response(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
-        ogs_gtp_create_bearer_response_t *req);
+        ogs_gtp2_create_bearer_response_t *req);
 void smf_s5c_handle_update_bearer_response(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
-        ogs_gtp_update_bearer_response_t *req);
+        ogs_gtp2_update_bearer_response_t *req);
 void smf_s5c_handle_delete_bearer_response(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
-        ogs_gtp_delete_bearer_response_t *req);
+        ogs_gtp2_delete_bearer_response_t *req);
 void smf_s5c_handle_bearer_resource_command(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
-        ogs_gtp_bearer_resource_command_t *cmd);
+        ogs_gtp2_bearer_resource_command_t *cmd);
 
 #ifdef __cplusplus
 }

@@ -136,10 +136,10 @@ int sgwc_context_parse_config(void)
     return OGS_OK;
 }
 
-sgwc_ue_t *sgwc_ue_add_by_message(ogs_gtp_message_t *message)
+sgwc_ue_t *sgwc_ue_add_by_message(ogs_gtp2_message_t *message)
 {
     sgwc_ue_t *sgwc_ue = NULL;
-    ogs_gtp_create_session_request_t *req = &message->create_session_request;
+    ogs_gtp2_create_session_request_t *req = &message->create_session_request;
 
     ogs_assert(message);
 
@@ -152,7 +152,7 @@ sgwc_ue_t *sgwc_ue_add_by_message(ogs_gtp_message_t *message)
     ogs_trace("sgwc_ue_add_by_message() - IMSI ");
     ogs_log_hexdump(OGS_LOG_TRACE, req->imsi.data, req->imsi.len);
 
-    /* 
+    /*
      * 7.2.1 in 3GPP TS 29.274 Release 15
      *
      * If the new Create Session Request received by the SGW collides with
@@ -418,7 +418,7 @@ int sgwc_sess_remove(sgwc_sess_t *sess)
 void sgwc_sess_remove_all(sgwc_ue_t *sgwc_ue)
 {
     sgwc_sess_t *sess = NULL, *next_sess = NULL;
-    
+
     ogs_assert(sgwc_ue);
     ogs_list_for_each_safe(&sgwc_ue->sess_list, next_sess, sess)
         sgwc_sess_remove(sess);
@@ -489,15 +489,15 @@ sgwc_bearer_t *sgwc_bearer_add(sgwc_sess_t *sess)
     bearer->sess = sess;
 
     /* Downlink */
-    tunnel = sgwc_tunnel_add(bearer, OGS_GTP_F_TEID_S5_S8_SGW_GTP_U);
+    tunnel = sgwc_tunnel_add(bearer, OGS_GTP2_F_TEID_S5_S8_SGW_GTP_U);
     ogs_assert(tunnel);
 
     /* Uplink */
-    tunnel = sgwc_tunnel_add(bearer, OGS_GTP_F_TEID_S1_U_SGW_GTP_U);
+    tunnel = sgwc_tunnel_add(bearer, OGS_GTP2_F_TEID_S1_U_SGW_GTP_U);
     ogs_assert(tunnel);
 
     ogs_list_add(&sess->bearer_list, bearer);
-    
+
     return bearer;
 }
 
@@ -539,7 +539,7 @@ sgwc_bearer_t *sgwc_bearer_find_by_ue_ebi(sgwc_ue_t *sgwc_ue, uint8_t ebi)
 {
     sgwc_sess_t *sess = NULL;
     sgwc_bearer_t *bearer = NULL;
-    
+
     ogs_assert(sgwc_ue);
     ogs_list_for_each(&sgwc_ue->sess_list, sess) {
         ogs_list_for_each(&sess->bearer_list, bearer) {
@@ -643,20 +643,20 @@ sgwc_tunnel_t *sgwc_tunnel_add(
 
     switch (interface_type) {
     /* Downlink */
-    case OGS_GTP_F_TEID_S5_S8_SGW_GTP_U:
+    case OGS_GTP2_F_TEID_S5_S8_SGW_GTP_U:
         src_if = OGS_PFCP_INTERFACE_CORE;
         dst_if = OGS_PFCP_INTERFACE_ACCESS;
         break;
 
     /* Uplink */
-    case OGS_GTP_F_TEID_S1_U_SGW_GTP_U:
+    case OGS_GTP2_F_TEID_S1_U_SGW_GTP_U:
         src_if = OGS_PFCP_INTERFACE_ACCESS;
         dst_if = OGS_PFCP_INTERFACE_CORE;
         break;
 
     /* Indirect */
-    case OGS_GTP_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING:
-    case OGS_GTP_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING:
+    case OGS_GTP2_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING:
+    case OGS_GTP2_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING:
         src_if = OGS_PFCP_INTERFACE_ACCESS;
         dst_if = OGS_PFCP_INTERFACE_ACCESS;
         break;
@@ -848,13 +848,13 @@ sgwc_tunnel_t *sgwc_dl_tunnel_in_bearer(sgwc_bearer_t *bearer)
 {
     ogs_assert(bearer);
     return sgwc_tunnel_find_by_interface_type(bearer,
-            OGS_GTP_F_TEID_S5_S8_SGW_GTP_U);
+            OGS_GTP2_F_TEID_S5_S8_SGW_GTP_U);
 }
 sgwc_tunnel_t *sgwc_ul_tunnel_in_bearer(sgwc_bearer_t *bearer)
 {
     ogs_assert(bearer);
     return sgwc_tunnel_find_by_interface_type(bearer,
-            OGS_GTP_F_TEID_S1_U_SGW_GTP_U);
+            OGS_GTP2_F_TEID_S1_U_SGW_GTP_U);
 }
 
 static void stats_add_sgwc_session(void)

@@ -30,19 +30,18 @@ extern "C" {
 
 typedef struct ogs_gtp_xact_s ogs_gtp_xact_t;
 
-
-int ogs_gtp_send_user_plane(
+int ogs_gtp2_send_user_plane(
         ogs_gtp_node_t *gnode,
-        ogs_gtp_header_t *gtp_hdesc, ogs_gtp_extension_header_t *ext_hdesc,
+        ogs_gtp2_header_t *gtp_hdesc, ogs_gtp2_extension_header_t *ext_hdesc,
         ogs_pkbuf_t *pkbuf);
 
-ogs_pkbuf_t *ogs_gtp_handle_echo_req(ogs_pkbuf_t *pkt);
+ogs_pkbuf_t *ogs_gtp2_handle_echo_req(ogs_pkbuf_t *pkt);
 void ogs_gtp2_send_error_message(
         ogs_gtp_xact_t *xact, uint32_t teid, uint8_t type, uint8_t cause_value);
 
-void ogs_gtp_send_echo_request(
+void ogs_gtp2_send_echo_request(
         ogs_gtp_node_t *gnode, uint8_t recovery, uint8_t features);
-void ogs_gtp_send_echo_response(ogs_gtp_xact_t *xact,
+void ogs_gtp2_send_echo_response(ogs_gtp_xact_t *xact,
         uint8_t recovery, uint8_t features);
 
 #ifdef __cplusplus

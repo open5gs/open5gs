@@ -33,14 +33,14 @@ static uint8_t gtp_cause_from_diameter(
     if (dia_err) {
         switch (*dia_err) {
         case OGS_DIAM_UNKNOWN_SESSION_ID:
-            return OGS_GTP_CAUSE_APN_ACCESS_DENIED_NO_SUBSCRIPTION;
+            return OGS_GTP2_CAUSE_APN_ACCESS_DENIED_NO_SUBSCRIPTION;
         }
     }
 
     ogs_error("Unexpected Diameter Result Code %d/%d, defaulting to severe "
               "network failure",
               dia_err ? *dia_err : -1, dia_exp_err ? *dia_exp_err : -1);
-    return OGS_GTP_CAUSE_UE_NOT_AUTHORISED_BY_OCS_OR_EXTERNAL_AAA_SERVER;
+    return OGS_GTP2_CAUSE_UE_NOT_AUTHORISED_BY_OCS_OR_EXTERNAL_AAA_SERVER;
 }
 
 void smf_gx_handle_cca_initial_request(
@@ -76,8 +76,8 @@ void smf_gx_handle_cca_initial_request(
             ogs_gtp1_send_error_message(gtp_xact, sess ? sess->sgw_s5c_teid : 0,
                 OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE, cause_value);
         else
-            ogs_gtp_send_error_message(gtp_xact, sess ? sess->sgw_s5c_teid : 0,
-                OGS_GTP_CREATE_SESSION_RESPONSE_TYPE, cause_value);
+            ogs_gtp2_send_error_message(gtp_xact, sess ? sess->sgw_s5c_teid : 0,
+                OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE, cause_value);
         return;
     }
 
@@ -292,8 +292,8 @@ void smf_gx_handle_cca_initial_request(
                 OGS_GTP1_CAUSE_NO_RESOURCES_AVAILABLE);
         else
             ogs_gtp2_send_error_message(gtp_xact, sess ? sess->sgw_s5c_teid : 0,
-                OGS_GTP_CREATE_SESSION_RESPONSE_TYPE,
-                OGS_GTP_CAUSE_UE_NOT_AUTHORISED_BY_OCS_OR_EXTERNAL_AAA_SERVER);
+                OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE,
+                OGS_GTP2_CAUSE_UE_NOT_AUTHORISED_BY_OCS_OR_EXTERNAL_AAA_SERVER);
         return;
     }
 }

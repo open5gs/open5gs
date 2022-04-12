@@ -35,7 +35,7 @@ void testgtpu_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf);
 
 int test_gtpu_send(
         ogs_socknode_t *node, test_bearer_t *bearer,
-        ogs_gtp_header_t *gtp_hdesc, ogs_gtp_extension_header_t *ext_hdesc,
+        ogs_gtp2_header_t *gtp_hdesc, ogs_gtp2_extension_header_t *ext_hdesc,
         ogs_pkbuf_t *pkbuf);
 int test_gtpu_send_ping(
         ogs_socknode_t *node, test_bearer_t *bearer, const char *dst_ip);
