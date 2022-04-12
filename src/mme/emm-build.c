@@ -113,6 +113,14 @@ ogs_pkbuf_t *emm_build_attach_accept(
                             "EPS_EMERGENCY_ATTACH]");
                 break;
         }
+
+        if ((mme_ue->nas_eps.attach.value ==
+                OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH) &&
+            (eps_attach_result->result == OGS_NAS_ATTACH_TYPE_EPS_ATTACH)) {
+            attach_accept->presencemask |=
+                OGS_NAS_EPS_ATTACH_ACCEPT_EMM_CAUSE_PRESENT;
+            attach_accept->emm_cause = EMM_CAUSE_CS_DOMAIN_NOT_AVAILABLE;
+        }
     } else {
         switch (eps_attach_result->result) {
             case OGS_NAS_ATTACH_TYPE_EPS_ATTACH:
