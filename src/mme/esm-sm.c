@@ -107,7 +107,7 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
             rv = esm_handle_pdn_connectivity_request(
                     bearer, &message->esm.pdn_connectivity_request,
-                    e->esm_piggybacked);
+                    e->create_action);
             if (rv != OGS_OK) {
                 OGS_FSM_TRAN(s, esm_state_exception);
                 break;
@@ -230,7 +230,7 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
                 ogs_assert(OGS_OK ==
                     nas_eps_send_pdn_connectivity_reject(sess,
                         ESM_CAUSE_ESM_INFORMATION_NOT_RECEIVED,
-                        e->esm_piggybacked));
+                        e->create_action));
             } else {
                 rv = nas_eps_send_esm_information_request(bearer);
                 if (rv == OGS_OK) {
@@ -289,7 +289,7 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
             rv = esm_handle_pdn_connectivity_request(
                     bearer, &message->esm.pdn_connectivity_request,
-                    e->esm_piggybacked);
+                    e->create_action);
             if (rv != OGS_OK) {
                 OGS_FSM_TRAN(s, esm_state_exception);
                 break;
@@ -397,7 +397,7 @@ void esm_state_pdn_will_disconnect(ogs_fsm_t *s, mme_event_t *e)
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
             rv = esm_handle_pdn_connectivity_request(
                     bearer, &message->esm.pdn_connectivity_request,
-                    e->esm_piggybacked);
+                    e->create_action);
             if (rv != OGS_OK) {
                 OGS_FSM_TRAN(s, esm_state_exception);
                 break;

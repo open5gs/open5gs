@@ -95,7 +95,7 @@ int app_initialize(const char *const argv[])
      *
      * Note that at least 4 seconds are needed if freeDiameter is running.
      */
-    ogs_msleep(5000);
+    ogs_msleep(500);
 
     return OGS_OK;;
 }

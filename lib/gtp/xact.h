@@ -111,7 +111,10 @@ typedef struct ogs_gtp_xact_s {
 #define OGS_GTP_DELETE_INDIRECT_HANDOVER_CANCEL 2
     int             delete_indirect_action;
 
-    bool            esm_piggybacked;
+#define OGS_GTP_CREATE_IN_ATTACH_REQUEST 1
+#define OGS_GTP_CREATE_IN_UPLINK_NAS_TRANSPORT 2
+#define OGS_GTP_CREATE_IN_PATH_SWITCH_REQUEST 3
+    int             create_action;
 } ogs_gtp_xact_t;
 
 int ogs_gtp_xact_init(void);

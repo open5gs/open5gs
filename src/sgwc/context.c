@@ -317,10 +317,12 @@ static bool compare_ue_info(ogs_pfcp_node_t *node, sgwc_sess_t *sess)
         if (ogs_strcasecmp(node->dnn[i], sess->session.name) == 0) return true;
 
     for (i = 0; i < node->num_of_e_cell_id; i++)
-        if (node->e_cell_id[i] == sgwc_ue->e_cgi.cell_id) return true;
+        if (sgwc_ue->uli_presence == true &&
+            node->e_cell_id[i] == sgwc_ue->e_cgi.cell_id) return true;
 
     for (i = 0; i < node->num_of_tac; i++)
-        if (node->tac[i] == sgwc_ue->e_tai.tac) return true;
+        if (sgwc_ue->uli_presence == true &&
+            node->tac[i] == sgwc_ue->e_tai.tac) return true;
 
     return false;
 }
@@ -680,19 +682,6 @@ sgwc_tunnel_t *sgwc_tunnel_add(
         pdr->apn = ogs_strdup(sess->session.name);
         ogs_assert(pdr->apn);
     }
-
-    pdr->outer_header_removal_len = 1;
-    if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
-        pdr->outer_header_removal.description =
-            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4;
-    } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
-        pdr->outer_header_removal.description =
-            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV6;
-    } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
-        pdr->outer_header_removal.description =
-            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
-    } else
-        ogs_assert_if_reached();
 
     far = ogs_pfcp_far_add(&sess->pfcp);
     ogs_assert(far);

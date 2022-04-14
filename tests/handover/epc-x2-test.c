@@ -57,7 +57,7 @@ static void test1_func(abts_case *tc, void *data)
     test_ue = test_ue_add_by_suci(&mobile_identity_suci, 13);
     ogs_assert(test_ue);
 
-    test_ue->e_cgi.cell_id = 0x4615380;
+    test_ue->e_cgi.cell_id = 0x1234560;
     test_ue->nas.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
     test_ue->nas.value = OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH;
 
@@ -260,7 +260,7 @@ static void test1_func(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     /* Send Path Switch Request */
-    test_ue->e_cgi.cell_id = 0x461530;
+    test_ue->e_cgi.cell_id = 0xabcdef0;
     test_ue->enb_ue_s1ap_id++;
     ogs_list_for_each(&sess->bearer_list, bearer) {
         bearer->enb_s1u_addr = test_self()->gnb2_addr;
@@ -310,7 +310,7 @@ static void test1_func(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     /* Send Path Switch Request */
-    test_ue->e_cgi.cell_id = 0x46150;
+    test_ue->e_cgi.cell_id = 0x1234560;
     test_ue->enb_ue_s1ap_id++;
     ogs_list_for_each(&sess->bearer_list, bearer) {
         bearer->enb_s1u_addr = test_self()->gnb1_addr;

@@ -147,11 +147,11 @@ void sgwc_s5c_handle_create_session_response(
 
     if (rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.presence == 0) {
         ogs_error("No GTP TEID");
-        cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
+        cause_value = OGS_GTP2_CAUSE_CONDITIONAL_IE_MISSING;
     }
     if (rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.presence == 0) {
         ogs_error("No GTP TEID");
-        cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
+        cause_value = OGS_GTP2_CAUSE_CONDITIONAL_IE_MISSING;
     }
 
     if (rsp->cause.presence == 0) {
@@ -177,12 +177,12 @@ void sgwc_s5c_handle_create_session_response(
             /* Nothing */
         } else {
             ogs_error("Unknown PDN Type %u", paa.session_type);
-            cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
+            cause_value = OGS_GTP2_CAUSE_CONDITIONAL_IE_MISSING;
         }
 
     } else {
         ogs_error("No PDN Address Allocation");
-        cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
+        cause_value = OGS_GTP2_CAUSE_CONDITIONAL_IE_MISSING;
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {

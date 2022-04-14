@@ -31,9 +31,6 @@ hss:
 #
 # parameter:
 #
-#  o Number of output streams per SCTP associations.
-#      sctp_streams: 30
-#
 #  o Disable use of IPv4 addresses (only IPv6)
 #      no_ipv4: true
 #

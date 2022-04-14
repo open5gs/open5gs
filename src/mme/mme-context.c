@@ -1552,8 +1552,10 @@ mme_sgw_t *mme_sgw_add(ogs_sockaddr_t *addr)
     ogs_assert(sgw);
     memset(sgw, 0, sizeof *sgw);
 
-    sgw->gnode = ogs_gtp_node_new(addr);
-    ogs_assert(sgw->gnode);
+    sgw->gnode.sa_list = addr;
+
+    ogs_list_init(&sgw->gnode.local_list);
+    ogs_list_init(&sgw->gnode.remote_list);
 
     ogs_list_add(&self.sgw_list, sgw);
 
@@ -1566,7 +1568,9 @@ void mme_sgw_remove(mme_sgw_t *sgw)
 
     ogs_list_remove(&self.sgw_list, sgw);
 
-    ogs_gtp_node_free(sgw->gnode);
+    ogs_gtp_xact_delete_all(&sgw->gnode);
+    ogs_freeaddrinfo(sgw->gnode.sa_list);
+
     ogs_pool_free(&mme_sgw_pool, sgw);
 }
 
@@ -1585,8 +1589,7 @@ mme_sgw_t *mme_sgw_find_by_addr(ogs_sockaddr_t *addr)
     ogs_assert(addr);
 
     ogs_list_for_each(&self.sgw_list, sgw) {
-        ogs_assert(sgw->gnode);
-        if (ogs_sockaddr_is_equal(&sgw->gnode->addr, addr) == true)
+        if (ogs_sockaddr_is_equal(&sgw->gnode.addr, addr) == true)
             break;
     }
 
@@ -1603,8 +1606,7 @@ mme_pgw_t *mme_pgw_add(ogs_sockaddr_t *addr)
     ogs_assert(pgw);
     memset(pgw, 0, sizeof *pgw);
 
-    pgw->gnode = ogs_gtp_node_new(addr);
-    ogs_assert(pgw->gnode);
+    pgw->sa_list = addr;
 
     ogs_list_add(&self.pgw_list, pgw);
 
@@ -1617,7 +1619,7 @@ void mme_pgw_remove(mme_pgw_t *pgw)
 
     ogs_list_remove(&self.pgw_list, pgw);
 
-    ogs_gtp_node_free(pgw->gnode);
+    ogs_freeaddrinfo(pgw->sa_list);
     ogs_pool_free(&mme_pgw_pool, pgw);
 }
 
@@ -1636,8 +1638,8 @@ ogs_sockaddr_t *mme_pgw_addr_find_by_apn(
     ogs_assert(list);
 
     ogs_list_for_each(list, pgw) {
-        ogs_assert(pgw->gnode);
-        ogs_sockaddr_t *addr = pgw->gnode->sa_list;
+        ogs_assert(pgw->sa_list);
+        ogs_sockaddr_t *addr = pgw->sa_list;
 
         while (addr) {
             if (addr->ogs_sa_family == family &&
@@ -2109,6 +2111,20 @@ static mme_sgw_t *selected_sgw_node(mme_sgw_t *current, enb_ue_t *enb_ue)
     return next ? next : ogs_list_first(&mme_self()->sgw_list);
 }
 
+mme_sgw_t *mme_changed_sgw_node(mme_sgw_t *current, enb_ue_t *enb_ue)
+{
+    mme_sgw_t *changed = NULL;
+
+    ogs_assert(current);
+    ogs_assert(enb_ue);
+
+    changed = selected_sgw_node(current, enb_ue);
+    if (changed && changed != current &&
+        compare_ue_info(changed, enb_ue) == true) return changed;
+
+    return NULL;
+}
+
 mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
 {
     mme_enb_t *enb = NULL;
@@ -2140,10 +2156,10 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
         mme_self()->sgw = ogs_list_last(&mme_self()->sgw_list);
 
     /* setup GTP path with selected SGW */
-    mme_self()->sgw = selected_sgw_node(mme_self()->sgw, enb_ue);
-    ogs_assert(mme_self()->sgw);
-    OGS_SETUP_GTP_NODE(mme_ue, mme_self()->sgw->gnode);
-    ogs_debug("UE using SGW on IP[%s]", OGS_ADDR(&mme_ue->gnode->addr, buf));
+    mme_ue->sgw = mme_self()->sgw = selected_sgw_node(mme_self()->sgw, enb_ue);
+    ogs_assert(mme_ue->sgw);
+    ogs_assert(mme_ue->gnode);
+    ogs_debug("UE using SGW on IP[%s]", OGS_ADDR(mme_ue->gnode->sa_list, buf));
 
     /* Clear VLR */
     mme_ue->csmap = NULL;
@@ -2890,7 +2906,7 @@ mme_bearer_t *mme_bearer_find_by_ue_ebi(mme_ue_t *mme_ue, uint8_t ebi)
 }
 
 mme_bearer_t *mme_bearer_find_or_add_by_message(
-        mme_ue_t *mme_ue, ogs_nas_eps_message_t *message, bool esm_piggybacked)
+        mme_ue_t *mme_ue, ogs_nas_eps_message_t *message, int create_action)
 {
     uint8_t pti = OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
     uint8_t ebi = OGS_NAS_EPS_BEARER_IDENTITY_UNASSIGNED;
@@ -3001,12 +3017,12 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
             OGS_NAS_EPS_PDN_CONNECTIVITY_REQUEST_ACCESS_POINT_NAME_PRESENT) {
             sess = mme_sess_find_by_apn(mme_ue,
                     pdn_connectivity_request->access_point_name.apn);
-            if (sess && esm_piggybacked == false) {
+            if (sess && create_action != OGS_GTP_CREATE_IN_ATTACH_REQUEST) {
                 ogs_assert(OGS_OK ==
                     nas_eps_send_pdn_connectivity_reject(
                         sess,
                         ESM_CAUSE_MULTIPLE_PDN_CONNECTIONS_FOR_A_GIVEN_APN_NOT_ALLOWED,
-                        esm_piggybacked));
+                        create_action));
                 ogs_warn("APN duplicated [%s]",
                     pdn_connectivity_request->access_point_name.apn);
                 return NULL;

@@ -25,7 +25,7 @@
 #define OGS_LOG_DOMAIN __esm_log_domain
 
 ogs_pkbuf_t *esm_build_pdn_connectivity_reject(
-        mme_sess_t *sess, ogs_nas_esm_cause_t esm_cause, bool esm_piggybacked)
+        mme_sess_t *sess, ogs_nas_esm_cause_t esm_cause, int create_action)
 {
     mme_ue_t *mme_ue = NULL;
     ogs_nas_eps_message_t message;
@@ -41,7 +41,7 @@ ogs_pkbuf_t *esm_build_pdn_connectivity_reject(
             mme_ue->imsi_bcd, sess->pti, esm_cause);
 
     memset(&message, 0, sizeof(message));
-    if (esm_piggybacked == true) {
+    if (create_action == OGS_GTP_CREATE_IN_ATTACH_REQUEST) {
         /* Nothing */
     } else {
         message.h.security_header_type =
@@ -55,7 +55,7 @@ ogs_pkbuf_t *esm_build_pdn_connectivity_reject(
 
     pdn_connectivity_reject->esm_cause = esm_cause;
 
-    if (esm_piggybacked == true)
+    if (create_action == OGS_GTP_CREATE_IN_ATTACH_REQUEST)
         return ogs_nas_eps_plain_encode(&message);
     else
         return nas_eps_security_encode(mme_ue, &message);
@@ -90,7 +90,7 @@ ogs_pkbuf_t *esm_build_information_request(mme_bearer_t *bearer)
 }
 
 ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(
-        mme_sess_t *sess, bool esm_piggybacked)
+        mme_sess_t *sess, int create_action)
 {
     ogs_nas_eps_message_t message;
     ogs_nas_eps_activate_default_eps_bearer_context_request_t 
@@ -131,7 +131,7 @@ ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(
             mme_ue->imsi_bcd, sess->pti, bearer->ebi);
 
     memset(&message, 0, sizeof(message));
-    if (esm_piggybacked == true) {
+    if (create_action == OGS_GTP_CREATE_IN_ATTACH_REQUEST) {
         /* Nothing */
     } else {
         message.h.security_header_type =
@@ -245,7 +245,7 @@ ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(
         }
     }
 
-    if (esm_piggybacked == true)
+    if (create_action == OGS_GTP_CREATE_IN_ATTACH_REQUEST)
         return ogs_nas_eps_plain_encode(&message);
     else
         return nas_eps_security_encode(mme_ue, &message);

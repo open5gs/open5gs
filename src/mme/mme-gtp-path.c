@@ -59,11 +59,11 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
         ogs_pkbuf_free(pkbuf);
         return;
     }
-    ogs_assert(sgw->gnode);
+    ogs_assert(sgw);
 
     e = mme_event_new(MME_EVT_S11_MESSAGE);
     ogs_assert(e);
-    e->gnode = sgw->gnode;
+    e->gnode = (ogs_gtp_node_t *)sgw;
     e->pkbuf = pkbuf;
 
     rv = ogs_queue_push(ogs_app()->queue, e);
@@ -186,7 +186,7 @@ int mme_gtp_open(void)
     ogs_list_for_each(&mme_self()->sgw_list, sgw) {
         rv = ogs_gtp_connect(
                 ogs_gtp_self()->gtpc_sock, ogs_gtp_self()->gtpc_sock6,
-                sgw->gnode);
+                (ogs_gtp_node_t *)sgw);
         ogs_assert(rv == OGS_OK);
     }
 
@@ -199,7 +199,7 @@ void mme_gtp_close(void)
     ogs_socknode_remove_all(&ogs_gtp_self()->gtpc_list6);
 }
 
-int mme_gtp_send_create_session_request(mme_sess_t *sess, bool esm_piggybacked)
+int mme_gtp_send_create_session_request(mme_sess_t *sess, int create_action)
 {
     int rv;
     ogs_gtp2_header_t h;
@@ -219,7 +219,7 @@ int mme_gtp_send_create_session_request(mme_sess_t *sess, bool esm_piggybacked)
 
     xact = ogs_gtp_xact_local_create(mme_ue->gnode, &h, pkbuf, timeout, sess);
     ogs_expect_or_return_val(xact, OGS_ERROR);
-    xact->esm_piggybacked = esm_piggybacked;
+    xact->create_action = create_action;
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);

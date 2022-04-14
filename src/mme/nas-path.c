@@ -56,7 +56,7 @@ int nas_eps_send_emm_to_esm(mme_ue_t *mme_ue,
     ogs_pkbuf_put_data(esmbuf,
             esm_message_container->buffer, esm_message_container->length);
 
-    rv = s1ap_send_to_esm(mme_ue, esmbuf, 0, true);
+    rv = s1ap_send_to_esm(mme_ue, esmbuf, 0, OGS_GTP_CREATE_IN_ATTACH_REQUEST);
     ogs_expect(rv == OGS_OK);
 
     return rv;
@@ -105,7 +105,8 @@ int nas_eps_send_attach_accept(mme_ue_t *mme_ue)
 
     ogs_debug("[%s] Attach accept", mme_ue->imsi_bcd);
 
-    esmbuf = esm_build_activate_default_bearer_context_request(sess, true);
+    esmbuf = esm_build_activate_default_bearer_context_request(
+                sess, OGS_GTP_CREATE_IN_ATTACH_REQUEST);
     ogs_expect_or_return_val(esmbuf, OGS_ERROR);
 
     emmbuf = emm_build_attach_accept(mme_ue, esmbuf);
@@ -140,7 +141,8 @@ int nas_eps_send_attach_reject(mme_ue_t *mme_ue,
 
     sess = mme_sess_first(mme_ue);
     if (sess) {
-        esmbuf = esm_build_pdn_connectivity_reject(sess, esm_cause, true);
+        esmbuf = esm_build_pdn_connectivity_reject(
+                    sess, esm_cause, OGS_GTP_CREATE_IN_ATTACH_REQUEST);
         ogs_expect_or_return_val(esmbuf, OGS_ERROR);
     }
 
@@ -285,7 +287,7 @@ int nas_eps_send_detach_accept(mme_ue_t *mme_ue)
 }
 
 int nas_eps_send_pdn_connectivity_reject(
-    mme_sess_t *sess, ogs_nas_esm_cause_t esm_cause, bool esm_piggybacked)
+    mme_sess_t *sess, ogs_nas_esm_cause_t esm_cause, int create_action)
 {
     int rv;
     mme_ue_t *mme_ue;
@@ -295,14 +297,15 @@ int nas_eps_send_pdn_connectivity_reject(
     mme_ue = sess->mme_ue;
     ogs_assert(mme_ue);
 
-    if (esm_piggybacked == true) {
+    if (create_action == OGS_GTP_CREATE_IN_ATTACH_REQUEST) {
         /* During the UE-attach process, we'll send Attach-Reject
          * with pyggybacking PDN-connectivity-Reject */
         rv = nas_eps_send_attach_reject(mme_ue,
             EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED, esm_cause);
         ogs_expect(rv == OGS_OK);
     } else {
-        esmbuf = esm_build_pdn_connectivity_reject(sess, esm_cause, false);
+        esmbuf = esm_build_pdn_connectivity_reject(
+                    sess, esm_cause, create_action);
         ogs_expect_or_return_val(esmbuf, OGS_ERROR);
 
         rv = nas_eps_send_to_downlink_nas_transport(mme_ue, esmbuf);
@@ -341,7 +344,8 @@ int nas_eps_send_esm_information_request(mme_bearer_t *bearer)
     return rv;
 }
 
-int nas_eps_send_activate_default_bearer_context_request(mme_bearer_t *bearer)
+int nas_eps_send_activate_default_bearer_context_request(
+        mme_bearer_t *bearer, int create_action)
 {
     int rv;
     ogs_pkbuf_t *s1apbuf = NULL;
@@ -355,7 +359,8 @@ int nas_eps_send_activate_default_bearer_context_request(mme_bearer_t *bearer)
     mme_ue = bearer->mme_ue;
     ogs_assert(mme_ue);
 
-    esmbuf = esm_build_activate_default_bearer_context_request(sess, false);
+    esmbuf = esm_build_activate_default_bearer_context_request(
+                sess, create_action);
     ogs_expect_or_return_val(esmbuf, OGS_ERROR);
 
     s1apbuf = s1ap_build_e_rab_setup_request(bearer, esmbuf);

@@ -169,6 +169,10 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
                                         &gtpc_iter, &option);
                                 if (rv != OGS_OK) return rv;
                                 is_option = true;
+                            } else if (!strcmp(gtpc_key, "tac")) {
+                                /* Nothing */
+                            } else if (!strcmp(gtpc_key, "e_cell_id")) {
+                                /* Nothing */
                             } else
                                 ogs_warn("unknown key `%s`", gtpc_key);
                         }

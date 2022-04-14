@@ -120,9 +120,13 @@ void upf_n4_handle_session_establishment_request(
         ogs_assert(pdr);
 
         /* Setup UE IP address */
-        if (req->pdn_type.presence && pdr->ue_ip_addr_len) {
-            ogs_assert(OGS_PFCP_CAUSE_REQUEST_ACCEPTED ==
-                    upf_sess_set_ue_ip(sess, req->pdn_type.u8, pdr));
+        if (pdr->ue_ip_addr_len) {
+            if (req->pdn_type.presence == 1) {
+                ogs_assert(OGS_PFCP_CAUSE_REQUEST_ACCEPTED ==
+                        upf_sess_set_ue_ip(sess, req->pdn_type.u8, pdr));
+            } else {
+                ogs_error("No PDN Type");
+            }
         }
 
         /* Setup UPF-N3-TEID & QFI Hash */

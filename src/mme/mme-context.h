@@ -147,20 +147,18 @@ typedef struct mme_context_s {
 } mme_context_t;
 
 typedef struct mme_sgw_s {
-    ogs_lnode_t     lnode;
+    ogs_gtp_node_t  gnode;
 
     uint16_t        tac[OGS_MAX_NUM_OF_TAI];
     uint8_t         num_of_tac;
     uint32_t        e_cell_id[OGS_MAX_NUM_OF_CELL_ID];
     uint8_t         num_of_e_cell_id;
-
-    ogs_gtp_node_t  *gnode;
 } mme_sgw_t;
 
 typedef struct mme_pgw_s {
     ogs_lnode_t     lnode;
 
-    ogs_gtp_node_t  *gnode;
+    ogs_sockaddr_t  *sa_list;
     const char      *apn;
 } mme_pgw_t;
 
@@ -517,7 +515,10 @@ struct mme_ue_s {
      */
     int             session_context_will_deleted;
 
-    ogs_gtp_node_t  *gnode;
+    union {
+        mme_sgw_t       *sgw;
+        ogs_gtp_node_t  *gnode;
+    };
     mme_csmap_t     *csmap;
 };
 
@@ -796,7 +797,7 @@ void mme_bearer_remove_all(mme_sess_t *sess);
 mme_bearer_t *mme_bearer_find_by_sess_ebi(mme_sess_t *sess, uint8_t ebi);
 mme_bearer_t *mme_bearer_find_by_ue_ebi(mme_ue_t *mme_ue, uint8_t ebi);
 mme_bearer_t *mme_bearer_find_or_add_by_message(
-        mme_ue_t *mme_ue, ogs_nas_eps_message_t *message, bool esm_piggybacked);
+        mme_ue_t *mme_ue, ogs_nas_eps_message_t *message, int create_action);
 mme_bearer_t *mme_default_bearer_in_sess(mme_sess_t *sess);
 mme_bearer_t *mme_linked_bearer(mme_bearer_t *bearer);
 mme_bearer_t *mme_bearer_first(mme_sess_t *sess);
@@ -819,6 +820,8 @@ void mme_ebi_pool_clear(mme_ue_t *mme_ue);
 
 uint8_t mme_selected_int_algorithm(mme_ue_t *mme_ue);
 uint8_t mme_selected_enc_algorithm(mme_ue_t *mme_ue);
+
+mme_sgw_t *mme_changed_sgw_node(mme_sgw_t *current, enb_ue_t *enb_ue);
 
 #ifdef __cplusplus
 }

@@ -29,7 +29,7 @@ extern "C" {
 int mme_gtp_open(void);
 void mme_gtp_close(void);
 
-int mme_gtp_send_create_session_request(mme_sess_t *sess, bool esm_piggybacked);
+int mme_gtp_send_create_session_request(mme_sess_t *sess, int create_action);
 int mme_gtp_send_modify_bearer_request(mme_bearer_t *bearer, int uli_presence);
 int mme_gtp_send_delete_session_request(mme_sess_t *sess, int action);
 void mme_gtp_send_delete_all_sessions(mme_ue_t *mme_ue, int action);

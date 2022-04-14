@@ -83,7 +83,7 @@ typedef struct mme_event_s {
     ogs_gtp_node_t *gnode;
 
     uint8_t nas_type;
-    bool esm_piggybacked;
+    int create_action;
     ogs_nas_eps_message_t *nas_message;
 
     ogs_diam_s6a_message_t *s6a_message;
