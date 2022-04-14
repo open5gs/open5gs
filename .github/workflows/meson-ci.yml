@@ -44,7 +44,7 @@ jobs:
     - name : Build Open5GS
       run: ninja -C build
     - name: Test Open5GS
-      run: sudo meson test -C build -v crypt sctp unit
+      run: sudo meson test -C build -v crypt unit
 
   ubuntu-latest:
     name: Build and Test on Ubuntu Latest
