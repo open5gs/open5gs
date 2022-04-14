@@ -100,6 +100,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_pkbuf_free(recvbuf);
             break;
         }
+        e->gtp2_message = &gtp_message;
 
         if (gtp_message.h.teid != 0) {
             sess = smf_sess_find_by_teid(gtp_message.h.teid);
@@ -118,6 +119,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_pkbuf_free(recvbuf);
             break;
         }
+        e->gtp_xact = gtp_xact;
 
         switch(gtp_message.h.type) {
         case OGS_GTP2_ECHO_REQUEST_TYPE:
@@ -133,8 +135,14 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 if (sess)
                     OGS_SETUP_GTP_NODE(sess, gnode);
             }
-            smf_s5c_handle_create_session_request(
-                sess, gtp_xact, &gtp_message.create_session_request);
+            if (!sess) {
+                ogs_gtp1_send_error_message(gtp_xact, 0,
+                        OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE,
+                        OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND);
+                break;
+            }
+            e->sess = sess;
+            ogs_fsm_dispatch(&sess->sm, e);
             break;
         case OGS_GTP2_DELETE_SESSION_REQUEST_TYPE:
             smf_s5c_handle_delete_session_request(
@@ -177,6 +185,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_pkbuf_free(recvbuf);
             break;
         }
+        e->gtp1_message = &gtp1_message;
 
         if (gtp1_message.h.teid != 0) {
             sess = smf_sess_find_by_teid(gtp1_message.h.teid);
@@ -195,6 +204,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_pkbuf_free(recvbuf);
             break;
         }
+        e->gtp_xact = gtp_xact;
 
         switch(gtp1_message.h.type) {
         case OGS_GTP1_ECHO_REQUEST_TYPE:
@@ -210,8 +220,14 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 if (sess)
                     OGS_SETUP_GTP_NODE(sess, gnode);
             }
-            smf_gn_handle_create_pdp_context_request(
-                sess, gtp_xact, &gtp1_message.create_pdp_context_request);
+            if (!sess) {
+                ogs_gtp1_send_error_message(gtp_xact, 0,
+                        OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE,
+                        OGS_GTP1_CAUSE_CONTEXT_NOT_FOUND);
+                break;
+            }
+            e->sess = sess;
+            ogs_fsm_dispatch(&sess->sm, e);
             break;
         case OGS_GTP1_DELETE_PDP_CONTEXT_REQUEST_TYPE:
             smf_gn_handle_delete_pdp_context_request(
@@ -247,8 +263,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
             switch(gx_message->cc_request_type) {
             case OGS_DIAM_GX_CC_REQUEST_TYPE_INITIAL_REQUEST:
-                smf_gx_handle_cca_initial_request(
-                        sess, gx_message, gtp_xact);
+                ogs_fsm_dispatch(&sess->sm, e);
                 break;
             case OGS_DIAM_GX_CC_REQUEST_TYPE_TERMINATION_REQUEST:
                 smf_gx_handle_cca_termination_request(
@@ -284,9 +299,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         case OGS_DIAM_GY_CMD_CODE_CREDIT_CONTROL:
             switch(gy_message->cc_request_type) {
             case OGS_DIAM_GY_CC_REQUEST_TYPE_INITIAL_REQUEST:
-                ogs_assert(e->gtp_xact);
-                smf_gy_handle_cca_initial_request(
-                        sess, gy_message, e->gtp_xact);
+                ogs_fsm_dispatch(&sess->sm, e);
                 break;
             case OGS_DIAM_GY_CC_REQUEST_TYPE_UPDATE_REQUEST:
                     ogs_assert(e->pfcp_xact);

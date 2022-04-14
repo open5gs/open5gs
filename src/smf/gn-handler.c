@@ -46,7 +46,7 @@ void smf_gn_handle_echo_response(
     /* Not Implemented */
 }
 
-void smf_gn_handle_create_pdp_context_request(
+uint8_t smf_gn_handle_create_pdp_context_request(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_gtp1_create_pdp_context_request_t *req)
 {
@@ -65,6 +65,7 @@ void smf_gn_handle_create_pdp_context_request(
     ogs_gtp1_qos_profile_decoded_t qos_pdec;
     uint8_t qci = 9;
 
+    ogs_assert(sess);
     ogs_assert(xact);
     ogs_assert(req);
 
@@ -101,23 +102,14 @@ void smf_gn_handle_create_pdp_context_request(
         cause_value = OGS_GTP1_CAUSE_MANDATORY_IE_MISSING;
     }
 
-    if (!sess) {
-        ogs_error("No Context");
-        cause_value = OGS_GTP1_CAUSE_CONTEXT_NOT_FOUND;
-    } else {
-        if (!ogs_diam_app_connected(OGS_DIAM_GX_APPLICATION_ID)) {
-            ogs_error("No Gx Diameter Peer");
-            cause_value = OGS_GTP1_CAUSE_NO_RESOURCES_AVAILABLE;
-        }
+    if (!ogs_diam_app_connected(OGS_DIAM_GX_APPLICATION_ID)) {
+        ogs_error("No Gx Diameter Peer");
+        cause_value = OGS_GTP1_CAUSE_NO_RESOURCES_AVAILABLE;
     }
 
-    if (cause_value != OGS_GTP1_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp1_send_error_message(xact, sess ? sess->sgw_s5c_teid : 0,
-                OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE, cause_value);
-        return;
-    }
+    if (cause_value != OGS_GTP1_CAUSE_REQUEST_ACCEPTED)
+        return cause_value;
 
-    ogs_assert(sess);
     smf_ue = sess->smf_ue;
     ogs_assert(smf_ue);
 
@@ -133,12 +125,9 @@ void smf_gn_handle_create_pdp_context_request(
     ogs_debug("    SGW_S5C_TEID[0x%x] SMF_N4_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->smf_n4_teid);
 
-    if (ogs_gtp1_parse_uli(&uli, &req->user_location_information) == 0) {
-        ogs_gtp1_send_error_message(xact, sess->sgw_s5c_teid,
-                OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE,
-                OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT);
-        return;
-    }
+    if (ogs_gtp1_parse_uli(&uli, &req->user_location_information) == 0)
+        return OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT;
+
     /* TODO: Copy uli->cgi/sai/rai into sess-> */
     switch (uli.geo_loc_type) {
     case OGS_GTP1_GEO_LOC_TYPE_CGI:
@@ -155,12 +144,8 @@ void smf_gn_handle_create_pdp_context_request(
     /* Set Bearer QoS */
     rv = ogs_gtp1_parse_qos_profile(&qos_pdec,
         &req->quality_of_service_profile);
-    if(rv < 0) {
-        ogs_gtp1_send_error_message(xact, sess->sgw_s5c_teid,
-                OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE,
-                OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT);
-        return;
-    }
+    if(rv < 0)
+        return OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT;
 
     /* 3GPP TS 23.060 section 9.2.1A: "The QoS profiles of the PDP context and EPS bearer are mapped as specified in TS 23.401"
      * 3GPP TS 23.401 Annex E: "Mapping between EPS and Release 99 QoS parameters"
@@ -205,12 +190,9 @@ void smf_gn_handle_create_pdp_context_request(
     ogs_assert(eua);
     rv = ogs_gtp1_eua_to_ip(eua, req->end_user_address.len, &sess->session.ue_ip,
             &sess->ue_session_type);
-    if(rv != OGS_OK) {
-        ogs_gtp1_send_error_message(xact, sess->sgw_s5c_teid,
-                OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE,
-                OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT);
-        return;
-    }
+    if(rv != OGS_OK)
+        return OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT;
+
     /* Initially Set Session Type from UE */
     sess->session.session_type = sess->ue_session_type;
 
@@ -240,19 +222,12 @@ void smf_gn_handle_create_pdp_context_request(
 
     /* Check if selected PGW is associated with SMF */
     ogs_assert(sess->pfcp_node);
-    if (!OGS_FSM_CHECK(&sess->pfcp_node->sm, smf_pfcp_state_associated)) {
-        ogs_gtp1_send_error_message(xact, sess->sgw_s5c_teid,
-                OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE,
-                OGS_GTP1_CAUSE_NO_RESOURCES_AVAILABLE);
-        return;
-    }
+    if (!OGS_FSM_CHECK(&sess->pfcp_node->sm, smf_pfcp_state_associated))
+        return OGS_GTP1_CAUSE_NO_RESOURCES_AVAILABLE;
 
     if ((pfcp_cause = smf_sess_set_ue_ip(sess)) != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
         cause_value = gtp_cause_from_pfcp(pfcp_cause, 1);
-        ogs_gtp1_send_error_message(xact, sess->sgw_s5c_teid,
-                OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE,
-                cause_value);
-        return;
+        return cause_value;
     }
 
     ogs_info("UE IMSI[%s] APN[%s] IPv4[%s] IPv6[%s]",
@@ -261,8 +236,7 @@ void smf_gn_handle_create_pdp_context_request(
         sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
         sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
 
-    smf_gx_send_ccr(sess, xact,
-        OGS_DIAM_GX_CC_REQUEST_TYPE_INITIAL_REQUEST);
+    return cause_value;
 }
 
 void smf_gn_handle_delete_pdp_context_request(

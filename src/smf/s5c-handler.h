@@ -31,7 +31,7 @@ void smf_s5c_handle_echo_request(
 void smf_s5c_handle_echo_response(
         ogs_gtp_xact_t *xact, ogs_gtp2_echo_response_t *req);
 
-void smf_s5c_handle_create_session_request(
+uint8_t smf_s5c_handle_create_session_request(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_gtp2_create_session_request_t *req);
 void smf_s5c_handle_delete_session_request(

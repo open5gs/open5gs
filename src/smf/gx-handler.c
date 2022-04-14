@@ -25,25 +25,8 @@
 #include "gx-handler.h"
 #include "binding.h"
 
-static uint8_t gtp_cause_from_diameter(
-        const uint32_t *dia_err, const uint32_t *dia_exp_err)
-{
-    if (dia_exp_err) {
-    }
-    if (dia_err) {
-        switch (*dia_err) {
-        case OGS_DIAM_UNKNOWN_SESSION_ID:
-            return OGS_GTP2_CAUSE_APN_ACCESS_DENIED_NO_SUBSCRIPTION;
-        }
-    }
-
-    ogs_error("Unexpected Diameter Result Code %d/%d, defaulting to severe "
-              "network failure",
-              dia_err ? *dia_err : -1, dia_exp_err ? *dia_exp_err : -1);
-    return OGS_GTP2_CAUSE_UE_NOT_AUTHORISED_BY_OCS_OR_EXTERNAL_AAA_SERVER;
-}
-
-void smf_gx_handle_cca_initial_request(
+/* Returns ER_DIAMETER_SUCCESS on success, Diameter error code on failue. */
+uint32_t smf_gx_handle_cca_initial_request(
         smf_sess_t *sess, ogs_diam_gx_message_t *gx_message,
         ogs_gtp_xact_t *gtp_xact)
 {
@@ -68,18 +51,10 @@ void smf_gx_handle_cca_initial_request(
     ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->smf_n4_teid);
 
-    if (gx_message->result_code != ER_DIAMETER_SUCCESS) {
-        uint8_t cause_value = gtp_cause_from_diameter(
-            gx_message->err, gx_message->exp_err);
+    if (gx_message->result_code != ER_DIAMETER_SUCCESS)
+        return gx_message->err ? *gx_message->err :
+                                 ER_DIAMETER_AUTHENTICATION_REJECTED;
 
-        if (gtp_xact->gtp_version == 1)
-            ogs_gtp1_send_error_message(gtp_xact, sess ? sess->sgw_s5c_teid : 0,
-                OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE, cause_value);
-        else
-            ogs_gtp2_send_error_message(gtp_xact, sess ? sess->sgw_s5c_teid : 0,
-                OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE, cause_value);
-        return;
-    }
 
     sess->policy.num_of_pcc_rule = gx_message->session_data.num_of_pcc_rule;
     for (i = 0; i < gx_message->session_data.num_of_pcc_rule; i++)
@@ -272,30 +247,7 @@ void smf_gx_handle_cca_initial_request(
         ogs_pfcp_pdr_associate_qer(dl_pdr, qer);
         ogs_pfcp_pdr_associate_qer(ul_pdr, qer);
     }
-
-    switch(smf_use_gy_iface()) {
-    case 1:
-        /* Gy is available, set up session for the bearer before accepting it towards the UE */
-        smf_gy_send_ccr(sess, gtp_xact,
-            OGS_DIAM_GY_CC_REQUEST_TYPE_INITIAL_REQUEST);
-        return;
-    case 0:
-        /* Not using Gy, jump directly to PFCP Session Establishment Request */
-        ogs_assert(OGS_OK ==
-            smf_epc_pfcp_send_session_establishment_request(sess, gtp_xact));
-        return;
-    case -1:
-        ogs_error("No Gy Diameter Peer");
-        if (gtp_xact->gtp_version == 1)
-            ogs_gtp1_send_error_message(gtp_xact, sess ? sess->sgw_s5c_teid : 0,
-                OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE,
-                OGS_GTP1_CAUSE_NO_RESOURCES_AVAILABLE);
-        else
-            ogs_gtp2_send_error_message(gtp_xact, sess ? sess->sgw_s5c_teid : 0,
-                OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE,
-                OGS_GTP2_CAUSE_UE_NOT_AUTHORISED_BY_OCS_OR_EXTERNAL_AAA_SERVER);
-        return;
-    }
+    return ER_DIAMETER_SUCCESS;
 }
 
 void smf_gx_handle_cca_termination_request(

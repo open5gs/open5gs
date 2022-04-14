@@ -45,7 +45,7 @@ void smf_s5c_handle_echo_response(
     /* Not Implemented */
 }
 
-void smf_s5c_handle_create_session_request(
+uint8_t smf_s5c_handle_create_session_request(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_gtp2_create_session_request_t *req)
 {
@@ -66,6 +66,7 @@ void smf_s5c_handle_create_session_request(
     ogs_gtp2_ambr_t *ambr = NULL;
     uint16_t decoded = 0;
 
+    ogs_assert(sess);
     ogs_assert(xact);
     ogs_assert(req);
 
@@ -111,50 +112,41 @@ void smf_s5c_handle_create_session_request(
         cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
     }
 
-    if (!sess) {
-        ogs_error("No Context");
-        cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
-    } else {
-        if (!ogs_diam_app_connected(OGS_DIAM_GX_APPLICATION_ID)) {
-            ogs_error("No Gx Diameter Peer");
-            cause_value = OGS_GTP2_CAUSE_REMOTE_PEER_NOT_RESPONDING;
-        }
-        switch (sess->gtp_rat_type) {
-        case OGS_GTP2_RAT_TYPE_EUTRAN:
-            if (req->bearer_contexts_to_be_created.
-                    s5_s8_u_sgw_f_teid.presence == 0) {
-                ogs_error("No S5/S8 SGW GTP-U TEID");
-                cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
-            }
-            if (req->user_location_information.presence == 0) {
-                ogs_error("No UE Location Information");
-                cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
-            }
-            break;
-        case OGS_GTP2_RAT_TYPE_WLAN:
-            if (!ogs_diam_app_connected(OGS_DIAM_S6B_APPLICATION_ID)) {
-                ogs_error("No S6b Diameter Peer");
-                cause_value = OGS_GTP2_CAUSE_REMOTE_PEER_NOT_RESPONDING;
-            }
-            if (req->bearer_contexts_to_be_created.
-                    s2b_u_epdg_f_teid_5.presence == 0) {
-                ogs_error("No S2b ePDG GTP-U TEID");
-                cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
-            }
-            break;
-        default:
-            ogs_error("Unknown RAT Type [%d]", req->rat_type.u8);
+    if (!ogs_diam_app_connected(OGS_DIAM_GX_APPLICATION_ID)) {
+        ogs_error("No Gx Diameter Peer");
+        cause_value = OGS_GTP2_CAUSE_REMOTE_PEER_NOT_RESPONDING;
+    }
+    switch (sess->gtp_rat_type) {
+    case OGS_GTP2_RAT_TYPE_EUTRAN:
+        if (req->bearer_contexts_to_be_created.
+                s5_s8_u_sgw_f_teid.presence == 0) {
+            ogs_error("No S5/S8 SGW GTP-U TEID");
             cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
         }
+        if (req->user_location_information.presence == 0) {
+            ogs_error("No UE Location Information");
+            cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
+        }
+        break;
+    case OGS_GTP2_RAT_TYPE_WLAN:
+        if (!ogs_diam_app_connected(OGS_DIAM_S6B_APPLICATION_ID)) {
+            ogs_error("No S6b Diameter Peer");
+            cause_value = OGS_GTP2_CAUSE_REMOTE_PEER_NOT_RESPONDING;
+        }
+        if (req->bearer_contexts_to_be_created.
+                s2b_u_epdg_f_teid_5.presence == 0) {
+            ogs_error("No S2b ePDG GTP-U TEID");
+            cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
+        }
+        break;
+    default:
+        ogs_error("Unknown RAT Type [%d]", req->rat_type.u8);
+        cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
     }
 
-    if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp2_send_error_message(xact, sess ? sess->sgw_s5c_teid : 0,
-                OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE, cause_value);
-        return;
-    }
+    if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED)
+        return cause_value;
 
-    ogs_assert(sess);
     smf_ue = sess->smf_ue;
     ogs_assert(smf_ue);
 
@@ -184,10 +176,7 @@ void smf_s5c_handle_create_session_request(
 
             if (eutran_session_count < 1) {
                 ogs_error("Cannot handover to WLAN");
-                ogs_gtp2_send_error_message(xact, sess ? sess->sgw_s5c_teid : 0,
-                    OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE,
-                    OGS_GTP2_CAUSE_MULTIPLE_ACCESSES_TO_A_PDN_CONNECTION_NOT_ALLOWED);
-                return;
+                return OGS_GTP2_CAUSE_MULTIPLE_ACCESSES_TO_A_PDN_CONNECTION_NOT_ALLOWED;
             }
         }
     }
@@ -200,12 +189,8 @@ void smf_s5c_handle_create_session_request(
 
     /* Check if selected PGW is associated with SMF */
     ogs_assert(sess->pfcp_node);
-    if (!OGS_FSM_CHECK(&sess->pfcp_node->sm, smf_pfcp_state_associated)) {
-        ogs_gtp2_send_error_message(xact, sess ? sess->sgw_s5c_teid : 0,
-                OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE,
-                OGS_GTP2_CAUSE_REMOTE_PEER_NOT_RESPONDING);
-        return;
-    }
+    if (!OGS_FSM_CHECK(&sess->pfcp_node->sm, smf_pfcp_state_associated))
+        return OGS_GTP2_CAUSE_REMOTE_PEER_NOT_RESPONDING;
 
     /* UE IP Address */
     paa = req->pdn_address_allocation.data;
@@ -316,18 +301,7 @@ void smf_s5c_handle_create_session_request(
         OGS_TLV_STORE_DATA(&sess->gtp.ue_timezone, &req->ue_time_zone);
     }
 
-    switch (sess->gtp_rat_type) {
-    case OGS_GTP2_RAT_TYPE_EUTRAN:
-        smf_gx_send_ccr(sess, xact,
-            OGS_DIAM_GX_CC_REQUEST_TYPE_INITIAL_REQUEST);
-        break;
-    case OGS_GTP2_RAT_TYPE_WLAN:
-        smf_s6b_send_aar(sess, xact);
-        break;
-    default:
-        ogs_error("Unknown RAT Type [%d]", sess->gtp_rat_type);
-        ogs_assert_if_reached();
-    }
+    return OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
 }
 
 void smf_s5c_handle_delete_session_request(
