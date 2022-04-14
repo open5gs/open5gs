@@ -858,7 +858,8 @@ static int on_header(nghttp2_session *session, const nghttp2_frame *frame,
     ogs_assert(value);
     valuebuf = nghttp2_rcbuf_get_buf(value);
     ogs_assert(valuebuf.base);
-    ogs_assert(valuebuf.len);
+
+    if (valuebuf.len == 0) return 0;
 
     namestr = ogs_strndup((const char *)namebuf.base, namebuf.len);
     ogs_assert(namestr);
