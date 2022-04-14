@@ -76,6 +76,33 @@ static void send_gtp_create_err_msg(const smf_sess_t *sess, ogs_gtp_xact_t *gtp_
             OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE, gtp_cause);
 }
 
+static bool send_ccr_init_req_gx_gy(smf_sess_t *sess, smf_event_t *e)
+{
+    int use_gy = smf_use_gy_iface();
+
+    if (use_gy == -1) {
+        ogs_error("No Gy Diameter Peer");
+        /* TODO: drop Gx connection here, possibly move to another "releasing" state! */
+        uint8_t gtp_cause = (e->gtp_xact->gtp_version == 1) ?
+                        OGS_GTP1_CAUSE_NO_RESOURCES_AVAILABLE :
+                        OGS_GTP2_CAUSE_UE_NOT_AUTHORISED_BY_OCS_OR_EXTERNAL_AAA_SERVER;
+        send_gtp_create_err_msg(sess, e->gtp_xact, gtp_cause);
+        return false;
+    }
+
+    sess->sm_data.gx_ccr_init_in_flight = true;
+    smf_gx_send_ccr(sess, e->gtp_xact,
+        OGS_DIAM_GX_CC_REQUEST_TYPE_INITIAL_REQUEST);
+
+    if (use_gy == 1) {
+        /* Gy is available, set up session for the bearer before accepting it towards the UE */
+        sess->sm_data.gy_ccr_init_in_flight = true;
+        smf_gy_send_ccr(sess, e->gtp_xact,
+            OGS_DIAM_GY_CC_REQUEST_TYPE_INITIAL_REQUEST);
+    }
+    return true;
+}
+
 void smf_gsm_state_initial(ogs_fsm_t *s, smf_event_t *e)
 {
     ogs_assert(s);
@@ -85,6 +112,11 @@ void smf_gsm_state_initial(ogs_fsm_t *s, smf_event_t *e)
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
+        /* reset state: */
+        sess->sm_data.gx_ccr_init_in_flight = false;
+        sess->sm_data.gy_ccr_init_in_flight = false;
+        sess->sm_data.gx_cca_init_err = ER_DIAMETER_SUCCESS;
+        sess->sm_data.gy_cca_init_err = ER_DIAMETER_SUCCESS;
         if (!sess->gtp_rat_type) /* 5gc */
             OGS_FSM_TRAN(s, &smf_gsm_state_operational);
         break;
@@ -99,9 +131,8 @@ void smf_gsm_state_initial(ogs_fsm_t *s, smf_event_t *e)
                 send_gtp_create_err_msg(sess, e->gtp_xact, gtp1_cause);
                 return;
             }
-            OGS_FSM_TRAN(s, &smf_gsm_state_initial_wait_auth);
-            smf_gx_send_ccr(sess, e->gtp_xact,
-                OGS_DIAM_GX_CC_REQUEST_TYPE_INITIAL_REQUEST);
+            if (send_ccr_init_req_gx_gy(sess, e) == true)
+                OGS_FSM_TRAN(s, &smf_gsm_state_initial_wait_auth);
         }
         break;
 
@@ -115,14 +146,14 @@ void smf_gsm_state_initial(ogs_fsm_t *s, smf_event_t *e)
                 send_gtp_create_err_msg(sess, e->gtp_xact, gtp2_cause);
                 return;
             }
-            OGS_FSM_TRAN(s, &smf_gsm_state_initial_wait_auth);
             switch (sess->gtp_rat_type) {
             case OGS_GTP2_RAT_TYPE_EUTRAN:
-                smf_gx_send_ccr(sess, e->gtp_xact,
-                    OGS_DIAM_GX_CC_REQUEST_TYPE_INITIAL_REQUEST);
+                if (send_ccr_init_req_gx_gy(sess, e) == true)
+                    OGS_FSM_TRAN(s, &smf_gsm_state_initial_wait_auth);
                 break;
             case OGS_GTP2_RAT_TYPE_WLAN:
                 smf_s6b_send_aar(sess, e->gtp_xact);
+                OGS_FSM_TRAN(s, &smf_gsm_state_initial_wait_auth);
                 break;
             default:
                 ogs_error("Unknown RAT Type [%d]", sess->gtp_rat_type);
@@ -139,7 +170,6 @@ void smf_gsm_state_initial_wait_auth(ogs_fsm_t *s, smf_event_t *e)
     ogs_assert(e && e->sess);
     smf_sess_t *sess = e->sess;
     uint32_t diam_err;
-    uint8_t gtp_cause;
 
     switch (e->id) {
     case SMF_EVT_GX_MESSAGE:
@@ -150,36 +180,9 @@ void smf_gsm_state_initial_wait_auth(ogs_fsm_t *s, smf_event_t *e)
                 ogs_assert(e->gtp_xact);
                 diam_err = smf_gx_handle_cca_initial_request(sess,
                                 e->gx_message, e->gtp_xact);
-                if (diam_err != ER_DIAMETER_SUCCESS) {
-                    uint8_t gtp_cause = gtp_cause_from_diameter(
-                                            e->gtp_xact->gtp_version,
-                                            diam_err, e->gx_message->exp_err);
-                    send_gtp_create_err_msg(sess, e->gtp_xact, gtp_cause);
-                    return;
-                }
-                switch(smf_use_gy_iface()) {
-                case 1:
-                    /* Gy is available, set up session for the bearer before accepting it towards the UE */
-                    /* OGS_FSM_TRAN: keep current state, we handle Gy here. */
-                    smf_gy_send_ccr(sess, e->gtp_xact,
-                        OGS_DIAM_GY_CC_REQUEST_TYPE_INITIAL_REQUEST);
-                    return;
-                case 0:
-                    /* Not using Gy, jump directly to PFCP Session Establishment Request */
-                    OGS_FSM_TRAN(s, &smf_gsm_state_initial_wait_pfcp_establishment);
-                    ogs_assert(OGS_OK ==
-                        smf_epc_pfcp_send_session_establishment_request(sess, e->gtp_xact));
-                    return;
-                case -1:
-                    ogs_error("No Gy Diameter Peer");
-                    /* TODO: drop Gx connection here, possibly move to another "releasing" state! */
-                    gtp_cause = (e->gtp_xact->gtp_version == 1) ?
-                                    OGS_GTP1_CAUSE_NO_RESOURCES_AVAILABLE :
-                                    OGS_GTP2_CAUSE_UE_NOT_AUTHORISED_BY_OCS_OR_EXTERNAL_AAA_SERVER;
-                    send_gtp_create_err_msg(sess, e->gtp_xact, gtp_cause);
-                    return;
-                }
-                break;
+                sess->sm_data.gx_ccr_init_in_flight = false;
+                sess->sm_data.gx_cca_init_err = diam_err;
+                goto test_can_proceed;
             }
             break;
         }
@@ -193,21 +196,36 @@ void smf_gsm_state_initial_wait_auth(ogs_fsm_t *s, smf_event_t *e)
                 ogs_assert(e->gtp_xact);
                 diam_err = smf_gy_handle_cca_initial_request(sess,
                                 e->gy_message, e->gtp_xact);
-                if (diam_err != ER_DIAMETER_SUCCESS) {
-                    /* FIXME: tear down Gx session */
-                    gtp_cause = gtp_cause_from_diameter(e->gtp_xact->gtp_version,
-                                    diam_err, e->gy_message->exp_err);
-                    send_gtp_create_err_msg(sess, e->gtp_xact, gtp_cause);
-                    return;
-                }
-                OGS_FSM_TRAN(s, &smf_gsm_state_initial_wait_pfcp_establishment);
-                ogs_assert(OGS_OK ==
-                    smf_epc_pfcp_send_session_establishment_request(sess, e->gtp_xact));
-                return;
+                sess->sm_data.gy_ccr_init_in_flight = false;
+                sess->sm_data.gy_cca_init_err = diam_err;
+                goto test_can_proceed;
             }
             break;
         }
         break;
+    }
+    return;
+
+test_can_proceed:
+    /* First wait for both Gx and Gy requests to be done: */
+    if (!sess->sm_data.gx_ccr_init_in_flight &&
+        !sess->sm_data.gy_ccr_init_in_flight) {
+        diam_err = ER_DIAMETER_SUCCESS;
+        if (sess->sm_data.gx_cca_init_err != ER_DIAMETER_SUCCESS)
+            diam_err = sess->sm_data.gx_cca_init_err;
+        if (sess->sm_data.gy_cca_init_err != ER_DIAMETER_SUCCESS)
+            diam_err = sess->sm_data.gy_cca_init_err;
+
+        if (diam_err == ER_DIAMETER_SUCCESS) {
+            OGS_FSM_TRAN(s, &smf_gsm_state_initial_wait_pfcp_establishment);
+            ogs_assert(OGS_OK ==
+                smf_epc_pfcp_send_session_establishment_request(sess, e->gtp_xact));
+        } else {
+            /* FIXME: tear down Gx/Gy session if its sm_data.*init_err == ER_DIAMETER_SUCCESS */
+            uint8_t gtp_cause = gtp_cause_from_diameter(e->gtp_xact->gtp_version,
+                            diam_err, NULL);
+            send_gtp_create_err_msg(sess, e->gtp_xact, gtp_cause);
+        }
     }
 }
 

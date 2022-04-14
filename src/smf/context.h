@@ -210,6 +210,12 @@ typedef struct smf_sess_s {
     ogs_sbi_object_t sbi;
     uint32_t        index;          /**< An index of this node */
     ogs_fsm_t       sm;             /* A state machine */
+    struct {
+        bool gx_ccr_init_in_flight; /* Waiting for Gx CCA */
+        uint32_t gx_cca_init_err; /* Gx CCA RXed error code */
+        bool gy_ccr_init_in_flight; /* Waiting for Gy CCA */
+        uint32_t gy_cca_init_err; /* Gx CCA RXed error code */
+    } sm_data;
 
     ogs_pfcp_sess_t pfcp;           /* PFCP session context */
 
