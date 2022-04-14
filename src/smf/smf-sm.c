@@ -136,7 +136,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     OGS_SETUP_GTP_NODE(sess, gnode);
             }
             if (!sess) {
-                ogs_gtp1_send_error_message(gtp_xact, 0,
+                ogs_gtp2_send_error_message(gtp_xact, 0,
                         OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE,
                         OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND);
                 break;
