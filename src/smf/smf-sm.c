@@ -57,7 +57,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
     ogs_gtp_node_t *gnode = NULL;
     ogs_gtp_xact_t *gtp_xact = NULL;
-    ogs_gtp2_message_t gtp_message;
+    ogs_gtp2_message_t gtp2_message;
     ogs_gtp1_message_t gtp1_message;
 
     ogs_diam_gx_message_t *gx_message = NULL;
@@ -95,15 +95,15 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         recvbuf = e->pkbuf;
         ogs_assert(recvbuf);
 
-        if (ogs_gtp2_parse_msg(&gtp_message, recvbuf) != OGS_OK) {
+        if (ogs_gtp2_parse_msg(&gtp2_message, recvbuf) != OGS_OK) {
             ogs_error("ogs_gtp2_parse_msg() failed");
             ogs_pkbuf_free(recvbuf);
             break;
         }
-        e->gtp2_message = &gtp_message;
+        e->gtp2_message = &gtp2_message;
 
-        if (gtp_message.h.teid != 0) {
-            sess = smf_sess_find_by_teid(gtp_message.h.teid);
+        if (gtp2_message.h.teid != 0) {
+            sess = smf_sess_find_by_teid(gtp2_message.h.teid);
         }
 
         if (sess) {
@@ -114,24 +114,24 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_assert(gnode);
         }
 
-        rv = ogs_gtp_xact_receive(gnode, &gtp_message.h, &gtp_xact);
+        rv = ogs_gtp_xact_receive(gnode, &gtp2_message.h, &gtp_xact);
         if (rv != OGS_OK) {
             ogs_pkbuf_free(recvbuf);
             break;
         }
         e->gtp_xact = gtp_xact;
 
-        switch(gtp_message.h.type) {
+        switch(gtp2_message.h.type) {
         case OGS_GTP2_ECHO_REQUEST_TYPE:
-            smf_s5c_handle_echo_request(gtp_xact, &gtp_message.echo_request);
+            smf_s5c_handle_echo_request(gtp_xact, &gtp2_message.echo_request);
             break;
         case OGS_GTP2_ECHO_RESPONSE_TYPE:
-            smf_s5c_handle_echo_response(gtp_xact, &gtp_message.echo_response);
+            smf_s5c_handle_echo_response(gtp_xact, &gtp2_message.echo_response);
             break;
         case OGS_GTP2_CREATE_SESSION_REQUEST_TYPE:
-            if (gtp_message.h.teid == 0) {
+            if (gtp2_message.h.teid == 0) {
                 ogs_expect(!sess);
-                sess = smf_sess_add_by_gtp_message(&gtp_message);
+                sess = smf_sess_add_by_gtp_message(&gtp2_message);
                 if (sess)
                     OGS_SETUP_GTP_NODE(sess, gnode);
             }
@@ -146,30 +146,30 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
         case OGS_GTP2_DELETE_SESSION_REQUEST_TYPE:
             smf_s5c_handle_delete_session_request(
-                sess, gtp_xact, &gtp_message.delete_session_request);
+                sess, gtp_xact, &gtp2_message.delete_session_request);
             break;
         case OGS_GTP2_MODIFY_BEARER_REQUEST_TYPE:
             smf_s5c_handle_modify_bearer_request(
-                sess, gtp_xact, &gtp_message.modify_bearer_request);
+                sess, gtp_xact, &gtp2_message.modify_bearer_request);
             break;
         case OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE:
             smf_s5c_handle_create_bearer_response(
-                sess, gtp_xact, &gtp_message.create_bearer_response);
+                sess, gtp_xact, &gtp2_message.create_bearer_response);
             break;
         case OGS_GTP2_UPDATE_BEARER_RESPONSE_TYPE:
             smf_s5c_handle_update_bearer_response(
-                sess, gtp_xact, &gtp_message.update_bearer_response);
+                sess, gtp_xact, &gtp2_message.update_bearer_response);
             break;
         case OGS_GTP2_DELETE_BEARER_RESPONSE_TYPE:
             smf_s5c_handle_delete_bearer_response(
-                sess, gtp_xact, &gtp_message.delete_bearer_response);
+                sess, gtp_xact, &gtp2_message.delete_bearer_response);
             break;
         case OGS_GTP2_BEARER_RESOURCE_COMMAND_TYPE:
             smf_s5c_handle_bearer_resource_command(
-                sess, gtp_xact, &gtp_message.bearer_resource_command);
+                sess, gtp_xact, &gtp2_message.bearer_resource_command);
             break;
         default:
-            ogs_warn("Not implmeneted(type:%d)", gtp_message.h.type);
+            ogs_warn("Not implmeneted(type:%d)", gtp2_message.h.type);
             break;
         }
         ogs_pkbuf_free(recvbuf);
