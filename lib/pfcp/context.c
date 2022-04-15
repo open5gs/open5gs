@@ -470,7 +470,7 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                 const char *v = ogs_yaml_iter_value(&pfcp_iter);
                                 if (v) port = atoi(v);
                             } else if (!strcmp(pfcp_key, "send_asr")) {
-                                bool send_asr = ogs_yaml_iter_bool(&pfcp_iter);
+                                send_asr = ogs_yaml_iter_bool(&pfcp_iter);
                             } else if (!strcmp(pfcp_key, "tac")) {
                                 ogs_yaml_iter_t tac_iter;
                                 ogs_yaml_iter_recurse(&pfcp_iter, &tac_iter);
