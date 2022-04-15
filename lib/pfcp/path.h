@@ -49,7 +49,7 @@ extern "C" {
         ogs_assert(ogs_pfcp_self()->pfcp_addr || ogs_pfcp_self()->pfcp_addr6); \
         \
         ogs_list_for_each(&ogs_pfcp_self()->pfcp_peer_list, pfcp_node) \
-            pfcp_node_fsm_init(pfcp_node, true); \
+            pfcp_node_fsm_init(pfcp_node, pfcp_node->send_asr); \
         \
     } while(0)
 
