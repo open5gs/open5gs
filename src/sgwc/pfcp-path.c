@@ -243,13 +243,16 @@ int sgwc_pfcp_send_sess_modification_request(
     ogs_pfcp_header_t h;
     ogs_pfcp_xact_t *xact = NULL;
 
+    OGS_LIST(pdr_to_create_list);
+
     ogs_assert(sess);
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE;
     h.seid = sess->sgwu_sxa_seid;
 
-    sxabuf = sgwc_sxa_build_sess_modification_request(h.type, sess, flags);
+    sxabuf = sgwc_sxa_build_sess_modification_request(
+                h.type, sess, flags, &pdr_to_create_list);
     ogs_expect_or_return_val(sxabuf, OGS_ERROR);
 
     xact = ogs_pfcp_xact_local_create(
@@ -261,6 +264,8 @@ int sgwc_pfcp_send_sess_modification_request(
         xact->gtpbuf = ogs_pkbuf_copy(gtpbuf);
         ogs_expect_or_return_val(xact->gtpbuf, OGS_ERROR);
     }
+
+    ogs_list_copy(&xact->pdr_to_create_list, &pdr_to_create_list);
 
     rv = ogs_pfcp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
@@ -278,6 +283,8 @@ int sgwc_pfcp_send_bearer_modification_request(
     ogs_pfcp_xact_t *xact = NULL;
     sgwc_sess_t *sess = NULL;
 
+    OGS_LIST(pdr_to_create_list);
+
     ogs_assert(bearer);
     sess = bearer->sess;
     ogs_assert(sess);
@@ -286,7 +293,8 @@ int sgwc_pfcp_send_bearer_modification_request(
     h.type = OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE;
     h.seid = sess->sgwu_sxa_seid;
 
-    sxabuf = sgwc_sxa_build_bearer_modification_request(h.type, bearer, flags);
+    sxabuf = sgwc_sxa_build_bearer_modification_request(
+                h.type, bearer, flags, &pdr_to_create_list);
     ogs_expect_or_return_val(sxabuf, OGS_ERROR);
 
     xact = ogs_pfcp_xact_local_create(
@@ -298,6 +306,8 @@ int sgwc_pfcp_send_bearer_modification_request(
         xact->gtpbuf = ogs_pkbuf_copy(gtpbuf);
         ogs_expect_or_return_val(xact->gtpbuf, OGS_ERROR);
     }
+
+    ogs_list_copy(&xact->pdr_to_create_list, &pdr_to_create_list);
 
     rv = ogs_pfcp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);

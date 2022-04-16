@@ -155,6 +155,9 @@ uint8_t smf_5gc_n4_handle_session_establishment_response(
 
     ogs_pfcp_f_seid_t *up_f_seid = NULL;
 
+    ogs_pfcp_pdr_t *pdr = NULL;
+    ogs_pfcp_far_t *far = NULL;
+
     ogs_assert(sess);
     ogs_assert(xact);
     ogs_assert(rsp);
@@ -168,11 +171,6 @@ uint8_t smf_5gc_n4_handle_session_establishment_response(
 
     if (rsp->up_f_seid.presence == 0) {
         ogs_error("No UP F-SEID");
-        cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_MISSING;
-    }
-
-    if (rsp->created_pdr[0].presence == 0) {
-        ogs_error("No Created PDR");
         cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_MISSING;
     }
 
@@ -190,16 +188,15 @@ uint8_t smf_5gc_n4_handle_session_establishment_response(
         return cause_value;
 
     for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
-        ogs_pfcp_pdr_t *pdr = NULL;
-        ogs_pfcp_far_t *far = NULL;
-
         pdr = ogs_pfcp_handle_created_pdr(
                 &sess->pfcp, &rsp->created_pdr[i],
                 &cause_value, &offending_ie_value);
 
         if (!pdr)
             break;
+    }
 
+    ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {
         far = pdr->far;
         ogs_assert(far);
 
@@ -253,6 +250,8 @@ void smf_5gc_n4_handle_session_modification_response(
     ogs_sbi_stream_t *stream = NULL;
     smf_bearer_t *qos_flow = NULL;
 
+    OGS_LIST(pdr_to_create_list);
+
     ogs_assert(xact);
     ogs_assert(rsp);
 
@@ -272,6 +271,8 @@ void smf_5gc_n4_handle_session_modification_response(
         qos_flow = xact->data;
         ogs_assert(qos_flow);
     }
+
+    ogs_list_copy(&pdr_to_create_list, &xact->pdr_to_create_list);
 
     ogs_pfcp_xact_commit(xact);
 
@@ -298,18 +299,20 @@ void smf_5gc_n4_handle_session_modification_response(
         uint8_t pfcp_cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
         uint8_t offending_ie_value = 0;
 
+        ogs_pfcp_pdr_t *pdr = NULL;
+        ogs_pfcp_far_t *far = NULL;
+
         ogs_assert(sess);
         for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
-            ogs_pfcp_pdr_t *pdr = NULL;
-            ogs_pfcp_far_t *far = NULL;
-
             pdr = ogs_pfcp_handle_created_pdr(
                     &sess->pfcp, &rsp->created_pdr[i],
                     &pfcp_cause_value, &offending_ie_value);
 
             if (!pdr)
                 break;
+        }
 
+        ogs_list_for_each_entry(&pdr_to_create_list, pdr, to_create_node) {
             far = pdr->far;
             ogs_assert(far);
 
@@ -739,11 +742,6 @@ uint8_t smf_epc_n4_handle_session_establishment_response(
         cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_MISSING;
     }
 
-    if (rsp->created_pdr[0].presence == 0) {
-        ogs_error("No Created PDR");
-        cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_MISSING;
-    }
-
     if (rsp->cause.presence) {
         if (rsp->cause.u8 != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
             ogs_warn("PFCP Cause [%d] : Not Accepted", rsp->cause.u8);
@@ -758,17 +756,19 @@ uint8_t smf_epc_n4_handle_session_establishment_response(
         int i;
         uint8_t offending_ie_value = 0;
 
-        for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
-            ogs_pfcp_pdr_t *pdr = NULL;
-            ogs_pfcp_far_t *far = NULL;
+        ogs_pfcp_pdr_t *pdr = NULL;
+        ogs_pfcp_far_t *far = NULL;
 
+        for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
             pdr = ogs_pfcp_handle_created_pdr(
                     &sess->pfcp, &rsp->created_pdr[i],
                     &cause_value, &offending_ie_value);
 
             if (!pdr)
                 break;
+        }
 
+        ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {
             far = pdr->far;
             ogs_assert(far);
 
@@ -836,6 +836,11 @@ void smf_epc_n4_handle_session_modification_response(
     uint8_t pfcp_cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
     uint8_t offending_ie_value = 0;
 
+    ogs_pfcp_pdr_t *pdr = NULL;
+    ogs_pfcp_far_t *far = NULL;
+
+    OGS_LIST(pdr_to_create_list);
+
     ogs_assert(xact);
     ogs_assert(rsp);
 
@@ -860,6 +865,8 @@ void smf_epc_n4_handle_session_modification_response(
         gtp_cause = xact->gtp_cause;
     }
 
+    ogs_list_copy(&pdr_to_create_list, &xact->pdr_to_create_list);
+
     ogs_pfcp_xact_commit(xact);
 
     if (!sess) {
@@ -881,16 +888,15 @@ void smf_epc_n4_handle_session_modification_response(
 
     pfcp_cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
     for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
-        ogs_pfcp_pdr_t *pdr = NULL;
-        ogs_pfcp_far_t *far = NULL;
-
         pdr = ogs_pfcp_handle_created_pdr(
                 &sess->pfcp, &rsp->created_pdr[i],
                 &pfcp_cause_value, &offending_ie_value);
 
         if (!pdr)
             break;
+    }
 
+    ogs_list_for_each_entry(&pdr_to_create_list, pdr, to_create_node) {
         far = pdr->far;
         ogs_assert(far);
 

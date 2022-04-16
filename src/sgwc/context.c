@@ -698,14 +698,7 @@ sgwc_tunnel_t *sgwc_tunnel_add(
         pdr->f_teid.ch = 1;
         pdr->f_teid_len = 1;
     } else {
-        char buf[OGS_ADDRSTRLEN];
         ogs_gtpu_resource_t *resource = NULL;
-        ogs_sockaddr_t *addr = sess->pfcp_node->sa_list;
-        ogs_assert(addr);
-
-        ogs_error("F-TEID allocation/release not supported with peer [%s]:%d",
-                OGS_ADDR(addr, buf), OGS_PORT(addr));
-
         resource = ogs_pfcp_find_gtpu_resource(
                 &sess->pfcp_node->gtpu_resource_list,
                 sess->session.name, OGS_PFCP_INTERFACE_ACCESS);
@@ -714,10 +707,10 @@ sgwc_tunnel_t *sgwc_tunnel_add(
                 &tunnel->local_addr, &tunnel->local_addr6);
             if (resource->info.teidri)
                 tunnel->local_teid = OGS_PFCP_GTPU_INDEX_TO_TEID(
-                        tunnel->index, resource->info.teidri,
+                        pdr->index, resource->info.teidri,
                         resource->info.teid_range);
             else
-                tunnel->local_teid = tunnel->index;
+                tunnel->local_teid = pdr->index;
         } else {
             if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
                 ogs_assert(OGS_OK ==
@@ -730,7 +723,7 @@ sgwc_tunnel_t *sgwc_tunnel_add(
             else
                 ogs_assert_if_reached();
 
-            tunnel->local_teid = tunnel->index;
+            tunnel->local_teid = pdr->index;
         }
 
         ogs_assert(OGS_OK ==

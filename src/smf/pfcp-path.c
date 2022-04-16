@@ -331,6 +331,8 @@ int smf_5gc_pfcp_send_session_modification_request(
     ogs_pkbuf_t *n4buf = NULL;
     ogs_pfcp_header_t h;
     ogs_pfcp_xact_t *xact = NULL;
+    
+    OGS_LIST(pdr_to_create_list);
 
     ogs_assert(sess);
     if ((flags & OGS_PFCP_MODIFY_ERROR_INDICATION) == 0)
@@ -340,7 +342,8 @@ int smf_5gc_pfcp_send_session_modification_request(
     h.type = OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE;
     h.seid = sess->upf_n4_seid;
 
-    n4buf = smf_n4_build_session_modification_request(h.type, sess, flags);
+    n4buf = smf_n4_build_session_modification_request(
+                h.type, sess, flags, &pdr_to_create_list);
     ogs_expect_or_return_val(n4buf, OGS_ERROR);
 
     xact = ogs_pfcp_xact_local_create(
@@ -348,6 +351,8 @@ int smf_5gc_pfcp_send_session_modification_request(
     ogs_expect_or_return_val(xact, OGS_ERROR);
     xact->assoc_stream = stream;
     xact->modify_flags = flags | OGS_PFCP_MODIFY_SESSION;
+
+    ogs_list_copy(&xact->pdr_to_create_list, &pdr_to_create_list);
 
     if (duration) {
         ogs_pfcp_xact_delayed_commit(xact, duration);
@@ -370,6 +375,8 @@ int smf_5gc_pfcp_send_qos_flow_modification_request(smf_bearer_t *qos_flow,
     ogs_pfcp_xact_t *xact = NULL;
     smf_sess_t *sess = NULL;
 
+    OGS_LIST(pdr_to_create_list);
+
     ogs_assert(qos_flow);
     sess = qos_flow->sess;
     ogs_assert(sess);
@@ -378,7 +385,8 @@ int smf_5gc_pfcp_send_qos_flow_modification_request(smf_bearer_t *qos_flow,
     h.type = OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE;
     h.seid = sess->upf_n4_seid;
 
-    n4buf = smf_n4_build_qos_flow_modification_request(h.type, qos_flow, flags);
+    n4buf = smf_n4_build_qos_flow_modification_request(
+                h.type, qos_flow, flags, &pdr_to_create_list);
     ogs_expect_or_return_val(n4buf, OGS_ERROR);
 
     xact = ogs_pfcp_xact_local_create(
@@ -387,6 +395,8 @@ int smf_5gc_pfcp_send_qos_flow_modification_request(smf_bearer_t *qos_flow,
 
     xact->assoc_stream = stream;
     xact->modify_flags = flags;
+
+    ogs_list_copy(&xact->pdr_to_create_list, &pdr_to_create_list);
 
     rv = ogs_pfcp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
@@ -463,13 +473,16 @@ int smf_epc_pfcp_send_session_modification_request(
     ogs_pfcp_header_t h;
     ogs_pfcp_xact_t *xact = NULL;
 
+    OGS_LIST(pdr_to_create_list);
+
     ogs_assert(sess);
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE;
     h.seid = sess->upf_n4_seid;
 
-    n4buf = smf_n4_build_session_modification_request(h.type, sess, flags);
+    n4buf = smf_n4_build_session_modification_request(
+                h.type, sess, flags, &pdr_to_create_list);
     ogs_expect_or_return_val(n4buf, OGS_ERROR);
 
     xact = ogs_pfcp_xact_local_create(
@@ -482,6 +495,8 @@ int smf_epc_pfcp_send_session_modification_request(
 
     xact->gtp_pti = gtp_pti;
     xact->gtp_cause = gtp_cause;
+
+    ogs_list_copy(&xact->pdr_to_create_list, &pdr_to_create_list);
 
     rv = ogs_pfcp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
@@ -499,6 +514,8 @@ int smf_epc_pfcp_send_bearer_modification_request(
     ogs_pfcp_xact_t *xact = NULL;
     smf_sess_t *sess = NULL;
 
+    OGS_LIST(pdr_to_create_list);
+
     ogs_assert(bearer);
     sess = bearer->sess;
     ogs_assert(sess);
@@ -507,7 +524,8 @@ int smf_epc_pfcp_send_bearer_modification_request(
     h.type = OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE;
     h.seid = sess->upf_n4_seid;
 
-    n4buf = smf_n4_build_qos_flow_modification_request(h.type, bearer, flags);
+    n4buf = smf_n4_build_qos_flow_modification_request(
+                h.type, bearer, flags, &pdr_to_create_list);
     ogs_expect_or_return_val(n4buf, OGS_ERROR);
 
     xact = ogs_pfcp_xact_local_create(
@@ -520,6 +538,8 @@ int smf_epc_pfcp_send_bearer_modification_request(
 
     xact->gtp_pti = gtp_pti;
     xact->gtp_cause = gtp_cause;
+
+    ogs_list_copy(&xact->pdr_to_create_list, &pdr_to_create_list);
 
     rv = ogs_pfcp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);

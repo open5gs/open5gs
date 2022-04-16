@@ -173,11 +173,6 @@ void sgwc_sxa_handle_session_establishment_response(
         cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
     }
 
-    if (pfcp_rsp->created_pdr[0].presence == 0) {
-        ogs_error("No Created PDR");
-        cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
-    }
-
     if (pfcp_rsp->cause.presence) {
         if (pfcp_rsp->cause.u8 != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
             ogs_warn("PFCP Cause [%d] : Not Accepted", pfcp_rsp->cause.u8);
@@ -194,19 +189,21 @@ void sgwc_sxa_handle_session_establishment_response(
         uint8_t pfcp_cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
         uint8_t offending_ie_value = 0;
 
+        sgwc_tunnel_t *tunnel = NULL;
+        ogs_pfcp_pdr_t *pdr = NULL;
+        ogs_pfcp_far_t *far = NULL;
+
         ogs_assert(sess);
         for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
-            sgwc_tunnel_t *tunnel = NULL;
-            ogs_pfcp_pdr_t *pdr = NULL;
-            ogs_pfcp_far_t *far = NULL;
-
             pdr = ogs_pfcp_handle_created_pdr(
                     &sess->pfcp, &pfcp_rsp->created_pdr[i],
                     &pfcp_cause_value, &offending_ie_value);
 
             if (!pdr)
                 break;
+        }
 
+        ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {
             far = pdr->far;
             ogs_assert(far);
 
@@ -356,6 +353,8 @@ void sgwc_sxa_handle_session_modification_response(
 
     ogs_gtp2_cause_t cause;
 
+    OGS_LIST(pdr_to_create_list);
+
     ogs_debug("Session Modification Response");
 
     ogs_assert(pfcp_xact);
@@ -409,19 +408,24 @@ void sgwc_sxa_handle_session_modification_response(
         uint8_t pfcp_cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
         uint8_t offending_ie_value = 0;
 
-        ogs_assert(sess);
-        for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
-            sgwc_tunnel_t *tunnel = NULL;
-            ogs_pfcp_pdr_t *pdr = NULL;
-            ogs_pfcp_far_t *far = NULL;
+        sgwc_tunnel_t *tunnel = NULL;
+        ogs_pfcp_pdr_t *pdr = NULL;
+        ogs_pfcp_far_t *far = NULL;
 
+        ogs_assert(sess);
+
+        ogs_list_copy(&pdr_to_create_list, &pfcp_xact->pdr_to_create_list);
+
+        for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
             pdr = ogs_pfcp_handle_created_pdr(
                     &sess->pfcp, &pfcp_rsp->created_pdr[i],
                     &pfcp_cause_value, &offending_ie_value);
 
             if (!pdr)
                 break;
+        }
 
+        ogs_list_for_each_entry(&pdr_to_create_list, pdr, to_create_node) {
             far = pdr->far;
             ogs_assert(far);
 

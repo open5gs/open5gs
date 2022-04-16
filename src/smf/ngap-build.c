@@ -82,8 +82,8 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
         NGAP_UPTransportLayerInformation_PR_gTPTunnel;
     UPTransportLayerInformation->choice.gTPTunnel = gTPTunnel;
 
-    ogs_assert(sess->upf_n3_addr || sess->upf_n3_addr6);
-    ogs_sockaddr_to_ip(sess->upf_n3_addr, sess->upf_n3_addr6, &upf_n3_ip);
+    ogs_assert(OGS_OK == ogs_sockaddr_to_ip(
+                sess->upf_n3_addr, sess->upf_n3_addr6, &upf_n3_ip));
     ogs_asn_ip_to_BIT_STRING(&upf_n3_ip, &gTPTunnel->transportLayerAddress);
     ogs_asn_uint32_to_OCTET_STRING(sess->upf_n3_teid, &gTPTunnel->gTP_TEID);
 
@@ -378,7 +378,8 @@ ogs_pkbuf_t *ngap_build_path_switch_request_ack_transfer(smf_sess_t *sess)
         NGAP_UPTransportLayerInformation_PR_gTPTunnel;
     UPTransportLayerInformation->choice.gTPTunnel = gTPTunnel;
 
-    ogs_sockaddr_to_ip(sess->upf_n3_addr, sess->upf_n3_addr6, &upf_n3_ip);
+    ogs_assert(OGS_OK == ogs_sockaddr_to_ip(
+                sess->upf_n3_addr, sess->upf_n3_addr6, &upf_n3_ip));
     ogs_asn_ip_to_BIT_STRING(&upf_n3_ip, &gTPTunnel->transportLayerAddress);
     ogs_asn_uint32_to_OCTET_STRING(sess->upf_n3_teid, &gTPTunnel->gTP_TEID);
 
@@ -417,9 +418,9 @@ ogs_pkbuf_t *ngap_build_handover_command_transfer(smf_sess_t *sess)
             CALLOC(1, sizeof(*gTPTunnel));
         ogs_assert(gTPTunnel);
 
-        ogs_sockaddr_to_ip(
+        ogs_assert(OGS_OK == ogs_sockaddr_to_ip(
                 sess->handover.upf_dl_addr, sess->handover.upf_dl_addr6,
-                &upf_dl_ip);
+                &upf_dl_ip));
         ogs_asn_ip_to_BIT_STRING(&upf_dl_ip, &gTPTunnel->transportLayerAddress);
         ogs_asn_uint32_to_OCTET_STRING(
                 sess->handover.upf_dl_teid, &gTPTunnel->gTP_TEID);

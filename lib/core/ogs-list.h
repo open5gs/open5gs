@@ -42,6 +42,11 @@ typedef struct ogs_list_s ogs_lnode_t;;
     (list)->next = (NULL); \
 } while (0)
 
+#define ogs_list_copy(dst, src) do { \
+    (dst)->prev = (src)->prev; \
+    (dst)->next = (src)->next; \
+} while (0)
+
 static ogs_inline void *ogs_list_first(const ogs_list_t *list)
 {
     return list->next;

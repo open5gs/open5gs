@@ -238,7 +238,7 @@ ED3(uint8_t ipv4:1;,
 } ogs_ip_t;
 
 int ogs_ip_to_sockaddr(ogs_ip_t *ip, uint16_t port, ogs_sockaddr_t **list);
-void ogs_sockaddr_to_ip(
+int ogs_sockaddr_to_ip(
         ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6, ogs_ip_t *ip);
 
 char *ogs_ipv4_to_string(uint32_t addr);

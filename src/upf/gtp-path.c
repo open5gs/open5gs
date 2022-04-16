@@ -289,7 +289,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
          *          Session Container should be the first Extension Header
          */
         ogs_gtp2_extension_header_t *extension_header =
-            (ogs_gtp2_extension_header_t *)(pkbuf->data + OGS_GTPV1U_HEADER_LEN);
+            (ogs_gtp2_extension_header_t *)(pkbuf->data+OGS_GTPV1U_HEADER_LEN);
         ogs_assert(extension_header);
         if (extension_header->type ==
                 OGS_GTP2_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER) {

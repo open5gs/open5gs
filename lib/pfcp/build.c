@@ -351,16 +351,14 @@ void ogs_pfcp_build_create_pdr(
     }
 }
 
-void ogs_pfcp_build_created_pdr(
+bool ogs_pfcp_build_created_pdr(
     ogs_pfcp_tlv_created_pdr_t *message, int i, ogs_pfcp_pdr_t *pdr)
 {
+    bool pdr_presence = false;
+
     ogs_assert(message);
 
     ogs_assert(pdr);
-
-    message->presence = 1;
-    message->pdr_id.presence = 1;
-    message->pdr_id.u16 = pdr->id;
 
     if (ogs_pfcp_self()->up_function_features.ftup) {
         if (pdr->f_teid_len) {
@@ -370,8 +368,18 @@ void ogs_pfcp_build_created_pdr(
             message->local_f_teid.presence = 1;
             message->local_f_teid.data = &pdrbuf[i].f_teid;
             message->local_f_teid.len = pdr->f_teid_len;
+
+            pdr_presence = true;
         }
     }
+
+    if (pdr_presence == true) {
+        message->presence = 1;
+        message->pdr_id.presence = 1;
+        message->pdr_id.u16 = pdr->id;
+    }
+
+    return pdr_presence;
 }
 
 void ogs_pfcp_build_update_pdr(

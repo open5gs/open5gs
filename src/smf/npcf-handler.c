@@ -520,14 +520,7 @@ bool smf_npcf_smpolicycontrol_handle_create(
         up2cp_pdr->f_teid.choose_id = OGS_PFCP_DEFAULT_CHOOSE_ID;
         up2cp_pdr->f_teid_len = 2;
     } else {
-        char buf[OGS_ADDRSTRLEN];
         ogs_gtpu_resource_t *resource = NULL;
-        ogs_sockaddr_t *addr = sess->pfcp_node->sa_list;
-        ogs_assert(addr);
-
-        ogs_error("F-TEID allocation/release not supported with peer [%s]:%d",
-                OGS_ADDR(addr, buf), OGS_PORT(addr));
-
         resource = ogs_pfcp_find_gtpu_resource(
                 &sess->pfcp_node->gtpu_resource_list,
                 sess->session.name, OGS_PFCP_INTERFACE_ACCESS);
@@ -536,10 +529,10 @@ bool smf_npcf_smpolicycontrol_handle_create(
                 &sess->upf_n3_addr, &sess->upf_n3_addr6);
             if (resource->info.teidri)
                 sess->upf_n3_teid = OGS_PFCP_GTPU_INDEX_TO_TEID(
-                        sess->index, resource->info.teidri,
+                        ul_pdr->index, resource->info.teidri,
                         resource->info.teid_range);
             else
-                sess->upf_n3_teid = sess->index;
+                sess->upf_n3_teid = ul_pdr->index;
         } else {
             if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
                 ogs_assert(OGS_OK ==
@@ -552,7 +545,7 @@ bool smf_npcf_smpolicycontrol_handle_create(
             else
                 ogs_assert_if_reached();
 
-            sess->upf_n3_teid = sess->index;
+            sess->upf_n3_teid = ul_pdr->index;
         }
 
         ogs_assert(OGS_OK ==
@@ -563,9 +556,9 @@ bool smf_npcf_smpolicycontrol_handle_create(
 
         ogs_assert(OGS_OK ==
             ogs_pfcp_sockaddr_to_f_teid(
-                ogs_gtp_self()->gtpu_addr, ogs_gtp_self()->gtpu_addr6,
+                sess->upf_n3_addr, sess->upf_n3_addr6,
                 &cp2up_pdr->f_teid, &cp2up_pdr->f_teid_len));
-        cp2up_pdr->f_teid.teid = sess->index;
+        cp2up_pdr->f_teid.teid = cp2up_pdr->index;
 
         ogs_assert(OGS_OK ==
             ogs_pfcp_sockaddr_to_f_teid(

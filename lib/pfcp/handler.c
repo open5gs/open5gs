@@ -85,7 +85,7 @@ bool ogs_pfcp_cp_handle_association_setup_request(
         ogs_sockaddr_t *addr = node->sa_list;
         ogs_assert(addr);
 
-        ogs_error("F-TEID allocation/release not supported with peer [%s]:%d",
+        ogs_warn("F-TEID allocation/release not supported with peer [%s]:%d",
                 OGS_ADDR(addr, buf), OGS_PORT(addr));
     }
 
@@ -131,7 +131,7 @@ bool ogs_pfcp_cp_handle_association_setup_response(
         ogs_sockaddr_t *addr = node->sa_list;
         ogs_assert(addr);
 
-        ogs_error("F-TEID allocation/release not supported with peer [%s]:%d",
+        ogs_warn("F-TEID allocation/release not supported with peer [%s]:%d",
                 OGS_ADDR(addr, buf), OGS_PORT(addr));
     }
 

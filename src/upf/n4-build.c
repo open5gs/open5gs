@@ -27,7 +27,7 @@ ogs_pkbuf_t *upf_n4_build_session_establishment_response(uint8_t type,
     ogs_pfcp_session_establishment_response_t *rsp = NULL;
     ogs_pkbuf_t *pkbuf = NULL;
 
-    int i = 0;
+    int i = 0, j = 0;
 
     ogs_pfcp_node_id_t node_id;
     ogs_pfcp_f_seid_t f_seid;
@@ -63,8 +63,10 @@ ogs_pkbuf_t *upf_n4_build_session_establishment_response(uint8_t type,
     ogs_pfcp_pdrbuf_init();
 
     /* Created PDR */
-    for (i = 0; i < num_of_created_pdr; i++) {
-        ogs_pfcp_build_created_pdr(&rsp->created_pdr[i], i, created_pdr[i]);
+    for (i = 0, j = 0; i < num_of_created_pdr; i++) {
+        bool pdr_presence = ogs_pfcp_build_created_pdr(
+                &rsp->created_pdr[j], i, created_pdr[i]);
+        if (pdr_presence == true) j++;
     }
 
     pfcp_message.h.type = type;
@@ -82,7 +84,7 @@ ogs_pkbuf_t *upf_n4_build_session_modification_response(uint8_t type,
     ogs_pfcp_session_modification_response_t *rsp = NULL;
     ogs_pkbuf_t *pkbuf = NULL;
 
-    int i = 0;
+    int i = 0, j = 0;
 
     ogs_debug("Session Modification Response");
 
@@ -96,8 +98,10 @@ ogs_pkbuf_t *upf_n4_build_session_modification_response(uint8_t type,
     ogs_pfcp_pdrbuf_init();
 
     /* Created PDR */
-    for (i = 0; i < num_of_created_pdr; i++) {
-        ogs_pfcp_build_created_pdr(&rsp->created_pdr[i], i, created_pdr[i]);
+    for (i = 0, j = 0; i < num_of_created_pdr; i++) {
+        bool pdr_presence = ogs_pfcp_build_created_pdr(
+                &rsp->created_pdr[j], i, created_pdr[i]);
+        if (pdr_presence == true) j++;
     }
 
     pfcp_message.h.type = type;

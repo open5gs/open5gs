@@ -106,7 +106,8 @@ ogs_pkbuf_t *sgwc_sxa_build_session_establishment_request(
 }
 
 ogs_pkbuf_t *sgwc_sxa_build_sess_modification_request(
-        uint8_t type, sgwc_sess_t *sess, uint64_t modify_flags)
+        uint8_t type, sgwc_sess_t *sess, uint64_t modify_flags,
+        ogs_list_t *pdr_to_create_list)
 {
     ogs_pfcp_message_t pfcp_message;
     ogs_pfcp_session_modification_request_t *req = NULL;
@@ -128,6 +129,10 @@ ogs_pkbuf_t *sgwc_sxa_build_sess_modification_request(
 
     req = &pfcp_message.pfcp_session_modification_request;
     memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
+
+    if (modify_flags & OGS_PFCP_MODIFY_CREATE) {
+        ogs_pfcp_pdrbuf_init();
+    }
 
     ogs_list_for_each(&sess->bearer_list, bearer) {
         ogs_list_for_each(&bearer->tunnel_list, tunnel) {
@@ -182,8 +187,11 @@ ogs_pkbuf_t *sgwc_sxa_build_sess_modification_request(
                             ogs_pfcp_build_create_pdr(
                                     &req->create_pdr[num_of_create_pdr],
                                     num_of_create_pdr, pdr);
-
                             num_of_create_pdr++;
+
+                            ogs_assert(pdr_to_create_list);
+                            ogs_list_add(pdr_to_create_list,
+                                            &pdr->to_create_node);
                         } else
                             ogs_assert_if_reached();
 
@@ -217,11 +225,16 @@ ogs_pkbuf_t *sgwc_sxa_build_sess_modification_request(
     pfcp_message.h.type = type;
     pkbuf = ogs_pfcp_build_msg(&pfcp_message);
 
+    if (modify_flags & OGS_PFCP_MODIFY_CREATE) {
+        ogs_pfcp_pdrbuf_clear();
+    }
+
     return pkbuf;
 }
 
 ogs_pkbuf_t *sgwc_sxa_build_bearer_modification_request(
-        uint8_t type, sgwc_bearer_t *bearer, uint64_t modify_flags)
+        uint8_t type, sgwc_bearer_t *bearer, uint64_t modify_flags,
+        ogs_list_t *pdr_to_create_list)
 {
     ogs_pfcp_message_t pfcp_message;
     ogs_pfcp_session_modification_request_t *req = NULL;
@@ -302,8 +315,10 @@ ogs_pkbuf_t *sgwc_sxa_build_bearer_modification_request(
                         ogs_pfcp_build_create_pdr(
                                 &req->create_pdr[num_of_create_pdr],
                                 num_of_create_pdr, pdr);
-
                         num_of_create_pdr++;
+
+                        ogs_assert(pdr_to_create_list);
+                        ogs_list_add(pdr_to_create_list, &pdr->to_create_node);
                     } else
                         ogs_assert_if_reached();
 

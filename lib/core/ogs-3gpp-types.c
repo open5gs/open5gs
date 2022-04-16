@@ -465,11 +465,11 @@ int ogs_ip_to_sockaddr(ogs_ip_t *ip, uint16_t port, ogs_sockaddr_t **list)
     return OGS_OK;
 }
 
-void ogs_sockaddr_to_ip(
+int ogs_sockaddr_to_ip(
         ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6, ogs_ip_t *ip)
 {
-    ogs_assert(ip);
-    ogs_assert(addr || addr6);
+    ogs_expect_or_return_val(ip, OGS_ERROR);
+    ogs_expect_or_return_val(addr || addr6, OGS_ERROR);
 
     memset(ip, 0, sizeof(ogs_ip_t));
 
@@ -489,6 +489,8 @@ void ogs_sockaddr_to_ip(
         memcpy(ip->addr6, addr6->sin6.sin6_addr.s6_addr, OGS_IPV6_LEN);
     } else
         ogs_assert_if_reached();
+
+    return OGS_OK;
 }
 
 char *ogs_ipv4_to_string(uint32_t addr)

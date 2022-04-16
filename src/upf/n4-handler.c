@@ -131,7 +131,7 @@ void upf_n4_handle_session_establishment_request(
 
         /* Setup UPF-N3-TEID & QFI Hash */
         if (pdr->f_teid_len) {
-            ogs_pfcp_object_type_e type = OGS_PFCP_OBJ_PDR_TYPE;
+            ogs_pfcp_object_type_e type = OGS_PFCP_OBJ_SESS_TYPE;
 
             if (ogs_pfcp_self()->up_function_features.ftup &&
                 pdr->f_teid.ch) {
@@ -139,19 +139,20 @@ void upf_n4_handle_session_establishment_request(
                 ogs_pfcp_pdr_t *choosed_pdr = NULL;
 
                 if (pdr->f_teid.chid) {
-                    type = OGS_PFCP_OBJ_SESS_TYPE;
-
                     choosed_pdr = ogs_pfcp_pdr_find_by_choose_id(
                             &sess->pfcp, pdr->f_teid.choose_id);
                     if (!choosed_pdr) {
                         pdr->chid = true;
                         pdr->choose_id = pdr->f_teid.choose_id;
                     }
+                } else {
+                    type = OGS_PFCP_OBJ_PDR_TYPE;
                 }
 
                 if (choosed_pdr) {
                     pdr->f_teid_len = choosed_pdr->f_teid_len;
                     memcpy(&pdr->f_teid, &choosed_pdr->f_teid, pdr->f_teid_len);
+
                 } else {
                     ogs_gtpu_resource_t *resource = NULL;
                     resource = ogs_pfcp_find_gtpu_resource(
@@ -363,7 +364,7 @@ void upf_n4_handle_session_modification_request(
         ogs_assert(pdr);
 
         if (pdr->f_teid_len) {
-            ogs_pfcp_object_type_e type = OGS_PFCP_OBJ_PDR_TYPE;
+            ogs_pfcp_object_type_e type = OGS_PFCP_OBJ_SESS_TYPE;
 
             if (ogs_pfcp_self()->up_function_features.ftup &&
                 pdr->f_teid.ch) {
@@ -371,14 +372,14 @@ void upf_n4_handle_session_modification_request(
                 ogs_pfcp_pdr_t *choosed_pdr = NULL;
 
                 if (pdr->f_teid.chid) {
-                    type = OGS_PFCP_OBJ_SESS_TYPE;
-
                     choosed_pdr = ogs_pfcp_pdr_find_by_choose_id(
                             &sess->pfcp, pdr->f_teid.choose_id);
                     if (!choosed_pdr) {
                         pdr->chid = true;
                         pdr->choose_id = pdr->f_teid.choose_id;
                     }
+                } else {
+                    type = OGS_PFCP_OBJ_PDR_TYPE;
                 }
 
                 if (choosed_pdr) {
