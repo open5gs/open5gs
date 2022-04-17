@@ -80,7 +80,7 @@ ogs_hash_t *ogs_hash_make()
     ht->seed = (unsigned int)((now >> 32) ^ now ^ 
                               (uintptr_t)ht ^ (uintptr_t)&now) - 1;
     ht->array = alloc_array(ht, ht->max);
-    ht->hash_func = NULL;
+    ht->hash_func = ogs_hashfunc_default;
 
     return ht;
 }
@@ -268,10 +268,7 @@ static ogs_hash_entry_t **find_entry(ogs_hash_t *ht,
     ogs_hash_entry_t **hep, *he;
     unsigned int hash;
 
-    if (ht->hash_func)
-        hash = ht->hash_func(key, &klen, ht->seed);
-    else
-        hash = hashfunc_default(key, &klen, ht->seed);
+    hash = ht->hash_func(key, &klen, ht->seed);
 
     /* scan linked list */
     for (hep = &ht->array[hash & ht->max], he = *hep;
