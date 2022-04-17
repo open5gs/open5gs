@@ -256,9 +256,10 @@ static unsigned int hashfunc_default(
     return hash;
 }
 
-unsigned int ogs_hashfunc_default(const char *char_key, int *klen)
+unsigned int ogs_hashfunc_default(const char *char_key,
+        int *klen, unsigned int seed)
 {
-    return hashfunc_default(char_key, klen, 0);
+    return hashfunc_default(char_key, klen, seed);
 }
 
 static ogs_hash_entry_t **find_entry(ogs_hash_t *ht,
@@ -268,7 +269,7 @@ static ogs_hash_entry_t **find_entry(ogs_hash_t *ht,
     unsigned int hash;
 
     if (ht->hash_func)
-        hash = ht->hash_func(key, &klen);
+        hash = ht->hash_func(key, &klen, ht->seed);
     else
         hash = hashfunc_default(key, &klen, ht->seed);
 
