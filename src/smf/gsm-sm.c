@@ -110,6 +110,8 @@ void smf_gsm_state_initial(ogs_fsm_t *s, smf_event_t *e)
     smf_sess_t *sess = e->sess;
     uint8_t gtp1_cause, gtp2_cause;
 
+    smf_sm_debug(e);
+
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
         /* reset state: */
@@ -170,6 +172,8 @@ void smf_gsm_state_initial_wait_auth(ogs_fsm_t *s, smf_event_t *e)
     ogs_assert(e && e->sess);
     smf_sess_t *sess = e->sess;
     uint32_t diam_err;
+
+    smf_sm_debug(e);
 
     switch (e->id) {
     case SMF_EVT_GX_MESSAGE:
@@ -234,6 +238,8 @@ void smf_gsm_state_initial_wait_pfcp_establishment(ogs_fsm_t *s, smf_event_t *e)
     ogs_assert(e && e->sess);
     smf_sess_t *sess = e->sess;
     uint8_t pfcp_cause, gtp_cause;
+
+    smf_sm_debug(e);
 
     switch (e->id) {
     case SMF_EVT_N4_MESSAGE:
