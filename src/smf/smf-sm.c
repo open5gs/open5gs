@@ -62,6 +62,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
     ogs_diam_gx_message_t *gx_message = NULL;
     ogs_diam_gy_message_t *gy_message = NULL;
+    ogs_diam_s6b_message_t *s6b_message = NULL;
 
     ogs_pfcp_node_t *pfcp_node = NULL;
     ogs_pfcp_xact_t *pfcp_xact = NULL;
@@ -145,8 +146,14 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_fsm_dispatch(&sess->sm, e);
             break;
         case OGS_GTP2_DELETE_SESSION_REQUEST_TYPE:
-            smf_s5c_handle_delete_session_request(
-                sess, gtp_xact, &gtp2_message.delete_session_request);
+            if (!sess) {
+                ogs_gtp2_send_error_message(gtp_xact, 0,
+                        OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE,
+                        OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND);
+                break;
+            }
+            e->sess = sess;
+            ogs_fsm_dispatch(&sess->sm, e);
             break;
         case OGS_GTP2_MODIFY_BEARER_REQUEST_TYPE:
             smf_s5c_handle_modify_bearer_request(
@@ -161,8 +168,12 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 sess, gtp_xact, &gtp2_message.update_bearer_response);
             break;
         case OGS_GTP2_DELETE_BEARER_RESPONSE_TYPE:
-            smf_s5c_handle_delete_bearer_response(
-                sess, gtp_xact, &gtp2_message.delete_bearer_response);
+            if (!sess) {
+                /* TODO: NACK the message */
+                break;
+            }
+            e->sess = sess;
+            ogs_fsm_dispatch(&sess->sm, e);
             break;
         case OGS_GTP2_BEARER_RESOURCE_COMMAND_TYPE:
             smf_s5c_handle_bearer_resource_command(
@@ -230,8 +241,14 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_fsm_dispatch(&sess->sm, e);
             break;
         case OGS_GTP1_DELETE_PDP_CONTEXT_REQUEST_TYPE:
-            smf_gn_handle_delete_pdp_context_request(
-                sess, gtp_xact, &gtp1_message.delete_pdp_context_request);
+            if (!sess) {
+                ogs_gtp1_send_error_message(gtp_xact, 0,
+                        OGS_GTP1_DELETE_PDP_CONTEXT_RESPONSE_TYPE,
+                        OGS_GTP1_CAUSE_NON_EXISTENT);
+                break;
+            }
+            e->sess = sess;
+            ogs_fsm_dispatch(&sess->sm, e);
             break;
         case OGS_GTP1_UPDATE_PDP_CONTEXT_REQUEST_TYPE:
             smf_gn_handle_update_pdp_context_request(
@@ -258,16 +275,12 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
         switch(gx_message->cmd_code) {
         case OGS_DIAM_GX_CMD_CODE_CREDIT_CONTROL:
-            gtp_xact = e->gtp_xact;
-            ogs_assert(gtp_xact);
-
             switch(gx_message->cc_request_type) {
             case OGS_DIAM_GX_CC_REQUEST_TYPE_INITIAL_REQUEST:
                 ogs_fsm_dispatch(&sess->sm, e);
                 break;
             case OGS_DIAM_GX_CC_REQUEST_TYPE_TERMINATION_REQUEST:
-                smf_gx_handle_cca_termination_request(
-                        sess, gx_message, gtp_xact);
+                ogs_fsm_dispatch(&sess->sm, e);
                 break;
             default:
                 ogs_error("Not implemented(%d)", gx_message->cc_request_type);
@@ -307,9 +320,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         sess, gy_message, e->pfcp_xact);
             break;
             case OGS_DIAM_GY_CC_REQUEST_TYPE_TERMINATION_REQUEST:
-                ogs_assert(e->gtp_xact);
-                smf_gy_handle_cca_termination_request(
-                        sess, gy_message, e->gtp_xact);
+                ogs_fsm_dispatch(&sess->sm, e);
                 break;
             default:
                 ogs_error("Not implemented(%d)", gy_message->cc_request_type);
@@ -326,6 +337,25 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         }
 
         ogs_free(gy_message);
+        break;
+
+    case SMF_EVT_S6B_MESSAGE:
+        ogs_assert(e);
+        s6b_message = e->s6b_message;
+        ogs_assert(s6b_message);
+        sess = e->sess;
+        ogs_assert(sess);
+
+        switch(s6b_message->cmd_code) {
+        case OGS_DIAM_S6B_CMD_SESSION_TERMINATION:
+            ogs_fsm_dispatch(&sess->sm, e);
+            break;
+        default:
+            ogs_error("Invalid type(%d)", s6b_message->cmd_code);
+            break;
+        }
+
+        ogs_free(s6b_message);
         break;
 
     case SMF_EVT_N4_MESSAGE:
@@ -715,9 +745,6 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_fsm_dispatch(&sess->sm, e);
             if (OGS_FSM_CHECK(&sess->sm, smf_gsm_state_exception)) {
                 ogs_error("[%s] State machine exception", smf_ue->supi);
-                SMF_SESS_CLEAR(sess);
-            } else if (OGS_FSM_CHECK(
-                        &sess->sm, smf_gsm_state_session_will_release)) {
                 SMF_SESS_CLEAR(sess);
             }
             break;

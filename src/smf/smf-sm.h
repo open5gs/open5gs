@@ -43,13 +43,15 @@ void smf_nf_state_exception(ogs_fsm_t *s, smf_event_t *e);
 
 void smf_gsm_state_initial(ogs_fsm_t *s, smf_event_t *e);
 void smf_gsm_state_final(ogs_fsm_t *s, smf_event_t *e);
+void smf_gsm_state_initial_wait_auth(ogs_fsm_t *s, smf_event_t *e);
+void smf_gsm_state_initial_wait_pfcp_establishment(ogs_fsm_t *s, smf_event_t *e);
 void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e);
+void smf_gsm_state_release_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e);
+void smf_gsm_state_release_wait_auth(ogs_fsm_t *s, smf_event_t *e);
 void smf_gsm_state_session_will_release(ogs_fsm_t *s, smf_event_t *e);
 void smf_gsm_state_exception(ogs_fsm_t *s, smf_event_t *e);
 
 void smf_pfcp_state_initial(ogs_fsm_t *s, smf_event_t *e);
-void smf_gsm_state_initial_wait_auth(ogs_fsm_t *s, smf_event_t *e);
-void smf_gsm_state_initial_wait_pfcp_establishment(ogs_fsm_t *s, smf_event_t *e);
 void smf_pfcp_state_final(ogs_fsm_t *s, smf_event_t *e);
 void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e);
 void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e);

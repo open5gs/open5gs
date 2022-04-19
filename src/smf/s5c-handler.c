@@ -304,58 +304,31 @@ uint8_t smf_s5c_handle_create_session_request(
     return OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
 }
 
-void smf_s5c_handle_delete_session_request(
+uint8_t smf_s5c_handle_delete_session_request(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_gtp2_delete_session_request_t *req)
 {
-    uint8_t cause_value = 0;
-
     ogs_debug("Delete Session Request");
 
     ogs_assert(xact);
     ogs_assert(req);
 
-    cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
-
-    if (!sess) {
-        ogs_warn("No Context");
-        cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
-    } else {
-        if (!ogs_diam_app_connected(OGS_DIAM_GX_APPLICATION_ID)) {
-            ogs_error("No Gx Diameter Peer");
-            cause_value = OGS_GTP2_CAUSE_REMOTE_PEER_NOT_RESPONDING;
-        }
-
-        if (sess->gtp_rat_type == OGS_GTP2_RAT_TYPE_WLAN) {
-            if (!ogs_diam_app_connected(OGS_DIAM_S6B_APPLICATION_ID)) {
-                ogs_error("No S6b Diameter Peer");
-                cause_value = OGS_GTP2_CAUSE_REMOTE_PEER_NOT_RESPONDING;
-            }
-        }
+    if (!ogs_diam_app_connected(OGS_DIAM_GX_APPLICATION_ID)) {
+        ogs_error("No Gx Diameter Peer");
+        return OGS_GTP2_CAUSE_REMOTE_PEER_NOT_RESPONDING;
     }
 
-    if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp2_send_error_message(xact, sess ? sess->sgw_s5c_teid : 0,
-                OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE, cause_value);
-        return;
+    if (sess->gtp_rat_type == OGS_GTP2_RAT_TYPE_WLAN) {
+        if (!ogs_diam_app_connected(OGS_DIAM_S6B_APPLICATION_ID)) {
+            ogs_error("No S6b Diameter Peer");
+            return OGS_GTP2_CAUSE_REMOTE_PEER_NOT_RESPONDING;
+        }
     }
 
     ogs_debug("    SGW_S5C_TEID[0x%x] SMF_N4_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->smf_n4_teid);
 
-    switch (sess->gtp_rat_type) {
-    case OGS_GTP2_RAT_TYPE_EUTRAN:
-        smf_gx_send_ccr(sess, xact,
-            OGS_DIAM_GX_CC_REQUEST_TYPE_TERMINATION_REQUEST);
-        break;
-    case OGS_GTP2_RAT_TYPE_WLAN:
-        smf_s6b_send_str(sess, xact,
-            OGS_DIAM_TERMINATION_CAUSE_DIAMETER_LOGOUT);
-        break;
-    default:
-        ogs_error("Unknown RAT Type [%d]", sess->gtp_rat_type);
-        ogs_assert_if_reached();
-    }
+    return OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
 }
 
 void smf_s5c_handle_modify_bearer_request(
@@ -664,7 +637,8 @@ void smf_s5c_handle_update_bearer_response(
                 OGS_GTP2_CAUSE_UNDEFINED_VALUE));
 }
 
-void smf_s5c_handle_delete_bearer_response(
+/* return true if entire session must be released */
+bool smf_s5c_handle_delete_bearer_response(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_gtp2_delete_bearer_response_t *rsp)
 {
@@ -717,66 +691,64 @@ void smf_s5c_handle_delete_bearer_response(
             ogs_error("No Cause");
             cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
         }
+        /* Release entire session: */
+        return true;
+    }
 
-        ogs_assert(OGS_OK ==
-            smf_epc_pfcp_send_session_deletion_request(
-                sess, NULL));
+    /*
+     * 1. MME sends Bearer Resource Command to SGW/SMF.
+     * 2. SMF sends Delete Bearer Request(DEDICATED BEARER) to SGW/MME
+     * 3. MME sends Delete Bearer Response(DEDICATED BEARER) to SGW/SMF
+     *
+     * OR
+     *
+     * 1. SMF sends Delete Bearer Request(DEDICATED BEARER) to SGW/MME
+     * 2. MME sends Delete Bearer Response(DEDICATED BEARER) to SGW/SMF
+     */
+    if (rsp->bearer_contexts.presence == 0) {
+        ogs_error("No Bearer");
+        cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
+    }
+    if (rsp->bearer_contexts.eps_bearer_id.presence == 0) {
+        ogs_error("No EPS Bearer ID");
+        cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
+    }
 
-    } else {
-        /*
-         * 1. MME sends Bearer Resource Command to SGW/SMF.
-         * 2. SMF sends Delete Bearer Request(DEDICATED BEARER) to SGW/MME
-         * 3. MME sends Delete Bearer Response(DEDICATED BEARER) to SGW/SMF
-         *
-         * OR
-         *
-         * 1. SMF sends Delete Bearer Request(DEDICATED BEARER) to SGW/MME
-         * 2. MME sends Delete Bearer Response(DEDICATED BEARER) to SGW/SMF
-         */
-        if (rsp->bearer_contexts.presence == 0) {
-            ogs_error("No Bearer");
-            cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
-        }
-        if (rsp->bearer_contexts.eps_bearer_id.presence == 0) {
-            ogs_error("No EPS Bearer ID");
-            cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
-        }
+    if (rsp->cause.presence) {
+        ogs_gtp2_cause_t *cause = rsp->cause.data;
+        ogs_assert(cause);
 
-        if (rsp->cause.presence) {
-            ogs_gtp2_cause_t *cause = rsp->cause.data;
-            ogs_assert(cause);
+        cause_value = cause->value;
+        if (cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
+            if (rsp->bearer_contexts.cause.presence) {
+                cause = rsp->bearer_contexts.cause.data;
+                ogs_assert(cause);
 
-            cause_value = cause->value;
-            if (cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-                if (rsp->bearer_contexts.cause.presence) {
-                    cause = rsp->bearer_contexts.cause.data;
-                    ogs_assert(cause);
-
-                    cause_value = cause->value;
-                } else {
-                    ogs_error("No Cause");
-                    cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
-                }
+                cause_value = cause->value;
             } else {
-                ogs_warn("GTP Failed [CAUSE:%d]", cause_value);
+                ogs_error("No Cause");
+                cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
             }
         } else {
-            ogs_error("No Cause");
-            cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
+            ogs_warn("GTP Failed [CAUSE:%d]", cause_value);
         }
-
-        ogs_debug("    SGW_S5C_TEID[0x%x] SMF_N4_TEID[0x%x]",
-                sess->sgw_s5c_teid, sess->smf_n4_teid);
-
-        ogs_debug("Delete Bearer Response : SGW[0x%x] --> SMF[0x%x]",
-                sess->sgw_s5c_teid, sess->smf_n4_teid);
-
-        ogs_assert(OGS_OK ==
-            smf_epc_pfcp_send_bearer_modification_request(
-                bearer, NULL, OGS_PFCP_MODIFY_REMOVE,
-                OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
-                OGS_GTP2_CAUSE_UNDEFINED_VALUE));
+    } else {
+        ogs_error("No Cause");
+        cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
     }
+
+    ogs_debug("    SGW_S5C_TEID[0x%x] SMF_N4_TEID[0x%x]",
+            sess->sgw_s5c_teid, sess->smf_n4_teid);
+
+    ogs_debug("Delete Bearer Response : SGW[0x%x] --> SMF[0x%x]",
+            sess->sgw_s5c_teid, sess->smf_n4_teid);
+
+    ogs_assert(OGS_OK ==
+        smf_epc_pfcp_send_bearer_modification_request(
+            bearer, NULL, OGS_PFCP_MODIFY_REMOVE,
+            OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
+            OGS_GTP2_CAUSE_UNDEFINED_VALUE));
+    return false;
 }
 
 static int reconfigure_packet_filter(smf_pf_t *pf, ogs_gtp2_tft_t *tft, int i)

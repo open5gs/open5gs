@@ -245,17 +245,9 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
             break;
 
         case OGS_PFCP_SESSION_DELETION_RESPONSE_TYPE:
-            if (!message->h.seid_presence) {
+            if (!message->h.seid_presence)
                 ogs_error("No SEID");
-                break;
-            }
-
-            if (xact->epc)
-                smf_epc_n4_handle_session_deletion_response(
-                    sess, xact, &message->pfcp_session_deletion_response);
-            else
-                smf_5gc_n4_handle_session_deletion_response(
-                    sess, xact, &message->pfcp_session_deletion_response);
+            ogs_fsm_dispatch(&sess->sm, e);
             break;
 
         case OGS_PFCP_SESSION_REPORT_REQUEST_TYPE:

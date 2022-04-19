@@ -239,39 +239,20 @@ uint8_t smf_gn_handle_create_pdp_context_request(
     return cause_value;
 }
 
-void smf_gn_handle_delete_pdp_context_request(
+uint8_t smf_gn_handle_delete_pdp_context_request(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_gtp1_delete_pdp_context_request_t *req)
 {
-    uint8_t cause_value = 0;
-
     ogs_debug("Delete PDP Context Request");
 
-    ogs_assert(xact);
-    ogs_assert(req);
-
-    cause_value = OGS_GTP1_CAUSE_REQUEST_ACCEPTED;
-
-    if (!sess) {
-        ogs_warn("No Context");
-        cause_value = OGS_GTP1_CAUSE_NON_EXISTENT;
-    } else {
-        if (!ogs_diam_app_connected(OGS_DIAM_GX_APPLICATION_ID)) {
-            ogs_error("No Gx Diameter Peer");
-            cause_value = OGS_GTP1_CAUSE_NO_RESOURCES_AVAILABLE;
-        }
-    }
-
-    if (cause_value != OGS_GTP1_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp1_send_error_message(xact, sess ? sess->sgw_s5c_teid : 0,
-                OGS_GTP1_DELETE_PDP_CONTEXT_RESPONSE_TYPE, cause_value);
-        return;
+    if (!ogs_diam_app_connected(OGS_DIAM_GX_APPLICATION_ID)) {
+        ogs_error("No Gx Diameter Peer");
+        return OGS_GTP1_CAUSE_NO_RESOURCES_AVAILABLE;
     }
 
     ogs_debug("    SGW_S5C_TEID[0x%x] SMF_N4_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->smf_n4_teid);
-    smf_gx_send_ccr(sess, xact,
-        OGS_DIAM_GX_CC_REQUEST_TYPE_TERMINATION_REQUEST);
+    return OGS_GTP1_CAUSE_REQUEST_ACCEPTED;
 }
 
 void smf_gn_handle_update_pdp_context_request(

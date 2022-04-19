@@ -34,7 +34,7 @@ void smf_s5c_handle_echo_response(
 uint8_t smf_s5c_handle_create_session_request(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_gtp2_create_session_request_t *req);
-void smf_s5c_handle_delete_session_request(
+uint8_t smf_s5c_handle_delete_session_request(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_gtp2_delete_session_request_t *req);
 void smf_s5c_handle_modify_bearer_request(
@@ -46,7 +46,7 @@ void smf_s5c_handle_create_bearer_response(
 void smf_s5c_handle_update_bearer_response(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_gtp2_update_bearer_response_t *req);
-void smf_s5c_handle_delete_bearer_response(
+bool smf_s5c_handle_delete_bearer_response(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_gtp2_delete_bearer_response_t *req);
 void smf_s5c_handle_bearer_resource_command(

@@ -34,6 +34,14 @@ extern struct dict_object *ogs_diam_s6b_application;
 
 extern struct dict_object *ogs_diam_s6b_mip6_feature_vector;
 
+typedef struct ogs_diam_s6b_message_s {
+#define OGS_DIAM_S6B_CMD_SESSION_TERMINATION                        1
+    uint16_t            cmd_code;
+    uint32_t            result_code;
+    uint32_t            *err;
+    uint32_t            *exp_err;
+} ogs_diam_s6b_message_t;
+
 int ogs_diam_s6b_init(void);
 
 #ifdef __cplusplus

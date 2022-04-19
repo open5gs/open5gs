@@ -214,7 +214,13 @@ typedef struct smf_sess_s {
         bool gx_ccr_init_in_flight; /* Waiting for Gx CCA */
         uint32_t gx_cca_init_err; /* Gx CCA RXed error code */
         bool gy_ccr_init_in_flight; /* Waiting for Gy CCA */
-        uint32_t gy_cca_init_err; /* Gx CCA RXed error code */
+        uint32_t gy_cca_init_err; /* Gy CCA RXed error code */
+        bool gx_ccr_term_in_flight; /* Waiting for Gx CCA */
+        uint32_t gx_cca_term_err; /* Gx CCA RXed error code */
+        bool gy_ccr_term_in_flight; /* Waiting for Gy CCA */
+        uint32_t gy_cca_term_err; /* Gy CCA RXed error code */
+        bool s6b_str_in_flight; /* Waiting for S6B CCA */
+        uint32_t s6b_sta_err; /* S6B CCA RXed error code */
     } sm_data;
 
     ogs_pfcp_sess_t pfcp;           /* PFCP session context */

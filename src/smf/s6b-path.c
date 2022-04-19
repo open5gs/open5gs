@@ -20,7 +20,7 @@
 #include "fd-path.h"
 
 static struct session_handler *smf_s6b_reg = NULL;
-static struct disp_hdl *hdl_s6b_fb = NULL; 
+static struct disp_hdl *hdl_s6b_fb = NULL;
 
 struct sess_state {
     smf_sess_t *sess;
@@ -62,12 +62,12 @@ static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
     ogs_thread_mutex_unlock(&sess_state_mutex);
 }
 
-static int smf_s6b_fb_cb(struct msg **msg, struct avp *avp, 
+static int smf_s6b_fb_cb(struct msg **msg, struct avp *avp,
         struct session *sess, void *opaque, enum disp_action *act)
 {
 	/* This CB should never be called */
 	ogs_warn("Unexpected message received!");
-	
+
 	return ENOTSUP;
 }
 
@@ -488,7 +488,7 @@ void smf_s6b_send_str(smf_sess_t *sess, ogs_gtp_xact_t *xact, uint32_t cause)
     smf_ue_t *smf_ue = NULL;
     char *user_name = NULL;
 
-    ogs_assert(xact);
+    //ogs_assert(xact);
     ogs_assert(sess);
     smf_ue = sess->smf_ue;
     ogs_assert(smf_ue);
@@ -603,6 +603,7 @@ void smf_s6b_send_str(smf_sess_t *sess, ogs_gtp_xact_t *xact, uint32_t cause)
 static void smf_s6b_sta_cb(void *data, struct msg **msg)
 {
     int ret;
+    int rv;
 
     struct sess_state *sess_data = NULL;
     struct timespec ts;
@@ -612,11 +613,10 @@ static void smf_s6b_sta_cb(void *data, struct msg **msg)
     unsigned long dur;
     int error = 0;
     int new;
-    int result_code = 0;
-    int exp_result_code = 0;
 
+    smf_event_t *e = NULL;
     smf_sess_t *sess = NULL;
-    ogs_gtp_xact_t *xact = NULL;
+    ogs_diam_s6b_message_t *s6b_message = NULL;
 
     ogs_debug("[Session-Termination-Answer]");
 
@@ -638,9 +638,11 @@ static void smf_s6b_sta_cb(void *data, struct msg **msg)
     ogs_debug("    Retrieve its data: [%s]", sess_data->s6b_sid);
 
     sess = sess_data->sess;
-    ogs_assert(sess);
-    xact = sess_data->xact;
-    ogs_assert(xact);
+
+    s6b_message = ogs_calloc(1, sizeof(ogs_diam_s6b_message_t));
+    ogs_assert(s6b_message);
+    /* Set Session Termination Command */
+    s6b_message->cmd_code = OGS_DIAM_S6B_CMD_SESSION_TERMINATION;
 
     /* Value of Result Code */
     ret = fd_msg_search_avp(*msg, ogs_diam_result_code, &avp);
@@ -648,9 +650,10 @@ static void smf_s6b_sta_cb(void *data, struct msg **msg)
     if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
-        result_code = hdr->avp_value->i32;
-        if (result_code != ER_DIAMETER_SUCCESS) {
-            ogs_error("Result Code: %d", result_code);
+        s6b_message->result_code = hdr->avp_value->i32;
+        s6b_message->err = &s6b_message->result_code;
+        if (s6b_message->result_code != ER_DIAMETER_SUCCESS) {
+            ogs_error("Result Code: %d", s6b_message->result_code);
             error++;
         }
     } else {
@@ -665,8 +668,10 @@ static void smf_s6b_sta_cb(void *data, struct msg **msg)
             if (avpch1) {
                 ret = fd_msg_avp_hdr(avpch1, &hdr);
                 ogs_assert(ret == 0);
-                exp_result_code = hdr->avp_value->i32;
-                ogs_error("Experimental Result Code: %d", exp_result_code);
+                s6b_message->result_code = hdr->avp_value->i32;
+                s6b_message->exp_err = &s6b_message->result_code;
+                ogs_error("Experimental Result Code: %d",
+                        s6b_message->result_code);
             }
         } else {
             ogs_error("no Result-Code");
@@ -700,8 +705,21 @@ static void smf_s6b_sta_cb(void *data, struct msg **msg)
     }
 
     if (!error) {
-        smf_gx_send_ccr(sess, xact,
-            OGS_DIAM_GX_CC_REQUEST_TYPE_TERMINATION_REQUEST);
+        e = smf_event_new(SMF_EVT_S6B_MESSAGE);
+        ogs_assert(e);
+
+        e->sess = sess;
+        e->s6b_message = s6b_message;
+        rv = ogs_queue_push(ogs_app()->queue, e);
+        if (rv != OGS_OK) {
+            ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+            ogs_free(s6b_message);
+            smf_event_free(e);
+        } else {
+            ogs_pollset_notify(ogs_app()->pollset);
+        }
+    } else {
+        ogs_free(s6b_message);
     }
 
     /* Free the message */

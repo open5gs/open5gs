@@ -243,26 +243,18 @@ uint32_t smf_gx_handle_cca_initial_request(
     return ER_DIAMETER_SUCCESS;
 }
 
-void smf_gx_handle_cca_termination_request(
+uint32_t smf_gx_handle_cca_termination_request(
         smf_sess_t *sess, ogs_diam_gx_message_t *gx_message,
         ogs_gtp_xact_t *gtp_xact)
 {
     ogs_assert(sess);
     ogs_assert(gx_message);
-    ogs_assert(gtp_xact);
 
     ogs_debug("[SMF] Delete Session Response");
     ogs_debug("    SGW_S5C_TEID[0x%x] SMF_N4_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->smf_n4_teid);
 
-    /*
-     * << 'gtp_xact' is NOT NULL >>
-     *
-     * 1. MME sends Delete Session Request to SGW/SMF.
-     * 2. SMF sends Delete Session Response to SGW/MME.
-     */
-    ogs_assert(OGS_OK ==
-        smf_epc_pfcp_send_session_deletion_request(sess, gtp_xact));
+    return ER_DIAMETER_SUCCESS;
 }
 
 void smf_gx_handle_re_auth_request(

@@ -693,7 +693,7 @@ void smf_5gc_n4_handle_session_deletion_response(
         ogs_assert(stream);
         ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
-        SMF_SESS_CLEAR(sess);
+        OGS_FSM_TRAN(&sess->sm, smf_gsm_state_session_will_release);
     } else if (trigger == OGS_PFCP_DELETE_TRIGGER_PCF_INITIATED) {
         smf_n1_n2_message_transfer_param_t param;
 
@@ -1045,61 +1045,28 @@ void smf_epc_n4_handle_session_modification_response(
     }
 }
 
-void smf_epc_n4_handle_session_deletion_response(
+uint8_t smf_epc_n4_handle_session_deletion_response(
         smf_sess_t *sess, ogs_pfcp_xact_t *xact,
         ogs_pfcp_session_deletion_response_t *rsp)
 {
-    uint8_t cause_value = 0;
-    uint8_t resp_type = 0;
-    ogs_gtp_xact_t *gtp_xact = NULL;
     smf_bearer_t *bearer = NULL;
     unsigned int i;
 
+    ogs_assert(sess);
     ogs_assert(xact);
     ogs_assert(rsp);
 
     ogs_debug("Session Deletion Response [epc]");
 
-    gtp_xact = xact->assoc_xact;
-
     ogs_pfcp_xact_commit(xact);
 
-    /* If !gtp_xact, set it to whatever valid, nothing is sent in the end anyway */
-    uint8_t gtp_version = gtp_xact ? gtp_xact->gtp_version : 2;
-
-    if (gtp_version == 1) {
-        resp_type = OGS_GTP1_DELETE_PDP_CONTEXT_RESPONSE_TYPE;
-        cause_value = OGS_GTP1_CAUSE_REQUEST_ACCEPTED;
-    } else {
-        resp_type = OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE;
-        cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
-    }
-
-    if (!sess) {
-        ogs_warn("No Context");
-        cause_value = (gtp_version == 1) ?
-                        OGS_GTP1_CAUSE_NON_EXISTENT :
-                        OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
-    }
-
-    if (rsp->cause.presence) {
-        if (rsp->cause.u8 != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
-            ogs_warn("PFCP Cause[%d] : Not Accepted", rsp->cause.u8);
-            cause_value = gtp_cause_from_pfcp(rsp->cause.u8, gtp_version);
-        }
-    } else {
+    if (!rsp->cause.presence) {
         ogs_error("No Cause");
-        cause_value = (gtp_xact->gtp_version == 1) ?
-                        OGS_GTP1_CAUSE_MANDATORY_IE_MISSING :
-                        OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
+        return OGS_PFCP_CAUSE_MANDATORY_IE_MISSING;
     }
-
-    if (gtp_xact &&
-        ((gtp_version == 1 && cause_value != OGS_GTP1_CAUSE_REQUEST_ACCEPTED) ||
-         (gtp_version == 2 && cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED))) {
-        ogs_gtp_send_error_message(gtp_xact, sess->sgw_s5c_teid, resp_type,
-                cause_value);
-        return;
+    if (rsp->cause.u8 != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
+            ogs_warn("PFCP Cause[%d] : Not Accepted", rsp->cause.u8);
+            return rsp->cause.u8;
     }
 
     ogs_assert(sess);
@@ -1124,48 +1091,7 @@ void smf_epc_n4_handle_session_deletion_response(
         sess->gy.duration += use_rep->duration_measurement.u32;
     }
 
-    switch(smf_use_gy_iface()) {
-    case 1:
-        /* Gy is available, terminate the Gy session before terminating it towards the UE */
-        smf_gy_send_ccr(sess, gtp_xact,
-            OGS_DIAM_GY_CC_REQUEST_TYPE_TERMINATION_REQUEST);
-        return;
-    case -1:
-        ogs_error("No Gy Diameter Peer");
-        break; /* continue below */
-    /* default: continue below */
-    }
-
-    if (gtp_xact) {
-        /*
-         * 1. MME sends Delete Session Request to SGW/SMF.
-         * 2. SMF sends Delete Session Response to SGW/MME.
-         */
-        switch (gtp_version) {
-        case 1:
-            ogs_assert(OGS_OK == smf_gtp1_send_delete_pdp_context_response(sess, gtp_xact));
-            break;
-        case 2:
-            ogs_assert(OGS_OK == smf_gtp_send_delete_session_response(sess, gtp_xact));
-            break;
-        }
-    } else {
-        /*
-         * 1. SMF sends Delete Bearer Request(DEFAULT BEARER) to SGW/MME.
-         * 2. MME sends Delete Bearer Response to SGW/SMF.
-         *
-         * OR
-         *
-         * 1. SMF sends Delete Bearer Request(DEFAULT BEARER) to ePDG.
-         * 2. ePDG sends Delete Bearer Response(DEFAULT BEARER) to SMF.
-         *
-         * Note that the following messages are not processed here.
-         * - Bearer Resource Command
-         * - Delete Bearer Request/Response with DEDICATED BEARER.
-         */
-    }
-
-    SMF_SESS_CLEAR(sess);
+    return OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 }
 
 void smf_n4_handle_session_report_request(
