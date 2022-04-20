@@ -182,7 +182,7 @@ void smf_gy_handle_cca_update_request(
     }
 }
 
-void smf_gy_handle_cca_termination_request(
+uint32_t smf_gy_handle_cca_termination_request(
         smf_sess_t *sess, ogs_diam_gy_message_t *gy_message,
         ogs_gtp_xact_t *gtp_xact)
 {
@@ -194,36 +194,7 @@ void smf_gy_handle_cca_termination_request(
     ogs_debug("    SGW_S5C_TEID[0x%x] SMF_N4_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->smf_n4_teid);
 
-     if (gtp_xact) {
-         /*
-          * 1. MME sends Delete Session Request to SGW/SMF.
-          * 2. SMF sends Delete Session Response to SGW/MME.
-          */
-         switch (gtp_xact->gtp_version) {
-         case 1:
-             ogs_assert(OGS_OK == smf_gtp1_send_delete_pdp_context_response(sess, gtp_xact));
-             break;
-         case 2:
-             ogs_assert(OGS_OK == smf_gtp_send_delete_session_response(sess, gtp_xact));
-             break;
-         }
-     } else {
-         /*
-          * 1. SMF sends Delete Bearer Request(DEFAULT BEARER) to SGW/MME.
-          * 2. MME sends Delete Bearer Response to SGW/SMF.
-          *
-          * OR
-          *
-          * 1. SMF sends Delete Bearer Request(DEFAULT BEARER) to ePDG.
-          * 2. ePDG sends Delete Bearer Response(DEFAULT BEARER) to SMF.
-          *
-          * Note that the following messages are not processed here.
-          * - Bearer Resource Command
-          * - Delete Bearer Request/Response with DEDICATED BEARER.
-          */
-     }
-     SMF_SESS_CLEAR(sess);
-     return;
+     return ER_DIAMETER_SUCCESS;
 }
 
 void smf_gy_handle_re_auth_request(

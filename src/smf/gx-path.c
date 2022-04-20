@@ -93,7 +93,6 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
     struct sockaddr_in6 sin6;
     uint32_t charing_id;
 
-    ogs_assert(xact);
     ogs_assert(sess);
 
     ogs_assert(sess->ipv4 || sess->ipv6);
@@ -742,7 +741,6 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
     ogs_debug("    CC-Request-Number[%d]", cc_request_number);
 
     xact = sess_data->xact[cc_request_number];
-    ogs_assert(xact);
     sess = sess_data->sess;
     ogs_assert(sess);
 
