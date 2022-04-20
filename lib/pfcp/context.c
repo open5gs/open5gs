@@ -403,7 +403,7 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                         const char *hostname[OGS_MAX_NUM_OF_HOSTNAME];
                         uint16_t port = self.pfcp_port;
                         uint16_t tac[OGS_MAX_NUM_OF_TAI] = {0,};
-                        uint8_t num_of_tac = 0;
+                        uint16_t num_of_tac = 0;
                         const char *dnn[OGS_MAX_NUM_OF_DNN];
                         uint8_t num_of_dnn = 0;
                         uint32_t e_cell_id[OGS_MAX_NUM_OF_CELL_ID] = {0,};
