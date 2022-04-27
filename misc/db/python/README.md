@@ -24,7 +24,7 @@ slice_data = [
       "session": [
         {
           "name": "internet",
-          "type": 3, "pcc_rule": [], "ambr": {"uplink": {"value": 1, "unit": 0}, "downlink": {"value": 1, "unit": 0}},
+          "type": 3, "pcc_rule": [], "ambr": {"uplink": {"value": 1, "unit": 3}, "downlink": {"value": 1, "unit": 3}},
           "qos": {
             "index": 9,
             "arp": {"priority_level": 8, "pre_emption_capability": 1, "pre_emption_vulnerability": 1}
@@ -41,7 +41,7 @@ sub_data = {
   "subscriber_status": 0,
   "access_restriction_data": 32,
   "slice" : slice_data,
-  "ambr": {"uplink": {"value": 1, "unit": 0}, "downlink": {"value": 1, "unit": 0}},
+  "ambr": {"uplink": {"value": 1, "unit": 3}, "downlink": {"value": 1, "unit": 3}},
   "security": {
     "k": "465B5CE8 B199B49F AA5F0A2E E238A6BC",
     "amf": "8000",
