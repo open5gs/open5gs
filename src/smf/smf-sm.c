@@ -732,7 +732,10 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_sbi_xact_remove(sbi_xact);
 
             sess = smf_sess_cycle(sess);
-            ogs_assert(sess);
+            if (!sess) {
+                ogs_error("Session has already been removed");
+                break;
+            }
             smf_ue = sess->smf_ue;
             ogs_assert(smf_ue);
             smf_ue = smf_ue_cycle(smf_ue);

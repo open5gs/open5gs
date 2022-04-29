@@ -277,12 +277,14 @@ int upf_pfcp_send_session_report_request(
     h.type = OGS_PFCP_SESSION_REPORT_REQUEST_TYPE;
     h.seid = sess->smf_n4_seid;
 
+    xact = ogs_pfcp_xact_local_create(sess->pfcp_node, sess_timeout, sess);
+    ogs_expect_or_return_val(xact, OGS_ERROR);
+
     n4buf = ogs_pfcp_build_session_report_request(h.type, report);
     ogs_expect_or_return_val(n4buf, OGS_ERROR);
 
-    xact = ogs_pfcp_xact_local_create(
-            sess->pfcp_node, &h, n4buf, sess_timeout, sess);
-    ogs_expect_or_return_val(xact, OGS_ERROR);
+    rv = ogs_pfcp_xact_update_tx(xact, &h, n4buf);
+    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
 
     rv = ogs_pfcp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);

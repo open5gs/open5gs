@@ -111,8 +111,7 @@ ogs_pkbuf_t *smf_n4_build_session_establishment_request(
 }
 
 ogs_pkbuf_t *smf_n4_build_session_modification_request(
-        uint8_t type, smf_sess_t *sess, uint64_t modify_flags,
-        ogs_list_t *pdr_to_create_list)
+        uint8_t type, smf_sess_t *sess, ogs_pfcp_xact_t *xact)
 {
     ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_urr_t *urr = NULL;
@@ -128,8 +127,12 @@ ogs_pkbuf_t *smf_n4_build_session_modification_request(
     int num_of_create_far = 0;
     int num_of_update_far = 0;
 
+    uint64_t modify_flags = 0;
+
     ogs_debug("Session Modification Request");
     ogs_assert(sess);
+    ogs_assert(xact);
+    modify_flags = xact->modify_flags;
     ogs_assert(modify_flags);
 
     req = &pfcp_message.pfcp_session_modification_request;
@@ -181,8 +184,7 @@ ogs_pkbuf_t *smf_n4_build_session_modification_request(
                         num_of_create_pdr, pdr);
                 num_of_create_pdr++;
 
-                ogs_assert(pdr_to_create_list);
-                ogs_list_add(pdr_to_create_list, &pdr->to_create_node);
+                ogs_list_add(&xact->pdr_to_create_list, &pdr->to_create_node);
 
                 ogs_pfcp_build_create_far(
                         &req->create_far[num_of_create_far],
@@ -237,8 +239,7 @@ ogs_pkbuf_t *smf_n4_build_session_modification_request(
 }
 
 ogs_pkbuf_t *smf_n4_build_qos_flow_modification_request(
-        uint8_t type, smf_bearer_t *qos_flow, uint64_t modify_flags,
-        ogs_list_t *pdr_to_create_list)
+        uint8_t type, smf_bearer_t *qos_flow, ogs_pfcp_xact_t *xact)
 {
     ogs_pfcp_message_t pfcp_message;
     ogs_pfcp_session_modification_request_t *req = NULL;
@@ -247,10 +248,15 @@ ogs_pkbuf_t *smf_n4_build_qos_flow_modification_request(
 
     smf_sess_t *sess = NULL;
 
+    uint64_t modify_flags = 0;
+
     ogs_debug("QoS Flow Modification Request");
+
     ogs_assert(qos_flow);
     sess = qos_flow->sess;
     ogs_assert(sess);
+    ogs_assert(xact);
+    modify_flags = xact->modify_flags;
     ogs_assert(modify_flags);
 
     req = &pfcp_message.pfcp_session_modification_request;
@@ -324,8 +330,7 @@ ogs_pkbuf_t *smf_n4_build_qos_flow_modification_request(
                         &req->create_pdr[i], i, qos_flow->dl_pdr);
                 i++;
 
-                ogs_assert(pdr_to_create_list);
-                ogs_list_add(pdr_to_create_list,
+                ogs_list_add(&xact->pdr_to_create_list,
                                 &qos_flow->dl_pdr->to_create_node);
             }
             if (qos_flow->ul_pdr) {
@@ -333,8 +338,7 @@ ogs_pkbuf_t *smf_n4_build_qos_flow_modification_request(
                         &req->create_pdr[i], i, qos_flow->ul_pdr);
                 i++;
 
-                ogs_assert(pdr_to_create_list);
-                ogs_list_add(pdr_to_create_list,
+                ogs_list_add(&xact->pdr_to_create_list,
                                 &qos_flow->ul_pdr->to_create_node);
             }
 

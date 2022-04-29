@@ -32,7 +32,7 @@ struct ogs_list_s {
     struct ogs_list_s *prev, *next;
 };
 typedef struct ogs_list_s ogs_list_t;
-typedef struct ogs_list_s ogs_lnode_t;;
+typedef struct ogs_list_s ogs_lnode_t;
 
 #define OGS_LIST(name) \
     ogs_list_t name = { NULL, NULL }
@@ -123,7 +123,7 @@ static ogs_inline void ogs_list_remove(ogs_list_t *list, void *lnode)
 {
     ogs_list_t *node = lnode;
     ogs_list_t *prev = node->prev;
-    ogs_list_t *next = node->next;;
+    ogs_list_t *next = node->next;
 
     if (prev)
         prev->next = next;

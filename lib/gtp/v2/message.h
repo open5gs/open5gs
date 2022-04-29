@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by gtp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2022-04-12 14:16:09.770077 by pespin
+ * Created on: 2022-04-22 03:19:22.024556 by acetcom
  * from 29274-g30.docx
  ******************************************************************************/
 
@@ -851,7 +851,7 @@ typedef struct ogs_gtp2_modify_bearer_request_s {
     ogs_gtp2_tlv_f_teid_t sender_f_teid_for_control_plane;
     ogs_gtp2_tlv_ambr_t aggregate_maximum_bit_rate;
     ogs_gtp2_tlv_delay_value_t delay_downlink_packet_notification_request;
-    ogs_gtp2_tlv_bearer_context_t bearer_contexts_to_be_modified;
+    ogs_gtp2_tlv_bearer_context_t bearer_contexts_to_be_modified[8];
     ogs_gtp2_tlv_bearer_context_t bearer_contexts_to_be_removed;
     ogs_gtp2_tlv_recovery_t recovery;
     ogs_gtp2_tlv_ue_time_zone_t ue_time_zone;
@@ -884,7 +884,7 @@ typedef struct ogs_gtp2_modify_bearer_response_s {
     ogs_gtp2_tlv_ebi_t linked_eps_bearer_id;
     ogs_gtp2_tlv_apn_restriction_t apn_restriction;
     ogs_gtp2_tlv_pco_t protocol_configuration_options;
-    ogs_gtp2_tlv_bearer_context_t bearer_contexts_modified;
+    ogs_gtp2_tlv_bearer_context_t bearer_contexts_modified[8];
     ogs_gtp2_tlv_bearer_context_t bearer_contexts_marked_for_removal;
     ogs_gtp2_tlv_change_reporting_action_t change_reporting_action;
     ogs_gtp2_tlv_csg_information_reporting_action_t csg_information_reporting_action;

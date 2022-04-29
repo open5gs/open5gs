@@ -115,6 +115,10 @@ typedef struct ogs_gtp_xact_s {
 #define OGS_GTP_CREATE_IN_UPLINK_NAS_TRANSPORT 2
 #define OGS_GTP_CREATE_IN_PATH_SWITCH_REQUEST 3
     int             create_action;
+
+#define OGS_GTP_MODIFY_IN_PATH_SWITCH_REQUEST 1
+#define OGS_GTP_MODIFY_IN_E_RAB_MODIFICATION 2
+    int             modify_action;
 } ogs_gtp_xact_t;
 
 int ogs_gtp_xact_init(void);

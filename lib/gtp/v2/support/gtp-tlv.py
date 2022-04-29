@@ -219,7 +219,7 @@ if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
     print("Read from " + cachefile)
 else:
     document = Document(filename)
-    f = open(cachefile, 'w') 
+    f = open(cachefile, 'w')
 
     msg_table = ""
     for i, paragraph, table in document_paragraph_tables(document):
@@ -252,7 +252,7 @@ if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
     print("Read from " + cachefile)
 else:
     document = Document(filename)
-    f = open(cachefile, 'w') 
+    f = open(cachefile, 'w')
 
     ie_table = ""
     for i, paragraph, table in document_paragraph_tables(document):
@@ -298,7 +298,7 @@ if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
     print("Read from " + cachefile)
 else:
     document = Document(filename)
-    f = open(cachefile, 'w') 
+    f = open(cachefile, 'w')
 
     for i, paragraph, table in document_paragraph_tables(document):
         if table.rows[0].cells[0].text.find('Octet') != -1 and \
@@ -400,7 +400,7 @@ for key in msg_list.keys():
             print("Read from " + cachefile)
         else:
             document = Document(filename)
-            f = open(cachefile, 'w') 
+            f = open(cachefile, 'w')
 
             ies = []
             write_file(f, "ies = []\n")
@@ -580,7 +580,7 @@ for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
         f.write("typedef struct ogs_gtp2_" + v_lower(k) + "_s {\n")
         for ies in msg_list[k]["ies"]:
-            if (k == 'Create Indirect Data Forwarding Tunnel Request' or k == 'Create Indirect Data Forwarding Tunnel Response') and ies["ie_value"] == 'Bearer Contexts':
+            if ((k == 'Create Indirect Data Forwarding Tunnel Request' or k == 'Create Indirect Data Forwarding Tunnel Response') and ies["ie_value"] == 'Bearer Contexts') or (k == 'Modify Bearer Request' and ies["ie_value"] == 'Bearer Contexts to be modified') or (k == 'Modify Bearer Response' and ies["ie_value"] == 'Bearer Contexts modified'):
                 f.write("    ogs_gtp2_tlv_" + v_lower(ies["ie_type"]) + "_t " + \
                         v_lower(ies["ie_value"]) + "[8];\n")
             else:
@@ -671,13 +671,13 @@ for (k, v) in sorted_msg_list:
         f.write("    0, 0, 0, 0, {\n")
         for ies in msg_list[k]["ies"]:
             f.write("        &ogs_gtp2_tlv_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), v_lower(ies["instance"])))
-            if (k == 'Create Indirect Data Forwarding Tunnel Request' or k == 'Create Indirect Data Forwarding Tunnel Response') and ies["ie_value"] == 'Bearer Contexts':
+            if ((k == 'Create Indirect Data Forwarding Tunnel Request' or k == 'Create Indirect Data Forwarding Tunnel Response') and ies["ie_value"] == 'Bearer Contexts') or (k == 'Modify Bearer Request' and ies["ie_value"] == 'Bearer Contexts to be modified') or (k == 'Modify Bearer Response' and ies["ie_value"] == 'Bearer Contexts modified'):
                 f.write("        &ogs_tlv_desc_more8,\n")
         f.write("    NULL,\n")
         f.write("}};\n\n")
 f.write("\n")
 
-f.write("""int ogs_gtp2_parse_msg(ogs_gtp2_message_t *gtp_message, ogs_pkbuf_t *pkbuf)
+f.write("""int ogs_gtp2_parse_msg(ogs_gtp2_message_t *gtp2_message, ogs_pkbuf_t *pkbuf)
 {
     int rv = OGS_ERROR;
     ogs_gtp2_header_t *h = NULL;
@@ -689,7 +689,7 @@ f.write("""int ogs_gtp2_parse_msg(ogs_gtp2_message_t *gtp_message, ogs_pkbuf_t *
 
     h = (ogs_gtp2_header_t *)pkbuf->data;
     ogs_assert(h);
-    
+
     memset(gtp2_message, 0, sizeof(ogs_gtp2_message_t));
 
     if (h->teid_presence)
@@ -701,7 +701,7 @@ f.write("""int ogs_gtp2_parse_msg(ogs_gtp2_message_t *gtp_message, ogs_pkbuf_t *
     memcpy(&gtp2_message->h, pkbuf->data - size, size);
 
     if (h->teid_presence)
-        gtp2_message->h.teid = be32toh(gtp_message->h.teid);
+        gtp2_message->h.teid = be32toh(gtp2_message->h.teid);
 
     if (pkbuf->len == 0) {
         ogs_assert(ogs_pkbuf_push(pkbuf, size));
@@ -728,7 +728,7 @@ f.write("""    default:
 
 """)
 
-f.write("""ogs_pkbuf_t *ogs_gtp2_build_msg(ogs_gtp2_message_t *gtp_message)
+f.write("""ogs_pkbuf_t *ogs_gtp2_build_msg(ogs_gtp2_message_t *gtp2_message)
 {
     ogs_pkbuf_t *pkbuf = NULL;
 
@@ -749,7 +749,5 @@ f.write("""    default:
     return pkbuf;
 }
 """)
-
-f.write("\n")
 
 f.close()

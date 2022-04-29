@@ -136,11 +136,14 @@ int ogs_pfcp_send_heartbeat_request(ogs_pfcp_node_t *node,
     h.type = OGS_PFCP_HEARTBEAT_REQUEST_TYPE;
     h.seid = 0;
 
+    xact = ogs_pfcp_xact_local_create(node, cb, node);
+    ogs_expect_or_return_val(xact, OGS_ERROR);
+
     pkbuf = ogs_pfcp_build_heartbeat_request(h.type);
     ogs_expect_or_return_val(pkbuf, OGS_ERROR);
 
-    xact = ogs_pfcp_xact_local_create(node, &h, pkbuf, cb, node);
-    ogs_expect_or_return_val(xact, OGS_ERROR);
+    rv = ogs_pfcp_xact_update_tx(xact, &h, pkbuf);
+    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
 
     rv = ogs_pfcp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
@@ -186,11 +189,14 @@ int ogs_pfcp_cp_send_association_setup_request(ogs_pfcp_node_t *node,
     h.type = OGS_PFCP_ASSOCIATION_SETUP_REQUEST_TYPE;
     h.seid = 0;
 
+    xact = ogs_pfcp_xact_local_create(node, cb, node);
+    ogs_expect_or_return_val(xact, OGS_ERROR);
+
     pkbuf = ogs_pfcp_cp_build_association_setup_request(h.type);
     ogs_expect_or_return_val(pkbuf, OGS_ERROR);
 
-    xact = ogs_pfcp_xact_local_create(node, &h, pkbuf, cb, node);
-    ogs_expect_or_return_val(xact, OGS_ERROR);
+    rv = ogs_pfcp_xact_update_tx(xact, &h, pkbuf);
+    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
 
     rv = ogs_pfcp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
@@ -237,11 +243,14 @@ int ogs_pfcp_up_send_association_setup_request(ogs_pfcp_node_t *node,
     h.type = OGS_PFCP_ASSOCIATION_SETUP_REQUEST_TYPE;
     h.seid = 0;
 
+    xact = ogs_pfcp_xact_local_create(node, cb, node);
+    ogs_expect_or_return_val(xact, OGS_ERROR);
+
     pkbuf = ogs_pfcp_up_build_association_setup_request(h.type);
     ogs_expect_or_return_val(pkbuf, OGS_ERROR);
 
-    xact = ogs_pfcp_xact_local_create(node, &h, pkbuf, cb, node);
-    ogs_expect_or_return_val(xact, OGS_ERROR);
+    rv = ogs_pfcp_xact_update_tx(xact, &h, pkbuf);
+    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
 
     rv = ogs_pfcp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);

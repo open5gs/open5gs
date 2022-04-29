@@ -45,6 +45,7 @@ static OGS_POOL(mme_csmap_pool, mme_csmap_t);
 static OGS_POOL(mme_enb_pool, mme_enb_t);
 static OGS_POOL(mme_ue_pool, mme_ue_t);
 static OGS_POOL(enb_ue_pool, enb_ue_t);
+static OGS_POOL(sgw_ue_pool, sgw_ue_t);
 static OGS_POOL(mme_sess_pool, mme_sess_t);
 static OGS_POOL(mme_bearer_pool, mme_bearer_t);
 
@@ -57,6 +58,10 @@ static void stats_add_enb_ue(void);
 static void stats_remove_enb_ue(void);
 static void stats_add_mme_session(void);
 static void stats_remove_mme_session(void);
+
+static bool compare_ue_info(mme_sgw_t *node, enb_ue_t *enb_ue);
+static mme_sgw_t *selected_sgw_node(mme_sgw_t *current, enb_ue_t *enb_ue);
+static mme_sgw_t *changed_sgw_node(mme_sgw_t *current, enb_ue_t *enb_ue);
 
 void mme_context_init()
 {
@@ -96,6 +101,7 @@ void mme_context_init()
 
     ogs_pool_init(&mme_ue_pool, ogs_app()->max.ue);
     ogs_pool_init(&enb_ue_pool, ogs_app()->max.ue);
+    ogs_pool_init(&sgw_ue_pool, ogs_app()->max.ue);
     ogs_pool_init(&mme_sess_pool, ogs_app()->pool.sess);
     ogs_pool_init(&mme_bearer_pool, ogs_app()->pool.bearer);
     ogs_pool_init(&self.m_tmsi, ogs_app()->max.ue);
@@ -141,6 +147,7 @@ void mme_context_final()
     ogs_pool_final(&mme_sess_pool);
     ogs_pool_final(&mme_ue_pool);
     ogs_pool_final(&enb_ue_pool);
+    ogs_pool_final(&sgw_ue_pool);
 
     ogs_pool_final(&mme_enb_pool);
 
@@ -1557,6 +1564,8 @@ mme_sgw_t *mme_sgw_add(ogs_sockaddr_t *addr)
     ogs_list_init(&sgw->gnode.local_list);
     ogs_list_init(&sgw->gnode.remote_list);
 
+    ogs_list_init(&sgw->sgw_ue_list);
+
     ogs_list_add(&self.sgw_list, sgw);
 
     return sgw;
@@ -2019,6 +2028,112 @@ enb_ue_t *enb_ue_cycle(enb_ue_t *enb_ue)
     return ogs_pool_cycle(&enb_ue_pool, enb_ue);
 }
 
+/** sgw_ue_context handling function */
+sgw_ue_t *sgw_ue_add(mme_sgw_t *sgw)
+{
+    sgw_ue_t *sgw_ue = NULL;
+
+    ogs_assert(sgw);
+
+    ogs_pool_alloc(&sgw_ue_pool, &sgw_ue);
+    ogs_assert(sgw_ue);
+    memset(sgw_ue, 0, sizeof *sgw_ue);
+
+    sgw_ue->index = ogs_pool_index(&sgw_ue_pool, sgw_ue);
+    ogs_assert(sgw_ue->index > 0 && sgw_ue->index <= ogs_app()->max.ue);
+
+    sgw_ue->mme_s11_teid = sgw_ue->index;
+
+    sgw_ue->t_gtp2_holding = ogs_timer_add(
+            ogs_app()->timer_mgr, mme_timer_s11_holding_timer_expire, sgw_ue);
+    ogs_assert(sgw_ue->t_gtp2_holding);
+
+    sgw_ue->sgw = sgw;
+
+    ogs_list_add(&sgw->sgw_ue_list, sgw_ue);
+
+    return sgw_ue;
+}
+
+void sgw_ue_remove(sgw_ue_t *sgw_ue)
+{
+    mme_sgw_t *sgw = NULL;
+
+    ogs_assert(sgw_ue);
+    sgw = sgw_ue->sgw;
+    ogs_assert(sgw);
+
+    ogs_list_remove(&sgw->sgw_ue_list, sgw_ue);
+
+    ogs_assert(sgw_ue->t_gtp2_holding);
+    ogs_timer_delete(sgw_ue->t_gtp2_holding);
+
+    ogs_pool_free(&sgw_ue_pool, sgw_ue);
+}
+
+void sgw_ue_switch_to_sgw(sgw_ue_t *sgw_ue, mme_sgw_t *new_sgw)
+{
+    ogs_assert(sgw_ue);
+    ogs_assert(sgw_ue->sgw);
+    ogs_assert(new_sgw);
+
+    /* Remove from the old sgw */
+    ogs_list_remove(&sgw_ue->sgw->sgw_ue_list, sgw_ue);
+
+    /* Add to the new sgw */
+    ogs_list_add(&new_sgw->sgw_ue_list, sgw_ue);
+
+    /* Switch to sgw */
+    sgw_ue->sgw = new_sgw;
+}
+
+sgw_ue_t *sgw_ue_find(uint32_t index)
+{
+    return ogs_pool_find(&sgw_ue_pool, index);
+}
+
+sgw_ue_t *sgw_ue_find_by_mme_s11_teid(uint32_t mme_s11_teid)
+{
+    return sgw_ue_find(mme_s11_teid);
+}
+
+sgw_ue_t *sgw_ue_cycle(sgw_ue_t *sgw_ue)
+{
+    return ogs_pool_cycle(&sgw_ue_pool, sgw_ue);
+}
+
+sgw_relocation_e sgw_ue_check_if_relocated(mme_ue_t *mme_ue)
+{
+    enb_ue_t *enb_ue = NULL;
+    sgw_ue_t *source_ue, *target_ue = NULL;
+    mme_sgw_t *current = NULL, *changed = NULL;
+
+    ogs_assert(mme_ue);
+    enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+    ogs_assert(enb_ue);
+    source_ue = sgw_ue_cycle(mme_ue->sgw_ue);
+    ogs_assert(source_ue);
+
+    current = source_ue->sgw;
+    ogs_assert(current);
+
+    changed = changed_sgw_node(current, enb_ue);
+    if (!changed) return SGW_WITHOUT_RELOCATION;
+
+    target_ue = sgw_ue_cycle(source_ue->target_ue);
+    if (target_ue) {
+        ogs_error("SGW-UE source has already been associated with target");
+        return SGW_HAS_ALREADY_BEEN_RELOCATED;
+    }
+
+    target_ue = sgw_ue_add(changed);
+    ogs_assert(target_ue);
+
+    sgw_ue_source_associate_target(source_ue, target_ue);
+
+    return SGW_WITH_RELOCATION;
+}
+
 void mme_ue_new_guti(mme_ue_t *mme_ue)
 {
     served_gummei_t *served_gummei = NULL;
@@ -2111,7 +2226,7 @@ static mme_sgw_t *selected_sgw_node(mme_sgw_t *current, enb_ue_t *enb_ue)
     return next ? next : ogs_list_first(&mme_self()->sgw_list);
 }
 
-mme_sgw_t *mme_changed_sgw_node(mme_sgw_t *current, enb_ue_t *enb_ue)
+static mme_sgw_t *changed_sgw_node(mme_sgw_t *current, enb_ue_t *enb_ue)
 {
     mme_sgw_t *changed = NULL;
 
@@ -2129,6 +2244,7 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
 {
     mme_enb_t *enb = NULL;
     mme_ue_t *mme_ue = NULL;
+    sgw_ue_t *sgw_ue = NULL;
 
     char buf[OGS_ADDRSTRLEN];
 
@@ -2144,10 +2260,6 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
 
     ogs_list_init(&mme_ue->sess_list);
 
-    mme_ue->mme_s11_teid = ogs_pool_index(&mme_ue_pool, mme_ue);
-    ogs_assert(mme_ue->mme_s11_teid > 0 &&
-            mme_ue->mme_s11_teid <= ogs_app()->max.ue);
-
     /*
      * When used for the first time, if last node is set,
      * the search is performed from the first SGW in a round-robin manner.
@@ -2156,10 +2268,16 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
         mme_self()->sgw = ogs_list_last(&mme_self()->sgw_list);
 
     /* setup GTP path with selected SGW */
-    mme_ue->sgw = mme_self()->sgw = selected_sgw_node(mme_self()->sgw, enb_ue);
-    ogs_assert(mme_ue->sgw);
-    ogs_assert(mme_ue->gnode);
-    ogs_debug("UE using SGW on IP[%s]", OGS_ADDR(mme_ue->gnode->sa_list, buf));
+    mme_self()->sgw = selected_sgw_node(mme_self()->sgw, enb_ue);
+    ogs_assert(mme_self()->sgw);
+
+    sgw_ue = sgw_ue_add(mme_self()->sgw);
+    ogs_assert(sgw_ue);
+    ogs_assert(sgw_ue->gnode);
+
+    sgw_ue_associate_mme_ue(sgw_ue, mme_ue);
+
+    ogs_debug("UE using SGW on IP[%s]", OGS_ADDR(sgw_ue->gnode->sa_list, buf));
 
     /* Clear VLR */
     mme_ue->csmap = NULL;
@@ -2213,6 +2331,9 @@ void mme_ue_remove(mme_ue_t *mme_ue)
 
     mme_ue_fsm_fini(mme_ue);
 
+    ogs_assert(mme_ue->sgw_ue);
+    sgw_ue_remove(mme_ue->sgw_ue);
+
     if (mme_ue->current.m_tmsi)
         ogs_assert(mme_m_tmsi_free(mme_ue->current.m_tmsi) == OGS_OK);
 
@@ -2239,7 +2360,7 @@ void mme_ue_remove(mme_ue_t *mme_ue)
     ogs_timer_delete(mme_ue->t3460.timer);
     ogs_timer_delete(mme_ue->t3470.timer);
 
-    mme_ue_deassociate(mme_ue);
+    enb_ue_unlink(mme_ue);
 
     mme_sess_remove_all(mme_ue);
     mme_session_remove_all(mme_ue);
@@ -2315,11 +2436,6 @@ mme_ue_t *mme_ue_find_by_guti(ogs_nas_eps_guti_t *guti)
 
     return (mme_ue_t *)ogs_hash_get(
             self.guti_ue_hash, guti, sizeof(ogs_nas_eps_guti_t));
-}
-
-mme_ue_t *mme_ue_find_by_teid(uint32_t teid)
-{
-    return ogs_pool_find(&mme_ue_pool, teid);
 }
 
 mme_ue_t *mme_ue_find_by_message(ogs_nas_eps_message_t *message)
@@ -2598,7 +2714,7 @@ bool mme_ue_have_active_eps_bearers(mme_ue_t *mme_ue)
     return false;
 }
 
-void mme_ue_associate_enb_ue(mme_ue_t *mme_ue, enb_ue_t *enb_ue)
+void enb_ue_associate_mme_ue(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
 {
     ogs_assert(mme_ue);
     ogs_assert(enb_ue);
@@ -2613,14 +2729,13 @@ void enb_ue_deassociate(enb_ue_t *enb_ue)
     enb_ue->mme_ue = NULL;
 }
 
-void mme_ue_deassociate(mme_ue_t *mme_ue)
+void enb_ue_unlink(mme_ue_t *mme_ue)
 {
     ogs_assert(mme_ue);
     mme_ue->enb_ue = NULL;
 }
 
-void source_ue_associate_target_ue(
-        enb_ue_t *source_ue, enb_ue_t *target_ue)
+void enb_ue_source_associate_target(enb_ue_t *source_ue, enb_ue_t *target_ue)
 {
     mme_ue_t *mme_ue = NULL;
 
@@ -2634,7 +2749,7 @@ void source_ue_associate_target_ue(
     source_ue->target_ue = target_ue;
 }
 
-void source_ue_deassociate_target_ue(enb_ue_t *enb_ue)
+void enb_ue_source_deassociate_target(enb_ue_t *enb_ue)
 {
     enb_ue_t *source_ue = NULL;
     enb_ue_t *target_ue = NULL;
@@ -2651,6 +2766,66 @@ void source_ue_deassociate_target_ue(enb_ue_t *enb_ue)
     } else if (enb_ue->source_ue) {
         target_ue = enb_ue;
         source_ue = enb_ue->source_ue;
+
+        ogs_assert(source_ue->target_ue);
+        ogs_assert(target_ue->source_ue);
+        source_ue->target_ue = NULL;
+        target_ue->source_ue = NULL;
+    }
+}
+
+void sgw_ue_associate_mme_ue(sgw_ue_t *sgw_ue, mme_ue_t *mme_ue)
+{
+    ogs_assert(mme_ue);
+    ogs_assert(sgw_ue);
+
+    mme_ue->sgw_ue = sgw_ue;
+    sgw_ue->mme_ue = mme_ue;
+}
+
+void sgw_ue_deassociate(sgw_ue_t *sgw_ue)
+{
+    ogs_assert(sgw_ue);
+    sgw_ue->mme_ue = NULL;
+}
+
+void sgw_ue_unlink(mme_ue_t *mme_ue)
+{
+    ogs_assert(mme_ue);
+    mme_ue->sgw_ue = NULL;
+}
+
+void sgw_ue_source_associate_target(sgw_ue_t *source_ue, sgw_ue_t *target_ue)
+{
+    mme_ue_t *mme_ue = NULL;
+
+    ogs_assert(source_ue);
+    ogs_assert(target_ue);
+    mme_ue = source_ue->mme_ue;
+    ogs_assert(mme_ue);
+
+    target_ue->mme_ue = mme_ue;
+    target_ue->source_ue = source_ue;
+    source_ue->target_ue = target_ue;
+}
+
+void sgw_ue_source_deassociate_target(sgw_ue_t *sgw_ue)
+{
+    sgw_ue_t *source_ue = NULL;
+    sgw_ue_t *target_ue = NULL;
+    ogs_assert(sgw_ue);
+
+    if (sgw_ue->target_ue) {
+        source_ue = sgw_ue;
+        target_ue = sgw_ue->target_ue;
+
+        ogs_assert(source_ue->target_ue);
+        ogs_assert(target_ue->source_ue);
+        source_ue->target_ue = NULL;
+        target_ue->source_ue = NULL;
+    } else if (sgw_ue->source_ue) {
+        target_ue = sgw_ue;
+        source_ue = sgw_ue->source_ue;
 
         ogs_assert(source_ue->target_ue);
         ogs_assert(target_ue->source_ue);

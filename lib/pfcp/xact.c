@@ -72,10 +72,8 @@ void ogs_pfcp_xact_final(void)
 }
 
 ogs_pfcp_xact_t *ogs_pfcp_xact_local_create(ogs_pfcp_node_t *node,
-        ogs_pfcp_header_t *hdesc, ogs_pkbuf_t *pkbuf,
         void (*cb)(ogs_pfcp_xact_t *xact, void *data), void *data)
 {
-    int rv;
     char buf[OGS_ADDRSTRLEN];
     ogs_pfcp_xact_t *xact = NULL;
 
@@ -109,12 +107,7 @@ ogs_pfcp_xact_t *ogs_pfcp_xact_local_create(ogs_pfcp_node_t *node,
     ogs_list_add(xact->org == OGS_PFCP_LOCAL_ORIGINATOR ?
             &xact->node->local_list : &xact->node->remote_list, xact);
 
-    rv = ogs_pfcp_xact_update_tx(xact, hdesc, pkbuf);
-    if (rv != OGS_OK) {
-        ogs_error("ogs_pfcp_xact_update_tx(rv=%d) failed", (int)rv);
-        ogs_pfcp_xact_delete(xact);
-        return NULL;
-    }
+    ogs_list_init(&xact->pdr_to_create_list);
 
     ogs_debug("[%d] %s Create  peer [%s]:%d",
             xact->xid,

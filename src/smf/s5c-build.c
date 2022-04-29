@@ -263,19 +263,19 @@ ogs_pkbuf_t *smf_s5c_build_modify_bearer_response(
     rsp->cause.data = &cause;
     rsp->cause.len = sizeof(cause);
 
-    rsp->bearer_contexts_modified.presence = 1;
-    rsp->bearer_contexts_modified.eps_bearer_id.presence = 1;
-    rsp->bearer_contexts_modified.eps_bearer_id.u8 =
-        req->bearer_contexts_to_be_modified.eps_bearer_id.u8;
-    rsp->bearer_contexts_modified.s1_u_enodeb_f_teid.presence = 1;
-    rsp->bearer_contexts_modified.s1_u_enodeb_f_teid.data =
-        req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.data;
-    rsp->bearer_contexts_modified.s1_u_enodeb_f_teid.len =
-        req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.len;
+    rsp->bearer_contexts_modified[0].presence = 1;
+    rsp->bearer_contexts_modified[0].eps_bearer_id.presence = 1;
+    rsp->bearer_contexts_modified[0].eps_bearer_id.u8 =
+        req->bearer_contexts_to_be_modified[0].eps_bearer_id.u8;
+    rsp->bearer_contexts_modified[0].s1_u_enodeb_f_teid.presence = 1;
+    rsp->bearer_contexts_modified[0].s1_u_enodeb_f_teid.data =
+        req->bearer_contexts_to_be_modified[0].s1_u_enodeb_f_teid.data;
+    rsp->bearer_contexts_modified[0].s1_u_enodeb_f_teid.len =
+        req->bearer_contexts_to_be_modified[0].s1_u_enodeb_f_teid.len;
 
-    rsp->bearer_contexts_modified.cause.presence = 1;
-    rsp->bearer_contexts_modified.cause.len = sizeof(cause);
-    rsp->bearer_contexts_modified.cause.data = &cause;
+    rsp->bearer_contexts_modified[0].cause.presence = 1;
+    rsp->bearer_contexts_modified[0].cause.len = sizeof(cause);
+    rsp->bearer_contexts_modified[0].cause.data = &cause;
 
     /* build */
     gtp_message.h.type = type;

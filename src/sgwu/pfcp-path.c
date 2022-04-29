@@ -132,7 +132,7 @@ int sgwu_pfcp_open(void)
     ogs_list_for_each(&ogs_pfcp_self()->pfcp_list, node) {
         sock = ogs_pfcp_server(node);
         if (!sock) return OGS_ERROR;
-        
+
         node->poll = ogs_pollset_add(ogs_app()->pollset,
                 OGS_POLLIN, sock->fd, pfcp_recv_cb, sock);
         ogs_assert(node->poll);
@@ -274,12 +274,14 @@ int sgwu_pfcp_send_session_report_request(
     h.type = OGS_PFCP_SESSION_REPORT_REQUEST_TYPE;
     h.seid = sess->sgwc_sxa_seid;
 
+    xact = ogs_pfcp_xact_local_create(sess->pfcp_node, sess_timeout, sess);
+    ogs_expect_or_return_val(xact, OGS_ERROR);
+
     sxabuf = ogs_pfcp_build_session_report_request(h.type, report);
     ogs_expect_or_return_val(sxabuf, OGS_ERROR);
 
-    xact = ogs_pfcp_xact_local_create(
-            sess->pfcp_node, &h, sxabuf, sess_timeout, sess);
-    ogs_expect_or_return_val(xact, OGS_ERROR);
+    rv = ogs_pfcp_xact_update_tx(xact, &h, sxabuf);
+    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
 
     rv = ogs_pfcp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);

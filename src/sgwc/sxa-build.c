@@ -105,17 +105,17 @@ ogs_pkbuf_t *sgwc_sxa_build_session_establishment_request(
     return pkbuf;
 }
 
-ogs_pkbuf_t *sgwc_sxa_build_sess_modification_request(
-        uint8_t type, sgwc_sess_t *sess, uint64_t modify_flags,
-        ogs_list_t *pdr_to_create_list)
+ogs_pkbuf_t *sgwc_sxa_build_session_modification_request(
+        uint8_t type, sgwc_sess_t *sess, ogs_pfcp_xact_t *xact)
 {
     ogs_pfcp_message_t pfcp_message;
     ogs_pfcp_session_modification_request_t *req = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
+
     ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_far_t *far = NULL;
-    ogs_pkbuf_t *pkbuf = NULL;
-    sgwc_bearer_t *bearer = NULL;
     sgwc_tunnel_t *tunnel = NULL;
+    sgwc_bearer_t *bearer = NULL;
 
     int num_of_remove_pdr = 0;
     int num_of_remove_far = 0;
@@ -123,18 +123,30 @@ ogs_pkbuf_t *sgwc_sxa_build_sess_modification_request(
     int num_of_create_far = 0;
     int num_of_update_far = 0;
 
+    uint64_t modify_flags = 0;
+
     ogs_debug("Session Modification Request");
+
     ogs_assert(sess);
+    ogs_assert(xact);
+    modify_flags = xact->modify_flags;
     ogs_assert(modify_flags);
 
     req = &pfcp_message.pfcp_session_modification_request;
     memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
 
+    num_of_remove_pdr = 0;
+    num_of_remove_far = 0;
+    num_of_create_pdr = 0;
+    num_of_create_far = 0;
+    num_of_update_far = 0;
+
     if (modify_flags & OGS_PFCP_MODIFY_CREATE) {
         ogs_pfcp_pdrbuf_init();
     }
 
-    ogs_list_for_each(&sess->bearer_list, bearer) {
+    ogs_list_for_each_entry(
+            &xact->bearer_to_modify_list, bearer, to_modify_node) {
         ogs_list_for_each(&bearer->tunnel_list, tunnel) {
             if (((modify_flags &
                   (OGS_PFCP_MODIFY_DL_ONLY|
@@ -180,136 +192,7 @@ ogs_pkbuf_t *sgwc_sxa_build_sess_modification_request(
                     } else
                         ogs_assert_if_reached();
 
-                } else {
-                    if (modify_flags & OGS_PFCP_MODIFY_CREATE) {
-                        pdr = tunnel->pdr;
-                        if (pdr) {
-                            ogs_pfcp_build_create_pdr(
-                                    &req->create_pdr[num_of_create_pdr],
-                                    num_of_create_pdr, pdr);
-                            num_of_create_pdr++;
-
-                            ogs_assert(pdr_to_create_list);
-                            ogs_list_add(pdr_to_create_list,
-                                            &pdr->to_create_node);
-                        } else
-                            ogs_assert_if_reached();
-
-                        far = tunnel->far;
-                        if (far) {
-                            ogs_pfcp_build_create_far(
-                                    &req->create_far[num_of_create_far],
-                                    num_of_create_far, far);
-
-                            num_of_create_far++;
-                        } else
-                            ogs_assert_if_reached();
-                    }
-                    if (modify_flags & OGS_PFCP_MODIFY_DEACTIVATE) {
-                        far = tunnel->far;
-                        if (far) {
-                            ogs_pfcp_build_update_far_deactivate(
-                                    &req->update_far[num_of_update_far],
-                                    num_of_update_far, far);
-
-                            num_of_update_far++;
-                        } else
-                            ogs_assert_if_reached();
-                    }
-                }
-            }
-
-        }
-    }
-
-    pfcp_message.h.type = type;
-    pkbuf = ogs_pfcp_build_msg(&pfcp_message);
-
-    if (modify_flags & OGS_PFCP_MODIFY_CREATE) {
-        ogs_pfcp_pdrbuf_clear();
-    }
-
-    return pkbuf;
-}
-
-ogs_pkbuf_t *sgwc_sxa_build_bearer_modification_request(
-        uint8_t type, sgwc_bearer_t *bearer, uint64_t modify_flags,
-        ogs_list_t *pdr_to_create_list)
-{
-    ogs_pfcp_message_t pfcp_message;
-    ogs_pfcp_session_modification_request_t *req = NULL;
-    sgwc_tunnel_t *tunnel = NULL;
-    ogs_pfcp_pdr_t *pdr = NULL;
-    ogs_pfcp_far_t *far = NULL;
-    ogs_pkbuf_t *pkbuf = NULL;
-    int num_of_remove_pdr = 0;
-    int num_of_remove_far = 0;
-    int num_of_create_pdr = 0;
-    int num_of_create_far = 0;
-    int num_of_update_far = 0;
-
-    sgwc_sess_t *sess = NULL;
-
-    ogs_debug("Session Modification Request");
-    ogs_assert(bearer);
-    sess = bearer->sess;
-    ogs_assert(sess);
-    ogs_assert(modify_flags);
-
-    req = &pfcp_message.pfcp_session_modification_request;
-    memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
-
-    if (modify_flags & OGS_PFCP_MODIFY_CREATE) {
-        ogs_pfcp_pdrbuf_init();
-    }
-
-    ogs_list_for_each(&bearer->tunnel_list, tunnel) {
-        if (((modify_flags &
-              (OGS_PFCP_MODIFY_DL_ONLY|
-               OGS_PFCP_MODIFY_UL_ONLY|
-               OGS_PFCP_MODIFY_INDIRECT)) == 0) ||
-
-            ((modify_flags & OGS_PFCP_MODIFY_DL_ONLY) &&
-             (tunnel->interface_type == OGS_GTP2_F_TEID_S5_S8_SGW_GTP_U)) ||
-
-            ((modify_flags & OGS_PFCP_MODIFY_UL_ONLY) &&
-             (tunnel->interface_type == OGS_GTP2_F_TEID_S1_U_SGW_GTP_U)) ||
-
-            (((modify_flags & OGS_PFCP_MODIFY_INDIRECT) &&
-              ((tunnel->interface_type ==
-                  OGS_GTP2_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING) ||
-               (tunnel->interface_type ==
-                  OGS_GTP2_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING))))) {
-
-            if (modify_flags & OGS_PFCP_MODIFY_REMOVE) {
-                pdr = tunnel->pdr;
-                if (pdr) {
-                    ogs_pfcp_tlv_remove_pdr_t *message =
-                        &req->remove_pdr[num_of_remove_pdr];
-
-                    message->presence = 1;
-                    message->pdr_id.presence = 1;
-                    message->pdr_id.u16 = pdr->id;
-
-                    num_of_remove_pdr++;
-                } else
-                    ogs_assert_if_reached();
-
-                far = tunnel->far;
-                if (far) {
-                    ogs_pfcp_tlv_remove_far_t *message =
-                        &req->remove_far[num_of_remove_far];
-
-                    message->presence = 1;
-                    message->far_id.presence = 1;
-                    message->far_id.u32 = far->id;
-
-                    num_of_remove_far++;
-                } else
-                    ogs_assert_if_reached();
-
-            } else {
-                if (modify_flags & OGS_PFCP_MODIFY_CREATE) {
+                } else if (modify_flags & OGS_PFCP_MODIFY_CREATE) {
                     pdr = tunnel->pdr;
                     if (pdr) {
                         ogs_pfcp_build_create_pdr(
@@ -317,8 +200,8 @@ ogs_pkbuf_t *sgwc_sxa_build_bearer_modification_request(
                                 num_of_create_pdr, pdr);
                         num_of_create_pdr++;
 
-                        ogs_assert(pdr_to_create_list);
-                        ogs_list_add(pdr_to_create_list, &pdr->to_create_node);
+                        ogs_list_add(&xact->pdr_to_create_list,
+                                        &pdr->to_create_node);
                     } else
                         ogs_assert_if_reached();
 
@@ -331,9 +214,17 @@ ogs_pkbuf_t *sgwc_sxa_build_bearer_modification_request(
                         num_of_create_far++;
                     } else
                         ogs_assert_if_reached();
-                }
+                } else if (modify_flags & OGS_PFCP_MODIFY_DEACTIVATE) {
+                    far = tunnel->far;
+                    if (far) {
+                        ogs_pfcp_build_update_far_deactivate(
+                                &req->update_far[num_of_update_far],
+                                num_of_update_far, far);
 
-                if (modify_flags & OGS_PFCP_MODIFY_ACTIVATE) {
+                        num_of_update_far++;
+                    } else
+                        ogs_assert_if_reached();
+                } else if (modify_flags & OGS_PFCP_MODIFY_ACTIVATE) {
                     far = tunnel->far;
                     if (far) {
                         if (modify_flags & OGS_PFCP_MODIFY_END_MARKER) {

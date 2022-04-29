@@ -23,38 +23,41 @@
 
 static mme_timer_cfg_t g_mme_timer_cfg[MAX_NUM_OF_MME_TIMER] = {
     /* Paging procedure for EPS services initiated */
-    [MME_TIMER_T3413] = 
+    [MME_TIMER_T3413] =
         { .max_count = 2, .duration = ogs_time_from_sec(2) },
 
     /* DETACH REQUEST sent */
-    [MME_TIMER_T3422] = 
+    [MME_TIMER_T3422] =
         { .max_count = 4, .duration = ogs_time_from_sec(3) },
 
     /* ATTACH ACCEPT sent
      * TRACKING AREA UPDATE ACCEPT sent with GUTI
      * TRACKING AREA UPDATE ACCEPT sent with TMSI
      * GUTI REALLOCATION COMMAND sent */
-    [MME_TIMER_T3450] = 
+    [MME_TIMER_T3450] =
         { .max_count = 4, .duration = ogs_time_from_sec(6) },
 
     /* AUTHENTICATION REQUEST sent
      * SECURITY MODE COMMAND sent */
-    [MME_TIMER_T3460] = 
+    [MME_TIMER_T3460] =
         { .max_count = 4, .duration = ogs_time_from_sec(3) },
 
     /* IDENTITY REQUEST sent */
-    [MME_TIMER_T3470] = 
+    [MME_TIMER_T3470] =
         { .max_count = 4, .duration = ogs_time_from_sec(3) },
 
     /* ESM INFORMATION REQUEST sent */
-    [MME_TIMER_T3489] = 
+    [MME_TIMER_T3489] =
         { .max_count = 2, .duration = ogs_time_from_sec(4) },
 
-    [MME_TIMER_SGS_CLI_CONN_TO_SRV] = 
+    [MME_TIMER_SGS_CLI_CONN_TO_SRV] =
         { .duration = ogs_time_from_sec(3) },
 
     [MME_TIMER_S1_HOLDING] =
         { .duration = ogs_time_from_sec(30) },
+
+    [MME_TIMER_S11_HOLDING] =
+        { .duration = ogs_time_from_msec(300) },
 };
 
 static void emm_timer_event_send(
@@ -89,7 +92,9 @@ const char *mme_timer_get_name(mme_timer_e id)
         return "MME_TIMER_SGS_CLI_CONN_TO_SRV";
     case MME_TIMER_S1_HOLDING:
         return "MME_TIMER_S1_HOLDING";
-    default: 
+    case MME_TIMER_S11_HOLDING:
+        return "MME_TIMER_S11_HOLDING";
+    default:
        break;
     }
 
@@ -209,6 +214,27 @@ void mme_timer_s1_holding_timer_expire(void *data)
 
     e->timer_id = MME_TIMER_S1_HOLDING;
     e->enb_ue = enb_ue;
+
+    rv = ogs_queue_push(ogs_app()->queue, e);
+    if (rv != OGS_OK) {
+        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+        mme_event_free(e);
+    }
+}
+
+void mme_timer_s11_holding_timer_expire(void *data)
+{
+    int rv;
+    mme_event_t *e = NULL;
+    sgw_ue_t *sgw_ue = NULL;
+
+    ogs_assert(data);
+    sgw_ue = data;
+
+    e = mme_event_new(MME_EVT_S11_TIMER);
+
+    e->timer_id = MME_TIMER_S11_HOLDING;
+    e->sgw_ue = sgw_ue;
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {

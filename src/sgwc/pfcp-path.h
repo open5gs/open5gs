@@ -31,9 +31,26 @@ void sgwc_pfcp_close(void);
 
 int sgwc_pfcp_send_session_establishment_request(
         sgwc_sess_t *sess, ogs_gtp_xact_t *gtp_xact, ogs_pkbuf_t *gtpbuf);
+
+/*
+ * sgwc_pfcp_xact_create()/sgwc_pfcp_xact_commit() can only be used
+ * with sgwc_pfcp_send_sess_modification_request()
+ *
+ * You should not use the following functions
+ * - sgwc_pfcp_send_session_establishment_request()
+ * - sgwc_pfcp_send_bearer_modification_request()
+ * - sgwc_pfcp_send_session_deletion_request()
+ * - sgwc_pfcp_send_session_report_response()
+ */
+ogs_pfcp_xact_t *sgwc_pfcp_xact_create(
+        sgwc_sess_t *sess, ogs_gtp_xact_t *gtp_xact,
+        ogs_pkbuf_t *gtpbuf, uint64_t flags);
+int sgwc_pfcp_xact_commit(ogs_pfcp_xact_t *xact);
+
 int sgwc_pfcp_send_sess_modification_request(
         sgwc_sess_t *sess, ogs_gtp_xact_t *gtp_xact,
         ogs_pkbuf_t *gtpbuf, uint64_t flags);
+
 int sgwc_pfcp_send_bearer_modification_request(
         sgwc_bearer_t *bearer, ogs_gtp_xact_t *gtp_xact,
         ogs_pkbuf_t *gtpbuf, uint64_t flags);

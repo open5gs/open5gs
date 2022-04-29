@@ -61,6 +61,7 @@ typedef struct ogs_diam_s6a_message_s ogs_diam_s6a_message_t;
 typedef struct mme_vlr_s mme_vlr_t;
 typedef struct mme_enb_s mme_enb_t;
 typedef struct enb_ue_s enb_ue_t;
+typedef struct sgw_ue_s sgw_ue_t;
 typedef struct mme_ue_s mme_ue_t;
 typedef struct mme_sess_s mme_sess_t;
 typedef struct mme_bearer_s mme_bearer_t;
@@ -91,6 +92,7 @@ typedef struct mme_event_s {
     mme_vlr_t *vlr;
     mme_enb_t *enb;
     enb_ue_t *enb_ue;
+    sgw_ue_t *sgw_ue;
     mme_ue_t *mme_ue;
     mme_sess_t *sess;
     mme_bearer_t *bearer;

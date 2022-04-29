@@ -252,10 +252,10 @@ void smf_5gc_n4_handle_session_modification_response(
 
     OGS_LIST(pdr_to_create_list);
 
+    ogs_debug("Session Modification Response [5gc]");
+
     ogs_assert(xact);
     ogs_assert(rsp);
-
-    ogs_debug("Session Modification Response [5gc]");
 
     flags = xact->modify_flags;
     ogs_assert(flags);
@@ -1017,8 +1017,19 @@ void smf_epc_n4_handle_session_modification_response(
                         linked_bearer, gtp_pti, gtp_cause));
             } else {
         /*
-         * 1. SMF sends Delete Bearer Request(DEDICATED BEARER) to SGW/MME.
-         * 2. MME sends Delete Bearer Response(DEDICATED BEARER) to SGW/SMF.
+         * 1. RX : Session-Termination Request
+         * 2. GX : Re-Auth-Request(Charging-Rule-Remove)
+         * 3. RX : Session-Termination Answer
+         * 4. PFCP Session Modification Request(Buffering)
+         * 5. PFCP Session Modification Answer(Buffering)
+         * 6. SMF sends Delete Bearer Request(DEDICATED BEARER) to SGW/MME.
+         * 7. E-RABReleaseCommand + Deactivate EPS bearer context request
+         * 8. E-RABReleaseResponse
+         * 9. UplinkNASTransport + Deactivate EPS bearer context accept
+         * 10. MME sends Delete Bearer Response(DEDICATED BEARER) to SGW-C
+         * 11. PFCP Session Modification Request/Response(Remove PDR/FAR)
+         * 12. SGW-C sends Delete Bearer Response(DECIATED BEARER) to SMF
+         * 13. PFCP Session Modification Request/Response(Remove PDR/FAR)
          */
                 ogs_assert(bearer);
 

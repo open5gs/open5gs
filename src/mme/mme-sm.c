@@ -113,6 +113,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
     ogs_nas_eps_message_t nas_message;
     enb_ue_t *enb_ue = NULL;
+    sgw_ue_t *sgw_ue = NULL;
     mme_ue_t *mme_ue = NULL;
 
     mme_bearer_t *bearer = NULL;
@@ -338,7 +339,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                         S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                         S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0));
             }
-            mme_ue_associate_enb_ue(mme_ue, enb_ue);
+            enb_ue_associate_mme_ue(enb_ue, mme_ue);
         }
 
         ogs_assert(mme_ue);
@@ -551,13 +552,12 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
          */
         if (gtp_message.h.teid_presence && gtp_message.h.teid != 0) {
             /* Cause is not "Context not found" */
-            mme_ue = mme_ue_find_by_teid(gtp_message.h.teid);
+            sgw_ue = sgw_ue_find_by_mme_s11_teid(gtp_message.h.teid);
         }
 
-        if (mme_ue) {
-            gnode = mme_ue->gnode;
+        if (sgw_ue) {
+            gnode = sgw_ue->gnode;
             ogs_assert(gnode);
-
         } else {
             gnode = e->gnode;
             ogs_assert(gnode);
@@ -578,57 +578,49 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             break;
         case OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE:
             mme_s11_handle_create_session_response(
-                xact, mme_ue, &gtp_message.create_session_response);
+                xact, sgw_ue, &gtp_message.create_session_response);
             break;
         case OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE:
             mme_s11_handle_modify_bearer_response(
-                xact, mme_ue, &gtp_message.modify_bearer_response);
+                xact, sgw_ue, &gtp_message.modify_bearer_response);
             break;
         case OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE:
             mme_s11_handle_delete_session_response(
-                xact, mme_ue, &gtp_message.delete_session_response);
+                xact, sgw_ue, &gtp_message.delete_session_response);
             break;
         case OGS_GTP2_CREATE_BEARER_REQUEST_TYPE:
             mme_s11_handle_create_bearer_request(
-                xact, mme_ue, &gtp_message.create_bearer_request);
+                xact, sgw_ue, &gtp_message.create_bearer_request);
             break;
         case OGS_GTP2_UPDATE_BEARER_REQUEST_TYPE:
             mme_s11_handle_update_bearer_request(
-                xact, mme_ue, &gtp_message.update_bearer_request);
+                xact, sgw_ue, &gtp_message.update_bearer_request);
             break;
         case OGS_GTP2_DELETE_BEARER_REQUEST_TYPE:
             mme_s11_handle_delete_bearer_request(
-                xact, mme_ue, &gtp_message.delete_bearer_request);
+                xact, sgw_ue, &gtp_message.delete_bearer_request);
             break;
         case OGS_GTP2_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
             mme_s11_handle_release_access_bearers_response(
-                xact, mme_ue, &gtp_message.release_access_bearers_response);
+                xact, sgw_ue, &gtp_message.release_access_bearers_response);
             break;
         case OGS_GTP2_DOWNLINK_DATA_NOTIFICATION_TYPE:
-            if (!mme_ue) {
-                if (gtp_message.h.teid_presence)
-                    ogs_warn("No Context : TEID[%d]", gtp_message.h.teid);
-                else
-                    ogs_warn("No Context : No TEID");
-
-                break;
-            }
             mme_s11_handle_downlink_data_notification(
-                xact, mme_ue, &gtp_message.downlink_data_notification);
+                xact, sgw_ue, &gtp_message.downlink_data_notification);
             break;
         case OGS_GTP2_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
             mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
-                xact, mme_ue,
+                xact, sgw_ue,
                 &gtp_message.create_indirect_data_forwarding_tunnel_response);
             break;
         case OGS_GTP2_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
             mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
-                xact, mme_ue,
+                xact, sgw_ue,
                 &gtp_message.delete_indirect_data_forwarding_tunnel_response);
             break;
         case OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE:
             mme_s11_handle_bearer_resource_failure_indication(
-                xact, mme_ue,
+                xact, sgw_ue,
                 &gtp_message.bearer_resource_failure_indication);
             break;
         default:

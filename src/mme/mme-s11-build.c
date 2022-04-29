@@ -22,14 +22,16 @@
 #include "mme-s11-build.h"
 
 ogs_pkbuf_t *mme_s11_build_create_session_request(
-        uint8_t type, mme_sess_t *sess)
+        uint8_t type, mme_sess_t *sess, int create_action)
 {
     int rv;
     ogs_session_t *session = NULL;
     mme_ue_t *mme_ue = NULL;
+    sgw_ue_t *sgw_ue = NULL;
     mme_bearer_t *bearer = NULL;
     ogs_gtp2_message_t gtp_message;
-    ogs_gtp2_create_session_request_t *req = &gtp_message.create_session_request;
+    ogs_gtp2_create_session_request_t *req =
+        &gtp_message.create_session_request;
 
     ogs_gtp2_uli_t uli;
     char uli_buf[OGS_GTP2_MAX_ULI_LEN];
@@ -53,10 +55,17 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
     ogs_assert(bearer);
     mme_ue = sess->mme_ue;
     ogs_assert(mme_ue);
+    sgw_ue = mme_ue->sgw_ue;
+    ogs_assert(sgw_ue);
+
+    if (create_action == OGS_GTP_CREATE_IN_PATH_SWITCH_REQUEST) {
+        sgw_ue = sgw_ue_cycle(sgw_ue->target_ue);
+        ogs_assert(sgw_ue);
+    }
 
     ogs_debug("Create Session Request");
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
-            mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
+            sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
     memset(&gtp_message, 0, sizeof(ogs_gtp2_message_t));
 
     ogs_assert(mme_ue->imsi_len);
@@ -84,7 +93,7 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
     ogs_nas_from_plmn_id(&uli.e_cgi.nas_plmn_id, &mme_ue->e_cgi.plmn_id);
     uli.e_cgi.cell_id = mme_ue->e_cgi.cell_id;
     req->user_location_information.presence = 1;
-    ogs_gtp2_build_uli(&req->user_location_information, &uli, 
+    ogs_gtp2_build_uli(&req->user_location_information, &uli,
             uli_buf, OGS_GTP2_MAX_ULI_LEN);
 
     req->serving_network.presence = 1;
@@ -96,7 +105,7 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
 
     memset(&mme_s11_teid, 0, sizeof(ogs_gtp2_f_teid_t));
     mme_s11_teid.interface_type = OGS_GTP2_F_TEID_S11_MME_GTP_C;
-    mme_s11_teid.teid = htobe32(mme_ue->mme_s11_teid);
+    mme_s11_teid.teid = htobe32(sgw_ue->mme_s11_teid);
     rv = ogs_gtp2_sockaddr_to_f_teid(
             ogs_gtp_self()->gtpc_addr, ogs_gtp_self()->gtpc_addr6,
             &mme_s11_teid, &len);
@@ -107,6 +116,7 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
 
     memset(&pgw_s5c_teid, 0, sizeof(ogs_gtp2_f_teid_t));
     pgw_s5c_teid.interface_type = OGS_GTP2_F_TEID_S5_S8_PGW_GTP_C;
+    pgw_s5c_teid.teid = htobe32(sess->pgw_s5c_teid);
     if (session->smf_ip.ipv4 || session->smf_ip.ipv6) {
         pgw_s5c_teid.ipv4 = session->smf_ip.ipv4;
         pgw_s5c_teid.ipv6 = session->smf_ip.ipv6;
@@ -156,7 +166,7 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
     req->access_point_name.data = apn;
 
     req->selection_mode.presence = 1;
-    req->selection_mode.u8 = 
+    req->selection_mode.u8 =
         OGS_GTP2_SELECTION_MODE_MS_OR_NETWORK_PROVIDED_APN;
 
     ogs_assert(sess->request_type.type == OGS_NAS_EPS_PDN_TYPE_IPV4 ||
@@ -178,7 +188,7 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
     }
     req->pdn_type.presence = 1;
 
-    /* If we started with both addrs (IPV4V6) but the above code 
+    /* If we started with both addrs (IPV4V6) but the above code
      * (pdn_type & sess->request_type) truncates us down to just one,
      * we need to change position of addresses in struct. */
     if (req->pdn_type.u8 == OGS_PDU_SESSION_TYPE_IPV4 &&
@@ -201,14 +211,14 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
     indication.change_reporting_support_indication = 1;
     indication.enb_change_reporting_support_indication = 1;
 
-    if (req->pdn_type.u8 == OGS_PDU_SESSION_TYPE_IPV4V6) {
+    if (req->pdn_type.u8 == OGS_PDU_SESSION_TYPE_IPV4V6)
 	    indication.dual_address_bearer_flag = 1;
-    }
 
-    if (sess->request_type.value == OGS_NAS_EPS_REQUEST_TYPE_HANDOVER) {
+    if (sess->request_type.value == OGS_NAS_EPS_REQUEST_TYPE_HANDOVER)
 	    indication.handover_indication = 1;
-	    req->indication_flags.presence = 1;
-    }
+
+    if (create_action == OGS_GTP_CREATE_IN_PATH_SWITCH_REQUEST)
+	    indication.operation_indication = 1;
 
     session->paa.session_type = req->pdn_type.u8;
     req->pdn_address_allocation.data = &session->paa;
@@ -269,11 +279,12 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
     if (time_exp.tm_gmtoff >= 0) {
         ue_timezone.timezone = OGS_GTP2_TIME_TO_BCD(time_exp.tm_gmtoff / 900);
     } else {
-        ue_timezone.timezone = OGS_GTP2_TIME_TO_BCD((-time_exp.tm_gmtoff) / 900);
+        ue_timezone.timezone =
+            OGS_GTP2_TIME_TO_BCD((-time_exp.tm_gmtoff) / 900);
         ue_timezone.timezone |= 0x08;
     }
     /* quarters of an hour */
-    ue_timezone.daylight_saving_time = 
+    ue_timezone.daylight_saving_time =
         OGS_GTP2_UE_TIME_ZONE_NO_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME;
     req->ue_time_zone.presence = 1;
     req->ue_time_zone.data = &ue_timezone;
@@ -288,61 +299,80 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
 }
 
 ogs_pkbuf_t *mme_s11_build_modify_bearer_request(
-        uint8_t type, mme_bearer_t *bearer, int uli_presence)
+        uint8_t type, mme_ue_t *mme_ue, int uli_presence)
 {
-    int rv;
     ogs_gtp2_message_t gtp_message;
-    ogs_gtp2_modify_bearer_request_t *req = &gtp_message.modify_bearer_request;
+    ogs_gtp2_modify_bearer_request_t *req = NULL;
 
-    ogs_gtp2_f_teid_t enb_s1u_teid;
-    int len;
+    ogs_gtp2_f_teid_t enb_s1u_teid[OGS_BEARER_PER_UE];
+    int len, i;
     ogs_gtp2_uli_t uli;
     char uli_buf[OGS_GTP2_MAX_ULI_LEN];
 
     ogs_gtp2_indication_t indication;
 
-    mme_ue_t *mme_ue = NULL;
-    mme_sess_t *sess = NULL;
-
-    ogs_assert(bearer);
-    sess = bearer->sess;
-    ogs_assert(sess);
-    mme_ue = sess->mme_ue;
-    ogs_assert(mme_ue);
+    sgw_ue_t *sgw_ue = NULL;
+    mme_bearer_t *bearer = NULL;
 
     ogs_debug("Modifty Bearer Request");
-    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
-            mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
-    ogs_debug("    ENB_S1U_TEID[%d] SGW_S1U_TEID[%d]",
-        bearer->enb_s1u_teid, bearer->sgw_s1u_teid);
 
+    ogs_assert(mme_ue);
+    sgw_ue = mme_ue->sgw_ue;
+    ogs_assert(sgw_ue);
+    ogs_assert(ogs_list_count(&mme_ue->bearer_to_modify_list));
+
+    /* Initialize message */
     memset(&gtp_message, 0, sizeof(ogs_gtp2_message_t));
+    req = &gtp_message.modify_bearer_request;
 
-    if (sess->request_type.value == OGS_NAS_EPS_REQUEST_TYPE_HANDOVER) {
-	    memset(&indication, 0, sizeof(ogs_gtp2_indication_t));
-	    indication.handover_indication = 1;
-	    req->indication_flags.presence = 1;
-	    req->indication_flags.data = &indication;
-	    req->indication_flags.len = sizeof(ogs_gtp2_indication_t);
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
+            sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
+
+    i = 0;
+    ogs_list_for_each_entry(
+            &mme_ue->bearer_to_modify_list, bearer, to_modify_node) {
+        ogs_assert(i < OGS_BEARER_PER_UE);
+
+        ogs_debug("    ENB_S1U_TEID[%d] SGW_S1U_TEID[%d]",
+            bearer->enb_s1u_teid, bearer->sgw_s1u_teid);
+
+        /* Bearer Context : EBI */
+        req->bearer_contexts_to_be_modified[i].presence = 1;
+        req->bearer_contexts_to_be_modified[i].eps_bearer_id.presence = 1;
+        req->bearer_contexts_to_be_modified[i].eps_bearer_id.u8 = bearer->ebi;
+
+        /* Data Plane(DL) : ENB-S1U */
+        memset(&enb_s1u_teid[i], 0, sizeof(ogs_gtp2_f_teid_t));
+        enb_s1u_teid[i].interface_type = OGS_GTP2_F_TEID_S1_U_ENODEB_GTP_U;
+        enb_s1u_teid[i].teid = htobe32(bearer->enb_s1u_teid);
+        ogs_assert(OGS_OK ==
+            ogs_gtp2_ip_to_f_teid(&bearer->enb_s1u_ip, &enb_s1u_teid[i], &len));
+        req->bearer_contexts_to_be_modified[i].s1_u_enodeb_f_teid.presence = 1;
+        req->bearer_contexts_to_be_modified[i].s1_u_enodeb_f_teid.data =
+            &enb_s1u_teid[i];
+        req->bearer_contexts_to_be_modified[i].s1_u_enodeb_f_teid.len = len;
+
+        i++;
     }
 
-    /* Bearer Context : EBI */
-    req->bearer_contexts_to_be_modified.presence = 1;
-    req->bearer_contexts_to_be_modified.eps_bearer_id.presence = 1;
-    req->bearer_contexts_to_be_modified.eps_bearer_id.u8 = bearer->ebi;
+    /* Indication */
+    memset(&indication, 0, sizeof(ogs_gtp2_indication_t));
+    ogs_list_for_each_entry(
+            &mme_ue->bearer_to_modify_list, bearer, to_modify_node) {
+        mme_sess_t *sess = bearer->sess;
+        ogs_assert(sess);
 
-    /* Data Plane(DL) : ENB-S1U */
-    memset(&enb_s1u_teid, 0, sizeof(ogs_gtp2_f_teid_t));
-    enb_s1u_teid.interface_type = OGS_GTP2_F_TEID_S1_U_ENODEB_GTP_U;
-    enb_s1u_teid.teid = htobe32(bearer->enb_s1u_teid);
-    rv = ogs_gtp2_ip_to_f_teid(&bearer->enb_s1u_ip, &enb_s1u_teid, &len);
-    ogs_expect_or_return_val(rv == OGS_OK, NULL);
-    req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.presence = 1;
-    req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.data = &enb_s1u_teid;
-    req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.len = len;
+        if (sess->request_type.value == OGS_NAS_EPS_REQUEST_TYPE_HANDOVER) {
+            indication.handover_indication = 1;
+            req->indication_flags.presence = 1;
+            req->indication_flags.data = &indication;
+            req->indication_flags.len = sizeof(ogs_gtp2_indication_t);
+            break;
+        }
+    }
 
+    /* User Location Information(ULI) */
     if (uli_presence) {
-        /* User Location Information(ULI) */
         memset(&uli, 0, sizeof(ogs_gtp2_uli_t));
         uli.flags.e_cgi = 1;
         uli.flags.tai = 1;
@@ -351,7 +381,7 @@ ogs_pkbuf_t *mme_s11_build_modify_bearer_request(
         ogs_nas_from_plmn_id(&uli.e_cgi.nas_plmn_id, &mme_ue->e_cgi.plmn_id);
         uli.e_cgi.cell_id = mme_ue->e_cgi.cell_id;
         req->user_location_information.presence = 1;
-        ogs_gtp2_build_uli(&req->user_location_information, &uli, 
+        ogs_gtp2_build_uli(&req->user_location_information, &uli,
                 uli_buf, OGS_GTP2_MAX_ULI_LEN);
     }
 
@@ -382,7 +412,8 @@ ogs_pkbuf_t *mme_s11_build_delete_session_request(
         uint8_t type, mme_sess_t *sess)
 {
     ogs_gtp2_message_t gtp_message;
-    ogs_gtp2_delete_session_request_t *req = &gtp_message.delete_session_request;
+    ogs_gtp2_delete_session_request_t *req =
+        &gtp_message.delete_session_request;
 
     ogs_gtp2_uli_t uli;
     char uli_buf[OGS_GTP2_MAX_ULI_LEN];
@@ -390,16 +421,19 @@ ogs_pkbuf_t *mme_s11_build_delete_session_request(
 
     mme_bearer_t *bearer = NULL;
     mme_ue_t *mme_ue = NULL;
+    sgw_ue_t *sgw_ue = NULL;
 
     ogs_assert(sess);
     mme_ue = sess->mme_ue;
     ogs_assert(mme_ue);
+    sgw_ue = mme_ue->sgw_ue;
+    ogs_assert(sgw_ue);
     bearer = mme_default_bearer_in_sess(sess);
     ogs_assert(bearer);
 
     ogs_debug("Delete Session Request");
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
-            mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
+            sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
 
     memset(&gtp_message, 0, sizeof(ogs_gtp2_message_t));
 
@@ -433,7 +467,8 @@ ogs_pkbuf_t *mme_s11_build_create_bearer_response(
 {
     int rv;
     ogs_gtp2_message_t gtp_message;
-    ogs_gtp2_create_bearer_response_t *rsp = &gtp_message.create_bearer_response;
+    ogs_gtp2_create_bearer_response_t *rsp =
+        &gtp_message.create_bearer_response;
 
     ogs_gtp2_cause_t cause;
     ogs_gtp2_f_teid_t enb_s1u_teid, sgw_s1u_teid;
@@ -445,14 +480,17 @@ ogs_pkbuf_t *mme_s11_build_create_bearer_response(
     struct tm time_exp;
 
     mme_ue_t *mme_ue = NULL;
+    sgw_ue_t *sgw_ue = NULL;
 
     ogs_assert(bearer);
     mme_ue = bearer->mme_ue;
     ogs_assert(mme_ue);
+    sgw_ue = mme_ue->sgw_ue;
+    ogs_assert(sgw_ue);
 
     ogs_debug("Create Bearer Response");
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
-            mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
+            sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
 
     memset(&gtp_message, 0, sizeof(ogs_gtp2_message_t));
 
@@ -504,7 +542,7 @@ ogs_pkbuf_t *mme_s11_build_create_bearer_response(
     ogs_nas_from_plmn_id(&uli.e_cgi.nas_plmn_id, &mme_ue->e_cgi.plmn_id);
     uli.e_cgi.cell_id = mme_ue->e_cgi.cell_id;
     rsp->user_location_information.presence = 1;
-    ogs_gtp2_build_uli(&rsp->user_location_information, &uli, 
+    ogs_gtp2_build_uli(&rsp->user_location_information, &uli,
             uli_buf, OGS_GTP2_MAX_ULI_LEN);
 
     /* UE Time Zone */
@@ -514,10 +552,11 @@ ogs_pkbuf_t *mme_s11_build_create_bearer_response(
     if (time_exp.tm_gmtoff >= 0) {
         ue_timezone.timezone = OGS_GTP2_TIME_TO_BCD(time_exp.tm_gmtoff / 900);
     } else {
-        ue_timezone.timezone = OGS_GTP2_TIME_TO_BCD((-time_exp.tm_gmtoff) / 900);
+        ue_timezone.timezone =
+            OGS_GTP2_TIME_TO_BCD((-time_exp.tm_gmtoff) / 900);
         ue_timezone.timezone |= 0x08;
     }
-    ue_timezone.daylight_saving_time = 
+    ue_timezone.daylight_saving_time =
         OGS_GTP2_UE_TIME_ZONE_NO_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME;
     rsp->ue_time_zone.presence = 1;
     rsp->ue_time_zone.data = &ue_timezone;
@@ -531,7 +570,8 @@ ogs_pkbuf_t *mme_s11_build_update_bearer_response(
         uint8_t type, mme_bearer_t *bearer, uint8_t cause_value)
 {
     ogs_gtp2_message_t gtp_message;
-    ogs_gtp2_update_bearer_response_t *rsp = &gtp_message.update_bearer_response;
+    ogs_gtp2_update_bearer_response_t *rsp =
+        &gtp_message.update_bearer_response;
 
     ogs_gtp2_cause_t cause;
     ogs_gtp2_uli_t uli;
@@ -541,14 +581,17 @@ ogs_pkbuf_t *mme_s11_build_update_bearer_response(
     struct tm time_exp;
 
     mme_ue_t *mme_ue = NULL;
+    sgw_ue_t *sgw_ue = NULL;
 
     ogs_assert(bearer);
     mme_ue = bearer->mme_ue;
     ogs_assert(mme_ue);
+    sgw_ue = mme_ue->sgw_ue;
+    ogs_assert(sgw_ue);
 
     ogs_debug("Update Bearer Response");
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
-            mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
+            sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
 
     memset(&gtp_message, 0, sizeof(ogs_gtp2_message_t));
 
@@ -580,7 +623,7 @@ ogs_pkbuf_t *mme_s11_build_update_bearer_response(
     ogs_nas_from_plmn_id(&uli.e_cgi.nas_plmn_id, &mme_ue->e_cgi.plmn_id);
     uli.e_cgi.cell_id = mme_ue->e_cgi.cell_id;
     rsp->user_location_information.presence = 1;
-    ogs_gtp2_build_uli(&rsp->user_location_information, &uli, 
+    ogs_gtp2_build_uli(&rsp->user_location_information, &uli,
             uli_buf, OGS_GTP2_MAX_ULI_LEN);
 
     /* UE Time Zone */
@@ -593,7 +636,7 @@ ogs_pkbuf_t *mme_s11_build_update_bearer_response(
         ue_timezone.timezone = OGS_GTP2_TIME_TO_BCD((-time_exp.tm_gmtoff) / 900);
         ue_timezone.timezone |= 0x08;
     }
-    ue_timezone.daylight_saving_time = 
+    ue_timezone.daylight_saving_time =
         OGS_GTP2_UE_TIME_ZONE_NO_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME;
     rsp->ue_time_zone.presence = 1;
     rsp->ue_time_zone.data = &ue_timezone;
@@ -617,14 +660,17 @@ ogs_pkbuf_t *mme_s11_build_delete_bearer_response(
     struct tm time_exp;
 
     mme_ue_t *mme_ue = NULL;
+    sgw_ue_t *sgw_ue = NULL;
 
     ogs_assert(bearer);
     mme_ue = bearer->mme_ue;
     ogs_assert(mme_ue);
+    sgw_ue = mme_ue->sgw_ue;
+    ogs_assert(sgw_ue);
 
     ogs_debug("Delete Bearer Response");
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
-            mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
+            sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
 
     memset(&gtp_message, 0, sizeof(ogs_gtp2_message_t));
 
@@ -688,7 +734,7 @@ ogs_pkbuf_t *mme_s11_build_delete_bearer_response(
     ogs_nas_from_plmn_id(&uli.e_cgi.nas_plmn_id, &mme_ue->e_cgi.plmn_id);
     uli.e_cgi.cell_id = mme_ue->e_cgi.cell_id;
     rsp->user_location_information.presence = 1;
-    ogs_gtp2_build_uli(&rsp->user_location_information, &uli, 
+    ogs_gtp2_build_uli(&rsp->user_location_information, &uli,
             uli_buf, OGS_GTP2_MAX_ULI_LEN);
 
     /* UE Time Zone */
@@ -701,7 +747,7 @@ ogs_pkbuf_t *mme_s11_build_delete_bearer_response(
         ue_timezone.timezone = OGS_GTP2_TIME_TO_BCD((-time_exp.tm_gmtoff) / 900);
         ue_timezone.timezone |= 0x08;
     }
-    ue_timezone.daylight_saving_time = 
+    ue_timezone.daylight_saving_time =
         OGS_GTP2_UE_TIME_ZONE_NO_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME;
     rsp->ue_time_zone.presence = 1;
     rsp->ue_time_zone.data = &ue_timezone;
@@ -714,7 +760,7 @@ ogs_pkbuf_t *mme_s11_build_delete_bearer_response(
 ogs_pkbuf_t *mme_s11_build_release_access_bearers_request(uint8_t type)
 {
     ogs_gtp2_message_t gtp_message;
-    ogs_gtp2_release_access_bearers_request_t *req = 
+    ogs_gtp2_release_access_bearers_request_t *req =
         &gtp_message.release_access_bearers_request;
 
     ogs_debug("Release Access Bearers Request");
@@ -731,7 +777,7 @@ ogs_pkbuf_t *mme_s11_build_downlink_data_notification_ack(
         uint8_t type, uint8_t cause_value)
 {
     ogs_gtp2_message_t gtp_message;
-    ogs_gtp2_downlink_data_notification_acknowledge_t *ack = 
+    ogs_gtp2_downlink_data_notification_acknowledge_t *ack =
         &gtp_message.downlink_data_notification_acknowledge;
 
     ogs_gtp2_cause_t cause;
@@ -759,23 +805,26 @@ ogs_pkbuf_t *mme_s11_build_create_indirect_data_forwarding_tunnel_request(
 {
     int rv;
     int i;
-    
+
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
+    sgw_ue_t *sgw_ue = NULL;
 
     ogs_gtp2_message_t gtp_message;
     ogs_gtp2_create_indirect_data_forwarding_tunnel_request_t *req =
         &gtp_message.create_indirect_data_forwarding_tunnel_request;
-    
+
     ogs_gtp2_f_teid_t dl_teid[OGS_GTP2_MAX_INDIRECT_TUNNEL];
     ogs_gtp2_f_teid_t ul_teid[OGS_GTP2_MAX_INDIRECT_TUNNEL];
     int len;
 
     ogs_assert(mme_ue);
+    sgw_ue = mme_ue->sgw_ue;
+    ogs_assert(sgw_ue);
 
     ogs_debug("Create Indirect Data Forwarding Tunnel Request");
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
-            mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
+            sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
 
     memset(&gtp_message, 0, sizeof(ogs_gtp2_message_t));
 
@@ -843,6 +892,7 @@ ogs_pkbuf_t *mme_s11_build_bearer_resource_command(
     char flow_qos_buf[GTP2_FLOW_QOS_LEN];
 
     mme_ue_t *mme_ue = NULL;
+    sgw_ue_t *sgw_ue = NULL;
     mme_sess_t *sess = NULL;
     mme_bearer_t *linked_bearer = NULL;
 
@@ -851,10 +901,12 @@ ogs_pkbuf_t *mme_s11_build_bearer_resource_command(
     ogs_assert(sess);
     mme_ue = sess->mme_ue;
     ogs_assert(mme_ue);
+    sgw_ue = mme_ue->sgw_ue;
+    ogs_assert(sgw_ue);
 
     ogs_debug("Bearer Resource Command");
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
-            mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
+            sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
 
     ogs_assert(nas_message);
     switch (nas_message->esm.h.message_type) {

@@ -81,19 +81,6 @@ typedef struct sgwc_sess_s {
     uint64_t        sgwc_sxa_seid;  /* SGW-C SEID is dervied from INDEX */
     uint64_t        sgwu_sxa_seid;  /* SGW-U SEID is received from Peer */
 
-    /*
-     * PFCP modification request is set to FALSE
-     * PFCP modifitation response is set to TRUE
-     *
-     * For example, when SGW-C is received Release Access Bearers Request,
-     * it is used to check if all sessions are deactivated.
-     */
-    struct {
-        bool        release_access_bearers;
-        bool        create_indirect_tunnel;
-        bool        delete_indirect_tunnel;
-    } state;
-
     /* APN Configuration */
     ogs_session_t   session;
 
@@ -108,6 +95,7 @@ typedef struct sgwc_sess_s {
 
 typedef struct sgwc_bearer_s {
     ogs_lnode_t     lnode;
+    ogs_lnode_t     to_modify_node;
 
     uint8_t         ebi;
 
@@ -166,6 +154,11 @@ sgwc_sess_t *sgwc_sess_find_by_seid(uint64_t seid);
 sgwc_sess_t *sgwc_sess_find_by_apn(sgwc_ue_t *sgwc_ue, char *apn);
 sgwc_sess_t *sgwc_sess_find_by_ebi(sgwc_ue_t *sgwc_ue, uint8_t ebi);
 sgwc_sess_t *sgwc_sess_cycle(sgwc_sess_t *sess);
+
+#define SESSION_SYNC_DONE(__sGWC, __tYPE, __fLAGS) \
+    (sgwc_sess_pfcp_xact_count(__sGWC, __tYPE, __fLAGS) == 0)
+int sgwc_sess_pfcp_xact_count(
+        sgwc_ue_t *sgwc_ue, uint8_t pfcp_type, uint64_t modify_flags);
 
 sgwc_bearer_t *sgwc_bearer_add(sgwc_sess_t *sess);
 int sgwc_bearer_remove(sgwc_bearer_t *bearer);

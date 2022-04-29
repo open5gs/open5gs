@@ -126,7 +126,7 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, ogs_s1ap_message_t *message)
         S1AP_SupportedTAs_Item_t *SupportedTAs_Item = NULL;
         S1AP_TAC_t *tAC = NULL;
 
-        SupportedTAs_Item = 
+        SupportedTAs_Item =
             (S1AP_SupportedTAs_Item_t *)SupportedTAs->list.array[i];
         ogs_assert(SupportedTAs_Item);
         tAC = &SupportedTAs_Item->tAC;
@@ -140,7 +140,7 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, ogs_s1ap_message_t *message)
 
             memcpy(&enb->supported_ta_list[enb->num_of_supported_ta_list].tac,
                     tAC->buf, sizeof(uint16_t));
-            enb->supported_ta_list[enb->num_of_supported_ta_list].tac = 
+            enb->supported_ta_list[enb->num_of_supported_ta_list].tac =
                 be16toh(enb->supported_ta_list
                         [enb->num_of_supported_ta_list].tac);
             memcpy(&enb->supported_ta_list
@@ -288,7 +288,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
                         mme_ue->current.guti.mme_gid,
                         mme_ue->current.guti.mme_code,
                         mme_ue->current.guti.m_tmsi,
-                        MME_UE_HAVE_IMSI(mme_ue) 
+                        MME_UE_HAVE_IMSI(mme_ue)
                             ? mme_ue->imsi_bcd : "Unknown");
 
                 /* If NAS(mme_ue_t) has already been associated with
@@ -311,7 +311,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
                             S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                             S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0));
                 }
-                mme_ue_associate_enb_ue(mme_ue, enb_ue);
+                enb_ue_associate_mme_ue(enb_ue, mme_ue);
             }
         }
     }
@@ -349,7 +349,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
             sizeof(enb_ue->saved.tai.plmn_id));
     memcpy(&enb_ue->saved.tai.tac, tAC->buf, sizeof(enb_ue->saved.tai.tac));
     enb_ue->saved.tai.tac = be16toh(enb_ue->saved.tai.tac);
-    
+
     pLMNidentity = &EUTRAN_CGI->pLMNidentity;
     ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
     cell_ID = &EUTRAN_CGI->cell_ID;
@@ -690,6 +690,10 @@ void s1ap_handle_initial_context_setup_response(
     ogs_expect_or_return(mme_ue);
 
     if (E_RABSetupListCtxtSURes) {
+        int uli_presence = 0;
+
+        ogs_list_init(&mme_ue->bearer_to_modify_list);
+
         for (i = 0; i < E_RABSetupListCtxtSURes->list.count; i++) {
             S1AP_E_RABSetupItemCtxtSUResIEs_t *item = NULL;
             S1AP_E_RABSetupItemCtxtSURes_t *e_rab = NULL;
@@ -745,14 +749,18 @@ void s1ap_handle_initial_context_setup_response(
 
             if (OGS_FSM_CHECK(&bearer->sm, esm_state_active)) {
                 ogs_debug("    NAS_EPS Type[%d]", mme_ue->nas_eps.type);
-                int uli_presence = 0;
                 if (mme_ue->nas_eps.type != MME_EPS_TYPE_ATTACH_REQUEST) {
                     ogs_debug("    ### ULI PRESENT ###");
                     uli_presence = 1;
                 }
-                ogs_assert(OGS_OK ==
-                    mme_gtp_send_modify_bearer_request(bearer, uli_presence));
+                ogs_list_add(&mme_ue->bearer_to_modify_list,
+                                &bearer->to_modify_node);
             }
+        }
+
+        if (ogs_list_count(&mme_ue->bearer_to_modify_list)) {
+            ogs_assert(OGS_OK ==
+                mme_gtp_send_modify_bearer_request(mme_ue, uli_presence, 0));
         }
     }
 
@@ -1213,12 +1221,15 @@ void s1ap_handle_e_rab_setup_response(
                 ogs_debug("    Linked-EBI[%d]", linked_bearer->ebi);
 
                 if (bearer->ebi == linked_bearer->ebi) {
-                ogs_assert(OGS_OK ==
-                    mme_gtp_send_modify_bearer_request(bearer, 0));
+                    ogs_list_init(&mme_ue->bearer_to_modify_list);
+                    ogs_list_add(&mme_ue->bearer_to_modify_list,
+                                    &bearer->to_modify_node);
+                    ogs_assert(OGS_OK ==
+                        mme_gtp_send_modify_bearer_request(mme_ue, 0, 0));
                 } else {
-                ogs_assert(OGS_OK ==
-                    mme_gtp_send_create_bearer_response(
-                        bearer, OGS_GTP2_CAUSE_REQUEST_ACCEPTED));
+                    ogs_assert(OGS_OK ==
+                        mme_gtp_send_create_bearer_response(
+                            bearer, OGS_GTP2_CAUSE_REQUEST_ACCEPTED));
                 }
             }
         }
@@ -1240,7 +1251,7 @@ void s1ap_handle_e_rab_setup_response(
             }
 
             ogs_debug("RAB_ID: %d", (int)item->e_RAB_ID);
-            ogs_debug("    Cause[Group:%d Cause:%d]", 
+            ogs_debug("    Cause[Group:%d Cause:%d]",
                 (int)item->cause.present, (int)item->cause.choice.radioNetwork);
         }
     }
@@ -1455,7 +1466,7 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
          * An assert occurs when a NAS message retransmission occurs.
          *
          * Because there is no `enb_ue` context.
-         * 
+         *
          * Therefore, before removing enb_ue, all Timers must be stopped
          * to prevent retransmission of NAS messages.
          */
@@ -1471,7 +1482,7 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
         ogs_debug("    Action: S1 normal release");
         enb_ue_remove(enb_ue);
         ogs_expect_or_return(mme_ue);
-        mme_ue_deassociate(mme_ue);
+        enb_ue_unlink(mme_ue);
         break;
     case S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE:
         ogs_debug("    Action: UE context remove");
@@ -1484,7 +1495,7 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
     case S1AP_UE_CTX_REL_S1_HANDOVER_COMPLETE:
         ogs_debug("    Action: S1 handover complete");
 
-        source_ue_deassociate_target_ue(enb_ue);
+        enb_ue_source_deassociate_target(enb_ue);
         enb_ue_remove(enb_ue);
 
         ogs_expect_or_return(mme_ue);
@@ -1502,7 +1513,7 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
     case S1AP_UE_CTX_REL_S1_HANDOVER_CANCEL:
         ogs_warn("    Action: S1 handover cancel");
 
-        source_ue_deassociate_target_ue(enb_ue);
+        enb_ue_source_deassociate_target(enb_ue);
         enb_ue_remove(enb_ue);
 
         ogs_expect_or_return(mme_ue);
@@ -1524,7 +1535,7 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
     case S1AP_UE_CTX_REL_S1_HANDOVER_FAILURE:
         ogs_warn("    Action: S1 handover failure");
 
-        source_ue_deassociate_target_ue(enb_ue);
+        enb_ue_source_deassociate_target(enb_ue);
         enb_ue_remove(enb_ue);
 
         ogs_expect_or_return(mme_ue);
@@ -1538,7 +1549,7 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
         ogs_debug("    Action: S1 paging");
         enb_ue_remove(enb_ue);
         ogs_expect_or_return(mme_ue);
-        mme_ue_deassociate(mme_ue);
+        enb_ue_unlink(mme_ue);
 
         ogs_assert(OGS_OK == s1ap_send_paging(mme_ue, S1AP_CNDomain_ps));
         break;
@@ -1639,6 +1650,8 @@ void s1ap_handle_e_rab_modification_indication(
     mme_ue = enb_ue->mme_ue;
     ogs_expect_or_return(mme_ue);
 
+    ogs_list_init(&mme_ue->bearer_to_modify_list);
+
     for (i = 0; i < E_RABToBeModifiedListBearerModInd->list.count; i++) {
         S1AP_E_RABToBeModifiedItemBearerModIndIEs_t *item = NULL;
         S1AP_E_RABToBeModifiedItemBearerModInd_t *e_rab = NULL;
@@ -1689,11 +1702,12 @@ void s1ap_handle_e_rab_modification_indication(
             return;
         }
 
-        GTP_COUNTER_INCREMENT(
-                mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_E_RAB_MODIFICATION);
+        ogs_list_add(&mme_ue->bearer_to_modify_list, &bearer->to_modify_node);
+    }
 
-        ogs_assert(OGS_OK ==
-            mme_gtp_send_modify_bearer_request(bearer, 0));
+    if (ogs_list_count(&mme_ue->bearer_to_modify_list)) {
+        ogs_assert(OGS_OK == mme_gtp_send_modify_bearer_request(
+                    mme_ue, 0, OGS_GTP_MODIFY_IN_E_RAB_MODIFICATION));
     }
 }
 
@@ -1726,6 +1740,8 @@ void s1ap_handle_path_switch_request(
     enb_ue_t *enb_ue = NULL;
     mme_ue_t *mme_ue = NULL;
     ogs_pkbuf_t *s1apbuf = NULL;
+
+    sgw_relocation_e relocation;
 
     ogs_assert(enb);
     ogs_assert(enb->sctp.sock);
@@ -1839,6 +1855,17 @@ void s1ap_handle_path_switch_request(
     mme_ue = enb_ue->mme_ue;
     ogs_expect_or_return(mme_ue);
 
+    if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
+        ogs_error("No Security Context");
+        s1apbuf = s1ap_build_path_switch_failure(
+                *ENB_UE_S1AP_ID, *MME_UE_S1AP_ID,
+                S1AP_Cause_PR_nas, S1AP_CauseNas_authentication_failure);
+        ogs_expect_or_return(s1apbuf);
+
+        s1ap_send_to_enb_ue(enb_ue, s1apbuf);
+        return;
+    }
+
     ogs_info("    OLD TAI[PLMN_ID:%06x,TAC:%d]",
             ogs_plmn_id_hexdump(&mme_ue->tai.plmn_id),
             mme_ue->tai.tac);
@@ -1855,12 +1882,12 @@ void s1ap_handle_path_switch_request(
     ogs_info("    NEW ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
-    memcpy(&enb_ue->saved.tai.plmn_id, pLMNidentity->buf, 
+    memcpy(&enb_ue->saved.tai.plmn_id, pLMNidentity->buf,
             sizeof(enb_ue->saved.tai.plmn_id));
     memcpy(&enb_ue->saved.tai.tac, tAC->buf, sizeof(enb_ue->saved.tai.tac));
     enb_ue->saved.tai.tac = be16toh(enb_ue->saved.tai.tac);
 
-    memcpy(&enb_ue->saved.e_cgi.plmn_id, pLMNidentity->buf, 
+    memcpy(&enb_ue->saved.e_cgi.plmn_id, pLMNidentity->buf,
             sizeof(enb_ue->saved.e_cgi.plmn_id));
     memcpy(&enb_ue->saved.e_cgi.cell_id, cell_ID->buf,
             sizeof(enb_ue->saved.e_cgi.cell_id));
@@ -1896,77 +1923,89 @@ void s1ap_handle_path_switch_request(
     mme_ue->ue_network_capability.eia = eia >> 9;
     mme_ue->ue_network_capability.eia0 = eia0;
 
-    if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
-        ogs_error("No Security Context");
-        s1apbuf = s1ap_build_path_switch_failure(
-                *ENB_UE_S1AP_ID, *MME_UE_S1AP_ID,
-                S1AP_Cause_PR_nas, S1AP_CauseNas_authentication_failure);
-        ogs_expect_or_return(s1apbuf);
-
-        s1ap_send_to_enb_ue(enb_ue, s1apbuf);
-        return;
-    }
-
     /* Update Security Context (NextHop) */
     mme_ue->nhcc++;
     ogs_kdf_nh_enb(mme_ue->kasme, mme_ue->nh, mme_ue->nh);
 
-    for (i = 0; i < E_RABToBeSwitchedDLList->list.count; i++) {
-        S1AP_E_RABToBeSwitchedDLItemIEs_t *item = NULL;
-        S1AP_E_RABToBeSwitchedDLItem_t *e_rab = NULL;
+#if 0
+    relocation = sgw_ue_check_if_relocated(mme_ue);
+#else
+    relocation = SGW_WITHOUT_RELOCATION;
+#endif
+    if (relocation == SGW_WITHOUT_RELOCATION) {
 
-        mme_bearer_t *bearer = NULL;
+        ogs_list_init(&mme_ue->bearer_to_modify_list);
 
-        item = (S1AP_E_RABToBeSwitchedDLItemIEs_t *)
-            E_RABToBeSwitchedDLList->list.array[i];
-        if (!item) {
-            ogs_error("No S1AP_E_RABToBeSwitchedDLItemIEs_t");
-            ogs_assert(OGS_OK ==
-                s1ap_send_error_indication2(mme_ue,
-                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error));
-            return;
+        for (i = 0; i < E_RABToBeSwitchedDLList->list.count; i++) {
+            S1AP_E_RABToBeSwitchedDLItemIEs_t *item = NULL;
+            S1AP_E_RABToBeSwitchedDLItem_t *e_rab = NULL;
+
+            mme_bearer_t *bearer = NULL;
+
+            item = (S1AP_E_RABToBeSwitchedDLItemIEs_t *)
+                E_RABToBeSwitchedDLList->list.array[i];
+            if (!item) {
+                ogs_error("No S1AP_E_RABToBeSwitchedDLItemIEs_t");
+                ogs_assert(OGS_OK ==
+                    s1ap_send_error_indication2(mme_ue,
+                    S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error));
+                return;
+            }
+
+            e_rab = &item->value.choice.E_RABToBeSwitchedDLItem;
+            if (!e_rab) {
+                ogs_error("No E_RABToBeSwitchedDLItem");
+                ogs_assert(OGS_OK ==
+                    s1ap_send_error_indication2(mme_ue,
+                    S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error));
+                return;
+            }
+
+            bearer = mme_bearer_find_by_ue_ebi(mme_ue, e_rab->e_RAB_ID);
+            if (!bearer) {
+                ogs_error("No Bearer [%d]", (int)e_rab->e_RAB_ID);
+                ogs_assert(OGS_OK ==
+                    s1ap_send_error_indication2(mme_ue,
+                        S1AP_Cause_PR_radioNetwork,
+                        S1AP_CauseRadioNetwork_unknown_E_RAB_ID));
+                return;
+            }
+
+            memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf,
+                    sizeof(bearer->enb_s1u_teid));
+            bearer->enb_s1u_teid = be32toh(bearer->enb_s1u_teid);
+            rv = ogs_asn_BIT_STRING_to_ip(
+                    &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
+            if (rv != OGS_OK) {
+                ogs_error("No transportLayerAddress [%d]",
+                        (int)e_rab->e_RAB_ID);
+                ogs_assert(OGS_OK ==
+                    s1ap_send_error_indication2(mme_ue,
+                        S1AP_Cause_PR_protocol,
+                        S1AP_CauseProtocol_abstract_syntax_error_falsely_constructed_message));
+                return;
+            }
+
+            ogs_list_add(
+                    &mme_ue->bearer_to_modify_list, &bearer->to_modify_node);
         }
 
-        e_rab = &item->value.choice.E_RABToBeSwitchedDLItem;
-        if (!e_rab) {
-            ogs_error("No E_RABToBeSwitchedDLItem");
-            ogs_assert(OGS_OK ==
-                s1ap_send_error_indication2(mme_ue,
-                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error));
-            return;
+        if (ogs_list_count(&mme_ue->bearer_to_modify_list)) {
+            ogs_assert(OGS_OK == mme_gtp_send_modify_bearer_request(
+                        mme_ue, 1, OGS_GTP_MODIFY_IN_PATH_SWITCH_REQUEST));
         }
+    } else if (relocation == SGW_WITH_RELOCATION) {
+        mme_sess_t *sess = NULL;
 
-        bearer = mme_bearer_find_by_ue_ebi(mme_ue, e_rab->e_RAB_ID);
-        if (!bearer) {
-            ogs_error("No Bearer [%d]", (int)e_rab->e_RAB_ID);
+        ogs_list_for_each(&mme_ue->sess_list, sess) {
             ogs_assert(OGS_OK ==
-                s1ap_send_error_indication2(mme_ue,
-                    S1AP_Cause_PR_radioNetwork,
-                    S1AP_CauseRadioNetwork_unknown_E_RAB_ID));
-            return;
+                mme_gtp_send_create_session_request(
+                    sess, OGS_GTP_CREATE_IN_PATH_SWITCH_REQUEST));
         }
-
-        memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf, 
-                sizeof(bearer->enb_s1u_teid));
-        bearer->enb_s1u_teid = be32toh(bearer->enb_s1u_teid);
-        rv = ogs_asn_BIT_STRING_to_ip(
-                &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
-        if (rv != OGS_OK) {
-            ogs_error("No transportLayerAddress [%d]",
-                    (int)e_rab->e_RAB_ID);
-            ogs_assert(OGS_OK ==
-                s1ap_send_error_indication2(mme_ue,
-                    S1AP_Cause_PR_protocol,
-                    S1AP_CauseProtocol_abstract_syntax_error_falsely_constructed_message));
-            return;
-        }
-
-        GTP_COUNTER_INCREMENT(
-                mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_PATH_SWITCH);
-
-        ogs_assert(OGS_OK ==
-            mme_gtp_send_modify_bearer_request(bearer, 1));
+    } else if (relocation == SGW_HAS_ALREADY_BEEN_RELOCATED) {
+        ogs_error("SGW has already been relocated");
     }
+
 }
 
 void s1ap_handle_enb_configuration_transfer(
@@ -2211,17 +2250,18 @@ void s1ap_handle_handover_required(mme_enb_t *enb, ogs_s1ap_message_t *message)
     mme_ue = source_ue->mme_ue;
     ogs_expect_or_return(mme_ue);
 
-    source_ue->handover_type = *HandoverType;
-
-    if (SECURITY_CONTEXT_IS_VALID(mme_ue)) {
-        mme_ue->nhcc++;
-        ogs_kdf_nh_enb(mme_ue->kasme, mme_ue->nh, mme_ue->nh);
-    } else {
+    if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
+        ogs_error("No Security Context");
         ogs_assert(OGS_OK ==
             s1ap_send_handover_preparation_failure(source_ue,
                 S1AP_Cause_PR_nas, S1AP_CauseNas_authentication_failure));
         return;
     }
+
+    source_ue->handover_type = *HandoverType;
+
+    mme_ue->nhcc++;
+    ogs_kdf_nh_enb(mme_ue->kasme, mme_ue->nh, mme_ue->nh);
 
     ogs_assert(OGS_OK ==
         s1ap_send_handover_request(
@@ -2381,7 +2421,7 @@ void s1ap_handle_handover_request_ack(
             return;
         }
 
-        memcpy(&bearer->target_s1u_teid, e_rab->gTP_TEID.buf, 
+        memcpy(&bearer->target_s1u_teid, e_rab->gTP_TEID.buf,
                 sizeof(bearer->target_s1u_teid));
         bearer->target_s1u_teid = be32toh(bearer->target_s1u_teid);
         rv = ogs_asn_BIT_STRING_to_ip(
@@ -2399,7 +2439,7 @@ void s1ap_handle_handover_request_ack(
         if (e_rab->dL_transportLayerAddress && e_rab->dL_gTP_TEID) {
             ogs_assert(e_rab->dL_gTP_TEID->buf);
             ogs_assert(e_rab->dL_transportLayerAddress->buf);
-            memcpy(&bearer->enb_dl_teid, e_rab->dL_gTP_TEID->buf, 
+            memcpy(&bearer->enb_dl_teid, e_rab->dL_gTP_TEID->buf,
                     sizeof(bearer->enb_dl_teid));
             bearer->enb_dl_teid = be32toh(bearer->enb_dl_teid);
             rv = ogs_asn_BIT_STRING_to_ip(
@@ -2418,7 +2458,7 @@ void s1ap_handle_handover_request_ack(
         if (e_rab->uL_TransportLayerAddress && e_rab->uL_GTP_TEID) {
             ogs_assert(e_rab->uL_GTP_TEID->buf);
             ogs_assert(e_rab->uL_TransportLayerAddress->buf);
-            memcpy(&bearer->enb_ul_teid, e_rab->uL_GTP_TEID->buf, 
+            memcpy(&bearer->enb_ul_teid, e_rab->uL_GTP_TEID->buf,
                     sizeof(bearer->enb_ul_teid));
             bearer->enb_ul_teid = be32toh(bearer->enb_ul_teid);
             rv = ogs_asn_BIT_STRING_to_ip(
@@ -2876,15 +2916,15 @@ void s1ap_handle_handover_notification(
     ogs_debug("    Target : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
 
-    mme_ue_associate_enb_ue(mme_ue, target_ue);
+    enb_ue_associate_mme_ue(target_ue, mme_ue);
 
-    memcpy(&target_ue->saved.tai.plmn_id, pLMNidentity->buf, 
+    memcpy(&target_ue->saved.tai.plmn_id, pLMNidentity->buf,
             sizeof(target_ue->saved.tai.plmn_id));
     memcpy(&target_ue->saved.tai.tac,
             tAC->buf, sizeof(target_ue->saved.tai.tac));
     target_ue->saved.tai.tac = be16toh(target_ue->saved.tai.tac);
 
-    memcpy(&target_ue->saved.e_cgi.plmn_id, pLMNidentity->buf, 
+    memcpy(&target_ue->saved.e_cgi.plmn_id, pLMNidentity->buf,
             sizeof(target_ue->saved.e_cgi.plmn_id));
     memcpy(&target_ue->saved.e_cgi.cell_id, cell_ID->buf,
             sizeof(target_ue->saved.e_cgi.cell_id));
@@ -2916,15 +2956,22 @@ void s1ap_handle_handover_notification(
             S1AP_UE_CTX_REL_S1_HANDOVER_COMPLETE,
             ogs_app()->time.handover.duration));
 
+    ogs_list_init(&mme_ue->bearer_to_modify_list);
+
     ogs_list_for_each(&mme_ue->sess_list, sess) {
         ogs_list_for_each(&sess->bearer_list, bearer) {
             bearer->enb_s1u_teid = bearer->target_s1u_teid;
             memcpy(&bearer->enb_s1u_ip, &bearer->target_s1u_ip,
                     sizeof(ogs_ip_t));
 
-            ogs_assert(OGS_OK ==
-                mme_gtp_send_modify_bearer_request(bearer, 1));
+            ogs_list_add(
+                    &mme_ue->bearer_to_modify_list, &bearer->to_modify_node);
+
         }
+    }
+
+    if (ogs_list_count(&mme_ue->bearer_to_modify_list)) {
+        ogs_assert(OGS_OK == mme_gtp_send_modify_bearer_request(mme_ue, 1, 0));
     }
 }
 

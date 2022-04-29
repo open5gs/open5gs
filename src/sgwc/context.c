@@ -473,6 +473,32 @@ sgwc_sess_t *sgwc_sess_cycle(sgwc_sess_t *sess)
     return ogs_pool_cycle(&sgwc_sess_pool, sess);
 }
 
+int sgwc_sess_pfcp_xact_count(
+        sgwc_ue_t *sgwc_ue, uint8_t pfcp_type, uint64_t modify_flags)
+{
+    sgwc_sess_t *sess = NULL;
+    int xact_count = 0;
+
+    ogs_assert(sgwc_ue);
+
+    ogs_list_for_each(&sgwc_ue->sess_list, sess) {
+        ogs_pfcp_node_t *pfcp_node = sess->pfcp_node;
+        ogs_pfcp_xact_t *pfcp_xact = NULL;
+        ogs_assert(pfcp_node);
+        ogs_list_for_each(&pfcp_node->local_list, pfcp_xact) {
+            if (sess != pfcp_xact->data)
+                continue;
+            if (pfcp_type && pfcp_type != pfcp_xact->seq[0].type)
+                continue;
+            if (modify_flags && modify_flags != pfcp_xact->modify_flags)
+                continue;
+            xact_count++;
+        }
+    }
+
+    return xact_count;
+}
+
 sgwc_bearer_t *sgwc_bearer_add(sgwc_sess_t *sess)
 {
     sgwc_bearer_t *bearer = NULL;

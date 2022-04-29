@@ -91,7 +91,7 @@ int s1ap_delayed_send_to_enb_ue(
 {
     ogs_assert(enb_ue);
     ogs_assert(pkbuf);
-        
+
     if (duration) {
         mme_event_t *e = NULL;
 
@@ -140,7 +140,7 @@ int s1ap_send_to_esm(
 
     return rv;
 }
- 
+
 int s1ap_send_to_nas(enb_ue_t *enb_ue,
         S1AP_ProcedureCode_t procedureCode, S1AP_NAS_PDU_t *nasPdu)
 {
@@ -154,7 +154,7 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
     ogs_assert(enb_ue);
     ogs_assert(nasPdu);
 
-    /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
+    /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM.
      * When calculating AES_CMAC, we need to use the headroom of the packet. */
     nasbuf = ogs_pkbuf_alloc(NULL, OGS_NAS_HEADROOM+nasPdu->size);
     ogs_assert(nasbuf);
@@ -372,7 +372,7 @@ int s1ap_send_paging(mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain)
     }
 
     /* Start T3413 */
-    ogs_timer_start(mme_ue->t3413.timer, 
+    ogs_timer_start(mme_ue->t3413.timer,
             mme_timer_cfg(MME_TIMER_T3413)->duration);
 
     return OGS_OK;
@@ -510,7 +510,7 @@ int s1ap_send_handover_request(
     ogs_info("    Target : ENB_UE_S1AP_ID[Unknown] MME_UE_S1AP_ID[%d]",
             target_ue->mme_ue_s1ap_id);
 
-    source_ue_associate_target_ue(source_ue, target_ue);
+    enb_ue_source_associate_target(source_ue, target_ue);
 
     s1apbuf = s1ap_build_handover_request(
             target_ue, handovertype, cause,

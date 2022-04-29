@@ -179,8 +179,11 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
             /* Check if Initial Context Setup Response or 
              *          E-RAB Setup Response is received */
             if (MME_HAVE_ENB_S1U_PATH(bearer)) {
+                ogs_list_init(&mme_ue->bearer_to_modify_list);
+                ogs_list_add(&mme_ue->bearer_to_modify_list,
+                                &bearer->to_modify_node);
                 ogs_assert(OGS_OK ==
-                    mme_gtp_send_modify_bearer_request(bearer, 0));
+                    mme_gtp_send_modify_bearer_request(mme_ue, 0, 0));
             }
 
             nas_eps_send_activate_all_dedicated_bearers(bearer);
