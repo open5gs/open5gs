@@ -226,9 +226,11 @@ void sgwu_sxa_handle_session_modification_request(
 
     /* Send End Marker to gNB */
     ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {
-        far = pdr->far;
-        if (far && far->smreq_flags.send_end_marker_packets)
-            ogs_assert(OGS_ERROR != ogs_pfcp_send_end_marker(pdr));
+        if (pdr->src_if == OGS_PFCP_INTERFACE_CORE) { /* Downlink */
+            far = pdr->far;
+            if (far && far->smreq_flags.send_end_marker_packets)
+                ogs_assert(OGS_ERROR != ogs_pfcp_send_end_marker(pdr));
+        }
     }
     /* Clear PFCPSMReq-Flags */
     ogs_list_for_each(&sess->pfcp.far_list, far)
