@@ -2057,6 +2057,16 @@ void smf_sess_create_cp_up_data_forwarding(smf_sess_t *sess)
     ogs_pfcp_pdr_associate_far(up2cp_pdr, up2cp_far);
 
     up2cp_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
+
+    if (qos_flow->qer && qos_flow->qfi) {
+        /* To match the PDI of UP2CP_PDR(from ff02::2/128 to assigned)
+         * Router-Solicitation has QFI in the Extended Header */
+        up2cp_pdr->qfi = qos_flow->qfi;
+
+        /* When UPF sends router advertisement to gNB,
+         * it includes QFI in extension header */
+        ogs_pfcp_pdr_associate_qer(cp2up_pdr, qos_flow->qer);
+    }
 }
 
 void smf_sess_delete_cp_up_data_forwarding(smf_sess_t *sess)

@@ -149,7 +149,7 @@ void testgtpu_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
 found:
     ogs_assert(sess);
 
-    ip6_h = pkbuf->data + OGS_GTPV1U_HEADER_LEN;
+    ip6_h = pkbuf->data + ogs_gtpu_header_len(pkbuf);
     ogs_assert(ip6_h);
     if (ip6_h->ip6_nxt == IPPROTO_ICMPV6) {
         struct nd_router_advert *advert_h = (struct nd_router_advert *)
@@ -384,10 +384,11 @@ int test_gtpu_send_slacc_rs(ogs_socknode_t *node, test_bearer_t *bearer)
     if (bearer->qfi) {
         gtp_hdesc.teid = sess->upf_n3_teid;
 
-/* CHECK: I guess that Router Soliciation does not include QFI in 5G Core */
-#if 0
+/*
+ * Discussion #1506
+ * Router Soliciation should include QFI in 5G Core
+ */
         ext_hdesc.qos_flow_identifier = bearer->qfi;
-#endif
 
     } else if (bearer->ebi) {
         gtp_hdesc.teid = bearer->sgw_s1u_teid;
