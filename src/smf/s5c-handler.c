@@ -78,6 +78,10 @@ uint8_t smf_s5c_handle_create_session_request(
         ogs_error("No IMSI");
         cause_value = OGS_GTP2_CAUSE_CONDITIONAL_IE_MISSING;
     }
+    if (req->msisdn.presence == 0) {
+        ogs_error("No MSISDN");
+        cause_value = OGS_GTP2_CAUSE_CONDITIONAL_IE_MISSING;
+    }
     if (req->sender_f_teid_for_control_plane.presence == 0) {
         ogs_error("No TEID");
         cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
@@ -149,6 +153,18 @@ uint8_t smf_s5c_handle_create_session_request(
 
     smf_ue = sess->smf_ue;
     ogs_assert(smf_ue);
+
+    /* Set MSISDN: */
+    /* TS 29.274 sec 8.11, TS 29.002 ISDN-AddressString  */
+    if (req->msisdn.len > sizeof(smf_ue->msisdn))  {
+        ogs_error("MSISDN wrong size %u > %zu", req->msisdn.len, sizeof(smf_ue->msisdn));
+        return OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
+    }
+    smf_ue->msisdn_len = req->msisdn.len;
+    if (smf_ue->msisdn_len > 0) {
+        memcpy(smf_ue->msisdn, req->msisdn.data, smf_ue->msisdn_len);
+        ogs_buffer_to_bcd(smf_ue->msisdn, smf_ue->msisdn_len, smf_ue->msisdn_bcd);
+    }
 
     if (sess->gtp_rat_type == OGS_GTP2_RAT_TYPE_EUTRAN) {
         /* User Location Inforation is mandatory only for E-UTRAN */

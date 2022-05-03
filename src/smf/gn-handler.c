@@ -93,6 +93,10 @@ uint8_t smf_gn_handle_create_pdp_context_request(
         ogs_error("No SGSN Address for user traffic");
         cause_value = OGS_GTP1_CAUSE_MANDATORY_IE_MISSING;
     }
+    if (req->msisdn.presence == 0) {
+        ogs_error("No MSISDN");
+        cause_value = OGS_GTP1_CAUSE_MANDATORY_IE_MISSING;
+    }
     if (req->quality_of_service_profile.presence == 0) {
         ogs_error("No QoS Profile");
         cause_value = OGS_GTP1_CAUSE_MANDATORY_IE_MISSING;
@@ -139,6 +143,19 @@ uint8_t smf_gn_handle_create_pdp_context_request(
     case  OGS_GTP1_GEO_LOC_TYPE_RAI:
         ogs_nas_to_plmn_id(&sess->plmn_id, &uli.rai.nas_plmn_id);
         break;
+    }
+
+    /* Set MSISDN: */
+    /* TS 29.060 sec 7.7.33, TS 29.002 ISDN-AddressString
+     * 1 byte offset: Get rid of address and numbering plan indicator  */
+    if (req->msisdn.len == 0 || (req->msisdn.len - 1) > sizeof(smf_ue->msisdn))  {
+        ogs_error("MSISDN wrong size %u > %zu", (req->msisdn.len - 1), sizeof(smf_ue->msisdn));
+        return OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT;
+    }
+    smf_ue->msisdn_len = req->msisdn.len - 1;
+    if (smf_ue->msisdn_len > 0) {
+        memcpy(smf_ue->msisdn, (uint8_t*)req->msisdn.data + 1, smf_ue->msisdn_len);
+        ogs_buffer_to_bcd(smf_ue->msisdn, smf_ue->msisdn_len, smf_ue->msisdn_bcd);
     }
 
     /* Set Bearer QoS */
