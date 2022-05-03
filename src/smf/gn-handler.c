@@ -86,11 +86,11 @@ uint8_t smf_gn_handle_create_pdp_context_request(
         cause_value = OGS_GTP1_CAUSE_MANDATORY_IE_MISSING;
     }
     if (req->sgsn_address_for_signalling.presence == 0) {
-        ogs_error("SGSN Address for signalling");
+        ogs_error("No SGSN Address for signalling");
         cause_value = OGS_GTP1_CAUSE_MANDATORY_IE_MISSING;
     }
     if (req->sgsn_address_for_user_traffic.presence == 0) {
-        ogs_error("SGSN Address for user traffic");
+        ogs_error("No SGSN Address for user traffic");
         cause_value = OGS_GTP1_CAUSE_MANDATORY_IE_MISSING;
     }
     if (req->quality_of_service_profile.presence == 0) {
