@@ -109,6 +109,11 @@ typedef struct smf_ue_s {
     int imsi_len;
     char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
 
+    /* MSISDN */
+    uint8_t msisdn[OGS_MAX_MSISDN_LEN];
+    int msisdn_len;
+    char msisdn_bcd[OGS_MAX_MSISDN_BCD_LEN+1];
+
     ogs_list_t sess_list;
 } smf_ue_t;
 
