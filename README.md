@@ -58,6 +58,11 @@ If you find Open5GS useful for work, please consider supporting this Open Source
           <img src="https://open5gs.org/assets/img/ng-voice-logo_color.png">
         </a>
       </td>
+      <td align="center" valign="middle" width="222px">
+        <a href="http://www.bristol.ac.uk/engineering/research/smart/" target="_blank">
+          <img src="https://open5gs.org/assets/img/smart-internet-lab.png">
+        </a>
+      </td>
     </tr>
   </tbody>
 </table>
