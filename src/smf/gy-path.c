@@ -482,28 +482,30 @@ void smf_gy_send_ccr(smf_sess_t *sess, void *xact,
     ogs_assert(ret == 0);
 
     /* Subscription-Id (MSISDN) */
-    ret = fd_msg_avp_new(ogs_diam_subscription_id, 0, &avp);
-    ogs_assert(ret == 0);
+    if (smf_ue->msisdn_len > 0) {
+        ret = fd_msg_avp_new(ogs_diam_subscription_id, 0, &avp);
+        ogs_assert(ret == 0);
 
-    ret = fd_msg_avp_new(ogs_diam_subscription_id_type, 0, &avpch1);
-    ogs_assert(ret == 0);
-    val.i32 = OGS_DIAM_SUBSCRIPTION_ID_TYPE_END_USER_E164;
-    ret = fd_msg_avp_setvalue (avpch1, &val);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
-    ogs_assert(ret == 0);
+        ret = fd_msg_avp_new(ogs_diam_subscription_id_type, 0, &avpch1);
+        ogs_assert(ret == 0);
+        val.i32 = OGS_DIAM_SUBSCRIPTION_ID_TYPE_END_USER_E164;
+        ret = fd_msg_avp_setvalue (avpch1, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
+        ogs_assert(ret == 0);
 
-    ret = fd_msg_avp_new(ogs_diam_subscription_id_data, 0, &avpch1);
-    ogs_assert(ret == 0);
-    val.os.data = (uint8_t *)smf_ue->msisdn_bcd;
-    val.os.len = strlen(smf_ue->msisdn_bcd);
-    ret = fd_msg_avp_setvalue (avpch1, &val);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
-    ogs_assert(ret == 0);
+        ret = fd_msg_avp_new(ogs_diam_subscription_id_data, 0, &avpch1);
+        ogs_assert(ret == 0);
+        val.os.data = (uint8_t *)smf_ue->msisdn_bcd;
+        val.os.len = strlen(smf_ue->msisdn_bcd);
+        ret = fd_msg_avp_setvalue (avpch1, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
+        ogs_assert(ret == 0);
 
-    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-    ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+        ogs_assert(ret == 0);
+    }
 
     /* Termination-Cause */
     if (cc_request_type == OGS_DIAM_GY_CC_REQUEST_TYPE_TERMINATION_REQUEST) {
