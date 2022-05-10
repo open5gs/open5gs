@@ -48,6 +48,7 @@ struct dict_object *ogs_diam_gy_service_id = NULL;
 
 struct dict_object *ogs_diam_gy_service_information = NULL;
 struct dict_object *ogs_diam_gy_ps_information = NULL;
+struct dict_object *ogs_diam_gy_3gpp_charging_id = NULL;
 struct dict_object *ogs_diam_gy_3gpp_pdp_type = NULL;
 struct dict_object *ogs_diam_gy_pdp_address = NULL;
 
@@ -105,6 +106,7 @@ int ogs_diam_gy_init(void)
 
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Service-Information", &ogs_diam_gy_service_information);
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "PS-Information", &ogs_diam_gy_ps_information);
+	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "3GPP-Charging-Id", &ogs_diam_gy_3gpp_charging_id);
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "3GPP-PDP-Type", &ogs_diam_gy_3gpp_pdp_type);
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "PDP-Address", &ogs_diam_gy_pdp_address);
 

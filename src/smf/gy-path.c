@@ -262,6 +262,15 @@ static void fill_service_information_ccr(smf_sess_t *sess,
     /* PS-Information, TS 32.299 sec 7.2.158 */
     ret = fd_msg_avp_new(ogs_diam_gy_ps_information, 0, &avpch1);
 
+    /* 3GPP-Charging-Id, 3GPP TS 29.061 16.4.7.2 2 */
+    ret = fd_msg_avp_new(ogs_diam_gy_3gpp_charging_id, 0, &avpch2);
+    ogs_assert(ret == 0);
+    val.u32 = sess->charging.id;
+    ret = fd_msg_avp_setvalue(avpch2, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
+    ogs_assert(ret == 0);
+
     /* 3GPP-PDP-Type, 3GPP TS 29.061 16.4.7.2 3 */
     if (cc_request_type == OGS_DIAM_GY_CC_REQUEST_TYPE_INITIAL_REQUEST) {
         ret = fd_msg_avp_new(ogs_diam_gy_3gpp_pdp_type, 0, &avpch2);
