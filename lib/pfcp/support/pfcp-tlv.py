@@ -721,7 +721,6 @@ f.write("""int ogs_pfcp_parse_msg(ogs_pfcp_message_t *pfcp_message, ogs_pkbuf_t 
         pfcp_message->h.seid = be64toh(pfcp_message->h.seid);
     } else {
         pfcp_message->h.sqn = pfcp_message->h.sqn_only;
-        pfcp_message->h.sqn_only = pfcp_message->h.sqn_only;
     }
 
     if (pkbuf->len == 0)

@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by pfcp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2022-03-30 17:00:53.610079 by pespin
+ * Created on: 2022-05-10 22:56:07.851458 by acetcom
  * from 29244-g10.docx
  ******************************************************************************/
 
@@ -2774,7 +2774,6 @@ int ogs_pfcp_parse_msg(ogs_pfcp_message_t *pfcp_message, ogs_pkbuf_t *pkbuf)
         pfcp_message->h.seid = be64toh(pfcp_message->h.seid);
     } else {
         pfcp_message->h.sqn = pfcp_message->h.sqn_only;
-        pfcp_message->h.sqn_only = pfcp_message->h.sqn_only;
     }
 
     if (pkbuf->len == 0)
