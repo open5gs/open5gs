@@ -244,6 +244,56 @@ static void fill_multiple_services_credit_control_ccr(smf_sess_t *sess,
     ogs_assert(ret == 0);
 }
 
+/* TS 32.299 7.2.192 Service-Information AVP for CCR */
+static void fill_service_information_ccr(smf_sess_t *sess,
+                                         uint32_t cc_request_type, struct msg *req)
+{
+    int ret;
+    union avp_value val;
+    struct avp *avp;
+    struct avp *avpch1, *avpch2;
+    struct sockaddr_in sin;
+    struct sockaddr_in6 sin6;
+
+    /* Service-Information, TS 32.299 sec 7.2.192 */
+    ret = fd_msg_avp_new(ogs_diam_gy_service_information, 0, &avp);
+
+    /* PS-Information, TS 32.299 sec 7.2.158 */
+    ret = fd_msg_avp_new(ogs_diam_gy_ps_information, 0, &avpch1);
+
+    /* PDP-Address, TS 32.299 7.2.137 */
+    if (sess->ipv4) {
+        ret = fd_msg_avp_new(ogs_diam_gy_pdp_address, 0, &avpch2);
+        sin.sin_family = AF_INET;
+        memcpy(&sin.sin_addr.s_addr, (uint8_t*)&sess->ipv4->addr[0], OGS_IPV4_LEN);
+        ret = fd_msg_avp_value_encode(&sin, avpch2);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
+    }
+    if (sess->ipv6) {
+        ret = fd_msg_avp_new(ogs_diam_gy_pdp_address, 0, &avpch2);
+        sin6.sin6_family = AF_INET6;
+        memcpy(&sin6.sin6_addr.s6_addr, (uint8_t*)&sess->ipv6->addr[0], OGS_IPV6_LEN);
+        ret = fd_msg_avp_value_encode(&sin6, avpch2);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
+        /* PDP-Address-Prefix-Length, TS 32.299 7.2.137 */
+        /* TODO: not yet needed since used OGS_IPV6_DEFAULT_PREFIX_LEN is 64.
+        if (OGS_IPV6_DEFAULT_PREFIX_LEN != 64) {
+            .u32 = sess->ipv6->subnet->prefixlen;
+        }
+        */
+    }
+
+    /* PS-Information AVP add to req: */
+    ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
+    ogs_assert(ret == 0);
+
+    /* Service-Information AVP add to req: */
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+}
+
 /* 3GPP TS 32.299  6.4.2 Credit-Control-Request message */
 void smf_gy_send_ccr(smf_sess_t *sess, void *xact,
         uint32_t cc_request_type)
@@ -549,6 +599,9 @@ void smf_gy_send_ccr(smf_sess_t *sess, void *xact,
     fill_multiple_services_credit_control_ccr(sess, cc_request_type, req);
 
     /* OC-Supported-Features */
+
+    /* Service-Information */
+    fill_service_information_ccr(sess, cc_request_type, req);
 
     /* 3GPP-User-Location-Info */
     if (sess->gtp.user_location_information.presence) {
