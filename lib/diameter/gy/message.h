@@ -103,6 +103,7 @@ extern struct dict_object *ogs_diam_gy_3gpp_pdp_type;
 #define OGS_DIAM_GY_3GPP_PDP_TYPE_ETHERNET 6
 extern struct dict_object *ogs_diam_gy_pdp_address;
 extern struct dict_object *ogs_diam_gy_sgsn_address;
+extern struct dict_object *ogs_diam_gy_ggsn_address;
 extern struct dict_object *ogs_diam_gy_feature_list_id;
 extern struct dict_object *ogs_diam_gy_feature_list;
 extern struct dict_object *ogs_diam_gy_qos_information;

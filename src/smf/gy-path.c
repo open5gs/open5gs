@@ -344,6 +344,24 @@ static void fill_service_information_ccr(smf_sess_t *sess,
         ogs_assert(ret == 0);
     }
 
+    /* GGSN-Address */
+    if (ogs_gtp_self()->gtpc_addr) {
+        ret = fd_msg_avp_new(ogs_diam_gy_ggsn_address, 0, &avpch2);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_value_encode(&ogs_gtp_self()->gtpc_addr->sin, avpch2);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
+        ogs_assert(ret == 0);
+    }
+    if (ogs_gtp_self()->gtpc_addr6) {
+        ret = fd_msg_avp_new(ogs_diam_gy_ggsn_address, 0, &avpch2);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_value_encode(&ogs_gtp_self()->gtpc_addr->sin6, avpch2);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
+        ogs_assert(ret == 0);
+    }
+
     /* Called-Station-Id */
     ret = fd_msg_avp_new(ogs_diam_gy_called_station_id, 0, &avpch2);
     ogs_assert(ret == 0);
