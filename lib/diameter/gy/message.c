@@ -53,6 +53,7 @@ struct dict_object *ogs_diam_gy_3gpp_pdp_type = NULL;
 struct dict_object *ogs_diam_gy_pdp_address = NULL;
 struct dict_object *ogs_diam_gy_sgsn_address = NULL;
 struct dict_object *ogs_diam_gy_ggsn_address = NULL;
+struct dict_object *ogs_diam_gy_3gpp_nsapi = NULL;
 
 struct dict_object *ogs_diam_gy_feature_list_id = NULL;
 struct dict_object *ogs_diam_gy_feature_list = NULL;
@@ -113,6 +114,8 @@ int ogs_diam_gy_init(void)
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "PDP-Address", &ogs_diam_gy_pdp_address);
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "SGSN-Address", &ogs_diam_gy_sgsn_address);
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "GGSN-Address", &ogs_diam_gy_ggsn_address);
+	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "3GPP-NSAPI", &ogs_diam_gy_3gpp_nsapi);
+
 
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Feature-List-ID", &ogs_diam_gy_feature_list_id);
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Feature-List", &ogs_diam_gy_feature_list);
