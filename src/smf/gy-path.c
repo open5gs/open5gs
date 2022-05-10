@@ -254,6 +254,7 @@ static void fill_service_information_ccr(smf_sess_t *sess,
     struct avp *avpch1, *avpch2;
     struct sockaddr_in sin;
     struct sockaddr_in6 sin6;
+    char buf[OGS_PLMNIDSTRLEN];
 
     /* Service-Information, TS 32.299 sec 7.2.192 */
     ret = fd_msg_avp_new(ogs_diam_gy_service_information, 0, &avp);
@@ -285,6 +286,78 @@ static void fill_service_information_ccr(smf_sess_t *sess,
         */
     }
 
+    /* Called-Station-Id */
+    ret = fd_msg_avp_new(ogs_diam_gy_called_station_id, 0, &avpch2);
+    ogs_assert(ret == 0);
+    ogs_assert(sess->session.name);
+    val.os.data = (uint8_t*)sess->session.name;
+    val.os.len = strlen(sess->session.name);
+    ret = fd_msg_avp_setvalue(avpch2, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
+    ogs_assert(ret == 0);
+
+    /* 3GPP-SGSN-MCC-MNC */
+    ret = fd_msg_avp_new(ogs_diam_gy_3gpp_sgsn_mcc_mnc, 0, &avpch2);
+    ogs_assert(ret == 0);
+    val.os.data = (uint8_t *)ogs_plmn_id_to_string(&sess->plmn_id, buf);
+    val.os.len = strlen(buf);
+    ret = fd_msg_avp_setvalue(avpch2, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
+    ogs_assert(ret == 0);
+
+    /* 3GPP-MS-Timezone */
+    if (sess->gtp.ue_timezone.presence &&
+            sess->gtp.ue_timezone.len && sess->gtp.ue_timezone.data) {
+        ret = fd_msg_avp_new(ogs_diam_gy_3gpp_ms_timezone, 0, &avpch2);
+        ogs_assert(ret == 0);
+        val.os.data = sess->gtp.ue_timezone.data;
+        val.os.len = sess->gtp.ue_timezone.len;
+        ret = fd_msg_avp_setvalue(avpch2, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
+        ogs_assert(ret == 0);
+    }
+
+    /* 3GPP-User-Location-Info */
+    if (sess->gtp.user_location_information.presence) {
+        ogs_gtp2_uli_t uli;
+        int16_t uli_len;
+
+        uint8_t uli_buf[OGS_GTP2_MAX_ULI_LEN];
+
+        uli_len = ogs_gtp2_parse_uli(
+                &uli, &sess->gtp.user_location_information);
+        ogs_assert(sess->gtp.user_location_information.len == uli_len);
+
+        ogs_assert(sess->gtp.user_location_information.data);
+        ogs_assert(sess->gtp.user_location_information.len);
+        memcpy(&uli_buf, sess->gtp.user_location_information.data,
+                sess->gtp.user_location_information.len);
+
+        /* Update Gy ULI Type */
+        if (uli.flags.tai && uli.flags.e_cgi)
+            uli_buf[0] =
+                OGS_DIAM_GY_3GPP_USER_LOCATION_INFO_TYPE_TAI_AND_ECGI;
+        else if (uli.flags.tai)
+            uli_buf[0] = OGS_DIAM_GY_3GPP_USER_LOCATION_INFO_TYPE_TAI;
+        else if (uli.flags.e_cgi)
+            uli_buf[0] = OGS_DIAM_GY_3GPP_USER_LOCATION_INFO_TYPE_ECGI;
+
+        if (uli_buf[0]) {
+            ret = fd_msg_avp_new(
+                    ogs_diam_gy_3gpp_user_location_info, 0, &avpch2);
+            ogs_assert(ret == 0);
+            val.os.data = (uint8_t *)&uli_buf;
+            val.os.len = sess->gtp.user_location_information.len;
+            ret = fd_msg_avp_setvalue(avpch2, &val);
+            ogs_assert(ret == 0);
+            ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
+            ogs_assert(ret == 0);
+        }
+    }
+
     /* PS-Information AVP add to req: */
     ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
     ogs_assert(ret == 0);
@@ -308,7 +381,6 @@ void smf_gy_send_ccr(smf_sess_t *sess, void *xact,
     struct sess_state *sess_data = NULL, *svg;
     struct session *session = NULL;
     int new;
-    char buf[OGS_PLMNIDSTRLEN];
     const char *service_context_id = "open5gs-smfd@open5gs.org";
     uint32_t timestamp;
 
@@ -602,78 +674,6 @@ void smf_gy_send_ccr(smf_sess_t *sess, void *xact,
 
     /* Service-Information */
     fill_service_information_ccr(sess, cc_request_type, req);
-
-    /* 3GPP-User-Location-Info */
-    if (sess->gtp.user_location_information.presence) {
-        ogs_gtp2_uli_t uli;
-        int16_t uli_len;
-
-        uint8_t uli_buf[OGS_GTP2_MAX_ULI_LEN];
-
-        uli_len = ogs_gtp2_parse_uli(
-                &uli, &sess->gtp.user_location_information);
-        ogs_assert(sess->gtp.user_location_information.len == uli_len);
-
-        ogs_assert(sess->gtp.user_location_information.data);
-        ogs_assert(sess->gtp.user_location_information.len);
-        memcpy(&uli_buf, sess->gtp.user_location_information.data,
-                sess->gtp.user_location_information.len);
-
-        /* Update Gy ULI Type */
-        if (uli.flags.tai && uli.flags.e_cgi)
-            uli_buf[0] =
-                OGS_DIAM_GY_3GPP_USER_LOCATION_INFO_TYPE_TAI_AND_ECGI;
-        else if (uli.flags.tai)
-            uli_buf[0] = OGS_DIAM_GY_3GPP_USER_LOCATION_INFO_TYPE_TAI;
-        else if (uli.flags.e_cgi)
-            uli_buf[0] = OGS_DIAM_GY_3GPP_USER_LOCATION_INFO_TYPE_ECGI;
-
-        if (uli_buf[0]) {
-            ret = fd_msg_avp_new(
-                    ogs_diam_gy_3gpp_user_location_info, 0, &avp);
-            ogs_assert(ret == 0);
-            val.os.data = (uint8_t *)&uli_buf;
-            val.os.len = sess->gtp.user_location_information.len;
-            ret = fd_msg_avp_setvalue(avp, &val);
-            ogs_assert(ret == 0);
-            ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-            ogs_assert(ret == 0);
-        }
-    }
-
-    /* 3GPP-MS-Timezone */
-    if (sess->gtp.ue_timezone.presence &&
-            sess->gtp.ue_timezone.len && sess->gtp.ue_timezone.data) {
-        ret = fd_msg_avp_new(ogs_diam_gy_3gpp_ms_timezone, 0, &avp);
-        ogs_assert(ret == 0);
-        val.os.data = sess->gtp.ue_timezone.data;
-        val.os.len = sess->gtp.ue_timezone.len;
-        ret = fd_msg_avp_setvalue(avp, &val);
-        ogs_assert(ret == 0);
-        ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-        ogs_assert(ret == 0);
-    }
-
-    /* 3GPP-SGSN-MCC-MNC */
-    ret = fd_msg_avp_new(ogs_diam_gy_3gpp_sgsn_mcc_mnc, 0, &avp);
-    ogs_assert(ret == 0);
-    val.os.data = (uint8_t *)ogs_plmn_id_to_string(&sess->plmn_id, buf);
-    val.os.len = strlen(buf);
-    ret = fd_msg_avp_setvalue(avp, &val);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-    ogs_assert(ret == 0);
-
-    /* Called-Station-Id */
-    ret = fd_msg_avp_new(ogs_diam_gy_called_station_id, 0, &avp);
-    ogs_assert(ret == 0);
-    ogs_assert(sess->session.name);
-    val.os.data = (uint8_t*)sess->session.name;
-    val.os.len = strlen(sess->session.name);
-    ret = fd_msg_avp_setvalue(avp, &val);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-    ogs_assert(ret == 0);
 
 
     ret = clock_gettime(CLOCK_REALTIME, &sess_data->ts);
