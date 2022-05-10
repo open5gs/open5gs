@@ -1658,7 +1658,7 @@ ogs_pfcp_ue_ip_t *ogs_pfcp_ue_ip_alloc(
     } else {
         ogs_pool_alloc(&subnet->pool, &ue_ip);
         if (!ue_ip) {
-            ogs_error("No resources avaiable");
+            ogs_error("No resources available");
             *cause_value = OGS_PFCP_CAUSE_NO_RESOURCES_AVAILABLE;
             return NULL;
         }
