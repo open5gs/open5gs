@@ -262,6 +262,35 @@ static void fill_service_information_ccr(smf_sess_t *sess,
     /* PS-Information, TS 32.299 sec 7.2.158 */
     ret = fd_msg_avp_new(ogs_diam_gy_ps_information, 0, &avpch1);
 
+    /* 3GPP-PDP-Type, 3GPP TS 29.061 16.4.7.2 3 */
+    if (cc_request_type == OGS_DIAM_GY_CC_REQUEST_TYPE_INITIAL_REQUEST) {
+        ret = fd_msg_avp_new(ogs_diam_gy_3gpp_pdp_type, 0, &avpch2);
+        ogs_assert(ret == 0);
+        switch (sess->session.session_type) {
+        case OGS_PDU_SESSION_TYPE_IPV4:
+            val.i32 = OGS_DIAM_GY_3GPP_PDP_TYPE_IPv4;
+            break;
+        case OGS_PDU_SESSION_TYPE_IPV6:
+            val.i32 = OGS_DIAM_GY_3GPP_PDP_TYPE_IPv6;
+            break;
+        case OGS_PDU_SESSION_TYPE_IPV4V6:
+            val.i32 = OGS_DIAM_GY_3GPP_PDP_TYPE_IPv4v6;
+            break;
+        case OGS_PDU_SESSION_TYPE_UNSTRUCTURED:
+            val.i32 = OGS_DIAM_GY_3GPP_PDP_TYPE_UNSTRUCTURED;
+            break;
+        case OGS_PDU_SESSION_TYPE_ETHERNET:
+            val.i32 = OGS_DIAM_GY_3GPP_PDP_TYPE_ETHERNET;
+            break;
+        default:
+            val.i32 = OGS_DIAM_GY_3GPP_PDP_TYPE_NON_IP;
+        }
+        ret = fd_msg_avp_setvalue(avpch2, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
+        ogs_assert(ret == 0);
+    }
+
     /* PDP-Address, TS 32.299 7.2.137 */
     if (sess->ipv4) {
         ret = fd_msg_avp_new(ogs_diam_gy_pdp_address, 0, &avpch2);

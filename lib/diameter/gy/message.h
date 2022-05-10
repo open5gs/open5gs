@@ -92,6 +92,14 @@ extern struct dict_object *ogs_diam_gy_reporting_reason;
 extern struct dict_object *ogs_diam_gy_service_id;
 extern struct dict_object *ogs_diam_gy_service_information;
 extern struct dict_object *ogs_diam_gy_ps_information;
+extern struct dict_object *ogs_diam_gy_3gpp_pdp_type;
+#define OGS_DIAM_GY_3GPP_PDP_TYPE_IPv4     0
+#define OGS_DIAM_GY_3GPP_PDP_TYPE_PPP      1
+#define OGS_DIAM_GY_3GPP_PDP_TYPE_IPv6     2
+#define OGS_DIAM_GY_3GPP_PDP_TYPE_IPv4v6   3
+#define OGS_DIAM_GY_3GPP_PDP_TYPE_NON_IP   4
+#define OGS_DIAM_GY_3GPP_PDP_TYPE_UNSTRUCTURED 5
+#define OGS_DIAM_GY_3GPP_PDP_TYPE_ETHERNET 6
 extern struct dict_object *ogs_diam_gy_pdp_address;
 extern struct dict_object *ogs_diam_gy_feature_list_id;
 extern struct dict_object *ogs_diam_gy_feature_list;
