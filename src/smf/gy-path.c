@@ -324,6 +324,26 @@ static void fill_service_information_ccr(smf_sess_t *sess,
         */
     }
 
+    /* SGSN-Address */
+    if (sess->sgw_s5c_ip.ipv4) {
+        ret = fd_msg_avp_new(ogs_diam_gy_sgsn_address, 0, &avpch2);
+        sin.sin_family = AF_INET;
+        memcpy(&sin.sin_addr.s_addr, (uint8_t*)&sess->sgw_s5c_ip.addr, OGS_IPV4_LEN);
+        ret = fd_msg_avp_value_encode(&sin, avpch2);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
+        ogs_assert(ret == 0);
+    }
+    if (sess->sgw_s5c_ip.ipv6) {
+        ret = fd_msg_avp_new(ogs_diam_gy_sgsn_address, 0, &avpch2);
+        sin6.sin6_family = AF_INET6;
+        memcpy(&sin6.sin6_addr.s6_addr, (uint8_t*)&sess->sgw_s5c_ip.addr6[0], OGS_IPV6_LEN);
+        ret = fd_msg_avp_value_encode(&sin6, avpch2);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
+        ogs_assert(ret == 0);
+    }
+
     /* Called-Station-Id */
     ret = fd_msg_avp_new(ogs_diam_gy_called_station_id, 0, &avpch2);
     ogs_assert(ret == 0);
