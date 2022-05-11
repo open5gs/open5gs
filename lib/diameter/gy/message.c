@@ -46,6 +46,14 @@ struct dict_object *ogs_diam_gy_cc_service_specific_units = NULL;
 struct dict_object *ogs_diam_gy_reporting_reason = NULL;
 struct dict_object *ogs_diam_gy_service_id = NULL;
 
+struct dict_object *ogs_diam_gy_service_information = NULL;
+struct dict_object *ogs_diam_gy_ps_information = NULL;
+struct dict_object *ogs_diam_gy_3gpp_charging_id = NULL;
+struct dict_object *ogs_diam_gy_3gpp_pdp_type = NULL;
+struct dict_object *ogs_diam_gy_pdp_address = NULL;
+struct dict_object *ogs_diam_gy_sgsn_address = NULL;
+struct dict_object *ogs_diam_gy_ggsn_address = NULL;
+
 struct dict_object *ogs_diam_gy_feature_list_id = NULL;
 struct dict_object *ogs_diam_gy_feature_list = NULL;
 struct dict_object *ogs_diam_gy_qos_information = NULL;
@@ -97,6 +105,14 @@ int ogs_diam_gy_init(void)
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "CC-Service-Specific-Units", &ogs_diam_gy_cc_service_specific_units);
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Reporting-Reason", &ogs_diam_gy_reporting_reason);
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Service-Identifier", &ogs_diam_gy_service_id);
+
+	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Service-Information", &ogs_diam_gy_service_information);
+	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "PS-Information", &ogs_diam_gy_ps_information);
+	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "3GPP-Charging-Id", &ogs_diam_gy_3gpp_charging_id);
+	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "3GPP-PDP-Type", &ogs_diam_gy_3gpp_pdp_type);
+	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "PDP-Address", &ogs_diam_gy_pdp_address);
+	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "SGSN-Address", &ogs_diam_gy_sgsn_address);
+	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "GGSN-Address", &ogs_diam_gy_ggsn_address);
 
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Feature-List-ID", &ogs_diam_gy_feature_list_id);
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Feature-List", &ogs_diam_gy_feature_list);
