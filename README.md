@@ -2,8 +2,21 @@
 
 If you find Open5GS useful for work, please consider supporting this Open Source project by [Becoming a sponsor](https://github.com/sponsors/acetcom). To manage the funding transactions transparently, you can donate through [OpenCollective](https://opencollective.com/open5gs).
 
+<h3 align="center">Platinum Sponsors</h3>
+<table align="center">
+  <tbody>
+    <tr>
+      <td align="center" valign="middle">
+  <a href="https://teletresearch.com/" target="_blank">
+    <img width="260px" src="https://open5gs.org/assets/img/Telet-logo-v2.png">
+  </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
 <h3 align="center">Gold Sponsors</h3>
-<table>
+<table align="center">
   <tbody>
     <tr>
       <td align="center" valign="middle">
@@ -16,7 +29,7 @@ If you find Open5GS useful for work, please consider supporting this Open Source
 </table>
 
 <h3 align="center">Silver Sponsors</h3>
-<table>
+<table align="center">
   <tbody>
     <tr>
       <td align="center" valign="middle" width="222px">
