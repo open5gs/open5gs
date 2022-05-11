@@ -8,7 +8,7 @@ If you find Open5GS useful for work, please consider supporting this Open Source
     <tr>
       <td align="center" valign="middle">
   <a href="https://teletresearch.com/" target="_blank">
-    <img width="260px" src="https://open5gs.org/assets/img/Telet-logo-v2.png">
+    <img width="320px" src="https://open5gs.org/assets/img/Telet-logo-v2.png">
   </a>
       </td>
     </tr>
@@ -21,7 +21,7 @@ If you find Open5GS useful for work, please consider supporting this Open Source
     <tr>
       <td align="center" valign="middle">
   <a href="http://wavemobile.com/" target="_blank">
-    <img width="260px" src="https://open5gs.org/assets/img/Wavemobile-Logo-Mark-RGB.png">
+    <img width="250px" src="https://open5gs.org/assets/img/Wavemobile-Logo-Mark-RGB.png">
   </a>
       </td>
     </tr>
