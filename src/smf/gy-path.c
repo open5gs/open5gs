@@ -251,7 +251,7 @@ static void fill_service_information_ccr(smf_sess_t *sess,
     int ret;
     union avp_value val;
     struct avp *avp;
-    struct avp *avpch1, *avpch2;
+    struct avp *avpch1, *avpch2, *avpch3;
     struct sockaddr_in sin;
     struct sockaddr_in6 sin6;
     char buf[OGS_PLMNIDSTRLEN];
@@ -491,6 +491,35 @@ static void fill_service_information_ccr(smf_sess_t *sess,
             ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
             ogs_assert(ret == 0);
         }
+    }
+
+    if (sess->smf_ue->imeisv_len > 0) {
+        /* User-Equipment-Info, 3GPP TS 32.299 7.1.17 */
+        ret = fd_msg_avp_new(ogs_diam_gy_user_equipment_info, 0, &avpch2);
+
+        /* User-Equipment-Info-Type 0 (IMEI) */
+        ret = fd_msg_avp_new(ogs_diam_gy_user_equipment_info_type, 0, &avpch3);
+        ogs_assert(ret == 0);
+        val.i32 = 0;
+        ret = fd_msg_avp_setvalue(avpch3, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(avpch2, MSG_BRW_LAST_CHILD, avpch3);
+        ogs_assert(ret == 0);
+
+        /* User-Equipment-Info-Val */
+        ret = fd_msg_avp_new(ogs_diam_gy_user_equipment_info_value, 0, &avpch3);
+        ogs_assert(ret == 0);
+        digit = '0';
+        val.os.data = (uint8_t*)&sess->smf_ue->imeisv_bcd[0];
+        val.os.len = 16;
+        ret = fd_msg_avp_setvalue(avpch3, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(avpch2, MSG_BRW_LAST_CHILD, avpch3);
+        ogs_assert(ret == 0);
+
+        /* User-Equipment-Info AVP add to PS-Information: */
+        ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
+        ogs_assert(ret == 0);
     }
 
     /* PS-Information AVP add to req: */

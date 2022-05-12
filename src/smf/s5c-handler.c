@@ -354,6 +354,15 @@ uint8_t smf_s5c_handle_create_session_request(
                 smf_ue->msisdn_len, smf_ue->msisdn_bcd);
     }
 
+    /* Set IMEI(SV) */
+    if (req->me_identity.presence && req->me_identity.len > 0) {
+        smf_ue->imeisv_len = req->me_identity.len;
+        memcpy(smf_ue->imeisv,
+            (uint8_t*)req->me_identity.data, smf_ue->imeisv_len);
+        ogs_buffer_to_bcd(
+            smf_ue->imeisv, smf_ue->imeisv_len, smf_ue->imeisv_bcd);
+    }
+
     return OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
 }
 
