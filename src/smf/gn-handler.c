@@ -364,7 +364,7 @@ void smf_gn_handle_update_pdp_context_request(
                 sess->sgw_s5c_teid, sess->smf_n4_teid);
     }
 
-    /* User Plane(DL) : SGW-S5C */
+    /* User Plane(DL) : SGW-S5U */
     bearer->sgw_s5u_teid = req->tunnel_endpoint_identifier_data_i.u32;
     rv = ogs_gtp1_gsn_addr_to_ip(req->sgsn_address_for_user_traffic.data,
                                  req->sgsn_address_for_user_traffic.len,
@@ -405,7 +405,7 @@ void smf_gn_handle_update_pdp_context_request(
         }
     }
 
-    rv = smf_epc_pfcp_send_session_modification_request(sess, xact,
+    rv = smf_epc_pfcp_send_session_modification_request(sess, xact, NULL,
             OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE,
             OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
             OGS_GTP1_CAUSE_REACTIACTION_REQUESTED);

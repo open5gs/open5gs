@@ -153,18 +153,18 @@ static void gtp_message_test1(abts_case *tc, void *data)
     req.protocol_configuration_options.len =
         ogs_pco_build(pcobuf, OGS_MAX_PCO_LEN, &pco);
 
-    req.bearer_contexts_to_be_created.presence = 1;
-    req.bearer_contexts_to_be_created.eps_bearer_id.presence = 1;
-    req.bearer_contexts_to_be_created.eps_bearer_id.u8 = 5;
+    req.bearer_contexts_to_be_created[0].presence = 1;
+    req.bearer_contexts_to_be_created[0].eps_bearer_id.presence = 1;
+    req.bearer_contexts_to_be_created[0].eps_bearer_id.u8 = 5;
 
     memset(&bearer_qos, 0, sizeof(bearer_qos));
     bearer_qos.pre_emption_vulnerability = 1;
     bearer_qos.priority_level = 1;
     bearer_qos.pre_emption_capability = 1;
     bearer_qos.qci = 5;
-    req.bearer_contexts_to_be_created.bearer_level_qos.presence = 1;
+    req.bearer_contexts_to_be_created[0].bearer_level_qos.presence = 1;
     size = ogs_gtp2_build_bearer_qos(
-            &req.bearer_contexts_to_be_created.bearer_level_qos,
+            &req.bearer_contexts_to_be_created[0].bearer_level_qos,
             &bearer_qos, bearer_qos_buf, GTP2_BEARER_QOS_LEN);
 
     memset(&ue_timezone, 0, sizeof(ue_timezone));
@@ -259,38 +259,43 @@ static void gtp_message_test1(abts_case *tc, void *data)
         OGS_PCO_ID_IP_ADDRESS_ALLOCATION_VIA_NAS_SIGNALLING,
         pco.ids[2].id);
     ABTS_INT_EQUAL(tc, 0, pco.ids[2].len);
-    ABTS_INT_EQUAL(tc, 1, req.bearer_contexts_to_be_created.presence);
+    ABTS_INT_EQUAL(tc, 1, req.bearer_contexts_to_be_created[0].presence);
+    ABTS_INT_EQUAL(tc, 0, req.bearer_contexts_to_be_created[1].presence);
     ABTS_INT_EQUAL(tc, 1, req.
-                bearer_contexts_to_be_created.eps_bearer_id.presence);
+                bearer_contexts_to_be_created[0].eps_bearer_id.presence);
+    ABTS_INT_EQUAL(tc, 0, req.
+                bearer_contexts_to_be_created[1].eps_bearer_id.presence);
     ABTS_INT_EQUAL(tc, 0x05,
-            req.bearer_contexts_to_be_created.eps_bearer_id.u8);
+            req.bearer_contexts_to_be_created[0].eps_bearer_id.u8);
     ABTS_INT_EQUAL(tc, 0, req.
-                bearer_contexts_to_be_created.tft.presence);
+                bearer_contexts_to_be_created[0].tft.presence);
     ABTS_INT_EQUAL(tc, 0, req.
-                bearer_contexts_to_be_created.s1_u_enodeb_f_teid.presence);
+                bearer_contexts_to_be_created[0].s1_u_enodeb_f_teid.presence);
     ABTS_INT_EQUAL(tc, 0, req.
-                bearer_contexts_to_be_created.s2b_u_epdg_f_teid_5.presence);
+                bearer_contexts_to_be_created[0].s2b_u_epdg_f_teid_5.presence);
     ABTS_INT_EQUAL(tc, 0, req.
-                bearer_contexts_to_be_created.s2a_u_twan_f_teid_6.presence);
+                bearer_contexts_to_be_created[0].s2a_u_twan_f_teid_6.presence);
     ABTS_INT_EQUAL(tc, 1, req.
-                bearer_contexts_to_be_created.bearer_level_qos.presence);
+                bearer_contexts_to_be_created[0].bearer_level_qos.presence);
+    ABTS_INT_EQUAL(tc, 0, req.
+                bearer_contexts_to_be_created[1].bearer_level_qos.presence);
     ABTS_INT_EQUAL(tc, 22,
-            req.bearer_contexts_to_be_created.bearer_level_qos.len);
+            req.bearer_contexts_to_be_created[0].bearer_level_qos.len);
     size = ogs_gtp2_parse_bearer_qos(&bearer_qos,
-            &req.bearer_contexts_to_be_created.bearer_level_qos);
+            &req.bearer_contexts_to_be_created[0].bearer_level_qos);
     ABTS_INT_EQUAL(tc, 22, size);
     ABTS_INT_EQUAL(tc, 1, bearer_qos.pre_emption_vulnerability);
     ABTS_INT_EQUAL(tc, 1, bearer_qos.priority_level);
     ABTS_INT_EQUAL(tc, 1, bearer_qos.pre_emption_capability);
     ABTS_INT_EQUAL(tc, 5, bearer_qos.qci);
     ABTS_INT_EQUAL(tc, 0, req.
-                bearer_contexts_to_be_created.s11_u_mme_f_teid.presence);
+                bearer_contexts_to_be_created[0].s11_u_mme_f_teid.presence);
     ABTS_INT_EQUAL(tc, 0, req.
-                bearer_contexts_to_be_created.cause.presence);
+                bearer_contexts_to_be_created[0].cause.presence);
     ABTS_INT_EQUAL(tc, 0, req.
-                bearer_contexts_to_be_created.transaction_identifier.presence);
+                bearer_contexts_to_be_created[0].transaction_identifier.presence);
     ABTS_INT_EQUAL(tc, 0, req.
-                bearer_contexts_to_be_created.packet_flow_id.presence);
+                bearer_contexts_to_be_created[0].packet_flow_id.presence);
     ABTS_INT_EQUAL(tc, 0, req.bearer_contexts_to_be_removed.presence);
     ABTS_INT_EQUAL(tc, 0, req.recovery.presence);
     ABTS_INT_EQUAL(tc, 0, req.mme_fq_csid.presence);

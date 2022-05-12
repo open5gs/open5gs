@@ -38,12 +38,14 @@ int smf_gtp1_send_update_pdp_context_request(
 int smf_gtp1_send_update_pdp_context_response(
         smf_bearer_t *bearer, ogs_gtp_xact_t *xact);
 
-int smf_gtp_send_create_session_response(
+int smf_gtp2_send_create_session_response(
         smf_sess_t *sess, ogs_gtp_xact_t *xact);
-int smf_gtp_send_delete_session_response(
+int smf_gtp2_send_modify_bearer_response(
+        smf_sess_t *sess, ogs_gtp_xact_t *xact,
+        ogs_gtp2_modify_bearer_request_t *req, bool sgw_relocation);
+int smf_gtp2_send_delete_session_response(
         smf_sess_t *sess, ogs_gtp_xact_t *xact);
-
-int smf_gtp_send_delete_bearer_request(
+int smf_gtp2_send_delete_bearer_request(
         smf_bearer_t *bearer, uint8_t pti, uint8_t cause_value);
 
 #ifdef __cplusplus

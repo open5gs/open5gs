@@ -580,9 +580,9 @@ for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
         f.write("typedef struct ogs_gtp2_" + v_lower(k) + "_s {\n")
         for ies in msg_list[k]["ies"]:
-            if ((k == 'Create Indirect Data Forwarding Tunnel Request' or k == 'Create Indirect Data Forwarding Tunnel Response') and ies["ie_value"] == 'Bearer Contexts') or (k == 'Modify Bearer Request' and ies["ie_value"] == 'Bearer Contexts to be modified') or (k == 'Modify Bearer Response' and ies["ie_value"] == 'Bearer Contexts modified'):
+            if ((k == 'Create Indirect Data Forwarding Tunnel Request' or k == 'Create Indirect Data Forwarding Tunnel Response') and ies["ie_value"] == 'Bearer Contexts') or (k == 'Create Session Request' and ies["ie_value"] == 'Bearer Contexts to be created') or (k == 'Create Session Response' and ies["ie_value"] == 'Bearer Contexts created') or (k == 'Modify Bearer Request' and ies["ie_value"] == 'Bearer Contexts to be modified') or (k == 'Modify Bearer Response' and ies["ie_value"] == 'Bearer Contexts modified'):
                 f.write("    ogs_gtp2_tlv_" + v_lower(ies["ie_type"]) + "_t " + \
-                        v_lower(ies["ie_value"]) + "[8];\n")
+                        v_lower(ies["ie_value"]) + "[OGS_BEARER_PER_UE];\n")
             else:
                 f.write("    ogs_gtp2_tlv_" + v_lower(ies["ie_type"]) + "_t " + \
                         v_lower(ies["ie_value"]) + ";\n")
@@ -671,7 +671,7 @@ for (k, v) in sorted_msg_list:
         f.write("    0, 0, 0, 0, {\n")
         for ies in msg_list[k]["ies"]:
             f.write("        &ogs_gtp2_tlv_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), v_lower(ies["instance"])))
-            if ((k == 'Create Indirect Data Forwarding Tunnel Request' or k == 'Create Indirect Data Forwarding Tunnel Response') and ies["ie_value"] == 'Bearer Contexts') or (k == 'Modify Bearer Request' and ies["ie_value"] == 'Bearer Contexts to be modified') or (k == 'Modify Bearer Response' and ies["ie_value"] == 'Bearer Contexts modified'):
+            if ((k == 'Create Indirect Data Forwarding Tunnel Request' or k == 'Create Indirect Data Forwarding Tunnel Response') and ies["ie_value"] == 'Bearer Contexts') or (k == 'Create Session Request' and ies["ie_value"] == 'Bearer Contexts to be created') or (k == 'Create Session Response' and ies["ie_value"] == 'Bearer Contexts created') or (k == 'Modify Bearer Request' and ies["ie_value"] == 'Bearer Contexts to be modified') or (k == 'Modify Bearer Response' and ies["ie_value"] == 'Bearer Contexts modified'):
                 f.write("        &ogs_tlv_desc_more8,\n")
         f.write("    NULL,\n")
         f.write("}};\n\n")

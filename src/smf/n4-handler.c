@@ -823,6 +823,7 @@ uint8_t smf_epc_n4_handle_session_establishment_response(
 
 void smf_epc_n4_handle_session_modification_response(
         smf_sess_t *sess, ogs_pfcp_xact_t *xact,
+        ogs_gtp2_message_t *recv_message,
         ogs_pfcp_session_modification_response_t *rsp)
 {
     int i;
@@ -940,7 +941,7 @@ void smf_epc_n4_handle_session_modification_response(
 
     } else if (flags & OGS_PFCP_MODIFY_CREATE) {
         ogs_assert(bearer);
-        ogs_assert(OGS_OK == smf_gtp_send_create_bearer_request(bearer));
+        ogs_assert(OGS_OK == smf_gtp2_send_create_bearer_request(bearer));
 
     } else if (flags & OGS_PFCP_MODIFY_DEACTIVATE) {
         /*
@@ -1013,7 +1014,7 @@ void smf_epc_n4_handle_session_modification_response(
                 ogs_assert(linked_bearer);
 
                 ogs_assert(OGS_OK ==
-                    smf_gtp_send_delete_bearer_request(
+                    smf_gtp2_send_delete_bearer_request(
                         linked_bearer, gtp_pti, gtp_cause));
             } else {
         /*
@@ -1034,7 +1035,7 @@ void smf_epc_n4_handle_session_modification_response(
                 ogs_assert(bearer);
 
                 ogs_assert(OGS_OK ==
-                    smf_gtp_send_delete_bearer_request(
+                    smf_gtp2_send_delete_bearer_request(
                         bearer,
                         OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
                         gtp_cause));
@@ -1043,12 +1044,36 @@ void smf_epc_n4_handle_session_modification_response(
 
     } else if (flags & OGS_PFCP_MODIFY_ACTIVATE) {
         if (gtp_xact) {
+
             /* SMF send Update PDP Context Response (GTPv1C) to SGSN */
             if (gtp_xact->gtp_version == 1) {
+
                 bearer = gtp_xact->data;
                 smf_gtp1_send_update_pdp_context_response(bearer, gtp_xact);
+
             } else {
-                /* TODO: SMF send Modify Bearer Response (GTPv2C) to SGWC */
+
+                /* SMF send Modify Bearer Response (GTPv2C) to SGW-C */
+                ogs_gtp2_indication_t *indication = NULL;
+
+                ogs_assert(recv_message);
+                ogs_gtp2_modify_bearer_request_t *gtp_req =
+                    &recv_message->modify_bearer_request;
+
+                ogs_assert(OGS_OK == smf_gtp2_send_modify_bearer_response(
+                            sess, gtp_xact, gtp_req, true));
+
+                /* Check if Handover from Non-3GPP to 3GPP */
+                if (gtp_req->indication_flags.presence &&
+                    gtp_req->indication_flags.data &&
+                    gtp_req->indication_flags.len) {
+                    indication = gtp_req->indication_flags.data;
+                }
+
+                if (indication && indication->handover_indication) {
+                    ogs_assert(OGS_OK == smf_epc_pfcp_send_deactivation(sess,
+                        OGS_GTP2_CAUSE_ACCESS_CHANGED_FROM_NON_3GPP_TO_3GPP));
+                }
             }
         } else {
             /* Nothing */

@@ -97,6 +97,7 @@ void tests1ap_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
             tests1ap_handle_s1_setup_response(pdu);
             break;
         case S1AP_ProcedureCode_id_PathSwitchRequest:
+            tests1ap_handle_path_switch_request_ack(test_ue, pdu);
             break;
         case S1AP_ProcedureCode_id_HandoverPreparation:
             tests1ap_handle_handover_command(test_ue, pdu);

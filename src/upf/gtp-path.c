@@ -179,7 +179,8 @@ static void _gtpv1_tun_recv_common_cb(
     for (i = 0; i < pdr->num_of_urr; i++)
         upf_sess_urr_acc_add(sess, pdr->urr[i], recvbuf->len, false);
 
-    ogs_assert(true == ogs_pfcp_up_handle_pdr(pdr, recvbuf, &report));
+    ogs_assert(true == ogs_pfcp_up_handle_pdr(
+                pdr, OGS_GTPU_MSGTYPE_GPDU, recvbuf, &report));
 
     if (report.type.downlink_data_report) {
         ogs_assert(pdr->sess);
@@ -539,7 +540,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                 ogs_warn("ogs_tun_write() failed");
 
         } else if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) {
-            ogs_assert(true == ogs_pfcp_up_handle_pdr(pdr, pkbuf, &report));
+            ogs_assert(true == ogs_pfcp_up_handle_pdr(
+                        pdr, gtp_h->type, pkbuf, &report));
 
             if (report.type.downlink_data_report) {
                 ogs_error("Indirect Data Fowarding Buffered");
@@ -565,7 +567,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                 goto cleanup;
             }
 
-            ogs_assert(true == ogs_pfcp_up_handle_pdr(pdr, pkbuf, &report));
+            ogs_assert(true == ogs_pfcp_up_handle_pdr(
+                        pdr, gtp_h->type, pkbuf, &report));
 
             ogs_assert(report.type.downlink_data_report == 0);
 
@@ -755,7 +758,8 @@ static void upf_gtp_handle_multicast(ogs_pkbuf_t *recvbuf)
                     ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {
                         if (pdr->src_if == OGS_PFCP_INTERFACE_CORE) {
                             ogs_assert(true ==
-                                ogs_pfcp_up_handle_pdr(pdr, recvbuf, &report));
+                                ogs_pfcp_up_handle_pdr(pdr,
+                                    OGS_GTPU_MSGTYPE_GPDU, recvbuf, &report));
                             break;
                         }
                     }

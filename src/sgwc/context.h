@@ -155,7 +155,7 @@ sgwc_sess_t *sgwc_sess_find_by_apn(sgwc_ue_t *sgwc_ue, char *apn);
 sgwc_sess_t *sgwc_sess_find_by_ebi(sgwc_ue_t *sgwc_ue, uint8_t ebi);
 sgwc_sess_t *sgwc_sess_cycle(sgwc_sess_t *sess);
 
-#define SESSION_SYNC_DONE(__sGWC, __tYPE, __fLAGS) \
+#define SGWC_SESSION_SYNC_DONE(__sGWC, __tYPE, __fLAGS) \
     (sgwc_sess_pfcp_xact_count(__sGWC, __tYPE, __fLAGS) == 0)
 int sgwc_sess_pfcp_xact_count(
         sgwc_ue_t *sgwc_ue, uint8_t pfcp_type, uint64_t modify_flags);

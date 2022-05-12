@@ -400,6 +400,78 @@ void tests1ap_handle_handover_request(
         test_ue->mme_ue_s1ap_id = *MME_UE_S1AP_ID;
 }
 
+void tests1ap_handle_path_switch_request_ack(
+        test_ue_t *test_ue, ogs_s1ap_message_t *message)
+{
+    int rv, i;
+    char buf[OGS_ADDRSTRLEN];
+
+    test_sess_t *sess = NULL;
+    test_bearer_t *bearer = NULL;
+
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_SuccessfulOutcome_t *successfulOutcome = NULL;
+    S1AP_PathSwitchRequestAcknowledge_t *PathSwitchRequestAcknowledge = NULL;
+
+    S1AP_PathSwitchRequestAcknowledgeIEs_t *ie = NULL;
+    S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
+    S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
+    S1AP_E_RABToBeSwitchedULList_t *E_RABToBeSwitchedULList = NULL;
+
+    ogs_assert(test_ue);
+    ogs_assert(message);
+
+    successfulOutcome = message->choice.successfulOutcome;
+    ogs_assert(successfulOutcome);
+    PathSwitchRequestAcknowledge = &successfulOutcome->value.choice.PathSwitchRequestAcknowledge;
+    ogs_assert(PathSwitchRequestAcknowledge);
+
+    for (i = 0; i < PathSwitchRequestAcknowledge->protocolIEs.list.count; i++) {
+        ie = PathSwitchRequestAcknowledge->protocolIEs.list.array[i];
+        switch (ie->id) {
+        case S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID:
+            MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+            break;
+        case S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID:
+            ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+            break;
+        case S1AP_ProtocolIE_ID_id_E_RABToBeSwitchedULList:
+            E_RABToBeSwitchedULList =
+                &ie->value.choice.E_RABToBeSwitchedULList;
+            break;
+        default:
+            break;
+        }
+    }
+
+    if (MME_UE_S1AP_ID)
+        test_ue->mme_ue_s1ap_id = *MME_UE_S1AP_ID;
+    if (ENB_UE_S1AP_ID)
+        test_ue->enb_ue_s1ap_id = *ENB_UE_S1AP_ID;
+
+    if (E_RABToBeSwitchedULList) {
+        for (i = 0; i < E_RABToBeSwitchedULList->list.count; i++) {
+            S1AP_E_RABToBeSwitchedULItemIEs_t *ie2 = NULL;
+            S1AP_E_RABToBeSwitchedULItem_t *e_rab = NULL;
+
+            ie2 = (S1AP_E_RABToBeSwitchedULItemIEs_t *)
+                    E_RABToBeSwitchedULList->list.array[i];
+            ogs_assert(ie2);
+            e_rab = &ie2->value.choice.E_RABToBeSwitchedULItem;
+
+            bearer = test_bearer_find_by_ue_ebi(test_ue, e_rab->e_RAB_ID);
+            ogs_assert(bearer);
+
+            memcpy(&bearer->sgw_s1u_teid, e_rab->gTP_TEID.buf,
+                    sizeof(bearer->sgw_s1u_teid));
+            bearer->sgw_s1u_teid = be32toh(bearer->sgw_s1u_teid);
+            rv = ogs_asn_BIT_STRING_to_ip(
+                    &e_rab->transportLayerAddress, &bearer->sgw_s1u_ip);
+            ogs_assert(rv == OGS_OK);
+        }
+    }
+}
+
 void tests1ap_handle_handover_command(
         test_ue_t *test_ue, ogs_s1ap_message_t *message)
 {

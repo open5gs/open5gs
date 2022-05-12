@@ -29,6 +29,9 @@ extern "C" {
 int sgwc_gtp_open(void);
 void sgwc_gtp_close(void);
 
+int sgwc_gtp_send_create_session_response(
+    sgwc_sess_t *sess, ogs_gtp_xact_t *xact);
+
 int sgwc_gtp_send_downlink_data_notification(
     uint8_t cause_value, sgwc_bearer_t *bearer);
 

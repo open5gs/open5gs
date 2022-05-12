@@ -119,7 +119,7 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
             if (MME_HAVE_SGW_S1U_PATH(sess)) {
                 ogs_assert(OGS_OK ==
-                    mme_gtp_send_delete_session_request(sess,
+                    mme_gtp_send_delete_session_request(mme_ue->sgw_ue, sess,
                     OGS_GTP_DELETE_SEND_DEACTIVATE_BEARER_CONTEXT_REQUEST));
             } else {
                 ogs_assert(OGS_OK ==
@@ -306,7 +306,7 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
             if (MME_HAVE_SGW_S1U_PATH(sess)) {
                 ogs_assert(OGS_OK ==
-                    mme_gtp_send_delete_session_request(sess,
+                    mme_gtp_send_delete_session_request(mme_ue->sgw_ue, sess,
                     OGS_GTP_DELETE_SEND_DEACTIVATE_BEARER_CONTEXT_REQUEST));
             } else {
                 ogs_assert(OGS_OK ==

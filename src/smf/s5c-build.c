@@ -32,11 +32,16 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
     ogs_gtp2_create_session_response_t *rsp = NULL;
 
     ogs_gtp2_cause_t cause;
-    ogs_gtp2_cause_t bearer_cause;
-    ogs_gtp2_f_teid_t smf_s5c_teid, pgw_s5u_teid;
+
+    int i;
+    ogs_gtp2_cause_t bearer_cause[OGS_BEARER_PER_UE];
+    ogs_gtp2_f_teid_t pgw_s5u_teid[OGS_BEARER_PER_UE];
+    int pgw_s5u_len[OGS_BEARER_PER_UE];
+
+    ogs_gtp2_f_teid_t smf_s5c_teid;
     ogs_gtp2_ambr_t ambr;
     ogs_gtp2_bearer_qos_t bearer_qos;
-    char bearer_qos_buf[GTP2_BEARER_QOS_LEN];
+    char bearer_qos_buf[OGS_BEARER_PER_UE][GTP2_BEARER_QOS_LEN];
     int len;
     uint8_t pco_buf[OGS_MAX_PCO_LEN];
     int16_t pco_len;
@@ -44,13 +49,9 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
     ogs_debug("[SMF] Create Session Response");
 
     ogs_assert(sess);
-    bearer = smf_default_bearer_in_sess(sess);
-    ogs_assert(bearer);
 
     ogs_debug("    SGW_S5C_TEID[0x%x] SMF_N4_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->smf_n4_teid);
-    ogs_debug("    SGW_S5U_TEID[0x%x] PGW_S5U_TEID[0x%x]",
-            bearer->sgw_s5u_teid, bearer->pgw_s5u_teid);
 
     rsp = &gtp_message.create_session_response;
     memset(&gtp_message, 0, sizeof(ogs_gtp2_message_t));
@@ -114,7 +115,7 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
         ogs_error("Unknown RAT Type [%d]", sess->gtp_rat_type);
         ogs_assert_if_reached();
     }
-    
+
     /* APN-AMBR
      * if PCRF changes APN-AMBR, this should be included. */
     if (sess->gtp.create_session_response_apn_ambr == true) {
@@ -137,62 +138,78 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
         rsp->protocol_configuration_options.len = pco_len;
     }
 
-    /* Bearer EBI */
-    rsp->bearer_contexts_created.presence = 1;
-    rsp->bearer_contexts_created.eps_bearer_id.presence = 1;
-    rsp->bearer_contexts_created.eps_bearer_id.u8 = bearer->ebi;
+    i = 0;
+    ogs_list_for_each(&sess->bearer_list, bearer) {
+        ogs_assert(i < OGS_BEARER_PER_UE);
 
-    /* Bearer Cause */
-    memset(&bearer_cause, 0, sizeof(bearer_cause));
-    rsp->bearer_contexts_created.cause.presence = 1;
-    rsp->bearer_contexts_created.cause.len = sizeof(bearer_cause);
-    rsp->bearer_contexts_created.cause.data = &bearer_cause;
-    bearer_cause.value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
+        ogs_debug("    SGW_S5U_TEID[0x%x] PGW_S5U_TEID[0x%x]",
+                bearer->sgw_s5u_teid, bearer->pgw_s5u_teid);
 
-    /* Bearer QoS
-     * if PCRF changes Bearer QoS, this should be included. */
-    if (sess->gtp.create_session_response_bearer_qos == true) {
-        memset(&bearer_qos, 0, sizeof(bearer_qos));
-        bearer_qos.qci = sess->session.qos.index;
-        bearer_qos.priority_level = sess->session.qos.arp.priority_level;
-        bearer_qos.pre_emption_capability =
-            sess->session.qos.arp.pre_emption_capability;
-        bearer_qos.pre_emption_vulnerability =
-            sess->session.qos.arp.pre_emption_vulnerability;
+        /* Bearer EBI */
+        rsp->bearer_contexts_created[i].presence = 1;
+        rsp->bearer_contexts_created[i].eps_bearer_id.presence = 1;
+        rsp->bearer_contexts_created[i].eps_bearer_id.u8 = bearer->ebi;
 
-        rsp->bearer_contexts_created.bearer_level_qos.presence = 1;
-        ogs_gtp2_build_bearer_qos(&rsp->bearer_contexts_created.bearer_level_qos,
-                &bearer_qos, bearer_qos_buf, GTP2_BEARER_QOS_LEN);
-    }
+        /* Bearer Cause */
+        memset(&bearer_cause[i], 0, sizeof(bearer_cause[i]));
+        rsp->bearer_contexts_created[i].cause.presence = 1;
+        rsp->bearer_contexts_created[i].cause.len = sizeof(bearer_cause[i]);
+        rsp->bearer_contexts_created[i].cause.data = &bearer_cause[i];
+        bearer_cause[i].value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
 
-    /* Bearer Charging ID */
-    rsp->bearer_contexts_created.charging_id.presence = 1;
-    rsp->bearer_contexts_created.charging_id.u32 = sess->charging.id;
+        /* Bearer QoS
+         * if PCRF changes Bearer QoS, this should be included. */
+        if (sess->gtp.create_session_response_bearer_qos == true) {
+            memset(&bearer_qos, 0, sizeof(bearer_qos));
+            bearer_qos.qci = sess->session.qos.index;
+            bearer_qos.priority_level = sess->session.qos.arp.priority_level;
+            bearer_qos.pre_emption_capability =
+                sess->session.qos.arp.pre_emption_capability;
+            bearer_qos.pre_emption_vulnerability =
+                sess->session.qos.arp.pre_emption_vulnerability;
 
-    /* Data Plane(UL) : SMF-S5U */
-    memset(&pgw_s5u_teid, 0, sizeof(ogs_gtp2_f_teid_t));
-    pgw_s5u_teid.teid = htobe32(bearer->pgw_s5u_teid);
-    ogs_assert(bearer->pgw_s5u_addr || bearer->pgw_s5u_addr6);
-    rv = ogs_gtp2_sockaddr_to_f_teid(
-        bearer->pgw_s5u_addr, bearer->pgw_s5u_addr6, &pgw_s5u_teid, &len);
-    ogs_expect_or_return_val(rv == OGS_OK, NULL);
+            rsp->bearer_contexts_created[i].bearer_level_qos.presence = 1;
+            ogs_gtp2_build_bearer_qos(
+                    &rsp->bearer_contexts_created[i].bearer_level_qos,
+                    &bearer_qos, bearer_qos_buf[i], GTP2_BEARER_QOS_LEN);
+        }
 
-    switch (sess->gtp_rat_type) {
-    case OGS_GTP2_RAT_TYPE_EUTRAN:
-        pgw_s5u_teid.interface_type = OGS_GTP2_F_TEID_S5_S8_PGW_GTP_U;
-        rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.presence = 1;
-        rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.data = &pgw_s5u_teid;
-        rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.len = len;
-        break;
-    case OGS_GTP2_RAT_TYPE_WLAN:
-        pgw_s5u_teid.interface_type = OGS_GTP2_F_TEID_S2B_U_PGW_GTP_U;
-        rsp->bearer_contexts_created.s12_rnc_f_teid.presence = 1;
-        rsp->bearer_contexts_created.s12_rnc_f_teid.data = &pgw_s5u_teid;
-        rsp->bearer_contexts_created.s12_rnc_f_teid.len = len;
-        break;
-    default:
-        ogs_error("Unknown RAT Type [%d]", sess->gtp_rat_type);
-        ogs_assert_if_reached();
+        /* Bearer Charging ID */
+        rsp->bearer_contexts_created[i].charging_id.presence = 1;
+        rsp->bearer_contexts_created[i].charging_id.u32 = sess->charging.id;
+
+        /* Data Plane(UL) : SMF-S5U */
+        memset(&pgw_s5u_teid[i], 0, sizeof(ogs_gtp2_f_teid_t));
+        pgw_s5u_teid[i].teid = htobe32(bearer->pgw_s5u_teid);
+        ogs_assert(bearer->pgw_s5u_addr || bearer->pgw_s5u_addr6);
+        rv = ogs_gtp2_sockaddr_to_f_teid(
+            bearer->pgw_s5u_addr, bearer->pgw_s5u_addr6,
+            &pgw_s5u_teid[i], &pgw_s5u_len[i]);
+        ogs_expect_or_return_val(rv == OGS_OK, NULL);
+
+        switch (sess->gtp_rat_type) {
+        case OGS_GTP2_RAT_TYPE_EUTRAN:
+            pgw_s5u_teid[i].interface_type = OGS_GTP2_F_TEID_S5_S8_PGW_GTP_U;
+            rsp->bearer_contexts_created[i].s5_s8_u_sgw_f_teid.presence = 1;
+            rsp->bearer_contexts_created[i].s5_s8_u_sgw_f_teid.data =
+                &pgw_s5u_teid[i];
+            rsp->bearer_contexts_created[i].s5_s8_u_sgw_f_teid.len =
+                pgw_s5u_len[i];
+            break;
+        case OGS_GTP2_RAT_TYPE_WLAN:
+            pgw_s5u_teid[i].interface_type = OGS_GTP2_F_TEID_S2B_U_PGW_GTP_U;
+            rsp->bearer_contexts_created[i].s12_rnc_f_teid.presence = 1;
+            rsp->bearer_contexts_created[i].s12_rnc_f_teid.data =
+                &pgw_s5u_teid[i];
+            rsp->bearer_contexts_created[i].s12_rnc_f_teid.len =
+                pgw_s5u_len[i];
+            break;
+        default:
+            ogs_error("Unknown RAT Type [%d]", sess->gtp_rat_type);
+            ogs_assert_if_reached();
+        }
+
+        i++;
     }
 
     gtp_message.h.type = type;
@@ -208,7 +225,7 @@ ogs_pkbuf_t *smf_s5c_build_delete_session_response(
     ogs_gtp2_cause_t cause;
     uint8_t pco_buf[OGS_MAX_PCO_LEN];
     int16_t pco_len;
-    
+
     /* prepare cause */
     memset(&cause, 0, sizeof(cause));
     cause.value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
@@ -243,14 +260,21 @@ ogs_pkbuf_t *smf_s5c_build_delete_session_response(
 
 ogs_pkbuf_t *smf_s5c_build_modify_bearer_response(
         uint8_t type, smf_sess_t *sess,
-        ogs_gtp2_modify_bearer_request_t *req)
+        ogs_gtp2_modify_bearer_request_t *req, bool sgw_relocation)
 {
+    int i;
+
     ogs_gtp2_message_t gtp_message;
     ogs_gtp2_modify_bearer_response_t *rsp = NULL;
 
     ogs_gtp2_cause_t cause;
 
+    smf_ue_t *smf_ue = NULL;
+    smf_bearer_t *bearer = NULL;
+
     ogs_assert(sess);
+    smf_ue = sess->smf_ue;
+    ogs_assert(smf_ue);
     ogs_assert(req);
 
     rsp = &gtp_message.modify_bearer_response;
@@ -263,19 +287,42 @@ ogs_pkbuf_t *smf_s5c_build_modify_bearer_response(
     rsp->cause.data = &cause;
     rsp->cause.len = sizeof(cause);
 
-    rsp->bearer_contexts_modified[0].presence = 1;
-    rsp->bearer_contexts_modified[0].eps_bearer_id.presence = 1;
-    rsp->bearer_contexts_modified[0].eps_bearer_id.u8 =
-        req->bearer_contexts_to_be_modified[0].eps_bearer_id.u8;
-    rsp->bearer_contexts_modified[0].s1_u_enodeb_f_teid.presence = 1;
-    rsp->bearer_contexts_modified[0].s1_u_enodeb_f_teid.data =
-        req->bearer_contexts_to_be_modified[0].s1_u_enodeb_f_teid.data;
-    rsp->bearer_contexts_modified[0].s1_u_enodeb_f_teid.len =
-        req->bearer_contexts_to_be_modified[0].s1_u_enodeb_f_teid.len;
+    if (sgw_relocation == true) {
 
-    rsp->bearer_contexts_modified[0].cause.presence = 1;
-    rsp->bearer_contexts_modified[0].cause.len = sizeof(cause);
-    rsp->bearer_contexts_modified[0].cause.data = &cause;
+        if (smf_ue->msisdn_len) {
+            rsp->msisdn.presence = 1;
+            rsp->msisdn.len = smf_ue->msisdn_len;
+            rsp->msisdn.data = smf_ue->msisdn;
+        }
+
+        for (i = 0; i < OGS_BEARER_PER_UE; i++) {
+            if (req->bearer_contexts_to_be_modified[i].presence == 0)
+                break;
+            if (req->bearer_contexts_to_be_modified[i].
+                    eps_bearer_id.presence == 0) {
+                ogs_error("No EPS Bearer ID");
+                break;
+            }
+
+            bearer = smf_bearer_find_by_ebi(sess,
+                    req->bearer_contexts_to_be_modified[i].eps_bearer_id.u8);
+            if (!bearer) {
+                ogs_error("Unknown EPS Bearer ID[%d]",
+                    req->bearer_contexts_to_be_modified[i].eps_bearer_id.u8);
+                break;
+            }
+
+            rsp->bearer_contexts_modified[i].presence = 1;
+            rsp->bearer_contexts_modified[i].eps_bearer_id.presence = 1;
+            rsp->bearer_contexts_modified[i].eps_bearer_id.u8 =
+                req->bearer_contexts_to_be_modified[i].eps_bearer_id.u8;
+
+            rsp->bearer_contexts_modified[i].charging_id.presence = 1;
+            rsp->bearer_contexts_modified[i].charging_id.u32 =
+                sess->charging.id;
+        }
+
+    }
 
     /* build */
     gtp_message.h.type = type;
@@ -310,7 +357,7 @@ ogs_pkbuf_t *smf_s5c_build_create_bearer_request(
 
     req = &gtp_message.create_bearer_request;
     memset(&gtp_message, 0, sizeof(ogs_gtp2_message_t));
- 
+
     /* Linked EBI */
     req->linked_eps_bearer_id.presence = 1;
     req->linked_eps_bearer_id.u8 = linked_bearer->ebi;
@@ -336,7 +383,7 @@ ogs_pkbuf_t *smf_s5c_build_create_bearer_request(
     memset(&bearer_qos, 0, sizeof(bearer_qos));
     bearer_qos.qci = bearer->qos.index;
     bearer_qos.priority_level = bearer->qos.arp.priority_level;
-    bearer_qos.pre_emption_capability = 
+    bearer_qos.pre_emption_capability =
         bearer->qos.arp.pre_emption_capability;
     bearer_qos.pre_emption_vulnerability =
         bearer->qos.arp.pre_emption_vulnerability;
@@ -383,7 +430,7 @@ ogs_pkbuf_t *smf_s5c_build_update_bearer_request(
             sess->sgw_s5c_teid, sess->smf_n4_teid);
     req = &gtp_message.update_bearer_request;
     memset(&gtp_message, 0, sizeof(ogs_gtp2_message_t));
- 
+
     /* Bearer EBI */
     req->bearer_contexts.presence = 1;
     req->bearer_contexts.eps_bearer_id.presence = 1;
@@ -416,7 +463,7 @@ ogs_pkbuf_t *smf_s5c_build_update_bearer_request(
         memset(&bearer_qos, 0, sizeof(bearer_qos));
         bearer_qos.qci = bearer->qos.index;
         bearer_qos.priority_level = bearer->qos.arp.priority_level;
-        bearer_qos.pre_emption_capability = 
+        bearer_qos.pre_emption_capability =
             bearer->qos.arp.pre_emption_capability;
         bearer_qos.pre_emption_vulnerability =
             bearer->qos.arp.pre_emption_vulnerability;
@@ -463,7 +510,7 @@ ogs_pkbuf_t *smf_s5c_build_delete_bearer_request(
             sess->sgw_s5c_teid, sess->smf_n4_teid);
     req = &gtp_message.delete_bearer_request;
     memset(&gtp_message, 0, sizeof(ogs_gtp2_message_t));
- 
+
     if (bearer->ebi == linked_bearer->ebi) {
        /*
         * << Linked EPS Bearer ID >>

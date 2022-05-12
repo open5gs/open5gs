@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by gtp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2022-04-22 03:19:22.024556 by acetcom
+ * Created on: 2022-05-01 15:20:04.456902 by acetcom
  * from 29274-g30.docx
  ******************************************************************************/
 
@@ -758,7 +758,7 @@ typedef struct ogs_gtp2_create_session_request_s {
     ogs_gtp2_tlv_ebi_t linked_eps_bearer_id;
     ogs_gtp2_tlv_twmi_t trusted_wlan_mode_indication;
     ogs_gtp2_tlv_pco_t protocol_configuration_options;
-    ogs_gtp2_tlv_bearer_context_t bearer_contexts_to_be_created;
+    ogs_gtp2_tlv_bearer_context_t bearer_contexts_to_be_created[OGS_BEARER_PER_UE];
     ogs_gtp2_tlv_bearer_context_t bearer_contexts_to_be_removed;
     ogs_gtp2_tlv_trace_information_t trace_information;
     ogs_gtp2_tlv_recovery_t recovery;
@@ -818,7 +818,7 @@ typedef struct ogs_gtp2_create_session_response_s {
     ogs_gtp2_tlv_ambr_t aggregate_maximum_bit_rate;
     ogs_gtp2_tlv_ebi_t linked_eps_bearer_id;
     ogs_gtp2_tlv_pco_t protocol_configuration_options;
-    ogs_gtp2_tlv_bearer_context_t bearer_contexts_created;
+    ogs_gtp2_tlv_bearer_context_t bearer_contexts_created[OGS_BEARER_PER_UE];
     ogs_gtp2_tlv_bearer_context_t bearer_contexts_marked_for_removal;
     ogs_gtp2_tlv_recovery_t recovery;
     ogs_gtp2_tlv_fqdn_t charging_gateway_name;
@@ -851,7 +851,7 @@ typedef struct ogs_gtp2_modify_bearer_request_s {
     ogs_gtp2_tlv_f_teid_t sender_f_teid_for_control_plane;
     ogs_gtp2_tlv_ambr_t aggregate_maximum_bit_rate;
     ogs_gtp2_tlv_delay_value_t delay_downlink_packet_notification_request;
-    ogs_gtp2_tlv_bearer_context_t bearer_contexts_to_be_modified[8];
+    ogs_gtp2_tlv_bearer_context_t bearer_contexts_to_be_modified[OGS_BEARER_PER_UE];
     ogs_gtp2_tlv_bearer_context_t bearer_contexts_to_be_removed;
     ogs_gtp2_tlv_recovery_t recovery;
     ogs_gtp2_tlv_ue_time_zone_t ue_time_zone;
@@ -884,7 +884,7 @@ typedef struct ogs_gtp2_modify_bearer_response_s {
     ogs_gtp2_tlv_ebi_t linked_eps_bearer_id;
     ogs_gtp2_tlv_apn_restriction_t apn_restriction;
     ogs_gtp2_tlv_pco_t protocol_configuration_options;
-    ogs_gtp2_tlv_bearer_context_t bearer_contexts_modified[8];
+    ogs_gtp2_tlv_bearer_context_t bearer_contexts_modified[OGS_BEARER_PER_UE];
     ogs_gtp2_tlv_bearer_context_t bearer_contexts_marked_for_removal;
     ogs_gtp2_tlv_change_reporting_action_t change_reporting_action;
     ogs_gtp2_tlv_csg_information_reporting_action_t csg_information_reporting_action;
@@ -1160,14 +1160,14 @@ typedef struct ogs_gtp2_create_indirect_data_forwarding_tunnel_request_s {
     ogs_gtp2_tlv_mei_t me_identity;
     ogs_gtp2_tlv_indication_t indication_flags;
     ogs_gtp2_tlv_f_teid_t sender_f_teid_for_control_plane;
-    ogs_gtp2_tlv_bearer_context_t bearer_contexts[8];
+    ogs_gtp2_tlv_bearer_context_t bearer_contexts[OGS_BEARER_PER_UE];
     ogs_gtp2_tlv_recovery_t recovery;
 } ogs_gtp2_create_indirect_data_forwarding_tunnel_request_t;
 
 typedef struct ogs_gtp2_create_indirect_data_forwarding_tunnel_response_s {
     ogs_gtp2_tlv_cause_t cause;
     ogs_gtp2_tlv_f_teid_t sender_f_teid_for_control_plane;
-    ogs_gtp2_tlv_bearer_context_t bearer_contexts[8];
+    ogs_gtp2_tlv_bearer_context_t bearer_contexts[OGS_BEARER_PER_UE];
     ogs_gtp2_tlv_recovery_t recovery;
 } ogs_gtp2_create_indirect_data_forwarding_tunnel_response_t;
 

@@ -103,17 +103,8 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         }
         e->gtp2_message = &gtp2_message;
 
-        if (gtp2_message.h.teid != 0) {
-            sess = smf_sess_find_by_teid(gtp2_message.h.teid);
-        }
-
-        if (sess) {
-            gnode = sess->gnode;
-            ogs_assert(gnode);
-        } else {
-            gnode = e->gnode;
-            ogs_assert(gnode);
-        }
+        gnode = e->gnode;
+        ogs_assert(gnode);
 
         rv = ogs_gtp_xact_receive(gnode, &gtp2_message.h, &gtp_xact);
         if (rv != OGS_OK) {
@@ -121,6 +112,10 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
         }
         e->gtp_xact = gtp_xact;
+
+        if (gtp2_message.h.teid != 0) {
+            sess = smf_sess_find_by_teid(gtp2_message.h.teid);
+        }
 
         switch(gtp2_message.h.type) {
         case OGS_GTP2_ECHO_REQUEST_TYPE:
@@ -157,7 +152,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
         case OGS_GTP2_MODIFY_BEARER_REQUEST_TYPE:
             smf_s5c_handle_modify_bearer_request(
-                sess, gtp_xact, &gtp2_message.modify_bearer_request);
+                sess, gtp_xact, recvbuf, &gtp2_message.modify_bearer_request);
             break;
         case OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE:
             smf_s5c_handle_create_bearer_response(
@@ -202,13 +197,8 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             sess = smf_sess_find_by_teid(gtp1_message.h.teid);
         }
 
-        if (sess) {
-            gnode = sess->gnode;
-            ogs_assert(gnode);
-        } else {
-            gnode = e->gnode;
-            ogs_assert(gnode);
-        }
+        gnode = e->gnode;
+        ogs_assert(gnode);
 
         rv = ogs_gtp1_xact_receive(gnode, &gtp1_message.h, &gtp_xact);
         if (rv != OGS_OK) {
@@ -380,6 +370,13 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
         e->pfcp_message = &pfcp_message;
         e->pfcp_xact = pfcp_xact;
+
+        e->gtp2_message = NULL;
+        if (pfcp_xact->gtpbuf) {
+            rv = ogs_gtp2_parse_msg(&gtp2_message, pfcp_xact->gtpbuf);
+            e->gtp2_message = &gtp2_message;
+        }
+
         ogs_fsm_dispatch(&pfcp_node->sm, e);
         if (OGS_FSM_CHECK(&pfcp_node->sm, smf_pfcp_state_exception)) {
             ogs_error("PFCP state machine exception");

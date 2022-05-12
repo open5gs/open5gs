@@ -28,7 +28,7 @@ extern "C" {
 
 ogs_pkbuf_t *sgwc_sxa_build_session_establishment_request(
         uint8_t type, sgwc_sess_t *sess);
-ogs_pkbuf_t *sgwc_sxa_build_session_modification_request(
+ogs_pkbuf_t *sgwc_sxa_build_bearer_to_modify_list(
         uint8_t type, sgwc_sess_t *sess, ogs_pfcp_xact_t *xact);
 ogs_pkbuf_t *sgwc_sxa_build_session_deletion_request(
         uint8_t type, sgwc_sess_t *sess);

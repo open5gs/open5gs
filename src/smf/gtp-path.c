@@ -427,7 +427,7 @@ int smf_gtp1_send_update_pdp_context_response(
     return rv;
 }
 
-int smf_gtp_send_create_session_response(
+int smf_gtp2_send_create_session_response(
         smf_sess_t *sess, ogs_gtp_xact_t *xact)
 {
     int rv;
@@ -453,7 +453,36 @@ int smf_gtp_send_create_session_response(
     return rv;
 }
 
-int smf_gtp_send_delete_session_response(
+int smf_gtp2_send_modify_bearer_response(
+        smf_sess_t *sess, ogs_gtp_xact_t *xact,
+        ogs_gtp2_modify_bearer_request_t *req, bool sgw_relocation)
+{
+    int rv;
+    ogs_gtp2_header_t h;
+    ogs_pkbuf_t *pkbuf = NULL;
+
+    ogs_assert(sess);
+    ogs_assert(xact);
+    ogs_assert(req);
+
+    memset(&h, 0, sizeof(ogs_gtp2_header_t));
+    h.type = OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE;
+    h.teid = sess->sgw_s5c_teid;
+
+    pkbuf = smf_s5c_build_modify_bearer_response(
+                h.type, sess, req, sgw_relocation);
+    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
+
+    rv = ogs_gtp_xact_update_tx(xact, &h, pkbuf);
+    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
+
+    rv = ogs_gtp_xact_commit(xact);
+    ogs_expect(rv == OGS_OK);
+
+    return rv;
+}
+
+int smf_gtp2_send_delete_session_response(
         smf_sess_t *sess, ogs_gtp_xact_t *xact)
 {
     int rv;
@@ -479,7 +508,7 @@ int smf_gtp_send_delete_session_response(
     return rv;
 }
 
-int smf_gtp_send_delete_bearer_request(
+int smf_gtp2_send_delete_bearer_request(
         smf_bearer_t *bearer, uint8_t pti, uint8_t cause_value)
 {
     int rv;

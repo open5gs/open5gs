@@ -415,7 +415,8 @@ int s1ap_send_e_rab_modification_confirm(mme_ue_t *mme_ue)
     return rv;
 }
 
-int s1ap_send_path_switch_ack(mme_ue_t *mme_ue)
+int s1ap_send_path_switch_ack(
+        mme_ue_t *mme_ue, bool e_rab_to_switched_in_uplink_list)
 {
     int rv;
     ogs_pkbuf_t *s1apbuf = NULL;
@@ -423,7 +424,8 @@ int s1ap_send_path_switch_ack(mme_ue_t *mme_ue)
     ogs_assert(mme_ue);
 
     ogs_debug("PathSwitchAcknowledge");
-    s1apbuf = s1ap_build_path_switch_ack(mme_ue);
+    s1apbuf = s1ap_build_path_switch_ack(
+                mme_ue, e_rab_to_switched_in_uplink_list);
     ogs_expect_or_return_val(s1apbuf, OGS_ERROR);
 
     rv = nas_eps_send_to_enb(mme_ue, s1apbuf);

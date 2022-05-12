@@ -252,6 +252,7 @@ void ogs_gtp2_send_error_message(
         tlv = &errmsg.bearer_resource_failure_indication.cause;
         break;
     default:
+        ogs_fatal("Invalid message[%d]", type);
         ogs_assert_if_reached();
         return;
     }

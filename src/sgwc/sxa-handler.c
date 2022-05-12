@@ -134,9 +134,14 @@ void sgwc_sxa_handle_session_establishment_response(
 
     ogs_pfcp_f_seid_t *up_f_seid = NULL;
 
-    int sgw_s5c_len, sgw_s5u_len;
-    ogs_gtp2_f_teid_t sgw_s5c_teid, sgw_s5u_teid;
+    int sgw_s5c_len;
+    ogs_gtp2_f_teid_t sgw_s5c_teid;
     ogs_gtp2_f_teid_t *pgw_s5c_teid = NULL;
+
+    int i, num_of_sgw_s5u;
+    uint8_t ebi[OGS_BEARER_PER_UE];
+    int sgw_s5u_len[OGS_BEARER_PER_UE];
+    ogs_gtp2_f_teid_t sgw_s5u_teid[OGS_BEARER_PER_UE];
 
     ogs_gtp_xact_t *s11_xact = NULL, *s5c_xact = NULL;
     ogs_gtp_node_t *pgw = NULL;
@@ -248,24 +253,44 @@ void sgwc_sxa_handle_session_establishment_response(
 
     ogs_assert(sess);
 
-    bearer = sgwc_default_bearer_in_sess(sess);
-    ogs_assert(bearer);
-    dl_tunnel = sgwc_dl_tunnel_in_bearer(bearer);
-    ogs_assert(dl_tunnel);
+    ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
+        sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
-    if (dl_tunnel->local_addr == NULL && dl_tunnel->local_addr6 == NULL) {
-        ogs_error("No UP F-TEID");
-        ogs_gtp_send_error_message(
-                s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
-                OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE,
-                OGS_GTP2_CAUSE_GRE_KEY_NOT_FOUND);
-        return;
+    /* Data Plane(DL) : SGW-S5U */
+    i = 0;
+    ogs_list_for_each(&sess->bearer_list, bearer) {
+        ogs_assert(i < OGS_BEARER_PER_UE);
+
+        dl_tunnel = sgwc_dl_tunnel_in_bearer(bearer);
+        ogs_assert(dl_tunnel);
+
+        ogs_debug("    SGW_S5U_TEID[%d] PGW_S5U_TEID[%d]",
+            dl_tunnel->local_teid, dl_tunnel->remote_teid);
+
+        if (dl_tunnel->local_addr == NULL && dl_tunnel->local_addr6 == NULL) {
+            ogs_error("No UP F-TEID");
+            ogs_gtp_send_error_message(
+                    s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+                    OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE,
+                    OGS_GTP2_CAUSE_GRE_KEY_NOT_FOUND);
+            return;
+        }
+
+        ebi[i] = bearer->ebi;
+
+        memset(&sgw_s5u_teid[i], 0, sizeof(ogs_gtp2_f_teid_t));
+        sgw_s5u_teid[i].teid = htobe32(dl_tunnel->local_teid);
+        sgw_s5u_teid[i].interface_type = dl_tunnel->interface_type;
+        ogs_assert(dl_tunnel->local_addr || dl_tunnel->local_addr6);
+        rv = ogs_gtp2_sockaddr_to_f_teid(
+                dl_tunnel->local_addr, dl_tunnel->local_addr6,
+                &sgw_s5u_teid[i], &sgw_s5u_len[i]);
+        ogs_assert(rv == OGS_OK);
+
+        i++;
     }
 
-    /* UP F-SEID */
-    up_f_seid = pfcp_rsp->up_f_seid.data;
-    ogs_assert(up_f_seid);
-    sess->sgwu_sxa_seid = be64toh(up_f_seid->seid);
+    num_of_sgw_s5u = i;
 
     /* Send Control Plane(DL) : SGW-S5C */
     memset(&sgw_s5c_teid, 0, sizeof(ogs_gtp2_f_teid_t));
@@ -276,10 +301,10 @@ void sgwc_sxa_handle_session_establishment_response(
             &sgw_s5c_teid, &sgw_s5c_len);
     ogs_assert(rv == OGS_OK);
 
-    ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
-        sess->sgw_s5c_teid, sess->pgw_s5c_teid);
-    ogs_debug("    SGW_S5U_TEID[%d] PGW_S5U_TEID[%d]",
-        dl_tunnel->local_teid, dl_tunnel->remote_teid);
+    /* UP F-SEID */
+    up_f_seid = pfcp_rsp->up_f_seid.data;
+    ogs_assert(up_f_seid);
+    sess->sgwu_sxa_seid = be64toh(up_f_seid->seid);
 
     pgw_s5c_teid = create_session_request->
         pgw_s5_s8_address_for_control_plane_or_pmip.data;
@@ -298,16 +323,6 @@ void sgwc_sxa_handle_session_establishment_response(
     }
     /* Setup GTP Node */
     OGS_SETUP_GTP_NODE(sess, pgw);
-
-    /* Data Plane(DL) : SGW-S5U */
-    memset(&sgw_s5u_teid, 0, sizeof(ogs_gtp2_f_teid_t));
-    sgw_s5u_teid.teid = htobe32(dl_tunnel->local_teid);
-    sgw_s5u_teid.interface_type = dl_tunnel->interface_type;
-    ogs_assert(dl_tunnel->local_addr || dl_tunnel->local_addr6);
-    rv = ogs_gtp2_sockaddr_to_f_teid(
-            dl_tunnel->local_addr, dl_tunnel->local_addr6,
-            &sgw_s5u_teid, &sgw_s5u_len);
-    ogs_assert(rv == OGS_OK);
 
     /* Check Indication */
     if (create_session_request->indication_flags.presence &&
@@ -340,20 +355,24 @@ void sgwc_sxa_handle_session_establishment_response(
         modify_bearer_request->sender_f_teid_for_control_plane.
             len = sgw_s5c_len;
 
-        /* Bearer Context : EBI */
-        modify_bearer_request->bearer_contexts_to_be_modified[0].presence = 1;
-        modify_bearer_request->bearer_contexts_to_be_modified[0].
-            eps_bearer_id.presence = 1;
-        modify_bearer_request->bearer_contexts_to_be_modified[0].
-            eps_bearer_id.u8 = bearer->ebi;
+        for (i = 0; i < num_of_sgw_s5u; i++) {
+            modify_bearer_request->bearer_contexts_to_be_modified[i].
+                presence = 1;
+            modify_bearer_request->bearer_contexts_to_be_modified[i].
+                eps_bearer_id.presence = 1;
 
-        /* Data Plane(DL) : SGW-S5U */
-        modify_bearer_request->bearer_contexts_to_be_modified[0].
-            s4_u_sgsn_f_teid.presence = 1;
-        modify_bearer_request->bearer_contexts_to_be_modified[0].
-            s4_u_sgsn_f_teid.data = &sgw_s5u_teid;
-        modify_bearer_request->bearer_contexts_to_be_modified[0].
-            s4_u_sgsn_f_teid.len = sgw_s5u_len;
+            /* Bearer Context : EBI */
+            modify_bearer_request->bearer_contexts_to_be_modified[i].
+                eps_bearer_id.u8 = ebi[i];
+
+            /* Data Plane(DL) : SGW-S5U */
+            modify_bearer_request->bearer_contexts_to_be_modified[i].
+                s4_u_sgsn_f_teid.presence = 1;
+            modify_bearer_request->bearer_contexts_to_be_modified[i].
+                s4_u_sgsn_f_teid.data = &sgw_s5u_teid[i];
+            modify_bearer_request->bearer_contexts_to_be_modified[i].
+                s4_u_sgsn_f_teid.len = sgw_s5u_len[i];
+        }
 
         pkbuf = ogs_gtp2_build_msg(&send_message);
         ogs_expect_or_return(pkbuf);
@@ -362,7 +381,11 @@ void sgwc_sxa_handle_session_establishment_response(
         s5c_xact = ogs_gtp_xact_local_create(
                 sess->gnode, &send_message.h, pkbuf, sess_timeout, sess);
         ogs_expect_or_return(s5c_xact);
+
+        s5c_xact->modify_action = OGS_GTP_MODIFY_IN_PATH_SWITCH_REQUEST;
+
     } else {
+
         /* Create Session Request */
         recv_message->h.type = OGS_GTP2_CREATE_SESSION_REQUEST_TYPE;
         recv_message->h.teid = sess->pgw_s5c_teid;
@@ -379,12 +402,14 @@ void sgwc_sxa_handle_session_establishment_response(
             presence = 0;
 
         /* Bearer Contexts */
-        create_session_request->bearer_contexts_to_be_created.
-            s5_s8_u_sgw_f_teid.presence = 1;
-        create_session_request->bearer_contexts_to_be_created.
-            s5_s8_u_sgw_f_teid.data = &sgw_s5u_teid;
-        create_session_request->bearer_contexts_to_be_created.
-            s5_s8_u_sgw_f_teid.len = sgw_s5u_len;
+        for (i = 0; i < num_of_sgw_s5u; i++) {
+            create_session_request->bearer_contexts_to_be_created[i].
+                s5_s8_u_sgw_f_teid.presence = 1;
+            create_session_request->bearer_contexts_to_be_created[i].
+                s5_s8_u_sgw_f_teid.data = &sgw_s5u_teid[i];
+            create_session_request->bearer_contexts_to_be_created[i].
+                s5_s8_u_sgw_f_teid.len = sgw_s5u_len[i];
+        }
 
         pkbuf = ogs_gtp2_build_msg(recv_message);
         ogs_expect_or_return(pkbuf);
@@ -617,7 +642,7 @@ void sgwc_sxa_handle_session_modification_response(
             ogs_pfcp_xact_commit(pfcp_xact);
 
             ogs_assert(flags & OGS_PFCP_MODIFY_SESSION);
-            if (SESSION_SYNC_DONE(sgwc_ue,
+            if (SGWC_SESSION_SYNC_DONE(sgwc_ue,
                 OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE, flags)) {
 
                 sgwc_tunnel_t *tunnel = NULL, *next_tunnel = NULL;
@@ -701,9 +726,6 @@ void sgwc_sxa_handle_session_modification_response(
             ogs_assert(recv_message);
             gtp_req = &recv_message->create_bearer_request;
             ogs_assert(gtp_req);
-
-            /* Remove S5U-F-TEID */
-            gtp_req->bearer_contexts.s4_u_sgsn_f_teid.presence = 0;
 
             /* Send Data Plane(UL) : SGW-S1U */
             memset(&sgw_s1u_teid, 0, sizeof(ogs_gtp2_f_teid_t));
@@ -797,7 +819,7 @@ void sgwc_sxa_handle_session_modification_response(
             ogs_pfcp_xact_commit(pfcp_xact);
 
             ogs_assert(flags & OGS_PFCP_MODIFY_SESSION);
-            if (SESSION_SYNC_DONE(sgwc_ue,
+            if (SGWC_SESSION_SYNC_DONE(sgwc_ue,
                 OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE, flags)) {
 
                 sgwc_tunnel_t *tunnel = NULL;
@@ -921,10 +943,12 @@ void sgwc_sxa_handle_session_modification_response(
 
         ogs_pfcp_xact_commit(pfcp_xact);
 
+        ogs_assert(flags & OGS_PFCP_MODIFY_SESSION);
         if (flags & OGS_PFCP_MODIFY_UL_ONLY) {
             ogs_gtp2_create_session_response_t *gtp_rsp = NULL;
             ogs_gtp2_f_teid_t sgw_s11_teid;
-            ogs_gtp2_f_teid_t sgw_s1u_teid;
+            ogs_gtp2_f_teid_t sgw_s1u_teid[OGS_BEARER_PER_UE];
+            int sgw_s1u_len[OGS_BEARER_PER_UE];
 
             ogs_assert(recv_message);
             gtp_rsp = &recv_message->create_session_response;
@@ -943,19 +967,30 @@ void sgwc_sxa_handle_session_modification_response(
             gtp_rsp->sender_f_teid_for_control_plane.len = len;
 
             /* Send Data Plane(UL) : SGW-S1U */
-            ogs_assert(ul_tunnel);
-            memset(&sgw_s1u_teid, 0, sizeof(ogs_gtp2_f_teid_t));
-            sgw_s1u_teid.interface_type = ul_tunnel->interface_type;
-            sgw_s1u_teid.teid = htobe32(ul_tunnel->local_teid);
-            ogs_assert(ul_tunnel->local_addr || ul_tunnel->local_addr6);
-            rv = ogs_gtp2_sockaddr_to_f_teid(
-                ul_tunnel->local_addr, ul_tunnel->local_addr6,
-                &sgw_s1u_teid, &len);
-            ogs_assert(rv == OGS_OK);
-            gtp_rsp->bearer_contexts_created.s1_u_enodeb_f_teid.presence = 1;
-            gtp_rsp->bearer_contexts_created.s1_u_enodeb_f_teid.data =
-                &sgw_s1u_teid;
-            gtp_rsp->bearer_contexts_created.s1_u_enodeb_f_teid.len = len;
+            i = 0;
+            ogs_list_for_each(&sess->bearer_list, bearer) {
+                ogs_assert(i < OGS_BEARER_PER_UE);
+
+                ul_tunnel = sgwc_ul_tunnel_in_bearer(bearer);
+                ogs_assert(ul_tunnel);
+
+                memset(&sgw_s1u_teid[i], 0, sizeof(ogs_gtp2_f_teid_t));
+                sgw_s1u_teid[i].interface_type = ul_tunnel->interface_type;
+                sgw_s1u_teid[i].teid = htobe32(ul_tunnel->local_teid);
+                ogs_assert(ul_tunnel->local_addr || ul_tunnel->local_addr6);
+                rv = ogs_gtp2_sockaddr_to_f_teid(
+                    ul_tunnel->local_addr, ul_tunnel->local_addr6,
+                    &sgw_s1u_teid[i], &sgw_s1u_len[i]);
+                ogs_assert(rv == OGS_OK);
+                gtp_rsp->bearer_contexts_created[i].s1_u_enodeb_f_teid.
+                    presence = 1;
+                gtp_rsp->bearer_contexts_created[i].s1_u_enodeb_f_teid.
+                    data = &sgw_s1u_teid[i];
+                gtp_rsp->bearer_contexts_created[i].s1_u_enodeb_f_teid.
+                    len = sgw_s1u_len[i];
+
+                i++;
+            }
 
             recv_message->h.type = OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE;
             recv_message->h.teid = sgwc_ue->mme_s11_teid;
@@ -970,10 +1005,7 @@ void sgwc_sxa_handle_session_modification_response(
             ogs_expect(rv == OGS_OK);
 
         } else if (flags & OGS_PFCP_MODIFY_DL_ONLY) {
-#if 0 /* FIXME */
-            ogs_assert(flags & OGS_PFCP_MODIFY_SESSION);
-#endif
-            if (SESSION_SYNC_DONE(sgwc_ue,
+            if (SGWC_SESSION_SYNC_DONE(sgwc_ue,
                     OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE, flags)) {
                 ogs_gtp2_modify_bearer_request_t *gtp_req = NULL;
                 ogs_gtp2_modify_bearer_response_t *gtp_rsp = NULL;
@@ -1023,7 +1055,7 @@ void sgwc_sxa_handle_session_modification_response(
 
         /* Copy Bearer-Contexts-Modified from Modify-Bearer-Request
          *
-         * TS 29.274 Table 7.2.7-2
+         * TS 29.274 Table 7.2.8-2
          * NOTE 1: The SGW shall not change its F-TEID for a given interface
          * during the Handover, Service Request, E-UTRAN Initial Attach,
          * UE Requested PDN connectivity and PDP Context Activation procedures.
@@ -1083,12 +1115,10 @@ void sgwc_sxa_handle_session_modification_response(
                     ogs_expect(rv == OGS_OK);
                 }
             }
-
         } else {
             ogs_fatal("Invalid modify_flags[0x%llx]", (long long)flags);
             ogs_assert_if_reached();
         }
-
     } else if (flags & OGS_PFCP_MODIFY_DEACTIVATE) {
         if (flags & OGS_PFCP_MODIFY_ERROR_INDICATION) {
             /* It's faked method for receiving `bearer` context */
@@ -1098,7 +1128,7 @@ void sgwc_sxa_handle_session_modification_response(
             ogs_pfcp_xact_commit(pfcp_xact);
 
             ogs_assert(flags & OGS_PFCP_MODIFY_SESSION);
-            if (SESSION_SYNC_DONE(sgwc_ue,
+            if (SGWC_SESSION_SYNC_DONE(sgwc_ue,
                     OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE, flags)) {
                 ogs_assert(OGS_OK ==
                     sgwc_gtp_send_downlink_data_notification(
@@ -1112,7 +1142,7 @@ void sgwc_sxa_handle_session_modification_response(
             ogs_pfcp_xact_commit(pfcp_xact);
 
             ogs_assert(flags & OGS_PFCP_MODIFY_SESSION);
-            if (SESSION_SYNC_DONE(sgwc_ue,
+            if (SGWC_SESSION_SYNC_DONE(sgwc_ue,
                     OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE, flags)) {
 
                 ogs_gtp2_release_access_bearers_response_t *gtp_rsp = NULL;
@@ -1192,6 +1222,15 @@ void sgwc_sxa_handle_session_deletion_response(
     if (!gtp_message) {
         ogs_error("No GTP Message");
         goto cleanup;
+    }
+
+    if (gtp_message->h.type == OGS_GTP2_DELETE_SESSION_REQUEST_TYPE) {
+        /*
+         * X2-based Handover with SGW change
+         * 1. MME sends Delete Session Request to SGW-C
+         * 2. SGW-C sends Delete Session Response to MME.
+         */
+        gtp_message->h.type = OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE;
     }
 
     switch (gtp_message->h.type) {
@@ -1350,7 +1389,7 @@ void sgwc_sxa_handle_session_report_request(
         ogs_list_for_each(&sgwc_ue->sess_list, sess) {
 
             ogs_assert(OGS_OK ==
-                sgwc_pfcp_send_sess_modification_request(sess,
+                sgwc_pfcp_send_session_modification_request(sess,
                 /* We only use the `assoc_xact` parameter temporarily here
                  * to pass the `bearer` context. */
                     (ogs_gtp_xact_t *)bearer,

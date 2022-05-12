@@ -170,7 +170,7 @@ bool ogs_pfcp_up_handle_association_setup_response(
 }
 
 bool ogs_pfcp_up_handle_pdr(
-        ogs_pfcp_pdr_t *pdr, ogs_pkbuf_t *recvbuf,
+        ogs_pfcp_pdr_t *pdr, uint8_t type, ogs_pkbuf_t *recvbuf,
         ogs_pfcp_user_plane_report_t *report)
 {
     ogs_pfcp_far_t *far = NULL;
@@ -178,6 +178,7 @@ bool ogs_pfcp_up_handle_pdr(
     bool buffering;
 
     ogs_assert(recvbuf);
+    ogs_assert(type);
     ogs_assert(pdr);
     ogs_assert(report);
 
@@ -198,7 +199,7 @@ bool ogs_pfcp_up_handle_pdr(
         if (far->apply_action & OGS_PFCP_APPLY_ACTION_FORW) {
 
             /* Forward packet */
-            ogs_pfcp_send_g_pdu(pdr, sendbuf);
+            ogs_pfcp_send_g_pdu(pdr, type, sendbuf);
 
         } else if (far->apply_action & OGS_PFCP_APPLY_ACTION_BUFF) {
 

@@ -159,6 +159,37 @@ static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
     }
 }
 
+int sgwc_gtp_send_create_session_response(
+    sgwc_sess_t *sess, ogs_gtp_xact_t *xact)
+{
+    int rv;
+
+    sgwc_ue_t *sgwc_ue = NULL;
+
+    ogs_gtp2_header_t h;
+    ogs_pkbuf_t *pkbuf = NULL;
+
+    ogs_assert(sess);
+    sgwc_ue = sess->sgwc_ue;
+    ogs_assert(sgwc_ue);
+    ogs_assert(xact);
+
+    memset(&h, 0, sizeof(ogs_gtp2_header_t));
+    h.type = OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE;
+    h.teid = sgwc_ue->mme_s11_teid;
+
+    pkbuf = sgwc_s11_build_create_session_response(h.type, sess);
+    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
+
+    rv = ogs_gtp_xact_update_tx(xact, &h, pkbuf);
+    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
+
+    rv = ogs_gtp_xact_commit(xact);
+    ogs_expect(rv == OGS_OK);
+
+    return rv;
+}
+
 int sgwc_gtp_send_downlink_data_notification(
     uint8_t cause_value, sgwc_bearer_t *bearer)
 {
@@ -169,8 +200,8 @@ int sgwc_gtp_send_downlink_data_notification(
 
     ogs_gtp_xact_t *gtp_xact = NULL;
 
-    ogs_pkbuf_t *pkbuf = NULL;
     ogs_gtp2_header_t h;
+    ogs_pkbuf_t *pkbuf = NULL;
 
     ogs_assert(bearer);
 

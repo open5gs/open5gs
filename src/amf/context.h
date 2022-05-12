@@ -754,7 +754,7 @@ void amf_sess_select_nf(amf_sess_t *sess, OpenAPI_nf_type_e nf_type);
 
 void amf_sess_select_smf(amf_sess_t *sess);
 
-#define SESSION_SYNC_DONE(__aMF, __sTATE) \
+#define AMF_SESSION_SYNC_DONE(__aMF, __sTATE) \
     (amf_sess_xact_state_count(__aMF, __sTATE) == 0)
 int amf_sess_xact_count(amf_ue_t *amf_ue);
 int amf_sess_xact_state_count(amf_ue_t *amf_ue, int state);

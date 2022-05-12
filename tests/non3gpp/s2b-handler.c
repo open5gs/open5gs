@@ -24,7 +24,7 @@ void test_s2b_handle_create_session_response(
         ogs_gtp_xact_t *xact, test_sess_t *sess,
         ogs_gtp2_create_session_response_t *rsp)
 {
-    int rv;
+    int rv, i;
     uint8_t cause_value;
 
     test_bearer_t *bearer = NULL;
@@ -58,18 +58,6 @@ void test_s2b_handle_create_session_response(
         ogs_error("No S5/S8 TEID");
         return;
     }
-    if (rsp->bearer_contexts_created.presence == 0) {
-        ogs_error("No Bearer Context");
-        return;
-    }
-    if (rsp->bearer_contexts_created.eps_bearer_id.presence == 0) {
-        ogs_error("No EBI");
-        return;
-    }
-    if (rsp->bearer_contexts_created.s12_rnc_f_teid.presence == 0) {
-        ogs_error("No S1U TEID");
-        return;
-    }
     if (rsp->pdn_address_allocation.presence == 0) {
         ogs_error("No PDN Address Allocation");
         return;
@@ -78,21 +66,36 @@ void test_s2b_handle_create_session_response(
     ogs_expect(
         rsp->pdn_address_allocation.data && rsp->pdn_address_allocation.len);
 
-    bearer = test_bearer_find_by_sess_ebi(
-                sess, rsp->bearer_contexts_created.eps_bearer_id.u8);
-    ogs_assert(bearer);
+    for (i = 0; i < OGS_BEARER_PER_UE; i++) {
+        if (rsp->bearer_contexts_created[i].presence == 0) {
+            break;
+        }
+        if (rsp->bearer_contexts_created[i].eps_bearer_id.presence == 0) {
+            ogs_error("No EBI");
+            break;
+        }
+        if (rsp->bearer_contexts_created[i].s12_rnc_f_teid.presence == 0) {
+            ogs_error("No S1U TEID");
+            break;
+        }
+
+        bearer = test_bearer_find_by_sess_ebi(
+                    sess, rsp->bearer_contexts_created[i].eps_bearer_id.u8);
+        ogs_assert(bearer);
+
+        smf_s2b_u_teid = rsp->bearer_contexts_created[i].s12_rnc_f_teid.data;
+        ogs_assert(smf_s2b_u_teid);
+
+        bearer->sgw_s1u_teid = be32toh(smf_s2b_u_teid->teid);
+        ogs_assert(OGS_OK ==
+                ogs_gtp2_f_teid_to_ip(smf_s2b_u_teid, &bearer->sgw_s1u_ip));
+
+    }
 
     smf_s2b_c_teid = rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.data;
     ogs_assert(smf_s2b_c_teid);
 
     sess->smf_s2b_c_teid = be32toh(smf_s2b_c_teid->teid);
-
-    smf_s2b_u_teid = rsp->bearer_contexts_created.s12_rnc_f_teid.data;
-    ogs_assert(smf_s2b_u_teid);
-
-    bearer->sgw_s1u_teid = be32toh(smf_s2b_u_teid->teid);
-    ogs_assert(OGS_OK ==
-            ogs_gtp2_f_teid_to_ip(smf_s2b_u_teid, &bearer->sgw_s1u_ip));
 
     memcpy(&paa,
             rsp->pdn_address_allocation.data, rsp->pdn_address_allocation.len);

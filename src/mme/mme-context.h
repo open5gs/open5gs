@@ -277,7 +277,6 @@ struct sgw_ue_s {
     sgw_ue_t        *target_ue;
 
     /* UE identity */
-    uint32_t        mme_s11_teid;   /* MME-S11-TEID is derived from INDEX */
     uint32_t        sgw_s11_teid;   /* SGW-S11-TEID is received from SGW */
 
     /*
@@ -288,8 +287,8 @@ struct sgw_ue_s {
      */
     int             session_context_will_deleted;
 
-    /* GTPv2-C Holding timer for removing this context */
-    ogs_timer_t     *t_gtp2_holding;
+    /* S11 Holding timer for removing this context */
+    ogs_timer_t     *t_s11_holding;
 
     /* Related Context */
     union {
@@ -350,6 +349,8 @@ struct mme_ue_s {
         mme_m_tmsi_t *m_tmsi;
         ogs_nas_eps_guti_t guti;
     } current, next;
+
+    uint32_t        mme_s11_teid;   /* MME-S11-TEID is derived from INDEX */
 
     uint16_t        vlr_ostream_id; /* SCTP output stream id for VLR */
 
@@ -533,8 +534,8 @@ struct mme_ue_s {
 
 #define MAX_NUM_OF_GTP_COUNTER                                  16
 
-#define GTP_COUNTER_MODIFY_BEARER_BY_PATH_SWITCH                1
-#define GTP_COUNTER_MODIFY_BEARER_BY_E_RAB_MODIFICATION         2
+#define GTP_COUNTER_CREATE_SESSION_BY_PATH_SWITCH               1
+#define GTP_COUNTER_DELETE_SESSION_BY_PATH_SWITCH               2
     struct {
         uint8_t request;
         uint8_t response;
@@ -638,6 +639,8 @@ typedef struct mme_bearer_s {
     ogs_ip_t        enb_s1u_ip;
     uint32_t        sgw_s1u_teid;
     ogs_ip_t        sgw_s1u_ip;
+    uint32_t        pgw_s5u_teid;
+    ogs_ip_t        pgw_s5u_ip;
 
     uint32_t        target_s1u_teid;    /* Target S1U TEID from HO-Req-Ack */
     ogs_ip_t        target_s1u_ip;      /* Target S1U ADDR from HO-Req-Ack */
@@ -734,7 +737,6 @@ sgw_ue_t *sgw_ue_add(mme_sgw_t *sgw);
 void sgw_ue_remove(sgw_ue_t *sgw_ue);
 void sgw_ue_switch_to_sgw(sgw_ue_t *sgw_ue, mme_sgw_t *new_sgw);
 sgw_ue_t *sgw_ue_find(uint32_t index);
-sgw_ue_t *sgw_ue_find_by_mme_s11_teid(uint32_t mme_s11_teid);
 sgw_ue_t *sgw_ue_cycle(sgw_ue_t *sgw_ue);
 
 typedef enum {
@@ -758,6 +760,7 @@ void mme_ue_fsm_fini(mme_ue_t *mme_ue);
 mme_ue_t *mme_ue_find_by_imsi(uint8_t *imsi, int imsi_len);
 mme_ue_t *mme_ue_find_by_imsi_bcd(char *imsi_bcd);
 mme_ue_t *mme_ue_find_by_guti(ogs_nas_eps_guti_t *nas_guti);
+mme_ue_t *mme_ue_find_by_teid(uint32_t teid);
 
 mme_ue_t *mme_ue_find_by_message(ogs_nas_eps_message_t *message);
 int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd);

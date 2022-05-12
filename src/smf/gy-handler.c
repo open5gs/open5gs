@@ -174,10 +174,10 @@ void smf_gy_handle_cca_update_request(
     /* Send PFCP Session Modification Request if we need to update the params. */
     if (modify_flags) {
         modify_flags |= OGS_PFCP_MODIFY_URR|OGS_PFCP_MODIFY_UL_ONLY;
-        rv = smf_epc_pfcp_send_session_modification_request(sess, pfcp_xact,
-            modify_flags,
-            OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
-            OGS_GTP1_CAUSE_REACTIACTION_REQUESTED);
+        rv = smf_epc_pfcp_send_session_modification_request(
+                sess, pfcp_xact, NULL, modify_flags,
+                OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
+                OGS_GTP1_CAUSE_REACTIACTION_REQUESTED);
         ogs_assert(rv == OGS_OK);
     }
 }

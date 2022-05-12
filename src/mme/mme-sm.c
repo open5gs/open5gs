@@ -521,6 +521,15 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             break;
         }
 
+        gnode = e->gnode;
+        ogs_assert(gnode);
+
+        rv = ogs_gtp_xact_receive(gnode, &gtp_message.h, &xact);
+        if (rv != OGS_OK) {
+            ogs_pkbuf_free(pkbuf);
+            break;
+        }
+
         /*
          * 5.5.2 in spec 29.274
          *
@@ -552,21 +561,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
          */
         if (gtp_message.h.teid_presence && gtp_message.h.teid != 0) {
             /* Cause is not "Context not found" */
-            sgw_ue = sgw_ue_find_by_mme_s11_teid(gtp_message.h.teid);
-        }
-
-        if (sgw_ue) {
-            gnode = sgw_ue->gnode;
-            ogs_assert(gnode);
-        } else {
-            gnode = e->gnode;
-            ogs_assert(gnode);
-        }
-
-        rv = ogs_gtp_xact_receive(gnode, &gtp_message.h, &xact);
-        if (rv != OGS_OK) {
-            ogs_pkbuf_free(pkbuf);
-            break;
+            mme_ue = mme_ue_find_by_teid(gtp_message.h.teid);
         }
 
         switch (gtp_message.h.type) {
@@ -578,49 +573,49 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             break;
         case OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE:
             mme_s11_handle_create_session_response(
-                xact, sgw_ue, &gtp_message.create_session_response);
+                xact, mme_ue, &gtp_message.create_session_response);
             break;
         case OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE:
             mme_s11_handle_modify_bearer_response(
-                xact, sgw_ue, &gtp_message.modify_bearer_response);
+                xact, mme_ue, &gtp_message.modify_bearer_response);
             break;
         case OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE:
             mme_s11_handle_delete_session_response(
-                xact, sgw_ue, &gtp_message.delete_session_response);
+                xact, mme_ue, &gtp_message.delete_session_response);
             break;
         case OGS_GTP2_CREATE_BEARER_REQUEST_TYPE:
             mme_s11_handle_create_bearer_request(
-                xact, sgw_ue, &gtp_message.create_bearer_request);
+                xact, mme_ue, &gtp_message.create_bearer_request);
             break;
         case OGS_GTP2_UPDATE_BEARER_REQUEST_TYPE:
             mme_s11_handle_update_bearer_request(
-                xact, sgw_ue, &gtp_message.update_bearer_request);
+                xact, mme_ue, &gtp_message.update_bearer_request);
             break;
         case OGS_GTP2_DELETE_BEARER_REQUEST_TYPE:
             mme_s11_handle_delete_bearer_request(
-                xact, sgw_ue, &gtp_message.delete_bearer_request);
+                xact, mme_ue, &gtp_message.delete_bearer_request);
             break;
         case OGS_GTP2_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
             mme_s11_handle_release_access_bearers_response(
-                xact, sgw_ue, &gtp_message.release_access_bearers_response);
+                xact, mme_ue, &gtp_message.release_access_bearers_response);
             break;
         case OGS_GTP2_DOWNLINK_DATA_NOTIFICATION_TYPE:
             mme_s11_handle_downlink_data_notification(
-                xact, sgw_ue, &gtp_message.downlink_data_notification);
+                xact, mme_ue, &gtp_message.downlink_data_notification);
             break;
         case OGS_GTP2_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
             mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
-                xact, sgw_ue,
+                xact, mme_ue,
                 &gtp_message.create_indirect_data_forwarding_tunnel_response);
             break;
         case OGS_GTP2_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
             mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
-                xact, sgw_ue,
+                xact, mme_ue,
                 &gtp_message.delete_indirect_data_forwarding_tunnel_response);
             break;
         case OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE:
             mme_s11_handle_bearer_resource_failure_indication(
-                xact, sgw_ue,
+                xact, mme_ue,
                 &gtp_message.bearer_resource_failure_indication);
             break;
         default:
@@ -629,6 +624,37 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         }
         ogs_pkbuf_free(pkbuf);
         break;
+
+    case MME_EVT_S11_TIMER:
+        sgw_ue = e->sgw_ue;
+        ogs_assert(sgw_ue);
+        mme_ue = sgw_ue->mme_ue;
+        ogs_assert(mme_ue);
+
+        switch (e->timer_id) {
+        case MME_TIMER_S11_HOLDING:
+
+            GTP_COUNTER_CLEAR(mme_ue,
+                    GTP_COUNTER_DELETE_SESSION_BY_PATH_SWITCH);
+
+            ogs_list_for_each(&mme_ue->sess_list, sess) {
+
+                GTP_COUNTER_INCREMENT(
+                    mme_ue, GTP_COUNTER_DELETE_SESSION_BY_PATH_SWITCH);
+
+                ogs_assert(OGS_OK ==
+                    mme_gtp_send_delete_session_request(
+                        sgw_ue, sess,
+                        OGS_GTP_DELETE_IN_PATH_SWITCH_REQUEST));
+            }
+            break;
+
+        default:
+            ogs_error("Unknown timer[%s:%d]",
+                    mme_timer_get_name(e->timer_id), e->timer_id);
+        }
+        break;
+
 
     case MME_EVT_SGSAP_LO_SCTP_COMM_UP:
         sock = e->sock;

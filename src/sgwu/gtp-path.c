@@ -133,7 +133,33 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     ogs_assert(ogs_pkbuf_pull(pkbuf, len));
 
     if (gtp_h->type == OGS_GTPU_MSGTYPE_END_MARKER) {
-        /* Nothing */
+        ogs_pfcp_object_t *pfcp_object = NULL;
+        ogs_pfcp_pdr_t *pdr = NULL;
+        ogs_pkbuf_t *sendbuf = NULL;
+
+        pfcp_object = ogs_pfcp_object_find_by_teid(teid);
+        if (!pfcp_object) {
+            /* TODO : Send Error Indication */
+            goto cleanup;
+        }
+
+        switch(pfcp_object->type) {
+        case OGS_PFCP_OBJ_PDR_TYPE:
+            pdr = (ogs_pfcp_pdr_t *)pfcp_object;
+            ogs_assert(pdr);
+            break;
+        default:
+            ogs_fatal("Unknown type [%d]", pfcp_object->type);
+            ogs_assert_if_reached();
+        }
+
+        ogs_assert(pdr);
+
+        sendbuf = ogs_pkbuf_copy(pkbuf);
+        ogs_assert(sendbuf);
+
+        /* Forward packet */
+        ogs_pfcp_send_g_pdu(pdr, gtp_h->type, sendbuf);
 
     } else if (gtp_h->type == OGS_GTPU_MSGTYPE_ERR_IND) {
         ogs_pfcp_far_t *far = NULL;
@@ -209,7 +235,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
         }
 
         ogs_assert(pdr);
-        ogs_assert(true == ogs_pfcp_up_handle_pdr(pdr, pkbuf, &report));
+        ogs_assert(true == ogs_pfcp_up_handle_pdr(
+                                pdr, gtp_h->type, pkbuf, &report));
 
         if (report.type.downlink_data_report) {
             ogs_assert(pdr->sess);

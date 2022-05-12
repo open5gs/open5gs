@@ -26,6 +26,9 @@
 extern "C" {
 #endif
 
+ogs_pkbuf_t *sgwc_s11_build_create_session_response(
+        uint8_t type, sgwc_sess_t *sess);
+
 ogs_pkbuf_t *sgwc_s11_build_downlink_data_notification(
         uint8_t cause_value, sgwc_bearer_t *bearer);
 

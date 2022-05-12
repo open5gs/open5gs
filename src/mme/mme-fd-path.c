@@ -747,10 +747,10 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
         if (avpch1) {
             ret = fd_msg_avp_hdr(avpch1, &hdr);
             ogs_assert(ret == 0);
-            if (hdr->avp_value->os.len) {
+            if (hdr->avp_value->os.data && hdr->avp_value->os.len) {
                 mme_ue->msisdn_len = hdr->avp_value->os.len;
-                memcpy(mme_ue->msisdn,
-                    hdr->avp_value->os.data, mme_ue->msisdn_len);
+                memcpy(mme_ue->msisdn, hdr->avp_value->os.data,
+                        ogs_min(mme_ue->msisdn_len, OGS_MAX_MSISDN_LEN));
                 ogs_buffer_to_bcd(mme_ue->msisdn,
                         mme_ue->msisdn_len, mme_ue->msisdn_bcd);
             }
@@ -769,10 +769,10 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
         if (avpch1) {
             ret = fd_msg_avp_hdr(avpch1, &hdr);
             ogs_assert(ret == 0);
-            if (hdr->avp_value->os.len) {
+            if (hdr->avp_value->os.data && hdr->avp_value->os.len) {
                 mme_ue->a_msisdn_len = hdr->avp_value->os.len;
-                memcpy(mme_ue->a_msisdn,
-                    hdr->avp_value->os.data, mme_ue->a_msisdn_len);
+                memcpy(mme_ue->a_msisdn, hdr->avp_value->os.data,
+                        ogs_min(mme_ue->a_msisdn_len, OGS_MAX_MSISDN_LEN));
                 ogs_buffer_to_bcd(mme_ue->a_msisdn,
                         mme_ue->a_msisdn_len, mme_ue->a_msisdn_bcd);
             }

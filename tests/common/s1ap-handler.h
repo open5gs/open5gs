@@ -38,6 +38,8 @@ void tests1ap_handle_e_rab_modify_request(
 void tests1ap_handle_e_rab_release_command(
         test_ue_t *test_ue, ogs_s1ap_message_t *message);
 
+void tests1ap_handle_path_switch_request_ack(
+        test_ue_t *test_ue, ogs_s1ap_message_t *message);
 void tests1ap_handle_handover_request(
         test_ue_t *test_ue, ogs_s1ap_message_t *message);
 void tests1ap_handle_handover_command(

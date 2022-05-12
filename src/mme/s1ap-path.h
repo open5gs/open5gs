@@ -66,7 +66,8 @@ int s1ap_send_mme_configuration_transfer(
 
 int s1ap_send_e_rab_modification_confirm(mme_ue_t *mme_ue);
 
-int s1ap_send_path_switch_ack(mme_ue_t *mme_ue);
+int s1ap_send_path_switch_ack(
+        mme_ue_t *mme_ue, bool e_rab_to_switched_in_uplink_list);
 
 int s1ap_send_handover_command(enb_ue_t *source_ue);
 int s1ap_send_handover_preparation_failure(

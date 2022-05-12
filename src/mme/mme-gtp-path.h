@@ -32,7 +32,8 @@ void mme_gtp_close(void);
 int mme_gtp_send_create_session_request(mme_sess_t *sess, int create_action);
 int mme_gtp_send_modify_bearer_request(
         mme_ue_t *mme_ue, int uli_presence, int modify_action);
-int mme_gtp_send_delete_session_request(mme_sess_t *sess, int action);
+int mme_gtp_send_delete_session_request(
+        sgw_ue_t *sgw_ue, mme_sess_t *sess, int action);
 void mme_gtp_send_delete_all_sessions(mme_ue_t *mme_ue, int action);
 int mme_gtp_send_create_bearer_response(
         mme_bearer_t *bearer, uint8_t cause_value);

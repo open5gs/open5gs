@@ -29,7 +29,7 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
 ogs_pkbuf_t *mme_s11_build_modify_bearer_request(
         uint8_t type, mme_ue_t *mme_ue, int uli_presense);
 ogs_pkbuf_t *mme_s11_build_delete_session_request(
-        uint8_t type, mme_sess_t *sess);
+        uint8_t type, mme_sess_t *sess, int action);
 ogs_pkbuf_t *mme_s11_build_create_bearer_response(
         uint8_t type, mme_bearer_t *bearer, uint8_t cause_value);
 ogs_pkbuf_t *mme_s11_build_update_bearer_response(

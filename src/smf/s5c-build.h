@@ -33,7 +33,7 @@ ogs_pkbuf_t *smf_s5c_build_delete_session_response(
 
 ogs_pkbuf_t *smf_s5c_build_modify_bearer_response(
         uint8_t type, smf_sess_t *sess,
-        ogs_gtp2_modify_bearer_request_t *req);
+        ogs_gtp2_modify_bearer_request_t *req, bool sgw_relocation);
 
 ogs_pkbuf_t *smf_s5c_build_create_bearer_request(
         uint8_t type, smf_bearer_t *bearer, ogs_gtp2_tft_t *tft);

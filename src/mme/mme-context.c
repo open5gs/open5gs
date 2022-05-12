@@ -2039,14 +2039,9 @@ sgw_ue_t *sgw_ue_add(mme_sgw_t *sgw)
     ogs_assert(sgw_ue);
     memset(sgw_ue, 0, sizeof *sgw_ue);
 
-    sgw_ue->index = ogs_pool_index(&sgw_ue_pool, sgw_ue);
-    ogs_assert(sgw_ue->index > 0 && sgw_ue->index <= ogs_app()->max.ue);
-
-    sgw_ue->mme_s11_teid = sgw_ue->index;
-
-    sgw_ue->t_gtp2_holding = ogs_timer_add(
+    sgw_ue->t_s11_holding = ogs_timer_add(
             ogs_app()->timer_mgr, mme_timer_s11_holding_timer_expire, sgw_ue);
-    ogs_assert(sgw_ue->t_gtp2_holding);
+    ogs_assert(sgw_ue->t_s11_holding);
 
     sgw_ue->sgw = sgw;
 
@@ -2065,8 +2060,8 @@ void sgw_ue_remove(sgw_ue_t *sgw_ue)
 
     ogs_list_remove(&sgw->sgw_ue_list, sgw_ue);
 
-    ogs_assert(sgw_ue->t_gtp2_holding);
-    ogs_timer_delete(sgw_ue->t_gtp2_holding);
+    ogs_assert(sgw_ue->t_s11_holding);
+    ogs_timer_delete(sgw_ue->t_s11_holding);
 
     ogs_pool_free(&sgw_ue_pool, sgw_ue);
 }
@@ -2092,11 +2087,6 @@ sgw_ue_t *sgw_ue_find(uint32_t index)
     return ogs_pool_find(&sgw_ue_pool, index);
 }
 
-sgw_ue_t *sgw_ue_find_by_mme_s11_teid(uint32_t mme_s11_teid)
-{
-    return sgw_ue_find(mme_s11_teid);
-}
-
 sgw_ue_t *sgw_ue_cycle(sgw_ue_t *sgw_ue)
 {
     return ogs_pool_cycle(&sgw_ue_pool, sgw_ue);
@@ -2105,7 +2095,7 @@ sgw_ue_t *sgw_ue_cycle(sgw_ue_t *sgw_ue)
 sgw_relocation_e sgw_ue_check_if_relocated(mme_ue_t *mme_ue)
 {
     enb_ue_t *enb_ue = NULL;
-    sgw_ue_t *source_ue, *target_ue = NULL;
+    sgw_ue_t *old_source_ue = NULL, *source_ue = NULL, *target_ue = NULL;
     mme_sgw_t *current = NULL, *changed = NULL;
 
     ogs_assert(mme_ue);
@@ -2119,6 +2109,13 @@ sgw_relocation_e sgw_ue_check_if_relocated(mme_ue_t *mme_ue)
 
     changed = changed_sgw_node(current, enb_ue);
     if (!changed) return SGW_WITHOUT_RELOCATION;
+
+    /* Check if Old Source UE */
+    old_source_ue = sgw_ue_cycle(source_ue->source_ue);
+    if (old_source_ue) {
+        sgw_ue_source_deassociate_target(old_source_ue);
+        sgw_ue_remove(old_source_ue);
+    }
 
     target_ue = sgw_ue_cycle(source_ue->target_ue);
     if (target_ue) {
@@ -2259,6 +2256,10 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
     mme_ebi_pool_init(mme_ue);
 
     ogs_list_init(&mme_ue->sess_list);
+
+    mme_ue->mme_s11_teid = ogs_pool_index(&mme_ue_pool, mme_ue);
+    ogs_assert(mme_ue->mme_s11_teid > 0 &&
+            mme_ue->mme_s11_teid <= ogs_app()->max.ue);
 
     /*
      * When used for the first time, if last node is set,
@@ -2436,6 +2437,11 @@ mme_ue_t *mme_ue_find_by_guti(ogs_nas_eps_guti_t *guti)
 
     return (mme_ue_t *)ogs_hash_get(
             self.guti_ue_hash, guti, sizeof(ogs_nas_eps_guti_t));
+}
+
+mme_ue_t *mme_ue_find_by_teid(uint32_t teid)
+{
+    return ogs_pool_find(&mme_ue_pool, teid);
 }
 
 mme_ue_t *mme_ue_find_by_message(ogs_nas_eps_message_t *message)

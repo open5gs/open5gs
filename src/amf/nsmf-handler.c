@@ -223,9 +223,9 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                             sess, pdu_session_resource_setup_request,
                             ogs_pkbuf_copy(n2smbuf));
 
-                    if (SESSION_SYNC_DONE(amf_ue,
+                    if (AMF_SESSION_SYNC_DONE(amf_ue,
                             AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT) &&
-                        SESSION_SYNC_DONE(amf_ue,
+                        AMF_SESSION_SYNC_DONE(amf_ue,
                             AMF_UPDATE_SM_CONTEXT_REGISTRATION_REQUEST)) {
 
                         if (!PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
@@ -247,9 +247,9 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                             sess, pdu_session_resource_setup_request,
                             ogs_pkbuf_copy(n2smbuf));
 
-                    if (SESSION_SYNC_DONE(amf_ue,
+                    if (AMF_SESSION_SYNC_DONE(amf_ue,
                                 AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT) &&
-                        SESSION_SYNC_DONE(amf_ue,
+                        AMF_SESSION_SYNC_DONE(amf_ue,
                                 AMF_UPDATE_SM_CONTEXT_SERVICE_REQUEST)) {
                         ogs_assert(OGS_OK ==
                             nas_5gs_send_service_accept(amf_ue));
@@ -261,7 +261,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                     AMF_SESS_STORE_N2_TRANSFER(
                             sess, handover_request, ogs_pkbuf_copy(n2smbuf));
 
-                    if (SESSION_SYNC_DONE(amf_ue,
+                    if (AMF_SESSION_SYNC_DONE(amf_ue,
                                 AMF_UPDATE_SM_CONTEXT_HANDOVER_REQUIRED)) {
                         ogs_assert(OGS_OK ==
                             ngap_send_handover_request(amf_ue));
@@ -367,7 +367,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                         sess, path_switch_request_ack,
                         ogs_pkbuf_copy(n2smbuf));
 
-                if (SESSION_SYNC_DONE(amf_ue, state)) {
+                if (AMF_SESSION_SYNC_DONE(amf_ue, state)) {
                     ogs_assert(OGS_OK ==
                         ngap_send_path_switch_ack(sess));
 
@@ -390,7 +390,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 AMF_SESS_STORE_N2_TRANSFER(
                         sess, handover_command, ogs_pkbuf_copy(n2smbuf));
 
-                if (SESSION_SYNC_DONE(amf_ue, state)) {
+                if (AMF_SESSION_SYNC_DONE(amf_ue, state)) {
                     ogs_assert(OGS_OK ==
                         ngap_send_handover_command(amf_ue));
 
@@ -497,7 +497,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                  * 6. UEContextReleaseComplete
                  */
 
-                if (SESSION_SYNC_DONE(amf_ue, state)) {
+                if (AMF_SESSION_SYNC_DONE(amf_ue, state)) {
                     ogs_assert(amf_ue->deactivation.group);
 
                     ogs_assert(OGS_OK ==
@@ -573,7 +573,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
 
             } else if (state == AMF_UPDATE_SM_CONTEXT_HANDOVER_CANCEL) {
 
-                if (SESSION_SYNC_DONE(amf_ue, state)) {
+                if (AMF_SESSION_SYNC_DONE(amf_ue, state)) {
                     ran_ue_t *source_ue = NULL, *target_ue = NULL;
 
                     source_ue = amf_ue->ran_ue;
@@ -593,7 +593,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 /* Nothing to do */
 
             } else if (state == AMF_REMOVE_S1_CONTEXT_BY_LO_CONNREFUSED) {
-                if (SESSION_SYNC_DONE(amf_ue, state)) {
+                if (AMF_SESSION_SYNC_DONE(amf_ue, state)) {
                     ran_ue_t *ran_ue = ran_ue_cycle(amf_ue->ran_ue);
 
                     amf_ue_deassociate(amf_ue);
@@ -608,7 +608,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 }
 
             } else if (state == AMF_REMOVE_S1_CONTEXT_BY_RESET_ALL) {
-                if (SESSION_SYNC_DONE(amf_ue, state)) {
+                if (AMF_SESSION_SYNC_DONE(amf_ue, state)) {
                     ran_ue_t *ran_ue = ran_ue_cycle(amf_ue->ran_ue);
 
                     amf_ue_deassociate(amf_ue);
@@ -631,7 +631,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 }
 
             } else if (state == AMF_REMOVE_S1_CONTEXT_BY_RESET_PARTIAL) {
-                if (SESSION_SYNC_DONE(amf_ue, state)) {
+                if (AMF_SESSION_SYNC_DONE(amf_ue, state)) {
                     ran_ue_t *iter = NULL;
                     ran_ue_t *ran_ue = ran_ue_cycle(amf_ue->ran_ue);
 
@@ -797,9 +797,9 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
          * 2. Release All SM contexts
          * 3. Registration accept
          */
-        if (SESSION_SYNC_DONE(
+        if (AMF_SESSION_SYNC_DONE(
                 amf_ue, AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT) &&
-            SESSION_SYNC_DONE(
+            AMF_SESSION_SYNC_DONE(
                 amf_ue, AMF_UPDATE_SM_CONTEXT_REGISTRATION_REQUEST)) {
 
             if (!PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
@@ -820,14 +820,14 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
          * 2. Release All SM contexts
          * 3. Service accept
          */
-        if (SESSION_SYNC_DONE(amf_ue, AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT) &&
-            SESSION_SYNC_DONE(amf_ue, AMF_UPDATE_SM_CONTEXT_SERVICE_REQUEST))
+        if (AMF_SESSION_SYNC_DONE(amf_ue, AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT) &&
+            AMF_SESSION_SYNC_DONE(amf_ue, AMF_UPDATE_SM_CONTEXT_SERVICE_REQUEST))
             ogs_assert(OGS_OK ==
                 nas_5gs_send_service_accept(amf_ue));
 
     } else {
 
-        if (SESSION_SYNC_DONE(amf_ue, state)) {
+        if (AMF_SESSION_SYNC_DONE(amf_ue, state)) {
 
             if (state == AMF_RELEASE_SM_CONTEXT_NG_CONTEXT_REMOVE) {
                 /*

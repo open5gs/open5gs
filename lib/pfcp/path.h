@@ -78,7 +78,8 @@ int ogs_pfcp_up_send_association_setup_request(ogs_pfcp_node_t *node,
 int ogs_pfcp_up_send_association_setup_response(ogs_pfcp_xact_t *xact,
         uint8_t cause);
 
-void ogs_pfcp_send_g_pdu(ogs_pfcp_pdr_t *pdr, ogs_pkbuf_t *sendbuf);
+void ogs_pfcp_send_g_pdu(
+        ogs_pfcp_pdr_t *pdr, uint8_t type, ogs_pkbuf_t *sendbuf);
 int ogs_pfcp_send_end_marker(ogs_pfcp_pdr_t *pdr);
 
 void ogs_pfcp_send_buffered_packet(ogs_pfcp_pdr_t *pdr);

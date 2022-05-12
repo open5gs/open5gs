@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by gtp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2022-04-22 03:19:22.029355 by acetcom
+ * Created on: 2022-05-01 15:20:04.462265 by acetcom
  * from 29274-g30.docx
  ******************************************************************************/
 
@@ -2063,6 +2063,7 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_create_session_request =
         &ogs_gtp2_tlv_desc_twmi_0,
         &ogs_gtp2_tlv_desc_pco_0,
         &ogs_gtp2_tlv_desc_bearer_context_0,
+        &ogs_tlv_desc_more8,
         &ogs_gtp2_tlv_desc_bearer_context_1,
         &ogs_gtp2_tlv_desc_trace_information_0,
         &ogs_gtp2_tlv_desc_recovery_0,
@@ -2128,6 +2129,7 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_create_session_response =
         &ogs_gtp2_tlv_desc_ebi_0,
         &ogs_gtp2_tlv_desc_pco_0,
         &ogs_gtp2_tlv_desc_bearer_context_0,
+        &ogs_tlv_desc_more8,
         &ogs_gtp2_tlv_desc_bearer_context_1,
         &ogs_gtp2_tlv_desc_recovery_0,
         &ogs_gtp2_tlv_desc_fqdn_0,

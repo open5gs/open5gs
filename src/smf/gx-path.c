@@ -91,7 +91,7 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
     char buf[OGS_PLMNIDSTRLEN];
     struct sockaddr_in sin;
     struct sockaddr_in6 sin6;
-    uint32_t charing_id;
+    uint32_t charging_id;
 
     ogs_assert(sess);
 
@@ -636,9 +636,9 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
                 ogs_diam_gx_access_network_charging_identifier_value, 0,
                 &avpch1);
         ogs_assert(ret == 0);
-        charing_id = htobe32(sess->charging.id);
-        val.os.data = (uint8_t *)&charing_id;
-        val.os.len = sizeof(charing_id);
+        charging_id = htobe32(sess->charging.id);
+        val.os.data = (uint8_t *)&charging_id;
+        val.os.len = sizeof(charging_id);
         ret = fd_msg_avp_setvalue (avpch1, &val);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);

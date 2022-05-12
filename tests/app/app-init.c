@@ -43,7 +43,7 @@ int app_initialize(const char *const argv[])
 
     for (i = 0; argv[i]; i++) {
         if (strcmp("-c", argv[i]) == 0) {
-            user_config = true; 
+            user_config = true;
         }
         argv_out[i] = argv[i];
     }

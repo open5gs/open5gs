@@ -27,20 +27,21 @@ ogs_pkbuf_t *test_s2b_build_create_session_request(
     test_ue_t *test_ue = NULL;
     test_bearer_t *bearer = NULL;
     ogs_gtp2_message_t gtp_message;
-    ogs_gtp2_create_session_request_t *req = &gtp_message.create_session_request;
+    ogs_gtp2_create_session_request_t *req =
+        &gtp_message.create_session_request;
 
     uint8_t msisdn_buf[OGS_MAX_MSISDN_LEN];
     int msisdn_len;
 
     ogs_gtp2_uli_t uli;
     char uli_buf[OGS_GTP2_MAX_ULI_LEN];
-    ogs_gtp2_f_teid_t test_s2b_c_teid, test_s2b_u_teid;
-    int len;
+    ogs_gtp2_f_teid_t test_s2b_c_teid, test_s2b_u_teid[OGS_BEARER_PER_UE];
+    int len, test_s2b_u_len;
     ogs_paa_t paa;
 
     ogs_gtp2_ambr_t ambr;
     ogs_gtp2_bearer_qos_t bearer_qos;
-    char bearer_qos_buf[GTP2_BEARER_QOS_LEN];
+    char bearer_qos_buf[OGS_BEARER_PER_UE][GTP2_BEARER_QOS_LEN];
     char apn[OGS_MAX_APN_LEN+1];
 
     ogs_gtp2_indication_t indication;
@@ -84,7 +85,7 @@ ogs_pkbuf_t *test_s2b_build_create_session_request(
     ogs_nas_from_plmn_id(&uli.e_cgi.nas_plmn_id, &test_ue->e_cgi.plmn_id);
     uli.e_cgi.cell_id = test_ue->e_cgi.cell_id;
     req->user_location_information.presence = 1;
-    ogs_gtp2_build_uli(&req->user_location_information, &uli, 
+    ogs_gtp2_build_uli(&req->user_location_information, &uli,
             uli_buf, OGS_GTP2_MAX_ULI_LEN);
 
     req->serving_network.presence = 1;
@@ -111,7 +112,7 @@ ogs_pkbuf_t *test_s2b_build_create_session_request(
     req->access_point_name.data = apn;
 
     req->selection_mode.presence = 1;
-    req->selection_mode.u8 = 
+    req->selection_mode.u8 =
         OGS_GTP2_SELECTION_MODE_MS_OR_NETWORK_PROVIDED_APN;
 
     memset(&paa, 0, sizeof(paa));
@@ -128,31 +129,40 @@ ogs_pkbuf_t *test_s2b_build_create_session_request(
     req->aggregate_maximum_bit_rate.data = &ambr;
     req->aggregate_maximum_bit_rate.len = sizeof(ambr);
 
-    req->bearer_contexts_to_be_created.presence = 1;
-    req->bearer_contexts_to_be_created.eps_bearer_id.presence = 1;
-    req->bearer_contexts_to_be_created.eps_bearer_id.u8 = bearer->ebi;
+    int i = 0;
+    ogs_list_for_each(&sess->bearer_list, bearer) {
+        ogs_assert(i < OGS_BEARER_PER_UE);
 
-    memset(&test_s2b_u_teid, 0, sizeof(ogs_gtp2_f_teid_t));
-    test_s2b_u_teid.teid = htobe32(bearer->enb_s1u_teid);
-    test_s2b_u_teid.interface_type = OGS_GTP2_F_TEID_S2B_U_EPDG_GTP_U;
-    ogs_assert(sess->gnode->sock);
-    rv = ogs_gtp2_sockaddr_to_f_teid(
-            &sess->gnode->sock->local_addr, NULL, &test_s2b_u_teid, &len);
+        req->bearer_contexts_to_be_created[i].presence = 1;
+        req->bearer_contexts_to_be_created[i].eps_bearer_id.presence = 1;
+        req->bearer_contexts_to_be_created[i].eps_bearer_id.u8 = bearer->ebi;
 
-    req->bearer_contexts_to_be_created.s2b_u_epdg_f_teid_5.presence = 1;
-    req->bearer_contexts_to_be_created.s2b_u_epdg_f_teid_5.data =
-        &test_s2b_u_teid;
-    req->bearer_contexts_to_be_created.s2b_u_epdg_f_teid_5.len = len;
+        memset(&test_s2b_u_teid[i], 0, sizeof(ogs_gtp2_f_teid_t));
+        test_s2b_u_teid[i].teid = htobe32(bearer->enb_s1u_teid);
+        test_s2b_u_teid[i].interface_type = OGS_GTP2_F_TEID_S2B_U_EPDG_GTP_U;
+        ogs_assert(sess->gnode->sock);
+        rv = ogs_gtp2_sockaddr_to_f_teid(
+                &sess->gnode->sock->local_addr, NULL,
+                &test_s2b_u_teid[i], &test_s2b_u_len);
 
-    memset(&bearer_qos, 0, sizeof(bearer_qos));
-    bearer_qos.qci = 8;
-    bearer_qos.priority_level = 1;
-    bearer_qos.pre_emption_capability = 0;
-    bearer_qos.pre_emption_vulnerability = 0;
-    req->bearer_contexts_to_be_created.bearer_level_qos.presence = 1;
-    ogs_gtp2_build_bearer_qos(
-            &req->bearer_contexts_to_be_created.bearer_level_qos,
-            &bearer_qos, bearer_qos_buf, GTP2_BEARER_QOS_LEN);
+        req->bearer_contexts_to_be_created[i].s2b_u_epdg_f_teid_5.presence = 1;
+        req->bearer_contexts_to_be_created[i].s2b_u_epdg_f_teid_5.data =
+            &test_s2b_u_teid[i];
+        req->bearer_contexts_to_be_created[i].s2b_u_epdg_f_teid_5.len =
+            test_s2b_u_len;
+
+        memset(&bearer_qos, 0, sizeof(bearer_qos));
+        bearer_qos.qci = 8;
+        bearer_qos.priority_level = 1;
+        bearer_qos.pre_emption_capability = 0;
+        bearer_qos.pre_emption_vulnerability = 0;
+        req->bearer_contexts_to_be_created[i].bearer_level_qos.presence = 1;
+        ogs_gtp2_build_bearer_qos(
+                &req->bearer_contexts_to_be_created[i].bearer_level_qos,
+                &bearer_qos, bearer_qos_buf[i], GTP2_BEARER_QOS_LEN);
+
+        i++;
+    }
 
     req->recovery.presence = 1;
     req->recovery.u8 = 66;

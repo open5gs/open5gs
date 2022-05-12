@@ -283,7 +283,8 @@ int ogs_pfcp_up_send_association_setup_response(ogs_pfcp_xact_t *xact,
     return rv;
 }
 
-void ogs_pfcp_send_g_pdu(ogs_pfcp_pdr_t *pdr, ogs_pkbuf_t *sendbuf)
+void ogs_pfcp_send_g_pdu(
+        ogs_pfcp_pdr_t *pdr, uint8_t type, ogs_pkbuf_t *sendbuf)
 {
     ogs_gtp_node_t *gnode = NULL;
     ogs_pfcp_far_t *far = NULL;
@@ -292,6 +293,7 @@ void ogs_pfcp_send_g_pdu(ogs_pfcp_pdr_t *pdr, ogs_pkbuf_t *sendbuf)
     ogs_gtp2_extension_header_t ext_hdesc;
 
     ogs_assert(pdr);
+    ogs_assert(type);
     ogs_assert(sendbuf);
 
     far = pdr->far;
@@ -314,7 +316,7 @@ void ogs_pfcp_send_g_pdu(ogs_pfcp_pdr_t *pdr, ogs_pkbuf_t *sendbuf)
     memset(&gtp_hdesc, 0, sizeof(gtp_hdesc));
     memset(&ext_hdesc, 0, sizeof(ext_hdesc));
 
-    gtp_hdesc.type = OGS_GTPU_MSGTYPE_GPDU;
+    gtp_hdesc.type = type;
     gtp_hdesc.teid = far->outer_header_creation.teid;
     if (pdr->qer && pdr->qer->qfi)
         ext_hdesc.qos_flow_identifier = pdr->qer->qfi;
@@ -374,7 +376,8 @@ void ogs_pfcp_send_buffered_packet(ogs_pfcp_pdr_t *pdr)
     if (far && far->gnode) {
         if (far->apply_action & OGS_PFCP_APPLY_ACTION_FORW) {
             for (i = 0; i < far->num_of_buffered_packet; i++) {
-                ogs_pfcp_send_g_pdu(pdr, far->buffered_packet[i]);
+                ogs_pfcp_send_g_pdu(
+                        pdr, OGS_GTPU_MSGTYPE_GPDU, far->buffered_packet[i]);
             }
             far->num_of_buffered_packet = 0;
         }

@@ -138,6 +138,7 @@ typedef struct ogs_pfcp_pdr_s {
     uint32_t                index;
 
     ogs_lnode_t             to_create_node;
+    ogs_lnode_t             to_modify_node;
 
     struct {
         struct {

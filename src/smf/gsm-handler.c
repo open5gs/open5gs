@@ -307,7 +307,7 @@ int gsm_handle_pdu_session_modification_request(
 
                         pfcp_flags |= OGS_PFCP_MODIFY_TFT_REPLACE;
                         qos_flow_find_or_add(
-                            &update_list, qos_flow, to_update_node);
+                            &update_list, qos_flow, to_modify_node);
 
                         ogs_list_add(
                                 &qos_flow->pf_to_add_list, &pf->to_add_node);
@@ -389,7 +389,7 @@ int gsm_handle_pdu_session_modification_request(
                         ogs_assert_if_reached();
 
                     qos_flow_find_or_add(
-                        &update_list, qos_flow, to_update_node);
+                        &update_list, qos_flow, to_modify_node);
 
                     ogs_list_add(
                             &qos_flow->pf_to_add_list, &pf->to_add_node);
@@ -414,7 +414,7 @@ int gsm_handle_pdu_session_modification_request(
                 if (ogs_list_count(&qos_flow->pf_list)) {
                     pfcp_flags |= OGS_PFCP_MODIFY_TFT_DELETE;
                     qos_flow_find_or_add(
-                        &update_list, qos_flow, to_update_node);
+                        &update_list, qos_flow, to_modify_node);
                 } else {
                     pfcp_flags |= OGS_PFCP_MODIFY_REMOVE;
                     qos_flow_find_or_add(
@@ -469,7 +469,7 @@ int gsm_handle_pdu_session_modification_request(
             }
 
             pfcp_flags |= OGS_PFCP_MODIFY_QOS_MODIFY;
-            qos_flow_find_or_add(&update_list, qos_flow, to_update_node);
+            qos_flow_find_or_add(&update_list, qos_flow, to_modify_node);
         }
     }
 

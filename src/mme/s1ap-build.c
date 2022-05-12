@@ -1556,7 +1556,8 @@ ogs_pkbuf_t *s1ap_build_mme_configuration_transfer(
     return ogs_s1ap_encode(&pdu);
 }
 
-ogs_pkbuf_t *s1ap_build_path_switch_ack(mme_ue_t *mme_ue)
+ogs_pkbuf_t *s1ap_build_path_switch_ack(
+        mme_ue_t *mme_ue, bool e_rab_to_switched_in_uplink_list)
 {
     S1AP_S1AP_PDU_t pdu;
     S1AP_SuccessfulOutcome_t *successfulOutcome = NULL;
@@ -1565,8 +1566,11 @@ ogs_pkbuf_t *s1ap_build_path_switch_ack(mme_ue_t *mme_ue)
     S1AP_PathSwitchRequestAcknowledgeIEs_t *ie = NULL;
     S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
     S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
+    S1AP_E_RABToBeSwitchedULList_t *E_RABToBeSwitchedULList = NULL;
     S1AP_SecurityContext_t *SecurityContext = NULL;
 
+    mme_sess_t *sess = NULL;
+    mme_bearer_t *bearer = NULL;
     enb_ue_t *enb_ue = NULL;
 
     ogs_assert(mme_ue);
@@ -1608,6 +1612,18 @@ ogs_pkbuf_t *s1ap_build_path_switch_ack(mme_ue_t *mme_ue)
 
     ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
 
+    if (e_rab_to_switched_in_uplink_list == true) {
+        ie = CALLOC(1, sizeof(S1AP_PathSwitchRequestAcknowledgeIEs_t));
+        ASN_SEQUENCE_ADD(&PathSwitchRequestAcknowledge->protocolIEs, ie);
+
+        ie->id = S1AP_ProtocolIE_ID_id_E_RABToBeSwitchedULList;
+        ie->criticality = S1AP_Criticality_ignore;
+        ie->value.present =
+            S1AP_PathSwitchRequestAcknowledgeIEs__value_PR_E_RABToBeSwitchedULList;
+
+        E_RABToBeSwitchedULList = &ie->value.choice.E_RABToBeSwitchedULList;
+    }
+
     ie = CALLOC(1, sizeof(S1AP_PathSwitchRequestAcknowledgeIEs_t));
     ASN_SEQUENCE_ADD(&PathSwitchRequestAcknowledge->protocolIEs, ie);
 
@@ -1623,6 +1639,31 @@ ogs_pkbuf_t *s1ap_build_path_switch_ack(mme_ue_t *mme_ue)
 
     *MME_UE_S1AP_ID = enb_ue->mme_ue_s1ap_id;
     *ENB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
+
+    if (e_rab_to_switched_in_uplink_list == true) {
+        ogs_list_for_each(&mme_ue->sess_list, sess) {
+            ogs_list_for_each(&sess->bearer_list, bearer) {
+                S1AP_E_RABToBeSwitchedULItemIEs_t *item = NULL;
+                S1AP_E_RABToBeSwitchedULItem_t *e_rab = NULL;
+
+                item = CALLOC(1, sizeof(S1AP_E_RABToBeSwitchedULItemIEs_t));
+                ASN_SEQUENCE_ADD(&E_RABToBeSwitchedULList->list, item);
+
+                item->id = S1AP_ProtocolIE_ID_id_E_RABToBeSwitchedULItem;
+                item->criticality = S1AP_Criticality_ignore;
+                item->value.present = S1AP_E_RABToBeSwitchedULItemIEs__value_PR_E_RABToBeSwitchedULItem;
+
+                e_rab = &item->value.choice.E_RABToBeSwitchedULItem;
+
+                e_rab->e_RAB_ID = bearer->ebi;
+
+                ogs_assert(OGS_OK == ogs_asn_ip_to_BIT_STRING(
+                        &bearer->sgw_s1u_ip, &e_rab->transportLayerAddress));
+                ogs_asn_uint32_to_OCTET_STRING(
+                        bearer->sgw_s1u_teid, &e_rab->gTP_TEID);
+            }
+        }
+    }
 
     SecurityContext->nextHopChainingCount = mme_ue->nhcc;
     SecurityContext->nextHopParameter.size = OGS_SHA256_DIGEST_SIZE;

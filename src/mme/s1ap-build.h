@@ -56,7 +56,8 @@ ogs_pkbuf_t *s1ap_build_paging(
 ogs_pkbuf_t *s1ap_build_mme_configuration_transfer(
     S1AP_SONConfigurationTransfer_t *son_configuration_transfer);
 
-ogs_pkbuf_t *s1ap_build_path_switch_ack(mme_ue_t *mme_ue);
+ogs_pkbuf_t *s1ap_build_path_switch_ack(
+        mme_ue_t *mme_ue, bool e_rab_to_switched_in_uplink_list);
 ogs_pkbuf_t *s1ap_build_path_switch_failure(
     uint32_t enb_ue_s1ap_id, uint32_t mme_ue_s1ap_id,
     S1AP_Cause_PR group, long cause);
