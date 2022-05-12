@@ -106,6 +106,7 @@ extern struct dict_object *ogs_diam_gy_sgsn_address;
 extern struct dict_object *ogs_diam_gy_ggsn_address;
 extern struct dict_object *ogs_diam_gy_3gpp_nsapi;
 extern struct dict_object *ogs_diam_gy_3gpp_selection_mode;
+extern struct dict_object *ogs_diam_gy_3gpp_charging_characteristics;
 extern struct dict_object *ogs_diam_gy_feature_list_id;
 extern struct dict_object *ogs_diam_gy_feature_list;
 extern struct dict_object *ogs_diam_gy_qos_information;
