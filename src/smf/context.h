@@ -312,16 +312,16 @@ typedef struct smf_sess_s {
     OpenAPI_rat_type_e sbi_rat_type;
 
     struct {
+        uint8_t version; /* GTPC version */
         ogs_tlv_octet_t ue_pco;
         ogs_tlv_octet_t user_location_information;
         ogs_tlv_octet_t ue_timezone;
         bool create_session_response_apn_ambr;
         bool create_session_response_bearer_qos;
-    } gtp; /* Saved from S5-C */
-
-    struct {
-        uint8_t nsapi;
-    } gtp1; /* GTPv1C specific fields */
+        struct {
+            uint8_t nsapi;
+        } v1;  /* GTPv1C specific fields */
+    } gtp; /* Saved from S5-C/Gn */
 
     struct {
         uint64_t ul_octets;
@@ -412,7 +412,7 @@ smf_ue_t *smf_ue_find_by_supi(char *supi);
 smf_ue_t *smf_ue_find_by_imsi(uint8_t *imsi, int imsi_len);
 
 smf_sess_t *smf_sess_add_by_gtp1_message(ogs_gtp1_message_t *message);
-smf_sess_t *smf_sess_add_by_gtp_message(ogs_gtp2_message_t *message);
+smf_sess_t *smf_sess_add_by_gtp2_message(ogs_gtp2_message_t *message);
 smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn, uint8_t rat_type);
 
 smf_sess_t *smf_sess_add_by_sbi_message(ogs_sbi_message_t *message);

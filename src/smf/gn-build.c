@@ -157,7 +157,7 @@ ogs_pkbuf_t *smf_gn_build_create_pdp_context_response(
 
     /* TODO: NSAPI ? */
     rsp->nsapi.presence = 1;
-    rsp->nsapi.u8 = sess->gtp1.nsapi;
+    rsp->nsapi.u8 = sess->gtp.v1.nsapi;
 
     /* Charging ID */
     rsp->charging_id.presence = 1;
