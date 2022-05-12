@@ -166,6 +166,13 @@ uint8_t smf_s5c_handle_create_session_request(
         }
     }
 
+    /* Set Selection Mode, TS 29.274 8.58 */
+    if (req->selection_mode.presence == 1) {
+        sess->gtp.selection_mode = req->selection_mode.u8 & 0x03;
+        if (sess->gtp.selection_mode > 2)
+            sess->gtp.selection_mode = 2;
+    }
+
     if (sess->gtp_rat_type == OGS_GTP2_RAT_TYPE_EUTRAN) {
         /* User Location Inforation is mandatory only for E-UTRAN */
         ogs_assert(req->user_location_information.presence);

@@ -318,6 +318,7 @@ typedef struct smf_sess_s {
         ogs_tlv_octet_t ue_timezone;
         bool create_session_response_apn_ambr;
         bool create_session_response_bearer_qos;
+        uint8_t selection_mode; /* OGS_GTP{1,2}_SELECTION_MODE_*, same in GTPv1C and 2C. */
         struct {
             uint8_t nsapi;
         } v1;  /* GTPv1C specific fields */
