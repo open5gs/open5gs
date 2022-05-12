@@ -412,7 +412,7 @@ smf_ue_t *smf_ue_find_by_supi(char *supi);
 smf_ue_t *smf_ue_find_by_imsi(uint8_t *imsi, int imsi_len);
 
 smf_sess_t *smf_sess_add_by_gtp1_message(ogs_gtp1_message_t *message);
-smf_sess_t *smf_sess_add_by_gtp_message(ogs_gtp2_message_t *message);
+smf_sess_t *smf_sess_add_by_gtp2_message(ogs_gtp2_message_t *message);
 smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn, uint8_t rat_type);
 
 smf_sess_t *smf_sess_add_by_sbi_message(ogs_sbi_message_t *message);

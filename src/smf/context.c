@@ -1144,7 +1144,7 @@ smf_sess_t *smf_sess_add_by_gtp1_message(ogs_gtp1_message_t *message)
     return sess;
 }
 
-smf_sess_t *smf_sess_add_by_gtp_message(ogs_gtp2_message_t *message)
+smf_sess_t *smf_sess_add_by_gtp2_message(ogs_gtp2_message_t *message)
 {
     smf_ue_t *smf_ue = NULL;
     smf_sess_t *sess = NULL;

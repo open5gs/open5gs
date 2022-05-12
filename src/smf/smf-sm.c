@@ -132,7 +132,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         case OGS_GTP2_CREATE_SESSION_REQUEST_TYPE:
             if (gtp2_message.h.teid == 0) {
                 ogs_expect(!sess);
-                sess = smf_sess_add_by_gtp_message(&gtp2_message);
+                sess = smf_sess_add_by_gtp2_message(&gtp2_message);
                 if (sess)
                     OGS_SETUP_GTP_NODE(sess, gnode);
             }
