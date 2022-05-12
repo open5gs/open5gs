@@ -312,6 +312,7 @@ typedef struct smf_sess_s {
     OpenAPI_rat_type_e sbi_rat_type;
 
     struct {
+        uint8_t version; /* GTPC version */
         ogs_tlv_octet_t ue_pco;
         ogs_tlv_octet_t user_location_information;
         ogs_tlv_octet_t ue_timezone;
