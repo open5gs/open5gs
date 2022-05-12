@@ -118,7 +118,7 @@ uint8_t smf_gn_handle_create_pdp_context_request(
     ogs_assert(smf_ue);
 
     /* Store NSAPI */
-    sess->gtp1.nsapi = req->nsapi.u8;
+    sess->gtp.v1.nsapi = req->nsapi.u8;
 
     /* Control Plane(DL) : SGW-S5C */
     sess->sgw_s5c_teid = req->tunnel_endpoint_identifier_control_plane.u32;

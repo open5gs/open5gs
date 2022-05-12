@@ -318,11 +318,10 @@ typedef struct smf_sess_s {
         ogs_tlv_octet_t ue_timezone;
         bool create_session_response_apn_ambr;
         bool create_session_response_bearer_qos;
-    } gtp; /* Saved from S5-C */
-
-    struct {
-        uint8_t nsapi;
-    } gtp1; /* GTPv1C specific fields */
+        struct {
+            uint8_t nsapi;
+        } v1;  /* GTPv1C specific fields */
+    } gtp; /* Saved from S5-C/Gn */
 
     struct {
         uint64_t ul_octets;
