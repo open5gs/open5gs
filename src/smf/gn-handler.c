@@ -77,6 +77,10 @@ uint8_t smf_gn_handle_create_pdp_context_request(
         ogs_error("No IMSI");
         cause_value = OGS_GTP1_CAUSE_MANDATORY_IE_MISSING;
     }
+    if (req->selection_mode.presence == 0) {
+        ogs_error("No Selection Mode");
+        cause_value = OGS_GTP1_CAUSE_MANDATORY_IE_MISSING;
+    }
     if (req->tunnel_endpoint_identifier_data_i.presence == 0) {
         ogs_error("No TEID");
         cause_value = OGS_GTP1_CAUSE_MANDATORY_IE_MISSING;
@@ -119,6 +123,10 @@ uint8_t smf_gn_handle_create_pdp_context_request(
 
     /* Store NSAPI */
     sess->gtp.v1.nsapi = req->nsapi.u8;
+    /* Selection Mode, TS 29.060 7.7.12 */
+    sess->gtp.selection_mode = req->selection_mode.u8 & 0x03;
+    if (sess->gtp.selection_mode > 2)
+        sess->gtp.selection_mode = 2;
 
     /* Control Plane(DL) : SGW-S5C */
     sess->sgw_s5c_teid = req->tunnel_endpoint_identifier_control_plane.u32;

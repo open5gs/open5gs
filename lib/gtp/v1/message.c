@@ -21,7 +21,7 @@
 /*******************************************************************************
  * This file had been created by gtp1-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2022-02-18 19:21:27.743742 by pespin
+ * Created on: 2022-05-12 14:42:38.611950 by pespin
  * from 29060-g00.docx
  ******************************************************************************/
 
@@ -150,7 +150,7 @@ ogs_tlv_desc_t ogs_gtp1_tlv_desc_recovery =
 
 ogs_tlv_desc_t ogs_gtp1_tlv_desc_selection_mode =
 {
-    OGS_TV_FIXED_STR,
+    OGS_TV_UINT8,
     "Selection Mode",
     OGS_GTP1_SELECTION_MODE_TYPE,
     1,

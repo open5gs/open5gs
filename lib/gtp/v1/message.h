@@ -21,7 +21,7 @@
 /*******************************************************************************
  * This file had been created by gtp1-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2022-02-18 19:21:27.730656 by pespin
+ * Created on: 2022-05-12 14:42:38.599141 by pespin
  * from 29060-g00.docx
  ******************************************************************************/
 
@@ -471,7 +471,7 @@ typedef ogs_tlv_octet_t ogs_gtp1_tlv_map_cause_t;
 typedef ogs_tlv_octet_t ogs_gtp1_tlv_p_tmsi_signature_t;
 typedef ogs_tlv_octet_t ogs_gtp1_tlv_ms_validated_t;
 typedef ogs_tlv_uint8_t ogs_gtp1_tlv_recovery_t;
-typedef ogs_tlv_octet_t ogs_gtp1_tlv_selection_mode_t;
+typedef ogs_tlv_uint8_t ogs_gtp1_tlv_selection_mode_t;
 typedef ogs_tlv_uint32_t ogs_gtp1_tlv_tunnel_endpoint_identifier_data_i_t;
 typedef ogs_tlv_uint32_t ogs_gtp1_tlv_tunnel_endpoint_identifier_control_plane_t;
 typedef ogs_tlv_octet_t ogs_gtp1_tlv_tunnel_endpoint_identifier_data_ii_t;
