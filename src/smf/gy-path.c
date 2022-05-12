@@ -377,7 +377,6 @@ static void fill_service_information_ccr(smf_sess_t *sess,
     /* 3GPP-Selection-Mode, 3GPP TS 29.061 16.4.7.2 12 */
     ret = fd_msg_avp_new(ogs_diam_gy_3gpp_selection_mode, 0, &avpch2);
     ogs_assert(ret == 0);
-    ogs_assert(sess->session.name);
     digit = sess->gtp.selection_mode + '0';
     val.os.data = (uint8_t*)&digit;
     val.os.len = 1;
@@ -385,6 +384,25 @@ static void fill_service_information_ccr(smf_sess_t *sess,
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
     ogs_assert(ret == 0);
+
+    /* 3GPP-Charging-Characteristics, 3GPP TS 29.061 16.4.7.2 13 */
+    if (sess->gtp.charging_characteristics.presence &&
+        sess->gtp.charging_characteristics.len > 0) {
+        uint8_t oct1, oct2;
+        char digits[5];
+        ret = fd_msg_avp_new(ogs_diam_gy_3gpp_charging_characteristics, 0, &avpch2);
+        ogs_assert(ret == 0);
+        oct1 = ((uint8_t*)sess->gtp.charging_characteristics.data)[0];
+        oct2 = (sess->gtp.charging_characteristics.len > 1) ?
+                        ((uint8_t*)sess->gtp.charging_characteristics.data)[1] : 0;
+        snprintf(digits, sizeof(digits), "%02x%02x", oct1, oct2);
+        val.os.data = (uint8_t*)&digits[0];
+        val.os.len = 4;
+        ret = fd_msg_avp_setvalue(avpch2, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
+        ogs_assert(ret == 0);
+    }
 
     /* 3GPP-SGSN-MCC-MNC */
     ret = fd_msg_avp_new(ogs_diam_gy_3gpp_sgsn_mcc_mnc, 0, &avpch2);

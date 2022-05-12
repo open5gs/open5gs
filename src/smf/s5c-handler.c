@@ -341,6 +341,10 @@ uint8_t smf_s5c_handle_create_session_request(
         OGS_TLV_STORE_DATA(&sess->gtp.ue_timezone, &req->ue_time_zone);
     }
 
+    if (req->charging_characteristics.presence) {
+        OGS_TLV_STORE_DATA(&sess->gtp.charging_characteristics, &req->charging_characteristics);
+    }
+
     /* Set MSISDN */
     if (req->msisdn.presence && req->msisdn.len && req->msisdn.data) {
         smf_ue->msisdn_len = req->msisdn.len;

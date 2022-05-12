@@ -128,6 +128,10 @@ uint8_t smf_gn_handle_create_pdp_context_request(
     if (sess->gtp.selection_mode > 2)
         sess->gtp.selection_mode = 2;
 
+    if (req->charging_characteristics.presence) {
+        OGS_TLV_STORE_DATA(&sess->gtp.charging_characteristics, &req->charging_characteristics);
+    }
+
     /* Control Plane(DL) : SGW-S5C */
     sess->sgw_s5c_teid = req->tunnel_endpoint_identifier_control_plane.u32;
     rv = ogs_gtp1_gsn_addr_to_ip(req->sgsn_address_for_signalling.data,

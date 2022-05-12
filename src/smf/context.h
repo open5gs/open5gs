@@ -316,6 +316,7 @@ typedef struct smf_sess_s {
         ogs_tlv_octet_t ue_pco;
         ogs_tlv_octet_t user_location_information;
         ogs_tlv_octet_t ue_timezone;
+        ogs_tlv_octet_t charging_characteristics;
         bool create_session_response_apn_ambr;
         bool create_session_response_bearer_qos;
         uint8_t selection_mode; /* OGS_GTP{1,2}_SELECTION_MODE_*, same in GTPv1C and 2C. */
