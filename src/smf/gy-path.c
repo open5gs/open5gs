@@ -255,6 +255,7 @@ static void fill_service_information_ccr(smf_sess_t *sess,
     struct sockaddr_in sin;
     struct sockaddr_in6 sin6;
     char buf[OGS_PLMNIDSTRLEN];
+    char digit;
 
     /* Service-Information, TS 32.299 sec 7.2.192 */
     ret = fd_msg_avp_new(ogs_diam_gy_service_information, 0, &avp);
@@ -368,6 +369,18 @@ static void fill_service_information_ccr(smf_sess_t *sess,
     ogs_assert(sess->session.name);
     val.os.data = (uint8_t*)sess->session.name;
     val.os.len = strlen(sess->session.name);
+    ret = fd_msg_avp_setvalue(avpch2, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
+    ogs_assert(ret == 0);
+
+    /* 3GPP-Selection-Mode, 3GPP TS 29.061 16.4.7.2 12 */
+    ret = fd_msg_avp_new(ogs_diam_gy_3gpp_selection_mode, 0, &avpch2);
+    ogs_assert(ret == 0);
+    ogs_assert(sess->session.name);
+    digit = sess->gtp.selection_mode + '0';
+    val.os.data = (uint8_t*)&digit;
+    val.os.len = 1;
     ret = fd_msg_avp_setvalue(avpch2, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
