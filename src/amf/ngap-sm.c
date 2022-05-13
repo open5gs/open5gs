@@ -119,6 +119,9 @@ void ngap_state_operational(ogs_fsm_t *s, amf_event_t *e)
             case NGAP_ProcedureCode_id_NGReset:
                 ngap_handle_ng_reset(gnb, pdu);
                 break;
+            case NGAP_ProcedureCode_id_ErrorIndication:
+                ngap_handle_error_indication(gnb, pdu);
+                break;
             default:
                 ogs_error("Not implemented(choice:%d, proc:%d)",
                         pdu->present, (int)initiatingMessage->procedureCode);

@@ -81,6 +81,8 @@ void ngap_handle_ran_configuration_update(
 
 void ngap_handle_ng_reset(
         amf_gnb_t *gnb, ogs_ngap_message_t *message);
+void ngap_handle_error_indication(
+        amf_gnb_t *gnb, ogs_ngap_message_t *message);
 
 #ifdef __cplusplus
 }

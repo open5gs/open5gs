@@ -3831,7 +3831,8 @@ void ngap_handle_ng_reset(
         amf_gnb_t *gnb, ogs_ngap_message_t *message)
 {
     char buf[OGS_ADDRSTRLEN];
-    int i;
+    int i, old_xact_count = 0, new_xact_count = 0;
+
 
     NGAP_InitiatingMessage_t *initiatingMessage = NULL;
     NGAP_NGReset_t *NGReset = NULL;
@@ -3996,10 +3997,16 @@ void ngap_handle_ng_reset(
             amf_ue = ran_ue->amf_ue;
             ogs_assert(amf_ue);
 
+            old_xact_count = amf_sess_xact_count(amf_ue);
+
             amf_sbi_send_deactivate_all_sessions(
                 amf_ue, AMF_REMOVE_S1_CONTEXT_BY_RESET_PARTIAL,
                 NGAP_Cause_PR_radioNetwork,
                 NGAP_CauseRadioNetwork_failure_in_radio_interface_procedure);
+
+            new_xact_count = amf_sess_xact_count(amf_ue);
+
+            if (old_xact_count == new_xact_count) ran_ue_remove(ran_ue);
         }
 
         ogs_list_for_each(&gnb->ran_ue_list, iter) {
@@ -4023,5 +4030,83 @@ void ngap_handle_ng_reset(
     default:
         ogs_warn("Invalid ResetType[%d]", ResetType->present);
         break;
+    }
+}
+
+void ngap_handle_error_indication(amf_gnb_t *gnb, ogs_ngap_message_t *message)
+{
+    int i;
+    char buf[OGS_ADDRSTRLEN];
+    uint64_t amf_ue_ngap_id;
+
+    ran_ue_t *ran_ue = NULL;
+
+    NGAP_InitiatingMessage_t *initiatingMessage = NULL;
+    NGAP_ErrorIndication_t *ErrorIndication = NULL;
+
+    NGAP_ErrorIndicationIEs_t *ie = NULL;
+    NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
+    NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
+    NGAP_Cause_t *Cause = NULL;
+
+    ogs_assert(gnb);
+    ogs_assert(gnb->sctp.sock);
+
+    ogs_assert(message);
+    initiatingMessage = message->choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
+    ErrorIndication = &initiatingMessage->value.choice.ErrorIndication;
+    ogs_assert(ErrorIndication);
+
+    ogs_warn("ErrorIndication");
+
+    for (i = 0; i < ErrorIndication->protocolIEs.list.count; i++) {
+        ie = ErrorIndication->protocolIEs.list.array[i];
+        switch (ie->id) {
+        case NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID:
+            RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
+            break;
+        case NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID:
+            AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
+            break;
+        case NGAP_ProtocolIE_ID_id_Cause:
+            Cause = &ie->value.choice.Cause;
+            break;
+        default:
+            break;
+        }
+    }
+
+    ogs_warn("    IP[%s] RAN_ID[%d]",
+            OGS_ADDR(gnb->sctp.addr, buf), gnb->gnb_id);
+
+    if (AMF_UE_NGAP_ID) {
+
+        if (asn_INTEGER2ulong(AMF_UE_NGAP_ID,
+                    (unsigned long *)&amf_ue_ngap_id) != 0) {
+            ogs_warn("Invalid AMF_UE_NGAP_ID");
+        }
+
+        ran_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
+        if (!ran_ue)
+            ogs_warn("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
+                    (long long)amf_ue_ngap_id);
+        else
+            ogs_warn("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
+                    ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
+
+    } else if (RAN_UE_NGAP_ID) {
+        ran_ue = ran_ue_find_by_ran_ue_ngap_id(gnb, *RAN_UE_NGAP_ID);
+        if (!ran_ue)
+            ogs_warn("No RAN UE Context : RAN_UE_NGAP_ID[%d]",
+                    (int)*RAN_UE_NGAP_ID);
+        else
+            ogs_warn("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
+                    ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
+    }
+
+    if (Cause) {
+        ogs_warn("    Cause[Group:%d Cause:%d]",
+                Cause->present, (int)Cause->choice.radioNetwork);
     }
 }
