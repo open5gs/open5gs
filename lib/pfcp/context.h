@@ -96,7 +96,7 @@ typedef struct ogs_pfcp_node_s {
 
     uint16_t        tac[OGS_MAX_NUM_OF_TAI];
     uint8_t         num_of_tac;
-    const char*     dnn[OGS_MAX_DNN_LEN+1];
+    const char*     dnn[OGS_MAX_NUM_OF_DNN];
     uint8_t         num_of_dnn;
     uint32_t        e_cell_id[OGS_MAX_NUM_OF_CELL_ID];
     uint8_t         num_of_e_cell_id;
