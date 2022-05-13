@@ -71,6 +71,7 @@ struct dict_object *ogs_diam_gy_pre_emption_capability = NULL;
 struct dict_object *ogs_diam_gy_pre_emption_vulnerability = NULL;
 struct dict_object *ogs_diam_gy_apn_aggregate_max_bitrate_ul = NULL;
 struct dict_object *ogs_diam_gy_apn_aggregate_max_bitrate_dl = NULL;
+struct dict_object *ogs_diam_gy_3gpp_rat_type = NULL;
 struct dict_object *ogs_diam_gy_3gpp_user_location_info = NULL;
 struct dict_object *ogs_diam_gy_called_station_id = NULL;
 struct dict_object *ogs_diam_gy_3gpp_ms_timezone = NULL;
@@ -134,6 +135,7 @@ int ogs_diam_gy_init(void)
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Pre-emption-Vulnerability", &ogs_diam_gy_pre_emption_vulnerability);
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "APN-Aggregate-Max-Bitrate-UL" , &ogs_diam_gy_apn_aggregate_max_bitrate_ul);
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "APN-Aggregate-Max-Bitrate-DL" , &ogs_diam_gy_apn_aggregate_max_bitrate_dl);
+	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "3GPP-RAT-Type" , &ogs_diam_gy_3gpp_rat_type);
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "3GPP-User-Location-Info", &ogs_diam_gy_3gpp_user_location_info);
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Called-Station-Id", &ogs_diam_gy_called_station_id);
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "3GPP-MS-TimeZone", &ogs_diam_gy_3gpp_ms_timezone);

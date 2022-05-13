@@ -121,6 +121,7 @@ extern struct dict_object *ogs_diam_gy_pre_emption_capability;
 extern struct dict_object *ogs_diam_gy_pre_emption_vulnerability;
 extern struct dict_object *ogs_diam_gy_apn_aggregate_max_bitrate_ul;
 extern struct dict_object *ogs_diam_gy_apn_aggregate_max_bitrate_dl;
+extern struct dict_object *ogs_diam_gy_3gpp_rat_type;
 #define OGS_DIAM_GY_3GPP_USER_LOCATION_INFO_TYPE_TAI            128
 #define OGS_DIAM_GY_3GPP_USER_LOCATION_INFO_TYPE_ECGI           129
 #define OGS_DIAM_GY_3GPP_USER_LOCATION_INFO_TYPE_TAI_AND_ECGI   130
