@@ -1053,6 +1053,9 @@ smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn, uint8_t rat_type)
     sess->gtp_rat_type = rat_type;
     ogs_assert(sess->gtp_rat_type);
 
+    /* Set EPC */
+    sess->epc = true;
+
     memset(&e, 0, sizeof(e));
     e.sess = sess;
     ogs_fsm_create(&sess->sm, smf_gsm_state_initial, smf_gsm_state_final);

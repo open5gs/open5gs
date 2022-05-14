@@ -590,20 +590,6 @@ cleanup:
     return false;
 }
 
-bool smf_npcf_smpolicycontrol_handle_delete(
-        smf_sess_t *sess, ogs_sbi_stream_t *stream, int state,
-        ogs_sbi_message_t *recvmsg)
-{
-    int trigger = state;
-
-    ogs_assert(trigger);
-
-    ogs_assert(OGS_OK ==
-        smf_5gc_pfcp_send_session_deletion_request(sess, stream, trigger));
-
-    return true;
-}
-
 bool smf_npcf_smpolicycontrol_handle_update_notify(
         smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {

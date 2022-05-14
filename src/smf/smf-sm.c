@@ -245,7 +245,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 sess, gtp_xact, &gtp1_message.update_pdp_context_request);
             break;
         case OGS_GTP1_ERROR_INDICATION_TYPE:
-            /* TS 29.060 10.1.1.4 dst port shall be the user plane port (2152) */
+            /* TS 29.060 10.1.1.4 dst port shall be the userplane port (2152) */
             ogs_error("Rx unexpected Error Indication in GTPC port");
             break;
         default:
@@ -514,10 +514,6 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     e->sess = sess;
                     e->sbi.message = &sbi_message;
                     ogs_fsm_dispatch(&sess->sm, e);
-                    if (OGS_FSM_CHECK(&sess->sm, smf_gsm_state_exception)) {
-                        ogs_error("[%s] State machine exception", smf_ue->supi);
-                        SMF_SESS_CLEAR(sess);
-                    }
                 }
                 break;
 
@@ -743,10 +739,6 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             e->sbi.message = &sbi_message;
 
             ogs_fsm_dispatch(&sess->sm, e);
-            if (OGS_FSM_CHECK(&sess->sm, smf_gsm_state_exception)) {
-                ogs_error("[%s] State machine exception", smf_ue->supi);
-                SMF_SESS_CLEAR(sess);
-            }
             break;
 
         DEFAULT
@@ -830,22 +822,8 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         ogs_assert(sess);
         ogs_assert(OGS_FSM_STATE(&sess->sm));
 
-        sess->pti = nas_message.gsm.h.procedure_transaction_identity;
-
-        switch (nas_message.gsm.h.message_type) {
-        case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
-            ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
-            ogs_assert(true == smf_sbi_send_sm_context_status_notify(sess));
-            SMF_SESS_CLEAR(sess);
-            break;
-        default:
-            e->nas.message = &nas_message;
-            ogs_fsm_dispatch(&sess->sm, e);
-            if (OGS_FSM_CHECK(&sess->sm, smf_gsm_state_exception)) {
-                ogs_error("State machine exception");
-                SMF_SESS_CLEAR(sess);
-            }
-        }
+        e->nas.message = &nas_message;
+        ogs_fsm_dispatch(&sess->sm, e);
 
         ogs_pkbuf_free(pkbuf);
         break;
@@ -863,10 +841,6 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         ogs_assert(OGS_FSM_STATE(&sess->sm));
 
         ogs_fsm_dispatch(&sess->sm, e);
-        if (OGS_FSM_CHECK(&sess->sm, smf_gsm_state_exception)) {
-            ogs_error("State machine exception");
-            SMF_SESS_CLEAR(sess);
-        }
 
         ogs_pkbuf_free(pkbuf);
         break;

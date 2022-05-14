@@ -27,8 +27,6 @@ extern "C" {
 #endif
 
 upf_sess_t *upf_sess_find_by_ue_ip_address(ogs_pkbuf_t *pkbuf);
-ogs_pfcp_rule_t *upf_pdr_rule_find_by_packet(
-                    ogs_pfcp_pdr_t *pdr, ogs_pkbuf_t *pkbuf);
 
 #ifdef __cplusplus
 }

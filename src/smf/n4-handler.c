@@ -141,7 +141,8 @@ static int sbi_status_from_pfcp(uint8_t pfcp_cause)
     return OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR;
 }
 
-/* Returns OGS_PFCP_CAUSE_REQUEST_ACCEPTED on success, other cause value on failure */
+/* Returns OGS_PFCP_CAUSE_REQUEST_ACCEPTED on success,
+ * other cause value on failure */
 uint8_t smf_5gc_n4_handle_session_establishment_response(
         smf_sess_t *sess, ogs_pfcp_xact_t *xact,
         ogs_pfcp_session_establishment_response_t *rsp)
@@ -599,28 +600,16 @@ void smf_5gc_n4_handle_session_modification_response(
     }
 }
 
-void smf_5gc_n4_handle_session_deletion_response(
-        smf_sess_t *sess, ogs_pfcp_xact_t *xact,
+int smf_5gc_n4_handle_session_deletion_response(
+        smf_sess_t *sess, ogs_sbi_stream_t *stream, int trigger,
         ogs_pfcp_session_deletion_response_t *rsp)
 {
     int status = 0;
-    int trigger;
-
-    ogs_sbi_stream_t *stream = NULL;
-
-    ogs_sbi_message_t sendmsg;
-    ogs_sbi_response_t *response = NULL;
-
-    ogs_assert(xact);
-    ogs_assert(rsp);
 
     ogs_debug("Session Deletion Response [5gc]");
 
-    stream = xact->assoc_stream;
-    trigger = xact->delete_trigger;
+    ogs_assert(rsp);
     ogs_assert(trigger);
-
-    ogs_pfcp_xact_commit(xact);
 
     status = OGS_SBI_HTTP_STATUS_OK;
 
@@ -662,59 +651,16 @@ void smf_5gc_n4_handle_session_deletion_response(
 
         ogs_error("%s", strerror);
         ogs_free(strerror);
-        return;
+        return status;
     }
 
     ogs_assert(sess);
 
-    if (trigger == OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED) {
-        ogs_pkbuf_t *n1smbuf = NULL, *n2smbuf = NULL;
-
-        n1smbuf = gsm_build_pdu_session_release_command(
-                sess, OGS_5GSM_CAUSE_REGULAR_DEACTIVATION);
-        ogs_assert(n1smbuf);
-
-        n2smbuf = ngap_build_pdu_session_resource_release_command_transfer(
-                sess, SMF_NGAP_STATE_DELETE_TRIGGER_UE_REQUESTED,
-                NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release);
-        ogs_assert(n2smbuf);
-
-        ogs_assert(stream);
-        smf_sbi_send_sm_context_updated_data_n1_n2_message(sess, stream,
-                n1smbuf, OpenAPI_n2_sm_info_type_PDU_RES_REL_CMD, n2smbuf);
-    } else if (trigger == OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT ||
-                trigger == OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT) {
-        memset(&sendmsg, 0, sizeof(sendmsg));
-
-        response = ogs_sbi_build_response(
-                &sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
-        ogs_assert(response);
-
-        ogs_assert(stream);
-        ogs_assert(true == ogs_sbi_server_send_response(stream, response));
-
-        OGS_FSM_TRAN(&sess->sm, smf_gsm_state_session_will_release);
-    } else if (trigger == OGS_PFCP_DELETE_TRIGGER_PCF_INITIATED) {
-        smf_n1_n2_message_transfer_param_t param;
-
-        memset(&param, 0, sizeof(param));
-        param.state = SMF_NETWORK_REQUESTED_PDU_SESSION_RELEASE;
-        param.n2smbuf =
-            ngap_build_pdu_session_resource_release_command_transfer(
-                sess, SMF_NGAP_STATE_DELETE_TRIGGER_PCF_INITIATED,
-                NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release);
-        ogs_assert(param.n2smbuf);
-
-        param.skip_ind = true;
-
-        smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
-    } else {
-        ogs_fatal("Unknown trigger [%d]", trigger);
-        ogs_assert_if_reached();
-    }
+    return status;
 }
 
-/* Returns OGS_PFCP_CAUSE_REQUEST_ACCEPTED on success, other cause value on failure */
+/* Returns OGS_PFCP_CAUSE_REQUEST_ACCEPTED on success,
+ * other cause value on failure */
 uint8_t smf_epc_n4_handle_session_establishment_response(
         smf_sess_t *sess, ogs_pfcp_xact_t *xact,
         ogs_pfcp_session_establishment_response_t *rsp)
@@ -1109,7 +1055,8 @@ uint8_t smf_epc_n4_handle_session_deletion_response(
 
     bearer = smf_default_bearer_in_sess(sess);
     for (i = 0; i < OGS_ARRAY_SIZE(rsp->usage_report); i++) {
-        ogs_pfcp_tlv_usage_report_session_deletion_response_t *use_rep = &rsp->usage_report[i];
+        ogs_pfcp_tlv_usage_report_session_deletion_response_t *use_rep =
+            &rsp->usage_report[i];
         uint32_t urr_id;
         ogs_pfcp_volume_measurement_t volume;
         if (use_rep->presence == 0)
@@ -1119,7 +1066,8 @@ uint8_t smf_epc_n4_handle_session_deletion_response(
         urr_id = use_rep->urr_id.u32;
         if (!bearer || !bearer->urr || bearer->urr->id != urr_id)
             continue;
-        ogs_pfcp_parse_volume_measurement(&volume, &use_rep->volume_measurement);
+        ogs_pfcp_parse_volume_measurement(
+                &volume, &use_rep->volume_measurement);
         if (volume.ulvol)
             sess->gy.ul_octets += volume.uplink_volume;
         if (volume.dlvol)
@@ -1270,7 +1218,8 @@ void smf_n4_handle_session_report_request(
     if (report_type.usage_report) {
         bearer = smf_default_bearer_in_sess(sess);
         for (i = 0; i < OGS_ARRAY_SIZE(pfcp_req->usage_report); i++) {
-            ogs_pfcp_tlv_usage_report_session_report_request_t *use_rep = &pfcp_req->usage_report[i];
+            ogs_pfcp_tlv_usage_report_session_report_request_t *use_rep =
+                &pfcp_req->usage_report[i];
             uint32_t urr_id;
             ogs_pfcp_volume_measurement_t volume;
             if (use_rep->presence == 0)
@@ -1280,7 +1229,8 @@ void smf_n4_handle_session_report_request(
             urr_id = use_rep->urr_id.u32;
             if (!bearer || !bearer->urr || bearer->urr->id != urr_id)
                 continue;
-            ogs_pfcp_parse_volume_measurement(&volume, &use_rep->volume_measurement);
+            ogs_pfcp_parse_volume_measurement(
+                    &volume, &use_rep->volume_measurement);
             if (volume.ulvol)
                 sess->gy.ul_octets += volume.uplink_volume;
             if (volume.dlvol)
@@ -1289,7 +1239,8 @@ void smf_n4_handle_session_report_request(
         }
         switch(smf_use_gy_iface()) {
         case 1:
-            smf_gy_send_ccr(sess, pfcp_xact, OGS_DIAM_GY_CC_REQUEST_TYPE_UPDATE_REQUEST);
+            smf_gy_send_ccr(sess, pfcp_xact,
+                    OGS_DIAM_GY_CC_REQUEST_TYPE_UPDATE_REQUEST);
             break;
         case -1:
             ogs_error("No Gy Diameter Peer");

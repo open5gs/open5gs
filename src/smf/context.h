@@ -228,6 +228,8 @@ typedef struct smf_sess_s {
         uint32_t s6b_sta_err; /* S6B CCA RXed error code */
     } sm_data;
 
+    bool            epc;            /**< EPC or 5GC */
+
     ogs_pfcp_sess_t pfcp;           /* PFCP session context */
 
     uint64_t        smpolicycontrol_features; /* SBI features */
