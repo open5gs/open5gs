@@ -114,6 +114,11 @@ typedef struct smf_ue_s {
     int msisdn_len;
     char msisdn_bcd[OGS_MAX_MSISDN_BCD_LEN+1];
 
+    /* IMEI */
+    uint8_t imeisv[OGS_MAX_IMEISV_LEN];
+    int imeisv_len;
+    char  imeisv_bcd[OGS_MAX_IMEISV_BCD_LEN+1];
+
     ogs_list_t sess_list;
 } smf_ue_t;
 
