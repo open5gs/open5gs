@@ -1152,16 +1152,10 @@ void mme_s11_handle_release_access_bearers_response(
             ogs_error("ENB-S1 Context has already been removed");
         }
     } else if (action == OGS_GTP_RELEASE_S1_CONTEXT_REMOVE_BY_LO_CONNREFUSED) {
-        enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+    /* enb_ue_unlink() and enb_ue_remove() has already been executed.
+     * So, there is no `enb_ue` context */
 
-        enb_ue_unlink(mme_ue);
-
-        if (enb_ue) {
-            enb_ue_remove(enb_ue);
-        } else {
-            ogs_error("ENB-S1 Context has already been removed");
-        }
-
+    } else if (action == OGS_GTP_RELEASE_S1_CONTEXT_REMOVE_BY_RESET_ALL) {
     /*
      * TS36.413
      * 8.7.1.2.1 Reset Procedure Initiated from the MME
@@ -1175,7 +1169,6 @@ void mme_s11_handle_release_access_bearers_response(
      * for new UE-associated logical S1-connections over the S1 interface,
      * the MME shall respond with the RESET ACKNOWLEDGE message.
      */
-    } else if (action == OGS_GTP_RELEASE_S1_CONTEXT_REMOVE_BY_RESET_ALL) {
         enb_ue = enb_ue_cycle(mme_ue->enb_ue);
 
         enb_ue_unlink(mme_ue);
