@@ -56,6 +56,9 @@ struct dict_object *ogs_diam_gy_ggsn_address = NULL;
 struct dict_object *ogs_diam_gy_3gpp_nsapi = NULL;
 struct dict_object *ogs_diam_gy_3gpp_selection_mode = NULL;
 struct dict_object *ogs_diam_gy_3gpp_charging_characteristics = NULL;
+struct dict_object *ogs_diam_gy_user_equipment_info = NULL;
+struct dict_object *ogs_diam_gy_user_equipment_info_type = NULL;
+struct dict_object *ogs_diam_gy_user_equipment_info_value = NULL;
 
 struct dict_object *ogs_diam_gy_feature_list_id = NULL;
 struct dict_object *ogs_diam_gy_feature_list = NULL;
@@ -120,6 +123,9 @@ int ogs_diam_gy_init(void)
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "3GPP-NSAPI", &ogs_diam_gy_3gpp_nsapi);
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "3GPP-Selection-Mode", &ogs_diam_gy_3gpp_selection_mode);
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "3GPP-Charging-Characteristics", &ogs_diam_gy_3gpp_charging_characteristics);
+	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "User-Equipment-Info", &ogs_diam_gy_user_equipment_info);
+	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "User-Equipment-Info-Type", &ogs_diam_gy_user_equipment_info_type);
+	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "User-Equipment-Info-Value", &ogs_diam_gy_user_equipment_info_value);
 
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Feature-List-ID", &ogs_diam_gy_feature_list_id);
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Feature-List", &ogs_diam_gy_feature_list);

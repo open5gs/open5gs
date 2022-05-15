@@ -218,6 +218,15 @@ uint8_t smf_gn_handle_create_pdp_context_request(
         OGS_TLV_STORE_DATA(&sess->gtp.ue_timezone, &req->ms_time_zone);
     }
 
+    /* Set IMEI(SV) */
+    if (req->imei.presence && req->imei.len > 0) {
+        smf_ue->imeisv_len = req->imei.len;
+        memcpy(smf_ue->imeisv,
+            (uint8_t*)req->imei.data, smf_ue->imeisv_len);
+        ogs_buffer_to_bcd(
+            smf_ue->imeisv, smf_ue->imeisv_len, smf_ue->imeisv_bcd);
+    }
+
     /* UE IP Address */
     eua = req->end_user_address.data;
     ogs_assert(eua);
