@@ -448,8 +448,6 @@ void sgwc_sxa_handle_session_modification_response(
 
     ogs_gtp2_cause_t cause;
 
-    OGS_LIST(pdr_to_create_list);
-
     ogs_debug("Session Modification Response");
 
     ogs_assert(pfcp_xact);
@@ -506,6 +504,8 @@ void sgwc_sxa_handle_session_modification_response(
         sgwc_tunnel_t *tunnel = NULL;
         ogs_pfcp_pdr_t *pdr = NULL;
         ogs_pfcp_far_t *far = NULL;
+
+        OGS_LIST(pdr_to_create_list);
 
         ogs_assert(sess);
 
@@ -938,8 +938,13 @@ void sgwc_sxa_handle_session_modification_response(
         }
 
     } else if (flags & OGS_PFCP_MODIFY_ACTIVATE) {
+        OGS_LIST(bearer_to_modify_list);
+
         s11_xact = pfcp_xact->assoc_xact;
         ogs_assert(s11_xact);
+
+        ogs_list_copy(&bearer_to_modify_list,
+                &pfcp_xact->bearer_to_modify_list);
 
         ogs_pfcp_xact_commit(pfcp_xact);
 
@@ -968,7 +973,8 @@ void sgwc_sxa_handle_session_modification_response(
 
             /* Send Data Plane(UL) : SGW-S1U */
             i = 0;
-            ogs_list_for_each(&sess->bearer_list, bearer) {
+            ogs_list_for_each_entry(
+                    &bearer_to_modify_list, bearer, to_modify_node) {
                 ogs_assert(i < OGS_BEARER_PER_UE);
 
                 ul_tunnel = sgwc_ul_tunnel_in_bearer(bearer);

@@ -51,6 +51,8 @@ ogs_pkbuf_t *testngap_sess_build_pdu_session_resource_setup_response(
         test_sess_t *sess);
 ogs_pkbuf_t *testngap_sess_build_pdu_session_resource_failed_to_setup(
         test_sess_t *sess, NGAP_Cause_PR group, long cause);
+ogs_pkbuf_t *testngap_sess_build_pdu_session_resource_modify_response(
+        test_sess_t *sess);
 ogs_pkbuf_t *testngap_build_qos_flow_resource_modify_response(
         test_bearer_t *qos_flow);
 ogs_pkbuf_t *testngap_build_qos_flow_resource_release_response(

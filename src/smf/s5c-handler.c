@@ -27,6 +27,29 @@
 
 #include "ipfw/ipfw2.h"
 
+static void pfcp_sess_timeout(ogs_pfcp_xact_t *xact, void *data)
+{
+    uint8_t type;
+
+    ogs_assert(xact);
+    type = xact->seq[0].type;
+
+    switch (type) {
+    case OGS_PFCP_SESSION_ESTABLISHMENT_REQUEST_TYPE:
+        ogs_error("No PFCP session establishment response");
+        break;
+    case OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE:
+        ogs_error("No PFCP session modification response");
+        break;
+    case OGS_PFCP_SESSION_DELETION_REQUEST_TYPE:
+        ogs_error("No PFCP session deletion response");
+        break;
+    default:
+        ogs_error("Not implemented [type:%d]", type);
+        break;
+    }
+}
+
 void smf_s5c_handle_echo_request(
         ogs_gtp_xact_t *xact, ogs_gtp2_echo_request_t *req)
 {
@@ -394,7 +417,7 @@ uint8_t smf_s5c_handle_delete_session_request(
 }
 
 void smf_s5c_handle_modify_bearer_request(
-        smf_sess_t *sess, ogs_gtp_xact_t *xact,
+        smf_sess_t *sess, ogs_gtp_xact_t *gtp_xact,
         ogs_pkbuf_t *gtpbuf, ogs_gtp2_modify_bearer_request_t *req)
 {
     int rv, i;
@@ -406,7 +429,7 @@ void smf_s5c_handle_modify_bearer_request(
 
     ogs_debug("Modify Bearer Request");
 
-    ogs_assert(xact);
+    ogs_assert(gtp_xact);
     ogs_assert(req);
 
     /************************
@@ -420,7 +443,7 @@ void smf_s5c_handle_modify_bearer_request(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp2_send_error_message(xact, sess ? sess->sgw_s5c_teid : 0,
+        ogs_gtp2_send_error_message(gtp_xact, sess ? sess->sgw_s5c_teid : 0,
                 OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE, cause_value);
         return;
     }
@@ -441,7 +464,7 @@ void smf_s5c_handle_modify_bearer_request(
         rv = ogs_gtp2_f_teid_to_ip(sgw_s5c_teid, &sess->sgw_s5c_ip);
         ogs_assert(rv == OGS_OK);
 
-        OGS_SETUP_GTP_NODE(sess, xact->gnode);
+        OGS_SETUP_GTP_NODE(sess, gtp_xact->gnode);
 
         ogs_debug("    SGW_S5C_TEID[0x%x] SMF_N4_TEID[0x%x]",
                 sess->sgw_s5c_teid, sess->smf_n4_teid);
@@ -519,13 +542,27 @@ void smf_s5c_handle_modify_bearer_request(
     }
 
     if (ogs_list_count(&sess->qos_flow_to_modify_list)) {
+        ogs_pfcp_xact_t *pfcp_xact = NULL;
 
         /* Need to modify SGW-S5U */
-        rv = smf_epc_pfcp_send_session_modification_request(sess, xact, gtpbuf,
-                flags|OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE,
-                OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
-                OGS_GTP2_CAUSE_UNDEFINED_VALUE);
-        ogs_assert(rv == OGS_OK);
+        pfcp_xact = ogs_pfcp_xact_local_create(
+                        sess->pfcp_node, pfcp_sess_timeout, sess);
+        ogs_assert(pfcp_xact);
+
+        pfcp_xact->epc = true; /* EPC PFCP transaction */
+        pfcp_xact->assoc_xact = gtp_xact;
+        pfcp_xact->modify_flags =
+            flags|OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE;
+
+        pfcp_xact->gtp_pti = OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
+        pfcp_xact->gtp_cause = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
+
+        ogs_assert(gtpbuf);
+        pfcp_xact->gtpbuf = ogs_pkbuf_copy(gtpbuf);
+        ogs_assert(pfcp_xact->gtpbuf);
+
+        ogs_assert(OGS_OK == smf_pfcp_send_modify_list(
+                sess, smf_n4_build_qos_flow_to_modify_list, pfcp_xact, 0));
 
     } else {
 
@@ -533,7 +570,7 @@ void smf_s5c_handle_modify_bearer_request(
         ogs_gtp2_indication_t *indication = NULL;
 
         ogs_assert(OGS_OK ==
-            smf_gtp2_send_modify_bearer_response(sess, xact, req, false));
+            smf_gtp2_send_modify_bearer_response(sess, gtp_xact, req, false));
 
         if (req->indication_flags.presence &&
             req->indication_flags.data && req->indication_flags.len) {

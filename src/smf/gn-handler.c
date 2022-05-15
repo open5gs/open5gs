@@ -418,7 +418,7 @@ void smf_gn_handle_update_pdp_context_request(
         }
     }
 
-    rv = smf_epc_pfcp_send_session_modification_request(sess, xact, NULL,
+    rv = smf_epc_pfcp_send_pdr_modification_request(sess, xact, NULL,
             OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE,
             OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
             OGS_GTP1_CAUSE_REACTIACTION_REQUESTED);

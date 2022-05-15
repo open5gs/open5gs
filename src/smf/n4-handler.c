@@ -265,7 +265,7 @@ void smf_5gc_n4_handle_session_modification_response(
     stream = xact->assoc_stream;
 
     if (flags & OGS_PFCP_MODIFY_SESSION) {
-        /* If smf_5gc_pfcp_send_session_modification_request() is called */
+        /* If smf_5gc_pfcp_send_pdr_modification_request() is called */
 
     } else {
         /* If smf_5gc_pfcp_send_qos_flow_modification_request() is called */
@@ -390,7 +390,7 @@ void smf_5gc_n4_handle_session_modification_response(
 
             if (smf_sess_have_indirect_data_forwarding(sess) == true) {
                 ogs_assert(OGS_OK ==
-                    smf_5gc_pfcp_send_session_modification_request(
+                    smf_5gc_pfcp_send_pdr_modification_request(
                         sess, stream,
                         OGS_PFCP_MODIFY_INDIRECT|OGS_PFCP_MODIFY_REMOVE,
                         ogs_app()->time.handover.duration));
@@ -444,7 +444,7 @@ void smf_5gc_n4_handle_session_modification_response(
                 smf_sess_create_indirect_data_forwarding(sess);
 
                 ogs_assert(OGS_OK ==
-                    smf_5gc_pfcp_send_session_modification_request(
+                    smf_5gc_pfcp_send_pdr_modification_request(
                         sess, stream,
                         OGS_PFCP_MODIFY_INDIRECT|OGS_PFCP_MODIFY_CREATE,
                         0));
@@ -454,47 +454,57 @@ void smf_5gc_n4_handle_session_modification_response(
             }
         } else if (flags & OGS_PFCP_MODIFY_NETWORK_REQUESTED) {
             smf_n1_n2_message_transfer_param_t param;
+            smf_bearer_t *next = NULL;
 
-            ogs_assert(qos_flow);
+            ogs_assert(flags & OGS_PFCP_MODIFY_SESSION);
 
             memset(&param, 0, sizeof(param));
             param.state = SMF_NETWORK_REQUESTED_QOS_FLOW_MODIFICATION;
-            param.n1smbuf = gsm_build_qos_flow_modification_command(
-                    qos_flow,
+            param.n1smbuf = gsm_build_pdu_session_modification_command(
+                    sess,
                     OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
                     OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE,
                     OGS_NAS_DELETE_NEW_QOS_FLOW_DESCRIPTION);
             ogs_assert(param.n1smbuf);
             param.n2smbuf =
-                ngap_build_qos_flow_resource_release_request_transfer(
-                        qos_flow,
+                ngap_build_pdu_session_resource_release_request_transfer(
+                        sess,
                         NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release);
             ogs_assert(param.n2smbuf);
 
             smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
 
-            smf_bearer_remove(qos_flow);
+            ogs_list_for_each_entry_safe(&sess->qos_flow_to_modify_list,
+                    next, qos_flow, to_modify_node)
+                smf_bearer_remove(qos_flow);
+
         } else if (flags & OGS_PFCP_MODIFY_UE_REQUESTED) {
             ogs_pkbuf_t *n1smbuf = NULL, *n2smbuf = NULL;
+            smf_bearer_t *next = NULL;
 
             ogs_assert(stream);
-            ogs_assert(qos_flow);
 
-            n1smbuf = gsm_build_qos_flow_modification_command(
-                    qos_flow, sess->pti,
+            ogs_assert(flags & OGS_PFCP_MODIFY_SESSION);
+
+            n1smbuf = gsm_build_pdu_session_modification_command(
+                    sess, sess->pti,
                     OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE,
                     OGS_NAS_DELETE_NEW_QOS_FLOW_DESCRIPTION);
             ogs_assert(n1smbuf);
 
-            n2smbuf = ngap_build_qos_flow_resource_release_request_transfer(
-                        qos_flow,
+            n2smbuf = ngap_build_pdu_session_resource_release_request_transfer(
+                        sess,
                         NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release);
             ogs_assert(n2smbuf);
 
-            smf_sbi_send_sm_context_updated_data_n1_n2_message(sess, stream,
-                    n1smbuf, OpenAPI_n2_sm_info_type_PDU_RES_MOD_REQ, n2smbuf);
+            smf_sbi_send_sm_context_updated_data_n1_n2_message(
+                        sess, stream, n1smbuf,
+                        OpenAPI_n2_sm_info_type_PDU_RES_MOD_REQ, n2smbuf);
 
-            smf_bearer_remove(qos_flow);
+            ogs_list_for_each_entry_safe(&sess->qos_flow_to_modify_list,
+                    next, qos_flow, to_modify_node)
+                smf_bearer_remove(qos_flow);
+
         } else {
             ogs_fatal("Unknown flags [0x%llx]", (long long)flags);
             ogs_assert_if_reached();
@@ -511,22 +521,23 @@ void smf_5gc_n4_handle_session_modification_response(
         } else if (flags & OGS_PFCP_MODIFY_NETWORK_REQUESTED) {
             smf_n1_n2_message_transfer_param_t param;
 
-            ogs_assert(qos_flow);
+            ogs_assert(flags & OGS_PFCP_MODIFY_SESSION);
 
             memset(&param, 0, sizeof(param));
             param.state = SMF_NETWORK_REQUESTED_QOS_FLOW_MODIFICATION;
-            param.n1smbuf = gsm_build_qos_flow_modification_command(
-                    qos_flow,
+            param.n1smbuf = gsm_build_pdu_session_modification_command(
+                    sess,
                     OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
                     OGS_NAS_QOS_CODE_CREATE_NEW_QOS_RULE,
                     OGS_NAS_CREATE_NEW_QOS_FLOW_DESCRIPTION);
             ogs_assert(param.n1smbuf);
             param.n2smbuf =
-                ngap_build_qos_flow_resource_modify_request_transfer(
-                        qos_flow, true);
+                ngap_build_pdu_session_resource_modify_request_transfer(
+                        sess, true);
             ogs_assert(param.n2smbuf);
 
             smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
+
         } else {
             ogs_fatal("Unknown flags [0x%llx]", (long long)flags);
             ogs_assert_if_reached();
@@ -559,35 +570,36 @@ void smf_5gc_n4_handle_session_modification_response(
         }
 
         if (flags & OGS_PFCP_MODIFY_NETWORK_REQUESTED) {
-            ogs_assert(qos_flow);
+            ogs_assert(flags & OGS_PFCP_MODIFY_SESSION);
 
             memset(&param, 0, sizeof(param));
             param.state = SMF_NETWORK_REQUESTED_QOS_FLOW_MODIFICATION;
-            param.n1smbuf = gsm_build_qos_flow_modification_command(
-                    qos_flow,
+            param.n1smbuf = gsm_build_pdu_session_modification_command(
+                    sess,
                     OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
                     qos_rule_code, qos_flow_description_code);
             ogs_assert(param.n1smbuf);
             param.n2smbuf =
-                ngap_build_qos_flow_resource_modify_request_transfer(
-                        qos_flow,
-                        (flags & OGS_PFCP_MODIFY_QOS_MODIFY) ? true : false);
+                ngap_build_pdu_session_resource_modify_request_transfer(
+                    sess,
+                    (flags & OGS_PFCP_MODIFY_QOS_MODIFY) ? true : false);
             ogs_assert(param.n2smbuf);
 
             smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
+
         } else if (flags & OGS_PFCP_MODIFY_UE_REQUESTED) {
             ogs_pkbuf_t *n1smbuf = NULL, *n2smbuf = NULL;
 
             ogs_assert(stream);
-            ogs_assert(qos_flow);
 
-            n1smbuf = gsm_build_qos_flow_modification_command(
-                    qos_flow, sess->pti,
+            ogs_assert(flags & OGS_PFCP_MODIFY_SESSION);
+            n1smbuf = gsm_build_pdu_session_modification_command(
+                    sess, sess->pti,
                     qos_rule_code, qos_flow_description_code);
             ogs_assert(n1smbuf);
 
-            n2smbuf = ngap_build_qos_flow_resource_modify_request_transfer(
-                    qos_flow,
+            n2smbuf = ngap_build_pdu_session_resource_modify_request_transfer(
+                    sess,
                     (flags & OGS_PFCP_MODIFY_QOS_MODIFY) ? true : false);
             ogs_assert(n2smbuf);
 
@@ -794,7 +806,7 @@ void smf_epc_n4_handle_session_modification_response(
     ogs_debug("Session Modification Response [epc]");
 
     if (flags & OGS_PFCP_MODIFY_SESSION) {
-        /* If smf_epc_pfcp_send_session_modification_request() is called */
+        /* If smf_epc_pfcp_send_pdr_modification_request() is called */
     } else {
         /* If smf_epc_pfcp_send_bearer_modification_request() is called */
         bearer = xact->data;
@@ -1207,7 +1219,7 @@ void smf_n4_handle_session_report_request(
 
         if (error_indication_session) {
             ogs_assert(OGS_OK ==
-                smf_5gc_pfcp_send_session_modification_request(
+                smf_5gc_pfcp_send_pdr_modification_request(
                     error_indication_session, NULL,
                     OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE|
                     OGS_PFCP_MODIFY_ERROR_INDICATION,

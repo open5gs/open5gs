@@ -195,7 +195,7 @@ int gsm_handle_pdu_session_modification_request(
     int i, j;
 
     uint64_t pfcp_flags = 0;
-    ogs_list_t update_list, delete_list;
+
     smf_bearer_t *qos_flow = NULL;
     smf_pf_t *pf = NULL;
 
@@ -217,8 +217,7 @@ int gsm_handle_pdu_session_modification_request(
     ogs_assert(stream);
     ogs_assert(pdu_session_modification_request);
 
-    ogs_list_init(&update_list);
-    ogs_list_init(&delete_list);
+    ogs_list_init(&sess->qos_flow_to_modify_list);
 
     if (pdu_session_modification_request->presencemask &
         OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_5GSM_CAUSE_PRESENT) {
@@ -246,7 +245,8 @@ int gsm_handle_pdu_session_modification_request(
                 smf_pf_remove_all(qos_flow);
 
                 pfcp_flags |= OGS_PFCP_MODIFY_REMOVE;
-                qos_flow_find_or_add(&delete_list, qos_flow, to_delete_node);
+                qos_flow_find_or_add(&sess->qos_flow_to_modify_list,
+                                        qos_flow, to_modify_node);
             } else if (qos_rule[i].code ==
                 OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_REPLACE_PACKET_FILTERS) {
                 for (j = 0; j < qos_rule[i].num_of_packet_filter &&
@@ -306,8 +306,8 @@ int gsm_handle_pdu_session_modification_request(
                         }
 
                         pfcp_flags |= OGS_PFCP_MODIFY_TFT_REPLACE;
-                        qos_flow_find_or_add(
-                            &update_list, qos_flow, to_modify_node);
+                        qos_flow_find_or_add(&sess->qos_flow_to_modify_list,
+                                                qos_flow, to_modify_node);
 
                         ogs_list_add(
                                 &qos_flow->pf_to_add_list, &pf->to_add_node);
@@ -388,8 +388,8 @@ int gsm_handle_pdu_session_modification_request(
                     } else
                         ogs_assert_if_reached();
 
-                    qos_flow_find_or_add(
-                        &update_list, qos_flow, to_modify_node);
+                    qos_flow_find_or_add(&sess->qos_flow_to_modify_list,
+                                            qos_flow, to_modify_node);
 
                     ogs_list_add(
                             &qos_flow->pf_to_add_list, &pf->to_add_node);
@@ -413,12 +413,12 @@ int gsm_handle_pdu_session_modification_request(
 
                 if (ogs_list_count(&qos_flow->pf_list)) {
                     pfcp_flags |= OGS_PFCP_MODIFY_TFT_DELETE;
-                    qos_flow_find_or_add(
-                        &update_list, qos_flow, to_modify_node);
+                    qos_flow_find_or_add(&sess->qos_flow_to_modify_list,
+                                            qos_flow, to_modify_node);
                 } else {
                     pfcp_flags |= OGS_PFCP_MODIFY_REMOVE;
-                    qos_flow_find_or_add(
-                        &delete_list, qos_flow, to_delete_node);
+                    qos_flow_find_or_add(&sess->qos_flow_to_modify_list,
+                                            qos_flow, to_modify_node);
                 }
             }
         }
@@ -469,14 +469,15 @@ int gsm_handle_pdu_session_modification_request(
             }
 
             pfcp_flags |= OGS_PFCP_MODIFY_QOS_MODIFY;
-            qos_flow_find_or_add(&update_list, qos_flow, to_modify_node);
+            qos_flow_find_or_add(&sess->qos_flow_to_modify_list,
+                                    qos_flow, to_modify_node);
         }
     }
 
-    if ((ogs_list_count(&update_list) + ogs_list_count(&delete_list)) != 1) {
+    if (ogs_list_count(&sess->qos_flow_to_modify_list) != 1) {
         strerror = ogs_msprintf("[%s:%d] Invalid modification request "
-                "[update:%d,delete:%d]", smf_ue->supi, sess->psi,
-                ogs_list_count(&update_list), ogs_list_count(&delete_list));
+                "[modify:%d]", smf_ue->supi, sess->psi,
+                ogs_list_count(&sess->qos_flow_to_modify_list));
         ogs_assert(strerror);
 
         ogs_error("%s", strerror);
@@ -492,19 +493,18 @@ int gsm_handle_pdu_session_modification_request(
         return OGS_ERROR;
     }
 
-    ogs_assert(qos_flow);
-
     if (pfcp_flags & OGS_PFCP_MODIFY_REMOVE) {
-
-        ogs_assert(OGS_OK ==
-            smf_5gc_pfcp_send_qos_flow_modification_request(
-                qos_flow, stream,
-                OGS_PFCP_MODIFY_UE_REQUESTED|pfcp_flags));
+        ogs_assert((pfcp_flags &
+                    (OGS_PFCP_MODIFY_TFT_NEW|OGS_PFCP_MODIFY_TFT_ADD|
+                    OGS_PFCP_MODIFY_TFT_REPLACE|OGS_PFCP_MODIFY_TFT_DELETE|
+                    OGS_PFCP_MODIFY_QOS_MODIFY)) == 0);
 
     } else if (pfcp_flags &
                 (OGS_PFCP_MODIFY_TFT_NEW|OGS_PFCP_MODIFY_TFT_ADD|
                 OGS_PFCP_MODIFY_TFT_REPLACE|OGS_PFCP_MODIFY_TFT_DELETE|
                 OGS_PFCP_MODIFY_QOS_MODIFY)) {
+
+        ogs_assert((pfcp_flags & OGS_PFCP_MODIFY_REMOVE) == 0);
 
         if (pfcp_flags &
                 (OGS_PFCP_MODIFY_TFT_NEW|OGS_PFCP_MODIFY_TFT_ADD|
@@ -514,13 +514,15 @@ int gsm_handle_pdu_session_modification_request(
         if (pfcp_flags & OGS_PFCP_MODIFY_QOS_MODIFY)
             smf_bearer_qos_update(qos_flow);
 
-        ogs_assert(OGS_OK ==
-            smf_5gc_pfcp_send_qos_flow_modification_request(
-                qos_flow, stream, OGS_PFCP_MODIFY_UE_REQUESTED|pfcp_flags));
     } else {
         ogs_fatal("Unknown PFCP-Flags : [0x%llx]", (long long)pfcp_flags);
         ogs_assert_if_reached();
     }
+
+    ogs_assert(OGS_OK ==
+            smf_5gc_pfcp_send_session_modification_request(
+                sess, stream,
+                OGS_PFCP_MODIFY_UE_REQUESTED|pfcp_flags, 0));
 
     return OGS_OK;
 }

@@ -199,8 +199,8 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
             &asn_DEF_NGAP_PDUSessionResourceSetupRequestTransfer, &message);
 }
 
-ogs_pkbuf_t *ngap_build_qos_flow_resource_modify_request_transfer(
-        smf_bearer_t *qos_flow, bool qos_presence)
+ogs_pkbuf_t *ngap_build_pdu_session_resource_modify_request_transfer(
+        smf_sess_t *sess, bool qos_presence)
 {
     NGAP_PDUSessionResourceModifyRequestTransfer_t message;
 
@@ -215,7 +215,9 @@ ogs_pkbuf_t *ngap_build_qos_flow_resource_modify_request_transfer(
     NGAP_AllocationAndRetentionPriority_t *allocationAndRetentionPriority;
     NGAP_GBR_QosInformation_t *gBR_QosInformation;
 
-    ogs_assert(qos_flow);
+    smf_bearer_t *qos_flow = NULL;
+
+    ogs_assert(sess);
 
     ogs_debug("PDUSessionResourceModifyRequestTransfer");
     memset(&message, 0, sizeof(NGAP_PDUSessionResourceModifyRequestTransfer_t));
@@ -229,66 +231,70 @@ ogs_pkbuf_t *ngap_build_qos_flow_resource_modify_request_transfer(
 
     QosFlowAddOrModifyRequestList = &ie->value.choice.QosFlowAddOrModifyRequestList;
 
-    QosFlowAddOrModifyRequestItem =
-        CALLOC(1, sizeof(*QosFlowAddOrModifyRequestItem));
-    ASN_SEQUENCE_ADD(&QosFlowAddOrModifyRequestList->list, QosFlowAddOrModifyRequestItem);
+    ogs_list_for_each_entry(
+            &sess->qos_flow_to_modify_list, qos_flow, to_modify_node) {
 
-    qosFlowIdentifier = &QosFlowAddOrModifyRequestItem->qosFlowIdentifier;
+        QosFlowAddOrModifyRequestItem =
+            CALLOC(1, sizeof(*QosFlowAddOrModifyRequestItem));
+        ASN_SEQUENCE_ADD(&QosFlowAddOrModifyRequestList->list, QosFlowAddOrModifyRequestItem);
 
-    QosFlowAddOrModifyRequestItem->qosFlowLevelQosParameters =
-        qosFlowLevelQosParameters =
-            CALLOC(1, sizeof(*qosFlowLevelQosParameters));
+        qosFlowIdentifier = &QosFlowAddOrModifyRequestItem->qosFlowIdentifier;
 
-    allocationAndRetentionPriority =
-        &qosFlowLevelQosParameters->allocationAndRetentionPriority;
-    qosCharacteristics = &qosFlowLevelQosParameters->qosCharacteristics;
+        QosFlowAddOrModifyRequestItem->qosFlowLevelQosParameters =
+            qosFlowLevelQosParameters =
+                CALLOC(1, sizeof(*qosFlowLevelQosParameters));
 
-    qosCharacteristics->present = NGAP_QosCharacteristics_PR_nonDynamic5QI;
-    qosCharacteristics->choice.nonDynamic5QI =
-        nonDynamic5QI = CALLOC(1, sizeof(struct NGAP_NonDynamic5QIDescriptor));
+        allocationAndRetentionPriority =
+            &qosFlowLevelQosParameters->allocationAndRetentionPriority;
+        qosCharacteristics = &qosFlowLevelQosParameters->qosCharacteristics;
 
-    *qosFlowIdentifier = qos_flow->qfi;
+        qosCharacteristics->present = NGAP_QosCharacteristics_PR_nonDynamic5QI;
+        qosCharacteristics->choice.nonDynamic5QI =
+            nonDynamic5QI = CALLOC(1, sizeof(struct NGAP_NonDynamic5QIDescriptor));
 
-    nonDynamic5QI->fiveQI = qos_flow->qos.index;
+        *qosFlowIdentifier = qos_flow->qfi;
 
-    allocationAndRetentionPriority->priorityLevelARP =
-        qos_flow->qos.arp.priority_level;
-    if (qos_flow->qos.arp.pre_emption_capability ==
-            OGS_5GC_PRE_EMPTION_ENABLED)
-        allocationAndRetentionPriority->pre_emptionCapability =
-            NGAP_Pre_emptionCapability_may_trigger_pre_emption;
-    if (qos_flow->qos.arp.pre_emption_vulnerability ==
-            OGS_5GC_PRE_EMPTION_ENABLED)
-        allocationAndRetentionPriority->pre_emptionVulnerability =
-            NGAP_Pre_emptionVulnerability_pre_emptable;
+        nonDynamic5QI->fiveQI = qos_flow->qos.index;
 
-    if (qos_presence == true &&
-        (qos_flow->qos.mbr.downlink || qos_flow->qos.mbr.uplink ||
-         qos_flow->qos.gbr.downlink || qos_flow->qos.gbr.uplink)) {
-        ogs_assert(qos_flow->qos.mbr.downlink);
-        ogs_assert(qos_flow->qos.mbr.uplink);
-        ogs_assert(qos_flow->qos.gbr.downlink);
-        ogs_assert(qos_flow->qos.gbr.uplink);
+        allocationAndRetentionPriority->priorityLevelARP =
+            qos_flow->qos.arp.priority_level;
+        if (qos_flow->qos.arp.pre_emption_capability ==
+                OGS_5GC_PRE_EMPTION_ENABLED)
+            allocationAndRetentionPriority->pre_emptionCapability =
+                NGAP_Pre_emptionCapability_may_trigger_pre_emption;
+        if (qos_flow->qos.arp.pre_emption_vulnerability ==
+                OGS_5GC_PRE_EMPTION_ENABLED)
+            allocationAndRetentionPriority->pre_emptionVulnerability =
+                NGAP_Pre_emptionVulnerability_pre_emptable;
 
-        qosFlowLevelQosParameters->gBR_QosInformation =
-            gBR_QosInformation = CALLOC(1, sizeof(*gBR_QosInformation));
+        if (qos_presence == true &&
+            (qos_flow->qos.mbr.downlink || qos_flow->qos.mbr.uplink ||
+             qos_flow->qos.gbr.downlink || qos_flow->qos.gbr.uplink)) {
+            ogs_assert(qos_flow->qos.mbr.downlink);
+            ogs_assert(qos_flow->qos.mbr.uplink);
+            ogs_assert(qos_flow->qos.gbr.downlink);
+            ogs_assert(qos_flow->qos.gbr.uplink);
 
-        asn_uint642INTEGER(&gBR_QosInformation->maximumFlowBitRateDL,
-                qos_flow->qos.mbr.downlink);
-        asn_uint642INTEGER(&gBR_QosInformation->maximumFlowBitRateUL,
-                qos_flow->qos.mbr.uplink);
-        asn_uint642INTEGER(&gBR_QosInformation->
-                guaranteedFlowBitRateDL, qos_flow->qos.gbr.downlink);
-        asn_uint642INTEGER(&gBR_QosInformation->
-                guaranteedFlowBitRateUL, qos_flow->qos.gbr.uplink);
+            qosFlowLevelQosParameters->gBR_QosInformation =
+                gBR_QosInformation = CALLOC(1, sizeof(*gBR_QosInformation));
+
+            asn_uint642INTEGER(&gBR_QosInformation->maximumFlowBitRateDL,
+                    qos_flow->qos.mbr.downlink);
+            asn_uint642INTEGER(&gBR_QosInformation->maximumFlowBitRateUL,
+                    qos_flow->qos.mbr.uplink);
+            asn_uint642INTEGER(&gBR_QosInformation->
+                    guaranteedFlowBitRateDL, qos_flow->qos.gbr.downlink);
+            asn_uint642INTEGER(&gBR_QosInformation->
+                    guaranteedFlowBitRateUL, qos_flow->qos.gbr.uplink);
+        }
     }
 
     return ogs_asn_encode(
             &asn_DEF_NGAP_PDUSessionResourceModifyRequestTransfer, &message);
 }
 
-ogs_pkbuf_t *ngap_build_qos_flow_resource_release_request_transfer(
-        smf_bearer_t *qos_flow, NGAP_Cause_PR group, long cause)
+ogs_pkbuf_t *ngap_build_pdu_session_resource_release_request_transfer(
+        smf_sess_t *sess, NGAP_Cause_PR group, long cause)
 {
     NGAP_PDUSessionResourceModifyRequestTransfer_t message;
 
@@ -299,7 +305,9 @@ ogs_pkbuf_t *ngap_build_qos_flow_resource_release_request_transfer(
     NGAP_QosFlowIdentifier_t *qosFlowIdentifier = NULL;
     NGAP_Cause_t *Cause = NULL;
 
-    ogs_assert(qos_flow);
+    smf_bearer_t *qos_flow = NULL;
+
+    ogs_assert(sess);
 
     ogs_debug("PDUSessionResourceModifyRequestTransfer");
     memset(&message, 0, sizeof(NGAP_PDUSessionResourceModifyRequestTransfer_t));
@@ -313,16 +321,21 @@ ogs_pkbuf_t *ngap_build_qos_flow_resource_release_request_transfer(
 
     QosFlowListWithCause = &ie->value.choice.QosFlowListWithCause;
 
-    QosFlowWithCauseItem = CALLOC(1, sizeof(*QosFlowWithCauseItem));
-    ASN_SEQUENCE_ADD(&QosFlowListWithCause->list, QosFlowWithCauseItem);
+    ogs_list_for_each_entry(
+            &sess->qos_flow_to_modify_list, qos_flow, to_modify_node) {
 
-    qosFlowIdentifier = &QosFlowWithCauseItem->qosFlowIdentifier;
+        QosFlowWithCauseItem = CALLOC(1, sizeof(*QosFlowWithCauseItem));
+        ASN_SEQUENCE_ADD(&QosFlowListWithCause->list, QosFlowWithCauseItem);
 
-    *qosFlowIdentifier = qos_flow->qfi;
+        qosFlowIdentifier = &QosFlowWithCauseItem->qosFlowIdentifier;
 
-    Cause = &QosFlowWithCauseItem->cause;
-    Cause->present = group;
-    Cause->choice.radioNetwork = cause;
+        *qosFlowIdentifier = qos_flow->qfi;
+
+        Cause = &QosFlowWithCauseItem->cause;
+        Cause->present = group;
+        Cause->choice.radioNetwork = cause;
+
+    }
 
     return ogs_asn_encode(
             &asn_DEF_NGAP_PDUSessionResourceModifyRequestTransfer, &message);

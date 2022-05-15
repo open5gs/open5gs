@@ -67,7 +67,7 @@ services:
     volumes:
       - home:/home/${USER}
       - ${HOME}:/mnt
-      - /tmp/.X11-unix:/tmp/.X11-unix
+    # - /tmp/.X11-unix:/tmp/.X11-unix
     # - /etc/localtime:/etc/localtime:ro
     # - /usr/share/zoneinfo/Europe/Helsinki:/etc/localtime:ro
     hostname: open5gs-dev

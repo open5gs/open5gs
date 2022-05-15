@@ -147,7 +147,7 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
 
     if (far_update) {
         ogs_assert(OGS_OK ==
-            smf_5gc_pfcp_send_session_modification_request(
+            smf_5gc_pfcp_send_pdr_modification_request(
                 sess, stream, OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE,
                 0));
     } else {
@@ -247,7 +247,7 @@ int ngap_handle_pdu_session_resource_setup_unsuccessful_transfer(
      */
 
     ogs_assert(OGS_OK ==
-        smf_5gc_pfcp_send_session_modification_request(
+        smf_5gc_pfcp_send_pdr_modification_request(
             sess, stream,
             OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE, 0));
 
@@ -304,6 +304,8 @@ int ngap_handle_pdu_session_resource_modify_response_transfer(
         goto cleanup;
     }
 
+    ogs_list_init(&sess->qos_flow_to_modify_list);
+
     if (qosFlowAddOrModifyResponseList) {
         for (i = 0; i < qosFlowAddOrModifyResponseList->list.count; i++) {
             NGAP_QosFlowAddOrModifyResponseItem_t
@@ -315,11 +317,26 @@ int ngap_handle_pdu_session_resource_modify_response_transfer(
             if (qosFlowAddOrModifyResponseItem) {
                 qos_flow = smf_qos_flow_find_by_qfi(sess,
                         qosFlowAddOrModifyResponseItem->qosFlowIdentifier);
+                if (qos_flow) {
+                    dl_far = qos_flow->dl_far;
+                    ogs_assert(dl_far);
+
+                    dl_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
+                    ogs_assert(OGS_OK ==
+                        ogs_pfcp_ip_to_outer_header_creation(
+                            &sess->gnb_n3_ip,
+                            &dl_far->outer_header_creation,
+                            &dl_far->outer_header_creation_len));
+                    dl_far->outer_header_creation.teid = sess->gnb_n3_teid;
+
+                    ogs_list_add(&sess->qos_flow_to_modify_list,
+                                    &qos_flow->to_modify_node);
+                }
             }
         }
     }
 
-    if (!qos_flow) {
+    if (ogs_list_count(&sess->qos_flow_to_modify_list) == 0) {
         ogs_error("[%s:%d] No QoS flow", smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error(stream,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
@@ -327,20 +344,10 @@ int ngap_handle_pdu_session_resource_modify_response_transfer(
         goto cleanup;
     }
 
-    dl_far = qos_flow->dl_far;
-    ogs_assert(dl_far);
-
-    dl_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
     ogs_assert(OGS_OK ==
-        ogs_pfcp_ip_to_outer_header_creation(
-            &sess->gnb_n3_ip,
-            &dl_far->outer_header_creation,
-            &dl_far->outer_header_creation_len));
-    dl_far->outer_header_creation.teid = sess->gnb_n3_teid;
-
-    ogs_assert(OGS_OK ==
-        smf_5gc_pfcp_send_qos_flow_modification_request(
-            qos_flow, stream, OGS_PFCP_MODIFY_ACTIVATE));
+            smf_5gc_pfcp_send_session_modification_request(
+                sess, stream,
+                OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE, 0));
 
     rv = OGS_OK;
 
@@ -467,7 +474,7 @@ int ngap_handle_path_switch_request_transfer(
 
     if (far_update) {
         ogs_assert(OGS_OK ==
-            smf_5gc_pfcp_send_session_modification_request(
+            smf_5gc_pfcp_send_pdr_modification_request(
                 sess, stream,
                 OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE|
                 OGS_PFCP_MODIFY_XN_HANDOVER|OGS_PFCP_MODIFY_END_MARKER,
@@ -676,7 +683,7 @@ int ngap_handle_handover_request_ack(
             ogs_error("It will be automatically removed");
 
             ogs_assert(OGS_OK ==
-                smf_5gc_pfcp_send_session_modification_request(
+                smf_5gc_pfcp_send_pdr_modification_request(
                     sess, stream,
                     OGS_PFCP_MODIFY_INDIRECT|
                     /*
@@ -698,7 +705,7 @@ int ngap_handle_handover_request_ack(
             smf_sess_create_indirect_data_forwarding(sess);
 
             ogs_assert(OGS_OK ==
-                smf_5gc_pfcp_send_session_modification_request(
+                smf_5gc_pfcp_send_pdr_modification_request(
                     sess, stream,
                     OGS_PFCP_MODIFY_INDIRECT|OGS_PFCP_MODIFY_CREATE,
                     0));

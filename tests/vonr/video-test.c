@@ -323,52 +323,18 @@ static void test1_func(abts_case *tc, void *data)
             NGAP_ProcedureCode_id_PDUSessionResourceModify,
             test_ue->ngap_procedure_code);
 
-    /* Receive PDUSessionResourceModifyRequest +
-     * DL NAS transport +
-     * PDU session modification command */
-    recvbuf = testgnb_ngap_read(ngap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
-    ABTS_INT_EQUAL(tc,
-            NGAP_ProcedureCode_id_PDUSessionResourceModify,
-            test_ue->ngap_procedure_code);
-
     /* Send PDU session resource modify response */
+    ogs_list_init(&sess->qos_flow_to_modify_list);
+
     qos_flow = test_qos_flow_find_by_qfi(sess, 2);
     ogs_assert(qos_flow);
+    ogs_list_add(&sess->qos_flow_to_modify_list, &qos_flow->to_modify_node);
 
-    sendbuf = testngap_build_qos_flow_resource_modify_response(qos_flow);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Send PDU session resource modify complete */
-    sess->ul_nas_transport_param.request_type =
-        OGS_NAS_5GS_REQUEST_TYPE_MODIFICATION_REQUEST;
-    sess->ul_nas_transport_param.dnn = 0;
-    sess->ul_nas_transport_param.s_nssai = 0;
-
-    sess->pdu_session_establishment_param.ssc_mode = 0;
-    sess->pdu_session_establishment_param.epco = 0;
-
-    gsmbuf = testgsm_build_pdu_session_modification_complete(sess);
-    ABTS_PTR_NOTNULL(tc, gsmbuf);
-    gmmbuf = testgmm_build_ul_nas_transport(sess,
-            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, gsmbuf);
-    ABTS_PTR_NOTNULL(tc, gmmbuf);
-    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Wait for PDU session resource modify complete */
-    ogs_msleep(100);
-
-    /* Send PDU session resource modify response */
     qos_flow = test_qos_flow_find_by_qfi(sess, 3);
     ogs_assert(qos_flow);
+    ogs_list_add(&sess->qos_flow_to_modify_list, &qos_flow->to_modify_node);
 
-    sendbuf = testngap_build_qos_flow_resource_modify_response(qos_flow);
+    sendbuf = testngap_sess_build_pdu_session_resource_modify_response(sess);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);

@@ -24,7 +24,7 @@
 
 #include "ipfw/ipfw2.h"
 
-static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
+static void gtp_bearer_timeout(ogs_gtp_xact_t *xact, void *data)
 {
     smf_bearer_t *bearer = data;
     smf_sess_t *sess = NULL;
@@ -234,12 +234,12 @@ void smf_bearer_binding(smf_sess_t *sess)
                 }
             }
 
-            /*
-             * We only use the method of adding a flow to an existing tft.
-             *
-             * EPC: OGS_GTP2_TFT_CODE_ADD_PACKET_FILTERS_TO_EXISTING_TFT
-             * 5GC: OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_ADD_PACKET_FILTERS
-             */
+        /*
+         * We only use the method of adding a flow to an existing tft.
+         *
+         * EPC: OGS_GTP2_TFT_CODE_ADD_PACKET_FILTERS_TO_EXISTING_TFT
+         * 5GC: OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_ADD_PACKET_FILTERS
+         */
             ogs_list_init(&bearer->pf_to_add_list);
 
             for (j = 0; j < pcc_rule->num_of_flow; j++) {
@@ -351,7 +351,7 @@ void smf_bearer_binding(smf_sess_t *sess)
                 ogs_expect_or_return(pkbuf);
 
                 xact = ogs_gtp_xact_local_create(
-                        sess->gnode, &h, pkbuf, bearer_timeout, bearer);
+                        sess->gnode, &h, pkbuf, gtp_bearer_timeout, bearer);
                 ogs_expect_or_return(xact);
 
                 if (ogs_list_count(&bearer->pf_to_add_list) > 0)
@@ -413,13 +413,14 @@ int smf_gtp2_send_create_bearer_request(smf_bearer_t *bearer)
     h.teid = sess->sgw_s5c_teid;
 
     memset(&tft, 0, sizeof tft);
-    encode_traffic_flow_template(&tft, bearer, OGS_GTP2_TFT_CODE_CREATE_NEW_TFT);
+    encode_traffic_flow_template(
+            &tft, bearer, OGS_GTP2_TFT_CODE_CREATE_NEW_TFT);
 
     pkbuf = smf_s5c_build_create_bearer_request(h.type, bearer, &tft);
     ogs_expect_or_return_val(pkbuf, OGS_ERROR);
 
     xact = ogs_gtp_xact_local_create(
-            sess->gnode, &h, pkbuf, bearer_timeout, bearer);
+            sess->gnode, &h, pkbuf, gtp_bearer_timeout, bearer);
     ogs_expect_or_return_val(xact, OGS_ERROR);
 
     rv = ogs_gtp_xact_commit(xact);
@@ -433,7 +434,13 @@ void smf_qos_flow_binding(smf_sess_t *sess)
     int rv;
     int i, j;
 
+    uint64_t pfcp_flags, check;
+
     ogs_assert(sess);
+
+    pfcp_flags = OGS_PFCP_MODIFY_NETWORK_REQUESTED;
+
+    ogs_list_init(&sess->qos_flow_to_modify_list);
 
     for (i = 0; i < sess->policy.num_of_pcc_rule; i++) {
         smf_bearer_t *qos_flow = NULL;
@@ -521,12 +528,12 @@ void smf_qos_flow_binding(smf_sess_t *sess)
                 }
             }
 
-            /*
-             * We only use the method of adding a flow to an existing tft.
-             *
-             * EPC: OGS_GTP2_TFT_CODE_ADD_PACKET_FILTERS_TO_EXISTING_TFT
-             * 5GC: OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_ADD_PACKET_FILTERS
-             */
+        /*
+         * We only use the method of adding a flow to an existing tft.
+         *
+         * EPC: OGS_GTP2_TFT_CODE_ADD_PACKET_FILTERS_TO_EXISTING_TFT
+         * 5GC: OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_ADD_PACKET_FILTERS
+         */
             ogs_list_init(&qos_flow->pf_to_add_list);
 
             for (j = 0; j < pcc_rule->num_of_flow; j++) {
@@ -609,15 +616,11 @@ void smf_qos_flow_binding(smf_sess_t *sess)
                 smf_bearer_tft_update(qos_flow);
                 smf_bearer_qos_update(qos_flow);
 
-                ogs_assert(OGS_OK ==
-                    smf_5gc_pfcp_send_qos_flow_modification_request(
-                        qos_flow, NULL,
-                        OGS_PFCP_MODIFY_NETWORK_REQUESTED|
-                        OGS_PFCP_MODIFY_CREATE));
+                pfcp_flags |= OGS_PFCP_MODIFY_CREATE;
 
+                ogs_list_add(&sess->qos_flow_to_modify_list,
+                                &qos_flow->to_modify_node);
             } else {
-                uint64_t pfcp_flags = 0;
-
                 pfcp_flags |= OGS_PFCP_MODIFY_NETWORK_REQUESTED;
 
                 if (ogs_list_count(&qos_flow->pf_to_add_list) > 0) {
@@ -629,9 +632,8 @@ void smf_qos_flow_binding(smf_sess_t *sess)
                     smf_bearer_qos_update(qos_flow);
                 }
 
-                ogs_assert(OGS_OK ==
-                    smf_5gc_pfcp_send_qos_flow_modification_request(
-                        qos_flow, NULL, pfcp_flags));
+                ogs_list_add(&sess->qos_flow_to_modify_list,
+                                &qos_flow->to_modify_node);
             }
         } else if (pcc_rule->type == OGS_PCC_RULE_TYPE_REMOVE) {
             qos_flow = smf_qos_flow_find_by_pcc_rule_id(sess, pcc_rule->id);
@@ -643,14 +645,27 @@ void smf_qos_flow_binding(smf_sess_t *sess)
                 continue;
             }
 
-            ogs_assert(OGS_OK ==
-                smf_5gc_pfcp_send_qos_flow_modification_request(
-                    qos_flow, NULL, 
-                    OGS_PFCP_MODIFY_NETWORK_REQUESTED|OGS_PFCP_MODIFY_REMOVE));
+            pfcp_flags |= OGS_PFCP_MODIFY_REMOVE;
+
+            ogs_list_add(&sess->qos_flow_to_modify_list,
+                            &qos_flow->to_modify_node);
 
         } else {
             ogs_error("Invalid Type[%d]", pcc_rule->type);
             ogs_assert_if_reached();
         }
+    }
+
+    check = pfcp_flags & (OGS_PFCP_MODIFY_CREATE|OGS_PFCP_MODIFY_REMOVE);
+    if (check != 0 &&
+        check != OGS_PFCP_MODIFY_CREATE && check != OGS_PFCP_MODIFY_REMOVE) {
+        ogs_fatal("Invalid flags[%ld]", pfcp_flags);
+        ogs_assert_if_reached();
+    }
+
+    if (ogs_list_count(&sess->qos_flow_to_modify_list)) {
+        ogs_assert(OGS_OK ==
+                smf_5gc_pfcp_send_session_modification_request(
+                    sess, NULL, pfcp_flags, 0));
     }
 }

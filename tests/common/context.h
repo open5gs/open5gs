@@ -459,11 +459,16 @@ typedef struct test_sess_s {
 
     ogs_list_t bearer_list;
 
+    ogs_list_t qos_flow_to_modify_list;
+
     test_ue_t *test_ue;
 } test_sess_t;
 
 typedef struct test_bearer_s {
     ogs_lnode_t     lnode;          /**< A node of list_t */
+
+    ogs_lnode_t     to_modify_node;
+
     uint32_t        index;
 
     uint8_t         qfi;            /* 5GC */

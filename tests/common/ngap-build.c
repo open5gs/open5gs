@@ -23,8 +23,8 @@ static ogs_pkbuf_t *testngap_build_pdu_session_resource_setup_response_trasfer(
         test_sess_t *sess);
 static ogs_pkbuf_t *testngap_build_pdu_session_resource_setup_unsuccessful_trasfer(
         test_sess_t *sess, NGAP_Cause_PR group, long cause);
-static ogs_pkbuf_t *testngap_build_qos_flow_resource_modify_response_trasfer(
-        test_bearer_t *qos_flow);
+static ogs_pkbuf_t *testngap_build_pdu_session_resource_modify_response_trasfer(
+        test_sess_t *sess);
 static ogs_pkbuf_t *testngap_build_qos_flow_resource_release_response_trasfer(
         test_bearer_t *qos_flow);
 static ogs_pkbuf_t *testngap_build_path_switch_request_trasfer(
@@ -1165,13 +1165,12 @@ ogs_pkbuf_t *testngap_sess_build_pdu_session_resource_failed_to_setup(
     return ogs_ngap_encode(&pdu);
 }
 
-ogs_pkbuf_t *testngap_build_qos_flow_resource_modify_response(
-        test_bearer_t *qos_flow)
+ogs_pkbuf_t *testngap_sess_build_pdu_session_resource_modify_response(
+        test_sess_t *sess)
 {
     int rv;
 
     test_ue_t *test_ue = NULL;
-    test_sess_t *sess = NULL;
 
     ogs_pkbuf_t *n2smbuf = NULL;
     ogs_pkbuf_t *ngapbuf = NULL;
@@ -1187,8 +1186,6 @@ ogs_pkbuf_t *testngap_build_qos_flow_resource_modify_response(
     NGAP_PDUSessionResourceModifyItemModRes_t *PDUSessionItem = NULL;
     OCTET_STRING_t *transfer = NULL;
 
-    ogs_assert(qos_flow);
-    sess = qos_flow->sess;
     ogs_assert(sess);
     test_ue = sess->test_ue;
     ogs_assert(test_ue);
@@ -1245,8 +1242,7 @@ ogs_pkbuf_t *testngap_build_qos_flow_resource_modify_response(
 
     PDUSessionItem->pDUSessionID = sess->psi;
 
-    n2smbuf = testngap_build_qos_flow_resource_modify_response_trasfer(
-            qos_flow);
+    n2smbuf = testngap_build_pdu_session_resource_modify_response_trasfer(sess);
     ogs_assert(n2smbuf);
     transfer = &PDUSessionItem->pDUSessionResourceModifyResponseTransfer;
 
@@ -1256,6 +1252,22 @@ ogs_pkbuf_t *testngap_build_qos_flow_resource_modify_response(
     ogs_pkbuf_free(n2smbuf);
 
     return ogs_ngap_encode(&pdu);
+}
+
+ogs_pkbuf_t *testngap_build_qos_flow_resource_modify_response(
+        test_bearer_t *qos_flow)
+{
+    int rv;
+    test_sess_t *sess = NULL;
+
+    ogs_assert(qos_flow);
+    sess = qos_flow->sess;
+    ogs_assert(sess);
+
+    ogs_list_init(&sess->qos_flow_to_modify_list);
+    ogs_list_add(&sess->qos_flow_to_modify_list, &qos_flow->to_modify_node);
+
+    return testngap_sess_build_pdu_session_resource_modify_response(sess);
 }
 
 ogs_pkbuf_t *testngap_build_qos_flow_resource_release_response(
@@ -2377,27 +2389,34 @@ static ogs_pkbuf_t *testngap_build_pdu_session_resource_setup_unsuccessful_trasf
         &asn_DEF_NGAP_PDUSessionResourceSetupUnsuccessfulTransfer, &message);
 }
 
-static ogs_pkbuf_t *testngap_build_qos_flow_resource_modify_response_trasfer(
-        test_bearer_t *qos_flow)
+static ogs_pkbuf_t *testngap_build_pdu_session_resource_modify_response_trasfer(
+        test_sess_t *sess)
 {
-    ogs_assert(qos_flow);
-
     NGAP_PDUSessionResourceModifyResponseTransfer_t message;
 
     NGAP_QosFlowAddOrModifyResponseList_t *qosFlowAddOrModifyResponseList;
     NGAP_QosFlowAddOrModifyResponseItem_t *qosFlowAddOrModifyResponseItem;
+
+    test_bearer_t *qos_flow = NULL;
+
+    ogs_assert(sess);
 
     memset(&message, 0, sizeof(message));
 
     message.qosFlowAddOrModifyResponseList =
         qosFlowAddOrModifyResponseList =
             CALLOC(1, sizeof(struct NGAP_QosFlowAddOrModifyResponseList));
-    qosFlowAddOrModifyResponseItem =
-        CALLOC(1, sizeof(struct NGAP_QosFlowAddOrModifyResponseItem));
-    ASN_SEQUENCE_ADD(&qosFlowAddOrModifyResponseList->list,
-            qosFlowAddOrModifyResponseItem);
 
-    qosFlowAddOrModifyResponseItem->qosFlowIdentifier = qos_flow->qfi;
+    ogs_list_for_each_entry(
+                &sess->qos_flow_to_modify_list, qos_flow, to_modify_node) {
+
+        qosFlowAddOrModifyResponseItem =
+            CALLOC(1, sizeof(struct NGAP_QosFlowAddOrModifyResponseItem));
+        ASN_SEQUENCE_ADD(&qosFlowAddOrModifyResponseList->list,
+                qosFlowAddOrModifyResponseItem);
+
+        qosFlowAddOrModifyResponseItem->qosFlowIdentifier = qos_flow->qfi;
+    }
 
     return ogs_asn_encode(
             &asn_DEF_NGAP_PDUSessionResourceModifyResponseTransfer, &message);
