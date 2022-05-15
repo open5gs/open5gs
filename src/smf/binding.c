@@ -659,7 +659,7 @@ void smf_qos_flow_binding(smf_sess_t *sess)
     check = pfcp_flags & (OGS_PFCP_MODIFY_CREATE|OGS_PFCP_MODIFY_REMOVE);
     if (check != 0 &&
         check != OGS_PFCP_MODIFY_CREATE && check != OGS_PFCP_MODIFY_REMOVE) {
-        ogs_fatal("Invalid flags[%ld]", pfcp_flags);
+        ogs_fatal("Invalid flags[%d]", (int)pfcp_flags);
         ogs_assert_if_reached();
     }
 
