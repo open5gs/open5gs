@@ -480,15 +480,37 @@ int mme_gtp_send_release_access_bearers_request(mme_ue_t *mme_ue, int action)
 void mme_gtp_send_release_all_ue_in_enb(mme_enb_t *enb, int action)
 {
     mme_ue_t *mme_ue = NULL;
-    enb_ue_t *enb_ue = NULL;
+    enb_ue_t *enb_ue = NULL, *next = NULL;
 
-    ogs_list_for_each(&enb->enb_ue_list, enb_ue) {
+    ogs_list_for_each_safe(&enb->enb_ue_list, next, enb_ue) {
         mme_ue = enb_ue->mme_ue;
 
         if (mme_ue) {
+            if (action == OGS_GTP_RELEASE_S1_CONTEXT_REMOVE_BY_LO_CONNREFUSED) {
+                /*
+                 * https://github.com/open5gs/open5gs/pull/1497
+                 *
+                 * 1. eNB, SGW-U and UPF go offline at the same time.
+                 * 2. MME sends Release Access Bearer Request to SGW-C
+                 * 3. SGW-C/SMF sends PFCP modification,
+                 *    but SGW-U/UPF does not respond.
+                 * 4. MME does not receive Release Access Bearer Response.
+                 * 5. timeout()
+                 * 6. MME sends Delete Session Request to the SGW-C/SMF
+                 * 7. No SGW-U/UPF, so timeout()
+                 * 8. MME sends UEContextReleaseRequest enb_ue.
+                 * 9. But there is no enb_ue, so MME crashed.
+                 *
+                 * To solve this situation,
+                 * Execute enb_ue_unlink(mme_ue) and enb_ue_remove(enb_ue)
+                 * before mme_gtp_send_release_access_bearers_request()
+                 */
+                enb_ue_unlink(mme_ue);
+                enb_ue_remove(enb_ue);
+            }
+
             ogs_assert(OGS_OK ==
                 mme_gtp_send_release_access_bearers_request(mme_ue, action));
-
         } else {
             ogs_warn("mme_gtp_send_release_all_ue_in_enb()");
             ogs_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d] Action[%d]",
