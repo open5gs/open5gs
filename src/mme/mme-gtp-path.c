@@ -488,7 +488,9 @@ void mme_gtp_send_release_all_ue_in_enb(mme_enb_t *enb, int action)
         if (mme_ue) {
             ogs_assert(OGS_OK ==
                 mme_gtp_send_release_access_bearers_request(mme_ue, action));
-
+            if (action == OGS_GTP_RELEASE_S1_CONTEXT_REMOVE_BY_LO_CONNREFUSED) {
+                enb_ue_remove(enb_ue);
+            }
         } else {
             ogs_warn("mme_gtp_send_release_all_ue_in_enb()");
             ogs_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d] Action[%d]",
