@@ -19,7 +19,7 @@
 
 #include "ogs-gtp.h"
 
-/* 8.13 Protocol Configuration Options (PCO) 
+/* 8.13 Protocol Configuration Options (PCO)
  * 10.5.6.3 Protocol configuration options in 3GPP TS 24.008 */
 
 /* 8.15 Bearer Quality of Service (Bearer QoS) */
@@ -63,7 +63,7 @@ int16_t ogs_gtp2_parse_bearer_qos(
     size += 5;
 
     ogs_assert(size == octet->len);
-    
+
     return size;
 }
 int16_t ogs_gtp2_build_bearer_qos(ogs_tlv_octet_t *octet,
@@ -233,7 +233,7 @@ int16_t ogs_gtp2_parse_flow_qos(
     size += 5;
 
     ogs_assert(size == octet->len);
-    
+
     return size;
 }
 int16_t ogs_gtp2_build_flow_qos(ogs_tlv_octet_t *octet,
@@ -277,7 +277,7 @@ int16_t ogs_gtp2_build_flow_qos(ogs_tlv_octet_t *octet,
     return octet->len;
 }
 
-/* 8.19 EPS Bearer Level Traffic Flow Template (Bearer TFT) 
+/* 8.19 EPS Bearer Level Traffic Flow Template (Bearer TFT)
  * See subclause 10.5.6.12 in 3GPP TS 24.008 [13]. */
 int16_t ogs_gtp2_parse_tft(ogs_gtp2_tft_t *tft, ogs_tlv_octet_t *octet)
 {
@@ -714,7 +714,7 @@ int16_t ogs_gtp2_build_uli(
         size += sizeof(target.sai);
     }
     if (target.flags.rai) {
-        ogs_assert(size + sizeof(target.rai) <= data_len); 
+        ogs_assert(size + sizeof(target.rai) <= data_len);
         target.rai.lac = htobe16(target.rai.lac);
         target.rai.rac = htobe16(target.rai.rac);
         memcpy((unsigned char *)octet->data + size,
