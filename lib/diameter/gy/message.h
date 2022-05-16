@@ -125,9 +125,16 @@ extern struct dict_object *ogs_diam_gy_pre_emption_vulnerability;
 extern struct dict_object *ogs_diam_gy_apn_aggregate_max_bitrate_ul;
 extern struct dict_object *ogs_diam_gy_apn_aggregate_max_bitrate_dl;
 extern struct dict_object *ogs_diam_gy_3gpp_rat_type;
-#define OGS_DIAM_GY_3GPP_USER_LOCATION_INFO_TYPE_TAI            128
-#define OGS_DIAM_GY_3GPP_USER_LOCATION_INFO_TYPE_ECGI           129
-#define OGS_DIAM_GY_3GPP_USER_LOCATION_INFO_TYPE_TAI_AND_ECGI   130
+#define OGS_DIAM_GY_3GPP_USER_LOCATION_INFO_TYPE_CGI                0
+#define OGS_DIAM_GY_3GPP_USER_LOCATION_INFO_TYPE_SAI                1
+#define OGS_DIAM_GY_3GPP_USER_LOCATION_INFO_TYPE_RAI                2
+#define OGS_DIAM_GY_3GPP_USER_LOCATION_INFO_TYPE_TAI                128
+#define OGS_DIAM_GY_3GPP_USER_LOCATION_INFO_TYPE_ECGI               129
+#define OGS_DIAM_GY_3GPP_USER_LOCATION_INFO_TYPE_TAI_AND_ECGI       130
+#define OGS_DIAM_GY_3GPP_USER_LOCATION_INFO_TYPE_ENODEB_ID          131
+#define OGS_DIAM_GY_3GPP_USER_LOCATION_INFO_TYPE_TAI_AND_ENODEB_ID  132
+#define OGS_DIAM_GY_3GPP_USER_LOCATION_INFO_TYPE_EXT_ENODEB_ID      133
+#define OGS_DIAM_GY_3GPP_USER_LOCATION_INFO_TYPE_TAI_AND_EXT_ENODEB_ID 134
 extern struct dict_object *ogs_diam_gy_3gpp_user_location_info;
 extern struct dict_object *ogs_diam_gy_called_station_id;
 extern struct dict_object *ogs_diam_gy_3gpp_ms_timezone;

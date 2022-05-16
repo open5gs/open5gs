@@ -389,15 +389,29 @@ typedef struct ogs_gtp2_uli_e_cgi_s {
     uint32_t cell_id;
 } __attribute__ ((packed)) ogs_gtp2_uli_e_cgi_t;
 
+typedef struct ogs_gtp2_uli_enodeb_id_s {
+    ogs_nas_plmn_id_t nas_plmn_id;
+    uint16_t enodeb_id;
+} __attribute__ ((packed)) ogs_gtp2_uli_enodeb_id_t;
+
+typedef struct ogs_gtp2_uli_ext_enodeb_id_s {
+    ogs_nas_plmn_id_t nas_plmn_id;
+    uint32_t enodeb_id;
+} __attribute__ ((packed)) ogs_gtp2_uli_ext_enodeb_id_t;
+
 typedef struct ogs_gtp2_uli_s {
-    struct {
-    ED7(uint8_t spare:2;,
-        uint8_t lai:1;,
-        uint8_t e_cgi:1;,
-        uint8_t tai:1;,
-        uint8_t rai:1;,
-        uint8_t sai:1;,
-        uint8_t cgi:1;)
+    union {
+        struct {
+            ED8(uint8_t ext_enodeb_id:1;,
+                uint8_t enodeb_id:1;,
+                uint8_t lai:1;,
+                uint8_t e_cgi:1;,
+                uint8_t tai:1;,
+                uint8_t rai:1;,
+                uint8_t sai:1;,
+                uint8_t cgi:1;)
+        };
+        uint8_t octet;
     } flags;
     ogs_gtp2_uli_cgi_t cgi;
     ogs_gtp2_uli_sai_t sai;
@@ -405,6 +419,8 @@ typedef struct ogs_gtp2_uli_s {
     ogs_gtp2_uli_tai_t tai;
     ogs_gtp2_uli_e_cgi_t e_cgi;
     ogs_gtp2_uli_lai_t lai;
+    ogs_gtp2_uli_enodeb_id_t enodeb_id;
+    ogs_gtp2_uli_ext_enodeb_id_t ext_enodeb_id;
 } ogs_gtp2_uli_t;
 
 int16_t ogs_gtp2_parse_uli(ogs_gtp2_uli_t *uli, ogs_tlv_octet_t *octet);

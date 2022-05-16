@@ -141,10 +141,13 @@ uint8_t smf_gn_handle_create_pdp_context_request(
     ogs_debug("    SGW_S5C_TEID[0x%x] SMF_N4_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->smf_n4_teid);
 
+    /* User Location Information, TS 29.060 sec 7.7.51 */
+    /* Note: the IE is content is different in GTPv1C and GTPv2C */
+    OGS_TLV_STORE_DATA(&sess->gtp.user_location_information,
+                       &req->user_location_information);
     if (ogs_gtp1_parse_uli(&uli, &req->user_location_information) == 0)
         return OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT;
 
-    /* TODO: Copy uli->cgi/sai/rai into sess-> */
     switch (uli.geo_loc_type) {
     case OGS_GTP1_GEO_LOC_TYPE_CGI:
         ogs_nas_to_plmn_id(&sess->plmn_id, &uli.cgi.nas_plmn_id);
@@ -155,6 +158,7 @@ uint8_t smf_gn_handle_create_pdp_context_request(
     case  OGS_GTP1_GEO_LOC_TYPE_RAI:
         ogs_nas_to_plmn_id(&sess->plmn_id, &uli.rai.nas_plmn_id);
         break;
+    /* default: should not happen */
     }
 
     /* Set MSISDN: */
@@ -202,15 +206,6 @@ uint8_t smf_gn_handle_create_pdp_context_request(
         OGS_TLV_STORE_DATA(&sess->gtp.ue_pco,
                 &req->protocol_configuration_options);
     }
-
-#if 0
-    /* Set User Location Information */
-    /* TODO: the IE is probably different between GTPv1C and GTPv2, see what needs to be adapted */
-    if (req->user_location_information.presence) {
-        OGS_TLV_STORE_DATA(&sess->gtp.user_location_information,
-                &req->user_location_information);
-    }
-#endif
 
     /* Set UE Timezone */
     if (req->ms_time_zone.presence) {

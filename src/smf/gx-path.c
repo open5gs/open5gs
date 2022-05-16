@@ -486,43 +486,8 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
         ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
         ogs_assert(ret == 0);
 
-        /* Set 3GPP-User-Location-Info */
-        if (sess->gtp.user_location_information.presence) {
-            ogs_gtp2_uli_t uli;
-            int16_t uli_len;
-
-            uint8_t uli_buf[OGS_GTP2_MAX_ULI_LEN];
-
-            uli_len = ogs_gtp2_parse_uli(
-                    &uli, &sess->gtp.user_location_information);
-            ogs_assert(sess->gtp.user_location_information.len == uli_len);
-
-            ogs_assert(sess->gtp.user_location_information.data);
-            ogs_assert(sess->gtp.user_location_information.len);
-            memcpy(&uli_buf, sess->gtp.user_location_information.data,
-                    sess->gtp.user_location_information.len);
-
-            /* Update Gx ULI Type */
-            if (uli.flags.tai && uli.flags.e_cgi)
-                uli_buf[0] =
-                    OGS_DIAM_GX_3GPP_USER_LOCATION_INFO_TYPE_TAI_AND_ECGI;
-            else if (uli.flags.tai)
-                uli_buf[0] = OGS_DIAM_GX_3GPP_USER_LOCATION_INFO_TYPE_TAI;
-            else if (uli.flags.e_cgi)
-                uli_buf[0] = OGS_DIAM_GX_3GPP_USER_LOCATION_INFO_TYPE_ECGI;
-
-            if (uli_buf[0]) {
-                ret = fd_msg_avp_new(
-                        ogs_diam_gx_3gpp_user_location_info, 0, &avp);
-                ogs_assert(ret == 0);
-                val.os.data = (uint8_t *)&uli_buf;
-                val.os.len = sess->gtp.user_location_information.len;
-                ret = fd_msg_avp_setvalue(avp, &val);
-                ogs_assert(ret == 0);
-                ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-                ogs_assert(ret == 0);
-            }
-        }
+        /* 3GPP-User-Location-Info, 3GPP TS 29.061 16.4.7.2 22 */
+        smf_fd_msg_avp_add_3gpp_uli(sess, avpch1);
 
         /* Set 3GPP-MS-Timezone */
         if (sess->gtp.ue_timezone.presence &&

@@ -673,6 +673,16 @@ int16_t ogs_gtp2_parse_uli(ogs_gtp2_uli_t *uli, ogs_tlv_octet_t *octet)
         uli->lai.lac = be16toh(uli->lai.lac);
         size += sizeof(uli->lai);
     }
+    if (uli->flags.enodeb_id) {
+        ogs_assert(size + sizeof(uli->enodeb_id) <= octet->len);
+        memcpy(&uli->enodeb_id,
+                (unsigned char *)octet->data + size, sizeof(uli->enodeb_id));
+        uli->enodeb_id.enodeb_id = be16toh(uli->enodeb_id.enodeb_id);
+        size += sizeof(uli->enodeb_id);
+    }
+    if (uli->flags.ext_enodeb_id) {  /* TODO */
+        ogs_error("Extended Macro eNodeB ID in ULI not implemented! see 3GPP TS 29.274 8.21.8");
+    }
 
     ogs_assert(size == octet->len);
 
@@ -741,6 +751,16 @@ int16_t ogs_gtp2_build_uli(
         memcpy((unsigned char *)octet->data + size,
                 &target.lai, sizeof(target.lai));
         size += sizeof(target.lai);
+    }
+    if (target.flags.enodeb_id) {
+        ogs_assert(size + sizeof(target.enodeb_id) <= data_len);
+        target.enodeb_id.enodeb_id = htobe16(target.enodeb_id.enodeb_id);
+        memcpy((unsigned char *)octet->data + size,
+                &target.enodeb_id, sizeof(target.enodeb_id));
+        size += sizeof(target.enodeb_id);
+    }
+    if (uli->flags.ext_enodeb_id) { /* TODO */
+        ogs_error("Extended Macro eNodeB ID in ULI not implemented! see 3GPP TS 29.274 8.21.8");
     }
 
     octet->len = size;
