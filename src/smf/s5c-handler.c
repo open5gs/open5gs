@@ -211,7 +211,7 @@ uint8_t smf_s5c_handle_create_session_request(
         if (eutran_sess) {
             /* Need to check handover is possible */
             int eutran_session_count = 0;
-            ogs_list_for_each(&smf_ue->sess_list, eutran_sess) {
+            ogs_list_reverse_for_each(&smf_ue->sess_list, eutran_sess) {
                 if (eutran_sess->gtp_rat_type != OGS_GTP2_RAT_TYPE_EUTRAN)
                     continue;
                 if (strcmp(eutran_sess->session.name, sess->session.name) == 0)

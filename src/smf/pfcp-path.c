@@ -169,6 +169,7 @@ static void sess_5gc_timeout(ogs_pfcp_xact_t *xact, void *data)
     smf_sess_t *sess = NULL;
     ogs_sbi_stream_t *stream = NULL;
     uint8_t type;
+    int trigger;
     char *strerror = NULL;
 
     ogs_assert(xact);
@@ -176,12 +177,12 @@ static void sess_5gc_timeout(ogs_pfcp_xact_t *xact, void *data)
 
     sess = data;
     ogs_assert(sess);
-    stream = xact->assoc_stream;
-    ogs_assert(stream);
     smf_ue = sess->smf_ue;
     ogs_assert(smf_ue);
 
+    stream = xact->assoc_stream;
     type = xact->seq[0].type;
+
     switch (type) {
     case OGS_PFCP_SESSION_ESTABLISHMENT_REQUEST_TYPE:
         ogs_error("No PFCP session establishment response");
@@ -192,21 +193,43 @@ static void sess_5gc_timeout(ogs_pfcp_xact_t *xact, void *data)
         ogs_assert(strerror);
 
         ogs_error("%s", strerror);
+        ogs_assert(stream);
         smf_sbi_send_sm_context_update_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT,
                 strerror, NULL, NULL, NULL);
         ogs_free(strerror);
         break;
     case OGS_PFCP_SESSION_DELETION_REQUEST_TYPE:
-        strerror = ogs_msprintf("[%s:%d] No PFCP session deletion response",
-                smf_ue->supi, sess->psi);
+        trigger = xact->delete_trigger;
+        ogs_assert(trigger);
+
+        strerror = ogs_msprintf("[%s:%d] No PFCP session deletion response[%d]",
+                smf_ue->supi, sess->psi, trigger);
         ogs_assert(strerror);
 
         ogs_error("%s", strerror);
-        ogs_assert(true ==
-            ogs_sbi_server_send_error(stream,
-                OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL, strerror, NULL));
+
+        if (trigger == OGS_PFCP_DELETE_TRIGGER_LOCAL_INITIATED ||
+            trigger == OGS_PFCP_DELETE_TRIGGER_PCF_INITIATED) {
+
+            /* Nothing */
+
+        } else if (trigger == OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED ||
+                trigger == OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT ||
+                trigger == OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT) {
+
+            ogs_assert(stream);
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream,
+                    OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL, strerror, NULL));
+        } else {
+            ogs_fatal("Unknown trigger [%d]", trigger);
+            ogs_assert_if_reached();
+        }
+
         ogs_free(strerror);
+
+        smf_sess_remove(sess);
         break;
     default:
         ogs_error("Not implemented [type:%d]", type);

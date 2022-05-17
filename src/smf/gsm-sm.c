@@ -160,7 +160,11 @@ static bool send_sbi_message_from_delete_trigger(
     ogs_sbi_message_t sendmsg;
     ogs_sbi_response_t *response = NULL;
 
-    if (trigger == OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED) {
+    if (trigger == OGS_PFCP_DELETE_TRIGGER_LOCAL_INITIATED) {
+
+        /* Nothing */
+
+    } else if (trigger == OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED) {
         ogs_pkbuf_t *n1smbuf = NULL, *n2smbuf = NULL;
 
         n1smbuf = gsm_build_pdu_session_release_command(
@@ -1215,14 +1219,23 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
                             &pfcp_message->pfcp_session_deletion_response);
                 if (status != OGS_SBI_HTTP_STATUS_OK) {
                     ogs_error(
-                        "smf_5gc_n4_handle_session_deletion_response() failed");
+                        "[%d] smf_5gc_n4_handle_session_deletion_response() "
+                        "failed", trigger);
+
+                    OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
                     break;
                 }
 
                 if (send_sbi_message_from_delete_trigger(
                             sess, stream, trigger) == true) {
 
-                    if (trigger == OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED ||
+                    if (trigger == OGS_PFCP_DELETE_TRIGGER_LOCAL_INITIATED) {
+
+                        ogs_warn("OLD Session Released");
+                        OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+
+                    } else if (
+                        trigger == OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED ||
                         trigger == OGS_PFCP_DELETE_TRIGGER_PCF_INITIATED) {
 
                         OGS_FSM_TRAN(s, smf_gsm_state_wait_5gc_n1_n2_release);
@@ -1233,9 +1246,6 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
                             OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT) {
 
                         OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
-
-                    } else if (trigger ==
-                            OGS_PFCP_DELETE_TRIGGER_PCF_INITIATED) {
 
                     } else {
                         ogs_fatal("Unknown trigger [%d]", trigger);

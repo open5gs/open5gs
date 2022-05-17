@@ -18,6 +18,7 @@
  */
 
 #include "context.h"
+#include "pfcp-path.h"
 
 static smf_context_t self;
 static ogs_diam_config_t g_diam_conf;
@@ -1138,7 +1139,7 @@ smf_sess_t *smf_sess_add_by_gtp1_message(ogs_gtp1_message_t *message)
 
     sess = smf_sess_find_by_apn(smf_ue, apn, req->rat_type.u8);
     if (sess) {
-        ogs_warn("OLD Session Release [IMSI:%s,APN:%s]",
+        ogs_warn("OLD Session Will Release [IMSI:%s,APN:%s]",
                 smf_ue->imsi_bcd, sess->session.name);
         smf_sess_remove(sess);
     }
@@ -1202,7 +1203,7 @@ smf_sess_t *smf_sess_add_by_gtp2_message(ogs_gtp2_message_t *message)
 
     sess = smf_sess_find_by_apn(smf_ue, apn, req->rat_type.u8);
     if (sess) {
-        ogs_info("OLD Session Release [IMSI:%s,APN:%s]",
+        ogs_info("OLD Session Will Release [IMSI:%s,APN:%s]",
                 smf_ue->imsi_bcd, sess->session.name);
         smf_sess_remove(sess);
     }
@@ -1308,7 +1309,7 @@ smf_sess_t *smf_sess_add_by_sbi_message(ogs_sbi_message_t *message)
 
     sess = smf_sess_find_by_psi(smf_ue, SmContextCreateData->pdu_session_id);
     if (sess) {
-        ogs_warn("OLD Session Release [SUPI:%s,PDU Session identity:%d]",
+        ogs_warn("OLD Session Will Release [SUPI:%s,PDU Session identity:%d]",
                 SmContextCreateData->supi, SmContextCreateData->pdu_session_id);
         smf_sess_remove(sess);
     }
@@ -1503,7 +1504,7 @@ smf_sess_t *smf_sess_find_by_error_indication_report(
         return NULL;
     }
 
-    ogs_list_for_each(&smf_ue->sess_list, sess) {
+    ogs_list_reverse_for_each(&smf_ue->sess_list, sess) {
         if (teid == sess->gnb_n3_teid) {
             if (len == OGS_IPV4_LEN && sess->gnb_n3_ip.ipv4 &&
                 memcmp(addr, &sess->gnb_n3_ip.addr, len) == 0) {
@@ -1656,7 +1657,7 @@ smf_sess_t *smf_sess_find_by_apn(smf_ue_t *smf_ue, char *apn, uint8_t rat_type)
     ogs_assert(smf_ue);
     ogs_assert(apn);
 
-    ogs_list_for_each(&smf_ue->sess_list, sess) {
+    ogs_list_reverse_for_each(&smf_ue->sess_list, sess) {
         if (ogs_strcasecmp(sess->session.name, apn) == 0 &&
             sess->gtp_rat_type == rat_type)
             return sess;
@@ -1672,7 +1673,7 @@ smf_sess_t *smf_sess_find_by_psi(smf_ue_t *smf_ue, uint8_t psi)
     ogs_assert(smf_ue);
     ogs_assert(psi != OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED);
 
-    ogs_list_for_each(&smf_ue->sess_list, sess) {
+    ogs_list_reverse_for_each(&smf_ue->sess_list, sess) {
         if (sess->psi == psi)
             return sess;
     }

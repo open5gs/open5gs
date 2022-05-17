@@ -641,9 +641,13 @@ int smf_5gc_n4_handle_session_deletion_response(
 
     if (status != OGS_SBI_HTTP_STATUS_OK) {
         char *strerror = ogs_msprintf(
-                "PFCP Cause [%d] : Not Accepted", rsp->cause.u8);
+                "[%d] PFCP Cause [%d] : Not Accepted", trigger, rsp->cause.u8);
 
-        if (trigger == OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED ||
+        if (trigger == OGS_PFCP_DELETE_TRIGGER_LOCAL_INITIATED) {
+
+            /* Nothing */
+
+        } else if (trigger == OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED ||
             trigger == OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT) {
             ogs_assert(stream);
             smf_sbi_send_sm_context_update_error(

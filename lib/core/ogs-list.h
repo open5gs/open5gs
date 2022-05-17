@@ -75,6 +75,10 @@ static ogs_inline void *ogs_list_prev(void *lnode)
     for (node = ogs_list_first(list); (node); \
         node = ogs_list_next(node))
 
+#define ogs_list_reverse_for_each(list, node) \
+    for (node = ogs_list_last(list); (node); \
+        node = ogs_list_prev(node))
+
 #define ogs_list_for_each_entry(list, node, member) \
     for (node = ogs_list_entry(ogs_list_first(list), typeof(*node), member); \
             (&node->member); \
