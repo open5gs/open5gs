@@ -1,3 +1,33 @@
+open5gs (2.4.6) unstable; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 17 May 2022 22:41:32 +0900
+
+open5gs (2.4.6~jammy) jammy; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 17 May 2022 22:40:16 +0900
+
+open5gs (2.4.6~focal) focal; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 17 May 2022 22:38:38 +0900
+
+open5gs (2.4.6~bionic) bionic; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 17 May 2022 22:37:22 +0900
+
+open5gs (2.4.6~impish) impish; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 17 May 2022 22:34:40 +0900
+
 open5gs (2.4.5) unstable; urgency=medium
 
   * GTP-1C(GGSN) provided by sysmocom
