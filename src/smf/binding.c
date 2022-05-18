@@ -47,7 +47,7 @@ static void gtp_bearer_timeout(ogs_gtp_xact_t *xact, void *data)
             break;
         }
         ogs_assert(OGS_OK ==
-            smf_epc_pfcp_send_bearer_modification_request(
+            smf_epc_pfcp_send_one_bearer_modification_request(
                 bearer, NULL, OGS_PFCP_MODIFY_REMOVE,
                 OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
                 OGS_GTP2_CAUSE_UNDEFINED_VALUE));
@@ -325,7 +325,7 @@ void smf_bearer_binding(smf_sess_t *sess)
                 smf_bearer_qos_update(bearer);
 
                 ogs_assert(OGS_OK ==
-                    smf_epc_pfcp_send_bearer_modification_request(
+                    smf_epc_pfcp_send_one_bearer_modification_request(
                         bearer, NULL, OGS_PFCP_MODIFY_CREATE,
                         OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
                         OGS_GTP2_CAUSE_UNDEFINED_VALUE));
@@ -383,7 +383,7 @@ void smf_bearer_binding(smf_sess_t *sess)
              * forwarding downlink packets for the affected bearer(s).
              */
             ogs_assert(OGS_OK ==
-                smf_epc_pfcp_send_bearer_modification_request(
+                smf_epc_pfcp_send_one_bearer_modification_request(
                     bearer, NULL,
                     OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE,
                     OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
@@ -665,7 +665,7 @@ void smf_qos_flow_binding(smf_sess_t *sess)
 
     if (ogs_list_count(&sess->qos_flow_to_modify_list)) {
         ogs_assert(OGS_OK ==
-                smf_5gc_pfcp_send_session_modification_request(
+                smf_5gc_pfcp_send_qos_flow_list_modification_request(
                     sess, NULL, pfcp_flags, 0));
     }
 }

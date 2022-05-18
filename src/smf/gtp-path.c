@@ -705,7 +705,7 @@ static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
         }
 
         ogs_assert(OGS_OK ==
-            smf_epc_pfcp_send_bearer_modification_request(
+            smf_epc_pfcp_send_one_bearer_modification_request(
                 bearer, NULL, OGS_PFCP_MODIFY_REMOVE,
                 OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
                 OGS_GTP2_CAUSE_UNDEFINED_VALUE));

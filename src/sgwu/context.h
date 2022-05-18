@@ -37,7 +37,9 @@ extern int __sgwu_log_domain;
 #define OGS_LOG_DOMAIN __sgwu_log_domain
 
 typedef struct sgwu_context_s {
-    ogs_hash_t      *sess_hash;     /* hash table (F-SEID) */
+    ogs_hash_t      *seid_hash;     /* hash table (SEID) */
+    ogs_hash_t      *f_seid_hash;   /* hash table (F-SEID) */
+
     ogs_list_t      sess_list;
 } sgwu_context_t;
 
@@ -49,7 +51,10 @@ typedef struct sgwu_sess_s {
     ogs_pfcp_sess_t pfcp;
 
     uint64_t        sgwu_sxa_seid;      /* SGW-U SEID is dervied from INDEX */
-    uint64_t        sgwc_sxa_seid;      /* SGW-C SEID is received from Peer */
+    struct {
+        uint64_t    seid;
+        ogs_ip_t    ip;
+    } sgwc_sxa_f_seid;                  /* SGW-C SEID is received from Peer */
 
     ogs_pfcp_node_t *pfcp_node;
 } sgwu_sess_t;
@@ -66,8 +71,9 @@ sgwu_sess_t *sgwu_sess_add(ogs_pfcp_f_seid_t *f_seid);
 int sgwu_sess_remove(sgwu_sess_t *sess);
 void sgwu_sess_remove_all(void);
 sgwu_sess_t *sgwu_sess_find(uint32_t index);
-sgwu_sess_t *sgwu_sess_find_by_cp_seid(uint64_t seid);
-sgwu_sess_t *sgwu_sess_find_by_up_seid(uint64_t seid);
+sgwu_sess_t *sgwu_sess_find_by_sgwc_sxa_seid(uint64_t seid);
+sgwu_sess_t *sgwu_sess_find_by_sgwc_sxa_f_seid(ogs_pfcp_f_seid_t *f_seid);
+sgwu_sess_t *sgwu_sess_find_by_sgwu_sxa_seid(uint64_t seid);
 
 #ifdef __cplusplus
 }

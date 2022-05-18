@@ -265,7 +265,7 @@ void smf_5gc_n4_handle_session_modification_response(
     stream = xact->assoc_stream;
 
     if (flags & OGS_PFCP_MODIFY_SESSION) {
-        /* If smf_5gc_pfcp_send_pdr_modification_request() is called */
+        /* If smf_5gc_pfcp_send_all_pdr_modification_request() is called */
 
     } else {
         /* If smf_5gc_pfcp_send_qos_flow_modification_request() is called */
@@ -390,7 +390,7 @@ void smf_5gc_n4_handle_session_modification_response(
 
             if (smf_sess_have_indirect_data_forwarding(sess) == true) {
                 ogs_assert(OGS_OK ==
-                    smf_5gc_pfcp_send_pdr_modification_request(
+                    smf_5gc_pfcp_send_all_pdr_modification_request(
                         sess, stream,
                         OGS_PFCP_MODIFY_INDIRECT|OGS_PFCP_MODIFY_REMOVE,
                         ogs_app()->time.handover.duration));
@@ -444,7 +444,7 @@ void smf_5gc_n4_handle_session_modification_response(
                 smf_sess_create_indirect_data_forwarding(sess);
 
                 ogs_assert(OGS_OK ==
-                    smf_5gc_pfcp_send_pdr_modification_request(
+                    smf_5gc_pfcp_send_all_pdr_modification_request(
                         sess, stream,
                         OGS_PFCP_MODIFY_INDIRECT|OGS_PFCP_MODIFY_CREATE,
                         0));
@@ -1219,7 +1219,7 @@ void smf_n4_handle_session_report_request(
 
         if (error_indication_session) {
             ogs_assert(OGS_OK ==
-                smf_5gc_pfcp_send_pdr_modification_request(
+                smf_5gc_pfcp_send_all_pdr_modification_request(
                     error_indication_session, NULL,
                     OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE|
                     OGS_PFCP_MODIFY_ERROR_INDICATION,

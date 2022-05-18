@@ -45,7 +45,8 @@ extern int __upf_log_domain;
 #define OGS_LOG_DOMAIN __upf_log_domain
 
 typedef struct upf_context_s {
-    ogs_hash_t      *sess_hash;     /* hash table (F-SEID) */
+    ogs_hash_t      *seid_hash;     /* hash table (SEID) */
+    ogs_hash_t      *f_seid_hash;   /* hash table (F-SEID) */
     ogs_hash_t      *ipv4_hash;     /* hash table (IPv4 Address) */
     ogs_hash_t      *ipv6_hash;     /* hash table (IPv6 Address) */
 
@@ -86,7 +87,10 @@ typedef struct upf_sess_s {
     ogs_pfcp_sess_t pfcp;
 
     uint64_t        upf_n4_seid;        /* UPF SEID is dervied from INDEX */
-    uint64_t        smf_n4_seid;        /* SMF SEID is received from Peer */
+    struct {
+        uint64_t    seid;
+        ogs_ip_t    ip;
+    } smf_n4_f_seid;                    /* SMF SEID is received from Peer */
 
     /* APN Configuration */
     ogs_pfcp_ue_ip_t *ipv4;
@@ -111,8 +115,9 @@ upf_sess_t *upf_sess_add(ogs_pfcp_f_seid_t *f_seid);
 int upf_sess_remove(upf_sess_t *sess);
 void upf_sess_remove_all(void);
 upf_sess_t *upf_sess_find(uint32_t index);
-upf_sess_t *upf_sess_find_by_cp_seid(uint64_t seid);
-upf_sess_t *upf_sess_find_by_up_seid(uint64_t seid);
+upf_sess_t *upf_sess_find_by_smf_n4_seid(uint64_t seid);
+upf_sess_t *upf_sess_find_by_smf_n4_f_seid(ogs_pfcp_f_seid_t *f_seid);
+upf_sess_t *upf_sess_find_by_upf_n4_seid(uint64_t seid);
 upf_sess_t *upf_sess_find_by_ipv4(uint32_t addr);
 upf_sess_t *upf_sess_find_by_ipv6(uint32_t *addr6);
 

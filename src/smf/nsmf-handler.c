@@ -370,7 +370,7 @@ bool smf_nsmf_handle_update_sm_context(
                         sess, stream, OpenAPI_up_cnx_state_DEACTIVATED);
             } else {
                 ogs_assert(OGS_OK ==
-                    smf_5gc_pfcp_send_pdr_modification_request(
+                    smf_5gc_pfcp_send_all_pdr_modification_request(
                         sess, stream,
                         OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE, 0));
             }
@@ -506,7 +506,7 @@ bool smf_nsmf_handle_update_sm_context(
 
             if (far_update) {
                 ogs_assert(OGS_OK ==
-                    smf_5gc_pfcp_send_pdr_modification_request(
+                    smf_5gc_pfcp_send_all_pdr_modification_request(
                         sess, stream,
                         OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE|
                         OGS_PFCP_MODIFY_N2_HANDOVER|OGS_PFCP_MODIFY_END_MARKER,
@@ -539,7 +539,7 @@ bool smf_nsmf_handle_update_sm_context(
 
             if (smf_sess_have_indirect_data_forwarding(sess) == true) {
                 ogs_assert(OGS_OK ==
-                    smf_5gc_pfcp_send_pdr_modification_request(
+                    smf_5gc_pfcp_send_all_pdr_modification_request(
                         sess, stream,
                         OGS_PFCP_MODIFY_INDIRECT|OGS_PFCP_MODIFY_REMOVE|
                         OGS_PFCP_MODIFY_HANDOVER_CANCEL,

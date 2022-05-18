@@ -520,7 +520,7 @@ int gsm_handle_pdu_session_modification_request(
     }
 
     ogs_assert(OGS_OK ==
-            smf_5gc_pfcp_send_session_modification_request(
+            smf_5gc_pfcp_send_qos_flow_list_modification_request(
                 sess, stream,
                 OGS_PFCP_MODIFY_UE_REQUESTED|pfcp_flags, 0));
 

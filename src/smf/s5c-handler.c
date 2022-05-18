@@ -621,7 +621,7 @@ void smf_s5c_handle_create_bearer_response(
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
         ogs_assert(OGS_OK ==
-            smf_epc_pfcp_send_bearer_modification_request(
+            smf_epc_pfcp_send_one_bearer_modification_request(
                 bearer, NULL, OGS_PFCP_MODIFY_REMOVE,
                 OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
                 OGS_GTP2_CAUSE_UNDEFINED_VALUE));
@@ -678,7 +678,7 @@ void smf_s5c_handle_create_bearer_response(
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
         ogs_assert(OGS_OK ==
-            smf_epc_pfcp_send_bearer_modification_request(
+            smf_epc_pfcp_send_one_bearer_modification_request(
                 bearer, NULL, OGS_PFCP_MODIFY_REMOVE,
                 OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
                 OGS_GTP2_CAUSE_UNDEFINED_VALUE));
@@ -696,7 +696,7 @@ void smf_s5c_handle_create_bearer_response(
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
         ogs_error("GTP Failed [Bearer-CAUSE:%d]", cause_value);
         ogs_assert(OGS_OK ==
-            smf_epc_pfcp_send_bearer_modification_request(
+            smf_epc_pfcp_send_one_bearer_modification_request(
                 bearer, NULL, OGS_PFCP_MODIFY_REMOVE,
                 OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
                 OGS_GTP2_CAUSE_UNDEFINED_VALUE));
@@ -709,7 +709,7 @@ void smf_s5c_handle_create_bearer_response(
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
         ogs_error("GTP Failed [CAUSE:%d]", cause_value);
         ogs_assert(OGS_OK ==
-            smf_epc_pfcp_send_bearer_modification_request(
+            smf_epc_pfcp_send_one_bearer_modification_request(
                 bearer, NULL, OGS_PFCP_MODIFY_REMOVE,
                 OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
                 OGS_GTP2_CAUSE_UNDEFINED_VALUE));
@@ -753,7 +753,7 @@ void smf_s5c_handle_create_bearer_response(
     dl_far->outer_header_creation.teid = bearer->sgw_s5u_teid;
 
     ogs_assert(OGS_OK ==
-        smf_epc_pfcp_send_bearer_modification_request(
+        smf_epc_pfcp_send_one_bearer_modification_request(
             bearer, NULL, OGS_PFCP_MODIFY_ACTIVATE,
             OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
             OGS_GTP2_CAUSE_UNDEFINED_VALUE));
@@ -872,7 +872,7 @@ void smf_s5c_handle_update_bearer_response(
 
     if (pfcp_flags)
         ogs_assert(OGS_OK ==
-            smf_epc_pfcp_send_bearer_modification_request(
+            smf_epc_pfcp_send_one_bearer_modification_request(
                 bearer, NULL, pfcp_flags,
                 OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
                 OGS_GTP2_CAUSE_UNDEFINED_VALUE));
@@ -990,7 +990,7 @@ bool smf_s5c_handle_delete_bearer_response(
             sess->sgw_s5c_teid, sess->smf_n4_teid);
 
     ogs_assert(OGS_OK ==
-        smf_epc_pfcp_send_bearer_modification_request(
+        smf_epc_pfcp_send_one_bearer_modification_request(
             bearer, NULL, OGS_PFCP_MODIFY_REMOVE,
             OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
             OGS_GTP2_CAUSE_UNDEFINED_VALUE));
@@ -1372,7 +1372,7 @@ void smf_s5c_handle_bearer_resource_command(
          * forwarding downlink packets for the affected bearer(s).
          */
         ogs_assert(OGS_OK ==
-            smf_epc_pfcp_send_bearer_modification_request(
+            smf_epc_pfcp_send_one_bearer_modification_request(
                 bearer, xact,
                 OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE,
                 cmd->procedure_transaction_id.u8,

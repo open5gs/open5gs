@@ -180,7 +180,7 @@ void sgwu_pfcp_state_associated(ogs_fsm_t *s, sgwu_event_t *e)
         ogs_assert(xact);
 
         if (message->h.seid_presence && message->h.seid != 0)
-            sess = sgwu_sess_find_by_up_seid(message->h.seid);
+            sess = sgwu_sess_find_by_sgwu_sxa_seid(message->h.seid);
 
         switch (message->h.type) {
         case OGS_PFCP_HEARTBEAT_REQUEST_TYPE:
