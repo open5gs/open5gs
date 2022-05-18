@@ -485,7 +485,6 @@ void smf_5gc_n4_handle_session_modification_response(
             ogs_assert(stream);
 
             ogs_assert(flags & OGS_PFCP_MODIFY_SESSION);
-
             n1smbuf = gsm_build_pdu_session_modification_command(
                     sess, sess->pti,
                     OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE,
