@@ -83,6 +83,7 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
     struct msg *req = NULL;
     struct avp *avp;
     struct avp *avpch1, *avpch2;
+    struct avp_hdr *ahdr;
     union avp_value val;
     struct sess_state *sess_data = NULL, *svg;
     struct session *session = NULL;
@@ -367,6 +368,7 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
             val.i32 = OGS_DIAM_GX_IP_CAN_TYPE_3GPP_EPS;
             break;
         case OGS_GTP2_RAT_TYPE_WLAN:
+        case OGS_GTP2_RAT_TYPE_VIRTUAL:
             val.i32 = OGS_DIAM_GX_IP_CAN_TYPE_NON_3GPP_EPS;
             break;
         default:
@@ -612,13 +614,35 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
         ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
         ogs_assert(ret == 0);
 
-        ret = fd_msg_avp_new(ogs_diam_gx_an_trusted, 0, &avp);
-        ogs_assert(ret == 0);
-        val.u32 = OGS_DIAM_GX_AN_UNTRUSTED;
-        ret = fd_msg_avp_setvalue (avp, &val);
-        ogs_assert(ret == 0);
-        ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-        ogs_assert(ret == 0);
+        /*
+         * TS 29.274 version 16.11.0, Table 7.2.1-1,
+         * GTPv2 RAT Type: The ePDG may use the access technology type of the
+         * untrusted non-3GPP access network if it is able to acquire
+         * it; otherwise it shall indicate Virtual as the RAT Type.
+         * The TWAN shall set the RAT Type value to "WLAN" on the
+         * S2a interface.
+         */
+        if (sess->gtp_rat_type == OGS_GTP2_RAT_TYPE_WLAN ||
+            sess->gtp_rat_type == OGS_GTP2_RAT_TYPE_VIRTUAL) {
+            ret = fd_msg_avp_new(ogs_diam_gx_an_trusted, 0, &avp);
+            ogs_assert(ret == 0);
+            /*
+             * TS 29.212 version 16.4.0, Table 5.4.0.1,
+             * AN-Trusted: This AVP shall have the 'M' bit cleared.
+             */
+            ret = fd_msg_avp_hdr(avp, &ahdr);
+            ogs_assert(ret == 0);
+            ahdr->avp_flags = ahdr->avp_flags & AVP_FLAG_VENDOR;
+
+            /*
+             * Currently, only Untrusted non-3GPP access via ePDG is supported.
+             */
+            val.u32 = OGS_DIAM_GX_AN_UNTRUSTED;
+            ret = fd_msg_avp_setvalue (avp, &val);
+            ogs_assert(ret == 0);
+            ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+            ogs_assert(ret == 0);
+        }
     }
 
     ret = clock_gettime(CLOCK_REALTIME, &sess_data->ts);
