@@ -793,8 +793,12 @@ bool udr_nudr_dr_handle_subscription_provisioned(
                 dnnConfigurationList;
 
         memset(&sendmsg, 0, sizeof(sendmsg));
-        sendmsg.SessionManagementSubscriptionData =
-            &SessionManagementSubscriptionData;
+        
+        sendmsg.SessionManagementSubscriptionDataList = OpenAPI_list_create();
+        ogs_assert(sendmsg.SessionManagementSubscriptionDataList);
+
+        OpenAPI_list_add(sendmsg.SessionManagementSubscriptionDataList,
+            &SessionManagementSubscriptionData);
 
         response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
         ogs_assert(response);

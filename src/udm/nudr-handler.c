@@ -627,12 +627,10 @@ bool udm_nudr_dr_handle_subscription_provisioned(
         break;
 
     CASE(OGS_SBI_RESOURCE_NAME_SM_DATA)
-        OpenAPI_session_management_subscription_data_t *
-                SessionManagementSubscriptionData = NULL;
+        OpenAPI_lnode_t *node;
 
-        SessionManagementSubscriptionData =
-            recvmsg->SessionManagementSubscriptionData;
-        if (!SessionManagementSubscriptionData) {
+        if ((!recvmsg->SessionManagementSubscriptionDataList) ||
+            (recvmsg->SessionManagementSubscriptionDataList->count == 0)) {
             ogs_error("[%s] No SessionManagementSubscriptionData",
                     udm_ue->supi);
             ogs_assert(true ==
@@ -644,18 +642,23 @@ bool udm_nudr_dr_handle_subscription_provisioned(
         }
 
         memset(&sendmsg, 0, sizeof(sendmsg));
+        sendmsg.SessionManagementSubscriptionDataList = OpenAPI_list_create();
 
-        sendmsg.SessionManagementSubscriptionData =
-            OpenAPI_session_management_subscription_data_copy(
-                sendmsg.SessionManagementSubscriptionData,
-                    recvmsg->SessionManagementSubscriptionData);
+        OpenAPI_list_for_each(recvmsg->SessionManagementSubscriptionDataList, node)
+        {
+            OpenAPI_session_management_subscription_data_t *item = NULL;
+
+            item = OpenAPI_session_management_subscription_data_copy(item, node->data);
+            OpenAPI_list_add(sendmsg.SessionManagementSubscriptionDataList, item);
+        }
 
         response = ogs_sbi_build_response(&sendmsg, recvmsg->res_status);
         ogs_assert(response);
         ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
-        OpenAPI_session_management_subscription_data_free(
-                sendmsg.SessionManagementSubscriptionData);
+        OpenAPI_list_for_each(sendmsg.SessionManagementSubscriptionDataList, node)
+            OpenAPI_session_management_subscription_data_free(node->data);
+        OpenAPI_list_free(sendmsg.SessionManagementSubscriptionDataList);
 
         break;
 

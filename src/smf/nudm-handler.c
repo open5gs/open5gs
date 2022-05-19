@@ -56,8 +56,23 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
 
     ogs_assert(recvmsg);
 
-    SessionManagementSubscriptionData =
-        recvmsg->SessionManagementSubscriptionData;
+
+    if ((!recvmsg->SessionManagementSubscriptionDataList) ||
+        (recvmsg->SessionManagementSubscriptionDataList->count == 0))
+    {
+        strerror = ogs_msprintf("[%s:%d] No SessionManagementSubscriptionDataList",
+                smf_ue->supi, sess->psi);
+        goto cleanup;
+    }
+
+    OpenAPI_list_for_each(recvmsg->SessionManagementSubscriptionDataList, node)
+    {
+        SessionManagementSubscriptionData = node->data;
+
+        /* currently supported to parse only first element of the array */
+        break;
+    }
+    
     if (!SessionManagementSubscriptionData) {
         strerror = ogs_msprintf("[%s:%d] No SessionManagementSubscriptionData",
                 smf_ue->supi, sess->psi);
