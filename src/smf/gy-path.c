@@ -112,6 +112,21 @@ static void fill_multiple_services_credit_control_ccr(smf_sess_t *sess,
     ogs_assert(ret == 0);
 
     /* Reporting-Reason, TS 32.299 7.2.175 */
+    /*  "values THRESHOLD, QUOTA_EXHAUSTED and OTHER_QUOTA_TYPE apply to one
+        particular quota type and shall occur only in the Used-Service-Units AVP" */
+#if 0
+    /* TODO: set when update is triggered by threshold from PFCP URR. Not yet supported. */
+    if (cc_request_type == OGS_DIAM_GY_CC_REQUEST_TYPE_UPDATE_REQUEST) {
+        ret = fd_msg_avp_new(ogs_diam_gy_reporting_reason, 0, &avpch2);
+        ogs_assert(ret == 0);
+        val.u32 = OGS_DIAM_GY_REPORTING_REASON_THRESHOLD;
+        ret = fd_msg_avp_setvalue (avpch2, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
+        ogs_assert(ret == 0);
+    }
+#endif
+
     /* Tariff-Change-Usage */
 
     /* CC-Time, RFC4006 8.21 */
@@ -155,11 +170,21 @@ static void fill_multiple_services_credit_control_ccr(smf_sess_t *sess,
     /* Rating-Group */
 
     /* Reporting-Reason, TS 32.299 7.2.175 */
+    /* "values QHT, FINAL, VALIDITY_TIME, FORCED_REAUTHORISATION,
+     * RATING_CONDITION_CHANGE, UNUSED_QUOTA_TIMER apply for all quota types
+     * and are used directly in the Multiple-Services-Credit-Control AVP"
+     */
     if (cc_request_type == OGS_DIAM_GY_CC_REQUEST_TYPE_UPDATE_REQUEST ||
         cc_request_type == OGS_DIAM_GY_CC_REQUEST_TYPE_TERMINATION_REQUEST) {
         ret = fd_msg_avp_new(ogs_diam_gy_reporting_reason, 0, &avpch1);
         ogs_assert(ret == 0);
-        val.u32 = OGS_DIAM_GY_REPORTING_REASON_VALIDITY_TIME; // TODO: set value
+        if (cc_request_type == OGS_DIAM_GY_CC_REQUEST_TYPE_UPDATE_REQUEST) {
+                val.u32 = OGS_DIAM_GY_REPORTING_REASON_VALIDITY_TIME;
+                /* TODO: do NOT set when update is triggered by threshold from
+                 * PFCP URR (not yet supported) */
+        } else {
+                val.u32 = OGS_DIAM_GY_REPORTING_REASON_FINAL;
+        }
         ret = fd_msg_avp_setvalue (avpch1, &val);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
