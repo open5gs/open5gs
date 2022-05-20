@@ -385,8 +385,7 @@ typedef struct ogs_sbi_message_s {
     OpenAPI_sm_context_update_error_t *SmContextUpdateError;
     OpenAPI_sm_context_release_data_t *SmContextReleaseData;
     OpenAPI_sm_context_released_data_t *SmContextReleasedData;
-    OpenAPI_session_management_subscription_data_t *
-            SessionManagementSubscriptionData;
+    OpenAPI_list_t *SessionManagementSubscriptionDataList;
     OpenAPI_n1_n2_message_transfer_req_data_t *N1N2MessageTransferReqData;
     OpenAPI_n1_n2_message_transfer_rsp_data_t *N1N2MessageTransferRspData;
     OpenAPI_n1_n2_msg_txfr_failure_notification_t

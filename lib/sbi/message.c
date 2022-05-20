@@ -124,9 +124,12 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
         OpenAPI_sm_context_release_data_free(message->SmContextReleaseData);
     if (message->SmContextReleasedData)
         OpenAPI_sm_context_released_data_free(message->SmContextReleasedData);
-    if (message->SessionManagementSubscriptionData)
-        OpenAPI_session_management_subscription_data_free(
-                message->SessionManagementSubscriptionData);
+    if (message->SessionManagementSubscriptionDataList) {
+        OpenAPI_lnode_t *node = NULL;
+        OpenAPI_list_for_each(message->SessionManagementSubscriptionDataList, node)
+            OpenAPI_session_management_subscription_data_free(node->data);
+        OpenAPI_list_free(message->SessionManagementSubscriptionDataList);
+    }
     if (message->N1N2MessageTransferReqData)
         OpenAPI_n1_n2_message_transfer_req_data_free(
                 message->N1N2MessageTransferReqData);
@@ -801,10 +804,18 @@ static char *build_json(ogs_sbi_message_t *message)
         item = OpenAPI_sm_context_released_data_convertToJSON(
                 message->SmContextReleasedData);
         ogs_assert(item);
-    } else if (message->SessionManagementSubscriptionData) {
-        item = OpenAPI_session_management_subscription_data_convertToJSON(
-                message->SessionManagementSubscriptionData);
+    } else if (message->SessionManagementSubscriptionDataList) {
+        OpenAPI_lnode_t *node = NULL;
+
+        item = cJSON_CreateArray();
         ogs_assert(item);
+
+        OpenAPI_list_for_each(message->SessionManagementSubscriptionDataList, node) {
+            cJSON *smSubDataItem = 
+                OpenAPI_session_management_subscription_data_convertToJSON(node->data);
+            ogs_assert(smSubDataItem);
+            cJSON_AddItemToArray(item, smSubDataItem);
+        }
     } else if (message->N1N2MessageTransferReqData) {
         item = OpenAPI_n1_n2_message_transfer_req_data_convertToJSON(
                 message->N1N2MessageTransferReqData);
@@ -1140,12 +1151,20 @@ static int parse_json(ogs_sbi_message_t *message,
                 break;
 
             CASE(OGS_SBI_RESOURCE_NAME_SM_DATA)
-                message->SessionManagementSubscriptionData =
-                    OpenAPI_session_management_subscription_data_parseFromJSON(
-                            item);
-                if (!message->SessionManagementSubscriptionData) {
-                    rv = OGS_ERROR;
-                    ogs_error("JSON parse error");
+                if (item) {
+                    OpenAPI_session_management_subscription_data_t *smsub_item = NULL;
+                    cJSON *smsubJSON = NULL;
+                    message->SessionManagementSubscriptionDataList = OpenAPI_list_create();
+                    cJSON_ArrayForEach(smsubJSON, item) {
+                        if (!cJSON_IsObject(smsubJSON)) {
+                            rv = OGS_ERROR;
+                            ogs_error("Unknown JSON");
+                            goto cleanup;
+                        }
+
+                        smsub_item = OpenAPI_session_management_subscription_data_parseFromJSON(smsubJSON);
+                        OpenAPI_list_add(message->SessionManagementSubscriptionDataList, smsub_item);
+                    }
                 }
                 break;
 
@@ -1230,11 +1249,20 @@ static int parse_json(ogs_sbi_message_t *message,
                             break;
 
                         CASE(OGS_SBI_RESOURCE_NAME_SM_DATA)
-                            message->SessionManagementSubscriptionData =
-                                OpenAPI_session_management_subscription_data_parseFromJSON(item);
-                            if (!message->SessionManagementSubscriptionData) {
-                                rv = OGS_ERROR;
-                                ogs_error("JSON parse error");
+                            if (item) {
+                                OpenAPI_session_management_subscription_data_t *smsub_item = NULL;
+                                cJSON *smsubJSON = NULL;
+                                message->SessionManagementSubscriptionDataList = OpenAPI_list_create();
+                                cJSON_ArrayForEach(smsubJSON, item) {
+                                    if (!cJSON_IsObject(smsubJSON)) {
+                                        rv = OGS_ERROR;
+                                        ogs_error("Unknown JSON");
+                                        goto cleanup;
+                                    }
+
+                                    smsub_item = OpenAPI_session_management_subscription_data_parseFromJSON(smsubJSON);
+                                    OpenAPI_list_add(message->SessionManagementSubscriptionDataList, smsub_item);
+                                }
                             }
                             break;
 
