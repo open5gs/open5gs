@@ -804,6 +804,8 @@ bool udr_nudr_dr_handle_subscription_provisioned(
         ogs_assert(response);
         ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
+        OpenAPI_list_free(sendmsg.SessionManagementSubscriptionDataList);
+
         if (singleNSSAI.sd)
             ogs_free(singleNSSAI.sd);
 
