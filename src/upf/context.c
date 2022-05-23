@@ -407,6 +407,8 @@ uint8_t upf_sess_set_ue_ip(upf_sess_t *sess,
 void upf_sess_urr_acc_add(upf_sess_t *sess, ogs_pfcp_urr_t *urr, size_t size, bool is_uplink)
 {
     upf_sess_urr_acc_t *urr_acc = &sess->urr_acc[urr->id];
+    uint64_t vol;
+
     /* Increment total & ul octets + pkts */
     urr_acc->total_octets += size;
     urr_acc->total_pkts++;
@@ -422,7 +424,21 @@ void upf_sess_urr_acc_add(upf_sess_t *sess, ogs_pfcp_urr_t *urr, size_t size, bo
     if (urr_acc->time_of_first_packet == 0)
         urr_acc->time_of_first_packet = urr_acc->time_of_last_packet;
 
-    /* TODO: generate report if volume threshold/quota is reached, eg sess->urr_acc[urr->id].total_octets - sess->urr_acc[urr->id].last_report.total_octets > threshold */
+    /* generate report if volume threshold/quota is reached */
+    vol = urr_acc->total_octets - urr_acc->last_report.total_octets;
+    if ((urr->rep_triggers.volume_quota && urr->vol_quota.tovol && vol >= urr->vol_quota.total_volume) ||
+        (urr->rep_triggers.volume_threshold && urr->vol_threshold.tovol && vol >= urr->vol_threshold.total_volume)) {
+        ogs_pfcp_user_plane_report_t report;
+        memset(&report, 0, sizeof(report));
+        upf_sess_urr_acc_fill_usage_report(sess, urr, &report, 0);
+        report.num_of_usage_report = 1;
+        upf_sess_urr_acc_snapshot(sess, urr);
+
+        ogs_assert(OGS_OK ==
+            upf_pfcp_send_session_report_request(sess, &report));
+        /* Start new report period/iteration: */
+        upf_sess_urr_acc_timers_setup(sess, urr);
+    }
 }
 
 /* report struct must be memzeroed before first use of this function.
@@ -466,6 +482,7 @@ void upf_sess_urr_acc_fill_usage_report(upf_sess_t *sess, const ogs_pfcp_urr_t *
     report->usage_report[idx].time_of_first_packet = ogs_time_to_ntp32(urr_acc->time_of_first_packet); /* TODO: First since last report? */
     report->usage_report[idx].time_of_last_packet = ogs_time_to_ntp32(urr_acc->time_of_last_packet);
 
+    /* Time triggers: */
     if (urr->quota_validity_time > 0 &&
             report->usage_report[idx].dur_measurement >= urr->quota_validity_time)
         report->usage_report[idx].rep_trigger.quota_validity_time = 1;
@@ -475,6 +492,14 @@ void upf_sess_urr_acc_fill_usage_report(upf_sess_t *sess, const ogs_pfcp_urr_t *
     if (urr->time_threshold > 0 &&
             report->usage_report[idx].dur_measurement >= urr->time_threshold)
         report->usage_report[idx].rep_trigger.time_threshold = 1;
+
+    /* Volume triggers: */
+    if (urr->rep_triggers.volume_quota && urr->vol_quota.tovol &&
+            report->usage_report[idx].vol_measurement.total_volume >= urr->vol_quota.total_volume)
+        report->usage_report[idx].rep_trigger.volume_quota = 1;
+    if (urr->rep_triggers.volume_threshold && urr->vol_threshold.tovol &&
+            report->usage_report[idx].vol_measurement.total_volume >= urr->vol_threshold.total_volume)
+        report->usage_report[idx].rep_trigger.volume_threshold = 1;
 }
 
 void upf_sess_urr_acc_snapshot(upf_sess_t *sess, ogs_pfcp_urr_t *urr)
