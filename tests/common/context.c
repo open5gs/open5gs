@@ -44,9 +44,15 @@ void test_context_init(void)
     rv = ogs_getaddrinfo(&test_self()->gnb1_addr, AF_UNSPEC,
             "127.0.0.2", OGS_GTPV1_U_UDP_PORT, 0);
     ogs_assert(rv == OGS_OK);
+    rv = ogs_getaddrinfo(&test_self()->gnb1_addr6, AF_UNSPEC,
+            "fd69:f21d:873c:fa::2", OGS_GTPV1_U_UDP_PORT, 0);
+    ogs_assert(rv == OGS_OK);
 
     rv = ogs_getaddrinfo(&test_self()->gnb2_addr, AF_UNSPEC,
             "127.0.0.3", OGS_GTPV1_U_UDP_PORT, 0);
+    ogs_assert(rv == OGS_OK);
+    rv = ogs_getaddrinfo(&test_self()->gnb2_addr6, AF_UNSPEC,
+            "fd69:f21d:873c:fa::3", OGS_GTPV1_U_UDP_PORT, 0);
     ogs_assert(rv == OGS_OK);
 
     context_initialized = 1;
@@ -63,7 +69,9 @@ void test_context_final(void)
     ogs_socknode_remove_all(&self.s1ap_list6);
 
     ogs_freeaddrinfo(test_self()->gnb1_addr);
+    ogs_freeaddrinfo(test_self()->gnb1_addr6);
     ogs_freeaddrinfo(test_self()->gnb2_addr);
+    ogs_freeaddrinfo(test_self()->gnb2_addr6);
 
     ogs_pool_final(&test_ue_pool);
     ogs_pool_final(&test_bearer_pool);

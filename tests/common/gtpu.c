@@ -195,6 +195,10 @@ int test_gtpu_send(
         if (sess->upf_n3_ip.ipv4) {
             gnode.addr.ogs_sa_family = AF_INET;
             gnode.addr.sin.sin_addr.s_addr = sess->upf_n3_ip.addr;
+        } else if (sess->upf_n3_ip.ipv6) {
+            gnode.addr.ogs_sa_family = AF_INET6;
+            memcpy(gnode.addr.sin6.sin6_addr.s6_addr,
+                    sess->upf_n3_ip.addr6, OGS_IPV6_LEN);
         } else {
             ogs_fatal("Not implemented");
             ogs_assert_if_reached();
@@ -204,6 +208,10 @@ int test_gtpu_send(
         if (bearer->sgw_s1u_ip.ipv4) {
             gnode.addr.ogs_sa_family = AF_INET;
             gnode.addr.sin.sin_addr.s_addr = bearer->sgw_s1u_ip.addr;
+        } else if (bearer->sgw_s1u_ip.ipv6) {
+            gnode.addr.ogs_sa_family = AF_INET6;
+            memcpy(gnode.addr.sin6.sin6_addr.s6_addr,
+                    bearer->sgw_s1u_ip.addr6, OGS_IPV6_LEN);
         } else {
             ogs_fatal("Not implemented");
             ogs_assert_if_reached();
