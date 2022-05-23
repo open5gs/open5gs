@@ -1056,6 +1056,12 @@ static void smf_gy_cca_cb(void *data, struct msg **msg)
                 case OGS_DIAM_GY_AVP_CODE_VALIDITY_TIME:
                     gy_message->cca.validity_time = hdr->avp_value->u32;
                     break;
+                case OGS_DIAM_GY_AVP_CODE_TIME_QUOTA_THRESHOLD:
+                    gy_message->cca.time_threshold = hdr->avp_value->u32;
+                    break;
+                case OGS_DIAM_GY_AVP_CODE_VOLUME_QUOTA_THRESHOLD:
+                    gy_message->cca.volume_threshold = hdr->avp_value->u32;
+                    break;
                 default:
                     ogs_warn("Not supported(%d)", hdr->avp_code);
                     break;

@@ -44,6 +44,8 @@ extern "C" {
 #define OGS_DIAM_GY_AVP_CODE_VALIDITY_TIME                  (448)
 #define OGS_DIAM_GY_AVP_CODE_MULTIPLE_SERVICES_CREDIT_CONTROL (456)
 #define OGS_DIAM_GY_AVP_CODE_SUPPORTED_FEATURES             (628)
+#define OGS_DIAM_GY_AVP_CODE_TIME_QUOTA_THRESHOLD           (868)
+#define OGS_DIAM_GY_AVP_CODE_VOLUME_QUOTA_THRESHOLD         (869)
 #define OGS_DIAM_GY_AVP_CODE_CHARGING_RULE_BASE_NAME        (1004)
 #define OGS_DIAM_GY_AVP_CODE_FLOW_INFORMATION               (1058)
 #define OGS_DIAM_GY_AVP_CODE_QOS_INFORMATION                (1016)
@@ -182,6 +184,8 @@ typedef struct ogs_diam_gy_message_s {
     union {
         struct {
             uint32_t validity_time;
+            uint32_t time_threshold;
+            uint32_t volume_threshold;
             ogs_diam_gy_service_unit_t granted;
         } cca;
     };

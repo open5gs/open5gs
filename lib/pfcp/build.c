@@ -654,7 +654,10 @@ void ogs_pfcp_build_update_urr(
     /* No change requested, skip. */
     if (!(modify_flags & (OGS_PFCP_MODIFY_URR_MEAS_METHOD|
                           OGS_PFCP_MODIFY_URR_REPORT_TRIGGER|
+                          OGS_PFCP_MODIFY_URR_QUOTA_VALIDITY_TIME|
+                          OGS_PFCP_MODIFY_URR_VOLUME_QUOTA|
                           OGS_PFCP_MODIFY_URR_VOLUME_THRESH|
+                          OGS_PFCP_MODIFY_URR_TIME_QUOTA|
                           OGS_PFCP_MODIFY_URR_TIME_THRESH)))
         return;
 

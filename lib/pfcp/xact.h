@@ -102,8 +102,11 @@ typedef struct ogs_pfcp_xact_s {
 #define OGS_PFCP_MODIFY_URR  ((uint64_t)1<<24) /* type of trigger */
 #define OGS_PFCP_MODIFY_URR_MEAS_METHOD ((uint64_t)1<<25)
 #define OGS_PFCP_MODIFY_URR_REPORT_TRIGGER ((uint64_t)1<<26)
-#define OGS_PFCP_MODIFY_URR_VOLUME_THRESH ((uint64_t)1<<27)
-#define OGS_PFCP_MODIFY_URR_TIME_THRESH ((uint64_t)1<<28)
+#define OGS_PFCP_MODIFY_URR_QUOTA_VALIDITY_TIME ((uint64_t)1<<27)
+#define OGS_PFCP_MODIFY_URR_VOLUME_QUOTA ((uint64_t)1<<28)
+#define OGS_PFCP_MODIFY_URR_TIME_QUOTA ((uint64_t)1<<29)
+#define OGS_PFCP_MODIFY_URR_VOLUME_THRESH ((uint64_t)1<<30)
+#define OGS_PFCP_MODIFY_URR_TIME_THRESH ((uint64_t)1<<31)
 
     uint64_t        modify_flags;
 
