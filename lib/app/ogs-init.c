@@ -32,9 +32,6 @@ int ogs_app_initialize(
         char *log_file;
         char *log_level;
         char *domain_mask;
-
-        bool enable_debug;
-        bool enable_trace;
     } optarg;
 
     ogs_core_initialize();
