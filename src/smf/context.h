@@ -336,6 +336,7 @@ typedef struct smf_sess_s {
         uint64_t ul_octets;
         uint64_t dl_octets;
         ogs_time_t duration;
+        uint32_t reporting_reason; /* OGS_DIAM_GY_REPORTING_REASON_* */
         /* Snapshot of measurement when last report was sent: */
         struct {
             uint64_t ul_octets;

@@ -449,6 +449,15 @@ int16_t ogs_pfcp_build_volume(ogs_tlv_octet_t *octet,
     return octet->len;
 }
 
+void ogs_pfcp_parse_usage_report_trigger(
+        ogs_pfcp_usage_report_trigger_t *rep_trig,
+        ogs_pfcp_tlv_usage_report_trigger_t *tlv)
+{
+    rep_trig->reptri_5 = (tlv->u24 >> 16) & 0xff;
+    rep_trig->reptri_6 = (tlv->u24 >> 8) & 0xff;
+    rep_trig->reptri_7 = (tlv->u24) & 0xff;
+}
+
 int16_t ogs_pfcp_parse_volume(
         ogs_pfcp_volume_threshold_t *volume, ogs_tlv_octet_t *octet)
 {
