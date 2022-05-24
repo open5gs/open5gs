@@ -196,7 +196,7 @@ void bsf_nf_state_registered(ogs_fsm_t *s, bsf_event_t *e)
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
         if (NF_INSTANCE_IS_SELF(nf_instance->id)) {
-            ogs_info("[%s] NF registred [Heartbeat:%ds]",
+            ogs_info("[%s] NF registered [Heartbeat:%ds]",
                     nf_instance->id, nf_instance->time.heartbeat_interval);
 
             client = nf_instance->client;
