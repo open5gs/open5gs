@@ -36,12 +36,9 @@ static void upf_n4_handle_create_urr(upf_sess_t *sess, ogs_pfcp_tlv_create_urr_t
         if (!urr)
             return;
 
-        /* TODO: here we should check for Reporting Triggers IMTH=1 instead? */
-        if ((urr->meas_method & OGS_PFCP_MEASUREMENT_METHOD_DURATION) && urr->time_threshold > 0) {
-            /* if ISTM bit set in Measurement Information: */
-            if (urr->meas_info.istm) {
-                upf_sess_urr_acc_time_threshold_setup(sess, urr);
-            } /* else: TODO: call upf_sess_urr_acc_time_threshold_setup() upon first pkt received */
+        /* TODO: enable counters somewhere else if ISTM not set, upon first pkt received */
+        if (urr->meas_info.istm) {
+            upf_sess_urr_acc_timers_setup(sess, urr);
         }
     }
 }

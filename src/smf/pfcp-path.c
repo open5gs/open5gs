@@ -20,6 +20,45 @@
 #include "sbi-path.h"
 #include "pfcp-path.h"
 
+/* Converts PFCP "Usage Report" "Report Trigger" bitmask to Gy "Reporting-Reason" AVP enum value.
+ * PFCP: 3GPP TS 29.244 sec 8.2.41
+ * Gy: 3GPP TS 32.299 sec 7.2.175 (OGS_DIAM_GY_REPORTING_REASON_*) */
+uint32_t smf_pfcp_urr_usage_report_trigger2diam_gy_reporting_reason(ogs_pfcp_usage_report_trigger_t *rep_trigger)
+{
+
+    if (rep_trigger->termination_report ||
+        rep_trigger->termination_by_up_function_report)
+        return OGS_DIAM_GY_REPORTING_REASON_FINAL;
+
+    if (rep_trigger->time_threshold ||
+        rep_trigger->volume_threshold)
+        return OGS_DIAM_GY_REPORTING_REASON_THRESHOLD;
+
+    if (rep_trigger->time_quota ||
+        rep_trigger->volume_quota ||
+        rep_trigger->event_quota)
+        return OGS_DIAM_GY_REPORTING_REASON_QUOTA_EXHAUSTED;
+
+    if (rep_trigger->quota_validity_time)
+        return OGS_DIAM_GY_REPORTING_REASON_VALIDITY_TIME;
+
+    /* if (rep_trigger->immediate_report ||
+        rep_trigger->dropped_dl_traffic_threshold ||
+        rep_trigger->stop_of_traffic ||
+        rep_trigger->start_of_traffic ||
+        rep_trigger->quota_holding_time ||
+        rep_trigger->periodic_reporting ||
+        rep_trigger->event_threshold ||
+        rep_trigger->mac_addresses_reporting ||
+        rep_trigger->envelope_closure ||
+        rep_trigger->monitoring_time ||
+        rep_trigger->linked_usage_reporting ||
+        rep_trigger->report_the_end_marker_reception ||
+        rep_trigger->ip_multicast_join_leave
+        ) */
+    return OGS_DIAM_GY_REPORTING_REASON_UNUSED_QUOTA_TIMER;
+}
+
 static void pfcp_node_fsm_init(ogs_pfcp_node_t *node, bool try_to_assoicate)
 {
     smf_event_t e;

@@ -1023,6 +1023,10 @@ ED6(uint8_t spare:3;,
     };
 } __attribute__ ((packed)) ogs_pfcp_usage_report_trigger_t;
 
+void ogs_pfcp_parse_usage_report_trigger(
+        ogs_pfcp_usage_report_trigger_t *rep_trig,
+        ogs_pfcp_tlv_usage_report_trigger_t *tlv);
+
 /*
  * 8.2.42 Measurement Period
  *

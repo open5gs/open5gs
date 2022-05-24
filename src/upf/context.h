@@ -56,8 +56,10 @@ typedef struct upf_context_s {
 /* Accounting: */
 typedef struct upf_sess_urr_acc_s {
     bool reporting_enabled;
-    ogs_timer_t *t_time_threshold; /* Time threshold expiration handler */
-    uint32_t time_threshold_start; /* When t_time_threshold started */
+    ogs_timer_t *t_validity_time; /* Quota Validity Time expiration handler */
+    ogs_timer_t *t_time_quota; /* Time Quota expiration handler */
+    ogs_timer_t *t_time_threshold; /* Time Threshold expiration handler */
+    uint32_t time_start; /* When t_time_* started */
     ogs_pfcp_urr_ur_seqn_t report_seqn; /* Next seqn to use when reporting */
     uint64_t total_octets;
     uint64_t ul_octets;
@@ -128,7 +130,7 @@ void upf_sess_urr_acc_add(upf_sess_t *sess, ogs_pfcp_urr_t *urr, size_t size, bo
 void upf_sess_urr_acc_fill_usage_report(upf_sess_t *sess, const ogs_pfcp_urr_t *urr,
                                         ogs_pfcp_user_plane_report_t *report, unsigned int idx);
 void upf_sess_urr_acc_snapshot(upf_sess_t *sess, ogs_pfcp_urr_t *urr);
-void upf_sess_urr_acc_time_threshold_setup(upf_sess_t *sess, ogs_pfcp_urr_t *urr);
+void upf_sess_urr_acc_timers_setup(upf_sess_t *sess, ogs_pfcp_urr_t *urr);
 
 #ifdef __cplusplus
 }

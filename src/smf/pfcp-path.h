@@ -62,6 +62,9 @@ int smf_epc_pfcp_send_deactivation(smf_sess_t *sess, uint8_t gtp_cause);
 int smf_pfcp_send_session_report_response(
         ogs_pfcp_xact_t *xact, smf_sess_t *sess, uint8_t cause);
 
+uint32_t smf_pfcp_urr_usage_report_trigger2diam_gy_reporting_reason(
+            ogs_pfcp_usage_report_trigger_t *rep_trigger);
+
 #ifdef __cplusplus
 }
 #endif
