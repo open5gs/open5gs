@@ -94,6 +94,8 @@ typedef struct ogs_pfcp_node_s {
     ogs_timer_t     *t_association; /* timer to retry to associate peer node */
     ogs_timer_t     *t_no_heartbeat; /* heartbeat timer to check aliveness */
 
+    bool            send_asr; /* send association setup request or just listen? */
+
     uint16_t        tac[OGS_MAX_NUM_OF_TAI];
     uint8_t         num_of_tac;
     const char*     dnn[OGS_MAX_NUM_OF_DNN];

@@ -402,6 +402,7 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                         int i, num = 0;
                         const char *hostname[OGS_MAX_NUM_OF_HOSTNAME];
                         uint16_t port = self.pfcp_port;
+                        bool send_asr = 1;
                         uint16_t tac[OGS_MAX_NUM_OF_TAI] = {0,};
                         uint16_t num_of_tac = 0;
                         const char *dnn[OGS_MAX_NUM_OF_DNN];
@@ -468,6 +469,8 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                             } else if (!strcmp(pfcp_key, "port")) {
                                 const char *v = ogs_yaml_iter_value(&pfcp_iter);
                                 if (v) port = atoi(v);
+                            } else if (!strcmp(pfcp_key, "send_asr")) {
+                                send_asr = ogs_yaml_iter_bool(&pfcp_iter);
                             } else if (!strcmp(pfcp_key, "tac")) {
                                 ogs_yaml_iter_t tac_iter;
                                 ogs_yaml_iter_recurse(&pfcp_iter, &tac_iter);
@@ -599,6 +602,8 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                         node = ogs_pfcp_node_new(addr);
                         ogs_assert(node);
                         ogs_list_add(&self.pfcp_peer_list, node);
+
+                        node->send_asr = send_asr;
 
                         node->num_of_tac = num_of_tac;
                         if (num_of_tac != 0)
