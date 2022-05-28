@@ -77,6 +77,7 @@ void sgwc_s5c_handle_create_session_response(
 
     ogs_gtp2_create_session_response_t *rsp = NULL;
     ogs_gtp_xact_t *s11_xact = NULL;
+    ogs_gtp_node_t *pgw = NULL;
 
     ogs_assert(gtpbuf);
     ogs_assert(message);
@@ -260,6 +261,20 @@ void sgwc_s5c_handle_create_session_response(
     pgw_s5c_teid = rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.data;
     ogs_assert(pgw_s5c_teid);
     sess->pgw_s5c_teid = be32toh(pgw_s5c_teid->teid);
+
+    pgw = ogs_gtp_node_find_by_f_teid(&sgwc_self()->pgw_s5c_list, pgw_s5c_teid);
+    if (!pgw) {
+        pgw = ogs_gtp_node_add_by_f_teid(
+                &sgwc_self()->pgw_s5c_list,
+                pgw_s5c_teid, ogs_gtp_self()->gtpc_port);
+        ogs_assert(pgw);
+
+        rv = ogs_gtp_connect(
+                ogs_gtp_self()->gtpc_sock, ogs_gtp_self()->gtpc_sock6, pgw);
+        ogs_assert(rv == OGS_OK);
+    }
+    /* Setup GTP Node */
+    OGS_SETUP_GTP_NODE(sess, pgw);
 
     ogs_assert(OGS_OK ==
         sgwc_pfcp_send_session_modification_request(

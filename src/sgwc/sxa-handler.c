@@ -306,6 +306,7 @@ void sgwc_sxa_handle_session_establishment_response(
     ogs_assert(up_f_seid);
     sess->sgwu_sxa_seid = be64toh(up_f_seid->seid);
 
+    /* Receive Control Plane(UL) : PGW-S5C */
     pgw_s5c_teid = create_session_request->
         pgw_s5_s8_address_for_control_plane_or_pmip.data;
     ogs_assert(pgw_s5c_teid);
