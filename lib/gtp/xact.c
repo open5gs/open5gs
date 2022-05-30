@@ -1068,8 +1068,8 @@ static ogs_gtp_xact_t *ogs_gtp_xact_find_by_xid(
         }
         break;
     default:
-        ogs_assert_if_reached();
-        break;
+        ogs_warn("%s: Unexpected stage %u.", OGS_FUNC, stage);
+        return NULL;
     }
 
     ogs_assert(list);
