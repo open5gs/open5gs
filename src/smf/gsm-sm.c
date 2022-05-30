@@ -1372,14 +1372,12 @@ test_can_proceed:
                  */
                 switch (e->gtp_xact->gtp_version) {
                 case 1:
-                    ogs_assert(OGS_OK ==
-                            smf_gtp1_send_delete_pdp_context_response(
-                                sess, e->gtp_xact));
+                    smf_gtp1_send_delete_pdp_context_response(
+                                sess, e->gtp_xact);
                     break;
                 case 2:
-                    ogs_assert(OGS_OK ==
-                            smf_gtp2_send_delete_session_response(
-                                sess, e->gtp_xact));
+                    smf_gtp2_send_delete_session_response(
+                                sess, e->gtp_xact);
                     break;
                 }
             } else {
