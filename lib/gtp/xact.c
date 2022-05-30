@@ -34,7 +34,7 @@ static uint32_t g_xact_id = 0;
 static OGS_POOL(pool, ogs_gtp_xact_t);
 
 static ogs_gtp_xact_t *ogs_gtp_xact_remote_create(ogs_gtp_node_t *gnode, uint8_t gtp_version, uint32_t sqn);
-static ogs_gtp_xact_stage_t ogs_gtp_xact_get_stage(uint8_t type, uint32_t sqn);
+static ogs_gtp_xact_stage_t ogs_gtp2_xact_get_stage(uint8_t type, uint32_t sqn);
 static ogs_gtp_xact_stage_t ogs_gtp1_xact_get_stage(uint8_t type, uint32_t sqn);
 static int ogs_gtp_xact_delete(ogs_gtp_xact_t *xact);
 static int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type);
@@ -352,7 +352,7 @@ int ogs_gtp_xact_update_tx(ogs_gtp_xact_t *xact,
             OGS_ADDR(&xact->gnode->addr, buf),
             OGS_PORT(&xact->gnode->addr));
 
-    stage = ogs_gtp_xact_get_stage(hdesc->type, xact->xid);
+    stage = ogs_gtp2_xact_get_stage(hdesc->type, xact->xid);
     if (xact->org == OGS_GTP_LOCAL_ORIGINATOR) {
         switch (stage) {
         case GTP_XACT_INITIAL_STAGE:
@@ -456,7 +456,7 @@ static int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
     if (xact->gtp_version == 1)
         stage = ogs_gtp1_xact_get_stage(type, xact->xid);
     else
-        stage = ogs_gtp_xact_get_stage(type, xact->xid);
+        stage = ogs_gtp2_xact_get_stage(type, xact->xid);
 
     if (xact->org == OGS_GTP_LOCAL_ORIGINATOR) {
         switch (stage) {
@@ -640,7 +640,7 @@ int ogs_gtp_xact_commit(ogs_gtp_xact_t *xact)
     if (xact->gtp_version == 1)
         stage = ogs_gtp1_xact_get_stage(type, xact->xid);
     else
-        stage = ogs_gtp_xact_get_stage(type, xact->xid);
+        stage = ogs_gtp2_xact_get_stage(type, xact->xid);
 
     if (xact->org == OGS_GTP_LOCAL_ORIGINATOR) {
         switch (stage) {
@@ -947,7 +947,7 @@ static ogs_gtp_xact_stage_t ogs_gtp1_xact_get_stage(uint8_t type, uint32_t xid)
 }
 
 /* TS 29.274 Table 6.1-1 */
-static ogs_gtp_xact_stage_t ogs_gtp_xact_get_stage(uint8_t type, uint32_t xid)
+static ogs_gtp_xact_stage_t ogs_gtp2_xact_get_stage(uint8_t type, uint32_t xid)
 {
     ogs_gtp_xact_stage_t stage = GTP_XACT_UNKNOWN_STAGE;
 
@@ -1037,7 +1037,7 @@ static ogs_gtp_xact_t *ogs_gtp_xact_find_by_xid(
     if (gtp_version == 1)
         stage = ogs_gtp1_xact_get_stage(type, xid);
     else
-        stage = ogs_gtp_xact_get_stage(type, xid);
+        stage = ogs_gtp2_xact_get_stage(type, xid);
 
     switch (stage) {
     case GTP_XACT_INITIAL_STAGE:
