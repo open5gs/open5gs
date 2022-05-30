@@ -1081,11 +1081,14 @@ static ogs_gtp_xact_t *ogs_gtp_xact_find_by_xid(
                     xact->gtp_version,
                     OGS_ADDR(&gnode->addr, buf),
                     OGS_PORT(&gnode->addr));
-            break;
+            return xact;
         }
     }
 
-    return xact;
+    ogs_error("[%d] Failed Finding xact type %u from GTPv%u peer [%s]:%d",
+            xid, type, gtp_version,
+            OGS_ADDR(&gnode->addr, buf), OGS_PORT(&gnode->addr));
+    return NULL;
 }
 
 void ogs_gtp_xact_associate(ogs_gtp_xact_t *xact1, ogs_gtp_xact_t *xact2)
