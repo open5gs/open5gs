@@ -638,6 +638,7 @@ void smf_gsm_state_wait_pfcp_establishment(ogs_fsm_t *s, smf_event_t *e)
 
     ogs_pfcp_xact_t *pfcp_xact = NULL;
     ogs_pfcp_message_t *pfcp_message = NULL;
+    int rv;
 
     ogs_assert(s);
     ogs_assert(e);
@@ -672,16 +673,21 @@ void smf_gsm_state_wait_pfcp_establishment(ogs_fsm_t *s, smf_event_t *e)
                 }
                 switch (gtp_xact->gtp_version) {
                 case 1:
-                    ogs_assert(OGS_OK ==
-                            smf_gtp1_send_create_pdp_context_response(
-                                sess, gtp_xact));
+                    rv = smf_gtp1_send_create_pdp_context_response(sess, gtp_xact);
                     break;
                 case 2:
-                    ogs_assert(OGS_OK ==
-                            smf_gtp2_send_create_session_response(
-                                sess, gtp_xact));
+                    rv = smf_gtp2_send_create_session_response(sess, gtp_xact);
+                    break;
+                default:
+                    rv = OGS_ERROR;
                     break;
                 }
+                /* If no CreatePDPCtxResp can be sent, then tear down the session: */
+                if (rv != OGS_OK) {
+                    OGS_FSM_TRAN(s, &smf_gsm_state_wait_pfcp_deletion);
+                    return;
+                }
+
                 if (sess->gtp_rat_type == OGS_GTP2_RAT_TYPE_WLAN) {
                     /*
                      * TS23.214
