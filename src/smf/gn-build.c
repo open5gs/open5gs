@@ -282,7 +282,6 @@ ogs_pkbuf_t *smf_gn_build_create_pdp_context_response(
 
     gtp1_message.h.type = type;
     return ogs_gtp1_build_msg(&gtp1_message);
-    return NULL;
 }
 
 ogs_pkbuf_t *smf_gn_build_delete_pdp_context_response(
