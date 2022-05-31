@@ -34,7 +34,7 @@ static uint32_t g_xact_id = 0;
 static OGS_POOL(pool, ogs_gtp_xact_t);
 
 static ogs_gtp_xact_t *ogs_gtp_xact_remote_create(ogs_gtp_node_t *gnode, uint8_t gtp_version, uint32_t sqn);
-static ogs_gtp_xact_stage_t ogs_gtp_xact_get_stage(uint8_t type, uint32_t sqn);
+static ogs_gtp_xact_stage_t ogs_gtp2_xact_get_stage(uint8_t type, uint32_t sqn);
 static ogs_gtp_xact_stage_t ogs_gtp1_xact_get_stage(uint8_t type, uint32_t sqn);
 static int ogs_gtp_xact_delete(ogs_gtp_xact_t *xact);
 static int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type);
@@ -352,7 +352,7 @@ int ogs_gtp_xact_update_tx(ogs_gtp_xact_t *xact,
             OGS_ADDR(&xact->gnode->addr, buf),
             OGS_PORT(&xact->gnode->addr));
 
-    stage = ogs_gtp_xact_get_stage(hdesc->type, xact->xid);
+    stage = ogs_gtp2_xact_get_stage(hdesc->type, xact->xid);
     if (xact->org == OGS_GTP_LOCAL_ORIGINATOR) {
         switch (stage) {
         case GTP_XACT_INITIAL_STAGE:
@@ -456,7 +456,7 @@ static int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
     if (xact->gtp_version == 1)
         stage = ogs_gtp1_xact_get_stage(type, xact->xid);
     else
-        stage = ogs_gtp_xact_get_stage(type, xact->xid);
+        stage = ogs_gtp2_xact_get_stage(type, xact->xid);
 
     if (xact->org == OGS_GTP_LOCAL_ORIGINATOR) {
         switch (stage) {
@@ -640,7 +640,7 @@ int ogs_gtp_xact_commit(ogs_gtp_xact_t *xact)
     if (xact->gtp_version == 1)
         stage = ogs_gtp1_xact_get_stage(type, xact->xid);
     else
-        stage = ogs_gtp_xact_get_stage(type, xact->xid);
+        stage = ogs_gtp2_xact_get_stage(type, xact->xid);
 
     if (xact->org == OGS_GTP_LOCAL_ORIGINATOR) {
         switch (stage) {
@@ -946,22 +946,36 @@ static ogs_gtp_xact_stage_t ogs_gtp1_xact_get_stage(uint8_t type, uint32_t xid)
     return stage;
 }
 
-static ogs_gtp_xact_stage_t ogs_gtp_xact_get_stage(uint8_t type, uint32_t xid)
+/* TS 29.274 Table 6.1-1 */
+static ogs_gtp_xact_stage_t ogs_gtp2_xact_get_stage(uint8_t type, uint32_t xid)
 {
     ogs_gtp_xact_stage_t stage = GTP_XACT_UNKNOWN_STAGE;
 
     switch (type) {
+    case OGS_GTP2_ECHO_REQUEST_TYPE:
     case OGS_GTP2_CREATE_SESSION_REQUEST_TYPE:
     case OGS_GTP2_MODIFY_BEARER_REQUEST_TYPE:
     case OGS_GTP2_DELETE_SESSION_REQUEST_TYPE:
+    case OGS_GTP2_CHANGE_NOTIFICATION_REQUEST_TYPE:
+    case OGS_GTP2_REMOTE_UE_REPORT_NOTIFICATION_TYPE:
     case OGS_GTP2_MODIFY_BEARER_COMMAND_TYPE:
     case OGS_GTP2_DELETE_BEARER_COMMAND_TYPE:
     case OGS_GTP2_BEARER_RESOURCE_COMMAND_TYPE:
-    case OGS_GTP2_RELEASE_ACCESS_BEARERS_REQUEST_TYPE:
+    case OGS_GTP2_TRACE_SESSION_ACTIVATION_TYPE:
+    case OGS_GTP2_TRACE_SESSION_DEACTIVATION_TYPE:
+    case OGS_GTP2_STOP_PAGING_INDICATION_TYPE:
+    case OGS_GTP2_DELETE_PDN_CONNECTION_SET_REQUEST_TYPE:
+    case OGS_GTP2_PGW_DOWNLINK_TRIGGERING_NOTIFICATION_TYPE:
+    case OGS_GTP2_CREATE_FORWARDING_TUNNEL_REQUEST_TYPE:
+    case OGS_GTP2_SUSPEND_NOTIFICATION_TYPE:
+    case OGS_GTP2_RESUME_NOTIFICATION_TYPE:
     case OGS_GTP2_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
     case OGS_GTP2_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
+    case OGS_GTP2_RELEASE_ACCESS_BEARERS_REQUEST_TYPE:
     case OGS_GTP2_DOWNLINK_DATA_NOTIFICATION_TYPE:
-    case OGS_GTP2_ECHO_REQUEST_TYPE:
+    case OGS_GTP2_PGW_RESTART_NOTIFICATION_TYPE:
+    case OGS_GTP2_UPDATE_PDN_CONNECTION_SET_REQUEST_TYPE:
+    case OGS_GTP2_MODIFY_ACCESS_BEARERS_REQUEST_TYPE:
         stage = GTP_XACT_INITIAL_STAGE;
         break;
     case OGS_GTP2_CREATE_BEARER_REQUEST_TYPE:
@@ -972,20 +986,32 @@ static ogs_gtp_xact_stage_t ogs_gtp_xact_get_stage(uint8_t type, uint32_t xid)
         else
             stage = GTP_XACT_INITIAL_STAGE;
         break;
+    case OGS_GTP2_ECHO_RESPONSE_TYPE:
+    case OGS_GTP2_VERSION_NOT_SUPPORTED_INDICATION_TYPE:
     case OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE:
     case OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE:
     case OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE:
+    case OGS_GTP2_CHANGE_NOTIFICATION_RESPONSE_TYPE:
+    case OGS_GTP2_REMOTE_UE_REPORT_ACKNOWLEDGE_TYPE:
     case OGS_GTP2_MODIFY_BEARER_FAILURE_INDICATION_TYPE:
     case OGS_GTP2_DELETE_BEARER_FAILURE_INDICATION_TYPE:
     case OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE:
+    case OGS_GTP2_DOWNLINK_DATA_NOTIFICATION_FAILURE_INDICATION_TYPE:
     case OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE:
     case OGS_GTP2_UPDATE_BEARER_RESPONSE_TYPE:
     case OGS_GTP2_DELETE_BEARER_RESPONSE_TYPE:
-    case OGS_GTP2_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
+    case OGS_GTP2_DELETE_PDN_CONNECTION_SET_RESPONSE_TYPE:
+    case OGS_GTP2_PGW_DOWNLINK_TRIGGERING_ACKNOWLEDGE_TYPE:
+    case OGS_GTP2_CREATE_FORWARDING_TUNNEL_RESPONSE_TYPE:
+    case OGS_GTP2_SUSPEND_ACKNOWLEDGE_TYPE:
+    case OGS_GTP2_RESUME_ACKNOWLEDGE_TYPE:
     case OGS_GTP2_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
     case OGS_GTP2_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
+    case OGS_GTP2_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
     case OGS_GTP2_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE:
-    case OGS_GTP2_ECHO_RESPONSE_TYPE:
+    case OGS_GTP2_PGW_RESTART_NOTIFICATION_ACKNOWLEDGE_TYPE:
+    case OGS_GTP2_UPDATE_PDN_CONNECTION_SET_RESPONSE_TYPE:
+    case OGS_GTP2_MODIFY_ACCESS_BEARERS_RESPONSE_TYPE:
         stage = GTP_XACT_FINAL_STAGE;
         break;
 
@@ -1011,7 +1037,7 @@ static ogs_gtp_xact_t *ogs_gtp_xact_find_by_xid(
     if (gtp_version == 1)
         stage = ogs_gtp1_xact_get_stage(type, xid);
     else
-        stage = ogs_gtp_xact_get_stage(type, xid);
+        stage = ogs_gtp2_xact_get_stage(type, xid);
 
     switch (stage) {
     case GTP_XACT_INITIAL_STAGE:
@@ -1042,8 +1068,8 @@ static ogs_gtp_xact_t *ogs_gtp_xact_find_by_xid(
         }
         break;
     default:
-        ogs_assert_if_reached();
-        break;
+        ogs_warn("%s: Unexpected stage %u.", OGS_FUNC, stage);
+        return NULL;
     }
 
     ogs_assert(list);
@@ -1055,11 +1081,14 @@ static ogs_gtp_xact_t *ogs_gtp_xact_find_by_xid(
                     xact->gtp_version,
                     OGS_ADDR(&gnode->addr, buf),
                     OGS_PORT(&gnode->addr));
-            break;
+            return xact;
         }
     }
 
-    return xact;
+    ogs_error("[%d] Failed Finding xact type %u from GTPv%u peer [%s]:%d",
+            xid, type, gtp_version,
+            OGS_ADDR(&gnode->addr, buf), OGS_PORT(&gnode->addr));
+    return NULL;
 }
 
 void ogs_gtp_xact_associate(ogs_gtp_xact_t *xact1, ogs_gtp_xact_t *xact2)
