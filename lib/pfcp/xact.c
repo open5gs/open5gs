@@ -459,7 +459,6 @@ static int ogs_pfcp_xact_update_rx(ogs_pfcp_xact_t *xact, uint8_t type)
 
 int ogs_pfcp_xact_commit(ogs_pfcp_xact_t *xact)
 {
-    int rv;
     char buf[OGS_ADDRSTRLEN];
 
     uint8_t type;
@@ -562,8 +561,11 @@ int ogs_pfcp_xact_commit(ogs_pfcp_xact_t *xact)
     pkbuf = xact->seq[xact->step-1].pkbuf;
     ogs_assert(pkbuf);
 
-    rv = ogs_pfcp_sendto(xact->node, pkbuf);
-    ogs_expect(rv == OGS_OK);
+    if (ogs_pfcp_sendto(xact->node, pkbuf) != OGS_OK) {
+        ogs_error("ogs_pfcp_sendto() failed");
+        ogs_pfcp_xact_delete(xact);
+        return OGS_ERROR;
+    }
 
     return OGS_OK;
 }
@@ -756,10 +758,13 @@ static ogs_pfcp_xact_t *ogs_pfcp_xact_find_by_xid(
 
     ogs_list_t *list = NULL;
     ogs_pfcp_xact_t *xact = NULL;
+    ogs_pfcp_xact_stage_t stage;
 
     ogs_assert(node);
 
-    switch (ogs_pfcp_xact_get_stage(type, xid)) {
+    stage = ogs_pfcp_xact_get_stage(type, xid);
+
+    switch (stage) {
     case PFCP_XACT_INITIAL_STAGE:
         list = &node->remote_list;
         break;
@@ -770,8 +775,9 @@ static ogs_pfcp_xact_t *ogs_pfcp_xact_find_by_xid(
         list = &node->local_list;
         break;
     default:
+        ogs_warn("Unexpected stage %u.", stage);
         ogs_assert_if_reached();
-        break;
+        return NULL;
     }
 
     ogs_assert(list);
@@ -782,11 +788,15 @@ static ogs_pfcp_xact_t *ogs_pfcp_xact_find_by_xid(
                 xact->org == OGS_PFCP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                 OGS_ADDR(&node->addr, buf),
                 OGS_PORT(&node->addr));
-            break;
+            return xact;
         }
     }
 
-    return xact;
+    ogs_debug("[%d] Cannot find xact type %u from PFCP peer [%s]:%d",
+            xid, type,
+            OGS_ADDR(&node->addr, buf), OGS_PORT(&node->addr));
+
+    return NULL;
 }
 
 static int ogs_pfcp_xact_delete(ogs_pfcp_xact_t *xact)

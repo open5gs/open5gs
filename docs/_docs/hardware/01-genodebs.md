@@ -42,6 +42,8 @@ If you have tested radio hardware from a vendor not listed with Open5GS, please 
  * Nokia FW2PC BC28 Flexi Zone G2 Outdoor Micro FDD LTE 700 MHz High Power
  * Nokia FWH1 B38 Flexi Zone Outdoor Micro TD LTE 2600 MHz
  * Nokia FRGY Flexi BTS BBU with Nokia FRCG RRU Band 5 850Mhz FDD 40W. Version 16.1A to 19.0
+ * Nokia FW2FA Flexi Zone Mini-Macro Outdoor BTS, 2x20w Band 39
+ * Nokia FWGR Flexi Zone Mini-Macro Outdoor BTS, 2x20w Band 1
  * Ruckus Q710 and Q910
 
 ### 4G/5G Software Stacks + SDRs

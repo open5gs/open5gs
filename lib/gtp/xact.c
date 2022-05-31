@@ -620,7 +620,6 @@ static int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
 
 int ogs_gtp_xact_commit(ogs_gtp_xact_t *xact)
 {
-    int rv;
     char buf[OGS_ADDRSTRLEN];
 
     uint8_t type;
@@ -726,10 +725,13 @@ int ogs_gtp_xact_commit(ogs_gtp_xact_t *xact)
     pkbuf = xact->seq[xact->step-1].pkbuf;
     ogs_assert(pkbuf);
 
-    rv = ogs_gtp_sendto(xact->gnode, pkbuf);
-    ogs_expect(rv == OGS_OK);
+    if (ogs_gtp_sendto(xact->gnode, pkbuf) != OGS_OK) {
+        ogs_error("ogs_gtp_sendto() failed");
+        ogs_gtp_xact_delete(xact);
+        return OGS_ERROR;
+    }
 
-    return rv;
+    return OGS_OK;
 }
 
 static void response_timeout(void *data)
@@ -1068,7 +1070,8 @@ static ogs_gtp_xact_t *ogs_gtp_xact_find_by_xid(
         }
         break;
     default:
-        ogs_warn("%s: Unexpected stage %u.", OGS_FUNC, stage);
+        ogs_warn("Unexpected stage %u.", stage);
+        ogs_assert_if_reached();
         return NULL;
     }
 
@@ -1085,7 +1088,7 @@ static ogs_gtp_xact_t *ogs_gtp_xact_find_by_xid(
         }
     }
 
-    ogs_error("[%d] Failed Finding xact type %u from GTPv%u peer [%s]:%d",
+    ogs_debug("[%d] Cannot find xact type %u from GTPv%u peer [%s]:%d",
             xid, type, gtp_version,
             OGS_ADDR(&gnode->addr, buf), OGS_PORT(&gnode->addr));
     return NULL;
