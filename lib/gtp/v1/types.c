@@ -241,7 +241,9 @@ static uint8_t enc_transfer_delay_ms(uint16_t transfer_delay_ms)
     }
     if (transfer_delay_ms > 150)
         transfer_delay_ms = 150;
-    return transfer_delay_ms / 10;
+    if (transfer_delay_ms >= 10)
+        return transfer_delay_ms / 10;
+    return 1; /* 0 is "Reserved" Network->MS */
 }
 
 #define CHECK_EXT1 0xfe
