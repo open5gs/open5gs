@@ -264,6 +264,8 @@ typedef struct ogs_gtp1_qos_profile_decoded_s {
     uint16_t dec_transfer_delay;
     uint32_t dec_mbr_kbps_dl; /* decoded MBR in kbps */
     uint32_t dec_mbr_kbps_ul; /* decoded MBR in kbps */
+    uint32_t dec_gbr_kbps_dl; /* decoded GBR in kbps */
+    uint32_t dec_gbr_kbps_ul; /* decoded GBR in kbps */
 } __attribute__ ((packed)) ogs_gtp1_qos_profile_decoded_t;
 
 #define OGS_GTP1_QOS_TRAFFIC_CLASS_SUBSCRIBED 0
