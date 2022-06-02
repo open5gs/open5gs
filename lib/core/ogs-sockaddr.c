@@ -70,7 +70,7 @@ int ogs_getnameinfo(
 }
 #endif
 
-int ogs_getaddrinfo(ogs_sockaddr_t **sa_list, 
+int ogs_getaddrinfo(ogs_sockaddr_t **sa_list,
         int family, const char *hostname, uint16_t port, int flags)
 {
     *sa_list = NULL;
@@ -93,7 +93,7 @@ int ogs_freeaddrinfo(ogs_sockaddr_t *sa_list)
     return OGS_OK;
 }
 
-int ogs_addaddrinfo(ogs_sockaddr_t **sa_list, 
+int ogs_addaddrinfo(ogs_sockaddr_t **sa_list,
         int family, const char *hostname, uint16_t port, int flags)
 {
     int rc;
@@ -246,7 +246,7 @@ int ogs_sortaddrinfo(ogs_sockaddr_t **sa_list, int family)
             new->next = addr;
         }
     }
-    
+
     *sa_list = head;
 
     return OGS_OK;
@@ -312,11 +312,11 @@ ogs_sockaddr_t *ogs_link_local_addr_by_sa(const ogs_sockaddr_t *sa)
     return ogs_link_local_addr(NULL, sa);
 }
 
-int ogs_filter_ip_version(ogs_sockaddr_t **addr, 
+int ogs_filter_ip_version(ogs_sockaddr_t **addr,
         int no_ipv4, int no_ipv6, int prefer_ipv4)
 {
     int rv;
-    
+
     if (no_ipv4 == 1) {
         rv = ogs_filteraddrinfo(addr, AF_INET6);
         ogs_assert(rv == OGS_OK);
@@ -491,7 +491,7 @@ static int parse_ip(
     /* supported flavors of IP:
      *
      * . IPv6 numeric address string (e.g., "fe80::1")
-     * 
+     *
      *   IMPORTANT: Don't store IPv4-mapped IPv6 address as an IPv6 address.
      *
      * . IPv4 numeric address string (e.g., "127.0.0.1")
@@ -506,7 +506,7 @@ static int parse_ip(
     if (rc == 1) {
         if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)ipsub->sub)) {
             /* ipsubnet_test() assumes that we don't create IPv4-mapped IPv6
-             * addresses; this of course forces the user to specify 
+             * addresses; this of course forces the user to specify
              * IPv4 addresses in a.b.c.d style instead of ::ffff:a.b.c.d style.
              */
             ogs_error("Cannot support IPv4-mapped IPv6: "
@@ -535,7 +535,7 @@ static int looks_like_ip(const char *ipstr)
 {
     if (strlen(ipstr) == 0)
         return 0;
-    
+
     if (strchr(ipstr, ':')) {
         /* definitely not a hostname;
          * assume it is intended to be an IPv6 address */
@@ -572,9 +572,9 @@ int ogs_ipsubnet(ogs_ipsubnet_t *ipsub,
     ogs_assert(ipstr);
 
     /* filter out stuff which doesn't look remotely like an IP address;
-     * this helps callers like mod_access which have a syntax allowing 
+     * this helps callers like mod_access which have a syntax allowing
      * hostname or IP address;
-     * CORE_EINVAL tells the caller that it was probably not intended 
+     * CORE_EINVAL tells the caller that it was probably not intended
      * to be an IP address
      */
     if (!looks_like_ip(ipstr)) {
