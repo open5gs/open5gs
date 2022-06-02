@@ -332,12 +332,13 @@ int16_t ogs_gtp1_build_qos_profile(ogs_tlv_octet_t *octet,
     octet->data = data;
     target = (ogs_gtp1_qos_profile_t *)octet->data;
 
-    /* First, encode in the target position the decoded-provided fields: */
+    /* First, copy the encoded buffer as it is: */
+    memcpy(target, &decoded->qos_profile, sizeof(ogs_gtp1_qos_profile_t));
 
+    /* Then, encode in the target position the decoded-provided fields: */
     if (decoded->data_octet6_to_13_present)
         target->data.transfer_delay = enc_transfer_delay_ms(decoded->dec_transfer_delay);
 
-    /* TODO: prefill with default values the extended bytes */
     extended_dl = enc_mbr_kbps(decoded->dec_mbr_kbps_dl,
                                 &target->data.max_bit_rate_downlink,
                                 &target->data.extended.max_bit_rate_downlink,
@@ -347,7 +348,7 @@ int16_t ogs_gtp1_build_qos_profile(ogs_tlv_octet_t *octet,
                                 &target->data.extended.max_bit_rate_uplink,
                                 &target->data.extended2.max_bit_rate_uplink);
 
-    memcpy(target, &decoded->qos_profile, sizeof(ogs_gtp1_qos_profile_t));
+    /* Finally, set len based on the required octets to encode the fields: */
     if (extended_ul == 2)
         octet->len = 23;
     else if (extended_dl == 2)
