@@ -578,7 +578,7 @@ int ogs_ipsubnet(ogs_ipsubnet_t *ipsub,
      * to be an IP address
      */
     if (!looks_like_ip(ipstr)) {
-        ogs_error("looks_like_ip() is failed");
+        ogs_error("looks_like_ip(%s, %s) failed", ipstr, mask_or_numbits);
         return OGS_ERROR;
     }
 
@@ -587,7 +587,7 @@ int ogs_ipsubnet(ogs_ipsubnet_t *ipsub,
 
     rv = parse_ip(ipsub, ipstr, mask_or_numbits == NULL);
     if (rv != OGS_OK) {
-        ogs_error("parse_ip() is failed");
+        ogs_error("parse_ip(%s, %s) failed", ipstr, mask_or_numbits);
         return rv;
     }
 
@@ -619,7 +619,7 @@ int ogs_ipsubnet(ogs_ipsubnet_t *ipsub,
             ipsub->family == AF_INET) {
             /* valid IPv4 netmask */
         } else {
-            ogs_error("Bad netmask");
+            ogs_error("Bad netmask %s", mask_or_numbits);
             return OGS_ERROR;
         }
     }
