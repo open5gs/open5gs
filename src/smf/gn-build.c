@@ -244,12 +244,12 @@ ogs_pkbuf_t *smf_gn_build_create_pdp_context_response(
     rsp->ggsn_address_for_user_traffic.len = gsn_len;
 
     /* QoS Profile: if PCRF changes Bearer QoS, this should be included. */
-   if (sess->gtp.create_session_response_bearer_qos == true) {
-      build_qos_profile_from_session(&qos_pdec, sess);
-       rsp->quality_of_service_profile.presence = 1;
-       ogs_gtp1_build_qos_profile(&rsp->quality_of_service_profile,
+    if (sess->gtp.create_session_response_bearer_qos == true) {
+        build_qos_profile_from_session(&qos_pdec, sess);
+        rsp->quality_of_service_profile.presence = 1;
+        ogs_gtp1_build_qos_profile(&rsp->quality_of_service_profile,
                &qos_pdec, qos_pdec_buf, OGS_GTP1_QOS_PROFILE_MAX_LEN);
-   }
+    }
 
     /* TODO: Charging Gateway Address */
     /* TODO: Alternative Charging Gateway Address */
@@ -433,21 +433,12 @@ ogs_pkbuf_t *smf_gn_build_update_pdp_context_response(
     rsp->ggsn_address_for_user_traffic.len = gsn_len;
 
     /* QoS Profile: if PCRF changes Bearer QoS, this should be included. */
-   if (sess->gtp.create_session_response_bearer_qos == true) {
-      build_qos_profile_from_session(&qos_pdec, sess);
-       rsp->quality_of_service_profile.presence = 1;
-       ogs_gtp1_build_qos_profile(&rsp->quality_of_service_profile,
+    if (sess->gtp.create_session_response_bearer_qos == true) {
+        build_qos_profile_from_session(&qos_pdec, sess);
+        rsp->quality_of_service_profile.presence = 1;
+        ogs_gtp1_build_qos_profile(&rsp->quality_of_service_profile,
                &qos_pdec, qos_pdec_buf, OGS_GTP1_QOS_PROFILE_MAX_LEN);
-   }
-
-
-    /* QoS Profile: if PCRF changes Bearer QoS, this should be included. */
-   if (sess->gtp.create_session_response_bearer_qos == true) {
-      build_qos_profile_from_session(&qos_pdec, sess);
-       rsp->quality_of_service_profile.presence = 1;
-       ogs_gtp1_build_qos_profile(&rsp->quality_of_service_profile,
-               &qos_pdec, qos_pdec_buf, OGS_GTP1_QOS_PROFILE_MAX_LEN);
-   }
+    }
 
    /* TODO: Charging Gateway Address */
    /* TODO: Alternative Charging Gateway Address */
