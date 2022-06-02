@@ -337,6 +337,11 @@ int16_t ogs_gtp1_build_qos_profile(ogs_tlv_octet_t *octet,
     /* First, copy the encoded buffer as it is: */
     memcpy(target, &decoded->qos_profile, sizeof(ogs_gtp1_qos_profile_t));
 
+    /* Avoid setting Traffic Handling to 0=Reserved even if ignored based on
+     * Interactive/Background Traffic Class: */
+    if (target->data.traffic_handling_priority == 0)
+        target->data.traffic_handling_priority = 1;
+
     /* Then, encode in the target position the decoded-provided fields: */
     if (decoded->data_octet6_to_13_present)
         target->data.transfer_delay = enc_transfer_delay_ms(decoded->dec_transfer_delay);
