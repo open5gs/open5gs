@@ -36,6 +36,7 @@
 
 #include "timer.h"
 #include "smf-sm.h"
+#include "metrics.h"
 
 #if HAVE_NET_IF_H
 #include <net/if.h>

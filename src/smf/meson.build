@@ -67,6 +67,7 @@ libsmf_sources = files('''
     ngap-build.h
     ngap-handler.h
     ngap-path.h
+    metrics.h
 
     init.c
     event.c
@@ -107,11 +108,13 @@ libsmf_sources = files('''
     ngap-build.c
     ngap-handler.c
     ngap-path.c
+    metrics.c
 '''.split())
 
 libsmf = static_library('smf',
     sources : libsmf_sources,
     dependencies : [libapp_dep,
+                    libmetrics_dep,
                     libsbi_dep,
                     libngap_dep,
                     libnas_5gs_dep,
@@ -125,6 +128,7 @@ libsmf = static_library('smf',
 libsmf_dep = declare_dependency(
     link_with : libsmf,
     dependencies : [libapp_dep,
+                    libmetrics_dep,
                     libsbi_dep,
                     libngap_dep,
                     libnas_5gs_dep,

@@ -91,6 +91,7 @@ static void _gtpv1v2_c_recv_cb(short when, ogs_socket_t fd, void *data)
         gnode = ogs_gtp_node_add_by_addr(&smf_self()->sgw_s5c_list, &from);
         ogs_assert(gnode);
         gnode->sock = data;
+        smf_metrics_inst_global_inc(SMF_METR_GLOB_GAUGE_GTP_PEERS_ACTIVE);
     }
     ogs_assert(e);
     e->gnode = gnode;

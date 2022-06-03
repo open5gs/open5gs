@@ -22,6 +22,7 @@
 #include "gtp-path.h"
 #include "pfcp-path.h"
 #include "sbi-path.h"
+#include "metrics.h"
 
 static ogs_thread_t *thread;
 static void smf_main(void *data);
@@ -32,6 +33,7 @@ int smf_initialize()
 {
     int rv;
 
+    ogs_metrics_context_init();
     ogs_gtp_context_init(ogs_app()->pool.nf * OGS_MAX_NUM_OF_GTPU_RESOURCE);
     ogs_pfcp_context_init();
 
@@ -54,6 +56,9 @@ int smf_initialize()
     rv = ogs_sbi_context_parse_config("smf", "nrf");
     if (rv != OGS_OK) return rv;
 
+    rv = ogs_metrics_context_parse_config();
+    if (rv != OGS_OK) return rv;
+
     rv = smf_context_parse_config();
     if (rv != OGS_OK) return rv;
 
@@ -63,6 +68,9 @@ int smf_initialize()
 
     rv = ogs_pfcp_ue_pool_generate();
     if (rv != OGS_OK) return rv;
+
+    rv = smf_metrics_open();
+    if (rv != 0) return OGS_ERROR;
 
     rv = smf_fd_init();
     if (rv != 0) return OGS_ERROR;
@@ -117,6 +125,7 @@ void smf_terminate(void)
     smf_gtp_close();
     smf_pfcp_close();
     smf_sbi_close();
+    smf_metrics_close();
 
     smf_fd_final();
 
@@ -125,6 +134,7 @@ void smf_terminate(void)
     ogs_pfcp_context_final();
     ogs_sbi_context_final();
     ogs_gtp_context_final();
+    ogs_metrics_context_final();
 
     ogs_pfcp_xact_final();
     ogs_gtp_xact_final();

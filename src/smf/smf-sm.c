@@ -98,6 +98,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
         if (ogs_gtp2_parse_msg(&gtp2_message, recvbuf) != OGS_OK) {
             ogs_error("ogs_gtp2_parse_msg() failed");
+            smf_metrics_inst_global_inc(SMF_METR_GLOB_CTR_S5C_RX_PARSE_FAILED);
             ogs_pkbuf_free(recvbuf);
             break;
         }
@@ -125,6 +126,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             smf_s5c_handle_echo_response(gtp_xact, &gtp2_message.echo_response);
             break;
         case OGS_GTP2_CREATE_SESSION_REQUEST_TYPE:
+            smf_metrics_inst_global_inc(SMF_METR_GLOB_CTR_S5C_RX_CREATESESSIONREQ);
             if (gtp2_message.h.teid == 0) {
                 ogs_expect(!sess);
                 sess = smf_sess_add_by_gtp2_message(&gtp2_message);
@@ -141,6 +143,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_fsm_dispatch(&sess->sm, e);
             break;
         case OGS_GTP2_DELETE_SESSION_REQUEST_TYPE:
+            smf_metrics_inst_global_inc(SMF_METR_GLOB_CTR_S5C_RX_DELETESESSIONREQ);
             if (!sess) {
                 ogs_gtp2_send_error_message(gtp_xact, 0,
                         OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE,
@@ -188,6 +191,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
         if (ogs_gtp1_parse_msg(&gtp1_message, recvbuf) != OGS_OK) {
             ogs_error("ogs_gtp2_parse_msg() failed");
+            smf_metrics_inst_global_inc(SMF_METR_GLOB_CTR_GN_RX_PARSE_FAILED);
             ogs_pkbuf_free(recvbuf);
             break;
         }
@@ -215,6 +219,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             smf_gn_handle_echo_response(gtp_xact, &gtp1_message.echo_response);
             break;
         case OGS_GTP1_CREATE_PDP_CONTEXT_REQUEST_TYPE:
+            smf_metrics_inst_global_inc(SMF_METR_GLOB_CTR_GN_RX_CREATEPDPCTXREQ);
             if (gtp1_message.h.teid == 0) {
                 ogs_expect(!sess);
                 sess = smf_sess_add_by_gtp1_message(&gtp1_message);
@@ -231,6 +236,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_fsm_dispatch(&sess->sm, e);
             break;
         case OGS_GTP1_DELETE_PDP_CONTEXT_REQUEST_TYPE:
+            smf_metrics_inst_global_inc(SMF_METR_GLOB_CTR_GN_RX_DELETEPDPCTXREQ);
             if (!sess) {
                 ogs_gtp1_send_error_message(gtp_xact, 0,
                         OGS_GTP1_DELETE_PDP_CONTEXT_RESPONSE_TYPE,
