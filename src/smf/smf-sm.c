@@ -54,8 +54,8 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
     ogs_pkbuf_t *recvbuf = NULL;
     smf_sess_t *sess = NULL;
     smf_ue_t *smf_ue = NULL;
+    smf_gtp_node_t *smf_gnode = NULL;
 
-    ogs_gtp_node_t *gnode = NULL;
     ogs_gtp_xact_t *gtp_xact = NULL;
     ogs_gtp2_message_t gtp2_message;
     ogs_gtp1_message_t gtp1_message;
@@ -96,18 +96,19 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         recvbuf = e->pkbuf;
         ogs_assert(recvbuf);
 
+        smf_gnode = e->gnode;
+        ogs_assert(smf_gnode);
+
         if (ogs_gtp2_parse_msg(&gtp2_message, recvbuf) != OGS_OK) {
             ogs_error("ogs_gtp2_parse_msg() failed");
             smf_metrics_inst_global_inc(SMF_METR_GLOB_CTR_S5C_RX_PARSE_FAILED);
+            smf_metrics_inst_gtp_node_inc(smf_gnode->metrics, SMF_METR_GTP_NODE_CTR_S5C_RX_PARSE_FAILED);
             ogs_pkbuf_free(recvbuf);
             break;
         }
         e->gtp2_message = &gtp2_message;
 
-        gnode = e->gnode;
-        ogs_assert(gnode);
-
-        rv = ogs_gtp_xact_receive(gnode, &gtp2_message.h, &gtp_xact);
+        rv = ogs_gtp_xact_receive(smf_gnode->gnode, &gtp2_message.h, &gtp_xact);
         if (rv != OGS_OK) {
             ogs_pkbuf_free(recvbuf);
             break;
@@ -127,11 +128,12 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
         case OGS_GTP2_CREATE_SESSION_REQUEST_TYPE:
             smf_metrics_inst_global_inc(SMF_METR_GLOB_CTR_S5C_RX_CREATESESSIONREQ);
+            smf_metrics_inst_gtp_node_inc(smf_gnode->metrics, SMF_METR_GTP_NODE_CTR_S5C_RX_CREATESESSIONREQ);
             if (gtp2_message.h.teid == 0) {
                 ogs_expect(!sess);
                 sess = smf_sess_add_by_gtp2_message(&gtp2_message);
                 if (sess)
-                    OGS_SETUP_GTP_NODE(sess, gnode);
+                    OGS_SETUP_GTP_NODE(sess, smf_gnode->gnode);
             }
             if (!sess) {
                 ogs_gtp2_send_error_message(gtp_xact, 0,
@@ -144,6 +146,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
         case OGS_GTP2_DELETE_SESSION_REQUEST_TYPE:
             smf_metrics_inst_global_inc(SMF_METR_GLOB_CTR_S5C_RX_DELETESESSIONREQ);
+            smf_metrics_inst_gtp_node_inc(smf_gnode->metrics, SMF_METR_GTP_NODE_CTR_S5C_RX_DELETESESSIONREQ);
             if (!sess) {
                 ogs_gtp2_send_error_message(gtp_xact, 0,
                         OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE,
@@ -189,9 +192,13 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         recvbuf = e->pkbuf;
         ogs_assert(recvbuf);
 
+        smf_gnode = e->gnode;
+        ogs_assert(smf_gnode);
+
         if (ogs_gtp1_parse_msg(&gtp1_message, recvbuf) != OGS_OK) {
             ogs_error("ogs_gtp2_parse_msg() failed");
             smf_metrics_inst_global_inc(SMF_METR_GLOB_CTR_GN_RX_PARSE_FAILED);
+            smf_metrics_inst_gtp_node_inc(smf_gnode->metrics, SMF_METR_GTP_NODE_CTR_GN_RX_PARSE_FAILED);
             ogs_pkbuf_free(recvbuf);
             break;
         }
@@ -201,10 +208,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             sess = smf_sess_find_by_teid(gtp1_message.h.teid);
         }
 
-        gnode = e->gnode;
-        ogs_assert(gnode);
-
-        rv = ogs_gtp1_xact_receive(gnode, &gtp1_message.h, &gtp_xact);
+        rv = ogs_gtp1_xact_receive(smf_gnode->gnode, &gtp1_message.h, &gtp_xact);
         if (rv != OGS_OK) {
             ogs_pkbuf_free(recvbuf);
             break;
@@ -220,11 +224,12 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
         case OGS_GTP1_CREATE_PDP_CONTEXT_REQUEST_TYPE:
             smf_metrics_inst_global_inc(SMF_METR_GLOB_CTR_GN_RX_CREATEPDPCTXREQ);
+            smf_metrics_inst_gtp_node_inc(smf_gnode->metrics, SMF_METR_GTP_NODE_CTR_GN_RX_CREATEPDPCTXREQ);
             if (gtp1_message.h.teid == 0) {
                 ogs_expect(!sess);
                 sess = smf_sess_add_by_gtp1_message(&gtp1_message);
                 if (sess)
-                    OGS_SETUP_GTP_NODE(sess, gnode);
+                    OGS_SETUP_GTP_NODE(sess, smf_gnode->gnode);
             }
             if (!sess) {
                 ogs_gtp1_send_error_message(gtp_xact, 0,
@@ -237,6 +242,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
         case OGS_GTP1_DELETE_PDP_CONTEXT_REQUEST_TYPE:
             smf_metrics_inst_global_inc(SMF_METR_GLOB_CTR_GN_RX_DELETEPDPCTXREQ);
+            smf_metrics_inst_gtp_node_inc(smf_gnode->metrics, SMF_METR_GTP_NODE_CTR_GN_RX_DELETEPDPCTXREQ);
             if (!sess) {
                 ogs_gtp1_send_error_message(gtp_xact, 0,
                         OGS_GTP1_DELETE_PDP_CONTEXT_RESPONSE_TYPE,
