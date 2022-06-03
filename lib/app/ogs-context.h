@@ -175,6 +175,10 @@ typedef struct ogs_app_context_s {
         } handover;
 
     } time;
+
+    struct metrics {
+        uint64_t max_specs;
+    } metrics;
 } ogs_app_context_t;
 
 int ogs_app_context_init(void);
