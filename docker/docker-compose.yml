@@ -33,7 +33,8 @@ services:
 
   build:
     build:
-      context: ./build
+      context: ../
+      dockerfile: docker/build/Dockerfile
       args:
         dist: ${DIST-ubuntu}
         tag: ${TAG-latest}
