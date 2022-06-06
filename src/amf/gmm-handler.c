@@ -1120,12 +1120,18 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                     OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE) {
                 param.ue_location = true;
                 param.ue_timezone = true;
-            }
 
-            ogs_assert(true ==
-                amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
-                    sess, AMF_UPDATE_SM_CONTEXT_N1_RELEASED, &param,
-                    amf_nsmf_pdusession_build_update_sm_context));
+                ogs_assert(true ==
+                    amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
+                        sess, AMF_UPDATE_SM_CONTEXT_N1_RELEASED, &param,
+                        amf_nsmf_pdusession_build_update_sm_context));
+            } else {
+
+                ogs_assert(true ==
+                    amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
+                        sess, AMF_UPDATE_SM_CONTEXT_MODIFIED, &param,
+                        amf_nsmf_pdusession_build_update_sm_context));
+            }
 
             switch (gsm_header->message_type) {
             case OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMPLETE:

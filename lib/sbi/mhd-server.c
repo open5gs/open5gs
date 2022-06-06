@@ -289,6 +289,11 @@ static void server_stop(ogs_sbi_server_t *server)
     }
 }
 
+static void free_callback(void *cls)
+{
+    ogs_free(cls);
+}
+
 static bool server_send_response(
         ogs_sbi_stream_t *stream, ogs_sbi_response_t *response)
 {
@@ -325,10 +330,20 @@ static bool server_send_response(
     ogs_assert(mhd_socket != INVALID_SOCKET);
 
     if (response->http.content) {
-        mhd_response = MHD_create_response_from_buffer(
+        mhd_response = MHD_create_response_from_buffer_with_free_callback(
                 response->http.content_length, response->http.content,
-                MHD_RESPMEM_PERSISTENT);
+                free_callback);
         ogs_assert(mhd_response);
+
+        /* response->http.content will be freed in free_callback() function.
+         *
+         * ogs_sbi_response_free(response) should not de-allocate
+         * response->http.content memory.
+         *
+         * So, we'll set response->http.content to NULL.
+         */
+        response->http.content = NULL;
+
     } else {
         mhd_response = MHD_create_response_from_buffer(
                 0, NULL, MHD_RESPMEM_PERSISTENT);

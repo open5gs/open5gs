@@ -487,6 +487,16 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                  * 4. PFCP Session Modifcation Response
                  */
 
+                /*
+                 * 1. PDU session release request
+                 * 2. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
+                 */
+
+                /*
+                 * 1. PDU session modification complete
+                 * 2. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
+                 */
+
             } else if (state == AMF_UPDATE_SM_CONTEXT_DEACTIVATED) {
                 /*
                  * 1. UEContextReleaseRequest
