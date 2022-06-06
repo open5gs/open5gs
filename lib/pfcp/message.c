@@ -303,7 +303,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_up_function_features =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_apply_action =
 {
-    OGS_TLV_UINT8,
+    OGS_TLV_UINT16,
     "Apply Action",
     OGS_PFCP_APPLY_ACTION_TYPE,
     1,

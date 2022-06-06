@@ -319,7 +319,9 @@ ED2(uint8_t reserved:7;,
 #define OGS_PFCP_APPLY_ACTION_BUFF                          4
 #define OGS_PFCP_APPLY_ACTION_NOCP                          8
 #define OGS_PFCP_APPLY_ACTION_DUPL                          16
-typedef uint8_t  ogs_pfcp_apply_action_t;
+#define PFCP_APPLY_ACTION_BDPN                              512
+#define PFCP_APPLY_ACTION_DDPN                              1024
+typedef uint16_t  ogs_pfcp_apply_action_t;
 
 /* 8.2.58 CP Function Features */
 typedef struct ogs_pfcp_cp_function_features_s {

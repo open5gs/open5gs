@@ -463,7 +463,7 @@ void ogs_pfcp_build_create_far(
     message->far_id.u32 = far->id;
 
     message->apply_action.presence = 1;
-    message->apply_action.u8 = far->apply_action;
+    message->apply_action.u16 = htobe16(far->apply_action);
 
     if (far->apply_action & OGS_PFCP_APPLY_ACTION_FORW) {
         message->forwarding_parameters.presence = 1;
@@ -507,7 +507,7 @@ void ogs_pfcp_build_update_far_deactivate(
     far->apply_action =
         OGS_PFCP_APPLY_ACTION_BUFF | OGS_PFCP_APPLY_ACTION_NOCP;
     message->apply_action.presence = 1;
-    message->apply_action.u8 = far->apply_action;
+    message->apply_action.u16 = htobe16(far->apply_action);
 
     ogs_assert(sess->bar);
     message->bar_id.presence = 1;
@@ -527,7 +527,7 @@ void ogs_pfcp_build_update_far_activate(
     ogs_assert(far->apply_action & OGS_PFCP_APPLY_ACTION_FORW);
 
     message->apply_action.presence = 1;
-    message->apply_action.u8 = far->apply_action;
+    message->apply_action.u16 = htobe16(far->apply_action);
 
     message->update_forwarding_parameters.presence = 1;
     message->update_forwarding_parameters.destination_interface.presence = 1;

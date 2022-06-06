@@ -761,7 +761,7 @@ ogs_pfcp_far_t *ogs_pfcp_handle_create_far(ogs_pfcp_sess_t *sess,
         return NULL;
     }
 
-    far->apply_action = message->apply_action.u8;
+    far->apply_action = message->apply_action.u16;
 
     far->dst_if = 0;
     memset(&far->outer_header_creation, 0, sizeof(far->outer_header_creation));
@@ -855,7 +855,7 @@ ogs_pfcp_far_t *ogs_pfcp_handle_update_far(ogs_pfcp_sess_t *sess,
     }
 
     if (message->apply_action.presence)
-        far->apply_action = message->apply_action.u8;
+        far->apply_action = message->apply_action.u16;
 
     if (message->update_forwarding_parameters.presence) {
         if (message->update_forwarding_parameters.
