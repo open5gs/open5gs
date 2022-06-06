@@ -930,6 +930,14 @@ ED3(uint8_t     spare:6;,
     };
 } __attribute__ ((packed)) ogs_pfcp_downlink_data_service_information_t;
 
+typedef struct ogs_pfcp_data_status_s {
+    struct {
+ED3(uint8_t     spare:6;,
+    uint8_t     buff:1;,
+    uint8_t     drop:1;)
+    };
+} __attribute__ ((packed)) ogs_pfcp_data_status_t;
+
 /*
  * 8.2.31 PFCPSMReq-Flags
  *

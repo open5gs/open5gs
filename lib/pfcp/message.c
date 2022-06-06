@@ -323,6 +323,17 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_downlink_data_service_information =
     { NULL }
 };
 
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_data_status =
+{
+    OGS_TLV_UINT8,
+    "Data Status",
+    OGS_PFCP_DATA_STATUS_TYPE,
+    1,
+    0,
+    sizeof(ogs_pfcp_tlv_data_status_t),
+    { NULL }
+};
+
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_downlink_data_notification_delay =
 {
     OGS_TLV_VAR_STR,
@@ -2211,6 +2222,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_downlink_data_report =
     {
         &ogs_pfcp_tlv_desc_pdr_id,
         &ogs_pfcp_tlv_desc_downlink_data_service_information,
+        &ogs_pfcp_tlv_desc_data_status,
         NULL,
     }
 };

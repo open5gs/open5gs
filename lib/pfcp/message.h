@@ -269,6 +269,7 @@ typedef struct ogs_pfcp_header_s {
 #define OGS_PFCP_PACKET_REPLICATION_AND_DETECTION_CARRY_ON_INFORMATION_TYPE 179
 #define OGS_PFCP_SMF_SET_ID_TYPE 180
 #define OGS_PFCP_QUOTA_VALIDITY_TIME_TYPE 181
+#define OGS_PFCP_DATA_STATUS_TYPE 260
 
 /* Information Element TLV Descriptor */
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_cause;
@@ -298,6 +299,7 @@ extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_destination_interface;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_up_function_features;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_apply_action;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_downlink_data_service_information;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_data_status;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_downlink_data_notification_delay;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_dl_buffering_duration;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_dl_buffering_suggested_packet_count;
@@ -508,6 +510,7 @@ typedef ogs_tlv_uint8_t ogs_pfcp_tlv_destination_interface_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_up_function_features_t;
 typedef ogs_tlv_uint16_t ogs_pfcp_tlv_apply_action_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_downlink_data_service_information_t;
+typedef ogs_tlv_uint8_t ogs_pfcp_tlv_data_status_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_downlink_data_notification_delay_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_dl_buffering_duration_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_dl_buffering_suggested_packet_count_t;
@@ -1000,6 +1003,7 @@ typedef struct ogs_pfcp_tlv_downlink_data_report_s {
     ogs_tlv_presence_t presence;
     ogs_pfcp_tlv_pdr_id_t pdr_id;
     ogs_pfcp_tlv_downlink_data_service_information_t downlink_data_service_information;
+    ogs_pfcp_tlv_data_status_t data_status;
 } ogs_pfcp_tlv_downlink_data_report_t;
 
 typedef struct ogs_pfcp_tlv_create_bar_s {
