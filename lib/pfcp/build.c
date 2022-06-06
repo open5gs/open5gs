@@ -507,7 +507,7 @@ void ogs_pfcp_build_update_far_deactivate(
     far->apply_action =
         OGS_PFCP_APPLY_ACTION_BUFF | OGS_PFCP_APPLY_ACTION_NOCP;
     message->apply_action.presence = 1;
-    message->apply_action.u16 = htobe16(far->apply_action);
+    message->apply_action.u16 = far->apply_action;
 
     ogs_assert(sess->bar);
     message->bar_id.presence = 1;
