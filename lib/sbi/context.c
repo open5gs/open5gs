@@ -494,6 +494,11 @@ int ogs_sbi_context_parse_config(const char *local, const char *remote)
     return OGS_OK;
 }
 
+bool ogs_sbi_nf_instance_maximum_number_is_reached()
+{
+    return nf_instance_pool.avail <= 0;
+}
+
 ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_add(char *id)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;

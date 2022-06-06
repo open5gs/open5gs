@@ -246,6 +246,7 @@ void ogs_sbi_context_final(void);
 ogs_sbi_context_t *ogs_sbi_self(void);
 int ogs_sbi_context_parse_config(const char *local, const char *remote);
 
+bool ogs_sbi_nf_instance_maximum_number_is_reached(void);
 ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_add(char *id);
 void ogs_sbi_nf_instance_add_allowed_nf_type(
         ogs_sbi_nf_instance_t *nf_instance, OpenAPI_nf_type_e allowed_nf_type);
