@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by pfcp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2022-05-10 22:56:07.844328 by acetcom
+ * Created on: 2022-06-06 21:06:39.840383 by acetcom
  * from 29244-g10.docx
  ******************************************************************************/
 
@@ -506,7 +506,7 @@ typedef ogs_tlv_uint16_t ogs_pfcp_tlv_offending_ie_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_forwarding_policy_t;
 typedef ogs_tlv_uint8_t ogs_pfcp_tlv_destination_interface_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_up_function_features_t;
-typedef ogs_tlv_uint8_t ogs_pfcp_tlv_apply_action_t;
+typedef ogs_tlv_uint16_t ogs_pfcp_tlv_apply_action_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_downlink_data_service_information_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_downlink_data_notification_delay_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_dl_buffering_duration_t;

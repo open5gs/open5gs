@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by pfcp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2022-05-10 22:56:07.851458 by acetcom
+ * Created on: 2022-06-06 21:06:39.847520 by acetcom
  * from 29244-g10.docx
  ******************************************************************************/
 
@@ -303,10 +303,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_up_function_features =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_apply_action =
 {
-    OGS_TLV_UINT8,
+    OGS_TLV_UINT16,
     "Apply Action",
     OGS_PFCP_APPLY_ACTION_TYPE,
-    1,
+    2,
     0,
     sizeof(ogs_pfcp_tlv_apply_action_t),
     { NULL }
