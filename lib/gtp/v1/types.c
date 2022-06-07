@@ -143,9 +143,9 @@ static uint32_t dec_mbr_kbps(uint8_t mbr_byte, const uint8_t *extended_mbr_byte,
             return (256 + embr2 * 4) * 1000;
         }
         if (embr1 >= 0xbb && embr1 <= 0xfa)
-            return (128 + (embr1 - (0xbb - 1)) * 1000) * 1000;
+            return (128 + (embr1 - (0xbb - 1)) * 2) * 1000;
         if (embr1 >= 0x4b && embr1 <= 0xba)
-            return (16 + (embr1 - (0x4b - 1)) * 100) * 1000;
+            return (16 + (embr1 - (0x4b - 1)) * 1) * 1000;
         return 8600 + embr1 * 100;
     }
     if (mbr & 0x80) {
