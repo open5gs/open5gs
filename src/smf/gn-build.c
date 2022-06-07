@@ -24,7 +24,8 @@
 #include "ipfw/ipfw2.h"
 
 /* 3GPP TS 23.401 Annex E */
-static void build_qos_profile_from_session(ogs_gtp1_qos_profile_decoded_t *qos_pdec, const smf_sess_t *sess)
+static void build_qos_profile_from_session(ogs_gtp1_qos_profile_decoded_t *qos_pdec,
+        const smf_sess_t *sess, const smf_bearer_t *bearer)
 {
     memset(qos_pdec, 0, sizeof(*qos_pdec));
 
@@ -99,6 +100,8 @@ static void build_qos_profile_from_session(ogs_gtp1_qos_profile_decoded_t *qos_p
     qos_pdec->data_octet14_present = true;
     qos_pdec->dec_mbr_kbps_dl = sess->session.ambr.downlink / 1000;
     qos_pdec->dec_mbr_kbps_ul = sess->session.ambr.uplink / 1000;
+    qos_pdec->dec_gbr_kbps_dl = bearer->qos.gbr.downlink / 1000;
+    qos_pdec->dec_gbr_kbps_ul = bearer->qos.gbr.uplink / 1000;
 }
 
 ogs_pkbuf_t *smf_gn_build_create_pdp_context_response(
@@ -245,7 +248,7 @@ ogs_pkbuf_t *smf_gn_build_create_pdp_context_response(
 
     /* QoS Profile: if PCRF changes Bearer QoS, this should be included. */
     if (sess->gtp.create_session_response_bearer_qos == true) {
-        build_qos_profile_from_session(&qos_pdec, sess);
+        build_qos_profile_from_session(&qos_pdec, sess, bearer);
         rsp->quality_of_service_profile.presence = 1;
         ogs_gtp1_build_qos_profile(&rsp->quality_of_service_profile,
                &qos_pdec, qos_pdec_buf, OGS_GTP1_QOS_PROFILE_MAX_LEN);
@@ -434,7 +437,7 @@ ogs_pkbuf_t *smf_gn_build_update_pdp_context_response(
 
     /* QoS Profile: if PCRF changes Bearer QoS, this should be included. */
     if (sess->gtp.create_session_response_bearer_qos == true) {
-        build_qos_profile_from_session(&qos_pdec, sess);
+        build_qos_profile_from_session(&qos_pdec, sess, bearer);
         rsp->quality_of_service_profile.presence = 1;
         ogs_gtp1_build_qos_profile(&rsp->quality_of_service_profile,
                &qos_pdec, qos_pdec_buf, OGS_GTP1_QOS_PROFILE_MAX_LEN);

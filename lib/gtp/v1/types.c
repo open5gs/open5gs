@@ -143,9 +143,9 @@ static uint32_t dec_mbr_kbps(uint8_t mbr_byte, const uint8_t *extended_mbr_byte,
             return (256 + embr2 * 4) * 1000;
         }
         if (embr1 >= 0xbb && embr1 <= 0xfa)
-            return (128 + (embr1 - (0xbb - 1)) * 1000) * 1000;
+            return (128 + (embr1 - (0xbb - 1)) * 2) * 1000;
         if (embr1 >= 0x4b && embr1 <= 0xba)
-            return (16 + (embr1 - (0x4b - 1)) * 100) * 1000;
+            return (16 + (embr1 - (0x4b - 1)) * 1) * 1000;
         return 8600 + embr1 * 100;
     }
     if (mbr & 0x80) {
@@ -383,17 +383,17 @@ int16_t ogs_gtp1_build_qos_profile(ogs_tlv_octet_t *octet,
 
     /* Finally, set len based on the required octets to encode the fields: */
     if (extended_ul == 2)
-        octet->len = 23;
-    else if (extended_dl == 2)
         octet->len = 21;
-    else if (extended_ul == 1)
+    else if (extended_dl == 2)
         octet->len = 19;
-    else if (extended_dl == 1)
+    else if (extended_ul == 1)
         octet->len = 17;
-    else if (decoded->data_octet14_present)
+    else if (extended_dl == 1)
         octet->len = 15;
+    else if (decoded->data_octet14_present)
+        octet->len = 13;
     else if (decoded->data_octet6_to_13_present)
-        octet->len = 14;
+        octet->len = 12;
     else
         octet->len = 6;
     return octet->len;
