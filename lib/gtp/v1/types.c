@@ -383,17 +383,17 @@ int16_t ogs_gtp1_build_qos_profile(ogs_tlv_octet_t *octet,
 
     /* Finally, set len based on the required octets to encode the fields: */
     if (extended_ul == 2)
-        octet->len = 23;
-    else if (extended_dl == 2)
         octet->len = 21;
-    else if (extended_ul == 1)
+    else if (extended_dl == 2)
         octet->len = 19;
-    else if (extended_dl == 1)
+    else if (extended_ul == 1)
         octet->len = 17;
-    else if (decoded->data_octet14_present)
+    else if (extended_dl == 1)
         octet->len = 15;
+    else if (decoded->data_octet14_present)
+        octet->len = 13;
     else if (decoded->data_octet6_to_13_present)
-        octet->len = 14;
+        octet->len = 12;
     else
         octet->len = 6;
     return octet->len;
