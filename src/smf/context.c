@@ -821,11 +821,9 @@ int smf_context_parse_config(void)
     return OGS_OK;
 }
 
-smf_ue_t *smf_ue_add_by_supi(char *supi)
+static smf_ue_t *smf_ue_add(void)
 {
     smf_ue_t *smf_ue = NULL;
-
-    ogs_assert(supi);
 
     ogs_pool_alloc(&smf_ue_pool, &smf_ue);
     if (!smf_ue) {
@@ -837,44 +835,44 @@ smf_ue_t *smf_ue_add_by_supi(char *supi)
 
     ogs_list_init(&smf_ue->sess_list);
 
+    ogs_list_add(&self.smf_ue_list, smf_ue);
+
+    smf_metrics_inst_global_inc(SMF_METR_GLOB_GAUGE_UES_ACTIVE);
+    ogs_info("[Added] Number of SMF-UEs is now %d",
+            ogs_list_count(&self.smf_ue_list));
+    return smf_ue;
+}
+
+smf_ue_t *smf_ue_add_by_supi(char *supi)
+{
+    smf_ue_t *smf_ue;
+
+    ogs_assert(supi);
+
+    if ((smf_ue = smf_ue_add()) == NULL)
+        return NULL;
+
     smf_ue->supi = ogs_strdup(supi);
     ogs_assert(smf_ue->supi);
     ogs_hash_set(self.supi_hash, smf_ue->supi, strlen(smf_ue->supi), smf_ue);
-
-    ogs_list_add(&self.smf_ue_list, smf_ue);
-
-    ogs_info("[Added] Number of SMF-UEs is now %d",
-            ogs_list_count(&self.smf_ue_list));
 
     return smf_ue;
 }
 
 smf_ue_t *smf_ue_add_by_imsi(uint8_t *imsi, int imsi_len)
 {
-    smf_ue_t *smf_ue = NULL;
+    smf_ue_t *smf_ue;
 
     ogs_assert(imsi);
     ogs_assert(imsi_len);
 
-    ogs_pool_alloc(&smf_ue_pool, &smf_ue);
-    if (!smf_ue) {
-        ogs_error("Maximum number of smf_ue[%lld] reached",
-                    (long long)ogs_app()->max.ue);
-        return NULL;
-    }
-    memset(smf_ue, 0, sizeof *smf_ue);
-
-    ogs_list_init(&smf_ue->sess_list);
+    if ((smf_ue = smf_ue_add()) == NULL)
+        return NULL;;
 
     smf_ue->imsi_len = imsi_len;
     memcpy(smf_ue->imsi, imsi, smf_ue->imsi_len);
     ogs_buffer_to_bcd(smf_ue->imsi, smf_ue->imsi_len, smf_ue->imsi_bcd);
     ogs_hash_set(self.imsi_hash, smf_ue->imsi, smf_ue->imsi_len, smf_ue);
-
-    ogs_list_add(&self.smf_ue_list, smf_ue);
-
-    ogs_info("[Added] Number of SMF-UEs is now %d",
-            ogs_list_count(&self.smf_ue_list));
 
     return smf_ue;
 }
@@ -898,6 +896,7 @@ void smf_ue_remove(smf_ue_t *smf_ue)
 
     ogs_pool_free(&smf_ue_pool, smf_ue);
 
+    smf_metrics_inst_global_dec(SMF_METR_GLOB_GAUGE_UES_ACTIVE);
     ogs_info("[Removed] Number of SMF-UEs is now %d",
             ogs_list_count(&self.smf_ue_list));
 }
@@ -1146,6 +1145,7 @@ smf_sess_t *smf_sess_add_by_gtp1_message(ogs_gtp1_message_t *message)
 
     sess = smf_sess_add_by_apn(smf_ue, apn, req->rat_type.u8);
     sess->gtp.version = 1;
+    smf_metrics_inst_global_inc(SMF_METR_GLOB_GAUGE_GTP1_PDPCTXS_ACTIVE);
     return sess;
 }
 
@@ -1210,6 +1210,7 @@ smf_sess_t *smf_sess_add_by_gtp2_message(ogs_gtp2_message_t *message)
 
     sess = smf_sess_add_by_apn(smf_ue, apn, req->rat_type.u8);
     sess->gtp.version = 2;
+    smf_metrics_inst_global_inc(SMF_METR_GLOB_GAUGE_GTP2_SESSIONS_ACTIVE);
     return sess;
 }
 
@@ -1620,9 +1621,16 @@ void smf_sess_remove(smf_sess_t *sess)
     smf_qfi_pool_final(sess);
     smf_pf_precedence_pool_final(sess);
 
-    ogs_pool_free(&smf_sess_pool, sess);
-
+    switch (sess->gtp.version) {
+    case 1:
+        smf_metrics_inst_global_dec(SMF_METR_GLOB_GAUGE_GTP1_PDPCTXS_ACTIVE);
+        break;
+    case 2:
+        smf_metrics_inst_global_dec(SMF_METR_GLOB_GAUGE_GTP2_SESSIONS_ACTIVE);
+        break;
+    }
     stats_remove_smf_session();
+    ogs_pool_free(&smf_sess_pool, sess);
 }
 
 void smf_sess_remove_all(smf_ue_t *smf_ue)
@@ -2203,6 +2211,7 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
 
     ogs_list_add(&sess->bearer_list, bearer);
 
+    smf_metrics_inst_global_inc(SMF_METR_GLOB_GAUGE_BEARERS_ACTIVE);
     return bearer;
 }
 
@@ -2244,6 +2253,7 @@ int smf_bearer_remove(smf_bearer_t *bearer)
 
     ogs_pool_free(&smf_bearer_pool, bearer);
 
+    smf_metrics_inst_global_dec(SMF_METR_GLOB_GAUGE_BEARERS_ACTIVE);
     return OGS_OK;
 }
 
@@ -2864,12 +2874,14 @@ void smf_pf_precedence_pool_final(smf_sess_t *sess)
 
 static void stats_add_smf_session(void)
 {
+    smf_metrics_inst_global_inc(SMF_METR_GLOB_GAUGE_SESSIONS_ACTIVE);
     num_of_smf_sess = num_of_smf_sess + 1;
     ogs_info("[Added] Number of SMF-Sessions is now %d", num_of_smf_sess);
 }
 
 static void stats_remove_smf_session(void)
 {
+    smf_metrics_inst_global_dec(SMF_METR_GLOB_GAUGE_SESSIONS_ACTIVE);
     num_of_smf_sess = num_of_smf_sess - 1;
     ogs_info("[Removed] Number of SMF-Sessions is now %d", num_of_smf_sess);
 }

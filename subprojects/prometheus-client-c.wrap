@@ -1,0 +1,7 @@
+[wrap-git]
+directory = prometheus-client-c
+url = https://github.com/open5gs/prometheus-client-c.git
+revision = open5gs
+
+[provide]
+dependency_names = libprom

@@ -37,6 +37,7 @@ typedef struct ogs_diam_gy_message_s ogs_diam_gy_message_t;
 typedef struct ogs_diam_s6b_message_s ogs_diam_s6b_message_t;
 typedef struct smf_sess_s smf_sess_t;
 typedef struct smf_upf_s smf_upf_t;
+typedef struct smf_gtp_node_s smf_gtp_node_t;
 typedef struct ogs_sbi_request_s ogs_sbi_request_t;
 typedef struct ogs_sbi_response_s ogs_sbi_response_t;
 typedef struct ogs_sbi_message_s ogs_sbi_message_t;
@@ -77,7 +78,7 @@ typedef struct smf_event_s {
     ogs_pkbuf_t *pkbuf;
     int timer_id;
 
-    ogs_gtp_node_t *gnode;
+    smf_gtp_node_t *gnode;
     ogs_gtp_xact_t *gtp_xact;
 
     ogs_pfcp_node_t *pfcp_node;

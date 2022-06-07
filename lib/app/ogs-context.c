@@ -226,9 +226,12 @@ static void app_context_prepare(void)
      */
     self.time.handover.duration = ogs_time_from_msec(300);
 
+    /* Size of internal metrics pool (amount of ogs_metrics_spec_t) */
+    self.metrics.max_specs = 512;
+
     regenerate_all_timer_duration();
 }
- 
+
 static int app_context_validation(void)
 {
     if (self.parameter.no_ipv4 == 1 &&

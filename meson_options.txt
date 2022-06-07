@@ -1,0 +1,1 @@
+option('metrics_impl', type : 'combo', choices : ['void', 'prometheus'], value : 'void', description : 'libogsmetrics implementation')

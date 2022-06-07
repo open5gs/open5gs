@@ -65,6 +65,7 @@ typedef struct ogs_gtp_context_s {
  * PGW gateway. Some of members may not be used by the specific type of node */
 typedef struct ogs_gtp_node_s {
     ogs_lnode_t     node;           /* A node of list_t */
+    void            *data_ptr;      /* Can be used by app */
 
     ogs_sockaddr_t  *sa_list;       /* Socket Address List Candidate */
 
