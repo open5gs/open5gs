@@ -253,6 +253,14 @@ uint8_t smf_gn_handle_create_pdp_context_request(
     ogs_assert(rv == OGS_OK);
     ogs_debug("    SGW_S5U_TEID[0x%x] PGW_S5U_TEID[0x%x]",
             bearer->sgw_s5u_teid, bearer->pgw_s5u_teid);
+    if (qos_pdec.data_octet6_to_13_present) {
+        bearer->qos.gbr.downlink = qos_pdec.dec_gbr_kbps_dl * 1000;
+        bearer->qos.gbr.uplink = qos_pdec.dec_gbr_kbps_ul * 1000;
+    } else {
+        /* Set some sane default if infomation not present in Qos Profile IE: */
+        bearer->qos.gbr.downlink = sess->session.ambr.downlink;
+        bearer->qos.gbr.uplink = sess->session.ambr.uplink;
+    }
 
     /* Select PGW based on UE Location Information */
     smf_sess_select_upf(sess);
