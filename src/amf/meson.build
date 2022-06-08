@@ -16,6 +16,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 libamf_sources = files('''
+    metrics.h
+
     context.c
     event.c
     timer.c
@@ -59,11 +61,13 @@ libamf_sources = files('''
     amf-sm.c
 
     init.c
+    metrics.c
 '''.split())
 
 libamf = static_library('amf',
     sources : libamf_sources,
     dependencies : [libapp_dep,
+                    libmetrics_dep,
                     libsctp_dep,
                     libngap_dep,
                     libnas_5gs_dep,
@@ -73,6 +77,7 @@ libamf = static_library('amf',
 libamf_dep = declare_dependency(
     link_with : libamf,
     dependencies : [libapp_dep,
+                    libmetrics_dep,
                     libsctp_dep,
                     libngap_dep,
                     libnas_5gs_dep,

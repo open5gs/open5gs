@@ -872,6 +872,7 @@ amf_gnb_t *amf_gnb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
     ogs_fsm_init(&gnb->sm, &e);
 
     ogs_list_add(&self.gnb_list, gnb);
+    amf_metrics_inst_global_inc(AMF_METR_GLOB_GAUGE_GNB);
 
     ogs_info("[Added] Number of gNBs is now %d",
             ogs_list_count(&self.gnb_list));
@@ -900,7 +901,7 @@ void amf_gnb_remove(amf_gnb_t *gnb)
     ogs_sctp_flush_and_destroy(&gnb->sctp);
 
     ogs_pool_free(&amf_gnb_pool, gnb);
-
+    amf_metrics_inst_global_dec(AMF_METR_GLOB_GAUGE_GNB);
     ogs_info("[Removed] Number of gNBs is now %d",
             ogs_list_count(&self.gnb_list));
 }
@@ -2068,24 +2069,28 @@ void amf_clear_subscribed_info(amf_ue_t *amf_ue)
 
 static void stats_add_ran_ue(void)
 {
+    amf_metrics_inst_global_inc(AMF_METR_GLOB_GAUGE_RAN_UE);
     num_of_ran_ue = num_of_ran_ue + 1;
     ogs_info("[Added] Number of gNB-UEs is now %d", num_of_ran_ue);
 }
 
 static void stats_remove_ran_ue(void)
 {
+    amf_metrics_inst_global_dec(AMF_METR_GLOB_GAUGE_RAN_UE);
     num_of_ran_ue = num_of_ran_ue - 1;
     ogs_info("[Removed] Number of gNB-UEs is now %d", num_of_ran_ue);
 }
 
 static void stats_add_amf_session(void)
 {
+    amf_metrics_inst_global_inc(AMF_METR_GLOB_GAUGE_AMF_SESS);
     num_of_amf_sess = num_of_amf_sess + 1;
     ogs_info("[Added] Number of AMF-Sessions is now %d", num_of_amf_sess);
 }
 
 static void stats_remove_amf_session(void)
 {
+    amf_metrics_inst_global_dec(AMF_METR_GLOB_GAUGE_AMF_SESS);
     num_of_amf_sess = num_of_amf_sess - 1;
     ogs_info("[Removed] Number of AMF-Sessions is now %d", num_of_amf_sess);
 }

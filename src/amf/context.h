@@ -28,6 +28,7 @@
 
 #include "amf-sm.h"
 #include "timer.h"
+#include "metrics.h"
 
 #ifdef __cplusplus
 extern "C" {

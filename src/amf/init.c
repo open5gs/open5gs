@@ -19,6 +19,7 @@
 
 #include "sbi-path.h"
 #include "ngap-path.h"
+#include "metrics.h"
 
 static ogs_thread_t *thread;
 static void amf_main(void *data);
@@ -28,6 +29,7 @@ int amf_initialize()
 {
     int rv;
 
+    ogs_metrics_context_init();
     amf_context_init();
     amf_event_init();
     ogs_sbi_context_init();
@@ -35,11 +37,17 @@ int amf_initialize()
     rv = ogs_sbi_context_parse_config("amf", "nrf");
     if (rv != OGS_OK) return rv;
 
+    rv = ogs_metrics_context_parse_config();
+    if (rv != OGS_OK) return rv;
+
     rv = amf_context_parse_config();
     if (rv != OGS_OK) return rv;
 
     rv = amf_m_tmsi_pool_generate();
     if (rv != OGS_OK) return rv;
+
+    rv = amf_metrics_open();
+    if (rv != 0) return OGS_ERROR;
 
     rv = ogs_log_config_domain(
             ogs_app()->logger.domain, ogs_app()->logger.level);
@@ -91,9 +99,11 @@ void amf_terminate(void)
 
     ngap_close();
     amf_sbi_close();
+    amf_metrics_close();
 
     amf_context_final();
     ogs_sbi_context_final();
+    ogs_metrics_context_final();
 
     amf_event_final(); /* Destroy event */
 }
