@@ -1833,6 +1833,7 @@ mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
     ogs_fsm_init(&enb->sm, &e);
 
     ogs_list_add(&self.enb_list, enb);
+    mme_metrics_inst_global_inc(MME_METR_GLOB_GAUGE_ENB);
 
     ogs_info("[Added] Number of eNBs is now %d",
             ogs_list_count(&self.enb_list));
@@ -1868,7 +1869,7 @@ int mme_enb_remove(mme_enb_t *enb)
     ogs_sctp_flush_and_destroy(&enb->sctp);
 
     ogs_pool_free(&mme_enb_pool, enb);
-
+    mme_metrics_inst_global_dec(MME_METR_GLOB_GAUGE_ENB);
     ogs_info("[Removed] Number of eNBs is now %d",
             ogs_list_count(&self.enb_list));
 
@@ -3485,24 +3486,28 @@ uint8_t mme_selected_enc_algorithm(mme_ue_t *mme_ue)
 
 static void stats_add_enb_ue(void)
 {
+    mme_metrics_inst_global_inc(MME_METR_GLOB_GAUGE_ENB_UE);
     num_of_enb_ue = num_of_enb_ue + 1;
     ogs_info("[Added] Number of eNB-UEs is now %d", num_of_enb_ue);
 }
 
 static void stats_remove_enb_ue(void)
 {
+    mme_metrics_inst_global_dec(MME_METR_GLOB_GAUGE_ENB_UE);
     num_of_enb_ue = num_of_enb_ue - 1;
     ogs_info("[Removed] Number of eNB-UEs is now %d", num_of_enb_ue);
 }
 
 static void stats_add_mme_session(void)
 {
+    mme_metrics_inst_global_inc(MME_METR_GLOB_GAUGE_MME_SESS);
     num_of_mme_sess = num_of_mme_sess + 1;
     ogs_info("[Added] Number of MME-Sessions is now %d", num_of_mme_sess);
 }
 
 static void stats_remove_mme_session(void)
 {
+    mme_metrics_inst_global_dec(MME_METR_GLOB_GAUGE_MME_SESS);
     num_of_mme_sess = num_of_mme_sess - 1;
     ogs_info("[Removed] Number of MME-Sessions is now %d", num_of_mme_sess);
 }
