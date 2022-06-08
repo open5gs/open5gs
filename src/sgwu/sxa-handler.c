@@ -380,7 +380,7 @@ void sgwu_sxa_handle_session_deletion_request(
     ogs_debug("Session Deletion Request");
 
     if (!sess) {
-        ogs_error("No Context");
+        ogs_warn("Session Deletion Request: No Context");
         ogs_pfcp_send_error_message(xact, 0,
                 OGS_PFCP_SESSION_DELETION_RESPONSE_TYPE,
                 OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND, 0);
