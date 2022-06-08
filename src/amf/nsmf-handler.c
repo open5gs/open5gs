@@ -886,8 +886,8 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
 
                     ogs_assert(true ==
                         amf_ue_sbi_discover_and_send(
-                            OpenAPI_nf_type_PCF, amf_ue,
-                            NULL, amf_npcf_am_policy_control_build_delete));
+                            OpenAPI_nf_type_UDM, amf_ue,
+                            NULL, amf_nudm_uecm_build_registration_delete));
 
                 } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered)) {
                     /*

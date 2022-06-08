@@ -28,6 +28,8 @@ extern "C" {
 
 ogs_sbi_request_t *amf_nudm_uecm_build_registration(
         amf_ue_t *amf_ue, void *data);
+ogs_sbi_request_t *amf_nudm_uecm_build_registration_delete(
+        amf_ue_t *amf_ue, void *data);
 ogs_sbi_request_t *amf_nudm_sdm_build_get(amf_ue_t *amf_ue, void *data);
 
 #ifdef __cplusplus
