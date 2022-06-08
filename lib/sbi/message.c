@@ -100,6 +100,9 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
     if (message->Amf3GppAccessRegistration)
         OpenAPI_amf3_gpp_access_registration_free(
                 message->Amf3GppAccessRegistration);
+    if (message->Amf3GppAccessRegistrationModification)
+        OpenAPI_amf3_gpp_access_registration_modification_free(
+                message->Amf3GppAccessRegistrationModification);
     if (message->AccessAndMobilitySubscriptionData)
         OpenAPI_access_and_mobility_subscription_data_free(
                 message->AccessAndMobilitySubscriptionData);
@@ -760,6 +763,10 @@ static char *build_json(ogs_sbi_message_t *message)
         item = OpenAPI_amf3_gpp_access_registration_convertToJSON(
                 message->Amf3GppAccessRegistration);
         ogs_assert(item);
+    } else if (message->Amf3GppAccessRegistrationModification) {
+        item = OpenAPI_amf3_gpp_access_registration_modification_convertToJSON(
+                message->Amf3GppAccessRegistrationModification);
+        ogs_assert(item);
     } else if (message->AccessAndMobilitySubscriptionData) {
         item = OpenAPI_access_and_mobility_subscription_data_convertToJSON(
                 message->AccessAndMobilitySubscriptionData);
@@ -1098,13 +1105,30 @@ static int parse_json(ogs_sbi_message_t *message,
             CASE(OGS_SBI_RESOURCE_NAME_REGISTRATIONS)
                 SWITCH(message->h.resource.component[2])
                 CASE(OGS_SBI_RESOURCE_NAME_AMF_3GPP_ACCESS)
-                    message->Amf3GppAccessRegistration =
-                        OpenAPI_amf3_gpp_access_registration_parseFromJSON(
-                                item);
-                    if (!message->Amf3GppAccessRegistration) {
-                        rv = OGS_ERROR;
-                        ogs_error("JSON parse error");
-                    }
+
+                    SWITCH(message->h.method)
+                        CASE(OGS_SBI_HTTP_METHOD_PUT)
+                            message->Amf3GppAccessRegistration =
+                                OpenAPI_amf3_gpp_access_registration_parseFromJSON(
+                                        item);
+                            if (!message->Amf3GppAccessRegistration) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
+                            break;
+                        CASE(OGS_SBI_HTTP_METHOD_PATCH)
+                            message->Amf3GppAccessRegistrationModification =
+                                OpenAPI_amf3_gpp_access_registration_modification_parseFromJSON(
+                                        item);
+                            if (!message->Amf3GppAccessRegistrationModification) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
+                            break;
+                        DEFAULT
+                            rv = OGS_ERROR;
+                            ogs_error("Unknown method [%s]", message->h.method);
+                        END
                     break;
                 DEFAULT
                     rv = OGS_ERROR;

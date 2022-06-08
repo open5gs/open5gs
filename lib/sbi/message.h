@@ -373,6 +373,8 @@ typedef struct ogs_sbi_message_s {
     OpenAPI_confirmation_data_response_t *ConfirmationDataResponse;
     OpenAPI_auth_event_t *AuthEvent;
     OpenAPI_amf3_gpp_access_registration_t *Amf3GppAccessRegistration;
+    OpenAPI_amf3_gpp_access_registration_modification_t
+        *Amf3GppAccessRegistrationModification;
     OpenAPI_access_and_mobility_subscription_data_t
         *AccessAndMobilitySubscriptionData;
     OpenAPI_smf_selection_subscription_data_t *SmfSelectionSubscriptionData;
