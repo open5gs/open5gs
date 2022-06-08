@@ -271,7 +271,8 @@ ogs_pkbuf_t *smf_gn_build_create_pdp_context_response(
 
     /* APN-AMBR
      * if PCRF changes APN-AMBR, this should be included. */
-    if (sess->gtp.create_session_response_apn_ambr == true) {
+    if (sess->gtp.v1.peer_supports_apn_ambr == true &&
+        sess->gtp.create_session_response_apn_ambr == true) {
         memset(&ambr, 0, sizeof(ogs_gtp1_apn_ambr_t));
         ambr.uplink = htobe32(sess->session.ambr.uplink / 1000);
         ambr.downlink = htobe32(sess->session.ambr.downlink / 1000);
@@ -458,7 +459,8 @@ ogs_pkbuf_t *smf_gn_build_update_pdp_context_response(
 
    /* APN-AMBR
     * if PCRF changes APN-AMBR, this should be included. */
-   if (sess->gtp.create_session_response_apn_ambr == true) {
+   if (sess->gtp.v1.peer_supports_apn_ambr == true &&
+       sess->gtp.create_session_response_apn_ambr == true) {
        memset(&ambr, 0, sizeof(ogs_gtp1_apn_ambr_t));
        ambr.uplink = htobe32(sess->session.ambr.uplink / 1000);
        ambr.downlink = htobe32(sess->session.ambr.downlink / 1000);
