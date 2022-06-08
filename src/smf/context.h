@@ -330,6 +330,7 @@ typedef struct smf_sess_s {
         uint8_t selection_mode; /* OGS_GTP{1,2}_SELECTION_MODE_*, same in GTPv1C and 2C. */
         struct {
             uint8_t nsapi;
+            bool peer_supports_apn_ambr;
         } v1;  /* GTPv1C specific fields */
     } gtp; /* Saved from S5-C/Gn */
 
