@@ -29,6 +29,7 @@
 #include "s1ap-path.h"
 #include "sgsap-path.h"
 #include "mme-gtp-path.h"
+#include "metrics.h"
 
 static ogs_thread_t *thread;
 static void mme_main(void *data);
@@ -38,7 +39,7 @@ static int initialized = 0;
 int mme_initialize()
 {
     int rv;
-
+    ogs_metrics_context_init();
     ogs_gtp_context_init(OGS_MAX_NUM_OF_GTPU_RESOURCE);
     mme_context_init();
 
@@ -48,8 +49,14 @@ int mme_initialize()
     rv = ogs_gtp_context_parse_config("mme", "sgwc");
     if (rv != OGS_OK) return rv;
 
+    rv = ogs_metrics_context_parse_config();
+    if (rv != OGS_OK) return rv;
+
     rv = mme_context_parse_config();
     if (rv != OGS_OK) return rv;
+
+    rv = mme_metrics_open();
+    if (rv != 0) return OGS_ERROR;
 
     rv = ogs_log_config_domain(
             ogs_app()->logger.domain, ogs_app()->logger.level);
@@ -89,6 +96,7 @@ void mme_terminate(void)
     mme_gtp_close();
     sgsap_close();
     s1ap_close();
+    mme_metrics_close();
 
     mme_fd_final();
 
@@ -97,6 +105,8 @@ void mme_terminate(void)
     ogs_gtp_context_final();
 
     ogs_gtp_xact_final();
+
+    ogs_metrics_context_final();
 }
 
 static void mme_main(void *data)

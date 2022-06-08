@@ -28,6 +28,7 @@
 #include "ogs-nas-eps.h"
 #include "ogs-app.h"
 #include "ogs-sctp.h"
+#include "metrics.h"
 
 /* S1AP */
 #include "S1AP_Cause.h"

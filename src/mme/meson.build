@@ -40,7 +40,8 @@ libmme_sources = files('''
     sbc-message.h
     sbc-handler.h
     mme-sm.h
-    mme-path.h 
+    mme-path.h
+    metrics.h 
 
     mme-init.c
     mme-event.c
@@ -73,11 +74,13 @@ libmme_sources = files('''
     mme-sm.c
     mme-path.c 
     sbc-handler.c 
+    metrics.c
 '''.split())
 
 libmme = static_library('mme',
     sources : libmme_sources,
     dependencies : [libapp_dep,
+                    libmetrics_dep,
                     libsctp_dep,
                     libs1ap_dep,
                     libnas_eps_dep,
@@ -88,6 +91,7 @@ libmme = static_library('mme',
 libmme_dep = declare_dependency(
     link_with : libmme,
     dependencies : [libapp_dep,
+                    libmetrics_dep,
                     libsctp_dep,
                     libs1ap_dep,
                     libnas_eps_dep,
