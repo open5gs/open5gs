@@ -18,6 +18,7 @@
  */
 
 #include "context.h"
+#include "gtp-path.h"
 #include "pfcp-path.h"
 
 static smf_context_t self;
@@ -102,6 +103,7 @@ void smf_context_init(void)
 
 void smf_context_final(void)
 {
+    ogs_gtp_node_t *gnode = NULL, *next_gnode = NULL;
     ogs_assert(context_initialized == 1);
 
     smf_ue_remove_all();
@@ -123,7 +125,12 @@ void smf_context_final(void)
 
     ogs_pool_final(&smf_pf_pool);
 
-    ogs_gtp_node_remove_all(&self.sgw_s5c_list);
+    ogs_list_for_each_entry_safe(&self.sgw_s5c_list, next_gnode, gnode, node) {
+        smf_gtp_node_t *smf_gnode = gnode->data_ptr;
+        ogs_assert(smf_gnode);
+        smf_gtp_node_free(smf_gnode);
+        ogs_gtp_node_remove(&self.sgw_s5c_list, gnode);
+    }
 
     context_initialized = 0;
 }
