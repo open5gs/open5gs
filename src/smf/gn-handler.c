@@ -178,6 +178,10 @@ uint8_t smf_gn_handle_create_pdp_context_request(
             smf_ue->msisdn, smf_ue->msisdn_len, smf_ue->msisdn_bcd);
     }
 
+    /* Set some sane default if infomation not present in Qos Profile or APN-AMBR: */
+    sess->session.ambr.downlink = 102400000;
+    sess->session.ambr.uplink = 102400000;
+
     /* Set Bearer QoS */
     rv = ogs_gtp1_parse_qos_profile(&qos_pdec,
         &req->quality_of_service_profile);
@@ -195,10 +199,19 @@ uint8_t smf_gn_handle_create_pdp_context_request(
     if (qos_pdec.data_octet6_to_13_present) {
         sess->session.ambr.downlink = qos_pdec.dec_mbr_kbps_dl * 1000;
         sess->session.ambr.uplink = qos_pdec.dec_mbr_kbps_ul * 1000;
-    } else {
-        /* Set some sane default if infomation not present in Qos Profile IE: */
-        sess->session.ambr.downlink = 102400000;
-        sess->session.ambr.uplink = 102400000;
+    }
+
+    /* APN-AMBR, 7.7.98 */
+    if (req->apn_ambr.presence) {
+        /* "The APN-AMBR IE shall be included as the authorized APN-AMBR if the
+         * GGSN supports this IE and if the APN-AMBR IE has been included in the
+         * corresponding request message." */
+        sess->gtp.v1.peer_supports_apn_ambr = true;
+        if (req->apn_ambr.len >= sizeof(ogs_gtp1_apn_ambr_t)) {
+            ogs_gtp1_apn_ambr_t *ambr = req->apn_ambr.data;
+            sess->session.ambr.uplink = be32toh(ambr->uplink) * 1000;
+            sess->session.ambr.downlink = be32toh(ambr->downlink) * 1000;
+        }
     }
 
     /* PCO */
