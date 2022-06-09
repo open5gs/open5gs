@@ -1212,7 +1212,8 @@ void sgwc_sxa_handle_session_deletion_response(
     }
 
     if (pfcp_rsp->cause.presence) {
-        if (pfcp_rsp->cause.u8 != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
+        if (pfcp_rsp->cause.u8 != OGS_PFCP_CAUSE_REQUEST_ACCEPTED &&
+            pfcp_rsp->cause.u8 != OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND) {
             ogs_warn("PFCP Cause[%d] : Not Accepted", pfcp_rsp->cause.u8);
             cause_value = gtp_cause_from_pfcp(pfcp_rsp->cause.u8);
         }
