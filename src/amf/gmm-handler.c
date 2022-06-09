@@ -42,7 +42,6 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
     ogs_nas_5gs_registration_type_t *registration_type = NULL;
     ogs_nas_5gs_mobile_identity_t *mobile_identity = NULL;
     ogs_nas_5gs_mobile_identity_header_t *mobile_identity_header = NULL;
-    ogs_nas_5gs_mobile_identity_suci_t *mobile_identity_suci = NULL;
     ogs_nas_5gs_mobile_identity_guti_t *mobile_identity_guti = NULL;
     ogs_nas_ue_security_capability_t *ue_security_capability = NULL;
     ogs_nas_5gs_guti_t nas_guti;
@@ -141,18 +140,8 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
 
     switch (mobile_identity_header->type) {
     case OGS_NAS_5GS_MOBILE_IDENTITY_SUCI:
-        mobile_identity_suci =
-            (ogs_nas_5gs_mobile_identity_suci_t *)mobile_identity->buffer;
-        if (mobile_identity_suci->protection_scheme_id !=
-                OGS_NAS_5GS_NULL_SCHEME) {
-            ogs_error("Not implemented ProtectionSchemeID(%d) in SUCI",
-                mobile_identity_suci->protection_scheme_id);
-            ogs_assert(OGS_OK ==
-                nas_5gs_send_registration_reject(amf_ue,
-                    OGS_5GMM_CAUSE_MESSAGE_TYPE_NON_EXISTENT_OR_NOT_IMPLEMENTED)
-            );
-            return OGS_ERROR;
-        }
+        /*mobile_identity_suci =
+            (ogs_nas_5gs_mobile_identity_suci_t *)mobile_identity->buffer;*/
         amf_ue_set_suci(amf_ue, mobile_identity);
         ogs_info("[%s]    SUCI", amf_ue->suci);
         break;

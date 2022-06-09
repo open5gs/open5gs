@@ -70,7 +70,9 @@ char *ogs_nas_5gs_suci_from_mobile_identity(
     ogs_expect_or_return_val(mobile_identity_suci->h.supi_format ==
             OGS_NAS_5GS_SUPI_FORMAT_IMSI, NULL);
     ogs_expect_or_return_val(mobile_identity_suci->protection_scheme_id ==
-            OGS_NAS_5GS_NULL_SCHEME, NULL);
+            OGS_NAS_5GS_NULL_SCHEME || mobile_identity_suci->protection_scheme_id ==
+            OGS_NAS_5GS_ECIES_SCHEME_PROFILE_A || mobile_identity_suci->protection_scheme_id ==
+            OGS_NAS_5GS_ECIES_SCHEME_PROFILE_B, NULL);
 
     suci = ogs_msprintf("suci-%d-", mobile_identity_suci->h.supi_format);
     ogs_expect_or_return_val(suci, NULL);
@@ -107,8 +109,14 @@ char *ogs_nas_5gs_suci_from_mobile_identity(
     ogs_expect_or_return_val(scheme_output_len > 0, NULL);
     ogs_expect_or_return_val(
             scheme_output_len <= OGS_NAS_MAX_SCHEME_OUTPUT_LEN, NULL);
-    ogs_buffer_to_bcd(mobile_identity_suci->scheme_output,
+
+    if (mobile_identity_suci->protection_scheme_id != OGS_NAS_5GS_NULL_SCHEME) {
+        ogs_hex_to_ascii(mobile_identity_suci->scheme_output, 
+            scheme_output_len, tmp, sizeof(tmp));
+    } else {
+        ogs_buffer_to_bcd(mobile_identity_suci->scheme_output,
             scheme_output_len, tmp);
+    }
 
     suci = ogs_mstrcatf(suci, "%s-%d-%d-%s",
             routing_indicator,
