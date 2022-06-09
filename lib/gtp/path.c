@@ -116,8 +116,12 @@ int ogs_gtp_sendto(ogs_gtp_node_t *gnode, ogs_pkbuf_t *pkbuf)
     sent = ogs_sendto(sock->fd, pkbuf->data, pkbuf->len, 0, addr);
     if (sent < 0 || sent != pkbuf->len) {
         if (ogs_socket_errno != OGS_EAGAIN) {
-            ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                    "ogs_gtp_sendto() failed");
+            char buf[OGS_ADDRSTRLEN];
+            int err = ogs_socket_errno;
+            ogs_log_message(OGS_LOG_ERROR, err,
+                    "ogs_gtp_sendto(%u, %p, %u, 0, %s:%u) failed",
+                    sock->fd, pkbuf->data, pkbuf->len,
+                    OGS_ADDR(addr, buf), OGS_PORT(addr));
         }
         return OGS_ERROR;
     }
