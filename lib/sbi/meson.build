@@ -49,7 +49,7 @@ sbi_cc_flags = ['-DOGS_SBI_COMPILATION']
 
 libgnutls_dep = cc.find_library('gnutls', required : true)
 libnghttp2_dep = dependency('libnghttp2', version: '>=1.18.1')
-libmicrohttpd_dep = dependency('libmicrohttpd', version: '>=0.9.40')
+libmicrohttpd_dep = dependency('libmicrohttpd', version: '>=0.9.61')
 libcurl_dep = dependency('libcurl', version: '>=7.52.1')
 
 libsbi = library('ogssbi',
