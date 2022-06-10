@@ -289,10 +289,12 @@ static void server_stop(ogs_sbi_server_t *server)
     }
 }
 
+#if MHD_VERSION >= 0x00096100
 static void free_callback(void *cls)
 {
     ogs_free(cls);
 }
+#endif
 
 static bool server_send_response(
         ogs_sbi_stream_t *stream, ogs_sbi_response_t *response)
@@ -330,6 +332,7 @@ static bool server_send_response(
     ogs_assert(mhd_socket != INVALID_SOCKET);
 
     if (response->http.content) {
+#if MHD_VERSION >= 0x00096100
         mhd_response = MHD_create_response_from_buffer_with_free_callback(
                 response->http.content_length, response->http.content,
                 free_callback);
@@ -343,6 +346,12 @@ static bool server_send_response(
          * So, we'll set response->http.content to NULL.
          */
         response->http.content = NULL;
+#else
+        mhd_response = MHD_create_response_from_buffer(
+                response->http.content_length, response->http.content,
+                MHD_RESPMEM_MUST_COPY);
+        ogs_assert(mhd_response);
+#endif
 
     } else {
         mhd_response = MHD_create_response_from_buffer(

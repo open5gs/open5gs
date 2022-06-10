@@ -31,7 +31,7 @@ if metrics_impl_optval == 'prometheus'
     # 0.50.0: {'CMake Module'}
     # 0.51.0: {'subproject'}
 
-    libmicrohttpd_dep = dependency('libmicrohttpd', version: '>=0.9.61')
+    libmicrohttpd_dep = dependency('libmicrohttpd', version: '>=0.9.40')
 
     cmake = import('cmake')
     prometheus_client_c_proj = cmake.subproject('prometheus-client-c')
