@@ -198,7 +198,6 @@ char *ogs_supi_from_suci(char *suci)
 {
 #define MAX_SUCI_TOKEN 16
     char *array[MAX_SUCI_TOKEN];
-    char *saveptr = NULL;
     char *p, *tmp;
     int i;
     char *supi = NULL;
@@ -207,13 +206,9 @@ char *ogs_supi_from_suci(char *suci)
     tmp = ogs_strdup(suci);
     ogs_expect_or_return_val(tmp, NULL);
 
-    p = strtok_r(tmp, "-", &saveptr);
-
-    memset(array, 0, sizeof(array));
-    for (i = 0; i < MAX_SUCI_TOKEN && p; i++) {
-        array[i] = p;
-        p = strtok_r(NULL, "-", &saveptr);
-    }
+    p = tmp;
+    i = 0;
+    while((array[i++] = strsep(&p, "-")));
 
     SWITCH(array[0])
     CASE("suci")
@@ -240,17 +235,17 @@ char *ogs_supi_from_suci(char *suci)
 
 char *ogs_id_get_type(char *str)
 {
-    char *saveptr = NULL;
-    char *p, *tmp;
+    char *token, *p, *tmp;
     char *type = NULL;
 
     ogs_assert(str);
     tmp = ogs_strdup(str);
     ogs_expect_or_return_val(tmp, NULL);
 
-    p = strtok_r(tmp, "-", &saveptr);
-    ogs_assert(p);
-    type = ogs_strdup(p);
+    p = tmp;
+    token = strsep(&p, "-");
+    ogs_assert(token);
+    type = ogs_strdup(token);
     ogs_expect_or_return_val(type, NULL);
 
     ogs_free(tmp);
@@ -259,19 +254,19 @@ char *ogs_id_get_type(char *str)
 
 char *ogs_id_get_value(char *str)
 {
-    char *saveptr = NULL;
-    char *p, *tmp;
+    char *token, *p, *tmp;
     char *ueid = NULL;
 
     ogs_assert(str);
     tmp = ogs_strdup(str);
     ogs_expect_or_return_val(tmp, NULL);
 
-    p = strtok_r(tmp, "-", &saveptr);
-    ogs_assert(p);
-    p = strtok_r(NULL, "-", &saveptr);
-    ogs_assert(p);
-    ueid = ogs_strdup(p);
+    p = tmp;
+    token = strsep(&p, "-");
+    ogs_assert(token);
+    token = strsep(&p, "-");
+    ogs_assert(token);
+    ueid = ogs_strdup(token);
     ogs_expect_or_return_val(ueid, NULL);
 
     ogs_free(tmp);

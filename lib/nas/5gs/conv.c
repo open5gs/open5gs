@@ -105,6 +105,17 @@ char *ogs_nas_5gs_suci_from_mobile_identity(
         }
     }
 
+    if (routing_indicator[0] == 0 && routing_indicator[1] == 0 &&
+        routing_indicator[2] == 0 && routing_indicator[3] == 0) {
+        ogs_error("Unknown Routing Indicator: [%x,%x,%x,%x]",
+            mobile_identity_suci->routing_indicator1,
+            mobile_identity_suci->routing_indicator2,
+            mobile_identity_suci->routing_indicator3,
+            mobile_identity_suci->routing_indicator4);
+
+        routing_indicator[0] = '0';
+    }
+
     scheme_output_len = mobile_identity->length - 8;
     ogs_expect_or_return_val(scheme_output_len > 0, NULL);
     ogs_expect_or_return_val(

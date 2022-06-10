@@ -60,9 +60,9 @@ static char *masked_db_uri(const char *db_uri)
     ogs_assert(tmp);
 
     memset(array, 0, sizeof(array));
-    array[0] = strtok_r(tmp, "@", &saveptr);
+    array[0] = ogs_strtok_r(tmp, "@", &saveptr);
     if (array[0])
-        array[1] = strtok_r(NULL, "@", &saveptr);
+        array[1] = ogs_strtok_r(NULL, "@", &saveptr);
 
     if (array[1]) {
         masked = ogs_msprintf("mongodb://*****:*****@%s", array[1]);

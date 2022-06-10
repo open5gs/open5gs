@@ -146,7 +146,7 @@ char *ogs_sbi_parse_uri(char *uri, const char *delim, char **saveptr)
 {
     char *item = NULL;
 
-    item = url_decode(strtok_r(uri, delim, saveptr));
+    item = url_decode(ogs_strtok_r(uri, delim, saveptr));
     if (!item) {
         return NULL;
     }
