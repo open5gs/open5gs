@@ -29,15 +29,6 @@ extern "C" {
 int smf_gtp_open(void);
 void smf_gtp_close(void);
 
-typedef struct smf_gtp_node_s {
-    ogs_gtp_node_t *gnode;
-    ogs_metrics_inst_t *metrics[_SMF_METR_GTP_NODE_MAX];
-} smf_gtp_node_t;
-
-smf_gtp_node_t *smf_gtp_node_new(ogs_gtp_node_t *gnode);
-void smf_gtp_node_free(smf_gtp_node_t *smf_gnode);
-
-
 int smf_gtp1_send_create_pdp_context_response(
         smf_sess_t *sess, ogs_gtp_xact_t *xact);
 int smf_gtp1_send_delete_pdp_context_response(

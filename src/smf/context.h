@@ -99,6 +99,11 @@ typedef struct smf_context_s {
     ogs_list_t      smf_ue_list;
 } smf_context_t;
 
+typedef struct smf_gtp_node_s {
+    ogs_gtp_node_t *gnode;
+    ogs_metrics_inst_t *metrics[_SMF_METR_GTP_NODE_MAX];
+} smf_gtp_node_t;
+
 typedef struct smf_ue_s {
     ogs_lnode_t lnode;
 
@@ -418,6 +423,9 @@ smf_context_t *smf_self(void);
 int smf_context_parse_config(void);
 
 int smf_use_gy_iface(void);
+
+smf_gtp_node_t *smf_gtp_node_new(ogs_gtp_node_t *gnode);
+void smf_gtp_node_free(smf_gtp_node_t *smf_gnode);
 
 smf_ue_t *smf_ue_add_by_supi(char *supi);
 smf_ue_t *smf_ue_add_by_imsi(uint8_t *imsi, int imsi_len);

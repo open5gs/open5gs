@@ -41,8 +41,6 @@
 #include "s5c-build.h"
 #include "gn-build.h"
 
-static OGS_POOL(smf_gtp_node_pool, smf_gtp_node_t);
-
 static bool check_if_router_solicit(ogs_pkbuf_t *pkbuf);
 static void send_router_advertisement(smf_sess_t *sess, uint8_t *ip6_dst);
 
@@ -298,8 +296,6 @@ int smf_gtp_open(void)
         ogs_gtp_self()->link_local_addr =
             ogs_link_local_addr_by_sa(ogs_gtp_self()->gtpu_addr6);
 
-    ogs_pool_init(&smf_gtp_node_pool, ogs_app()->pool.gtp_node);
-
     return OGS_OK;
 }
 
@@ -312,37 +308,6 @@ void smf_gtp_close(void)
     ogs_socknode_remove_all(&ogs_gtp_self()->gtpc_list6);
 
     ogs_socknode_remove_all(&ogs_gtp_self()->gtpu_list);
-
-    ogs_pool_final(&smf_gtp_node_pool);
-}
-
-smf_gtp_node_t *smf_gtp_node_new(ogs_gtp_node_t *gnode)
-{
-    smf_gtp_node_t *smf_gnode = NULL;
-    char addr[OGS_ADDRSTRLEN];
-
-    ogs_pool_alloc(&smf_gtp_node_pool, &smf_gnode);
-    ogs_expect_or_return_val(smf_gnode, NULL);
-    memset(smf_gnode, 0, sizeof(smf_gtp_node_t));
-
-    addr[0] = '\0';
-    ogs_assert(gnode->sa_list);
-    ogs_inet_ntop(&gnode->sa_list[0].sa, addr, sizeof(addr));
-    ogs_assert(smf_metrics_init_inst_gtp_node(smf_gnode->metrics, addr)
-        == OGS_OK);
-
-    smf_gnode->gnode = gnode;
-    gnode->data_ptr = smf_gnode; /* Set backpointer */
-    return smf_gnode;
-}
-
-void smf_gtp_node_free(smf_gtp_node_t *smf_gnode)
-{
-    ogs_assert(smf_gnode);
-    if (smf_gnode->gnode)
-        smf_gnode->gnode->data_ptr = NULL; /*Drop backpointer */
-    smf_metrics_free_inst_gtp_node(smf_gnode->metrics);
-    ogs_pool_free(&smf_gtp_node_pool, smf_gnode);
 }
 
 int smf_gtp1_send_create_pdp_context_response(

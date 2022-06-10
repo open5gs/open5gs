@@ -27,6 +27,7 @@ static ogs_diam_config_t g_diam_conf;
 int __smf_log_domain;
 int __gsm_log_domain;
 
+static OGS_POOL(smf_gtp_node_pool, smf_gtp_node_t);
 static OGS_POOL(smf_ue_pool, smf_ue_t);
 static OGS_POOL(smf_sess_pool, smf_sess_t);
 static OGS_POOL(smf_bearer_pool, smf_bearer_t);
@@ -79,6 +80,7 @@ void smf_context_init(void)
     ogs_log_install_domain(&__smf_log_domain, "smf", ogs_core()->log.level);
     ogs_log_install_domain(&__gsm_log_domain, "gsm", ogs_core()->log.level);
 
+    ogs_pool_init(&smf_gtp_node_pool, ogs_app()->pool.gtp_node);
     ogs_pool_init(&smf_ue_pool, ogs_app()->max.ue);
     ogs_pool_init(&smf_sess_pool, ogs_app()->pool.sess);
     ogs_pool_init(&smf_bearer_pool, ogs_app()->pool.bearer);
@@ -131,6 +133,8 @@ void smf_context_final(void)
         smf_gtp_node_free(smf_gnode);
         ogs_gtp_node_remove(&self.sgw_s5c_list, gnode);
     }
+
+    ogs_pool_final(&smf_gtp_node_pool);
 
     context_initialized = 0;
 }
@@ -372,10 +376,11 @@ int smf_context_parse_config(void)
                         const char *ctf_key = ogs_yaml_iter_key(&ctf_iter);
                         ogs_assert(ctf_key);
                         if (!strcmp(ctf_key, "enabled")) {
-                            yaml_node_t *ctf_node =
-                                yaml_document_get_node(document, ctf_iter.pair->value);
+                            yaml_node_t *ctf_node = yaml_document_get_node(
+                                    document, ctf_iter.pair->value);
                             ogs_assert(ctf_node->type == YAML_SCALAR_NODE);
-                            const char* enabled = ogs_yaml_iter_value(&ctf_iter);
+                            const char* enabled =
+                                ogs_yaml_iter_value(&ctf_iter);
                             if (!strcmp(enabled, "auto"))
                                 self.ctf_config.enabled = SMF_CTF_ENABLED_AUTO;
                             else if (!strcmp(enabled, "yes"))
@@ -383,7 +388,8 @@ int smf_context_parse_config(void)
                             else if (!strcmp(enabled, "no"))
                                 self.ctf_config.enabled = SMF_CTF_ENABLED_NO;
                             else
-                                ogs_warn("unknown 'enabled' value `%s`", enabled);
+                                ogs_warn("unknown 'enabled' value `%s`",
+                                        enabled);
                         } else
                             ogs_warn("unknown key `%s`", ctf_key);
                     }
@@ -826,6 +832,35 @@ int smf_context_parse_config(void)
     if (rv != OGS_OK) return rv;
 
     return OGS_OK;
+}
+
+smf_gtp_node_t *smf_gtp_node_new(ogs_gtp_node_t *gnode)
+{
+    smf_gtp_node_t *smf_gnode = NULL;
+    char addr[OGS_ADDRSTRLEN];
+
+    ogs_pool_alloc(&smf_gtp_node_pool, &smf_gnode);
+    ogs_expect_or_return_val(smf_gnode, NULL);
+    memset(smf_gnode, 0, sizeof(smf_gtp_node_t));
+
+    addr[0] = '\0';
+    ogs_assert(gnode->sa_list);
+    ogs_inet_ntop(&gnode->sa_list[0].sa, addr, sizeof(addr));
+    ogs_assert(smf_metrics_init_inst_gtp_node(smf_gnode->metrics, addr)
+        == OGS_OK);
+
+    smf_gnode->gnode = gnode;
+    gnode->data_ptr = smf_gnode; /* Set backpointer */
+    return smf_gnode;
+}
+
+void smf_gtp_node_free(smf_gtp_node_t *smf_gnode)
+{
+    ogs_assert(smf_gnode);
+    if (smf_gnode->gnode)
+        smf_gnode->gnode->data_ptr = NULL; /* Drop backpointer */
+    smf_metrics_free_inst_gtp_node(smf_gnode->metrics);
+    ogs_pool_free(&smf_gtp_node_pool, smf_gnode);
 }
 
 static smf_ue_t *smf_ue_add(void)
