@@ -1,4 +1,4 @@
-# Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+# Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
 
 # This file is part of Open5GS.
 
@@ -54,7 +54,7 @@ def write_file(f, string):
 def output_header_to_file(f):
     now = datetime.datetime.now()
     f.write("""/*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -101,7 +101,7 @@ def get_cells(cells):
         return None
     comment = cells[2].text.encode('ascii', 'ignore').decode('utf-8')
     comment = re.sub('\n|\"|\'|\\\\', '', comment);
-    #print comment
+    #print(comment)
     ie_type = re.sub('\s*$', '', re.sub('\'\s*\n*\s*\(NOTE.*\)*', '', cells[-1].text))
 
     #if ie_type.find('Usage Report') != -1:
@@ -133,11 +133,28 @@ def get_cells(cells):
         ie_type = 'PFCPSRRsp-Flags'
     elif ie_type.find('IPv4 Configuration Parameters (IP4CP)') != -1:
         ie_type = 'IP4CP'
+    elif ie_type.find('QoS Information') != -1:
+        ie_type = 'QoS Information in GTP-U Path QoS Report'
+    elif ie_type.find('IP Multicast Addressing Info') != -1:
+        ie_type = 'IP Multicast Addressing Info within PFCP Session Establishment Request'
+    elif ie_type.find('Redundant Transmission Detection Parameters') != -1:
+        ie_type = 'Redundant Transmission Parameters'
+    elif ie_type.find('MAC Addressed Detected') != -1:
+        ie_type = 'MAC Addresses Detected'
+    elif ie_type.find('Join IP Multicast Information') != -1:
+        ie_type = 'Join IP Multicast Information IE within Usage Report'
+    elif ie_type.find('Leave IP Multicast Information') != -1:
+        ie_type = 'Leave IP Multicast Information IE within Usage Report'
+    elif ie_type.find('PFCP Session Retention Information') != -1:
+        ie_type = 'PFCP Session Retention Information within PFCP Association Setup Request'
+    elif ie_type.find('GTP-U Path QoS Report') != -1:
+        ie_type = 'GTP-U Path QoS Report PFCP Node Report Request'
     if ie_type not in type_list.keys():
         assert False, "Unknown IE type : [" \
                 + cells[-1].text + "]" + "(" + ie_type + ")"
     presence = cells[1].text
     ie_value = re.sub('\s*\n*\s*\([^\)]*\)*', '', cells[0].text)
+    ie_value = re.sub('\n', '', ie_value)
     if ie_value[len(ie_value)-1] == ' ':
         ie_value = ie_value[:len(ie_value)-1]
 
@@ -231,6 +248,7 @@ else:
         if key.find('Reserved') != -1:
             continue
         key = re.sub('\s*\n*\s*\([^\)]*\)*', '', key)
+        key = re.sub('\n', '', key)
         msg_list[key] = { "type": type }
         write_file(f, "msg_list[\"" + key + "\"] = { \"type\" : \"" + type + "\" }\n")
     f.close()
@@ -255,15 +273,17 @@ else:
                 ie_table = table
                 d_print("Table Index = %d\n" % i)
 
-    for row in ie_table.rows[1:-1]:
+    for row in ie_table.rows[1:]:
         key = row.cells[1].text
+        type = row.cells[0].text
+        if type.isdigit() is False:
+            continue
         if key.find('Reserved') != -1:
             continue
         key = re.sub('\(', '', key)
         key = re.sub('\)', '', key)
         key = re.sub('\s*$', '', key)
 
-        type = row.cells[0].text
         type_list[key] = { "type": type , "max_tlv_more" : "0" }
         write_file(f, "type_list[\"" + key + "\"] = { \"type\" : \"" + type)
         write_file(f, "\", \"max_tlv_more\" : \"0\" }\n")
@@ -300,7 +320,7 @@ else:
 
                 row = table.rows[0];
 
-                d_print("Table Index = %d[%s]\n" % (i, row.cells[num].text))
+                d_print("Table Index = %d[%d:%s]\n" % (i, num, row.cells[num].text))
 
                 if len(re.findall('\d+', row.cells[num].text)) == 0:
                     continue;
@@ -320,8 +340,32 @@ else:
                     ie_name =  "Update BAR Session Modification Request"
                 elif (int(ie_type) == 12):
                     ie_name =  "Update BAR PFCP Session Report Response"
+                elif (int(ie_type) == 183):
+                    ie_name =  "PFCP Session Retention Information within PFCP Association Setup Request"
+                elif (int(ie_type) == 188):
+                    ie_name =  "IP Multicast Addressing Info within PFCP Session Establishment Request"
+                elif (int(ie_type) == 189):
+                    ie_name =  "Join IP Multicast Information IE within Usage Report"
+                elif (int(ie_type) == 190):
+                    ie_name =  "Leave IP Multicast Information IE within Usage Report"
+                elif (int(ie_type) == 199):
+                    ie_name =  "TSC Management Information IE within PFCP Session Modification Request"
+                elif (int(ie_type) == 200):
+                    ie_name =  "TSC Management Information IE within PFCP Session Modification Response"
+                elif (int(ie_type) == 201):
+                    ie_name =  "TSC Management Information IE within PFCP Session Report Request"
+                elif (int(ie_type) == 239):
+                    ie_name =  "GTP-U Path QoS Report PFCP Node Report Request"
+                elif (int(ie_type) == 240):
+                    ie_name =  "QoS Information in GTP-U Path QoS Report"
+                elif (int(ie_type) == 255):
+                    ie_name =  "Redundant Transmission Parameters"
+                elif (int(ie_type) == 263):
+                    ie_name =  "Query Packet Rate Status IE within PFCP Session Modification Request"
+                elif (int(ie_type) == 264):
+                    ie_name =  "Packet Rate Status Report IE within PFCP Session Modification Response"
 
-                if ie_name.find('Access Forwarding Action Information 2') != -1:
+                if ie_name.find('Non-3GPP Access Forwarding Action Information') != -1:
                     ie_idx = str(int(ie_type)+100)
                     group_list[ie_name] = { "index" : ie_idx, "type" : ie_type, "ies" : ies }
                     write_file(f, "group_list[\"" + ie_name + "\"] = { \"index\" : \"" + ie_idx + "\", \"type\" : \"" + ie_type + "\", \"ies\" : ies }\n")
@@ -343,29 +387,29 @@ else:
                     write_file(f, "group_list[\"" + ie_name + "\"] = { \"index\" : \"" + ie_idx + "\", \"type\" : \"" + ie_type + "\", \"ies\" : ies }\n")
     f.close()
 
-msg_list["PFCP Heartbeat Request"]["table"] = 7
-msg_list["PFCP Heartbeat Response"]["table"] = 8
-msg_list["PFCP PFD Management Request"]["table"] = 9
-msg_list["PFCP PFD Management Response"]["table"] = 12
-msg_list["PFCP Association Setup Request"]["table"] = 13
-msg_list["PFCP Association Setup Response"]["table"] = 14
-msg_list["PFCP Association Update Request"]["table"] = 15
-msg_list["PFCP Association Update Response"]["table"] = 16
-msg_list["PFCP Association Release Request"]["table"] = 17
-msg_list["PFCP Association Release Response"]["table"] = 18
+msg_list["PFCP Heartbeat Request"]["table"] = 9
+msg_list["PFCP Heartbeat Response"]["table"] = 10
+msg_list["PFCP PFD Management Request"]["table"] = 11
+msg_list["PFCP PFD Management Response"]["table"] = 14
+msg_list["PFCP Association Setup Request"]["table"] = 15
+msg_list["PFCP Association Setup Response"]["table"] = 20
+msg_list["PFCP Association Update Request"]["table"] = 21
+msg_list["PFCP Association Update Response"]["table"] = 23
+msg_list["PFCP Association Release Request"]["table"] = 24
+msg_list["PFCP Association Release Response"]["table"] = 25
 msg_list["PFCP Version Not Supported Response"]["table"] = 0
-msg_list["PFCP Node Report Request"]["table"] = 19
-msg_list["PFCP Node Report Response"]["table"] = 21
-msg_list["PFCP Session Set Deletion Request"]["table"] = 22
-msg_list["PFCP Session Set Deletion Response"]["table"] = 23
-msg_list["PFCP Session Establishment Request"]["table"] = 24
-msg_list["PFCP Session Establishment Response"]["table"] = 40
-msg_list["PFCP Session Modification Request"]["table"] = 45
-msg_list["PFCP Session Modification Response"]["table"] = 65
-msg_list["PFCP Session Deletion Request"]["table"] = 67
-msg_list["PFCP Session Deletion Response"]["table"] = 68
-msg_list["PFCP Session Report Request"]["table"] = 70
-msg_list["PFCP Session Report Response"]["table"] = 76
+msg_list["PFCP Node Report Request"]["table"] = 26
+msg_list["PFCP Node Report Response"]["table"] = 32
+msg_list["PFCP Session Set Deletion Request"]["table"] = 33
+msg_list["PFCP Session Set Deletion Response"]["table"] = 34
+msg_list["PFCP Session Establishment Request"]["table"] = 35
+msg_list["PFCP Session Establishment Response"]["table"] = 60
+msg_list["PFCP Session Modification Request"]["table"] = 70
+msg_list["PFCP Session Modification Response"]["table"] = 95
+msg_list["PFCP Session Deletion Request"]["table"] = 100
+msg_list["PFCP Session Deletion Response"]["table"] = 101
+msg_list["PFCP Session Report Request"]["table"] = 104
+msg_list["PFCP Session Report Response"]["table"] = 116
 
 for key in msg_list.keys():
     if "table" in msg_list[key].keys():
@@ -516,36 +560,58 @@ f.write("\n")
 for k, v in group_list.items():
     if v_lower(k) == "ethernet_packet_filter":
         v["index"] = "1"
-    if v_lower(k) == "pdi":
+    if v_lower(k) == "redundant_transmission_parameters":
         v["index"] = "2"
-    if v_lower(k) == "create_pdr":
+    if v_lower(k) == "ip_multicast_addressing_info_within_pfcp_session_establishment_request":
         v["index"] = "3"
-    if v_lower(k) == "forwarding_parameters":
+    if v_lower(k) == "pdi":
         v["index"] = "4"
-    if v_lower(k) == "duplicating_parameters":
+    if v_lower(k) == "transport_delay_reporting":
         v["index"] = "5"
-    if v_lower(k) == "create_far":
+    if v_lower(k) == "create_pdr":
         v["index"] = "6"
-    if v_lower(k) == "update_forwarding_parameters":
+    if v_lower(k) == "forwarding_parameters":
         v["index"] = "7"
-    if v_lower(k) == "update_duplicating_parameters":
+    if v_lower(k) == "duplicating_parameters":
         v["index"] = "8"
-    if v_lower(k) == "update_far":
+    if v_lower(k) == "redundant_transmission_forwarding_parameters":
         v["index"] = "9"
-    if v_lower(k) == "pfd_context":
+    if v_lower(k) == "create_far":
         v["index"] = "10"
-    if v_lower(k) == "application_id_s_pfds":
+    if v_lower(k) == "update_forwarding_parameters":
         v["index"] = "11"
-    if v_lower(k) == "ethernet_traffic_information":
+    if v_lower(k) == "update_duplicating_parameters":
         v["index"] = "12"
-    if v_lower(k) == "access_forwarding_action_information_1":
+    if v_lower(k) == "update_far":
         v["index"] = "13"
-    if v_lower(k) == "access_forwarding_action_information_2":
+    if v_lower(k) == "pfd_context":
         v["index"] = "14"
-    if v_lower(k) == "update_access_forwarding_action_information_1":
+    if v_lower(k) == "application_id_s_pfds":
         v["index"] = "15"
-    if v_lower(k) == "update_access_forwarding_action_information_2":
+    if v_lower(k) == "ethernet_traffic_information":
         v["index"] = "16"
+    if v_lower(k) == "_access_forwarding_action_information":
+        v["index"] = "17"
+    if v_lower(k) == "non__access_forwarding_action_information":
+        v["index"] = "18"
+    if v_lower(k) == "update__access_forwarding_action_information":
+        v["index"] = "19"
+    if v_lower(k) == "update_non__access_forwarding_action_information":
+        v["index"] = "20"
+    if v_lower(k) == "access_availability_report":
+        v["index"] = "21"
+    if v_lower(k) == "qos_monitoring_report":
+        v["index"] = "22"
+    if v_lower(k) == "mptcp_parameters":
+        v["index"] = "23"
+    if v_lower(k) == "atsss_ll_parameters":
+        v["index"] = "24"
+    if v_lower(k) == "pmf_parameters":
+        v["index"] = "25"
+    if v_lower(k) == "join_ip_multicast_information_ie_within_usage_report":
+        v["index"] = "26"
+    if v_lower(k) == "leave_ip_multicast_information_ie_within_usage_report":
+        v["index"] = "27"
 
 tmp = [(k, v["index"]) for k, v in group_list.items()]
 sorted_group_list = sorted(tmp, key=lambda tup: int(tup[1]), reverse=False)

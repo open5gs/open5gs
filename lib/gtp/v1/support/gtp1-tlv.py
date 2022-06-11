@@ -118,6 +118,7 @@ def get_cells(cells):
     presence = re.sub('\n', '', presence);
     ie_value = re.sub('\s*\n*\s*\([^\)]*\)*', '', cells[0].text)
     ie_value = re.sub('\\xa0', ' ', ie_value) # drop unicode char "No-Break Space" in "Higher bitrates than 16 Mbps flag"
+    ie_value = re.sub('\n', ' ', ie_value)
     comment = cells[2].text.encode('ascii', 'ignore').decode('utf-8').rstrip()
     comment = re.sub('\n|\"|\'|\\\\', '', comment);
     if comment == 'GSN Address 7.7.32':
@@ -234,6 +235,7 @@ else:
         if key.find('Reserved') != -1:
             continue
         key = re.sub('\s*\n*\s*\([^\)]*\)*', '', key)
+        key = re.sub('\n', '', key)
         msg_list[key] = { "type": type }
         write_file(f, "msg_list[\"" + key + "\"] = { \"type\" : \"" + type + "\" }\n")
     f.close()
