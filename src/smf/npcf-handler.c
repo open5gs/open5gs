@@ -529,13 +529,13 @@ bool smf_npcf_smpolicycontrol_handle_create(
 
 	if (sess->pfcp_node->addr.ogs_sa_family == AF_INET) {
 		ul_pdr->f_teid.ipv4 = 1;
-		cp2up->pdr->f_teid.ipv4 = 1;
-		up2cp->f_teid.ipv4 = 1;
+		cp2up_pdr->f_teid.ipv4 = 1;
+		up2cp_pdr->f_teid.ipv4 = 1;
 	}
 	if  (sess->pfcp_node->addr.ogs_sa_family == AF_INET6) {
 		ul_pdr->f_teid.ipv6 = 1;
-		cp2up->pdr->f_teid.ipv6 = 1;
-		up2cp->f_teid.ipv6 = 1;
+		cp2up_pdr->f_teid.ipv6 = 1;
+		up2cp_pdr->f_teid.ipv6 = 1;
 	}
 
     } else {
