@@ -215,6 +215,11 @@ typedef struct ogs_pfcp_far_s {
     ogs_pfcp_outer_header_creation_t outer_header_creation;
     int                     outer_header_creation_len;
 
+    union {
+	char *apn;
+	char *dnn;
+    };
+
     ogs_pfcp_smreq_flags_t  smreq_flags;
 
     uint32_t                num_of_buffered_packet;
