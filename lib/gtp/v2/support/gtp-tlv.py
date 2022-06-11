@@ -1,4 +1,4 @@
-# Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+# Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
 
 # This file is part of Open5GS.
 
@@ -60,7 +60,7 @@ def write_file(f, string):
 def output_header_to_file(f):
     now = datetime.datetime.now()
     f.write("""/*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -128,6 +128,7 @@ def get_cells(cells):
     presence = cells[1].text
     presence = re.sub('\n', '', presence);
     ie_value = re.sub('\s*\n*\s*\([^\)]*\)*', '', cells[0].text)
+    ie_value = re.sub('\n', '', ie_value);
     comment = cells[2].text.encode('ascii', 'ignore').decode('utf-8')
     comment = re.sub('\n|\"|\'|\\\\', '', comment);
 
@@ -241,6 +242,7 @@ else:
         if key.find('Reserved') != -1:
             continue
         key = re.sub('\s*\n*\s*\([^\)]*\)*', '', key)
+        key = re.sub('\n', '', key);
         msg_list[key] = { "type": type }
         write_file(f, "msg_list[\"" + key + "\"] = { \"type\" : \"" + type + "\" }\n")
     f.close()
@@ -264,6 +266,9 @@ else:
 
     for row in ie_table.rows[1:-5]:
         key = row.cells[1].text
+        type = row.cells[0].text
+        if type.isdigit() is False:
+            continue
         if key.find('Reserved') != -1:
             continue
         if key.find('MM Context') != -1:
@@ -284,7 +289,7 @@ else:
             key = re.sub('.*\(', '', row.cells[1].text)
             key = re.sub('\)', '', key)
             key = re.sub('\s*$', '', key)
-        type = row.cells[0].text
+
         type_list[key] = { "type": type , "max_instance" : "0" }
         write_file(f, "type_list[\"" + key + "\"] = { \"type\" : \"" + type)
         write_file(f, "\", \"max_instance\" : \"0\" }\n")

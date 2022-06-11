@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -20,8 +20,8 @@
 /*******************************************************************************
  * This file had been created by pfcp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2022-06-06 21:06:39.847520 by acetcom
- * from 29244-g10.docx
+ * Created on: 2022-06-11 23:49:11.025259 by acetcom
+ * from 29244-g91-modified.docx
  ******************************************************************************/
 
 #include "ogs-pfcp.h"
@@ -1302,14 +1302,14 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_framed_ipv6_route =
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_pfcp_tlv_desc_event_time_stamp =
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_time_stamp =
 {
     OGS_TLV_VAR_STR,
-    "Event Time Stamp",
-    OGS_PFCP_EVENT_TIME_STAMP_TYPE,
+    "Time Stamp",
+    OGS_PFCP_TIME_STAMP_TYPE,
     0,
     0,
-    sizeof(ogs_pfcp_tlv_event_time_stamp_t),
+    sizeof(ogs_pfcp_tlv_time_stamp_t),
     { NULL }
 };
 
@@ -1511,6 +1511,611 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_quota_validity_time =
     { NULL }
 };
 
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_number_of_reports =
+{
+    OGS_TLV_VAR_STR,
+    "Number of Reports",
+    OGS_PFCP_NUMBER_OF_REPORTS_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_number_of_reports_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_pfcpasrsp_flags =
+{
+    OGS_TLV_VAR_STR,
+    "PFCPASRsp-Flags",
+    OGS_PFCP_PFCPASRSP_FLAGS_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_pfcpasrsp_flags_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_cp_pfcp_entity_ip_address =
+{
+    OGS_TLV_VAR_STR,
+    "CP PFCP Entity IP Address",
+    OGS_PFCP_CP_PFCP_ENTITY_IP_ADDRESS_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_cp_pfcp_entity_ip_address_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_pfcpsereq_flags =
+{
+    OGS_TLV_VAR_STR,
+    "PFCPSEReq-Flags",
+    OGS_PFCP_PFCPSEREQ_FLAGS_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_pfcpsereq_flags_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_ip_multicast_address =
+{
+    OGS_TLV_VAR_STR,
+    "IP Multicast Address",
+    OGS_PFCP_IP_MULTICAST_ADDRESS_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_ip_multicast_address_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_source_ip_address =
+{
+    OGS_TLV_VAR_STR,
+    "Source IP Address",
+    OGS_PFCP_SOURCE_IP_ADDRESS_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_source_ip_address_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_packet_rate_status =
+{
+    OGS_TLV_VAR_STR,
+    "Packet Rate Status",
+    OGS_PFCP_PACKET_RATE_STATUS_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_packet_rate_status_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_create_bridge_info_for_tsc =
+{
+    OGS_TLV_VAR_STR,
+    "Create Bridge Info for TSC",
+    OGS_PFCP_CREATE_BRIDGE_INFO_FOR_TSC_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_create_bridge_info_for_tsc_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_ds_tt_port_number =
+{
+    OGS_TLV_VAR_STR,
+    "DS-TT Port Number",
+    OGS_PFCP_DS_TT_PORT_NUMBER_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_ds_tt_port_number_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_nw_tt_port_number =
+{
+    OGS_TLV_VAR_STR,
+    "NW-TT Port Number",
+    OGS_PFCP_NW_TT_PORT_NUMBER_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_nw_tt_port_number_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_tsn_bridge_id =
+{
+    OGS_TLV_VAR_STR,
+    "TSN Bridge ID",
+    OGS_PFCP_TSN_BRIDGE_ID_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_tsn_bridge_id_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_port_management_information_container =
+{
+    OGS_TLV_VAR_STR,
+    "Port Management Information Container",
+    OGS_PFCP_PORT_MANAGEMENT_INFORMATION_CONTAINER_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_port_management_information_container_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_requested_clock_drift_information =
+{
+    OGS_TLV_VAR_STR,
+    "Requested Clock Drift Information",
+    OGS_PFCP_REQUESTED_CLOCK_DRIFT_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_requested_clock_drift_information_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_tsn_time_domain_number =
+{
+    OGS_TLV_VAR_STR,
+    "TSN Time Domain Number",
+    OGS_PFCP_TSN_TIME_DOMAIN_NUMBER_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_tsn_time_domain_number_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_time_offset_threshold =
+{
+    OGS_TLV_VAR_STR,
+    "Time Offset Threshold",
+    OGS_PFCP_TIME_OFFSET_THRESHOLD_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_time_offset_threshold_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_cumulative_rateratio_threshold =
+{
+    OGS_TLV_VAR_STR,
+    "Cumulative rateRatio Threshold",
+    OGS_PFCP_CUMULATIVE_RATERATIO_THRESHOLD_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_cumulative_rateratio_threshold_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_time_offset_measurement =
+{
+    OGS_TLV_VAR_STR,
+    "Time Offset Measurement",
+    OGS_PFCP_TIME_OFFSET_MEASUREMENT_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_time_offset_measurement_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_cumulative_rateratio_measurement =
+{
+    OGS_TLV_VAR_STR,
+    "Cumulative rateRatio Measurement",
+    OGS_PFCP_CUMULATIVE_RATERATIO_MEASUREMENT_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_cumulative_rateratio_measurement_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_srr_id =
+{
+    OGS_TLV_VAR_STR,
+    "SRR ID",
+    OGS_PFCP_SRR_ID_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_srr_id_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_access_availability_control_information =
+{
+    OGS_TLV_VAR_STR,
+    "Access Availability Control Information",
+    OGS_PFCP_ACCESS_AVAILABILITY_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_access_availability_control_information_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_requested_access_availability_information =
+{
+    OGS_TLV_VAR_STR,
+    "Requested Access Availability Information",
+    OGS_PFCP_REQUESTED_ACCESS_AVAILABILITY_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_requested_access_availability_information_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_access_availability_information =
+{
+    OGS_TLV_VAR_STR,
+    "Access Availability Information",
+    OGS_PFCP_ACCESS_AVAILABILITY_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_access_availability_information_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_mptcp_control_information =
+{
+    OGS_TLV_VAR_STR,
+    "MPTCP Control Information",
+    OGS_PFCP_MPTCP_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_mptcp_control_information_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_atsss_ll_control_information =
+{
+    OGS_TLV_VAR_STR,
+    "ATSSS-LL Control Information",
+    OGS_PFCP_ATSSS_LL_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_atsss_ll_control_information_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_pmf_control_information =
+{
+    OGS_TLV_VAR_STR,
+    "PMF Control Information",
+    OGS_PFCP_PMF_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_pmf_control_information_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_mptcp_address_information =
+{
+    OGS_TLV_VAR_STR,
+    "MPTCP Address Information",
+    OGS_PFCP_MPTCP_ADDRESS_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_mptcp_address_information_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_ue_link_specific_ip_address =
+{
+    OGS_TLV_VAR_STR,
+    "UE Link-Specific IP Address",
+    OGS_PFCP_UE_LINK_SPECIFIC_IP_ADDRESS_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_ue_link_specific_ip_address_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_pmf_address_information =
+{
+    OGS_TLV_VAR_STR,
+    "PMF Address Information",
+    OGS_PFCP_PMF_ADDRESS_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_pmf_address_information_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_atsss_ll_information =
+{
+    OGS_TLV_VAR_STR,
+    "ATSSS-LL Information",
+    OGS_PFCP_ATSSS_LL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_atsss_ll_information_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_data_network_access_identifier =
+{
+    OGS_TLV_VAR_STR,
+    "Data Network Access Identifier",
+    OGS_PFCP_DATA_NETWORK_ACCESS_IDENTIFIER_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_data_network_access_identifier_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_average_packet_delay =
+{
+    OGS_TLV_VAR_STR,
+    "Average Packet Delay",
+    OGS_PFCP_AVERAGE_PACKET_DELAY_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_average_packet_delay_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_minimum_packet_delay =
+{
+    OGS_TLV_VAR_STR,
+    "Minimum Packet Delay",
+    OGS_PFCP_MINIMUM_PACKET_DELAY_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_minimum_packet_delay_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_maximum_packet_delay =
+{
+    OGS_TLV_VAR_STR,
+    "Maximum Packet Delay",
+    OGS_PFCP_MAXIMUM_PACKET_DELAY_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_maximum_packet_delay_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_qos_report_trigger =
+{
+    OGS_TLV_VAR_STR,
+    "QoS Report Trigger",
+    OGS_PFCP_QOS_REPORT_TRIGGER_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_qos_report_trigger_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_gtp_u_path_qos_control_information =
+{
+    OGS_TLV_VAR_STR,
+    "GTP-U Path QoS Control Information",
+    OGS_PFCP_GTP_U_PATH_QOS_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_gtp_u_path_qos_control_information_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_gtp_u_path_interface_type =
+{
+    OGS_TLV_VAR_STR,
+    "GTP-U Path Interface Type",
+    OGS_PFCP_GTP_U_PATH_INTERFACE_TYPE_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_gtp_u_path_interface_type_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_qos_monitoring_per_qos_flow_control_information =
+{
+    OGS_TLV_VAR_STR,
+    "QoS Monitoring per QoS flow Control Information",
+    OGS_PFCP_QOS_MONITORING_PER_QOS_FLOW_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_qos_monitoring_per_qos_flow_control_information_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_requested_qos_monitoring =
+{
+    OGS_TLV_VAR_STR,
+    "Requested QoS Monitoring",
+    OGS_PFCP_REQUESTED_QOS_MONITORING_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_requested_qos_monitoring_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_reporting_frequency =
+{
+    OGS_TLV_VAR_STR,
+    "Reporting Frequency",
+    OGS_PFCP_REPORTING_FREQUENCY_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_reporting_frequency_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_packet_delay_thresholds =
+{
+    OGS_TLV_VAR_STR,
+    "Packet Delay Thresholds",
+    OGS_PFCP_PACKET_DELAY_THRESHOLDS_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_packet_delay_thresholds_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_minimum_wait_time =
+{
+    OGS_TLV_VAR_STR,
+    "Minimum Wait Time",
+    OGS_PFCP_MINIMUM_WAIT_TIME_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_minimum_wait_time_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_qos_monitoring_measurement =
+{
+    OGS_TLV_VAR_STR,
+    "QoS Monitoring Measurement",
+    OGS_PFCP_QOS_MONITORING_MEASUREMENT_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_qos_monitoring_measurement_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_mt_edt_control_information =
+{
+    OGS_TLV_VAR_STR,
+    "MT-EDT Control Information",
+    OGS_PFCP_MT_EDT_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_mt_edt_control_information_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_dl_data_packets_size =
+{
+    OGS_TLV_VAR_STR,
+    "DL Data Packets Size",
+    OGS_PFCP_DL_DATA_PACKETS_SIZE_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_dl_data_packets_size_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_qer_control_indications =
+{
+    OGS_TLV_VAR_STR,
+    "QER Control Indications",
+    OGS_PFCP_QER_CONTROL_INDICATIONS_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_qer_control_indications_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_nf_instance_id =
+{
+    OGS_TLV_VAR_STR,
+    "NF Instance ID",
+    OGS_PFCP_NF_INSTANCE_ID_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_nf_instance_id_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_s_nssai =
+{
+    OGS_TLV_VAR_STR,
+    "S-NSSAI",
+    OGS_PFCP_S_NSSAI_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_s_nssai_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_ip_version =
+{
+    OGS_TLV_VAR_STR,
+    "IP version",
+    OGS_PFCP_IP_VERSION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_ip_version_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_pfcpasreq_flags =
+{
+    OGS_TLV_VAR_STR,
+    "PFCPASReq-Flags",
+    OGS_PFCP_PFCPASREQ_FLAGS_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_pfcpasreq_flags_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_data_status =
+{
+    OGS_TLV_VAR_STR,
+    "Data Status",
+    OGS_PFCP_DATA_STATUS_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_data_status_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_rds_configuration_information =
+{
+    OGS_TLV_VAR_STR,
+    "RDS Configuration Information",
+    OGS_PFCP_RDS_CONFIGURATION_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_rds_configuration_information_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_mptcp_applicable_indication =
+{
+    OGS_TLV_VAR_STR,
+    "MPTCP Applicable Indication",
+    OGS_PFCP_MPTCP_APPLICABLE_INDICATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_mptcp_applicable_indication_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_bridge_management_information_container =
+{
+    OGS_TLV_VAR_STR,
+    "Bridge Management Information Container",
+    OGS_PFCP_BRIDGE_MANAGEMENT_INFORMATION_CONTAINER_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_bridge_management_information_container_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_number_of_ue_ip_addresses =
+{
+    OGS_TLV_VAR_STR,
+    "Number of UE IP Addresses",
+    OGS_PFCP_NUMBER_OF_UE_IP_ADDRESSES_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_number_of_ue_ip_addresses_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_validity_timer =
+{
+    OGS_TLV_VAR_STR,
+    "Validity Timer",
+    OGS_PFCP_VALIDITY_TIMER_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_validity_timer_t),
+    { NULL }
+};
+
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_ethernet_packet_filter =
 {
     OGS_TLV_COMPOUND,
@@ -1532,6 +2137,36 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_ethernet_packet_filter =
     }
 };
 
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_redundant_transmission_parameters =
+{
+    OGS_TLV_COMPOUND,
+    "Redundant Transmission Parameters",
+    OGS_PFCP_REDUNDANT_TRANSMISSION_PARAMETERS_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_redundant_transmission_parameters_t),
+    {
+        &ogs_pfcp_tlv_desc_f_teid,
+        &ogs_pfcp_tlv_desc_network_instance,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_ip_multicast_addressing_info_within_pfcp_session_establishment_request =
+{
+    OGS_TLV_COMPOUND,
+    "IP Multicast Addressing Info within PFCP Session Establishment Request",
+    OGS_PFCP_IP_MULTICAST_ADDRESSING_INFO_WITHIN_PFCP_SESSION_ESTABLISHMENT_REQUEST_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_ip_multicast_addressing_info_within_pfcp_session_establishment_request_t),
+    {
+        &ogs_pfcp_tlv_desc_ip_multicast_address,
+        &ogs_pfcp_tlv_desc_source_ip_address,
+        NULL,
+    }
+};
+
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_pdi =
 {
     OGS_TLV_COMPOUND,
@@ -1544,6 +2179,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_pdi =
         &ogs_pfcp_tlv_desc_source_interface,
         &ogs_pfcp_tlv_desc_f_teid,
         &ogs_pfcp_tlv_desc_network_instance,
+        &ogs_pfcp_tlv_desc_redundant_transmission_parameters,
         &ogs_pfcp_tlv_desc_ue_ip_address,
         &ogs_pfcp_tlv_desc_traffic_endpoint_id,
         &ogs_pfcp_tlv_desc_sdf_filter,
@@ -1556,6 +2192,22 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_pdi =
         &ogs_pfcp_tlv_desc_framed_routing,
         &ogs_pfcp_tlv_desc_framed_ipv6_route,
         &ogs_pfcp_tlv_desc__interface_type,
+        &ogs_pfcp_tlv_desc_ip_multicast_addressing_info_within_pfcp_session_establishment_request,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_transport_delay_reporting =
+{
+    OGS_TLV_COMPOUND,
+    "Transport Delay Reporting",
+    OGS_PFCP_TRANSPORT_DELAY_REPORTING_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_transport_delay_reporting_t),
+    {
+        &ogs_pfcp_tlv_desc_remote_gtp_u_peer,
+        &ogs_pfcp_tlv_desc_transport_level_marking,
         NULL,
     }
 };
@@ -1582,6 +2234,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_create_pdr =
         &ogs_pfcp_tlv_desc_deactivation_time,
         &ogs_pfcp_tlv_desc_mar_id,
         &ogs_pfcp_tlv_desc_packet_replication_and_detection_carry_on_information,
+        &ogs_pfcp_tlv_desc_ip_multicast_addressing_info_within_pfcp_session_establishment_request,
+        &ogs_pfcp_tlv_desc_ue_ip_address,
+        &ogs_pfcp_tlv_desc_mptcp_applicable_indication,
+        &ogs_pfcp_tlv_desc_transport_delay_reporting,
         NULL,
     }
 };
@@ -1605,6 +2261,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_forwarding_parameters =
         &ogs_pfcp_tlv_desc_traffic_endpoint_id,
         &ogs_pfcp_tlv_desc_proxying,
         &ogs_pfcp_tlv_desc__interface_type,
+        &ogs_pfcp_tlv_desc_data_network_access_identifier,
         NULL,
     }
 };
@@ -1626,6 +2283,21 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_duplicating_parameters =
     }
 };
 
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_redundant_transmission_forwarding_parameters =
+{
+    OGS_TLV_COMPOUND,
+    "Redundant Transmission Forwarding Parameters",
+    OGS_PFCP_REDUNDANT_TRANSMISSION_FORWARDING_PARAMETERS_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_redundant_transmission_forwarding_parameters_t),
+    {
+        &ogs_pfcp_tlv_desc_outer_header_creation,
+        &ogs_pfcp_tlv_desc_network_instance,
+        NULL,
+    }
+};
+
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_create_far =
 {
     OGS_TLV_COMPOUND,
@@ -1640,6 +2312,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_create_far =
         &ogs_pfcp_tlv_desc_forwarding_parameters,
         &ogs_pfcp_tlv_desc_duplicating_parameters,
         &ogs_pfcp_tlv_desc_bar_id,
+        &ogs_pfcp_tlv_desc_redundant_transmission_forwarding_parameters,
         NULL,
     }
 };
@@ -1663,6 +2336,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_update_forwarding_parameters =
         &ogs_pfcp_tlv_desc_pfcpsmreq_flags,
         &ogs_pfcp_tlv_desc_traffic_endpoint_id,
         &ogs_pfcp_tlv_desc__interface_type,
+        &ogs_pfcp_tlv_desc_data_network_access_identifier,
         NULL,
     }
 };
@@ -1697,6 +2371,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_update_far =
         &ogs_pfcp_tlv_desc_apply_action,
         &ogs_pfcp_tlv_desc_update_forwarding_parameters,
         &ogs_pfcp_tlv_desc_update_duplicating_parameters,
+        &ogs_pfcp_tlv_desc_redundant_transmission_forwarding_parameters,
         &ogs_pfcp_tlv_desc_bar_id,
         NULL,
     }
@@ -1746,14 +2421,14 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_ethernet_traffic_information =
     }
 };
 
-ogs_tlv_desc_t ogs_pfcp_tlv_desc_access_forwarding_action_information_1 =
+ogs_tlv_desc_t ogs_pfcp_tlv_desc__access_forwarding_action_information =
 {
     OGS_TLV_COMPOUND,
-    "Access Forwarding Action Information 1",
-    OGS_PFCP_ACCESS_FORWARDING_ACTION_INFORMATION_1_TYPE,
+    "3GPP Access Forwarding Action Information",
+    OGS_PFCP__ACCESS_FORWARDING_ACTION_INFORMATION_TYPE,
     0,
     0,
-    sizeof(ogs_pfcp_tlv_access_forwarding_action_information_1_t),
+    sizeof(ogs_pfcp_tlv__access_forwarding_action_information_t),
     {
         &ogs_pfcp_tlv_desc_far_id,
         &ogs_pfcp_tlv_desc_weight,
@@ -1764,14 +2439,14 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_access_forwarding_action_information_1 =
     }
 };
 
-ogs_tlv_desc_t ogs_pfcp_tlv_desc_access_forwarding_action_information_2 =
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_non__access_forwarding_action_information =
 {
     OGS_TLV_COMPOUND,
-    "Access Forwarding Action Information 2",
-    OGS_PFCP_ACCESS_FORWARDING_ACTION_INFORMATION_2_TYPE,
+    "Non-3GPP Access Forwarding Action Information",
+    OGS_PFCP_NON__ACCESS_FORWARDING_ACTION_INFORMATION_TYPE,
     0,
     0,
-    sizeof(ogs_pfcp_tlv_access_forwarding_action_information_2_t),
+    sizeof(ogs_pfcp_tlv_non__access_forwarding_action_information_t),
     {
         &ogs_pfcp_tlv_desc_far_id,
         &ogs_pfcp_tlv_desc_weight,
@@ -1782,14 +2457,14 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_access_forwarding_action_information_2 =
     }
 };
 
-ogs_tlv_desc_t ogs_pfcp_tlv_desc_update_access_forwarding_action_information_1 =
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_update__access_forwarding_action_information =
 {
     OGS_TLV_COMPOUND,
-    "Update Access Forwarding Action Information 1",
-    OGS_PFCP_UPDATE_ACCESS_FORWARDING_ACTION_INFORMATION_1_TYPE,
+    "Update 3GPP Access Forwarding Action Information",
+    OGS_PFCP_UPDATE__ACCESS_FORWARDING_ACTION_INFORMATION_TYPE,
     0,
     0,
-    sizeof(ogs_pfcp_tlv_update_access_forwarding_action_information_1_t),
+    sizeof(ogs_pfcp_tlv_update__access_forwarding_action_information_t),
     {
         &ogs_pfcp_tlv_desc_far_id,
         &ogs_pfcp_tlv_desc_weight,
@@ -1799,19 +2474,123 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_update_access_forwarding_action_information_1 =
     }
 };
 
-ogs_tlv_desc_t ogs_pfcp_tlv_desc_update_access_forwarding_action_information_2 =
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_update_non__access_forwarding_action_information =
 {
     OGS_TLV_COMPOUND,
-    "Update Access Forwarding Action Information 2",
-    OGS_PFCP_UPDATE_ACCESS_FORWARDING_ACTION_INFORMATION_2_TYPE,
+    "Update Non-3GPP Access Forwarding Action Information",
+    OGS_PFCP_UPDATE_NON__ACCESS_FORWARDING_ACTION_INFORMATION_TYPE,
     0,
     0,
-    sizeof(ogs_pfcp_tlv_update_access_forwarding_action_information_2_t),
+    sizeof(ogs_pfcp_tlv_update_non__access_forwarding_action_information_t),
     {
         &ogs_pfcp_tlv_desc_far_id,
         &ogs_pfcp_tlv_desc_weight,
         &ogs_pfcp_tlv_desc_priority,
         &ogs_pfcp_tlv_desc_urr_id,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_access_availability_report =
+{
+    OGS_TLV_COMPOUND,
+    "Access Availability Report",
+    OGS_PFCP_ACCESS_AVAILABILITY_REPORT_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_access_availability_report_t),
+    {
+        &ogs_pfcp_tlv_desc_access_availability_information,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_qos_monitoring_report =
+{
+    OGS_TLV_COMPOUND,
+    "QoS Monitoring Report",
+    OGS_PFCP_QOS_MONITORING_REPORT_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_qos_monitoring_report_t),
+    {
+        &ogs_pfcp_tlv_desc_qfi,
+        &ogs_pfcp_tlv_desc_qos_monitoring_measurement,
+        &ogs_pfcp_tlv_desc_time_stamp,
+        &ogs_pfcp_tlv_desc_start_time,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_mptcp_parameters =
+{
+    OGS_TLV_COMPOUND,
+    "MPTCP Parameters",
+    OGS_PFCP_MPTCP_PARAMETERS_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_mptcp_parameters_t),
+    {
+        &ogs_pfcp_tlv_desc_mptcp_address_information,
+        &ogs_pfcp_tlv_desc_ue_link_specific_ip_address,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_atsss_ll_parameters =
+{
+    OGS_TLV_COMPOUND,
+    "ATSSS-LL Parameters",
+    OGS_PFCP_ATSSS_LL_PARAMETERS_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_atsss_ll_parameters_t),
+    {
+        &ogs_pfcp_tlv_desc_atsss_ll_information,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_pmf_parameters =
+{
+    OGS_TLV_COMPOUND,
+    "PMF Parameters",
+    OGS_PFCP_PMF_PARAMETERS_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_pmf_parameters_t),
+    {
+        &ogs_pfcp_tlv_desc_pmf_address_information,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_join_ip_multicast_information_ie_within_usage_report =
+{
+    OGS_TLV_COMPOUND,
+    "Join IP Multicast Information IE within Usage Report",
+    OGS_PFCP_JOIN_IP_MULTICAST_INFORMATION_IE_WITHIN_USAGE_REPORT_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_join_ip_multicast_information_ie_within_usage_report_t),
+    {
+        &ogs_pfcp_tlv_desc_ip_multicast_address,
+        &ogs_pfcp_tlv_desc_source_ip_address,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_leave_ip_multicast_information_ie_within_usage_report =
+{
+    OGS_TLV_COMPOUND,
+    "Leave IP Multicast Information IE within Usage Report",
+    OGS_PFCP_LEAVE_IP_MULTICAST_INFORMATION_IE_WITHIN_USAGE_REPORT_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_leave_ip_multicast_information_ie_within_usage_report_t),
+    {
+        &ogs_pfcp_tlv_desc_ip_multicast_address,
+        &ogs_pfcp_tlv_desc_source_ip_address,
         NULL,
     }
 };
@@ -1853,6 +2632,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_create_urr =
         &ogs_pfcp_tlv_desc_far_id,
         &ogs_pfcp_tlv_desc_ethernet_inactivity_timer,
         &ogs_pfcp_tlv_desc_additional_monitoring_time,
+        &ogs_pfcp_tlv_desc_number_of_reports,
         NULL,
     }
 };
@@ -1872,11 +2652,13 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_create_qer =
         &ogs_pfcp_tlv_desc_mbr,
         &ogs_pfcp_tlv_desc_gbr,
         &ogs_pfcp_tlv_desc_packet_rate,
+        &ogs_pfcp_tlv_desc_packet_rate_status,
         &ogs_pfcp_tlv_desc_dl_flow_level_marking,
         &ogs_pfcp_tlv_desc_qfi,
         &ogs_pfcp_tlv_desc_rqi,
         &ogs_pfcp_tlv_desc_paging_policy_indicator,
         &ogs_pfcp_tlv_desc_averaging_window,
+        &ogs_pfcp_tlv_desc_qer_control_indications,
         NULL,
     }
 };
@@ -1891,6 +2673,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_created_pdr =
     sizeof(ogs_pfcp_tlv_created_pdr_t),
     {
         &ogs_pfcp_tlv_desc_pdr_id,
+        &ogs_pfcp_tlv_desc_f_teid,
         &ogs_pfcp_tlv_desc_f_teid,
         &ogs_pfcp_tlv_desc_ue_ip_address,
         NULL,
@@ -1917,6 +2700,8 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_update_pdr =
         &ogs_pfcp_tlv_desc_deactivate_predefined_rules,
         &ogs_pfcp_tlv_desc_activation_time,
         &ogs_pfcp_tlv_desc_deactivation_time,
+        &ogs_pfcp_tlv_desc_ip_multicast_addressing_info_within_pfcp_session_establishment_request,
+        &ogs_pfcp_tlv_desc_transport_delay_reporting,
         NULL,
     }
 };
@@ -1976,6 +2761,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_update_urr =
         &ogs_pfcp_tlv_desc_far_id,
         &ogs_pfcp_tlv_desc_ethernet_inactivity_timer,
         &ogs_pfcp_tlv_desc_additional_monitoring_time,
+        &ogs_pfcp_tlv_desc_number_of_reports,
         NULL,
     }
 };
@@ -2000,6 +2786,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_update_qer =
         &ogs_pfcp_tlv_desc_rqi,
         &ogs_pfcp_tlv_desc_paging_policy_indicator,
         &ogs_pfcp_tlv_desc_averaging_window,
+        &ogs_pfcp_tlv_desc_qer_control_indications,
         NULL,
     }
 };
@@ -2104,6 +2891,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_application_detection_information =
         &ogs_pfcp_tlv_desc_application_id,
         &ogs_pfcp_tlv_desc_application_instance_id,
         &ogs_pfcp_tlv_desc_flow_information,
+        &ogs_pfcp_tlv_desc_pdr_id,
         NULL,
     }
 };
@@ -2194,8 +2982,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_usage_report_session_report_request =
         &ogs_pfcp_tlv_desc_time_of_last_packet,
         &ogs_pfcp_tlv_desc_usage_information,
         &ogs_pfcp_tlv_desc_query_urr_reference,
-        &ogs_pfcp_tlv_desc_event_time_stamp,
+        &ogs_pfcp_tlv_desc_time_stamp,
         &ogs_pfcp_tlv_desc_ethernet_traffic_information,
+        &ogs_pfcp_tlv_desc_join_ip_multicast_information_ie_within_usage_report,
+        &ogs_pfcp_tlv_desc_leave_ip_multicast_information_ie_within_usage_report,
         NULL,
     }
 };
@@ -2211,6 +3001,8 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_downlink_data_report =
     {
         &ogs_pfcp_tlv_desc_pdr_id,
         &ogs_pfcp_tlv_desc_downlink_data_service_information,
+        &ogs_pfcp_tlv_desc_dl_data_packets_size,
+        &ogs_pfcp_tlv_desc_data_status,
         NULL,
     }
 };
@@ -2227,6 +3019,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_create_bar =
         &ogs_pfcp_tlv_desc_bar_id,
         &ogs_pfcp_tlv_desc_downlink_data_notification_delay,
         &ogs_pfcp_tlv_desc_suggested_buffering_packets_count,
+        &ogs_pfcp_tlv_desc_mt_edt_control_information,
         NULL,
     }
 };
@@ -2243,6 +3036,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_update_bar_session_modification_request =
         &ogs_pfcp_tlv_desc_bar_id,
         &ogs_pfcp_tlv_desc_downlink_data_notification_delay,
         &ogs_pfcp_tlv_desc_suggested_buffering_packets_count,
+        &ogs_pfcp_tlv_desc_mt_edt_control_information,
         NULL,
     }
 };
@@ -2301,12 +3095,14 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_create_traffic_endpoint =
         &ogs_pfcp_tlv_desc_traffic_endpoint_id,
         &ogs_pfcp_tlv_desc_f_teid,
         &ogs_pfcp_tlv_desc_network_instance,
+        &ogs_pfcp_tlv_desc_redundant_transmission_parameters,
         &ogs_pfcp_tlv_desc_ue_ip_address,
         &ogs_pfcp_tlv_desc_ethernet_pdu_session_information,
         &ogs_pfcp_tlv_desc_framed_route,
         &ogs_pfcp_tlv_desc_framed_routing,
         &ogs_pfcp_tlv_desc_framed_ipv6_route,
         &ogs_pfcp_tlv_desc_qfi,
+        &ogs_pfcp_tlv_desc__interface_type,
         NULL,
     }
 };
@@ -2321,6 +3117,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_created_traffic_endpoint =
     sizeof(ogs_pfcp_tlv_created_traffic_endpoint_t),
     {
         &ogs_pfcp_tlv_desc_traffic_endpoint_id,
+        &ogs_pfcp_tlv_desc_f_teid,
         &ogs_pfcp_tlv_desc_f_teid,
         &ogs_pfcp_tlv_desc_ue_ip_address,
         NULL,
@@ -2353,8 +3150,8 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_create_mar =
         &ogs_pfcp_tlv_desc_mar_id,
         &ogs_pfcp_tlv_desc_steering_functionality,
         &ogs_pfcp_tlv_desc_steering_mode,
-        &ogs_pfcp_tlv_desc_access_forwarding_action_information_1,
-        &ogs_pfcp_tlv_desc_access_forwarding_action_information_2,
+        &ogs_pfcp_tlv_desc__access_forwarding_action_information,
+        &ogs_pfcp_tlv_desc_non__access_forwarding_action_information,
         NULL,
     }
 };
@@ -2385,10 +3182,393 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_update_mar =
         &ogs_pfcp_tlv_desc_mar_id,
         &ogs_pfcp_tlv_desc_steering_functionality,
         &ogs_pfcp_tlv_desc_steering_mode,
-        &ogs_pfcp_tlv_desc_update_access_forwarding_action_information_1,
-        &ogs_pfcp_tlv_desc_update_access_forwarding_action_information_2,
-        &ogs_pfcp_tlv_desc_access_forwarding_action_information_1,
-        &ogs_pfcp_tlv_desc_access_forwarding_action_information_2,
+        &ogs_pfcp_tlv_desc_update__access_forwarding_action_information,
+        &ogs_pfcp_tlv_desc_update_non__access_forwarding_action_information,
+        &ogs_pfcp_tlv_desc__access_forwarding_action_information,
+        &ogs_pfcp_tlv_desc_non__access_forwarding_action_information,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_pfcp_session_retention_information_within_pfcp_association_setup_request =
+{
+    OGS_TLV_COMPOUND,
+    "PFCP Session Retention Information within PFCP Association Setup Request",
+    OGS_PFCP_PFCP_SESSION_RETENTION_INFORMATION_WITHIN_PFCP_ASSOCIATION_SETUP_REQUEST_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_pfcp_session_retention_information_within_pfcp_association_setup_request_t),
+    {
+        &ogs_pfcp_tlv_desc_cp_pfcp_entity_ip_address,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_user_plane_path_recovery_report =
+{
+    OGS_TLV_COMPOUND,
+    "User Plane Path Recovery Report",
+    OGS_PFCP_USER_PLANE_PATH_RECOVERY_REPORT_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_user_plane_path_recovery_report_t),
+    {
+        &ogs_pfcp_tlv_desc_remote_gtp_u_peer,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_created_bridge_info_for_tsc =
+{
+    OGS_TLV_COMPOUND,
+    "Created Bridge Info for TSC",
+    OGS_PFCP_CREATED_BRIDGE_INFO_FOR_TSC_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_created_bridge_info_for_tsc_t),
+    {
+        &ogs_pfcp_tlv_desc_ds_tt_port_number,
+        &ogs_pfcp_tlv_desc_tsn_bridge_id,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_tsc_management_information_ie_within_pfcp_session_modification_request =
+{
+    OGS_TLV_COMPOUND,
+    "TSC Management Information IE within PFCP Session Modification Request",
+    OGS_PFCP_TSC_MANAGEMENT_INFORMATION_IE_WITHIN_PFCP_SESSION_MODIFICATION_REQUEST_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_tsc_management_information_ie_within_pfcp_session_modification_request_t),
+    {
+        &ogs_pfcp_tlv_desc_port_management_information_container,
+        &ogs_pfcp_tlv_desc_bridge_management_information_container,
+        &ogs_pfcp_tlv_desc_nw_tt_port_number,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_tsc_management_information_ie_within_pfcp_session_modification_response =
+{
+    OGS_TLV_COMPOUND,
+    "TSC Management Information IE within PFCP Session Modification Response",
+    OGS_PFCP_TSC_MANAGEMENT_INFORMATION_IE_WITHIN_PFCP_SESSION_MODIFICATION_RESPONSE_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_tsc_management_information_ie_within_pfcp_session_modification_response_t),
+    {
+        &ogs_pfcp_tlv_desc_port_management_information_container,
+        &ogs_pfcp_tlv_desc_bridge_management_information_container,
+        &ogs_pfcp_tlv_desc_nw_tt_port_number,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_tsc_management_information_ie_within_pfcp_session_report_request =
+{
+    OGS_TLV_COMPOUND,
+    "TSC Management Information IE within PFCP Session Report Request",
+    OGS_PFCP_TSC_MANAGEMENT_INFORMATION_IE_WITHIN_PFCP_SESSION_REPORT_REQUEST_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_tsc_management_information_ie_within_pfcp_session_report_request_t),
+    {
+        &ogs_pfcp_tlv_desc_port_management_information_container,
+        &ogs_pfcp_tlv_desc_bridge_management_information_container,
+        &ogs_pfcp_tlv_desc_nw_tt_port_number,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_clock_drift_control_information =
+{
+    OGS_TLV_COMPOUND,
+    "Clock Drift Control Information",
+    OGS_PFCP_CLOCK_DRIFT_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_clock_drift_control_information_t),
+    {
+        &ogs_pfcp_tlv_desc_requested_clock_drift_information,
+        &ogs_pfcp_tlv_desc_tsn_time_domain_number,
+        &ogs_pfcp_tlv_desc_time_offset_threshold,
+        &ogs_pfcp_tlv_desc_cumulative_rateratio_threshold,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_clock_drift_report =
+{
+    OGS_TLV_COMPOUND,
+    "Clock Drift Report",
+    OGS_PFCP_CLOCK_DRIFT_REPORT_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_clock_drift_report_t),
+    {
+        &ogs_pfcp_tlv_desc_tsn_time_domain_number,
+        &ogs_pfcp_tlv_desc_time_offset_measurement,
+        &ogs_pfcp_tlv_desc_cumulative_rateratio_measurement,
+        &ogs_pfcp_tlv_desc_time_stamp,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_remove_srr =
+{
+    OGS_TLV_COMPOUND,
+    "Remove SRR",
+    OGS_PFCP_REMOVE_SRR_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_remove_srr_t),
+    {
+        &ogs_pfcp_tlv_desc_srr_id,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_create_srr =
+{
+    OGS_TLV_COMPOUND,
+    "Create SRR",
+    OGS_PFCP_CREATE_SRR_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_create_srr_t),
+    {
+        &ogs_pfcp_tlv_desc_srr_id,
+        &ogs_pfcp_tlv_desc_access_availability_control_information,
+        &ogs_pfcp_tlv_desc_qos_monitoring_per_qos_flow_control_information,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_update_srr =
+{
+    OGS_TLV_COMPOUND,
+    "Update SRR",
+    OGS_PFCP_UPDATE_SRR_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_update_srr_t),
+    {
+        &ogs_pfcp_tlv_desc_srr_id,
+        &ogs_pfcp_tlv_desc_access_availability_control_information,
+        &ogs_pfcp_tlv_desc_qos_monitoring_per_qos_flow_control_information,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_session_report =
+{
+    OGS_TLV_COMPOUND,
+    "Session Report",
+    OGS_PFCP_SESSION_REPORT_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_session_report_t),
+    {
+        &ogs_pfcp_tlv_desc_srr_id,
+        &ogs_pfcp_tlv_desc_access_availability_report,
+        &ogs_pfcp_tlv_desc_qos_monitoring_report,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_provide_atsss_control_information =
+{
+    OGS_TLV_COMPOUND,
+    "Provide ATSSS Control Information",
+    OGS_PFCP_PROVIDE_ATSSS_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_provide_atsss_control_information_t),
+    {
+        &ogs_pfcp_tlv_desc_mptcp_control_information,
+        &ogs_pfcp_tlv_desc_atsss_ll_control_information,
+        &ogs_pfcp_tlv_desc_pmf_control_information,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_atsss_control_parameters =
+{
+    OGS_TLV_COMPOUND,
+    "ATSSS Control Parameters",
+    OGS_PFCP_ATSSS_CONTROL_PARAMETERS_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_atsss_control_parameters_t),
+    {
+        &ogs_pfcp_tlv_desc_mptcp_parameters,
+        &ogs_pfcp_tlv_desc_atsss_ll_parameters,
+        &ogs_pfcp_tlv_desc_pmf_parameters,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_ue_ip_address_pool_information =
+{
+    OGS_TLV_COMPOUND,
+    "UE IP address Pool Information",
+    OGS_PFCP_UE_IP_ADDRESS_POOL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_ue_ip_address_pool_information_t),
+    {
+        &ogs_pfcp_tlv_desc_ue_ip_address,
+        &ogs_pfcp_tlv_desc_network_instance,
+        &ogs_pfcp_tlv_desc_s_nssai,
+        &ogs_pfcp_tlv_desc_ip_version,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_gtp_u_path_qos_report_pfcp_node_report_request =
+{
+    OGS_TLV_COMPOUND,
+    "GTP-U Path QoS Report PFCP Node Report Request",
+    OGS_PFCP_GTP_U_PATH_QOS_REPORT_PFCP_NODE_REPORT_REQUEST_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_gtp_u_path_qos_report_pfcp_node_report_request_t),
+    {
+        &ogs_pfcp_tlv_desc_remote_gtp_u_peer,
+        &ogs_pfcp_tlv_desc_gtp_u_path_interface_type,
+        &ogs_pfcp_tlv_desc_qos_report_trigger,
+        &ogs_pfcp_tlv_desc_transport_level_marking,
+        &ogs_pfcp_tlv_desc_measurement_period,
+        &ogs_pfcp_tlv_desc_average_packet_delay,
+        &ogs_pfcp_tlv_desc_minimum_packet_delay,
+        &ogs_pfcp_tlv_desc_maximum_packet_delay,
+        &ogs_pfcp_tlv_desc_timer,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_qos_information_in_gtp_u_path_qos_report =
+{
+    OGS_TLV_COMPOUND,
+    "QoS Information in GTP-U Path QoS Report",
+    OGS_PFCP_QOS_INFORMATION_IN_GTP_U_PATH_QOS_REPORT_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_qos_information_in_gtp_u_path_qos_report_t),
+    {
+        &ogs_pfcp_tlv_desc_average_packet_delay,
+        &ogs_pfcp_tlv_desc_minimum_packet_delay,
+        &ogs_pfcp_tlv_desc_maximum_packet_delay,
+        &ogs_pfcp_tlv_desc_transport_level_marking,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_packet_rate_status_report =
+{
+    OGS_TLV_COMPOUND,
+    "Packet Rate Status Report",
+    OGS_PFCP_PACKET_RATE_STATUS_REPORT_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_packet_rate_status_report_t),
+    {
+        &ogs_pfcp_tlv_desc_qer_id,
+        &ogs_pfcp_tlv_desc_packet_rate_status,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_ethernet_context_information =
+{
+    OGS_TLV_COMPOUND,
+    "Ethernet Context Information",
+    OGS_PFCP_ETHERNET_CONTEXT_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_ethernet_context_information_t),
+    {
+        &ogs_pfcp_tlv_desc_mac_addresses_detected,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_updated_pdr =
+{
+    OGS_TLV_COMPOUND,
+    "Updated PDR",
+    OGS_PFCP_UPDATED_PDR_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_updated_pdr_t),
+    {
+        &ogs_pfcp_tlv_desc_pdr_id,
+        &ogs_pfcp_tlv_desc_f_teid,
+        &ogs_pfcp_tlv_desc_f_teid,
+        &ogs_pfcp_tlv_desc_ue_ip_address,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_provide_rds_configuration_information =
+{
+    OGS_TLV_COMPOUND,
+    "Provide RDS Configuration Information",
+    OGS_PFCP_PROVIDE_RDS_CONFIGURATION_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_provide_rds_configuration_information_t),
+    {
+        &ogs_pfcp_tlv_desc_rds_configuration_information,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_query_packet_rate_status_ie_within_pfcp_session_modification_request =
+{
+    OGS_TLV_COMPOUND,
+    "Query Packet Rate Status IE within PFCP Session Modification Request",
+    OGS_PFCP_QUERY_PACKET_RATE_STATUS_IE_WITHIN_PFCP_SESSION_MODIFICATION_REQUEST_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_query_packet_rate_status_ie_within_pfcp_session_modification_request_t),
+    {
+        &ogs_pfcp_tlv_desc_qer_id,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_packet_rate_status_report_ie_within_pfcp_session_modification_response =
+{
+    OGS_TLV_COMPOUND,
+    "Packet Rate Status Report IE within PFCP Session Modification Response",
+    OGS_PFCP_PACKET_RATE_STATUS_REPORT_IE_WITHIN_PFCP_SESSION_MODIFICATION_RESPONSE_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_packet_rate_status_report_ie_within_pfcp_session_modification_response_t),
+    {
+        &ogs_pfcp_tlv_desc_qer_id,
+        &ogs_pfcp_tlv_desc_packet_rate_status,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_ue_ip_address_usage_information =
+{
+    OGS_TLV_COMPOUND,
+    "UE IP Address Usage Information",
+    OGS_PFCP_UE_IP_ADDRESS_USAGE_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_ue_ip_address_usage_information_t),
+    {
+        &ogs_pfcp_tlv_desc_sequence_number,
+        &ogs_pfcp_tlv_desc_metric,
+        &ogs_pfcp_tlv_desc_validity_timer,
+        &ogs_pfcp_tlv_desc_number_of_ue_ip_addresses,
+        &ogs_pfcp_tlv_desc_network_instance,
+        &ogs_pfcp_tlv_desc_ue_ip_address,
         NULL,
     }
 };
@@ -2399,6 +3579,7 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_heartbeat_request =
     "PFCP Heartbeat Request",
     0, 0, 0, 0, {
         &ogs_pfcp_tlv_desc_recovery_time_stamp,
+        &ogs_pfcp_tlv_desc_source_ip_address,
     NULL,
 }};
 
@@ -2417,6 +3598,7 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_pfd_management_request =
     "PFCP PFD Management Request",
     0, 0, 0, 0, {
         &ogs_pfcp_tlv_desc_application_id_s_pfds,
+        &ogs_pfcp_tlv_desc_node_id,
     NULL,
 }};
 
@@ -2427,6 +3609,7 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_pfd_management_response =
     0, 0, 0, 0, {
         &ogs_pfcp_tlv_desc_cause,
         &ogs_pfcp_tlv_desc_offending_ie,
+        &ogs_pfcp_tlv_desc_node_id,
     NULL,
 }};
 
@@ -2441,9 +3624,14 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_association_setup_request =
         &ogs_pfcp_tlv_desc_cp_function_features,
         &ogs_pfcp_tlv_desc_user_plane_ip_resource_information,
         &ogs_tlv_desc_more4,
-        &ogs_pfcp_tlv_desc_ue_ip_address,
         &ogs_pfcp_tlv_desc_alternative_smf_ip_address,
         &ogs_pfcp_tlv_desc_smf_set_id,
+        &ogs_pfcp_tlv_desc_pfcp_session_retention_information_within_pfcp_association_setup_request,
+        &ogs_pfcp_tlv_desc_ue_ip_address,
+        &ogs_pfcp_tlv_desc_gtp_u_path_qos_control_information,
+        &ogs_pfcp_tlv_desc_clock_drift_control_information,
+        &ogs_pfcp_tlv_desc_nf_instance_id,
+        &ogs_pfcp_tlv_desc_pfcpasreq_flags,
     NULL,
 }};
 
@@ -2460,6 +3648,12 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_association_setup_response =
         &ogs_pfcp_tlv_desc_user_plane_ip_resource_information,
         &ogs_tlv_desc_more4,
         &ogs_pfcp_tlv_desc_alternative_smf_ip_address,
+        &ogs_pfcp_tlv_desc_smf_set_id,
+        &ogs_pfcp_tlv_desc_pfcpasrsp_flags,
+        &ogs_pfcp_tlv_desc_clock_drift_control_information,
+        &ogs_pfcp_tlv_desc_ue_ip_address,
+        &ogs_pfcp_tlv_desc_gtp_u_path_qos_control_information,
+        &ogs_pfcp_tlv_desc_nf_instance_id,
     NULL,
 }};
 
@@ -2471,12 +3665,17 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_association_update_request =
         &ogs_pfcp_tlv_desc_node_id,
         &ogs_pfcp_tlv_desc_up_function_features,
         &ogs_pfcp_tlv_desc_cp_function_features,
-        &ogs_pfcp_tlv_desc_pfcp_association_release_request,
-        &ogs_pfcp_tlv_desc_graceful_release_period,
         &ogs_pfcp_tlv_desc_user_plane_ip_resource_information,
         &ogs_tlv_desc_more4,
+        &ogs_pfcp_tlv_desc_pfcp_association_release_request,
+        &ogs_pfcp_tlv_desc_graceful_release_period,
         &ogs_pfcp_tlv_desc_pfcpaureq_flags,
         &ogs_pfcp_tlv_desc_alternative_smf_ip_address,
+        &ogs_pfcp_tlv_desc_smf_set_id,
+        &ogs_pfcp_tlv_desc_clock_drift_control_information,
+        &ogs_pfcp_tlv_desc_ue_ip_address,
+        &ogs_pfcp_tlv_desc_gtp_u_path_qos_control_information,
+        &ogs_pfcp_tlv_desc_ue_ip_address_usage_information,
     NULL,
 }};
 
@@ -2489,6 +3688,7 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_association_update_response =
         &ogs_pfcp_tlv_desc_cause,
         &ogs_pfcp_tlv_desc_up_function_features,
         &ogs_pfcp_tlv_desc_cp_function_features,
+        &ogs_pfcp_tlv_desc_ue_ip_address_usage_information,
     NULL,
 }};
 
@@ -2527,6 +3727,9 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_node_report_request =
         &ogs_pfcp_tlv_desc_node_id,
         &ogs_pfcp_tlv_desc_node_report_type,
         &ogs_pfcp_tlv_desc_user_plane_path_failure_report,
+        &ogs_pfcp_tlv_desc_user_plane_path_recovery_report,
+        &ogs_pfcp_tlv_desc_clock_drift_report,
+        &ogs_pfcp_tlv_desc_gtp_u_path_qos_report_pfcp_node_report_request,
     NULL,
 }};
 
@@ -2547,7 +3750,6 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_set_deletion_request =
     "PFCP Session Set Deletion Request",
     0, 0, 0, 0, {
         &ogs_pfcp_tlv_desc_node_id,
-        &ogs_pfcp_tlv_desc_fq_csid,
         &ogs_pfcp_tlv_desc_fq_csid,
         &ogs_pfcp_tlv_desc_fq_csid,
         &ogs_pfcp_tlv_desc_fq_csid,
@@ -2596,6 +3798,13 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_establishment_request =
         &ogs_pfcp_tlv_desc_trace_information,
         &ogs_pfcp_tlv_desc_apn_dnn,
         &ogs_pfcp_tlv_desc_create_mar,
+        &ogs_pfcp_tlv_desc_pfcpsereq_flags,
+        &ogs_pfcp_tlv_desc_create_bridge_info_for_tsc,
+        &ogs_pfcp_tlv_desc_create_srr,
+        &ogs_pfcp_tlv_desc_provide_atsss_control_information,
+        &ogs_pfcp_tlv_desc_recovery_time_stamp,
+        &ogs_pfcp_tlv_desc_s_nssai,
+        &ogs_pfcp_tlv_desc_provide_rds_configuration_information,
     NULL,
 }};
 
@@ -2613,9 +3822,11 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_establishment_response =
         &ogs_pfcp_tlv_desc_load_control_information,
         &ogs_pfcp_tlv_desc_overload_control_information,
         &ogs_pfcp_tlv_desc_fq_csid,
-        &ogs_pfcp_tlv_desc_fq_csid,
         &ogs_pfcp_tlv_desc_failed_rule_id,
         &ogs_pfcp_tlv_desc_created_traffic_endpoint,
+        &ogs_pfcp_tlv_desc_created_bridge_info_for_tsc,
+        &ogs_pfcp_tlv_desc_atsss_control_parameters,
+        &ogs_pfcp_tlv_desc_rds_configuration_information,
     NULL,
 }};
 
@@ -2669,6 +3880,15 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_modification_request =
         &ogs_pfcp_tlv_desc_update_mar,
         &ogs_pfcp_tlv_desc_create_mar,
         &ogs_pfcp_tlv_desc_node_id,
+        &ogs_pfcp_tlv_desc_tsc_management_information_ie_within_pfcp_session_modification_request,
+        &ogs_pfcp_tlv_desc_remove_srr,
+        &ogs_pfcp_tlv_desc_create_srr,
+        &ogs_pfcp_tlv_desc_update_srr,
+        &ogs_pfcp_tlv_desc_provide_atsss_control_information,
+        &ogs_pfcp_tlv_desc_ethernet_context_information,
+        &ogs_pfcp_tlv_desc_access_availability_information,
+        &ogs_pfcp_tlv_desc_query_packet_rate_status_ie_within_pfcp_session_modification_request,
+        &ogs_pfcp_tlv_desc_s_nssai,
     NULL,
 }};
 
@@ -2688,6 +3908,10 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_modification_response =
         &ogs_pfcp_tlv_desc_failed_rule_id,
         &ogs_pfcp_tlv_desc_additional_usage_reports_information,
         &ogs_pfcp_tlv_desc_created_traffic_endpoint,
+        &ogs_pfcp_tlv_desc_tsc_management_information_ie_within_pfcp_session_modification_response,
+        &ogs_pfcp_tlv_desc_atsss_control_parameters,
+        &ogs_pfcp_tlv_desc_updated_pdr,
+        &ogs_pfcp_tlv_desc_packet_rate_status_report_ie_within_pfcp_session_modification_response,
     NULL,
 }};
 
@@ -2710,6 +3934,9 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_deletion_response =
         &ogs_pfcp_tlv_desc_overload_control_information,
         &ogs_pfcp_tlv_desc_usage_report_session_deletion_response,
         &ogs_tlv_desc_more8,
+        &ogs_pfcp_tlv_desc_additional_usage_reports_information,
+        &ogs_pfcp_tlv_desc_packet_rate_status_report,
+        &ogs_pfcp_tlv_desc_session_report,
     NULL,
 }};
 
@@ -2728,6 +3955,9 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_report_request =
         &ogs_pfcp_tlv_desc_additional_usage_reports_information,
         &ogs_pfcp_tlv_desc_pfcpsrreq_flags,
         &ogs_pfcp_tlv_desc_f_seid,
+        &ogs_pfcp_tlv_desc_packet_rate_status_report,
+        &ogs_pfcp_tlv_desc_tsc_management_information_ie_within_pfcp_session_report_request,
+        &ogs_pfcp_tlv_desc_session_report,
     NULL,
 }};
 
