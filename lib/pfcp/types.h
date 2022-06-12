@@ -297,6 +297,8 @@ ED2(uint8_t reserved:7;,
 /*
  * 8.2.26 Apply Action
  *
+ * The octet 5 shall be encoded as follows:
+ *
  * Bit 1 – DROP (Drop): when set to 1, this indicates a request
  * to drop the packets.
  * Bit 2 – FORW (Forward): when set to 1, this indicates a request
@@ -308,17 +310,49 @@ ED2(uint8_t reserved:7;,
  * arrival of a first downlink packet being buffered.
  * Bit 5 – DUPL (Duplicate): when set to 1, this indicates a request
  * to duplicate the packets.
- * Bit 6 to 8 – Spare, for future use and set to 0.
+ * Bit 6 – IPMA (IP Multicast Accept): when set to "1", this indicates
+ * a request to accept UE requests to join an IP multicast group.
+ * Bit 7 – IPMD (IP Multicast Deny): when set to "1", this indicates
+ * a request to deny UE requests to join an IP multicast group.
+ * Bit 8 – DFRT (Duplicate for Redundant Transmission): when set to "1",
+ * this indicates a request to duplicate the packets
+ * for redundant transmission (see clause 5.24.2).
  *
- * One and only one of the DROP, FORW and BUFF flags shall be set to 1.
- * The NOCP flag may only be set if the BUFF flag is set.
+ * The octet 6 shall be encoded as follows:
+ *
+ * Bit 1 – EDRT (Eliminate Duplicate Packets for Redundant Transmission):
+ * when set to "1", this indicates a request to eliminate duplicate packets
+ * used for redundant transmission (see clause 5.24.2).
+ * Bit 2 – BDPN (Buffered Downlink Packet Notification): when set to "1",
+ * this indicates a request to notify the CP function about the first buffered
+ * DL packet for downlink data delivery status notification.
+ * Bit 3 – DDPN (Discarded Downlink Packet Notification): when set to "1",
+ * this indicates a request to notify the CP function about the first discarded
+ * DL packet for downlink data delivery status notification if the DL Buffering
+ * Duration or DL Buffering Suggested Packet Count is exceeded or
+ * it is discarded directly. See clause 5.2.3.1.
+ * Bit 4 to 8 – Spare, for future use and seto to "0".
+ *
+ * One and only one of the DROP, FORW, BUFF, IPMA and IPMD flags shall be
+ * set to "1".
+ *
+ * The NOCP flag and BDPN flag may only be set if the BUFF flag is set.
  * The DUPL flag may be set with any of the DROP, FORW, BUFF and NOCP flags.
+ * The DFRN flag may only be set if the FORW flag is set.
+ * The EDRT flag may be set if the FORW flag is set.
+ * The DDPN flag may be set with any of the DROP and BUFF flags.
  */
-#define OGS_PFCP_APPLY_ACTION_DROP                          1
-#define OGS_PFCP_APPLY_ACTION_FORW                          2
-#define OGS_PFCP_APPLY_ACTION_BUFF                          4
-#define OGS_PFCP_APPLY_ACTION_NOCP                          8
-#define OGS_PFCP_APPLY_ACTION_DUPL                          16
+#define OGS_PFCP_APPLY_ACTION_DROP                          (1<<0)
+#define OGS_PFCP_APPLY_ACTION_FORW                          (1<<1)
+#define OGS_PFCP_APPLY_ACTION_BUFF                          (1<<2)
+#define OGS_PFCP_APPLY_ACTION_NOCP                          (1<<3)
+#define OGS_PFCP_APPLY_ACTION_DUPL                          (1<<4)
+#define OGS_PFCP_APPLY_ACTION_IPMA                          (1<<5)
+#define OGS_PFCP_APPLY_ACTION_IPMD                          (1<<6)
+#define OGS_PFCP_APPLY_ACTION_DFRT                          (1<<7)
+#define OGS_PFCP_APPLY_ACTION_EDRT                          (1<<8)
+#define OGS_PFCP_APPLY_ACTION_BDPN                          (1<<9)
+#define OGS_PFCP_APPLY_ACTION_DDPN                          (1<<10)
 typedef uint8_t  ogs_pfcp_apply_action_t;
 
 /* 8.2.58 CP Function Features */
@@ -1317,6 +1351,21 @@ ED6(uint8_t spare:3;,
     uint8_t octet5;
     };
 } __attribute__ ((packed)) ogs_pfcp_measurement_information_t;
+
+/*
+ * 8.2.179 Data Status
+ *
+ * The following flags are coded within Octet 5:
+ *
+ * Bit 1 – DROP: when set to "1", this indicates first DL packet is
+ * discarded by the UP function.
+ * Bit 2 – BUFF: when set to "1", this indicates first DL packet is
+ * received and buffered by the UP function.
+ * Bit 3 to 8 Spare, for future use and set to "0".
+ */
+#define OGS_PFCP_DATA_STATUS_DROP                          (1<<0)
+#define OGS_PFCP_DATA_STATUS_BUFF                          (1<<1)
+typedef uint8_t  ogs_pfcp_data_status_t;
 
 typedef struct ogs_pfcp_user_plane_report_s {
     ogs_pfcp_report_type_t type;

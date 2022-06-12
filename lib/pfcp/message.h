@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by pfcp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2022-06-11 23:49:11.012732 by acetcom
+ * Created on: 2022-06-12 08:57:15.335605 by acetcom
  * from 29244-g91-modified.docx
  ******************************************************************************/
 
@@ -845,7 +845,7 @@ typedef ogs_tlv_octet_t ogs_pfcp_tlv_nf_instance_id_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_s_nssai_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_ip_version_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_pfcpasreq_flags_t;
-typedef ogs_tlv_octet_t ogs_pfcp_tlv_data_status_t;
+typedef ogs_tlv_uint8_t ogs_pfcp_tlv_data_status_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_rds_configuration_information_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_mptcp_applicable_indication_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_bridge_management_information_container_t;

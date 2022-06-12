@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by pfcp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2022-06-11 23:49:11.025259 by acetcom
+ * Created on: 2022-06-12 08:57:15.347805 by acetcom
  * from 29244-g91-modified.docx
  ******************************************************************************/
 
@@ -2052,10 +2052,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_pfcpasreq_flags =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_data_status =
 {
-    OGS_TLV_VAR_STR,
+    OGS_TLV_UINT8,
     "Data Status",
     OGS_PFCP_DATA_STATUS_TYPE,
-    0,
+    1,
     0,
     sizeof(ogs_pfcp_tlv_data_status_t),
     { NULL }
