@@ -29,7 +29,7 @@ ogs_pkbuf_t *testngap_build_ran_configuration_update(bool supported_ta_list);
 
 ogs_pkbuf_t *testngap_build_initial_ue_message(
         test_ue_t *test_ue, ogs_pkbuf_t *gmmbuf,
-        bool s_tmsi, bool ue_context_requested);
+        uint8_t cause, bool s_tmsi, bool ue_context_requested);
 ogs_pkbuf_t *testngap_build_uplink_nas_transport(
         test_ue_t *test_ue, ogs_pkbuf_t *gmmbuf);
 

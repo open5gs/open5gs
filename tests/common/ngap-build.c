@@ -259,7 +259,7 @@ ogs_pkbuf_t *testngap_build_ran_configuration_update(bool supported_ta_list)
 
 ogs_pkbuf_t *testngap_build_initial_ue_message(
         test_ue_t *test_ue, ogs_pkbuf_t *gmmbuf,
-        bool s_tmsi, bool ue_context_requested)
+        uint8_t cause, bool s_tmsi, bool ue_context_requested)
 {
     ogs_pkbuf_t *pkbuf = NULL;
     int i, j;
@@ -355,7 +355,7 @@ ogs_pkbuf_t *testngap_build_initial_ue_message(
     UserLocationInformation->choice.userLocationInformationNR =
         userLocationInformationNR;
 
-    *RRCEstablishmentCause = NGAP_RRCEstablishmentCause_mo_Signalling;
+    *RRCEstablishmentCause = cause;
 
     if (s_tmsi) {
         NGAP_AMFSetID_t *aMFSetID = NULL;

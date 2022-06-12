@@ -106,7 +106,8 @@ static void test1_func(abts_case *tc, void *data)
     nasbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
-    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, false, true);
+    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf,
+                NGAP_RRCEstablishmentCause_mo_Signalling, false, true);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -280,7 +281,8 @@ static void test1_func(abts_case *tc, void *data)
     gmmbuf = testgmm_build_registration_request(test_ue, nasbuf, true, false);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
-    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, true, true);
+    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf,
+                NGAP_RRCEstablishmentCause_mo_Signalling, true, true);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -338,7 +340,8 @@ static void test1_func(abts_case *tc, void *data)
     nasbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
-    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, true, true);
+    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf,
+                NGAP_RRCEstablishmentCause_mo_Signalling, true, true);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -583,7 +586,8 @@ static void test2_func(abts_case *tc, void *data)
     nasbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
-    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, false, true);
+    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf,
+                NGAP_RRCEstablishmentCause_mo_Signalling, false, true);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -757,7 +761,8 @@ static void test2_func(abts_case *tc, void *data)
     gmmbuf = testgmm_build_registration_request(test_ue, nasbuf, true, false);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
-    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, true, true);
+    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf,
+                NGAP_RRCEstablishmentCause_mo_Signalling, true, true);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -824,7 +829,8 @@ static void test2_func(abts_case *tc, void *data)
     gmmbuf = testgmm_build_registration_request(test_ue, NULL, true, false);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
-    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, true, true);
+    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf,
+                NGAP_RRCEstablishmentCause_mo_Signalling, true, true);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -1042,7 +1048,8 @@ static void test3_func(abts_case *tc, void *data)
     nasbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
-    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, false, true);
+    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf,
+                NGAP_RRCEstablishmentCause_mo_Signalling, false, true);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
