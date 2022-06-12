@@ -705,7 +705,7 @@ ogs_gtp_node_t *ogs_gtp_node_find_by_ip(ogs_list_t *list, ogs_ip_t *ip)
     ogs_assert(ip);
 
     ogs_list_for_each(list, node) {
-        if (node->ip.len == ip->len && memcmp(&node->ip, ip, ip->len) == 0)
+        if (memcmp(&node->ip, ip, sizeof(*ip)) == 0)
             break;
     }
 
