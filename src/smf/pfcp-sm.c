@@ -254,6 +254,8 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
             if (!sess) {
                 ogs_pkbuf_t *pkbuf = xact->seq[0].pkbuf;
                 ogs_pfcp_header_t *sent_hdr = (ogs_pfcp_header_t *) pkbuf->data;
+                ogs_error("DEBUG SMF IN: pkbuf=%p sent_hdr=%p data=%p\nsqn=%d seid_presence=%d seid=%u",
+                            pkbuf, sent_hdr, pkbuf->data, sent_hdr->sqn, sent_hdr->seid_presence, sent_hdr->seid);
                 if (sent_hdr->seid_presence && sent_hdr->seid != 0)
                     sess = smf_sess_find_by_seid(sent_hdr->seid);
             }

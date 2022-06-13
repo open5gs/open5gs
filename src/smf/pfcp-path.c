@@ -618,6 +618,11 @@ int smf_epc_pfcp_send_session_deletion_request(
     rv = ogs_pfcp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
 
+    ogs_error("DEBUG SMF OUT: pkbuf=%p sent_hdr=%p data=%p\n \
+                sqn=%d seid_presence=%d seid=%u",
+                n4buf, n4buf->data, &h,
+                h.sqn, h.seid_presence, h.seid);
+
     return rv;
 }
 
