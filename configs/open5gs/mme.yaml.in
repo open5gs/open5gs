@@ -248,7 +248,7 @@ mme:
       - addr: 127.0.0.2
     gtpc:
       - addr: 127.0.0.2
-    gummei: 
+    gummei:
       plmn_id:
         mcc: 901
         mnc: 70
