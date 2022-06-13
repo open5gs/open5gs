@@ -575,5 +575,5 @@ time:
 #      port: 9090
 #
 metrics:
-    addr: 0.0.0.0
+    addr: 127.0.0.4
     port: 9090
