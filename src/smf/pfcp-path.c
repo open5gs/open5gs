@@ -572,7 +572,7 @@ int smf_epc_pfcp_send_session_deletion_request(
 {
     int rv;
     ogs_pkbuf_t *n4buf = NULL;
-    ogs_pfcp_header_t *h;
+    ogs_pfcp_header_t h;
     ogs_pfcp_xact_t *xact = NULL;
 
     ogs_assert(sess);
@@ -605,15 +605,14 @@ int smf_epc_pfcp_send_session_deletion_request(
      */
     xact->assoc_xact = gtp_xact;
 
-    h = (ogs_pfcp_header_t *) malloc(sizeof(ogs_pfcp_header_t));
-    memset(h, 0, sizeof(ogs_pfcp_header_t));
-    h->type = OGS_PFCP_SESSION_DELETION_REQUEST_TYPE;
-    h->seid = sess->upf_n4_seid;
+    memset(&h, 0, sizeof(ogs_pfcp_header_t));
+    h.type = OGS_PFCP_SESSION_DELETION_REQUEST_TYPE;
+    h.seid = sess->upf_n4_seid;
 
-    n4buf = smf_n4_build_session_deletion_request(h->type, sess);
+    n4buf = smf_n4_build_session_deletion_request(h.type, sess);
     ogs_expect_or_return_val(n4buf, OGS_ERROR);
 
-    rv = ogs_pfcp_xact_update_tx(xact, h, n4buf);
+    rv = ogs_pfcp_xact_update_tx(xact, &h, n4buf);
     ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
 
     rv = ogs_pfcp_xact_commit(xact);
