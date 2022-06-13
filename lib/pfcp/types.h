@@ -353,7 +353,7 @@ ED2(uint8_t reserved:7;,
 #define OGS_PFCP_APPLY_ACTION_EDRT                          (1<<8)
 #define OGS_PFCP_APPLY_ACTION_BDPN                          (1<<9)
 #define OGS_PFCP_APPLY_ACTION_DDPN                          (1<<10)
-typedef uint8_t  ogs_pfcp_apply_action_t;
+typedef uint16_t  ogs_pfcp_apply_action_t;
 
 
 /* 8.2.58 CP Function Features */
