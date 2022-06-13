@@ -223,14 +223,6 @@ void upf_pfcp_state_associated(ogs_fsm_t *s, upf_event_t *e)
                 sess, xact, &message->pfcp_session_modification_request);
             break;
         case OGS_PFCP_SESSION_DELETION_REQUEST_TYPE:
-            if (!sess) {
-                uint64_t seid = message->h.seid_presence ? message->h.seid : 0;
-                ogs_warn("Session Deletion Request: No Context");
-                ogs_pfcp_send_error_message(xact, seid,
-                        OGS_PFCP_SESSION_DELETION_RESPONSE_TYPE,
-                        OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND, 0);
-                break;
-            }
             upf_n4_handle_session_deletion_request(
                 sess, xact, &message->pfcp_session_deletion_request);
             break;

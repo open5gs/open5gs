@@ -246,9 +246,23 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
             break;
 
         case OGS_PFCP_SESSION_DELETION_RESPONSE_TYPE:
-            if (!message->h.seid_presence)
+            if (!message->h.seid_presence) {
                 ogs_error("No SEID");
-            ogs_fsm_dispatch(&sess->sm, e);
+                break;
+            }
+
+            if (!sess) {
+                ogs_pkbuf_t *pkbuf = xact->seq[0].pkbuf;
+                ogs_pfcp_header_t *sent_hdr = (ogs_pfcp_header_t *) pkbuf->data;
+                if (sent_hdr->seid_presence && sent_hdr->seid != 0)
+                    sess = smf_sess_find_by_seid(sent_hdr->seid);
+            }
+
+            if (sess) {
+                ogs_fsm_dispatch(&sess->sm, e);                
+            } else {
+                ogs_warn("No session associated with Session Deletion Response");
+            }
             break;
 
         case OGS_PFCP_SESSION_REPORT_REQUEST_TYPE:

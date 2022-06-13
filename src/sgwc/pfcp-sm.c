@@ -235,6 +235,13 @@ void sgwc_pfcp_state_associated(ogs_fsm_t *s, sgwc_event_t *e)
                 break;
             }
 
+            if (!sess) {
+                ogs_pkbuf_t *pkbuf = xact->seq[0].pkbuf;
+                ogs_pfcp_header_t *sent_hdr = (ogs_pfcp_header_t *) pkbuf->data;
+                if (sent_hdr->seid_presence && sent_hdr->seid != 0)
+                    sess = sgwc_sess_find_by_seid(sent_hdr->seid);
+            }
+
             sgwc_sxa_handle_session_deletion_response(
                 sess, xact, e->gtp_message,
                 &message->pfcp_session_deletion_response);
