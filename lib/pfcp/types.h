@@ -355,6 +355,7 @@ ED2(uint8_t reserved:7;,
 #define OGS_PFCP_APPLY_ACTION_DDPN                          (1<<10)
 typedef uint8_t  ogs_pfcp_apply_action_t;
 
+
 /* 8.2.58 CP Function Features */
 typedef struct ogs_pfcp_cp_function_features_s {
     union {
@@ -396,6 +397,7 @@ ED8(uint8_t uiaur:1;,
         uint8_t octet5;
     };
 } __attribute__ ((packed)) ogs_pfcp_cp_function_features_t;
+
 
 /*
  * 8.2.64 Outer Header Remaval
