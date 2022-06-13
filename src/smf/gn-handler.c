@@ -401,9 +401,6 @@ void smf_gn_handle_update_pdp_context_request(
     ogs_assert(rv == OGS_OK);
     ogs_debug("    Updated SGW_S5U_TEID[0x%x] PGW_S5U_TEID[0x%x]",
             bearer->sgw_s5u_teid, bearer->pgw_s5u_teid);
-    /* FIXME: UPF needs to be updated through PFCP here, see:
-     * https://github.com/open5gs/open5gs/issues/1367
-     */
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
     h.type = OGS_GTP1_UPDATE_PDP_CONTEXT_RESPONSE_TYPE;
