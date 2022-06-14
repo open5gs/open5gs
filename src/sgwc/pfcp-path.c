@@ -249,7 +249,7 @@ int sgwc_pfcp_send_session_establishment_request(
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_SESSION_ESTABLISHMENT_REQUEST_TYPE;
-    h.seid = sess->sgwu_sxa_seid;
+    h.seid = 0;
 
     sxabuf = sgwc_sxa_build_session_establishment_request(h.type, sess);
     ogs_expect_or_return_val(sxabuf, OGS_ERROR);

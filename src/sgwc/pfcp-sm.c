@@ -213,6 +213,10 @@ void sgwc_pfcp_state_associated(ogs_fsm_t *s, sgwc_event_t *e)
                 break;
             }
 
+            if (!e->gtp_message) {
+                ogs_warn("No GTP Message Context");
+            }
+
             sgwc_sxa_handle_session_establishment_response(
                 sess, xact, e->gtp_message,
                 &message->pfcp_session_establishment_response);
