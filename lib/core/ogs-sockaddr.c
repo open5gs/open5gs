@@ -416,17 +416,23 @@ bool ogs_sockaddr_is_equal(void *p, void *q)
     if (a->ogs_sa_family != b->ogs_sa_family)
         return false;
 
-    if (a->ogs_sa_family == AF_INET && memcmp(
-        &a->sin.sin_addr, &b->sin.sin_addr, sizeof(struct in_addr)) == 0)
+    switch (a->ogs_sa_family) {
+    case AF_INET:
+        if (a->sin.sin_port != b->sin.sin_port)
+            return false;
+        if (memcmp(&a->sin.sin_addr, &b->sin.sin_addr, sizeof(struct in_addr)) != 0)
+            return false;
         return true;
-    else if (a->ogs_sa_family == AF_INET6 && memcmp(
-        &a->sin6.sin6_addr, &b->sin6.sin6_addr, sizeof(struct in6_addr)) == 0)
+    case AF_INET6:
+        if (a->sin6.sin6_port != b->sin6.sin6_port)
+            return false;
+        if (memcmp(&a->sin6.sin6_addr, &b->sin6.sin6_addr, sizeof(struct in6_addr)) != 0)
+            return false;
         return true;
-    else {
-        return false;
+    default:
+        ogs_error("Unexpected address faimily %u", a->ogs_sa_family);
+        ogs_abort();
     }
-
-    return false;
 }
 
 static int parse_network(ogs_ipsubnet_t *ipsub, const char *network)

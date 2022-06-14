@@ -169,8 +169,7 @@ ogs_sbi_client_t *ogs_sbi_client_find(ogs_sockaddr_t *addr)
     ogs_assert(addr);
 
     ogs_list_for_each(&ogs_sbi_self()->client_list, client) {
-        if (ogs_sockaddr_is_equal(client->node.addr, addr) == true &&
-            OGS_PORT(client->node.addr) == OGS_PORT(addr))
+        if (ogs_sockaddr_is_equal(client->node.addr, addr) == true)
             break;
     }
 
