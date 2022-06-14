@@ -1528,6 +1528,7 @@ void smf_sess_remove(smf_sess_t *sess)
 {
     int i;
     smf_ue_t *smf_ue = NULL;
+    ogs_pfcp_node_t *node = NULL;
     smf_event_t e;
 
     char buf1[OGS_ADDRSTRLEN];
@@ -1536,6 +1537,8 @@ void smf_sess_remove(smf_sess_t *sess)
     ogs_assert(sess);
     smf_ue = sess->smf_ue;
     ogs_assert(smf_ue);
+    node = sess->pfcp_node;
+    ogs_assert(node);
 
     ogs_info("Removed Session: UE IMSI:[%s] DNN:[%s:%d] IPv4:[%s] IPv6:[%s]",
             smf_ue->supi ? smf_ue->supi : smf_ue->imsi_bcd,
@@ -1544,6 +1547,7 @@ void smf_sess_remove(smf_sess_t *sess)
             sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
 
     ogs_list_remove(&smf_ue->sess_list, sess);
+    ogs_list_remove(&node->sess_list, sess);
 
     memset(&e, 0, sizeof(e));
     e.sess = sess;

@@ -252,6 +252,10 @@ void sgwc_pfcp_state_associated(ogs_fsm_t *s, sgwc_event_t *e)
                 &message->pfcp_session_deletion_response);
             break;
 
+        case OGS_PFCP_SESSION_SET_DELETION_RESPONSE_TYPE:
+            ogs_debug("Session Set Deletion Response");
+            break;
+
         case OGS_PFCP_SESSION_REPORT_REQUEST_TYPE:
             if (!message->h.seid_presence) {
                 ogs_error("No SEID");

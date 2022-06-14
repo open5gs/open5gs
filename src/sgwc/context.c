@@ -393,12 +393,16 @@ void sgwc_sess_select_sgwu(sgwc_sess_t *sess)
 int sgwc_sess_remove(sgwc_sess_t *sess)
 {
     sgwc_ue_t *sgwc_ue = NULL;
+    ogs_pfcp_node_t *node = NULL;
 
     ogs_assert(sess);
     sgwc_ue = sess->sgwc_ue;
     ogs_assert(sgwc_ue);
+    node = sess->pfcp_node;
+    ogs_assert(node);
 
     ogs_list_remove(&sgwc_ue->sess_list, sess);
+    ogs_list_remove(&node->sess_list, sess);
 
     sgwc_bearer_remove_all(sess);
 

@@ -35,6 +35,10 @@ ogs_pkbuf_t *ogs_pfcp_up_build_association_setup_request(uint8_t type);
 ogs_pkbuf_t *ogs_pfcp_up_build_association_setup_response(uint8_t type,
         uint8_t cause);
 
+ogs_pkbuf_t *ogs_pfcp_cp_build_session_set_deletion_request(uint8_t type);
+ogs_pkbuf_t *ogs_pfcp_up_build_session_set_deletion_response(uint8_t type,
+        uint8_t cause);
+
 void ogs_pfcp_pdrbuf_init(void);
 void ogs_pfcp_pdrbuf_clear(void);
 

@@ -652,6 +652,7 @@ ogs_pfcp_node_t *ogs_pfcp_node_new(ogs_sockaddr_t *sa_list)
     ogs_list_init(&node->local_list);
     ogs_list_init(&node->remote_list);
 
+    ogs_list_init(&node->sess_list);
     ogs_list_init(&node->gtpu_resource_list);
 
     return node;

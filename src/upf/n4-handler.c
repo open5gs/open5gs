@@ -461,6 +461,24 @@ void upf_n4_handle_session_deletion_request(
     upf_sess_remove(sess);
 }
 
+void upf_n4_handle_session_set_deletion_request(
+        ogs_pfcp_node_t *node, ogs_pfcp_xact_t *xact,
+        ogs_pfcp_session_set_deletion_request_t *req)
+{
+    upf_sess_t *sess = NULL, *next = NULL;;
+    ogs_assert(node);
+    ogs_assert(xact);
+    ogs_assert(req);
+
+    ogs_debug("Session Set Deletion Request");
+
+    ogs_list_for_each_safe(&node->sess_list, next, sess) {
+        upf_sess_remove(sess);
+    }
+
+    ogs_pfcp_up_send_session_set_deletion_response(xact, OGS_PFCP_CAUSE_REQUEST_ACCEPTED);
+}
+
 void upf_n4_handle_session_report_response(
         upf_sess_t *sess, ogs_pfcp_xact_t *xact,
         ogs_pfcp_session_report_response_t *rsp)

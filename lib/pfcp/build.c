@@ -235,6 +235,65 @@ ogs_pkbuf_t *ogs_pfcp_up_build_association_setup_response(uint8_t type,
     return ogs_pfcp_build_msg(&pfcp_message);
 }
 
+ogs_pkbuf_t *ogs_pfcp_cp_build_session_set_deletion_request(uint8_t type)
+{
+    ogs_pfcp_message_t pfcp_message;
+    ogs_pfcp_session_set_deletion_request_t *req = NULL;
+
+    ogs_pfcp_node_id_t node_id;
+    int node_id_len = 0, rv;
+
+    ogs_debug("Session Set Deletion Request");
+
+    req = &pfcp_message.pfcp_session_set_deletion_request;
+    memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
+
+    rv = ogs_pfcp_sockaddr_to_node_id(
+            ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
+            ogs_app()->parameter.prefer_ipv4,
+            &node_id, &node_id_len);
+    ogs_expect_or_return_val(rv == OGS_OK, NULL);
+    req->node_id.presence = 1;
+    req->node_id.data = &node_id;
+    req->node_id.len = node_id_len;
+
+    pfcp_message.h.type = type;
+    return ogs_pfcp_build_msg(&pfcp_message);
+}
+
+ogs_pkbuf_t *ogs_pfcp_up_build_session_set_deletion_response(uint8_t type, uint8_t cause)
+{
+    ogs_pfcp_message_t pfcp_message;
+    ogs_pfcp_session_set_deletion_response_t *rsp = NULL;
+
+    ogs_pfcp_node_id_t node_id;
+    int node_id_len = 0, rv;
+
+    ogs_debug("Session Set Deletion Response");
+
+    rsp = &pfcp_message.pfcp_session_set_deletion_response;
+    memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
+
+    // node id
+    rv = ogs_pfcp_sockaddr_to_node_id(
+            ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
+            ogs_app()->parameter.prefer_ipv4,
+            &node_id, &node_id_len);
+    ogs_expect_or_return_val(rv == OGS_OK, NULL);
+    rsp->node_id.presence = 1;
+    rsp->node_id.data = &node_id;
+    rsp->node_id.len = node_id_len;
+
+    // cause
+    rsp->cause.presence = 1;
+    rsp->cause.u8 = cause;
+
+    // offending ie???
+
+    pfcp_message.h.type = type;
+    return ogs_pfcp_build_msg(&pfcp_message);
+}
+
 static struct {
     ogs_pfcp_f_teid_t f_teid;
     char dnn[OGS_MAX_DNN_LEN+1];
@@ -980,3 +1039,4 @@ ogs_pkbuf_t *ogs_pfcp_build_session_deletion_response( uint8_t type, uint8_t cau
     pfcp_message.h.type = type;
     return ogs_pfcp_build_msg(&pfcp_message);
 }
+
