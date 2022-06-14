@@ -342,6 +342,7 @@ bool udm_nudm_uecm_handle_registration_update(
     OpenAPI_amf3_gpp_access_registration_modification_t
         *Amf3GppAccessRegistrationModification = NULL;
     OpenAPI_guami_t *Guami = NULL;
+    ogs_guami_t recv_guami;
     OpenAPI_list_t *PatchItemList = NULL;
     OpenAPI_patch_item_t item;
 
@@ -399,7 +400,19 @@ bool udm_nudm_uecm_handle_registration_update(
         return false;
     }
 
-    ogs_sbi_parse_guami(&udm_ue->guami, Guami);
+    /* TS 29.503: 5.3.2.4.2 AMF deregistration for 3GPP access
+     * 2a. The UDM shall check whether the received GUAMI matches the stored
+     * GUAMI. If so, the UDM shall set the PurgeFlag. The UDM responds with
+     * "204 No Content".
+     * 2b. Otherwise the UDM responds with "403 Forbidden". */
+    ogs_sbi_parse_guami(&recv_guami, Guami);
+    if (memcmp(&recv_guami, &udm_ue->guami, sizeof(recv_guami)) != 0) {
+        ogs_error("[%s] Guami mismatch", udm_ue->supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_FORBIDDEN,
+                message, "Guami mismatch", udm_ue->supi));
+    }
+
 
     if (Amf3GppAccessRegistrationModification->is_purge_flag) {
         udm_ue->amf_3gpp_access_registration->is_purge_flag =
