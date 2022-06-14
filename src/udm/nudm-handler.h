@@ -33,6 +33,8 @@ bool udm_nudm_ueau_handle_result_confirmation_inform(
 
 bool udm_nudm_uecm_handle_registration(
     udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message);
+bool udm_nudm_uecm_handle_registration_update(
+    udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message);
 
 bool udm_nudm_sdm_handle_subscription_provisioned(
     udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);

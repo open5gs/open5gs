@@ -149,6 +149,50 @@ ogs_sbi_request_t *udm_nudr_dr_build_update_amf_context(
     return request;
 }
 
+ogs_sbi_request_t *udm_nudr_dr_build_patch_amf_context(
+        udm_ue_t *udm_ue, void *data)
+{
+    ogs_sbi_message_t message;
+    ogs_sbi_request_t *request = NULL;
+
+    OpenAPI_patch_item_t *pitem = NULL;
+    OpenAPI_lnode_t *node = NULL;
+
+    OpenAPI_list_t *PatchItemList = (OpenAPI_list_t *)data;
+
+    ogs_assert(udm_ue);
+    ogs_assert(PatchItemList);
+
+    memset(&message, 0, sizeof(message));
+    message.http.content_type = (char *)OGS_SBI_CONTENT_PATCH_TYPE;
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_PATCH;
+    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDR_DR;
+    message.h.api.version = (char *)OGS_SBI_API_V1;
+    message.h.resource.component[0] =
+        (char *)OGS_SBI_RESOURCE_NAME_SUBSCRIPTION_DATA;
+    message.h.resource.component[1] = (char *)udm_ue->supi;
+    message.h.resource.component[2] =
+        (char *)OGS_SBI_RESOURCE_NAME_CONTEXT_DATA;
+    message.h.resource.component[3] =
+        (char *)OGS_SBI_RESOURCE_NAME_AMF_3GPP_ACCESS;
+
+    message.PatchItemList = PatchItemList;
+
+    request = ogs_sbi_build_request(&message);
+    ogs_assert(request);
+
+    if (PatchItemList) {
+        OpenAPI_list_for_each(PatchItemList, node) {
+            pitem = node->data;
+            if (pitem)
+                OpenAPI_any_type_free(pitem->value);
+        }
+        OpenAPI_list_free(PatchItemList);
+    }
+
+    return request;
+}
+
 ogs_sbi_request_t *udm_nudr_dr_build_query_subscription_provisioned(
         udm_ue_t *udm_ue, void *data)
 {

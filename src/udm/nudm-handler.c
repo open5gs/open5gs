@@ -336,6 +336,113 @@ bool udm_nudm_uecm_handle_registration(
     return true;
 }
 
+bool udm_nudm_uecm_handle_registration_update(
+    udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
+{
+    OpenAPI_amf3_gpp_access_registration_modification_t
+        *Amf3GppAccessRegistrationModification = NULL;
+    OpenAPI_guami_t *Guami = NULL;
+    ogs_guami_t recv_guami;
+    OpenAPI_list_t *PatchItemList = NULL;
+    OpenAPI_patch_item_t item;
+
+    ogs_assert(udm_ue);
+    ogs_assert(stream);
+    ogs_assert(message);
+
+    Amf3GppAccessRegistrationModification = message->Amf3GppAccessRegistrationModification;
+    if (!Amf3GppAccessRegistrationModification) {
+        ogs_error("[%s] No Amf3GppAccessRegistrationModification", udm_ue->supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                message, "No Amf3GppAccessRegistrationModification", udm_ue->supi));
+        return false;
+    }
+
+    Guami = Amf3GppAccessRegistrationModification->guami;
+    if (!Guami) {
+        ogs_error("[%s] No Guami", udm_ue->supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                message, "No Guami", udm_ue->supi));
+        return false;
+    }
+
+    if (!Guami->amf_id) {
+        ogs_error("[%s] No Guami.AmfId", udm_ue->supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                message, "No Guami.AmfId", udm_ue->supi));
+        return false;
+    }
+
+    if (!Guami->plmn_id) {
+        ogs_error("[%s] No PlmnId", udm_ue->supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                message, "No PlmnId", udm_ue->supi));
+        return false;
+    }
+
+    if (!Guami->plmn_id->mnc) {
+        ogs_error("[%s] No PlmnId.Mnc", udm_ue->supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                message, "No PlmnId.Mnc", udm_ue->supi));
+        return false;
+    }
+
+    if (!Guami->plmn_id->mcc) {
+        ogs_error("[%s] No PlmnId.Mcc", udm_ue->supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                message, "No PlmnId.Mcc", udm_ue->supi));
+        return false;
+    }
+
+    /* TS 29.503: 5.3.2.4.2 AMF deregistration for 3GPP access
+     * 2a. The UDM shall check whether the received GUAMI matches the stored
+     * GUAMI. If so, the UDM shall set the PurgeFlag. The UDM responds with
+     * "204 No Content".
+     * 2b. Otherwise the UDM responds with "403 Forbidden". */
+    ogs_sbi_parse_guami(&recv_guami, Guami);
+    if (memcmp(&recv_guami, &udm_ue->guami, sizeof(recv_guami)) != 0) {
+        ogs_error("[%s] Guami mismatch", udm_ue->supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_FORBIDDEN,
+                message, "Guami mismatch", udm_ue->supi));
+    }
+
+
+    if (Amf3GppAccessRegistrationModification->is_purge_flag) {
+        udm_ue->amf_3gpp_access_registration->is_purge_flag =
+                Amf3GppAccessRegistrationModification->is_purge_flag;
+        udm_ue->amf_3gpp_access_registration->purge_flag =
+                Amf3GppAccessRegistrationModification->purge_flag;
+    }
+
+    PatchItemList = OpenAPI_list_create();
+    ogs_assert(PatchItemList);
+
+
+    if (Amf3GppAccessRegistrationModification->is_purge_flag) {
+        memset(&item, 0, sizeof(item));
+        item.op = OpenAPI_patch_operation_replace;
+        item.path = (char *)"PurgeFlag";
+        item.value = OpenAPI_any_type_create_bool(
+                Amf3GppAccessRegistrationModification->purge_flag);
+        ogs_assert(item.value);
+
+        OpenAPI_list_add(PatchItemList, &item);
+    }
+
+    ogs_assert(true ==
+        udm_sbi_discover_and_send(OpenAPI_nf_type_UDR, udm_ue, stream,
+            PatchItemList, udm_nudr_dr_build_patch_amf_context));
+
+    return true;
+}
+
 bool udm_nudm_sdm_handle_subscription_provisioned(
     udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {

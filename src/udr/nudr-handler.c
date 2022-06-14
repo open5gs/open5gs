@@ -303,6 +303,30 @@ bool udr_nudr_dr_handle_subscription_context(
 
             return true;
 
+        CASE(OGS_SBI_HTTP_METHOD_PATCH)
+            OpenAPI_list_t *PatchItemList;
+
+            PatchItemList = recvmsg->PatchItemList;
+            if (!PatchItemList) {
+                ogs_error("[%s] No PatchItemList", supi);
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(
+                        stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                        recvmsg, "No PatchItemList", supi));
+                return false;
+            }
+
+            /* TODO: parse PatchItemList */
+
+            memset(&sendmsg, 0, sizeof(sendmsg));
+
+            response = ogs_sbi_build_response(
+                    &sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+            ogs_assert(response);
+            ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+            return true;
+
         DEFAULT
             ogs_error("Invalid HTTP method [%s]", recvmsg->h.method);
             ogs_assert(true ==

@@ -34,6 +34,8 @@ ogs_sbi_request_t *udm_nudr_dr_build_update_authentication_status(
         udm_ue_t *udm_ue, void *data);
 ogs_sbi_request_t *udm_nudr_dr_build_update_amf_context(
         udm_ue_t *udm_ue, void *data);
+ogs_sbi_request_t *udm_nudr_dr_build_patch_amf_context(
+        udm_ue_t *udm_ue, void *data);
 
 #ifdef __cplusplus
 }

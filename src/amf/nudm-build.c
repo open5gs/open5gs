@@ -74,6 +74,48 @@ ogs_sbi_request_t *amf_nudm_uecm_build_registration(
     return request;
 }
 
+ogs_sbi_request_t *amf_nudm_uecm_build_registration_delete(
+        amf_ue_t *amf_ue, void *data)
+{
+    ogs_sbi_message_t message;
+    ogs_sbi_request_t *request = NULL;
+
+    OpenAPI_amf3_gpp_access_registration_modification_t
+        Amf3GppAccessRegistrationModification;
+
+    ogs_assert(amf_ue);
+    ogs_assert(amf_ue->supi);
+
+    memset(&message, 0, sizeof(message));
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_PATCH;
+    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDM_UECM;
+    message.h.api.version = (char *)OGS_SBI_API_V1;
+    message.h.resource.component[0] = amf_ue->supi;
+    message.h.resource.component[1] =
+            (char *)OGS_SBI_RESOURCE_NAME_REGISTRATIONS;
+    message.h.resource.component[2] =
+            (char *)OGS_SBI_RESOURCE_NAME_AMF_3GPP_ACCESS;
+
+    memset(&Amf3GppAccessRegistrationModification, 0,
+            sizeof(Amf3GppAccessRegistrationModification));
+
+    Amf3GppAccessRegistrationModification.guami =
+            ogs_sbi_build_guami(amf_ue->guami);
+    Amf3GppAccessRegistrationModification.is_purge_flag = true;
+    Amf3GppAccessRegistrationModification.purge_flag = 1;
+
+    message.Amf3GppAccessRegistrationModification =
+            &Amf3GppAccessRegistrationModification;
+
+    request = ogs_sbi_build_request(&message);
+    ogs_assert(request);
+
+    if (Amf3GppAccessRegistrationModification.guami)
+        ogs_sbi_free_guami(Amf3GppAccessRegistrationModification.guami);
+
+    return request;
+}
+
 ogs_sbi_request_t *amf_nudm_sdm_build_get(amf_ue_t *amf_ue, void *data)
 {
     ogs_sbi_message_t message;

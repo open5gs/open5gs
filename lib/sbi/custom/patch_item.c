@@ -76,7 +76,7 @@ cJSON *OpenAPI_patch_item_convertToJSON(OpenAPI_patch_item_t *patch_item)
             }
         } else if (OpenAPI_IsBool(patch_item->value)) {
             if (cJSON_AddBoolToObject(
-                    item, "value", OpenAPI_IsTrue(patch_item->value))) {
+                    item, "value", OpenAPI_IsTrue(patch_item->value)) == NULL) {
                 ogs_error("OpenAPI_patch_item_convertToJSON() failed [value]");
                 goto end;
             }
