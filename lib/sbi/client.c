@@ -471,7 +471,7 @@ static void check_multi_info(ogs_sbi_client_t *client)
 
                 if (conn->memory) {
                     response->http.content =
-                        ogs_memdup(conn->memory, conn->size);
+                        ogs_memdup(conn->memory, conn->size + 1);
                     ogs_assert(response->http.content);
                     response->http.content_length = conn->size;
                     ogs_assert(response->http.content_length);
