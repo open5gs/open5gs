@@ -21,6 +21,10 @@ display_help() {
     echo "   add_ue_with_slice {imsi key opc apn sst sd}: adds a user to the database with a specific apn, sst and sd"
     echo "   update_apn {imsi apn slice_num}: adds an APN to the slice number slice_num of an existent UE"
     echo "   update_slice {imsi apn sst sd}: adds an slice to an existent UE"
+    echo "   showall: shows the list of subscriber in the db"
+    echo "   showpretty: shows the list of subscriber in the db in a pretty json tree format"
+    echo "   showfiltered: shows {imsi key opc apn ip} information of subscriber"
+
 
 }
 
@@ -671,6 +675,21 @@ if [ "$1" = "update_slice" ]; then
     fi
 
     echo "open5gs-dbctl: incorrect number of args, format is \"open5gs-dbctl update_slice imsi apn sst sd\""
+    exit 1
+fi
+if [ "$1" = "showall" ]; then
+   mongo --eval "db.subscribers.find()" $DB_URI
+        exit $?
+fi
+if [ "$1" = "showpretty" ]; then
+   mongo --eval "db.subscribers.find().pretty()" $DB_URI
+        exit $?
+fi
+if [ "$1" = "showfiltered" ]; then
+   mongo --eval "db.subscribers.find({},{'_id':0,'imsi':1,'security.k':1, 'security.opc':1,'slice.session.name':1,'slice.session.ue.addr':1})" $DB_URI
+        exit $?
+fi
+    echo "open5gs-dbctl: incorrect number of args, format is \"open5gs-dbctl add imsi key opc\""
     exit 1
 fi
 
