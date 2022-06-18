@@ -170,9 +170,10 @@ bool nssf_nnrf_handle_nf_status_notify(
 
         nf_instance = ogs_sbi_nf_instance_find(message.h.resource.component[1]);
         if (!nf_instance) {
-            nf_instance = ogs_sbi_nf_instance_add(
-                    message.h.resource.component[1]);
+            nf_instance = ogs_sbi_nf_instance_add();
             ogs_assert(nf_instance);
+            ogs_sbi_nf_instance_set_id(nf_instance,
+                    message.h.resource.component[1]);
 
             nssf_nf_fsm_init(nf_instance);
 

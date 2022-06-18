@@ -27,9 +27,10 @@ int udm_initialize()
 {
     int rv;
 
+    ogs_sbi_context_init();
+
     udm_context_init();
     udm_event_init();
-    ogs_sbi_context_init();
 
     rv = ogs_sbi_context_parse_config("udm", "nrf");
     if (rv != OGS_OK) return rv;

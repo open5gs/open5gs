@@ -148,14 +148,17 @@ static int smf_context_prepare(void)
 {
     self.diam_config->cnf_port = DIAMETER_PORT;
     self.diam_config->cnf_port_tls = DIAMETER_SECURE_PORT;
-    self.nf_type = OpenAPI_nf_type_SMF;
 
     return OGS_OK;
 }
 
 static int smf_context_validation(void)
 {
+    ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_nf_info_t *nf_info = NULL;
+
+    nf_instance = ogs_sbi_self()->nf_instance;
+    ogs_assert(nf_instance);
 
     if (self.dns[0] == NULL && self.dns6[0] == NULL) {
         ogs_error("No smf.dns in '%s'", ogs_app()->file);
@@ -170,7 +173,7 @@ static int smf_context_validation(void)
         return OGS_ERROR;
     }
 
-    ogs_list_for_each(&ogs_sbi_self()->nf_info_list, nf_info) {
+    ogs_list_for_each(&nf_instance->nf_info_list, nf_info) {
         int i;
         ogs_sbi_smf_info_t *smf_info = &nf_info->smf;
         ogs_assert(smf_info);
@@ -479,8 +482,14 @@ int smf_context_parse_config(void)
                     } while (ogs_yaml_iter_type(&p_cscf_iter) ==
                                 YAML_SEQUENCE_NODE);
                 } else if (!strcmp(smf_key, "info")) {
+                    ogs_sbi_nf_instance_t *nf_instance = NULL;
+
                     ogs_yaml_iter_t info_array, info_iter;
                     ogs_yaml_iter_recurse(&smf_iter, &info_array);
+
+                    nf_instance = ogs_sbi_self()->nf_instance;
+                    ogs_assert(nf_instance);
+
                     do {
                         ogs_sbi_nf_info_t *nf_info = NULL;
                         ogs_sbi_smf_info_t *smf_info = NULL;
@@ -501,7 +510,7 @@ int smf_context_parse_config(void)
                             ogs_assert_if_reached();
 
                         nf_info = ogs_sbi_nf_info_add(
-                                    &ogs_sbi_self()->nf_info_list,
+                                    &nf_instance->nf_info_list,
                                         OpenAPI_nf_type_SMF);
                         ogs_assert(nf_info);
 
@@ -2471,10 +2480,7 @@ void smf_sess_select_nf(smf_sess_t *sess, OpenAPI_nf_type_e nf_type)
     ogs_assert(sess);
     ogs_assert(nf_type);
 
-    if (nf_type == OpenAPI_nf_type_NRF)
-        ogs_sbi_select_nrf(&sess->sbi, smf_nf_state_registered);
-    else
-        ogs_sbi_select_first_nf(&sess->sbi, nf_type, smf_nf_state_registered);
+    ogs_sbi_select_nf(&sess->sbi, nf_type, smf_nf_state_registered);
 }
 
 smf_pf_t *smf_pf_add(smf_bearer_t *bearer)

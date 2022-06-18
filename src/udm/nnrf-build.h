@@ -26,8 +26,7 @@
 extern "C" {
 #endif
 
-ogs_sbi_request_t *udm_nnrf_nfm_build_register(
-        ogs_sbi_nf_instance_t *nf_instance);
+ogs_sbi_request_t *udm_nnrf_nfm_build_register(void);
 
 #ifdef __cplusplus
 }

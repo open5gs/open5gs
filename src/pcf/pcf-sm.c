@@ -527,7 +527,8 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
             ogs_fsm_dispatch(&nf_instance->sm, e);
             if (OGS_FSM_CHECK(&nf_instance->sm, pcf_nf_state_exception))
-                ogs_error("[%s] State machine exception [%d]",
+                ogs_error("[%s:%s] State machine exception [%d]",
+                        OpenAPI_nf_type_ToString(nf_instance->nf_type),
                         nf_instance->id, e->timer_id);
             break;
 
@@ -535,9 +536,11 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             subscription = e->sbi.data;
             ogs_assert(subscription);
 
+            ogs_assert(ogs_sbi_self()->nf_instance);
             ogs_assert(true ==
                 ogs_nnrf_nfm_send_nf_status_subscribe(subscription->client,
-                    pcf_self()->nf_type, subscription->req_nf_instance_id,
+                    ogs_sbi_self()->nf_instance->nf_type,
+                    subscription->req_nf_instance_id,
                     subscription->subscr_cond.nf_type));
 
             ogs_info("[%s] Subscription validity expired", subscription->id);

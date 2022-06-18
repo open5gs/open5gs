@@ -38,8 +38,6 @@ extern int __af_log_domain;
 #define OGS_LOG_DOMAIN __af_log_domain
 
 typedef struct af_context_s {
-    OpenAPI_nf_type_e   nf_type;
-
     ogs_hash_t      *supi_hash;     /* hash table (SUPI) */
     ogs_hash_t      *ipv4_hash;     /* hash table (IPv4 Address) */
     ogs_hash_t      *ipv6_hash;     /* hash table (IPv6 Address) */

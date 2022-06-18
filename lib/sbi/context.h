@@ -34,43 +34,48 @@ extern "C" {
 
 typedef struct ogs_sbi_client_s ogs_sbi_client_t;
 typedef struct ogs_sbi_smf_info_s ogs_sbi_smf_info_t;
+typedef struct ogs_sbi_nf_instance_s ogs_sbi_nf_instance_t;
 
 typedef struct ogs_sbi_context_s {
-    uint32_t            sbi_port;       /* SBI local port */
+    uint32_t sbi_port;       /* SBI local port */
 
-    ogs_list_t          server_list;
-    ogs_list_t          client_list;
+    ogs_list_t server_list;
+    ogs_list_t client_list;
 
-    ogs_uuid_t          uuid;
-    char                nf_instance_id[OGS_UUID_FORMATTED_LENGTH + 1];
+    ogs_uuid_t uuid;
 
-    ogs_list_t          nf_instance_list;
-    ogs_list_t          subscription_list;
+    ogs_list_t nf_instance_list;
+    ogs_list_t subscription_list;
 
-    ogs_list_t          nf_info_list;
+    ogs_sbi_nf_instance_t *nf_instance; /* SELF NF Instance */
 
-    const char          *content_encoding;
+    const char *content_encoding;
 } ogs_sbi_context_t;
 
 typedef struct ogs_sbi_nf_instance_s {
-    ogs_lnode_t     lnode;
+    ogs_lnode_t lnode;
 
-    ogs_fsm_t       sm;                         /* A state machine */
-    ogs_timer_t     *t_registration_interval;   /* timer to retry
+    ogs_fsm_t sm;                               /* A state machine */
+    ogs_timer_t *t_registration_interval;       /* timer to retry
                                                    to register peer node */
     struct {
         int heartbeat_interval;
         int validity_duration;
     } time;
 
-    ogs_timer_t     *t_heartbeat_interval;  /* heartbeat interval */
-    ogs_timer_t     *t_no_heartbeat;        /* check heartbeat */
-    ogs_timer_t     *t_validity;            /* check validation */
+    ogs_timer_t *t_heartbeat_interval;  /* heartbeat interval */
+    ogs_timer_t *t_no_heartbeat;        /* check heartbeat */
+    ogs_timer_t *t_validity;            /* check validation */
 
 #define NF_INSTANCE_IS_SELF(_iD) \
-    strcmp((_iD), ogs_sbi_self()->nf_instance_id) == 0
+    (_iD) && ogs_sbi_self()->nf_instance && \
+        strcmp((_iD), ogs_sbi_self()->nf_instance->id) == 0
 #define NF_INSTANCE_IS_OTHERS(_iD) \
-    strcmp((_iD), ogs_sbi_self()->nf_instance_id) != 0
+    (_iD) && ogs_sbi_self()->nf_instance && \
+        strcmp((_iD), ogs_sbi_self()->nf_instance->id) != 0
+
+#define NF_INSTANCE_IS_NRF(__nFInstance) \
+    ((__nFInstance->nf_type) == OpenAPI_nf_type_NRF)
 
     char *id;                           /* NFInstanceId */
 
@@ -246,14 +251,19 @@ void ogs_sbi_context_final(void);
 ogs_sbi_context_t *ogs_sbi_self(void);
 int ogs_sbi_context_parse_config(const char *local, const char *remote);
 
-bool ogs_sbi_nf_instance_maximum_number_is_reached(void);
-ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_add(char *id);
+ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_add(void);
+void ogs_sbi_nf_instance_set_id(ogs_sbi_nf_instance_t *nf_instance, char *id);
+void ogs_sbi_nf_instance_set_type(
+        ogs_sbi_nf_instance_t *nf_instance, OpenAPI_nf_type_e nf_type);
+void ogs_sbi_nf_instance_set_status(
+        ogs_sbi_nf_instance_t *nf_instance, OpenAPI_nf_status_e nf_status);
 void ogs_sbi_nf_instance_add_allowed_nf_type(
         ogs_sbi_nf_instance_t *nf_instance, OpenAPI_nf_type_e allowed_nf_type);
 void ogs_sbi_nf_instance_clear(ogs_sbi_nf_instance_t *nf_instance);
 void ogs_sbi_nf_instance_remove(ogs_sbi_nf_instance_t *nf_instance);
 void ogs_sbi_nf_instance_remove_all(void);
 ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_find(char *id);
+bool ogs_sbi_nf_instance_maximum_number_is_reached(void);
 
 ogs_sbi_nf_service_t *ogs_sbi_nf_service_add(ogs_sbi_nf_instance_t *nf_instance,
         char *id, char *name, OpenAPI_uri_scheme_e scheme);
@@ -309,8 +319,7 @@ OpenAPI_uri_scheme_e ogs_sbi_default_uri_scheme(void);
                 (__nFInstance)->reference_count); \
     } while(0)
 
-void ogs_sbi_select_nrf(ogs_sbi_object_t *sbi_object, void *state);
-void ogs_sbi_select_first_nf(
+void ogs_sbi_select_nf(
         ogs_sbi_object_t *sbi_object, OpenAPI_nf_type_e nf_type, void *state);
 
 void ogs_sbi_object_free(ogs_sbi_object_t *sbi_object);

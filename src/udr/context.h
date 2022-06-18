@@ -39,8 +39,6 @@ extern int __udr_log_domain;
 #define OGS_LOG_DOMAIN __udr_log_domain
 
 typedef struct udr_context_s {
-    OpenAPI_nf_type_e   nf_type;
-
 } udr_context_t;
 
 #define UDR_NF_INSTANCE_CLEAR(_cAUSE, _nFInstance) \

@@ -38,8 +38,6 @@ extern int __nssf_log_domain;
 #define OGS_LOG_DOMAIN __nssf_log_domain
 
 typedef struct nssf_context_s {
-    OpenAPI_nf_type_e   nf_type;
-
     ogs_list_t      nsi_list; /* NSI List */
 } nssf_context_t;
 

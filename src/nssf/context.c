@@ -59,8 +59,6 @@ nssf_context_t *nssf_self(void)
 
 static int nssf_context_prepare(void)
 {
-    self.nf_type = OpenAPI_nf_type_NSSF;
-
     return OGS_OK;
 }
 

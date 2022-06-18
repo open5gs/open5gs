@@ -40,8 +40,6 @@ extern int __pcf_log_domain;
 #define OGS_LOG_DOMAIN __pcf_log_domain
 
 typedef struct pcf_context_s {
-    OpenAPI_nf_type_e   nf_type;
-
     ogs_list_t      pcf_ue_list;
     ogs_hash_t      *supi_hash;
 

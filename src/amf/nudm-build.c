@@ -44,7 +44,8 @@ ogs_sbi_request_t *amf_nudm_uecm_build_registration(
 
     memset(&Amf3GppAccessRegistration, 0, sizeof(Amf3GppAccessRegistration));
 
-    Amf3GppAccessRegistration.amf_instance_id = ogs_sbi_self()->nf_instance_id;
+    ogs_assert(ogs_sbi_self()->nf_instance);
+    Amf3GppAccessRegistration.amf_instance_id = ogs_sbi_self()->nf_instance->id;
 
     server = ogs_list_first(&ogs_sbi_self()->server_list);
     ogs_assert(server);

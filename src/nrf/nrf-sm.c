@@ -105,7 +105,8 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
                     if (!nf_instance) {
                         SWITCH(message.h.method)
                         CASE(OGS_SBI_HTTP_METHOD_PUT)
-                            if (ogs_sbi_nf_instance_maximum_number_is_reached()) {
+                            if (ogs_sbi_nf_instance_maximum_number_is_reached())
+                            {
                                 ogs_warn("Can't add instance [%s] "
                                          "due to insufficient space",
                                          message.h.resource.component[1]);
@@ -118,9 +119,11 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
                                         message.h.resource.component[1]));
                                 break;
                             }
-                            nf_instance = ogs_sbi_nf_instance_add(
-                                    message.h.resource.component[1]);
+                            nf_instance = ogs_sbi_nf_instance_add();
                             ogs_assert(nf_instance);
+                            ogs_sbi_nf_instance_set_id(nf_instance,
+                                    message.h.resource.component[1]);
+
                             nrf_nf_fsm_init(nf_instance);
                             break;
                         DEFAULT

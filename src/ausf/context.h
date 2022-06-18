@@ -39,8 +39,6 @@ extern int __ausf_log_domain;
 #define OGS_LOG_DOMAIN __ausf_log_domain
 
 typedef struct ausf_context_s {
-    OpenAPI_nf_type_e   nf_type;
-
     ogs_list_t      ausf_ue_list;
     ogs_hash_t      *suci_hash;
     ogs_hash_t      *supi_hash;

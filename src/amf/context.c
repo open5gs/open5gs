@@ -114,8 +114,6 @@ amf_context_t *amf_self(void)
 
 static int amf_context_prepare(void)
 {
-    self.nf_type = OpenAPI_nf_type_AMF;
-
     self.relative_capacity = 0xff;
 
     self.ngap_port = OGS_NGAP_SCTP_PORT;
@@ -1780,10 +1778,7 @@ void amf_ue_select_nf(amf_ue_t *amf_ue, OpenAPI_nf_type_e nf_type)
     ogs_assert(amf_ue);
     ogs_assert(nf_type);
 
-    if (nf_type == OpenAPI_nf_type_NRF)
-        ogs_sbi_select_nrf(&amf_ue->sbi, amf_nf_state_registered);
-    else
-        ogs_sbi_select_first_nf(&amf_ue->sbi, nf_type, amf_nf_state_registered);
+    ogs_sbi_select_nf(&amf_ue->sbi, nf_type, amf_nf_state_registered);
 }
 
 void amf_sess_select_nf(amf_sess_t *sess, OpenAPI_nf_type_e nf_type)
@@ -1791,12 +1786,10 @@ void amf_sess_select_nf(amf_sess_t *sess, OpenAPI_nf_type_e nf_type)
     ogs_assert(sess);
     ogs_assert(nf_type);
 
-    if (nf_type == OpenAPI_nf_type_NRF)
-        ogs_sbi_select_nrf(&sess->sbi, amf_nf_state_registered);
-    else if (nf_type == OpenAPI_nf_type_SMF)
+    if (nf_type == OpenAPI_nf_type_SMF)
         amf_sess_select_smf(sess);
     else
-        ogs_sbi_select_first_nf(&sess->sbi, nf_type, amf_nf_state_registered);
+        ogs_sbi_select_nf(&sess->sbi, nf_type, amf_nf_state_registered);
 }
 
 static bool check_smf_info(amf_sess_t *sess, ogs_list_t *nf_info_list);

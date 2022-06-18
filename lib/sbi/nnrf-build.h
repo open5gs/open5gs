@@ -24,14 +24,11 @@
 extern "C" {
 #endif
 
-OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
-        ogs_sbi_nf_instance_t *nf_instance);
+OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(void);
 void ogs_sbi_nnrf_free_nf_profile(OpenAPI_nf_profile_t *NFProfile);
 
-ogs_sbi_request_t *ogs_nnrf_nfm_build_update(
-        ogs_sbi_nf_instance_t *nf_instance);
-ogs_sbi_request_t *ogs_nnrf_nfm_build_de_register(
-        ogs_sbi_nf_instance_t *nf_instance);
+ogs_sbi_request_t *ogs_nnrf_nfm_build_update(void);
+ogs_sbi_request_t *ogs_nnrf_nfm_build_de_register(void);
 
 ogs_sbi_request_t *ogs_nnrf_nfm_build_status_subscribe(
         ogs_sbi_subscription_t *subscription);

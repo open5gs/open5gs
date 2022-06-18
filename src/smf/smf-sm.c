@@ -776,16 +776,20 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
             ogs_fsm_dispatch(&nf_instance->sm, e);
             if (OGS_FSM_CHECK(&nf_instance->sm, smf_nf_state_exception))
-                ogs_error("State machine exception [%d]", e->timer_id);
+                ogs_error("[%s:%s] State machine exception [%d]",
+                        OpenAPI_nf_type_ToString(nf_instance->nf_type),
+                        nf_instance->id, e->timer_id);
             break;
 
         case SMF_TIMER_SUBSCRIPTION_VALIDITY:
             subscription = e->sbi.data;
             ogs_assert(subscription);
 
+            ogs_assert(ogs_sbi_self()->nf_instance);
             ogs_assert(true ==
                 ogs_nnrf_nfm_send_nf_status_subscribe(subscription->client,
-                    smf_self()->nf_type, subscription->req_nf_instance_id,
+                    ogs_sbi_self()->nf_instance->nf_type,
+                    subscription->req_nf_instance_id,
                     subscription->subscr_cond.nf_type));
 
             ogs_info("Subscription validity expired [%s]", subscription->id);

@@ -27,9 +27,10 @@ int ausf_initialize()
 {
     int rv;
 
+    ogs_sbi_context_init();
+
     ausf_context_init();
     ausf_event_init();
-    ogs_sbi_context_init();
 
     rv = ogs_sbi_context_parse_config("ausf", "nrf");
     if (rv != OGS_OK) return rv;

@@ -26,8 +26,7 @@
 extern "C" {
 #endif
 
-ogs_sbi_request_t *amf_nnrf_nfm_build_register(
-        ogs_sbi_nf_instance_t *nf_instance);
+ogs_sbi_request_t *amf_nnrf_nfm_build_register(void);
 
 ogs_sbi_request_t *amf_nnrf_disc_build_discover(
         char *nrf_id,

@@ -85,8 +85,6 @@ pcf_context_t *pcf_self(void)
 
 static int pcf_context_prepare(void)
 {
-    self.nf_type = OpenAPI_nf_type_PCF;
-
     return OGS_OK;
 }
 
@@ -506,10 +504,7 @@ void pcf_ue_select_nf(pcf_ue_t *pcf_ue, OpenAPI_nf_type_e nf_type)
     ogs_assert(pcf_ue);
     ogs_assert(nf_type);
 
-    if (nf_type == OpenAPI_nf_type_NRF)
-        ogs_sbi_select_nrf(&pcf_ue->sbi, pcf_nf_state_registered);
-    else
-        ogs_sbi_select_first_nf(&pcf_ue->sbi, nf_type, pcf_nf_state_registered);
+    ogs_sbi_select_nf(&pcf_ue->sbi, nf_type, pcf_nf_state_registered);
 }
 
 void pcf_sess_select_nf(pcf_sess_t *sess, OpenAPI_nf_type_e nf_type)
@@ -517,10 +512,7 @@ void pcf_sess_select_nf(pcf_sess_t *sess, OpenAPI_nf_type_e nf_type)
     ogs_assert(sess);
     ogs_assert(nf_type);
 
-    if (nf_type == OpenAPI_nf_type_NRF)
-        ogs_sbi_select_nrf(&sess->sbi, pcf_nf_state_registered);
-    else
-        ogs_sbi_select_first_nf(&sess->sbi, nf_type, pcf_nf_state_registered);
+    ogs_sbi_select_nf(&sess->sbi, nf_type, pcf_nf_state_registered);
 }
 
 pcf_app_t *pcf_app_add(pcf_sess_t *sess)

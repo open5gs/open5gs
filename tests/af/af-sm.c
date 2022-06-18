@@ -406,9 +406,11 @@ void af_state_operational(ogs_fsm_t *s, af_event_t *e)
             subscription = e->sbi.data;
             ogs_assert(subscription);
 
+            ogs_assert(ogs_sbi_self()->nf_instance);
             ogs_assert(true ==
                 ogs_nnrf_nfm_send_nf_status_subscribe(subscription->client,
-                    af_self()->nf_type, subscription->req_nf_instance_id,
+                    ogs_sbi_self()->nf_instance->nf_type,
+                    subscription->req_nf_instance_id,
                     subscription->subscr_cond.nf_type));
 
             ogs_info("Subscription validity expired [%s]", subscription->id);

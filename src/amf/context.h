@@ -48,8 +48,6 @@ typedef struct amf_ue_s amf_ue_t;
 typedef uint32_t amf_m_tmsi_t;
 
 typedef struct amf_context_s {
-    OpenAPI_nf_type_e   nf_type;
-
     /* Served GUAMI */
     uint8_t num_of_served_guami;
     ogs_guami_t served_guami[MAX_NUM_OF_SERVED_GUAMI];

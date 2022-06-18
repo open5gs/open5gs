@@ -27,9 +27,10 @@ int pcf_initialize()
 {
     int rv;
 
+    ogs_sbi_context_init();
+
     pcf_context_init();
     pcf_event_init();
-    ogs_sbi_context_init();
 
     rv = ogs_sbi_context_parse_config("pcf", "nrf");
     if (rv != OGS_OK) return rv;

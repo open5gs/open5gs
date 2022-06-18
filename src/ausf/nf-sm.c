@@ -60,7 +60,6 @@ void ausf_nf_state_initial(ogs_fsm_t *s, ausf_event_t *e)
 
     nf_instance = e->sbi.data;
     ogs_assert(nf_instance);
-    ogs_assert(nf_instance->id);
 
     ogs_assert(nf_instance->t_registration_interval);
     nf_instance->t_registration_interval->cb =
@@ -73,9 +72,10 @@ void ausf_nf_state_initial(ogs_fsm_t *s, ausf_event_t *e)
     ogs_assert(nf_instance->t_validity);
     nf_instance->t_validity->cb = ausf_timer_nf_instance_validity;
 
-    if (NF_INSTANCE_IS_SELF(nf_instance->id)) {
+    if (NF_INSTANCE_IS_NRF(nf_instance)) {
         OGS_FSM_TRAN(s, &ausf_nf_state_will_register);
     } else {
+        ogs_assert(nf_instance->id);
         OGS_FSM_TRAN(s, &ausf_nf_state_registered);
     }
 }
@@ -102,19 +102,19 @@ void ausf_nf_state_will_register(ogs_fsm_t *s, ausf_event_t *e)
 
     nf_instance = e->sbi.data;
     ogs_assert(nf_instance);
+    ogs_assert(ogs_sbi_self()->nf_instance);
+    ogs_assert(NF_INSTANCE_IS_NRF(nf_instance));
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
-        if (NF_INSTANCE_IS_SELF(nf_instance->id))
-            ogs_timer_start(nf_instance->t_registration_interval,
-                ogs_app()->time.message.sbi.nf_register_interval);
+        ogs_timer_start(nf_instance->t_registration_interval,
+            ogs_app()->time.message.sbi.nf_register_interval);
 
         ogs_assert(true == ausf_nnrf_nfm_send_nf_register(nf_instance));
         break;
 
     case OGS_FSM_EXIT_SIG:
-        if (NF_INSTANCE_IS_SELF(nf_instance->id))
-            ogs_timer_stop(nf_instance->t_registration_interval);
+        ogs_timer_stop(nf_instance->t_registration_interval);
         break;
 
     case AUSF_EVT_SBI_CLIENT:
@@ -133,20 +133,22 @@ void ausf_nf_state_will_register(ogs_fsm_t *s, ausf_event_t *e)
                     OGS_FSM_TRAN(s, &ausf_nf_state_registered);
                 } else {
                     ogs_error("[%s] HTTP response error [%d]",
-                            nf_instance->id, message->res_status);
+                            ogs_sbi_self()->nf_instance->id,
+                            message->res_status);
                     OGS_FSM_TRAN(s, &ausf_nf_state_exception);
                 }
                 break;
 
             DEFAULT
                 ogs_error("[%s] Invalid resource name [%s]",
-                        nf_instance->id, message->h.resource.component[0]);
+                        ogs_sbi_self()->nf_instance->id,
+                        message->h.resource.component[0]);
             END
             break;
 
         DEFAULT
             ogs_error("[%s] Invalid API name [%s]",
-                    nf_instance->id, message->h.service.name);
+                    ogs_sbi_self()->nf_instance->id, message->h.service.name);
         END
         break;
 
@@ -158,17 +160,18 @@ void ausf_nf_state_will_register(ogs_fsm_t *s, ausf_event_t *e)
             addr = client->node.addr;
             ogs_assert(addr);
 
-            ogs_warn("[%s] Retry to registration with NRF", nf_instance->id);
+            ogs_warn("[%s] Retry to registration with NRF",
+                    ogs_sbi_self()->nf_instance->id);
 
-            if (NF_INSTANCE_IS_SELF(nf_instance->id))
-                ogs_timer_start(nf_instance->t_registration_interval,
-                    ogs_app()->time.message.sbi.nf_register_interval);
+            ogs_timer_start(nf_instance->t_registration_interval,
+                ogs_app()->time.message.sbi.nf_register_interval);
 
             ogs_assert(true == ausf_nnrf_nfm_send_nf_register(nf_instance));
             break;
 
         default:
-            ogs_error("[%s] Unknown timer[%s:%d]", nf_instance->id,
+            ogs_error("[%s] Unknown timer[%s:%d]",
+                    ogs_sbi_self()->nf_instance->id,
                     ausf_timer_get_name(e->timer_id), e->timer_id);
         }
         break;
@@ -191,12 +194,14 @@ void ausf_nf_state_registered(ogs_fsm_t *s, ausf_event_t *e)
 
     nf_instance = e->sbi.data;
     ogs_assert(nf_instance);
+    ogs_assert(ogs_sbi_self()->nf_instance);
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
-        if (NF_INSTANCE_IS_SELF(nf_instance->id)) {
+        if (NF_INSTANCE_IS_NRF(nf_instance)) {
             ogs_info("[%s] NF registered [Heartbeat:%ds]",
-                    nf_instance->id, nf_instance->time.heartbeat_interval);
+                    ogs_sbi_self()->nf_instance->id,
+                    nf_instance->time.heartbeat_interval);
 
             client = nf_instance->client;
             ogs_assert(client);
@@ -212,14 +217,16 @@ void ausf_nf_state_registered(ogs_fsm_t *s, ausf_event_t *e)
 
             ogs_assert(true ==
                 ogs_nnrf_nfm_send_nf_status_subscribe(client,
-                ausf_self()->nf_type, nf_instance->id, OpenAPI_nf_type_UDM));
+                    ogs_sbi_self()->nf_instance->nf_type,
+                    ogs_sbi_self()->nf_instance->id,
+                    OpenAPI_nf_type_UDM));
         }
 
         break;
 
     case OGS_FSM_EXIT_SIG:
-        if (NF_INSTANCE_IS_SELF(nf_instance->id)) {
-            ogs_info("[%s] NF de-registered", nf_instance->id);
+        if (NF_INSTANCE_IS_NRF(nf_instance)) {
+            ogs_info("[%s] NF de-registered", ogs_sbi_self()->nf_instance->id);
 
             if (nf_instance->time.heartbeat_interval) {
                 ogs_timer_stop(nf_instance->t_heartbeat_interval);
@@ -253,7 +260,8 @@ void ausf_nf_state_registered(ogs_fsm_t *s, ausf_event_t *e)
                                     no_heartbeat_margin));
                 } else {
                     ogs_warn("[%s] HTTP response error [%d]",
-                            nf_instance->id, message->res_status);
+                            ogs_sbi_self()->nf_instance->id,
+                            message->res_status);
                     OGS_FSM_TRAN(s, &ausf_nf_state_exception);
                 }
 
@@ -261,13 +269,14 @@ void ausf_nf_state_registered(ogs_fsm_t *s, ausf_event_t *e)
 
             DEFAULT
                 ogs_error("[%s] Invalid resource name [%s]",
-                        nf_instance->id, message->h.resource.component[0]);
+                        ogs_sbi_self()->nf_instance->id,
+                        message->h.resource.component[0]);
             END
             break;
 
         DEFAULT
             ogs_error("[%s] Invalid API name [%s]",
-                    nf_instance->id, message->h.service.name);
+                    ogs_sbi_self()->nf_instance->id, message->h.service.name);
         END
         break;
 
@@ -282,27 +291,31 @@ void ausf_nf_state_registered(ogs_fsm_t *s, ausf_event_t *e)
             break;
 
         case AUSF_TIMER_NF_INSTANCE_NO_HEARTBEAT:
-            ogs_error("[%s] No heartbeat", nf_instance->id);
+            ogs_error("[%s] No heartbeat", ogs_sbi_self()->nf_instance->id);
             OGS_FSM_TRAN(s, &ausf_nf_state_will_register);
             break;
 
         case AUSF_TIMER_NF_INSTANCE_VALIDITY:
-            if (NF_INSTANCE_IS_OTHERS(nf_instance->id)) {
-                ogs_info("[%s] NF expired", nf_instance->id);
-                OGS_FSM_TRAN(s, &ausf_nf_state_de_registered);
-            }
+            ogs_assert(!NF_INSTANCE_IS_NRF(nf_instance));
+            ogs_assert(nf_instance->id);
+
+            ogs_info("[%s] NF expired", nf_instance->id);
+            OGS_FSM_TRAN(s, &ausf_nf_state_de_registered);
             break;
 
         default:
-            ogs_error("[%s] Unknown timer[%s:%d]", nf_instance->id,
+            ogs_error("[%s:%s] Unknown timer[%s:%d]",
+                    OpenAPI_nf_type_ToString(nf_instance->nf_type),
+                    nf_instance->id ? nf_instance->id : "Undefined",
                     ausf_timer_get_name(e->timer_id), e->timer_id);
-            break;
         }
         break;
 
     default:
-        ogs_error("[%s] Unknown event %s",
-                nf_instance->id, ausf_event_get_name(e));
+        ogs_error("[%s:%s] Unknown event %s",
+                OpenAPI_nf_type_ToString(nf_instance->nf_type),
+                nf_instance->id ? nf_instance->id : "Undefined",
+                ausf_event_get_name(e));
         break;
     }
 }
@@ -317,11 +330,12 @@ void ausf_nf_state_de_registered(ogs_fsm_t *s, ausf_event_t *e)
 
     nf_instance = e->sbi.data;
     ogs_assert(nf_instance);
+    ogs_assert(ogs_sbi_self()->nf_instance);
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
-        if (NF_INSTANCE_IS_SELF(nf_instance->id)) {
-            ogs_info("[%s] NF de-registered", nf_instance->id);
+        if (NF_INSTANCE_IS_NRF(nf_instance)) {
+            ogs_info("[%s] NF de-registered", ogs_sbi_self()->nf_instance->id);
         }
         break;
 
@@ -329,8 +343,10 @@ void ausf_nf_state_de_registered(ogs_fsm_t *s, ausf_event_t *e)
         break;
 
     default:
-        ogs_error("[%s] Unknown event %s",
-                nf_instance->id, ausf_event_get_name(e));
+        ogs_error("[%s:%s] Unknown event %s",
+                OpenAPI_nf_type_ToString(nf_instance->nf_type),
+                nf_instance->id ? nf_instance->id : "Undefined",
+                ausf_event_get_name(e));
         break;
     }
 }
@@ -348,18 +364,21 @@ void ausf_nf_state_exception(ogs_fsm_t *s, ausf_event_t *e)
 
     nf_instance = e->sbi.data;
     ogs_assert(nf_instance);
+    ogs_assert(ogs_sbi_self()->nf_instance);
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
-        if (NF_INSTANCE_IS_SELF(nf_instance->id))
+        if (NF_INSTANCE_IS_NRF(nf_instance)) {
             ogs_timer_start(nf_instance->t_registration_interval,
                 ogs_app()->time.message.sbi.
                     nf_register_interval_in_exception);
+        }
         break;
 
     case OGS_FSM_EXIT_SIG:
-        if (NF_INSTANCE_IS_SELF(nf_instance->id))
+        if (NF_INSTANCE_IS_NRF(nf_instance)) {
             ogs_timer_stop(nf_instance->t_registration_interval);
+        }
         break;
 
     case AUSF_EVT_SBI_TIMER:
@@ -370,15 +389,17 @@ void ausf_nf_state_exception(ogs_fsm_t *s, ausf_event_t *e)
             addr = client->node.addr;
             ogs_assert(addr);
 
-            ogs_warn("[%s] Retry to registration with NRF", nf_instance->id);
+            ogs_warn("[%s] Retry to registration with NRF",
+                    ogs_sbi_self()->nf_instance->id);
 
             OGS_FSM_TRAN(s, &ausf_nf_state_will_register);
             break;
 
         default:
-            ogs_error("[%s] Unknown timer[%s:%d]", nf_instance->id,
+            ogs_error("[%s:%s] Unknown timer[%s:%d]",
+                    OpenAPI_nf_type_ToString(nf_instance->nf_type),
+                    nf_instance->id ? nf_instance->id : "Undefined",
                     ausf_timer_get_name(e->timer_id), e->timer_id);
-            break;
         }
         break;
 
@@ -403,8 +424,10 @@ void ausf_nf_state_exception(ogs_fsm_t *s, ausf_event_t *e)
         break;
 
     default:
-        ogs_error("[%s] Unknown event %s",
-                nf_instance->id, ausf_event_get_name(e));
+        ogs_error("[%s:%s] Unknown event %s",
+                OpenAPI_nf_type_ToString(nf_instance->nf_type),
+                nf_instance->id ? nf_instance->id : "Undefined",
+                ausf_event_get_name(e));
         break;
     }
 }

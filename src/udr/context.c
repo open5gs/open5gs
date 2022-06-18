@@ -52,8 +52,6 @@ udr_context_t *udr_self(void)
 
 static int udr_context_prepare(void)
 {
-    self.nf_type = OpenAPI_nf_type_UDR;
-
     return OGS_OK;
 }
 

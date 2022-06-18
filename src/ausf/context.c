@@ -70,8 +70,6 @@ ausf_context_t *ausf_self(void)
 
 static int ausf_context_prepare(void)
 {
-    self.nf_type = OpenAPI_nf_type_AUSF;
-
     return OGS_OK;
 }
 
@@ -230,9 +228,5 @@ void ausf_ue_select_nf(ausf_ue_t *ausf_ue, OpenAPI_nf_type_e nf_type)
     ogs_assert(ausf_ue);
     ogs_assert(nf_type);
 
-    if (nf_type == OpenAPI_nf_type_NRF)
-        ogs_sbi_select_nrf(&ausf_ue->sbi, ausf_nf_state_registered);
-    else
-        ogs_sbi_select_first_nf(
-                &ausf_ue->sbi, nf_type, ausf_nf_state_registered);
+    ogs_sbi_select_nf(&ausf_ue->sbi, nf_type, ausf_nf_state_registered);
 }

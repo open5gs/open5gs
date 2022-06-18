@@ -33,6 +33,8 @@ static OGS_POOL(nf_info_pool, ogs_sbi_nf_info_t);
 
 void ogs_sbi_context_init(void)
 {
+    char nf_instance_id[OGS_UUID_FORMATTED_LENGTH + 1];
+
     ogs_assert(context_initialized == 0);
 
     /* Initialize SBI context */
@@ -57,8 +59,14 @@ void ogs_sbi_context_init(void)
 
     ogs_pool_init(&nf_info_pool, ogs_app()->pool.nf * OGS_MAX_NUM_OF_NF_INFO);
 
+    /* Add SELF NF instance */
+    self.nf_instance = ogs_sbi_nf_instance_add();
+    ogs_assert(self.nf_instance);
+
     ogs_uuid_get(&self.uuid);
-    ogs_uuid_format(self.nf_instance_id, &self.uuid);
+    ogs_uuid_format(nf_instance_id, &self.uuid);
+
+    ogs_sbi_nf_instance_set_id(self.nf_instance, nf_instance_id);
 
     context_initialized = 1;
 }
@@ -73,8 +81,6 @@ void ogs_sbi_context_final(void)
     ogs_pool_final(&xact_pool);
 
     ogs_sbi_nf_instance_remove_all();
-
-    ogs_sbi_nf_info_remove_all(&self.nf_info_list);
 
     ogs_pool_final(&nf_instance_pool);
     ogs_pool_final(&nf_service_pool);
@@ -470,9 +476,10 @@ int ogs_sbi_context_parse_config(const char *local, const char *remote)
                         client = ogs_sbi_client_add(addr);
                         ogs_assert(client);
 
-                        nf_instance = ogs_sbi_nf_instance_add(
-                                ogs_sbi_self()->nf_instance_id);
+                        nf_instance = ogs_sbi_nf_instance_add();
                         ogs_assert(nf_instance);
+                        ogs_sbi_nf_instance_set_type(
+                                nf_instance, OpenAPI_nf_type_NRF);
 
                         OGS_SBI_SETUP_CLIENT(nf_instance, client);
 
@@ -494,16 +501,9 @@ int ogs_sbi_context_parse_config(const char *local, const char *remote)
     return OGS_OK;
 }
 
-bool ogs_sbi_nf_instance_maximum_number_is_reached()
-{
-    return nf_instance_pool.avail <= 0;
-}
-
-ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_add(char *id)
+ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_add(void)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
-
-    ogs_assert(id);
 
     ogs_pool_alloc(&nf_instance_pool, &nf_instance);
     ogs_assert(nf_instance);
@@ -511,9 +511,6 @@ ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_add(char *id)
 
     nf_instance->reference_count++;
     ogs_trace("ogs_sbi_nf_instance_add()");
-
-    nf_instance->id = ogs_strdup(id);
-    ogs_assert(nf_instance->id);
 
     nf_instance->time.heartbeat_interval =
             ogs_app()->time.nf_instance.heartbeat_interval;
@@ -538,6 +535,33 @@ ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_add(char *id)
     ogs_list_add(&ogs_sbi_self()->nf_instance_list, nf_instance);
 
     return nf_instance;
+}
+
+void ogs_sbi_nf_instance_set_id(ogs_sbi_nf_instance_t *nf_instance, char *id)
+{
+    ogs_assert(nf_instance);
+    ogs_assert(id);
+
+    nf_instance->id = ogs_strdup(id);
+    ogs_assert(nf_instance->id);
+}
+
+void ogs_sbi_nf_instance_set_type(
+        ogs_sbi_nf_instance_t *nf_instance, OpenAPI_nf_type_e nf_type)
+{
+    ogs_assert(nf_instance);
+    ogs_assert(nf_type);
+
+    nf_instance->nf_type = nf_type;
+}
+
+void ogs_sbi_nf_instance_set_status(
+        ogs_sbi_nf_instance_t *nf_instance, OpenAPI_nf_status_e nf_status)
+{
+    ogs_assert(nf_instance);
+    ogs_assert(nf_status);
+
+    nf_instance->nf_status = nf_status;
 }
 
 void ogs_sbi_nf_instance_add_allowed_nf_type(
@@ -592,13 +616,14 @@ void ogs_sbi_nf_instance_remove(ogs_sbi_nf_instance_t *nf_instance)
 
     ogs_sbi_nf_info_remove_all(&nf_instance->nf_info_list);
 
-    ogs_sbi_subscription_remove_all_by_nf_instance_id(nf_instance->id);
     ogs_sbi_nf_service_remove_all(nf_instance);
 
     ogs_sbi_nf_instance_clear(nf_instance);
 
-    ogs_assert(nf_instance->id);
-    ogs_free(nf_instance->id);
+    if (nf_instance->id) {
+        ogs_sbi_subscription_remove_all_by_nf_instance_id(nf_instance->id);
+        ogs_free(nf_instance->id);
+    }
 
     ogs_timer_delete(nf_instance->t_registration_interval);
     ogs_timer_delete(nf_instance->t_heartbeat_interval);
@@ -630,15 +655,20 @@ ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_find(char *id)
     ogs_assert(id);
 
     ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance) {
-        ogs_assert(nf_instance->id);
-        if (strcmp(nf_instance->id, id) == 0)
+        if (nf_instance->id && strcmp(nf_instance->id, id) == 0)
             break;
     }
 
     return nf_instance;
 }
 
-ogs_sbi_nf_service_t *ogs_sbi_nf_service_add(ogs_sbi_nf_instance_t *nf_instance,
+bool ogs_sbi_nf_instance_maximum_number_is_reached()
+{
+    return nf_instance_pool.avail <= 0;
+}
+
+ogs_sbi_nf_service_t *ogs_sbi_nf_service_add(
+        ogs_sbi_nf_instance_t *nf_instance,
         char *id, char *name, OpenAPI_uri_scheme_e scheme)
 {
     ogs_sbi_nf_service_t *nf_service = NULL;
@@ -884,9 +914,10 @@ void ogs_sbi_nf_instance_build_default(
     char *hostname = NULL;
 
     ogs_assert(nf_instance);
+    ogs_assert(nf_type);
 
-    nf_instance->nf_type = nf_type;
-    nf_instance->nf_status = OpenAPI_nf_status_REGISTERED;
+    ogs_sbi_nf_instance_set_type(nf_instance, nf_type);
+    ogs_sbi_nf_instance_set_status(nf_instance, OpenAPI_nf_status_REGISTERED);
 
     hostname = NULL;
     ogs_list_for_each(&ogs_sbi_self()->server_list, server) {
@@ -933,11 +964,11 @@ ogs_sbi_nf_service_t *ogs_sbi_nf_service_build_default(
         ogs_sbi_nf_instance_t *nf_instance, char *name)
 {
     ogs_sbi_server_t *server = NULL;
-    ogs_sbi_client_t *client = NULL;
     ogs_sbi_nf_service_t *nf_service = NULL;
     ogs_uuid_t uuid;
     char id[OGS_UUID_FORMATTED_LENGTH + 1];
     char *hostname = NULL;
+    OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
 
     ogs_assert(nf_instance);
     ogs_assert(name);
@@ -945,14 +976,27 @@ ogs_sbi_nf_service_t *ogs_sbi_nf_service_build_default(
     ogs_uuid_get(&uuid);
     ogs_uuid_format(id, &uuid);
 
-    client = nf_instance->client;
-    ogs_assert(client);
+    ogs_list_for_each(&ogs_sbi_self()->server_list, server) {
+        OpenAPI_uri_scheme_e s;
 
-    nf_service = ogs_sbi_nf_service_add(nf_instance, id, name,
-        (client->tls.key && client->tls.pem) ?
-            OpenAPI_uri_scheme_https : OpenAPI_uri_scheme_http);
+        if (server->tls.key && server->tls.pem)
+            s = OpenAPI_uri_scheme_https;
+        else
+            s = OpenAPI_uri_scheme_http;
+
+        if (scheme == OpenAPI_uri_scheme_NULL) {
+            scheme = s;
+        } else if (scheme != s) {
+            ogs_fatal("Please CHECK CONFIGURATION - sbi[%d:%s]",
+                    nf_instance->nf_type,
+                    OpenAPI_nf_type_ToString(nf_instance->nf_type));
+            ogs_assert_if_reached();
+            return NULL;
+        }
+    }
+
+    nf_service = ogs_sbi_nf_service_add(nf_instance, id, name, scheme);
     ogs_assert(nf_service);
-    OGS_SBI_SETUP_CLIENT(nf_service, client);
 
     hostname = NULL;
     ogs_list_for_each(&ogs_sbi_self()->server_list, server) {
@@ -1092,19 +1136,7 @@ static void nf_service_associate_client_all(ogs_sbi_nf_instance_t *nf_instance)
         nf_service_associate_client(nf_service);
 }
 
-void ogs_sbi_select_nrf(ogs_sbi_object_t *sbi_object, void *state)
-{
-    ogs_sbi_nf_instance_t *nf_instance = NULL;
-
-    ogs_assert(sbi_object);
-
-    /* SELF NF Instace is used for NRF Instance */
-    nf_instance = ogs_sbi_nf_instance_find(ogs_sbi_self()->nf_instance_id);
-    if (nf_instance && OGS_FSM_CHECK(&nf_instance->sm, state))
-        OGS_SBI_SETUP_NF(sbi_object, OpenAPI_nf_type_NRF, nf_instance);
-}
-
-void ogs_sbi_select_first_nf(
+void ogs_sbi_select_nf(
         ogs_sbi_object_t *sbi_object, OpenAPI_nf_type_e nf_type, void *state)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;

@@ -63,7 +63,7 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
     ogs_expect_or_return_val(sess->dnn, NULL);
     PcfBinding.dnn = sess->dnn;
 
-    nf_instance = ogs_sbi_nf_instance_find(ogs_sbi_self()->nf_instance_id);
+    nf_instance = ogs_sbi_self()->nf_instance;
     ogs_expect_or_return_val(nf_instance, NULL);
     nf_service = ogs_list_first(&nf_instance->nf_service_list);
     ogs_expect_or_return_val(nf_service, NULL);

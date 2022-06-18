@@ -27,9 +27,10 @@ int nssf_initialize()
 {
     int rv;
 
+    ogs_sbi_context_init();
+
     nssf_context_init();
     nssf_event_init();
-    ogs_sbi_context_init();
 
     rv = ogs_sbi_context_parse_config("nssf", "nrf");
     if (rv != OGS_OK) return rv;

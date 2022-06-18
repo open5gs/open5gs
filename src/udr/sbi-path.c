@@ -68,47 +68,43 @@ static int client_cb(ogs_sbi_response_t *response, void *data)
 int udr_sbi_open(void)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
+    ogs_sbi_nf_service_t *service = NULL;
 
     if (ogs_sbi_server_start_all(server_cb) != OGS_OK)
         return OGS_ERROR;
 
-    /*
-     * The connection between NF and NRF is a little special.
-     *
-     * NF and NRF share nf_instance. I get the NRF EndPoint(client) information
-     * the configuration file via lib/sbi/context.c.
-     * And, the NFService information will be transmitted to NRF.
-     *
-     * ogs_sbi_self()->nf_instance_id means NF's InstanceId.
-     */
+    /* Add SELF NF instance */
+    nf_instance = ogs_sbi_self()->nf_instance;
+    ogs_assert(nf_instance);
+
+    /* Build NF instance information. It will be transmitted to NRF. */
+    ogs_sbi_nf_instance_build_default(nf_instance, OpenAPI_nf_type_UDR);
+    ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_PCF);
+    ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_UDM);
+
+    /* Build NF service information. It will be transmitted to NRF. */
+    service = ogs_sbi_nf_service_build_default(nf_instance,
+            (char*)OGS_SBI_SERVICE_NAME_NUDR_DR);
+    ogs_assert(service);
+    ogs_sbi_nf_service_add_version(service, (char*)OGS_SBI_API_V1,
+            (char*)OGS_SBI_API_V1_0_0, NULL);
+    ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_PCF);
+    ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_UDM);
+
+    /* Initialize NRF NF Instance */
     ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance) {
-        ogs_sbi_nf_service_t *service = NULL;
-        ogs_sbi_client_t *client = NULL;
+        if (NF_INSTANCE_IS_NRF(nf_instance)) {
+            ogs_sbi_client_t *client = NULL;
 
-        /* Build NF instance information. It will be transmitted to NRF. */
-        ogs_sbi_nf_instance_build_default(nf_instance, udr_self()->nf_type);
-        ogs_sbi_nf_instance_add_allowed_nf_type(
-                nf_instance, OpenAPI_nf_type_PCF);
-        ogs_sbi_nf_instance_add_allowed_nf_type(
-                nf_instance, OpenAPI_nf_type_UDM);
+            /* Client callback is only used when NF sends to NRF */
+            client = nf_instance->client;
+            ogs_assert(client);
+            client->cb = client_cb;
 
-        /* Build NF service information. It will be transmitted to NRF. */
-        service = ogs_sbi_nf_service_build_default(nf_instance,
-                (char*)OGS_SBI_SERVICE_NAME_NUDR_DR);
-        ogs_assert(service);
-        ogs_sbi_nf_service_add_version(service, (char*)OGS_SBI_API_V1,
-                (char*)OGS_SBI_API_V1_0_0, NULL);
-        ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_PCF);
-        ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_UDM);
-
-        /* Client callback is only used when NF sends to NRF */
-        client = nf_instance->client;
-        ogs_assert(client);
-        client->cb = client_cb;
-
-        /* NFRegister is sent and the response is received
-         * by the above client callback. */
-        udr_nf_fsm_init(nf_instance);
+            /* NFRegister is sent and the response is received
+             * by the above client callback. */
+            udr_nf_fsm_init(nf_instance);
+        }
     }
 
     return OGS_OK;
@@ -128,7 +124,7 @@ bool udr_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance)
     client = nf_instance->client;
     ogs_assert(client);
 
-    request = udr_nnrf_nfm_build_register(nf_instance);
+    request = udr_nnrf_nfm_build_register();
     ogs_expect_or_return_val(request, false);
     return ogs_sbi_client_send_request(client, client->cb, request, nf_instance);
 }

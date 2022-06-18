@@ -173,9 +173,10 @@ bool amf_nnrf_handle_nf_status_notify(
 
         nf_instance = ogs_sbi_nf_instance_find(message.h.resource.component[1]);
         if (!nf_instance) {
-            nf_instance = ogs_sbi_nf_instance_add(
-                    message.h.resource.component[1]);
+            nf_instance = ogs_sbi_nf_instance_add();
             ogs_assert(nf_instance);
+            ogs_sbi_nf_instance_set_id(nf_instance,
+                    message.h.resource.component[1]);
 
             amf_nf_fsm_init(nf_instance);
 
@@ -336,8 +337,9 @@ void amf_nnrf_handle_nf_discover_search_result(
 
         nf_instance = ogs_sbi_nf_instance_find(NFProfile->nf_instance_id);
         if (!nf_instance) {
-            nf_instance = ogs_sbi_nf_instance_add(NFProfile->nf_instance_id);
+            nf_instance = ogs_sbi_nf_instance_add();
             ogs_assert(nf_instance);
+            ogs_sbi_nf_instance_set_id(nf_instance, NFProfile->nf_instance_id);
 
             amf_nf_fsm_init(nf_instance);
 

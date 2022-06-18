@@ -29,9 +29,10 @@ int af_initialize()
 {
     int rv;
 
+    ogs_sbi_context_init();
+
     af_context_init();
     af_event_init();
-    ogs_sbi_context_init();
 
     rv = ogs_sbi_context_parse_config("af", "nrf");
     if (rv != OGS_OK) return rv;

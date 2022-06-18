@@ -39,8 +39,6 @@ extern int __udm_log_domain;
 #define OGS_LOG_DOMAIN __udm_log_domain
 
 typedef struct udm_context_s {
-    OpenAPI_nf_type_e   nf_type;
-
     ogs_list_t      udm_ue_list;
     ogs_hash_t      *suci_hash;
     ogs_hash_t      *supi_hash;

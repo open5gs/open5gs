@@ -70,8 +70,6 @@ udm_context_t *udm_self(void)
 
 static int udm_context_prepare(void)
 {
-    self.nf_type = OpenAPI_nf_type_UDM;
-
     return OGS_OK;
 }
 
@@ -237,8 +235,5 @@ void udm_ue_select_nf(udm_ue_t *udm_ue, OpenAPI_nf_type_e nf_type)
     ogs_assert(udm_ue);
     ogs_assert(nf_type);
 
-    if (nf_type == OpenAPI_nf_type_NRF)
-        ogs_sbi_select_nrf(&udm_ue->sbi, udm_nf_state_registered);
-    else
-        ogs_sbi_select_first_nf(&udm_ue->sbi, nf_type, udm_nf_state_registered);
+    ogs_sbi_select_nf(&udm_ue->sbi, nf_type, udm_nf_state_registered);
 }

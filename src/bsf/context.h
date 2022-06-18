@@ -36,8 +36,6 @@ extern int __bsf_log_domain;
 #define OGS_LOG_DOMAIN __bsf_log_domain
 
 typedef struct bsf_context_s {
-    OpenAPI_nf_type_e   nf_type;
-
     ogs_hash_t          *ipv4addr_hash;
     ogs_hash_t          *ipv6prefix_hash;
 

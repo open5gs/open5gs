@@ -72,8 +72,6 @@ bsf_context_t *bsf_self(void)
 
 static int bsf_context_prepare(void)
 {
-    self.nf_type = OpenAPI_nf_type_BSF;
-
     return OGS_OK;
 }
 
@@ -331,8 +329,5 @@ void bsf_sess_select_nf(bsf_sess_t *sess, OpenAPI_nf_type_e nf_type)
     ogs_assert(sess);
     ogs_assert(nf_type);
 
-    if (nf_type == OpenAPI_nf_type_NRF)
-        ogs_sbi_select_nrf(&sess->sbi, bsf_nf_state_registered);
-    else
-        ogs_sbi_select_first_nf(&sess->sbi, nf_type, bsf_nf_state_registered);
+    ogs_sbi_select_nf(&sess->sbi, nf_type, bsf_nf_state_registered);
 }

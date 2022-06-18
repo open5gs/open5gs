@@ -27,9 +27,10 @@ int nrf_initialize()
 {
     int rv;
 
+    ogs_sbi_context_init();
+
     nrf_context_init();
     nrf_event_init();
-    ogs_sbi_context_init();
 
     rv = ogs_sbi_context_parse_config("nrf", NULL);
     if (rv != OGS_OK) return rv;

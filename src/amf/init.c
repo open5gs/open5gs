@@ -30,9 +30,10 @@ int amf_initialize()
     int rv;
 
     ogs_metrics_context_init();
+    ogs_sbi_context_init();
+
     amf_context_init();
     amf_event_init();
-    ogs_sbi_context_init();
 
     rv = ogs_sbi_context_parse_config("amf", "nrf");
     if (rv != OGS_OK) return rv;

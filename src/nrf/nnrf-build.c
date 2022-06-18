@@ -36,6 +36,7 @@ ogs_sbi_request_t *nrf_nnrf_nfm_build_nf_status_notify(
     ogs_assert(subscription);
     ogs_assert(event);
     ogs_assert(nf_instance);
+    ogs_assert(nf_instance->id);
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;

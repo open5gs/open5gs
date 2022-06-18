@@ -20,9 +20,9 @@
 #include "ogs-sbi.h"
 #include "ogs-app.h"
 
-OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
-        ogs_sbi_nf_instance_t *nf_instance)
+OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(void)
 {
+    ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_nf_service_t *nf_service = NULL;
 
     OpenAPI_nf_profile_t *NFProfile = NULL;
@@ -39,7 +39,9 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
 
     char *ipstr = NULL;
 
+    nf_instance = ogs_sbi_self()->nf_instance;
     ogs_assert(nf_instance);
+    ogs_assert(nf_instance->id);
 
     NFProfile = ogs_calloc(1, sizeof(*NFProfile));
     ogs_expect_or_return_val(NFProfile, NULL);
@@ -331,15 +333,19 @@ void ogs_sbi_nnrf_free_nf_profile(OpenAPI_nf_profile_t *NFProfile)
     ogs_free(NFProfile);
 }
 
-ogs_sbi_request_t *ogs_nnrf_nfm_build_update(ogs_sbi_nf_instance_t *nf_instance)
+ogs_sbi_request_t *ogs_nnrf_nfm_build_update(void)
 {
+    ogs_sbi_nf_instance_t *nf_instance = NULL;
+
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
 
     OpenAPI_list_t *PatchItemList;
     OpenAPI_patch_item_t item;
 
+    nf_instance = ogs_sbi_self()->nf_instance;
     ogs_assert(nf_instance);
+    ogs_assert(nf_instance->id);
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_PATCH;
@@ -347,7 +353,8 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_update(ogs_sbi_nf_instance_t *nf_instance)
     message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] =
         (char *)OGS_SBI_RESOURCE_NAME_NF_INSTANCES;
-    message.h.resource.component[1] = ogs_sbi_self()->nf_instance_id;
+    message.h.resource.component[1] = nf_instance->id;
+
     message.http.content_type = (char *)OGS_SBI_CONTENT_PATCH_TYPE;
 
     PatchItemList = OpenAPI_list_create();
@@ -372,13 +379,16 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_update(ogs_sbi_nf_instance_t *nf_instance)
     return request;
 }
 
-ogs_sbi_request_t *ogs_nnrf_nfm_build_de_register(
-        ogs_sbi_nf_instance_t *nf_instance)
+ogs_sbi_request_t *ogs_nnrf_nfm_build_de_register(void)
 {
+    ogs_sbi_nf_instance_t *nf_instance = NULL;
+
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
 
+    nf_instance = ogs_sbi_self()->nf_instance;
     ogs_assert(nf_instance);
+    ogs_assert(nf_instance->id);
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_DELETE;

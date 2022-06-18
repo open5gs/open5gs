@@ -27,9 +27,10 @@ int udr_initialize()
 {
     int rv;
 
+    ogs_sbi_context_init();
+
     udr_context_init();
     udr_event_init();
-    ogs_sbi_context_init();
 
     rv = ogs_sbi_context_parse_config("udr", "nrf");
     if (rv != OGS_OK) return rv;
