@@ -946,6 +946,7 @@ int mme_context_parse_config()
                             }
                             network_full_name->length = size*2+1;
                             network_full_name->coding_scheme = 1;
+                            network_full_name->ext = 1;
                         } else if (!strcmp(network_name_key, "short")) {
                             ogs_nas_network_name_t *network_short_name =
                                 &self.short_name;
@@ -962,6 +963,7 @@ int mme_context_parse_config()
                             }
                             network_short_name->length = size*2+1;
                             network_short_name->coding_scheme = 1;
+                            network_short_name->ext = 1;
                         }
                     }
                 } else if (!strcmp(mme_key, "sgsap")) {
