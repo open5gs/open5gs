@@ -1,0 +1,10 @@
+**/*.md
+**/docker-compose*.yml
+**/docker-compose*.yaml
+**/Dockerfile*
+.git
+.dockerignore
+.cache
+.gitignore
+.github
+build
