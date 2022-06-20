@@ -591,7 +591,7 @@ void smf_s5c_handle_create_bearer_response(
     int rv;
     uint8_t cause_value;
     ogs_gtp2_cause_t *cause = NULL;
-    ogs_gtp2_f_teid_t *sgw_s5u_teid, *pgw_s5u_teid;
+    ogs_gtp2_f_teid_t *sgw_s5u_teid = NULL, *pgw_s5u_teid = NULL;
     smf_bearer_t *bearer = NULL;
     ogs_pfcp_far_t *dl_far = NULL;
 
