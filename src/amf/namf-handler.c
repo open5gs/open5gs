@@ -508,3 +508,92 @@ cleanup:
 
     return OGS_OK;
 }
+
+int amf_namf_callback_handle_dereg_notify(
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+{
+    int status = OGS_SBI_HTTP_STATUS_NO_CONTENT;
+
+    amf_ue_t *amf_ue = NULL;
+
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+
+    OpenAPI_deregistration_data_t *DeregistrationData;
+
+    ogs_assert(stream);
+    ogs_assert(recvmsg);
+
+    if (!recvmsg->h.resource.component[0]) {
+        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+        ogs_error("No SUPI");
+        goto cleanup;
+    }
+
+    amf_ue = amf_ue_find_by_supi(recvmsg->h.resource.component[0]);
+    if (!amf_ue) {
+        status = OGS_SBI_HTTP_STATUS_NOT_FOUND;
+        ogs_error("Cannot find SUPI [%s]", recvmsg->h.resource.component[0]);
+        goto cleanup;
+    }
+
+    DeregistrationData = recvmsg->DeregistrationData;
+    if (!DeregistrationData) {
+        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+        ogs_error("[%s] No DeregistrationData", amf_ue->supi);
+        goto cleanup;
+    }
+
+    if (DeregistrationData->access_type != OpenAPI_access_type_3GPP_ACCESS)
+    {
+        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+        ogs_error("[%s] Deregistration access type not 3GPP", amf_ue->supi);
+        goto cleanup;
+    }
+
+    ogs_info("Deregistration notify reason: %s:%s:%s",
+        amf_ue->supi,
+        OpenAPI_deregistration_reason_ToString(DeregistrationData->dereg_reason),
+        OpenAPI_access_type_ToString(DeregistrationData->access_type));
+
+    /*
+     * TODO: do not start deregistration if UE has emergency sessions
+     * 4.2.2.3.3
+     * If the UE has established PDU Session associated with emergency service, the AMF shall not initiate
+     * Deregistration procedure. In this case, the AMF performs network requested PDU Session Release for any PDU
+     * session associated with non-emergency service as described in clause 4.3.4.
+     */
+
+
+    if (CM_CONNECTED(amf_ue))
+    {
+        amf_ue->network_initiated_de_reg = true;
+
+        ogs_assert(OGS_OK ==
+            nas_5gs_send_de_registration_request(amf_ue));
+
+            amf_sbi_send_release_all_sessions(
+                amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+
+            if (ogs_list_count(&amf_ue->sess_list) == 0)
+                ogs_assert(true ==
+                    amf_ue_sbi_discover_and_send(
+                        OpenAPI_nf_type_PCF, amf_ue,
+                        NULL, amf_npcf_am_policy_control_build_delete));
+
+            OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_de_registered);
+    }
+    else if (CM_IDLE(amf_ue)) {
+        /* TODO: need to page UE */
+        /*ngap_send_paging(amf_ue);*/
+    }
+
+cleanup:
+    memset(&sendmsg, 0, sizeof(sendmsg));
+
+    response = ogs_sbi_build_response(&sendmsg, status);
+    ogs_assert(response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+    return OGS_OK;
+}

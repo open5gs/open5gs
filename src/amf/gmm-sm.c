@@ -286,6 +286,21 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
             OGS_FSM_TRAN(s, &gmm_state_de_registered);
             break;
 
+        case OGS_NAS_5GS_DEREGISTRATION_ACCEPT_TO_UE:
+            ogs_info("[%s] Deregistration accept", amf_ue->supi);
+            CLEAR_AMF_UE_TIMER(amf_ue->t3522);
+
+            /* De-associate NG with NAS/EMM */
+            ran_ue_deassociate(amf_ue->ran_ue);
+
+            ogs_assert(OGS_OK ==
+                ngap_send_ran_ue_context_release_command(amf_ue->ran_ue,
+                    NGAP_Cause_PR_misc, NGAP_CauseMisc_om_intervention,
+                    NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0));
+
+            OGS_FSM_TRAN(s, &gmm_state_de_registered);
+            break;
+
         case OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE:
             ogs_debug("[%s] Configuration update complete", amf_ue->supi);
 
@@ -414,6 +429,20 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
             }
             break;
 
+        case AMF_TIMER_T3522:
+            if (amf_ue->t3522.retry_count >=
+                    amf_timer_cfg(AMF_TIMER_T3522)->max_count) {
+                ogs_warn("Retransmission of Deregistration-Request failed. "
+                        "Stop retransmission");
+                CLEAR_AMF_UE_TIMER(amf_ue->t3522);
+                OGS_FSM_TRAN(&amf_ue->t3522, &gmm_state_exception);
+            } else {
+                amf_ue->t3522.retry_count++;
+                ogs_assert(OGS_OK ==
+                    nas_5gs_send_de_registration_request(amf_ue));
+            }
+            break;
+
         default:
             ogs_error("Unknown timer[%s:%d]",
                     amf_timer_get_name(e->timer_id), e->timer_id);
@@ -432,8 +461,10 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_POLICIES)
                 SWITCH(sbi_message->h.method)
                 CASE(OGS_SBI_HTTP_METHOD_DELETE)
-                    ogs_assert(OGS_OK ==
-                        nas_5gs_send_de_registration_accept(amf_ue));
+
+                    if (!amf_ue->network_initiated_de_reg)
+                        ogs_assert(OGS_OK ==
+                            nas_5gs_send_de_registration_accept(amf_ue));
 
                     PCF_AM_POLICY_CLEAR(amf_ue);
                     break;

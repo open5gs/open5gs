@@ -408,6 +408,9 @@ struct amf_ue_s {
         long cause;
     } handover;
 
+    /* Network Initiated De-Registration */
+    bool network_initiated_de_reg;
+
     ogs_list_t      sess_list;
 };
 
