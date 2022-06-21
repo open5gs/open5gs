@@ -173,6 +173,8 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
         OpenAPI_sm_policy_notification_free(message->SmPolicyNotification);
     if (message->TerminationNotification)
         OpenAPI_termination_notification_free(message->TerminationNotification);
+    if (message->DeregistrationData)
+        OpenAPI_deregistration_data_free(message->DeregistrationData);
 
     for (i = 0; i < message->num_of_part; i++) {
         if (message->part[i].pkbuf)
@@ -887,6 +889,10 @@ static char *build_json(ogs_sbi_message_t *message)
     } else if (message->TerminationNotification) {
         item = OpenAPI_termination_notification_convertToJSON(
                 message->TerminationNotification);
+        ogs_assert(item);
+    } else if (message->DeregistrationData) {
+        item = OpenAPI_deregistration_data_convertToJSON(
+                message->DeregistrationData);
         ogs_assert(item);
     }
 
@@ -1721,6 +1727,15 @@ static int parse_json(ogs_sbi_message_t *message,
                 message->SmContextStatusNotification =
                     OpenAPI_sm_context_status_notification_parseFromJSON(item);
                 if (!message->SmContextStatusNotification) {
+                    rv = OGS_ERROR;
+                    ogs_error("JSON parse error");
+                }
+                break;
+
+            CASE(OGS_SBI_RESOURCE_NAME_DEREG_NOTIFY)
+                message->DeregistrationData =
+                    OpenAPI_deregistration_data_parseFromJSON(item);
+                if (!message->DeregistrationData) {
                     rv = OGS_ERROR;
                     ogs_error("JSON parse error");
                 }

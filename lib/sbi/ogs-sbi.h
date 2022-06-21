@@ -73,6 +73,7 @@
 #include "model/policy_update.h"
 #include "model/sm_policy_notification.h"
 #include "model/termination_notification.h"
+#include "model/deregistration_data.h"
 
 #include "custom/links.h"
 #include "custom/ue_authentication_ctx.h"
