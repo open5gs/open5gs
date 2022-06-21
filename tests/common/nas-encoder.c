@@ -44,7 +44,7 @@ ogs_pkbuf_t *test_nas_5gmm_encode(ogs_nas_5gs_message_t *message)
     encoded += size;
 
     switch(message->gmm.h.message_type) {
-    case OGS_NAS_5GS_DEREGISTRATION_REQUEST:
+    case OGS_NAS_5GS_DEREGISTRATION_REQUEST_FROM_UE:
         size = ogs_nas_5gs_encode_deregistration_request_from_ue(
                 pkbuf, message);
         ogs_assert(size >= 0);

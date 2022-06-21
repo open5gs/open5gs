@@ -408,7 +408,7 @@ ogs_pkbuf_t *testgmm_build_de_registration_request(
     }
     message.gmm.h.extended_protocol_discriminator =
             OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
-    message.gmm.h.message_type = OGS_NAS_5GS_DEREGISTRATION_REQUEST;
+    message.gmm.h.message_type = OGS_NAS_5GS_DEREGISTRATION_REQUEST_FROM_UE;
 
     de_registration_type->ksi = test_ue->nas.ksi;
     de_registration_type->switch_off = switch_off;

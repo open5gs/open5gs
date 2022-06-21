@@ -28,7 +28,7 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.2.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2022-01-22 09:24:09.040249 by acetcom
+ * Created on: 2022-07-11 07:09:47.165005 by ubuntu
  * from 24501-g41.docx
  ******************************************************************************/
 
@@ -72,8 +72,10 @@ typedef struct ogs_nas_5gs_security_header_s {
 #define OGS_NAS_5GS_REGISTRATION_ACCEPT 66
 #define OGS_NAS_5GS_REGISTRATION_COMPLETE 67
 #define OGS_NAS_5GS_REGISTRATION_REJECT 68
-#define OGS_NAS_5GS_DEREGISTRATION_REQUEST 69
-#define OGS_NAS_5GS_DEREGISTRATION_ACCEPT 70
+#define OGS_NAS_5GS_DEREGISTRATION_REQUEST_FROM_UE 69
+#define OGS_NAS_5GS_DEREGISTRATION_ACCEPT_FROM_UE 70
+#define OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE 71
+#define OGS_NAS_5GS_DEREGISTRATION_ACCEPT_TO_UE 72
 #define OGS_NAS_5GS_SERVICE_REQUEST 76
 #define OGS_NAS_5GS_SERVICE_REJECT 77
 #define OGS_NAS_5GS_SERVICE_ACCEPT 78
@@ -396,12 +398,12 @@ typedef struct ogs_nas_5gs_deregistration_request_from_ue_s {
 /*******************************************************
  * DEREGISTRATION REQUEST TO UE
  ******************************************************/
-#define OGS_NAS_5GS_DEREGISTRATION_REQUEST_5GMM_CAUSE_PRESENT ((uint64_t)1<<0)
-#define OGS_NAS_5GS_DEREGISTRATION_REQUEST_T3346_VALUE_PRESENT ((uint64_t)1<<1)
-#define OGS_NAS_5GS_DEREGISTRATION_REQUEST_REJECTED_NSSAI_PRESENT ((uint64_t)1<<2)
-#define OGS_NAS_5GS_DEREGISTRATION_REQUEST_5GMM_CAUSE_TYPE 0x58
-#define OGS_NAS_5GS_DEREGISTRATION_REQUEST_T3346_VALUE_TYPE 0x5F
-#define OGS_NAS_5GS_DEREGISTRATION_REQUEST_REJECTED_NSSAI_TYPE 0x6D
+#define OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_5GMM_CAUSE_PRESENT ((uint64_t)1<<0)
+#define OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_T3346_VALUE_PRESENT ((uint64_t)1<<1)
+#define OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_REJECTED_NSSAI_PRESENT ((uint64_t)1<<2)
+#define OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_5GMM_CAUSE_TYPE 0x58
+#define OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_T3346_VALUE_TYPE 0x5F
+#define OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_REJECTED_NSSAI_TYPE 0x6D
 
 typedef struct ogs_nas_5gs_deregistration_request_to_ue_s {
     /* Mandatory fields */

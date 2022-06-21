@@ -106,7 +106,7 @@ def usage():
     print("-h        Print this help and return")
 
 def v_upper(v):
-    return re.sub('_TO_UE', '', re.sub('_FROM_UE', '', re.sub('\'', '_', re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v)))).upper()))
+    return re.sub('\'', '_', re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v)))).upper()
 
 def v_lower(v):
     return re.sub('\'', '_', re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v)))).lower()
@@ -550,8 +550,7 @@ typedef struct ogs_nas_5gs_security_header_s {
 """)
 
 for (k, v) in sorted_msg_list:
-    if k.find("TO UE") == -1:
-        f.write("#define OGS_NAS_5GS_" + v_upper(k) + " " + v.split('.')[0] + "\n")
+    f.write("#define OGS_NAS_5GS_" + v_upper(k) + " " + v.split('.')[0] + "\n")
 f.write("\n")
 
 for (k, v) in sorted_msg_list:
@@ -749,7 +748,7 @@ f.write("""int ogs_nas_5gmm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *
 for (k, v) in sorted_msg_list:
     if "ies" not in msg_list[k]:
         continue;
-    if float(msg_list[k]["type"]) < 192 and k.find("TO UE") == -1:
+    if float(msg_list[k]["type"]) < 192:
         f.write("    case OGS_NAS_5GS_%s:\n" % v_upper(k))
         if len(msg_list[k]["ies"]) != 0:
             f.write("        size = ogs_nas_5gs_decode_%s(message, pkbuf);\n" % v_lower(k))
@@ -903,7 +902,7 @@ f.write("""ogs_pkbuf_t *ogs_nas_5gmm_encode(ogs_nas_5gs_message_t *message)
 for (k, v) in sorted_msg_list:
     if "ies" not in msg_list[k]:
         continue;
-    if float(msg_list[k]["type"]) < 192 and k.find("FROM UE") == -1:
+    if float(msg_list[k]["type"]) < 192:
         f.write("    case OGS_NAS_5GS_%s:\n" % v_upper(k))
         if len(msg_list[k]["ies"]) != 0:
             f.write("        size = ogs_nas_5gs_encode_%s(pkbuf, message);\n" % v_lower(k))
