@@ -408,6 +408,7 @@ typedef struct ogs_sbi_message_s {
         *AppSessionContextUpdateDataPatch;
     OpenAPI_sm_policy_notification_t *SmPolicyNotification;
     OpenAPI_termination_notification_t *TerminationNotification;
+    OpenAPI_deregistration_data_t *DeregistrationData;
 
     ogs_sbi_links_t *links;
 
