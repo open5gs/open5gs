@@ -209,11 +209,10 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                         stream, &sbi_message);
                 break;
 
-            /* TODO */
-#if 0
             CASE(OGS_SBI_RESOURCE_NAME_DEREG_NOTIFY)
+                amf_namf_callback_handle_dereg_notify(stream, &sbi_message);
                 break;
-#endif
+
             CASE(OGS_SBI_RESOURCE_NAME_AM_POLICY_NOTIFY)
                 ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
                 break;

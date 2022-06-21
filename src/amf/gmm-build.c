@@ -276,6 +276,35 @@ ogs_pkbuf_t *gmm_build_de_registration_accept(amf_ue_t *amf_ue)
     return nas_5gs_security_encode(amf_ue, &message);
 }
 
+ogs_pkbuf_t *gmm_build_de_registration_request(amf_ue_t *amf_ue)
+{
+    ogs_nas_5gs_message_t message;
+    ogs_nas_5gs_deregistration_request_to_ue_t *dereg_req =
+        &message.gmm.deregistration_request_to_ue;
+
+    ogs_assert(amf_ue);
+
+    memset(&message, 0, sizeof(message));
+    message.h.security_header_type =
+        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+    message.h.extended_protocol_discriminator =
+        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
+
+    message.gmm.h.extended_protocol_discriminator =
+        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
+    message.gmm.h.message_type = OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE;
+
+    dereg_req->de_registration_type.switch_off = 1;
+    dereg_req->de_registration_type.re_registration_required = 0;
+    dereg_req->de_registration_type.access_type = OGS_ACCESS_TYPE_3GPP;
+
+    dereg_req->presencemask |=
+        OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_5GMM_CAUSE_PRESENT;
+    dereg_req->gmm_cause = OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED;
+
+    return nas_5gs_security_encode(amf_ue, &message);
+}
+
 ogs_pkbuf_t *gmm_build_identity_request(amf_ue_t *amf_ue)
 {
     ogs_nas_5gs_message_t message;
