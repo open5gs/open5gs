@@ -278,7 +278,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
             OGS_FSM_TRAN(s, &gmm_state_exception);
             break;
 
-        case OGS_NAS_5GS_DEREGISTRATION_REQUEST:
+        case OGS_NAS_5GS_DEREGISTRATION_REQUEST_FROM_UE:
             ogs_info("[%s] Deregistration request", amf_ue->supi);
 
             gmm_handle_deregistration_request(
@@ -625,7 +625,7 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
             OGS_FSM_TRAN(s, &gmm_state_exception);
             break;
 
-        case OGS_NAS_5GS_DEREGISTRATION_REQUEST:
+        case OGS_NAS_5GS_DEREGISTRATION_REQUEST_FROM_UE:
             ogs_warn("[%s] Deregistration request", amf_ue->supi);
 
             gmm_handle_deregistration_request(
@@ -870,7 +870,7 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
             OGS_FSM_TRAN(s, &gmm_state_exception);
             break;
 
-        case OGS_NAS_5GS_DEREGISTRATION_REQUEST:
+        case OGS_NAS_5GS_DEREGISTRATION_REQUEST_FROM_UE:
             ogs_warn("[%s] Deregistration request", amf_ue->supi);
 
             gmm_handle_deregistration_request(
@@ -1193,7 +1193,7 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
             OGS_FSM_TRAN(s, &gmm_state_exception);
             break;
 
-        case OGS_NAS_5GS_DEREGISTRATION_REQUEST:
+        case OGS_NAS_5GS_DEREGISTRATION_REQUEST_FROM_UE:
             ogs_warn("[%s] Deregistration request", amf_ue->supi);
 
             gmm_handle_deregistration_request(

@@ -679,7 +679,7 @@ int gmm_handle_deregistration_request(amf_ue_t *amf_ue,
     /* Set 5GS De-registration Type */
     memcpy(&amf_ue->nas.de_registration,
             de_registration_type, sizeof(ogs_nas_de_registration_type_t));
-    amf_ue->nas.message_type = OGS_NAS_5GS_DEREGISTRATION_REQUEST;
+    amf_ue->nas.message_type = OGS_NAS_5GS_DEREGISTRATION_REQUEST_FROM_UE;
 
     amf_ue->nas.ue.tsc = de_registration_type->tsc;
     amf_ue->nas.ue.ksi = de_registration_type->ksi;

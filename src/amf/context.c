@@ -1475,7 +1475,7 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
                     mobile_identity_header->type);
         }
         break;
-    case OGS_NAS_5GS_DEREGISTRATION_REQUEST:
+    case OGS_NAS_5GS_DEREGISTRATION_REQUEST_FROM_UE:
         deregistration_request = &message->gmm.deregistration_request_from_ue;
         ogs_assert(deregistration_request);
         mobile_identity = &deregistration_request->mobile_identity;

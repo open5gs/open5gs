@@ -28,7 +28,7 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.2.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2022-01-22 09:24:09.045630 by acetcom
+ * Created on: 2022-07-11 07:09:47.173881 by ubuntu
  * from 24501-g41.docx
  ******************************************************************************/
 
@@ -979,7 +979,7 @@ int ogs_nas_5gs_decode_deregistration_request_from_ue(ogs_nas_5gs_message_t *mes
     int decoded = 0;
     int size = 0;
 
-    ogs_trace("[NAS] Decode DEREGISTRATION_REQUEST\n");
+    ogs_trace("[NAS] Decode DEREGISTRATION_REQUEST_FROM_UE\n");
 
     size = ogs_nas_5gs_decode_de_registration_type(&deregistration_request_from_ue->de_registration_type, pkbuf);
     if (size < 0) {
@@ -1006,7 +1006,7 @@ int ogs_nas_5gs_decode_deregistration_request_to_ue(ogs_nas_5gs_message_t *messa
     int decoded = 0;
     int size = 0;
 
-    ogs_trace("[NAS] Decode DEREGISTRATION_REQUEST\n");
+    ogs_trace("[NAS] Decode DEREGISTRATION_REQUEST_TO_UE\n");
 
     size = ogs_nas_5gs_decode_de_registration_type(&deregistration_request_to_ue->de_registration_type, pkbuf);
     if (size < 0) {
@@ -1028,34 +1028,34 @@ int ogs_nas_5gs_decode_deregistration_request_to_ue(ogs_nas_5gs_message_t *messa
         decoded += size;
 
         switch(type) {
-        case OGS_NAS_5GS_DEREGISTRATION_REQUEST_5GMM_CAUSE_TYPE:
+        case OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_5GMM_CAUSE_TYPE:
             size = ogs_nas_5gs_decode_5gmm_cause(&deregistration_request_to_ue->gmm_cause, pkbuf);
             if (size < 0) {
                ogs_error("ogs_nas_5gs_decode_5gmm_cause() failed");
                return size;
             }
 
-            deregistration_request_to_ue->presencemask |= OGS_NAS_5GS_DEREGISTRATION_REQUEST_5GMM_CAUSE_PRESENT;
+            deregistration_request_to_ue->presencemask |= OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_5GMM_CAUSE_PRESENT;
             decoded += size;
             break;
-        case OGS_NAS_5GS_DEREGISTRATION_REQUEST_T3346_VALUE_TYPE:
+        case OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_T3346_VALUE_TYPE:
             size = ogs_nas_5gs_decode_gprs_timer_2(&deregistration_request_to_ue->t3346_value, pkbuf);
             if (size < 0) {
                ogs_error("ogs_nas_5gs_decode_gprs_timer_2() failed");
                return size;
             }
 
-            deregistration_request_to_ue->presencemask |= OGS_NAS_5GS_DEREGISTRATION_REQUEST_T3346_VALUE_PRESENT;
+            deregistration_request_to_ue->presencemask |= OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_T3346_VALUE_PRESENT;
             decoded += size;
             break;
-        case OGS_NAS_5GS_DEREGISTRATION_REQUEST_REJECTED_NSSAI_TYPE:
+        case OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_REJECTED_NSSAI_TYPE:
             size = ogs_nas_5gs_decode_rejected_nssai(&deregistration_request_to_ue->rejected_nssai, pkbuf);
             if (size < 0) {
                ogs_error("ogs_nas_5gs_decode_rejected_nssai() failed");
                return size;
             }
 
-            deregistration_request_to_ue->presencemask |= OGS_NAS_5GS_DEREGISTRATION_REQUEST_REJECTED_NSSAI_PRESENT;
+            deregistration_request_to_ue->presencemask |= OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_REJECTED_NSSAI_PRESENT;
             decoded += size;
             break;
         default:
@@ -3742,7 +3742,7 @@ int ogs_nas_5gmm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
 
         decoded += size;
         break;
-    case OGS_NAS_5GS_DEREGISTRATION_REQUEST:
+    case OGS_NAS_5GS_DEREGISTRATION_REQUEST_FROM_UE:
         size = ogs_nas_5gs_decode_deregistration_request_from_ue(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_deregistration_request_from_ue() failed");
@@ -3751,7 +3751,18 @@ int ogs_nas_5gmm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
 
         decoded += size;
         break;
-    case OGS_NAS_5GS_DEREGISTRATION_ACCEPT:
+    case OGS_NAS_5GS_DEREGISTRATION_ACCEPT_FROM_UE:
+        break;
+    case OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE:
+        size = ogs_nas_5gs_decode_deregistration_request_to_ue(message, pkbuf);
+        if (size < 0) {
+           ogs_error("ogs_nas_5gs_decode_deregistration_request_to_ue() failed");
+           return size;
+        }
+
+        decoded += size;
+        break;
+    case OGS_NAS_5GS_DEREGISTRATION_ACCEPT_TO_UE:
         break;
     case OGS_NAS_5GS_SERVICE_REQUEST:
         size = ogs_nas_5gs_decode_service_request(message, pkbuf);

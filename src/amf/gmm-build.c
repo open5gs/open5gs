@@ -271,7 +271,7 @@ ogs_pkbuf_t *gmm_build_de_registration_accept(amf_ue_t *amf_ue)
 
     message.gmm.h.extended_protocol_discriminator =
         OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
-    message.gmm.h.message_type = OGS_NAS_5GS_DEREGISTRATION_ACCEPT;
+    message.gmm.h.message_type = OGS_NAS_5GS_DEREGISTRATION_ACCEPT_FROM_UE;
 
     return nas_5gs_security_encode(amf_ue, &message);
 }
