@@ -119,8 +119,9 @@ void upf_n4_handle_session_establishment_request(
         /* Setup UE IP address */
         if (pdr->ue_ip_addr_len) {
             if (req->pdn_type.presence == 1) {
-                ogs_assert(OGS_PFCP_CAUSE_REQUEST_ACCEPTED ==
-                        upf_sess_set_ue_ip(sess, req->pdn_type.u8, pdr));
+                cause_value = upf_sess_set_ue_ip(sess, req->pdn_type.u8, pdr);
+                if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
+                    goto cleanup;
             } else {
                 ogs_error("No PDN Type");
             }
