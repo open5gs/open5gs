@@ -329,6 +329,8 @@ int smf_pfcp_send_modify_list(
     ogs_assert(sess);
     ogs_assert(xact);
 
+    xact->local_seid = sess->smf_n4_seid;
+
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE;
     h.seid = sess->upf_n4_seid;
@@ -366,6 +368,7 @@ int smf_5gc_pfcp_send_session_establishment_request(
     ogs_expect_or_return_val(xact, OGS_ERROR);
 
     xact->assoc_stream = stream;
+    xact->local_seid = sess->smf_n4_seid;
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_SESSION_ESTABLISHMENT_REQUEST_TYPE;
@@ -399,6 +402,7 @@ int smf_5gc_pfcp_send_all_pdr_modification_request(
     ogs_expect_or_return_val(xact, OGS_ERROR);
 
     xact->assoc_stream = stream;
+    xact->local_seid = sess->smf_n4_seid;
     xact->modify_flags = flags | OGS_PFCP_MODIFY_SESSION;
 
     ogs_list_init(&sess->pdr_to_modify_list);
@@ -425,6 +429,7 @@ int smf_5gc_pfcp_send_qos_flow_list_modification_request(
     ogs_expect_or_return_val(xact, OGS_ERROR);
 
     xact->assoc_stream = stream;
+    xact->local_seid = sess->smf_n4_seid;
     xact->modify_flags = flags | OGS_PFCP_MODIFY_SESSION;
 
     rv = smf_pfcp_send_modify_list(
@@ -450,6 +455,7 @@ int smf_5gc_pfcp_send_session_deletion_request(
 
     xact->assoc_stream = stream;
     xact->delete_trigger = trigger;
+    xact->local_seid = sess->smf_n4_seid;
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_SESSION_DELETION_REQUEST_TYPE;
@@ -482,6 +488,7 @@ int smf_epc_pfcp_send_session_establishment_request(
 
     xact->epc = true; /* EPC PFCP transaction */
     xact->assoc_xact = gtp_xact;
+    xact->local_seid = sess->smf_n4_seid;
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_SESSION_ESTABLISHMENT_REQUEST_TYPE;
@@ -514,6 +521,7 @@ int smf_epc_pfcp_send_all_pdr_modification_request(
 
     xact->epc = true; /* EPC PFCP transaction */
     xact->assoc_xact = gtp_xact;
+    xact->local_seid = sess->smf_n4_seid;
     xact->modify_flags = flags | OGS_PFCP_MODIFY_SESSION;
 
     xact->gtp_pti = gtp_pti;
@@ -552,6 +560,7 @@ int smf_epc_pfcp_send_one_bearer_modification_request(
 
     xact->epc = true; /* EPC PFCP transaction */
     xact->assoc_xact = gtp_xact;
+    xact->local_seid = sess->smf_n4_seid;
     xact->modify_flags = flags;
 
     xact->gtp_pti = gtp_pti;
@@ -604,6 +613,7 @@ int smf_epc_pfcp_send_session_deletion_request(
      * - Delete Bearer Request/Response with DEDICATED BEARER.
      */
     xact->assoc_xact = gtp_xact;
+    xact->local_seid = sess->smf_n4_seid;
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_SESSION_DELETION_REQUEST_TYPE;
@@ -683,6 +693,7 @@ int smf_pfcp_send_session_report_response(
     ogs_pfcp_header_t h;
 
     ogs_assert(xact);
+    xact->local_seid = sess->smf_n4_seid;
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE;
