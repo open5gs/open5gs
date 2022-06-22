@@ -531,6 +531,8 @@ parameter:
 #    ue: 1024
 # o Maximum Number of gNB/eNB per AMF/MME
 #    gnb: 64
+# o Maximum Number of GTP peer nodes per SGWC/SMF
+#    gtp_peer: 64
 #
 max:
 
