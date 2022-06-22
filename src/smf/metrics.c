@@ -49,6 +49,11 @@ ogs_metrics_spec_t *smf_metrics_spec_global[_SMF_METR_GLOB_MAX];
 ogs_metrics_inst_t *smf_metrics_inst_global[_SMF_METR_GLOB_MAX];
 smf_metrics_spec_def_t smf_metrics_spec_def_global[_SMF_METR_GLOB_MAX] = {
 /* Global Counters: */
+[SMF_METR_GLOB_CTR_GTP_NEW_NODE_FAILED] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "gtp_new_node_failed",
+    .description = "Unable to allocate new GTP (peer) Node",
+},
 [SMF_METR_GLOB_CTR_GN_RX_PARSE_FAILED] = {
     .type = OGS_METRICS_METRIC_TYPE_COUNTER,
     .name = "gn_rx_parse_failed",
