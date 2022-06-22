@@ -512,13 +512,39 @@ bool smf_npcf_smpolicycontrol_handle_create(
         ul_pdr->f_teid.choose_id = OGS_PFCP_DEFAULT_CHOOSE_ID;
         ul_pdr->f_teid_len = 2;
 
+	/* TS 129 244 V16.5.0 8.2.3
+	 *
+	 * At least one of the V4 and V6 flags shall be set to "1",
+	 * and both may be set to "1" for both scenarios:
+	 *
+	 * - when the CP function is providing F-TEID, i.e.
+	 *   both IPv4 address field and IPv6 address field may be present;
+	 *   or
+	 * - when the UP function is requested to allocate the F-TEID,
+	 *   i.e. when CHOOSE bit is set to "1",
+	 *   and the IPv4 address and IPv6 address fields are not present.
+	 */
+
+	if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
+		ul_pdr->f_teid.ipv4 = 1;
+	else if (sess->pfcp_node->addr.ogs_sa_family == AF_INET6)
+		ul_pdr->f_teid.ipv6 = 1;
+
         cp2up_pdr->f_teid.ch = 1;
         cp2up_pdr->f_teid_len = 1;
+	if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
+		cp2up_pdr->f_teid.ipv4 = 1;
+	else if (sess->pfcp_node->addr.ogs_sa_family == AF_INET6)
+		cp2up_pdr->f_teid.ipv6 = 1;
 
         up2cp_pdr->f_teid.ch = 1;
         up2cp_pdr->f_teid.chid = 1;
         up2cp_pdr->f_teid.choose_id = OGS_PFCP_DEFAULT_CHOOSE_ID;
         up2cp_pdr->f_teid_len = 2;
+	if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
+		up2cp_pdr->f_teid.ipv4 = 1;
+	else if (sess->pfcp_node->addr.ogs_sa_family == AF_INET6)
+		up2cp_pdr->f_teid.ipv6 = 1;
     } else {
         ogs_gtpu_resource_t *resource = NULL;
         resource = ogs_pfcp_find_gtpu_resource(
