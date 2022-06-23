@@ -38,6 +38,7 @@ void ogs_fsm_init(void *sm, void *event)
 {
     ogs_fsm_t *s = sm;
     fsm_event_t *e = event;
+    ogs_assert(s);
 
     if (s->init != NULL) {
         (*s->init)(s, e);
@@ -56,6 +57,7 @@ void ogs_fsm_dispatch(void *sm, void *event)
 {
     ogs_fsm_t *s = sm;
     fsm_event_t *e = event;
+    ogs_assert(s);
     ogs_fsm_handler_t tmp = s->state;
 
     if (e)
@@ -81,6 +83,7 @@ void ogs_fsm_fini(void *sm, void *event)
 {
     ogs_fsm_t *s = sm;
     fsm_event_t *e = event;
+    ogs_assert(s);
 
     if (s->fini != s->state) {
         if (e) {
