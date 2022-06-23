@@ -450,39 +450,6 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
             END
             break;
 
-        CASE(OGS_SBI_SERVICE_NAME_NUDM_UECM)
-            SWITCH(sbi_message->h.resource.component[1])
-            CASE(OGS_SBI_RESOURCE_NAME_REGISTRATIONS)
-                SWITCH(sbi_message->h.resource.component[2])
-                CASE(OGS_SBI_RESOURCE_NAME_AMF_3GPP_ACCESS)
-                    SWITCH(sbi_message->h.method)
-                    CASE(OGS_SBI_HTTP_METHOD_PATCH)
-
-                        ogs_assert(true ==
-                            amf_ue_sbi_discover_and_send(
-                                OpenAPI_nf_type_PCF, amf_ue,
-                                NULL, amf_npcf_am_policy_control_build_delete));
-
-                        break;
-
-                    DEFAULT
-                        ogs_error("Unknown method [%s]", sbi_message->h.method);
-                        ogs_assert_if_reached();
-                    END
-                    break;
-                DEFAULT
-                    ogs_error("Invalid resource name [%s]",
-                            sbi_message->h.resource.component[2]);
-                    ogs_assert_if_reached();
-                END
-                break;
-
-            DEFAULT
-                ogs_error("Invalid resource name [%s]",
-                        sbi_message->h.resource.component[1]);
-                ogs_assert_if_reached();
-            END
-            break;
         DEFAULT
             ogs_error("Invalid service name [%s]", sbi_message->h.service.name);
             ogs_assert_if_reached();
