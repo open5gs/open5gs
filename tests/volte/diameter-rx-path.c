@@ -1269,7 +1269,7 @@ void test_rx_send_aar_ctrl(uint8_t **rx_sid, test_sess_t *sess, int id_type)
     ogs_assert(sess->ue_ip.ipv4);
     ipstr = ogs_ipv4_to_string(sess->ue_ip.addr);
     ogs_assert(ipstr);
-    sip_uri = ogs_msprintf("sip:%s@ims.mnc0970.mcc901.3gppnetwork.org", ipstr);
+    sip_uri = ogs_msprintf("sip:%s@ims.mnc0970.mcc999.3gppnetwork.org", ipstr);
     ogs_assert(sip_uri);
 
     rv = ogs_ipsubnet(&ipsub, ipstr, NULL);

@@ -107,7 +107,7 @@ $ diff -u /etc/open5gs/amf.yaml.old /etc/open5gs/amf.yaml
 +      - addr: 10.10.0.5
      guami:
        - plmn_id:
--          mcc: 901
+-          mcc: 999
 -          mnc: 70
 +          mcc: 001
 +          mnc: 01
@@ -116,7 +116,7 @@ $ diff -u /etc/open5gs/amf.yaml.old /etc/open5gs/amf.yaml
            set: 1
      tai:
        - plmn_id:
--          mcc: 901
+-          mcc: 999
 -          mnc: 70
 -        tac: 1
 +          mcc: 001
@@ -124,7 +124,7 @@ $ diff -u /etc/open5gs/amf.yaml.old /etc/open5gs/amf.yaml
 +        tac: 2
      plmn_support:
        - plmn_id:
--          mcc: 901
+-          mcc: 999
 -          mnc: 70
 +          mcc: 001
 +          mnc: 01
@@ -168,7 +168,7 @@ $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
        addr: 127.0.0.2
      gummei:
        plmn_id:
--        mcc: 901
+-        mcc: 999
 -        mnc: 70
 +        mcc: 001
 +        mnc: 01
@@ -176,7 +176,7 @@ $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
        mme_code: 1
      tai:
        plmn_id:
--        mcc: 901
+-        mcc: 999
 -        mnc: 70
 -      tac: 1
 +        mcc: 001

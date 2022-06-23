@@ -134,7 +134,7 @@ int nas_eps_send_attach_reject(mme_ue_t *mme_ue,
     mme_sess_t *sess = NULL;
     ogs_pkbuf_t *esmbuf = NULL, *emmbuf = NULL;
 
-    ogs_assert(mme_ue);
+    ogs_expect_or_return_val(mme_ue, OGS_ERROR);
 
     ogs_debug("[%s] Attach reject", mme_ue->imsi_bcd);
     ogs_debug("    Cause[%d]", emm_cause);

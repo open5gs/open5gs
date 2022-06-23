@@ -249,7 +249,7 @@ $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
        addr: 127.0.0.2
      gummei:
        plmn_id:
--        mcc: 901
+-        mcc: 999
 -        mnc: 70
 +        mcc: 001 # set your PLMN-MCC
 +        mnc: 01  # set your PLMN-MNC
@@ -257,7 +257,7 @@ $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
        mme_code: 1
      tai:
        plmn_id:
--        mcc: 901
+-        mcc: 999
 -        mnc: 70
 -      tac: 1
 +        mcc: 001 # set your PLMN-MCC
@@ -308,7 +308,7 @@ amf:
 +      - addr: 10.10.0.5 # for external gNB - a local address that can be reached by the gNB
      guami:
        - plmn_id:
--          mcc: 901
+-          mcc: 999
 -          mnc: 70
 +          mcc: 001 # set your PLMN-MCC
 +          mnc: 01  # set your PLMN-MNC
@@ -317,7 +317,7 @@ amf:
            set: 1
      tai:
        - plmn_id:
--          mcc: 901
+-          mcc: 999
 -          mnc: 70
 -        tac: 1
 +          mcc: 001 # set your PLMN-MCC
@@ -325,7 +325,7 @@ amf:
 +        tac: 2 # should match the TAC used by your gNB
      plmn_support:
        - plmn_id:
--          mcc: 901
+-          mcc: 999
 -          mnc: 70
 +          mcc: 001 # set your PLMN-MCC
 +          mnc: 01  # set your PLMN-MNC

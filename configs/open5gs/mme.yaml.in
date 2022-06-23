@@ -250,13 +250,13 @@ mme:
       - addr: 127.0.0.2
     gummei:
       plmn_id:
-        mcc: 901
+        mcc: 999
         mnc: 70
       mme_gid: 2
       mme_code: 1
     tai:
       plmn_id:
-        mcc: 901
+        mcc: 999
         mnc: 70
       tac: 1
     security:

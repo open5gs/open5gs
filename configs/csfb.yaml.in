@@ -47,12 +47,12 @@ mme:
         map:
           tai:
             plmn_id:
-              mcc: 901
+              mcc: 999
               mnc: 70
             tac: 7
           lai:
             plmn_id:
-              mcc: 901
+              mcc: 999
               mnc: 70
             lac: 2342
         map:
@@ -68,7 +68,7 @@ mme:
             lac: 51544
     gummei:
       - plmn_id:
-          mcc: 901
+          mcc: 999
           mnc: 70
         mme_gid: 2
         mme_code: 1
@@ -79,7 +79,7 @@ mme:
         mme_code: 1
     tai:
       plmn_id:
-        mcc: 901
+        mcc: 999
         mnc: 70
       tac: 7
     tai:
@@ -146,19 +146,19 @@ amf:
       - addr: 127.0.0.5
     guami:
       - plmn_id:
-          mcc: 901
+          mcc: 999
           mnc: 70
         amf_id:
           region: 2
           set: 1
     tai:
       - plmn_id:
-          mcc: 901
+          mcc: 999
           mnc: 70
         tac: 1
     plmn_support:
       - plmn_id:
-          mcc: 901
+          mcc: 999
           mnc: 70
         s_nssai:
           - sst: 1

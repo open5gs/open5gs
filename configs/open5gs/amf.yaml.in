@@ -150,7 +150,7 @@ logger:
 #  o Multiple GUAMI
 #    guami:
 #      - plmn_id:
-#          mcc: 901
+#          mcc: 999
 #          mnc: 70
 #        amf_id:
 #          region: 2
@@ -199,13 +199,13 @@ logger:
 #  o Multiple PLMN Support
 #    plmn_support:
 #      - plmn_id:
-#          mcc: 901
+#          mcc: 999
 #          mnc: 70
 #        s_nssai:
 #          - sst: 1
 #            sd: 010000
 #      - plmn_id:
-#          mcc: 901
+#          mcc: 999
 #          mnc: 70
 #        s_nssai:
 #          - sst: 1
@@ -218,7 +218,7 @@ logger:
 #
 #  <AMF Name>
 #
-#    amf_name: amf1.open5gs.amf.5gc.mnc70.mcc901.3gppnetwork.org
+#    amf_name: amf1.open5gs.amf.5gc.mnc70.mcc999.3gppnetwork.org
 #
 #  <Relative Capacity> - Default(255)
 #
@@ -232,19 +232,19 @@ amf:
       - addr: 127.0.0.5
     guami:
       - plmn_id:
-          mcc: 901
+          mcc: 999
           mnc: 70
         amf_id:
           region: 2
           set: 1
     tai:
       - plmn_id:
-          mcc: 901
+          mcc: 999
           mnc: 70
         tac: 1
     plmn_support:
       - plmn_id:
-          mcc: 901
+          mcc: 999
           mnc: 70
         s_nssai:
           - sst: 1

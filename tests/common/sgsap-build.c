@@ -25,7 +25,7 @@ ogs_pkbuf_t *test_sgsap_location_update_accept(int i)
 {
     ogs_pkbuf_t *pkbuf = NULL;
     const char *payload[TEST_SGSAP_MAX_MESSAGE] = {
-        "0a01089910073746 000006040509f107 09260e05f49ee88e 64",
+        "0a01089999073746 000006040509f107 09260e05f49ee88e 64",
         "0a01087942120000 000030040527f412 c9580e05f437ab9c c5",
         "",
 
@@ -49,7 +49,7 @@ ogs_pkbuf_t *test_sgsap_location_update_reject(int i)
 {
     ogs_pkbuf_t *pkbuf = NULL;
     const char *payload[TEST_SGSAP_MAX_MESSAGE] = {
-        "0b01089910073746 0000060f01030405 09f1070926",
+        "0b01089999073746 0000060f01030405 09f1070926",
         "",
         "",
 
@@ -73,7 +73,7 @@ ogs_pkbuf_t *test_sgsap_imsi_detach_ack(int i)
 {
     ogs_pkbuf_t *pkbuf = NULL;
     const char *payload[TEST_SGSAP_MAX_MESSAGE] = {
-        "1401089910073746 000006",
+        "1401089999073746 000006",
         "",
         "",
 
@@ -97,15 +97,15 @@ ogs_pkbuf_t *test_sgsap_paging_request(int i)
 {
     ogs_pkbuf_t *pkbuf = NULL;
     const char *payload[TEST_SGSAP_MAX_MESSAGE] = {
-        "0101089910073746 000006021003766c 72076578616d706c 65036e6574200101"
+        "0101089999073746 000006021003766c 72076578616d706c 65036e6574200101"
         "040509f1070926",
-        "0101089910073746 000005021003766c 72076578616d706c 65036e6574200101"
+        "0101089999073746 000005021003766c 72076578616d706c 65036e6574200101"
         "040509f1070926",  /* Paging-Reject */
-        "0101089910073746 000006021003766c 72076578616d706c 65036e6574200102"
+        "0101089999073746 000006021003766c 72076578616d706c 65036e6574200102"
         "040509f1070926",  /* Paging-Request with SMS */
 
         /* Paging-Request for crash-test */
-        "0101089910073746 000006021003766c 72076578616d706c 65036e6574200101"
+        "0101089999073746 000006021003766c 72076578616d706c 65036e6574200101"
         "040527f412c958",
         "",
         "",
@@ -157,7 +157,7 @@ ogs_pkbuf_t *test_sgsap_release_request(int i)
 {
     ogs_pkbuf_t *pkbuf = NULL;
     const char *payload[TEST_SGSAP_MAX_MESSAGE] = {
-        "1b01089910073746 000006",
+        "1b01089999073746 000006",
         "",
         "",
 
@@ -181,7 +181,7 @@ ogs_pkbuf_t *test_sgsap_downlink_unitdata(int i)
 {
     ogs_pkbuf_t *pkbuf = NULL;
     const char *payload[TEST_SGSAP_MAX_MESSAGE] = {
-        "0701089910073746 0000061626090123 0100079144775810 0650001700048032"
+        "0701089999073746 0000061626090123 0100079144775810 0650001700048032"
         "2400009160404044 150009c8329bfd06 4d9b53",
 
     };

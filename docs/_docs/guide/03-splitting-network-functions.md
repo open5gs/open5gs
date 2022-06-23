@@ -70,7 +70,7 @@ $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
        plmn_id:
 -        mcc: 001
 -        mnc: 01
-+        mcc: 901
++        mcc: 999
 +        mnc: 70
        mme_gid: 2
        mme_code: 1
@@ -79,7 +79,7 @@ $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
 -        mcc: 001
 -        mnc: 01
 -      tac: 7
-+        mcc: 901
++        mcc: 999
 +        mnc: 70
 +      tac: 1
      security:
@@ -153,7 +153,7 @@ diff -u /etc/open5gs/amf.yaml.old /etc/open5gs/amf.yaml
        - plmn_id:
 -          mcc: 001
 -          mnc: 01
-+          mcc: 901
++          mcc: 999
 +          mnc: 70
          amf_id:
            region: 2
@@ -163,14 +163,14 @@ diff -u /etc/open5gs/amf.yaml.old /etc/open5gs/amf.yaml
 -          mcc: 001
 -          mnc: 01
 -        tac: 7
-+          mcc: 901
++          mcc: 999
 +          mnc: 70
 +        tac: 1
      plmn_support:
        - plmn_id:
 -          mcc: 001
 -          mnc: 01
-+          mcc: 901
++          mcc: 999
 +          mnc: 70
          s_nssai:
            - sst: 1

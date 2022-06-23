@@ -97,7 +97,7 @@ $ mongo
 > db.subscribers.find().pretty()
 {
 	"_id" : ObjectId("60969fe79459f8b40d8d3f68"),
-	"imsi" : "901700000000001",
+	"imsi" : "999700000000001",
 	"__v" : 0,
 	"access_restriction_data" : 32,
 	"ambr" : {
@@ -164,7 +164,7 @@ $ mongo
 > db.subscribers.find().pretty()
 {
 	"_id" : ObjectId("609715fda08851a0744e6ae7"),
-	"imsi" : "901700000021309",
+	"imsi" : "999700000021309",
 	"__v" : 0,
 	"access_restriction_data" : 32,
 	"ambr" : {
@@ -317,7 +317,7 @@ index 7e939e81..dfe4456d 100644
          s_nssai:
            - sst: 1
 +      - plmn_id:
-+          mcc: 901
++          mcc: 999
 +          mnc: 70
 +        s_nssai:
 +          - sst: 1
@@ -1089,12 +1089,12 @@ Currently, the number of UE is limited to `128*128`.
 
 ```
 * AMF_ID
-  PLMN ID - MNC: 901, MCC: 70
+  PLMN ID - MNC: 999, MCC: 70
   Region : 2
   Set : 1
 
 * TAI
-  PLMN ID - MNC: 901, MCC: 70
+  PLMN ID - MNC: 999, MCC: 70
   TAC : 1
 
 * S_NSSASI
@@ -1105,12 +1105,12 @@ Currently, the number of UE is limited to `128*128`.
 
 ```
 * GUMMEI
-  PLMN ID - MNC: 901, MCC: 70
+  PLMN ID - MNC: 999, MCC: 70
   MME Group : 2
   MME Code : 1
 
 * TAI
-  PLMN ID - MNC: 901, MCC: 70
+  PLMN ID - MNC: 999, MCC: 70
   TAC : 1
 ```
 
