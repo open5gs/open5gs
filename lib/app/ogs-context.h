@@ -103,6 +103,7 @@ typedef struct ogs_app_context_s {
     struct {
         uint64_t ue;
         uint64_t gnb;
+        uint64_t gtp_peer;
     } max;
 
     struct {
