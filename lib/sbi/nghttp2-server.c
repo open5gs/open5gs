@@ -477,6 +477,7 @@ static void session_remove(ogs_sbi_session_t *sbi_sess)
     ogs_list_remove(&server->session_list, sbi_sess);
 
     stream_remove_all(sbi_sess);
+    nghttp2_session_del(sbi_sess->session);
 
     ogs_assert(sbi_sess->poll.read);
     ogs_pollset_remove(sbi_sess->poll.read);

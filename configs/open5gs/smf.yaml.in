@@ -269,7 +269,7 @@ logger:
 #              - internet
 #              - ims
 #
-#  o S-NSSAI[SST:1] and DNN[internet] and TAI[PLMN-ID:90170 TAC:1]
+#  o S-NSSAI[SST:1] and DNN[internet] and TAI[PLMN-ID:99970 TAC:1]
 #    info:
 #      - s_nssai:
 #          - sst: 1
@@ -277,14 +277,14 @@ logger:
 #              - internet
 #        tai:
 #          - plmn_id:
-#              mcc: 901
+#              mcc: 999
 #              mnc: 70
 #            tac: 1
 #
 #  o If any of conditions below are met:
-#   - S-NSSAI[SST:1] and DNN[internet] and TAI[PLMN-ID:90170 TAC:1-9]
+#   - S-NSSAI[SST:1] and DNN[internet] and TAI[PLMN-ID:99970 TAC:1-9]
 #   - S-NSSAI[SST:2 SD:000080] and DNN[internet or ims]
-#   - S-NSSAI[SST:4] and DNN[internet] and TAI[PLMN-ID:90170 TAC:10-20,30-40]
+#   - S-NSSAI[SST:4] and DNN[internet] and TAI[PLMN-ID:99970 TAC:10-20,30-40]
 #
 #    info:
 #      - s_nssai:
@@ -293,7 +293,7 @@ logger:
 #              - internet
 #        tai:
 #          - plmn_id:
-#              mcc: 901
+#              mcc: 999
 #              mnc: 70
 #            range:
 #              - 1-9
@@ -309,7 +309,7 @@ logger:
 #              - internet
 #        tai:
 #          - plmn_id:
-#              mcc: 901
+#              mcc: 999
 #              mnc: 70
 #            range:
 #              - 10-20
@@ -339,27 +339,27 @@ logger:
 #              - internet
 #        tai:
 #          - plmn_id:
-#              mcc: 901
+#              mcc: 999
 #              mnc: 70
 #            tac: [1, 2, 3]
 #          - plmn_id:
-#              mcc: 901
+#              mcc: 999
 #              mnc: 70
 #            tac: 4
 #          - plmn_id:
-#              mcc: 901
+#              mcc: 999
 #              mnc: 70
 #            tac:
 #              - 5
 #              - 6
 #          - plmn_id:
-#              mcc: 901
+#              mcc: 999
 #              mnc: 70
 #            range:
 #              - 100-200
 #              - 300-400
 #          - plmn_id:
-#              mcc: 901
+#              mcc: 999
 #              mnc: 70
 #            range:
 #              - 500-600
@@ -371,7 +371,7 @@ logger:
 #              - internet
 #        tai:
 #          - plmn_id:
-#              mcc: 901
+#              mcc: 999
 #              mnc: 70
 #            tac: 99
 #
@@ -531,6 +531,8 @@ parameter:
 #    ue: 1024
 # o Maximum Number of gNB/eNB per AMF/MME
 #    gnb: 64
+# o Maximum Number of GTP peer nodes per SGWC/SMF
+#    gtp_peer: 64
 #
 max:
 

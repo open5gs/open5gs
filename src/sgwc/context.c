@@ -721,6 +721,22 @@ sgwc_tunnel_t *sgwc_tunnel_add(
 
     ogs_assert(sess->pfcp_node);
     if (sess->pfcp_node->up_function_features.ftup) {
+
+       /* TS 129 244 V16.5.0 8.2.3
+        *
+        * At least one of the V4 and V6 flags shall be set to "1",
+        * and both may be set to "1" for both scenarios:
+        *
+        * - when the CP function is providing F-TEID, i.e.
+        *   both IPv4 address field and IPv6 address field may be present;
+        *   or
+        * - when the UP function is requested to allocate the F-TEID,
+        *   i.e. when CHOOSE bit is set to "1",
+        *   and the IPv4 address and IPv6 address fields are not present.
+        */
+
+        pdr->f_teid.ipv4 = 1;
+        pdr->f_teid.ipv6 = 1;
         pdr->f_teid.ch = 1;
         pdr->f_teid_len = 1;
     } else {

@@ -83,7 +83,7 @@ static void recalculate_pool_size(void)
 
 #define MAX_NUM_OF_XACT         8
     self.pool.gtp_xact = self.max.ue * MAX_NUM_OF_XACT;
-    self.pool.gtp_node = self.pool.nf;
+    self.pool.gtp_node = self.max.gtp_peer;
 
     self.pool.pfcp_xact = self.max.ue * MAX_NUM_OF_XACT;
     self.pool.pfcp_node = self.pool.nf;
@@ -190,9 +190,11 @@ static void app_context_prepare(void)
 
 #define MAX_NUM_OF_UE               1024    /* Num of UE per AMF/MME */
 #define MAX_NUM_OF_GNB              64      /* Num of gNB per AMF/MME */
+#define MAX_NUM_OF_GTP_PEER         64      /* Num of gtp_node per SGW/PGW */
 
     self.max.gnb = MAX_NUM_OF_GNB;
     self.max.ue = MAX_NUM_OF_UE;
+    self.max.gtp_peer = MAX_NUM_OF_GTP_PEER;
 
     ogs_pkbuf_default_init(&self.pool.defconfig);
 
@@ -437,6 +439,9 @@ int ogs_app_context_parse_config(void)
                             !strcmp(max_key, "enb")) {
                     const char *v = ogs_yaml_iter_value(&max_iter);
                     if (v) self.max.gnb = atoi(v);
+                } else if (!strcmp(max_key, "gtp_peer")) {
+                    const char *v = ogs_yaml_iter_value(&max_iter);
+                    if (v) self.max.gtp_peer = atoi(v);
                 } else
                     ogs_warn("unknown key `%s`", max_key);
             }

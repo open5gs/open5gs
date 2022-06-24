@@ -168,6 +168,22 @@ void smf_bearer_binding(smf_sess_t *sess)
 
                 ogs_assert(sess->pfcp_node);
                 if (sess->pfcp_node->up_function_features.ftup) {
+
+           /* TS 129 244 V16.5.0 8.2.3
+            *
+            * At least one of the V4 and V6 flags shall be set to "1",
+            * and both may be set to "1" for both scenarios:
+            *
+            * - when the CP function is providing F-TEID, i.e.
+            *   both IPv4 address field and IPv6 address field may be present;
+            *   or
+            * - when the UP function is requested to allocate the F-TEID,
+            *   i.e. when CHOOSE bit is set to "1",
+            *   and the IPv4 address and IPv6 address fields are not present.
+            */
+
+                    ul_pdr->f_teid.ipv4 = 1;
+                    ul_pdr->f_teid.ipv6 = 1;
                     ul_pdr->f_teid.ch = 1;
                     ul_pdr->f_teid_len = 1;
                 } else {
@@ -490,6 +506,22 @@ void smf_qos_flow_binding(smf_sess_t *sess)
                 /* Set UPF-N3 TEID & ADDR to the UL PDR */
                 ogs_assert(sess->pfcp_node);
                 if (sess->pfcp_node->up_function_features.ftup) {
+
+           /* TS 129 244 V16.5.0 8.2.3
+            *
+            * At least one of the V4 and V6 flags shall be set to "1",
+            * and both may be set to "1" for both scenarios:
+            *
+            * - when the CP function is providing F-TEID, i.e.
+            *   both IPv4 address field and IPv6 address field may be present;
+            *   or
+            * - when the UP function is requested to allocate the F-TEID,
+            *   i.e. when CHOOSE bit is set to "1",
+            *   and the IPv4 address and IPv6 address fields are not present.
+            */
+
+                    ul_pdr->f_teid.ipv4 = 1;
+                    ul_pdr->f_teid.ipv6 = 1;
                     ul_pdr->f_teid.ch = 1;
                     ul_pdr->f_teid.chid = 1;
                     ul_pdr->f_teid.choose_id = OGS_PFCP_DEFAULT_CHOOSE_ID;

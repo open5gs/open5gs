@@ -170,14 +170,20 @@ uint32_t smf_gx_handle_cca_initial_request(
     /* Set F-TEID */
     ogs_assert(sess->pfcp_node);
     if (sess->pfcp_node->up_function_features.ftup) {
+        ul_pdr->f_teid.ipv4 = 1;
+        ul_pdr->f_teid.ipv6 = 1;
         ul_pdr->f_teid.ch = 1;
         ul_pdr->f_teid.chid = 1;
         ul_pdr->f_teid.choose_id = OGS_PFCP_DEFAULT_CHOOSE_ID;
         ul_pdr->f_teid_len = 2;
 
+        cp2up_pdr->f_teid.ipv4 = 1;
+        cp2up_pdr->f_teid.ipv6 = 1;
         cp2up_pdr->f_teid.ch = 1;
         cp2up_pdr->f_teid_len = 1;
 
+        up2cp_pdr->f_teid.ipv4 = 1;
+        up2cp_pdr->f_teid.ipv6 = 1;
         up2cp_pdr->f_teid.ch = 1;
         up2cp_pdr->f_teid.chid = 1;
         up2cp_pdr->f_teid.choose_id = OGS_PFCP_DEFAULT_CHOOSE_ID;

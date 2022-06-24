@@ -519,7 +519,7 @@ static ogs_pkbuf_t *test_build_uplink_nas_transport(
 
     EUTRAN_CGI = &ie->value.choice.EUTRAN_CGI;
 
-    ogs_plmn_id_build(&plmn_id, 901, 70, 2);
+    ogs_plmn_id_build(&plmn_id, 999, 70, 2);
 
     ogs_s1ap_buffer_to_OCTET_STRING(
             &plmn_id, OGS_PLMN_ID_LEN, &EUTRAN_CGI->pLMNidentity);

@@ -145,7 +145,7 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     /* PDU Address */
     pdu_session_establishment_accept->presencemask |=
         OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_PDU_ADDRESS_PRESENT;
-    pdu_address->pdn_type = sess->session.paa.session_type;
+    pdu_address->pdn_type = sess->session.session_type;
 
     if (pdu_address->pdn_type == OGS_PDU_SESSION_TYPE_IPV4) {
         pdu_address->addr = sess->session.paa.addr;

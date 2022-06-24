@@ -48,8 +48,10 @@ void sgsap_handle_location_update_accept(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     ogs_pkbuf_pull(pkbuf, 1);
 
     root = ogs_tlv_parse_block(pkbuf->len, pkbuf->data, OGS_TLV_MODE_T1_L1);
-    if (!root)
+    if (!root) {
+        ogs_error("!root");
         goto error;
+    }
 
     iter = root;
     while (iter) {
@@ -73,20 +75,29 @@ void sgsap_handle_location_update_accept(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 
     ogs_tlv_free_all(root);
 
-    if (!nas_mobile_identity_imsi || !lai)
+    if (!nas_mobile_identity_imsi || !lai) {
+        ogs_error("!nas_mobile_identity_imsi || !lai");
         goto error;
-    if (nas_mobile_identity_imsi_len != SGSAP_IE_IMSI_LEN)
+    }
+    if (nas_mobile_identity_imsi_len != SGSAP_IE_IMSI_LEN) {
+        ogs_error("nas_mobile_identity_imsi_len != SGSAP_IE_IMSI_LEN");
         goto error;
+    }
 
     if (nas_mobile_identity_imsi->type == OGS_NAS_MOBILE_IDENTITY_IMSI) {
         ogs_nas_eps_imsi_to_bcd(nas_mobile_identity_imsi,
                 nas_mobile_identity_imsi_len, imsi_bcd);
         mme_ue = mme_ue_find_by_imsi_bcd(imsi_bcd);
-    } else
+    } else {
+        ogs_error("nas_mobile_identity_imsi->type == "
+                "OGS_NAS_MOBILE_IDENTITY_IMSI");
         goto error;
+    }
 
-    if (!mme_ue)
+    if (!mme_ue) {
+        ogs_error("!mme_ue");
         goto error;
+    }
 
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
     if (lai) {
@@ -138,8 +149,10 @@ void sgsap_handle_location_update_reject(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     ogs_pkbuf_pull(pkbuf, 1);
 
     root = ogs_tlv_parse_block(pkbuf->len, pkbuf->data, OGS_TLV_MODE_T1_L1);
-    if (!root)
+    if (!root) {
+        ogs_error("!root");
         goto error;
+    }
 
     iter = root;
     while (iter) {
@@ -163,17 +176,24 @@ void sgsap_handle_location_update_reject(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 
     ogs_tlv_free_all(root);
 
-    if (!nas_mobile_identity_imsi || !emm_cause)
+    if (!nas_mobile_identity_imsi || !emm_cause) {
+        ogs_error("!nas_mobile_identity_imsi || !emm_cause");
         goto error;
-    if (nas_mobile_identity_imsi_len != SGSAP_IE_IMSI_LEN)
+    }
+    if (nas_mobile_identity_imsi_len != SGSAP_IE_IMSI_LEN) {
+        ogs_error("nas_mobile_identity_imsi_len != SGSAP_IE_IMSI_LEN");
         goto error;
+    }
 
     if (nas_mobile_identity_imsi->type == OGS_NAS_MOBILE_IDENTITY_IMSI) {
         ogs_nas_eps_imsi_to_bcd(nas_mobile_identity_imsi,
                 nas_mobile_identity_imsi_len, imsi_bcd);
         mme_ue = mme_ue_find_by_imsi_bcd(imsi_bcd);
-    } else
+    } else {
+        ogs_error("nas_mobile_identity_imsi->type == "
+                    "OGS_NAS_MOBILE_IDENTITY_IMSI");
         goto error;
+    }
 
     ogs_expect_or_return(mme_ue);
 
