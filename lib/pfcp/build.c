@@ -446,6 +446,7 @@ void ogs_pfcp_build_update_pdr(
 
 static struct {
     ogs_pfcp_outer_header_creation_t outer_header_creation;
+    char dnn[OGS_MAX_DNN_LEN+1];
 } farbuf[OGS_MAX_NUM_OF_FAR];
 
 void ogs_pfcp_build_create_far(
@@ -470,6 +471,14 @@ void ogs_pfcp_build_create_far(
         message->forwarding_parameters.destination_interface.presence = 1;
         message->forwarding_parameters.destination_interface.u8 =
             far->dst_if;
+
+        if (far->dnn) {
+            message->forwarding_parameters.network_instance.presence = 1;
+            message->forwarding_parameters.network_instance.len =
+                ogs_fqdn_build(farbuf[i].dnn, far->dnn, strlen(far->dnn));
+            message->forwarding_parameters.network_instance.data =
+                farbuf[i].dnn;
+        }
 
         if (far->outer_header_creation_len) {
             memcpy(&farbuf[i].outer_header_creation,
@@ -533,6 +542,14 @@ void ogs_pfcp_build_update_far_activate(
     message->update_forwarding_parameters.destination_interface.presence = 1;
     message->update_forwarding_parameters.
         destination_interface.u8 = far->dst_if;
+
+    if (far->dnn) {
+        message->update_forwarding_parameters.network_instance.presence = 1;
+        message->update_forwarding_parameters.network_instance.len =
+            ogs_fqdn_build(farbuf[i].dnn, far->dnn, strlen(far->dnn));
+        message->update_forwarding_parameters.network_instance.data =
+            farbuf[i].dnn;
+    }
 
     if (far->outer_header_creation_len || far->smreq_flags.value) {
 

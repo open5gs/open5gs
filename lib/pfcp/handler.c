@@ -808,10 +808,27 @@ ogs_pfcp_far_t *ogs_pfcp_handle_create_far(ogs_pfcp_sess_t *sess,
     far->dst_if = 0;
     memset(&far->outer_header_creation, 0, sizeof(far->outer_header_creation));
 
+    if (far->dnn) {
+        ogs_free(far->dnn);
+        far->dnn = NULL;
+    }
+
     if (message->forwarding_parameters.presence) {
         if (message->forwarding_parameters.destination_interface.presence) {
             far->dst_if =
                 message->forwarding_parameters.destination_interface.u8;
+        }
+
+        if (message->forwarding_parameters.network_instance.presence) {
+            char dnn[OGS_MAX_DNN_LEN+1];
+
+            ogs_assert(0 < ogs_fqdn_parse(dnn,
+                message->forwarding_parameters.network_instance.data,
+                    ogs_min(message->forwarding_parameters.network_instance.len,
+                        OGS_MAX_DNN_LEN)));
+
+            far->dnn = ogs_strdup(dnn);
+            ogs_assert(far->dnn);
         }
 
         if (message->forwarding_parameters.outer_header_creation.presence) {
@@ -904,6 +921,20 @@ ogs_pfcp_far_t *ogs_pfcp_handle_update_far(ogs_pfcp_sess_t *sess,
                 destination_interface.presence) {
             far->dst_if =
                 message->update_forwarding_parameters.destination_interface.u8;
+        }
+
+        if (message->update_forwarding_parameters.network_instance.presence) {
+            char dnn[OGS_MAX_DNN_LEN+1];
+
+            ogs_assert(0 < ogs_fqdn_parse(dnn,
+                message->update_forwarding_parameters.network_instance.data,
+                    ogs_min(message->update_forwarding_parameters.
+                        network_instance.len, OGS_MAX_DNN_LEN)));
+
+            if (far->dnn)
+                ogs_free(far->dnn);
+            far->dnn = ogs_strdup(dnn);
+            ogs_assert(far->dnn);
         }
 
         if (message->update_forwarding_parameters.

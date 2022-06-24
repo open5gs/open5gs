@@ -1222,6 +1222,9 @@ void ogs_pfcp_far_remove(ogs_pfcp_far_t *far)
         ogs_hash_set(self.far_f_teid_hash,
                 &far->hash.f_teid.key, far->hash.f_teid.len, NULL);
 
+    if (far->dnn)
+        ogs_free(far->dnn);
+
     for (i = 0; i < far->num_of_buffered_packet; i++)
         ogs_pkbuf_free(far->buffered_packet[i]);
 

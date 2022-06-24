@@ -208,6 +208,11 @@ typedef struct ogs_pfcp_far_s {
         } teid;
     } hash;
 
+    union {
+        char *apn;
+        char *dnn;
+    };
+
     uint8_t                 *id_node;      /* Pool-Node for ID */
     ogs_pfcp_far_id_t       id;
     ogs_pfcp_apply_action_t apply_action;

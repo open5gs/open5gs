@@ -1822,23 +1822,21 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
     ogs_assert(dl_pdr);
     qos_flow->dl_pdr = dl_pdr;
 
-    dl_pdr->src_if = OGS_PFCP_INTERFACE_CORE;
+    ogs_assert(sess->session.name);
+    dl_pdr->apn = ogs_strdup(sess->session.name);
+    ogs_assert(dl_pdr->apn);
 
-    if (sess->session.name) {
-        dl_pdr->apn = ogs_strdup(sess->session.name);
-        ogs_assert(dl_pdr->apn);
-    }
+    dl_pdr->src_if = OGS_PFCP_INTERFACE_CORE;
 
     ul_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
     ogs_assert(ul_pdr);
     qos_flow->ul_pdr = ul_pdr;
 
-    ul_pdr->src_if = OGS_PFCP_INTERFACE_ACCESS;
+    ogs_assert(sess->session.name);
+    ul_pdr->apn = ogs_strdup(sess->session.name);
+    ogs_assert(ul_pdr->apn);
 
-    if (sess->session.name) {
-        ul_pdr->apn = ogs_strdup(sess->session.name);
-        ogs_assert(ul_pdr->apn);
-    }
+    ul_pdr->src_if = OGS_PFCP_INTERFACE_ACCESS;
 
     ul_pdr->outer_header_removal_len = 2;
     if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
@@ -1860,6 +1858,10 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
     ogs_assert(dl_far);
     qos_flow->dl_far = dl_far;
 
+    ogs_assert(sess->session.name);
+    dl_far->apn = ogs_strdup(sess->session.name);
+    ogs_assert(dl_far->apn);
+
     dl_far->dst_if = OGS_PFCP_INTERFACE_ACCESS;
     ogs_pfcp_pdr_associate_far(dl_pdr, dl_far);
 
@@ -1870,6 +1872,10 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
     ul_far = ogs_pfcp_far_add(&sess->pfcp);
     ogs_assert(ul_far);
     qos_flow->ul_far = ul_far;
+
+    ogs_assert(sess->session.name);
+    ul_far->apn = ogs_strdup(sess->session.name);
+    ogs_assert(ul_far->apn);
 
     ul_far->dst_if = OGS_PFCP_INTERFACE_CORE;
     ogs_pfcp_pdr_associate_far(ul_pdr, ul_far);
@@ -1925,6 +1931,10 @@ void smf_sess_create_indirect_data_forwarding(smf_sess_t *sess)
         pdr = ogs_pfcp_pdr_add(&sess->pfcp);
         ogs_assert(pdr);
 
+        ogs_assert(sess->session.name);
+        pdr->apn = ogs_strdup(sess->session.name);
+        ogs_assert(pdr->apn);
+
         pdr->src_if = OGS_PFCP_INTERFACE_ACCESS;
 
         pdr->outer_header_removal_len = 1;
@@ -1942,6 +1952,10 @@ void smf_sess_create_indirect_data_forwarding(smf_sess_t *sess)
 
         far = ogs_pfcp_far_add(&sess->pfcp);
         ogs_assert(far);
+
+        ogs_assert(sess->session.name);
+        far->apn = ogs_strdup(sess->session.name);
+        ogs_assert(far->apn);
 
         far->dst_if = OGS_PFCP_INTERFACE_ACCESS;
         ogs_pfcp_pdr_associate_far(pdr, far);
@@ -2224,21 +2238,21 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
     ogs_assert(dl_pdr);
     bearer->dl_pdr = dl_pdr;
 
-    dl_pdr->src_if = OGS_PFCP_INTERFACE_CORE;
-
     ogs_assert(sess->session.name);
     dl_pdr->apn = ogs_strdup(sess->session.name);
     ogs_assert(dl_pdr->apn);
+
+    dl_pdr->src_if = OGS_PFCP_INTERFACE_CORE;
 
     ul_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
     ogs_assert(ul_pdr);
     bearer->ul_pdr = ul_pdr;
 
-    ul_pdr->src_if = OGS_PFCP_INTERFACE_ACCESS;
-
     ogs_assert(sess->session.name);
     ul_pdr->apn = ogs_strdup(sess->session.name);
     ogs_assert(ul_pdr->apn);
+
+    ul_pdr->src_if = OGS_PFCP_INTERFACE_ACCESS;
 
     ul_pdr->outer_header_removal_len = 1;
     if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
@@ -2258,6 +2272,10 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
     ogs_assert(dl_far);
     bearer->dl_far = dl_far;
 
+    ogs_assert(sess->session.name);
+    dl_far->apn = ogs_strdup(sess->session.name);
+    ogs_assert(dl_far->apn);
+
     dl_far->dst_if = OGS_PFCP_INTERFACE_ACCESS;
     ogs_pfcp_pdr_associate_far(dl_pdr, dl_far);
 
@@ -2268,6 +2286,10 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
     ul_far = ogs_pfcp_far_add(&sess->pfcp);
     ogs_assert(ul_far);
     bearer->ul_far = ul_far;
+
+    ogs_assert(sess->session.name);
+    ul_far->apn = ogs_strdup(sess->session.name);
+    ogs_assert(ul_far->apn);
 
     ul_far->dst_if = OGS_PFCP_INTERFACE_CORE;
     ogs_pfcp_pdr_associate_far(ul_pdr, ul_far);

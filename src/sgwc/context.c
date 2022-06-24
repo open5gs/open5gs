@@ -702,15 +702,19 @@ sgwc_tunnel_t *sgwc_tunnel_add(
 
     pdr = ogs_pfcp_pdr_add(&sess->pfcp);
     ogs_assert(pdr);
-    pdr->src_if = src_if;
 
-    if (sess->session.name) {
-        pdr->apn = ogs_strdup(sess->session.name);
-        ogs_assert(pdr->apn);
-    }
+    ogs_assert(sess->session.name);
+    pdr->apn = ogs_strdup(sess->session.name);
+    ogs_assert(pdr->apn);
+
+    pdr->src_if = src_if;
 
     far = ogs_pfcp_far_add(&sess->pfcp);
     ogs_assert(far);
+
+    ogs_assert(sess->session.name);
+    far->apn = ogs_strdup(sess->session.name);
+    ogs_assert(far->apn);
 
     far->dst_if = dst_if;
     ogs_pfcp_pdr_associate_far(pdr, far);
