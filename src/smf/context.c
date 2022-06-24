@@ -1865,6 +1865,12 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
 
     dl_far->apply_action =
         OGS_PFCP_APPLY_ACTION_BUFF| OGS_PFCP_APPLY_ACTION_NOCP;
+
+    if (sess->session.name) {
+	dl_far->apn = ogs_strdup (sess->session.name);
+	ogs_assert(dl_far->apn);
+    }
+
     ogs_assert(sess->pfcp.bar);
 
     ul_far = ogs_pfcp_far_add(&sess->pfcp);
@@ -1875,6 +1881,12 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
     ogs_pfcp_pdr_associate_far(ul_pdr, ul_far);
 
     ul_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
+
+    if (sess->session.name) {
+	ul_far->apn = ogs_strdup (sess->session.name);
+	ogs_assert(ul_far->apn);
+    }
+
 
     /* URR */
     urr = ogs_pfcp_urr_add(&sess->pfcp);
@@ -2089,6 +2101,11 @@ void smf_sess_create_cp_up_data_forwarding(smf_sess_t *sess)
 
     cp2up_pdr->src_if = OGS_PFCP_INTERFACE_CP_FUNCTION;
 
+    if (sess->session.name) {
+	cp2up_pdr->apn = ogs_strdup (sess->session.name);
+	ogs_assert(cp2up_pdr->apn);
+    }
+
     cp2up_pdr->outer_header_removal_len = 1;
     if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
         cp2up_pdr->outer_header_removal.description =
@@ -2107,6 +2124,11 @@ void smf_sess_create_cp_up_data_forwarding(smf_sess_t *sess)
     sess->up2cp_pdr = up2cp_pdr;
 
     up2cp_pdr->src_if = OGS_PFCP_INTERFACE_ACCESS;
+
+    if (sess->session.name) {
+	up2cp_pdr->apn = ogs_strdup (sess->session.name);
+	ogs_assert(up2cp_pdr->apn);
+    }
 
     up2cp_pdr->outer_header_removal_len = 1;
     if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
@@ -2139,6 +2161,11 @@ void smf_sess_create_cp_up_data_forwarding(smf_sess_t *sess)
     ogs_pfcp_pdr_associate_far(up2cp_pdr, up2cp_far);
 
     up2cp_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
+
+    if (sess->session.name) {
+	up2cp_far->apn = ogs_strdup (sess->session.name);
+	ogs_assert(up2cp_far->apn);
+    }
 
     if (qos_flow->qer && qos_flow->qfi) {
         /* To match the PDI of UP2CP_PDR(from ff02::2/128 to assigned)
