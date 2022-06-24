@@ -2101,6 +2101,10 @@ void smf_sess_create_cp_up_data_forwarding(smf_sess_t *sess)
     ogs_assert(cp2up_pdr);
     sess->cp2up_pdr = cp2up_pdr;
 
+    ogs_assert(sess->session.name);
+    cp2up_pdr->apn = ogs_strdup(sess->session.name);
+    ogs_assert(cp2up_pdr->apn);
+
     cp2up_pdr->src_if = OGS_PFCP_INTERFACE_CP_FUNCTION;
 
     cp2up_pdr->outer_header_removal_len = 1;
@@ -2119,6 +2123,10 @@ void smf_sess_create_cp_up_data_forwarding(smf_sess_t *sess)
     up2cp_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
     ogs_assert(up2cp_pdr);
     sess->up2cp_pdr = up2cp_pdr;
+
+    ogs_assert(sess->session.name);
+    up2cp_pdr->apn = ogs_strdup(sess->session.name);
+    ogs_assert(up2cp_pdr->apn);
 
     up2cp_pdr->src_if = OGS_PFCP_INTERFACE_ACCESS;
 
@@ -2148,6 +2156,10 @@ void smf_sess_create_cp_up_data_forwarding(smf_sess_t *sess)
     up2cp_far = ogs_pfcp_far_add(&sess->pfcp);
     ogs_assert(up2cp_far);
     sess->up2cp_far = up2cp_far;
+
+    ogs_assert(sess->session.name);
+    up2cp_far->apn = ogs_strdup(sess->session.name);
+    ogs_assert(up2cp_far->apn);
 
     up2cp_far->dst_if = OGS_PFCP_INTERFACE_CP_FUNCTION;
     ogs_pfcp_pdr_associate_far(up2cp_pdr, up2cp_far);
