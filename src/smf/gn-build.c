@@ -168,7 +168,7 @@ ogs_pkbuf_t *smf_gn_build_create_pdp_context_response(
 
     /* End User Address */
     rv = ogs_gtp2_paa_to_ip(&sess->session.paa, &ip_eua);
-    rv = ogs_gtp1_ip_to_eua(sess->session.paa.session_type, &ip_eua, &eua,
+    rv = ogs_gtp1_ip_to_eua(sess->session.session_type, &ip_eua, &eua,
             &eua_len);
     rsp->end_user_address.presence = 1;
     rsp->end_user_address.data = &eua;

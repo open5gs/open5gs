@@ -100,7 +100,7 @@ ogs_pkbuf_t *smf_n4_build_session_establishment_request(
 
     /* PDN Type */
     req->pdn_type.presence = 1;
-    req->pdn_type.u8 = sess->session.paa.session_type;
+    req->pdn_type.u8 = sess->session.session_type;
 
     pfcp_message.h.type = type;
     pkbuf = ogs_pfcp_build_msg(&pfcp_message);

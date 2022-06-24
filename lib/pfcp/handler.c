@@ -311,6 +311,20 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
         return NULL;
     }
 
+    if (message->pdi.local_f_teid.presence) {
+        ogs_pfcp_f_teid_t f_teid;
+
+        memcpy(&f_teid, message->pdi.local_f_teid.data,
+                message->pdi.local_f_teid.len);
+        if (f_teid.ipv4 == 0 && f_teid.ipv6 == 0) {
+            ogs_error("One of the IPv4 and IPv6 flags should be 1 "
+                        "in the local F-TEID");
+            *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_INCORRECT;
+            *offending_ie_value = OGS_PFCP_F_TEID_TYPE;
+            return NULL;
+        }
+    }
+
     pdr->src_if = message->pdi.source_interface.u8;
 
     ogs_pfcp_rule_remove_all(pdr);
@@ -437,6 +451,7 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
     if (message->pdi.local_f_teid.presence) {
         pdr->f_teid_len = message->pdi.local_f_teid.len;
         memcpy(&pdr->f_teid, message->pdi.local_f_teid.data, pdr->f_teid_len);
+        ogs_assert(pdr->f_teid.ipv4 || pdr->f_teid.ipv6);
         pdr->f_teid.teid = be32toh(pdr->f_teid.teid);
     }
 
@@ -522,8 +537,21 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_created_pdr(ogs_pfcp_sess_t *sess,
     }
 
     if (message->local_f_teid.presence) {
+        ogs_pfcp_f_teid_t f_teid;
+
+        memcpy(&f_teid, message->local_f_teid.data, message->local_f_teid.len);
+        if (f_teid.ipv4 == 0 && f_teid.ipv6 == 0) {
+            ogs_error("One of the IPv4 and IPv6 flags should be 1 "
+                        "in the local F-TEID");
+            *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_INCORRECT;
+            *offending_ie_value = OGS_PFCP_F_TEID_TYPE;
+
+            return NULL;
+        }
+
         pdr->f_teid_len = message->local_f_teid.len;
         memcpy(&pdr->f_teid, message->local_f_teid.data, pdr->f_teid_len);
+        ogs_assert(pdr->f_teid.ipv4 || pdr->f_teid.ipv6);
         pdr->f_teid.teid = be32toh(pdr->f_teid.teid);
     }
 
@@ -565,6 +593,20 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_update_pdr(ogs_pfcp_sess_t *sess,
             *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_MISSING;
             *offending_ie_value = OGS_PFCP_SOURCE_INTERFACE_TYPE;
             return NULL;
+        }
+
+        if (message->pdi.local_f_teid.presence) {
+            ogs_pfcp_f_teid_t f_teid;
+
+            memcpy(&f_teid, message->pdi.local_f_teid.data,
+                    message->pdi.local_f_teid.len);
+            if (f_teid.ipv4 == 0 && f_teid.ipv6 == 0) {
+                ogs_error("One of the IPv4 and IPv6 flags should be 1 "
+                            "in the local F-TEID");
+                *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_INCORRECT;
+                *offending_ie_value = OGS_PFCP_F_TEID_TYPE;
+                return NULL;
+            }
         }
 
         pdr->src_if = message->pdi.source_interface.u8;
