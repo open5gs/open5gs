@@ -376,9 +376,14 @@ ogs_pkbuf_t *smf_gn_build_update_pdp_context_response(
     rsp->charging_id.presence = 1;
     rsp->charging_id.u32 = sess->charging.id;
 
-    /* Protocol Configuration Options (PCO) */
-    if (sess->gtp.ue_pco.presence &&
-            sess->gtp.ue_pco.len && sess->gtp.ue_pco.data) {
+    /* Protocol Configuration Options (PCO):
+     * If the "No QoS negotiation" bit of the Common Flags IE in the Update PDP
+     * Context Request message was set to 1, then the GGSN [...] shall not
+     * include the Protocol Configuration Options (PCO) information element in
+     * the message) */
+    if (!sess->gtp.v1.common_flags.no_qos_negotiation &&
+        sess->gtp.ue_pco.presence &&
+        sess->gtp.ue_pco.len && sess->gtp.ue_pco.data) {
         pco_len = smf_pco_build(
                 pco_buf, sess->gtp.ue_pco.data, sess->gtp.ue_pco.len);
         ogs_assert(pco_len > 0);
