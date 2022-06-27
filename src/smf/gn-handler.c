@@ -178,7 +178,7 @@ uint8_t smf_gn_handle_create_pdp_context_request(
             smf_ue->msisdn, smf_ue->msisdn_len, smf_ue->msisdn_bcd);
     }
 
-    /* Set some sane default if infomation not present in Qos Profile or APN-AMBR: */
+    /* Set some sane default if information not present in QoS Profile or APN-AMBR: */
     sess->session.ambr.downlink = 102400000;
     sess->session.ambr.uplink = 102400000;
 
