@@ -324,6 +324,8 @@ void smf_gn_handle_update_pdp_context_request(
     ogs_pfcp_pdr_t *pdr = NULL;
     smf_bearer_t *bearer = NULL;
     smf_ue_t *smf_ue = NULL;
+    ogs_gtp1_qos_profile_decoded_t *qos_pdec;
+    uint8_t qci;
 
     ogs_debug("Update PDP Context Request");
 
@@ -401,6 +403,50 @@ void smf_gn_handle_update_pdp_context_request(
     ogs_assert(rv == OGS_OK);
     ogs_debug("    Updated SGW_S5U_TEID[0x%x] PGW_S5U_TEID[0x%x]",
             bearer->sgw_s5u_teid, bearer->pgw_s5u_teid);
+
+
+    /* Set Bearer QoS */
+    OGS_TLV_STORE_DATA(&sess->gtp.v1.qos, &req->quality_of_service_profile);
+    qos_pdec = &sess->gtp.v1.qos_pdec;
+    rv = ogs_gtp1_parse_qos_profile(qos_pdec, &req->quality_of_service_profile);
+    if(rv < 0) {
+        ogs_gtp1_send_error_message(xact, sess->sgw_s5c_teid,
+                OGS_GTP1_UPDATE_PDP_CONTEXT_RESPONSE_TYPE,
+                OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT);
+        return;
+    }
+
+    /* 3GPP TS 23.060 section 9.2.1A: "The QoS profiles of the PDP context and EPS bearer are mapped as specified in TS 23.401"
+     * 3GPP TS 23.401 Annex E: "Mapping between EPS and Release 99 QoS parameters"
+     */
+    ogs_gtp1_qos_profile_to_qci(qos_pdec, &qci);
+    sess->session.qos.index = qci;
+    sess->session.qos.arp.priority_level = qos_pdec->qos_profile.arp; /* 3GPP TS 23.401 Annex E Table E.2 */
+    sess->session.qos.arp.pre_emption_capability = 0; /* ignored as per 3GPP TS 23.401 Annex E */
+    sess->session.qos.arp.pre_emption_vulnerability = 0; /* ignored as per 3GPP TS 23.401 Annex E */
+    if (qos_pdec->data_octet6_to_13_present) {
+        sess->session.ambr.downlink = qos_pdec->dec_mbr_kbps_dl * 1000;
+        sess->session.ambr.uplink = qos_pdec->dec_mbr_kbps_ul * 1000;
+    }
+
+    /* APN-AMBR, 7.7.98 */
+    if (req->apn_ambr.presence) {
+        /* "The APN-AMBR IE shall be included as the authorized APN-AMBR if the
+         * GGSN supports this IE and if the APN-AMBR IE has been included in the
+         * corresponding request message." */
+        sess->gtp.v1.peer_supports_apn_ambr = true;
+        if (req->apn_ambr.len >= sizeof(ogs_gtp1_apn_ambr_t)) {
+            ogs_gtp1_apn_ambr_t *ambr = req->apn_ambr.data;
+            sess->session.ambr.uplink = be32toh(ambr->uplink) * 1000;
+            sess->session.ambr.downlink = be32toh(ambr->downlink) * 1000;
+        }
+    }
+
+    /* PCO */
+    if (req->protocol_configuration_options.presence) {
+        OGS_TLV_STORE_DATA(&sess->gtp.ue_pco,
+                &req->protocol_configuration_options);
+    }
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
     h.type = OGS_GTP1_UPDATE_PDP_CONTEXT_RESPONSE_TYPE;
