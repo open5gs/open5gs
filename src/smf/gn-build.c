@@ -27,19 +27,10 @@
 static void build_qos_profile_from_session(ogs_gtp1_qos_profile_decoded_t *qos_pdec,
         const smf_sess_t *sess, const smf_bearer_t *bearer)
 {
-    memset(qos_pdec, 0, sizeof(*qos_pdec));
+    /* Initialize with defaults retrieved from MS/SGSN: */
+    memcpy(qos_pdec, &sess->gtp.v1.qos_pdec, sizeof(*qos_pdec));
 
     qos_pdec->qos_profile.arp = sess->session.qos.arp.priority_level;
-    qos_pdec->qos_profile.data.reliability_class = 3; /* Unacknowledged GTP and LLC; Acknowledged RLC, Protected data */
-    qos_pdec->qos_profile.data.precedence_class = 2; /* Normal priority */
-    qos_pdec->qos_profile.data.peak_throughput = 9; /* Up to 256 000 octet/s */
-    qos_pdec->qos_profile.data.mean_throughput = 0x1f; /* Best effort */
-    qos_pdec->qos_profile.data.delivery_erroneous_sdu = 2; /* Erroneous SDUs are delivered ('yes') */
-    qos_pdec->qos_profile.data.delivery_order = 2; /* Without delivery order ('no') */
-    qos_pdec->qos_profile.data.max_sdu_size = 0x96; /* 1500 octets */
-    qos_pdec->qos_profile.data.residual_ber = 5; /* 1*10^-4,  <= 2*10^-4 */
-    qos_pdec->qos_profile.data.sdu_error_ratio = 4; /* 1*10^-4 */
-
 
      /* 3GPP TS 23.401 Annex E table Table E.3 */
     /* Also take into account table 7 in 3GPP TS 23.107 9.1.2.2 */
@@ -102,6 +93,22 @@ static void build_qos_profile_from_session(ogs_gtp1_qos_profile_decoded_t *qos_p
     qos_pdec->dec_mbr_kbps_ul = sess->session.ambr.uplink / 1000;
     qos_pdec->dec_gbr_kbps_dl = bearer->qos.gbr.downlink / 1000;
     qos_pdec->dec_gbr_kbps_ul = bearer->qos.gbr.uplink / 1000;
+
+    /* Don't upgrade values if Common Flags "Upgrade QoS Supported" is 0: */
+    if (!sess->gtp.v1.common_flags.upgrade_qos_supported) {
+        if (sess->gtp.v1.qos_pdec.dec_mbr_kbps_dl > 0)
+            qos_pdec->dec_mbr_kbps_dl = ogs_min(qos_pdec->dec_mbr_kbps_dl,
+                                            sess->gtp.v1.qos_pdec.dec_mbr_kbps_dl);
+        if (sess->gtp.v1.qos_pdec.dec_mbr_kbps_ul > 0)
+            qos_pdec->dec_mbr_kbps_ul = ogs_min(qos_pdec->dec_mbr_kbps_ul,
+                                            sess->gtp.v1.qos_pdec.dec_mbr_kbps_ul);
+        if (sess->gtp.v1.qos_pdec.dec_gbr_kbps_dl > 0)
+            qos_pdec->dec_gbr_kbps_dl = ogs_min(qos_pdec->dec_gbr_kbps_dl,
+                                            sess->gtp.v1.qos_pdec.dec_gbr_kbps_dl);
+        if (sess->gtp.v1.qos_pdec.dec_gbr_kbps_ul > 0)
+            qos_pdec->dec_gbr_kbps_ul = ogs_min(qos_pdec->dec_gbr_kbps_ul,
+                                            sess->gtp.v1.qos_pdec.dec_gbr_kbps_ul);
+    }
 }
 
 ogs_pkbuf_t *smf_gn_build_create_pdp_context_response(
@@ -246,12 +253,16 @@ ogs_pkbuf_t *smf_gn_build_create_pdp_context_response(
     rsp->ggsn_address_for_user_traffic.data = &pgw_gnu_gsnaddr;
     rsp->ggsn_address_for_user_traffic.len = gsn_len;
 
-    /* QoS Profile: if PCRF changes Bearer QoS, this should be included. */
+    /* QoS Profile: if PCRF changes Bearer QoS, apply changes. */
     if (sess->gtp.create_session_response_bearer_qos == true) {
         build_qos_profile_from_session(&qos_pdec, sess, bearer);
         rsp->quality_of_service_profile.presence = 1;
         ogs_gtp1_build_qos_profile(&rsp->quality_of_service_profile,
                &qos_pdec, qos_pdec_buf, OGS_GTP1_QOS_PROFILE_MAX_LEN);
+    } else {
+        /* Copy over received QoS Profile from originating Request: */
+        memcpy(&rsp->quality_of_service_profile, &sess->gtp.v1.qos,
+               sizeof(rsp->quality_of_service_profile));
     }
 
     /* TODO: Charging Gateway Address */
@@ -365,9 +376,14 @@ ogs_pkbuf_t *smf_gn_build_update_pdp_context_response(
     rsp->charging_id.presence = 1;
     rsp->charging_id.u32 = sess->charging.id;
 
-    /* Protocol Configuration Options (PCO) */
-    if (sess->gtp.ue_pco.presence &&
-            sess->gtp.ue_pco.len && sess->gtp.ue_pco.data) {
+    /* Protocol Configuration Options (PCO):
+     * If the "No QoS negotiation" bit of the Common Flags IE in the Update PDP
+     * Context Request message was set to 1, then the GGSN [...] shall not
+     * include the Protocol Configuration Options (PCO) information element in
+     * the message) */
+    if (!sess->gtp.v1.common_flags.no_qos_negotiation &&
+        sess->gtp.ue_pco.presence &&
+        sess->gtp.ue_pco.len && sess->gtp.ue_pco.data) {
         pco_len = smf_pco_build(
                 pco_buf, sess->gtp.ue_pco.data, sess->gtp.ue_pco.len);
         ogs_assert(pco_len > 0);
@@ -437,12 +453,18 @@ ogs_pkbuf_t *smf_gn_build_update_pdp_context_response(
     rsp->ggsn_address_for_user_traffic.data = &pgw_gnu_gsnaddr;
     rsp->ggsn_address_for_user_traffic.len = gsn_len;
 
-    /* QoS Profile: if PCRF changes Bearer QoS, this should be included. */
-    if (sess->gtp.create_session_response_bearer_qos == true) {
+    /* QoS Profile: if SGSN supports QoS re-negotiation and PCRF changes Bearer
+     * QoS, apply changes: */
+    if (!sess->gtp.v1.common_flags.no_qos_negotiation &&
+        sess->gtp.create_session_response_bearer_qos == true) {
         build_qos_profile_from_session(&qos_pdec, sess, bearer);
         rsp->quality_of_service_profile.presence = 1;
         ogs_gtp1_build_qos_profile(&rsp->quality_of_service_profile,
                &qos_pdec, qos_pdec_buf, OGS_GTP1_QOS_PROFILE_MAX_LEN);
+    } else {
+        /* Copy over received QoS Profile from originating Request: */
+        memcpy(&rsp->quality_of_service_profile, &sess->gtp.v1.qos,
+               sizeof(rsp->quality_of_service_profile));
     }
 
    /* TODO: Charging Gateway Address */

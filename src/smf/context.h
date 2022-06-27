@@ -333,6 +333,9 @@ typedef struct smf_sess_s {
         uint8_t selection_mode; /* OGS_GTP{1,2}_SELECTION_MODE_*, same in GTPv1C and 2C. */
         struct {
             uint8_t nsapi;
+            ogs_gtp1_common_flags_t common_flags;
+            ogs_tlv_octet_t qos; /* Encoded GTPv1C "QoS Profile" IE */
+            ogs_gtp1_qos_profile_decoded_t qos_pdec;
             bool peer_supports_apn_ambr;
         } v1;  /* GTPv1C specific fields */
     } gtp; /* Saved from S5-C/Gn */

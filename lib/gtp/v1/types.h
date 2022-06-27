@@ -277,6 +277,18 @@ typedef struct ogs_gtp1_qos_profile_decoded_s {
 #define OGS_GTP1_QOS_SRC_STATS_DESC_UNKNOWN 0
 #define OGS_GTP1_QOS_SRC_STATS_DESC_SPEECH 1
 
+/* 7.7.48 Common Flags */
+typedef struct ogs_gtp1_common_flags_s {
+ED8(uint8_t dual_address_bearer_flag:1;,
+    uint8_t upgrade_qos_supported:1;,
+    uint8_t nrsn:1;,
+    uint8_t no_qos_negotiation:1;,
+    uint8_t mbms_counting_information:1;,
+    uint8_t ran_procedures_ready:1;,
+    uint8_t mbms_service_type:1;,
+    uint8_t prohibit_payload_compression:1;)
+} __attribute__ ((packed)) ogs_gtp1_common_flags_t;
+
 /* 7.7.98 APN Aggregate Maximum Bit Rate (APN-AMBR) */
 typedef struct ogs_gtp1_apn_ambr_s {
     uint32_t uplink;
