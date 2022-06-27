@@ -1606,6 +1606,7 @@ void smf_sess_remove(smf_sess_t *sess)
     OGS_TLV_CLEAR_DATA(&sess->gtp.user_location_information);
     OGS_TLV_CLEAR_DATA(&sess->gtp.ue_timezone);
     OGS_TLV_CLEAR_DATA(&sess->gtp.charging_characteristics);
+    OGS_TLV_CLEAR_DATA(&sess->gtp.v1.qos);
 
     OGS_NAS_CLEAR_DATA(&sess->nas.ue_pco);
 

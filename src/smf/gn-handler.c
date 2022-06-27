@@ -183,6 +183,7 @@ uint8_t smf_gn_handle_create_pdp_context_request(
     sess->session.ambr.uplink = 102400000;
 
     /* Set Bearer QoS */
+    OGS_TLV_STORE_DATA(&sess->gtp.v1.qos, &req->quality_of_service_profile);
     qos_pdec = &sess->gtp.v1.qos_pdec;
     rv = ogs_gtp1_parse_qos_profile(qos_pdec, &req->quality_of_service_profile);
     if(rv < 0)

@@ -237,12 +237,16 @@ ogs_pkbuf_t *smf_gn_build_create_pdp_context_response(
     rsp->ggsn_address_for_user_traffic.data = &pgw_gnu_gsnaddr;
     rsp->ggsn_address_for_user_traffic.len = gsn_len;
 
-    /* QoS Profile: if PCRF changes Bearer QoS, this should be included. */
+    /* QoS Profile: if PCRF changes Bearer QoS, apply changes. */
     if (sess->gtp.create_session_response_bearer_qos == true) {
         build_qos_profile_from_session(&qos_pdec, sess, bearer);
         rsp->quality_of_service_profile.presence = 1;
         ogs_gtp1_build_qos_profile(&rsp->quality_of_service_profile,
                &qos_pdec, qos_pdec_buf, OGS_GTP1_QOS_PROFILE_MAX_LEN);
+    } else {
+        /* Copy over received QoS Profile from originating Request: */
+        memcpy(&rsp->quality_of_service_profile, &sess->gtp.v1.qos,
+               sizeof(rsp->quality_of_service_profile));
     }
 
     /* TODO: Charging Gateway Address */
@@ -428,12 +432,16 @@ ogs_pkbuf_t *smf_gn_build_update_pdp_context_response(
     rsp->ggsn_address_for_user_traffic.data = &pgw_gnu_gsnaddr;
     rsp->ggsn_address_for_user_traffic.len = gsn_len;
 
-    /* QoS Profile: if PCRF changes Bearer QoS, this should be included. */
+    /* QoS Profile: if PCRF changes Bearer QoS, apply changes. */
     if (sess->gtp.create_session_response_bearer_qos == true) {
         build_qos_profile_from_session(&qos_pdec, sess, bearer);
         rsp->quality_of_service_profile.presence = 1;
         ogs_gtp1_build_qos_profile(&rsp->quality_of_service_profile,
                &qos_pdec, qos_pdec_buf, OGS_GTP1_QOS_PROFILE_MAX_LEN);
+    } else {
+        /* Copy over received QoS Profile from originating Request: */
+        memcpy(&rsp->quality_of_service_profile, &sess->gtp.v1.qos,
+               sizeof(rsp->quality_of_service_profile));
     }
 
    /* TODO: Charging Gateway Address */
