@@ -93,6 +93,22 @@ static void build_qos_profile_from_session(ogs_gtp1_qos_profile_decoded_t *qos_p
     qos_pdec->dec_mbr_kbps_ul = sess->session.ambr.uplink / 1000;
     qos_pdec->dec_gbr_kbps_dl = bearer->qos.gbr.downlink / 1000;
     qos_pdec->dec_gbr_kbps_ul = bearer->qos.gbr.uplink / 1000;
+
+    /* Don't upgrade values if Common Flags "Upgrade QoS Supported" is 0: */
+    if (!sess->gtp.v1.common_flags.upgrade_qos_supported) {
+        if (sess->gtp.v1.qos_pdec.dec_mbr_kbps_dl > 0)
+            qos_pdec->dec_mbr_kbps_dl = ogs_min(qos_pdec->dec_mbr_kbps_dl,
+                                            sess->gtp.v1.qos_pdec.dec_mbr_kbps_dl);
+        if (sess->gtp.v1.qos_pdec.dec_mbr_kbps_ul > 0)
+            qos_pdec->dec_mbr_kbps_ul = ogs_min(qos_pdec->dec_mbr_kbps_ul,
+                                            sess->gtp.v1.qos_pdec.dec_mbr_kbps_ul);
+        if (sess->gtp.v1.qos_pdec.dec_gbr_kbps_dl > 0)
+            qos_pdec->dec_gbr_kbps_dl = ogs_min(qos_pdec->dec_gbr_kbps_dl,
+                                            sess->gtp.v1.qos_pdec.dec_gbr_kbps_dl);
+        if (sess->gtp.v1.qos_pdec.dec_gbr_kbps_ul > 0)
+            qos_pdec->dec_gbr_kbps_ul = ogs_min(qos_pdec->dec_gbr_kbps_ul,
+                                            sess->gtp.v1.qos_pdec.dec_gbr_kbps_ul);
+    }
 }
 
 ogs_pkbuf_t *smf_gn_build_create_pdp_context_response(
@@ -432,8 +448,10 @@ ogs_pkbuf_t *smf_gn_build_update_pdp_context_response(
     rsp->ggsn_address_for_user_traffic.data = &pgw_gnu_gsnaddr;
     rsp->ggsn_address_for_user_traffic.len = gsn_len;
 
-    /* QoS Profile: if PCRF changes Bearer QoS, apply changes. */
-    if (sess->gtp.create_session_response_bearer_qos == true) {
+    /* QoS Profile: if SGSN supports QoS re-negotiation and PCRF changes Bearer
+     * QoS, apply changes: */
+    if (!sess->gtp.v1.common_flags.no_qos_negotiation &&
+        sess->gtp.create_session_response_bearer_qos == true) {
         build_qos_profile_from_session(&qos_pdec, sess, bearer);
         rsp->quality_of_service_profile.presence = 1;
         ogs_gtp1_build_qos_profile(&rsp->quality_of_service_profile,

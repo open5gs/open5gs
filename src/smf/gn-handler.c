@@ -178,6 +178,11 @@ uint8_t smf_gn_handle_create_pdp_context_request(
             smf_ue->msisdn, smf_ue->msisdn_len, smf_ue->msisdn_bcd);
     }
 
+    /* Common Flags 7.7.48 */
+    if (req->common_flags.presence) {
+        sess->gtp.v1.common_flags = *(ogs_gtp1_common_flags_t*)req->common_flags.data;
+    }
+
     /* Set some sane default if information not present in QoS Profile or APN-AMBR: */
     sess->session.ambr.downlink = 102400000;
     sess->session.ambr.uplink = 102400000;
@@ -383,6 +388,14 @@ void smf_gn_handle_update_pdp_context_request(
                     OGS_GTP1_CAUSE_NON_EXISTENT);
             return;
         }
+    }
+
+    /* Common Flags 7.7.48 */
+    if (req->common_flags.presence) {
+        sess->gtp.v1.common_flags = *(ogs_gtp1_common_flags_t*)req->common_flags.data;
+    } else {
+        /* Reset it to overwrite what was received during CreatePDPCtxReq time */
+        sess->gtp.v1.common_flags = (ogs_gtp1_common_flags_t){0};
     }
 
     /* Control Plane(DL) : SGW-S5C */
