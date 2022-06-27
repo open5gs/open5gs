@@ -27,19 +27,10 @@
 static void build_qos_profile_from_session(ogs_gtp1_qos_profile_decoded_t *qos_pdec,
         const smf_sess_t *sess, const smf_bearer_t *bearer)
 {
-    memset(qos_pdec, 0, sizeof(*qos_pdec));
+    /* Initialize with defaults retrieved from MS/SGSN: */
+    memcpy(qos_pdec, &sess->gtp.v1.qos_pdec, sizeof(*qos_pdec));
 
     qos_pdec->qos_profile.arp = sess->session.qos.arp.priority_level;
-    qos_pdec->qos_profile.data.reliability_class = 3; /* Unacknowledged GTP and LLC; Acknowledged RLC, Protected data */
-    qos_pdec->qos_profile.data.precedence_class = 2; /* Normal priority */
-    qos_pdec->qos_profile.data.peak_throughput = 9; /* Up to 256 000 octet/s */
-    qos_pdec->qos_profile.data.mean_throughput = 0x1f; /* Best effort */
-    qos_pdec->qos_profile.data.delivery_erroneous_sdu = 2; /* Erroneous SDUs are delivered ('yes') */
-    qos_pdec->qos_profile.data.delivery_order = 2; /* Without delivery order ('no') */
-    qos_pdec->qos_profile.data.max_sdu_size = 0x96; /* 1500 octets */
-    qos_pdec->qos_profile.data.residual_ber = 5; /* 1*10^-4,  <= 2*10^-4 */
-    qos_pdec->qos_profile.data.sdu_error_ratio = 4; /* 1*10^-4 */
-
 
      /* 3GPP TS 23.401 Annex E table Table E.3 */
     /* Also take into account table 7 in 3GPP TS 23.107 9.1.2.2 */

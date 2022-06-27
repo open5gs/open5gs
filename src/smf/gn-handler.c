@@ -62,7 +62,7 @@ uint8_t smf_gn_handle_create_pdp_context_request(
     smf_ue_t *smf_ue = NULL;
     ogs_eua_t *eua = NULL;
     smf_bearer_t *bearer = NULL;
-    ogs_gtp1_qos_profile_decoded_t qos_pdec;
+    ogs_gtp1_qos_profile_decoded_t *qos_pdec;
     uint8_t qci = 9;
 
     ogs_assert(sess);
@@ -183,22 +183,22 @@ uint8_t smf_gn_handle_create_pdp_context_request(
     sess->session.ambr.uplink = 102400000;
 
     /* Set Bearer QoS */
-    rv = ogs_gtp1_parse_qos_profile(&qos_pdec,
-        &req->quality_of_service_profile);
+    qos_pdec = &sess->gtp.v1.qos_pdec;
+    rv = ogs_gtp1_parse_qos_profile(qos_pdec, &req->quality_of_service_profile);
     if(rv < 0)
         return OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT;
 
     /* 3GPP TS 23.060 section 9.2.1A: "The QoS profiles of the PDP context and EPS bearer are mapped as specified in TS 23.401"
      * 3GPP TS 23.401 Annex E: "Mapping between EPS and Release 99 QoS parameters"
      */
-    ogs_gtp1_qos_profile_to_qci(&qos_pdec, &qci);
+    ogs_gtp1_qos_profile_to_qci(qos_pdec, &qci);
     sess->session.qos.index = qci;
-    sess->session.qos.arp.priority_level = qos_pdec.qos_profile.arp; /* 3GPP TS 23.401 Annex E Table E.2 */
+    sess->session.qos.arp.priority_level = qos_pdec->qos_profile.arp; /* 3GPP TS 23.401 Annex E Table E.2 */
     sess->session.qos.arp.pre_emption_capability = 0; /* ignored as per 3GPP TS 23.401 Annex E */
     sess->session.qos.arp.pre_emption_vulnerability = 0; /* ignored as per 3GPP TS 23.401 Annex E */
-    if (qos_pdec.data_octet6_to_13_present) {
-        sess->session.ambr.downlink = qos_pdec.dec_mbr_kbps_dl * 1000;
-        sess->session.ambr.uplink = qos_pdec.dec_mbr_kbps_ul * 1000;
+    if (qos_pdec->data_octet6_to_13_present) {
+        sess->session.ambr.downlink = qos_pdec->dec_mbr_kbps_dl * 1000;
+        sess->session.ambr.uplink = qos_pdec->dec_mbr_kbps_ul * 1000;
     }
 
     /* APN-AMBR, 7.7.98 */
@@ -266,9 +266,9 @@ uint8_t smf_gn_handle_create_pdp_context_request(
     ogs_assert(rv == OGS_OK);
     ogs_debug("    SGW_S5U_TEID[0x%x] PGW_S5U_TEID[0x%x]",
             bearer->sgw_s5u_teid, bearer->pgw_s5u_teid);
-    if (qos_pdec.data_octet6_to_13_present) {
-        bearer->qos.gbr.downlink = qos_pdec.dec_gbr_kbps_dl * 1000;
-        bearer->qos.gbr.uplink = qos_pdec.dec_gbr_kbps_ul * 1000;
+    if (qos_pdec->data_octet6_to_13_present) {
+        bearer->qos.gbr.downlink = qos_pdec->dec_gbr_kbps_dl * 1000;
+        bearer->qos.gbr.uplink = qos_pdec->dec_gbr_kbps_ul * 1000;
     } else {
         /* Set some sane default if infomation not present in Qos Profile IE: */
         bearer->qos.gbr.downlink = sess->session.ambr.downlink;
