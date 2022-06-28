@@ -578,7 +578,7 @@ ogs_gtp_node_t *ogs_gtp_node_add_by_f_teid(
 #endif
 
     node = ogs_gtp_node_new(addr);
-    ogs_assert(node);
+    ogs_expect_or_return_val(node, NULL);
 
     rv = ogs_gtp2_f_teid_to_ip(f_teid, &node->ip);
     ogs_expect_or_return_val(rv == OGS_OK, NULL);
@@ -598,8 +598,8 @@ ogs_gtp_node_t *ogs_gtp_node_add_by_addr(ogs_list_t *list, ogs_sockaddr_t *addr)
 
     ogs_assert(OGS_OK == ogs_copyaddrinfo(&new, addr));
     gnode = ogs_gtp_node_new(new);
+    ogs_expect_or_return_val(gnode, NULL);
 
-    ogs_assert(gnode);
     memcpy(&gnode->addr, new, sizeof gnode->addr);
 
     ogs_list_add(list, gnode);
