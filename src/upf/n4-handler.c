@@ -467,11 +467,7 @@ void upf_n4_handle_session_deletion_request(
                 OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND, 0);
         return;
     }
-
-    ogs_assert(sess);
-
     upf_pfcp_send_session_deletion_response(xact, sess);
-
     upf_sess_remove(sess);
 }
 
