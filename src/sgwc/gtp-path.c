@@ -27,6 +27,7 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_sockaddr_t from;
     ogs_gtp_node_t *gnode = NULL;
+    char frombuf[OGS_ADDRSTRLEN];
 
     ogs_assert(fd != INVALID_SOCKET);
 
@@ -83,7 +84,12 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
         gnode = ogs_gtp_node_find_by_addr(&sgwc_self()->mme_s11_list, &from);
         if (!gnode) {
             gnode = ogs_gtp_node_add_by_addr(&sgwc_self()->mme_s11_list, &from);
-            ogs_assert(gnode);
+            if (!gnode) {
+                ogs_error("Failed to create new gnode(%s:%u), mempool full, ignoring msg!",
+                          OGS_ADDR(&from, frombuf), OGS_PORT(&from));
+                ogs_pkbuf_free(pkbuf);
+                return;
+            }
             gnode->sock = data;
         }
         ogs_assert(e);
