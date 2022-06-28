@@ -157,6 +157,7 @@ void sgwc_sxa_handle_session_establishment_response(
 
     ogs_debug("Session Establishment Response");
 
+    ogs_assert(sess);
     ogs_assert(pfcp_xact);
     ogs_assert(pfcp_rsp);
     ogs_assert(recv_message);
@@ -170,11 +171,6 @@ void sgwc_sxa_handle_session_establishment_response(
     ogs_pfcp_xact_commit(pfcp_xact);
 
     cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
-
-    if (!sess) {
-        ogs_warn("No Context");
-        cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
-    }
 
     if (pfcp_rsp->up_f_seid.presence == 0) {
         ogs_error("No UP F-SEID");
@@ -451,6 +447,7 @@ void sgwc_sxa_handle_session_modification_response(
 
     ogs_debug("Session Modification Response");
 
+    ogs_assert(sess);
     ogs_assert(pfcp_xact);
     ogs_assert(pfcp_rsp);
 
@@ -460,30 +457,12 @@ void sgwc_sxa_handle_session_modification_response(
     cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
 
     if (flags & OGS_PFCP_MODIFY_SESSION) {
-        if (!sess) {
-            ogs_warn("No Context");
-
-            sess = pfcp_xact->data;
-            ogs_assert(sess);
-
-            cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
-        }
         sgwc_ue = sess->sgwc_ue;
         ogs_assert(sgwc_ue);
 
     } else {
         bearer = pfcp_xact->data;
         ogs_assert(bearer);
-
-        if (!sess) {
-            ogs_warn("No Context");
-
-            sess = bearer->sess;
-            ogs_assert(sess);
-
-            cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
-        }
-
         sgwc_ue = bearer->sgwc_ue;
         ogs_assert(sgwc_ue);
     }
@@ -1202,15 +1181,11 @@ void sgwc_sxa_handle_session_deletion_response(
 
     ogs_debug("Session Deletion Response");
 
+    ogs_assert(sess);
     ogs_assert(pfcp_xact);
     ogs_assert(pfcp_rsp);
 
     cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
-
-    if (!sess) {
-        ogs_warn("No Context");
-        cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
-    }
 
     if (pfcp_rsp->cause.presence) {
         if (pfcp_rsp->cause.u8 != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
@@ -1320,15 +1295,11 @@ void sgwc_sxa_handle_session_report_request(
 
     ogs_debug("Session Report Request");
 
+    ogs_assert(sess);
     ogs_assert(pfcp_xact);
     ogs_assert(pfcp_req);
 
     cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
-
-    if (!sess) {
-        ogs_warn("No Context");
-        cause_value = OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND;
-    }
 
     if (pfcp_req->report_type.presence == 0) {
         ogs_error("No Report Type");

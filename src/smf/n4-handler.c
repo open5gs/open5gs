@@ -255,6 +255,7 @@ void smf_5gc_n4_handle_session_modification_response(
 
     ogs_debug("Session Modification Response [5gc]");
 
+    ogs_assert(sess);
     ogs_assert(xact);
     ogs_assert(rsp);
 
@@ -278,11 +279,6 @@ void smf_5gc_n4_handle_session_modification_response(
     ogs_pfcp_xact_commit(xact);
 
     status = OGS_SBI_HTTP_STATUS_OK;
-
-    if (!sess) {
-        ogs_warn("No Context");
-        status = OGS_SBI_HTTP_STATUS_NOT_FOUND;
-    }
 
     if (rsp->cause.presence) {
         if (rsp->cause.u8 != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
@@ -624,10 +620,7 @@ int smf_5gc_n4_handle_session_deletion_response(
 
     status = OGS_SBI_HTTP_STATUS_OK;
 
-    if (!sess) {
-        ogs_warn("No Context");
-        status = OGS_SBI_HTTP_STATUS_NOT_FOUND;
-    }
+    ogs_assert(sess);
 
     if (rsp->cause.presence) {
         if (rsp->cause.u8 != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
@@ -668,8 +661,6 @@ int smf_5gc_n4_handle_session_deletion_response(
         ogs_free(strerror);
         return status;
     }
-
-    ogs_assert(sess);
 
     return status;
 }
@@ -803,6 +794,7 @@ void smf_epc_n4_handle_session_modification_response(
 
     OGS_LIST(pdr_to_create_list);
 
+    ogs_assert(sess);
     ogs_assert(xact);
     ogs_assert(rsp);
 
@@ -830,11 +822,6 @@ void smf_epc_n4_handle_session_modification_response(
     ogs_list_copy(&pdr_to_create_list, &xact->pdr_to_create_list);
 
     ogs_pfcp_xact_commit(xact);
-
-    if (!sess) {
-        ogs_error("No Context");
-        return;
-    }
 
     if (rsp->cause.presence) {
         if (rsp->cause.u8 != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
@@ -1111,17 +1098,13 @@ void smf_n4_handle_session_report_request(
     uint16_t pdr_id = 0;
     unsigned int i;
 
+    ogs_assert(sess);
     ogs_assert(pfcp_xact);
     ogs_assert(pfcp_req);
 
     ogs_debug("Session Report Request");
 
     cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
-
-    if (!sess) {
-        ogs_warn("No Context");
-        cause_value = OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND;
-    }
 
     if (pfcp_req->report_type.presence == 0) {
         ogs_error("No Report Type");
@@ -1135,7 +1118,6 @@ void smf_n4_handle_session_report_request(
         return;
     }
 
-    ogs_assert(sess);
     report_type.value = pfcp_req->report_type.u8;
 
     if (report_type.downlink_data_report) {
