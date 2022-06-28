@@ -238,8 +238,14 @@ void ngap_recv_handler(ogs_sock_t *sock)
         ngap_event_push(AMF_EVT_NGAP_MESSAGE, sock, addr, pkbuf, 0, 0);
         return;
     } else {
-        ogs_fatal("Invalid flag(0x%x)", flags);
-        ogs_assert_if_reached();
+        if (ogs_socket_errno != OGS_EAGAIN) {
+            ogs_fatal("ogs_sctp_recvmsg(%d) failed(%d:%s-0x%x)",
+                    size, errno, strerror(errno), flags);
+            ogs_assert_if_reached();
+        } else {
+            ogs_error("ogs_sctp_recvmsg(%d) failed(%d:%s-0x%x)",
+                    size, errno, strerror(errno), flags);
+        }
     }
 
     ogs_pkbuf_free(pkbuf);
