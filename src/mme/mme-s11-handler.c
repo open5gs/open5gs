@@ -78,7 +78,7 @@ void mme_s11_handle_echo_response(
 }
 
 void mme_s11_handle_create_session_response(
-        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue_from_teid,
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
         ogs_gtp2_create_session_response_t *rsp)
 {
     int rv, i;
@@ -91,7 +91,6 @@ void mme_s11_handle_create_session_response(
 
     mme_bearer_t *bearer = NULL;
     mme_sess_t *sess = NULL;
-    mme_ue_t *mme_ue = NULL;
     sgw_ue_t *source_ue = NULL, *target_ue = NULL;
     ogs_session_t *session = NULL;
     ogs_gtp2_bearer_qos_t bearer_qos;
@@ -99,6 +98,7 @@ void mme_s11_handle_create_session_response(
     uint16_t decoded = 0;
     int create_action = 0;
 
+    ogs_assert(mme_ue);
     ogs_assert(rsp);
 
     ogs_debug("Create Session Response");
@@ -110,8 +110,6 @@ void mme_s11_handle_create_session_response(
     create_action = xact->create_action;
     sess = xact->data;
     ogs_assert(sess);
-    mme_ue = sess->mme_ue;
-    ogs_assert(mme_ue);
     source_ue = sgw_ue_cycle(mme_ue->sgw_ue);
     ogs_assert(source_ue);
 
@@ -130,11 +128,6 @@ void mme_s11_handle_create_session_response(
      * Check MME-UE Context
      ************************/
     cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
-
-    if (!mme_ue_from_teid) {
-        ogs_error("No Context in TEID");
-        cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
-    }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
         if (create_action == OGS_GTP_CREATE_IN_ATTACH_REQUEST) {
@@ -400,7 +393,7 @@ void mme_s11_handle_create_session_response(
 }
 
 void mme_s11_handle_modify_bearer_response(
-        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue_from_teid,
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
         ogs_gtp2_modify_bearer_response_t *rsp)
 {
     int rv;
@@ -408,9 +401,9 @@ void mme_s11_handle_modify_bearer_response(
     int modify_action = 0;
     ogs_gtp2_cause_t *cause = NULL;
 
-    mme_ue_t *mme_ue = NULL;
     sgw_ue_t *sgw_ue = NULL;
 
+    ogs_assert(mme_ue);
     ogs_assert(rsp);
 
     ogs_debug("Modify Bearer Response");
@@ -420,8 +413,6 @@ void mme_s11_handle_modify_bearer_response(
      ********************/
     ogs_assert(xact);
     modify_action = xact->modify_action;
-    mme_ue = xact->data;
-    ogs_assert(mme_ue);
     sgw_ue = sgw_ue_cycle(mme_ue->sgw_ue);
     ogs_assert(sgw_ue);
 
@@ -432,11 +423,6 @@ void mme_s11_handle_modify_bearer_response(
      * Check MME-UE Context
      ************************/
     cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
-
-    if (!mme_ue_from_teid) {
-        ogs_error("No Context in TEID");
-        cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
-    }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
         mme_send_delete_session_or_mme_ue_context_release(mme_ue);
@@ -494,7 +480,7 @@ void mme_s11_handle_modify_bearer_response(
 }
 
 void mme_s11_handle_delete_session_response(
-        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue_from_teid,
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
         ogs_gtp2_delete_session_response_t *rsp)
 {
     int rv;
@@ -502,8 +488,8 @@ void mme_s11_handle_delete_session_response(
     int action = 0;
     sgw_ue_t *source_ue = NULL, *target_ue = NULL;
     mme_sess_t *sess = NULL;
-    mme_ue_t *mme_ue = NULL;
 
+    ogs_assert(mme_ue);
     ogs_assert(rsp);
 
     ogs_debug("Delete Session Response");
@@ -516,8 +502,6 @@ void mme_s11_handle_delete_session_response(
     ogs_assert(action);
     sess = xact->data;
     ogs_assert(sess);
-    mme_ue = sess->mme_ue;
-    ogs_assert(mme_ue);
     target_ue = sgw_ue_cycle(mme_ue->sgw_ue);
     ogs_assert(target_ue);
 
@@ -531,13 +515,6 @@ void mme_s11_handle_delete_session_response(
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect_or_return(rv == OGS_OK);
-
-    /************************
-     * Check MME-UE Context
-     ************************/
-    if (!mme_ue_from_teid) {
-        ogs_error("No Context in TEID");
-    }
 
     /********************
      * Check Cause Value
@@ -1076,7 +1053,7 @@ void mme_s11_handle_delete_bearer_request(
 }
 
 void mme_s11_handle_release_access_bearers_response(
-        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue_from_teid,
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
         ogs_gtp2_release_access_bearers_response_t *rsp)
 {
     int rv;
@@ -1085,10 +1062,10 @@ void mme_s11_handle_release_access_bearers_response(
     enb_ue_t *enb_ue = NULL;
 
     sgw_ue_t *sgw_ue = NULL;;
-    mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
 
+    ogs_assert(mme_ue);
     ogs_assert(rsp);
 
     ogs_debug("Release Access Bearers Response");
@@ -1099,20 +1076,11 @@ void mme_s11_handle_release_access_bearers_response(
     ogs_assert(xact);
     action = xact->release_action;
     ogs_assert(action);
-    mme_ue = xact->data;
-    ogs_assert(mme_ue);
     sgw_ue = sgw_ue_cycle(mme_ue->sgw_ue);
     ogs_assert(sgw_ue);
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect_or_return(rv == OGS_OK);
-
-    /***********************
-     * Check MME-UE Context
-     ***********************/
-    if (!mme_ue_from_teid) {
-        ogs_error("No Context in TEID");
-    }
 
     /********************
      * Check Cause Value
@@ -1365,7 +1333,7 @@ void mme_s11_handle_downlink_data_notification(
 }
 
 void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
-        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue_from_teid,
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
         ogs_gtp2_create_indirect_data_forwarding_tunnel_response_t *rsp)
 {
     int rv;
@@ -1373,12 +1341,12 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
     ogs_gtp2_cause_t *cause = NULL;
     sgw_ue_t *sgw_ue = NULL;
     mme_bearer_t *bearer = NULL;
-    mme_ue_t *mme_ue = NULL;
     enb_ue_t *source_ue = NULL;
     int i;
 
     ogs_gtp2_f_teid_t *teid = NULL;
 
+    ogs_assert(mme_ue);
     ogs_assert(rsp);
 
     ogs_debug("Create Indirect Data Forwarding Tunnel Response");
@@ -1386,9 +1354,6 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
     /********************
      * Check Transaction
      ********************/
-    ogs_assert(xact);
-    mme_ue = xact->data;
-    ogs_assert(mme_ue);
     sgw_ue = sgw_ue_cycle(mme_ue->sgw_ue);
     ogs_assert(sgw_ue);
 
@@ -1399,11 +1364,6 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
      * Check MME-UE Context
      ************************/
     cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
-
-    if (!mme_ue_from_teid) {
-        ogs_error("No Context in TEID");
-        cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
-    }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
         mme_send_delete_session_or_mme_ue_context_release(mme_ue);
@@ -1483,16 +1443,16 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
 }
 
 void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
-        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue_from_teid,
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
         ogs_gtp2_delete_indirect_data_forwarding_tunnel_response_t *rsp)
 {
     int rv;
     uint8_t cause_value = 0;
     ogs_gtp2_cause_t *cause = NULL;
     int action = 0;
-    mme_ue_t *mme_ue = NULL;
     sgw_ue_t *sgw_ue = NULL;
 
+    ogs_assert(mme_ue);
     ogs_assert(rsp);
 
     ogs_debug("Delete Indirect Data Forwarding Tunnel Response");
@@ -1503,8 +1463,6 @@ void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
     ogs_assert(xact);
     action = xact->delete_indirect_action;
     ogs_assert(action);
-    mme_ue = xact->data;
-    ogs_assert(mme_ue);
     sgw_ue = sgw_ue_cycle(mme_ue->sgw_ue);
     ogs_assert(sgw_ue);
 
@@ -1515,11 +1473,6 @@ void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
      * Check MME-UE Context
      ************************/
     cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
-
-    if (!mme_ue_from_teid) {
-        ogs_error("No Context in TEID");
-        cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
-    }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
         mme_send_delete_session_or_mme_ue_context_release(mme_ue);
@@ -1578,7 +1531,7 @@ void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
 }
 
 void mme_s11_handle_bearer_resource_failure_indication(
-        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue_from_teid,
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
         ogs_gtp2_bearer_resource_failure_indication_t *ind)
 {
     int rv;
@@ -1586,10 +1539,11 @@ void mme_s11_handle_bearer_resource_failure_indication(
 
     mme_bearer_t *bearer = NULL;
     mme_sess_t *sess = NULL;
-    mme_ue_t *mme_ue = NULL;
     sgw_ue_t *sgw_ue = NULL;
 
     ogs_debug("Bearer Resource Failure Indication");
+
+    ogs_assert(mme_ue);
 
     /********************
      * Check Transaction
@@ -1599,16 +1553,11 @@ void mme_s11_handle_bearer_resource_failure_indication(
     ogs_assert(ind);
     sess = bearer->sess;
     ogs_assert(sess);
-    mme_ue = sess->mme_ue;
-    ogs_assert(mme_ue);
     sgw_ue = sgw_ue_cycle(mme_ue->sgw_ue);
     ogs_assert(sgw_ue);
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect_or_return(rv == OGS_OK);
-
-    if (!mme_ue_from_teid)
-        ogs_error("No Context in TEID");
 
     /********************
      * Check Cause Value

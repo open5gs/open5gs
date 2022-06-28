@@ -369,6 +369,7 @@ void smf_bearer_binding(smf_sess_t *sess)
                 xact = ogs_gtp_xact_local_create(
                         sess->gnode, &h, pkbuf, gtp_bearer_timeout, bearer);
                 ogs_expect_or_return(xact);
+                xact->local_teid = sess->smf_n4_teid;
 
                 if (ogs_list_count(&bearer->pf_to_add_list) > 0)
                     xact->update_flags |= OGS_GTP_MODIFY_TFT_UPDATE;
@@ -438,6 +439,7 @@ int smf_gtp2_send_create_bearer_request(smf_bearer_t *bearer)
     xact = ogs_gtp_xact_local_create(
             sess->gnode, &h, pkbuf, gtp_bearer_timeout, bearer);
     ogs_expect_or_return_val(xact, OGS_ERROR);
+    xact->local_teid = sess->smf_n4_teid;
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);

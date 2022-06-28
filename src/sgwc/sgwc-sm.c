@@ -157,6 +157,13 @@ void sgwc_state_operational(ogs_fsm_t *s, sgwc_event_t *e)
         if (gtp_message.h.teid_presence && gtp_message.h.teid != 0) {
             /* Cause is not "Context not found" */
             sgwc_ue = sgwc_ue_find_by_teid(gtp_message.h.teid);
+        } else if (gtp_xact->local_teid) { /* rx no TEID or TEID=0 */
+            /* 3GPP TS 29.274 5.5.2: we receive TEID=0 under some
+             * conditions, such as cause "Session context not found". In those
+             * cases, we still want to identify the local session which
+             * originated the message, so try harder by using the TEID we
+             * locally stored in xact when sending the original request: */
+            sgwc_ue = sgwc_ue_find_by_teid(gtp_xact->local_teid);
         }
 
         switch(gtp_message.h.type) {
@@ -185,14 +192,17 @@ void sgwc_state_operational(ogs_fsm_t *s, sgwc_event_t *e)
                     sgwc_ue, gtp_xact, recvbuf, &gtp_message);
             break;
         case OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE:
+            if (!gtp_message.h.teid_presence) ogs_error("No TEID");
             sgwc_s11_handle_create_bearer_response(
                     sgwc_ue, gtp_xact, recvbuf, &gtp_message);
             break;
         case OGS_GTP2_UPDATE_BEARER_RESPONSE_TYPE:
+            if (!gtp_message.h.teid_presence) ogs_error("No TEID");
             sgwc_s11_handle_update_bearer_response(
                     sgwc_ue, gtp_xact, recvbuf, &gtp_message);
             break;
         case OGS_GTP2_DELETE_BEARER_RESPONSE_TYPE:
+            if (!gtp_message.h.teid_presence) ogs_error("No TEID");
             sgwc_s11_handle_delete_bearer_response(
                     sgwc_ue, gtp_xact, recvbuf, &gtp_message);
             break;
@@ -245,6 +255,13 @@ void sgwc_state_operational(ogs_fsm_t *s, sgwc_event_t *e)
 
         if (gtp_message.h.teid_presence && gtp_message.h.teid != 0) {
             sess = sgwc_sess_find_by_teid(gtp_message.h.teid);
+        } else if (gtp_xact->local_teid) { /* rx no TEID or TEID=0 */
+            /* 3GPP TS 29.274 5.5.2: we receive TEID=0 under some
+             * conditions, such as cause "Session context not found". In those
+             * cases, we still want to identify the local session which
+             * originated the message, so try harder by using the TEID we
+             * locally stored in xact when sending the original request: */
+            sess = sgwc_sess_find_by_teid(gtp_xact->local_teid);
         }
 
         switch(gtp_message.h.type) {
@@ -255,15 +272,18 @@ void sgwc_state_operational(ogs_fsm_t *s, sgwc_event_t *e)
             sgwc_handle_echo_response(gtp_xact, &gtp_message.echo_response);
             break;
         case OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE:
+            if (!gtp_message.h.teid_presence) ogs_error("No TEID");
             sgwc_s5c_handle_create_session_response(
                     sess, gtp_xact, recvbuf, &gtp_message);
             break;
-        case OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE:
-            sgwc_s5c_handle_delete_session_response(
+        case OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE:
+            if (!gtp_message.h.teid_presence) ogs_error("No TEID");
+            sgwc_s5c_handle_modify_bearer_response(
                     sess, gtp_xact, recvbuf, &gtp_message);
             break;
-        case OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE:
-            sgwc_s5c_handle_modify_bearer_response(
+        case OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE:
+            if (!gtp_message.h.teid_presence) ogs_error("No TEID");
+            sgwc_s5c_handle_delete_session_response(
                     sess, gtp_xact, recvbuf, &gtp_message);
             break;
         case OGS_GTP2_CREATE_BEARER_REQUEST_TYPE:
@@ -279,6 +299,7 @@ void sgwc_state_operational(ogs_fsm_t *s, sgwc_event_t *e)
                     sess, gtp_xact, recvbuf, &gtp_message);
             break;
         case OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE:
+            if (!gtp_message.h.teid_presence) ogs_error("No TEID");
             sgwc_s5c_handle_bearer_resource_failure_indication(
                     sess, gtp_xact, recvbuf, &gtp_message);
             break;

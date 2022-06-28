@@ -402,7 +402,6 @@ int smf_5gc_pfcp_send_all_pdr_modification_request(
     ogs_expect_or_return_val(xact, OGS_ERROR);
 
     xact->assoc_stream = stream;
-    xact->local_seid = sess->smf_n4_seid;
     xact->modify_flags = flags | OGS_PFCP_MODIFY_SESSION;
 
     ogs_list_init(&sess->pdr_to_modify_list);
@@ -429,7 +428,6 @@ int smf_5gc_pfcp_send_qos_flow_list_modification_request(
     ogs_expect_or_return_val(xact, OGS_ERROR);
 
     xact->assoc_stream = stream;
-    xact->local_seid = sess->smf_n4_seid;
     xact->modify_flags = flags | OGS_PFCP_MODIFY_SESSION;
 
     rv = smf_pfcp_send_modify_list(
@@ -521,7 +519,6 @@ int smf_epc_pfcp_send_all_pdr_modification_request(
 
     xact->epc = true; /* EPC PFCP transaction */
     xact->assoc_xact = gtp_xact;
-    xact->local_seid = sess->smf_n4_seid;
     xact->modify_flags = flags | OGS_PFCP_MODIFY_SESSION;
 
     xact->gtp_pti = gtp_pti;
@@ -560,7 +557,6 @@ int smf_epc_pfcp_send_one_bearer_modification_request(
 
     xact->epc = true; /* EPC PFCP transaction */
     xact->assoc_xact = gtp_xact;
-    xact->local_seid = sess->smf_n4_seid;
     xact->modify_flags = flags;
 
     xact->gtp_pti = gtp_pti;

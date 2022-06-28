@@ -688,6 +688,7 @@ void sgwc_s11_handle_create_bearer_response(
     ogs_gtp2_f_teid_t *sgw_s1u_teid = NULL, *enb_s1u_teid = NULL;
     ogs_gtp2_uli_t uli;
 
+    ogs_assert(sgwc_ue);
     ogs_assert(message);
     rsp = &message->create_bearer_response;
     ogs_assert(rsp);
@@ -714,30 +715,10 @@ void sgwc_s11_handle_create_bearer_response(
     rv = ogs_gtp_xact_commit(s11_xact);
     ogs_expect(rv == OGS_OK);
 
-    /************************
-     * Check SGWC-UE Context
-     ************************/
-    cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
-
-    if (!sgwc_ue) {
-        ogs_error("No Context in TEID");
-        cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
-    }
-
-    if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_assert(OGS_OK ==
-            sgwc_pfcp_send_bearer_modification_request(
-                bearer, NULL, NULL,
-                OGS_PFCP_MODIFY_UL_ONLY|OGS_PFCP_MODIFY_REMOVE));
-        ogs_gtp_send_error_message(s5c_xact, sess ? sess->pgw_s5c_teid : 0,
-                OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE, cause_value);
-        return;
-    }
-
     /*****************************************
      * Check Mandatory/Conditional IE Missing
      *****************************************/
-    ogs_assert(cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED);
+    cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
 
     if (rsp->bearer_contexts.presence == 0) {
         ogs_error("No Bearer");
@@ -872,6 +853,7 @@ void sgwc_s11_handle_update_bearer_response(
     sgwc_bearer_t *bearer = NULL;
     ogs_gtp2_update_bearer_response_t *rsp = NULL;
 
+    ogs_assert(sgwc_ue);
     ogs_assert(message);
     rsp = &message->update_bearer_response;
     ogs_assert(rsp);
@@ -898,26 +880,10 @@ void sgwc_s11_handle_update_bearer_response(
     rv = ogs_gtp_xact_commit(s11_xact);
     ogs_expect(rv == OGS_OK);
 
-    /************************
-     * Check SGWC-UE Context
-     ************************/
-    cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
-
-    if (!sgwc_ue) {
-        ogs_error("No Context in TEID");
-        cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
-    }
-
-    if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp_send_error_message(s5c_xact, sess ? sess->pgw_s5c_teid : 0,
-                OGS_GTP2_UPDATE_BEARER_RESPONSE_TYPE, cause_value);
-        return;
-    }
-
     /*****************************************
      * Check Mandatory/Conditional IE Missing
      *****************************************/
-    ogs_assert(cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED);
+    cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
 
     if (rsp->bearer_contexts.presence == 0) {
         ogs_error("No Bearer");
@@ -1004,6 +970,7 @@ void sgwc_s11_handle_delete_bearer_response(
     sgwc_bearer_t *bearer = NULL;
     ogs_gtp2_delete_bearer_response_t *rsp = NULL;
 
+    ogs_assert(sgwc_ue);
     ogs_assert(message);
     rsp = &message->delete_bearer_response;
     ogs_assert(rsp);
@@ -1034,11 +1001,6 @@ void sgwc_s11_handle_delete_bearer_response(
      * Check SGWC-UE Context
      ************************/
     cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
-
-    if (!sgwc_ue) {
-        ogs_error("No Context in TEID");
-        cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
-    }
 
     if (rsp->linked_eps_bearer_id.presence) {
        /*
@@ -1111,10 +1073,8 @@ void sgwc_s11_handle_delete_bearer_response(
             ogs_error("No Cause");
         }
 
-        if (sgwc_ue) {
-            ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
-                sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);
-        }
+        ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
+            sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);
         ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
@@ -1513,6 +1473,7 @@ void sgwc_s11_handle_bearer_resource_command(
     s5c_xact = ogs_gtp_xact_local_create(
             sess->gnode, &message->h, pkbuf, gtp_bearer_timeout, bearer);
     ogs_expect_or_return(s5c_xact);
+    s5c_xact->local_teid = sess->sgw_s5c_teid;
 
     ogs_gtp_xact_associate(s11_xact, s5c_xact);
 
