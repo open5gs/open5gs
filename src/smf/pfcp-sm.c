@@ -185,8 +185,16 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
         xact = e->pfcp_xact;
         ogs_assert(xact);
 
-        if (message->h.seid_presence && message->h.seid != 0)
-            sess = smf_sess_find_by_seid(message->h.seid);
+        if (message->h.seid_presence && message->h.seid != 0) {
+               sess = smf_sess_find_by_seid(message->h.seid);
+        } else if (xact->local_seid) { /* rx no SEID or SEID=0 */
+            /* 3GPP TS 29.244 7.2.2.4.2: we receive SEID=0 under some
+             * conditions, such as cause "Session context not found". In those
+             * cases, we still want to identify the local session which
+             * originated the message, so try harder by using the SEID we
+             * locacally stored in xact when sending the original request: */
+            sess = smf_sess_find_by_seid(xact->local_seid);
+        }
         if (sess)
             e->sess = sess;
 
