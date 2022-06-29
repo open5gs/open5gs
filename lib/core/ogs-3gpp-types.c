@@ -427,12 +427,19 @@ int ogs_ip_to_sockaddr(ogs_ip_t *ip, uint16_t port, ogs_sockaddr_t **list)
     ogs_assert(list);
 
     addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
-    ogs_expect_or_return_val(addr, OGS_ERROR);
+    if (!addr) {
+        ogs_error("ogs_calloc() failed");
+        return OGS_ERROR;
+    }
     addr->ogs_sa_family = AF_INET;
     addr->ogs_sin_port = htobe16(port);
 
     addr6 = ogs_calloc(1, sizeof(ogs_sockaddr_t));
-    ogs_expect_or_return_val(addr6, OGS_ERROR);
+    if (!addr6) {
+        ogs_error("ogs_calloc() failed");
+        ogs_free(addr);
+        return OGS_ERROR;
+    }
     addr6->ogs_sa_family = AF_INET6;
     addr6->ogs_sin_port = htobe16(port);
 
@@ -454,6 +461,7 @@ int ogs_ip_to_sockaddr(ogs_ip_t *ip, uint16_t port, ogs_sockaddr_t **list)
 
         *list = addr6;
     } else {
+        ogs_error("No IPv4 and IPv6");
         ogs_free(addr);
         ogs_free(addr6);
         return OGS_ERROR;

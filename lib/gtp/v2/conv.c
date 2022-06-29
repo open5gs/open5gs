@@ -33,7 +33,11 @@ int ogs_gtp2_f_teid_to_sockaddr(
     addr->ogs_sin_port = htobe16(port);
 
     addr6 = ogs_calloc(1, sizeof(ogs_sockaddr_t));
-    ogs_expect_or_return_val(addr6, OGS_ERROR);
+    if (!addr6) {
+        ogs_error("ogs_calloc() failed");
+        ogs_free(addr);
+        return OGS_ERROR;
+    }
     addr6->ogs_sa_family = AF_INET6;
     addr6->ogs_sin_port = htobe16(port);
 
@@ -55,9 +59,9 @@ int ogs_gtp2_f_teid_to_sockaddr(
 
         *list = addr6;
     } else {
+        ogs_error("No IPv4 or IPv6");
         ogs_free(addr);
         ogs_free(addr6);
-        ogs_error("No IPv4 or IPv6");
         return OGS_ERROR;
     }
 
