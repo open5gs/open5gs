@@ -31,7 +31,7 @@ extern "C" {
 
 #define OGS_TLV_MAX_HEADROOM 16
 #define OGS_TLV_VARIABLE_LEN 0
-#define OGS_TLV_MAX_MORE 8
+#define OGS_TLV_MAX_MORE 16
 #define OGS_TLV_1_OR_MORE(__v) __v[OGS_TLV_MAX_MORE]
 
 #define OGS_TLV_MAX_CHILD_DESC 128
@@ -83,6 +83,14 @@ extern ogs_tlv_desc_t ogs_tlv_desc_more5;
 extern ogs_tlv_desc_t ogs_tlv_desc_more6;
 extern ogs_tlv_desc_t ogs_tlv_desc_more7;
 extern ogs_tlv_desc_t ogs_tlv_desc_more8;
+extern ogs_tlv_desc_t ogs_tlv_desc_more9;
+extern ogs_tlv_desc_t ogs_tlv_desc_more10;
+extern ogs_tlv_desc_t ogs_tlv_desc_more11;
+extern ogs_tlv_desc_t ogs_tlv_desc_more12;
+extern ogs_tlv_desc_t ogs_tlv_desc_more13;
+extern ogs_tlv_desc_t ogs_tlv_desc_more14;
+extern ogs_tlv_desc_t ogs_tlv_desc_more15;
+extern ogs_tlv_desc_t ogs_tlv_desc_more16;
 
 typedef uint64_t ogs_tlv_presence_t;
 

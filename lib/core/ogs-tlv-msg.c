@@ -36,6 +36,22 @@ ogs_tlv_desc_t ogs_tlv_desc_more7 = {
     OGS_TLV_MORE, "More", 0, 7, 0, 0, { NULL } };
 ogs_tlv_desc_t ogs_tlv_desc_more8 = {
     OGS_TLV_MORE, "More", 0, 8, 0, 0, { NULL } };
+ogs_tlv_desc_t ogs_tlv_desc_more9 = {
+    OGS_TLV_MORE, "More", 0, 9, 0, 0, { NULL } };
+ogs_tlv_desc_t ogs_tlv_desc_more10 = {
+    OGS_TLV_MORE, "More", 0, 10, 0, 0, { NULL } };
+ogs_tlv_desc_t ogs_tlv_desc_more11 = {
+    OGS_TLV_MORE, "More", 0, 11, 0, 0, { NULL } };
+ogs_tlv_desc_t ogs_tlv_desc_more12 = {
+    OGS_TLV_MORE, "More", 0, 12, 0, 0, { NULL } };
+ogs_tlv_desc_t ogs_tlv_desc_more13 = {
+    OGS_TLV_MORE, "More", 0, 13, 0, 0, { NULL } };
+ogs_tlv_desc_t ogs_tlv_desc_more14 = {
+    OGS_TLV_MORE, "More", 0, 14, 0, 0, { NULL } };
+ogs_tlv_desc_t ogs_tlv_desc_more15 = {
+    OGS_TLV_MORE, "More", 0, 15, 0, 0, { NULL } };
+ogs_tlv_desc_t ogs_tlv_desc_more16 = {
+    OGS_TLV_MORE, "More", 0, 16, 0, 0, { NULL } };
 
 /* Return specific TLV mode based on its TLV description type and the msg
  * provided mode (used to know the type length) */

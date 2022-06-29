@@ -635,54 +635,53 @@ static void test5_func(abts_case *tc, void *data)
     return;
 }
 
-#if 0
 /* Sample header for tlv_msg */
 #define TLV_AUTHORIZATION_POLICY_SUPPORT_TYPE 21
 #define TLV_AUTHORIZATION_POLICY_SUPPORT_LEN 1
-typedef tlv_uint8_t tlv_authorization_policy_support_t;
-extern tlv_desc_t tlv_desc_authorization_policy_support;
+typedef ogs_tlv_uint8_t tlv_authorization_policy_support_t;
+extern ogs_tlv_desc_t tlv_desc_authorization_policy_support;
 
 #define TLV_CLIENT_SECURITY_HISTORY_TYPE 108
-#define TLV_CLIENT_SECURITY_HISTORY_LEN TLV_VARIABLE_LEN
+#define TLV_CLIENT_SECURITY_HISTORY_LEN OGS_TLV_VARIABLE_LEN
 typedef struct _tlv_client_security_history_t {
-    tlv_presence_t presence;
+    ogs_tlv_presence_t presence;
     tlv_authorization_policy_support_t authorization_policy_support0;
     tlv_authorization_policy_support_t authorization_policy_support2;
 } tlv_client_security_history_t;
-extern tlv_desc_t tlv_desc_client_security_history;
+extern ogs_tlv_desc_t tlv_desc_client_security_history;
 
 #define TLV_CLIENT_INFO_TYPE 103
-#define TLV_CLIENT_INFO_LEN TLV_VARIABLE_LEN
+#define TLV_CLIENT_INFO_LEN OGS_TLV_VARIABLE_LEN
 typedef struct _tlv_client_info_t {
-    tlv_presence_t presence;
+    ogs_tlv_presence_t presence;
     tlv_client_security_history_t client_security_history;
 } tlv_client_info_t;
-extern tlv_desc_t tlv_desc_client_info;
+extern ogs_tlv_desc_t tlv_desc_client_info;
 
 #define TLV_SERVER_NAME_TYPE 25
-#define TLV_SERVER_NAME_LEN TLV_VARIABLE_LEN
-typedef tlv_octet_t tlv_server_name_t;
-extern tlv_desc_t tlv_desc_server_name;
+#define TLV_SERVER_NAME_LEN OGS_TLV_VARIABLE_LEN
+typedef ogs_tlv_octet_t tlv_server_name_t;
+extern ogs_tlv_desc_t tlv_desc_server_name;
 
 #define TLV_SERVER_INFO_TYPE 26
-#define TLV_SERVER_INFO_LEN TLV_VARIABLE_LEN
+#define TLV_SERVER_INFO_LEN OGS_TLV_VARIABLE_LEN
 typedef struct _tlv_server_info_t {
-    tlv_presence_t presence;
-    tlv_server_name_t TLV_1_OR_MORE(server_name);
+    ogs_tlv_presence_t presence;
+    tlv_server_name_t OGS_TLV_1_OR_MORE(server_name);
 } tlv_server_info_t;
-extern tlv_desc_t tlv_desc_server_info;
+extern ogs_tlv_desc_t tlv_desc_server_info;
 
 typedef struct _tlv_attach_req {
     tlv_client_info_t client_info;
     tlv_server_info_t server_info;
 } tlv_attach_req;
 
-extern tlv_desc_t tlv_desc_attach_req;
+extern ogs_tlv_desc_t tlv_desc_attach_req;
 
 /* Sample source for tlv_msg */
-tlv_desc_t tlv_desc_authorization_policy_support0 =
+ogs_tlv_desc_t tlv_desc_authorization_policy_support0 =
 {
-    TLV_UINT8,
+    OGS_TLV_UINT8,
     "Auth Policy0",
     TLV_AUTHORIZATION_POLICY_SUPPORT_TYPE,
     TLV_AUTHORIZATION_POLICY_SUPPORT_LEN,
@@ -690,9 +689,9 @@ tlv_desc_t tlv_desc_authorization_policy_support0 =
     sizeof(tlv_authorization_policy_support_t),
     { NULL }
 };
-tlv_desc_t tlv_desc_authorization_policy_support2 =
+ogs_tlv_desc_t tlv_desc_authorization_policy_support2 =
 {
-    TLV_UINT8,
+    OGS_TLV_UINT8,
     "Auth Policy2",
     TLV_AUTHORIZATION_POLICY_SUPPORT_TYPE,
     TLV_AUTHORIZATION_POLICY_SUPPORT_LEN,
@@ -701,9 +700,9 @@ tlv_desc_t tlv_desc_authorization_policy_support2 =
     { NULL }
 };
 
-tlv_desc_t tlv_desc_client_security_history =
+ogs_tlv_desc_t tlv_desc_client_security_history =
 {
-    TLV_COMPOUND,
+    OGS_TLV_COMPOUND,
     "Sec History",
     TLV_CLIENT_SECURITY_HISTORY_TYPE,
     TLV_CLIENT_SECURITY_HISTORY_LEN,
@@ -716,9 +715,9 @@ tlv_desc_t tlv_desc_client_security_history =
     }
 };
 
-tlv_desc_t tlv_desc_client_info =
+ogs_tlv_desc_t tlv_desc_client_info =
 {
-    TLV_COMPOUND,
+    OGS_TLV_COMPOUND,
     "Client Info",
     TLV_CLIENT_INFO_TYPE,
     TLV_CLIENT_INFO_LEN,
@@ -730,9 +729,9 @@ tlv_desc_t tlv_desc_client_info =
     }
 };
 
-tlv_desc_t tlv_desc_server_name =
+ogs_tlv_desc_t tlv_desc_server_name =
 {
-    TLV_VAR_STR,
+    OGS_TLV_VAR_STR,
     "Server Name",
     TLV_SERVER_NAME_TYPE,
     TLV_SERVER_NAME_LEN,
@@ -741,22 +740,22 @@ tlv_desc_t tlv_desc_server_name =
     { NULL }
 };
 
-tlv_desc_t tlv_desc_server_info =
+ogs_tlv_desc_t tlv_desc_server_info =
 {
-    TLV_COMPOUND,
+    OGS_TLV_COMPOUND,
     "Server Info",
     TLV_SERVER_INFO_TYPE,
     TLV_SERVER_INFO_LEN,
     0,
     sizeof(tlv_server_info_t),
     {
-        &tlv_desc_server_name, &tlv_desc_more2,
+        &tlv_desc_server_name, &ogs_tlv_desc_more16,
         NULL,
     }
 };
 
-tlv_desc_t tlv_desc_attach_req = {
-    TLV_MESSAGE, "Attach Req", 0, 0, 0, 0, {
+ogs_tlv_desc_t tlv_desc_attach_req = {
+    OGS_TLV_MESSAGE, "Attach Req", 0, 0, 0, 0, {
     &tlv_desc_client_info,
     &tlv_desc_server_info,
     NULL,
@@ -767,8 +766,10 @@ static void test6_func(abts_case *tc, void *data)
     tlv_attach_req reqv;
     tlv_attach_req reqv2;
 
-    pkbuf_t *req = NULL;
+    ogs_pkbuf_t *req = NULL;
     char testbuf[1024];
+
+    int i;
 
     /* Initialize message value structure */
     memset(&reqv, 0, sizeof(tlv_attach_req));
@@ -786,34 +787,44 @@ static void test6_func(abts_case *tc, void *data)
             authorization_policy_support2.u8 = 0x9;
 
     reqv.server_info.presence = 1;
-    reqv.server_info.server_name[0].presence = 1;
-    reqv.server_info.server_name[0].data =
-        (uint8_t*)"\x11\x22\x33\x44\x55\x66";
-    reqv.server_info.server_name[0].len = 6;
+    for (i = 0; i < 16; i++) {
+        reqv.server_info.server_name[i].presence = 1;
+        reqv.server_info.server_name[i].data =
+            (uint8_t*)"\x11\x22\x33\x44\x55\x66";
+        reqv.server_info.server_name[i].len = 6;
 
-    reqv.server_info.presence = 1;
-    reqv.server_info.server_name[1].presence = 1;
-    reqv.server_info.server_name[1].data =
-        (uint8_t*)"\xaa\xbb\xcc\xdd\xee\xff";
-    reqv.server_info.server_name[1].len = 6;
+        req = ogs_tlv_build_msg(
+                &tlv_desc_attach_req, &reqv, OGS_TLV_MODE_T1_L2_I1);
+        ABTS_INT_EQUAL(tc, 32+i*10, req->len);
+        ogs_pkbuf_free(req);
+    }
 
     /* Build message */
-    tlv_build_msg(&req, &tlv_desc_attach_req, &reqv, OGS_TLV_MODE_T1_L2_I1);
+    req = ogs_tlv_build_msg(&tlv_desc_attach_req, &reqv, OGS_TLV_MODE_T1_L2_I1);
 #define TEST_TLV_BUILD_MSG \
     "67000e00 6c000a00 15000100 03150001" \
-    "02091a00 14001900 06001122 33445566" \
-    "19000600 aabbccdd eeff"
+    "02091a00 a0001900 06001122 33445566" \
+    "19000600 11223344 55661900 06001122" \
+    "33445566 19000600 11223344 55661900" \
+    "06001122 33445566 19000600 11223344" \
+    "55661900 06001122 33445566 19000600" \
+    "11223344 55661900 06001122 33445566" \
+    "19000600 11223344 55661900 06001122" \
+    "33445566 19000600 11223344 55661900" \
+    "06001122 33445566 19000600 11223344" \
+    "55661900 06001122 33445566 19000600" \
+    "11223344 5566"
 
-    ABTS_INT_EQUAL(tc, 42, req->len);
-    ABTS_TRUE(tc, memcmp(req->payload,
-        CORE_HEX(TEST_TLV_BUILD_MSG, strlen(TEST_TLV_BUILD_MSG), testbuf),
+    ABTS_INT_EQUAL(tc, 182, req->len);
+    ABTS_TRUE(tc, memcmp(req->data,
+        OGS_HEX(TEST_TLV_BUILD_MSG, strlen(TEST_TLV_BUILD_MSG), testbuf),
         req->len) == 0);
 
     /* Initialize message value structure */
     memset(&reqv2, 0, sizeof(tlv_attach_req));
 
     /* Parse message */
-    tlv_parse_msg(&reqv2, &tlv_desc_attach_req, req,
+    ogs_tlv_parse_msg(&reqv2, &tlv_desc_attach_req, req,
             OGS_TLV_MODE_T1_L2_I1);
 
     ABTS_INT_EQUAL(tc, 1, reqv2.client_info.presence);
@@ -830,19 +841,16 @@ static void test6_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 0x9, reqv2.client_info.
             client_security_history.authorization_policy_support2.u8);
 
-    ABTS_INT_EQUAL(tc, 1, reqv2.server_info.presence);
-    ABTS_INT_EQUAL(tc, 1, reqv2.server_info.server_name[0].presence);
-    ABTS_INT_EQUAL(tc, 1, reqv2.server_info.server_name[1].presence);
-    ABTS_INT_EQUAL(tc, 6, reqv2.server_info.server_name[0].len);
-    ABTS_TRUE(tc, memcmp(reqv2.server_info.server_name[0].data,
-                (uint8_t*)"\x11\x22\x33\x44\x55\x66", 6) == 0);
-    ABTS_INT_EQUAL(tc, 6, reqv2.server_info.server_name[1].len);
-    ABTS_TRUE(tc, memcmp(reqv2.server_info.server_name[1].data,
-                (uint8_t*)"\xaa\xbb\xcc\xdd\xee\xff", 6) == 0);
+    for (i = 0; i < 16; i++) {
+        ABTS_INT_EQUAL(tc, 1, reqv2.server_info.presence);
+        ABTS_INT_EQUAL(tc, 1, reqv2.server_info.server_name[i].presence);
+        ABTS_INT_EQUAL(tc, 6, reqv2.server_info.server_name[i].len);
+        ABTS_TRUE(tc, memcmp(reqv2.server_info.server_name[i].data,
+                    (uint8_t*)"\x11\x22\x33\x44\x55\x66", 6) == 0);
+    }
 
-    pkbuf_free(req);
+    ogs_pkbuf_free(req);
 }
-#endif
 
 abts_suite *test_tlv(abts_suite *suite)
 {
@@ -866,9 +874,7 @@ abts_suite *test_tlv(abts_suite *suite)
 	abts_run_test(suite, test4_func, (void*)OGS_TLV_MODE_T1_L2_I1);
 	abts_run_test(suite, test5_func, (void*)OGS_TLV_MODE_T1_L2_I1);
 
-#if 0
 	abts_run_test(suite, test6_func, NULL);
-#endif
 
     return suite;
 }
