@@ -36,7 +36,7 @@ static void server_stop(ogs_sbi_server_t *server);
 static bool server_send_response(
         ogs_sbi_stream_t *stream, ogs_sbi_response_t *response);
 
-static ogs_sbi_server_t *server_from_stream(ogs_sbi_stream_t *data);
+static ogs_sbi_server_t *server_from_stream(ogs_sbi_stream_t *stream);
 
 const ogs_sbi_server_actions_t ogs_nghttp2_server_actions = {
     server_init,

@@ -41,13 +41,13 @@ void mme_s11_handle_delete_session_response(
         ogs_gtp2_delete_session_response_t *rsp);
 void mme_s11_handle_create_bearer_request(
         ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
-        ogs_gtp2_create_bearer_request_t *rsp);
+        ogs_gtp2_create_bearer_request_t *req);
 void mme_s11_handle_update_bearer_request(
         ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
-        ogs_gtp2_update_bearer_request_t *rsp);
+        ogs_gtp2_update_bearer_request_t *req);
 void mme_s11_handle_delete_bearer_request(
         ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
-        ogs_gtp2_delete_bearer_request_t *rsp);
+        ogs_gtp2_delete_bearer_request_t *req);
 
 void mme_s11_handle_release_access_bearers_response(
         ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,

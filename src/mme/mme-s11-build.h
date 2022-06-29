@@ -27,7 +27,7 @@ extern "C" {
 ogs_pkbuf_t *mme_s11_build_create_session_request(
         uint8_t type, mme_sess_t *sess, int create_action);
 ogs_pkbuf_t *mme_s11_build_modify_bearer_request(
-        uint8_t type, mme_ue_t *mme_ue, int uli_presense);
+        uint8_t type, mme_ue_t *mme_ue, int uli_presence);
 ogs_pkbuf_t *mme_s11_build_delete_session_request(
         uint8_t type, mme_sess_t *sess, int action);
 ogs_pkbuf_t *mme_s11_build_create_bearer_response(

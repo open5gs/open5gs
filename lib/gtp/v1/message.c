@@ -21,7 +21,7 @@
 /*******************************************************************************
  * This file had been created by gtp1-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2022-05-12 14:42:38.611950 by pespin
+ * Created on: 2022-06-30 08:56:31.641366 by ubuntu
  * from 29060-g00.docx
  ******************************************************************************/
 
@@ -2264,20 +2264,20 @@ ogs_tlv_desc_t ogs_gtp1_tlv_desc_mbms_session_update_response =
 }};
 
 
-int ogs_gtp1_parse_msg(ogs_gtp1_message_t *gtp_message, ogs_pkbuf_t *pkbuf)
+int ogs_gtp1_parse_msg(ogs_gtp1_message_t *gtp1_message, ogs_pkbuf_t *pkbuf)
 {
     int rv = OGS_ERROR;
     ogs_gtp1_header_t *h = NULL;
     uint16_t size = 0;
 
-    ogs_assert(gtp_message);
+    ogs_assert(gtp1_message);
     ogs_assert(pkbuf);
     ogs_assert(pkbuf->len);
 
     h = (ogs_gtp1_header_t *)pkbuf->data;
     ogs_assert(h);
 
-    memset(gtp_message, 0, sizeof(ogs_gtp1_message_t));
+    memset(gtp1_message, 0, sizeof(ogs_gtp1_message_t));
 
     if (h->e || h->s || h->pn)
         size = OGS_GTPV1C_HEADER_LEN;
@@ -2285,242 +2285,242 @@ int ogs_gtp1_parse_msg(ogs_gtp1_message_t *gtp_message, ogs_pkbuf_t *pkbuf)
         size = OGS_GTPV1C_HEADER_LEN - 4;
 
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
-    memcpy(&gtp_message->h, pkbuf->data - size, size);
+    memcpy(&gtp1_message->h, pkbuf->data - size, size);
 
-    gtp_message->h.teid = be32toh(gtp_message->h.teid);
+    gtp1_message->h.teid = be32toh(gtp1_message->h.teid);
 
     if (pkbuf->len == 0) {
         ogs_assert(ogs_pkbuf_push(pkbuf, size));
         return OGS_OK;
     }
 
-    switch(gtp_message->h.type) {
+    switch(gtp1_message->h.type) {
     case OGS_GTP1_ECHO_REQUEST_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->echo_request,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->echo_request,
                 &ogs_gtp1_tlv_desc_echo_request, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_ECHO_RESPONSE_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->echo_response,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->echo_response,
                 &ogs_gtp1_tlv_desc_echo_response, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_CREATE_PDP_CONTEXT_REQUEST_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->create_pdp_context_request,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->create_pdp_context_request,
                 &ogs_gtp1_tlv_desc_create_pdp_context_request, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->create_pdp_context_response,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->create_pdp_context_response,
                 &ogs_gtp1_tlv_desc_create_pdp_context_response, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_UPDATE_PDP_CONTEXT_REQUEST_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->update_pdp_context_request,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->update_pdp_context_request,
                 &ogs_gtp1_tlv_desc_update_pdp_context_request, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_UPDATE_PDP_CONTEXT_RESPONSE_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->update_pdp_context_response,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->update_pdp_context_response,
                 &ogs_gtp1_tlv_desc_update_pdp_context_response, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_DELETE_PDP_CONTEXT_REQUEST_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->delete_pdp_context_request,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->delete_pdp_context_request,
                 &ogs_gtp1_tlv_desc_delete_pdp_context_request, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_DELETE_PDP_CONTEXT_RESPONSE_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->delete_pdp_context_response,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->delete_pdp_context_response,
                 &ogs_gtp1_tlv_desc_delete_pdp_context_response, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_INITIATE_PDP_CONTEXT_ACTIVATION_REQUEST_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->initiate_pdp_context_activation_request,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->initiate_pdp_context_activation_request,
                 &ogs_gtp1_tlv_desc_initiate_pdp_context_activation_request, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_INITIATE_PDP_CONTEXT_ACTIVATION_RESPONSE_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->initiate_pdp_context_activation_response,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->initiate_pdp_context_activation_response,
                 &ogs_gtp1_tlv_desc_initiate_pdp_context_activation_response, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_PDU_NOTIFICATION_REQUEST_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->pdu_notification_request,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->pdu_notification_request,
                 &ogs_gtp1_tlv_desc_pdu_notification_request, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_PDU_NOTIFICATION_RESPONSE_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->pdu_notification_response,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->pdu_notification_response,
                 &ogs_gtp1_tlv_desc_pdu_notification_response, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_PDU_NOTIFICATION_REJECT_REQUEST_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->pdu_notification_reject_request,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->pdu_notification_reject_request,
                 &ogs_gtp1_tlv_desc_pdu_notification_reject_request, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_PDU_NOTIFICATION_REJECT_RESPONSE_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->pdu_notification_reject_response,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->pdu_notification_reject_response,
                 &ogs_gtp1_tlv_desc_pdu_notification_reject_response, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_SUPPORTED_EXTENSION_HEADERS_NOTIFICATION_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->supported_extension_headers_notification,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->supported_extension_headers_notification,
                 &ogs_gtp1_tlv_desc_supported_extension_headers_notification, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_SEND_ROUTEING_INFORMATION_FOR_GPRS_REQUEST_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->send_routeing_information_for_gprs_request,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->send_routeing_information_for_gprs_request,
                 &ogs_gtp1_tlv_desc_send_routeing_information_for_gprs_request, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_SEND_ROUTEING_INFORMATION_FOR_GPRS_RESPONSE_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->send_routeing_information_for_gprs_response,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->send_routeing_information_for_gprs_response,
                 &ogs_gtp1_tlv_desc_send_routeing_information_for_gprs_response, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_FAILURE_REPORT_REQUEST_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->failure_report_request,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->failure_report_request,
                 &ogs_gtp1_tlv_desc_failure_report_request, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_FAILURE_REPORT_RESPONSE_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->failure_report_response,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->failure_report_response,
                 &ogs_gtp1_tlv_desc_failure_report_response, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_NOTE_MS_GPRS_PRESENT_REQUEST_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->note_ms_gprs_present_request,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->note_ms_gprs_present_request,
                 &ogs_gtp1_tlv_desc_note_ms_gprs_present_request, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_NOTE_MS_GPRS_PRESENT_RESPONSE_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->note_ms_gprs_present_response,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->note_ms_gprs_present_response,
                 &ogs_gtp1_tlv_desc_note_ms_gprs_present_response, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_IDENTIFICATION_REQUEST_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->identification_request,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->identification_request,
                 &ogs_gtp1_tlv_desc_identification_request, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_IDENTIFICATION_RESPONSE_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->identification_response,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->identification_response,
                 &ogs_gtp1_tlv_desc_identification_response, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_SGSN_CONTEXT_REQUEST_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->sgsn_context_request,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->sgsn_context_request,
                 &ogs_gtp1_tlv_desc_sgsn_context_request, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_SGSN_CONTEXT_RESPONSE_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->sgsn_context_response,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->sgsn_context_response,
                 &ogs_gtp1_tlv_desc_sgsn_context_response, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_SGSN_CONTEXT_ACKNOWLEDGE_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->sgsn_context_acknowledge,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->sgsn_context_acknowledge,
                 &ogs_gtp1_tlv_desc_sgsn_context_acknowledge, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_FORWARD_RELOCATION_REQUEST_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->forward_relocation_request,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->forward_relocation_request,
                 &ogs_gtp1_tlv_desc_forward_relocation_request, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_FORWARD_RELOCATION_RESPONSE_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->forward_relocation_response,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->forward_relocation_response,
                 &ogs_gtp1_tlv_desc_forward_relocation_response, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_FORWARD_RELOCATION_COMPLETE_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->forward_relocation_complete,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->forward_relocation_complete,
                 &ogs_gtp1_tlv_desc_forward_relocation_complete, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_RELOCATION_CANCEL_REQUEST_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->relocation_cancel_request,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->relocation_cancel_request,
                 &ogs_gtp1_tlv_desc_relocation_cancel_request, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_RELOCATION_CANCEL_RESPONSE_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->relocation_cancel_response,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->relocation_cancel_response,
                 &ogs_gtp1_tlv_desc_relocation_cancel_response, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_FORWARD_SRNS_CONTEXT_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->forward_srns_context,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->forward_srns_context,
                 &ogs_gtp1_tlv_desc_forward_srns_context, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_FORWARD_RELOCATION_COMPLETE_ACKNOWLEDGE_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->forward_relocation_complete_acknowledge,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->forward_relocation_complete_acknowledge,
                 &ogs_gtp1_tlv_desc_forward_relocation_complete_acknowledge, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_FORWARD_SRNS_CONTEXT_ACKNOWLEDGE_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->forward_srns_context_acknowledge,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->forward_srns_context_acknowledge,
                 &ogs_gtp1_tlv_desc_forward_srns_context_acknowledge, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_UE_REGISTRATION_QUERY_REQUEST_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->ue_registration_query_request,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->ue_registration_query_request,
                 &ogs_gtp1_tlv_desc_ue_registration_query_request, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_UE_REGISTRATION_QUERY_RESPONSE_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->ue_registration_query_response,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->ue_registration_query_response,
                 &ogs_gtp1_tlv_desc_ue_registration_query_response, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_RAN_INFORMATION_RELAY_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->ran_information_relay,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->ran_information_relay,
                 &ogs_gtp1_tlv_desc_ran_information_relay, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_MBMS_NOTIFICATION_REQUEST_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->mbms_notification_request,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->mbms_notification_request,
                 &ogs_gtp1_tlv_desc_mbms_notification_request, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_MBMS_NOTIFICATION_RESPONSE_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->mbms_notification_response,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->mbms_notification_response,
                 &ogs_gtp1_tlv_desc_mbms_notification_response, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_MBMS_NOTIFICATION_REJECT_REQUEST_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->mbms_notification_reject_request,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->mbms_notification_reject_request,
                 &ogs_gtp1_tlv_desc_mbms_notification_reject_request, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_MBMS_NOTIFICATION_REJECT_RESPONSE_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->mbms_notification_reject_response,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->mbms_notification_reject_response,
                 &ogs_gtp1_tlv_desc_mbms_notification_reject_response, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_CREATE_MBMS_CONTEXT_REQUEST_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->create_mbms_context_request,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->create_mbms_context_request,
                 &ogs_gtp1_tlv_desc_create_mbms_context_request, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_CREATE_MBMS_CONTEXT_RESPONSE_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->create_mbms_context_response,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->create_mbms_context_response,
                 &ogs_gtp1_tlv_desc_create_mbms_context_response, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_UPDATE_MBMS_CONTEXT_REQUEST_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->update_mbms_context_request,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->update_mbms_context_request,
                 &ogs_gtp1_tlv_desc_update_mbms_context_request, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_UPDATE_MBMS_CONTEXT_RESPONSE_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->update_mbms_context_response,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->update_mbms_context_response,
                 &ogs_gtp1_tlv_desc_update_mbms_context_response, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_DELETE_MBMS_CONTEXT_RESPONSE_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->delete_mbms_context_response,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->delete_mbms_context_response,
                 &ogs_gtp1_tlv_desc_delete_mbms_context_response, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_MBMS_REGISTRATION_REQUEST_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->mbms_registration_request,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->mbms_registration_request,
                 &ogs_gtp1_tlv_desc_mbms_registration_request, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_MBMS_REGISTRATION_RESPONSE_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->mbms_registration_response,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->mbms_registration_response,
                 &ogs_gtp1_tlv_desc_mbms_registration_response, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_MBMS_DE_REGISTRATION_REQUEST_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->mbms_de_registration_request,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->mbms_de_registration_request,
                 &ogs_gtp1_tlv_desc_mbms_de_registration_request, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_MBMS_DE_REGISTRATION_RESPONSE_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->mbms_de_registration_response,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->mbms_de_registration_response,
                 &ogs_gtp1_tlv_desc_mbms_de_registration_response, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_MBMS_SESSION_START_REQUEST_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->mbms_session_start_request,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->mbms_session_start_request,
                 &ogs_gtp1_tlv_desc_mbms_session_start_request, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_MBMS_SESSION_START_RESPONSE_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->mbms_session_start_response,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->mbms_session_start_response,
                 &ogs_gtp1_tlv_desc_mbms_session_start_response, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_MBMS_SESSION_STOP_REQUEST_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->mbms_session_stop_request,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->mbms_session_stop_request,
                 &ogs_gtp1_tlv_desc_mbms_session_stop_request, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_MBMS_SESSION_STOP_RESPONSE_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->mbms_session_stop_response,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->mbms_session_stop_response,
                 &ogs_gtp1_tlv_desc_mbms_session_stop_response, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_MBMS_SESSION_UPDATE_REQUEST_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->mbms_session_update_request,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->mbms_session_update_request,
                 &ogs_gtp1_tlv_desc_mbms_session_update_request, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_MBMS_SESSION_UPDATE_RESPONSE_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp_message->mbms_session_update_response,
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->mbms_session_update_response,
                 &ogs_gtp1_tlv_desc_mbms_session_update_response, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     default:
-        ogs_warn("Not implmeneted(type:%d)", gtp_message->h.type);
+        ogs_warn("Not implmeneted(type:%d)", gtp1_message->h.type);
         break;
     }
 
@@ -2529,238 +2529,238 @@ int ogs_gtp1_parse_msg(ogs_gtp1_message_t *gtp_message, ogs_pkbuf_t *pkbuf)
     return rv;
 }
 
-ogs_pkbuf_t *ogs_gtp1_build_msg(ogs_gtp1_message_t *gtp_message)
+ogs_pkbuf_t *ogs_gtp1_build_msg(ogs_gtp1_message_t *gtp1_message)
 {
     ogs_pkbuf_t *pkbuf = NULL;
 
-    ogs_assert(gtp_message);
-    switch(gtp_message->h.type) {
+    ogs_assert(gtp1_message);
+    switch(gtp1_message->h.type) {
     case OGS_GTP1_ECHO_REQUEST_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_echo_request,
-                &gtp_message->echo_request, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->echo_request, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_ECHO_RESPONSE_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_echo_response,
-                &gtp_message->echo_response, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->echo_response, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_CREATE_PDP_CONTEXT_REQUEST_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_create_pdp_context_request,
-                &gtp_message->create_pdp_context_request, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->create_pdp_context_request, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_create_pdp_context_response,
-                &gtp_message->create_pdp_context_response, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->create_pdp_context_response, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_UPDATE_PDP_CONTEXT_REQUEST_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_update_pdp_context_request,
-                &gtp_message->update_pdp_context_request, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->update_pdp_context_request, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_UPDATE_PDP_CONTEXT_RESPONSE_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_update_pdp_context_response,
-                &gtp_message->update_pdp_context_response, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->update_pdp_context_response, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_DELETE_PDP_CONTEXT_REQUEST_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_delete_pdp_context_request,
-                &gtp_message->delete_pdp_context_request, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->delete_pdp_context_request, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_DELETE_PDP_CONTEXT_RESPONSE_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_delete_pdp_context_response,
-                &gtp_message->delete_pdp_context_response, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->delete_pdp_context_response, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_INITIATE_PDP_CONTEXT_ACTIVATION_REQUEST_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_initiate_pdp_context_activation_request,
-                &gtp_message->initiate_pdp_context_activation_request, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->initiate_pdp_context_activation_request, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_INITIATE_PDP_CONTEXT_ACTIVATION_RESPONSE_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_initiate_pdp_context_activation_response,
-                &gtp_message->initiate_pdp_context_activation_response, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->initiate_pdp_context_activation_response, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_PDU_NOTIFICATION_REQUEST_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_pdu_notification_request,
-                &gtp_message->pdu_notification_request, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->pdu_notification_request, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_PDU_NOTIFICATION_RESPONSE_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_pdu_notification_response,
-                &gtp_message->pdu_notification_response, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->pdu_notification_response, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_PDU_NOTIFICATION_REJECT_REQUEST_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_pdu_notification_reject_request,
-                &gtp_message->pdu_notification_reject_request, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->pdu_notification_reject_request, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_PDU_NOTIFICATION_REJECT_RESPONSE_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_pdu_notification_reject_response,
-                &gtp_message->pdu_notification_reject_response, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->pdu_notification_reject_response, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_SUPPORTED_EXTENSION_HEADERS_NOTIFICATION_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_supported_extension_headers_notification,
-                &gtp_message->supported_extension_headers_notification, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->supported_extension_headers_notification, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_SEND_ROUTEING_INFORMATION_FOR_GPRS_REQUEST_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_send_routeing_information_for_gprs_request,
-                &gtp_message->send_routeing_information_for_gprs_request, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->send_routeing_information_for_gprs_request, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_SEND_ROUTEING_INFORMATION_FOR_GPRS_RESPONSE_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_send_routeing_information_for_gprs_response,
-                &gtp_message->send_routeing_information_for_gprs_response, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->send_routeing_information_for_gprs_response, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_FAILURE_REPORT_REQUEST_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_failure_report_request,
-                &gtp_message->failure_report_request, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->failure_report_request, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_FAILURE_REPORT_RESPONSE_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_failure_report_response,
-                &gtp_message->failure_report_response, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->failure_report_response, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_NOTE_MS_GPRS_PRESENT_REQUEST_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_note_ms_gprs_present_request,
-                &gtp_message->note_ms_gprs_present_request, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->note_ms_gprs_present_request, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_NOTE_MS_GPRS_PRESENT_RESPONSE_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_note_ms_gprs_present_response,
-                &gtp_message->note_ms_gprs_present_response, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->note_ms_gprs_present_response, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_IDENTIFICATION_REQUEST_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_identification_request,
-                &gtp_message->identification_request, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->identification_request, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_IDENTIFICATION_RESPONSE_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_identification_response,
-                &gtp_message->identification_response, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->identification_response, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_SGSN_CONTEXT_REQUEST_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_sgsn_context_request,
-                &gtp_message->sgsn_context_request, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->sgsn_context_request, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_SGSN_CONTEXT_RESPONSE_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_sgsn_context_response,
-                &gtp_message->sgsn_context_response, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->sgsn_context_response, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_SGSN_CONTEXT_ACKNOWLEDGE_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_sgsn_context_acknowledge,
-                &gtp_message->sgsn_context_acknowledge, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->sgsn_context_acknowledge, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_FORWARD_RELOCATION_REQUEST_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_forward_relocation_request,
-                &gtp_message->forward_relocation_request, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->forward_relocation_request, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_FORWARD_RELOCATION_RESPONSE_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_forward_relocation_response,
-                &gtp_message->forward_relocation_response, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->forward_relocation_response, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_FORWARD_RELOCATION_COMPLETE_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_forward_relocation_complete,
-                &gtp_message->forward_relocation_complete, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->forward_relocation_complete, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_RELOCATION_CANCEL_REQUEST_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_relocation_cancel_request,
-                &gtp_message->relocation_cancel_request, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->relocation_cancel_request, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_RELOCATION_CANCEL_RESPONSE_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_relocation_cancel_response,
-                &gtp_message->relocation_cancel_response, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->relocation_cancel_response, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_FORWARD_SRNS_CONTEXT_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_forward_srns_context,
-                &gtp_message->forward_srns_context, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->forward_srns_context, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_FORWARD_RELOCATION_COMPLETE_ACKNOWLEDGE_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_forward_relocation_complete_acknowledge,
-                &gtp_message->forward_relocation_complete_acknowledge, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->forward_relocation_complete_acknowledge, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_FORWARD_SRNS_CONTEXT_ACKNOWLEDGE_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_forward_srns_context_acknowledge,
-                &gtp_message->forward_srns_context_acknowledge, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->forward_srns_context_acknowledge, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_UE_REGISTRATION_QUERY_REQUEST_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_ue_registration_query_request,
-                &gtp_message->ue_registration_query_request, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->ue_registration_query_request, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_UE_REGISTRATION_QUERY_RESPONSE_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_ue_registration_query_response,
-                &gtp_message->ue_registration_query_response, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->ue_registration_query_response, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_RAN_INFORMATION_RELAY_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_ran_information_relay,
-                &gtp_message->ran_information_relay, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->ran_information_relay, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_MBMS_NOTIFICATION_REQUEST_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_mbms_notification_request,
-                &gtp_message->mbms_notification_request, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->mbms_notification_request, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_MBMS_NOTIFICATION_RESPONSE_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_mbms_notification_response,
-                &gtp_message->mbms_notification_response, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->mbms_notification_response, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_MBMS_NOTIFICATION_REJECT_REQUEST_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_mbms_notification_reject_request,
-                &gtp_message->mbms_notification_reject_request, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->mbms_notification_reject_request, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_MBMS_NOTIFICATION_REJECT_RESPONSE_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_mbms_notification_reject_response,
-                &gtp_message->mbms_notification_reject_response, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->mbms_notification_reject_response, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_CREATE_MBMS_CONTEXT_REQUEST_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_create_mbms_context_request,
-                &gtp_message->create_mbms_context_request, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->create_mbms_context_request, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_CREATE_MBMS_CONTEXT_RESPONSE_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_create_mbms_context_response,
-                &gtp_message->create_mbms_context_response, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->create_mbms_context_response, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_UPDATE_MBMS_CONTEXT_REQUEST_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_update_mbms_context_request,
-                &gtp_message->update_mbms_context_request, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->update_mbms_context_request, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_UPDATE_MBMS_CONTEXT_RESPONSE_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_update_mbms_context_response,
-                &gtp_message->update_mbms_context_response, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->update_mbms_context_response, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_DELETE_MBMS_CONTEXT_RESPONSE_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_delete_mbms_context_response,
-                &gtp_message->delete_mbms_context_response, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->delete_mbms_context_response, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_MBMS_REGISTRATION_REQUEST_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_mbms_registration_request,
-                &gtp_message->mbms_registration_request, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->mbms_registration_request, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_MBMS_REGISTRATION_RESPONSE_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_mbms_registration_response,
-                &gtp_message->mbms_registration_response, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->mbms_registration_response, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_MBMS_DE_REGISTRATION_REQUEST_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_mbms_de_registration_request,
-                &gtp_message->mbms_de_registration_request, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->mbms_de_registration_request, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_MBMS_DE_REGISTRATION_RESPONSE_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_mbms_de_registration_response,
-                &gtp_message->mbms_de_registration_response, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->mbms_de_registration_response, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_MBMS_SESSION_START_REQUEST_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_mbms_session_start_request,
-                &gtp_message->mbms_session_start_request, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->mbms_session_start_request, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_MBMS_SESSION_START_RESPONSE_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_mbms_session_start_response,
-                &gtp_message->mbms_session_start_response, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->mbms_session_start_response, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_MBMS_SESSION_STOP_REQUEST_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_mbms_session_stop_request,
-                &gtp_message->mbms_session_stop_request, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->mbms_session_stop_request, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_MBMS_SESSION_STOP_RESPONSE_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_mbms_session_stop_response,
-                &gtp_message->mbms_session_stop_response, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->mbms_session_stop_response, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_MBMS_SESSION_UPDATE_REQUEST_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_mbms_session_update_request,
-                &gtp_message->mbms_session_update_request, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->mbms_session_update_request, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_MBMS_SESSION_UPDATE_RESPONSE_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_mbms_session_update_response,
-                &gtp_message->mbms_session_update_response, OGS_TLV_MODE_T1_L2);
+                &gtp1_message->mbms_session_update_response, OGS_TLV_MODE_T1_L2);
         break;
     default:
-        ogs_warn("Not implmeneted(type:%d)", gtp_message->h.type);
+        ogs_warn("Not implmeneted(type:%d)", gtp1_message->h.type);
         break;
     }
 

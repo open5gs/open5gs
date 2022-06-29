@@ -27,7 +27,7 @@ extern "C" {
 #include "context.h"
 
 int amf_npcf_am_policy_control_handle_create(
-        amf_ue_t *amf_ue, ogs_sbi_message_t *message);
+        amf_ue_t *amf_ue, ogs_sbi_message_t *recvmsg);
 
 #ifdef __cplusplus
 }

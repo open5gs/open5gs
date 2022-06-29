@@ -35,7 +35,7 @@ int ogs_gtp2_send_user_plane(
         ogs_gtp2_header_t *gtp_hdesc, ogs_gtp2_extension_header_t *ext_hdesc,
         ogs_pkbuf_t *pkbuf);
 
-ogs_pkbuf_t *ogs_gtp2_handle_echo_req(ogs_pkbuf_t *pkt);
+ogs_pkbuf_t *ogs_gtp2_handle_echo_req(ogs_pkbuf_t *pkb);
 void ogs_gtp2_send_error_message(
         ogs_gtp_xact_t *xact, uint32_t teid, uint8_t type, uint8_t cause_value);
 

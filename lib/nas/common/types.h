@@ -748,8 +748,8 @@ typedef struct ogs_nas_apn_aggregate_maximum_bit_rate_s {
 } __attribute__ ((packed)) ogs_nas_apn_aggregate_maximum_bit_rate_t;
 
 void apn_ambr_build(
-    ogs_nas_apn_aggregate_maximum_bit_rate_t * apn_aggregate_maximum_bit_rate,
-    uint32_t dl_ambr, uint32_t ul_ambr);
+    ogs_nas_apn_aggregate_maximum_bit_rate_t *apn_aggregate_maximum_bit_rate,
+    uint32_t dl_apn_ambr, uint32_t ul_apn_ambr);
 
 /* 9.9.4.3 EPS quality of service
  * M LV 2-14 */

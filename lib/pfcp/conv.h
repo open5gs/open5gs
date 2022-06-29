@@ -40,7 +40,8 @@ int ogs_pfcp_sockaddr_to_f_seid(
 int ogs_pfcp_f_seid_to_ip(ogs_pfcp_f_seid_t *f_seid, ogs_ip_t *ip);
 
 int ogs_pfcp_sockaddr_to_f_teid(
-    ogs_sockaddr_t *a, ogs_sockaddr_t *b, ogs_pfcp_f_teid_t *f_teid, int *len);
+    ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6,
+    ogs_pfcp_f_teid_t *f_teid, int *len);
 int ogs_pfcp_f_teid_to_sockaddr(
     ogs_pfcp_f_teid_t *f_teid, int f_teid_len,
     ogs_sockaddr_t **addr, ogs_sockaddr_t **addr6);

@@ -32,7 +32,7 @@ extern "C" {
 typedef struct ogs_gtp_xact_s ogs_gtp_xact_t;
 
 
-ogs_pkbuf_t *ogs_gtp1_handle_echo_req(ogs_pkbuf_t *pkt);
+ogs_pkbuf_t *ogs_gtp1_handle_echo_req(ogs_pkbuf_t *pkb);
 void ogs_gtp1_send_error_message(
         ogs_gtp_xact_t *xact, uint32_t teid, uint8_t type, uint8_t cause_value);
 
