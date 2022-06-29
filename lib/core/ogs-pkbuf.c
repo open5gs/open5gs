@@ -301,7 +301,7 @@ ogs_pkbuf_t *ogs_pkbuf_copy_debug(ogs_pkbuf_t *pkbuf, const char *file_line)
 
     ogs_assert(size > 0);
     newbuf = ogs_pkbuf_alloc_debug(NULL, size, file_line);
-    if (!pkbuf) {
+    if (!newbuf) {
         ogs_error("ogs_pkbuf_alloc() failed [size=%d]", size);
         return NULL;
     }
