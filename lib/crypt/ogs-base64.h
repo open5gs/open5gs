@@ -43,16 +43,16 @@
 extern "C" {
 #endif
 
-int ogs_base64_decode_len(const char *coded_src);
-int ogs_base64_decode(char *plain_dst, const char *coded_src);
+int ogs_base64_decode_len(const char *bufcoded);
+int ogs_base64_decode(char *bufplain, const char *bufcoded);
 int ogs_base64_decode_binary(
-        unsigned char *plain_dst, const char *coded_src);
+        unsigned char *bufplain, const char *bufcoded);
 
 int ogs_base64_encode_len(int len);
 int ogs_base64_encode(
-        char *coded_dst, const char *plain_src, int len_plain_src);
+        char *encoded, const char *string, int len);
 int ogs_base64_encode_binary(
-        char *coded_dst, const unsigned char *plain_src, int len_plain_src);
+        char *encoded, const unsigned char *string, int len);
 
 #ifdef __cplusplus
 }

@@ -50,7 +50,7 @@ uint64_t ogs_sbi_bitrate_from_string(char *str);
 int ogs_strftimezone(char *str, size_t size, int tm_gmtoff);
 char *ogs_sbi_localtime_string(ogs_time_t time);
 char *ogs_sbi_gmtime_string(ogs_time_t time);
-char *ogs_sbi_timezone_string(int tm_offset);
+char *ogs_sbi_timezone_string(int tm_gmtoff);
 bool ogs_sbi_time_from_string(ogs_time_t *time, char *str);
 
 char *ogs_sbi_s_nssai_to_string(ogs_s_nssai_t *s_nssai);

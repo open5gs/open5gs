@@ -99,10 +99,10 @@ int ogs_filter_ip_version(ogs_sockaddr_t **addr,
     ogs_inet_ntop(__aDDR, __bUF, OGS_ADDRSTRLEN)
 #define OGS_PORT(__aDDR) \
     be16toh((__aDDR)->ogs_sin_port)
-const char *ogs_inet_ntop(void *addr, char *buf, int buflen);
-int ogs_inet_pton(int family, const char *src, void *addr);
+const char *ogs_inet_ntop(void *sa, char *buf, int buflen);
+int ogs_inet_pton(int family, const char *src, void *sa);
 
-socklen_t ogs_sockaddr_len(const void *addr);
+socklen_t ogs_sockaddr_len(const void *sa);
 bool ogs_sockaddr_is_equal(void *p, void *q);
 
 int ogs_ipsubnet(ogs_ipsubnet_t *ipsub,

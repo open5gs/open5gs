@@ -554,12 +554,12 @@ ED2(uint8_t length_of_rejected_s_nssai:4;,
 } __attribute__ ((packed)) ogs_nas_rejected_s_nssai_t;
 
 void ogs_nas_build_rejected_nssai(
-        ogs_nas_rejected_nssai_t *nas_rejected_nssai,
-        ogs_nas_rejected_s_nssai_t *nas_rejected_s_nssai,
-        int num_of_nas_rejected_s_nssai);
+        ogs_nas_rejected_nssai_t *rejected_nssai,
+        ogs_nas_rejected_s_nssai_t *rejected_s_nssai,
+        int num_of_rejected_s_nssai);
 int ogs_nas_parse_rejected_nssai(
-        ogs_nas_rejected_s_nssai_t *nas_rejected_s_nssai,
-        ogs_nas_rejected_nssai_t *nas_rejected_nssai);
+        ogs_nas_rejected_s_nssai_t *rejected_s_nssai,
+        ogs_nas_rejected_nssai_t *rejected_nssai);
 
 /* 9.11.3.49 Service area list
  * O TLV 6-114 */

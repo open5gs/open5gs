@@ -603,8 +603,8 @@ for (k, v) in sorted_msg_list:
 f.write("   };\n");
 f.write("} ogs_gtp2_message_t;\n\n")
 
-f.write("""int ogs_gtp2_parse_msg(ogs_gtp2_message_t *gtp_message, ogs_pkbuf_t *pkbuf);
-ogs_pkbuf_t *ogs_gtp2_build_msg(ogs_gtp2_message_t *gtp_message);
+f.write("""int ogs_gtp2_parse_msg(ogs_gtp2_message_t *gtp2_message, ogs_pkbuf_t *pkbuf);
+ogs_pkbuf_t *ogs_gtp2_build_msg(ogs_gtp2_message_t *gtp2_message);
 
 #ifdef __cplusplus
 }

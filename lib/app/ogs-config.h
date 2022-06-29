@@ -29,7 +29,7 @@ extern "C" {
 #endif
 
 int ogs_app_config_parse_sockopt(
-        ogs_yaml_iter_t *parent, ogs_sockopt_t *sockopt);
+        ogs_yaml_iter_t *parent, ogs_sockopt_t *option);
 
 #ifdef __cplusplus
 }

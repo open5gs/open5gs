@@ -84,7 +84,7 @@ enum ogs_proc_option_e {
     ogs_proc_option_inherit_environment = 0x2
 };
 
-int ogs_proc_create(const char *const command_line[], int options,
+int ogs_proc_create(const char *const commandLine[], int options,
                     ogs_proc_t *const out_process);
 
 FILE *ogs_proc_stdin(const ogs_proc_t *const process);

@@ -56,10 +56,10 @@ int ngap_send_ran_configuration_update_failure(
 
 int ngap_send_ran_ue_context_release_command(
     ran_ue_t *ran_ue, NGAP_Cause_PR group, long cause,
-    uint8_t action, ogs_time_t delay);
+    uint8_t action, ogs_time_t duration);
 int ngap_send_amf_ue_context_release_command(
     amf_ue_t *amf_ue, NGAP_Cause_PR group, long cause,
-    uint8_t action, ogs_time_t delay);
+    uint8_t action, ogs_time_t duration);
 
 int ngap_send_paging(amf_ue_t *amf_ue);
 int ngap_send_pdu_resource_setup_request(

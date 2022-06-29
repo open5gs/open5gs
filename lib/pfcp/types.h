@@ -838,10 +838,10 @@ ED6(uint8_t     spare1:3;,
 } __attribute__ ((packed)) ogs_pfcp_sdf_filter_t;
 
 int16_t ogs_pfcp_build_sdf_filter(
-        ogs_tlv_octet_t *octet, ogs_pfcp_sdf_filter_t *info,
+        ogs_tlv_octet_t *octet, ogs_pfcp_sdf_filter_t *filter,
         void *data, int data_len);
 int16_t ogs_pfcp_parse_sdf_filter(
-        ogs_pfcp_sdf_filter_t *info, ogs_tlv_octet_t *octet);
+        ogs_pfcp_sdf_filter_t *filter, ogs_tlv_octet_t *octet);
 
 /*
  * 8.2.8 MBR

@@ -28,11 +28,11 @@ extern "C" {
 
 void sgwc_sxa_handle_session_establishment_response(
         sgwc_sess_t *sess, ogs_pfcp_xact_t *pfcp_xact,
-        ogs_gtp2_message_t *gtp_message,
+        ogs_gtp2_message_t *recv_message,
         ogs_pfcp_session_establishment_response_t *pfcp_rsp);
 void sgwc_sxa_handle_session_modification_response(
         sgwc_sess_t *sess, ogs_pfcp_xact_t *pfcp_xact,
-        ogs_gtp2_message_t *gtp_message,
+        ogs_gtp2_message_t *recv_message,
         ogs_pfcp_session_modification_response_t *pfcp_rsp);
 void sgwc_sxa_handle_session_deletion_response(
         sgwc_sess_t *sess, ogs_pfcp_xact_t *pfcp_xact,

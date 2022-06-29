@@ -41,7 +41,7 @@ uint8_t smf_epc_n4_handle_session_establishment_response(
         ogs_pfcp_session_establishment_response_t *rsp);
 void smf_epc_n4_handle_session_modification_response(
         smf_sess_t *sess, ogs_pfcp_xact_t *xact,
-        ogs_gtp2_message_t *gtp2_message,
+        ogs_gtp2_message_t *recv_message,
         ogs_pfcp_session_modification_response_t *rsp);
 uint8_t smf_epc_n4_handle_session_deletion_response(
         smf_sess_t *sess, ogs_pfcp_xact_t *xact,
