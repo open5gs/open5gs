@@ -42,6 +42,12 @@ python3 = find_program('python3', 'python')
 python3_exe = join_paths(python3.path())
 mkdir_p = 'import os; os.makedirs("@0@", exist_ok=True) if not os.environ.get("DESTDIR") else False;'
 install_conf = 'import os; import shutil; shutil.copy("@0@", "@1@") if not os.environ.get("DESTDIR") and not os.path.isfile(os.path.join("@1@", os.path.split("@0@")[1])) else False;'
+cppcheck = find_program('cppcheck', required: false)
+clangtidy = find_program('run-clang-tidy', required: false) # requires clang-tools package
+if clangtidy.found() != true
+    clangtidy = find_program('clang-tidy', required: false)
+endif
+
 
 meson.add_install_script(python3_exe, '-c',
         mkdir_p.format(join_paths(localstatedir, 'log', 'open5gs')))
@@ -131,3 +137,24 @@ message('\n'.join([
   '        debugging support:            ' + get_option('buildtype'),
   '',
 ]))
+
+
+if cppcheck.found()
+    run_target('analyze-cppcheck',
+    command : [ 'misc/static_code_analyze.sh',
+        cppcheck.path(),
+        meson.build_root(),
+        meson.source_root()
+        ]
+    )
+endif
+
+if clangtidy.found()
+    run_target('analyze-clang-tidy',
+    command : [ 'misc/static_code_analyze.sh',
+        clangtidy.path(),
+        meson.build_root(),
+        meson.source_root()
+        ]
+    )
+endif
