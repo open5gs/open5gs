@@ -592,7 +592,15 @@ static int hss_ogs_diam_swx_sar_cb( struct msg **msg, struct avp *avp,
             struct avp *pdn_gw_allocation_type;
             struct avp *vplmn_dynamic_address_allowed;
 
-            ogs_session_t *session = &slice_data->session[i];
+            ogs_session_t *session = NULL;
+
+            if (i >= OGS_MAX_NUM_OF_SESS) {
+                ogs_warn("Ignore max session count overflow [%d>=%d]",
+                    slice_data->num_of_session, OGS_MAX_NUM_OF_SESS);
+                break;
+            }
+
+            session = &slice_data->session[i];
             ogs_assert(session);
             session->context_identifier = i+1;
 

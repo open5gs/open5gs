@@ -67,10 +67,13 @@ void mme_s6a_handle_ula(mme_ue_t *mme_ue,
 
     mme_session_remove_all(mme_ue);
 
-    mme_ue->num_of_session = slice_data->num_of_session;
-    mme_ue->context_identifier = slice_data->context_identifier;
-
     for (i = 0; i < slice_data->num_of_session; i++) {
+        if (i >= OGS_MAX_NUM_OF_SESS) {
+            ogs_warn("Ignore max session count overflow [%d>=%d]",
+                    slice_data->num_of_session, OGS_MAX_NUM_OF_SESS);
+            break;
+        }
+
         mme_ue->session[i].name = ogs_strdup(slice_data->session[i].name);
         ogs_assert(mme_ue->session[i].name);
 
@@ -89,4 +92,7 @@ void mme_s6a_handle_ula(mme_ue_t *mme_ue,
         memcpy(&mme_ue->session[i].smf_ip, &slice_data->session[i].smf_ip,
                 sizeof(mme_ue->session[i].smf_ip));
     }
+
+    mme_ue->num_of_session = i;
+    mme_ue->context_identifier = slice_data->context_identifier;
 }

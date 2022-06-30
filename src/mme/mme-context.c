@@ -3281,6 +3281,7 @@ void mme_session_remove_all(mme_ue_t *mme_ue)
 
     ogs_assert(mme_ue);
 
+    ogs_assert(mme_ue->num_of_session <= OGS_MAX_NUM_OF_SESS);
     for (i = 0; i < mme_ue->num_of_session; i++) {
         if (mme_ue->session[i].name)
             ogs_free(mme_ue->session[i].name);
@@ -3297,6 +3298,7 @@ ogs_session_t *mme_session_find_by_apn(mme_ue_t *mme_ue, char *apn)
     ogs_assert(mme_ue);
     ogs_assert(apn);
 
+    ogs_assert(mme_ue->num_of_session <= OGS_MAX_NUM_OF_SESS);
     for (i = 0; i < mme_ue->num_of_session; i++) {
         session = &mme_ue->session[i];
         ogs_assert(session->name);
@@ -3314,6 +3316,7 @@ ogs_session_t *mme_default_session(mme_ue_t *mme_ue)
 
     ogs_assert(mme_ue);
 
+    ogs_assert(mme_ue->num_of_session <= OGS_MAX_NUM_OF_SESS);
     for (i = 0; i < mme_ue->num_of_session; i++) {
         session = &mme_ue->session[i];
         if (session->context_identifier == mme_ue->context_identifier)

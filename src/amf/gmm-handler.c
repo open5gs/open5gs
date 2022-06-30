@@ -1000,6 +1000,11 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
 
 
             for (i = 0; i < amf_ue->num_of_slice; i++) {
+                if (i >= OGS_MAX_NUM_OF_SLICE) {
+                    ogs_warn("Ignore max slice count overflow [%d>=%d]",
+                            amf_ue->num_of_slice, OGS_MAX_NUM_OF_SLICE);
+                    break;
+                }
                 if (ul_nas_transport->presencemask &
                         OGS_NAS_5GS_UL_NAS_TRANSPORT_S_NSSAI_PRESENT) {
                     ogs_nas_s_nssai_ie_t ie;
@@ -1015,6 +1020,12 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                     }
                 }
                 for (j = 0; j < amf_ue->allowed_nssai.num_of_s_nssai; j++) {
+                    if (j >= OGS_MAX_NUM_OF_SLICE) {
+                        ogs_warn("Ignore max slice count overflow [%d>=%d]",
+                                amf_ue->allowed_nssai.num_of_s_nssai,
+                                OGS_MAX_NUM_OF_SLICE);
+                        break;
+                    }
                     if (amf_ue->slice[i].s_nssai.sst ==
                             amf_ue->allowed_nssai.s_nssai[j].sst &&
                         amf_ue->slice[i].s_nssai.sd.v ==
@@ -1025,6 +1036,13 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
 
                             for (k = 0;
                                     k < amf_ue->slice[i].num_of_session; k++) {
+                                if (k >= OGS_MAX_NUM_OF_SESS) {
+                                    ogs_warn("Ignore max session "
+                                        "count overflow [%d>=%d]",
+                                        amf_ue->slice[i].num_of_session,
+                                        OGS_MAX_NUM_OF_SESS);
+                                    break;
+                                }
                                 if (!strcmp(dnn->value,
                                             amf_ue->slice[i].session[k].name)) {
 

@@ -913,8 +913,14 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                  */
                 case OGS_DIAM_S6A_AVP_CODE_APN_CONFIGURATION:
                 {
-                    ogs_session_t *session =
-                        &slice_data->session[slice_data->num_of_session];
+                    ogs_session_t *session = NULL;
+
+                    if (slice_data->num_of_session >= OGS_MAX_NUM_OF_SESS) {
+                        ogs_warn("Ignore max session count overflow [%d>=%d]",
+                            slice_data->num_of_session, OGS_MAX_NUM_OF_SESS);
+                        break;
+                    }
+                    session = &slice_data->session[slice_data->num_of_session];
                     ogs_assert(session);
 
                     /* AVP: 'Service-Selection'(493)
