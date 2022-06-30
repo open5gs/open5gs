@@ -329,8 +329,6 @@ int smf_pfcp_send_modify_list(
     ogs_assert(sess);
     ogs_assert(xact);
 
-    xact->local_seid = sess->smf_n4_seid;
-
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE;
     h.seid = sess->upf_n4_seid;

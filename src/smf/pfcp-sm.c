@@ -220,8 +220,8 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
                     &message->pfcp_association_setup_response);
             break;
         case OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE:
-            if (!message->h.seid_presence)
-                ogs_error("No SEID");
+            if (!message->h.seid_presence) ogs_error("No SEID");
+
             if (!sess) {
                 ogs_gtp_xact_t *gtp_xact = xact->assoc_xact;
                 ogs_assert(gtp_xact);
@@ -239,10 +239,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
             break;
 
         case OGS_PFCP_SESSION_MODIFICATION_RESPONSE_TYPE:
-            if (!message->h.seid_presence) {
-                ogs_error("No SEID");
-                break;
-            }
+            if (!message->h.seid_presence) ogs_error("No SEID");
 
             if (xact->epc)
                 smf_epc_n4_handle_session_modification_response(
@@ -254,8 +251,8 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
             break;
 
         case OGS_PFCP_SESSION_DELETION_RESPONSE_TYPE:
-            if (!message->h.seid_presence)
-                ogs_error("No SEID");
+            if (!message->h.seid_presence) ogs_error("No SEID");
+
             if (!sess) {
                 ogs_gtp_xact_t *gtp_xact = xact->assoc_xact;
                 if (!gtp_xact)
@@ -275,10 +272,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
             break;
 
         case OGS_PFCP_SESSION_REPORT_REQUEST_TYPE:
-            if (!message->h.seid_presence) {
-                ogs_error("No SEID");
-                break;
-            }
+            if (!message->h.seid_presence) ogs_error("No SEID");
 
             smf_n4_handle_session_report_request(
                 sess, xact, &message->pfcp_session_report_request);

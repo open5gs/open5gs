@@ -556,6 +556,7 @@ void smf_s5c_handle_modify_bearer_request(
 
         pfcp_xact->gtp_pti = OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
         pfcp_xact->gtp_cause = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
+        pfcp_xact->local_seid = sess->smf_n4_seid;
 
         ogs_assert(gtpbuf);
         pfcp_xact->gtpbuf = ogs_pkbuf_copy(gtpbuf);

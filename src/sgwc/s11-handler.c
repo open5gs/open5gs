@@ -480,6 +480,7 @@ void sgwc_s11_handle_modify_bearer_request(
                 current_xact->gtpbuf = ogs_pkbuf_copy(gtpbuf);
                 ogs_assert(current_xact->gtpbuf);
             }
+            current_xact->local_seid = sess->sgwc_sxa_seid;
 
             ogs_list_add(&pfcp_xact_list, &current_xact->tmpnode);
         }
