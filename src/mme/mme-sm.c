@@ -562,6 +562,13 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         if (gtp_message.h.teid_presence && gtp_message.h.teid != 0) {
             /* Cause is not "Context not found" */
             mme_ue = mme_ue_find_by_teid(gtp_message.h.teid);
+        } else if (xact->local_teid) { /* rx no TEID or TEID=0 */
+            /* 3GPP TS 29.274 5.5.2: we receive TEID=0 under some
+             * conditions, such as cause "Session context not found". In those
+             * cases, we still want to identify the local session which
+             * originated the message, so try harder by using the TEID we
+             * locally stored in xact when sending the original request: */
+            mme_ue = mme_ue_find_by_teid(xact->local_teid);
         }
 
         switch (gtp_message.h.type) {
@@ -572,14 +579,17 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             mme_s11_handle_echo_response(xact, &gtp_message.echo_response);
             break;
         case OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE:
+            if (!gtp_message.h.teid_presence) ogs_error("No TEID");
             mme_s11_handle_create_session_response(
                 xact, mme_ue, &gtp_message.create_session_response);
             break;
         case OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE:
+            if (!gtp_message.h.teid_presence) ogs_error("No TEID");
             mme_s11_handle_modify_bearer_response(
                 xact, mme_ue, &gtp_message.modify_bearer_response);
             break;
         case OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE:
+            if (!gtp_message.h.teid_presence) ogs_error("No TEID");
             mme_s11_handle_delete_session_response(
                 xact, mme_ue, &gtp_message.delete_session_response);
             break;
@@ -596,6 +606,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                 xact, mme_ue, &gtp_message.delete_bearer_request);
             break;
         case OGS_GTP2_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
+            if (!gtp_message.h.teid_presence) ogs_error("No TEID");
             mme_s11_handle_release_access_bearers_response(
                 xact, mme_ue, &gtp_message.release_access_bearers_response);
             break;
@@ -604,16 +615,19 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                 xact, mme_ue, &gtp_message.downlink_data_notification);
             break;
         case OGS_GTP2_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
+            if (!gtp_message.h.teid_presence) ogs_error("No TEID");
             mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
                 xact, mme_ue,
                 &gtp_message.create_indirect_data_forwarding_tunnel_response);
             break;
         case OGS_GTP2_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
+            if (!gtp_message.h.teid_presence) ogs_error("No TEID");
             mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
                 xact, mme_ue,
                 &gtp_message.delete_indirect_data_forwarding_tunnel_response);
             break;
         case OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE:
+            if (!gtp_message.h.teid_presence) ogs_error("No TEID");
             mme_s11_handle_bearer_resource_failure_indication(
                 xact, mme_ue,
                 &gtp_message.bearer_resource_failure_indication);

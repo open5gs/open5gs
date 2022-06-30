@@ -190,7 +190,7 @@ void sgwc_pfcp_state_associated(ogs_fsm_t *s, sgwc_event_t *e)
              * conditions, such as cause "Session context not found". In those
              * cases, we still want to identify the local session which
              * originated the message, so try harder by using the SEID we
-             * locacally stored in xact when sending the original request: */
+             * locally stored in xact when sending the original request: */
             sess = sgwc_sess_find_by_seid(xact->local_seid);
         }
 
