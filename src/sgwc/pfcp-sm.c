@@ -190,7 +190,7 @@ void sgwc_pfcp_state_associated(ogs_fsm_t *s, sgwc_event_t *e)
              * conditions, such as cause "Session context not found". In those
              * cases, we still want to identify the local session which
              * originated the message, so try harder by using the SEID we
-             * locally stored in xact when sending the original request: */
+             * locacally stored in xact when sending the original request: */
             sess = sgwc_sess_find_by_seid(xact->local_seid);
         }
 
@@ -216,28 +216,32 @@ void sgwc_pfcp_state_associated(ogs_fsm_t *s, sgwc_event_t *e)
                     &message->pfcp_association_setup_response);
             break;
         case OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE:
-            if (!message->h.seid_presence) ogs_error("No SEID");
+            if (!message->h.seid_presence)
+                ogs_error("No SEID");
             sgwc_sxa_handle_session_establishment_response(
                 sess, xact, e->gtp_message,
                 &message->pfcp_session_establishment_response);
             break;
 
         case OGS_PFCP_SESSION_MODIFICATION_RESPONSE_TYPE:
-            if (!message->h.seid_presence) ogs_error("No SEID");
+            if (!message->h.seid_presence)
+                ogs_error("No SEID");
             sgwc_sxa_handle_session_modification_response(
                 sess, xact, e->gtp_message,
                 &message->pfcp_session_modification_response);
             break;
 
         case OGS_PFCP_SESSION_DELETION_RESPONSE_TYPE:
-            if (!message->h.seid_presence) ogs_error("No SEID");
+            if (!message->h.seid_presence)
+                ogs_error("No SEID");
             sgwc_sxa_handle_session_deletion_response(
                 sess, xact, e->gtp_message,
                 &message->pfcp_session_deletion_response);
             break;
 
         case OGS_PFCP_SESSION_REPORT_REQUEST_TYPE:
-            if (!message->h.seid_presence) ogs_error("No SEID");
+            if (!message->h.seid_presence)
+                ogs_error("No SEID");
             sgwc_sxa_handle_session_report_request(
                 sess, xact, &message->pfcp_session_report_request);
             break;

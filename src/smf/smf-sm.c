@@ -115,15 +115,8 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         }
         e->gtp_xact = gtp_xact;
 
-        if (gtp2_message.h.teid_presence && gtp2_message.h.teid != 0) {
+        if (gtp2_message.h.teid != 0) {
             sess = smf_sess_find_by_teid(gtp2_message.h.teid);
-        } else if (gtp_xact->local_teid) { /* rx no TEID or TEID=0 */
-            /* 3GPP TS 29.274 5.5.2: we receive TEID=0 under some
-             * conditions, such as cause "Session context not found". In those
-             * cases, we still want to identify the local session which
-             * originated the message, so try harder by using the TEID we
-             * locally stored in xact when sending the original request: */
-            sess = smf_sess_find_by_teid(gtp_xact->local_teid);
         }
 
         switch(gtp2_message.h.type) {
@@ -168,18 +161,18 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 sess, gtp_xact, recvbuf, &gtp2_message.modify_bearer_request);
             break;
         case OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE:
-            if (!gtp2_message.h.teid_presence) ogs_error("No TEID");
             smf_s5c_handle_create_bearer_response(
                 sess, gtp_xact, &gtp2_message.create_bearer_response);
             break;
         case OGS_GTP2_UPDATE_BEARER_RESPONSE_TYPE:
-            if (!gtp2_message.h.teid_presence) ogs_error("No TEID");
             smf_s5c_handle_update_bearer_response(
                 sess, gtp_xact, &gtp2_message.update_bearer_response);
             break;
         case OGS_GTP2_DELETE_BEARER_RESPONSE_TYPE:
-            if (!gtp2_message.h.teid_presence) ogs_error("No TEID");
-            ogs_assert(sess);
+            if (!sess) {
+                /* TODO: NACK the message */
+                break;
+            }
             e->sess = sess;
             ogs_fsm_dispatch(&sess->sm, e);
             break;

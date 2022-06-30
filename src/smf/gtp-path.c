@@ -542,7 +542,6 @@ int smf_gtp2_send_delete_bearer_request(
     xact = ogs_gtp_xact_local_create(
             sess->gnode, &h, pkbuf, bearer_timeout, bearer);
     ogs_expect_or_return_val(xact, OGS_ERROR);
-    xact->local_teid = sess->smf_n4_teid;
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);

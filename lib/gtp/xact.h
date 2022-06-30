@@ -86,9 +86,6 @@ typedef struct ogs_gtp_xact_s {
     ogs_timer_t     *tm_holding;    /**< Timer waiting for holding message */
     uint8_t         holding_rcount;
 
-    uint32_t        local_teid;     /**< Local TEID,
-                                         expected in reply from peer */
-
     void            *assoc_xact;    /**< Associated GTP transaction */
     void            *pfcp_xact;     /**< Associated PFCP transaction */
 

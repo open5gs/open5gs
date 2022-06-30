@@ -192,7 +192,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
              * conditions, such as cause "Session context not found". In those
              * cases, we still want to identify the local session which
              * originated the message, so try harder by using the SEID we
-             * locally stored in xact when sending the original request: */
+             * locacally stored in xact when sending the original request: */
             sess = smf_sess_find_by_seid(xact->local_seid);
         }
         if (sess)
@@ -220,13 +220,15 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
                     &message->pfcp_association_setup_response);
             break;
         case OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE:
-            if (!message->h.seid_presence) ogs_error("No SEID");
+            if (!message->h.seid_presence)
+                ogs_error("No SEID");
             ogs_assert(sess);
             ogs_fsm_dispatch(&sess->sm, e);
             break;
 
         case OGS_PFCP_SESSION_MODIFICATION_RESPONSE_TYPE:
-            if (!message->h.seid_presence) ogs_error("No SEID");
+            if (!message->h.seid_presence)
+                ogs_error("No SEID");
             if (xact->epc)
                 smf_epc_n4_handle_session_modification_response(
                     sess, xact, e->gtp2_message,
@@ -237,13 +239,15 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
             break;
 
         case OGS_PFCP_SESSION_DELETION_RESPONSE_TYPE:
-            if (!message->h.seid_presence) ogs_error("No SEID");
+            if (!message->h.seid_presence)
+                ogs_error("No SEID");
             ogs_assert(sess);
             ogs_fsm_dispatch(&sess->sm, e);
             break;
 
         case OGS_PFCP_SESSION_REPORT_REQUEST_TYPE:
-            if (!message->h.seid_presence) ogs_error("No SEID");
+            if (!message->h.seid_presence)
+                ogs_error("No SEID");
             smf_n4_handle_session_report_request(
                 sess, xact, &message->pfcp_session_report_request);
             break;

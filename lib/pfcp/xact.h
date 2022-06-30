@@ -65,8 +65,7 @@ typedef struct ogs_pfcp_xact_s {
 
     ogs_timer_t     *tm_delayed_commit; /**< Timer waiting for commit xact */
 
-    uint64_t        local_seid;     /**< Local SEID,
-                                         expected in reply from peer */
+    uint64_t        local_seid;     /**< Local SEID, expected in reply from peer */
 
     void            *assoc_xact;    /**< Associated GTP transaction */
     ogs_pkbuf_t     *gtpbuf;        /**< GTP packet buffer */

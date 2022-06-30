@@ -378,7 +378,6 @@ void sgwc_sxa_handle_session_establishment_response(
         s5c_xact = ogs_gtp_xact_local_create(
                 sess->gnode, &send_message.h, pkbuf, sess_timeout, sess);
         ogs_expect_or_return(s5c_xact);
-        s5c_xact->local_teid = sess->sgw_s5c_teid;
 
         s5c_xact->modify_action = OGS_GTP_MODIFY_IN_PATH_SWITCH_REQUEST;
 
@@ -416,7 +415,6 @@ void sgwc_sxa_handle_session_establishment_response(
         s5c_xact = ogs_gtp_xact_local_create(
                 sess->gnode, &recv_message->h, pkbuf, sess_timeout, sess);
         ogs_expect_or_return(s5c_xact);
-        s5c_xact->local_teid = sess->sgw_s5c_teid;
     }
 
     ogs_gtp_xact_associate(s11_xact, s5c_xact);
@@ -733,7 +731,6 @@ void sgwc_sxa_handle_session_modification_response(
             s11_xact = ogs_gtp_xact_local_create(sgwc_ue->gnode,
                     &recv_message->h, pkbuf, bearer_timeout, bearer);
             ogs_expect_or_return(s11_xact);
-            s11_xact->local_teid = sgwc_ue->sgw_s11_teid;
 
             ogs_gtp_xact_associate(s5c_xact, s11_xact);
 
@@ -1023,7 +1020,6 @@ void sgwc_sxa_handle_session_modification_response(
                             sess->gnode, &recv_message->h, pkbuf,
                             sess_timeout, sess);
                     ogs_expect_or_return(s5c_xact);
-                    s5c_xact->local_teid = sess->sgw_s5c_teid;
 
                     ogs_gtp_xact_associate(s11_xact, s5c_xact);
 
