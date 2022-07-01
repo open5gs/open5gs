@@ -297,8 +297,10 @@ ogs_pkbuf_t *ogs_pkbuf_copy_debug(ogs_pkbuf_t *pkbuf, const char *file_line)
 {
 #if OGS_USE_TALLOC
     ogs_pkbuf_t *newbuf;
-    int size = pkbuf->end - pkbuf->head;
+    int size = 0;
 
+    ogs_assert(pkbuf);
+    size = pkbuf->end - pkbuf->head;
     ogs_assert(size > 0);
     newbuf = ogs_pkbuf_alloc_debug(NULL, size, file_line);
     if (!newbuf) {
