@@ -486,6 +486,10 @@ bool smf_npcf_smpolicycontrol_handle_create(
 
     ogs_assert(OGS_OK ==
         ogs_pfcp_paa_to_ue_ip_addr(&sess->session.paa,
+            &ul_pdr->ue_ip_addr, &ul_pdr->ue_ip_addr_len));
+
+    ogs_assert(OGS_OK ==
+        ogs_pfcp_paa_to_ue_ip_addr(&sess->session.paa,
             &dl_pdr->ue_ip_addr, &dl_pdr->ue_ip_addr_len));
     dl_pdr->ue_ip_addr.sd = OGS_PFCP_UE_IP_DST;
 
