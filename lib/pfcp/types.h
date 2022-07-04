@@ -342,17 +342,17 @@ ED2(uint8_t reserved:7;,
  * The EDRT flag may be set if the FORW flag is set.
  * The DDPN flag may be set with any of the DROP and BUFF flags.
  */
-#define OGS_PFCP_APPLY_ACTION_DROP                          (1<<0)
-#define OGS_PFCP_APPLY_ACTION_FORW                          (1<<1)
-#define OGS_PFCP_APPLY_ACTION_BUFF                          (1<<2)
-#define OGS_PFCP_APPLY_ACTION_NOCP                          (1<<3)
-#define OGS_PFCP_APPLY_ACTION_DUPL                          (1<<4)
-#define OGS_PFCP_APPLY_ACTION_IPMA                          (1<<5)
-#define OGS_PFCP_APPLY_ACTION_IPMD                          (1<<6)
-#define OGS_PFCP_APPLY_ACTION_DFRT                          (1<<7)
-#define OGS_PFCP_APPLY_ACTION_EDRT                          (1<<8)
-#define OGS_PFCP_APPLY_ACTION_BDPN                          (1<<9)
-#define OGS_PFCP_APPLY_ACTION_DDPN                          (1<<10)
+#define OGS_PFCP_APPLY_ACTION_DROP                          (1<<8)
+#define OGS_PFCP_APPLY_ACTION_FORW                          (1<<9)
+#define OGS_PFCP_APPLY_ACTION_BUFF                          (1<<10)
+#define OGS_PFCP_APPLY_ACTION_NOCP                          (1<<11)
+#define OGS_PFCP_APPLY_ACTION_DUPL                          (1<<12)
+#define OGS_PFCP_APPLY_ACTION_IPMA                          (1<<13)
+#define OGS_PFCP_APPLY_ACTION_IPMD                          (1<<14)
+#define OGS_PFCP_APPLY_ACTION_DFRT                          (1<<15)
+#define OGS_PFCP_APPLY_ACTION_EDRT                          (1<<0)
+#define OGS_PFCP_APPLY_ACTION_BDPN                          (1<<1)
+#define OGS_PFCP_APPLY_ACTION_DDPN                          (1<<2)
 typedef uint16_t  ogs_pfcp_apply_action_t;
 
 
