@@ -27,7 +27,9 @@ case "$1" in
 	if test "x`systemctl is-enabled systemd-networkd`" = xdisabled; then
 		systemctl enable systemd-networkd
 	fi
-	deb-systemd-invoke restart systemd-networkd
+	if test -d "/run/systemd"; then
+		deb-systemd-invoke restart systemd-networkd
+	fi
 	if test -f /etc/sysctl.d/30-open5gs.conf && grep "ogstun" /proc/net/dev > /dev/null; then
 		echo "net.ipv6.conf.ogstun.disable_ipv6=0" > /etc/sysctl.d/30-open5gs.conf
 		sysctl -p /etc/sysctl.d/30-open5gs.conf
