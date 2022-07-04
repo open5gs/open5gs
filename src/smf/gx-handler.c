@@ -157,6 +157,10 @@ uint32_t smf_gx_handle_cca_initial_request(
             &dl_pdr->ue_ip_addr, &dl_pdr->ue_ip_addr_len));
     dl_pdr->ue_ip_addr.sd = OGS_PFCP_UE_IP_DST;
 
+    ogs_assert(OGS_OK ==
+        ogs_pfcp_paa_to_ue_ip_addr(&sess->session.paa,
+            &ul_pdr->ue_ip_addr, &ul_pdr->ue_ip_addr_len));
+
     /* Set UE-to-CP Flow-Description and Outer-Header-Creation */
     up2cp_pdr->flow_description[up2cp_pdr->num_of_flow++] =
         (char *)"permit out 58 from ff02::2/128 to assigned";
