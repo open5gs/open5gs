@@ -212,8 +212,9 @@ bool ogs_nnrf_disc_send_nf_discover(ogs_sbi_nf_instance_t *nf_instance,
     client = nf_instance->client;
     ogs_assert(client);
 
+    ogs_assert(ogs_sbi_self()->nf_instance);
     request = ogs_nnrf_disc_build_discover(
-            target_nf_type, nf_instance->nf_type);
+            target_nf_type, ogs_sbi_self()->nf_instance->nf_type);
     ogs_expect_or_return_val(request, false);
 
     return ogs_sbi_client_send_request(client, client->cb, request, data);
