@@ -43,7 +43,7 @@ void ogs_sbi_context_init(void)
     ogs_log_install_domain(&__ogs_sbi_domain, "sbi", ogs_core()->log.level);
 
     ogs_sbi_message_init(ogs_app()->pool.message, ogs_app()->pool.message);
-    ogs_sbi_server_init(ogs_app()->pool.nf, ogs_app()->pool.event);
+    ogs_sbi_server_init(ogs_app()->pool.event, ogs_app()->pool.event);
     ogs_sbi_client_init(ogs_app()->pool.event, ogs_app()->pool.event);
 
     ogs_list_init(&self.nf_instance_list);
