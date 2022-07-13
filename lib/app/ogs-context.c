@@ -78,8 +78,8 @@ static void recalculate_pool_size(void)
 
     self.pool.nf = self.max.gnb;
 
-#define MAX_NUM_OF_SOCKET       4   /* Num of socket per NF */
-    self.pool.socket = self.pool.nf * MAX_NUM_OF_SOCKET;
+#define MAX_NUM_OF_SOCKET       8
+    self.pool.socket = self.max.ue * MAX_NUM_OF_SOCKET;
 
 #define MAX_NUM_OF_XACT         8
     self.pool.gtp_xact = self.max.ue * MAX_NUM_OF_XACT;
