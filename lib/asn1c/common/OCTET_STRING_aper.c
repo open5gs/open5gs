@@ -173,9 +173,10 @@ OCTET_STRING_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
         /* Get the PER length */
         if (csiz->upper_bound - csiz->lower_bound == 0)
             /* Indefinite length case */
-            raw_len = aper_get_length(pd, -1, csiz->effective_bits, &repeat);
+            raw_len = aper_get_length(pd, -1, -1, csiz->effective_bits, &repeat);
         else
-            raw_len = aper_get_length(pd, csiz->upper_bound - csiz->lower_bound + 1, csiz->effective_bits, &repeat);
+            raw_len = aper_get_length(pd, csiz->lower_bound, csiz->upper_bound,
+                                      csiz->effective_bits, &repeat);
         if(raw_len < 0) RETURN(RC_WMORE);
         raw_len += csiz->lower_bound;
 
@@ -342,10 +343,9 @@ OCTET_STRING_encode_aper(const asn_TYPE_descriptor_t *td,
                   st->size, sizeinunits - csiz->lower_bound,
                   csiz->effective_bits);
         if (csiz->effective_bits > 0) {
-                ret = aper_put_length(po,
-                                      csiz->upper_bound - csiz->lower_bound + 1,
-                                      sizeinunits - csiz->lower_bound, 0);
-                if(ret) ASN__ENCODE_FAILED;
+                ret = aper_put_length(po, csiz->lower_bound, csiz->upper_bound,
+                                      sizeinunits - csiz->lower_bound, NULL);
+                if(ret < 0) ASN__ENCODE_FAILED;
         }
         if (csiz->effective_bits > 0 || (st->size > 2)
             || (csiz->upper_bound > (2 * 8 / unit_bits))
@@ -372,7 +372,7 @@ OCTET_STRING_encode_aper(const asn_TYPE_descriptor_t *td,
     ASN_DEBUG("Encoding %lu bytes", st->size);
 
     if(sizeinunits == 0) {
-        if(aper_put_length(po, -1, 0, 0))
+        if(aper_put_length(po, -1, -1, 0, NULL) < 0)
             ASN__ENCODE_FAILED;
         ASN__ENCODED_OK(er);
     }
@@ -380,7 +380,7 @@ OCTET_STRING_encode_aper(const asn_TYPE_descriptor_t *td,
     buf = st->buf;
     while(sizeinunits) {
         int need_eom = 0;
-        ssize_t maySave = aper_put_length(po, -1, sizeinunits, &need_eom);
+        ssize_t maySave = aper_put_length(po, -1, -1, sizeinunits, &need_eom);
 
         if(maySave < 0) ASN__ENCODE_FAILED;
 
@@ -404,7 +404,7 @@ OCTET_STRING_encode_aper(const asn_TYPE_descriptor_t *td,
             buf += maySave >> 3;
         sizeinunits -= maySave;
         assert(!(maySave & 0x07) || !sizeinunits);
-        if(need_eom && aper_put_length(po, -1, 0, 0))
+        if(need_eom && (aper_put_length(po, -1, -1, 0, NULL) < 0))
             ASN__ENCODE_FAILED; /* End of Message length */
     }
 

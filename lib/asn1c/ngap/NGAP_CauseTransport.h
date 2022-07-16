@@ -37,6 +37,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_CauseTransport_specs_1;
 asn_struct_free_f CauseTransport_free;
 asn_struct_print_f CauseTransport_print;
 asn_constr_check_f CauseTransport_constraint;
+jer_type_encoder_f CauseTransport_encode_jer;
 per_type_decoder_f CauseTransport_decode_aper;
 per_type_encoder_f CauseTransport_encode_aper;
 

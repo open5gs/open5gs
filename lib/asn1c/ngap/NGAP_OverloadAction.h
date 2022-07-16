@@ -39,6 +39,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_OverloadAction_specs_1;
 asn_struct_free_f OverloadAction_free;
 asn_struct_print_f OverloadAction_print;
 asn_constr_check_f OverloadAction_constraint;
+jer_type_encoder_f OverloadAction_encode_jer;
 per_type_decoder_f OverloadAction_decode_aper;
 per_type_encoder_f OverloadAction_encode_aper;
 

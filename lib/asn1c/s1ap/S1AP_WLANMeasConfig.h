@@ -36,6 +36,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_WLANMeasConfig_specs_1;
 asn_struct_free_f WLANMeasConfig_free;
 asn_struct_print_f WLANMeasConfig_print;
 asn_constr_check_f WLANMeasConfig_constraint;
+jer_type_encoder_f WLANMeasConfig_encode_jer;
 per_type_decoder_f WLANMeasConfig_decode_aper;
 per_type_encoder_f WLANMeasConfig_encode_aper;
 

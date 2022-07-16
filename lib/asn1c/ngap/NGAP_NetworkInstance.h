@@ -26,6 +26,7 @@ extern asn_TYPE_descriptor_t asn_DEF_NGAP_NetworkInstance;
 asn_struct_free_f NGAP_NetworkInstance_free;
 asn_struct_print_f NGAP_NetworkInstance_print;
 asn_constr_check_f NGAP_NetworkInstance_constraint;
+jer_type_encoder_f NGAP_NetworkInstance_encode_jer;
 per_type_decoder_f NGAP_NetworkInstance_decode_aper;
 per_type_encoder_f NGAP_NetworkInstance_encode_aper;
 

@@ -27,6 +27,7 @@ extern asn_TYPE_descriptor_t asn_DEF_NGAP_ProcedureCode;
 asn_struct_free_f NGAP_ProcedureCode_free;
 asn_struct_print_f NGAP_ProcedureCode_print;
 asn_constr_check_f NGAP_ProcedureCode_constraint;
+jer_type_encoder_f NGAP_ProcedureCode_encode_jer;
 per_type_decoder_f NGAP_ProcedureCode_decode_aper;
 per_type_encoder_f NGAP_ProcedureCode_encode_aper;
 #define NGAP_ProcedureCode_id_AMFConfigurationUpdate	((NGAP_ProcedureCode_t)0)

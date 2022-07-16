@@ -49,6 +49,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_NB_IoT_Paging_eDRXCycle_specs_1;
 asn_struct_free_f NB_IoT_Paging_eDRXCycle_free;
 asn_struct_print_f NB_IoT_Paging_eDRXCycle_print;
 asn_constr_check_f NB_IoT_Paging_eDRXCycle_constraint;
+jer_type_encoder_f NB_IoT_Paging_eDRXCycle_encode_jer;
 per_type_decoder_f NB_IoT_Paging_eDRXCycle_decode_aper;
 per_type_encoder_f NB_IoT_Paging_eDRXCycle_encode_aper;
 

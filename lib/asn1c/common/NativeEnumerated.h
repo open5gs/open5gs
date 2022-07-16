@@ -41,6 +41,10 @@ extern asn_TYPE_operation_t asn_OP_NativeEnumerated;
 xer_type_encoder_f NativeEnumerated_encode_xer;
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+jer_type_encoder_f NativeEnumerated_encode_jer;
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
+
 #if !defined(ASN_DISABLE_OER_SUPPORT)
 oer_type_decoder_f NativeEnumerated_decode_oer;
 oer_type_encoder_f NativeEnumerated_encode_oer;

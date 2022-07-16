@@ -34,6 +34,7 @@ extern asn_TYPE_descriptor_t asn_DEF_S1AP_RAT_Type;
 asn_struct_free_f S1AP_RAT_Type_free;
 asn_struct_print_f S1AP_RAT_Type_print;
 asn_constr_check_f S1AP_RAT_Type_constraint;
+jer_type_encoder_f S1AP_RAT_Type_encode_jer;
 per_type_decoder_f S1AP_RAT_Type_decode_aper;
 per_type_encoder_f S1AP_RAT_Type_encode_aper;
 

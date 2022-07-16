@@ -28,6 +28,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_RAN_UE_NGAP_ID_specs_1;
 asn_struct_free_f RAN_UE_NGAP_ID_free;
 asn_struct_print_f RAN_UE_NGAP_ID_print;
 asn_constr_check_f RAN_UE_NGAP_ID_constraint;
+jer_type_encoder_f RAN_UE_NGAP_ID_encode_jer;
 per_type_decoder_f RAN_UE_NGAP_ID_decode_aper;
 per_type_encoder_f RAN_UE_NGAP_ID_encode_aper;
 

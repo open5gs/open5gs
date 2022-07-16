@@ -26,6 +26,7 @@ extern asn_TYPE_descriptor_t asn_DEF_NGAP_URI_address;
 asn_struct_free_f NGAP_URI_address_free;
 asn_struct_print_f NGAP_URI_address_print;
 asn_constr_check_f NGAP_URI_address_constraint;
+jer_type_encoder_f NGAP_URI_address_encode_jer;
 per_type_decoder_f NGAP_URI_address_decode_aper;
 per_type_encoder_f NGAP_URI_address_encode_aper;
 

@@ -41,6 +41,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_TraceDepth_specs_1;
 asn_struct_free_f TraceDepth_free;
 asn_struct_print_f TraceDepth_print;
 asn_constr_check_f TraceDepth_constraint;
+jer_type_encoder_f TraceDepth_encode_jer;
 per_type_decoder_f TraceDepth_decode_aper;
 per_type_encoder_f TraceDepth_encode_aper;
 

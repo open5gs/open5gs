@@ -27,6 +27,11 @@ asn_TYPE_operation_t asn_OP_CHOICE = {
     0,
     0,
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+    CHOICE_encode_jer,
+#else
+    0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
     CHOICE_decode_oer,
     CHOICE_encode_oer,

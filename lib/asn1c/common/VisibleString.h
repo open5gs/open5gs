@@ -36,6 +36,10 @@ asn_constr_check_f VisibleString_constraint;
 #define VisibleString_encode_xer OCTET_STRING_encode_xer
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+#define VisibleString_encode_jer OCTET_STRING_encode_jer
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
+
 #if !defined(ASN_DISABLE_UPER_SUPPORT)
 #define VisibleString_decode_uper OCTET_STRING_decode_uper
 #define VisibleString_encode_uper OCTET_STRING_encode_uper

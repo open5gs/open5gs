@@ -27,6 +27,7 @@ extern asn_TYPE_descriptor_t asn_DEF_S1AP_HFN;
 asn_struct_free_f S1AP_HFN_free;
 asn_struct_print_f S1AP_HFN_print;
 asn_constr_check_f S1AP_HFN_constraint;
+jer_type_encoder_f S1AP_HFN_encode_jer;
 per_type_decoder_f S1AP_HFN_decode_aper;
 per_type_encoder_f S1AP_HFN_encode_aper;
 

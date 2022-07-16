@@ -45,6 +45,10 @@ xer_type_decoder_f OBJECT_IDENTIFIER_decode_xer;
 xer_type_encoder_f OBJECT_IDENTIFIER_encode_xer;
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+jer_type_encoder_f OBJECT_IDENTIFIER_encode_jer;
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
+
 #if !defined(ASN_DISABLE_OER_SUPPORT)
 #define OBJECT_IDENTIFIER_decode_oer oer_decode_primitive
 #define OBJECT_IDENTIFIER_encode_oer oer_encode_primitive

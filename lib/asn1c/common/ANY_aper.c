@@ -132,7 +132,7 @@ ANY_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
         int ret;
 
         /* Get the PER length */
-        raw_len = aper_get_length(pd, -1, 0, &repeat);
+        raw_len = aper_get_length(pd, -1, -1, 0, &repeat);
         if(raw_len < 0) RETURN(RC_WMORE);
         if(raw_len == 0 && st->buf) break;
 
@@ -173,7 +173,7 @@ ANY_encode_aper(const asn_TYPE_descriptor_t *td,
     size = st->size;
     do {
         int need_eom = 0;
-        ssize_t may_save = aper_put_length(po, -1, size, &need_eom);
+        ssize_t may_save = aper_put_length(po, -1, -1, size, &need_eom);
         if(may_save < 0) ASN__ENCODE_FAILED;
 
         ret = per_put_many_bits(po, buf, may_save * 8);
@@ -182,7 +182,7 @@ ANY_encode_aper(const asn_TYPE_descriptor_t *td,
         buf += may_save;
         size -= may_save;
         assert(!(may_save & 0x07) || !size);
-        if(need_eom && aper_put_length(po, -1, 0, 0))
+        if(need_eom && aper_put_length(po, -1, -1, 0, NULL))
             ASN__ENCODE_FAILED; /* End of Message length */
     } while(size);
 

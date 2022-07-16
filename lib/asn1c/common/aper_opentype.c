@@ -25,7 +25,7 @@ aper_open_type_get_simple(const asn_codec_ctx_t *ctx,
 	ASN_DEBUG("Getting open type %s...", td->name);
 
 	do {
-	        chunk_bytes = aper_get_length(pd, -1, -1, &repeat);
+	        chunk_bytes = aper_get_length(pd, -1, -1, -1, &repeat);
 		if(chunk_bytes < 0) {
 			FREEMEM(buf);
 			ASN__DECODE_STARVED;
@@ -101,12 +101,12 @@ aper_open_type_put(const asn_TYPE_descriptor_t *td,
 
 	for(bptr = buf, toGo = size; toGo;) {
         int need_eom = 0;
-		ssize_t maySave = aper_put_length(po, -1, toGo, &need_eom);
+		ssize_t maySave = aper_put_length(po, -1, -1, toGo, &need_eom);
 		if(maySave < 0) break;
 		if(per_put_many_bits(po, bptr, maySave * 8)) break;
 		bptr = (char *)bptr + maySave;
 		toGo -= maySave;
-        if(need_eom && aper_put_length(po, -1, 0, 0)) {
+        if(need_eom && (aper_put_length(po, -1, -1, 0, NULL) < 0)) {
             FREEMEM(buf);
             return -1;
         }

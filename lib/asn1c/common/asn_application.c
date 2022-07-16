@@ -431,6 +431,23 @@ asn_encode_internal(const asn_codec_ctx_t *opt_codec_ctx,
         break;
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+    case ATS_BASIC_JER:
+        if(td->op->jer_encoder) {
+            er = jer_encode(td, sptr, callback, callback_key);
+            if(er.encoded == -1) {
+                if(er.failed_type && er.failed_type->op->jer_encoder) {
+                    errno = EBADF;   /* Structure has incorrect form. */
+                } else {
+                    errno = ENOENT;  /* JER is not defined for this type. */
+                }
+            }
+        } else {
+            errno = ENOENT;  /* Transfer syntax is not defined for this type. */
+            ASN__ENCODE_FAILED;
+        }
+        break;
+#endif /* !defined(ASN_DISABLE_JER_SUPPORT) */
     default:
         errno = ENOENT;
         ASN__ENCODE_FAILED;

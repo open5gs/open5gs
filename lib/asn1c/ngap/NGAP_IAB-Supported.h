@@ -34,6 +34,7 @@ extern asn_TYPE_descriptor_t asn_DEF_NGAP_IAB_Supported;
 asn_struct_free_f NGAP_IAB_Supported_free;
 asn_struct_print_f NGAP_IAB_Supported_print;
 asn_constr_check_f NGAP_IAB_Supported_constraint;
+jer_type_encoder_f NGAP_IAB_Supported_encode_jer;
 per_type_decoder_f NGAP_IAB_Supported_decode_aper;
 per_type_encoder_f NGAP_IAB_Supported_encode_aper;
 

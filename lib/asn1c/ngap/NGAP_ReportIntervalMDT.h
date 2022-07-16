@@ -45,6 +45,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_ReportIntervalMDT_specs_1;
 asn_struct_free_f ReportIntervalMDT_free;
 asn_struct_print_f ReportIntervalMDT_print;
 asn_constr_check_f ReportIntervalMDT_constraint;
+jer_type_encoder_f ReportIntervalMDT_encode_jer;
 per_type_decoder_f ReportIntervalMDT_decode_aper;
 per_type_encoder_f ReportIntervalMDT_encode_aper;
 

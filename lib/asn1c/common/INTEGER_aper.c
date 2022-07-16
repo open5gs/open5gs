@@ -129,7 +129,7 @@ INTEGER_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
         int ret;
 
         /* Get the PER length */
-        len = aper_get_length(pd, -1, -1, &repeat);
+        len = aper_get_length(pd, -1, -1, -1, &repeat);
         if(len < 0) ASN__DECODE_STARVED;
 
         p = REALLOC(st->buf, st->size + len + 1);
@@ -291,13 +291,14 @@ INTEGER_encode_aper(const asn_TYPE_descriptor_t *td,
 
     for(buf = st->buf, end = st->buf + st->size; buf < end;) {
         int need_eom = 0;
-        ssize_t mayEncode = aper_put_length(po, -1, end - buf, &need_eom);
+        ssize_t mayEncode = aper_put_length(po, -1, -1, end - buf, &need_eom);
         if(mayEncode < 0)
             ASN__ENCODE_FAILED;
         if(per_put_many_bits(po, buf, 8 * mayEncode))
             ASN__ENCODE_FAILED;
         buf += mayEncode;
-        if(need_eom && aper_put_length(po, -1, 0, 0)) ASN__ENCODE_FAILED;
+        if(need_eom && (aper_put_length(po, -1, -1, 0, NULL) < 0))
+            ASN__ENCODE_FAILED;
     }
 
     ASN__ENCODED_OK(er);

@@ -27,6 +27,7 @@ extern asn_TYPE_descriptor_t asn_DEF_NGAP_NRCellIdentity;
 asn_struct_free_f NGAP_NRCellIdentity_free;
 asn_struct_print_f NGAP_NRCellIdentity_print;
 asn_constr_check_f NGAP_NRCellIdentity_constraint;
+jer_type_encoder_f NGAP_NRCellIdentity_encode_jer;
 per_type_decoder_f NGAP_NRCellIdentity_decode_aper;
 per_type_encoder_f NGAP_NRCellIdentity_encode_aper;
 

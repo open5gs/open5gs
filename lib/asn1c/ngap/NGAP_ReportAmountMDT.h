@@ -40,6 +40,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_ReportAmountMDT_specs_1;
 asn_struct_free_f ReportAmountMDT_free;
 asn_struct_print_f ReportAmountMDT_print;
 asn_constr_check_f ReportAmountMDT_constraint;
+jer_type_encoder_f ReportAmountMDT_encode_jer;
 per_type_decoder_f ReportAmountMDT_decode_aper;
 per_type_encoder_f ReportAmountMDT_encode_aper;
 

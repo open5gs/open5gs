@@ -34,6 +34,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_CSGMembershipStatus_specs_1;
 asn_struct_free_f CSGMembershipStatus_free;
 asn_struct_print_f CSGMembershipStatus_print;
 asn_constr_check_f CSGMembershipStatus_constraint;
+jer_type_encoder_f CSGMembershipStatus_encode_jer;
 per_type_decoder_f CSGMembershipStatus_decode_aper;
 per_type_encoder_f CSGMembershipStatus_encode_aper;
 

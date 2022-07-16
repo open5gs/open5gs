@@ -35,6 +35,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_Criticality_specs_1;
 asn_struct_free_f Criticality_free;
 asn_struct_print_f Criticality_print;
 asn_constr_check_f Criticality_constraint;
+jer_type_encoder_f Criticality_encode_jer;
 per_type_decoder_f Criticality_decode_aper;
 per_type_encoder_f Criticality_encode_aper;
 

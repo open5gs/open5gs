@@ -27,6 +27,7 @@ extern asn_TYPE_descriptor_t asn_DEF_NGAP_Hysteresis;
 asn_struct_free_f NGAP_Hysteresis_free;
 asn_struct_print_f NGAP_Hysteresis_print;
 asn_constr_check_f NGAP_Hysteresis_constraint;
+jer_type_encoder_f NGAP_Hysteresis_encode_jer;
 per_type_decoder_f NGAP_Hysteresis_decode_aper;
 per_type_encoder_f NGAP_Hysteresis_encode_aper;
 

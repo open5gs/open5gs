@@ -38,6 +38,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_UEPresence_specs_1;
 asn_struct_free_f UEPresence_free;
 asn_struct_print_f UEPresence_print;
 asn_constr_check_f UEPresence_constraint;
+jer_type_encoder_f UEPresence_encode_jer;
 per_type_decoder_f UEPresence_decode_aper;
 per_type_encoder_f UEPresence_encode_aper;
 

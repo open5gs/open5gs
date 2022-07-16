@@ -40,6 +40,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_CauseNas_specs_1;
 asn_struct_free_f CauseNas_free;
 asn_struct_print_f CauseNas_print;
 asn_constr_check_f CauseNas_constraint;
+jer_type_encoder_f CauseNas_encode_jer;
 per_type_decoder_f CauseNas_decode_aper;
 per_type_encoder_f CauseNas_encode_aper;
 

@@ -39,6 +39,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_PagingDRX_specs_1;
 asn_struct_free_f PagingDRX_free;
 asn_struct_print_f PagingDRX_print;
 asn_constr_check_f PagingDRX_constraint;
+jer_type_encoder_f PagingDRX_encode_jer;
 per_type_decoder_f PagingDRX_decode_aper;
 per_type_encoder_f PagingDRX_encode_aper;
 

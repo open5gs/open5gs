@@ -37,6 +37,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_LineType_specs_1;
 asn_struct_free_f LineType_free;
 asn_struct_print_f LineType_print;
 asn_constr_check_f LineType_constraint;
+jer_type_encoder_f LineType_encode_jer;
 per_type_decoder_f LineType_decode_aper;
 per_type_encoder_f LineType_encode_aper;
 

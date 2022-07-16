@@ -45,6 +45,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_M3period_specs_1;
 asn_struct_free_f M3period_free;
 asn_struct_print_f M3period_print;
 asn_constr_check_f M3period_constraint;
+jer_type_encoder_f M3period_encode_jer;
 per_type_decoder_f M3period_decode_aper;
 per_type_encoder_f M3period_encode_aper;
 

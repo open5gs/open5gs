@@ -52,7 +52,7 @@ SET_OF_encode_aper(const asn_TYPE_descriptor_t *td,
                             ct->effective_bits))
             ASN__ENCODE_FAILED;*/
 
-        if (aper_put_length(po, ct->upper_bound - ct->lower_bound + 1, list->count - ct->lower_bound, 0) < 0) {
+        if (aper_put_length(po, ct->lower_bound, ct->upper_bound, list->count - ct->lower_bound, 0) < 0) {
             ASN__ENCODE_FAILED;
         }
     }
@@ -70,7 +70,7 @@ SET_OF_encode_aper(const asn_TYPE_descriptor_t *td,
             may_encode = list->count;
         } else {
             may_encode =
-                aper_put_length(po, -1, list->count - seq, &need_eom);
+                aper_put_length(po, -1, -1, list->count - seq, &need_eom);
             if(may_encode < 0) ASN__ENCODE_FAILED;
         }
 
@@ -81,7 +81,7 @@ SET_OF_encode_aper(const asn_TYPE_descriptor_t *td,
                 break;
             }
         }
-        if(need_eom && aper_put_length(po, -1, 0, 0))
+        if(need_eom && (aper_put_length(po, -1, -1, 0, NULL) < 0))
             ASN__ENCODE_FAILED;  /* End of Message length */
     }
 
@@ -141,8 +141,11 @@ SET_OF_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
     do {
         int i;
         if(nelems < 0) {
-            nelems = aper_get_length(pd, ct ? ct->upper_bound - ct->lower_bound + 1 : -1,
-                                     ct ? ct->effective_bits : -1, &repeat);
+            if (ct)
+                nelems = aper_get_length(pd, ct->lower_bound, ct->upper_bound,
+                                         ct->effective_bits, &repeat);
+            else
+                nelems = aper_get_length(pd, -1, -1, -1, &repeat);
             ASN_DEBUG("Got to decode %d elements (eff %d)",
                       (int)nelems, (int)(ct ? ct->effective_bits : -1));
             if(nelems < 0) ASN__DECODE_STARVED;

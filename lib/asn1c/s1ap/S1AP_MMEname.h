@@ -26,6 +26,7 @@ extern asn_TYPE_descriptor_t asn_DEF_S1AP_MMEname;
 asn_struct_free_f S1AP_MMEname_free;
 asn_struct_print_f S1AP_MMEname_print;
 asn_constr_check_f S1AP_MMEname_constraint;
+jer_type_encoder_f S1AP_MMEname_encode_jer;
 per_type_decoder_f S1AP_MMEname_decode_aper;
 per_type_encoder_f S1AP_MMEname_encode_aper;
 

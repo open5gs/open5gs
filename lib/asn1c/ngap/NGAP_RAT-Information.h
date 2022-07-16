@@ -35,6 +35,7 @@ extern asn_TYPE_descriptor_t asn_DEF_NGAP_RAT_Information;
 asn_struct_free_f NGAP_RAT_Information_free;
 asn_struct_print_f NGAP_RAT_Information_print;
 asn_constr_check_f NGAP_RAT_Information_constraint;
+jer_type_encoder_f NGAP_RAT_Information_encode_jer;
 per_type_decoder_f NGAP_RAT_Information_decode_aper;
 per_type_encoder_f NGAP_RAT_Information_encode_aper;
 

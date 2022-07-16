@@ -36,6 +36,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_DataForwardingAccepted_specs_1;
 asn_struct_free_f DataForwardingAccepted_free;
 asn_struct_print_f DataForwardingAccepted_print;
 asn_constr_check_f DataForwardingAccepted_constraint;
+jer_type_encoder_f DataForwardingAccepted_encode_jer;
 per_type_decoder_f DataForwardingAccepted_decode_aper;
 per_type_encoder_f DataForwardingAccepted_encode_aper;
 

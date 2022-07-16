@@ -41,6 +41,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_LoggingDuration_specs_1;
 asn_struct_free_f LoggingDuration_free;
 asn_struct_print_f LoggingDuration_print;
 asn_constr_check_f LoggingDuration_constraint;
+jer_type_encoder_f LoggingDuration_encode_jer;
 per_type_decoder_f LoggingDuration_decode_aper;
 per_type_encoder_f LoggingDuration_encode_aper;
 

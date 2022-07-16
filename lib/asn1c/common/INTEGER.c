@@ -36,6 +36,11 @@ asn_TYPE_operation_t asn_OP_INTEGER = {
     0,
     0,
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+    INTEGER_encode_jer,
+#else
+    0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
     INTEGER_decode_oer,  /* OER decoder */
     INTEGER_encode_oer,  /* Canonical OER encoder */

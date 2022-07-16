@@ -34,6 +34,11 @@ asn_TYPE_operation_t asn_OP_GraphicString = {
     0,
     0,
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+    OCTET_STRING_encode_jer,  /* Can't expect it to be ASCII/UTF8 */
+#else
+    0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
     OCTET_STRING_decode_oer,
     OCTET_STRING_encode_oer,

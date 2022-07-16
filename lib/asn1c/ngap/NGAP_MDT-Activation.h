@@ -38,6 +38,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_MDT_Activation_specs_1;
 asn_struct_free_f MDT_Activation_free;
 asn_struct_print_f MDT_Activation_print;
 asn_constr_check_f MDT_Activation_constraint;
+jer_type_encoder_f MDT_Activation_encode_jer;
 per_type_decoder_f MDT_Activation_decode_aper;
 per_type_encoder_f MDT_Activation_encode_aper;
 

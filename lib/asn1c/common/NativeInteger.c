@@ -41,6 +41,11 @@ asn_TYPE_operation_t asn_OP_NativeInteger = {
     0,
     0,
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+    NativeInteger_encode_jer,
+#else
+    0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
     NativeInteger_decode_oer,  /* OER decoder */
     NativeInteger_encode_oer,  /* Canonical OER encoder */

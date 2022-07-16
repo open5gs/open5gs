@@ -36,6 +36,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_ReportArea_specs_1;
 asn_struct_free_f ReportArea_free;
 asn_struct_print_f ReportArea_print;
 asn_constr_check_f ReportArea_constraint;
+jer_type_encoder_f ReportArea_encode_jer;
 per_type_decoder_f ReportArea_decode_aper;
 per_type_encoder_f ReportArea_encode_aper;
 

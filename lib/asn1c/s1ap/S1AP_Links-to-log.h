@@ -38,6 +38,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_Links_to_log_specs_1;
 asn_struct_free_f Links_to_log_free;
 asn_struct_print_f Links_to_log_print;
 asn_constr_check_f Links_to_log_constraint;
+jer_type_encoder_f Links_to_log_encode_jer;
 per_type_decoder_f Links_to_log_decode_aper;
 per_type_encoder_f Links_to_log_encode_aper;
 

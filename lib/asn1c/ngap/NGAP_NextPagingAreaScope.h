@@ -37,6 +37,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_NextPagingAreaScope_specs_1;
 asn_struct_free_f NextPagingAreaScope_free;
 asn_struct_print_f NextPagingAreaScope_print;
 asn_constr_check_f NextPagingAreaScope_constraint;
+jer_type_encoder_f NextPagingAreaScope_encode_jer;
 per_type_decoder_f NextPagingAreaScope_decode_aper;
 per_type_encoder_f NextPagingAreaScope_encode_aper;
 

@@ -36,6 +36,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_CellAccessMode_specs_1;
 asn_struct_free_f CellAccessMode_free;
 asn_struct_print_f CellAccessMode_print;
 asn_constr_check_f CellAccessMode_constraint;
+jer_type_encoder_f CellAccessMode_encode_jer;
 per_type_decoder_f CellAccessMode_decode_aper;
 per_type_encoder_f CellAccessMode_encode_aper;
 

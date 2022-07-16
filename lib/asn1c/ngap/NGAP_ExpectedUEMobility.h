@@ -37,6 +37,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_ExpectedUEMobility_specs_1;
 asn_struct_free_f ExpectedUEMobility_free;
 asn_struct_print_f ExpectedUEMobility_print;
 asn_constr_check_f ExpectedUEMobility_constraint;
+jer_type_encoder_f ExpectedUEMobility_encode_jer;
 per_type_decoder_f ExpectedUEMobility_decode_aper;
 per_type_encoder_f ExpectedUEMobility_encode_aper;
 

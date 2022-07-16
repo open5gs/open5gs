@@ -36,6 +36,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_ResetAll_specs_1;
 asn_struct_free_f ResetAll_free;
 asn_struct_print_f ResetAll_print;
 asn_constr_check_f ResetAll_constraint;
+jer_type_encoder_f ResetAll_encode_jer;
 per_type_decoder_f ResetAll_decode_aper;
 per_type_encoder_f ResetAll_encode_aper;
 

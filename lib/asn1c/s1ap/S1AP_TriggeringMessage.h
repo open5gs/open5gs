@@ -35,6 +35,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_TriggeringMessage_specs_1;
 asn_struct_free_f TriggeringMessage_free;
 asn_struct_print_f TriggeringMessage_print;
 asn_constr_check_f TriggeringMessage_constraint;
+jer_type_encoder_f TriggeringMessage_encode_jer;
 per_type_decoder_f TriggeringMessage_decode_aper;
 per_type_encoder_f TriggeringMessage_encode_aper;
 

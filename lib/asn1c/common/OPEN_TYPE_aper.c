@@ -146,7 +146,7 @@ OPEN_TYPE_aper_unknown_type_discard_bytes (asn_per_data_t *pd) {
     rv.code = RC_FAIL;
 
     do {
-        bytes = aper_get_length(pd, -1, -1, &repeat);
+        bytes = aper_get_length(pd, -1, -1, -1, &repeat);
         if (bytes > 10 * ASN_DUMMY_BYTES)
         {
             return rv;
@@ -171,4 +171,3 @@ OPEN_TYPE_aper_unknown_type_discard_bytes (asn_per_data_t *pd) {
      return rv;
 #undef ASN_DUMMY_BYTES
 }
-

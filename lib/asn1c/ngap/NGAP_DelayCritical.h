@@ -37,6 +37,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_DelayCritical_specs_1;
 asn_struct_free_f DelayCritical_free;
 asn_struct_print_f DelayCritical_print;
 asn_constr_check_f DelayCritical_constraint;
+jer_type_encoder_f DelayCritical_encode_jer;
 per_type_decoder_f DelayCritical_decode_aper;
 per_type_encoder_f DelayCritical_encode_aper;
 

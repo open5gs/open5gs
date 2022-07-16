@@ -38,6 +38,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_EventType_specs_1;
 asn_struct_free_f EventType_free;
 asn_struct_print_f EventType_print;
 asn_constr_check_f EventType_constraint;
+jer_type_encoder_f EventType_encode_jer;
 per_type_decoder_f EventType_decode_aper;
 per_type_encoder_f EventType_encode_aper;
 

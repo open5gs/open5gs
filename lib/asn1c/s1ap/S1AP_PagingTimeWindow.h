@@ -51,6 +51,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_PagingTimeWindow_specs_1;
 asn_struct_free_f PagingTimeWindow_free;
 asn_struct_print_f PagingTimeWindow_print;
 asn_constr_check_f PagingTimeWindow_constraint;
+jer_type_encoder_f PagingTimeWindow_encode_jer;
 per_type_decoder_f PagingTimeWindow_decode_aper;
 per_type_encoder_f PagingTimeWindow_encode_aper;
 

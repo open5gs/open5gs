@@ -36,6 +36,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_NotificationControl_specs_1;
 asn_struct_free_f NotificationControl_free;
 asn_struct_print_f NotificationControl_print;
 asn_constr_check_f NotificationControl_constraint;
+jer_type_encoder_f NotificationControl_encode_jer;
 per_type_decoder_f NotificationControl_decode_aper;
 per_type_encoder_f NotificationControl_encode_aper;
 

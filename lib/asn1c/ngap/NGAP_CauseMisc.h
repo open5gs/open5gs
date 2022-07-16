@@ -41,6 +41,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_CauseMisc_specs_1;
 asn_struct_free_f CauseMisc_free;
 asn_struct_print_f CauseMisc_print;
 asn_constr_check_f CauseMisc_constraint;
+jer_type_encoder_f CauseMisc_encode_jer;
 per_type_decoder_f CauseMisc_decode_aper;
 per_type_encoder_f CauseMisc_encode_aper;
 

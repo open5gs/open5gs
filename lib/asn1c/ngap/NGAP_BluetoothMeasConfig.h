@@ -36,6 +36,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_BluetoothMeasConfig_specs_1;
 asn_struct_free_f BluetoothMeasConfig_free;
 asn_struct_print_f BluetoothMeasConfig_print;
 asn_constr_check_f BluetoothMeasConfig_constraint;
+jer_type_encoder_f BluetoothMeasConfig_encode_jer;
 per_type_decoder_f BluetoothMeasConfig_decode_aper;
 per_type_encoder_f BluetoothMeasConfig_encode_aper;
 

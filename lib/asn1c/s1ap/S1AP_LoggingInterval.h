@@ -40,6 +40,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_LoggingInterval_specs_1;
 asn_struct_free_f LoggingInterval_free;
 asn_struct_print_f LoggingInterval_print;
 asn_constr_check_f LoggingInterval_constraint;
+jer_type_encoder_f LoggingInterval_encode_jer;
 per_type_decoder_f LoggingInterval_decode_aper;
 per_type_encoder_f LoggingInterval_encode_aper;
 

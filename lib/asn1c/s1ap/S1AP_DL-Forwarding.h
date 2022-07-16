@@ -36,6 +36,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_DL_Forwarding_specs_1;
 asn_struct_free_f DL_Forwarding_free;
 asn_struct_print_f DL_Forwarding_print;
 asn_constr_check_f DL_Forwarding_constraint;
+jer_type_encoder_f DL_Forwarding_encode_jer;
 per_type_decoder_f DL_Forwarding_decode_aper;
 per_type_encoder_f DL_Forwarding_encode_aper;
 

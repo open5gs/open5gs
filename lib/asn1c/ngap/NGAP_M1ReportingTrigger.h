@@ -38,6 +38,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_M1ReportingTrigger_specs_1;
 asn_struct_free_f M1ReportingTrigger_free;
 asn_struct_print_f M1ReportingTrigger_print;
 asn_constr_check_f M1ReportingTrigger_constraint;
+jer_type_encoder_f M1ReportingTrigger_encode_jer;
 per_type_decoder_f M1ReportingTrigger_decode_aper;
 per_type_encoder_f M1ReportingTrigger_encode_aper;
 

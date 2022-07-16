@@ -35,6 +35,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_Presence_specs_1;
 asn_struct_free_f Presence_free;
 asn_struct_print_f Presence_print;
 asn_constr_check_f Presence_constraint;
+jer_type_encoder_f Presence_encode_jer;
 per_type_decoder_f Presence_decode_aper;
 per_type_encoder_f Presence_encode_aper;
 

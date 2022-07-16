@@ -60,7 +60,8 @@ enum asn_transfer_syntax {
      * CANONICAL-XER is a more strict variant of BASIC-XER.
      */
     ATS_BASIC_XER,
-    ATS_CANONICAL_XER
+    ATS_CANONICAL_XER,
+    ATS_BASIC_JER,
 };
 
 /*

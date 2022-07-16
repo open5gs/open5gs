@@ -37,6 +37,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_RSN_specs_1;
 asn_struct_free_f RSN_free;
 asn_struct_print_f RSN_print;
 asn_constr_check_f RSN_constraint;
+jer_type_encoder_f RSN_encode_jer;
 per_type_decoder_f RSN_decode_aper;
 per_type_encoder_f RSN_encode_aper;
 

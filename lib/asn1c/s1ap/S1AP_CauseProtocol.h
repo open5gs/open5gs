@@ -42,6 +42,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_CauseProtocol_specs_1;
 asn_struct_free_f CauseProtocol_free;
 asn_struct_print_f CauseProtocol_print;
 asn_constr_check_f CauseProtocol_constraint;
+jer_type_encoder_f CauseProtocol_encode_jer;
 per_type_decoder_f CauseProtocol_decode_aper;
 per_type_encoder_f CauseProtocol_encode_aper;
 

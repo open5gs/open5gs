@@ -16,7 +16,7 @@ extern "C" {
  * X.691 (08/2015) #11.9 "General rules for encoding a length determinant"
  * Get the length "n" from the Aligned PER stream.
  */
-ssize_t aper_get_length(asn_per_data_t *pd, int range,
+ssize_t aper_get_length(asn_per_data_t *pd, ssize_t lb, ssize_t ub,
                         int effective_bound_bits, int *repeat);
 
 /*
@@ -31,13 +31,14 @@ ssize_t aper_get_nsnnwn(asn_per_data_t *pd, int range);
 
 /*
  * X.691 (08/2015) #11.9 "General rules for encoding a length determinant"
- * Put the length "whole_length" to the Aligned PER stream.
- * If (opt_need_eom) is given, it will be set to 1 if final 0-length is needed.
- * In that case, invoke uper_put_length(po, 0, 0) after encoding the last block.
+ * Put the length "n" to the Aligned PER stream.
+ * If (opt_need_eom) is given, it will be set to 1 if final 0-n is needed.
+ * In that case, invoke aper_put_length(po, -1, -1, 0, NULL) after encoding the
+ * last block.
  * This function returns the number of units which may be flushed
  * in the next units saving iteration.
  */
-ssize_t aper_put_length(asn_per_outp_t *po, int range, size_t length,
+ssize_t aper_put_length(asn_per_outp_t *po, ssize_t lb, ssize_t ub, size_t n,
                         int *opt_need_eom);
 
 /* Align the current bit position to octet bundary */

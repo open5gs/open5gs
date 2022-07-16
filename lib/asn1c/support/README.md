@@ -1,17 +1,26 @@
 Use mounse07410(vlm_master) git's fork for asn1c
 
-commit c098de2086633d2027f1d117092541d8482c1c96 (HEAD -> vlm_master, origin/vlm_master, origin/HEAD)
-Author: Nikolaos Koutsianas <nkoutsianas@gmail.com>
-Date:   Fri Feb 25 13:18:01 2022 +0200
+commit 24247e2813a7510ebabe6a9b6b6b29fffa0eb27b (HEAD -> vlm_master, origin/vlm_master, origin/HEAD)
+Author: Pau Espin Pedrol <pespin@sysmocom.de>
+Date:   Fri Jul 15 17:43:08 2022 +0200
 
-    aper decoder can ignore unknown open types in a sequence and continue with next ones
+    aper: Rework aper_get_length to gain lb & ub information
 
+    This should help aper_put_length() to take proper decisions on the way
+    to encode the length, since the range alone is not enough.
+    A contraint of lb=1 ub=65536 would yield a range=65536, but according to
+    ITU-T X.691 11.9 it shouldn't be encoded using nsnnwn since that only
+    applies in case ub<65536.
+    As a result, it would end up encoding/decoding it using 2 bytes while it
+    should use only 1.
+
+    Related: https://github.com/mouse07410/asn1c/issues/94
 
 ===========================================
 user@host ~/Documents/git/my$ \
     git clone https://github.com/mouse07410/asn1c.git
 user@host ~/Documents/git/my$ \
-    git checkout git checkout c098de2086633d2027f1d117092541d8482c1c96
+    git checkout git checkout 24247e2813a7510ebabe6a9b6b6b29fffa0eb27b
 
 OR
 
@@ -23,8 +32,8 @@ user@host Documents/git/my/asn1c$ \
 
 Modify 36413-g40.txt to 36413-g40.asn
 ===========================================
-user@host ~/documents/git/open5gs/lib/asn1c/support/s1ap-r16.4.0$ \
-    diff 36413-g40.txt 36413-g40.asn
+user@host ~/documents/git/open5gs/lib/asn1c/support/s1ap-r16.7.0$ \
+    diff 36413-g70.txt 36413-g70.asn
 
 ASN.1 encoder/decoder
 ===========================================
@@ -40,86 +49,8 @@ user@host ~/Documents/git/open5gs/lib/asn1c/ngap$ \
     -no-gen-BER -no-gen-XER -no-gen-OER -no-gen-UPER \
     ../support/ngap-r16.7.0/38413-g70.asn
 
-Fix aper_support.c (Issues #773 - NGReset Decode Problem)
-===========================================
-diff --git a/lib/asn1c/common/aper_support.c b/lib/asn1c/common/aper_support.c
-index 67ad9db5..1adbdde6 100644
---- a/lib/asn1c/common/aper_support.c
-+++ b/lib/asn1c/common/aper_support.c
-@@ -22,7 +22,20 @@ aper_get_length(asn_per_data_t *pd, int range, int ebits, int *repeat) {
-
-        *repeat = 0;
-
--       if (range <= 65536 && range >= 0)
-+    /*
-+     * ITU-T X.691(08/2015)
-+     * #11.9.4.2
-+     *
-+     * If the length determinant "n" to be encoded is a normally small length,
-+     * or a constrained whole number with "ub" greater than or equal to 64K,
-+     * or is a semi-constrained whole number, then "n" shall be encoded
-+     * as specified in 11.9.3.4 to 11.9.3.8.4.
-+     *
-+     * NOTE – Thus, if "ub" is greater than or equal to 64K,
-+     * the encoding of the length determinant is the same as it would be
-+     * if the length were unconstrained.
-+     */
-+       if (range <= 65535 && range >= 0)
-                return aper_get_nsnnwn(pd, range);
-
-        if (aper_get_align(pd) < 0)
-@@ -32,14 +45,14 @@ aper_get_length(asn_per_data_t *pd, int range, int ebits, int *repeat) {
-
-        value = per_get_few_bits(pd, 8);
-        if(value < 0) return -1;
--       if((value & 128) == 0)  /* #10.9.3.6 */
-+       if((value & 128) == 0)  /* #11.9.3.6 */
-                return (value & 0x7F);
--       if((value & 64) == 0) { /* #10.9.3.7 */
-+       if((value & 64) == 0) { /* #11.9.3.7 */
-                value = ((value & 63) << 8) | per_get_few_bits(pd, 8);
-                if(value < 0) return -1;
-                return value;
-        }
--       value &= 63;    /* this is "m" from X.691, #10.9.3.8 */
-+       value &= 63;    /* this is "m" from X.691, #11.9.3.8 */
-        if(value < 1 || value > 4)
-                return -1;
-        *repeat = 1;
-@@ -162,18 +175,18 @@ aper_put_length(asn_per_outp_t *po, int range, size_t length, int *need_eom) {
-
-        ASN_DEBUG("APER put length %zu with range %d", length, range);
-
--       /* 10.9 X.691 Note 2 */
-+       /* 11.9 X.691 Note 2 */
-        if (range <= 65536 && range >= 0)
-                return aper_put_nsnnwn(po, range, length);
-
-        if (aper_put_align(po) < 0)
-                return -1;
-
--       if(length <= 127)          /* #10.9.3.6 */{
-+       if(length <= 127)          /* #11.9.3.6 */{
-                return per_put_few_bits(po, length, 8)
-                ? -1 : (ssize_t)length;
-        }
--       else if(length < 16384) /* #10.9.3.7 */
-+       else if(length < 16384) /* #11.9.3.7 */
-                return per_put_few_bits(po, length|0x8000, 16)
-                ? -1 : (ssize_t)length;
-
-@@ -193,7 +206,7 @@ int
- aper_put_nslength(asn_per_outp_t *po, size_t length) {
-
-        if(length <= 64) {
--               /* #10.9.3.4 */
-+               /* #11.9.3.4 */
-                if(length == 0) return -1;
-                return per_put_few_bits(po, length-1, 7) ? -1 : 0;
-        } else {
-
-Fix NGAP_RANNodeNameUTF8String.c/NGAP_AMFNameUTF8String.c (Issues #994 - APC_EXTENSIBLE)
-===========================================
+Fix NGAP_RANNodeNameUTF8String.c (Issues #994 - APC_EXTENSIBLE)
+===============================================================
 diff --git a/lib/asn1c/ngap/NGAP_RANNodeNameUTF8String.c b/lib/asn1c/ngap/NGAP_RANNodeNameUTF8String.c
 index 9e469f7f..79ebd028 100644
 --- a/lib/asn1c/ngap/NGAP_RANNodeNameUTF8String.c
@@ -136,6 +67,9 @@ index 9e469f7f..79ebd028 100644
         0, 0    /* No PER value map */
  };
  #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+
+Fix NGAP_AMFNameUTF8String.c (Issues #994 - APC_EXTENSIBLE)
+===============================================================
 diff --git a/lib/asn1c/ngap/NGAP_AMFNameUTF8String.c b/lib/asn1c/ngap/NGAP_AMFNameUTF8String.c
 index 1df33a4d..a74f97ea 100644
 --- a/lib/asn1c/ngap/NGAP_AMFNameUTF8String.c

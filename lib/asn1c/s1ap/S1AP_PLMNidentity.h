@@ -27,6 +27,7 @@ extern asn_TYPE_descriptor_t asn_DEF_S1AP_PLMNidentity;
 asn_struct_free_f S1AP_PLMNidentity_free;
 asn_struct_print_f S1AP_PLMNidentity_print;
 asn_constr_check_f S1AP_PLMNidentity_constraint;
+jer_type_encoder_f S1AP_PLMNidentity_encode_jer;
 per_type_decoder_f S1AP_PLMNidentity_decode_aper;
 per_type_encoder_f S1AP_PLMNidentity_encode_aper;
 

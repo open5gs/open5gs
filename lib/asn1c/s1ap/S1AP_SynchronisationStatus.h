@@ -37,6 +37,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_SynchronisationStatus_specs_1;
 asn_struct_free_f SynchronisationStatus_free;
 asn_struct_print_f SynchronisationStatus_print;
 asn_constr_check_f SynchronisationStatus_constraint;
+jer_type_encoder_f SynchronisationStatus_encode_jer;
 per_type_decoder_f SynchronisationStatus_decode_aper;
 per_type_encoder_f SynchronisationStatus_encode_aper;
 

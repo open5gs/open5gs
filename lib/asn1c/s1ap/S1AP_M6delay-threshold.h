@@ -47,6 +47,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_M6delay_threshold_specs_1;
 asn_struct_free_f M6delay_threshold_free;
 asn_struct_print_f M6delay_threshold_print;
 asn_constr_check_f M6delay_threshold_constraint;
+jer_type_encoder_f M6delay_threshold_encode_jer;
 per_type_decoder_f M6delay_threshold_decode_aper;
 per_type_encoder_f M6delay_threshold_encode_aper;
 

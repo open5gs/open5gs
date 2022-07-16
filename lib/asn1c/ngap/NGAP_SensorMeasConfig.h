@@ -36,6 +36,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_SensorMeasConfig_specs_1;
 asn_struct_free_f SensorMeasConfig_free;
 asn_struct_print_f SensorMeasConfig_print;
 asn_constr_check_f SensorMeasConfig_constraint;
+jer_type_encoder_f SensorMeasConfig_encode_jer;
 per_type_decoder_f SensorMeasConfig_decode_aper;
 per_type_encoder_f SensorMeasConfig_encode_aper;
 

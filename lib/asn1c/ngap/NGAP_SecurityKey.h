@@ -27,6 +27,7 @@ extern asn_TYPE_descriptor_t asn_DEF_NGAP_SecurityKey;
 asn_struct_free_f NGAP_SecurityKey_free;
 asn_struct_print_f NGAP_SecurityKey_print;
 asn_constr_check_f NGAP_SecurityKey_constraint;
+jer_type_encoder_f NGAP_SecurityKey_encode_jer;
 per_type_decoder_f NGAP_SecurityKey_decode_aper;
 per_type_encoder_f NGAP_SecurityKey_encode_aper;
 

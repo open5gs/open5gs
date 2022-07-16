@@ -39,6 +39,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_Cell_Size_specs_1;
 asn_struct_free_f Cell_Size_free;
 asn_struct_print_f Cell_Size_print;
 asn_constr_check_f Cell_Size_constraint;
+jer_type_encoder_f Cell_Size_encode_jer;
 per_type_decoder_f Cell_Size_decode_aper;
 per_type_encoder_f Cell_Size_encode_aper;
 

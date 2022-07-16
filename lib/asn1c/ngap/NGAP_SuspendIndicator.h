@@ -36,6 +36,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_SuspendIndicator_specs_1;
 asn_struct_free_f SuspendIndicator_free;
 asn_struct_print_f SuspendIndicator_print;
 asn_constr_check_f SuspendIndicator_constraint;
+jer_type_encoder_f SuspendIndicator_encode_jer;
 per_type_decoder_f SuspendIndicator_decode_aper;
 per_type_encoder_f SuspendIndicator_encode_aper;
 

@@ -40,6 +40,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_M5period_specs_1;
 asn_struct_free_f M5period_free;
 asn_struct_print_f M5period_print;
 asn_constr_check_f M5period_constraint;
+jer_type_encoder_f M5period_encode_jer;
 per_type_decoder_f M5period_decode_aper;
 per_type_encoder_f M5period_encode_aper;
 

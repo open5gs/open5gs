@@ -37,6 +37,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_VehicleUE_specs_1;
 asn_struct_free_f VehicleUE_free;
 asn_struct_print_f VehicleUE_print;
 asn_constr_check_f VehicleUE_constraint;
+jer_type_encoder_f VehicleUE_encode_jer;
 per_type_decoder_f VehicleUE_decode_aper;
 per_type_encoder_f VehicleUE_encode_aper;
 

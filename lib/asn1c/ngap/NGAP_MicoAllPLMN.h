@@ -34,6 +34,7 @@ extern asn_TYPE_descriptor_t asn_DEF_NGAP_MicoAllPLMN;
 asn_struct_free_f NGAP_MicoAllPLMN_free;
 asn_struct_print_f NGAP_MicoAllPLMN_print;
 asn_constr_check_f NGAP_MicoAllPLMN_constraint;
+jer_type_encoder_f NGAP_MicoAllPLMN_encode_jer;
 per_type_decoder_f NGAP_MicoAllPLMN_decode_aper;
 per_type_encoder_f NGAP_MicoAllPLMN_encode_aper;
 

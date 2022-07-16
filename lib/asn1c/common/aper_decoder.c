@@ -75,7 +75,7 @@ aper_decode(const asn_codec_ctx_t *opt_codec_ctx,
 	 */
 	if(!td->op->aper_decoder)
 		ASN__DECODE_FAILED;	/* PER is not compiled in */
-		rval = td->op->aper_decoder(opt_codec_ctx, td, 0, sptr, &pd);
+	rval = td->op->aper_decoder(opt_codec_ctx, td, 0, sptr, &pd);
 	if(rval.code == RC_OK) {
 		/* Return the number of consumed bits */
 		rval.consumed = ((pd.buffer - (const uint8_t *)buffer) << 3)

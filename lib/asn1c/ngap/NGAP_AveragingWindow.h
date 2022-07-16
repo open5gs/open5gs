@@ -27,6 +27,7 @@ extern asn_TYPE_descriptor_t asn_DEF_NGAP_AveragingWindow;
 asn_struct_free_f NGAP_AveragingWindow_free;
 asn_struct_print_f NGAP_AveragingWindow_print;
 asn_constr_check_f NGAP_AveragingWindow_constraint;
+jer_type_encoder_f NGAP_AveragingWindow_encode_jer;
 per_type_decoder_f NGAP_AveragingWindow_decode_aper;
 per_type_encoder_f NGAP_AveragingWindow_encode_aper;
 

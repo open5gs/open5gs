@@ -45,6 +45,11 @@ xer_type_encoder_f OCTET_STRING_encode_xer;
 xer_type_encoder_f OCTET_STRING_encode_xer_utf8;
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+jer_type_encoder_f OCTET_STRING_encode_jer;
+jer_type_encoder_f OCTET_STRING_encode_jer_utf8;
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
+
 #if !defined(ASN_DISABLE_OER_SUPPORT)
 oer_type_decoder_f OCTET_STRING_decode_oer;
 oer_type_encoder_f OCTET_STRING_encode_oer;

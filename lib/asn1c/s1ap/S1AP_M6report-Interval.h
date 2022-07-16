@@ -39,6 +39,7 @@ extern const asn_INTEGER_specifics_t asn_SPC_M6report_Interval_specs_1;
 asn_struct_free_f M6report_Interval_free;
 asn_struct_print_f M6report_Interval_print;
 asn_constr_check_f M6report_Interval_constraint;
+jer_type_encoder_f M6report_Interval_encode_jer;
 per_type_decoder_f M6report_Interval_decode_aper;
 per_type_encoder_f M6report_Interval_encode_aper;
 
