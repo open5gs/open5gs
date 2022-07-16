@@ -31,6 +31,7 @@ if [ "$SYSTEM" = "Linux" ]; then
     ip addr del fd69:f21d:873c:fa::18 dev lo 2> /dev/null
     ip addr del fd69:f21d:873c:fa::19 dev lo 2> /dev/null
     ip addr del fd69:f21d:873c:fa::20 dev lo 2> /dev/null
+    ip addr del fd69:f21d:873c:fb::10 dev lo 2> /dev/null
     ip addr add fd69:f21d:873c:fa::1 dev lo
     ip addr add fd69:f21d:873c:fa::2 dev lo
     ip addr add fd69:f21d:873c:fa::3 dev lo
@@ -51,11 +52,8 @@ if [ "$SYSTEM" = "Linux" ]; then
     ip addr add fd69:f21d:873c:fa::18 dev lo
     ip addr add fd69:f21d:873c:fa::19 dev lo
     ip addr add fd69:f21d:873c:fa::20 dev lo
+    ip addr add fd69:f21d:873c:fb::10 dev lo
 else
-    ifconfig lo0 alias 127.0.0.2 netmask 255.255.255.255
-    ifconfig lo0 alias 127.0.0.3 netmask 255.255.255.255
-    ifconfig lo0 alias 127.0.0.4 netmask 255.255.255.255
-    ifconfig lo0 alias 127.0.0.5 netmask 255.255.255.255
     sysctl -w net.inet.ip.forwarding=1
     sysctl -w net.inet6.ip6.forwarding=1
     ifconfig lo0 alias 127.0.0.2 netmask 255.255.255.255
@@ -77,6 +75,7 @@ else
     ifconfig lo0 alias 127.0.0.18 netmask 255.255.255.255
     ifconfig lo0 alias 127.0.0.19 netmask 255.255.255.255
     ifconfig lo0 alias 127.0.0.20 netmask 255.255.255.255
+    ifconfig lo0 alias 127.0.1.10 netmask 255.255.255.255
     ifconfig lo0 inet6 delete fd69:f21d:873c:fa::1 prefixlen 128 2> /dev/null
     ifconfig lo0 inet6 delete fd69:f21d:873c:fa::2 prefixlen 128 2> /dev/null
     ifconfig lo0 inet6 delete fd69:f21d:873c:fa::3 prefixlen 128 2> /dev/null
@@ -97,6 +96,7 @@ else
     ifconfig lo0 inet6 delete fd69:f21d:873c:fa::18 prefixlen 128 2> /dev/null
     ifconfig lo0 inet6 delete fd69:f21d:873c:fa::19 prefixlen 128 2> /dev/null
     ifconfig lo0 inet6 delete fd69:f21d:873c:fa::20 prefixlen 128 2> /dev/null
+    ifconfig lo0 inet6 delete fd69:f21d:873c:fb::10 prefixlen 128 2> /dev/null
     ifconfig lo0 inet6 add fd69:f21d:873c:fa::1 prefixlen 128
     ifconfig lo0 inet6 add fd69:f21d:873c:fa::2 prefixlen 128
     ifconfig lo0 inet6 add fd69:f21d:873c:fa::3 prefixlen 128
@@ -117,6 +117,7 @@ else
     ifconfig lo0 inet6 add fd69:f21d:873c:fa::18 prefixlen 128
     ifconfig lo0 inet6 add fd69:f21d:873c:fa::19 prefixlen 128
     ifconfig lo0 inet6 add fd69:f21d:873c:fa::20 prefixlen 128
+    ifconfig lo0 inet6 add fd69:f21d:873c:fb::10 prefixlen 128
     if [ "$SYSTEM" = "Darwin" ]; then
         if ! test -f /etc/pf.anchors/org.open5gs; then
             sudo sh -c "echo 'nat on {en0} from 10.45.0.0/16 to any -> {en0}' > /etc/pf.anchors/org.open5gs"

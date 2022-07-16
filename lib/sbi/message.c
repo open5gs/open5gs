@@ -252,7 +252,6 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
     ogs_expect_or_return_val(message->h.method, NULL);
     request->h.method = ogs_strdup(message->h.method);
     if (message->h.uri) {
-        ogs_expect_or_return_val(message->h.uri, NULL);
         request->h.uri = ogs_strdup(message->h.uri);
         ogs_expect_or_return_val(request->h.uri, NULL);
     } else {
@@ -547,6 +546,11 @@ int ogs_sbi_parse_request(
 
     for (hi = ogs_hash_first(request->http.headers);
             hi; hi = ogs_hash_next(hi)) {
+        /*
+         * <RFC 2616>
+         *  Each header field consists of a name followed by a colon (":")
+         *  and the field value. Field names are case-insensitive.
+         */
         if (!ogs_strcasecmp(ogs_hash_this_key(hi), OGS_SBI_ACCEPT_ENCODING)) {
             message->http.content_encoding = ogs_hash_this_val(hi);
         } else if (!ogs_strcasecmp(
@@ -620,7 +624,7 @@ int ogs_sbi_parse_header(ogs_sbi_message_t *message, ogs_sbi_header_t *header)
 {
     struct yuarel yuarel;
     char *saveptr = NULL;
-    char *uri = NULL, *p = NULL;;
+    char *uri = NULL, *p = NULL;
 
     char *component = NULL;
     int i = 0;
@@ -691,6 +695,21 @@ void ogs_sbi_header_free(ogs_sbi_header_t *h)
         ogs_free(h->resource.component[i]);
 }
 
+void ogs_sbi_http_hash_free(ogs_hash_t *hash)
+{
+    ogs_hash_index_t *hi;
+
+    ogs_assert(hash);
+
+    for (hi = ogs_hash_first(hash); hi; hi = ogs_hash_next(hi)) {
+        char *key = (char *)ogs_hash_this_key(hi);
+        char *val = ogs_hash_this_val(hi);
+        ogs_hash_set(hash, key, strlen(key), NULL);
+        ogs_free(key);
+        ogs_free(val);
+    }
+    ogs_hash_destroy(hash);
+}
 
 static char *build_json(ogs_sbi_message_t *message)
 {
@@ -2152,29 +2171,12 @@ static void http_message_free(ogs_sbi_http_message_t *http)
     int i;
     ogs_assert(http);
 
-    if (http->params) {
-        ogs_hash_index_t *hi;
-        for (hi = ogs_hash_first(http->params); hi; hi = ogs_hash_next(hi)) {
-            char *key = (char *)ogs_hash_this_key(hi);
-            char *val = ogs_hash_this_val(hi);
-            ogs_hash_set(http->params, key, strlen(key), NULL);
-            ogs_free(key);
-            ogs_free(val);
-        }
-        ogs_hash_destroy(http->params);
-    }
+    if (http->params)
+        ogs_sbi_http_hash_free(http->params);
 
-    if (http->headers) {
-        ogs_hash_index_t *hi;
-        for (hi = ogs_hash_first(http->headers); hi; hi = ogs_hash_next(hi)) {
-            char *key = (char *)ogs_hash_this_key(hi);
-            char *val = ogs_hash_this_val(hi);
-            ogs_hash_set(http->headers, key, strlen(key), NULL);
-            ogs_free(key);
-            ogs_free(val);
-        }
-        ogs_hash_destroy(http->headers);
-    }
+    if (http->headers)
+        ogs_sbi_http_hash_free(http->headers);
+
     if (http->content)
         ogs_free(http->content);
 

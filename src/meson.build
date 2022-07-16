@@ -36,6 +36,8 @@ subdir('sgwu')
 subdir('pcrf')
 
 subdir('nrf')
+subdir('scp')
+
 subdir('udr')
 subdir('udm')
 subdir('pcf')

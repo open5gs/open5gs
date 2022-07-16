@@ -119,7 +119,7 @@ void amf_sctp_event_push(amf_event_e id,
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
-        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
         ogs_free(e->ngap.addr);
         if (e->pkbuf)
             ogs_pkbuf_free(e->pkbuf);

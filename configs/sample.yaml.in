@@ -4,6 +4,7 @@ logger:
 
 parameter:
 #    no_nrf: true
+#    no_scp: true
 #    no_amf: true
 #    no_smf: true
 #    no_upf: true
@@ -192,6 +193,70 @@ nrf:
       - addr:
         - 127.0.0.10
         - ::1
+        port: 7777
+
+#
+# scp:
+#
+#  <SBI Client>>
+#
+#  o SBI Client(http://127.0.0.10:7777)
+#    sbi:
+#      addr: 127.0.0.10
+#      port: 7777
+#
+#  o SBI Client(https://127.0.0.10:443, http://scp.open5gs.org:80)
+#    sbi:
+#      - addr: 127.0.0.10
+#        tls:
+#          key: scp.key
+#          pem: scp.pem
+#      - name: scp.open5gs.org
+#
+#  o SBI Client(http://[fd69:f21d:873c:fa::1]:80)
+#    If prefer_ipv4 is true, http://127.0.0.10:80 is selected.
+#
+#    sbi:
+#      addr:
+#        - 127.0.0.10
+#        - fd69:f21d:873c:fa::1
+#
+#  o SBI Option (Default)
+#    - tcp_nodelay : true
+#    - so_linger.l_onoff : false
+#
+#    sbi:
+#      addr: 127.0.0.10
+#      option:
+#        tcp_nodelay: false
+#        so_linger:
+#          l_onoff: true
+#          l_linger: 10
+#
+#  <Discovery>
+#
+#  o NF Discovery and Selection
+#    for indirect communication with Delegated Discovery;
+#
+#  o delegated:
+#    o auto: (Default)
+#            Use SCP if SCP avaiable. Otherwise NRF is used.
+#            => App fails if both NRF and SCP are unavailable.
+#    o yes:  Use SCP always.
+#            => App fails if no SCP available.
+#    o no:   Don't use SCP server.
+#            => App fails if no NRF available.
+#
+#  scp:
+#      sbi:
+#        - addr: 127.0.1.10
+#          port: 7777
+#      discovery:
+#        delegated: auto|yes|no
+#
+scp:
+    sbi:
+      - addr: 127.0.1.10
         port: 7777
 
 ausf:

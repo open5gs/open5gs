@@ -53,7 +53,8 @@ extern "C" {
                 (__pClient)->reference_count); \
     } while(0)
 
-typedef int (*ogs_sbi_client_cb_f)(ogs_sbi_response_t *response, void *data);
+typedef int (*ogs_sbi_client_cb_f)(
+        int status, ogs_sbi_response_t *response, void *data);
 
 typedef struct ogs_sbi_client_s {
     ogs_socknode_t  node;
@@ -84,7 +85,20 @@ void ogs_sbi_client_remove(ogs_sbi_client_t *client);
 void ogs_sbi_client_remove_all(void);
 ogs_sbi_client_t *ogs_sbi_client_find(ogs_sockaddr_t *addr);
 
+void ogs_sbi_client_stop(ogs_sbi_client_t *client);
+void ogs_sbi_client_stop_all(void);
+
+bool ogs_sbi_client_send_reqmem_persistent(
+        ogs_sbi_client_t *client, ogs_sbi_client_cb_f client_cb,
+        ogs_sbi_request_t *request, void *data);
 bool ogs_sbi_client_send_request(
+        ogs_sbi_client_t *client, ogs_sbi_client_cb_f client_cb,
+        ogs_sbi_request_t *request, void *data);
+
+bool ogs_sbi_scp_send_reqmem_persistent(
+        ogs_sbi_client_t *client, ogs_sbi_client_cb_f client_cb,
+        ogs_sbi_request_t *request, void *data);
+bool ogs_sbi_scp_send_request(
         ogs_sbi_client_t *client, ogs_sbi_client_cb_f client_cb,
         ogs_sbi_request_t *request, void *data);
 

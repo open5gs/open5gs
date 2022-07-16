@@ -125,7 +125,7 @@ void mme_sctp_event_push(mme_event_e id,
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
-        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
         ogs_free(e->addr);
         if (e->pkbuf)
             ogs_pkbuf_free(e->pkbuf);

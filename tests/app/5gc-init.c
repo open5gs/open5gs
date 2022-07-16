@@ -20,6 +20,7 @@
 #include "test-app.h"
 
 static ogs_thread_t *nrf_thread = NULL;
+static ogs_thread_t *scp_thread = NULL;
 static ogs_thread_t *upf_thread = NULL;
 static ogs_thread_t *smf_thread = NULL;
 static ogs_thread_t *amf_thread = NULL;
@@ -52,6 +53,8 @@ int app_initialize(const char *const argv[])
 
     if (ogs_app()->parameter.no_nrf == 0)
         nrf_thread = test_child_create("nrf", argv_out);
+    if (ogs_app()->parameter.no_scp == 0)
+        scp_thread = test_child_create("scp", argv_out);
 
     if (ogs_app()->parameter.no_upf == 0)
         upf_thread = test_child_create("upf", argv_out);
@@ -98,6 +101,7 @@ void app_terminate(void)
     if (udm_thread) ogs_thread_destroy(udm_thread);
     if (ausf_thread) ogs_thread_destroy(ausf_thread);
 
+    if (scp_thread) ogs_thread_destroy(scp_thread);
     if (nrf_thread) ogs_thread_destroy(nrf_thread);
 }
 

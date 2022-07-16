@@ -133,7 +133,7 @@ int s1ap_send_to_esm(
     e->create_action = create_action;
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
-        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
         ogs_pkbuf_free(e->pkbuf);
         mme_event_free(e);
     }
@@ -221,7 +221,7 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
         e->pkbuf = nasbuf;
         rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
-            ogs_warn("s1ap_send_to_nas() failed:%d", (int)rv);
+            ogs_error("s1ap_send_to_nas() failed:%d", (int)rv);
             ogs_pkbuf_free(e->pkbuf);
             mme_event_free(e);
         }

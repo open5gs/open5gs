@@ -29,8 +29,6 @@ extern "C" {
 int udr_sbi_open(void);
 void udr_sbi_close(void);
 
-bool udr_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance);
-
 #ifdef __cplusplus
 }
 #endif

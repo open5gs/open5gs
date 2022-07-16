@@ -133,6 +133,12 @@ void ogs_sbi_server_stop_all(void)
         ogs_sbi_server_actions.stop(server);
 }
 
+bool ogs_sbi_server_send_rspmem_persistent(
+        ogs_sbi_stream_t *stream, ogs_sbi_response_t *response)
+{
+    return ogs_sbi_server_actions.send_rspmem_persistent(stream, response);
+}
+
 bool ogs_sbi_server_send_response(
         ogs_sbi_stream_t *stream, ogs_sbi_response_t *response)
 {

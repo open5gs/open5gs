@@ -712,7 +712,7 @@ static void smf_s6b_sta_cb(void *data, struct msg **msg)
         e->s6b_message = s6b_message;
         rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
-            ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+            ogs_error("ogs_queue_push() failed:%d", (int)rv);
             ogs_free(s6b_message);
             smf_event_free(e);
         } else {

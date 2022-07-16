@@ -32,7 +32,7 @@ int nssf_initialize()
     nssf_context_init();
     nssf_event_init();
 
-    rv = ogs_sbi_context_parse_config("nssf", "nrf");
+    rv = ogs_sbi_context_parse_config("nssf", "nrf", "scp");
     if (rv != OGS_OK) return rv;
 
     rv = nssf_context_parse_config();

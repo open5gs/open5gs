@@ -34,8 +34,6 @@ extern "C" {
 int pcf_sbi_open(void);
 void pcf_sbi_close(void);
 
-bool pcf_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance);
-
 bool pcf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact);
 bool pcf_ue_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
         pcf_ue_t *pcf_ue, ogs_sbi_stream_t *stream, void *data,

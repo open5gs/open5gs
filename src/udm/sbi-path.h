@@ -30,8 +30,6 @@ extern "C" {
 int udm_sbi_open(void);
 void udm_sbi_close(void);
 
-bool udm_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance);
-
 bool udm_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact);
 bool udm_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
         udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, void *data,

@@ -128,7 +128,7 @@ int ngap_send_to_5gsm(amf_ue_t *amf_ue, ogs_pkbuf_t *esmbuf)
     e->pkbuf = esmbuf;
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
-        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
         ogs_pkbuf_free(e->pkbuf);
         amf_event_free(e);
     }
@@ -214,7 +214,7 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
         e->pkbuf = nasbuf;
         rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
-            ogs_warn("ngap_send_to_nas() failed:%d", (int)rv);
+            ogs_error("ngap_send_to_nas() failed:%d", (int)rv);
             ogs_pkbuf_free(e->pkbuf);
             amf_event_free(e);
         }

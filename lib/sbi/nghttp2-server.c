@@ -33,6 +33,8 @@ static int server_start(ogs_sbi_server_t *server,
         int (*cb)(ogs_sbi_request_t *request, void *data));
 static void server_stop(ogs_sbi_server_t *server);
 
+static bool server_send_rspmem_persistent(
+        ogs_sbi_stream_t *stream, ogs_sbi_response_t *response);
 static bool server_send_response(
         ogs_sbi_stream_t *stream, ogs_sbi_response_t *response);
 
@@ -45,7 +47,9 @@ const ogs_sbi_server_actions_t ogs_nghttp2_server_actions = {
     server_start,
     server_stop,
 
+    server_send_rspmem_persistent,
     server_send_response,
+
     server_from_stream,
 };
 
@@ -284,7 +288,7 @@ static ssize_t response_read_callback(nghttp2_session *session,
     return response->http.content_length;
 }
 
-static bool server_send_response(
+static bool server_send_rspmem_persistent(
         ogs_sbi_stream_t *stream, ogs_sbi_response_t *response)
 {
     ogs_sbi_session_t *sbi_sess = NULL;
@@ -299,11 +303,17 @@ static bool server_send_response(
     char srv_version[128];
     char clen[128];
 
-    ogs_assert(stream);
+    ogs_assert(response);
+
+    stream = ogs_pool_cycle(&stream_pool, stream);
+    if (!stream) {
+        ogs_error("stream has already been closed");
+        return true;
+    }
+
     sbi_sess = stream->session;
     ogs_assert(sbi_sess);
     ogs_assert(sbi_sess->session);
-    ogs_assert(response);
 
     sock = sbi_sess->sock;
     ogs_assert(sock);
@@ -375,10 +385,23 @@ static bool server_send_response(
         session_remove(sbi_sess);
     }
 
-    ogs_sbi_response_free(response);
     ogs_free(nva);
 
     return true;
+}
+
+static bool server_send_response(
+        ogs_sbi_stream_t *stream, ogs_sbi_response_t *response)
+{
+    bool rc;
+
+    ogs_assert(response);
+
+    rc = server_send_rspmem_persistent(stream, response);
+
+    ogs_sbi_response_free(response);
+
+    return rc;
 }
 
 static ogs_sbi_server_t *server_from_stream(ogs_sbi_stream_t *stream)

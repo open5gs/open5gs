@@ -50,7 +50,7 @@ void af_local_discover_and_send(OpenAPI_nf_type_e target_nf_type,
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
-        ogs_warn("ogs_queue_push() failed [%d] in %s",
+        ogs_error("ogs_queue_push() failed [%d] in %s",
                 (int)rv, af_timer_get_name(e->timer_id));
         af_event_free(e);
     } else {
@@ -76,7 +76,7 @@ void af_local_send_to_pcf(
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
-        ogs_warn("ogs_queue_push() failed [%d] in %s",
+        ogs_error("ogs_queue_push() failed [%d] in %s",
                 (int)rv, af_timer_get_name(e->timer_id));
         af_event_free(e);
     } else {

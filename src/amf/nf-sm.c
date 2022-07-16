@@ -61,16 +61,18 @@ void amf_nf_state_initial(ogs_fsm_t *s, amf_event_t *e)
     nf_instance = e->sbi.data;
     ogs_assert(nf_instance);
 
+    nf_instance->t_registration_interval = ogs_timer_add(ogs_app()->timer_mgr,
+            amf_timer_nf_instance_registration_interval, nf_instance);
     ogs_assert(nf_instance->t_registration_interval);
-    nf_instance->t_registration_interval->cb =
-            amf_timer_nf_instance_registration_interval;
+    nf_instance->t_heartbeat_interval = ogs_timer_add(ogs_app()->timer_mgr,
+            amf_timer_nf_instance_heartbeat_interval, nf_instance);
     ogs_assert(nf_instance->t_heartbeat_interval);
-    nf_instance->t_heartbeat_interval->cb =
-            amf_timer_nf_instance_heartbeat_interval;
+    nf_instance->t_no_heartbeat = ogs_timer_add(ogs_app()->timer_mgr,
+            amf_timer_nf_instance_no_heartbeat, nf_instance);
     ogs_assert(nf_instance->t_no_heartbeat);
-    nf_instance->t_no_heartbeat->cb = amf_timer_nf_instance_no_heartbeat;
+    nf_instance->t_validity = ogs_timer_add(ogs_app()->timer_mgr,
+            amf_timer_nf_instance_validity, nf_instance);
     ogs_assert(nf_instance->t_validity);
-    nf_instance->t_validity->cb = amf_timer_nf_instance_validity;
 
     if (NF_INSTANCE_IS_NRF(nf_instance)) {
         OGS_FSM_TRAN(s, &amf_nf_state_will_register);
@@ -82,10 +84,20 @@ void amf_nf_state_initial(ogs_fsm_t *s, amf_event_t *e)
 
 void amf_nf_state_final(ogs_fsm_t *s, amf_event_t *e)
 {
+    ogs_sbi_nf_instance_t *nf_instance = NULL;
+
     ogs_assert(s);
     ogs_assert(e);
 
     amf_sm_debug(e);
+
+    nf_instance = e->sbi.data;
+    ogs_assert(nf_instance);
+
+    ogs_timer_delete(nf_instance->t_registration_interval);
+    ogs_timer_delete(nf_instance->t_heartbeat_interval);
+    ogs_timer_delete(nf_instance->t_no_heartbeat);
+    ogs_timer_delete(nf_instance->t_validity);
 }
 
 void amf_nf_state_will_register(ogs_fsm_t *s, amf_event_t *e)
@@ -110,7 +122,8 @@ void amf_nf_state_will_register(ogs_fsm_t *s, amf_event_t *e)
         ogs_timer_start(nf_instance->t_registration_interval,
             ogs_app()->time.message.sbi.nf_register_interval);
 
-        ogs_assert(true == amf_nnrf_nfm_send_nf_register(nf_instance));
+        ogs_assert(true == ogs_nnrf_nfm_send_nf_register(
+                    nf_instance, amf_nnrf_nfm_build_register));
         break;
 
     case OGS_FSM_EXIT_SIG:
@@ -166,7 +179,8 @@ void amf_nf_state_will_register(ogs_fsm_t *s, amf_event_t *e)
             ogs_timer_start(nf_instance->t_registration_interval,
                 ogs_app()->time.message.sbi.nf_register_interval);
 
-            ogs_assert(true == amf_nnrf_nfm_send_nf_register(nf_instance));
+            ogs_assert(true == ogs_nnrf_nfm_send_nf_register(
+                        nf_instance, amf_nnrf_nfm_build_register));
             break;
 
         default:

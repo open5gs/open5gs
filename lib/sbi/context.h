@@ -36,8 +36,20 @@ typedef struct ogs_sbi_client_s ogs_sbi_client_t;
 typedef struct ogs_sbi_smf_info_s ogs_sbi_smf_info_t;
 typedef struct ogs_sbi_nf_instance_s ogs_sbi_nf_instance_t;
 
+typedef enum {
+    OGS_SBI_DISCOVERY_DELEGATED_AUTO = 0,
+    OGS_SBI_DISCOVERY_DELEGATED_YES,
+    OGS_SBI_DISCOVERY_DELEGATED_NO,
+} ogs_sbi_discovery_delegated_mode;
+
+typedef struct ogs_sbi_discovery_config_s {
+    ogs_sbi_discovery_delegated_mode delegated;
+} ogs_sbi_discovery_config_t;
+
 typedef struct ogs_sbi_context_s {
-    uint32_t sbi_port;       /* SBI local port */
+    ogs_sbi_discovery_config_t discovery_config; /* SCP Discovery Delegated */
+
+    uint32_t sbi_port;                      /* SBI local port */
 
     ogs_list_t server_list;
     ogs_list_t client_list;
@@ -47,25 +59,28 @@ typedef struct ogs_sbi_context_s {
     ogs_list_t nf_instance_list;
     ogs_list_t subscription_list;
 
-    ogs_sbi_nf_instance_t *nf_instance; /* SELF NF Instance */
+    ogs_sbi_nf_instance_t *nf_instance;     /* SELF NF Instance */
+    ogs_sbi_nf_instance_t *nrf_instance;    /* NRF Instance */
+    ogs_sbi_nf_instance_t *scp_instance;    /* SCP Instance */
 
     const char *content_encoding;
+
 } ogs_sbi_context_t;
 
 typedef struct ogs_sbi_nf_instance_s {
     ogs_lnode_t lnode;
 
-    ogs_fsm_t sm;                               /* A state machine */
-    ogs_timer_t *t_registration_interval;       /* timer to retry
-                                                   to register peer node */
+    ogs_fsm_t sm;                           /* A state machine */
+    ogs_timer_t *t_registration_interval;   /* timer to retry
+                                               to register peer node */
     struct {
         int heartbeat_interval;
         int validity_duration;
     } time;
 
-    ogs_timer_t *t_heartbeat_interval;  /* heartbeat interval */
-    ogs_timer_t *t_no_heartbeat;        /* check heartbeat */
-    ogs_timer_t *t_validity;            /* check validation */
+    ogs_timer_t *t_heartbeat_interval;      /* heartbeat interval */
+    ogs_timer_t *t_no_heartbeat;            /* check heartbeat */
+    ogs_timer_t *t_validity;                /* check validation */
 
 #define NF_INSTANCE_IS_SELF(_iD) \
     (_iD) && ogs_sbi_self()->nf_instance && \
@@ -77,7 +92,7 @@ typedef struct ogs_sbi_nf_instance_s {
 #define NF_INSTANCE_IS_NRF(__nFInstance) \
     ((__nFInstance->nf_type) == OpenAPI_nf_type_NRF)
 
-    char *id;                           /* NFInstanceId */
+    char *id;                               /* NFInstanceId */
 
     OpenAPI_nf_type_e nf_type;
     OpenAPI_nf_status_e nf_status;
@@ -103,12 +118,12 @@ typedef struct ogs_sbi_nf_instance_s {
 
     ogs_list_t nf_service_list;
 
-    void *client;                   /* only used in CLIENT */
-    unsigned int reference_count;   /* reference count for memory free */
+    void *client;                       /* only used in CLIENT */
+    unsigned int reference_count;       /* reference count for memory free */
 
     ogs_list_t nf_info_list;
 
-    OpenAPI_nf_profile_t *nf_profile;   /* stored NF Profile */
+    OpenAPI_nf_profile_t *nf_profile;       /* stored NF Profile */
 } ogs_sbi_nf_instance_t;
 
 typedef struct ogs_sbi_nf_type_array_s {
@@ -196,19 +211,19 @@ typedef struct ogs_sbi_subscription_s {
         int validity_duration;
     } time;
 
-    ogs_timer_t *t_validity;            /* check validation */
+    ogs_timer_t *t_validity;                /* check validation */
 
-    char *id;                           /* SubscriptionId */
-    char *req_nf_instance_id;           /* reqNfInstanceId */
-    OpenAPI_nf_type_e req_nf_type;      /* reqNfType */
+    char *id;                               /* SubscriptionId */
+    char *req_nf_instance_id;               /* reqNfInstanceId */
+    OpenAPI_nf_type_e req_nf_type;          /* reqNfType */
     OpenAPI_nf_status_e nf_status;
     char *notification_uri;
 
     struct {
-        OpenAPI_nf_type_e nf_type;      /* nfType */
+        OpenAPI_nf_type_e nf_type;          /* nfType */
     } subscr_cond;
 
-    void *client;                       /* only used in SERVER */
+    void *client;                           /* only used in SERVER */
 } ogs_sbi_subscription_t;
 
 typedef struct ogs_sbi_smf_info_s {
@@ -249,7 +264,10 @@ typedef struct ogs_sbi_nf_info_s {
 void ogs_sbi_context_init(void);
 void ogs_sbi_context_final(void);
 ogs_sbi_context_t *ogs_sbi_self(void);
-int ogs_sbi_context_parse_config(const char *local, const char *remote);
+int ogs_sbi_context_parse_config(
+        const char *local, const char *nrf, const char *scp);
+
+ogs_sbi_nf_instance_t *ogs_sbi_scp_instance(void);
 
 ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_add(void);
 void ogs_sbi_nf_instance_set_id(ogs_sbi_nf_instance_t *nf_instance, char *id);

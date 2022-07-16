@@ -34,7 +34,7 @@ int bsf_initialize()
     bsf_context_init();
     bsf_event_init();
 
-    rv = ogs_sbi_context_parse_config("bsf", "nrf");
+    rv = ogs_sbi_context_parse_config("bsf", "nrf", "scp");
     if (rv != OGS_OK) return rv;
 
     rv = bsf_context_parse_config();

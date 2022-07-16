@@ -32,7 +32,7 @@ int nrf_initialize()
     nrf_context_init();
     nrf_event_init();
 
-    rv = ogs_sbi_context_parse_config("nrf", NULL);
+    rv = ogs_sbi_context_parse_config("nrf", NULL, "scp");
     if (rv != OGS_OK) return rv;
 
     rv = nrf_context_parse_config();

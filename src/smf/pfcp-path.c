@@ -157,7 +157,7 @@ static void pfcp_recv_cb(short when, ogs_socket_t fd, void *data)
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
-        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
         ogs_pkbuf_free(e->pkbuf);
         smf_event_free(e);
     }
@@ -328,6 +328,8 @@ int smf_pfcp_send_modify_list(
 
     ogs_assert(sess);
     ogs_assert(xact);
+
+    xact->local_seid = sess->smf_n4_seid;
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE;

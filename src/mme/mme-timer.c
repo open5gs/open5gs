@@ -111,7 +111,7 @@ void mme_timer_s1_delayed_send(void *data)
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
-        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
         ogs_timer_delete(e->timer);
         mme_event_free(e);
     }
@@ -131,7 +131,7 @@ static void emm_timer_event_send(
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
-        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
         mme_event_free(e);
     }
 }
@@ -174,7 +174,7 @@ static void esm_timer_event_send(
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
-        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
         mme_event_free(e);
     }
 }
@@ -196,7 +196,7 @@ void mme_timer_sgs_cli_conn_to_srv(void *data)
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
-        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
         mme_event_free(e);
     }
 }
@@ -217,7 +217,7 @@ void mme_timer_s1_holding_timer_expire(void *data)
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
-        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
         mme_event_free(e);
     }
 }
@@ -238,7 +238,7 @@ void mme_timer_s11_holding_timer_expire(void *data)
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
-        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
         mme_event_free(e);
     }
 }

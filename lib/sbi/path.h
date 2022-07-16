@@ -31,6 +31,8 @@ bool ogs_sbi_send(ogs_sbi_nf_instance_t *nf_instance,
 bool ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact,
         ogs_fsm_handler_t nf_state_registered, ogs_sbi_client_cb_f client_cb);
 
+bool ogs_nnrf_nfm_send_nf_register(
+        ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_request_t *(*build)(void));
 bool ogs_nnrf_nfm_send_nf_update(ogs_sbi_nf_instance_t *nf_instance);
 bool ogs_nnrf_nfm_send_nf_de_register(ogs_sbi_nf_instance_t *nf_instance);
 

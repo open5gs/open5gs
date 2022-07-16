@@ -117,7 +117,7 @@ static void pfcp_recv_cb(short when, ogs_socket_t fd, void *data)
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
-        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
         ogs_pkbuf_free(e->pkbuf);
         sgwu_event_free(e);
     }

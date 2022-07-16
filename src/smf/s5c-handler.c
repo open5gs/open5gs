@@ -596,6 +596,7 @@ void smf_s5c_handle_create_bearer_response(
     smf_bearer_t *bearer = NULL;
     ogs_pfcp_far_t *dl_far = NULL;
 
+    ogs_assert(sess);
     ogs_assert(rsp);
 
     ogs_debug("Create Bearer Response");
@@ -614,11 +615,6 @@ void smf_s5c_handle_create_bearer_response(
      * Check Session Context
      ************************/
     cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
-
-    if (!sess) {
-        ogs_error("No Context in TEID");
-        cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
-    }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
         ogs_assert(OGS_OK ==
@@ -771,6 +767,7 @@ void smf_s5c_handle_update_bearer_response(
     uint64_t pfcp_flags = 0;
     smf_bearer_t *bearer = NULL;
 
+    ogs_assert(sess);
     ogs_assert(rsp);
 
     ogs_debug("Update Bearer Response");
@@ -787,24 +784,10 @@ void smf_s5c_handle_update_bearer_response(
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
 
-    /************************
-     * Check Session Context
-     ************************/
-    cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
-
-    if (!sess) {
-        ogs_error("No Context in TEID");
-        cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
-    }
-
-    if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        return;
-    }
-
     /*****************************************
      * Check Mandatory/Conditional IE Missing
      *****************************************/
-    ogs_assert(cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED);
+    cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
 
     if (rsp->bearer_contexts.presence == 0) {
         ogs_error("No Bearer");
@@ -888,6 +871,7 @@ bool smf_s5c_handle_delete_bearer_response(
     uint8_t cause_value;
     smf_bearer_t *bearer = NULL;
 
+    ogs_assert(sess);
     ogs_assert(rsp);
 
     ogs_debug("Delete Bearer Response");
@@ -902,18 +886,10 @@ bool smf_s5c_handle_delete_bearer_response(
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
 
-    /************************
-     * Check Session Context
-     ************************/
-    if (!sess)
-        ogs_error("No Context in TEID");
-
     /********************
      * Check ALL Context
      ********************/
     ogs_assert(bearer);
-    sess = bearer->sess;
-    ogs_assert(sess);
 
     if (rsp->linked_eps_bearer_id.presence) {
         /*

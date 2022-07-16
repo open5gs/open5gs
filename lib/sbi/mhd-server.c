@@ -35,6 +35,8 @@ static int server_start(ogs_sbi_server_t *server,
         int (*cb)(ogs_sbi_request_t *request, void *data));
 static void server_stop(ogs_sbi_server_t *server);
 
+static bool server_send_rspmem_persistent(
+        ogs_sbi_stream_t *stream, ogs_sbi_response_t *response);
 static bool server_send_response(
         ogs_sbi_stream_t *stream, ogs_sbi_response_t *response);
 
@@ -47,7 +49,9 @@ const ogs_sbi_server_actions_t ogs_mhd_server_actions = {
     server_start,
     server_stop,
 
+    server_send_rspmem_persistent,
     server_send_response,
+
     server_from_stream,
 };
 
@@ -296,7 +300,7 @@ static void free_callback(void *cls)
 }
 #endif
 
-static bool server_send_response(
+static bool server_send_rspmem_persistent(
         ogs_sbi_stream_t *stream, ogs_sbi_response_t *response)
 {
     int ret;
@@ -312,9 +316,13 @@ static bool server_send_response(
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_session_t *sbi_sess = NULL;
 
-    sbi_sess = (ogs_sbi_session_t *)stream;
-    ogs_assert(sbi_sess);
     ogs_assert(response);
+
+    sbi_sess = ogs_pool_cycle(&session_pool, (ogs_sbi_session_t *)stream);
+    if (!sbi_sess) {
+        ogs_error("session has already been removed");
+        return true;
+    }
 
     connection = sbi_sess->connection;
     ogs_assert(connection);
@@ -370,7 +378,6 @@ static bool server_send_response(
     request = sbi_sess->request;
     ogs_assert(request);
 
-    ogs_sbi_response_free(response);
     session_remove(sbi_sess);
 
     request->poll.write = ogs_pollset_add(ogs_app()->pollset,
@@ -385,6 +392,20 @@ static bool server_send_response(
     MHD_destroy_response(mhd_response);
 
     return true;
+}
+
+static bool server_send_response(
+        ogs_sbi_stream_t *stream, ogs_sbi_response_t *response)
+{
+    bool rc;
+
+    ogs_assert(response);
+
+    rc = server_send_rspmem_persistent(stream, response);
+
+    ogs_sbi_response_free(response);
+
+    return rc;
 }
 
 static void run(short when, ogs_socket_t fd, void *data)
@@ -539,19 +560,15 @@ suspend:
     sbi_sess = session_add(server, request, connection);
     ogs_assert(sbi_sess);
 
-    if (server->cb) {
-        if (server->cb(request, sbi_sess) != OGS_OK) {
-            ogs_warn("server callback error");
-            ogs_assert(true ==
-                    ogs_sbi_server_send_error((ogs_sbi_stream_t *)sbi_sess,
-                        OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, NULL,
-                        "server callback error", NULL));
+    ogs_assert(server->cb);
+    if (server->cb(request, sbi_sess) != OGS_OK) {
+        ogs_error("server callback error");
+        ogs_assert(true ==
+                ogs_sbi_server_send_error((ogs_sbi_stream_t *)sbi_sess,
+                    OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, NULL,
+                    "server callback error", NULL));
 
-            return MHD_YES;
-        }
-    } else {
-        ogs_fatal("server callback is not registered");
-        ogs_assert_if_reached();
+        return MHD_YES;
     }
 
     return MHD_YES;

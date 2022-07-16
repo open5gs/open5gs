@@ -295,7 +295,7 @@ static void node_timeout(ogs_pfcp_xact_t *xact, void *data)
 
         rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
-            ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+            ogs_error("ogs_queue_push() failed:%d", (int)rv);
             sgwu_event_free(e);
         }
         break;

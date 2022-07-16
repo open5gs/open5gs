@@ -34,7 +34,7 @@ int af_initialize()
     af_context_init();
     af_event_init();
 
-    rv = ogs_sbi_context_parse_config("af", "nrf");
+    rv = ogs_sbi_context_parse_config("af", "nrf", "scp");
     if (rv != OGS_OK) return rv;
 
     rv = af_context_parse_config();

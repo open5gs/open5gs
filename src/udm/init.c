@@ -32,7 +32,7 @@ int udm_initialize()
     udm_context_init();
     udm_event_init();
 
-    rv = ogs_sbi_context_parse_config("udm", "nrf");
+    rv = ogs_sbi_context_parse_config("udm", "nrf", "scp");
     if (rv != OGS_OK) return rv;
 
     rv = udm_context_parse_config();

@@ -35,7 +35,11 @@ static int server_cb(ogs_sbi_request_t *request, void *data)
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
-        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+        if (rv != OGS_DONE)
+            ogs_error("ogs_queue_push() failed:%d", (int)rv);
+        else
+            ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+        ogs_sbi_request_free(request);
         nrf_event_free(e);
         return OGS_ERROR;
     }
@@ -43,11 +47,18 @@ static int server_cb(ogs_sbi_request_t *request, void *data)
     return OGS_OK;
 }
 
-static int client_notify_cb(ogs_sbi_response_t *response, void *data)
+static int client_notify_cb(
+        int status, ogs_sbi_response_t *response, void *data)
 {
     int rv;
-
     ogs_sbi_message_t message;
+
+    if (status != OGS_OK) {
+        ogs_log_message(
+                status == OGS_DONE ? OGS_LOG_DEBUG : OGS_LOG_WARN, 0,
+                "client_notify_cb() failed [%d]", status);
+        return OGS_ERROR;
+    }
 
     ogs_assert(response);
 
@@ -69,14 +80,28 @@ static int client_notify_cb(ogs_sbi_response_t *response, void *data)
 
 int nrf_sbi_open(void)
 {
+    ogs_sbi_nf_instance_t *nf_instance = NULL;
+
     if (ogs_sbi_server_start_all(server_cb) != OGS_OK)
         return OGS_ERROR;
+
+    /* Initialize SCP NF Instance */
+    nf_instance = ogs_sbi_self()->scp_instance;
+    if (nf_instance) {
+        ogs_sbi_client_t *client = NULL;
+
+        /* Client callback is only used when NF sends to SCP */
+        client = nf_instance->client;
+        ogs_assert(client);
+        client->cb = client_notify_cb;
+    }
 
     return OGS_OK;
 }
 
 void nrf_sbi_close(void)
 {
+    ogs_sbi_client_stop_all();
     ogs_sbi_server_stop_all();
 }
 
@@ -92,10 +117,10 @@ bool nrf_nnrf_nfm_send_nf_status_notify(ogs_sbi_subscription_t *subscription,
     ogs_assert(client);
 
     request = nrf_nnrf_nfm_build_nf_status_notify(
-            client, subscription, event, nf_instance);
+                subscription, event, nf_instance);
     ogs_expect_or_return_val(request, false);
 
-    return ogs_sbi_client_send_request(client, client_notify_cb, request, NULL);
+    return ogs_sbi_scp_send_request(client, client_notify_cb, request, NULL);
 }
 
 bool nrf_nnrf_nfm_send_nf_status_notify_all(

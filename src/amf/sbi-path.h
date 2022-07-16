@@ -34,8 +34,6 @@ extern "C" {
 int amf_sbi_open(void);
 void amf_sbi_close(void);
 
-bool amf_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance);
-
 bool amf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact);
 bool amf_ue_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
         amf_ue_t *amf_ue, void *data,

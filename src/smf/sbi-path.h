@@ -34,8 +34,6 @@ extern "C" {
 int smf_sbi_open(void);
 void smf_sbi_close(void);
 
-bool smf_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance);
-
 bool smf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact);
 
 bool smf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,

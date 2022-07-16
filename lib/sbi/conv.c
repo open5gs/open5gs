@@ -29,7 +29,6 @@ char *ogs_uridup(bool https, ogs_sockaddr_t *addr, ogs_sbi_header_t *h)
     char *hostname = NULL;
 
     ogs_assert(addr);
-    ogs_assert(h);
 
     p = uri;
     last = uri + OGS_HUGE_LEN;
@@ -61,16 +60,18 @@ char *ogs_uridup(bool https, ogs_sockaddr_t *addr, ogs_sbi_header_t *h)
     }
 
     /* API */
-    ogs_assert(h->service.name);
-    p = ogs_slprintf(p, last, "/%s", h->service.name);
-    ogs_assert(h->api.version);
-    p = ogs_slprintf(p, last, "/%s", h->api.version);
+    if (h) {
+        ogs_assert(h->service.name);
+        p = ogs_slprintf(p, last, "/%s", h->service.name);
+        ogs_assert(h->api.version);
+        p = ogs_slprintf(p, last, "/%s", h->api.version);
 
-    /* Resource */
-    ogs_assert(h->resource.component[0]);
-    for (i = 0; i < OGS_SBI_MAX_NUM_OF_RESOURCE_COMPONENT &&
-                        h->resource.component[i]; i++)
-        p = ogs_slprintf(p, last, "/%s", h->resource.component[i]);
+        /* Resource */
+        ogs_assert(h->resource.component[0]);
+        for (i = 0; i < OGS_SBI_MAX_NUM_OF_RESOURCE_COMPONENT &&
+                            h->resource.component[i]; i++)
+            p = ogs_slprintf(p, last, "/%s", h->resource.component[i]);
+    }
 
     return ogs_strdup(uri);
 }
@@ -81,7 +82,6 @@ char *ogs_sbi_server_uri(ogs_sbi_server_t *server, ogs_sbi_header_t *h)
     bool https = false;
 
     ogs_assert(server);
-    ogs_assert(h);
 
     if (server->tls.key && server->tls.pem)
         https = true;
@@ -100,12 +100,16 @@ char *ogs_sbi_client_uri(ogs_sbi_client_t *client, ogs_sbi_header_t *h)
     bool https = false;
 
     ogs_assert(client);
-    ogs_assert(h);
 
     if (client->tls.key && client->tls.pem)
         https = true;
 
     return ogs_uridup(https, client->node.addr, h);
+}
+
+char *ogs_sbi_client_apiroot(ogs_sbi_client_t *client)
+{
+    return ogs_sbi_client_uri(client, NULL);
 }
 
 /**
@@ -205,6 +209,57 @@ ogs_sockaddr_t *ogs_sbi_getaddr_from_uri(char *uri)
 
     ogs_free(p);
     return addr;
+}
+
+char *ogs_sbi_getpath_from_uri(char *uri)
+{
+    int rv;
+    struct yuarel yuarel;
+    char *p = NULL;
+    char *path = NULL;
+
+    p = ogs_strdup(uri);
+
+    rv = yuarel_parse(&yuarel, p);
+    if (rv != OGS_OK) {
+        ogs_free(p);
+        ogs_error("yuarel_parse() failed [%s]", uri);
+        return NULL;
+    }
+
+    if (!yuarel.scheme) {
+        ogs_error("No http.scheme found [%s]", uri);
+        ogs_free(p);
+        return NULL;
+    }
+
+    if (strcmp(yuarel.scheme, "https") == 0) {
+
+    } else if (strcmp(yuarel.scheme, "http") == 0) {
+
+    } else {
+        ogs_error("Invalid http.scheme [%s:%s]", yuarel.scheme, uri);
+        ogs_free(p);
+        return NULL;
+    }
+
+    if (!yuarel.host) {
+        ogs_error("No http.host found [%s]", uri);
+        ogs_free(p);
+        return NULL;
+    }
+
+    if (!yuarel.path) {
+        ogs_error("No http.path found [%s]", uri);
+        ogs_free(p);
+        return NULL;
+    }
+
+    path = ogs_strdup(yuarel.path);
+    ogs_assert(path);
+
+    ogs_free(p);
+    return path;
 }
 
 char *ogs_sbi_bitrate_to_string(uint64_t bitrate, int unit)

@@ -109,7 +109,7 @@ void amf_timer_ng_delayed_send(void *data)
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
-        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
         ogs_timer_delete(e->timer);
         amf_event_free(e);
     }
@@ -153,7 +153,7 @@ static void sbi_timer_send_event(int timer_id, void *data)
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
-        ogs_warn("ogs_queue_push() failed [%d] in %s",
+        ogs_error("ogs_queue_push() failed [%d] in %s",
                 (int)rv, amf_timer_get_name(e->timer_id));
         amf_event_free(e);
     }
@@ -203,7 +203,7 @@ static void gmm_timer_event_send(
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
-        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
         amf_event_free(e);
     }
 }
@@ -250,7 +250,7 @@ void amf_timer_ng_holding_timer_expire(void *data)
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
-        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
         amf_event_free(e);
     }
 }

@@ -32,7 +32,7 @@ int udr_initialize()
     udr_context_init();
     udr_event_init();
 
-    rv = ogs_sbi_context_parse_config("udr", "nrf");
+    rv = ogs_sbi_context_parse_config("udr", "nrf", "scp");
     if (rv != OGS_OK) return rv;
 
     rv = udr_context_parse_config();

@@ -35,7 +35,8 @@ static int server_cb(ogs_sbi_request_t *request, void *data)
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
-        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
+        ogs_sbi_request_free(request);
         af_event_free(e);
         return OGS_ERROR;
     }
@@ -43,10 +44,17 @@ static int server_cb(ogs_sbi_request_t *request, void *data)
     return OGS_OK;
 }
 
-static int client_cb(ogs_sbi_response_t *response, void *data)
+static int client_cb(int status, ogs_sbi_response_t *response, void *data)
 {
     af_event_t *e = NULL;
     int rv;
+
+    if (status != OGS_OK) {
+        ogs_log_message(
+                status == OGS_DONE ? OGS_LOG_DEBUG : OGS_LOG_WARN, 0,
+                "client_cb() failed [%d]", status);
+        return OGS_ERROR;
+    }
 
     ogs_assert(response);
 
@@ -57,7 +65,8 @@ static int client_cb(ogs_sbi_response_t *response, void *data)
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
-        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
+        ogs_sbi_response_free(response);
         af_event_free(e);
         return OGS_ERROR;
     }
@@ -108,6 +117,7 @@ int af_sbi_open(void)
 
 void af_sbi_close(void)
 {
+    ogs_sbi_client_stop_all();
     ogs_sbi_server_stop_all();
 }
 

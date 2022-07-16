@@ -32,7 +32,7 @@ int pcf_initialize()
     pcf_context_init();
     pcf_event_init();
 
-    rv = ogs_sbi_context_parse_config("pcf", "nrf");
+    rv = ogs_sbi_context_parse_config("pcf", "nrf", "scp");
     if (rv != OGS_OK) return rv;
 
     rv = pcf_context_parse_config();

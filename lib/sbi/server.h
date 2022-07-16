@@ -53,6 +53,8 @@ typedef struct ogs_sbi_server_actions_s {
             int (*cb)(ogs_sbi_request_t *request, void *data));
     void (*stop)(ogs_sbi_server_t *server);
 
+    bool (*send_rspmem_persistent)(
+            ogs_sbi_stream_t *stream, ogs_sbi_response_t *response);
     bool (*send_response)(
             ogs_sbi_stream_t *stream, ogs_sbi_response_t *response);
 
@@ -74,6 +76,8 @@ int ogs_sbi_server_start_all(
         int (*cb)(ogs_sbi_request_t *request, void *data));
 void ogs_sbi_server_stop_all(void);
 
+bool ogs_sbi_server_send_rspmem_persistent(
+        ogs_sbi_stream_t *stream, ogs_sbi_response_t *response);
 bool ogs_sbi_server_send_response(
         ogs_sbi_stream_t *stream, ogs_sbi_response_t *response);
 bool ogs_sbi_server_send_error(ogs_sbi_stream_t *stream,

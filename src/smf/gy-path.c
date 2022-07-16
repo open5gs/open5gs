@@ -1104,7 +1104,7 @@ out:
         }
         rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
-            ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+            ogs_error("ogs_queue_push() failed:%d", (int)rv);
             ogs_free(gy_message);
             smf_event_free(e);
         } else {
@@ -1233,7 +1233,7 @@ static int smf_gy_rar_cb( struct msg **msg, struct avp *avp,
     e->gy_message = gy_message;
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
-        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
         ogs_free(gy_message);
         smf_event_free(e);
     } else {

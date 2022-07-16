@@ -37,7 +37,8 @@ static int server_cb(ogs_sbi_request_t *request, void *data)
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
-        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
+        ogs_sbi_request_free(request);
         amf_event_free(e);
         return OGS_ERROR;
     }
@@ -45,10 +46,17 @@ static int server_cb(ogs_sbi_request_t *request, void *data)
     return OGS_OK;
 }
 
-static int client_cb(ogs_sbi_response_t *response, void *data)
+static int client_cb(int status, ogs_sbi_response_t *response, void *data)
 {
     amf_event_t *e = NULL;
     int rv;
+
+    if (status != OGS_OK) {
+        ogs_log_message(
+                status == OGS_DONE ? OGS_LOG_DEBUG : OGS_LOG_WARN, 0,
+                "client_cb() failed [%d]", status);
+        return OGS_ERROR;
+    }
 
     ogs_assert(response);
 
@@ -59,7 +67,8 @@ static int client_cb(ogs_sbi_response_t *response, void *data)
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
-        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
+        ogs_sbi_response_free(response);
         amf_event_free(e);
         return OGS_ERROR;
     }
@@ -91,20 +100,30 @@ int amf_sbi_open(void)
             (char*)OGS_SBI_API_V1_0_0, NULL);
     ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_SMF);
 
+    /* Initialize SCP NF Instance */
+    nf_instance = ogs_sbi_self()->scp_instance;
+    if (nf_instance) {
+        ogs_sbi_client_t *client = NULL;
+
+        /* Client callback is only used when NF sends to SCP */
+        client = nf_instance->client;
+        ogs_assert(client);
+        client->cb = client_cb;
+    }
+
     /* Initialize NRF NF Instance */
-    ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance) {
-        if (NF_INSTANCE_IS_NRF(nf_instance)) {
-            ogs_sbi_client_t *client = NULL;
+    nf_instance = ogs_sbi_self()->nrf_instance;
+    if (nf_instance) {
+        ogs_sbi_client_t *client = NULL;
 
-            /* Client callback is only used when NF sends to NRF */
-            client = nf_instance->client;
-            ogs_assert(client);
-            client->cb = client_cb;
+        /* Client callback is only used when NF sends to NRF */
+        client = nf_instance->client;
+        ogs_assert(client);
+        client->cb = client_cb;
 
-            /* NFRegister is sent and the response is received
-             * by the above client callback. */
-            amf_nf_fsm_init(nf_instance);
-        }
+        /* NFRegister is sent and the response is received
+         * by the above client callback. */
+        amf_nf_fsm_init(nf_instance);
     }
 
     return OGS_OK;
@@ -112,23 +131,8 @@ int amf_sbi_open(void)
 
 void amf_sbi_close(void)
 {
+    ogs_sbi_client_stop_all();
     ogs_sbi_server_stop_all();
-}
-
-bool amf_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance)
-{
-    ogs_sbi_request_t *request = NULL;
-    ogs_sbi_client_t *client = NULL;
-
-    ogs_assert(nf_instance);
-    client = nf_instance->client;
-    ogs_assert(client);
-
-    request = amf_nnrf_nfm_build_register();
-    ogs_expect_or_return_val(request, false);
-
-    return ogs_sbi_client_send_request(
-            client, client->cb, request, nf_instance);
 }
 
 bool amf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact)
@@ -203,12 +207,20 @@ bool amf_sess_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
 
     return true;
 }
-static int client_discover_cb(ogs_sbi_response_t *response, void *data)
+static int client_discover_cb(
+        int status, ogs_sbi_response_t *response, void *data)
 {
     int rv;
 
     ogs_sbi_message_t message;
     amf_sess_t *sess = data;
+
+    if (status != OGS_OK) {
+        ogs_log_message(
+                status == OGS_DONE ? OGS_LOG_DEBUG : OGS_LOG_WARN, 0,
+                "client_discover_cb() failed [%d]", status);
+        return OGS_ERROR;
+    }
 
     ogs_assert(response);
     ogs_assert(sess);
@@ -395,11 +407,18 @@ void amf_sbi_send_release_all_sessions(amf_ue_t *amf_ue, int state)
     }
 }
 
-static int client_notify_cb(ogs_sbi_response_t *response, void *data)
+static int client_notify_cb(
+        int status, ogs_sbi_response_t *response, void *data)
 {
     int rv;
-
     ogs_sbi_message_t message;
+
+    if (status != OGS_OK) {
+        ogs_log_message(
+                status == OGS_DONE ? OGS_LOG_DEBUG : OGS_LOG_WARN, 0,
+                "client_notify_cb() failed [%d]", status);
+        return OGS_ERROR;
+    }
 
     ogs_assert(response);
 
