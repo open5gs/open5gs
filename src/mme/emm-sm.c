@@ -133,7 +133,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 ogs_info("Service request : Unknown UE");
                 ogs_assert(OGS_OK ==
                     nas_eps_send_service_reject(mme_ue,
-                    EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
+                    OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
                 OGS_FSM_TRAN(s, &emm_state_exception);
                 break;
             }
@@ -142,7 +142,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 ogs_warn("No Security Context : IMSI[%s]", mme_ue->imsi_bcd);
                 ogs_assert(OGS_OK ==
                     nas_eps_send_service_reject(mme_ue,
-                    EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
+                    OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
                 OGS_FSM_TRAN(s, &emm_state_exception);
                 break;
             }
@@ -151,7 +151,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 ogs_warn("No Session Context : IMSI[%s]", mme_ue->imsi_bcd);
                 ogs_assert(OGS_OK ==
                     nas_eps_send_service_reject(mme_ue,
-                    EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
+                    OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
                 OGS_FSM_TRAN(s, &emm_state_exception);
                 break;
             }
@@ -160,7 +160,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 ogs_warn("No active EPS bearers : IMSI[%s]", mme_ue->imsi_bcd);
                 ogs_assert(OGS_OK ==
                     nas_eps_send_service_reject(mme_ue,
-                        EMM_CAUSE_NO_EPS_BEARER_CONTEXT_ACTIVATED));
+                        OGS_NAS_EMM_CAUSE_NO_EPS_BEARER_CONTEXT_ACTIVATED));
                 OGS_FSM_TRAN(s, &emm_state_exception);
                 break;
             }
@@ -227,8 +227,8 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                         ogs_error("nas_eps_send_emm_to_esm() failed");
                         ogs_assert(OGS_OK ==
                             nas_eps_send_attach_reject(mme_ue,
-                                EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
-                                ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
+                                OGS_NAS_EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
+                                OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
                         OGS_FSM_TRAN(s, &emm_state_exception);
                         break;
                     }
@@ -259,7 +259,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 ogs_info("TAU request : Unknown UE");
                 ogs_assert(OGS_OK ==
                     nas_eps_send_tau_reject(mme_ue,
-                    EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
+                    OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
                 OGS_FSM_TRAN(s, &emm_state_exception);
                 break;
             }
@@ -268,7 +268,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 ogs_warn("No PDN Connection : UE[%s]", mme_ue->imsi_bcd);
                 ogs_assert(OGS_OK ==
                     nas_eps_send_tau_reject(mme_ue,
-                    EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
+                    OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
                 OGS_FSM_TRAN(s, emm_state_exception);
                 break;
             }
@@ -277,7 +277,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 ogs_warn("No active EPS bearers : IMSI[%s]", mme_ue->imsi_bcd);
                 ogs_assert(OGS_OK ==
                     nas_eps_send_tau_reject(mme_ue,
-                        EMM_CAUSE_NO_EPS_BEARER_CONTEXT_ACTIVATED));
+                        OGS_NAS_EMM_CAUSE_NO_EPS_BEARER_CONTEXT_ACTIVATED));
                 OGS_FSM_TRAN(s, &emm_state_exception);
                 break;
             }
@@ -400,7 +400,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 ogs_warn("Extended Service request : Unknown UE");
                 ogs_assert(OGS_OK ==
                     nas_eps_send_service_reject(mme_ue,
-                    EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
+                    OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
                 OGS_FSM_TRAN(s, &emm_state_exception);
                 break;
             }
@@ -409,7 +409,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 ogs_warn("No PDN Connection : UE[%s]", mme_ue->imsi_bcd);
                 ogs_assert(OGS_OK ==
                     nas_eps_send_service_reject(mme_ue,
-                    EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
+                    OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
                 OGS_FSM_TRAN(s, emm_state_exception);
                 break;
             }
@@ -418,7 +418,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 ogs_warn("No Security Context : IMSI[%s]", mme_ue->imsi_bcd);
                 ogs_assert(OGS_OK ==
                     nas_eps_send_service_reject(mme_ue,
-                    EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
+                    OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
                 OGS_FSM_TRAN(s, &emm_state_exception);
                 break;
             }
@@ -430,7 +430,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                     ogs_warn("No P-TMSI : UE[%s]", mme_ue->imsi_bcd);
                     ogs_assert(OGS_OK ==
                         nas_eps_send_service_reject(mme_ue,
-                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK)
+                        OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK)
                     );
                     mme_send_release_access_bearer_or_ue_context_release(
                             enb_ue);
@@ -457,7 +457,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                             mme_ue->nas_eps.service.value);
                     ogs_assert(OGS_OK ==
                         nas_eps_send_service_reject(mme_ue,
-                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK)
+                        OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK)
                     );
                     OGS_FSM_TRAN(s, &emm_state_exception);
                     break;
@@ -474,7 +474,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                     ogs_warn("No P-TMSI : UE[%s]", mme_ue->imsi_bcd);
                     ogs_assert(OGS_OK ==
                         nas_eps_send_service_reject(mme_ue,
-                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK)
+                        OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK)
                     );
                     break;
                 }
@@ -499,7 +499,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                             mme_ue->nas_eps.service.value);
                     ogs_assert(OGS_OK ==
                         nas_eps_send_service_reject(mme_ue,
-                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK)
+                        OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK)
                     );
                     OGS_FSM_TRAN(s, &emm_state_exception);
                     break;
@@ -704,26 +704,26 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
                         authentication_failure_parameter;
 
             ogs_debug("Authentication failure");
-            ogs_debug("    IMSI[%s] EMM_CAUSE[%d]", mme_ue->imsi_bcd,
+            ogs_debug("    IMSI[%s] OGS_NAS_EMM_CAUSE[%d]", mme_ue->imsi_bcd,
                     authentication_failure->emm_cause);
 
             CLEAR_MME_UE_TIMER(mme_ue->t3460);
 
             switch (authentication_failure->emm_cause) {
-            case EMM_CAUSE_MAC_FAILURE:
+            case OGS_NAS_EMM_CAUSE_MAC_FAILURE:
                 ogs_warn("Authentication failure(MAC failure)");
                 break;
-            case EMM_CAUSE_NON_EPS_AUTHENTICATION_UNACCEPTABLE:
+            case OGS_NAS_EMM_CAUSE_NON_EPS_AUTHENTICATION_UNACCEPTABLE:
                 ogs_error("Authentication failure"
                         "(Non-EPS authentication unacceptable)");
                 break;
-            case EMM_CAUSE_SYNCH_FAILURE:
+            case OGS_NAS_EMM_CAUSE_SYNCH_FAILURE:
                 ogs_info("Authentication failure(Synch failure)");
                 mme_s6a_send_air(mme_ue,
                         authentication_failure_parameter);
                 return;
             default:
-                ogs_error("Unknown EMM_CAUSE{%d] in Authentication"
+                ogs_error("Unknown OGS_NAS_EMM_CAUSE{%d] in Authentication"
                         " failure",
                         authentication_failure->emm_cause);
                 break;
@@ -837,7 +837,7 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("Service request");
             ogs_assert(OGS_OK ==
                 nas_eps_send_service_reject(mme_ue,
-                    EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED));
+                    OGS_NAS_EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED));
             OGS_FSM_TRAN(s, &emm_state_exception);
             break;
         }
@@ -856,8 +856,8 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
 
                 ogs_assert(OGS_OK ==
                     nas_eps_send_attach_reject(mme_ue,
-                        EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
-                        ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
+                        OGS_NAS_EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
+                        OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
                 OGS_FSM_TRAN(s, &emm_state_exception);
                 break;
             }
@@ -866,8 +866,8 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
                 ogs_warn("[%s] No Security Context", mme_ue->imsi_bcd);
                 ogs_assert(OGS_OK ==
                     nas_eps_send_attach_reject(mme_ue,
-                        EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
-                        ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
+                        OGS_NAS_EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
+                        OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
                 OGS_FSM_TRAN(s, &emm_state_exception);
                 break;
             }
@@ -917,7 +917,7 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("Tracking area update request");
             ogs_assert(OGS_OK ==
                 nas_eps_send_tau_reject(mme_ue,
-                    EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED));
+                    OGS_NAS_EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED));
             OGS_FSM_TRAN(s, &emm_state_exception);
             break;
         case OGS_NAS_EPS_EMM_STATUS:
@@ -955,8 +955,8 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
 
                 ogs_expect(OGS_OK ==
                     nas_eps_send_attach_reject(mme_ue,
-                        EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
-                        ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
+                        OGS_NAS_EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
+                        OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
             } else {
                 rv = nas_eps_send_security_mode_command(mme_ue);
                 if (rv == OGS_OK) {
@@ -1008,7 +1008,7 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("Service request");
             ogs_assert(OGS_OK ==
                 nas_eps_send_service_reject(mme_ue,
-                    EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
+                    OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
             OGS_FSM_TRAN(s, &emm_state_exception);
             break;
         }
@@ -1025,8 +1025,8 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
 
                 ogs_assert(OGS_OK ==
                     nas_eps_send_attach_reject(mme_ue,
-                        EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
-                        ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
+                        OGS_NAS_EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
+                        OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
                 OGS_FSM_TRAN(s, &emm_state_exception);
                 break;
             }
@@ -1035,8 +1035,8 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
                 ogs_warn("[%s] No Security Context", mme_ue->imsi_bcd);
                 ogs_assert(OGS_OK ==
                     nas_eps_send_attach_reject(mme_ue,
-                        EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
-                        ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
+                        OGS_NAS_EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
+                        OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
                 OGS_FSM_TRAN(s, &emm_state_exception);
                 break;
             }
@@ -1072,8 +1072,8 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
 
                 ogs_assert(OGS_OK ==
                     nas_eps_send_attach_reject(mme_ue,
-                        EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
-                        ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
+                        OGS_NAS_EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
+                        OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
                 OGS_FSM_TRAN(s, &emm_state_exception);
                 break;
             }
@@ -1082,8 +1082,8 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
                 ogs_warn("[%s] No Security Context", mme_ue->imsi_bcd);
                 ogs_assert(OGS_OK ==
                     nas_eps_send_attach_reject(mme_ue,
-                        EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
-                        ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
+                        OGS_NAS_EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
+                        OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
                 OGS_FSM_TRAN(s, &emm_state_exception);
                 break;
             }
@@ -1242,8 +1242,8 @@ void emm_state_exception(ogs_fsm_t *s, mme_event_t *e)
                         ogs_error("nas_eps_send_emm_to_esm() failed");
                         ogs_assert(OGS_OK ==
                             nas_eps_send_attach_reject(mme_ue,
-                                EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
-                                ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
+                                OGS_NAS_EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
+                                OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
                         OGS_FSM_TRAN(s, &emm_state_exception);
                         break;
                     }

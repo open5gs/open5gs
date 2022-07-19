@@ -3113,8 +3113,8 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
             ogs_error("No Bearer : EBI[%d]", ebi);
             ogs_assert(OGS_OK ==
                 nas_eps_send_attach_reject(mme_ue,
-                    EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
-                    ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
+                    OGS_NAS_EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
+                    OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
             return NULL;
         }
 
@@ -3125,8 +3125,8 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
         ogs_error("Both PTI[%d] and EBI[%d] are 0", pti, ebi);
         ogs_assert(OGS_OK ==
             nas_eps_send_attach_reject(mme_ue,
-                EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
-                ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
+                OGS_NAS_EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
+                OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
         return NULL;
     }
 
@@ -3143,8 +3143,8 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
                     linked_eps_bearer_identity->eps_bearer_identity);
             ogs_assert(OGS_OK ==
                 nas_eps_send_attach_reject(mme_ue,
-                    EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
-                    ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
+                    OGS_NAS_EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
+                    OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
             return NULL;
         }
     } else if (message->esm.h.message_type ==
@@ -3162,7 +3162,8 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
                     linked_eps_bearer_identity->eps_bearer_identity);
             ogs_assert(OGS_OK ==
                 nas_eps_send_bearer_resource_allocation_reject(
-                    mme_ue, pti, ESM_CAUSE_INVALID_EPS_BEARER_IDENTITY));
+                    mme_ue, pti,
+                    OGS_NAS_ESM_CAUSE_INVALID_EPS_BEARER_IDENTITY));
             return NULL;
         }
 
@@ -3181,7 +3182,8 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
                     linked_eps_bearer_identity->eps_bearer_identity);
             ogs_assert(OGS_OK ==
                 nas_eps_send_bearer_resource_modification_reject(
-                    mme_ue, pti, ESM_CAUSE_INVALID_EPS_BEARER_IDENTITY));
+                    mme_ue, pti,
+                    OGS_NAS_ESM_CAUSE_INVALID_EPS_BEARER_IDENTITY));
             return NULL;
         }
     }
@@ -3205,7 +3207,7 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
                 ogs_assert(OGS_OK ==
                     nas_eps_send_pdn_connectivity_reject(
                         sess,
-                        ESM_CAUSE_MULTIPLE_PDN_CONNECTIONS_FOR_A_GIVEN_APN_NOT_ALLOWED,
+                        OGS_NAS_ESM_CAUSE_MULTIPLE_PDN_CONNECTIONS_FOR_A_GIVEN_APN_NOT_ALLOWED,
                         create_action));
                 ogs_warn("APN duplicated [%s]",
                     pdn_connectivity_request->access_point_name.apn);
@@ -3228,8 +3230,8 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
                     message->esm.h.message_type, pti);
             ogs_assert(OGS_OK ==
                 nas_eps_send_attach_reject(mme_ue,
-                    EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
-                    ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
+                    OGS_NAS_EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
+                    OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
             return NULL;
         }
     }

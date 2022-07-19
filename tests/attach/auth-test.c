@@ -315,7 +315,7 @@ static void test1_func(abts_case *tc, void *data)
 
     /* Send Authentication failure - SYNCH failure */
     emmbuf = testemm_build_authentication_failure(
-            test_ue, EMM_CAUSE_SYNCH_FAILURE, 0x11223344);
+            test_ue, OGS_NAS_EMM_CAUSE_SYNCH_FAILURE, 0x11223344);
     ABTS_PTR_NOTNULL(tc, emmbuf);
     sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, emmbuf);
     ABTS_PTR_NOTNULL(tc, sendbuf);
@@ -329,7 +329,7 @@ static void test1_func(abts_case *tc, void *data)
 
     /* Send Authentication failure - MAC failure */
     emmbuf = testemm_build_authentication_failure(
-            test_ue, EMM_CAUSE_MAC_FAILURE, 0);
+            test_ue, OGS_NAS_EMM_CAUSE_MAC_FAILURE, 0);
     ABTS_PTR_NOTNULL(tc, emmbuf);
     sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, emmbuf);
     ABTS_PTR_NOTNULL(tc, sendbuf);
@@ -388,7 +388,7 @@ static void test1_func(abts_case *tc, void *data)
 
     /* Send Authentication failure - MAC failure */
     emmbuf = testemm_build_authentication_failure(
-            test_ue, EMM_CAUSE_MAC_FAILURE, 0);
+            test_ue, OGS_NAS_EMM_CAUSE_MAC_FAILURE, 0);
     ABTS_PTR_NOTNULL(tc, emmbuf);
     sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, emmbuf);
     ABTS_PTR_NOTNULL(tc, sendbuf);

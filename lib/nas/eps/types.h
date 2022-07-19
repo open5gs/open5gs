@@ -182,8 +182,8 @@ ED3(uint8_t type:4;,
 } __attribute__ ((packed)) ogs_nas_csfb_response_t;
 
 /* 9.9.3.7 Detach type
- * M V 1/2 
- * 9.9.3.21 NAS key set identifier 
+ * M V 1/2
+ * 9.9.3.21 NAS key set identifier
  * M V 1/2 */
 #define OGS_NAS_DETACH_TYPE_FROM_UE_EPS_DETACH                  1
 #define OGS_NAS_DETACH_TYPE_FROM_UE_IMSI_DETACH                 2
@@ -222,51 +222,55 @@ ED3(uint8_t cn_specific_drx_cycle_length_coefficient_and_drx_value_for_s1_mode:4
 } __attribute__ ((packed)) ogs_nas_drx_parameter_t;
 
 /* 9.9.3.9 EMM cause
- * O TV 2 
- * Annex A (informative) Cause values for EPS mobility management 
+ * O TV 2 */
+
+/* REQUEST_ACCEPTED(16) cause is defined by Open5GS */
+#define EMM_CAUSE_REQUEST_ACCEPTED 16
+
+/* Annex A (informative) Cause values for EPS mobility management
  * A.1 Causes related to UE identification */
-#define EMM_CAUSE_IMSI_UNKNOWN_IN_HSS 2
-#define EMM_CAUSE_ILLEGAL_UE 3
-#define EMM_CAUSE_IMSI_UNKNOWN_IN_VLR 4
-#define EMM_CAUSE_ILLEGAL_ME 6
-#define EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK 9
-#define EMM_CAUSE_IMPLICITLY_DETACHED 10
+#define OGS_NAS_EMM_CAUSE_IMSI_UNKNOWN_IN_HSS 2
+#define OGS_NAS_EMM_CAUSE_ILLEGAL_UE 3
+#define OGS_NAS_EMM_CAUSE_IMSI_UNKNOWN_IN_VLR 4
+#define OGS_NAS_EMM_CAUSE_ILLEGAL_ME 6
+#define OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK 9
+#define OGS_NAS_EMM_CAUSE_IMPLICITLY_DETACHED 10
 /* A.2 Cause related to subscription options */
-#define EMM_CAUSE_IMEI_NOT_ACCEPTED 5
-#define EMM_CAUSE_EPS_SERVICES_NOT_ALLOWED 7
-#define EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED 8
-#define EMM_CAUSE_PLMN_NOT_ALLOWED 11
-#define EMM_CAUSE_TRACKING_AREA_NOT_ALLOWED 12
-#define EMM_CAUSE_ROAMING_NOT_ALLOWED_IN_THIS_TRACKING_AREA 13
-#define EMM_CAUSE_EPS_SERVICES_NOT_ALLOWED_IN_THIS_PLMN 14
-#define EMM_CAUSE_NO_SUITABLE_CELLS_IN_TRACKING_AREA 15
-#define EMM_CAUSE_REQUESTED_SERVICE_OPTION_NOT_AUTHORIZED_IN_THIS_PLMN 35
-#define EMM_CAUSE_NO_EPS_BEARER_CONTEXT_ACTIVATED 40
-/* A.3 Causes related to PLMN specific network failures and 
+#define OGS_NAS_EMM_CAUSE_IMEI_NOT_ACCEPTED 5
+#define OGS_NAS_EMM_CAUSE_EPS_SERVICES_NOT_ALLOWED 7
+#define OGS_NAS_EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED 8
+#define OGS_NAS_EMM_CAUSE_PLMN_NOT_ALLOWED 11
+#define OGS_NAS_EMM_CAUSE_TRACKING_AREA_NOT_ALLOWED 12
+#define OGS_NAS_EMM_CAUSE_ROAMING_NOT_ALLOWED_IN_THIS_TRACKING_AREA 13
+#define OGS_NAS_EMM_CAUSE_EPS_SERVICES_NOT_ALLOWED_IN_THIS_PLMN 14
+#define OGS_NAS_EMM_CAUSE_NO_SUITABLE_CELLS_IN_TRACKING_AREA 15
+#define OGS_NAS_EMM_CAUSE_REQUESTED_SERVICE_OPTION_NOT_AUTHORIZED_IN_THIS_PLMN 35
+#define OGS_NAS_EMM_CAUSE_NO_EPS_BEARER_CONTEXT_ACTIVATED 40
+/* A.3 Causes related to PLMN specific network failures and
  *     congestion/authentication failures */
-#define EMM_CAUSE_MSC_TEMPORARILY_NOT_REACHABLE 16
-#define EMM_CAUSE_NETWORK_FAILURE 17
-#define EMM_CAUSE_CS_DOMAIN_NOT_AVAILABLE 18
-#define EMM_CAUSE_ESM_FAILURE 19
-#define EMM_CAUSE_MAC_FAILURE 20
-#define EMM_CAUSE_SYNCH_FAILURE 21
-#define EMM_CAUSE_CONGESTION 22
-#define EMM_CAUSE_UE_SECURITY_CAPABILITIES_MISMATCH 23
-#define EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED 24
-#define EMM_CAUSE_NON_EPS_AUTHENTICATION_UNACCEPTABLE 26
-#define EMM_CAUSE_CS_SERVICE_TEMPORARILY_NOT_AVAILABLE 39
-#define EMM_CAUSE_SEVERE_NETWORK_FAILURE 42
-/* A.4 Causes related to nature of request 
+#define OGS_NAS_EMM_CAUSE_MSC_TEMPORARILY_NOT_REACHABLE 16
+#define OGS_NAS_EMM_CAUSE_NETWORK_FAILURE 17
+#define OGS_NAS_EMM_CAUSE_CS_DOMAIN_NOT_AVAILABLE 18
+#define OGS_NAS_EMM_CAUSE_ESM_FAILURE 19
+#define OGS_NAS_EMM_CAUSE_MAC_FAILURE 20
+#define OGS_NAS_EMM_CAUSE_SYNCH_FAILURE 21
+#define OGS_NAS_EMM_CAUSE_CONGESTION 22
+#define OGS_NAS_EMM_CAUSE_UE_SECURITY_CAPABILITIES_MISMATCH 23
+#define OGS_NAS_EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED 24
+#define OGS_NAS_EMM_CAUSE_NON_EPS_AUTHENTICATION_UNACCEPTABLE 26
+#define OGS_NAS_EMM_CAUSE_CS_SERVICE_TEMPORARILY_NOT_AVAILABLE 39
+#define OGS_NAS_EMM_CAUSE_SEVERE_NETWORK_FAILURE 42
+/* A.4 Causes related to nature of request
  * NOTE:   This subclause has no entries in this version of the specification *
  * A.5 Causes related to invalid messages */
-#define EMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE 95
-#define EMM_CAUSE_INVALID_MANDATORY_INFORMATION 96
-#define EMM_CAUSE_MESSAGE_TYPE_NON_EXISTENT_OR_NOT_IMPLEMENTED 97
-#define EMM_CAUSE_MESSAGE_TYPE_NOT_COMPATIBLE_WITH_PROTOCOL_STATE 98
-#define EMM_CAUSE_INFORMATION_ELEMENT_NON_EXISTENT_OR_NOT_IMPLEMENTED 99
-#define EMM_CAUSE_CONDITIONAL_IE_ERROR 100
-#define EMM_CAUSE_MESSAGE_NOT_COMPATIBLE_WITH_PROTOCOL_STATE 101
-#define EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED 111
+#define OGS_NAS_EMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE 95
+#define OGS_NAS_EMM_CAUSE_INVALID_MANDATORY_INFORMATION 96
+#define OGS_NAS_EMM_CAUSE_MESSAGE_TYPE_NON_EXISTENT_OR_NOT_IMPLEMENTED 97
+#define OGS_NAS_EMM_CAUSE_MESSAGE_TYPE_NOT_COMPATIBLE_WITH_PROTOCOL_STATE 98
+#define OGS_NAS_EMM_CAUSE_INFORMATION_ELEMENT_NON_EXISTENT_OR_NOT_IMPLEMENTED 99
+#define OGS_NAS_EMM_CAUSE_CONDITIONAL_IE_ERROR 100
+#define OGS_NAS_EMM_CAUSE_MESSAGE_NOT_COMPATIBLE_WITH_PROTOCOL_STATE 101
+#define OGS_NAS_EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED 111
 typedef uint8_t ogs_nas_emm_cause_t;
 
 /* 9.9.3.10 * EPS attach result
@@ -280,7 +284,7 @@ ED2(uint8_t spare:5;,
 
 /* 9.9.3.11 EPS attach type
  * M V 1/2
- * 9.9.3.21 NAS key set identifier 
+ * 9.9.3.21 NAS key set identifier
  * M V 1/2 */
 #define OGS_NAS_KEY_SET_IDENTIFIER_NATIVE 0
 #define OGS_NAS_KEY_SET_IDENTIFIER_MAPPED 1
@@ -320,7 +324,7 @@ typedef struct ogs_nas_eps_mobile_identity_s {
     };
 } __attribute__ ((packed)) ogs_nas_eps_mobile_identity_t;
 
-/* 9.9.3.12A EPS network feature support 
+/* 9.9.3.12A EPS network feature support
  * O TLV 3 */
 typedef struct ogs_nas_eps_network_feature_support_s {
     uint8_t length;
@@ -353,8 +357,8 @@ ED2(uint8_t spare:5;,
 } __attribute__ ((packed)) ogs_nas_eps_update_result_t;
 
 /* 9.9.3.14 EPS update type
- * M V 1/2 
- * 9.9.3.21 NAS key set identifier 
+ * M V 1/2
+ * 9.9.3.21 NAS key set identifier
  * M V 1/2 */
 #define OGS_NAS_EPS_UPDATE_TYPE_TA_UPDATING                                 0
 #define OGS_NAS_EPS_UPDATE_TYPE_COMBINED_TA_LA_UPDATING                     1
@@ -430,7 +434,7 @@ ED6(uint8_t user_plane_integrity_protection_support:1;,
     uint8_t spare:3;)
 } __attribute__ ((packed)) ogs_nas_ms_network_capability_t;
 
-/* 9.9.3.20A MS network feature support 
+/* 9.9.3.20A MS network feature support
  * See subclause 10.5.1.15 in 3GPP TS 24.008 [13].
  * O TV 1 */
 typedef struct ogs_nas_ms_network_feature_support_s {
@@ -470,12 +474,12 @@ ED2(uint8_t spare:7;,
     uint8_t identity:1;)
 } ogs_nas_paging_identity_t;
 
-/* 9.9.3.26 P-TMSI signature 
+/* 9.9.3.26 P-TMSI signature
  * See subclause 10.5.5.8 in 3GPP TS 24.008
  * O TV 4 */
 typedef uint32_t ogs_nas_p_tmsi_signature_t; /* TV : 4bytes */
 
-/* 9.9.3.26A Extended EMM cause 
+/* 9.9.3.26A Extended EMM cause
  * O TV 1 */
 typedef struct ogs_nas_extended_emm_cause_s {
 ED4(uint8_t type:4;,
@@ -485,8 +489,8 @@ ED4(uint8_t type:4;,
 } ogs_nas_extended_emm_cause_t;
 
 /* 9.9.3.27 Service type
- * M V 1/2 
- * 9.9.3.21 NAS key set identifier 
+ * M V 1/2
+ * 9.9.3.21 NAS key set identifier
  * M V 1/2 */
 #define OGS_NAS_SERVICE_TYPE_CS_FALLBACK_FROM_UE 0
 #define OGS_NAS_SERVICE_TYPE_CS_FALLBACK_TO_UE 1
@@ -540,7 +544,7 @@ ED3(uint8_t spare:1;,
     /*
      * Do not change 'ogs_eps_tai_t' to 'ogs_nas_tracking_area_identity_t'.
      * Use 'ogs_eps_tai_t' for easy implementation.
-     * ogs_nas_tai_list_build() changes to NAS 
+     * ogs_nas_tai_list_build() changes to NAS
      * format(ogs_nas_tracking_area_identity_t)
      * and is sent to the UE.
      */
@@ -565,9 +569,9 @@ ED3(uint8_t type:4;,
 } __attribute__ ((packed)) ogs_nas_ue_radio_capability_information_update_needed_t;
 
 /* 9.9.3.38 CLI
- * O TLV 3-14 
- * The coding of the CLI value part is the same as for 
- * octets 3 to 14 of the Calling party BCD number information element 
+ * O TLV 3-14
+ * The coding of the CLI value part is the same as for
+ * octets 3 to 14 of the Calling party BCD number information element
  * defined in subclause 10.5.4.9 of 3GPP TS 24.008 [13]. */
 #define NAX_MAX_CLI_LEN 12
 typedef struct ogs_nas_cli_s {
@@ -576,8 +580,8 @@ typedef struct ogs_nas_cli_s {
 } __attribute__ ((packed)) ogs_nas_cli_t;
 
 /* 9.9.3.39 SS Code
- * O TV 2 
- * The coding of the SS Code value is given in subclause 17.7.5 of 
+ * O TV 2
+ * The coding of the SS Code value is given in subclause 17.7.5 of
  * 3GPP TS 29.002 [15C] */
 typedef uint8_t ogs_nas_ss_code_t;
 
@@ -613,11 +617,11 @@ typedef struct ogs_nas_generic_message_container_s {
 typedef struct ogs_nas_voice_domain_preference_and_ue_usage_setting_s {
     uint8_t length;
 ED3(uint8_t spare:5;,
-    uint8_t ue_usage_setting:1;, 
+    uint8_t ue_usage_setting:1;,
     uint8_t voice_domain_preference_for_e_utran:2;)
 } __attribute__ ((packed)) ogs_nas_voice_domain_preference_and_ue_usage_setting_t;
 
-/* 9.9.3.45 GUTI type 
+/* 9.9.3.45 GUTI type
  * O TV 1 */
 typedef struct ogs_nas_guti_type_s {
 ED3(uint8_t type:4;,
@@ -767,56 +771,56 @@ ED3(uint8_t type:4;,
 } __attribute__ ((packed)) ogs_nas_connectivity_type_t;
 
 /* 9.9.4.4 ESM cause
- * M V 1 
- * Annex B (informative) Cause values for EPS session management 
+ * M V 1
+ * Annex B (informative) Cause values for EPS session management
    B.1 Causes related to nature of request */
-#define ESM_CAUSE_OPERATOR_DETERMINED_BARRING 8
-#define ESM_CAUSE_INSUFFICIENT_RESOURCES 26
-#define ESM_CAUSE_MISSING_OR_UNKNOWN_APN 27
-#define ESM_CAUSE_UNKNOWN_PDN_TYPE 28
-#define ESM_CAUSE_USER_AUTHENTICATION_FAILED 29
-#define ESM_CAUSE_REQUEST_REJECTED_BY_SERVING_GW_OR_PDN_GW 30
-#define ESM_CAUSE_REQUEST_REJECTED_UNSPECIFIED 31
-#define ESM_CAUSE_SERVICE_OPTION_NOT_SUPPORTED 32
-#define ESM_CAUSE_REQUESTED_SERVICE_OPTION_NOT_SUBSCRIBED 33
-#define ESM_CAUSE_SERVICE_OPTION_TEMPORARILY_OUT_OF_ORDER 34
-#define ESM_CAUSE_PTI_ALREADY_IN_USE 35
-#define ESM_CAUSE_REGULAR_DEACTIVATION 36
-#define ESM_CAUSE_EPS_QOS_NOT_ACCEPTED 37
-#define ESM_CAUSE_NETWORK_FAILURE 38
-#define ESM_CAUSE_REACTIVATION_REQUESTED 39
-#define ESM_CAUSE_SEMANTIC_ERROR_IN_THE_TFT_OPERATION  41
-#define ESM_CAUSE_SYNTACTICAL_ERROR_IN_THE_TFT_OPERATION 42
-#define ESM_CAUSE_INVALID_EPS_BEARER_IDENTITY 43
-#define ESM_CAUSE_SEMANTIC_ERRORS_IN_PACKET_FILTERS 44
-#define ESM_CAUSE_SYNTACTICAL_ERROR_IN_PACKET_FILTERS 45
-#define ESM_CAUSE_PTI_MISMATCH 47
-#define ESM_CAUSE_LAST_PDN_DISCONNECTION_NOT_ALLOWED 49
-#define ESM_CAUSE_PDN_TYPE_IPV4_ONLY_ALLOWED 50
-#define ESM_CAUSE_PDN_TYPE_IPV6_ONLY_ALLOWED 51
-#define ESM_CAUSE_SINGLE_ADDRESS_BEARERS_ONLY_ALLOWED 52
-#define ESM_CAUSE_ESM_INFORMATION_NOT_RECEIVED 53
-#define ESM_CAUSE_PDN_CONNECTION_DOES_NOT_EXIST 54
-#define ESM_CAUSE_MULTIPLE_PDN_CONNECTIONS_FOR_A_GIVEN_APN_NOT_ALLOWED 55
-#define ESM_CAUSE_COLLISION_WITH_NETWORK_INITIATED_REQUEST 56
-#define ESM_CAUSE_PDN_TYPE_IPV4V6_ONLY_ALLOWED 57
-#define ESM_CAUSE_PDN_TYPE_NON_IP_ONLY_ALLOWED 58
-#define ESM_CAUSE_UNSUPPORTED_QCI_VALUE 59
-#define ESM_CAUSE_BEARER_HANDLING_NOT_SUPPORTED 60
-#define ESM_CAUSE_MAXIMUM_NUMBER_OF_EPS_BEARERS_REACHED 65
-#define ESM_CAUSE_REQUESTED_APN_NOT_SUPPORTED_IN_CURRENT_RAT_AND_PLMN_COMBINATION 66
-#define ESM_CAUSE_INVALID_PTI_VALUE 81
-#define ESM_CAUSE_APN_RESTRICTION_VALUE_INCOMPATIBLE_WITH_ACTIVE_EPS_BEARER_CONTEXT 112
-#define ESM_CAUSE_MULTIPLE_ACCESSES_TO_A_PDN_CONNECTION_NOT_ALLOWED 113
+#define OGS_NAS_ESM_CAUSE_OPERATOR_DETERMINED_BARRING 8
+#define OGS_NAS_ESM_CAUSE_INSUFFICIENT_RESOURCES 26
+#define OGS_NAS_ESM_CAUSE_MISSING_OR_UNKNOWN_APN 27
+#define OGS_NAS_ESM_CAUSE_UNKNOWN_PDN_TYPE 28
+#define OGS_NAS_ESM_CAUSE_USER_AUTHENTICATION_FAILED 29
+#define OGS_NAS_ESM_CAUSE_REQUEST_REJECTED_BY_SERVING_GW_OR_PDN_GW 30
+#define OGS_NAS_ESM_CAUSE_REQUEST_REJECTED_UNSPECIFIED 31
+#define OGS_NAS_ESM_CAUSE_SERVICE_OPTION_NOT_SUPPORTED 32
+#define OGS_NAS_ESM_CAUSE_REQUESTED_SERVICE_OPTION_NOT_SUBSCRIBED 33
+#define OGS_NAS_ESM_CAUSE_SERVICE_OPTION_TEMPORARILY_OUT_OF_ORDER 34
+#define OGS_NAS_ESM_CAUSE_PTI_ALREADY_IN_USE 35
+#define OGS_NAS_ESM_CAUSE_REGULAR_DEACTIVATION 36
+#define OGS_NAS_ESM_CAUSE_EPS_QOS_NOT_ACCEPTED 37
+#define OGS_NAS_ESM_CAUSE_NETWORK_FAILURE 38
+#define OGS_NAS_ESM_CAUSE_REACTIVATION_REQUESTED 39
+#define OGS_NAS_ESM_CAUSE_SEMANTIC_ERROR_IN_THE_TFT_OPERATION  41
+#define OGS_NAS_ESM_CAUSE_SYNTACTICAL_ERROR_IN_THE_TFT_OPERATION 42
+#define OGS_NAS_ESM_CAUSE_INVALID_EPS_BEARER_IDENTITY 43
+#define OGS_NAS_ESM_CAUSE_SEMANTIC_ERRORS_IN_PACKET_FILTERS 44
+#define OGS_NAS_ESM_CAUSE_SYNTACTICAL_ERROR_IN_PACKET_FILTERS 45
+#define OGS_NAS_ESM_CAUSE_PTI_MISMATCH 47
+#define OGS_NAS_ESM_CAUSE_LAST_PDN_DISCONNECTION_NOT_ALLOWED 49
+#define OGS_NAS_ESM_CAUSE_PDN_TYPE_IPV4_ONLY_ALLOWED 50
+#define OGS_NAS_ESM_CAUSE_PDN_TYPE_IPV6_ONLY_ALLOWED 51
+#define OGS_NAS_ESM_CAUSE_SINGLE_ADDRESS_BEARERS_ONLY_ALLOWED 52
+#define OGS_NAS_ESM_CAUSE_ESM_INFORMATION_NOT_RECEIVED 53
+#define OGS_NAS_ESM_CAUSE_PDN_CONNECTION_DOES_NOT_EXIST 54
+#define OGS_NAS_ESM_CAUSE_MULTIPLE_PDN_CONNECTIONS_FOR_A_GIVEN_APN_NOT_ALLOWED 55
+#define OGS_NAS_ESM_CAUSE_COLLISION_WITH_NETWORK_INITIATED_REQUEST 56
+#define OGS_NAS_ESM_CAUSE_PDN_TYPE_IPV4V6_ONLY_ALLOWED 57
+#define OGS_NAS_ESM_CAUSE_PDN_TYPE_NON_IP_ONLY_ALLOWED 58
+#define OGS_NAS_ESM_CAUSE_UNSUPPORTED_QCI_VALUE 59
+#define OGS_NAS_ESM_CAUSE_BEARER_HANDLING_NOT_SUPPORTED 60
+#define OGS_NAS_ESM_CAUSE_MAXIMUM_NUMBER_OF_EPS_BEARERS_REACHED 65
+#define OGS_NAS_ESM_CAUSE_REQUESTED_APN_NOT_SUPPORTED_IN_CURRENT_RAT_AND_PLMN_COMBINATION 66
+#define OGS_NAS_ESM_CAUSE_INVALID_PTI_VALUE 81
+#define OGS_NAS_ESM_CAUSE_APN_RESTRICTION_VALUE_INCOMPATIBLE_WITH_ACTIVE_EPS_BEARER_CONTEXT 112
+#define OGS_NAS_ESM_CAUSE_MULTIPLE_ACCESSES_TO_A_PDN_CONNECTION_NOT_ALLOWED 113
 /* B.2 Protocol errors (e.g., unknown message) class */
-#define ESM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE 95
-#define ESM_CAUSE_INVALID_MANDATORY_INFORMATION 96
-#define ESM_CAUSE_MESSAGE_TYPE_NON_EXISTENT_OR_NOT_IMPLEMENTED 97
-#define ESM_CAUSE_MESSAGE_TYPE_NOT_COMPATIBLE_WITH_PROTOCOL_STATE 98
-#define ESM_CAUSE_INFORMATION_ELEMENT_NON_EXISTENT_OR_NOT_IMPLEMENTED 99
-#define ESM_CAUSE_CONDITIONAL_IE_ERROR 100
-#define ESM_CAUSE_MESSAGE_NOT_COMPATIBLE_WITH_PROTOCOL_STATE 101
-#define ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED 111
+#define OGS_NAS_ESM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE 95
+#define OGS_NAS_ESM_CAUSE_INVALID_MANDATORY_INFORMATION 96
+#define OGS_NAS_ESM_CAUSE_MESSAGE_TYPE_NON_EXISTENT_OR_NOT_IMPLEMENTED 97
+#define OGS_NAS_ESM_CAUSE_MESSAGE_TYPE_NOT_COMPATIBLE_WITH_PROTOCOL_STATE 98
+#define OGS_NAS_ESM_CAUSE_INFORMATION_ELEMENT_NON_EXISTENT_OR_NOT_IMPLEMENTED 99
+#define OGS_NAS_ESM_CAUSE_CONDITIONAL_IE_ERROR 100
+#define OGS_NAS_ESM_CAUSE_MESSAGE_NOT_COMPATIBLE_WITH_PROTOCOL_STATE 101
+#define OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED 111
 typedef uint8_t ogs_nas_esm_cause_t;
 
 /* 9.9.4.5 ESM information transfer flag
@@ -869,7 +873,7 @@ typedef ogs_nas_pdu_address_t ogs_nas_pdn_address_t;
 
 /* 9.9.4.11 Protocol configuration options
  * See subclause 10.5.6.3 in 3GPP TS 24.008 [13].
- * O TLV 3-253 */ 
+ * O TLV 3-253 */
 typedef struct ogs_nas_protocol_configuration_options_s {
     uint8_t length;
     uint8_t buffer[OGS_MAX_PCO_LEN];

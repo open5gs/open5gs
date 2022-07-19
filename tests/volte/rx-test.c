@@ -430,7 +430,7 @@ static void test1_func(abts_case *tc, void *data)
     sess->pti = 10;
     esmbuf = testesm_build_bearer_resource_modification_request(
             bearer, OGS_GTP2_TFT_CODE_DELETE_PACKET_FILTERS_FROM_EXISTING, 0,
-            ESM_CAUSE_REGULAR_DEACTIVATION);
+            OGS_NAS_ESM_CAUSE_REGULAR_DEACTIVATION);
     ABTS_PTR_NOTNULL(tc, esmbuf);
     sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, esmbuf);
     ABTS_PTR_NOTNULL(tc, sendbuf);

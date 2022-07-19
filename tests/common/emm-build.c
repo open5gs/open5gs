@@ -342,7 +342,7 @@ ogs_pkbuf_t *testemm_build_authentication_failure(
 
     authentication_failure->emm_cause = emm_cause;
 
-    if (emm_cause == EMM_CAUSE_SYNCH_FAILURE) {
+    if (emm_cause == OGS_NAS_EMM_CAUSE_SYNCH_FAILURE) {
         authentication_failure->presencemask |=
             OGS_NAS_EPS_AUTHENTICATION_FAILURE_AUTHENTICATION_FAILURE_PARAMETER_PRESENT;
 

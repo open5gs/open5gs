@@ -301,7 +301,7 @@ int nas_eps_send_pdn_connectivity_reject(
         /* During the UE-attach process, we'll send Attach-Reject
          * with pyggybacking PDN-connectivity-Reject */
         rv = nas_eps_send_attach_reject(mme_ue,
-            EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED, esm_cause);
+            OGS_NAS_EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED, esm_cause);
         ogs_expect(rv == OGS_OK);
     } else {
         esmbuf = esm_build_pdn_connectivity_reject(
@@ -450,7 +450,7 @@ int nas_eps_send_deactivate_bearer_context_request(mme_bearer_t *bearer)
     ogs_assert(mme_ue);
 
     esmbuf = esm_build_deactivate_bearer_context_request(
-            bearer, ESM_CAUSE_REGULAR_DEACTIVATION);
+            bearer, OGS_NAS_ESM_CAUSE_REGULAR_DEACTIVATION);
     ogs_expect_or_return_val(esmbuf, OGS_ERROR);
 
     s1apbuf = s1ap_build_e_rab_release_command(bearer, esmbuf,

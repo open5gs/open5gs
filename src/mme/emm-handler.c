@@ -126,8 +126,8 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
             ogs_plmn_id_hexdump(&mme_ue->tai.plmn_id), mme_ue->tai.tac);
         ogs_assert(OGS_OK ==
             nas_eps_send_attach_reject(mme_ue,
-                EMM_CAUSE_TRACKING_AREA_NOT_ALLOWED,
-                ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
+                OGS_NAS_EMM_CAUSE_TRACKING_AREA_NOT_ALLOWED,
+                OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
         return OGS_ERROR;
     }
     ogs_debug("    SERVED_TAI_INDEX[%d]", served_tai_index);
@@ -169,8 +169,8 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
             mme_selected_int_algorithm(mme_ue));
         ogs_assert(OGS_OK ==
             nas_eps_send_attach_reject(mme_ue,
-                EMM_CAUSE_UE_SECURITY_CAPABILITIES_MISMATCH,
-                ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
+                OGS_NAS_EMM_CAUSE_UE_SECURITY_CAPABILITIES_MISMATCH,
+                OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
         return OGS_ERROR;
     }
 
@@ -519,7 +519,7 @@ int emm_handle_tau_request(mme_ue_t *mme_ue,
             ogs_plmn_id_hexdump(&mme_ue->tai.plmn_id), mme_ue->tai.tac);
         ogs_assert(OGS_OK ==
             nas_eps_send_tau_reject(
-                mme_ue, EMM_CAUSE_TRACKING_AREA_NOT_ALLOWED));
+                mme_ue, OGS_NAS_EMM_CAUSE_TRACKING_AREA_NOT_ALLOWED));
         return OGS_ERROR;
     }
     ogs_debug("    SERVED_TAI_INDEX[%d]", served_tai_index);
@@ -637,7 +637,7 @@ int emm_handle_extended_service_request(mme_ue_t *mme_ue,
             ogs_plmn_id_hexdump(&mme_ue->tai.plmn_id), mme_ue->tai.tac);
         ogs_assert(OGS_OK ==
             nas_eps_send_tau_reject(
-                mme_ue, EMM_CAUSE_TRACKING_AREA_NOT_ALLOWED));
+                mme_ue, OGS_NAS_EMM_CAUSE_TRACKING_AREA_NOT_ALLOWED));
         return OGS_ERROR;
     }
     ogs_debug("    SERVED_TAI_INDEX[%d]", served_tai_index);

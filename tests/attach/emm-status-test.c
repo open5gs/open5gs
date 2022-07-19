@@ -150,8 +150,8 @@ static void test1_func(abts_case *tc, void *data)
     tests1ap_recv(test_ue, recvbuf);
 
     /* Send EMM Status */
-    emmbuf = testemm_build_emm_status(
-            test_ue, ESM_CAUSE_MESSAGE_NOT_COMPATIBLE_WITH_PROTOCOL_STATE);
+    emmbuf = testemm_build_emm_status(test_ue,
+            OGS_NAS_ESM_CAUSE_MESSAGE_NOT_COMPATIBLE_WITH_PROTOCOL_STATE);
     ABTS_PTR_NOTNULL(tc, emmbuf);
     sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, emmbuf);
     ABTS_PTR_NOTNULL(tc, sendbuf);

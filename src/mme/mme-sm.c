@@ -45,18 +45,19 @@ static uint8_t emm_cause_from_diameter(
         switch (*dia_exp_err) {
         case OGS_DIAM_S6A_ERROR_USER_UNKNOWN:                   /* 5001 */
             ogs_info("[%s] User Unknown in HSS DB", mme_ue->imsi_bcd);
-            return EMM_CAUSE_PLMN_NOT_ALLOWED;
+            return OGS_NAS_EMM_CAUSE_PLMN_NOT_ALLOWED;
         case OGS_DIAM_S6A_ERROR_UNKNOWN_EPS_SUBSCRIPTION:       /* 5420 */
             /* FIXME: Error diagnostic? */
-            return EMM_CAUSE_NO_SUITABLE_CELLS_IN_TRACKING_AREA;
+            return OGS_NAS_EMM_CAUSE_NO_SUITABLE_CELLS_IN_TRACKING_AREA;
         case OGS_DIAM_S6A_ERROR_RAT_NOT_ALLOWED:                /* 5421 */
-            return EMM_CAUSE_ROAMING_NOT_ALLOWED_IN_THIS_TRACKING_AREA;
+            return OGS_NAS_EMM_CAUSE_ROAMING_NOT_ALLOWED_IN_THIS_TRACKING_AREA;
         case OGS_DIAM_S6A_ERROR_ROAMING_NOT_ALLOWED:            /* 5004 */
-            return EMM_CAUSE_PLMN_NOT_ALLOWED;
-            //return EMM_CAUSE_EPS_SERVICES_NOT_ALLOWED_IN_THIS_PLMN; (ODB_HPLMN_APN)
-            //return EMM_CAUSE_ESM_FAILURE; (ODB_ALL_APN)
+            return OGS_NAS_EMM_CAUSE_PLMN_NOT_ALLOWED;
+            /* return OGS_NAS_EMM_CAUSE_EPS_SERVICES_NOT_ALLOWED_IN_THIS_PLMN;
+             * (ODB_HPLMN_APN) */
+            /* return OGS_NAS_EMM_CAUSE_ESM_FAILURE; (ODB_ALL_APN) */
         case OGS_DIAM_S6A_AUTHENTICATION_DATA_UNAVAILABLE:      /* 4181 */
-            return EMM_CAUSE_NETWORK_FAILURE;
+            return OGS_NAS_EMM_CAUSE_NETWORK_FAILURE;
         }
     }
     if (dia_err) {
@@ -64,21 +65,21 @@ static uint8_t emm_cause_from_diameter(
         case ER_DIAMETER_AUTHORIZATION_REJECTED:                /* 5003 */
         case ER_DIAMETER_UNABLE_TO_DELIVER:                     /* 3002 */
         case ER_DIAMETER_REALM_NOT_SERVED:                      /* 3003 */
-            return EMM_CAUSE_NO_SUITABLE_CELLS_IN_TRACKING_AREA;
+            return OGS_NAS_EMM_CAUSE_NO_SUITABLE_CELLS_IN_TRACKING_AREA;
         case ER_DIAMETER_UNABLE_TO_COMPLY:                      /* 5012 */
         case ER_DIAMETER_INVALID_AVP_VALUE:                     /* 5004 */
         case ER_DIAMETER_AVP_UNSUPPORTED:                       /* 5001 */
         case ER_DIAMETER_MISSING_AVP:                           /* 5005 */
         case ER_DIAMETER_RESOURCES_EXCEEDED:                    /* 5006 */
         case ER_DIAMETER_AVP_OCCURS_TOO_MANY_TIMES:             /* 5009 */
-            return EMM_CAUSE_NETWORK_FAILURE;
+            return OGS_NAS_EMM_CAUSE_NETWORK_FAILURE;
         }
     }
 
     ogs_error("Unexpected Diameter Result Code %d/%d, defaulting to severe "
               "network failure",
               dia_err ? *dia_err : -1, dia_exp_err ? *dia_exp_err : -1);
-    return EMM_CAUSE_SEVERE_NETWORK_FAILURE;
+    return OGS_NAS_EMM_CAUSE_SEVERE_NETWORK_FAILURE;
 }
 
 void mme_state_initial(ogs_fsm_t *s, mme_event_t *e)
@@ -455,11 +456,11 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             uint8_t emm_cause = emm_cause_from_diameter(
                     mme_ue, s6a_message->err, s6a_message->exp_err);
 
-            ogs_info("[%s] Attach reject [EMM_CAUSE:%d]",
+            ogs_info("[%s] Attach reject [OGS_NAS_EMM_CAUSE:%d]",
                     mme_ue->imsi_bcd, emm_cause);
             ogs_assert(OGS_OK ==
                 nas_eps_send_attach_reject(mme_ue,
-                    emm_cause, ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
+                    emm_cause, OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
 
             ogs_assert(OGS_OK ==
                 s1ap_send_ue_context_release_command(enb_ue,
@@ -486,8 +487,8 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                     ogs_error("nas_eps_send_emm_to_esm() failed");
                     ogs_assert(OGS_OK ==
                         nas_eps_send_attach_reject(mme_ue,
-                        EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
-                        ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
+                        OGS_NAS_EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
+                        OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
                 }
             } else if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST) {
                 ogs_assert(OGS_OK ==

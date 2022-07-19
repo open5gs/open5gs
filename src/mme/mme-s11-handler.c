@@ -36,17 +36,17 @@ static uint8_t esm_cause_from_gtp(uint8_t gtp_cause)
 {
     switch (gtp_cause) {
     case OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND:
-        return ESM_CAUSE_INVALID_EPS_BEARER_IDENTITY;
+        return OGS_NAS_ESM_CAUSE_INVALID_EPS_BEARER_IDENTITY;
     case OGS_GTP2_CAUSE_SERVICE_NOT_SUPPORTED:
-        return ESM_CAUSE_SERVICE_OPTION_NOT_SUPPORTED;
+        return OGS_NAS_ESM_CAUSE_SERVICE_OPTION_NOT_SUPPORTED;
     case OGS_GTP2_CAUSE_SEMANTIC_ERROR_IN_THE_TFT_OPERATION:
-        return ESM_CAUSE_SEMANTIC_ERROR_IN_THE_TFT_OPERATION;
+        return OGS_NAS_ESM_CAUSE_SEMANTIC_ERROR_IN_THE_TFT_OPERATION;
     case OGS_GTP2_CAUSE_SYNTACTIC_ERROR_IN_THE_TFT_OPERATION:
-        return ESM_CAUSE_SYNTACTICAL_ERROR_IN_THE_TFT_OPERATION;
+        return OGS_NAS_ESM_CAUSE_SYNTACTICAL_ERROR_IN_THE_TFT_OPERATION;
     case OGS_GTP2_CAUSE_SYNTACTIC_ERRORS_IN_PACKET_FILTER:
-        return ESM_CAUSE_SYNTACTICAL_ERROR_IN_PACKET_FILTERS;
+        return OGS_NAS_ESM_CAUSE_SYNTACTICAL_ERROR_IN_PACKET_FILTERS;
     case OGS_GTP2_CAUSE_SEMANTIC_ERRORS_IN_PACKET_FILTER:
-        return ESM_CAUSE_SEMANTIC_ERRORS_IN_PACKET_FILTERS;
+        return OGS_NAS_ESM_CAUSE_SEMANTIC_ERRORS_IN_PACKET_FILTERS;
     default:
         break;
     }
@@ -56,7 +56,7 @@ static uint8_t esm_cause_from_gtp(uint8_t gtp_cause)
      * OGS_GTP2_CAUSE_MANDATORY_IE_MISSING
      * ...
      */
-    return ESM_CAUSE_NETWORK_FAILURE;
+    return OGS_NAS_ESM_CAUSE_NETWORK_FAILURE;
 }
 
 void mme_s11_handle_echo_request(
@@ -140,7 +140,7 @@ void mme_s11_handle_create_session_response(
         if (create_action == OGS_GTP_CREATE_IN_ATTACH_REQUEST) {
             ogs_error("[%s] Attach reject", mme_ue->imsi_bcd);
             ogs_assert(OGS_OK == nas_eps_send_attach_reject(mme_ue,
-                    EMM_CAUSE_NETWORK_FAILURE, ESM_CAUSE_NETWORK_FAILURE));
+                    OGS_NAS_EMM_CAUSE_NETWORK_FAILURE, OGS_NAS_ESM_CAUSE_NETWORK_FAILURE));
         }
         mme_send_delete_session_or_mme_ue_context_release(mme_ue);
         return;
@@ -200,7 +200,7 @@ void mme_s11_handle_create_session_response(
         if (create_action == OGS_GTP_CREATE_IN_ATTACH_REQUEST) {
             ogs_error("[%s] Attach reject", mme_ue->imsi_bcd);
             ogs_assert(OGS_OK == nas_eps_send_attach_reject(mme_ue,
-                    EMM_CAUSE_NETWORK_FAILURE, ESM_CAUSE_NETWORK_FAILURE));
+                    OGS_NAS_EMM_CAUSE_NETWORK_FAILURE, OGS_NAS_ESM_CAUSE_NETWORK_FAILURE));
         }
         mme_send_delete_session_or_mme_ue_context_release(mme_ue);
         return;
@@ -224,7 +224,7 @@ void mme_s11_handle_create_session_response(
             if (create_action == OGS_GTP_CREATE_IN_ATTACH_REQUEST) {
                 ogs_error("[%s] Attach reject", mme_ue->imsi_bcd);
                 ogs_assert(OGS_OK == nas_eps_send_attach_reject(mme_ue,
-                        EMM_CAUSE_NETWORK_FAILURE, ESM_CAUSE_NETWORK_FAILURE));
+                        OGS_NAS_EMM_CAUSE_NETWORK_FAILURE, OGS_NAS_ESM_CAUSE_NETWORK_FAILURE));
             }
             mme_send_delete_session_or_mme_ue_context_release(mme_ue);
             return;
@@ -244,7 +244,7 @@ void mme_s11_handle_create_session_response(
         if (create_action == OGS_GTP_CREATE_IN_ATTACH_REQUEST) {
             ogs_error("[%s] Attach reject", mme_ue->imsi_bcd);
             ogs_assert(OGS_OK == nas_eps_send_attach_reject(mme_ue,
-                    EMM_CAUSE_NETWORK_FAILURE, ESM_CAUSE_NETWORK_FAILURE));
+                    OGS_NAS_EMM_CAUSE_NETWORK_FAILURE, OGS_NAS_ESM_CAUSE_NETWORK_FAILURE));
         }
         mme_send_delete_session_or_mme_ue_context_release(mme_ue);
         return;
@@ -611,8 +611,8 @@ void mme_s11_handle_delete_session_response(
                 ogs_error("nas_eps_send_emm_to_esm() failed");
                 ogs_assert(OGS_OK ==
                     nas_eps_send_attach_reject(mme_ue,
-                        EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
-                        ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
+                        OGS_NAS_EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
+                        OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
             }
         }
 
@@ -951,7 +951,8 @@ void mme_s11_handle_update_bearer_request(
             /* MME received Bearer Resource Modification Request */
             ogs_assert(OGS_OK ==
                 nas_eps_send_bearer_resource_modification_reject(
-                    mme_ue, sess->pti, ESM_CAUSE_SERVICE_OPTION_NOT_SUPPORTED));
+                    mme_ue, sess->pti,
+                    OGS_NAS_ESM_CAUSE_SERVICE_OPTION_NOT_SUPPORTED));
         }
 
         ogs_assert(OGS_OK ==

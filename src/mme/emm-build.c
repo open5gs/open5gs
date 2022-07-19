@@ -119,7 +119,8 @@ ogs_pkbuf_t *emm_build_attach_accept(
             (eps_attach_result->result == OGS_NAS_ATTACH_TYPE_EPS_ATTACH)) {
             attach_accept->presencemask |=
                 OGS_NAS_EPS_ATTACH_ACCEPT_EMM_CAUSE_PRESENT;
-            attach_accept->emm_cause = EMM_CAUSE_CS_DOMAIN_NOT_AVAILABLE;
+            attach_accept->emm_cause =
+                OGS_NAS_EMM_CAUSE_CS_DOMAIN_NOT_AVAILABLE;
         }
     } else {
         switch (eps_attach_result->result) {

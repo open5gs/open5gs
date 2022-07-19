@@ -175,7 +175,7 @@ static void ogs_nas_eps_message_test4(abts_case *tc, void *data)
     memset(&message, 0, sizeof(message));
     message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = OGS_NAS_EPS_ATTACH_REJECT;
-    attach_reject->emm_cause = EMM_CAUSE_NETWORK_FAILURE; 
+    attach_reject->emm_cause = OGS_NAS_EMM_CAUSE_NETWORK_FAILURE; 
 
     pkbuf = ogs_nas_eps_plain_encode(&message);
     ABTS_INT_EQUAL(tc, sizeof(buffer), pkbuf->len);

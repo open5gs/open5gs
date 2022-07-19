@@ -67,7 +67,7 @@ int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
             /* Invalid APN */
             ogs_assert(OGS_OK ==
                 nas_eps_send_pdn_connectivity_reject(
-                    sess, ESM_CAUSE_MISSING_OR_UNKNOWN_APN, create_action));
+                    sess, OGS_NAS_ESM_CAUSE_MISSING_OR_UNKNOWN_APN, create_action));
             ogs_warn("Invalid APN[%s]", req->access_point_name.apn);
             return OGS_ERROR;
         }
@@ -82,7 +82,7 @@ int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
                     sess->request_type.type, sess->session->session_type);
                 ogs_assert(OGS_OK ==
                     nas_eps_send_pdn_connectivity_reject(
-                        sess, ESM_CAUSE_UNKNOWN_PDN_TYPE, create_action));
+                        sess, OGS_NAS_ESM_CAUSE_UNKNOWN_PDN_TYPE, create_action));
                 return OGS_ERROR;
             }
         } else {
@@ -139,7 +139,7 @@ int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
         ogs_error("No APN");
         ogs_assert(OGS_OK ==
             nas_eps_send_pdn_connectivity_reject(
-                sess, ESM_CAUSE_MISSING_OR_UNKNOWN_APN, create_action));
+                sess, OGS_NAS_ESM_CAUSE_MISSING_OR_UNKNOWN_APN, create_action));
         return OGS_ERROR;
     }
 
@@ -185,7 +185,7 @@ int esm_handle_information_response(mme_sess_t *sess,
                     sess->request_type.type, sess->session->session_type);
                 ogs_assert(OGS_OK ==
                     nas_eps_send_pdn_connectivity_reject(
-                        sess, ESM_CAUSE_UNKNOWN_PDN_TYPE,
+                        sess, OGS_NAS_ESM_CAUSE_UNKNOWN_PDN_TYPE,
                         OGS_GTP_CREATE_IN_ATTACH_REQUEST));
                 return OGS_ERROR;
             }
@@ -219,7 +219,7 @@ int esm_handle_information_response(mme_sess_t *sess,
 
         ogs_assert(OGS_OK ==
             nas_eps_send_pdn_connectivity_reject(
-                sess, ESM_CAUSE_MISSING_OR_UNKNOWN_APN,
+                sess, OGS_NAS_ESM_CAUSE_MISSING_OR_UNKNOWN_APN,
                 OGS_GTP_CREATE_IN_ATTACH_REQUEST));
         return OGS_ERROR;
     }
@@ -241,7 +241,7 @@ int esm_handle_bearer_resource_allocation_request(
 
     ogs_assert(OGS_OK ==
         nas_eps_send_bearer_resource_allocation_reject(
-            mme_ue, sess->pti, ESM_CAUSE_NETWORK_FAILURE));
+            mme_ue, sess->pti, OGS_NAS_ESM_CAUSE_NETWORK_FAILURE));
 
     return OGS_OK;
 }

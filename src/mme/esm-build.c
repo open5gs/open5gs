@@ -174,13 +174,13 @@ ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(
         if (session->paa.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
             pdn_address->pdn_type = OGS_PDU_SESSION_TYPE_IPV4;
             activate_default_eps_bearer_context_request->esm_cause =
-                ESM_CAUSE_PDN_TYPE_IPV4_ONLY_ALLOWED;
+                OGS_NAS_ESM_CAUSE_PDN_TYPE_IPV4_ONLY_ALLOWED;
             activate_default_eps_bearer_context_request->presencemask |=
                 OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_ESM_CAUSE_PRESENT;
         } else if (session->paa.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
             pdn_address->pdn_type = OGS_PDU_SESSION_TYPE_IPV6;
             activate_default_eps_bearer_context_request->esm_cause =
-                ESM_CAUSE_PDN_TYPE_IPV6_ONLY_ALLOWED;
+                OGS_NAS_ESM_CAUSE_PDN_TYPE_IPV6_ONLY_ALLOWED;
             activate_default_eps_bearer_context_request->presencemask |=
                 OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_ESM_CAUSE_PRESENT;
         }
@@ -188,7 +188,7 @@ ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(
         if (session->paa.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
             pdn_address->pdn_type = OGS_PDU_SESSION_TYPE_IPV6;
             activate_default_eps_bearer_context_request->esm_cause =
-                ESM_CAUSE_PDN_TYPE_IPV6_ONLY_ALLOWED;
+                OGS_NAS_ESM_CAUSE_PDN_TYPE_IPV6_ONLY_ALLOWED;
             activate_default_eps_bearer_context_request->presencemask |=
                 OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_ESM_CAUSE_PRESENT;
         }
@@ -196,7 +196,7 @@ ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(
         if (session->paa.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
             pdn_address->pdn_type = OGS_PDU_SESSION_TYPE_IPV4;
             activate_default_eps_bearer_context_request->esm_cause =
-                ESM_CAUSE_PDN_TYPE_IPV4_ONLY_ALLOWED;
+                OGS_NAS_ESM_CAUSE_PDN_TYPE_IPV4_ONLY_ALLOWED;
             activate_default_eps_bearer_context_request->presencemask |=
                 OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_ESM_CAUSE_PRESENT;
         }

@@ -26,16 +26,16 @@
 extern "C" {
 #endif
 
-int gmm_handle_registration_request(amf_ue_t *amf_ue,
+ogs_nas_5gmm_cause_t gmm_handle_registration_request(amf_ue_t *amf_ue,
         ogs_nas_security_header_type_t h, NGAP_ProcedureCode_t ngap_code,
         ogs_nas_5gs_registration_request_t *registration_request);
-int gmm_handle_registration_update(amf_ue_t *amf_ue,
+ogs_nas_5gmm_cause_t gmm_handle_registration_update(amf_ue_t *amf_ue,
         ogs_nas_5gs_registration_request_t *registration_request);
 
-int gmm_handle_service_request(amf_ue_t *amf_ue,
+ogs_nas_5gmm_cause_t gmm_handle_service_request(amf_ue_t *amf_ue,
         ogs_nas_security_header_type_t h, NGAP_ProcedureCode_t ngap_code,
         ogs_nas_5gs_service_request_t *service_request);
-int gmm_handle_service_update(amf_ue_t *amf_ue,
+ogs_nas_5gmm_cause_t gmm_handle_service_update(amf_ue_t *amf_ue,
         ogs_nas_5gs_service_request_t *service_request);
 
 int gmm_handle_deregistration_request(amf_ue_t *amf_ue,
@@ -47,7 +47,7 @@ int gmm_handle_authentication_response(amf_ue_t *amf_ue,
 int gmm_handle_identity_response(amf_ue_t *amf_ue,
         ogs_nas_5gs_identity_response_t *identity_response);
 
-int gmm_handle_security_mode_complete(amf_ue_t *amf_ue,
+ogs_nas_5gmm_cause_t gmm_handle_security_mode_complete(amf_ue_t *amf_ue,
         ogs_nas_5gs_security_mode_complete_t *security_mode_complete);
 
 int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
