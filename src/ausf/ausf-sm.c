@@ -287,8 +287,10 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
             ogs_sbi_xact_remove(sbi_xact);
 
             ausf_ue = ausf_ue_cycle(ausf_ue);
-            ogs_assert(ausf_ue);
-            ogs_assert(OGS_FSM_STATE(&ausf_ue->sm));
+            if (!ausf_ue) {
+                ogs_error("UE(ausf-ue) Context has already been removed");
+                break;
+            }
 
             e->ausf_ue = ausf_ue;
             e->sbi.message = &message;

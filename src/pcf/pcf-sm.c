@@ -403,7 +403,11 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                     ogs_sbi_xact_remove(sbi_xact);
 
                     pcf_ue = pcf_ue_cycle(pcf_ue);
-                    ogs_assert(pcf_ue);
+                    if (!pcf_ue) {
+                        ogs_error("UE(pcf_ue) Context "
+                                    "has already been removed");
+                        break;
+                    }
 
                     e->pcf_ue = pcf_ue;
                     e->sbi.message = &message;
@@ -427,7 +431,10 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                     ogs_sbi_xact_remove(sbi_xact);
 
                     sess = pcf_sess_cycle(sess);
-                    ogs_assert(sess);
+                    if (!sess) {
+                        ogs_error("Session has already been removed");
+                        break;
+                    }
 
                     pcf_ue = sess->pcf_ue;
                     ogs_assert(pcf_ue);
@@ -475,7 +482,10 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                 ogs_sbi_xact_remove(sbi_xact);
 
                 sess = pcf_sess_cycle(sess);
-                ogs_assert(sess);
+                if (!sess) {
+                    ogs_error("Session has already been removed");
+                    break;
+                }
 
                 pcf_ue = sess->pcf_ue;
                 ogs_assert(pcf_ue);
@@ -568,12 +578,22 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             case OGS_SBI_OBJ_UE_TYPE:
                 pcf_ue = (pcf_ue_t *)sbi_object;
                 ogs_assert(pcf_ue);
+                pcf_ue = pcf_ue_cycle(pcf_ue);
+                if (!pcf_ue) {
+                    ogs_error("UE(pcf_ue) has already been removed");
+                    break;
+                }
                 ogs_error("[%s] Cannot receive SBI message", pcf_ue->supi);
                 break;
 
             case OGS_SBI_OBJ_SESS_TYPE:
                 sess = (pcf_sess_t *)sbi_object;
                 ogs_assert(sess);
+                sess = pcf_sess_cycle(sess);
+                if (!sess) {
+                    ogs_error("Session has already been removed");
+                    break;
+                }
                 ogs_error("[%d] Cannot receive SBI message", sess->psi);
                 break;
 

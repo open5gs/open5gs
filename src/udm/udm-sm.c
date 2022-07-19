@@ -321,7 +321,10 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
                 ogs_sbi_xact_remove(sbi_xact);
 
                 udm_ue = udm_ue_cycle(udm_ue);
-                ogs_assert(udm_ue);
+                if (!udm_ue) {
+                    ogs_error("UE(udm_ue) Context has already been removed");
+                    break;
+                }
 
                 e->udm_ue = udm_ue;
                 e->sbi.message = &message;

@@ -497,7 +497,10 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             ogs_sbi_xact_remove(sbi_xact);
 
             sess = amf_sess_cycle(sess);
-            ogs_assert(sess);
+            if (!sess) {
+                ogs_error("Session has already been removed");
+                break;
+            }
 
             amf_ue = sess->amf_ue;
             ogs_assert(amf_ue);
@@ -574,6 +577,12 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             case OGS_SBI_OBJ_UE_TYPE:
                 amf_ue = (amf_ue_t *)sbi_object;
                 ogs_assert(amf_ue);
+                amf_ue = amf_ue_cycle(amf_ue);
+                if (!amf_ue) {
+                    ogs_error("UE(amf_ue) Context has already been removed");
+                    break;
+                }
+
                 ogs_error("[%s] Cannot receive SBI message", amf_ue->suci);
                 ogs_assert(OGS_OK ==
                     nas_5gs_send_gmm_reject_from_sbi(amf_ue,
@@ -583,6 +592,12 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             case OGS_SBI_OBJ_SESS_TYPE:
                 sess = (amf_sess_t *)sbi_object;
                 ogs_assert(sess);
+                sess = amf_sess_cycle(sess);
+                if (!sess) {
+                    ogs_error("Session has already been removed");
+                    break;
+                }
+
                 ogs_error("[%d:%d] Cannot receive SBI message",
                         sess->psi, sess->pti);
                 if (sess->payload_container_type) {
