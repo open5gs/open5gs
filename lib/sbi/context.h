@@ -339,6 +339,9 @@ OpenAPI_uri_scheme_e ogs_sbi_default_uri_scheme(void);
 
 void ogs_sbi_select_nf(
         ogs_sbi_object_t *sbi_object, OpenAPI_nf_type_e nf_type, void *state);
+void ogs_sbi_select_nf_by_instanceid(
+    ogs_sbi_object_t *sbi_object, OpenAPI_nf_type_e nf_type, void *state,
+    char *nf_instance_id);
 
 void ogs_sbi_object_free(ogs_sbi_object_t *sbi_object);
 
