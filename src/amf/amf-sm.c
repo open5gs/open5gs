@@ -598,22 +598,6 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                     break;
                 }
 
-                amf_ue = sess->amf_ue;
-                ogs_assert(amf_ue);
-                amf_ue = amf_ue_cycle(amf_ue);
-                ogs_assert(amf_ue);
-                ran_ue = ran_ue_cycle(amf_ue->ran_ue);
-                if (!ran_ue) {
-                    ogs_error("NG context has already been removed");
-                    break;
-                }
-
-                gnb = amf_gnb_cycle(ran_ue->gnb);
-                if (!gnb) {
-                    ogs_error("gNB context has already been removed");
-                    break;
-                }
-
                 ogs_error("[%d:%d] Cannot receive SBI message",
                         sess->psi, sess->pti);
                 if (sess->payload_container_type) {
