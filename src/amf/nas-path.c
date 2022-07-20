@@ -44,6 +44,7 @@ int nas_5gs_send_to_downlink_nas_transport(amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf)
     ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     if (!ran_ue) {
         ogs_warn("NG context has already been removed");
+        ogs_pkbuf_free(pkbuf);
         return OGS_OK;
     } else {
         ngapbuf = ngap_build_downlink_nas_transport(

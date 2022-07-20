@@ -54,6 +54,7 @@ int ngap_send_to_gnb(amf_gnb_t *gnb, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
     gnb = amf_gnb_cycle(gnb);
     if (!gnb) {
         ogs_warn("gNB has already been removed");
+        ogs_pkbuf_free(pkbuf);
         return OGS_OK;
     }
 

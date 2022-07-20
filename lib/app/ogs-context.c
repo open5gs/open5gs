@@ -71,8 +71,10 @@ static void recalculate_pool_size(void)
 
 #define MAX_NUM_OF_TIMER        16
     self.pool.timer = self.max.ue * MAX_NUM_OF_TIMER;
-    self.pool.message = self.max.ue;
-    self.pool.event = self.max.ue;
+#define MAX_NUM_OF_MESSAGE      16
+    self.pool.message = self.max.ue * MAX_NUM_OF_MESSAGE;
+#define MAX_NUM_OF_EVENT        16
+    self.pool.event = self.max.ue * MAX_NUM_OF_EVENT;
 
     self.pool.packet = self.max.ue * OGS_MAX_NUM_OF_PACKET_BUFFER;
 
