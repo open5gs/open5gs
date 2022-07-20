@@ -658,12 +658,27 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
             SWITCH(sbi_message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
-                nf_instance = e->sbi.data;
-                ogs_assert(nf_instance);
-                ogs_assert(OGS_FSM_STATE(&nf_instance->sm));
 
-                e->sbi.message = &sbi_message;
-                ogs_fsm_dispatch(&nf_instance->sm, e);
+                SWITCH(sbi_message.h.method)
+                CASE(OGS_SBI_HTTP_METHOD_GET)
+                    sbi_xact = e->sbi.data;
+                    ogs_assert(sbi_xact);
+
+                    if (sbi_message.res_status == OGS_SBI_HTTP_STATUS_OK)
+                        smf_nnrf_handle_nf_profile_retrieve(
+                            sbi_xact, &sbi_message);
+                    else
+                        ogs_error("HTTP response error [%d]",
+                                sbi_message.res_status);
+                    break;
+                DEFAULT
+                    nf_instance = e->sbi.data;
+                    ogs_assert(nf_instance);
+                    ogs_assert(OGS_FSM_STATE(&nf_instance->sm));
+
+                    e->sbi.message = &sbi_message;
+                    ogs_fsm_dispatch(&nf_instance->sm, e);
+                END
                 break;
 
             CASE(OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS)

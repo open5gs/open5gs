@@ -1658,6 +1658,8 @@ void smf_sess_remove(smf_sess_t *sess)
 
     if (sess->pcf_id)
         ogs_free(sess->pcf_id);
+    if (sess->serving_nf_id)
+        ogs_free(sess->serving_nf_id);
 
     /* Free SBI object memory */
     ogs_sbi_object_free(&sess->sbi);

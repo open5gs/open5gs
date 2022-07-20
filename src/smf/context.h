@@ -300,6 +300,9 @@ typedef struct smf_sess_s {
     /* PCF ID */
     char            *pcf_id;
 
+    /* Serving NF (AMF) Id */
+    char            *serving_nf_id;
+
     /* Integrity protection maximum data rate */
     struct {
         uint8_t mbr_dl;
