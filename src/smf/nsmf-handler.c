@@ -197,6 +197,12 @@ bool smf_nsmf_handle_create_sm_context(
         ogs_assert(sess->pcf_id);
     }
 
+    if (SmContextCreateData->serving_nf_id) {
+        if (sess->serving_nf_id) ogs_free(sess->serving_nf_id);
+        sess->serving_nf_id = ogs_strdup(SmContextCreateData->serving_nf_id);
+        ogs_assert(sess->serving_nf_id);
+    }
+
     /*
      * NOTE : The pkbuf created in the SBI message will be removed
      *        from ogs_sbi_message_free().

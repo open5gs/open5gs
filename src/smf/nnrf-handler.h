@@ -36,6 +36,8 @@ bool smf_nnrf_handle_nf_status_notify(
 
 void smf_nnrf_handle_nf_discover(
         ogs_sbi_xact_t *xact, ogs_sbi_message_t *recvmsg);
+void smf_nnrf_handle_nf_profile_retrieve(
+        ogs_sbi_xact_t *xact, ogs_sbi_message_t *recvmsg);
 
 #ifdef __cplusplus
 }

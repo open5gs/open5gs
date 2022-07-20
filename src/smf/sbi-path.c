@@ -200,8 +200,13 @@ void smf_namf_comm_send_n1_n2_message_transfer(
 
     xact->state = param->state;
 
-    ogs_sbi_discover_and_send(xact,
-            (ogs_fsm_handler_t)smf_nf_state_registered, client_cb);
+    if (ogs_sbi_discover_by_nf_instanceid_and_send(xact,
+            (ogs_fsm_handler_t)smf_nf_state_registered, client_cb,
+            sess->serving_nf_id) != true)
+    {
+        ogs_error("smf_namf_comm_send_n1_n2_message_transfer() failed");
+        ogs_sbi_xact_remove(xact);
+    }
 }
 
 void smf_sbi_send_sm_context_create_error(
