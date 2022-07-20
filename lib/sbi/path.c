@@ -141,6 +141,51 @@ bool ogs_nnrf_nfm_send_nf_register(
     return ogs_sbi_scp_send_request(client, client->cb, request, nf_instance);
 }
 
+bool ogs_sbi_discover_by_nf_instanceid_and_send(ogs_sbi_xact_t *xact,
+        ogs_fsm_handler_t nf_state_registered, ogs_sbi_client_cb_f client_cb,
+        char *nf_instance_id)
+{
+    ogs_sbi_nf_instance_t *nf_instance = NULL;
+
+    ogs_assert(xact);
+    ogs_assert(xact->sbi_object);
+    ogs_assert(xact->target_nf_type);
+    ogs_assert(nf_state_registered);
+    ogs_assert(client_cb);
+    ogs_assert(nf_instance_id);
+
+    /* Target NF-Instance - search by NF Instance Id */
+    ogs_assert(xact->target_nf_type != OpenAPI_nf_type_NRF);
+    ogs_sbi_select_nf_by_instanceid(
+        xact->sbi_object, xact->target_nf_type, nf_state_registered,
+        nf_instance_id);
+
+    nf_instance = OGS_SBI_NF_INSTANCE(
+            xact->sbi_object, xact->target_nf_type);
+
+    if (nf_instance) {
+        return ogs_sbi_send(nf_instance, client_cb, xact);
+    }
+
+    /* NRF NF-Instance */
+    nf_instance = OGS_SBI_NF_INSTANCE(xact->sbi_object, OpenAPI_nf_type_NRF);
+    if (!nf_instance) {
+        ogs_sbi_select_nf(
+                xact->sbi_object, OpenAPI_nf_type_NRF, nf_state_registered);
+        nf_instance = OGS_SBI_NF_INSTANCE(
+                xact->sbi_object, OpenAPI_nf_type_NRF);
+    }
+
+    if (nf_instance) {
+        ogs_warn("Try to retrieve [%s]", nf_instance_id);
+        return ogs_nnrf_nfm_send_nf_profile_retrieve(nf_instance,
+                nf_instance_id, xact);
+    }
+
+    ogs_error("Cannot retrieve [%s]", nf_instance_id);
+    return false;
+}
+
 bool ogs_nnrf_nfm_send_nf_update(ogs_sbi_nf_instance_t *nf_instance)
 {
     ogs_sbi_request_t *request = NULL;
@@ -169,6 +214,24 @@ bool ogs_nnrf_nfm_send_nf_de_register(ogs_sbi_nf_instance_t *nf_instance)
     ogs_expect_or_return_val(request, false);
 
     return ogs_sbi_scp_send_request(client, client->cb, request, nf_instance);
+}
+
+bool ogs_nnrf_nfm_send_nf_profile_retrieve(ogs_sbi_nf_instance_t *nf_instance,
+        char *nf_instance_id, void *data)
+{
+    ogs_sbi_request_t *request = NULL;
+    ogs_sbi_client_t *client = NULL;
+
+    ogs_assert(nf_instance);
+    client = nf_instance->client;
+    ogs_assert(client);
+    ogs_assert(nf_instance_id);
+
+    request = ogs_nnrf_nfm_build_profile_retrieve(nf_instance_id);
+    ogs_expect_or_return_val(request, false);
+
+    return ogs_sbi_client_send_request(
+            client, client->cb, request, data);
 }
 
 bool ogs_nnrf_nfm_send_nf_status_subscribe(ogs_sbi_client_t *client,

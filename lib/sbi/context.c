@@ -1341,6 +1341,26 @@ void ogs_sbi_select_nf(
     }
 }
 
+void ogs_sbi_select_nf_by_instanceid(
+        ogs_sbi_object_t *sbi_object, OpenAPI_nf_type_e nf_type, void *state,
+        char *nf_instance_id)
+{
+    ogs_sbi_nf_instance_t *nf_instance = NULL;
+
+    ogs_assert(sbi_object);
+    ogs_assert(nf_type);
+    ogs_assert(state);
+
+    ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance) {
+        if (OGS_FSM_CHECK(&nf_instance->sm, state) &&
+            (nf_instance->nf_type == nf_type) &&
+            (!(strcmp(nf_instance->id, nf_instance_id)))) {
+            OGS_SBI_SETUP_NF(sbi_object, nf_type, nf_instance);
+            break;
+        }
+    }
+}
+
 bool ogs_sbi_client_associate(ogs_sbi_nf_instance_t *nf_instance)
 {
     ogs_sbi_client_t *client = NULL;
