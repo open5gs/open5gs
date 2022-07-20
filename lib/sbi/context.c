@@ -1447,15 +1447,21 @@ void ogs_sbi_xact_remove(ogs_sbi_xact_t *xact)
     ogs_sbi_object_t *sbi_object = NULL;
 
     ogs_assert(xact);
+
+    xact = ogs_pool_cycle(&xact_pool, xact);
+    if (!xact) {
+        ogs_error("SBI transaction has already been removed");
+        return;
+    }
+
     sbi_object = xact->sbi_object;
     ogs_assert(sbi_object);
 
     ogs_assert(xact->t_response);
     ogs_timer_delete(xact->t_response);
 
-    /* If ogs_sbi_send() is called, xact->request has already been freed */
-    if (xact->request)
-        ogs_sbi_request_free(xact->request);
+    ogs_assert(xact->request);
+    ogs_sbi_request_free(xact->request);
 
     ogs_list_remove(&sbi_object->xact_list, xact);
     ogs_pool_free(&xact_pool, xact);

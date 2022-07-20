@@ -637,6 +637,7 @@ amf_gnb_t *amf_gnb_find_by_addr(ogs_sockaddr_t *addr);
 amf_gnb_t *amf_gnb_find_by_gnb_id(uint32_t gnb_id);
 int amf_gnb_set_gnb_id(amf_gnb_t *gnb, uint32_t gnb_id);
 int amf_gnb_sock_type(ogs_sock_t *sock);
+amf_gnb_t *amf_gnb_cycle(amf_gnb_t *gnb);
 
 ran_ue_t *ran_ue_add(amf_gnb_t *gnb, uint32_t ran_ue_ngap_id);
 void ran_ue_remove(ran_ue_t *ran_ue);

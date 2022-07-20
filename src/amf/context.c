@@ -955,6 +955,11 @@ int amf_gnb_sock_type(ogs_sock_t *sock)
     return SOCK_STREAM;
 }
 
+amf_gnb_t *amf_gnb_cycle(amf_gnb_t *gnb)
+{
+    return ogs_pool_cycle(&amf_gnb_pool, gnb);
+}
+
 /** ran_ue_context handling function */
 ran_ue_t *ran_ue_add(amf_gnb_t *gnb, uint32_t ran_ue_ngap_id)
 {

@@ -307,7 +307,7 @@ static bool server_send_rspmem_persistent(
 
     stream = ogs_pool_cycle(&stream_pool, stream);
     if (!stream) {
-        ogs_error("stream has already been closed");
+        ogs_error("stream has already been removed");
         return true;
     }
 
@@ -434,6 +434,8 @@ static ogs_sbi_stream_t *stream_add(
     sbi_sess->last_stream_id = stream_id;
 
     stream->session = sbi_sess;
+
+    ogs_list_add(&sbi_sess->stream_list, stream);
 
     return stream;
 }

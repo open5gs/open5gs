@@ -51,6 +51,12 @@ int ngap_send_to_gnb(amf_gnb_t *gnb, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
     char buf[OGS_ADDRSTRLEN];
 
     ogs_assert(gnb);
+    gnb = amf_gnb_cycle(gnb);
+    if (!gnb) {
+        ogs_warn("gNB has already been removed");
+        return OGS_OK;
+    }
+
     ogs_assert(pkbuf);
     ogs_assert(gnb->sctp.sock);
     if (gnb->sctp.sock->fd == INVALID_SOCKET) {
