@@ -32,10 +32,13 @@ static OGS_POOL(sgwc_tunnel_pool, sgwc_tunnel_t);
 
 static int context_initialized = 0;
 
+static int num_of_sgwc_ue = 0;
 static int num_of_sgwc_sess = 0;
 
-static void stats_add_sgwc_session(void);
-static void stats_remove_sgwc_session(void);
+static void stats_add_sgwc_session(sgwc_sess_t *sess);
+static void stats_remove_sgwc_session(sgwc_sess_t *sess);
+static void stats_add_sgwc_ue(sgwc_ue_t *sgwc_ue);
+static void stats_remove_sgwc_ue(sgwc_ue_t *sgwc_ue);
 
 void sgwc_context_init(void)
 {
@@ -207,8 +210,7 @@ sgwc_ue_t *sgwc_ue_add(uint8_t *imsi, int imsi_len)
 
     ogs_list_add(&self.sgw_ue_list, sgwc_ue);
 
-    ogs_info("[Added] Number of SGWC-UEs is now %d",
-            ogs_list_count(&self.sgw_ue_list));
+    stats_add_sgwc_ue(sgwc_ue);
 
     return sgwc_ue;
 }
@@ -225,9 +227,8 @@ int sgwc_ue_remove(sgwc_ue_t *sgwc_ue)
 
     ogs_pool_free(&sgwc_ue_pool, sgwc_ue);
 
-    ogs_info("[Removed] Number of SGWC-UEs is now %d",
-            ogs_list_count(&self.sgw_ue_list));
-
+    stats_remove_sgwc_ue(sgwc_ue);
+    
     return OGS_OK;
 }
 
@@ -297,7 +298,7 @@ sgwc_sess_t *sgwc_sess_add(sgwc_ue_t *sgwc_ue, char *apn)
 
     ogs_list_add(&sgwc_ue->sess_list, sess);
 
-    stats_add_sgwc_session();
+    stats_add_sgwc_session(sess);
 
     return sess;
 }
@@ -416,7 +417,7 @@ int sgwc_sess_remove(sgwc_sess_t *sess)
 
     ogs_pool_free(&sgwc_sess_pool, sess);
 
-    stats_remove_sgwc_session();
+    stats_remove_sgwc_session(sess);
 
     return OGS_OK;
 }
@@ -869,14 +870,56 @@ sgwc_tunnel_t *sgwc_ul_tunnel_in_bearer(sgwc_bearer_t *bearer)
             OGS_GTP2_F_TEID_S1_U_SGW_GTP_U);
 }
 
-static void stats_add_sgwc_session(void)
+static void stats_add_sgwc_ue(sgwc_ue_t *sgwc_ue)
 {
-    num_of_sgwc_sess = num_of_sgwc_sess + 1;
-    ogs_info("[Added] Number of SGWC-Sessions is now %d", num_of_sgwc_sess);
+    num_of_sgwc_ue = num_of_sgwc_ue + 1;
+    ogs_info("[Added] Number of SGWC-UEs is now %d", num_of_sgwc_ue);
+
+    char buffer[20];
+    sprintf(buffer, "%d\n", num_of_sgwc_ue);
+    ogs_write_file_value("sgwc/num_ues", buffer);
+    ogs_add_line_file("sgwc/list_ues", sgwc_ue->imsi_bcd);
 }
 
-static void stats_remove_sgwc_session(void)
+static void stats_remove_sgwc_ue(sgwc_ue_t *sgwc_ue)
 {
+    num_of_sgwc_ue = num_of_sgwc_ue - 1;
+    ogs_info("[Removed] Number of SGWC-UEs is now %d", num_of_sgwc_ue);
+
+    char buffer[20];
+    sprintf(buffer, "%d\n", num_of_sgwc_ue);
+    ogs_write_file_value("sgwc/num_ues", buffer);
+    ogs_remove_line_file("sgwc/list_ues", sgwc_ue->imsi_bcd);
+}
+
+static void stats_add_sgwc_session(sgwc_sess_t *sess)
+{
+    char buffer[150];
+
+    num_of_sgwc_sess = num_of_sgwc_sess + 1;
+    ogs_info("[Added] Number of SGWC-Sessions is now %d", num_of_sgwc_sess);
+
+    sprintf(buffer, "%d\n", num_of_sgwc_sess);
+    ogs_write_file_value("sgwc/num_sessions", buffer);
+
+    sprintf(buffer, "imsi:%s apn:%s",
+        sess->sgwc_ue->imsi_bcd ? sess->sgwc_ue->imsi_bcd : "",
+        sess->session.name ? sess->session.name : "");
+    ogs_add_line_file("sgwc/list_sessions", buffer);
+}
+
+static void stats_remove_sgwc_session(sgwc_sess_t *sess)
+{
+    char buffer[150];
+
     num_of_sgwc_sess = num_of_sgwc_sess - 1;
     ogs_info("[Removed] Number of SGWC-Sessions is now %d", num_of_sgwc_sess);
+
+    sprintf(buffer, "%d\n", num_of_sgwc_sess);
+    ogs_write_file_value("sgwc/num_sessions", buffer);
+
+    sprintf(buffer, "imsi:%s apn:%s",
+        sess->sgwc_ue->imsi_bcd ? sess->sgwc_ue->imsi_bcd : "",
+        sess->session.name ? sess->session.name : "");
+    ogs_remove_line_file("sgwc/list_sessions", buffer);
 }

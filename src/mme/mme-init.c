@@ -76,11 +76,18 @@ int mme_initialize()
     initialized = 1;
 
     ogs_write_file_start("mme_start_time");
-    char buffer[20];
+    ogs_write_file_subdir("mme");
+
+    char buffer[25];
     sprintf(buffer, "%d\n", 0);
-    ogs_write_file_value("num_enbs", buffer);
-    ogs_write_file_value("enb_ues", buffer);
-    ogs_write_file_value("mme_sessions", buffer);
+    ogs_write_file_value("mme/num_enbs", buffer);
+    ogs_write_file_value("mme/num_ues", buffer);
+    ogs_write_file_value("mme/num_sessions", buffer);
+
+    sprintf(buffer, "List of Active Sessions\n");    
+    ogs_write_file_value("mme/list_sessions", buffer);
+    sprintf(buffer, "List of Attached UEs\n");
+    ogs_write_file_value("mme/list_ues", buffer);
 
     return OGS_OK;
 }

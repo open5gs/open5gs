@@ -35,6 +35,7 @@
 #include <sys/stat.h>
 #include <string.h>
 #include <time.h>
+#include <stdlib.h>
 // END SPENCERS FILE-LOG SYSTEM
 
 #define TA_NOR              "\033[0m"       /* all off */
@@ -187,6 +188,47 @@ void ogs_write_file_start(const char *filename) {
     time_t mytime = time(NULL);
     sprintf(buf, "%s%d\n", ctime(&mytime), (int)mytime);
     ogs_write_file_value(filename, buf);
+}
+
+void ogs_write_file_subdir(const char *filename) {
+    struct stat st = {0};
+    char filestring[256];
+
+    strcpy(filestring, BASEFILE);
+    strcat(filestring, "/");
+    strcat(filestring, filename);
+
+    if (stat(filestring, &st) == -1) {
+        mkdir(filestring, 0744);
+    }
+
+    return;
+}
+
+void ogs_add_line_file(const char *filename, const char *value) {
+// grep -qx "$VALUE" $FILENAME || echo "$VALUE" >> $FILENAME
+
+    char filestring[50];
+    strcpy(filestring, BASEFILE);
+    strcat(filestring, "/");
+    strcat(filestring, filename);
+
+    char cmd[256];
+    sprintf(cmd, "grep -qx \"%s\" %s || echo \"%s\" >> %s\n", value, filestring, value, filestring);
+    system(cmd);
+}
+
+void ogs_remove_line_file(const char *filename, const char *value) {
+// sed -i '/$VALUE/d' $FILENAME
+
+    char filestring[50];
+    strcpy(filestring, BASEFILE);
+    strcat(filestring, "/");
+    strcat(filestring, filename);
+
+    char cmd[256];
+    sprintf(cmd, "sed -i '/%s/d' %s\n", value, filestring);
+    system(cmd);
 }
 // END SPENCERS FILE-LOG SYSTEM
 
