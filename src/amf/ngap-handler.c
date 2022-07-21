@@ -4022,7 +4022,8 @@ void ngap_handle_ng_reset(
          * where PartOfNG_interface was requested
          * REMOVED */
         ogs_assert(gnb->ng_reset_ack);
-        ngap_send_to_gnb(gnb, gnb->ng_reset_ack, NGAP_NON_UE_SIGNALLING);
+        ogs_expect(OGS_OK ==
+            ngap_send_to_gnb(gnb, gnb->ng_reset_ack, NGAP_NON_UE_SIGNALLING));
 
         /* Clear NG-Reset Ack Buffer */
         gnb->ng_reset_ack = NULL;

@@ -294,6 +294,14 @@ void af_state_operational(ogs_fsm_t *s, af_event_t *e)
                 sbi_xact = e->sbi.data;
                 ogs_assert(sbi_xact);
 
+                sbi_xact = ogs_sbi_xact_cycle(sbi_xact);
+                if (!sbi_xact) {
+                    /* CLIENT_WAIT timer could remove SBI transaction
+                     * before receiving SBI message */
+                    ogs_error("SBI transaction has already been removed");
+                    break;
+                }
+
                 sess = (af_sess_t *)sbi_xact->sbi_object;
                 ogs_assert(sess);
 

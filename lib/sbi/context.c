@@ -1448,12 +1448,6 @@ void ogs_sbi_xact_remove(ogs_sbi_xact_t *xact)
 
     ogs_assert(xact);
 
-    xact = ogs_pool_cycle(&xact_pool, xact);
-    if (!xact) {
-        ogs_error("SBI transaction has already been removed");
-        return;
-    }
-
     sbi_object = xact->sbi_object;
     ogs_assert(sbi_object);
 
@@ -1475,6 +1469,11 @@ void ogs_sbi_xact_remove_all(ogs_sbi_object_t *sbi_object)
 
     ogs_list_for_each_safe(&sbi_object->xact_list, next_xact, xact)
         ogs_sbi_xact_remove(xact);
+}
+
+ogs_sbi_xact_t *ogs_sbi_xact_cycle(ogs_sbi_xact_t *xact)
+{
+    return ogs_pool_cycle(&xact_pool, xact);
 }
 
 ogs_sbi_subscription_t *ogs_sbi_subscription_add(void)

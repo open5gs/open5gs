@@ -357,6 +357,14 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             sbi_xact = e->sbi.data;
             ogs_assert(sbi_xact);
 
+            sbi_xact = ogs_sbi_xact_cycle(sbi_xact);
+            if (!sbi_xact) {
+                /* CLIENT_WAIT timer could remove SBI transaction
+                 * before receiving SBI message */
+                ogs_error("SBI transaction has already been removed");
+                break;
+            }
+
             amf_ue = (amf_ue_t *)sbi_xact->sbi_object;
             ogs_assert(amf_ue);
 
@@ -379,6 +387,14 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION)
             sbi_xact = e->sbi.data;
             ogs_assert(sbi_xact);
+
+            sbi_xact = ogs_sbi_xact_cycle(sbi_xact);
+            if (!sbi_xact) {
+                /* CLIENT_WAIT timer could remove SBI transaction
+                 * before receiving SBI message */
+                ogs_error("SBI transaction has already been removed");
+                break;
+            }
 
             state = sbi_xact->state;
 
@@ -489,6 +505,14 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             sbi_xact = e->sbi.data;
             ogs_assert(sbi_xact);
 
+            sbi_xact = ogs_sbi_xact_cycle(sbi_xact);
+            if (!sbi_xact) {
+                /* CLIENT_WAIT timer could remove SBI transaction
+                 * before receiving SBI message */
+                ogs_error("SBI transaction has already been removed");
+                break;
+            }
+
             sess = (amf_sess_t *)sbi_xact->sbi_object;
             ogs_assert(sess);
 
@@ -584,7 +608,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 }
 
                 ogs_error("[%s] Cannot receive SBI message", amf_ue->suci);
-                ogs_assert(OGS_OK ==
+                ogs_expect(OGS_OK ==
                     nas_5gs_send_gmm_reject_from_sbi(amf_ue,
                         OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT));
                 break;
@@ -601,12 +625,12 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 ogs_error("[%d:%d] Cannot receive SBI message",
                         sess->psi, sess->pti);
                 if (sess->payload_container_type) {
-                    ogs_assert(OGS_OK ==
+                    ogs_expect(OGS_OK ==
                         nas_5gs_send_back_gsm_message(sess,
                             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                             AMF_NAS_BACKOFF_TIME));
                 } else {
-                    ogs_assert(OGS_OK ==
+                    ogs_expect(OGS_OK ==
                         ngap_send_error_indication2(amf_ue,
                             NGAP_Cause_PR_transport,
                             NGAP_CauseTransport_transport_resource_unavailable)
@@ -825,7 +849,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 /* De-associate NG with NAS/EMM */
                 ran_ue_deassociate(amf_ue->ran_ue);
 
-                ogs_assert(OGS_OK ==
+                ogs_expect(OGS_OK ==
                     ngap_send_ran_ue_context_release_command(amf_ue->ran_ue,
                         NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
                         NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0));

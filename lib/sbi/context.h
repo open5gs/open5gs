@@ -348,6 +348,7 @@ ogs_sbi_xact_t *ogs_sbi_xact_add(
         void (*timer_cb)(void *data));
 void ogs_sbi_xact_remove(ogs_sbi_xact_t *xact);
 void ogs_sbi_xact_remove_all(ogs_sbi_object_t *sbi_object);
+ogs_sbi_xact_t *ogs_sbi_xact_cycle(ogs_sbi_xact_t *xact);
 
 ogs_sbi_subscription_t *ogs_sbi_subscription_add(void);
 void ogs_sbi_subscription_set_id(

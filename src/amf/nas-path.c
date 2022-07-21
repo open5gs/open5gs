@@ -24,38 +24,40 @@
 
 int nas_5gs_send_to_gnb(amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf)
 {
-    ran_ue_t *ran_ue = NULL;
+    ogs_assert(pkbuf);
 
-    ogs_assert(amf_ue);
-    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
-    ogs_expect_or_return_val(ran_ue, OGS_ERROR);
+    amf_ue = amf_ue_cycle(amf_ue);
+    if (!amf_ue) {
+        ogs_warn("UE(amf-ue) context has already been removed");
+        ogs_pkbuf_free(pkbuf);
+        return OGS_ERROR;
+    }
 
-    return ngap_send_to_ran_ue(ran_ue, pkbuf);
+    return ngap_send_to_ran_ue(amf_ue->ran_ue, pkbuf);
 }
 
 int nas_5gs_send_to_downlink_nas_transport(amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf)
 {
     int rv;
     ogs_pkbuf_t *ngapbuf = NULL;
-    ran_ue_t *ran_ue = NULL;
 
     ogs_assert(pkbuf);
-    ogs_assert(amf_ue);
-    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
-    if (!ran_ue) {
-        ogs_warn("NG context has already been removed");
+
+    amf_ue = amf_ue_cycle(amf_ue);
+    if (!amf_ue) {
+        ogs_warn("UE(amf-ue) context has already been removed");
         ogs_pkbuf_free(pkbuf);
-        return OGS_OK;
-    } else {
-        ngapbuf = ngap_build_downlink_nas_transport(
-                ran_ue, pkbuf, false, false);
-        ogs_expect_or_return_val(ngapbuf, OGS_ERROR);
-
-        rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
-        ogs_expect(rv == OGS_OK);
-
-        return rv;
+        return OGS_ERROR;
     }
+
+    ngapbuf = ngap_build_downlink_nas_transport(
+            amf_ue->ran_ue, pkbuf, false, false);
+    ogs_expect_or_return_val(ngapbuf, OGS_ERROR);
+
+    rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
+    ogs_expect(rv == OGS_OK);
+
+    return rv;
 }
 
 int nas_5gs_send_registration_accept(amf_ue_t *amf_ue)

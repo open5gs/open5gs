@@ -21,23 +21,28 @@
 #include "context.h"
 
 static OGS_POOL(pool, amf_event_t);
+static ogs_thread_mutex_t amf_event_alloc_mutex;
 
 void amf_event_init(void)
 {
     ogs_pool_init(&pool, ogs_app()->pool.event);
+    ogs_thread_mutex_init(&amf_event_alloc_mutex);
 }
 
 void amf_event_final(void)
 {
     ogs_pool_final(&pool);
+    ogs_thread_mutex_destroy(&amf_event_alloc_mutex);
 }
 
 amf_event_t *amf_event_new(amf_event_e id)
 {
     amf_event_t *e = NULL;
 
+    ogs_thread_mutex_lock(&amf_event_alloc_mutex);
     ogs_pool_alloc(&pool, &e);
-    if (!e) return NULL;
+    ogs_thread_mutex_unlock(&amf_event_alloc_mutex);
+    ogs_assert(e);
     memset(e, 0, sizeof(*e));
 
     e->id = id;
@@ -48,7 +53,9 @@ amf_event_t *amf_event_new(amf_event_e id)
 void amf_event_free(amf_event_t *e)
 {
     ogs_assert(e);
+    ogs_thread_mutex_lock(&amf_event_alloc_mutex);
     ogs_pool_free(&pool, e);
+    ogs_thread_mutex_unlock(&amf_event_alloc_mutex);
 }
 
 const char *amf_event_get_name(amf_event_t *e)
