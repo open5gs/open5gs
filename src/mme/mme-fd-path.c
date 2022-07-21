@@ -593,6 +593,8 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
 {
     int ret;
 
+    char buf[OGS_CHRGCHARS_LEN];
+
     struct sess_state *sess_data = NULL;
     struct timespec ts;
     struct session *session;
@@ -795,6 +797,26 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
             error++;
         }
 
+        /* AVP: '3GPP-Charging-Characteristics'(13)
+            * For GGSN, it contains the charging characteristics for 
+            * this PDP Context received in the Create PDP Context 
+            * Request Message (only available in R99 and later releases). 
+            * For PGW, it contains the charging characteristics for the 
+            * IP-CAN bearer.
+            * Reference: 3GPP TS 29.061 16.4.7.2 13
+            */
+        ret = fd_avp_search_avp(avp, ogs_diam_s6a_3gpp_charging_characteristics, &avpch1);
+        ogs_assert(ret == 0);
+        if (avpch1) {
+            ret = fd_msg_avp_hdr(avpch1, &hdr);
+            memcpy(mme_ue->charging_characteristics,
+                OGS_HEX(hdr->avp_value->os.data, (int)hdr->avp_value->os.len, buf), OGS_CHRGCHARS_LEN);
+            mme_ue->charging_characteristics_presence = true;
+        } else {
+            memcpy(mme_ue->charging_characteristics, (uint8_t *)"\x00\x00", OGS_CHRGCHARS_LEN);
+            mme_ue->charging_characteristics_presence = false;
+        }        
+
         /* AVP: 'AMBR'(1435)
          * The Amber AVP contains the Max-Requested-Bandwidth-UL and
          * Max-Requested-Bandwidth-DL AVPs.
@@ -982,6 +1004,27 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                     } else {
                         ogs_error("no_PDN-Type");
                         error++;
+                    }
+
+                    /* AVP: '3GPP-Charging-Characteristics'(13)
+                     * For GGSN, it contains the charging characteristics for 
+                     * this PDP Context received in the Create PDP Context 
+                     * Request Message (only available in R99 and later releases). 
+                     * For PGW, it contains the charging characteristics for the 
+                     * IP-CAN bearer.
+                     * Reference: 3GPP TS 29.061 16.4.7.2 13
+                     */
+                    ret = fd_avp_search_avp(avpch2, ogs_diam_s6a_3gpp_charging_characteristics,
+                            &avpch3);
+                    ogs_assert(ret == 0);
+                    if (avpch3) {
+                        ret = fd_msg_avp_hdr(avpch3, &hdr);
+                        memcpy(session->charging_characteristics,
+                            OGS_HEX(hdr->avp_value->os.data, (int)hdr->avp_value->os.len, buf), OGS_CHRGCHARS_LEN);
+                        session->charging_characteristics_presence = true;
+                    } else {
+                        memcpy(session->charging_characteristics, mme_ue->charging_characteristics, OGS_CHRGCHARS_LEN);
+                        session->charging_characteristics_presence = mme_ue->charging_characteristics_presence;
                     }
 
                     /* AVP: 'Served-Party-IP-Address'(848)

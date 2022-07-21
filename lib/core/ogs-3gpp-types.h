@@ -56,6 +56,8 @@ extern "C" {
 #define OGS_PLMN_ID_LEN                 3
 #define OGS_MAX_PLMN_ID_BCD_LEN         6
 
+#define OGS_CHRGCHARS_LEN               2
+
 #define OGS_BCD_TO_BUFFER_LEN(x)        (((x)+1)/2)
 #define OGS_MAX_IMSI_BCD_LEN            15
 #define OGS_MAX_IMSI_LEN                \
@@ -452,6 +454,9 @@ typedef struct ogs_session_s {
 
     uint32_t context_identifier; /* EPC */
     bool default_dnn_indicator; /* 5GC */
+
+    uint8_t charging_characteristics[OGS_CHRGCHARS_LEN];
+    bool charging_characteristics_presence;
 
 #define OGS_PDU_SESSION_TYPE_IPV4                   1
 #define OGS_PDU_SESSION_TYPE_IPV6                   2

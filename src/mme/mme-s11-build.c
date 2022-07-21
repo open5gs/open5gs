@@ -330,9 +330,11 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
     req->ue_time_zone.data = &ue_timezone;
     req->ue_time_zone.len = sizeof(ue_timezone);
 
-    req->charging_characteristics.presence = 1;
-    req->charging_characteristics.data = (uint8_t *)"\x54\x00";
-    req->charging_characteristics.len = 2;
+    if (session->charging_characteristics_presence == true) {
+        req->charging_characteristics.presence = 1;
+        req->charging_characteristics.data = session->charging_characteristics;
+        req->charging_characteristics.len = 2;
+    }
 
     gtp_message.h.type = type;
     return ogs_gtp2_build_msg(&gtp_message);
