@@ -313,9 +313,10 @@ ogs_pkbuf_t *ngap_build_downlink_nas_transport(
     NGAP_AllowedNSSAI_t *AllowedNSSAI = NULL;
 
     ogs_assert(gmmbuf);
+    ran_ue = ran_ue_cycle(ran_ue);
     ogs_assert(ran_ue);
-
-    amf_ue = ran_ue->amf_ue;
+    amf_ue = amf_ue_cycle(ran_ue->amf_ue);
+    ogs_assert(amf_ue);
 
     ogs_debug("DownlinkNASTransport");
 
@@ -468,6 +469,7 @@ ogs_pkbuf_t *ngap_ue_build_initial_context_setup_request(
     NGAP_MaskedIMEISV_t *MaskedIMEISV = NULL;
     NGAP_NAS_PDU_t *NAS_PDU = NULL;
 
+    amf_ue = amf_ue_cycle(amf_ue);
     ogs_assert(amf_ue);
     ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     ogs_assert(ran_ue);
@@ -787,7 +789,7 @@ ogs_pkbuf_t *ngap_sess_build_initial_context_setup_request(
     NGAP_MaskedIMEISV_t *MaskedIMEISV = NULL;
 
     ogs_assert(sess);
-    amf_ue = sess->amf_ue;
+    amf_ue = amf_ue_cycle(sess->amf_ue);
     ogs_assert(amf_ue);
     ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     ogs_assert(ran_ue);
@@ -1076,6 +1078,7 @@ ogs_pkbuf_t *ngap_build_ue_context_release_command(
     NGAP_UE_NGAP_IDs_t *UE_NGAP_IDs = NULL;
     NGAP_Cause_t *Cause = NULL;
 
+    ran_ue = ran_ue_cycle(ran_ue);
     ogs_assert(ran_ue);
 
     ogs_debug("UEContextReleaseCommand");
@@ -1151,6 +1154,7 @@ ogs_pkbuf_t *ngap_ue_build_pdu_session_resource_setup_request(
     NGAP_PDUSessionResourceSetupListSUReq_t *PDUSessionList = NULL;
     NGAP_PDUSessionResourceSetupItemSUReq_t *PDUSessionItem = NULL;
 
+    amf_ue = amf_ue_cycle(amf_ue);
     ogs_assert(amf_ue);
     ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     ogs_assert(ran_ue);
@@ -1317,7 +1321,7 @@ ogs_pkbuf_t *ngap_sess_build_pdu_session_resource_setup_request(
     ogs_assert(n2smbuf);
     ogs_assert(sess);
 
-    amf_ue = sess->amf_ue;
+    amf_ue = amf_ue_cycle(sess->amf_ue);
     ogs_assert(amf_ue);
     ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     ogs_assert(ran_ue);
@@ -1459,7 +1463,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_modify_request(
     ogs_assert(n2smbuf);
     ogs_assert(sess);
 
-    amf_ue = sess->amf_ue;
+    amf_ue = amf_ue_cycle(sess->amf_ue);
     ogs_assert(amf_ue);
     ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     ogs_assert(ran_ue);
@@ -1558,7 +1562,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_release_command(
     ogs_assert(n2smbuf);
     ogs_assert(sess);
 
-    amf_ue = sess->amf_ue;
+    amf_ue = amf_ue_cycle(sess->amf_ue);
     ogs_assert(amf_ue);
     ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     ogs_assert(ran_ue);
@@ -1663,6 +1667,7 @@ ogs_pkbuf_t *ngap_build_paging(amf_ue_t *amf_ue)
     NGAP_TAIListForPagingItem_t *TAIItem = NULL;
     NGAP_TAI_t *tAI = NULL;
 
+    amf_ue = amf_ue_cycle(amf_ue);
     ogs_assert(amf_ue);
     ogs_debug("Paging");
 
@@ -1785,6 +1790,7 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
     NGAP_PDUSessionResourceSwitchedList_t *PDUSessionResourceSwitchedList;
     NGAP_AllowedNSSAI_t *AllowedNSSAI = NULL;
 
+    amf_ue = amf_ue_cycle(amf_ue);
     ogs_assert(amf_ue);
     ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     ogs_assert(ran_ue);
@@ -1951,8 +1957,9 @@ ogs_pkbuf_t *ngap_build_handover_request(ran_ue_t *target_ue)
         *SourceToTarget_TransparentContainer = NULL;
     NGAP_GUAMI_t *GUAMI = NULL;
 
+    target_ue = ran_ue_cycle(target_ue);
     ogs_assert(target_ue);
-    amf_ue = target_ue->amf_ue;
+    amf_ue = amf_ue_cycle(target_ue->amf_ue);
     ogs_assert(amf_ue);
 
     ogs_debug("HandoverRequest");
@@ -2249,6 +2256,7 @@ ogs_pkbuf_t *ngap_build_handover_preparation_failure(
     NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
     NGAP_Cause_t *Cause = NULL;
 
+    source_ue = ran_ue_cycle(source_ue);
     ogs_assert(source_ue);
     ogs_assert(cause);
 
@@ -2332,8 +2340,9 @@ ogs_pkbuf_t *ngap_build_handover_command(ran_ue_t *source_ue)
     NGAP_TargetToSource_TransparentContainer_t
         *TargetToSource_TransparentContainer = NULL;
 
+    source_ue = ran_ue_cycle(source_ue);
     ogs_assert(source_ue);
-    amf_ue = source_ue->amf_ue;
+    amf_ue = amf_ue_cycle(source_ue->amf_ue);
     ogs_assert(amf_ue);
 
     ogs_debug("HandoverCommand");
@@ -2449,6 +2458,7 @@ ogs_pkbuf_t *ngap_build_handover_cancel_ack(ran_ue_t *source_ue)
     NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
     NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
 
+    source_ue = ran_ue_cycle(source_ue);
     ogs_assert(source_ue);
 
     ogs_debug("HandoverCancelAcknowledge");
@@ -2513,6 +2523,7 @@ ogs_pkbuf_t *ngap_build_uplink_ran_status_transfer(
     NGAP_RANStatusTransfer_TransparentContainer_t
         *RANStatusTransfer_TransparentContainer = NULL;
 
+    target_ue = ran_ue_cycle(target_ue);
     ogs_assert(target_ue);
     ogs_assert(transfer);
 

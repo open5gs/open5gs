@@ -40,6 +40,7 @@ int nas_5gs_send_to_downlink_nas_transport(amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf)
 {
     int rv;
     ogs_pkbuf_t *ngapbuf = NULL;
+    ran_ue_t *ran_ue = NULL;
 
     ogs_assert(pkbuf);
 
@@ -50,8 +51,15 @@ int nas_5gs_send_to_downlink_nas_transport(amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf)
         return OGS_ERROR;
     }
 
+    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+    if (!ran_ue) {
+        ogs_warn("NG context has already been removed");
+        ogs_pkbuf_free(pkbuf);
+        return OGS_ERROR;
+    }
+
     ngapbuf = ngap_build_downlink_nas_transport(
-            amf_ue->ran_ue, pkbuf, false, false);
+            ran_ue, pkbuf, false, false);
     ogs_expect_or_return_val(ngapbuf, OGS_ERROR);
 
     rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
