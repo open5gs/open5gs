@@ -15,4 +15,4 @@ services:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=0
     hostname: open5gs-test
-    command: /bin/bash -c "/root/setup.sh; cd open5gs/build && meson test -v"
+    command: /bin/bash -c "/root/setup.sh; cd /open5gs/build && meson test -v"
