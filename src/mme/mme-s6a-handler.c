@@ -91,6 +91,11 @@ void mme_s6a_handle_ula(mme_ue_t *mme_ue,
 
         memcpy(&mme_ue->session[i].smf_ip, &slice_data->session[i].smf_ip,
                 sizeof(mme_ue->session[i].smf_ip));
+
+        memcpy(&mme_ue->session[i].charging_characteristics, &slice_data->session[i].charging_characteristics,
+                sizeof(mme_ue->session[i].charging_characteristics));
+        mme_ue->session[i].charging_characteristics_presence =
+            slice_data->session[i].charging_characteristics_presence;
     }
 
     mme_ue->num_of_session = i;

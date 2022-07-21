@@ -103,6 +103,7 @@ extern struct dict_object *ogs_diam_s6a_apn_configuration;
 extern struct dict_object *ogs_diam_s6a_max_bandwidth_ul;
 extern struct dict_object *ogs_diam_s6a_max_bandwidth_dl;
 extern struct dict_object *ogs_diam_s6a_pdn_type;
+extern struct dict_object *ogs_diam_s6a_3gpp_charging_characteristics;
 extern struct dict_object *ogs_diam_s6a_served_party_ip_address;
 extern struct dict_object *ogs_diam_s6a_eps_subscribed_qos_profile;
 extern struct dict_object *ogs_diam_s6a_qos_class_identifier;

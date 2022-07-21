@@ -422,6 +422,8 @@ struct mme_ue_s {
     /* HSS Info */
     ogs_bitrate_t   ambr; /* UE-AMBR */
     uint32_t        network_access_mode; /* Permitted EPS Attach Type */
+    uint8_t         charging_characteristics[OGS_CHRGCHARS_LEN]; /* Subscription Level Charging Characteristics */
+    bool            charging_characteristics_presence;
 
     uint32_t        context_identifier; /* default APN */
 

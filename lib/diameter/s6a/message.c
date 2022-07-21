@@ -57,6 +57,7 @@ struct dict_object *ogs_diam_s6a_apn_configuration = NULL;
 struct dict_object *ogs_diam_s6a_max_bandwidth_ul = NULL;
 struct dict_object *ogs_diam_s6a_max_bandwidth_dl = NULL;
 struct dict_object *ogs_diam_s6a_pdn_type = NULL;
+struct dict_object *ogs_diam_s6a_3gpp_charging_characteristics = NULL;
 struct dict_object *ogs_diam_s6a_served_party_ip_address = NULL;
 struct dict_object *ogs_diam_s6a_eps_subscribed_qos_profile = NULL;
 struct dict_object *ogs_diam_s6a_qos_class_identifier = NULL;
@@ -125,6 +126,7 @@ int ogs_diam_s6a_init(void)
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "All-APN-Configurations-Included-Indicator", &ogs_diam_s6a_all_apn_configuration_included_indicator);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "APN-Configuration", &ogs_diam_s6a_apn_configuration);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "PDN-Type", &ogs_diam_s6a_pdn_type);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "3GPP-Charging-Characteristics", &ogs_diam_s6a_3gpp_charging_characteristics);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Served-Party-IP-Address", &ogs_diam_s6a_served_party_ip_address);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Subscription-Data", &ogs_diam_s6a_subscription_data);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Subscriber-Status", &ogs_diam_s6a_subscriber_status);
