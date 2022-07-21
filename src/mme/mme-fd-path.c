@@ -791,8 +791,8 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
             ogs_assert(ret == 0);
             mme_ue->network_access_mode = hdr->avp_value->i32;
         } else {
-            ogs_error("no_Network-Access-Mode");
-            error++;
+	    mme_ue->network_access_mode = 0;
+            ogs_warn("no subscribed Network-Access-Mode, defaulting to PACKET_AND_CIRCUIT (0)");
         }
 
         /* AVP: 'AMBR'(1435)
