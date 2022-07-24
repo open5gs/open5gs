@@ -1023,8 +1023,8 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                             OGS_HEX(hdr->avp_value->os.data, (int)hdr->avp_value->os.len, buf), OGS_CHRGCHARS_LEN);
                         session->charging_characteristics_presence = true;
                     } else {
-                        memcpy(session->charging_characteristics, mme_ue->charging_characteristics, OGS_CHRGCHARS_LEN);
-                        session->charging_characteristics_presence = mme_ue->charging_characteristics_presence;
+                        memcpy(session->charging_characteristics, (uint8_t *)"\x00\x00", OGS_CHRGCHARS_LEN);
+                        session->charging_characteristics_presence = false;
                     }
 
                     /* AVP: 'Served-Party-IP-Address'(848)
