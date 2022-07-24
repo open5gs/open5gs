@@ -294,8 +294,6 @@ void amf_nnrf_handle_nf_discover_search_result(
     OpenAPI_lnode_t *node = NULL;
     ogs_sbi_nf_instance_t *nf_instance = NULL;
 
-    amf_sess_t *sess = NULL;
-
     ogs_assert(sbi_object);
     ogs_assert(SearchResult);
 
