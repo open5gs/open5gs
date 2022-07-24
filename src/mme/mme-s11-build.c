@@ -333,7 +333,11 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
     if (session->charging_characteristics_presence == true) {
         req->charging_characteristics.presence = 1;
         req->charging_characteristics.data = session->charging_characteristics;
-        req->charging_characteristics.len = 2;
+        req->charging_characteristics.len = OGS_CHRGCHARS_LEN;
+    } else if (mme_ue->charging_characteristics_presence == true) {
+        req->charging_characteristics.presence = 1;
+        req->charging_characteristics.data = mme_ue->charging_characteristics;
+        req->charging_characteristics.len = OGS_CHRGCHARS_LEN;
     }
 
     gtp_message.h.type = type;
