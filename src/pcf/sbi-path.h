@@ -34,13 +34,20 @@ extern "C" {
 int pcf_sbi_open(void);
 void pcf_sbi_close(void);
 
-bool pcf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact);
-bool pcf_ue_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
-        pcf_ue_t *pcf_ue, ogs_sbi_stream_t *stream, void *data,
-        ogs_sbi_request_t *(*build)(pcf_ue_t *pcf_ue, void *data));
-bool pcf_sess_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
-        pcf_sess_t *sess, ogs_sbi_stream_t *stream, void *data,
-        ogs_sbi_request_t *(*build)(pcf_sess_t *sess, void *data));
+bool pcf_sbi_send_request(
+        ogs_sbi_object_t *sbi_object,
+        OpenAPI_nf_type_e target_nf_type,
+        void *data);
+bool pcf_ue_sbi_discover_and_send(
+        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_discovery_option_t *discovery_option,
+        ogs_sbi_request_t *(*build)(pcf_ue_t *pcf_ue, void *data),
+        pcf_ue_t *pcf_ue, ogs_sbi_stream_t *stream, void *data);
+bool pcf_sess_sbi_discover_and_send(
+        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_discovery_option_t *discovery_option,
+        ogs_sbi_request_t *(*build)(pcf_sess_t *sess, void *data),
+        pcf_sess_t *sess, ogs_sbi_stream_t *stream, void *data);
 
 bool pcf_sbi_send_am_policy_control_notify(pcf_ue_t *pcf_ue);
 bool pcf_sbi_send_smpolicycontrol_update_notify(

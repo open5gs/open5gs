@@ -262,14 +262,6 @@ af_sess_t *af_sess_find_by_pcf_app_session_id(char *pcf_app_session_id)
                         pcf_app_session_id, strlen(pcf_app_session_id));
 }
 
-void af_sess_select_nf(af_sess_t *sess, OpenAPI_nf_type_e nf_type)
-{
-    ogs_assert(sess);
-    ogs_assert(nf_type);
-
-    ogs_sbi_select_nf(&sess->sbi, nf_type, af_nf_state_registered);
-}
-
 static ogs_sbi_client_t *find_client_by_fqdn(char *fqdn, int port)
 {
     int rv;

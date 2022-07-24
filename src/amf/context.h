@@ -752,10 +752,10 @@ amf_sess_t *amf_sess_find_by_dnn(amf_ue_t *amf_ue, char *dnn);
 amf_ue_t *amf_ue_cycle(amf_ue_t *amf_ue);
 amf_sess_t *amf_sess_cycle(amf_sess_t *sess);
 
-void amf_ue_select_nf(amf_ue_t *amf_ue, OpenAPI_nf_type_e nf_type);
-void amf_sess_select_nf(amf_sess_t *sess, OpenAPI_nf_type_e nf_type);
-
-void amf_sess_select_smf(amf_sess_t *sess);
+void amf_sbi_select_nf(
+        ogs_sbi_object_t *sbi_object,
+        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_discovery_option_t *discovery_option);
 
 #define AMF_SESSION_SYNC_DONE(__aMF, __sTATE) \
     (amf_sess_xact_state_count(__aMF, __sTATE) == 0)

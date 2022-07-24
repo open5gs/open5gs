@@ -1780,40 +1780,46 @@ amf_sess_t *amf_sess_cycle(amf_sess_t *sess)
     return ogs_pool_cycle(&amf_sess_pool, sess);
 }
 
-void amf_ue_select_nf(amf_ue_t *amf_ue, OpenAPI_nf_type_e nf_type)
-{
-    ogs_assert(amf_ue);
-    ogs_assert(nf_type);
-
-    ogs_sbi_select_nf(&amf_ue->sbi, nf_type, amf_nf_state_registered);
-}
-
-void amf_sess_select_nf(amf_sess_t *sess, OpenAPI_nf_type_e nf_type)
-{
-    ogs_assert(sess);
-    ogs_assert(nf_type);
-
-    if (nf_type == OpenAPI_nf_type_SMF)
-        amf_sess_select_smf(sess);
-    else
-        ogs_sbi_select_nf(&sess->sbi, nf_type, amf_nf_state_registered);
-}
-
 static bool check_smf_info(amf_sess_t *sess, ogs_list_t *nf_info_list);
 
-void amf_sess_select_smf(amf_sess_t *sess)
+void amf_sbi_select_nf(
+        ogs_sbi_object_t *sbi_object,
+        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_discovery_option_t *discovery_option)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
+    amf_sess_t *sess = NULL;
 
-    ogs_assert(sess);
+    ogs_assert(ogs_sbi_self()->nf_state_registered);
+    ogs_assert(sbi_object);
+    ogs_assert(target_nf_type);
 
-    ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance) {
-        if (OGS_FSM_CHECK(&nf_instance->sm, amf_nf_state_registered) &&
-            nf_instance->nf_type == OpenAPI_nf_type_SMF &&
-            check_smf_info(sess, &nf_instance->nf_info_list) == true) {
-            OGS_SBI_SETUP_NF(&sess->sbi, OpenAPI_nf_type_SMF, nf_instance);
+    switch(sbi_object->type) {
+    case OGS_SBI_OBJ_UE_TYPE:
+        ogs_sbi_select_nf(sbi_object, target_nf_type, discovery_option);
+        break;
+    case OGS_SBI_OBJ_SESS_TYPE:
+        sess = (amf_sess_t *)sbi_object;
+        ogs_assert(sess);
+
+        ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance) {
+            if (ogs_sbi_discovery_param_is_matched(
+                    nf_instance, target_nf_type, discovery_option) == false)
+                continue;
+
+            if (target_nf_type == OpenAPI_nf_type_SMF) {
+                if (check_smf_info(sess, &nf_instance->nf_info_list) == false)
+                    continue;
+            }
+
+            OGS_SBI_SETUP_NF(sbi_object, target_nf_type, nf_instance);
             break;
         }
+        break;
+    default:
+        ogs_fatal("(NF discover search result) Not implemented [%d]",
+                    sbi_object->type);
+        ogs_assert_if_reached();
     }
 }
 

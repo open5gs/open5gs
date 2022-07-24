@@ -200,33 +200,33 @@ nrf:
 #
 #  <SBI Client>>
 #
-#  o SBI Client(http://127.0.0.10:7777)
+#  o SBI Client(http://127.0.1.10:7777)
 #    sbi:
-#      addr: 127.0.0.10
+#      addr: 127.0.1.10
 #      port: 7777
 #
-#  o SBI Client(https://127.0.0.10:443, http://scp.open5gs.org:80)
+#  o SBI Client(https://127.0.1.10:443, http://scp.open5gs.org:80)
 #    sbi:
-#      - addr: 127.0.0.10
+#      - addr: 127.0.1.10
 #        tls:
 #          key: scp.key
 #          pem: scp.pem
 #      - name: scp.open5gs.org
 #
-#  o SBI Client(http://[fd69:f21d:873c:fa::1]:80)
-#    If prefer_ipv4 is true, http://127.0.0.10:80 is selected.
+#  o SBI Client(http://[fd69:f21d:873c:fb::1]:80)
+#    If prefer_ipv4 is true, http://127.0.1.10:80 is selected.
 #
 #    sbi:
 #      addr:
-#        - 127.0.0.10
-#        - fd69:f21d:873c:fa::1
+#        - 127.0.1.10
+#        - fd69:f21d:873c:fb::1
 #
 #  o SBI Option (Default)
 #    - tcp_nodelay : true
 #    - so_linger.l_onoff : false
 #
 #    sbi:
-#      addr: 127.0.0.10
+#      addr: 127.0.1.10
 #      option:
 #        tcp_nodelay: false
 #        so_linger:

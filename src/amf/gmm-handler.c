@@ -720,8 +720,8 @@ int gmm_handle_authentication_response(amf_ue_t *amf_ue,
             authentication_response_parameter->length);
 
     ogs_assert(true ==
-        amf_ue_sbi_discover_and_send(OpenAPI_nf_type_AUSF, amf_ue, NULL,
-                amf_nausf_auth_build_authenticate_confirmation));
+        amf_ue_sbi_discover_and_send(OpenAPI_nf_type_AUSF, NULL,
+                amf_nausf_auth_build_authenticate_confirmation, amf_ue, NULL));
 
     return OGS_OK;
 }
@@ -1067,20 +1067,22 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                 nf_instance = OGS_SBI_NF_INSTANCE(
                                 &sess->sbi, OpenAPI_nf_type_SMF);
                 if (!nf_instance) {
-                    amf_sess_select_smf(sess);
+                    amf_sbi_select_nf(&sess->sbi, OpenAPI_nf_type_SMF, NULL);
                     nf_instance = OGS_SBI_NF_INSTANCE(
                                     &sess->sbi, OpenAPI_nf_type_SMF);
                 }
 
                 if (nf_instance) {
                     ogs_assert(true ==
-                        amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
-                            sess, AMF_CREATE_SM_CONTEXT_NO_STATE, NULL,
-                            amf_nsmf_pdusession_build_create_sm_context));
+                        amf_sess_sbi_discover_and_send(
+                            OpenAPI_nf_type_SMF, NULL,
+                            amf_nsmf_pdusession_build_create_sm_context,
+                            sess, AMF_CREATE_SM_CONTEXT_NO_STATE, NULL));
                 } else {
                     ogs_assert(true ==
-                        amf_sess_sbi_discover_and_send(OpenAPI_nf_type_NSSF,
-                            sess, 0, NULL, amf_nnssf_nsselection_build_get));
+                        amf_sess_sbi_discover_and_send(
+                            OpenAPI_nf_type_NSSF, NULL,
+                            amf_nnssf_nsselection_build_get, sess, 0, NULL));
                 }
 
             } else {
@@ -1090,9 +1092,10 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                 param.cause = OpenAPI_cause_REL_DUE_TO_DUPLICATE_SESSION_ID;
 
                 ogs_assert(true ==
-                    amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
+                    amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF, NULL,
+                        amf_nsmf_pdusession_build_update_sm_context,
                         sess, AMF_UPDATE_SM_CONTEXT_DUPLICATED_PDU_SESSION_ID,
-                        &param, amf_nsmf_pdusession_build_update_sm_context));
+                        &param));
             }
 
         } else {
@@ -1115,15 +1118,15 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                 param.ue_timezone = true;
 
                 ogs_assert(true ==
-                    amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
-                        sess, AMF_UPDATE_SM_CONTEXT_N1_RELEASED, &param,
-                        amf_nsmf_pdusession_build_update_sm_context));
+                    amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF, NULL,
+                        amf_nsmf_pdusession_build_update_sm_context,
+                        sess, AMF_UPDATE_SM_CONTEXT_N1_RELEASED, &param));
             } else {
 
                 ogs_assert(true ==
-                    amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
-                        sess, AMF_UPDATE_SM_CONTEXT_MODIFIED, &param,
-                        amf_nsmf_pdusession_build_update_sm_context));
+                    amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF, NULL,
+                        amf_nsmf_pdusession_build_update_sm_context,
+                        sess, AMF_UPDATE_SM_CONTEXT_MODIFIED, &param));
             }
 
             switch (gsm_header->message_type) {

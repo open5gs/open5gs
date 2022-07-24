@@ -501,8 +501,11 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_profile_retrieve(char *nf_instance_id)
 }
 
 ogs_sbi_request_t *ogs_nnrf_disc_build_discover(
-        OpenAPI_nf_type_e target_nf_type, OpenAPI_nf_type_e requester_nf_type)
+        OpenAPI_nf_type_e target_nf_type, OpenAPI_nf_type_e requester_nf_type,
+        ogs_sbi_discovery_option_t *discovery_option)
 {
+    int i;
+
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
 
@@ -518,6 +521,21 @@ ogs_sbi_request_t *ogs_nnrf_disc_build_discover(
 
     message.param.target_nf_type = target_nf_type;
     message.param.requester_nf_type = requester_nf_type;
+
+    if (discovery_option) {
+        message.param.discovery_option.target_nf_instance_id =
+            discovery_option->target_nf_instance_id;
+        message.param.discovery_option.requester_nf_instance_id =
+            discovery_option->requester_nf_instance_id;
+
+        message.param.discovery_option.num_of_service_names =
+            discovery_option->num_of_service_names;
+        for (i = 0;
+                i < message.param.discovery_option.num_of_service_names; i++) {
+            message.param.discovery_option.service_names[i] =
+                discovery_option->service_names[i];;
+        }
+    }
 
     request = ogs_sbi_build_request(&message);
 

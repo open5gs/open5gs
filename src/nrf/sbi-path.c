@@ -82,9 +82,6 @@ int nrf_sbi_open(void)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
 
-    if (ogs_sbi_server_start_all(server_cb) != OGS_OK)
-        return OGS_ERROR;
-
     /* Initialize SCP NF Instance */
     nf_instance = ogs_sbi_self()->scp_instance;
     if (nf_instance) {
@@ -95,6 +92,16 @@ int nrf_sbi_open(void)
         ogs_assert(client);
         client->cb = client_notify_cb;
     }
+
+    /* Timer expiration handler of client wait timer */
+    ogs_sbi_self()->client_wait_expire = nrf_timer_sbi_client_wait_expire;
+
+    /* NF register state in NF state machine */
+    ogs_sbi_self()->nf_state_registered =
+        (ogs_fsm_handler_t)nrf_nf_state_registered;
+
+    if (ogs_sbi_server_start_all(server_cb) != OGS_OK)
+        return OGS_ERROR;
 
     return OGS_OK;
 }

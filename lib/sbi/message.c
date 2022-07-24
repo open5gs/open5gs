@@ -60,6 +60,11 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
 
     ogs_assert(message);
 
+    /* Discovery Option */
+    for (i = 0; i < message->param.discovery_option.num_of_service_names; i++)
+        ogs_free(message->param.discovery_option.service_names[i]);
+
+    /* JSON Data */
     if (message->NFProfile)
         OpenAPI_nf_profile_free(message->NFProfile);
     if (message->ProblemDetails)
@@ -176,6 +181,7 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
     if (message->DeregistrationData)
         OpenAPI_deregistration_data_free(message->DeregistrationData);
 
+    /* HTTP Part */
     for (i = 0; i < message->num_of_part; i++) {
         if (message->part[i].pkbuf)
             ogs_pkbuf_free(message->part[i].pkbuf);
@@ -242,6 +248,7 @@ void ogs_sbi_response_free(ogs_sbi_response_t *response)
 
 ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
 {
+    int i;
     ogs_sbi_request_t *request = NULL;
 
     ogs_assert(message);
@@ -255,8 +262,6 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
         request->h.uri = ogs_strdup(message->h.uri);
         ogs_expect_or_return_val(request->h.uri, NULL);
     } else {
-        int i;
-
         ogs_expect_or_return_val(message->h.service.name, NULL);
         request->h.service.name = ogs_strdup(message->h.service.name);
         ogs_expect_or_return_val(message->h.api.version, NULL);
@@ -270,7 +275,50 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
                     message->h.resource.component[i]);
     }
 
-    /* URL Param */
+    /* Discovery Parameter */
+    if (message->param.target_nf_type) {
+        char *v = OpenAPI_nf_type_ToString(message->param.target_nf_type);
+        ogs_expect_or_return_val(v, NULL);
+        ogs_sbi_header_set(request->http.params,
+                OGS_SBI_PARAM_TARGET_NF_TYPE, v);
+    }
+    if (message->param.requester_nf_type) {
+        char *v = OpenAPI_nf_type_ToString(message->param.requester_nf_type);
+        ogs_expect_or_return_val(v, NULL);
+        ogs_sbi_header_set(request->http.params,
+                OGS_SBI_PARAM_REQUESTER_NF_TYPE, v);
+    }
+
+    /* Discovery Option Parameter */
+    if (message->param.discovery_option.target_nf_instance_id) {
+        ogs_sbi_header_set(request->http.params,
+                OGS_SBI_PARAM_TARGET_NF_INSTANCE_ID,
+                message->param.discovery_option.target_nf_instance_id);
+    }
+    if (message->param.discovery_option.requester_nf_instance_id) {
+        ogs_sbi_header_set(request->http.params,
+                OGS_SBI_PARAM_REQUESTER_NF_INSTANCE_ID,
+                message->param.discovery_option.requester_nf_instance_id);
+    }
+    if (message->param.discovery_option.num_of_service_names) {
+        char *v = NULL;
+        cJSON *item = NULL;
+
+        item = cJSON_CreateStringArray(
+            (const char * const*)message->param.discovery_option.service_names,
+            message->param.discovery_option.num_of_service_names);
+        ogs_expect_or_return_val(item, NULL);
+
+        v = cJSON_Print(item);
+        ogs_expect_or_return_val(v, NULL);
+        cJSON_Delete(item);
+
+        ogs_sbi_header_set(
+                request->http.params, OGS_SBI_PARAM_SERVICE_NAMES, v);
+        ogs_free(v);
+    }
+
+    /* URL Query Paramemter */
     if (message->param.nf_id) {
         ogs_sbi_header_set(request->http.params,
                 OGS_SBI_PARAM_NF_ID, message->param.nf_id);
@@ -279,18 +327,6 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
         char *v = OpenAPI_nf_type_ToString(message->param.nf_type);
         ogs_expect_or_return_val(v, NULL);
         ogs_sbi_header_set(request->http.params, OGS_SBI_PARAM_NF_TYPE, v);
-    }
-    if (message->param.requester_nf_type) {
-        char *v = OpenAPI_nf_type_ToString(message->param.requester_nf_type);
-        ogs_expect_or_return_val(v, NULL);
-        ogs_sbi_header_set(request->http.params,
-                OGS_SBI_PARAM_REQUESTER_NF_TYPE, v);
-    }
-    if (message->param.target_nf_type) {
-        char *v = OpenAPI_nf_type_ToString(message->param.target_nf_type);
-        ogs_expect_or_return_val(v, NULL);
-        ogs_sbi_header_set(request->http.params,
-                OGS_SBI_PARAM_TARGET_NF_TYPE, v);
     }
     if (message->param.limit) {
         char *v = ogs_msprintf("%d", message->param.limit);
@@ -452,18 +488,51 @@ int ogs_sbi_parse_request(
 
     for (hi = ogs_hash_first(request->http.params);
             hi; hi = ogs_hash_next(hi)) {
-        if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_NF_ID)) {
-            message->param.nf_id = ogs_hash_this_val(hi);
-        } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_NF_TYPE)) {
-            message->param.nf_type =
-                OpenAPI_nf_type_FromString(ogs_hash_this_val(hi));
-        } else if (!strcmp(ogs_hash_this_key(hi),
+        /* Discovery Parameter */
+        if (!strcmp(ogs_hash_this_key(hi),
                     OGS_SBI_PARAM_TARGET_NF_TYPE)) {
             message->param.target_nf_type =
                 OpenAPI_nf_type_FromString(ogs_hash_this_val(hi));
         } else if (!strcmp(ogs_hash_this_key(hi),
                     OGS_SBI_PARAM_REQUESTER_NF_TYPE)) {
             message->param.requester_nf_type =
+                OpenAPI_nf_type_FromString(ogs_hash_this_val(hi));
+
+        /* Discovery Option Parameter */
+        } else if (!strcmp(ogs_hash_this_key(hi),
+                    OGS_SBI_PARAM_TARGET_NF_INSTANCE_ID)) {
+            message->param.discovery_option.target_nf_instance_id =
+                        ogs_hash_this_val(hi);
+        } else if (!strcmp(ogs_hash_this_key(hi),
+                    OGS_SBI_PARAM_REQUESTER_NF_INSTANCE_ID)) {
+            message->param.discovery_option.requester_nf_instance_id =
+                        ogs_hash_this_val(hi);
+        } else if (!strcmp(ogs_hash_this_key(hi),
+                    OGS_SBI_PARAM_SERVICE_NAMES)) {
+            char *v = NULL;
+            cJSON *array = NULL, *item = NULL;
+
+            v = ogs_hash_this_val(hi);
+            if (v) {
+                array = cJSON_Parse(v);
+                if (cJSON_IsArray(array)) {
+                    cJSON_ArrayForEach(item, array) {
+                        char *names = cJSON_GetStringValue(item);
+                        if (names) {
+                            message->param.discovery_option.service_names[
+                                message->param.discovery_option.
+                                    num_of_service_names++] = ogs_strdup(names);
+                        }
+                    }
+                }
+                cJSON_Delete(array);
+            }
+
+        /* URL Query Parameter */
+        } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_NF_ID)) {
+            message->param.nf_id = ogs_hash_this_val(hi);
+        } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_NF_TYPE)) {
+            message->param.nf_type =
                 OpenAPI_nf_type_FromString(ogs_hash_this_val(hi));
         } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_LIMIT)) {
             message->param.limit = atoi(ogs_hash_this_val(hi));
@@ -2188,4 +2257,71 @@ static void http_message_free(ogs_sbi_http_message_t *http)
         if (http->part[i].content_type)
             ogs_free(http->part[i].content_type);
     }
+}
+
+ogs_sbi_discovery_option_t *ogs_sbi_discovery_option_new(void)
+{
+    ogs_sbi_discovery_option_t *discovery_option = NULL;
+
+    discovery_option = ogs_calloc(1, sizeof(*discovery_option));
+    ogs_assert(discovery_option);
+
+    return discovery_option;
+}
+void ogs_sbi_discovery_option_free(
+        ogs_sbi_discovery_option_t *discovery_option)
+{
+    int i;
+
+    ogs_assert(discovery_option);
+
+    if (discovery_option->target_nf_instance_id)
+        ogs_free(discovery_option->target_nf_instance_id);
+    if (discovery_option->requester_nf_instance_id)
+        ogs_free(discovery_option->requester_nf_instance_id);
+
+    for (i = 0; i < discovery_option->num_of_service_names; i++)
+        ogs_free(discovery_option->service_names[i]);
+
+    ogs_free(discovery_option);
+}
+
+void ogs_sbi_discovery_option_set_target_nf_instance_id(
+        ogs_sbi_discovery_option_t *discovery_option,
+        char *target_nf_instance_id)
+{
+    ogs_assert(discovery_option);
+    ogs_assert(target_nf_instance_id);
+
+    ogs_assert(!discovery_option->target_nf_instance_id);
+    discovery_option->target_nf_instance_id = ogs_strdup(target_nf_instance_id);
+    ogs_assert(discovery_option->target_nf_instance_id);
+}
+void ogs_sbi_discovery_option_set_requester_nf_instance_id(
+        ogs_sbi_discovery_option_t *discovery_option,
+        char *requester_nf_instance_id)
+{
+    ogs_assert(discovery_option);
+    ogs_assert(requester_nf_instance_id);
+
+    ogs_assert(!discovery_option->requester_nf_instance_id);
+    discovery_option->requester_nf_instance_id =
+        ogs_strdup(requester_nf_instance_id);
+    ogs_assert(discovery_option->requester_nf_instance_id);
+}
+void ogs_sbi_discovery_option_add_service_names(
+        ogs_sbi_discovery_option_t *discovery_option,
+        char *service_name)
+{
+    ogs_assert(discovery_option);
+    ogs_assert(service_name);
+
+    ogs_assert(discovery_option->num_of_service_names <
+                OGS_MAX_NUM_OF_NF_SERVICE);
+
+    discovery_option->service_names[discovery_option->num_of_service_names] =
+        ogs_strdup(service_name);
+    ogs_assert(discovery_option->service_names
+                [discovery_option->num_of_service_names]);
+    discovery_option->num_of_service_names++;
 }

@@ -123,8 +123,9 @@ void app_terminate(void)
 
     if (hss_thread) ogs_thread_destroy(hss_thread);
     if (pcrf_thread) ogs_thread_destroy(pcrf_thread);
-    if (nrf_thread) ogs_thread_destroy(nrf_thread);
+
     if (scp_thread) ogs_thread_destroy(scp_thread);
+    if (nrf_thread) ogs_thread_destroy(nrf_thread);
 }
 
 void test_app_init(void)

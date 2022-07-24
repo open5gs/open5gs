@@ -81,9 +81,6 @@ int smf_sbi_open(void)
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_nf_service_t *service = NULL;
 
-    if (ogs_sbi_server_start_all(server_cb) != OGS_OK)
-        return OGS_ERROR;
-
     /* Add SELF NF instance */
     nf_instance = ogs_sbi_self()->nf_instance;
     ogs_assert(nf_instance);
@@ -116,6 +113,16 @@ int smf_sbi_open(void)
         }
     }
 
+    /* Timer expiration handler of client wait timer */
+    ogs_sbi_self()->client_wait_expire = smf_timer_sbi_client_wait_expire;
+
+    /* NF register state in NF state machine */
+    ogs_sbi_self()->nf_state_registered =
+        (ogs_fsm_handler_t)smf_nf_state_registered;
+
+    if (ogs_sbi_server_start_all(server_cb) != OGS_OK)
+        return OGS_ERROR;
+
     return OGS_OK;
 }
 
@@ -125,29 +132,47 @@ void smf_sbi_close(void)
     ogs_sbi_server_stop_all();
 }
 
-bool smf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact)
+bool smf_sbi_send_request(
+        ogs_sbi_object_t *sbi_object,
+        OpenAPI_nf_type_e target_nf_type,
+        void *data)
 {
-    return ogs_sbi_send(nf_instance, client_cb, xact);
+    ogs_sbi_nf_instance_t *nf_instance = NULL;
+
+    nf_instance = OGS_SBI_NF_INSTANCE(sbi_object, target_nf_type);
+    if (!nf_instance) {
+        ogs_error("(NF discover) No [%s]",
+                OpenAPI_nf_type_ToString(target_nf_type));
+        return false;
+    }
+
+    return ogs_sbi_send_request(nf_instance, client_cb, data);
 }
 
-bool smf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
-        smf_sess_t *sess, ogs_sbi_stream_t *stream, int state, void *data,
-        ogs_sbi_request_t *(*build)(smf_sess_t *sess, void *data))
+bool smf_sbi_discover_and_send(
+        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_discovery_option_t *discovery_option,
+        ogs_sbi_request_t *(*build)(smf_sess_t *sess, void *data),
+        smf_sess_t *sess, ogs_sbi_stream_t *stream, int state, void *data)
 {
-    ogs_sbi_xact_t *xact = NULL;
     smf_ue_t *smf_ue = NULL;
+    ogs_sbi_xact_t *xact = NULL;
 
-    ogs_assert(target_nf_type);
+    OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
 
     ogs_assert(sess);
     smf_ue = sess->smf_ue;
     ogs_assert(smf_ue);
 
+    ogs_assert(ogs_sbi_self()->nf_instance);
+    requester_nf_type = ogs_sbi_self()->nf_instance->nf_type;
+    ogs_assert(requester_nf_type);
+
     ogs_assert(build);
 
-    xact = ogs_sbi_xact_add(target_nf_type, &sess->sbi,
-            (ogs_sbi_build_f)build, sess, data,
-            smf_timer_sbi_client_wait_expire);
+    xact = ogs_sbi_xact_add(
+            &sess->sbi, target_nf_type, discovery_option,
+            (ogs_sbi_build_f)build, sess, data);
     if (!xact) {
         ogs_error("smf_sbi_discover_and_send() failed");
         ogs_assert(true ==
@@ -160,8 +185,10 @@ bool smf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
     xact->state = state;
     xact->assoc_stream = stream;
 
-    if (ogs_sbi_discover_and_send(xact,
-            (ogs_fsm_handler_t)smf_nf_state_registered, client_cb) != true) {
+    if (ogs_sbi_discover_and_send(
+            &sess->sbi,
+            target_nf_type, requester_nf_type, discovery_option,
+            client_cb, xact) != true) {
         ogs_error("smf_sbi_discover_and_send() failed");
         ogs_sbi_xact_remove(xact);
 
@@ -179,8 +206,12 @@ bool smf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
 void smf_namf_comm_send_n1_n2_message_transfer(
         smf_sess_t *sess, smf_n1_n2_message_transfer_param_t *param)
 {
-    ogs_sbi_xact_t *xact = NULL;
     smf_ue_t *smf_ue = NULL;
+    ogs_sbi_xact_t *xact = NULL;
+
+    OpenAPI_nf_type_e target_nf_type = OpenAPI_nf_type_NULL;
+    OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
+    ogs_sbi_discovery_option_t *discovery_option = NULL;
 
     ogs_assert(param);
     ogs_assert(param->state);
@@ -190,9 +221,21 @@ void smf_namf_comm_send_n1_n2_message_transfer(
     smf_ue = sess->smf_ue;
     ogs_assert(smf_ue);
 
-    xact = ogs_sbi_xact_add(OpenAPI_nf_type_AMF, &sess->sbi,
+    ogs_assert(ogs_sbi_self()->nf_instance);
+    requester_nf_type = ogs_sbi_self()->nf_instance->nf_type;
+    ogs_assert(requester_nf_type);
+
+    target_nf_type = OpenAPI_nf_type_AMF;
+
+    discovery_option = ogs_sbi_discovery_option_new();
+    ogs_assert(discovery_option);
+    ogs_sbi_discovery_option_set_target_nf_instance_id(
+            discovery_option, sess->serving_nf_id);
+
+    xact = ogs_sbi_xact_add(
+            &sess->sbi, target_nf_type, discovery_option,
             (ogs_sbi_build_f)smf_namf_comm_build_n1_n2_message_transfer,
-            sess, param, smf_timer_sbi_client_wait_expire);
+            sess, param);
     if (!xact) {
         ogs_error("smf_namf_comm_send_n1_n2_message_transfer() failed");
         return;
@@ -200,10 +243,10 @@ void smf_namf_comm_send_n1_n2_message_transfer(
 
     xact->state = param->state;
 
-    if (ogs_sbi_discover_by_nf_instanceid_and_send(xact,
-            (ogs_fsm_handler_t)smf_nf_state_registered, client_cb,
-            sess->serving_nf_id) != true)
-    {
+    if (ogs_sbi_discover_and_send(
+            &sess->sbi,
+            target_nf_type, requester_nf_type, discovery_option,
+            client_cb, xact) != true) {
         ogs_error("smf_namf_comm_send_n1_n2_message_transfer() failed");
         ogs_sbi_xact_remove(xact);
     }

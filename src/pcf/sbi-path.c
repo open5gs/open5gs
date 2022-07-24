@@ -79,9 +79,6 @@ int pcf_sbi_open(void)
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_nf_service_t *service = NULL;
 
-    if (ogs_sbi_server_start_all(server_cb) != OGS_OK)
-        return OGS_ERROR;
-
     /* Add SELF NF instance */
     nf_instance = ogs_sbi_self()->nf_instance;
     ogs_assert(nf_instance);
@@ -127,6 +124,16 @@ int pcf_sbi_open(void)
         }
     }
 
+    /* Timer expiration handler of client wait timer */
+    ogs_sbi_self()->client_wait_expire = pcf_timer_sbi_client_wait_expire;
+
+    /* NF register state in NF state machine */
+    ogs_sbi_self()->nf_state_registered =
+        (ogs_fsm_handler_t)pcf_nf_state_registered;
+
+    if (ogs_sbi_server_start_all(server_cb) != OGS_OK)
+        return OGS_ERROR;
+
     return OGS_OK;
 }
 
@@ -136,31 +143,76 @@ void pcf_sbi_close(void)
     ogs_sbi_server_stop_all();
 }
 
-bool pcf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact)
+bool pcf_sbi_send_request(
+        ogs_sbi_object_t *sbi_object,
+        OpenAPI_nf_type_e target_nf_type,
+        void *data)
 {
-    return ogs_sbi_send(nf_instance, client_cb, xact);
+    ogs_sbi_nf_instance_t *nf_instance = NULL;
+
+    nf_instance = OGS_SBI_NF_INSTANCE(sbi_object, target_nf_type);
+    if (!nf_instance) {
+        pcf_ue_t *pcf_ue = NULL;
+        pcf_sess_t *sess = NULL;
+
+        ogs_assert(sbi_object->type > OGS_SBI_OBJ_BASE &&
+                    sbi_object->type < OGS_SBI_OBJ_TOP);
+        switch(sbi_object->type) {
+        case OGS_SBI_OBJ_UE_TYPE:
+            pcf_ue = (pcf_ue_t *)sbi_object;
+            ogs_assert(pcf_ue);
+            ogs_error("[%s] (NF discover) No [%s]", pcf_ue->supi,
+                    OpenAPI_nf_type_ToString(target_nf_type));
+            break;
+        case OGS_SBI_OBJ_SESS_TYPE:
+            sess = (pcf_sess_t *)sbi_object;
+            ogs_assert(sess);
+            ogs_error("[%d] (NF discover) No [%s]", sess->psi,
+                    OpenAPI_nf_type_ToString(target_nf_type));
+            break;
+        default:
+            ogs_fatal("(NF discover) Not implemented [%s:%d]",
+                OpenAPI_nf_type_ToString(target_nf_type),
+                sbi_object->type);
+            ogs_assert_if_reached();
+        }
+
+        return false;
+    }
+
+    return ogs_sbi_send_request(nf_instance, client_cb, data);
 }
 
-static bool pcf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
-        ogs_sbi_object_t *sbi_object, ogs_sbi_stream_t *stream,
-        ogs_sbi_build_f build, void *context, void *data)
+static bool pcf_sbi_discover_and_send(
+        ogs_sbi_object_t *sbi_object,
+        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_discovery_option_t *discovery_option,
+        ogs_sbi_build_f build,
+        void *context, ogs_sbi_stream_t *stream, void *data)
 {
     ogs_sbi_xact_t *xact = NULL;
+    OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
+
+    ogs_assert(ogs_sbi_self()->nf_instance);
+    requester_nf_type = ogs_sbi_self()->nf_instance->nf_type;
+    ogs_assert(requester_nf_type);
 
     ogs_assert(target_nf_type);
     ogs_assert(sbi_object);
     ogs_assert(stream);
     ogs_assert(build);
 
-    xact = ogs_sbi_xact_add(target_nf_type, sbi_object,
-                            build, context, data,
-                            pcf_timer_sbi_client_wait_expire);
+    xact = ogs_sbi_xact_add(
+            sbi_object, target_nf_type, discovery_option,
+            build, context, data);
     ogs_expect_or_return_val(xact, false);
 
     xact->assoc_stream = stream;
 
-    if (ogs_sbi_discover_and_send(xact,
-            (ogs_fsm_handler_t)pcf_nf_state_registered, client_cb) != true) {
+    if (ogs_sbi_discover_and_send(
+            sbi_object,
+            target_nf_type, requester_nf_type, discovery_option,
+            client_cb, xact) != true) {
         ogs_error("ogs_sbi_discover_and_send() failed");
         ogs_sbi_xact_remove(xact);
         return false;
@@ -169,12 +221,15 @@ static bool pcf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
     return true;
 }
 
-bool pcf_ue_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
-        pcf_ue_t *pcf_ue, ogs_sbi_stream_t *stream, void *data,
-        ogs_sbi_request_t *(*build)(pcf_ue_t *pcf_ue, void *data))
+bool pcf_ue_sbi_discover_and_send(
+        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_discovery_option_t *discovery_option,
+        ogs_sbi_request_t *(*build)(pcf_ue_t *pcf_ue, void *data),
+        pcf_ue_t *pcf_ue, ogs_sbi_stream_t *stream, void *data)
 {
-    if (pcf_sbi_discover_and_send(target_nf_type, &pcf_ue->sbi, stream,
-                (ogs_sbi_build_f)build, pcf_ue, data) != true) {
+    if (pcf_sbi_discover_and_send(
+                &pcf_ue->sbi, target_nf_type, discovery_option,
+                (ogs_sbi_build_f)build, pcf_ue, stream, data) != true) {
         ogs_error("pcf_ue_sbi_discover_and_send() failed");
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,
@@ -186,12 +241,15 @@ bool pcf_ue_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
     return true;
 }
 
-bool pcf_sess_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
-        pcf_sess_t *sess, ogs_sbi_stream_t *stream, void *data,
-        ogs_sbi_request_t *(*build)(pcf_sess_t *sess, void *data))
+bool pcf_sess_sbi_discover_and_send(
+        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_discovery_option_t *discovery_option,
+        ogs_sbi_request_t *(*build)(pcf_sess_t *sess, void *data),
+        pcf_sess_t *sess, ogs_sbi_stream_t *stream, void *data)
 {
-    if (pcf_sbi_discover_and_send(target_nf_type, &sess->sbi, stream,
-                (ogs_sbi_build_f)build, sess, data) != true) {
+    if (pcf_sbi_discover_and_send(
+                &sess->sbi, target_nf_type, discovery_option,
+                (ogs_sbi_build_f)build, sess, stream, data) != true) {
         ogs_error("pcf_sess_sbi_discover_and_send() failed");
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,

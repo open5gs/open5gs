@@ -455,8 +455,8 @@ void af_state_operational(ogs_fsm_t *s, af_event_t *e)
 
         switch(e->local_id) {
         case AF_LOCAL_DISCOVER_AND_SEND:
-            af_sbi_discover_and_send(e->local.target_nf_type,
-                    e->sess, e->local.data, e->local.build);
+            af_sbi_discover_and_send(e->local.target_nf_type, NULL,
+                    e->local.build, e->sess, e->local.data);
             break;
         case AF_LOCAL_SEND_TO_PCF:
             af_sbi_send_to_pcf(e->sess, e->local.data, e->local.build);

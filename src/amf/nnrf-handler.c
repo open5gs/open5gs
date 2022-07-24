@@ -255,16 +255,19 @@ void amf_nnrf_handle_nf_discover(
         ogs_sbi_xact_t *xact, ogs_sbi_message_t *recvmsg)
 {
     ogs_sbi_object_t *sbi_object = NULL;
-    amf_ue_t *amf_ue = NULL;
-    amf_sess_t *sess = NULL;
-    ogs_sbi_nf_instance_t *nf_instance = NULL;
+    OpenAPI_nf_type_e target_nf_type = 0;
+    ogs_sbi_discovery_option_t *discovery_option = NULL;
 
     OpenAPI_search_result_t *SearchResult = NULL;
 
+    ogs_assert(recvmsg);
     ogs_assert(xact);
     sbi_object = xact->sbi_object;
     ogs_assert(sbi_object);
-    ogs_assert(recvmsg);
+    target_nf_type = xact->target_nf_type;
+    ogs_assert(target_nf_type);
+
+    discovery_option = xact->discovery_option;
 
     SearchResult = recvmsg->SearchResult;
     if (!SearchResult) {
@@ -272,58 +275,26 @@ void amf_nnrf_handle_nf_discover(
         return;
     }
 
-    amf_nnrf_handle_nf_discover_search_result(sbi_object, SearchResult);
+    amf_nnrf_handle_nf_discover_search_result(
+            sbi_object, target_nf_type, discovery_option, SearchResult);
 
-    ogs_assert(xact->target_nf_type);
-    nf_instance = OGS_SBI_NF_INSTANCE(sbi_object, xact->target_nf_type);
-    if (!nf_instance) {
-        ogs_assert(sbi_object->type > OGS_SBI_OBJ_BASE &&
-                    sbi_object->type < OGS_SBI_OBJ_TOP);
-        switch(sbi_object->type) {
-        case OGS_SBI_OBJ_UE_TYPE:
-            amf_ue = (amf_ue_t *)sbi_object;
-            ogs_assert(amf_ue);
-            ogs_error("[%s] (NF discover) No [%s]", amf_ue->suci,
-                    OpenAPI_nf_type_ToString(xact->target_nf_type));
-            ogs_assert(OGS_OK ==
-                nas_5gs_send_gmm_reject_from_sbi(amf_ue,
-                    OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT));
-            break;
-        case OGS_SBI_OBJ_SESS_TYPE:
-            sess = (amf_sess_t *)sbi_object;
-            ogs_assert(sess);
-            ogs_error("[%d:%d] (NF discover) No [%s]", sess->psi, sess->pti,
-                    OpenAPI_nf_type_ToString(xact->target_nf_type));
-            if (sess->payload_container_type) {
-                ogs_assert(OGS_OK ==
-                    nas_5gs_send_back_gsm_message(sess,
-                        OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
-                        AMF_NAS_BACKOFF_TIME));
-            } else {
-                ogs_assert(OGS_OK ==
-                    ngap_send_error_indication2(amf_ue,
-                        NGAP_Cause_PR_transport,
-                        NGAP_CauseTransport_transport_resource_unavailable));
-            }
-            break;
-        default:
-            ogs_fatal("(NF discover) Not implemented [%s:%d]",
-                OpenAPI_nf_type_ToString(xact->target_nf_type),
-                sbi_object->type);
-            ogs_assert_if_reached();
-        }
-    } else {
-        ogs_assert(true == amf_sbi_send(nf_instance, xact));
-    }
+    amf_sbi_select_nf(sbi_object, target_nf_type, discovery_option);
+
+    ogs_expect(true == amf_sbi_send_request(sbi_object, target_nf_type, xact));
 }
 
 void amf_nnrf_handle_nf_discover_search_result(
-        ogs_sbi_object_t *sbi_object, OpenAPI_search_result_t *SearchResult)
+        ogs_sbi_object_t *sbi_object,
+        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_discovery_option_t *discovery_option,
+        OpenAPI_search_result_t *SearchResult)
 {
     bool handled;
 
     OpenAPI_lnode_t *node = NULL;
     ogs_sbi_nf_instance_t *nf_instance = NULL;
+
+    amf_sess_t *sess = NULL;
 
     ogs_assert(sbi_object);
     ogs_assert(SearchResult);
@@ -355,9 +326,6 @@ void amf_nnrf_handle_nf_discover_search_result(
         }
 
         if (NF_INSTANCE_IS_OTHERS(nf_instance->id)) {
-            amf_ue_t *amf_ue = NULL;
-            amf_sess_t *sess = NULL;
-
             handled = ogs_sbi_nnrf_handle_nf_profile(
                         nf_instance, NFProfile, NULL, NULL);
             if (!handled) {
@@ -372,23 +340,6 @@ void amf_nnrf_handle_nf_discover_search_result(
                 ogs_error("[%s] Cannot assciate NF EndPoint", nf_instance->id);
                 AMF_NF_INSTANCE_CLEAR("NRF-discover", nf_instance);
                 continue;
-            }
-
-            switch(sbi_object->type) {
-            case OGS_SBI_OBJ_UE_TYPE:
-                amf_ue = (amf_ue_t *)sbi_object;
-                ogs_assert(amf_ue);
-                amf_ue_select_nf(amf_ue, nf_instance->nf_type);
-                break;
-            case OGS_SBI_OBJ_SESS_TYPE:
-                sess = (amf_sess_t *)sbi_object;
-                ogs_assert(sess);
-                amf_sess_select_nf(sess, nf_instance->nf_type);
-                break;
-            default:
-                ogs_fatal("(NF discover search result) Not implemented [%d]",
-                            sbi_object->type);
-                ogs_assert_if_reached();
             }
 
             /* TIME : Update validity from NRF */

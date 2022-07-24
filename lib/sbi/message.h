@@ -247,20 +247,6 @@ extern "C" {
 #define OGS_SBI_NBSF_MANAGEMENT_ES3XX 4
 #define OGS_SBI_NBSF_MANAGEMENT_EXTENDED_SAME_PCF 5
 
-#define OGS_SBI_PARAM_NF_ID                         "nf-id"
-#define OGS_SBI_PARAM_NF_TYPE                       "nf-type"
-#define OGS_SBI_PARAM_TARGET_NF_TYPE                "target-nf-type"
-#define OGS_SBI_PARAM_REQUESTER_NF_TYPE             "requester-nf-type"
-#define OGS_SBI_PARAM_LIMIT                         "limit"
-#define OGS_SBI_PARAM_DNN                           "dnn"
-#define OGS_SBI_PARAM_PLMN_ID                       "plmn-id"
-#define OGS_SBI_PARAM_SINGLE_NSSAI                  "single-nssai"
-#define OGS_SBI_PARAM_SNSSAI                        "snssai"
-#define OGS_SBI_PARAM_SLICE_INFO_REQUEST_FOR_PDU_SESSION \
-        "slice-info-request-for-pdu-session"
-#define OGS_SBI_PARAM_IPV4ADDR                      "ipv4Addr"
-#define OGS_SBI_PARAM_IPV6PREFIX                    "ipv6Prefix"
-
 #define OGS_SBI_ACCEPT                              "Accept"
 #define OGS_SBI_ACCEPT_ENCODING                     "Accept-Encoding"
 #define OGS_SBI_CONTENT_TYPE                        "Content-Type"
@@ -274,20 +260,61 @@ extern "C" {
 #define OGS_SBI_APPLICATION_5GNAS_TYPE              "vnd.3gpp.5gnas"
 #define OGS_SBI_APPLICATION_NGAP_TYPE               "vnd.3gpp.ngap"
 
-#define OGS_SBI_CUSTOM_3GPP_COMMON              "3gpp-Sbi-"
-#define OGS_SBI_CUSTOM_MESSAGE_PRIORITY         "3gpp-Sbi-Message-Priority"
-#define OGS_SBI_CUSTOM_CALLBACK                 "3gpp-Sbi-Callback"
-#define OGS_SBI_CUSTOM_TARGET_APIROOT           "3gpp-Sbi-Target-apiRoot"
-#define OGS_SBI_CUSTOM_ROUTING_BINDING          "3gpp-Sbi-Routing-Binding"
-#define OGS_SBI_CUSTOM_BINDING                  "3gpp-Sbi-Binding"
-#define OGS_SBI_CUSTOM_DISCOVERY_COMMON         "3gpp-Sbi-Discovery-"
-#define OGS_SBI_CUSTOM_PRODUCER_ID              "3gpp-Sbi-Producer-Id"
-#define OGS_SBI_CUSTOM_OCI                      "3gpp-Sbi-Oci"
-#define OGS_SBI_CUSTOM_CLIENT_CREDENTIALS       "3gpp-Sbi-Client-Credentials"
-#define OGS_SBI_CUSTOM_NRF_URI                  "3gpp-Sbi-Nrf-Uri"
-#define OGS_SBI_CUSTOM_TARGET_NF_ID             "3gpp-Sbi-Target-Nf-Id"
-#define OGS_SBI_CUSTOM_ACCESS_SCOPE             "3gpp-Sbi-Access-Scope"
-#define OGS_SBI_CUSTOM_ACCESS_TOKEN             "3gpp-Sbi-Access-Token"
+#define OGS_SBI_CUSTOM_3GPP_COMMON                  "3gpp-Sbi-"
+#define OGS_SBI_CUSTOM_MESSAGE_PRIORITY  \
+    OGS_SBI_CUSTOM_3GPP_COMMON "Message-Priority"
+#define OGS_SBI_CUSTOM_CALLBACK          \
+    OGS_SBI_CUSTOM_3GPP_COMMON "Callback"
+#define OGS_SBI_CUSTOM_TARGET_APIROOT    \
+    OGS_SBI_CUSTOM_3GPP_COMMON "Target-apiRoot"
+#define OGS_SBI_CUSTOM_ROUTING_BINDING   \
+    OGS_SBI_CUSTOM_3GPP_COMMON "Routing-Binding"
+#define OGS_SBI_CUSTOM_BINDING           \
+    OGS_SBI_CUSTOM_3GPP_COMMON "Binding"
+#define OGS_SBI_CUSTOM_DISCOVERY_COMMON  \
+    OGS_SBI_CUSTOM_3GPP_COMMON "Discovery-"
+#define OGS_SBI_CUSTOM_DISCOVERY_TARGET_NF_TYPE     \
+    OGS_SBI_CUSTOM_DISCOVERY_COMMON OGS_SBI_PARAM_TARGET_NF_TYPE
+#define OGS_SBI_CUSTOM_DISCOVERY_REQUESTER_NF_TYPE  \
+    OGS_SBI_CUSTOM_DISCOVERY_COMMON OGS_SBI_PARAM_REQUESTER_NF_TYPE
+#define OGS_SBI_CUSTOM_DISCOVERY_TARGET_NF_INSTANCE_ID \
+    OGS_SBI_CUSTOM_DISCOVERY_COMMON OGS_SBI_PARAM_TARGET_NF_INSTANCE_ID
+#define OGS_SBI_CUSTOM_DISCOVERY_REQUESTER_NF_INSTANCE_ID \
+    OGS_SBI_CUSTOM_DISCOVERY_COMMON OGS_SBI_PARAM_REQUESTER_NF_INSTANCE_ID
+#define OGS_SBI_CUSTOM_DISCOVERY_SERVICE_NAMES  \
+    OGS_SBI_CUSTOM_DISCOVERY_COMMON OGS_SBI_PARAM_SERVICE_NAMES
+#define OGS_SBI_CUSTOM_PRODUCER_ID       \
+    OGS_SBI_CUSTOM_3GPP_COMMON "Producer-Id"
+#define OGS_SBI_CUSTOM_OCI               \
+    OGS_SBI_CUSTOM_3GPP_COMMON "Oci"
+#define OGS_SBI_CUSTOM_CLIENT_CREDENTIALS   \
+    OGS_SBI_CUSTOM_3GPP_COMMON "Client-Credentials"
+#define OGS_SBI_CUSTOM_NRF_URI           \
+    OGS_SBI_CUSTOM_3GPP_COMMON "Nrf-Uri"
+#define OGS_SBI_CUSTOM_TARGET_NF_ID      \
+    OGS_SBI_CUSTOM_3GPP_COMMON "Target-Nf-Id"
+#define OGS_SBI_CUSTOM_ACCESS_SCOPE      \
+    OGS_SBI_CUSTOM_3GPP_COMMON "Access-Scope"
+#define OGS_SBI_CUSTOM_ACCESS_TOKEN      \
+    OGS_SBI_CUSTOM_3GPP_COMMON "Access-Token"
+
+#define OGS_SBI_PARAM_TARGET_NF_TYPE                "target-nf-type"
+#define OGS_SBI_PARAM_REQUESTER_NF_TYPE             "requester-nf-type"
+#define OGS_SBI_PARAM_TARGET_NF_INSTANCE_ID         "target-nf-instance-id"
+#define OGS_SBI_PARAM_REQUESTER_NF_INSTANCE_ID      "requester-nf-instance-id"
+#define OGS_SBI_PARAM_SERVICE_NAMES                 "service-names"
+
+#define OGS_SBI_PARAM_NF_ID                         "nf-id"
+#define OGS_SBI_PARAM_NF_TYPE                       "nf-type"
+#define OGS_SBI_PARAM_LIMIT                         "limit"
+#define OGS_SBI_PARAM_DNN                           "dnn"
+#define OGS_SBI_PARAM_PLMN_ID                       "plmn-id"
+#define OGS_SBI_PARAM_SINGLE_NSSAI                  "single-nssai"
+#define OGS_SBI_PARAM_SNSSAI                        "snssai"
+#define OGS_SBI_PARAM_SLICE_INFO_REQUEST_FOR_PDU_SESSION \
+        "slice-info-request-for-pdu-session"
+#define OGS_SBI_PARAM_IPV4ADDR                      "ipv4Addr"
+#define OGS_SBI_PARAM_IPV6PREFIX                    "ipv6Prefix"
 
 #define OGS_SBI_CONTENT_JSON_TYPE                   \
     OGS_SBI_APPLICATION_TYPE "/" OGS_SBI_APPLICATION_JSON_TYPE
@@ -337,6 +364,14 @@ typedef struct ogs_sbi_part_s {
     ogs_pkbuf_t *pkbuf;
 } ogs_sbi_part_t;
 
+typedef struct ogs_sbi_discovery_option_s {
+    char *target_nf_instance_id;
+    char *requester_nf_instance_id;
+
+    int num_of_service_names;
+    char *service_names[OGS_MAX_NUM_OF_NF_SERVICE];
+} ogs_sbi_discovery_option_t;
+
 typedef struct ogs_sbi_message_s {
     ogs_sbi_header_t h;
 
@@ -349,8 +384,14 @@ typedef struct ogs_sbi_message_s {
     } http;
 
     struct {
+        /* Discovery Parameter */
         OpenAPI_nf_type_e target_nf_type;
         OpenAPI_nf_type_e requester_nf_type;
+
+        /* Discovery Option Parameter */
+        ogs_sbi_discovery_option_t discovery_option;
+
+        /* URL Query Parameter */
         char *nf_id;
         OpenAPI_nf_type_e nf_type;
         int limit;
@@ -493,6 +534,20 @@ int ogs_sbi_parse_header(ogs_sbi_message_t *message, ogs_sbi_header_t *header);
 void ogs_sbi_header_free(ogs_sbi_header_t *h);
 
 void ogs_sbi_http_hash_free(ogs_hash_t *hash);
+
+ogs_sbi_discovery_option_t *ogs_sbi_discovery_option_new(void);
+void ogs_sbi_discovery_option_free(
+        ogs_sbi_discovery_option_t *discovery_option);
+
+void ogs_sbi_discovery_option_set_target_nf_instance_id(
+        ogs_sbi_discovery_option_t *discovery_option,
+        char *target_nf_instance_id);
+void ogs_sbi_discovery_option_set_requester_nf_instance_id(
+        ogs_sbi_discovery_option_t *discovery_option,
+        char *requester_nf_instance_id);
+void ogs_sbi_discovery_option_add_service_names(
+        ogs_sbi_discovery_option_t *discovery_option,
+        char *service_name);
 
 #ifdef __cplusplus
 }

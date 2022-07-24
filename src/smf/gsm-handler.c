@@ -67,9 +67,9 @@ int gsm_handle_pdu_session_establishment_request(
     }
 
     ogs_assert(true ==
-        smf_sbi_discover_and_send(OpenAPI_nf_type_UDM, sess, stream,
-                0, (char *)OGS_SBI_RESOURCE_NAME_SM_DATA,
-                smf_nudm_sdm_build_get));
+        smf_sbi_discover_and_send(OpenAPI_nf_type_UDM, NULL,
+            smf_nudm_sdm_build_get,
+            sess, stream, 0, (char *)OGS_SBI_RESOURCE_NAME_SM_DATA));
 
     return OGS_OK;
 }

@@ -253,16 +253,22 @@ void smf_nnrf_handle_nf_discover(
         ogs_sbi_xact_t *xact, ogs_sbi_message_t *recvmsg)
 {
     ogs_sbi_object_t *sbi_object = NULL;
+    OpenAPI_nf_type_e target_nf_type = 0;
+    ogs_sbi_discovery_option_t *discovery_option = NULL;
     ogs_sbi_nf_instance_t *nf_instance = NULL;
 
     OpenAPI_search_result_t *SearchResult = NULL;
     OpenAPI_lnode_t *node = NULL;
     bool handled;
 
+    ogs_assert(recvmsg);
     ogs_assert(xact);
     sbi_object = xact->sbi_object;
     ogs_assert(sbi_object);
-    ogs_assert(recvmsg);
+    target_nf_type = xact->target_nf_type;
+    ogs_assert(target_nf_type);
+
+    discovery_option = xact->discovery_option;
 
     SearchResult = recvmsg->SearchResult;
     if (!SearchResult) {
@@ -297,8 +303,6 @@ void smf_nnrf_handle_nf_discover(
         }
 
         if (NF_INSTANCE_IS_OTHERS(nf_instance->id)) {
-            smf_sess_t *sess = NULL;
-
             handled = ogs_sbi_nnrf_handle_nf_profile(
                         nf_instance, NFProfile, NULL, NULL);
             if (!handled) {
@@ -314,10 +318,6 @@ void smf_nnrf_handle_nf_discover(
                 SMF_NF_INSTANCE_CLEAR("NRF-discover", nf_instance);
                 continue;
             }
-
-            sess = (smf_sess_t *)sbi_object;
-            ogs_assert(sess);
-            smf_sess_select_nf(sess, nf_instance->nf_type);
 
             /* TIME : Update validity from NRF */
             if (SearchResult->is_validity_period &&
@@ -337,85 +337,7 @@ void smf_nnrf_handle_nf_discover(
         }
     }
 
-    ogs_assert(xact->target_nf_type);
-    nf_instance = OGS_SBI_NF_INSTANCE(sbi_object, xact->target_nf_type);
-    if (!nf_instance) {
-        ogs_error("(NF discover) No [%s]",
-                OpenAPI_nf_type_ToString(xact->target_nf_type));
-    } else {
-        ogs_assert(true == smf_sbi_send(nf_instance, xact));
-    }
-}
+    ogs_sbi_select_nf(sbi_object, target_nf_type, discovery_option);
 
-void smf_nnrf_handle_nf_profile_retrieve(
-        ogs_sbi_xact_t *xact, ogs_sbi_message_t *recvmsg)
-{
-    ogs_sbi_object_t *sbi_object = NULL;
-    ogs_sbi_nf_instance_t *nf_instance = NULL;
-
-    OpenAPI_nf_profile_t *NFProfile = NULL;
-    bool handled;
-
-    ogs_assert(xact);
-    sbi_object = xact->sbi_object;
-    ogs_assert(sbi_object);
-    ogs_assert(recvmsg);
-
-    NFProfile = recvmsg->NFProfile;
-    if (!NFProfile) {
-        ogs_error("No NFProfile");
-        return;
-    }
-
-    nf_instance = ogs_sbi_nf_instance_find(NFProfile->nf_instance_id);
-    if (!nf_instance) {
-        nf_instance = ogs_sbi_nf_instance_add();
-        ogs_assert(nf_instance);
-        ogs_sbi_nf_instance_set_id(nf_instance, NFProfile->nf_instance_id);
-
-        smf_nf_fsm_init(nf_instance);
-
-        ogs_info("[%s] (NF-discover) NF registered", nf_instance->id);
-    } else {
-        nf_instance->reference_count++;
-
-        OGS_FSM_TRAN(&nf_instance->sm, smf_nf_state_registered);
-        ogs_fsm_dispatch(&nf_instance->sm, NULL);
-
-        ogs_warn("[%s] (NF-discover) NF has already been added",
-                NFProfile->nf_instance_id);
-    }
-
-    if (NF_INSTANCE_IS_OTHERS(nf_instance->id)) {
-        smf_sess_t *sess = NULL;
-
-        handled = ogs_sbi_nnrf_handle_nf_profile(
-                    nf_instance, NFProfile, NULL, NULL);
-        if (!handled) {
-            ogs_error("ogs_sbi_nnrf_handle_nf_profile() failed [%s]",
-                    nf_instance->id);
-            SMF_NF_INSTANCE_CLEAR("NRF-discover", nf_instance);
-            return;
-        }
-
-        handled = ogs_sbi_client_associate(nf_instance);
-        if (!handled) {
-            ogs_error("[%s] Cannot assciate NF EndPoint", nf_instance->id);
-            SMF_NF_INSTANCE_CLEAR("NRF-discover", nf_instance);
-            return;
-        }
-
-        sess = (smf_sess_t *)sbi_object;
-        ogs_assert(sess);
-        smf_sess_select_nf(sess, nf_instance->nf_type);
-
-        ogs_info("[%s] (NF-discover) NF Profile updated", nf_instance->id);
-    }
-
-    if (!nf_instance) {
-        ogs_error("(NF discover) No [%s]",
-                OpenAPI_nf_type_ToString(xact->target_nf_type));
-    } else {
-        ogs_assert(true == smf_sbi_send(nf_instance, xact));
-    }
+    ogs_expect(true == smf_sbi_send_request(sbi_object, target_nf_type, xact));
 }

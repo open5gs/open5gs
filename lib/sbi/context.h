@@ -65,6 +65,9 @@ typedef struct ogs_sbi_context_s {
 
     const char *content_encoding;
 
+    void (*client_wait_expire)(void *data);
+    ogs_fsm_handler_t nf_state_registered;
+
 } ogs_sbi_context_t;
 
 typedef struct ogs_sbi_nf_instance_s {
@@ -157,6 +160,7 @@ typedef struct ogs_sbi_xact_s {
     ogs_lnode_t lnode;
 
     OpenAPI_nf_type_e target_nf_type;
+    ogs_sbi_discovery_option_t *discovery_option;
 
     ogs_sbi_request_t *request;
     ogs_timer_t *t_response;
@@ -337,18 +341,23 @@ OpenAPI_uri_scheme_e ogs_sbi_default_uri_scheme(void);
                 (__nFInstance)->reference_count); \
     } while(0)
 
+bool ogs_sbi_discovery_param_is_matched(
+        ogs_sbi_nf_instance_t *nf_instance,
+        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_discovery_option_t *discovery_option);
+
 void ogs_sbi_select_nf(
-        ogs_sbi_object_t *sbi_object, OpenAPI_nf_type_e nf_type, void *state);
-void ogs_sbi_select_nf_by_instanceid(
-    ogs_sbi_object_t *sbi_object, OpenAPI_nf_type_e nf_type, void *state,
-    char *nf_instance_id);
+        ogs_sbi_object_t *sbi_object,
+        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_discovery_option_t *discovery_option);
 
 void ogs_sbi_object_free(ogs_sbi_object_t *sbi_object);
 
 ogs_sbi_xact_t *ogs_sbi_xact_add(
-        OpenAPI_nf_type_e target_nf_type, ogs_sbi_object_t *sbi_object,
-        ogs_sbi_build_f build, void *context, void *data,
-        void (*timer_cb)(void *data));
+        ogs_sbi_object_t *sbi_object,
+        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_discovery_option_t *discovery_option,
+        ogs_sbi_build_f build, void *context, void *data);
 void ogs_sbi_xact_remove(ogs_sbi_xact_t *xact);
 void ogs_sbi_xact_remove_all(ogs_sbi_object_t *sbi_object);
 ogs_sbi_xact_t *ogs_sbi_xact_cycle(ogs_sbi_xact_t *xact);

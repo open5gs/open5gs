@@ -32,6 +32,7 @@ typedef enum {
 
     NRF_TIMER_NF_INSTANCE_NO_HEARTBEAT,
     NRF_TIMER_SUBSCRIPTION_VALIDITY,
+    NRF_TIMER_SBI_CLIENT_WAIT,
 
     MAX_NUM_OF_NRF_TIMER,
 
@@ -48,6 +49,7 @@ const char *nrf_timer_get_name(nrf_timer_e id);
 
 void nrf_timer_nf_instance_no_heartbeat(void *data);
 void nrf_timer_subscription_validity(void *data);
+void nrf_timer_sbi_client_wait_expire(void *data);
 
 #ifdef __cplusplus
 }

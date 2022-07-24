@@ -79,8 +79,6 @@ void scp_conn_remove_all(void);
 
 scp_conn_t *scp_conn_find(uint32_t index);
 
-void scp_conn_select_nf(scp_conn_t *sess, OpenAPI_nf_type_e nf_type);
-
 #ifdef __cplusplus
 }
 #endif

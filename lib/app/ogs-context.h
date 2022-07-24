@@ -109,27 +109,25 @@ typedef struct ogs_app_context_s {
 
     struct {
         ogs_pkbuf_config_t defconfig;
-        uint64_t packet;
 
-        uint64_t nf;
+        uint64_t packet;
 
         uint64_t sess;
         uint64_t bearer;
         uint64_t tunnel;
+
         uint64_t nf_service;
-        uint64_t nf_subscription;
 
-        uint64_t csmap;
-
+        uint64_t timer;
         uint64_t message;
         uint64_t event;
-        uint64_t timer;
-
         uint64_t socket;
-        uint64_t gtp_xact;
-        uint64_t gtp_node;
-        uint64_t pfcp_xact;
-        uint64_t pfcp_node;
+        uint64_t subscription;
+        uint64_t xact;
+
+        uint64_t nf;
+
+        uint64_t csmap;
 
         uint64_t impi;
         uint64_t impu;

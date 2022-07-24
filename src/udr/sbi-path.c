@@ -79,9 +79,6 @@ int udr_sbi_open(void)
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_nf_service_t *service = NULL;
 
-    if (ogs_sbi_server_start_all(server_cb) != OGS_OK)
-        return OGS_ERROR;
-
     /* Add SELF NF instance */
     nf_instance = ogs_sbi_self()->nf_instance;
     ogs_assert(nf_instance);
@@ -115,6 +112,16 @@ int udr_sbi_open(void)
             udr_nf_fsm_init(nf_instance);
         }
     }
+
+    /* Timer expiration handler of client wait timer */
+    ogs_sbi_self()->client_wait_expire = udr_timer_sbi_client_wait_expire;
+
+    /* NF register state in NF state machine */
+    ogs_sbi_self()->nf_state_registered =
+        (ogs_fsm_handler_t)udr_nf_state_registered;
+
+    if (ogs_sbi_server_start_all(server_cb) != OGS_OK)
+        return OGS_ERROR;
 
     return OGS_OK;
 }

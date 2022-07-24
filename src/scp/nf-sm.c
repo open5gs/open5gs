@@ -229,6 +229,47 @@ void scp_nf_state_registered(ogs_fsm_t *s, scp_event_t *e)
                         nf_instance->time.heartbeat_interval +
                         ogs_app()->time.nf_instance.no_heartbeat_margin));
             }
+
+            ogs_assert(true ==
+                ogs_nnrf_nfm_send_nf_status_subscribe(client,
+                    ogs_sbi_self()->nf_instance->nf_type,
+                    ogs_sbi_self()->nf_instance->id,
+                    OpenAPI_nf_type_AMF));
+            ogs_assert(true ==
+                ogs_nnrf_nfm_send_nf_status_subscribe(client,
+                    ogs_sbi_self()->nf_instance->nf_type,
+                    ogs_sbi_self()->nf_instance->id,
+                    OpenAPI_nf_type_AUSF));
+            ogs_assert(true ==
+                ogs_nnrf_nfm_send_nf_status_subscribe(client,
+                    ogs_sbi_self()->nf_instance->nf_type,
+                    ogs_sbi_self()->nf_instance->id,
+                    OpenAPI_nf_type_BSF));
+            ogs_assert(true ==
+                ogs_nnrf_nfm_send_nf_status_subscribe(client,
+                    ogs_sbi_self()->nf_instance->nf_type,
+                    ogs_sbi_self()->nf_instance->id,
+                    OpenAPI_nf_type_NSSF));
+            ogs_assert(true ==
+                ogs_nnrf_nfm_send_nf_status_subscribe(client,
+                    ogs_sbi_self()->nf_instance->nf_type,
+                    ogs_sbi_self()->nf_instance->id,
+                    OpenAPI_nf_type_PCF));
+            ogs_assert(true ==
+                ogs_nnrf_nfm_send_nf_status_subscribe(client,
+                    ogs_sbi_self()->nf_instance->nf_type,
+                    ogs_sbi_self()->nf_instance->id,
+                    OpenAPI_nf_type_SMF));
+            ogs_assert(true ==
+                ogs_nnrf_nfm_send_nf_status_subscribe(client,
+                    ogs_sbi_self()->nf_instance->nf_type,
+                    ogs_sbi_self()->nf_instance->id,
+                    OpenAPI_nf_type_UDM));
+            ogs_assert(true ==
+                ogs_nnrf_nfm_send_nf_status_subscribe(client,
+                    ogs_sbi_self()->nf_instance->nf_type,
+                    ogs_sbi_self()->nf_instance->id,
+                    OpenAPI_nf_type_UDR));
         }
 
         break;

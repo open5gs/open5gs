@@ -502,8 +502,6 @@ smf_sess_t *smf_sess_cycle(smf_sess_t *sess);
 smf_bearer_t *smf_qos_flow_cycle(smf_bearer_t *qos_flow);
 smf_bearer_t *smf_bearer_cycle(smf_bearer_t *bearer);
 
-void smf_sess_select_nf(smf_sess_t *sess, OpenAPI_nf_type_e nf_type);
-
 smf_pf_t *smf_pf_add(smf_bearer_t *bearer);
 int smf_pf_remove(smf_pf_t *pf);
 void smf_pf_remove_all(smf_bearer_t *bearer);

@@ -143,9 +143,9 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
                 CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA)
                 CASE(OGS_SBI_RESOURCE_NAME_SM_DATA)
                     ogs_assert(true ==
-                        udm_sbi_discover_and_send(
-                            OpenAPI_nf_type_UDR, udm_ue, stream, message,
-                            udm_nudr_dr_build_query_subscription_provisioned));
+                        udm_sbi_discover_and_send(OpenAPI_nf_type_UDR, NULL,
+                            udm_nudr_dr_build_query_subscription_provisioned,
+                            udm_ue, stream, message));
                     break;
 
                 CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA)

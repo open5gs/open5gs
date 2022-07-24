@@ -29,9 +29,6 @@ int scp_sbi_open(void)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
 
-    if (ogs_sbi_server_start_all(request_handler) != OGS_OK)
-        return OGS_ERROR;
-
     /* Add SELF NF instance */
     nf_instance = ogs_sbi_self()->nf_instance;
     ogs_assert(nf_instance);
@@ -64,6 +61,16 @@ int scp_sbi_open(void)
          * by the above client callback. */
         scp_nf_fsm_init(nf_instance);
     }
+
+    /* Timer expiration handler of client wait timer */
+    ogs_sbi_self()->client_wait_expire = scp_timer_sbi_client_wait_expire;
+
+    /* NF register state in NF state machine */
+    ogs_sbi_self()->nf_state_registered =
+        (ogs_fsm_handler_t)scp_nf_state_registered;
+
+    if (ogs_sbi_server_start_all(request_handler) != OGS_OK)
+        return OGS_ERROR;
 
     return OGS_OK;
 }
@@ -266,35 +273,25 @@ static int request_handler(ogs_sbi_request_t *source, void *data)
             return OGS_ERROR;
         }
     } else {
-        ogs_sbi_message_t message;
+        scp_event_t *e = NULL;
+        int rv;
 
-        ogs_error("Unknown HTTP Headers");
-        ogs_error("  [%s:%s]", source->h.method, source->h.uri);
-        for (hi = ogs_hash_first(source->http.headers);
-                hi; hi = ogs_hash_next(hi)) {
-            char *key = (char *)ogs_hash_this_key(hi);
-            char *val = ogs_hash_this_val(hi);
-            ogs_error("  [%s:%s]", key, val);
-        }
+        ogs_assert(source);
+        ogs_assert(data);
 
-        rv = ogs_sbi_parse_request(&message, source);
+        e = scp_event_new(SCP_EVT_SBI_SERVER);
+        ogs_assert(e);
+
+        e->sbi.request = source;
+        e->sbi.data = data;
+
+        rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
-            ogs_error("cannot parse HTTP sbi_message");
-            ogs_assert(true ==
-                ogs_sbi_server_send_error(
-                    stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                    NULL, "cannot parse HTTP sbi_message", NULL));
+            ogs_error("ogs_queue_push() failed:%d", (int)rv);
+            ogs_sbi_request_free(source);
+            scp_event_free(e);
             return OGS_ERROR;
         }
-
-        ogs_assert(true ==
-            ogs_sbi_server_send_error(
-                stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                &message, "SCP - HTTP Client", NULL));
-
-        ogs_sbi_message_free(&message);
-
-        return OGS_OK;
     }
 
     return OGS_OK;
@@ -366,24 +363,29 @@ static int client_cb(int status, ogs_sbi_response_t *response, void *data)
 
 bool scp_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact)
 {
-    return ogs_sbi_send(nf_instance, client_cb, xact);
+    return ogs_sbi_send_request(nf_instance, client_cb, xact);
 }
 
-bool scp_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
-        scp_conn_t *conn, ogs_sbi_stream_t *stream, void *data,
-        ogs_sbi_request_t *(*build)(scp_conn_t *conn, void *data))
+bool scp_sbi_discover_and_send(
+        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_discovery_option_t *discovery_option,
+        ogs_sbi_request_t *(*build)(scp_conn_t *conn, void *data),
+        scp_conn_t *conn, ogs_sbi_stream_t *stream, void *data)
 {
     ogs_sbi_xact_t *xact = NULL;
+    OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
 
-    ogs_assert(target_nf_type);
+    ogs_assert(ogs_sbi_self()->nf_instance);
+    requester_nf_type = ogs_sbi_self()->nf_instance->nf_type;
+    ogs_assert(requester_nf_type);
 
     ogs_assert(conn);
     ogs_assert(stream);
     ogs_assert(build);
 
-    xact = ogs_sbi_xact_add(target_nf_type, &conn->sbi,
-            (ogs_sbi_build_f)build, conn, data,
-            scp_timer_sbi_client_wait_expire);
+    xact = ogs_sbi_xact_add(
+            &conn->sbi, target_nf_type, discovery_option,
+            (ogs_sbi_build_f)build, conn, data);
     if (!xact) {
         ogs_error("scp_sbi_discover_and_send() failed");
         ogs_assert(true ==
@@ -395,8 +397,10 @@ bool scp_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
 
     xact->assoc_stream = stream;
 
-    if (ogs_sbi_discover_and_send(xact,
-            (ogs_fsm_handler_t)scp_nf_state_registered, client_cb) != true) {
+    if (ogs_sbi_discover_and_send(
+            &conn->sbi,
+            target_nf_type, requester_nf_type, discovery_option,
+            client_cb, xact) != true) {
         ogs_error("scp_sbi_discover_and_send() failed");
         ogs_sbi_xact_remove(xact);
         ogs_assert(true ==

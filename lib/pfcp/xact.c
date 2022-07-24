@@ -53,7 +53,7 @@ int ogs_pfcp_xact_init(void)
 {
     ogs_assert(ogs_pfcp_xact_initialized == 0);
 
-    ogs_pool_init(&pool, ogs_app()->pool.pfcp_xact);
+    ogs_pool_init(&pool, ogs_app()->pool.xact);
 
     g_xact_id = 0;
 

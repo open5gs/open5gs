@@ -153,11 +153,3 @@ scp_conn_t *scp_conn_find(uint32_t index)
 {
     return ogs_pool_find(&scp_conn_pool, index);
 }
-
-void scp_conn_select_nf(scp_conn_t *sess, OpenAPI_nf_type_e nf_type)
-{
-    ogs_assert(sess);
-    ogs_assert(nf_type);
-
-    ogs_sbi_select_nf(&sess->sbi, nf_type, scp_nf_state_registered);
-}

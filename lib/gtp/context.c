@@ -35,7 +35,7 @@ void ogs_gtp_context_init(int num_of_gtpu_resource)
 
     ogs_log_install_domain(&__ogs_gtp_domain, "gtp", ogs_core()->log.level);
 
-    ogs_pool_init(&pool, ogs_app()->pool.gtp_node);
+    ogs_pool_init(&pool, ogs_app()->pool.nf);
     ogs_pool_init(&ogs_gtpu_resource_pool, num_of_gtpu_resource);
 
     context_initialized = 1;

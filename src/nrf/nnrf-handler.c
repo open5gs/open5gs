@@ -426,6 +426,21 @@ bool nrf_nnrf_handle_nf_discover(
             OpenAPI_nf_type_ToString(recvmsg->param.requester_nf_type),
             OpenAPI_nf_type_ToString(recvmsg->param.target_nf_type));
 
+    if (recvmsg->param.discovery_option.target_nf_instance_id) {
+        ogs_debug("target-nf-instance-id[%s]",
+            recvmsg->param.discovery_option.target_nf_instance_id);
+    }
+    if (recvmsg->param.discovery_option.requester_nf_instance_id) {
+        ogs_debug("requester-nf-instance-id[%s]",
+            recvmsg->param.discovery_option.requester_nf_instance_id);
+    }
+    if (recvmsg->param.discovery_option.num_of_service_names) {
+        for (i = 0;
+                i < recvmsg->param.discovery_option.num_of_service_names; i++)
+            ogs_debug("[%d] service-names[%s]", i,
+                recvmsg->param.discovery_option.service_names[i]);
+    }
+
     SearchResult = ogs_calloc(1, sizeof(*SearchResult));
     ogs_assert(SearchResult);
 
@@ -441,7 +456,9 @@ bool nrf_nnrf_handle_nf_discover(
     ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance) {
         if (nf_instance->nf_type != recvmsg->param.target_nf_type)
             continue;
-        if (nf_instance->nf_type == recvmsg->param.requester_nf_type)
+        if (recvmsg->param.discovery_option.target_nf_instance_id &&
+            strcmp(nf_instance->id,
+                recvmsg->param.discovery_option.target_nf_instance_id) != 0)
             continue;
 
         if (!recvmsg->param.limit ||

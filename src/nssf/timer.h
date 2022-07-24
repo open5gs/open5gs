@@ -35,6 +35,7 @@ typedef enum {
     NSSF_TIMER_NF_INSTANCE_NO_HEARTBEAT,
     NSSF_TIMER_NF_INSTANCE_VALIDITY,
     NSSF_TIMER_SUBSCRIPTION_VALIDITY,
+    NSSF_TIMER_SBI_CLIENT_WAIT,
 
     MAX_NUM_OF_NSSF_TIMER,
 
@@ -47,6 +48,7 @@ void nssf_timer_nf_instance_heartbeat_interval(void *data);
 void nssf_timer_nf_instance_no_heartbeat(void *data);
 void nssf_timer_nf_instance_validity(void *data);
 void nssf_timer_subscription_validity(void *data);
+void nssf_timer_sbi_client_wait_expire(void *data);
 
 #ifdef __cplusplus
 }

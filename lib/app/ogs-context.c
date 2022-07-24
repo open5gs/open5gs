@@ -64,37 +64,26 @@ ogs_app_context_t *ogs_app()
 
 static void recalculate_pool_size(void)
 {
+    self.pool.packet = self.max.ue * OGS_MAX_NUM_OF_PACKET_BUFFER;
+
 #define MAX_NUM_OF_TUNNEL       3   /* Num of Tunnel per Bearer */
     self.pool.sess = self.max.ue * OGS_MAX_NUM_OF_SESS;
     self.pool.bearer = self.pool.sess * OGS_MAX_NUM_OF_BEARER;
     self.pool.tunnel = self.pool.bearer * MAX_NUM_OF_TUNNEL;
 
-#define MAX_NUM_OF_TIMER        16
-    self.pool.timer = self.max.ue * MAX_NUM_OF_TIMER;
-#define MAX_NUM_OF_MESSAGE      16
-    self.pool.message = self.max.ue * MAX_NUM_OF_MESSAGE;
-#define MAX_NUM_OF_EVENT        16
-    self.pool.event = self.max.ue * MAX_NUM_OF_EVENT;
+#define OGS_MAX_NUM_OF_NF_SUBSCRIPTION  4 /* Num of Subscription per NF */
+    self.pool.nf_service = self.max.gnb * OGS_MAX_NUM_OF_NF_SERVICE;
 
-    self.pool.packet = self.max.ue * OGS_MAX_NUM_OF_PACKET_BUFFER;
+#define POOL_NUM_PER_UE 16
+#define POOL_NUM_PER_GNB 8
+    self.pool.timer = self.max.ue * POOL_NUM_PER_UE;
+    self.pool.message = self.max.ue * POOL_NUM_PER_UE;
+    self.pool.event = self.max.ue * POOL_NUM_PER_UE;
+    self.pool.socket = self.max.ue * POOL_NUM_PER_UE;
+    self.pool.subscription = self.max.ue * POOL_NUM_PER_UE;
+    self.pool.xact = self.max.ue * POOL_NUM_PER_UE;
 
     self.pool.nf = self.max.gnb;
-
-#define MAX_NUM_OF_SOCKET       8
-    self.pool.socket = self.max.ue * MAX_NUM_OF_SOCKET;
-
-#define MAX_NUM_OF_XACT         8
-    self.pool.gtp_xact = self.max.ue * MAX_NUM_OF_XACT;
-    self.pool.gtp_node = self.max.gtp_peer;
-
-    self.pool.pfcp_xact = self.max.ue * MAX_NUM_OF_XACT;
-    self.pool.pfcp_node = self.pool.nf;
-
-#define MAX_NUM_OF_NF_SERVICE   16  /* Num of NF Service per NF Instance */
-#define MAX_NUM_OF_SBI_MESSAGE  4   /* Num of HTTP(s) Request/Response per NF */
-#define MAX_NUM_OF_NF_SUBSCRIPTION  4 /* Num of Subscription per NF */
-    self.pool.nf_service = self.pool.nf * MAX_NUM_OF_NF_SERVICE;
-    self.pool.nf_subscription = self.pool.nf * MAX_NUM_OF_NF_SUBSCRIPTION;
 
 #define MAX_CSMAP_POOL          128
     self.pool.csmap = MAX_CSMAP_POOL;   /* Num of TAI-LAI Mapping Table */
@@ -192,11 +181,9 @@ static void app_context_prepare(void)
 
 #define MAX_NUM_OF_UE               1024    /* Num of UE per AMF/MME */
 #define MAX_NUM_OF_GNB              64      /* Num of gNB per AMF/MME */
-#define MAX_NUM_OF_GTP_PEER         64      /* Num of gtp_node per SGW/PGW */
 
     self.max.gnb = MAX_NUM_OF_GNB;
     self.max.ue = MAX_NUM_OF_UE;
-    self.max.gtp_peer = MAX_NUM_OF_GTP_PEER;
 
     ogs_pkbuf_default_init(&self.pool.defconfig);
 
@@ -444,9 +431,6 @@ int ogs_app_context_parse_config(void)
                             !strcmp(max_key, "enb")) {
                     const char *v = ogs_yaml_iter_value(&max_iter);
                     if (v) self.max.gnb = atoi(v);
-                } else if (!strcmp(max_key, "gtp_peer")) {
-                    const char *v = ogs_yaml_iter_value(&max_iter);
-                    if (v) self.max.gtp_peer = atoi(v);
                 } else
                     ogs_warn("unknown key `%s`", max_key);
             }

@@ -683,9 +683,9 @@ bool smf_npcf_smpolicycontrol_handle_terminate_notify(
 
     memset(&param, 0, sizeof(param));
     ogs_assert(true ==
-        smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, sess, NULL,
-            OGS_PFCP_DELETE_TRIGGER_PCF_INITIATED, &param,
-            smf_npcf_smpolicycontrol_build_delete));
+        smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, NULL,
+            smf_npcf_smpolicycontrol_build_delete,
+            sess, NULL, OGS_PFCP_DELETE_TRIGGER_PCF_INITIATED, &param));
 
     return true;
 }

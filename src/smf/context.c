@@ -80,7 +80,7 @@ void smf_context_init(void)
     ogs_log_install_domain(&__smf_log_domain, "smf", ogs_core()->log.level);
     ogs_log_install_domain(&__gsm_log_domain, "gsm", ogs_core()->log.level);
 
-    ogs_pool_init(&smf_gtp_node_pool, ogs_app()->pool.gtp_node);
+    ogs_pool_init(&smf_gtp_node_pool, ogs_app()->pool.nf);
     ogs_pool_init(&smf_ue_pool, ogs_app()->max.ue);
     ogs_pool_init(&smf_sess_pool, ogs_app()->pool.sess);
     ogs_pool_init(&smf_bearer_pool, ogs_app()->pool.bearer);
@@ -2526,14 +2526,6 @@ smf_bearer_t *smf_bearer_cycle(smf_bearer_t *bearer)
 smf_bearer_t *smf_qos_flow_cycle(smf_bearer_t *qos_flow)
 {
     return ogs_pool_cycle(&smf_bearer_pool, qos_flow);
-}
-
-void smf_sess_select_nf(smf_sess_t *sess, OpenAPI_nf_type_e nf_type)
-{
-    ogs_assert(sess);
-    ogs_assert(nf_type);
-
-    ogs_sbi_select_nf(&sess->sbi, nf_type, smf_nf_state_registered);
 }
 
 smf_pf_t *smf_pf_add(smf_bearer_t *bearer)

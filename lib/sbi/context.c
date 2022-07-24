@@ -50,10 +50,10 @@ void ogs_sbi_context_init(void)
     ogs_pool_init(&nf_instance_pool, ogs_app()->pool.nf);
     ogs_pool_init(&nf_service_pool, ogs_app()->pool.nf_service);
 
-    ogs_pool_init(&xact_pool, ogs_app()->pool.message);
+    ogs_pool_init(&xact_pool, ogs_app()->pool.xact);
 
     ogs_list_init(&self.subscription_list);
-    ogs_pool_init(&subscription_pool, ogs_app()->pool.nf_subscription);
+    ogs_pool_init(&subscription_pool, ogs_app()->pool.subscription);
 
     ogs_pool_init(&smf_info_pool, ogs_app()->pool.nf);
 
@@ -1323,41 +1323,48 @@ static void nf_service_associate_client_all(ogs_sbi_nf_instance_t *nf_instance)
         nf_service_associate_client(nf_service);
 }
 
-void ogs_sbi_select_nf(
-        ogs_sbi_object_t *sbi_object, OpenAPI_nf_type_e nf_type, void *state)
+bool ogs_sbi_discovery_param_is_matched(
+        ogs_sbi_nf_instance_t *nf_instance,
+        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_discovery_option_t *discovery_option)
 {
-    ogs_sbi_nf_instance_t *nf_instance = NULL;
+    ogs_assert(nf_instance);
+    ogs_assert(ogs_sbi_self()->nf_state_registered);
+    ogs_assert(target_nf_type);
 
-    ogs_assert(sbi_object);
-    ogs_assert(nf_type);
-    ogs_assert(state);
+    if (!OGS_FSM_CHECK(&nf_instance->sm,
+            ogs_sbi_self()->nf_state_registered)) return false;
 
-    ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance) {
-        if (OGS_FSM_CHECK(&nf_instance->sm, state) &&
-            nf_instance->nf_type == nf_type) {
-            OGS_SBI_SETUP_NF(sbi_object, nf_type, nf_instance);
-            break;
-        }
+    if (nf_instance->nf_type != target_nf_type) return false;
+
+    if (discovery_option) {
+        if (discovery_option->target_nf_instance_id &&
+            strcmp(nf_instance->id,
+                discovery_option->target_nf_instance_id) != 0)
+            return false;
     }
+
+    return true;
 }
 
-void ogs_sbi_select_nf_by_instanceid(
-        ogs_sbi_object_t *sbi_object, OpenAPI_nf_type_e nf_type, void *state,
-        char *nf_instance_id)
+void ogs_sbi_select_nf(
+        ogs_sbi_object_t *sbi_object,
+        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_discovery_option_t *discovery_option)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
 
+    ogs_assert(ogs_sbi_self()->nf_state_registered);
     ogs_assert(sbi_object);
-    ogs_assert(nf_type);
-    ogs_assert(state);
+    ogs_assert(target_nf_type);
 
     ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance) {
-        if (OGS_FSM_CHECK(&nf_instance->sm, state) &&
-            (nf_instance->nf_type == nf_type) &&
-            (!(strcmp(nf_instance->id, nf_instance_id)))) {
-            OGS_SBI_SETUP_NF(sbi_object, nf_type, nf_instance);
-            break;
-        }
+        if (ogs_sbi_discovery_param_is_matched(
+                    nf_instance, target_nf_type, discovery_option) == false)
+            continue;
+
+        OGS_SBI_SETUP_NF(sbi_object, target_nf_type, nf_instance);
+        break;
     }
 }
 
@@ -1423,20 +1430,24 @@ void ogs_sbi_object_free(ogs_sbi_object_t *sbi_object)
 }
 
 ogs_sbi_xact_t *ogs_sbi_xact_add(
-        OpenAPI_nf_type_e target_nf_type, ogs_sbi_object_t *sbi_object,
-        ogs_sbi_build_f build, void *context, void *data,
-        void (*timer_cb)(void *data))
+        ogs_sbi_object_t *sbi_object,
+        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_discovery_option_t *discovery_option,
+        ogs_sbi_build_f build, void *context, void *data)
 {
     ogs_sbi_xact_t *xact = NULL;
 
+    ogs_assert(ogs_sbi_self()->client_wait_expire);
     ogs_assert(sbi_object);
 
     ogs_pool_alloc(&xact_pool, &xact);
     ogs_expect_or_return_val(xact, NULL);
     memset(xact, 0, sizeof(ogs_sbi_xact_t));
 
-    xact->target_nf_type = target_nf_type;
     xact->sbi_object = sbi_object;
+
+    xact->target_nf_type = target_nf_type;
+    xact->discovery_option = discovery_option;
 
     xact->request = (*build)(context, data);
     if (!xact->request) {
@@ -1446,7 +1457,7 @@ ogs_sbi_xact_t *ogs_sbi_xact_add(
     }
 
     xact->t_response = ogs_timer_add(
-            ogs_app()->timer_mgr, timer_cb, xact);
+            ogs_app()->timer_mgr, ogs_sbi_self()->client_wait_expire, xact);
     if (!xact->t_response) {
         ogs_error("ogs_timer_add() failed");
         ogs_sbi_request_free(xact->request);
@@ -1470,6 +1481,9 @@ void ogs_sbi_xact_remove(ogs_sbi_xact_t *xact)
 
     sbi_object = xact->sbi_object;
     ogs_assert(sbi_object);
+
+    if (xact->discovery_option)
+        ogs_sbi_discovery_option_free(xact->discovery_option);
 
     ogs_assert(xact->t_response);
     ogs_timer_delete(xact->t_response);

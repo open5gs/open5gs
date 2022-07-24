@@ -996,9 +996,10 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     NGAP_CauseNas_normal_release;
 
                 ogs_assert(true ==
-                    smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, sess, stream,
-                        OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED, &param,
-                        smf_npcf_smpolicycontrol_build_delete));
+                    smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, NULL,
+                        smf_npcf_smpolicycontrol_build_delete,
+                        sess, stream,
+                        OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED, &param));
             } else {
                 ogs_error("[%s:%d] No PolicyAssociationId",
                         smf_ue->supi, sess->psi);

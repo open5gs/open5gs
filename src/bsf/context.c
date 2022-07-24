@@ -323,11 +323,3 @@ bsf_sess_t *bsf_sess_find_by_ipv6prefix(char *ipv6prefix_string)
     return ogs_hash_get(self.ipv6prefix_hash,
             &ipv6prefix, (ipv6prefix.len >> 3) + 1);
 }
-
-void bsf_sess_select_nf(bsf_sess_t *sess, OpenAPI_nf_type_e nf_type)
-{
-    ogs_assert(sess);
-    ogs_assert(nf_type);
-
-    ogs_sbi_select_nf(&sess->sbi, nf_type, bsf_nf_state_registered);
-}

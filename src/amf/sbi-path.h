@@ -34,10 +34,15 @@ extern "C" {
 int amf_sbi_open(void);
 void amf_sbi_close(void);
 
-bool amf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact);
-bool amf_ue_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
-        amf_ue_t *amf_ue, void *data,
-        ogs_sbi_request_t *(*build)(amf_ue_t *amf_ue, void *data));
+bool amf_sbi_send_request(
+        ogs_sbi_object_t *sbi_object,
+        OpenAPI_nf_type_e target_nf_type,
+        void *data);
+bool amf_ue_sbi_discover_and_send(
+        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_discovery_option_t *discovery_option,
+        ogs_sbi_request_t *(*build)(amf_ue_t *amf_ue, void *data),
+        amf_ue_t *amf_ue, void *data);
 
 #define AMF_CREATE_SM_CONTEXT_NO_STATE              0
 #define AMF_UPDATE_SM_CONTEXT_ACTIVATED             11
@@ -61,9 +66,11 @@ bool amf_ue_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
 #define AMF_REMOVE_S1_CONTEXT_BY_LO_CONNREFUSED     51
 #define AMF_REMOVE_S1_CONTEXT_BY_RESET_ALL          52
 #define AMF_REMOVE_S1_CONTEXT_BY_RESET_PARTIAL      53
-bool amf_sess_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
-        amf_sess_t *sess, int state, void *data,
-        ogs_sbi_request_t *(*build)(amf_sess_t *sess, void *data));
+bool amf_sess_sbi_discover_and_send(
+        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_discovery_option_t *discovery_option,
+        ogs_sbi_request_t *(*build)(amf_sess_t *sess, void *data),
+        amf_sess_t *sess, int state, void *data);
 
 bool amf_sess_sbi_discover_by_nsi(
         OpenAPI_nf_type_e target_nf_type, amf_sess_t *sess);

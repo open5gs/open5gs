@@ -288,8 +288,8 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
     ogs_free(sendmsg.http.location);
 
     ogs_assert(true ==
-        smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, sess, stream,
-            0, NULL, smf_npcf_smpolicycontrol_build_create));
+        smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, NULL,
+            smf_npcf_smpolicycontrol_build_create, sess, stream, 0, NULL));
 
     return true;
 

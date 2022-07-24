@@ -106,8 +106,6 @@ udm_ue_t *udm_ue_find_by_ctx_id(char *ctx_id);
 
 udm_ue_t *udm_ue_cycle(udm_ue_t *udm_ue);
 
-void udm_ue_select_nf(udm_ue_t *udm_ue, OpenAPI_nf_type_e nf_type);
-
 #ifdef __cplusplus
 }
 #endif

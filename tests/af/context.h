@@ -113,8 +113,6 @@ af_sess_t *af_sess_find(uint32_t index);
 af_sess_t *af_sess_find_by_af_app_session_id(char *af_app_session_id);
 af_sess_t *af_sess_find_by_pcf_app_session_id(char *pcf_app_session_id);
 
-void af_sess_select_nf(af_sess_t *sess, OpenAPI_nf_type_e nf_type);
-
 void af_sess_associate_pcf_client(af_sess_t *sess);
 
 #ifdef __cplusplus

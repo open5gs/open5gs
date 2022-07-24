@@ -94,3 +94,8 @@ void nssf_timer_subscription_validity(void *data)
 {
     sbi_timer_send_event(NSSF_TIMER_SUBSCRIPTION_VALIDITY, data);
 }
+
+void nssf_timer_sbi_client_wait_expire(void *data)
+{
+    sbi_timer_send_event(NSSF_TIMER_SBI_CLIENT_WAIT, data);
+}

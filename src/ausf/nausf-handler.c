@@ -55,9 +55,9 @@ bool ausf_nausf_auth_handle_authenticate(ausf_ue_t *ausf_ue,
     ogs_assert(ausf_ue->serving_network_name);
 
     ogs_assert(true ==
-        ausf_sbi_discover_and_send(OpenAPI_nf_type_UDM, ausf_ue, stream,
-            AuthenticationInfo->resynchronization_info,
-            ausf_nudm_ueau_build_get));
+        ausf_sbi_discover_and_send(OpenAPI_nf_type_UDM, NULL,
+            ausf_nudm_ueau_build_get,
+            ausf_ue, stream, AuthenticationInfo->resynchronization_info));
 
     return true;
 }
@@ -104,8 +104,9 @@ bool ausf_nausf_auth_handle_authenticate_confirmation(ausf_ue_t *ausf_ue,
     }
 
     ogs_assert(true ==
-        ausf_sbi_discover_and_send(OpenAPI_nf_type_UDM, ausf_ue, stream, NULL,
-            ausf_nudm_ueau_build_result_confirmation_inform));
+        ausf_sbi_discover_and_send(OpenAPI_nf_type_UDM, NULL,
+            ausf_nudm_ueau_build_result_confirmation_inform,
+            ausf_ue, stream, NULL));
 
     return true;
 }

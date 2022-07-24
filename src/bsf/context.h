@@ -114,8 +114,6 @@ bsf_sess_t *bsf_sess_find_by_binding_id(char *binding_id);
 bsf_sess_t *bsf_sess_find_by_ipv4addr(char *ipv4addr_string);
 bsf_sess_t *bsf_sess_find_by_ipv6prefix(char *ipv6prefix_string);
 
-void bsf_sess_select_nf(bsf_sess_t *sess, OpenAPI_nf_type_e nf_type);
-
 #ifdef __cplusplus
 }
 #endif

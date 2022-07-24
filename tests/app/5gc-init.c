@@ -101,8 +101,8 @@ void app_terminate(void)
     if (udm_thread) ogs_thread_destroy(udm_thread);
     if (ausf_thread) ogs_thread_destroy(ausf_thread);
 
-    if (nrf_thread) ogs_thread_destroy(nrf_thread);
     if (scp_thread) ogs_thread_destroy(scp_thread);
+    if (nrf_thread) ogs_thread_destroy(nrf_thread);
 }
 
 void test_5gc_init(void)

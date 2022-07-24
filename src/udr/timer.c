@@ -94,3 +94,8 @@ void udr_timer_subscription_validity(void *data)
 {
     sbi_timer_send_event(UDR_TIMER_SUBSCRIPTION_VALIDITY, data);
 }
+
+void udr_timer_sbi_client_wait_expire(void *data)
+{
+    sbi_timer_send_event(UDR_TIMER_SBI_CLIENT_WAIT, data);
+}

@@ -229,11 +229,3 @@ udm_ue_t *udm_ue_cycle(udm_ue_t *udm_ue)
 {
     return ogs_pool_cycle(&udm_ue_pool, udm_ue);
 }
-
-void udm_ue_select_nf(udm_ue_t *udm_ue, OpenAPI_nf_type_e nf_type)
-{
-    ogs_assert(udm_ue);
-    ogs_assert(nf_type);
-
-    ogs_sbi_select_nf(&udm_ue->sbi, nf_type, udm_nf_state_registered);
-}

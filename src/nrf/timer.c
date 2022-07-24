@@ -82,3 +82,8 @@ void nrf_timer_subscription_validity(void *data)
 {
     timer_send_event(NRF_TIMER_SUBSCRIPTION_VALIDITY, data);
 }
+
+void nrf_timer_sbi_client_wait_expire(void *data)
+{
+    timer_send_event(NRF_TIMER_SBI_CLIENT_WAIT, data);
+}
