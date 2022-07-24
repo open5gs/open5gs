@@ -61,8 +61,8 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
     ogs_assert(message);
 
     /* Discovery Option */
-    for (i = 0; i < message->param.discovery_option.num_of_service_names; i++)
-        ogs_free(message->param.discovery_option.service_names[i]);
+    if (message->param.discovery_option)
+        ogs_sbi_discovery_option_free(message->param.discovery_option);
 
     /* JSON Data */
     if (message->NFProfile)
@@ -290,32 +290,37 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
     }
 
     /* Discovery Option Parameter */
-    if (message->param.discovery_option.target_nf_instance_id) {
-        ogs_sbi_header_set(request->http.params,
-                OGS_SBI_PARAM_TARGET_NF_INSTANCE_ID,
-                message->param.discovery_option.target_nf_instance_id);
-    }
-    if (message->param.discovery_option.requester_nf_instance_id) {
-        ogs_sbi_header_set(request->http.params,
-                OGS_SBI_PARAM_REQUESTER_NF_INSTANCE_ID,
-                message->param.discovery_option.requester_nf_instance_id);
-    }
-    if (message->param.discovery_option.num_of_service_names) {
-        char *v = NULL;
-        cJSON *item = NULL;
+    if (message->param.discovery_option) {
+        ogs_sbi_discovery_option_t *discovery_option =
+                message->param.discovery_option;
 
-        item = cJSON_CreateStringArray(
-            (const char * const*)message->param.discovery_option.service_names,
-            message->param.discovery_option.num_of_service_names);
-        ogs_expect_or_return_val(item, NULL);
+        if (discovery_option->target_nf_instance_id) {
+            ogs_sbi_header_set(request->http.params,
+                    OGS_SBI_PARAM_TARGET_NF_INSTANCE_ID,
+                    discovery_option->target_nf_instance_id);
+        }
+        if (discovery_option->requester_nf_instance_id) {
+            ogs_sbi_header_set(request->http.params,
+                    OGS_SBI_PARAM_REQUESTER_NF_INSTANCE_ID,
+                    discovery_option->requester_nf_instance_id);
+        }
+        if (discovery_option->num_of_service_names) {
+            char *v = NULL;
+            cJSON *item = NULL;
 
-        v = cJSON_Print(item);
-        ogs_expect_or_return_val(v, NULL);
-        cJSON_Delete(item);
+            item = cJSON_CreateStringArray(
+                (const char * const*)discovery_option->service_names,
+                discovery_option->num_of_service_names);
+            ogs_expect_or_return_val(item, NULL);
 
-        ogs_sbi_header_set(
-                request->http.params, OGS_SBI_PARAM_SERVICE_NAMES, v);
-        ogs_free(v);
+            v = cJSON_Print(item);
+            ogs_expect_or_return_val(v, NULL);
+            cJSON_Delete(item);
+
+            ogs_sbi_header_set(
+                    request->http.params, OGS_SBI_PARAM_SERVICE_NAMES, v);
+            ogs_free(v);
+        }
     }
 
     /* URL Query Paramemter */
@@ -476,6 +481,8 @@ int ogs_sbi_parse_request(
 {
     int rv;
     ogs_hash_index_t *hi;
+    ogs_sbi_discovery_option_t *discovery_option = NULL;
+    bool discovery_option_presence = false;
 
     ogs_assert(request);
     ogs_assert(message);
@@ -485,6 +492,10 @@ int ogs_sbi_parse_request(
         ogs_error("ogs_sbi_parse_header() failed");
         return OGS_ERROR;
     }
+
+    discovery_option_presence = false;
+    discovery_option = ogs_sbi_discovery_option_new();
+    ogs_assert(discovery_option);
 
     for (hi = ogs_hash_first(request->http.params);
             hi; hi = ogs_hash_next(hi)) {
@@ -501,12 +512,14 @@ int ogs_sbi_parse_request(
         /* Discovery Option Parameter */
         } else if (!strcmp(ogs_hash_this_key(hi),
                     OGS_SBI_PARAM_TARGET_NF_INSTANCE_ID)) {
-            message->param.discovery_option.target_nf_instance_id =
-                        ogs_hash_this_val(hi);
+            discovery_option_presence = true;
+            ogs_sbi_discovery_option_set_target_nf_instance_id(
+                    discovery_option, ogs_hash_this_val(hi));
         } else if (!strcmp(ogs_hash_this_key(hi),
                     OGS_SBI_PARAM_REQUESTER_NF_INSTANCE_ID)) {
-            message->param.discovery_option.requester_nf_instance_id =
-                        ogs_hash_this_val(hi);
+            discovery_option_presence = true;
+            ogs_sbi_discovery_option_set_requester_nf_instance_id(
+                    discovery_option, ogs_hash_this_val(hi));
         } else if (!strcmp(ogs_hash_this_key(hi),
                     OGS_SBI_PARAM_SERVICE_NAMES)) {
             char *v = NULL;
@@ -516,13 +529,14 @@ int ogs_sbi_parse_request(
             if (v) {
                 array = cJSON_Parse(v);
                 if (cJSON_IsArray(array)) {
+
+                    discovery_option_presence = true;
+
                     cJSON_ArrayForEach(item, array) {
                         char *names = cJSON_GetStringValue(item);
-                        if (names) {
-                            message->param.discovery_option.service_names[
-                                message->param.discovery_option.
-                                    num_of_service_names++] = ogs_strdup(names);
-                        }
+                        if (names)
+                            ogs_sbi_discovery_option_add_service_names(
+                                    discovery_option, names);
                     }
                 }
                 cJSON_Delete(array);
@@ -612,6 +626,13 @@ int ogs_sbi_parse_request(
             message->param.ipv6prefix = ogs_hash_this_val(hi);
         }
     }
+
+    if (discovery_option_presence == true)
+        /* message->param.discovery_option will be freed()
+         * in ogs_sbi_message_free() */
+        message->param.discovery_option = discovery_option;
+    else
+        ogs_sbi_discovery_option_free(discovery_option);
 
     for (hi = ogs_hash_first(request->http.headers);
             hi; hi = ogs_hash_next(hi)) {

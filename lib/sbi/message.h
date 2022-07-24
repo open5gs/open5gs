@@ -389,7 +389,7 @@ typedef struct ogs_sbi_message_s {
         OpenAPI_nf_type_e requester_nf_type;
 
         /* Discovery Option Parameter */
-        ogs_sbi_discovery_option_t discovery_option;
+        ogs_sbi_discovery_option_t *discovery_option;
 
         /* URL Query Parameter */
         char *nf_id;
