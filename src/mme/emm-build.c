@@ -437,6 +437,25 @@ ogs_pkbuf_t *emm_build_security_mode_command(mme_ue_t *mme_ue)
     return nas_eps_security_encode(mme_ue, &message);
 }
 
+ogs_pkbuf_t *emm_build_detach_request(mme_ue_t *mme_ue)
+{
+    ogs_nas_eps_message_t message;
+
+    ogs_assert(mme_ue);
+
+    memset(&message, 0, sizeof(message));
+    message.h.security_header_type = 
+        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+    message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
+
+    message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.emm.h.message_type = OGS_NAS_EPS_DETACH_REQUEST;
+
+    message.emm.detach_request_to_ue.detach_type.value = mme_ue->mme_to_ue_detach_type;
+
+    return nas_eps_security_encode(mme_ue, &message);
+}
+
 ogs_pkbuf_t *emm_build_detach_accept(mme_ue_t *mme_ue)
 {
     ogs_nas_eps_message_t message;

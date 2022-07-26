@@ -20,6 +20,9 @@
 #include "mme-event.h"
 #include "mme-fd-path.h"
 
+/* handler for Cancel-Location-Request cb */
+static struct disp_hdl *hdl_s6a_clr = NULL;
+
 static struct session_handler *mme_s6a_reg = NULL;
 
 struct sess_state {
@@ -226,6 +229,7 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     s6a_message = ogs_calloc(1, sizeof(ogs_diam_s6a_message_t));
     ogs_assert(s6a_message);
     s6a_message->cmd_code = OGS_DIAM_S6A_CMD_CODE_AUTHENTICATION_INFORMATION;
+    s6a_message->during_attach = true;
     aia_message = &s6a_message->aia_message;
     ogs_assert(aia_message);
     e_utran_vector = &aia_message->e_utran_vector;
@@ -634,6 +638,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     s6a_message = ogs_calloc(1, sizeof(ogs_diam_s6a_message_t));
     ogs_assert(s6a_message);
     s6a_message->cmd_code = OGS_DIAM_S6A_CMD_CODE_UPDATE_LOCATION;
+    s6a_message->during_attach = true;
     ula_message = &s6a_message->ula_message;
     ogs_assert(ula_message);
     subscription_data = &ula_message->subscription_data;
@@ -1403,10 +1408,129 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     return;
 }
 
+/* Callback for incoming Cancel-Location-Request messages */
+static int mme_ogs_diam_s6a_clr_cb( struct msg **msg, struct avp *avp,
+        struct session *session, void *opaque, enum disp_action *act)
+{
+    int ret;
+    int error = 0;
+    
+    mme_event_t *e = NULL;
+    mme_ue_t *mme_ue = NULL;
+
+    struct msg *ans, *qry;
+    ogs_diam_s6a_clr_message_t *clr_message = NULL;    
+
+    struct avp_hdr *hdr;
+    union avp_value val;
+
+    char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
+
+    uint32_t result_code = 0;
+
+    ogs_assert(msg);
+
+    ogs_diam_s6a_message_t *s6a_message = NULL;
+
+    ogs_debug("Cancel-Location-Request");
+
+    s6a_message = ogs_calloc(1, sizeof(ogs_diam_s6a_message_t));
+    ogs_assert(s6a_message);
+    s6a_message->cmd_code = OGS_DIAM_S6A_CMD_CODE_CANCEL_LOCATION;
+    clr_message = &s6a_message->clr_message;
+    ogs_assert(clr_message);    
+    
+
+    /* Create answer header */
+    qry = *msg;
+    ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
+    ogs_assert(ret == 0);
+    ans = *msg;
+
+    ret = fd_msg_search_avp(qry, ogs_diam_user_name, &avp);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_hdr(avp, &hdr);
+    ogs_assert(ret == 0);
+
+    ogs_cpystrn(imsi_bcd, (char*)hdr->avp_value->os.data,
+        ogs_min(hdr->avp_value->os.len, OGS_MAX_IMSI_BCD_LEN)+1);
+
+    mme_ue = mme_ue_find_by_imsi_bcd(imsi_bcd);
+
+    if (!mme_ue) {
+        ogs_error("Cancel Location for Unknown IMSI[%s]", imsi_bcd);
+        result_code = OGS_DIAM_S6A_ERROR_USER_UNKNOWN;
+        error++;
+    }
+
+    ret = fd_msg_search_avp(qry, ogs_diam_s6a_cancellation_type, &avp);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_hdr(avp, &hdr);
+    ogs_assert(ret == 0);
+
+    /* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
+    ret = fd_msg_rescode_set(ans, (char*)"DIAMETER_SUCCESS", NULL, NULL, 1);
+    ogs_assert(ret == 0);
+
+    /* Set the Auth-Session-State AVP */
+    ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
+    ogs_assert(ret == 0);
+    val.i32 = OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    ret = fd_msg_search_avp(qry, ogs_diam_s6a_clr_flags, &avp);
+    ogs_assert(ret == 0);
+    if (avp) {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        ogs_assert(ret == 0);
+        clr_message->clr_flags = hdr->avp_value->i32;
+    }
+
+    /* Set Vendor-Specific-Application-Id AVP */
+    ret = ogs_diam_message_vendor_specific_appid_set(
+            ans, OGS_DIAM_S6A_APPLICATION_ID);
+    ogs_assert(ret == 0);
+
+    /* Send the answer */
+    ret = fd_msg_send(msg, NULL, NULL);
+    ogs_assert(ret == 0);
+
+    ogs_debug("Cancel-Location-Answer");
+
+    /* Add this value to the stats */
+    ogs_assert( pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_diam_logger_self()->stats.nb_echoed++;
+    ogs_assert( pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+
+    if (!error) {
+        int rv;
+        e = mme_event_new(MME_EVT_S6A_MESSAGE);
+        ogs_assert(e);
+        e->mme_ue = mme_ue;
+        e->s6a_message = s6a_message;
+        rv = ogs_queue_push(ogs_app()->queue, e);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_queue_push() failed:%d", (int)rv);
+            ogs_free(s6a_message);
+            mme_event_free(e);
+        } else {
+            ogs_pollset_notify(ogs_app()->pollset);
+        }
+    } else {
+        ret = ogs_diam_message_experimental_rescode_set(ans, result_code);
+        ogs_assert(ret == 0);
+    }
+
+    return 0;
+}
 
 int mme_fd_init(void)
 {
     int ret;
+    struct disp_when data;
 
     ret = ogs_diam_init(FD_MODE_CLIENT,
                 mme_self()->diam_conf_path, mme_self()->diam_config);
@@ -1419,6 +1543,12 @@ int mme_fd_init(void)
     /* Create handler for sessions */
 	ret = fd_sess_handler_create(&mme_s6a_reg, &state_cleanup, NULL, NULL);
     ogs_assert(ret == 0);
+
+	/* Specific handler for Cancel-Location-Request */
+	data.command = ogs_diam_s6a_cmd_clr;
+	ret = fd_disp_register(mme_ogs_diam_s6a_clr_cb, DISP_HOW_CC, &data, NULL,
+                &hdl_s6a_clr);
+    ogs_assert(ret == 0);    
 
 	/* Advertise the support for the application in the peer */
 	ret = fd_disp_app_support(ogs_diam_s6a_application, ogs_diam_vendor, 1, 0);
@@ -1436,6 +1566,9 @@ void mme_fd_final(void)
 
 	ret = fd_sess_handler_destroy(&mme_s6a_reg, NULL);
     ogs_assert(ret == OGS_OK);
+
+    if (hdl_s6a_clr)
+		(void) fd_disp_unregister(&hdl_s6a_clr, NULL);
 
     ogs_diam_final();
 }

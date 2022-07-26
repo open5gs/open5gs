@@ -101,3 +101,27 @@ void mme_s6a_handle_ula(mme_ue_t *mme_ue,
     mme_ue->num_of_session = i;
     mme_ue->context_identifier = slice_data->context_identifier;
 }
+
+void mme_s6a_handle_clr(mme_ue_t *mme_ue,
+        ogs_diam_s6a_clr_message_t *clr_message)
+{
+    ogs_assert(mme_ue);
+    ogs_assert(clr_message);    
+
+    if (clr_message->clr_flags & OGS_DIAM_S6A_CLR_REATTACH_REQUIRED) {
+        mme_ue->mme_to_ue_detach_type = OGS_NAS_DETACH_TYPE_TO_UE_RE_ATTACH_REQUIRED;
+    } else {
+        mme_ue->mme_to_ue_detach_type = OGS_NAS_DETACH_TYPE_TO_UE_RE_ATTACH_NOT_REQUIRED;
+    }
+    
+    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_de_registered)) {
+        // Remove all trace of subscriber even when detached.
+        mme_ue_hash_remove(mme_ue);
+        mme_ue_remove(mme_ue);
+    } else if (ECM_IDLE(mme_ue)) {
+        ogs_assert(OGS_OK == s1ap_send_paging(mme_ue, S1AP_CNDomain_ps));
+        mme_ue->mme_to_ue_detach_pending = true;
+    } else {
+        ogs_assert(OGS_OK == nas_eps_send_detach_request(mme_ue));
+    }
+}

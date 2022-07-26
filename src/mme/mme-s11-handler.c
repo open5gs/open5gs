@@ -636,6 +636,8 @@ void mme_s11_handle_delete_session_response(
 
         return;
 
+    } else if (action == OGS_GTP_DELETE_NO_ACTION) {
+        
     } else {
         ogs_fatal("Invalid action = %d", action);
         ogs_assert_if_reached();

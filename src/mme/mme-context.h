@@ -321,6 +321,9 @@ struct mme_ue_s {
         };
     } nas_eps;
 
+    bool            mme_to_ue_detach_pending;
+    uint8_t         mme_to_ue_detach_type;
+
     /* UE identity */
 #define MME_UE_HAVE_IMSI(__mME) \
     ((__mME) && ((__mME)->imsi_len))

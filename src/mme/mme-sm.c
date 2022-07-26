@@ -437,40 +437,42 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         s6a_message = e->s6a_message;
         ogs_assert(s6a_message);
 
-        enb_ue = enb_ue_cycle(mme_ue->enb_ue);
-        if (!enb_ue) {
-            ogs_error("S1 context has already been removed");
+        if (s6a_message->during_attach) {
+            enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+            if (!enb_ue) {
+                ogs_error("S1 context has already been removed");
 
-            ogs_subscription_data_free(
-                    &s6a_message->ula_message.subscription_data);
-            ogs_free(s6a_message);
-            break;
-        }
+                ogs_subscription_data_free(
+                        &s6a_message->ula_message.subscription_data);
+                ogs_free(s6a_message);
+                break;
+            }
 
-        if (s6a_message->result_code != ER_DIAMETER_SUCCESS) {
-            /* Unfortunately fd doesn't distinguish
-             * between result-code and experimental-result-code.
-             *
-             * However, e.g. 5004 has different meaning
-             * if used in result-code than in experimental-result-code */
-            uint8_t emm_cause = emm_cause_from_diameter(
-                    mme_ue, s6a_message->err, s6a_message->exp_err);
+            if (s6a_message->result_code != ER_DIAMETER_SUCCESS) {
+                /* Unfortunately fd doesn't distinguish
+                * between result-code and experimental-result-code.
+                *
+                * However, e.g. 5004 has different meaning
+                * if used in result-code than in experimental-result-code */
+                uint8_t emm_cause = emm_cause_from_diameter(
+                        mme_ue, s6a_message->err, s6a_message->exp_err);
 
-            ogs_info("[%s] Attach reject [OGS_NAS_EMM_CAUSE:%d]",
-                    mme_ue->imsi_bcd, emm_cause);
-            ogs_assert(OGS_OK ==
-                nas_eps_send_attach_reject(mme_ue,
-                    emm_cause, OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
+                ogs_info("[%s] Attach reject [OGS_NAS_EMM_CAUSE:%d]",
+                        mme_ue->imsi_bcd, emm_cause);
+                ogs_assert(OGS_OK ==
+                    nas_eps_send_attach_reject(mme_ue,
+                        emm_cause, OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
 
-            ogs_assert(OGS_OK ==
-                s1ap_send_ue_context_release_command(enb_ue,
-                    S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                    S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
+                ogs_assert(OGS_OK ==
+                    s1ap_send_ue_context_release_command(enb_ue,
+                        S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                        S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
 
-            ogs_subscription_data_free(
-                    &s6a_message->ula_message.subscription_data);
-            ogs_free(s6a_message);
-            break;
+                ogs_subscription_data_free(
+                        &s6a_message->ula_message.subscription_data);
+                ogs_free(s6a_message);
+                break;
+            }
         }
 
         switch (s6a_message->cmd_code) {
@@ -502,6 +504,17 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             } else {
                 ogs_fatal("Invalid Type[%d]", mme_ue->nas_eps.type);
                 ogs_assert_if_reached();
+            }
+            break;
+        case OGS_DIAM_S6A_CMD_CODE_CANCEL_LOCATION:
+            mme_s6a_handle_clr(mme_ue, &s6a_message->clr_message);
+
+            if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue) && !mme_ue->mme_to_ue_detach_pending) {
+                mme_gtp_send_delete_all_sessions(mme_ue, OGS_GTP_DELETE_NO_ACTION);
+            }
+            if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
+                ogs_assert(OGS_OK ==
+                    sgsap_send_detach_indication(mme_ue));
             }
             break;
         default:

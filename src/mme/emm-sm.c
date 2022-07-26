@@ -129,6 +129,16 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 break;
             }
 
+            if (mme_ue->mme_to_ue_detach_pending) {
+                ogs_assert(OGS_OK == nas_eps_send_detach_request(mme_ue));
+                mme_gtp_send_delete_all_sessions(mme_ue, OGS_GTP_DELETE_NO_ACTION);
+                if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
+                    ogs_assert(OGS_OK ==
+                        sgsap_send_detach_indication(mme_ue));
+                }
+                break;
+            }
+
             if (!MME_UE_HAVE_IMSI(mme_ue)) {
                 ogs_info("Service request : Unknown UE");
                 ogs_assert(OGS_OK ==
@@ -539,6 +549,21 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             OGS_FSM_TRAN(s, &emm_state_de_registered);
             break;
 
+        case OGS_NAS_EPS_DETACH_ACCEPT:
+            ogs_debug("Detach accept");
+
+            CLEAR_MME_UE_TIMER(mme_ue->t3422);
+
+            if (enb_ue) {
+                s1ap_send_ue_context_release_command(enb_ue,
+                        S1AP_Cause_PR_nas, S1AP_CauseNas_detach,
+                        S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+            } else {
+                ogs_warn("[%s] No S1 Context", mme_ue->imsi_bcd);
+            }
+            OGS_FSM_TRAN(s, &emm_state_de_registered);
+            break;
+
         case OGS_NAS_EPS_UPLINK_NAS_TRANSPORT:
             ogs_debug("Uplink NAS Transport");
             ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
@@ -626,6 +651,23 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 }
             }
             break;
+
+        case MME_TIMER_T3422:
+            if (mme_ue->t3422.retry_count >=
+                    mme_timer_cfg(MME_TIMER_T3422)->max_count) {
+                ogs_warn("Retransmission of Detach Request failed. "
+                        "Stop retransmission");
+                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
+            } else {
+                rv = nas_eps_send_detach_request(mme_ue);
+                if (rv == OGS_OK) {
+                    mme_ue->t3422.retry_count++;
+                } else {
+                    ogs_error("nas_eps_send_detach_request() failed");
+                    OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
+                }
+            }
+            break;            
 
         default:
             ogs_error("Unknown timer[%s:%d]",

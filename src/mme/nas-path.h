@@ -43,6 +43,7 @@ int nas_eps_send_authentication_reject(mme_ue_t *mme_ue);
 
 int nas_eps_send_security_mode_command(mme_ue_t *mme_ue);
 
+int nas_eps_send_detach_request(mme_ue_t *mme_ue);
 int nas_eps_send_detach_accept(mme_ue_t *mme_ue);
 
 int nas_eps_send_pdn_connectivity_reject(
