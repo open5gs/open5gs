@@ -272,7 +272,9 @@ void sgsap_handle_detach_ack(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
 
-    mme_send_delete_session_or_detach(mme_ue);
+    if (!mme_ue->mme_to_ue_detach_pending) {
+        mme_send_delete_session_or_detach(mme_ue);
+    }
 }
 
 void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
