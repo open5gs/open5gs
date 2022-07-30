@@ -22,6 +22,8 @@
 
 #include "mme-context.h"
 
+#include "sgsap-types.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

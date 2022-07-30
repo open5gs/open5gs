@@ -23,6 +23,8 @@
 #include "mme-context.h"
 #include "mme-event.h"
 
+#include "sgsap-build.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -403,8 +403,6 @@ int emm_handle_detach_request(
     if (detach_request->detach_type.switch_off)
         ogs_debug("    Switch-Off");
 
-    ogs_info("    IMSI[%s]", mme_ue->imsi_bcd);
-
     return OGS_OK;
 }
 

@@ -19,7 +19,6 @@
 
 #include "mme-context.h"
 
-#include "sgsap-types.h"
 #include "sgsap-build.h"
 #include "sgsap-conv.h"
 

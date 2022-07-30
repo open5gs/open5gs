@@ -437,11 +437,12 @@ ogs_pkbuf_t *emm_build_security_mode_command(mme_ue_t *mme_ue)
     return nas_eps_security_encode(mme_ue, &message);
 }
 
-ogs_pkbuf_t *emm_build_detach_request(mme_ue_t *mme_ue)
+ogs_pkbuf_t *emm_build_detach_request(mme_ue_t *mme_ue, uint8_t detach_type)
 {
     ogs_nas_eps_message_t message;
 
     ogs_assert(mme_ue);
+    ogs_assert(detach_type);
 
     memset(&message, 0, sizeof(message));
     message.h.security_header_type = 
@@ -451,7 +452,7 @@ ogs_pkbuf_t *emm_build_detach_request(mme_ue_t *mme_ue)
     message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = OGS_NAS_EPS_DETACH_REQUEST;
 
-    message.emm.detach_request_to_ue.detach_type.value = mme_ue->mme_to_ue_detach_type;
+    message.emm.detach_request_to_ue.detach_type.value = detach_type;
 
     return nas_eps_security_encode(mme_ue, &message);
 }

@@ -22,8 +22,6 @@
 #include "mme-event.h"
 #include "mme-sm.h"
 
-#include "sgsap-types.h"
-#include "sgsap-build.h"
 #include "sgsap-path.h"
 
 int sgsap_open()

@@ -129,16 +129,6 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 break;
             }
 
-            if (mme_ue->mme_to_ue_detach_pending) {
-                ogs_assert(OGS_OK == nas_eps_send_detach_request(mme_ue));
-                mme_gtp_send_delete_all_sessions(mme_ue, OGS_GTP_DELETE_NO_ACTION);
-                if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
-                    ogs_assert(OGS_OK ==
-                        sgsap_send_detach_indication(mme_ue));
-                }
-                break;
-            }
-
             if (!MME_UE_HAVE_IMSI(mme_ue)) {
                 ogs_info("Service request : Unknown UE");
                 ogs_assert(OGS_OK ==
@@ -540,8 +530,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             }
 
             if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
-                ogs_assert(OGS_OK ==
-                    sgsap_send_detach_indication(mme_ue));
+                ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
             } else {
                 mme_send_delete_session_or_detach(mme_ue);
             }
@@ -550,17 +539,16 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             break;
 
         case OGS_NAS_EPS_DETACH_ACCEPT:
-            ogs_debug("Detach accept");
+            ogs_info("[%s] Detach accept", mme_ue->imsi_bcd);
 
             CLEAR_MME_UE_TIMER(mme_ue->t3422);
 
-            if (enb_ue) {
-                s1ap_send_ue_context_release_command(enb_ue,
-                        S1AP_Cause_PR_nas, S1AP_CauseNas_detach,
-                        S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+            if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
+                ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
             } else {
-                ogs_warn("[%s] No S1 Context", mme_ue->imsi_bcd);
+                mme_send_delete_session_or_detach(mme_ue);
             }
+
             OGS_FSM_TRAN(s, &emm_state_de_registered);
             break;
 
@@ -612,18 +600,8 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                         mme_ue->imsi_bcd);
                 CLEAR_MME_UE_TIMER(mme_ue->t3413);
 
-                mme_send_after_paging(mme_ue, OGS_GTP2_CAUSE_UNABLE_TO_PAGE_UE);
-
-                if (CS_CALL_SERVICE_INDICATOR(mme_ue) ||
-                    SMS_SERVICE_INDICATOR(mme_ue)) {
-                    ogs_assert(OGS_OK ==
-                        sgsap_send_ue_unreachable(mme_ue,
-                            SGSAP_SGS_CAUSE_UE_UNREACHABLE));
-
-                }
-    
-                CLEAR_SERVICE_INDICATOR(mme_ue);
-
+                ogs_assert(MME_PAGING_ONGOING(mme_ue));
+                mme_send_after_paging(mme_ue, true);
             } else {
                 mme_ue->t3413.retry_count++;
                 /*
@@ -642,6 +620,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                         "Stop retransmission");
                 OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
             } else {
+                ogs_assert(mme_ue->t3470.pkbuf);
                 rv = nas_eps_send_identity_request(mme_ue);
                 if (rv == OGS_OK) {
                     mme_ue->t3470.retry_count++;
@@ -659,7 +638,8 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                         "Stop retransmission");
                 OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
             } else {
-                rv = nas_eps_send_detach_request(mme_ue);
+                ogs_assert(mme_ue->t3422.pkbuf);
+                rv = nas_eps_send_detach_request(mme_ue, 0);
                 if (rv == OGS_OK) {
                     mme_ue->t3422.retry_count++;
                 } else {

@@ -272,9 +272,7 @@ void sgsap_handle_detach_ack(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
 
-    if (!mme_ue->mme_to_ue_detach_pending) {
-        mme_send_delete_session_or_detach(mme_ue);
-    }
+    mme_send_delete_session_or_detach(mme_ue);
 }
 
 void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
@@ -354,11 +352,15 @@ void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
         if (ECM_IDLE(mme_ue)) {
             if (CS_CALL_SERVICE_INDICATOR(mme_ue)) {
                 /* UE will respond Extended Service Request in PS CNDomain*/
+                MME_STORE_PAGING_INFO(mme_ue,
+                        MME_PAGING_TYPE_CS_CALL_SERVICE, NULL);
                 ogs_assert(OGS_OK ==
                     s1ap_send_paging(mme_ue, S1AP_CNDomain_cs));
 
             } else if (SMS_SERVICE_INDICATOR(mme_ue)) {
                 /* UE will respond Service Request in PS CNDomain*/
+                MME_STORE_PAGING_INFO(mme_ue,
+                        MME_PAGING_TYPE_SMS_SERVICE, NULL);
                 ogs_assert(OGS_OK ==
                     s1ap_send_paging(mme_ue, S1AP_CNDomain_ps));
             } else

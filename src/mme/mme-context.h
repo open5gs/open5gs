@@ -321,9 +321,6 @@ struct mme_ue_s {
         };
     } nas_eps;
 
-    bool            mme_to_ue_detach_pending;
-    uint8_t         mme_to_ue_detach_type;
-
     /* UE identity */
 #define MME_UE_HAVE_IMSI(__mME) \
     ((__mME) && ((__mME)->imsi_len))
@@ -453,6 +450,34 @@ struct mme_ue_s {
     ((__mME) && \
      (((__mME)->enb_ue == NULL) || (enb_ue_cycle((__mME)->enb_ue) == NULL)))
     enb_ue_t        *enb_ue;    /* S1 UE context */
+
+    struct {
+#define MME_CLEAR_PAGING_INFO(__mME) \
+    do { \
+        ogs_assert(__mME); \
+        (__mME)->paging.type = 0; \
+    } while(0)
+
+#define MME_STORE_PAGING_INFO(__mME, __tYPE, __dATA) \
+    do { \
+        ogs_assert(__mME); \
+        ogs_assert(__tYPE); \
+        (__mME)->paging.type = __tYPE; \
+        (__mME)->paging.data = __dATA; \
+    } while(0)
+
+#define MME_PAGING_ONGOING(__mME) ((__mME) && ((__mME)->paging.type))
+
+#define MME_PAGING_TYPE_DOWNLINK_DATA_NOTIFICATION 1
+#define MME_PAGING_TYPE_CREATE_BEARER 2
+#define MME_PAGING_TYPE_UPDATE_BEARER 3
+#define MME_PAGING_TYPE_DELETE_BEARER 4
+#define MME_PAGING_TYPE_CS_CALL_SERVICE 5
+#define MME_PAGING_TYPE_SMS_SERVICE 6
+#define MME_PAGING_TYPE_DETACH_TO_UE 7
+        int type;
+        void *data;
+    } paging;
 
     /* SGW UE context */
     sgw_ue_t        *sgw_ue;
@@ -687,9 +712,10 @@ typedef struct mme_bearer_s {
     /* Related Context */
     mme_ue_t        *mme_ue;
     mme_sess_t      *sess;
+
     struct {
         ogs_gtp_xact_t  *xact;
-    } create, update, delete, notify, current;
+    } create, update, delete, notify;
 } mme_bearer_t;
 
 void mme_context_init(void);

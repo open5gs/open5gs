@@ -256,16 +256,10 @@ int nas_eps_send_authentication_reject(mme_ue_t *mme_ue)
     return rv;
 }
 
-int nas_eps_send_detach_request(mme_ue_t *mme_ue)
+int nas_eps_send_detach_request(mme_ue_t *mme_ue, uint8_t detach_type)
 {
     int rv;
- 
-    enb_ue_t *enb_ue = NULL;
     ogs_pkbuf_t *emmbuf = NULL;
-
-    ogs_assert(mme_ue);
-    enb_ue = enb_ue_cycle(mme_ue->enb_ue);
-    ogs_expect_or_return_val(enb_ue, OGS_ERROR);
 
     ogs_debug("[%s] Detach request to UE", mme_ue->imsi_bcd);
 
@@ -273,7 +267,8 @@ int nas_eps_send_detach_request(mme_ue_t *mme_ue)
         emmbuf = mme_ue->t3422.pkbuf;
         ogs_expect_or_return_val(emmbuf, OGS_ERROR);
     } else {
-        emmbuf = emm_build_identity_request(mme_ue);
+        ogs_assert(detach_type);
+        emmbuf = emm_build_detach_request(mme_ue, detach_type);
         ogs_expect_or_return_val(emmbuf, OGS_ERROR);
     }
 
@@ -281,10 +276,6 @@ int nas_eps_send_detach_request(mme_ue_t *mme_ue)
     ogs_expect_or_return_val(mme_ue->t3422.pkbuf, OGS_ERROR);
     ogs_timer_start(mme_ue->t3422.timer, 
             mme_timer_cfg(MME_TIMER_T3422)->duration);    
-
-    /* send detach request */
-    emmbuf = emm_build_detach_request(mme_ue);
-    ogs_expect_or_return_val(emmbuf, OGS_ERROR);
 
     rv = nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
     ogs_expect_or_return_val(rv == OGS_OK, rv);

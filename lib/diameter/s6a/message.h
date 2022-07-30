@@ -59,9 +59,6 @@ extern "C" {
 #define OGS_DIAM_S6A_ULR_INITIAL_ATTACH_IND             (1 << 5)
 #define OGS_DIAM_S6A_ULR_PS_LCS_SUPPORTED_BY_UE         (1 << 6)
 
-#define OGS_DIAM_S6A_CLR_S6A_S6D_INDICATOR              (1)
-#define OGS_DIAM_S6A_CLR_REATTACH_REQUIRED              (1 << 1)
-
 #define OGS_DIAM_S6A_UE_SRVCC_NOT_SUPPORTED             (0)
 #define OGS_DIAM_S6A_UE_SRVCC_SUPPORTED                 (1)
 
@@ -148,8 +145,8 @@ typedef struct ogs_diam_s6a_ula_message_s {
 } ogs_diam_s6a_ula_message_t;
 
 typedef struct ogs_diam_s6a_clr_message_s {
-#define OGS_DIAM_S6A_CLR_FLAGS_S6A_S6D_INDICATOR            (0)
-#define OGS_DIAM_S6A_CLR_FLAGS_REATTACH_REQUIRED            (1)
+#define OGS_DIAM_S6A_CLR_FLAGS_S6A_S6D_INDICATOR            (1)
+#define OGS_DIAM_S6A_CLR_FLAGS_REATTACH_REQUIRED            (1 << 1)
     uint32_t clr_flags;
 } ogs_diam_s6a_clr_message_t;
 

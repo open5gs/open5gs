@@ -460,8 +460,8 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                 ogs_info("[%s] Attach reject [OGS_NAS_EMM_CAUSE:%d]",
                         mme_ue->imsi_bcd, emm_cause);
                 ogs_assert(OGS_OK ==
-                    nas_eps_send_attach_reject(mme_ue,
-                        emm_cause, OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
+                    nas_eps_send_attach_reject(mme_ue, emm_cause,
+                        OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
 
                 ogs_assert(OGS_OK ==
                     s1ap_send_ue_context_release_command(enb_ue,
@@ -508,14 +508,6 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             break;
         case OGS_DIAM_S6A_CMD_CODE_CANCEL_LOCATION:
             mme_s6a_handle_clr(mme_ue, &s6a_message->clr_message);
-
-            if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue) && !mme_ue->mme_to_ue_detach_pending) {
-                mme_gtp_send_delete_all_sessions(mme_ue, OGS_GTP_DELETE_NO_ACTION);
-            }
-            if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
-                ogs_assert(OGS_OK ==
-                    sgsap_send_detach_indication(mme_ue));
-            }
             break;
         default:
             ogs_error("Invalid Type[%d]", s6a_message->cmd_code);
