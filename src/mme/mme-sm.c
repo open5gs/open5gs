@@ -34,54 +34,6 @@
 #include "mme-s6a-handler.h"
 #include "mme-path.h"
 
-/* 3GPP TS 29.272 Annex A; Table !.a:
- * Mapping from S6a error codes to NAS Cause Codes */
-static uint8_t emm_cause_from_diameter(
-        mme_ue_t *mme_ue, const uint32_t *dia_err, const uint32_t *dia_exp_err)
-{
-    ogs_assert(mme_ue);
-
-    if (dia_exp_err) {
-        switch (*dia_exp_err) {
-        case OGS_DIAM_S6A_ERROR_USER_UNKNOWN:                   /* 5001 */
-            ogs_info("[%s] User Unknown in HSS DB", mme_ue->imsi_bcd);
-            return OGS_NAS_EMM_CAUSE_PLMN_NOT_ALLOWED;
-        case OGS_DIAM_S6A_ERROR_UNKNOWN_EPS_SUBSCRIPTION:       /* 5420 */
-            /* FIXME: Error diagnostic? */
-            return OGS_NAS_EMM_CAUSE_NO_SUITABLE_CELLS_IN_TRACKING_AREA;
-        case OGS_DIAM_S6A_ERROR_RAT_NOT_ALLOWED:                /* 5421 */
-            return OGS_NAS_EMM_CAUSE_ROAMING_NOT_ALLOWED_IN_THIS_TRACKING_AREA;
-        case OGS_DIAM_S6A_ERROR_ROAMING_NOT_ALLOWED:            /* 5004 */
-            return OGS_NAS_EMM_CAUSE_PLMN_NOT_ALLOWED;
-            /* return OGS_NAS_EMM_CAUSE_EPS_SERVICES_NOT_ALLOWED_IN_THIS_PLMN;
-             * (ODB_HPLMN_APN) */
-            /* return OGS_NAS_EMM_CAUSE_ESM_FAILURE; (ODB_ALL_APN) */
-        case OGS_DIAM_S6A_AUTHENTICATION_DATA_UNAVAILABLE:      /* 4181 */
-            return OGS_NAS_EMM_CAUSE_NETWORK_FAILURE;
-        }
-    }
-    if (dia_err) {
-        switch (*dia_err) {
-        case ER_DIAMETER_AUTHORIZATION_REJECTED:                /* 5003 */
-        case ER_DIAMETER_UNABLE_TO_DELIVER:                     /* 3002 */
-        case ER_DIAMETER_REALM_NOT_SERVED:                      /* 3003 */
-            return OGS_NAS_EMM_CAUSE_NO_SUITABLE_CELLS_IN_TRACKING_AREA;
-        case ER_DIAMETER_UNABLE_TO_COMPLY:                      /* 5012 */
-        case ER_DIAMETER_INVALID_AVP_VALUE:                     /* 5004 */
-        case ER_DIAMETER_AVP_UNSUPPORTED:                       /* 5001 */
-        case ER_DIAMETER_MISSING_AVP:                           /* 5005 */
-        case ER_DIAMETER_RESOURCES_EXCEEDED:                    /* 5006 */
-        case ER_DIAMETER_AVP_OCCURS_TOO_MANY_TIMES:             /* 5009 */
-            return OGS_NAS_EMM_CAUSE_NETWORK_FAILURE;
-        }
-    }
-
-    ogs_error("Unexpected Diameter Result Code %d/%d, defaulting to severe "
-              "network failure",
-              dia_err ? *dia_err : -1, dia_exp_err ? *dia_exp_err : -1);
-    return OGS_NAS_EMM_CAUSE_SEVERE_NETWORK_FAILURE;
-}
-
 void mme_state_initial(ogs_fsm_t *s, mme_event_t *e)
 {
     mme_sm_debug(e);
@@ -122,6 +74,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
     mme_sess_t *sess = NULL;
 
     ogs_diam_s6a_message_t *s6a_message = NULL;
+    uint8_t emm_cause = 0;
 
     ogs_gtp_node_t *gnode = NULL;
     ogs_gtp_xact_t *xact = NULL;
@@ -437,26 +390,20 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         s6a_message = e->s6a_message;
         ogs_assert(s6a_message);
 
-        if (s6a_message->during_attach) {
-            enb_ue = enb_ue_cycle(mme_ue->enb_ue);
-            if (!enb_ue) {
-                ogs_error("S1 context has already been removed");
+        enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+        if (!enb_ue) {
+            ogs_error("S1 context has already been removed");
 
-                ogs_subscription_data_free(
-                        &s6a_message->ula_message.subscription_data);
-                ogs_free(s6a_message);
-                break;
-            }
+            ogs_subscription_data_free(
+                    &s6a_message->ula_message.subscription_data);
+            ogs_free(s6a_message);
+            break;
+        }
 
-            if (s6a_message->result_code != ER_DIAMETER_SUCCESS) {
-                /* Unfortunately fd doesn't distinguish
-                * between result-code and experimental-result-code.
-                *
-                * However, e.g. 5004 has different meaning
-                * if used in result-code than in experimental-result-code */
-                uint8_t emm_cause = emm_cause_from_diameter(
-                        mme_ue, s6a_message->err, s6a_message->exp_err);
-
+        switch (s6a_message->cmd_code) {
+        case OGS_DIAM_S6A_CMD_CODE_AUTHENTICATION_INFORMATION:
+            emm_cause = mme_s6a_handle_aia(mme_ue, s6a_message);
+            if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
                 ogs_info("[%s] Attach reject [OGS_NAS_EMM_CAUSE:%d]",
                         mme_ue->imsi_bcd, emm_cause);
                 ogs_assert(OGS_OK ==
@@ -467,43 +414,21 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                     s1ap_send_ue_context_release_command(enb_ue,
                         S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                         S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
-
-                ogs_subscription_data_free(
-                        &s6a_message->ula_message.subscription_data);
-                ogs_free(s6a_message);
-                break;
             }
-        }
-
-        switch (s6a_message->cmd_code) {
-        case OGS_DIAM_S6A_CMD_CODE_AUTHENTICATION_INFORMATION:
-            mme_s6a_handle_aia(mme_ue, &s6a_message->aia_message);
             break;
         case OGS_DIAM_S6A_CMD_CODE_UPDATE_LOCATION:
-            mme_s6a_handle_ula(mme_ue, &s6a_message->ula_message);
-
-            if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST) {
-                rv = nas_eps_send_emm_to_esm(mme_ue,
-                        &mme_ue->pdn_connectivity_request);
-                if (rv != OGS_OK) {
-                    ogs_error("nas_eps_send_emm_to_esm() failed");
-                    ogs_assert(OGS_OK ==
-                        nas_eps_send_attach_reject(mme_ue,
-                        OGS_NAS_EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
-                        OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
-                }
-            } else if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST) {
+            emm_cause = mme_s6a_handle_ula(mme_ue, s6a_message);
+            if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
+                ogs_info("[%s] Attach reject [OGS_NAS_EMM_CAUSE:%d]",
+                        mme_ue->imsi_bcd, emm_cause);
                 ogs_assert(OGS_OK ==
-                    nas_eps_send_tau_accept(mme_ue,
-                        S1AP_ProcedureCode_id_InitialContextSetup));
-            } else if (mme_ue->nas_eps.type == MME_EPS_TYPE_SERVICE_REQUEST) {
-                ogs_error("[%s] Service request", mme_ue->imsi_bcd);
-            } else if (mme_ue->nas_eps.type ==
-                    MME_EPS_TYPE_DETACH_REQUEST_FROM_UE) {
-                ogs_error("[%s] Detach request", mme_ue->imsi_bcd);
-            } else {
-                ogs_fatal("Invalid Type[%d]", mme_ue->nas_eps.type);
-                ogs_assert_if_reached();
+                    nas_eps_send_attach_reject(mme_ue, emm_cause,
+                        OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
+
+                ogs_assert(OGS_OK ==
+                    s1ap_send_ue_context_release_command(enb_ue,
+                        S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                        S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
             }
             break;
         case OGS_DIAM_S6A_CMD_CODE_CANCEL_LOCATION:

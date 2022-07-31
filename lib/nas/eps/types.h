@@ -225,7 +225,7 @@ ED3(uint8_t cn_specific_drx_cycle_length_coefficient_and_drx_value_for_s1_mode:4
  * O TV 2 */
 
 /* REQUEST_ACCEPTED(16) cause is defined by Open5GS */
-#define EMM_CAUSE_REQUEST_ACCEPTED 16
+#define OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED 16
 
 /* Annex A (informative) Cause values for EPS mobility management
  * A.1 Causes related to UE identification */

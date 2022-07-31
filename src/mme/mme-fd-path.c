@@ -229,7 +229,6 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     s6a_message = ogs_calloc(1, sizeof(ogs_diam_s6a_message_t));
     ogs_assert(s6a_message);
     s6a_message->cmd_code = OGS_DIAM_S6A_CMD_CODE_AUTHENTICATION_INFORMATION;
-    s6a_message->during_attach = true;
     aia_message = &s6a_message->aia_message;
     ogs_assert(aia_message);
     e_utran_vector = &aia_message->e_utran_vector;
@@ -638,7 +637,6 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     s6a_message = ogs_calloc(1, sizeof(ogs_diam_s6a_message_t));
     ogs_assert(s6a_message);
     s6a_message->cmd_code = OGS_DIAM_S6A_CMD_CODE_UPDATE_LOCATION;
-    s6a_message->during_attach = true;
     ula_message = &s6a_message->ula_message;
     ogs_assert(ula_message);
     subscription_data = &ula_message->subscription_data;
@@ -1439,7 +1437,6 @@ static int mme_ogs_diam_s6a_clr_cb( struct msg **msg, struct avp *avp,
     s6a_message->cmd_code = OGS_DIAM_S6A_CMD_CODE_CANCEL_LOCATION;
     clr_message = &s6a_message->clr_message;
     ogs_assert(clr_message);    
-    
 
     /* Create answer header */
     qry = *msg;
