@@ -89,6 +89,8 @@ bool ogs_pfcp_cp_handle_association_setup_request(
                 OGS_ADDR(addr, buf), OGS_PORT(addr));
     }
 
+    ogs_pfcp_cp_send_session_set_deletion_request(node, NULL);
+
     return true;
 }
 
@@ -134,6 +136,8 @@ bool ogs_pfcp_cp_handle_association_setup_response(
         ogs_warn("F-TEID allocation/release not supported with peer [%s]:%d",
                 OGS_ADDR(addr, buf), OGS_PORT(addr));
     }
+
+    ogs_pfcp_cp_send_session_set_deletion_request(node, NULL);
 
     return true;
 }
