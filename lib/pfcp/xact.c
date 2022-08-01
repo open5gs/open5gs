@@ -605,7 +605,7 @@ static void response_timeout(void *data)
 
         if (ogs_pfcp_sendto(xact->node, pkbuf) != OGS_OK) {
             ogs_error("ogs_pfcp_sendto() failed");
-            goto out;
+            // goto out;
         }
     } else {
         ogs_warn("[%d] %s No Reponse. Give up! "
