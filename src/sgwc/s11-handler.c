@@ -1184,7 +1184,8 @@ void sgwc_s11_handle_downlink_data_notification_ack(
         ogs_assert(cause);
 
         cause_value = cause->value;
-        if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED)
+        if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED && 
+            cause_value != OGS_GTP2_CAUSE_UE_ALREADY_RE_ATTACHED)
             ogs_warn("GTP Cause [Value:%d] - PFCP_CAUSE[%d]",
                     cause_value, pfcp_cause_from_gtp(cause_value));
     } else {
