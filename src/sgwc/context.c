@@ -407,13 +407,16 @@ int sgwc_sess_remove(sgwc_sess_t *sess)
 
     sgwc_bearer_remove_all(sess);
 
-    ogs_assert(sess->pfcp.bar);
-    ogs_pfcp_bar_delete(sess->pfcp.bar);
+    if (sess->pfcp.bar) {
+        ogs_pfcp_bar_delete(sess->pfcp.bar);        
+    }
 
     ogs_pfcp_pool_final(&sess->pfcp);
 
-    ogs_assert(sess->session.name);
-    ogs_free(sess->session.name);
+    if (sess->session.name) {
+        ogs_free(sess->session.name);
+        sess->session.name = NULL;
+    }
 
     ogs_pool_free(&sgwc_sess_pool, sess);
 
