@@ -242,7 +242,7 @@ ogs_time_t ogs_get_monotonic_time(void)
 #if defined(HAVE_CLOCK_GETTIME) && defined(CLOCK_MONOTONIC)
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
-    return ((ts.tv_sec * 1000000UL) + (ts.tv_nsec / 1000UL));
+    return (((int64_t) ts.tv_sec * 1000000UL) + (ts.tv_nsec / 1000UL));
 #elif defined(__APPLE__)
     static mach_timebase_info_data_t info = {0};
     static double ratio = 0.0;
