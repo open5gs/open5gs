@@ -265,6 +265,11 @@ void sgwc_pfcp_state_associated(ogs_fsm_t *s, sgwc_event_t *e)
                     sess = sgwc_sess_find_by_seid(be64toh(sent_hdr->seid));
             }
 
+	    if (!sess) {
+		ogs_warn("No session associated with Session Deletion Response");
+		break;
+	    }
+
             sgwc_sxa_handle_session_deletion_response(
                 sess, xact, e->gtp_message,
                 &message->pfcp_session_deletion_response);
