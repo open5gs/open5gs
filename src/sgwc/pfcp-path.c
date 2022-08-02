@@ -285,6 +285,11 @@ int sgwc_pfcp_send_session_modification_request(
     ogs_list_for_each(&sess->bearer_list, bearer)
         ogs_list_add(&xact->bearer_to_modify_list, &bearer->to_modify_node);
 
+    if (ogs_list_empty(&xact->bearer_to_modify_list)) {
+        ogs_error("bearer_to_modify_list empty?!?");
+        return OGS_OK;
+    }
+
     return sgwc_pfcp_send_bearer_to_modify_list(sess, xact);
 }
 
