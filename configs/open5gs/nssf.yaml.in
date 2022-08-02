@@ -35,7 +35,7 @@ logger:
 #          - ::0
 #        port: 7777
 #
-#  o SBI Server(https://<all address avaiable>:443)
+#  o SBI Server(https://<all address available>:443)
 #    sbi:
 #      - tls:
 #          key: nssf.key
@@ -85,7 +85,7 @@ logger:
 #          l_onoff: true
 #          l_linger: 10
 #
-#  <List of avaiable Network Slice Instance(NSI)>
+#  <List of available Network Slice Instance(NSI)>
 #
 #  o One NSI
 #   - NRF[http://::1:7777/nnrf-nfm/v1/nf-instances]
@@ -134,6 +134,16 @@ logger:
 #        so_linger:
 #          l_onoff: true
 #          l_linger: 10
+#
+#  <NF Service>
+#
+#  o NF Service Name(Default : all NF services available)
+#    service_name:
+#
+#  o NF Service Name(Only some NF services are available)
+#    service_name:
+#      - nnssf-nsselection
+#
 nssf:
     sbi:
       - addr: 127.0.0.14

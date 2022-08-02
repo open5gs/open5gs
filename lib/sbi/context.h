@@ -68,6 +68,8 @@ typedef struct ogs_sbi_context_s {
     void (*client_wait_expire)(void *data);
     ogs_fsm_handler_t nf_state_registered;
 
+    int num_of_service_name;
+    const char *service_name[OGS_MAX_NUM_OF_NF_SERVICE];
 } ogs_sbi_context_t;
 
 typedef struct ogs_sbi_nf_instance_s {
@@ -271,6 +273,8 @@ ogs_sbi_context_t *ogs_sbi_self(void);
 int ogs_sbi_context_parse_config(
         const char *local, const char *nrf, const char *scp);
 
+bool ogs_sbi_nf_service_is_available(const char *name);
+
 ogs_sbi_nf_instance_t *ogs_sbi_scp_instance(void);
 
 ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_add(void);
@@ -287,10 +291,12 @@ void ogs_sbi_nf_instance_remove_all(void);
 ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_find(char *id);
 bool ogs_sbi_nf_instance_maximum_number_is_reached(void);
 
-ogs_sbi_nf_service_t *ogs_sbi_nf_service_add(ogs_sbi_nf_instance_t *nf_instance,
-        char *id, char *name, OpenAPI_uri_scheme_e scheme);
-void ogs_sbi_nf_service_add_version(ogs_sbi_nf_service_t *nf_service,
-        char *in_uri, char *full, char *expiry);
+ogs_sbi_nf_service_t *ogs_sbi_nf_service_add(
+        ogs_sbi_nf_instance_t *nf_instance,
+        char *id, const char *name, OpenAPI_uri_scheme_e scheme);
+void ogs_sbi_nf_service_add_version(
+        ogs_sbi_nf_service_t *nf_service,
+        const char *in_uri, const char *full, const char *expiry);
 void ogs_sbi_nf_service_add_allowed_nf_type(
         ogs_sbi_nf_service_t *nf_service, OpenAPI_nf_type_e allowed_nf_type);
 void ogs_sbi_nf_service_clear(ogs_sbi_nf_service_t *nf_service);
@@ -309,7 +315,7 @@ void ogs_sbi_nf_info_remove_all(ogs_list_t *list);
 void ogs_sbi_nf_instance_build_default(
         ogs_sbi_nf_instance_t *nf_instance, OpenAPI_nf_type_e nf_type);
 ogs_sbi_nf_service_t *ogs_sbi_nf_service_build_default(
-        ogs_sbi_nf_instance_t *nf_instance, char *name);
+        ogs_sbi_nf_instance_t *nf_instance, const char *name);
 
 ogs_sbi_client_t *ogs_sbi_client_find_by_service_name(
         ogs_sbi_nf_instance_t *nf_instance, char *name, char *version);

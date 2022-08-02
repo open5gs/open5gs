@@ -102,6 +102,8 @@ int ausf_context_parse_config(void)
                 ogs_assert(ausf_key);
                 if (!strcmp(ausf_key, "sbi")) {
                     /* handle config in sbi library */
+                } else if (!strcmp(ausf_key, "service_name")) {
+                    /* handle config in sbi library */
                 } else
                     ogs_warn("unknown key `%s`", ausf_key);
             }

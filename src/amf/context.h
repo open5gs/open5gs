@@ -203,6 +203,7 @@ struct ran_ue_s {
         if ((_nFInstance)->reference_count == 1) { \
             ogs_info("[%s] (%s) NF removed", (_nFInstance)->id, (_cAUSE)); \
             amf_nf_fsm_fini((_nFInstance)); \
+            ogs_sbi_nf_instance_remove(_nFInstance); \
         } else { \
             /* There is an assocation with other context */ \
             ogs_info("[%s:%d] (%s) NF suspended", \
@@ -210,7 +211,6 @@ struct ran_ue_s {
             OGS_FSM_TRAN(&_nFInstance->sm, amf_nf_state_de_registered); \
             ogs_fsm_dispatch(&_nFInstance->sm, NULL); \
         } \
-        ogs_sbi_nf_instance_remove(_nFInstance); \
     } while(0)
 
 struct amf_ue_s {

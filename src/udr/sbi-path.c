@@ -89,13 +89,15 @@ int udr_sbi_open(void)
     ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_UDM);
 
     /* Build NF service information. It will be transmitted to NRF. */
-    service = ogs_sbi_nf_service_build_default(nf_instance,
-            (char*)OGS_SBI_SERVICE_NAME_NUDR_DR);
-    ogs_assert(service);
-    ogs_sbi_nf_service_add_version(service, (char*)OGS_SBI_API_V1,
-            (char*)OGS_SBI_API_V1_0_0, NULL);
-    ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_PCF);
-    ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_UDM);
+    if (ogs_sbi_nf_service_is_available(OGS_SBI_SERVICE_NAME_NUDR_DR)) {
+        service = ogs_sbi_nf_service_build_default(
+                    nf_instance, OGS_SBI_SERVICE_NAME_NUDR_DR);
+        ogs_assert(service);
+        ogs_sbi_nf_service_add_version(
+                    service, OGS_SBI_API_V1, OGS_SBI_API_V1_0_0, NULL);
+        ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_PCF);
+        ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_UDM);
+    }
 
     /* Initialize NRF NF Instance */
     ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance) {

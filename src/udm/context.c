@@ -102,6 +102,8 @@ int udm_context_parse_config(void)
                 ogs_assert(udm_key);
                 if (!strcmp(udm_key, "sbi")) {
                     /* handle config in sbi library */
+                } else if (!strcmp(udm_key, "service_name")) {
+                    /* handle config in sbi library */
                 } else
                     ogs_warn("unknown key `%s`", udm_key);
             }

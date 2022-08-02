@@ -35,7 +35,7 @@ logger:
 #          - ::0
 #        port: 7777
 #
-#  o SBI Server(https://<all address avaiable>:443)
+#  o SBI Server(https://<all address available>:443)
 #    sbi:
 #      - tls:
 #          key: smf.key
@@ -84,6 +84,15 @@ logger:
 #        so_linger:
 #          l_onoff: true
 #          l_linger: 10
+#
+#  <NF Service>
+#
+#  o NF Service Name(Default : all NF services available)
+#    service_name:
+#
+#  o NF Service Name(Only some NF services are available)
+#    service_name:
+#      - nsmf-pdusession
 #
 #  <PFCP Server>
 #

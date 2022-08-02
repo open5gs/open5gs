@@ -821,6 +821,8 @@ int amf_context_parse_config(void)
                     self.amf_name = ogs_yaml_iter_value(&amf_iter);
                 } else if (!strcmp(amf_key, "sbi")) {
                     /* handle config in sbi library */
+                } else if (!strcmp(amf_key, "service_name")) {
+                    /* handle config in sbi library */
                 } else
                     ogs_warn("unknown key `%s`", amf_key);
             }

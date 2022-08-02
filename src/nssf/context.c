@@ -96,6 +96,8 @@ int nssf_context_parse_config(void)
                 ogs_assert(nssf_key);
                 if (!strcmp(nssf_key, "sbi")) {
                     /* handle config in sbi library */
+                } else if (!strcmp(nssf_key, "service_name")) {
+                    /* handle config in sbi library */
                 } else if (!strcmp(nssf_key, "nsi")) {
                     ogs_list_t list, list6;
                     ogs_socknode_t *node = NULL, *node6 = NULL;

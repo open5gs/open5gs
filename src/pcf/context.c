@@ -117,6 +117,8 @@ int pcf_context_parse_config(void)
                 ogs_assert(pcf_key);
                 if (!strcmp(pcf_key, "sbi")) {
                     /* handle config in sbi library */
+                } else if (!strcmp(pcf_key, "service_name")) {
+                    /* handle config in sbi library */
                 } else
                     ogs_warn("unknown key `%s`", pcf_key);
             }

@@ -35,7 +35,7 @@ logger:
 #          - ::0
 #        port: 7777
 #
-#  o SBI Server(https://<all address avaiable>:443)
+#  o SBI Server(https://<all address available>:443)
 #    sbi:
 #      - tls:
 #          key: amf.key
@@ -85,9 +85,18 @@ logger:
 #          l_onoff: true
 #          l_linger: 10
 #
+#  <NF Service>
+#
+#  o NF Service Name(Default : all NF services available)
+#    service_name:
+#
+#  o NF Service Name(Only some NF services are available)
+#    service_name:
+#      - namf-comm
+#
 #  <NGAP Server>>
 #
-#  o NGAP Server(all address avaiable)
+#  o NGAP Server(all address available)
 #    ngap:
 #
 #  o NGAP Server(0.0.0.0:38412)
@@ -104,7 +113,7 @@ logger:
 #      - addr: 127.0.0.5
 #        port: 38413
 #
-#  o NGAP Server(address avaiable in `eth0` interface)
+#  o NGAP Server(address available in `eth0` interface)
 #    ngap:
 #      dev: eth0
 #

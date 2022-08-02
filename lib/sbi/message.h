@@ -122,7 +122,6 @@ extern "C" {
 
 #define OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION        "nsmf-pdusession"
 #define OGS_SBI_RESOURCE_NAME_SM_CONTEXTS           "sm-contexts"
-#define OGS_SBI_SERVICE_NAME_NSMF_EVENT_EXPOSURE    "nsmf-event-exposure"
 #define OGS_SBI_RESOURCE_NAME_MODIFY                "modify"
 #define OGS_SBI_RESOURCE_NAME_RELEASE               "release"
 

@@ -111,6 +111,8 @@ int af_context_parse_config(void)
                 ogs_assert(af_key);
                 if (!strcmp(af_key, "sbi")) {
                     /* handle config in sbi library */
+                } else if (!strcmp(af_key, "service_name")) {
+                    /* handle config in sbi library */
                 } else
                     ogs_warn("unknown key `%s`", af_key);
             }

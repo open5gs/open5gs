@@ -400,6 +400,27 @@ int ogs_sbi_context_parse_config(
                         ogs_socknode_remove_all(&list);
                         ogs_socknode_remove_all(&list6);
                     }
+                } else if (!strcmp(local_key, "service_name")) {
+                    ogs_yaml_iter_t service_name_iter;
+                    ogs_yaml_iter_recurse(&local_iter, &service_name_iter);
+                    ogs_assert(ogs_yaml_iter_type(
+                                &service_name_iter) != YAML_MAPPING_NODE);
+
+                    do {
+                        const char *v = NULL;
+
+                        if (ogs_yaml_iter_type(&service_name_iter) ==
+                                YAML_SEQUENCE_NODE) {
+                            if (!ogs_yaml_iter_next(&service_name_iter))
+                                break;
+                        }
+
+                        v = ogs_yaml_iter_value(&service_name_iter);
+                        if (v && strlen(v))
+                            self.service_name[self.num_of_service_name++] = v;
+
+                    } while (ogs_yaml_iter_type(
+                                &service_name_iter) == YAML_SEQUENCE_NODE);
                 }
             }
         } else if (nrf && !strcmp(root_key, nrf)) {
@@ -706,6 +727,24 @@ int ogs_sbi_context_parse_config(
     return OGS_OK;
 }
 
+bool ogs_sbi_nf_service_is_available(const char *name)
+{
+    int i;
+
+    ogs_assert(name);
+
+    if (self.num_of_service_name == 0)
+        /* If no service name is configured, all services are available */
+        return true;
+
+    for (i = 0; i < self.num_of_service_name; i++)
+        /* Only services in the configuration are available */
+        if (strcmp(self.service_name[i], name) == 0)
+            return true;
+
+    return false;
+}
+
 ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_add(void)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
@@ -856,7 +895,7 @@ bool ogs_sbi_nf_instance_maximum_number_is_reached()
 
 ogs_sbi_nf_service_t *ogs_sbi_nf_service_add(
         ogs_sbi_nf_instance_t *nf_instance,
-        char *id, char *name, OpenAPI_uri_scheme_e scheme)
+        char *id, const char *name, OpenAPI_uri_scheme_e scheme)
 {
     ogs_sbi_nf_service_t *nf_service = NULL;
 
@@ -888,7 +927,7 @@ ogs_sbi_nf_service_t *ogs_sbi_nf_service_add(
 }
 
 void ogs_sbi_nf_service_add_version(ogs_sbi_nf_service_t *nf_service,
-        char *in_uri, char *full, char *expiry)
+        const char *in_uri, const char *full, const char *expiry)
 {
     ogs_assert(nf_service);
 
@@ -1148,7 +1187,7 @@ void ogs_sbi_nf_instance_build_default(
 }
 
 ogs_sbi_nf_service_t *ogs_sbi_nf_service_build_default(
-        ogs_sbi_nf_instance_t *nf_instance, char *name)
+        ogs_sbi_nf_instance_t *nf_instance, const char *name)
 {
     ogs_sbi_server_t *server = NULL;
     ogs_sbi_nf_service_t *nf_service = NULL;

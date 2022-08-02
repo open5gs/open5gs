@@ -26,7 +26,7 @@ logger:
 #
 #  <S1AP Server>>
 #
-#  o S1AP Server(all address avaiable)
+#  o S1AP Server(all address available)
 #    s1ap:
 #
 #  o S1AP Server(0.0.0.0:36412)
@@ -43,7 +43,7 @@ logger:
 #      - addr: 127.0.0.2
 #        port: 36413
 #
-#  o S1AP Server(address avaiable in `eth0` interface)
+#  o S1AP Server(address available in `eth0` interface)
 #    s1ap:
 #      dev: eth0
 #
@@ -86,7 +86,7 @@ logger:
 #
 #  <GTP-C Server>>
 #
-#  o GTP-C Server(all address avaiable)
+#  o GTP-C Server(all address available)
 #    gtpc:
 #
 #  o GTP-C Server(127.0.0.2:2123, [::1]:2123)

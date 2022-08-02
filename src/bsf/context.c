@@ -104,6 +104,8 @@ int bsf_context_parse_config(void)
                 ogs_assert(bsf_key);
                 if (!strcmp(bsf_key, "sbi")) {
                     /* handle config in sbi library */
+                } else if (!strcmp(bsf_key, "service_name")) {
+                    /* handle config in sbi library */
                 } else
                     ogs_warn("unknown key `%s`", bsf_key);
             }
