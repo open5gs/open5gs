@@ -1098,13 +1098,17 @@ void smf_n4_handle_session_report_request(
     uint16_t pdr_id = 0;
     unsigned int i;
 
-    ogs_assert(sess);
     ogs_assert(pfcp_xact);
     ogs_assert(pfcp_req);
 
     ogs_debug("Session Report Request");
 
     cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
+
+    if (!sess) {
+        ogs_warn("No Context");
+        cause_value = OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND;
+    }
 
     if (pfcp_req->report_type.presence == 0) {
         ogs_error("No Report Type");
@@ -1118,6 +1122,7 @@ void smf_n4_handle_session_report_request(
         return;
     }
 
+    ogs_assert(sess);
     report_type.value = pfcp_req->report_type.u8;
 
     if (report_type.downlink_data_report) {
