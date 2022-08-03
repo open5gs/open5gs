@@ -428,34 +428,6 @@ static int hss_ogs_diam_swx_sar_cb( struct msg **msg, struct avp *avp,
         goto out;
     }
 
-    /* Set Vendor-Specific-Application-Id AVP */
-    ret = ogs_diam_message_vendor_specific_appid_set(
-            ans, OGS_DIAM_SWX_APPLICATION_ID);
-    ogs_assert(ret == 0);
-
-    /* Set the Auth-Session-State AVP */
-    ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
-    ogs_assert(ret == 0);
-    val.i32 = OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED;
-    ret = fd_msg_avp_setvalue(avp, &val);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-    ogs_assert(ret == 0);
-
-	/* Set the Origin-Host, Origin-Realm, and Result-Code AVPs */
-	ret = fd_msg_rescode_set(ans, (char*)"DIAMETER_SUCCESS", NULL, NULL, 1);
-    ogs_assert(ret == 0);
-
-    /* Set the User-Name AVP */
-    ret = fd_msg_avp_new(ogs_diam_user_name, 0, &avp);
-    ogs_assert(ret == 0);
-    val.os.data = (uint8_t *)user_name;
-    val.os.len = strlen(user_name);
-    ret = fd_msg_avp_setvalue(avp, &val);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-    ogs_assert(ret == 0);
-
     /* Get Server-Assignment-Type AVP (Mandatory) */
     ret = fd_msg_search_avp(qry,
             ogs_diam_cx_server_assignment_type, &avp);
@@ -839,6 +811,34 @@ static int hss_ogs_diam_swx_sar_cb( struct msg **msg, struct avp *avp,
         ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
         ogs_assert(ret == 0);
     }
+
+    /* Set Vendor-Specific-Application-Id AVP */
+    ret = ogs_diam_message_vendor_specific_appid_set(
+            ans, OGS_DIAM_SWX_APPLICATION_ID);
+    ogs_assert(ret == 0);
+
+    /* Set the Auth-Session-State AVP */
+    ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
+    ogs_assert(ret == 0);
+    val.i32 = OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+	/* Set the Origin-Host, Origin-Realm, and Result-Code AVPs */
+	ret = fd_msg_rescode_set(ans, (char*)"DIAMETER_SUCCESS", NULL, NULL, 1);
+    ogs_assert(ret == 0);
+
+    /* Set the User-Name AVP */
+    ret = fd_msg_avp_new(ogs_diam_user_name, 0, &avp);
+    ogs_assert(ret == 0);
+    val.os.data = (uint8_t *)user_name;
+    val.os.len = strlen(user_name);
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
 
 	/* Send the answer */
 	ret = fd_msg_send(msg, NULL, NULL);

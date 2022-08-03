@@ -1411,7 +1411,6 @@ static int mme_ogs_diam_s6a_clr_cb( struct msg **msg, struct avp *avp,
         struct session *session, void *opaque, enum disp_action *act)
 {
     int ret;
-    int error = 0;
     
     mme_event_t *e = NULL;
     mme_ue_t *mme_ue = NULL;
@@ -1457,7 +1456,7 @@ static int mme_ogs_diam_s6a_clr_cb( struct msg **msg, struct avp *avp,
     if (!mme_ue) {
         ogs_error("Cancel Location for Unknown IMSI[%s]", imsi_bcd);
         result_code = OGS_DIAM_S6A_ERROR_USER_UNKNOWN;
-        error++;
+        goto out;
     }
 
     ret = fd_msg_search_avp(qry, ogs_diam_s6a_cancellation_type, &avp);
@@ -1502,24 +1501,43 @@ static int mme_ogs_diam_s6a_clr_cb( struct msg **msg, struct avp *avp,
     ogs_diam_logger_self()->stats.nb_echoed++;
     ogs_assert( pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
 
-    if (!error) {
-        int rv;
-        e = mme_event_new(MME_EVT_S6A_MESSAGE);
-        ogs_assert(e);
-        e->mme_ue = mme_ue;
-        e->s6a_message = s6a_message;
-        rv = ogs_queue_push(ogs_app()->queue, e);
-        if (rv != OGS_OK) {
-            ogs_error("ogs_queue_push() failed:%d", (int)rv);
-            ogs_free(s6a_message);
-            mme_event_free(e);
-        } else {
-            ogs_pollset_notify(ogs_app()->pollset);
-        }
+    int rv;
+    e = mme_event_new(MME_EVT_S6A_MESSAGE);
+    ogs_assert(e);
+    e->mme_ue = mme_ue;
+    e->s6a_message = s6a_message;
+    rv = ogs_queue_push(ogs_app()->queue, e);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
+        ogs_free(s6a_message);
+        mme_event_free(e);
     } else {
-        ret = ogs_diam_message_experimental_rescode_set(ans, result_code);
-        ogs_assert(ret == 0);
+        ogs_pollset_notify(ogs_app()->pollset);
     }
+
+    return 0;
+
+out:
+    ret = ogs_diam_message_experimental_rescode_set(ans, result_code);
+    ogs_assert(ret == 0);
+
+    /* Set the Auth-Session-State AVP */
+    ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
+    ogs_assert(ret == 0);
+    val.i32 = OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+    
+    /* Set Vendor-Specific-Application-Id AVP */
+    ret = ogs_diam_message_vendor_specific_appid_set(
+            ans, OGS_DIAM_S6A_APPLICATION_ID);
+    ogs_assert(ret == 0);
+
+    /* Send the answer */
+    ret = fd_msg_send(msg, NULL, NULL);
+    ogs_assert(ret == 0);    
 
     return 0;
 }
