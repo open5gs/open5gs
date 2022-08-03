@@ -54,7 +54,7 @@ ogs_sbi_request_t *nrf_nnrf_nfm_build_nf_status_notify(
     memset(&header, 0, sizeof(header));
     header.service.name = (char *)OGS_SBI_SERVICE_NAME_NNRF_NFM;
     header.api.version = (char *)OGS_SBI_API_V1;
-    header.resource.component[0] = (char *)OGS_SBI_SERVICE_NAME_NNRF_NFM;
+    header.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_NF_INSTANCES;
     header.resource.component[1] = nf_instance->id;
 
     NotificationData->nf_instance_uri = ogs_sbi_server_uri(server, &header);
