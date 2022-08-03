@@ -1410,7 +1410,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
 static int mme_ogs_diam_s6a_clr_cb( struct msg **msg, struct avp *avp,
         struct session *session, void *opaque, enum disp_action *act)
 {
-    int ret;
+    int ret, rv;
     
     mme_event_t *e = NULL;
     mme_ue_t *mme_ue = NULL;
@@ -1501,7 +1501,6 @@ static int mme_ogs_diam_s6a_clr_cb( struct msg **msg, struct avp *avp,
     ogs_diam_logger_self()->stats.nb_echoed++;
     ogs_assert( pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
 
-    int rv;
     e = mme_event_new(MME_EVT_S6A_MESSAGE);
     ogs_assert(e);
     e->mme_ue = mme_ue;
