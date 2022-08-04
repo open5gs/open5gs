@@ -692,9 +692,6 @@ int smf_pfcp_send_session_report_response(
     ogs_pkbuf_t *sxabuf = NULL;
     ogs_pfcp_header_t h;
 
-    ogs_assert(xact);
-    xact->local_seid = sess->smf_n4_seid;
-
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE;
     h.seid = sess->upf_n4_seid;

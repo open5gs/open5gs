@@ -222,7 +222,22 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
         case OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE:
             if (!message->h.seid_presence) ogs_error("No SEID");
 
-            ogs_assert(sess);
+            if (!sess) {
+                ogs_gtp_xact_t *gtp_xact = xact->assoc_xact;
+                if (!gtp_xact) {
+                    ogs_error("No associated GTP transaction");
+                    break;
+                }
+                if (gtp_xact->gtp_version == 1)
+                    ogs_gtp1_send_error_message(gtp_xact, 0,
+                        OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE,
+                        OGS_GTP1_CAUSE_CONTEXT_NOT_FOUND);
+                else
+                    ogs_gtp2_send_error_message(gtp_xact, 0,
+                        OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE,
+                        OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND);
+                break;
+            }
             ogs_fsm_dispatch(&sess->sm, e);
             break;
 
@@ -241,7 +256,22 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
         case OGS_PFCP_SESSION_DELETION_RESPONSE_TYPE:
             if (!message->h.seid_presence) ogs_error("No SEID");
 
-            ogs_assert(sess);
+            if (!sess) {
+                ogs_gtp_xact_t *gtp_xact = xact->assoc_xact;
+                if (!gtp_xact) {
+                    ogs_error("No associated GTP transaction");
+                    break;
+                }
+                if (gtp_xact->gtp_version == 1)
+                    ogs_gtp1_send_error_message(gtp_xact, 0,
+                        OGS_GTP1_DELETE_PDP_CONTEXT_RESPONSE_TYPE,
+                        OGS_GTP1_CAUSE_CONTEXT_NOT_FOUND);
+                else
+                    ogs_gtp2_send_error_message(gtp_xact, 0,
+                        OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE,
+                        OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND);
+                break;
+            }
             ogs_fsm_dispatch(&sess->sm, e);
             break;
 

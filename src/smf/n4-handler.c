@@ -255,7 +255,6 @@ void smf_5gc_n4_handle_session_modification_response(
 
     ogs_debug("Session Modification Response [5gc]");
 
-    ogs_assert(sess);
     ogs_assert(xact);
     ogs_assert(rsp);
 
@@ -279,6 +278,11 @@ void smf_5gc_n4_handle_session_modification_response(
     ogs_pfcp_xact_commit(xact);
 
     status = OGS_SBI_HTTP_STATUS_OK;
+
+    if (!sess) {
+        ogs_error("No Context");
+        status = OGS_SBI_HTTP_STATUS_NOT_FOUND;
+    }
 
     if (rsp->cause.presence) {
         if (rsp->cause.u8 != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
@@ -794,7 +798,6 @@ void smf_epc_n4_handle_session_modification_response(
 
     OGS_LIST(pdr_to_create_list);
 
-    ogs_assert(sess);
     ogs_assert(xact);
     ogs_assert(rsp);
 
@@ -822,6 +825,11 @@ void smf_epc_n4_handle_session_modification_response(
     ogs_list_copy(&pdr_to_create_list, &xact->pdr_to_create_list);
 
     ogs_pfcp_xact_commit(xact);
+
+    if (!sess) {
+        ogs_error("No Context");
+        return;
+    }
 
     if (rsp->cause.presence) {
         if (rsp->cause.u8 != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
@@ -1106,7 +1114,7 @@ void smf_n4_handle_session_report_request(
     cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
 
     if (!sess) {
-        ogs_warn("No Context");
+        ogs_error("No Context");
         cause_value = OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND;
     }
 
