@@ -131,10 +131,10 @@ parameter:
 #
 # max:
 #
-# o Maximum Number of UE per AMF/MME
+# o Maximum Number of UE
 #    ue: 1024
-# o Maximum Number of gNB/eNB per AMF/MME
-#    gnb: 64
+# o Maximum Number of Peer(S1AP/NGAP, DIAMETER, GTP, PFCP or SBI)
+#    peer: 64
 #
 max:
 

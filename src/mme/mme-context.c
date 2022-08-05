@@ -97,7 +97,7 @@ void mme_context_init()
     ogs_pool_init(&mme_csmap_pool, ogs_app()->pool.csmap);
 
     /* Allocate TWICE the pool to check if maximum number of eNBs is reached */
-    ogs_pool_init(&mme_enb_pool, ogs_app()->max.gnb*2);
+    ogs_pool_init(&mme_enb_pool, ogs_app()->max.peer*2);
 
     ogs_pool_init(&mme_ue_pool, ogs_app()->max.ue);
     ogs_pool_init(&enb_ue_pool, ogs_app()->max.ue);

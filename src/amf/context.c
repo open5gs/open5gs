@@ -56,7 +56,7 @@ void amf_context_init(void)
     ogs_list_init(&self.ngap_list6);
 
     /* Allocate TWICE the pool to check if maximum number of gNBs is reached */
-    ogs_pool_init(&amf_gnb_pool, ogs_app()->max.gnb*2);
+    ogs_pool_init(&amf_gnb_pool, ogs_app()->max.peer*2);
     ogs_pool_init(&amf_ue_pool, ogs_app()->max.ue);
     ogs_pool_init(&ran_ue_pool, ogs_app()->max.ue);
     ogs_pool_init(&amf_sess_pool, ogs_app()->pool.sess);

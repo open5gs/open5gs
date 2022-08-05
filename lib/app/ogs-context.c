@@ -72,10 +72,9 @@ static void recalculate_pool_size(void)
     self.pool.tunnel = self.pool.bearer * MAX_NUM_OF_TUNNEL;
 
 #define OGS_MAX_NUM_OF_NF_SUBSCRIPTION  4 /* Num of Subscription per NF */
-    self.pool.nf_service = self.max.gnb * OGS_MAX_NUM_OF_NF_SERVICE;
+    self.pool.nf_service = self.max.peer * OGS_MAX_NUM_OF_NF_SERVICE;
 
 #define POOL_NUM_PER_UE 16
-#define POOL_NUM_PER_GNB 8
     self.pool.timer = self.max.ue * POOL_NUM_PER_UE;
     self.pool.message = self.max.ue * POOL_NUM_PER_UE;
     self.pool.event = self.max.ue * POOL_NUM_PER_UE;
@@ -83,10 +82,10 @@ static void recalculate_pool_size(void)
     self.pool.subscription = self.max.ue * POOL_NUM_PER_UE;
     self.pool.xact = self.max.ue * POOL_NUM_PER_UE;
 
-    self.pool.nf = self.max.gnb;
-
-#define MAX_CSMAP_POOL          128
-    self.pool.csmap = MAX_CSMAP_POOL;   /* Num of TAI-LAI Mapping Table */
+#define POOL_NUM_PER_PEER 8
+    self.pool.nf = self.max.peer * POOL_NUM_PER_PEER;
+    /* Num of TAI-LAI Mapping Table */
+    self.pool.csmap = self.max.peer * POOL_NUM_PER_PEER;
 
 #define MAX_NUM_OF_IMPU         8
     self.pool.impi = self.max.ue;
@@ -179,11 +178,12 @@ static void app_context_prepare(void)
 
     self.sockopt.no_delay = true;
 
-#define MAX_NUM_OF_UE               1024    /* Num of UE per AMF/MME */
-#define MAX_NUM_OF_GNB              64      /* Num of gNB per AMF/MME */
+#define MAX_NUM_OF_UE               1024    /* Num of UEs */
+#define MAX_NUM_OF_PEER             64      /* Num of Peer */
 
-    self.max.gnb = MAX_NUM_OF_GNB;
     self.max.ue = MAX_NUM_OF_UE;
+    self.max.peer = MAX_NUM_OF_PEER;
+    self.max.gtp_peer = MAX_NUM_OF_PEER;
 
     ogs_pkbuf_default_init(&self.pool.defconfig);
 
@@ -427,10 +427,14 @@ int ogs_app_context_parse_config(void)
                 if (!strcmp(max_key, "ue")) {
                     const char *v = ogs_yaml_iter_value(&max_iter);
                     if (v) self.max.ue = atoi(v);
-                } else if (!strcmp(max_key, "gnb") ||
+                } else if (!strcmp(max_key, "peer") ||
                             !strcmp(max_key, "enb")) {
                     const char *v = ogs_yaml_iter_value(&max_iter);
-                    if (v) self.max.gnb = atoi(v);
+                    if (v) self.max.peer = atoi(v);
+                } else if (!strcmp(max_key, "gtp_peer") ||
+                            !strcmp(max_key, "enb")) {
+                    const char *v = ogs_yaml_iter_value(&max_iter);
+                    if (v) self.max.gtp_peer = atoi(v);
                 } else
                     ogs_warn("unknown key `%s`", max_key);
             }
