@@ -611,7 +611,7 @@ void mme_s11_handle_delete_session_response(
             if (enb_ue) {
                 ogs_assert(OGS_OK ==
                     s1ap_send_ue_context_release_command(enb_ue,
-                        S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                        S1AP_Cause_PR_nas, S1AP_CauseNas_detach,
                         S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0));
             } else
                 ogs_error("ENB-S1 Context has already been removed");

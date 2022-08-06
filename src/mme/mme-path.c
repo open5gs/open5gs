@@ -46,7 +46,7 @@ void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
             if (enb_ue) {
                 ogs_assert(OGS_OK ==
                     s1ap_send_ue_context_release_command(enb_ue,
-                        S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                        S1AP_Cause_PR_nas, S1AP_CauseNas_detach,
                         S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0));
             } else {
                 ogs_warn("[%s] No S1 Context", mme_ue->imsi_bcd);
