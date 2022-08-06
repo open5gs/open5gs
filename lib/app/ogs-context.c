@@ -82,10 +82,13 @@ static void recalculate_pool_size(void)
     self.pool.subscription = self.max.ue * POOL_NUM_PER_UE;
     self.pool.xact = self.max.ue * POOL_NUM_PER_UE;
 
-#define POOL_NUM_PER_PEER 8
-    self.pool.nf = self.max.peer * POOL_NUM_PER_PEER;
+    self.pool.nf = self.max.peer;
+    self.pool.gtp_node = self.pool.nf;
+    if (self.max.gtp_peer)
+        self.pool.gtp_node = self.max.gtp_peer;
+
     /* Num of TAI-LAI Mapping Table */
-    self.pool.csmap = self.max.peer * POOL_NUM_PER_PEER;
+    self.pool.csmap = self.pool.nf;
 
 #define MAX_NUM_OF_IMPU         8
     self.pool.impi = self.max.ue;
@@ -183,7 +186,6 @@ static void app_context_prepare(void)
 
     self.max.ue = MAX_NUM_OF_UE;
     self.max.peer = MAX_NUM_OF_PEER;
-    self.max.gtp_peer = MAX_NUM_OF_PEER;
 
     ogs_pkbuf_default_init(&self.pool.defconfig);
 

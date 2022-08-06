@@ -126,6 +126,7 @@ typedef struct ogs_app_context_s {
         uint64_t xact;
 
         uint64_t nf;
+        uint64_t gtp_node;
 
         uint64_t csmap;
 
