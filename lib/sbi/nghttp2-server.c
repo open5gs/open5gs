@@ -1112,7 +1112,7 @@ static int session_send_preface(ogs_sbi_session_t *sbi_sess)
 {
     int rv;
     nghttp2_settings_entry iv[1] = {
-        { NGHTTP2_SETTINGS_MAX_CONCURRENT_STREAMS, 100 }
+        { NGHTTP2_SETTINGS_MAX_CONCURRENT_STREAMS, ogs_app()->pool.stream }
     };
 
     ogs_assert(sbi_sess);

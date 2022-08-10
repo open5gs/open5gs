@@ -81,6 +81,7 @@ static void recalculate_pool_size(void)
     self.pool.socket = self.max.ue * POOL_NUM_PER_UE;
     self.pool.subscription = self.max.ue * POOL_NUM_PER_UE;
     self.pool.xact = self.max.ue * POOL_NUM_PER_UE;
+    self.pool.stream = self.max.ue * POOL_NUM_PER_UE;
 
     self.pool.nf = self.max.peer;
     self.pool.gtp_node = self.pool.nf;
