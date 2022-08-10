@@ -388,6 +388,9 @@ void amf_sbi_send_activating_session(amf_sess_t *sess, int state)
 
     memset(&param, 0, sizeof(param));
     param.upCnxState = OpenAPI_up_cnx_state_ACTIVATING;
+    param.cause = OpenAPI_cause_PDU_SESSION_RESUMED;
+    param.ue_location = true;
+    param.ue_timezone = true;
 
     amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF, NULL,
             amf_nsmf_pdusession_build_update_sm_context, sess, state, &param);
