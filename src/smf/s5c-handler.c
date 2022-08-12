@@ -410,6 +410,23 @@ uint8_t smf_s5c_handle_delete_session_request(
         }
     }
 
+    /* PCO
+     * 3GPP TS 29.274 version 10.5.0, Table 7.2.9.1-1
+     * If the UE includes the PCO IE, then the MME/SGSN shall copy
+     * the content of this IE transparently from the PCO IE included by the UE.
+     * If SGW receives the PCO IE, SGW shall forward it to PGW.
+     */
+    if (req->protocol_configuration_options.presence) {
+        OGS_TLV_STORE_DATA(&sess->gtp.ue_pco,
+                &req->protocol_configuration_options);
+    } else {
+        /* 
+         * Clear contents to reflect whether PCO IE was included or not as part
+         * of session deletion procedure
+         */
+        OGS_TLV_CLEAR_DATA(&sess->gtp.ue_pco);
+    }
+
     ogs_debug("    SGW_S5C_TEID[0x%x] SMF_N4_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->smf_n4_teid);
 
