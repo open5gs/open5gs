@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,19 +17,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef PCF_NNRF_BUILD_H
-#define PCF_NNRF_BUILD_H
+#include "ogs-proto.h"
 
-#include "context.h"
+void ogs_extract_digit_from_string(char *digit, char *string)
+{
+    bool extracting = false;
+    int i = 0;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+    ogs_assert(string);
+    ogs_assert(digit);
 
-ogs_sbi_request_t *pcf_nnrf_nfm_build_register(void);
+    while (*string && i < OGS_MAX_IMSI_BCD_LEN) {
+        if (*string >= '0' && *string <= '9') {
+            *digit++ = *string;
+            extracting = true;
+        } else if (extracting == true) {
+            break;
+        }
+        string++;
+        i++;
+    }
 
-#ifdef __cplusplus
+    *digit = 0;
 }
-#endif
-
-#endif /* PCF_NNRF_BUILD_H */

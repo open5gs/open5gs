@@ -46,16 +46,10 @@ typedef struct _ogs_fsm_t {
     ogs_fsm_handler_t state;
 } ogs_fsm_t;
 
-#define ogs_fsm_create(__s, __i, __f) \
-    (((__s)->init = (__s)->state = (ogs_fsm_handler_t)(__i)), \
-     (__s)->fini = (ogs_fsm_handler_t)(__f))
-
-#define ogs_fsm_delete(__s) \
-    ((__s)->init = (__s)->state = (__s)->fini = NULL)
-
-void ogs_fsm_init(void *sm, void *event);
-void ogs_fsm_dispatch(void *sm, void *event);
-void ogs_fsm_fini(void *sm, void *event);
+void ogs_fsm_init(void *fsm, void *init, void *fini, void *event);
+void ogs_fsm_tran(void *fsm, void *state, void *event);
+void ogs_fsm_dispatch(void *fsm, void *event);
+void ogs_fsm_fini(void *fsm, void *event);
 
 #define OGS_FSM_TRAN(__s, __target) \
     ((ogs_fsm_t *)__s)->state = (ogs_fsm_handler_t)(__target)

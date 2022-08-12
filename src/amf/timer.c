@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -20,36 +20,33 @@
 #include "context.h"
 
 static amf_timer_cfg_t g_amf_timer_cfg[MAX_NUM_OF_AMF_TIMER] = {
-    [AMF_TIMER_SBI_CLIENT_WAIT] =
-        { .duration = ogs_time_from_msec(500) },
-
     /* Paging procedure for EPS services initiated */
     [AMF_TIMER_T3513] =
-        { .max_count = 2, .duration = ogs_time_from_sec(2) },
+        { .have = true, .max_count = 2, .duration = ogs_time_from_sec(2) },
 
     /* DEREGISTRATION REQUEST sent */
     [AMF_TIMER_T3522] =
-        { .max_count = 4, .duration = ogs_time_from_sec(3) },
+        { .have = true, .max_count = 4, .duration = ogs_time_from_sec(3) },
 
     /* REGISTRATION ACCEPT sent */
     [AMF_TIMER_T3550] =
-        { .max_count = 4, .duration = ogs_time_from_sec(6) },
+        { .have = true, .max_count = 4, .duration = ogs_time_from_sec(6) },
 
     /* CONFIGURATION UPDATE COMMAND sent */
     [AMF_TIMER_T3555] =
-        { .max_count = 4, .duration = ogs_time_from_sec(6) },
+        { .have = true, .max_count = 4, .duration = ogs_time_from_sec(6) },
 
     /* AUTHENTICATION REQUEST sent
      * SECURITY MODE COMMAND sent */
     [AMF_TIMER_T3560] =
-        { .max_count = 4, .duration = ogs_time_from_sec(6) },
+        { .have = true, .max_count = 4, .duration = ogs_time_from_sec(6) },
 
     /* IDENTITY REQUEST sent */
     [AMF_TIMER_T3570] =
-        { .max_count = 4, .duration = ogs_time_from_sec(3) },
+        { .have = true, .max_count = 4, .duration = ogs_time_from_sec(3) },
 
     [AMF_TIMER_NG_HOLDING] =
-        { .duration = ogs_time_from_sec(30) },
+        { .have = true, .duration = ogs_time_from_sec(30) },
 };
 
 static void gmm_timer_event_send(
@@ -58,24 +55,28 @@ static void gmm_timer_event_send(
 amf_timer_cfg_t *amf_timer_cfg(amf_timer_e id)
 {
     ogs_assert(id < MAX_NUM_OF_AMF_TIMER);
+    if (g_amf_timer_cfg[id].have != true) {
+        ogs_fatal("No timer[%d] configuration", id);
+        ogs_assert_if_reached();
+    }
     return &g_amf_timer_cfg[id];
 }
 
-const char *amf_timer_get_name(amf_timer_e id)
+const char *amf_timer_get_name(int timer_id)
 {
-    switch (id) {
-    case AMF_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL:
-        return "AMF_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL";
-    case AMF_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL:
-        return "AMF_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL";
-    case AMF_TIMER_NF_INSTANCE_NO_HEARTBEAT:
-        return "AMF_TIMER_NF_INSTANCE_NO_HEARTBEAT";
-    case AMF_TIMER_NF_INSTANCE_VALIDITY:
-        return "AMF_TIMER_NF_INSTANCE_VALIDITY";
-    case AMF_TIMER_SUBSCRIPTION_VALIDITY:
-        return "AMF_TIMER_SUBSCRIPTION_VALIDITY";
-    case AMF_TIMER_SBI_CLIENT_WAIT:
-        return "AMF_TIMER_SBI_CLIENT_WAIT";
+    switch (timer_id) {
+    case OGS_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL:
+        return OGS_TIMER_NAME_NF_INSTANCE_REGISTRATION_INTERVAL;
+    case OGS_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL:
+        return OGS_TIMER_NAME_NF_INSTANCE_HEARTBEAT_INTERVAL;
+    case OGS_TIMER_NF_INSTANCE_NO_HEARTBEAT:
+        return OGS_TIMER_NAME_NF_INSTANCE_NO_HEARTBEAT;
+    case OGS_TIMER_NF_INSTANCE_VALIDITY:
+        return OGS_TIMER_NAME_NF_INSTANCE_VALIDITY;
+    case OGS_TIMER_SUBSCRIPTION_VALIDITY:
+        return OGS_TIMER_NAME_SUBSCRIPTION_VALIDITY;
+    case OGS_TIMER_SBI_CLIENT_WAIT:
+        return OGS_TIMER_NAME_SBI_CLIENT_WAIT;
     case AMF_TIMER_NG_DELAYED_SEND:
         return "AMF_TIMER_NG_DELAYED_SEND";
     case AMF_TIMER_T3513:
@@ -93,9 +94,10 @@ const char *amf_timer_get_name(amf_timer_e id)
     case AMF_TIMER_NG_HOLDING:
         return "AMF_TIMER_NG_HOLDING";
     default: 
-       break;
+        break;
     }
 
+    ogs_error("Unknown Timer[%d]", timer_id);
     return "UNKNOWN_TIMER";
 }
 
@@ -105,88 +107,14 @@ void amf_timer_ng_delayed_send(void *data)
     amf_event_t *e = data;
     ogs_assert(e);
 
-    e->timer_id = AMF_TIMER_NG_DELAYED_SEND;
+    e->h.timer_id = AMF_TIMER_NG_DELAYED_SEND;
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_error("ogs_queue_push() failed:%d", (int)rv);
         ogs_timer_delete(e->timer);
-        amf_event_free(e);
+        ogs_event_free(e);
     }
-}
-
-static void sbi_timer_send_event(int timer_id, void *data)
-{
-    int rv;
-    amf_event_t *e = NULL;
-    ogs_assert(data);
-
-    switch (timer_id) {
-    case AMF_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL:
-    case AMF_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL:
-    case AMF_TIMER_NF_INSTANCE_NO_HEARTBEAT:
-    case AMF_TIMER_NF_INSTANCE_VALIDITY:
-    case AMF_TIMER_SUBSCRIPTION_VALIDITY:
-        e = amf_event_new(AMF_EVT_SBI_TIMER);
-        ogs_assert(e);
-        e->timer_id = timer_id;
-        e->sbi.data = data;
-        break;
-    case AMF_TIMER_SBI_CLIENT_WAIT:
-        e = amf_event_new(AMF_EVT_SBI_TIMER);
-        if (!e) {
-            ogs_sbi_xact_t *sbi_xact = data;
-            ogs_assert(sbi_xact);
-
-            ogs_error("sbi_timer_send_event() failed");
-            ogs_sbi_xact_remove(sbi_xact);
-            return;
-        }
-        e->timer_id = timer_id;
-        e->sbi.data = data;
-        break;
-    default:
-        ogs_fatal("Unknown timer id[%d]", timer_id);
-        ogs_assert_if_reached();
-        break;
-    }
-
-    rv = ogs_queue_push(ogs_app()->queue, e);
-    if (rv != OGS_OK) {
-        ogs_error("ogs_queue_push() failed [%d] in %s",
-                (int)rv, amf_timer_get_name(e->timer_id));
-        amf_event_free(e);
-    }
-}
-
-void amf_timer_nf_instance_registration_interval(void *data)
-{
-    sbi_timer_send_event(AMF_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL, data);
-}
-
-void amf_timer_nf_instance_heartbeat_interval(void *data)
-{
-    sbi_timer_send_event(AMF_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL, data);
-}
-
-void amf_timer_nf_instance_no_heartbeat(void *data)
-{
-    sbi_timer_send_event(AMF_TIMER_NF_INSTANCE_NO_HEARTBEAT, data);
-}
-
-void amf_timer_nf_instance_validity(void *data)
-{
-    sbi_timer_send_event(AMF_TIMER_NF_INSTANCE_VALIDITY, data);
-}
-
-void amf_timer_subscription_validity(void *data)
-{
-    sbi_timer_send_event(AMF_TIMER_SUBSCRIPTION_VALIDITY, data);
-}
-
-void amf_timer_sbi_client_wait_expire(void *data)
-{
-    sbi_timer_send_event(AMF_TIMER_SBI_CLIENT_WAIT, data);
 }
 
 static void gmm_timer_event_send(
@@ -196,15 +124,16 @@ static void gmm_timer_event_send(
     amf_event_t *e = NULL;
     ogs_assert(amf_ue);
 
-    e = amf_event_new(AMF_EVT_5GMM_TIMER);
+    e = amf_event_new(AMF_EVENT_5GMM_TIMER);
     ogs_assert(e);
-    e->timer_id = timer_id;
+    e->h.timer_id = timer_id;
     e->amf_ue = amf_ue;
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
-        ogs_error("ogs_queue_push() failed:%d", (int)rv);
-        amf_event_free(e);
+        ogs_error("ogs_queue_push() failed:%d in %s",
+                (int)rv, amf_timer_get_name(timer_id));
+        ogs_event_free(e);
     }
 }
 
@@ -242,15 +171,15 @@ void amf_timer_ng_holding_timer_expire(void *data)
     ogs_assert(data);
     ran_ue = data;
 
-    e = amf_event_new(AMF_EVT_NGAP_TIMER);
+    e = amf_event_new(AMF_EVENT_NGAP_TIMER);
     ogs_assert(e);
 
-    e->timer_id = AMF_TIMER_NG_HOLDING;
+    e->h.timer_id = AMF_TIMER_NG_HOLDING;
     e->ran_ue = ran_ue;
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_error("ogs_queue_push() failed:%d", (int)rv);
-        amf_event_free(e);
+        ogs_event_free(e);
     }
 }

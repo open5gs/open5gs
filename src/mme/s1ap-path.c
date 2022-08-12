@@ -95,7 +95,7 @@ int s1ap_delayed_send_to_enb_ue(
     if (duration) {
         mme_event_t *e = NULL;
 
-        e = mme_event_new(MME_EVT_S1AP_TIMER);
+        e = mme_event_new(MME_EVENT_S1AP_TIMER);
         ogs_assert(e);
         e->timer = ogs_timer_add(
                 ogs_app()->timer_mgr, mme_timer_s1_delayed_send, e);
@@ -125,7 +125,7 @@ int s1ap_send_to_esm(
     ogs_assert(mme_ue);
     ogs_assert(esmbuf);
 
-    e = mme_event_new(MME_EVT_ESM_MESSAGE);
+    e = mme_event_new(MME_EVENT_ESM_MESSAGE);
     ogs_assert(e);
     e->mme_ue = mme_ue;
     e->pkbuf = esmbuf;
@@ -209,7 +209,7 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
     ogs_assert(h);
     if (h->protocol_discriminator == OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM) {
         int rv;
-        e = mme_event_new(MME_EVT_EMM_MESSAGE);
+        e = mme_event_new(MME_EVENT_EMM_MESSAGE);
         if (!e) {
             ogs_error("s1ap_send_to_nas() failed");
             ogs_pkbuf_free(nasbuf);

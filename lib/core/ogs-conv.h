@@ -49,8 +49,6 @@ char *ogs_uint64_to_string(uint64_t x);
 ogs_uint24_t ogs_uint24_from_string(char *str);
 uint64_t ogs_uint64_from_string(char *str);
 
-void ogs_extract_digit_from_string(char *digit, char *string);
-
 #ifdef __cplusplus
 }
 #endif

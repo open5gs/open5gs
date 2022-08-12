@@ -26,14 +26,6 @@
 extern "C" {
 #endif
 
-void udm_nnrf_handle_nf_register(
-        ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_message_t *recvmsg);
-void udm_nnrf_handle_nf_status_subscribe(
-        ogs_sbi_subscription_t *subscription, ogs_sbi_message_t *recvmsg);
-
-bool udm_nnrf_handle_nf_status_notify(
-        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
-
 void udm_nnrf_handle_nf_discover(
         ogs_sbi_xact_t *xact, ogs_sbi_message_t *recvmsg);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,19 +17,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef NSSF_NNRF_BUILD_H
-#define NSSF_NNRF_BUILD_H
+#ifndef OGS_PROTO_H
+#define OGS_PROTO_H
 
-#include "context.h"
+#include "ogs-core.h"
+
+#define OGS_PROTO_INSIDE
+
+#include "proto/types.h"
+#include "proto/conv.h"
+#include "proto/event.h"
+#include "proto/timer.h"
+
+#undef OGS_PROTO_INSIDE
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-ogs_sbi_request_t *nssf_nnrf_nfm_build_register(void);
-
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* NSSF_NNRF_BUILD_H */
+#endif /* OGS_PROTO_H */

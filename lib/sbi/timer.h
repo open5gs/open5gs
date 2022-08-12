@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,19 +17,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef SMF_NNRF_BUILD_H
-#define SMF_NNRF_BUILD_H
+#if !defined(OGS_SBI_INSIDE) && !defined(OGS_SBI_COMPILATION)
+#error "This header cannot be included directly."
+#endif
 
-#include "context.h"
+#ifndef OGS_SBI_TIMER_H
+#define OGS_SBI_TIMER_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-ogs_sbi_request_t *smf_nnrf_nfm_build_register(void);
+void ogs_timer_nf_instance_registration_interval(void *data);
+void ogs_timer_nf_instance_heartbeat_interval(void *data);
+void ogs_timer_nf_instance_no_heartbeat(void *data);
+void ogs_timer_nf_instance_validity(void *data);
+void ogs_timer_subscription_validity(void *data);
+void ogs_timer_sbi_client_wait_expire(void *data);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* SMF_NNRF_BUILD_H */
+#endif /* OGS_SBI_TIMER_H */

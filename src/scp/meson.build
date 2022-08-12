@@ -18,12 +18,8 @@
 libscp_sources = files('''
     context.c
     event.c
-    timer.c
 
-    nnrf-build.c
     nnrf-handler.c
-    nf-sm.c
-
     nscp-handler.c
 
     sbi-path.c

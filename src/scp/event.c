@@ -18,60 +18,42 @@
  */
 
 #include "event.h"
-#include "context.h"
 
-static OGS_POOL(pool, scp_event_t);
-
-void scp_event_init(void)
-{
-    ogs_pool_init(&pool, ogs_app()->pool.event);
-}
-
-void scp_event_final(void)
-{
-    ogs_pool_final(&pool);
-}
-
-scp_event_t *scp_event_new(scp_event_e id)
+scp_event_t *scp_event_new(int id)
 {
     scp_event_t *e = NULL;
 
-    ogs_pool_alloc(&pool, &e);
+    e = ogs_event_size(id, sizeof(scp_event_t));
     ogs_assert(e);
-    memset(e, 0, sizeof(*e));
 
-    e->id = id;
+    e->h.id = id;
 
     return e;
 }
 
-void scp_event_free(scp_event_t *e)
-{
-    ogs_assert(e);
-    ogs_pool_free(&pool, e);
-}
-
 const char *scp_event_get_name(scp_event_t *e)
 {
-    if (e == NULL)
+    if (e == NULL) {
         return OGS_FSM_NAME_INIT_SIG;
-
-    switch (e->id) {
-    case OGS_FSM_ENTRY_SIG: 
-        return OGS_FSM_NAME_ENTRY_SIG;
-    case OGS_FSM_EXIT_SIG: 
-        return OGS_FSM_NAME_EXIT_SIG;
-
-    case SCP_EVT_SBI_SERVER:
-        return "SCP_EVT_SBI_SERVER";
-    case SCP_EVT_SBI_CLIENT:
-        return "SCP_EVT_SBI_CLIENT";
-    case SCP_EVT_SBI_TIMER:
-        return "SCP_EVT_SBI_TIMER";
-
-    default: 
-       break;
     }
 
+    switch (e->h.id) {
+    case OGS_FSM_ENTRY_SIG:
+        return OGS_FSM_NAME_ENTRY_SIG;
+    case OGS_FSM_EXIT_SIG:
+        return OGS_FSM_NAME_EXIT_SIG;
+
+    case OGS_EVENT_SBI_SERVER:
+        return OGS_EVENT_NAME_SBI_SERVER;
+    case OGS_EVENT_SBI_CLIENT:
+        return OGS_EVENT_NAME_SBI_CLIENT;
+    case OGS_EVENT_SBI_TIMER:
+        return OGS_EVENT_NAME_SBI_TIMER;
+
+    default:
+        break;
+    }
+
+    ogs_error("Unknown Event[%d]", e->h.id);
     return "UNKNOWN_EVENT";
 }

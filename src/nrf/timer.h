@@ -38,18 +38,10 @@ typedef enum {
 
 } nrf_timer_e;
 
-typedef struct nrf_timer_cfg_s {
-    int max_count;
-    ogs_time_t duration;
-} nrf_timer_cfg_t;
-
-nrf_timer_cfg_t *nrf_timer_cfg(nrf_timer_e id);
-
 const char *nrf_timer_get_name(nrf_timer_e id);
 
 void nrf_timer_nf_instance_no_heartbeat(void *data);
 void nrf_timer_subscription_validity(void *data);
-void nrf_timer_sbi_client_wait_expire(void *data);
 
 #ifdef __cplusplus
 }

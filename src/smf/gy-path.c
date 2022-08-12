@@ -1106,7 +1106,7 @@ out:
         if (rv != OGS_OK) {
             ogs_error("ogs_queue_push() failed:%d", (int)rv);
             ogs_free(gy_message);
-            smf_event_free(e);
+            ogs_event_free(e);
         } else {
             ogs_pollset_notify(ogs_app()->pollset);
         }
@@ -1235,7 +1235,7 @@ static int smf_gy_rar_cb( struct msg **msg, struct avp *avp,
     if (rv != OGS_OK) {
         ogs_error("ogs_queue_push() failed:%d", (int)rv);
         ogs_free(gy_message);
-        smf_event_free(e);
+        ogs_event_free(e);
     } else {
         ogs_pollset_notify(ogs_app()->pollset);
     }

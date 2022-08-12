@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "app/ogs-app.h"
+#include "ogs-app.h"
 #include "ogs-sbi.h"
 
 int __ogs_sbi_domain;
@@ -727,6 +727,16 @@ int ogs_sbi_context_parse_config(
     return OGS_OK;
 }
 
+void ogs_sbi_add_to_be_notified_nf_type(OpenAPI_nf_type_e nf_type)
+{
+    ogs_assert(nf_type);
+
+    if (self.num_of_to_be_notified_nf_type < OGS_SBI_MAX_NUM_OF_NF_TYPE) {
+        self.to_be_notified_nf_type[self.num_of_to_be_notified_nf_type] = nf_type;
+        self.num_of_to_be_notified_nf_type++;
+    }
+}
+
 bool ogs_sbi_nf_service_is_available(const char *name)
 {
     int i;
@@ -753,8 +763,9 @@ ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_add(void)
     ogs_assert(nf_instance);
     memset(nf_instance, 0, sizeof(ogs_sbi_nf_instance_t));
 
-    nf_instance->reference_count++;
-    ogs_trace("ogs_sbi_nf_instance_add()");
+    ogs_debug("ogs_sbi_nf_instance_add()");
+
+    OGS_OBJECT_REF(nf_instance);
 
     nf_instance->time.heartbeat_interval =
             ogs_app()->time.nf_instance.heartbeat_interval;
@@ -802,7 +813,7 @@ void ogs_sbi_nf_instance_add_allowed_nf_type(
     ogs_assert(allowed_nf_type);
 
     if (nf_instance->num_of_allowed_nf_type < OGS_SBI_MAX_NUM_OF_NF_TYPE) {
-        nf_instance->allowed_nf_types[nf_instance->num_of_allowed_nf_type] =
+        nf_instance->allowed_nf_type[nf_instance->num_of_allowed_nf_type] =
             allowed_nf_type;
         nf_instance->num_of_allowed_nf_type++;
     }
@@ -836,13 +847,13 @@ void ogs_sbi_nf_instance_remove(ogs_sbi_nf_instance_t *nf_instance)
 {
     ogs_assert(nf_instance);
 
-    ogs_trace("nf_instance->reference_count = %d",
-            nf_instance->reference_count);
-    nf_instance->reference_count--;
-    if (nf_instance->reference_count > 0)
-        return;
+    ogs_debug("ogs_sbi_nf_instance_remove()");
 
-    ogs_trace("ogs_sbi_nf_instance_remove()");
+    if (OGS_OBJECT_IS_REF(nf_instance)) {
+        OGS_OBJECT_UNREF(nf_instance);
+        return;
+    }
+
     ogs_list_remove(&ogs_sbi_self()->nf_instance_list, nf_instance);
 
     ogs_sbi_nf_info_remove_all(&nf_instance->nf_info_list);
@@ -935,17 +946,17 @@ void ogs_sbi_nf_service_add_version(ogs_sbi_nf_service_t *nf_service,
     ogs_assert(full);
 
     if (nf_service->num_of_version < OGS_SBI_MAX_NUM_OF_SERVICE_VERSION) {
-        nf_service->versions[nf_service->num_of_version].in_uri =
+        nf_service->version[nf_service->num_of_version].in_uri =
             ogs_strdup(in_uri);
-        ogs_assert(nf_service->versions[nf_service->num_of_version].in_uri);
-        nf_service->versions[nf_service->num_of_version].full =
+        ogs_assert(nf_service->version[nf_service->num_of_version].in_uri);
+        nf_service->version[nf_service->num_of_version].full =
             ogs_strdup(full);
-        ogs_assert(nf_service->versions[nf_service->num_of_version].full);
+        ogs_assert(nf_service->version[nf_service->num_of_version].full);
         if (expiry) {
-            nf_service->versions[nf_service->num_of_version].expiry =
+            nf_service->version[nf_service->num_of_version].expiry =
                 ogs_strdup(expiry);
             ogs_assert(
-                nf_service->versions[nf_service->num_of_version].expiry);
+                nf_service->version[nf_service->num_of_version].expiry);
 
         }
         nf_service->num_of_version++;
@@ -978,12 +989,12 @@ void ogs_sbi_nf_service_clear(ogs_sbi_nf_service_t *nf_service)
         ogs_free(nf_service->fqdn);
 
     for (i = 0; i < nf_service->num_of_version; i++) {
-        if (nf_service->versions[i].in_uri)
-            ogs_free(nf_service->versions[i].in_uri);
-        if (nf_service->versions[i].full)
-            ogs_free(nf_service->versions[i].full);
-        if (nf_service->versions[i].expiry)
-            ogs_free(nf_service->versions[i].expiry);
+        if (nf_service->version[i].in_uri)
+            ogs_free(nf_service->version[i].in_uri);
+        if (nf_service->version[i].full)
+            ogs_free(nf_service->version[i].full);
+        if (nf_service->version[i].expiry)
+            ogs_free(nf_service->version[i].expiry);
     }
     nf_service->num_of_version = 0;
 
@@ -1368,13 +1379,13 @@ bool ogs_sbi_discovery_param_is_matched(
         ogs_sbi_discovery_option_t *discovery_option)
 {
     ogs_assert(nf_instance);
-    ogs_assert(ogs_sbi_self()->nf_state_registered);
     ogs_assert(target_nf_type);
 
-    if (!OGS_FSM_CHECK(&nf_instance->sm,
-            ogs_sbi_self()->nf_state_registered)) return false;
+    if (!OGS_FSM_CHECK(&nf_instance->sm, ogs_sbi_nf_state_registered))
+        return false;
 
-    if (nf_instance->nf_type != target_nf_type) return false;
+    if (nf_instance->nf_type != target_nf_type)
+        return false;
 
     if (discovery_option) {
         if (discovery_option->target_nf_instance_id &&
@@ -1393,7 +1404,6 @@ void ogs_sbi_select_nf(
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
 
-    ogs_assert(ogs_sbi_self()->nf_state_registered);
     ogs_assert(sbi_object);
     ogs_assert(target_nf_type);
 
@@ -1407,20 +1417,18 @@ void ogs_sbi_select_nf(
     }
 }
 
-bool ogs_sbi_client_associate(ogs_sbi_nf_instance_t *nf_instance)
+void ogs_sbi_client_associate(ogs_sbi_nf_instance_t *nf_instance)
 {
     ogs_sbi_client_t *client = NULL;
 
     ogs_assert(nf_instance);
 
     client = nf_instance_find_client(nf_instance);
-    if (!client) return false;
+    ogs_assert(client);
 
     OGS_SBI_SETUP_CLIENT(nf_instance, client);
 
     nf_service_associate_client_all(nf_instance);
-
-    return true;
 }
 
 OpenAPI_uri_scheme_e ogs_sbi_default_uri_scheme(void)
@@ -1442,7 +1450,7 @@ ogs_sbi_client_t *ogs_sbi_client_find_by_service_name(
         ogs_assert(nf_service->name);
         if (strcmp(nf_service->name, name) == 0) {
             for (i = 0; i < nf_service->num_of_version; i++) {
-                if (strcmp(nf_service->versions[i].in_uri, version) == 0) {
+                if (strcmp(nf_service->version[i].in_uri, version) == 0) {
                     return nf_service->client;
                 }
             }
@@ -1476,7 +1484,6 @@ ogs_sbi_xact_t *ogs_sbi_xact_add(
 {
     ogs_sbi_xact_t *xact = NULL;
 
-    ogs_assert(ogs_sbi_self()->client_wait_expire);
     ogs_assert(sbi_object);
 
     ogs_pool_alloc(&xact_pool, &xact);
@@ -1496,7 +1503,7 @@ ogs_sbi_xact_t *ogs_sbi_xact_add(
     }
 
     xact->t_response = ogs_timer_add(
-            ogs_app()->timer_mgr, ogs_sbi_self()->client_wait_expire, xact);
+            ogs_app()->timer_mgr, ogs_timer_sbi_client_wait_expire, xact);
     if (!xact->t_response) {
         ogs_error("ogs_timer_add() failed");
         ogs_sbi_request_free(xact->request);

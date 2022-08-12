@@ -20,7 +20,7 @@
 #ifndef SCP_SBI_PATH_H
 #define SCP_SBI_PATH_H
 
-#include "nnrf-build.h"
+#include "context.h"
 
 #ifdef __cplusplus
 extern "C" {

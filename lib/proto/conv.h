@@ -17,41 +17,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef SCP_TIMER_H
-#define SCP_TIMER_H
+#if !defined(OGS_PROTO_INSIDE) && !defined(OGS_PROTO_COMPILATION)
+#error "This header cannot be included directly."
+#endif
 
-#include "ogs-core.h"
+#ifndef OGS_PROTO_CONV_H
+#define OGS_PROTO_CONV_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* forward declaration */
-typedef enum {
-    SCP_TIMER_BASE = 0,
-
-    SCP_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL,
-    SCP_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL,
-    SCP_TIMER_NF_INSTANCE_NO_HEARTBEAT,
-    SCP_TIMER_NF_INSTANCE_VALIDITY,
-    SCP_TIMER_SUBSCRIPTION_VALIDITY,
-    SCP_TIMER_SBI_CLIENT_WAIT,
-
-    MAX_NUM_OF_SCP_TIMER,
-
-} scp_timer_e;
-
-const char *scp_timer_get_name(scp_timer_e id);
-
-void scp_timer_nf_instance_registration_interval(void *data);
-void scp_timer_nf_instance_heartbeat_interval(void *data);
-void scp_timer_nf_instance_no_heartbeat(void *data);
-void scp_timer_nf_instance_validity(void *data);
-void scp_timer_subscription_validity(void *data);
-void scp_timer_sbi_client_wait_expire(void *data);
+void ogs_extract_digit_from_string(char *digit, char *string);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* SCP_TIMER_H */
+#endif /* OGS_PROTO_CONV_H */

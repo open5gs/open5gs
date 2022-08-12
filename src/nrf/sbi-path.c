@@ -93,13 +93,6 @@ int nrf_sbi_open(void)
         client->cb = client_notify_cb;
     }
 
-    /* Timer expiration handler of client wait timer */
-    ogs_sbi_self()->client_wait_expire = nrf_timer_sbi_client_wait_expire;
-
-    /* NF register state in NF state machine */
-    ogs_sbi_self()->nf_state_registered =
-        (ogs_fsm_handler_t)nrf_nf_state_registered;
-
     if (ogs_sbi_server_start_all(server_cb) != OGS_OK)
         return OGS_ERROR;
 

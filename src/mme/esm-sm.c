@@ -96,7 +96,7 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
         break;
     case OGS_FSM_EXIT_SIG:
         break;
-    case MME_EVT_ESM_MESSAGE:
+    case MME_EVENT_ESM_MESSAGE:
         message = e->nas_message;
         ogs_assert(message);
 
@@ -221,7 +221,7 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
             break;
         }
         break;
-    case MME_EVT_ESM_TIMER:
+    case MME_EVENT_ESM_TIMER:
         switch (e->timer_id) {
         case MME_TIMER_T3489:
             if (bearer->t3489.retry_count >=
@@ -281,7 +281,7 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
         break;
     case OGS_FSM_EXIT_SIG:
         break;
-    case MME_EVT_ESM_MESSAGE:
+    case MME_EVENT_ESM_MESSAGE:
         message = e->nas_message;
         ogs_assert(message);
 
@@ -382,7 +382,7 @@ void esm_state_pdn_will_disconnect(ogs_fsm_t *s, mme_event_t *e)
         break;
     case OGS_FSM_EXIT_SIG:
         break;
-    case MME_EVT_ESM_MESSAGE:
+    case MME_EVENT_ESM_MESSAGE:
         message = e->nas_message;
         ogs_assert(message);
 

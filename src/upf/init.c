@@ -97,8 +97,7 @@ static void upf_main(void *data)
     ogs_fsm_t upf_sm;
     int rv;
 
-    ogs_fsm_create(&upf_sm, upf_state_initial, upf_state_final);
-    ogs_fsm_init(&upf_sm, 0);
+    ogs_fsm_init(&upf_sm, upf_state_initial, upf_state_final, 0);
 
     for ( ;; ) {
         ogs_pollset_poll(ogs_app()->pollset,
@@ -137,5 +136,4 @@ static void upf_main(void *data)
 done:
 
     ogs_fsm_fini(&upf_sm, 0);
-    ogs_fsm_delete(&upf_sm);
 }

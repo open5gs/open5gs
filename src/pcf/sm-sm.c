@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -54,17 +54,17 @@ void pcf_sm_state_operational(ogs_fsm_t *s, pcf_event_t *e)
     pcf_ue = sess->pcf_ue;
     ogs_assert(pcf_ue);
 
-    switch (e->id) {
+    switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
         break;
 
     case OGS_FSM_EXIT_SIG:
         break;
 
-    case PCF_EVT_SBI_SERVER:
-        message = e->sbi.message;
+    case OGS_EVENT_SBI_SERVER:
+        message = e->h.sbi.message;
         ogs_assert(message);
-        stream = e->sbi.data;
+        stream = e->h.sbi.data;
         ogs_assert(stream);
 
         SWITCH(message->h.service.name)
@@ -158,10 +158,10 @@ void pcf_sm_state_operational(ogs_fsm_t *s, pcf_event_t *e)
         END
         break;
 
-    case PCF_EVT_SBI_CLIENT:
-        message = e->sbi.message;
+    case OGS_EVENT_SBI_CLIENT:
+        message = e->h.sbi.message;
         ogs_assert(message);
-        stream = e->sbi.data;
+        stream = e->h.sbi.data;
         ogs_assert(stream);
 
         SWITCH(message->h.service.name)
@@ -285,7 +285,7 @@ void pcf_sm_state_deleted(ogs_fsm_t *s, pcf_event_t *e)
     pcf_ue = sess->pcf_ue;
     ogs_assert(pcf_ue);
 
-    switch (e->id) {
+    switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
         break;
 
@@ -314,7 +314,7 @@ void pcf_sm_state_exception(ogs_fsm_t *s, pcf_event_t *e)
     pcf_ue = sess->pcf_ue;
     ogs_assert(pcf_ue);
 
-    switch (e->id) {
+    switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
         break;
 

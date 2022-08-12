@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -141,8 +141,7 @@ ausf_ue_t *ausf_ue_add(char *suci)
 
     memset(&e, 0, sizeof(e));
     e.ausf_ue = ausf_ue;
-    ogs_fsm_create(&ausf_ue->sm, ausf_ue_state_initial, ausf_ue_state_final);
-    ogs_fsm_init(&ausf_ue->sm, &e);
+    ogs_fsm_init(&ausf_ue->sm, ausf_ue_state_initial, ausf_ue_state_final, &e);
 
     ogs_list_add(&self.ausf_ue_list, ausf_ue);
 
@@ -160,7 +159,6 @@ void ausf_ue_remove(ausf_ue_t *ausf_ue)
     memset(&e, 0, sizeof(e));
     e.ausf_ue = ausf_ue;
     ogs_fsm_fini(&ausf_ue->sm, &e);
-    ogs_fsm_delete(&ausf_ue->sm);
 
     /* Free SBI object memory */
     ogs_sbi_object_free(&ausf_ue->sbi);

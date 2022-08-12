@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -30,7 +30,6 @@ int pcf_initialize()
     ogs_sbi_context_init();
 
     pcf_context_init();
-    pcf_event_init();
 
     rv = ogs_sbi_context_parse_config("pcf", "nrf", "scp");
     if (rv != OGS_OK) return rv;
@@ -64,7 +63,7 @@ static void event_termination(void)
 
     /* Sending NF Instance De-registeration to NRF */
     ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance)
-        pcf_nf_fsm_fini(nf_instance);
+        ogs_sbi_nf_fsm_fini(nf_instance);
 
     /* Starting holding timer */
     t_termination_holding = ogs_timer_add(ogs_app()->timer_mgr, NULL, NULL);
@@ -92,8 +91,6 @@ void pcf_terminate(void)
 
     pcf_context_final();
     ogs_sbi_context_final();
-
-    pcf_event_final(); /* Destroy event */
 }
 
 static void pcf_main(void *data)
@@ -101,8 +98,7 @@ static void pcf_main(void *data)
     ogs_fsm_t pcf_sm;
     int rv;
 
-    ogs_fsm_create(&pcf_sm, pcf_state_initial, pcf_state_final);
-    ogs_fsm_init(&pcf_sm, 0);
+    ogs_fsm_init(&pcf_sm, pcf_state_initial, pcf_state_final, 0);
 
     for ( ;; ) {
         ogs_pollset_poll(ogs_app()->pollset,
@@ -135,11 +131,10 @@ static void pcf_main(void *data)
 
             ogs_assert(e);
             ogs_fsm_dispatch(&pcf_sm, e);
-            pcf_event_free(e);
+            ogs_event_free(e);
         }
     }
 done:
 
     ogs_fsm_fini(&pcf_sm, 0);
-    ogs_fsm_delete(&pcf_sm);
 }

@@ -113,7 +113,7 @@ void ngap_accept_handler(ogs_sock_t *sock)
         ogs_info("gNB-N2 accepted[%s]:%d in ng-path module",
             OGS_ADDR(addr, buf), OGS_PORT(addr));
 
-        ngap_event_push(AMF_EVT_NGAP_LO_ACCEPT,
+        ngap_event_push(AMF_EVENT_NGAP_LO_ACCEPT,
                 new, addr, NULL, 0, 0);
     } else {
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno, "accept() failed");
@@ -164,7 +164,7 @@ void ngap_recv_handler(ogs_sock_t *sock)
                 ogs_assert(addr);
                 memcpy(addr, &from, sizeof(ogs_sockaddr_t));
 
-                ngap_event_push(AMF_EVT_NGAP_LO_SCTP_COMM_UP,
+                ngap_event_push(AMF_EVENT_NGAP_LO_SCTP_COMM_UP,
                         sock, addr, NULL,
                         not->sn_assoc_change.sac_inbound_streams,
                         not->sn_assoc_change.sac_outbound_streams);
@@ -180,7 +180,7 @@ void ngap_recv_handler(ogs_sock_t *sock)
                 ogs_assert(addr);
                 memcpy(addr, &from, sizeof(ogs_sockaddr_t));
 
-                ngap_event_push(AMF_EVT_NGAP_LO_CONNREFUSED,
+                ngap_event_push(AMF_EVENT_NGAP_LO_CONNREFUSED,
                         sock, addr, NULL, 0, 0);
             }
             break;
@@ -193,7 +193,7 @@ void ngap_recv_handler(ogs_sock_t *sock)
             ogs_assert(addr);
             memcpy(addr, &from, sizeof(ogs_sockaddr_t));
 
-            ngap_event_push(AMF_EVT_NGAP_LO_CONNREFUSED,
+            ngap_event_push(AMF_EVENT_NGAP_LO_CONNREFUSED,
                     sock, addr, NULL, 0, 0);
             break;
 
@@ -235,7 +235,7 @@ void ngap_recv_handler(ogs_sock_t *sock)
         ogs_assert(addr);
         memcpy(addr, &from, sizeof(ogs_sockaddr_t));
 
-        ngap_event_push(AMF_EVT_NGAP_MESSAGE, sock, addr, pkbuf, 0, 0);
+        ngap_event_push(AMF_EVENT_NGAP_MESSAGE, sock, addr, pkbuf, 0, 0);
         return;
     } else {
         if (ogs_socket_errno != OGS_EAGAIN) {

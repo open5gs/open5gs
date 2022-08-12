@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -159,8 +159,7 @@ pcf_ue_t *pcf_ue_add(char *supi)
 
     memset(&e, 0, sizeof(e));
     e.pcf_ue = pcf_ue;
-    ogs_fsm_create(&pcf_ue->sm, pcf_am_state_initial, pcf_am_state_final);
-    ogs_fsm_init(&pcf_ue->sm, &e);
+    ogs_fsm_init(&pcf_ue->sm, pcf_am_state_initial, pcf_am_state_final, &e);
 
     ogs_list_add(&self.pcf_ue_list, pcf_ue);
 
@@ -178,7 +177,6 @@ void pcf_ue_remove(pcf_ue_t *pcf_ue)
     memset(&e, 0, sizeof(e));
     e.pcf_ue = pcf_ue;
     ogs_fsm_fini(&pcf_ue->sm, &e);
-    ogs_fsm_delete(&pcf_ue->sm);
 
     /* Free SBI object memory */
     ogs_sbi_object_free(&pcf_ue->sbi);
@@ -270,8 +268,7 @@ pcf_sess_t *pcf_sess_add(pcf_ue_t *pcf_ue, uint8_t psi)
 
     memset(&e, 0, sizeof(e));
     e.sess = sess;
-    ogs_fsm_create(&sess->sm, pcf_sm_state_initial, pcf_sm_state_final);
-    ogs_fsm_init(&sess->sm, &e);
+    ogs_fsm_init(&sess->sm, pcf_sm_state_initial, pcf_sm_state_final, &e);
 
     ogs_list_add(&pcf_ue->sess_list, sess);
 
@@ -290,7 +287,6 @@ void pcf_sess_remove(pcf_sess_t *sess)
     memset(&e, 0, sizeof(e));
     e.sess = sess;
     ogs_fsm_fini(&sess->sm, &e);
-    ogs_fsm_delete(&sess->sm);
 
     /* Free SBI object memory */
     ogs_sbi_object_free(&sess->sbi);

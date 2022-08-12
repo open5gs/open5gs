@@ -109,7 +109,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
     case OGS_FSM_EXIT_SIG:
         break;
 
-    case MME_EVT_EMM_MESSAGE:
+    case MME_EVENT_EMM_MESSAGE:
         message = e->nas_message;
         ogs_assert(message);
 
@@ -590,7 +590,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
         }
         break;
 
-    case MME_EVT_EMM_TIMER:
+    case MME_EVENT_EMM_TIMER:
         switch (e->timer_id) {
         case MME_TIMER_T3413:
             if (mme_ue->t3413.retry_count >=
@@ -679,7 +679,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
         break;
     case OGS_FSM_EXIT_SIG:
         break;
-    case MME_EVT_EMM_MESSAGE:
+    case MME_EVENT_EMM_MESSAGE:
         message = e->nas_message;
         ogs_assert(message);
 
@@ -794,7 +794,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
             break;
         }
         break;
-    case MME_EVT_EMM_TIMER:
+    case MME_EVENT_EMM_TIMER:
         switch (e->timer_id) {
         case MME_TIMER_T3460:
             if (mme_ue->t3460.retry_count >=
@@ -850,7 +850,7 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
         break;
     case OGS_FSM_EXIT_SIG:
         break;
-    case MME_EVT_EMM_MESSAGE:
+    case MME_EVENT_EMM_MESSAGE:
         message = e->nas_message;
         ogs_assert(message);
 
@@ -966,7 +966,7 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
             break;
         }
         break;
-    case MME_EVT_EMM_TIMER:
+    case MME_EVENT_EMM_TIMER:
         switch (e->timer_id) {
         case MME_TIMER_T3460:
             if (mme_ue->t3460.retry_count >=
@@ -1021,7 +1021,7 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
         break;
     case OGS_FSM_EXIT_SIG:
         break;
-    case MME_EVT_EMM_MESSAGE:
+    case MME_EVENT_EMM_MESSAGE:
         message = e->nas_message;
         ogs_assert(message);
 
@@ -1159,7 +1159,7 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
             break;
         }
         break;
-    case MME_EVT_EMM_TIMER:
+    case MME_EVENT_EMM_TIMER:
         switch (e->timer_id) {
         case MME_TIMER_T3450:
             if (mme_ue->t3450.retry_count >=
@@ -1224,7 +1224,7 @@ void emm_state_exception(ogs_fsm_t *s, mme_event_t *e)
     case OGS_FSM_EXIT_SIG:
         break;
 
-    case MME_EVT_EMM_MESSAGE:
+    case MME_EVENT_EMM_MESSAGE:
         message = e->nas_message;
         ogs_assert(message);
 

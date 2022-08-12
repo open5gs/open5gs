@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -20,7 +20,7 @@
 #ifndef SMF_TIMER_H
 #define SMF_TIMER_H
 
-#include "ogs-core.h"
+#include "ogs-proto.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,33 +28,19 @@ extern "C" {
 
 /* forward declaration */
 typedef enum {
-    SMF_TIMER_BASE = 0,
+    SMF_TIMER_BASE = OGS_MAX_NUM_OF_PROTO_TIMER,
 
     SMF_TIMER_PFCP_ASSOCIATION,
     SMF_TIMER_PFCP_NO_HEARTBEAT,
-
-    SMF_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL,
-    SMF_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL,
-    SMF_TIMER_NF_INSTANCE_NO_HEARTBEAT,
-    SMF_TIMER_NF_INSTANCE_VALIDITY,
-    SMF_TIMER_SUBSCRIPTION_VALIDITY,
-    SMF_TIMER_SBI_CLIENT_WAIT,
 
     MAX_NUM_OF_SMF_TIMER,
 
 } smf_timer_e;
 
-const char *smf_timer_get_name(smf_timer_e id);
+const char *smf_timer_get_name(int timer_id);
 
 void smf_timer_pfcp_association(void *data);
 void smf_timer_pfcp_no_heartbeat(void *data);
-
-void smf_timer_nf_instance_registration_interval(void *data);
-void smf_timer_nf_instance_heartbeat_interval(void *data);
-void smf_timer_nf_instance_no_heartbeat(void *data);
-void smf_timer_nf_instance_validity(void *data);
-void smf_timer_subscription_validity(void *data);
-void smf_timer_sbi_client_wait_expire(void *data);
 
 #ifdef __cplusplus
 }

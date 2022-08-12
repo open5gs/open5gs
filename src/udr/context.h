@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -25,7 +25,6 @@
 #include "ogs-sbi.h"
 
 #include "udr-sm.h"
-#include "timer.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,22 +39,6 @@ extern int __udr_log_domain;
 
 typedef struct udr_context_s {
 } udr_context_t;
-
-#define UDR_NF_INSTANCE_CLEAR(_cAUSE, _nFInstance) \
-    do { \
-        ogs_assert(_nFInstance); \
-        if ((_nFInstance)->reference_count == 1) { \
-            ogs_info("[%s] (%s) NF removed", (_nFInstance)->id, (_cAUSE)); \
-            udr_nf_fsm_fini((_nFInstance)); \
-            ogs_sbi_nf_instance_remove(_nFInstance); \
-        } else { \
-            /* There is an assocation with other context */ \
-            ogs_info("[%s:%d] (%s) NF suspended", \
-                    _nFInstance->id, _nFInstance->reference_count, (_cAUSE)); \
-            OGS_FSM_TRAN(&_nFInstance->sm, udr_nf_state_de_registered); \
-            ogs_fsm_dispatch(&_nFInstance->sm, NULL); \
-        } \
-    } while(0)
 
 void udr_context_init(void);
 void udr_context_final(void);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -51,8 +51,8 @@ void af_local_discover_and_send(OpenAPI_nf_type_e target_nf_type,
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_error("ogs_queue_push() failed [%d] in %s",
-                (int)rv, af_timer_get_name(e->timer_id));
-        af_event_free(e);
+                (int)rv, af_local_get_name(e->local_id));
+        ogs_event_free(e);
     } else {
         ogs_pollset_notify(ogs_app()->pollset);
     }
@@ -77,8 +77,8 @@ void af_local_send_to_pcf(
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_error("ogs_queue_push() failed [%d] in %s",
-                (int)rv, af_timer_get_name(e->timer_id));
-        af_event_free(e);
+                (int)rv, af_local_get_name(e->local_id));
+        ogs_event_free(e);
     } else {
         ogs_pollset_notify(ogs_app()->pollset);
     }

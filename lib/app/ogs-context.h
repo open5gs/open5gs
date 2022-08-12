@@ -86,18 +86,6 @@ typedef struct ogs_app_context_s {
     } sockopt;
 
     struct {
-        int heartbit_interval;
-        int sack_delay;
-        int rto_initial;
-        int rto_min;
-        int rto_max;
-        int max_num_of_ostreams;
-        int max_num_of_istreams;
-        int max_attempts;
-        int max_initial_timeout;
-    } sctp;
-
-    struct {
         int udp_port;
     } usrsctp;
 

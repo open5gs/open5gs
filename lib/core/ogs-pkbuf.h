@@ -32,7 +32,7 @@ typedef struct ogs_cluster_s {
     unsigned char *buffer;
     unsigned int size;
 
-    unsigned int ref;
+    unsigned int reference_count;
 } ogs_cluster_t;
 
 #if OGS_USE_TALLOC

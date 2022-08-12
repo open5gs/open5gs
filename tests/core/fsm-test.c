@@ -41,12 +41,6 @@ void bomb_initial(bomb_t *s, tick_event_t *e);
 void bomb_setting(bomb_t *s, tick_event_t *e);
 void bomb_timing(bomb_t *s, tick_event_t *e);
 
-void bomb_create(bomb_t *s, uint8_t defuse)
-{
-    ogs_fsm_create(&s->fsm, &bomb_initial, 0);
-    s->defuse = defuse;
-}
-
 void bomb_initial(bomb_t *s, tick_event_t *e)
 {
     s->timeout = 10;
@@ -98,9 +92,8 @@ static void test1_func(abts_case *tc, void *data)
     bomb_t bomb;
     tick_event_t tick_event;
 
-    bomb_create(&bomb, 14);
-
-    ogs_fsm_init(&bomb, 0);
+    ogs_fsm_init(&bomb, &bomb_initial, 0, 0);
+    bomb.defuse = 14;
     ABTS_PTR_EQUAL(tc, &bomb_setting, OGS_FSM_STATE(&bomb));
     ABTS_INT_EQUAL(tc, 10, bomb.timeout);
 
@@ -246,9 +239,7 @@ static void test2_func(abts_case *tc, void *data)
     set_event_t set_event;
     time_event_t time_event;
 
-    ogs_fsm_create(&alarm.fsm, &alarm_initial, 0);
-
-    ogs_fsm_init(&alarm, 0);
+    ogs_fsm_init(&alarm, &alarm_initial, 0, 0);
     ABTS_PTR_EQUAL(tc, &alarm_off, OGS_FSM_STATE(&alarm));
     ABTS_INT_EQUAL(tc, 1200, alarm.time);
 

@@ -28,9 +28,6 @@ void af_nbsf_management_handle_pcf_binding(
     OpenAPI_pcf_binding_t *PcfBinding = NULL;
     OpenAPI_list_t *PcfIpEndPointList = NULL;
     OpenAPI_lnode_t *node = NULL;
-#if SBI_FQDN_WITH_ONE_OCTET_LENGTH
-    char fqdn[OGS_MAX_FQDN_LEN];
-#endif
 
     ogs_assert(sess);
     ogs_assert(recvmsg);
@@ -46,19 +43,10 @@ void af_nbsf_management_handle_pcf_binding(
     }
 
     if (PcfBinding->pcf_fqdn) {
-#if SBI_FQDN_WITH_ONE_OCTET_LENGTH
-        ogs_assert(0 < ogs_fqdn_parse(fqdn, PcfBinding->pcf_fqdn,
-                ogs_min(strlen(PcfBinding->pcf_fqdn), OGS_MAX_FQDN_LEN)));
-        if (sess->pcf.fqdn)
-            ogs_free(sess->pcf.fqdn);
-        sess->pcf.fqdn = ogs_strdup(fqdn);
-        ogs_assert(sess->pcf.fqdn);
-#else
         if (sess->pcf.fqdn)
             ogs_free(sess->pcf.fqdn);
         sess->pcf.fqdn = ogs_strdup(PcfBinding->pcf_fqdn);
         ogs_assert(sess->pcf.fqdn);
-#endif
     }
 
     PcfIpEndPointList = PcfBinding->pcf_ip_end_points;

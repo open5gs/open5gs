@@ -20,7 +20,7 @@
 #ifndef UPF_EVENT_H
 #define UPF_EVENT_H
 
-#include "ogs-core.h"
+#include "ogs-proto.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,7 +32,7 @@ typedef struct ogs_pfcp_message_s ogs_pfcp_message_t;
 typedef struct upf_sess_s upf_sess_t;
 
 typedef enum {
-    UPF_EVT_BASE = OGS_FSM_USER_SIG,
+    UPF_EVT_BASE = OGS_MAX_NUM_OF_PROTO_EVENT,
 
     UPF_EVT_N4_MESSAGE,
     UPF_EVT_N4_TIMER,
@@ -44,8 +44,9 @@ typedef enum {
 
 typedef struct upf_event_s {
     int id;
-    ogs_pkbuf_t *pkbuf;
     int timer_id;
+
+    ogs_pkbuf_t *pkbuf;
 
     ogs_pfcp_node_t *pfcp_node;
     ogs_pfcp_xact_t *pfcp_xact;

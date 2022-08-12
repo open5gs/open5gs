@@ -62,7 +62,7 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
     amf_ue = e->amf_ue;
     ogs_assert(amf_ue);
 
-    switch (e->id) {
+    switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
         AMF_UE_CLEAR_PAGING_INFO(amf_ue);
         AMF_UE_CLEAR_N2_TRANSFER(amf_ue, pdu_session_resource_setup_request);
@@ -113,13 +113,13 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
         ogs_assert(amf_ue);
     }
 
-    switch (e->id) {
+    switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
         break;
     case OGS_FSM_EXIT_SIG:
         break;
 
-    case AMF_EVT_5GMM_MESSAGE:
+    case AMF_EVENT_5GMM_MESSAGE:
         nas_message = e->nas.message;
         ogs_assert(nas_message);
 
@@ -367,8 +367,8 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
         }
         break;
 
-    case AMF_EVT_5GMM_TIMER:
-        switch (e->timer_id) {
+    case AMF_EVENT_5GMM_TIMER:
+        switch (e->h.timer_id) {
         case AMF_TIMER_T3513:
             if (amf_ue->t3513.retry_count >=
                     amf_timer_cfg(AMF_TIMER_T3513)->max_count) {
@@ -457,14 +457,14 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
 
         default:
             ogs_error("Unknown timer[%s:%d]",
-                    amf_timer_get_name(e->timer_id), e->timer_id);
+                    amf_timer_get_name(e->h.timer_id), e->h.timer_id);
         }
         break;
 
-    case AMF_EVT_SBI_CLIENT:
-        sbi_response = e->sbi.response;
+    case OGS_EVENT_SBI_CLIENT:
+        sbi_response = e->h.sbi.response;
         ogs_assert(sbi_response);
-        sbi_message = e->sbi.message;
+        sbi_message = e->h.sbi.message;
         ogs_assert(sbi_message);
 
         SWITCH(sbi_message->h.service.name)
@@ -536,12 +536,12 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
         ogs_assert(amf_ue);
     }
 
-    switch (e->id) {
+    switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
         break;
     case OGS_FSM_EXIT_SIG:
         break;
-    case AMF_EVT_5GMM_MESSAGE:
+    case AMF_EVENT_5GMM_MESSAGE:
         nas_message = e->nas.message;
         ogs_assert(nas_message);
 
@@ -651,8 +651,8 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
             break;
         }
         break;
-    case AMF_EVT_5GMM_TIMER:
-        switch (e->timer_id) {
+    case AMF_EVENT_5GMM_TIMER:
+        switch (e->h.timer_id) {
         case AMF_TIMER_T3560:
             if (amf_ue->t3560.retry_count >=
                     amf_timer_cfg(AMF_TIMER_T3560)->max_count) {
@@ -673,14 +673,14 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
             break;
         default:
             ogs_error("[%s] Unknown timer[%s:%d]", amf_ue->suci,
-                    amf_timer_get_name(e->timer_id), e->timer_id);
+                    amf_timer_get_name(e->h.timer_id), e->h.timer_id);
             break;
         }
         break;
-    case AMF_EVT_SBI_CLIENT:
-        sbi_response = e->sbi.response;
+    case OGS_EVENT_SBI_CLIENT:
+        sbi_response = e->h.sbi.response;
         ogs_assert(sbi_response);
-        sbi_message = e->sbi.message;
+        sbi_message = e->h.sbi.message;
         ogs_assert(sbi_message);
 
         SWITCH(sbi_message->h.service.name)
@@ -772,7 +772,7 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
     amf_ue = e->amf_ue;
     ogs_assert(amf_ue);
 
-    switch (e->id) {
+    switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
         CLEAR_AMF_UE_TIMER(amf_ue->t3560);
         ogs_assert(OGS_OK ==
@@ -780,7 +780,7 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
         break;
     case OGS_FSM_EXIT_SIG:
         break;
-    case AMF_EVT_5GMM_MESSAGE:
+    case AMF_EVENT_5GMM_MESSAGE:
         nas_message = e->nas.message;
         ogs_assert(nas_message);
 
@@ -901,8 +901,8 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
             break;
         }
         break;
-    case AMF_EVT_5GMM_TIMER:
-        switch (e->timer_id) {
+    case AMF_EVENT_5GMM_TIMER:
+        switch (e->h.timer_id) {
         case AMF_TIMER_T3560:
             if (amf_ue->t3560.retry_count >=
                     amf_timer_cfg(AMF_TIMER_T3560)->max_count) {
@@ -923,7 +923,7 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
             break;
         default:
             ogs_error("Unknown timer[%s:%d]",
-                    amf_timer_get_name(e->timer_id), e->timer_id);
+                    amf_timer_get_name(e->h.timer_id), e->h.timer_id);
             break;
         }
         break;
@@ -962,16 +962,16 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
         ogs_assert(amf_ue);
     }
 
-    switch (e->id) {
+    switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
         break;
     case OGS_FSM_EXIT_SIG:
         break;
 
-    case AMF_EVT_SBI_CLIENT:
-        sbi_response = e->sbi.response;
+    case OGS_EVENT_SBI_CLIENT:
+        sbi_response = e->h.sbi.response;
         ogs_assert(sbi_response);
-        sbi_message = e->sbi.message;
+        sbi_message = e->h.sbi.message;
         ogs_assert(sbi_message);
 
         SWITCH(sbi_message->h.service.name)
@@ -1105,7 +1105,7 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
         END
         break;
 
-    case AMF_EVT_5GMM_MESSAGE:
+    case AMF_EVENT_5GMM_MESSAGE:
         nas_message = e->nas.message;
         ogs_assert(nas_message);
 
@@ -1228,8 +1228,8 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
             break;
         }
         break;
-    case AMF_EVT_5GMM_TIMER:
-        switch (e->timer_id) {
+    case AMF_EVENT_5GMM_TIMER:
+        switch (e->h.timer_id) {
         case AMF_TIMER_T3550:
             if (amf_ue->t3550.retry_count >=
                     amf_timer_cfg(AMF_TIMER_T3550)->max_count) {
@@ -1248,7 +1248,7 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
             break;
         default:
             ogs_error("[%s] Unknown timer[%s:%d]", amf_ue->suci,
-                    amf_timer_get_name(e->timer_id), e->timer_id);
+                    amf_timer_get_name(e->h.timer_id), e->h.timer_id);
             break;
         }
         break;
@@ -1281,7 +1281,7 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
         ogs_assert(amf_ue);
     }
 
-    switch (e->id) {
+    switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
         AMF_UE_CLEAR_PAGING_INFO(amf_ue);
         AMF_UE_CLEAR_N2_TRANSFER(amf_ue, pdu_session_resource_setup_request);
@@ -1300,7 +1300,7 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
     case OGS_FSM_EXIT_SIG:
         break;
 
-    case AMF_EVT_5GMM_MESSAGE:
+    case AMF_EVENT_5GMM_MESSAGE:
         nas_message = e->nas.message;
         ogs_assert(nas_message);
 

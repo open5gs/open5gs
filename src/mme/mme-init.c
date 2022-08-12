@@ -114,8 +114,7 @@ static void mme_main(void *data)
     ogs_fsm_t mme_sm;
     int rv;
 
-    ogs_fsm_create(&mme_sm, mme_state_initial, mme_state_final);
-    ogs_fsm_init(&mme_sm, 0);
+    ogs_fsm_init(&mme_sm, mme_state_initial, mme_state_final, 0);
 
     for ( ;; ) {
         ogs_pollset_poll(ogs_app()->pollset,
@@ -154,5 +153,4 @@ static void mme_main(void *data)
 done:
 
     ogs_fsm_fini(&mme_sm, 0);
-    ogs_fsm_delete(&mme_sm);
 }

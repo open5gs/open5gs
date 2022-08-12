@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -59,17 +59,17 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
     ogs_assert(s);
 
-    switch (e->id) {
+    switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
         break;
 
     case OGS_FSM_EXIT_SIG:
         break;
 
-    case PCF_EVT_SBI_SERVER:
-        request = e->sbi.request;
+    case OGS_EVENT_SBI_SERVER:
+        request = e->h.sbi.request;
         ogs_assert(request);
-        stream = e->sbi.data;
+        stream = e->h.sbi.data;
         ogs_assert(stream);
 
         rv = ogs_sbi_parse_request(&message, request);
@@ -100,7 +100,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_NF_STATUS_NOTIFY)
                 SWITCH(message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
-                    pcf_nnrf_handle_nf_status_notify(stream, &message);
+                    ogs_nnrf_handle_nf_status_notify(stream, &message);
                     break;
 
                 DEFAULT
@@ -160,7 +160,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             ogs_assert(OGS_FSM_STATE(&pcf_ue->sm));
 
             e->pcf_ue = pcf_ue;
-            e->sbi.message = &message;
+            e->h.sbi.message = &message;
             ogs_fsm_dispatch(&pcf_ue->sm, e);
             if (OGS_FSM_CHECK(&pcf_ue->sm, pcf_am_state_exception)) {
                 ogs_error("[%s] State machine exception", pcf_ue->supi);
@@ -214,7 +214,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             ogs_assert(OGS_FSM_STATE(&sess->sm));
 
             e->sess = sess;
-            e->sbi.message = &message;
+            e->h.sbi.message = &message;
             ogs_fsm_dispatch(&sess->sm, e);
             if (OGS_FSM_CHECK(&sess->sm, pcf_sm_state_exception)) {
                 ogs_error("[%s:%d] State machine exception",
@@ -265,7 +265,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
             e->sess = sess;
             e->app = app_session;
-            e->sbi.message = &message;
+            e->h.sbi.message = &message;
             ogs_fsm_dispatch(&sess->sm, e);
             if (OGS_FSM_CHECK(&sess->sm, pcf_sm_state_exception)) {
                 ogs_error("[%s:%d] State machine exception",
@@ -286,10 +286,10 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
         ogs_sbi_message_free(&message);
         break;
 
-    case PCF_EVT_SBI_CLIENT:
+    case OGS_EVENT_SBI_CLIENT:
         ogs_assert(e);
 
-        response = e->sbi.response;
+        response = e->h.sbi.response;
         ogs_assert(response);
         rv = ogs_sbi_parse_response(&message, response);
         if (rv != OGS_OK) {
@@ -311,23 +311,23 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
             SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
-                nf_instance = e->sbi.data;
+                nf_instance = e->h.sbi.data;
                 ogs_assert(nf_instance);
                 ogs_assert(OGS_FSM_STATE(&nf_instance->sm));
 
-                e->sbi.message = &message;
+                e->h.sbi.message = &message;
                 ogs_fsm_dispatch(&nf_instance->sm, e);
                 break;
 
             CASE(OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS)
-                subscription = e->sbi.data;
+                subscription = e->h.sbi.data;
                 ogs_assert(subscription);
 
                 SWITCH(message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
                     if (message.res_status == OGS_SBI_HTTP_STATUS_CREATED ||
                         message.res_status == OGS_SBI_HTTP_STATUS_OK) {
-                        pcf_nnrf_handle_nf_status_subscribe(
+                        ogs_nnrf_handle_nf_status_subscribe(
                                 subscription, &message);
                     } else {
                         ogs_error("[%s] HTTP response error [%d]",
@@ -362,7 +362,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NNRF_DISC)
             SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
-                sbi_xact = e->sbi.data;
+                sbi_xact = e->h.sbi.data;
                 ogs_assert(sbi_xact);
 
                 SWITCH(message.h.method)
@@ -392,7 +392,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_POLICY_DATA)
                 SWITCH(message.h.resource.component[3])
                 CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
-                    sbi_xact = e->sbi.data;
+                    sbi_xact = e->h.sbi.data;
                     ogs_assert(sbi_xact);
 
                     sbi_xact = ogs_sbi_xact_cycle(sbi_xact);
@@ -406,7 +406,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                     pcf_ue = (pcf_ue_t *)sbi_xact->sbi_object;
                     ogs_assert(pcf_ue);
 
-                    e->sbi.data = sbi_xact->assoc_stream;
+                    e->h.sbi.data = sbi_xact->assoc_stream;
 
                     ogs_sbi_xact_remove(sbi_xact);
 
@@ -418,7 +418,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                     }
 
                     e->pcf_ue = pcf_ue;
-                    e->sbi.message = &message;
+                    e->h.sbi.message = &message;
 
                     ogs_fsm_dispatch(&pcf_ue->sm, e);
                     if (OGS_FSM_CHECK(&pcf_ue->sm, pcf_am_state_exception)) {
@@ -428,7 +428,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                     break;
 
                 CASE(OGS_SBI_RESOURCE_NAME_SM_DATA)
-                    sbi_xact = e->sbi.data;
+                    sbi_xact = e->h.sbi.data;
                     ogs_assert(sbi_xact);
 
                     sbi_xact = ogs_sbi_xact_cycle(sbi_xact);
@@ -442,7 +442,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                     sess = (pcf_sess_t *)sbi_xact->sbi_object;
                     ogs_assert(sess);
 
-                    e->sbi.data = sbi_xact->assoc_stream;
+                    e->h.sbi.data = sbi_xact->assoc_stream;
 
                     ogs_sbi_xact_remove(sbi_xact);
 
@@ -458,7 +458,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                     ogs_assert(pcf_ue);
 
                     e->sess = sess;
-                    e->sbi.message = &message;
+                    e->h.sbi.message = &message;
 
                     ogs_fsm_dispatch(&sess->sm, e);
                     if (OGS_FSM_CHECK(&sess->sm, pcf_sm_state_exception)) {
@@ -487,7 +487,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_PCF_BINDINGS)
 
-                sbi_xact = e->sbi.data;
+                sbi_xact = e->h.sbi.data;
                 ogs_assert(sbi_xact);
 
                 sbi_xact = ogs_sbi_xact_cycle(sbi_xact);
@@ -501,7 +501,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                 sess = (pcf_sess_t *)sbi_xact->sbi_object;
                 ogs_assert(sess);
 
-                e->sbi.data = sbi_xact->assoc_stream;
+                e->h.sbi.data = sbi_xact->assoc_stream;
 
                 ogs_sbi_xact_remove(sbi_xact);
 
@@ -517,7 +517,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                 ogs_assert(pcf_ue);
 
                 e->sess = sess;
-                e->sbi.message = &message;
+                e->h.sbi.message = &message;
 
                 ogs_fsm_dispatch(&sess->sm, e);
                 if (OGS_FSM_CHECK(&sess->sm, pcf_sm_state_exception)) {
@@ -547,27 +547,27 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
         ogs_sbi_response_free(response);
         break;
 
-    case PCF_EVT_SBI_TIMER:
+    case OGS_EVENT_SBI_TIMER:
         ogs_assert(e);
 
-        switch(e->timer_id) {
-        case PCF_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL:
-        case PCF_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL:
-        case PCF_TIMER_NF_INSTANCE_NO_HEARTBEAT:
-        case PCF_TIMER_NF_INSTANCE_VALIDITY:
-            nf_instance = e->sbi.data;
+        switch(e->h.timer_id) {
+        case OGS_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL:
+        case OGS_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL:
+        case OGS_TIMER_NF_INSTANCE_NO_HEARTBEAT:
+        case OGS_TIMER_NF_INSTANCE_VALIDITY:
+            nf_instance = e->h.sbi.data;
             ogs_assert(nf_instance);
             ogs_assert(OGS_FSM_STATE(&nf_instance->sm));
 
             ogs_fsm_dispatch(&nf_instance->sm, e);
-            if (OGS_FSM_CHECK(&nf_instance->sm, pcf_nf_state_exception))
+            if (OGS_FSM_CHECK(&nf_instance->sm, ogs_sbi_nf_state_exception))
                 ogs_error("[%s:%s] State machine exception [%d]",
                         OpenAPI_nf_type_ToString(nf_instance->nf_type),
-                        nf_instance->id, e->timer_id);
+                        nf_instance->id, e->h.timer_id);
             break;
 
-        case PCF_TIMER_SUBSCRIPTION_VALIDITY:
-            subscription = e->sbi.data;
+        case OGS_TIMER_SUBSCRIPTION_VALIDITY:
+            subscription = e->h.sbi.data;
             ogs_assert(subscription);
 
             ogs_assert(ogs_sbi_self()->nf_instance);
@@ -581,8 +581,8 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             ogs_sbi_subscription_remove(subscription);
             break;
 
-        case PCF_TIMER_SBI_CLIENT_WAIT:
-            sbi_xact = e->sbi.data;
+        case OGS_TIMER_SBI_CLIENT_WAIT:
+            sbi_xact = e->h.sbi.data;
             ogs_assert(sbi_xact);
 
             sbi_object = sbi_xact->sbi_object;
@@ -636,7 +636,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
         default:
             ogs_error("Unknown timer[%s:%d]",
-                    pcf_timer_get_name(e->timer_id), e->timer_id);
+                    ogs_timer_get_name(e->h.timer_id), e->h.timer_id);
         }
         break;
 

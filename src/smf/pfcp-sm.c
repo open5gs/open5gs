@@ -82,7 +82,7 @@ void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e)
     addr = node->sa_list;
     ogs_assert(addr);
 
-    switch (e->id) {
+    switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
         if (node->t_association) {
             ogs_timer_start(node->t_association,
@@ -99,7 +99,7 @@ void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e)
         break;
 
     case SMF_EVT_N4_TIMER:
-        switch(e->timer_id) {
+        switch(e->h.timer_id) {
         case SMF_TIMER_PFCP_ASSOCIATION:
             node = e->pfcp_node;
             ogs_assert(node);
@@ -115,7 +115,7 @@ void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e)
             break;
         default:
             ogs_error("Unknown timer[%s:%d]",
-                    smf_timer_get_name(e->timer_id), e->timer_id);
+                    smf_timer_get_name(e->h.timer_id), e->h.timer_id);
             break;
         }
         break;
@@ -169,7 +169,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
     addr = node->sa_list;
     ogs_assert(addr);
 
-    switch (e->id) {
+    switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
         ogs_info("PFCP associated");
         ogs_timer_start(node->t_no_heartbeat,
@@ -290,7 +290,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
 
         break;
     case SMF_EVT_N4_TIMER:
-        switch(e->timer_id) {
+        switch(e->h.timer_id) {
         case SMF_TIMER_PFCP_NO_HEARTBEAT:
             node = e->pfcp_node;
             ogs_assert(node);
@@ -300,7 +300,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
             break;
         default:
             ogs_error("Unknown timer[%s:%d]",
-                    smf_timer_get_name(e->timer_id), e->timer_id);
+                    smf_timer_get_name(e->h.timer_id), e->h.timer_id);
             break;
         }
         break;
@@ -322,7 +322,7 @@ void smf_pfcp_state_exception(ogs_fsm_t *s, smf_event_t *e)
 
     smf_sm_debug(e);
 
-    switch (e->id) {
+    switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
         break;
     case OGS_FSM_EXIT_SIG:
@@ -353,7 +353,7 @@ static void node_timeout(ogs_pfcp_xact_t *xact, void *data)
         rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
             ogs_error("ogs_queue_push() failed:%d", (int)rv);
-            smf_event_free(e);
+            ogs_event_free(e);
         }
         break;
     case OGS_PFCP_ASSOCIATION_SETUP_REQUEST_TYPE:

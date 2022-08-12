@@ -23,7 +23,6 @@ bool nrf_nnrf_handle_nf_register(ogs_sbi_nf_instance_t *nf_instance,
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
     int status;
-    bool handled;
     ogs_sbi_response_t *response = NULL;
 
     OpenAPI_nf_profile_t *NFProfile = NULL;
@@ -46,9 +45,7 @@ bool nrf_nnrf_handle_nf_register(ogs_sbi_nf_instance_t *nf_instance,
             nf_instance->nf_profile, NFProfile);
 
     /* ogs_sbi_nnrf_handle_nf_profile() sends error response */
-    handled = ogs_sbi_nnrf_handle_nf_profile(
-                nf_instance, NFProfile, stream, recvmsg);
-    if (!handled) return false;
+    ogs_sbi_nnrf_handle_nf_profile(nf_instance, NFProfile, stream, recvmsg);
 
     if (OGS_FSM_CHECK(&nf_instance->sm, nrf_nf_state_will_register)) {
         recvmsg->http.location = recvmsg->h.uri;

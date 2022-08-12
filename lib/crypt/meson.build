@@ -52,10 +52,10 @@ libcrypt = library('ogscrypt',
     version : libogslib_version,
     c_args : '-DOGS_CRYPT_COMPILATION',
     include_directories : [libcrypt_inc, libinc],
-    dependencies : libcore_dep,
+    dependencies : libproto_dep,
     install : true)
 
 libcrypt_dep = declare_dependency(
     link_with : libcrypt,
     include_directories : [libcrypt_inc, libinc],
-    dependencies : libcore_dep)
+    dependencies : libproto_dep)

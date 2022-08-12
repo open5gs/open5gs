@@ -20,7 +20,7 @@
 #ifndef OGS_CRYPT_H
 #define OGS_CRYPT_H
 
-#include "ogs-core.h"
+#include "ogs-proto.h"
 
 #define OGS_CRYPT_INSIDE
 

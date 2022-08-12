@@ -24,7 +24,7 @@
 extern "C" {
 #endif
 
-#include "ogs-core.h"
+#include "ogs-proto.h"
 
 typedef struct ogs_ipfw_rule_s {
     uint8_t proto;

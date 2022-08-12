@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -20,7 +20,6 @@
 #ifndef SMF_SBI_PATH_H
 #define SMF_SBI_PATH_H
 
-#include "nnrf-build.h"
 #include "nudm-build.h"
 #include "namf-build.h"
 #include "gsm-build.h"

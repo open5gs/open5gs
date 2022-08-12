@@ -102,8 +102,8 @@ ogs_sbi_client_t *ogs_sbi_client_add(ogs_sockaddr_t *addr)
     ogs_assert(client);
     memset(client, 0, sizeof(ogs_sbi_client_t));
 
-    client->reference_count++;
-    ogs_trace("ogs_sbi_client_add()");
+    ogs_debug("ogs_sbi_client_add()");
+    OGS_OBJECT_REF(client);
 
     ogs_assert(OGS_OK == ogs_copyaddrinfo(&client->node.addr, addr));
 
@@ -128,17 +128,22 @@ ogs_sbi_client_t *ogs_sbi_client_add(ogs_sockaddr_t *addr)
 
 void ogs_sbi_client_remove(ogs_sbi_client_t *client)
 {
+    ogs_sockaddr_t *addr = NULL;
+    char buf[OGS_ADDRSTRLEN];
+
     ogs_assert(client);
 
+    addr = client->node.addr;
+    ogs_assert(addr);
+    ogs_debug("ogs_sbi_client_remove() [%s:%d]",
+                OGS_ADDR(addr, buf), OGS_PORT(addr));
+
     /* ogs_sbi_client_t is always created with reference context */
-    ogs_assert(client->reference_count > 0);
-
-    ogs_trace("client->reference_count = %d", client->reference_count);
-    client->reference_count--;
-    if (client->reference_count > 0)
+    if (OGS_OBJECT_IS_REF(client)) {
+        OGS_OBJECT_UNREF(client);
         return;
+    }
 
-    ogs_trace("ogs_sbi_client_remove()");
     ogs_list_remove(&ogs_sbi_self()->client_list, client);
 
     connection_remove_all(client);

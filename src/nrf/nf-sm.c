@@ -30,9 +30,8 @@ void nrf_nf_fsm_init(ogs_sbi_nf_instance_t *nf_instance)
     memset(&e, 0, sizeof(e));
     e.nf_instance = nf_instance;
 
-    ogs_fsm_create(&nf_instance->sm,
-            nrf_nf_state_initial, nrf_nf_state_final);
-    ogs_fsm_init(&nf_instance->sm, &e);
+    ogs_fsm_init(&nf_instance->sm,
+        nrf_nf_state_initial, nrf_nf_state_final, &e);
 }
 
 void nrf_nf_fsm_fini(ogs_sbi_nf_instance_t *nf_instance)
@@ -44,7 +43,6 @@ void nrf_nf_fsm_fini(ogs_sbi_nf_instance_t *nf_instance)
     e.nf_instance = nf_instance;
 
     ogs_fsm_fini(&nf_instance->sm, &e);
-    ogs_fsm_delete(&nf_instance->sm);
 }
 
 void nrf_nf_state_initial(ogs_fsm_t *s, nrf_event_t *e)

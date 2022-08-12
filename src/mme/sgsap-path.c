@@ -34,8 +34,7 @@ int sgsap_open()
         memset(&e, 0, sizeof(e));
         e.vlr = vlr;
 
-        ogs_fsm_create(&vlr->sm, sgsap_state_initial, sgsap_state_final);
-        ogs_fsm_init(&vlr->sm, &e);
+        ogs_fsm_init(&vlr->sm, sgsap_state_initial, sgsap_state_final, &e);
     }
 
     return OGS_OK;
@@ -51,7 +50,6 @@ void sgsap_close()
         e.vlr = vlr;
 
         ogs_fsm_fini(&vlr->sm, &e);
-        ogs_fsm_delete(&vlr->sm);
     }
 }
 

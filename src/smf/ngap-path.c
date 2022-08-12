@@ -31,13 +31,13 @@ void ngap_send_to_n2sm(smf_sess_t *sess,
     e = smf_event_new(SMF_EVT_NGAP_MESSAGE);
     ogs_assert(e);
     e->sess = sess;
-    e->sbi.data = stream;
+    e->h.sbi.data = stream;
     e->pkbuf = pkbuf;
     e->ngap.type = type;
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_error("ogs_queue_push() failed:%d", (int)rv);
         ogs_pkbuf_free(e->pkbuf);
-        smf_event_free(e);
+        ogs_event_free(e);
     }
 }

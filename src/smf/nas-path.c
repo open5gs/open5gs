@@ -31,12 +31,12 @@ void nas_5gs_send_to_gsm(
     e = smf_event_new(SMF_EVT_5GSM_MESSAGE);
     ogs_assert(e);
     e->sess = sess;
-    e->sbi.data = stream;
+    e->h.sbi.data = stream;
     e->pkbuf = pkbuf;
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_error("ogs_queue_push() failed:%d", (int)rv);
         ogs_pkbuf_free(e->pkbuf);
-        smf_event_free(e);
+        ogs_event_free(e);
     }
 }

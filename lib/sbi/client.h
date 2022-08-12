@@ -47,10 +47,8 @@ extern "C" {
             ogs_sbi_client_remove(client); \
         } \
         \
-        (__pClient)->reference_count++; \
+        OGS_OBJECT_REF(__pClient); \
         ((__cTX)->client) = (__pClient); \
-        ogs_trace("client->reference_count = %d", \
-                (__pClient)->reference_count); \
     } while(0)
 
 typedef int (*ogs_sbi_client_cb_f)(

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -870,8 +870,7 @@ amf_gnb_t *amf_gnb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
 
     memset(&e, 0, sizeof(e));
     e.gnb = gnb;
-    ogs_fsm_create(&gnb->sm, ngap_state_initial, ngap_state_final);
-    ogs_fsm_init(&gnb->sm, &e);
+    ogs_fsm_init(&gnb->sm, ngap_state_initial, ngap_state_final, &e);
 
     ogs_list_add(&self.gnb_list, gnb);
     amf_metrics_inst_global_inc(AMF_METR_GLOB_GAUGE_GNB);
@@ -894,7 +893,6 @@ void amf_gnb_remove(amf_gnb_t *gnb)
     memset(&e, 0, sizeof(e));
     e.gnb = gnb;
     ogs_fsm_fini(&gnb->sm, &e);
-    ogs_fsm_delete(&gnb->sm);
 
     ogs_hash_set(self.gnb_addr_hash,
             gnb->sctp.addr, sizeof(ogs_sockaddr_t), NULL);
@@ -1311,8 +1309,7 @@ void amf_ue_fsm_init(amf_ue_t *amf_ue)
 
     memset(&e, 0, sizeof(e));
     e.amf_ue = amf_ue;
-    ogs_fsm_create(&amf_ue->sm, gmm_state_initial, gmm_state_final);
-    ogs_fsm_init(&amf_ue->sm, &e);
+    ogs_fsm_init(&amf_ue->sm, gmm_state_initial, gmm_state_final, &e);
 }
 
 void amf_ue_fsm_fini(amf_ue_t *amf_ue)
@@ -1324,7 +1321,6 @@ void amf_ue_fsm_fini(amf_ue_t *amf_ue)
     memset(&e, 0, sizeof(e));
     e.amf_ue = amf_ue;
     ogs_fsm_fini(&amf_ue->sm, &e);
-    ogs_fsm_delete(&amf_ue->sm);
 }
 
 amf_ue_t *amf_ue_find_by_guti(ogs_nas_5gs_guti_t *guti)
@@ -1792,7 +1788,6 @@ void amf_sbi_select_nf(
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     amf_sess_t *sess = NULL;
 
-    ogs_assert(ogs_sbi_self()->nf_state_registered);
     ogs_assert(sbi_object);
     ogs_assert(target_nf_type);
 

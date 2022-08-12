@@ -1,4 +1,4 @@
-# Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+# Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
 
 # This file is part of Open5GS.
 
@@ -18,12 +18,8 @@
 libbsf_sources = files('''
     context.c
     event.c
-    timer.c
 
-    nnrf-build.c
     nnrf-handler.c
-    nf-sm.c
-
     nbsf-handler.c
 
     sbi-path.c

@@ -60,42 +60,42 @@ const char *mme_event_get_name(mme_event_t *e)
     case OGS_FSM_EXIT_SIG: 
         return OGS_FSM_NAME_EXIT_SIG;
 
-    case MME_EVT_S1AP_MESSAGE:
-        return "MME_EVT_S1AP_MESSAGE";
-    case MME_EVT_S1AP_TIMER:
-        return "MME_EVT_S1AP_TIMER";
-    case MME_EVT_S1AP_LO_ACCEPT:
-        return "MME_EVT_S1AP_LO_ACCEPT";
-    case MME_EVT_S1AP_LO_SCTP_COMM_UP:
-        return "MME_EVT_S1AP_LO_SCTP_COMM_UP";
-    case MME_EVT_S1AP_LO_CONNREFUSED:
-        return "MME_EVT_S1AP_LO_CONNREFUSED";
+    case MME_EVENT_S1AP_MESSAGE:
+        return "MME_EVENT_S1AP_MESSAGE";
+    case MME_EVENT_S1AP_TIMER:
+        return "MME_EVENT_S1AP_TIMER";
+    case MME_EVENT_S1AP_LO_ACCEPT:
+        return "MME_EVENT_S1AP_LO_ACCEPT";
+    case MME_EVENT_S1AP_LO_SCTP_COMM_UP:
+        return "MME_EVENT_S1AP_LO_SCTP_COMM_UP";
+    case MME_EVENT_S1AP_LO_CONNREFUSED:
+        return "MME_EVENT_S1AP_LO_CONNREFUSED";
 
-    case MME_EVT_EMM_MESSAGE:
-        return "MME_EVT_EMM_MESSAGE";
-    case MME_EVT_EMM_TIMER:
-        return "MME_EVT_EMM_TIMER";
-    case MME_EVT_ESM_MESSAGE:
-        return "MME_EVT_ESM_MESSAGE";
-    case MME_EVT_ESM_TIMER:
-        return "MME_EVT_ESM_TIMER";
-    case MME_EVT_S11_MESSAGE:
-        return "MME_EVT_S11_MESSAGE";
-    case MME_EVT_S11_TIMER:
-        return "MME_EVT_S11_TIMER";
-    case MME_EVT_S6A_MESSAGE:
-        return "MME_EVT_S6A_MESSAGE";
-    case MME_EVT_S6A_TIMER:
-        return "MME_EVT_S6A_TIMER";
+    case MME_EVENT_EMM_MESSAGE:
+        return "MME_EVENT_EMM_MESSAGE";
+    case MME_EVENT_EMM_TIMER:
+        return "MME_EVENT_EMM_TIMER";
+    case MME_EVENT_ESM_MESSAGE:
+        return "MME_EVENT_ESM_MESSAGE";
+    case MME_EVENT_ESM_TIMER:
+        return "MME_EVENT_ESM_TIMER";
+    case MME_EVENT_S11_MESSAGE:
+        return "MME_EVENT_S11_MESSAGE";
+    case MME_EVENT_S11_TIMER:
+        return "MME_EVENT_S11_TIMER";
+    case MME_EVENT_S6A_MESSAGE:
+        return "MME_EVENT_S6A_MESSAGE";
+    case MME_EVENT_S6A_TIMER:
+        return "MME_EVENT_S6A_TIMER";
 
-    case MME_EVT_SGSAP_MESSAGE:
-        return "MME_EVT_SGSAP_MESSAGE";
-    case MME_EVT_SGSAP_TIMER:
-        return "MME_EVT_SGSAP_TIMER";
-    case MME_EVT_SGSAP_LO_SCTP_COMM_UP:
-        return "MME_EVT_SGSAP_LO_SCTP_COMM_UP";
-    case MME_EVT_SGSAP_LO_CONNREFUSED:
-        return "MME_EVT_SGSAP_LO_CONNREFUSED";
+    case MME_EVENT_SGSAP_MESSAGE:
+        return "MME_EVENT_SGSAP_MESSAGE";
+    case MME_EVENT_SGSAP_TIMER:
+        return "MME_EVENT_SGSAP_TIMER";
+    case MME_EVENT_SGSAP_LO_SCTP_COMM_UP:
+        return "MME_EVENT_SGSAP_LO_SCTP_COMM_UP";
+    case MME_EVENT_SGSAP_LO_CONNREFUSED:
+        return "MME_EVENT_SGSAP_LO_CONNREFUSED";
 
     default: 
        break;

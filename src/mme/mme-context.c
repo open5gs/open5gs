@@ -1831,8 +1831,7 @@ mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
 
     memset(&e, 0, sizeof(e));
     e.enb = enb;
-    ogs_fsm_create(&enb->sm, s1ap_state_initial, s1ap_state_final);
-    ogs_fsm_init(&enb->sm, &e);
+    ogs_fsm_init(&enb->sm, s1ap_state_initial, s1ap_state_final, &e);
 
     ogs_list_add(&self.enb_list, enb);
     mme_metrics_inst_global_inc(MME_METR_GLOB_GAUGE_ENB);
@@ -1855,7 +1854,6 @@ int mme_enb_remove(mme_enb_t *enb)
     memset(&e, 0, sizeof(e));
     e.enb = enb;
     ogs_fsm_fini(&enb->sm, &e);
-    ogs_fsm_delete(&enb->sm);
 
     ogs_hash_set(self.enb_addr_hash,
             enb->sctp.addr, sizeof(ogs_sockaddr_t), NULL);
@@ -2399,8 +2397,7 @@ void mme_ue_fsm_init(mme_ue_t *mme_ue)
 
     memset(&e, 0, sizeof(e));
     e.mme_ue = mme_ue;
-    ogs_fsm_create(&mme_ue->sm, emm_state_initial, emm_state_final);
-    ogs_fsm_init(&mme_ue->sm, &e);
+    ogs_fsm_init(&mme_ue->sm, emm_state_initial, emm_state_final, &e);
 }
 
 void mme_ue_fsm_fini(mme_ue_t *mme_ue)
@@ -2412,7 +2409,6 @@ void mme_ue_fsm_fini(mme_ue_t *mme_ue)
     memset(&e, 0, sizeof(e));
     e.mme_ue = mme_ue;
     ogs_fsm_fini(&mme_ue->sm, &e);
-    ogs_fsm_delete(&mme_ue->sm);
 }
 
 mme_ue_t *mme_ue_find_by_imsi_bcd(char *imsi_bcd)
@@ -3004,8 +3000,7 @@ mme_bearer_t *mme_bearer_add(mme_sess_t *sess)
 
     memset(&e, 0, sizeof(e));
     e.bearer = bearer;
-    ogs_fsm_create(&bearer->sm, esm_state_initial, esm_state_final);
-    ogs_fsm_init(&bearer->sm, &e);
+    ogs_fsm_init(&bearer->sm, esm_state_initial, esm_state_final, &e);
 
     return bearer;
 }
@@ -3021,7 +3016,6 @@ void mme_bearer_remove(mme_bearer_t *bearer)
     memset(&e, 0, sizeof(e));
     e.bearer = bearer;
     ogs_fsm_fini(&bearer->sm, &e);
-    ogs_fsm_delete(&bearer->sm);
 
     CLEAR_BEARER_ALL_TIMERS(bearer);
     ogs_timer_delete(bearer->t3489.timer);

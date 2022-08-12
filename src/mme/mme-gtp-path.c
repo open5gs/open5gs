@@ -61,7 +61,7 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
     }
     ogs_assert(sgw);
 
-    e = mme_event_new(MME_EVT_S11_MESSAGE);
+    e = mme_event_new(MME_EVENT_S11_MESSAGE);
     ogs_assert(e);
     e->gnode = (ogs_gtp_node_t *)sgw;
     e->pkbuf = pkbuf;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -1111,8 +1111,7 @@ smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn, uint8_t rat_type)
 
     memset(&e, 0, sizeof(e));
     e.sess = sess;
-    ogs_fsm_create(&sess->sm, smf_gsm_state_initial, smf_gsm_state_final);
-    ogs_fsm_init(&sess->sm, &e);
+    ogs_fsm_init(&sess->sm, smf_gsm_state_initial, smf_gsm_state_final, &e);
 
     sess->smf_ue = smf_ue;
 
@@ -1321,8 +1320,7 @@ smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi)
 
     memset(&e, 0, sizeof(e));
     e.sess = sess;
-    ogs_fsm_create(&sess->sm, smf_gsm_state_initial, smf_gsm_state_final);
-    ogs_fsm_init(&sess->sm, &e);
+    ogs_fsm_init(&sess->sm, smf_gsm_state_initial, smf_gsm_state_final, &e);
 
     sess->smf_ue = smf_ue;
 
@@ -1602,7 +1600,6 @@ void smf_sess_remove(smf_sess_t *sess)
     memset(&e, 0, sizeof(e));
     e.sess = sess;
     ogs_fsm_fini(&sess->sm, &e);
-    ogs_fsm_delete(&sess->sm);
 
     OGS_TLV_CLEAR_DATA(&sess->gtp.ue_pco);
     OGS_TLV_CLEAR_DATA(&sess->gtp.user_location_information);

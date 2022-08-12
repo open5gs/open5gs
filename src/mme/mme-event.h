@@ -20,7 +20,7 @@
 #ifndef MME_EVENT_H
 #define MME_EVENT_H
 
-#include "ogs-core.h"
+#include "ogs-proto.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,29 +28,29 @@ extern "C" {
 
 /* forward declaration */
 typedef enum {
-    MME_EVT_BASE = OGS_FSM_USER_SIG,
+    MME_EVENT_BASE = OGS_MAX_NUM_OF_PROTO_EVENT,
 
-    MME_EVT_S1AP_MESSAGE,
-    MME_EVT_S1AP_TIMER,
-    MME_EVT_S1AP_LO_ACCEPT,
-    MME_EVT_S1AP_LO_SCTP_COMM_UP,
-    MME_EVT_S1AP_LO_CONNREFUSED,
+    MME_EVENT_S1AP_MESSAGE,
+    MME_EVENT_S1AP_TIMER,
+    MME_EVENT_S1AP_LO_ACCEPT,
+    MME_EVENT_S1AP_LO_SCTP_COMM_UP,
+    MME_EVENT_S1AP_LO_CONNREFUSED,
 
-    MME_EVT_EMM_MESSAGE,
-    MME_EVT_EMM_TIMER,
-    MME_EVT_ESM_MESSAGE,
-    MME_EVT_ESM_TIMER,
-    MME_EVT_S11_MESSAGE,
-    MME_EVT_S11_TIMER,
-    MME_EVT_S6A_MESSAGE,
-    MME_EVT_S6A_TIMER,
+    MME_EVENT_EMM_MESSAGE,
+    MME_EVENT_EMM_TIMER,
+    MME_EVENT_ESM_MESSAGE,
+    MME_EVENT_ESM_TIMER,
+    MME_EVENT_S11_MESSAGE,
+    MME_EVENT_S11_TIMER,
+    MME_EVENT_S6A_MESSAGE,
+    MME_EVENT_S6A_TIMER,
 
-    MME_EVT_SGSAP_MESSAGE,
-    MME_EVT_SGSAP_TIMER,
-    MME_EVT_SGSAP_LO_SCTP_COMM_UP,
-    MME_EVT_SGSAP_LO_CONNREFUSED,
+    MME_EVENT_SGSAP_MESSAGE,
+    MME_EVENT_SGSAP_TIMER,
+    MME_EVENT_SGSAP_LO_SCTP_COMM_UP,
+    MME_EVENT_SGSAP_LO_CONNREFUSED,
 
-    MME_EVT_TOP,
+    MAX_NUM_OF_MME_EVENT,
 
 } mme_event_e;
 
@@ -69,8 +69,9 @@ typedef struct ogs_gtp_node_s ogs_gtp_node_t;
 
 typedef struct mme_event_s {
     int id;
-    ogs_pkbuf_t *pkbuf;
     int timer_id;
+
+    ogs_pkbuf_t *pkbuf;
 
     ogs_sock_t *sock;
     ogs_sockaddr_t *addr;

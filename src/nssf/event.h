@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -20,49 +20,19 @@
 #ifndef NSSF_EVENT_H
 #define NSSF_EVENT_H
 
-#include "ogs-core.h"
+#include "ogs-proto.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct ogs_sbi_request_s ogs_sbi_request_t;
-typedef struct ogs_sbi_response_s ogs_sbi_response_t;
-typedef struct ogs_sbi_message_s ogs_sbi_message_t;
-typedef struct ogs_sbi_nf_instance_s ogs_sbi_nf_instance_t;
-typedef struct ogs_sbi_subscription_s ogs_sbi_subscription_t;
-
-typedef enum {
-    NSSF_EVT_BASE = OGS_FSM_USER_SIG,
-
-    NSSF_EVT_SBI_SERVER,
-    NSSF_EVT_SBI_CLIENT,
-    NSSF_EVT_SBI_TIMER,
-
-    NSSF_EVT_TOP,
-
-} nssf_event_e;
+typedef struct nssf_ue_s nssf_ue_t;
 
 typedef struct nssf_event_s {
-    int id;
-    int timer_id;
-
-    struct {
-        ogs_sbi_request_t *request;
-        ogs_sbi_response_t *response;
-        void *data;
-
-        ogs_sbi_message_t *message;
-    } sbi;
-
-    ogs_timer_t *timer;
+    ogs_event_t h;
 } nssf_event_t;
 
-void nssf_event_init(void);
-void nssf_event_final(void);
-
-nssf_event_t *nssf_event_new(nssf_event_e id);
-void nssf_event_free(nssf_event_t *e);
+nssf_event_t *nssf_event_new(int id);
 
 const char *nssf_event_get_name(nssf_event_t *e);
 

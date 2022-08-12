@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -30,16 +30,6 @@ void af_state_initial(ogs_fsm_t *s, af_event_t *e);
 void af_state_final(ogs_fsm_t *s, af_event_t *e);
 void af_state_operational(ogs_fsm_t *s, af_event_t *e);
 void af_state_exception(ogs_fsm_t *s, af_event_t *e);
-
-void af_nf_fsm_init(ogs_sbi_nf_instance_t *nf_instance);
-void af_nf_fsm_fini(ogs_sbi_nf_instance_t *nf_instance);
-
-void af_nf_state_initial(ogs_fsm_t *s, af_event_t *e);
-void af_nf_state_final(ogs_fsm_t *s, af_event_t *e);
-void af_nf_state_will_register(ogs_fsm_t *s, af_event_t *e);
-void af_nf_state_registered(ogs_fsm_t *s, af_event_t *e);
-void af_nf_state_de_registered(ogs_fsm_t *s, af_event_t *e);
-void af_nf_state_exception(ogs_fsm_t *s, af_event_t *e);
 
 #define af_sm_debug(__pe) \
     ogs_debug("%s(): %s", __func__, af_event_get_name(__pe))

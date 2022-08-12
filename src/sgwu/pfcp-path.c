@@ -34,8 +34,7 @@ static void pfcp_node_fsm_init(ogs_pfcp_node_t *node, bool try_to_assoicate)
         ogs_assert(node->t_association);
     }
 
-    ogs_fsm_create(&node->sm, sgwu_pfcp_state_initial, sgwu_pfcp_state_final);
-    ogs_fsm_init(&node->sm, &e);
+    ogs_fsm_init(&node->sm, sgwu_pfcp_state_initial, sgwu_pfcp_state_final, &e);
 }
 
 static void pfcp_node_fsm_fini(ogs_pfcp_node_t *node)
@@ -48,7 +47,6 @@ static void pfcp_node_fsm_fini(ogs_pfcp_node_t *node)
     e.pfcp_node = node;
 
     ogs_fsm_fini(&node->sm, &e);
-    ogs_fsm_delete(&node->sm);
 
     if (node->t_association)
         ogs_timer_delete(node->t_association);

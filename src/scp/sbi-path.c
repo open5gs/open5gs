@@ -29,6 +29,17 @@ int scp_sbi_open(void)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
 
+    /* To be notified when NF Instances registered/deregistered in NRF
+     * or when their profile is modified */
+    ogs_sbi_add_to_be_notified_nf_type(OpenAPI_nf_type_AMF);
+    ogs_sbi_add_to_be_notified_nf_type(OpenAPI_nf_type_AUSF);
+    ogs_sbi_add_to_be_notified_nf_type(OpenAPI_nf_type_BSF);
+    ogs_sbi_add_to_be_notified_nf_type(OpenAPI_nf_type_NSSF);
+    ogs_sbi_add_to_be_notified_nf_type(OpenAPI_nf_type_PCF);
+    ogs_sbi_add_to_be_notified_nf_type(OpenAPI_nf_type_SMF);
+    ogs_sbi_add_to_be_notified_nf_type(OpenAPI_nf_type_UDM);
+    ogs_sbi_add_to_be_notified_nf_type(OpenAPI_nf_type_UDR);
+
     /* Add SELF NF instance */
     nf_instance = ogs_sbi_self()->nf_instance;
     ogs_assert(nf_instance);
@@ -59,15 +70,8 @@ int scp_sbi_open(void)
 
         /* NFRegister is sent and the response is received
          * by the above client callback. */
-        scp_nf_fsm_init(nf_instance);
+        ogs_sbi_nf_fsm_init(nf_instance);
     }
-
-    /* Timer expiration handler of client wait timer */
-    ogs_sbi_self()->client_wait_expire = scp_timer_sbi_client_wait_expire;
-
-    /* NF register state in NF state machine */
-    ogs_sbi_self()->nf_state_registered =
-        (ogs_fsm_handler_t)scp_nf_state_registered;
 
     if (ogs_sbi_server_start_all(request_handler) != OGS_OK)
         return OGS_ERROR;
@@ -259,17 +263,17 @@ static int request_handler(ogs_sbi_request_t *source, void *data)
     } else if (headers.discovery) {
         scp_event_t *e = NULL;
 
-        e = scp_event_new(SCP_EVT_SBI_SERVER);
+        e = scp_event_new(OGS_EVENT_SBI_SERVER);
         ogs_assert(e);
 
-        e->sbi.request = source;
-        e->sbi.data = stream;
+        e->h.sbi.request = source;
+        e->h.sbi.data = stream;
 
         rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
             ogs_error("ogs_queue_push() failed:%d", (int)rv);
             ogs_sbi_request_free(source);
-            scp_event_free(e);
+            ogs_event_free(e);
             return OGS_ERROR;
         }
     } else {
@@ -279,17 +283,17 @@ static int request_handler(ogs_sbi_request_t *source, void *data)
         ogs_assert(source);
         ogs_assert(data);
 
-        e = scp_event_new(SCP_EVT_SBI_SERVER);
+        e = scp_event_new(OGS_EVENT_SBI_SERVER);
         ogs_assert(e);
 
-        e->sbi.request = source;
-        e->sbi.data = data;
+        e->h.sbi.request = source;
+        e->h.sbi.data = data;
 
         rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
             ogs_error("ogs_queue_push() failed:%d", (int)rv);
             ogs_sbi_request_free(source);
-            scp_event_free(e);
+            ogs_event_free(e);
             return OGS_ERROR;
         }
     }
@@ -344,16 +348,16 @@ static int client_cb(int status, ogs_sbi_response_t *response, void *data)
 
     ogs_assert(response);
 
-    e = scp_event_new(SCP_EVT_SBI_CLIENT);
+    e = scp_event_new(OGS_EVENT_SBI_CLIENT);
     ogs_assert(e);
-    e->sbi.response = response;
-    e->sbi.data = data;
+    e->h.sbi.response = response;
+    e->h.sbi.data = data;
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_error("ogs_queue_push() failed:%d", (int)rv);
         ogs_sbi_response_free(response);
-        scp_event_free(e);
+        ogs_event_free(e);
         return OGS_ERROR;
     }
 

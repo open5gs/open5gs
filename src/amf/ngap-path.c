@@ -104,7 +104,7 @@ int ngap_delayed_send_to_ran_ue(
     if (duration) {
         amf_event_t *e = NULL;
 
-        e = amf_event_new(AMF_EVT_NGAP_TIMER);
+        e = amf_event_new(AMF_EVENT_NGAP_TIMER);
         ogs_assert(e);
         e->timer = ogs_timer_add(
                 ogs_app()->timer_mgr, amf_timer_ng_delayed_send, e);
@@ -132,7 +132,7 @@ int ngap_send_to_5gsm(amf_ue_t *amf_ue, ogs_pkbuf_t *esmbuf)
     ogs_assert(amf_ue);
     ogs_assert(esmbuf);
 
-    e = amf_event_new(AMF_EVT_5GSM_MESSAGE);
+    e = amf_event_new(AMF_EVENT_5GSM_MESSAGE);
     ogs_assert(e);
     e->amf_ue = amf_ue;
     e->pkbuf = esmbuf;
@@ -140,7 +140,7 @@ int ngap_send_to_5gsm(amf_ue_t *amf_ue, ogs_pkbuf_t *esmbuf)
     if (rv != OGS_OK) {
         ogs_error("ogs_queue_push() failed:%d", (int)rv);
         ogs_pkbuf_free(e->pkbuf);
-        amf_event_free(e);
+        ogs_event_free(e);
     }
 
     return rv;
@@ -212,7 +212,7 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
     if (h->extended_protocol_discriminator ==
             OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM) {
         int rv;
-        e = amf_event_new(AMF_EVT_5GMM_MESSAGE);
+        e = amf_event_new(AMF_EVENT_5GMM_MESSAGE);
         if (!e) {
             ogs_error("ngap_send_to_nas() failed");
             ogs_pkbuf_free(nasbuf);
@@ -226,7 +226,7 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
         if (rv != OGS_OK) {
             ogs_error("ngap_send_to_nas() failed:%d", (int)rv);
             ogs_pkbuf_free(e->pkbuf);
-            amf_event_free(e);
+            ogs_event_free(e);
         }
         return rv;
     } else if (h->extended_protocol_discriminator ==

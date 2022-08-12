@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -20,49 +20,17 @@
 #ifndef UDR_EVENT_H
 #define UDR_EVENT_H
 
-#include "ogs-core.h"
+#include "ogs-proto.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct ogs_sbi_request_s ogs_sbi_request_t;
-typedef struct ogs_sbi_response_s ogs_sbi_response_t;
-typedef struct ogs_sbi_message_s ogs_sbi_message_t;
-typedef struct ogs_sbi_nf_instance_s ogs_sbi_nf_instance_t;
-typedef struct ogs_sbi_subscription_s ogs_sbi_subscription_t;
-
-typedef enum {
-    UDR_EVT_BASE = OGS_FSM_USER_SIG,
-
-    UDR_EVT_SBI_SERVER,
-    UDR_EVT_SBI_CLIENT,
-    UDR_EVT_SBI_TIMER,
-
-    UDR_EVT_TOP,
-
-} udr_event_e;
-
 typedef struct udr_event_s {
-    int id;
-    int timer_id;
-
-    struct {
-        ogs_sbi_request_t *request;
-        ogs_sbi_response_t *response;
-        void *data;
-
-        ogs_sbi_message_t *message;
-    } sbi;
-
-    ogs_timer_t *timer;
+    ogs_event_t h;
 } udr_event_t;
 
-void udr_event_init(void);
-void udr_event_final(void);
-
-udr_event_t *udr_event_new(udr_event_e id);
-void udr_event_free(udr_event_t *e);
+udr_event_t *udr_event_new(int id);
 
 const char *udr_event_get_name(udr_event_t *e);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ogs-core.h"
+#include "ogs-proto.h"
 
 #define PLMN_ID_DIGIT1(x) (((x) / 100) % 10)
 #define PLMN_ID_DIGIT2(x) (((x) / 10) % 10)

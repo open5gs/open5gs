@@ -94,7 +94,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
     case OGS_FSM_EXIT_SIG:
         break;
 
-    case MME_EVT_S1AP_LO_ACCEPT:
+    case MME_EVENT_S1AP_LO_ACCEPT:
         sock = e->sock;
         ogs_assert(sock);
         addr = e->addr;
@@ -120,7 +120,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
         break;
 
-    case MME_EVT_S1AP_LO_SCTP_COMM_UP:
+    case MME_EVENT_S1AP_LO_SCTP_COMM_UP:
         sock = e->sock;
         ogs_assert(sock);
         addr = e->addr;
@@ -150,7 +150,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
         break;
 
-    case MME_EVT_S1AP_LO_CONNREFUSED:
+    case MME_EVENT_S1AP_LO_CONNREFUSED:
         sock = e->sock;
         ogs_assert(sock);
         addr = e->addr;
@@ -172,7 +172,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_free(addr);
 
         break;
-    case MME_EVT_S1AP_MESSAGE:
+    case MME_EVENT_S1AP_MESSAGE:
         sock = e->sock;
         ogs_assert(sock);
         addr = e->addr;
@@ -206,7 +206,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_pkbuf_free(pkbuf);
         break;
 
-    case MME_EVT_S1AP_TIMER:
+    case MME_EVENT_S1AP_TIMER:
         enb_ue = e->enb_ue;
         ogs_assert(enb_ue);
 
@@ -233,7 +233,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         }
         break;
 
-    case MME_EVT_EMM_MESSAGE:
+    case MME_EVENT_EMM_MESSAGE:
         enb_ue = e->enb_ue;
         ogs_assert(enb_ue);
         pkbuf = e->pkbuf;
@@ -309,7 +309,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
         ogs_pkbuf_free(pkbuf);
         break;
-    case MME_EVT_EMM_TIMER:
+    case MME_EVENT_EMM_TIMER:
         mme_ue = e->mme_ue;
         ogs_assert(mme_ue);
         ogs_assert(OGS_FSM_STATE(&mme_ue->sm));
@@ -317,7 +317,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_fsm_dispatch(&mme_ue->sm, e);
         break;
 
-    case MME_EVT_ESM_MESSAGE:
+    case MME_EVENT_ESM_MESSAGE:
         mme_ue = e->mme_ue;
         ogs_assert(mme_ue);
 
@@ -376,7 +376,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_pkbuf_free(pkbuf);
         break;
 
-    case MME_EVT_ESM_TIMER:
+    case MME_EVENT_ESM_TIMER:
         bearer = e->bearer;
         ogs_assert(bearer);
         ogs_assert(OGS_FSM_STATE(&bearer->sm));
@@ -384,7 +384,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_fsm_dispatch(&bearer->sm, e);
         break;
 
-    case MME_EVT_S6A_MESSAGE:
+    case MME_EVENT_S6A_MESSAGE:
         mme_ue = e->mme_ue;
         ogs_assert(mme_ue);
         s6a_message = e->s6a_message;
@@ -442,7 +442,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_free(s6a_message);
         break;
 
-    case MME_EVT_S11_MESSAGE:
+    case MME_EVENT_S11_MESSAGE:
         pkbuf = e->pkbuf;
         ogs_assert(pkbuf);
 
@@ -570,7 +570,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_pkbuf_free(pkbuf);
         break;
 
-    case MME_EVT_S11_TIMER:
+    case MME_EVENT_S11_TIMER:
         sgw_ue = e->sgw_ue;
         ogs_assert(sgw_ue);
         mme_ue = sgw_ue->mme_ue;
@@ -601,7 +601,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         break;
 
 
-    case MME_EVT_SGSAP_LO_SCTP_COMM_UP:
+    case MME_EVENT_SGSAP_LO_SCTP_COMM_UP:
         sock = e->sock;
         ogs_assert(sock);
         addr = e->addr;
@@ -628,7 +628,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_fsm_dispatch(&vlr->sm, e);
         break;
 
-    case MME_EVT_SGSAP_LO_CONNREFUSED:
+    case MME_EVENT_SGSAP_LO_CONNREFUSED:
         sock = e->sock;
         ogs_assert(sock);
         addr = e->addr;
@@ -656,7 +656,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         }
 
         break;
-    case MME_EVT_SGSAP_MESSAGE:
+    case MME_EVENT_SGSAP_MESSAGE:
         sock = e->sock;
         ogs_assert(sock);
         addr = e->addr;
@@ -679,7 +679,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_pkbuf_free(pkbuf);
         break;
 
-    case MME_EVT_SGSAP_TIMER:
+    case MME_EVENT_SGSAP_TIMER:
         vlr = e->vlr;
         ogs_assert(vlr);
         ogs_assert(OGS_FSM_STATE(&vlr->sm));

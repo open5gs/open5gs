@@ -28,6 +28,7 @@ libsbi_sources = files('''
 
     yuarel.c
     conv.c
+    timer.c
     message.c
 
     mhd-server.c
@@ -39,8 +40,9 @@ libsbi_sources = files('''
 
     nnrf-build.c
     nnrf-handler.c
-
+    
     path.c
+    nf-sm.c
 '''.split())
 
 libsbi_inc = include_directories('.')
@@ -57,8 +59,7 @@ libsbi = library('ogssbi',
     version : libogslib_version,
     c_args : sbi_cc_flags,
     include_directories : [libsbi_inc, libinc],
-    dependencies : [libcore_dep,
-                    libcrypt_dep,
+    dependencies : [libcrypt_dep,
                     libapp_dep,
                     libsbi_openapi_dep,
                     libgnutls_dep,
@@ -71,8 +72,7 @@ libsbi = library('ogssbi',
 libsbi_dep = declare_dependency(
     link_with : libsbi,
     include_directories : [libsbi_inc, libinc],
-    dependencies : [libcore_dep,
-                    libcrypt_dep,
+    dependencies : [libcrypt_dep,
                     libapp_dep,
                     libsbi_openapi_dep,
                     libgnutls_dep,

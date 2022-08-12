@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -53,17 +53,17 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
 
     ogs_assert(s);
 
-    switch (e->id) {
+    switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
         break;
 
     case OGS_FSM_EXIT_SIG:
         break;
 
-    case AUSF_EVT_SBI_SERVER:
-        request = e->sbi.request;
+    case OGS_EVENT_SBI_SERVER:
+        request = e->h.sbi.request;
         ogs_assert(request);
-        stream = e->sbi.data;
+        stream = e->h.sbi.data;
         ogs_assert(stream);
 
         rv = ogs_sbi_parse_request(&message, request);
@@ -94,7 +94,7 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_NF_STATUS_NOTIFY)
                 SWITCH(message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
-                    ausf_nnrf_handle_nf_status_notify(stream, &message);
+                    ogs_nnrf_handle_nf_status_notify(stream, &message);
                     break;
 
                 DEFAULT
@@ -154,7 +154,7 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
             ogs_assert(OGS_FSM_STATE(&ausf_ue->sm));
 
             e->ausf_ue = ausf_ue;
-            e->sbi.message = &message;
+            e->h.sbi.message = &message;
             ogs_fsm_dispatch(&ausf_ue->sm, e);
             if (OGS_FSM_CHECK(&ausf_ue->sm, ausf_ue_state_exception)) {
                 ogs_error("[%s] State machine exception", ausf_ue->suci);
@@ -174,10 +174,10 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
         ogs_sbi_message_free(&message);
         break;
 
-    case AUSF_EVT_SBI_CLIENT:
+    case OGS_EVENT_SBI_CLIENT:
         ogs_assert(e);
 
-        response = e->sbi.response;
+        response = e->h.sbi.response;
         ogs_assert(response);
         rv = ogs_sbi_parse_response(&message, response);
         if (rv != OGS_OK) {
@@ -199,23 +199,23 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
 
             SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
-                nf_instance = e->sbi.data;
+                nf_instance = e->h.sbi.data;
                 ogs_assert(nf_instance);
                 ogs_assert(OGS_FSM_STATE(&nf_instance->sm));
 
-                e->sbi.message = &message;
+                e->h.sbi.message = &message;
                 ogs_fsm_dispatch(&nf_instance->sm, e);
                 break;
 
             CASE(OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS)
-                subscription = e->sbi.data;
+                subscription = e->h.sbi.data;
                 ogs_assert(subscription);
 
                 SWITCH(message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
                     if (message.res_status == OGS_SBI_HTTP_STATUS_CREATED ||
                         message.res_status == OGS_SBI_HTTP_STATUS_OK) {
-                        ausf_nnrf_handle_nf_status_subscribe(
+                        ogs_nnrf_handle_nf_status_subscribe(
                                 subscription, &message);
                     } else {
                         ogs_error("[%s] HTTP response error [%d]",
@@ -250,7 +250,7 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NNRF_DISC)
             SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
-                sbi_xact = e->sbi.data;
+                sbi_xact = e->h.sbi.data;
                 ogs_assert(sbi_xact);
 
                 SWITCH(message.h.method)
@@ -276,7 +276,7 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
             break;
 
         CASE(OGS_SBI_SERVICE_NAME_NUDM_UEAU)
-            sbi_xact = e->sbi.data;
+            sbi_xact = e->h.sbi.data;
             ogs_assert(sbi_xact);
 
             sbi_xact = ogs_sbi_xact_cycle(sbi_xact);
@@ -290,7 +290,7 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
             ausf_ue = (ausf_ue_t *)sbi_xact->sbi_object;
             ogs_assert(ausf_ue);
 
-            e->sbi.data = sbi_xact->assoc_stream;
+            e->h.sbi.data = sbi_xact->assoc_stream;
 
             ogs_sbi_xact_remove(sbi_xact);
 
@@ -301,7 +301,7 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
             }
 
             e->ausf_ue = ausf_ue;
-            e->sbi.message = &message;
+            e->h.sbi.message = &message;
 
             ogs_fsm_dispatch(&ausf_ue->sm, e);
             if (OGS_FSM_CHECK(&ausf_ue->sm, ausf_ue_state_exception)) {
@@ -319,27 +319,27 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
         ogs_sbi_response_free(response);
         break;
 
-    case AUSF_EVT_SBI_TIMER:
+    case OGS_EVENT_SBI_TIMER:
         ogs_assert(e);
 
-        switch(e->timer_id) {
-        case AUSF_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL:
-        case AUSF_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL:
-        case AUSF_TIMER_NF_INSTANCE_NO_HEARTBEAT:
-        case AUSF_TIMER_NF_INSTANCE_VALIDITY:
-            nf_instance = e->sbi.data;
+        switch(e->h.timer_id) {
+        case OGS_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL:
+        case OGS_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL:
+        case OGS_TIMER_NF_INSTANCE_NO_HEARTBEAT:
+        case OGS_TIMER_NF_INSTANCE_VALIDITY:
+            nf_instance = e->h.sbi.data;
             ogs_assert(nf_instance);
             ogs_assert(OGS_FSM_STATE(&nf_instance->sm));
 
             ogs_fsm_dispatch(&nf_instance->sm, e);
-            if (OGS_FSM_CHECK(&nf_instance->sm, ausf_nf_state_exception))
+            if (OGS_FSM_CHECK(&nf_instance->sm, ogs_sbi_nf_state_exception))
                 ogs_error("[%s:%s] State machine exception [%d]",
                         OpenAPI_nf_type_ToString(nf_instance->nf_type),
-                        nf_instance->id, e->timer_id);
+                        nf_instance->id, e->h.timer_id);
             break;
 
-        case AUSF_TIMER_SUBSCRIPTION_VALIDITY:
-            subscription = e->sbi.data;
+        case OGS_TIMER_SUBSCRIPTION_VALIDITY:
+            subscription = e->h.sbi.data;
             ogs_assert(subscription);
 
             ogs_assert(ogs_sbi_self()->nf_instance);
@@ -353,8 +353,8 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
             ogs_sbi_subscription_remove(subscription);
             break;
 
-        case AUSF_TIMER_SBI_CLIENT_WAIT:
-            sbi_xact = e->sbi.data;
+        case OGS_TIMER_SBI_CLIENT_WAIT:
+            sbi_xact = e->h.sbi.data;
             ogs_assert(sbi_xact);
 
             stream = sbi_xact->assoc_stream;
@@ -370,7 +370,7 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
             break;
         default:
             ogs_error("Unknown timer[%s:%d]",
-                    ausf_timer_get_name(e->timer_id), e->timer_id);
+                    ogs_timer_get_name(e->h.timer_id), e->h.timer_id);
         }
         break;
 

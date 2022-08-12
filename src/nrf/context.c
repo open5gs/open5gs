@@ -47,7 +47,7 @@ void nrf_context_final(void)
 
     ogs_list_for_each_safe(
             &ogs_sbi_self()->nf_instance_list, next_nf_instance, nf_instance)
-        nrf_nf_fsm_fini(nf_instance);
+        if (OGS_FSM_STATE(&nf_instance->sm)) nrf_nf_fsm_fini(nf_instance);
 
     context_initialized = 0;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -54,17 +54,17 @@ void nssf_state_operational(ogs_fsm_t *s, nssf_event_t *e)
 
     ogs_assert(s);
 
-    switch (e->id) {
+    switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
         break;
 
     case OGS_FSM_EXIT_SIG:
         break;
 
-    case NSSF_EVT_SBI_SERVER:
-        request = e->sbi.request;
+    case OGS_EVENT_SBI_SERVER:
+        request = e->h.sbi.request;
         ogs_assert(request);
-        stream = e->sbi.data;
+        stream = e->h.sbi.data;
         ogs_assert(stream);
 
         rv = ogs_sbi_parse_request(&message, request);
@@ -138,10 +138,10 @@ void nssf_state_operational(ogs_fsm_t *s, nssf_event_t *e)
         ogs_sbi_message_free(&message);
         break;
 
-    case NSSF_EVT_SBI_CLIENT:
+    case OGS_EVENT_SBI_CLIENT:
         ogs_assert(e);
 
-        response = e->sbi.response;
+        response = e->h.sbi.response;
         ogs_assert(response);
         rv = ogs_sbi_parse_response(&message, response);
         if (rv != OGS_OK) {
@@ -163,23 +163,23 @@ void nssf_state_operational(ogs_fsm_t *s, nssf_event_t *e)
 
             SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
-                nf_instance = e->sbi.data;
+                nf_instance = e->h.sbi.data;
                 ogs_assert(nf_instance);
                 ogs_assert(OGS_FSM_STATE(&nf_instance->sm));
 
-                e->sbi.message = &message;
+                e->h.sbi.message = &message;
                 ogs_fsm_dispatch(&nf_instance->sm, e);
                 break;
 
             CASE(OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS)
-                subscription = e->sbi.data;
+                subscription = e->h.sbi.data;
                 ogs_assert(subscription);
 
                 SWITCH(message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
                     if (message.res_status == OGS_SBI_HTTP_STATUS_CREATED ||
                         message.res_status == OGS_SBI_HTTP_STATUS_OK) {
-                        nssf_nnrf_handle_nf_status_subscribe(
+                        ogs_nnrf_handle_nf_status_subscribe(
                                 subscription, &message);
                     } else {
                         ogs_error("[%s] HTTP response error [%d]",
@@ -220,27 +220,27 @@ void nssf_state_operational(ogs_fsm_t *s, nssf_event_t *e)
         ogs_sbi_response_free(response);
         break;
 
-    case NSSF_EVT_SBI_TIMER:
+    case OGS_EVENT_SBI_TIMER:
         ogs_assert(e);
 
-        switch(e->timer_id) {
-        case NSSF_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL:
-        case NSSF_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL:
-        case NSSF_TIMER_NF_INSTANCE_NO_HEARTBEAT:
-        case NSSF_TIMER_NF_INSTANCE_VALIDITY:
-            nf_instance = e->sbi.data;
+        switch(e->h.timer_id) {
+        case OGS_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL:
+        case OGS_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL:
+        case OGS_TIMER_NF_INSTANCE_NO_HEARTBEAT:
+        case OGS_TIMER_NF_INSTANCE_VALIDITY:
+            nf_instance = e->h.sbi.data;
             ogs_assert(nf_instance);
             ogs_assert(OGS_FSM_STATE(&nf_instance->sm));
 
             ogs_fsm_dispatch(&nf_instance->sm, e);
-            if (OGS_FSM_CHECK(&nf_instance->sm, nssf_nf_state_exception))
+            if (OGS_FSM_CHECK(&nf_instance->sm, ogs_sbi_nf_state_exception))
                 ogs_error("[%s:%s] State machine exception [%d]",
                         OpenAPI_nf_type_ToString(nf_instance->nf_type),
-                        nf_instance->id, e->timer_id);
+                        nf_instance->id, e->h.timer_id);
             break;
 
-        case NSSF_TIMER_SUBSCRIPTION_VALIDITY:
-            subscription = e->sbi.data;
+        case OGS_TIMER_SUBSCRIPTION_VALIDITY:
+            subscription = e->h.sbi.data;
             ogs_assert(subscription);
 
             ogs_assert(ogs_sbi_self()->nf_instance);
@@ -256,7 +256,7 @@ void nssf_state_operational(ogs_fsm_t *s, nssf_event_t *e)
 
         default:
             ogs_error("Unknown timer[%s:%d]",
-                    nssf_timer_get_name(e->timer_id), e->timer_id);
+                    ogs_timer_get_name(e->h.timer_id), e->h.timer_id);
         }
         break;
 

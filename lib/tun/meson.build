@@ -36,10 +36,10 @@ libtun = library('ogstun',
     version : libogslib_version,
     c_args : '-DOGS_TUN_COMPILATION',
     include_directories : [libtun_inc, libinc],
-    dependencies : [libcore_dep, libipfw_dep],
+    dependencies : libipfw_dep,
     install : true)
 
 libtun_dep = declare_dependency(
     link_with : libtun,
     include_directories : [libtun_inc, libinc],
-    dependencies : [libcore_dep, libipfw_dep])
+    dependencies : libipfw_dep)

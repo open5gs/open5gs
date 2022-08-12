@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -66,17 +66,17 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
     ausf_ue = e->ausf_ue;
     ogs_assert(ausf_ue);
 
-    switch (e->id) {
+    switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
         break;
 
     case OGS_FSM_EXIT_SIG:
         break;
 
-    case AUSF_EVT_SBI_SERVER:
-        message = e->sbi.message;
+    case OGS_EVENT_SBI_SERVER:
+        message = e->h.sbi.message;
         ogs_assert(message);
-        stream = e->sbi.data;
+        stream = e->h.sbi.data;
         ogs_assert(stream);
 
         SWITCH(message->h.method)
@@ -109,13 +109,13 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
 
         break;
 
-    case AUSF_EVT_SBI_CLIENT:
-        message = e->sbi.message;
+    case OGS_EVENT_SBI_CLIENT:
+        message = e->h.sbi.message;
         ogs_assert(message);
 
         ausf_ue = e->ausf_ue;
         ogs_assert(ausf_ue);
-        stream = e->sbi.data;
+        stream = e->h.sbi.data;
         ogs_assert(stream);
 
         SWITCH(message->h.service.name)
@@ -178,7 +178,7 @@ void ausf_ue_state_exception(ogs_fsm_t *s, ausf_event_t *e)
     ausf_ue = e->ausf_ue;
     ogs_assert(ausf_ue);
 
-    switch (e->id) {
+    switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
         break;
 

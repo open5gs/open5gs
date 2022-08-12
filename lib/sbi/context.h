@@ -65,11 +65,12 @@ typedef struct ogs_sbi_context_s {
 
     const char *content_encoding;
 
-    void (*client_wait_expire)(void *data);
-    ogs_fsm_handler_t nf_state_registered;
-
     int num_of_service_name;
     const char *service_name[OGS_MAX_NUM_OF_NF_SERVICE];
+
+#define OGS_SBI_MAX_NUM_OF_NF_TYPE 16
+    int num_of_to_be_notified_nf_type;
+    OpenAPI_nf_type_e to_be_notified_nf_type[OGS_SBI_MAX_NUM_OF_NF_TYPE];
 } ogs_sbi_context_t;
 
 typedef struct ogs_sbi_nf_instance_s {
@@ -87,14 +88,14 @@ typedef struct ogs_sbi_nf_instance_s {
     ogs_timer_t *t_no_heartbeat;            /* check heartbeat */
     ogs_timer_t *t_validity;                /* check validation */
 
-#define NF_INSTANCE_IS_SELF(_iD) \
+#define NF_INSTANCE_ID_IS_SELF(_iD) \
     (_iD) && ogs_sbi_self()->nf_instance && \
         strcmp((_iD), ogs_sbi_self()->nf_instance->id) == 0
-#define NF_INSTANCE_IS_OTHERS(_iD) \
+#define NF_INSTANCE_ID_IS_OTHERS(_iD) \
     (_iD) && ogs_sbi_self()->nf_instance && \
         strcmp((_iD), ogs_sbi_self()->nf_instance->id) != 0
 
-#define NF_INSTANCE_IS_NRF(__nFInstance) \
+#define NF_INSTANCE_TYPE_IS_NRF(__nFInstance) \
     ((__nFInstance->nf_type) == OpenAPI_nf_type_NRF)
 
     char *id;                               /* NFInstanceId */
@@ -110,9 +111,8 @@ typedef struct ogs_sbi_nf_instance_s {
     int num_of_ipv6;
     ogs_sockaddr_t *ipv6[OGS_SBI_MAX_NUM_OF_IP_ADDRESS];
 
-#define OGS_SBI_MAX_NUM_OF_NF_TYPE 16
     int num_of_allowed_nf_type;
-    OpenAPI_nf_type_e allowed_nf_types[OGS_SBI_MAX_NUM_OF_NF_TYPE];
+    OpenAPI_nf_type_e allowed_nf_type[OGS_SBI_MAX_NUM_OF_NF_TYPE];
 
 #define OGS_SBI_DEFAULT_PRIORITY 0
 #define OGS_SBI_DEFAULT_CAPACITY 100
@@ -188,7 +188,7 @@ typedef struct ogs_sbi_nf_service_s {
         char *in_uri;
         char *full;
         char *expiry;
-    } versions[OGS_SBI_MAX_NUM_OF_SERVICE_VERSION];
+    } version[OGS_SBI_MAX_NUM_OF_SERVICE_VERSION];
 
     char *fqdn;
     int num_of_addr;
@@ -273,6 +273,8 @@ ogs_sbi_context_t *ogs_sbi_self(void);
 int ogs_sbi_context_parse_config(
         const char *local, const char *nrf, const char *scp);
 
+void ogs_sbi_add_to_be_notified_nf_type(OpenAPI_nf_type_e nf_type);
+
 bool ogs_sbi_nf_service_is_available(const char *name);
 
 ogs_sbi_nf_instance_t *ogs_sbi_scp_instance(void);
@@ -320,7 +322,7 @@ ogs_sbi_nf_service_t *ogs_sbi_nf_service_build_default(
 ogs_sbi_client_t *ogs_sbi_client_find_by_service_name(
         ogs_sbi_nf_instance_t *nf_instance, char *name, char *version);
 
-bool ogs_sbi_client_associate(ogs_sbi_nf_instance_t *nf_instance);
+void ogs_sbi_client_associate(ogs_sbi_nf_instance_t *nf_instance);
 
 OpenAPI_uri_scheme_e ogs_sbi_default_uri_scheme(void);
 
@@ -341,10 +343,8 @@ OpenAPI_uri_scheme_e ogs_sbi_default_uri_scheme(void);
                     OGS_SBI_NF_INSTANCE((__sBIObject), (__nFType))); \
         } \
         \
-        (__nFInstance)->reference_count++; \
+        OGS_OBJECT_REF(__nFInstance); \
         OGS_SBI_NF_INSTANCE((__sBIObject), (__nFType)) = (__nFInstance); \
-        ogs_trace("nf_instance->reference_count = %d", \
-                (__nFInstance)->reference_count); \
     } while(0)
 
 bool ogs_sbi_discovery_param_is_matched(

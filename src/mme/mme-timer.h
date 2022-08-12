@@ -49,6 +49,7 @@ typedef enum {
 } mme_timer_e;
 
 typedef struct mme_timer_cfg_s {
+    bool have;
     int max_count;
     ogs_time_t duration;
 } mme_timer_cfg_t;

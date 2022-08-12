@@ -210,6 +210,14 @@ static ogs_inline ogs_uint24_t ogs_htobe24(ogs_uint24_t x)
 
 #define ogs_uint64_to_uint32(x) ((x >= 0xffffffffUL) ? 0xffffffffU : x)
 
+#define OGS_OBJECT_REF(__oBJ) \
+    ((__oBJ)->reference_count)++, \
+    ogs_debug("[REF] %d", ((__oBJ)->reference_count))
+#define OGS_OBJECT_UNREF(__oBJ) \
+    ogs_debug("[UNREF] %d", ((__oBJ)->reference_count)), \
+    ((__oBJ)->reference_count)--
+#define OGS_OBJECT_IS_REF(__oBJ) ((__oBJ)->reference_count > 1)
+
 #ifdef __cplusplus
 }
 #endif

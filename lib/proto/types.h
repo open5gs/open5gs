@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,12 +17,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined(OGS_CORE_INSIDE) && !defined(OGS_CORE_COMPILATION)
+#if !defined(OGS_PROTO_INSIDE) && !defined(OGS_PROTO_COMPILATION)
 #error "This header cannot be included directly."
 #endif
 
-#ifndef OGS_3GPP_TYPES_H
-#define OGS_3GPP_TYPES_H
+#ifndef OGS_PROTO_TYPES_H
+#define OGS_PROTO_TYPES_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -106,8 +106,6 @@ extern "C" {
 #define OGS_ACCESS_TYPE_BOTH_3GPP_AND_NON_3GPP 3
 
 #define OGS_MAX_QOS_FLOW_ID             63
-
-#define OGS_DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS 30
 
 /************************************
  * PLMN_ID Structure                */
@@ -778,4 +776,4 @@ int ogs_pcc_rule_update_qos_from_media(
 }
 #endif
 
-#endif /* OGS_3GPP_TYPES_H */
+#endif /* OGS_PROTO_TYPES_H */

@@ -126,7 +126,7 @@ static void recv_handler(ogs_sock_t *sock)
                 ogs_assert(addr);
                 memcpy(addr, &from, sizeof(ogs_sockaddr_t));
 
-                sgsap_event_push(MME_EVT_SGSAP_LO_SCTP_COMM_UP,
+                sgsap_event_push(MME_EVENT_SGSAP_LO_SCTP_COMM_UP,
                         sock, addr, NULL,
                         not->sn_assoc_change.sac_inbound_streams,
                         not->sn_assoc_change.sac_outbound_streams);
@@ -142,7 +142,7 @@ static void recv_handler(ogs_sock_t *sock)
                 ogs_assert(addr);
                 memcpy(addr, &from, sizeof(ogs_sockaddr_t));
 
-                sgsap_event_push(MME_EVT_SGSAP_LO_CONNREFUSED,
+                sgsap_event_push(MME_EVENT_SGSAP_LO_CONNREFUSED,
                         sock, addr, NULL, 0, 0);
             }
             break;
@@ -170,7 +170,7 @@ static void recv_handler(ogs_sock_t *sock)
             ogs_assert(addr);
             memcpy(addr, &from, sizeof(ogs_sockaddr_t));
 
-            sgsap_event_push(MME_EVT_SGSAP_LO_CONNREFUSED,
+            sgsap_event_push(MME_EVENT_SGSAP_LO_CONNREFUSED,
                     sock, addr, NULL, 0, 0);
             break;
         case SCTP_PEER_ADDR_CHANGE:
@@ -197,7 +197,7 @@ static void recv_handler(ogs_sock_t *sock)
         ogs_assert(addr);
         memcpy(addr, &from, sizeof(ogs_sockaddr_t));
 
-        sgsap_event_push(MME_EVT_SGSAP_MESSAGE, sock, addr, pkbuf, 0, 0);
+        sgsap_event_push(MME_EVENT_SGSAP_MESSAGE, sock, addr, pkbuf, 0, 0);
         return;
     } else {
         ogs_fatal("Invalid flag(0x%x)", flags);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -20,7 +20,7 @@
 #ifndef UDR_SBI_PATH_H
 #define UDR_SBI_PATH_H
 
-#include "nnrf-build.h"
+#include "context.h"
 
 #ifdef __cplusplus
 extern "C" {

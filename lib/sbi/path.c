@@ -124,8 +124,7 @@ bool ogs_sbi_discover_and_send(
     return false;
 }
 
-bool ogs_nnrf_nfm_send_nf_register(
-        ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_request_t *(*build)(void))
+bool ogs_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance)
 {
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_client_t *client = NULL;
@@ -133,9 +132,8 @@ bool ogs_nnrf_nfm_send_nf_register(
     ogs_assert(nf_instance);
     client = nf_instance->client;
     ogs_assert(client);
-    ogs_assert(build);
 
-    request = (*build)();
+    request = ogs_nnrf_nfm_build_register();
     ogs_expect_or_return_val(request, false);
 
     return ogs_sbi_scp_send_request(client, client->cb, request, nf_instance);

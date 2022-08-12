@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -20,51 +20,20 @@
 #ifndef BSF_EVENT_H
 #define BSF_EVENT_H
 
-#include "ogs-core.h"
+#include "ogs-proto.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 typedef struct bsf_sess_s bsf_sess_t;
-typedef struct ogs_sbi_request_s ogs_sbi_request_t;
-typedef struct ogs_sbi_response_s ogs_sbi_response_t;
-typedef struct ogs_sbi_message_s ogs_sbi_message_t;
-typedef struct ogs_sbi_subscription_s ogs_sbi_subscription_t;
-
-typedef enum {
-    BSF_EVT_BASE = OGS_FSM_USER_SIG,
-
-    BSF_EVT_SBI_SERVER,
-    BSF_EVT_SBI_CLIENT,
-    BSF_EVT_SBI_TIMER,
-
-    BSF_EVT_TOP,
-
-} bsf_event_e;
 
 typedef struct bsf_event_s {
-    int id;
-    ogs_pkbuf_t *pkbuf;
-    int timer_id;
-
-    struct {
-        ogs_sbi_request_t *request;
-        ogs_sbi_response_t *response;
-        void *data;
-        int state;
-
-        ogs_sbi_message_t *message;
-    } sbi;
-
+    ogs_event_t h;
     bsf_sess_t *sess;
 } bsf_event_t;
 
-void bsf_event_init(void);
-void bsf_event_final(void);
-
-bsf_event_t *bsf_event_new(bsf_event_e id);
-void bsf_event_free(bsf_event_t *e);
+bsf_event_t *bsf_event_new(int id);
 
 const char *bsf_event_get_name(bsf_event_t *e);
 

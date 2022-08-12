@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -30,17 +30,17 @@ static int server_cb(ogs_sbi_request_t *request, void *data)
     ogs_assert(request);
     ogs_assert(data);
 
-    e = amf_event_new(AMF_EVT_SBI_SERVER);
+    e = amf_event_new(OGS_EVENT_SBI_SERVER);
     ogs_assert(e);
 
-    e->sbi.request = request;
-    e->sbi.data = data;
+    e->h.sbi.request = request;
+    e->h.sbi.data = data;
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_error("ogs_queue_push() failed:%d", (int)rv);
         ogs_sbi_request_free(request);
-        amf_event_free(e);
+        ogs_event_free(e);
         return OGS_ERROR;
     }
 
@@ -61,16 +61,16 @@ static int client_cb(int status, ogs_sbi_response_t *response, void *data)
 
     ogs_assert(response);
 
-    e = amf_event_new(AMF_EVT_SBI_CLIENT);
+    e = amf_event_new(OGS_EVENT_SBI_CLIENT);
     ogs_assert(e);
-    e->sbi.response = response;
-    e->sbi.data = data;
+    e->h.sbi.response = response;
+    e->h.sbi.data = data;
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_error("ogs_queue_push() failed:%d", (int)rv);
         ogs_sbi_response_free(response);
-        amf_event_free(e);
+        ogs_event_free(e);
         return OGS_ERROR;
     }
 
@@ -81,6 +81,14 @@ int amf_sbi_open(void)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_nf_service_t *service = NULL;
+
+    /* To be notified when NF Instances registered/deregistered in NRF
+     * or when their profile is modified */
+    ogs_sbi_add_to_be_notified_nf_type(OpenAPI_nf_type_AUSF);
+    ogs_sbi_add_to_be_notified_nf_type(OpenAPI_nf_type_UDM);
+    ogs_sbi_add_to_be_notified_nf_type(OpenAPI_nf_type_PCF);
+    ogs_sbi_add_to_be_notified_nf_type(OpenAPI_nf_type_SMF);
+    ogs_sbi_add_to_be_notified_nf_type(OpenAPI_nf_type_NSSF);
 
     /* Add SELF NF instance */
     nf_instance = ogs_sbi_self()->nf_instance;
@@ -123,15 +131,8 @@ int amf_sbi_open(void)
 
         /* NFRegister is sent and the response is received
          * by the above client callback. */
-        amf_nf_fsm_init(nf_instance);
+        ogs_sbi_nf_fsm_init(nf_instance);
     }
-
-    /* Timer expiration handler of client wait timer */
-    ogs_sbi_self()->client_wait_expire = amf_timer_sbi_client_wait_expire;
-
-    /* NF register state in NF state machine */
-    ogs_sbi_self()->nf_state_registered =
-        (ogs_fsm_handler_t)amf_nf_state_registered;
 
     if (ogs_sbi_server_start_all(server_cb) != OGS_OK)
         return OGS_ERROR;
@@ -332,7 +333,7 @@ static int client_discover_cb(
         goto cleanup;
     }
 
-    amf_nnrf_handle_nf_discover_search_result(
+    ogs_nnrf_handle_nf_discover_search_result(
             &sess->sbi, OpenAPI_nf_type_SMF, NULL, message.SearchResult);
 
     amf_sbi_select_nf(&sess->sbi, OpenAPI_nf_type_SMF, NULL);

@@ -67,7 +67,7 @@ void s1ap_state_operational(ogs_fsm_t *s, mme_event_t *e)
         break;
     case OGS_FSM_EXIT_SIG:
         break;
-    case MME_EVT_S1AP_MESSAGE:
+    case MME_EVENT_S1AP_MESSAGE:
         pdu = e->s1ap_message;
         ogs_assert(pdu);
 

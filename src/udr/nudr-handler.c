@@ -18,7 +18,6 @@
  */
 
 #include "sbi-path.h"
-#include "nnrf-handler.h"
 #include "nudr-handler.h"
 
 bool udr_nudr_dr_handle_subscription_authentication(

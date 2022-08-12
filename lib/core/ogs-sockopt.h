@@ -35,6 +35,7 @@ typedef struct ogs_sockopt_s {
         uint32_t srto_initial;
         uint32_t srto_min;
         uint32_t srto_max;
+#define OGS_DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS 30
         uint16_t sinit_num_ostreams;
         uint16_t sinit_max_instreams;
         uint16_t sinit_max_attempts;

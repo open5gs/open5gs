@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -29,16 +29,6 @@ extern "C" {
 void pcf_state_initial(ogs_fsm_t *s, pcf_event_t *e);
 void pcf_state_final(ogs_fsm_t *s, pcf_event_t *e);
 void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e);
-
-void pcf_nf_fsm_init(ogs_sbi_nf_instance_t *nf_instance);
-void pcf_nf_fsm_fini(ogs_sbi_nf_instance_t *nf_instance);
-
-void pcf_nf_state_initial(ogs_fsm_t *s, pcf_event_t *e);
-void pcf_nf_state_final(ogs_fsm_t *s, pcf_event_t *e);
-void pcf_nf_state_will_register(ogs_fsm_t *s, pcf_event_t *e);
-void pcf_nf_state_registered(ogs_fsm_t *s, pcf_event_t *e);
-void pcf_nf_state_de_registered(ogs_fsm_t *s, pcf_event_t *e);
-void pcf_nf_state_exception(ogs_fsm_t *s, pcf_event_t *e);
 
 void pcf_am_state_initial(ogs_fsm_t *s, pcf_event_t *e);
 void pcf_am_state_final(ogs_fsm_t *s, pcf_event_t *e);

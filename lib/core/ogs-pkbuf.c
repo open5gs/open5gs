@@ -245,7 +245,7 @@ ogs_pkbuf_t *ogs_pkbuf_alloc_debug(
     }
     memset(pkbuf, 0, sizeof(*pkbuf));
 
-    cluster->ref++;
+    OGS_OBJECT_REF(cluster);
 
     pkbuf->cluster = cluster;
 
@@ -283,8 +283,9 @@ void ogs_pkbuf_free(ogs_pkbuf_t *pkbuf)
     cluster = pkbuf->cluster;
     ogs_assert(cluster);
 
-    cluster->ref--;
-    if (cluster->ref == 0)
+    if (OGS_OBJECT_IS_REF(cluster))
+        OGS_OBJECT_UNREF(cluster);
+    else
         cluster_free(pool, pkbuf->cluster);
 
     ogs_pool_free(&pool->pkbuf, pkbuf);
@@ -337,7 +338,7 @@ ogs_pkbuf_t *ogs_pkbuf_copy_debug(ogs_pkbuf_t *pkbuf, const char *file_line)
     ogs_assert(newbuf);
     memcpy(newbuf, pkbuf, sizeof *pkbuf);
 
-    newbuf->cluster->ref++;
+    OGS_OBJECT_REF(newbuf->cluster);
 
     ogs_thread_mutex_unlock(&pool->mutex);
 #endif

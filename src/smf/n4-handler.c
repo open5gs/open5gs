@@ -18,7 +18,6 @@
  */
 
 #include "context.h"
-#include "timer.h"
 #include "s5c-build.h"
 #include "pfcp-path.h"
 #include "gtp-path.h"

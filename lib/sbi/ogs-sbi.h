@@ -20,7 +20,7 @@
 #ifndef OGS_SBI_H
 #define OGS_SBI_H
 
-#include "ogs-core.h"
+#include "ogs-proto.h"
 
 #if defined(__GNUC__)
 #pragma GCC diagnostic push
@@ -86,11 +86,14 @@
 #define OGS_SBI_INSIDE
 
 #include "sbi/conv.h"
+#include "sbi/timer.h"
 #include "sbi/message.h"
 
 #include "sbi/server.h"
 #include "sbi/client.h"
 #include "sbi/context.h"
+
+#include "sbi/nf-sm.h"
 
 #include "sbi/nnrf-build.h"
 #include "sbi/nnrf-handler.h"

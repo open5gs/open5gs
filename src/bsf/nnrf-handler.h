@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -25,14 +25,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-void bsf_nnrf_handle_nf_register(
-        ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_message_t *recvmsg);
-void bsf_nnrf_handle_nf_status_subscribe(
-        ogs_sbi_subscription_t *subscription, ogs_sbi_message_t *recvmsg);
-
-bool bsf_nnrf_handle_nf_status_notify(
-        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 
 void bsf_nnrf_handle_nf_discover(
         ogs_sbi_xact_t *xact, ogs_sbi_message_t *recvmsg);

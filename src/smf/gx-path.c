@@ -1008,7 +1008,7 @@ out:
             ogs_error("ogs_queue_push() failed:%d", (int)rv);
             ogs_session_data_free(&gx_message->session_data);
             ogs_free(gx_message);
-            smf_event_free(e);
+            ogs_event_free(e);
         } else {
             ogs_pollset_notify(ogs_app()->pollset);
         }
@@ -1251,7 +1251,7 @@ static int smf_gx_rar_cb( struct msg **msg, struct avp *avp,
         ogs_error("ogs_queue_push() failed:%d", (int)rv);
         ogs_session_data_free(&gx_message->session_data);
         ogs_free(gx_message);
-        smf_event_free(e);
+        ogs_event_free(e);
     } else {
         ogs_pollset_notify(ogs_app()->pollset);
     }

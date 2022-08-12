@@ -19,16 +19,6 @@
 
 #include "context.h"
 
-static nrf_timer_cfg_t g_nrf_timer_cfg[MAX_NUM_OF_NRF_TIMER] = {
-    /* Nothing */
-};
-
-nrf_timer_cfg_t *nrf_timer_cfg(nrf_timer_e id)
-{
-    ogs_assert(id < MAX_NUM_OF_NRF_TIMER);
-    return &g_nrf_timer_cfg[id];
-}
-
 const char *nrf_timer_get_name(nrf_timer_e id)
 {
     switch (id) {
@@ -81,9 +71,4 @@ void nrf_timer_nf_instance_no_heartbeat(void *data)
 void nrf_timer_subscription_validity(void *data)
 {
     timer_send_event(NRF_TIMER_SUBSCRIPTION_VALIDITY, data);
-}
-
-void nrf_timer_sbi_client_wait_expire(void *data)
-{
-    timer_send_event(NRF_TIMER_SBI_CLIENT_WAIT, data);
 }

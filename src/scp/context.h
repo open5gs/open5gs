@@ -23,7 +23,6 @@
 #include "ogs-sbi.h"
 #include "ogs-app.h"
 
-#include "timer.h"
 #include "scp-sm.h"
 
 #ifdef __cplusplus
@@ -38,22 +37,6 @@ extern int __scp_log_domain;
 typedef struct scp_context_s {
     ogs_list_t          conn_list;
 } scp_context_t;
-
-#define SCP_NF_INSTANCE_CLEAR(_cAUSE, _nFInstance) \
-    do { \
-        ogs_assert(_nFInstance); \
-        if ((_nFInstance)->reference_count == 1) { \
-            ogs_info("[%s] (%s) NF removed", (_nFInstance)->id, (_cAUSE)); \
-            scp_nf_fsm_fini((_nFInstance)); \
-            ogs_sbi_nf_instance_remove(_nFInstance); \
-        } else { \
-            /* There is an assocation with other context */ \
-            ogs_info("[%s:%d] (%s) NF suspended", \
-                    _nFInstance->id, _nFInstance->reference_count, (_cAUSE)); \
-            OGS_FSM_TRAN(&_nFInstance->sm, scp_nf_state_de_registered); \
-            ogs_fsm_dispatch(&_nFInstance->sm, NULL); \
-        } \
-    } while(0)
 
 typedef struct scp_conn_s scp_conn_t;
 

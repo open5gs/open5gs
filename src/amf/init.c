@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -33,7 +33,6 @@ int amf_initialize()
     ogs_sbi_context_init();
 
     amf_context_init();
-    amf_event_init();
 
     rv = ogs_sbi_context_parse_config("amf", "nrf", "scp");
     if (rv != OGS_OK) return rv;
@@ -76,7 +75,7 @@ static void event_termination(void)
 
     /* Sending NF Instance De-registeration to NRF */
     ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance)
-        amf_nf_fsm_fini(nf_instance);
+        ogs_sbi_nf_fsm_fini(nf_instance);
 
     /* Starting holding timer */
     t_termination_holding = ogs_timer_add(ogs_app()->timer_mgr, NULL, NULL);
@@ -105,8 +104,6 @@ void amf_terminate(void)
     amf_context_final();
     ogs_sbi_context_final();
     ogs_metrics_context_final();
-
-    amf_event_final(); /* Destroy event */
 }
 
 static void amf_main(void *data)
@@ -114,8 +111,7 @@ static void amf_main(void *data)
     ogs_fsm_t amf_sm;
     int rv;
 
-    ogs_fsm_create(&amf_sm, amf_state_initial, amf_state_final);
-    ogs_fsm_init(&amf_sm, 0);
+    ogs_fsm_init(&amf_sm, amf_state_initial, amf_state_final, 0);
 
     for ( ;; ) {
         ogs_pollset_poll(ogs_app()->pollset,
@@ -148,11 +144,10 @@ static void amf_main(void *data)
 
             ogs_assert(e);
             ogs_fsm_dispatch(&amf_sm, e);
-            amf_event_free(e);
+            ogs_event_free(e);
         }
     }
 done:
 
     ogs_fsm_fini(&amf_sm, 0);
-    ogs_fsm_delete(&amf_sm);
 }

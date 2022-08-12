@@ -191,7 +191,8 @@ static ogs_gtp_xact_t *ogs_gtp_xact_remote_create(ogs_gtp_node_t *gnode, uint8_t
 
     xact->gtp_version = gtp_version;
     xact->org = OGS_GTP_REMOTE_ORIGINATOR;
-    xact->xid = (gtp_version == 1) ? OGS_GTP1_SQN_TO_XID(sqn) : OGS_GTP2_SQN_TO_XID(sqn);
+    xact->xid = (gtp_version == 1) ?
+            OGS_GTP1_SQN_TO_XID(sqn) : OGS_GTP2_SQN_TO_XID(sqn);
     xact->gnode = gnode;
 
     xact->tm_response = ogs_timer_add(

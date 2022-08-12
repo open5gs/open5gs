@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -19,54 +19,37 @@
 
 #include "context.h"
 
-static OGS_POOL(pool, af_event_t);
-
-void af_event_init(void)
-{
-    ogs_pool_init(&pool, ogs_app()->pool.event);
-}
-
-void af_event_final(void)
-{
-    ogs_pool_final(&pool);
-}
-
-af_event_t *af_event_new(af_event_e id)
+af_event_t *af_event_new(int id)
 {
     af_event_t *e = NULL;
 
-    ogs_pool_alloc(&pool, &e);
+    e = ogs_event_size(id, sizeof(af_event_t));
     ogs_assert(e);
-    memset(e, 0, sizeof(*e));
 
-    e->id = id;
+    e->h.id = id;
 
     return e;
 }
 
-void af_event_free(af_event_t *e)
-{
-    ogs_assert(e);
-    ogs_pool_free(&pool, e);
-}
-
 const char *af_event_get_name(af_event_t *e)
 {
-    if (e == NULL)
+    if (e == NULL) {
         return OGS_FSM_NAME_INIT_SIG;
+    }
 
-    switch (e->id) {
+    switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG: 
         return OGS_FSM_NAME_ENTRY_SIG;
     case OGS_FSM_EXIT_SIG: 
         return OGS_FSM_NAME_EXIT_SIG;
 
-    case AF_EVT_SBI_SERVER:
-        return "AF_EVT_SBI_SERVER";
-    case AF_EVT_SBI_CLIENT:
-        return "AF_EVT_SBI_CLIENT";
-    case AF_EVT_SBI_TIMER:
-        return "AF_EVT_SBI_TIMER";
+    case OGS_EVENT_SBI_SERVER:
+        return OGS_EVENT_NAME_SBI_SERVER;
+    case OGS_EVENT_SBI_CLIENT:
+        return OGS_EVENT_NAME_SBI_CLIENT;
+    case OGS_EVENT_SBI_TIMER:
+        return OGS_EVENT_NAME_SBI_TIMER;
+
     case AF_EVT_SBI_LOCAL:
         return "AF_EVT_SBI_LOCAL";
 
@@ -74,5 +57,6 @@ const char *af_event_get_name(af_event_t *e)
        break;
     }
 
+    ogs_error("Unknown Event[%d]", e->h.id);
     return "UNKNOWN_EVENT";
 }

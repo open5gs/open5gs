@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -20,24 +20,17 @@
 #ifndef AF_EVENT_H
 #define AF_EVENT_H
 
-#include "ogs-core.h"
+#include "ogs-proto.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 typedef struct af_sess_s af_sess_t;
-typedef struct ogs_sbi_request_s ogs_sbi_request_t;
-typedef struct ogs_sbi_response_s ogs_sbi_response_t;
-typedef struct ogs_sbi_message_s ogs_sbi_message_t;
-typedef struct ogs_sbi_subscription_s ogs_sbi_subscription_t;
 
 typedef enum {
-    AF_EVT_BASE = OGS_FSM_USER_SIG,
+    AF_EVT_BASE = OGS_MAX_NUM_OF_PROTO_EVENT,
 
-    AF_EVT_SBI_SERVER,
-    AF_EVT_SBI_CLIENT,
-    AF_EVT_SBI_TIMER,
     AF_EVT_SBI_LOCAL,
 
     AF_EVT_TOP,
@@ -45,10 +38,10 @@ typedef enum {
 } af_event_e;
 
 typedef struct af_event_s {
-    int id;
-    ogs_pkbuf_t *pkbuf;
-    int timer_id;
+    ogs_event_t h;
     int local_id;
+
+    ogs_pkbuf_t *pkbuf;
 
     struct {
         OpenAPI_nf_type_e target_nf_type;
@@ -56,23 +49,10 @@ typedef struct af_event_s {
         ogs_sbi_request_t *(*build)(af_sess_t *sess, void *data);
     } local;
 
-    struct {
-        ogs_sbi_request_t *request;
-        ogs_sbi_response_t *response;
-        void *data;
-        int state;
-
-        ogs_sbi_message_t *message;
-    } sbi;
-
     af_sess_t *sess;
 } af_event_t;
 
-void af_event_init(void);
-void af_event_final(void);
-
-af_event_t *af_event_new(af_event_e id);
-void af_event_free(af_event_t *e);
+af_event_t *af_event_new(int id);
 
 const char *af_event_get_name(af_event_t *e);
 

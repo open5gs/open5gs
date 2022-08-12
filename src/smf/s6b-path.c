@@ -714,7 +714,7 @@ static void smf_s6b_sta_cb(void *data, struct msg **msg)
         if (rv != OGS_OK) {
             ogs_error("ogs_queue_push() failed:%d", (int)rv);
             ogs_free(s6b_message);
-            smf_event_free(e);
+            ogs_event_free(e);
         } else {
             ogs_pollset_notify(ogs_app()->pollset);
         }
