@@ -314,6 +314,18 @@ uint8_t smf_gn_handle_delete_pdp_context_request(
         return OGS_GTP1_CAUSE_NO_RESOURCES_AVAILABLE;
     }
 
+    /* PCO */
+    if (req->protocol_configuration_options.presence) {
+        OGS_TLV_STORE_DATA(&sess->gtp.ue_pco,
+                &req->protocol_configuration_options);
+    } else {
+        /*
+         * Clear contents to reflect whether PCO IE was included or not as part
+         * of Delete PDP context request
+         */
+        OGS_TLV_CLEAR_DATA(&sess->gtp.ue_pco);
+    }
+
     ogs_debug("    SGW_S5C_TEID[0x%x] SMF_N4_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->smf_n4_teid);
     return OGS_GTP1_CAUSE_REQUEST_ACCEPTED;
@@ -460,6 +472,12 @@ void smf_gn_handle_update_pdp_context_request(
     if (req->protocol_configuration_options.presence) {
         OGS_TLV_STORE_DATA(&sess->gtp.ue_pco,
                 &req->protocol_configuration_options);
+    } else {
+        /*
+         * Clear contents to reflect whether PCO IE was included or not as part
+         * of Update PDP context request
+         */
+        OGS_TLV_CLEAR_DATA(&sess->gtp.ue_pco);
     }
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
