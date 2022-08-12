@@ -76,7 +76,8 @@ bool ogs_pfcp_cp_handle_association_setup_request(
         if (req->up_function_features.data && req->up_function_features.len) {
             node->up_function_features_len = req->up_function_features.len;
             memcpy(&node->up_function_features, req->up_function_features.data,
-                node->up_function_features_len);
+                    ogs_min(sizeof(node->up_function_features),
+                            node->up_function_features_len));
         }
     }
 
@@ -122,7 +123,8 @@ bool ogs_pfcp_cp_handle_association_setup_response(
         if (rsp->up_function_features.data && rsp->up_function_features.len) {
             node->up_function_features_len = rsp->up_function_features.len;
             memcpy(&node->up_function_features, rsp->up_function_features.data,
-                node->up_function_features_len);
+                    ogs_min(sizeof(node->up_function_features),
+                            node->up_function_features_len));
         }
     }
 
@@ -250,11 +252,13 @@ bool ogs_pfcp_up_handle_error_indication(
     if (len == OGS_IPV4_LEN) {
         report->error_indication.remote_f_teid.ipv4 = 1;
         memcpy(&report->error_indication.remote_f_teid.addr,
-                far->hash.f_teid.key.addr, len);
+            far->hash.f_teid.key.addr,
+            ogs_min(sizeof(report->error_indication.remote_f_teid.addr), len));
     } else if (len == OGS_IPV6_LEN) {
         report->error_indication.remote_f_teid.ipv6 = 1;
         memcpy(report->error_indication.remote_f_teid.addr6,
-                far->hash.f_teid.key.addr, len);
+            far->hash.f_teid.key.addr,
+            ogs_min(sizeof(report->error_indication.remote_f_teid.addr6), len));
     } else {
         ogs_error("Invalid Length [%d]", len);
         return false;
@@ -315,7 +319,7 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
         ogs_pfcp_f_teid_t f_teid;
 
         memcpy(&f_teid, message->pdi.local_f_teid.data,
-                message->pdi.local_f_teid.len);
+                ogs_min(sizeof(f_teid), message->pdi.local_f_teid.len));
         if (f_teid.ipv4 == 0 && f_teid.ipv6 == 0) {
             ogs_error("One of the IPv4 and IPv6 flags should be 1 "
                         "in the local F-TEID");
@@ -365,8 +369,8 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
 
         if (oppsite_direction_rule) {
             /* Copy oppsite direction rule and Swap */
-            memcpy(&rule->ipfw,
-                    &oppsite_direction_rule->ipfw, sizeof(rule->ipfw));
+            memcpy(&rule->ipfw, &oppsite_direction_rule->ipfw,
+                    sizeof(rule->ipfw));
             ogs_ipfw_rule_swap(&rule->ipfw);
         }
 
@@ -450,7 +454,8 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
 
     if (message->pdi.local_f_teid.presence) {
         pdr->f_teid_len = message->pdi.local_f_teid.len;
-        memcpy(&pdr->f_teid, message->pdi.local_f_teid.data, pdr->f_teid_len);
+        memcpy(&pdr->f_teid, message->pdi.local_f_teid.data,
+                ogs_min(sizeof(pdr->f_teid), pdr->f_teid_len));
         ogs_assert(pdr->f_teid.ipv4 || pdr->f_teid.ipv6);
         pdr->f_teid.teid = be32toh(pdr->f_teid.teid);
     }
@@ -466,8 +471,8 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
 
     if (message->pdi.ue_ip_address.presence) {
         pdr->ue_ip_addr_len = message->pdi.ue_ip_address.len;
-        memcpy(&pdr->ue_ip_addr,
-                message->pdi.ue_ip_address.data, pdr->ue_ip_addr_len);
+        memcpy(&pdr->ue_ip_addr, message->pdi.ue_ip_address.data,
+                ogs_min(sizeof(pdr->ue_ip_addr), pdr->ue_ip_addr_len));
     }
 
     memset(&pdr->outer_header_removal, 0, sizeof(pdr->outer_header_removal));
@@ -476,7 +481,8 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
     if (message->outer_header_removal.presence) {
         pdr->outer_header_removal_len = message->outer_header_removal.len;
         memcpy(&pdr->outer_header_removal, message->outer_header_removal.data,
-                pdr->outer_header_removal_len);
+                ogs_min(sizeof(pdr->outer_header_removal),
+                        pdr->outer_header_removal_len));
     }
 
     pdr->far = NULL;
@@ -539,7 +545,8 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_created_pdr(ogs_pfcp_sess_t *sess,
     if (message->local_f_teid.presence) {
         ogs_pfcp_f_teid_t f_teid;
 
-        memcpy(&f_teid, message->local_f_teid.data, message->local_f_teid.len);
+        memcpy(&f_teid, message->local_f_teid.data,
+                ogs_min(sizeof(f_teid), message->local_f_teid.len));
         if (f_teid.ipv4 == 0 && f_teid.ipv6 == 0) {
             ogs_error("One of the IPv4 and IPv6 flags should be 1 "
                         "in the local F-TEID");
@@ -550,7 +557,8 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_created_pdr(ogs_pfcp_sess_t *sess,
         }
 
         pdr->f_teid_len = message->local_f_teid.len;
-        memcpy(&pdr->f_teid, message->local_f_teid.data, pdr->f_teid_len);
+        memcpy(&pdr->f_teid, message->local_f_teid.data,
+                ogs_min(sizeof(pdr->f_teid), pdr->f_teid_len));
         ogs_assert(pdr->f_teid.ipv4 || pdr->f_teid.ipv6);
         pdr->f_teid.teid = be32toh(pdr->f_teid.teid);
     }
@@ -599,7 +607,7 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_update_pdr(ogs_pfcp_sess_t *sess,
             ogs_pfcp_f_teid_t f_teid;
 
             memcpy(&f_teid, message->pdi.local_f_teid.data,
-                    message->pdi.local_f_teid.len);
+                    ogs_min(sizeof(f_teid), message->pdi.local_f_teid.len));
             if (f_teid.ipv4 == 0 && f_teid.ipv6 == 0) {
                 ogs_error("One of the IPv4 and IPv6 flags should be 1 "
                             "in the local F-TEID");
@@ -649,8 +657,8 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_update_pdr(ogs_pfcp_sess_t *sess,
 
             if (oppsite_direction_rule) {
                 /* Copy oppsite direction rule and Swap */
-                memcpy(&rule->ipfw,
-                        &oppsite_direction_rule->ipfw, sizeof(rule->ipfw));
+                memcpy(&rule->ipfw, &oppsite_direction_rule->ipfw,
+                        sizeof(rule->ipfw));
                 ogs_ipfw_rule_swap(&rule->ipfw);
             }
 
@@ -725,8 +733,8 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_update_pdr(ogs_pfcp_sess_t *sess,
 
         if (message->pdi.local_f_teid.presence) {
             pdr->f_teid_len = message->pdi.local_f_teid.len;
-            memcpy(&pdr->f_teid,
-                    message->pdi.local_f_teid.data, pdr->f_teid_len);
+            memcpy(&pdr->f_teid, message->pdi.local_f_teid.data,
+                    ogs_min(sizeof(pdr->f_teid), pdr->f_teid_len));
             pdr->f_teid.teid = be32toh(pdr->f_teid.teid);
         }
 
@@ -838,8 +846,9 @@ ogs_pfcp_far_t *ogs_pfcp_handle_create_far(ogs_pfcp_sess_t *sess,
             ogs_assert(outer_header_creation->data);
             ogs_assert(outer_header_creation->len);
 
-            memcpy(&far->outer_header_creation,
-                    outer_header_creation->data, outer_header_creation->len);
+            memcpy(&far->outer_header_creation, outer_header_creation->data,
+                    ogs_min(sizeof(far->outer_header_creation),
+                            outer_header_creation->len));
             far->outer_header_creation.teid =
                     be32toh(far->outer_header_creation.teid);
         }
@@ -945,8 +954,9 @@ ogs_pfcp_far_t *ogs_pfcp_handle_update_far(ogs_pfcp_sess_t *sess,
             ogs_assert(outer_header_creation->data);
             ogs_assert(outer_header_creation->len);
 
-            memcpy(&far->outer_header_creation,
-                    outer_header_creation->data, outer_header_creation->len);
+            memcpy(&far->outer_header_creation, outer_header_creation->data,
+                    ogs_min(sizeof(far->outer_header_creation),
+                            outer_header_creation->len));
             far->outer_header_creation.teid =
                     be32toh(far->outer_header_creation.teid);
         }
