@@ -118,8 +118,10 @@ ogs_sbi_client_t *ogs_sbi_client_add(ogs_sockaddr_t *addr)
     curl_multi_setopt(multi, CURLMOPT_SOCKETDATA, client);
     curl_multi_setopt(multi, CURLMOPT_TIMERFUNCTION, multi_timer_cb);
     curl_multi_setopt(multi, CURLMOPT_TIMERDATA, client);
+#ifdef CURLMOPT_MAX_CONCURRENT_STREAMS
     curl_multi_setopt(multi, CURLMOPT_MAX_CONCURRENT_STREAMS,
                         ogs_app()->pool.stream);
+#endif
 
     ogs_list_add(&ogs_sbi_self()->client_list, client);
 
