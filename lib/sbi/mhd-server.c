@@ -371,7 +371,12 @@ static bool server_send_rspmem_persistent(
             hi; hi = ogs_hash_next(hi)) {
         const char *key = ogs_hash_this_key(hi);
         char *val = ogs_hash_this_val(hi);
-        MHD_add_response_header(mhd_response, key, val);
+        ret = MHD_add_response_header(mhd_response, key, val);
+        if (ret != MHD_YES) {
+            ogs_error("MHD_add_response_header failed [%d]", ret);
+            MHD_destroy_response(mhd_response);
+            return false;
+        }
     }
 
     status = response->status;
@@ -386,7 +391,9 @@ static bool server_send_rspmem_persistent(
 
     ret = MHD_queue_response(connection, status, mhd_response);
     if (ret != MHD_YES) {
-        ogs_error("MHD_queue_response_error [%d]", ret);
+        ogs_error("MHD_queue_response failed [%d]", ret);
+        MHD_destroy_response(mhd_response);
+        ogs_pollset_remove(request->poll.write);
         return false;
     }
     MHD_destroy_response(mhd_response);
@@ -562,7 +569,7 @@ suspend:
 
     ogs_assert(server->cb);
     if (server->cb(request, sbi_sess) != OGS_OK) {
-        ogs_error("server callback error");
+        ogs_warn("server callback error");
         ogs_assert(true ==
                 ogs_sbi_server_send_error((ogs_sbi_stream_t *)sbi_sess,
                     OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, NULL,

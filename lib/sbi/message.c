@@ -722,7 +722,7 @@ int ogs_sbi_parse_header(ogs_sbi_message_t *message, ogs_sbi_header_t *header)
     ogs_assert(message);
     ogs_assert(header);
 
-    memset(message, 0, sizeof(*message));
+    memset(message, 0, sizeof(ogs_sbi_message_t));
 
     message->h.method = header->method;
     message->h.uri = header->uri;

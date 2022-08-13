@@ -196,8 +196,8 @@ static ogs_inline ogs_uint24_t ogs_htobe24(ogs_uint24_t x)
                               __switch_p__; \
                               __switch_p__ = 0, __switch_next__ = 1) { {
     #define CASE(X)            } if (!__switch_next__ || \
-                                     !(__switch_next__ = \
-                                         strcmp(__switch_p__, X))) {
+                                     (__switch_next__ = \
+                                         strcmp(__switch_p__, X)) == 0) {
     #define DEFAULT            } {
     #define END          }}}
 #endif

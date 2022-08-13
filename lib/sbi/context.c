@@ -693,12 +693,7 @@ int ogs_sbi_context_parse_config(
                             ogs_yaml_iter_key(&discovery_iter);
                         ogs_assert(discovery_key);
                         if (!strcmp(discovery_key, "delegated")) {
-                            yaml_node_t *discovery_node =
-                                yaml_document_get_node(document,
-                                        discovery_iter.pair->value);
-                            ogs_assert(discovery_node->type ==
-                                    YAML_SCALAR_NODE);
-                            const char* delegated =
+                            const char *delegated =
                                 ogs_yaml_iter_value(&discovery_iter);
                             if (!strcmp(delegated, "auto"))
                                 self.discovery_config.delegated =
@@ -713,8 +708,7 @@ int ogs_sbi_context_parse_config(
                                 ogs_warn("unknown 'delegated' value `%s`",
                                         delegated);
                         } else
-                            ogs_warn("unknown key `%s`",
-                                    discovery_key);
+                            ogs_warn("unknown key `%s`", discovery_key);
                     }
                 }
             }
@@ -732,7 +726,8 @@ void ogs_sbi_add_to_be_notified_nf_type(OpenAPI_nf_type_e nf_type)
     ogs_assert(nf_type);
 
     if (self.num_of_to_be_notified_nf_type < OGS_SBI_MAX_NUM_OF_NF_TYPE) {
-        self.to_be_notified_nf_type[self.num_of_to_be_notified_nf_type] = nf_type;
+        self.to_be_notified_nf_type[self.num_of_to_be_notified_nf_type] =
+            nf_type;
         self.num_of_to_be_notified_nf_type++;
     }
 }
