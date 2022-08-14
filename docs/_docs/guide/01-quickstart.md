@@ -379,8 +379,8 @@ To add subscriber information, you can do WebUI operations in the following orde
 
 Enter the subscriber details of your SIM cards using this tool, to save the subscriber profile in the HSS and UDR MongoDB database backend. If you are using test SIMs, the details are normally printed on the card.
 
-**Tip:** Subscribers added with this tool immediately register in the Open5GS HSS/ UDR without the need to restart any daemon.
-{: .notice--info}
+**Note:** Subscribers added with this tool immediately register in the Open5GS HSS/UDR without the need to restart any daemon. However, if you use the WebUI to change subscriber profile, you must restart the Open5GS AMF/MME daemon for the changes to take effect.
+{: .notice--warning}
 
 
 #### Adding a route for the UE to have WAN connectivity {#UEInternet}
