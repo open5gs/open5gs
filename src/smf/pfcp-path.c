@@ -460,6 +460,23 @@ int smf_epc_pfcp_send_session_establishment_request(
     return rv;
 }
 
+int smf_epc_pfcp_resend_established_sessions(ogs_pfcp_node_t *node)
+{
+    smf_ue_t *smf_ue = NULL;
+    smf_sess_t *sess = NULL;
+
+    ogs_pfcp_cp_send_session_set_deletion_request(node, NULL);
+
+    ogs_list_for_each(&smf_self()->smf_ue_list, smf_ue) {
+        ogs_list_for_each(&smf_ue->sess_list, sess) {
+            if (sess->pfcp_node == node) {
+                smf_epc_pfcp_send_session_establishment_request(sess, NULL);
+            }
+        }
+    }
+    return OGS_OK;    
+}
+
 int smf_epc_pfcp_send_all_pdr_modification_request(
         smf_sess_t *sess, void *gtp_xact, ogs_pkbuf_t *gtpbuf,
         uint64_t flags, uint8_t gtp_pti, uint8_t gtp_cause)

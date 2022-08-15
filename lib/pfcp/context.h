@@ -77,7 +77,6 @@ typedef struct ogs_pfcp_context_s {
         ogs_assert((__cTX)); \
         ogs_assert((__pNODE)); \
         (__cTX)->pfcp_node = __pNODE; \
-        ogs_list_add(&(__pNODE)->sess_list, (__cTX)); \
     } while(0)
 
 typedef struct ogs_pfcp_node_s {
@@ -109,7 +108,6 @@ typedef struct ogs_pfcp_node_s {
     /* flag to enable/ disable full list RR for this node */
     uint8_t         rr_enable;
 
-    ogs_list_t      sess_list;
     ogs_list_t      gtpu_resource_list; /* User Plane IP Resource Information */
 
     ogs_pfcp_up_function_features_t up_function_features;

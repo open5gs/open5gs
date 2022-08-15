@@ -263,6 +263,23 @@ int sgwc_pfcp_send_session_establishment_request(
     return rv;
 }
 
+int sgwc_pfcp_resend_established_sessions(ogs_pfcp_node_t *node)
+{
+    sgwc_ue_t *sgwc_ue = NULL;
+    sgwc_sess_t *sess = NULL;
+
+    ogs_pfcp_cp_send_session_set_deletion_request(node, NULL);
+
+    ogs_list_for_each(&sgwc_self()->sgw_ue_list, sgwc_ue) {
+        ogs_list_for_each(&sgwc_ue->sess_list, sess) {
+            if (sess->pfcp_node == node) {
+                sgwc_pfcp_send_session_establishment_request(sess, NULL, NULL);                
+            }
+        }
+    }
+    return OGS_OK;
+}
+
 int sgwc_pfcp_send_session_modification_request(
         sgwc_sess_t *sess, ogs_gtp_xact_t *gtp_xact,
         ogs_pkbuf_t *gtpbuf, uint64_t flags)

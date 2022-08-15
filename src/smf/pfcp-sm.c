@@ -131,19 +131,16 @@ void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e)
                     &message->pfcp_association_setup_request);
             OGS_FSM_TRAN(s, smf_pfcp_state_associated);
 
-            smf_sess_t *ps;
-            ogs_list_for_each(&node->sess_list, ps) {
-                smf_epc_pfcp_send_session_establishment_request(ps, NULL);
-            }
+            smf_epc_pfcp_resend_established_sessions(node);
+
             break;
         case OGS_PFCP_ASSOCIATION_SETUP_RESPONSE_TYPE:
             ogs_pfcp_cp_handle_association_setup_response(node, xact,
                     &message->pfcp_association_setup_response);
             OGS_FSM_TRAN(s, smf_pfcp_state_associated);
 
-            ogs_list_for_each(&node->sess_list, ps) {
-                smf_epc_pfcp_send_session_establishment_request(ps, NULL);
-            }
+            smf_epc_pfcp_resend_established_sessions(node);
+
             break;
         default:
             ogs_warn("cannot handle PFCP message type[%d]",
@@ -215,19 +212,16 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
             ogs_pfcp_cp_handle_association_setup_request(node, xact,
                     &message->pfcp_association_setup_request);
 
-            smf_sess_t *ps;
-            ogs_list_for_each(&node->sess_list, ps) {
-                smf_epc_pfcp_send_session_establishment_request(ps, NULL);
-            }
+            smf_epc_pfcp_resend_established_sessions(node);
+
             break;
         case OGS_PFCP_ASSOCIATION_SETUP_RESPONSE_TYPE:
             ogs_warn("PFCP[RSP] has already been associated");
             ogs_pfcp_cp_handle_association_setup_response(node, xact,
                     &message->pfcp_association_setup_response);
 
-            ogs_list_for_each(&node->sess_list, ps) {
-                smf_epc_pfcp_send_session_establishment_request(ps, NULL);
-            }
+            smf_epc_pfcp_resend_established_sessions(node);
+
             break;
         case OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE:
             if (!message->h.seid_presence)

@@ -48,6 +48,7 @@ int smf_5gc_pfcp_send_session_deletion_request(
 
 int smf_epc_pfcp_send_session_establishment_request(
         smf_sess_t *sess, void *gtp_xact);
+int smf_epc_pfcp_resend_established_sessions(ogs_pfcp_node_t *node);
 int smf_epc_pfcp_send_all_pdr_modification_request(
         smf_sess_t *sess, void *gtp_xact, ogs_pkbuf_t *gtpbuf,
         uint64_t flags, uint8_t gtp_pti, uint8_t gtp_cause);

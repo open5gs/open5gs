@@ -187,7 +187,6 @@ int upf_sess_remove(upf_sess_t *sess)
     upf_sess_urr_acc_remove_all(sess);
 
     ogs_list_remove(&self.sess_list, sess);
-    ogs_list_remove(&sess->pfcp_node->sess_list, sess);
     ogs_pfcp_sess_clear(&sess->pfcp);
 
     ogs_hash_set(self.seid_hash, &sess->smf_n4_f_seid.seid,
