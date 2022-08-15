@@ -165,6 +165,11 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 break;
             }
 
+            if(mme_ue->paging.type == MME_PAGING_TYPE_DETACH_TO_UE) {
+                mme_send_after_paging(mme_ue, false);
+                break;
+            }
+
             ogs_assert(OGS_OK ==
                 s1ap_send_initial_context_setup_request(mme_ue));
             OGS_FSM_TRAN(s, &emm_state_registered);
