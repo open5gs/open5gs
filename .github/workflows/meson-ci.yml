@@ -6,11 +6,6 @@ jobs:
     name: Build and Test on MacOS Latest
     runs-on: macos-latest
     steps:
-    - name: Install MongoDB with Package Manager
-      run: |
-          brew tap mongodb/brew
-          brew install mongodb-community
-          brew services start mongodb-community
     - name: Create the TUN device with the interface name `ogstun`.
       run: |
           sudo ifconfig lo0 alias 127.0.0.2 netmask 255.255.255.255
