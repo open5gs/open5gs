@@ -56,6 +56,7 @@ struct dict_object *ogs_diam_gx_3gpp_user_location_info = NULL;
 struct dict_object *ogs_diam_gx_called_station_id = NULL;
 struct dict_object *ogs_diam_gx_default_eps_bearer_qos = NULL;
 struct dict_object *ogs_diam_gx_3gpp_ms_timezone = NULL;
+struct dict_object *ogs_diam_gx_3gpp_charging_characteristics = NULL;
 struct dict_object *ogs_diam_gx_event_trigger = NULL;
 struct dict_object *ogs_diam_gx_bearer_control_mode = NULL;
 struct dict_object *ogs_diam_gx_charging_rule_install = NULL;
@@ -133,6 +134,7 @@ int ogs_diam_gx_init(void)
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Event-Trigger", &ogs_diam_gx_event_trigger);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Bearer-Control-Mode", &ogs_diam_gx_bearer_control_mode);
 
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "3GPP-Charging-Characteristics", &ogs_diam_gx_3gpp_charging_characteristics);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Charging-Rule-Install", &ogs_diam_gx_charging_rule_install);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Charging-Rule-Remove", &ogs_diam_gx_charging_rule_remove);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Charging-Rule-Definition", &ogs_diam_gx_charging_rule_definition);

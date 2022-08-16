@@ -86,6 +86,7 @@ extern struct dict_object *ogs_diam_gx_3gpp_user_location_info;
 extern struct dict_object *ogs_diam_gx_called_station_id;
 extern struct dict_object *ogs_diam_gx_default_eps_bearer_qos;
 extern struct dict_object *ogs_diam_gx_3gpp_ms_timezone;
+extern struct dict_object *ogs_diam_gx_3gpp_charging_characteristics;
 extern struct dict_object *ogs_diam_gx_event_trigger;
 extern struct dict_object *ogs_diam_gx_bearer_control_mode;
 extern struct dict_object *ogs_diam_gx_charging_rule_install;
