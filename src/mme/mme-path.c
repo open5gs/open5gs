@@ -28,34 +28,32 @@ void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
 {
     ogs_assert(mme_ue);
 
-    switch (mme_ue->nas_eps.type) {
-    case MME_EPS_TYPE_DETACH_REQUEST_FROM_UE:
-        if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
-            mme_gtp_send_delete_all_sessions(
-                    mme_ue, OGS_GTP_DELETE_SEND_DETACH_ACCEPT);
+    if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
+        mme_gtp_send_delete_all_sessions(mme_ue,
+                OGS_GTP_DELETE_SEND_DETACH_ACCEPT);
+    } else {
+        ogs_assert(OGS_OK ==
+            nas_eps_send_detach_accept(mme_ue));
+    }
+}
+
+void mme_send_delete_session_or_mme_ue_context_release_detach(mme_ue_t *mme_ue)
+{
+    ogs_assert(mme_ue);
+
+    if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
+        mme_gtp_send_delete_all_sessions(
+                mme_ue, OGS_GTP_DELETE_NO_ACTION);
+    } else {
+        enb_ue_t *enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+        if (enb_ue) {
+            ogs_assert(OGS_OK ==
+                s1ap_send_ue_context_release_command(enb_ue,
+                    S1AP_Cause_PR_nas, S1AP_CauseNas_detach,
+                    S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
         } else {
-            ogs_assert(OGS_OK == nas_eps_send_detach_accept(mme_ue));
+            ogs_warn("[%s] No S1 Context", mme_ue->imsi_bcd);
         }
-        break;
-    case MME_EPS_TYPE_DETACH_REQUEST_TO_UE:
-        if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
-            mme_gtp_send_delete_all_sessions(
-                    mme_ue, OGS_GTP_DELETE_SEND_S1_REMOVE_AND_UNLINK);
-        } else {
-            enb_ue_t *enb_ue = enb_ue_cycle(mme_ue->enb_ue);
-            if (enb_ue) {
-                ogs_assert(OGS_OK ==
-                    s1ap_send_ue_context_release_command(enb_ue,
-                        S1AP_Cause_PR_nas, S1AP_CauseNas_detach,
-                        S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0));
-            } else {
-                ogs_warn("[%s] No S1 Context", mme_ue->imsi_bcd);
-            }
-        }
-        break;
-    default:
-        ogs_fatal("    Invalid OGS_NAS_EPS TYPE[%d]", mme_ue->nas_eps.type);
-        ogs_assert_if_reached();
     }
 }
 
