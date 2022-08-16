@@ -538,6 +538,25 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
         }
     }
 
+    /* 3GPP-Charging-Characteristics, 3GPP TS 29.061 16.4.7.2 13 */
+    if (sess->gtp.charging_characteristics.presence &&
+		    sess->gtp.charging_characteristics.len > 0) {
+	    uint8_t oct1, oct2;
+	    char digits[5];
+	    ret = fd_msg_avp_new(ogs_diam_gx_3gpp_charging_characteristics, 0, &avp);
+	    ogs_assert(ret == 0);
+	    oct1 = ((uint8_t*)sess->gtp.charging_characteristics.data)[0];
+	    oct2 = (sess->gtp.charging_characteristics.len > 1) ?
+		    ((uint8_t*)sess->gtp.charging_characteristics.data)[1] : 0;
+	    snprintf(digits, sizeof(digits), "%02x%02x", oct1, oct2);
+	    val.os.data = (uint8_t*)&digits[0];
+	    val.os.len = 4;
+	    ret = fd_msg_avp_setvalue(avp, &val);
+	    ogs_assert(ret == 0);
+	    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+	    ogs_assert(ret == 0);
+    }
+
     /* Set Called-Station-Id */
     ret = fd_msg_avp_new(ogs_diam_gx_called_station_id, 0, &avp);
     ogs_assert(ret == 0);
