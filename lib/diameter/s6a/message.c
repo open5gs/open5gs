@@ -32,10 +32,13 @@ struct dict_object *ogs_diam_s6a_cmd_pur = NULL;
 struct dict_object *ogs_diam_s6a_cmd_pua = NULL;
 struct dict_object *ogs_diam_s6a_cmd_clr = NULL;
 struct dict_object *ogs_diam_s6a_cmd_cla = NULL;
+struct dict_object *ogs_diam_s6a_cmd_idr = NULL;
+struct dict_object *ogs_diam_s6a_cmd_ida = NULL;
 
 struct dict_object *ogs_diam_s6a_ulr_flags = NULL;
 struct dict_object *ogs_diam_s6a_ula_flags = NULL;
 struct dict_object *ogs_diam_s6a_clr_flags = NULL;
+struct dict_object *ogs_diam_s6a_idr_flags = NULL;
 struct dict_object *ogs_diam_s6a_cancellation_type = NULL;
 struct dict_object *ogs_diam_s6a_subscription_data = NULL;
 struct dict_object *ogs_diam_s6a_req_eutran_auth_info = NULL;
@@ -96,11 +99,14 @@ int ogs_diam_s6a_init(void)
     CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME, "Purge-UE-Request", &ogs_diam_s6a_cmd_pur);
     CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME, "Purge-UE-Answer", &ogs_diam_s6a_cmd_pua);
     CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME, "Cancel-Location-Request", &ogs_diam_s6a_cmd_clr);
-    CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME, "Cancel-Location-Answer", &ogs_diam_s6a_cmd_cla);    
+    CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME, "Cancel-Location-Answer", &ogs_diam_s6a_cmd_cla);
+    CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME, "Insert-Subscriber-Data-Request", &ogs_diam_s6a_cmd_idr);
+    CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME, "Insert-Subscriber-Data-Answer", &ogs_diam_s6a_cmd_ida);        
 
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "ULR-Flags", &ogs_diam_s6a_ulr_flags);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "ULA-Flags", &ogs_diam_s6a_ula_flags);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "CLR-Flags", &ogs_diam_s6a_clr_flags);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "IDR-Flags", &ogs_diam_s6a_idr_flags);    
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Cancellation-Type", &ogs_diam_s6a_cancellation_type);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "UE-SRVCC-Capability", &ogs_diam_s6a_ue_srvcc_capability);
 
