@@ -74,10 +74,11 @@ bool ogs_pfcp_cp_handle_association_setup_request(
 
     if (req->up_function_features.presence) {
         if (req->up_function_features.data && req->up_function_features.len) {
-            node->up_function_features_len = req->up_function_features.len;
+            node->up_function_features_len =
+                ogs_min(req->up_function_features.len,
+                        sizeof(node->up_function_features));
             memcpy(&node->up_function_features, req->up_function_features.data,
-                    ogs_min(sizeof(node->up_function_features),
-                            node->up_function_features_len));
+                    node->up_function_features_len);
         }
     }
 
@@ -121,10 +122,11 @@ bool ogs_pfcp_cp_handle_association_setup_response(
 
     if (rsp->up_function_features.presence) {
         if (rsp->up_function_features.data && rsp->up_function_features.len) {
-            node->up_function_features_len = rsp->up_function_features.len;
+            node->up_function_features_len =
+                ogs_min(rsp->up_function_features.len,
+                        sizeof(node->up_function_features));
             memcpy(&node->up_function_features, rsp->up_function_features.data,
-                    ogs_min(sizeof(node->up_function_features),
-                            node->up_function_features_len));
+                    node->up_function_features_len);
         }
     }
 
@@ -453,9 +455,9 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
     pdr->f_teid_len = 0;
 
     if (message->pdi.local_f_teid.presence) {
-        pdr->f_teid_len = message->pdi.local_f_teid.len;
-        memcpy(&pdr->f_teid, message->pdi.local_f_teid.data,
-                ogs_min(sizeof(pdr->f_teid), pdr->f_teid_len));
+        pdr->f_teid_len =
+            ogs_min(message->pdi.local_f_teid.len, sizeof(pdr->f_teid));
+        memcpy(&pdr->f_teid, message->pdi.local_f_teid.data, pdr->f_teid_len);
         ogs_assert(pdr->f_teid.ipv4 || pdr->f_teid.ipv6);
         pdr->f_teid.teid = be32toh(pdr->f_teid.teid);
     }
@@ -470,19 +472,21 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
     pdr->ue_ip_addr_len = 0;
 
     if (message->pdi.ue_ip_address.presence) {
-        pdr->ue_ip_addr_len = message->pdi.ue_ip_address.len;
+        pdr->ue_ip_addr_len =
+            ogs_min(message->pdi.ue_ip_address.len, sizeof(pdr->ue_ip_addr));
         memcpy(&pdr->ue_ip_addr, message->pdi.ue_ip_address.data,
-                ogs_min(sizeof(pdr->ue_ip_addr), pdr->ue_ip_addr_len));
+                pdr->ue_ip_addr_len);
     }
 
     memset(&pdr->outer_header_removal, 0, sizeof(pdr->outer_header_removal));
     pdr->outer_header_removal_len = 0;
 
     if (message->outer_header_removal.presence) {
-        pdr->outer_header_removal_len = message->outer_header_removal.len;
+        pdr->outer_header_removal_len =
+            ogs_min(message->outer_header_removal.len,
+                    sizeof(pdr->outer_header_removal));
         memcpy(&pdr->outer_header_removal, message->outer_header_removal.data,
-                ogs_min(sizeof(pdr->outer_header_removal),
-                        pdr->outer_header_removal_len));
+                pdr->outer_header_removal_len);
     }
 
     pdr->far = NULL;
