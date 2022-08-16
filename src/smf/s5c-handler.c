@@ -270,7 +270,7 @@ uint8_t smf_s5c_handle_create_session_request(
     ogs_debug("    SGW_S5C_TEID[0x%x] SMF_N4_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->smf_n4_teid);
 
-    stats_add_smf_session_info(sess);
+//    stats_add_smf_session_info(sess);
 
     /* Remove all previous bearer */
     smf_bearer_remove_all(sess);
