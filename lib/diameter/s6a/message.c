@@ -75,6 +75,11 @@ struct dict_object *ogs_diam_s6a_pre_emption_vulnerability = NULL;
 struct dict_object *ogs_diam_s6a_pdn_gw_allocation_type = NULL;
 struct dict_object *ogs_diam_s6a_vplmn_dynamic_address_allowed = NULL;
 struct dict_object *ogs_diam_s6a_eps_location_information = NULL;
+struct dict_object *ogs_diam_s6a_mme_location_information = NULL;
+struct dict_object *ogs_diam_s6a_e_utran_cell_global_identity = NULL;
+struct dict_object *ogs_diam_s6a_tracking_area_identity = NULL;
+struct dict_object *ogs_diam_s6a_age_of_location_information = NULL;
+
 
 struct dict_object *ogs_diam_s6a_terminal_information = NULL;
 struct dict_object *ogs_diam_s6a_imei = NULL;
@@ -150,6 +155,10 @@ int ogs_diam_s6a_init(void)
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Subscribed-Periodic-RAU-TAU-Timer", &ogs_diam_s6a_subscribed_rau_tau_timer);
 
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "EPS-Location-Information", &ogs_diam_s6a_eps_location_information);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "MME-Location-Information", &ogs_diam_s6a_mme_location_information);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "E-UTRAN-Cell-Global-Identity", &ogs_diam_s6a_e_utran_cell_global_identity);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Tracking-Area-Identity", &ogs_diam_s6a_tracking_area_identity);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Age-Of-Location-Information", &ogs_diam_s6a_age_of_location_information);
 
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Terminal-Information", &ogs_diam_s6a_terminal_information);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "IMEI", &ogs_diam_s6a_imei);

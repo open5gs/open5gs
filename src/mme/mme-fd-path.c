@@ -1628,9 +1628,7 @@ static int mme_ogs_diam_s6a_idr_cb( struct msg **msg, struct avp *avp,
         goto outnoexp;        
     }
 
-    ogs_info("IDR ECGI PLMN_ID[MCC:%d MNC:%d]", ogs_plmn_id_mcc(mme_ue->e_cgi.plmn_id));
-    ogs_info("IDR TAI PLMN_ID[MCC:%d MNC:%d]", ogs_plmn_id_mcc(mme_ue->tai.plmn_id));
-    ogs_info("IDR PLMN_ID[MCC:%d MNC:%d]", ogs_plmn_id_mcc(mme_ue->e_cgi.plmn_id));
+/*    ogs_info("IDR ECGI PLMN_ID[MCC:%d MNC:%d]", ogs_plmn_id_mcc(mme_ue->e_cgi.plmn_id)); */
     
     struct avp *avp_mme_location_information;
     struct avp *avp_e_utran_cell_global_identity;
@@ -1645,7 +1643,8 @@ static int mme_ogs_diam_s6a_idr_cb( struct msg **msg, struct avp *avp,
 
     ret = fd_msg_avp_new(ogs_diam_s6a_e_utran_cell_global_identity, 0, &avp_e_utran_cell_global_identity);
     ogs_assert(ret == 0);
-    val.i32 = 1;
+    val.os.data = (unsigned char *)"456";
+    val.os.len  = 1;
     ret = fd_msg_avp_setvalue(avp_e_utran_cell_global_identity, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(avp_mme_location_information, MSG_BRW_LAST_CHILD, avp_e_utran_cell_global_identity);
@@ -1653,7 +1652,8 @@ static int mme_ogs_diam_s6a_idr_cb( struct msg **msg, struct avp *avp,
 
     ret = fd_msg_avp_new(ogs_diam_s6a_tracking_area_identity, 0, &avp_tracking_area_identity);
     ogs_assert(ret == 0);
-    val.i32 = 2;
+    val.os.data = (unsigned char *)"123";
+    val.os.len  = 1;
     ret = fd_msg_avp_setvalue(avp_tracking_area_identity, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(avp_mme_location_information, MSG_BRW_LAST_CHILD, avp_tracking_area_identity);

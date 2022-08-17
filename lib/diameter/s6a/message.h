@@ -120,6 +120,11 @@ extern struct dict_object *ogs_diam_s6a_pre_emption_capability;
 extern struct dict_object *ogs_diam_s6a_pre_emption_vulnerability;
 extern struct dict_object *ogs_diam_s6a_pdn_gw_allocation_type;
 extern struct dict_object *ogs_diam_s6a_vplmn_dynamic_address_allowed;
+extern struct dict_object *ogs_diam_s6a_eps_location_information;
+extern struct dict_object *ogs_diam_s6a_mme_location_information;
+extern struct dict_object *ogs_diam_s6a_e_utran_cell_global_identity;
+extern struct dict_object *ogs_diam_s6a_tracking_area_identity;
+extern struct dict_object *ogs_diam_s6a_age_of_location_information;
 
 extern struct dict_object *ogs_diam_s6a_terminal_information;
 extern struct dict_object *ogs_diam_s6a_imei;
