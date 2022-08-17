@@ -214,6 +214,7 @@ void mme_send_after_paging(mme_ue_t *mme_ue, bool failed)
 
             ogs_assert(OGS_OK ==
                     nas_eps_send_detach_request(mme_ue, detach_type));
+            mme_send_delete_session_or_mme_ue_context_release_detach(mme_ue);
         }
         break;
     default:

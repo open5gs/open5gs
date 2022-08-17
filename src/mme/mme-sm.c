@@ -435,7 +435,6 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             break;
         case OGS_DIAM_S6A_CMD_CODE_CANCEL_LOCATION:
             mme_s6a_handle_clr(mme_ue, &s6a_message->clr_message);
-            mme_send_delete_session_or_mme_ue_context_release_detach(mme_ue);
             break;
         default:
             ogs_error("Invalid Type[%d]", s6a_message->cmd_code);
