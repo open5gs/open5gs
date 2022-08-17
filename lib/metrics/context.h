@@ -65,6 +65,31 @@ static inline void ogs_metrics_inst_dec(ogs_metrics_inst_t *inst)
     ogs_metrics_inst_add(inst, -1);
 }
 
+
+typedef struct ogs_metrics_inst2_s ogs_metrics_inst2_t;
+ogs_metrics_inst2_t *ogs_metrics_inst2_new(
+        ogs_metrics_context_t *ctx, ogs_metrics_metric_type_t type,
+        const char *name, const char *description,
+        int initial_val, unsigned int num_labels, const char **labels);
+void ogs_metrics_inst2_free(ogs_metrics_inst2_t *inst);
+
+void ogs_metrics_inst2_set(ogs_metrics_inst2_t *inst,
+    int val, int label_num, const char **label_values);
+void ogs_metrics_inst2_reset(ogs_metrics_inst2_t *inst,
+    int label_num, const char **label_values);
+void ogs_metrics_inst2_add(ogs_metrics_inst2_t *inst,
+    int val, int label_num, const char **label_values);
+
+static inline void ogs_metrics_inst2_inc(ogs_metrics_inst2_t *inst,
+    int label_num, const char **label_values)
+{
+    ogs_metrics_inst2_add(inst, 1, label_num, label_values);
+}
+static inline void ogs_metrics_inst2_dec(ogs_metrics_inst2_t *inst,
+    int label_num, const char **label_values)
+{
+    ogs_metrics_inst2_add(inst, -1, label_num, label_values);
+}
 #ifdef __cplusplus
 }
 #endif

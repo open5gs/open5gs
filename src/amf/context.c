@@ -876,6 +876,8 @@ amf_gnb_t *amf_gnb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
 
     ogs_list_add(&self.gnb_list, gnb);
     amf_metrics_inst_global_inc(AMF_METR_GLOB_GAUGE_GNB);
+    amf_metrics_inst2_global_inc(AMF_METR_GLOB_GAUGE_GNB, 1, (const char *[]) { "AMFName1" });
+/*    amf_metrics_inst2_global_inc(AMF_METR_GLOB_GAUGE_GNB, 0, NULL);*/
 
     ogs_info("[Added] Number of gNBs is now %d",
             ogs_list_count(&self.gnb_list));

@@ -22,6 +22,25 @@ static int amf_metrics_init_inst(ogs_metrics_inst_t **inst, ogs_metrics_spec_t *
     return OGS_OK;
 }
 
+int amf_metrics_init_inst2(ogs_metrics_context_t *ctx,
+    ogs_metrics_inst2_t **inst,
+    amf_metrics_spec_def_t *specs, unsigned int len);
+
+int amf_metrics_init_inst2(ogs_metrics_context_t *ctx,
+    ogs_metrics_inst2_t **inst,
+    amf_metrics_spec_def_t *specs, unsigned int len)
+{
+    unsigned int i;
+
+    for (i = 0; i < len; i++) {
+        inst[i] = ogs_metrics_inst2_new(ctx, specs[i].type,
+            specs[i].name, specs[i].description, specs[i].initial_val,
+            specs[i].num_labels, specs[i].labels);
+    }
+
+    return OGS_OK;
+}
+
 static int amf_metrics_free_inst(ogs_metrics_inst_t **inst,
         unsigned int len)
 {
@@ -65,8 +84,44 @@ amf_metrics_spec_def_t amf_metrics_spec_def_global[_AMF_METR_GLOB_MAX] = {
     .description = "gNodeBs",
 },
 };
+
+const char *labels_nf_name[] = {
+    "nf_name"
+};
+
+ogs_metrics_inst2_t *amf_metrics_inst_global2[_AMF_METR_GLOB_MAX];
+amf_metrics_spec_def_t amf_metrics_spec_def_global2[_AMF_METR_GLOB_MAX] = {
+/* Global Gauges: */
+[AMF_METR_GLOB_GAUGE_RAN_UE] = {
+    .type = OGS_METRICS_METRIC_TYPE_GAUGE,
+    .name = "bm_ran_ue",
+    .description = "RAN UEs",
+    .num_labels = OGS_ARRAY_SIZE(labels_nf_name),
+    .labels = labels_nf_name,
+},
+[AMF_METR_GLOB_GAUGE_AMF_SESS] = {
+    .type = OGS_METRICS_METRIC_TYPE_GAUGE,
+    .name = "bm_amf_session",
+    .description = "AMF Sessions",
+    .num_labels = OGS_ARRAY_SIZE(labels_nf_name),
+    .labels = labels_nf_name,
+},
+[AMF_METR_GLOB_GAUGE_GNB] = {
+    .type = OGS_METRICS_METRIC_TYPE_GAUGE,
+    .name = "bm_gnb",
+    .description = "gNodeBs",
+    .num_labels = OGS_ARRAY_SIZE(labels_nf_name),
+    .labels = labels_nf_name,
+},
+};
+
 static int amf_metrics_init_inst_global(void)
 {
+    ogs_metrics_context_t *ctx = ogs_metrics_self();
+
+    amf_metrics_init_inst2(ctx, amf_metrics_inst_global2,
+        amf_metrics_spec_def_global2, _AMF_METR_GLOB_MAX);
+
     return amf_metrics_init_inst(amf_metrics_inst_global, amf_metrics_spec_global,
                 _AMF_METR_GLOB_MAX, 0, NULL);
 }

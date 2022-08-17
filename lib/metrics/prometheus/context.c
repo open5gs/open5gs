@@ -33,6 +33,7 @@ typedef struct ogs_metrics_context_s {
     ogs_socknode_t node;
 
     ogs_list_t  spec_list;
+    ogs_list_t inst_list;
     struct MHD_Daemon *mhd_server;
 } ogs_metrics_context_t;
 
@@ -56,9 +57,22 @@ typedef struct ogs_metrics_inst_s {
     char                    *label_values[MAX_LABELS];
 } ogs_metrics_inst_t;
 
+typedef struct ogs_metrics_inst2_s {
+    ogs_metrics_context_t       *ctx; /* backpointer */
+    ogs_list_t                  entry; /* included in ogs_metrics_context_t */ /* TODO */
+    ogs_metrics_metric_type_t   type;
+    const char                  *name;
+    const char                  *description;
+    int                         initial_val;
+    unsigned int                num_labels;
+    /*char                        *labels[MAX_LABELS];*/
+    prom_metric_t               *prom;
+} ogs_metrics_inst2_t;
+
 static ogs_metrics_context_t self;
 static int context_initialized = 0;
 static OGS_POOL(metrics_spec_pool, ogs_metrics_spec_t);
+static OGS_POOL(metrics_inst_pool, ogs_metrics_inst2_t);
 
 void ogs_metrics_context_init(void)
 {
@@ -67,10 +81,12 @@ void ogs_metrics_context_init(void)
     ogs_log_install_domain(&__ogs_metrics_domain, "metrics", ogs_core()->log.level);
 
     ogs_pool_init(&metrics_spec_pool, ogs_app()->metrics.max_specs);
+    ogs_pool_init(&metrics_inst_pool, ogs_app()->metrics.max_specs);
 
     /* Initialize METRICS context */
     memset(&self, 0, sizeof(ogs_metrics_context_t));
     ogs_list_init(&self.spec_list);
+    ogs_list_init(&self.inst_list);
     prom_collector_registry_default_init();
 
     context_initialized = 1;
@@ -79,6 +95,7 @@ void ogs_metrics_context_init(void)
 void ogs_metrics_context_final(void)
 {
     ogs_metrics_spec_t *spec = NULL, *next = NULL;
+    ogs_metrics_inst2_t *inst = NULL, *next2 = NULL;
     ogs_assert(context_initialized == 1);
 
     if (self.mhd_server)
@@ -86,6 +103,9 @@ void ogs_metrics_context_final(void)
 
     ogs_list_for_each_entry_safe(&self.spec_list, next, spec, entry) {
         ogs_metrics_spec_free(spec);
+    }
+    ogs_list_for_each_entry_safe(&self.inst_list, next2, inst, entry) {
+        ogs_metrics_inst2_free(inst);
     }
     prom_collector_registry_destroy(PROM_COLLECTOR_REGISTRY_DEFAULT);
 
@@ -95,6 +115,7 @@ void ogs_metrics_context_final(void)
     }
 
     ogs_pool_final(&metrics_spec_pool);
+    ogs_pool_final(&metrics_inst_pool);
 
     context_initialized = 0;
 }
@@ -334,6 +355,50 @@ void ogs_metrics_context_close(ogs_metrics_context_t *ctx)
     ogs_assert(ogs_metrics_context_mhd_server_stop(ctx) == OGS_OK);
 }
 
+ogs_metrics_inst2_t *ogs_metrics_inst2_new(
+        ogs_metrics_context_t *ctx, ogs_metrics_metric_type_t type,
+        const char *name, const char *description,
+        int initial_val, unsigned int num_labels, const char **labels)
+{
+    ogs_metrics_inst2_t *inst;
+
+    ogs_assert(name);
+    ogs_assert(description);
+    ogs_assert(num_labels <= MAX_LABELS);
+
+    ogs_pool_alloc(&metrics_inst_pool, &inst);
+    ogs_assert(inst);
+
+    memset(inst, 0, sizeof(*inst));
+
+    inst->ctx = ctx;
+    inst->type = type;
+    inst->name = name;
+    inst->description = description;
+    inst->initial_val = initial_val;
+    inst->num_labels = num_labels;
+
+    switch (type) {
+        case OGS_METRICS_METRIC_TYPE_COUNTER:
+            inst->prom = prom_counter_new(name, description, num_labels, labels);
+            break;
+        case OGS_METRICS_METRIC_TYPE_GAUGE:
+            inst->prom = prom_gauge_new(name, description, num_labels, labels);
+            break;
+        default:
+            ogs_assert_if_reached();
+            break;
+    }
+    ogs_assert(inst->prom);
+
+    prom_collector_registry_must_register_metric(inst->prom);
+    ogs_list_add(&ctx->inst_list, &inst->entry);
+
+    if (inst->num_labels == 0)
+        ogs_metrics_inst2_reset(inst, 0, NULL);
+    return inst;
+}
+
 ogs_metrics_spec_t *ogs_metrics_spec_new(
         ogs_metrics_context_t *ctx, ogs_metrics_metric_type_t type,
         const char *name, const char *description,
@@ -378,6 +443,12 @@ ogs_metrics_spec_t *ogs_metrics_spec_new(
 
     ogs_list_add(&ctx->spec_list, &spec->entry);
     return spec;
+}
+
+void ogs_metrics_inst2_free(ogs_metrics_inst2_t *inst)
+{
+    ogs_list_remove(&inst->ctx->inst_list, inst);
+    ogs_pool_free(&metrics_inst_pool, inst);
 }
 
 void ogs_metrics_spec_free(ogs_metrics_spec_t *spec)
@@ -447,6 +518,21 @@ void ogs_metrics_inst_set(ogs_metrics_inst_t *inst, int val)
     }
 }
 
+void ogs_metrics_inst2_set(ogs_metrics_inst2_t *inst, int val,
+        int label_num, const char **label_values)
+{
+    ogs_assert(inst->num_labels == label_num);
+
+    switch (inst->type) {
+        case OGS_METRICS_METRIC_TYPE_GAUGE:
+            prom_gauge_set(inst->prom, (double)val, label_values);
+            break;
+        default:
+            ogs_assert_if_reached();
+            break;
+    }
+}
+
 void ogs_metrics_inst_reset(ogs_metrics_inst_t *inst)
 {
     switch (inst->spec->type) {
@@ -459,6 +545,22 @@ void ogs_metrics_inst_reset(ogs_metrics_inst_t *inst)
     default:
         /* Other types have no way to reset */
         break;
+    }
+}
+
+void ogs_metrics_inst2_reset(ogs_metrics_inst2_t *inst, int label_num, const char **label_values)
+{
+    ogs_assert(inst->num_labels == label_num);
+
+    switch (inst->type) {
+        case OGS_METRICS_METRIC_TYPE_COUNTER:
+            prom_counter_add(inst->prom, 0.0, label_values);
+            break;
+        case OGS_METRICS_METRIC_TYPE_GAUGE:
+            prom_gauge_set(inst->prom, (double)inst->initial_val, label_values);
+            break;
+        default:
+            ogs_assert_if_reached();
     }
 }
 
@@ -478,5 +580,27 @@ void ogs_metrics_inst_add(ogs_metrics_inst_t *inst, int val)
     default:
         ogs_assert_if_reached();
         break;
+    }
+}
+
+void ogs_metrics_inst2_add(ogs_metrics_inst2_t *inst, int val,
+    int label_num, const char **label_values)
+{
+    ogs_assert(inst->num_labels == label_num);
+
+    switch (inst->type) {
+        case OGS_METRICS_METRIC_TYPE_COUNTER:
+            ogs_assert(val >= 0);
+            prom_counter_add(inst->prom, (double)val, label_values);
+            break;
+        case OGS_METRICS_METRIC_TYPE_GAUGE:
+            if (val >= 0)
+                prom_gauge_add(inst->prom, (double)val, label_values);
+            else
+                prom_gauge_sub(inst->prom, (double)-1.0*(double)val, label_values);
+            break;
+        default:
+            ogs_assert_if_reached();
+            break;
     }
 }
