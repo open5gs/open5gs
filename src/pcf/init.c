@@ -18,6 +18,7 @@
  */
 
 #include "sbi-path.h"
+#include "metrics.h"
 
 static ogs_thread_t *thread;
 static void pcf_main(void *data);
@@ -28,14 +29,20 @@ int pcf_initialize()
     int rv;
 
     ogs_sbi_context_init();
-
+    ogs_metrics_context_init();
     pcf_context_init();
 
     rv = ogs_sbi_context_parse_config("pcf", "nrf", "scp");
     if (rv != OGS_OK) return rv;
 
+    rv = ogs_metrics_context_parse_config("pcf");
+    if (rv != OGS_OK) return rv;
+
     rv = pcf_context_parse_config();
     if (rv != OGS_OK) return rv;
+
+    rv = pcf_metrics_open();
+    if (rv != 0) return OGS_ERROR;
 
     rv = ogs_log_config_domain(
             ogs_app()->logger.domain, ogs_app()->logger.level);
@@ -90,6 +97,8 @@ void pcf_terminate(void)
     ogs_dbi_final();
 
     pcf_context_final();
+
+    pcf_metrics_close();
     ogs_sbi_context_final();
 }
 

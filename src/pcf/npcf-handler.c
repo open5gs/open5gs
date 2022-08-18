@@ -35,6 +35,8 @@ bool pcf_npcf_am_policy_contrtol_handle_create(pcf_ue_t *pcf_ue,
     OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
     ogs_sockaddr_t *addr = NULL;
 
+    pcf_metrics_inst_by_plmn_add(NULL, PCF_METR_CTR_PA_POLICYAMASSOREQ, 1);
+
     ogs_assert(pcf_ue);
     ogs_assert(stream);
     ogs_assert(message);
@@ -138,6 +140,9 @@ bool pcf_npcf_am_policy_contrtol_handle_create(pcf_ue_t *pcf_ue,
         ogs_sbi_parse_guami(&pcf_ue->guami, PolicyAssociationRequest->guami);
     }
 
+    pcf_metrics_inst_by_plmn_add(&pcf_ue->guami.plmn_id,
+            PCF_METR_CTR_PA_POLICYAMASSOREQ, 1);
+
     if (PolicyAssociationRequest->rat_type)
         pcf_ue->rat_type = PolicyAssociationRequest->rat_type;
 
@@ -171,6 +176,8 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
     ogs_sbi_client_t *client = NULL;
     OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
     ogs_sockaddr_t *addr = NULL;
+
+    pcf_metrics_inst_by_slice_add(NULL, NULL, PCF_METR_CTR_PA_POLICYSMASSOREQ, 1);
 
     ogs_assert(sess);
     pcf_ue = sess->pcf_ue;
@@ -291,6 +298,11 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
 
     sess->s_nssai.sst = sliceInfo->sst;
     sess->s_nssai.sd = ogs_s_nssai_sd_from_string(sliceInfo->sd);
+
+    pcf_metrics_inst_by_slice_add(&pcf_ue->guami.plmn_id,
+            &sess->s_nssai, PCF_METR_GAUGE_PA_SESSIONNBR, 1);
+    pcf_metrics_inst_by_slice_add(&pcf_ue->guami.plmn_id,
+            &sess->s_nssai, PCF_METR_CTR_PA_POLICYSMASSOREQ, 1);
 
     if (SmPolicyContextData->subs_sess_ambr)
         sess->subscribed_sess_ambr = OpenAPI_ambr_copy(
