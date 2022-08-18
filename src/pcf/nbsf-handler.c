@@ -384,6 +384,9 @@ bool pcf_nbsf_management_handle_register(
     if (SmPolicyDecision.supp_feat)
         ogs_free(SmPolicyDecision.supp_feat);
 
+    pcf_metrics_inst_by_slice_add(&sess->pcf_ue->guami.plmn_id,
+            &sess->s_nssai, PCF_METR_CTR_PA_POLICYSMASSOSUCC, 1);
+
     ogs_session_data_free(&session_data);
 
     return true;

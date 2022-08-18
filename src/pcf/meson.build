@@ -17,6 +17,7 @@
 
 libpcf_sources = files('''
     context.c
+    metrics.c
     event.c
 
     nnrf-handler.c
@@ -44,12 +45,14 @@ libpcf_sources = files('''
 libpcf = static_library('pcf',
     sources : libpcf_sources,
     dependencies : [libdbi_dep,
+                    libmetrics_dep,
                     libsbi_dep],
     install : false)
 
 libpcf_dep = declare_dependency(
     link_with : libpcf,
     dependencies : [libdbi_dep,
+                    libmetrics_dep,
                     libsbi_dep])
 
 pcf_sources = files('''

@@ -939,3 +939,17 @@ void ogs_sbi_free_qos_data(OpenAPI_qos_data_t *QosData)
 
     ogs_free(QosData);
 }
+
+char *ogs_sbi_s_nssai_to_string_plain(ogs_s_nssai_t *s_nssai)
+{
+    ogs_assert(s_nssai);
+    if (s_nssai->sd.v !=
+            OGS_S_NSSAI_NO_SD_VALUE) {
+        return ogs_msprintf("%d%06x",
+            s_nssai->sst,
+            s_nssai->sd.v);
+    } else {
+        return ogs_msprintf("%d",
+            s_nssai->sst);
+    }
+}
