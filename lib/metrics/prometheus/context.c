@@ -23,7 +23,6 @@
 #include "prom.h"
 #include "microhttpd.h"
 
-#define DEFAULT_PROMETHEUS_HTTP_PORT       9090
 #define MAX_LABELS 8
 
 typedef struct ogs_metrics_context_s {
@@ -108,7 +107,7 @@ int ogs_metrics_context_parse_config(void)
 {
     int family = AF_UNSPEC;
     const char *hostname = NULL;
-    uint16_t port = DEFAULT_PROMETHEUS_HTTP_PORT;
+    uint16_t port = 0;
     ogs_sockaddr_t *addr = NULL;
     yaml_document_t *document = NULL;
     ogs_yaml_iter_t root_iter;
@@ -313,7 +312,8 @@ static int ogs_metrics_context_mhd_server_start(ogs_metrics_context_t *ctx)
 }
 void ogs_metrics_context_open(ogs_metrics_context_t *ctx)
 {
-    ogs_assert(ogs_metrics_context_mhd_server_start(ctx) == OGS_OK);
+    if (ctx->node.addr->sin.sin_port != 0)
+        ogs_assert(ogs_metrics_context_mhd_server_start(ctx) == OGS_OK);
 }
 
 static int ogs_metrics_context_mhd_server_stop(ogs_metrics_context_t *ctx)
@@ -331,7 +331,8 @@ static int ogs_metrics_context_mhd_server_stop(ogs_metrics_context_t *ctx)
 }
 void ogs_metrics_context_close(ogs_metrics_context_t *ctx)
 {
-    ogs_assert(ogs_metrics_context_mhd_server_stop(ctx) == OGS_OK);
+    if (ctx->node.addr->sin.sin_port != 0)
+        ogs_assert(ogs_metrics_context_mhd_server_stop(ctx) == OGS_OK);
 }
 
 ogs_metrics_spec_t *ogs_metrics_spec_new(
