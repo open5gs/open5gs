@@ -390,22 +390,17 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         s6a_message = e->s6a_message;
         ogs_assert(s6a_message);
 
-        enb_ue = enb_ue_cycle(mme_ue->enb_ue);
-        if (!enb_ue) {
-            ogs_error("S1 context has already been removed");
-
-            ogs_subscription_data_free(
-                    &s6a_message->ula_message.subscription_data);
-            ogs_free(s6a_message);
-            break;
-        }
-
         switch (s6a_message->cmd_code) {
         case OGS_DIAM_S6A_CMD_CODE_AUTHENTICATION_INFORMATION:
             emm_cause = mme_s6a_handle_aia(mme_ue, s6a_message);
             if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
                 ogs_info("[%s] Attach reject [OGS_NAS_EMM_CAUSE:%d]",
                         mme_ue->imsi_bcd, emm_cause);
+                enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+                if (!enb_ue) {
+                    ogs_error("S1 context has already been removed");
+                    break;
+                }
                 ogs_assert(OGS_OK ==
                     nas_eps_send_attach_reject(mme_ue, emm_cause,
                         OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
@@ -421,6 +416,11 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
                 ogs_info("[%s] Attach reject [OGS_NAS_EMM_CAUSE:%d]",
                         mme_ue->imsi_bcd, emm_cause);
+                enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+                if (!enb_ue) {
+                    ogs_error("S1 context has already been removed");
+                    break;
+                }
                 ogs_assert(OGS_OK ==
                     nas_eps_send_attach_reject(mme_ue, emm_cause,
                         OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));

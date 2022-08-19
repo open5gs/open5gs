@@ -237,7 +237,6 @@ ogs_pkbuf_t *sgsap_build_paging_reject(
 
     root = ogs_tlv_add(NULL, OGS_TLV_MODE_T1_L1,
             SGSAP_IE_IMSI_TYPE, SGSAP_IE_IMSI_LEN, 0, nas_mobile_identity_imsi);
-    sgs_cause = SGSAP_SGS_CAUSE_IMSI_UNKNOWN;
     ogs_tlv_add(root, OGS_TLV_MODE_T1_L1,
             SGSAP_IE_SGS_CAUSE_TYPE, SGSAP_IE_SGS_CAUSE_LEN, 0, &sgs_cause);
 

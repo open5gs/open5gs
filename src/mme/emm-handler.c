@@ -64,13 +64,17 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
     /* HashMME */
     ogs_kdf_hash_mme(pkbuf->data, pkbuf->len, mme_ue->hash_mme);
 
-    /* Set EPS Attach Request Type */
+    /* Set EPS Attach */
     memcpy(&mme_ue->nas_eps.attach, eps_attach_type,
             sizeof(ogs_nas_eps_attach_type_t));
     mme_ue->nas_eps.type = MME_EPS_TYPE_ATTACH_REQUEST;
     mme_ue->nas_eps.ksi = eps_attach_type->nas_key_set_identifier;
-    ogs_debug("    OGS_NAS_EPS TYPE[%d] KSI[%d] ATTACH[0x%x]",
-            mme_ue->nas_eps.type, mme_ue->nas_eps.ksi, mme_ue->nas_eps.data);
+    ogs_debug("    OGS_NAS_EPS TYPE[%d] KSI[%d]",
+            mme_ue->nas_eps.type, mme_ue->nas_eps.ksi);
+    ogs_debug("    ATTACH TSC[%d] KSI[%d] VALUE[%d]",
+            mme_ue->nas_eps.attach.tsc,
+            mme_ue->nas_eps.attach.nas_key_set_identifier,
+            mme_ue->nas_eps.attach.value);
     switch(mme_ue->nas_eps.attach.value){
         case OGS_NAS_ATTACH_TYPE_EPS_ATTACH:
             ogs_debug("    Requested EPS_ATTACH_TYPE[1, EPS_ATTACH]");
@@ -373,12 +377,30 @@ int emm_handle_detach_request(
 
     detach_type = &detach_request->detach_type;
 
-    /* Set EPS Attach Type */
+    /* Set EPS Detach */
     memcpy(&mme_ue->nas_eps.detach, detach_type, sizeof(ogs_nas_detach_type_t));
-    mme_ue->nas_eps.type = MME_EPS_TYPE_DETACH_REQUEST_FROM_UE;
+
+    /* 1. MME initiated detach request to the UE.
+     *    (nas_eps.type = MME_EPS_TYPE_DETACH_REQUEST_TO_UE)
+     * 2. If UE is IDLE, Paging sent to the UE
+     * 3. If UE is wake-up, UE will send Server Request.
+     *    (nas_eps.type = MME_EPS_TYPE_SERVICE_REQUEST)
+     *
+     * So, we will lose the MME_EPS_TYPE_DETACH_REQUEST_TO_UE.
+     *
+     * We need more variable(nas_eps.detach_type)
+     * to keep Detach-Type whether UE-initiated or MME-initiaed.  */
+    mme_ue->nas_eps.type = mme_ue->nas_eps.detach_type =
+        MME_EPS_TYPE_DETACH_REQUEST_FROM_UE;
+
     mme_ue->nas_eps.ksi = detach_type->nas_key_set_identifier;
-    ogs_debug("    OGS_NAS_EPS TYPE[%d] KSI[%d] DETACH[0x%x]",
-            mme_ue->nas_eps.type, mme_ue->nas_eps.ksi, mme_ue->nas_eps.data);
+    ogs_debug("    OGS_NAS_EPS TYPE[%d] KSI[%d]",
+            mme_ue->nas_eps.type, mme_ue->nas_eps.ksi);
+    ogs_debug("    DETACH TSC[%d] KSI[%d] SWITCH_OFF[%d] VALUE[%d]",
+            mme_ue->nas_eps.attach.tsc,
+            mme_ue->nas_eps.detach.nas_key_set_identifier,
+            mme_ue->nas_eps.detach.switch_off,
+            mme_ue->nas_eps.attach.value);
 
     switch (detach_request->detach_type.value) {
     /* 0 0 1 : EPS detach */
@@ -414,11 +436,15 @@ int emm_handle_service_request(
 
     ogs_assert(mme_ue);
 
-    /* Set EPS Update Type */
+    /* Set EPS Service */
     mme_ue->nas_eps.type = MME_EPS_TYPE_SERVICE_REQUEST;
     mme_ue->nas_eps.ksi = ksi_and_sequence_number->ksi;
     ogs_debug("    OGS_NAS_EPS TYPE[%d] KSI[%d]",
             mme_ue->nas_eps.type, mme_ue->nas_eps.ksi);
+    ogs_debug("    SERVICE TSC[%d] KSI[%d] VALUE[%d]",
+            mme_ue->nas_eps.service.tsc,
+            mme_ue->nas_eps.service.nas_key_set_identifier,
+            mme_ue->nas_eps.service.value);
 
     /*
      * ATTACH_REQUEST
@@ -469,15 +495,19 @@ int emm_handle_tau_request(mme_ue_t *mme_ue,
     /* HashMME */
     ogs_kdf_hash_mme(pkbuf->data, pkbuf->len, mme_ue->hash_mme);
 
-    /* Set EPS Update Type */
+    /* Set EPS Update */
     memcpy(&mme_ue->nas_eps.update, eps_update_type,
             sizeof(ogs_nas_eps_update_type_t));
     mme_ue->nas_eps.type = MME_EPS_TYPE_TAU_REQUEST;
     mme_ue->nas_eps.ksi = eps_update_type->nas_key_set_identifier;
-    ogs_debug("    OGS_NAS_EPS TYPE[%d] KSI[%d] UPDATE[0x%x]",
-            mme_ue->nas_eps.type, mme_ue->nas_eps.ksi,
-            mme_ue->nas_eps.data);
-    
+    ogs_debug("    OGS_NAS_EPS TYPE[%d] KSI[%d]",
+            mme_ue->nas_eps.type, mme_ue->nas_eps.ksi);
+    ogs_debug("    UPDATE TSC[%d] KSI[%d] Active-flag[%d] VALUE[%d]",
+            mme_ue->nas_eps.update.tsc,
+            mme_ue->nas_eps.update.nas_key_set_identifier,
+            mme_ue->nas_eps.update.active_flag,
+            mme_ue->nas_eps.update.value);
+
     /*
      * ATTACH_REQUEST
      * TAU_REQUEST
@@ -598,9 +628,8 @@ int emm_handle_extended_service_request(mme_ue_t *mme_ue,
             sizeof(ogs_nas_service_type_t));
     mme_ue->nas_eps.type = MME_EPS_TYPE_EXTENDED_SERVICE_REQUEST;
     mme_ue->nas_eps.ksi = service_type->nas_key_set_identifier;
-    ogs_debug("    OGS_NAS_EPS TYPE[%d] KSI[%d] SERVICE[0x%x]",
-            mme_ue->nas_eps.type, mme_ue->nas_eps.ksi,
-            mme_ue->nas_eps.data);
+    ogs_debug("    OGS_NAS_EPS TYPE[%d] KSI[%d]",
+            mme_ue->nas_eps.type, mme_ue->nas_eps.ksi);
     
     /*
      * ATTACH_REQUEST

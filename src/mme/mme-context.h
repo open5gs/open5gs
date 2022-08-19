@@ -312,13 +312,22 @@ struct mme_ue_s {
 #define MME_EPS_TYPE_DETACH_REQUEST_TO_UE           6
         uint8_t     type;
         uint8_t     ksi;
-        union {
-            ogs_nas_eps_attach_type_t attach;
-            ogs_nas_eps_update_type_t update;
-            ogs_nas_service_type_t service;
-            ogs_nas_detach_type_t detach;
-            uint8_t data;
-        };
+        ogs_nas_eps_attach_type_t attach;
+        ogs_nas_eps_update_type_t update;
+        ogs_nas_service_type_t service;
+        ogs_nas_detach_type_t detach;
+
+        /* 1. MME initiated detach request to the UE.
+         *    (nas_eps.type = MME_EPS_TYPE_DETACH_REQUEST_TO_UE)
+         * 2. If UE is IDLE, Paging sent to the UE
+         * 3. If UE is wake-up, UE will send Server Request.
+         *    (nas_eps.type = MME_EPS_TYPE_SERVICE_REQUEST)
+         *
+         * So, we will lose the MME_EPS_TYPE_DETACH_REQUEST_TO_UE.
+         *
+         * We need more variable(nas_eps.detach_type)
+         * to keep Detach-Type whether UE-initiated or MME-initiaed.  */
+        uint8_t     detach_type;
     } nas_eps;
 
     /* UE identity */
@@ -756,6 +765,7 @@ mme_enb_t *mme_enb_find_by_addr(ogs_sockaddr_t *addr);
 mme_enb_t *mme_enb_find_by_enb_id(uint32_t enb_id);
 int mme_enb_set_enb_id(mme_enb_t *enb, uint32_t enb_id);
 int mme_enb_sock_type(ogs_sock_t *sock);
+mme_enb_t *mme_enb_cycle(mme_enb_t *enb);
 
 enb_ue_t *enb_ue_add(mme_enb_t *enb, uint32_t enb_ue_s1ap_id);
 void enb_ue_remove(enb_ue_t *enb_ue);
@@ -786,6 +796,7 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue);
 void mme_ue_hash_remove(mme_ue_t *mme_ue);
 void mme_ue_remove(mme_ue_t *mme_ue);
 void mme_ue_remove_all(void);
+mme_ue_t *mme_ue_cycle(mme_ue_t *mme_ue);
 
 void mme_ue_fsm_init(mme_ue_t *mme_ue);
 void mme_ue_fsm_fini(mme_ue_t *mme_ue);

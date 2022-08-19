@@ -1927,6 +1927,11 @@ int mme_enb_sock_type(ogs_sock_t *sock)
     return SOCK_STREAM;
 }
 
+mme_enb_t *mme_enb_cycle(mme_enb_t *enb)
+{
+    return ogs_pool_cycle(&mme_enb_pool, enb);
+}
+
 /** enb_ue_context handling function */
 enb_ue_t *enb_ue_add(mme_enb_t *enb, uint32_t enb_ue_s1ap_id)
 {
@@ -2387,6 +2392,11 @@ void mme_ue_remove_all(void)
         mme_ue_hash_remove(mme_ue);
         mme_ue_remove(mme_ue);
     }
+}
+
+mme_ue_t *mme_ue_cycle(mme_ue_t *mme_ue)
+{
+    return ogs_pool_cycle(&mme_ue_pool, mme_ue);
 }
 
 void mme_ue_fsm_init(mme_ue_t *mme_ue)

@@ -28,7 +28,7 @@ void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
 {
     ogs_assert(mme_ue);
 
-    switch (mme_ue->nas_eps.type) {
+    switch (mme_ue->nas_eps.detach_type) {
     case MME_EPS_TYPE_DETACH_REQUEST_FROM_UE:
         if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
             mme_gtp_send_delete_all_sessions(
@@ -39,18 +39,7 @@ void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
         break;
     case MME_EPS_TYPE_DETACH_REQUEST_TO_UE:
         if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
-            mme_gtp_send_delete_all_sessions(
-                    mme_ue, OGS_GTP_DELETE_SEND_S1_REMOVE_AND_UNLINK);
-        } else {
-            enb_ue_t *enb_ue = enb_ue_cycle(mme_ue->enb_ue);
-            if (enb_ue) {
-                ogs_assert(OGS_OK ==
-                    s1ap_send_ue_context_release_command(enb_ue,
-                        S1AP_Cause_PR_nas, S1AP_CauseNas_detach,
-                        S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0));
-            } else {
-                ogs_warn("[%s] No S1 Context", mme_ue->imsi_bcd);
-            }
+            mme_gtp_send_delete_all_sessions(mme_ue, OGS_GTP_DELETE_NO_ACTION);
         }
         break;
     default:
@@ -184,7 +173,7 @@ void mme_send_after_paging(mme_ue_t *mme_ue, bool failed)
     case MME_PAGING_TYPE_CS_CALL_SERVICE:
         if (failed == true) {
             ogs_assert(OGS_OK ==
-                sgsap_send_service_request(
+                sgsap_send_paging_reject(
                     mme_ue, SGSAP_SGS_CAUSE_UE_UNREACHABLE));
         } else {
             /* Nothing */
@@ -193,7 +182,7 @@ void mme_send_after_paging(mme_ue_t *mme_ue, bool failed)
     case MME_PAGING_TYPE_SMS_SERVICE:
         if (failed == true) {
             ogs_assert(OGS_OK ==
-                sgsap_send_service_request(
+                sgsap_send_paging_reject(
                     mme_ue, SGSAP_SGS_CAUSE_UE_UNREACHABLE));
         } else {
             ogs_assert(OGS_OK ==
@@ -203,19 +192,15 @@ void mme_send_after_paging(mme_ue_t *mme_ue, bool failed)
         break;
     case MME_PAGING_TYPE_DETACH_TO_UE:
         if (failed == true) {
+            /* Nothing */
+            ogs_warn("MME-initiated Detach cannot be invoked");
+        } else {
+            ogs_assert(OGS_OK == nas_eps_send_detach_request(mme_ue));
             if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
                 ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
             } else {
                 mme_send_delete_session_or_detach(mme_ue);
             }
-
-            OGS_FSM_TRAN(&mme_ue->sm, &emm_state_de_registered);
-        } else {
-            uint8_t detach_type = (uintptr_t)mme_ue->paging.data;
-            ogs_assert(detach_type);
-
-            ogs_assert(OGS_OK ==
-                    nas_eps_send_detach_request(mme_ue, detach_type));
         }
         break;
     default:

@@ -1438,7 +1438,7 @@ static int mme_ogs_diam_s6a_clr_cb( struct msg **msg, struct avp *avp,
     ogs_assert(s6a_message);
     s6a_message->cmd_code = OGS_DIAM_S6A_CMD_CODE_CANCEL_LOCATION;
     clr_message = &s6a_message->clr_message;
-    ogs_assert(clr_message);    
+    ogs_assert(clr_message);
 
     /* Create answer header */
     qry = *msg;
