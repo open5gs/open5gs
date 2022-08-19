@@ -51,8 +51,15 @@ int s1ap_send_to_enb(mme_enb_t *enb, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
 {
     char buf[OGS_ADDRSTRLEN];
 
-    ogs_assert(enb);
     ogs_assert(pkbuf);
+
+    enb = mme_enb_cycle(enb);
+    if (!enb) {
+        ogs_warn("eNB has already been removed");
+        ogs_pkbuf_free(pkbuf);
+        return OGS_ERROR;
+    }
+
     ogs_assert(enb->sctp.sock);
     if (enb->sctp.sock->fd == INVALID_SOCKET) {
         ogs_fatal("eNB SCTP socket has already been destroyed");
@@ -77,13 +84,16 @@ int s1ap_send_to_enb(mme_enb_t *enb, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
 
 int s1ap_send_to_enb_ue(enb_ue_t *enb_ue, ogs_pkbuf_t *pkbuf)
 {
-    mme_enb_t *enb = NULL;
+    ogs_assert(pkbuf);
 
-    ogs_assert(enb_ue);
-    enb = enb_ue->enb;
-    ogs_assert(enb);
+    enb_ue = enb_ue_cycle(enb_ue);
+    if (!enb_ue) {
+        ogs_warn("S1 context has already been removed");
+        ogs_pkbuf_free(pkbuf);
+        return OGS_ERROR;
+    }
 
-    return s1ap_send_to_enb(enb, pkbuf, enb_ue->enb_ostream_id);
+    return s1ap_send_to_enb(enb_ue->enb, pkbuf, enb_ue->enb_ostream_id);
 }
 
 int s1ap_delayed_send_to_enb_ue(

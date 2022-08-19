@@ -28,13 +28,16 @@
 
 int nas_eps_send_to_enb(mme_ue_t *mme_ue, ogs_pkbuf_t *pkbuf)
 {
-    enb_ue_t *enb_ue = NULL;
+    ogs_assert(pkbuf);
 
-    ogs_assert(mme_ue);
-    enb_ue = enb_ue_cycle(mme_ue->enb_ue);
-    ogs_expect_or_return_val(enb_ue, OGS_ERROR);
+    mme_ue = mme_ue_cycle(mme_ue);
+    if (!mme_ue) {
+        ogs_warn("UE(mme-ue) context has already been removed");
+        ogs_pkbuf_free(pkbuf);
+        return OGS_ERROR;
+    }
 
-    return s1ap_send_to_enb_ue(enb_ue, pkbuf);
+    return s1ap_send_to_enb_ue(mme_ue->enb_ue, pkbuf);
 }
 
 int nas_eps_send_emm_to_esm(mme_ue_t *mme_ue,
@@ -69,22 +72,28 @@ int nas_eps_send_to_downlink_nas_transport(mme_ue_t *mme_ue, ogs_pkbuf_t *pkbuf)
     enb_ue_t *enb_ue = NULL;
 
     ogs_assert(pkbuf);
-    ogs_assert(mme_ue);
+
+    mme_ue = mme_ue_cycle(mme_ue);
+    if (!mme_ue) {
+        ogs_warn("UE(mme-ue) context has already been removed");
+        ogs_pkbuf_free(pkbuf);
+        return OGS_ERROR;
+    }
+
     enb_ue = enb_ue_cycle(mme_ue->enb_ue);
     if (!enb_ue) {
-        ogs_error("S1 context has already been removed");
+        ogs_warn("S1 context has already been removed");
         ogs_pkbuf_free(pkbuf);
-
         return OGS_ERROR;
-    } else {
-        s1apbuf = s1ap_build_downlink_nas_transport(enb_ue, pkbuf);
-        ogs_expect_or_return_val(s1apbuf, OGS_ERROR);
-
-        rv = nas_eps_send_to_enb(mme_ue, s1apbuf);
-        ogs_expect(rv == OGS_OK);
-
-        return rv;
     }
+
+    s1apbuf = s1ap_build_downlink_nas_transport(enb_ue, pkbuf);
+    ogs_expect_or_return_val(s1apbuf, OGS_ERROR);
+
+    rv = nas_eps_send_to_enb(mme_ue, s1apbuf);
+    ogs_expect(rv == OGS_OK);
+
+    return rv;
 }
 
 int nas_eps_send_attach_accept(mme_ue_t *mme_ue)

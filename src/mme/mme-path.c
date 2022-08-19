@@ -173,7 +173,7 @@ void mme_send_after_paging(mme_ue_t *mme_ue, bool failed)
     case MME_PAGING_TYPE_CS_CALL_SERVICE:
         if (failed == true) {
             ogs_assert(OGS_OK ==
-                sgsap_send_service_request(
+                sgsap_send_paging_reject(
                     mme_ue, SGSAP_SGS_CAUSE_UE_UNREACHABLE));
         } else {
             /* Nothing */
@@ -182,7 +182,7 @@ void mme_send_after_paging(mme_ue_t *mme_ue, bool failed)
     case MME_PAGING_TYPE_SMS_SERVICE:
         if (failed == true) {
             ogs_assert(OGS_OK ==
-                sgsap_send_service_request(
+                sgsap_send_paging_reject(
                     mme_ue, SGSAP_SGS_CAUSE_UE_UNREACHABLE));
         } else {
             ogs_assert(OGS_OK ==
@@ -193,9 +193,7 @@ void mme_send_after_paging(mme_ue_t *mme_ue, bool failed)
     case MME_PAGING_TYPE_DETACH_TO_UE:
         if (failed == true) {
             /* Nothing */
-            ogs_fatal("MME-initiated Detach should not be invoked "
-                        "if Paging failed");
-            ogs_assert_if_reached();
+            ogs_warn("MME-initiated Detach cannot be invoked");
         } else {
             ogs_assert(OGS_OK == nas_eps_send_detach_request(mme_ue));
             if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {

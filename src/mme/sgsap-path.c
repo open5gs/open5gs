@@ -175,6 +175,25 @@ int sgsap_send_mo_csfb_indication(mme_ue_t *mme_ue)
     return rv;
 }
 
+int sgsap_send_paging_reject(mme_ue_t *mme_ue, uint8_t sgs_cause)
+{
+    int rv;
+    ogs_pkbuf_t *pkbuf = NULL;
+    ogs_assert(mme_ue);
+
+    ogs_debug("[SGSAP] PAGING-REJECT");
+    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+
+    pkbuf = sgsap_build_paging_reject(
+                &mme_ue->nas_mobile_identity_imsi,
+                SGSAP_IE_IMSI_LEN, sgs_cause);
+    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
+    rv = sgsap_send_to_vlr(mme_ue, pkbuf);
+    ogs_expect(rv == OGS_OK);
+
+    return rv;
+}
+
 int sgsap_send_service_request(mme_ue_t *mme_ue, uint8_t emm_mode)
 {
     int rv;
