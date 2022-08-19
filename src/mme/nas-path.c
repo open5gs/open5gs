@@ -315,7 +315,7 @@ int nas_eps_send_detach_accept(mme_ue_t *mme_ue)
 
     rv = s1ap_send_ue_context_release_command(enb_ue,
             S1AP_Cause_PR_nas, S1AP_CauseNas_detach,
-            S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+            S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0);
     ogs_expect(rv == OGS_OK);
 
     return rv;
