@@ -1544,7 +1544,7 @@ out:
     return 0;
 }
 
-/* Callback for incoming Insert-Subscriber-Data-Request messages */
+/* Callback for incoming Insert-Subscriber-Data-Request messages 29.272 5.2.2.1.2 */
 static int mme_ogs_diam_s6a_idr_cb( struct msg **msg, struct avp *avp,
         struct session *session, void *opaque, enum disp_action *act)
 {
@@ -1573,7 +1573,7 @@ static int mme_ogs_diam_s6a_idr_cb( struct msg **msg, struct avp *avp,
     ogs_assert(s6a_message);
     s6a_message->cmd_code = OGS_DIAM_S6A_CMD_CODE_INSERT_SUBSCRIBER_DATA;
     idr_message = &s6a_message->idr_message;
-    ogs_assert(idr_message);    
+    ogs_assert(idr_message);
 
     /* Create answer header */
     qry = *msg;
@@ -1628,50 +1628,51 @@ static int mme_ogs_diam_s6a_idr_cb( struct msg **msg, struct avp *avp,
         goto outnoexp;        
     }
 
-/*    ogs_info("IDR ECGI PLMN_ID[MCC:%d MNC:%d]", ogs_plmn_id_mcc(mme_ue->e_cgi.plmn_id)); */
-    
-    struct avp *avp_mme_location_information;
-    struct avp *avp_e_utran_cell_global_identity;
-    struct avp *avp_tracking_area_identity;
-    struct avp *avp_age_of_location_information;
+    if (idr_message->idr_flags & OGS_DIAM_S6A_IDR_FLAGS_EPS_LOCATION_INFO) {
+        ogs_info("EPS Loci %d", mme_ue->e_cgi.plmn_id);
+        struct avp *avp_mme_location_information;
+        struct avp *avp_e_utran_cell_global_identity;
+        struct avp *avp_tracking_area_identity;
+        struct avp *avp_age_of_location_information;
 
-    /* Set the EPS-Location-Information AVP */
-    ret = fd_msg_avp_new(ogs_diam_s6a_eps_location_information, 0, &avp);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_new(ogs_diam_s6a_mme_location_information, 0, &avp_mme_location_information);
-    ogs_assert(ret == 0);
+        /* Set the EPS-Location-Information AVP */
+        ret = fd_msg_avp_new(ogs_diam_s6a_eps_location_information, 0, &avp);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_new(ogs_diam_s6a_mme_location_information, 0, &avp_mme_location_information);
+        ogs_assert(ret == 0);
 
-    ret = fd_msg_avp_new(ogs_diam_s6a_e_utran_cell_global_identity, 0, &avp_e_utran_cell_global_identity);
-    ogs_assert(ret == 0);
-    val.os.data = (unsigned char *)"456";
-    val.os.len  = 1;
-    ret = fd_msg_avp_setvalue(avp_e_utran_cell_global_identity, &val);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_add(avp_mme_location_information, MSG_BRW_LAST_CHILD, avp_e_utran_cell_global_identity);
-    ogs_assert(ret == 0);
+        ret = fd_msg_avp_new(ogs_diam_s6a_e_utran_cell_global_identity, 0, &avp_e_utran_cell_global_identity);
+        ogs_assert(ret == 0);
+        val.os.data = (unsigned char *)"456";
+        val.os.len  = 3;
+        ret = fd_msg_avp_setvalue(avp_e_utran_cell_global_identity, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(avp_mme_location_information, MSG_BRW_LAST_CHILD, avp_e_utran_cell_global_identity);
+        ogs_assert(ret == 0);
 
-    ret = fd_msg_avp_new(ogs_diam_s6a_tracking_area_identity, 0, &avp_tracking_area_identity);
-    ogs_assert(ret == 0);
-    val.os.data = (unsigned char *)"123";
-    val.os.len  = 1;
-    ret = fd_msg_avp_setvalue(avp_tracking_area_identity, &val);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_add(avp_mme_location_information, MSG_BRW_LAST_CHILD, avp_tracking_area_identity);
-    ogs_assert(ret == 0);    
+        ret = fd_msg_avp_new(ogs_diam_s6a_tracking_area_identity, 0, &avp_tracking_area_identity);
+        ogs_assert(ret == 0);
+        val.os.data = (unsigned char *)"123";
+        val.os.len  = 3;
+        ret = fd_msg_avp_setvalue(avp_tracking_area_identity, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(avp_mme_location_information, MSG_BRW_LAST_CHILD, avp_tracking_area_identity);
+        ogs_assert(ret == 0);    
 
-    ret = fd_msg_avp_new(ogs_diam_s6a_age_of_location_information, 0, &avp_age_of_location_information);
-    ogs_assert(ret == 0);
-    val.i32 = 3;
-    ret = fd_msg_avp_setvalue(avp_age_of_location_information, &val);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_add(avp_mme_location_information, MSG_BRW_LAST_CHILD, avp_age_of_location_information);
-    ogs_assert(ret == 0);
+        ret = fd_msg_avp_new(ogs_diam_s6a_age_of_location_information, 0, &avp_age_of_location_information);
+        ogs_assert(ret == 0);
+        val.i32 = 3;
+        ret = fd_msg_avp_setvalue(avp_age_of_location_information, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(avp_mme_location_information, MSG_BRW_LAST_CHILD, avp_age_of_location_information);
+        ogs_assert(ret == 0);
 
-    ret = fd_msg_avp_add(ogs_diam_s6a_eps_location_information, MSG_BRW_LAST_CHILD, avp_mme_location_information);
-    ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_mme_location_information);
+        ogs_assert(ret == 0);
 
-    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-    ogs_assert(ret == 0);    
+        ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+        ogs_assert(ret == 0);        
+    }
 
     /* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
     ret = fd_msg_rescode_set(ans, (char*)"DIAMETER_SUCCESS", NULL, NULL, 1);
@@ -1740,6 +1741,11 @@ outnoexp:
     ogs_assert(ret == 0);    
 
     return 0;
+}
+
+void mme_s6a_send_ida(struct msg **ans)
+{
+
 }
 
 int mme_fd_init(void)

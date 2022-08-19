@@ -190,9 +190,9 @@ void mme_s6a_handle_idr(
     ogs_assert(mme_ue);
     ogs_assert(idr_message);    
 
-    if (idr_message->idr_flags & OGS_DIAM_S6A_IDR_FLAGS_EPS_LOCATION_INFO)
-        ogs_info("EPS Loci");
-    else
+    if (idr_message->idr_flags & OGS_DIAM_S6A_IDR_FLAGS_EPS_LOCATION_INFO) {
+        ogs_info("EPS LOCI");
+    } else
         ogs_info("Unsupported Flag");
     
     if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_de_registered)) {
