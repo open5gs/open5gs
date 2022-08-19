@@ -1629,7 +1629,7 @@ static int mme_ogs_diam_s6a_idr_cb( struct msg **msg, struct avp *avp,
     }
 
     if (idr_message->idr_flags & OGS_DIAM_S6A_IDR_FLAGS_EPS_LOCATION_INFO) {
-        ogs_info("EPS Loci %d", mme_ue->e_cgi.plmn_id);
+        /*ogs_info("EPS Loci %d", mme_ue->e_cgi.plmn_id);*/
         struct avp *avp_mme_location_information;
         struct avp *avp_e_utran_cell_global_identity;
         struct avp *avp_tracking_area_identity;
