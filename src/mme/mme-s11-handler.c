@@ -573,8 +573,7 @@ void mme_s11_handle_delete_session_response(
 
     } else if (action == OGS_GTP_DELETE_SEND_DETACH_ACCEPT) {
         if (mme_sess_count(mme_ue) == 1) /* Last Session */ {
-            ogs_assert(OGS_OK ==
-                nas_eps_send_detach_accept(mme_ue));
+            ogs_assert(OGS_OK == nas_eps_send_detach_accept(mme_ue));
         }
 
     } else if (action ==
