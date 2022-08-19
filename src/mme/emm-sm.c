@@ -128,11 +128,6 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 OGS_FSM_TRAN(s, emm_state_exception);
                 break;
             }
-            
-            if(mme_ue->paging.type == MME_PAGING_TYPE_DETACH_TO_UE) {
-                mme_send_after_paging(mme_ue, false);
-                break;
-            }
 
             if (!MME_UE_HAVE_IMSI(mme_ue)) {
                 ogs_info("Service request : Unknown UE");
@@ -548,11 +543,10 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
 
             CLEAR_MME_UE_TIMER(mme_ue->t3422);
 
-            if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
-                ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
-            } else {
-                mme_send_delete_session_or_mme_ue_context_release_detach(mme_ue);
-            }
+            rv = s1ap_send_ue_context_release_command(enb_ue,
+                    S1AP_Cause_PR_nas, S1AP_CauseNas_detach,
+                    S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0);
+            ogs_expect(rv == OGS_OK);
 
             OGS_FSM_TRAN(s, &emm_state_de_registered);
             break;
@@ -644,7 +638,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
             } else {
                 ogs_assert(mme_ue->t3422.pkbuf);
-                rv = nas_eps_send_detach_request(mme_ue, 0);
+                rv = nas_eps_send_detach_request(mme_ue);
                 if (rv == OGS_OK) {
                     mme_ue->t3422.retry_count++;
                 } else {

@@ -312,13 +312,22 @@ struct mme_ue_s {
 #define MME_EPS_TYPE_DETACH_REQUEST_TO_UE           6
         uint8_t     type;
         uint8_t     ksi;
-        union {
-            ogs_nas_eps_attach_type_t attach;
-            ogs_nas_eps_update_type_t update;
-            ogs_nas_service_type_t service;
-            ogs_nas_detach_type_t detach;
-            uint8_t data;
-        };
+        ogs_nas_eps_attach_type_t attach;
+        ogs_nas_eps_update_type_t update;
+        ogs_nas_service_type_t service;
+        ogs_nas_detach_type_t detach;
+
+        /* 1. MME initiated detach request to the UE.
+         *    (nas_eps.type = MME_EPS_TYPE_DETACH_REQUEST_TO_UE)
+         * 2. If UE is IDLE, Paging sent to the UE
+         * 3. If UE is wake-up, UE will send Server Request.
+         *    (nas_eps.type = MME_EPS_TYPE_SERVICE_REQUEST)
+         *
+         * So, we will lose the MME_EPS_TYPE_DETACH_REQUEST_TO_UE.
+         *
+         * We need more variable(nas_eps.detach_type)
+         * to keep Detach-Type whether UE-initiated or MME-initiaed.  */
+        uint8_t     detach_type;
     } nas_eps;
 
     /* UE identity */

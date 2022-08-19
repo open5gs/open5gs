@@ -27,7 +27,6 @@ extern "C" {
 #endif
 
 void mme_send_delete_session_or_detach(mme_ue_t *mme_ue);
-void mme_send_delete_session_or_mme_ue_context_release_detach(mme_ue_t *mme_ue);
 void mme_send_delete_session_or_mme_ue_context_release(mme_ue_t *mme_ue);
 void mme_send_release_access_bearer_or_ue_context_release(enb_ue_t *enb_ue);
 

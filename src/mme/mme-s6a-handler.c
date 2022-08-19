@@ -18,8 +18,9 @@
  */
 
 #include "nas-path.h"
-#include "mme-path.h"
 #include "s1ap-path.h"
+#include "sgsap-path.h"
+#include "mme-path.h"
 
 #include "mme-sm.h"
 #include "mme-s6a-handler.h"
@@ -140,16 +141,9 @@ uint8_t mme_s6a_handle_ula(
         ogs_assert(OGS_OK ==
             nas_eps_send_tau_accept(mme_ue,
                 S1AP_ProcedureCode_id_InitialContextSetup));
-    } else if (mme_ue->nas_eps.type == MME_EPS_TYPE_SERVICE_REQUEST) {
-        ogs_error("[%s] Service request", mme_ue->imsi_bcd);
-        return OGS_NAS_EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED;
-    } else if (mme_ue->nas_eps.type ==
-            MME_EPS_TYPE_DETACH_REQUEST_FROM_UE) {
-        ogs_error("[%s] Detach request", mme_ue->imsi_bcd);
-        return OGS_NAS_EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED;
     } else {
-        ogs_fatal("Invalid Type[%d]", mme_ue->nas_eps.type);
-        ogs_assert_if_reached();
+        ogs_error("Invalid Type[%d]", mme_ue->nas_eps.type);
+        return OGS_NAS_EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED;
     }
 
     return OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED;
@@ -158,31 +152,47 @@ uint8_t mme_s6a_handle_ula(
 void mme_s6a_handle_clr(
         mme_ue_t *mme_ue, ogs_diam_s6a_clr_message_t *clr_message)
 {
-    uint8_t detach_type = 0;
-
     ogs_assert(mme_ue);
     ogs_assert(clr_message);    
 
-    /* Set NAS EPS Type */
-    mme_ue->nas_eps.type = MME_EPS_TYPE_DETACH_REQUEST_TO_UE;
-    ogs_debug("    OGS_NAS_EPS TYPE[%d]", mme_ue->nas_eps.type);
+    /* Set EPS Detach */
+    memset(&mme_ue->nas_eps.detach, 0, sizeof(ogs_nas_detach_type_t));
 
     if (clr_message->clr_flags & OGS_DIAM_S6A_CLR_FLAGS_REATTACH_REQUIRED)
-        detach_type = OGS_NAS_DETACH_TYPE_TO_UE_RE_ATTACH_REQUIRED;
+        mme_ue->nas_eps.detach.value =
+            OGS_NAS_DETACH_TYPE_TO_UE_RE_ATTACH_REQUIRED;
     else
-        detach_type = OGS_NAS_DETACH_TYPE_TO_UE_RE_ATTACH_NOT_REQUIRED;
-    
+        mme_ue->nas_eps.detach.value =
+            OGS_NAS_DETACH_TYPE_TO_UE_RE_ATTACH_NOT_REQUIRED;
+
+    /* 1. MME initiated detach request to the UE.
+     *    (nas_eps.type = MME_EPS_TYPE_DETACH_REQUEST_TO_UE)
+     * 2. If UE is IDLE, Paging sent to the UE
+     * 3. If UE is wake-up, UE will send Server Request.
+     *    (nas_eps.type = MME_EPS_TYPE_SERVICE_REQUEST)
+     *
+     * So, we will lose the MME_EPS_TYPE_DETACH_REQUEST_TO_UE.
+     *
+     * We need more variable(nas_eps.detach_type)
+     * to keep Detach-Type whether UE-initiated or MME-initiaed.  */
+    mme_ue->nas_eps.type = mme_ue->nas_eps.detach_type =
+        MME_EPS_TYPE_DETACH_REQUEST_TO_UE;
+    ogs_debug("    OGS_NAS_EPS TYPE[%d]", mme_ue->nas_eps.type);
+
     if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_de_registered)) {
         /* Remove all trace of subscriber even when detached. */
         mme_ue_hash_remove(mme_ue);
         mme_ue_remove(mme_ue);
     } else if (ECM_IDLE(mme_ue)) {
-        MME_STORE_PAGING_INFO(mme_ue,
-                MME_PAGING_TYPE_DETACH_TO_UE, (void *)(uintptr_t)detach_type);
+        MME_STORE_PAGING_INFO(mme_ue, MME_PAGING_TYPE_DETACH_TO_UE, NULL);
         ogs_assert(OGS_OK == s1ap_send_paging(mme_ue, S1AP_CNDomain_ps));
     } else {
-        ogs_assert(OGS_OK == nas_eps_send_detach_request(mme_ue, detach_type));
-        mme_send_delete_session_or_mme_ue_context_release_detach(mme_ue);
+        ogs_assert(OGS_OK == nas_eps_send_detach_request(mme_ue));
+        if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
+            ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
+        } else {
+            mme_send_delete_session_or_detach(mme_ue);
+        }
     }
 }
 

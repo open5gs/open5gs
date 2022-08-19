@@ -256,7 +256,7 @@ int nas_eps_send_authentication_reject(mme_ue_t *mme_ue)
     return rv;
 }
 
-int nas_eps_send_detach_request(mme_ue_t *mme_ue, uint8_t detach_type)
+int nas_eps_send_detach_request(mme_ue_t *mme_ue)
 {
     int rv;
     ogs_pkbuf_t *emmbuf = NULL;
@@ -267,8 +267,7 @@ int nas_eps_send_detach_request(mme_ue_t *mme_ue, uint8_t detach_type)
         emmbuf = mme_ue->t3422.pkbuf;
         ogs_expect_or_return_val(emmbuf, OGS_ERROR);
     } else {
-        ogs_assert(detach_type);
-        emmbuf = emm_build_detach_request(mme_ue, detach_type);
+        emmbuf = emm_build_detach_request(mme_ue);
         ogs_expect_or_return_val(emmbuf, OGS_ERROR);
     }
 

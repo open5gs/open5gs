@@ -233,8 +233,6 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     ogs_assert(aia_message);
     e_utran_vector = &aia_message->e_utran_vector;
     ogs_assert(e_utran_vector);
-
-    s6a_message->isAnswer = true;
     
     /* Value of Result Code */
     ret = fd_msg_search_avp(*msg, ogs_diam_result_code, &avp);
@@ -643,8 +641,6 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     ogs_assert(ula_message);
     subscription_data = &ula_message->subscription_data;
     ogs_assert(subscription_data);
-
-    s6a_message->isAnswer = true;
 
     /* AVP: 'Result-Code'(268)
      * The Result-Code AVP indicates whether a particular request was completed
@@ -1440,8 +1436,6 @@ static int mme_ogs_diam_s6a_clr_cb( struct msg **msg, struct avp *avp,
     s6a_message->cmd_code = OGS_DIAM_S6A_CMD_CODE_CANCEL_LOCATION;
     clr_message = &s6a_message->clr_message;
     ogs_assert(clr_message);
-
-    s6a_message->isAnswer = false;
 
     /* Create answer header */
     qry = *msg;
