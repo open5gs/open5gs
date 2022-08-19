@@ -390,14 +390,16 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         s6a_message = e->s6a_message;
         ogs_assert(s6a_message);
 
-        enb_ue = enb_ue_cycle(mme_ue->enb_ue);
-        if (!enb_ue) {
-            ogs_error("S1 context has already been removed");
+        if (s6a_message->isAnswer) {
+            enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+            if (!enb_ue) {
+                ogs_error("S1 context has already been removed");
 
-            ogs_subscription_data_free(
-                    &s6a_message->ula_message.subscription_data);
-            ogs_free(s6a_message);
-            break;
+                ogs_subscription_data_free(
+                        &s6a_message->ula_message.subscription_data);
+                ogs_free(s6a_message);
+                break;
+            }
         }
 
         switch (s6a_message->cmd_code) {

@@ -18,6 +18,7 @@
  */
 
 #include "nas-path.h"
+#include "mme-path.h"
 #include "s1ap-path.h"
 
 #include "mme-sm.h"
@@ -181,6 +182,7 @@ void mme_s6a_handle_clr(
         ogs_assert(OGS_OK == s1ap_send_paging(mme_ue, S1AP_CNDomain_ps));
     } else {
         ogs_assert(OGS_OK == nas_eps_send_detach_request(mme_ue, detach_type));
+        mme_send_delete_session_or_mme_ue_context_release_detach(mme_ue);
     }
 }
 

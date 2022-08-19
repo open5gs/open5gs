@@ -128,6 +128,11 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 OGS_FSM_TRAN(s, emm_state_exception);
                 break;
             }
+            
+            if(mme_ue->paging.type == MME_PAGING_TYPE_DETACH_TO_UE) {
+                mme_send_after_paging(mme_ue, false);
+                break;
+            }
 
             if (!MME_UE_HAVE_IMSI(mme_ue)) {
                 ogs_info("Service request : Unknown UE");
@@ -546,7 +551,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
                 ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
             } else {
-                mme_send_delete_session_or_detach(mme_ue);
+                mme_send_delete_session_or_mme_ue_context_release_detach(mme_ue);
             }
 
             OGS_FSM_TRAN(s, &emm_state_de_registered);
