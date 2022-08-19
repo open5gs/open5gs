@@ -268,6 +268,8 @@ int upf_pfcp_send_session_report_request(
     ogs_pfcp_header_t h;
     ogs_pfcp_xact_t *xact = NULL;
 
+    upf_metrics_inst_global_inc(UPF_METR_GLOB_CTR_SM_N4SESSIONREPORT);
+
     ogs_assert(sess);
     ogs_assert(report);
 
