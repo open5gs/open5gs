@@ -61,8 +61,6 @@ static void stats_add_mme_ue(mme_ue_t *mme_ue);
 static void stats_remove_mme_ue(mme_ue_t *mme_ue);
 static void stats_add_mme_session(mme_sess_t *sess);
 static void stats_remove_mme_session(mme_sess_t *sess);
-static void stats_write_list_ues(void);
-static void stats_write_list_sessions(void);
 
 static bool compare_ue_info(mme_sgw_t *node, enb_ue_t *enb_ue);
 static mme_sgw_t *selected_sgw_node(mme_sgw_t *current, enb_ue_t *enb_ue);
@@ -2682,6 +2680,8 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd)
 
     ogs_hash_set(self.imsi_ue_hash, mme_ue->imsi, mme_ue->imsi_len, mme_ue);
 
+    stats_write_list_ues();
+
     return OGS_OK;
 }
 
@@ -3500,7 +3500,7 @@ uint8_t mme_selected_enc_algorithm(mme_ue_t *mme_ue)
     return 0;
 }
 
-static void stats_write_list_ues(void) {
+void stats_write_list_ues(void) {
     mme_ue_t *mme_ue = NULL;
     char *buffer = NULL;
     char *ptr = NULL;
@@ -3518,7 +3518,7 @@ static void stats_write_list_ues(void) {
 #define MAX_APN 63
 #define MAX_SESSION_STRING_LEN (21 + OGS_MAX_IMSI_BCD_LEN + MAX_APN + INET_ADDRSTRLEN + INET6_ADDRSTRLEN)
 
-static void stats_write_list_sessions(void) {
+void stats_write_list_sessions(void) {
     mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess = NULL;
     ogs_session_t *session = NULL;
