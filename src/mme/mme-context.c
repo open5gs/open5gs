@@ -1843,7 +1843,7 @@ mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
     char buffer[20];
     sprintf(buffer, "%d\n", ogs_list_count(&self.enb_list));
     ogs_write_file_value("mme/num_enbs", buffer);
-    stats_write_list_enbs();
+    stats_write_list_mme_enbs();
 
     return enb;
 }
@@ -1883,7 +1883,7 @@ int mme_enb_remove(mme_enb_t *enb)
     char buffer[20];
     sprintf(buffer, "%d\n", ogs_list_count(&self.enb_list));
     ogs_write_file_value("mme/num_enbs", buffer);
-    stats_write_list_enbs();
+    stats_write_list_mme_enbs();
 
     return OGS_OK;
 }
@@ -2682,7 +2682,7 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd)
 
     ogs_hash_set(self.imsi_ue_hash, mme_ue->imsi, mme_ue->imsi_len, mme_ue);
 
-    stats_write_list_ues();
+    stats_write_list_mme_ues();
 
     return OGS_OK;
 }
@@ -3502,7 +3502,7 @@ uint8_t mme_selected_enc_algorithm(mme_ue_t *mme_ue)
     return 0;
 }
 
-void stats_write_list_enbs(void) {
+void stats_write_list_mme_enbs(void) {
     mme_enb_t *enb = NULL;
 
     char buf[OGS_ADDRSTRLEN];
@@ -3525,7 +3525,7 @@ void stats_write_list_enbs(void) {
     ogs_free(buffer);
 }
 
-void stats_write_list_ues(void) {
+void stats_write_list_mme_ues(void) {
     mme_ue_t *mme_ue = NULL;
     char *buffer = NULL;
     char *ptr = NULL;
@@ -3543,7 +3543,7 @@ void stats_write_list_ues(void) {
 #define MAX_APN 63
 #define MAX_SESSION_STRING_LEN (21 + OGS_MAX_IMSI_BCD_LEN + MAX_APN + INET_ADDRSTRLEN + INET6_ADDRSTRLEN)
 
-void stats_write_list_sessions(void) {
+void stats_write_list_mme_sessions(void) {
     mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess = NULL;
     ogs_session_t *session = NULL;
@@ -3593,7 +3593,7 @@ static void stats_add_mme_ue(mme_ue_t *enb_ue)
     char buffer[20];
     sprintf(buffer, "%d\n", num_of_mme_ue);
     ogs_write_file_value("mme/num_ues", buffer);
-    stats_write_list_ues();
+    stats_write_list_mme_ues();
 }
 
 static void stats_remove_mme_ue(mme_ue_t *enb_ue)
@@ -3603,7 +3603,7 @@ static void stats_remove_mme_ue(mme_ue_t *enb_ue)
     char buffer[20];
     sprintf(buffer, "%d\n", num_of_mme_ue);
     ogs_write_file_value("mme/num_ues", buffer);
-    stats_write_list_ues();
+    stats_write_list_mme_ues();
 }
 
 static void stats_add_mme_session(mme_sess_t *sess)
@@ -3616,7 +3616,7 @@ static void stats_add_mme_session(mme_sess_t *sess)
     sprintf(buffer, "%d\n", num_of_mme_sess);
     ogs_write_file_value("mme/num_sessions", buffer);
 
-    stats_write_list_sessions();
+    stats_write_list_mme_sessions();
 }
 
 static void stats_remove_mme_session(mme_sess_t *sess)
@@ -3629,5 +3629,5 @@ static void stats_remove_mme_session(mme_sess_t *sess)
     sprintf(buffer, "%d\n", num_of_mme_sess);
     ogs_write_file_value("mme/num_sessions", buffer);
 
-    stats_write_list_sessions();
+    stats_write_list_mme_sessions();
 }
