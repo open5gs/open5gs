@@ -3508,11 +3508,17 @@ void stats_write_list_enbs(void) {
     char buf[OGS_ADDRSTRLEN];
     char *buffer = NULL;
     char *ptr = NULL;
+    int i = 0;
 
     ptr = buffer = ogs_malloc(OGS_MAX_IMSI_BCD_LEN * ogs_app()->max.ue);
 
     ogs_list_for_each(&self.enb_list, enb) {
-        ptr += sprintf(ptr, "ip:%s\n", OGS_ADDR(enb->sctp.addr, buf));
+        ptr += sprintf(ptr, "ip:%s tac:%u",
+            OGS_ADDR(enb->sctp.addr, buf),enb->supported_ta_list[0].tac);
+        for(i = 1; i < enb->num_of_supported_ta_list; i++) {
+            ptr += sprintf(ptr, ",%u",enb->supported_ta_list[i].tac);
+        }
+        ptr += sprintf(ptr, "\n");
     }
 
     ogs_write_file_value("mme/list_enbs", buffer);
