@@ -871,6 +871,7 @@ void mme_ebi_pool_clear(mme_ue_t *mme_ue);
 uint8_t mme_selected_int_algorithm(mme_ue_t *mme_ue);
 uint8_t mme_selected_enc_algorithm(mme_ue_t *mme_ue);
 
+void stats_write_list_enbs(void);
 void stats_write_list_ues(void);
 void stats_write_list_sessions(void);
 

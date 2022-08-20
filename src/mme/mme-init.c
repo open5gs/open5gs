@@ -84,10 +84,10 @@ int mme_initialize()
     ogs_write_file_value("mme/num_ues", buffer);
     ogs_write_file_value("mme/num_sessions", buffer);
 
-    sprintf(buffer, "List of Active Sessions\n");    
-    ogs_write_file_value("mme/list_sessions", buffer);
-    sprintf(buffer, "List of Attached UEs\n");
+    sprintf(buffer, "\n");    
+    ogs_write_file_value("mme/list_enbs", buffer);
     ogs_write_file_value("mme/list_ues", buffer);
+    ogs_write_file_value("mme/list_sessions", buffer);
 
     return OGS_OK;
 }

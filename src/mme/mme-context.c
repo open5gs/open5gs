@@ -1843,6 +1843,7 @@ mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
     char buffer[20];
     sprintf(buffer, "%d\n", ogs_list_count(&self.enb_list));
     ogs_write_file_value("mme/num_enbs", buffer);
+    stats_write_list_enbs();
 
     return enb;
 }
@@ -1882,6 +1883,7 @@ int mme_enb_remove(mme_enb_t *enb)
     char buffer[20];
     sprintf(buffer, "%d\n", ogs_list_count(&self.enb_list));
     ogs_write_file_value("mme/num_enbs", buffer);
+    stats_write_list_enbs();
 
     return OGS_OK;
 }
@@ -3498,6 +3500,23 @@ uint8_t mme_selected_enc_algorithm(mme_ue_t *mme_ue)
     }
 
     return 0;
+}
+
+void stats_write_list_enbs(void) {
+    mme_enb_t *enb = NULL;
+
+    char buf[OGS_ADDRSTRLEN];
+    char *buffer = NULL;
+    char *ptr = NULL;
+
+    ptr = buffer = ogs_malloc(OGS_MAX_IMSI_BCD_LEN * ogs_app()->max.ue);
+
+    ogs_list_for_each(&self.enb_list, enb) {
+        ptr += sprintf(ptr, "ip:%s\n", OGS_ADDR(enb->sctp.addr, buf));
+    }
+
+    ogs_write_file_value("mme/list_enbs", buffer);
+    ogs_free(buffer);
 }
 
 void stats_write_list_ues(void) {
