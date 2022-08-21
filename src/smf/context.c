@@ -2904,8 +2904,8 @@ void stats_write_list_smf_sessions(void) {
             ptr += sprintf(ptr, "imsi:%s apn:%s ip4:%s ip6:%s\n",
                 smf_ue->imsi_bcd,
                 sess->session.name ? sess->session.name : "",
-                sess->session.ue_ip.ipv4 ? OGS_INET_NTOP(sess->session.ue_ip.addr, buf1) : "",
-                sess->session.ue_ip.ipv6 ? OGS_INET6_NTOP(sess->session.ue_ip.addr6, buf2) : "");
+                sess->session.ue_ip.ipv4 ? OGS_INET_NTOP(&sess->session.ue_ip.addr, buf1) : "",
+                sess->session.ue_ip.ipv6 ? OGS_INET6_NTOP(&sess->session.ue_ip.addr6, buf2) : "");
         }
     }
 
