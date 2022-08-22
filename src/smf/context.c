@@ -37,8 +37,6 @@ static int context_initialized = 0;
 static int num_of_smf_ue = 0;
 static int num_of_smf_sess = 0;
 
-static void stats_write_list_smf_ues(void);
-static void stats_write_list_smf_sessions(void);
 static void stats_add_smf_session(void);
 static void stats_remove_smf_session(void);
 static void stats_add_smf_ue(void);

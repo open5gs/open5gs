@@ -191,8 +191,8 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         else
             enb->max_num_of_ostreams = max_num_of_ostreams;
 
-        ogs_info("eNB-N2[%s] max_num_of_ostreams : %d",
-            OGS_ADDR(enb->sctp.addr, buf), enb->max_num_of_ostreams);
+        ogs_info("eNB-N2[%s] tac: %u max_num_of_ostreams : %d",
+            OGS_ADDR(enb->sctp.addr, buf), enb->supported_ta_list[0].tac, enb->max_num_of_ostreams);
 
         break;
 

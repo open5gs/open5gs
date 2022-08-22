@@ -877,7 +877,6 @@ static void stats_add_sgwc_ue(sgwc_ue_t *sgwc_ue)
     char buffer[20];
     sprintf(buffer, "%d\n", num_of_sgwc_ue);
     ogs_write_file_value("sgwc/num_ues", buffer);
-    ogs_add_line_file("sgwc/list_ues", sgwc_ue->imsi_bcd);
 }
 
 static void stats_remove_sgwc_ue(sgwc_ue_t *sgwc_ue)
@@ -888,37 +887,24 @@ static void stats_remove_sgwc_ue(sgwc_ue_t *sgwc_ue)
     char buffer[20];
     sprintf(buffer, "%d\n", num_of_sgwc_ue);
     ogs_write_file_value("sgwc/num_ues", buffer);
-    ogs_remove_line_file("sgwc/list_ues", sgwc_ue->imsi_bcd);
 }
 
 static void stats_add_sgwc_session(sgwc_sess_t *sess)
 {
-    char buffer[150];
-
     num_of_sgwc_sess = num_of_sgwc_sess + 1;
     ogs_info("[Added] Number of SGWC-Sessions is now %d", num_of_sgwc_sess);
 
+    char buffer[20];
     sprintf(buffer, "%d\n", num_of_sgwc_sess);
     ogs_write_file_value("sgwc/num_sessions", buffer);
-
-    sprintf(buffer, "imsi:%s apn:%s",
-        sess->sgwc_ue->imsi_bcd ? sess->sgwc_ue->imsi_bcd : "",
-        sess->session.name ? sess->session.name : "");
-    ogs_add_line_file("sgwc/list_sessions", buffer);
 }
 
 static void stats_remove_sgwc_session(sgwc_sess_t *sess)
 {
-    char buffer[150];
-
     num_of_sgwc_sess = num_of_sgwc_sess - 1;
     ogs_info("[Removed] Number of SGWC-Sessions is now %d", num_of_sgwc_sess);
 
+    char buffer[20];
     sprintf(buffer, "%d\n", num_of_sgwc_sess);
     ogs_write_file_value("sgwc/num_sessions", buffer);
-
-    sprintf(buffer, "imsi:%s apn:%s",
-        sess->sgwc_ue->imsi_bcd ? sess->sgwc_ue->imsi_bcd : "",
-        sess->session.name ? sess->session.name : "");
-    ogs_remove_line_file("sgwc/list_sessions", buffer);
 }

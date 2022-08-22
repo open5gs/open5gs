@@ -509,6 +509,9 @@ void smf_pf_identifier_pool_final(smf_bearer_t *bearer);
 void smf_pf_precedence_pool_init(smf_sess_t *sess);
 void smf_pf_precedence_pool_final(smf_sess_t *sess);
 
+void stats_write_list_smf_ues(void);
+void stats_write_list_smf_sessions(void);
+
 #ifdef __cplusplus
 }
 #endif
