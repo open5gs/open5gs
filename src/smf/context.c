@@ -1441,6 +1441,8 @@ uint8_t smf_sess_set_ue_ip(smf_sess_t *sess)
         ogs_assert_if_reached();
     }
 
+    stats_write_list_smf_sessions();
+
     return cause_value;
 }
 
