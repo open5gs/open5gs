@@ -54,6 +54,13 @@ int smf_fd_init(void)
 
 void smf_fd_final(void)
 {
+    if (smf_self()->diam_conf_path == NULL &&
+        (smf_self()->diam_config->cnf_diamid == NULL ||
+        smf_self()->diam_config->cnf_diamrlm == NULL ||
+        smf_self()->diam_config->cnf_addr == NULL)) {
+        return;
+    }
+
     smf_gx_final();
     smf_s6b_final();
 
