@@ -803,7 +803,7 @@ for (k, v) in sorted_msg_list:
         f.write("                    &ogs_pfcp_msg_desc_%s, pkbuf, OGS_TLV_MODE_T2_L2);\n" % v_lower(k))
         f.write("            break;\n")
 f.write("""        default:
-            ogs_warn("Not implmeneted(type:%d)", pfcp_message->h.type);
+            ogs_warn("Not implemented(type:%d)", pfcp_message->h.type);
             break;
     }
 
@@ -827,7 +827,7 @@ for (k, v) in sorted_msg_list:
         f.write("                    &pfcp_message->%s, OGS_TLV_MODE_T2_L2);\n" % v_lower(k))
         f.write("            break;\n")
 f.write("""        default:
-            ogs_warn("Not implmeneted(type:%d)", pfcp_message->h.type);
+            ogs_warn("Not implemented(type:%d)", pfcp_message->h.type);
             break;
     }
 
