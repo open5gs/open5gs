@@ -1629,6 +1629,27 @@ static int mme_ogs_diam_s6a_idr_cb( struct msg **msg, struct avp *avp,
     }
 
     if (idr_message->idr_flags & OGS_DIAM_S6A_IDR_FLAGS_EPS_LOCATION_INFO) {
+        char buf[8] = "\x0";
+
+        ogs_nas_plmn_id_t myplmn;
+
+        uint16_t mytai = mme_ue->tai.tac;
+        char taihex[4];
+        sprintf(taihex, "%x", mytai);
+
+        uint8_t ida_tac[5];
+        memcpy(ida_tac, ogs_nas_from_plmn_id(&myplmn, &mme_ue->tai.plmn_id), 3);
+        memcpy(ida_tac+3, OGS_HEX(taihex,sizeof(taihex),buf), 2);
+
+
+        uint16_t myecgi = mme_ue->e_cgi.cell_id;
+        char cellidhex[8];
+        sprintf(cellidhex, "%x", myecgi);
+
+        uint8_t ida_ecgi[7];
+        memcpy(ida_ecgi, ogs_nas_from_plmn_id(&myplmn, &mme_ue->e_cgi.plmn_id), 3);
+        memcpy(ida_ecgi+3, OGS_HEX(taihex,sizeof(taihex),buf), 5);
+
         /*ogs_info("EPS Loci %d", mme_ue->e_cgi.plmn_id);*/
         struct avp *avp_mme_location_information;
         struct avp *avp_e_utran_cell_global_identity;
@@ -1643,8 +1664,8 @@ static int mme_ogs_diam_s6a_idr_cb( struct msg **msg, struct avp *avp,
 
         ret = fd_msg_avp_new(ogs_diam_s6a_e_utran_cell_global_identity, 0, &avp_e_utran_cell_global_identity);
         ogs_assert(ret == 0);
-        val.os.data = (unsigned char *)"456";
-        val.os.len  = 3;
+        val.os.data = ida_ecgi;
+        val.os.len  = 7;
         ret = fd_msg_avp_setvalue(avp_e_utran_cell_global_identity, &val);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add(avp_mme_location_information, MSG_BRW_LAST_CHILD, avp_e_utran_cell_global_identity);
@@ -1652,12 +1673,12 @@ static int mme_ogs_diam_s6a_idr_cb( struct msg **msg, struct avp *avp,
 
         ret = fd_msg_avp_new(ogs_diam_s6a_tracking_area_identity, 0, &avp_tracking_area_identity);
         ogs_assert(ret == 0);
-        val.os.data = (unsigned char *)"123";
-        val.os.len  = 3;
+        val.os.data = ida_tac;
+        val.os.len  = 5;
         ret = fd_msg_avp_setvalue(avp_tracking_area_identity, &val);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add(avp_mme_location_information, MSG_BRW_LAST_CHILD, avp_tracking_area_identity);
-        ogs_assert(ret == 0);    
+        ogs_assert(ret == 0);
 
         ret = fd_msg_avp_new(ogs_diam_s6a_age_of_location_information, 0, &avp_age_of_location_information);
         ogs_assert(ret == 0);
