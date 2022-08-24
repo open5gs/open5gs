@@ -2846,7 +2846,7 @@ int ogs_gtp2_parse_msg(ogs_gtp2_message_t *gtp2_message, ogs_pkbuf_t *pkbuf)
                 &ogs_gtp2_tlv_desc_modify_access_bearers_response, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
     default:
-        ogs_warn("Not implmeneted(type:%d)", gtp2_message->h.type);
+        ogs_warn("Not implemented(type:%d)", gtp2_message->h.type);
         break;
     }
 
@@ -2986,7 +2986,7 @@ ogs_pkbuf_t *ogs_gtp2_build_msg(ogs_gtp2_message_t *gtp2_message)
                 &gtp2_message->modify_access_bearers_response, OGS_TLV_MODE_T1_L2_I1);
         break;
     default:
-        ogs_warn("Not implmeneted(type:%d)", gtp2_message->h.type);
+        ogs_warn("Not implemented(type:%d)", gtp2_message->h.type);
         break;
     }
 

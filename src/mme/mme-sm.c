@@ -566,7 +566,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                 &gtp_message.bearer_resource_failure_indication);
             break;
         default:
-            ogs_warn("Not implmeneted(type:%d)", gtp_message.h.type);
+            ogs_warn("Not implemented(type:%d)", gtp_message.h.type);
             break;
         }
         ogs_pkbuf_free(pkbuf);

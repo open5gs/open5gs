@@ -294,7 +294,7 @@ void smf_gsm_state_initial(ogs_fsm_t *s, smf_event_t *e)
             break;
 
         default:
-            ogs_error("Not implmeneted(type:%d)", gtp2_message->h.type);
+            ogs_error("Not implemented(type:%d)", gtp2_message->h.type);
         }
         break;
 
@@ -808,7 +808,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
 
         default:
-            ogs_error("Not implmeneted(type:%d)", gtp2_message->h.type);
+            ogs_error("Not implemented(type:%d)", gtp2_message->h.type);
         }
         break;
 

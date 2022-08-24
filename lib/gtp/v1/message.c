@@ -2520,7 +2520,7 @@ int ogs_gtp1_parse_msg(ogs_gtp1_message_t *gtp1_message, ogs_pkbuf_t *pkbuf)
                 &ogs_gtp1_tlv_desc_mbms_session_update_response, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     default:
-        ogs_warn("Not implmeneted(type:%d)", gtp1_message->h.type);
+        ogs_warn("Not implemented(type:%d)", gtp1_message->h.type);
         break;
     }
 
@@ -2760,7 +2760,7 @@ ogs_pkbuf_t *ogs_gtp1_build_msg(ogs_gtp1_message_t *gtp1_message)
                 &gtp1_message->mbms_session_update_response, OGS_TLV_MODE_T1_L2);
         break;
     default:
-        ogs_warn("Not implmeneted(type:%d)", gtp1_message->h.type);
+        ogs_warn("Not implemented(type:%d)", gtp1_message->h.type);
         break;
     }
 

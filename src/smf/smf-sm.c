@@ -192,7 +192,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 sess, gtp_xact, &gtp2_message.bearer_resource_command);
             break;
         default:
-            ogs_warn("Not implmeneted(type:%d)", gtp2_message.h.type);
+            ogs_warn("Not implemented(type:%d)", gtp2_message.h.type);
             break;
         }
         ogs_pkbuf_free(recvbuf);
@@ -272,7 +272,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_error("Rx unexpected Error Indication in GTPC port");
             break;
         default:
-            ogs_warn("Not implmeneted(type:%d)", gtp1_message.h.type);
+            ogs_warn("Not implemented(type:%d)", gtp1_message.h.type);
             break;
         }
         ogs_pkbuf_free(recvbuf);
