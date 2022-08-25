@@ -27,8 +27,6 @@
 
 #include "ipfw/ipfw2.h"
 
-static void stats_add_smf_session_info(smf_sess_t *sess);
-
 static void pfcp_sess_timeout(ogs_pfcp_xact_t *xact, void *data)
 {
     uint8_t type;
@@ -270,7 +268,7 @@ uint8_t smf_s5c_handle_create_session_request(
     ogs_debug("    SGW_S5C_TEID[0x%x] SMF_N4_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->smf_n4_teid);
 
-//    stats_add_smf_session_info(sess);
+   stats_write_list_smf_sessions();
 
     /* Remove all previous bearer */
     smf_bearer_remove_all(sess);
@@ -1421,19 +1419,4 @@ void smf_s5c_handle_bearer_resource_command(
         rv = ogs_gtp_xact_commit(xact);
         ogs_expect(rv == OGS_OK);
     }
-}
-
-static void stats_add_smf_session_info(smf_sess_t *sess)
-{
-    char buf1[OGS_ADDRSTRLEN];
-    char buf2[OGS_ADDRSTRLEN];
-    char buffer[150];
-
-    sprintf(buffer, "imsi:%s apn:%s ip4:%s ip6:%s sgw_teid:%x smf_teid:%x",
-        sess->smf_ue->imsi_bcd ? sess->smf_ue->imsi_bcd : "",
-        sess->session.name ? sess->session.name : "",
-        sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
-        sess->ipv6 ? OGS_INET6_NTOP(sess->ipv6->addr, buf2) : "",
-        sess->sgw_s5c_teid, sess->smf_n4_teid);
-    ogs_add_line_file("smf/list_sessions", buffer);
 }
