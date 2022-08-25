@@ -196,26 +196,6 @@ void mme_s6a_handle_clr(
     }
 }
 
-void mme_s6a_handle_idr(
-        mme_ue_t *mme_ue, ogs_diam_s6a_idr_message_t *idr_message)
-{
-    ogs_assert(mme_ue);
-    ogs_assert(idr_message);    
-
-    if (idr_message->idr_flags & OGS_DIAM_S6A_IDR_FLAGS_EPS_LOCATION_INFO) {
-        ogs_info("EPS LOCI");
-    } else
-        ogs_info("Unsupported Flag");
-    
-    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_de_registered)) {
-        ogs_info("Dereg");
-    } else if (ECM_IDLE(mme_ue)) {
-        ogs_info("Idle");
-    } else {
-        ogs_info("Unknown state");
-    }
-}
-
 /* 3GPP TS 29.272 Annex A; Table !.a:
  * Mapping from S6a error codes to NAS Cause Codes */
 static uint8_t emm_cause_from_diameter(

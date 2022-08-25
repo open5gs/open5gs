@@ -1607,9 +1607,9 @@ static int mme_ogs_diam_s6a_idr_cb( struct msg **msg, struct avp *avp,
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
         if (hdr->avp_value->os.len) {
-            ogs_info("WIP: Process New Subscription Data");
+            ogs_debug("WIP: Process New Subscription Data");
         } else {
-            ogs_info("No Sub Data, good to check IDR Flags");
+            ogs_debug("No Sub Data, ok to check IDR Flags");
         }
     }
 
@@ -1630,28 +1630,27 @@ static int mme_ogs_diam_s6a_idr_cb( struct msg **msg, struct avp *avp,
     if (idr_message->idr_flags & OGS_DIAM_S6A_IDR_FLAGS_EPS_LOCATION_INFO) {
         char buf[8];
 
-        ogs_nas_plmn_id_t myplmn;
-
-        uint16_t mytai = mme_ue->tai.tac;
-        char taihex[5];
-        sprintf(taihex, "%04x", mytai);
-
-        uint8_t ida_tac[5];
-        memcpy(ida_tac, ogs_nas_from_plmn_id(&myplmn, &mme_ue->tai.plmn_id), 3);
-        memcpy(ida_tac+3, OGS_HEX(taihex,sizeof(taihex),buf), 2);
-
-        uint32_t myecgi = mme_ue->e_cgi.cell_id;
-        char cellidhex[9];
-        sprintf(cellidhex, "%08x", myecgi);
-
         uint8_t ida_ecgi[7];
-        memcpy(ida_ecgi, ogs_nas_from_plmn_id(&myplmn, &mme_ue->e_cgi.plmn_id), 3);
-        memcpy(ida_ecgi+3, OGS_HEX(cellidhex,sizeof(cellidhex),buf), 5);
-
+        uint8_t ida_tai[5];
         ogs_time_t ida_age;
-        ida_age = (ogs_time_now() - mme_ue->ue_location_timestamp)/1000000/60;
 
-        /*ogs_info("EPS Loci %d", mme_ue->e_cgi.plmn_id);*/
+        ogs_nas_plmn_id_t ida_plmn_buf;
+        char ida_cell_id_hex[9];
+        char ida_tac_hex[5];
+
+        uint32_t ida_cell_id = mme_ue->e_cgi.cell_id;
+        uint16_t ida_tac = mme_ue->tai.tac;
+        
+        sprintf(ida_cell_id_hex, "%08x", ida_cell_id);
+        memcpy(ida_ecgi, ogs_nas_from_plmn_id(&ida_plmn_buf, &mme_ue->e_cgi.plmn_id), 3);
+        memcpy(ida_ecgi + 3, OGS_HEX(ida_cell_id_hex,sizeof(ida_cell_id_hex),buf), 5);
+
+        sprintf(ida_tac_hex, "%04x", ida_tac);
+        memcpy(ida_tai, ogs_nas_from_plmn_id(&ida_plmn_buf, &mme_ue->tai.plmn_id), 3);
+        memcpy(ida_tai + 3, OGS_HEX(ida_tac_hex,sizeof(ida_tac_hex),buf), 2);
+
+        ida_age = (ogs_time_now() - mme_ue->ue_location_timestamp) / 1000000 / 60;
+
         struct avp *avp_mme_location_information;
         struct avp *avp_e_utran_cell_global_identity;
         struct avp *avp_tracking_area_identity;
@@ -1674,7 +1673,7 @@ static int mme_ogs_diam_s6a_idr_cb( struct msg **msg, struct avp *avp,
 
         ret = fd_msg_avp_new(ogs_diam_s6a_tracking_area_identity, 0, &avp_tracking_area_identity);
         ogs_assert(ret == 0);
-        val.os.data = ida_tac;
+        val.os.data = ida_tai;
         val.os.len  = 5;
         ret = fd_msg_avp_setvalue(avp_tracking_area_identity, &val);
         ogs_assert(ret == 0);
@@ -1756,11 +1755,6 @@ outnoexp:
     ogs_assert(ret == 0);    
 
     return 0;
-}
-
-void mme_s6a_send_ida(struct msg **ans)
-{
-
 }
 
 int mme_fd_init(void)

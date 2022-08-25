@@ -80,7 +80,6 @@ struct dict_object *ogs_diam_s6a_e_utran_cell_global_identity = NULL;
 struct dict_object *ogs_diam_s6a_tracking_area_identity = NULL;
 struct dict_object *ogs_diam_s6a_age_of_location_information = NULL;
 
-
 struct dict_object *ogs_diam_s6a_terminal_information = NULL;
 struct dict_object *ogs_diam_s6a_imei = NULL;
 struct dict_object *ogs_diam_s6a_software_version = NULL;
