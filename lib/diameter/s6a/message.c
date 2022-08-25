@@ -32,10 +32,13 @@ struct dict_object *ogs_diam_s6a_cmd_pur = NULL;
 struct dict_object *ogs_diam_s6a_cmd_pua = NULL;
 struct dict_object *ogs_diam_s6a_cmd_clr = NULL;
 struct dict_object *ogs_diam_s6a_cmd_cla = NULL;
+struct dict_object *ogs_diam_s6a_cmd_idr = NULL;
+struct dict_object *ogs_diam_s6a_cmd_ida = NULL;
 
 struct dict_object *ogs_diam_s6a_ulr_flags = NULL;
 struct dict_object *ogs_diam_s6a_ula_flags = NULL;
 struct dict_object *ogs_diam_s6a_clr_flags = NULL;
+struct dict_object *ogs_diam_s6a_idr_flags = NULL;
 struct dict_object *ogs_diam_s6a_cancellation_type = NULL;
 struct dict_object *ogs_diam_s6a_subscription_data = NULL;
 struct dict_object *ogs_diam_s6a_req_eutran_auth_info = NULL;
@@ -71,6 +74,11 @@ struct dict_object *ogs_diam_s6a_pre_emption_capability = NULL;
 struct dict_object *ogs_diam_s6a_pre_emption_vulnerability = NULL;
 struct dict_object *ogs_diam_s6a_pdn_gw_allocation_type = NULL;
 struct dict_object *ogs_diam_s6a_vplmn_dynamic_address_allowed = NULL;
+struct dict_object *ogs_diam_s6a_eps_location_information = NULL;
+struct dict_object *ogs_diam_s6a_mme_location_information = NULL;
+struct dict_object *ogs_diam_s6a_e_utran_cell_global_identity = NULL;
+struct dict_object *ogs_diam_s6a_tracking_area_identity = NULL;
+struct dict_object *ogs_diam_s6a_age_of_location_information = NULL;
 
 struct dict_object *ogs_diam_s6a_terminal_information = NULL;
 struct dict_object *ogs_diam_s6a_imei = NULL;
@@ -96,11 +104,14 @@ int ogs_diam_s6a_init(void)
     CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME, "Purge-UE-Request", &ogs_diam_s6a_cmd_pur);
     CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME, "Purge-UE-Answer", &ogs_diam_s6a_cmd_pua);
     CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME, "Cancel-Location-Request", &ogs_diam_s6a_cmd_clr);
-    CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME, "Cancel-Location-Answer", &ogs_diam_s6a_cmd_cla);    
+    CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME, "Cancel-Location-Answer", &ogs_diam_s6a_cmd_cla);
+    CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME, "Insert-Subscriber-Data-Request", &ogs_diam_s6a_cmd_idr);
+    CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME, "Insert-Subscriber-Data-Answer", &ogs_diam_s6a_cmd_ida);
 
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "ULR-Flags", &ogs_diam_s6a_ulr_flags);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "ULA-Flags", &ogs_diam_s6a_ula_flags);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "CLR-Flags", &ogs_diam_s6a_clr_flags);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "IDR-Flags", &ogs_diam_s6a_idr_flags);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Cancellation-Type", &ogs_diam_s6a_cancellation_type);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "UE-SRVCC-Capability", &ogs_diam_s6a_ue_srvcc_capability);
 
@@ -141,6 +152,12 @@ int ogs_diam_s6a_init(void)
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Network-Access-Mode", &ogs_diam_s6a_network_access_mode);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Access-Restriction-Data", &ogs_diam_s6a_access_restriction_data);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Subscribed-Periodic-RAU-TAU-Timer", &ogs_diam_s6a_subscribed_rau_tau_timer);
+
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "EPS-Location-Information", &ogs_diam_s6a_eps_location_information);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "MME-Location-Information", &ogs_diam_s6a_mme_location_information);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "E-UTRAN-Cell-Global-Identity", &ogs_diam_s6a_e_utran_cell_global_identity);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Tracking-Area-Identity", &ogs_diam_s6a_tracking_area_identity);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Age-Of-Location-Information", &ogs_diam_s6a_age_of_location_information);
 
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Terminal-Information", &ogs_diam_s6a_terminal_information);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "IMEI", &ogs_diam_s6a_imei);

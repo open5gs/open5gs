@@ -78,10 +78,13 @@ extern struct dict_object *ogs_diam_s6a_cmd_pur;
 extern struct dict_object *ogs_diam_s6a_cmd_pua;
 extern struct dict_object *ogs_diam_s6a_cmd_clr;
 extern struct dict_object *ogs_diam_s6a_cmd_cla;
+extern struct dict_object *ogs_diam_s6a_cmd_idr;
+extern struct dict_object *ogs_diam_s6a_cmd_ida;
 
 extern struct dict_object *ogs_diam_s6a_ulr_flags;
 extern struct dict_object *ogs_diam_s6a_ula_flags;
 extern struct dict_object *ogs_diam_s6a_clr_flags;
+extern struct dict_object *ogs_diam_s6a_idr_flags;
 extern struct dict_object *ogs_diam_s6a_cancellation_type;
 extern struct dict_object *ogs_diam_s6a_subscription_data;
 extern struct dict_object *ogs_diam_s6a_req_eutran_auth_info;
@@ -117,6 +120,11 @@ extern struct dict_object *ogs_diam_s6a_pre_emption_capability;
 extern struct dict_object *ogs_diam_s6a_pre_emption_vulnerability;
 extern struct dict_object *ogs_diam_s6a_pdn_gw_allocation_type;
 extern struct dict_object *ogs_diam_s6a_vplmn_dynamic_address_allowed;
+extern struct dict_object *ogs_diam_s6a_eps_location_information;
+extern struct dict_object *ogs_diam_s6a_mme_location_information;
+extern struct dict_object *ogs_diam_s6a_e_utran_cell_global_identity;
+extern struct dict_object *ogs_diam_s6a_tracking_area_identity;
+extern struct dict_object *ogs_diam_s6a_age_of_location_information;
 
 extern struct dict_object *ogs_diam_s6a_terminal_information;
 extern struct dict_object *ogs_diam_s6a_imei;
@@ -150,10 +158,27 @@ typedef struct ogs_diam_s6a_clr_message_s {
     uint32_t clr_flags;
 } ogs_diam_s6a_clr_message_t;
 
+typedef struct ogs_diam_s6a_idr_message_s {
+#define OGS_DIAM_S6A_IDR_FLAGS_UE_REACHABILITY             (1)
+#define OGS_DIAM_S6A_IDR_FLAGS_TADS_DATA                   (1 << 1)
+#define OGS_DIAM_S6A_IDR_FLAGS_EPS_USER_STATE              (1 << 2)
+#define OGS_DIAM_S6A_IDR_FLAGS_EPS_LOCATION_INFO           (1 << 3)
+#define OGS_DIAM_S6A_IDR_FLAGS_CURRENT_LOCATION            (1 << 4)
+#define OGS_DIAM_S6A_IDR_FLAGS_LOCAL_TZ                    (1 << 5)
+#define OGS_DIAM_S6A_IDR_FLAGS_REMOVE_SMS_REG              (1 << 6)
+#define OGS_DIAM_S6A_IDR_FLAGS_RAT_TYPE                    (1 << 7)
+#define OGS_DIAM_S6A_IDR_FLAGS_PCSCF_Restoration           (1 << 8)
+
+    uint32_t idr_flags;
+    ogs_subscription_data_t subscription_data;
+} ogs_diam_s6a_idr_message_t;
+
 typedef struct ogs_diam_s6a_message_s {
 #define OGS_DIAM_S6A_CMD_CODE_UPDATE_LOCATION               316
 #define OGS_DIAM_S6A_CMD_CODE_CANCEL_LOCATION               317
 #define OGS_DIAM_S6A_CMD_CODE_AUTHENTICATION_INFORMATION    318
+#define OGS_DIAM_S6A_CMD_CODE_INSERT_SUBSCRIBER_DATA        319
+#define OGS_DIAM_S6A_CMD_CODE_PURGE_UE                      321
     uint16_t                        cmd_code;
 
     /* Experimental Result Code */
@@ -168,6 +193,7 @@ typedef struct ogs_diam_s6a_message_s {
     uint32_t                        *err;
     uint32_t                        *exp_err;
 
+    ogs_diam_s6a_idr_message_t      idr_message;
     ogs_diam_s6a_clr_message_t      clr_message;
     ogs_diam_s6a_aia_message_t      aia_message;
     ogs_diam_s6a_ula_message_t      ula_message;

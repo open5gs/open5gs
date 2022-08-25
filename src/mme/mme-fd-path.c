@@ -23,6 +23,9 @@
 /* handler for Cancel-Location-Request cb */
 static struct disp_hdl *hdl_s6a_clr = NULL;
 
+/* handler for Insert-Subscriber-Data-Request cb */
+static struct disp_hdl *hdl_s6a_idr = NULL;
+
 static struct session_handler *mme_s6a_reg = NULL;
 
 struct sess_state {
@@ -1541,6 +1544,219 @@ out:
     return 0;
 }
 
+/* Callback for incoming Insert-Subscriber-Data-Request messages 29.272 5.2.2.1.2 */
+static int mme_ogs_diam_s6a_idr_cb( struct msg **msg, struct avp *avp,
+        struct session *session, void *opaque, enum disp_action *act)
+{
+    int ret;
+    
+    mme_ue_t *mme_ue = NULL;
+
+    struct msg *ans, *qry;
+    ogs_diam_s6a_idr_message_t *idr_message = NULL;    
+
+    struct avp_hdr *hdr;
+    union avp_value val;
+
+    char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
+
+    uint32_t result_code = 0;
+
+    ogs_assert(msg);
+
+    ogs_diam_s6a_message_t *s6a_message = NULL;
+
+    ogs_debug("Insert-Subscriber-Data-Request");
+
+    s6a_message = ogs_calloc(1, sizeof(ogs_diam_s6a_message_t));
+    ogs_assert(s6a_message);
+    s6a_message->cmd_code = OGS_DIAM_S6A_CMD_CODE_INSERT_SUBSCRIBER_DATA;
+    idr_message = &s6a_message->idr_message;
+    ogs_assert(idr_message);
+
+    /* Create answer header */
+    qry = *msg;
+    ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
+    ogs_assert(ret == 0);
+    ans = *msg;
+
+    ret = fd_msg_search_avp(qry, ogs_diam_user_name, &avp);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_hdr(avp, &hdr);
+    ogs_assert(ret == 0);
+
+    ogs_cpystrn(imsi_bcd, (char*)hdr->avp_value->os.data,
+        ogs_min(hdr->avp_value->os.len, OGS_MAX_IMSI_BCD_LEN)+1);
+
+    mme_ue = mme_ue_find_by_imsi_bcd(imsi_bcd);
+
+    if (!mme_ue) {
+        ogs_error("Insert Subscriber Data for Unknown IMSI[%s]", imsi_bcd);
+        result_code = OGS_DIAM_S6A_ERROR_USER_UNKNOWN;
+        goto out;
+    }
+
+    /* AVP: 'Subscription-Data'(1400)
+     * The Subscription-Data AVP contains the information related to the user
+     * profile relevant for EPS and GERAN/UTRAN.
+     * Reference: 3GPP TS 29.272-f70
+     */
+    ret = fd_msg_search_avp(*msg, ogs_diam_s6a_subscription_data, &avp);
+    ogs_assert(ret == 0);
+    if (avp) {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        ogs_assert(ret == 0);
+        if (hdr->avp_value->os.len) {
+            ogs_debug("WIP: Process New Subscription Data");
+        } else {
+            ogs_debug("No Sub Data, ok to check IDR Flags");
+        }
+    }
+
+    ret = fd_msg_search_avp(qry, ogs_diam_s6a_idr_flags, &avp);
+    ogs_assert(ret == 0);
+    if (avp) {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        ogs_assert(ret == 0);
+        idr_message->idr_flags = hdr->avp_value->i32;
+    } else {
+        ogs_error("Insert Subscriber Data does not contain any IDR Flags for IMSI[%s]", imsi_bcd);
+        /* Set the Origin-Host, Origin-Realm, and Result-Code AVPs */
+        ret = fd_msg_rescode_set(ans, (char*)"DIAMETER_UNABLE_TO_COMPLY", NULL, NULL, 1);
+        ogs_assert(ret == 0);
+        goto outnoexp;        
+    }
+
+    if (idr_message->idr_flags & OGS_DIAM_S6A_IDR_FLAGS_EPS_LOCATION_INFO) {
+        char buf[8];
+
+        uint8_t ida_ecgi[7];
+        uint8_t ida_tai[5];
+        ogs_time_t ida_age;
+
+        ogs_nas_plmn_id_t ida_plmn_buf;
+        char ida_cell_id_hex[9];
+        char ida_tac_hex[5];
+
+        uint32_t ida_cell_id = mme_ue->e_cgi.cell_id;
+        uint16_t ida_tac = mme_ue->tai.tac;
+        
+        sprintf(ida_cell_id_hex, "%08x", ida_cell_id);
+        memcpy(ida_ecgi, ogs_nas_from_plmn_id(&ida_plmn_buf, &mme_ue->e_cgi.plmn_id), 3);
+        memcpy(ida_ecgi + 3, OGS_HEX(ida_cell_id_hex,sizeof(ida_cell_id_hex),buf), 5);
+
+        sprintf(ida_tac_hex, "%04x", ida_tac);
+        memcpy(ida_tai, ogs_nas_from_plmn_id(&ida_plmn_buf, &mme_ue->tai.plmn_id), 3);
+        memcpy(ida_tai + 3, OGS_HEX(ida_tac_hex,sizeof(ida_tac_hex),buf), 2);
+
+        ida_age = (ogs_time_now() - mme_ue->ue_location_timestamp) / 1000000 / 60;
+
+        struct avp *avp_mme_location_information;
+        struct avp *avp_e_utran_cell_global_identity;
+        struct avp *avp_tracking_area_identity;
+        struct avp *avp_age_of_location_information;
+
+        /* Set the EPS-Location-Information AVP */
+        ret = fd_msg_avp_new(ogs_diam_s6a_eps_location_information, 0, &avp);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_new(ogs_diam_s6a_mme_location_information, 0, &avp_mme_location_information);
+        ogs_assert(ret == 0);
+
+        ret = fd_msg_avp_new(ogs_diam_s6a_e_utran_cell_global_identity, 0, &avp_e_utran_cell_global_identity);
+        ogs_assert(ret == 0);
+        val.os.data = ida_ecgi;
+        val.os.len  = 7;
+        ret = fd_msg_avp_setvalue(avp_e_utran_cell_global_identity, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(avp_mme_location_information, MSG_BRW_LAST_CHILD, avp_e_utran_cell_global_identity);
+        ogs_assert(ret == 0);
+
+        ret = fd_msg_avp_new(ogs_diam_s6a_tracking_area_identity, 0, &avp_tracking_area_identity);
+        ogs_assert(ret == 0);
+        val.os.data = ida_tai;
+        val.os.len  = 5;
+        ret = fd_msg_avp_setvalue(avp_tracking_area_identity, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(avp_mme_location_information, MSG_BRW_LAST_CHILD, avp_tracking_area_identity);
+        ogs_assert(ret == 0);
+
+        ret = fd_msg_avp_new(ogs_diam_s6a_age_of_location_information, 0, &avp_age_of_location_information);
+        ogs_assert(ret == 0);
+        val.i32 = ida_age;
+        ret = fd_msg_avp_setvalue(avp_age_of_location_information, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(avp_mme_location_information, MSG_BRW_LAST_CHILD, avp_age_of_location_information);
+        ogs_assert(ret == 0);
+
+        ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_mme_location_information);
+        ogs_assert(ret == 0);
+
+        ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+        ogs_assert(ret == 0);        
+    } else {
+        ogs_error("Insert Subscriber Data with unsupported IDR Flags for IMSI[%s]", imsi_bcd);
+        /* Set the Origin-Host, Origin-Realm, and Result-Code AVPs */
+        ret = fd_msg_rescode_set(ans, (char*)"DIAMETER_UNABLE_TO_COMPLY", NULL, NULL, 1);
+        ogs_assert(ret == 0);
+        goto outnoexp;        
+    }
+
+    /* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
+    ret = fd_msg_rescode_set(ans, (char*)"DIAMETER_SUCCESS", NULL, NULL, 1);
+    ogs_assert(ret == 0);
+
+    /* Set the Auth-Session-State AVP */
+    ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
+    ogs_assert(ret == 0);
+    val.i32 = OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    /* Set Vendor-Specific-Application-Id AVP */
+    ret = ogs_diam_message_vendor_specific_appid_set(
+            ans, OGS_DIAM_S6A_APPLICATION_ID);
+    ogs_assert(ret == 0);
+
+    /* Send the answer */
+    ret = fd_msg_send(msg, NULL, NULL);
+    ogs_assert(ret == 0);
+
+    ogs_debug("Insert-Subscriber-Data-Answer");
+
+    /* Add this value to the stats */
+    ogs_assert( pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_diam_logger_self()->stats.nb_echoed++;
+    ogs_assert( pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+
+    return 0;
+
+out:
+    ret = ogs_diam_message_experimental_rescode_set(ans, result_code);
+    ogs_assert(ret == 0);
+outnoexp:
+    /* Set the Auth-Session-State AVP */
+    ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
+    ogs_assert(ret == 0);
+    val.i32 = OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+    
+    /* Set Vendor-Specific-Application-Id AVP */
+    ret = ogs_diam_message_vendor_specific_appid_set(
+            ans, OGS_DIAM_S6A_APPLICATION_ID);
+    ogs_assert(ret == 0);
+
+    /* Send the answer */
+    ret = fd_msg_send(msg, NULL, NULL);
+    ogs_assert(ret == 0);    
+
+    return 0;
+}
+
 int mme_fd_init(void)
 {
     int ret;
@@ -1562,6 +1778,12 @@ int mme_fd_init(void)
 	data.command = ogs_diam_s6a_cmd_clr;
 	ret = fd_disp_register(mme_ogs_diam_s6a_clr_cb, DISP_HOW_CC, &data, NULL,
                 &hdl_s6a_clr);
+    ogs_assert(ret == 0);
+
+	/* Specific handler for Insert-Subscriber-Data-Request */
+	data.command = ogs_diam_s6a_cmd_idr;
+	ret = fd_disp_register(mme_ogs_diam_s6a_idr_cb, DISP_HOW_CC, &data, NULL,
+                &hdl_s6a_idr);
     ogs_assert(ret == 0);    
 
 	/* Advertise the support for the application in the peer */
@@ -1583,6 +1805,9 @@ void mme_fd_final(void)
 
     if (hdl_s6a_clr)
 		(void) fd_disp_unregister(&hdl_s6a_clr, NULL);
+
+    if (hdl_s6a_idr)
+		(void) fd_disp_unregister(&hdl_s6a_idr, NULL);        
 
     ogs_diam_final();
 }

@@ -368,6 +368,7 @@ struct mme_ue_s {
     uint16_t        enb_ostream_id;
     ogs_eps_tai_t   tai;
     ogs_e_cgi_t     e_cgi;
+    ogs_time_t      ue_location_timestamp;
     ogs_plmn_id_t   last_visited_plmn_id;
 
 #define SECURITY_CONTEXT_IS_VALID(__mME) \
