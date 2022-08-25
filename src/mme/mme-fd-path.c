@@ -1548,9 +1548,8 @@ out:
 static int mme_ogs_diam_s6a_idr_cb( struct msg **msg, struct avp *avp,
         struct session *session, void *opaque, enum disp_action *act)
 {
-    int ret, rv;
+    int ret;
     
-    mme_event_t *e = NULL;
     mme_ue_t *mme_ue = NULL;
 
     struct msg *ans, *qry;
@@ -1629,26 +1628,28 @@ static int mme_ogs_diam_s6a_idr_cb( struct msg **msg, struct avp *avp,
     }
 
     if (idr_message->idr_flags & OGS_DIAM_S6A_IDR_FLAGS_EPS_LOCATION_INFO) {
-        char buf[8] = "\x0";
+        char buf[8];
 
         ogs_nas_plmn_id_t myplmn;
 
         uint16_t mytai = mme_ue->tai.tac;
-        char taihex[4];
-        sprintf(taihex, "%x", mytai);
+        char taihex[5];
+        sprintf(taihex, "%04x", mytai);
 
         uint8_t ida_tac[5];
         memcpy(ida_tac, ogs_nas_from_plmn_id(&myplmn, &mme_ue->tai.plmn_id), 3);
         memcpy(ida_tac+3, OGS_HEX(taihex,sizeof(taihex),buf), 2);
 
-
-        uint16_t myecgi = mme_ue->e_cgi.cell_id;
-        char cellidhex[8];
-        sprintf(cellidhex, "%x", myecgi);
+        uint32_t myecgi = mme_ue->e_cgi.cell_id;
+        char cellidhex[9];
+        sprintf(cellidhex, "%08x", myecgi);
 
         uint8_t ida_ecgi[7];
         memcpy(ida_ecgi, ogs_nas_from_plmn_id(&myplmn, &mme_ue->e_cgi.plmn_id), 3);
-        memcpy(ida_ecgi+3, OGS_HEX(taihex,sizeof(taihex),buf), 5);
+        memcpy(ida_ecgi+3, OGS_HEX(cellidhex,sizeof(cellidhex),buf), 5);
+
+        ogs_time_t ida_age;
+        ida_age = (ogs_time_now() - mme_ue->ue_location_timestamp)/1000000/60;
 
         /*ogs_info("EPS Loci %d", mme_ue->e_cgi.plmn_id);*/
         struct avp *avp_mme_location_information;
@@ -1682,7 +1683,7 @@ static int mme_ogs_diam_s6a_idr_cb( struct msg **msg, struct avp *avp,
 
         ret = fd_msg_avp_new(ogs_diam_s6a_age_of_location_information, 0, &avp_age_of_location_information);
         ogs_assert(ret == 0);
-        val.i32 = 3;
+        val.i32 = ida_age;
         ret = fd_msg_avp_setvalue(avp_age_of_location_information, &val);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add(avp_mme_location_information, MSG_BRW_LAST_CHILD, avp_age_of_location_information);
@@ -1693,6 +1694,12 @@ static int mme_ogs_diam_s6a_idr_cb( struct msg **msg, struct avp *avp,
 
         ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
         ogs_assert(ret == 0);        
+    } else {
+        ogs_error("Insert Subscriber Data with unsupported IDR Flags for IMSI[%s]", imsi_bcd);
+        /* Set the Origin-Host, Origin-Realm, and Result-Code AVPs */
+        ret = fd_msg_rescode_set(ans, (char*)"DIAMETER_UNABLE_TO_COMPLY", NULL, NULL, 1);
+        ogs_assert(ret == 0);
+        goto outnoexp;        
     }
 
     /* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
@@ -1723,19 +1730,6 @@ static int mme_ogs_diam_s6a_idr_cb( struct msg **msg, struct avp *avp,
     ogs_assert( pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
     ogs_diam_logger_self()->stats.nb_echoed++;
     ogs_assert( pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
-
-    e = mme_event_new(MME_EVENT_S6A_MESSAGE);
-    ogs_assert(e);
-    e->mme_ue = mme_ue;
-    e->s6a_message = s6a_message;
-    rv = ogs_queue_push(ogs_app()->queue, e);
-    if (rv != OGS_OK) {
-        ogs_error("ogs_queue_push() failed:%d", (int)rv);
-        ogs_free(s6a_message);
-        mme_event_free(e);
-    } else {
-        ogs_pollset_notify(ogs_app()->pollset);
-    }
 
     return 0;
 
