@@ -54,15 +54,16 @@ void *ogs_ascii_to_hex(char *in, int in_len, void *out, int out_len)
 
 void *ogs_hex_to_ascii(void *in, int in_len, void *out, int out_len)
 {
-    char *p;
+    char *p, *last;
     int i = 0, l, off = 0;
 
     p = out;
+    last = p + out_len;
     p[0] = 0;
 
     l = (in_len - off) > out_len ? out_len : in_len - off;
     for (i = 0; i < l; i++) {
-        p += sprintf(p, "%02x", ((char*)in)[off+i] & 0xff);
+        p = ogs_slprintf(p, last, "%02x", ((char*)in)[off+i] & 0xff);
     }
 
     return out;

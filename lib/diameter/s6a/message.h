@@ -168,7 +168,6 @@ typedef struct ogs_diam_s6a_idr_message_s {
 #define OGS_DIAM_S6A_IDR_FLAGS_REMOVE_SMS_REG              (1 << 6)
 #define OGS_DIAM_S6A_IDR_FLAGS_RAT_TYPE                    (1 << 7)
 #define OGS_DIAM_S6A_IDR_FLAGS_PCSCF_Restoration           (1 << 8)
-
     uint32_t idr_flags;
     ogs_subscription_data_t subscription_data;
 } ogs_diam_s6a_idr_message_t;
