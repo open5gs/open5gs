@@ -165,12 +165,16 @@ void sgwu_pfcp_state_associated(ogs_fsm_t *s, sgwu_event_t *e)
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
-        ogs_info("PFCP associated");
+        ogs_info("PFCP associated [%s]:%d",
+            OGS_ADDR(&node->addr, buf),
+            OGS_PORT(&node->addr));
         ogs_timer_start(node->t_no_heartbeat,
                 ogs_app()->time.message.pfcp.no_heartbeat_duration);
         break;
     case OGS_FSM_EXIT_SIG:
-        ogs_info("PFCP de-associated");
+        ogs_info("PFCP de-associated [%s]:%d",
+            OGS_ADDR(&node->addr, buf),
+            OGS_PORT(&node->addr));
         ogs_timer_stop(node->t_no_heartbeat);
         break;
     case SGWU_EVT_SXA_MESSAGE:
@@ -194,12 +198,16 @@ void sgwu_pfcp_state_associated(ogs_fsm_t *s, sgwu_event_t *e)
                     &message->pfcp_heartbeat_response));
             break;
         case OGS_PFCP_ASSOCIATION_SETUP_REQUEST_TYPE:
-            ogs_warn("PFCP[REQ] has already been associated");
+            ogs_warn("PFCP[REQ] has already been associated [%s]:%d",
+                OGS_ADDR(&node->addr, buf),
+                OGS_PORT(&node->addr));
             ogs_pfcp_up_handle_association_setup_request(node, xact,
                     &message->pfcp_association_setup_request);
             break;
         case OGS_PFCP_ASSOCIATION_SETUP_RESPONSE_TYPE:
-            ogs_warn("PFCP[RSP] has already been associated");
+            ogs_warn("PFCP[RSP] has already been associated [%s]:%d",
+                OGS_ADDR(&node->addr, buf),
+                OGS_PORT(&node->addr));
             ogs_pfcp_up_handle_association_setup_response(node, xact,
                     &message->pfcp_association_setup_response);
             break;
