@@ -54,7 +54,7 @@ typedef struct amf_context_s {
     ogs_guami_t served_guami[MAX_NUM_OF_SERVED_GUAMI];
 
     /* Served TAI */
-    uint8_t num_of_served_tai;
+    uint16_t num_of_served_tai;
     struct {
         ogs_5gs_tai0_list_t list0;
         ogs_5gs_tai2_list_t list2;

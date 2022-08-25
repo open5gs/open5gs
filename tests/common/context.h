@@ -75,7 +75,7 @@ typedef struct test_context_s {
     } plmn_support[OGS_MAX_NUM_OF_PLMN];
 
     /* Served EPC TAI */
-    uint8_t num_of_e_served_tai;
+    uint16_t num_of_e_served_tai;
     struct {
         ogs_eps_tai0_list_t list0;
         ogs_eps_tai2_list_t list2;
@@ -84,7 +84,7 @@ typedef struct test_context_s {
     ogs_eps_tai_t e_tai;
 
     /* Served 5GC TAI */
-    uint8_t num_of_nr_served_tai;
+    uint16_t num_of_nr_served_tai;
     struct {
         ogs_5gs_tai0_list_t list0;
         ogs_5gs_tai2_list_t list2;

@@ -101,7 +101,7 @@ typedef struct mme_context_s {
     served_gummei_t served_gummei[MAX_NUM_OF_SERVED_GUMMEI];
 
     /* Served TAI */
-    uint8_t         num_of_served_tai;
+    uint16_t         num_of_served_tai;
     struct {
         ogs_eps_tai0_list_t list0;
         ogs_eps_tai2_list_t list2;
