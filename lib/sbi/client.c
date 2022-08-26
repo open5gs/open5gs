@@ -17,7 +17,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ogs-app.h"
 #include "ogs-sbi.h"
 
 #include "curl/curl.h"

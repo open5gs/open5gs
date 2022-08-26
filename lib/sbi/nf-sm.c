@@ -17,7 +17,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ogs-app.h"
 #include "ogs-sbi.h"
 
 void ogs_sbi_nf_fsm_init(ogs_sbi_nf_instance_t *nf_instance)

@@ -20,13 +20,9 @@
 #ifndef OGS_PFCP_H
 #define OGS_PFCP_H
 
-#include "ogs-core.h"
-
 #include "pfcp/pfcp-config.h"
 
-#include "ipfw/ogs-ipfw.h"
-#include "ogs-app.h"
-#include "ogs-gtp.h"
+#include "gtp/ogs-gtp.h"
 
 #define OGS_PFCP_UDP_PORT               8805
 

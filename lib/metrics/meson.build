@@ -20,7 +20,7 @@ libmetrics_file_list = '''
     context.h
     context.c
 '''
-libmetrics_dependencies = [libcore_dep, libapp_dep]
+libmetrics_dependencies = [libapp_dep]
 
 
 metrics_impl_optval = get_option('metrics_impl')

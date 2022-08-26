@@ -40,7 +40,7 @@ int get_asn1c_environment_version(void);	/* Run-time version */
 #define	REALLOC(oldptr, size)	realloc(oldptr, size)
 #define	FREEMEM(ptr)		free(ptr)
 #else
-#include "ogs-proto.h"
+#include "proto/ogs-proto.h"
 
 static ogs_inline void *ogs_asn_malloc(size_t size, const char *file_line)
 {

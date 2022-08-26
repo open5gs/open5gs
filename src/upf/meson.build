@@ -86,8 +86,6 @@ libarp_nd_dep = declare_dependency(
 libupf = static_library('upf',
     sources : libupf_sources,
     dependencies : [
-        libapp_dep,
-        libgtp_dep,
         libpfcp_dep,
         libtun_dep,
         libarp_nd_dep,
@@ -97,8 +95,6 @@ libupf = static_library('upf',
 libupf_dep = declare_dependency(
     link_with : libupf,
     dependencies : [
-        libapp_dep,
-        libgtp_dep,
         libpfcp_dep,
         libtun_dep,
         libarp_nd_dep,

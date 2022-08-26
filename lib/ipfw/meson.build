@@ -80,10 +80,10 @@ libipfw = library('ogsipfw',
     version : libogslib_version,
     c_args : ['-include', 'glue.h', ipfw_cc_flags],
     include_directories : libipfw_inc,
-    dependencies : libproto_dep,
+    dependencies : libcore_dep,
     install : true)
 
 libipfw_dep = declare_dependency(
     link_with : libipfw,
     include_directories : libinc,
-    dependencies : libproto_dep)
+    dependencies : libcore_dep)

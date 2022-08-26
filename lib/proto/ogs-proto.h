@@ -20,7 +20,7 @@
 #ifndef OGS_PROTO_H
 #define OGS_PROTO_H
 
-#include "ogs-core.h"
+#include "core/ogs-core.h"
 
 #define OGS_PROTO_INSIDE
 

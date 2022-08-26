@@ -45,16 +45,12 @@ libsgwc_sources = files('''
 
 libsgwc = static_library('sgwc',
     sources : libsgwc_sources,
-    dependencies : [libapp_dep,
-                    libgtp_dep,
-                    libpfcp_dep],
+    dependencies : libpfcp_dep,
     install : false)
 
 libsgwc_dep = declare_dependency(
     link_with : libsgwc,
-    dependencies : [libapp_dep,
-                    libgtp_dep,
-                    libpfcp_dep])
+    dependencies : libpfcp_dep)
 
 sgwc_sources = files('''
     app.c

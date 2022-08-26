@@ -18,7 +18,6 @@
  */
 
 #include "ogs-sbi.h"
-#include "ogs-app.h"
 
 static void handle_smf_info(
         ogs_sbi_nf_instance_t *nf_instance, OpenAPI_smf_info_t *SmfInfo);

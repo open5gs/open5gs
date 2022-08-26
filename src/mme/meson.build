@@ -79,8 +79,7 @@ libmme_sources = files('''
 
 libmme = static_library('mme',
     sources : libmme_sources,
-    dependencies : [libapp_dep,
-                    libmetrics_dep,
+    dependencies : [libmetrics_dep,
                     libsctp_dep,
                     libs1ap_dep,
                     libnas_eps_dep,
@@ -90,8 +89,7 @@ libmme = static_library('mme',
 
 libmme_dep = declare_dependency(
     link_with : libmme,
-    dependencies : [libapp_dep,
-                    libmetrics_dep,
+    dependencies : [libmetrics_dep,
                     libsctp_dep,
                     libs1ap_dep,
                     libnas_eps_dep,

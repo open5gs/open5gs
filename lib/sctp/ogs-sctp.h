@@ -20,7 +20,7 @@
 #ifndef OGS_SCTP_H
 #define OGS_SCTP_H
 
-#include "ogs-app.h"
+#include "app/ogs-app.h"
 
 #include "sctp/sctp-config.h"
 

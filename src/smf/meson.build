@@ -110,29 +110,25 @@ libsmf_sources = files('''
 
 libsmf = static_library('smf',
     sources : libsmf_sources,
-    dependencies : [libapp_dep,
-                    libmetrics_dep,
+    dependencies : [libmetrics_dep,
                     libsbi_dep,
                     libngap_dep,
                     libnas_5gs_dep,
                     libdiameter_gx_dep,
                     libdiameter_gy_dep,
                     libdiameter_s6b_dep,
-                    libgtp_dep,
                     libpfcp_dep],
     install : false)
 
 libsmf_dep = declare_dependency(
     link_with : libsmf,
-    dependencies : [libapp_dep,
-                    libmetrics_dep,
+    dependencies : [libmetrics_dep,
                     libsbi_dep,
                     libngap_dep,
                     libnas_5gs_dep,
                     libdiameter_gx_dep,
                     libdiameter_gy_dep,
                     libdiameter_s6b_dep,
-                    libgtp_dep,
                     libpfcp_dep])
 
 smf_sources = files('''

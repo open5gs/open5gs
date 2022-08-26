@@ -18,7 +18,6 @@
  */
 
 #include "ogs-sbi.h"
-#include "ogs-app.h"
 
 OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(void)
 {

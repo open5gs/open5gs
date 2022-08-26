@@ -29,15 +29,13 @@ libudr_sources = files('''
 
 libudr = static_library('udr',
     sources : libudr_sources,
-    dependencies : [libapp_dep,
-                    libdbi_dep,
+    dependencies : [libdbi_dep,
                     libsbi_dep],
     install : false)
 
 libudr_dep = declare_dependency(
     link_with : libudr,
-    dependencies : [libapp_dep,
-                    libdbi_dep,
+    dependencies : [libdbi_dep,
                     libsbi_dep])
 
 udr_sources = files('''

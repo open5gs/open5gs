@@ -64,8 +64,7 @@ libamf_sources = files('''
 
 libamf = static_library('amf',
     sources : libamf_sources,
-    dependencies : [libapp_dep,
-                    libmetrics_dep,
+    dependencies : [libmetrics_dep,
                     libsctp_dep,
                     libngap_dep,
                     libnas_5gs_dep,
@@ -74,8 +73,7 @@ libamf = static_library('amf',
 
 libamf_dep = declare_dependency(
     link_with : libamf,
-    dependencies : [libapp_dep,
-                    libmetrics_dep,
+    dependencies : [libmetrics_dep,
                     libsctp_dep,
                     libngap_dep,
                     libnas_5gs_dep,

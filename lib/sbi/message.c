@@ -18,7 +18,6 @@
  */
 
 #include "ogs-sbi.h"
-#include "ogs-crypt.h"
 #include "yuarel.h"
 
 #include "contrib/multipart_parser.h"

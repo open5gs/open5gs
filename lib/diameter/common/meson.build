@@ -51,10 +51,10 @@ libdiameter_common = library('ogsdiameter-common',
     version : libogslib_version,
     c_args : libdiameter_common_cc_flags,
     include_directories : [libdiameter_common_inc, libinc],
-    dependencies : [libproto_dep, libfdcore_dep],
+    dependencies : [libcore_dep, libfdcore_dep],
     install : true)
 
 libdiameter_common_dep = declare_dependency(
     link_with : libdiameter_common,
     include_directories : [libdiameter_common_inc, libinc],
-    dependencies : [libproto_dep, libfdcore_dep])
+    dependencies : [libcore_dep, libfdcore_dep])

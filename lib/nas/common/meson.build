@@ -28,10 +28,10 @@ libnas_common = library('ogsnas-common',
     version : libogslib_version,
     c_args : '-DOGS_NAS_COMPILATION',
     include_directories : [libnas_common_inc, libcrypt_inc, libinc],
-    dependencies : [libcore_dep, libcrypt_dep],
+    dependencies : libcrypt_dep,
     install : true)
 
 libnas_common_dep = declare_dependency(
     link_with : libnas_common,
     include_directories : [libnas_common_inc, libcrypt_inc, libinc],
-    dependencies : [libcore_dep, libcrypt_dep])
+    dependencies : libcrypt_dep)

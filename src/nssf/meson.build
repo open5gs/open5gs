@@ -29,14 +29,12 @@ libnssf_sources = files('''
 
 libnssf = static_library('nssf',
     sources : libnssf_sources,
-    dependencies : [libapp_dep,
-                    libsbi_dep],
+    dependencies : libsbi_dep,
     install : false)
 
 libnssf_dep = declare_dependency(
     link_with : libnssf,
-    dependencies : [libapp_dep,
-                    libsbi_dep])
+    dependencies : libsbi_dep)
 
 nssf_sources = files('''
     app.c

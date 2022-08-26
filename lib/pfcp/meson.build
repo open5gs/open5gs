@@ -64,11 +64,11 @@ libpfcp = library('ogspfcp',
     version : libogslib_version,
     c_args : '-DOGS_PFCP_COMPILATION',
     include_directories : [libpfcp_inc, libinc],
-    dependencies : [libcore_dep, libipfw_dep, libapp_dep, libgtp_dep],
+    dependencies : libgtp_dep,
     install_rpath : libdir,
     install : true)
 
 libpfcp_dep = declare_dependency(
     link_with : libpfcp,
     include_directories : [libpfcp_inc, libinc],
-    dependencies : [libcore_dep, libipfw_dep, libapp_dep, libgtp_dep])
+    dependencies : libgtp_dep)

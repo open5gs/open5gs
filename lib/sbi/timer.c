@@ -18,7 +18,6 @@
  */
 
 #include "ogs-sbi.h"
-#include "ogs-app.h"
 
 static void timer_send_event(int timer_id, void *data)
 {

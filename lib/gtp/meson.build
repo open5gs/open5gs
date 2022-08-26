@@ -56,10 +56,10 @@ libgtp = library('ogsgtp',
     version : libogslib_version,
     c_args : '-DOGS_GTP_COMPILATION',
     include_directories : [libgtp_inc, libinc],
-    dependencies : [libcore_dep, libapp_dep, libnas_common_dep],
+    dependencies : [libproto_dep, libipfw_dep, libapp_dep],
     install : true)
 
 libgtp_dep = declare_dependency(
     link_with : libgtp,
     include_directories : [libgtp_inc, libinc],
-    dependencies : [libcore_dep, libapp_dep, libnas_common_dep])
+    dependencies : [libproto_dep, libipfw_dep, libapp_dep])

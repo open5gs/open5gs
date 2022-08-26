@@ -34,16 +34,12 @@ libudm_sources = files('''
 
 libudm = static_library('udm',
     sources : libudm_sources,
-    dependencies : [libapp_dep,
-                    libcrypt_dep,
-                    libsbi_dep],
+    dependencies : libsbi_dep,
     install : false)
 
 libudm_dep = declare_dependency(
     link_with : libudm,
-    dependencies : [libapp_dep,
-                    libcrypt_dep,
-                    libsbi_dep])
+    dependencies : libsbi_dep)
 
 udm_sources = files('''
     app.c

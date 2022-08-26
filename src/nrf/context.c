@@ -17,7 +17,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ogs-dbi.h"
 #include "context.h"
 
 static nrf_context_t self;
@@ -33,7 +32,6 @@ void nrf_context_init(void)
     /* Initialize NRF context */
     memset(&self, 0, sizeof(nrf_context_t));
 
-    ogs_log_install_domain(&__ogs_dbi_domain, "dbi", ogs_core()->log.level);
     ogs_log_install_domain(&__nrf_log_domain, "nrf", ogs_core()->log.level);
 
     context_initialized = 1;

@@ -20,8 +20,7 @@
 #ifndef OGS_DBI_H
 #define OGS_DBI_H
 
-#include "ogs-core.h"
-#include "ogs-crypt.h"
+#include "crypt/ogs-crypt.h"
 
 #define OGS_DBI_INSIDE
 

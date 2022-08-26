@@ -20,8 +20,7 @@
 #ifndef OGS_NAS_COMMON_H
 #define OGS_NAS_COMMON_H
 
-#include "ogs-core.h"
-#include "ogs-crypt.h"
+#include "crypt/ogs-crypt.h"
 
 #define OGS_NAS_INSIDE
 

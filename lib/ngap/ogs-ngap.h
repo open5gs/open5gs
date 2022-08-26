@@ -20,7 +20,7 @@
 #ifndef OGS_NGAP_H
 #define OGS_NGAP_H
 
-#include "ogs-core.h"
+#include "core/ogs-core.h"
 
 #include "NGAP_AdditionalDLUPTNLInformationForHOItem.h"
 #include "NGAP_AdditionalDLUPTNLInformationForHOList.h"

@@ -17,7 +17,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ogs-app.h"
 #include "ogs-sbi.h"
 
 extern const ogs_sbi_server_actions_t ogs_mhd_server_actions;
