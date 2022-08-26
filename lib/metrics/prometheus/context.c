@@ -427,7 +427,7 @@ void ogs_metrics_inst_free(ogs_metrics_inst_t *inst)
 {
     unsigned int i;
 
-    ogs_list_remove(&inst->spec->inst_list, inst);
+    ogs_list_remove(&inst->spec->inst_list, &inst->entry);
 
     for (i = 0; i < inst->num_labels; i++)
         ogs_free(inst->label_values[i]);
