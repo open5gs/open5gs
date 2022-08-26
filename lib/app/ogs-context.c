@@ -71,9 +71,6 @@ static void recalculate_pool_size(void)
     self.pool.bearer = self.pool.sess * OGS_MAX_NUM_OF_BEARER;
     self.pool.tunnel = self.pool.bearer * MAX_NUM_OF_TUNNEL;
 
-#define OGS_MAX_NUM_OF_NF_SUBSCRIPTION  4 /* Num of Subscription per NF */
-    self.pool.nf_service = self.max.peer * OGS_MAX_NUM_OF_NF_SERVICE;
-
 #define POOL_NUM_PER_UE 16
     self.pool.timer = self.max.ue * POOL_NUM_PER_UE;
     self.pool.message = self.max.ue * POOL_NUM_PER_UE;
@@ -84,6 +81,9 @@ static void recalculate_pool_size(void)
     self.pool.stream = self.max.ue * POOL_NUM_PER_UE;
 
     self.pool.nf = self.max.peer;
+#define NF_SERVICE_PER_NF_INSTANCE 16
+    self.pool.nf_service = self.pool.nf * NF_SERVICE_PER_NF_INSTANCE;
+
     self.pool.gtp_node = self.pool.nf;
     if (self.max.gtp_peer)
         self.pool.gtp_node = self.max.gtp_peer;

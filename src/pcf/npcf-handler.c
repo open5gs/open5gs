@@ -148,7 +148,7 @@ bool pcf_npcf_am_policy_contrtol_handle_create(pcf_ue_t *pcf_ue,
                 pcf_ue->subscribed_ue_ambr, PolicyAssociationRequest->ue_ambr);
 
     ogs_assert(true ==
-        pcf_ue_sbi_discover_and_send(OpenAPI_nf_type_UDR, NULL,
+        pcf_ue_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NUDR_DR, NULL,
             pcf_nudr_dr_build_query_am_data, pcf_ue, stream, NULL));
 
     return true;
@@ -163,8 +163,6 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
 
     OpenAPI_sm_policy_context_data_t *SmPolicyContextData = NULL;
     OpenAPI_snssai_t *sliceInfo = NULL;
-
-    uint64_t supported_features = 0;
 
     ogs_sbi_client_t *client = NULL;
     ogs_sockaddr_t *addr = NULL;
@@ -250,7 +248,7 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
     }
 
     if (SmPolicyContextData->supp_feat) {
-        supported_features =
+        uint64_t supported_features =
             ogs_uint64_from_string(SmPolicyContextData->supp_feat);
         sess->smpolicycontrol_features &= supported_features;
     } else {
@@ -298,7 +296,8 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
             sess->subscribed_default_qos, SmPolicyContextData->subs_def_qos);
 
     ogs_assert(true ==
-        pcf_sess_sbi_discover_and_send(OpenAPI_nf_type_UDR, NULL,
+        pcf_sess_sbi_discover_and_send(
+            OGS_SBI_SERVICE_TYPE_NUDR_DR, NULL,
             pcf_nudr_dr_build_query_sm_data, sess, stream, NULL));
 
     return true;
@@ -352,7 +351,8 @@ bool pcf_npcf_smpolicycontrol_handle_delete(pcf_sess_t *sess,
         ogs_assert(true == ogs_sbi_server_send_response(stream, response));
     } else {
         ogs_assert(true ==
-            pcf_sess_sbi_discover_and_send(OpenAPI_nf_type_BSF, NULL,
+            pcf_sess_sbi_discover_and_send(
+                OGS_SBI_SERVICE_TYPE_NBSF_MANAGEMENT, NULL,
                 pcf_nbsf_management_build_de_register, sess, stream, NULL));
     }
 

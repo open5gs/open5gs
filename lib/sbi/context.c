@@ -120,36 +120,35 @@ static int ogs_sbi_context_validation(
         return OGS_ERROR;
     }
 
-    if (context_initialized == 1) {
-        switch (self.discovery_config.delegated) {
-        case OGS_SBI_DISCOVERY_DELEGATED_AUTO:
-            if (strcmp(local, "nrf") != 0 && /* Skip NRF */
-                strcmp(local, "smf") != 0 && /* Skip SMF since SMF can run 4G */
-                ogs_sbi_self()->nrf_instance == NULL &&
-                ogs_sbi_self()->scp_instance == NULL) {
-                ogs_error("DELEGATED_AUTO - Both NRF and %s are unavailable",
-                        strcmp(scp, "next_scp") == 0 ? "Next-hop SCP" : "SCP");
-                return OGS_ERROR;
-            }
-            break;
-        case OGS_SBI_DISCOVERY_DELEGATED_YES:
-            if (ogs_sbi_self()->scp_instance == NULL) {
-                ogs_error("DELEGATED_YES - no %s available",
-                        strcmp(scp, "next_scp") == 0 ? "Next-hop SCP" : "SCP");
-                return OGS_ERROR;
-            }
-            break;
-        case OGS_SBI_DISCOVERY_DELEGATED_NO:
-            if (ogs_sbi_self()->nrf_instance == NULL) {
-                ogs_error("DELEGATED_NO - no NRF available");
-                return OGS_ERROR;
-            }
-            break;
-        default:
-            ogs_fatal("Invalid dicovery-config delegated [%d]",
-                        self.discovery_config.delegated);
-            ogs_assert_if_reached();
+    ogs_assert(context_initialized == 1);
+    switch (self.discovery_config.delegated) {
+    case OGS_SBI_DISCOVERY_DELEGATED_AUTO:
+        if (strcmp(local, "nrf") != 0 && /* Skip NRF */
+            strcmp(local, "smf") != 0 && /* Skip SMF since SMF can run 4G */
+            ogs_sbi_self()->nrf_instance == NULL &&
+            ogs_sbi_self()->scp_instance == NULL) {
+            ogs_error("DELEGATED_AUTO - Both NRF and %s are unavailable",
+                    strcmp(scp, "next_scp") == 0 ? "Next-hop SCP" : "SCP");
+            return OGS_ERROR;
         }
+        break;
+    case OGS_SBI_DISCOVERY_DELEGATED_YES:
+        if (ogs_sbi_self()->scp_instance == NULL) {
+            ogs_error("DELEGATED_YES - no %s available",
+                    strcmp(scp, "next_scp") == 0 ? "Next-hop SCP" : "SCP");
+            return OGS_ERROR;
+        }
+        break;
+    case OGS_SBI_DISCOVERY_DELEGATED_NO:
+        if (ogs_sbi_self()->nrf_instance == NULL) {
+            ogs_error("DELEGATED_NO - no NRF available");
+            return OGS_ERROR;
+        }
+        break;
+    default:
+        ogs_fatal("Invalid dicovery-config delegated [%d]",
+                    self.discovery_config.delegated);
+        ogs_assert_if_reached();
     }
 
     return OGS_OK;
@@ -420,6 +419,53 @@ int ogs_sbi_context_parse_config(
 
                     } while (ogs_yaml_iter_type(
                                 &service_name_iter) == YAML_SEQUENCE_NODE);
+
+                } else if (!strcmp(local_key, "discovery")) {
+                    ogs_yaml_iter_t discovery_iter;
+                    ogs_yaml_iter_recurse(&local_iter, &discovery_iter);
+                    while (ogs_yaml_iter_next(&discovery_iter)) {
+                        const char *discovery_key =
+                            ogs_yaml_iter_key(&discovery_iter);
+                        ogs_assert(discovery_key);
+                        if (!strcmp(discovery_key, "delegated")) {
+                            const char *delegated =
+                                ogs_yaml_iter_value(&discovery_iter);
+                            if (!strcmp(delegated, "auto"))
+                                self.discovery_config.delegated =
+                                    OGS_SBI_DISCOVERY_DELEGATED_AUTO;
+                            else if (!strcmp(delegated, "yes"))
+                                self.discovery_config.delegated =
+                                    OGS_SBI_DISCOVERY_DELEGATED_YES;
+                            else if (!strcmp(delegated, "no"))
+                                self.discovery_config.delegated =
+                                    OGS_SBI_DISCOVERY_DELEGATED_NO;
+                            else
+                                ogs_warn("unknown 'delegated' value `%s`",
+                                        delegated);
+                        } else if (!strcmp(discovery_key, "option")) {
+                            ogs_yaml_iter_t option_iter;
+                            ogs_yaml_iter_recurse(
+                                    &discovery_iter, &option_iter);
+
+                            while (ogs_yaml_iter_next(&option_iter)) {
+                                const char *option_key =
+                                    ogs_yaml_iter_key(&option_iter);
+                                ogs_assert(option_key);
+
+                                if (!strcmp(option_key, "no_service_names")) {
+                                    self.discovery_config.no_service_names =
+                                        ogs_yaml_iter_bool(&option_iter);
+                                } else if (!strcmp(option_key,
+                                        "prefer_requester_nf_instance_id")) {
+                                    self.discovery_config.
+                                        prefer_requester_nf_instance_id =
+                                            ogs_yaml_iter_bool(&option_iter);
+                                } else
+                                    ogs_warn("unknown key `%s`", option_key);
+                            }
+                        } else
+                            ogs_warn("unknown key `%s`", discovery_key);
+                    }
                 }
             }
         } else if (nrf && !strcmp(root_key, nrf)) {
@@ -680,35 +726,6 @@ int ogs_sbi_context_parse_config(
 
                     } while (ogs_yaml_iter_type(&sbi_array) ==
                             YAML_SEQUENCE_NODE);
-                } else if (!strcmp(scp_key, "discovery")) {
-                    ogs_yaml_iter_t discovery_iter;
-                    yaml_node_t *node = yaml_document_get_node(
-                            document, scp_iter.pair->value);
-                    ogs_assert(node);
-                    ogs_assert(node->type == YAML_MAPPING_NODE);
-                    ogs_yaml_iter_recurse(&scp_iter, &discovery_iter);
-                    while (ogs_yaml_iter_next(&discovery_iter)) {
-                        const char *discovery_key =
-                            ogs_yaml_iter_key(&discovery_iter);
-                        ogs_assert(discovery_key);
-                        if (!strcmp(discovery_key, "delegated")) {
-                            const char *delegated =
-                                ogs_yaml_iter_value(&discovery_iter);
-                            if (!strcmp(delegated, "auto"))
-                                self.discovery_config.delegated =
-                                    OGS_SBI_DISCOVERY_DELEGATED_AUTO;
-                            else if (!strcmp(delegated, "yes"))
-                                self.discovery_config.delegated =
-                                    OGS_SBI_DISCOVERY_DELEGATED_YES;
-                            else if (!strcmp(delegated, "no"))
-                                self.discovery_config.delegated =
-                                    OGS_SBI_DISCOVERY_DELEGATED_NO;
-                            else
-                                ogs_warn("unknown 'delegated' value `%s`",
-                                        delegated);
-                        } else
-                            ogs_warn("unknown key `%s`", discovery_key);
-                    }
                 }
             }
         }
@@ -821,6 +838,7 @@ void ogs_sbi_nf_instance_clear(ogs_sbi_nf_instance_t *nf_instance)
 
     if (nf_instance->fqdn)
         ogs_free(nf_instance->fqdn);
+    nf_instance->fqdn = NULL;
 
     for (i = 0; i < nf_instance->num_of_ipv4; i++) {
         if (nf_instance->ipv4[i])
@@ -863,9 +881,6 @@ void ogs_sbi_nf_instance_remove(ogs_sbi_nf_instance_t *nf_instance)
 
     if (nf_instance->client)
         ogs_sbi_client_remove(nf_instance->client);
-
-    if (nf_instance->nf_profile)
-        OpenAPI_nf_profile_free(nf_instance->nf_profile);
 
     ogs_pool_free(&nf_instance_pool, nf_instance);
 }
@@ -964,7 +979,7 @@ void ogs_sbi_nf_service_add_allowed_nf_type(
     ogs_assert(allowed_nf_type);
 
     if (nf_service->num_of_allowed_nf_type < OGS_SBI_MAX_NUM_OF_NF_TYPE) {
-        nf_service->allowed_nf_types[nf_service->num_of_allowed_nf_type] =
+        nf_service->allowed_nf_type[nf_service->num_of_allowed_nf_type] =
             allowed_nf_type;
         nf_service->num_of_allowed_nf_type++;
     }
@@ -981,6 +996,7 @@ void ogs_sbi_nf_service_clear(ogs_sbi_nf_service_t *nf_service)
 
     if (nf_service->fqdn)
         ogs_free(nf_service->fqdn);
+    nf_service->fqdn = NULL;
 
     for (i = 0; i < nf_service->num_of_version; i++) {
         if (nf_service->version[i].in_uri)
@@ -1136,6 +1152,22 @@ void ogs_sbi_nf_info_remove_all(ogs_list_t *list)
 
     ogs_list_for_each_safe(list, next_nf_info, nf_info)
         ogs_sbi_nf_info_remove(list, nf_info);
+}
+
+ogs_sbi_nf_info_t *ogs_sbi_nf_info_find(
+        ogs_list_t *list, OpenAPI_nf_type_e nf_type)
+{
+    ogs_sbi_nf_info_t *nf_info = NULL;
+
+    ogs_assert(list);
+    ogs_assert(nf_type);
+
+    ogs_list_for_each(list, nf_info) {
+        if (nf_info->nf_type == nf_type)
+            return nf_info;
+    }
+
+    return NULL;
 }
 
 void ogs_sbi_nf_instance_build_default(
@@ -1367,6 +1399,43 @@ static void nf_service_associate_client_all(ogs_sbi_nf_instance_t *nf_instance)
         nf_service_associate_client(nf_service);
 }
 
+bool ogs_sbi_discovery_option_is_matched(
+        ogs_sbi_nf_instance_t *nf_instance,
+        ogs_sbi_discovery_option_t *discovery_option)
+{
+    ogs_assert(nf_instance);
+    ogs_assert(discovery_option);
+
+    if (discovery_option->target_nf_instance_id &&
+        nf_instance->id && strcmp(nf_instance->id,
+            discovery_option->target_nf_instance_id) != 0) {
+        return false;
+    }
+
+    if (discovery_option->num_of_service_names) {
+        ogs_sbi_nf_service_t *nf_service = NULL;
+
+        bool exist = false;
+        int i;
+
+        ogs_list_for_each(&nf_instance->nf_service_list, nf_service) {
+            for (i = 0; i < discovery_option->num_of_service_names; i++) {
+                if (nf_service->name &&
+                    discovery_option->service_names[i] &&
+                    strcmp(nf_service->name,
+                        discovery_option->service_names[i]) == 0) {
+                    exist = true;
+                    break;
+                }
+            }
+            if (exist == true) break;
+        }
+        if (exist == false) return false;
+    }
+
+    return true;
+}
+
 bool ogs_sbi_discovery_param_is_matched(
         ogs_sbi_nf_instance_t *nf_instance,
         OpenAPI_nf_type_e target_nf_type,
@@ -1381,24 +1450,25 @@ bool ogs_sbi_discovery_param_is_matched(
     if (nf_instance->nf_type != target_nf_type)
         return false;
 
-    if (discovery_option) {
-        if (discovery_option->target_nf_instance_id &&
-            strcmp(nf_instance->id,
-                discovery_option->target_nf_instance_id) != 0)
-            return false;
-    }
+    if (discovery_option &&
+        ogs_sbi_discovery_option_is_matched(
+            nf_instance, discovery_option) == false)
+        return false;
 
     return true;
 }
 
 void ogs_sbi_select_nf(
         ogs_sbi_object_t *sbi_object,
-        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
+    OpenAPI_nf_type_e target_nf_type = OpenAPI_nf_type_NULL;
 
     ogs_assert(sbi_object);
+    ogs_assert(service_type);
+    target_nf_type = ogs_sbi_service_type_to_nf_type(service_type);
     ogs_assert(target_nf_type);
 
     ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance) {
@@ -1406,7 +1476,7 @@ void ogs_sbi_select_nf(
                     nf_instance, target_nf_type, discovery_option) == false)
             continue;
 
-        OGS_SBI_SETUP_NF(sbi_object, target_nf_type, nf_instance);
+        OGS_SBI_SETUP_NF_INSTANCE(sbi_object, service_type, nf_instance);
         break;
     }
 }
@@ -1464,7 +1534,7 @@ void ogs_sbi_object_free(ogs_sbi_object_t *sbi_object)
     if (ogs_list_count(&sbi_object->xact_list))
         ogs_error("SBI running [%d]", ogs_list_count(&sbi_object->xact_list));
 
-    for (i = 0; i < OGS_SBI_MAX_NF_TYPE; i++) {
+    for (i = 0; i < OGS_SBI_MAX_NUM_OF_SERVICE_TYPE; i++) {
         if (OGS_SBI_NF_INSTANCE(sbi_object, i))
             ogs_sbi_nf_instance_remove(OGS_SBI_NF_INSTANCE(sbi_object, i));
     }
@@ -1472,7 +1542,7 @@ void ogs_sbi_object_free(ogs_sbi_object_t *sbi_object)
 
 ogs_sbi_xact_t *ogs_sbi_xact_add(
         ogs_sbi_object_t *sbi_object,
-        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_build_f build, void *context, void *data)
 {
@@ -1485,28 +1555,67 @@ ogs_sbi_xact_t *ogs_sbi_xact_add(
     memset(xact, 0, sizeof(ogs_sbi_xact_t));
 
     xact->sbi_object = sbi_object;
+    xact->service_type = service_type;
 
-    xact->target_nf_type = target_nf_type;
-    xact->discovery_option = discovery_option;
-
-    xact->request = (*build)(context, data);
-    if (!xact->request) {
-        ogs_error("SBI build failed");
-        ogs_pool_free(&xact_pool, xact);
-        return NULL;
+    /* Always insert one service-name in the discovery option */
+    if (!discovery_option) {
+        discovery_option = ogs_sbi_discovery_option_new();
+        ogs_assert(discovery_option);
     }
+
+    if (!discovery_option->num_of_service_names) {
+        ogs_sbi_discovery_option_add_service_names(
+                discovery_option,
+                (char *)ogs_sbi_service_type_to_name(service_type));
+    }
+    xact->discovery_option = discovery_option;
 
     xact->t_response = ogs_timer_add(
             ogs_app()->timer_mgr, ogs_timer_sbi_client_wait_expire, xact);
     if (!xact->t_response) {
         ogs_error("ogs_timer_add() failed");
-        ogs_sbi_request_free(xact->request);
         ogs_pool_free(&xact_pool, xact);
         return NULL;
     }
 
     ogs_timer_start(xact->t_response,
             ogs_app()->time.message.sbi.client_wait_duration);
+
+    if (build) {
+        xact->request = (*build)(context, data);
+        if (!xact->request) {
+            ogs_error("SBI build failed");
+            ogs_timer_delete(xact->t_response);
+            ogs_pool_free(&xact_pool, xact);
+            return NULL;
+        }
+        if (!xact->request->h.uri) {
+            const char *service_name = NULL;
+
+            ogs_assert(xact->service_type);
+            service_name = ogs_sbi_service_type_to_name(xact->service_type);
+            ogs_assert(service_name);
+            ogs_assert(xact->request->h.service.name);
+
+            /*
+             * Make sure the service matches
+             * between discover and build functions:
+             *
+             * DISCOVER : amf_ue_sbi_discover_and_send(
+             *              OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
+             * BUILD    : amf_npcf_am_policy_control_build_create()
+             *            message.h.service.name =
+             *              (char *)OGS_SBI_SERVICE_NAME_NPCF_AM_POLICY_CONTROL;
+             */
+
+            if (strcmp(service_name, xact->request->h.service.name) != 0) {
+                ogs_fatal("[%s:%d] is not the same with [%s]",
+                            service_name, xact->service_type,
+                            xact->request->h.service.name);
+                ogs_assert_if_reached();
+            }
+        }
+    }
 
     ogs_list_add(&sbi_object->xact_list, xact);
 

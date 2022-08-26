@@ -577,7 +577,8 @@ int amf_namf_callback_handle_dereg_notify(
 
             if (ogs_list_count(&amf_ue->sess_list) == 0)
                 ogs_assert(true ==
-                    amf_ue_sbi_discover_and_send(OpenAPI_nf_type_PCF, NULL,
+                    amf_ue_sbi_discover_and_send(
+                        OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,
                         amf_npcf_am_policy_control_build_delete, amf_ue, NULL));
 
             OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_de_registered);

@@ -31,10 +31,10 @@ void bsf_sbi_close(void);
 
 bool bsf_sbi_send_request(
         ogs_sbi_object_t *sbi_object,
-        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_service_type_e service_type,
         void *data);
 bool bsf_sbi_discover_and_send(
-        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(bsf_sess_t *sess, void *data),
         bsf_sess_t *sess, ogs_sbi_stream_t *stream, void *data);

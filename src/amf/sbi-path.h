@@ -36,10 +36,10 @@ void amf_sbi_close(void);
 
 bool amf_sbi_send_request(
         ogs_sbi_object_t *sbi_object,
-        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_service_type_e service_type,
         void *data);
 bool amf_ue_sbi_discover_and_send(
-        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(amf_ue_t *amf_ue, void *data),
         amf_ue_t *amf_ue, void *data);
@@ -67,13 +67,15 @@ bool amf_ue_sbi_discover_and_send(
 #define AMF_REMOVE_S1_CONTEXT_BY_RESET_ALL          52
 #define AMF_REMOVE_S1_CONTEXT_BY_RESET_PARTIAL      53
 bool amf_sess_sbi_discover_and_send(
-        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(amf_sess_t *sess, void *data),
         amf_sess_t *sess, int state, void *data);
 
 bool amf_sess_sbi_discover_by_nsi(
-        OpenAPI_nf_type_e target_nf_type, amf_sess_t *sess);
+        amf_sess_t *sess,
+        ogs_sbi_service_type_e service_type,
+        ogs_sbi_discovery_option_t *discovery_option);
 
 void amf_sbi_send_activating_session(amf_sess_t *sess, int state);
 

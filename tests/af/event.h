@@ -44,7 +44,7 @@ typedef struct af_event_s {
     ogs_pkbuf_t *pkbuf;
 
     struct {
-        OpenAPI_nf_type_e target_nf_type;
+        ogs_sbi_service_type_e service_type;
         void *data;
         ogs_sbi_request_t *(*build)(af_sess_t *sess, void *data);
     } local;

@@ -738,7 +738,7 @@ amf_sess_t *amf_sess_cycle(amf_sess_t *sess);
 
 void amf_sbi_select_nf(
         ogs_sbi_object_t *sbi_object,
-        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option);
 
 #define AMF_SESSION_SYNC_DONE(__aMF, __sTATE) \

@@ -233,7 +233,8 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                         if (!PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
                             ogs_assert(true ==
                                 amf_ue_sbi_discover_and_send(
-                                    OpenAPI_nf_type_PCF, NULL,
+                                    OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
+                                    NULL,
                                     amf_npcf_am_policy_control_build_create,
                                     amf_ue, NULL));
                         } else {
@@ -565,7 +566,8 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 ogs_warn("[%s:%d] Receive Update SM context"
                         "(DUPLICATED_PDU_SESSION_ID)", amf_ue->supi, sess->psi);
 
-                amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF, NULL,
+                amf_sess_sbi_discover_and_send(
+                        OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                         amf_nsmf_pdusession_build_create_sm_context,
                         sess, AMF_CREATE_SM_CONTEXT_NO_STATE, NULL);
 
@@ -816,7 +818,8 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
 
             if (!PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
                 ogs_assert(true ==
-                    amf_ue_sbi_discover_and_send(OpenAPI_nf_type_PCF, NULL,
+                    amf_ue_sbi_discover_and_send(
+                        OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,
                         amf_npcf_am_policy_control_build_create, amf_ue, NULL));
             } else {
                 CLEAR_AMF_UE_TIMER(amf_ue->t3550);
@@ -868,7 +871,8 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
                 if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_authentication)) {
 
                     ogs_assert(true ==
-                        amf_ue_sbi_discover_and_send(OpenAPI_nf_type_AUSF, NULL,
+                        amf_ue_sbi_discover_and_send(
+                            OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
                             amf_nausf_auth_build_authenticate, amf_ue, NULL));
 
                 } else if (OGS_FSM_CHECK(&amf_ue->sm,
@@ -885,7 +889,8 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
                      */
 
                     ogs_assert(true ==
-                        amf_ue_sbi_discover_and_send(OpenAPI_nf_type_PCF, NULL,
+                        amf_ue_sbi_discover_and_send(
+                            OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,
                             amf_npcf_am_policy_control_build_delete,
                             amf_ue, NULL));
 

@@ -20,7 +20,9 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_create(
     OpenAPI_list_t *req_per_plmn_snssais,
     OpenAPI_list_t *req_plmn_list,
     OpenAPI_list_t *req_snpn_list,
-    OpenAPI_list_t *serving_scope
+    OpenAPI_list_t *serving_scope,
+    char *requester_features,
+    char *nrf_supported_features
 )
 {
     OpenAPI_subscription_data_t *subscription_data_local_var = ogs_malloc(sizeof(OpenAPI_subscription_data_t));
@@ -42,6 +44,8 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_create(
     subscription_data_local_var->req_plmn_list = req_plmn_list;
     subscription_data_local_var->req_snpn_list = req_snpn_list;
     subscription_data_local_var->serving_scope = serving_scope;
+    subscription_data_local_var->requester_features = requester_features;
+    subscription_data_local_var->nrf_supported_features = nrf_supported_features;
 
     return subscription_data_local_var;
 }
@@ -82,6 +86,8 @@ void OpenAPI_subscription_data_free(OpenAPI_subscription_data_t *subscription_da
         ogs_free(node->data);
     }
     OpenAPI_list_free(subscription_data->serving_scope);
+    ogs_free(subscription_data->requester_features);
+    ogs_free(subscription_data->nrf_supported_features);
     ogs_free(subscription_data);
 }
 
@@ -290,6 +296,20 @@ cJSON *OpenAPI_subscription_data_convertToJSON(OpenAPI_subscription_data_t *subs
         goto end;
     }
                     }
+    }
+
+    if (subscription_data->requester_features) {
+    if (cJSON_AddStringToObject(item, "requesterFeatures", subscription_data->requester_features) == NULL) {
+        ogs_error("OpenAPI_subscription_data_convertToJSON() failed [requester_features]");
+        goto end;
+    }
+    }
+
+    if (subscription_data->nrf_supported_features) {
+    if (cJSON_AddStringToObject(item, "nrfSupportedFeatures", subscription_data->nrf_supported_features) == NULL) {
+        ogs_error("OpenAPI_subscription_data_convertToJSON() failed [nrf_supported_features]");
+        goto end;
+    }
     }
 
 end:
@@ -545,6 +565,24 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
     }
     }
 
+    cJSON *requester_features = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "requesterFeatures");
+
+    if (requester_features) {
+    if (!cJSON_IsString(requester_features)) {
+        ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [requester_features]");
+        goto end;
+    }
+    }
+
+    cJSON *nrf_supported_features = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "nrfSupportedFeatures");
+
+    if (nrf_supported_features) {
+    if (!cJSON_IsString(nrf_supported_features)) {
+        ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [nrf_supported_features]");
+        goto end;
+    }
+    }
+
     subscription_data_local_var = OpenAPI_subscription_data_create (
         ogs_strdup(nf_status_notification_uri->valuestring),
         req_nf_instance_id ? ogs_strdup(req_nf_instance_id->valuestring) : NULL,
@@ -561,7 +599,9 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
         req_per_plmn_snssais ? req_per_plmn_snssaisList : NULL,
         req_plmn_list ? req_plmn_listList : NULL,
         req_snpn_list ? req_snpn_listList : NULL,
-        serving_scope ? serving_scopeList : NULL
+        serving_scope ? serving_scopeList : NULL,
+        requester_features ? ogs_strdup(requester_features->valuestring) : NULL,
+        nrf_supported_features ? ogs_strdup(nrf_supported_features->valuestring) : NULL
     );
 
     return subscription_data_local_var;

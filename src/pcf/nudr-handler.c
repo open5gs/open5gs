@@ -194,7 +194,8 @@ bool pcf_nudr_dr_handle_query_sm_data(
         }
 
         ogs_assert(true ==
-            pcf_sess_sbi_discover_and_send(OpenAPI_nf_type_BSF, NULL,
+            pcf_sess_sbi_discover_and_send(
+                OGS_SBI_SERVICE_TYPE_NBSF_MANAGEMENT, NULL,
                 pcf_nbsf_management_build_register, sess, stream, NULL));
 
         return true;

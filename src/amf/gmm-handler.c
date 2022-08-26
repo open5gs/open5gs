@@ -720,8 +720,9 @@ int gmm_handle_authentication_response(amf_ue_t *amf_ue,
             authentication_response_parameter->length);
 
     ogs_assert(true ==
-        amf_ue_sbi_discover_and_send(OpenAPI_nf_type_AUSF, NULL,
-                amf_nausf_auth_build_authenticate_confirmation, amf_ue, NULL));
+        amf_ue_sbi_discover_and_send(
+            OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
+            amf_nausf_auth_build_authenticate_confirmation, amf_ue, NULL));
 
     return OGS_OK;
 }
@@ -1063,25 +1064,39 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
 
             if (!SESSION_CONTEXT_IN_SMF(sess)) {
                 ogs_sbi_nf_instance_t *nf_instance = NULL;
+                ogs_sbi_discovery_option_t *discovery_option = NULL;
+
+                discovery_option = ogs_sbi_discovery_option_new();
+                ogs_assert(discovery_option);
+                ogs_sbi_discovery_option_add_service_names(
+                        discovery_option,
+                        (char *)OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION);
 
                 nf_instance = OGS_SBI_NF_INSTANCE(
-                                &sess->sbi, OpenAPI_nf_type_SMF);
+                                &sess->sbi,
+                                OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION);
                 if (!nf_instance) {
-                    amf_sbi_select_nf(&sess->sbi, OpenAPI_nf_type_SMF, NULL);
+                    amf_sbi_select_nf(
+                            &sess->sbi,
+                            OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION,
+                            discovery_option);
                     nf_instance = OGS_SBI_NF_INSTANCE(
-                                    &sess->sbi, OpenAPI_nf_type_SMF);
+                                    &sess->sbi,
+                                    OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION);
                 }
+
+                ogs_sbi_discovery_option_free(discovery_option);
 
                 if (nf_instance) {
                     ogs_assert(true ==
                         amf_sess_sbi_discover_and_send(
-                            OpenAPI_nf_type_SMF, NULL,
+                            OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                             amf_nsmf_pdusession_build_create_sm_context,
                             sess, AMF_CREATE_SM_CONTEXT_NO_STATE, NULL));
                 } else {
                     ogs_assert(true ==
                         amf_sess_sbi_discover_and_send(
-                            OpenAPI_nf_type_NSSF, NULL,
+                            OGS_SBI_SERVICE_TYPE_NNSSF_NSSELECTION, NULL,
                             amf_nnssf_nsselection_build_get, sess, 0, NULL));
                 }
 
@@ -1092,7 +1107,8 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                 param.cause = OpenAPI_cause_REL_DUE_TO_DUPLICATE_SESSION_ID;
 
                 ogs_assert(true ==
-                    amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF, NULL,
+                    amf_sess_sbi_discover_and_send(
+                        OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                         amf_nsmf_pdusession_build_update_sm_context,
                         sess, AMF_UPDATE_SM_CONTEXT_DUPLICATED_PDU_SESSION_ID,
                         &param));
@@ -1118,13 +1134,15 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                 param.ue_timezone = true;
 
                 ogs_assert(true ==
-                    amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF, NULL,
+                    amf_sess_sbi_discover_and_send(
+                        OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                         amf_nsmf_pdusession_build_update_sm_context,
                         sess, AMF_UPDATE_SM_CONTEXT_N1_RELEASED, &param));
             } else {
 
                 ogs_assert(true ==
-                    amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF, NULL,
+                    amf_sess_sbi_discover_and_send(
+                        OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                         amf_nsmf_pdusession_build_update_sm_context,
                         sess, AMF_UPDATE_SM_CONTEXT_MODIFIED, &param));
             }

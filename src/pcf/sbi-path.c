@@ -158,12 +158,14 @@ void pcf_sbi_close(void)
 
 bool pcf_sbi_send_request(
         ogs_sbi_object_t *sbi_object,
-        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_service_type_e service_type,
         void *data)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
 
-    nf_instance = OGS_SBI_NF_INSTANCE(sbi_object, target_nf_type);
+    ogs_assert(service_type);
+
+    nf_instance = OGS_SBI_NF_INSTANCE(sbi_object, service_type);
     if (!nf_instance) {
         pcf_ue_t *pcf_ue = NULL;
         pcf_sess_t *sess = NULL;
@@ -175,18 +177,17 @@ bool pcf_sbi_send_request(
             pcf_ue = (pcf_ue_t *)sbi_object;
             ogs_assert(pcf_ue);
             ogs_error("[%s] (NF discover) No [%s]", pcf_ue->supi,
-                    OpenAPI_nf_type_ToString(target_nf_type));
+                        ogs_sbi_service_type_to_name(service_type));
             break;
         case OGS_SBI_OBJ_SESS_TYPE:
             sess = (pcf_sess_t *)sbi_object;
             ogs_assert(sess);
             ogs_error("[%d] (NF discover) No [%s]", sess->psi,
-                    OpenAPI_nf_type_ToString(target_nf_type));
+                        ogs_sbi_service_type_to_name(service_type));
             break;
         default:
             ogs_fatal("(NF discover) Not implemented [%s:%d]",
-                OpenAPI_nf_type_ToString(target_nf_type),
-                sbi_object->type);
+                ogs_sbi_service_type_to_name(service_type), sbi_object->type);
             ogs_assert_if_reached();
         }
 
@@ -198,34 +199,26 @@ bool pcf_sbi_send_request(
 
 static bool pcf_sbi_discover_and_send(
         ogs_sbi_object_t *sbi_object,
-        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_build_f build,
         void *context, ogs_sbi_stream_t *stream, void *data)
 {
     ogs_sbi_xact_t *xact = NULL;
-    OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
 
-    ogs_assert(ogs_sbi_self()->nf_instance);
-    requester_nf_type = ogs_sbi_self()->nf_instance->nf_type;
-    ogs_assert(requester_nf_type);
-
-    ogs_assert(target_nf_type);
+    ogs_assert(service_type);
     ogs_assert(sbi_object);
     ogs_assert(stream);
     ogs_assert(build);
 
     xact = ogs_sbi_xact_add(
-            sbi_object, target_nf_type, discovery_option,
+            sbi_object, service_type, discovery_option,
             build, context, data);
     ogs_expect_or_return_val(xact, false);
 
     xact->assoc_stream = stream;
 
-    if (ogs_sbi_discover_and_send(
-            sbi_object,
-            target_nf_type, requester_nf_type, discovery_option,
-            client_cb, xact) != true) {
+    if (ogs_sbi_discover_and_send(xact, client_cb) != true) {
         ogs_error("ogs_sbi_discover_and_send() failed");
         ogs_sbi_xact_remove(xact);
         return false;
@@ -235,13 +228,13 @@ static bool pcf_sbi_discover_and_send(
 }
 
 bool pcf_ue_sbi_discover_and_send(
-        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(pcf_ue_t *pcf_ue, void *data),
         pcf_ue_t *pcf_ue, ogs_sbi_stream_t *stream, void *data)
 {
     if (pcf_sbi_discover_and_send(
-                &pcf_ue->sbi, target_nf_type, discovery_option,
+                &pcf_ue->sbi, service_type, discovery_option,
                 (ogs_sbi_build_f)build, pcf_ue, stream, data) != true) {
         ogs_error("pcf_ue_sbi_discover_and_send() failed");
         ogs_assert(true ==
@@ -255,13 +248,13 @@ bool pcf_ue_sbi_discover_and_send(
 }
 
 bool pcf_sess_sbi_discover_and_send(
-        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(pcf_sess_t *sess, void *data),
         pcf_sess_t *sess, ogs_sbi_stream_t *stream, void *data)
 {
     if (pcf_sbi_discover_and_send(
-                &sess->sbi, target_nf_type, discovery_option,
+                &sess->sbi, service_type, discovery_option,
                 (ogs_sbi_build_f)build, sess, stream, data) != true) {
         ogs_error("pcf_sess_sbi_discover_and_send() failed");
         ogs_assert(true ==

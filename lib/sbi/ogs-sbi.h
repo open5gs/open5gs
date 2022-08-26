@@ -86,6 +86,7 @@
 
 #define OGS_SBI_INSIDE
 
+#include "sbi/types.h"
 #include "sbi/conv.h"
 #include "sbi/timer.h"
 #include "sbi/message.h"

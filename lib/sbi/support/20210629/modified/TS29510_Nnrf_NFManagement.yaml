@@ -1442,11 +1442,13 @@ components:
           items:
             type: string
           minItems: 1
-#        requesterFeatures:
+        requesterFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
 #          writeOnly: true
 #          allOf:
 #            - $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
-#        nrfSupportedFeatures:
+        nrfSupportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
 #          readOnly: true
 #          allOf:
 #            - $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'

@@ -27,6 +27,7 @@ libsbi_sources = files('''
     custom/patch_item.c
 
     yuarel.c
+    types.c
     conv.c
     timer.c
     message.c

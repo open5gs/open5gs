@@ -98,7 +98,8 @@ int amf_nnssf_nsselection_handle_get(
 
     ogs_freeaddrinfo(addr);
 
-    ogs_assert(true == amf_sess_sbi_discover_by_nsi(OpenAPI_nf_type_SMF, sess));
+    ogs_assert(true == amf_sess_sbi_discover_by_nsi(
+                sess, OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL));
 
     return OGS_OK;
 }

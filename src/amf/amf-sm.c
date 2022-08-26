@@ -68,7 +68,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
     int state = AMF_CREATE_SM_CONTEXT_NO_STATE;
     ogs_sbi_stream_t *stream = NULL;
     ogs_sbi_request_t *sbi_request = NULL;
-    OpenAPI_nf_type_e target_nf_type = OpenAPI_nf_type_NULL;
+    ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
 
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_subscription_t *subscription = NULL;
@@ -398,10 +398,11 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
             state = sbi_xact->state;
 
-            ogs_sbi_xact_remove(sbi_xact);
-
             sess = (amf_sess_t *)sbi_xact->sbi_object;
             ogs_assert(sess);
+
+            ogs_sbi_xact_remove(sbi_xact);
+
             sess = amf_sess_cycle(sess);
             if (!sess) {
             /*
@@ -590,7 +591,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             sbi_object = sbi_xact->sbi_object;
             ogs_assert(sbi_object);
 
-            target_nf_type = sbi_xact->target_nf_type;
+            service_type = sbi_xact->service_type;
 
             ogs_sbi_xact_remove(sbi_xact);
 
@@ -640,7 +641,8 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
             default:
                 ogs_fatal("Not implemented [%s:%d]",
-                    OpenAPI_nf_type_ToString(target_nf_type), sbi_object->type);
+                    ogs_sbi_service_type_to_name(service_type),
+                    sbi_object->type);
                 ogs_assert_if_reached();
             }
             break;

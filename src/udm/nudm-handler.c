@@ -74,7 +74,7 @@ bool udm_nudm_ueau_handle_get(
     if (!ResynchronizationInfo) {
 
         ogs_assert(true ==
-            udm_sbi_discover_and_send(OpenAPI_nf_type_UDR, NULL,
+            udm_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NUDR_DR, NULL,
                 udm_nudr_dr_build_authentication_subscription,
                 udm_ue, stream, NULL));
 
@@ -163,7 +163,7 @@ bool udm_nudm_ueau_handle_get(
         ogs_uint64_to_buffer(sqn, OGS_SQN_LEN, udm_ue->sqn);
 
         ogs_assert(true ==
-            udm_sbi_discover_and_send(OpenAPI_nf_type_UDR, NULL,
+            udm_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NUDR_DR, NULL,
                 udm_nudr_dr_build_authentication_subscription,
                 udm_ue, stream, udm_ue->sqn));
     }
@@ -233,7 +233,7 @@ bool udm_nudm_ueau_handle_result_confirmation_inform(
             udm_ue->auth_event, message->AuthEvent);
 
     ogs_assert(true ==
-        udm_sbi_discover_and_send(OpenAPI_nf_type_UDR, NULL,
+        udm_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NUDR_DR, NULL,
             udm_nudr_dr_build_update_authentication_status,
             udm_ue, stream, NULL));
 
@@ -332,7 +332,7 @@ bool udm_nudm_uecm_handle_registration(
                 message->Amf3GppAccessRegistration);
 
     ogs_assert(true ==
-        udm_sbi_discover_and_send(OpenAPI_nf_type_UDR, NULL,
+        udm_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NUDR_DR, NULL,
             udm_nudr_dr_build_update_amf_context, udm_ue, stream, NULL));
 
     return true;
@@ -439,7 +439,7 @@ bool udm_nudm_uecm_handle_registration_update(
     }
 
     ogs_assert(true ==
-        udm_sbi_discover_and_send(OpenAPI_nf_type_UDR, NULL,
+        udm_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NUDR_DR, NULL,
             udm_nudr_dr_build_patch_amf_context,
             udm_ue, stream, PatchItemList));
 

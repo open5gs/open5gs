@@ -148,16 +148,16 @@ void amf_sbi_close(void)
 
 bool amf_sbi_send_request(
         ogs_sbi_object_t *sbi_object,
-        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_service_type_e service_type,
         void *data)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
 
+    ogs_assert(service_type);
     ogs_assert(sbi_object);
-    ogs_assert(target_nf_type);
     ogs_assert(data);
 
-    nf_instance = OGS_SBI_NF_INSTANCE(sbi_object, target_nf_type);
+    nf_instance = OGS_SBI_NF_INSTANCE(sbi_object, service_type);
     if (!nf_instance) {
         amf_ue_t *amf_ue = NULL;
         amf_sess_t *sess = NULL;
@@ -169,7 +169,7 @@ bool amf_sbi_send_request(
             amf_ue = (amf_ue_t *)sbi_object;
             ogs_assert(amf_ue);
             ogs_error("[%s] (NF discover) No [%s]", amf_ue->suci,
-                    OpenAPI_nf_type_ToString(target_nf_type));
+                        ogs_sbi_service_type_to_name(service_type));
             ogs_assert(OGS_OK ==
                 nas_5gs_send_gmm_reject_from_sbi(amf_ue,
                     OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT));
@@ -178,7 +178,7 @@ bool amf_sbi_send_request(
             sess = (amf_sess_t *)sbi_object;
             ogs_assert(sess);
             ogs_error("[%d:%d] (NF discover) No [%s]", sess->psi, sess->pti,
-                    OpenAPI_nf_type_ToString(target_nf_type));
+                        ogs_sbi_service_type_to_name(service_type));
             if (sess->payload_container_type) {
                 ogs_assert(OGS_OK ==
                     nas_5gs_send_back_gsm_message(sess,
@@ -193,8 +193,7 @@ bool amf_sbi_send_request(
             break;
         default:
             ogs_fatal("(NF discover) Not implemented [%s:%d]",
-                OpenAPI_nf_type_ToString(target_nf_type),
-                sbi_object->type);
+                ogs_sbi_service_type_to_name(service_type), sbi_object->type);
             ogs_assert_if_reached();
         }
 
@@ -205,24 +204,19 @@ bool amf_sbi_send_request(
 }
 
 bool amf_ue_sbi_discover_and_send(
-        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(amf_ue_t *amf_ue, void *data),
         amf_ue_t *amf_ue, void *data)
 {
     ogs_sbi_xact_t *xact = NULL;
-    OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
 
-    ogs_assert(ogs_sbi_self()->nf_instance);
-    requester_nf_type = ogs_sbi_self()->nf_instance->nf_type;
-    ogs_assert(requester_nf_type);
-
-    ogs_assert(target_nf_type);
+    ogs_assert(service_type);
     ogs_assert(amf_ue);
     ogs_assert(build);
 
     xact = ogs_sbi_xact_add(
-            &amf_ue->sbi, target_nf_type, discovery_option,
+            &amf_ue->sbi, service_type, discovery_option,
             (ogs_sbi_build_f)build, amf_ue, data);
     if (!xact) {
         ogs_error("amf_ue_sbi_discover_and_send() failed");
@@ -232,10 +226,7 @@ bool amf_ue_sbi_discover_and_send(
         return false;
     }
 
-    if (ogs_sbi_discover_and_send(
-            &amf_ue->sbi,
-            target_nf_type, requester_nf_type, discovery_option,
-            client_cb, xact) != true) {
+    if (ogs_sbi_discover_and_send(xact, client_cb) != true) {
         ogs_error("amf_ue_sbi_discover_and_send() failed");
         ogs_sbi_xact_remove(xact);
         ogs_assert(OGS_OK ==
@@ -248,24 +239,19 @@ bool amf_ue_sbi_discover_and_send(
 }
 
 bool amf_sess_sbi_discover_and_send(
-        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(amf_sess_t *sess, void *data),
         amf_sess_t *sess, int state, void *data)
 {
     ogs_sbi_xact_t *xact = NULL;
-    OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
 
-    ogs_assert(ogs_sbi_self()->nf_instance);
-    requester_nf_type = ogs_sbi_self()->nf_instance->nf_type;
-    ogs_assert(requester_nf_type);
-
-    ogs_assert(target_nf_type);
+    ogs_assert(service_type);
     ogs_assert(sess);
     ogs_assert(build);
 
     xact = ogs_sbi_xact_add(
-            &sess->sbi, target_nf_type, discovery_option,
+            &sess->sbi, service_type, discovery_option,
             (ogs_sbi_build_f)build, sess, data);
     if (!xact) {
         ogs_error("amf_sess_sbi_discover_and_send() failed");
@@ -276,10 +262,7 @@ bool amf_sess_sbi_discover_and_send(
 
     xact->state = state;
 
-    if (ogs_sbi_discover_and_send(
-            &sess->sbi,
-            target_nf_type, requester_nf_type, discovery_option,
-            client_cb, xact) != true) {
+    if (ogs_sbi_discover_and_send(xact, client_cb) != true) {
         ogs_error("amf_sess_sbi_discover_and_send() failed");
         ogs_sbi_xact_remove(xact);
         ogs_assert(OGS_OK == nas_5gs_send_back_gsm_message(sess,
@@ -293,20 +276,49 @@ static int client_discover_cb(
         int status, ogs_sbi_response_t *response, void *data)
 {
     int rv;
-
     ogs_sbi_message_t message;
-    amf_sess_t *sess = data;
+
+    ogs_sbi_xact_t *xact = NULL;
+    ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
+    ogs_sbi_discovery_option_t *discovery_option = NULL;
+    amf_ue_t *amf_ue = NULL;
+    amf_sess_t *sess = NULL;
+
+    ogs_assert(response);
+
+    xact = data;
+    ogs_assert(xact);
+
+    xact = ogs_sbi_xact_cycle(xact);
+    if (!xact) {
+        ogs_error("SBI transaction has already been removed");
+        return OGS_ERROR;
+    }
+
+    sess = (amf_sess_t *)xact->sbi_object;
+    ogs_assert(sess);
+
+    service_type = xact->service_type;
+    discovery_option = xact->discovery_option;
+
+    sess = amf_sess_cycle(sess);
+    if (!sess) {
+        ogs_error("Session has already been removed");
+        ogs_sbi_xact_remove(xact);
+        return OGS_ERROR;
+    }
+
+    ogs_assert(sess->sbi.type == OGS_SBI_OBJ_SESS_TYPE);
+    amf_ue = sess->amf_ue;
+    ogs_assert(amf_ue);
 
     if (status != OGS_OK) {
         ogs_log_message(
                 status == OGS_DONE ? OGS_LOG_DEBUG : OGS_LOG_WARN, 0,
                 "client_discover_cb() failed [%d]", status);
+        ogs_sbi_xact_remove(xact);
         return OGS_ERROR;
     }
-
-    ogs_assert(response);
-    ogs_assert(sess);
-    ogs_assert(sess->sbi.type == OGS_SBI_OBJ_SESS_TYPE);
 
     rv = ogs_sbi_parse_response(&message, response);
     if (rv != OGS_OK) {
@@ -333,14 +345,14 @@ static int client_discover_cb(
         goto cleanup;
     }
 
-    ogs_nnrf_handle_nf_discover_search_result(
-            &sess->sbi, OpenAPI_nf_type_SMF, NULL, message.SearchResult);
+    ogs_nnrf_handle_nf_discover_search_result(message.SearchResult);
 
-    amf_sbi_select_nf(&sess->sbi, OpenAPI_nf_type_SMF, NULL);
+    amf_sbi_select_nf(&sess->sbi, service_type, discovery_option);
 
-    if (!OGS_SBI_NF_INSTANCE(&sess->sbi, OpenAPI_nf_type_SMF)) {
-        ogs_error("Cannot discover [%s]",
-                    OpenAPI_nf_type_ToString(OpenAPI_nf_type_SMF));
+    if (!OGS_SBI_NF_INSTANCE(&sess->sbi, service_type)) {
+        ogs_error("[%s:%d] (NF discover) No [%s]",
+                    amf_ue->supi, sess->psi,
+                    ogs_sbi_service_type_to_name(service_type));
         ogs_assert(OGS_OK ==
             nas_5gs_send_back_gsm_message(sess,
                 OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
@@ -349,11 +361,14 @@ static int client_discover_cb(
         goto cleanup;
     }
 
-    amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF, NULL,
+    amf_sess_sbi_discover_and_send(
+            service_type, NULL,
             amf_nsmf_pdusession_build_create_sm_context,
             sess, AMF_CREATE_SM_CONTEXT_NO_STATE, NULL);
 
 cleanup:
+    ogs_sbi_xact_remove(xact);
+
     ogs_sbi_message_free(&message);
     ogs_sbi_response_free(response);
 
@@ -361,24 +376,31 @@ cleanup:
 }
 
 bool amf_sess_sbi_discover_by_nsi(
-        OpenAPI_nf_type_e target_nf_type, amf_sess_t *sess)
+        amf_sess_t *sess,
+        ogs_sbi_service_type_e service_type,
+        ogs_sbi_discovery_option_t *discovery_option)
 {
-    ogs_sbi_request_t *request = NULL;
+    ogs_sbi_xact_t *xact = NULL;
     ogs_sbi_client_t *client = NULL;
 
-    ogs_assert(target_nf_type);
     ogs_assert(sess);
     client = sess->nssf.nrf.client;
     ogs_assert(client);
+    ogs_assert(service_type);
 
-    ogs_assert(ogs_sbi_self()->nf_instance);
-    request = amf_nnrf_disc_build_discover(
-                sess->nssf.nrf.id, target_nf_type,
-                ogs_sbi_self()->nf_instance->nf_type);
-    ogs_expect_or_return_val(request, false);
+    ogs_warn("Try to discover [%s]",
+                ogs_sbi_service_type_to_name(service_type));
 
-    return ogs_sbi_client_send_request(
-            client, client_discover_cb, request, sess);
+    xact = ogs_sbi_xact_add(
+            &sess->sbi, service_type, discovery_option, NULL, NULL, NULL);
+    ogs_expect_or_return_val(xact, false);
+
+    xact->request = amf_nnrf_disc_build_discover(
+                sess->nssf.nrf.id, xact->service_type, xact->discovery_option);
+    ogs_expect_or_return_val(xact->request, false);
+
+    return ogs_sbi_client_send_reqmem_persistent(
+            client, client_discover_cb, xact->request, xact);
 }
 
 void amf_sbi_send_activating_session(amf_sess_t *sess, int state)
@@ -390,7 +412,8 @@ void amf_sbi_send_activating_session(amf_sess_t *sess, int state)
     memset(&param, 0, sizeof(param));
     param.upCnxState = OpenAPI_up_cnx_state_ACTIVATING;
 
-    amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF, NULL,
+    amf_sess_sbi_discover_and_send(
+            OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
             amf_nsmf_pdusession_build_update_sm_context, sess, state, &param);
 }
 
@@ -408,7 +431,8 @@ void amf_sbi_send_deactivate_session(
     param.ue_location = true;
     param.ue_timezone = true;
 
-    amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF, NULL,
+    amf_sess_sbi_discover_and_send(
+            OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
             amf_nsmf_pdusession_build_update_sm_context, sess, state, &param);
 }
 
@@ -470,7 +494,8 @@ void amf_sbi_send_release_session(amf_sess_t *sess, int state)
 {
     ogs_assert(sess);
 
-    amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF, NULL,
+    amf_sess_sbi_discover_and_send(
+            OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
             amf_nsmf_pdusession_build_release_sm_context, sess, state, NULL);
 
     /* Prevent to invoke SMF for this session */

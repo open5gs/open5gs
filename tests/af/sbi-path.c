@@ -77,7 +77,6 @@ static int client_cb(int status, ogs_sbi_response_t *response, void *data)
 int af_sbi_open(void)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
-    ogs_sbi_nf_service_t *service = NULL;
 
     /* To be notified when NF Instances registered/deregistered in NRF
      * or when their profile is modified */
@@ -89,16 +88,6 @@ int af_sbi_open(void)
 
     /* Build NF instance information. It will be transmitted to NRF. */
     ogs_sbi_nf_instance_build_default(nf_instance, OpenAPI_nf_type_AF);
-
-    /* Build NF service information. It will be transmitted to NRF. */
-    if (ogs_sbi_nf_service_is_available(
-                OGS_SBI_SERVICE_NAME_NAF_EVENTEXPOSURE)) {
-        service = ogs_sbi_nf_service_build_default(
-                    nf_instance, OGS_SBI_SERVICE_NAME_NAF_EVENTEXPOSURE);
-        ogs_assert(service);
-        ogs_sbi_nf_service_add_version(
-                    service, OGS_SBI_API_V1, OGS_SBI_API_V1_0_0, NULL);
-    }
 
     /* Initialize NRF NF Instance */
     nf_instance = ogs_sbi_self()->nrf_instance;
@@ -129,15 +118,17 @@ void af_sbi_close(void)
 
 bool af_sbi_send_request(
         ogs_sbi_object_t *sbi_object,
-        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_service_type_e service_type,
         void *data)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
 
-    nf_instance = OGS_SBI_NF_INSTANCE(sbi_object, target_nf_type);
+    ogs_assert(service_type);
+
+    nf_instance = OGS_SBI_NF_INSTANCE(sbi_object, service_type);
     if (!nf_instance) {
         ogs_error("(NF discover) No [%s]",
-                OpenAPI_nf_type_ToString(target_nf_type));
+                    ogs_sbi_service_type_to_name(service_type));
         return false;
     }
 
@@ -145,35 +136,26 @@ bool af_sbi_send_request(
 }
 
 void af_sbi_discover_and_send(
-        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(af_sess_t *sess, void *data),
         af_sess_t *sess, void *data)
 {
     ogs_sbi_xact_t *xact = NULL;
-    OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
 
-    ogs_assert(ogs_sbi_self()->nf_instance);
-    requester_nf_type = ogs_sbi_self()->nf_instance->nf_type;
-    ogs_assert(requester_nf_type);
-
-    ogs_assert(target_nf_type);
-
+    ogs_assert(service_type);
     ogs_assert(sess);
     ogs_assert(build);
 
     xact = ogs_sbi_xact_add(
-            &sess->sbi, target_nf_type, discovery_option,
+            &sess->sbi, service_type, discovery_option,
             (ogs_sbi_build_f)build, sess, data);
     if (!xact) {
         ogs_error("af_sbi_discover_and_send() failed");
         return;
     }
 
-    if (ogs_sbi_discover_and_send(
-            &sess->sbi,
-            target_nf_type, requester_nf_type, discovery_option,
-            client_cb, xact) != true) {
+    if (ogs_sbi_discover_and_send(xact, client_cb) != true) {
         ogs_error("af_sbi_discover_and_send() failed");
         return;
     }

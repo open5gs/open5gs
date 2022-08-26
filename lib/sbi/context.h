@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -28,8 +28,6 @@
 extern "C" {
 #endif
 
-#define OGS_SBI_MAX_NF_TYPE 64
-
 #define OGS_MAX_NUM_OF_NF_INFO 8
 
 typedef struct ogs_sbi_client_s ogs_sbi_client_t;
@@ -44,6 +42,8 @@ typedef enum {
 
 typedef struct ogs_sbi_discovery_config_s {
     ogs_sbi_discovery_delegated_mode delegated;
+    bool no_service_names;
+    bool prefer_requester_nf_instance_id;
 } ogs_sbi_discovery_config_t;
 
 typedef struct ogs_sbi_context_s {
@@ -66,9 +66,9 @@ typedef struct ogs_sbi_context_s {
     const char *content_encoding;
 
     int num_of_service_name;
-    const char *service_name[OGS_MAX_NUM_OF_NF_SERVICE];
+    const char *service_name[OGS_SBI_MAX_NUM_OF_SERVICE_TYPE];
 
-#define OGS_SBI_MAX_NUM_OF_NF_TYPE 16
+#define OGS_SBI_MAX_NUM_OF_NF_TYPE 128
     int num_of_to_be_notified_nf_type;
     OpenAPI_nf_type_e to_be_notified_nf_type[OGS_SBI_MAX_NUM_OF_NF_TYPE];
 } ogs_sbi_context_t;
@@ -122,18 +122,15 @@ typedef struct ogs_sbi_nf_instance_s {
     int load;
 
     ogs_list_t nf_service_list;
+    ogs_list_t nf_info_list;
 
     void *client;                       /* only used in CLIENT */
     unsigned int reference_count;       /* reference count for memory free */
-
-    ogs_list_t nf_info_list;
-
-    OpenAPI_nf_profile_t *nf_profile;       /* stored NF Profile */
 } ogs_sbi_nf_instance_t;
 
-typedef struct ogs_sbi_nf_type_array_s {
+typedef struct ogs_sbi_nf_instance_array_s {
     ogs_sbi_nf_instance_t *nf_instance;
-} ogs_sbi_nf_type_array_t[OGS_SBI_MAX_NF_TYPE];
+} ogs_sbi_nf_instance_array_t[OGS_SBI_MAX_NUM_OF_SERVICE_TYPE];
 
 typedef enum {
     OGS_SBI_OBJ_BASE = 0,
@@ -149,7 +146,7 @@ typedef struct ogs_sbi_object_s {
 
     ogs_sbi_obj_type_e type;
 
-    ogs_sbi_nf_type_array_t nf_type_array;
+    ogs_sbi_nf_instance_array_t nf_instance_array;
 
     ogs_list_t xact_list;
 
@@ -161,7 +158,7 @@ typedef ogs_sbi_request_t *(*ogs_sbi_build_f)(
 typedef struct ogs_sbi_xact_s {
     ogs_lnode_t lnode;
 
-    OpenAPI_nf_type_e target_nf_type;
+    ogs_sbi_service_type_e service_type;
     ogs_sbi_discovery_option_t *discovery_option;
 
     ogs_sbi_request_t *request;
@@ -199,7 +196,7 @@ typedef struct ogs_sbi_nf_service_s {
     } addr[OGS_SBI_MAX_NUM_OF_IP_ADDRESS];
 
     int num_of_allowed_nf_type;
-    OpenAPI_nf_type_e allowed_nf_types[OGS_SBI_MAX_NUM_OF_NF_TYPE];
+    OpenAPI_nf_type_e allowed_nf_type[OGS_SBI_MAX_NUM_OF_NF_TYPE];
 
     int priority;
     int capacity;
@@ -228,6 +225,9 @@ typedef struct ogs_sbi_subscription_s {
     struct {
         OpenAPI_nf_type_e nf_type;          /* nfType */
     } subscr_cond;
+
+    uint64_t requester_features;
+    uint64_t nrf_supported_features;
 
     void *client;                           /* only used in SERVER */
 } ogs_sbi_subscription_t;
@@ -313,6 +313,8 @@ ogs_sbi_nf_info_t *ogs_sbi_nf_info_add(
         ogs_list_t *list, OpenAPI_nf_type_e nf_type);
 void ogs_sbi_nf_info_remove(ogs_list_t *list, ogs_sbi_nf_info_t *nf_info);
 void ogs_sbi_nf_info_remove_all(ogs_list_t *list);
+ogs_sbi_nf_info_t *ogs_sbi_nf_info_find(
+        ogs_list_t *list, OpenAPI_nf_type_e nf_type);
 
 void ogs_sbi_nf_instance_build_default(
         ogs_sbi_nf_instance_t *nf_instance, OpenAPI_nf_type_e nf_type);
@@ -326,25 +328,25 @@ void ogs_sbi_client_associate(ogs_sbi_nf_instance_t *nf_instance);
 
 OpenAPI_uri_scheme_e ogs_sbi_default_uri_scheme(void);
 
-#define OGS_SBI_NF_INSTANCE(__sBIObject, __nFType) \
-    (((__sBIObject)->nf_type_array)[__nFType].nf_instance)
+#define OGS_SBI_NF_INSTANCE(__sBIObject, __sERVICEType) \
+    (((__sBIObject)->nf_instance_array)[__sERVICEType].nf_instance)
 
-#define OGS_SBI_SETUP_NF(__sBIObject, __nFType, __nFInstance) \
+#define OGS_SBI_SETUP_NF_INSTANCE(__sBIObject, __sERVICEType, __nFInstance) \
     do { \
         ogs_assert((__sBIObject)); \
-        ogs_assert((__nFType)); \
+        ogs_assert((__sERVICEType)); \
         ogs_assert((__nFInstance)); \
         \
-        if (OGS_SBI_NF_INSTANCE((__sBIObject), (__nFType))) { \
+        if (OGS_SBI_NF_INSTANCE((__sBIObject), (__sERVICEType))) { \
             ogs_warn("UE %s-EndPoint updated [%s]", \
-                    OpenAPI_nf_type_ToString((__nFType)), \
+                    ogs_sbi_service_type_to_name((__sERVICEType)), \
                     (__nFInstance)->id); \
             ogs_sbi_nf_instance_remove( \
-                    OGS_SBI_NF_INSTANCE((__sBIObject), (__nFType))); \
+                    OGS_SBI_NF_INSTANCE((__sBIObject), (__sERVICEType))); \
         } \
         \
         OGS_OBJECT_REF(__nFInstance); \
-        OGS_SBI_NF_INSTANCE((__sBIObject), (__nFType)) = (__nFInstance); \
+        OGS_SBI_NF_INSTANCE((__sBIObject), (__sERVICEType)) = (__nFInstance); \
     } while(0)
 
 bool ogs_sbi_discovery_param_is_matched(
@@ -352,16 +354,20 @@ bool ogs_sbi_discovery_param_is_matched(
         OpenAPI_nf_type_e target_nf_type,
         ogs_sbi_discovery_option_t *discovery_option);
 
+bool ogs_sbi_discovery_option_is_matched(
+        ogs_sbi_nf_instance_t *nf_instance,
+        ogs_sbi_discovery_option_t *discovery_option);
+
 void ogs_sbi_select_nf(
         ogs_sbi_object_t *sbi_object,
-        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option);
 
 void ogs_sbi_object_free(ogs_sbi_object_t *sbi_object);
 
 ogs_sbi_xact_t *ogs_sbi_xact_add(
         ogs_sbi_object_t *sbi_object,
-        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_build_f build, void *context, void *data);
 void ogs_sbi_xact_remove(ogs_sbi_xact_t *xact);

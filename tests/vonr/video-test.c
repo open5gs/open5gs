@@ -303,7 +303,9 @@ static void test1_func(abts_case *tc, void *data)
     af_sess->dnn = ogs_strdup(sess->dnn);
     ogs_assert(af_sess->dnn);
 
-    af_local_discover_and_send(OpenAPI_nf_type_BSF, af_sess, NULL,
+    af_local_discover_and_send(
+            OGS_SBI_SERVICE_TYPE_NBSF_MANAGEMENT,
+            af_sess, NULL,
             af_nbsf_management_build_discover);
 
     /* Wait for PCF-Discovery */

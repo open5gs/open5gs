@@ -33,9 +33,6 @@ extern "C" {
 #define OGS_BEARER_PER_UE               8   /* Num of Bearer per UE */
 #define OGS_MAX_NUM_OF_PACKET_BUFFER    64  /* Num of PacketBuffer per UE */
 
-/* Num of NF Service per NF Instance */
-#define OGS_MAX_NUM_OF_NF_SERVICE       16
-
 /*
  * The array of TLV messages is limited to 8.
  * So, Flow(PDI.SDF_Filter) in PDR is limited to 8.

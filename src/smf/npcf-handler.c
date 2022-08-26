@@ -276,8 +276,6 @@ bool smf_npcf_smpolicycontrol_handle_create(
     char buf1[OGS_ADDRSTRLEN];
     char buf2[OGS_ADDRSTRLEN];
 
-    uint64_t supported_features;
-
     char *strerror = NULL;
     smf_ue_t *smf_ue = NULL;
 
@@ -345,7 +343,7 @@ bool smf_npcf_smpolicycontrol_handle_create(
 
     /* SBI Features */
     if (SmPolicyDecision->supp_feat) {
-        supported_features =
+        uint64_t supported_features =
             ogs_uint64_from_string(SmPolicyDecision->supp_feat);
         sess->smpolicycontrol_features &= supported_features;
     } else {
@@ -683,7 +681,8 @@ bool smf_npcf_smpolicycontrol_handle_terminate_notify(
 
     memset(&param, 0, sizeof(param));
     ogs_assert(true ==
-        smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, NULL,
+        smf_sbi_discover_and_send(
+            OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL, NULL,
             smf_npcf_smpolicycontrol_build_delete,
             sess, NULL, OGS_PFCP_DELETE_TRIGGER_PCF_INITIATED, &param));
 

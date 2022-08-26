@@ -24,9 +24,8 @@ void scp_nnrf_handle_nf_discover(
         ogs_sbi_xact_t *xact, ogs_sbi_message_t *recvmsg)
 {
     ogs_sbi_object_t *sbi_object = NULL;
-    OpenAPI_nf_type_e target_nf_type = 0;
+    ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
     ogs_sbi_discovery_option_t *discovery_option = NULL;
-    ogs_sbi_nf_instance_t *nf_instance = NULL;
 
     OpenAPI_search_result_t *SearchResult = NULL;
 
@@ -34,8 +33,8 @@ void scp_nnrf_handle_nf_discover(
     ogs_assert(xact);
     sbi_object = xact->sbi_object;
     ogs_assert(sbi_object);
-    target_nf_type = xact->target_nf_type;
-    ogs_assert(target_nf_type);
+    service_type = xact->service_type;
+    ogs_assert(service_type);
 
     discovery_option = xact->discovery_option;
 
@@ -45,16 +44,9 @@ void scp_nnrf_handle_nf_discover(
         return;
     }
 
-    ogs_nnrf_handle_nf_discover_search_result(
-            sbi_object, target_nf_type, discovery_option, SearchResult);
+    ogs_nnrf_handle_nf_discover_search_result(SearchResult);
 
-    ogs_sbi_select_nf(sbi_object, target_nf_type, discovery_option);
+    ogs_sbi_select_nf(sbi_object, service_type, discovery_option);
 
-    nf_instance = OGS_SBI_NF_INSTANCE(sbi_object, target_nf_type);
-    if (!nf_instance) {
-        ogs_error("(NF discover) No [%s]",
-                OpenAPI_nf_type_ToString(target_nf_type));
-    } else {
-        scp_sbi_send(nf_instance, xact);
-    }
+    scp_sbi_send_request(sbi_object, service_type, xact);
 }

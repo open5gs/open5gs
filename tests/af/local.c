@@ -31,7 +31,8 @@ const char *af_local_get_name(af_local_e id)
     return "UNKNOWN_LOCAL";
 }
 
-void af_local_discover_and_send(OpenAPI_nf_type_e target_nf_type,
+void af_local_discover_and_send(
+        ogs_sbi_service_type_e service_type,
         af_sess_t *sess, void *data,
         ogs_sbi_request_t *(*build)(af_sess_t *sess, void *data))
 {
@@ -44,7 +45,7 @@ void af_local_discover_and_send(OpenAPI_nf_type_e target_nf_type,
     e->local_id = AF_LOCAL_DISCOVER_AND_SEND;
     e->sess = sess;
 
-    e->local.target_nf_type = target_nf_type;
+    e->local.service_type = service_type;
     e->local.data = data;
     e->local.build = build;
 

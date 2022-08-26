@@ -80,19 +80,15 @@ extern "C" {
 #define OGS_SBI_API_V2                              "v2"
 #define OGS_SBI_API_V2_0_0                          "2.0.0"
 
-#define OGS_SBI_SERVICE_NAME_NNRF_NFM               "nnrf-nfm"
-#define OGS_SBI_SERVICE_NAME_NNRF_DISC              "nnrf-disc"
 #define OGS_SBI_RESOURCE_NAME_NF_INSTANCES          "nf-instances"
 #define OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS         "subscriptions"
 #define OGS_SBI_RESOURCE_NAME_NF_STATUS_NOTIFY      "nf-status-notify"
 
-#define OGS_SBI_SERVICE_NAME_NAUSF_AUTH             "nausf-auth"
 #define OGS_SBI_RESOURCE_NAME_UE_AUTHENTICATIONS    "ue-authentications"
 #define OGS_SBI_RESOURCE_NAME_5G_AKA                "5g-aka"
 #define OGS_SBI_RESOURCE_NAME_5G_AKA_CONFIRMATION   "5g-aka-confirmation"
 #define OGS_SBI_RESOURCE_NAME_EAP_SESSION           "eap-session"
 
-#define OGS_SBI_SERVICE_NAME_NUDM_SDM               "nudm-sdm"
 #define OGS_SBI_RESOURCE_NAME_AM_DATA               "am-data"
 #define OGS_SBI_RESOURCE_NAME_SM_DATA               "sm-data"
 #define OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA       "smf-select-data"
@@ -100,15 +96,12 @@ extern "C" {
 #define OGS_SBI_RESOURCE_NAME_SMF_SELECTION_SUBSCRIPTION_DATA \
                                             "smf-selection-subscription-data"
 
-#define OGS_SBI_SERVICE_NAME_NUDM_UEAU              "nudm-ueau"
 #define OGS_SBI_RESOURCE_NAME_SECURITY_INFORMATION  "security-information"
 #define OGS_SBI_RESOURCE_NAME_GENERATE_AUTH_DATA    "generate-auth-data"
 #define OGS_SBI_RESOURCE_NAME_AUTH_EVENTS           "auth-events"
-#define OGS_SBI_SERVICE_NAME_NUDM_UECM              "nudm-uecm"
 #define OGS_SBI_RESOURCE_NAME_REGISTRATIONS         "registrations"
 #define OGS_SBI_RESOURCE_NAME_AMF_3GPP_ACCESS       "amf-3gpp-access"
 
-#define OGS_SBI_SERVICE_NAME_NUDR_DR                "nudr-dr"
 #define OGS_SBI_RESOURCE_NAME_SUBSCRIPTION_DATA     "subscription-data"
 #define OGS_SBI_RESOURCE_NAME_AUTHENTICATION_DATA   "authentication-data"
 #define OGS_SBI_RESOURCE_NAME_AUTHENTICATION_SUBSCRIPTION \
@@ -120,50 +113,41 @@ extern "C" {
 #define OGS_SBI_RESOURCE_NAME_UES                   "ues"
 #define OGS_SBI_RESOURCE_NAME_AM_DATA               "am-data"
 
-#define OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION        "nsmf-pdusession"
 #define OGS_SBI_RESOURCE_NAME_SM_CONTEXTS           "sm-contexts"
 #define OGS_SBI_RESOURCE_NAME_MODIFY                "modify"
 #define OGS_SBI_RESOURCE_NAME_RELEASE               "release"
 
-#define OGS_SBI_SERVICE_NAME_NSMF_CALLBACK          "nsmf-callback"
 #define OGS_SBI_RESOURCE_NAME_SM_POLICY_NOTIFY      "sm-policy-notify"
 #define OGS_SBI_RESOURCE_NAME_N1_N2_FAILURE_NOTIFY  "n1-n2-failure-notify"
 
-#define OGS_SBI_SERVICE_NAME_NAMF_COMM              "namf-comm"
 #define OGS_SBI_RESOURCE_NAME_UE_CONTEXTS           "ue-contexts"
 #define OGS_SBI_RESOURCE_NAME_N1_N2_MESSAGES        "n1-n2-messages"
 
-#define OGS_SBI_SERVICE_NAME_NAMF_CALLBACK          "namf-callback"
 #define OGS_SBI_RESOURCE_NAME_SM_CONTEXT_STATUS     "sm-context-status"
 #define OGS_SBI_RESOURCE_NAME_AM_POLICY_NOTIFY      "am-policy-notify"
 #define OGS_SBI_RESOURCE_NAME_DEREG_NOTIFY          "dereg-notify"
 
-#define OGS_SBI_SERVICE_NAME_NPCF_AM_POLICY_CONTROL "npcf-am-policy-control"
 #define OGS_SBI_RESOURCE_NAME_POLICIES              "policies"
-#define OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL   "npcf-smpolicycontrol"
 #define OGS_SBI_RESOURCE_NAME_SM_POLICIES           "sm-policies"
 #define OGS_SBI_RESOURCE_NAME_DELETE                "delete"
-#define OGS_SBI_SERVICE_NAME_NPCF_POLICYAUTHORIZATION \
-                                                    "npcf-policyauthorization"
 #define OGS_SBI_RESOURCE_NAME_APP_SESSIONS          "app-sessions"
 #define OGS_SBI_RESOURCE_NAME_NOTIFY                "notify"
-#define OGS_SBI_SERVICE_NAME_NPCF_CALLBACK          "npcf-callback"
 #define OGS_SBI_RESOURCE_NAME_UPDATE                "update"
 #define OGS_SBI_RESOURCE_NAME_TERMINATE             "terminate"
 
-#define OGS_SBI_SERVICE_NAME_NNSSF_NSSELECTION      "nnssf-nsselection"
 #define OGS_SBI_RESOURCE_NAME_NETWORK_SLICE_INFORMATION \
                                                     "network-slice-information"
 
-#define OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT        "nbsf-management"
 #define OGS_SBI_RESOURCE_NAME_PCF_BINDINGS          "pcfBindings"
 
-#define OGS_SBI_SERVICE_NAME_NAF_EVENTEXPOSURE      "naf-eventexposure"
 
 #define OGS_SBI_FEATURES_IS_SET(__fEATURES, __n) \
     (__fEATURES & (1 << ((__n)-1)))
 #define OGS_SBI_FEATURES_SET(__fEATURES, __n) \
     __fEATURES |= (1 << ((__n)-1))
+
+#define OGS_SBI_NNRF_NFM_SERVICE_MAP 1
+#define OGS_SBI_NNRF_NFM_EMPTY_OBJECTS_NRF_INFO 2
 
 #define OGS_SBI_NPCF_AM_POLICY_CONTROL_SLICE_SUPPORT 1
 #define OGS_SBI_NPCF_AM_POLICY_CONTROL_PENDING_TRANSACTION 2
@@ -368,7 +352,7 @@ typedef struct ogs_sbi_discovery_option_s {
     char *requester_nf_instance_id;
 
     int num_of_service_names;
-    char *service_names[OGS_MAX_NUM_OF_NF_SERVICE];
+    char *service_names[OGS_SBI_MAX_NUM_OF_SERVICE_TYPE];
 } ogs_sbi_discovery_option_t;
 
 typedef struct ogs_sbi_message_s {

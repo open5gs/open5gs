@@ -43,6 +43,8 @@ typedef struct OpenAPI_subscription_data_s {
     OpenAPI_list_t *req_plmn_list;
     OpenAPI_list_t *req_snpn_list;
     OpenAPI_list_t *serving_scope;
+    char *requester_features;
+    char *nrf_supported_features;
 } OpenAPI_subscription_data_t;
 
 OpenAPI_subscription_data_t *OpenAPI_subscription_data_create(
@@ -61,7 +63,9 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_create(
     OpenAPI_list_t *req_per_plmn_snssais,
     OpenAPI_list_t *req_plmn_list,
     OpenAPI_list_t *req_snpn_list,
-    OpenAPI_list_t *serving_scope
+    OpenAPI_list_t *serving_scope,
+    char *requester_features,
+    char *nrf_supported_features
 );
 void OpenAPI_subscription_data_free(OpenAPI_subscription_data_t *subscription_data);
 OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subscription_dataJSON);

@@ -1778,22 +1778,26 @@ amf_sess_t *amf_sess_cycle(amf_sess_t *sess)
     return ogs_pool_cycle(&amf_sess_pool, sess);
 }
 
-static bool check_smf_info(amf_sess_t *sess, ogs_list_t *nf_info_list);
+static bool check_smf_info(ogs_sbi_nf_info_t *nf_info, void *context);
 
 void amf_sbi_select_nf(
         ogs_sbi_object_t *sbi_object,
-        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option)
 {
+    OpenAPI_nf_type_e target_nf_type = OpenAPI_nf_type_NULL;
     ogs_sbi_nf_instance_t *nf_instance = NULL;
+    ogs_sbi_nf_info_t *nf_info = NULL;
     amf_sess_t *sess = NULL;
 
     ogs_assert(sbi_object);
+    ogs_assert(service_type);
+    target_nf_type = ogs_sbi_service_type_to_nf_type(service_type);
     ogs_assert(target_nf_type);
 
     switch(sbi_object->type) {
     case OGS_SBI_OBJ_UE_TYPE:
-        ogs_sbi_select_nf(sbi_object, target_nf_type, discovery_option);
+        ogs_sbi_select_nf(sbi_object, service_type, discovery_option);
         break;
     case OGS_SBI_OBJ_SESS_TYPE:
         sess = (amf_sess_t *)sbi_object;
@@ -1804,12 +1808,15 @@ void amf_sbi_select_nf(
                     nf_instance, target_nf_type, discovery_option) == false)
                 continue;
 
-            if (target_nf_type == OpenAPI_nf_type_SMF) {
-                if (check_smf_info(sess, &nf_instance->nf_info_list) == false)
+            nf_info = ogs_sbi_nf_info_find(
+                        &nf_instance->nf_info_list, nf_instance->nf_type);
+            if (nf_info) {
+                if (nf_instance->nf_type == OpenAPI_nf_type_SMF &&
+                    check_smf_info(nf_info, sess) == false)
                     continue;
             }
 
-            OGS_SBI_SETUP_NF(sbi_object, target_nf_type, nf_instance);
+            OGS_SBI_SETUP_NF_INSTANCE(sbi_object, service_type, nf_instance);
             break;
         }
         break;
@@ -2106,35 +2113,29 @@ static void stats_remove_amf_session(void)
 }
 
 static bool check_smf_info_s_nssai(
-        amf_sess_t *sess, ogs_sbi_smf_info_t *smf_info);
+        ogs_sbi_smf_info_t *smf_info, amf_sess_t *sess);
 static bool check_smf_info_nr_tai(
-        amf_sess_t *sess, ogs_sbi_smf_info_t *smf_info);
+        ogs_sbi_smf_info_t *smf_info, amf_sess_t *sess);
 
-static bool check_smf_info(amf_sess_t *sess, ogs_list_t *nf_info_list)
+static bool check_smf_info(ogs_sbi_nf_info_t *nf_info, void *context)
 {
-    ogs_sbi_nf_info_t *nf_info = NULL;
+    amf_sess_t *sess = NULL;
 
+    ogs_assert(nf_info);
+    ogs_assert(nf_info->nf_type == OpenAPI_nf_type_SMF);
+    sess = context;
     ogs_assert(sess);
-    ogs_assert(nf_info_list);
 
-    if (ogs_list_count(nf_info_list) == 0) {
-        return true;
-    }
+    if (check_smf_info_s_nssai(&nf_info->smf, sess) == false)
+        return false;
+    if (check_smf_info_nr_tai(&nf_info->smf, sess) == false)
+        return false;
 
-    ogs_list_for_each(nf_info_list, nf_info) {
-        ogs_sbi_smf_info_t *smf_info = &nf_info->smf;
-        ogs_assert(smf_info);
-
-        if (check_smf_info_s_nssai(sess, smf_info) == true &&
-            check_smf_info_nr_tai(sess, smf_info) == true)
-            return true;
-    }
-
-    return false;
+    return true;
 }
 
 static bool check_smf_info_s_nssai(
-        amf_sess_t *sess, ogs_sbi_smf_info_t *smf_info)
+        ogs_sbi_smf_info_t *smf_info, amf_sess_t *sess)
 {
     int i, j;
 
@@ -2157,7 +2158,7 @@ static bool check_smf_info_s_nssai(
 }
 
 static bool check_smf_info_nr_tai(
-        amf_sess_t *sess, ogs_sbi_smf_info_t *smf_info)
+        ogs_sbi_smf_info_t *smf_info, amf_sess_t *sess)
 {
     amf_ue_t *amf_ue = NULL;
     int i, j;

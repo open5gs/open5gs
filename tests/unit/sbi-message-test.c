@@ -625,6 +625,165 @@ static void sbi_message_test6(abts_case *tc, void *data)
     ogs_free(content);
 }
 
+static void sbi_message_test7(abts_case *tc, void *data)
+{
+    ABTS_INT_EQUAL(tc, OpenAPI_nf_type_NRF,
+        ogs_sbi_service_type_to_nf_type(OGS_SBI_SERVICE_TYPE_NNRF_NFM));
+    ABTS_STR_EQUAL(tc, OGS_SBI_SERVICE_NAME_NNRF_NFM,
+        ogs_sbi_service_type_to_name(OGS_SBI_SERVICE_TYPE_NNRF_NFM));
+    ABTS_INT_EQUAL(tc, OGS_SBI_SERVICE_TYPE_NNRF_NFM,
+        ogs_sbi_service_type_from_name(OGS_SBI_SERVICE_NAME_NNRF_NFM));
+    ABTS_INT_EQUAL(tc, OpenAPI_nf_type_UDM,
+        ogs_sbi_service_type_to_nf_type(OGS_SBI_SERVICE_TYPE_NUDM_SDM));
+    ABTS_STR_EQUAL(tc, OGS_SBI_SERVICE_NAME_NUDM_SDM,
+        ogs_sbi_service_type_to_name(OGS_SBI_SERVICE_TYPE_NUDM_SDM));
+    ABTS_INT_EQUAL(tc, OGS_SBI_SERVICE_TYPE_NUDM_SDM,
+        ogs_sbi_service_type_from_name(OGS_SBI_SERVICE_NAME_NUDM_SDM));
+    ABTS_INT_EQUAL(tc, OpenAPI_nf_type_AMF,
+        ogs_sbi_service_type_to_nf_type(OGS_SBI_SERVICE_TYPE_NAMF_COMM));
+    ABTS_STR_EQUAL(tc, OGS_SBI_SERVICE_NAME_NAMF_COMM,
+        ogs_sbi_service_type_to_name(OGS_SBI_SERVICE_TYPE_NAMF_COMM));
+    ABTS_INT_EQUAL(tc, OGS_SBI_SERVICE_TYPE_NAMF_COMM,
+        ogs_sbi_service_type_from_name(OGS_SBI_SERVICE_NAME_NAMF_COMM));
+    ABTS_INT_EQUAL(tc, OpenAPI_nf_type_SMF,
+        ogs_sbi_service_type_to_nf_type(OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION));
+    ABTS_STR_EQUAL(tc, OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION,
+        ogs_sbi_service_type_to_name(OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION));
+    ABTS_INT_EQUAL(tc, OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION,
+        ogs_sbi_service_type_from_name(OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION));
+    ABTS_INT_EQUAL(tc, OpenAPI_nf_type_AUSF,
+        ogs_sbi_service_type_to_nf_type(OGS_SBI_SERVICE_TYPE_NAUSF_AUTH));
+    ABTS_STR_EQUAL(tc, OGS_SBI_SERVICE_NAME_NAUSF_AUTH,
+        ogs_sbi_service_type_to_name(OGS_SBI_SERVICE_TYPE_NAUSF_AUTH));
+    ABTS_INT_EQUAL(tc, OGS_SBI_SERVICE_TYPE_NAUSF_AUTH,
+        ogs_sbi_service_type_from_name(OGS_SBI_SERVICE_NAME_NAUSF_AUTH));
+    ABTS_INT_EQUAL(tc, OpenAPI_nf_type_NEF,
+        ogs_sbi_service_type_to_nf_type(
+            OGS_SBI_SERVICE_TYPE_NNEF_PFDMANAGEMENT));
+    ABTS_STR_EQUAL(tc, OGS_SBI_SERVICE_NAME_NNEF_PFDMANAGEMENT,
+        ogs_sbi_service_type_to_name(OGS_SBI_SERVICE_TYPE_NNEF_PFDMANAGEMENT));
+    ABTS_INT_EQUAL(tc, OGS_SBI_SERVICE_TYPE_NNEF_PFDMANAGEMENT,
+        ogs_sbi_service_type_from_name(
+            OGS_SBI_SERVICE_NAME_NNEF_PFDMANAGEMENT));
+    ABTS_INT_EQUAL(tc, OpenAPI_nf_type_PCF,
+        ogs_sbi_service_type_to_nf_type(
+            OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL));
+    ABTS_STR_EQUAL(tc, OGS_SBI_SERVICE_NAME_NPCF_AM_POLICY_CONTROL,
+        ogs_sbi_service_type_to_name(
+            OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL));
+    ABTS_INT_EQUAL(tc, OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
+        ogs_sbi_service_type_from_name(
+            OGS_SBI_SERVICE_NAME_NPCF_AM_POLICY_CONTROL));
+    ABTS_INT_EQUAL(tc, OpenAPI_nf_type_SMSF,
+        ogs_sbi_service_type_to_nf_type(OGS_SBI_SERVICE_TYPE_NSMSF_SMS));
+    ABTS_STR_EQUAL(tc, OGS_SBI_SERVICE_NAME_NSMSF_SMS,
+        ogs_sbi_service_type_to_name(OGS_SBI_SERVICE_TYPE_NSMSF_SMS));
+    ABTS_INT_EQUAL(tc, OGS_SBI_SERVICE_TYPE_NSMSF_SMS,
+        ogs_sbi_service_type_from_name(OGS_SBI_SERVICE_NAME_NSMSF_SMS));
+    ABTS_INT_EQUAL(tc, OpenAPI_nf_type_NSSF,
+        ogs_sbi_service_type_to_nf_type(
+            OGS_SBI_SERVICE_TYPE_NNSSF_NSSELECTION));
+    ABTS_STR_EQUAL(tc, OGS_SBI_SERVICE_NAME_NNSSF_NSSELECTION,
+        ogs_sbi_service_type_to_name(OGS_SBI_SERVICE_TYPE_NNSSF_NSSELECTION));
+    ABTS_INT_EQUAL(tc, OGS_SBI_SERVICE_TYPE_NNSSF_NSSELECTION,
+        ogs_sbi_service_type_from_name(OGS_SBI_SERVICE_NAME_NNSSF_NSSELECTION));
+    ABTS_INT_EQUAL(tc, OpenAPI_nf_type_UDR,
+        ogs_sbi_service_type_to_nf_type(OGS_SBI_SERVICE_TYPE_NUDR_DR));
+    ABTS_STR_EQUAL(tc, OGS_SBI_SERVICE_NAME_NUDR_DR,
+        ogs_sbi_service_type_to_name(OGS_SBI_SERVICE_TYPE_NUDR_DR));
+    ABTS_INT_EQUAL(tc, OGS_SBI_SERVICE_TYPE_NUDR_DR,
+        ogs_sbi_service_type_from_name(OGS_SBI_SERVICE_NAME_NUDR_DR));
+    ABTS_INT_EQUAL(tc, OpenAPI_nf_type_LMF,
+        ogs_sbi_service_type_to_nf_type(OGS_SBI_SERVICE_TYPE_NLMF_LOC));
+    ABTS_STR_EQUAL(tc, OGS_SBI_SERVICE_NAME_NLMF_LOC,
+        ogs_sbi_service_type_to_name(OGS_SBI_SERVICE_TYPE_NLMF_LOC));
+    ABTS_INT_EQUAL(tc, OGS_SBI_SERVICE_TYPE_NLMF_LOC,
+        ogs_sbi_service_type_from_name(OGS_SBI_SERVICE_NAME_NLMF_LOC));
+    ABTS_INT_EQUAL(tc, OpenAPI_nf_type_5G_EIR,
+        ogs_sbi_service_type_to_nf_type(OGS_SBI_SERVICE_TYPE_N5G_EIR_EIC));
+    ABTS_STR_EQUAL(tc, OGS_SBI_SERVICE_NAME_N5G_EIR_EIC,
+        ogs_sbi_service_type_to_name(OGS_SBI_SERVICE_TYPE_N5G_EIR_EIC));
+    ABTS_INT_EQUAL(tc, OGS_SBI_SERVICE_TYPE_N5G_EIR_EIC,
+        ogs_sbi_service_type_from_name(OGS_SBI_SERVICE_NAME_N5G_EIR_EIC));
+    ABTS_INT_EQUAL(tc, OpenAPI_nf_type_BSF,
+        ogs_sbi_service_type_to_nf_type(OGS_SBI_SERVICE_TYPE_NBSF_MANAGEMENT));
+    ABTS_STR_EQUAL(tc, OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT,
+        ogs_sbi_service_type_to_name(OGS_SBI_SERVICE_TYPE_NBSF_MANAGEMENT));
+    ABTS_INT_EQUAL(tc, OGS_SBI_SERVICE_TYPE_NBSF_MANAGEMENT,
+        ogs_sbi_service_type_from_name(OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT));
+    ABTS_INT_EQUAL(tc, OpenAPI_nf_type_CHF,
+        ogs_sbi_service_type_to_nf_type(
+            OGS_SBI_SERVICE_TYPE_NCHF_SPENDINGLIMITCONTROL));
+    ABTS_STR_EQUAL(tc, OGS_SBI_SERVICE_NAME_NCHF_SPENDINGLIMITCONTROL,
+        ogs_sbi_service_type_to_name(
+            OGS_SBI_SERVICE_TYPE_NCHF_SPENDINGLIMITCONTROL));
+    ABTS_INT_EQUAL(tc, OGS_SBI_SERVICE_TYPE_NCHF_SPENDINGLIMITCONTROL,
+        ogs_sbi_service_type_from_name(
+            OGS_SBI_SERVICE_NAME_NCHF_SPENDINGLIMITCONTROL));
+    ABTS_INT_EQUAL(tc, OpenAPI_nf_type_NWDAF,
+        ogs_sbi_service_type_to_nf_type(
+            OGS_SBI_SERVICE_TYPE_NNWDAF_EVENTSSUBSCRIPTION));
+    ABTS_STR_EQUAL(tc, OGS_SBI_SERVICE_NAME_NNWDAF_EVENTSSUBSCRIPTION,
+        ogs_sbi_service_type_to_name(
+            OGS_SBI_SERVICE_TYPE_NNWDAF_EVENTSSUBSCRIPTION));
+    ABTS_INT_EQUAL(tc, OGS_SBI_SERVICE_TYPE_NNWDAF_EVENTSSUBSCRIPTION,
+        ogs_sbi_service_type_from_name(
+            OGS_SBI_SERVICE_NAME_NNWDAF_EVENTSSUBSCRIPTION));
+    ABTS_INT_EQUAL(tc, OpenAPI_nf_type_GMLC,
+        ogs_sbi_service_type_to_nf_type(OGS_SBI_SERVICE_TYPE_NGMLC_LOC));
+    ABTS_STR_EQUAL(tc, OGS_SBI_SERVICE_NAME_NGMLC_LOC,
+        ogs_sbi_service_type_to_name(OGS_SBI_SERVICE_TYPE_NGMLC_LOC));
+    ABTS_INT_EQUAL(tc, OGS_SBI_SERVICE_TYPE_NGMLC_LOC,
+        ogs_sbi_service_type_from_name(OGS_SBI_SERVICE_NAME_NGMLC_LOC));
+    ABTS_INT_EQUAL(tc, OpenAPI_nf_type_UCMF,
+        ogs_sbi_service_type_to_nf_type(
+            OGS_SBI_SERVICE_TYPE_NUCMF_PROVISIONING));
+    ABTS_STR_EQUAL(tc, OGS_SBI_SERVICE_NAME_NUCMF_PROVISIONING,
+        ogs_sbi_service_type_to_name(OGS_SBI_SERVICE_TYPE_NUCMF_PROVISIONING));
+    ABTS_INT_EQUAL(tc, OGS_SBI_SERVICE_TYPE_NUCMF_PROVISIONING,
+        ogs_sbi_service_type_from_name(
+            OGS_SBI_SERVICE_NAME_NUCMF_PROVISIONING));
+    ABTS_INT_EQUAL(tc, OpenAPI_nf_type_HSS,
+        ogs_sbi_service_type_to_nf_type(OGS_SBI_SERVICE_TYPE_NHSS_SDM));
+    ABTS_STR_EQUAL(tc, OGS_SBI_SERVICE_NAME_NHSS_SDM,
+        ogs_sbi_service_type_to_name(OGS_SBI_SERVICE_TYPE_NHSS_SDM));
+    ABTS_INT_EQUAL(tc, OGS_SBI_SERVICE_TYPE_NHSS_SDM,
+        ogs_sbi_service_type_from_name(OGS_SBI_SERVICE_NAME_NHSS_SDM));
+    ABTS_INT_EQUAL(tc, OpenAPI_nf_type_SEPP,
+        ogs_sbi_service_type_to_nf_type(OGS_SBI_SERVICE_TYPE_NSEPP_TELESCOPIC));
+    ABTS_STR_EQUAL(tc, OGS_SBI_SERVICE_NAME_NSEPP_TELESCOPIC,
+        ogs_sbi_service_type_to_name(OGS_SBI_SERVICE_TYPE_NSEPP_TELESCOPIC));
+    ABTS_INT_EQUAL(tc, OGS_SBI_SERVICE_TYPE_NSEPP_TELESCOPIC,
+        ogs_sbi_service_type_from_name(OGS_SBI_SERVICE_NAME_NSEPP_TELESCOPIC));
+    ABTS_INT_EQUAL(tc, OpenAPI_nf_type_SOR_AF,
+        ogs_sbi_service_type_to_nf_type(OGS_SBI_SERVICE_TYPE_NSORAF_SOR));
+    ABTS_STR_EQUAL(tc, OGS_SBI_SERVICE_NAME_NSORAF_SOR,
+        ogs_sbi_service_type_to_name(OGS_SBI_SERVICE_TYPE_NSORAF_SOR));
+    ABTS_INT_EQUAL(tc, OGS_SBI_SERVICE_TYPE_NSORAF_SOR,
+        ogs_sbi_service_type_from_name(OGS_SBI_SERVICE_NAME_NSORAF_SOR));
+    ABTS_INT_EQUAL(tc, OpenAPI_nf_type_SPAF,
+        ogs_sbi_service_type_to_nf_type(
+            OGS_SBI_SERVICE_TYPE_NSPAF_SECURED_PACKET));
+    ABTS_STR_EQUAL(tc, OGS_SBI_SERVICE_NAME_NSPAF_SECURED_PACKET,
+        ogs_sbi_service_type_to_name(
+            OGS_SBI_SERVICE_TYPE_NSPAF_SECURED_PACKET));
+    ABTS_INT_EQUAL(tc, OGS_SBI_SERVICE_TYPE_NSPAF_SECURED_PACKET,
+        ogs_sbi_service_type_from_name(
+            OGS_SBI_SERVICE_NAME_NSPAF_SECURED_PACKET));
+    ABTS_INT_EQUAL(tc, OpenAPI_nf_type_UDSF,
+        ogs_sbi_service_type_to_nf_type(OGS_SBI_SERVICE_TYPE_NUDSF_DR));
+    ABTS_STR_EQUAL(tc, OGS_SBI_SERVICE_NAME_NUDSF_DR,
+        ogs_sbi_service_type_to_name(OGS_SBI_SERVICE_TYPE_NUDSF_DR));
+    ABTS_INT_EQUAL(tc, OGS_SBI_SERVICE_TYPE_NUDSF_DR,
+        ogs_sbi_service_type_from_name(OGS_SBI_SERVICE_NAME_NUDSF_DR));
+    ABTS_INT_EQUAL(tc, OpenAPI_nf_type_NSSAAF,
+        ogs_sbi_service_type_to_nf_type(OGS_SBI_SERVICE_TYPE_NNSSAAF_NSSAA));
+    ABTS_STR_EQUAL(tc, OGS_SBI_SERVICE_NAME_NNSSAAF_NSSAA,
+        ogs_sbi_service_type_to_name(OGS_SBI_SERVICE_TYPE_NNSSAAF_NSSAA));
+    ABTS_INT_EQUAL(tc, OGS_SBI_SERVICE_TYPE_NNSSAAF_NSSAA,
+        ogs_sbi_service_type_from_name(OGS_SBI_SERVICE_NAME_NNSSAAF_NSSAA));
+}
+
 abts_suite *test_sbi_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -635,6 +794,7 @@ abts_suite *test_sbi_message(abts_suite *suite)
     abts_run_test(suite, sbi_message_test4, NULL);
     abts_run_test(suite, sbi_message_test5, NULL);
     abts_run_test(suite, sbi_message_test6, NULL);
+    abts_run_test(suite, sbi_message_test7, NULL);
 
     return suite;
 }

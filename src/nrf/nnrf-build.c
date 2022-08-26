@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -61,14 +61,19 @@ ogs_sbi_request_t *nrf_nnrf_nfm_build_nf_status_notify(
     ogs_expect_or_return_val(NotificationData->nf_instance_uri, NULL);
 
     if (event != OpenAPI_notification_event_type_NF_DEREGISTERED) {
-        ogs_expect_or_return_val(nf_instance->nf_profile, NULL);
-        NotificationData->nf_profile = nf_instance->nf_profile;
+        NotificationData->nf_profile =
+            ogs_nnrf_nfm_build_nf_profile(
+                nf_instance, NULL, subscription->requester_features);
+        ogs_expect_or_return_val(NotificationData->nf_profile, NULL);
     }
 
     message.NotificationData = NotificationData;
 
     request = ogs_sbi_build_request(&message);
     ogs_expect_or_return_val(request, NULL);
+
+    if (NotificationData->nf_profile)
+        ogs_nnrf_nfm_free_nf_profile(NotificationData->nf_profile);
 
     ogs_free(NotificationData->nf_instance_uri);
     ogs_free(NotificationData);

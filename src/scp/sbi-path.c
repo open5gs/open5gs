@@ -364,31 +364,40 @@ static int client_cb(int status, ogs_sbi_response_t *response, void *data)
     return OGS_OK;
 }
 
-
-bool scp_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact)
+bool scp_sbi_send_request(
+        ogs_sbi_object_t *sbi_object,
+        ogs_sbi_service_type_e service_type,
+        void *data)
 {
-    return ogs_sbi_send_request(nf_instance, client_cb, xact);
+    ogs_sbi_nf_instance_t *nf_instance = NULL;
+
+    ogs_assert(service_type);
+
+    nf_instance = OGS_SBI_NF_INSTANCE(sbi_object, service_type);
+    if (!nf_instance) {
+        ogs_error("(NF discover) No [%s]",
+                    ogs_sbi_service_type_to_name(service_type));
+        return false;
+    }
+
+    return ogs_sbi_send_request(nf_instance, client_cb, data);
 }
 
 bool scp_sbi_discover_and_send(
-        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(scp_conn_t *conn, void *data),
         scp_conn_t *conn, ogs_sbi_stream_t *stream, void *data)
 {
     ogs_sbi_xact_t *xact = NULL;
-    OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
 
-    ogs_assert(ogs_sbi_self()->nf_instance);
-    requester_nf_type = ogs_sbi_self()->nf_instance->nf_type;
-    ogs_assert(requester_nf_type);
-
+    ogs_assert(service_type);
     ogs_assert(conn);
     ogs_assert(stream);
     ogs_assert(build);
 
     xact = ogs_sbi_xact_add(
-            &conn->sbi, target_nf_type, discovery_option,
+            &conn->sbi, service_type, discovery_option,
             (ogs_sbi_build_f)build, conn, data);
     if (!xact) {
         ogs_error("scp_sbi_discover_and_send() failed");
@@ -401,10 +410,7 @@ bool scp_sbi_discover_and_send(
 
     xact->assoc_stream = stream;
 
-    if (ogs_sbi_discover_and_send(
-            &conn->sbi,
-            target_nf_type, requester_nf_type, discovery_option,
-            client_cb, xact) != true) {
+    if (ogs_sbi_discover_and_send(xact, client_cb) != true) {
         ogs_error("scp_sbi_discover_and_send() failed");
         ogs_sbi_xact_remove(xact);
         ogs_assert(true ==

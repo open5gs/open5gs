@@ -26,7 +26,7 @@ void amf_nnrf_handle_nf_discover(
         ogs_sbi_xact_t *xact, ogs_sbi_message_t *recvmsg)
 {
     ogs_sbi_object_t *sbi_object = NULL;
-    OpenAPI_nf_type_e target_nf_type = 0;
+    ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
     ogs_sbi_discovery_option_t *discovery_option = NULL;
 
     OpenAPI_search_result_t *SearchResult = NULL;
@@ -35,8 +35,8 @@ void amf_nnrf_handle_nf_discover(
     ogs_assert(xact);
     sbi_object = xact->sbi_object;
     ogs_assert(sbi_object);
-    target_nf_type = xact->target_nf_type;
-    ogs_assert(target_nf_type);
+    service_type = xact->service_type;
+    ogs_assert(service_type);
 
     discovery_option = xact->discovery_option;
 
@@ -46,10 +46,9 @@ void amf_nnrf_handle_nf_discover(
         return;
     }
 
-    ogs_nnrf_handle_nf_discover_search_result(
-            sbi_object, target_nf_type, discovery_option, SearchResult);
+    ogs_nnrf_handle_nf_discover_search_result(SearchResult);
 
-    amf_sbi_select_nf(sbi_object, target_nf_type, discovery_option);
+    amf_sbi_select_nf(sbi_object, service_type, discovery_option);
 
-    ogs_expect(true == amf_sbi_send_request(sbi_object, target_nf_type, xact));
+    ogs_expect(true == amf_sbi_send_request(sbi_object, service_type, xact));
 }

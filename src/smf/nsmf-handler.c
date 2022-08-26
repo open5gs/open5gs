@@ -590,7 +590,8 @@ bool smf_nsmf_handle_update_sm_context(
                 param.ue_timezone = true;
 
                 ogs_assert(true ==
-                    smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, NULL,
+                    smf_sbi_discover_and_send(
+                        OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL, NULL,
                         smf_npcf_smpolicycontrol_build_delete,
                         sess, stream,
                         OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT, &param));
@@ -666,7 +667,8 @@ bool smf_nsmf_handle_release_sm_context(
 
     if (sess->policy_association_id) {
         ogs_assert(true ==
-            smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, NULL,
+            smf_sbi_discover_and_send(
+                OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL, NULL,
                 smf_npcf_smpolicycontrol_build_delete,
                 sess, stream,
                 OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT, &param));

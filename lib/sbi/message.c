@@ -2337,7 +2337,7 @@ void ogs_sbi_discovery_option_add_service_names(
     ogs_assert(service_name);
 
     ogs_assert(discovery_option->num_of_service_names <
-                OGS_MAX_NUM_OF_NF_SERVICE);
+                OGS_SBI_MAX_NUM_OF_SERVICE_TYPE);
 
     discovery_option->service_names[discovery_option->num_of_service_names] =
         ogs_strdup(service_name);

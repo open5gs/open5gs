@@ -35,15 +35,15 @@ void pcf_sbi_close(void);
 
 bool pcf_sbi_send_request(
         ogs_sbi_object_t *sbi_object,
-        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_service_type_e service_type,
         void *data);
 bool pcf_ue_sbi_discover_and_send(
-        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(pcf_ue_t *pcf_ue, void *data),
         pcf_ue_t *pcf_ue, ogs_sbi_stream_t *stream, void *data);
 bool pcf_sess_sbi_discover_and_send(
-        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(pcf_sess_t *sess, void *data),
         pcf_sess_t *sess, ogs_sbi_stream_t *stream, void *data);
