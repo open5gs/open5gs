@@ -1085,7 +1085,8 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                                     OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION);
                 }
 
-                ogs_sbi_discovery_option_free(discovery_option);
+                if (discovery_option)
+                    ogs_sbi_discovery_option_free(discovery_option);
 
                 if (nf_instance) {
                     ogs_assert(true ==

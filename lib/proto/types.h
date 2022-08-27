@@ -177,6 +177,7 @@ ogs_amf_id_t *ogs_amf_id_build(ogs_amf_id_t *amf_id,
 /************************************
  * SUPI/SUCI                       */
 char *ogs_supi_from_suci(char *suci);
+char *ogs_supi_from_supi_or_suci(char *supi_or_suci);
 
 /************************************
  * SUPI/GPSI                       */

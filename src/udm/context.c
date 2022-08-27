@@ -104,6 +104,8 @@ int udm_context_parse_config(void)
                     /* handle config in sbi library */
                 } else if (!strcmp(udm_key, "service_name")) {
                     /* handle config in sbi library */
+                } else if (!strcmp(udm_key, "discovery")) {
+                    /* handle config in sbi library */
                 } else
                     ogs_warn("unknown key `%s`", udm_key);
             }
@@ -135,7 +137,7 @@ udm_ue_t *udm_ue_add(char *suci)
     ogs_assert(udm_ue->suci);
     ogs_hash_set(self.suci_hash, udm_ue->suci, strlen(udm_ue->suci), udm_ue);
 
-    udm_ue->supi = ogs_supi_from_suci(udm_ue->suci);
+    udm_ue->supi = ogs_supi_from_supi_or_suci(udm_ue->suci);
     ogs_assert(udm_ue->supi);
     ogs_hash_set(self.supi_hash, udm_ue->supi, strlen(udm_ue->supi), udm_ue);
 

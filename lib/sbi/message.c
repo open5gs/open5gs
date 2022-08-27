@@ -303,7 +303,8 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
                     OGS_SBI_PARAM_REQUESTER_NF_INSTANCE_ID,
                     discovery_option->requester_nf_instance_id);
         }
-        if (discovery_option->num_of_service_names) {
+        if (ogs_sbi_self()->discovery_config.no_service_names == false &&
+            discovery_option->num_of_service_names) {
             char *v = NULL;
             cJSON *item = NULL;
 

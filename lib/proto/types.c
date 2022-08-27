@@ -235,6 +235,37 @@ char *ogs_supi_from_suci(char *suci)
     return supi;
 }
 
+char *ogs_supi_from_supi_or_suci(char *supi_or_suci)
+{
+    char *type = NULL;
+    char *supi = NULL;
+
+    ogs_assert(supi_or_suci);
+    type = ogs_id_get_type(supi_or_suci);
+    if (!type) {
+        ogs_error("ogs_id_get_type[%s] failed", supi_or_suci);
+        goto cleanup;
+    }
+    SWITCH(type)
+    CASE("imsi")
+        supi = ogs_strdup(supi_or_suci);
+        ogs_expect(supi);
+        break;
+    CASE("suci")
+        supi = ogs_supi_from_suci(supi_or_suci);
+        ogs_expect(supi);
+        break;
+    DEFAULT
+        ogs_error("Not implemented [%s]", type);
+        break;
+    END
+
+cleanup:
+    if (type)
+        ogs_free(type);
+    return supi;
+}
+
 char *ogs_id_get_type(char *str)
 {
     char *token, *p, *tmp;
@@ -242,15 +273,26 @@ char *ogs_id_get_type(char *str)
 
     ogs_assert(str);
     tmp = ogs_strdup(str);
-    ogs_expect_or_return_val(tmp, NULL);
+    if (!tmp) {
+        ogs_error("ogs_strdup[%s] failed", str);
+        goto cleanup;
+    }
 
     p = tmp;
     token = strsep(&p, "-");
-    ogs_assert(token);
+    if (!token) {
+        ogs_error("strsep[%s] failed", str);
+        goto cleanup;
+    }
     type = ogs_strdup(token);
-    ogs_expect_or_return_val(type, NULL);
+    if (!type) {
+        ogs_error("ogs_strdup[%s:%s] failed", str, token);
+        goto cleanup;
+    }
 
-    ogs_free(tmp);
+cleanup:
+    if (tmp)
+        ogs_free(tmp);
     return type;
 }
 
@@ -261,17 +303,31 @@ char *ogs_id_get_value(char *str)
 
     ogs_assert(str);
     tmp = ogs_strdup(str);
-    ogs_expect_or_return_val(tmp, NULL);
+    if (!tmp) {
+        ogs_error("ogs_strdup[%s] failed", str);
+        goto cleanup;
+    }
 
     p = tmp;
     token = strsep(&p, "-");
-    ogs_assert(token);
+    if (!token) {
+        ogs_error("strsep[%s] failed", str);
+        goto cleanup;
+    }
     token = strsep(&p, "-");
-    ogs_assert(token);
+    if (!token) {
+        ogs_error("strsep[%s] failed", str);
+        goto cleanup;
+    }
     ueid = ogs_strdup(token);
-    ogs_expect_or_return_val(ueid, NULL);
+    if (!ueid) {
+        ogs_error("ogs_strdup[%s:%s] failed", str, token);
+        goto cleanup;
+    }
 
-    ogs_free(tmp);
+cleanup:
+    if (tmp)
+        ogs_free(tmp);
     return ueid;
 }
 

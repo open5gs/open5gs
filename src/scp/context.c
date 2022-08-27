@@ -98,6 +98,8 @@ int scp_context_parse_config(void)
                     /* handle config in sbi library */
                 } else if (!strcmp(scp_key, "service_name")) {
                     /* handle config in sbi library */
+                } else if (!strcmp(scp_key, "discovery")) {
+                    /* handle config in sbi library */
                 } else
                     ogs_warn("unknown key `%s`", scp_key);
             }

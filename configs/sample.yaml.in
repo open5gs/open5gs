@@ -107,62 +107,28 @@ smf:
           addr: 127.0.0.9
 
 #
-#  <NF Discovery Query Parameter>
-#
-#  o (Default) If you do not set Query Parameter as shown below,
-#
-# amf:
-#     sbi:
-#       - addr: 127.0.0.5
-#         port: 7777
-#
-#    - 'service-names' is included.
-#    - 'requester-nf-instance-id' is NOT included.
-#
-# amf:
-#     sbi:
-#       - addr: 127.0.0.5
-#         port: 7777
-#     discovery:
-#       option:
-#         no_service_names: false
-#         prefer_requester_nf_instance_id: false
-#
-#  o To remove 'service-names' from URI query parameters in NS Discovery
-#         no_service_names: true
-#
-#    * For Indirect Communication with Delegated Discovery,
-#      'service-names' is always included in the URI query parameter.
-#    * That is, 'no_service_names' has no effect.
-#
-#  o To add 'requester-nf-instance-id' from URI query parameters in NS Discovery
-#         prefer_requester_nf_instance_id: true
-#
-#
 #  <For Indirect Communication with Delegated Discovery>
 #
 #  o (Default) If you do not set Delegated Discovery as shown below,
 #
-# amf:
-#     sbi:
-#       - addr: 127.0.0.5
-#         port: 7777
+#    sbi:
+#      - addr: 127.0.0.5
+#        port: 7777
 #
 #    - Use SCP if SCP avaiable. Otherwise NRF is used.
 #      => App fails if both NRF and SCP are unavailable.
 #
-# amf:
-#     sbi:
-#       - addr: 127.0.0.5
-#         port: 7777
-#     discovery:
-#       delegated: auto
+#    sbi:
+#      - addr: 127.0.0.5
+#        port: 7777
+#    discovery:
+#      delegated: auto
 #
 #  o To use SCP always => App fails if no SCP available.
-#       delegated: yes
+#      delegated: yes
 #
 #  o Don't use SCP server => App fails if no NRF available.
-#       delegated: no
+#      delegated: no
 #
 amf:
     sbi:

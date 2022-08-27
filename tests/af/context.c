@@ -113,6 +113,8 @@ int af_context_parse_config(void)
                     /* handle config in sbi library */
                 } else if (!strcmp(af_key, "service_name")) {
                     /* handle config in sbi library */
+                } else if (!strcmp(af_key, "discovery")) {
+                    /* handle config in sbi library */
                 } else
                     ogs_warn("unknown key `%s`", af_key);
             }

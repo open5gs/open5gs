@@ -144,6 +144,30 @@ logger:
 #    service_name:
 #      - nnssf-nsselection
 #
+#  <NF Discovery Query Parameter>
+#
+#  o (Default) If you do not set Query Parameter as shown below,
+#
+#    sbi:
+#      - addr: 127.0.0.14
+#        port: 7777
+#
+#    - 'service-names' is included.
+#
+#    sbi:
+#      - addr: 127.0.0.14
+#        port: 7777
+#    discovery:
+#      option:
+#        no_service_names: false
+#
+#  o To remove 'service-names' from URI query parameters in NS Discovery
+#         no_service_names: true
+#
+#    * For Indirect Communication with Delegated Discovery,
+#      'service-names' is always included in the URI query parameter.
+#    * That is, 'no_service_names' has no effect.
+#
 nssf:
     sbi:
       - addr: 127.0.0.14

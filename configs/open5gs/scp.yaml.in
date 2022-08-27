@@ -96,26 +96,30 @@ logger:
 #        - addr: 127.0.1.11
 #          port: 7777
 #
-#  <Discovery>
+#  <For Indirect Communication with Delegated Discovery>
 #
-#  o NF Discovery and Selection
-#    for indirect communication with Delegated Discovery;
-#
-#  o delegated:
-#    o auto: (Default)
-#            Use next-hop SCP if next-hop SCP available. Otherwise NRF is used.
-#            => App fails if both next-hop SCP and NRF are unavailable.
-#    o yes:  Use next-hop SCP always.
-#            => App fails if no next-hop SCP available.
-#    o no:   Don't use next-hop SCP server.
-#            => App fails if no NRF available.
+#  o (Default) If you do not set Delegated Discovery as shown below,
 #
 #  next_scp:
-#      sbi:
-#        - addr: 127.0.1.11
-#          port: 7777
-#      discovery:
-#        delegated: auto|yes|no
+#    sbi:
+#      - addr: 127.0.1.10
+#        port: 7777
+#
+#    - Use SCP if SCP avaiable. Otherwise NRF is used.
+#      => App fails if both NRF and SCP are unavailable.
+#
+#  next_scp:
+#    sbi:
+#      - addr: 127.0.1.10
+#        port: 7777
+#    discovery:
+#      delegated: auto
+#
+#  o To use SCP always => App fails if no SCP available.
+#      delegated: yes
+#
+#  o Don't use SCP server => App fails if no NRF available.
+#      delegated: no
 #
 scp:
     sbi:

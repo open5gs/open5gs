@@ -1307,6 +1307,8 @@ ogs_sbi_nf_service_t *ogs_sbi_nf_service_build_default(
         ogs_assert(nf_service->fqdn);
     }
 
+    ogs_info("NF Service [%s]", nf_service->name);
+
     return nf_service;
 }
 
