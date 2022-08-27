@@ -441,7 +441,7 @@ static void fill_service_information_ccr(smf_sess_t *sess,
         oct1 = ((uint8_t*)sess->gtp.charging_characteristics.data)[0];
         oct2 = (sess->gtp.charging_characteristics.len > 1) ?
                         ((uint8_t*)sess->gtp.charging_characteristics.data)[1] : 0;
-        snprintf(digits, sizeof(digits), "%02x%02x", oct1, oct2);
+        ogs_snprintf(digits, sizeof(digits), "%02x%02x", oct1, oct2);
         val.os.data = (uint8_t*)&digits[0];
         val.os.len = 4;
         ret = fd_msg_avp_setvalue(avpch2, &val);
