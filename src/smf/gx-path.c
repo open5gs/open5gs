@@ -543,7 +543,7 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
         sess->gtp.charging_characteristics.len > 0) {
         uint8_t oct1, oct2;
         char digits[5];
-        ret = fd_msg_avp_new(ogs_diam_gy_3gpp_charging_characteristics, 0, &avpch2);
+        ret = fd_msg_avp_new(ogs_diam_gx_3gpp_charging_characteristics, 0, &avp);
         ogs_assert(ret == 0);
         oct1 = ((uint8_t*)sess->gtp.charging_characteristics.data)[0];
         oct2 = (sess->gtp.charging_characteristics.len > 1) ?
@@ -551,9 +551,9 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_snprintf(digits, sizeof(digits), "%02x%02x", oct1, oct2);
         val.os.data = (uint8_t*)&digits[0];
         val.os.len = 4;
-        ret = fd_msg_avp_setvalue(avpch2, &val);
+        ret = fd_msg_avp_setvalue(avp, &val);
         ogs_assert(ret == 0);
-        ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
+        ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
         ogs_assert(ret == 0);
     }
 
