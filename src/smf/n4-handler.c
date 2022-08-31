@@ -400,7 +400,14 @@ void smf_5gc_n4_handle_session_modification_response(
 
         } else {
             sess->paging.ue_requested_pdu_session_establishment_done = true;
-            ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
+
+            if (sess->up_cnx_state == OpenAPI_up_cnx_state_ACTIVATING) {
+                sess->up_cnx_state = OpenAPI_up_cnx_state_ACTIVATED;
+                smf_sbi_send_sm_context_updated_data_up_cnx_state(
+                        sess, stream, OpenAPI_up_cnx_state_ACTIVATED);
+            } else {
+                ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
+            }
         }
 
     } else if (flags & OGS_PFCP_MODIFY_DEACTIVATE) {
