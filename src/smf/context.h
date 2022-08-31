@@ -270,6 +270,8 @@ typedef struct smf_sess_s {
      * of [POST] /npcf-smpolocycontrol/v1/policies */
     char *policy_association_id;
 
+    OpenAPI_up_cnx_state_e up_cnx_state;
+
     /* PLMN ID & NID */
     ogs_plmn_id_t   plmn_id;
 
