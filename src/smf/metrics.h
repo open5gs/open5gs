@@ -61,6 +61,35 @@ static inline void smf_metrics_inst_gtp_node_dec(
     ogs_metrics_inst_t **inst, smf_metric_type_gtp_node_t t)
 { ogs_metrics_inst_dec(inst[t]); }
 
+
+extern ogs_metrics_inst2_t *test_metrics2[_SMF_METR_GTP_NODE_MAX];
+
+static inline void smf_metrics_inst2_gtp_node_set(
+        smf_metric_type_gtp_node_t t, int val,
+        int label_num, const char **label_values)
+{ ogs_metrics_inst2_set( test_metrics2[t], val, label_num, label_values); }
+
+static inline void smf_metrics_inst2_gtp_node_add(
+        smf_metric_type_gtp_node_t t, int val,
+        int label_num, const char **label_values)
+{ ogs_metrics_inst2_add(test_metrics2[t], val, label_num, label_values); }
+
+static inline void smf_metrics_inst2_gtp_node_inc(
+    smf_metric_type_gtp_node_t t,
+    int label_num, const char **label_values)
+{ ogs_metrics_inst2_inc(test_metrics2[t], label_num, label_values); }
+
+static inline void smf_metrics_inst2_gtp_node_dec(
+    smf_metric_type_gtp_node_t t,
+    int label_num, const char **label_values)
+{ ogs_metrics_inst2_dec(test_metrics2[t], label_num, label_values); }
+
+static inline void smf_metrics_inst2_gtp_node_reset(
+    smf_metric_type_gtp_node_t t,
+    int label_num, const char **label_values)
+{ ogs_metrics_inst2_reset(test_metrics2[t], label_num, label_values); }
+
+
 int smf_metrics_open(void);
 int smf_metrics_close(void);
 

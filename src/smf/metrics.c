@@ -22,6 +22,25 @@ static int smf_metrics_init_inst(ogs_metrics_inst_t **inst, ogs_metrics_spec_t *
     return OGS_OK;
 }
 
+int smf_metrics_init_inst2(ogs_metrics_context_t *ctx,
+    ogs_metrics_inst2_t **inst,
+    smf_metrics_spec_def_t *specs, unsigned int len);
+
+int smf_metrics_init_inst2(ogs_metrics_context_t *ctx,
+    ogs_metrics_inst2_t **inst,
+    smf_metrics_spec_def_t *specs, unsigned int len)
+{
+    unsigned int i;
+
+    for (i = 0; i < len; i++) {
+        inst[i] = ogs_metrics_inst2_new(ctx, specs[i].type,
+            specs[i].name, specs[i].description, specs[i].initial_val,
+            specs[i].num_labels, specs[i].labels);
+    }
+
+    return OGS_OK;
+}
+
 static int smf_metrics_free_inst(ogs_metrics_inst_t **inst,
         unsigned int len)
 {
@@ -139,6 +158,7 @@ const char *labels_gtp_node[] = {
         .labels = labels_gtp_node, \
     },
 ogs_metrics_spec_t *smf_metrics_spec_gtp_node[_SMF_METR_GTP_NODE_MAX];
+ogs_metrics_inst2_t *smf_metrics_inst_global2[_SMF_METR_GTP_NODE_MAX];
 smf_metrics_spec_def_t smf_metrics_spec_def_gtp_node[_SMF_METR_GTP_NODE_MAX] = {
 /* Global Counters: */
 SMF_METR_GTP_NODE_CTR_ENTRY(
@@ -166,6 +186,45 @@ SMF_METR_GTP_NODE_CTR_ENTRY(
     "gtp_node_s5c_rx_deletesession",
     "Received GTPv2C DeleteSessionRequest messages")
 };
+
+smf_metrics_spec_def_t smf_metrics_spec2_def_gtp_node[_SMF_METR_GTP_NODE_MAX] = {
+/* Global Counters: */
+SMF_METR_GTP_NODE_CTR_ENTRY(
+    SMF_METR_GTP_NODE_CTR_GN_RX_PARSE_FAILED,
+    "ztp_node_gn_rx_parse_failed",
+    "Received GTPv1C messages discarded due to parsing failure")
+SMF_METR_GTP_NODE_CTR_ENTRY(
+    SMF_METR_GTP_NODE_CTR_GN_RX_CREATEPDPCTXREQ,
+    "ztp_node_gn_rx_createpdpcontextreq",
+    "Received GTPv1C CreatePDPContextRequest messages")
+SMF_METR_GTP_NODE_CTR_ENTRY(
+    SMF_METR_GTP_NODE_CTR_GN_RX_DELETEPDPCTXREQ,
+    "ztp_node_gn_rx_deletepdpcontextreq",
+    "Received GTPv1C DeletePDPContextRequest messages")
+SMF_METR_GTP_NODE_CTR_ENTRY(
+    SMF_METR_GTP_NODE_CTR_S5C_RX_PARSE_FAILED,
+    "ztp_node_s5c_rx_parse_failed",
+    "Received GTPv2C messages discarded due to parsing failure")
+SMF_METR_GTP_NODE_CTR_ENTRY(
+    SMF_METR_GTP_NODE_CTR_S5C_RX_CREATESESSIONREQ,
+    "ztp_node_s5c_rx_createsession",
+    "Received GTPv2C CreateSessionRequest messages")
+SMF_METR_GTP_NODE_CTR_ENTRY(
+    SMF_METR_GTP_NODE_CTR_S5C_RX_DELETESESSIONREQ,
+    "ztp_node_s5c_rx_deletesession",
+    "Received GTPv2C DeleteSessionRequest messages")
+};
+
+
+#define TEST_METRICS_NUM        5000
+#define TEST_LOOP_COUNT         500
+
+
+ogs_metrics_inst_t *test_metrics[TEST_METRICS_NUM][_SMF_METR_GTP_NODE_MAX];
+ogs_metrics_inst2_t *test_metrics2[_SMF_METR_GTP_NODE_MAX];
+
+
+
 int smf_metrics_init_inst_gtp_node(ogs_metrics_inst_t **inst, const char *addr)
 {
     return smf_metrics_init_inst(inst,
@@ -176,6 +235,127 @@ int smf_metrics_free_inst_gtp_node(ogs_metrics_inst_t **inst)
 {
     return smf_metrics_free_inst(inst, _SMF_METR_GTP_NODE_MAX);
 }
+
+void test_orig(void);
+void test_orig(void)
+{
+    ogs_time_t t_start, t_end;
+    int i;
+    int loop;
+
+
+    t_start = ogs_get_monotonic_time();
+    for (i = 0; i < TEST_METRICS_NUM; i++)
+    {
+        char buf[32];
+        snprintf(buf, sizeof(buf), "%d", i+1);
+        if (smf_metrics_init_inst_gtp_node(test_metrics[i], (const char *)buf) != OGS_OK) {
+            ogs_error("init_inst_gtp_node");
+        }
+    }
+    t_end = ogs_get_monotonic_time();
+    ogs_error("BMBM: test_orig: initialization: %ld", t_end-t_start);
+
+
+    t_start = ogs_get_monotonic_time();
+    for (loop = 0; loop < TEST_LOOP_COUNT; loop++)
+    {
+        for (i = 0; i < TEST_METRICS_NUM; i++)
+        {
+            smf_metrics_inst_gtp_node_inc(test_metrics[i],
+                SMF_METR_GTP_NODE_CTR_GN_RX_PARSE_FAILED);
+            smf_metrics_inst_gtp_node_inc(test_metrics[i],
+                SMF_METR_GTP_NODE_CTR_GN_RX_CREATEPDPCTXREQ);
+            smf_metrics_inst_gtp_node_inc(test_metrics[i],
+                SMF_METR_GTP_NODE_CTR_GN_RX_DELETEPDPCTXREQ);
+            smf_metrics_inst_gtp_node_inc(test_metrics[i],
+                SMF_METR_GTP_NODE_CTR_S5C_RX_PARSE_FAILED);
+            smf_metrics_inst_gtp_node_inc(test_metrics[i],
+                SMF_METR_GTP_NODE_CTR_S5C_RX_CREATESESSIONREQ);
+            smf_metrics_inst_gtp_node_inc(test_metrics[i],
+                SMF_METR_GTP_NODE_CTR_S5C_RX_DELETESESSIONREQ);
+        }
+    }
+    t_end = ogs_get_monotonic_time();
+    ogs_error("BMBM: test_orig: increment: %ld", t_end-t_start);
+}
+
+void test_new(void);
+void test_new(void)
+{
+    ogs_time_t t_start, t_end;
+    int i;
+    int loop;
+
+    ogs_metrics_context_t *ctx = ogs_metrics_self();
+
+    t_start = ogs_get_monotonic_time();
+    if (smf_metrics_init_inst2(ctx, test_metrics2,
+            smf_metrics_spec2_def_gtp_node, _SMF_METR_GTP_NODE_MAX) != OGS_OK)
+    {
+        ogs_error("init_inst_gtp_node");
+    }
+    t_end = ogs_get_monotonic_time();
+
+
+    char addr[TEST_METRICS_NUM][32];
+    for (i = 0; i < TEST_METRICS_NUM; i++)
+    {
+        snprintf(addr[i], sizeof(addr[i]), "%d", i+1);
+    }
+
+    for (i = 0; i < TEST_METRICS_NUM; i++)
+    {
+        smf_metrics_inst2_gtp_node_reset(
+            SMF_METR_GTP_NODE_CTR_GN_RX_PARSE_FAILED,
+            1, (const char *[]){ addr[i] });
+        smf_metrics_inst2_gtp_node_reset(
+            SMF_METR_GTP_NODE_CTR_GN_RX_CREATEPDPCTXREQ,
+            1, (const char *[]){ addr[i] });
+        smf_metrics_inst2_gtp_node_reset(
+            SMF_METR_GTP_NODE_CTR_GN_RX_DELETEPDPCTXREQ,
+            1, (const char *[]){ addr[i] });
+        smf_metrics_inst2_gtp_node_reset(
+            SMF_METR_GTP_NODE_CTR_S5C_RX_PARSE_FAILED,
+            1, (const char *[]){ addr[i] });
+        smf_metrics_inst2_gtp_node_reset(
+            SMF_METR_GTP_NODE_CTR_S5C_RX_CREATESESSIONREQ,
+            1, (const char *[]){ addr[i] });
+        smf_metrics_inst2_gtp_node_reset(
+            SMF_METR_GTP_NODE_CTR_S5C_RX_DELETESESSIONREQ,
+            1, (const char *[]){ addr[i] });
+    }
+    ogs_error("BMBM: test_new: initalization + reset: %ld", t_end-t_start);
+
+    t_start = ogs_get_monotonic_time();
+    for (loop = 0; loop < TEST_LOOP_COUNT; loop++)
+    {
+        for (i = 0; i < TEST_METRICS_NUM; i++)
+        {
+            smf_metrics_inst2_gtp_node_inc(
+                SMF_METR_GTP_NODE_CTR_GN_RX_PARSE_FAILED,
+                1, (const char *[]){ addr[i] });
+            smf_metrics_inst2_gtp_node_inc(
+                SMF_METR_GTP_NODE_CTR_GN_RX_CREATEPDPCTXREQ,
+                1, (const char *[]){ addr[i] });
+            smf_metrics_inst2_gtp_node_inc(
+                SMF_METR_GTP_NODE_CTR_GN_RX_DELETEPDPCTXREQ,
+                1, (const char *[]){ addr[i] });
+            smf_metrics_inst2_gtp_node_inc(
+                SMF_METR_GTP_NODE_CTR_S5C_RX_PARSE_FAILED,
+                1, (const char *[]){ addr[i] });
+            smf_metrics_inst2_gtp_node_inc(
+                SMF_METR_GTP_NODE_CTR_S5C_RX_CREATESESSIONREQ,
+                1, (const char *[]){ addr[i] });
+            smf_metrics_inst2_gtp_node_inc(
+                SMF_METR_GTP_NODE_CTR_S5C_RX_DELETESESSIONREQ,
+                1, (const char *[]){ addr[i] });
+        }
+    }
+    t_end = ogs_get_monotonic_time();
+    ogs_error("BMBM: test_new: increment: %ld", t_end-t_start);
+}
+
 
 int smf_metrics_open(void)
 {
@@ -189,6 +369,10 @@ int smf_metrics_open(void)
             _SMF_METR_GTP_NODE_MAX);
 
     smf_metrics_init_inst_global();
+
+    test_orig();
+    test_new();
+
     return 0;
 }
 
