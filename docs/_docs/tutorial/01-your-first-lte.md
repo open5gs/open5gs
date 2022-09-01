@@ -19,6 +19,10 @@ This document will be described with the following equipment.
  - sysmoUSIM-SJS1
  - 10Mhz GPS-DO(Optional)
 
+This tutorial uses PLMN 901/70 (MCC 901 and MNC 70) to match the Sysmocom SIM Cards default values.
+If you are planning on operating a network beyond a lab, you will need a PLMN of your own.
+The ITU has allocated PLMN 999/99 for Private Networks, and 001/01 for test networks, however it is worth noting many devices will not attach to networks using these PLMNs.
+
 ### Overall Physical Setup
 ---
 
@@ -88,7 +92,7 @@ SMSP: ffffffffffffffffffffffffffffffffffffffffffffffffe1ffffffffffffffffffffffff
 
 ###### Program your SIM card like the followings:
 ```
-./pySim-prog.py -p 0 -n Open5GS -a 62416296 -s 8988211000000213010 -i 310789012345301 -x 310 -y 789 -k 82E9053A1882085FF2C020359938DAE9 -o BFD5771AAF4F6728E9BC6EF2C2533BDB
+./pySim-prog.py -p 0 -n Open5GS -a 62416296 -s 8988211000000213010 -i 310789012345301 -x 901 -y 70 -k 82E9053A1882085FF2C020359938DAE9 -o BFD5771AAF4F6728E9BC6EF2C2533BDB
 Using PC/SC reader (dev=0) interface
 Insert card now (or CTRL-C to cancel)
 Autodetected card type: sysmoUSIM-SJS1
@@ -96,9 +100,9 @@ Generated card parameters :
  > Name    : Open5GS
  > SMSP    : e1ffffffffffffffffffffffff0581005155f5ffffffffffff000000
  > ICCID   : 8988211000000213010
- > MCC/MNC : 310/789
+ > MCC/MNC : 901/70
  > IMSI    : 310789012345301
- > Ki      : 82E9053A1882085FF2C020359938DAE9
+ > Ki      : 82E9053A1882085FF2C020357038DAE9
  > OPC     : BFD5771AAF4F6728E9BC6EF2C2533BDB
  > ACC     : None
 
@@ -122,7 +126,7 @@ Most Linux distributions provide UHD as part of their package management. On *De
 ```bash
 $ sudo add-apt-repository ppa:ettusresearch/uhd
 $ sudo apt update
-$ sudo apt install libuhd-dev libuhd003 uhd-host
+$ sudo apt install libuhd-dev uhd-host
 ```
 
 After installing, you need to download the FPGA images packages by running _uhd images downloader_ on the command line (the actual path may differ based on your installation):
@@ -131,41 +135,31 @@ After installing, you need to download the FPGA images packages by running _uhd 
 $ sudo /usr/lib/uhd/utils/uhd_images_downloader.py
 ```
 
-#### 2. srsRAN
-
-On *Ubuntu 20.04(focal)*, one can install the required libraries with:
+The Laptop then needs to reboot, with the USRP unplugged. Only plug in the USRP after booting is done.
 
 ```bash
-$ sudo apt install cmake libfftw3-dev libmbedtls-dev libboost-program-options-dev libconfig++-dev libsctp-dev
+$ cd /usr/share/uhd/images/
+$ sudo uhd_usrp_probe
 ```
 
-Download and build srsLTE:
+If Issues akin to `IOError: Could not find path for image: usrp_b200_fw.hex` come up and you can not start execution from the `/usr/share/uhd/iamges` path, copy `/usr/share/uhd/images/usrp_b200_fw.hex` & `/usr/share/uhd/images/usrp_b210_fpga.bin` or the matching files for your usrp to the execution directory
+
+Furter execution should work even without sudo
+
+#### 2. srsRAN
 
 ```bash
-$ git clone https://github.com/srsRAN/srsRAN.git
-$ cd srsRAN
-$ git checkout release_21_10
-$ git rev-parse HEAD
-5275f33360f1b3f1ee8d1c4d9ae951ac7c4ecd4e
-$ mkdir build
-$ cd build
-$ cmake ../
-$ make
-$ make test
+$ sudo add-apt-repository ppa:softwareradiosystems/srsran
+$ sudo apt-get update
+$ sudo apt-get install srsran
 ```
 
 #### 3. Open5GS
 
-The Open5GS package is available on the recent versions of *Ubuntu*.
+See also [Quickstart Guide: Install Open5GS with a package manager](https://open5gs.org/open5gs/docs/guide/01-quickstart/#2-install-open5gs-with-a-package-manager)
 
 ```bash
-# Getting the authentication key
-$ sudo apt install wget
-$ wget https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_20.04/Release.key
-$ sudo apt-key add Release.key
-
-# Installing Open5GS
-$ sudo sh -c "echo 'deb https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_20.04/ ./' > /etc/apt/sources.list.d/open5gs.list"
+$ sudo add-apt-repository ppa:open5gs/latest
 $ sudo apt update
 $ sudo apt install open5gs
 ```
@@ -204,7 +198,7 @@ OPc : 625150E2A943E3353DD23554101CAFD4
 
 If you programmed USIM using a card reader like me, you should use your SIM information.
 ```
-MCC/MNC : 310/789
+MCC/MNC : 901/70
 IMSI : 310789012345301
 K : 82E9053A1882085FF2C020359938DAE9
 OPc : BFD5771AAF4F6728E9BC6EF2C2533BDB  
@@ -229,58 +223,67 @@ Modify [install/etc/open5gs/mme.yaml](https://github.com/{{ site.github_username
 
 ```diff
 $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
---- mme.yaml.old	2020-08-22 12:07:32.755250028 -0400
-+++ mme.yaml	2020-08-22 12:08:17.309320211 -0400
-@@ -208,20 +208,20 @@
- mme:
-     freeDiameter: /home/acetcom/Documents/git/open5gs/install/etc/freeDiameter/mme.conf
-     s1ap:
--      addr: 127.0.0.2
-+      addr: 127.0.1.2
-     gtpc:
-       addr: 127.0.0.2
+--- mme.yaml.old 2022-01-19 10:36:02.462763600 +0100
++++ mme.yaml    2022-01-19 10:37:21.862156800 +0100
+@@ -213,14 +213,14 @@
+       - addr: 127.0.0.2
      gummei:
        plmn_id:
 -        mcc: 999
 -        mnc: 70
-+        mcc: 310
-+        mnc: 789
++        mcc: 901
++        mnc: 70
        mme_gid: 2
        mme_code: 1
      tai:
        plmn_id:
 -        mcc: 999
 -        mnc: 70
--      tac: 1
-+        mcc: 310
-+        mnc: 789
-+      tac: 2
++        mcc: 901
++        mnc: 70
+       tac: 1
      security:
-         integrity_order : [ EIA1, EIA2, EIA0 ]
-         ciphering_order : [ EEA0, EEA1, EEA2 ]
+         integrity_order : [ EIA2, EIA1, EIA0 ]
 ```
 
-Modify [install/etc/open5gs/sgwu.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/sgwu.yaml.in) to set the GTP-U IP address.
 ```diff
-$ diff -u /etc/open5gs/sgwu.yaml.old /etc/open5gs/sgwu.yaml
---- sgwu.yaml.old	2020-08-22 12:08:44.782880778 -0400
-+++ sgwu.yaml	2020-08-22 12:06:49.809299514 -0400
-@@ -82,7 +82,7 @@
- #
- sgwu:
-     gtpu:
--      addr: 10.11.0.6
-+      addr: 127.0.0.6
-     pfcp:
-       addr: 127.0.0.6
+$ diff -u ./examples/amf.yaml amf.yaml
+--- amf.yaml.old 2022-01-19 10:35:48.457438300 +0100
++++ amf.yaml    2022-01-19 10:38:14.523755800 +0100
+@@ -183,20 +183,20 @@
+       - addr: 127.0.0.5
+     guami:
+       - plmn_id:
+-          mcc: 901
+-          mnc: 70
++          mcc: 901
++          mnc: 70
+         amf_id:
+           region: 2
+           set: 1
+     tai:
+       - plmn_id:
+-          mcc: 901
+-          mnc: 70
++          mcc: 901
++          mnc: 70
+         tac: 1
+     plmn_support:
+       - plmn_id:
+-          mcc: 901
+-          mnc: 70
++          mcc: 901
++          mnc: 70
+         s_nssai:
+           - sst: 1
+     security:
 ```
-
 
 After changing conf files, please restart Open5GS daemons.
 
 ```bash
 $ sudo systemctl restart open5gs-mmed.service
-$ sudo systemctl restart open5gs-sgwud.service
+$ sudo systemctl restart open5gs-amfd.service
 ```
 
 If your phone can connect to internet, you must run the following command in Open5GS-PGW installed host. 
@@ -324,22 +327,11 @@ $ sudo ip6tables -t nat -A POSTROUTING -s 2001:db8:cafe::/48 ! -o ogstun -j MASQ
 {: .notice--danger}
 
 #### 2. srsRAN
-Change back to the srsRAN source directory and copy the main config example as well as all additional config files for RR, SIB and DRB.
-
-```bash
-$ cp srsenb/enb.conf.example srsenb/enb.conf
-$ cp srsenb/rr.conf.example srsenb/rr.conf
-$ cp srsenb/drb.conf.example srsenb/drb.conf
-$ cp srsenb/sib.conf.example srsenb/sib.conf
-$ cp srsenb/sib.conf.mbsfn.example srsenb/sib.conf.mbsfn
-```
-
-You should check your phone frequency. If your phone does not support Band-3, you should use a different DL EARFCN value.
 
 ```diff
-$ diff -u enb.conf.example enb.conf
--- enb.conf.example	2022-01-19 20:30:13.612993155 +0900
-+++ enb.conf	2022-01-19 21:04:15.674419300 +0900
+$ diff -u /root/.config/srsran/enb.conf.old /root/.config/srsran/enb.conf
+--- enb.conf.example 2022-01-19 09:56:18.317977900 +0100
++++ enb.conf    2022-01-19 10:07:28.943500800 +0100
 @@ -20,9 +20,9 @@
  #####################################################################
  [enb]
@@ -347,9 +339,9 @@ $ diff -u enb.conf.example enb.conf
 -mcc = 001
 -mnc = 01
 -mme_addr = 127.0.1.100
-+mcc = 310
-+mnc = 789
-+mme_addr = 127.0.1.2
++mcc = 901
++mnc = 70
++mme_addr = 127.0.0.2
  gtp_bind_addr = 127.0.1.1
  s1c_bind_addr = 127.0.1.1
  s1c_bind_port = 0
@@ -362,8 +354,14 @@ $ diff -u enb.conf.example enb.conf
 
  # For best performance in 2x2 MIMO and >= 15 MHz use the following device_args settings:
  #     USRP B210: num_recv_frames=64,num_send_frames=64
-@@ -81,7 +81,7 @@
+```
 
+If you use the GPS-DO, you should also set
+```diff
+$ diff -u /root/.config/srsran/enb.conf.old /root/.config/srsran/enb.conf
+--- enb.conf.old	2021-08-23 14:32:35.585438813 +0900
++++ enb.conf	2021-08-23 14:32:08.350450409 +0900
+ @@ -80,6 +82,7 @@
  # Example for ZMQ-based operation with TCP transport for I/Q samples
  #device_name = zmq
 -#device_args = fail_on_disconnect=true,tx_port=tcp://*:2000,rx_port=tcp://localhost:2001,id=enb,base_srate=23.04e6
@@ -373,60 +371,44 @@ $ diff -u enb.conf.example enb.conf
  # Packet capture configuration
 ```
 
+You should check your phone frequency. This example uses Band-3.
+
 ```diff
-$ diff -u rr.conf.example rr.conf
--- rr.conf.example	2022-01-19 20:30:13.620992794 +0900
-+++ rr.conf	2022-01-19 21:05:21.959044145 +0900
-@@ -55,10 +55,10 @@
+$ diff -u /root/.config/srsran/rr.conf.old /root/.config/srsran/rr.conf                                                                   
+--- rr.conf.old  2022-01-19 10:01:43.027197000 +0100
++++ rr.conf     2022-01-19 16:14:20.490827200 +0100
+@@ -55,11 +55,11 @@
    {
      // rf_port = 0;
      cell_id = 0x01;
 -    tac = 0x0007;
-+    tac = 0x0002;
++    tac = 0x0001;
      pci = 1;
      // root_seq_idx = 204;
 -    dl_earfcn = 3350;
-+    dl_earfcn = 1600;
-     //ul_earfcn = 21400;
+-    //ul_earfcn = 21400;
++    dl_earfcn = 1300;
++    ul_earfcn = 19300;
      ho_active = false;
      //meas_gap_period = 0; // 0 (inactive), 40 or 80
-@@ -114,4 +114,4 @@
- nr_cell_list =
- (
-   // no NR cells
+     //meas_gap_offset_subframe = [6, 12, 18, 24, 30]
 ```
 
 MME Address, TAC, PLMN ID, DL EARFCN, and Device Argument are updated as belows.
 
 ```
-MME Address : 127.0.1.2
-TAC : 2
-PLMN ID : MNC(310), MCC(789) programmed USIM with a card reader
+MME Address : 127.0.0.2
+TAC : 1
+PLMN ID : MNC(901), MCC(70) programmed USIM with a card reader
 DL EARFCN : Band-3 - from your Phone
 Device Argument : Clock source from external GPS-DO
-```
-
-If you are not using GPS-DO, you can just comment out `device_args` as shown below.
-```diff
-$ diff -u enb.conf enb.conf.no_gps_do
---- enb.conf	2022-01-19 21:08:32.941527373 +0900
-+++ enb.conf.no_gps_do	2022-01-19 21:10:18.612581261 +0900
-@@ -81,7 +81,7 @@
-
- # Example for ZMQ-based operation with TCP transport for I/Q samples
- #device_name = zmq
--device_args = clock=external
-+#device_args = fail_on_disconnect=true,tx_port=tcp://*:2000,rx_port=tcp://localhost:2001,id=enb,base_srate=23.04e6
-
- #####################################################################
- # Packet capture configuration
 ```
 
 Now, run the srsRAN as follows:
 
 ```bash
-$ cd srsenb/
-$ sudo UHD_IMAGES_DIR=/usr/share/uhd/images ../build/srsenb/src/srsenb ./enb.conf
+$ sudo srsenb
+
 ---  Software Radio Systems LTE eNodeB  ---
 
 Reading configuration file ./enb.conf...
