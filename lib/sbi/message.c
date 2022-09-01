@@ -305,17 +305,19 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
         }
         if (ogs_sbi_self()->discovery_config.no_service_names == false &&
             discovery_option->num_of_service_names) {
+
+            /* send array items separated by a comma */
             char *v = NULL;
-            cJSON *item = NULL;
 
-            item = cJSON_CreateStringArray(
-                (const char * const*)discovery_option->service_names,
-                discovery_option->num_of_service_names);
-            ogs_expect_or_return_val(item, NULL);
-
-            v = cJSON_Print(item);
+            v = ogs_strdup(discovery_option->service_names[0]);
             ogs_expect_or_return_val(v, NULL);
-            cJSON_Delete(item);
+
+            if (discovery_option->num_of_service_names > 1)
+            {
+                int i;
+                for (i = 1; i < discovery_option->num_of_service_names; i++)
+                    v = ogs_mstrcatf(v, ",%s", discovery_option->service_names[i]);
+            }
 
             ogs_sbi_header_set(
                     request->http.params, OGS_SBI_PARAM_SERVICE_NAMES, v);
@@ -523,23 +525,26 @@ int ogs_sbi_parse_request(
         } else if (!strcmp(ogs_hash_this_key(hi),
                     OGS_SBI_PARAM_SERVICE_NAMES)) {
             char *v = NULL;
-            cJSON *array = NULL, *item = NULL;
+            char *service_names;
+            char *token;
+            char *saveptr;
 
             v = ogs_hash_this_val(hi);
             if (v) {
-                array = cJSON_Parse(v);
-                if (cJSON_IsArray(array)) {
+                service_names = ogs_strdup(v);
+                ogs_assert(service_names);
 
+                token = ogs_strtok_r(service_names, ",", &saveptr);
+                while (token != NULL)
+                {
                     discovery_option_presence = true;
+                    ogs_sbi_discovery_option_add_service_names(
+                        discovery_option, token);
 
-                    cJSON_ArrayForEach(item, array) {
-                        char *names = cJSON_GetStringValue(item);
-                        if (names)
-                            ogs_sbi_discovery_option_add_service_names(
-                                    discovery_option, names);
-                    }
+                    token = ogs_strtok_r(NULL, ",", &saveptr);
                 }
-                cJSON_Delete(array);
+
+                ogs_free(service_names);
             }
 
         /* URL Query Parameter */
