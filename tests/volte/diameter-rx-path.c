@@ -60,10 +60,10 @@ static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
 static int pcscf_rx_fb_cb(struct msg **msg, struct avp *avp,
         struct session *sess, void *opaque, enum disp_action *act)
 {
-	/* This CB should never be called */
-	ogs_warn("Unexpected message received!");
-	
-	return ENOTSUP;
+    /* This CB should never be called */
+    ogs_warn("Unexpected message received!");
+
+    return ENOTSUP;
 }
 
 void test_rx_send_aar_audio(uint8_t **rx_sid,
@@ -115,7 +115,7 @@ void test_rx_send_aar_audio(uint8_t **rx_sid,
     if (*rx_sid) {
         /* Retrieve session by Session-Id */
         size_t sidlen = strlen((char *)*rx_sid);
-		ret = fd_sess_fromsid_msg(*rx_sid, sidlen, &session, &new);
+        ret = fd_sess_fromsid_msg(*rx_sid, sidlen, &session, &new);
         ogs_assert(ret == 0);
         ogs_assert(new == 0);
 
@@ -612,7 +612,7 @@ void test_rx_send_aar_video(uint8_t **rx_sid, test_sess_t *sess, int id_type)
     if (*rx_sid) {
         /* Retrieve session by Session-Id */
         size_t sidlen = strlen((char *)*rx_sid);
-		ret = fd_sess_fromsid_msg(*rx_sid, sidlen, &session, &new);
+        ret = fd_sess_fromsid_msg(*rx_sid, sidlen, &session, &new);
         ogs_assert(ret == 0);
         ogs_assert(new == 0);
 
@@ -1290,7 +1290,7 @@ void test_rx_send_aar_ctrl(uint8_t **rx_sid, test_sess_t *sess, int id_type)
     if (*rx_sid) {
         /* Retrieve session by Session-Id */
         size_t sidlen = strlen((char *)*rx_sid);
-		ret = fd_sess_fromsid_msg(*rx_sid, sidlen, &session, &new);
+        ret = fd_sess_fromsid_msg(*rx_sid, sidlen, &session, &new);
         ogs_assert(ret == 0);
         ogs_assert(new == 0);
 
@@ -1789,7 +1789,7 @@ static int pcscf_rx_asr_cb( struct msg **msg, struct avp *avp,
     int rv;
     int ret;
 
-	struct msg *ans, *qry;
+    struct msg *ans, *qry;
     struct avp *avpch1, *avpch2, *avpch3;
     struct avp_hdr *hdr;
     union avp_value val;
@@ -1804,9 +1804,9 @@ static int pcscf_rx_asr_cb( struct msg **msg, struct avp *avp,
     ogs_assert(ret == 0);
     ogs_assert(sess_data);
 
-	/* Create answer header */
-	qry = *msg;
-	ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
+    /* Create answer header */
+    qry = *msg;
+    ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
     ogs_assert(ret == 0);
     ans = *msg;
 
@@ -1838,8 +1838,8 @@ static int pcscf_rx_asr_cb( struct msg **msg, struct avp *avp,
         ogs_error("no_Abort-Cause ");
     }
 
-	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
-	ret = fd_msg_rescode_set(ans, (char*)"DIAMETER_SUCCESS", NULL, NULL, 1);
+    /* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
+    ret = fd_msg_rescode_set(ans, (char*)"DIAMETER_SUCCESS", NULL, NULL, 1);
     ogs_assert(ret == 0);
 
     /* Store this value in the session */
@@ -1850,14 +1850,14 @@ static int pcscf_rx_asr_cb( struct msg **msg, struct avp *avp,
     ogs_assert(ret == 0);
     ogs_assert(sess_data == NULL);
 
-	/* Send the answer */
-	ret = fd_msg_send(msg, NULL, NULL);
+    /* Send the answer */
+    ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
-	/* Add this value to the stats */
-	ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
-	ogs_diam_logger_self()->stats.nb_echoed++;
-	ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+    /* Add this value to the stats */
+    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_diam_logger_self()->stats.nb_echoed++;
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
 
     test_rx_send_str(sid);
 
@@ -2102,48 +2102,48 @@ out:
 int test_rx_init(void)
 {
     int ret;
-	struct disp_when data;
+    struct disp_when data;
 
     test_cx_init();
 
-	/* Install objects definitions for this application */
-	ret = ogs_diam_rx_init();
+    /* Install objects definitions for this application */
+    ret = ogs_diam_rx_init();
     ogs_assert(ret == 0);
 
     /* Create handler for sessions */
-	ret = fd_sess_handler_create(&pcscf_rx_reg, state_cleanup, NULL, NULL);
+    ret = fd_sess_handler_create(&pcscf_rx_reg, state_cleanup, NULL, NULL);
     ogs_assert(ret == 0);
 
-	/* Fallback CB if command != unexpected message received */
-	memset(&data, 0, sizeof(data));
-	data.app = ogs_diam_rx_application;
+    /* Fallback CB if command != unexpected message received */
+    memset(&data, 0, sizeof(data));
+    data.app = ogs_diam_rx_application;
 
-	ret = fd_disp_register(pcscf_rx_fb_cb, DISP_HOW_APPID, &data, NULL,
+    ret = fd_disp_register(pcscf_rx_fb_cb, DISP_HOW_APPID, &data, NULL,
                 &hdl_rx_fb);
     ogs_assert(ret == 0);
-	
-	/* Specific handler for Abort-Session-Request */
-	data.command = ogs_diam_rx_cmd_asr;
-	ret = fd_disp_register(pcscf_rx_asr_cb, DISP_HOW_CC, &data, NULL,
+
+    /* Specific handler for Abort-Session-Request */
+    data.command = ogs_diam_rx_cmd_asr;
+    ret = fd_disp_register(pcscf_rx_asr_cb, DISP_HOW_CC, &data, NULL,
                 &hdl_rx_asr);
     ogs_assert(ret == 0);
 
-	/* Advertise the support for the application in the peer */
-	ret = fd_disp_app_support(ogs_diam_rx_application, ogs_diam_vendor, 1, 0);
+    /* Advertise the support for the application in the peer */
+    ret = fd_disp_app_support(ogs_diam_rx_application, ogs_diam_vendor, 1, 0);
     ogs_assert(ret == 0);
 
-	return 0;
+    return 0;
 }
 
 void test_rx_final(void)
 {
     int ret;
 
-	ret = fd_sess_handler_destroy(&pcscf_rx_reg, NULL);
+    ret = fd_sess_handler_destroy(&pcscf_rx_reg, NULL);
     ogs_assert(ret == 0);
 
-	if (hdl_rx_fb)
-		(void) fd_disp_unregister(&hdl_rx_fb, NULL);
-	if (hdl_rx_asr)
-		(void) fd_disp_unregister(&hdl_rx_asr, NULL);
+    if (hdl_rx_fb)
+        (void) fd_disp_unregister(&hdl_rx_fb, NULL);
+    if (hdl_rx_asr)
+        (void) fd_disp_unregister(&hdl_rx_asr, NULL);
 }

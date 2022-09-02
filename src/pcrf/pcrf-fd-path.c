@@ -36,7 +36,7 @@ int pcrf_fd_init(void)
     rv = ogs_diam_start();
     ogs_assert(rv == 0);
 
-	return OGS_OK;
+    return OGS_OK;
 }
 
 void pcrf_fd_final(void)

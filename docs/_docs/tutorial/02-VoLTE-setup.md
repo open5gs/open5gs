@@ -307,9 +307,9 @@ Username: test
 Password: testpasswd
 Server: ims.mnc001.mcc001.3gppnetwork.org (Created DNS Domain Name or IP to which IMS components are bound to, visible interface IP address)
 Optional Settings:
-	Authentication username: test
-	Outbound proxy address: 172.24.15.30 (Floating IP of VM in case of OpenStack or else no need to fill in case of physical machine)
-	Transport type: UDP
+    Authentication username: test
+    Outbound proxy address: 172.24.15.30 (Floating IP of VM in case of OpenStack or else no need to fill in case of physical machine)
+    Transport type: UDP
 ```
 
 In Phone 2:
@@ -319,9 +319,9 @@ Username: test2
 Password: testpasswd
 Server: ims.mnc001.mcc001.3gppnetwork.org (Created DNS Domain Name or IP to which IMS components are bound to, visible interface IP address)
 Optional Settings:
-	Authentication username: test2
-	Outbound proxy address: 172.24.15.30 (Floating IP of VM in case of OpenStack or else no need to fill in case of physical machine)
-	Transport type: UDP
+    Authentication username: test2
+    Outbound proxy address: 172.24.15.30 (Floating IP of VM in case of OpenStack or else no need to fill in case of physical machine)
+    Transport type: UDP
 ```
 
 - Set "Receive incoming calls" option to enabled state in both phones
@@ -566,8 +566,8 @@ options {
         // the all-0's placeholder.
 
         //forwarders {
-		// Put here the IP address of other DNS server which could be used if name cannot be resolved with DNS server running in this machine (Optional)
-		//10.4.128.2;
+        // Put here the IP address of other DNS server which could be used if name cannot be resolved with DNS server running in this machine (Optional)
+        //10.4.128.2;
         //};
 
         //========================================================================
@@ -1068,8 +1068,8 @@ In the below example. epc-ims is the hostname of the machine
 
 ```
 root@epc-ims:~# cat /etc/hosts
-127.0.0.1	localhost
-127.0.0.1	epc-ims
+127.0.0.1    localhost
+127.0.0.1    epc-ims
 ```
 
 #### 20. Add IMS subscription use in FoHSS as follows from the Web GUI
@@ -1078,7 +1078,7 @@ Assuming IMSI of the user as 001010123456791 and MSISDN is 0198765432100
 
 ```
 Login to the HSS web console.
-Navigate to the User Identities page	
+Navigate to the User Identities page
 Create the IMSU 
 Click IMS Subscription / Create
 Enter:

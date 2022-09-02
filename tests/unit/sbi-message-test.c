@@ -22,11 +22,11 @@
 
 static void sbi_message_test1(abts_case *tc, void *data)
 {
-	cJSON *item = NULL;
+    cJSON *item = NULL;
     OpenAPI_lnode_t *entry;
 
-	OpenAPI_nf_profile_t *nf_profile1;
-	OpenAPI_nf_profile_t *nf_profile2;
+    OpenAPI_nf_profile_t *nf_profile1;
+    OpenAPI_nf_profile_t *nf_profile2;
 
     OpenAPI_udr_info_t *udr_info1;
     OpenAPI_udr_info_t *udr_info2;
@@ -41,9 +41,9 @@ static void sbi_message_test1(abts_case *tc, void *data)
 
     nf_profile1 = ogs_calloc(1, sizeof(*nf_profile1));
     ABTS_PTR_NOTNULL(tc, nf_profile1);
-	nf_profile1->nf_instance_id = "NF_INSTANCE_ID";
-	nf_profile1->nf_type = OpenAPI_nf_type_SMF;
-	nf_profile1->nf_status = OpenAPI_nf_status_REGISTERED;
+    nf_profile1->nf_instance_id = "NF_INSTANCE_ID";
+    nf_profile1->nf_type = OpenAPI_nf_type_SMF;
+    nf_profile1->nf_status = OpenAPI_nf_status_REGISTERED;
 
     memset(plmn_id1, 0, sizeof(plmn_id1));
 
@@ -83,7 +83,7 @@ static void sbi_message_test1(abts_case *tc, void *data)
     identity_range1->end = "9";
     OpenAPI_list_add(udr_info1->gpsi_ranges, identity_range1);
 
-	item = OpenAPI_nf_profile_convertToJSON(nf_profile1);
+    item = OpenAPI_nf_profile_convertToJSON(nf_profile1);
     ABTS_PTR_NOTNULL(tc, item);
 
 #if 0
@@ -94,7 +94,7 @@ static void sbi_message_test1(abts_case *tc, void *data)
     }
 #endif
 
-	nf_profile2 = OpenAPI_nf_profile_parseFromJSON(item);
+    nf_profile2 = OpenAPI_nf_profile_parseFromJSON(item);
     ABTS_PTR_NOTNULL(tc, nf_profile2);
 
     ABTS_STR_EQUAL(tc,
@@ -170,27 +170,27 @@ static void sbi_message_test1(abts_case *tc, void *data)
 
     cJSON_Delete(item);
 
-	OpenAPI_nf_profile_free(nf_profile2);
+    OpenAPI_nf_profile_free(nf_profile2);
 }
 
 static void sbi_message_test2(abts_case *tc, void *data)
 {
-	cJSON *item = NULL;
+    cJSON *item = NULL;
     OpenAPI_lnode_t *entry;
 
     OpenAPI_nf_group_cond_t *nf_group_cond1;
     OpenAPI_nf_group_cond_t *nf_group_cond2;
 
-	OpenAPI_smf_info_t *smf_info1;
-	OpenAPI_smf_info_t *smf_info2;
+    OpenAPI_smf_info_t *smf_info1;
+    OpenAPI_smf_info_t *smf_info2;
     OpenAPI_access_type_e access_type;
 
     nf_group_cond1 = ogs_calloc(1, sizeof(*nf_group_cond1));
     ABTS_PTR_NOTNULL(tc, nf_group_cond1);
-	nf_group_cond1->nf_type = OpenAPI_nf_group_cond_NFTYPE_UDR;
-	nf_group_cond1->nf_group_id = "group";
+    nf_group_cond1->nf_type = OpenAPI_nf_group_cond_NFTYPE_UDR;
+    nf_group_cond1->nf_group_id = "group";
 
-	item = OpenAPI_nf_group_cond_convertToJSON(nf_group_cond1);
+    item = OpenAPI_nf_group_cond_convertToJSON(nf_group_cond1);
     ABTS_PTR_NOTNULL(tc, item);
 
 #if 0
@@ -201,7 +201,7 @@ static void sbi_message_test2(abts_case *tc, void *data)
     }
 #endif
 
-	nf_group_cond2 = OpenAPI_nf_group_cond_parseFromJSON(item);
+    nf_group_cond2 = OpenAPI_nf_group_cond_parseFromJSON(item);
     ABTS_PTR_NOTNULL(tc, nf_group_cond2);
 
     ABTS_STR_EQUAL(tc,
@@ -218,7 +218,7 @@ static void sbi_message_test2(abts_case *tc, void *data)
     smf_info1 = ogs_calloc(1, sizeof(*smf_info1));
     ABTS_PTR_NOTNULL(tc, smf_info1);
     smf_info1->s_nssai_smf_info_list = OpenAPI_list_create();
-	smf_info1->pgw_fqdn = "PGW_FQDN";
+    smf_info1->pgw_fqdn = "PGW_FQDN";
     smf_info1->access_type = OpenAPI_list_create();
     ABTS_PTR_NOTNULL(tc, smf_info1->access_type);
 
@@ -226,7 +226,7 @@ static void sbi_message_test2(abts_case *tc, void *data)
             (void*)OpenAPI_access_type_3GPP_ACCESS);
     OpenAPI_list_add(smf_info1->access_type,
             (void*)OpenAPI_access_type_NON_3GPP_ACCESS);
-	item = OpenAPI_smf_info_convertToJSON(smf_info1);
+    item = OpenAPI_smf_info_convertToJSON(smf_info1);
     ABTS_PTR_NOTNULL(tc, item);
 
 #if 0
@@ -237,7 +237,7 @@ static void sbi_message_test2(abts_case *tc, void *data)
     }
 #endif
 
-	smf_info2 = OpenAPI_smf_info_parseFromJSON(item);
+    smf_info2 = OpenAPI_smf_info_parseFromJSON(item);
     ABTS_PTR_NOTNULL(tc, smf_info2);
 
     ABTS_STR_EQUAL(tc,
@@ -270,11 +270,11 @@ static void sbi_message_test2(abts_case *tc, void *data)
 
 static void sbi_message_test3(abts_case *tc, void *data)
 {
-	cJSON *item = NULL;
+    cJSON *item = NULL;
     OpenAPI_lnode_t *entry;
 
-	OpenAPI_nrf_info_t *nrf_info1;
-	OpenAPI_nrf_info_t *nrf_info2;
+    OpenAPI_nrf_info_t *nrf_info1;
+    OpenAPI_nrf_info_t *nrf_info2;
 
     OpenAPI_map_t *served_pcf_info1 = NULL;
     OpenAPI_map_t *served_pcf_info2 = NULL;
@@ -301,7 +301,7 @@ static void sbi_message_test3(abts_case *tc, void *data)
     OpenAPI_list_add(nrf_info1->served_pcf_info, served_pcf_info1);
     OpenAPI_list_add(nrf_info1->served_pcf_info, served_pcf_info2);
 
-	item = OpenAPI_nrf_info_convertToJSON(nrf_info1);
+    item = OpenAPI_nrf_info_convertToJSON(nrf_info1);
     ABTS_PTR_NOTNULL(tc, item);
 
 #if 0
@@ -317,7 +317,7 @@ static void sbi_message_test3(abts_case *tc, void *data)
     ogs_free(pcf_info1);
     ogs_free(pcf_info2);
 
-	nrf_info2 = OpenAPI_nrf_info_parseFromJSON(item);
+    nrf_info2 = OpenAPI_nrf_info_parseFromJSON(item);
     ABTS_PTR_NOTNULL(tc, nrf_info2);
 
     ABTS_INT_EQUAL(tc, nrf_info1->served_pcf_info->count,

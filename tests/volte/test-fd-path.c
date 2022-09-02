@@ -69,7 +69,7 @@ static void test_diam_config(void)
 int test_fd_init(void)
 {
     int ret;
-	struct disp_when data;
+    struct disp_when data;
 
     test_diam_config();
 
@@ -82,7 +82,7 @@ int test_fd_init(void)
     ret = ogs_diam_start();
     ogs_assert(ret == 0);
 
-	return 0;
+    return 0;
 }
 
 void test_fd_final(void)

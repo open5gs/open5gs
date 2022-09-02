@@ -255,23 +255,23 @@ int ogs_sortaddrinfo(ogs_sockaddr_t **sa_list, int family)
 ogs_sockaddr_t *ogs_link_local_addr(const char *dev, const ogs_sockaddr_t *sa)
 {
 #if defined(HAVE_GETIFADDRS)
-	struct ifaddrs *iflist, *cur;
+    struct ifaddrs *iflist, *cur;
     int rc;
 
-	rc = getifaddrs(&iflist);
+    rc = getifaddrs(&iflist);
     if (rc != 0) {
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno, "getifaddrs failed");
         return NULL;
     }
 
-	for (cur = iflist; cur != NULL; cur = cur->ifa_next) {
+    for (cur = iflist; cur != NULL; cur = cur->ifa_next) {
         ogs_sockaddr_t *ifa_addr = NULL;
         ogs_sockaddr_t *addr = NULL;
 
         ifa_addr = (ogs_sockaddr_t *)cur->ifa_addr;
 
-		if (ifa_addr == NULL) /* may happen with ppp interfaces */
-			continue;
+        if (ifa_addr == NULL) /* may happen with ppp interfaces */
+            continue;
 
         if (ifa_addr->ogs_sa_family == AF_INET)
             continue;
@@ -293,9 +293,9 @@ ogs_sockaddr_t *ogs_link_local_addr(const char *dev, const ogs_sockaddr_t *sa)
 
         freeifaddrs(iflist);
         return addr;
-	}
+    }
 
-	freeifaddrs(iflist);
+    freeifaddrs(iflist);
 #endif
     return NULL;
 }

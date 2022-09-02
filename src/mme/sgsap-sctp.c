@@ -62,9 +62,9 @@ ogs_sock_t *sgsap_client(mme_vlr_t *vlr)
 #if HAVE_USRSCTP
 static void usrsctp_recv_handler(struct socket *socket, void *data, int flags)
 {
-	int events;
+    int events;
 
-	while ((events = usrsctp_get_events(socket)) &&
+    while ((events = usrsctp_get_events(socket)) &&
            (events & SCTP_EVENT_READ)) {
         recv_handler((ogs_sock_t *)socket);
     }

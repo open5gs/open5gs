@@ -79,7 +79,7 @@ void ogs_random(void *buf, size_t buflen)
             fd = -1; /* force open() again */
         }
         else {
-			buf = (unsigned char *)buf + rc;
+            buf = (unsigned char *)buf + rc;
             buflen -= rc;
         }
     } while (buflen > 0);
@@ -123,7 +123,7 @@ void *(*volatile evutil_memset_volatile_)(void *, int, size_t) = memset;
 
 static void evutil_memclear_(void *mem, size_t len)
 {
-	evutil_memset_volatile_(mem, 0, len);
+    evutil_memset_volatile_(mem, 0, len);
 }
 
 #include "arc4random.c"

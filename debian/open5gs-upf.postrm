@@ -24,7 +24,7 @@ case "$1" in
     if grep "ogstun" /proc/net/dev > /dev/null; then
         ip tuntap del name ogstun mode tun
     fi
-	rm -f /etc/sysctl.d/30-open5gs.conf
+    rm -f /etc/sysctl.d/30-open5gs.conf
     ;;
 
     remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)

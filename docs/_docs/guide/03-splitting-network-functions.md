@@ -56,8 +56,8 @@ Modify [install/etc/open5gs/mme.yaml](https://github.com/{{ site.github_username
 
 ```diff
 $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
---- mme.yaml.old	2020-08-22 11:36:40.512418765 -0400
-+++ mme.yaml	2020-08-22 11:36:27.081466682 -0400
+--- mme.yaml.old    2020-08-22 11:36:40.512418765 -0400
++++ mme.yaml    2020-08-22 11:36:27.081466682 -0400
 @@ -204,20 +204,20 @@
  mme:
      freeDiameter: /home/acetcom/Documents/git/open5gs/install/etc/freeDiameter/mme.conf
@@ -113,8 +113,8 @@ $ diff -u /etc/open5gs/sgwc.yaml.old /etc/open5gs/sgwc.yaml
 Modify [install/etc/open5gs/smf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/smf.yaml.in) to set the PFCP IP address.
 ```diff
 $ diff -u /etc/open5gs/smf.yaml.old /etc/open5gs/smf.yaml
---- smf.yaml.old	2020-08-22 11:37:39.990816411 -0400
-+++ smf.yaml	2020-08-22 11:38:18.647999952 -0400
+--- smf.yaml.old    2020-08-22 11:37:39.990816411 -0400
++++ smf.yaml    2020-08-22 11:38:18.647999952 -0400
 @@ -187,8 +187,7 @@
        - addr: 127.0.0.4
        - addr: ::1
@@ -141,8 +141,8 @@ Modify [install/etc/open5gs/amf.yaml](https://github.com/{{ site.github_username
 
 ```diff
 diff -u /etc/open5gs/amf.yaml.old /etc/open5gs/amf.yaml
---- amf.yaml.old	2020-06-21 23:34:14.643114779 -0400
-+++ amf.yaml	2020-06-21 23:34:28.718482095 -0400
+--- amf.yaml.old    2020-06-21 23:34:14.643114779 -0400
++++ amf.yaml    2020-06-21 23:34:28.718482095 -0400
 @@ -67,25 +67,25 @@
        - addr: 127.0.0.5
          port: 7777
@@ -183,8 +183,8 @@ diff -u /etc/open5gs/amf.yaml.old /etc/open5gs/amf.yaml
 Modify [install/etc/open5gs/sgwu.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/sgwu.yaml.in) to set the GTP-U and PFCP IP address.
 ```diff
 $ diff -u /etc/open5gs/sgwu.yaml.old /etc/open5gs/sgwu.yaml
---- sgwu.yaml.old	2020-08-22 11:41:09.214670723 -0400
-+++ sgwu.yaml	2020-08-22 11:41:27.433937124 -0400
+--- sgwu.yaml.old    2020-08-22 11:41:09.214670723 -0400
++++ sgwu.yaml    2020-08-22 11:41:27.433937124 -0400
 @@ -51,9 +51,9 @@
  #
  sgwu:
@@ -202,8 +202,8 @@ $ diff -u /etc/open5gs/sgwu.yaml.old /etc/open5gs/sgwu.yaml
 Modify [install/etc/open5gs/upf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/upf.yaml.in) to set the GTP-U and PFCP IP address.
 ```diff
 $ diff -u /etc/open5gs/upf.yaml.old /etc/open5gs/upf.yaml
---- upf.yaml.old	2020-08-22 11:42:57.781750067 -0400
-+++ upf.yaml	2020-08-22 11:43:13.268901616 -0400
+--- upf.yaml.old    2020-08-22 11:42:57.781750067 -0400
++++ upf.yaml    2020-08-22 11:43:13.268901616 -0400
 @@ -59,11 +59,9 @@
  #
  upf:

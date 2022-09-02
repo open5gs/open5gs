@@ -174,31 +174,31 @@ static int diam_config_apply(ogs_diam_config_t *fd_config)
         CHECK_FCT_DO( fd_ext_add( fname, cfname ), return OGS_ERROR );
     }
 
-	return OGS_OK;
+    return OGS_OK;
 }
 
 int ogs_diam_config_init(ogs_diam_config_t *fd_config)
 {
-	char * buf = NULL, *b;
-	size_t len = 0;
-	
-	CHECK_FCT( diam_config_apply(fd_config) );
-	
-	/* The following module use data from the configuration */
-	CHECK_FCT( fd_rtdisp_init() );
+    char * buf = NULL, *b;
+    size_t len = 0;
+
+    CHECK_FCT( diam_config_apply(fd_config) );
+
+    /* The following module use data from the configuration */
+    CHECK_FCT( fd_rtdisp_init() );
 
     /* Now, load all dynamic extensions */
     CHECK_FCT( fd_ext_load()  );
 
-	/* Display configuration */
-	b = fd_conf_dump(&buf, &len, NULL);
+    /* Display configuration */
+    b = fd_conf_dump(&buf, &len, NULL);
     LOG_SPLIT(FD_LOG_NOTICE, NULL, 
             b ?: (char*)"<Error during configuration dump...>", NULL);
-	free(buf);	
-	
-	/* Since some extensions might have modified the definitions from the dict_base_protocol, we only load the objects now */
-	CHECK_FCT( fd_msg_init()    );
-	
+    free(buf);
+
+    /* Since some extensions might have modified the definitions from the dict_base_protocol, we only load the objects now */
+    CHECK_FCT( fd_msg_init()    );
+
     return OGS_OK;
 }
 

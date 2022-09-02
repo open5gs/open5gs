@@ -43,7 +43,7 @@ int pcrf_initialize(void)
 
     initialized = 1;
 
-	return OGS_OK;
+    return OGS_OK;
 }
 
 void pcrf_terminate(void)
@@ -54,6 +54,6 @@ void pcrf_terminate(void)
 
     ogs_dbi_final();
     pcrf_context_final();
-	
-	return;
+
+    return;
 }

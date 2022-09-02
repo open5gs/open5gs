@@ -369,7 +369,7 @@ int ogs_signal_thread(int(*signal_handler)(int signum))
             return OGS_OK;
         }
 #elif HAVE_SIGSUSPEND
-	sigsuspend(&sig_mask);
+    sigsuspend(&sig_mask);
 #else
 #error No sigwait() and no sigsuspend()
 #endif

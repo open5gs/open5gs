@@ -19,8 +19,8 @@
 
 #include "ogs-diameter-s6a.h"
 
-#define CHECK_dict_search( _type, _criteria, _what, _result )	\
-	CHECK_FCT(  fd_dict_search( fd_g_config->cnf_dict, (_type), (_criteria), (_what), (_result), ENOENT) );
+#define CHECK_dict_search( _type, _criteria, _what, _result )    \
+    CHECK_FCT(  fd_dict_search( fd_g_config->cnf_dict, (_type), (_criteria), (_what), (_result), ENOENT) );
 
 struct dict_object *ogs_diam_s6a_application = NULL;
 
@@ -166,5 +166,5 @@ int ogs_diam_s6a_init(void)
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "MSISDN", &ogs_diam_s6a_msisdn);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "A-MSISDN", &ogs_diam_s6a_a_msisdn);
 
-	return 0;
+    return 0;
 }

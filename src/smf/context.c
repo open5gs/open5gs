@@ -2648,22 +2648,22 @@ static const uint8_t *ipcp_contains_option(
     const ogs_pco_ipcp_t *ipcp, size_t ipcp_len,
     enum ogs_pco_ipcp_options opt, size_t opt_minlen)
 {
-	const uint8_t *cur_opt = (const uint8_t *)ipcp->options;
+    const uint8_t *cur_opt = (const uint8_t *)ipcp->options;
 
-	/* iterate over Options and check if protocol contained */
-	while (cur_opt + sizeof(struct ogs_pco_ipcp_options_s) <=
+    /* iterate over Options and check if protocol contained */
+    while (cur_opt + sizeof(struct ogs_pco_ipcp_options_s) <=
             (uint8_t*)ipcp + ipcp_len) {
-		const struct ogs_pco_ipcp_options_s *cur_opt_hdr =
+        const struct ogs_pco_ipcp_options_s *cur_opt_hdr =
             (const struct ogs_pco_ipcp_options_s *)cur_opt;
-		/* length value includes 2 bytes type/length */
-		if (cur_opt_hdr->len < 2)
-			return NULL;
-		if (cur_opt_hdr->type == opt &&
-		    cur_opt_hdr->len >= 2 + opt_minlen)
-			return cur_opt;
-		cur_opt += cur_opt_hdr->len;
-	}
-	return NULL;
+        /* length value includes 2 bytes type/length */
+        if (cur_opt_hdr->len < 2)
+            return NULL;
+        if (cur_opt_hdr->type == opt &&
+            cur_opt_hdr->len >= 2 + opt_minlen)
+            return cur_opt;
+        cur_opt += cur_opt_hdr->len;
+    }
+    return NULL;
 }
 
 #include "../version.h"

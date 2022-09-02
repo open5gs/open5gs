@@ -203,7 +203,7 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
         if (nas_5gs_security_decode(ran_ue->amf_ue,
                 security_header_type, nasbuf) != OGS_OK) {
             ogs_error("nas_eps_security_decode failed()");
-	        return OGS_ERROR;
+            return OGS_ERROR;
         }
     }
 

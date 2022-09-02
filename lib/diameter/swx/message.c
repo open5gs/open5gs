@@ -19,8 +19,8 @@
 
 #include "ogs-diameter-swx.h"
 
-#define CHECK_dict_search( _type, _criteria, _what, _result )	\
-	CHECK_FCT(  fd_dict_search( fd_g_config->cnf_dict, (_type), (_criteria), (_what), (_result), ENOENT) );
+#define CHECK_dict_search( _type, _criteria, _what, _result )    \
+    CHECK_FCT(  fd_dict_search( fd_g_config->cnf_dict, (_type), (_criteria), (_what), (_result), ENOENT) );
 
 struct dict_object *ogs_diam_swx_application = NULL;
 

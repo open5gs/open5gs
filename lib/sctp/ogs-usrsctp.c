@@ -321,14 +321,14 @@ int ogs_sctp_sendmsg(ogs_sock_t *sock, const void *msg, size_t len,
 int ogs_sctp_recvmsg(ogs_sock_t *sock, void *msg, size_t len,
         ogs_sockaddr_t *from, ogs_sctp_info_t *sinfo, int *msg_flags)
 {
-	struct socket *socket = (struct socket *)sock;
+    struct socket *socket = (struct socket *)sock;
     ogs_sockaddr_t addr;
-	ssize_t n = 0;
-	int flags = 0;
+    ssize_t n = 0;
+    int flags = 0;
     socklen_t addrlen = sizeof(struct sockaddr_storage);
-	socklen_t infolen;
-	struct sctp_rcvinfo rcv_info;
-	unsigned int infotype = 0;
+    socklen_t infolen;
+    struct sctp_rcvinfo rcv_info;
+    unsigned int infotype = 0;
 
     ogs_assert(socket);
 

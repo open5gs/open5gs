@@ -52,8 +52,8 @@ const ogs_pollset_actions_t ogs_kqueue_actions = {
 struct kqueue_context_s {
     int kqueue;
 
-	struct kevent *change_list;
-	struct kevent *event_list;
+    struct kevent *change_list;
+    struct kevent *event_list;
     int nchanges, nevents;
 };
 
@@ -66,12 +66,12 @@ static void kqueue_init(ogs_pollset_t *pollset)
     ogs_assert(context);
     pollset->context = context;
 
-	context->change_list = ogs_calloc(
+    context->change_list = ogs_calloc(
         pollset->capacity, sizeof(struct kevent));
     ogs_assert(context->change_list);
-	context->event_list = ogs_calloc(
+    context->event_list = ogs_calloc(
         pollset->capacity, sizeof(struct kevent));
-	ogs_assert(context->change_list);
+    ogs_assert(context->change_list);
     context->nchanges = 0;
     context->nevents = pollset->capacity;
 
@@ -89,8 +89,8 @@ static void kqueue_cleanup(ogs_pollset_t *pollset)
     context = pollset->context;
     ogs_assert(context);
 
-	ogs_free(context->change_list);
-	ogs_free(context->event_list);
+    ogs_free(context->change_list);
+    ogs_free(context->event_list);
 
     close(context->kqueue);
 
@@ -215,75 +215,75 @@ static int kqueue_process(ogs_pollset_t *pollset, ogs_time_t timeout)
         return OGS_TIMEUP;
     }
 
-	for (i = 0; i < n; i++) {
+    for (i = 0; i < n; i++) {
         ogs_poll_t *poll = NULL;
         short when = 0;
 
         if (context->event_list[i].flags & EV_ERROR) {
-			switch (context->event_list[i].data) {
+            switch (context->event_list[i].data) {
 
-			/* Can occur on delete if we are not currently
-			 * watching any events on this fd.  That can
-			 * happen when the fd was closed and another
-			 * file was opened with that fd. */
-			case ENOENT:
-			/* Can occur for reasons not fully understood
-			 * on FreeBSD. */
-			case EINVAL:
-				continue;
+            /* Can occur on delete if we are not currently
+             * watching any events on this fd.  That can
+             * happen when the fd was closed and another
+             * file was opened with that fd. */
+            case ENOENT:
+            /* Can occur for reasons not fully understood
+             * on FreeBSD. */
+            case EINVAL:
+                continue;
 #if defined(__FreeBSD__)
-			/*
-			 * This currently occurs if an FD is closed
-			 * before the EV_DELETE makes it out via kevent().
-			 * The FreeBSD capabilities code sees the blank
-			 * capability set and rejects the request to
-			 * modify an event.
-			 *
-			 * To be strictly correct - when an FD is closed,
-			 * all the registered events are also removed.
-			 * Queuing EV_DELETE to a closed FD is wrong.
-			 * The event(s) should just be deleted from
-			 * the pending changelist.
-			 */
-			case ENOTCAPABLE:
-				continue;
+            /*
+             * This currently occurs if an FD is closed
+             * before the EV_DELETE makes it out via kevent().
+             * The FreeBSD capabilities code sees the blank
+             * capability set and rejects the request to
+             * modify an event.
+             *
+             * To be strictly correct - when an FD is closed,
+             * all the registered events are also removed.
+             * Queuing EV_DELETE to a closed FD is wrong.
+             * The event(s) should just be deleted from
+             * the pending changelist.
+             */
+            case ENOTCAPABLE:
+                continue;
 #endif
 
-			/* Can occur on a delete if the fd is closed. */
-			case EBADF:
-				/* XXXX On NetBSD, we can also get EBADF if we
-				 * try to add the write side of a pipe, but
-				 * the read side has already been closed.
-				 * Other BSDs call this situation 'EPIPE'. It
-				 * would be good if we had a way to report
-				 * this situation. */
-				continue;
-			/* These two can occur on an add if the fd was one side
-			 * of a pipe, and the other side was closed. */
-			case EPERM:
-			case EPIPE:
-				/* Report read events, if we're listening for
-				 * them, so that the user can learn about any
-				 * add errors.  (If the operation was a
-				 * delete, then udata should be cleared.) */
-				if (context->event_list[i].udata) {
-					/* The operation was an add:
-					 * report the error as a read. */
-					when |= OGS_POLLIN;
-					break;
-				} else {
-					/* The operation was a del:
-					 * report nothing. */
-					continue;
-				}
+            /* Can occur on a delete if the fd is closed. */
+            case EBADF:
+                /* XXXX On NetBSD, we can also get EBADF if we
+                 * try to add the write side of a pipe, but
+                 * the read side has already been closed.
+                 * Other BSDs call this situation 'EPIPE'. It
+                 * would be good if we had a way to report
+                 * this situation. */
+                continue;
+            /* These two can occur on an add if the fd was one side
+             * of a pipe, and the other side was closed. */
+            case EPERM:
+            case EPIPE:
+                /* Report read events, if we're listening for
+                 * them, so that the user can learn about any
+                 * add errors.  (If the operation was a
+                 * delete, then udata should be cleared.) */
+                if (context->event_list[i].udata) {
+                    /* The operation was an add:
+                     * report the error as a read. */
+                    when |= OGS_POLLIN;
+                    break;
+                } else {
+                    /* The operation was a del:
+                     * report nothing. */
+                    continue;
+                }
 
-			/* Other errors shouldn't occur. */
-			default:
+            /* Other errors shouldn't occur. */
+            default:
                 ogs_error("kevent() error : flags = 0x%x, errno = %d",
                         context->event_list[i].flags,
                         (int)context->event_list[i].data);
-				return OGS_ERROR;
-			}
+                return OGS_ERROR;
+            }
         } else if (context->event_list[i].filter == EVFILT_READ) {
             when |= OGS_POLLIN;
         } else if (context->event_list[i].filter == EVFILT_WRITE) {
@@ -316,7 +316,7 @@ static void kqueue_notify_init(ogs_pollset_t *pollset)
     int rc;
     struct kqueue_context_s *context = NULL;
     struct kevent kev;
-	struct timespec timeout = { 0, 0 };
+    struct timespec timeout = { 0, 0 };
     ogs_assert(pollset);
 
     ogs_assert(pollset);
@@ -325,8 +325,8 @@ static void kqueue_notify_init(ogs_pollset_t *pollset)
 
     memset(&kev, 0, sizeof kev);
     kev.ident = NOTIFY_IDENT;
-	kev.filter = EVFILT_USER;
-	kev.flags = EV_ADD | EV_CLEAR;
+    kev.filter = EVFILT_USER;
+    kev.flags = EV_ADD | EV_CLEAR;
 
     rc = kevent(context->kqueue, &kev, 1, NULL, 0, &timeout);
     ogs_assert(rc != -1);
@@ -337,7 +337,7 @@ static int kqueue_notify_pollset(ogs_pollset_t *pollset)
     int rc;
     struct kqueue_context_s *context = NULL;
     struct kevent kev;
-	struct timespec timeout = { 0, 0 };
+    struct timespec timeout = { 0, 0 };
     ogs_assert(pollset);
 
     ogs_assert(pollset);
@@ -346,8 +346,8 @@ static int kqueue_notify_pollset(ogs_pollset_t *pollset)
 
     memset(&kev, 0, sizeof kev);
     kev.ident = NOTIFY_IDENT;
-	kev.filter = EVFILT_USER;
-	kev.fflags = NOTE_TRIGGER;
+    kev.filter = EVFILT_USER;
+    kev.fflags = NOTE_TRIGGER;
 
     rc = kevent(context->kqueue, &kev, 1, NULL, 0, &timeout);
     if (rc == -1) {

@@ -57,10 +57,10 @@ static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
 static int test_swx_fb_cb(struct msg **msg, struct avp *avp,
         struct session *sess, void *opaque, enum disp_action *act)
 {
-	/* This CB should never be called */
-	ogs_warn("Unexpected message received!");
-	
-	return ENOTSUP;
+    /* This CB should never be called */
+    ogs_warn("Unexpected message received!");
+
+    return ENOTSUP;
 }
 
 void test_swx_send(test_sess_t *sess, bool handover_ind,
@@ -629,38 +629,38 @@ static void test_swx_saa_cb(void *data, struct msg **msg)
 int test_swx_init(void)
 {
     int ret;
-	struct disp_when data;
+    struct disp_when data;
 
-	/* Install objects definitions for this application */
-	ret = ogs_diam_swx_init();
+    /* Install objects definitions for this application */
+    ret = ogs_diam_swx_init();
     ogs_assert(ret == 0);
 
     /* Create handler for sessions */
-	ret = fd_sess_handler_create(&test_swx_reg, &state_cleanup, NULL, NULL);
+    ret = fd_sess_handler_create(&test_swx_reg, &state_cleanup, NULL, NULL);
     ogs_assert(ret == 0);
 
-	/* Fallback CB if command != unexpected message received */
-	memset(&data, 0, sizeof(data));
-	data.app = ogs_diam_swx_application;
+    /* Fallback CB if command != unexpected message received */
+    memset(&data, 0, sizeof(data));
+    data.app = ogs_diam_swx_application;
 
-	ret = fd_disp_register(test_swx_fb_cb, DISP_HOW_APPID, &data, NULL,
+    ret = fd_disp_register(test_swx_fb_cb, DISP_HOW_APPID, &data, NULL,
                 &hdl_swx_fb);
     ogs_assert(ret == 0);
-	
-	/* Advertise the support for the application in the peer */
-	ret = fd_disp_app_support(ogs_diam_swx_application, ogs_diam_vendor, 1, 0);
+
+    /* Advertise the support for the application in the peer */
+    ret = fd_disp_app_support(ogs_diam_swx_application, ogs_diam_vendor, 1, 0);
     ogs_assert(ret == 0);
 
-	return 0;
+    return 0;
 }
 
 void test_swx_final(void)
 {
     int ret;
 
-	ret = fd_sess_handler_destroy(&test_swx_reg, NULL);
+    ret = fd_sess_handler_destroy(&test_swx_reg, NULL);
     ogs_assert(ret == OGS_OK);
 
-	if (hdl_swx_fb)
-		(void) fd_disp_unregister(&hdl_swx_fb, NULL);
+    if (hdl_swx_fb)
+        (void) fd_disp_unregister(&hdl_swx_fb, NULL);
 }

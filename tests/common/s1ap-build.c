@@ -1717,10 +1717,10 @@ ogs_pkbuf_t *test_s1ap_build_enb_status_transfer(test_ue_t *test_ue)
     S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
     S1AP_ENB_StatusTransfer_TransparentContainer_t
         *ENB_StatusTransfer_TransparentContainer = NULL;
-	S1AP_Bearers_SubjectToStatusTransferList_t
+    S1AP_Bearers_SubjectToStatusTransferList_t
         *Bearers_SubjectToStatusTransferList = NULL;
-	S1AP_Bearers_SubjectToStatusTransfer_ItemIEs_t *ie2 = NULL;
-	S1AP_Bearers_SubjectToStatusTransfer_Item_t *item = NULL;
+    S1AP_Bearers_SubjectToStatusTransfer_ItemIEs_t *ie2 = NULL;
+    S1AP_Bearers_SubjectToStatusTransfer_Item_t *item = NULL;
 
     ogs_assert(test_ue);
 

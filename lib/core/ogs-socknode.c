@@ -112,16 +112,16 @@ int ogs_socknode_probe(ogs_list_t *list, ogs_list_t *list6,
 {
 #if defined(HAVE_GETIFADDRS)
     ogs_socknode_t *node = NULL;
-	struct ifaddrs *iflist, *cur;
+    struct ifaddrs *iflist, *cur;
     int rc;
 
-	rc = getifaddrs(&iflist);
+    rc = getifaddrs(&iflist);
     if (rc != 0) {
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno, "getifaddrs failed");
         return OGS_ERROR;
     }
 
-	for (cur = iflist; cur != NULL; cur = cur->ifa_next) {
+    for (cur = iflist; cur != NULL; cur = cur->ifa_next) {
         ogs_sockaddr_t *addr = NULL;
 
         if (cur->ifa_flags & IFF_LOOPBACK)
@@ -130,8 +130,8 @@ int ogs_socknode_probe(ogs_list_t *list, ogs_list_t *list6,
         if (cur->ifa_flags & IFF_POINTOPOINT)
             continue;
 
-		if (cur->ifa_addr == NULL) /* may happen with ppp interfaces */
-			continue;
+        if (cur->ifa_addr == NULL) /* may happen with ppp interfaces */
+            continue;
 
         if (dev && strcmp(dev, cur->ifa_name) != 0)
             continue;
@@ -185,9 +185,9 @@ int ogs_socknode_probe(ogs_list_t *list, ogs_list_t *list6,
 
         if (option)
             node->option = ogs_memdup(option, sizeof *option);
-	}
+    }
 
-	freeifaddrs(iflist);
+    freeifaddrs(iflist);
     return OGS_OK;
 #elif defined(_WIN32)
     return OGS_OK;
@@ -202,7 +202,7 @@ int ogs_socknode_probe(ogs_list_t *list, ogs_list_t *list6,
 int ogs_socknode_fill_scope_id_in_local(ogs_sockaddr_t *sa_list)
 {
 #if defined(HAVE_GETIFADDRS)
-	struct ifaddrs *iflist = NULL, *cur;
+    struct ifaddrs *iflist = NULL, *cur;
     int rc;
     ogs_sockaddr_t *addr, *ifaddr;
 

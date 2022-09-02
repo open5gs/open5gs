@@ -41,7 +41,7 @@ int smf_fd_init(void)
     rv = smf_gy_init();
     ogs_assert(rv == OGS_OK);
 
-	rv = ogs_diam_rx_init();
+    rv = ogs_diam_rx_init();
     ogs_assert(rv == 0);
     rv = smf_s6b_init();
     ogs_assert(rv == OGS_OK);
@@ -49,7 +49,7 @@ int smf_fd_init(void)
     rv = ogs_diam_start();
     ogs_assert(rv == 0);
 
-	return OGS_OK;
+    return OGS_OK;
 }
 
 void smf_fd_final(void)

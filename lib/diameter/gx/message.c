@@ -19,8 +19,8 @@
 
 #include "ogs-diameter-gx.h"
 
-#define CHECK_dict_search( _type, _criteria, _what, _result )	\
-	CHECK_FCT(  fd_dict_search( fd_g_config->cnf_dict, (_type), (_criteria), (_what), (_result), ENOENT) );
+#define CHECK_dict_search( _type, _criteria, _what, _result )    \
+    CHECK_FCT(  fd_dict_search( fd_g_config->cnf_dict, (_type), (_criteria), (_what), (_result), ENOENT) );
 
 struct dict_object *ogs_diam_gx_application = NULL;
 
@@ -113,19 +113,19 @@ int ogs_diam_gx_init(void)
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Framed-IPv6-Prefix", &ogs_diam_gx_framed_ipv6_prefix);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "IP-CAN-Type", &ogs_diam_gx_ip_can_type);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "QoS-Information", &ogs_diam_gx_qos_information);
-	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "QoS-Class-Identifier" , &ogs_diam_gx_qos_class_identifier);
-	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Max-Requested-Bandwidth-UL" , &ogs_diam_gx_max_requested_bandwidth_ul);
-	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Max-Requested-Bandwidth-DL" , &ogs_diam_gx_max_requested_bandwidth_dl);
-	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Min-Requested-Bandwidth-UL" , &ogs_diam_gx_min_requested_bandwidth_ul);
-	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Min-Requested-Bandwidth-DL" , &ogs_diam_gx_min_requested_bandwidth_dl);
-	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Guaranteed-Bitrate-UL" , &ogs_diam_gx_guaranteed_bitrate_ul);
-	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Guaranteed-Bitrate-DL" , &ogs_diam_gx_guaranteed_bitrate_dl);
-	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Allocation-Retention-Priority" , &ogs_diam_gx_allocation_retention_priority);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "QoS-Class-Identifier" , &ogs_diam_gx_qos_class_identifier);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Max-Requested-Bandwidth-UL" , &ogs_diam_gx_max_requested_bandwidth_ul);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Max-Requested-Bandwidth-DL" , &ogs_diam_gx_max_requested_bandwidth_dl);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Min-Requested-Bandwidth-UL" , &ogs_diam_gx_min_requested_bandwidth_ul);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Min-Requested-Bandwidth-DL" , &ogs_diam_gx_min_requested_bandwidth_dl);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Guaranteed-Bitrate-UL" , &ogs_diam_gx_guaranteed_bitrate_ul);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Guaranteed-Bitrate-DL" , &ogs_diam_gx_guaranteed_bitrate_dl);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Allocation-Retention-Priority" , &ogs_diam_gx_allocation_retention_priority);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Priority-Level", &ogs_diam_gx_priority_level);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Pre-emption-Capability", &ogs_diam_gx_pre_emption_capability);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Pre-emption-Vulnerability", &ogs_diam_gx_pre_emption_vulnerability);
-	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "APN-Aggregate-Max-Bitrate-UL" , &ogs_diam_gx_apn_aggregate_max_bitrate_ul);
-	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "APN-Aggregate-Max-Bitrate-DL" , &ogs_diam_gx_apn_aggregate_max_bitrate_dl);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "APN-Aggregate-Max-Bitrate-UL" , &ogs_diam_gx_apn_aggregate_max_bitrate_ul);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "APN-Aggregate-Max-Bitrate-DL" , &ogs_diam_gx_apn_aggregate_max_bitrate_dl);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "3GPP-User-Location-Info", &ogs_diam_gx_3gpp_user_location_info);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Called-Station-Id", &ogs_diam_gx_called_station_id);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Default-EPS-Bearer-QoS", &ogs_diam_gx_default_eps_bearer_qos);
@@ -150,8 +150,8 @@ int ogs_diam_gx_init(void)
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Media-Component-Description", &ogs_diam_gx_media_component_description);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Media-Component-Number", &ogs_diam_gx_media_component_number);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Media-Type", &ogs_diam_gx_media_type);
-	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "RR-Bandwidth" , &ogs_diam_gx_rr_bandwidth);
-	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "RS-Bandwidth" , &ogs_diam_gx_rs_bandwidth);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "RR-Bandwidth" , &ogs_diam_gx_rr_bandwidth);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "RS-Bandwidth" , &ogs_diam_gx_rs_bandwidth);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Codec-Data", &ogs_diam_gx_codec_data);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Media-Sub-Component", &ogs_diam_gx_media_sub_component);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Flow-Number", &ogs_diam_gx_flow_number);

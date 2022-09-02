@@ -69,10 +69,10 @@ static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
 static int test_s6b_fb_cb(struct msg **msg, struct avp *avp,
         struct session *sess, void *opaque, enum disp_action *act)
 {
-	/* This CB should never be called */
-	ogs_warn("Unexpected message received!");
-	
-	return ENOTSUP;
+    /* This CB should never be called */
+    ogs_warn("Unexpected message received!");
+
+    return ENOTSUP;
 }
 
 static int test_s6b_aar_cb( struct msg **msg, struct avp *avp,
@@ -81,7 +81,7 @@ static int test_s6b_aar_cb( struct msg **msg, struct avp *avp,
     int rv;
     int ret = 0, i;
 
-	struct msg *ans, *qry;
+    struct msg *ans, *qry;
     struct avp *avpch1, *avpch2;
     struct avp_hdr *hdr;
     union avp_value val;
@@ -91,9 +91,9 @@ static int test_s6b_aar_cb( struct msg **msg, struct avp *avp,
 
     ogs_assert(msg);
 
-	/* Create answer header */
-	qry = *msg;
-	ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
+    /* Create answer header */
+    qry = *msg;
+    ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
     ogs_assert(ret == 0);
     ans = *msg;
 
@@ -151,8 +151,8 @@ static int test_s6b_aar_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
 
-	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
-	ret = fd_msg_rescode_set(ans, (char *)"DIAMETER_SUCCESS", NULL, NULL, 1);
+    /* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
+    ret = fd_msg_rescode_set(ans, (char *)"DIAMETER_SUCCESS", NULL, NULL, 1);
     ogs_assert(ret == 0);
 
     /* Store this value in the session */
@@ -160,19 +160,19 @@ static int test_s6b_aar_cb( struct msg **msg, struct avp *avp,
     ogs_assert(ret == 0);
     ogs_assert(sess_data == NULL);
 
-	/* Send the answer */
-	ret = fd_msg_send(msg, NULL, NULL);
+    /* Send the answer */
+    ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
-	/* Add this value to the stats */
-	ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
-	ogs_diam_logger_self()->stats.nb_echoed++;
-	ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) ==0);
+    /* Add this value to the stats */
+    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_diam_logger_self()->stats.nb_echoed++;
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) ==0);
 
     return 0;
 
 out:
-	/* Set the Result-Code */
+    /* Set the Result-Code */
     if (result_code == OGS_DIAM_AVP_UNSUPPORTED) {
         ret = fd_msg_rescode_set(ans,
                     (char *)"DIAMETER_AVP_UNSUPPORTED", NULL, NULL, 1);
@@ -196,7 +196,7 @@ out:
         ogs_assert(sess_data == NULL);
     }
 
-	ret = fd_msg_send(msg, NULL, NULL);
+    ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
     return 0;
@@ -208,7 +208,7 @@ static int test_s6b_str_cb( struct msg **msg, struct avp *avp,
     int rv;
     int ret = 0, i;
 
-	struct msg *ans, *qry;
+    struct msg *ans, *qry;
     struct avp *avpch1, *avpch2;
     struct avp_hdr *hdr;
     union avp_value val;
@@ -218,9 +218,9 @@ static int test_s6b_str_cb( struct msg **msg, struct avp *avp,
 
     ogs_assert(msg);
 
-	/* Create answer header */
-	qry = *msg;
-	ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
+    /* Create answer header */
+    qry = *msg;
+    ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
     ogs_assert(ret == 0);
     ans = *msg;
 
@@ -251,8 +251,8 @@ static int test_s6b_str_cb( struct msg **msg, struct avp *avp,
         goto out;
     }
 
-	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
-	ret = fd_msg_rescode_set(ans, (char *)"DIAMETER_SUCCESS", NULL, NULL, 1);
+    /* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
+    ret = fd_msg_rescode_set(ans, (char *)"DIAMETER_SUCCESS", NULL, NULL, 1);
     ogs_assert(ret == 0);
 
     /* Store this value in the session */
@@ -260,19 +260,19 @@ static int test_s6b_str_cb( struct msg **msg, struct avp *avp,
     ogs_assert(ret == 0);
     ogs_assert(sess_data == NULL);
 
-	/* Send the answer */
-	ret = fd_msg_send(msg, NULL, NULL);
+    /* Send the answer */
+    ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
-	/* Add this value to the stats */
-	ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
-	ogs_diam_logger_self()->stats.nb_echoed++;
-	ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) ==0);
+    /* Add this value to the stats */
+    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_diam_logger_self()->stats.nb_echoed++;
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) ==0);
 
     return 0;
 
 out:
-	/* Set the Result-Code */
+    /* Set the Result-Code */
     if (result_code == OGS_DIAM_AVP_UNSUPPORTED) {
         ret = fd_msg_rescode_set(ans,
                     (char *)"DIAMETER_AVP_UNSUPPORTED", NULL, NULL, 1);
@@ -296,7 +296,7 @@ out:
         ogs_assert(sess_data == NULL);
     }
 
-	ret = fd_msg_send(msg, NULL, NULL);
+    ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
     return 0;
@@ -305,57 +305,57 @@ out:
 int test_s6b_init(void)
 {
     int ret;
-	struct disp_when data;
+    struct disp_when data;
 
     ogs_thread_mutex_init(&sess_state_mutex);
     ogs_pool_init(&sess_state_pool, ogs_app()->pool.sess);
 
-	/* Install objects definitions for this application */
-	ret = ogs_diam_s6b_init();
+    /* Install objects definitions for this application */
+    ret = ogs_diam_s6b_init();
     ogs_assert(ret == 0);
 
     /* Create handler for sessions */
-	ret = fd_sess_handler_create(&test_s6b_reg, &state_cleanup, NULL, NULL);
+    ret = fd_sess_handler_create(&test_s6b_reg, &state_cleanup, NULL, NULL);
     ogs_assert(ret == 0);
 
-	/* Fallback CB if command != unexpected message received */
-	memset(&data, 0, sizeof(data));
-	data.app = ogs_diam_s6b_application;
+    /* Fallback CB if command != unexpected message received */
+    memset(&data, 0, sizeof(data));
+    data.app = ogs_diam_s6b_application;
 
-	ret = fd_disp_register(test_s6b_fb_cb, DISP_HOW_APPID, &data, NULL,
+    ret = fd_disp_register(test_s6b_fb_cb, DISP_HOW_APPID, &data, NULL,
                 &hdl_s6b_fb);
     ogs_assert(ret == 0);
 
-	data.command = ogs_diam_rx_cmd_aar;
-	ret = fd_disp_register(test_s6b_aar_cb, DISP_HOW_CC, &data, NULL,
+    data.command = ogs_diam_rx_cmd_aar;
+    ret = fd_disp_register(test_s6b_aar_cb, DISP_HOW_CC, &data, NULL,
                 &hdl_s6b_aar);
     ogs_assert(ret == 0);
 
-	data.command = ogs_diam_rx_cmd_str;
-	ret = fd_disp_register(test_s6b_str_cb, DISP_HOW_CC, &data, NULL,
+    data.command = ogs_diam_rx_cmd_str;
+    ret = fd_disp_register(test_s6b_str_cb, DISP_HOW_CC, &data, NULL,
                 &hdl_s6b_str);
     ogs_assert(ret == 0);
-	
-	/* Advertise the support for the application in the peer */
-	ret = fd_disp_app_support(ogs_diam_s6b_application, ogs_diam_vendor, 1, 0);
+
+    /* Advertise the support for the application in the peer */
+    ret = fd_disp_app_support(ogs_diam_s6b_application, ogs_diam_vendor, 1, 0);
     ogs_assert(ret == 0);
 
-	return 0;
+    return 0;
 }
 
 void test_s6b_final(void)
 {
     int ret;
 
-	ret = fd_sess_handler_destroy(&test_s6b_reg, NULL);
+    ret = fd_sess_handler_destroy(&test_s6b_reg, NULL);
     ogs_assert(ret == OGS_OK);
 
-	if (hdl_s6b_fb)
-		(void) fd_disp_unregister(&hdl_s6b_fb, NULL);
-	if (hdl_s6b_aar)
-		(void) fd_disp_unregister(&hdl_s6b_aar, NULL);
-	if (hdl_s6b_str)
-		(void) fd_disp_unregister(&hdl_s6b_str, NULL);
+    if (hdl_s6b_fb)
+        (void) fd_disp_unregister(&hdl_s6b_fb, NULL);
+    if (hdl_s6b_aar)
+        (void) fd_disp_unregister(&hdl_s6b_aar, NULL);
+    if (hdl_s6b_str)
+        (void) fd_disp_unregister(&hdl_s6b_str, NULL);
 
     ogs_pool_final(&sess_state_pool);
     ogs_thread_mutex_destroy(&sess_state_mutex);

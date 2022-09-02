@@ -19,8 +19,8 @@
 
 #include "ogs-diameter-rx.h"
 
-#define CHECK_dict_search( _type, _criteria, _what, _result )	\
-	CHECK_FCT(  fd_dict_search( fd_g_config->cnf_dict, (_type), (_criteria), (_what), (_result), ENOENT) );
+#define CHECK_dict_search( _type, _criteria, _what, _result )    \
+    CHECK_FCT(  fd_dict_search( fd_g_config->cnf_dict, (_type), (_criteria), (_what), (_result), ENOENT) );
 
 struct dict_object *ogs_diam_rx_application = NULL;
 
@@ -78,12 +78,12 @@ int ogs_diam_rx_init(void)
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Media-Component-Description", &ogs_diam_rx_media_component_description);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Media-Component-Number", &ogs_diam_rx_media_component_number);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Media-Type", &ogs_diam_rx_media_type);
-	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Max-Requested-Bandwidth-UL" , &ogs_diam_rx_max_requested_bandwidth_ul);
-	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Max-Requested-Bandwidth-DL" , &ogs_diam_rx_max_requested_bandwidth_dl);
-	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Min-Requested-Bandwidth-UL" , &ogs_diam_rx_min_requested_bandwidth_ul);
-	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Min-Requested-Bandwidth-DL" , &ogs_diam_rx_min_requested_bandwidth_dl);
-	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "RR-Bandwidth" , &ogs_diam_rx_rr_bandwidth);
-	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "RS-Bandwidth" , &ogs_diam_rx_rs_bandwidth);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Max-Requested-Bandwidth-UL" , &ogs_diam_rx_max_requested_bandwidth_ul);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Max-Requested-Bandwidth-DL" , &ogs_diam_rx_max_requested_bandwidth_dl);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Min-Requested-Bandwidth-UL" , &ogs_diam_rx_min_requested_bandwidth_ul);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Min-Requested-Bandwidth-DL" , &ogs_diam_rx_min_requested_bandwidth_dl);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "RR-Bandwidth" , &ogs_diam_rx_rr_bandwidth);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "RS-Bandwidth" , &ogs_diam_rx_rs_bandwidth);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Flow-Status", &ogs_diam_rx_flow_status);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Codec-Data", &ogs_diam_rx_codec_data);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Media-Sub-Component", &ogs_diam_rx_media_sub_component);

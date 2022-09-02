@@ -78,12 +78,12 @@ void ngap_recv_upcall(short when, ogs_socket_t fd, void *data)
 #if HAVE_USRSCTP
 static void usrsctp_recv_handler(struct socket *socket, void *data, int flags)
 {
-	int events;
+    int events;
 
-	while ((events = usrsctp_get_events(socket)) &&
+    while ((events = usrsctp_get_events(socket)) &&
            (events & SCTP_EVENT_READ)) {
         ngap_recv_handler((ogs_sock_t *)socket);
-	}
+    }
 }
 #else
 static void lksctp_accept_handler(short when, ogs_socket_t fd, void *data)

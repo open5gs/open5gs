@@ -59,11 +59,11 @@ ogs_pkbuf_t *test_s2b_build_create_session_request(
     memset(&gtp_message, 0, sizeof(ogs_gtp2_message_t));
 
     if (handover_ind == true) {
-	    memset(&indication, 0, sizeof(ogs_gtp2_indication_t));
-	    indication.handover_indication = 1;
-	    req->indication_flags.presence = 1;
-	    req->indication_flags.data = &indication;
-	    req->indication_flags.len = sizeof(ogs_gtp2_indication_t);
+        memset(&indication, 0, sizeof(ogs_gtp2_indication_t));
+        indication.handover_indication = 1;
+        req->indication_flags.presence = 1;
+        req->indication_flags.data = &indication;
+        req->indication_flags.len = sizeof(ogs_gtp2_indication_t);
     }
 
     ogs_assert(test_ue->imsi_len);

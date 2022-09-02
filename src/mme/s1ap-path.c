@@ -211,7 +211,7 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
         if (nas_eps_security_decode(enb_ue->mme_ue,
                 security_header_type, nasbuf) != OGS_OK) {
             ogs_error("nas_eps_security_decode failed()");
-	        return OGS_ERROR;
+            return OGS_ERROR;
         }
     }
 

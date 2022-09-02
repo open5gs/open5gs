@@ -19,8 +19,8 @@
 
 #include "ogs-diameter-common.h"
 
-#define CHECK_dict_search( _type, _criteria, _what, _result )	\
-	CHECK_FCT(  fd_dict_search( fd_g_config->cnf_dict, (_type), (_criteria), (_what), (_result), ENOENT) );
+#define CHECK_dict_search( _type, _criteria, _what, _result )    \
+    CHECK_FCT(  fd_dict_search( fd_g_config->cnf_dict, (_type), (_criteria), (_what), (_result), ENOENT) );
 
 struct dict_object *ogs_diam_session_id = NULL;
 struct dict_object *ogs_diam_termination_cause = NULL;
@@ -107,17 +107,17 @@ int ogs_diam_message_session_id_set(
     struct avp *avp;
     union avp_value val;
 
-	/* Create an AVP to hold it */
-	CHECK_FCT( fd_msg_avp_new( ogs_diam_session_id, 0, &avp ) );
+    /* Create an AVP to hold it */
+    CHECK_FCT( fd_msg_avp_new( ogs_diam_session_id, 0, &avp ) );
 
-	/* Set its value */
-	memset(&val, 0, sizeof(val));
-	val.os.data = sid;
-	val.os.len  = sidlen;
-	CHECK_FCT( fd_msg_avp_setvalue( avp, &val ) );
+    /* Set its value */
+    memset(&val, 0, sizeof(val));
+    val.os.data = sid;
+    val.os.len  = sidlen;
+    CHECK_FCT( fd_msg_avp_setvalue( avp, &val ) );
 
-	/* Add it to the message */
-	CHECK_FCT( fd_msg_avp_add( msg, MSG_BRW_FIRST_CHILD, avp ) );
+    /* Add it to the message */
+    CHECK_FCT( fd_msg_avp_add( msg, MSG_BRW_FIRST_CHILD, avp ) );
 
     return 0;
 }

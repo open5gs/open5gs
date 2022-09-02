@@ -33,10 +33,10 @@ static struct disp_hdl *hdl_s6a_ulr = NULL;
 static int hss_ogs_diam_s6a_fb_cb(struct msg **msg, struct avp *avp,
         struct session *session, void *opaque, enum disp_action *act)
 {
-	/* This CB should never be called */
-	ogs_warn("Unexpected message received!");
-	
-	return ENOTSUP;
+    /* This CB should never be called */
+    ogs_warn("Unexpected message received!");
+
+    return ENOTSUP;
 }
 
 /* Callback for incoming Authentication-Information-Request messages */
@@ -75,9 +75,9 @@ static int hss_ogs_diam_s6a_air_cb( struct msg **msg, struct avp *avp,
 
     ogs_debug("Authentication-Information-Request");
 
-	/* Create answer header */
-	qry = *msg;
-	ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
+    /* Create answer header */
+    qry = *msg;
+    ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
     ogs_assert(ret == 0);
     ans = *msg;
 
@@ -211,8 +211,8 @@ static int hss_ogs_diam_s6a_air_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
 
-	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
-	ret = fd_msg_rescode_set(ans, (char*)"DIAMETER_SUCCESS", NULL, NULL, 1);
+    /* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
+    ret = fd_msg_rescode_set(ans, (char*)"DIAMETER_SUCCESS", NULL, NULL, 1);
     ogs_assert(ret == 0);
 
     /* Set the Auth-Session-State AVP */
@@ -229,18 +229,18 @@ static int hss_ogs_diam_s6a_air_cb( struct msg **msg, struct avp *avp,
             ans, OGS_DIAM_S6A_APPLICATION_ID);
     ogs_assert(ret == 0);
 
-	/* Send the answer */
-	ret = fd_msg_send(msg, NULL, NULL);
+    /* Send the answer */
+    ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
     ogs_debug("Authentication-Information-Answer");
 
-	/* Add this value to the stats */
-	ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
-	ogs_diam_logger_self()->stats.nb_echoed++;
-	ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+    /* Add this value to the stats */
+    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_diam_logger_self()->stats.nb_echoed++;
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
 
-	return 0;
+    return 0;
 
 out:
     ret = ogs_diam_message_experimental_rescode_set(ans, result_code);
@@ -260,7 +260,7 @@ out:
             ans, OGS_DIAM_S6A_APPLICATION_ID);
     ogs_assert(ret == 0);
 
-	ret = fd_msg_send(msg, NULL, NULL);
+    ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
     return 0;
@@ -866,45 +866,45 @@ out:
 int hss_s6a_init(void)
 {
     int ret;
-	struct disp_when data;
+    struct disp_when data;
 
-	/* Install objects definitions for this application */
-	ret = ogs_diam_s6a_init();
+    /* Install objects definitions for this application */
+    ret = ogs_diam_s6a_init();
     ogs_assert(ret == 0);
 
-	memset(&data, 0, sizeof(data));
-	data.app = ogs_diam_s6a_application;
-	
-	/* Fallback CB if command != unexpected message received */
-	ret = fd_disp_register(hss_ogs_diam_s6a_fb_cb, DISP_HOW_APPID, &data, NULL,
+    memset(&data, 0, sizeof(data));
+    data.app = ogs_diam_s6a_application;
+
+    /* Fallback CB if command != unexpected message received */
+    ret = fd_disp_register(hss_ogs_diam_s6a_fb_cb, DISP_HOW_APPID, &data, NULL,
                 &hdl_s6a_fb);
     ogs_assert(ret == 0);
-	
-	/* Specific handler for Authentication-Information-Request */
-	data.command = ogs_diam_s6a_cmd_air;
-	ret = fd_disp_register(hss_ogs_diam_s6a_air_cb, DISP_HOW_CC, &data, NULL,
+
+    /* Specific handler for Authentication-Information-Request */
+    data.command = ogs_diam_s6a_cmd_air;
+    ret = fd_disp_register(hss_ogs_diam_s6a_air_cb, DISP_HOW_CC, &data, NULL,
                 &hdl_s6a_air);
     ogs_assert(ret == 0);
 
-	/* Specific handler for Location-Update-Request */
-	data.command = ogs_diam_s6a_cmd_ulr;
-	ret = fd_disp_register(hss_ogs_diam_s6a_ulr_cb, DISP_HOW_CC, &data, NULL,
+    /* Specific handler for Location-Update-Request */
+    data.command = ogs_diam_s6a_cmd_ulr;
+    ret = fd_disp_register(hss_ogs_diam_s6a_ulr_cb, DISP_HOW_CC, &data, NULL,
                 &hdl_s6a_ulr);
     ogs_assert(ret == 0);
 
-	/* Advertise the support for the application in the peer */
-	ret = fd_disp_app_support(ogs_diam_s6a_application, ogs_diam_vendor, 1, 0);
+    /* Advertise the support for the application in the peer */
+    ret = fd_disp_app_support(ogs_diam_s6a_application, ogs_diam_vendor, 1, 0);
     ogs_assert(ret == 0);
 
-	return OGS_OK;
+    return OGS_OK;
 }
 
 void hss_s6a_final(void)
 {
-	if (hdl_s6a_fb)
-		(void) fd_disp_unregister(&hdl_s6a_fb, NULL);
-	if (hdl_s6a_air)
-		(void) fd_disp_unregister(&hdl_s6a_air, NULL);
-	if (hdl_s6a_ulr)
-		(void) fd_disp_unregister(&hdl_s6a_ulr, NULL);
+    if (hdl_s6a_fb)
+        (void) fd_disp_unregister(&hdl_s6a_fb, NULL);
+    if (hdl_s6a_air)
+        (void) fd_disp_unregister(&hdl_s6a_air, NULL);
+    if (hdl_s6a_ulr)
+        (void) fd_disp_unregister(&hdl_s6a_ulr, NULL);
 }

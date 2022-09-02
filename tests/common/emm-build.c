@@ -301,8 +301,8 @@ ogs_pkbuf_t *testemm_build_authentication_response(test_ue_t *test_ue)
     milenage_f2345(test_ue->opc, test_ue->k, test_ue->rand,
             res, ck, ik, ak, NULL);
 
-	for (i = 0; i < 6; i++)
-		sqn[i] = test_ue->autn[i] ^ ak[i];
+    for (i = 0; i < 6; i++)
+        sqn[i] = test_ue->autn[i] ^ ak[i];
 
     ogs_nas_from_plmn_id(&nas_plmn_id, &test_ue->e_tai.plmn_id);
     ogs_auc_kasme(ck, ik, &nas_plmn_id, sqn, ak, test_ue->kasme);

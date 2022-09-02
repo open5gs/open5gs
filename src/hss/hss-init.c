@@ -43,7 +43,7 @@ int hss_initialize(void)
 
     initialized = 1;
 
-	return OGS_OK;
+    return OGS_OK;
 }
 
 void hss_terminate(void)
@@ -54,6 +54,6 @@ void hss_terminate(void)
 
     ogs_dbi_final();
     hss_context_final();
-	
-	return;
+
+    return;
 }

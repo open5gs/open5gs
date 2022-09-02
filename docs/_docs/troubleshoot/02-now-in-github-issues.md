@@ -96,63 +96,63 @@ $ mongo
 > use open5gs
 > db.subscribers.find().pretty()
 {
-	"_id" : ObjectId("60969fe79459f8b40d8d3f68"),
-	"imsi" : "999700000000001",
-	"__v" : 0,
-	"access_restriction_data" : 32,
-	"ambr" : {
-		"uplink" : {
-			"value" : 1,
-			"unit" : 3
-		},
-		"downlink" : {
-			"value" : 1,
-			"unit" : 3
-		}
-	},
-	"network_access_mode" : 2,
-	"security" : {
-		"k" : "465b5ce8b199b49faa5f0a2ee238a6bc",
-		"amf" : "8000",
-		"op" : null,
-		"opc" : "e8ed289deba952e4283b54e88e6183ca",
-		"sqn" : NumberLong(97)
-	},
-	"slice" : [
-		{
-			"sst" : 1,
-			"default_indicator" : true,
-			"_id" : ObjectId("60969fe7de8743b3c7b1a973"),
-			"session" : [
-				{
-					"name" : "internet",
-					"type" : 3,
-					"_id" : ObjectId("60969fe7de8743b3c7b1a974"),
-					"pcc_rule" : [ ],
-					"ambr" : {
-						"uplink" : {
-							"value" : 1,
-							"unit" : 3
-						},
-						"downlink" : {
-							"value" : 1,
-							"unit" : 3
-						}
-					},
-					"qos" : {
-						"index" : 9,
-						"arp" : {
-							"priority_level" : 8,
-							"pre_emption_capability" : 1,
-							"pre_emption_vulnerability" : 1
-						}
-					}
-				}
-			]
-		}
-	],
-	"subscribed_rau_tau_timer" : 12,
-	"subscriber_status" : 0
+    "_id" : ObjectId("60969fe79459f8b40d8d3f68"),
+    "imsi" : "999700000000001",
+    "__v" : 0,
+    "access_restriction_data" : 32,
+    "ambr" : {
+        "uplink" : {
+            "value" : 1,
+            "unit" : 3
+        },
+        "downlink" : {
+            "value" : 1,
+            "unit" : 3
+        }
+    },
+    "network_access_mode" : 2,
+    "security" : {
+        "k" : "465b5ce8b199b49faa5f0a2ee238a6bc",
+        "amf" : "8000",
+        "op" : null,
+        "opc" : "e8ed289deba952e4283b54e88e6183ca",
+        "sqn" : NumberLong(97)
+    },
+    "slice" : [
+        {
+            "sst" : 1,
+            "default_indicator" : true,
+            "_id" : ObjectId("60969fe7de8743b3c7b1a973"),
+            "session" : [
+                {
+                    "name" : "internet",
+                    "type" : 3,
+                    "_id" : ObjectId("60969fe7de8743b3c7b1a974"),
+                    "pcc_rule" : [ ],
+                    "ambr" : {
+                        "uplink" : {
+                            "value" : 1,
+                            "unit" : 3
+                        },
+                        "downlink" : {
+                            "value" : 1,
+                            "unit" : 3
+                        }
+                    },
+                    "qos" : {
+                        "index" : 9,
+                        "arp" : {
+                            "priority_level" : 8,
+                            "pre_emption_capability" : 1,
+                            "pre_emption_vulnerability" : 1
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "subscribed_rau_tau_timer" : 12,
+    "subscriber_status" : 0
 }
 ```
 
@@ -163,43 +163,43 @@ $ mongo
 > use open5gs
 > db.subscribers.find().pretty()
 {
-	"_id" : ObjectId("609715fda08851a0744e6ae7"),
-	"imsi" : "999700000021309",
-	"__v" : 0,
-	"access_restriction_data" : 32,
-	"ambr" : {
-		"downlink" : NumberLong(1024000),
-		"uplink" : NumberLong(1024000)
-	},
-	"network_access_mode" : 2,
-	"pdn" : [
-		{
-			"apn" : "internet",
-			"_id" : ObjectId("609715fd455bcd38c884ce85"),
-			"pcc_rule" : [ ],
-			"ambr" : {
-				"downlink" : NumberLong(1024000),
-				"uplink" : NumberLong(1024000)
-			},
-			"qos" : {
-				"qci" : 9,
-				"arp" : {
-					"priority_level" : 8,
-					"pre_emption_vulnerability" : 1,
-					"pre_emption_capability" : 0
-				}
-			},
-			"type" : 0
-		}
-	],
-	"security" : {
-		"k" : "70D49A71DD1A2B806A25ABE0EF749F1E",
-		"amf" : "8000",
-		"op" : null,
-		"opc" : "6F1BF53D624B3A43AF6592854E2444C7"
-	},
-	"subscribed_rau_tau_timer" : 12,
-	"subscriber_status" : 0
+    "_id" : ObjectId("609715fda08851a0744e6ae7"),
+    "imsi" : "999700000021309",
+    "__v" : 0,
+    "access_restriction_data" : 32,
+    "ambr" : {
+        "downlink" : NumberLong(1024000),
+        "uplink" : NumberLong(1024000)
+    },
+    "network_access_mode" : 2,
+    "pdn" : [
+        {
+            "apn" : "internet",
+            "_id" : ObjectId("609715fd455bcd38c884ce85"),
+            "pcc_rule" : [ ],
+            "ambr" : {
+                "downlink" : NumberLong(1024000),
+                "uplink" : NumberLong(1024000)
+            },
+            "qos" : {
+                "qci" : 9,
+                "arp" : {
+                    "priority_level" : 8,
+                    "pre_emption_vulnerability" : 1,
+                    "pre_emption_capability" : 0
+                }
+            },
+            "type" : 0
+        }
+    ],
+    "security" : {
+        "k" : "70D49A71DD1A2B806A25ABE0EF749F1E",
+        "amf" : "8000",
+        "op" : null,
+        "opc" : "6F1BF53D624B3A43AF6592854E2444C7"
+    },
+    "subscribed_rau_tau_timer" : 12,
+    "subscriber_status" : 0
 }
 ```
 
@@ -226,12 +226,12 @@ $ mongo
 > db.subscribers.find().pretty()
 {
 ...
-	"slice" : [
-		{
-			"sst" : 1,
-			"default_indicator" : true,
-			"_id" : ObjectId("60969fe7de8743b3c7b1a973"),
-			"session" : [
+    "slice" : [
+        {
+            "sst" : 1,
+            "default_indicator" : true,
+            "_id" : ObjectId("60969fe7de8743b3c7b1a973"),
+            "session" : [
 ...
 }
 ```
@@ -476,8 +476,8 @@ The Open5GS package contains a systemd-networkd configuration file for `ogstun`.
 
 ```diff
 $ diff -u /etc/systemd/network/99-open5gs.network /etc/systemd/network/99-open5gs.network.new
---- /etc/systemd/network/99-open5gs.network	2020-09-17 09:29:09.137392040 -0400
-+++ /etc/systemd/network/99-open5gs.network.new	2020-09-17 09:29:03.375719620 -0400
+--- /etc/systemd/network/99-open5gs.network    2020-09-17 09:29:09.137392040 -0400
++++ /etc/systemd/network/99-open5gs.network.new    2020-09-17 09:29:03.375719620 -0400
 @@ -2,5 +2,5 @@
  Name=ogstun
 
@@ -501,8 +501,8 @@ Now, you need to modify the configuration file of Open5GS to adjust the UE IP Po
 
 ```diff
 $ diff -u smf.yaml smf.yaml.new
---- smf.yaml	2020-09-17 09:31:16.547882093 -0400
-+++ smf.yaml.new	2020-09-17 09:32:18.267726844 -0400
+--- smf.yaml    2020-09-17 09:31:16.547882093 -0400
++++ smf.yaml.new    2020-09-17 09:32:18.267726844 -0400
 @@ -190,7 +190,7 @@
        - addr: 127.0.0.4
        - addr: ::1
@@ -516,8 +516,8 @@ $ diff -u smf.yaml smf.yaml.new
 
 ```diff
 $ diff -u upf.yaml upf.yaml.new
---- upf.yaml	2020-09-17 09:31:16.547882093 -0400
-+++ upf.yaml.new	2020-09-17 09:32:25.199619989 -0400
+--- upf.yaml    2020-09-17 09:31:16.547882093 -0400
++++ upf.yaml.new    2020-09-17 09:32:25.199619989 -0400
 @@ -139,7 +139,7 @@
      gtpu:
        - addr: 127.0.0.7
@@ -766,8 +766,8 @@ Create **newtables** file as below.
 
 ```diff
 $ diff -u oldtables newtables
---- oldtables	2019-06-01 23:43:50.354974226 +0900
-+++ newtables	2019-06-01 23:44:16.110931684 +0900
+--- oldtables    2019-06-01 23:43:50.354974226 +0900
++++ newtables    2019-06-01 23:44:16.110931684 +0900
 @@ -8,6 +8,7 @@
  -A PREROUTING -m addrtype --dst-type LOCAL -j DOCKER
  -A OUTPUT ! -d 127.0.0.0/8 -m addrtype --dst-type LOCAL -j DOCKER
@@ -1273,10 +1273,10 @@ $ echo $(cd $(dirname ./install/lib/x86_64-linux-gnu/) && pwd -P)/$(basename ./i
 $ export LD_LIBRARY_PATH=/home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu
 $ ldd ./install/bin/open5gs-amfd
 ...
-	libogsapp.so.1 => /home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu/libogsapp.so.1 (0x00007f161ab51000)
-	libogscore.so.1 => /home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu/libogscore.so.1 (0x00007f161a922000)
-	libogssctp.so.1 => /home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu/libogssctp.so.1 (0x00007f161a71d000)
-	libogss1ap.so.1 => /home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu/libogss1ap.so.1 (0x00007f161a519000)
+    libogsapp.so.1 => /home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu/libogsapp.so.1 (0x00007f161ab51000)
+    libogscore.so.1 => /home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu/libogscore.so.1 (0x00007f161a922000)
+    libogssctp.so.1 => /home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu/libogssctp.so.1 (0x00007f161a71d000)
+    libogss1ap.so.1 => /home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu/libogss1ap.so.1 (0x00007f161a519000)
 ...
 ```
 

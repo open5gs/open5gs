@@ -24,7 +24,7 @@ bool ogs_diam_app_connected(uint32_t app_id)
     struct fd_list *li = NULL;
     struct fd_app *found = NULL;
 
-	CHECK_POSIX( pthread_rwlock_rdlock(&fd_g_peers_rw) );
+    CHECK_POSIX( pthread_rwlock_rdlock(&fd_g_peers_rw) );
     for (li = fd_g_peers.next; li != &fd_g_peers; li = li->next) {
         struct peer_hdr *p = (struct peer_hdr *)li->o;
         int state = fd_peer_get_state(p);
@@ -44,7 +44,7 @@ bool ogs_diam_app_connected(uint32_t app_id)
             ogs_debug("'%s' STATE[%d] is NOT open ", p->info.pi_diamid, state);
         }
     }
-	CHECK_POSIX( pthread_rwlock_unlock(&fd_g_peers_rw) );
+    CHECK_POSIX( pthread_rwlock_unlock(&fd_g_peers_rw) );
 
     if (found)
         return true;

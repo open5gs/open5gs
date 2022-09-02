@@ -78,18 +78,18 @@ int ogs_gettimeofday(struct timeval *tv)
 #else
 #define DELTA_EPOCH_IN_MICROSEC 11644473600000000ULL
 #endif
-	FILETIME ft;
-	uint64_t tmp = 0;
+    FILETIME ft;
+    uint64_t tmp = 0;
 
-	/*
-	 * The const value is shamelessy stolen from
-	 * http://www.boost.org/doc/libs/1_55_0/boost/chrono/detail/inlined/win/chrono.hpp
-	 *
-	 * File times are the number of 100 nanosecond intervals elapsed since
-	 * 12:00 am Jan 1, 1601 UTC.  I haven't check the math particularly hard
-	 *
-	 * ...  good luck
-	 */
+    /*
+     * The const value is shamelessy stolen from
+     * http://www.boost.org/doc/libs/1_55_0/boost/chrono/detail/inlined/win/chrono.hpp
+     *
+     * File times are the number of 100 nanosecond intervals elapsed since
+     * 12:00 am Jan 1, 1601 UTC.  I haven't check the math particularly hard
+     *
+     * ...  good luck
+     */
 
     if (tv) {
         GetSystemTimeAsFileTime (&ft);
@@ -182,7 +182,7 @@ int ogs_time_from_gmt(ogs_time_t *t, struct tm *tm, int tm_usec)
  */
 uint32_t ogs_time_ntp32_now(void)
 {
-	int rc;
+    int rc;
     struct timeval tv;
 
     rc = ogs_gettimeofday(&tv);
@@ -192,13 +192,13 @@ uint32_t ogs_time_ntp32_now(void)
 }
 ogs_time_t ogs_time_from_ntp32(uint32_t ntp_timestamp)
 {
-	if (ntp_timestamp < OGS_1970_1900_SEC_DIFF)
-		return 0;
-	return (ntp_timestamp - OGS_1970_1900_SEC_DIFF) * OGS_USEC_PER_SEC;
+    if (ntp_timestamp < OGS_1970_1900_SEC_DIFF)
+        return 0;
+    return (ntp_timestamp - OGS_1970_1900_SEC_DIFF) * OGS_USEC_PER_SEC;
 }
 uint32_t ogs_time_to_ntp32(ogs_time_t time)
 {
-	return (time / OGS_USEC_PER_SEC) + OGS_1970_1900_SEC_DIFF;
+    return (time / OGS_USEC_PER_SEC) + OGS_1970_1900_SEC_DIFF;
 }
 
 int ogs_timezone(void)

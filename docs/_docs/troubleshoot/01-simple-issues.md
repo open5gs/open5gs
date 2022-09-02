@@ -176,8 +176,8 @@ You can modify the configuration file to record more logs.
 
 ```diff
 $ diff -u /etc/open5gs/amf.yaml.old /etc/open5gs/amf.yaml
---- amf.yaml.old	2020-08-22 12:26:56.132213488 -0400
-+++ amf.yaml	2020-08-22 12:27:04.135901201 -0400
+--- amf.yaml.old    2020-08-22 12:26:56.132213488 -0400
++++ amf.yaml    2020-08-22 12:27:04.135901201 -0400
 @@ -20,6 +20,7 @@
  #
  logger:

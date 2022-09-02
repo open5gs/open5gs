@@ -69,18 +69,18 @@ static void test_diam_config(void)
 int test_fd_init(void)
 {
     int ret;
-	struct disp_when data;
+    struct disp_when data;
 
     test_diam_config();
 
     ret = ogs_diam_init(FD_MODE_CLIENT, NULL, &diam_config);
     ogs_assert(ret == 0);
 
-	ret = ogs_diam_s6a_init();
+    ret = ogs_diam_s6a_init();
     ogs_assert(ret == 0);
-	ret = ogs_diam_cx_init();
+    ret = ogs_diam_cx_init();
     ogs_assert(ret == 0);
-	ret = ogs_diam_rx_init();
+    ret = ogs_diam_rx_init();
     ogs_assert(ret == 0);
 
     test_swx_init();
@@ -89,7 +89,7 @@ int test_fd_init(void)
     ret = ogs_diam_start();
     ogs_assert(ret == 0);
 
-	return 0;
+    return 0;
 }
 
 void test_fd_final(void)
