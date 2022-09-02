@@ -93,6 +93,7 @@ int amf_sbi_open(void)
     /* Add SELF NF instance */
     nf_instance = ogs_sbi_self()->nf_instance;
     ogs_assert(nf_instance);
+    ogs_sbi_nf_fsm_init(nf_instance);
 
     /* Build NF instance information. It will be transmitted to NRF. */
     ogs_sbi_nf_instance_build_default(nf_instance, OpenAPI_nf_type_AMF);
@@ -106,17 +107,6 @@ int amf_sbi_open(void)
         ogs_sbi_nf_service_add_version(
                     service, OGS_SBI_API_V1, OGS_SBI_API_V1_0_0, NULL);
         ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_SMF);
-    }
-
-    /* Initialize SCP NF Instance */
-    nf_instance = ogs_sbi_self()->scp_instance;
-    if (nf_instance) {
-        ogs_sbi_client_t *client = NULL;
-
-        /* Client callback is only used when NF sends to SCP */
-        client = nf_instance->client;
-        ogs_assert(client);
-        client->cb = client_cb;
     }
 
     /* Initialize NRF NF Instance */
@@ -146,59 +136,10 @@ void amf_sbi_close(void)
     ogs_sbi_server_stop_all();
 }
 
-bool amf_sbi_send_request(
-        ogs_sbi_object_t *sbi_object,
-        ogs_sbi_service_type_e service_type,
-        void *data)
+bool amf_sbi_send_request(ogs_sbi_nf_instance_t *nf_instance, void *data)
 {
-    ogs_sbi_nf_instance_t *nf_instance = NULL;
-
-    ogs_assert(service_type);
-    ogs_assert(sbi_object);
+    ogs_assert(nf_instance);
     ogs_assert(data);
-
-    nf_instance = OGS_SBI_NF_INSTANCE(sbi_object, service_type);
-    if (!nf_instance) {
-        amf_ue_t *amf_ue = NULL;
-        amf_sess_t *sess = NULL;
-
-        ogs_assert(sbi_object->type > OGS_SBI_OBJ_BASE &&
-                    sbi_object->type < OGS_SBI_OBJ_TOP);
-        switch(sbi_object->type) {
-        case OGS_SBI_OBJ_UE_TYPE:
-            amf_ue = (amf_ue_t *)sbi_object;
-            ogs_assert(amf_ue);
-            ogs_error("[%s] (NF discover) No [%s]", amf_ue->suci,
-                        ogs_sbi_service_type_to_name(service_type));
-            ogs_assert(OGS_OK ==
-                nas_5gs_send_gmm_reject_from_sbi(amf_ue,
-                    OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT));
-            break;
-        case OGS_SBI_OBJ_SESS_TYPE:
-            sess = (amf_sess_t *)sbi_object;
-            ogs_assert(sess);
-            ogs_error("[%d:%d] (NF discover) No [%s]", sess->psi, sess->pti,
-                        ogs_sbi_service_type_to_name(service_type));
-            if (sess->payload_container_type) {
-                ogs_assert(OGS_OK ==
-                    nas_5gs_send_back_gsm_message(sess,
-                        OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
-                        AMF_NAS_BACKOFF_TIME));
-            } else {
-                ogs_assert(OGS_OK ==
-                    ngap_send_error_indication2(amf_ue,
-                        NGAP_Cause_PR_transport,
-                        NGAP_CauseTransport_transport_resource_unavailable));
-            }
-            break;
-        default:
-            ogs_fatal("(NF discover) Not implemented [%s:%d]",
-                ogs_sbi_service_type_to_name(service_type), sbi_object->type);
-            ogs_assert_if_reached();
-        }
-
-        return false;
-    }
 
     return ogs_sbi_send_request(nf_instance, client_cb, data);
 }
@@ -349,7 +290,7 @@ static int client_discover_cb(
 
     amf_sbi_select_nf(&sess->sbi, service_type, discovery_option);
 
-    if (!OGS_SBI_NF_INSTANCE(&sess->sbi, service_type)) {
+    if (!sess->sbi.service_type_array[service_type].nf_instance) {
         ogs_error("[%s:%d] (NF discover) No [%s]",
                     amf_ue->supi, sess->psi,
                     ogs_sbi_service_type_to_name(service_type));

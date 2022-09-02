@@ -29,11 +29,11 @@ extern "C" {
 typedef struct af_sess_s af_sess_t;
 
 typedef enum {
-    AF_EVT_BASE = OGS_MAX_NUM_OF_PROTO_EVENT,
+    AF_EVENT_BASE = OGS_MAX_NUM_OF_PROTO_EVENT,
 
-    AF_EVT_SBI_LOCAL,
+    AF_EVENT_SBI_LOCAL,
 
-    AF_EVT_TOP,
+    MAX_NUM_OF_AF_EVENT,
 
 } af_event_e;
 

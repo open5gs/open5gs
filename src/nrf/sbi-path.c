@@ -80,19 +80,6 @@ static int client_notify_cb(
 
 int nrf_sbi_open(void)
 {
-    ogs_sbi_nf_instance_t *nf_instance = NULL;
-
-    /* Initialize SCP NF Instance */
-    nf_instance = ogs_sbi_self()->scp_instance;
-    if (nf_instance) {
-        ogs_sbi_client_t *client = NULL;
-
-        /* Client callback is only used when NF sends to SCP */
-        client = nf_instance->client;
-        ogs_assert(client);
-        client->cb = client_notify_cb;
-    }
-
     if (ogs_sbi_server_start_all(server_cb) != OGS_OK)
         return OGS_ERROR;
 

@@ -39,7 +39,7 @@ void af_local_discover_and_send(
     int rv;
     af_event_t *e = NULL;
 
-    e = af_event_new(AF_EVT_SBI_LOCAL);
+    e = af_event_new(AF_EVENT_SBI_LOCAL);
     ogs_assert(e);
 
     e->local_id = AF_LOCAL_DISCOVER_AND_SEND;
@@ -66,7 +66,7 @@ void af_local_send_to_pcf(
     int rv;
     af_event_t *e = NULL;
 
-    e = af_event_new(AF_EVT_SBI_LOCAL);
+    e = af_event_new(AF_EVENT_SBI_LOCAL);
     ogs_assert(e);
 
     e->local_id = AF_LOCAL_SEND_TO_PCF;

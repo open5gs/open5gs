@@ -128,10 +128,6 @@ typedef struct ogs_sbi_nf_instance_s {
     unsigned int reference_count;       /* reference count for memory free */
 } ogs_sbi_nf_instance_t;
 
-typedef struct ogs_sbi_nf_instance_array_s {
-    ogs_sbi_nf_instance_t *nf_instance;
-} ogs_sbi_nf_instance_array_t[OGS_SBI_MAX_NUM_OF_SERVICE_TYPE];
-
 typedef enum {
     OGS_SBI_OBJ_BASE = 0,
 
@@ -146,7 +142,10 @@ typedef struct ogs_sbi_object_s {
 
     ogs_sbi_obj_type_e type;
 
-    ogs_sbi_nf_instance_array_t nf_instance_array;
+    struct {
+        ogs_sbi_nf_instance_t *nf_instance;
+    } nf_type_array[OGS_SBI_MAX_NUM_OF_NF_TYPE],
+      service_type_array[OGS_SBI_MAX_NUM_OF_SERVICE_TYPE];
 
     ogs_list_t xact_list;
 
@@ -291,6 +290,11 @@ void ogs_sbi_nf_instance_clear(ogs_sbi_nf_instance_t *nf_instance);
 void ogs_sbi_nf_instance_remove(ogs_sbi_nf_instance_t *nf_instance);
 void ogs_sbi_nf_instance_remove_all(void);
 ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_find(char *id);
+ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_find_by_discovery_param(
+        OpenAPI_nf_type_e nf_type,
+        ogs_sbi_discovery_option_t *discovery_option);
+ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_find_by_service_type(
+        ogs_sbi_service_type_e service_type);
 bool ogs_sbi_nf_instance_maximum_number_is_reached(void);
 
 ogs_sbi_nf_service_t *ogs_sbi_nf_service_add(
@@ -328,25 +332,17 @@ void ogs_sbi_client_associate(ogs_sbi_nf_instance_t *nf_instance);
 
 OpenAPI_uri_scheme_e ogs_sbi_default_uri_scheme(void);
 
-#define OGS_SBI_NF_INSTANCE(__sBIObject, __sERVICEType) \
-    (((__sBIObject)->nf_instance_array)[__sERVICEType].nf_instance)
-
-#define OGS_SBI_SETUP_NF_INSTANCE(__sBIObject, __sERVICEType, __nFInstance) \
+#define OGS_SBI_SETUP_NF_INSTANCE(__cTX, __nFInstance) \
     do { \
-        ogs_assert((__sBIObject)); \
-        ogs_assert((__sERVICEType)); \
-        ogs_assert((__nFInstance)); \
+        ogs_assert(__nFInstance); \
         \
-        if (OGS_SBI_NF_INSTANCE((__sBIObject), (__sERVICEType))) { \
-            ogs_warn("UE %s-EndPoint updated [%s]", \
-                    ogs_sbi_service_type_to_name((__sERVICEType)), \
-                    (__nFInstance)->id); \
-            ogs_sbi_nf_instance_remove( \
-                    OGS_SBI_NF_INSTANCE((__sBIObject), (__sERVICEType))); \
+        if ((__cTX).nf_instance) { \
+            ogs_warn("NF Instance updated [%s]", (__nFInstance)->id); \
+            ogs_sbi_nf_instance_remove((__cTX).nf_instance); \
         } \
         \
         OGS_OBJECT_REF(__nFInstance); \
-        OGS_SBI_NF_INSTANCE((__sBIObject), (__sERVICEType)) = (__nFInstance); \
+        ((__cTX).nf_instance) = (__nFInstance); \
     } while(0)
 
 bool ogs_sbi_discovery_param_is_matched(
@@ -356,11 +352,6 @@ bool ogs_sbi_discovery_param_is_matched(
 
 bool ogs_sbi_discovery_option_is_matched(
         ogs_sbi_nf_instance_t *nf_instance,
-        ogs_sbi_discovery_option_t *discovery_option);
-
-void ogs_sbi_select_nf(
-        ogs_sbi_object_t *sbi_object,
-        ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option);
 
 void ogs_sbi_object_free(ogs_sbi_object_t *sbi_object);

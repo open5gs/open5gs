@@ -50,8 +50,8 @@ const char *af_event_get_name(af_event_t *e)
     case OGS_EVENT_SBI_TIMER:
         return OGS_EVENT_NAME_SBI_TIMER;
 
-    case AF_EVT_SBI_LOCAL:
-        return "AF_EVT_SBI_LOCAL";
+    case AF_EVENT_SBI_LOCAL:
+        return "AF_EVENT_SBI_LOCAL";
 
     default: 
        break;

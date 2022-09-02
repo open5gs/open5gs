@@ -30,10 +30,7 @@ extern "C" {
 int af_sbi_open(void);
 void af_sbi_close(void);
 
-bool af_sbi_send_request(
-        ogs_sbi_object_t *sbi_object,
-        ogs_sbi_service_type_e service_type,
-        void *data);
+bool af_sbi_send_request(ogs_sbi_nf_instance_t *nf_instance, void *data);
 void af_sbi_discover_and_send(
         ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,

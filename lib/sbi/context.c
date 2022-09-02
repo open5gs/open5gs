@@ -908,6 +908,52 @@ ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_find(char *id)
     return nf_instance;
 }
 
+ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_find_by_discovery_param(
+        OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_discovery_option_t *discovery_option)
+{
+    ogs_sbi_nf_instance_t *nf_instance = NULL;
+
+    ogs_assert(target_nf_type);
+
+    ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance) {
+        if (ogs_sbi_discovery_param_is_matched(
+                    nf_instance, target_nf_type, discovery_option) == false)
+            continue;
+
+        return nf_instance;
+    }
+
+    return NULL;
+}
+
+ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_find_by_service_type(
+        ogs_sbi_service_type_e service_type)
+{
+    ogs_sbi_nf_instance_t *nf_instance = NULL;
+    ogs_sbi_discovery_option_t *discovery_option = NULL;
+
+    OpenAPI_nf_type_e target_nf_type = OpenAPI_nf_type_NULL;
+    char *service_name = NULL;
+
+    ogs_assert(service_type);
+    target_nf_type = ogs_sbi_service_type_to_nf_type(service_type);
+    ogs_assert(target_nf_type);
+    service_name = (char *)ogs_sbi_service_type_to_name(service_type);
+    ogs_assert(service_name);
+
+    discovery_option = ogs_sbi_discovery_option_new();
+    ogs_assert(discovery_option);
+    ogs_sbi_discovery_option_add_service_names(discovery_option, service_name);
+
+    nf_instance = ogs_sbi_nf_instance_find_by_discovery_param(
+            target_nf_type, discovery_option);
+
+    ogs_sbi_discovery_option_free(discovery_option);
+
+    return nf_instance;
+}
+
 bool ogs_sbi_nf_instance_maximum_number_is_reached()
 {
     return nf_instance_pool.avail <= 0;
@@ -1082,10 +1128,10 @@ ogs_sbi_nf_service_t *ogs_sbi_nf_service_find_by_name(
     ogs_list_for_each(&nf_instance->nf_service_list, nf_service) {
         ogs_assert(nf_service->name);
         if (strcmp(nf_service->name, name) == 0)
-            break;
+            return nf_service;
     }
 
-    return nf_service;
+    return NULL;
 }
 
 ogs_sbi_nf_info_t *ogs_sbi_nf_info_add(
@@ -1460,29 +1506,6 @@ bool ogs_sbi_discovery_param_is_matched(
     return true;
 }
 
-void ogs_sbi_select_nf(
-        ogs_sbi_object_t *sbi_object,
-        ogs_sbi_service_type_e service_type,
-        ogs_sbi_discovery_option_t *discovery_option)
-{
-    ogs_sbi_nf_instance_t *nf_instance = NULL;
-    OpenAPI_nf_type_e target_nf_type = OpenAPI_nf_type_NULL;
-
-    ogs_assert(sbi_object);
-    ogs_assert(service_type);
-    target_nf_type = ogs_sbi_service_type_to_nf_type(service_type);
-    ogs_assert(target_nf_type);
-
-    ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance) {
-        if (ogs_sbi_discovery_param_is_matched(
-                    nf_instance, target_nf_type, discovery_option) == false)
-            continue;
-
-        OGS_SBI_SETUP_NF_INSTANCE(sbi_object, service_type, nf_instance);
-        break;
-    }
-}
-
 void ogs_sbi_client_associate(ogs_sbi_nf_instance_t *nf_instance)
 {
     ogs_sbi_client_t *client = NULL;
@@ -1537,8 +1560,16 @@ void ogs_sbi_object_free(ogs_sbi_object_t *sbi_object)
         ogs_error("SBI running [%d]", ogs_list_count(&sbi_object->xact_list));
 
     for (i = 0; i < OGS_SBI_MAX_NUM_OF_SERVICE_TYPE; i++) {
-        if (OGS_SBI_NF_INSTANCE(sbi_object, i))
-            ogs_sbi_nf_instance_remove(OGS_SBI_NF_INSTANCE(sbi_object, i));
+        ogs_sbi_nf_instance_t *nf_instance =
+            sbi_object->service_type_array[i].nf_instance;
+        if (nf_instance)
+            ogs_sbi_nf_instance_remove(nf_instance);
+    }
+    for (i = 0; i < OGS_SBI_MAX_NUM_OF_NF_TYPE; i++) {
+        ogs_sbi_nf_instance_t *nf_instance =
+            sbi_object->nf_type_array[i].nf_instance;
+        if (nf_instance)
+            ogs_sbi_nf_instance_remove(nf_instance);
     }
 }
 
@@ -1639,8 +1670,8 @@ void ogs_sbi_xact_remove(ogs_sbi_xact_t *xact)
     ogs_assert(xact->t_response);
     ogs_timer_delete(xact->t_response);
 
-    ogs_assert(xact->request);
-    ogs_sbi_request_free(xact->request);
+    if (xact->request)
+        ogs_sbi_request_free(xact->request);
 
     ogs_list_remove(&sbi_object->xact_list, xact);
     ogs_pool_free(&xact_pool, xact);

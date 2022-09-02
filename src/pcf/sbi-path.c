@@ -87,6 +87,7 @@ int pcf_sbi_open(void)
     /* Add SELF NF instance */
     nf_instance = ogs_sbi_self()->nf_instance;
     ogs_assert(nf_instance);
+    ogs_sbi_nf_fsm_init(nf_instance);
 
     /* Build NF instance information. It will be transmitted to NRF. */
     ogs_sbi_nf_instance_build_default(nf_instance, OpenAPI_nf_type_PCF);
@@ -156,43 +157,9 @@ void pcf_sbi_close(void)
     ogs_sbi_server_stop_all();
 }
 
-bool pcf_sbi_send_request(
-        ogs_sbi_object_t *sbi_object,
-        ogs_sbi_service_type_e service_type,
-        void *data)
+bool pcf_sbi_send_request(ogs_sbi_nf_instance_t *nf_instance, void *data)
 {
-    ogs_sbi_nf_instance_t *nf_instance = NULL;
-
-    ogs_assert(service_type);
-
-    nf_instance = OGS_SBI_NF_INSTANCE(sbi_object, service_type);
-    if (!nf_instance) {
-        pcf_ue_t *pcf_ue = NULL;
-        pcf_sess_t *sess = NULL;
-
-        ogs_assert(sbi_object->type > OGS_SBI_OBJ_BASE &&
-                    sbi_object->type < OGS_SBI_OBJ_TOP);
-        switch(sbi_object->type) {
-        case OGS_SBI_OBJ_UE_TYPE:
-            pcf_ue = (pcf_ue_t *)sbi_object;
-            ogs_assert(pcf_ue);
-            ogs_error("[%s] (NF discover) No [%s]", pcf_ue->supi,
-                        ogs_sbi_service_type_to_name(service_type));
-            break;
-        case OGS_SBI_OBJ_SESS_TYPE:
-            sess = (pcf_sess_t *)sbi_object;
-            ogs_assert(sess);
-            ogs_error("[%d] (NF discover) No [%s]", sess->psi,
-                        ogs_sbi_service_type_to_name(service_type));
-            break;
-        default:
-            ogs_fatal("(NF discover) Not implemented [%s:%d]",
-                ogs_sbi_service_type_to_name(service_type), sbi_object->type);
-            ogs_assert_if_reached();
-        }
-
-        return false;
-    }
+    ogs_assert(nf_instance);
 
     return ogs_sbi_send_request(nf_instance, client_cb, data);
 }
@@ -245,6 +212,23 @@ bool pcf_ue_sbi_discover_and_send(
     }
 
     return true;
+}
+
+bool pcf_sess_sbi_discover_only(
+        pcf_sess_t *sess, ogs_sbi_stream_t *stream,
+        ogs_sbi_service_type_e service_type)
+{
+    ogs_sbi_xact_t *xact = NULL;
+
+    ogs_assert(sess);
+    ogs_assert(service_type);
+
+    xact = ogs_sbi_xact_add(&sess->sbi, service_type, NULL, NULL, NULL, NULL);
+    ogs_expect_or_return_val(xact, false);
+
+    xact->assoc_stream = stream;
+
+    return ogs_sbi_discover_only(xact, client_cb);
 }
 
 bool pcf_sess_sbi_discover_and_send(

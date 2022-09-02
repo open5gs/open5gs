@@ -98,6 +98,11 @@ logger:
 #      - npcf-smpolicycontrol
 #      - npcf-policyauthorization
 #
+#  == NOTE ==
+#  Placing npcf-smpolicycontrol and pcf-policyauthorization
+#  in different NFs is not supported. Both npcf-smpolicycontrol
+#  and pcf-policyauthorization should be placed in the same NF.
+#
 #  <NF Discovery Query Parameter>
 #
 #  o (Default) If you do not set Query Parameter as shown below,

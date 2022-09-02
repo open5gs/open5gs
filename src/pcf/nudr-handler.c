@@ -186,6 +186,9 @@ bool pcf_nudr_dr_handle_query_sm_data(
 
     SWITCH(recvmsg->h.resource.component[3])
     CASE(OGS_SBI_RESOURCE_NAME_SM_DATA)
+        ogs_sbi_nf_instance_t *nf_instance = NULL;
+        ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
+
         if (!recvmsg->SmPolicyData) {
             strerror = ogs_msprintf("[%s:%d] No SmPolicyData",
                     pcf_ue->supi, sess->psi);
@@ -193,10 +196,28 @@ bool pcf_nudr_dr_handle_query_sm_data(
             goto cleanup;
         }
 
-        ogs_assert(true ==
-            pcf_sess_sbi_discover_and_send(
-                OGS_SBI_SERVICE_TYPE_NBSF_MANAGEMENT, NULL,
-                pcf_nbsf_management_build_register, sess, stream, NULL));
+        service_type = OGS_SBI_SERVICE_TYPE_NPCF_POLICYAUTHORIZATION;
+
+        nf_instance = sess->sbi.service_type_array[service_type].nf_instance;
+        if (!nf_instance) {
+            nf_instance =
+                ogs_sbi_nf_instance_find_by_service_type(service_type);
+            if (nf_instance)
+                OGS_SBI_SETUP_NF_INSTANCE(
+                        sess->sbi.service_type_array[service_type],
+                        nf_instance);
+        }
+
+        if (nf_instance) {
+            ogs_assert(true ==
+                    pcf_sess_sbi_discover_and_send(
+                        OGS_SBI_SERVICE_TYPE_NBSF_MANAGEMENT, NULL,
+                        pcf_nbsf_management_build_register,
+                        sess, stream, nf_instance));
+        } else {
+            ogs_expect(true ==
+                    pcf_sess_sbi_discover_only(sess, stream, service_type));
+        }
 
         return true;
 

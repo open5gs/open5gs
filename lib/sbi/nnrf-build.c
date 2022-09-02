@@ -93,9 +93,9 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
     NFProfile = ogs_calloc(1, sizeof(*NFProfile));
     ogs_expect_or_return_val(NFProfile, NULL);
 
-	NFProfile->nf_instance_id = nf_instance->id;
-	NFProfile->nf_type = nf_instance->nf_type;
-	NFProfile->nf_status = nf_instance->nf_status;
+    NFProfile->nf_instance_id = nf_instance->id;
+    NFProfile->nf_type = nf_instance->nf_type;
+    NFProfile->nf_status = nf_instance->nf_status;
 
     ogs_trace("[%s] ogs_nnrf_nfm_build_nf_profile()", nf_instance->id);
 
@@ -806,7 +806,7 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_status_subscribe(
     ogs_expect_or_return_val(
             SubscriptionData->nf_status_notification_uri, NULL);
 
-	SubscriptionData->req_nf_type = subscription->req_nf_type;
+    SubscriptionData->req_nf_type = subscription->req_nf_type;
     SubscriptionData->req_nf_instance_id = subscription->req_nf_instance_id;
 
     OGS_SBI_FEATURES_SET(subscription->requester_features,
@@ -874,17 +874,14 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_profile_retrieve(char *nf_instance_id)
 }
 
 ogs_sbi_request_t *ogs_nnrf_disc_build_discover(
-        ogs_sbi_service_type_e service_type,
+        OpenAPI_nf_type_e target_nf_type,
         ogs_sbi_discovery_option_t *discovery_option)
 {
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
 
-    OpenAPI_nf_type_e target_nf_type = OpenAPI_nf_type_NULL;
     OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
 
-    ogs_assert(service_type);
-    target_nf_type = ogs_sbi_service_type_to_nf_type(service_type);
     ogs_assert(target_nf_type);
 
     ogs_assert(ogs_sbi_self()->nf_instance);

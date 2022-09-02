@@ -41,7 +41,7 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_status_unsubscribe(
 ogs_sbi_request_t *ogs_nnrf_nfm_build_profile_retrieve(char *nf_instance_id);
 
 ogs_sbi_request_t *ogs_nnrf_disc_build_discover(
-        ogs_sbi_service_type_e service_type,
+        OpenAPI_nf_type_e target_nf_type,
         ogs_sbi_discovery_option_t *discovery_option);
 
 #ifdef __cplusplus

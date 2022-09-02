@@ -28,6 +28,8 @@ extern "C" {
 
 bool ogs_sbi_send_request(ogs_sbi_nf_instance_t *nf_instance,
         ogs_sbi_client_cb_f client_cb, ogs_sbi_xact_t *xact);
+bool ogs_sbi_discover_only(
+        ogs_sbi_xact_t *xact, ogs_sbi_client_cb_f client_cb);
 bool ogs_sbi_discover_and_send(
         ogs_sbi_xact_t *xact, ogs_sbi_client_cb_f client_cb);
 
@@ -45,9 +47,10 @@ bool ogs_nnrf_nfm_send_nf_status_unsubscribe(
 
 bool ogs_nnrf_disc_send_nf_discover(
         ogs_sbi_nf_instance_t *nf_instance,
-        ogs_sbi_service_type_e service_type,
+        OpenAPI_nf_type_e target_nf_type,
         ogs_sbi_discovery_option_t *discovery_option,
         void *data);
+
 
 #define ogs_sbi_send_http_status_no_content(__sTREAM) \
         ogs_sbi_send_response(__sTREAM, OGS_SBI_HTTP_STATUS_NO_CONTENT)

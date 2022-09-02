@@ -450,7 +450,7 @@ void af_state_operational(ogs_fsm_t *s, af_event_t *e)
         }
         break;
 
-    case AF_EVT_SBI_LOCAL:
+    case AF_EVENT_SBI_LOCAL:
         ogs_assert(e);
 
         switch(e->local_id) {

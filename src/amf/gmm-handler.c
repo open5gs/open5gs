@@ -1064,29 +1064,19 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
 
             if (!SESSION_CONTEXT_IN_SMF(sess)) {
                 ogs_sbi_nf_instance_t *nf_instance = NULL;
-                ogs_sbi_discovery_option_t *discovery_option = NULL;
+                ogs_sbi_service_type_e service_type =
+                    OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION;
 
-                discovery_option = ogs_sbi_discovery_option_new();
-                ogs_assert(discovery_option);
-                ogs_sbi_discovery_option_add_service_names(
-                        discovery_option,
-                        (char *)OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION);
-
-                nf_instance = OGS_SBI_NF_INSTANCE(
-                                &sess->sbi,
-                                OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION);
+                nf_instance = sess->sbi.
+                    service_type_array[service_type].nf_instance;
                 if (!nf_instance) {
-                    amf_sbi_select_nf(
-                            &sess->sbi,
-                            OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION,
-                            discovery_option);
-                    nf_instance = OGS_SBI_NF_INSTANCE(
-                                    &sess->sbi,
-                                    OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION);
+                    nf_instance =
+                        ogs_sbi_nf_instance_find_by_service_type(service_type);
+                    if (nf_instance)
+                        OGS_SBI_SETUP_NF_INSTANCE(
+                                sess->sbi.service_type_array[service_type],
+                                nf_instance);
                 }
-
-                if (discovery_option)
-                    ogs_sbi_discovery_option_free(discovery_option);
 
                 if (nf_instance) {
                     ogs_assert(true ==

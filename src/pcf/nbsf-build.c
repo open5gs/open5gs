@@ -41,6 +41,9 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
     pcf_ue = sess->pcf_ue;
     ogs_assert(pcf_ue);
 
+    nf_instance = data;
+    ogs_assert(nf_instance);
+
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
     message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT;
@@ -59,9 +62,8 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
     ogs_expect_or_return_val(sess->dnn, NULL);
     PcfBinding.dnn = sess->dnn;
 
-    nf_instance = ogs_sbi_self()->nf_instance;
-    ogs_expect_or_return_val(nf_instance, NULL);
-    nf_service = ogs_list_first(&nf_instance->nf_service_list);
+    nf_service = ogs_sbi_nf_service_find_by_name(
+            nf_instance, (char *)OGS_SBI_SERVICE_NAME_NPCF_POLICYAUTHORIZATION);
     ogs_expect_or_return_val(nf_service, NULL);
 
     if (nf_service->fqdn)

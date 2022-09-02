@@ -25,13 +25,6 @@ void ogs_sbi_nf_fsm_init(ogs_sbi_nf_instance_t *nf_instance)
 
     ogs_assert(nf_instance);
 
-    if (NF_INSTANCE_TYPE_IS_NRF(nf_instance)) {
-    } else if (NF_INSTANCE_ID_IS_OTHERS(nf_instance->id)) {
-    } else {
-        ogs_fatal("FSM is available in NRF or OTHERS");
-        ogs_assert_if_reached();
-    }
-
     memset(&e, 0, sizeof(e));
     e.sbi.data = nf_instance;
 

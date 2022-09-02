@@ -86,6 +86,7 @@ int udm_sbi_open(void)
     /* Add SELF NF instance */
     nf_instance = ogs_sbi_self()->nf_instance;
     ogs_assert(nf_instance);
+    ogs_sbi_nf_fsm_init(nf_instance);
 
     /* Build NF instance information. It will be transmitted to NRF. */
     ogs_sbi_nf_instance_build_default(nf_instance, OpenAPI_nf_type_UDM);
@@ -149,21 +150,9 @@ void udm_sbi_close(void)
     ogs_sbi_server_stop_all();
 }
 
-bool udm_sbi_send_request(
-        ogs_sbi_object_t *sbi_object,
-        ogs_sbi_service_type_e service_type,
-        void *data)
+bool udm_sbi_send_request(ogs_sbi_nf_instance_t *nf_instance, void *data)
 {
-    ogs_sbi_nf_instance_t *nf_instance = NULL;
-
-    ogs_assert(service_type);
-
-    nf_instance = OGS_SBI_NF_INSTANCE(sbi_object, service_type);
-    if (!nf_instance) {
-        ogs_error("(NF discover) No [%s]",
-                    ogs_sbi_service_type_to_name(service_type));
-        return false;
-    }
+    ogs_assert(nf_instance);
 
     return ogs_sbi_send_request(nf_instance, client_cb, data);
 }

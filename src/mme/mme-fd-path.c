@@ -799,7 +799,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
             ogs_assert(ret == 0);
             mme_ue->network_access_mode = hdr->avp_value->i32;
         } else {
-	    mme_ue->network_access_mode = 0;
+            mme_ue->network_access_mode = 0;
             ogs_warn("no subscribed Network-Access-Mode, defaulting to PACKET_AND_CIRCUIT (0)");
         }
 
@@ -1785,48 +1785,48 @@ int mme_fd_init(void)
                 mme_self()->diam_conf_path, mme_self()->diam_config);
     ogs_assert(ret == 0);
 
-	/* Install objects definitions for this application */
-	ret = ogs_diam_s6a_init();
+    /* Install objects definitions for this application */
+    ret = ogs_diam_s6a_init();
     ogs_assert(ret == OGS_OK);
 
     /* Create handler for sessions */
-	ret = fd_sess_handler_create(&mme_s6a_reg, &state_cleanup, NULL, NULL);
+    ret = fd_sess_handler_create(&mme_s6a_reg, &state_cleanup, NULL, NULL);
     ogs_assert(ret == 0);
 
-	/* Specific handler for Cancel-Location-Request */
-	data.command = ogs_diam_s6a_cmd_clr;
-	ret = fd_disp_register(mme_ogs_diam_s6a_clr_cb, DISP_HOW_CC, &data, NULL,
+    /* Specific handler for Cancel-Location-Request */
+    data.command = ogs_diam_s6a_cmd_clr;
+    ret = fd_disp_register(mme_ogs_diam_s6a_clr_cb, DISP_HOW_CC, &data, NULL,
                 &hdl_s6a_clr);
     ogs_assert(ret == 0);
 
-	/* Specific handler for Insert-Subscriber-Data-Request */
-	data.command = ogs_diam_s6a_cmd_idr;
-	ret = fd_disp_register(mme_ogs_diam_s6a_idr_cb, DISP_HOW_CC, &data, NULL,
+    /* Specific handler for Insert-Subscriber-Data-Request */
+    data.command = ogs_diam_s6a_cmd_idr;
+    ret = fd_disp_register(mme_ogs_diam_s6a_idr_cb, DISP_HOW_CC, &data, NULL,
                 &hdl_s6a_idr);
     ogs_assert(ret == 0);    
 
-	/* Advertise the support for the application in the peer */
-	ret = fd_disp_app_support(ogs_diam_s6a_application, ogs_diam_vendor, 1, 0);
+    /* Advertise the support for the application in the peer */
+    ret = fd_disp_app_support(ogs_diam_s6a_application, ogs_diam_vendor, 1, 0);
     ogs_assert(ret == 0);
 
     ret = ogs_diam_start();
     ogs_assert(ret == 0);
-	
-	return 0;
+
+    return 0;
 }
 
 void mme_fd_final(void)
 {
     int ret;
 
-	ret = fd_sess_handler_destroy(&mme_s6a_reg, NULL);
+    ret = fd_sess_handler_destroy(&mme_s6a_reg, NULL);
     ogs_assert(ret == OGS_OK);
 
     if (hdl_s6a_clr)
-		(void) fd_disp_unregister(&hdl_s6a_clr, NULL);
+        (void) fd_disp_unregister(&hdl_s6a_clr, NULL);
 
     if (hdl_s6a_idr)
-		(void) fd_disp_unregister(&hdl_s6a_idr, NULL);        
+        (void) fd_disp_unregister(&hdl_s6a_idr, NULL);
 
     ogs_diam_final();
 }
