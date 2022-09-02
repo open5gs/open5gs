@@ -1634,7 +1634,7 @@ static int mme_ogs_diam_s6a_idr_cb( struct msg **msg, struct avp *avp,
     if (idr_message->idr_flags & OGS_DIAM_S6A_IDR_FLAGS_EPS_LOCATION_INFO) {
         char buf[8];
 
-        uint8_t ida_ecgi[7];
+        uint8_t ida_ecgi[8];
         uint8_t ida_tai[5];
         ogs_time_t ida_age;
 
