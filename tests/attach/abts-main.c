@@ -20,6 +20,7 @@
 #include "test-app.h"
 
 abts_suite *test_s1setup(abts_suite *suite);
+abts_suite *test_simple(abts_suite *suite);
 abts_suite *test_guti(abts_suite *suite);
 abts_suite *test_auth(abts_suite *suite);
 abts_suite *test_idle(abts_suite *suite);
@@ -32,6 +33,7 @@ const struct testlist {
     abts_suite *(*func)(abts_suite *suite);
 } alltests[] = {
     {test_s1setup},
+    {test_simple},
     {test_guti},
     {test_auth},
     {test_idle},

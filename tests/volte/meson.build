@@ -24,6 +24,7 @@ testapp_volte_sources = files('''
     abts-main.c
     bearer-test.c
     session-test.c
+    simple-test.c
     rx-test.c
     video-test.c
     cx-test.c
