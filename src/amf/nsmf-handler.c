@@ -412,6 +412,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
             }
 
         } else {
+            SmContextUpdatedData = recvmsg->SmContextUpdatedData;
 
             if (state == AMF_UPDATE_SM_CONTEXT_ACTIVATED) {
                 /*

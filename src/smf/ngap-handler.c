@@ -151,8 +151,18 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
                 sess, stream, OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE,
                 0));
     } else {
+#if 0 /* Modified by pull request #1729 */
         /* ACTIVATED Is NOT Included in RESPONSE */
         ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
+#else
+        if (sess->up_cnx_state == OpenAPI_up_cnx_state_ACTIVATING) {
+            sess->up_cnx_state = OpenAPI_up_cnx_state_ACTIVATED;
+            smf_sbi_send_sm_context_updated_data_up_cnx_state(
+                    sess, stream, OpenAPI_up_cnx_state_ACTIVATED);
+        } else {
+            ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
+        }
+#endif
     }
 
     rv = OGS_OK;

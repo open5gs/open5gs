@@ -350,6 +350,8 @@ bool smf_nsmf_handle_update_sm_context(
 
     } else if (SmContextUpdateData->up_cnx_state) {
 
+        sess->up_cnx_state = SmContextUpdateData->up_cnx_state;
+
         if (SmContextUpdateData->up_cnx_state ==
                 OpenAPI_up_cnx_state_DEACTIVATED) {
 
@@ -432,7 +434,6 @@ bool smf_nsmf_handle_update_sm_context(
 
             memset(&SmContextUpdatedData, 0, sizeof(SmContextUpdatedData));
             SmContextUpdatedData.up_cnx_state = OpenAPI_up_cnx_state_ACTIVATING;
-            sess->up_cnx_state = OpenAPI_up_cnx_state_ACTIVATING;
             SmContextUpdatedData.n2_sm_info_type =
                 OpenAPI_n2_sm_info_type_PDU_RES_SETUP_REQ;
             SmContextUpdatedData.n2_sm_info = &n2SmInfo;
