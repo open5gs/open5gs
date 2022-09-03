@@ -79,6 +79,9 @@ int pcf_sbi_open(void)
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_nf_service_t *service = NULL;
 
+    bool smpolicycontrol_enabled = false;
+    bool policyauthorization_enabled = false;
+
     /* To be notified when NF Instances registered/deregistered in NRF
      * or when their profile is modified */
     ogs_sbi_add_to_be_notified_nf_type(OpenAPI_nf_type_BSF);
@@ -117,6 +120,8 @@ int pcf_sbi_open(void)
                     service, OGS_SBI_API_V1, OGS_SBI_API_V1_0_0, NULL);
         ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_SMF);
         ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_NEF);
+
+        smpolicycontrol_enabled = true;
     }
 
     if (ogs_sbi_nf_service_is_available(
@@ -128,6 +133,27 @@ int pcf_sbi_open(void)
                     service, OGS_SBI_API_V1, OGS_SBI_API_V1_0_0, NULL);
         ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_AF);
         ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_NEF);
+
+        policyauthorization_enabled = true;
+    }
+
+    if ((smpolicycontrol_enabled == true &&
+            policyauthorization_enabled == false) ||
+        (smpolicycontrol_enabled == false &&
+            policyauthorization_enabled == true)) {
+        ogs_fatal("CHECK CONFIGURATION:");
+        ogs_fatal("   %s - %s",
+            OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL,
+            smpolicycontrol_enabled ? "enabled" : "disabled");
+        ogs_fatal("   %s - %s",
+            OGS_SBI_SERVICE_NAME_NPCF_POLICYAUTHORIZATION,
+            policyauthorization_enabled ? "enabled" : "disabled");
+        ogs_fatal("Only one of %s and %s cannot be enabled.",
+            OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL,
+            OGS_SBI_SERVICE_NAME_NPCF_POLICYAUTHORIZATION);
+        ogs_fatal("They can be enabled or disabled together.");
+
+        return OGS_ERROR;
     }
 
     /* Initialize NRF NF Instance */
