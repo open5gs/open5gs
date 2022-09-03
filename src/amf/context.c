@@ -973,6 +973,14 @@ ran_ue_t *ran_ue_add(amf_gnb_t *gnb, uint32_t ran_ue_ngap_id)
     ogs_assert(ran_ue);
     memset(ran_ue, 0, sizeof *ran_ue);
 
+    ran_ue->t_ng_holding = ogs_timer_add(
+            ogs_app()->timer_mgr, amf_timer_ng_holding_timer_expire, ran_ue);
+    if (!ran_ue->t_ng_holding) {
+        ogs_error("ogs_timer_add() failed");
+        ogs_pool_free(&ran_ue_pool, ran_ue);
+        return NULL;
+    }
+
     ran_ue->index = ogs_pool_index(&ran_ue_pool, ran_ue);
     ogs_assert(ran_ue->index > 0 && ran_ue->index <= ogs_app()->max.ue);
 
@@ -988,10 +996,6 @@ ran_ue_t *ran_ue_add(amf_gnb_t *gnb, uint32_t ran_ue_ngap_id)
     ogs_assert((gnb->max_num_of_ostreams-1) >= 1); /* NEXT_ID(MAX >= MIN) */
     ran_ue->gnb_ostream_id =
         OGS_NEXT_ID(gnb->ostream_id, 1, gnb->max_num_of_ostreams-1);
-
-    ran_ue->t_ng_holding = ogs_timer_add(
-            ogs_app()->timer_mgr, amf_timer_ng_holding_timer_expire, ran_ue);
-    ogs_assert(ran_ue->t_ng_holding);
 
     ran_ue->gnb = gnb;
 
@@ -1163,6 +1167,56 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
     ogs_assert(amf_ue);
     memset(amf_ue, 0, sizeof *amf_ue);
 
+    /* Add All Timers */
+    amf_ue->t3513.timer = ogs_timer_add(
+            ogs_app()->timer_mgr, amf_timer_t3513_expire, amf_ue);
+    if (!amf_ue->t3513.timer) {
+        ogs_error("ogs_timer_add() failed");
+        ogs_pool_free(&amf_ue_pool, amf_ue);
+        return NULL;
+    }
+    amf_ue->t3513.pkbuf = NULL;
+    amf_ue->t3522.timer = ogs_timer_add(
+            ogs_app()->timer_mgr, amf_timer_t3522_expire, amf_ue);
+    if (!amf_ue->t3522.timer) {
+        ogs_error("ogs_timer_add() failed");
+        ogs_pool_free(&amf_ue_pool, amf_ue);
+        return NULL;
+    }
+    amf_ue->t3522.pkbuf = NULL;
+    amf_ue->t3550.timer = ogs_timer_add(
+            ogs_app()->timer_mgr, amf_timer_t3550_expire, amf_ue);
+    if (!amf_ue->t3550.timer) {
+        ogs_error("ogs_timer_add() failed");
+        ogs_pool_free(&amf_ue_pool, amf_ue);
+        return NULL;
+    }
+    amf_ue->t3550.pkbuf = NULL;
+    amf_ue->t3555.timer = ogs_timer_add(
+            ogs_app()->timer_mgr, amf_timer_t3555_expire, amf_ue);
+    if (!amf_ue->t3555.timer) {
+        ogs_error("ogs_timer_add() failed");
+        ogs_pool_free(&amf_ue_pool, amf_ue);
+        return NULL;
+    }
+    amf_ue->t3555.pkbuf = NULL;
+    amf_ue->t3560.timer = ogs_timer_add(
+            ogs_app()->timer_mgr, amf_timer_t3560_expire, amf_ue);
+    if (!amf_ue->t3560.timer) {
+        ogs_error("ogs_timer_add() failed");
+        ogs_pool_free(&amf_ue_pool, amf_ue);
+        return NULL;
+    }
+    amf_ue->t3560.pkbuf = NULL;
+    amf_ue->t3570.timer = ogs_timer_add(
+            ogs_app()->timer_mgr, amf_timer_t3570_expire, amf_ue);
+    if (!amf_ue->t3570.timer) {
+        ogs_error("ogs_timer_add() failed");
+        ogs_pool_free(&amf_ue_pool, amf_ue);
+        return NULL;
+    }
+    amf_ue->t3570.pkbuf = NULL;
+
     /* SBI Type */
     amf_ue->sbi.type = OGS_SBI_OBJ_UE_TYPE;
 
@@ -1177,26 +1231,6 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
     amf_ue->nas.access_type = OGS_ACCESS_TYPE_3GPP;
     amf_ue->nas.amf.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
     amf_ue->abba_len = 2;
-
-    /* Add All Timers */
-    amf_ue->t3513.timer = ogs_timer_add(
-            ogs_app()->timer_mgr, amf_timer_t3513_expire, amf_ue);
-    amf_ue->t3513.pkbuf = NULL;
-    amf_ue->t3522.timer = ogs_timer_add(
-            ogs_app()->timer_mgr, amf_timer_t3522_expire, amf_ue);
-    amf_ue->t3522.pkbuf = NULL;
-    amf_ue->t3550.timer = ogs_timer_add(
-            ogs_app()->timer_mgr, amf_timer_t3550_expire, amf_ue);
-    amf_ue->t3550.pkbuf = NULL;
-    amf_ue->t3555.timer = ogs_timer_add(
-            ogs_app()->timer_mgr, amf_timer_t3555_expire, amf_ue);
-    amf_ue->t3555.pkbuf = NULL;
-    amf_ue->t3560.timer = ogs_timer_add(
-            ogs_app()->timer_mgr, amf_timer_t3560_expire, amf_ue);
-    amf_ue->t3560.pkbuf = NULL;
-    amf_ue->t3570.timer = ogs_timer_add(
-            ogs_app()->timer_mgr, amf_timer_t3570_expire, amf_ue);
-    amf_ue->t3570.pkbuf = NULL;
 
     amf_ue_fsm_init(amf_ue);
 

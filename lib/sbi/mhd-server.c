@@ -135,7 +135,11 @@ static ogs_sbi_session_t *session_add(ogs_sbi_server_t *server,
 
     sbi_sess->timer = ogs_timer_add(
             ogs_app()->timer_mgr, session_timer_expired, sbi_sess);
-    ogs_assert(sbi_sess->timer);
+    if (!sbi_sess->timer) {
+        ogs_error("ogs_timer_add() failed");
+        ogs_pool_free(&session_pool, sbi_sess);
+        return NULL;
+    }
 
     /* If User does not send HTTP response within deadline,
      * Open5GS will assert this program. */

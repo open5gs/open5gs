@@ -1943,6 +1943,14 @@ enb_ue_t *enb_ue_add(mme_enb_t *enb, uint32_t enb_ue_s1ap_id)
     ogs_assert(enb_ue);
     memset(enb_ue, 0, sizeof *enb_ue);
 
+    enb_ue->t_s1_holding = ogs_timer_add(
+            ogs_app()->timer_mgr, mme_timer_s1_holding_timer_expire, enb_ue);
+    if (!enb_ue->t_s1_holding) {
+        ogs_error("ogs_timer_add() failed");
+        ogs_pool_free(&enb_ue_pool, enb_ue);
+        return NULL;
+    }
+
     enb_ue->index = ogs_pool_index(&enb_ue_pool, enb_ue);
     ogs_assert(enb_ue->index > 0 && enb_ue->index <= ogs_app()->max.ue);
 
@@ -1958,10 +1966,6 @@ enb_ue_t *enb_ue_add(mme_enb_t *enb, uint32_t enb_ue_s1ap_id)
     ogs_assert((enb->max_num_of_ostreams-1) >= 1); /* NEXT_ID(MAX >= MIN) */
     enb_ue->enb_ostream_id =
         OGS_NEXT_ID(enb->ostream_id, 1, enb->max_num_of_ostreams-1);
-
-    enb_ue->t_s1_holding = ogs_timer_add(
-            ogs_app()->timer_mgr, mme_timer_s1_holding_timer_expire, enb_ue);
-    ogs_assert(enb_ue->t_s1_holding);
 
     enb_ue->enb = enb;
 
@@ -2047,7 +2051,11 @@ sgw_ue_t *sgw_ue_add(mme_sgw_t *sgw)
 
     sgw_ue->t_s11_holding = ogs_timer_add(
             ogs_app()->timer_mgr, mme_timer_s11_holding_timer_expire, sgw_ue);
-    ogs_assert(sgw_ue->t_s11_holding);
+    if (!sgw_ue->t_s11_holding) {
+        ogs_error("ogs_timer_add() failed");
+        ogs_pool_free(&sgw_ue_pool, sgw_ue);
+        return NULL;
+    }
 
     sgw_ue->sgw = sgw;
 
@@ -2259,6 +2267,48 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
     ogs_assert(mme_ue);
     memset(mme_ue, 0, sizeof *mme_ue);
 
+    /* Add All Timers */
+    mme_ue->t3413.timer = ogs_timer_add(
+            ogs_app()->timer_mgr, mme_timer_t3413_expire, mme_ue);
+    if (!mme_ue->t3413.timer) {
+        ogs_error("ogs_timer_add() failed");
+        ogs_pool_free(&mme_ue_pool, mme_ue);
+        return NULL;
+    }
+    mme_ue->t3413.pkbuf = NULL;
+    mme_ue->t3422.timer = ogs_timer_add(
+            ogs_app()->timer_mgr, mme_timer_t3422_expire, mme_ue);
+    if (!mme_ue->t3422.timer) {
+        ogs_error("ogs_timer_add() failed");
+        ogs_pool_free(&mme_ue_pool, mme_ue);
+        return NULL;
+    }
+    mme_ue->t3422.pkbuf = NULL;
+    mme_ue->t3450.timer = ogs_timer_add(
+            ogs_app()->timer_mgr, mme_timer_t3450_expire, mme_ue);
+    if (!mme_ue->t3450.timer) {
+        ogs_error("ogs_timer_add() failed");
+        ogs_pool_free(&mme_ue_pool, mme_ue);
+        return NULL;
+    }
+    mme_ue->t3450.pkbuf = NULL;
+    mme_ue->t3460.timer = ogs_timer_add(
+            ogs_app()->timer_mgr, mme_timer_t3460_expire, mme_ue);
+    if (!mme_ue->t3460.timer) {
+        ogs_error("ogs_timer_add() failed");
+        ogs_pool_free(&mme_ue_pool, mme_ue);
+        return NULL;
+    }
+    mme_ue->t3460.pkbuf = NULL;
+    mme_ue->t3470.timer = ogs_timer_add(
+            ogs_app()->timer_mgr, mme_timer_t3470_expire, mme_ue);
+    if (!mme_ue->t3470.timer) {
+        ogs_error("ogs_timer_add() failed");
+        ogs_pool_free(&mme_ue_pool, mme_ue);
+        return NULL;
+    }
+    mme_ue->t3470.pkbuf = NULL;
+
     mme_ebi_pool_init(mme_ue);
 
     ogs_list_init(&mme_ue->sess_list);
@@ -2289,23 +2339,6 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
     /* Clear VLR */
     mme_ue->csmap = NULL;
     mme_ue->vlr_ostream_id = 0;
-
-    /* Add All Timers */
-    mme_ue->t3413.timer = ogs_timer_add(
-            ogs_app()->timer_mgr, mme_timer_t3413_expire, mme_ue);
-    mme_ue->t3413.pkbuf = NULL;
-    mme_ue->t3422.timer = ogs_timer_add(
-            ogs_app()->timer_mgr, mme_timer_t3422_expire, mme_ue);
-    mme_ue->t3422.pkbuf = NULL;
-    mme_ue->t3450.timer = ogs_timer_add(
-            ogs_app()->timer_mgr, mme_timer_t3450_expire, mme_ue);
-    mme_ue->t3450.pkbuf = NULL;
-    mme_ue->t3460.timer = ogs_timer_add(
-            ogs_app()->timer_mgr, mme_timer_t3460_expire, mme_ue);
-    mme_ue->t3460.pkbuf = NULL;
-    mme_ue->t3470.timer = ogs_timer_add(
-            ogs_app()->timer_mgr, mme_timer_t3470_expire, mme_ue);
-    mme_ue->t3470.pkbuf = NULL;
 
     mme_ue_fsm_init(mme_ue);
 

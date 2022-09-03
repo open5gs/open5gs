@@ -46,10 +46,17 @@ void ogs_timer_mgr_destroy(ogs_timer_mgr_t *manager);
 
 ogs_timer_t *ogs_timer_add(
         ogs_timer_mgr_t *manager, void (*cb)(void *data), void *data);
-void ogs_timer_delete(ogs_timer_t *timer);
+#define ogs_timer_delete(timer) \
+    ogs_timer_delete_debug(timer, OGS_FILE_LINE)
+void ogs_timer_delete_debug(ogs_timer_t *timer, const char *file_line);
 
-void ogs_timer_start(ogs_timer_t *timer, ogs_time_t duration);
-void ogs_timer_stop(ogs_timer_t *timer);
+#define ogs_timer_start(timer, duration) \
+    ogs_timer_start_debug(timer, duration, OGS_FILE_LINE)
+void ogs_timer_start_debug(
+        ogs_timer_t *timer, ogs_time_t duration, const char *file_line);
+#define ogs_timer_stop(timer) \
+    ogs_timer_stop_debug(timer, OGS_FILE_LINE)
+void ogs_timer_stop_debug(ogs_timer_t *timer, const char *file_line);
 
 ogs_time_t ogs_timer_mgr_next(ogs_timer_mgr_t *manager);
 void ogs_timer_mgr_expire(ogs_timer_mgr_t *manager);

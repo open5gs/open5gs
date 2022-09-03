@@ -106,10 +106,13 @@ ogs_sbi_client_t *ogs_sbi_client_add(ogs_sockaddr_t *addr)
 
     ogs_assert(OGS_OK == ogs_copyaddrinfo(&client->node.addr, addr));
 
-    ogs_list_init(&client->connection_list);
-
     client->t_curl = ogs_timer_add(
             ogs_app()->timer_mgr, multi_timer_expired, client);
+    if (!client->t_curl) {
+        ogs_error("ogs_timer_add() failed");
+        ogs_pool_free(&client_pool, client);
+        return NULL;
+    }
 
     multi = client->multi = curl_multi_init();
     ogs_assert(multi);
@@ -121,6 +124,8 @@ ogs_sbi_client_t *ogs_sbi_client_add(ogs_sockaddr_t *addr)
     curl_multi_setopt(multi, CURLMOPT_MAX_CONCURRENT_STREAMS,
                         ogs_app()->pool.stream);
 #endif
+
+    ogs_list_init(&client->connection_list);
 
     ogs_list_add(&ogs_sbi_self()->client_list, client);
 
