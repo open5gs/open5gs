@@ -689,8 +689,5 @@ if [ "$1" = "showfiltered" ]; then
    mongo --eval "db.subscribers.find({},{'_id':0,'imsi':1,'security.k':1, 'security.opc':1,'slice.session.name':1,'slice.session.ue.addr':1})" $DB_URI
         exit $?
 fi
-    echo "open5gs-dbctl: incorrect number of args, format is \"open5gs-dbctl add imsi key opc\""
-    exit 1
-fi
 
 display_help
