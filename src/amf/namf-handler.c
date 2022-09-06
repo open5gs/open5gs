@@ -565,7 +565,8 @@ int amf_namf_callback_handle_dereg_notify(
      */
 
 
-    if (CM_CONNECTED(amf_ue))
+    if ((CM_CONNECTED(amf_ue)) &&
+        (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered)))
     {
         amf_ue->network_initiated_de_reg = true;
 
@@ -575,17 +576,25 @@ int amf_namf_callback_handle_dereg_notify(
             amf_sbi_send_release_all_sessions(
                 amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
 
-            if (ogs_list_count(&amf_ue->sess_list) == 0)
+            if ((ogs_list_count(&amf_ue->sess_list) == 0) &&
+                (PCF_AM_POLICY_ASSOCIATED(amf_ue)))
+            {
                 ogs_assert(true ==
                     amf_ue_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,
                         amf_npcf_am_policy_control_build_delete, amf_ue, NULL));
+            }
 
             OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_de_registered);
     }
     else if (CM_IDLE(amf_ue)) {
         /* TODO: need to page UE */
         /*ngap_send_paging(amf_ue);*/
+    }
+    else {
+        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+        ogs_error("[%s] Deregistration notification for UE in wrong state", amf_ue->supi);
+        goto cleanup;
     }
 
 cleanup:
