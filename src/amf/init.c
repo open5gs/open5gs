@@ -49,12 +49,12 @@ int amf_initialize()
     rv = amf_m_tmsi_pool_generate();
     if (rv != OGS_OK) return rv;
 
-    rv = amf_metrics_open();
-    if (rv != 0) return OGS_ERROR;
-
     rv = ogs_log_config_domain(
             ogs_app()->logger.domain, ogs_app()->logger.level);
     if (rv != OGS_OK) return rv;
+
+    rv = amf_metrics_open();
+    if (rv != 0) return OGS_ERROR;
 
     rv = amf_sbi_open();
     if (rv != OGS_OK) return rv;
