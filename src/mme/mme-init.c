@@ -55,15 +55,15 @@ int mme_initialize()
     rv = mme_context_parse_config();
     if (rv != OGS_OK) return rv;
 
-    rv = mme_metrics_open();
-    if (rv != 0) return OGS_ERROR;
-
     rv = ogs_log_config_domain(
             ogs_app()->logger.domain, ogs_app()->logger.level);
     if (rv != OGS_OK) return rv;
 
     rv = mme_m_tmsi_pool_generate();
     if (rv != OGS_OK) return rv;
+
+    rv = mme_metrics_open();
+    if (rv != 0) return OGS_ERROR;
 
     rv = mme_fd_init();
     if (rv != OGS_OK) return OGS_ERROR;
