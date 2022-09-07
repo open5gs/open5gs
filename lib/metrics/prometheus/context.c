@@ -104,7 +104,7 @@ ogs_metrics_context_t *ogs_metrics_self(void)
     return &self;
 }
 
-int ogs_metrics_context_parse_config(void)
+int ogs_metrics_context_parse_config(const char *local)
 {
     int family = AF_UNSPEC;
     const char *hostname = NULL;
@@ -121,17 +121,26 @@ int ogs_metrics_context_parse_config(void)
     while (ogs_yaml_iter_next(&root_iter)) {
         const char *root_key = ogs_yaml_iter_key(&root_iter);
         ogs_assert(root_key);
-        if (!strcmp(root_key, "metrics")) {
+        if (local && !strcmp(root_key, local)) {
             ogs_yaml_iter_t local_iter;
             ogs_yaml_iter_recurse(&root_iter, &local_iter);
             while (ogs_yaml_iter_next(&local_iter)) {
                 const char *local_key = ogs_yaml_iter_key(&local_iter);
-                if (!strcmp(local_key, "addr")) {
-                    if ((v = ogs_yaml_iter_value(&local_iter)))
-                        hostname = v;
-                } else if (!strcmp(local_key, "port")) {
-                    if ((v = ogs_yaml_iter_value(&local_iter)))
-                        port = atoi(v);
+                ogs_assert(local_key);
+                if (!strcmp(local_key, "metrics")) {
+                    ogs_yaml_iter_t metrics_iter;
+                    ogs_yaml_iter_recurse(&local_iter, &metrics_iter);
+                    while (ogs_yaml_iter_next(&metrics_iter)) {
+                        const char *metrics_key = ogs_yaml_iter_key(&metrics_iter);
+                        ogs_assert(metrics_key);
+                        if (!strcmp(metrics_key, "addr")) {
+                            if ((v = ogs_yaml_iter_value(&metrics_iter)))
+                                hostname = v;
+                        } else if (!strcmp(metrics_key, "port")) {
+                            if ((v = ogs_yaml_iter_value(&metrics_iter)))
+                                port = atoi(v);
+                        }
+                    }
                 }
             }
         }

@@ -1277,6 +1277,8 @@ int mme_context_parse_config()
                             YAML_SEQUENCE_NODE);
                 } else if (!strcmp(mme_key, "mme_name")) {
                     self.mme_name = ogs_yaml_iter_value(&mme_iter);
+                } else if (!strcmp(mme_key, "metrics")) {
+                    /* handle config in metrics library */
                 } else
                     ogs_warn("unknown key `%s`", mme_key);
             }

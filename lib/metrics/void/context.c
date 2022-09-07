@@ -50,7 +50,7 @@ ogs_metrics_context_t *ogs_metrics_self(void)
     return &self;
 }
 
-int ogs_metrics_context_parse_config(void)
+int ogs_metrics_context_parse_config(const char *local)
 {
     return OGS_OK;
 }

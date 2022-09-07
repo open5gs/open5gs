@@ -39,7 +39,7 @@ void ogs_metrics_context_open(ogs_metrics_context_t *ctx);
 void ogs_metrics_context_close(ogs_metrics_context_t *ctx);
 void ogs_metrics_context_final(void);
 ogs_metrics_context_t *ogs_metrics_self(void);
-int ogs_metrics_context_parse_config(void);
+int ogs_metrics_context_parse_config(const char *local);
 
 typedef struct ogs_metrics_spec_s ogs_metrics_spec_t;
 ogs_metrics_spec_t *ogs_metrics_spec_new(

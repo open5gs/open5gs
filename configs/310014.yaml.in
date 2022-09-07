@@ -43,6 +43,9 @@ mme:
       - addr: 127.0.0.2
     gtpc:
       - addr: 127.0.0.2
+    metrics:
+        addr: 127.0.0.2
+        port: 9090
     gummei:
       plmn_id:
         mcc: 310
@@ -79,6 +82,9 @@ smf:
     gtpu:
       - addr: 127.0.0.4
       - addr: ::1
+    metrics:
+        addr: 127.0.0.4
+        port: 9090
     subnet:
       - addr: 10.45.0.1/16
       - addr: 2001:db8:cafe::1/48
@@ -111,6 +117,9 @@ amf:
         port: 7777
     ngap:
       - addr: 127.0.0.5
+    metrics:
+        addr: 127.0.0.5
+        port: 9090
     guami:
       - plmn_id:
           mcc: 310
