@@ -299,7 +299,7 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
                     </div>
                   }
                   <div className="body" style={{color:oc.gray[5]}}>
-                    <div className="medium_data">DNN/APN</div>
+                    <div className="large_data">DNN/APN</div>
                     <div className="medium_data">Type</div>
                     <div className="small_data">5QI/QCI</div>
                     <div className="small_data">ARP</div>
@@ -312,7 +312,7 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
                       slice.session.map(session =>
                     <div key={session.name}>
                       <div className="body">
-                        <div className="medium_data">{session.name}</div>
+                        <div className="large_data">{session.name}</div>
                         <div className="medium_data">{
                             session.type === 1 ? "IPv4" :
                             session.type === 2 ? "IPv6" :
