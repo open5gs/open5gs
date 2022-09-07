@@ -13,6 +13,8 @@ const Subscriber = new Schema({
 
   msisdn: [ String ],
   imeisv: [ String ],
+  mme_host: [ String ],
+  mme_realm: [ String ],  
 
   security: {
     k: String,

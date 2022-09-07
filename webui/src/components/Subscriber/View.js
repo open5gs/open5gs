@@ -10,6 +10,7 @@ import CloseIcon from 'react-icons/lib/md/close';
 
 import PhoneIcon from 'react-icons/lib/md/phone';
 import SecurityIcon from 'react-icons/lib/md/security';
+import MmeIcon from 'react-icons/lib/md/router';
 import PdnIcon from 'react-icons/lib/md/cast';
 import KeyboardControlIcon from 'react-icons/lib/md/keyboard-control';
 
@@ -163,6 +164,8 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
   const imsi = (subscriber || {}).imsi;
   const msisdn_list = ((subscriber || {}).msisdn || []);
   const imeisv = (subscriber || {}).imeisv;
+  const mme_host = (subscriber || {}).mme_host;
+  const mme_realm = (subscriber || {}).mme_realm;
   const security = ((subscriber || {}).security || {});
   const ambr = ((subscriber || {}).ambr || {});
   const slice_list = ((subscriber || {}).slice || []);
@@ -247,6 +250,25 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
                   }
                 </div>
               </div>
+              {mme_host && mme_host.length !== 0 &&
+                <div className="body">
+                  <div className="left">
+                    <MmeIcon/>
+                  </div>
+                  <div className="right">
+                    <div className="data">
+                      {mme_host}
+                      <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>MME Hostname</span>
+                    </div>
+                    {mme_realm &&
+                      <div className="data">
+                        {mme_realm}
+                        <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>MME Realm</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
               <div className="body">
                 <div className="left">
                   <PdnIcon/>

@@ -68,6 +68,12 @@ extern "C" {
 #define OGS_DIAM_S6A_VPLMN_DYNAMIC_ADDRESS_NOTALLOWED   (0)
 #define OGS_DIAM_S6A_VPLMN_DYNAMIC_ADDRESS_ALLOWED      (1)
 
+#define OGS_DIAM_S6A_CT_MME_UPDATE_PROCEDURE            (0)
+#define OGS_DIAM_S6A_CT_SGSN_UPDATE_PROCEDURE           (1)
+#define OGS_DIAM_S6A_CT_SUBSCRIPTION_WITHDRAWL          (2)
+#define OGS_DIAM_S6A_CT_UPDATE_PROCEDURE_IWF            (3)
+#define OGS_DIAM_S6A_CT_INITIAL_ATTACH_PROCEDURE        (4)
+
 extern struct dict_object *ogs_diam_s6a_application;
 
 extern struct dict_object *ogs_diam_s6a_cmd_air;

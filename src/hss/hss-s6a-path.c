@@ -21,6 +21,7 @@
 
 #include "hss-context.h"
 #include "hss-fd-path.h"
+#include "hss-s6a-path.h"
 
 /* handler for fallback cb */
 static struct disp_hdl *hdl_s6a_fb = NULL;
@@ -28,6 +29,26 @@ static struct disp_hdl *hdl_s6a_fb = NULL;
 static struct disp_hdl *hdl_s6a_air = NULL;
 /* handler for Update-Location-Request cb */
 static struct disp_hdl *hdl_s6a_ulr = NULL;
+/* handler for Cancel-Location-Answer cb */
+static void hss_s6a_cla_cb(void *data, struct msg **msg);
+/* handler for Insert-Subscriber-Data-Answer cb */
+static void hss_s6a_ida_cb(void *data, struct msg **msg);
+/* handler for Sessions */
+static struct session_handler *hss_s6a_reg = NULL;
+
+/* s6a Subscription-Data builder */
+static int hss_s6a_avp_add_subscription_data(
+    ogs_subscription_data_t *subscription_data, struct avp *avp, 
+    uint32_t subdatamask);
+
+struct sess_state {
+    char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
+};
+
+static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
+{
+    ogs_free(sess_data);
+}
 
 /* Default callback for the application. */
 static int hss_ogs_diam_s6a_fb_cb(struct msg **msg, struct avp *avp,
@@ -266,133 +287,32 @@ out:
     return 0;
 }
 
-/* Callback for incoming Update-Location-Request messages */
-static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
-        struct session *session, void *opaque, enum disp_action *act)
+/* s6a Subscription-Data builder */
+static int hss_s6a_avp_add_subscription_data(
+    ogs_subscription_data_t *subscription_data, struct avp *avp,
+    uint32_t subdatamask)
 {
     int ret;
-    struct msg *ans, *qry;
-
-    struct avp_hdr *hdr;
-    struct avp *avpch1;
     union avp_value val;
 
-    char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
-    char imeisv_bcd[OGS_MAX_IMEISV_BCD_LEN+1];
-
-    int rv;
-    uint32_t result_code = 0;
-    ogs_subscription_data_t subscription_data;
     ogs_slice_data_t *slice_data = NULL;
     struct sockaddr_in sin;
     struct sockaddr_in6 sin6;
 
-    ogs_plmn_id_t visited_plmn_id;
+    struct avp *avp_msisdn, *avp_a_msisdn;
+    struct avp *avp_access_restriction_data;
+    struct avp *avp_subscriber_status, *avp_network_access_mode;
+    struct avp *avp_ambr, *avp_max_bandwidth_ul, *avp_max_bandwidth_dl;
+    struct avp *avp_rau_tau_timer;
 
-    ogs_assert(msg);
+    /* Set the APN Configuration Profile */
+    struct avp *apn_configuration_profile;
+    struct avp *context_identifier;
+    struct avp *all_apn_configuration_included_indicator;
 
-    ogs_debug("Update-Location-Request");
+    int i;
 
-    memset(&subscription_data, 0, sizeof(ogs_subscription_data_t));
-
-    /* Create answer header */
-    qry = *msg;
-    ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
-    ogs_assert(ret == 0);
-    ans = *msg;
-
-    ret = fd_msg_search_avp(qry, ogs_diam_user_name, &avp);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_hdr(avp, &hdr);
-    ogs_assert(ret == 0);
-    ogs_cpystrn(imsi_bcd, (char*)hdr->avp_value->os.data,
-        ogs_min(hdr->avp_value->os.len, OGS_MAX_IMSI_BCD_LEN)+1);
-
-    rv = hss_db_subscription_data(imsi_bcd, &subscription_data);
-    if (rv != OGS_OK) {
-        ogs_error("Cannot get Subscription-Data for IMSI:'%s'", imsi_bcd);
-        result_code = OGS_DIAM_S6A_ERROR_USER_UNKNOWN;
-        goto out;
-    }
-
-    ret = fd_msg_search_avp(qry, ogs_diam_s6a_terminal_information, &avp);
-    ogs_assert(ret == 0);
-    if (avp) {
-        char *p, *last;
-
-        p = imeisv_bcd;
-        last = imeisv_bcd + OGS_MAX_IMEISV_BCD_LEN + 1;
-
-        ret = fd_avp_search_avp(avp, ogs_diam_s6a_imei, &avpch1);
-        ogs_assert(ret == 0);
-        if (avpch1) {
-            ret = fd_msg_avp_hdr(avpch1, &hdr);
-            ogs_assert(ret == 0);
-            if (hdr->avp_value->os.len) {
-                char *s = NULL;
-
-                ogs_assert(hdr->avp_value->os.data);
-                s = ogs_strndup(
-                        (const char *)hdr->avp_value->os.data,
-                        hdr->avp_value->os.len);
-                ogs_assert(s);
-                p = ogs_slprintf(p, last, "%s", s);
-
-                ogs_free(s);
-            }
-        }
-
-        ret = fd_avp_search_avp(avp, ogs_diam_s6a_software_version, &avpch1);
-        ogs_assert(ret == 0);
-        if (avpch1) {
-            ret = fd_msg_avp_hdr(avpch1, &hdr);
-            ogs_assert(ret == 0);
-            if (hdr->avp_value->os.len) {
-                char *s = NULL;
-
-                ogs_assert(hdr->avp_value->os.data);
-                s = ogs_strndup(
-                        (const char *)hdr->avp_value->os.data,
-                        hdr->avp_value->os.len);
-                ogs_assert(s);
-                p = ogs_slprintf(p, last, "%s", s);
-
-                ogs_free(s);
-            }
-        }
-
-        ogs_assert(OGS_OK == hss_db_update_imeisv(imsi_bcd, imeisv_bcd));
-    }
-
-    ret = fd_msg_search_avp(qry, ogs_diam_visited_plmn_id, &avp);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_hdr(avp, &hdr);
-    ogs_assert(ret == 0);
-    memcpy(&visited_plmn_id, hdr->avp_value->os.data, hdr->avp_value->os.len);
-
-    ret = fd_msg_search_avp(qry, ogs_diam_s6a_ulr_flags, &avp);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_hdr(avp, &hdr);
-    ogs_assert(ret == 0);
-    if (!(hdr->avp_value->u32 & OGS_DIAM_S6A_ULR_SKIP_SUBSCRIBER_DATA)) {
-        struct avp *avp_msisdn, *avp_a_msisdn;
-        struct avp *avp_access_restriction_data;
-        struct avp *avp_subscriber_status, *avp_network_access_mode;
-        struct avp *avp_ambr, *avp_max_bandwidth_ul, *avp_max_bandwidth_dl;
-        struct avp *avp_rau_tau_timer;
-
-        /* Set the APN Configuration Profile */
-        struct avp *apn_configuration_profile;
-        struct avp *context_identifier;
-        struct avp *all_apn_configuration_included_indicator;
-
-        int i;
-
-        /* Set the Subscription Data */
-
-        ret = fd_msg_avp_new(ogs_diam_s6a_subscription_data, 0, &avp);
-        ogs_assert(ret == 0);
-
+    if (subdatamask & OGS_HSS_SUBDATA_MSISDN) {
         /*
          * TS29.328
          * 6.3.2 MSISDN AVP
@@ -405,65 +325,73 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
          * bits 8 to 5 of octet n encode digit 2n;
          * bits 4 to 1 of octet n encode digit 2(n-1)+1.
          */
-        if (subscription_data.num_of_msisdn >= 1)  {
+        if (subscription_data->num_of_msisdn >= 1)  {
             ret = fd_msg_avp_new(ogs_diam_s6a_msisdn, 0, &avp_msisdn);
             ogs_assert(ret == 0);
-            val.os.data = subscription_data.msisdn[0].buf;
-            val.os.len = subscription_data.msisdn[0].len;
+            val.os.data = subscription_data->msisdn[0].buf;
+            val.os.len = subscription_data->msisdn[0].len;
             ret = fd_msg_avp_setvalue(avp_msisdn, &val);
             ogs_assert(ret == 0);
             ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_msisdn);
             ogs_assert(ret == 0);
         }
 
-        if (subscription_data.num_of_msisdn >= 2)  {
+        if (subscription_data->num_of_msisdn >= 2)  {
             ret = fd_msg_avp_new(ogs_diam_s6a_a_msisdn, 0, &avp_a_msisdn);
             ogs_assert(ret == 0);
-            val.os.data = subscription_data.msisdn[1].buf;
-            val.os.len = subscription_data.msisdn[1].len;
+            val.os.data = subscription_data->msisdn[1].buf;
+            val.os.len = subscription_data->msisdn[1].len;
             ret = fd_msg_avp_setvalue(avp_a_msisdn, &val);
             ogs_assert(ret == 0);
             ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_a_msisdn);
             ogs_assert(ret == 0);
         }
+    }
 
-        if (subscription_data.access_restriction_data) {
+    if (subdatamask & OGS_HSS_SUBDATA_ARD) {
+        if (subscription_data->access_restriction_data) {
             ret = fd_msg_avp_new(ogs_diam_s6a_access_restriction_data, 0,
                     &avp_access_restriction_data);
             ogs_assert(ret == 0);
-            val.i32 = subscription_data.access_restriction_data;
+            val.i32 = subscription_data->access_restriction_data;
             ret = fd_msg_avp_setvalue( avp_access_restriction_data, &val);
             ogs_assert(ret == 0);
             ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD,
                     avp_access_restriction_data);
             ogs_assert(ret == 0);
         }
+    }
 
+    if (subdatamask & OGS_HSS_SUBDATA_SUB_STATUS) {
         ret = fd_msg_avp_new(
                 ogs_diam_s6a_subscriber_status, 0, &avp_subscriber_status);
         ogs_assert(ret == 0);
-        val.i32 = subscription_data.subscriber_status;
+        val.i32 = subscription_data->subscriber_status;
         ret = fd_msg_avp_setvalue(avp_subscriber_status, &val);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_subscriber_status);
         ogs_assert(ret == 0);
+    }
 
+    if (subdatamask & OGS_HSS_SUBDATA_NAM) {
         ret = fd_msg_avp_new(ogs_diam_s6a_network_access_mode, 0,
                     &avp_network_access_mode);
         ogs_assert(ret == 0);
-        val.i32 = subscription_data.network_access_mode;
+        val.i32 = subscription_data->network_access_mode;
         ret = fd_msg_avp_setvalue(avp_network_access_mode, &val);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_network_access_mode);
         ogs_assert(ret == 0);
+    }
 
+    if (subdatamask & OGS_HSS_SUBDATA_UEAMBR) {
         /* Set the AMBR */
         ret = fd_msg_avp_new(ogs_diam_s6a_ambr, 0, &avp_ambr);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_new(
                 ogs_diam_s6a_max_bandwidth_ul, 0, &avp_max_bandwidth_ul);
         ogs_assert(ret == 0);
-        val.u32 = ogs_uint64_to_uint32(subscription_data.ambr.uplink);
+        val.u32 = ogs_uint64_to_uint32(subscription_data->ambr.uplink);
         ret = fd_msg_avp_setvalue(avp_max_bandwidth_ul, &val);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add(
@@ -472,7 +400,7 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
         ret = fd_msg_avp_new(
                 ogs_diam_s6a_max_bandwidth_dl, 0, &avp_max_bandwidth_dl);
         ogs_assert(ret == 0);
-        val.u32 = ogs_uint64_to_uint32(subscription_data.ambr.downlink);
+        val.u32 = ogs_uint64_to_uint32(subscription_data->ambr.downlink);
         ret = fd_msg_avp_setvalue(avp_max_bandwidth_dl, &val);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add(
@@ -480,31 +408,34 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_ambr);
         ogs_assert(ret == 0);
+    }
 
+    if (subdatamask & OGS_HSS_SUBDATA_RAU_TAU_TIMER) {
         /* Set the Subscribed RAU TAU Timer */
         ret = fd_msg_avp_new(
                 ogs_diam_s6a_subscribed_rau_tau_timer, 0, &avp_rau_tau_timer);
         ogs_assert(ret == 0);
-        val.i32 = subscription_data.subscribed_rau_tau_timer * 60; /* seconds */
+        /* seconds */
+        val.i32 = subscription_data->subscribed_rau_tau_timer * 60;
         ret = fd_msg_avp_setvalue(avp_rau_tau_timer, &val);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_rau_tau_timer);
         ogs_assert(ret == 0);
+    }
 
+    if (subdatamask & OGS_HSS_SUBDATA_SLICE) {
         /* For EPC, we'll use first Slice in Subscription */
-        if (subscription_data.num_of_slice)
-            slice_data = &subscription_data.slice[0];
+        if (subscription_data->num_of_slice)
+            slice_data = &subscription_data->slice[0];
 
         if (!slice_data) {
-            ogs_error("[%s] Cannot find S-NSSAI", imsi_bcd);
-            result_code = OGS_DIAM_S6A_ERROR_UNKNOWN_EPS_SUBSCRIPTION;
-            goto out;
+            ogs_error("[%s] Cannot find S-NSSAI", subscription_data->imsi);
+            return OGS_ERROR;
         }
 
         if (!slice_data->num_of_session) {
-            ogs_error("[%s] No PDN", imsi_bcd);
-            result_code = OGS_DIAM_S6A_ERROR_UNKNOWN_EPS_SUBSCRIPTION;
-            goto out;
+            ogs_error("[%s] No PDN", subscription_data->imsi);
+            return OGS_ERROR;
         }
 
         ret = fd_msg_avp_new(ogs_diam_s6a_apn_configuration_profile, 0,
@@ -583,7 +514,7 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
 
             /* Set Served-Party-IP-Address */
             if ((session->session_type == OGS_PDU_SESSION_TYPE_IPV4 ||
-                 session->session_type == OGS_PDU_SESSION_TYPE_IPV4V6) &&
+                    session->session_type == OGS_PDU_SESSION_TYPE_IPV4V6) &&
                 session->ue_ip.ipv4) {
                 ret = fd_msg_avp_new(ogs_diam_s6a_served_party_ip_address,
                         0, &served_party_ip_address);
@@ -598,7 +529,7 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
             }
 
             if ((session->session_type == OGS_PDU_SESSION_TYPE_IPV6 ||
-                 session->session_type == OGS_PDU_SESSION_TYPE_IPV4V6) &&
+                    session->session_type == OGS_PDU_SESSION_TYPE_IPV4V6) &&
                 session->ue_ip.ipv6) {
                 ret = fd_msg_avp_new(ogs_diam_s6a_served_party_ip_address,
                         0, &served_party_ip_address);
@@ -786,11 +717,164 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
             ret = fd_msg_avp_add(apn_configuration_profile,
                     MSG_BRW_LAST_CHILD, apn_configuration);
             ogs_assert(ret == 0);
+            
         }
         ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD,
                 apn_configuration_profile);
         ogs_assert(ret == 0);
+    }
 
+    return OGS_OK;
+}
+
+/* Callback for incoming Update-Location-Request messages */
+static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
+        struct session *session, void *opaque, enum disp_action *act)
+{
+    int ret;
+    struct msg *ans, *qry;
+
+    struct avp_hdr *hdr;
+    struct avp *avpch1;
+    union avp_value val;
+
+    char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
+    char imeisv_bcd[OGS_MAX_IMEISV_BCD_LEN+1];
+
+    char mme_host[OGS_MAX_FQDN_LEN+1];
+    char mme_realm[OGS_MAX_FQDN_LEN+1];
+
+    int rv;
+    uint32_t result_code = 0;
+    ogs_subscription_data_t subscription_data;
+
+    ogs_plmn_id_t visited_plmn_id;
+
+    ogs_assert(msg);
+
+    ogs_debug("Update-Location-Request");
+
+    memset(&subscription_data, 0, sizeof(ogs_subscription_data_t));
+
+    /* Create answer header */
+    qry = *msg;
+    ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
+    ogs_assert(ret == 0);
+    ans = *msg;
+
+    ret = fd_msg_search_avp(qry, ogs_diam_user_name, &avp);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_hdr(avp, &hdr);
+    ogs_assert(ret == 0);
+    ogs_cpystrn(imsi_bcd, (char*)hdr->avp_value->os.data,
+        ogs_min(hdr->avp_value->os.len, OGS_MAX_IMSI_BCD_LEN)+1);
+
+    rv = hss_db_subscription_data(imsi_bcd, &subscription_data);
+    if (rv != OGS_OK) {
+        ogs_error("Cannot get Subscription-Data for IMSI:'%s'", imsi_bcd);
+        result_code = OGS_DIAM_S6A_ERROR_USER_UNKNOWN;
+        goto out;
+    }
+
+    ret = fd_msg_search_avp(qry, ogs_diam_origin_host, &avp);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_hdr(avp, &hdr);
+    ogs_assert(ret == 0);
+    ogs_cpystrn(mme_host, (char*)hdr->avp_value->os.data,
+        ogs_min(hdr->avp_value->os.len, OGS_MAX_FQDN_LEN)+1);
+
+    ret = fd_msg_search_avp(qry, ogs_diam_origin_realm, &avp);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_hdr(avp, &hdr);
+    ogs_assert(ret == 0);
+    ogs_cpystrn(mme_realm, (char*)hdr->avp_value->os.data,
+        ogs_min(hdr->avp_value->os.len, OGS_MAX_FQDN_LEN)+1);
+    
+    /* If UE is not purged at MME, determine if the MME sending the ULR  
+     * is different from the one that was last used.  if so, send CLR.
+     */
+    if (!subscription_data.mme_ispurged) {
+        if (strcmp(subscription_data.mme_host, mme_host) || 
+            strcmp(subscription_data.mme_realm, mme_realm)) {
+            hss_s6a_send_clr(imsi_bcd, subscription_data.mme_host, 
+                subscription_data.mme_realm, 
+                OGS_DIAM_S6A_CT_MME_UPDATE_PROCEDURE);
+            ogs_info("[%s] Sending Cancel Location to previous MME", imsi_bcd);
+        }
+    }
+
+    /* Update database with current MME and timestamp */
+    ogs_assert(OGS_OK == hss_db_update_mme(imsi_bcd, mme_host, mme_realm));
+
+    ret = fd_msg_search_avp(qry, ogs_diam_s6a_terminal_information, &avp);
+    ogs_assert(ret == 0);
+    if (avp) {
+        char *p, *last;
+
+        p = imeisv_bcd;
+        last = imeisv_bcd + OGS_MAX_IMEISV_BCD_LEN + 1;
+
+        ret = fd_avp_search_avp(avp, ogs_diam_s6a_imei, &avpch1);
+        ogs_assert(ret == 0);
+        if (avpch1) {
+            ret = fd_msg_avp_hdr(avpch1, &hdr);
+            ogs_assert(ret == 0);
+            if (hdr->avp_value->os.len) {
+                char *s = NULL;
+
+                ogs_assert(hdr->avp_value->os.data);
+                s = ogs_strndup(
+                        (const char *)hdr->avp_value->os.data,
+                        hdr->avp_value->os.len);
+                ogs_assert(s);
+                p = ogs_slprintf(p, last, "%s", s);
+
+                ogs_free(s);
+            }
+        }
+
+        ret = fd_avp_search_avp(avp, ogs_diam_s6a_software_version, &avpch1);
+        ogs_assert(ret == 0);
+        if (avpch1) {
+            ret = fd_msg_avp_hdr(avpch1, &hdr);
+            ogs_assert(ret == 0);
+            if (hdr->avp_value->os.len) {
+                char *s = NULL;
+
+                ogs_assert(hdr->avp_value->os.data);
+                s = ogs_strndup(
+                        (const char *)hdr->avp_value->os.data,
+                        hdr->avp_value->os.len);
+                ogs_assert(s);
+                p = ogs_slprintf(p, last, "%s", s);
+
+                ogs_free(s);
+            }
+        }
+
+        ogs_assert(OGS_OK == hss_db_update_imeisv(imsi_bcd, imeisv_bcd));
+    }
+
+    ret = fd_msg_search_avp(qry, ogs_diam_visited_plmn_id, &avp);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_hdr(avp, &hdr);
+    ogs_assert(ret == 0);
+    memcpy(&visited_plmn_id, hdr->avp_value->os.data, hdr->avp_value->os.len);
+
+    ret = fd_msg_search_avp(qry, ogs_diam_s6a_ulr_flags, &avp);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_hdr(avp, &hdr);
+    ogs_assert(ret == 0);
+    if (!(hdr->avp_value->u32 & OGS_DIAM_S6A_ULR_SKIP_SUBSCRIBER_DATA)) {
+        /* Set the Subscription Data */
+        ret = fd_msg_avp_new(ogs_diam_s6a_subscription_data, 0, &avp);
+        ogs_assert(ret == 0);
+        rv = hss_s6a_avp_add_subscription_data(&subscription_data, 
+            avp, OGS_HSS_SUBDATA_ALL);
+        if (rv != OGS_OK) {
+            result_code = OGS_DIAM_S6A_ERROR_UNKNOWN_EPS_SUBSCRIPTION;
+            goto out;
+        }
         ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
         ogs_assert(ret == 0);
     }
@@ -863,6 +947,323 @@ out:
     return 0;
 }
 
+/* HSS Sends Cancel Location Request to MME */
+void hss_s6a_send_clr(char *imsi_bcd, char *mme_host, char *mme_realm, 
+    uint32_t cancellation_type)
+{
+    int ret;
+
+    struct msg *req = NULL;
+    struct avp *avp;
+    union avp_value val;
+    struct sess_state *sess_data = NULL, *svg;
+    struct session *session = NULL;
+
+    ogs_debug("[HSS] Cancel-Location-Request");
+
+    /* Create the random value to store with the session */
+    sess_data = ogs_calloc(1, sizeof(*sess_data));
+    ogs_assert(sess_data);
+
+    /* Create the request */
+    ret = fd_msg_new(ogs_diam_s6a_cmd_clr, MSGFL_ALLOC_ETEID, &req);
+    ogs_assert(ret == 0);
+
+    /* Create a new session */
+    #define OGS_DIAM_S6A_APP_SID_OPT  "app_s6a"
+    ret = fd_msg_new_session(req, (os0_t)OGS_DIAM_S6A_APP_SID_OPT, 
+            CONSTSTRLEN(OGS_DIAM_S6A_APP_SID_OPT));
+    ogs_assert(ret == 0);
+    ret = fd_msg_sess_get(fd_g_config->cnf_dict, req, &session, NULL);
+    ogs_assert(ret == 0);
+
+    /* Set the Auth-Session-State AVP */
+    ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
+    ogs_assert(ret == 0);
+    val.i32 = OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    /* Set Origin-Host & Origin-Realm */
+    ret = fd_msg_add_origin(req, 0);
+    ogs_assert(ret == 0);
+
+    /* Set the Destination-Host AVP */
+    if (mme_host != NULL) {
+        ret = fd_msg_avp_new(ogs_diam_destination_host, 0, &avp);
+        ogs_assert(ret == 0);
+        val.os.data = (uint8_t *)mme_host;
+        val.os.len  = strlen(mme_host);
+        ret = fd_msg_avp_setvalue(avp, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+        ogs_assert(ret == 0);
+    }
+
+    /* Set the Destination-Realm AVP */
+    ret = fd_msg_avp_new(ogs_diam_destination_realm, 0, &avp);
+    ogs_assert(ret == 0);
+    if (mme_realm == NULL) {
+        val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
+        val.os.len  = strlen(fd_g_config->cnf_diamrlm);
+    } else {
+        val.os.data = (uint8_t *)mme_realm;
+        val.os.len  = strlen(mme_realm);
+    }
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    /* Set the User-Name AVP */
+    ret = fd_msg_avp_new(ogs_diam_user_name, 0, &avp);
+    ogs_assert(ret == 0);
+    val.os.data = (uint8_t *)imsi_bcd;
+    val.os.len  = strlen(imsi_bcd);
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    /* Set the CLR-Flags */
+    ret = fd_msg_avp_new(ogs_diam_s6a_clr_flags, 0, &avp);
+    ogs_assert(ret == 0);
+    if (cancellation_type == OGS_DIAM_S6A_CT_SUBSCRIPTION_WITHDRAWL) {
+        val.u32 = (OGS_DIAM_S6A_CLR_FLAGS_REATTACH_REQUIRED | 
+            OGS_DIAM_S6A_CLR_FLAGS_S6A_S6D_INDICATOR);
+    } else {
+        val.u32 = OGS_DIAM_S6A_CLR_FLAGS_S6A_S6D_INDICATOR;
+    }
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    /* Set the Cancellation-Type */
+    ret = fd_msg_avp_new(ogs_diam_s6a_cancellation_type, 0, &avp);
+    ogs_assert(ret == 0);
+    val.u32 = cancellation_type;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    /* Set Vendor-Specific-Application-Id AVP */
+    ret = ogs_diam_message_vendor_specific_appid_set(
+            req, OGS_DIAM_S6A_APPLICATION_ID);
+    ogs_assert(ret == 0);
+
+    /* Keep a pointer to the session data for debug purpose,
+     * in real life we would not need it */
+    svg = sess_data;
+
+    /* Store this value in the session */
+    ret = fd_sess_state_store(hss_s6a_reg, session, &sess_data); 
+    ogs_assert(ret == 0);
+    ogs_assert(sess_data == 0);
+
+    /* Send the request */
+    ret = fd_msg_send(&req, hss_s6a_cla_cb, svg);
+    ogs_assert(ret == 0);
+
+    /* Increment the counter */
+    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_diam_logger_self()->stats.nb_sent++;
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+}
+
+/* HSS received Cancel Location Answer from MME */
+static void hss_s6a_cla_cb(void *data, struct msg **msg)
+{
+    int ret;
+
+    struct sess_state *sess_data = NULL;
+    struct session *session;
+    int new;
+
+    ogs_debug("[HSS] Cancel-Location-Answer");
+
+    /* Search the session, retrieve its data */
+    ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
+    ogs_expect_or_return(ret == 0);
+    ogs_expect_or_return(new == 0);
+    
+    ret = fd_sess_state_retrieve(hss_s6a_reg, session, &sess_data);
+    ogs_expect_or_return(ret == 0);
+    ogs_expect_or_return(sess_data);
+    ogs_expect_or_return((void *)sess_data == data);
+
+    ret = fd_msg_free(*msg);
+    ogs_assert(ret == 0);
+    *msg = NULL;
+
+    state_cleanup(sess_data, NULL, NULL);
+    return;
+}
+
+/* HSS Sends Insert Subscriber Data Request to MME */
+/* arguments: flags, subscriber data, imsi */
+int hss_s6a_send_idr(char *imsi_bcd, uint32_t idr_flags, uint32_t subdatamask)
+{
+    int ret;
+
+    struct msg *req = NULL;
+    struct avp *avp;
+    union avp_value val;
+    struct sess_state *sess_data = NULL, *svg;
+    struct session *session = NULL;
+
+    ogs_subscription_data_t subscription_data;
+
+    ogs_debug("[HSS] Insert-Subscriber-Data-Request");
+
+    memset(&subscription_data, 0, sizeof(ogs_subscription_data_t));
+
+    ret = hss_db_subscription_data(imsi_bcd, &subscription_data);
+    if (ret != OGS_OK) {
+        ogs_error("Cannot get Subscription-Data for IMSI:'%s'", imsi_bcd);
+        return OGS_ERROR;
+    }
+
+    if (subscription_data.mme_ispurged) {
+        ogs_error("    [%s] UE Purged at MME.  Cannot send IDR.", imsi_bcd);
+        return OGS_ERROR;        
+    }    
+
+    /* Create the random value to store with the session */
+    sess_data = ogs_calloc(1, sizeof(*sess_data));
+    ogs_assert(sess_data);
+
+    /* Create the request */
+    ret = fd_msg_new(ogs_diam_s6a_cmd_idr, MSGFL_ALLOC_ETEID, &req);
+    ogs_assert(ret == 0);
+
+    /* Create a new session */
+    #define OGS_DIAM_S6A_APP_SID_OPT  "app_s6a"
+    ret = fd_msg_new_session(req, (os0_t)OGS_DIAM_S6A_APP_SID_OPT, 
+            CONSTSTRLEN(OGS_DIAM_S6A_APP_SID_OPT));
+    ogs_assert(ret == 0);
+    ret = fd_msg_sess_get(fd_g_config->cnf_dict, req, &session, NULL);
+    ogs_assert(ret == 0);
+
+    /* Set the Auth-Session-State AVP */
+    ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
+    ogs_assert(ret == 0);
+    val.i32 = OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    /* Set Origin-Host & Origin-Realm */
+    ret = fd_msg_add_origin(req, 0);
+    ogs_assert(ret == 0);
+
+    /* Need a Destination Host of the serving MME */
+
+    /* Set the Destination-Realm AVP */
+    ret = fd_msg_avp_new(ogs_diam_destination_realm, 0, &avp);
+    ogs_assert(ret == 0);
+    val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
+    val.os.len  = strlen(fd_g_config->cnf_diamrlm);
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    /* Set the User-Name AVP */
+    ret = fd_msg_avp_new(ogs_diam_user_name, 0, &avp);
+    ogs_assert(ret == 0);
+    val.os.data = (uint8_t *)imsi_bcd;
+    val.os.len  = strlen(imsi_bcd);
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    /* Set the IDR-Flags */
+    if (idr_flags) {
+        ret = fd_msg_avp_new(ogs_diam_s6a_idr_flags, 0, &avp);
+        ogs_assert(ret == 0);
+        val.u32 = idr_flags;
+        ret = fd_msg_avp_setvalue(avp, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+        ogs_assert(ret == 0);
+    }
+    
+    /* Set the Subscription Data */
+    ret = fd_msg_avp_new(ogs_diam_s6a_subscription_data, 0, &avp);
+    ogs_assert(ret == 0);
+        if (subdatamask) {
+            ret = hss_s6a_avp_add_subscription_data(&subscription_data,
+                avp, subdatamask);
+            if (ret != OGS_OK) {
+                ogs_error("    [%s] Could not build Subscription-Data.", 
+                    imsi_bcd);
+                return OGS_ERROR;   
+            }
+        }
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);    
+
+    /* Set Vendor-Specific-Application-Id AVP */
+    ret = ogs_diam_message_vendor_specific_appid_set(
+            req, OGS_DIAM_S6A_APPLICATION_ID);
+    ogs_assert(ret == 0);
+
+    /* Keep a pointer to the session data for debug purpose,
+     * in real life we would not need it */
+    svg = sess_data;
+
+    /* Store this value in the session */
+    ret = fd_sess_state_store(hss_s6a_reg, session, &sess_data); 
+    ogs_assert(ret == 0);
+    ogs_assert(sess_data == 0);
+
+    /* Send the request */
+    ret = fd_msg_send(&req, hss_s6a_ida_cb, svg);
+    ogs_assert(ret == 0);
+
+    /* Increment the counter */
+    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_diam_logger_self()->stats.nb_sent++;
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+
+    return OGS_OK;
+}
+
+/* HSS received Insert Subscriber Data Answer from MME */
+static void hss_s6a_ida_cb(void *data, struct msg **msg)
+{
+    int ret;
+
+    struct sess_state *sess_data = NULL;
+    struct session *session;
+    int new;
+
+    ogs_debug("[HSS] Insert-Subscriber-Data-Answer");
+
+    /* Search the session, retrieve its data */
+    ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
+    ogs_expect_or_return(ret == 0);
+    ogs_expect_or_return(new == 0);
+    
+    ret = fd_sess_state_retrieve(hss_s6a_reg, session, &sess_data);
+    ogs_expect_or_return(ret == 0);
+    ogs_expect_or_return(sess_data);
+    ogs_expect_or_return((void *)sess_data == data);
+
+    ret = fd_msg_free(*msg);
+    ogs_assert(ret == 0);
+    *msg = NULL;
+
+    state_cleanup(sess_data, NULL, NULL);
+    return;
+}
+
 int hss_s6a_init(void)
 {
     int ret;
@@ -874,6 +1275,10 @@ int hss_s6a_init(void)
 
     memset(&data, 0, sizeof(data));
     data.app = ogs_diam_s6a_application;
+
+    /* Create handler for sessions */
+    ret = fd_sess_handler_create(&hss_s6a_reg, state_cleanup, NULL, NULL);
+    ogs_assert(ret == 0);
 
     /* Fallback CB if command != unexpected message received */
     ret = fd_disp_register(hss_ogs_diam_s6a_fb_cb, DISP_HOW_APPID, &data, NULL,
@@ -901,6 +1306,11 @@ int hss_s6a_init(void)
 
 void hss_s6a_final(void)
 {
+    int ret;
+    
+    ret = fd_sess_handler_destroy(&hss_s6a_reg, NULL);
+    ogs_assert(ret == OGS_OK);
+
     if (hdl_s6a_fb)
         (void) fd_disp_unregister(&hdl_s6a_fb, NULL);
     if (hdl_s6a_air)
