@@ -16,7 +16,7 @@
 #
 #  o Set OGS_LOG_TRACE to all domain level
 #    level: trace
-#    domain: core,pfcp,fd,pfcp,gtp,smf,event,tlv,mem,sock
+#    domain: core,fd,pfcp,gtp,smf,event,tlv,mem,sock
 #
 logger:
     file: @localstatedir@/log/open5gs/smf.log
@@ -178,6 +178,13 @@ logger:
 #      addr: 127.0.0.4
 #      option:
 #        so_bindtodevice: vrf-blue
+#
+#  <Metrics Server>
+#
+#  o Metrics Server(http://<any address>:9090)
+#    metrics:
+#      addr: 0.0.0.0
+#      port: 9090
 #
 #  <Subnet for UE Pool>
 #
@@ -423,6 +430,9 @@ smf:
     gtpu:
       - addr: 127.0.0.4
       - addr: ::1
+    metrics:
+        addr: 127.0.0.4
+        port: 9090
     subnet:
       - addr: 10.45.0.1/16
       - addr: 2001:db8:cafe::1/48
@@ -599,17 +609,3 @@ max:
 #    handover:
 #        duration: 500
 time:
-
-#
-# metrics:
-#
-#  <Metrics Server>
-#
-#  o Metrics Server(http://<any address>:9090)
-#    metrics:
-#      addr: 0.0.0.0
-#      port: 9090
-#
-metrics:
-    addr: 127.0.0.4
-    port: 9090

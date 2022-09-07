@@ -175,6 +175,12 @@ logger:
 #              mnc: 02
 #            lac: 43693
 #
+#  <Metrics Server>
+#
+#  o Metrics Server(http://<any address>:9090)
+#    metrics:
+#      addr: 0.0.0.0
+#      port: 9090
 #
 #  <GUMMEI>
 #
@@ -248,6 +254,9 @@ mme:
       - addr: 127.0.0.2
     gtpc:
       - addr: 127.0.0.2
+    metrics:
+      addr: 127.0.0.2
+      port: 9090
     gummei:
       plmn_id:
         mcc: 999
@@ -421,17 +430,3 @@ usrsctp:
 #    handover:
 #        duration: 500
 time:
-
-#
-# metrics:
-#
-#  <Metrics Server>
-#
-#  o Metrics Server(http://<any address>:9090)
-#    metrics:
-#      addr: 0.0.0.0
-#      port: 9090
-#
-metrics:
-    addr: 127.0.0.2
-    port: 9090

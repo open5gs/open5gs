@@ -68,6 +68,9 @@ mme:
               mcc: 724
               mnc: 21
             lac: 51544
+    metrics:
+        addr: 127.0.0.2
+        port: 9090
     gummei:
       - plmn_id:
           mcc: 999
@@ -114,6 +117,9 @@ smf:
     gtpu:
       - addr: 127.0.0.4
       - addr: ::1
+    metrics:
+        addr: 127.0.0.4
+        port: 9090
     subnet:
       - addr: 10.45.0.1/16
       - addr: 2001:db8:cafe::1/48
@@ -144,6 +150,9 @@ amf:
     sbi:
       - addr: 127.0.0.5
         port: 7777
+    metrics:
+        addr: 127.0.0.5
+        port: 9090
     ngap:
       - addr: 127.0.0.5
     guami:

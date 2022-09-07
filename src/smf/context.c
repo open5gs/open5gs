@@ -835,6 +835,8 @@ int smf_context_parse_config(void)
                     /* handle config in sbi library */
                 } else if (!strcmp(smf_key, "discovery")) {
                     /* handle config in sbi library */
+                } else if (!strcmp(smf_key, "metrics")) {
+                    /* handle config in metrics library */
                 } else
                     ogs_warn("unknown key `%s`", smf_key);
             }
