@@ -396,7 +396,8 @@ int hss_db_update_imeisv(char *imsi_bcd, char *imeisv)
     return rv;
 }
 
-int hss_db_update_mme(char *imsi_bcd, char *mme_host, char *mme_realm)
+int hss_db_update_mme(char *imsi_bcd, char *mme_host, char *mme_realm,
+    bool mme_ispurged)
 {
     int rv;
     char *supi = NULL;
@@ -407,7 +408,7 @@ int hss_db_update_mme(char *imsi_bcd, char *mme_host, char *mme_realm)
     supi = ogs_msprintf("%s-%s", OGS_ID_SUPI_TYPE_IMSI, imsi_bcd);
     ogs_assert(supi);
 
-    rv = ogs_dbi_update_mme(supi, mme_host, mme_realm);
+    rv = ogs_dbi_update_mme(supi, mme_host, mme_realm, mme_ispurged);
 
     ogs_free(supi);
     ogs_thread_mutex_unlock(&self.db_lock);

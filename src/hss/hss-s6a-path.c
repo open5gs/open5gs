@@ -29,6 +29,8 @@ static struct disp_hdl *hdl_s6a_fb = NULL;
 static struct disp_hdl *hdl_s6a_air = NULL;
 /* handler for Update-Location-Request cb */
 static struct disp_hdl *hdl_s6a_ulr = NULL;
+/* handler for Purge-UE-Request cb */
+static struct disp_hdl *hdl_s6a_pur = NULL;
 /* handler for Cancel-Location-Answer cb */
 static void hss_s6a_cla_cb(void *data, struct msg **msg);
 /* handler for Insert-Subscriber-Data-Answer cb */
@@ -232,7 +234,7 @@ static int hss_ogs_diam_s6a_air_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
 
-    /* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
+    /* Set the Origin-Host, Origin-Realm, and Result-Code AVPs */
     ret = fd_msg_rescode_set(ans, (char*)"DIAMETER_SUCCESS", NULL, NULL, 1);
     ogs_assert(ret == 0);
 
@@ -806,7 +808,8 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
     }
 
     /* Update database with current MME and timestamp */
-    ogs_assert(OGS_OK == hss_db_update_mme(imsi_bcd, mme_host, mme_realm));
+    ogs_assert(OGS_OK == hss_db_update_mme(imsi_bcd, mme_host, mme_realm, 
+        false));
 
     ret = fd_msg_search_avp(qry, ogs_diam_s6a_terminal_information, &avp);
     ogs_assert(ret == 0);
@@ -881,7 +884,7 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
         ogs_assert(ret == 0);
     }
 
-    /* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
+    /* Set the Origin-Host, Origin-Realm, and Result-Code AVPs */
     ret = fd_msg_rescode_set(ans, (char*)"DIAMETER_SUCCESS", NULL, NULL, 1);
     ogs_assert(ret == 0);
 
@@ -945,6 +948,145 @@ out:
     ogs_assert(ret == 0);
 
     ogs_subscription_data_free(&subscription_data);
+
+    return 0;
+}
+
+/* Callback for incoming Purge-UE-Request messages */
+static int hss_ogs_diam_s6a_pur_cb( struct msg **msg, struct avp *avp,
+        struct session *session, void *opaque, enum disp_action *act)
+{
+    int ret, rv;
+
+    struct msg *ans, *qry;
+    struct avp_hdr *hdr;
+    union avp_value val;
+
+    ogs_subscription_data_t subscription_data;
+
+    char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
+    char mme_host[OGS_MAX_FQDN_LEN+1];
+    char mme_realm[OGS_MAX_FQDN_LEN+1];
+
+    uint32_t result_code = 0;
+
+    ogs_assert(msg);
+
+    ogs_debug("Purge-UE-Request");
+
+    memset(&subscription_data, 0, sizeof(ogs_subscription_data_t));
+
+    /* Create answer header */
+    qry = *msg;
+    ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
+    ogs_assert(ret == 0);
+    ans = *msg;
+
+    ret = fd_msg_search_avp(qry, ogs_diam_user_name, &avp);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_hdr(avp, &hdr);
+    ogs_assert(ret == 0);
+    ogs_cpystrn(imsi_bcd, (char*)hdr->avp_value->os.data,
+        ogs_min(hdr->avp_value->os.len, OGS_MAX_IMSI_BCD_LEN)+1);
+
+    rv = hss_db_subscription_data(imsi_bcd, &subscription_data);
+    if (rv != OGS_OK) {
+        ogs_error("Cannot get Subscription-Data for IMSI:'%s'", imsi_bcd);
+        result_code = OGS_DIAM_S6A_ERROR_USER_UNKNOWN;
+        goto out;
+    }
+
+    ret = fd_msg_search_avp(qry, ogs_diam_origin_host, &avp);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_hdr(avp, &hdr);
+    ogs_assert(ret == 0);
+    ogs_cpystrn(mme_host, (char*)hdr->avp_value->os.data,
+        ogs_min(hdr->avp_value->os.len, OGS_MAX_FQDN_LEN)+1);
+
+    ret = fd_msg_search_avp(qry, ogs_diam_origin_realm, &avp);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_hdr(avp, &hdr);
+    ogs_assert(ret == 0);
+    ogs_cpystrn(mme_realm, (char*)hdr->avp_value->os.data,
+        ogs_min(hdr->avp_value->os.len, OGS_MAX_FQDN_LEN)+1);
+
+    if (!strcmp(subscription_data.mme_host, mme_host) && 
+            !strcmp(subscription_data.mme_realm, mme_realm)) {
+        rv = hss_db_update_mme(imsi_bcd, mme_host, mme_realm, true);
+        if (rv != OGS_OK) {
+            ogs_error("Cannot update UE Purged at MME flag:'%s'", imsi_bcd);
+            ret = fd_msg_rescode_set(ans,
+                    (char*)"DIAMETER_UNABLE_TO_COMPLY", NULL, NULL, 1);
+            ogs_assert(ret == 0);
+            goto outnoexp;
+        }
+    }
+
+    /* Set the PUA Flags */
+    ret = fd_msg_avp_new(ogs_diam_s6a_pua_flags, 0, &avp);
+    ogs_assert(ret == 0);
+    if (!strcmp(subscription_data.mme_host, mme_host) && 
+            !strcmp(subscription_data.mme_realm, mme_realm)) {
+        val.i32 = OGS_DIAM_S6A_PUA_FLAGS_FREEZE_MTMSI;
+    } else {
+        val.i32 = 0;
+    }
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    /* Set the Origin-Host, Origin-Realm, and Result-Code AVPs */
+    ret = fd_msg_rescode_set(ans, (char*)"DIAMETER_SUCCESS", NULL, NULL, 1);
+    ogs_assert(ret == 0);
+
+    /* Set the Auth-Session-State AVP */
+    ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
+    ogs_assert(ret == 0);
+    val.i32 = OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    /* Set Vendor-Specific-Application-Id AVP */
+    ret = ogs_diam_message_vendor_specific_appid_set(
+            ans, OGS_DIAM_S6A_APPLICATION_ID);
+    ogs_assert(ret == 0);
+
+    /* Send the answer */
+    ret = fd_msg_send(msg, NULL, NULL);
+    ogs_assert(ret == 0);
+
+    ogs_debug("Purge-UE-Answer");
+
+    /* Add this value to the stats */
+    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_diam_logger_self()->stats.nb_echoed++;
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+
+    return 0;
+
+out:
+    ret = ogs_diam_message_experimental_rescode_set(ans, result_code);
+    ogs_assert(ret == 0);
+outnoexp:
+    /* Set the Auth-Session-State AVP */
+    ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
+    ogs_assert(ret == 0);
+    val.i32 = OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    /* Set Vendor-Specific-Application-Id AVP */
+    ret = ogs_diam_message_vendor_specific_appid_set(
+            ans, OGS_DIAM_S6A_APPLICATION_ID);
+    ogs_assert(ret == 0);
+
+    ret = fd_msg_send(msg, NULL, NULL);
+    ogs_assert(ret == 0);
 
     return 0;
 }
@@ -1299,6 +1441,12 @@ int hss_s6a_init(void)
                 &hdl_s6a_ulr);
     ogs_assert(ret == 0);
 
+    /* Specific handler for Purge-UE-Request */
+    data.command = ogs_diam_s6a_cmd_pur;
+    ret = fd_disp_register(hss_ogs_diam_s6a_pur_cb, DISP_HOW_CC, &data, NULL,
+                &hdl_s6a_pur);
+    ogs_assert(ret == 0);
+
     /* Advertise the support for the application in the peer */
     ret = fd_disp_app_support(ogs_diam_s6a_application, ogs_diam_vendor, 1, 0);
     ogs_assert(ret == 0);
@@ -1319,4 +1467,6 @@ void hss_s6a_final(void)
         (void) fd_disp_unregister(&hdl_s6a_air, NULL);
     if (hdl_s6a_ulr)
         (void) fd_disp_unregister(&hdl_s6a_ulr, NULL);
+    if (hdl_s6a_pur)
+        (void) fd_disp_unregister(&hdl_s6a_pur, NULL);
 }

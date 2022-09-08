@@ -189,7 +189,8 @@ int ogs_dbi_update_imeisv(char *supi, char *imeisv)
     return rv;
 }
 
-int ogs_dbi_update_mme(char *supi, char *mme_host, char *mme_realm)
+int ogs_dbi_update_mme(char *supi, char *mme_host, char *mme_realm, 
+    bool mme_ispurged)
 {
     int rv = OGS_OK;
     bson_t *query = NULL;
@@ -215,7 +216,7 @@ int ogs_dbi_update_mme(char *supi, char *mme_host, char *mme_realm)
                 "mme_host", BCON_UTF8(mme_host),
                 "mme_realm", BCON_UTF8(mme_realm),
                 "mme_timestamp", BCON_INT64(ogs_time_now()),
-                "mme_ispurged", BCON_BOOL(false),
+                "mme_ispurged", BCON_BOOL(mme_ispurged),
             "}");
     if (!mongoc_collection_update(ogs_mongoc()->collection.subscriber,
             MONGOC_UPDATE_UPSERT, query, update, NULL, &error)) {
