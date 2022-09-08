@@ -283,7 +283,7 @@ bsf_sess_t *bsf_sess_find_by_snssai_and_dnn(ogs_s_nssai_t *s_nssai, char *dnn)
 
     ogs_list_for_each(&self.sess_list, sess)
         if (sess->s_nssai.sst == s_nssai->sst &&
-            sess->dnn && strcmp(sess->dnn, dnn) == 0)
+            sess->dnn && ogs_strcasecmp(sess->dnn, dnn) == 0)
             return sess;
 
     return NULL;
