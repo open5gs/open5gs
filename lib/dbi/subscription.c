@@ -300,7 +300,6 @@ int ogs_dbi_subscription_data(char *supi,
     bson_iter_t child1_iter, child2_iter, child3_iter;
     bson_iter_t child4_iter, child5_iter, child6_iter;
     const char *utf8 = NULL;
-    bool booltmp;
     uint32_t length = 0;
 
     char *supi_type = NULL;
@@ -712,8 +711,7 @@ int ogs_dbi_subscription_data(char *supi,
                 utf8, ogs_min(length, OGS_MAX_FQDN_LEN)+1);
         } else if (!strcmp(key, "mme_ispurged") &&
             BSON_ITER_HOLDS_BOOL(&iter)) {
-            booltmp = bson_iter_bool(&iter);
-            subscription_data->mme_ispurged = booltmp;
+            subscription_data->mme_ispurged = bson_iter_bool(&iter);
         }
     }
 
