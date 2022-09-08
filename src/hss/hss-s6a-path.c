@@ -794,8 +794,10 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
      * is different from the one that was last used.  if so, send CLR.
      */
     if (!subscription_data.mme_ispurged) {
-        if (strcmp(subscription_data.mme_host, mme_host) || 
-            strcmp(subscription_data.mme_realm, mme_realm)) {
+        if ((strcmp(subscription_data.mme_host, mme_host) || 
+            strcmp(subscription_data.mme_realm, mme_realm)) &&
+            strlen(subscription_data.mme_host) > 0 &&
+            strlen(subscription_data.mme_realm) > 0) {
             hss_s6a_send_clr(imsi_bcd, subscription_data.mme_host, 
                 subscription_data.mme_realm, 
                 OGS_DIAM_S6A_CT_MME_UPDATE_PROCEDURE);
