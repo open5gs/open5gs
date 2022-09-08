@@ -1014,7 +1014,7 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                                         OGS_MAX_NUM_OF_SESS);
                                     break;
                                 }
-                                if (!strcmp(dnn->value,
+                                if (!ogs_strcasecmp(dnn->value,
                                             amf_ue->slice[i].session[k].name)) {
 
                                     selected_slice = amf_ue->slice + i;
