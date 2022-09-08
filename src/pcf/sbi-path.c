@@ -82,11 +82,6 @@ int pcf_sbi_open(void)
     bool smpolicycontrol_enabled = false;
     bool policyauthorization_enabled = false;
 
-    /* To be notified when NF Instances registered/deregistered in NRF
-     * or when their profile is modified */
-    ogs_sbi_add_to_be_notified_nf_type(OpenAPI_nf_type_BSF);
-    ogs_sbi_add_to_be_notified_nf_type(OpenAPI_nf_type_UDR);
-
     /* Add SELF NF instance */
     nf_instance = ogs_sbi_self()->nf_instance;
     ogs_assert(nf_instance);
@@ -96,8 +91,7 @@ int pcf_sbi_open(void)
     ogs_sbi_nf_instance_build_default(nf_instance, OpenAPI_nf_type_PCF);
     ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_AMF);
     ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_SMF);
-    ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_NEF);
-    ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_AF);
+    ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_SCP);
 
     /* Build NF service information. It will be transmitted to NRF. */
     if (ogs_sbi_nf_service_is_available(
@@ -108,7 +102,6 @@ int pcf_sbi_open(void)
         ogs_sbi_nf_service_add_version(
                     service, OGS_SBI_API_V1, OGS_SBI_API_V1_0_0, NULL);
         ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_AMF);
-        ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_NEF);
     }
 
     if (ogs_sbi_nf_service_is_available(
@@ -119,7 +112,6 @@ int pcf_sbi_open(void)
         ogs_sbi_nf_service_add_version(
                     service, OGS_SBI_API_V1, OGS_SBI_API_V1_0_0, NULL);
         ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_SMF);
-        ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_NEF);
 
         smpolicycontrol_enabled = true;
     }
@@ -131,8 +123,6 @@ int pcf_sbi_open(void)
         ogs_assert(service);
         ogs_sbi_nf_service_add_version(
                     service, OGS_SBI_API_V1, OGS_SBI_API_V1_0_0, NULL);
-        ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_AF);
-        ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_NEF);
 
         policyauthorization_enabled = true;
     }
@@ -170,6 +160,12 @@ int pcf_sbi_open(void)
          * by the above client callback. */
         ogs_sbi_nf_fsm_init(nf_instance);
     }
+
+    /* Build Subscription-Data */
+    ogs_sbi_subscription_data_build_default(
+            OpenAPI_nf_type_BSF, OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT);
+    ogs_sbi_subscription_data_build_default(
+            OpenAPI_nf_type_UDR, OGS_SBI_SERVICE_NAME_NUDR_DR);
 
     if (ogs_sbi_server_start_all(server_cb) != OGS_OK)
         return OGS_ERROR;

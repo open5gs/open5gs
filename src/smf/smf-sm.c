@@ -72,7 +72,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
     ogs_sbi_request_t *sbi_request = NULL;
 
     ogs_sbi_nf_instance_t *nf_instance = NULL;
-    ogs_sbi_subscription_t *subscription = NULL;
+    ogs_sbi_subscription_data_t *subscription_data = NULL;
     ogs_sbi_response_t *sbi_response = NULL;
     ogs_sbi_message_t sbi_message;
     ogs_sbi_xact_t *sbi_xact = NULL;
@@ -667,15 +667,15 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 break;
 
             CASE(OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS)
-                subscription = e->h.sbi.data;
-                ogs_assert(subscription);
+                subscription_data = e->h.sbi.data;
+                ogs_assert(subscription_data);
 
                 SWITCH(sbi_message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
                     if (sbi_message.res_status == OGS_SBI_HTTP_STATUS_CREATED ||
                         sbi_message.res_status == OGS_SBI_HTTP_STATUS_OK) {
                         ogs_nnrf_handle_nf_status_subscribe(
-                                subscription, &sbi_message);
+                                subscription_data, &sbi_message);
                     } else {
                         ogs_error("HTTP response error : %d",
                                 sbi_message.res_status);
@@ -685,7 +685,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 CASE(OGS_SBI_HTTP_METHOD_DELETE)
                     if (sbi_message.res_status ==
                             OGS_SBI_HTTP_STATUS_NO_CONTENT) {
-                        ogs_sbi_subscription_remove(subscription);
+                        ogs_sbi_subscription_data_remove(subscription_data);
                     } else {
                         ogs_error("HTTP response error : %d",
                                 sbi_message.res_status);
@@ -801,18 +801,15 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
 
         case OGS_TIMER_SUBSCRIPTION_VALIDITY:
-            subscription = e->h.sbi.data;
-            ogs_assert(subscription);
+            subscription_data = e->h.sbi.data;
+            ogs_assert(subscription_data);
 
-            ogs_assert(ogs_sbi_self()->nf_instance);
             ogs_assert(true ==
-                ogs_nnrf_nfm_send_nf_status_subscribe(subscription->client,
-                    ogs_sbi_self()->nf_instance->nf_type,
-                    subscription->req_nf_instance_id,
-                    subscription->subscr_cond.nf_type));
+                ogs_nnrf_nfm_send_nf_status_subscribe(subscription_data));
 
-            ogs_info("Subscription validity expired [%s]", subscription->id);
-            ogs_sbi_subscription_remove(subscription);
+            ogs_info("Subscription validity expired [%s]",
+                subscription_data->id);
+            ogs_sbi_subscription_data_remove(subscription_data);
             break;
 
         case OGS_TIMER_SBI_CLIENT_WAIT:

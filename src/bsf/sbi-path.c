@@ -79,10 +79,6 @@ int bsf_sbi_open(void)
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_nf_service_t *service = NULL;
 
-    /* To be notified when NF Instances registered/deregistered in NRF
-     * or when their profile is modified */
-    ogs_sbi_add_to_be_notified_nf_type(OpenAPI_nf_type_UDM);
-
     /* Add SELF NF instance */
     nf_instance = ogs_sbi_self()->nf_instance;
     ogs_assert(nf_instance);
@@ -91,6 +87,8 @@ int bsf_sbi_open(void)
     /* Build NF instance information. It will be transmitted to NRF. */
     ogs_sbi_nf_instance_build_default(nf_instance, OpenAPI_nf_type_BSF);
     ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_PCF);
+    ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_AF);
+    ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_SCP);
 
     /* Build NF service information. It will be transmitted to NRF. */
     if (ogs_sbi_nf_service_is_available(OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT)) {
@@ -100,6 +98,7 @@ int bsf_sbi_open(void)
         ogs_sbi_nf_service_add_version(
                     service, OGS_SBI_API_V1, OGS_SBI_API_V1_0_0, NULL);
         ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_PCF);
+        ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_AF);
     }
 
     /* Initialize NRF NF Instance */

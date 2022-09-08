@@ -92,19 +92,20 @@ void nrf_sbi_close(void)
     ogs_sbi_server_stop_all();
 }
 
-bool nrf_nnrf_nfm_send_nf_status_notify(ogs_sbi_subscription_t *subscription,
+bool nrf_nnrf_nfm_send_nf_status_notify(
+        ogs_sbi_subscription_data_t *subscription_data,
         OpenAPI_notification_event_type_e event,
         ogs_sbi_nf_instance_t *nf_instance)
 {
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_client_t *client = NULL;
 
-    ogs_assert(subscription);
-    client = subscription->client;
+    ogs_assert(subscription_data);
+    client = subscription_data->client;
     ogs_assert(client);
 
     request = nrf_nnrf_nfm_build_nf_status_notify(
-                subscription, event, nf_instance);
+                subscription_data, event, nf_instance);
     ogs_expect_or_return_val(request, false);
 
     return ogs_sbi_scp_send_request(client, client_notify_cb, request, NULL);
@@ -114,23 +115,41 @@ bool nrf_nnrf_nfm_send_nf_status_notify_all(
         OpenAPI_notification_event_type_e event,
         ogs_sbi_nf_instance_t *nf_instance)
 {
-    ogs_sbi_subscription_t *subscription = NULL;
+    ogs_sbi_subscription_data_t *subscription_data = NULL;
 
     ogs_assert(nf_instance);
 
-    ogs_list_for_each(&ogs_sbi_self()->subscription_list, subscription) {
+    ogs_list_for_each(
+            &ogs_sbi_self()->subscription_data_list, subscription_data) {
 
-        if (subscription->req_nf_instance_id &&
-            strcmp(subscription->req_nf_instance_id, nf_instance->id) == 0)
+        if (subscription_data->req_nf_instance_id &&
+            strcmp(subscription_data->req_nf_instance_id, nf_instance->id) == 0)
             continue;
 
-        if (subscription->subscr_cond.nf_type &&
-            subscription->subscr_cond.nf_type != nf_instance->nf_type)
+        if (subscription_data->subscr_cond.nf_type &&
+            subscription_data->subscr_cond.nf_type != nf_instance->nf_type)
             continue;
+
+        if (subscription_data->req_nf_type &&
+            ogs_sbi_nf_instance_is_allowed_nf_type(
+                nf_instance, subscription_data->req_nf_type) == false)
+            continue;
+
+        if (subscription_data->subscr_cond.service_name) {
+            ogs_sbi_nf_service_t *nf_service =
+                ogs_sbi_nf_service_find_by_name(nf_instance,
+                    subscription_data->subscr_cond.service_name);
+            if (nf_service == NULL) continue;
+
+            if (subscription_data->req_nf_type &&
+                ogs_sbi_nf_service_is_allowed_nf_type(
+                    nf_service, subscription_data->req_nf_type) == false)
+                continue;
+        }
 
         ogs_expect_or_return_val(true ==
             nrf_nnrf_nfm_send_nf_status_notify(
-                subscription, event, nf_instance),
+                subscription_data, event, nf_instance),
             false);
     }
 

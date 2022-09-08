@@ -51,7 +51,8 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_register(void)
 
     OGS_SBI_FEATURES_SET(supported_features, OGS_SBI_NNRF_NFM_SERVICE_MAP);
     NFProfile = ogs_nnrf_nfm_build_nf_profile(
-                    ogs_sbi_self()->nf_instance, NULL, supported_features);
+                    ogs_sbi_self()->nf_instance,
+                    NULL, NULL, supported_features);
     ogs_expect_or_return_val(NFProfile, NULL);
 
     message.NFProfile = NFProfile;
@@ -65,6 +66,7 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_register(void)
 
 OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
         ogs_sbi_nf_instance_t *nf_instance,
+        const char *service_name,
         ogs_sbi_discovery_option_t *discovery_option,
         uint64_t supported_features)
 {
@@ -177,6 +179,10 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
 
     ogs_list_for_each(&nf_instance->nf_service_list, nf_service) {
         OpenAPI_nf_service_t *NFService = NULL;
+
+        if (service_name && nf_service->name &&
+            strcmp(service_name, nf_service->name) != 0)
+            continue;
 
         if (discovery_option && discovery_option->num_of_service_names) {
             for (i = 0; i < discovery_option->num_of_service_names; i++) {
@@ -770,7 +776,7 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_de_register(void)
 }
 
 ogs_sbi_request_t *ogs_nnrf_nfm_build_status_subscribe(
-        ogs_sbi_subscription_t *subscription)
+        ogs_sbi_subscription_data_t *subscription_data)
 {
     ogs_sbi_message_t message;
     ogs_sbi_header_t header;
@@ -780,8 +786,8 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_status_subscribe(
     OpenAPI_subscription_data_t *SubscriptionData = NULL;
     OpenAPI_subscription_data_subscr_cond_t SubscrCond;
 
-    ogs_assert(subscription);
-    ogs_assert(subscription->req_nf_type);
+    ogs_assert(subscription_data);
+    ogs_assert(subscription_data->req_nf_type);
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
@@ -806,18 +812,23 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_status_subscribe(
     ogs_expect_or_return_val(
             SubscriptionData->nf_status_notification_uri, NULL);
 
-    SubscriptionData->req_nf_type = subscription->req_nf_type;
-    SubscriptionData->req_nf_instance_id = subscription->req_nf_instance_id;
+    SubscriptionData->req_nf_type = subscription_data->req_nf_type;
+    SubscriptionData->req_nf_instance_id =
+        subscription_data->req_nf_instance_id;
 
-    OGS_SBI_FEATURES_SET(subscription->requester_features,
+    OGS_SBI_FEATURES_SET(subscription_data->requester_features,
             OGS_SBI_NNRF_NFM_SERVICE_MAP);
     SubscriptionData->requester_features =
-        ogs_uint64_to_string(subscription->requester_features);
+        ogs_uint64_to_string(subscription_data->requester_features);
     ogs_expect_or_return_val(SubscriptionData->requester_features, NULL);
 
     memset(&SubscrCond, 0, sizeof(SubscrCond));
-    if (subscription->subscr_cond.nf_type) {
-        SubscrCond.nf_type = subscription->subscr_cond.nf_type;
+    if (subscription_data->subscr_cond.nf_type) {
+        SubscrCond.nf_type = subscription_data->subscr_cond.nf_type;
+        SubscriptionData->subscr_cond = &SubscrCond;
+    }
+    if (subscription_data->subscr_cond.service_name) {
+        SubscrCond.service_name = subscription_data->subscr_cond.service_name;
         SubscriptionData->subscr_cond = &SubscrCond;
     }
 
@@ -833,12 +844,13 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_status_subscribe(
 }
 
 ogs_sbi_request_t *ogs_nnrf_nfm_build_status_unsubscribe(
-        ogs_sbi_subscription_t *subscription)
+        ogs_sbi_subscription_data_t *subscription_data)
 {
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
 
-    ogs_assert(subscription);
+    ogs_assert(subscription_data);
+    ogs_assert(subscription_data->id);
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_DELETE;
@@ -846,7 +858,7 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_status_unsubscribe(
     message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] =
         (char *)OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS;
-    message.h.resource.component[1] = subscription->id;
+    message.h.resource.component[1] = subscription_data->id;
 
     request = ogs_sbi_build_request(&message);
 

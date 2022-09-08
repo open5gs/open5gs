@@ -20,7 +20,7 @@
 #include "nnrf-build.h"
 
 ogs_sbi_request_t *nrf_nnrf_nfm_build_nf_status_notify(
-        ogs_sbi_subscription_t *subscription,
+        ogs_sbi_subscription_data_t *subscription_data,
         OpenAPI_notification_event_type_e event,
         ogs_sbi_nf_instance_t *nf_instance)
 {
@@ -32,14 +32,14 @@ ogs_sbi_request_t *nrf_nnrf_nfm_build_nf_status_notify(
 
     OpenAPI_notification_data_t *NotificationData = NULL;
 
-    ogs_assert(subscription);
+    ogs_assert(subscription_data);
     ogs_assert(event);
     ogs_assert(nf_instance);
     ogs_assert(nf_instance->id);
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
-    message.h.uri = subscription->notification_uri;
+    message.h.uri = subscription_data->notification_uri;
 
     message.http.accept = (char *)OGS_SBI_CONTENT_PROBLEM_TYPE;
 
@@ -63,7 +63,10 @@ ogs_sbi_request_t *nrf_nnrf_nfm_build_nf_status_notify(
     if (event != OpenAPI_notification_event_type_NF_DEREGISTERED) {
         NotificationData->nf_profile =
             ogs_nnrf_nfm_build_nf_profile(
-                nf_instance, NULL, subscription->requester_features);
+                nf_instance,
+                subscription_data->subscr_cond.service_name,
+                NULL,
+                subscription_data->requester_features);
         ogs_expect_or_return_val(NotificationData->nf_profile, NULL);
     }
 

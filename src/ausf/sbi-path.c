@@ -79,10 +79,6 @@ int ausf_sbi_open(void)
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_nf_service_t *service = NULL;
 
-    /* To be notified when NF Instances registered/deregistered in NRF
-     * or when their profile is modified */
-    ogs_sbi_add_to_be_notified_nf_type(OpenAPI_nf_type_UDM);
-
     /* Add SELF NF instance */
     nf_instance = ogs_sbi_self()->nf_instance;
     ogs_assert(nf_instance);
@@ -91,6 +87,7 @@ int ausf_sbi_open(void)
     /* Build NF instance information. It will be transmitted to NRF. */
     ogs_sbi_nf_instance_build_default(nf_instance, OpenAPI_nf_type_AUSF);
     ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_AMF);
+    ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_SCP);
 
     /* Build NF service information. It will be transmitted to NRF. */
     if (ogs_sbi_nf_service_is_available(OGS_SBI_SERVICE_NAME_NAUSF_AUTH)) {
@@ -116,6 +113,10 @@ int ausf_sbi_open(void)
          * by the above client callback. */
         ogs_sbi_nf_fsm_init(nf_instance);
     }
+
+    /* Build Subscription-Data */
+    ogs_sbi_subscription_data_build_default(
+            OpenAPI_nf_type_UDM, OGS_SBI_SERVICE_NAME_NUDM_UEAU);
 
     if (ogs_sbi_server_start_all(server_cb) != OGS_OK)
         return OGS_ERROR;
