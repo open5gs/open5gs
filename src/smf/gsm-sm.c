@@ -1521,6 +1521,11 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
 
                 ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
 
+                sess->n2_released = true;
+                if ((sess->n1_released) && (sess->n2_released)) {
+                    OGS_FSM_TRAN(s, &smf_gsm_state_session_will_release);
+                }
+
             } else {
                 ogs_fatal("Invalid state [%d]", ngap_state);
                 ogs_assert_if_reached();
@@ -1545,7 +1550,12 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
         case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
             ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
             ogs_assert(true == smf_sbi_send_sm_context_status_notify(sess));
-            OGS_FSM_TRAN(s, &smf_gsm_state_session_will_release);
+
+            sess->n1_released = true;
+            if ((sess->n1_released) && (sess->n2_released)) {
+                OGS_FSM_TRAN(s, &smf_gsm_state_session_will_release);
+            }
+
             break;
         default:
             strerror = ogs_msprintf("Unknown message [%d]",

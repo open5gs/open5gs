@@ -405,6 +405,9 @@ typedef struct smf_sess_s {
     ogs_pfcp_node_t *pfcp_node;
 
     smf_ue_t *smf_ue;
+
+    bool n1_released;
+    bool n2_released;
 } smf_sess_t;
 
 void smf_context_init(void);
