@@ -26,7 +26,7 @@ static int context_initialized = 0;
 static OGS_POOL(nf_instance_pool, ogs_sbi_nf_instance_t);
 static OGS_POOL(nf_service_pool, ogs_sbi_nf_service_t);
 static OGS_POOL(xact_pool, ogs_sbi_xact_t);
-static OGS_POOL(subscription_pool, ogs_sbi_subscription_t);
+static OGS_POOL(subscription_data_pool, ogs_sbi_subscription_data_t);
 static OGS_POOL(smf_info_pool, ogs_sbi_smf_info_t);
 static OGS_POOL(nf_info_pool, ogs_sbi_nf_info_t);
 
@@ -51,8 +51,8 @@ void ogs_sbi_context_init(void)
 
     ogs_pool_init(&xact_pool, ogs_app()->pool.xact);
 
-    ogs_list_init(&self.subscription_list);
-    ogs_pool_init(&subscription_pool, ogs_app()->pool.subscription);
+    ogs_list_init(&self.subscription_data_list);
+    ogs_pool_init(&subscription_data_pool, ogs_app()->pool.subscription);
 
     ogs_pool_init(&smf_info_pool, ogs_app()->pool.nf);
 
@@ -74,8 +74,8 @@ void ogs_sbi_context_final(void)
 {
     ogs_assert(context_initialized == 1);
 
-    ogs_sbi_subscription_remove_all();
-    ogs_pool_final(&subscription_pool);
+    ogs_sbi_subscription_data_remove_all();
+    ogs_pool_final(&subscription_data_pool);
 
     ogs_pool_final(&xact_pool);
 
@@ -737,17 +737,6 @@ int ogs_sbi_context_parse_config(
     return OGS_OK;
 }
 
-void ogs_sbi_add_to_be_notified_nf_type(OpenAPI_nf_type_e nf_type)
-{
-    ogs_assert(nf_type);
-
-    if (self.num_of_to_be_notified_nf_type < OGS_SBI_MAX_NUM_OF_NF_TYPE) {
-        self.to_be_notified_nf_type[self.num_of_to_be_notified_nf_type] =
-            nf_type;
-        self.num_of_to_be_notified_nf_type++;
-    }
-}
-
 bool ogs_sbi_nf_service_is_available(const char *name)
 {
     int i;
@@ -830,6 +819,29 @@ void ogs_sbi_nf_instance_add_allowed_nf_type(
     }
 }
 
+bool ogs_sbi_nf_instance_is_allowed_nf_type(
+        ogs_sbi_nf_instance_t *nf_instance, OpenAPI_nf_type_e allowed_nf_type)
+{
+    int i;
+
+    ogs_assert(nf_instance);
+    ogs_assert(allowed_nf_type);
+
+    if (!nf_instance->num_of_allowed_nf_type) {
+        return true;
+    }
+
+    for (i = 0; i < nf_instance->num_of_allowed_nf_type; i++) {
+        if (nf_instance->allowed_nf_type[i] == allowed_nf_type)
+            return true;
+    }
+
+    ogs_error("Not allowed nf-type[%s] in nf-instance[%s]",
+            OpenAPI_nf_type_ToString(allowed_nf_type),
+            OpenAPI_nf_type_ToString(nf_instance->nf_type));
+    return false;
+}
+
 void ogs_sbi_nf_instance_clear(ogs_sbi_nf_instance_t *nf_instance)
 {
     int i;
@@ -875,7 +887,7 @@ void ogs_sbi_nf_instance_remove(ogs_sbi_nf_instance_t *nf_instance)
     ogs_sbi_nf_instance_clear(nf_instance);
 
     if (nf_instance->id) {
-        ogs_sbi_subscription_remove_all_by_nf_instance_id(nf_instance->id);
+        ogs_sbi_subscription_data_remove_all_by_nf_instance_id(nf_instance->id);
         ogs_free(nf_instance->id);
     }
 
@@ -1029,6 +1041,30 @@ void ogs_sbi_nf_service_add_allowed_nf_type(
             allowed_nf_type;
         nf_service->num_of_allowed_nf_type++;
     }
+}
+
+bool ogs_sbi_nf_service_is_allowed_nf_type(
+        ogs_sbi_nf_service_t *nf_service, OpenAPI_nf_type_e allowed_nf_type)
+{
+    int i;
+
+    ogs_assert(nf_service);
+    ogs_assert(allowed_nf_type);
+
+    if (!nf_service->num_of_allowed_nf_type) {
+        return true;
+    }
+
+    for (i = 0; i < nf_service->num_of_allowed_nf_type; i++) {
+        if (nf_service->allowed_nf_type[i] == allowed_nf_type)
+            return true;
+    }
+
+    ogs_assert(nf_service->name);
+    ogs_error("Not allowed nf-type[%s] in nf-service[%s]",
+            OpenAPI_nf_type_ToString(allowed_nf_type),
+            nf_service->name);
+    return false;
 }
 
 void ogs_sbi_nf_service_clear(ogs_sbi_nf_service_t *nf_service)
@@ -1449,9 +1485,11 @@ static void nf_service_associate_client_all(ogs_sbi_nf_instance_t *nf_instance)
 
 bool ogs_sbi_discovery_option_is_matched(
         ogs_sbi_nf_instance_t *nf_instance,
+        OpenAPI_nf_type_e requester_nf_type,
         ogs_sbi_discovery_option_t *discovery_option)
 {
     ogs_assert(nf_instance);
+    ogs_assert(requester_nf_type);
     ogs_assert(discovery_option);
 
     if (discovery_option->target_nf_instance_id &&
@@ -1472,8 +1510,11 @@ bool ogs_sbi_discovery_option_is_matched(
                     discovery_option->service_names[i] &&
                     strcmp(nf_service->name,
                         discovery_option->service_names[i]) == 0) {
-                    exist = true;
-                    break;
+                    if (ogs_sbi_nf_service_is_allowed_nf_type(
+                            nf_service, requester_nf_type) == true) {
+                        exist = true;
+                        break;
+                    }
                 }
             }
             if (exist == true) break;
@@ -1489,8 +1530,13 @@ bool ogs_sbi_discovery_param_is_matched(
         OpenAPI_nf_type_e target_nf_type,
         ogs_sbi_discovery_option_t *discovery_option)
 {
+    OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
+
     ogs_assert(nf_instance);
     ogs_assert(target_nf_type);
+    ogs_assert(ogs_sbi_self()->nf_instance);
+    requester_nf_type = ogs_sbi_self()->nf_instance->nf_type;
+    ogs_assert(requester_nf_type);
 
     if (!OGS_FSM_CHECK(&nf_instance->sm, ogs_sbi_nf_state_registered))
         return false;
@@ -1500,7 +1546,7 @@ bool ogs_sbi_discovery_param_is_matched(
 
     if (discovery_option &&
         ogs_sbi_discovery_option_is_matched(
-            nf_instance, discovery_option) == false)
+            nf_instance, requester_nf_type, discovery_option) == false)
         return false;
 
     return true;
@@ -1692,90 +1738,136 @@ ogs_sbi_xact_t *ogs_sbi_xact_cycle(ogs_sbi_xact_t *xact)
     return ogs_pool_cycle(&xact_pool, xact);
 }
 
-ogs_sbi_subscription_t *ogs_sbi_subscription_add(void)
+ogs_sbi_subscription_data_t *ogs_sbi_subscription_data_add(void)
 {
-    ogs_sbi_subscription_t *subscription = NULL;
+    ogs_sbi_subscription_data_t *subscription_data = NULL;
 
-    ogs_pool_alloc(&subscription_pool, &subscription);
-    ogs_assert(subscription);
-    memset(subscription, 0, sizeof(ogs_sbi_subscription_t));
+    ogs_pool_alloc(&subscription_data_pool, &subscription_data);
+    ogs_assert(subscription_data);
+    memset(subscription_data, 0, sizeof(ogs_sbi_subscription_data_t));
 
-    subscription->time.validity_duration =
+    subscription_data->time.validity_duration =
             ogs_app()->time.subscription.validity_duration;
 
-    ogs_list_add(&ogs_sbi_self()->subscription_list, subscription);
+    ogs_list_add(&ogs_sbi_self()->subscription_data_list, subscription_data);
 
-    return subscription;
+    return subscription_data;
 }
 
-void ogs_sbi_subscription_set_id(ogs_sbi_subscription_t *subscription, char *id)
+void ogs_sbi_subscription_data_set_id(
+        ogs_sbi_subscription_data_t *subscription_data, char *id)
 {
-    ogs_assert(subscription);
+    ogs_assert(subscription_data);
     ogs_assert(id);
 
-    subscription->id = ogs_strdup(id);
-    ogs_assert(subscription->id);
+    subscription_data->id = ogs_strdup(id);
+    ogs_assert(subscription_data->id);
 }
 
-void ogs_sbi_subscription_remove(ogs_sbi_subscription_t *subscription)
+void ogs_sbi_subscription_data_remove(
+        ogs_sbi_subscription_data_t *subscription_data)
 {
-    ogs_assert(subscription);
+    ogs_assert(subscription_data);
 
-    ogs_list_remove(&ogs_sbi_self()->subscription_list, subscription);
+    ogs_list_remove(&ogs_sbi_self()->subscription_data_list, subscription_data);
 
-    if (subscription->id)
-        ogs_free(subscription->id);
+    if (subscription_data->id)
+        ogs_free(subscription_data->id);
 
-    if (subscription->notification_uri)
-        ogs_free(subscription->notification_uri);
+    if (subscription_data->notification_uri)
+        ogs_free(subscription_data->notification_uri);
 
-    if (subscription->req_nf_instance_id)
-        ogs_free(subscription->req_nf_instance_id);
+    if (subscription_data->req_nf_instance_id)
+        ogs_free(subscription_data->req_nf_instance_id);
 
-    if (subscription->t_validity)
-        ogs_timer_delete(subscription->t_validity);
+    if (subscription_data->subscr_cond.service_name)
+        ogs_free(subscription_data->subscr_cond.service_name);
 
-    if (subscription->client)
-        ogs_sbi_client_remove(subscription->client);
+    if (subscription_data->t_validity)
+        ogs_timer_delete(subscription_data->t_validity);
 
-    ogs_pool_free(&subscription_pool, subscription);
+    if (subscription_data->client)
+        ogs_sbi_client_remove(subscription_data->client);
+
+    ogs_pool_free(&subscription_data_pool, subscription_data);
 }
 
-void ogs_sbi_subscription_remove_all_by_nf_instance_id(char *nf_instance_id)
+void ogs_sbi_subscription_data_remove_all_by_nf_instance_id(
+        char *nf_instance_id)
 {
-    ogs_sbi_subscription_t *subscription = NULL, *next_subscription = NULL;
+    ogs_sbi_subscription_data_t *subscription_data = NULL;
+    ogs_sbi_subscription_data_t *next_subscription_data = NULL;
 
     ogs_assert(nf_instance_id);
 
-    ogs_list_for_each_safe(&ogs_sbi_self()->subscription_list,
-            next_subscription, subscription) {
-        if (subscription->req_nf_instance_id &&
-            strcmp(subscription->req_nf_instance_id, nf_instance_id) == 0) {
-            ogs_sbi_subscription_remove(subscription);
+    ogs_list_for_each_safe(&ogs_sbi_self()->subscription_data_list,
+            next_subscription_data, subscription_data) {
+        if (subscription_data->req_nf_instance_id &&
+            strcmp(subscription_data->req_nf_instance_id,
+                nf_instance_id) == 0) {
+            ogs_sbi_subscription_data_remove(subscription_data);
         }
     }
 }
 
-void ogs_sbi_subscription_remove_all(void)
+void ogs_sbi_subscription_data_remove_all(void)
 {
-    ogs_sbi_subscription_t *subscription = NULL, *next_subscription = NULL;
+    ogs_sbi_subscription_data_t *subscription_data = NULL;
+    ogs_sbi_subscription_data_t *next_subscription_data = NULL;
 
-    ogs_list_for_each_safe(&ogs_sbi_self()->subscription_list,
-            next_subscription, subscription)
-        ogs_sbi_subscription_remove(subscription);
+    ogs_list_for_each_safe(&ogs_sbi_self()->subscription_data_list,
+            next_subscription_data, subscription_data)
+        ogs_sbi_subscription_data_remove(subscription_data);
 }
 
-ogs_sbi_subscription_t *ogs_sbi_subscription_find(char *id)
+ogs_sbi_subscription_data_t *ogs_sbi_subscription_data_find(char *id)
 {
-    ogs_sbi_subscription_t *subscription = NULL;
+    ogs_sbi_subscription_data_t *subscription_data = NULL;
 
     ogs_assert(id);
 
-    ogs_list_for_each(&ogs_sbi_self()->subscription_list, subscription) {
-        ogs_assert(subscription->id);
-        if (strcmp(subscription->id, id) == 0)
+    ogs_list_for_each(&ogs_sbi_self()->subscription_data_list,
+            subscription_data) {
+        ogs_assert(subscription_data->id);
+        if (strcmp(subscription_data->id, id) == 0)
             break;
     }
 
-    return subscription;
+    return subscription_data;
+}
+
+void ogs_sbi_subscription_data_build_default(
+        OpenAPI_nf_type_e nf_type, const char *service_name)
+{
+    ogs_sbi_subscription_data_t *subscription_data = NULL;
+    ogs_sbi_nf_instance_t *nf_instance = NULL, *nrf_instance = NULL;
+    ogs_sbi_client_t *client = NULL;
+
+    ogs_assert(nf_type);
+
+    nrf_instance = ogs_sbi_self()->nrf_instance;
+    if (!nrf_instance) {
+        ogs_warn("[%s:%s] has no NRF",
+                OpenAPI_nf_type_ToString(nf_type), service_name);
+        return;
+    }
+
+    client = nrf_instance->client;
+    ogs_assert(client);
+
+    nf_instance = ogs_sbi_self()->nf_instance;
+    ogs_assert(nf_instance);
+    ogs_assert(nf_instance->id);
+    ogs_assert(nf_instance->nf_type);
+
+    subscription_data = ogs_sbi_subscription_data_add();
+    ogs_assert(subscription_data);
+
+    OGS_SBI_SETUP_CLIENT(subscription_data, client);
+    subscription_data->req_nf_type = nf_instance->nf_type;
+    if (nf_instance->id)
+        subscription_data->req_nf_instance_id = ogs_strdup(nf_instance->id);
+    subscription_data->subscr_cond.nf_type = nf_type;
+    if (service_name)
+        subscription_data->subscr_cond.service_name = ogs_strdup(service_name);
 }

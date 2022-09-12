@@ -304,7 +304,7 @@ void sgwc_state_operational(ogs_fsm_t *s, sgwc_event_t *e)
                     sess, gtp_xact, recvbuf, &gtp_message);
             break;
         default:
-            ogs_warn("Not implmeneted(type:%d)", gtp_message.h.type);
+            ogs_warn("Not implemented(type:%d)", gtp_message.h.type);
             break;
         }
         ogs_pkbuf_free(recvbuf);

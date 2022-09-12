@@ -231,49 +231,40 @@ bool ogs_nnrf_nfm_send_nf_profile_retrieve(ogs_sbi_nf_instance_t *nf_instance,
             client, client->cb, request, data);
 }
 
-bool ogs_nnrf_nfm_send_nf_status_subscribe(ogs_sbi_client_t *client,
-        OpenAPI_nf_type_e req_nf_type, char *req_nf_instance_id,
-        OpenAPI_nf_type_e subscr_cond_nf_type)
-{
-    ogs_sbi_request_t *request = NULL;
-    ogs_sbi_subscription_t *subscription = NULL;
-
-    ogs_assert(client);
-
-    subscription = ogs_sbi_subscription_add();
-    ogs_assert(subscription);
-
-    OGS_SBI_SETUP_CLIENT(subscription, client);
-    subscription->req_nf_type = req_nf_type;
-    if (req_nf_instance_id) {
-        subscription->req_nf_instance_id = ogs_strdup(req_nf_instance_id);
-        ogs_expect_or_return_val(req_nf_instance_id, false);
-    }
-    subscription->subscr_cond.nf_type = subscr_cond_nf_type;
-
-    request = ogs_nnrf_nfm_build_status_subscribe(subscription);
-    ogs_expect_or_return_val(request, false);
-
-    return ogs_sbi_scp_send_request(
-            client, client->cb, request, subscription);
-}
-
-bool ogs_nnrf_nfm_send_nf_status_unsubscribe(
-        ogs_sbi_subscription_t *subscription)
+bool ogs_nnrf_nfm_send_nf_status_subscribe(
+        ogs_sbi_subscription_data_t *subscription_data)
 {
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_client_t *client = NULL;
 
-    ogs_assert(subscription);
+    ogs_assert(subscription_data);
 
-    request = ogs_nnrf_nfm_build_status_unsubscribe(subscription);
+    request = ogs_nnrf_nfm_build_status_subscribe(subscription_data);
     ogs_expect_or_return_val(request, false);
 
-    client = subscription->client;
+    client = subscription_data->client;
     ogs_assert(client);
 
     return ogs_sbi_scp_send_request(
-            client, client->cb, request, subscription);
+            client, client->cb, request, subscription_data);
+}
+
+bool ogs_nnrf_nfm_send_nf_status_unsubscribe(
+        ogs_sbi_subscription_data_t *subscription_data)
+{
+    ogs_sbi_request_t *request = NULL;
+    ogs_sbi_client_t *client = NULL;
+
+    ogs_assert(subscription_data);
+
+    request = ogs_nnrf_nfm_build_status_unsubscribe(subscription_data);
+    ogs_expect_or_return_val(request, false);
+
+    client = subscription_data->client;
+    ogs_assert(client);
+
+    return ogs_sbi_scp_send_request(
+            client, client->cb, request, subscription_data);
 }
 
 bool ogs_nnrf_disc_send_nf_discover(

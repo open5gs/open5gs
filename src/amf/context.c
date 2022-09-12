@@ -2189,7 +2189,7 @@ static bool check_smf_info_s_nssai(
             sess->s_nssai.sd.v == smf_info->slice[i].s_nssai.sd.v) {
 
             for (j = 0; j < smf_info->slice[i].num_of_dnn; j++) {
-                if (strcmp(sess->dnn, smf_info->slice[i].dnn[j]) == 0)
+                if (ogs_strcasecmp(sess->dnn, smf_info->slice[i].dnn[j]) == 0)
                     return true;
             }
         }

@@ -633,7 +633,7 @@ for (k, v) in sorted_msg_list:
         f.write("                &ogs_gtp1_tlv_desc_%s, pkbuf, OGS_TLV_MODE_T1_L2);\n" % v_lower(k))
         f.write("        break;\n")
 f.write("""    default:
-        ogs_warn("Not implmeneted(type:%d)", gtp1_message->h.type);
+        ogs_warn("Not implemented(type:%d)", gtp1_message->h.type);
         break;
     }
 
@@ -658,7 +658,7 @@ for (k, v) in sorted_msg_list:
         f.write("                &gtp1_message->%s, OGS_TLV_MODE_T1_L2);\n" % v_lower(k))
         f.write("        break;\n")
 f.write("""    default:
-        ogs_warn("Not implmeneted(type:%d)", gtp1_message->h.type);
+        ogs_warn("Not implemented(type:%d)", gtp1_message->h.type);
         break;
     }
 

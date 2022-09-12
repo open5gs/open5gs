@@ -48,7 +48,7 @@ static void timer_send_event(int timer_id, void *data)
     case NRF_TIMER_SUBSCRIPTION_VALIDITY:
         e = nrf_event_new(NRF_EVT_SBI_TIMER);
         e->timer_id = timer_id;
-        e->subscription = data;
+        e->subscription_data = data;
         break;
     default:
         ogs_fatal("Unknown timer id[%d]", timer_id);

@@ -30,7 +30,7 @@ typedef struct ogs_sbi_request_s ogs_sbi_request_t;
 typedef struct ogs_sbi_response_s ogs_sbi_response_t;
 typedef struct ogs_sbi_message_s ogs_sbi_message_t;
 typedef struct ogs_sbi_nf_instance_s ogs_sbi_nf_instance_t;
-typedef struct ogs_sbi_subscription_s ogs_sbi_subscription_t;
+typedef struct ogs_sbi_subscription_data_s ogs_sbi_subscription_data_t;
 
 typedef enum {
     NRF_EVT_BASE = OGS_MAX_NUM_OF_PROTO_EVENT,
@@ -56,7 +56,7 @@ typedef struct nrf_event_s {
     } sbi;
 
     ogs_sbi_nf_instance_t *nf_instance;
-    ogs_sbi_subscription_t *subscription;
+    ogs_sbi_subscription_data_t *subscription_data;
 } nrf_event_t;
 
 void nrf_event_init(void);

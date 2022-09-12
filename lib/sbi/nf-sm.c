@@ -204,7 +204,6 @@ void ogs_sbi_nf_state_will_register(ogs_fsm_t *s, ogs_event_t *e)
 void ogs_sbi_nf_state_registered(ogs_fsm_t *s, ogs_event_t *e)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
-    ogs_sbi_client_t *client = NULL;
     ogs_sbi_message_t *message = NULL;
     ogs_assert(s);
     ogs_assert(e);
@@ -218,14 +217,11 @@ void ogs_sbi_nf_state_registered(ogs_fsm_t *s, ogs_event_t *e)
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
         if (NF_INSTANCE_TYPE_IS_NRF(nf_instance)) {
-            int i;
+            ogs_sbi_subscription_data_t *subscription_data = NULL;
 
             ogs_info("[%s] NF registered [Heartbeat:%ds]",
                     ogs_sbi_self()->nf_instance->id,
                     nf_instance->time.heartbeat_interval);
-
-            client = nf_instance->client;
-            ogs_assert(client);
 
             if (nf_instance->time.heartbeat_interval) {
                 ogs_timer_start(nf_instance->t_heartbeat_interval,
@@ -236,13 +232,10 @@ void ogs_sbi_nf_state_registered(ogs_fsm_t *s, ogs_event_t *e)
                         ogs_app()->time.nf_instance.no_heartbeat_margin));
             }
 
-            for (i = 0;
-                    i < ogs_sbi_self()->num_of_to_be_notified_nf_type; i++) {
+            ogs_list_for_each(
+                &ogs_sbi_self()->subscription_data_list, subscription_data) {
                 ogs_assert(true ==
-                    ogs_nnrf_nfm_send_nf_status_subscribe(client,
-                        ogs_sbi_self()->nf_instance->nf_type,
-                        ogs_sbi_self()->nf_instance->id,
-                        ogs_sbi_self()->to_be_notified_nf_type[i]));
+                    ogs_nnrf_nfm_send_nf_status_subscribe(subscription_data));
             }
         }
         break;

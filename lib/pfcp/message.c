@@ -4104,7 +4104,7 @@ int ogs_pfcp_parse_msg(ogs_pfcp_message_t *pfcp_message, ogs_pkbuf_t *pkbuf)
                     &ogs_pfcp_msg_desc_pfcp_session_report_response, pkbuf, OGS_TLV_MODE_T2_L2);
             break;
         default:
-            ogs_warn("Not implmeneted(type:%d)", pfcp_message->h.type);
+            ogs_warn("Not implemented(type:%d)", pfcp_message->h.type);
             break;
     }
 
@@ -4211,7 +4211,7 @@ ogs_pkbuf_t *ogs_pfcp_build_msg(ogs_pfcp_message_t *pfcp_message)
                     &pfcp_message->pfcp_session_report_response, OGS_TLV_MODE_T2_L2);
             break;
         default:
-            ogs_warn("Not implmeneted(type:%d)", pfcp_message->h.type);
+            ogs_warn("Not implemented(type:%d)", pfcp_message->h.type);
             break;
     }
 

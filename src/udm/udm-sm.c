@@ -43,7 +43,7 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
     ogs_sbi_request_t *request = NULL;
 
     ogs_sbi_nf_instance_t *nf_instance = NULL;
-    ogs_sbi_subscription_t *subscription = NULL;
+    ogs_sbi_subscription_data_t *subscription_data = NULL;
     ogs_sbi_response_t *response = NULL;
     ogs_sbi_message_t message;
     ogs_sbi_xact_t *sbi_xact = NULL;
@@ -240,34 +240,34 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
                 break;
 
             CASE(OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS)
-                subscription = e->h.sbi.data;
-                ogs_assert(subscription);
+                subscription_data = e->h.sbi.data;
+                ogs_assert(subscription_data);
 
                 SWITCH(message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
                     if (message.res_status == OGS_SBI_HTTP_STATUS_CREATED ||
                         message.res_status == OGS_SBI_HTTP_STATUS_OK) {
                         ogs_nnrf_handle_nf_status_subscribe(
-                                subscription, &message);
+                                subscription_data, &message);
                     } else {
                         ogs_error("[%s] HTTP response error [%d]",
-                                subscription->id, message.res_status);
+                                subscription_data->id, message.res_status);
                     }
                     break;
 
                 CASE(OGS_SBI_HTTP_METHOD_DELETE)
                     if (message.res_status ==
                             OGS_SBI_HTTP_STATUS_NO_CONTENT) {
-                        ogs_sbi_subscription_remove(subscription);
+                        ogs_sbi_subscription_data_remove(subscription_data);
                     } else {
                         ogs_error("[%s] HTTP response error [%d]",
-                                subscription->id, message.res_status);
+                                subscription_data->id, message.res_status);
                     }
                     break;
 
                 DEFAULT
                     ogs_error("[%s] Invalid HTTP method [%s]",
-                            subscription->id, message.h.method);
+                            subscription_data->id, message.h.method);
                     ogs_assert_if_reached();
                 END
                 break;
@@ -381,18 +381,15 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
             break;
 
         case OGS_TIMER_SUBSCRIPTION_VALIDITY:
-            subscription = e->h.sbi.data;
-            ogs_assert(subscription);
+            subscription_data = e->h.sbi.data;
+            ogs_assert(subscription_data);
 
-            ogs_assert(ogs_sbi_self()->nf_instance);
             ogs_assert(true ==
-                ogs_nnrf_nfm_send_nf_status_subscribe(subscription->client,
-                    ogs_sbi_self()->nf_instance->nf_type,
-                    subscription->req_nf_instance_id,
-                    subscription->subscr_cond.nf_type));
+                ogs_nnrf_nfm_send_nf_status_subscribe(subscription_data));
             
-            ogs_info("[%s] Subscription validity expired", subscription->id);
-            ogs_sbi_subscription_remove(subscription);
+            ogs_info("[%s] Subscription validity expired",
+                    subscription_data->id);
+            ogs_sbi_subscription_data_remove(subscription_data);
             break;
 
         case OGS_TIMER_SBI_CLIENT_WAIT:

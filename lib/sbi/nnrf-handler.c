@@ -452,14 +452,15 @@ static void handle_smf_info(
 }
 
 void ogs_nnrf_handle_nf_status_subscribe(
-        ogs_sbi_subscription_t *subscription, ogs_sbi_message_t *recvmsg)
+        ogs_sbi_subscription_data_t *subscription_data,
+        ogs_sbi_message_t *recvmsg)
 {
     OpenAPI_subscription_data_t *SubscriptionData = NULL;
     ogs_sbi_client_t *client = NULL;
 
     ogs_assert(recvmsg);
-    ogs_assert(subscription);
-    client = subscription->client;
+    ogs_assert(subscription_data);
+    client = subscription_data->client;
     ogs_assert(client);
 
     SubscriptionData = recvmsg->SubscriptionData;
@@ -472,15 +473,15 @@ void ogs_nnrf_handle_nf_status_subscribe(
         ogs_error("No SubscriptionId");
         return;
     }
-    ogs_sbi_subscription_set_id(
-        subscription, SubscriptionData->subscription_id);
+    ogs_sbi_subscription_data_set_id(
+        subscription_data, SubscriptionData->subscription_id);
 
     /* SBI Features */
     if (SubscriptionData->nrf_supported_features) {
-        subscription->nrf_supported_features =
+        subscription_data->nrf_supported_features =
             ogs_uint64_from_string(SubscriptionData->nrf_supported_features);
     } else {
-        subscription->nrf_supported_features = 0;
+        subscription_data->nrf_supported_features = 0;
     }
 
     if (SubscriptionData->validity_time) {
@@ -491,13 +492,13 @@ void ogs_nnrf_handle_nf_status_subscribe(
             duration = time - ogs_time_now();
             if (duration < VALIDITY_MINIMUM) {
                 duration = VALIDITY_MINIMUM;
-                ogs_warn("[%s] Forced to %lld seconds", subscription->id,
+                ogs_warn("[%s] Forced to %lld seconds", subscription_data->id,
                         (long long)ogs_time_sec(VALIDITY_MINIMUM));
             }
-            subscription->t_validity = ogs_timer_add(ogs_app()->timer_mgr,
-                ogs_timer_subscription_validity, subscription);
-            ogs_assert(subscription->t_validity);
-            ogs_timer_start(subscription->t_validity, duration);
+            subscription_data->t_validity = ogs_timer_add(ogs_app()->timer_mgr,
+                ogs_timer_subscription_validity, subscription_data);
+            ogs_assert(subscription_data->t_validity);
+            ogs_timer_start(subscription_data->t_validity, duration);
         } else {
             ogs_error("Cannot parse validitiyTime [%s]",
                     SubscriptionData->validity_time);

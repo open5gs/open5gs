@@ -300,7 +300,7 @@ const View = ({ visible, disableOnClickOutside, profile, onEdit, onDelete, onHid
                     </div>
                   }
                   <div className="body" style={{color:oc.gray[5]}}>
-                    <div className="medium_data">DNN/APN</div>
+                    <div className="large_data">DNN/APN</div>
                     <div className="medium_data">Type</div>
                     <div className="small_data">5QI/QCI</div>
                     <div className="small_data">ARP</div>
@@ -313,7 +313,7 @@ const View = ({ visible, disableOnClickOutside, profile, onEdit, onDelete, onHid
                       slice.session.map(session =>
                     <div key={session.name}>
                       <div className="body">
-                        <div className="medium_data">{session.name}</div>
+                        <div className="large_data">{session.name}</div>
                         <div className="medium_data">{
                             session.type === 1 ? "IPv4" :
                             session.type === 2 ? "IPv6" :
@@ -397,7 +397,7 @@ const View = ({ visible, disableOnClickOutside, profile, onEdit, onDelete, onHid
                         session.pcc_rule.map((pcc_rule, index) =>
                           <div key={index}>
                             <div className="body">
-                              <div className="medium_data"></div>
+                              <div className="large_data"></div>
                               <div className="medium_data"></div>
                               <div className="small_data">{pcc_rule.qos.index}</div>
                               <div className="small_data">{pcc_rule.qos.arp.priority_level}</div>

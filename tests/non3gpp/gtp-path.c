@@ -117,7 +117,7 @@ void test_s2b_recv(test_sess_t *sess, ogs_pkbuf_t *pkbuf)
                 xact, sess, &gtp_message.delete_bearer_request);
             break;
         default:
-            ogs_error("Not implmeneted(type:%d)", gtp_message.h.type);
+            ogs_error("Not implemented(type:%d)", gtp_message.h.type);
             break;
     }
 

@@ -442,7 +442,7 @@ int pcf_sessions_number_by_snssai_and_dnn(
 
     ogs_list_for_each(&pcf_ue->sess_list, sess)
         if (sess->s_nssai.sst == s_nssai->sst &&
-            sess->dnn && strcmp(sess->dnn, dnn) == 0)
+            sess->dnn && ogs_strcasecmp(sess->dnn, dnn) == 0)
             number_of_sessions++;
 
     return number_of_sessions;

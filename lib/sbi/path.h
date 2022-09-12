@@ -39,11 +39,10 @@ bool ogs_nnrf_nfm_send_nf_de_register(ogs_sbi_nf_instance_t *nf_instance);
 bool ogs_nnrf_nfm_send_nf_profile_retrieve(ogs_sbi_nf_instance_t *nf_instance,
         char *nf_instance_id, void *data);
 
-bool ogs_nnrf_nfm_send_nf_status_subscribe(ogs_sbi_client_t *client,
-        OpenAPI_nf_type_e req_nf_type, char *req_nf_instance_id,
-        OpenAPI_nf_type_e subscr_cond_nf_type);
+bool ogs_nnrf_nfm_send_nf_status_subscribe(
+        ogs_sbi_subscription_data_t *subscription_data);
 bool ogs_nnrf_nfm_send_nf_status_unsubscribe(
-        ogs_sbi_subscription_t *subscription);
+        ogs_sbi_subscription_data_t *subscription_data);
 
 bool ogs_nnrf_disc_send_nf_discover(
         ogs_sbi_nf_instance_t *nf_instance,
