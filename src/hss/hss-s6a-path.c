@@ -1065,6 +1065,8 @@ static int hss_ogs_diam_s6a_pur_cb( struct msg **msg, struct avp *avp,
     ogs_diam_logger_self()->stats.nb_echoed++;
     ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
 
+    ogs_subscription_data_free(&subscription_data);
+
     return 0;
 
 out:
@@ -1087,6 +1089,8 @@ outnoexp:
 
     ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
+
+    ogs_subscription_data_free(&subscription_data);
 
     return 0;
 }
@@ -1153,7 +1157,7 @@ void hss_s6a_send_clr(char *imsi_bcd, char *mme_host, char *mme_realm,
         val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
         val.os.len  = strlen(fd_g_config->cnf_diamrlm);
     } else {
-        val.os.data = (uint8_t *)mme_realm;
+        val.os.data = (unsigned char *)mme_realm;
         val.os.len  = strlen(mme_realm);
     }
     ret = fd_msg_avp_setvalue(avp, &val);
@@ -1305,13 +1309,28 @@ int hss_s6a_send_idr(char *imsi_bcd, uint32_t idr_flags, uint32_t subdatamask)
     ret = fd_msg_add_origin(req, 0);
     ogs_assert(ret == 0);
 
-    /* Need a Destination Host of the serving MME */
+    /* Set the Destination-Host AVP */
+    if (subscription_data.mme_host != NULL) {
+        ret = fd_msg_avp_new(ogs_diam_destination_host, 0, &avp);
+        ogs_assert(ret == 0);
+        val.os.data = (uint8_t *)subscription_data.mme_host;
+        val.os.len  = strlen(subscription_data.mme_host);
+        ret = fd_msg_avp_setvalue(avp, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+        ogs_assert(ret == 0);
+    }
 
     /* Set the Destination-Realm AVP */
     ret = fd_msg_avp_new(ogs_diam_destination_realm, 0, &avp);
     ogs_assert(ret == 0);
-    val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
-    val.os.len  = strlen(fd_g_config->cnf_diamrlm);
+    if (subscription_data.mme_realm == NULL) {
+        val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
+        val.os.len  = strlen(fd_g_config->cnf_diamrlm);
+    } else {
+        val.os.data = (unsigned char *)subscription_data.mme_realm;
+        val.os.len  = strlen(subscription_data.mme_realm);
+    }
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
@@ -1375,6 +1394,8 @@ int hss_s6a_send_idr(char *imsi_bcd, uint32_t idr_flags, uint32_t subdatamask)
     ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
     ogs_diam_logger_self()->stats.nb_sent++;
     ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+
+    ogs_subscription_data_free(&subscription_data);
 
     return OGS_OK;
 }

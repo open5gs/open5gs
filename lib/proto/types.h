@@ -684,7 +684,7 @@ typedef struct ogs_subscription_data_s {
     int num_of_slice;
     ogs_slice_data_t slice[OGS_MAX_NUM_OF_SLICE];
 
-    char imsi[OGS_MAX_IMSI_BCD_LEN+1];
+    char *imsi;
 
 #define OGS_MAX_NUM_OF_MSISDN                                   2
     int num_of_msisdn;
@@ -694,9 +694,9 @@ typedef struct ogs_subscription_data_s {
         char bcd[OGS_MAX_MSISDN_BCD_LEN+1];
     } msisdn[OGS_MAX_NUM_OF_MSISDN];
 
-    char mme_host[OGS_MAX_FQDN_LEN];
-    char mme_realm[OGS_MAX_FQDN_LEN];  
-    bool mme_ispurged;  
+    char *mme_host;
+    char *mme_realm;
+    bool mme_ispurged;
 } ogs_subscription_data_t;
 
 void ogs_subscription_data_free(ogs_subscription_data_t *subscription_data);

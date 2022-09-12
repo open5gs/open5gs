@@ -377,7 +377,10 @@ int ogs_dbi_subscription_data(char *supi,
         } else if (!strcmp(key, "imsi") &&
             BSON_ITER_HOLDS_UTF8(&iter)) {
             utf8 = bson_iter_utf8(&iter, &length);
-            ogs_cpystrn(subscription_data->imsi,
+            subscription_data->imsi = ogs_calloc(1, ogs_min(length,
+                OGS_MAX_IMSI_BCD_LEN)+1);
+            ogs_assert(subscription_data->imsi);
+            ogs_cpystrn((char*)subscription_data->imsi,
                 utf8, ogs_min(length, OGS_MAX_IMSI_BCD_LEN)+1);
         } else if (!strcmp(key, "access_restriction_data") &&
             BSON_ITER_HOLDS_INT32(&iter)) {
@@ -702,12 +705,18 @@ int ogs_dbi_subscription_data(char *supi,
         } else if (!strcmp(key, "mme_host") &&
             BSON_ITER_HOLDS_UTF8(&iter)) {
             utf8 = bson_iter_utf8(&iter, &length);
-            ogs_cpystrn(subscription_data->mme_host,
+            subscription_data->mme_host = ogs_calloc(1, ogs_min(length,
+                OGS_MAX_FQDN_LEN)+1);
+            ogs_assert(subscription_data->mme_host);
+            ogs_cpystrn((char*)subscription_data->mme_host,
                 utf8, ogs_min(length, OGS_MAX_FQDN_LEN)+1);
         } else if (!strcmp(key, "mme_realm") &&
             BSON_ITER_HOLDS_UTF8(&iter)) {
             utf8 = bson_iter_utf8(&iter, &length);
-            ogs_cpystrn(subscription_data->mme_realm,
+            subscription_data->mme_realm = ogs_calloc(1, ogs_min(length,
+                OGS_MAX_FQDN_LEN)+1);
+            ogs_assert(subscription_data->mme_realm);
+            ogs_cpystrn((char*)subscription_data->mme_realm,
                 utf8, ogs_min(length, OGS_MAX_FQDN_LEN)+1);
         } else if (!strcmp(key, "mme_ispurged") &&
             BSON_ITER_HOLDS_BOOL(&iter)) {
