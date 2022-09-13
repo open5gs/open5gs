@@ -10,6 +10,7 @@ import CloseIcon from 'react-icons/lib/md/close';
 
 import PhoneIcon from 'react-icons/lib/md/phone';
 import SecurityIcon from 'react-icons/lib/md/security';
+import MmeIcon from 'react-icons/lib/md/router';
 import PdnIcon from 'react-icons/lib/md/cast';
 import KeyboardControlIcon from 'react-icons/lib/md/keyboard-control';
 
@@ -99,6 +100,12 @@ const Subscriber = styled.div`
     margin: 12px;
     font-size: 16px;
   }
+  .sectionbody {
+    display: flex;
+  }
+  .sectioncolumn {
+    flex: 1;
+  }
   .body {
     display: flex;
     flex-direction: row;
@@ -163,6 +170,9 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
   const imsi = (subscriber || {}).imsi;
   const msisdn_list = ((subscriber || {}).msisdn || []);
   const imeisv = (subscriber || {}).imeisv;
+  const mme_host = (subscriber || {}).mme_host;
+  const mme_realm = (subscriber || {}).mme_realm;
+  const mme_ispurged = (subscriber || {}).mme_ispurged;
   const security = ((subscriber || {}).security || {});
   const ambr = ((subscriber || {}).ambr || {});
   const slice_list = ((subscriber || {}).slice || []);
@@ -193,94 +203,123 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
               <div className="header">
                 Subscriber Configuration
               </div>
-              {(msisdn_list.length !== 0 || (imeisv && imeisv.length !== 0)) &&
-                <div className="body">
-                  <div className="left">
-                    <PhoneIcon/>
-                  </div>
-                  <div className="right">
-                    {msisdn_list.map((msisdn, index) =>
-                      <div key={index} className="data">
-                        {msisdn}
-                        <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>MSISDN</span>
+              <div className="sectionbody">
+                <div className="sectioncolumn">
+                  {(msisdn_list.length !== 0 || (imeisv && imeisv.length !== 0)) &&
+                    <div className="body">
+                      <div className="left">
+                        <PhoneIcon/>
                       </div>
-                    )}
-                    {imeisv && imeisv.length !== 0 &&
+                      <div className="right">
+                        {msisdn_list.map((msisdn, index) =>
+                          <div key={index} className="data">
+                            {msisdn}
+                            <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>MSISDN</span>
+                          </div>
+                        )}
+                        {imeisv && imeisv.length !== 0 &&
+                          <div className="data">
+                            {imeisv}
+                            <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>IMEISV</span>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+                  <div className="body">
+                    <div className="left">
+                      <SecurityIcon/>
+                    </div>
+                    <div className="right">
                       <div className="data">
-                        {imeisv}
-                        <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>IMEISV</span>
+                        {security.k}
+                        <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>K</span>
                       </div>
-                    }
+                      {security.opc &&
+                        <div className="data">
+                          {security.opc}
+                          <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>OPc</span>
+                        </div>
+                      }
+                      {security.op &&
+                        <div className="data">
+                          {security.op}
+                          <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>OP</span>
+                        </div>
+                      }
+                      <div className="data">
+                        {security.amf}
+                        <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>AMF</span>
+                      </div>
+                      {security.sqn &&
+                        <div className="data">
+                          {security.sqn}
+                          <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>SQN</span>
+                        </div>
+                      }
+                    </div>
                   </div>
                 </div>
-              }
-              <div className="body">
-                <div className="left">
-                  <SecurityIcon/>
-                </div>
-                <div className="right">
-                  <div className="data">
-                    {security.k}
-                    <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>K</span>
-                  </div>
-                  {security.opc &&
-                    <div className="data">
-                      {security.opc}
-                      <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>OPc</span>
+                <div className="sectioncolumn">
+                  {mme_host && mme_host.length !== 0 &&
+                    <div className="body">
+                      <div className="left">
+                        <MmeIcon/>
+                      </div>
+                      <div className="right">
+                        <div className="data">
+                          {mme_host}
+                          <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>MME Hostname</span>
+                        </div>
+                        {mme_realm &&
+                          <div className="data">
+                            {mme_realm}
+                            <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>MME Realm</span>
+                          </div>
+                        }
+                        <div className="data">
+                          {mme_ispurged === true ? ( "Purged" ) : ( "Not Purged" )}
+                          <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>UE is Purged at MME</span>
+                        </div>
+                      </div>
                     </div>
                   }
-                  {security.op &&
-                    <div className="data">
-                      {security.op}
-                      <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>OP</span>
+                  <div className="body">
+                    <div className="left">
+                      <PdnIcon/>
                     </div>
-                  }
-                  <div className="data">
-                    {security.amf}
-                    <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>AMF</span>
-                  </div>
-                  {security.sqn &&
-                    <div className="data">
-                      {security.sqn}
-                      <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>SQN</span>
+                    <div className="right">
+                      <div className="data">
+                        {ambr['downlink'] === undefined ? "unlimited" :
+                          ambr.downlink['value'] === undefined ? "unlimited" :
+                            ambr.downlink.value
+                        } {ambr['downlink'] === undefined ? "unlimited" :
+                            ambr.downlink['value'] === undefined ? "" :
+                            ambr.downlink['unit'] === undefined ? "bps" :
+                                ambr.downlink.unit === 0 ? "bps" :
+                                ambr.downlink.unit === 1 ? "Kbps" :
+                                ambr.downlink.unit === 2 ? "Mbps" :
+                                ambr.downlink.unit === 3 ? "Gbps" :
+                                ambr.downlink.unit === 4 ? "Tbps" :
+                                  "Unknown Unit" }
+                        <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>DL</span>
+                      </div>
+                      <div className="data">
+                        {ambr['uplink'] === undefined ? "unlimited" :
+                          ambr.uplink['value'] === undefined ? "unlimited" :
+                            ambr.uplink.value
+                        } {ambr['uplink'] === undefined ? "unlimited" :
+                            ambr.uplink['value'] === undefined ? "" :
+                            ambr.uplink['unit'] === undefined ? "bps" :
+                                ambr.uplink.unit === 0 ? "bps" :
+                                ambr.uplink.unit === 1 ? "Kbps" :
+                                ambr.uplink.unit === 2 ? "Mbps" :
+                                ambr.uplink.unit === 3 ? "Gbps" :
+                                ambr.uplink.unit === 4 ? "Tbps" :
+                                  "Unknown Unit" }
+                        <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>UL</span>
+                      </div>
                     </div>
-                  }
-                </div>
-              </div>
-              <div className="body">
-                <div className="left">
-                  <PdnIcon/>
-                </div>
-                <div className="right">
-                  <div className="data">
-                    {ambr['downlink'] === undefined ? "unlimited" :
-                      ambr.downlink['value'] === undefined ? "unlimited" :
-                        ambr.downlink.value
-                    } {ambr['downlink'] === undefined ? "unlimited" :
-                         ambr.downlink['value'] === undefined ? "" :
-                         ambr.downlink['unit'] === undefined ? "bps" :
-                            ambr.downlink.unit === 0 ? "bps" :
-                            ambr.downlink.unit === 1 ? "Kbps" :
-                            ambr.downlink.unit === 2 ? "Mbps" :
-                            ambr.downlink.unit === 3 ? "Gbps" :
-                            ambr.downlink.unit === 4 ? "Tbps" :
-                              "Unknown Unit" }
-                    <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>DL</span>
-                  </div>
-                  <div className="data">
-                    {ambr['uplink'] === undefined ? "unlimited" :
-                      ambr.uplink['value'] === undefined ? "unlimited" :
-                        ambr.uplink.value
-                    } {ambr['uplink'] === undefined ? "unlimited" :
-                         ambr.uplink['value'] === undefined ? "" :
-                         ambr.uplink['unit'] === undefined ? "bps" :
-                            ambr.uplink.unit === 0 ? "bps" :
-                            ambr.uplink.unit === 1 ? "Kbps" :
-                            ambr.uplink.unit === 2 ? "Mbps" :
-                            ambr.uplink.unit === 3 ? "Gbps" :
-                            ambr.uplink.unit === 4 ? "Tbps" :
-                              "Unknown Unit" }
-                    <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>UL</span>
                   </div>
                 </div>
               </div>
