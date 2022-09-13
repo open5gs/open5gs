@@ -190,7 +190,7 @@ int ogs_dbi_update_imeisv(char *supi, char *imeisv)
 }
 
 int ogs_dbi_update_mme(char *supi, char *mme_host, char *mme_realm, 
-    bool mme_ispurged)
+    bool purge_flag)
 {
     int rv = OGS_OK;
     bson_t *query = NULL;
@@ -216,7 +216,7 @@ int ogs_dbi_update_mme(char *supi, char *mme_host, char *mme_realm,
                 "mme_host", BCON_UTF8(mme_host),
                 "mme_realm", BCON_UTF8(mme_realm),
                 "mme_timestamp", BCON_INT64(ogs_time_now()),
-                "mme_ispurged", BCON_BOOL(mme_ispurged),
+                "purge_flag", BCON_BOOL(purge_flag),
             "}");
     if (!mongoc_collection_update(ogs_mongoc()->collection.subscriber,
             MONGOC_UPDATE_UPSERT, query, update, NULL, &error)) {
@@ -377,11 +377,9 @@ int ogs_dbi_subscription_data(char *supi,
         } else if (!strcmp(key, "imsi") &&
             BSON_ITER_HOLDS_UTF8(&iter)) {
             utf8 = bson_iter_utf8(&iter, &length);
-            subscription_data->imsi = ogs_calloc(1, ogs_min(length,
-                OGS_MAX_IMSI_BCD_LEN)+1);
+            subscription_data->imsi =
+                ogs_strndup(utf8, ogs_min(length, OGS_MAX_IMSI_BCD_LEN) + 1);
             ogs_assert(subscription_data->imsi);
-            ogs_cpystrn((char*)subscription_data->imsi,
-                utf8, ogs_min(length, OGS_MAX_IMSI_BCD_LEN)+1);
         } else if (!strcmp(key, "access_restriction_data") &&
             BSON_ITER_HOLDS_INT32(&iter)) {
             subscription_data->access_restriction_data =
@@ -705,22 +703,18 @@ int ogs_dbi_subscription_data(char *supi,
         } else if (!strcmp(key, "mme_host") &&
             BSON_ITER_HOLDS_UTF8(&iter)) {
             utf8 = bson_iter_utf8(&iter, &length);
-            subscription_data->mme_host = ogs_calloc(1, ogs_min(length,
-                OGS_MAX_FQDN_LEN)+1);
+            subscription_data->mme_host =
+                ogs_strndup(utf8, ogs_min(length, OGS_MAX_FQDN_LEN) + 1);
             ogs_assert(subscription_data->mme_host);
-            ogs_cpystrn((char*)subscription_data->mme_host,
-                utf8, ogs_min(length, OGS_MAX_FQDN_LEN)+1);
         } else if (!strcmp(key, "mme_realm") &&
             BSON_ITER_HOLDS_UTF8(&iter)) {
             utf8 = bson_iter_utf8(&iter, &length);
-            subscription_data->mme_realm = ogs_calloc(1, ogs_min(length,
-                OGS_MAX_FQDN_LEN)+1);
+            subscription_data->mme_realm =
+                ogs_strndup(utf8, ogs_min(length, OGS_MAX_FQDN_LEN) + 1);
             ogs_assert(subscription_data->mme_realm);
-            ogs_cpystrn((char*)subscription_data->mme_realm,
-                utf8, ogs_min(length, OGS_MAX_FQDN_LEN)+1);
-        } else if (!strcmp(key, "mme_ispurged") &&
+        } else if (!strcmp(key, "purge_flag") &&
             BSON_ITER_HOLDS_BOOL(&iter)) {
-            subscription_data->mme_ispurged = bson_iter_bool(&iter);
+            subscription_data->purge_flag = bson_iter_bool(&iter);
         }
     }
 

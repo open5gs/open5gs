@@ -740,11 +740,11 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
     struct avp *avpch1;
     union avp_value val;
 
-    char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
+    char *imsi_bcd = NULL;
     char imeisv_bcd[OGS_MAX_IMEISV_BCD_LEN+1];
 
-    char mme_host[OGS_MAX_FQDN_LEN+1];
-    char mme_realm[OGS_MAX_FQDN_LEN+1];
+    char *mme_host = NULL;
+    char *mme_realm = NULL;
 
     int rv;
     uint32_t result_code = 0;
@@ -764,12 +764,22 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
     ogs_assert(ret == 0);
     ans = *msg;
 
+    /* Get User-Name AVP */
     ret = fd_msg_search_avp(qry, ogs_diam_user_name, &avp);
     ogs_assert(ret == 0);
-    ret = fd_msg_avp_hdr(avp, &hdr);
-    ogs_assert(ret == 0);
-    ogs_cpystrn(imsi_bcd, (char*)hdr->avp_value->os.data,
-        ogs_min(hdr->avp_value->os.len, OGS_MAX_IMSI_BCD_LEN)+1);
+    if (avp) {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        ogs_assert(ret == 0);
+
+        imsi_bcd = ogs_strndup(
+            (char*)hdr->avp_value->os.data,
+            ogs_min(hdr->avp_value->os.len, OGS_MAX_IMSI_BCD_LEN) + 1);
+        ogs_assert(imsi_bcd);
+    } else {
+        ogs_error("no_User-Name");
+        result_code = OGS_DIAM_MISSING_AVP;
+        goto out;
+    }
 
     rv = hss_db_subscription_data(imsi_bcd, &subscription_data);
     if (rv != OGS_OK) {
@@ -778,26 +788,49 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
         goto out;
     }
 
+    /* Get Origin-Host */
     ret = fd_msg_search_avp(qry, ogs_diam_origin_host, &avp);
     ogs_assert(ret == 0);
-    ret = fd_msg_avp_hdr(avp, &hdr);
-    ogs_assert(ret == 0);
-    ogs_cpystrn(mme_host, (char*)hdr->avp_value->os.data,
-        ogs_min(hdr->avp_value->os.len, OGS_MAX_FQDN_LEN)+1);
+    if (avp) {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        ogs_assert(ret == 0);
 
+        mme_host = ogs_strndup(
+            (char*)hdr->avp_value->os.data,
+            ogs_min(hdr->avp_value->os.len, OGS_MAX_FQDN_LEN) + 1);
+        ogs_assert(mme_host);
+    } else {
+        ogs_error("no_Origin-Host");
+        result_code = OGS_DIAM_MISSING_AVP;
+        goto out;
+    }
+
+    /* Get Origin-Realm */
     ret = fd_msg_search_avp(qry, ogs_diam_origin_realm, &avp);
     ogs_assert(ret == 0);
-    ret = fd_msg_avp_hdr(avp, &hdr);
-    ogs_assert(ret == 0);
-    ogs_cpystrn(mme_realm, (char*)hdr->avp_value->os.data,
-        ogs_min(hdr->avp_value->os.len, OGS_MAX_FQDN_LEN)+1);
-    
+    if (avp) {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        ogs_assert(ret == 0);
+
+        mme_realm = ogs_strndup(
+            (char*)hdr->avp_value->os.data,
+            ogs_min(hdr->avp_value->os.len, OGS_MAX_FQDN_LEN) + 1);
+        ogs_assert(mme_realm);
+    } else {
+        ogs_error("no_Origin-Realm");
+        result_code = OGS_DIAM_MISSING_AVP;
+        goto out;
+    }
+
+    ogs_assert(mme_host);
+    ogs_assert(mme_realm);
+
     /* If UE is not purged at MME, determine if the MME sending the ULR  
      * is different from the one that was last used.  if so, send CLR.
      */
     if (subscription_data.mme_host != NULL &&
             subscription_data.mme_realm != NULL) {
-        if (!subscription_data.mme_ispurged) {
+        if (!subscription_data.purge_flag) {
             if (strcmp(subscription_data.mme_host, mme_host) ||
                 strcmp(subscription_data.mme_realm, mme_realm)) {
                 hss_s6a_send_clr(imsi_bcd, subscription_data.mme_host,
@@ -926,6 +959,13 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
 
     ogs_subscription_data_free(&subscription_data);
 
+    if (imsi_bcd)
+        ogs_free(imsi_bcd);
+    if (mme_host)
+        ogs_free(mme_host);
+    if (mme_realm)
+        ogs_free(mme_realm);
+
     return 0;
 
 out:
@@ -950,6 +990,13 @@ out:
     ogs_assert(ret == 0);
 
     ogs_subscription_data_free(&subscription_data);
+
+    if (imsi_bcd)
+        ogs_free(imsi_bcd);
+    if (mme_host)
+        ogs_free(mme_host);
+    if (mme_realm)
+        ogs_free(mme_realm);
 
     return 0;
 }
@@ -1277,7 +1324,7 @@ int hss_s6a_send_idr(char *imsi_bcd, uint32_t idr_flags, uint32_t subdatamask)
         return OGS_ERROR;
     }
 
-    if (subscription_data.mme_ispurged) {
+    if (subscription_data.purge_flag) {
         ogs_error("    [%s] UE Purged at MME.  Cannot send IDR.", imsi_bcd);
         return OGS_ERROR;        
     }    

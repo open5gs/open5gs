@@ -696,7 +696,7 @@ typedef struct ogs_subscription_data_s {
 
     char *mme_host;
     char *mme_realm;
-    bool mme_ispurged;
+    bool purge_flag;
 } ogs_subscription_data_t;
 
 void ogs_subscription_data_free(ogs_subscription_data_t *subscription_data);

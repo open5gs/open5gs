@@ -15,7 +15,7 @@ const Subscriber = new Schema({
   imeisv: [ String ],
   mme_host: [ String ],
   mme_realm: [ String ],
-  mme_ispurged: [ Boolean ],
+  purge_flag: [ Boolean ],
 
   security: {
     k: String,

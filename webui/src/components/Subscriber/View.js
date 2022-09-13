@@ -172,7 +172,7 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
   const imeisv = (subscriber || {}).imeisv;
   const mme_host = (subscriber || {}).mme_host;
   const mme_realm = (subscriber || {}).mme_realm;
-  const mme_ispurged = (subscriber || {}).mme_ispurged;
+  const purge_flag = (subscriber || {}).purge_flag;
   const security = ((subscriber || {}).security || {});
   const ambr = ((subscriber || {}).ambr || {});
   const slice_list = ((subscriber || {}).slice || []);
@@ -278,7 +278,7 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
                           </div>
                         }
                         <div className="data">
-                          {mme_ispurged === true ? ( "Purged" ) : ( "Not Purged" )}
+                          {purge_flag === true ? ( "Purged" ) : ( "Not Purged" )}
                           <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>UE is Purged at MME</span>
                         </div>
                       </div>

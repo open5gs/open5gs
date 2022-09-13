@@ -43,7 +43,7 @@ int ogs_dbi_update_sqn(char *supi, uint64_t sqn);
 int ogs_dbi_increment_sqn(char *supi);
 int ogs_dbi_update_imeisv(char *supi, char *imeisv);
 int ogs_dbi_update_mme(char *supi, char *mme_host, char *mme_realm,
-    bool mme_ispurged);
+    bool purge_flag);
 
 int ogs_dbi_subscription_data(char *supi,
         ogs_subscription_data_t *subscription_data);
