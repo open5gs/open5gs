@@ -34,8 +34,6 @@
 extern "C" {
 #endif
 
-#define MAX_NUM_OF_SERVED_GUAMI     8
-
 extern int __amf_log_domain;
 extern int __gmm_log_domain;
 
