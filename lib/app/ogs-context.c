@@ -252,6 +252,8 @@ int ogs_app_context_parse_config(void)
         ogs_assert(root_key);
         if (!strcmp(root_key, "db_uri")) {
             self.db_uri = ogs_yaml_iter_value(&root_iter);
+        } else if (!strcmp(root_key, "db_updates")) {
+            self.db_updates = ogs_yaml_iter_bool(&root_iter);
         } else if (!strcmp(root_key, "logger")) {
             ogs_yaml_iter_t logger_iter;
             ogs_yaml_iter_recurse(&root_iter, &logger_iter);

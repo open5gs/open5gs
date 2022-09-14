@@ -35,6 +35,8 @@ typedef struct ogs_app_context_s {
     void *document;
 
     const char *db_uri;
+    int db_updates;
+
     struct {
         const char *file;
         const char *level;

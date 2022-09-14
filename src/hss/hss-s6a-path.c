@@ -719,7 +719,7 @@ static int hss_s6a_avp_add_subscription_data(
             ret = fd_msg_avp_add(apn_configuration_profile,
                     MSG_BRW_LAST_CHILD, apn_configuration);
             ogs_assert(ret == 0);
-            
+
         }
         ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD,
                 apn_configuration_profile);
@@ -825,7 +825,7 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
     ogs_assert(mme_host);
     ogs_assert(mme_realm);
 
-    /* If UE is not purged at MME, determine if the MME sending the ULR  
+    /* If UE is not purged at MME, determine if the MME sending the ULR 
      * is different from the one that was last used.  if so, send CLR.
      */
     if (subscription_data.mme_host != NULL &&
@@ -1269,6 +1269,9 @@ void hss_s6a_send_clr(char *imsi_bcd, char *mme_host, char *mme_realm,
     ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
     ogs_diam_logger_self()->stats.nb_sent++;
     ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+
+    if (imsi_bcd)
+        ogs_free(imsi_bcd);
 }
 
 /* HSS received Cancel Location Answer from MME */
@@ -1286,7 +1289,7 @@ static void hss_s6a_cla_cb(void *data, struct msg **msg)
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
     ogs_expect_or_return(ret == 0);
     ogs_expect_or_return(new == 0);
-    
+
     ret = fd_sess_state_retrieve(hss_s6a_reg, session, &sess_data);
     ogs_expect_or_return(ret == 0);
     ogs_expect_or_return(sess_data);
@@ -1326,8 +1329,8 @@ int hss_s6a_send_idr(char *imsi_bcd, uint32_t idr_flags, uint32_t subdatamask)
 
     if (subscription_data.purge_flag) {
         ogs_error("    [%s] UE Purged at MME.  Cannot send IDR.", imsi_bcd);
-        return OGS_ERROR;        
-    }    
+        return OGS_ERROR;
+    }
 
     /* Create the random value to store with the session */
     sess_data = ogs_calloc(1, sizeof(*sess_data));
@@ -1405,7 +1408,7 @@ int hss_s6a_send_idr(char *imsi_bcd, uint32_t idr_flags, uint32_t subdatamask)
         ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
         ogs_assert(ret == 0);
     }
-    
+
     /* Set the Subscription Data */
     ret = fd_msg_avp_new(ogs_diam_s6a_subscription_data, 0, &avp);
     ogs_assert(ret == 0);
@@ -1415,11 +1418,11 @@ int hss_s6a_send_idr(char *imsi_bcd, uint32_t idr_flags, uint32_t subdatamask)
             if (ret != OGS_OK) {
                 ogs_error("    [%s] Could not build Subscription-Data.", 
                     imsi_bcd);
-                return OGS_ERROR;   
+                return OGS_ERROR;
             }
         }
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-    ogs_assert(ret == 0);    
+    ogs_assert(ret == 0);
 
     /* Set Vendor-Specific-Application-Id AVP */
     ret = ogs_diam_message_vendor_specific_appid_set(
@@ -1445,6 +1448,9 @@ int hss_s6a_send_idr(char *imsi_bcd, uint32_t idr_flags, uint32_t subdatamask)
     ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
 
     ogs_subscription_data_free(&subscription_data);
+    if (imsi_bcd)
+        ogs_free(imsi_bcd);
+
 
     return OGS_OK;
 }
@@ -1464,7 +1470,7 @@ static void hss_s6a_ida_cb(void *data, struct msg **msg)
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
     ogs_expect_or_return(ret == 0);
     ogs_expect_or_return(new == 0);
-    
+
     ret = fd_sess_state_retrieve(hss_s6a_reg, session, &sess_data);
     ogs_expect_or_return(ret == 0);
     ogs_expect_or_return(sess_data);
@@ -1527,7 +1533,7 @@ int hss_s6a_init(void)
 void hss_s6a_final(void)
 {
     int ret;
-    
+
     ret = fd_sess_handler_destroy(&hss_s6a_reg, NULL);
     ogs_assert(ret == OGS_OK);
 

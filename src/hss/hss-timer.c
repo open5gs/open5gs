@@ -17,25 +17,38 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef HSS_FD_PATH_H
-#define HSS_FD_PATH_H
+#include "hss-timer.h"
+#include "hss-event.h"
+#include "hss-context.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+const char *hss_timer_get_name(hss_timer_e id)
+{
+    switch (id) {
+    case HSS_DB_POLL_CHANGE_STREAM:
+        return "HSS_DB_POLL_CHANGE_STREAM";
+    default:
+       break;
+    }
 
-int hss_fd_init(void);
-void hss_fd_final(void);
-
-int hss_s6a_init(void);
-void hss_s6a_final(void);
-int hss_cx_init(void);
-void hss_cx_final(void);
-int hss_swx_init(void);
-void hss_swx_final(void);
-
-#ifdef __cplusplus
+    return "UNKNOWN_TIMER";
 }
-#endif
 
-#endif /* HSS_FD_PATH_H */
+static void timer_send_event(int timer_id, void *data)
+{
+    int rv;
+    hss_event_t *e = NULL;
+
+    e = hss_event_new(HSS_EVT_DB_TIMER);
+    e->timer_id = timer_id;
+
+    rv = ogs_queue_push(ogs_app()->queue, e);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
+        hss_event_free(e);
+    }
+}
+
+void hss_timer_poll_change_stream(void *data)
+{
+    timer_send_event(HSS_DB_POLL_CHANGE_STREAM, data);
+}

@@ -17,25 +17,31 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef HSS_FD_PATH_H
-#define HSS_FD_PATH_H
+#ifndef HSS_TIMER_H
+#define HSS_TIMER_H
+
+#include "ogs-core.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int hss_fd_init(void);
-void hss_fd_final(void);
+/* forward declaration */
+typedef enum {
+    HSS_TIMER_BASE = 0,
 
-int hss_s6a_init(void);
-void hss_s6a_final(void);
-int hss_cx_init(void);
-void hss_cx_final(void);
-int hss_swx_init(void);
-void hss_swx_final(void);
+    HSS_DB_POLL_CHANGE_STREAM,
+
+    MAX_NUM_OF_HSS_TIMER,
+
+} hss_timer_e;
+
+const char *hss_timer_get_name(hss_timer_e id);
+
+void hss_timer_poll_change_stream(void *data);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* HSS_FD_PATH_H */
+#endif /* HSS_TIMER_H */
