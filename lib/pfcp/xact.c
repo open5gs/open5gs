@@ -563,8 +563,6 @@ int ogs_pfcp_xact_commit(ogs_pfcp_xact_t *xact)
 
     if (ogs_pfcp_sendto(xact->node, pkbuf) != OGS_OK) {
         ogs_error("ogs_pfcp_sendto() failed");
-        ogs_pfcp_xact_delete(xact);
-        return OGS_ERROR;
     }
 
     return OGS_OK;
