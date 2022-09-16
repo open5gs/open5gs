@@ -8,6 +8,8 @@ import EditIcon from 'react-icons/lib/md/edit';
 import DeleteIcon from 'react-icons/lib/md/delete';
 import CloseIcon from 'react-icons/lib/md/close';
 
+import LockOpenIcon from 'react-icons/lib/md/lock-open';
+import LockIcon from 'react-icons/lib/md/lock';
 import PhoneIcon from 'react-icons/lib/md/phone';
 import SecurityIcon from 'react-icons/lib/md/security';
 import MmeIcon from 'react-icons/lib/md/router';
@@ -168,6 +170,7 @@ const Pdn = styled.div`
 `
 const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, onHide }) => {
   const imsi = (subscriber || {}).imsi;
+  const subscriber_status = (subscriber || {}).subscriber_status;
   const msisdn_list = ((subscriber || {}).msisdn || []);
   const imeisv = (subscriber || {}).imeisv;
   const mme_host = (subscriber || {}).mme_host;
@@ -200,6 +203,35 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
           </Header>
           <Body>
             <Subscriber>
+              <div className="header">
+                Subscriber Status
+              </div>
+              <div className="sectionbody">
+                  {(subscriber_status == 0) &&
+                    <div className="body">
+                      <div className="left">
+                        <LockOpenIcon/>
+                      </div>
+                      <div className="right">
+                        <div className="data">
+                          <span style={{color:oc.green[5]}}>Service Granted</span>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                  {(subscriber_status == 1) &&
+                    <div className="body">
+                      <div className="left">
+                        <LockIcon/>
+                      </div>
+                      <div className="right">
+                        <div className="data">
+                          <span style={{color:oc.red[5]}}>Service Barred</span>
+                        </div>
+                      </div>
+                    </div>
+                  }
+              </div>
               <div className="header">
                 Subscriber Configuration
               </div>
