@@ -15,6 +15,8 @@ If you have tested radio hardware from a vendor not listed with Open5GS, please 
  * CableFree Small Cell Outdoor radios (5G n77, n78 and other bands)
  * CableFree Small Cell Indoor radios (5G n77, n78 and other bands)
  * CableFree Macro (BBU+RRH) radios (4G and 5G, various bands)
+ * Ericsson Baseband 6630 (21.Q3 Software) + Radio 2217, Radio 2219 (4G and 5G, various bands)
+ * Ericsson StreetMacro 6701 (21.Q3 Software) (5G mmWave, n261) (Baseband 6318 and AIR 1281 packaged together)
  * LIONS RANathon O-CU and O-DU + RANathon RS8601 Indoor O-RU + RANathon XG8600 Fronthaul Gateway
  * NOKIA AEQE (SW: 5G20A)
  * NOKIA AEQD (SW: 5G20A)
@@ -37,7 +39,8 @@ If you have tested radio hardware from a vendor not listed with Open5GS, please 
  * Baicells Nova 436Q
  * Baicells Nova 227 (EBS & CBRS)
  * Baicells Nova 233
- * Ericsson BaseBand 6630 (21Q1 Software)
+ * Ericsson Baseband 6630 (21Q1 Software)
+ * Ericsson RBS 6402 (18.Q1 software, B2 B25 B4 B7 B252 B255)
  * Ericsson RBS 6601 + DUL 20 01 + RUS 01 B8 
  * Gemtek WLTGFC-101 (S/W version 2.1.1746.1116)
  * Huawei BTS3900 (S/W version V100R011C10SPC230)
