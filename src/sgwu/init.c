@@ -65,6 +65,9 @@ int sgwu_initialize()
     initialized = 1;
 
     ogs_write_file_start("sgwu_start_time");
+    ogs_write_file_subdir("sgwu");
+    stats_update_sgwu_sessions();
+    
     return OGS_OK;
 }
 
