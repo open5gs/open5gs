@@ -684,7 +684,6 @@ uint8_t smf_epc_n4_handle_session_establishment_response(
     uint8_t cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 
     smf_bearer_t *bearer = NULL;
-    ogs_gtp_xact_t *gtp_xact = NULL;
 
     ogs_pfcp_f_seid_t *up_f_seid = NULL;
 
@@ -693,9 +692,6 @@ uint8_t smf_epc_n4_handle_session_establishment_response(
     ogs_assert(rsp);
 
     ogs_debug("Session Establishment Response [epc]");
-
-    gtp_xact = xact->assoc_xact;
-    ogs_assert(gtp_xact);
 
     ogs_pfcp_xact_commit(xact);
 

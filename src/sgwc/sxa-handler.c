@@ -124,6 +124,25 @@ static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
     }
 }
 
+void sgwc_sxa_handle_session_reestablishment(
+        sgwc_sess_t *sess, ogs_pfcp_xact_t *pfcp_xact,
+        ogs_pfcp_session_establishment_response_t *pfcp_rsp)
+{
+    ogs_assert(sess);
+    ogs_assert(pfcp_xact);
+    ogs_assert(pfcp_rsp);
+
+    ogs_pfcp_xact_commit(pfcp_xact);
+
+    // I *think* the only thing we need to do here is check/udpate up_f_seid
+    ogs_pfcp_f_seid_t *up_f_seid = NULL;
+    up_f_seid = pfcp_rsp->up_f_seid.data;
+    ogs_assert(up_f_seid);
+    sess->sgwu_sxa_seid = be64toh(up_f_seid->seid);
+
+    return;
+}
+
 void sgwc_sxa_handle_session_establishment_response(
         sgwc_sess_t *sess, ogs_pfcp_xact_t *pfcp_xact,
         ogs_gtp2_message_t *recv_message,
@@ -305,6 +324,8 @@ void sgwc_sxa_handle_session_establishment_response(
     up_f_seid = pfcp_rsp->up_f_seid.data;
     ogs_assert(up_f_seid);
     sess->sgwu_sxa_seid = be64toh(up_f_seid->seid);
+
+    sess->pfcp_state = PFCP_ESTABLISHED;
 
     pgw_s5c_teid = create_session_request->
         pgw_s5_s8_address_for_control_plane_or_pmip.data;

@@ -233,6 +233,13 @@ void sgwc_pfcp_state_associated(ogs_fsm_t *s, sgwc_event_t *e)
                 break;
             }
 
+            if (sess && sess->pfcp_state == PFCP_ESTABLISHED) {
+                ogs_warn("Already received SER for this session");
+                sgwc_sxa_handle_session_reestablishment(
+                    sess, xact, &message->pfcp_session_establishment_response);
+                break;
+            }
+
             if (!e->gtp_message) {
                 ogs_warn("No GTP Message Context");
                 break;

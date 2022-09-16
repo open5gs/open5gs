@@ -68,12 +68,21 @@ typedef struct sgwc_ue_s {
     ogs_gtp_node_t  *gnode;
 } sgwc_ue_t;
 
+enum PFCP_STATES {
+    PFCP_ENTRY,
+    PFCP_WAIT_ESTABLISHMENT,
+    PFCP_ESTABLISHED,
+    PFCP_WAIT_DELETION,
+    PFCP_DELETED
+};
+
 #define SGWC_SESS(pfcp_sess) ogs_container_of(pfcp_sess, sgwc_sess_t, pfcp)
 typedef struct sgwc_sess_s {
     ogs_lnode_t     lnode;          /* A node of list_t */
     uint32_t        index;          /**< An index of this node */
 
     ogs_pfcp_sess_t pfcp;           /* PFCP session context */
+    int pfcp_state;                 /* PFCP state machine */
 
     uint32_t        sgw_s5c_teid;   /* SGW-S5C-TEID is derived from INDEX */
     uint32_t        pgw_s5c_teid;   /* PGW-S5C-TEID is received from PGW */
