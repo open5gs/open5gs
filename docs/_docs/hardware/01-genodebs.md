@@ -17,11 +17,11 @@ If you have tested radio hardware from a vendor not listed with Open5GS, please 
  * CableFree Macro (BBU+RRH) radios (4G and 5G, various bands)
  * Ericsson Baseband 6630 (21.Q3 Software) + Radio 2217, Radio 2219 (4G and 5G, various bands)
  * Ericsson StreetMacro 6701 (21.Q3 Software) (5G mmWave, n261) (Baseband 6318 and AIR 1281 packaged together)
+ * Huawei BTS5900
  * LIONS RANathon O-CU and O-DU + RANathon RS8601 Indoor O-RU + RANathon XG8600 Fronthaul Gateway
  * NOKIA AEQE (SW: 5G20A)
  * NOKIA AEQD (SW: 5G20A)
  * NOKIA AEQP (SW: 5G21A)
- * Huawei BTS5900
 
 ### Commercial 4G
 ---
@@ -56,8 +56,8 @@ If you have tested radio hardware from a vendor not listed with Open5GS, please 
 ---
 
  * [Amarisoft](https://www.amarisoft.com/) + LimeSDR, USRP, Amarisoft PCI Express Card
- * [srsLTE / srsENB](https://github.com/srsLTE/srsLTE) + LimeSDR, USRP, BladeRF x40 (BladeRF Not stable)
  * Open Air Interface 5G ([NR_SA_F1AP_5GRECORDS branch](https://gitlab.eurecom.fr/oai/openairinterface5g/-/tree/NR_SA_F1AP_5GRECORDS)) + USRP B210
+ * [srsLTE / srsENB](https://github.com/srsLTE/srsLTE) + LimeSDR, USRP, BladeRF x40 (BladeRF Not stable)
 
 ### Misc Radio Hardware
 ---
