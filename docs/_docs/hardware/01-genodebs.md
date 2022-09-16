@@ -12,6 +12,9 @@ If you have tested radio hardware from a vendor not listed with Open5GS, please 
  * Airspan 5G OpenRange vCU + Airspan 5G OpenRange vDU + Airspan 5G OpenRANGE06 AirVelocity 2700 RU
  * Airspan AirSpeed 2900
  * Airspan AirStrand 2200
+ * CableFree Small Cell Outdoor radios (5G n77, n78 and other bands)
+ * CableFree Small Cell Indoor radios (5G n77, n78 and other bands)
+ * CableFree Macro (BBU+RRH) radios (4G and 5G, various bands)
  * LIONS RANathon O-CU and O-DU + RANathon RS8601 Indoor O-RU + RANathon XG8600 Fronthaul Gateway
  * NOKIA AEQE (SW: 5G20A)
  * NOKIA AEQD (SW: 5G20A)
