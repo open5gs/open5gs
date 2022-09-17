@@ -1270,8 +1270,6 @@ void hss_s6a_send_clr(char *imsi_bcd, char *mme_host, char *mme_realm,
     ogs_diam_logger_self()->stats.nb_sent++;
     ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
 
-    if (imsi_bcd)
-        ogs_free(imsi_bcd);
 }
 
 /* HSS received Cancel Location Answer from MME */
@@ -1448,9 +1446,6 @@ int hss_s6a_send_idr(char *imsi_bcd, uint32_t idr_flags, uint32_t subdatamask)
     ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
 
     ogs_subscription_data_free(&subscription_data);
-    if (imsi_bcd)
-        ogs_free(imsi_bcd);
-
 
     return OGS_OK;
 }

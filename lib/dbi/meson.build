@@ -19,11 +19,14 @@ libdbi_sources = files('''
     ogs-dbi.h
 
     ogs-mongoc.h
+    timer.h
 
     ogs-mongoc.c
     subscription.c
     session.c
     ims.c
+    path.c
+    timer.c
 '''.split())
 
 libmongoc_dep = dependency('libmongoc-1.0')
@@ -35,10 +38,10 @@ libdbi = library('ogsdbi',
     version : libogslib_version,
     c_args : '-DOGS_DBI_COMPILATION',
     include_directories : [libdbi_inc, libinc],
-    dependencies : [libcrypt_dep, libmongoc_dep],
+    dependencies : [libcrypt_dep, libapp_dep, libmongoc_dep],
     install : true)
 
 libdbi_dep = declare_dependency(
     link_with : libdbi,
     include_directories : [libdbi_inc, libinc],
-    dependencies : [libcrypt_dep, libmongoc_dep])
+    dependencies : [libcrypt_dep, libapp_dep, libmongoc_dep])

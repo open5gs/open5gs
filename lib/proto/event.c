@@ -65,6 +65,11 @@ const char *ogs_event_get_name(ogs_event_t *e)
     case OGS_EVENT_SBI_TIMER:
         return OGS_EVENT_NAME_SBI_TIMER;
 
+    case OGS_EVENT_DBI_POLL_TIMER:
+        return "OGS_EVENT_DBI_POLL_TIMER";
+    case OGS_EVENT_DBI_MESSAGE:
+        return "OGS_EVENT_DBI_MESSAGE";
+
     default:
         break;
     }

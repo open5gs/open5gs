@@ -54,7 +54,7 @@ int ogs_dbi_init(const char *db_uri);
 void ogs_dbi_final(void);
 
 int ogs_dbi_collection_watch_init(void);
-int ogs_dbi_poll_change_stream(int (*ptr)(const bson_t *document));
+int ogs_dbi_poll_change_stream(void);
 
 #ifdef __cplusplus
 }

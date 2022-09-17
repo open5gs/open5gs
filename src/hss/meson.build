@@ -21,13 +21,11 @@ libhss_sources = files('''
     hss-s6a-path.h
     hss-event.h
     hss-sm.h
-    hss-timer.h
 
     hss-init.c
     hss-context.c
     hss-event.c
     hss-sm.c
-    hss-timer.c
 
     hss-s6a-path.c
     hss-cx-path.c

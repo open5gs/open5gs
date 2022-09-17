@@ -21,6 +21,7 @@
 #define HSS_SM_H
 
 #include "hss-event.h"
+#include "ogs-proto.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,13 +29,13 @@ extern "C" {
 
 #define DB_POLLING_TIME ogs_time_from_msec(100)
 
-void hss_state_initial(ogs_fsm_t *s, hss_event_t *e);
-void hss_state_final(ogs_fsm_t *s, hss_event_t *e);
-void hss_state_operational(ogs_fsm_t *s, hss_event_t *e);
-void hss_state_exception(ogs_fsm_t *s, hss_event_t *e);
+void hss_state_initial(ogs_fsm_t *s, ogs_event_t *e);
+void hss_state_final(ogs_fsm_t *s, ogs_event_t *e);
+void hss_state_operational(ogs_fsm_t *s, ogs_event_t *e);
+void hss_state_exception(ogs_fsm_t *s, ogs_event_t *e);
 
 #define hss_sm_debug(__pe) \
-    ogs_debug("%s(): %s", __func__, hss_event_get_name(__pe))
+    ogs_debug("%s(): %s", __func__, ogs_event_get_name(__pe))
 
 #ifdef __cplusplus
 }

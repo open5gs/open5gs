@@ -94,7 +94,7 @@ static void hss_main(void *data)
         ogs_timer_mgr_expire(ogs_app()->timer_mgr);
 
         for ( ;; ) {
-            hss_event_t *e = NULL;
+            ogs_event_t *e = NULL;
 
             rv = ogs_queue_trypop(ogs_app()->queue, (void**)&e);
             ogs_assert(rv != OGS_ERROR);
@@ -107,7 +107,7 @@ static void hss_main(void *data)
 
             ogs_assert(e);
             ogs_fsm_dispatch(&hss_sm, e);
-            hss_event_free(e);
+            ogs_event_free(e);
         }
     }
 done:

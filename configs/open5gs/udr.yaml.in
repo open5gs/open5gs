@@ -1,5 +1,4 @@
 db_uri: mongodb://localhost/open5gs
-#db_updates: true
 
 #
 # logger:

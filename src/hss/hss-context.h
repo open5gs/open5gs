@@ -93,7 +93,6 @@ char *hss_cx_download_user_data(
         ogs_ims_data_t *ims_data);
 
 int hss_db_poll_change_stream(void);
-int hss_db_process_change_stream(const bson_t *document);
 int hss_handle_change_event(const bson_t *document);
 
 

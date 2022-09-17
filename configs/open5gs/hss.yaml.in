@@ -1,5 +1,4 @@
 db_uri: mongodb://localhost/open5gs
-#db_updates: true
 
 #
 # logger:
@@ -42,6 +41,7 @@ hss:
 #      prefer_ipv4: true
 #
 parameter:
+#    use_mongodb_change_stream: true
 
 #
 # max:

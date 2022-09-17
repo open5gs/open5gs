@@ -1180,31 +1180,11 @@ int hss_db_poll_change_stream(void) {
 
     ogs_thread_mutex_lock(&self.db_lock);
 
-    rv = ogs_dbi_poll_change_stream(&hss_db_process_change_stream);
+    rv = ogs_dbi_poll_change_stream();
 
     ogs_thread_mutex_unlock(&self.db_lock);
 
     return rv;
-}
-
-int hss_db_process_change_stream(const bson_t *document) {
-    int rv;
-
-    hss_event_t *e = NULL;
-
-    e = hss_event_new(HSS_EVT_S6A_MESSAGE);
-    ogs_assert(e);
-    e->eventmessage.document = bson_copy(document);
-    rv = ogs_queue_push(ogs_app()->queue, e);
-    if (rv != OGS_OK) {
-        ogs_error("ogs_queue_push() failed:%d", (int)rv);
-        bson_destroy((bson_t*)e->eventmessage.document);
-        hss_event_free(e);
-    } else {
-        ogs_pollset_notify(ogs_app()->pollset);
-    }
-
-    return OGS_OK;
 }
 
 int hss_handle_change_event(const bson_t *document) {
@@ -1222,7 +1202,7 @@ int hss_handle_change_event(const bson_t *document) {
     char *as_json = bson_as_relaxed_extended_json(document, NULL);
     ogs_debug("Got document: %s\n", as_json);
     if (!bson_iter_init_find(&iter, document, "fullDocument")) {
-        ogs_debug("No 'imsi' field in this document.");
+        ogs_error("No 'imsi' field in this document.");
         return OGS_ERROR;
     } else {
         bson_iter_recurse(&iter, &child1_iter);
@@ -1236,6 +1216,11 @@ int hss_handle_change_event(const bson_t *document) {
                 ogs_assert(imsi_bcd);
             }
         }
+    }
+
+    if (!imsi_bcd) {
+        ogs_error("No 'imsi' field in this document.");
+        return OGS_ERROR;
     }
 
     if (bson_iter_init_find(&iter, document, "updateDescription")) {
@@ -1312,9 +1297,9 @@ int hss_handle_change_event(const bson_t *document) {
     } else if (send_idr_flag) {
         ogs_info("[%s] Subscription-Data Changed", imsi_bcd);
         hss_s6a_send_idr(imsi_bcd, 0, subdatamask);
-    } else {
-        ogs_free(imsi_bcd);
     }
+
+    ogs_free(imsi_bcd);
 
     return OGS_OK;
 }

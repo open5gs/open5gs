@@ -20,38 +20,13 @@
 #ifndef HSS_EVENT_H
 #define HSS_EVENT_H
 
-#include "ogs-proto.h"
-#include "ogs-dbi.h"
+#include "ogs-core.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef enum {
-    HSS_EVT_BASE = OGS_MAX_NUM_OF_PROTO_EVENT,
-
-    HSS_EVT_DB_TIMER,
-    HSS_EVT_S6A_MESSAGE,
-
-    HSS_EVT_TOP,
-
-} hss_event_e;
-
-typedef struct hss_event_s {
-    int id;
-    int timer_id;
-
-    struct {
-        const bson_t *document;
-    } eventmessage;
-} hss_event_t;
-
 void hss_event_term(void);
-
-hss_event_t *hss_event_new(hss_event_e id);
-void hss_event_free(hss_event_t *e);
-
-const char *hss_event_get_name(hss_event_t *e);
 
 #ifdef __cplusplus
 }

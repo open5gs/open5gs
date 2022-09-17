@@ -214,7 +214,7 @@ int ogs_dbi_collection_watch_init(void) {
     return OGS_OK;
 }
 
-int ogs_dbi_poll_change_stream(int (*ptr)(const bson_t *document)) {
+int ogs_dbi_poll_change_stream(void) {
     int rv;
     
     const bson_t *document;
@@ -222,7 +222,7 @@ int ogs_dbi_poll_change_stream(int (*ptr)(const bson_t *document)) {
     bson_error_t error;
 
     while (mongoc_change_stream_next(ogs_mongoc()->stream, &document)) {
-        rv = (*ptr)(document);
+        rv = ogs_dbi_process_change_stream(document);
         if (rv != OGS_OK) return rv;
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,34 +17,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef OGS_DBI_H
-#define OGS_DBI_H
-
-#include "crypt/ogs-crypt.h"
-#include "app/ogs-app.h"
-
-#define OGS_DBI_INSIDE
-
-#include "dbi/ogs-mongoc.h"
-#include "dbi/subscription.h"
-#include "dbi/session.h"
-#include "dbi/ims.h"
-#include "dbi/path.h"
-#include "dbi/timer.h"
-
-#undef OGS_DBI_INSIDE
+#ifndef OGS_DBI_TIMER_H
+#define OGS_DBI_TIMER_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern int __ogs_dbi_domain;
-
-#undef OGS_LOG_DOMAIN
-#define OGS_LOG_DOMAIN __ogs_dbi_domain
+void ogs_timer_dbi_poll_change_stream(void *data);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* OGS_DBI_H */
+#endif /* OGS_DBI_TIMER_H */

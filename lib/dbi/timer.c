@@ -17,31 +17,25 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef HSS_TIMER_H
-#define HSS_TIMER_H
+#include "ogs-dbi.h"
 
-#include "ogs-core.h"
+static void timer_send_event(int timer_id, void *data)
+{
+    int rv;
+    ogs_event_t *e = NULL;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+    e = ogs_event_new(OGS_EVENT_DBI_POLL_TIMER);
+    ogs_assert(e);
+    e->timer_id = timer_id;
 
-/* forward declaration */
-typedef enum {
-    HSS_TIMER_BASE = 0,
-
-    HSS_DB_POLL_CHANGE_STREAM,
-
-    MAX_NUM_OF_HSS_TIMER,
-
-} hss_timer_e;
-
-const char *hss_timer_get_name(hss_timer_e id);
-
-void hss_timer_poll_change_stream(void *data);
-
-#ifdef __cplusplus
+    rv = ogs_queue_push(ogs_app()->queue, e);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
+        ogs_event_free(e);
+    }
 }
-#endif
 
-#endif /* HSS_TIMER_H */
+void ogs_timer_dbi_poll_change_stream(void *data)
+{
+    timer_send_event(OGS_TIMER_DBI_POLL_CHANGE_STREAM, data);
+}
