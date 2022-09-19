@@ -69,16 +69,8 @@ int sgwc_initialize()
 
     ogs_write_file_start("sgwc_start_time");
     ogs_write_file_subdir("sgwc");
-
-    char buffer[25];
-    sprintf(buffer, "%d\n", 0);
-    ogs_write_file_value("sgwc/num_sessions", buffer);
-    ogs_write_file_value("sgwc/num_ues", buffer);
-
-    sprintf(buffer, "List of Active Sessions\n");    
-    ogs_write_file_value("sgwc/list_sessions", buffer);
-    sprintf(buffer, "List of Attached UEs\n");
-    ogs_write_file_value("sgwc/list_ues", buffer);
+    stats_update_sgwc_ues();
+    stats_update_sgwc_sessions();
 
     return OGS_OK;
 }

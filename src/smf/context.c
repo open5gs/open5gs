@@ -34,13 +34,10 @@ static OGS_POOL(smf_pf_pool, smf_pf_t);
 
 static int context_initialized = 0;
 
-static int num_of_smf_ue = 0;
 static int num_of_smf_sess = 0;
 
 static void stats_add_smf_session(void);
 static void stats_remove_smf_session(void);
-static void stats_add_smf_ue(void);
-static void stats_remove_smf_ue(void);
 
 int smf_ctf_config_init(smf_ctf_config_t *ctf_config)
 {
@@ -846,7 +843,7 @@ smf_ue_t *smf_ue_add_by_supi(char *supi)
 
     ogs_list_add(&self.smf_ue_list, smf_ue);
 
-    stats_add_smf_ue();
+    stats_update_smf_ues();
 
     return smf_ue;
 }
@@ -875,7 +872,7 @@ smf_ue_t *smf_ue_add_by_imsi(uint8_t *imsi, int imsi_len)
 
     ogs_list_add(&self.smf_ue_list, smf_ue);
 
-    stats_add_smf_ue();
+    stats_update_smf_ues();
 
     return smf_ue;
 }
@@ -899,8 +896,7 @@ void smf_ue_remove(smf_ue_t *smf_ue)
 
     ogs_pool_free(&smf_ue_pool, smf_ue);
 
-    stats_remove_smf_ue();
-
+    stats_update_smf_ues();
     ogs_info("[Removed] Number of SMF-UEs is now %d",
             ogs_list_count(&self.smf_ue_list));
 }
@@ -1439,7 +1435,7 @@ uint8_t smf_sess_set_ue_ip(smf_sess_t *sess)
         ogs_assert_if_reached();
     }
 
-    stats_write_list_smf_sessions();
+    stats_update_smf_sessions();
 
     return cause_value;
 }
@@ -2870,17 +2866,36 @@ void smf_pf_precedence_pool_final(smf_sess_t *sess)
     ogs_index_final(&sess->pf_precedence_pool);
 }
 
-void stats_write_list_smf_ues(void) {
+static void stats_add_smf_session(void)
+{
+    num_of_smf_sess = num_of_smf_sess + 1;
+    ogs_info("[Added] Number of SMF-Sessions is now %d", num_of_smf_sess);
+
+    stats_update_smf_sessions();
+}
+
+static void stats_remove_smf_session(void)
+{
+    num_of_smf_sess = num_of_smf_sess - 1;
+    ogs_info("[Removed] Number of SMF-Sessions is now %d", num_of_smf_sess);
+
+    stats_update_smf_sessions();
+}
+
+void stats_update_smf_ues(void)
+{
     smf_ue_t *smf_ue = NULL;
     char *buffer = NULL;
     char *ptr = NULL;
 
-    ptr = buffer = ogs_malloc(OGS_MAX_IMSI_BCD_LEN * ogs_app()->max.ue);
+    char num[20];
+    sprintf(num, "%d\n", ogs_list_count(&self.smf_ue_list));
+    ogs_write_file_value("smf/num_ues", num);
 
+    ptr = buffer = ogs_malloc(OGS_MAX_IMSI_BCD_LEN * ogs_app()->max.ue);
     ogs_list_for_each(&self.smf_ue_list, smf_ue) {
         ptr += sprintf(ptr, "%s\n", smf_ue->imsi_bcd);
     }
-
     ogs_write_file_value("smf/list_ues", buffer);
     ogs_free(buffer);
 }
@@ -2888,17 +2903,19 @@ void stats_write_list_smf_ues(void) {
 #define MAX_APN 63
 #define MAX_SESSION_STRING_LEN (21 + OGS_MAX_IMSI_BCD_LEN + MAX_APN + INET_ADDRSTRLEN + INET6_ADDRSTRLEN)
 
-void stats_write_list_smf_sessions(void) {
+void stats_update_smf_sessions(void) {
     smf_ue_t *smf_ue = NULL;
     smf_sess_t *sess = NULL;
-
     char buf1[OGS_ADDRSTRLEN];
     char buf2[OGS_ADDRSTRLEN];
     char *buffer = NULL;
     char *ptr = NULL;
 
-    ptr = buffer = ogs_malloc(MAX_SESSION_STRING_LEN * ogs_app()->max.ue);
+    char num[20];
+    sprintf(num, "%d\n", num_of_smf_sess);
+    ogs_write_file_value("smf/num_sessions", num);
 
+    ptr = buffer = ogs_malloc(MAX_SESSION_STRING_LEN * ogs_app()->max.ue);
     ogs_list_for_each(&self.smf_ue_list, smf_ue) {
         ogs_list_for_each(&smf_ue->sess_list, sess) {
             ptr += sprintf(ptr, "imsi:%s apn:%s ip4:%s ip6:%s\n",
@@ -2908,56 +2925,6 @@ void stats_write_list_smf_sessions(void) {
                 sess->session.ue_ip.ipv6 ? OGS_INET6_NTOP(&sess->session.ue_ip.addr6, buf2) : "");
         }
     }
-
     ogs_write_file_value("smf/list_sessions", buffer);
     ogs_free(buffer);
-}
-
-static void stats_add_smf_ue(void)
-{
-    num_of_smf_ue = num_of_smf_ue + 1;
-    ogs_info("[Added] Number of SMF-UEs is now %d", num_of_smf_ue);
-
-    char buffer[20];
-    sprintf(buffer, "%d\n", num_of_smf_ue);
-    ogs_write_file_value("smf/num_ues", buffer);
-
-    stats_write_list_smf_ues();
-}
-
-static void stats_remove_smf_ue(void)
-{
-    num_of_smf_ue = num_of_smf_ue - 1;
-    ogs_info("[Removed] Number of SMF-UEs is now %d", num_of_smf_ue);
-
-    char buffer[20];
-    sprintf(buffer, "%d\n", num_of_smf_ue);
-    ogs_write_file_value("smf/num_ues", buffer);
-
-    stats_write_list_smf_ues();
-}
-
-static void stats_add_smf_session(void)
-{
-    num_of_smf_sess = num_of_smf_sess + 1;
-    ogs_info("[Added] Number of SMF-Sessions is now %d", num_of_smf_sess);
-
-    char buffer[20];
-    sprintf(buffer, "%d\n", num_of_smf_sess);
-    ogs_write_file_value("smf/num_sessions", buffer);
-
-    stats_write_list_smf_sessions();
-}
-
-static void stats_remove_smf_session(void)
-{
-    char buffer[20];
-
-    num_of_smf_sess = num_of_smf_sess - 1;
-    ogs_info("[Removed] Number of SMF-Sessions is now %d", num_of_smf_sess);
-
-    sprintf(buffer, "%d\n", num_of_smf_sess);
-    ogs_write_file_value("smf/num_sessions", buffer);
-
-    stats_write_list_smf_sessions();
 }

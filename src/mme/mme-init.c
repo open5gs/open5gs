@@ -77,17 +77,9 @@ int mme_initialize()
 
     ogs_write_file_start("mme_start_time");
     ogs_write_file_subdir("mme");
-
-    char buffer[25];
-    sprintf(buffer, "%d\n", 0);
-    ogs_write_file_value("mme/num_enbs", buffer);
-    ogs_write_file_value("mme/num_ues", buffer);
-    ogs_write_file_value("mme/num_sessions", buffer);
-
-    sprintf(buffer, "\n");    
-    ogs_write_file_value("mme/list_enbs", buffer);
-    ogs_write_file_value("mme/list_ues", buffer);
-    ogs_write_file_value("mme/list_sessions", buffer);
+    stats_update_mme_enbs();
+    stats_update_mme_ues();
+    stats_update_mme_sessions();
 
     return OGS_OK;
 }

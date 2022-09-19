@@ -186,7 +186,7 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, ogs_s1ap_message_t *message)
         return;
     }
 
-    stats_write_list_mme_enbs();
+    stats_update_mme_enbs();
 
     enb->state.s1_setup_success = true;
     ogs_assert(OGS_OK == s1ap_send_s1_setup_response(enb));
