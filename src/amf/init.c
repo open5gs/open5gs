@@ -102,10 +102,11 @@ void amf_terminate(void)
 
     ngap_close();
     amf_sbi_close();
-    amf_metrics_close();
 
     amf_context_final();
     ogs_sbi_context_final();
+
+    amf_metrics_close();
     ogs_metrics_context_final();
 }
 

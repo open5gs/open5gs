@@ -124,8 +124,6 @@ void smf_terminate(void)
     smf_gtp_close();
     smf_pfcp_close();
     smf_sbi_close();
-    smf_metrics_close();
-
     smf_fd_final();
 
     smf_context_final();
@@ -133,6 +131,8 @@ void smf_terminate(void)
     ogs_pfcp_context_final();
     ogs_sbi_context_final();
     ogs_gtp_context_final();
+
+    smf_metrics_close();
     ogs_metrics_context_final();
 
     ogs_pfcp_xact_final();
