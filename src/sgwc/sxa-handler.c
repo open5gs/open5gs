@@ -124,6 +124,24 @@ static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
     }
 }
 
+static void sgwc_sxa_handle_session_reestablishment(
+        sgwc_sess_t *sess, ogs_pfcp_xact_t *pfcp_xact,
+        ogs_pfcp_session_establishment_response_t *pfcp_rsp)
+{
+    ogs_assert(sess);
+    ogs_assert(pfcp_xact);
+    ogs_assert(pfcp_rsp);
+
+    ogs_pfcp_xact_commit(pfcp_xact);
+
+    ogs_pfcp_f_seid_t *up_f_seid = NULL;
+    up_f_seid = pfcp_rsp->up_f_seid.data;
+    ogs_assert(up_f_seid);
+    sess->sgwu_sxa_seid = be64toh(up_f_seid->seid);
+
+    return;
+}
+
 void sgwc_sxa_handle_session_establishment_response(
         sgwc_sess_t *sess, ogs_pfcp_xact_t *pfcp_xact,
         ogs_gtp2_message_t *recv_message,
@@ -159,6 +177,12 @@ void sgwc_sxa_handle_session_establishment_response(
 
     ogs_assert(pfcp_xact);
     ogs_assert(pfcp_rsp);
+
+    if (sess->pfcp_state == PFCP_ESTABLISHED) {
+        ogs_warn("Received PFCP Session Establishment Response for already established session");
+        return sgwc_sxa_handle_session_reestablishment(sess, pfcp_xact, pfcp_rsp);
+    }
+
     ogs_assert(recv_message);
 
     create_session_request = &recv_message->create_session_request;
@@ -305,6 +329,8 @@ void sgwc_sxa_handle_session_establishment_response(
     up_f_seid = pfcp_rsp->up_f_seid.data;
     ogs_assert(up_f_seid);
     sess->sgwu_sxa_seid = be64toh(up_f_seid->seid);
+
+    sess->pfcp_state = PFCP_ESTABLISHED;
 
     /* Receive Control Plane(UL) : PGW-S5C */
     pgw_s5c_teid = create_session_request->

@@ -739,6 +739,9 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
     smf_sess_t *sess = NULL;
     ogs_pkbuf_t *pkbuf = NULL;
 
+    ogs_pfcp_xact_t *pfcp_xact = NULL;
+    ogs_pfcp_message_t *pfcp_message = NULL;
+
     ogs_nas_5gs_message_t *nas_message = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
@@ -1131,6 +1134,30 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
         default:
             ogs_error("Unknown message[%d]", e->ngap.type);
+        }
+        break;
+
+    case SMF_EVT_N4_MESSAGE:
+        pfcp_xact = e->pfcp_xact;
+        ogs_assert(pfcp_xact);
+        pfcp_message = e->pfcp_message;
+        ogs_assert(pfcp_message);
+
+        switch (pfcp_message->h.type) {
+        case OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE:
+            ogs_warn("Received PFCP Session Establishment Response for already established session");
+
+            if (pfcp_xact->epc) {
+                smf_epc_n4_handle_session_establishment_response(
+                        sess, pfcp_xact, &pfcp_message->pfcp_session_establishment_response);
+            } else {
+                ogs_error("5GC PFCP re-establish session not yet written");
+            }
+            break;
+
+        default:
+            ogs_error("cannot handle PFCP message type[%d]",
+                    pfcp_message->h.type);
         }
         break;
 
