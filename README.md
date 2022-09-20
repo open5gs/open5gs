@@ -1,88 +1,18 @@
-<h1 align="center">Open5GS</h1>
+<p align="center"><a href="https://open5gs.org" target="_blank" rel="noopener noreferrer"><img width="100" src="https://open5gs.org/assets/img/open5gs-logo-only.png" alt="Open5GS logo"></a></p>
+
+## Getting Started
+
+If you don't understand something about Open5GS, the [https://open5gs.org/open5gs/docs/](https://open5gs.org/open5gs/docs/) is a great place to look for answers.
+
+## Sponsors
 
 If you find Open5GS useful for work, please consider supporting this Open Source project by [Becoming a sponsor](https://github.com/sponsors/acetcom). To manage the funding transactions transparently, you can donate through [OpenCollective](https://opencollective.com/open5gs).
 
-<h3 align="center">Platinum Sponsors</h3>
-<table align="center">
-  <tbody>
-    <tr>
-      <td align="center" valign="middle">
-  <a href="https://teletresearch.com/" target="_blank">
-    <img width="400px" src="https://open5gs.org/assets/img/Telet-logo-v2.png">
+<p align="center">
+  <a target="_blank" href="https://open5gs.org/#sponsors">
+      <img alt="sponsors" src="https://open5gs.org/assets/img/sponsors.svg">
   </a>
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-<h3 align="center">Gold Sponsors</h3>
-<table align="center">
-  <tbody>
-    <tr>
-      <td align="center" valign="middle">
-  <a href="http://wavemobile.com/" target="_blank">
-    <img width="222px" src="https://open5gs.org/assets/img/Wavemobile-Logo-Mark-RGB.png">
-  </a>
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-<h3 align="center">Silver Sponsors</h3>
-<table align="center">
-  <tbody>
-    <tr>
-      <td align="center" valign="middle" width="222px">
-        <a href="https://nextepc.com/" target="_blank">
-          <img src="https://open5gs.org/assets/img/nextepc_logo.jpg">
-        </a>
-      </td>
-      <td align="center" valign="middle" width="222px">
-        <a href="https://www.wearetriple.com/" target="_blank">
-          <img src="https://open5gs.org/assets/img/triple_logo.png">
-        </a>
-      </td>
-      <td align="center" valign="middle" width="222px">
-        <a href="https://sdr.eee.strath.ac.uk/" target="_blank">
-          <img src="https://open5gs.org/assets/img/strath.png">
-        </a>
-      </td>
-    </tr>
-    <tr>
-      <td align="center" valign="middle" width="222px">
-        <a href="https://skylarkwireless.com/" target="_blank">
-          <img src="https://open5gs.org/assets/img/SkylarkWireless-420x78-Web2-R.png">
-        </a>
-      </td>
-      <td align="center" valign="middle" width="222px">
-        <a href="https://sysmocom.de/" target="_blank">
-          <img src="https://open5gs.org/assets/img/sysmocom-logo-only.png">
-        </a>
-      </td>
-      <td align="center" valign="middle" width="222px">
-        <a href="https://www.p1sec.com/" target="_blank">
-          <img src="https://open5gs.org/assets/img/2021-logo-P1.svg">
-        </a>
-      </td>
-    </tr>
-    <tr>
-      <td align="center" valign="middle" width="222px">
-        <a href="https://www.ng-voice.com/" target="_blank">
-          <img src="https://open5gs.org/assets/img/ng-voice-logo_color.png">
-        </a>
-      </td>
-      <td align="center" valign="middle" width="222px">
-        <a href="http://www.bristol.ac.uk/engineering/research/smart/" target="_blank">
-          <img src="https://open5gs.org/assets/img/smart-internet-lab.png">
-        </a>
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-## Documentation
-
-If you don't understand something about Open5GS, the [https://open5gs.org/open5gs/docs/](https://open5gs.org/open5gs/docs/) is a great place to look for answers.
+</p>
 
 ## Community
 
