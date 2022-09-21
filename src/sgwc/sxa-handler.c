@@ -175,13 +175,17 @@ void sgwc_sxa_handle_session_establishment_response(
 
     ogs_debug("Session Establishment Response");
 
-    ogs_assert(pfcp_xact);
-    ogs_assert(pfcp_rsp);
-
     if (sess->pfcp_state == PFCP_ESTABLISHED) {
         ogs_warn("Received PFCP Session Establishment Response for already established session");
         return sgwc_sxa_handle_session_reestablishment(sess, pfcp_xact, pfcp_rsp);
     }
+    if (sess->pfcp_state != PFCP_WAIT_ESTABLISHMENT) {
+        ogs_warn("PFCP State = [%d]", sess->pfcp_state);
+    }
+    sess->pfcp_state = PFCP_ERROR;
+
+    ogs_assert(pfcp_xact);
+    ogs_assert(pfcp_rsp);
 
     ogs_assert(recv_message);
 
@@ -330,8 +334,6 @@ void sgwc_sxa_handle_session_establishment_response(
     ogs_assert(up_f_seid);
     sess->sgwu_sxa_seid = be64toh(up_f_seid->seid);
 
-    sess->pfcp_state = PFCP_ESTABLISHED;
-
     /* Receive Control Plane(UL) : PGW-S5C */
     pgw_s5c_teid = create_session_request->
         pgw_s5_s8_address_for_control_plane_or_pmip.data;
@@ -452,7 +454,9 @@ void sgwc_sxa_handle_session_establishment_response(
     ogs_gtp_xact_associate(s11_xact, s5c_xact);
 
     rv = ogs_gtp_xact_commit(s5c_xact);
-    ogs_expect(rv == OGS_OK);
+    ogs_expect_or_return(rv == OGS_OK);
+
+    sess->pfcp_state = PFCP_ESTABLISHED;
 }
 
 void sgwc_sxa_handle_session_modification_response(
@@ -1232,6 +1236,10 @@ void sgwc_sxa_handle_session_deletion_response(
     ogs_pkbuf_t *pkbuf = NULL;
 
     ogs_debug("Session Deletion Response");
+
+    if (sess->pfcp_state != PFCP_WAIT_DELETION) {
+        ogs_warn("PFCP State = [%d]", sess->pfcp_state);
+    }
 
     ogs_assert(pfcp_xact);
     ogs_assert(pfcp_rsp);

@@ -73,7 +73,7 @@ enum PFCP_STATES {
     PFCP_WAIT_ESTABLISHMENT,
     PFCP_ESTABLISHED,
     PFCP_WAIT_DELETION,
-    PFCP_DELETED
+    PFCP_ERROR,
 };
 
 #define SGWC_SESS(pfcp_sess) ogs_container_of(pfcp_sess, sgwc_sess_t, pfcp)
