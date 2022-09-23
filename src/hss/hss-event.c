@@ -17,25 +17,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef HSS_FD_PATH_H
-#define HSS_FD_PATH_H
+#include "hss-event.h"
+#include "ogs-app.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-int hss_fd_init(void);
-void hss_fd_final(void);
-
-int hss_s6a_init(void);
-void hss_s6a_final(void);
-int hss_cx_init(void);
-void hss_cx_final(void);
-int hss_swx_init(void);
-void hss_swx_final(void);
-
-#ifdef __cplusplus
+void hss_event_term(void)
+{
+    ogs_queue_term(ogs_app()->queue);
+    ogs_pollset_notify(ogs_app()->pollset);
 }
-#endif
-
-#endif /* HSS_FD_PATH_H */

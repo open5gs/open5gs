@@ -17,25 +17,25 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef HSS_FD_PATH_H
-#define HSS_FD_PATH_H
+#include "ogs-dbi.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+static void timer_send_event(int timer_id, void *data)
+{
+    int rv;
+    ogs_event_t *e = NULL;
 
-int hss_fd_init(void);
-void hss_fd_final(void);
+    e = ogs_event_new(OGS_EVENT_DBI_POLL_TIMER);
+    ogs_assert(e);
+    e->timer_id = timer_id;
 
-int hss_s6a_init(void);
-void hss_s6a_final(void);
-int hss_cx_init(void);
-void hss_cx_final(void);
-int hss_swx_init(void);
-void hss_swx_final(void);
-
-#ifdef __cplusplus
+    rv = ogs_queue_push(ogs_app()->queue, e);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
+        ogs_event_free(e);
+    }
 }
-#endif
 
-#endif /* HSS_FD_PATH_H */
+void ogs_timer_dbi_poll_change_stream(void *data)
+{
+    timer_send_event(OGS_TIMER_DBI_POLL_CHANGE_STREAM, data);
+}

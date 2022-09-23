@@ -19,6 +19,7 @@ parameter:
 #    no_sgwu: true
 #    no_pcrf: true
 #    no_hss: true
+#    use_mongodb_change_stream: true
 
 mme:
     freeDiameter:

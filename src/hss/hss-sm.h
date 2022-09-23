@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,25 +17,28 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef HSS_FD_PATH_H
-#define HSS_FD_PATH_H
+#ifndef HSS_SM_H
+#define HSS_SM_H
+
+#include "hss-event.h"
+#include "ogs-proto.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int hss_fd_init(void);
-void hss_fd_final(void);
+#define DB_POLLING_TIME ogs_time_from_msec(100)
 
-int hss_s6a_init(void);
-void hss_s6a_final(void);
-int hss_cx_init(void);
-void hss_cx_final(void);
-int hss_swx_init(void);
-void hss_swx_final(void);
+void hss_state_initial(ogs_fsm_t *s, ogs_event_t *e);
+void hss_state_final(ogs_fsm_t *s, ogs_event_t *e);
+void hss_state_operational(ogs_fsm_t *s, ogs_event_t *e);
+void hss_state_exception(ogs_fsm_t *s, ogs_event_t *e);
+
+#define hss_sm_debug(__pe) \
+    ogs_debug("%s(): %s", __func__, ogs_event_get_name(__pe))
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* HSS_FD_PATH_H */
+#endif /* HSS_SM_H */

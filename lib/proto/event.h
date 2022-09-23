@@ -39,6 +39,9 @@ typedef enum {
     OGS_EVENT_SBI_CLIENT,
     OGS_EVENT_SBI_TIMER,
 
+    OGS_EVENT_DBI_POLL_TIMER,
+    OGS_EVENT_DBI_MESSAGE,
+
     OGS_MAX_NUM_OF_PROTO_EVENT,
 
 } ogs_event_e;
@@ -46,6 +49,8 @@ typedef enum {
 typedef struct ogs_sbi_request_s ogs_sbi_request_t;
 typedef struct ogs_sbi_response_s ogs_sbi_response_t;
 typedef struct ogs_sbi_message_s ogs_sbi_message_t;
+
+typedef struct _bson_t bson_t;
 
 typedef struct ogs_event_s {
     int id;
@@ -59,6 +64,10 @@ typedef struct ogs_event_s {
 
         ogs_sbi_message_t *message;
     } sbi;
+
+    struct {
+        const bson_t *document;
+    } dbi;
 } ogs_event_t;
 
 void *ogs_event_size(int id, size_t size);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,25 +17,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef HSS_FD_PATH_H
-#define HSS_FD_PATH_H
+#ifndef OGS_DBI_PATH_H
+#define OGS_DBI_PATH_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int hss_fd_init(void);
-void hss_fd_final(void);
-
-int hss_s6a_init(void);
-void hss_s6a_final(void);
-int hss_cx_init(void);
-void hss_cx_final(void);
-int hss_swx_init(void);
-void hss_swx_final(void);
+int ogs_dbi_process_change_stream(const bson_t *document);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* HSS_FD_PATH_H */
+#endif /* OGS_DBI_PATH_H */

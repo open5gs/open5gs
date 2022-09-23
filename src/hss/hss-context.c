@@ -19,6 +19,9 @@
 
 #include "ogs-dbi.h"
 #include "hss-context.h"
+#include "hss-event.h"
+#include "hss-s6a-path.h"
+
 
 typedef struct hss_impi_s hss_impi_t;
 
@@ -680,7 +683,7 @@ void hss_cx_associate_identity(char *user_name, char *public_identity)
 {
     hss_impi_t *impi = NULL;
     hss_impu_t *impu = NULL;
-    
+
     ogs_assert(user_name);
     ogs_assert(public_identity);
 
@@ -1170,4 +1173,133 @@ char *hss_cx_download_user_data(
     ogs_thread_mutex_unlock(&self.cx_lock);
 
     return user_data;
+}
+
+int hss_db_poll_change_stream(void) {
+    int rv;
+
+    ogs_thread_mutex_lock(&self.db_lock);
+
+    rv = ogs_dbi_poll_change_stream();
+
+    ogs_thread_mutex_unlock(&self.db_lock);
+
+    return rv;
+}
+
+int hss_handle_change_event(const bson_t *document) {
+    bson_iter_t iter, child1_iter, child2_iter, child3_iter;
+
+    char *utf8 = NULL;
+    uint32_t length = 0;
+
+    bool send_clr_flag = false;
+    bool send_idr_flag = false;
+    uint32_t subdatamask = 0;
+
+    char *imsi_bcd;
+
+    char *as_json = bson_as_relaxed_extended_json(document, NULL);
+    ogs_debug("Got document: %s\n", as_json);
+    if (!bson_iter_init_find(&iter, document, "fullDocument")) {
+        ogs_error("No 'imsi' field in this document.");
+        return OGS_ERROR;
+    } else {
+        bson_iter_recurse(&iter, &child1_iter);
+        while (bson_iter_next(&child1_iter)) {
+            const char *key = bson_iter_key(&child1_iter);
+            if (!strcmp(key, "imsi") && 
+                    BSON_ITER_HOLDS_UTF8(&child1_iter)) {
+                utf8 = (char *)bson_iter_utf8(&child1_iter, &length);
+                imsi_bcd = ogs_strndup(utf8,
+                    ogs_min(length, OGS_MAX_IMSI_BCD_LEN) + 1);
+                ogs_assert(imsi_bcd);
+            }
+        }
+    }
+
+    if (!imsi_bcd) {
+        ogs_error("No 'imsi' field in this document.");
+        return OGS_ERROR;
+    }
+
+    if (bson_iter_init_find(&iter, document, "updateDescription")) {
+        bson_iter_recurse(&iter, &child1_iter);
+        while (bson_iter_next(&child1_iter)) {
+            const char *key = bson_iter_key(&child1_iter);
+            if (!strcmp(key, "updatedFields") && 
+                    BSON_ITER_HOLDS_DOCUMENT(&child1_iter)) {
+                bson_iter_recurse(&child1_iter, &child2_iter);
+                while (bson_iter_next(&child2_iter)) {
+                    const char *child2_key = bson_iter_key(&child2_iter);
+                    if (!strcmp(child2_key, 
+                            "request_cancel_location") && 
+                            BSON_ITER_HOLDS_BOOL(&child2_iter)) {
+                        send_clr_flag = (char *)bson_iter_bool(&child2_iter);
+                    } else if (!strncmp(child2_key, "msisdn",
+                            strlen("msisdn"))) {
+                        int msisdn_count = 0;
+                        bson_iter_recurse(&child2_iter, &child3_iter);
+                        while (bson_iter_next(&child3_iter)) {
+                            if (BSON_ITER_HOLDS_UTF8(&child3_iter)) {
+                                msisdn_count++;
+                            }
+                        }
+                        if (msisdn_count) {
+                            send_idr_flag = true;
+                            subdatamask = (subdatamask | 
+                                OGS_HSS_SUBDATA_MSISDN);
+                        } else {
+                            send_clr_flag = true;
+                        }
+                    } else if (!strncmp(child2_key, 
+                            "access_restriction_data",
+                            strlen("access_restriction_data"))) {
+                        send_idr_flag = true;
+                        subdatamask = (subdatamask | OGS_HSS_SUBDATA_ARD);
+                    } else if (!strncmp(child2_key, 
+                            "subscriber_status", 
+                            strlen("subscriber_status"))) {
+                        send_idr_flag = true;
+                        subdatamask = (subdatamask | 
+                            OGS_HSS_SUBDATA_SUB_STATUS);
+                    } else if (!strncmp(child2_key, 
+                            "network_access_mode",
+                            strlen("network_access_mode"))) {
+                        send_idr_flag = true;
+                        subdatamask = (subdatamask | OGS_HSS_SUBDATA_NAM);
+                    } else if (!strncmp(child2_key, "ambr", strlen("ambr"))) {
+                        send_idr_flag = true;
+                        subdatamask = (subdatamask | OGS_HSS_SUBDATA_UEAMBR);
+                    } else if (!strncmp(child2_key, 
+                            "subscribed_rau_tau_timer",
+                            strlen("subscribed_rau_tau_timer"))) {
+                        send_idr_flag = true;
+                        subdatamask = (subdatamask | 
+                            OGS_HSS_SUBDATA_RAU_TAU_TIMER);
+                    } else if (!strncmp(child2_key, "slice", strlen("slice"))) {
+                        send_idr_flag = true;
+                        subdatamask = (subdatamask | OGS_HSS_SUBDATA_SLICE);
+                    }
+                }
+            }
+        }
+    } else {
+        ogs_debug("No 'updateDescription' field in this document");
+    }
+
+    bson_free (as_json);
+
+    if (send_clr_flag) {
+        ogs_info("[%s] Cancel Location Requested", imsi_bcd);
+        hss_s6a_send_clr(imsi_bcd, NULL, NULL,
+            OGS_DIAM_S6A_CT_SUBSCRIPTION_WITHDRAWL);
+    } else if (send_idr_flag) {
+        ogs_info("[%s] Subscription-Data Changed", imsi_bcd);
+        hss_s6a_send_idr(imsi_bcd, 0, subdatamask);
+    }
+
+    ogs_free(imsi_bcd);
+
+    return OGS_OK;
 }

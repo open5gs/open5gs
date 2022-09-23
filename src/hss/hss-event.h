@@ -17,25 +17,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef HSS_FD_PATH_H
-#define HSS_FD_PATH_H
+#ifndef HSS_EVENT_H
+#define HSS_EVENT_H
+
+#include "ogs-core.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int hss_fd_init(void);
-void hss_fd_final(void);
-
-int hss_s6a_init(void);
-void hss_s6a_final(void);
-int hss_cx_init(void);
-void hss_cx_final(void);
-int hss_swx_init(void);
-void hss_swx_final(void);
+void hss_event_term(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* HSS_FD_PATH_H */
+#endif /* HSS_EVENT_H */

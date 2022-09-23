@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,25 +17,24 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef HSS_FD_PATH_H
-#define HSS_FD_PATH_H
+#include "ogs-dbi.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+int ogs_dbi_process_change_stream(const bson_t *document) {
+    int rv;
 
-int hss_fd_init(void);
-void hss_fd_final(void);
+    ogs_event_t *e = NULL;
 
-int hss_s6a_init(void);
-void hss_s6a_final(void);
-int hss_cx_init(void);
-void hss_cx_final(void);
-int hss_swx_init(void);
-void hss_swx_final(void);
+    e = ogs_event_new(OGS_EVENT_DBI_MESSAGE);
+    ogs_assert(e);
+    e->dbi.document = bson_copy(document);
+    rv = ogs_queue_push(ogs_app()->queue, e);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
+        bson_destroy((bson_t*)e->dbi.document);
+        ogs_event_free(e);
+    } else {
+        ogs_pollset_notify(ogs_app()->pollset);
+    }
 
-#ifdef __cplusplus
+    return OGS_OK;
 }
-#endif
-
-#endif /* HSS_FD_PATH_H */
