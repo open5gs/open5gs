@@ -43,6 +43,9 @@ int amf_initialize()
     rv = amf_context_parse_config();
     if (rv != OGS_OK) return rv;
 
+    rv = amf_context_nf_info();
+    if (rv != OGS_OK) return rv;
+
     rv = amf_m_tmsi_pool_generate();
     if (rv != OGS_OK) return rv;
 

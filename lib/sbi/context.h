@@ -260,7 +260,7 @@ typedef struct ogs_sbi_amf_info_s {
     int amf_region_id;
 
     int num_of_guami;
-    ogs_guami_t guami[MAX_NUM_OF_SERVED_GUAMI];
+    ogs_guami_t guami[OGS_MAX_NUM_OF_SERVED_GUAMI];
 
     int num_of_nr_tai;
     ogs_5gs_tai_t nr_tai[OGS_MAX_NUM_OF_TAI];

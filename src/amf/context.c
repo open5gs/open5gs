@@ -180,8 +180,6 @@ int amf_context_parse_config(void)
     int rv;
     yaml_document_t *document = NULL;
     ogs_yaml_iter_t root_iter;
-    ogs_sbi_nf_instance_t *nf_instance = NULL;
-    ogs_sbi_nf_info_t *nf_info = NULL;
 
     document = ogs_app()->document;
     ogs_assert(document);
@@ -332,7 +330,7 @@ int amf_context_parse_config(void)
                         const char *region = NULL, *set = NULL;
                         const char *pointer = NULL;
                         ogs_assert(self.num_of_served_guami <
-                                MAX_NUM_OF_SERVED_GUAMI);
+                                OGS_MAX_NUM_OF_SERVED_GUAMI);
 
                         if (ogs_yaml_iter_type(&guami_array) ==
                                 YAML_MAPPING_NODE) {
@@ -833,6 +831,17 @@ int amf_context_parse_config(void)
         }
     }
 
+    rv = amf_context_validation();
+    if (rv != OGS_OK) return rv;
+
+    return OGS_OK;
+}
+
+int amf_context_nf_info(void)
+{
+    ogs_sbi_nf_instance_t *nf_instance = NULL;
+    ogs_sbi_nf_info_t *nf_info = NULL;
+
     int served_i, next_new_i, info_i;
     bool next_found;
     served_i = 0;
@@ -915,9 +924,6 @@ int amf_context_parse_config(void)
             }
         }
     } while (next_found);
-
-    rv = amf_context_validation();
-    if (rv != OGS_OK) return rv;
 
     return OGS_OK;
 }

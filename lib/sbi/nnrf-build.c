@@ -891,7 +891,17 @@ static void free_amf_info(OpenAPI_amf_info_t *AmfInfo)
     guamiAmfInfoList = AmfInfo->guami_list;
     OpenAPI_list_for_each(guamiAmfInfoList, node) {
         guamiAmfInfoItem = node->data;
-        ogs_assert(guamiAmfInfoItem);
+        if (guamiAmfInfoItem) {
+            if (guamiAmfInfoItem->plmn_id) {
+                if (guamiAmfInfoItem->plmn_id->mcc)
+                    ogs_free(guamiAmfInfoItem->plmn_id->mcc);
+                if (guamiAmfInfoItem->plmn_id->mnc)
+                    ogs_free(guamiAmfInfoItem->plmn_id->mnc);
+                ogs_free(guamiAmfInfoItem->plmn_id);
+            }
+            if (guamiAmfInfoItem->amf_id)
+                ogs_free(guamiAmfInfoItem->amf_id);
+        }
         ogs_free(guamiAmfInfoItem);
     }
 
