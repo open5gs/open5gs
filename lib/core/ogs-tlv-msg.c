@@ -412,8 +412,7 @@ static int tlv_parse_leaf(void *msg, ogs_tlv_desc_t *desc, ogs_tlv_t *tlv)
     {
         ogs_tlv_uint8_t *v = (ogs_tlv_uint8_t *)msg;
 
-        if (tlv->length != 1)
-        {
+        if (tlv->length != 1) {
             ogs_error("Invalid TLV length %d. It should be 1", tlv->length);
             return OGS_ERROR;
         }
@@ -427,9 +426,8 @@ static int tlv_parse_leaf(void *msg, ogs_tlv_desc_t *desc, ogs_tlv_t *tlv)
     {
         ogs_tlv_uint16_t *v = (ogs_tlv_uint16_t *)msg;
 
-        if (tlv->length != 2)
-        {
-            ogs_error("Invalid TLV length %d. It should be 2", tlv->length);
+        if (tlv->length < 1 || tlv->length > 2) {
+            ogs_error("Invalid TLV length %d.", tlv->length);
             return OGS_ERROR;
         }
         v->u16 = ((((uint8_t*)tlv->value)[0]<< 8)&0xff00) |
@@ -443,9 +441,8 @@ static int tlv_parse_leaf(void *msg, ogs_tlv_desc_t *desc, ogs_tlv_t *tlv)
     {
         ogs_tlv_uint24_t *v = (ogs_tlv_uint24_t *)msg;
 
-        if (tlv->length != 3)
-        {
-            ogs_error("Invalid TLV length %d. It should be 3", tlv->length);
+        if (tlv->length < 1 || tlv->length > 3) {
+            ogs_error("Invalid TLV length %d.", tlv->length);
             return OGS_ERROR;
         }
         v->u24 = ((((uint8_t*)tlv->value)[0]<<16)&0x00ff0000) |
@@ -460,9 +457,8 @@ static int tlv_parse_leaf(void *msg, ogs_tlv_desc_t *desc, ogs_tlv_t *tlv)
     {
         ogs_tlv_uint32_t *v = (ogs_tlv_uint32_t *)msg;
 
-        if (tlv->length != 4)
-        {
-            ogs_error("Invalid TLV length %d. It should be 4", tlv->length);
+        if (tlv->length < 1 || tlv->length > 4) {
+            ogs_error("Invalid TLV length %d.", tlv->length);
             return OGS_ERROR;
         }
         v->u32 = ((((uint8_t*)tlv->value)[0]<<24)&0xff000000) |
