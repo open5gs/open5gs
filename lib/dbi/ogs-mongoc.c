@@ -189,7 +189,8 @@ void ogs_dbi_final()
     ogs_mongoc_final();
 }
 
-int ogs_dbi_collection_watch_init(void) {
+int ogs_dbi_collection_watch_init(void)
+{
     bson_t empty = BSON_INITIALIZER;    
     const bson_t *err_doc;
     bson_error_t error;
@@ -214,7 +215,8 @@ int ogs_dbi_collection_watch_init(void) {
     return OGS_OK;
 }
 
-int ogs_dbi_poll_change_stream(void) {
+int ogs_dbi_poll_change_stream(void)
+{
     int rv;
     
     const bson_t *document;

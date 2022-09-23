@@ -19,7 +19,8 @@
 
 #include "ogs-dbi.h"
 
-int ogs_dbi_process_change_stream(const bson_t *document) {
+int ogs_dbi_process_change_stream(const bson_t *document)
+{
     int rv;
 
     ogs_event_t *e = NULL;

@@ -21,6 +21,8 @@
 #include "hss-context.h"
 #include "hss-event.h"
 
+#define DB_POLLING_TIME ogs_time_from_msec(100)
+
 static ogs_timer_t *t_db_polling = NULL;
 
 void hss_state_initial(ogs_fsm_t *s, ogs_event_t *e)

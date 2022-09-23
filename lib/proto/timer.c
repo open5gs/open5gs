@@ -31,8 +31,6 @@ const char *OGS_TIMER_NAME_SUBSCRIPTION_VALIDITY =
     "OGS_TIMER_SUBSCRIPTION_VALIDITY";
 const char *OGS_TIMER_NAME_SBI_CLIENT_WAIT =
     "OGS_TIMER_SBI_CLIENT_WAIT";
-const char *OGS_TIMER_NAME_DBI_POLL_CHANGE_STREAM =
-    "OGS_TIMER_DBI_POLL_CHANGE_STREAM";
 
 const char *ogs_timer_get_name(int timer_id)
 {
@@ -50,7 +48,7 @@ const char *ogs_timer_get_name(int timer_id)
     case OGS_TIMER_SBI_CLIENT_WAIT:
         return OGS_TIMER_NAME_SBI_CLIENT_WAIT;
     case OGS_TIMER_DBI_POLL_CHANGE_STREAM:
-        return OGS_TIMER_NAME_DBI_POLL_CHANGE_STREAM;
+        return "OGS_TIMER_DBI_POLL_CHANGE_STREAM";
     default: 
        break;
     }

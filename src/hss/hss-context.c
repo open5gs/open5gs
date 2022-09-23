@@ -1175,7 +1175,8 @@ char *hss_cx_download_user_data(
     return user_data;
 }
 
-int hss_db_poll_change_stream(void) {
+int hss_db_poll_change_stream(void)
+{
     int rv;
 
     ogs_thread_mutex_lock(&self.db_lock);
@@ -1187,7 +1188,8 @@ int hss_db_poll_change_stream(void) {
     return rv;
 }
 
-int hss_handle_change_event(const bson_t *document) {
+int hss_handle_change_event(const bson_t *document)
+{
     bson_iter_t iter, child1_iter, child2_iter, child3_iter;
 
     char *utf8 = NULL;

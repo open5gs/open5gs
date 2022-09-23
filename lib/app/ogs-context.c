@@ -350,7 +350,8 @@ int ogs_app_context_parse_config(void)
                 } else if (!strcmp(parameter_key, "no_pfcp_rr_select")) {
                     self.parameter.no_pfcp_rr_select =
                         ogs_yaml_iter_bool(&parameter_iter);
-                } else if (!strcmp(parameter_key, "use_mongodb_change_stream")) {
+                } else if (!strcmp(parameter_key,
+                            "use_mongodb_change_stream")) {
                     self.use_mongodb_change_stream = 
                         ogs_yaml_iter_bool(&parameter_iter);
                 } else
