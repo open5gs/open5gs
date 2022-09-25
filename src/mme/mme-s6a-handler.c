@@ -102,13 +102,27 @@ uint8_t mme_s6a_handle_ula(
             break;
         }
 
-        mme_ue->session[i].name = ogs_strdup(slice_data->session[i].name);
-        ogs_assert(mme_ue->session[i].name);
+        if (slice_data->session[i].name) {
+            mme_ue->session[i].name = ogs_strdup(slice_data->session[i].name);
+            ogs_assert(mme_ue->session[i].name);
+        }
 
         mme_ue->session[i].context_identifier =
             slice_data->session[i].context_identifier;
 
-        mme_ue->session[i].session_type = slice_data->session[i].session_type;
+        if (slice_data->session[i].session_type == OGS_PDU_SESSION_TYPE_IPV4 ||
+            slice_data->session[i].session_type == OGS_PDU_SESSION_TYPE_IPV6 ||
+            slice_data->session[i].session_type ==
+                OGS_PDU_SESSION_TYPE_IPV4V6) {
+            mme_ue->session[i].session_type =
+                slice_data->session[i].session_type;
+        } else {
+            ogs_error("Invalid PDN_TYPE[%d]",
+                slice_data->session[i].session_type);
+            if (mme_ue->session[i].name)
+                ogs_free(mme_ue->session[i].name);
+            break;
+        }
         memcpy(&mme_ue->session[i].paa, &slice_data->session[i].paa,
                 sizeof(mme_ue->session[i].paa));
 
@@ -125,6 +139,11 @@ uint8_t mme_s6a_handle_ula(
                 sizeof(mme_ue->session[i].charging_characteristics));
         mme_ue->session[i].charging_characteristics_presence =
             slice_data->session[i].charging_characteristics_presence;
+    }
+
+    if (i == 0) {
+        ogs_error("No Session");
+        return OGS_NAS_EMM_CAUSE_SEVERE_NETWORK_FAILURE;
     }
 
     mme_ue->num_of_session = i;
