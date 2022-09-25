@@ -1063,7 +1063,7 @@ uint8_t smf_epc_n4_handle_session_deletion_response(
         return OGS_PFCP_CAUSE_MANDATORY_IE_MISSING;
     }
     if (rsp->cause.u8 != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
-            ogs_warn("PFCP Cause[%d] : Not Accepted", rsp->cause.u8);
+            ogs_warn("PFCP Cause [%d] : Not Accepted", rsp->cause.u8);
             return rsp->cause.u8;
     }
 

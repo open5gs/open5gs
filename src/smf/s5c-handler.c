@@ -708,7 +708,7 @@ void smf_s5c_handle_create_bearer_response(
     ogs_assert(cause);
     cause_value = cause->value;
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_error("GTP Failed [Bearer-CAUSE:%d]", cause_value);
+        ogs_error("GTP Bearer Cause [VALUE:%d]", cause_value);
         ogs_assert(OGS_OK ==
             smf_epc_pfcp_send_one_bearer_modification_request(
                 bearer, NULL, OGS_PFCP_MODIFY_REMOVE,
@@ -721,7 +721,7 @@ void smf_s5c_handle_create_bearer_response(
     ogs_assert(cause);
     cause_value = cause->value;
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_error("GTP Failed [CAUSE:%d]", cause_value);
+        ogs_error("GTP Cause [Value:%d]", cause_value);
         ogs_assert(OGS_OK ==
             smf_epc_pfcp_send_one_bearer_modification_request(
                 bearer, NULL, OGS_PFCP_MODIFY_REMOVE,
@@ -837,7 +837,7 @@ void smf_s5c_handle_update_bearer_response(
     ogs_assert(cause);
     cause_value = cause->value;
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_error("GTP Failed [Bearer-CAUSE:%d]", cause_value);
+        ogs_error("GTP Bearer Cause [VALUE:%d]", cause_value);
         return;
     }
 
@@ -845,7 +845,7 @@ void smf_s5c_handle_update_bearer_response(
     ogs_assert(cause);
     cause_value = cause->value;
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_error("GTP Failed [CAUSE:%d]", cause_value);
+        ogs_error("GTP Cause [Value:%d]", cause_value);
         return;
     }
 
@@ -925,7 +925,7 @@ bool smf_s5c_handle_delete_bearer_response(
             cause_value = cause->value;
             if (cause->value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
             } else {
-                ogs_error("GTP Failed [CAUSE:%d]", cause_value);
+                ogs_error("GTP Cause [Value:%d]", cause_value);
             }
         } else {
             ogs_error("No Cause");
@@ -965,13 +965,13 @@ bool smf_s5c_handle_delete_bearer_response(
 
                 if (cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
                 } else {
-                    ogs_error("GTP Failed [CAUSE:%d]", cause_value);
+                    ogs_error("GTP Cause [Value:%d]", cause_value);
                 }
             } else {
                 ogs_error("No Cause");
             }
         } else {
-            ogs_error("GTP Failed [CAUSE:%d]", cause_value);
+            ogs_error("GTP Cause [Value:%d]", cause_value);
         }
     } else {
         ogs_error("No Cause");
