@@ -44,6 +44,7 @@ typedef struct connection_s {
 
     char *memory;
     size_t size;
+    bool memory_overflow;
 
     char *location;
 
@@ -533,6 +534,8 @@ static void check_multi_info(ogs_sbi_client_t *client)
 
             res = resource->data.result;
             if (res == CURLE_OK) {
+                ogs_log_level_e level = OGS_LOG_DEBUG;
+
                 response = ogs_sbi_response_new();
                 ogs_assert(response);
 
@@ -546,7 +549,17 @@ static void check_multi_info(ogs_sbi_client_t *client)
                 response->h.uri = ogs_strdup(url);
                 ogs_assert(response->h.uri);
 
-                ogs_debug("[%d:%s] %s",
+                if (content_type)
+                    ogs_sbi_header_set(response->http.headers,
+                            OGS_SBI_CONTENT_TYPE, content_type);
+                if (conn->location)
+                    ogs_sbi_header_set(response->http.headers,
+                            OGS_SBI_LOCATION, conn->location);
+
+                if (conn->memory_overflow == true)
+                    level = OGS_LOG_ERROR;
+
+                ogs_log_message(level, 0, "[%d:%s] %s",
                         response->status, response->h.method, response->h.uri);
 
                 if (conn->memory) {
@@ -557,16 +570,17 @@ static void check_multi_info(ogs_sbi_client_t *client)
                     ogs_assert(response->http.content_length);
                 }
 
-                ogs_debug("RECEIVED[%d]", (int)response->http.content_length);
+                ogs_log_message(level, 0, "RECEIVED[%d]",
+                        (int)response->http.content_length);
                 if (response->http.content_length && response->http.content)
-                    ogs_debug("%s", response->http.content);
+                    ogs_log_message(level, 0, "%s", response->http.content);
 
-                if (content_type)
-                    ogs_sbi_header_set(response->http.headers,
-                            OGS_SBI_CONTENT_TYPE, content_type);
-                if (conn->location)
-                    ogs_sbi_header_set(response->http.headers,
-                            OGS_SBI_LOCATION, conn->location);
+                if (conn->memory_overflow == true) {
+                    ogs_sbi_response_free(response);
+                    connection_remove(conn);
+                    break;
+                }
+
             } else
                 ogs_warn("[%d] %s", res, conn->error);
 
@@ -727,8 +741,12 @@ static size_t write_cb(void *contents, size_t size, size_t nmemb, void *data)
     realsize = size * nmemb;
     ptr = ogs_realloc(conn->memory, conn->size + realsize + 1);
     if(!ptr) {
-        ogs_fatal("not enough memory (realloc returned NULL)");
-        ogs_assert_if_reached();
+        conn->memory_overflow = true;
+
+        ogs_error("Overflow : conn->size[%d], realsize[%d]",
+                    (int)conn->size, (int)realsize);
+        ogs_log_hexdump(OGS_LOG_ERROR, contents, realsize);
+
         return 0;
     }
 

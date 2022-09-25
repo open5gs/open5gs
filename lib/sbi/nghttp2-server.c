@@ -82,6 +82,7 @@ typedef struct ogs_sbi_stream_s {
 
     int32_t                 stream_id;
     ogs_sbi_request_t       *request;
+    bool                    memory_overflow;
 
     ogs_sbi_session_t       *session;
 } ogs_sbi_stream_t;
@@ -791,12 +792,23 @@ static int on_frame_recv(nghttp2_session *session,
     case NGHTTP2_DATA:
         /* HEADERS or DATA frame with +END_STREAM flag */
         if (frame->hd.flags & NGHTTP2_FLAG_END_STREAM) {
+            ogs_log_level_e level = OGS_LOG_DEBUG;
 
-            ogs_debug("[%s] %s", request->h.method, request->h.uri);
+            if (stream->memory_overflow == true)
+                level = OGS_LOG_ERROR;
+
+            ogs_log_message(level, 0,
+                    "[%s] %s", request->h.method, request->h.uri);
 
             if (request->http.content_length && request->http.content) {
-                ogs_debug("RECEIVED: %d", (int)request->http.content_length);
-                ogs_debug("%s", request->http.content);
+                ogs_log_message(level, 0,
+                        "RECEIVED: %d", (int)request->http.content_length);
+                ogs_log_message(level, 0, "%s", request->http.content);
+            }
+
+            if (stream->memory_overflow == true) {
+                ogs_error("[DROP] Overflow");
+                break;
             }
 
             if (server->cb(request, stream) != OGS_OK) {
@@ -967,22 +979,29 @@ static int on_data_chunk_recv(nghttp2_session *session, uint8_t flags,
     ogs_assert(len);
 
     if (request->http.content == NULL) {
-        request->http.content_length = len;
-        request->http.content =
-            (char*)ogs_malloc(request->http.content_length + 1);
-        ogs_assert(request->http.content);
+        ogs_assert(request->http.content_length == 0);
+        ogs_assert(offset == 0);
+
+        request->http.content = (char*)ogs_malloc(len + 1);
     } else {
-        offset = request->http.content_length;
-        if ((request->http.content_length + len) > OGS_HUGE_LEN) {
-            ogs_error("Overflow : Content-Length[%d], len[%d]",
-                        (int)request->http.content_length, (int)len);
-            ogs_assert_if_reached();
-        }
-        request->http.content_length += len;
-        request->http.content = (char *)ogs_realloc(
-                request->http.content, request->http.content_length + 1);
-        ogs_assert(request->http.content);
+        ogs_assert(request->http.content_length != 0);
+
+        request->http.content = (char*)ogs_realloc(
+                request->http.content, request->http.content_length + len + 1);
     }
+
+    if (!request->http.content) {
+        stream->memory_overflow = true;
+
+        ogs_error("Overflow : Content-Length[%d], len[%d]",
+                    (int)request->http.content_length, (int)len);
+        ogs_log_hexdump(OGS_LOG_ERROR, data, len);
+
+        return 0;
+    }
+
+    offset = request->http.content_length;
+    request->http.content_length += len;
 
     memcpy(request->http.content + offset, data, len);
     request->http.content[request->http.content_length] = '\0';
