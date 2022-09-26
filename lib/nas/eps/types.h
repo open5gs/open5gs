@@ -559,6 +559,9 @@ typedef struct ogs_nas_tracking_area_identity_list_s {
 int ogs_nas_tai_list_build(ogs_nas_tracking_area_identity_list_t *target,
         ogs_eps_tai0_list_t *source0, ogs_eps_tai2_list_t *source2);
 
+int ogs_nas_tai_list_build_for_oai(ogs_nas_tracking_area_identity_list_t *target,
+        ogs_eps_tai_t *tai);
+
 
 /* 9.9.3.35 UE radio capability information update needed
  * O TV 1 */

@@ -91,3 +91,33 @@ int ogs_nas_tai_list_build(ogs_nas_tracking_area_identity_list_t *target,
 
     return OGS_OK;
 }
+
+int ogs_nas_tai_list_build_for_oai(ogs_nas_tracking_area_identity_list_t *target,
+        ogs_eps_tai_t *tai)
+{
+    int size = 0;
+
+    ogs_eps_tai2_list_t target2;
+    ogs_nas_plmn_id_t ogs_nas_plmn_id;
+
+    ogs_assert(target);
+    ogs_assert(tai);
+
+    memset(target, 0, sizeof(ogs_nas_tracking_area_identity_list_t));
+    memset(&target2, 0, sizeof(ogs_eps_tai2_list_t));
+
+    size = 1 + (3 + 2);
+
+    target2.type = OGS_TAI1_TYPE;
+    target2.num = 0;
+
+    memcpy(&target2.tai[0].plmn_id,
+           ogs_nas_from_plmn_id(&ogs_nas_plmn_id, &tai->plmn_id),
+           OGS_PLMN_ID_LEN);
+    target2.tai[0].tac = htobe16(tai->tac);
+
+    memcpy(target->buffer + target->length, &target2, size);
+    target->length += size;
+
+    return OGS_OK;
+}
