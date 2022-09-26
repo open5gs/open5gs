@@ -1325,11 +1325,20 @@ void sgwc_sxa_handle_session_report_request(
 
     ogs_debug("Session Report Request");
 
-    ogs_assert(sess);
     ogs_assert(pfcp_xact);
     ogs_assert(pfcp_req);
 
     cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
+
+    /************************
+     * Check Session Context
+     *
+     * - Session could be deleted before a message is received from SMF.
+     ************************/
+    if (!sess) {
+        ogs_error("No Context");
+        cause_value = OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND;
+    }
 
     if (pfcp_req->report_type.presence == 0) {
         ogs_error("No Report Type");

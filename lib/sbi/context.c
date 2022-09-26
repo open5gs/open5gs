@@ -1189,6 +1189,11 @@ ogs_sbi_nf_info_t *ogs_sbi_nf_info_add(
     return nf_info;
 }
 
+static void amf_info_free(ogs_sbi_amf_info_t *amf_info)
+{
+    /* Nothing */
+}
+
 static void smf_info_free(ogs_sbi_smf_info_t *smf_info)
 {
     int i, j;
@@ -1214,6 +1219,9 @@ void ogs_sbi_nf_info_remove(ogs_list_t *list, ogs_sbi_nf_info_t *nf_info)
     ogs_list_remove(list, nf_info);
 
     switch(nf_info->nf_type) {
+    case OpenAPI_nf_type_AMF:
+        amf_info_free(&nf_info->amf);
+        break;
     case OpenAPI_nf_type_SMF:
         smf_info_free(&nf_info->smf);
         break;

@@ -21,6 +21,7 @@
 #define OGS_DBI_H
 
 #include "crypt/ogs-crypt.h"
+#include "app/ogs-app.h"
 
 #define OGS_DBI_INSIDE
 
@@ -28,6 +29,8 @@
 #include "dbi/subscription.h"
 #include "dbi/session.h"
 #include "dbi/ims.h"
+#include "dbi/path.h"
+#include "dbi/timer.h"
 
 #undef OGS_DBI_INSIDE
 

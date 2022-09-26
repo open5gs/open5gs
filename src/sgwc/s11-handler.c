@@ -766,7 +766,7 @@ void sgwc_s11_handle_create_bearer_response(
     ogs_assert(cause);
     cause_value = cause->value;
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_error("GTP Failed [CAUSE:%d]", cause_value);
+        ogs_error("GTP Cause [Value:%d]", cause_value);
         ogs_assert(OGS_OK ==
             sgwc_pfcp_send_bearer_modification_request(
                 bearer, NULL, NULL,
@@ -919,7 +919,7 @@ void sgwc_s11_handle_update_bearer_response(
     ogs_assert(cause);
     cause_value = cause->value;
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_error("GTP Failed [Bearer-CAUSE:%d]", cause_value);
+        ogs_error("GTP Bearer Cause [VALUE:%d]", cause_value);
         ogs_gtp_send_error_message(s5c_xact, sess ? sess->pgw_s5c_teid : 0,
                 OGS_GTP2_UPDATE_BEARER_RESPONSE_TYPE, cause_value);
         return;
@@ -929,7 +929,7 @@ void sgwc_s11_handle_update_bearer_response(
     ogs_assert(cause);
     cause_value = cause->value;
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_error("GTP Failed [CAUSE:%d]", cause_value);
+        ogs_error("GTP Cause [Value:%d]", cause_value);
         ogs_gtp_send_error_message(s5c_xact, sess ? sess->pgw_s5c_teid : 0,
                 OGS_GTP2_UPDATE_BEARER_RESPONSE_TYPE, cause_value);
         return;
@@ -1022,7 +1022,7 @@ void sgwc_s11_handle_delete_bearer_response(
             cause_value = cause->value;
             if (cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
             } else {
-                ogs_error("GTP Failed [CAUSE:%d]", cause_value);
+                ogs_error("GTP Cause [Value:%d]", cause_value);
             }
         } else {
             ogs_error("No Cause");
@@ -1062,13 +1062,13 @@ void sgwc_s11_handle_delete_bearer_response(
 
                     if (cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
                     } else {
-                        ogs_error("GTP Failed [CAUSE:%d]", cause_value);
+                        ogs_error("GTP Cause [Value:%d]", cause_value);
                     }
                 } else {
                     ogs_error("No Cause");
                 }
             } else {
-                ogs_error("GTP Failed [CAUSE:%d]", cause_value);
+                ogs_error("GTP Cause [Value:%d]", cause_value);
             }
         } else {
             ogs_error("No Cause");
@@ -1172,7 +1172,7 @@ void sgwc_s11_handle_downlink_data_notification_ack(
 
         cause_value = cause->value;
         if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED)
-            ogs_warn("GTP Failed [CAUSE:%d] - PFCP_CAUSE[%d]",
+            ogs_warn("GTP Cause [Value:%d] - PFCP_CAUSE[%d]",
                     cause_value, pfcp_cause_from_gtp(cause_value));
     } else {
         ogs_error("No Cause");

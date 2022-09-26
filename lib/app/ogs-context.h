@@ -35,6 +35,8 @@ typedef struct ogs_app_context_s {
     void *document;
 
     const char *db_uri;
+    int use_mongodb_change_stream;
+
     struct {
         const char *file;
         const char *level;

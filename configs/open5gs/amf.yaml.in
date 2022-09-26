@@ -178,6 +178,13 @@ logger:
 #          sinit_max_attempts : 4
 #          sinit_max_init_timeo : 8000
 #
+#  <Metrics Server>
+#
+#  o Metrics Server(http://<any address>:9090)
+#    metrics:
+#      addr: 0.0.0.0
+#      port: 9090
+#
 #  <GUAMI>
 #
 #  o Multiple GUAMI
@@ -263,6 +270,9 @@ amf:
         port: 7777
     ngap:
       - addr: 127.0.0.5
+    metrics:
+        addr: 127.0.0.5
+        port: 9090
     guami:
       - plmn_id:
           mcc: 999
@@ -391,17 +401,3 @@ usrsctp:
 #    handover:
 #        duration: 500
 time:
-
-#
-# metrics:
-#
-#  <Metrics Server>
-#
-#  o Metrics Server(http://<any address>:9090)
-#    metrics:
-#      addr: 0.0.0.0
-#      port: 9090
-#
-metrics:
-    addr: 127.0.0.5
-    port: 9090

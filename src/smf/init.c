@@ -55,7 +55,7 @@ int smf_initialize()
     rv = ogs_sbi_context_parse_config("smf", "nrf", "scp");
     if (rv != OGS_OK) return rv;
 
-    rv = ogs_metrics_context_parse_config();
+    rv = ogs_metrics_context_parse_config("smf");
     if (rv != OGS_OK) return rv;
 
     rv = smf_context_parse_config();

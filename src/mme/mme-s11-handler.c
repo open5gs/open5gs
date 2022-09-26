@@ -220,7 +220,7 @@ void mme_s11_handle_create_session_response(
         ogs_assert(cause);
         cause_value = cause->value;
         if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-            ogs_error("GTP Failed [Bearer-CAUSE:%d]", cause_value);
+            ogs_error("GTP Bearer Cause [VALUE:%d]", cause_value);
             if (create_action == OGS_GTP_CREATE_IN_ATTACH_REQUEST) {
                 ogs_error("[%s] Attach reject", mme_ue->imsi_bcd);
                 ogs_assert(OGS_OK == nas_eps_send_attach_reject(mme_ue,
@@ -240,7 +240,7 @@ void mme_s11_handle_create_session_response(
             OGS_GTP2_CAUSE_NEW_PDN_TYPE_DUE_TO_NETWORK_PREFERENCE &&
         cause_value !=
             OGS_GTP2_CAUSE_NEW_PDN_TYPE_DUE_TO_SINGLE_ADDRESS_BEARER_ONLY) {
-        ogs_error("GTP Failed [CAUSE:%d]", cause_value);
+        ogs_error("GTP Cause [Value:%d]", cause_value);
         if (create_action == OGS_GTP_CREATE_IN_ATTACH_REQUEST) {
             ogs_error("[%s] Attach reject", mme_ue->imsi_bcd);
             ogs_assert(OGS_OK == nas_eps_send_attach_reject(mme_ue,
@@ -467,7 +467,7 @@ void mme_s11_handle_modify_bearer_response(
     ogs_assert(cause);
     cause_value = cause->value;
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_error("GTP Failed [CAUSE:%d]", cause_value);
+        ogs_error("GTP Cause [Value:%d]", cause_value);
         mme_send_delete_session_or_mme_ue_context_release(mme_ue);
         return;
     }
@@ -548,7 +548,7 @@ void mme_s11_handle_delete_session_response(
 
         cause_value = cause->value;
         if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED)
-            ogs_error("GTP Failed [CAUSE:%d] - Ignored", cause_value);
+            ogs_error("GTP Cause [Value:%d] - Ignored", cause_value);
     }
 
     /********************
@@ -1143,7 +1143,7 @@ void mme_s11_handle_release_access_bearers_response(
 
         cause_value = cause->value;
         if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED)
-            ogs_error("GTP Failed [CAUSE:%d, ACTION:%d]", cause_value, action);
+            ogs_error("GTP Cause [Value:%d, ACTION:%d]", cause_value, action);
     }
 
     /********************
@@ -1455,7 +1455,7 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
     ogs_assert(cause);
     cause_value = cause->value;
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_error("GTP Failed [CAUSE:%d]", cause_value);
+        ogs_error("GTP Cause [Value:%d]", cause_value);
         mme_send_delete_session_or_mme_ue_context_release(mme_ue);
         return;
     }
@@ -1571,7 +1571,7 @@ void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
     ogs_assert(cause);
     cause_value = cause->value;
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_error("GTP Failed [CAUSE:%d]", cause_value);
+        ogs_error("GTP Cause [Value:%d]", cause_value);
         mme_send_delete_session_or_mme_ue_context_release(mme_ue);
         return;
     }
@@ -1639,7 +1639,7 @@ void mme_s11_handle_bearer_resource_failure_indication(
         ogs_assert(cause);
 
         cause_value = cause->value;
-        ogs_warn("GTP Failed [CAUSE:%d] - Ignored", cause_value);
+        ogs_warn("GTP Cause [Value:%d] - Ignored", cause_value);
     } else {
         ogs_error("No Cause");
     }

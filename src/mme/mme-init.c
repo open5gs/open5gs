@@ -49,7 +49,7 @@ int mme_initialize()
     rv = ogs_gtp_context_parse_config("mme", "sgwc");
     if (rv != OGS_OK) return rv;
 
-    rv = ogs_metrics_context_parse_config();
+    rv = ogs_metrics_context_parse_config("mme");
     if (rv != OGS_OK) return rv;
 
     rv = mme_context_parse_config();

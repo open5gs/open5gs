@@ -29,8 +29,6 @@
 extern "C" {
 #endif
 
-#define MAX_NUM_OF_SERVED_GUAMI     8
-
 extern int __nssf_log_domain;
 
 #undef OGS_LOG_DOMAIN

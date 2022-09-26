@@ -79,9 +79,6 @@ void sgwc_s5c_handle_create_session_response(
     ogs_gtp_xact_t *s11_xact = NULL;
     ogs_gtp_node_t *pgw = NULL;
 
-    ogs_assert(sess);
-    sgwc_ue = sess->sgwc_ue;
-    ogs_assert(sgwc_ue);
     ogs_assert(gtpbuf);
     ogs_assert(message);
     rsp = &message->create_session_response;
@@ -99,10 +96,32 @@ void sgwc_s5c_handle_create_session_response(
     rv = ogs_gtp_xact_commit(s5c_xact);
     ogs_expect(rv == OGS_OK);
 
+    /************************
+     * Check Session Context
+     *
+     * - Session could be deleted before a message is received from SMF.
+     ************************/
+    cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
+
+    if (!sess) {
+        ogs_error("No Context in TEID");
+        cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
+    } else {
+        sgwc_ue = sess->sgwc_ue;
+        ogs_assert(sgwc_ue);
+    }
+
+    if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
+        ogs_gtp_send_error_message(
+                s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+                OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE, cause_value);
+        return;
+    }
+
     /*****************************************
      * Check Mandatory/Conditional IE Missing
      *****************************************/
-    cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
+    ogs_assert(cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED);
 
     if (rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.presence == 0) {
         ogs_error("No GTP TEID");
@@ -150,7 +169,7 @@ void sgwc_s5c_handle_create_session_response(
         ogs_assert(cause);
         cause_value = cause->value;
         if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-            ogs_error("GTP Failed [Bearer-CAUSE:%d]", cause_value);
+            ogs_error("GTP Bearer Cause [VALUE:%d]", cause_value);
             ogs_gtp_send_error_message(
                     s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
                     OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE, cause_value);
@@ -167,7 +186,7 @@ void sgwc_s5c_handle_create_session_response(
             OGS_GTP2_CAUSE_NEW_PDN_TYPE_DUE_TO_NETWORK_PREFERENCE &&
         cause_value !=
             OGS_GTP2_CAUSE_NEW_PDN_TYPE_DUE_TO_SINGLE_ADDRESS_BEARER_ONLY) {
-        ogs_error("GTP Failed [CAUSE:%d]", cause_value);
+        ogs_error("GTP Cause [Value:%d]", cause_value);
         ogs_gtp_send_error_message(
                 s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
                 OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE, cause_value);
@@ -280,9 +299,6 @@ void sgwc_s5c_handle_modify_bearer_response(
     ogs_gtp_xact_t *s11_xact = NULL;
     ogs_gtp2_modify_bearer_response_t *rsp = NULL;
 
-    ogs_assert(sess);
-    sgwc_ue = sess->sgwc_ue;
-    ogs_assert(sgwc_ue);
     ogs_assert(message);
     rsp = &message->modify_bearer_response;
     ogs_assert(rsp);
@@ -300,10 +316,37 @@ void sgwc_s5c_handle_modify_bearer_response(
     rv = ogs_gtp_xact_commit(s5c_xact);
     ogs_expect(rv == OGS_OK);
 
+    /************************
+     * Check Session Context
+     *
+     * - Session could be deleted before a message is received from SMF.
+     ************************/
+    cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
+
+    if (!sess) {
+        ogs_error("No Context in TEID");
+        cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
+    } else {
+        sgwc_ue = sess->sgwc_ue;
+        ogs_assert(sgwc_ue);
+    }
+
+    if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
+        if (modify_action == OGS_GTP_MODIFY_IN_PATH_SWITCH_REQUEST)
+            ogs_gtp_send_error_message(
+                    s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+                    OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE, cause_value);
+        else
+            ogs_gtp_send_error_message(
+                    s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+                    OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE, cause_value);
+        return;
+    }
+
     /*****************************************
      * Check Mandatory/Conditional IE Missing
      *****************************************/
-    cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
+    ogs_assert(cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED);
 
     if (rsp->cause.presence == 0) {
         ogs_error("No Cause");
@@ -331,7 +374,7 @@ void sgwc_s5c_handle_modify_bearer_response(
     ogs_assert(cause);
     cause_value = cause->value;
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_error("GTP Failed [CAUSE:%d]", cause_value);
+        ogs_error("GTP Cause [Value:%d]", cause_value);
         if (modify_action == OGS_GTP_MODIFY_IN_PATH_SWITCH_REQUEST)
             ogs_gtp_send_error_message(
                     s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
@@ -385,9 +428,6 @@ void sgwc_s5c_handle_delete_session_response(
     ogs_gtp_xact_t *s11_xact = NULL;
     ogs_gtp2_delete_session_response_t *rsp = NULL;
 
-    ogs_assert(sess);
-    sgwc_ue = sess->sgwc_ue;
-    ogs_assert(sgwc_ue);
     ogs_assert(message);
     rsp = &message->delete_session_response;
     ogs_assert(rsp);
@@ -404,10 +444,32 @@ void sgwc_s5c_handle_delete_session_response(
     rv = ogs_gtp_xact_commit(s5c_xact);
     ogs_expect(rv == OGS_OK);
 
+    /************************
+     * Check Session Context
+     *
+     * - Session could be deleted before a message is received from SMF.
+     ************************/
+    cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
+
+    if (!sess) {
+        ogs_error("No Context in TEID");
+        cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
+    } else {
+        sgwc_ue = sess->sgwc_ue;
+        ogs_assert(sgwc_ue);
+    }
+
+    if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
+        ogs_gtp_send_error_message(
+                s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+                OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE, cause_value);
+        return;
+    }
+
     /*****************************************
      * Check Mandatory/Conditional IE Missing
      *****************************************/
-    cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
+    ogs_assert(cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED);
 
     if (rsp->cause.presence == 0) {
         ogs_error("No Cause");
@@ -430,7 +492,7 @@ void sgwc_s5c_handle_delete_session_response(
     ogs_assert(cause);
     cause_value = cause->value;
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_error("GTP Failed [CAUSE:%d]", cause_value);
+        ogs_error("GTP Cause [Value:%d]", cause_value);
         ogs_gtp_send_error_message(
                 s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
                 OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE, cause_value);
@@ -835,9 +897,6 @@ void sgwc_s5c_handle_bearer_resource_failure_indication(
 
     sgwc_ue_t *sgwc_ue = NULL;
 
-    ogs_assert(sess);
-    sgwc_ue = sess->sgwc_ue;
-    ogs_assert(sgwc_ue);
     ogs_assert(message);
     ind = &message->bearer_resource_failure_indication;
     ogs_assert(ind);
@@ -850,6 +909,19 @@ void sgwc_s5c_handle_bearer_resource_failure_indication(
     ogs_assert(s5c_xact);
     s11_xact = s5c_xact->assoc_xact;
     ogs_assert(s11_xact);
+
+    /************************
+     * Check Session Context
+     *
+     * - Session could be deleted before a message is received from SMF.
+     ************************/
+    if (!sess) {
+        ogs_error("No Context in TEID");
+        cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
+    } else {
+        sgwc_ue = sess->sgwc_ue;
+        ogs_assert(sgwc_ue);
+    }
 
     /********************
      * Check Cause Value

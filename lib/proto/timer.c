@@ -47,6 +47,8 @@ const char *ogs_timer_get_name(int timer_id)
         return OGS_TIMER_NAME_SUBSCRIPTION_VALIDITY;
     case OGS_TIMER_SBI_CLIENT_WAIT:
         return OGS_TIMER_NAME_SBI_CLIENT_WAIT;
+    case OGS_TIMER_DBI_POLL_CHANGE_STREAM:
+        return "OGS_TIMER_DBI_POLL_CHANGE_STREAM";
     default: 
        break;
     }

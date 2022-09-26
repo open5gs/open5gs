@@ -34,8 +34,6 @@
 extern "C" {
 #endif
 
-#define MAX_NUM_OF_SERVED_GUAMI     8
-
 extern int __amf_log_domain;
 extern int __gmm_log_domain;
 
@@ -50,7 +48,7 @@ typedef uint32_t amf_m_tmsi_t;
 typedef struct amf_context_s {
     /* Served GUAMI */
     uint8_t num_of_served_guami;
-    ogs_guami_t served_guami[MAX_NUM_OF_SERVED_GUAMI];
+    ogs_guami_t served_guami[OGS_MAX_NUM_OF_SERVED_GUAMI];
 
     /* Served TAI */
     uint8_t num_of_served_tai;
@@ -613,6 +611,7 @@ void amf_context_final(void);
 amf_context_t *amf_self(void);
 
 int amf_context_parse_config(void);
+int amf_context_nf_info(void);
 
 amf_gnb_t *amf_gnb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr);
 void amf_gnb_remove(amf_gnb_t *gnb);

@@ -330,7 +330,7 @@ int amf_context_parse_config(void)
                         const char *region = NULL, *set = NULL;
                         const char *pointer = NULL;
                         ogs_assert(self.num_of_served_guami <
-                                MAX_NUM_OF_SERVED_GUAMI);
+                                OGS_MAX_NUM_OF_SERVED_GUAMI);
 
                         if (ogs_yaml_iter_type(&guami_array) ==
                                 YAML_MAPPING_NODE) {
@@ -825,6 +825,8 @@ int amf_context_parse_config(void)
                     /* handle config in sbi library */
                 } else if (!strcmp(amf_key, "discovery")) {
                     /* handle config in sbi library */
+                } else if (!strcmp(amf_key, "metrics")) {
+                    /* handle config in metrics library */
                 } else
                     ogs_warn("unknown key `%s`", amf_key);
             }
@@ -833,6 +835,97 @@ int amf_context_parse_config(void)
 
     rv = amf_context_validation();
     if (rv != OGS_OK) return rv;
+
+    return OGS_OK;
+}
+
+int amf_context_nf_info(void)
+{
+    ogs_sbi_nf_instance_t *nf_instance = NULL;
+    ogs_sbi_nf_info_t *nf_info = NULL;
+
+    int served_i, next_new_i, info_i;
+    bool next_found;
+    served_i = 0;
+    next_new_i = 0;
+    next_found = false;
+    do {
+        nf_instance = ogs_sbi_self()->nf_instance;
+        ogs_assert(nf_instance);
+
+        nf_info = ogs_sbi_nf_info_add(
+                &nf_instance->nf_info_list, OpenAPI_nf_type_AMF);
+        ogs_assert(nf_info);
+        nf_info->amf.amf_set_id = self.served_guami[next_new_i].amf_id.set2;
+        nf_info->amf.amf_region_id = self.served_guami[next_new_i].amf_id.region;
+        next_found = false;
+        info_i = 0;
+        for (served_i = next_new_i; served_i <
+                self.num_of_served_guami; served_i++) {
+            if (self.served_guami[served_i].amf_id.set2 ==
+                    nf_info->amf.amf_set_id &&
+                    self.served_guami[served_i].amf_id.region ==
+                nf_info->amf.amf_region_id) {
+                nf_info->amf.guami[info_i] = self.served_guami[served_i];
+                nf_info->amf.num_of_guami++;
+                info_i++;
+            } else {
+                if (!next_found) {
+                    int handled_i;
+                    for (handled_i = 0; handled_i < served_i; handled_i++) {
+                        if (self.served_guami[handled_i].amf_id.set2 ==
+                                self.served_guami[served_i].amf_id.set2 &&
+                            self.served_guami[handled_i].amf_id.region ==
+                                    self.served_guami[served_i].amf_id.region) {
+                            break;
+                        }
+                    next_found = true;
+                    next_new_i = served_i;
+                    }
+                }
+            }
+        }
+
+        nf_info->amf.num_of_nr_tai = 0;
+        int i = 0, j = 0, info_tai_i = 0;
+        for (i = 0; i < self.num_of_served_tai; i++) {
+            if (self.served_tai[i].list2.num) {
+                for (j = 0; j < self.served_tai[i].list2.num; j++) {
+                    for (served_i = 0; served_i < info_i; served_i++) {
+                        if (ogs_plmn_id_hexdump
+                                (&self.served_tai[i].list2.tai[j].plmn_id) ==
+                                ogs_plmn_id_hexdump
+                                (&nf_info->amf.guami[served_i].plmn_id)) {
+                            nf_info->amf.nr_tai[info_tai_i].plmn_id =
+                                    self.served_tai[i].list2.tai[j].plmn_id;
+                            nf_info->amf.nr_tai[info_tai_i].tac =
+                                    self.served_tai[i].list2.tai[j].tac;
+                            nf_info->amf.num_of_nr_tai++;
+                            info_tai_i++;
+                        }
+                    }
+                }
+            }
+            for (j = 0; self.served_tai[i].list0.tai[j].num; j++) {
+                int k = 0;
+                for (k = 0; k < self.served_tai[i].list0.tai[j].num; k++) {
+                    for (served_i = 0; served_i < info_i; served_i++) {
+                        if (ogs_plmn_id_hexdump
+                                (&self.served_tai[i].list0.tai[j].plmn_id) ==
+                                ogs_plmn_id_hexdump
+                                (&nf_info->amf.guami[served_i].plmn_id)) {
+                            nf_info->amf.nr_tai[info_tai_i].plmn_id =
+                                    self.served_tai[i].list0.tai[j].plmn_id;
+                            nf_info->amf.nr_tai[info_tai_i].tac =
+                                    self.served_tai[i].list0.tai[j].tac[k];
+                            nf_info->amf.num_of_nr_tai++;
+                            info_tai_i++;
+                        }
+                    }
+                }
+            }
+        }
+    } while (next_found);
 
     return OGS_OK;
 }

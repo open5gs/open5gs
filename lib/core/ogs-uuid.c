@@ -80,7 +80,7 @@ static void get_system_time(uint64_t *uuid_time)
 
     /* ### fix this call to be more portable? */
     ogs_gettimeofday(&tv);
-    *uuid_time = tv.tv_sec * OGS_USEC_PER_SEC + tv.tv_usec;
+    *uuid_time = ogs_time_from_sec(tv.tv_sec) + tv.tv_usec;
 
     /* Offset between UUID formatted times and Unix formatted times.
        UUID UTC base time is October 15, 1582.

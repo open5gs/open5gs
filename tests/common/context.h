@@ -36,8 +36,6 @@ extern "C" {
 #define TEST_PING_IPV4          "10.45.0.1"
 #define TEST_PING_IPV6          "2001:db8:cafe::1"
 
-#define MAX_NUM_OF_SERVED_GUAMI     8
-
 #define TEST_MSISDN             "491725670014"
 #define TEST_ADDITIONAL_MSISDN  "491725670015"
 

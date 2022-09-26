@@ -468,6 +468,19 @@ $ sudo iptables -t nat -A POSTROUTING -s 10.45.0.0/16 ! -o ogstun -j MASQUERADE
 $ sudo ip6tables -t nat -A POSTROUTING -s 2001:db8:cafe::/48 ! -o ogstun -j MASQUERADE
 ```
 
+Optionally, you may consider the settings below for security purposes.
+
+```bash
+### Prevent UE's from connecting to the host on which UPF is running
+$ sudo iptables -I INPUT -s 10.45.0.0/16 -j DROP
+$ sudo ip6tables -I INPUT -s 2001:db8:cafe::/48 -j DROP
+
+### If your core network runs over multiple hosts, you probably want to block
+### UE originating traffic from accessing other network functions.
+### Replace x.x.x.x/y with the VNFs IP/subnet
+$ sudo iptables -I FORWARD -s 10.45.0.0/16 -d x.x.x.x/y -j DROP
+```
+
 **Note:** The above assumes you do not have any existing rules in the filter and nat tables. If a program such as docker has already set up rules, you may need to add the Open5GS related rules differently.
 {: .notice--danger}
 

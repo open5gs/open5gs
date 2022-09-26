@@ -125,7 +125,7 @@ ogs_time_t ogs_time_now(void)
     rc = ogs_gettimeofday(&tv);
     ogs_assert(rc == 0);
 
-    return tv.tv_sec * OGS_USEC_PER_SEC + tv.tv_usec;
+    return ogs_time_from_sec(tv.tv_sec) + tv.tv_usec;
 }
 
 /* The following code is stolen from APR library */
@@ -188,13 +188,13 @@ uint32_t ogs_time_ntp32_now(void)
     rc = ogs_gettimeofday(&tv);
     ogs_assert(rc == 0);
 
-    return ogs_time_to_ntp32(tv.tv_sec * OGS_USEC_PER_SEC + tv.tv_usec);
+    return ogs_time_to_ntp32(ogs_time_from_sec(tv.tv_sec) + tv.tv_usec);
 }
 ogs_time_t ogs_time_from_ntp32(uint32_t ntp_timestamp)
 {
     if (ntp_timestamp < OGS_1970_1900_SEC_DIFF)
         return 0;
-    return (ntp_timestamp - OGS_1970_1900_SEC_DIFF) * OGS_USEC_PER_SEC;
+    return ogs_time_from_sec(ntp_timestamp - OGS_1970_1900_SEC_DIFF);
 }
 uint32_t ogs_time_to_ntp32(ogs_time_t time)
 {
@@ -242,7 +242,7 @@ ogs_time_t ogs_get_monotonic_time(void)
 #if defined(HAVE_CLOCK_GETTIME) && defined(CLOCK_MONOTONIC)
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
-    return ((ts.tv_sec * 1000000UL) + (ts.tv_nsec / 1000UL));
+    return ogs_time_from_sec(ts.tv_sec) + ts.tv_nsec / 1000UL;
 #elif defined(__APPLE__)
     static mach_timebase_info_data_t info = {0};
     static double ratio = 0.0;
@@ -268,7 +268,7 @@ ogs_time_t ogs_get_monotonic_time(void)
     struct timeval tv;
 
     ogs_gettimeofday(&tv);
-    return (tv.tv_sec * 1000000UL) + tv.tv_usec;
+    return ogs_time_from_sec(tv.tv_sec) + tv.tv_usec;
 #endif
 }
 

@@ -255,12 +255,37 @@ typedef struct ogs_sbi_smf_info_s {
     } nr_tai_range[OGS_MAX_NUM_OF_TAI];
 } ogs_sbi_smf_info_t;
 
+typedef struct ogs_sbi_amf_info_s {
+    int amf_set_id;
+    int amf_region_id;
+
+    int num_of_guami;
+    ogs_guami_t guami[OGS_MAX_NUM_OF_SERVED_GUAMI];
+
+    int num_of_nr_tai;
+    ogs_5gs_tai_t nr_tai[OGS_MAX_NUM_OF_TAI];
+
+    int num_of_nr_tai_range;
+    struct {
+        ogs_plmn_id_t plmn_id;
+        /*
+         * TS29.510 6.1.6.2.28 Type: TacRange
+         *
+         * Either the start and end attributes, or
+         * the pattern attribute, shall be present.
+         */
+        int num_of_tac_range;
+        ogs_uint24_t start[OGS_MAX_NUM_OF_TAI], end[OGS_MAX_NUM_OF_TAI];
+    } nr_tai_range[OGS_MAX_NUM_OF_TAI];
+} ogs_sbi_amf_info_t;
+
 typedef struct ogs_sbi_nf_info_s {
     ogs_lnode_t lnode;
 
     OpenAPI_nf_type_e nf_type;
     union {
         ogs_sbi_smf_info_t smf;
+        ogs_sbi_amf_info_t amf;
     };
 } ogs_sbi_nf_info_t;
 
