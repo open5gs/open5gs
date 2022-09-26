@@ -22,7 +22,7 @@ baseurl: "/open5gs" # the subpath of your site, e.g. /blog
 url: "https://open5gs.org" # the base hostname & protocol for your site, e.g. http://example.com
 author: "Sukchan Lee"
 github_username: open5gs
-google_analytics: UA-139225646-2
+google_analytics: G-12MQZTB3JH
 
 # Build settings
 markdown: kramdown
