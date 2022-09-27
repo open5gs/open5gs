@@ -651,6 +651,7 @@ typedef struct ogs_slice_data_s {
     bool default_indicator;
 
     uint32_t context_identifier; /* EPC for checking default APN */
+    uint32_t all_apn_config_inc;
 
     int num_of_session;
     ogs_session_t session[OGS_MAX_NUM_OF_SESS];

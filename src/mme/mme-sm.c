@@ -435,6 +435,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             mme_s6a_handle_clr(mme_ue, &s6a_message->clr_message);
             break;
         case OGS_DIAM_S6A_CMD_CODE_INSERT_SUBSCRIBER_DATA:
+            mme_s6a_handle_idr(mme_ue, s6a_message);
             break;            
         default:
             ogs_error("Invalid Type[%d]", s6a_message->cmd_code);

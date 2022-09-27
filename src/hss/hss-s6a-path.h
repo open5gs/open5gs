@@ -26,16 +26,6 @@
 extern "C" {
 #endif
 
-#define OGS_HSS_SUBDATA_NO_UPDATE                       (0)
-#define OGS_HSS_SUBDATA_MSISDN                          (1)
-#define OGS_HSS_SUBDATA_ARD                             (1 << 1)
-#define OGS_HSS_SUBDATA_SUB_STATUS                      (1 << 2)
-#define OGS_HSS_SUBDATA_NAM                             (1 << 3)
-#define OGS_HSS_SUBDATA_UEAMBR                          (1 << 4)
-#define OGS_HSS_SUBDATA_RAU_TAU_TIMER                   (1 << 5)
-#define OGS_HSS_SUBDATA_SLICE                           (1 << 6)
-#define OGS_HSS_SUBDATA_ALL                             0xFFFFFFFF
-
 /* HSS Sends Cancel Location Request to MME */
 void hss_s6a_send_clr(char *imsi_bcd, char *mme_host, char *mme_realm, 
     uint32_t cancellation_type);

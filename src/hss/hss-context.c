@@ -1250,7 +1250,7 @@ int hss_handle_change_event(const bson_t *document)
                         if (msisdn_count) {
                             send_idr_flag = true;
                             subdatamask = (subdatamask | 
-                                OGS_HSS_SUBDATA_MSISDN);
+                                OGS_DIAM_S6A_SUBDATA_MSISDN);
                         } else {
                             send_clr_flag = true;
                         }
@@ -1258,30 +1258,32 @@ int hss_handle_change_event(const bson_t *document)
                             "access_restriction_data",
                             strlen("access_restriction_data"))) {
                         send_idr_flag = true;
-                        subdatamask = (subdatamask | OGS_HSS_SUBDATA_ARD);
+                        subdatamask = (subdatamask | OGS_DIAM_S6A_SUBDATA_ARD);
                     } else if (!strncmp(child2_key, 
                             "subscriber_status", 
                             strlen("subscriber_status"))) {
                         send_idr_flag = true;
                         subdatamask = (subdatamask | 
-                            OGS_HSS_SUBDATA_SUB_STATUS);
+                            OGS_DIAM_S6A_SUBDATA_SUB_STATUS);
                     } else if (!strncmp(child2_key, 
                             "network_access_mode",
                             strlen("network_access_mode"))) {
                         send_idr_flag = true;
-                        subdatamask = (subdatamask | OGS_HSS_SUBDATA_NAM);
+                        subdatamask = (subdatamask | OGS_DIAM_S6A_SUBDATA_NAM);
                     } else if (!strncmp(child2_key, "ambr", strlen("ambr"))) {
                         send_idr_flag = true;
-                        subdatamask = (subdatamask | OGS_HSS_SUBDATA_UEAMBR);
+                        subdatamask = (subdatamask | 
+                            OGS_DIAM_S6A_SUBDATA_UEAMBR);
                     } else if (!strncmp(child2_key, 
                             "subscribed_rau_tau_timer",
                             strlen("subscribed_rau_tau_timer"))) {
                         send_idr_flag = true;
                         subdatamask = (subdatamask | 
-                            OGS_HSS_SUBDATA_RAU_TAU_TIMER);
+                            OGS_DIAM_S6A_SUBDATA_RAU_TAU_TIMER);
                     } else if (!strncmp(child2_key, "slice", strlen("slice"))) {
                         send_idr_flag = true;
-                        subdatamask = (subdatamask | OGS_HSS_SUBDATA_SLICE);
+                        subdatamask = (subdatamask | 
+                            OGS_DIAM_S6A_SUBDATA_APN_CONFIG);
                     }
                 }
             }
