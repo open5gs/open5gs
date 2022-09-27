@@ -441,6 +441,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             ogs_error("Invalid Type[%d]", s6a_message->cmd_code);
             break;
         }
+        ogs_subscription_data_free(&s6a_message->idr_message.subscription_data);
         ogs_subscription_data_free(&s6a_message->ula_message.subscription_data);
         ogs_free(s6a_message);
         break;

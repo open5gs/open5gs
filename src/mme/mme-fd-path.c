@@ -1832,7 +1832,9 @@ outnoexp:
 
     /* Send the answer */
     ret = fd_msg_send(msg, NULL, NULL);
-    ogs_assert(ret == 0);    
+    ogs_assert(ret == 0);
+
+    ogs_free(s6a_message);
 
     return 0;
 }
