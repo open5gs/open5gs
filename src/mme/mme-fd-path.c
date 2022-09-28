@@ -1467,6 +1467,7 @@ static int mme_ogs_diam_s6a_clr_cb( struct msg **msg, struct avp *avp,
     ogs_assert(ret == 0);
     ret = fd_msg_avp_hdr(avp, &hdr);
     ogs_assert(ret == 0);
+    clr_message->cancellation_type = hdr->avp_value->i32;
 
     /* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
     ret = fd_msg_rescode_set(ans, (char*)"DIAMETER_SUCCESS", NULL, NULL, 1);

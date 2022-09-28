@@ -202,15 +202,23 @@ void mme_s6a_handle_clr(
         /* Remove all trace of subscriber even when detached. */
         mme_ue_hash_remove(mme_ue);
         mme_ue_remove(mme_ue);
-    } else if (ECM_IDLE(mme_ue)) {
-        MME_STORE_PAGING_INFO(mme_ue, MME_PAGING_TYPE_DETACH_TO_UE, NULL);
-        ogs_assert(OGS_OK == s1ap_send_paging(mme_ue, S1AP_CNDomain_ps));
+        return;
+    }
+
+    if (clr_message->cancellation_type == 
+            OGS_DIAM_S6A_CT_MME_UPDATE_PROCEDURE) {
+        mme_send_delete_session_or_mme_ue_context_release(mme_ue);
     } else {
-        ogs_assert(OGS_OK == nas_eps_send_detach_request(mme_ue));
-        if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
-            ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
+        if (ECM_IDLE(mme_ue)) {
+            MME_STORE_PAGING_INFO(mme_ue, MME_PAGING_TYPE_DETACH_TO_UE, NULL);
+            ogs_assert(OGS_OK == s1ap_send_paging(mme_ue, S1AP_CNDomain_ps));
         } else {
-            mme_send_delete_session_or_detach(mme_ue);
+            ogs_assert(OGS_OK == nas_eps_send_detach_request(mme_ue));
+            if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
+                ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
+            } else {
+                mme_send_delete_session_or_detach(mme_ue);
+            }
         }
     }
 }
