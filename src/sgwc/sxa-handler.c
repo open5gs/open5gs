@@ -134,7 +134,6 @@ void sgwc_sxa_handle_session_reestablishment(
 
     ogs_pfcp_xact_commit(pfcp_xact);
 
-    // I *think* the only thing we need to do here is check/udpate up_f_seid
     ogs_pfcp_f_seid_t *up_f_seid = NULL;
     up_f_seid = pfcp_rsp->up_f_seid.data;
     ogs_assert(up_f_seid);

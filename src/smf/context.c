@@ -843,6 +843,9 @@ smf_ue_t *smf_ue_add_by_supi(char *supi)
 
     ogs_list_add(&self.smf_ue_list, smf_ue);
 
+    ogs_info("[Added] Number of SMF-UEs is now %d",
+            ogs_list_count(&self.smf_ue_list));
+
     stats_update_smf_ues();
 
     return smf_ue;
@@ -872,6 +875,9 @@ smf_ue_t *smf_ue_add_by_imsi(uint8_t *imsi, int imsi_len)
 
     ogs_list_add(&self.smf_ue_list, smf_ue);
 
+    ogs_info("[Added] Number of SMF-UEs is now %d",
+            ogs_list_count(&self.smf_ue_list));
+
     stats_update_smf_ues();
 
     return smf_ue;
@@ -896,9 +902,10 @@ void smf_ue_remove(smf_ue_t *smf_ue)
 
     ogs_pool_free(&smf_ue_pool, smf_ue);
 
-    stats_update_smf_ues();
     ogs_info("[Removed] Number of SMF-UEs is now %d",
             ogs_list_count(&self.smf_ue_list));
+
+    stats_update_smf_ues();
 }
 
 void smf_ue_remove_all(void)

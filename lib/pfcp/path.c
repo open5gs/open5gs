@@ -283,7 +283,6 @@ int ogs_pfcp_up_send_session_set_deletion_response(ogs_pfcp_xact_t *xact,
     return rv;
 }
 
-
 int ogs_pfcp_up_send_association_setup_request(ogs_pfcp_node_t *node,
         void (*cb)(ogs_pfcp_xact_t *xact, void *data))
 {

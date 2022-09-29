@@ -44,6 +44,7 @@ int pcrf_initialize(void)
     initialized = 1;
 
     ogs_write_file_start("pcrf_start_time");
+
 	return OGS_OK;
 }
 

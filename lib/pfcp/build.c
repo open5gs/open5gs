@@ -288,8 +288,6 @@ ogs_pkbuf_t *ogs_pfcp_up_build_session_set_deletion_response(uint8_t type, uint8
     rsp->cause.presence = 1;
     rsp->cause.u8 = cause;
 
-    // offending ie???
-
     pfcp_message.h.type = type;
     return ogs_pfcp_build_msg(&pfcp_message);
 }
@@ -1039,4 +1037,3 @@ ogs_pkbuf_t *ogs_pfcp_build_session_deletion_response( uint8_t type, uint8_t cau
     pfcp_message.h.type = type;
     return ogs_pfcp_build_msg(&pfcp_message);
 }
-
