@@ -530,7 +530,8 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             }
 
             if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
-                ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
+                ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue,
+                    SGSAP_DETACH_ACK_DELETE_SESSION_OR_DETACH));
             } else {
                 mme_send_delete_session_or_detach(mme_ue);
             }

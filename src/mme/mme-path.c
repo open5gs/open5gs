@@ -197,7 +197,8 @@ void mme_send_after_paging(mme_ue_t *mme_ue, bool failed)
         } else {
             ogs_assert(OGS_OK == nas_eps_send_detach_request(mme_ue));
             if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
-                ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
+                ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue,
+                    SGSAP_DETACH_ACK_DELETE_SESSION_OR_DETACH));
             } else {
                 mme_send_delete_session_or_detach(mme_ue);
             }

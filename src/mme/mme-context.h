@@ -584,6 +584,11 @@ struct mme_ue_s {
 
     ogs_list_t      bearer_to_modify_list;
 
+#define SGSAP_DETACH_ACK_NO_ACTION                                   0
+#define SGSAP_DETACH_ACK_DELETE_SESSION_OR_DETACH                    1
+#define SGSAP_DETACH_ACK_DELETE_SESSION_OR_MME_UE_CONTEXT_RELEASE    2
+    uint8_t         sgsap_detach_ack_action;
+
     mme_csmap_t     *csmap;
 };
 

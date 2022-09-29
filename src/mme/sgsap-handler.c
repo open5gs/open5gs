@@ -272,7 +272,16 @@ void sgsap_handle_detach_ack(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
 
-    mme_send_delete_session_or_detach(mme_ue);
+    switch (mme_ue->sgsap_detach_ack_action) {
+    case SGSAP_DETACH_ACK_DELETE_SESSION_OR_DETACH:
+        mme_send_delete_session_or_detach(mme_ue);
+        break;
+    case SGSAP_DETACH_ACK_DELETE_SESSION_OR_MME_UE_CONTEXT_RELEASE:
+        mme_send_delete_session_or_mme_ue_context_release(mme_ue);
+        break;
+    default:
+        ogs_warn("Invalid Action [%d]", mme_ue->sgsap_detach_ack_action);
+    }
 }
 
 void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)

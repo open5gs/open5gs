@@ -207,7 +207,12 @@ void mme_s6a_handle_clr(
 
     if (clr_message->cancellation_type == 
             OGS_DIAM_S6A_CT_MME_UPDATE_PROCEDURE) {
-        mme_send_delete_session_or_mme_ue_context_release(mme_ue);
+        if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
+            ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue,
+                SGSAP_DETACH_ACK_DELETE_SESSION_OR_MME_UE_CONTEXT_RELEASE));
+        } else {
+            mme_send_delete_session_or_mme_ue_context_release(mme_ue);
+        }
     } else {
         if (ECM_IDLE(mme_ue)) {
             MME_STORE_PAGING_INFO(mme_ue, MME_PAGING_TYPE_DETACH_TO_UE, NULL);
@@ -215,7 +220,8 @@ void mme_s6a_handle_clr(
         } else {
             ogs_assert(OGS_OK == nas_eps_send_detach_request(mme_ue));
             if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
-                ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
+                ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue,
+                    SGSAP_DETACH_ACK_DELETE_SESSION_OR_DETACH));
             } else {
                 mme_send_delete_session_or_detach(mme_ue);
             }
