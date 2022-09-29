@@ -31,7 +31,7 @@ uint8_t mme_s6a_handle_aia(
 uint8_t mme_s6a_handle_ula(
         mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message);
 void mme_s6a_handle_clr(
-        mme_ue_t *mme_ue, ogs_diam_s6a_clr_message_t *clr_message);
+        mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message);
 
 #ifdef __cplusplus
 }

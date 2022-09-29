@@ -168,11 +168,13 @@ uint8_t mme_s6a_handle_ula(
     return OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED;
 }
 
-void mme_s6a_handle_clr(
-        mme_ue_t *mme_ue, ogs_diam_s6a_clr_message_t *clr_message)
+void mme_s6a_handle_clr(mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
 {
+    ogs_diam_s6a_clr_message_t *clr_message = NULL;
     ogs_assert(mme_ue);
-    ogs_assert(clr_message);    
+    ogs_assert(s6a_message);
+    clr_message = &s6a_message->clr_message;
+    ogs_assert(clr_message);
 
     /* Set EPS Detach */
     memset(&mme_ue->nas_eps.detach, 0, sizeof(ogs_nas_detach_type_t));
