@@ -271,6 +271,8 @@ void sgwc_sxa_handle_session_establishment_response(
 
     ogs_assert(sess);
 
+    sess->pfcp_established = true;
+
     ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
         sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
@@ -323,8 +325,6 @@ void sgwc_sxa_handle_session_establishment_response(
     up_f_seid = pfcp_rsp->up_f_seid.data;
     ogs_assert(up_f_seid);
     sess->sgwu_sxa_seid = be64toh(up_f_seid->seid);
-
-    sess->pfcp_state = PFCP_ESTABLISHED;
 
     pgw_s5c_teid = create_session_request->
         pgw_s5_s8_address_for_control_plane_or_pmip.data;
