@@ -128,17 +128,11 @@ void sgwc_pfcp_state_will_associate(ogs_fsm_t *s, sgwc_event_t *e)
             ogs_pfcp_cp_handle_association_setup_request(node, xact,
                     &message->pfcp_association_setup_request);
             OGS_FSM_TRAN(s, sgwc_pfcp_state_associated);
-
-            sgwc_pfcp_resend_established_sessions(node);
-
             break;
         case OGS_PFCP_ASSOCIATION_SETUP_RESPONSE_TYPE:
             ogs_pfcp_cp_handle_association_setup_response(node, xact,
                     &message->pfcp_association_setup_response);
             OGS_FSM_TRAN(s, sgwc_pfcp_state_associated);
-
-            sgwc_pfcp_resend_established_sessions(node);
-
             break;
         default:
             ogs_warn("cannot handle PFCP message type[%d]",
@@ -180,6 +174,12 @@ void sgwc_pfcp_state_associated(ogs_fsm_t *s, sgwc_event_t *e)
             OGS_PORT(&node->addr));
         ogs_timer_start(node->t_no_heartbeat,
                 ogs_app()->time.message.pfcp.no_heartbeat_duration);
+
+        if (node->already_associated) {
+            sgwc_pfcp_resend_established_sessions(node);
+        }
+        node->already_associated = true;
+
         break;
     case OGS_FSM_EXIT_SIG:
         ogs_info("PFCP de-associated [%s]:%d",
@@ -223,7 +223,7 @@ void sgwc_pfcp_state_associated(ogs_fsm_t *s, sgwc_event_t *e)
                     &message->pfcp_association_setup_response);
 
             sgwc_pfcp_resend_established_sessions(node);
-            
+
             break;
         case OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE:
             if (!message->h.seid_presence) {

@@ -112,6 +112,8 @@ typedef struct ogs_pfcp_node_s {
 
     ogs_pfcp_up_function_features_t up_function_features;
     int up_function_features_len;
+
+    bool already_associated;
 } ogs_pfcp_node_t;
 
 typedef enum {
