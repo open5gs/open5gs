@@ -1091,6 +1091,19 @@ uint8_t smf_epc_n4_handle_session_deletion_response(
     return OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 }
 
+void smf_epc_n4_handle_session_set_deletion_response(
+        ogs_pfcp_xact_t *xact, ogs_pfcp_session_set_deletion_response_t *rsp)
+{
+    ogs_debug("Session Set Deletion Response");
+
+    ogs_assert(xact);
+    ogs_assert(rsp);
+
+    ogs_pfcp_xact_commit(xact);
+
+    return;
+}
+
 void smf_n4_handle_session_report_request(
         smf_sess_t *sess, ogs_pfcp_xact_t *pfcp_xact,
         ogs_pfcp_session_report_request_t *pfcp_req)

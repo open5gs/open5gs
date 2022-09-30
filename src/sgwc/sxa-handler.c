@@ -1326,6 +1326,20 @@ cleanup:
     sgwc_sess_remove(sess);
 }
 
+void sgwc_sxa_handle_session_set_deletion_response(
+        ogs_pfcp_xact_t *pfcp_xact,
+        ogs_pfcp_session_set_deletion_response_t *pfcp_rsp)
+{
+    ogs_debug("Session Set Deletion Response");
+
+    ogs_assert(pfcp_xact);
+    ogs_assert(pfcp_rsp);
+
+    ogs_pfcp_xact_commit(pfcp_xact);
+
+    return;
+}
+
 void sgwc_sxa_handle_session_report_request(
         sgwc_sess_t *sess, ogs_pfcp_xact_t *pfcp_xact,
         ogs_pfcp_session_report_request_t *pfcp_req)
