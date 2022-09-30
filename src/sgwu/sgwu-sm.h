@@ -37,6 +37,8 @@ void sgwu_pfcp_state_will_associate(ogs_fsm_t *s, sgwu_event_t *e);
 void sgwu_pfcp_state_associated(ogs_fsm_t *s, sgwu_event_t *e);
 void sgwu_pfcp_state_exception(ogs_fsm_t *s, sgwu_event_t *e);
 
+void stats_update_sgwu_pfcp_nodes(void);
+
 #define sgwu_sm_debug(__pe) \
     ogs_debug("%s(): %s\n", __func__, sgwu_event_get_name(__pe))
 

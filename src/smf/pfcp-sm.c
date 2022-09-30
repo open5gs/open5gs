@@ -182,12 +182,17 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
         }
         node->already_associated = true;
 
+        stats_update_smf_pfcp_nodes();
+
         break;
     case OGS_FSM_EXIT_SIG:
         ogs_info("PFCP de-associated [%s]:%d",
             OGS_ADDR(&node->addr, buf),
             OGS_PORT(&node->addr));
         ogs_timer_stop(node->t_no_heartbeat);
+
+        stats_update_smf_pfcp_nodes();
+
         break;
     case SMF_EVT_N4_MESSAGE:
         message = e->pfcp_message;
@@ -379,4 +384,39 @@ static void node_timeout(ogs_pfcp_xact_t *xact, void *data)
         ogs_error("Not implemented [type:%d]", type);
         break;
     }
+}
+
+#define MAX_PFCP_STRING_LEN 9 + INET_ADDRSTRLEN + (4 * OGS_MAX_NUM_OF_TAI)
+
+void stats_update_smf_pfcp_nodes(void) {
+    ogs_pfcp_node_t *node = NULL;
+    char buf[OGS_ADDRSTRLEN];
+    int i;
+
+    char *buffer = NULL;
+    char *ptr = NULL;
+
+    int num_pfcp = 0;
+
+    ptr = buffer = ogs_calloc(MAX_PFCP_STRING_LEN * OGS_MAX_NUM_OF_SERVED_TAI, 1);
+    ogs_list_for_each(&ogs_pfcp_self()->pfcp_peer_list, node) {
+        if (node->sm.state == (ogs_fsm_handler_t) &smf_pfcp_state_associated) {
+            num_pfcp++;
+            ptr += sprintf(ptr, "ip:%s tac:", OGS_ADDR(&node->addr, buf));
+            for(i = 0; i < node->num_of_tac; i++) {
+                ptr += sprintf(ptr, "%u,",node->tac[i]);
+            }
+            if (node->num_of_tac > 0) {
+                ptr--;
+            }
+            ptr += sprintf(ptr, "\n");
+        }
+    }
+
+    char num[20];
+    sprintf(num, "%d\n", num_pfcp);
+    ogs_write_file_value("smf/num_pfcp", num);
+
+    ogs_write_file_value("smf/list_pfcp", buffer);
+    ogs_free(buffer);
 }

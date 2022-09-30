@@ -66,6 +66,7 @@ int sgwu_initialize()
 
     ogs_write_file_start("sgwu_start_time");
     ogs_write_file_subdir("sgwu");
+    stats_update_sgwu_pfcp_nodes();
     stats_update_sgwu_sessions();
     
     return OGS_OK;

@@ -83,6 +83,7 @@ int smf_initialize()
 
     ogs_write_file_start("smf_start_time");
     ogs_write_file_subdir("smf");
+    stats_update_smf_pfcp_nodes();
     stats_update_smf_ues();
     stats_update_smf_sessions();
 

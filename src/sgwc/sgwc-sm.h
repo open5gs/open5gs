@@ -37,6 +37,8 @@ void sgwc_pfcp_state_will_associate(ogs_fsm_t *s, sgwc_event_t *e);
 void sgwc_pfcp_state_associated(ogs_fsm_t *s, sgwc_event_t *e);
 void sgwc_pfcp_state_exception(ogs_fsm_t *s, sgwc_event_t *e);
 
+void stats_update_sgwc_pfcp_nodes(void);
+
 #define sgwc_sm_debug(__pe) \
     ogs_debug("%s(): %s\n", __func__, sgwc_event_get_name(__pe))
 

@@ -37,6 +37,8 @@ void upf_pfcp_state_will_associate(ogs_fsm_t *s, upf_event_t *e);
 void upf_pfcp_state_associated(ogs_fsm_t *s, upf_event_t *e);
 void upf_pfcp_state_exception(ogs_fsm_t *s, upf_event_t *e);
 
+void stats_update_upf_pfcp_nodes(void);
+
 #define upf_sm_debug(__pe) \
     ogs_debug("%s(): %s", __func__, upf_event_get_name(__pe))
 
