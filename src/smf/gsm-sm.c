@@ -1137,7 +1137,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
         switch (pfcp_message->h.type) {
         case OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE:
-            ogs_warn("PFCP session is already established; ignoring PFCP-SER");
+            ogs_warn("Received PFCP Session Establishment Response for already established session");
             if (pfcp_xact->epc) {
                 smf_epc_n4_handle_session_establishment_response(
                         sess, pfcp_xact, &pfcp_message->pfcp_session_establishment_response);

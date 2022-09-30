@@ -217,9 +217,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
                 OGS_PORT(&node->addr));
             ogs_pfcp_cp_handle_association_setup_request(node, xact,
                     &message->pfcp_association_setup_request);
-
             smf_epc_pfcp_resend_established_sessions(node);
-
             break;
         case OGS_PFCP_ASSOCIATION_SETUP_RESPONSE_TYPE:
             ogs_warn("PFCP[RSP] has already been associated [%s]:%d",
@@ -227,9 +225,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
                 OGS_PORT(&node->addr));
             ogs_pfcp_cp_handle_association_setup_response(node, xact,
                     &message->pfcp_association_setup_response);
-
             smf_epc_pfcp_resend_established_sessions(node);
-
             break;
         case OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE:
             if (!message->h.seid_presence)
@@ -280,11 +276,12 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
                     e->sess = sess;
             }
 
-            if (sess) {
-                ogs_fsm_dispatch(&sess->sm, e);                
-            } else {
+            if (!sess) {
                 ogs_warn("No session associated with Session Deletion Response");
+                break;
             }
+
+            ogs_fsm_dispatch(&sess->sm, e);
             break;
 
         case OGS_PFCP_SESSION_SET_DELETION_RESPONSE_TYPE:

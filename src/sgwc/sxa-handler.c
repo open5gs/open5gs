@@ -182,6 +182,7 @@ void sgwc_sxa_handle_session_establishment_response(
 
     ogs_assert(pfcp_xact);
     ogs_assert(pfcp_rsp);
+
     ogs_assert(recv_message);
 
     create_session_request = &recv_message->create_session_request;
