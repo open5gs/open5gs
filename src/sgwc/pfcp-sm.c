@@ -221,25 +221,11 @@ void sgwc_pfcp_state_associated(ogs_fsm_t *s, sgwc_event_t *e)
                 OGS_PORT(&node->addr));
             ogs_pfcp_cp_handle_association_setup_response(node, xact,
                     &message->pfcp_association_setup_response);
-
             sgwc_pfcp_resend_established_sessions(node);
-
             break;
         case OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE:
             if (!message->h.seid_presence) {
                 ogs_error("No SEID");
-                break;
-            }
-
-            if (sess && sess->pfcp_established) {
-                ogs_warn("Already received SER for this session");
-                sgwc_sxa_handle_session_reestablishment(
-                    sess, xact, &message->pfcp_session_establishment_response);
-                break;
-            }
-
-            if (!e->gtp_message) {
-                ogs_warn("No GTP Message Context");
                 break;
             }
 
@@ -272,10 +258,10 @@ void sgwc_pfcp_state_associated(ogs_fsm_t *s, sgwc_event_t *e)
                     sess = sgwc_sess_find_by_seid(be64toh(sent_hdr->seid));
             }
 
-	    if (!sess) {
-		ogs_warn("No session associated with Session Deletion Response");
-		break;
-	    }
+    	    if (!sess) {
+                ogs_warn("No session associated with Session Deletion Response");
+                break;
+    	    }
 
             sgwc_sxa_handle_session_deletion_response(
                 sess, xact, e->gtp_message,
