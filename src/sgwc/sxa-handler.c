@@ -124,7 +124,7 @@ static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
     }
 }
 
-void sgwc_sxa_handle_session_reestablishment(
+static void sgwc_sxa_handle_session_reestablishment(
         sgwc_sess_t *sess, ogs_pfcp_xact_t *pfcp_xact,
         ogs_pfcp_session_establishment_response_t *pfcp_rsp)
 {
@@ -174,6 +174,11 @@ void sgwc_sxa_handle_session_establishment_response(
     ogs_gtp2_indication_t *indication = NULL;
 
     ogs_debug("Session Establishment Response");
+
+    if (sess && sess->pfcp_established == true) {
+        ogs_warn("Received PFCP Session Establishment Response for already established session");
+        return sgwc_sxa_handle_session_reestablishment(sess, pfcp_xact, pfcp_rsp);
+    }
 
     ogs_assert(pfcp_xact);
     ogs_assert(pfcp_rsp);
