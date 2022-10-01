@@ -40,6 +40,8 @@ int test_gtpu_send(
 int test_gtpu_send_ping(
         ogs_socknode_t *node, test_bearer_t *bearer, const char *dst_ip);
 int test_gtpu_send_slacc_rs(ogs_socknode_t *node, test_bearer_t *bearer);
+int test_gtpu_send_slacc_rs_with_unspecified_source_address(
+        ogs_socknode_t *node, test_bearer_t *bearer);
 int test_gtpu_send_error_indication(
         ogs_socknode_t *node, test_bearer_t *bearer);
 int test_gtpu_send_indirect_data_forwarding(

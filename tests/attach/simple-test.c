@@ -209,6 +209,47 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testgtpu_recv(test_ue, recvbuf);
 
+/*
+ * Discussion #1776 was raised,
+ * but we decided not to allow unspecified addresses
+ * because Open5GS has already sent interface identifiers
+ * in the registgration/attach process.
+ *
+ *
+ * RFC4861
+ * 4.  Message Formats
+ * 4.1.  Router Solicitation Message Format
+ * IP Fields:
+ *    Source Address
+ *                  An IP address assigned to the sending interface, or
+ *                  the unspecified address if no address is assigned
+ *                  to the sending interface.
+ *
+ * 6.1.  Message Validation
+ * 6.1.1.  Validation of Router Solicitation Messages
+ *  Hosts MUST silently discard any received Router Solicitation
+ *  Messages.
+ *
+ *  A router MUST silently discard any received Router Solicitation
+ *  messages that do not satisfy all of the following validity checks:
+ *
+ *  ..
+ *  ..
+ *
+ *  - If the IP source address is the unspecified address, there is no
+ *    source link-layer address option in the message.
+ */
+#if 0
+    /* Send GTP-U Router Solicitation with an unspecified source address */
+    rv = test_gtpu_send_slacc_rs_with_unspecified_source_address(gtpu, bearer);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive GTP-U Router Solicitation */
+    recvbuf = test_gtpu_read(gtpu);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testgtpu_recv(test_ue, recvbuf);
+#endif
+
     /* Send GTP-U ICMP Packet */
     rv = test_gtpu_send_ping(gtpu, bearer, TEST_PING_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
