@@ -1238,22 +1238,6 @@ int hss_handle_change_event(const bson_t *document)
                             "request_cancel_location") && 
                             BSON_ITER_HOLDS_BOOL(&child2_iter)) {
                         send_clr_flag = (char *)bson_iter_bool(&child2_iter);
-                    } else if (!strncmp(child2_key, "msisdn",
-                            strlen("msisdn"))) {
-                        int msisdn_count = 0;
-                        bson_iter_recurse(&child2_iter, &child3_iter);
-                        while (bson_iter_next(&child3_iter)) {
-                            if (BSON_ITER_HOLDS_UTF8(&child3_iter)) {
-                                msisdn_count++;
-                            }
-                        }
-                        if (msisdn_count) {
-                            send_idr_flag = true;
-                            subdatamask = (subdatamask | 
-                                OGS_DIAM_S6A_SUBDATA_MSISDN);
-                        } else {
-                            send_clr_flag = true;
-                        }
                     } else if (!strncmp(child2_key, 
                             "access_restriction_data",
                             strlen("access_restriction_data"))) {
