@@ -120,7 +120,7 @@ static void pfcp_recv_cb(short when, ogs_socket_t fd, void *data)
     ogs_pkbuf_trim(pkbuf, size);
 
     h = (ogs_pfcp_header_t *)pkbuf->data;
-    if (h->version > OGS_PFCP_VERSION) {
+    if (h->version != OGS_PFCP_VERSION) {
         ogs_pfcp_header_t rsp;
 
         ogs_error("Not supported version[%d]", h->version);
