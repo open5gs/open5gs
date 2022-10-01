@@ -10,7 +10,7 @@ permalink: /support/
 
 Open5GS is licensed under a dual licensing model designed to meet the development and distribution needs of both commercial and open source projects.
 
-The commercial Open5GS license gives you the full rights to create and distribute software on your own terms without any open source license obligations. With the commercial license you also have access to the official NeoPlane Support and close strategic relationship with [NeoPlane](https://neoplane.io) to make sure your development goals are met.
+The commercial Open5GS license gives you the full rights to create and distribute software on your own terms without any open source license obligations. With the commercial license, you also have access to the official NeoPlane Support and close strategic relationship with [NeoPlane](https://neoplane.io) to make sure your development goals are met.
 
 Open5GS is also available under AGPL-3.0 open source licenses. The Open5GS open source licensing is ideal for use cases such as open source projects with open source distribution, student/academic purposes, hobby projects, internal research projects without external distribution, or other projects where all AGPL-3.0 obligations can be met.
 
@@ -24,6 +24,6 @@ We work with leading partners in mobile communications to offer our customers co
 
 Please contact [sales@nextepc.com](mailto:sales@nextepc.com) for more informations.
 
-**[sysmocom](https://sysmocom.de/)**: Sysmocom was founded in Berlin, Germany by two veterans of the Free / Open Source Software (FOSS) community. They is providing commercial services around Open5GS open source software including support, development, consulting, training and system integration.
+**[sysmocom](https://sysmocom.de/)**: Sysmocom was founded in Berlin, Germany by two veterans of the Free / Open Source Software (FOSS) community. They are providing commercial services around Open5GS open source software including support, development, consulting, training and system integration.
 
 Please contact [Harald Welte \<sales@sysmocom.de\>](mailto:sales@sysmocom.de) for any related inquiries.

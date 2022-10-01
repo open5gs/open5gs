@@ -336,9 +336,6 @@ static void test2_func(abts_case *tc, void *data)
         test_ue[i] = test_ue_add_by_suci(&mobile_identity_suci, 13);
         ogs_assert(test_ue[i]);
 
-        /* Multiple eNB-UE-S1AP-UD */
-        test_ue[i]->enb_ue_s1ap_id = i;
-
         test_ue[i]->e_cgi.cell_id = 0x54f6401;
         test_ue[i]->nas.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
         test_ue[i]->nas.value = OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH;
@@ -357,6 +354,11 @@ static void test2_func(abts_case *tc, void *data)
     }
 
     for (i = 0; i < NUM_OF_TEST_UE; i++) {
+        if (i > 0)
+            test_ue[i]->enb_ue_s1ap_id = test_ue[i-1]->enb_ue_s1ap_id;
+        else
+            test_ue[i]->enb_ue_s1ap_id = 0;
+
         sess = test_sess_find_by_apn(
                 test_ue[i], "internet", OGS_GTP2_RAT_TYPE_EUTRAN);
         ogs_assert(sess);
@@ -584,6 +586,11 @@ static void test3_func(abts_case *tc, void *data)
     }
 
     for (i = 0; i < NUM_OF_TEST_UE; i++) {
+        if (i > 0)
+            test_ue[i]->enb_ue_s1ap_id = test_ue[i-1]->enb_ue_s1ap_id;
+        else
+            test_ue[i]->enb_ue_s1ap_id = 0;
+
         sess = test_sess_find_by_apn(
                 test_ue[i], "internet", OGS_GTP2_RAT_TYPE_EUTRAN);
         ogs_assert(sess);
