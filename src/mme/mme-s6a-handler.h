@@ -30,6 +30,8 @@ uint8_t mme_s6a_handle_aia(
         mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message);
 uint8_t mme_s6a_handle_ula(
         mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message);
+uint8_t mme_s6a_handle_idr(
+        mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message);
 void mme_s6a_handle_clr(
         mme_ue_t *mme_ue, ogs_diam_s6a_clr_message_t *clr_message);
 
