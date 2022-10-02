@@ -458,7 +458,7 @@ static int hss_s6a_avp_add_subscription_data(
                 ogs_diam_s6a_all_apn_configuration_included_indicator, 0,
                 &all_apn_configuration_included_indicator);
         ogs_assert(ret == 0);
-        val.i32 = 0;
+        val.i32 = OGS_ALL_APN_CONFIGURATIONS_INCLUDED;
         ret = fd_msg_avp_setvalue(
                 all_apn_configuration_included_indicator, &val);
         ogs_assert(ret == 0);

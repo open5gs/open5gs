@@ -1190,7 +1190,7 @@ int hss_db_poll_change_stream(void)
 
 int hss_handle_change_event(const bson_t *document)
 {
-    bson_iter_t iter, child1_iter, child2_iter, child3_iter;
+    bson_iter_t iter, child1_iter, child2_iter;
 
     char *utf8 = NULL;
     uint32_t length = 0;

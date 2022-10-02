@@ -77,7 +77,7 @@ uint8_t mme_s6a_handle_ula(
     ogs_diam_s6a_ula_message_t *ula_message = NULL;
     ogs_subscription_data_t *subscription_data = NULL;
     ogs_slice_data_t *slice_data = NULL;
-    int rv;
+    int rv, num_of_session;
 
     ogs_assert(mme_ue);
     ogs_assert(s6a_message);
@@ -98,12 +98,12 @@ uint8_t mme_s6a_handle_ula(
 
     mme_session_remove_all(mme_ue);
 
-    rv = mme_ue_session_from_slice_data(mme_ue, slice_data);
-    if (rv == 0) {
+    num_of_session = mme_ue_session_from_slice_data(mme_ue, slice_data);
+    if (num_of_session == 0) {
         ogs_error("No Session");
         return OGS_NAS_EMM_CAUSE_SEVERE_NETWORK_FAILURE;
     }
-    mme_ue->num_of_session = rv;
+    mme_ue->num_of_session = num_of_session;
 
     mme_ue->context_identifier = slice_data->context_identifier;
 
@@ -132,7 +132,7 @@ uint8_t mme_s6a_handle_idr(
     ogs_diam_s6a_idr_message_t *idr_message = NULL;
     ogs_subscription_data_t *subscription_data = NULL;
     ogs_slice_data_t *slice_data = NULL;
-    int rv;
+    int num_of_session;
 
     ogs_assert(mme_ue);
     ogs_assert(s6a_message);
@@ -149,16 +149,18 @@ uint8_t mme_s6a_handle_idr(
         ogs_assert(subscription_data->num_of_slice == 1);
         slice_data = &subscription_data->slice[0];
 
-        if (!slice_data->all_apn_config_inc) {
+        if (slice_data->all_apn_config_inc ==
+                OGS_ALL_APN_CONFIGURATIONS_INCLUDED) {
             mme_session_remove_all(mme_ue);
-            rv = mme_ue_session_from_slice_data(mme_ue, slice_data);
-            if (rv == 0) {
+            num_of_session = mme_ue_session_from_slice_data(mme_ue, slice_data);
+            if (num_of_session == 0) {
                 ogs_error("No Session");
                 return OGS_ERROR;
             }
-            mme_ue->num_of_session = rv;
+            mme_ue->num_of_session = num_of_session;
         } else {
-            ogs_error ("Partial APN-Configuration Not Supported in IDR.");
+            ogs_error ("[%d] Partial APN-Configuration Not Supported in IDR.",
+                        slice_data->all_apn_config_inc);
             return OGS_ERROR;
         }
 
