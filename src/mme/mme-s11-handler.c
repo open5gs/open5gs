@@ -639,6 +639,12 @@ void mme_s11_handle_delete_session_response(
         mme_ue_remove(mme_ue);
         return;
 
+    } else if (action == OGS_GTP_DELETE_UE_CONTEXT_COMPLETE_REMOVE) {
+        /* Remove MME-UE Context and hash after Implicit Detach */
+        mme_ue_hash_remove(mme_ue);
+        mme_ue_remove(mme_ue);
+        return;
+
     } else if (action == OGS_GTP_DELETE_IN_PATH_SWITCH_REQUEST) {
 
         /* Don't have to remove Session in X2 Handover with SGW relocation */

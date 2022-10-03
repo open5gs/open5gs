@@ -144,14 +144,11 @@ int sgsap_send_tmsi_reallocation_complete(mme_ue_t *mme_ue)
     return rv;
 }
 
-int sgsap_send_detach_indication(mme_ue_t *mme_ue,
-    uint8_t sgsap_detach_ack_action)
+int sgsap_send_detach_indication(mme_ue_t *mme_ue)
 {
     int rv;
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_assert(mme_ue);
-
-    mme_ue->sgsap_detach_ack_action = sgsap_detach_ack_action;
 
     pkbuf = sgsap_build_detach_indication(mme_ue);
     ogs_expect_or_return_val(pkbuf, OGS_ERROR);
