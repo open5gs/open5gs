@@ -280,6 +280,10 @@ extern "C" {
     OGS_SBI_CUSTOM_3GPP_COMMON "Access-Scope"
 #define OGS_SBI_CUSTOM_ACCESS_TOKEN      \
     OGS_SBI_CUSTOM_3GPP_COMMON "Access-Token"
+#define OGS_SBI_OPTIONAL_CUSTOM_SENDER_TIMESTAMP      \
+    OGS_SBI_CUSTOM_3GPP_COMMON "Sender-Timestamp"
+#define OGS_SBI_OPTIONAL_CUSTOM_MAX_RSP_TIME      \
+    OGS_SBI_CUSTOM_3GPP_COMMON "Max-Rsp-Time"
 
 #define OGS_SBI_PARAM_TARGET_NF_TYPE                "target-nf-type"
 #define OGS_SBI_PARAM_REQUESTER_NF_TYPE             "requester-nf-type"
