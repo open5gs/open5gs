@@ -1387,6 +1387,8 @@ void amf_ue_remove(amf_ue_t *amf_ue)
 
     if (amf_ue->policy_association_id)
         ogs_free(amf_ue->policy_association_id);
+    if (amf_ue->data_change_subscription_id)
+        ogs_free(amf_ue->data_change_subscription_id);
 
     if (amf_ue->confirmation_url_for_5g_aka)
         ogs_free(amf_ue->confirmation_url_for_5g_aka);

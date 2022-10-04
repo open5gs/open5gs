@@ -163,6 +163,23 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
                             "Invalid resource name", message->h.method));
                 END
                 break;
+
+            CASE(OGS_SBI_HTTP_METHOD_POST)
+                SWITCH(message->h.resource.component[1])
+                CASE(OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS)
+                    udm_nudm_sdm_handle_subscription_create(
+                            udm_ue, stream, message);
+                    break;
+
+                DEFAULT
+                    ogs_error("[%s] Invalid resource name [%s]",
+                            udm_ue->suci, message->h.resource.component[1]);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST, message,
+                            "Invalid resource name", message->h.method));
+                END
+                break;
             DEFAULT
                 ogs_error("[%s] Invalid HTTP method [%s]",
                         udm_ue->supi, message->h.method);

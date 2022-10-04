@@ -137,3 +137,63 @@ ogs_sbi_request_t *amf_nudm_sdm_build_get(amf_ue_t *amf_ue, void *data)
 
     return request;
 }
+
+ogs_sbi_request_t *amf_nudm_sdm_build_subscription(amf_ue_t *amf_ue, void *data)
+{
+    ogs_sbi_message_t message;
+    ogs_sbi_header_t header;
+    ogs_sbi_request_t *request = NULL;
+    ogs_sbi_server_t *server = NULL;
+
+    OpenAPI_sdm_subscription_t SDMSubscription;
+
+    char *monres = NULL;
+
+    ogs_assert(amf_ue);
+    ogs_assert(amf_ue->supi);
+    ogs_assert(data);
+
+    memset(&message, 0, sizeof(message));
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
+    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDM_SDM;
+    message.h.api.version = (char *)OGS_SBI_API_V2;
+    message.h.resource.component[0] = amf_ue->supi;
+    message.h.resource.component[1] =
+            (char *)OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS;
+
+    memset(&SDMSubscription, 0, sizeof(SDMSubscription));
+
+    SDMSubscription.nf_instance_id = ogs_sbi_self()->nf_instance->id;
+
+    server = ogs_list_first(&ogs_sbi_self()->server_list);
+    ogs_assert(server);
+
+    memset(&header, 0, sizeof(header));
+    header.service.name = (char *)OGS_SBI_SERVICE_NAME_NAMF_CALLBACK;
+    header.api.version = (char *)OGS_SBI_API_V1;
+    header.resource.component[0] = amf_ue->supi;
+    header.resource.component[1] =
+            (char *)OGS_SBI_RESOURCE_NAME_SDMSUBSCRIPTION_NOTIFY;
+    SDMSubscription.callback_reference =
+            ogs_sbi_server_uri(server, &header);
+    ogs_assert(SDMSubscription.callback_reference);
+
+    SDMSubscription.monitored_resource_uris = OpenAPI_list_create();
+
+    monres = ogs_msprintf("%s/%s", amf_ue->supi, (char *)data);
+    ogs_assert(monres);
+
+    OpenAPI_list_add(SDMSubscription.monitored_resource_uris, monres);
+    SDMSubscription.implicit_unsubscribe = 1;
+
+    message.SDMSubscription = &SDMSubscription;
+
+    request = ogs_sbi_build_request(&message);
+    ogs_assert(request);
+
+    ogs_free(monres);
+    OpenAPI_list_free(SDMSubscription.monitored_resource_uris);
+    ogs_free(SDMSubscription.callback_reference);
+
+    return request;
+}

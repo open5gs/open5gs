@@ -393,6 +393,9 @@ struct amf_ue_s {
     /* Network Initiated De-Registration */
     bool network_initiated_de_reg;
 
+    /* SubscriptionId of Subscription to Data Change Notification to UDM */
+    char *data_change_subscription_id;
+
     ogs_list_t      sess_list;
 };
 

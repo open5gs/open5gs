@@ -188,6 +188,8 @@ void udm_ue_remove(udm_ue_t *udm_ue)
         ogs_free(udm_ue->amf_instance_id);
     if (udm_ue->dereg_callback_uri)
         ogs_free(udm_ue->dereg_callback_uri);
+    if (udm_ue->data_change_callback_uri)
+        ogs_free(udm_ue->data_change_callback_uri);
 
     ogs_pool_free(&udm_ue_pool, udm_ue);
 }

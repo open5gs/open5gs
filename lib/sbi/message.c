@@ -179,6 +179,10 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
         OpenAPI_termination_notification_free(message->TerminationNotification);
     if (message->DeregistrationData)
         OpenAPI_deregistration_data_free(message->DeregistrationData);
+    if (message->SDMSubscription)
+        OpenAPI_sdm_subscription_free(message->SDMSubscription);
+    if (message->ModificationNotification)
+        OpenAPI_modification_notification_free(message->ModificationNotification);
 
     /* HTTP Part */
     for (i = 0; i < message->num_of_part; i++) {
@@ -1022,6 +1026,15 @@ static char *build_json(ogs_sbi_message_t *message)
         item = OpenAPI_deregistration_data_convertToJSON(
                 message->DeregistrationData);
         ogs_assert(item);
+    } else if (message->SDMSubscription) {
+        item = OpenAPI_sdm_subscription_convertToJSON(
+                message->SDMSubscription);
+        ogs_assert(item);
+    }
+    else if (message->ModificationNotification) {
+        item = OpenAPI_modification_notification_convertToJSON(
+            message->ModificationNotification);
+        ogs_assert(item);
     }
 
     if (item) {
@@ -1323,6 +1336,15 @@ static int parse_json(ogs_sbi_message_t *message,
                         smsub_item = OpenAPI_session_management_subscription_data_parseFromJSON(smsubJSON);
                         OpenAPI_list_add(message->SessionManagementSubscriptionDataList, smsub_item);
                     }
+                }
+                break;
+
+            CASE(OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS)
+                message->SDMSubscription =
+                    OpenAPI_sdm_subscription_parseFromJSON(item);
+                if (!message->SDMSubscription) {
+                    rv = OGS_ERROR;
+                    ogs_error("JSON parse error");
                 }
                 break;
 
@@ -1864,6 +1886,15 @@ static int parse_json(ogs_sbi_message_t *message,
                 message->DeregistrationData =
                     OpenAPI_deregistration_data_parseFromJSON(item);
                 if (!message->DeregistrationData) {
+                    rv = OGS_ERROR;
+                    ogs_error("JSON parse error");
+                }
+                break;
+
+            CASE(OGS_SBI_RESOURCE_NAME_SDMSUBSCRIPTION_NOTIFY)
+                message->ModificationNotification =
+                    OpenAPI_modification_notification_parseFromJSON(item);
+                if (!message->ModificationNotification) {
                     rv = OGS_ERROR;
                     ogs_error("JSON parse error");
                 }
