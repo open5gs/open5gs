@@ -2925,7 +2925,7 @@ void stats_update_smf_sessions(void) {
     ptr = buffer = ogs_malloc(MAX_SESSION_STRING_LEN * ogs_app()->max.ue);
     ogs_list_for_each(&self.smf_ue_list, smf_ue) {
         ogs_list_for_each(&smf_ue->sess_list, sess) {
-            ptr += sprintf(ptr, "imsi:%s apn:%s ip4:%s ip6:%s seid_local:0x%lx seid_peer:0x%lx\n",
+            ptr += sprintf(ptr, "imsi:%s apn:%s ip4:%s ip6:%s seid_cp:0x%lx seid_up:0x%lx\n",
                 smf_ue->imsi_bcd,
                 sess->session.name ? sess->session.name : "",
                 sess->session.ue_ip.ipv4 ? OGS_INET_NTOP(&sess->session.ue_ip.addr, buf1) : "",

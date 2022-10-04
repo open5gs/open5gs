@@ -406,7 +406,7 @@ uint8_t upf_sess_set_ue_ip(upf_sess_t *sess,
     }
     sess->dnn = ogs_strdup(pdr->dnn);
 
-    ogs_info("UE F-SEID[CP:0x%lx UP:0x%lx] "
+    ogs_info("UE F-SEID[UP:0x%lx CP:0x%lx] "
              "APN[%s] PDN-Type[%d] IPv4[%s] IPv6[%s]",
         (long)sess->upf_n4_seid, (long)sess->smf_n4_f_seid.seid,
         sess->dnn, session_type,
@@ -564,7 +564,7 @@ void stats_update_upf_sessions(void)
             sess->dnn ? sess->dnn : "",
             sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
             sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "",
-            (long)sess->upf_n4_seid, (long)sess->smf_n4_f_seid.seid);
+            (long)sess->smf_n4_f_seid.seid, (long)sess->upf_n4_seid);
     }
     ogs_write_file_value("upf/list_sessions", buffer);
     ogs_free(buffer);

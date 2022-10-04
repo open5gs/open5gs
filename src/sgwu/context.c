@@ -154,7 +154,7 @@ sgwu_sess_t *sgwu_sess_add(ogs_pfcp_f_seid_t *cp_f_seid)
     ogs_hash_set(self.seid_hash, &sess->sgwc_sxa_f_seid.seid,
             sizeof(sess->sgwc_sxa_f_seid.seid), sess);
 
-    ogs_info("UE F-SEID[CP:0x%lx UP:0x%lx]",
+    ogs_info("UE F-SEID[UP:0x%lx CP:0x%lx]",
         (long)sess->sgwu_sxa_seid, (long)sess->sgwc_sxa_f_seid.seid);
 
     ogs_list_add(&self.sess_list, sess);
@@ -270,7 +270,7 @@ void stats_update_sgwu_sessions(void)
     ptr = buffer = ogs_malloc(MAX_SESSION_STRING_LEN * ogs_app()->max.ue);
     ogs_list_for_each(&self.sess_list, sess) {
         ptr += sprintf(ptr, "seid_cp:0x%lx seid_up:0x%lx\n",
-            (long)sess->sgwu_sxa_seid, (long)sess->sgwc_sxa_f_seid.seid);
+            (long)sess->sgwc_sxa_f_seid.seid, (long)sess->sgwu_sxa_seid);
     }
     ogs_write_file_value("sgwu/list_sessions", buffer);
     ogs_free(buffer);
