@@ -220,6 +220,69 @@ int amf_nudm_sdm_handle_provisioned(
         break;
 
     CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA)
+
+        if (amf_ue->data_change_subscription_id) {
+            /* we already have a SDM subscription to UDM; continue without
+             * subscribing again */
+            ogs_assert(true ==
+                amf_ue_sbi_discover_and_send(
+                    OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,
+                    amf_npcf_am_policy_control_build_create, amf_ue, NULL));
+        }
+        else {
+            ogs_assert(true ==
+                amf_ue_sbi_discover_and_send(
+                    OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
+                    amf_nudm_sdm_build_subscription, amf_ue,
+                    (char *)OGS_SBI_RESOURCE_NAME_AM_DATA));
+        }
+        break;
+
+    CASE(OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS)
+
+        int rv;
+        ogs_sbi_message_t message;
+        ogs_sbi_header_t header;
+
+        if (!recvmsg->http.location) {
+            ogs_error("[%s] No http.location", amf_ue->supi);
+            ogs_assert(OGS_OK ==
+                nas_5gs_send_gmm_reject_from_sbi(
+                    amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR));
+            return OGS_ERROR;
+        }
+
+        memset(&header, 0, sizeof(header));
+        header.uri = recvmsg->http.location;
+
+        rv = ogs_sbi_parse_header(&message, &header);
+        if (rv != OGS_OK) {
+            ogs_error("[%s] Cannot parse http.location [%s]",
+                amf_ue->supi, recvmsg->http.location);
+            ogs_assert(OGS_OK ==
+                nas_5gs_send_gmm_reject_from_sbi(
+                    amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR));
+            return OGS_ERROR;
+        }
+
+        if (!message.h.resource.component[2]) {
+            ogs_error("[%s] No Subscription ID [%s]",
+                amf_ue->supi, recvmsg->http.location);
+
+            ogs_sbi_header_free(&header);
+            ogs_assert(OGS_OK ==
+                nas_5gs_send_gmm_reject_from_sbi(
+                    amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR));
+            return OGS_ERROR;
+        }
+
+        if (amf_ue->data_change_subscription_id)
+            ogs_free(amf_ue->data_change_subscription_id);
+        amf_ue->data_change_subscription_id =
+            ogs_strdup(message.h.resource.component[2]);
+
+        ogs_sbi_header_free(&header);
+
         ogs_assert(true ==
             amf_ue_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,

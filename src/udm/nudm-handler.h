@@ -38,6 +38,8 @@ bool udm_nudm_uecm_handle_registration_update(
 
 bool udm_nudm_sdm_handle_subscription_provisioned(
     udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
+bool udm_nudm_sdm_handle_subscription_create(
+    udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 
 #ifdef __cplusplus
 }

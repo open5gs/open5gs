@@ -58,6 +58,7 @@ struct udm_ue_s {
     char *amf_instance_id;
 
     char *dereg_callback_uri;
+    char *data_change_callback_uri;
 
     uint8_t k[OGS_KEY_LEN];
     uint8_t opc[OGS_KEY_LEN];

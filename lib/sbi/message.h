@@ -95,6 +95,7 @@ extern "C" {
 #define OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA "ue-context-in-smf-data"
 #define OGS_SBI_RESOURCE_NAME_SMF_SELECTION_SUBSCRIPTION_DATA \
                                             "smf-selection-subscription-data"
+#define OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS     "sdm-subscriptions"
 
 #define OGS_SBI_RESOURCE_NAME_SECURITY_INFORMATION  "security-information"
 #define OGS_SBI_RESOURCE_NAME_GENERATE_AUTH_DATA    "generate-auth-data"
@@ -126,6 +127,8 @@ extern "C" {
 #define OGS_SBI_RESOURCE_NAME_SM_CONTEXT_STATUS     "sm-context-status"
 #define OGS_SBI_RESOURCE_NAME_AM_POLICY_NOTIFY      "am-policy-notify"
 #define OGS_SBI_RESOURCE_NAME_DEREG_NOTIFY          "dereg-notify"
+#define OGS_SBI_RESOURCE_NAME_SDMSUBSCRIPTION_NOTIFY \
+                                            "sdmsubscription-notify"
 
 #define OGS_SBI_RESOURCE_NAME_POLICIES              "policies"
 #define OGS_SBI_RESOURCE_NAME_SM_POLICIES           "sm-policies"
@@ -452,6 +455,8 @@ typedef struct ogs_sbi_message_s {
     OpenAPI_sm_policy_notification_t *SmPolicyNotification;
     OpenAPI_termination_notification_t *TerminationNotification;
     OpenAPI_deregistration_data_t *DeregistrationData;
+    OpenAPI_sdm_subscription_t *SDMSubscription;
+    OpenAPI_modification_notification_t *ModificationNotification;
 
     ogs_sbi_links_t *links;
 

@@ -606,3 +606,114 @@ cleanup:
 
     return OGS_OK;
 }
+
+int amf_namf_callback_handle_sdm_data_change_notify(
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+{
+    int status = OGS_SBI_HTTP_STATUS_NO_CONTENT;
+
+    amf_ue_t *amf_ue = NULL;
+
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+
+    OpenAPI_modification_notification_t *ModificationNotification;
+    OpenAPI_lnode_t *node;
+
+    char *ueid = NULL;
+    char *res_name = NULL;
+
+    ogs_assert(stream);
+    ogs_assert(recvmsg);
+
+    ModificationNotification = recvmsg->ModificationNotification;
+    if (!ModificationNotification) {
+        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+        ogs_error("[%s] No ModificationNotification", amf_ue->supi);
+        goto cleanup;
+    }
+
+
+    OpenAPI_list_for_each(ModificationNotification->notify_items, node)
+    {
+        OpenAPI_notify_item_t *item = node->data;
+
+        char *saveptr = NULL;
+
+        ueid = ogs_sbi_parse_uri(item->resource_id, "/", &saveptr);
+        if (!ueid) {
+            status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+            ogs_error("[%s] No UeId", item->resource_id);
+            goto cleanup;
+        }
+
+        amf_ue = amf_ue_find_by_supi(ueid);
+        if (!amf_ue) {
+            status = OGS_SBI_HTTP_STATUS_NOT_FOUND;
+            ogs_error("Cannot find SUPI [%s]", ueid);
+            goto cleanup;
+        }
+
+        res_name = ogs_sbi_parse_uri(NULL, "/", &saveptr);
+        if (!res_name) {
+            status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+            ogs_error("[%s] No Resource Name", item->resource_id);
+            goto cleanup;
+        }
+
+        SWITCH(res_name)
+        CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
+            OpenAPI_lnode_t *node_ci;
+
+            OpenAPI_list_for_each(item->changes, node_ci)
+            {
+                /*
+                OpenAPI_change_item_t *item_change = node_ci->data;
+                item_change->path;
+                item_change->from;
+                item_change->new_value;
+                item_change->orig_value;
+                */
+                /*
+                switch (item_change->op) {
+                    case OpenAPI_change_type_ADD:
+                        break;
+                    case OpenAPI_change_type_MOVE:
+                        break;
+                    case OpenAPI_change_type__REMOVE:
+                        break;
+                    case OpenAPI_change_type_REPLACE:
+                        break;
+                    default:
+                        break;
+                }
+                */
+            }
+            break;
+        DEFAULT
+            status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+            ogs_error("Unknown Resource Name: [%s]", res_name);
+            goto cleanup;
+        END
+
+        ogs_free(ueid);
+        ogs_free(res_name);
+
+        ueid = NULL;
+        res_name = NULL;
+    }
+
+cleanup:
+    if (ueid)
+        ogs_free(ueid);
+    if (res_name)
+        ogs_free(res_name);
+
+    memset(&sendmsg, 0, sizeof(sendmsg));
+
+    response = ogs_sbi_build_response(&sendmsg, status);
+    ogs_assert(response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+    return OGS_OK;
+}

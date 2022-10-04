@@ -479,3 +479,85 @@ bool udm_nudm_sdm_handle_subscription_provisioned(
 
     return true;
 }
+
+bool udm_nudm_sdm_handle_subscription_create(
+    udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+{
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+    ogs_sbi_server_t *server = NULL;
+    ogs_sbi_header_t header;
+
+    OpenAPI_sdm_subscription_t *SDMSubscription = NULL;
+
+    ogs_assert(udm_ue);
+    ogs_assert(stream);
+    ogs_assert(recvmsg);
+
+    SDMSubscription = recvmsg->SDMSubscription;
+    if (!SDMSubscription) {
+        ogs_error("[%s] No SDMSubscription", udm_ue->supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "No SDMSubscription", udm_ue->supi));
+        return false;
+    }
+
+    if (!SDMSubscription->nf_instance_id) {
+        ogs_error("[%s] No nfInstanceId", udm_ue->supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "No nfInstanceId", udm_ue->supi));
+        return false;
+    }
+
+    if (!SDMSubscription->callback_reference) {
+        ogs_error("[%s] No callbackReference", udm_ue->supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "No callbackReference", udm_ue->supi));
+        return false;
+    }
+
+    if ((!SDMSubscription->monitored_resource_uris) &&
+        (!SDMSubscription->monitored_resource_uris->count)) {
+        ogs_error("[%s] No monitoredResourceUris", udm_ue->supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "No monitoredResourceUris", udm_ue->supi));
+        return false;
+    }
+
+    if (udm_ue->data_change_callback_uri)
+        ogs_free(udm_ue->data_change_callback_uri);
+    udm_ue->data_change_callback_uri =
+        ogs_strdup(SDMSubscription->callback_reference);
+
+
+    server = ogs_sbi_server_from_stream(stream);
+    ogs_assert(server);
+
+    memset(&header, 0, sizeof(header));
+    header.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDM_SDM;
+    header.api.version = (char *)OGS_SBI_API_V2;
+    header.resource.component[0] = udm_ue->supi;
+    header.resource.component[1] =
+            (char *)OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS;
+    /* TODO: subscription id */
+    header.resource.component[2] = udm_ue->ctx_id;
+
+    memset(&sendmsg, 0, sizeof(sendmsg));
+    sendmsg.http.location = ogs_sbi_server_uri(server, &header);
+
+    sendmsg.SDMSubscription = OpenAPI_sdm_subscription_copy(
+            sendmsg.SDMSubscription, SDMSubscription);
+
+    response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_CREATED);
+    ogs_assert(response);
+    ogs_sbi_server_send_response(stream, response);
+
+    ogs_free(sendmsg.http.location);
+    OpenAPI_sdm_subscription_free(sendmsg.SDMSubscription);
+
+    return true;
+}
