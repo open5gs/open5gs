@@ -41,11 +41,6 @@ void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
 
     /* MME Explicit Detach, ie: O&M Procedures */
     case MME_DETACH_TYPE_MME_EXPLICIT:
-        ogs_debug("Explicit MME Detach");
-        if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
-            mme_gtp_send_delete_all_sessions(mme_ue,
-                S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK);
-        }
         break;
 
     /* HSS Explicit Detach, ie: Subscription Withdrawl Cancel Location */
@@ -58,16 +53,6 @@ void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
 
     /* MME Implicit Detach, ie: Lost Communication */
     case MME_DETACH_TYPE_MME_IMPLICIT:
-        ogs_debug("Implicit MME Detach");
-        if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
-            if (ECM_IDLE(mme_ue)) {
-                mme_gtp_send_delete_all_sessions(mme_ue,
-                    OGS_GTP_DELETE_NO_ACTION);
-            } else {
-                mme_gtp_send_delete_all_sessions(mme_ue,
-                    S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK);
-            }
-        }
         break;
 
     /* HSS Implicit Detach, ie: MME-UPDATE-PROCEDURE */
