@@ -1191,8 +1191,8 @@ typedef struct ogs_pfcp_dropped_dl_traffic_threshold_s {
     union {
         struct {
 ED3(uint8_t spare:6;,
-    uint8_t dlpa:1;,
-    uint8_t dlby:1;)
+    uint8_t dlby:1;,
+    uint8_t dlpa:1;)
         };
         uint8_t flags;
     };
