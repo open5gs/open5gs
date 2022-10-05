@@ -41,9 +41,16 @@ void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
 
     /* MME Explicit Detach, ie: O&M Procedures */
     case MME_DETACH_TYPE_MME_EXPLICIT:
+        ogs_fatal("Not Implemented : MME_DETACH_TYPE_MME_EXPLICIT");
+        ogs_assert_if_reached();
         break;
 
-    /* HSS Explicit Detach, ie: Subscription Withdrawl Cancel Location */
+    /* HSS Explicit Detach, ie: Subscription Withdrawl Cancel Location
+     *
+     * TS23.401 - V16.10.0
+     * Ch 5.3.8 Detach procedure
+     * Ch 5.3.8.4 HSS-initiated Detach procedure
+     */
     case MME_DETACH_TYPE_HSS_EXPLICIT:
         ogs_debug("Explicit HSS Detach");
         if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
@@ -53,24 +60,39 @@ void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
 
     /* MME Implicit Detach, ie: Lost Communication */
     case MME_DETACH_TYPE_MME_IMPLICIT:
+        ogs_fatal("Not Implemented : MME_DETACH_TYPE_MME_IMPLICIT");
+        ogs_assert_if_reached();
         break;
 
-    /* HSS Implicit Detach, ie: MME-UPDATE-PROCEDURE */
+    /* HSS Implicit Detach, ie: MME-UPDATE-PROCEDURE
+     *
+     * TS23.401 - V16.10.0
+     * Ch 5.3.2 Attach procedure
+     * Ch 5.3.2.1 E-UTRAN Initial Attach
+     *
+     * 9. The HSS sends Cancel Location (IMSI, Cancellation Type)
+     * to the old MME. The old MME acknowledges with Cancel Location Ack (IMSI)
+     * and removes the MM and bearer contexts. If the ULR-Flags indicates
+     * "Initial-Attach-Indicator" and the HSS has the SGSN registration,
+     * then the HSS sends Cancel Location (IMSI, Cancellation Type)
+     * to the old SGSN. The Cancellation Type indicates the old MME/SGSN
+     * to release the old Serving GW resource.
+     */
     case MME_DETACH_TYPE_HSS_IMPLICIT:
         ogs_debug("Implicit HSS Detach");
         if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
             if (ECM_IDLE(mme_ue)) {
                 mme_gtp_send_delete_all_sessions(mme_ue,
-                    OGS_GTP_DELETE_UE_CONTEXT_COMPLETE_REMOVE);
+                    OGS_GTP_DELETE_UE_CONTEXT_REMOVE_ALL);
             } else {
                 mme_gtp_send_delete_all_sessions(mme_ue,
-                    OGS_GTP_DELETE_SEND_UE_CONTEXT_RELEASE_COMMAND);
+                    OGS_GTP_DELETE_SEND_RELEASE_WITH_UE_CONTEXT_REMOVE);
             }
         }
         break;
 
     default:
-        ogs_fatal("    Invalid OGS_NAS_EPS TYPE[%d]", mme_ue->nas_eps.type);
+        ogs_fatal("    Invalid OGS_NAS_EPS TYPE[%d]", mme_ue->detach_type);
         ogs_assert_if_reached();
     }
 }
@@ -81,7 +103,7 @@ void mme_send_delete_session_or_mme_ue_context_release(mme_ue_t *mme_ue)
 
     if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
         mme_gtp_send_delete_all_sessions(mme_ue,
-                OGS_GTP_DELETE_SEND_UE_CONTEXT_RELEASE_COMMAND);
+                OGS_GTP_DELETE_SEND_RELEASE_WITH_UE_CONTEXT_REMOVE);
     } else {
         enb_ue_t *enb_ue = enb_ue_cycle(mme_ue->enb_ue);
         if (enb_ue) {

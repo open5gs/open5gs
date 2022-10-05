@@ -202,12 +202,7 @@ void mme_s6a_handle_clr(mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
 
     ogs_debug("    OGS_NAS_EPS TYPE[%d]", mme_ue->nas_eps.type);
 
-    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_de_registered)) {
-        /* Remove all trace of subscriber even when detached. */
-        mme_ue_hash_remove(mme_ue);
-        mme_ue_remove(mme_ue);
-        return;
-    } else if (clr_message->cancellation_type ==
+    if (clr_message->cancellation_type ==
             OGS_DIAM_S6A_CT_MME_UPDATE_PROCEDURE) {
         mme_ue->detach_type = MME_DETACH_TYPE_HSS_IMPLICIT;
         if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {

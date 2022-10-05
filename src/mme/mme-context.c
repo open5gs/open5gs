@@ -2698,7 +2698,7 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd)
             if (SESSION_CONTEXT_IS_AVAILABLE(old_mme_ue)) {
                 ogs_warn("[%s] Trigger OLD Session Remove", mme_ue->imsi_bcd);
                 mme_gtp_send_delete_all_sessions(old_mme_ue,
-                        OGS_GTP_DELETE_UE_CONTEXT_REMOVE);
+                        OGS_GTP_DELETE_UE_CONTEXT_REMOVE_PARTIAL);
             }
         }
     }
