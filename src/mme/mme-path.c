@@ -29,6 +29,7 @@ void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
     ogs_assert(mme_ue);
 
     switch (mme_ue->detach_type) {
+    /* TS23.401 5.3.8.2.1 */
     case MME_DETACH_TYPE_REQUEST_FROM_UE:
         ogs_debug("Detach Request from UE");
         if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
@@ -39,22 +40,68 @@ void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
         }
         break;
 
+    /* TS23.401 5.3.8.3 With Step 1 */
     /* MME Explicit Detach, ie: O&M Procedures */
     case MME_DETACH_TYPE_MME_EXPLICIT:
+        ogs_debug("Explicit MME Detach");
+        if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
+            mme_gtp_send_delete_all_sessions(mme_ue,
+                OGS_GTP_DELETE_SEND_S1_REMOVE_AND_UNLINK);
+        } else {
+            enb_ue_t *enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+            if (enb_ue) {
+                ogs_assert(OGS_OK ==
+                    s1ap_send_ue_context_release_command(enb_ue,
+                        S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                        S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0));
+            } else
+                ogs_error("ENB-S1 Context has already been removed");
+        }
         break;
 
+    /* TS23.401 5.3.8.4 With Step 2 */
     /* HSS Explicit Detach, ie: Subscription Withdrawl Cancel Location */
     case MME_DETACH_TYPE_HSS_EXPLICIT:
         ogs_debug("Explicit HSS Detach");
         if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
             mme_gtp_send_delete_all_sessions(mme_ue, OGS_GTP_DELETE_NO_ACTION);
+        } else {
+            enb_ue_t *enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+            if (enb_ue) {
+                ogs_assert(OGS_OK ==
+                    s1ap_send_ue_context_release_command(enb_ue,
+                        S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                        S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
+            } else
+                ogs_error("ENB-S1 Context has already been removed");
         }
         break;
 
+    /* TS23.401 5.3.8.3 Without Step 1 */
     /* MME Implicit Detach, ie: Lost Communication */
     case MME_DETACH_TYPE_MME_IMPLICIT:
+        ogs_debug("Implicit MME Detach");
+        if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
+            if (ECM_IDLE(mme_ue)) {
+                mme_gtp_send_delete_all_sessions(mme_ue,
+                    OGS_GTP_DELETE_NO_ACTION);
+            } else {
+                mme_gtp_send_delete_all_sessions(mme_ue,
+                    OGS_GTP_DELETE_SEND_S1_REMOVE_AND_UNLINK);
+            }
+        } else {
+            enb_ue_t *enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+            if (enb_ue) {
+                ogs_assert(OGS_OK ==
+                    s1ap_send_ue_context_release_command(enb_ue,
+                        S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                        S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0));
+            } else
+                ogs_error("ENB-S1 Context has already been removed");
+        }
         break;
 
+    /* TS23.401 5.3.8.4 Without Step 2 */
     /* HSS Implicit Detach, ie: MME-UPDATE-PROCEDURE */
     case MME_DETACH_TYPE_HSS_IMPLICIT:
         ogs_debug("Implicit HSS Detach");
@@ -66,9 +113,17 @@ void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
                 mme_gtp_send_delete_all_sessions(mme_ue,
                     OGS_GTP_DELETE_SEND_UE_CONTEXT_RELEASE_COMMAND);
             }
+        } else {
+            enb_ue_t *enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+            if (enb_ue) {
+                ogs_assert(OGS_OK ==
+                    s1ap_send_ue_context_release_command(enb_ue,
+                        S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                        S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
+            } else
+                ogs_error("ENB-S1 Context has already been removed");
         }
         break;
-
     default:
         ogs_fatal("    Invalid OGS_NAS_EPS TYPE[%d]", mme_ue->nas_eps.type);
         ogs_assert_if_reached();
@@ -238,4 +293,47 @@ void mme_send_after_paging(mme_ue_t *mme_ue, bool failed)
 cleanup:
     CLEAR_SERVICE_INDICATOR(mme_ue);
     MME_CLEAR_PAGING_INFO(mme_ue);
+}
+
+void mme_detach_explicit(mme_ue_t *mme_ue, uint8_t reattach_required)
+{
+    ogs_assert(mme_ue);
+
+    /* Set EPS Detach */
+    memset(&mme_ue->nas_eps.detach, 0, sizeof(ogs_nas_detach_type_t));
+
+    if (reattach_required)
+        mme_ue->nas_eps.detach.value =
+            OGS_NAS_DETACH_TYPE_TO_UE_RE_ATTACH_REQUIRED;
+    else
+        mme_ue->nas_eps.detach.value =
+            OGS_NAS_DETACH_TYPE_TO_UE_RE_ATTACH_NOT_REQUIRED;
+
+    mme_ue->nas_eps.type = MME_EPS_TYPE_DETACH_REQUEST_TO_UE;
+
+    mme_ue->detach_type = MME_DETACH_TYPE_MME_EXPLICIT;
+    if (ECM_IDLE(mme_ue)) {
+        MME_STORE_PAGING_INFO(mme_ue, MME_PAGING_TYPE_DETACH_TO_UE, NULL);
+        ogs_assert(OGS_OK == s1ap_send_paging(mme_ue, S1AP_CNDomain_ps));
+    } else {
+        ogs_assert(OGS_OK == nas_eps_send_detach_request(mme_ue));
+        if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
+            ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
+        } else {
+            mme_send_delete_session_or_detach(mme_ue);
+        }
+    }
+
+}
+
+void mme_detach_implicit(mme_ue_t *mme_ue)
+{
+    ogs_assert(mme_ue);
+
+    mme_ue->detach_type = MME_DETACH_TYPE_MME_IMPLICIT;
+    if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
+        ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
+    } else {
+        mme_send_delete_session_or_detach(mme_ue);
+    }
 }

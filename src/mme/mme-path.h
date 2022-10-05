@@ -32,6 +32,9 @@ void mme_send_release_access_bearer_or_ue_context_release(enb_ue_t *enb_ue);
 
 void mme_send_after_paging(mme_ue_t *mme_ue, bool failed);
 
+void mme_detach_explicit(mme_ue_t *mme_ue, uint8_t reattach_required);
+void mme_detach_implicit(mme_ue_t *mme_ue);
+
 #ifdef __cplusplus
 }
 #endif
