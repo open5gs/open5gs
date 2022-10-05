@@ -27,9 +27,6 @@ static OGS_POOL(bsf_sess_pool, bsf_sess_t);
 
 static int context_initialized = 0;
 
-static void clear_ipv4addr(bsf_sess_t *sess);
-static void clear_ipv6prefix(bsf_sess_t *sess);
-
 void bsf_context_init(void)
 {
     ogs_assert(context_initialized == 0);
@@ -120,13 +117,12 @@ int bsf_context_parse_config(void)
     return OGS_OK;
 }
 
-bsf_sess_t *bsf_sess_add_by_snssai_and_dnn(ogs_s_nssai_t *s_nssai, char *dnn)
+bsf_sess_t *bsf_sess_add_by_ip_address(
+            char *ipv4addr_string, char *ipv6prefix_string)
 {
     bsf_sess_t *sess = NULL;
 
-    ogs_assert(s_nssai);
-    ogs_assert(s_nssai->sst);
-    ogs_assert(dnn);
+    ogs_assert(ipv4addr_string || ipv6prefix_string);
 
     ogs_pool_alloc(&bsf_sess_pool, &sess);
     if (!sess) {
@@ -136,15 +132,22 @@ bsf_sess_t *bsf_sess_add_by_snssai_and_dnn(ogs_s_nssai_t *s_nssai, char *dnn)
     }
     memset(sess, 0, sizeof *sess);
 
+    if (ipv4addr_string &&
+        bsf_sess_set_ipv4addr(sess, ipv4addr_string) == false) {
+        ogs_error("bsf_sess_set_ipv4addr[%s] failed", ipv4addr_string);
+        ogs_pool_free(&bsf_sess_pool, sess);
+        return NULL;
+    }
+    if (ipv6prefix_string &&
+        bsf_sess_set_ipv6prefix(sess, ipv6prefix_string) == false) {
+        ogs_error("bsf_sess_set_ipv6prefix[%s] failed", ipv4addr_string);
+        ogs_pool_free(&bsf_sess_pool, sess);
+        return NULL;
+    }
+
     /* SBI Features */
     OGS_SBI_FEATURES_SET(sess->management_features,
             OGS_SBI_NBSF_MANAGEMENT_BINDING_UPDATE);
-
-    sess->s_nssai.sst = s_nssai->sst;
-    sess->s_nssai.sd.v = s_nssai->sd.v;
-
-    sess->dnn = ogs_strdup(dnn);
-    ogs_assert(sess->dnn);
 
     sess->binding_id = ogs_msprintf("%d",
             (int)ogs_pool_index(&bsf_sess_pool, sess));
@@ -174,8 +177,16 @@ void bsf_sess_remove(bsf_sess_t *sess)
     if (sess->gpsi)
         ogs_free(sess->gpsi);
 
-    clear_ipv4addr(sess);
-    clear_ipv6prefix(sess);
+    if (sess->ipv4addr_string) {
+        ogs_hash_set(self.ipv4addr_hash,
+                &sess->ipv4addr, sizeof(sess->ipv4addr), NULL);
+        ogs_free(sess->ipv4addr_string);
+    }
+    if (sess->ipv6prefix_string) {
+        ogs_hash_set(self.ipv6prefix_hash,
+                &sess->ipv6prefix, (sess->ipv6prefix.len >> 3) + 1, NULL);
+        ogs_free(sess->ipv6prefix_string);
+    }
 
     ogs_assert(sess->dnn);
     ogs_free(sess->dnn);
@@ -202,28 +213,6 @@ void bsf_sess_remove_all(void)
         bsf_sess_remove(sess);
 }
 
-static void clear_ipv4addr(bsf_sess_t *sess)
-{
-    ogs_assert(sess);
-
-    if (sess->ipv4addr_string) {
-        ogs_hash_set(self.ipv4addr_hash,
-                &sess->ipv4addr, sizeof(sess->ipv4addr), NULL);
-        ogs_free(sess->ipv4addr_string);
-    }
-}
-
-static void clear_ipv6prefix(bsf_sess_t *sess)
-{
-    ogs_assert(sess);
-
-    if (sess->ipv6prefix_string) {
-        ogs_hash_set(self.ipv6prefix_hash,
-                &sess->ipv6prefix, (sess->ipv6prefix.len >> 3) + 1, NULL);
-        ogs_free(sess->ipv6prefix_string);
-    }
-}
-
 bool bsf_sess_set_ipv4addr(bsf_sess_t *sess, char *ipv4addr_string)
 {
     int rv;
@@ -231,8 +220,11 @@ bool bsf_sess_set_ipv4addr(bsf_sess_t *sess, char *ipv4addr_string)
     ogs_assert(sess);
     ogs_assert(ipv4addr_string);
 
-    clear_ipv4addr(sess);
-
+    if (sess->ipv4addr_string) {
+        ogs_hash_set(self.ipv4addr_hash,
+                &sess->ipv4addr, sizeof(sess->ipv4addr), NULL);
+        ogs_free(sess->ipv4addr_string);
+    }
     rv = ogs_ipv4_from_string(&sess->ipv4addr, ipv4addr_string);
     ogs_expect_or_return_val(rv == OGS_OK, false);
 
@@ -252,8 +244,11 @@ bool bsf_sess_set_ipv6prefix(bsf_sess_t *sess, char *ipv6prefix_string)
     ogs_assert(sess);
     ogs_assert(ipv6prefix_string);
 
-    clear_ipv6prefix(sess);
-
+    if (sess->ipv6prefix_string) {
+        ogs_hash_set(self.ipv6prefix_hash,
+                &sess->ipv6prefix, (sess->ipv6prefix.len >> 3) + 1, NULL);
+        ogs_free(sess->ipv6prefix_string);
+    }
     rv = ogs_ipv6prefix_from_string(
             sess->ipv6prefix.addr6, &sess->ipv6prefix.len, ipv6prefix_string);
     ogs_expect_or_return_val(rv == OGS_OK, false);

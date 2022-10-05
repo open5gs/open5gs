@@ -314,7 +314,7 @@ static int hss_s6a_avp_add_subscription_data(
 
     int i;
 
-    if (subdatamask & OGS_HSS_SUBDATA_MSISDN) {
+    if (subdatamask & OGS_DIAM_S6A_SUBDATA_MSISDN) {
         /*
          * TS29.328
          * 6.3.2 MSISDN AVP
@@ -350,7 +350,7 @@ static int hss_s6a_avp_add_subscription_data(
         }
     }
 
-    if (subdatamask & OGS_HSS_SUBDATA_ARD) {
+    if (subdatamask & OGS_DIAM_S6A_SUBDATA_ARD) {
         if (subscription_data->access_restriction_data) {
             ret = fd_msg_avp_new(ogs_diam_s6a_access_restriction_data, 0,
                     &avp_access_restriction_data);
@@ -364,7 +364,7 @@ static int hss_s6a_avp_add_subscription_data(
         }
     }
 
-    if (subdatamask & OGS_HSS_SUBDATA_SUB_STATUS) {
+    if (subdatamask & OGS_DIAM_S6A_SUBDATA_SUB_STATUS) {
         ret = fd_msg_avp_new(
                 ogs_diam_s6a_subscriber_status, 0, &avp_subscriber_status);
         ogs_assert(ret == 0);
@@ -375,7 +375,7 @@ static int hss_s6a_avp_add_subscription_data(
         ogs_assert(ret == 0);
     }
 
-    if (subdatamask & OGS_HSS_SUBDATA_NAM) {
+    if (subdatamask & OGS_DIAM_S6A_SUBDATA_NAM) {
         ret = fd_msg_avp_new(ogs_diam_s6a_network_access_mode, 0,
                     &avp_network_access_mode);
         ogs_assert(ret == 0);
@@ -386,7 +386,7 @@ static int hss_s6a_avp_add_subscription_data(
         ogs_assert(ret == 0);
     }
 
-    if (subdatamask & OGS_HSS_SUBDATA_UEAMBR) {
+    if (subdatamask & OGS_DIAM_S6A_SUBDATA_UEAMBR) {
         /* Set the AMBR */
         ret = fd_msg_avp_new(ogs_diam_s6a_ambr, 0, &avp_ambr);
         ogs_assert(ret == 0);
@@ -412,7 +412,7 @@ static int hss_s6a_avp_add_subscription_data(
         ogs_assert(ret == 0);
     }
 
-    if (subdatamask & OGS_HSS_SUBDATA_RAU_TAU_TIMER) {
+    if (subdatamask & OGS_DIAM_S6A_SUBDATA_RAU_TAU_TIMER) {
         /* Set the Subscribed RAU TAU Timer */
         ret = fd_msg_avp_new(
                 ogs_diam_s6a_subscribed_rau_tau_timer, 0, &avp_rau_tau_timer);
@@ -425,7 +425,7 @@ static int hss_s6a_avp_add_subscription_data(
         ogs_assert(ret == 0);
     }
 
-    if (subdatamask & OGS_HSS_SUBDATA_SLICE) {
+    if (subdatamask & OGS_DIAM_S6A_SUBDATA_APN_CONFIG) {
         /* For EPC, we'll use first Slice in Subscription */
         if (subscription_data->num_of_slice)
             slice_data = &subscription_data->slice[0];
@@ -458,7 +458,7 @@ static int hss_s6a_avp_add_subscription_data(
                 ogs_diam_s6a_all_apn_configuration_included_indicator, 0,
                 &all_apn_configuration_included_indicator);
         ogs_assert(ret == 0);
-        val.i32 = 0;
+        val.i32 = OGS_ALL_APN_CONFIGURATIONS_INCLUDED;
         ret = fd_msg_avp_setvalue(
                 all_apn_configuration_included_indicator, &val);
         ogs_assert(ret == 0);
@@ -910,7 +910,7 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
         ret = fd_msg_avp_new(ogs_diam_s6a_subscription_data, 0, &avp);
         ogs_assert(ret == 0);
         rv = hss_s6a_avp_add_subscription_data(&subscription_data, 
-            avp, OGS_HSS_SUBDATA_ALL);
+            avp, OGS_DIAM_S6A_SUBDATA_ALL);
         if (rv != OGS_OK) {
             result_code = OGS_DIAM_S6A_ERROR_UNKNOWN_EPS_SUBSCRIPTION;
             goto out;

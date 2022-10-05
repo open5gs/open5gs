@@ -75,11 +75,14 @@ bool bsf_nbsf_management_handle_pcf_binding(
             RecvPcfBinding = recvmsg->PcfBinding;
             ogs_assert(RecvPcfBinding);
 
-            if (!RecvPcfBinding->ipv4_addr && !RecvPcfBinding->ipv6_prefix) {
-                strerror = ogs_msprintf(
-                            "No IPv4 address or IPv6 prefix[%p:%p]",
-                            RecvPcfBinding->ipv4_addr,
-                            RecvPcfBinding->ipv6_prefix);
+            if (!RecvPcfBinding->snssai) {
+                strerror = ogs_msprintf("No S-NSSAI");
+                status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+                goto cleanup;
+            }
+
+            if (!RecvPcfBinding->dnn) {
+                strerror = ogs_msprintf("No DNN");
                 status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
                 goto cleanup;
             }
@@ -93,17 +96,19 @@ bool bsf_nbsf_management_handle_pcf_binding(
                 goto cleanup;
             }
 
-            if (RecvPcfBinding->ipv4_addr)
-                bsf_sess_set_ipv4addr(sess, RecvPcfBinding->ipv4_addr);
-            if (RecvPcfBinding->ipv6_prefix)
-                bsf_sess_set_ipv6prefix(sess, RecvPcfBinding->ipv6_prefix);
-
             if (RecvPcfBinding->pcf_fqdn) {
                 if (sess->pcf_fqdn)
                     ogs_free(sess->pcf_fqdn);
                 sess->pcf_fqdn = ogs_strdup(RecvPcfBinding->pcf_fqdn);
                 ogs_assert(sess->pcf_fqdn);
             }
+
+            sess->s_nssai.sst = RecvPcfBinding->snssai->sst;
+            sess->s_nssai.sd =
+                ogs_s_nssai_sd_from_string(RecvPcfBinding->snssai->sd);
+
+            sess->dnn = ogs_strdup(RecvPcfBinding->dnn);
+            ogs_assert(sess->dnn);
 
             PcfIpEndPointList = RecvPcfBinding->pcf_ip_end_points;
 

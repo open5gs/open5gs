@@ -1,3 +1,27 @@
+open5gs (2.4.11) unstable; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sat, 01 Oct 2022 13:51:50 +0900
+
+open5gs (2.4.11~jammy) jammy; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sat, 01 Oct 2022 13:50:11 +0900
+
+open5gs (2.4.11~focal) focal; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sat, 01 Oct 2022 13:48:49 +0900
+
+open5gs (2.4.11~bionic) bionic; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sat, 01 Oct 2022 13:47:02 +0900
+
 open5gs (2.4.10) unstable; urgency=medium
 
   * Bug Fixed

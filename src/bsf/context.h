@@ -41,8 +41,6 @@ typedef struct bsf_context_s {
     ogs_list_t          sess_list;
 } bsf_context_t;
 
-typedef struct bsf_sess_s bsf_sess_t;
-
 typedef struct bsf_sess_s {
     ogs_sbi_object_t sbi;
 
@@ -84,7 +82,8 @@ bsf_context_t *bsf_self(void);
 
 int bsf_context_parse_config(void);
 
-bsf_sess_t *bsf_sess_add_by_snssai_and_dnn(ogs_s_nssai_t *s_nssai, char *dnn);
+bsf_sess_t *bsf_sess_add_by_ip_address(
+            char *ipv4addr_string, char *ipv6prefix_string);
 void bsf_sess_remove(bsf_sess_t *sess);
 void bsf_sess_remove_all(void);
 

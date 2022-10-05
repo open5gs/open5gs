@@ -130,25 +130,26 @@ void bsf_state_operational(ogs_fsm_t *s, bsf_event_t *e)
                     SWITCH(message.h.method)
                     CASE(OGS_SBI_HTTP_METHOD_POST)
                         if (message.PcfBinding &&
-                            message.PcfBinding->snssai &&
-                            message.PcfBinding->dnn) {
-                            ogs_s_nssai_t s_nssai;
+                            (message.PcfBinding->ipv4_addr ||
+                             message.PcfBinding->ipv6_prefix)) {
 
-                            s_nssai.sst = message.PcfBinding->snssai->sst;
-                            s_nssai.sd = ogs_s_nssai_sd_from_string(
-                                    message.PcfBinding->snssai->sd);
+                            if (message.PcfBinding->ipv4_addr)
+                                sess = bsf_sess_find_by_ipv4addr(
+                                            message.PcfBinding->ipv4_addr);
+                            if (!sess && message.PcfBinding->ipv6_prefix)
+                                sess = bsf_sess_find_by_ipv6prefix(
+                                            message.PcfBinding->ipv6_prefix);
 
-                            sess = bsf_sess_find_by_snssai_and_dnn(
-                                    &s_nssai, message.PcfBinding->dnn);
                             if (!sess) {
-                                sess = bsf_sess_add_by_snssai_and_dnn(
-                                        &s_nssai, message.PcfBinding->dnn);
+                                sess = bsf_sess_add_by_ip_address(
+                                            message.PcfBinding->ipv4_addr,
+                                            message.PcfBinding->ipv6_prefix);
                                 ogs_assert(sess);
                             }
                         }
                         break;
                     CASE(OGS_SBI_HTTP_METHOD_GET)
-                        if (!sess && message.param.ipv4addr)
+                        if (message.param.ipv4addr)
                             sess = bsf_sess_find_by_ipv4addr(
                                         message.param.ipv4addr);
                         if (!sess && message.param.ipv6prefix)

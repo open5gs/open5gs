@@ -33,6 +33,9 @@
 static uint8_t emm_cause_from_diameter(
                 const uint32_t *dia_err, const uint32_t *dia_exp_err);
 
+static uint8_t mme_ue_session_from_slice_data(mme_ue_t *mme_ue, 
+    ogs_slice_data_t *slice_data);
+
 uint8_t mme_s6a_handle_aia(
         mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
 {
@@ -74,7 +77,7 @@ uint8_t mme_s6a_handle_ula(
     ogs_diam_s6a_ula_message_t *ula_message = NULL;
     ogs_subscription_data_t *subscription_data = NULL;
     ogs_slice_data_t *slice_data = NULL;
-    int i, rv;
+    int rv, num_of_session;
 
     ogs_assert(mme_ue);
     ogs_assert(s6a_message);
@@ -95,58 +98,13 @@ uint8_t mme_s6a_handle_ula(
 
     mme_session_remove_all(mme_ue);
 
-    for (i = 0; i < slice_data->num_of_session; i++) {
-        if (i >= OGS_MAX_NUM_OF_SESS) {
-            ogs_warn("Ignore max session count overflow [%d>=%d]",
-                    slice_data->num_of_session, OGS_MAX_NUM_OF_SESS);
-            break;
-        }
-
-        if (slice_data->session[i].name) {
-            mme_ue->session[i].name = ogs_strdup(slice_data->session[i].name);
-            ogs_assert(mme_ue->session[i].name);
-        }
-
-        mme_ue->session[i].context_identifier =
-            slice_data->session[i].context_identifier;
-
-        if (slice_data->session[i].session_type == OGS_PDU_SESSION_TYPE_IPV4 ||
-            slice_data->session[i].session_type == OGS_PDU_SESSION_TYPE_IPV6 ||
-            slice_data->session[i].session_type ==
-                OGS_PDU_SESSION_TYPE_IPV4V6) {
-            mme_ue->session[i].session_type =
-                slice_data->session[i].session_type;
-        } else {
-            ogs_error("Invalid PDN_TYPE[%d]",
-                slice_data->session[i].session_type);
-            if (mme_ue->session[i].name)
-                ogs_free(mme_ue->session[i].name);
-            break;
-        }
-        memcpy(&mme_ue->session[i].paa, &slice_data->session[i].paa,
-                sizeof(mme_ue->session[i].paa));
-
-        memcpy(&mme_ue->session[i].qos, &slice_data->session[i].qos,
-                sizeof(mme_ue->session[i].qos));
-        memcpy(&mme_ue->session[i].ambr, &slice_data->session[i].ambr,
-                sizeof(mme_ue->session[i].ambr));
-
-        memcpy(&mme_ue->session[i].smf_ip, &slice_data->session[i].smf_ip,
-                sizeof(mme_ue->session[i].smf_ip));
-
-        memcpy(&mme_ue->session[i].charging_characteristics,
-                &slice_data->session[i].charging_characteristics,
-                sizeof(mme_ue->session[i].charging_characteristics));
-        mme_ue->session[i].charging_characteristics_presence =
-            slice_data->session[i].charging_characteristics_presence;
-    }
-
-    if (i == 0) {
+    num_of_session = mme_ue_session_from_slice_data(mme_ue, slice_data);
+    if (num_of_session == 0) {
         ogs_error("No Session");
         return OGS_NAS_EMM_CAUSE_SEVERE_NETWORK_FAILURE;
     }
+    mme_ue->num_of_session = num_of_session;
 
-    mme_ue->num_of_session = i;
     mme_ue->context_identifier = slice_data->context_identifier;
 
     if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST) {
@@ -166,6 +124,50 @@ uint8_t mme_s6a_handle_ula(
     }
 
     return OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED;
+}
+
+uint8_t mme_s6a_handle_idr(
+        mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
+{
+    ogs_diam_s6a_idr_message_t *idr_message = NULL;
+    ogs_subscription_data_t *subscription_data = NULL;
+    ogs_slice_data_t *slice_data = NULL;
+    int num_of_session;
+
+    ogs_assert(mme_ue);
+    ogs_assert(s6a_message);
+    idr_message = &s6a_message->idr_message;
+    ogs_assert(idr_message);
+    subscription_data = &idr_message->subscription_data;
+    ogs_assert(subscription_data);
+
+    if (idr_message->subdatamask & OGS_DIAM_S6A_SUBDATA_UEAMBR) {
+        memcpy(&mme_ue->ambr, &subscription_data->ambr, sizeof(ogs_bitrate_t));
+    }
+
+    if (idr_message->subdatamask & OGS_DIAM_S6A_SUBDATA_APN_CONFIG) {
+        ogs_assert(subscription_data->num_of_slice == 1);
+        slice_data = &subscription_data->slice[0];
+
+        if (slice_data->all_apn_config_inc ==
+                OGS_ALL_APN_CONFIGURATIONS_INCLUDED) {
+            mme_session_remove_all(mme_ue);
+            num_of_session = mme_ue_session_from_slice_data(mme_ue, slice_data);
+            if (num_of_session == 0) {
+                ogs_error("No Session");
+                return OGS_ERROR;
+            }
+            mme_ue->num_of_session = num_of_session;
+        } else {
+            ogs_error ("[%d] Partial APN-Configuration Not Supported in IDR.",
+                        slice_data->all_apn_config_inc);
+            return OGS_ERROR;
+        }
+
+        mme_ue->context_identifier = slice_data->context_identifier;
+    }
+
+    return OGS_OK;
 }
 
 void mme_s6a_handle_clr(mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
@@ -233,7 +235,60 @@ void mme_s6a_handle_clr(mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
     }
 }
 
-/* 3GPP TS 29.272 Annex A; Table !.a:
+static uint8_t mme_ue_session_from_slice_data(mme_ue_t *mme_ue, 
+    ogs_slice_data_t *slice_data)
+{
+    int i;
+    for (i = 0; i < slice_data->num_of_session; i++) {
+        if (i >= OGS_MAX_NUM_OF_SESS) {
+            ogs_warn("Ignore max session count overflow [%d>=%d]",
+                    slice_data->num_of_session, OGS_MAX_NUM_OF_SESS);
+            break;
+        }
+
+        if (slice_data->session[i].name) {
+            mme_ue->session[i].name = ogs_strdup(slice_data->session[i].name);
+            ogs_assert(mme_ue->session[i].name);
+        }
+
+        mme_ue->session[i].context_identifier =
+            slice_data->session[i].context_identifier;
+
+        if (slice_data->session[i].session_type == OGS_PDU_SESSION_TYPE_IPV4 ||
+            slice_data->session[i].session_type == OGS_PDU_SESSION_TYPE_IPV6 ||
+            slice_data->session[i].session_type ==
+                OGS_PDU_SESSION_TYPE_IPV4V6) {
+            mme_ue->session[i].session_type =
+                slice_data->session[i].session_type;
+        } else {
+            ogs_error("Invalid PDN_TYPE[%d]",
+                slice_data->session[i].session_type);
+            if (mme_ue->session[i].name)
+                ogs_free(mme_ue->session[i].name);
+            break;
+        }
+        memcpy(&mme_ue->session[i].paa, &slice_data->session[i].paa,
+                sizeof(mme_ue->session[i].paa));
+
+        memcpy(&mme_ue->session[i].qos, &slice_data->session[i].qos,
+                sizeof(mme_ue->session[i].qos));
+        memcpy(&mme_ue->session[i].ambr, &slice_data->session[i].ambr,
+                sizeof(mme_ue->session[i].ambr));
+
+        memcpy(&mme_ue->session[i].smf_ip, &slice_data->session[i].smf_ip,
+                sizeof(mme_ue->session[i].smf_ip));
+
+        memcpy(&mme_ue->session[i].charging_characteristics,
+                &slice_data->session[i].charging_characteristics,
+                sizeof(mme_ue->session[i].charging_characteristics));
+        mme_ue->session[i].charging_characteristics_presence =
+            slice_data->session[i].charging_characteristics_presence;
+    }
+
+    return i;
+}
+
+/* 3GPP TS 29.272 Annex A; Table A.1:
  * Mapping from S6a error codes to NAS Cause Codes */
 static uint8_t emm_cause_from_diameter(
                 const uint32_t *dia_err, const uint32_t *dia_exp_err)

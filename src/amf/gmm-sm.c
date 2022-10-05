@@ -450,7 +450,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
                 ogs_warn("Retransmission of Deregistration-Request failed. "
                         "Stop retransmission");
                 CLEAR_AMF_UE_TIMER(amf_ue->t3522);
-                OGS_FSM_TRAN(&amf_ue->t3522, &gmm_state_exception);
+                OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
             } else {
                 amf_ue->t3522.retry_count++;
                 ogs_assert(OGS_OK ==

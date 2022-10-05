@@ -249,6 +249,8 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
 {
     int i;
     ogs_sbi_request_t *request = NULL;
+    char sender_timestamp[OGS_SBI_RFC7231_DATE_LEN];
+    char *max_rsp_time = NULL;
 
     ogs_assert(message);
 
@@ -442,6 +444,18 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
             break;
         END
     }
+
+    ogs_assert(OGS_OK ==
+            ogs_sbi_rfc7231_string(sender_timestamp, ogs_time_now()));
+    ogs_sbi_header_set(request->http.headers,
+            OGS_SBI_OPTIONAL_CUSTOM_SENDER_TIMESTAMP, sender_timestamp);
+
+    ogs_assert(ogs_time_to_msec(ogs_app()->time.message.duration));
+    max_rsp_time = ogs_msprintf("%d",
+            (int)ogs_time_to_msec(ogs_app()->time.message.duration));
+    ogs_sbi_header_set(request->http.headers,
+            OGS_SBI_OPTIONAL_CUSTOM_MAX_RSP_TIME, max_rsp_time);
+    ogs_free(max_rsp_time);
 
     if (message->http.content_encoding)
         ogs_sbi_header_set(request->http.headers,

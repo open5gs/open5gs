@@ -56,6 +56,9 @@ char *ogs_sbi_gmtime_string(ogs_time_t time);
 char *ogs_sbi_timezone_string(int tm_gmtoff);
 bool ogs_sbi_time_from_string(ogs_time_t *time, char *str);
 
+#define OGS_SBI_RFC7231_DATE_LEN (34)
+int ogs_sbi_rfc7231_string(char *date_str, ogs_time_t time);
+
 char *ogs_sbi_s_nssai_to_string(ogs_s_nssai_t *s_nssai);
 bool ogs_sbi_s_nssai_from_string(ogs_s_nssai_t *s_nssai, char *str);
 

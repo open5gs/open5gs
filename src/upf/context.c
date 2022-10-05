@@ -413,11 +413,11 @@ void upf_sess_urr_acc_add(upf_sess_t *sess, ogs_pfcp_urr_t *urr, size_t size, bo
     urr_acc->total_octets += size;
     urr_acc->total_pkts++;
     if (is_uplink) {
-        urr_acc->dl_octets += size;
-        urr_acc->dl_pkts++;
-    } else {
         urr_acc->ul_octets += size;
         urr_acc->ul_pkts++;
+    } else {
+        urr_acc->dl_octets += size;
+        urr_acc->dl_pkts++;
     }
 
     urr_acc->time_of_last_packet = ogs_time_now();

@@ -462,9 +462,12 @@ ogs_tlv_t *ogs_tlv_parse_block(uint32_t length, void *data, uint8_t mode)
     }
 
     if (length != (pos - blk)) {
-        ogs_fatal("ogs_tlv_parse_block() failed[LEN:%d,MODE:%d]", length, mode);
+        ogs_error("ogs_tlv_parse_block() failed[LEN:%d,MODE:%d]", length, mode);
+        ogs_error("POS[%p] BLK[%p] POS-BLK[%d]", pos, blk, (int)(pos - blk));
         ogs_log_hexdump(OGS_LOG_FATAL, data, length);
-        ogs_assert_if_reached();
+
+        ogs_tlv_free_all(root);
+        return NULL;
     }
 
     return root;
