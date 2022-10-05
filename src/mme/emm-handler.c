@@ -389,10 +389,10 @@ int emm_handle_detach_request(
      *
      * So, we will lose the MME_EPS_TYPE_DETACH_REQUEST_TO_UE.
      *
-     * We need more variable(nas_eps.detach_type)
+     * We need more variable(detach_type)
      * to keep Detach-Type whether UE-initiated or MME-initiaed.  */
-    mme_ue->nas_eps.type = mme_ue->nas_eps.detach_type =
-        MME_EPS_TYPE_DETACH_REQUEST_FROM_UE;
+    mme_ue->nas_eps.type = MME_EPS_TYPE_DETACH_REQUEST_FROM_UE;
+    mme_ue->detach_type = MME_DETACH_TYPE_REQUEST_FROM_UE;
 
     mme_ue->nas_eps.ksi = detach_type->nas_key_set_identifier;
     ogs_debug("    OGS_NAS_EPS TYPE[%d] KSI[%d]",

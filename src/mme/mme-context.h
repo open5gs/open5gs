@@ -316,19 +316,24 @@ struct mme_ue_s {
         ogs_nas_eps_update_type_t update;
         ogs_nas_service_type_t service;
         ogs_nas_detach_type_t detach;
-
-        /* 1. MME initiated detach request to the UE.
-         *    (nas_eps.type = MME_EPS_TYPE_DETACH_REQUEST_TO_UE)
-         * 2. If UE is IDLE, Paging sent to the UE
-         * 3. If UE is wake-up, UE will send Server Request.
-         *    (nas_eps.type = MME_EPS_TYPE_SERVICE_REQUEST)
-         *
-         * So, we will lose the MME_EPS_TYPE_DETACH_REQUEST_TO_UE.
-         *
-         * We need more variable(nas_eps.detach_type)
-         * to keep Detach-Type whether UE-initiated or MME-initiaed.  */
-        uint8_t     detach_type;
     } nas_eps;
+
+    /* 1. MME initiated detach request to the UE.
+     *    (nas_eps.type = MME_EPS_TYPE_DETACH_REQUEST_TO_UE)
+     * 2. If UE is IDLE, Paging sent to the UE
+     * 3. If UE is wake-up, UE will send Server Request.
+     *    (nas_eps.type = MME_EPS_TYPE_SERVICE_REQUEST)
+     *
+     * So, we will lose the MME_EPS_TYPE_DETACH_REQUEST_TO_UE.
+     *
+     * We need more variable(detach_type)
+     * to keep Detach-Type whether UE-initiated or MME-initiaed.  */
+#define MME_DETACH_TYPE_REQUEST_FROM_UE             1
+#define MME_DETACH_TYPE_MME_EXPLICIT                2
+#define MME_DETACH_TYPE_HSS_EXPLICIT                3
+#define MME_DETACH_TYPE_MME_IMPLICIT                4
+#define MME_DETACH_TYPE_HSS_IMPLICIT                5
+    uint8_t     detach_type;
 
     /* UE identity */
 #define MME_UE_HAVE_IMSI(__mME) \

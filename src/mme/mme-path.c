@@ -28,8 +28,9 @@ void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
 {
     ogs_assert(mme_ue);
 
-    switch (mme_ue->nas_eps.detach_type) {
-    case MME_EPS_TYPE_DETACH_REQUEST_FROM_UE:
+    switch (mme_ue->detach_type) {
+    case MME_DETACH_TYPE_REQUEST_FROM_UE:
+        ogs_debug("Detach Request from UE");
         if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
             mme_gtp_send_delete_all_sessions(
                     mme_ue, OGS_GTP_DELETE_SEND_DETACH_ACCEPT);
@@ -37,11 +38,37 @@ void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
             ogs_assert(OGS_OK == nas_eps_send_detach_accept(mme_ue));
         }
         break;
-    case MME_EPS_TYPE_DETACH_REQUEST_TO_UE:
+
+    /* MME Explicit Detach, ie: O&M Procedures */
+    case MME_DETACH_TYPE_MME_EXPLICIT:
+        break;
+
+    /* HSS Explicit Detach, ie: Subscription Withdrawl Cancel Location */
+    case MME_DETACH_TYPE_HSS_EXPLICIT:
+        ogs_debug("Explicit HSS Detach");
         if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
             mme_gtp_send_delete_all_sessions(mme_ue, OGS_GTP_DELETE_NO_ACTION);
         }
         break;
+
+    /* MME Implicit Detach, ie: Lost Communication */
+    case MME_DETACH_TYPE_MME_IMPLICIT:
+        break;
+
+    /* HSS Implicit Detach, ie: MME-UPDATE-PROCEDURE */
+    case MME_DETACH_TYPE_HSS_IMPLICIT:
+        ogs_debug("Implicit HSS Detach");
+        if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
+            if (ECM_IDLE(mme_ue)) {
+                mme_gtp_send_delete_all_sessions(mme_ue,
+                    OGS_GTP_DELETE_UE_CONTEXT_COMPLETE_REMOVE);
+            } else {
+                mme_gtp_send_delete_all_sessions(mme_ue,
+                    OGS_GTP_DELETE_SEND_UE_CONTEXT_RELEASE_COMMAND);
+            }
+        }
+        break;
+
     default:
         ogs_fatal("    Invalid OGS_NAS_EPS TYPE[%d]", mme_ue->nas_eps.type);
         ogs_assert_if_reached();

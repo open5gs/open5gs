@@ -179,6 +179,7 @@ typedef struct ogs_diam_s6a_clr_message_s {
 #define OGS_DIAM_S6A_CLR_FLAGS_S6A_S6D_INDICATOR            (1)
 #define OGS_DIAM_S6A_CLR_FLAGS_REATTACH_REQUIRED            (1 << 1)
     uint32_t clr_flags;
+    uint32_t cancellation_type;
 } ogs_diam_s6a_clr_message_t;
 
 typedef struct ogs_diam_s6a_idr_message_s {

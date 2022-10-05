@@ -170,11 +170,13 @@ uint8_t mme_s6a_handle_idr(
     return OGS_OK;
 }
 
-void mme_s6a_handle_clr(
-        mme_ue_t *mme_ue, ogs_diam_s6a_clr_message_t *clr_message)
+void mme_s6a_handle_clr(mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
 {
+    ogs_diam_s6a_clr_message_t *clr_message = NULL;
     ogs_assert(mme_ue);
-    ogs_assert(clr_message);    
+    ogs_assert(s6a_message);
+    clr_message = &s6a_message->clr_message;
+    ogs_assert(clr_message);
 
     /* Set EPS Detach */
     memset(&mme_ue->nas_eps.detach, 0, sizeof(ogs_nas_detach_type_t));
@@ -194,26 +196,42 @@ void mme_s6a_handle_clr(
      *
      * So, we will lose the MME_EPS_TYPE_DETACH_REQUEST_TO_UE.
      *
-     * We need more variable(nas_eps.detach_type)
+     * We need more variable(detach_type)
      * to keep Detach-Type whether UE-initiated or MME-initiaed.  */
-    mme_ue->nas_eps.type = mme_ue->nas_eps.detach_type =
-        MME_EPS_TYPE_DETACH_REQUEST_TO_UE;
+    mme_ue->nas_eps.type = MME_EPS_TYPE_DETACH_REQUEST_TO_UE;
+
     ogs_debug("    OGS_NAS_EPS TYPE[%d]", mme_ue->nas_eps.type);
 
     if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_de_registered)) {
         /* Remove all trace of subscriber even when detached. */
         mme_ue_hash_remove(mme_ue);
         mme_ue_remove(mme_ue);
-    } else if (ECM_IDLE(mme_ue)) {
-        MME_STORE_PAGING_INFO(mme_ue, MME_PAGING_TYPE_DETACH_TO_UE, NULL);
-        ogs_assert(OGS_OK == s1ap_send_paging(mme_ue, S1AP_CNDomain_ps));
-    } else {
-        ogs_assert(OGS_OK == nas_eps_send_detach_request(mme_ue));
+        return;
+    } else if (clr_message->cancellation_type ==
+            OGS_DIAM_S6A_CT_MME_UPDATE_PROCEDURE) {
+        mme_ue->detach_type = MME_DETACH_TYPE_HSS_IMPLICIT;
         if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
             ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
         } else {
             mme_send_delete_session_or_detach(mme_ue);
         }
+    } else if (clr_message->cancellation_type ==
+            OGS_DIAM_S6A_CT_SUBSCRIPTION_WITHDRAWL) {
+        mme_ue->detach_type = MME_DETACH_TYPE_HSS_EXPLICIT;
+        if (ECM_IDLE(mme_ue)) {
+            MME_STORE_PAGING_INFO(mme_ue, MME_PAGING_TYPE_DETACH_TO_UE, NULL);
+            ogs_assert(OGS_OK == s1ap_send_paging(mme_ue, S1AP_CNDomain_ps));
+        } else {
+            ogs_assert(OGS_OK == nas_eps_send_detach_request(mme_ue));
+            if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
+                ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
+            } else {
+                mme_send_delete_session_or_detach(mme_ue);
+            }
+        }
+    } else {
+        ogs_error("Unsupported Cancellation-Type [%d]", 
+            clr_message->cancellation_type);
     }
 }
 
