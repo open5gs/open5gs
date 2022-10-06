@@ -3561,8 +3561,8 @@ void stats_update_mme_ues(void)
 
     ptr = buffer = ogs_malloc(OGS_MAX_IMSI_BCD_LEN * ogs_app()->max.ue);
     ogs_list_for_each(&self.mme_ue_list, mme_ue) {
-        ptr += sprintf(ptr, "imsi:%s enb:%s\n",
-            mme_ue->imsi_bcd, OGS_ADDR(mme_ue->enb_ue->enb->sctp.addr, buf1));
+        ptr += sprintf(ptr, "imsi:%s enb:%s\n", mme_ue->imsi_bcd,
+            mme_ue->enb_ue ? OGS_ADDR(mme_ue->enb_ue->enb->sctp.addr, buf1) : "");
     }
     ogs_write_file_value("mme/list_ues", buffer);
     ogs_free(buffer);
@@ -3590,8 +3590,8 @@ void stats_update_mme_sessions(void)
     ptr = buffer = ogs_malloc(MAX_SESSION_STRING_LEN * ogs_app()->max.ue);
     ogs_list_for_each(&self.mme_ue_list, mme_ue) {
         ogs_list_for_each(&mme_ue->sess_list, sess) {
-            ptr += sprintf(ptr, "imsi:%s enb:%s",
-                mme_ue->imsi_bcd, OGS_ADDR(mme_ue->enb_ue->enb->sctp.addr, buf1));
+            ptr += sprintf(ptr, "imsi:%s enb:%s", mme_ue->imsi_bcd,
+                mme_ue->enb_ue ? OGS_ADDR(mme_ue->enb_ue->enb->sctp.addr, buf1) : "");
             if (sess->session) {
                 session = sess->session;
                 ptr += sprintf(ptr, "apn:%s ip4:%s ip6:%s\n",
