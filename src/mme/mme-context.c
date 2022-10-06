@@ -3551,6 +3551,7 @@ void stats_update_mme_enbs(void)
 void stats_update_mme_ues(void)
 {
     mme_ue_t *mme_ue = NULL;
+    char buf1[OGS_ADDRSTRLEN];
     char *buffer = NULL;
     char *ptr = NULL;
 
@@ -3560,7 +3561,8 @@ void stats_update_mme_ues(void)
 
     ptr = buffer = ogs_malloc(OGS_MAX_IMSI_BCD_LEN * ogs_app()->max.ue);
     ogs_list_for_each(&self.mme_ue_list, mme_ue) {
-        ptr += sprintf(ptr, "%s\n", mme_ue->imsi_bcd);
+        ptr += sprintf(ptr, "imsi:%s enb:%s\n",
+            mme_ue->imsi_bcd, OGS_ADDR(mme_ue->enb_ue->enb->sctp.addr, buf1));
     }
     ogs_write_file_value("mme/list_ues", buffer);
     ogs_free(buffer);
@@ -3577,6 +3579,7 @@ void stats_update_mme_sessions(void)
 
     char buf1[OGS_ADDRSTRLEN];
     char buf2[OGS_ADDRSTRLEN];
+    char buf3[OGS_ADDRSTRLEN];
     char *buffer = NULL;
     char *ptr = NULL;
 
@@ -3587,13 +3590,14 @@ void stats_update_mme_sessions(void)
     ptr = buffer = ogs_malloc(MAX_SESSION_STRING_LEN * ogs_app()->max.ue);
     ogs_list_for_each(&self.mme_ue_list, mme_ue) {
         ogs_list_for_each(&mme_ue->sess_list, sess) {
-            ptr += sprintf(ptr, "imsi:%s ", mme_ue->imsi_bcd);
+            ptr += sprintf(ptr, "imsi:%s enb:%s",
+                mme_ue->imsi_bcd, OGS_ADDR(mme_ue->enb_ue->enb->sctp.addr, buf1));
             if (sess->session) {
                 session = sess->session;
                 ptr += sprintf(ptr, "apn:%s ip4:%s ip6:%s\n",
                     session->name ? session->name : "",
-                    session->ue_ip.ipv4 ? OGS_INET_NTOP(session->ue_ip.addr, buf1) : "",
-                    session->ue_ip.ipv6 ? OGS_INET6_NTOP(session->ue_ip.addr6, buf2) : "");
+                    session->ue_ip.ipv4 ? OGS_INET_NTOP(session->ue_ip.addr, buf2) : "",
+                    session->ue_ip.ipv6 ? OGS_INET6_NTOP(session->ue_ip.addr6, buf3) : "");
             } else {
                 ptr += sprintf(ptr, "apn: ip4: ip6:\n");
             }

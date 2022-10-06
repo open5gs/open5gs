@@ -239,6 +239,8 @@ uint8_t smf_5gc_n4_handle_session_establishment_response(
     ogs_assert(up_f_seid);
     sess->upf_n4_seid = be64toh(up_f_seid->seid);
 
+    stats_update_smf_sessions();
+
     return OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 }
 
@@ -776,6 +778,9 @@ uint8_t smf_epc_n4_handle_session_establishment_response(
     up_f_seid = rsp->up_f_seid.data;
     ogs_assert(up_f_seid);
     sess->upf_n4_seid = be64toh(up_f_seid->seid);
+
+    stats_update_smf_sessions();
+
     return OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 }
 

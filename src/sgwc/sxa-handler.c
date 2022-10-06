@@ -139,6 +139,8 @@ static void sgwc_sxa_handle_session_reestablishment(
     ogs_assert(up_f_seid);
     sess->sgwu_sxa_seid = be64toh(up_f_seid->seid);
 
+    stats_update_sgwc_sessions();
+
     return;
 }
 
@@ -331,6 +333,8 @@ void sgwc_sxa_handle_session_establishment_response(
     up_f_seid = pfcp_rsp->up_f_seid.data;
     ogs_assert(up_f_seid);
     sess->sgwu_sxa_seid = be64toh(up_f_seid->seid);
+
+    stats_update_sgwc_sessions();
 
     pgw_s5c_teid = create_session_request->
         pgw_s5_s8_address_for_control_plane_or_pmip.data;
