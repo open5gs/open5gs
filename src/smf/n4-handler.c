@@ -1195,7 +1195,7 @@ void smf_n4_handle_session_report_request(
             ogs_error("No Downlink Data Report");
         }
 
-        if (!pdr || !qos_flow) {
+        if (!pdr) {
             ogs_error("No Context [%p:%p]", pdr, qos_flow);
             ogs_pfcp_send_error_message(pfcp_xact, 0,
                     OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE,
