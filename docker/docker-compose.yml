@@ -2,7 +2,7 @@ version: '3'
 
 services:
   mongodb:
-    image: mongo
+    image: mongo:5
     container_name: open5gs-mongodb
     ports:
       - "27017:27017"
