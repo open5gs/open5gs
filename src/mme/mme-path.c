@@ -81,13 +81,8 @@ void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
     case MME_DETACH_TYPE_HSS_IMPLICIT:
         ogs_debug("Implicit HSS Detach");
         if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
-            if (ECM_IDLE(mme_ue)) {
-                mme_gtp_send_delete_all_sessions(mme_ue,
-                    OGS_GTP_DELETE_UE_CONTEXT_REMOVE_ALL);
-            } else {
-                mme_gtp_send_delete_all_sessions(mme_ue,
-                    OGS_GTP_DELETE_SEND_RELEASE_WITH_UE_CONTEXT_REMOVE);
-            }
+            mme_gtp_send_delete_all_sessions(mme_ue,
+                OGS_GTP_DELETE_SEND_RELEASE_WITH_UE_CONTEXT_REMOVE);
         }
         break;
 
@@ -245,11 +240,6 @@ void mme_send_after_paging(mme_ue_t *mme_ue, bool failed)
             ogs_warn("MME-initiated Detach cannot be invoked");
         } else {
             ogs_assert(OGS_OK == nas_eps_send_detach_request(mme_ue));
-            if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
-                ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
-            } else {
-                mme_send_delete_session_or_detach(mme_ue);
-            }
         }
         break;
     default:

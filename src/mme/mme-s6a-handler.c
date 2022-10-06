@@ -178,6 +178,27 @@ void mme_s6a_handle_clr(mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
     clr_message = &s6a_message->clr_message;
     ogs_assert(clr_message);
 
+    mme_ue = mme_ue_cycle(mme_ue);
+    if (!mme_ue) {
+        ogs_warn("UE(mme-ue) context has already been removed");
+        return;
+    }
+
+    /*
+     * This causes issues in this scenario:
+     * 1. UE attaches
+     * 2. UE detaches (Airplane Mode)
+     * 3. Cancel Location is triggered by HSS
+     *
+     * If Cancel Locations are performed, UE(mme-ue) context must be removed.
+     */
+    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_de_registered)) {
+        ogs_warn("UE has already been de-registered");
+        mme_ue_hash_remove(mme_ue);
+        mme_ue_remove(mme_ue);
+        return;
+    }
+
     /* Set EPS Detach */
     memset(&mme_ue->nas_eps.detach, 0, sizeof(ogs_nas_detach_type_t));
 
@@ -202,31 +223,30 @@ void mme_s6a_handle_clr(mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
 
     ogs_debug("    OGS_NAS_EPS TYPE[%d]", mme_ue->nas_eps.type);
 
-    if (clr_message->cancellation_type ==
-            OGS_DIAM_S6A_CT_MME_UPDATE_PROCEDURE) {
-        mme_ue->detach_type = MME_DETACH_TYPE_HSS_IMPLICIT;
-        if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
-            ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
-        } else {
-            mme_send_delete_session_or_detach(mme_ue);
-        }
-    } else if (clr_message->cancellation_type ==
-            OGS_DIAM_S6A_CT_SUBSCRIPTION_WITHDRAWL) {
+    switch (clr_message->cancellation_type) {
+    case OGS_DIAM_S6A_CT_SUBSCRIPTION_WITHDRAWL:
         mme_ue->detach_type = MME_DETACH_TYPE_HSS_EXPLICIT;
         if (ECM_IDLE(mme_ue)) {
             MME_STORE_PAGING_INFO(mme_ue, MME_PAGING_TYPE_DETACH_TO_UE, NULL);
             ogs_assert(OGS_OK == s1ap_send_paging(mme_ue, S1AP_CNDomain_ps));
         } else {
             ogs_assert(OGS_OK == nas_eps_send_detach_request(mme_ue));
-            if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
-                ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
-            } else {
-                mme_send_delete_session_or_detach(mme_ue);
-            }
         }
-    } else {
-        ogs_error("Unsupported Cancellation-Type [%d]", 
+        break;
+    case OGS_DIAM_S6A_CT_MME_UPDATE_PROCEDURE:
+        mme_ue->detach_type = MME_DETACH_TYPE_HSS_IMPLICIT;
+        break;
+    default:
+        ogs_fatal("Unsupported Cancellation-Type [%d]",
             clr_message->cancellation_type);
+        ogs_assert_if_reached();
+        break;
+    }
+
+    if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
+        ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
+    } else {
+        mme_send_delete_session_or_detach(mme_ue);
     }
 }
 

@@ -104,8 +104,7 @@ typedef struct ogs_gtp_xact_s {
 #define OGS_GTP_DELETE_SEND_RELEASE_WITH_S1_REMOVE_AND_UNLINK   6
 #define OGS_GTP_DELETE_HANDLE_PDN_CONNECTIVITY_REQUEST          7
 #define OGS_GTP_DELETE_UE_CONTEXT_REMOVE_PARTIAL                8
-#define OGS_GTP_DELETE_UE_CONTEXT_REMOVE_ALL                    9
-#define OGS_GTP_DELETE_IN_PATH_SWITCH_REQUEST                   10
+#define OGS_GTP_DELETE_IN_PATH_SWITCH_REQUEST                   9
 
     int             delete_action;
 

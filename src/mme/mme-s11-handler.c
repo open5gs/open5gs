@@ -594,16 +594,16 @@ void mme_s11_handle_delete_session_response(
 
     } else if (action == OGS_GTP_DELETE_SEND_RELEASE_WITH_UE_CONTEXT_REMOVE) {
         if (mme_sess_count(mme_ue) == 1) /* Last Session */ {
-            enb_ue_t *enb_ue = NULL;
-
-            enb_ue = enb_ue_cycle(mme_ue->enb_ue);
-            if (enb_ue) {
+            if (ECM_IDLE(mme_ue)) {
+                mme_ue_hash_remove(mme_ue);
+                mme_ue_remove(mme_ue);
+            } else {
+                ogs_assert(mme_ue->enb_ue);
                 ogs_assert(OGS_OK ==
-                    s1ap_send_ue_context_release_command(enb_ue,
+                    s1ap_send_ue_context_release_command(mme_ue->enb_ue,
                     S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                     S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
-            } else
-                ogs_error("ENB-S1 Context has already been removed");
+            }
         }
 
     } else if (action ==
@@ -637,12 +637,6 @@ void mme_s11_handle_delete_session_response(
     } else if (action == OGS_GTP_DELETE_UE_CONTEXT_REMOVE_PARTIAL) {
 
         /* Remove MME-UE Context with Session Context since IMSI duplicated */
-        mme_ue_remove(mme_ue);
-        return;
-
-    } else if (action == OGS_GTP_DELETE_UE_CONTEXT_REMOVE_ALL) {
-        /* Remove MME-UE Context and hash after Implicit Detach */
-        mme_ue_hash_remove(mme_ue);
         mme_ue_remove(mme_ue);
         return;
 
