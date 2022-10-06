@@ -3590,7 +3590,7 @@ void stats_update_mme_sessions(void)
     ptr = buffer = ogs_malloc(MAX_SESSION_STRING_LEN * ogs_app()->max.ue);
     ogs_list_for_each(&self.mme_ue_list, mme_ue) {
         ogs_list_for_each(&mme_ue->sess_list, sess) {
-            ptr += sprintf(ptr, "imsi:%s enb:%s", mme_ue->imsi_bcd,
+            ptr += sprintf(ptr, "imsi:%s enb:%s ", mme_ue->imsi_bcd,
                 mme_ue->enb_ue ? OGS_ADDR(mme_ue->enb_ue->enb->sctp.addr, buf1) : "");
             if (sess->session) {
                 session = sess->session;
