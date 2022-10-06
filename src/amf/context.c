@@ -60,7 +60,7 @@ void amf_context_init(void)
     ogs_pool_init(&amf_ue_pool, ogs_app()->max.ue);
     ogs_pool_init(&ran_ue_pool, ogs_app()->max.ue);
     ogs_pool_init(&amf_sess_pool, ogs_app()->pool.sess);
-    ogs_pool_init(&self.m_tmsi, ogs_app()->max.ue);
+    ogs_pool_init(&self.m_tmsi, ogs_app()->max.ue*2);
 
     ogs_list_init(&self.gnb_list);
     ogs_list_init(&self.amf_ue_list);
@@ -2120,7 +2120,7 @@ int amf_m_tmsi_pool_generate()
     int index = 0;
 
     ogs_trace("M-TMSI Pool try to generate...");
-    for (i = 0; index < ogs_app()->max.ue; i++) {
+    for (i = 0; index < ogs_app()->max.ue*2; i++) {
         amf_m_tmsi_t *m_tmsi = NULL;
         int conflict = 0;
 
