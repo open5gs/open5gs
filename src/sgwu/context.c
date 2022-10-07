@@ -262,6 +262,7 @@ void stats_update_sgwu_sessions(void)
     sgwu_sess_t *sess = NULL;
     ogs_gtp_node_t *peer;
     ogs_gtpu_resource_t *resource;
+    ogs_pfcp_far_t *far;
     char buf1[OGS_ADDRSTRLEN];
     char buf2[OGS_ADDRSTRLEN];
     char *buffer = NULL;
