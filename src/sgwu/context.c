@@ -271,7 +271,7 @@ void stats_update_sgwu_sessions(void)
     sprintf(num, "%d\n", ogs_list_count(&self.sess_list));
     ogs_write_file_value("sgwu/num_sessions", num);
 
-    ptr = buffer = ogs_malloc(MAX_SESSION_STRING_LEN * ogs_app()->max.ue);
+    ptr = buffer = ogs_calloc(1, MAX_SESSION_STRING_LEN * ogs_app()->max.ue);
     ogs_list_for_each(&self.sess_list, sess) {
         ptr += sprintf(ptr, "seid_cp:0x%lx seid_up:0x%lx\n",
             (long)sess->sgwc_sxa_f_seid.seid, (long)sess->sgwu_sxa_seid);
@@ -279,7 +279,7 @@ void stats_update_sgwu_sessions(void)
     ogs_write_file_value("sgwu/list_sessions", buffer);
     ogs_free(buffer);
 
-    ptr = buffer = ogs_malloc(MAX_SESSION_STRING_LEN * ogs_app()->max.ue);
+    ptr = buffer = ogs_calloc(1, MAX_SESSION_STRING_LEN * ogs_app()->max.ue);
     ogs_list_for_each(&ogs_gtp_self()->gtpu_peer_list, peer) {
         ptr += sprintf(ptr, "ip:%s addr:%s \n", 
             OGS_INET_NTOP(&peer->ip, buf1), OGS_ADDR(&peer->addr, buf2));
@@ -287,7 +287,7 @@ void stats_update_sgwu_sessions(void)
     ogs_write_file_value("sgwu/gtpu_peers", buffer);
     ogs_free(buffer);
 
-    ptr = buffer = ogs_malloc(MAX_SESSION_STRING_LEN * ogs_app()->max.ue);
+    ptr = buffer = ogs_calloc(1, MAX_SESSION_STRING_LEN * ogs_app()->max.ue);
     ogs_list_for_each(&ogs_gtp_self()->gtpu_resource_list, resource) {
         ptr += sprintf(ptr, "ip:%s \n", OGS_INET_NTOP(&resource->info.addr, buf1));
     }
