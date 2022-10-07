@@ -398,7 +398,13 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
     ran_ue = ran_ue_find_by_ran_ue_ngap_id(gnb, *RAN_UE_NGAP_ID);
     if (!ran_ue) {
         ran_ue = ran_ue_add(gnb, *RAN_UE_NGAP_ID);
-        ogs_assert(ran_ue);
+        if (ran_ue == NULL) {
+            ogs_assert(OGS_OK ==
+                ngap_send_error_indication(gnb, NULL, NULL,
+                    NGAP_Cause_PR_misc,
+                    NGAP_CauseMisc_control_processing_overload));
+            return;
+        }
 
         /* Find AMF_UE if 5G-S_TMSI included */
         if (FiveG_S_TMSI) {
@@ -2771,7 +2777,12 @@ void ngap_handle_handover_required(
 
     /* Target UE */
     target_ue = ran_ue_add(target_gnb, INVALID_UE_NGAP_ID);
-    ogs_assert(target_ue);
+    if (target_ue == NULL) {
+        ogs_assert(OGS_OK ==
+            ngap_send_error_indication2(amf_ue, NGAP_Cause_PR_misc,
+                NGAP_CauseMisc_control_processing_overload));
+        return;
+    }
 
     /* Source UE - Target UE associated */
     source_ue_associate_target_ue(source_ue, target_ue);
