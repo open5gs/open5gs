@@ -257,14 +257,50 @@ sgwu_sess_t *sgwu_sess_add_by_message(ogs_pfcp_message_t *message)
 
 #define MAX_SESSION_STRING_LEN (22 + 16 + 16)
 
+static void print_far(char *buf, ogs_pfcp_far_t *far) {
+    char buf1[OGS_ADDRSTRLEN];
+
+    buf += sprintf(buf, "\tfar ");
+    switch (far->apply_action) {
+    case OGS_PFCP_APPLY_ACTION_DROP:
+        buf += sprintf(buf, "act:DROP ");
+        break;
+    case OGS_PFCP_APPLY_ACTION_FORW:
+        buf += sprintf(buf, "act:FORW ");
+        break;
+    case OGS_PFCP_APPLY_ACTION_BUFF:
+        buf += sprintf(buf, "act:BUFF ");
+        break;
+    default:
+        buf += sprintf(buf, "act:%u ", far->apply_action);
+    }
+
+    switch (far->dst_if) {
+    case OGS_PFCP_INTERFACE_ACCESS:
+        buf += sprintf(buf, "dst:ACCESS ");
+        break;
+    case OGS_PFCP_INTERFACE_CORE:
+        buf += sprintf(buf, "dst:CORE ");
+        break;
+    case OGS_PFCP_INTERFACE_CP_FUNCTION:
+        buf += sprintf(buf, "dst:CP ");
+        break;
+    default:
+        buf += sprintf(buf, "dst:%u ", far->dst_if);
+    }
+
+    if (far->outer_header_creation.addr) {
+        buf += sprintf(buf, "hdr:%s ", OGS_INET_NTOP(&far->outer_header_creation.addr, buf1));
+    }
+
+    buf += sprintf(buf, "\n");
+    return;
+}
+
 void stats_update_sgwu_sessions(void)
 {
     sgwu_sess_t *sess = NULL;
-    ogs_gtp_node_t *peer;
-    ogs_gtpu_resource_t *resource;
     ogs_pfcp_far_t *far;
-    char buf1[OGS_ADDRSTRLEN];
-    char buf2[OGS_ADDRSTRLEN];
     char *buffer = NULL;
     char *ptr = NULL;
 
@@ -276,33 +312,10 @@ void stats_update_sgwu_sessions(void)
     ogs_list_for_each(&self.sess_list, sess) {
         ptr += sprintf(ptr, "seid_cp:0x%lx seid_up:0x%lx\n",
             (long)sess->sgwc_sxa_f_seid.seid, (long)sess->sgwu_sxa_seid);
+        ogs_list_for_each(&sess->pfcp.far_list, far) {
+            print_far(ptr, far);
+        }
     }
     ogs_write_file_value("sgwu/list_sessions", buffer);
     ogs_free(buffer);
-
-    ptr = buffer = ogs_calloc(1, MAX_SESSION_STRING_LEN * ogs_app()->max.ue);
-    ogs_list_for_each(&self.sess_list, sess) {
-        ogs_list_for_each(&sess->pfcp.far_list, far) {
-            ptr += sprintf(ptr, "act:%u, dest:%u, outer_header_creation:%s\n",
-                far->apply_action, far->dst_if,
-                OGS_INET_NTOP(&far->outer_header_creation.addr, buf1));
-        }
-    }
-    ogs_write_file_value("sgwu/fars", buffer);
-    ogs_free(buffer);
-
-    // ptr = buffer = ogs_calloc(1, MAX_SESSION_STRING_LEN * ogs_app()->max.ue);
-    // ogs_list_for_each(&ogs_gtp_self()->gtpu_peer_list, peer) {
-    //     ptr += sprintf(ptr, "ip:%s addr:%s \n", 
-    //         OGS_INET_NTOP(&peer->ip, buf1), OGS_ADDR(&peer->addr, buf2));
-    // }
-    // ogs_write_file_value("sgwu/gtpu_peers", buffer);
-    // ogs_free(buffer);
-
-    // ptr = buffer = ogs_calloc(1, MAX_SESSION_STRING_LEN * ogs_app()->max.ue);
-    // ogs_list_for_each(&ogs_gtp_self()->gtpu_resource_list, resource) {
-    //     ptr += sprintf(ptr, "ip:%s \n", OGS_INET_NTOP(&resource->info.addr, buf1));
-    // }
-    // ogs_write_file_value("sgwu/gtpu_resources", buffer);
-    // ogs_free(buffer);
 }
