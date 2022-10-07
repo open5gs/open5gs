@@ -1063,7 +1063,11 @@ ran_ue_t *ran_ue_add(amf_gnb_t *gnb, uint32_t ran_ue_ngap_id)
     ogs_assert(gnb);
 
     ogs_pool_alloc(&ran_ue_pool, &ran_ue);
-    ogs_assert(ran_ue);
+    if (ran_ue == NULL) {
+        ogs_error("Could not allocate ran_ue context from pool");
+        return NULL;
+    }
+
     memset(ran_ue, 0, sizeof *ran_ue);
 
     ran_ue->t_ng_holding = ogs_timer_add(
@@ -1257,7 +1261,11 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
     ogs_assert(gnb);
 
     ogs_pool_alloc(&amf_ue_pool, &amf_ue);
-    ogs_assert(amf_ue);
+    if (amf_ue == NULL) {
+        ogs_error("Could not allocate amf_ue context from pool");
+        return NULL;
+    }
+
     memset(amf_ue, 0, sizeof *amf_ue);
 
     /* Add All Timers */
