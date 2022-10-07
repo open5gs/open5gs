@@ -549,6 +549,8 @@ static void upf_sess_urr_acc_remove_all(upf_sess_t *sess)
 void stats_update_upf_sessions(void)
 {
     upf_sess_t *sess = NULL;
+    ogs_gtp_node_t *peer;
+    ogs_gtpu_resource_t *resource;
     char buf1[OGS_ADDRSTRLEN];
     char buf2[OGS_ADDRSTRLEN];
     char *buffer = NULL;
@@ -567,5 +569,20 @@ void stats_update_upf_sessions(void)
             (long)sess->smf_n4_f_seid.seid, (long)sess->upf_n4_seid);
     }
     ogs_write_file_value("upf/list_sessions", buffer);
+    ogs_free(buffer);
+
+    ptr = buffer = ogs_malloc(MAX_SESSION_STRING_LEN * ogs_app()->max.ue);
+    ogs_list_for_each(&ogs_gtp_self()->gtpu_peer_list, peer) {
+        ptr += sprintf(ptr, "ip:%s addr:%s \n", 
+            OGS_INET_NTOP(&peer->ip, buf1), OGS_ADDR(&peer->addr, buf2));
+    }
+    ogs_write_file_value("upf/gtpu_peers", buffer);
+    ogs_free(buffer);
+
+    ptr = buffer = ogs_malloc(MAX_SESSION_STRING_LEN * ogs_app()->max.ue);
+    ogs_list_for_each(&ogs_gtp_self()->gtpu_resource_list, resource) {
+        ptr += sprintf(ptr, "ip:%s \n", OGS_INET_NTOP(&resource->info.addr, buf1));
+    }
+    ogs_write_file_value("upf/gtpu_resources", buffer);
     ogs_free(buffer);
 }
