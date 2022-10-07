@@ -261,17 +261,13 @@ static char *print_far(char *buf, ogs_pfcp_far_t *far) {
     char buf1[OGS_ADDRSTRLEN];
 
     buf += sprintf(buf, "\tfar ");
-    switch (far->apply_action) {
-    case OGS_PFCP_APPLY_ACTION_DROP:
+    if (far->apply_action & OGS_PFCP_APPLY_ACTION_DROP) {
         buf += sprintf(buf, "act:DROP ");
-        break;
-    case OGS_PFCP_APPLY_ACTION_FORW:
+    } else if (far->apply_action & OGS_PFCP_APPLY_ACTION_FORW) {
         buf += sprintf(buf, "act:FORW ");
-        break;
-    case OGS_PFCP_APPLY_ACTION_BUFF:
+    } else if (far->apply_action & OGS_PFCP_APPLY_ACTION_BUFF) {
         buf += sprintf(buf, "act:BUFF ");
-        break;
-    default:
+    } else {
         buf += sprintf(buf, "act:%u ", far->apply_action);
     }
 
@@ -312,6 +308,7 @@ void stats_update_sgwu_sessions(void)
     ogs_list_for_each(&self.sess_list, sess) {
         ptr += sprintf(ptr, "seid_cp:0x%lx seid_up:0x%lx\n",
             (long)sess->sgwc_sxa_f_seid.seid, (long)sess->sgwu_sxa_seid);
+
         ogs_list_for_each(&sess->pfcp.far_list, far) {
             ptr = print_far(ptr, far);
         }
