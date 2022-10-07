@@ -226,27 +226,41 @@ void mme_s6a_handle_clr(mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
     switch (clr_message->cancellation_type) {
     case OGS_DIAM_S6A_CT_SUBSCRIPTION_WITHDRAWL:
         mme_ue->detach_type = MME_DETACH_TYPE_HSS_EXPLICIT;
+
+        /*
+         * Before sending Detach-Request,
+         * we need to check whether UE is IDLE or not.
+         */
         if (ECM_IDLE(mme_ue)) {
             MME_STORE_PAGING_INFO(mme_ue, MME_PAGING_TYPE_DETACH_TO_UE, NULL);
             ogs_assert(OGS_OK == s1ap_send_paging(mme_ue, S1AP_CNDomain_ps));
         } else {
             ogs_assert(OGS_OK == nas_eps_send_detach_request(mme_ue));
+            if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
+                ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
+            } else {
+                mme_send_delete_session_or_detach(mme_ue);
+            }
         }
         break;
     case OGS_DIAM_S6A_CT_MME_UPDATE_PROCEDURE:
         mme_ue->detach_type = MME_DETACH_TYPE_HSS_IMPLICIT;
+
+        /*
+         * There is no need to send NAS or S1AP message to the UE.
+         * So, we don't have to check whether UE is IDLE or not.
+         */
+        if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
+            ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
+        } else {
+            mme_send_delete_session_or_detach(mme_ue);
+        }
         break;
     default:
         ogs_fatal("Unsupported Cancellation-Type [%d]",
             clr_message->cancellation_type);
         ogs_assert_if_reached();
         break;
-    }
-
-    if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
-        ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
-    } else {
-        mme_send_delete_session_or_detach(mme_ue);
     }
 }
 
