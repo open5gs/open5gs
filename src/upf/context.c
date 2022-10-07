@@ -577,7 +577,7 @@ void stats_update_upf_sessions(void)
         ogs_list_for_each(&sess->pfcp.far_list, far) {
             ptr += sprintf(ptr, "act:%u, dest:%u, outer_header_creation:%s\n",
                 far->apply_action, far->dst_if,
-                OGS_INET_NTOP(far->outer_header_creation.addr, buf1));
+                OGS_INET_NTOP(&far->outer_header_creation.addr, buf1));
         }
     }
     ogs_write_file_value("upf/fars", buffer);

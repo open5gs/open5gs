@@ -280,17 +280,28 @@ void stats_update_sgwu_sessions(void)
     ogs_free(buffer);
 
     ptr = buffer = ogs_calloc(1, MAX_SESSION_STRING_LEN * ogs_app()->max.ue);
-    ogs_list_for_each(&ogs_gtp_self()->gtpu_peer_list, peer) {
-        ptr += sprintf(ptr, "ip:%s addr:%s \n", 
-            OGS_INET_NTOP(&peer->ip, buf1), OGS_ADDR(&peer->addr, buf2));
+    ogs_list_for_each(&self.sess_list, sess) {
+        ogs_list_for_each(&sess->pfcp.far_list, far) {
+            ptr += sprintf(ptr, "act:%u, dest:%u, outer_header_creation:%s\n",
+                far->apply_action, far->dst_if,
+                OGS_INET_NTOP(&far->outer_header_creation.addr, buf1));
+        }
     }
-    ogs_write_file_value("sgwu/gtpu_peers", buffer);
+    ogs_write_file_value("sgwu/fars", buffer);
     ogs_free(buffer);
 
-    ptr = buffer = ogs_calloc(1, MAX_SESSION_STRING_LEN * ogs_app()->max.ue);
-    ogs_list_for_each(&ogs_gtp_self()->gtpu_resource_list, resource) {
-        ptr += sprintf(ptr, "ip:%s \n", OGS_INET_NTOP(&resource->info.addr, buf1));
-    }
-    ogs_write_file_value("sgwu/gtpu_resources", buffer);
-    ogs_free(buffer);
+    // ptr = buffer = ogs_calloc(1, MAX_SESSION_STRING_LEN * ogs_app()->max.ue);
+    // ogs_list_for_each(&ogs_gtp_self()->gtpu_peer_list, peer) {
+    //     ptr += sprintf(ptr, "ip:%s addr:%s \n", 
+    //         OGS_INET_NTOP(&peer->ip, buf1), OGS_ADDR(&peer->addr, buf2));
+    // }
+    // ogs_write_file_value("sgwu/gtpu_peers", buffer);
+    // ogs_free(buffer);
+
+    // ptr = buffer = ogs_calloc(1, MAX_SESSION_STRING_LEN * ogs_app()->max.ue);
+    // ogs_list_for_each(&ogs_gtp_self()->gtpu_resource_list, resource) {
+    //     ptr += sprintf(ptr, "ip:%s \n", OGS_INET_NTOP(&resource->info.addr, buf1));
+    // }
+    // ogs_write_file_value("sgwu/gtpu_resources", buffer);
+    // ogs_free(buffer);
 }
