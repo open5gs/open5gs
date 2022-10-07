@@ -260,6 +260,10 @@ sgwu_sess_t *sgwu_sess_add_by_message(ogs_pfcp_message_t *message)
 void stats_update_sgwu_sessions(void)
 {
     sgwu_sess_t *sess = NULL;
+    ogs_gtp_node_t *peer;
+    ogs_gtpu_resource_t *resource;
+    char buf1[OGS_ADDRSTRLEN];
+    char buf2[OGS_ADDRSTRLEN];
     char *buffer = NULL;
     char *ptr = NULL;
 
@@ -273,5 +277,20 @@ void stats_update_sgwu_sessions(void)
             (long)sess->sgwc_sxa_f_seid.seid, (long)sess->sgwu_sxa_seid);
     }
     ogs_write_file_value("sgwu/list_sessions", buffer);
+    ogs_free(buffer);
+
+    ptr = buffer = ogs_malloc(MAX_SESSION_STRING_LEN * ogs_app()->max.ue);
+    ogs_list_for_each(&ogs_gtp_self()->gtpu_peer_list, peer) {
+        ptr += sprintf(ptr, "ip:%s addr:%s \n", 
+            OGS_INET_NTOP(&peer->ip, buf1), OGS_ADDR(&peer->addr, buf2));
+    }
+    ogs_write_file_value("sgwu/gtpu_peers", buffer);
+    ogs_free(buffer);
+
+    ptr = buffer = ogs_malloc(MAX_SESSION_STRING_LEN * ogs_app()->max.ue);
+    ogs_list_for_each(&ogs_gtp_self()->gtpu_resource_list, resource) {
+        ptr += sprintf(ptr, "ip:%s \n", OGS_INET_NTOP(&resource->info.addr, buf1));
+    }
+    ogs_write_file_value("sgwu/gtpu_resources", buffer);
     ogs_free(buffer);
 }
