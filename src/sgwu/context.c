@@ -257,7 +257,7 @@ sgwu_sess_t *sgwu_sess_add_by_message(ogs_pfcp_message_t *message)
 
 #define MAX_SESSION_STRING_LEN (22 + 16 + 16)
 
-static void print_far(char *buf, ogs_pfcp_far_t *far) {
+static char *print_far(char *buf, ogs_pfcp_far_t *far) {
     char buf1[OGS_ADDRSTRLEN];
 
     buf += sprintf(buf, "\tfar ");
@@ -294,7 +294,7 @@ static void print_far(char *buf, ogs_pfcp_far_t *far) {
     }
 
     buf += sprintf(buf, "\n");
-    return;
+    return buf;
 }
 
 void stats_update_sgwu_sessions(void)
@@ -313,7 +313,7 @@ void stats_update_sgwu_sessions(void)
         ptr += sprintf(ptr, "seid_cp:0x%lx seid_up:0x%lx\n",
             (long)sess->sgwc_sxa_f_seid.seid, (long)sess->sgwu_sxa_seid);
         ogs_list_for_each(&sess->pfcp.far_list, far) {
-            print_far(ptr, far);
+            ptr = print_far(ptr, far);
         }
     }
     ogs_write_file_value("sgwu/list_sessions", buffer);

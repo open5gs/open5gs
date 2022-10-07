@@ -546,7 +546,7 @@ static void upf_sess_urr_acc_remove_all(upf_sess_t *sess)
 #define MAX_APN 63
 #define MAX_SESSION_STRING_LEN (43 + MAX_APN + INET_ADDRSTRLEN + INET6_ADDRSTRLEN + 16 + 16)
 
-static void print_far(char *buf, ogs_pfcp_far_t *far) {
+static char *print_far(char *buf, ogs_pfcp_far_t *far) {
     char buf1[OGS_ADDRSTRLEN];
 
     buf += sprintf(buf, "\tfar ");
@@ -583,7 +583,7 @@ static void print_far(char *buf, ogs_pfcp_far_t *far) {
     }
 
     buf += sprintf(buf, "\n");
-    return;
+    return buf;
 }
 
 void stats_update_upf_sessions(void)
@@ -607,7 +607,7 @@ void stats_update_upf_sessions(void)
             sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "",
             (long)sess->smf_n4_f_seid.seid, (long)sess->upf_n4_seid);
         ogs_list_for_each(&sess->pfcp.far_list, far) {
-            print_far(ptr, far);
+            ptr = print_far(ptr, far);
         }
     }
     ogs_write_file_value("upf/list_sessions", buffer);
