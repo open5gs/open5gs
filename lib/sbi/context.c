@@ -124,6 +124,7 @@ static int ogs_sbi_context_validation(
     switch (self.discovery_config.delegated) {
     case OGS_SBI_DISCOVERY_DELEGATED_AUTO:
         if (strcmp(local, "nrf") != 0 && /* Skip NRF */
+            strcmp(local, "scp") != 0 && /* Skip SCP */
             strcmp(local, "smf") != 0 && /* Skip SMF since SMF can run 4G */
             ogs_sbi_self()->nrf_instance == NULL &&
             ogs_sbi_self()->scp_instance == NULL) {

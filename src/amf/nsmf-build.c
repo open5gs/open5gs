@@ -51,8 +51,9 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
 
     memset(&SmContextCreateData, 0, sizeof(SmContextCreateData));
 
-    ogs_assert(ogs_sbi_self()->nf_instance);
-    SmContextCreateData.serving_nf_id = ogs_sbi_self()->nf_instance->id;
+    SmContextCreateData.serving_nf_id =
+        NF_INSTANCE_ID(ogs_sbi_self()->nf_instance);
+    ogs_expect_or_return_val(SmContextCreateData.serving_nf_id, NULL);
 
     SmContextCreateData.serving_network =
         ogs_sbi_build_plmn_id_nid(&amf_ue->nr_tai.plmn_id);

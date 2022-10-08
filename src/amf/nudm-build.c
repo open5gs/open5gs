@@ -44,8 +44,8 @@ ogs_sbi_request_t *amf_nudm_uecm_build_registration(
 
     memset(&Amf3GppAccessRegistration, 0, sizeof(Amf3GppAccessRegistration));
 
-    ogs_assert(ogs_sbi_self()->nf_instance);
-    Amf3GppAccessRegistration.amf_instance_id = ogs_sbi_self()->nf_instance->id;
+    Amf3GppAccessRegistration.amf_instance_id =
+        NF_INSTANCE_ID(ogs_sbi_self()->nf_instance);
 
     server = ogs_list_first(&ogs_sbi_self()->server_list);
     ogs_assert(server);
@@ -163,7 +163,8 @@ ogs_sbi_request_t *amf_nudm_sdm_build_subscription(amf_ue_t *amf_ue, void *data)
 
     memset(&SDMSubscription, 0, sizeof(SDMSubscription));
 
-    SDMSubscription.nf_instance_id = ogs_sbi_self()->nf_instance->id;
+    SDMSubscription.nf_instance_id =
+        NF_INSTANCE_ID(ogs_sbi_self()->nf_instance);
 
     server = ogs_list_first(&ogs_sbi_self()->server_list);
     ogs_assert(server);

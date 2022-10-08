@@ -43,9 +43,8 @@ ogs_sbi_request_t *ausf_nudm_ueau_build_get(ausf_ue_t *ausf_ue, void *data)
 
     AuthenticationInfoRequest.serving_network_name =
         ausf_ue->serving_network_name;
-    ogs_assert(ogs_sbi_self()->nf_instance);
     AuthenticationInfoRequest.ausf_instance_id =
-        ogs_sbi_self()->nf_instance->id;
+        NF_INSTANCE_ID(ogs_sbi_self()->nf_instance);
 
     if (data) {
         OpenAPI_resynchronization_info_t *recvinfo = data;
@@ -89,8 +88,7 @@ ogs_sbi_request_t *ausf_nudm_ueau_build_result_confirmation_inform(
     AuthEvent->time_stamp = ogs_sbi_localtime_string(ogs_time_now());
     ogs_expect_or_return_val(AuthEvent->time_stamp, NULL);
 
-    ogs_assert(ogs_sbi_self()->nf_instance);
-    AuthEvent->nf_instance_id = ogs_sbi_self()->nf_instance->id;
+    AuthEvent->nf_instance_id = NF_INSTANCE_ID(ogs_sbi_self()->nf_instance);
     if (ausf_ue->auth_result == OpenAPI_auth_result_AUTHENTICATION_SUCCESS)
         AuthEvent->success = true;
     else

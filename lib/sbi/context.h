@@ -84,18 +84,20 @@ typedef struct ogs_sbi_nf_instance_s {
     ogs_timer_t *t_no_heartbeat;            /* check heartbeat */
     ogs_timer_t *t_validity;                /* check validation */
 
+#define NF_INSTANCE_ID(__nFInstance) \
+    ((__nFInstance) ? ((__nFInstance)->id) : NULL)
 #define NF_INSTANCE_ID_IS_SELF(_iD) \
     (_iD) && ogs_sbi_self()->nf_instance && \
         strcmp((_iD), ogs_sbi_self()->nf_instance->id) == 0
 #define NF_INSTANCE_ID_IS_OTHERS(_iD) \
     (_iD) && ogs_sbi_self()->nf_instance && \
         strcmp((_iD), ogs_sbi_self()->nf_instance->id) != 0
+    char *id;
 
+#define NF_INSTANCE_TYPE(__nFInstance) \
+    ((__nFInstance) ? ((__nFInstance)->nf_type) : OpenAPI_nf_type_NULL)
 #define NF_INSTANCE_TYPE_IS_NRF(__nFInstance) \
-    ((__nFInstance->nf_type) == OpenAPI_nf_type_NRF)
-
-    char *id;                               /* NFInstanceId */
-
+    (NF_INSTANCE_TYPE(__nFInstance) == OpenAPI_nf_type_NRF)
     OpenAPI_nf_type_e nf_type;
     OpenAPI_nf_status_e nf_status;
 
