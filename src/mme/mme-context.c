@@ -104,7 +104,7 @@ void mme_context_init()
     ogs_pool_init(&sgw_ue_pool, ogs_app()->max.ue);
     ogs_pool_init(&mme_sess_pool, ogs_app()->pool.sess);
     ogs_pool_init(&mme_bearer_pool, ogs_app()->pool.bearer);
-    ogs_pool_init(&self.m_tmsi, ogs_app()->max.ue);
+    ogs_pool_init(&self.m_tmsi, ogs_app()->max.ue*2);
 
     self.enb_addr_hash = ogs_hash_make();
     ogs_assert(self.enb_addr_hash);
