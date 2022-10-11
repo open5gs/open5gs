@@ -515,7 +515,13 @@ int s1ap_send_handover_request(
     ogs_assert(target_enb);
 
     target_ue = enb_ue_add(target_enb, INVALID_UE_S1AP_ID);
-    ogs_assert(target_ue);
+    if (target_ue == NULL) {
+        ogs_assert(OGS_OK ==
+            s1ap_send_error_indication(target_enb, NULL, NULL,
+                S1AP_Cause_PR_misc,
+                S1AP_CauseMisc_control_processing_overload));
+        return OGS_ERROR;
+    }
 
     ogs_info("    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);

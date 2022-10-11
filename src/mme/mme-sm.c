@@ -250,7 +250,15 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             mme_ue = mme_ue_find_by_message(&nas_message);
             if (!mme_ue) {
                 mme_ue = mme_ue_add(enb_ue);
-                ogs_assert(mme_ue);
+                if (mme_ue == NULL) {
+                    ogs_expect(OGS_OK ==
+                        s1ap_send_ue_context_release_command(enb_ue,
+                            S1AP_Cause_PR_misc,
+                            S1AP_CauseMisc_control_processing_overload,
+                            S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0));
+                    ogs_pkbuf_free(pkbuf);
+                    return;
+                }
             } else {
                 /* Here, if the MME_UE Context is found,
                  * the integrity check is not performed

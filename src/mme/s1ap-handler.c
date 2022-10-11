@@ -258,7 +258,13 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, *ENB_UE_S1AP_ID);
     if (!enb_ue) {
         enb_ue = enb_ue_add(enb, *ENB_UE_S1AP_ID);
-        ogs_assert(enb_ue);
+        if (enb_ue == NULL) {
+            ogs_assert(OGS_OK ==
+                s1ap_send_error_indication(enb, NULL, NULL,
+                    S1AP_Cause_PR_misc,
+                    S1AP_CauseMisc_control_processing_overload));
+            return;
+        }
 
         /* Find MME_UE if S_TMSI included */
         if (S_TMSI) {

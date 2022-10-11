@@ -1942,7 +1942,11 @@ enb_ue_t *enb_ue_add(mme_enb_t *enb, uint32_t enb_ue_s1ap_id)
     ogs_assert(enb);
 
     ogs_pool_alloc(&enb_ue_pool, &enb_ue);
-    ogs_assert(enb_ue);
+    if (enb_ue == NULL) {
+        ogs_error("Could not allocate enb_ue context from pool");
+        return NULL;
+    }
+
     memset(enb_ue, 0, sizeof *enb_ue);
 
     enb_ue->t_s1_holding = ogs_timer_add(
@@ -2266,7 +2270,11 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
     ogs_assert(enb);
 
     ogs_pool_alloc(&mme_ue_pool, &mme_ue);
-    ogs_assert(mme_ue);
+    if (mme_ue == NULL) {
+        ogs_error("Could not allocate mme_ue context from pool");
+        return NULL;
+    }
+
     memset(mme_ue, 0, sizeof *mme_ue);
 
     /* Add All Timers */
