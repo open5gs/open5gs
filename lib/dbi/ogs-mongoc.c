@@ -182,15 +182,18 @@ void ogs_dbi_final()
         mongoc_collection_destroy(self.collection.subscriber);
     }
 
+#if MONGOC_MAJOR_VERSION >= 1 && MONGOC_MINOR_VERSION >= 9
     if (self.stream) {
         mongoc_change_stream_destroy(self.stream);
     }
+#endif
 
     ogs_mongoc_final();
 }
 
 int ogs_dbi_collection_watch_init(void)
 {
+#if MONGOC_MAJOR_VERSION >= 1 && MONGOC_MINOR_VERSION >= 9
     bson_t empty = BSON_INITIALIZER;    
     const bson_t *err_doc;
     bson_error_t error;
@@ -213,10 +216,14 @@ int ogs_dbi_collection_watch_init(void)
     }
 
     return OGS_OK;
+# else
+    return OGS_ERROR;
+#endif
 }
 
 int ogs_dbi_poll_change_stream(void)
 {
+#if MONGOC_MAJOR_VERSION >= 1 && MONGOC_MINOR_VERSION >= 9
     int rv;
     
     const bson_t *document;
@@ -240,4 +247,7 @@ int ogs_dbi_poll_change_stream(void)
     }
 
     return OGS_OK;
+# else
+    return OGS_ERROR;
+#endif
 }
