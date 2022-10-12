@@ -1201,8 +1201,13 @@ int hss_handle_change_event(const bson_t *document)
 
     char *imsi_bcd;
 
+#if BSON_MAJOR_VERSION >= 1 && BSON_MINOR_VERSION >= 7
     char *as_json = bson_as_relaxed_extended_json(document, NULL);
-    ogs_debug("Got document: %s\n", as_json);
+    ogs_debug("Received change stream document: %s\n", as_json);
+    bson_free (as_json);
+# else
+    ogs_debug("Received change stream document.");
+#endif
     if (!bson_iter_init_find(&iter, document, "fullDocument")) {
         ogs_error("No 'imsi' field in this document.");
         return OGS_ERROR;
@@ -1275,8 +1280,6 @@ int hss_handle_change_event(const bson_t *document)
     } else {
         ogs_debug("No 'updateDescription' field in this document");
     }
-
-    bson_free (as_json);
 
     if (send_clr_flag) {
         ogs_info("[%s] Cancel Location Requested", imsi_bcd);
