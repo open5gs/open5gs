@@ -2,7 +2,7 @@
 
 ## Getting Started
 
-If you don't understand something about Open5GS, the [https://open5gs.org/open5gs/docs/](https://open5gs.org/open5gs/docs/) is a great place to look for answers.
+Please follow the [documentation](https://open5gs.org/open5gs/docs/) at [open5gs.org](https://open5gs.org/)!
 
 ## Sponsors
 

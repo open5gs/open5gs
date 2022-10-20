@@ -327,6 +327,7 @@ int nas_eps_send_pdn_connectivity_reject(
     int rv;
     mme_ue_t *mme_ue;
     ogs_pkbuf_t *esmbuf = NULL;
+    enb_ue_t *enb_ue = NULL;
 
     ogs_assert(sess);
     mme_ue = sess->mme_ue;
@@ -338,6 +339,16 @@ int nas_eps_send_pdn_connectivity_reject(
         rv = nas_eps_send_attach_reject(mme_ue,
             OGS_NAS_EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED, esm_cause);
         ogs_expect(rv == OGS_OK);
+
+        enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+        if (enb_ue) {
+            ogs_assert(OGS_OK ==
+                s1ap_send_ue_context_release_command(enb_ue,
+                    S1AP_Cause_PR_nas, S1AP_CauseNas_unspecified,
+                    S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0));
+        }
+
+        OGS_FSM_TRAN(&mme_ue->sm, &emm_state_de_registered);
     } else {
         esmbuf = esm_build_pdn_connectivity_reject(
                     sess, esm_cause, create_action);

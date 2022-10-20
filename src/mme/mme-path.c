@@ -41,8 +41,20 @@ void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
 
     /* MME Explicit Detach, ie: O&M Procedures */
     case MME_DETACH_TYPE_MME_EXPLICIT:
-        ogs_fatal("Not Implemented : MME_DETACH_TYPE_MME_EXPLICIT");
-        ogs_assert_if_reached();
+        ogs_debug("Explicit MME Detach");
+        if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
+            mme_gtp_send_delete_all_sessions(mme_ue,
+                OGS_GTP_DELETE_SEND_RELEASE_WITH_S1_REMOVE_AND_UNLINK);
+        } else {
+            enb_ue_t *enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+            if (enb_ue) {
+                ogs_assert(OGS_OK ==
+                    s1ap_send_ue_context_release_command(enb_ue,
+                        S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                        S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0));
+            } else
+                ogs_error("ENB-S1 Context has already been removed");
+        }
         break;
 
     /* HSS Explicit Detach, ie: Subscription Withdrawl Cancel Location
@@ -109,6 +121,24 @@ void mme_send_delete_session_or_mme_ue_context_release(mme_ue_t *mme_ue)
         } else {
             ogs_warn("[%s] No S1 Context", mme_ue->imsi_bcd);
         }
+    }
+}
+
+void mme_send_delete_session_by_sess_or_deactivate_bearer_context(
+    mme_ue_t *mme_ue, mme_sess_t *sess)
+{
+    ogs_assert(mme_ue);
+    ogs_assert(sess);
+
+    if (MME_HAVE_SGW_S1U_PATH(sess)) {
+        ogs_assert(OGS_OK ==
+            mme_gtp_send_delete_session_request(mme_ue->sgw_ue, sess,
+            OGS_GTP_DELETE_SEND_DEACTIVATE_BEARER_CONTEXT_REQUEST));
+    } else {
+        mme_bearer_t *bearer = mme_default_bearer_in_sess(sess);
+        ogs_assert(bearer);
+        ogs_assert(OGS_OK ==
+            nas_eps_send_deactivate_bearer_context_request(bearer));
     }
 }
 
@@ -199,19 +229,25 @@ void mme_send_after_paging(mme_ue_t *mme_ue, bool failed)
         }
         break;
     case MME_PAGING_TYPE_DELETE_BEARER:
-        bearer = mme_bearer_cycle(mme_ue->paging.data);
-        if (!bearer) {
-            ogs_error("No Bearer [%d]", mme_ue->paging.type);
-            goto cleanup;
-        }
+        ogs_list_for_each_entry(
+                &mme_ue->bearer_to_delete_list, bearer, to_delete_node) {
+            if (!bearer) {
+                ogs_error("No Bearer [%d]", mme_ue->paging.type);
+                continue;
+            }
 
-        if (failed == true) {
-            ogs_assert(OGS_OK ==
-                mme_gtp_send_delete_bearer_response(
-                    bearer, OGS_GTP2_CAUSE_UNABLE_TO_PAGE_UE));
-        } else {
-            ogs_assert(OGS_OK ==
-                nas_eps_send_deactivate_bearer_context_request(bearer));
+            if (failed == true) {
+                ogs_gtp_xact_t *xact = ogs_gtp_xact_cycle(bearer->delete.xact);
+                /* Do not send GTP response if delete bearer initiated at MME */
+                if (xact) {
+                    ogs_assert(OGS_OK ==
+                        mme_gtp_send_delete_bearer_response(
+                            bearer, OGS_GTP2_CAUSE_UNABLE_TO_PAGE_UE));
+                }
+            } else {
+                ogs_assert(OGS_OK ==
+                    nas_eps_send_deactivate_bearer_context_request(bearer));
+            }
         }
         break;
     case MME_PAGING_TYPE_CS_CALL_SERVICE:
@@ -255,4 +291,35 @@ void mme_send_after_paging(mme_ue_t *mme_ue, bool failed)
 cleanup:
     CLEAR_SERVICE_INDICATOR(mme_ue);
     MME_CLEAR_PAGING_INFO(mme_ue);
+}
+
+void mme_detach_explicit(mme_ue_t *mme_ue, uint8_t reattach_required)
+{
+    ogs_assert(mme_ue);
+
+    /* Set EPS Detach */
+    memset(&mme_ue->nas_eps.detach, 0, sizeof(ogs_nas_detach_type_t));
+
+    if (reattach_required)
+        mme_ue->nas_eps.detach.value =
+            OGS_NAS_DETACH_TYPE_TO_UE_RE_ATTACH_REQUIRED;
+    else
+        mme_ue->nas_eps.detach.value =
+            OGS_NAS_DETACH_TYPE_TO_UE_RE_ATTACH_NOT_REQUIRED;
+
+    mme_ue->nas_eps.type = MME_EPS_TYPE_DETACH_REQUEST_TO_UE;
+
+    mme_ue->detach_type = MME_DETACH_TYPE_MME_EXPLICIT;
+    if (ECM_IDLE(mme_ue)) {
+        MME_STORE_PAGING_INFO(mme_ue, MME_PAGING_TYPE_DETACH_TO_UE, NULL);
+        ogs_assert(OGS_OK == s1ap_send_paging(mme_ue, S1AP_CNDomain_ps));
+    } else {
+        ogs_assert(OGS_OK == nas_eps_send_detach_request(mme_ue));
+        if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
+            ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
+        } else {
+            mme_send_delete_session_or_detach(mme_ue);
+        }
+    }
+
 }
