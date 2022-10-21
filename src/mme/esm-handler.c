@@ -221,6 +221,8 @@ int esm_handle_information_response(mme_sess_t *sess,
             nas_eps_send_pdn_connectivity_reject(
                 sess, OGS_NAS_ESM_CAUSE_MISSING_OR_UNKNOWN_APN,
                 OGS_GTP_CREATE_IN_ATTACH_REQUEST));
+
+        mme_ue_fsm_init(mme_ue);
         return OGS_ERROR;
     }
 
