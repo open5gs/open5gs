@@ -347,6 +347,7 @@ int nas_eps_send_pdn_connectivity_reject(
                     S1AP_Cause_PR_nas, S1AP_CauseNas_unspecified,
                     S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0));
         }
+        mme_ue_fsm_init(mme_ue);
     } else {
         esmbuf = esm_build_pdn_connectivity_reject(
                     sess, esm_cause, create_action);
