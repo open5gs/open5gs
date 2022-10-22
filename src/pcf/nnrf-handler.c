@@ -33,6 +33,7 @@ void pcf_nnrf_handle_nf_discover(
     pcf_sess_t *sess = NULL;
 
     OpenAPI_nf_type_e target_nf_type = OpenAPI_nf_type_NULL;
+    OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
     OpenAPI_search_result_t *SearchResult = NULL;
 
     ogs_assert(recvmsg);
@@ -43,6 +44,8 @@ void pcf_nnrf_handle_nf_discover(
     ogs_assert(service_type);
     target_nf_type = ogs_sbi_service_type_to_nf_type(service_type);
     ogs_assert(target_nf_type);
+    requester_nf_type = xact->requester_nf_type;
+    ogs_assert(requester_nf_type);
 
     discovery_option = xact->discovery_option;
     stream = xact->assoc_stream;
@@ -67,15 +70,16 @@ void pcf_nnrf_handle_nf_discover(
         ogs_assert_if_reached();
     }
 
-    ogs_nnrf_handle_nf_discover_search_result(SearchResult);
+    ogs_nnrf_disc_handle_nf_discover_search_result(SearchResult);
 
     nf_instance = ogs_sbi_nf_instance_find_by_discovery_param(
-                    target_nf_type, discovery_option);
+                    target_nf_type, requester_nf_type, discovery_option);
     if (!nf_instance) {
-        ogs_error("[%s:%d] (NF discover) No [%s]",
+        ogs_error("[%s:%d] (NF discover) No [%s:%s]",
                     pcf_ue ? pcf_ue->supi : "Unknown",
                     sess ? sess->psi : 0,
-                    ogs_sbi_service_type_to_name(service_type));
+                    ogs_sbi_service_type_to_name(service_type),
+                    OpenAPI_nf_type_ToString(requester_nf_type));
         return;
     }
 

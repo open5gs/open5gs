@@ -20,35 +20,16 @@
 #include "event.h"
 #include "context.h"
 
-static OGS_POOL(pool, nrf_event_t);
-
-void nrf_event_init(void)
-{
-    ogs_pool_init(&pool, ogs_app()->pool.event);
-}
-
-void nrf_event_final(void)
-{
-    ogs_pool_final(&pool);
-}
-
-nrf_event_t *nrf_event_new(nrf_event_e id)
+nrf_event_t *nrf_event_new(int id)
 {
     nrf_event_t *e = NULL;
 
-    ogs_pool_alloc(&pool, &e);
+    e = ogs_event_size(id, sizeof(nrf_event_t));
     ogs_assert(e);
-    memset(e, 0, sizeof(*e));
 
-    e->id = id;
+    e->h.id = id;
 
     return e;
-}
-
-void nrf_event_free(nrf_event_t *e)
-{
-    ogs_assert(e);
-    ogs_pool_free(&pool, e);
 }
 
 const char *nrf_event_get_name(nrf_event_t *e)
@@ -56,18 +37,18 @@ const char *nrf_event_get_name(nrf_event_t *e)
     if (e == NULL)
         return OGS_FSM_NAME_INIT_SIG;
 
-    switch (e->id) {
+    switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG: 
         return OGS_FSM_NAME_ENTRY_SIG;
     case OGS_FSM_EXIT_SIG: 
         return OGS_FSM_NAME_EXIT_SIG;
 
-    case NRF_EVT_SBI_SERVER:
-        return "NRF_EVT_SBI_SERVER";
-    case NRF_EVT_SBI_CLIENT:
-        return "NRF_EVT_SBI_CLIENT";
-    case NRF_EVT_SBI_TIMER:
-        return "NRF_EVT_SBI_TIMER";
+    case OGS_EVENT_SBI_SERVER:
+        return OGS_EVENT_NAME_SBI_SERVER;
+    case OGS_EVENT_SBI_CLIENT:
+        return OGS_EVENT_NAME_SBI_CLIENT;
+    case OGS_EVENT_SBI_TIMER:
+        return OGS_EVENT_NAME_SBI_TIMER;
 
     default: 
        break;

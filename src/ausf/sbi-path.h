@@ -29,7 +29,8 @@ extern "C" {
 int ausf_sbi_open(void);
 void ausf_sbi_close(void);
 
-bool ausf_sbi_send_request(ogs_sbi_nf_instance_t *nf_instance, void *data);
+bool ausf_sbi_send_request(
+        ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact);
 bool ausf_sbi_discover_and_send(
         ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,

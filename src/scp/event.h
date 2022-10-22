@@ -36,6 +36,8 @@ typedef struct scp_event_s {
     scp_sess_t *sess;
 } scp_event_t;
 
+OGS_STATIC_ASSERT(OGS_EVENT_SIZE >= sizeof(scp_event_t));
+
 scp_event_t *scp_event_new(int id);
 
 const char *scp_event_get_name(scp_event_t *e);

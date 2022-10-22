@@ -28,7 +28,7 @@ extern "C" {
 
 /* forward declaration */
 typedef enum {
-    NRF_TIMER_BASE = 0,
+    NRF_TIMER_BASE = OGS_MAX_NUM_OF_PROTO_TIMER,
 
     NRF_TIMER_NF_INSTANCE_NO_HEARTBEAT,
     NRF_TIMER_SUBSCRIPTION_VALIDITY,
@@ -38,7 +38,7 @@ typedef enum {
 
 } nrf_timer_e;
 
-const char *nrf_timer_get_name(nrf_timer_e id);
+const char *nrf_timer_get_name(int timer_id);
 
 void nrf_timer_nf_instance_no_heartbeat(void *data);
 void nrf_timer_subscription_validity(void *data);

@@ -48,17 +48,32 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
 
     memset(&SmPolicyContextData, 0, sizeof(SmPolicyContextData));
 
-    ogs_assert(smf_ue->supi);
     SmPolicyContextData.supi = smf_ue->supi;
-    ogs_assert(sess->psi);
+    if (!SmPolicyContextData.supi) {
+        ogs_error("No supi");
+        goto end;
+    }
     SmPolicyContextData.pdu_session_id = sess->psi;
-    ogs_assert(sess->session.session_type);
+    if (!SmPolicyContextData.pdu_session_id) {
+        ogs_error("No pdu_session_id");
+        goto end;
+    }
     SmPolicyContextData.pdu_session_type = sess->session.session_type;
-    ogs_assert(sess->session.name);
+    if (!SmPolicyContextData.pdu_session_type) {
+        ogs_error("No pdu_session_type");
+        goto end;
+    }
     SmPolicyContextData.dnn = sess->session.name;
+    if (!SmPolicyContextData.dnn) {
+        ogs_error("No dnn");
+        goto end;
+    }
 
     server = ogs_list_first(&ogs_sbi_self()->server_list);
-    ogs_assert(server);
+    if (!server) {
+        ogs_error("No server");
+        goto end;
+    }
 
     memset(&header, 0, sizeof(header));
     header.service.name = (char *)OGS_SBI_SERVICE_NAME_NSMF_CALLBACK;
@@ -67,18 +82,27 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
             (char *)OGS_SBI_RESOURCE_NAME_SM_POLICY_NOTIFY;
     header.resource.component[1] = sess->sm_context_ref;
     SmPolicyContextData.notification_uri = ogs_sbi_server_uri(server, &header);
-    ogs_assert(SmPolicyContextData.notification_uri);
+    if (!SmPolicyContextData.notification_uri) {
+        ogs_error("No notification_uri");
+        goto end;
+    }
 
     if (sess->ipv4) {
         SmPolicyContextData.ipv4_address =
                 ogs_ipv4_to_string(sess->ipv4->addr[0]);
-        ogs_expect_or_return_val(SmPolicyContextData.ipv4_address, NULL);
+        if (!SmPolicyContextData.ipv4_address) {
+            ogs_error("No ipv4_address");
+            goto end;
+        }
     }
 
     if (sess->ipv6) {
         SmPolicyContextData.ipv6_address_prefix = ogs_ipv6prefix_to_string(
                 (uint8_t *)sess->ipv6->addr, OGS_IPV6_128_PREFIX_LEN);
-        ogs_expect_or_return_val(SmPolicyContextData.ipv6_address_prefix, NULL);
+        if (!SmPolicyContextData.ipv6_address_prefix) {
+            ogs_error("No ipv6_address_prefix");
+            goto end;
+        }
     }
 
     memset(&SubsSessAmbr, 0, sizeof(SubsSessAmbr));
@@ -104,14 +128,20 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
     else if (sess->session.qos.arp.pre_emption_capability ==
             OGS_5GC_PRE_EMPTION_DISABLED)
         Arp.preempt_cap = OpenAPI_preemption_capability_NOT_PREEMPT;
-    ogs_assert(Arp.preempt_cap);
+    if (!Arp.preempt_cap) {
+        ogs_error("No Arp.preempt_cap");
+        goto end;
+    }
     if (sess->session.qos.arp.pre_emption_vulnerability ==
             OGS_5GC_PRE_EMPTION_ENABLED)
         Arp.preempt_vuln = OpenAPI_preemption_vulnerability_PREEMPTABLE;
     else if (sess->session.qos.arp.pre_emption_vulnerability ==
             OGS_5GC_PRE_EMPTION_DISABLED)
         Arp.preempt_vuln = OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE;
-    ogs_assert(Arp.preempt_vuln);
+    if (!Arp.preempt_vuln) {
+        ogs_error("No Arp.preempt_vuln");
+        goto end;
+    }
     Arp.priority_level = sess->session.qos.arp.priority_level;
 
     memset(&SubsDefQos, 0, sizeof(SubsDefQos));
@@ -125,7 +155,10 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
     if (sess->smpolicycontrol_features) {
         SmPolicyContextData.supp_feat =
             ogs_uint64_to_string(sess->smpolicycontrol_features);
-        ogs_expect_or_return_val(SmPolicyContextData.supp_feat, NULL);
+        if (!SmPolicyContextData.supp_feat) {
+            ogs_error("No supp_feat");
+            goto end;
+        }
     }
 
     memset(&sNssai, 0, sizeof(sNssai));
@@ -138,7 +171,9 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
     request = ogs_sbi_build_request(&message);
     ogs_expect(request);
 
-    ogs_free(SmPolicyContextData.notification_uri);
+end:
+    if (SmPolicyContextData.notification_uri)
+        ogs_free(SmPolicyContextData.notification_uri);
     if (SmPolicyContextData.gpsi)
         ogs_free(SmPolicyContextData.gpsi);
 
@@ -198,18 +233,29 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_delete(
             param->ran_nas_release.gsm_cause ||
             param->ran_nas_release.ngap_cause.group) {
 
-            ranNasRelCause = ogs_calloc(1, sizeof(*ranNasRelCause));
-            ogs_expect_or_return_val(ranNasRelCause, NULL);
-
             ranNasRelCauseList = OpenAPI_list_create();
-            ogs_expect_or_return_val(ranNasRelCauseList, NULL);
+            if (!ranNasRelCauseList) {
+                ogs_error("No ranNasRelCauseList");
+                goto end;
+            }
+
+            ranNasRelCause = ogs_calloc(1, sizeof(*ranNasRelCause));
+            if (!ranNasRelCause) {
+                ogs_error("No ranNasRelCause");
+                goto end;
+            }
 
             if (param->ran_nas_release.ngap_cause.group) {
                 OpenAPI_ng_ap_cause_t *ngApCause = NULL;
 
                 ranNasRelCause->ng_ap_cause = ngApCause =
                     ogs_calloc(1, sizeof(*ngApCause));
-                ogs_expect_or_return_val(ngApCause, NULL);
+                if (!ranNasRelCause->ng_ap_cause) {
+                    ogs_error("No ranNasRelCause->ng_ap_cause");
+                    if (ranNasRelCause)
+                        ogs_free(ranNasRelCause);
+                    goto end;
+                }
 
                 ngApCause->group = param->ran_nas_release.ngap_cause.group;
                 ngApCause->value = param->ran_nas_release.ngap_cause.value;
@@ -226,24 +272,35 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_delete(
         if (param->ue_location) {
             ueLocation.nr_location = ogs_sbi_build_nr_location(
                     &sess->nr_tai, &sess->nr_cgi);
-            ogs_expect_or_return_val(ueLocation.nr_location, NULL);
+            if (!ueLocation.nr_location) {
+                ogs_error("ueLocation.nr_location");
+                goto end;
+            }
             ueLocation.nr_location->ue_location_timestamp =
                 ogs_sbi_gmtime_string(sess->ue_location_timestamp);
-            ogs_expect_or_return_val(
-                    ueLocation.nr_location->ue_location_timestamp, NULL);
+            if (!ueLocation.nr_location->ue_location_timestamp) {
+                ogs_error("ueLocation.nr_location->ue_location_timestamp");
+                goto end;
+            }
 
             SmPolicyDeleteData.user_location_info = &ueLocation;
         }
         if (param->ue_timezone) {
             SmPolicyDeleteData.ue_time_zone =
                 ogs_sbi_timezone_string(ogs_timezone());
-            ogs_expect_or_return_val(SmPolicyDeleteData.ue_time_zone, NULL);
+            if (!SmPolicyDeleteData.ue_time_zone) {
+                ogs_error("SmPolicyDeleteData.ue_time_zone");
+                goto end;
+            }
         }
     }
 
     SmPolicyDeleteData.serving_network =
         ogs_sbi_build_plmn_id_nid(&sess->plmn_id);
-    ogs_expect_or_return_val(SmPolicyDeleteData.serving_network, NULL);
+    if (!SmPolicyDeleteData.serving_network) {
+        ogs_error("SmPolicyDeleteData.serving_network");
+        goto end;
+    }
 
     SmPolicyDeleteData.ran_nas_rel_causes = ranNasRelCauseList;
 
@@ -251,6 +308,8 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_delete(
 
     request = ogs_sbi_build_request(&message);
     ogs_expect(request);
+
+end:
 
     if (ueLocation.nr_location) {
         if (ueLocation.nr_location->ue_location_timestamp)

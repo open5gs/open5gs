@@ -179,7 +179,7 @@ void nssf_state_operational(ogs_fsm_t *s, nssf_event_t *e)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
                     if (message.res_status == OGS_SBI_HTTP_STATUS_CREATED ||
                         message.res_status == OGS_SBI_HTTP_STATUS_OK) {
-                        ogs_nnrf_handle_nf_status_subscribe(
+                        ogs_nnrf_nfm_handle_nf_status_subscribe(
                                 subscription_data, &message);
                     } else {
                         ogs_error("[%s] HTTP response error [%d]",

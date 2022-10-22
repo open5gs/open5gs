@@ -50,6 +50,7 @@ ogs_sbi_request_t *amf_nnrf_disc_build_discover(
     message.param.discovery_option = discovery_option;
 
     request = ogs_sbi_build_request(&message);
+    ogs_expect(request);
 
     return request;
 }

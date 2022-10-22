@@ -92,7 +92,7 @@ home/open5gs/install/lib/x86_64-linux-gnu/libfdcore.so.7(+0x67c3c) [0x7f3b715f9c
 At this time, you need to check the DB schema is in the form below by using the command the below.
 
 ```
-$ mongo
+$ mongosh
 > use open5gs
 > db.subscribers.find().pretty()
 {
@@ -159,7 +159,7 @@ $ mongo
 If you see below, you are using the old format DB schema.
 
 ```
-$ mongo
+$ mongosh
 > use open5gs
 > db.subscribers.find().pretty()
 {
@@ -207,7 +207,7 @@ If you are using old format DB schema, please perform the following step.
 
 1. First of all, it is recommended to use the following command to remove all existing subscription DB.
 ```
-$ mongo
+$ mongosh
 > use open5gs
 switched to db open5gs
 > db.subscribers.drop()
@@ -221,7 +221,7 @@ $ curl -fsSL https://open5gs.org/open5gs/assets/webui/install | sudo -E bash -
 4. Log in to the new WebUI and add new subscriber information using your web browser.
 5. Make sure it is a new DB schema as below:
 ```
-$ mongo
+$ mongosh
 > use open5gs
 > db.subscribers.find().pretty()
 {
@@ -256,7 +256,7 @@ This is a test program bug and has not yet been resolved.
 
 To restart the test program, first remove all subscriber information using MongoDB Client
 ```
-$ mongo
+$ mongosh
 > use open5gs
 switched to db open5gs
 > db.subscribers.find()  ### Check the test subscriber
@@ -276,6 +276,7 @@ $ sudo pkill -9 open5gs-upfd
 $ sudo pkill -9 open5gs-hssd
 $ sudo pkill -9 open5gs-pcrfd
 $ sudo pkill -9 open5gs-nrfd
+$ sudo pkill -9 open5gs-scpd
 $ sudo pkill -9 open5gs-ausfd
 $ sudo pkill -9 open5gs-udmd
 $ sudo pkill -9 open5gs-pcfd
@@ -312,7 +313,7 @@ $ diff --git a/configs/open5gs/amf.yaml.in b/configs/open5gs/amf.yaml.in
 index 7e939e81..dfe4456d 100644
 --- a/configs/open5gs/amf.yaml.in
 +++ b/configs/open5gs/amf.yaml.in
-@@ -199,6 +199,12 @@ amf:
+@@ -315,6 +315,12 @@ amf:
            mnc: 70
          s_nssai:
            - sst: 1
@@ -332,9 +333,9 @@ $ diff --git a/configs/open5gs/smf.yaml.in b/configs/open5gs/smf.yaml.in
 index d45aa60f..701ee533 100644
 --- a/configs/open5gs/smf.yaml.in
 +++ b/configs/open5gs/smf.yaml.in
-@@ -317,6 +317,11 @@ logger:
- # 
- 
+@@ -442,6 +442,11 @@ logger:
+ #
+
  smf:
 +    info:
 +      - s_nssai:
@@ -351,7 +352,7 @@ $ diff --git a/configs/open5gs/smf.yaml.in b/configs/open5gs/smf.yaml.in
 index d45aa60f..949da220 100644
 --- a/configs/open5gs/smf.yaml.in
 +++ b/configs/open5gs/smf.yaml.in
-@@ -317,6 +317,12 @@ logger:
+@@ -442,6 +442,12 @@ logger:
  #
 
  smf:
@@ -370,7 +371,7 @@ $ diff --git a/configs/open5gs/nssf.yaml.in b/configs/open5gs/nssf.yaml.in
 index ecd4f7e2..04d9c4ba 100644
 --- a/configs/open5gs/nssf.yaml.in
 +++ b/configs/open5gs/nssf.yaml.in
-@@ -119,6 +119,11 @@ nssf:
+@@ -201,6 +201,12 @@ nssf:
          port: 7777
          s_nssai:
            sst: 1
@@ -379,9 +380,10 @@ index ecd4f7e2..04d9c4ba 100644
 +        s_nssai:
 +          sst: 1
 +          sd: 000080
- 
++
+
  #
- # nrf:
+ # scp:
 ```
 
 Then add a slice to MongoDB's subscriber info.
@@ -409,6 +411,7 @@ And the process below is only used in 5G, so there is no need to run it.
 
 ```bash
 $ open5gs-nrfd
+$ open5gs-scpd
 $ open5gs-amfd
 $ open5gs-ausfd
 $ open5gs-udmd
@@ -503,9 +506,9 @@ Now, you need to modify the configuration file of Open5GS to adjust the UE IP Po
 $ diff -u smf.yaml smf.yaml.new
 --- smf.yaml    2020-09-17 09:31:16.547882093 -0400
 +++ smf.yaml.new    2020-09-17 09:32:18.267726844 -0400
-@@ -190,7 +190,7 @@
-       - addr: 127.0.0.4
-       - addr: ::1
+@@ -458,7 +458,7 @@ smf:
+         addr: 127.0.0.4
+         port: 9090
      subnet:
 -      - addr: 10.45.0.1/16
 +      - addr: 10.46.0.1/16
@@ -518,7 +521,7 @@ $ diff -u smf.yaml smf.yaml.new
 $ diff -u upf.yaml upf.yaml.new
 --- upf.yaml    2020-09-17 09:31:16.547882093 -0400
 +++ upf.yaml.new    2020-09-17 09:32:25.199619989 -0400
-@@ -139,7 +139,7 @@
+@@ -170,7 +170,7 @@ upf:
      gtpu:
        - addr: 127.0.0.7
      subnet:
@@ -596,7 +599,7 @@ Please make sure that MongoDB server daemon is running.
 
 Then, remove all subscriber information using MongoDB Client
 ```
-$ mongo
+$ mongosh
 > use open5gs
 switched to db open5gs
 > db.subscribers.find()  ### Check the test subscriber
@@ -616,6 +619,7 @@ $ sudo pkill -9 open5gs-upfd
 $ sudo pkill -9 open5gs-hssd
 $ sudo pkill -9 open5gs-pcrfd
 $ sudo pkill -9 open5gs-nrfd
+$ sudo pkill -9 open5gs-scpd
 $ sudo pkill -9 open5gs-ausfd
 $ sudo pkill -9 open5gs-udmd
 $ sudo pkill -9 open5gs-pcfd
@@ -998,7 +1002,7 @@ attach_test         : -Line 134: Condition is false, but expected true
 
 Remove all subscriber information using MongoDB Client
 ```
-$ mongo
+$ mongosh
 > db.subscribers.find()  ### Check the test subscriber
 > db.subscribers.drop()  ### Remove all subscriber
 > db.subscribers.find()  ### Check that all subscribers are empty
@@ -1077,6 +1081,7 @@ Currently, the number of UE is limited to `128*128`.
 * HSS : 127.0.0.8
 * PCRF : 127.0.0.9
 * NRF : 127.0.0.10
+* SCP : 127.0.1.10
 * AUSF : 127.0.0.11
 * UDM : 127.0.0.12
 * PCF : 127.0.0.13

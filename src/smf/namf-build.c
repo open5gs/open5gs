@@ -146,7 +146,7 @@ ogs_sbi_request_t *smf_namf_comm_build_n1_n2_message_transfer(
     }
 
     request = ogs_sbi_build_request(&message);
-    ogs_assert(request);
+    ogs_expect(request);
 
     for (i = 0; i < message.num_of_part; i++)
         if (message.part[i].pkbuf)
@@ -184,7 +184,7 @@ ogs_sbi_request_t *smf_namf_callback_build_sm_context_status(
     message.SmContextStatusNotification = &SmContextStatusNotification;
 
     request = ogs_sbi_build_request(&message);
-    ogs_assert(request);
+    ogs_expect(request);
 
     return request;
 }

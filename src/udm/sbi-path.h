@@ -29,7 +29,8 @@ extern "C" {
 int udm_sbi_open(void);
 void udm_sbi_close(void);
 
-bool udm_sbi_send_request(ogs_sbi_nf_instance_t *nf_instance, void *data);
+bool udm_sbi_send_request(
+        ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact);
 bool udm_sbi_discover_and_send(
         ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,

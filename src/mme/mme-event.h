@@ -101,6 +101,8 @@ typedef struct mme_event_s {
     ogs_timer_t *timer;
 } mme_event_t;
 
+OGS_STATIC_ASSERT(OGS_EVENT_SIZE >= sizeof(mme_event_t));
+
 void mme_event_term(void);
 
 mme_event_t *mme_event_new(mme_event_e id);

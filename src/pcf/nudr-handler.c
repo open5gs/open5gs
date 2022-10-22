@@ -200,8 +200,11 @@ bool pcf_nudr_dr_handle_query_sm_data(
 
         nf_instance = sess->sbi.service_type_array[service_type].nf_instance;
         if (!nf_instance) {
-            nf_instance =
-                ogs_sbi_nf_instance_find_by_service_type(service_type);
+            OpenAPI_nf_type_e requester_nf_type =
+                        NF_INSTANCE_TYPE(ogs_sbi_self()->nf_instance);
+            ogs_assert(requester_nf_type);
+            nf_instance = ogs_sbi_nf_instance_find_by_service_type(
+                            service_type, requester_nf_type);
             if (nf_instance)
                 OGS_SBI_SETUP_NF_INSTANCE(
                         sess->sbi.service_type_array[service_type],

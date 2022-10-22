@@ -38,6 +38,8 @@ typedef struct pcf_event_s {
     pcf_app_t *app;
 } pcf_event_t;
 
+OGS_STATIC_ASSERT(OGS_EVENT_SIZE >= sizeof(pcf_event_t));
+
 pcf_event_t *pcf_event_new(int id);
 
 const char *pcf_event_get_name(pcf_event_t *e);

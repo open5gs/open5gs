@@ -34,6 +34,8 @@ typedef struct udm_event_s {
     udm_ue_t *udm_ue;
 } udm_event_t;
 
+OGS_STATIC_ASSERT(OGS_EVENT_SIZE >= sizeof(udm_event_t));
+
 udm_event_t *udm_event_new(int id);
 
 const char *udm_event_get_name(udm_event_t *e);

@@ -19,9 +19,6 @@ libscp_sources = files('''
     context.c
     event.c
 
-    nnrf-handler.c
-    nscp-handler.c
-
     sbi-path.c
     scp-sm.c
 

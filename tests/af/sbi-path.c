@@ -19,66 +19,11 @@
 
 #include "sbi-path.h"
 
-static int server_cb(ogs_sbi_request_t *request, void *data)
-{
-    af_event_t *e = NULL;
-    int rv;
-
-    ogs_assert(request);
-    ogs_assert(data);
-
-    e = af_event_new(OGS_EVENT_SBI_SERVER);
-    ogs_assert(e);
-
-    e->h.sbi.request = request;
-    e->h.sbi.data = data;
-
-    rv = ogs_queue_push(ogs_app()->queue, e);
-    if (rv != OGS_OK) {
-        ogs_error("ogs_queue_push() failed:%d", (int)rv);
-        ogs_sbi_request_free(request);
-        ogs_event_free(e);
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
-}
-
-static int client_cb(int status, ogs_sbi_response_t *response, void *data)
-{
-    af_event_t *e = NULL;
-    int rv;
-
-    if (status != OGS_OK) {
-        ogs_log_message(
-                status == OGS_DONE ? OGS_LOG_DEBUG : OGS_LOG_WARN, 0,
-                "client_cb() failed [%d]", status);
-        return OGS_ERROR;
-    }
-
-    ogs_assert(response);
-
-    e = af_event_new(OGS_EVENT_SBI_CLIENT);
-    ogs_assert(e);
-    e->h.sbi.response = response;
-    e->h.sbi.data = data;
-
-    rv = ogs_queue_push(ogs_app()->queue, e);
-    if (rv != OGS_OK) {
-        ogs_error("ogs_queue_push() failed:%d", (int)rv);
-        ogs_sbi_response_free(response);
-        ogs_event_free(e);
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
-}
-
 int af_sbi_open(void)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
 
-    /* Add SELF NF instance */
+    /* Initialize SELF NF instance */
     nf_instance = ogs_sbi_self()->nf_instance;
     ogs_assert(nf_instance);
     ogs_sbi_nf_fsm_init(nf_instance);
@@ -88,24 +33,14 @@ int af_sbi_open(void)
 
     /* Initialize NRF NF Instance */
     nf_instance = ogs_sbi_self()->nrf_instance;
-    if (nf_instance) {
-        ogs_sbi_client_t *client = NULL;
-
-        /* Client callback is only used when NF sends to NRF */
-        client = nf_instance->client;
-        ogs_assert(client);
-        client->cb = client_cb;
-
-        /* NFRegister is sent and the response is received
-         * by the above client callback. */
+    if (nf_instance)
         ogs_sbi_nf_fsm_init(nf_instance);
-    }
 
     /* Build Subscription-Data */
     ogs_sbi_subscription_data_build_default(
             OpenAPI_nf_type_BSF, OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT);
 
-    if (ogs_sbi_server_start_all(server_cb) != OGS_OK)
+    if (ogs_sbi_server_start_all(ogs_sbi_server_handler) != OGS_OK)
         return OGS_ERROR;
 
     return OGS_OK;
@@ -117,11 +52,12 @@ void af_sbi_close(void)
     ogs_sbi_server_stop_all();
 }
 
-bool af_sbi_send_request(ogs_sbi_nf_instance_t *nf_instance, void *data)
+bool af_sbi_send_request(
+        ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact)
 {
     ogs_assert(nf_instance);
-
-    return ogs_sbi_send_request(nf_instance, client_cb, data);
+    ogs_assert(xact);
+    return ogs_sbi_send_request_to_nf_instance(nf_instance, xact);
 }
 
 void af_sbi_discover_and_send(
@@ -144,7 +80,7 @@ void af_sbi_discover_and_send(
         return;
     }
 
-    if (ogs_sbi_discover_and_send(xact, client_cb) != true) {
+    if (ogs_sbi_discover_and_send(xact) != true) {
         ogs_error("af_sbi_discover_and_send() failed");
         return;
     }
@@ -164,5 +100,8 @@ void af_sbi_send_to_pcf(
 
     request = (*build)(sess, data);
     ogs_assert(request);
-    ogs_sbi_client_send_request(client, client_cb, request, sess);
+    ogs_sbi_send_request_to_client(
+            client, ogs_sbi_client_handler, request, sess);
+
+    ogs_sbi_request_free(request);
 }

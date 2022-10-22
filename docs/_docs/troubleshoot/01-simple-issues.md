@@ -21,6 +21,7 @@ open5gs  26934  0.0  0.0 707472 12732 ?        Ssl  12:13   0:00 /usr/bin/open5g
 open5gs  27244  0.2  0.0 2861424 13584 ?       Ssl  12:13   0:00 /usr/bin/open5gs-hssd -c /etc/open5gs/hss.yaml
 open5gs  27366  0.0  0.0 2890772 14380 ?       Ssl  12:13   0:00 /usr/bin/open5gs-pcrfd -c /etc/open5gs/pcrf.yaml
 open5gs  27485  0.0  0.0 243816 15064 ?        Ssl  12:13   0:00 /usr/bin/open5gs-nrfd -c /etc/open5gs/nrf.yaml
+open5gs  27485  0.0  0.0 243916 13064 ?        Ssl  12:13   0:00 /usr/bin/open5gs-scpd -c /etc/open5gs/scp.yaml
 open5gs  27543  0.0  0.0 222416  9672 ?        Ssl  12:13   0:00 /usr/bin/open5gs-ausfd -c /etc/open5gs/ausf.yaml
 open5gs  27600  0.0  0.0 222328  9668 ?        Ssl  12:13   0:00 /usr/bin/open5gs-udmd -c /etc/open5gs/udm.yaml
 open5gs  27600  0.0  0.0 222329  9669 ?        Ssl  12:13   0:00 /usr/bin/open5gs-pcfd -c /etc/open5gs/pcf.yaml
@@ -29,7 +30,7 @@ open5gs  27600  0.0  0.0 222329  9669 ?        Ssl  12:13   0:00 /usr/bin/open5g
 open5gs  27697  0.0  0.0 243976 13716 ?        Ssl  12:13   0:00 /usr/bin/open5gs-udrd -c /etc/open5gs/udr.yaml
 ```
 
-You should see each of the above services, MME, SGW-C, SMF, AMF, SGW-U, UPF, HSS, PCRF, NRF, AUSF, UDM, PCF, NSSF, BSF & UDR are all running.
+You should see each of the above services, MME, SGW-C, SMF, AMF, SGW-U, UPF, HSS, PCRF, NRF, SCP, AUSF, UDM, PCF, NSSF, BSF & UDR are all running.
 
 If your instance doesn't show this make sure you're started each service:
 ```bash
@@ -42,6 +43,7 @@ $ systemctl start open5gs-upfd.service
 $ systemctl start open5gs-hssd.service
 $ systemctl start open5gs-pcrfd.service
 $ systemctl start open5gs-nrfd.service
+$ systemctl start open5gs-scpd.service
 $ systemctl start open5gs-ausfd.service
 $ systemctl start open5gs-udmd.service
 $ systemctl start open5gs-pcfd.service
@@ -55,14 +57,15 @@ $ systemctl start open5gs-udrd.service
 If a service isn't running check the log for that service - logs for each service live in */var/log/open5gs/* where each service logs to it's own file - MME logs in mme.log, AMF logs in amf.log, and so on. 
 
 ```bash
-$ cat /var/log/open5gs/mme.log
-Open5GS daemon v1.0.0
+$ cat a.log
+Open5GS daemon v2.4.11-100-gbea24d7
 
-[app] INFO: Configuration: '/etc/open5gs/mme.yaml' (../src/main.c:54)
-[app] INFO: File Logging: '/var/log/open5gs/mme.log' (../src/main.c:57)
-[mme] ERROR: No sgwc.gtpc in '/etc/open5gs/mme.yaml' (../src/mme/mme-context.c:192)
-[app] ERROR: Failed to intialize MME (../src/mme/app-init.c:30)
-[app] FATAL: Open5GS initialization failed. Aborted (../src/main.c:222)
+10/22 11:05:40.032: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/mme.yaml' (../lib/app/ogs-init.c:126)
+10/22 11:05:40.032: [app] INFO: File Logging: 'a.log' (../lib/app/ogs-init.c:129)
+10/22 11:05:40.094: [gtp] INFO: gtp_server() [127.0.0.2]:2123 (../lib/gtp/path.c:30)
+10/22 11:05:40.094: [gtp] INFO: gtp_connect() [127.0.0.3]:2123 (../lib/gtp/path.c:60)
+10/22 11:05:40.094: [mme] INFO: s1ap_server() [127.0.0.2]:36412 (../src/mme/s1ap-sctp.c:62)
+10/22 11:05:40.094: [sctp] INFO: MME initialize...done (../src/mme/app-init.c:33)
 ```
 
 Or, you can use `journalctl` like below to view live log.
@@ -181,11 +184,11 @@ $ diff -u /etc/open5gs/amf.yaml.old /etc/open5gs/amf.yaml
 @@ -20,6 +20,7 @@
  #
  logger:
-     file: /home/acetcom/Documents/git/open5gs/install/var/log/open5gs/amf.log
+     file: @localstatedir@/log/open5gs/amf.log
 +    level: debug
+
  #
  # amf:
- #
 ```
 
 After changing conf files, please restart Open5GS daemons.

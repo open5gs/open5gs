@@ -33,6 +33,8 @@ typedef struct bsf_event_s {
     bsf_sess_t *sess;
 } bsf_event_t;
 
+OGS_STATIC_ASSERT(OGS_EVENT_SIZE >= sizeof(bsf_event_t));
+
 bsf_event_t *bsf_event_new(int id);
 
 const char *bsf_event_get_name(bsf_event_t *e);

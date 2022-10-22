@@ -70,6 +70,8 @@ typedef struct ogs_event_s {
     } dbi;
 } ogs_event_t;
 
+#define OGS_EVENT_SIZE 256
+
 void *ogs_event_size(int id, size_t size);
 ogs_event_t *ogs_event_new(int id);
 void ogs_event_free(void *e);

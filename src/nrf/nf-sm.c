@@ -95,17 +95,17 @@ void nrf_nf_state_will_register(ogs_fsm_t *s, nrf_event_t *e)
     nf_instance = e->nf_instance;
     ogs_assert(nf_instance);
 
-    switch (e->id) {
+    switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
         break;
 
     case OGS_FSM_EXIT_SIG:
         break;
 
-    case NRF_EVT_SBI_SERVER:
-        message = e->sbi.message;
+    case OGS_EVENT_SBI_SERVER:
+        message = e->h.sbi.message;
         ogs_assert(message);
-        stream = e->sbi.data;
+        stream = e->h.sbi.data;
         ogs_assert(stream);
 
         SWITCH(message->h.service.name)
@@ -185,7 +185,7 @@ void nrf_nf_state_registered(ogs_fsm_t *s, nrf_event_t *e)
     nf_instance = e->nf_instance;
     ogs_assert(nf_instance);
 
-    switch (e->id) {
+    switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
         ogs_info("[%s] NF registered [Heartbeat:%ds]",
                 nf_instance->id, nf_instance->time.heartbeat_interval);
@@ -212,10 +212,10 @@ void nrf_nf_state_registered(ogs_fsm_t *s, nrf_event_t *e)
                 OpenAPI_notification_event_type_NF_DEREGISTERED, nf_instance));
         break;
 
-    case NRF_EVT_SBI_SERVER:
-        message = e->sbi.message;
+    case OGS_EVENT_SBI_SERVER:
+        message = e->h.sbi.message;
         ogs_assert(message);
-        stream = e->sbi.data;
+        stream = e->h.sbi.data;
         ogs_assert(stream);
 
         SWITCH(message->h.service.name)
@@ -300,7 +300,7 @@ void nrf_nf_state_de_registered(ogs_fsm_t *s, nrf_event_t *e)
 
     nrf_sm_debug(e);
 
-    switch (e->id) {
+    switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
         break;
     case OGS_FSM_EXIT_SIG:
@@ -318,7 +318,7 @@ void nrf_nf_state_exception(ogs_fsm_t *s, nrf_event_t *e)
 
     nrf_sm_debug(e);
 
-    switch (e->id) {
+    switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
         break;
     case OGS_FSM_EXIT_SIG:

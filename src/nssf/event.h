@@ -32,6 +32,8 @@ typedef struct nssf_event_s {
     ogs_event_t h;
 } nssf_event_t;
 
+OGS_STATIC_ASSERT(OGS_EVENT_SIZE >= sizeof(nssf_event_t));
+
 nssf_event_t *nssf_event_new(int id);
 
 const char *nssf_event_get_name(nssf_event_t *e);

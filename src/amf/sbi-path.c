@@ -22,67 +22,12 @@
 #include "ngap-path.h"
 #include "nnrf-handler.h"
 
-static int server_cb(ogs_sbi_request_t *request, void *data)
-{
-    amf_event_t *e = NULL;
-    int rv;
-
-    ogs_assert(request);
-    ogs_assert(data);
-
-    e = amf_event_new(OGS_EVENT_SBI_SERVER);
-    ogs_assert(e);
-
-    e->h.sbi.request = request;
-    e->h.sbi.data = data;
-
-    rv = ogs_queue_push(ogs_app()->queue, e);
-    if (rv != OGS_OK) {
-        ogs_error("ogs_queue_push() failed:%d", (int)rv);
-        ogs_sbi_request_free(request);
-        ogs_event_free(e);
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
-}
-
-static int client_cb(int status, ogs_sbi_response_t *response, void *data)
-{
-    amf_event_t *e = NULL;
-    int rv;
-
-    if (status != OGS_OK) {
-        ogs_log_message(
-                status == OGS_DONE ? OGS_LOG_DEBUG : OGS_LOG_WARN, 0,
-                "client_cb() failed [%d]", status);
-        return OGS_ERROR;
-    }
-
-    ogs_assert(response);
-
-    e = amf_event_new(OGS_EVENT_SBI_CLIENT);
-    ogs_assert(e);
-    e->h.sbi.response = response;
-    e->h.sbi.data = data;
-
-    rv = ogs_queue_push(ogs_app()->queue, e);
-    if (rv != OGS_OK) {
-        ogs_error("ogs_queue_push() failed:%d", (int)rv);
-        ogs_sbi_response_free(response);
-        ogs_event_free(e);
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
-}
-
 int amf_sbi_open(void)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_nf_service_t *service = NULL;
 
-    /* Add SELF NF instance */
+    /* Initialize SELF NF instance */
     nf_instance = ogs_sbi_self()->nf_instance;
     ogs_assert(nf_instance);
     ogs_sbi_nf_fsm_init(nf_instance);
@@ -104,18 +49,8 @@ int amf_sbi_open(void)
 
     /* Initialize NRF NF Instance */
     nf_instance = ogs_sbi_self()->nrf_instance;
-    if (nf_instance) {
-        ogs_sbi_client_t *client = NULL;
-
-        /* Client callback is only used when NF sends to NRF */
-        client = nf_instance->client;
-        ogs_assert(client);
-        client->cb = client_cb;
-
-        /* NFRegister is sent and the response is received
-         * by the above client callback. */
+    if (nf_instance)
         ogs_sbi_nf_fsm_init(nf_instance);
-    }
 
     /* Build Subscription-Data */
     ogs_sbi_subscription_data_build_default(
@@ -131,7 +66,7 @@ int amf_sbi_open(void)
     ogs_sbi_subscription_data_build_default(
             OpenAPI_nf_type_NSSF, OGS_SBI_SERVICE_NAME_NNSSF_NSSELECTION);
 
-    if (ogs_sbi_server_start_all(server_cb) != OGS_OK)
+    if (ogs_sbi_server_start_all(ogs_sbi_server_handler) != OGS_OK)
         return OGS_ERROR;
 
     return OGS_OK;
@@ -143,12 +78,12 @@ void amf_sbi_close(void)
     ogs_sbi_server_stop_all();
 }
 
-bool amf_sbi_send_request(ogs_sbi_nf_instance_t *nf_instance, void *data)
+bool amf_sbi_send_request(
+        ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact)
 {
     ogs_assert(nf_instance);
-    ogs_assert(data);
-
-    return ogs_sbi_send_request(nf_instance, client_cb, data);
+    ogs_assert(xact);
+    return ogs_sbi_send_request_to_nf_instance(nf_instance, xact);
 }
 
 bool amf_ue_sbi_discover_and_send(
@@ -174,7 +109,7 @@ bool amf_ue_sbi_discover_and_send(
         return false;
     }
 
-    if (ogs_sbi_discover_and_send(xact, client_cb) != true) {
+    if (ogs_sbi_discover_and_send(xact) != true) {
         ogs_error("amf_ue_sbi_discover_and_send() failed");
         ogs_sbi_xact_remove(xact);
         ogs_assert(OGS_OK ==
@@ -210,7 +145,7 @@ bool amf_sess_sbi_discover_and_send(
 
     xact->state = state;
 
-    if (ogs_sbi_discover_and_send(xact, client_cb) != true) {
+    if (ogs_sbi_discover_and_send(xact) != true) {
         ogs_error("amf_sess_sbi_discover_and_send() failed");
         ogs_sbi_xact_remove(xact);
         ogs_assert(OGS_OK == nas_5gs_send_back_gsm_message(sess,
@@ -228,11 +163,10 @@ static int client_discover_cb(
 
     ogs_sbi_xact_t *xact = NULL;
     ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
+    OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
     ogs_sbi_discovery_option_t *discovery_option = NULL;
     amf_ue_t *amf_ue = NULL;
     amf_sess_t *sess = NULL;
-
-    ogs_assert(response);
 
     xact = data;
     ogs_assert(xact);
@@ -240,6 +174,8 @@ static int client_discover_cb(
     xact = ogs_sbi_xact_cycle(xact);
     if (!xact) {
         ogs_error("SBI transaction has already been removed");
+        if (response)
+            ogs_sbi_response_free(response);
         return OGS_ERROR;
     }
 
@@ -247,12 +183,17 @@ static int client_discover_cb(
     ogs_assert(sess);
 
     service_type = xact->service_type;
+    ogs_assert(service_type);
+    requester_nf_type = xact->requester_nf_type;
+    ogs_assert(requester_nf_type);
     discovery_option = xact->discovery_option;
 
     sess = amf_sess_cycle(sess);
     if (!sess) {
         ogs_error("Session has already been removed");
         ogs_sbi_xact_remove(xact);
+        if (response)
+            ogs_sbi_response_free(response);
         return OGS_ERROR;
     }
 
@@ -267,6 +208,8 @@ static int client_discover_cb(
         ogs_sbi_xact_remove(xact);
         return OGS_ERROR;
     }
+
+    ogs_assert(response);
 
     rv = ogs_sbi_parse_response(&message, response);
     if (rv != OGS_OK) {
@@ -293,9 +236,10 @@ static int client_discover_cb(
         goto cleanup;
     }
 
-    ogs_nnrf_handle_nf_discover_search_result(message.SearchResult);
+    ogs_nnrf_disc_handle_nf_discover_search_result(message.SearchResult);
 
-    amf_sbi_select_nf(&sess->sbi, service_type, discovery_option);
+    amf_sbi_select_nf(&sess->sbi,
+            service_type, requester_nf_type, discovery_option);
 
     if (!sess->sbi.service_type_array[service_type].nf_instance) {
         ogs_error("[%s:%d] (NF discover) No [%s]",
@@ -313,6 +257,13 @@ static int client_discover_cb(
             service_type, NULL,
             amf_nsmf_pdusession_build_create_sm_context,
             sess, AMF_CREATE_SM_CONTEXT_NO_STATE, NULL);
+
+    ogs_sbi_xact_remove(xact);
+
+    ogs_sbi_message_free(&message);
+    ogs_sbi_response_free(response);
+
+    return OGS_OK;
 
 cleanup:
     ogs_sbi_xact_remove(xact);
@@ -347,7 +298,7 @@ bool amf_sess_sbi_discover_by_nsi(
                 sess->nssf.nrf.id, xact->service_type, xact->discovery_option);
     ogs_expect_or_return_val(xact->request, false);
 
-    return ogs_sbi_client_send_reqmem_persistent(
+    return ogs_sbi_client_send_request(
             client, client_discover_cb, xact->request, xact);
 }
 
@@ -497,6 +448,7 @@ static int client_notify_cb(
 bool amf_sbi_send_n1_n2_failure_notify(
         amf_sess_t *sess, OpenAPI_n1_n2_message_transfer_cause_e cause)
 {
+    bool rc;
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_client_t *client = NULL;
 
@@ -508,5 +460,11 @@ bool amf_sbi_send_n1_n2_failure_notify(
     request = amf_nsmf_callback_build_n1_n2_failure_notify(sess, cause);
     ogs_expect_or_return_val(request, false);
 
-    return ogs_sbi_client_send_request(client, client_notify_cb, request, NULL);
+    rc = ogs_sbi_send_request_to_client(
+            client, client_notify_cb, request, NULL);
+    ogs_expect(rc == true);
+
+    ogs_sbi_request_free(request);
+
+    return rc;
 }

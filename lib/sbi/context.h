@@ -123,6 +123,8 @@ typedef struct ogs_sbi_nf_instance_s {
     ogs_list_t nf_service_list;
     ogs_list_t nf_info_list;
 
+#define NF_INSTANCE_CLIENT(__nFInstance) \
+    ((__nFInstance) ? ((__nFInstance)->client) : NULL)
     void *client;                       /* only used in CLIENT */
     unsigned int reference_count;       /* reference count for memory free */
 } ogs_sbi_nf_instance_t;
@@ -157,6 +159,7 @@ typedef struct ogs_sbi_xact_s {
     ogs_lnode_t lnode;
 
     ogs_sbi_service_type_e service_type;
+    OpenAPI_nf_type_e requester_nf_type;
     ogs_sbi_discovery_option_t *discovery_option;
 
     ogs_sbi_request_t *request;
@@ -222,7 +225,7 @@ typedef struct ogs_sbi_subscription_data_s {
 
     struct {
         OpenAPI_nf_type_e nf_type;          /* nfType */
-        char *service_name;           /* ServiceName */
+        char *service_name;                 /* ServiceName */
     } subscr_cond;
 
     uint64_t requester_features;
@@ -299,8 +302,6 @@ int ogs_sbi_context_parse_config(
 
 bool ogs_sbi_nf_service_is_available(const char *name);
 
-ogs_sbi_nf_instance_t *ogs_sbi_scp_instance(void);
-
 ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_add(void);
 void ogs_sbi_nf_instance_set_id(ogs_sbi_nf_instance_t *nf_instance, char *id);
 void ogs_sbi_nf_instance_set_type(
@@ -317,9 +318,11 @@ void ogs_sbi_nf_instance_remove_all(void);
 ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_find(char *id);
 ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_find_by_discovery_param(
         OpenAPI_nf_type_e nf_type,
+        OpenAPI_nf_type_e requester_nf_type,
         ogs_sbi_discovery_option_t *discovery_option);
 ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_find_by_service_type(
-        ogs_sbi_service_type_e service_type);
+        ogs_sbi_service_type_e service_type,
+        OpenAPI_nf_type_e requester_nf_type);
 bool ogs_sbi_nf_instance_maximum_number_is_reached(void);
 
 ogs_sbi_nf_service_t *ogs_sbi_nf_service_add(
@@ -354,6 +357,9 @@ ogs_sbi_nf_service_t *ogs_sbi_nf_service_build_default(
 
 ogs_sbi_client_t *ogs_sbi_client_find_by_service_name(
         ogs_sbi_nf_instance_t *nf_instance, char *name, char *version);
+ogs_sbi_client_t *ogs_sbi_client_find_by_service_type(
+        ogs_sbi_nf_instance_t *nf_instance,
+        ogs_sbi_service_type_e service_type);
 
 void ogs_sbi_client_associate(ogs_sbi_nf_instance_t *nf_instance);
 
@@ -375,6 +381,7 @@ OpenAPI_uri_scheme_e ogs_sbi_default_uri_scheme(void);
 bool ogs_sbi_discovery_param_is_matched(
         ogs_sbi_nf_instance_t *nf_instance,
         OpenAPI_nf_type_e target_nf_type,
+        OpenAPI_nf_type_e requester_nf_type,
         ogs_sbi_discovery_option_t *discovery_option);
 
 bool ogs_sbi_discovery_option_is_matched(

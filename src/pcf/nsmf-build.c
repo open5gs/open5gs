@@ -35,7 +35,10 @@ ogs_sbi_request_t *pcf_nsmf_callback_build_smpolicycontrol_update(
     ogs_assert(sess->notification_uri);
 
     server = ogs_list_first(&ogs_sbi_self()->server_list);
-    ogs_assert(server);
+    if (!server) {
+        ogs_error("No server");
+        goto end;
+    }
 
     memset(&header, 0, sizeof(header));
     header.service.name = (char *)OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL;
@@ -47,7 +50,10 @@ ogs_sbi_request_t *pcf_nsmf_callback_build_smpolicycontrol_update(
     memset(&SmPolicyNotification, 0, sizeof(SmPolicyNotification));
 
     SmPolicyNotification.resource_uri = ogs_sbi_server_uri(server, &header);
-    ogs_assert(SmPolicyNotification.resource_uri);
+    if (!SmPolicyNotification.resource_uri) {
+        ogs_error("No resource_uri");
+        goto end;
+    }
 
     SmPolicyDecision = data;
     ogs_assert(SmPolicyDecision);
@@ -58,15 +64,22 @@ ogs_sbi_request_t *pcf_nsmf_callback_build_smpolicycontrol_update(
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
     message.h.uri = ogs_msprintf("%s/%s",
             sess->notification_uri, OGS_SBI_RESOURCE_NAME_UPDATE);
-    ogs_assert(message.h.uri);
+    if (!message.h.uri) {
+        ogs_error("No message.h.uri");
+        goto end;
+    }
 
     message.SmPolicyNotification = &SmPolicyNotification;
 
     request = ogs_sbi_build_request(&message);
     ogs_assert(request);
 
-    ogs_free(SmPolicyNotification.resource_uri);
-    ogs_free(message.h.uri);
+end:
+
+    if (SmPolicyNotification.resource_uri)
+        ogs_free(SmPolicyNotification.resource_uri);
+    if (message.h.uri)
+        ogs_free(message.h.uri);
 
     return request;
 }
@@ -93,12 +106,18 @@ ogs_sbi_request_t *pcf_nsmf_callback_build_smpolicycontrol_terminate(
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
     message.h.uri = ogs_msprintf("%s/%s",
             sess->notification_uri, OGS_SBI_RESOURCE_NAME_TERMINATE);
-    ogs_assert(message.h.uri);
+    if (!message.h.uri) {
+        ogs_error("No message.h.uri");
+        goto end;
+    }
 
     request = ogs_sbi_build_request(&message);
     ogs_assert(request);
 
-    ogs_free(message.h.uri);
+end:
+
+    if (message.h.uri)
+        ogs_free(message.h.uri);
 
     return request;
 }

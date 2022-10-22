@@ -35,9 +35,15 @@ ogs_sbi_request_t *amf_nnssf_nsselection_build_get(
         (char *)OGS_SBI_RESOURCE_NAME_NETWORK_SLICE_INFORMATION;
 
     message.param.nf_id = NF_INSTANCE_ID(ogs_sbi_self()->nf_instance);
-    ogs_assert(message.param.nf_id);
+    if (!message.param.nf_id) {
+        ogs_error("No nf_id");
+        goto end;
+    }
     message.param.nf_type = NF_INSTANCE_TYPE(ogs_sbi_self()->nf_instance);
-    ogs_assert(message.param.nf_type);
+    if (!message.param.nf_type) {
+        ogs_error("No nf_type");
+        goto end;
+    }
 
     message.param.slice_info_request_for_pdu_session_presence = true;
     message.param.roaming_indication = OpenAPI_roaming_indication_NON_ROAMING;
@@ -45,7 +51,9 @@ ogs_sbi_request_t *amf_nnssf_nsselection_build_get(
             sizeof(message.param.s_nssai));
 
     request = ogs_sbi_build_request(&message);
-    ogs_assert(request);
+    ogs_expect(request);
+
+end:
 
     return request;
 }
