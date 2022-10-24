@@ -571,7 +571,8 @@ int amf_namf_callback_handle_dereg_notify(
         amf_ue->network_initiated_de_reg = true;
 
         ogs_assert(OGS_OK ==
-            nas_5gs_send_de_registration_request(amf_ue));
+            nas_5gs_send_de_registration_request(amf_ue,
+                DeregistrationData->dereg_reason));
 
             amf_sbi_send_release_all_sessions(
                 amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);

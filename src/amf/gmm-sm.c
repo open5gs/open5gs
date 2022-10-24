@@ -454,7 +454,8 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
             } else {
                 amf_ue->t3522.retry_count++;
                 ogs_assert(OGS_OK ==
-                    nas_5gs_send_de_registration_request(amf_ue));
+                    nas_5gs_send_de_registration_request(amf_ue,
+                        OpenAPI_deregistration_reason_NULL));
             }
             break;
 
