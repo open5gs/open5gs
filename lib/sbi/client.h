@@ -56,6 +56,7 @@ typedef int (*ogs_sbi_client_cb_f)(
 
 typedef struct ogs_sbi_client_s {
     ogs_socknode_t  node;
+    OpenAPI_uri_scheme_e scheme;
 
     struct {
         const char  *key;

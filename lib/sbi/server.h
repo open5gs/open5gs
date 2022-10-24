@@ -28,6 +28,9 @@
 extern "C" {
 #endif
 
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+
 typedef struct ogs_sbi_stream_s ogs_sbi_stream_t;
 
 typedef struct ogs_sbi_server_s {
@@ -38,6 +41,8 @@ typedef struct ogs_sbi_server_s {
         const char  *key;
         const char  *pem;
     } tls;
+
+    SSL_CTX *ssl_ctx;
 
     int (*cb)(ogs_sbi_request_t *request, void *data);
     ogs_list_t      session_list;
