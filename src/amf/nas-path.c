@@ -285,7 +285,8 @@ int nas_5gs_send_de_registration_accept(amf_ue_t *amf_ue)
     return rv;
 }
 
-int nas_5gs_send_de_registration_request(amf_ue_t *amf_ue)
+int nas_5gs_send_de_registration_request(amf_ue_t *amf_ue,
+        OpenAPI_deregistration_reason_e dereg_reason)
 {
     int rv;
 
@@ -302,7 +303,7 @@ int nas_5gs_send_de_registration_request(amf_ue_t *amf_ue)
         gmmbuf = amf_ue->t3522.pkbuf;
         ogs_expect_or_return_val(gmmbuf, OGS_ERROR);
     } else {
-        gmmbuf = gmm_build_de_registration_request(amf_ue);
+        gmmbuf = gmm_build_de_registration_request(amf_ue, dereg_reason);
         ogs_expect_or_return_val(gmmbuf, OGS_ERROR);
     }
 
