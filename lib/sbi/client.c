@@ -372,6 +372,9 @@ static connection_t *connection_add(
         request->h.uri = uri;
     }
 
+    curl_easy_setopt(conn->easy, CURLOPT_SSL_VERIFYPEER, 0);
+    curl_easy_setopt(conn->easy, CURLOPT_SSL_VERIFYHOST, 0);
+
     /* HTTP Method */
     if (strcmp(request->h.method, OGS_SBI_HTTP_METHOD_PUT) == 0 ||
         strcmp(request->h.method, OGS_SBI_HTTP_METHOD_PATCH) == 0 ||

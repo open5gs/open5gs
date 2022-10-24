@@ -75,6 +75,7 @@ typedef struct ogs_sbi_session_s {
     int32_t                 last_stream_id;
 
     struct h2_settings      settings;
+    SSL*                    ssl;
 } ogs_sbi_session_t;
 
 typedef struct ogs_sbi_stream_s {
@@ -116,6 +117,78 @@ static void server_final(void)
     ogs_pool_final(&session_pool);
 }
 
+#ifndef OPENSSL_NO_NEXTPROTONEG
+static int next_proto_cb(SSL *ssl, const unsigned char **data,
+                         unsigned int *len, void *arg) {
+    static unsigned char next_proto_list[256];
+    (void)ssl;
+    (void)arg;
+
+    next_proto_list[0] = NGHTTP2_PROTO_VERSION_ID_LEN;
+    memcpy(&next_proto_list[1], NGHTTP2_PROTO_VERSION_ID, NGHTTP2_PROTO_VERSION_ID_LEN);
+
+    *data = next_proto_list;
+    *len = 1 + NGHTTP2_PROTO_VERSION_ID_LEN;
+    return SSL_TLSEXT_ERR_OK;
+}
+#endif
+
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L
+static int alpn_select_proto_cb(SSL *ssl, const unsigned char **out,
+                                unsigned char *outlen, const unsigned char *in,
+                                unsigned int inlen, void *arg) {
+    int rv;
+    (void)ssl;
+    (void)arg;
+
+    rv = nghttp2_select_next_protocol((unsigned char **)out, outlen, in, inlen);
+    if (rv != 1) {
+        return SSL_TLSEXT_ERR_NOACK;
+    }
+
+    return SSL_TLSEXT_ERR_OK;
+}
+#endif /* OPENSSL_VERSION_NUMBER >= 0x10002000L */
+
+static SSL_CTX *create_ssl_ctx(const char *key_file, const char *cert_file) {
+    SSL_CTX *ssl_ctx;
+
+    ssl_ctx = SSL_CTX_new(TLS_server_method());
+    if (!ssl_ctx) {
+        ogs_error("Could not create SSL/TLS context: %s", ERR_error_string(ERR_get_error(), NULL));
+        return NULL;
+    }
+    SSL_CTX_set_options(ssl_ctx,
+                          SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 |
+                          SSL_OP_NO_COMPRESSION |
+                          SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION);
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    if (SSL_CTX_set1_curves_list(ssl_ctx, "P-256") != 1) {
+        ogs_error("SSL_CTX_set1_curves_list failed: %s", ERR_error_string(ERR_get_error(), NULL));
+        return NULL;
+    }
+#endif /* !(OPENSSL_VERSION_NUMBER >= 0x30000000L) */
+
+    if (SSL_CTX_use_PrivateKey_file(ssl_ctx, key_file, SSL_FILETYPE_PEM) != 1) {
+        ogs_error("Could not read private key file - key_file=%s", key_file);
+        return NULL;
+    }
+    if (SSL_CTX_use_certificate_chain_file(ssl_ctx, cert_file) != 1) {
+        ogs_error("Could not read certificate file - cert_file=%s ", cert_file);
+        return NULL;
+    }
+
+#ifndef OPENSSL_NO_NEXTPROTONEG
+    SSL_CTX_set_next_protos_advertised_cb(ssl_ctx, next_proto_cb, NULL);
+#endif /* !OPENSSL_NO_NEXTPROTONEG */
+
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L
+    SSL_CTX_set_alpn_select_cb(ssl_ctx, alpn_select_proto_cb, NULL);
+#endif /* OPENSSL_VERSION_NUMBER >= 0x10002000L */
+
+    return ssl_ctx;
+}
+
 static int server_start(ogs_sbi_server_t *server,
         int (*cb)(ogs_sbi_request_t *request, void *data))
 {
@@ -126,6 +199,15 @@ static int server_start(ogs_sbi_server_t *server,
 
     addr = server->node.addr;
     ogs_assert(addr);
+
+    /* Create SSL CTX */
+    if (server->tls.key && server->tls.pem) {
+        server->ssl_ctx = create_ssl_ctx(server->tls.key, server->tls.pem);
+        if (!server->ssl_ctx) {
+            ogs_error("Cannot create SSL CTX");
+            return OGS_ERROR;
+        }
+    }
 
     sock = ogs_tcp_server(addr, server->node.option);
     if (!sock) {
@@ -156,6 +238,10 @@ static int server_start(ogs_sbi_server_t *server,
 static void server_stop(ogs_sbi_server_t *server)
 {
     ogs_assert(server);
+
+    /* Free SSL CTX */
+    if (server->ssl_ctx)
+        SSL_CTX_free(server->ssl_ctx);
 
     if (server->node.poll)
         ogs_pollset_remove(server->node.poll);
@@ -485,6 +571,11 @@ static ogs_sbi_session_t *session_add(
     ogs_expect_or_return_val(sbi_sess->addr, NULL);
     memcpy(sbi_sess->addr, &sock->remote_addr, sizeof(ogs_sockaddr_t));
 
+    if (server->ssl_ctx) {
+        sbi_sess->ssl = SSL_new(server->ssl_ctx);
+        ogs_expect_or_return_val(sbi_sess->ssl, NULL);
+    }
+
     ogs_list_add(&server->session_list, sbi_sess);
 
     return sbi_sess;
@@ -500,6 +591,9 @@ static void session_remove(ogs_sbi_session_t *sbi_sess)
     ogs_assert(server);
 
     ogs_list_remove(&server->session_list, sbi_sess);
+
+    if (sbi_sess->ssl)
+        SSL_free(sbi_sess->ssl);
 
     stream_remove_all(sbi_sess);
     nghttp2_session_del(sbi_sess->session);
@@ -566,6 +660,19 @@ static void accept_handler(short when, ogs_socket_t fd, void *data)
     sbi_sess = session_add(server, new);
     ogs_assert(sbi_sess);
 
+    if (sbi_sess->ssl) {
+        int err ;
+        SSL_set_fd(sbi_sess->ssl, new->fd);
+        SSL_set_accept_state(sbi_sess->ssl);
+        err = SSL_accept(sbi_sess->ssl);
+        if (err <= 0) {
+            ogs_error("SSL_accept failed: %s", ERR_error_string(ERR_get_error(), NULL));
+            ogs_sock_destroy(new);
+            session_remove(sbi_sess);
+            return;
+        }
+    }
+
     sbi_sess->poll.read = ogs_pollset_add(ogs_app()->pollset,
         OGS_POLLIN, new->fd, recv_handler, sbi_sess);
     ogs_assert(sbi_sess->poll.read);
@@ -595,7 +702,11 @@ static void recv_handler(short when, ogs_socket_t fd, void *data)
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
 
-    n = ogs_recv(fd, pkbuf->data, OGS_MAX_SDU_LEN, 0);
+    if (sbi_sess->ssl)
+        n = SSL_read(sbi_sess->ssl, pkbuf->data, OGS_MAX_SDU_LEN);
+    else
+        n = ogs_recv(fd, pkbuf->data, OGS_MAX_SDU_LEN, 0);
+
     if (n > 0) {
         ogs_pkbuf_put(pkbuf, n);
 
@@ -1294,7 +1405,11 @@ static void session_write_callback(short when, ogs_socket_t fd, void *data)
     ogs_assert(pkbuf);
     ogs_list_remove(&sbi_sess->write_queue, pkbuf);
 
-    ogs_send(fd, pkbuf->data, pkbuf->len, 0);
+    if (sbi_sess->ssl)
+        SSL_write(sbi_sess->ssl, pkbuf->data, pkbuf->len);
+    else
+        ogs_send(fd, pkbuf->data, pkbuf->len, 0);
+
     ogs_log_hexdump(OGS_LOG_DEBUG, pkbuf->data, pkbuf->len);
 
     ogs_pkbuf_free(pkbuf);
