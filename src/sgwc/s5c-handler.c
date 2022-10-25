@@ -420,7 +420,6 @@ void sgwc_s5c_handle_delete_session_response(
         ogs_pkbuf_t *gtpbuf, ogs_gtp2_message_t *message)
 {
     int rv;
-    ogs_gtp2_cause_t *cause = NULL;
     uint8_t cause_value;
 
     sgwc_ue_t *sgwc_ue = NULL;
@@ -466,37 +465,23 @@ void sgwc_s5c_handle_delete_session_response(
         return;
     }
 
-    /*****************************************
-     * Check Mandatory/Conditional IE Missing
-     *****************************************/
-    ogs_assert(cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED);
-
-    if (rsp->cause.presence == 0) {
-        ogs_error("No Cause");
-        cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
-    }
-
-    if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp_send_error_message(
-                s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
-                OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE, cause_value);
-        return;
-    }
-
     /********************
      * Check Cause Value
      ********************/
     ogs_assert(cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED);
 
-    cause = rsp->cause.data;
-    ogs_assert(cause);
-    cause_value = cause->value;
+    if (rsp->cause.presence) {
+        ogs_gtp2_cause_t *cause = rsp->cause.data;
+        ogs_assert(cause);
+
+        cause_value = cause->value;
+    } else {
+        ogs_error("No Cause");
+        cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
+    }
+
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_error("GTP Cause [Value:%d]", cause_value);
-        ogs_gtp_send_error_message(
-                s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
-                OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE, cause_value);
-        return;
+        ogs_error("GTP Cause [Value:%d] - Ignored", cause_value);
     }
 
     /********************
@@ -725,6 +710,7 @@ void sgwc_s5c_handle_update_bearer_request(
         s11_xact = ogs_gtp_xact_local_create(
                 sgwc_ue->gnode, &message->h, pkbuf, bearer_timeout, bearer);
         ogs_expect_or_return(s11_xact);
+        s11_xact->local_teid = sgwc_ue->sgw_s11_teid;
 
         ogs_gtp_xact_associate(s5c_xact, s11_xact);
     } else {
@@ -870,6 +856,7 @@ void sgwc_s5c_handle_delete_bearer_request(
         s11_xact = ogs_gtp_xact_local_create(
                 sgwc_ue->gnode, &message->h, pkbuf, bearer_timeout, bearer);
         ogs_expect_or_return(s11_xact);
+        s11_xact->local_teid = sgwc_ue->sgw_s11_teid;
 
         ogs_gtp_xact_associate(s5c_xact, s11_xact);
     } else {

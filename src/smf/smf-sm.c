@@ -143,6 +143,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     OGS_SETUP_GTP_NODE(sess, smf_gnode->gnode);
             }
             if (!sess) {
+                ogs_error("No Session");
                 ogs_gtp2_send_error_message(gtp_xact, 0,
                         OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE,
                         OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND);
@@ -152,9 +153,11 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_fsm_dispatch(&sess->sm, e);
             break;
         case OGS_GTP2_DELETE_SESSION_REQUEST_TYPE:
+            if (!gtp2_message.h.teid_presence) ogs_error("No TEID");
             smf_metrics_inst_global_inc(SMF_METR_GLOB_CTR_S5C_RX_DELETESESSIONREQ);
             smf_metrics_inst_gtp_node_inc(smf_gnode->metrics, SMF_METR_GTP_NODE_CTR_S5C_RX_DELETESESSIONREQ);
             if (!sess) {
+                ogs_error("No Session");
                 ogs_gtp2_send_error_message(gtp_xact, 0,
                         OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE,
                         OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND);
@@ -164,6 +167,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_fsm_dispatch(&sess->sm, e);
             break;
         case OGS_GTP2_MODIFY_BEARER_REQUEST_TYPE:
+            if (!gtp2_message.h.teid_presence) ogs_error("No TEID");
             smf_s5c_handle_modify_bearer_request(
                 sess, gtp_xact, recvbuf, &gtp2_message.modify_bearer_request);
             break;
@@ -188,6 +192,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_fsm_dispatch(&sess->sm, e);
             break;
         case OGS_GTP2_BEARER_RESOURCE_COMMAND_TYPE:
+            if (!gtp2_message.h.teid_presence) ogs_error("No TEID");
             smf_s5c_handle_bearer_resource_command(
                 sess, gtp_xact, &gtp2_message.bearer_resource_command);
             break;

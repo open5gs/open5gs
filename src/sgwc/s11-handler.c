@@ -661,6 +661,7 @@ void sgwc_s11_handle_delete_session_request(
         s5c_xact = ogs_gtp_xact_local_create(
                 sess->gnode, &message->h, gtpbuf, gtp_sess_timeout, sess);
         ogs_expect_or_return(s5c_xact);
+        s5c_xact->local_teid = sess->sgw_s5c_teid;
 
         ogs_gtp_xact_associate(s11_xact, s5c_xact);
 

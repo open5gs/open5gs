@@ -231,6 +231,7 @@ int sgwc_gtp_send_downlink_data_notification(
     gtp_xact = ogs_gtp_xact_local_create(
             sgwc_ue->gnode, &h, pkbuf, bearer_timeout, bearer);
     ogs_expect_or_return_val(gtp_xact, OGS_ERROR);
+    gtp_xact->local_teid = sgwc_ue->sgw_s11_teid;
 
     rv = ogs_gtp_xact_commit(gtp_xact);
     ogs_expect(rv == OGS_OK);
