@@ -25,6 +25,7 @@ systemd_conf_in = '''
     open5gs-hssd.service
     open5gs-pcrfd.service
     open5gs-nrfd.service
+    open5gs-scpd.service
     open5gs-ausfd.service
     open5gs-udmd.service
     open5gs-pcfd.service
