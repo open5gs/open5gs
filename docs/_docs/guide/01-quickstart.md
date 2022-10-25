@@ -44,18 +44,19 @@ All of these Open5GS components have config files. Each config file contains the
 #### 5G SA Core
 
 The Open5GS 5G SA Core contains the following functions:
+* NRF - NF Repository Function
+* SCP - Service Communication Proxy
 * AMF - Access and Mobility Management Function
 * SMF - Session Management Function
 * UPF - User Plane Function
 * AUSF - Authentication Server Function
-* NRF - NF Repository Function
 * UDM - Unified Data Management
 * UDR - Unified Data Repository
 * PCF - Policy and Charging Function
 * NSSF - Network Slice Selection Function
 * BSF - Binding Support Function
 
-The 5G SA core works in a different way to the 4G core - it uses a **Service Based Architecture** (SBI). **Control plane** functions are configured to register with the NRF, and the NRF then helps them discover the other core functions. Running through the other functions: The AMF handles connection and mobility management; a subset of what the 4G MME is tasked with. gNBs (5G basestations) connect to the AMF. The UDM, AUSF and UDR carry out similar operations as the 4G HSS, generating SIM authentication vectors and holding the subscriber profile. Session management is all handled by the SMF (previously the responsibility of the 4G MME/ SGWC/ PGWC). The NSSF provides a way to select the network slice. Finally there is the PCF, used for charging and enforcing subscriber policies.
+The 5G SA core works in a different way to the 4G core - it uses a **Service Based Architecture** (SBI). **Control plane** functions are configured to register with the NRF, and the NRF then helps them discover the other core functions. Running through the other functions: The AMF handles connection and mobility management; a subset of what the 4G MME is tasked with. gNBs (5G basestations) connect to the AMF. The UDM, AUSF and UDR carry out similar operations as the 4G HSS, generating SIM authentication vectors and holding the subscriber profile. Session management is all handled by the SMF (previously the responsibility of the 4G MME/ SGWC/ PGWC). The NSSF provides a way to select the network slice, and PCF is used for charging and enforcing subscriber policies. Finally there is the SCP that enable indirect communication.
 
 The 5G SA core **user plane** is much simpler, as it only contains a single function. The UPF carries user data packets between the gNB and the external WAN. It connects back to the SMF too. 
 
@@ -70,14 +71,36 @@ With the exception of the SMF and UPF, all config files for the 5G SA core funct
 **Note:** Nighly builds are offered by [Osmocom](https://osmocom.org) on [OBS](https://build.opensuse.org/package/show/network:osmocom:nightly/open5gs). Scroll down to use a nightly build package.
 {: .notice--warning}
 
+#### Getting MongoDB
+---
+
+Import the public key used by the package management system.
+
+```bash
+$ sudo apt update
+$ sudo apt install wget gnupg
+$ wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
+```
+
+Create the list file /etc/apt/sources.list.d/mongodb-org-6.0.list for your version of Ubuntu.
+
+```bash
+$ echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+```
+
+Install the MongoDB packages.
+```bash
+$ sudo apt update
+$ sudo apt-get install -y mongodb-org
+$ sudo systemctl start mongod (if '/usr/bin/mongod' is not running)
+$ sudo systemctl enable mongod (ensure to automatically start it on system boot)
+```
 
 #### Ubuntu
 
 *Ubuntu* makes it easy to install Open5GS as shown below.
 
 ```bash
-$ sudo apt update
-$ sudo apt install software-properties-common
 $ sudo add-apt-repository ppa:open5gs/latest
 $ sudo apt update
 $ sudo apt install open5gs
@@ -90,13 +113,9 @@ The Open5GS packages for Debian are available on [OBS](https://build.opensuse.or
 
 ```bash
 $ sudo apt update
-$ sudo apt install wget gnupg
-$ wget -qO - https://www.mongodb.org/static/pgp/server-4.2.asc | sudo apt-key add -
-$ echo "deb http://repo.mongodb.org/apt/debian buster/mongodb-org/4.2 main" | sudo tee /etc/apt/sources.list.d/mongodb-org.list
 $ wget -qO - https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_10/Release.key | sudo apt-key add -
 $ sudo sh -c "echo 'deb http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_10/ ./' > /etc/apt/sources.list.d/open5gs.list"
 $ sudo apt update
-$ sudo apt install mongodb-org
 $ sudo apt install open5gs
 ```
 
@@ -113,16 +132,6 @@ https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbunt
 https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_21.04/
 https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_21.10/
 https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_22.04/
-```
-
-#### openSUSE
-
-[Martin Hauke](https://build.opensuse.org/user/show/mnhauke) packaged Open5GS for *openSUSE* on [OBS](https://build.opensuse.org/package/show/home:mnhauke:open5gs/open5gs).
-
-```bash
-$ sudo zypper addrepo -f obs://home:mnhauke:open5gs home:mnhauke:open5gs
-$ sudo zypper install mongodb-server mongodb-shell
-$ sudo zypper install open5gs
 ```
 
 #### Nightly Builds
@@ -153,6 +162,15 @@ https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_21.
 https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_22.04/
 ```
 
+#### openSUSE
+
+[Martin Hauke](https://build.opensuse.org/user/show/mnhauke) packaged Open5GS for *openSUSE* on [OBS](https://build.opensuse.org/package/show/home:mnhauke:open5gs/open5gs).
+
+```bash
+$ sudo zypper addrepo -f obs://home:mnhauke:open5gs home:mnhauke:open5gs
+$ sudo zypper install mongodb-server mongodb-shell
+$ sudo zypper install open5gs
+```
 
 ## 3. Install the  WebUI of Open5GS
 ---
@@ -167,7 +185,7 @@ The WebUI allows you to interactively edit subscriber data. While it is not esse
     ```bash
     $ sudo apt update
     $ sudo apt install curl
-    $ curl -fsSL https://deb.nodesource.com/setup_14.x | sudo -E bash -
+    $ curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
     $ sudo apt install nodejs
     ```
 
@@ -220,6 +238,7 @@ HSS-frDi  = 127.0.0.8 :3868 for S6a, Cx
 PCRF-frDi = 127.0.0.9 :3868 for Gx
 
 NRF-sbi   = 127.0.0.10:7777 for 5G SBI
+SCP-sbi   = 127.0.1.10:7777 for 5G SBI
 AUSF-sbi  = 127.0.0.11:7777 for 5G SBI
 UDM-sbi   = 127.0.0.12:7777 for 5G SBI
 PCF-sbi   = 127.0.0.13:7777 for 5G SBI
@@ -239,45 +258,49 @@ Modify [/etc/open5gs/mme.yaml](https://github.com/{{ site.github_username }}/ope
 
 ```diff
 $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
-
- mme:
-     freeDiameter: /etc/freeDiameter/mme.conf
+--- mme.yaml    2020-09-05 20:52:28.648235143 -0400
++++ mme.yaml.new    2020-09-05 20:56:05.434484208 -0400
+@@ -253,20 +253,20 @@ mme:
      s1ap:
--      addr: 127.0.0.2
-+      addr: 10.10.0.2 # for external eNB - a local address that can be reached by the eNB
+       - addr: 127.0.0.2
      gtpc:
+-      - addr: 127.0.0.2
++      - addr: 10.10.0.2
+     metrics:
        addr: 127.0.0.2
+       port: 9090
      gummei:
        plmn_id:
 -        mcc: 999
 -        mnc: 70
-+        mcc: 001 # set your PLMN-MCC
-+        mnc: 01  # set your PLMN-MNC
++        mcc: 001
++        mnc: 01
        mme_gid: 2
        mme_code: 1
      tai:
        plmn_id:
 -        mcc: 999
 -        mnc: 70
--      tac: 1
-+        mcc: 001 # set your PLMN-MCC
-+        mnc: 01  # set your PLMN-MNC
-+      tac: 2 # should match the TAC used by your eNB
++        mcc: 001
++        mnc: 01
+       tac: 1
      security:
-
+         integrity_order : [ EIA2, EIA1, EIA0 ]
 ```
 
 Modify [/etc/open5gs/sgwu.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/sgwu.yaml.in) to set the GTP-U IP address.
 ```diff
 $ diff -u /etc/open5gs/sgwu.yaml.old /etc/open5gs/sgwu.yaml
-
+--- sgwu.yaml    2020-09-05 20:50:39.393022566 -0400
++++ sgwu.yaml.new    2020-09-05 20:51:06.667838823 -0400
+@@ -98,7 +98,7 @@ logger:
+ #
  sgwu:
-     gtpu:
--      addr: 127.0.0.6
-+      addr: 10.11.0.6  # for external eNB - a local address that can be reached by the eNB
      pfcp:
-       addr: 127.0.0.6
-
+-      - addr: 127.0.0.6
++      - addr: 10.11.0.6
+     gtpu:
+       - addr: 127.0.0.6
 ```
 
 After changing config files, please restart Open5GS daemons.
@@ -298,20 +321,23 @@ Modify [/etc/open5gs/amf.yaml](https://github.com/{{ site.github_username }}/ope
 
 ```diff
 $ diff -u /etc/open5gs/amf.yaml.old /etc/open5gs/amf.yaml
-
-amf:
-    sbi:
-      - addr: 127.0.0.5
-        port: 7777
+--- amf.yaml    2020-09-05 20:52:28.652234967 -0400
++++ amf.yaml.new    2020-09-05 20:55:07.453114885 -0400
+@@ -293,26 +293,26 @@ amf:
+       - addr: 127.0.0.5
+         port: 7777
      ngap:
 -      - addr: 127.0.0.5
-+      - addr: 10.10.0.5 # for external gNB - a local address that can be reached by the gNB
++      - addr: 10.10.0.5
+     metrics:
+         addr: 127.0.0.5
+         port: 9090
      guami:
        - plmn_id:
 -          mcc: 999
 -          mnc: 70
-+          mcc: 001 # set your PLMN-MCC
-+          mnc: 01  # set your PLMN-MNC
++          mcc: 001
++          mnc: 01
          amf_id:
            region: 2
            set: 1
@@ -319,36 +345,34 @@ amf:
        - plmn_id:
 -          mcc: 999
 -          mnc: 70
--        tac: 1
-+          mcc: 001 # set your PLMN-MCC
-+          mnc: 01  # set your PLMN-MNC
-+        tac: 2 # should match the TAC used by your gNB
++          mcc: 001
++          mnc: 01
+         tac: 1
      plmn_support:
        - plmn_id:
 -          mcc: 999
 -          mnc: 70
-+          mcc: 001 # set your PLMN-MCC
-+          mnc: 01  # set your PLMN-MNC
++          mcc: 001
++          mnc: 01
          s_nssai:
            - sst: 1
      security:
-
 ```
 
 Modify [/etc/open5gs/upf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/upf.yaml.in) to set the GTP-U address.
 ```diff
 $ diff -u /etc/open5gs/upf.yaml.old /etc/open5gs/upf.yaml
-
-upf:
+--- upf.yaml    2020-09-05 20:52:28.652234967 -0400
++++ upf.yaml.new    2020-09-05 20:52:55.279052142 -0400
+@@ -168,7 +168,7 @@ upf:
      pfcp:
        - addr: 127.0.0.7
      gtpu:
 -      - addr: 127.0.0.7
-+      - addr: 10.11.0.7 # for external gNB - a local address that can be reached by the gNB
++      - addr: 10.11.0.7
      subnet:
        - addr: 10.45.0.1/16
        - addr: 2001:db8:cafe::1/48
-
 ```
 
 After changing config files, please restart Open5GS daemons.
@@ -482,6 +506,7 @@ $ sudo systemctl stop open5gs-upfd
 $ sudo systemctl stop open5gs-hssd
 $ sudo systemctl stop open5gs-pcrfd
 $ sudo systemctl stop open5gs-nrfd
+$ sudo systemctl stop open5gs-scpd
 $ sudo systemctl stop open5gs-ausfd
 $ sudo systemctl stop open5gs-udmd
 $ sudo systemctl stop open5gs-pcfd
@@ -501,6 +526,7 @@ $ sudo systemctl restart open5gs-upfd
 $ sudo systemctl restart open5gs-hssd
 $ sudo systemctl restart open5gs-pcrfd
 $ sudo systemctl restart open5gs-nrfd
+$ sudo systemctl restart open5gs-scpd
 $ sudo systemctl restart open5gs-ausfd
 $ sudo systemctl restart open5gs-udmd
 $ sudo systemctl restart open5gs-pcfd
@@ -539,4 +565,3 @@ The WebUI of Open5GS can be removed as follows:
 ```bash
 curl -fsSL {{ site.url }}{{ site.baseurl }}/assets/webui/uninstall | sudo -E bash -
 ```
-

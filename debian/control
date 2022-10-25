@@ -165,6 +165,18 @@ Description: NRF (Network Repository Function)
  .
  This package provides the NRF (Network Repository Function)
 
+Package: open5gs-scp
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         open5gs-common (= ${binary:Version})
+Description: SCP (Network Repository Function)
+ Open5GS is a C-language implementation of 5G Core and EPC
+ Packet Core, i.e. the core network of an NR/LTE network (Release-16)
+ .
+ This package provides the SCP (Service Communication Proxy)
+
 Package: open5gs-ausf
 Architecture: any
 Multi-Arch: same

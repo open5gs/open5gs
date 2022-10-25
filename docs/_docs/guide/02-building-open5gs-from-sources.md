@@ -6,14 +6,12 @@ head_inline: "<style> .blue { color: blue; } </style>"
 This post explains how to compile and install the source code on **Debian/Ubuntu** based Linux Distribution.
 {: .blue}
 
-**Note:** Ubuntu 22.04(focal) and earlier versions, and Debian 9(stretch) and earlier versions are not supported.
+**Note:** Ubuntu 16.04(xenial) and earlier versions, and Debian 9(stretch) and earlier versions are not supported.
 {: .notice--danger}
 
 
 ### Getting MongoDB
 ---
-
-Install MongoDB with package manager. It is used as database for NRF/PCF/UDR and PCRF/HSS.
 
 Import the public key used by the package management system.
 
@@ -34,6 +32,9 @@ $ sudo apt-get install -y mongodb-org
 $ sudo systemctl start mongod (if '/usr/bin/mongod' is not running)
 $ sudo systemctl enable mongod (ensure to automatically start it on system boot)
 ```
+
+**Tip:** MongoDB is used as database for NRF/PCF/UDR and PCRF/HSS.
+{: .notice--info}
 
 ### Setting up TUN device (not persistent after rebooting)
 ---

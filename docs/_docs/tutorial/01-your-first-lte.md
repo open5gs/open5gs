@@ -156,9 +156,20 @@ $ make test
 
 #### 3. Open5GS
 
+Install the MongoDB packages.
+
+```bash
+```
+
 The Open5GS package is available on the recent versions of *Ubuntu*.
 
 ```bash
+# Install the MongoDB Packages
+$ wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
+$ echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+$ sudo apt update
+$ sudo apt install mongodb-org
+
 # Getting the authentication key
 $ sudo apt install wget
 $ wget https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_20.04/Release.key
@@ -173,7 +184,7 @@ $ sudo apt install open5gs
 The following shows how to install the Web UI of Open5GS.
 
 ```bash
-$ curl -fsSL https://deb.nodesource.com/setup_14.x | sudo -E bash -
+$ curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
 $ sudo apt install nodejs
 $ curl -fsSL https://open5gs.org/open5gs/assets/webui/install | sudo -E bash -
 ```
@@ -229,16 +240,17 @@ Modify [install/etc/open5gs/mme.yaml](https://github.com/{{ site.github_username
 
 ```diff
 $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
---- mme.yaml.old    2020-08-22 12:07:32.755250028 -0400
-+++ mme.yaml    2020-08-22 12:08:17.309320211 -0400
-@@ -208,20 +208,20 @@
- mme:
-     freeDiameter: /home/acetcom/Documents/git/open5gs/install/etc/freeDiameter/mme.conf
+--- mme.yaml    2020-09-05 20:52:28.648235143 -0400
++++ mme.yaml.new    2020-09-05 20:56:05.434484208 -0400
+@@ -253,20 +253,20 @@ mme:
      s1ap:
--      addr: 127.0.0.2
-+      addr: 127.0.1.2
+       - addr: 127.0.0.2
      gtpc:
+-      - addr: 10.11.0.2
++      - addr: 127.0.0.2
+     metrics:
        addr: 127.0.0.2
+       port: 9090
      gummei:
        plmn_id:
 -        mcc: 999
@@ -251,28 +263,26 @@ $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
        plmn_id:
 -        mcc: 999
 -        mnc: 70
--      tac: 1
 +        mcc: 310
 +        mnc: 789
-+      tac: 2
+       tac: 1
      security:
-         integrity_order : [ EIA1, EIA2, EIA0 ]
-         ciphering_order : [ EEA0, EEA1, EEA2 ]
+         integrity_order : [ EIA2, EIA1, EIA0 ]
 ```
 
 Modify [install/etc/open5gs/sgwu.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/sgwu.yaml.in) to set the GTP-U IP address.
 ```diff
 $ diff -u /etc/open5gs/sgwu.yaml.old /etc/open5gs/sgwu.yaml
---- sgwu.yaml.old    2020-08-22 12:08:44.782880778 -0400
-+++ sgwu.yaml    2020-08-22 12:06:49.809299514 -0400
-@@ -82,7 +82,7 @@
+--- sgwu.yaml    2020-09-05 20:50:39.393022566 -0400
++++ sgwu.yaml.new    2020-09-05 20:51:06.667838823 -0400
+@@ -98,7 +98,7 @@ logger:
  #
  sgwu:
-     gtpu:
--      addr: 10.11.0.6
-+      addr: 127.0.0.6
      pfcp:
-       addr: 127.0.0.6
+-      - addr: 10.11.0.6
++      - addr: 127.0.0.6
+     gtpu:
+       - addr: 127.0.0.6
 ```
 
 

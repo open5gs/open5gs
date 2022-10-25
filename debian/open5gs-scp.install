@@ -1,0 +1,3 @@
+usr/bin/open5gs-scpd
+configs/open5gs/scp.yaml etc/open5gs
+configs/systemd/open5gs-scpd.service lib/systemd/system
