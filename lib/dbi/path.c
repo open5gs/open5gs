@@ -31,7 +31,7 @@ int ogs_dbi_process_change_stream(const bson_t *document)
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_error("ogs_queue_push() failed:%d", (int)rv);
-        bson_destroy((bson_t*)e->dbi.document);
+        bson_destroy(e->dbi.document);
         ogs_event_free(e);
     } else {
         ogs_pollset_notify(ogs_app()->pollset);

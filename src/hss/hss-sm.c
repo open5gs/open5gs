@@ -90,7 +90,7 @@ void hss_state_operational(ogs_fsm_t *s, ogs_event_t *e)
         ogs_assert(e->dbi.document);
         hss_handle_change_event(e->dbi.document);
 
-        bson_destroy((bson_t*)e->dbi.document);
+        bson_destroy(e->dbi.document);
         break;
 
     default:
