@@ -273,11 +273,13 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     AscReqData.med_components = MediaComponentList;
 
     request = ogs_sbi_build_request(&message);
-    ogs_expect_or_return_val(request, NULL);
+    ogs_expect(request);
 
-    ogs_free(AscReqData.notif_uri);
+    if (AscReqData.notif_uri)
+        ogs_free(AscReqData.notif_uri);
 
-    ogs_free(AscReqData.supp_feat);
+    if (AscReqData.supp_feat)
+        ogs_free(AscReqData.supp_feat);
 
     EventList = evSubsc.events;
     OpenAPI_list_for_each(EventList, node) {
@@ -534,7 +536,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_update(
     AscUpdateData.med_components = MediaComponentList;
 
     request = ogs_sbi_build_request(&message);
-    ogs_expect_or_return_val(request, NULL);
+    ogs_expect(request);
 
     OpenAPI_list_for_each(MediaComponentList, node) {
         MediaComponentMap = node->data;
@@ -616,7 +618,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_delete(
         (char *)OGS_SBI_RESOURCE_NAME_DELETE;
 
     request = ogs_sbi_build_request(&message);
-    ogs_expect_or_return_val(request, NULL);
+    ogs_expect(request);
 
     return request;
 }
@@ -992,11 +994,13 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create_video(
     AscReqData.med_components = MediaComponentList;
 
     request = ogs_sbi_build_request(&message);
-    ogs_expect_or_return_val(request, NULL);
+    ogs_expect(request);
 
-    ogs_free(AscReqData.notif_uri);
+    if (AscReqData.notif_uri)
+        ogs_free(AscReqData.notif_uri);
 
-    ogs_free(AscReqData.supp_feat);
+    if (AscReqData.supp_feat)
+        ogs_free(AscReqData.supp_feat);
 
     EventList = evSubsc.events;
     OpenAPI_list_for_each(EventList, node) {

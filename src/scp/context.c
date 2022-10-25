@@ -23,11 +23,11 @@ static scp_context_t self;
 
 int __scp_log_domain;
 
-static OGS_POOL(scp_conn_pool, scp_conn_t);
+static OGS_POOL(scp_assoc_pool, scp_assoc_t);
 
 static int context_initialized = 0;
 
-static int max_num_of_scp_conn = 0;
+static int max_num_of_scp_assoc = 0;
 
 void scp_context_init(void)
 {
@@ -38,10 +38,10 @@ void scp_context_init(void)
 
     ogs_log_install_domain(&__scp_log_domain, "scp", ogs_core()->log.level);
 
-#define MAX_NUM_OF_SCP_CONN 8
-    max_num_of_scp_conn = ogs_app()->max.ue * MAX_NUM_OF_SCP_CONN;
+#define MAX_NUM_OF_SCP_ASSOC 8
+    max_num_of_scp_assoc = ogs_app()->max.ue * MAX_NUM_OF_SCP_ASSOC;
 
-    ogs_pool_init(&scp_conn_pool, max_num_of_scp_conn);
+    ogs_pool_init(&scp_assoc_pool, max_num_of_scp_assoc);
 
     context_initialized = 1;
 }
@@ -50,9 +50,9 @@ void scp_context_final(void)
 {
     ogs_assert(context_initialized == 1);
 
-    scp_conn_remove_all();
+    scp_assoc_remove_all();
 
-    ogs_pool_final(&scp_conn_pool);
+    ogs_pool_final(&scp_assoc_pool);
 
     context_initialized = 0;
 }
@@ -112,48 +112,50 @@ int scp_context_parse_config(void)
     return OGS_OK;
 }
 
-scp_conn_t *scp_conn_add(ogs_sbi_stream_t *stream)
+scp_assoc_t *scp_assoc_add(ogs_sbi_stream_t *stream)
 {
-    scp_conn_t *conn = NULL;
+    scp_assoc_t *assoc = NULL;
 
     ogs_assert(stream);
 
-    ogs_pool_alloc(&scp_conn_pool, &conn);
-    if (!conn) {
-        ogs_error("Maximum number of connection[%d] reached",
-                    max_num_of_scp_conn);
+    ogs_pool_alloc(&scp_assoc_pool, &assoc);
+    if (!assoc) {
+        ogs_error("Maximum number of association[%d] reached",
+                    max_num_of_scp_assoc);
         return NULL;
     }
-    memset(conn, 0, sizeof *conn);
+    memset(assoc, 0, sizeof *assoc);
 
-    conn->stream = stream;
+    assoc->stream = stream;
 
-    ogs_list_add(&self.conn_list, conn);
+    ogs_list_add(&self.assoc_list, assoc);
 
-    return conn;
+    return assoc;
 }
 
-void scp_conn_remove(scp_conn_t *conn)
+void scp_assoc_remove(scp_assoc_t *assoc)
 {
-    ogs_assert(conn);
+    ogs_assert(assoc);
 
-    ogs_list_remove(&self.conn_list, conn);
+    ogs_list_remove(&self.assoc_list, assoc);
 
-    if (conn->client)
-        ogs_sbi_client_remove(conn->client);
+    if (assoc->client)
+        ogs_sbi_client_remove(assoc->client);
+    if (assoc->nrf_client)
+        ogs_sbi_client_remove(assoc->nrf_client);
 
-    ogs_pool_free(&scp_conn_pool, conn);
+    ogs_pool_free(&scp_assoc_pool, assoc);
 }
 
-void scp_conn_remove_all(void)
+void scp_assoc_remove_all(void)
 {
-    scp_conn_t *conn = NULL, *next_conn = NULL;
+    scp_assoc_t *assoc = NULL, *next_assoc = NULL;
 
-    ogs_list_for_each_safe(&self.conn_list, next_conn, conn)
-        scp_conn_remove(conn);
+    ogs_list_for_each_safe(&self.assoc_list, next_assoc, assoc)
+        scp_assoc_remove(assoc);
 }
 
-scp_conn_t *scp_conn_find(uint32_t index)
+scp_assoc_t *scp_assoc_find(uint32_t index)
 {
-    return ogs_pool_find(&scp_conn_pool, index);
+    return ogs_pool_find(&scp_assoc_pool, index);
 }

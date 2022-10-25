@@ -44,12 +44,18 @@ ogs_sbi_request_t *nrf_nnrf_nfm_build_nf_status_notify(
     message.http.accept = (char *)OGS_SBI_CONTENT_PROBLEM_TYPE;
 
     NotificationData = ogs_calloc(1, sizeof(*NotificationData));
-    ogs_expect_or_return_val(NotificationData, NULL);
+    if (!NotificationData) {
+        ogs_error("No NotificationData");
+        goto end;
+    }
 
     NotificationData->event = event;
 
     server = ogs_list_first(&ogs_sbi_self()->server_list);
-    ogs_expect_or_return_val(server, NULL);
+    if (!server) {
+        ogs_error("No server");
+        goto end;
+    }
 
     memset(&header, 0, sizeof(header));
     header.service.name = (char *)OGS_SBI_SERVICE_NAME_NNRF_NFM;
@@ -58,7 +64,10 @@ ogs_sbi_request_t *nrf_nnrf_nfm_build_nf_status_notify(
     header.resource.component[1] = nf_instance->id;
 
     NotificationData->nf_instance_uri = ogs_sbi_server_uri(server, &header);
-    ogs_expect_or_return_val(NotificationData->nf_instance_uri, NULL);
+    if (!server) {
+        ogs_error("No nf_instance_uri");
+        goto end;
+    }
 
     if (event != OpenAPI_notification_event_type_NF_DEREGISTERED) {
         NotificationData->nf_profile =
@@ -67,19 +76,26 @@ ogs_sbi_request_t *nrf_nnrf_nfm_build_nf_status_notify(
                 subscription_data->subscr_cond.service_name,
                 NULL,
                 subscription_data->requester_features);
-        ogs_expect_or_return_val(NotificationData->nf_profile, NULL);
+        if (!NotificationData->nf_profile) {
+            ogs_error("No nf_profile");
+            goto end;
+        }
     }
 
     message.NotificationData = NotificationData;
 
     request = ogs_sbi_build_request(&message);
-    ogs_expect_or_return_val(request, NULL);
+    ogs_expect(request);
 
-    if (NotificationData->nf_profile)
-        ogs_nnrf_nfm_free_nf_profile(NotificationData->nf_profile);
+end:
 
-    ogs_free(NotificationData->nf_instance_uri);
-    ogs_free(NotificationData);
+    if (NotificationData) {
+        if (NotificationData->nf_profile)
+            ogs_nnrf_nfm_free_nf_profile(NotificationData->nf_profile);
+        if (NotificationData->nf_instance_uri)
+            ogs_free(NotificationData->nf_instance_uri);
+        ogs_free(NotificationData);
+    }
 
     return request;
 }

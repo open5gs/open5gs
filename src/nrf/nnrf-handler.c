@@ -40,7 +40,7 @@ bool nrf_nnrf_handle_nf_register(ogs_sbi_nf_instance_t *nf_instance,
         return false;
     }
 
-    ogs_sbi_nnrf_handle_nf_profile(nf_instance, NFProfile);
+    ogs_nnrf_nfm_handle_nf_profile(nf_instance, NFProfile);
 
     if (OGS_FSM_CHECK(&nf_instance->sm, nrf_nf_state_will_register)) {
         recvmsg->http.location = recvmsg->h.uri;

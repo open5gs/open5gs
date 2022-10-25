@@ -58,6 +58,8 @@ typedef struct sgwu_event_s {
     sgwu_bearer_t *bearer;
 } sgwu_event_t;
 
+OGS_STATIC_ASSERT(OGS_EVENT_SIZE >= sizeof(sgwu_event_t));
+
 void sgwu_event_init(void);
 void sgwu_event_term(void);
 void sgwu_event_final(void);

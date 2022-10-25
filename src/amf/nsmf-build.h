@@ -51,6 +51,12 @@ typedef struct amf_nsmf_pdusession_sm_context_param_s {
     OpenAPI_ho_state_e hoState;
     OpenAPI_ng_ran_target_id_t *targetId;
     NGAP_TargetID_t *TargetID;
+
+    struct {
+        struct {
+            char *id;
+        } nrf;
+    } nrf_uri;
 } amf_nsmf_pdusession_sm_context_param_t;
 
 ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(

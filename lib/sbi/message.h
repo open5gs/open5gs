@@ -233,8 +233,11 @@ extern "C" {
 #define OGS_SBI_NBSF_MANAGEMENT_ES3XX 4
 #define OGS_SBI_NBSF_MANAGEMENT_EXTENDED_SAME_PCF 5
 
+#define OGS_SBI_SCHEME                              ":scheme"
+#define OGS_SBI_AUTHORITY                           ":authority"
 #define OGS_SBI_ACCEPT                              "Accept"
 #define OGS_SBI_ACCEPT_ENCODING                     "Accept-Encoding"
+#define OGS_SBI_USER_AGENT                          "User-Agent"
 #define OGS_SBI_CONTENT_TYPE                        "Content-Type"
 #define OGS_SBI_LOCATION                            "Location"
 #define OGS_SBI_EXPECT                              "Expect"
@@ -328,6 +331,39 @@ extern "C" {
 #define OGS_SBI_CONTENT_5GNAS_SM_ID                 "5gnas-sm"
 #define OGS_SBI_CONTENT_NGAP_SM_ID                  "ngap-sm"
 
+#define OGS_SBI_CALLBACK_NSMF_PDUSESSION_UPDATE \
+    "Nsmf_PDUSession_Update"
+#define OGS_SBI_CALLBACK_NSMF_PDUSESSION_STATUS_NOTIFY \
+    "Nsmf_PDUSession_StatusNotify"
+#define OGS_SBI_CALLBACK_NUDM_SDM_NOTIFICATION \
+    "Nudm_SDM_Notification"
+#define OGS_SBI_CALLBACK_NUDM_UECM_DEREGISTRATION_NOTIFICATION \
+    "Nudm_UECM_DeregistrationNotification"
+#define OGS_SBI_CALLBACK_NUDM_UECM_PCSCF_RESTORATION_NOTIFICATION \
+    "Nudm_UECM_PCSCFRestorationNotification"
+#define OGS_SBI_CALLBACK_NNRF_NFMANAGEMENT_NF_STATUS_NOTIFY \
+    "Nnrf_NFManagement_NFStatusNotify"
+#define OGS_SBI_CALLBACK_NAMF_EVENTEXPOSURE_NOTIFY \
+    "Namf_EventExposure_Notify"
+#define OGS_SBI_CALLBACK_NPCF_UEPOLICYCONTROL_UPDATE_NOTIFY \
+    "Npcf_UEPolicyControl_UpdateNotify"
+#define OGS_SBI_CALLBACK_NNSSF_NSSAIAVAILABILITY_NOTIFICATION \
+    "Nnssf_NSSAIAvailability_Notification"
+#define OGS_SBI_CALLBACK_NAMF_COMMUNICATION_AMF_STATUS_CHANGE_NOTIFY \
+    "Namf_Communication_AMFStatusChangeNotify"
+#define OGS_SBI_CALLBACK_NGMLC_LOCATION_EVENT_NOTIFY \
+    "Ngmlc_Location_EventNotify"
+#define OGS_SBI_CALLBACK_NCHF_CONVERGEDCHARGING_NOTIFY \
+    "Nchf_ConvergedCharging_Notify"
+#define OGS_SBI_CALLBACK_NNSSAAF_NSSAA_RE_AUTHENTICATION \
+    "Nnssaaf_NSSAA_ReAuthentication"
+#define OGS_SBI_CALLBACK_NNSSAAF_NSSAA_REVOCATION \
+    "Nnssaaf_NSSAA_Revocation"
+#define OGS_SBI_CALLBACK_N5G_DDNMF_DISCOVERY_MONITOR_UPDATE_RESULT \
+    "N5g-ddnmf_Discovery_MonitorUpdateResult"
+#define OGS_SBI_CALLBACK_N5G_DDNMF_DISCOVERY_MATCH_INFORMATION \
+    "N5g-ddnmf_Discovery_MatchInformation"
+
 typedef struct ogs_sbi_header_s {
     char *method;
     char *uri;
@@ -366,11 +402,18 @@ typedef struct ogs_sbi_message_s {
     ogs_sbi_header_t h;
 
     struct {
+        OpenAPI_nf_type_e requester_nf_type;
+
         char *accept;
         char *content_encoding;
         char *content_type;
         char *location;
         char *cache_control;
+
+        struct {
+            char *callback;
+            char *nrf_uri;
+        } custom;
     } http;
 
     struct {
@@ -537,9 +580,15 @@ void ogs_sbi_discovery_option_set_target_nf_instance_id(
 void ogs_sbi_discovery_option_set_requester_nf_instance_id(
         ogs_sbi_discovery_option_t *discovery_option,
         char *requester_nf_instance_id);
+
 void ogs_sbi_discovery_option_add_service_names(
         ogs_sbi_discovery_option_t *discovery_option,
         char *service_name);
+char *ogs_sbi_discovery_option_build_service_names(
+        ogs_sbi_discovery_option_t *discovery_option);
+void ogs_sbi_discovery_option_parse_service_names(
+        ogs_sbi_discovery_option_t *discovery_option,
+        char *service_names);
 
 #ifdef __cplusplus
 }

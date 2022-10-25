@@ -18,8 +18,6 @@
  */
 
 #include "sbi-path.h"
-#include "nnrf-handler.h"
-#include "nscp-handler.h"
 
 void scp_state_initial(ogs_fsm_t *s, scp_event_t *e)
 {
@@ -95,7 +93,7 @@ void scp_state_operational(ogs_fsm_t *s, scp_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_NF_STATUS_NOTIFY)
                 SWITCH(message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
-                    ogs_nnrf_handle_nf_status_notify(stream, &message);
+                    ogs_nnrf_nfm_handle_nf_status_notify(stream, &message);
                     break;
 
                 DEFAULT
@@ -117,71 +115,6 @@ void scp_state_operational(ogs_fsm_t *s, scp_event_t *e)
                         message.h.resource.component[0]));
             END
             break;
-
-#if 0
-        CASE(OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT)
-            SWITCH(message.h.resource.component[0])
-            CASE(OGS_SBI_RESOURCE_NAME_PCF_BINDINGS)
-                if (message.h.resource.component[1]) {
-                    sess = scp_sess_find_by_binding_id(
-                            message.h.resource.component[1]);
-                } else {
-                    SWITCH(message.h.method)
-                    CASE(OGS_SBI_HTTP_METHOD_POST)
-                        if (message.PcfBinding &&
-                            message.PcfBinding->snssai &&
-                            message.PcfBinding->dnn) {
-                            ogs_s_nssai_t s_nssai;
-
-                            s_nssai.sst = message.PcfBinding->snssai->sst;
-                            s_nssai.sd = ogs_s_nssai_sd_from_string(
-                                    message.PcfBinding->snssai->sd);
-
-                            sess = scp_sess_find_by_snssai_and_dnn(
-                                    &s_nssai, message.PcfBinding->dnn);
-                            if (!sess) {
-                                sess = scp_sess_add_by_snssai_and_dnn(
-                                        &s_nssai, message.PcfBinding->dnn);
-                                ogs_assert(sess);
-                            }
-                        }
-                        break;
-                    CASE(OGS_SBI_HTTP_METHOD_GET)
-                        if (!sess && message.param.ipv4addr)
-                            sess = scp_sess_find_by_ipv4addr(
-                                        message.param.ipv4addr);
-                        if (!sess && message.param.ipv6prefix)
-                            sess = scp_sess_find_by_ipv6prefix(
-                                        message.param.ipv6prefix);
-                        break;
-                    DEFAULT
-                        ogs_error("Invalid HTTP method [%s]", message.h.method);
-                    END
-                }
-
-                if (!sess) {
-                    ogs_error("Not found [%s]", message.h.uri);
-                    ogs_assert(true ==
-                        ogs_sbi_server_send_error(stream,
-                            OGS_SBI_HTTP_STATUS_NOT_FOUND,
-                            &message, "Not found", message.h.uri));
-                    break;
-                }
-
-                scp_nscp_management_handle_pcf_binding(sess, stream, &message);
-                break;
-
-            DEFAULT
-                ogs_error("Invalid resource name [%s]",
-                        message.h.resource.component[0]);
-                ogs_assert(true ==
-                    ogs_sbi_server_send_error(stream,
-                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, &message,
-                        "Invalid resource name",
-                        message.h.resource.component[0]));
-            END
-            break;
-#endif
 
         DEFAULT
             ogs_error("Invalid API name [%s]", message.h.service.name);
@@ -236,7 +169,7 @@ void scp_state_operational(ogs_fsm_t *s, scp_event_t *e)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
                     if (message.res_status == OGS_SBI_HTTP_STATUS_CREATED ||
                         message.res_status == OGS_SBI_HTTP_STATUS_OK) {
-                        ogs_nnrf_handle_nf_status_subscribe(
+                        ogs_nnrf_nfm_handle_nf_status_subscribe(
                                 subscription_data, &message);
                     } else {
                         ogs_error("HTTP response error : %d",
@@ -259,34 +192,6 @@ void scp_state_operational(ogs_fsm_t *s, scp_event_t *e)
                 END
                 break;
             
-            DEFAULT
-                ogs_error("Invalid resource name [%s]",
-                        message.h.resource.component[0]);
-                ogs_assert_if_reached();
-            END
-            break;
-
-        CASE(OGS_SBI_SERVICE_NAME_NNRF_DISC)
-            SWITCH(message.h.resource.component[0])
-            CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
-                sbi_xact = e->h.sbi.data;
-                ogs_assert(sbi_xact);
-
-                SWITCH(message.h.method)
-                CASE(OGS_SBI_HTTP_METHOD_GET)
-                    if (message.res_status == OGS_SBI_HTTP_STATUS_OK)
-                        scp_nnrf_handle_nf_discover(sbi_xact, &message);
-                    else
-                        ogs_error("HTTP response error [%d]",
-                                message.res_status);
-                    break;
-
-                DEFAULT
-                    ogs_error("Invalid HTTP method [%s]", message.h.method);
-                    ogs_assert_if_reached();
-                END
-                break;
-
             DEFAULT
                 ogs_error("Invalid resource name [%s]",
                         message.h.resource.component[0]);

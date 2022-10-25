@@ -102,6 +102,8 @@ typedef struct smf_event_s {
     smf_sess_t *sess;
 } smf_event_t;
 
+OGS_STATIC_ASSERT(OGS_EVENT_SIZE >= sizeof(smf_event_t));
+
 smf_event_t *smf_event_new(int id);
 
 const char *smf_event_get_name(smf_event_t *e);

@@ -63,6 +63,8 @@ typedef struct sgwc_event_s {
     sgwc_bearer_t *bearer;
 } sgwc_event_t;
 
+OGS_STATIC_ASSERT(OGS_EVENT_SIZE >= sizeof(sgwc_event_t));
+
 void sgwc_event_init(void);
 void sgwc_event_term(void);
 void sgwc_event_final(void);

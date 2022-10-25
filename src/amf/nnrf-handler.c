@@ -28,6 +28,7 @@ void amf_nnrf_handle_nf_discover(
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_object_t *sbi_object = NULL;
     ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
+    OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
     ogs_sbi_discovery_option_t *discovery_option = NULL;
 
     OpenAPI_search_result_t *SearchResult = NULL;
@@ -38,6 +39,8 @@ void amf_nnrf_handle_nf_discover(
     ogs_assert(sbi_object);
     service_type = xact->service_type;
     ogs_assert(service_type);
+    requester_nf_type = xact->requester_nf_type;
+    ogs_assert(requester_nf_type);
 
     discovery_option = xact->discovery_option;
 
@@ -47,9 +50,10 @@ void amf_nnrf_handle_nf_discover(
         return;
     }
 
-    ogs_nnrf_handle_nf_discover_search_result(SearchResult);
+    ogs_nnrf_disc_handle_nf_discover_search_result(SearchResult);
 
-    amf_sbi_select_nf(sbi_object, service_type, discovery_option);
+    amf_sbi_select_nf(sbi_object,
+            service_type, requester_nf_type, discovery_option);
 
     nf_instance = sbi_object->service_type_array[service_type].nf_instance;
     if (!nf_instance) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -26,30 +26,22 @@
 extern "C" {
 #endif
 
-bool ogs_sbi_send_request(ogs_sbi_nf_instance_t *nf_instance,
-        ogs_sbi_client_cb_f client_cb, ogs_sbi_xact_t *xact);
-bool ogs_sbi_discover_only(
-        ogs_sbi_xact_t *xact, ogs_sbi_client_cb_f client_cb);
-bool ogs_sbi_discover_and_send(
-        ogs_sbi_xact_t *xact, ogs_sbi_client_cb_f client_cb);
+int ogs_sbi_server_handler(ogs_sbi_request_t *request, void *data);
+int ogs_sbi_client_handler(
+        int status, ogs_sbi_response_t *response, void *data);
 
-bool ogs_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance);
-bool ogs_nnrf_nfm_send_nf_update(ogs_sbi_nf_instance_t *nf_instance);
-bool ogs_nnrf_nfm_send_nf_de_register(ogs_sbi_nf_instance_t *nf_instance);
-bool ogs_nnrf_nfm_send_nf_profile_retrieve(ogs_sbi_nf_instance_t *nf_instance,
-        char *nf_instance_id, void *data);
+bool ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact);
+bool ogs_sbi_discover_only(ogs_sbi_xact_t *xact);
 
-bool ogs_nnrf_nfm_send_nf_status_subscribe(
-        ogs_sbi_subscription_data_t *subscription_data);
-bool ogs_nnrf_nfm_send_nf_status_unsubscribe(
-        ogs_sbi_subscription_data_t *subscription_data);
-
-bool ogs_nnrf_disc_send_nf_discover(
-        ogs_sbi_nf_instance_t *nf_instance,
-        OpenAPI_nf_type_e target_nf_type,
+bool ogs_sbi_send_request_to_nf_instance(
+        ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact);
+bool ogs_sbi_send_request_to_client(
+        ogs_sbi_client_t *client, ogs_sbi_client_cb_f client_cb,
+        ogs_sbi_request_t *request, void *data);
+bool ogs_sbi_send_notification_request(
+        ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
-        void *data);
-
+        ogs_sbi_request_t *request, void *data);
 
 #define ogs_sbi_send_http_status_no_content(__sTREAM) \
         ogs_sbi_send_response(__sTREAM, OGS_SBI_HTTP_STATUS_NO_CONTENT)

@@ -129,7 +129,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_NF_STATUS_NOTIFY)
                 SWITCH(sbi_message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
-                    ogs_nnrf_handle_nf_status_notify(stream, &sbi_message);
+                    ogs_nnrf_nfm_handle_nf_status_notify(stream, &sbi_message);
                     break;
 
                 DEFAULT
@@ -296,7 +296,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
                     if (sbi_message.res_status == OGS_SBI_HTTP_STATUS_CREATED ||
                         sbi_message.res_status == OGS_SBI_HTTP_STATUS_OK) {
-                        ogs_nnrf_handle_nf_status_subscribe(
+                        ogs_nnrf_nfm_handle_nf_status_subscribe(
                                 subscription_data, &sbi_message);
                     } else {
                         ogs_error("[%s] HTTP response error [%d]",

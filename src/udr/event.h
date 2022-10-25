@@ -30,6 +30,8 @@ typedef struct udr_event_s {
     ogs_event_t h;
 } udr_event_t;
 
+OGS_STATIC_ASSERT(OGS_EVENT_SIZE >= sizeof(udr_event_t));
+
 udr_event_t *udr_event_new(int id);
 
 const char *udr_event_get_name(udr_event_t *e);

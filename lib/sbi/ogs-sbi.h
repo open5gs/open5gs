@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -101,6 +101,7 @@
 
 #include "sbi/nnrf-build.h"
 #include "sbi/nnrf-handler.h"
+#include "sbi/nnrf-path.h"
 
 #include "sbi/path.h"
 

@@ -223,7 +223,7 @@ nssf:
       - addr: 127.0.0.14
         port: 7777
     nsi:
-      - addr: ::1
+      - addr: 127.0.0.10
         port: 7777
         s_nssai:
           sst: 1

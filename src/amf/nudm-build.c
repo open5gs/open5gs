@@ -46,9 +46,16 @@ ogs_sbi_request_t *amf_nudm_uecm_build_registration(
 
     Amf3GppAccessRegistration.amf_instance_id =
         NF_INSTANCE_ID(ogs_sbi_self()->nf_instance);
+    if (!Amf3GppAccessRegistration.amf_instance_id) {
+        ogs_error("No amf_instance_id");
+        goto end;
+    }
 
     server = ogs_list_first(&ogs_sbi_self()->server_list);
-    ogs_assert(server);
+    if (!server) {
+        ogs_error("No server");
+        goto end;
+    }
 
     memset(&header, 0, sizeof(header));
     header.service.name = (char *)OGS_SBI_SERVICE_NAME_NAMF_CALLBACK;
@@ -57,20 +64,32 @@ ogs_sbi_request_t *amf_nudm_uecm_build_registration(
     header.resource.component[1] = (char *)OGS_SBI_RESOURCE_NAME_DEREG_NOTIFY;
     Amf3GppAccessRegistration.dereg_callback_uri =
                         ogs_sbi_server_uri(server, &header);
-    ogs_assert(Amf3GppAccessRegistration.dereg_callback_uri);
+    if (!Amf3GppAccessRegistration.dereg_callback_uri) {
+        ogs_error("No dereg_callback_uri");
+        goto end;
+    }
 
     Amf3GppAccessRegistration.guami = ogs_sbi_build_guami(amf_ue->guami);
     Amf3GppAccessRegistration.rat_type = amf_ue_rat_type(amf_ue);
-    ogs_assert(Amf3GppAccessRegistration.rat_type != OpenAPI_rat_type_NULL);
+    if (Amf3GppAccessRegistration.rat_type == OpenAPI_rat_type_NULL) {
+        ogs_error("No rat_type");
+        goto end;
+    }
 
     message.Amf3GppAccessRegistration = &Amf3GppAccessRegistration;
 
+    message.http.custom.callback =
+        (char *)OGS_SBI_CALLBACK_NUDM_UECM_DEREGISTRATION_NOTIFICATION;
+
     request = ogs_sbi_build_request(&message);
-    ogs_assert(request);
+    ogs_expect(request);
+
+end:
 
     if (Amf3GppAccessRegistration.guami)
         ogs_sbi_free_guami(Amf3GppAccessRegistration.guami);
-    ogs_free(Amf3GppAccessRegistration.dereg_callback_uri);
+    if (Amf3GppAccessRegistration.dereg_callback_uri)
+        ogs_free(Amf3GppAccessRegistration.dereg_callback_uri);
 
     return request;
 }
@@ -102,6 +121,10 @@ ogs_sbi_request_t *amf_nudm_uecm_build_registration_delete(
 
     Amf3GppAccessRegistrationModification.guami =
             ogs_sbi_build_guami(amf_ue->guami);
+    if (!Amf3GppAccessRegistrationModification.guami) {
+        ogs_error("No guami");
+        goto end;
+    }
     Amf3GppAccessRegistrationModification.is_purge_flag = true;
     Amf3GppAccessRegistrationModification.purge_flag = 1;
 
@@ -109,7 +132,9 @@ ogs_sbi_request_t *amf_nudm_uecm_build_registration_delete(
             &Amf3GppAccessRegistrationModification;
 
     request = ogs_sbi_build_request(&message);
-    ogs_assert(request);
+    ogs_expect(request);
+
+end:
 
     if (Amf3GppAccessRegistrationModification.guami)
         ogs_sbi_free_guami(Amf3GppAccessRegistrationModification.guami);
@@ -133,7 +158,7 @@ ogs_sbi_request_t *amf_nudm_sdm_build_get(amf_ue_t *amf_ue, void *data)
     message.h.resource.component[1] = data;
 
     request = ogs_sbi_build_request(&message);
-    ogs_assert(request);
+    ogs_expect(request);
 
     return request;
 }
@@ -167,7 +192,10 @@ ogs_sbi_request_t *amf_nudm_sdm_build_subscription(amf_ue_t *amf_ue, void *data)
         NF_INSTANCE_ID(ogs_sbi_self()->nf_instance);
 
     server = ogs_list_first(&ogs_sbi_self()->server_list);
-    ogs_assert(server);
+    if (!server) {
+        ogs_error("No server");
+        goto end;
+    }
 
     memset(&header, 0, sizeof(header));
     header.service.name = (char *)OGS_SBI_SERVICE_NAME_NAMF_CALLBACK;
@@ -175,26 +203,38 @@ ogs_sbi_request_t *amf_nudm_sdm_build_subscription(amf_ue_t *amf_ue, void *data)
     header.resource.component[0] = amf_ue->supi;
     header.resource.component[1] =
             (char *)OGS_SBI_RESOURCE_NAME_SDMSUBSCRIPTION_NOTIFY;
-    SDMSubscription.callback_reference =
-            ogs_sbi_server_uri(server, &header);
-    ogs_assert(SDMSubscription.callback_reference);
+    SDMSubscription.callback_reference = ogs_sbi_server_uri(server, &header);
+    if (!SDMSubscription.callback_reference) {
+        ogs_error("No callback_reference");
+        goto end;
+    }
 
     SDMSubscription.monitored_resource_uris = OpenAPI_list_create();
 
     monres = ogs_msprintf("%s/%s", amf_ue->supi, (char *)data);
-    ogs_assert(monres);
+    if (!monres) {
+        ogs_error("No monres");
+        goto end;
+    }
 
     OpenAPI_list_add(SDMSubscription.monitored_resource_uris, monres);
     SDMSubscription.implicit_unsubscribe = 1;
 
     message.SDMSubscription = &SDMSubscription;
 
-    request = ogs_sbi_build_request(&message);
-    ogs_assert(request);
+    message.http.custom.callback =
+        (char *)OGS_SBI_CALLBACK_NUDM_SDM_NOTIFICATION;
 
-    ogs_free(monres);
+    request = ogs_sbi_build_request(&message);
+    ogs_expect(request);
+
+end:
+
+    if (monres)
+        ogs_free(monres);
     OpenAPI_list_free(SDMSubscription.monitored_resource_uris);
-    ogs_free(SDMSubscription.callback_reference);
+    if (SDMSubscription.callback_reference)
+        ogs_free(SDMSubscription.callback_reference);
 
     return request;
 }

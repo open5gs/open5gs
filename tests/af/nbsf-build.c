@@ -38,7 +38,7 @@ ogs_sbi_request_t *af_nbsf_management_build_discover(
     message.param.ipv6prefix = sess->ipv6prefix;
 
     request = ogs_sbi_build_request(&message);
-    ogs_assert(request);
+    ogs_expect(request);
     
     return request;
 }

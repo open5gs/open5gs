@@ -37,7 +37,7 @@ void *ogs_event_size(int id, size_t size)
 
 ogs_event_t *ogs_event_new(int id)
 {
-    return ogs_event_size(id, sizeof(ogs_event_t));
+    return ogs_event_size(id, OGS_EVENT_SIZE);
 }
 
 void ogs_event_free(void *e)

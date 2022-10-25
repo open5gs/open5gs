@@ -88,19 +88,10 @@ logger:
 #          l_onoff: true
 #          l_linger: 10
 #
-#  <Next hop SCP>
-#
-#  o Next hop SCP Server(https://127.0.1.11:7777)
-#  next_scp:
-#      sbi:
-#        - addr: 127.0.1.11
-#          port: 7777
-#
 #  <For Indirect Communication with Delegated Discovery>
 #
 #  o (Default) If you do not set Delegated Discovery as shown below,
 #
-#  next_scp:
 #    sbi:
 #      - addr: 127.0.1.10
 #        port: 7777
@@ -108,7 +99,6 @@ logger:
 #    - Use SCP if SCP avaiable. Otherwise NRF is used.
 #      => App fails if both NRF and SCP are unavailable.
 #
-#  next_scp:
 #    sbi:
 #      - addr: 127.0.1.10
 #        port: 7777
@@ -125,6 +115,45 @@ scp:
     sbi:
       - addr: 127.0.1.10
         port: 7777
+
+#
+# next_scp:
+#
+#  <Next hop SCP>
+#
+#  o SBI Client(http://127.0.1.11:7777)
+#    sbi:
+#      addr: 127.0.1.11
+#      port: 7777
+#
+#  o SBI Client(https://127.0.1.11:443, http://next-scp.open5gs.org:80)
+#    sbi:
+#      - addr: 127.0.1.11
+#        tls:
+#          key: next-scp.key
+#          pem: next-scp.pem
+#      - name: next-scp.open5gs.org
+#
+#  o SBI Client(http://[fd69:f21d:873c:fb::1]:80)
+#    If prefer_ipv4 is true, http://127.0.1.11:80 is selected.
+#
+#    sbi:
+#      addr:
+#        - 127.0.1.11
+#        - fd69:f21d:873c:fb::1
+#
+#  o SBI Option (Default)
+#    - tcp_nodelay : true
+#    - so_linger.l_onoff : false
+#
+#    sbi:
+#      addr: 127.0.1.11
+#      option:
+#        tcp_nodelay: false
+#        so_linger:
+#          l_onoff: true
+#          l_linger: 10
+#
 
 #
 # nrf:

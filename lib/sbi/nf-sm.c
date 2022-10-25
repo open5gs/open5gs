@@ -110,9 +110,7 @@ void ogs_sbi_nf_state_final(ogs_fsm_t *s, ogs_event_t *e)
 void ogs_sbi_nf_state_will_register(ogs_fsm_t *s, ogs_event_t *e)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
-    ogs_sbi_client_t *client = NULL;
     ogs_sbi_message_t *message = NULL;
-    ogs_sockaddr_t *addr = NULL;
 
     ogs_assert(s);
     ogs_assert(e);
@@ -147,7 +145,7 @@ void ogs_sbi_nf_state_will_register(ogs_fsm_t *s, ogs_event_t *e)
 
                 if (message->res_status == OGS_SBI_HTTP_STATUS_OK ||
                     message->res_status == OGS_SBI_HTTP_STATUS_CREATED) {
-                    ogs_sbi_nnrf_handle_nf_register(nf_instance, message);
+                    ogs_nnrf_nfm_handle_nf_register(nf_instance, message);
                     OGS_FSM_TRAN(s, &ogs_sbi_nf_state_registered);
                 } else {
                     ogs_error("[%s] HTTP Response Status Code [%d]",
@@ -174,11 +172,6 @@ void ogs_sbi_nf_state_will_register(ogs_fsm_t *s, ogs_event_t *e)
     case OGS_EVENT_SBI_TIMER:
         switch(e->timer_id) {
         case OGS_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL:
-            client = nf_instance->client;
-            ogs_assert(client);
-            addr = client->node.addr;
-            ogs_assert(addr);
-
             ogs_warn("[%s] Retry to registration with NRF",
                     NF_INSTANCE_ID(ogs_sbi_self()->nf_instance));
 
@@ -373,9 +366,7 @@ void ogs_sbi_nf_state_de_registered(ogs_fsm_t *s, ogs_event_t *e)
 void ogs_sbi_nf_state_exception(ogs_fsm_t *s, ogs_event_t *e)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
-    ogs_sbi_client_t *client = NULL;
     ogs_sbi_message_t *message = NULL;
-    ogs_sockaddr_t *addr = NULL;
     ogs_assert(s);
     ogs_assert(e);
 
@@ -403,11 +394,6 @@ void ogs_sbi_nf_state_exception(ogs_fsm_t *s, ogs_event_t *e)
     case OGS_EVENT_SBI_TIMER:
         switch(e->timer_id) {
         case OGS_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL:
-            client = nf_instance->client;
-            ogs_assert(client);
-            addr = client->node.addr;
-            ogs_assert(addr);
-
             ogs_warn("[%s] Retry to registration with NRF",
                     NF_INSTANCE_ID(ogs_sbi_self()->nf_instance));
 

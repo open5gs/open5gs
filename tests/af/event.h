@@ -52,6 +52,8 @@ typedef struct af_event_s {
     af_sess_t *sess;
 } af_event_t;
 
+OGS_STATIC_ASSERT(OGS_EVENT_SIZE >= sizeof(af_event_t));
+
 af_event_t *af_event_new(int id);
 
 const char *af_event_get_name(af_event_t *e);

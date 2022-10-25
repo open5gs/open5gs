@@ -53,6 +53,8 @@ typedef struct upf_event_s {
     ogs_pfcp_message_t *pfcp_message;
 } upf_event_t;
 
+OGS_STATIC_ASSERT(OGS_EVENT_SIZE >= sizeof(upf_event_t));
+
 void upf_event_init(void);
 void upf_event_term(void);
 void upf_event_final(void);

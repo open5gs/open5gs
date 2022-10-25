@@ -31,12 +31,18 @@ ogs_sbi_request_t *pcf_naf_callback_build_policyauthorization_terminate(
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
     message.h.uri = ogs_msprintf("%s/%s",
                 app_session->notif_uri, OGS_SBI_RESOURCE_NAME_TERMINATE);
-    ogs_assert(message.h.uri);
+    if (!message.h.uri) {
+        ogs_error("No message.h.uri");
+        goto end;
+    }
 
     request = ogs_sbi_build_request(&message);
     ogs_assert(request);
 
-    ogs_free(message.h.uri);
+end:
+
+    if (message.h.uri)
+        ogs_free(message.h.uri);
 
     return request;
 }

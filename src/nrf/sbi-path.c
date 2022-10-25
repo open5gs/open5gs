@@ -19,34 +19,6 @@
 
 #include "sbi-path.h"
 
-static int server_cb(ogs_sbi_request_t *request, void *data)
-{
-    nrf_event_t *e = NULL;
-    int rv;
-
-    ogs_assert(request);
-    ogs_assert(data);
-
-    e = nrf_event_new(NRF_EVT_SBI_SERVER);
-    ogs_assert(e);
-
-    e->sbi.request = request;
-    e->sbi.data = data;
-
-    rv = ogs_queue_push(ogs_app()->queue, e);
-    if (rv != OGS_OK) {
-        if (rv != OGS_DONE)
-            ogs_error("ogs_queue_push() failed:%d", (int)rv);
-        else
-            ogs_warn("ogs_queue_push() failed:%d", (int)rv);
-        ogs_sbi_request_free(request);
-        nrf_event_free(e);
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
-}
-
 static int client_notify_cb(
         int status, ogs_sbi_response_t *response, void *data)
 {
@@ -80,7 +52,16 @@ static int client_notify_cb(
 
 int nrf_sbi_open(void)
 {
-    if (ogs_sbi_server_start_all(server_cb) != OGS_OK)
+    ogs_sbi_nf_instance_t *nf_instance = NULL;
+
+    /* Initialize SELF NF instance */
+    nf_instance = ogs_sbi_self()->nf_instance;
+    ogs_assert(nf_instance);
+
+    /* Build NF instance information. */
+    ogs_sbi_nf_instance_build_default(nf_instance, OpenAPI_nf_type_NRF);
+
+    if (ogs_sbi_server_start_all(ogs_sbi_server_handler) != OGS_OK)
         return OGS_ERROR;
 
     return OGS_OK;
@@ -97,18 +78,25 @@ bool nrf_nnrf_nfm_send_nf_status_notify(
         OpenAPI_notification_event_type_e event,
         ogs_sbi_nf_instance_t *nf_instance)
 {
+    bool rc;
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_client_t *client = NULL;
 
     ogs_assert(subscription_data);
     client = subscription_data->client;
-    ogs_assert(client);
+    ogs_expect_or_return_val(client, false);
 
     request = nrf_nnrf_nfm_build_nf_status_notify(
                 subscription_data, event, nf_instance);
     ogs_expect_or_return_val(request, false);
 
-    return ogs_sbi_scp_send_request(client, client_notify_cb, request, NULL);
+    rc = ogs_sbi_send_request_to_client(
+            client, client_notify_cb, request, NULL);
+    ogs_expect(rc == true);
+
+    ogs_sbi_request_free(request);
+
+    return rc;
 }
 
 bool nrf_nnrf_nfm_send_nf_status_notify_all(

@@ -20,6 +20,7 @@
 #
 logger:
     file: @localstatedir@/log/open5gs/udm.log
+
 #
 # udm:
 #
@@ -120,9 +121,76 @@ logger:
 #      'service-names' is always included in the URI query parameter.
 #    * That is, 'no_service_names' has no effect.
 #
+#  <For Indirect Communication with Delegated Discovery>
+#
+#  o (Default) If you do not set Delegated Discovery as shown below,
+#
+#    sbi:
+#      - addr: 127.0.0.12
+#        port: 7777
+#
+#    - Use SCP if SCP avaiable. Otherwise NRF is used.
+#      => App fails if both NRF and SCP are unavailable.
+#
+#    sbi:
+#      - addr: 127.0.0.12
+#        port: 7777
+#    discovery:
+#      delegated: auto
+#
+#  o To use SCP always => App fails if no SCP available.
+#      delegated: yes
+#
+#  o Don't use SCP server => App fails if no NRF available.
+#      delegated: no
+#
 udm:
     sbi:
       - addr: 127.0.0.12
+        port: 7777
+
+#
+# scp:
+#
+#  <SBI Client>>
+#
+#  o SBI Client(http://127.0.1.10:7777)
+#    sbi:
+#      addr: 127.0.1.10
+#      port: 7777
+#
+#  o SBI Client(https://127.0.1.10:443, http://scp.open5gs.org:80)
+#    sbi:
+#      - addr: 127.0.1.10
+#        tls:
+#          key: scp.key
+#          pem: scp.pem
+#      - name: scp.open5gs.org
+#
+#  o SBI Client(http://[fd69:f21d:873c:fb::1]:80)
+#    If prefer_ipv4 is true, http://127.0.1.10:80 is selected.
+#
+#    sbi:
+#      addr:
+#        - 127.0.1.10
+#        - fd69:f21d:873c:fb::1
+#
+#  o SBI Option (Default)
+#    - tcp_nodelay : true
+#    - so_linger.l_onoff : false
+#
+#    sbi:
+#      addr: 127.0.1.10
+#      option:
+#        tcp_nodelay: false
+#        so_linger:
+#          l_onoff: true
+#          l_linger: 10
+#
+#
+scp:
+    sbi:
+      - addr: 127.0.1.10
         port: 7777
 
 #
@@ -163,12 +231,12 @@ udm:
 #          l_onoff: true
 #          l_linger: 10
 #
-nrf:
-    sbi:
-      - addr:
-          - 127.0.0.10
-          - ::1
-        port: 7777
+#nrf:
+#    sbi:
+#      - addr:
+#          - 127.0.0.10
+#          - ::1
+#        port: 7777
 
 #
 # parameter:

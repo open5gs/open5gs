@@ -328,9 +328,10 @@ $ cd build
 $ ninja install
 $ cd ../
 $ ls install/bin
-open5gs-amfd   open5gs-hssd  open5gs-nrfd   open5gs-sgwcd  open5gs-smfd  open5gs-udrd
-open5gs-ausfd  open5gs-mmed  open5gs-pcrfd  open5gs-sgwud  open5gs-udmd  open5gs-pcfd
-open5gs-upfd   open5gs-nssfd open5gs-bsfd
+open5gs-amfd   open5gs-mmed   open5gs-pcrfd  open5gs-smfd
+open5gs-ausfd  open5gs-nrfd   open5gs-scpd   open5gs-udmd
+open5gs-bsfd   open5gs-nssfd  open5gs-sgwcd  open5gs-udrd
+open5gs-hssd   open5gs-pcfd   open5gs-sgwud  open5gs-upfd
 ```
 
 ## Building WebUI of Open5GS
@@ -347,7 +348,7 @@ Install the dependencies to run WebUI
 ```bash
 $ cd ~/open5gs
 $ cd webui
-$ npm ci --no-optional
+$ npm ci
 ```
 
 The WebUI runs as an [npm](https://www.npmjs.com/) script.

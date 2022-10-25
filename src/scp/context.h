@@ -35,20 +35,25 @@ extern int __scp_log_domain;
 #define OGS_LOG_DOMAIN __scp_log_domain
 
 typedef struct scp_context_s {
-    ogs_list_t          conn_list;
+    ogs_list_t          assoc_list;
 } scp_context_t;
 
-typedef struct scp_conn_s scp_conn_t;
+typedef struct scp_assoc_s scp_assoc_t;
 
-typedef struct scp_conn_s {
+typedef struct scp_assoc_s {
     ogs_sbi_object_t sbi;
 
-    ogs_sbi_client_t *client;
-
     ogs_sbi_stream_t *stream;
-    ogs_sbi_request_t *request;
 
-} scp_conn_t;
+    ogs_sbi_client_t *client;
+    ogs_sbi_client_t *nrf_client;
+
+    ogs_sbi_request_t *request;
+    ogs_sbi_service_type_e service_type;
+    OpenAPI_nf_type_e requester_nf_type;
+
+    ogs_sbi_nf_instance_t *nf_service_producer;
+} scp_assoc_t;
 
 void scp_context_init(void);
 void scp_context_final(void);
@@ -56,11 +61,11 @@ scp_context_t *scp_self(void);
 
 int scp_context_parse_config(void);
 
-scp_conn_t *scp_conn_add(ogs_sbi_stream_t *stream);
-void scp_conn_remove(scp_conn_t *sess);
-void scp_conn_remove_all(void);
+scp_assoc_t *scp_assoc_add(ogs_sbi_stream_t *stream);
+void scp_assoc_remove(scp_assoc_t *sess);
+void scp_assoc_remove_all(void);
 
-scp_conn_t *scp_conn_find(uint32_t index);
+scp_assoc_t *scp_assoc_find(uint32_t index);
 
 #ifdef __cplusplus
 }

@@ -83,6 +83,8 @@ typedef struct amf_event_s {
     ogs_timer_t *timer;
 } amf_event_t;
 
+OGS_STATIC_ASSERT(OGS_EVENT_SIZE >= sizeof(amf_event_t));
+
 amf_event_t *amf_event_new(int id);
 
 const char *amf_event_get_name(amf_event_t *e);

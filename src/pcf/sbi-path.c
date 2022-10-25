@@ -19,61 +19,6 @@
 
 #include "sbi-path.h"
 
-static int server_cb(ogs_sbi_request_t *request, void *data)
-{
-    pcf_event_t *e = NULL;
-    int rv;
-
-    ogs_assert(request);
-    ogs_assert(data);
-
-    e = pcf_event_new(OGS_EVENT_SBI_SERVER);
-    ogs_assert(e);
-
-    e->h.sbi.request = request;
-    e->h.sbi.data = data;
-
-    rv = ogs_queue_push(ogs_app()->queue, e);
-    if (rv != OGS_OK) {
-        ogs_error("ogs_queue_push() failed:%d", (int)rv);
-        ogs_sbi_request_free(request);
-        ogs_event_free(e);
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
-}
-
-static int client_cb(int status, ogs_sbi_response_t *response, void *data)
-{
-    pcf_event_t *e = NULL;
-    int rv;
-
-    if (status != OGS_OK) {
-        ogs_log_message(
-                status == OGS_DONE ? OGS_LOG_DEBUG : OGS_LOG_WARN, 0,
-                "client_cb() failed [%d]", status);
-        return OGS_ERROR;
-    }
-
-    ogs_assert(response);
-
-    e = pcf_event_new(OGS_EVENT_SBI_CLIENT);
-    ogs_assert(e);
-    e->h.sbi.response = response;
-    e->h.sbi.data = data;
-
-    rv = ogs_queue_push(ogs_app()->queue, e);
-    if (rv != OGS_OK) {
-        ogs_error("ogs_queue_push() failed:%d", (int)rv);
-        ogs_sbi_response_free(response);
-        ogs_event_free(e);
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
-}
-
 int pcf_sbi_open(void)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
@@ -82,7 +27,7 @@ int pcf_sbi_open(void)
     bool smpolicycontrol_enabled = false;
     bool policyauthorization_enabled = false;
 
-    /* Add SELF NF instance */
+    /* Initialize SELF NF instance */
     nf_instance = ogs_sbi_self()->nf_instance;
     ogs_assert(nf_instance);
     ogs_sbi_nf_fsm_init(nf_instance);
@@ -148,18 +93,8 @@ int pcf_sbi_open(void)
 
     /* Initialize NRF NF Instance */
     nf_instance = ogs_sbi_self()->nrf_instance;
-    if (nf_instance) {
-        ogs_sbi_client_t *client = NULL;
-
-        /* Client callback is only used when NF sends to NRF */
-        client = nf_instance->client;
-        ogs_assert(client);
-        client->cb = client_cb;
-
-        /* NFRegister is sent and the response is received
-         * by the above client callback. */
+    if (nf_instance)
         ogs_sbi_nf_fsm_init(nf_instance);
-    }
 
     /* Build Subscription-Data */
     ogs_sbi_subscription_data_build_default(
@@ -167,7 +102,7 @@ int pcf_sbi_open(void)
     ogs_sbi_subscription_data_build_default(
             OpenAPI_nf_type_UDR, OGS_SBI_SERVICE_NAME_NUDR_DR);
 
-    if (ogs_sbi_server_start_all(server_cb) != OGS_OK)
+    if (ogs_sbi_server_start_all(ogs_sbi_server_handler) != OGS_OK)
         return OGS_ERROR;
 
     return OGS_OK;
@@ -179,11 +114,12 @@ void pcf_sbi_close(void)
     ogs_sbi_server_stop_all();
 }
 
-bool pcf_sbi_send_request(ogs_sbi_nf_instance_t *nf_instance, void *data)
+bool pcf_sbi_send_request(
+        ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact)
 {
     ogs_assert(nf_instance);
-
-    return ogs_sbi_send_request(nf_instance, client_cb, data);
+    ogs_assert(xact);
+    return ogs_sbi_send_request_to_nf_instance(nf_instance, xact);
 }
 
 static bool pcf_sbi_discover_and_send(
@@ -207,7 +143,7 @@ static bool pcf_sbi_discover_and_send(
 
     xact->assoc_stream = stream;
 
-    if (ogs_sbi_discover_and_send(xact, client_cb) != true) {
+    if (ogs_sbi_discover_and_send(xact) != true) {
         ogs_error("ogs_sbi_discover_and_send() failed");
         ogs_sbi_xact_remove(xact);
         return false;
@@ -250,7 +186,7 @@ bool pcf_sess_sbi_discover_only(
 
     xact->assoc_stream = stream;
 
-    return ogs_sbi_discover_only(xact, client_cb);
+    return ogs_sbi_discover_only(xact);
 }
 
 bool pcf_sess_sbi_discover_and_send(
@@ -320,6 +256,7 @@ static int client_delete_notify_cb(
 
 bool pcf_sbi_send_am_policy_control_notify(pcf_ue_t *pcf_ue)
 {
+    bool rc;
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_client_t *client = NULL;
 
@@ -329,12 +266,20 @@ bool pcf_sbi_send_am_policy_control_notify(pcf_ue_t *pcf_ue)
 
     request = pcf_namf_callback_build_am_policy_control(pcf_ue, NULL);
     ogs_expect_or_return_val(request, false);
-    return ogs_sbi_client_send_request(client, client_notify_cb, request, NULL);
+
+    rc = ogs_sbi_send_request_to_client(
+            client, client_notify_cb, request, NULL);
+    ogs_expect(rc == true);
+
+    ogs_sbi_request_free(request);
+
+    return rc;
 }
 
 bool pcf_sbi_send_smpolicycontrol_update_notify(
         pcf_sess_t *sess, OpenAPI_sm_policy_decision_t *SmPolicyDecision)
 {
+    bool rc;
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_client_t *client = NULL;
 
@@ -345,13 +290,21 @@ bool pcf_sbi_send_smpolicycontrol_update_notify(
     request = pcf_nsmf_callback_build_smpolicycontrol_update(
                 sess, SmPolicyDecision);
     ogs_expect_or_return_val(request, false);
-    return ogs_sbi_client_send_request(client, client_notify_cb, request, NULL);
+
+    rc = ogs_sbi_send_request_to_client(
+            client, client_notify_cb, request, NULL);
+    ogs_expect(rc == true);
+
+    ogs_sbi_request_free(request);
+
+    return rc;
 }
 
 bool pcf_sbi_send_smpolicycontrol_delete_notify(
         pcf_sess_t *sess, pcf_app_t *app_session,
         OpenAPI_sm_policy_decision_t *SmPolicyDecision)
 {
+    bool rc;
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_client_t *client = NULL;
 
@@ -362,12 +315,19 @@ bool pcf_sbi_send_smpolicycontrol_delete_notify(
     request = pcf_nsmf_callback_build_smpolicycontrol_update(
                 sess, SmPolicyDecision);
     ogs_expect_or_return_val(request, false);
-    return ogs_sbi_client_send_request(
+
+    rc = ogs_sbi_send_request_to_client(
             client, client_delete_notify_cb, request, app_session);
+    ogs_expect(rc == true);
+
+    ogs_sbi_request_free(request);
+
+    return rc;
 }
 
 bool pcf_sbi_send_smpolicycontrol_terminate_notify(pcf_sess_t *sess)
 {
+    bool rc;
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_client_t *client = NULL;
 
@@ -377,11 +337,19 @@ bool pcf_sbi_send_smpolicycontrol_terminate_notify(pcf_sess_t *sess)
 
     request = pcf_nsmf_callback_build_smpolicycontrol_terminate(sess, NULL);
     ogs_expect_or_return_val(request, false);
-    return ogs_sbi_client_send_request(client, client_notify_cb, request, NULL);
+
+    rc = ogs_sbi_send_request_to_client(
+            client, client_notify_cb, request, NULL);
+    ogs_expect(rc == true);
+
+    ogs_sbi_request_free(request);
+
+    return rc;
 }
 
 bool pcf_sbi_send_policyauthorization_terminate_notify(pcf_app_t *app)
 {
+    bool rc;
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_client_t *client = NULL;
 
@@ -391,5 +359,12 @@ bool pcf_sbi_send_policyauthorization_terminate_notify(pcf_app_t *app)
 
     request = pcf_naf_callback_build_policyauthorization_terminate(app, NULL);
     ogs_expect_or_return_val(request, false);
-    return ogs_sbi_client_send_request(client, client_notify_cb, request, NULL);
+
+    rc = ogs_sbi_send_request_to_client(
+            client, client_notify_cb, request, NULL);
+    ogs_expect(rc == true);
+
+    ogs_sbi_request_free(request);
+
+    return rc;
 }

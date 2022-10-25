@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -62,8 +62,6 @@ typedef struct ogs_sbi_client_s {
         const char  *pem;
     } tls;
 
-    ogs_sbi_client_cb_f cb;             /* Only used when NF send to NRF */
-
     ogs_timer_t     *t_curl;            /* timer for CURL */
     ogs_list_t      connection_list;    /* CURL connection list */
 
@@ -86,17 +84,10 @@ ogs_sbi_client_t *ogs_sbi_client_find(ogs_sockaddr_t *addr);
 void ogs_sbi_client_stop(ogs_sbi_client_t *client);
 void ogs_sbi_client_stop_all(void);
 
-bool ogs_sbi_client_send_reqmem_persistent(
-        ogs_sbi_client_t *client, ogs_sbi_client_cb_f client_cb,
-        ogs_sbi_request_t *request, void *data);
 bool ogs_sbi_client_send_request(
         ogs_sbi_client_t *client, ogs_sbi_client_cb_f client_cb,
         ogs_sbi_request_t *request, void *data);
-
-bool ogs_sbi_scp_send_reqmem_persistent(
-        ogs_sbi_client_t *client, ogs_sbi_client_cb_f client_cb,
-        ogs_sbi_request_t *request, void *data);
-bool ogs_sbi_scp_send_request(
+bool ogs_sbi_client_send_via_scp(
         ogs_sbi_client_t *client, ogs_sbi_client_cb_f client_cb,
         ogs_sbi_request_t *request, void *data);
 

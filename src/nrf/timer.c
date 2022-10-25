@@ -19,9 +19,21 @@
 
 #include "context.h"
 
-const char *nrf_timer_get_name(nrf_timer_e id)
+const char *nrf_timer_get_name(int timer_id)
 {
-    switch (id) {
+    switch (timer_id) {
+    case OGS_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL:
+        return OGS_TIMER_NAME_NF_INSTANCE_REGISTRATION_INTERVAL;
+    case OGS_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL:
+        return OGS_TIMER_NAME_NF_INSTANCE_HEARTBEAT_INTERVAL;
+    case OGS_TIMER_NF_INSTANCE_NO_HEARTBEAT:
+        return OGS_TIMER_NAME_NF_INSTANCE_NO_HEARTBEAT;
+    case OGS_TIMER_NF_INSTANCE_VALIDITY:
+        return OGS_TIMER_NAME_NF_INSTANCE_VALIDITY;
+    case OGS_TIMER_SUBSCRIPTION_VALIDITY:
+        return OGS_TIMER_NAME_SUBSCRIPTION_VALIDITY;
+    case OGS_TIMER_SBI_CLIENT_WAIT:
+        return OGS_TIMER_NAME_SBI_CLIENT_WAIT;
     case NRF_TIMER_NF_INSTANCE_NO_HEARTBEAT:
         return "NRF_TIMER_NF_INSTANCE_NO_HEARTBEAT";
     case NRF_TIMER_SUBSCRIPTION_VALIDITY:
@@ -30,6 +42,7 @@ const char *nrf_timer_get_name(nrf_timer_e id)
        break;
     }
 
+    ogs_error("Unknown Timer[%d]", timer_id);
     return "UNKNOWN_TIMER";
 }
 
@@ -41,13 +54,13 @@ static void timer_send_event(int timer_id, void *data)
 
     switch (timer_id) {
     case NRF_TIMER_NF_INSTANCE_NO_HEARTBEAT:
-        e = nrf_event_new(NRF_EVT_SBI_TIMER);
-        e->timer_id = timer_id;
+        e = nrf_event_new(OGS_EVENT_SBI_TIMER);
+        e->h.timer_id = timer_id;
         e->nf_instance = data;
         break;
     case NRF_TIMER_SUBSCRIPTION_VALIDITY:
-        e = nrf_event_new(NRF_EVT_SBI_TIMER);
-        e->timer_id = timer_id;
+        e = nrf_event_new(OGS_EVENT_SBI_TIMER);
+        e->h.timer_id = timer_id;
         e->subscription_data = data;
         break;
     default:
@@ -59,7 +72,7 @@ static void timer_send_event(int timer_id, void *data)
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_error("ogs_queue_push() failed:%d", (int)rv);
-        nrf_event_free(e);
+        ogs_event_free(e);
     }
 }
 

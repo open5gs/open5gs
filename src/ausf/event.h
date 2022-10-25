@@ -34,6 +34,8 @@ typedef struct ausf_event_s {
     ausf_ue_t *ausf_ue;
 } ausf_event_t;
 
+OGS_STATIC_ASSERT(OGS_EVENT_SIZE >= sizeof(ausf_event_t));
+
 ausf_event_t *ausf_event_new(int id);
 
 const char *ausf_event_get_name(ausf_event_t *e);

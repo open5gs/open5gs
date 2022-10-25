@@ -26,44 +26,17 @@
 extern "C" {
 #endif
 
-typedef struct ogs_sbi_request_s ogs_sbi_request_t;
-typedef struct ogs_sbi_response_s ogs_sbi_response_t;
-typedef struct ogs_sbi_message_s ogs_sbi_message_t;
 typedef struct ogs_sbi_nf_instance_s ogs_sbi_nf_instance_t;
 typedef struct ogs_sbi_subscription_data_s ogs_sbi_subscription_data_t;
 
-typedef enum {
-    NRF_EVT_BASE = OGS_MAX_NUM_OF_PROTO_EVENT,
-
-    NRF_EVT_SBI_SERVER,
-    NRF_EVT_SBI_CLIENT,
-    NRF_EVT_SBI_TIMER,
-
-    NRF_EVT_TOP,
-
-} nrf_event_e;
-
 typedef struct nrf_event_s {
-    int id;
-    int timer_id;
-
-    struct {
-        ogs_sbi_request_t *request;
-        ogs_sbi_response_t *response;
-        void *data;
-
-        ogs_sbi_message_t *message;
-    } sbi;
+    ogs_event_t h;
 
     ogs_sbi_nf_instance_t *nf_instance;
     ogs_sbi_subscription_data_t *subscription_data;
 } nrf_event_t;
 
-void nrf_event_init(void);
-void nrf_event_final(void);
-
-nrf_event_t *nrf_event_new(nrf_event_e id);
-void nrf_event_free(nrf_event_t *e);
+nrf_event_t *nrf_event_new(int id);
 
 const char *nrf_event_get_name(nrf_event_t *e);
 

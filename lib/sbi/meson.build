@@ -41,6 +41,7 @@ libsbi_sources = files('''
 
     nnrf-build.c
     nnrf-handler.c
+    nnrf-path.c
     
     path.c
     nf-sm.c

@@ -31,6 +31,7 @@ AMF-sbi   = 127.0.0.5 :7777 for 5G SBI (N8,N12,N11)
 HSS-frDi  = 127.0.0.8 :3868 for S6a auth
 PCRF-frDi = 127.0.0.9 :3868 for Gx auth
 NRF-sbi   = 127.0.0.10:7777 for 5G SBI
+SCP-sbi   = 127.0.1.10:7777 for 5G SBI
 AUSF-sbi  = 127.0.0.11:7777 for 5G SBI
 UDM-sbi   = 127.0.0.12:7777 for 5G SBI
 PCF-sbi   = 127.0.0.13:7777 for 5G SBI
@@ -58,53 +59,52 @@ Modify [install/etc/open5gs/mme.yaml](https://github.com/{{ site.github_username
 $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
 --- mme.yaml.old    2020-08-22 11:36:40.512418765 -0400
 +++ mme.yaml    2020-08-22 11:36:27.081466682 -0400
-@@ -204,20 +204,20 @@
- mme:
-     freeDiameter: /home/acetcom/Documents/git/open5gs/install/etc/freeDiameter/mme.conf
+@@ -253,20 +253,20 @@ mme:
      s1ap:
--      addr: 127.0.0.2
-+      addr: 10.10.0.2
+       - addr: 127.0.0.2
      gtpc:
+-      - addr: 127.0.0.2
++      - addr: 10.10.0.2
+     metrics:
        addr: 127.0.0.2
-     gummei: 
+       port: 9090
+     gummei:
        plmn_id:
--        mcc: 001
--        mnc: 01
-+        mcc: 999
-+        mnc: 70
+-        mcc: 999
+-        mnc: 70
++        mcc: 001
++        mnc: 01
        mme_gid: 2
        mme_code: 1
      tai:
        plmn_id:
--        mcc: 001
--        mnc: 01
--      tac: 7
-+        mcc: 999
-+        mnc: 70
-+      tac: 1
+-        mcc: 999
+-        mnc: 70
++        mcc: 001
++        mnc: 01
+       tac: 1
      security:
-         integrity_order : [ EIA1, EIA2, EIA0 ]
-         ciphering_order : [ EEA0, EEA1, EEA2 ]
+         integrity_order : [ EIA2, EIA1, EIA0 ]
 ```
 
 Modify [install/etc/open5gs/sgwc.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/sgwc.yaml.in) to set the PFCP IP address.
 ```diff
 $ diff -u /etc/open5gs/sgwc.yaml.old /etc/open5gs/sgwc.yaml
-@@ -49,7 +49,7 @@
+@@ -69,7 +69,7 @@ sgwc:
      gtpc:
-       addr: 127.0.0.3
+       - addr: 127.0.0.3
      pfcp:
--      addr: 127.0.0.3
-+      addr: 10.10.0.3
+-      - addr: 127.0.0.3
++      - addr: 10.10.0.3
 
  #
  # sgwu:
-@@ -100,7 +100,7 @@
+@@ -120,7 +120,7 @@ sgwc:
  #
  sgwu:
      pfcp:
--      addr: 127.0.0.6
-+      addr: 10.10.0.6
+-      - addr: 127.0.0.6
++      - addr: 10.10.0.6
 
  #
  # parameter:
@@ -115,17 +115,16 @@ Modify [install/etc/open5gs/smf.yaml](https://github.com/{{ site.github_username
 $ diff -u /etc/open5gs/smf.yaml.old /etc/open5gs/smf.yaml
 --- smf.yaml.old    2020-08-22 11:37:39.990816411 -0400
 +++ smf.yaml    2020-08-22 11:38:18.647999952 -0400
-@@ -187,8 +187,7 @@
+@@ -446,7 +446,7 @@ smf:
        - addr: 127.0.0.4
-       - addr: ::1
+         port: 7777
      pfcp:
 -      - addr: 127.0.0.4
--      - addr: ::1
 +      - addr: 10.10.0.4
-     subnet:
-       - addr: 10.45.0.1/16
-       - addr: 2001:db8:cafe::1/48
-@@ -282,7 +281,7 @@
+       - addr: ::1
+     gtpc:
+       - addr: 127.0.0.4
+@@ -613,7 +613,7 @@ scp:
  #
  upf:
      pfcp:
@@ -134,7 +133,6 @@ $ diff -u /etc/open5gs/smf.yaml.old /etc/open5gs/smf.yaml
 
  #
  # parameter:
-
 ```
 
 Modify [install/etc/open5gs/amf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/amf.yaml.in) to set the NGAP IP address, PLMN ID, TAC and NSSAI.
@@ -143,41 +141,40 @@ Modify [install/etc/open5gs/amf.yaml](https://github.com/{{ site.github_username
 diff -u /etc/open5gs/amf.yaml.old /etc/open5gs/amf.yaml
 --- amf.yaml.old    2020-06-21 23:34:14.643114779 -0400
 +++ amf.yaml    2020-06-21 23:34:28.718482095 -0400
-@@ -67,25 +67,25 @@
+@@ -293,26 +293,26 @@ amf:
        - addr: 127.0.0.5
          port: 7777
      ngap:
 -      - addr: 127.0.0.5
 +      - addr: 10.10.0.5
+     metrics:
+         addr: 127.0.0.5
+         port: 9090
      guami:
        - plmn_id:
--          mcc: 001
--          mnc: 01
-+          mcc: 999
-+          mnc: 70
+-          mcc: 999
+-          mnc: 70
++          mcc: 001
++          mnc: 01
          amf_id:
            region: 2
            set: 1
      tai:
        - plmn_id:
--          mcc: 001
--          mnc: 01
--        tac: 7
-+          mcc: 999
-+          mnc: 70
-+        tac: 1
+-          mcc: 999
+-          mnc: 70
++          mcc: 001
++          mnc: 01
+         tac: 1
      plmn_support:
        - plmn_id:
--          mcc: 001
--          mnc: 01
-+          mcc: 999
-+          mnc: 70
+-          mcc: 999
+-          mnc: 70
++          mcc: 001
++          mnc: 01
          s_nssai:
            - sst: 1
--          - sd: 2
      security:
-         integrity_order : [ NIA1, NIA2, NIA0 ]
-         ciphering_order : [ NEA0, NEA1, NEA2 ]
 ```
 
 Modify [install/etc/open5gs/sgwu.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/sgwu.yaml.in) to set the GTP-U and PFCP IP address.
@@ -185,18 +182,14 @@ Modify [install/etc/open5gs/sgwu.yaml](https://github.com/{{ site.github_usernam
 $ diff -u /etc/open5gs/sgwu.yaml.old /etc/open5gs/sgwu.yaml
 --- sgwu.yaml.old    2020-08-22 11:41:09.214670723 -0400
 +++ sgwu.yaml    2020-08-22 11:41:27.433937124 -0400
-@@ -51,9 +51,9 @@
+@@ -98,7 +98,7 @@ logger:
  #
  sgwu:
-     gtpu:
--      addr: 127.0.0.6
-+      addr: 10.11.0.6
      pfcp:
--      addr: 127.0.0.6
-+      addr: 10.10.0.6
-
- #
- # sgwc:
+-      - addr: 127.0.0.6
++      - addr: 10.11.0.6
+     gtpu:
+       - addr: 127.0.0.6
 ```
 
 Modify [install/etc/open5gs/upf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/upf.yaml.in) to set the GTP-U and PFCP IP address.
@@ -204,16 +197,11 @@ Modify [install/etc/open5gs/upf.yaml](https://github.com/{{ site.github_username
 $ diff -u /etc/open5gs/upf.yaml.old /etc/open5gs/upf.yaml
 --- upf.yaml.old    2020-08-22 11:42:57.781750067 -0400
 +++ upf.yaml    2020-08-22 11:43:13.268901616 -0400
-@@ -59,11 +59,9 @@
- #
- upf:
+@@ -168,7 +168,7 @@ upf:
      pfcp:
--      - addr: 127.0.0.7
-+      - addr: 10.10.0.7
+       - addr: 127.0.0.7
      gtpu:
--      - addr:
--        - 127.0.0.7
--        - ::1
+-      - addr: 127.0.0.7
 +      - addr: 10.11.0.7
      subnet:
        - addr: 10.45.0.1/16

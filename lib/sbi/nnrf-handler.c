@@ -24,16 +24,13 @@ static void handle_nf_service(
 static void handle_smf_info(
         ogs_sbi_nf_instance_t *nf_instance, OpenAPI_smf_info_t *SmfInfo);
 
-void ogs_sbi_nnrf_handle_nf_register(
+void ogs_nnrf_nfm_handle_nf_register(
         ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_message_t *recvmsg)
 {
     OpenAPI_nf_profile_t *NFProfile = NULL;
-    ogs_sbi_client_t *client = NULL;
 
     ogs_assert(recvmsg);
     ogs_assert(nf_instance);
-    client = nf_instance->client;
-    ogs_assert(client);
 
     NFProfile = recvmsg->NFProfile;
     if (!NFProfile) {
@@ -46,7 +43,7 @@ void ogs_sbi_nnrf_handle_nf_register(
         nf_instance->time.heartbeat_interval = NFProfile->heart_beat_timer;
 }
 
-void ogs_sbi_nnrf_handle_nf_profile(
+void ogs_nnrf_nfm_handle_nf_profile(
         ogs_sbi_nf_instance_t *nf_instance, OpenAPI_nf_profile_t *NFProfile)
 {
     int rv;
@@ -451,17 +448,14 @@ static void handle_smf_info(
     }
 }
 
-void ogs_nnrf_handle_nf_status_subscribe(
+void ogs_nnrf_nfm_handle_nf_status_subscribe(
         ogs_sbi_subscription_data_t *subscription_data,
         ogs_sbi_message_t *recvmsg)
 {
     OpenAPI_subscription_data_t *SubscriptionData = NULL;
-    ogs_sbi_client_t *client = NULL;
 
     ogs_assert(recvmsg);
     ogs_assert(subscription_data);
-    client = subscription_data->client;
-    ogs_assert(client);
 
     SubscriptionData = recvmsg->SubscriptionData;
     if (!SubscriptionData) {
@@ -506,7 +500,7 @@ void ogs_nnrf_handle_nf_status_subscribe(
     }
 }
 
-bool ogs_nnrf_handle_nf_status_notify(
+bool ogs_nnrf_nfm_handle_nf_status_notify(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
     int rv;
@@ -633,7 +627,7 @@ bool ogs_nnrf_handle_nf_status_notify(
                     message.h.resource.component[1]);
         }
 
-        ogs_sbi_nnrf_handle_nf_profile(nf_instance, NFProfile);
+        ogs_nnrf_nfm_handle_nf_profile(nf_instance, NFProfile);
 
         ogs_info("[%s] (NRF-notify) NF Profile updated", nf_instance->id);
 
@@ -685,7 +679,7 @@ bool ogs_nnrf_handle_nf_status_notify(
     return true;
 }
 
-void ogs_nnrf_handle_nf_discover_search_result(
+void ogs_nnrf_disc_handle_nf_discover_search_result(
         OpenAPI_search_result_t *SearchResult)
 {
     OpenAPI_lnode_t *node = NULL;
@@ -737,7 +731,7 @@ void ogs_nnrf_handle_nf_discover_search_result(
         }
 
         if (NF_INSTANCE_ID_IS_OTHERS(nf_instance->id)) {
-            ogs_sbi_nnrf_handle_nf_profile(nf_instance, NFProfile);
+            ogs_nnrf_nfm_handle_nf_profile(nf_instance, NFProfile);
 
             ogs_sbi_client_associate(nf_instance);
 

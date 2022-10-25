@@ -45,7 +45,7 @@ ogs_sbi_request_t *smf_nudm_sdm_build_get(smf_sess_t *sess, void *data)
         message.param.dnn = sess->session.name;
 
     request = ogs_sbi_build_request(&message);
-    ogs_assert(request);
+    ogs_expect(request);
 
     return request;
 }
