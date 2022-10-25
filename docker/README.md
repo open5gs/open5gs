@@ -104,6 +104,15 @@ export DEBEMAIL='acetcom@gmail.com'
   $ ./misc/git-version-gen . > .tarball-version 2>/dev/null
   ```
 
+* WebUI Version Change
+
+  ```
+  $ cat ./docker/webui/Dockerfile
+  $ cat ./webui/package.json
+  $ cat ./webui/package-lock.json
+  $ cat ./docs/assets/webui/install
+  ```
+
 * Upload OpenBuildService
   
   ```
