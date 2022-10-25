@@ -141,7 +141,9 @@ int nas_eps_send_attach_reject(mme_ue_t *mme_ue,
 {
     int rv;
     mme_sess_t *sess = NULL;
-    ogs_pkbuf_t *esmbuf = NULL, *emmbuf = NULL;
+    ogs_pkbuf_t *esmbuf = NULL, *emmbuf = NULL, *eventbuf = NULL;
+    mme_event_t *e = NULL;
+    enb_ue_t *enb_ue = NULL;
 
     ogs_expect_or_return_val(mme_ue, OGS_ERROR);
 
@@ -157,8 +159,23 @@ int nas_eps_send_attach_reject(mme_ue_t *mme_ue,
 
     emmbuf = emm_build_attach_reject(emm_cause, esmbuf);
     ogs_expect_or_return_val(emmbuf, OGS_ERROR);
+    eventbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    eventbuf = ogs_pkbuf_copy(emmbuf);
     rv = nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
     ogs_expect_or_return_val(rv == OGS_OK, rv);
+
+    int ret;
+    enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+    ogs_assert(enb_ue);
+    e = mme_event_new(MME_EVENT_EMM_MESSAGE);
+    e->enb_ue = enb_ue;
+    e->pkbuf = eventbuf;
+    ret = ogs_queue_push(ogs_app()->queue, e);
+    if (ret != OGS_OK) {
+        ogs_error("ogs_queue_push() failed:%d", (int)ret);
+        ogs_pkbuf_free(e->pkbuf);
+        mme_event_free(e);
+    }
 
     return rv;
 }
@@ -327,7 +344,6 @@ int nas_eps_send_pdn_connectivity_reject(
     int rv;
     mme_ue_t *mme_ue;
     ogs_pkbuf_t *esmbuf = NULL;
-    enb_ue_t *enb_ue = NULL;
 
     ogs_assert(sess);
     mme_ue = sess->mme_ue;
@@ -339,15 +355,6 @@ int nas_eps_send_pdn_connectivity_reject(
         rv = nas_eps_send_attach_reject(mme_ue,
             OGS_NAS_EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED, esm_cause);
         ogs_expect(rv == OGS_OK);
-
-        enb_ue = enb_ue_cycle(mme_ue->enb_ue);
-        if (enb_ue) {
-            ogs_assert(OGS_OK ==
-                s1ap_send_ue_context_release_command(enb_ue,
-                    S1AP_Cause_PR_nas, S1AP_CauseNas_unspecified,
-                    S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0));
-        }
-        mme_ue_fsm_init(mme_ue);
     } else {
         esmbuf = esm_build_pdn_connectivity_reject(
                     sess, esm_cause, create_action);

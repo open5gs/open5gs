@@ -1004,6 +1004,7 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
 {
     int rv;
     mme_ue_t *mme_ue = NULL;
+    enb_ue_t *enb_ue = NULL;
     ogs_nas_eps_message_t *message = NULL;
     ogs_nas_security_header_type_t h;
 
@@ -1080,6 +1081,21 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
                     sgsap_send_tmsi_reallocation_complete(mme_ue));
 
             OGS_FSM_TRAN(s, &emm_state_registered);
+            break;
+
+        case OGS_NAS_EPS_ATTACH_REJECT:
+            ogs_info("[%s] Attach reject", mme_ue->imsi_bcd);
+            enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+            if (enb_ue) {
+                ogs_assert(OGS_OK ==
+                    s1ap_send_ue_context_release_command(enb_ue,
+                        S1AP_Cause_PR_nas, S1AP_CauseNas_unspecified,
+                        S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0));
+            }
+
+            CLEAR_SECURITY_CONTEXT(mme_ue);
+
+            OGS_FSM_TRAN(s, &emm_state_de_registered);
             break;
 
         case OGS_NAS_EPS_TRACKING_AREA_UPDATE_COMPLETE:
