@@ -185,7 +185,7 @@ The WebUI allows you to interactively edit subscriber data. While it is not esse
     ```bash
     $ sudo apt update
     $ sudo apt install curl
-    $ curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
+    $ curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
     $ sudo apt install nodejs
     ```
 

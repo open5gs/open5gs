@@ -1,9 +1,9 @@
-FROM node:carbon
+FROM node:19
 
 MAINTAINER Sukchan Lee <acetcom@gmail.com>
 
 ARG PACKAGE=open5gs
-ARG VERSION=2.5.0
+ARG VERSION=2.5.1
 
 RUN set -e; \
     cd /usr/src; \
@@ -13,7 +13,7 @@ RUN set -e; \
     mv ./$PACKAGE-$VERSION/ ./$PACKAGE;
 
 WORKDIR /usr/src/open5gs/webui
-RUN npm install && \
+RUN npm clean-install && \
     npm run build
 
 CMD npm run start

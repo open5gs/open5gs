@@ -38,7 +38,8 @@ co(function* () {
   }
   const db = yield mongoose.connect(process.env.DB_URI, {
     useNewUrlParser: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 1000
     /* other options */
   })
 
