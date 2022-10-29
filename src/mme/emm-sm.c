@@ -870,26 +870,30 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
 
             CLEAR_MME_UE_TIMER(mme_ue->t3460);
 
-            /* Now, We will check the MAC in the NAS message*/
+        /*
+         * TS24.301
+         * Section 4.4.4.3
+         * Integrity checking of NAS signalling messages in the MME:
+         *
+         * Once the secure exchange of NAS messages has been established
+         * for the NAS signalling connection, the receiving EMM or ESM entity
+         * in the MME shall not process any NAS signalling messages
+         * unless they have been successfully integrity checked by the NAS.
+         * If any NAS signalling message, having not successfully passed
+         * the integrity check, is received, then the NAS in the MME shall
+         * discard that message. If any NAS signalling message is received,
+         * as not integrity protected even though the secure exchange
+         * of NAS messages has been established, then the NAS shall discard
+         * this message.
+         */
             h.type = e->nas_type;
             if (h.integrity_protected == 0) {
                 ogs_error("[%s] No Integrity Protected", mme_ue->imsi_bcd);
-
-                ogs_assert(OGS_OK ==
-                    nas_eps_send_attach_reject(mme_ue,
-                        OGS_NAS_EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
-                        OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
-                OGS_FSM_TRAN(s, &emm_state_exception);
                 break;
             }
 
             if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
                 ogs_warn("[%s] No Security Context", mme_ue->imsi_bcd);
-                ogs_assert(OGS_OK ==
-                    nas_eps_send_attach_reject(mme_ue,
-                        OGS_NAS_EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
-                        OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
-                OGS_FSM_TRAN(s, &emm_state_exception);
                 break;
             }
 
@@ -1038,29 +1042,34 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
         case OGS_NAS_EPS_ATTACH_COMPLETE:
             ogs_info("[%s] Attach complete", mme_ue->imsi_bcd);
 
-            CLEAR_MME_UE_TIMER(mme_ue->t3450);
-
+        /*
+         * TS24.301
+         * Section 4.4.4.3
+         * Integrity checking of NAS signalling messages in the MME:
+         *
+         * Once the secure exchange of NAS messages has been established
+         * for the NAS signalling connection, the receiving EMM or ESM entity
+         * in the MME shall not process any NAS signalling messages
+         * unless they have been successfully integrity checked by the NAS.
+         * If any NAS signalling message, having not successfully passed
+         * the integrity check, is received, then the NAS in the MME shall
+         * discard that message. If any NAS signalling message is received,
+         * as not integrity protected even though the secure exchange
+         * of NAS messages has been established, then the NAS shall discard
+         * this message.
+         */
             h.type = e->nas_type;
             if (h.integrity_protected == 0) {
                 ogs_error("[%s] No Integrity Protected", mme_ue->imsi_bcd);
-
-                ogs_assert(OGS_OK ==
-                    nas_eps_send_attach_reject(mme_ue,
-                        OGS_NAS_EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
-                        OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
-                OGS_FSM_TRAN(s, &emm_state_exception);
                 break;
             }
 
             if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
                 ogs_warn("[%s] No Security Context", mme_ue->imsi_bcd);
-                ogs_assert(OGS_OK ==
-                    nas_eps_send_attach_reject(mme_ue,
-                        OGS_NAS_EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
-                        OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
-                OGS_FSM_TRAN(s, &emm_state_exception);
                 break;
             }
+
+            CLEAR_MME_UE_TIMER(mme_ue->t3450);
 
             rv = emm_handle_attach_complete(
                     mme_ue, &message->emm.attach_complete);
@@ -1085,29 +1094,34 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
         case OGS_NAS_EPS_TRACKING_AREA_UPDATE_COMPLETE:
             ogs_debug("[%s] Tracking area update complete", mme_ue->imsi_bcd);
 
-            CLEAR_MME_UE_TIMER(mme_ue->t3450);
-
+        /*
+         * TS24.301
+         * Section 4.4.4.3
+         * Integrity checking of NAS signalling messages in the MME:
+         *
+         * Once the secure exchange of NAS messages has been established
+         * for the NAS signalling connection, the receiving EMM or ESM entity
+         * in the MME shall not process any NAS signalling messages
+         * unless they have been successfully integrity checked by the NAS.
+         * If any NAS signalling message, having not successfully passed
+         * the integrity check, is received, then the NAS in the MME shall
+         * discard that message. If any NAS signalling message is received,
+         * as not integrity protected even though the secure exchange
+         * of NAS messages has been established, then the NAS shall discard
+         * this message.
+         */
             h.type = e->nas_type;
             if (h.integrity_protected == 0) {
                 ogs_error("[%s] No Integrity Protected", mme_ue->imsi_bcd);
-
-                ogs_assert(OGS_OK ==
-                    nas_eps_send_attach_reject(mme_ue,
-                        OGS_NAS_EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
-                        OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
-                OGS_FSM_TRAN(s, &emm_state_exception);
                 break;
             }
 
             if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
                 ogs_warn("[%s] No Security Context", mme_ue->imsi_bcd);
-                ogs_assert(OGS_OK ==
-                    nas_eps_send_attach_reject(mme_ue,
-                        OGS_NAS_EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
-                        OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
-                OGS_FSM_TRAN(s, &emm_state_exception);
                 break;
             }
+
+            CLEAR_MME_UE_TIMER(mme_ue->t3450);
 
             /* Confirm GUTI */
             if (mme_ue->next.m_tmsi)

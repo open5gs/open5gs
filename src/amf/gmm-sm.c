@@ -797,28 +797,34 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
         case OGS_NAS_5GS_SECURITY_MODE_COMPLETE:
             ogs_debug("[%s] Security mode complete", amf_ue->supi);
 
-            CLEAR_AMF_UE_TIMER(amf_ue->t3560);
-
-            /* Now, We will check the MAC in the NAS message*/
+        /*
+         * TS24.501
+         * Section 4.4.4.3
+         * Integrity checking of NAS signalling messages in the AMF
+         *
+         * Once the secure exchange of NAS messages has been established
+         * for the NAS signalling connection, the receiving 5GMM entity
+         * in the AMF shall not process any NAS signalling messages
+         * unless they have been successfully integrity checked by the NAS.
+         * If any NAS signalling message, having not successfully passed
+         * the integrity check, is received, then the NAS in the AMF shall
+         * discard that message. If any NAS signalling message is received,
+         * as not integrity protected even though the secure exchange
+         * of NAS messages has been established, then the NAS shall discard
+         * this message.
+         */
             if (h.integrity_protected == 0) {
                 ogs_error("[%s] Security-mode : No Integrity Protected",
                         amf_ue->supi);
-
-                ogs_assert(OGS_OK ==
-                    nas_5gs_send_gmm_reject(amf_ue,
-                        OGS_5GMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED));
-                OGS_FSM_TRAN(s, &gmm_state_exception);
                 break;
             }
 
             if (!SECURITY_CONTEXT_IS_VALID(amf_ue)) {
                 ogs_warn("[%s] No Security Context", amf_ue->supi);
-                ogs_assert(OGS_OK ==
-                    nas_5gs_send_gmm_reject(amf_ue,
-                        OGS_5GMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED));
-                OGS_FSM_TRAN(s, &gmm_state_exception);
                 break;
             }
+
+            CLEAR_AMF_UE_TIMER(amf_ue->t3560);
 
             gmm_cause = gmm_handle_security_mode_complete(
                     amf_ue, &nas_message->gmm.security_mode_complete);
