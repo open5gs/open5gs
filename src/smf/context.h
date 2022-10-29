@@ -92,6 +92,13 @@ typedef struct smf_context_s {
 
     uint16_t        mtu;            /* MTU to advertise in PCO */
 
+    struct  {
+        const char *integrity_protection_indication;
+        const char *confidentiality_protection_indication;
+        const char *maximum_integrity_protected_data_rate_uplink;
+        const char *maximum_integrity_protected_data_rate_downlink;
+    } security_indication;
+
 #define SMF_UE_IS_LAST_SESSION(__sMF) \
      ((__sMF) && (ogs_list_count(&(__sMF)->sess_list)) == 1)
     ogs_list_t      smf_ue_list;
@@ -511,6 +518,13 @@ void smf_pf_identifier_pool_final(smf_bearer_t *bearer);
 
 void smf_pf_precedence_pool_init(smf_sess_t *sess);
 void smf_pf_precedence_pool_final(smf_sess_t *sess);
+
+int smf_integrity_protection_indication_value2enum(const char *value);
+int smf_confidentiality_protection_indication_value2enum(const char *value);
+int smf_maximum_integrity_protected_data_rate_uplink_value2enum(
+        const char *value);
+int smf_maximum_integrity_protected_data_rate_downlink_value2enum(
+        const char *value);
 
 #ifdef __cplusplus
 }

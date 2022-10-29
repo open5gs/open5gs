@@ -33,6 +33,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
     NGAP_GTPTunnel_t *gTPTunnel = NULL;
     NGAP_DataForwardingNotPossible_t *DataForwardingNotPossible = NULL;
     NGAP_PDUSessionType_t *PDUSessionType = NULL;
+    NGAP_SecurityIndication_t *SecurityIndication = NULL;
     NGAP_QosFlowSetupRequestList_t *QosFlowSetupRequestList = NULL;
     NGAP_QosFlowSetupRequestItem_t *QosFlowSetupRequestItem = NULL;
     NGAP_QosFlowIdentifier_t *qosFlowIdentifier = NULL;
@@ -127,6 +128,89 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
     default:
         ogs_fatal("Unknown PDU Session Type [%d]", sess->session.session_type);
         ogs_assert_if_reached();
+    }
+
+    if (smf_self()->security_indication.integrity_protection_indication &&
+        smf_self()->security_indication.confidentiality_protection_indication) {
+
+        ie = CALLOC(1,
+                sizeof(NGAP_PDUSessionResourceSetupRequestTransferIEs_t));
+        ogs_assert(ie);
+        ASN_SEQUENCE_ADD(&message.protocolIEs, ie);
+
+        ie->id = NGAP_ProtocolIE_ID_id_SecurityIndication;
+        ie->criticality = NGAP_Criticality_reject;
+        ie->value.present = NGAP_PDUSessionResourceSetupRequestTransferIEs__value_PR_SecurityIndication;
+
+        SecurityIndication = &ie->value.choice.SecurityIndication;
+
+        SecurityIndication->integrityProtectionIndication =
+                smf_integrity_protection_indication_value2enum(
+                    smf_self()->security_indication.
+                        integrity_protection_indication);
+        ogs_assert(SecurityIndication->integrityProtectionIndication >= 0);
+
+        SecurityIndication->confidentialityProtectionIndication =
+                smf_confidentiality_protection_indication_value2enum(
+                    smf_self()->security_indication.
+                        confidentiality_protection_indication);
+        ogs_assert(SecurityIndication->
+                confidentialityProtectionIndication >= 0);
+
+        if (smf_self()->security_indication.
+                maximum_integrity_protected_data_rate_uplink) {
+
+            ogs_assert(
+                SecurityIndication->integrityProtectionIndication ==
+                    NGAP_IntegrityProtectionIndication_required ||
+                SecurityIndication->integrityProtectionIndication ==
+                    NGAP_IntegrityProtectionIndication_preferred);
+
+            SecurityIndication->maximumIntegrityProtectedDataRate_UL =
+                CALLOC(1, sizeof(NGAP_MaximumIntegrityProtectedDataRate_t));
+            ogs_assert(SecurityIndication->
+                    maximumIntegrityProtectedDataRate_UL);
+            *(SecurityIndication->maximumIntegrityProtectedDataRate_UL) =
+                smf_maximum_integrity_protected_data_rate_uplink_value2enum(
+                    smf_self()->security_indication.
+                        maximum_integrity_protected_data_rate_uplink);
+            ogs_assert(
+                *(SecurityIndication->
+                    maximumIntegrityProtectedDataRate_UL) >= 0);
+
+            if (smf_self()->security_indication.
+                    maximum_integrity_protected_data_rate_downlink) {
+                NGAP_ProtocolExtensionContainer_9625P229_t *extContainer = NULL;
+                NGAP_SecurityIndication_ExtIEs_t *extIe = NULL;
+                NGAP_MaximumIntegrityProtectedDataRate_t
+                    *MaximumIntegrityProtectedDataRate = NULL;
+
+                extContainer = CALLOC(1,
+                        sizeof(NGAP_ProtocolExtensionContainer_9625P229_t));
+                ogs_assert(extContainer);
+                SecurityIndication->iE_Extensions =
+                    (struct NGAP_ProtocolExtensionContainer *)extContainer;
+
+                extIe = CALLOC(1, sizeof(NGAP_SecurityIndication_ExtIEs_t));
+                ogs_assert(extIe);
+                ASN_SEQUENCE_ADD(&extContainer->list, extIe);
+
+                extIe->id =
+                    NGAP_ProtocolIE_ID_id_MaximumIntegrityProtectedDataRate_DL;
+                extIe->criticality = NGAP_Criticality_ignore;
+                extIe->extensionValue.present = NGAP_SecurityIndication_ExtIEs__extensionValue_PR_MaximumIntegrityProtectedDataRate;
+
+                MaximumIntegrityProtectedDataRate =
+                    &extIe->extensionValue.choice.
+                        MaximumIntegrityProtectedDataRate;
+
+                *MaximumIntegrityProtectedDataRate =
+                smf_maximum_integrity_protected_data_rate_downlink_value2enum(
+                        smf_self()->security_indication.
+                            maximum_integrity_protected_data_rate_downlink);
+                ogs_assert(*MaximumIntegrityProtectedDataRate >= 0);
+            }
+        }
     }
 
     ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceSetupRequestTransferIEs_t));

@@ -440,7 +440,20 @@ logger:
 #              mnc: 70
 #            tac: 99
 #
-
+#  <Security Indication - 5G Core only>
+#
+#   According to 3GPP TS38.413 Section 9.3.1.27,
+#   Security Indication IE may be instructed to 5G gNB.
+#
+#   If you set the security_indication in smf.yaml,
+#   this information is delivered using PDU Session Resource Request Transfer IE
+#
+#    security_indication:
+#      integrity_protection_indication: required|preferred|not-needed
+#      confidentiality_protection_indication: required|preferred|not-needed
+#      maximum_integrity_protected_data_rate_uplink: bitrate64kbs|maximum-UE-rate
+#      maximum_integrity_protected_data_rate_downlink: bitrate64kbs|maximum-UE-rate
+#
 smf:
     sbi:
       - addr: 127.0.0.4

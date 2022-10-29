@@ -202,6 +202,83 @@ static int smf_context_validation(void)
         }
     }
 
+    if (self.security_indication.integrity_protection_indication ||
+        self.security_indication.confidentiality_protection_indication) {
+        if (!self.security_indication.integrity_protection_indication ||
+            !self.security_indication.confidentiality_protection_indication) {
+            ogs_error("Invalid security_indication [%s,%s]",
+                self.security_indication.integrity_protection_indication ?
+                self.security_indication.integrity_protection_indication :
+                "No integrity_protection_indication",
+                self.security_indication.confidentiality_protection_indication ?
+                self.security_indication.confidentiality_protection_indication :
+                "No confidentiality_protection_indication");
+            return OGS_ERROR;
+        }
+        if (smf_integrity_protection_indication_value2enum(
+            self.security_indication.integrity_protection_indication) < 0) {
+            ogs_error("Invalid integrity_protection_indication [%s]",
+                self.security_indication.integrity_protection_indication);
+            return OGS_ERROR;
+        }
+        if (smf_confidentiality_protection_indication_value2enum(
+            self.security_indication.
+            confidentiality_protection_indication) < 0) {
+            ogs_error("Invalid confidentiality_protection_indication [%s]",
+                self.security_indication.confidentiality_protection_indication);
+            return OGS_ERROR;
+        }
+    }
+
+    if (self.security_indication.maximum_integrity_protected_data_rate_uplink) {
+        NGAP_IntegrityProtectionIndication_t integrityProtectionIndication;
+        if (smf_maximum_integrity_protected_data_rate_uplink_value2enum(
+                self.security_indication.
+                    maximum_integrity_protected_data_rate_uplink) < 0) {
+            ogs_error("Invalid "
+                "maximum_integrity_protected_data_rate_uplink [%s]",
+                self.security_indication.
+                    maximum_integrity_protected_data_rate_uplink);
+            return OGS_ERROR;
+        }
+        integrityProtectionIndication =
+            smf_integrity_protection_indication_value2enum(
+                self.security_indication.integrity_protection_indication);
+        if (integrityProtectionIndication ==
+                NGAP_IntegrityProtectionIndication_required ||
+            integrityProtectionIndication ==
+                NGAP_IntegrityProtectionIndication_preferred) {
+        } else {
+            ogs_error("Invalid security_indication [%s:UL-%s]",
+                self.security_indication.integrity_protection_indication ?
+                self.security_indication.integrity_protection_indication :
+                "No integrity_protection_indication",
+                self.security_indication.
+                    maximum_integrity_protected_data_rate_uplink ?
+                self.security_indication.
+                    maximum_integrity_protected_data_rate_uplink :
+                "No integrity_protection_indication");
+            return OGS_ERROR;
+        }
+    }
+
+    if (self.security_indication.maximum_integrity_protected_data_rate_downlink) {
+        if (smf_maximum_integrity_protected_data_rate_downlink_value2enum(
+                self.security_indication.
+                    maximum_integrity_protected_data_rate_downlink) < 0) {
+            ogs_error("Invalid "
+                "maximum_integrity_protected_data_rate_downlink [%s]",
+                self.security_indication.
+                    maximum_integrity_protected_data_rate_downlink);
+            return OGS_ERROR;
+        }
+        if (!self.security_indication.
+                maximum_integrity_protected_data_rate_uplink) {
+            ogs_error("No maximum_integrity_protected_data_rate_uplink");
+            return OGS_ERROR;
+        }
+    }
+
     return OGS_OK;
 }
 
@@ -825,6 +902,40 @@ int smf_context_parse_config(void)
                     } while (ogs_yaml_iter_type(&info_array) ==
                             YAML_SEQUENCE_NODE);
 
+                } else if (!strcmp(smf_key, "security_indication")) {
+                    ogs_yaml_iter_t security_indication_iter;
+                    ogs_yaml_iter_recurse(
+                            &smf_iter, &security_indication_iter);
+                    while (ogs_yaml_iter_next(&security_indication_iter)) {
+                        const char *security_indication_key =
+                            ogs_yaml_iter_key(&security_indication_iter);
+                        ogs_assert(security_indication_key);
+                        if (!strcmp(security_indication_key,
+                            "integrity_protection_indication")) {
+                            self.security_indication.
+                                integrity_protection_indication =
+                                    ogs_yaml_iter_value(
+                                        &security_indication_iter);
+                        } else if (!strcmp(security_indication_key,
+                            "confidentiality_protection_indication")) {
+                            self.security_indication.
+                                confidentiality_protection_indication =
+                                    ogs_yaml_iter_value(
+                                            &security_indication_iter);
+                        } else if (!strcmp(security_indication_key,
+                            "maximum_integrity_protected_data_rate_uplink")) {
+                            self.security_indication.
+                                maximum_integrity_protected_data_rate_uplink =
+                                    ogs_yaml_iter_value(
+                                            &security_indication_iter);
+                        } else if (!strcmp(security_indication_key,
+                            "maximum_integrity_protected_data_rate_downlink")) {
+                            self.security_indication.
+                                maximum_integrity_protected_data_rate_downlink =
+                                    ogs_yaml_iter_value(
+                                            &security_indication_iter);
+                        }
+                    }
                 } else if (!strcmp(smf_key, "pfcp")) {
                     /* handle config in pfcp library */
                 } else if (!strcmp(smf_key, "subnet")) {
@@ -2980,4 +3091,43 @@ static void stats_remove_smf_session(void)
     smf_metrics_inst_global_dec(SMF_METR_GLOB_GAUGE_SESSIONS_ACTIVE);
     num_of_smf_sess = num_of_smf_sess - 1;
     ogs_info("[Removed] Number of SMF-Sessions is now %d", num_of_smf_sess);
+}
+
+int smf_integrity_protection_indication_value2enum(const char *value)
+{
+    ogs_assert(value);
+    if (!strcmp(value, "required"))
+        return NGAP_IntegrityProtectionIndication_required;
+    else if (!strcmp(value, "preferred"))
+        return NGAP_IntegrityProtectionIndication_preferred;
+    else if (!strcmp(value, "not-needed"))
+        return NGAP_IntegrityProtectionIndication_not_needed;
+    else {
+        ogs_error("Invalid value[%s]", value);
+        return -1;
+    }
+}
+int smf_confidentiality_protection_indication_value2enum(const char *value)
+{
+    ogs_assert(value);
+    return smf_integrity_protection_indication_value2enum(value);
+}
+int smf_maximum_integrity_protected_data_rate_uplink_value2enum(
+        const char *value)
+{
+    ogs_assert(value);
+    if (!strcmp(value, "bitrate64kbs"))
+        return NGAP_MaximumIntegrityProtectedDataRate_bitrate64kbs;
+    else if (!strcmp(value, "maximum-UE-rate"))
+        return NGAP_MaximumIntegrityProtectedDataRate_maximum_UE_rate;
+    else {
+        ogs_error("Invalid value[%s]", value);
+        return -1;
+    }
+}
+int smf_maximum_integrity_protected_data_rate_downlink_value2enum(
+        const char *value)
+{
+    ogs_assert(value);
+    return smf_maximum_integrity_protected_data_rate_uplink_value2enum(value);
 }
