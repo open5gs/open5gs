@@ -22,8 +22,8 @@
 
 #define DATASTR "This is a test"
 #define STRLEN 8092
-#define PORT 7777
-#define PORT2 7778
+#define PORT 47777
+#define PORT2 47778
 
 #ifndef AI_PASSIVE
 #define AI_PASSIVE 1
