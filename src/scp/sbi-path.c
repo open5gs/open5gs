@@ -379,7 +379,7 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
 
                 v_start = v_end = NULL;
 
-                while (*p++) {
+                while (*p) {
                     if (*p == ';') {
                         if ((v_start && v_end) || !v_start) {
                             p++;
@@ -389,6 +389,7 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
                         if (!v_start) v_start = p+1;
                         else if (!v_end) v_end = p;
                     }
+                    p++;
                 }
 
                 if (v_start && v_end) {

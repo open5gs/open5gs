@@ -301,8 +301,10 @@ void ogs_sbi_nf_state_registered(ogs_fsm_t *s, ogs_event_t *e)
             break;
 
         case OGS_TIMER_NF_INSTANCE_NO_HEARTBEAT:
-            ogs_error("[%s] No heartbeat",
-                    NF_INSTANCE_ID(ogs_sbi_self()->nf_instance));
+            ogs_error("[%s:%s] No heartbeat",
+                    NF_INSTANCE_ID(ogs_sbi_self()->nf_instance),
+                    OpenAPI_nf_type_ToString(
+                        NF_INSTANCE_TYPE(ogs_sbi_self()->nf_instance)));
             OGS_FSM_TRAN(s, &ogs_sbi_nf_state_will_register);
             break;
 
