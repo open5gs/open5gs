@@ -3,7 +3,7 @@ FROM node:19
 MAINTAINER Sukchan Lee <acetcom@gmail.com>
 
 ARG PACKAGE=open5gs
-ARG VERSION=2.5.1
+ARG VERSION=2.5.2
 
 RUN set -e; \
     cd /usr/src; \
