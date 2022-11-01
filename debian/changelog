@@ -1,3 +1,33 @@
+open5gs (2.5.4) unstable; urgency=medium
+
+  * New NF - SCP(Service Communication Proxy)
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 01 Nov 2022 21:14:56 +0900
+
+open5gs (2.5.4~kinetic) kinetic; urgency=medium
+
+  * New NF - SCP(Service Communication Proxy)
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 01 Nov 2022 21:12:25 +0900
+
+open5gs (2.5.4~jammy) jammy; urgency=medium
+
+  * New NF - SCP(Service Communication Proxy)
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 01 Nov 2022 21:11:03 +0900
+
+open5gs (2.5.4~focal) focal; urgency=medium
+
+  * New NF - SCP(Service Communication Proxy)
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 01 Nov 2022 21:09:21 +0900
+
+open5gs (2.5.4~bionic) bionic; urgency=medium
+
+  * New NF - SCP(Service Communication Proxy)
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 01 Nov 2022 21:07:58 +0900
+
 open5gs (2.5.3) unstable; urgency=medium
 
   * New NF - SCP(Service Communication Proxy)

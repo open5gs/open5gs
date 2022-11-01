@@ -80,17 +80,19 @@ export DEBEMAIL='acetcom@gmail.com'
 * Version Change
   
   ```
-  $ vi meson.build
-  $ ./misc/git-version-gen . > .tarball-version 2>/dev/null
-  ```
-
-* WebUI Version Change
-
-  ```
+  $ cat ./meson.build
   $ cat ./docker/webui/Dockerfile
   $ cat ./webui/package.json
   $ cat ./webui/package-lock.json
   $ cat ./docs/assets/webui/install
+  ```
+
+* New NF
+  ```
+  $ cat debian/control
+  $ cat configs/systemd/open5gs-scpd.service.in
+  $ cat configs/logrotate/open5gs.in
+  $ cat configs/newsyslog/open5gs.conf.in
   ```
 
 * Upload OpenBuildService
