@@ -298,6 +298,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
 
             gmm_handle_deregistration_request(
                     amf_ue, &nas_message->gmm.deregistration_request_from_ue);
+            amf_ue->rm_state = RM_STATE_DEREGISTERED;
             OGS_FSM_TRAN(s, &gmm_state_de_registered);
             break;
 
@@ -313,6 +314,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
                     NGAP_Cause_PR_misc, NGAP_CauseMisc_om_intervention,
                     NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0));
 
+            amf_ue->rm_state = RM_STATE_DEREGISTERED;
             OGS_FSM_TRAN(s, &gmm_state_de_registered);
             break;
 
@@ -1133,6 +1135,7 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
         case OGS_NAS_5GS_REGISTRATION_COMPLETE:
             ogs_info("[%s] Registration complete", amf_ue->supi);
 
+            amf_ue->rm_state = RM_STATE_REGISTERED;
             CLEAR_AMF_UE_TIMER(amf_ue->t3550);
 
             /*
