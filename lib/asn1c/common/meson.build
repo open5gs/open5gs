@@ -138,6 +138,8 @@ libasn1c_common_sources = files('''
 	constr_SEQUENCE_OF_jer.c
 	constr_SEQUENCE_jer.c
 	constr_SET_OF_jer.c
+    NGAP_ExtendedReportIntervalMDT.c
+    NGAP_ExtendedReportIntervalMDT.h
 '''.split())
 
 libasn1c_common_cc_flags = ['-DASN_DISABLE_BER_SUPPORT',
