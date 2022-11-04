@@ -10,7 +10,7 @@
 #
 
 PACKAGE="open5gs"
-VERSION="2.5.4"
+VERSION="2.5.5"
 
 print_status() {
     echo
@@ -93,17 +93,22 @@ preinstall() {
 
 PRE_INSTALL_PKGS=""
 
-if [ ! -x /usr/bin/lsb_release ]; then
-    PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} lsb-release"
+# Check that HTTPS transport is available to APT
+# (Check snaked from: https://get.docker.io/ubuntu/)
+
+if [ ! -e /usr/lib/apt/methods/https ]; then
+    PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} apt-transport-https"
 fi
 
-if [ ! -x /usr/bin/node ] && [ ! -x /usr/bin/wget ]; then
-    PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} nodejs"
+if [ ! -x /usr/bin/lsb_release ]; then
+    PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} lsb-release"
 fi
 
 if [ ! -x /usr/bin/curl ] && [ ! -x /usr/bin/wget ]; then
     PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} curl"
 fi
+
+# Used by apt-key to add new keys
 
 if [ ! -x /usr/bin/gpg ]; then
     PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} gnupg"
@@ -114,7 +119,15 @@ exec_cmd 'apt-get update'
 
 if [ "X${PRE_INSTALL_PKGS}" != "X" ]; then
     print_status "Installing packages required for setup:${PRE_INSTALL_PKGS}..."
+    # This next command needs to be redirected to /dev/null or the script will bork
+    # in some environments
     exec_cmd "apt-get install -y${PRE_INSTALL_PKGS} > /dev/null 2>&1"
+fi
+
+IS_PRERELEASE=$(lsb_release -d | grep 'Ubuntu .*development' >& /dev/null; echo $?)
+if [[ $IS_PRERELEASE -eq 0 ]]; then
+    print_status "Your distribution, identified as \"$(lsb_release -d -s)\", is a pre-release version of Ubuntu. NodeSource does not maintain official support for Ubuntu versions until they are formally released. You can try using the manual installation instructions available at https://github.com/nodesource/distributions and use the latest supported Ubuntu version name as the distribution identifier, although this is not guaranteed to work."
+    exit 1
 fi
 
 DISTRO=$(lsb_release -c -s)
@@ -128,54 +141,76 @@ check_alt() {
     fi
 }
 
-check_alt "SolydXK"       "solydxk-9" "Debian" "stretch"
-check_alt "Kali"          "sana"     "Debian" "jessie"
-check_alt "Kali"          "kali-rolling" "Debian" "jessie"
-check_alt "Sparky Linux"  "Tyche"    "Debian" "stretch"
-check_alt "Sparky Linux"  "Nibiru"   "Debian" "buster"
-check_alt "MX Linux 17"   "Horizon"  "Debian" "stretch"
-check_alt "MX Linux 18"   "Continuum" "Debian" "stretch"
-check_alt "MX Linux 19"   "patito feo" "Debian" "buster"
-check_alt "Linux Mint"    "maya"     "Ubuntu" "precise"
-check_alt "Linux Mint"    "qiana"    "Ubuntu" "trusty"
-check_alt "Linux Mint"    "rafaela"  "Ubuntu" "trusty"
-check_alt "Linux Mint"    "rebecca"  "Ubuntu" "trusty"
-check_alt "Linux Mint"    "rosa"     "Ubuntu" "trusty"
-check_alt "Linux Mint"    "sarah"    "Ubuntu" "xenial"
-check_alt "Linux Mint"    "serena"   "Ubuntu" "xenial"
-check_alt "Linux Mint"    "sonya"    "Ubuntu" "xenial"
-check_alt "Linux Mint"    "sylvia"   "Ubuntu" "xenial"
-check_alt "Linux Mint"    "tara"     "Ubuntu" "bionic"
-check_alt "Linux Mint"    "tessa"    "Ubuntu" "bionic"
-check_alt "Linux Mint"    "tina"     "Ubuntu" "bionic"
-check_alt "Linux Mint"    "tricia"   "Ubuntu" "bionic"
-check_alt "LMDE"          "betsy"    "Debian" "jessie"
-check_alt "LMDE"          "cindy"    "Debian" "stretch"
-check_alt "elementaryOS"  "luna"     "Ubuntu" "precise"
-check_alt "elementaryOS"  "freya"    "Ubuntu" "trusty"
-check_alt "elementaryOS"  "loki"     "Ubuntu" "xenial"
-check_alt "elementaryOS"  "juno"     "Ubuntu" "bionic"
-check_alt "elementaryOS"  "hera"     "Ubuntu" "bionic"
-check_alt "Trisquel"      "toutatis" "Ubuntu" "precise"
-check_alt "Trisquel"      "belenos"  "Ubuntu" "trusty"
-check_alt "Trisquel"      "flidas"   "Ubuntu" "xenial"
-check_alt "Uruk GNU/Linux" "lugalbanda" "Ubuntu" "xenial"
-check_alt "BOSS"          "anokha"   "Debian" "wheezy"
-check_alt "BOSS"          "anoop"    "Debian" "jessie"
-check_alt "BOSS"          "drishti"  "Debian" "stretch"
-check_alt "bunsenlabs"    "bunsen-hydrogen" "Debian" "jessie"
-check_alt "bunsenlabs"    "helium"   "Debian" "stretch"
-check_alt "Tanglu"        "chromodoris" "Debian" "jessie"
-check_alt "PureOS"        "green"    "Debian" "sid"
-check_alt "Devuan"        "jessie"   "Debian" "jessie"
-check_alt "Devuan"        "ascii"    "Debian" "stretch"
-check_alt "Devuan"        "beowulf"  "Debian" "buster"
-check_alt "Devuan"        "ceres"    "Debian" "sid"
-check_alt "Deepin"        "panda"    "Debian" "sid"
-check_alt "Deepin"        "unstable" "Debian" "sid"
-check_alt "Deepin"        "stable"   "Debian" "buster"
-check_alt "Pardus"        "onyedi"   "Debian" "stretch"
-check_alt "Liquid Lemur"  "lemur-3"  "Debian" "stretch"
+check_alt "Astra Linux"    "orel"            "Debian"        "stretch"
+check_alt "BOSS"           "anokha"          "Debian"        "wheezy"
+check_alt "BOSS"           "anoop"           "Debian"        "jessie"
+check_alt "BOSS"           "drishti"         "Debian"        "stretch"
+check_alt "BOSS"           "unnati"          "Debian"        "buster"
+check_alt "BOSS"           "urja"            "Debian"        "bullseye"
+check_alt "bunsenlabs"     "bunsen-hydrogen" "Debian"        "jessie"
+check_alt "bunsenlabs"     "helium"          "Debian"        "stretch"
+check_alt "bunsenlabs"     "lithium"         "Debian"        "buster"
+check_alt "Devuan"         "jessie"          "Debian"        "jessie"
+check_alt "Devuan"         "ascii"           "Debian"        "stretch"
+check_alt "Devuan"         "beowulf"         "Debian"        "buster"
+check_alt "Devuan"         "chimaera"        "Debian"        "bullseye"
+check_alt "Devuan"         "ceres"           "Debian"        "sid"
+check_alt "Deepin"         "panda"           "Debian"        "sid"
+check_alt "Deepin"         "unstable"        "Debian"        "sid"
+check_alt "Deepin"         "stable"          "Debian"        "buster"
+check_alt "Deepin"         "apricot"         "Debian"        "buster"
+check_alt "elementaryOS"   "luna"            "Ubuntu"        "precise"
+check_alt "elementaryOS"   "freya"           "Ubuntu"        "trusty"
+check_alt "elementaryOS"   "loki"            "Ubuntu"        "xenial"
+check_alt "elementaryOS"   "juno"            "Ubuntu"        "bionic"
+check_alt "elementaryOS"   "hera"            "Ubuntu"        "bionic"
+check_alt "elementaryOS"   "odin"            "Ubuntu"        "focal"
+check_alt "elementaryOS"   "jolnir"          "Ubuntu"        "focal"
+check_alt "Kali"           "sana"            "Debian"        "jessie"
+check_alt "Kali"           "kali-rolling"    "Debian"        "bullseye"
+check_alt "Linux Mint"     "maya"            "Ubuntu"        "precise"
+check_alt "Linux Mint"     "qiana"           "Ubuntu"        "trusty"
+check_alt "Linux Mint"     "rafaela"         "Ubuntu"        "trusty"
+check_alt "Linux Mint"     "rebecca"         "Ubuntu"        "trusty"
+check_alt "Linux Mint"     "rosa"            "Ubuntu"        "trusty"
+check_alt "Linux Mint"     "sarah"           "Ubuntu"        "xenial"
+check_alt "Linux Mint"     "serena"          "Ubuntu"        "xenial"
+check_alt "Linux Mint"     "sonya"           "Ubuntu"        "xenial"
+check_alt "Linux Mint"     "sylvia"          "Ubuntu"        "xenial"
+check_alt "Linux Mint"     "tara"            "Ubuntu"        "bionic"
+check_alt "Linux Mint"     "tessa"           "Ubuntu"        "bionic"
+check_alt "Linux Mint"     "tina"            "Ubuntu"        "bionic"
+check_alt "Linux Mint"     "tricia"          "Ubuntu"        "bionic"
+check_alt "Linux Mint"     "ulyana"          "Ubuntu"        "focal"
+check_alt "Linux Mint"     "ulyssa"          "Ubuntu"        "focal"
+check_alt "Linux Mint"     "uma"             "Ubuntu"        "focal"
+check_alt "Linux Mint"     "una"             "Ubuntu"        "focal"
+check_alt "Linux Mint"     "vanessa"         "Ubuntu"        "jammy"
+check_alt "Liquid Lemur"   "lemur-3"         "Debian"        "stretch"
+check_alt "LMDE"           "betsy"           "Debian"        "jessie"
+check_alt "LMDE"           "cindy"           "Debian"        "stretch"
+check_alt "LMDE"           "debbie"          "Debian"        "buster"
+check_alt "LMDE"           "elsie"           "Debian"        "bullseye"
+check_alt "MX Linux 17"    "Horizon"         "Debian"        "stretch"
+check_alt "MX Linux 18"    "Continuum"       "Debian"        "stretch"
+check_alt "MX Linux 19"    "patito feo"      "Debian"        "buster"
+check_alt "MX Linux 21"    "wildflower"      "Debian"        "bullseye"
+check_alt "Pardus"         "onyedi"          "Debian"        "stretch"
+check_alt "Parrot"         "ara"             "Debian"        "bullseye"
+check_alt "PureOS"         "green"           "Debian"        "sid"
+check_alt "PureOS"         "amber"           "Debian"        "buster"
+check_alt "PureOS"         "byzantium"       "Debian"        "bullseye"
+check_alt "SolydXK"        "solydxk-9"       "Debian"        "stretch"
+check_alt "Sparky Linux"   "Tyche"           "Debian"        "stretch"
+check_alt "Sparky Linux"   "Nibiru"          "Debian"        "buster"
+check_alt "Sparky Linux"   "Po-Tolo"         "Debian"        "bullseye"
+check_alt "Tanglu"         "chromodoris"     "Debian"        "jessie"
+check_alt "Trisquel"       "toutatis"        "Ubuntu"        "precise"
+check_alt "Trisquel"       "belenos"         "Ubuntu"        "trusty"
+check_alt "Trisquel"       "flidas"          "Ubuntu"        "xenial"
+check_alt "Trisquel"       "etiona"          "Ubuntu"        "bionic"
+check_alt "Ubilinux"       "dolcetto"        "Debian"        "stretch"
+check_alt "Uruk GNU/Linux" "lugalbanda"      "Ubuntu"        "xenial"
 
 if [ "X${DISTRO}" == "Xdebian" ]; then
   print_status "Unknown Debian-based distribution, checking /etc/debian_version..."
@@ -188,31 +223,25 @@ if [ "X${DISTRO}" == "Xdebian" ]; then
   fi
 fi
 
-if [ "X${DISTRO}" == "Xbuster" ]; then
-    if [ -f "/etc/apt/sources.list.d/mongodb-org.list" ]; then
-        print_status 'Removing Launchpad PPA Repository for MongoDB...'
-        exec_cmd "rm -f /etc/apt/sources.list.d/mongodb-org.list"
-    fi
+print_status 'Removing Launchpad PPA Repository for MongoDB...'
+for i in /etc/apt/sources.list.d/mongodb-org*; do
+    exec_cmd "rm -f $i"
+done
 
-    print_status 'Adding the MongoDB signing key to your keyring...'
+print_status 'Adding the MongoDB signing key to your keyring...'
 
-    if [ -x /usr/bin/curl ]; then
-        exec_cmd 'curl -s https://www.mongodb.org/static/pgp/server-4.2.asc | apt-key add -'
-    else
-        exec_cmd 'wget -qO- https://www.mongodb.org/static/pgp/server-4.2.asc | apt-key add -'
-    fi
-
-    print_status "Creating apt sources list file for the MongoDB repo..."
-
-    exec_cmd "echo 'deb http://repo.mongodb.org/apt/debian buster/mongodb-org/4.2 main' > /etc/apt/sources.list.d/mongodb-org.list"
-
-    if [ ! -x /usr/bin/mongod ]; then
-        MONGODB_INSTALL_PKGS="${MONGODB_INSTALL_PKGS} mongodb-org"
-    fi
+if [ -x /usr/bin/crl ]; then
+    exec_cmd_nobail "curl -sLf -o /dev/null 'https://www.mongodb.org/static/pgp/server-6.0.asc' | apt-key add -"
 else
-    if [ ! -x /usr/bin/mongod ]; then
-        MONGODB_INSTALL_PKGS="${MONGODB_INSTALL_PKGS} mongodb"
-    fi
+    exec_cmd_nobail "wget -qO /dev/null -o /dev/null 'https://www.mongodb.org/static/pgp/server-6.0.asc' | apt-key add -"
+fi
+
+print_status "Creating apt sources list file for the MongoDB repo..."
+
+exec_cmd "echo 'deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse' > /etc/apt/sources.list.d/mongodb-org-6.0.list"
+
+if [ ! -x /usr/bin/mongod ]; then
+    MONGODB_INSTALL_PKGS="${MONGODB_INSTALL_PKGS} mongodb-org"
 fi
 
 if [ "X${MONGODB_INSTALL_PKGS}" != "X" ]; then
@@ -274,16 +303,7 @@ exec_cmd "rm -rf ./${PACKAGE}-${VERSION}"
 postinstall() {
 
 print_status "Default Administrator Account [Username:admin, Password:1423]..."
-
-exec_cmd "cat << EOF > ./account.js
-db = db.getSiblingDB('open5gs')
-cursor = db.accounts.find()
-if ( cursor.count() == 0 ) {
-    db.accounts.insert({ salt: 'f5c15fa72622d62b6b790aa8569b9339729801ab8bda5d13997b5db6bfc1d997', hash: '402223057db5194899d2e082aeb0802f6794622e1cbc47529c419e5a603f2cc592074b4f3323b239ffa594c8b756d5c70a4e1f6ecd3f9f0d2d7328c4cf8b1b766514effff0350a90b89e21eac54cd4497a169c0c7554a0e2cd9b672e5414c323f76b8559bc768cba11cad2ea3ae704fb36abc8abc2619231ff84ded60063c6e1554a9777a4a464ef9cfdfa90ecfdacc9844e0e3b2f91b59d9ff024aec4ea1f51b703a31cda9afb1cc2c719a09cee4f9852ba3cf9f07159b1ccf8133924f74df770b1a391c19e8d67ffdcbbef4084a3277e93f55ac60d80338172b2a7b3f29cfe8a36738681794f7ccbe9bc98f8cdeded02f8a4cd0d4b54e1d6ba3d11792ee0ae8801213691848e9c5338e39485816bb0f734b775ac89f454ef90992003511aa8cceed58a3ac2c3814f14afaaed39cbaf4e2719d7213f81665564eec02f60ede838212555873ef742f6666cc66883dcb8281715d5c762fb236d72b770257e7e8d86c122bb69028a34cf1ed93bb973b440fa89a23604cd3fefe85fbd7f55c9b71acf6ad167228c79513f5cfe899a2e2cc498feb6d2d2f07354a17ba74cecfbda3e87d57b147e17dcc7f4c52b802a8e77f28d255a6712dcdc1519e6ac9ec593270bfcf4c395e2531a271a841b1adefb8516a07136b0de47c7fd534601b16f0f7a98f1dbd31795feb97da59e1d23c08461cf37d6f2877d0f2e437f07e25015960f63', username: 'admin', roles: [ 'admin' ], "__v" : 0})
-}
-EOF"
-exec_cmd "mongo open5gs ./account.js"
-exec_cmd "rm -f ./account.js"
+exec_cmd "mongosh open5gs ./mongo-init.js"
 }
 
 ## Defer setup until we have the complete script

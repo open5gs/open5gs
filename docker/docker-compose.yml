@@ -6,8 +6,10 @@ services:
     container_name: open5gs-mongodb
     ports:
       - "27017:27017"
+    restart: unless-stopped
     volumes:
       - mongodb:/data/db
+      - ../docs/assets/webui/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
 
   webui:
     build: webui
@@ -17,10 +19,9 @@ services:
       - mongodb
     ports:
       - "3000:3000"
-    depends_on:
-      - mongodb
     environment:
-      DB_URI: mongodb://mongodb/open5gs
+      - DB_URI=mongodb://mongodb/open5gs
+      - WAIT_HOSTS=mongodb:27017
 
   base:
     build:
@@ -67,7 +68,8 @@ services:
       - mongodb
       - build
     environment:
-      DB_URI: mongodb://mongodb/open5gs
+      - DB_URI=mongodb://mongodb/open5gs
+      - WAIT_HOSTS=mongodb:27017
     cap_add:
       - NET_ADMIN
     devices:
@@ -75,7 +77,7 @@ services:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=0
     hostname: open5gs-test
-    command: /bin/bash -c "/root/setup.sh; cd /open5gs/build && meson test -v"
+    command: /bin/bash -c "/root/setup.sh; cd /open5gs/build && /wait && meson test -v"
 
   dev:
     build:
