@@ -256,7 +256,7 @@ fi
 install() {
 print_status "Download the Open5GS Source Code (v${VERSION})..."
 if [ -x /usr/bin/curl ]; then
-    exec_cmd "curl -sLf -o /dev/null 'https://github.com/open5gs/${PACKAGE}/archive/v${VERSION}.tar.gz' | tar zxf -"
+    exec_cmd "curl -sLf 'https://github.com/open5gs/${PACKAGE}/archive/v${VERSION}.tar.gz' | tar zxf -"
     RC=$?
 else
     exec_cmd "wget -qO- /dev/null 'https://github.com/open5gs/${PACKAGE}/archive/v${VERSION}.tar.gz' | tar zxf -"
