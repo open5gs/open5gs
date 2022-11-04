@@ -218,6 +218,7 @@ ogs_sbi_request_t *amf_nudm_sdm_build_subscription(amf_ue_t *amf_ue, void *data)
     }
 
     OpenAPI_list_add(SDMSubscription.monitored_resource_uris, monres);
+    SDMSubscription.is_implicit_unsubscribe = true;
     SDMSubscription.implicit_unsubscribe = 1;
 
     message.SDMSubscription = &SDMSubscription;
