@@ -75,7 +75,7 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
     if (nf_service->fqdn)
         PcfBinding.pcf_fqdn = ogs_strdup(nf_service->fqdn);
 
-    PcfBinding.pcf_ip_end_points = PcfIpEndPointList = OpenAPI_list_create();
+    PcfIpEndPointList = OpenAPI_list_create();
     if (!PcfIpEndPointList) {
         ogs_error("No PcfIpEndPointList");
         goto end;
@@ -127,6 +127,11 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
         ogs_error("No SST");
         goto end;
     }
+    if (PcfIpEndPointList->count)
+        PcfBinding.pcf_ip_end_points = PcfIpEndPointList;
+    else
+        OpenAPI_list_free(PcfIpEndPointList);
+
     memset(&sNssai, 0, sizeof(sNssai));
     sNssai.sst = sess->s_nssai.sst;
     sNssai.sd = ogs_s_nssai_sd_to_string(sess->s_nssai.sd);

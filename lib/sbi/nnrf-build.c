@@ -83,14 +83,19 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
     ogs_sbi_nf_info_t *nf_info = NULL;
 
     OpenAPI_nf_profile_t *NFProfile = NULL;
+    OpenAPI_list_t *Ipv4AddrList = NULL;
+    OpenAPI_list_t *Ipv6AddrList = NULL;
+    OpenAPI_list_t *AllowedNfTypeList = NULL;
     OpenAPI_list_t *NFServiceList = NULL;
+    OpenAPI_map_t *NFServiceMap = NULL;
     OpenAPI_list_t *InfoList = NULL;
     OpenAPI_map_t *InfoMap = NULL;
     OpenAPI_smf_info_t *SmfInfo = NULL;
-    OpenAPI_amf_info_t *AmfInfo = NULL;
     int InfoMapKey;
 
     OpenAPI_lnode_t *node = NULL;
+
+    OpenAPI_amf_info_t *AmfInfo = NULL;
 
     int i = 0;
     char *ipstr = NULL;
@@ -132,76 +137,81 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
     NFProfile->is_load = true;
     NFProfile->load = nf_instance->load;
 
-    if (nf_instance->num_of_ipv4 > 0) {
-        OpenAPI_list_t *Ipv4AddrList = NULL;
+    Ipv4AddrList = OpenAPI_list_create();
+    if (!Ipv4AddrList) {
+        ogs_error("No Ipv4AddrList");
+        ogs_nnrf_nfm_free_nf_profile(NFProfile);
+        return NULL;
+    }
 
-        NFProfile->ipv4_addresses = Ipv4AddrList = OpenAPI_list_create();
-        if (!Ipv4AddrList) {
-            ogs_error("No Ipv4AddrList");
-            ogs_nnrf_nfm_free_nf_profile(NFProfile);
-            return NULL;
-        }
-
-        for (i = 0; i < nf_instance->num_of_ipv4; i++) {
-            if (nf_instance->ipv4[i]) {
-                ogs_trace("IPv4 [family:%d, addr:%x, port:%d]",
-                        nf_instance->ipv4[i]->ogs_sa_family,
-                        htobe32(nf_instance->ipv4[i]->sin.sin_addr.s_addr),
-                        nf_instance->ipv4[i]->ogs_sin_port);
-                ogs_assert(nf_instance->ipv4[i]->ogs_sa_family == AF_INET);
-                ipstr = ogs_ipstrdup(nf_instance->ipv4[i]);
-                if (!ipstr) {
-                    ogs_error("No ipstr");
-                    ogs_nnrf_nfm_free_nf_profile(NFProfile);
-                    return NULL;
-                }
-                OpenAPI_list_add(Ipv4AddrList, ipstr);
+    for (i = 0; i < nf_instance->num_of_ipv4; i++) {
+        if (nf_instance->ipv4[i]) {
+            ogs_trace("IPv4 [family:%d, addr:%x, port:%d]",
+                    nf_instance->ipv4[i]->ogs_sa_family,
+                    htobe32(nf_instance->ipv4[i]->sin.sin_addr.s_addr),
+                    nf_instance->ipv4[i]->ogs_sin_port);
+            ogs_assert(nf_instance->ipv4[i]->ogs_sa_family == AF_INET);
+            ipstr = ogs_ipstrdup(nf_instance->ipv4[i]);
+            if (!ipstr) {
+                ogs_error("No ipstr");
+                ogs_nnrf_nfm_free_nf_profile(NFProfile);
+                OpenAPI_list_free(Ipv4AddrList);
+                return NULL;
             }
+            OpenAPI_list_add(Ipv4AddrList, ipstr);
         }
     }
 
-    if (nf_instance->num_of_ipv6 > 0) {
-        OpenAPI_list_t *Ipv6AddrList = NULL;
+    if (Ipv4AddrList->count)
+        NFProfile->ipv4_addresses = Ipv4AddrList;
+    else
+        OpenAPI_list_free(Ipv4AddrList);
 
-        NFProfile->ipv6_addresses = Ipv6AddrList = OpenAPI_list_create();
-        if (!Ipv6AddrList) {
-            ogs_error("No IPv6AddrList");
-            ogs_nnrf_nfm_free_nf_profile(NFProfile);
-            return NULL;
-        }
+    Ipv6AddrList = OpenAPI_list_create();
+    if (!Ipv6AddrList) {
+        ogs_error("No IPv6AddrList");
+        ogs_nnrf_nfm_free_nf_profile(NFProfile);
+        return NULL;
+    }
 
-        for (i = 0; i < nf_instance->num_of_ipv6; i++) {
-            if (nf_instance->ipv6[i]) {
-                ogs_trace("IPv6 [family:%d, port:%d]",
-                        nf_instance->ipv6[i]->ogs_sa_family,
-                        nf_instance->ipv6[i]->ogs_sin_port);
-                ogs_assert(nf_instance->ipv6[i]->ogs_sa_family == AF_INET6);
-                ipstr = ogs_ipstrdup(nf_instance->ipv6[i]);
-                if (!ipstr) {
-                    ogs_error("No ipstr");
-                    ogs_nnrf_nfm_free_nf_profile(NFProfile);
-                    return NULL;
-                }
-                OpenAPI_list_add(Ipv6AddrList, ipstr);
+    for (i = 0; i < nf_instance->num_of_ipv6; i++) {
+        if (nf_instance->ipv6[i]) {
+            ogs_trace("IPv6 [family:%d, port:%d]",
+                    nf_instance->ipv6[i]->ogs_sa_family,
+                    nf_instance->ipv6[i]->ogs_sin_port);
+            ogs_assert(nf_instance->ipv6[i]->ogs_sa_family == AF_INET6);
+            ipstr = ogs_ipstrdup(nf_instance->ipv6[i]);
+            if (!ipstr) {
+                ogs_error("No ipstr");
+                ogs_nnrf_nfm_free_nf_profile(NFProfile);
+                OpenAPI_list_free(Ipv6AddrList);
+                return NULL;
             }
+            OpenAPI_list_add(Ipv6AddrList, ipstr);
         }
     }
 
-    if (nf_instance->num_of_allowed_nf_type) {
-        OpenAPI_list_t *AllowedNfTypeList = NULL;
+    if (Ipv6AddrList->count)
+        NFProfile->ipv6_addresses = Ipv6AddrList;
+    else
+        OpenAPI_list_free(Ipv6AddrList);
 
-        NFProfile->allowed_nf_types = AllowedNfTypeList = OpenAPI_list_create();
-        if (!AllowedNfTypeList) {
-            ogs_error("No AllowedNfTypeList");
-            ogs_nnrf_nfm_free_nf_profile(NFProfile);
-            return NULL;
-        }
-
-        for (i = 0; i < nf_instance->num_of_allowed_nf_type; i++) {
-            OpenAPI_list_add(AllowedNfTypeList,
-                    (void *)(uintptr_t)nf_instance->allowed_nf_type[i]);
-        }
+    AllowedNfTypeList = OpenAPI_list_create();
+    if (!AllowedNfTypeList) {
+        ogs_error("No AllowedNfTypeList");
+        ogs_nnrf_nfm_free_nf_profile(NFProfile);
+        return NULL;
     }
+
+    for (i = 0; i < nf_instance->num_of_allowed_nf_type; i++) {
+        OpenAPI_list_add(AllowedNfTypeList,
+                (void *)(uintptr_t)nf_instance->allowed_nf_type[i]);
+    }
+
+    if (AllowedNfTypeList->count)
+        NFProfile->allowed_nf_types = AllowedNfTypeList;
+    else
+        OpenAPI_list_free(AllowedNfTypeList);
 
     NFServiceList = OpenAPI_list_create();
     if (!NFServiceList) {
@@ -247,8 +257,6 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
 
         if (OGS_SBI_FEATURES_IS_SET(
             supported_features, OGS_SBI_NNRF_NFM_SERVICE_MAP)) {
-            OpenAPI_map_t *NFServiceMap = NULL;
-
             NFServiceMap = OpenAPI_map_create(nf_service->id, NFService);
             if (!NFServiceMap) {
                 ogs_error("No NFServiceMap");
@@ -443,7 +451,7 @@ static OpenAPI_nf_service_t *build_nf_service(
         return NULL;
     }
 
-    NFService->versions = VersionList = OpenAPI_list_create();
+    VersionList = OpenAPI_list_create();
     if (!VersionList) {
         ogs_error("No VersionList");
         free_nf_service(NFService);
@@ -457,6 +465,7 @@ static OpenAPI_nf_service_t *build_nf_service(
         if (!NFServiceVersion) {
             ogs_error("No NFServiceVersion");
             free_nf_service(NFService);
+            OpenAPI_list_free(VersionList);
             return NULL;
         }
         if (nf_service->version[i].in_uri) {
@@ -467,6 +476,7 @@ static OpenAPI_nf_service_t *build_nf_service(
                 if (NFServiceVersion)
                     ogs_free(NFServiceVersion);
                 free_nf_service(NFService);
+                OpenAPI_list_free(VersionList);
                 return NULL;
             }
         }
@@ -481,6 +491,7 @@ static OpenAPI_nf_service_t *build_nf_service(
                     ogs_free(NFServiceVersion);
                 }
                 free_nf_service(NFService);
+                OpenAPI_list_free(VersionList);
                 return NULL;
             }
         }
@@ -497,6 +508,7 @@ static OpenAPI_nf_service_t *build_nf_service(
                     ogs_free(NFServiceVersion);
                 }
                 free_nf_service(NFService);
+                OpenAPI_list_free(VersionList);
                 return NULL;
             }
         }
@@ -504,13 +516,16 @@ static OpenAPI_nf_service_t *build_nf_service(
         OpenAPI_list_add(VersionList, NFServiceVersion);
     }
 
+    ogs_assert(VersionList->count);
+    NFService->versions = VersionList;
+
     NFService->scheme = nf_service->scheme;
     NFService->nf_service_status = nf_service->status;
 
     if (nf_service->fqdn)
         NFService->fqdn = ogs_strdup(nf_service->fqdn);
 
-    NFService->ip_end_points = IpEndPointList = OpenAPI_list_create();
+    IpEndPointList = OpenAPI_list_create();
     if (!IpEndPointList) {
         ogs_error("No IpEndPointList");
         free_nf_service(NFService);
@@ -531,6 +546,7 @@ static OpenAPI_nf_service_t *build_nf_service(
             if (!IpEndPoint) {
                 ogs_error("No IpEndPoint");
                 free_nf_service(NFService);
+                OpenAPI_list_free(IpEndPointList);
                 return NULL;
             }
             if (ipv4) {
@@ -540,6 +556,7 @@ static OpenAPI_nf_service_t *build_nf_service(
                     if (IpEndPoint)
                         ogs_free(IpEndPoint);
                     free_nf_service(NFService);
+                    OpenAPI_list_free(IpEndPointList);
                     return NULL;
                 }
             }
@@ -553,6 +570,7 @@ static OpenAPI_nf_service_t *build_nf_service(
                         ogs_free(IpEndPoint);
                     }
                     free_nf_service(NFService);
+                    OpenAPI_list_free(IpEndPointList);
                     return NULL;
                 }
             }
@@ -562,19 +580,27 @@ static OpenAPI_nf_service_t *build_nf_service(
         }
     }
 
-    if (nf_service->num_of_allowed_nf_type > 0) {
-        NFService->allowed_nf_types = AllowedNfTypeList = OpenAPI_list_create();
-        if (!AllowedNfTypeList) {
-            ogs_error("No AllowedNfTypeList");
-            free_nf_service(NFService);
-            return NULL;
-        }
+    if (IpEndPointList->count)
+        NFService->ip_end_points = IpEndPointList;
+    else
+        OpenAPI_list_free(IpEndPointList);
 
-        for (i = 0; i < nf_service->num_of_allowed_nf_type; i++) {
-            OpenAPI_list_add(AllowedNfTypeList,
-                    (void *)(uintptr_t)nf_service->allowed_nf_type[i]);
-        }
+    AllowedNfTypeList = OpenAPI_list_create();
+    if (!AllowedNfTypeList) {
+        ogs_error("No AllowedNfTypeList");
+        free_nf_service(NFService);
+        return NULL;
     }
+
+    for (i = 0; i < nf_service->num_of_allowed_nf_type; i++) {
+        OpenAPI_list_add(AllowedNfTypeList,
+                (void *)(uintptr_t)nf_service->allowed_nf_type[i]);
+    }
+
+    if (AllowedNfTypeList->count)
+        NFService->allowed_nf_types = AllowedNfTypeList;
+    else
+        OpenAPI_list_free(AllowedNfTypeList);
 
     NFService->is_priority = true;
     NFService->priority = nf_service->priority;
@@ -630,6 +656,19 @@ static OpenAPI_smf_info_t *build_smf_info(ogs_sbi_nf_info_t *nf_info)
     int i, j;
     OpenAPI_smf_info_t *SmfInfo = NULL;
 
+    OpenAPI_list_t *sNssaiSmfInfoList = NULL;
+    OpenAPI_snssai_smf_info_item_t *sNssaiSmfInfoItem = NULL;
+    OpenAPI_snssai_t *sNssai = NULL;
+    OpenAPI_list_t *DnnSmfInfoList = NULL;
+    OpenAPI_dnn_smf_info_item_t *DnnSmfInfoItem = NULL;
+
+    OpenAPI_list_t *TaiList = NULL;
+    OpenAPI_tai_t *TaiItem = NULL;
+    OpenAPI_list_t *TaiRangeList = NULL;
+    OpenAPI_tai_range_t *TaiRangeItem = NULL;
+    OpenAPI_list_t *TacRangeList = NULL;
+    OpenAPI_tac_range_t *TacRangeItem = NULL;
+
     ogs_assert(nf_info);
 
     SmfInfo = ogs_calloc(1, sizeof(*SmfInfo));
@@ -638,168 +677,165 @@ static OpenAPI_smf_info_t *build_smf_info(ogs_sbi_nf_info_t *nf_info)
         return NULL;
     }
 
-
-    if (nf_info->smf.num_of_slice > 0) {
-        OpenAPI_list_t *sNssaiSmfInfoList = NULL;
-
-        SmfInfo->s_nssai_smf_info_list = sNssaiSmfInfoList = OpenAPI_list_create();
-        if (!sNssaiSmfInfoList) {
-            ogs_error("No sNssaiSmfInfoList");
-            free_smf_info(SmfInfo);
-            return NULL;
-        }
-        for (i = 0; i < nf_info->smf.num_of_slice; i++) {
-            OpenAPI_list_t *DnnSmfInfoList = NULL;
-            OpenAPI_snssai_smf_info_item_t *sNssaiSmfInfoItem = NULL;
-            OpenAPI_snssai_t *sNssai = NULL;
-
-            DnnSmfInfoList = OpenAPI_list_create();
-            if (!DnnSmfInfoList) {
-                ogs_error("No DnnSmfInfoList");
-                free_smf_info(SmfInfo);
-                return NULL;
-            }
-
-            for (j = 0; j < nf_info->smf.slice[i].num_of_dnn; j++) {
-                OpenAPI_dnn_smf_info_item_t *DnnSmfInfoItem = NULL;
-
-                DnnSmfInfoItem = ogs_calloc(1, sizeof(*DnnSmfInfoItem));
-                ogs_assert(DnnSmfInfoItem);
-                DnnSmfInfoItem->dnn = nf_info->smf.slice[i].dnn[j];
-
-                OpenAPI_list_add(DnnSmfInfoList, DnnSmfInfoItem);
-            }
-
-            if (!DnnSmfInfoList->count) {
-                ogs_error("CHECK CONFIGURATION: No DNN");
-
-                OpenAPI_list_free(DnnSmfInfoList);
-                free_smf_info(SmfInfo);
-
-                return NULL;
-            }
-
-            sNssaiSmfInfoItem = ogs_calloc(1, sizeof(*sNssaiSmfInfoItem));
-            ogs_assert(sNssaiSmfInfoItem);
-
-            sNssaiSmfInfoItem->dnn_smf_info_list = DnnSmfInfoList;
-
-            sNssaiSmfInfoItem->s_nssai = sNssai = ogs_calloc(1, sizeof(*sNssai));
-            ogs_assert(sNssai);
-            sNssai->sst = nf_info->smf.slice[i].s_nssai.sst;
-            sNssai->sd =
-                ogs_s_nssai_sd_to_string(nf_info->smf.slice[i].s_nssai.sd);
-
-            OpenAPI_list_add(sNssaiSmfInfoList, sNssaiSmfInfoItem);
-        }
+    sNssaiSmfInfoList = OpenAPI_list_create();
+    if (!sNssaiSmfInfoList) {
+        ogs_error("No sNssaiSmfInfoList");
+        free_smf_info(SmfInfo);
+        return NULL;
     }
 
-    if (nf_info->smf.num_of_nr_tai > 0) {
-        OpenAPI_list_t *TaiList = NULL;
-
-        SmfInfo->tai_list = TaiList = OpenAPI_list_create();
-        if (!TaiList) {
-            ogs_error("No TaiList");
+    for (i = 0; i < nf_info->smf.num_of_slice; i++) {
+        DnnSmfInfoList = OpenAPI_list_create();
+        if (!DnnSmfInfoList) {
+            ogs_error("No DnnSmfInfoList");
             free_smf_info(SmfInfo);
+            OpenAPI_list_free(sNssaiSmfInfoList);
             return NULL;
         }
 
-        for (i = 0; i < nf_info->smf.num_of_nr_tai; i++) {
-            OpenAPI_tai_t *TaiItem = NULL;
+        for (j = 0; j < nf_info->smf.slice[i].num_of_dnn; j++) {
+            DnnSmfInfoItem = ogs_calloc(1, sizeof(*DnnSmfInfoItem));
+            ogs_assert(DnnSmfInfoItem);
+            DnnSmfInfoItem->dnn = nf_info->smf.slice[i].dnn[j];
 
-            TaiItem = ogs_calloc(1, sizeof(*TaiItem));
-            if (!TaiItem) {
-                ogs_error("No TaiItem");
-                free_smf_info(SmfInfo);
-                return NULL;
-            }
-            TaiItem->plmn_id = ogs_sbi_build_plmn_id(
-                    &nf_info->smf.nr_tai[i].plmn_id);
-            if (!TaiItem->plmn_id) {
-                ogs_error("No TaiItem->plmn_id");
-                if (TaiItem)
-                    ogs_free(TaiItem);
-                free_smf_info(SmfInfo);
-                return NULL;
-            }
-            TaiItem->tac =
-                ogs_uint24_to_0string(nf_info->smf.nr_tai[i].tac);
-            if (!TaiItem->tac) {
-                ogs_error("No TaiItem->tac");
-                if (TaiItem) {
-                    if (TaiItem->plmn_id)
-                        ogs_free(TaiItem->plmn_id);
-                    ogs_free(TaiItem);
-                }
-                free_smf_info(SmfInfo);
-                return NULL;
-            }
-
-            OpenAPI_list_add(TaiList, TaiItem);
+            OpenAPI_list_add(DnnSmfInfoList, DnnSmfInfoItem);
         }
-    }
 
-    if (nf_info->smf.num_of_nr_tai_range > 0) {
-        OpenAPI_list_t *TaiRangeList = NULL;
+        if (!DnnSmfInfoList->count) {
+            ogs_error("CHECK CONFIGURATION: No DNN");
 
-        SmfInfo->tai_range_list = TaiRangeList = OpenAPI_list_create();
-        if (!TaiRangeList) {
-            ogs_error("No TaiRangeList");
+            OpenAPI_list_free(DnnSmfInfoList);
             free_smf_info(SmfInfo);
+            OpenAPI_list_free(sNssaiSmfInfoList);
+
             return NULL;
         }
 
-        for (i = 0; i < nf_info->smf.num_of_nr_tai_range; i++) {
-            OpenAPI_list_t *TacRangeList = NULL;
-            OpenAPI_tai_range_t *TaiRangeItem = NULL;
+        sNssaiSmfInfoItem = ogs_calloc(1, sizeof(*sNssaiSmfInfoItem));
+        ogs_assert(sNssaiSmfInfoItem);
 
-            TacRangeList = OpenAPI_list_create();
-            if (!TacRangeList) {
-                ogs_error("No TacRangeList");
-                free_smf_info(SmfInfo);
-                return NULL;
-            }
+        sNssaiSmfInfoItem->dnn_smf_info_list = DnnSmfInfoList;
 
-            for (j = 0;
-                    j < nf_info->smf.nr_tai_range[i].num_of_tac_range;
-                    j++) {
-                OpenAPI_tac_range_t *TacRangeItem = NULL;
+        sNssaiSmfInfoItem->s_nssai = sNssai = ogs_calloc(1, sizeof(*sNssai));
+        ogs_assert(sNssai);
+        sNssai->sst = nf_info->smf.slice[i].s_nssai.sst;
+        sNssai->sd =
+            ogs_s_nssai_sd_to_string(nf_info->smf.slice[i].s_nssai.sd);
 
-                TacRangeItem = ogs_calloc(1, sizeof(*TacRangeItem));
-                ogs_assert(TacRangeItem);
-
-                TacRangeItem->start = ogs_uint24_to_0string(
-                        nf_info->smf.nr_tai_range[i].start[j]);
-                ogs_assert(TacRangeItem->start);
-                TacRangeItem->end =
-                    ogs_uint24_to_0string(
-                            nf_info->smf.nr_tai_range[i].end[j]);
-                ogs_assert(TacRangeItem->end);
-
-                OpenAPI_list_add(TacRangeList, TacRangeItem);
-            }
-
-            if (!TacRangeList->count) {
-                ogs_error("CHECK CONFIGURATION: No Start/End in TacRange");
-
-                OpenAPI_list_free(TacRangeList);
-                free_smf_info(SmfInfo);
-
-                return NULL;
-            }
-
-            TaiRangeItem = ogs_calloc(1, sizeof(*TaiRangeItem));
-            ogs_assert(TaiRangeItem);
-
-            TaiRangeItem->plmn_id = ogs_sbi_build_plmn_id(
-                    &nf_info->smf.nr_tai_range[i].plmn_id);
-            ogs_assert(TaiRangeItem->plmn_id);
-
-            TaiRangeItem->tac_range_list = TacRangeList;
-
-            OpenAPI_list_add(TaiRangeList, TaiRangeItem);
-        }
+        OpenAPI_list_add(sNssaiSmfInfoList, sNssaiSmfInfoItem);
     }
+
+    if (sNssaiSmfInfoList->count)
+        SmfInfo->s_nssai_smf_info_list = sNssaiSmfInfoList;
+    else
+        OpenAPI_list_free(sNssaiSmfInfoList);
+
+    TaiList = OpenAPI_list_create();
+    if (!TaiList) {
+        ogs_error("No TaiList");
+        free_smf_info(SmfInfo);
+        return NULL;
+    }
+
+    for (i = 0; i < nf_info->smf.num_of_nr_tai; i++) {
+        TaiItem = ogs_calloc(1, sizeof(*TaiItem));
+        if (!TaiItem) {
+            ogs_error("No TaiItem");
+            free_smf_info(SmfInfo);
+            OpenAPI_list_free(TaiList);
+            return NULL;
+        }
+        TaiItem->plmn_id = ogs_sbi_build_plmn_id(
+                &nf_info->smf.nr_tai[i].plmn_id);
+        if (!TaiItem->plmn_id) {
+            ogs_error("No TaiItem->plmn_id");
+            if (TaiItem)
+                ogs_free(TaiItem);
+            free_smf_info(SmfInfo);
+            OpenAPI_list_free(TaiList);
+            return NULL;
+        }
+        TaiItem->tac =
+            ogs_uint24_to_0string(nf_info->smf.nr_tai[i].tac);
+        if (!TaiItem->tac) {
+            ogs_error("No TaiItem->tac");
+            if (TaiItem) {
+                if (TaiItem->plmn_id)
+                    ogs_free(TaiItem->plmn_id);
+                ogs_free(TaiItem);
+            }
+            free_smf_info(SmfInfo);
+            OpenAPI_list_free(TaiList);
+            return NULL;
+        }
+
+        OpenAPI_list_add(TaiList, TaiItem);
+    }
+
+    if (TaiList->count)
+        SmfInfo->tai_list = TaiList;
+    else
+        OpenAPI_list_free(TaiList);
+
+    TaiRangeList = OpenAPI_list_create();
+    if (!TaiRangeList) {
+        ogs_error("No TaiRangeList");
+        free_smf_info(SmfInfo);
+        return NULL;
+    }
+
+    for (i = 0; i < nf_info->smf.num_of_nr_tai_range; i++) {
+        TacRangeList = OpenAPI_list_create();
+        if (!TacRangeList) {
+            ogs_error("No TacRangeList");
+            free_smf_info(SmfInfo);
+            OpenAPI_list_free(TaiRangeList);
+            return NULL;
+        }
+
+        for (j = 0;
+                j < nf_info->smf.nr_tai_range[i].num_of_tac_range;
+                j++) {
+            TacRangeItem = ogs_calloc(1, sizeof(*TacRangeItem));
+            ogs_assert(TacRangeItem);
+
+            TacRangeItem->start = ogs_uint24_to_0string(
+                    nf_info->smf.nr_tai_range[i].start[j]);
+            ogs_assert(TacRangeItem->start);
+            TacRangeItem->end =
+                ogs_uint24_to_0string(
+                        nf_info->smf.nr_tai_range[i].end[j]);
+            ogs_assert(TacRangeItem->end);
+
+            OpenAPI_list_add(TacRangeList, TacRangeItem);
+        }
+
+        if (!TacRangeList->count) {
+            ogs_error("CHECK CONFIGURATION: No Start/End in TacRange");
+
+            OpenAPI_list_free(TacRangeList);
+            free_smf_info(SmfInfo);
+            OpenAPI_list_free(TaiRangeList);
+
+            return NULL;
+        }
+
+        TaiRangeItem = ogs_calloc(1, sizeof(*TaiRangeItem));
+        ogs_assert(TaiRangeItem);
+
+        TaiRangeItem->plmn_id = ogs_sbi_build_plmn_id(
+                &nf_info->smf.nr_tai_range[i].plmn_id);
+        ogs_assert(TaiRangeItem->plmn_id);
+
+        TaiRangeItem->tac_range_list = TacRangeList;
+
+        OpenAPI_list_add(TaiRangeList, TaiRangeItem);
+    }
+
+    if (TaiRangeList->count)
+        SmfInfo->tai_range_list = TaiRangeList;
+    else
+        OpenAPI_list_free(TaiRangeList);
 
     return SmfInfo;
 }
@@ -808,6 +844,16 @@ static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info)
 {
     int i, j;
     OpenAPI_amf_info_t *AmfInfo = NULL;
+
+    OpenAPI_list_t *guamiAmfInfoList = NULL;
+    OpenAPI_guami_t *guamiAmfInfoItem = NULL;
+
+    OpenAPI_list_t *TaiList = NULL;
+    OpenAPI_tai_t *TaiItem = NULL;
+    OpenAPI_list_t *TaiRangeList = NULL;
+    OpenAPI_tai_range_t *TaiRangeItem = NULL;
+    OpenAPI_list_t *TacRangeList = NULL;
+    OpenAPI_tac_range_t *TacRangeItem = NULL;
 
     ogs_assert(nf_info);
 
@@ -830,167 +876,172 @@ static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info)
         return NULL;
     }
 
-    if (nf_info->amf.num_of_guami) {
-        OpenAPI_list_t *guamiAmfInfoList = NULL;
+    guamiAmfInfoList = OpenAPI_list_create();
+    if (!guamiAmfInfoList) {
+        ogs_error("No guamiAmfInfoList");
+        free_amf_info(AmfInfo);
+        return NULL;
+    }
 
-        AmfInfo->guami_list = guamiAmfInfoList = OpenAPI_list_create();
-        if (!guamiAmfInfoList) {
-            ogs_error("No guamiAmfInfoList");
+    for (i = 0; i < nf_info->amf.num_of_guami; i++) {
+
+        guamiAmfInfoItem = ogs_calloc(1, sizeof(*guamiAmfInfoItem));
+        if (!guamiAmfInfoItem) {
+            ogs_error("guamiAmfInfoItem");
             free_amf_info(AmfInfo);
+            OpenAPI_list_free(guamiAmfInfoList);
             return NULL;
         }
 
-        for (i = 0; i < nf_info->amf.num_of_guami; i++) {
-            OpenAPI_guami_t *guamiAmfInfoItem = NULL;
-
-            guamiAmfInfoItem = ogs_calloc(1, sizeof(*guamiAmfInfoItem));
-            if (!guamiAmfInfoItem) {
-                ogs_error("guamiAmfInfoItem");
-                free_amf_info(AmfInfo);
-                return NULL;
-            }
-
-            guamiAmfInfoItem->plmn_id =
-                    ogs_sbi_build_plmn_id_nid(&nf_info->amf.guami[i].plmn_id);
-            if (!guamiAmfInfoItem->plmn_id) {
-                ogs_error("guamiAmfInfoItem->plmn_id");
-                if (guamiAmfInfoItem)
-                    ogs_free(guamiAmfInfoItem);
-                free_amf_info(AmfInfo);
-                return NULL;
-            }
-            guamiAmfInfoItem->amf_id =
-                    ogs_amf_id_to_string(&nf_info->amf.guami[i].amf_id);
-            if (!guamiAmfInfoItem->amf_id) {
-                ogs_error("guamiAmfInfoItem->amf_id");
-                if (guamiAmfInfoItem) {
-                    if (guamiAmfInfoItem->plmn_id)
-                        ogs_free(guamiAmfInfoItem->plmn_id);
-                    ogs_free(guamiAmfInfoItem);
-                }
-                free_amf_info(AmfInfo);
-                return NULL;
-            }
-
-            OpenAPI_list_add(guamiAmfInfoList, guamiAmfInfoItem);
+        guamiAmfInfoItem->plmn_id =
+                ogs_sbi_build_plmn_id_nid(&nf_info->amf.guami[i].plmn_id);
+        if (!guamiAmfInfoItem->plmn_id) {
+            ogs_error("guamiAmfInfoItem->plmn_id");
+            if (guamiAmfInfoItem)
+                ogs_free(guamiAmfInfoItem);
+            free_amf_info(AmfInfo);
+            OpenAPI_list_free(guamiAmfInfoList);
+            return NULL;
         }
+        guamiAmfInfoItem->amf_id =
+                ogs_amf_id_to_string(&nf_info->amf.guami[i].amf_id);
+        if (!guamiAmfInfoItem->amf_id) {
+            ogs_error("guamiAmfInfoItem->amf_id");
+            if (guamiAmfInfoItem) {
+                if (guamiAmfInfoItem->plmn_id)
+                    ogs_free(guamiAmfInfoItem->plmn_id);
+                ogs_free(guamiAmfInfoItem);
+            }
+            free_amf_info(AmfInfo);
+            OpenAPI_list_free(guamiAmfInfoList);
+            return NULL;
+        }
+
+        OpenAPI_list_add(guamiAmfInfoList, guamiAmfInfoItem);
     }
 
-    if (nf_info->amf.num_of_nr_tai > 0) {
-        OpenAPI_list_t *TaiList = NULL;
+    if (guamiAmfInfoList->count)
+        AmfInfo->guami_list = guamiAmfInfoList;
+    else
+        OpenAPI_list_free(guamiAmfInfoList);
 
-        AmfInfo->tai_list = TaiList = OpenAPI_list_create();
+    TaiList = OpenAPI_list_create();
+    if (!TaiList) {
+        ogs_error("No TaiList");
+        free_amf_info(AmfInfo);
+        return NULL;
+    }
+
+    for (i = 0; i < nf_info->amf.num_of_nr_tai; i++) {
+        TaiItem = ogs_calloc(1, sizeof(*TaiItem));
         if (!TaiList) {
-            ogs_error("No TaiList");
+            ogs_error("No TaiItem");
             free_amf_info(AmfInfo);
+            OpenAPI_list_free(TaiList);
+            return NULL;
+        }
+        TaiItem->plmn_id = ogs_sbi_build_plmn_id(
+                &nf_info->amf.nr_tai[i].plmn_id);
+        if (!TaiItem->plmn_id) {
+            ogs_error("No TaiItem->plmn_id");
+            if (TaiItem)
+                ogs_free(TaiItem);
+            free_amf_info(AmfInfo);
+            OpenAPI_list_free(TaiList);
+            return NULL;
+        }
+        TaiItem->tac =
+            ogs_uint24_to_0string(nf_info->amf.nr_tai[i].tac);
+        if (!TaiItem->tac) {
+            ogs_error("No TaiItem->tac");
+            if (TaiItem) {
+                if (TaiItem->plmn_id)
+                    ogs_free(TaiItem->plmn_id);
+                ogs_free(TaiItem);
+            }
+            free_amf_info(AmfInfo);
+            OpenAPI_list_free(TaiList);
             return NULL;
         }
 
-        for (i = 0; i < nf_info->amf.num_of_nr_tai; i++) {
-            OpenAPI_tai_t *TaiItem = NULL;
-
-            TaiItem = ogs_calloc(1, sizeof(*TaiItem));
-            if (!TaiList) {
-                ogs_error("No TaiItem");
-                free_amf_info(AmfInfo);
-                return NULL;
-            }
-            TaiItem->plmn_id = ogs_sbi_build_plmn_id(
-                    &nf_info->amf.nr_tai[i].plmn_id);
-            if (!TaiItem->plmn_id) {
-                ogs_error("No TaiItem->plmn_id");
-                if (TaiItem)
-                    ogs_free(TaiItem);
-                free_amf_info(AmfInfo);
-                return NULL;
-            }
-            TaiItem->tac =
-                ogs_uint24_to_0string(nf_info->amf.nr_tai[i].tac);
-            if (!TaiItem->tac) {
-                ogs_error("No TaiItem->tac");
-                if (TaiItem) {
-                    if (TaiItem->plmn_id)
-                        ogs_free(TaiItem->plmn_id);
-                    ogs_free(TaiItem);
-                }
-                free_amf_info(AmfInfo);
-                return NULL;
-            }
-
-            OpenAPI_list_add(TaiList, TaiItem);
-        }
+        OpenAPI_list_add(TaiList, TaiItem);
     }
 
-    if (nf_info->amf.num_of_nr_tai_range > 0) {
-        OpenAPI_list_t *TaiRangeList = NULL;
+    if (TaiList->count)
+        AmfInfo->tai_list = TaiList;
+    else
+        OpenAPI_list_free(TaiList);
 
-        AmfInfo->tai_range_list = TaiRangeList = OpenAPI_list_create();
-        if (!TaiRangeList) {
-            ogs_error("No TaiRangeList");
+    TaiRangeList = OpenAPI_list_create();
+    if (!TaiRangeList) {
+        ogs_error("No TaiRangeList");
+        free_amf_info(AmfInfo);
+        return NULL;
+    }
+
+    for (i = 0; i < nf_info->amf.num_of_nr_tai_range; i++) {
+        TacRangeList = OpenAPI_list_create();
+        if (!TacRangeList) {
+            ogs_error("No TacRangeList");
             free_amf_info(AmfInfo);
+            OpenAPI_list_free(TaiRangeList);
             return NULL;
         }
 
-        for (i = 0; i < nf_info->amf.num_of_nr_tai_range; i++) {
-            OpenAPI_list_t *TacRangeList = NULL;
-            OpenAPI_tai_range_t *TaiRangeItem = NULL;
+        for (j = 0;
+                j < nf_info->amf.nr_tai_range[i].num_of_tac_range;
+                j++) {
+            TacRangeItem = ogs_calloc(1, sizeof(*TacRangeItem));
+            ogs_assert(TacRangeItem);
 
-            TacRangeList = OpenAPI_list_create();
-            if (!TacRangeList) {
-                ogs_error("No TacRangeList");
-                free_amf_info(AmfInfo);
-                return NULL;
-            }
+            TacRangeItem->start = ogs_uint24_to_0string(
+                    nf_info->amf.nr_tai_range[i].start[j]);
+            ogs_assert(TacRangeItem->start);
+            TacRangeItem->end =
+                ogs_uint24_to_0string(
+                        nf_info->amf.nr_tai_range[i].end[j]);
+            ogs_assert(TacRangeItem->end);
 
-            for (j = 0;
-                    j < nf_info->amf.nr_tai_range[i].num_of_tac_range;
-                    j++) {
-                OpenAPI_tac_range_t *TacRangeItem = NULL;
-
-                TacRangeItem = ogs_calloc(1, sizeof(*TacRangeItem));
-                ogs_assert(TacRangeItem);
-
-                TacRangeItem->start = ogs_uint24_to_0string(
-                        nf_info->amf.nr_tai_range[i].start[j]);
-                ogs_assert(TacRangeItem->start);
-                TacRangeItem->end =
-                    ogs_uint24_to_0string(
-                            nf_info->amf.nr_tai_range[i].end[j]);
-                ogs_assert(TacRangeItem->end);
-
-                OpenAPI_list_add(TacRangeList, TacRangeItem);
-            }
-
-            if (!TacRangeList->count) {
-                ogs_error("CHECK CONFIGURATION: No Start/End in TacRange");
-
-                OpenAPI_list_free(TacRangeList);
-                free_amf_info(AmfInfo);
-
-                return NULL;
-            }
-
-            TaiRangeItem = ogs_calloc(1, sizeof(*TaiRangeItem));
-            if (!TaiRangeItem) {
-                ogs_error("No TaiRangeItem");
-                free_amf_info(AmfInfo);
-                return NULL;
-            }
-
-            TaiRangeItem->plmn_id = ogs_sbi_build_plmn_id(
-                    &nf_info->amf.nr_tai_range[i].plmn_id);
-            if (!TaiRangeItem->plmn_id) {
-                ogs_error("No TaiRangeItem->plmn_id");
-                ogs_free(TaiRangeItem);
-                free_amf_info(AmfInfo);
-                return NULL;
-            }
-
-            TaiRangeItem->tac_range_list = TacRangeList;
-
-            OpenAPI_list_add(TaiRangeList, TaiRangeItem);
+            OpenAPI_list_add(TacRangeList, TacRangeItem);
         }
+
+        if (!TacRangeList->count) {
+            ogs_error("CHECK CONFIGURATION: No Start/End in TacRange");
+
+            OpenAPI_list_free(TacRangeList);
+            free_amf_info(AmfInfo);
+            OpenAPI_list_free(TaiRangeList);
+
+            return NULL;
+        }
+
+        TaiRangeItem = ogs_calloc(1, sizeof(*TaiRangeItem));
+        if (!TaiRangeItem) {
+            ogs_error("No TaiRangeItem");
+            free_amf_info(AmfInfo);
+            OpenAPI_list_free(TaiRangeList);
+            return NULL;
+        }
+
+        TaiRangeItem->plmn_id = ogs_sbi_build_plmn_id(
+                &nf_info->amf.nr_tai_range[i].plmn_id);
+        if (!TaiRangeItem->plmn_id) {
+            ogs_error("No TaiRangeItem->plmn_id");
+            ogs_free(TaiRangeItem);
+            free_amf_info(AmfInfo);
+            OpenAPI_list_free(TaiRangeList);
+            return NULL;
+        }
+
+        TaiRangeItem->tac_range_list = TacRangeList;
+
+        OpenAPI_list_add(TaiRangeList, TaiRangeItem);
     }
+
+    if (TaiRangeList->count)
+        AmfInfo->tai_range_list = TaiRangeList;
+    else
+        OpenAPI_list_free(TaiRangeList);
 
     return AmfInfo;
 }
