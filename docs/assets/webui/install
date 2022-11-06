@@ -231,9 +231,9 @@ done
 print_status 'Adding the MongoDB signing key to your keyring...'
 
 if [ -x /usr/bin/curl ]; then
-    exec_cmd_nobail "curl -sLf -o /dev/null 'https://www.mongodb.org/static/pgp/server-6.0.asc' | apt-key add -"
+    exec_cmd_nobail "curl -sLf 'https://www.mongodb.org/static/pgp/server-6.0.asc' | apt-key add -"
 else
-    exec_cmd_nobail "wget -qO /dev/null -o /dev/null 'https://www.mongodb.org/static/pgp/server-6.0.asc' | apt-key add -"
+    exec_cmd_nobail "wget -qO - 'https://www.mongodb.org/static/pgp/server-6.0.asc' | apt-key add -"
 fi
 
 print_status "Creating apt sources list file for the MongoDB repo..."
@@ -259,7 +259,7 @@ if [ -x /usr/bin/curl ]; then
     exec_cmd "curl -sLf 'https://github.com/open5gs/${PACKAGE}/archive/v${VERSION}.tar.gz' | tar zxf -"
     RC=$?
 else
-    exec_cmd "wget -qO- /dev/null 'https://github.com/open5gs/${PACKAGE}/archive/v${VERSION}.tar.gz' | tar zxf -"
+    exec_cmd "wget -qO - 'https://github.com/open5gs/${PACKAGE}/archive/v${VERSION}.tar.gz' | tar zxf -"
     RC=$?
 fi
 
