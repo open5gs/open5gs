@@ -859,8 +859,6 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         ogs_assert(sess);
         ogs_assert(OGS_FSM_STATE(&sess->sm));
 
-        sess->pti = nas_message.gsm.h.procedure_transaction_identity;
-
         e->nas.message = &nas_message;
         ogs_fsm_dispatch(&sess->sm, e);
 

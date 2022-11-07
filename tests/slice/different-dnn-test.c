@@ -167,7 +167,7 @@ static void test1_func(abts_case *tc, void *data)
     sess = test_sess_add_by_dnn_and_psi(test_ue, "internet", 10);
     ogs_assert(sess);
 
-    sess->pti = 0;
+    sess->pti = 20;
     sess->pdu_session_type = OGS_PDU_SESSION_TYPE_IPV4;
 
     sess->ul_nas_transport_param.request_type =

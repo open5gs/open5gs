@@ -464,11 +464,23 @@ void smf_5gc_n4_handle_session_modification_response(
 
             ogs_assert(flags & OGS_PFCP_MODIFY_SESSION);
 
+            /*
+             * TS24.501
+             * 6.2 General on elementary 5GSM procedures
+             * 6.2.1 Principles of PTI handling for 5GSM procedures
+             *
+             * If a command message is not sent as result of
+             * a received request message, the sending entity shall
+             * include in the command message the PTI value set to
+             * "no procedure transaction identity assigned"
+             * (see examples in figure 6.2.1.4).
+             */
+            sess->pti = OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
+
             memset(&param, 0, sizeof(param));
             param.state = SMF_NETWORK_REQUESTED_QOS_FLOW_MODIFICATION;
             param.n1smbuf = gsm_build_pdu_session_modification_command(
                     sess,
-                    OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
                     OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE,
                     OGS_NAS_DELETE_NEW_QOS_FLOW_DESCRIPTION);
             ogs_assert(param.n1smbuf);
@@ -492,7 +504,7 @@ void smf_5gc_n4_handle_session_modification_response(
 
             ogs_assert(flags & OGS_PFCP_MODIFY_SESSION);
             n1smbuf = gsm_build_pdu_session_modification_command(
-                    sess, sess->pti,
+                    sess,
                     OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE,
                     OGS_NAS_DELETE_NEW_QOS_FLOW_DESCRIPTION);
             ogs_assert(n1smbuf);
@@ -528,11 +540,23 @@ void smf_5gc_n4_handle_session_modification_response(
 
             ogs_assert(flags & OGS_PFCP_MODIFY_SESSION);
 
+            /*
+             * TS24.501
+             * 6.2 General on elementary 5GSM procedures
+             * 6.2.1 Principles of PTI handling for 5GSM procedures
+             *
+             * If a command message is not sent as result of
+             * a received request message, the sending entity shall
+             * include in the command message the PTI value set to
+             * "no procedure transaction identity assigned"
+             * (see examples in figure 6.2.1.4).
+             */
+            sess->pti = OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
+
             memset(&param, 0, sizeof(param));
             param.state = SMF_NETWORK_REQUESTED_QOS_FLOW_MODIFICATION;
             param.n1smbuf = gsm_build_pdu_session_modification_command(
                     sess,
-                    OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
                     OGS_NAS_QOS_CODE_CREATE_NEW_QOS_RULE,
                     OGS_NAS_CREATE_NEW_QOS_FLOW_DESCRIPTION);
             ogs_assert(param.n1smbuf);
@@ -577,12 +601,23 @@ void smf_5gc_n4_handle_session_modification_response(
         if (flags & OGS_PFCP_MODIFY_NETWORK_REQUESTED) {
             ogs_assert(flags & OGS_PFCP_MODIFY_SESSION);
 
+            /*
+             * TS24.501
+             * 6.2 General on elementary 5GSM procedures
+             * 6.2.1 Principles of PTI handling for 5GSM procedures
+             *
+             * If a command message is not sent as result of
+             * a received request message, the sending entity shall
+             * include in the command message the PTI value set to
+             * "no procedure transaction identity assigned"
+             * (see examples in figure 6.2.1.4).
+             */
+            sess->pti = OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
+
             memset(&param, 0, sizeof(param));
             param.state = SMF_NETWORK_REQUESTED_QOS_FLOW_MODIFICATION;
             param.n1smbuf = gsm_build_pdu_session_modification_command(
-                    sess,
-                    OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
-                    qos_rule_code, qos_flow_description_code);
+                    sess, qos_rule_code, qos_flow_description_code);
             ogs_assert(param.n1smbuf);
             param.n2smbuf =
                 ngap_build_pdu_session_resource_modify_request_transfer(
@@ -599,8 +634,7 @@ void smf_5gc_n4_handle_session_modification_response(
 
             ogs_assert(flags & OGS_PFCP_MODIFY_SESSION);
             n1smbuf = gsm_build_pdu_session_modification_command(
-                    sess, sess->pti,
-                    qos_rule_code, qos_flow_description_code);
+                    sess, qos_rule_code, qos_flow_description_code);
             ogs_assert(n1smbuf);
 
             n2smbuf = ngap_build_pdu_session_resource_modify_request_transfer(

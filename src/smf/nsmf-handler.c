@@ -28,6 +28,7 @@ bool smf_nsmf_handle_create_sm_context(
 {
     smf_ue_t *smf_ue = NULL;
 
+    ogs_nas_5gsm_header_t *gsm_header = NULL;
     ogs_pkbuf_t *n1smbuf = NULL;
 
     ogs_sbi_client_t *client = NULL;
@@ -50,12 +51,42 @@ bool smf_nsmf_handle_create_sm_context(
     if (!SmContextCreateData) {
         ogs_error("[%s:%d] No SmContextCreateData",
                 smf_ue->supi, sess->psi);
-        n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
-            OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION);
         smf_sbi_send_sm_context_create_error(stream,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                "No SmContextCreateData", smf_ue->supi, n1smbuf);
+                "No SmContextCreateData", smf_ue->supi, NULL);
         return false;
+    }
+
+    n1SmMsg = SmContextCreateData->n1_sm_msg;
+    if (!n1SmMsg || !n1SmMsg->content_id) {
+        ogs_error("[%s:%d] No n1SmMsg", smf_ue->supi, sess->psi);
+        smf_sbi_send_sm_context_create_error(stream,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                "No n1SmMsg", smf_ue->supi, NULL);
+        return false;
+    }
+
+    n1smbuf = ogs_sbi_find_part_by_content_id(message, n1SmMsg->content_id);
+    if (!n1smbuf) {
+        ogs_error("[%s:%d] No N1 SM Content [%s]",
+                smf_ue->supi, sess->psi, n1SmMsg->content_id);
+        smf_sbi_send_sm_context_create_error(stream,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                "No N1 SM Content", smf_ue->supi, NULL);
+        return false;
+    }
+
+    gsm_header = (ogs_nas_5gsm_header_t *)n1smbuf->data;
+    ogs_assert(gsm_header);
+
+    sess->pti = gsm_header->procedure_transaction_identity;
+    if (sess->pti == OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED) {
+        ogs_error("[%s:%d] No PTI", smf_ue->supi, sess->psi);
+        smf_sbi_send_sm_context_create_error(stream,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                "No PTI", smf_ue->supi, NULL);
+        return false;
+
     }
 
     sNssai = SmContextCreateData->s_nssai;
@@ -103,29 +134,6 @@ bool smf_nsmf_handle_create_sm_context(
         smf_sbi_send_sm_context_create_error(stream,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 "No UeLocation", smf_ue->supi, n1smbuf);
-        return false;
-    }
-
-    n1SmMsg = SmContextCreateData->n1_sm_msg;
-    if (!n1SmMsg || !n1SmMsg->content_id) {
-        ogs_error("[%s:%d] No n1SmMsg", smf_ue->supi, sess->psi);
-        n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
-            OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION);
-        smf_sbi_send_sm_context_create_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                "No n1SmMsg", smf_ue->supi, n1smbuf);
-        return false;
-    }
-
-    n1smbuf = ogs_sbi_find_part_by_content_id(message, n1SmMsg->content_id);
-    if (!n1smbuf) {
-        ogs_error("[%s:%d] No N1 SM Content [%s]",
-                smf_ue->supi, sess->psi, n1SmMsg->content_id);
-        n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
-            OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION);
-        smf_sbi_send_sm_context_create_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                "No N1 SM Content", smf_ue->supi, n1smbuf);
         return false;
     }
 
@@ -228,6 +236,7 @@ bool smf_nsmf_handle_update_sm_context(
     OpenAPI_ref_to_binary_data_t *n1SmMsg = NULL;
     OpenAPI_ref_to_binary_data_t *n2SmMsg = NULL;
 
+    ogs_nas_5gsm_header_t *gsm_header = NULL;
     ogs_pkbuf_t *n1smbuf = NULL;
     ogs_pkbuf_t *n2smbuf = NULL;
 
@@ -274,11 +283,9 @@ bool smf_nsmf_handle_update_sm_context(
         n1SmMsg = SmContextUpdateData->n1_sm_msg;
         if (!n1SmMsg || !n1SmMsg->content_id) {
             ogs_error("[%s:%d] No n1SmMsg", smf_ue->supi, sess->psi);
-            n1smbuf = gsm_build_pdu_session_release_reject(sess,
-                OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION);
             smf_sbi_send_sm_context_update_error(stream,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                    "No n1SmMsg", smf_ue->supi, n1smbuf, NULL);
+                    "No n1SmMsg", smf_ue->supi, NULL, NULL);
             return false;
         }
 
@@ -286,13 +293,15 @@ bool smf_nsmf_handle_update_sm_context(
         if (!n1smbuf) {
             ogs_error("[%s:%d] No N1 SM Content [%s]",
                     smf_ue->supi, sess->psi, n1SmMsg->content_id);
-            n1smbuf = gsm_build_pdu_session_release_reject(sess,
-                OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION);
             smf_sbi_send_sm_context_update_error(stream,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                    "No N1 SM Content", smf_ue->supi, n1smbuf, NULL);
+                    "No N1 SM Content", smf_ue->supi, NULL, NULL);
             return false;
         }
+
+        gsm_header = (ogs_nas_5gsm_header_t *)n1smbuf->data;
+        ogs_assert(gsm_header);
+        sess->pti = gsm_header->procedure_transaction_identity;
 
         /*
          * NOTE : The pkbuf created in the SBI message will be removed

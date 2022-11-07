@@ -292,7 +292,7 @@ static void encode_qos_rule_packet_filter(
 }
 
 ogs_pkbuf_t *gsm_build_pdu_session_modification_command(
-        smf_sess_t *sess, uint8_t pti,
+        smf_sess_t *sess,
         uint8_t qos_rule_code, uint8_t qos_flow_description_code)
 {
     ogs_pkbuf_t *pkbuf = NULL;
@@ -325,7 +325,7 @@ ogs_pkbuf_t *gsm_build_pdu_session_modification_command(
     message.gsm.h.extended_protocol_discriminator =
             OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GSM;
     message.gsm.h.pdu_session_identity = sess->psi;
-    message.gsm.h.procedure_transaction_identity = pti;
+    message.gsm.h.procedure_transaction_identity = sess->pti;
     message.gsm.h.message_type = OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND;
 
     /* QoS rule */
