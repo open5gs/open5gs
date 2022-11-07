@@ -416,6 +416,10 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
     OpenAPI_map_t *QosDecisionMap = NULL;
     OpenAPI_qos_data_t *QosData = NULL;
 
+    OpenAPI_list_t *SessRuleList = NULL;
+    OpenAPI_map_t *SessRuleMap = NULL;
+    OpenAPI_session_rule_t *SessRule = NULL;
+
     OpenAPI_lnode_t *node = NULL, *node2 = NULL, *node3 = NULL;
 
     ogs_assert(sess);
@@ -582,6 +586,9 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
 
     QosDecisionList = OpenAPI_list_create();
     ogs_assert(QosDecisionList);
+
+    SessRuleList = OpenAPI_list_create();
+    ogs_assert(SessRuleList);
 
     for (i = 0; i < ims_data.num_of_media_component; i++) {
         int flow_presence = 0;
@@ -751,6 +758,9 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
     if (QosDecisionList->count)
         SmPolicyDecision.qos_decs = QosDecisionList;
 
+    if (SessRuleList->count)
+        SmPolicyDecision.sess_rules = SessRuleList;
+
     memset(&sendmsg, 0, sizeof(sendmsg));
 
     memset(&header, 0, sizeof(header));
@@ -769,7 +779,7 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
 
     ogs_free(sendmsg.http.location);
 
-    if (PccRuleList->count || QosDecisionList->count) {
+    if (PccRuleList->count || QosDecisionList->count || SessRuleList->count) {
         ogs_assert(true == pcf_sbi_send_smpolicycontrol_update_notify(
                                 sess, &SmPolicyDecision));
     }
@@ -795,6 +805,17 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
         }
     }
     OpenAPI_list_free(QosDecisionList);
+
+    OpenAPI_list_for_each(SessRuleList, node) {
+        SessRuleMap = node->data;
+        if (SessRuleMap) {
+            SessRule = SessRuleMap->value;
+            if (SessRule)
+                ogs_sbi_free_sess_rule(SessRule);
+            ogs_free(SessRuleMap);
+        }
+    }
+    OpenAPI_list_free(SessRuleList);
 
     ogs_ims_data_free(&ims_data);
     ogs_session_data_free(&session_data);
@@ -877,6 +898,10 @@ bool pcf_npcf_policyauthorization_handle_update(
     OpenAPI_list_t *QosDecisionList = NULL;
     OpenAPI_map_t *QosDecisionMap = NULL;
     OpenAPI_qos_data_t *QosData = NULL;
+
+    OpenAPI_list_t *SessRuleList = NULL;
+    OpenAPI_map_t *SessRuleMap = NULL;
+    OpenAPI_session_rule_t *SessRule = NULL;
 
     OpenAPI_lnode_t *node = NULL, *node2 = NULL, *node3 = NULL;
 
@@ -995,6 +1020,9 @@ bool pcf_npcf_policyauthorization_handle_update(
 
     QosDecisionList = OpenAPI_list_create();
     ogs_assert(QosDecisionList);
+
+    SessRuleList = OpenAPI_list_create();
+    ogs_assert(SessRuleList);
 
     for (i = 0; i < ims_data.num_of_media_component; i++) {
         int flow_presence = 0;
@@ -1163,6 +1191,9 @@ bool pcf_npcf_policyauthorization_handle_update(
     if (QosDecisionList->count)
         SmPolicyDecision.qos_decs = QosDecisionList;
 
+    if (SessRuleList->count)
+        SmPolicyDecision.sess_rules = SessRuleList;
+
     memset(&sendmsg, 0, sizeof(sendmsg));
 
     sendmsg.AppSessionContextUpdateDataPatch =
@@ -1172,7 +1203,7 @@ bool pcf_npcf_policyauthorization_handle_update(
     ogs_assert(response);
     ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
-    if (PccRuleList->count || QosDecisionList->count) {
+    if (PccRuleList->count || QosDecisionList->count || SessRuleList->count) {
         ogs_assert(true == pcf_sbi_send_smpolicycontrol_update_notify(
                             sess, &SmPolicyDecision));
     }
@@ -1187,6 +1218,17 @@ bool pcf_npcf_policyauthorization_handle_update(
         }
     }
     OpenAPI_list_free(PccRuleList);
+
+    OpenAPI_list_for_each(SessRuleList, node) {
+        SessRuleMap = node->data;
+        if (SessRuleMap) {
+            SessRule = SessRuleMap->value;
+            if (SessRule)
+                ogs_sbi_free_sess_rule(SessRule);
+            ogs_free(SessRuleMap);
+        }
+    }
+    OpenAPI_list_free(SessRuleList);
 
     OpenAPI_list_for_each(QosDecisionList, node) {
         QosDecisionMap = node->data;
@@ -1222,6 +1264,17 @@ cleanup:
         }
     }
     OpenAPI_list_free(PccRuleList);
+
+    OpenAPI_list_for_each(SessRuleList, node) {
+        SessRuleMap = node->data;
+        if (SessRuleMap) {
+            SessRule = SessRuleMap->value;
+            if (SessRule)
+                ogs_sbi_free_sess_rule(SessRule);
+            ogs_free(SessRuleMap);
+        }
+    }
+    OpenAPI_list_free(SessRuleList);
 
     OpenAPI_list_for_each(QosDecisionList, node) {
         QosDecisionMap = node->data;
