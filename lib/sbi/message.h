@@ -237,7 +237,7 @@ extern "C" {
 #define OGS_SBI_AUTHORITY                           ":authority"
 #define OGS_SBI_ACCEPT                              "Accept"
 #define OGS_SBI_ACCEPT_ENCODING                     "Accept-Encoding"
-#define OGS_SBI_USER_AGENT                          "User-Agent"
+#define OGS_SBI_USER_AGENT                          "user-agent"
 #define OGS_SBI_CONTENT_TYPE                        "Content-Type"
 #define OGS_SBI_LOCATION                            "Location"
 #define OGS_SBI_EXPECT                              "Expect"
