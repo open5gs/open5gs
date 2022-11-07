@@ -235,8 +235,8 @@ extern "C" {
 
 #define OGS_SBI_SCHEME                              ":scheme"
 #define OGS_SBI_AUTHORITY                           ":authority"
-#define OGS_SBI_ACCEPT                              "Accept"
-#define OGS_SBI_ACCEPT_ENCODING                     "Accept-Encoding"
+#define OGS_SBI_ACCEPT                              "accept"
+#define OGS_SBI_ACCEPT_ENCODING                     "accept-encoding"
 #define OGS_SBI_USER_AGENT                          "user-agent"
 #define OGS_SBI_CONTENT_TYPE                        "Content-Type"
 #define OGS_SBI_LOCATION                            "Location"
