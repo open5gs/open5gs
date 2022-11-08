@@ -749,7 +749,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             ogs_fsm_dispatch(&gnb->sm, e);
         } else {
             ogs_error("Cannot decode NGAP message");
-            ogs_assert(OGS_OK ==
+            ogs_expect(OGS_OK ==
                 ngap_send_error_indication(
                     gnb, NULL, NULL, NGAP_Cause_PR_protocol, 
                     NGAP_CauseProtocol_abstract_syntax_error_falsely_constructed_message));

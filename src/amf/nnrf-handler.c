@@ -68,7 +68,7 @@ void amf_nnrf_handle_nf_discover(
             ogs_assert(amf_ue);
             ogs_error("[%s] (NF discover) No [%s]", amf_ue->suci,
                         ogs_sbi_service_type_to_name(service_type));
-            ogs_assert(OGS_OK ==
+            ogs_expect(OGS_OK ==
                 nas_5gs_send_gmm_reject_from_sbi(amf_ue,
                     OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT));
             break;
@@ -78,12 +78,12 @@ void amf_nnrf_handle_nf_discover(
             ogs_error("[%d:%d] (NF discover) No [%s]", sess->psi, sess->pti,
                         ogs_sbi_service_type_to_name(service_type));
             if (sess->payload_container_type) {
-                ogs_assert(OGS_OK ==
+                ogs_expect(OGS_OK ==
                     nas_5gs_send_back_gsm_message(sess,
                         OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                         AMF_NAS_BACKOFF_TIME));
             } else {
-                ogs_assert(OGS_OK ==
+                ogs_expect(OGS_OK ==
                     ngap_send_error_indication2(amf_ue,
                         NGAP_Cause_PR_transport,
                         NGAP_CauseTransport_transport_resource_unavailable));

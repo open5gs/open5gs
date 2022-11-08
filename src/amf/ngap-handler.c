@@ -909,7 +909,7 @@ void ngap_handle_initial_context_setup_response(
         param.n2SmInfoType = OpenAPI_n2_sm_info_type_PDU_RES_SETUP_RSP;
         ogs_pkbuf_put_data(param.n2smbuf, transfer->buf, transfer->size);
 
-        ogs_assert(true ==
+        ogs_expect(true ==
             amf_sess_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                 amf_nsmf_pdusession_build_update_sm_context,
@@ -1649,7 +1649,7 @@ void ngap_handle_pdu_session_resource_setup_response(
             param.n2SmInfoType = OpenAPI_n2_sm_info_type_PDU_RES_SETUP_RSP;
             ogs_pkbuf_put_data(param.n2smbuf, transfer->buf, transfer->size);
 
-            ogs_assert(true ==
+            ogs_expect(true ==
                 amf_sess_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                     amf_nsmf_pdusession_build_update_sm_context,
@@ -1769,7 +1769,7 @@ void ngap_handle_pdu_session_resource_setup_response(
             amf_ue->deactivation.group = NGAP_Cause_PR_nas;
             amf_ue->deactivation.cause = NGAP_CauseNas_normal_release;
 
-            ogs_assert(true ==
+            ogs_expect(true ==
                 amf_sess_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                     amf_nsmf_pdusession_build_update_sm_context,
@@ -1950,7 +1950,7 @@ void ngap_handle_pdu_session_resource_modify_response(
         param.n2SmInfoType = OpenAPI_n2_sm_info_type_PDU_RES_MOD_RSP;
         ogs_pkbuf_put_data(param.n2smbuf, transfer->buf, transfer->size);
 
-        ogs_assert(true ==
+        ogs_expect(true ==
             amf_sess_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                 amf_nsmf_pdusession_build_update_sm_context,
@@ -2126,7 +2126,7 @@ void ngap_handle_pdu_session_resource_release_response(
         param.n2SmInfoType = OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP;
         ogs_pkbuf_put_data(param.n2smbuf, transfer->buf, transfer->size);
 
-        ogs_assert(true ==
+        ogs_expect(true ==
             amf_sess_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                 amf_nsmf_pdusession_build_update_sm_context,
@@ -2549,7 +2549,7 @@ void ngap_handle_path_switch_request(
         param.n2SmInfoType = OpenAPI_n2_sm_info_type_PATH_SWITCH_REQ;
         ogs_pkbuf_put_data(param.n2smbuf, transfer->buf, transfer->size);
 
-        ogs_assert(true ==
+        ogs_expect(true ==
             amf_sess_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                 amf_nsmf_pdusession_build_update_sm_context,
@@ -2871,7 +2871,7 @@ void ngap_handle_handover_required(
         param.hoState = OpenAPI_ho_state_PREPARING;
         param.TargetID = TargetID;
 
-        ogs_assert(true ==
+        ogs_expect(true ==
             amf_sess_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                 amf_nsmf_pdusession_build_update_sm_context,
@@ -3096,7 +3096,7 @@ void ngap_handle_handover_request_ack(
 
         param.hoState = OpenAPI_ho_state_PREPARED;
 
-        ogs_assert(true ==
+        ogs_expect(true ==
             amf_sess_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                 amf_nsmf_pdusession_build_update_sm_context,
@@ -3342,7 +3342,7 @@ void ngap_handle_handover_cancel(
         param.ngApCause.group = Cause->present;
         param.ngApCause.value = (int)Cause->choice.radioNetwork;
 
-        ogs_assert(true ==
+        ogs_expect(true ==
             amf_sess_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                 amf_nsmf_pdusession_build_update_sm_context,
@@ -3623,7 +3623,7 @@ void ngap_handle_handover_notification(
         memset(&param, 0, sizeof(param));
         param.hoState = OpenAPI_ho_state_COMPLETED;
 
-        ogs_assert(true ==
+        ogs_expect(true ==
             amf_sess_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                 amf_nsmf_pdusession_build_update_sm_context,

@@ -44,7 +44,7 @@ int amf_nnssf_nsselection_handle_get(
     if (recvmsg->res_status != OGS_SBI_HTTP_STATUS_OK) {
         ogs_error("[%s] HTTP response error [%d]",
                 amf_ue->supi, recvmsg->res_status);
-        ogs_assert(OGS_OK ==
+        ogs_expect(OGS_OK ==
             nas_5gs_send_gmm_status(amf_ue, recvmsg->res_status));
         return OGS_ERROR;
     }
@@ -52,7 +52,7 @@ int amf_nnssf_nsselection_handle_get(
     AuthorizedNetworkSliceInfo = recvmsg->AuthorizedNetworkSliceInfo;
     if (!AuthorizedNetworkSliceInfo) {
         ogs_error("No AuthorizedNetworkSliceInfo");
-        ogs_assert(OGS_OK ==
+        ogs_expect(OGS_OK ==
             nas_5gs_send_gmm_reject_from_sbi(
                 amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR));
         return OGS_ERROR;
@@ -61,7 +61,7 @@ int amf_nnssf_nsselection_handle_get(
     NsiInformation = AuthorizedNetworkSliceInfo->nsi_information;
     if (!NsiInformation) {
         ogs_error("No NsiInformation");
-        ogs_assert(OGS_OK ==
+        ogs_expect(OGS_OK ==
             nas_5gs_send_gmm_reject_from_sbi(
                 amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR));
         return OGS_ERROR;
@@ -69,7 +69,7 @@ int amf_nnssf_nsselection_handle_get(
 
     if (!NsiInformation->nrf_id) {
         ogs_error("No nrfId");
-        ogs_assert(OGS_OK ==
+        ogs_expect(OGS_OK ==
             nas_5gs_send_gmm_reject_from_sbi(
                 amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR));
         return OGS_ERROR;
@@ -112,7 +112,7 @@ int amf_nnssf_nsselection_handle_get(
         OGS_SBI_SETUP_CLIENT(&sess->nssf.nrf, client);
         ogs_freeaddrinfo(addr);
 
-        ogs_assert(true == amf_sess_sbi_discover_by_nsi(
+        ogs_expect(true == amf_sess_sbi_discover_by_nsi(
                     sess, OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL));
     }
 

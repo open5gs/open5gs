@@ -111,7 +111,7 @@ int amf_nausf_auth_handle_authenticate(
 
     amf_ue->nas.ue.ksi = amf_ue->nas.amf.ksi;
 
-    ogs_assert(OGS_OK ==
+    ogs_expect(OGS_OK ==
         nas_5gs_send_authentication_request(amf_ue));
 
     return OGS_OK;

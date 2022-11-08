@@ -139,7 +139,7 @@ int amf_nudm_sdm_handle_provisioned(
             return OGS_ERROR;
         }
 
-        ogs_assert(true ==
+        ogs_expect(true ==
             amf_ue_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
                 amf_nudm_sdm_build_get,
@@ -212,7 +212,7 @@ int amf_nudm_sdm_handle_provisioned(
                 }
             }
         }
-        ogs_assert(true ==
+        ogs_expect(true ==
             amf_ue_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
                 amf_nudm_sdm_build_get,
@@ -224,13 +224,13 @@ int amf_nudm_sdm_handle_provisioned(
         if (amf_ue->data_change_subscription_id) {
             /* we already have a SDM subscription to UDM; continue without
              * subscribing again */
-            ogs_assert(true ==
+            ogs_expect(true ==
                 amf_ue_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,
                     amf_npcf_am_policy_control_build_create, amf_ue, NULL));
         }
         else {
-            ogs_assert(true ==
+            ogs_expect(true ==
                 amf_ue_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
                     amf_nudm_sdm_build_subscription, amf_ue,
@@ -246,7 +246,7 @@ int amf_nudm_sdm_handle_provisioned(
 
         if (!recvmsg->http.location) {
             ogs_error("[%s] No http.location", amf_ue->supi);
-            ogs_assert(OGS_OK ==
+            ogs_expect(OGS_OK ==
                 nas_5gs_send_gmm_reject_from_sbi(
                     amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR));
             return OGS_ERROR;
@@ -259,7 +259,7 @@ int amf_nudm_sdm_handle_provisioned(
         if (rv != OGS_OK) {
             ogs_error("[%s] Cannot parse http.location [%s]",
                 amf_ue->supi, recvmsg->http.location);
-            ogs_assert(OGS_OK ==
+            ogs_expect(OGS_OK ==
                 nas_5gs_send_gmm_reject_from_sbi(
                     amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR));
             return OGS_ERROR;
@@ -270,7 +270,7 @@ int amf_nudm_sdm_handle_provisioned(
                 amf_ue->supi, recvmsg->http.location);
 
             ogs_sbi_header_free(&header);
-            ogs_assert(OGS_OK ==
+            ogs_expect(OGS_OK ==
                 nas_5gs_send_gmm_reject_from_sbi(
                     amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR));
             return OGS_ERROR;
@@ -283,7 +283,7 @@ int amf_nudm_sdm_handle_provisioned(
 
         ogs_sbi_header_free(&header);
 
-        ogs_assert(true ==
+        ogs_expect(true ==
             amf_ue_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,
                 amf_npcf_am_policy_control_build_create, amf_ue, NULL));

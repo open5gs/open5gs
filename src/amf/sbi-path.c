@@ -103,7 +103,7 @@ bool amf_ue_sbi_discover_and_send(
             (ogs_sbi_build_f)build, amf_ue, data);
     if (!xact) {
         ogs_error("amf_ue_sbi_discover_and_send() failed");
-        ogs_assert(OGS_OK ==
+        ogs_expect(OGS_OK ==
             nas_5gs_send_gmm_reject_from_sbi(
                 amf_ue, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT));
         return false;
@@ -112,7 +112,7 @@ bool amf_ue_sbi_discover_and_send(
     if (ogs_sbi_discover_and_send(xact) != true) {
         ogs_error("amf_ue_sbi_discover_and_send() failed");
         ogs_sbi_xact_remove(xact);
-        ogs_assert(OGS_OK ==
+        ogs_expect(OGS_OK ==
             nas_5gs_send_gmm_reject_from_sbi(
                 amf_ue, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT));
         return false;
@@ -138,7 +138,7 @@ bool amf_sess_sbi_discover_and_send(
             (ogs_sbi_build_f)build, sess, data);
     if (!xact) {
         ogs_error("amf_sess_sbi_discover_and_send() failed");
-        ogs_assert(OGS_OK == nas_5gs_send_back_gsm_message(sess,
+        ogs_expect(OGS_OK == nas_5gs_send_back_gsm_message(sess,
             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME));
         return false;
     }
@@ -148,7 +148,7 @@ bool amf_sess_sbi_discover_and_send(
     if (ogs_sbi_discover_and_send(xact) != true) {
         ogs_error("amf_sess_sbi_discover_and_send() failed");
         ogs_sbi_xact_remove(xact);
-        ogs_assert(OGS_OK == nas_5gs_send_back_gsm_message(sess,
+        ogs_expect(OGS_OK == nas_5gs_send_back_gsm_message(sess,
             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME));
         return false;
     }
@@ -214,7 +214,7 @@ static int client_discover_cb(
     rv = ogs_sbi_parse_response(&message, response);
     if (rv != OGS_OK) {
         ogs_error("cannot parse HTTP response");
-        ogs_assert(OGS_OK == nas_5gs_send_back_gsm_message(sess,
+        ogs_expect(OGS_OK == nas_5gs_send_back_gsm_message(sess,
             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME));
 
         goto cleanup;
@@ -222,7 +222,7 @@ static int client_discover_cb(
 
     if (message.res_status != OGS_SBI_HTTP_STATUS_OK) {
         ogs_error("NF-Discover failed [%d]", message.res_status);
-        ogs_assert(OGS_OK == nas_5gs_send_back_gsm_message(sess,
+        ogs_expect(OGS_OK == nas_5gs_send_back_gsm_message(sess,
             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME));
 
         goto cleanup;
@@ -230,7 +230,7 @@ static int client_discover_cb(
 
     if (!message.SearchResult) {
         ogs_error("No SearchResult");
-        ogs_assert(OGS_OK == nas_5gs_send_back_gsm_message(sess,
+        ogs_expect(OGS_OK == nas_5gs_send_back_gsm_message(sess,
             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME));
 
         goto cleanup;
@@ -245,7 +245,7 @@ static int client_discover_cb(
         ogs_error("[%s:%d] (NF discover) No [%s]",
                     amf_ue->supi, sess->psi,
                     ogs_sbi_service_type_to_name(service_type));
-        ogs_assert(OGS_OK ==
+        ogs_expect(OGS_OK ==
             nas_5gs_send_back_gsm_message(sess,
                 OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                 AMF_NAS_BACKOFF_TIME));

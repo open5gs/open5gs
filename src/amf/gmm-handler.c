@@ -630,7 +630,7 @@ ogs_nas_5gmm_cause_t gmm_handle_service_update(amf_ue_t *amf_ue,
     }
 
     if (amf_sess_xact_count(amf_ue) == xact_count)
-        ogs_assert(OGS_OK ==
+        ogs_expect(OGS_OK ==
             nas_5gs_send_service_accept(amf_ue));
 
     return OGS_5GMM_CAUSE_REQUEST_ACCEPTED;
@@ -719,7 +719,7 @@ int gmm_handle_authentication_response(amf_ue_t *amf_ue,
     memcpy(amf_ue->xres_star, authentication_response_parameter->res,
             authentication_response_parameter->length);
 
-    ogs_assert(true ==
+    ogs_expect(true ==
         amf_ue_sbi_discover_and_send(
             OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
             amf_nausf_auth_build_authenticate_confirmation, amf_ue, NULL));
@@ -1083,13 +1083,13 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                 }
 
                 if (nf_instance) {
-                    ogs_assert(true ==
+                    ogs_expect(true ==
                         amf_sess_sbi_discover_and_send(
                             OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                             amf_nsmf_pdusession_build_create_sm_context,
                             sess, AMF_CREATE_SM_CONTEXT_NO_STATE, NULL));
                 } else {
-                    ogs_assert(true ==
+                    ogs_expect(true ==
                         amf_sess_sbi_discover_and_send(
                             OGS_SBI_SERVICE_TYPE_NNSSF_NSSELECTION, NULL,
                             amf_nnssf_nsselection_build_get, sess, 0, NULL));
@@ -1101,7 +1101,7 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                 param.release = 1;
                 param.cause = OpenAPI_cause_REL_DUE_TO_DUPLICATE_SESSION_ID;
 
-                ogs_assert(true ==
+                ogs_expect(true ==
                     amf_sess_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                         amf_nsmf_pdusession_build_update_sm_context,
@@ -1128,14 +1128,14 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                 param.ue_location = true;
                 param.ue_timezone = true;
 
-                ogs_assert(true ==
+                ogs_expect(true ==
                     amf_sess_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                         amf_nsmf_pdusession_build_update_sm_context,
                         sess, AMF_UPDATE_SM_CONTEXT_N1_RELEASED, &param));
             } else {
 
-                ogs_assert(true ==
+                ogs_expect(true ==
                     amf_sess_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                         amf_nsmf_pdusession_build_update_sm_context,

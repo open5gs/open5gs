@@ -38,14 +38,14 @@ int amf_npcf_am_policy_control_handle_create(
     if (recvmsg->res_status != OGS_SBI_HTTP_STATUS_CREATED) {
         ogs_error("[%s] HTTP response error [%d]",
                 amf_ue->supi, recvmsg->res_status);
-        ogs_assert(OGS_OK ==
+        ogs_expect(OGS_OK ==
             nas_5gs_send_gmm_reject_from_sbi(amf_ue, recvmsg->res_status));
         return OGS_ERROR;
     }
 
     if (!recvmsg->http.location) {
         ogs_error("[%s] No http.location", amf_ue->supi);
-        ogs_assert(OGS_OK ==
+        ogs_expect(OGS_OK ==
             nas_5gs_send_gmm_reject_from_sbi(
                 amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR));
         return OGS_ERROR;
@@ -54,7 +54,7 @@ int amf_npcf_am_policy_control_handle_create(
     PolicyAssociation = recvmsg->PolicyAssociation;
     if (!PolicyAssociation) {
         ogs_error("No PolicyAssociation");
-        ogs_assert(OGS_OK ==
+        ogs_expect(OGS_OK ==
             nas_5gs_send_gmm_reject_from_sbi(
                 amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR));
         return OGS_ERROR;
@@ -62,7 +62,7 @@ int amf_npcf_am_policy_control_handle_create(
 
     if (!PolicyAssociation->supp_feat) {
         ogs_error("No suppFeat");
-        ogs_assert(OGS_OK ==
+        ogs_expect(OGS_OK ==
             nas_5gs_send_gmm_reject_from_sbi(
                 amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR));
         return OGS_ERROR;
@@ -75,7 +75,7 @@ int amf_npcf_am_policy_control_handle_create(
     if (rv != OGS_OK) {
         ogs_error("[%s] Cannot parse http.location [%s]",
                 amf_ue->supi, recvmsg->http.location);
-        ogs_assert(OGS_OK ==
+        ogs_expect(OGS_OK ==
             nas_5gs_send_gmm_reject_from_sbi(
                 amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR));
         return OGS_ERROR;
@@ -86,7 +86,7 @@ int amf_npcf_am_policy_control_handle_create(
                 amf_ue->supi, recvmsg->http.location);
 
         ogs_sbi_header_free(&header);
-        ogs_assert(OGS_OK ==
+        ogs_expect(OGS_OK ==
             nas_5gs_send_gmm_reject_from_sbi(
                 amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR));
         return OGS_ERROR;

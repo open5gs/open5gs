@@ -279,10 +279,10 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
                 AMF_SESS_STORE_N2_TRANSFER(
                         sess, pdu_session_resource_setup_request, n2buf);
 
-                ogs_assert(OGS_OK == ngap_send_paging(amf_ue));
+                ogs_expect(OGS_OK == ngap_send_paging(amf_ue));
 
             } else if (CM_CONNECTED(amf_ue)) {
-                ogs_assert(OGS_OK ==
+                ogs_expect(OGS_OK ==
                     ngap_send_pdu_resource_setup_request(sess, n2buf));
 
             } else {
@@ -338,7 +338,7 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
                     OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND,
                     n1buf, n2buf);
 
-            ogs_assert(OGS_OK == ngap_send_paging(amf_ue));
+            ogs_expect(OGS_OK == ngap_send_paging(amf_ue));
 
         } else if (CM_CONNECTED(amf_ue)) {
             gmmbuf = gmm_build_dl_nas_transport(sess,
@@ -571,23 +571,23 @@ int amf_namf_callback_handle_dereg_notify(
     {
         amf_ue->network_initiated_de_reg = true;
 
-        ogs_assert(OGS_OK ==
+        ogs_expect(OGS_OK ==
             nas_5gs_send_de_registration_request(amf_ue,
                 DeregistrationData->dereg_reason));
 
-            amf_sbi_send_release_all_sessions(
-                amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+        amf_sbi_send_release_all_sessions(
+            amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
 
-            if ((ogs_list_count(&amf_ue->sess_list) == 0) &&
-                (PCF_AM_POLICY_ASSOCIATED(amf_ue)))
-            {
-                ogs_assert(true ==
-                    amf_ue_sbi_discover_and_send(
-                        OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,
-                        amf_npcf_am_policy_control_build_delete, amf_ue, NULL));
-            }
+        if ((ogs_list_count(&amf_ue->sess_list) == 0) &&
+            (PCF_AM_POLICY_ASSOCIATED(amf_ue)))
+        {
+            ogs_expect(true ==
+                amf_ue_sbi_discover_and_send(
+                    OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,
+                    amf_npcf_am_policy_control_build_delete, amf_ue, NULL));
+        }
 
-            OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_de_registered);
+        OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_de_registered);
     }
     else if (CM_IDLE(amf_ue)) {
         /* TODO: need to page UE */
