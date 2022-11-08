@@ -12,7 +12,9 @@ services:
       - ../docs/assets/webui/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
 
   webui:
-    build: webui
+    build:
+      context: ../
+      dockerfile: docker/webui/Dockerfile
     image: ${USER}/open5gs-webui
     container_name: open5gs-webui
     depends_on:
