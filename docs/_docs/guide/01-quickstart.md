@@ -262,10 +262,10 @@ $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
 +++ mme.yaml.new    2020-09-05 20:56:05.434484208 -0400
 @@ -253,20 +253,20 @@ mme:
      s1ap:
-       - addr: 127.0.0.2
-     gtpc:
 -      - addr: 127.0.0.2
 +      - addr: 10.10.0.2
+     gtpc:
+       - addr: 127.0.0.2
      metrics:
        addr: 127.0.0.2
        port: 9090
