@@ -66,6 +66,9 @@ typedef struct OpenAPI_{{classname}}_s {
                 {{#isFreeFormObject}}
     OpenAPI_{{datatype}}_t *{{name}};
                 {{/isFreeFormObject}}
+                {{#isAnyType}}
+    OpenAPI_{{datatype}}_t *{{name}};
+                {{/isAnyType}}
             {{/isEnum}}
         {{/isPrimitiveType}}
         {{#isPrimitiveType}}
@@ -134,6 +137,9 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_create(
                 {{#isFreeFormObject}}
     OpenAPI_{{datatype}}_t *{{name}}{{^-last}},{{/-last}}
                 {{/isFreeFormObject}}
+                {{#isAnyType}}
+    OpenAPI_{{datatype}}_t *{{name}}{{^-last}},{{/-last}}
+                {{/isAnyType}}
             {{/isEnum}}
         {{/isPrimitiveType}}
         {{#isPrimitiveType}}

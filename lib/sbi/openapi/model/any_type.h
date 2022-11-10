@@ -1,6 +1,7 @@
 #ifndef OGS_SBI_ANY_TYPE_H
 #define OGS_SBI_ANY_TYPE_H
 
+#include "../external/cJSON.h"
 #include "ogs-core.h"
 
 #ifdef __cplusplus
@@ -22,10 +23,7 @@ extern "C" {
 
 typedef struct OpenAPI_any_type_s OpenAPI_any_type_t;
 typedef struct OpenAPI_any_type_s {
-    int type;
-
-    char *valuestring;
-    double valuedouble;
+    cJSON *json;
 } OpenAPI_any_type_t;
 
 bool OpenAPI_IsInvalid(const OpenAPI_any_type_t * const item);
@@ -38,6 +36,10 @@ bool OpenAPI_IsString(const OpenAPI_any_type_t * const item);
 bool OpenAPI_IsArray(const OpenAPI_any_type_t * const item);
 bool OpenAPI_IsObject(const OpenAPI_any_type_t * const item);
 bool OpenAPI_IsRaw(const OpenAPI_any_type_t * const item);
+
+OpenAPI_any_type_t *OpenAPI_any_type_create(cJSON *json);
+OpenAPI_any_type_t *OpenAPI_any_type_parseFromJSON(cJSON *json);
+cJSON *OpenAPI_any_type_convertToJSON(OpenAPI_any_type_t *any_type);
 
 OpenAPI_any_type_t *OpenAPI_any_type_create_true(void);
 OpenAPI_any_type_t *OpenAPI_any_type_create_false(void);

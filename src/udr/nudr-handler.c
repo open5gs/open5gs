@@ -136,10 +136,9 @@ bool udr_nudr_dr_handle_subscription_authentication(
                 if (node->data) {
                     OpenAPI_patch_item_t *patch_item = node->data;
                     if (OpenAPI_IsString(patch_item->value))
-                        sqn_string = patch_item->value->valuestring;
+                        sqn_string = cJSON_GetStringValue(patch_item->value->json);
                     else
-                        ogs_error("Invalid any-type [%d]",
-                                patch_item->value->type);
+                        ogs_error("Non-string value in patch not implemented");
                 }
             }
 
