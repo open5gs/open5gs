@@ -8,11 +8,12 @@
 #define _OpenAPI_patch_item_H_
 
 #include <string.h>
-#include "../openapi/external/cJSON.h"
-#include "../openapi/include/list.h"
-#include "../openapi/model/patch_operation.h"
-
-#include "../openapi/model/any_type.h"
+#include "../external/cJSON.h"
+#include "../include/list.h"
+#include "../include/keyValuePair.h"
+#include "../include/binary.h"
+#include "any_type.h"
+#include "patch_operation.h"
 
 #ifdef __cplusplus
 extern "C" {

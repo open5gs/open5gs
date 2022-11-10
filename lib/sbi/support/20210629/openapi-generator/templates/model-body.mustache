@@ -81,6 +81,9 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_create(
                 {{#isFreeFormObject}}
     OpenAPI_{{datatype}}_t *{{name}}{{^-last}},{{/-last}}
                 {{/isFreeFormObject}}
+                {{#isAnyType}}
+    OpenAPI_{{datatype}}_t *{{name}}{{^-last}},{{/-last}}
+                {{/isAnyType}}
             {{/isEnum}}
         {{/isPrimitiveType}}
         {{#isPrimitiveType}}
@@ -174,8 +177,11 @@ void OpenAPI_{{classname}}_free(OpenAPI_{{classname}}_t *{{classname}})
     ogs_free({{{classname}}}->{{{name}}});
                 {{/isEmail}}
                 {{#isFreeFormObject}}
-    OpenAPI_object_free({{{classname}}}->{{{name}}});
+    OpenAPI_{{{datatype}}}_free({{{classname}}}->{{{name}}});
                 {{/isFreeFormObject}}
+                {{#isAnyType}}
+    OpenAPI_{{{datatype}}}_free({{{classname}}}->{{{name}}});
+                {{/isAnyType}}
             {{/isEnum}}
         {{/isPrimitiveType}}
         {{#isPrimitiveType}}
@@ -388,6 +394,21 @@ cJSON *OpenAPI_{{classname}}_convertToJSON(OpenAPI_{{classname}}_t *{{classname}
         goto end;
     }
                 {{/isFreeFormObject}}
+                {{#isAnyType}}
+                    {{^required}}
+    if ({{{classname}}}->{{{name}}}) {
+                    {{/required}}
+    cJSON *{{{name}}}_object = OpenAPI_any_type_convertToJSON({{{classname}}}->{{{name}}});
+    if ({{{name}}}_object == NULL) {
+        ogs_error("OpenAPI_{{classname}}_convertToJSON() failed [{{{name}}}]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "{{{baseName}}}", {{{name}}}_object);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_{{classname}}_convertToJSON() failed [{{{name}}}]");
+        goto end;
+    }
+                {{/isAnyType}}
             {{/isEnum}}
         {{/isPrimitiveType}}
     {{/isContainer}}
@@ -669,8 +690,19 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_parseFromJSON(cJSON *{{classname}
                     {{^required}}
     if ({{{name}}}) {
                     {{/required}}
+    if (!cJSON_IsObject({{{name}}})) {
+        ogs_error("OpenAPI_{{classname}}_parseFromJSON() failed [{{{name}}}]");
+        goto end;
+    }
     {{{name}}}_local_object = OpenAPI_object_parseFromJSON({{{name}}});
                 {{/isFreeFormObject}}
+                {{#isAnyType}}
+    OpenAPI_any_type_t *{{name}}_local_object = NULL;
+                    {{^required}}
+    if ({{{name}}}) {
+                    {{/required}}
+    {{{name}}}_local_object = OpenAPI_any_type_parseFromJSON({{{name}}});
+                {{/isAnyType}}
             {{/isEnum}}
         {{/isPrimitiveType}}
     {{/isContainer}}
@@ -849,6 +881,9 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_parseFromJSON(cJSON *{{classname}
                 {{#isFreeFormObject}}
         {{^required}}{{{name}}} ? {{/required}}{{{name}}}_local_object{{^required}} : NULL{{/required}}{{^-last}},{{/-last}}
                 {{/isFreeFormObject}}
+                {{#isAnyType}}
+        {{^required}}{{{name}}} ? {{/required}}{{{name}}}_local_object{{^required}} : NULL{{/required}}{{^-last}},{{/-last}}
+                {{/isAnyType}}
             {{/isEnum}}
         {{/isPrimitiveType}}
         {{#isPrimitiveType}}

@@ -2193,6 +2193,10 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON)
 
     OpenAPI_object_t *custom_info_local_object = NULL;
     if (custom_info) {
+    if (!cJSON_IsObject(custom_info)) {
+        ogs_error("OpenAPI_nf_profile_parseFromJSON() failed [custom_info]");
+        goto end;
+    }
     custom_info_local_object = OpenAPI_object_parseFromJSON(custom_info);
     }
 
