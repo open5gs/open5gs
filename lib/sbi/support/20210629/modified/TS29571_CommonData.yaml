@@ -357,12 +357,8 @@ components:
           type: string
         from:
           type: string
-#        origValue: {}
-#        newValue: {}
-        origValue:
-          type: string
-        newValue:
-          type: string
+        origValue: {}
+        newValue: {}
       required:
         - op
         - path
