@@ -86,6 +86,7 @@ libsbi_openapi_sources = files('''
     model/am_policy_data.c
     model/an_gw_address.c
     model/an_node_type.c
+    model/any_type.c
     model/apn_rate_status.c
     model/app_descriptor.c
     model/app_detection_info.c

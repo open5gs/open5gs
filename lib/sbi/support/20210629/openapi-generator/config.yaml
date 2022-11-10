@@ -6,3 +6,8 @@ reservedWordMappings:
   5G_AKA: "5G_AKA"
   5G_HE_AKA: "5G_HE_AKA"
   5GMM: "5GMM"
+files:
+  any_type.h:
+    folder: model
+  any_type.c:
+    folder: model
