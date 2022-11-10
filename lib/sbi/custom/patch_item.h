@@ -12,7 +12,7 @@
 #include "../openapi/include/list.h"
 #include "../openapi/model/patch_operation.h"
 
-#include "../custom/any_type.h"
+#include "../openapi/model/any_type.h"
 
 #ifdef __cplusplus
 extern "C" {
