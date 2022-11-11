@@ -598,8 +598,8 @@ static void session_remove(ogs_sbi_session_t *sbi_sess)
     stream_remove_all(sbi_sess);
     nghttp2_session_del(sbi_sess->session);
 
-    ogs_assert(sbi_sess->poll.read);
-    ogs_pollset_remove(sbi_sess->poll.read);
+    if (sbi_sess->poll.read)
+        ogs_pollset_remove(sbi_sess->poll.read);
 
     if (sbi_sess->poll.write)
         ogs_pollset_remove(sbi_sess->poll.write);
@@ -661,13 +661,12 @@ static void accept_handler(short when, ogs_socket_t fd, void *data)
     ogs_assert(sbi_sess);
 
     if (sbi_sess->ssl) {
-        int err ;
+        int err;
         SSL_set_fd(sbi_sess->ssl, new->fd);
         SSL_set_accept_state(sbi_sess->ssl);
         err = SSL_accept(sbi_sess->ssl);
         if (err <= 0) {
             ogs_error("SSL_accept failed: %s", ERR_error_string(ERR_get_error(), NULL));
-            ogs_sock_destroy(new);
             session_remove(sbi_sess);
             return;
         }
