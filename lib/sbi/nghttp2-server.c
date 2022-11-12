@@ -230,9 +230,12 @@ static int server_start(ogs_sbi_server_t *server,
 
     hostname = ogs_gethostname(addr);
     if (hostname)
-        ogs_info("nghttp2_server() [%s]:%d", hostname, OGS_PORT(addr));
+        ogs_info("nghttp2_server() [%s://%s]:%d",
+                server->ssl_ctx ? "https" : "http",
+                hostname, OGS_PORT(addr));
     else
-        ogs_info("nghttp2_server() [%s]:%d",
+        ogs_info("nghttp2_server() [%s://%s]:%d",
+                server->ssl_ctx ? "https" : "http",
                 OGS_ADDR(addr, buf), OGS_PORT(addr));
 
     return OGS_OK;

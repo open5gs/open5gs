@@ -197,9 +197,6 @@ udr:
     sbi:
       - addr: 127.0.0.20
         port: 7777
-        tls:
-          key: @sysconfdir@/open5gs/tls/udr.key
-          cert: @sysconfdir@/open5gs/tls/udr.crt
 
 #
 # scp:
