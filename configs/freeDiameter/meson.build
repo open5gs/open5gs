@@ -34,24 +34,3 @@ foreach file : freediameter_conf
     meson.add_install_script(python3_exe, '-c',
             install_conf.format(gen, freediameter_sysconfdir))
 endforeach
-
-freediameter_pem = '''
-    cacert.pem
-    mme.cert.pem
-    mme.key.pem
-    hss.cert.pem
-    hss.key.pem
-    smf.cert.pem
-    smf.key.pem
-    pcrf.cert.pem
-    pcrf.key.pem
-'''.split()
-
-foreach file : freediameter_pem
-    gen = configure_file(
-            input : file,
-            output : file,
-            configuration : conf_data)
-    meson.add_install_script(python3_exe, '-c',
-            install_conf.format(gen, freediameter_sysconfdir))
-endforeach

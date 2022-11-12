@@ -144,6 +144,11 @@ void ogs_nnrf_nfm_handle_nf_profile(
             continue;
         }
 
+        if (!NFService->scheme) {
+            ogs_error("No NFService.scheme");
+            continue;
+        }
+
         nf_service = ogs_sbi_nf_service_find_by_id(
                         nf_instance, NFService->service_instance_id);
         if (!nf_service) {
@@ -179,6 +184,11 @@ void ogs_nnrf_nfm_handle_nf_profile(
 
             if (!NFService->service_name) {
                 ogs_error("No NFService.service_name");
+                continue;
+            }
+
+            if (!NFService->scheme) {
+                ogs_error("No NFService.scheme");
                 continue;
             }
 

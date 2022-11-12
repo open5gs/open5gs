@@ -26,12 +26,14 @@
 bool smf_nsmf_handle_create_sm_context(
     smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
 {
+    bool rc;
     smf_ue_t *smf_ue = NULL;
 
     ogs_nas_5gsm_header_t *gsm_header = NULL;
     ogs_pkbuf_t *n1smbuf = NULL;
 
     ogs_sbi_client_t *client = NULL;
+    OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
     ogs_sockaddr_t *addr = NULL;
 
     OpenAPI_sm_context_create_data_t *SmContextCreateData = NULL;
@@ -148,8 +150,9 @@ bool smf_nsmf_handle_create_sm_context(
         return false;
     }
 
-    addr = ogs_sbi_getaddr_from_uri(SmContextCreateData->sm_context_status_uri);
-    if (!addr) {
+    rc = ogs_sbi_getaddr_from_uri(&scheme, &addr,
+            SmContextCreateData->sm_context_status_uri);
+    if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
         ogs_error("[%s:%d] Invalid URI [%s]",
                 smf_ue->supi, sess->psi,
                 SmContextCreateData->sm_context_status_uri);
@@ -184,13 +187,12 @@ bool smf_nsmf_handle_create_sm_context(
         ogs_strdup(SmContextCreateData->sm_context_status_uri);
     ogs_assert(sess->sm_context_status_uri);
 
-    client = ogs_sbi_client_find(addr);
+    client = ogs_sbi_client_find(scheme, addr);
     if (!client) {
-        client = ogs_sbi_client_add(addr);
+        client = ogs_sbi_client_add(scheme, addr);
         ogs_assert(client);
     }
     OGS_SBI_SETUP_CLIENT(&sess->namf, client);
-
     ogs_freeaddrinfo(addr);
 
     if (SmContextCreateData->dnn) {

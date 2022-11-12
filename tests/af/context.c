@@ -266,11 +266,15 @@ af_sess_t *af_sess_find_by_pcf_app_session_id(char *pcf_app_session_id)
                         pcf_app_session_id, strlen(pcf_app_session_id));
 }
 
-static ogs_sbi_client_t *find_client_by_fqdn(char *fqdn, int port)
+static ogs_sbi_client_t *find_client_by_fqdn(
+        OpenAPI_uri_scheme_e scheme, char *fqdn, int port)
 {
     int rv;
     ogs_sockaddr_t *addr = NULL;
     ogs_sbi_client_t *client = NULL;
+
+    ogs_assert(scheme);
+    ogs_assert(fqdn);
 
     rv = ogs_getaddrinfo(&addr, AF_UNSPEC, fqdn,
             port ? port : ogs_sbi_self()->sbi_port, 0);
@@ -279,9 +283,9 @@ static ogs_sbi_client_t *find_client_by_fqdn(char *fqdn, int port)
         return NULL;
     }
 
-    client = ogs_sbi_client_find(addr);
+    client = ogs_sbi_client_find(scheme, addr);
     if (!client) {
-        client = ogs_sbi_client_add(addr);
+        client = ogs_sbi_client_add(scheme, addr);
         ogs_assert(client);
     }
 
@@ -294,11 +298,15 @@ void af_sess_associate_pcf_client(af_sess_t *sess)
 {
     ogs_sbi_client_t *client = NULL;
     ogs_sockaddr_t *addr = NULL;
+    OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
 
     ogs_assert(sess);
 
+    scheme = ogs_app_tls_client_enabled() == true ?
+                OpenAPI_uri_scheme_https : OpenAPI_uri_scheme_http;
+
     if (sess->pcf.fqdn && strlen(sess->pcf.fqdn))
-        client = find_client_by_fqdn(sess->pcf.fqdn, 0);
+        client = find_client_by_fqdn(scheme, sess->pcf.fqdn, 0);
 
     if (!client) {
         /* At this point, CLIENT selection method is very simple. */
@@ -309,9 +317,9 @@ void af_sess_associate_pcf_client(af_sess_t *sess)
         }
 
         if (addr) {
-            client = ogs_sbi_client_find(addr);
+            client = ogs_sbi_client_find(scheme, addr);
             if (!client) {
-                client = ogs_sbi_client_add(addr);
+                client = ogs_sbi_client_add(scheme, addr);
                 ogs_assert(client);
             }
         }

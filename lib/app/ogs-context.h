@@ -28,6 +28,12 @@
 extern "C" {
 #endif
 
+typedef enum {
+    OGS_APP_TLS_ENABLED_AUTO = 0,
+    OGS_APP_TLS_ENABLED_YES,
+    OGS_APP_TLS_ENABLED_NO,
+} ogs_app_tls_enabled_mode_e;
+
 typedef struct ogs_app_context_s {
     const char *version;
 
@@ -42,6 +48,15 @@ typedef struct ogs_app_context_s {
         const char *level;
         const char *domain;
     } logger;
+
+    struct {
+        ogs_app_tls_enabled_mode_e enabled;
+        struct {
+            const char *cacert;
+            const char *cert;
+            const char *key;
+        } server, client;
+    } tls;
 
     ogs_queue_t *queue;
     ogs_timer_mgr_t *timer_mgr;
@@ -176,6 +191,9 @@ typedef struct ogs_app_context_s {
 int ogs_app_context_init(void);
 void ogs_app_context_final(void);
 ogs_app_context_t *ogs_app(void);
+
+bool ogs_app_tls_server_enabled(void);
+bool ogs_app_tls_client_enabled(void);
 
 int ogs_app_context_parse_config(void);
 

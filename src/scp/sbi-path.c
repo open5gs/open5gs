@@ -277,11 +277,14 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
             ogs_free(apiroot);
 
         } else if (headers.target_apiroot) {
+            bool rc;
+            OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
             ogs_sockaddr_t *addr = NULL;
 
             /* Find or Add Client Instance */
-            addr = ogs_sbi_getaddr_from_uri(headers.target_apiroot);
-            if (!addr) {
+            rc = ogs_sbi_getaddr_from_uri(
+                    &scheme, &addr, headers.target_apiroot);
+            if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
                 ogs_error("Invalid Target-apiRoot [%s]",
                         headers.target_apiroot);
 
@@ -291,13 +294,12 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
                 return OGS_ERROR;
             }
 
-            client = ogs_sbi_client_find(addr);
+            client = ogs_sbi_client_find(scheme, addr);
             if (!client) {
-                client = ogs_sbi_client_add(addr);
+                client = ogs_sbi_client_add(scheme, addr);
                 ogs_assert(client);
             }
             OGS_SBI_SETUP_CLIENT(assoc, client);
-
             ogs_freeaddrinfo(addr);
 
             /* Setup New URI */
@@ -412,10 +414,12 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
 
             /* Find or Add Client Instance */
             if (nnrf_disc) {
+                bool rc;
+                OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
                 ogs_sockaddr_t *addr = NULL;
 
-                addr = ogs_sbi_getaddr_from_uri(nnrf_disc);
-                if (!addr) {
+                rc = ogs_sbi_getaddr_from_uri(&scheme, &addr, nnrf_disc);
+                if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
                     ogs_error("Invalid nnrf-disc [%s]", nnrf_disc);
 
                     ogs_sbi_discovery_option_free(discovery_option);
@@ -424,13 +428,12 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
                     return OGS_ERROR;
                 }
 
-                nrf_client = ogs_sbi_client_find(addr);
+                nrf_client = ogs_sbi_client_find(scheme, addr);
                 if (!nrf_client) {
-                    nrf_client = ogs_sbi_client_add(addr);
+                    nrf_client = ogs_sbi_client_add(scheme, addr);
                     ogs_assert(nrf_client);
                 }
                 OGS_SBI_SETUP_CLIENT(assoc, nrf_client);
-
                 ogs_freeaddrinfo(addr);
             }
 

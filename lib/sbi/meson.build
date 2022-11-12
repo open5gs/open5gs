@@ -51,9 +51,9 @@ libsbi_inc = include_directories('.')
 
 sbi_cc_flags = ['-DOGS_SBI_COMPILATION']
 
-libgnutls_dep = cc.find_library('gnutls', required : true)
-libssl_dep = cc.find_library('ssl', required : true)
-libcrypto_dep = cc.find_library('crypto', required : true)
+libgnutls_dep = dependency('gnutls', required : true)
+libssl_dep = dependency('libssl', required : true)
+libcrypto_dep = dependency('libcrypto', required : true)
 libnghttp2_dep = dependency('libnghttp2', version: '>=1.18.1')
 libmicrohttpd_dep = dependency('libmicrohttpd', version: '>=0.9.40')
 libcurl_dep = dependency('libcurl', version: '>=7.52.1')

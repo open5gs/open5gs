@@ -58,11 +58,6 @@ typedef struct ogs_sbi_client_s {
     ogs_socknode_t  node;
     OpenAPI_uri_scheme_e scheme;
 
-    struct {
-        const char  *key;
-        const char  *pem;
-    } tls;
-
     ogs_timer_t     *t_curl;            /* timer for CURL */
     ogs_list_t      connection_list;    /* CURL connection list */
 
@@ -77,10 +72,12 @@ typedef struct ogs_sbi_nf_instance_s ogs_sbi_nf_instance_t;
 void ogs_sbi_client_init(int num_of_sockinfo_pool, int num_of_connection_pool);
 void ogs_sbi_client_final(void);
 
-ogs_sbi_client_t *ogs_sbi_client_add(ogs_sockaddr_t *addr);
+ogs_sbi_client_t *ogs_sbi_client_add(
+        OpenAPI_uri_scheme_e scheme, ogs_sockaddr_t *addr);
 void ogs_sbi_client_remove(ogs_sbi_client_t *client);
 void ogs_sbi_client_remove_all(void);
-ogs_sbi_client_t *ogs_sbi_client_find(ogs_sockaddr_t *addr);
+ogs_sbi_client_t *ogs_sbi_client_find(
+        OpenAPI_uri_scheme_e scheme, ogs_sockaddr_t *addr);
 
 void ogs_sbi_client_stop(ogs_sbi_client_t *client);
 void ogs_sbi_client_stop_all(void);

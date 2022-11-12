@@ -24,13 +24,15 @@
 int amf_nnssf_nsselection_handle_get(
         amf_sess_t *sess, ogs_sbi_message_t *recvmsg)
 {
-    amf_ue_t *amf_ue = NULL;
-
+    bool rc;
+    OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
     ogs_sbi_client_t *client = NULL, *scp_client = NULL;
     ogs_sockaddr_t *addr = NULL;
 
     OpenAPI_authorized_network_slice_info_t *AuthorizedNetworkSliceInfo = NULL;
     OpenAPI_nsi_information_t *NsiInformation = NULL;
+
+    amf_ue_t *amf_ue = NULL;
 
     ogs_assert(sess);
     amf_ue = sess->amf_ue;
@@ -91,8 +93,8 @@ int amf_nnssf_nsselection_handle_get(
                 amf_nsmf_pdusession_build_create_sm_context,
                 sess, AMF_CREATE_SM_CONTEXT_NO_STATE, &param);
     } else {
-        addr = ogs_sbi_getaddr_from_uri(NsiInformation->nrf_id);
-        if (!addr) {
+        rc = ogs_sbi_getaddr_from_uri(&scheme, &addr, NsiInformation->nrf_id);
+        if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
             ogs_error("[%s:%d] Invalid URI [%s]",
                     amf_ue->supi, sess->psi, NsiInformation->nrf_id);
             ogs_assert(OGS_OK ==
@@ -101,14 +103,13 @@ int amf_nnssf_nsselection_handle_get(
             return OGS_ERROR;;
         }
 
-        client = ogs_sbi_client_find(addr);
+        client = ogs_sbi_client_find(scheme, addr);
         if (!client) {
-            client = ogs_sbi_client_add(addr);
+            client = ogs_sbi_client_add(scheme, addr);
             ogs_assert(client);
         }
 
         OGS_SBI_SETUP_CLIENT(&sess->nssf.nrf, client);
-
         ogs_freeaddrinfo(addr);
 
         ogs_assert(true == amf_sess_sbi_discover_by_nsi(

@@ -219,9 +219,11 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
              *********************************************/
 
             if (CM_IDLE(amf_ue)) {
+                bool rc;
                 ogs_sbi_server_t *server = NULL;
                 ogs_sbi_header_t header;
                 ogs_sbi_client_t *client = NULL;
+                OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
                 ogs_sockaddr_t *addr = NULL;
 
                 if (!N1N2MessageTransferReqData->n1n2_failure_txf_notif_uri) {
@@ -230,9 +232,9 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
                     return OGS_ERROR;
                 }
 
-                addr = ogs_sbi_getaddr_from_uri(
+                rc = ogs_sbi_getaddr_from_uri(&scheme, &addr,
                         N1N2MessageTransferReqData->n1n2_failure_txf_notif_uri);
-                if (!addr) {
+                if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
                     ogs_error("[%s:%d] Invalid URI [%s]",
                             amf_ue->supi, sess->psi,
                             N1N2MessageTransferReqData->
@@ -240,13 +242,12 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
                     return OGS_ERROR;;
                 }
 
-                client = ogs_sbi_client_find(addr);
+                client = ogs_sbi_client_find(scheme, addr);
                 if (!client) {
-                    client = ogs_sbi_client_add(addr);
+                    client = ogs_sbi_client_add(scheme, addr);
                     ogs_assert(client);
                 }
                 OGS_SBI_SETUP_CLIENT(&sess->paging, client);
-
                 ogs_freeaddrinfo(addr);
 
                 status = OGS_SBI_HTTP_STATUS_ACCEPTED;

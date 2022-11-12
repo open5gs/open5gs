@@ -56,10 +56,10 @@ typedef enum {
     SMF_CTF_ENABLED_AUTO = 0,
     SMF_CTF_ENABLED_YES,
     SMF_CTF_ENABLED_NO,
-} smf_ctf_enabled_mode;
+} smf_ctf_enabled_mode_e;
 
 typedef struct smf_ctf_config_s {
-    smf_ctf_enabled_mode enabled;
+    smf_ctf_enabled_mode_e enabled;
 } smf_ctf_config_t;
 
 int smf_ctf_config_init(smf_ctf_config_t *ctf_config);

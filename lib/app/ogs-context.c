@@ -62,6 +62,44 @@ ogs_app_context_t *ogs_app()
     return &self;
 }
 
+bool ogs_app_tls_server_enabled(void)
+{
+    if (self.tls.enabled == OGS_APP_TLS_ENABLED_AUTO) {
+        if (self.tls.server.key && self.tls.server.cert)
+            return true;
+        else
+            return false;
+    } else if (self.tls.enabled == OGS_APP_TLS_ENABLED_YES) {
+        ogs_assert(self.tls.server.key);
+        ogs_assert(self.tls.server.cert);
+        return true;
+    } else if (self.tls.enabled == OGS_APP_TLS_ENABLED_NO) {
+        return false;
+    } else {
+        ogs_error("Unknown TLS enabled mode [%d]", self.tls.enabled);
+        return false;
+    }
+}
+
+bool ogs_app_tls_client_enabled(void)
+{
+    if (self.tls.enabled == OGS_APP_TLS_ENABLED_AUTO) {
+        if (self.tls.client.key && self.tls.client.cert)
+            return true;
+        else
+            return false;
+    } else if (self.tls.enabled == OGS_APP_TLS_ENABLED_YES) {
+        ogs_assert(self.tls.client.key);
+        ogs_assert(self.tls.client.cert);
+        return true;
+    } else if (self.tls.enabled == OGS_APP_TLS_ENABLED_NO) {
+        return false;
+    } else {
+        ogs_error("Unknown TLS enabled mode [%d]", self.tls.enabled);
+        return false;
+    }
+}
+
 static void recalculate_pool_size(void)
 {
     self.pool.packet = self.max.ue * OGS_MAX_NUM_OF_PACKET_BUFFER;
@@ -167,6 +205,8 @@ static void regenerate_all_timer_duration(void)
 
 static void app_context_prepare(void)
 {
+    self.tls.enabled = OGS_APP_TLS_ENABLED_AUTO;
+
 #define USRSCTP_LOCAL_UDP_PORT      9899
     self.usrsctp.udp_port = USRSCTP_LOCAL_UDP_PORT;
 
@@ -234,6 +274,27 @@ static int app_context_validation(void)
         return OGS_ERROR;
     }
 
+    if (self.tls.enabled == OGS_APP_TLS_ENABLED_YES) {
+
+        if (!self.tls.server.key) {
+            ogs_error("No Server Key");
+            return OGS_ERROR;
+        }
+        if (!self.tls.server.cert) {
+            ogs_error("No Server Certificate");
+            return OGS_ERROR;
+        }
+
+        if (!self.tls.client.key) {
+            ogs_error("No Client Key");
+            return OGS_ERROR;
+        }
+        if (!self.tls.client.cert) {
+            ogs_error("No Client Certificate");
+            return OGS_ERROR;
+        }
+    }
+
     return OGS_OK;
 }
 
@@ -267,6 +328,65 @@ int ogs_app_context_parse_config(void)
                     self.logger.domain =
                         ogs_yaml_iter_value(&logger_iter);
                 }
+            }
+        } else if (!strcmp(root_key, "tls")) {
+            ogs_yaml_iter_t tls_iter;
+            ogs_yaml_iter_recurse(&root_iter, &tls_iter);
+            while (ogs_yaml_iter_next(&tls_iter)) {
+                const char *tls_key = ogs_yaml_iter_key(&tls_iter);
+                ogs_assert(tls_key);
+                if (!strcmp(tls_key, "enabled")) {
+                    const char *v = ogs_yaml_iter_value(&tls_iter);
+                    if (!strcmp(v, "auto"))
+                        self.tls.enabled = OGS_APP_TLS_ENABLED_AUTO;
+                    else if (!strcmp(v, "yes"))
+                        self.tls.enabled = OGS_APP_TLS_ENABLED_YES;
+                    else if (!strcmp(v, "no"))
+                        self.tls.enabled = OGS_APP_TLS_ENABLED_NO;
+                    else
+                        ogs_warn("unknown 'tls.enabled' value `%s`", v);
+                } else if (!strcmp(tls_key, "server")) {
+                    ogs_yaml_iter_t server_iter;
+                    ogs_yaml_iter_recurse(&tls_iter, &server_iter);
+
+                    while (ogs_yaml_iter_next(&server_iter)) {
+                        const char *server_key =
+                            ogs_yaml_iter_key(&server_iter);
+                        ogs_assert(server_key);
+                        if (!strcmp(server_key, "cacert")) {
+                            self.tls.server.cacert =
+                                ogs_yaml_iter_value(&server_iter);
+                        } else if (!strcmp(server_key, "cert")) {
+                            self.tls.server.cert =
+                                ogs_yaml_iter_value(&server_iter);
+                        } else if (!strcmp(server_key, "key")) {
+                            self.tls.server.key =
+                                ogs_yaml_iter_value(&server_iter);
+                        } else
+                            ogs_warn("unknown key `%s`", server_key);
+                    }
+                } else if (!strcmp(tls_key, "client")) {
+                    ogs_yaml_iter_t client_iter;
+                    ogs_yaml_iter_recurse(&tls_iter, &client_iter);
+
+                    while (ogs_yaml_iter_next(&client_iter)) {
+                        const char *client_key =
+                            ogs_yaml_iter_key(&client_iter);
+                        ogs_assert(client_key);
+                        if (!strcmp(client_key, "cacert")) {
+                            self.tls.client.cacert =
+                                ogs_yaml_iter_value(&client_iter);
+                        } else if (!strcmp(client_key, "cert")) {
+                            self.tls.client.cert =
+                                ogs_yaml_iter_value(&client_iter);
+                        } else if (!strcmp(client_key, "key")) {
+                            self.tls.client.key =
+                                ogs_yaml_iter_value(&client_iter);
+                        } else
+                            ogs_warn("unknown key `%s`", client_key);
+                    }
+                } else
+                    ogs_warn("unknown key `%s`", tls_key);
             }
         } else if (!strcmp(root_key, "parameter")) {
             ogs_yaml_iter_t parameter_iter;

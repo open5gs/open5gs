@@ -106,7 +106,7 @@ ListenOn = "127.0.0.2";
 # Default : NO DEFAULT
 #TLS_Cred = "<x509 certif file.PEM>" , "<x509 private key file.PEM>";
 #TLS_Cred = "/etc/ssl/certs/freeDiameter.pem", "/etc/ssl/private/freeDiameter.key";
-TLS_Cred = "@sysconfdir@/freeDiameter/mme.cert.pem", "@sysconfdir@/freeDiameter/mme.key.pem";
+TLS_Cred = "@sysconfdir@/open5gs/tls/mme.crt", "@sysconfdir@/open5gs/tls/mme.key";
 
 # Certificate authority / trust anchors
 # The file containing the list of trusted Certificate Authorities (PEM list)
@@ -114,7 +114,7 @@ TLS_Cred = "@sysconfdir@/freeDiameter/mme.cert.pem", "@sysconfdir@/freeDiameter/
 # The directive can appear several times to specify several files.
 # Default : GNUTLS default behavior
 #TLS_CA = "<file.PEM>";
-TLS_CA = "@sysconfdir@/freeDiameter/cacert.pem";
+TLS_CA = "@sysconfdir@/open5gs/tls/ca.crt";
 
 # Certificate Revocation List file
 # The information about revoked certificates.

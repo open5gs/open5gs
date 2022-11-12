@@ -22,6 +22,44 @@ logger:
     file: @localstatedir@/log/open5gs/smf.log
 
 #
+# tls:
+#    enabled: auto|yes|no
+#    - auto: Default. Use TLS only if key/cert is available
+#    - yes:  Use TLS always;
+#            reject if no key/cert available
+#    - no:   Don't use TLS if there is an key/cert available
+#
+#    o Server-side Key and Certficiate
+#    server:
+#      key: /etc/open5gs/tls/smf.key
+#      cert: /etc/open5gs/tls/smf.crt
+#
+#    o Client-side does not use TLS
+#    client:
+#      enabled: no
+#      key: /etc/open5gs/tls/smf.key
+#      cert: /etc/open5gs/tls/smf.crt
+#
+#    o Use the specified certificate to verify client
+#    server
+#      cacert: /etc/open5gs/tls/ca.crt
+#
+#    o Use the specified certificate to verify server
+#    client
+#      cacert: /etc/open5gs/tls/ca.crt
+#
+tls:
+    enabled: no
+    server:
+      cacert: @sysconfdir@/open5gs/tls/ca.crt
+      key: @sysconfdir@/open5gs/tls/smf.key
+      cert: @sysconfdir@/open5gs/tls/smf.crt
+    client:
+      cacert: @sysconfdir@/open5gs/tls/ca.crt
+      key: @sysconfdir@/open5gs/tls/smf.key
+      cert: @sysconfdir@/open5gs/tls/smf.crt
+
+#
 # smf:
 #
 #  <SBI Server>
@@ -29,7 +67,7 @@ logger:
 #  o SBI Server(http://<all address available>:80)
 #    sbi:
 #
-#  o SBI Server(http://<any address>:80)
+#  o SBI Server(http://<any address>:7777)
 #    sbi:
 #      - addr:
 #          - 0.0.0.0
@@ -37,20 +75,31 @@ logger:
 #        port: 7777
 #
 #  o SBI Server(https://<all address available>:443)
+#  tls:
+#    server:
+#      key: /etc/open5gs/tls/smf.key
+#      cert: /etc/open5gs/tls/smf.crt
+#  smf:
 #    sbi:
-#      - tls:
-#          key: smf.key
-#          pem: smf.pem
 #
-#  o SBI Server(https://127.0.0.4:443, http://[::1]:80)
+#  o SBI Server(http://127.0.0.5:80, http://[::1]:80)
+#  tls:
+#    enabled: no
+#    server:
+#      key: /etc/open5gs/tls/smf.key
+#      cert: /etc/open5gs/tls/smf.crt
+#  smf:
 #    sbi:
-#      - addr: 127.0.0.4
-#        tls:
-#          key: smf.key
-#          pem: smf.pem
+#      - addr: 127.0.0.5
 #      - addr: ::1
 #
-#  o SBI Server(http://smf.open5gs.org:80)
+#  o SBI Server(https://smf.open5gs.org:443)
+#    Use the specified certificate to verify client
+#
+#  tls:
+#    server:
+#      cacert: /etc/open5gs/tls/ca.crt
+#  smf:
 #    sbi:
 #      - name: smf.open5gs.org
 #
@@ -497,9 +546,17 @@ smf:
 #    sbi:
 #      - addr: 127.0.1.10
 #        tls:
-#          key: scp.key
-#          pem: scp.pem
+#          key: /etc/open5gs/tls/smf.key
+#          cert: /etc/open5gs/tls/smf.crt
 #      - name: scp.open5gs.org
+#
+#  o SBI Client(https://scp.open5gs.org:443)
+#    Use the specified certificate to verify peer
+#
+#    sbi:
+#      - name: scp.open5gs.org
+#        tls:
+#          cacert: /etc/open5gs/tls/ca.crt
 #
 #  o SBI Client(http://[fd69:f21d:873c:fb::1]:80)
 #    If prefer_ipv4 is true, http://127.0.1.10:80 is selected.
@@ -537,12 +594,24 @@ scp:
 #      addr: 127.0.0.10
 #      port: 7777
 #
-#  o SBI Client(https://127.0.0.10:443, http://nrf.open5gs.org:80)
+#  o SBI Client(https://127.0.0.10:443, https://[::1]:443)
+#  tls:
+#    client:
+#      key: /etc/open5gs/tls/smf.key
+#      cert: /etc/open5gs/tls/smf.crt
+#  nrf:
 #    sbi:
 #      - addr: 127.0.0.10
-#        tls:
-#          key: nrf.key
-#          pem: nrf.pem
+#      - addr: ::1
+#
+#  o SBI Client(https://nrf.open5gs.org:443)
+#    Use the specified certificate to verify server
+#
+#  tls:
+#    client:
+#      cacert: /etc/open5gs/tls/ca.crt
+#  nrf:
+#    sbi:
 #      - name: nrf.open5gs.org
 #
 #  o SBI Client(http://[fd69:f21d:873c:fa::1]:80)

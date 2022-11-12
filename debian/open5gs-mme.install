@@ -1,4 +1,6 @@
 usr/bin/open5gs-mmed
 configs/freeDiameter/mme.* etc/freeDiameter
 configs/open5gs/mme.yaml etc/open5gs
+configs/open5gs/tls/mme.key etc/open5gs/tls
+configs/open5gs/tls/mme.crt etc/open5gs/tls
 configs/systemd/open5gs-mmed.service lib/systemd/system

@@ -161,12 +161,14 @@ bool nrf_nnrf_handle_nf_update(ogs_sbi_nf_instance_t *nf_instance,
 bool nrf_nnrf_handle_nf_status_subscribe(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
+    bool rc;
     int status;
     ogs_sbi_response_t *response = NULL;
     OpenAPI_subscription_data_t *SubscriptionData = NULL;
     OpenAPI_subscription_data_subscr_cond_t *SubscrCond = NULL;
     ogs_sbi_subscription_data_t *subscription_data = NULL;
     ogs_sbi_client_t *client = NULL;
+    OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
     ogs_sockaddr_t *addr = NULL;
 
     ogs_uuid_t uuid;
@@ -243,8 +245,9 @@ bool nrf_nnrf_handle_nf_status_subscribe(
             ogs_strdup(SubscriptionData->nf_status_notification_uri);
     ogs_assert(subscription_data->notification_uri);
 
-    addr = ogs_sbi_getaddr_from_uri(subscription_data->notification_uri);
-    if (!addr) {
+    rc = ogs_sbi_getaddr_from_uri(&scheme, &addr,
+            subscription_data->notification_uri);
+    if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
         ogs_assert(true ==
             ogs_sbi_server_send_error(
                 stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
@@ -253,13 +256,12 @@ bool nrf_nnrf_handle_nf_status_subscribe(
         return false;
     }
 
-    client = ogs_sbi_client_find(addr);
+    client = ogs_sbi_client_find(scheme, addr);
     if (!client) {
-        client = ogs_sbi_client_add(addr);
+        client = ogs_sbi_client_add(scheme, addr);
         ogs_assert(client);
     }
     OGS_SBI_SETUP_CLIENT(subscription_data, client);
-
     ogs_freeaddrinfo(addr);
 
     if (subscription_data->time.validity_duration) {

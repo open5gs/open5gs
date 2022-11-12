@@ -24,8 +24,16 @@
 int smf_sbi_open(void)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
-    ogs_sbi_nf_instance_t *nrf_instance = NULL, *scp_instance = NULL;
     ogs_sbi_nf_service_t *service = NULL;
+
+    /*
+     * SMF can only run to support 4G EPC mode.
+     *
+     * If the SMF is only running in 4G EPC mode,
+     * it should not send NFRegister/NFStatusSubscribe messages to the NRF.
+     */
+    if (ogs_list_count(&ogs_sbi_self()->server_list) == 0)
+        return OGS_OK;
 
     /* Initialize SELF NF instance */
     nf_instance = ogs_sbi_self()->nf_instance;
@@ -47,30 +55,18 @@ int smf_sbi_open(void)
         ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_AMF);
     }
 
-    /*
-     * SMF can only run to support 4G EPC mode.
-     *
-     * If the SMF is only running in 4G EPC mode,
-     * it should not send NFRegister/NFStatusSubscribe messages to the NRF.
-     */
-    nrf_instance = ogs_sbi_self()->nrf_instance;
-    scp_instance = ogs_sbi_self()->scp_instance;
+    /* Initialize NRF NF Instance */
+    nf_instance = ogs_sbi_self()->nrf_instance;
+    if (nf_instance)
+        ogs_sbi_nf_fsm_init(nf_instance);
 
-    if (NF_INSTANCE_CLIENT(nrf_instance) || NF_INSTANCE_CLIENT(scp_instance)) {
-
-        /* Initialize NRF NF Instance */
-        nf_instance = ogs_sbi_self()->nrf_instance;
-        if (nf_instance)
-            ogs_sbi_nf_fsm_init(nf_instance);
-
-        /* Build Subscription-Data */
-        ogs_sbi_subscription_data_build_default(
-                OpenAPI_nf_type_AMF, OGS_SBI_SERVICE_NAME_NAMF_COMM);
-        ogs_sbi_subscription_data_build_default(
-                OpenAPI_nf_type_PCF, OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL);
-        ogs_sbi_subscription_data_build_default(
-                OpenAPI_nf_type_UDM, OGS_SBI_SERVICE_NAME_NUDM_SDM);
-    }
+    /* Build Subscription-Data */
+    ogs_sbi_subscription_data_build_default(
+            OpenAPI_nf_type_AMF, OGS_SBI_SERVICE_NAME_NAMF_COMM);
+    ogs_sbi_subscription_data_build_default(
+            OpenAPI_nf_type_PCF, OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL);
+    ogs_sbi_subscription_data_build_default(
+            OpenAPI_nf_type_UDM, OGS_SBI_SERVICE_NAME_NUDM_SDM);
 
     if (ogs_sbi_server_start_all(ogs_sbi_server_handler) != OGS_OK)
         return OGS_ERROR;

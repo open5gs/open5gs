@@ -98,18 +98,22 @@ void ogs_sbi_client_final(void)
     curl_global_cleanup();
 }
 
-ogs_sbi_client_t *ogs_sbi_client_add(ogs_sockaddr_t *addr)
+ogs_sbi_client_t *ogs_sbi_client_add(
+        OpenAPI_uri_scheme_e scheme, ogs_sockaddr_t *addr)
 {
     ogs_sbi_client_t *client = NULL;
     CURLM *multi = NULL;
 
+    ogs_assert(scheme);
     ogs_assert(addr);
 
     ogs_pool_alloc(&client_pool, &client);
     ogs_assert(client);
     memset(client, 0, sizeof(ogs_sbi_client_t));
 
-    ogs_debug("ogs_sbi_client_add()");
+    client->scheme = scheme;
+
+    ogs_debug("ogs_sbi_client_add[%s]", OpenAPI_uri_scheme_ToString(scheme));
     OGS_OBJECT_REF(client);
 
     ogs_assert(OGS_OK == ogs_copyaddrinfo(&client->node.addr, addr));
@@ -183,14 +187,17 @@ void ogs_sbi_client_remove_all(void)
         ogs_sbi_client_remove(client);
 }
 
-ogs_sbi_client_t *ogs_sbi_client_find(ogs_sockaddr_t *addr)
+ogs_sbi_client_t *ogs_sbi_client_find(
+        OpenAPI_uri_scheme_e scheme, ogs_sockaddr_t *addr)
 {
     ogs_sbi_client_t *client = NULL;
 
+    ogs_assert(scheme);
     ogs_assert(addr);
 
     ogs_list_for_each(&ogs_sbi_self()->client_list, client) {
-        if (ogs_sockaddr_is_equal(client->node.addr, addr) == true)
+        if (client->scheme == scheme &&
+            ogs_sockaddr_is_equal(client->node.addr, addr) == true)
             break;
     }
 
@@ -302,7 +309,10 @@ static connection_t *connection_add(
     ogs_assert(request->h.method);
 
     ogs_pool_alloc(&connection_pool, &conn);
-    ogs_expect_or_return_val(conn, NULL);
+    if (!conn) {
+        ogs_error("ogs_pool_alloc() failed");
+        return NULL;
+    }
     memset(conn, 0, sizeof(connection_t));
 
     conn->client = client;
@@ -628,7 +638,10 @@ bool ogs_sbi_client_send_request(
     ogs_debug("[%s] %s", request->h.method, request->h.uri);
 
     conn = connection_add(client, client_cb, request, data);
-    ogs_expect_or_return_val(conn, false);
+    if (!conn) {
+        ogs_error("connection_add() failed");
+        return false;
+    }
 
     return true;
 }
@@ -637,6 +650,8 @@ bool ogs_sbi_client_send_via_scp(
         ogs_sbi_client_t *client, ogs_sbi_client_cb_f client_cb,
         ogs_sbi_request_t *request, void *data)
 {
+    bool rc;
+
     ogs_assert(request);
     ogs_assert(client);
 
@@ -657,7 +672,7 @@ bool ogs_sbi_client_send_via_scp(
         apiroot = ogs_sbi_client_apiroot(client);
         ogs_assert(apiroot);
 
-        path = ogs_sbi_getpath_from_uri(request->h.uri);
+        rc = ogs_sbi_getpath_from_uri(&path, request->h.uri);
         ogs_assert(path);
 
         request->h.uri = ogs_msprintf("%s/%s", apiroot, path);
@@ -670,10 +685,10 @@ bool ogs_sbi_client_send_via_scp(
         ogs_free(old);
     }
 
-    ogs_expect_or_return_val(true ==
-        ogs_sbi_client_send_request(client, client_cb, request, data), false);
+    rc = ogs_sbi_client_send_request(client, client_cb, request, data);
+    ogs_expect(rc == true);
 
-    return true;
+    return rc;
 }
 
 static size_t write_cb(void *contents, size_t size, size_t nmemb, void *data)

@@ -1,3 +1,5 @@
 usr/bin/open5gs-ausfd
 configs/open5gs/ausf.yaml etc/open5gs
+configs/open5gs/tls/ausf.key etc/open5gs/tls
+configs/open5gs/tls/ausf.crt etc/open5gs/tls
 configs/systemd/open5gs-ausfd.service lib/systemd/system

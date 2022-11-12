@@ -1,3 +1,5 @@
 usr/bin/open5gs-udrd
 configs/open5gs/udr.yaml etc/open5gs
+configs/open5gs/tls/udr.key etc/open5gs/tls
+configs/open5gs/tls/udr.crt etc/open5gs/tls
 configs/systemd/open5gs-udrd.service lib/systemd/system

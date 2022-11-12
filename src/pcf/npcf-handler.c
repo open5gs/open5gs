@@ -24,12 +24,15 @@
 bool pcf_npcf_am_policy_contrtol_handle_create(pcf_ue_t *pcf_ue,
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
 {
+    bool rc;
+
     OpenAPI_policy_association_request_t *PolicyAssociationRequest = NULL;
     OpenAPI_guami_t *Guami = NULL;
 
     uint64_t supported_features = 0;
 
     ogs_sbi_client_t *client = NULL;
+    OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
     ogs_sockaddr_t *addr = NULL;
 
     ogs_assert(pcf_ue);
@@ -69,8 +72,9 @@ bool pcf_npcf_am_policy_contrtol_handle_create(pcf_ue_t *pcf_ue,
         return false;
     }
 
-    addr = ogs_sbi_getaddr_from_uri(PolicyAssociationRequest->notification_uri);
-    if (!addr) {
+    rc = ogs_sbi_getaddr_from_uri(&scheme, &addr,
+            PolicyAssociationRequest->notification_uri);
+    if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
         ogs_error("[%s] Invalid URI [%s]",
                 pcf_ue->supi, PolicyAssociationRequest->notification_uri);
         ogs_assert(true ==
@@ -85,13 +89,12 @@ bool pcf_npcf_am_policy_contrtol_handle_create(pcf_ue_t *pcf_ue,
             PolicyAssociationRequest->notification_uri);
     ogs_assert(pcf_ue->notification_uri);
 
-    client = ogs_sbi_client_find(addr);
+    client = ogs_sbi_client_find(scheme, addr);
     if (!client) {
-        client = ogs_sbi_client_add(addr);
+        client = ogs_sbi_client_add(scheme, addr);
         ogs_assert(client);
     }
     OGS_SBI_SETUP_CLIENT(&pcf_ue->namf, client);
-
     ogs_freeaddrinfo(addr);
 
     supported_features =
@@ -157,6 +160,7 @@ bool pcf_npcf_am_policy_contrtol_handle_create(pcf_ue_t *pcf_ue,
 bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
 {
+    bool rc;
     int status = 0;
     char *strerror = NULL;
     pcf_ue_t *pcf_ue = NULL;
@@ -165,6 +169,7 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
     OpenAPI_snssai_t *sliceInfo = NULL;
 
     ogs_sbi_client_t *client = NULL;
+    OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
     ogs_sockaddr_t *addr = NULL;
 
     ogs_assert(sess);
@@ -239,8 +244,9 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
         goto cleanup;
     }
 
-    addr = ogs_sbi_getaddr_from_uri(SmPolicyContextData->notification_uri);
-    if (!addr) {
+    rc = ogs_sbi_getaddr_from_uri(&scheme, &addr,
+            SmPolicyContextData->notification_uri);
+    if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
         strerror = ogs_msprintf("[%s:%d] Invalid URI [%s]",
                 pcf_ue->supi, sess->psi, SmPolicyContextData->notification_uri);
         status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
@@ -267,13 +273,12 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
     sess->notification_uri = ogs_strdup(SmPolicyContextData->notification_uri);
     ogs_assert(sess->notification_uri);
 
-    client = ogs_sbi_client_find(addr);
+    client = ogs_sbi_client_find(scheme, addr);
     if (!client) {
-        client = ogs_sbi_client_add(addr);
+        client = ogs_sbi_client_add(scheme, addr);
         ogs_assert(client);
     }
     OGS_SBI_SETUP_CLIENT(&sess->nsmf, client);
-
     ogs_freeaddrinfo(addr);
 
     if (SmPolicyContextData->ipv4_address)
@@ -372,12 +377,14 @@ cleanup:
 bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
+    bool rc;
     int i, j, rv, status = 0;
     char *strerror = NULL;
     pcf_ue_t *pcf_ue = NULL;
     pcf_app_t *app_session = NULL;
 
     ogs_sbi_client_t *client = NULL;
+    OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
     ogs_sockaddr_t *addr = NULL;
 
     OpenAPI_app_session_context_t *AppSessionContext = NULL;
@@ -463,8 +470,8 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
         goto cleanup;
     }
 
-    addr = ogs_sbi_getaddr_from_uri(AscReqData->notif_uri);
-    if (!addr) {
+    rc = ogs_sbi_getaddr_from_uri(&scheme, &addr, AscReqData->notif_uri);
+    if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
         strerror = ogs_msprintf("[%s:%d] Invalid URI [%s]",
                 pcf_ue->supi, sess->psi, AscReqData->notif_uri);
         status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
@@ -556,13 +563,12 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
     app_session->notif_uri = ogs_strdup(AscReqData->notif_uri);
     ogs_assert(app_session->notif_uri);
 
-    client = ogs_sbi_client_find(addr);
+    client = ogs_sbi_client_find(scheme, addr);
     if (!client) {
-        client = ogs_sbi_client_add(addr);
+        client = ogs_sbi_client_add(scheme, addr);
         ogs_assert(client);
     }
     OGS_SBI_SETUP_CLIENT(&app_session->naf, client);
-
     ogs_freeaddrinfo(addr);
 
     memset(&session_data, 0, sizeof(ogs_session_data_t));

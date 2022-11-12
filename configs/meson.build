@@ -22,6 +22,9 @@ conf_data.set('sysconfdir', sysconfdir)
 conf_data.set('libdir', libdir)
 conf_data.set('localstatedir', localstatedir)
 
+open5gs_builddir = meson.build_root()
+conf_data.set('open5gs_builddir', open5gs_builddir)
+
 freediameter_extensions_builddir = join_paths(
         meson.build_root(), 'subprojects', 'freeDiameter', 'extensions')
 conf_data.set('freediameter_extensions_builddir',

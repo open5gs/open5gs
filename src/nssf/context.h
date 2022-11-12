@@ -50,10 +50,6 @@ typedef struct nssf_nsi_s {
     char *nsi_id;
 
     ogs_sockaddr_t *addr;
-    struct {
-        const char  *key;
-        const char  *pem;
-    } tls;
 
     ogs_s_nssai_t s_nssai;
 } nssf_nsi_t;

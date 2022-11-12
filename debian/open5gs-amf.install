@@ -1,3 +1,5 @@
 usr/bin/open5gs-amfd
 configs/open5gs/amf.yaml etc/open5gs
+configs/open5gs/tls/amf.key etc/open5gs/tls
+configs/open5gs/tls/amf.crt etc/open5gs/tls
 configs/systemd/open5gs-amfd.service lib/systemd/system
