@@ -16,6 +16,8 @@ This post explains how to compile and install the source code on **Debian/Ubuntu
 Import the public key used by the package management system.
 
 ```bash
+$ sudo apt update
+$ sudo apt install wget gnupg
 $ wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
 ```
 
@@ -28,7 +30,7 @@ $ echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongo
 Install the MongoDB packages.
 ```bash
 $ sudo apt update
-$ sudo apt-get install -y mongodb-org
+$ sudo apt install -y mongodb-org
 $ sudo systemctl start mongod (if '/usr/bin/mongod' is not running)
 $ sudo systemctl enable mongod (ensure to automatically start it on system boot)
 ```

@@ -91,7 +91,7 @@ $ echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongo
 Install the MongoDB packages.
 ```bash
 $ sudo apt update
-$ sudo apt-get install -y mongodb-org
+$ sudo apt install -y mongodb-org
 $ sudo systemctl start mongod (if '/usr/bin/mongod' is not running)
 $ sudo systemctl enable mongod (ensure to automatically start it on system boot)
 ```
@@ -123,9 +123,11 @@ Other distributions can be installed by changing the path.
 
 ```
 https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_10/
+https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_11/
 https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_Testing/
 https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_Unstable/
 https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Raspbian_10/
+https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Raspbian_11/
 https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_18.04/
 https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_20.04/
 https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_20.10/
@@ -136,13 +138,13 @@ https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbunt
 
 #### Nightly Builds
 
-Nightly bulit package are provided by [Osmocom](https://osmocom.org) on [OBS](https://build.opensuse.org/package/show/network:osmocom:nightly/open5gs). On *Ubuntu 20.04* you can install it like this:
+Nightly bulit package are provided by [Osmocom](https://osmocom.org) on [OBS](https://obs.osmocom.org/package/show/osmocom:nightly/open5gs). On *Ubuntu 20.04* you can install it like this:
 
 ```bash
 $ sudo apt update
 $ sudo apt install wget gnupg
-$ wget -qO - https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_20.04/Release.key | sudo apt-key add -
-$ sudo sh -c "echo 'deb http://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_20.04/ ./' > /etc/apt/sources.list.d/open5gs.list"
+$ wget -qO - https://downloads.osmocom.org/packages/osmocom:/nightly/xUbuntu_20.04/Release.key | sudo apt-key add -
+$ sudo sh -c "echo 'deb https://downloads.osmocom.org/packages/osmocom:/nightly/xUbuntu_20.04/ ./' > /etc/apt/sources.list.d/open5gs.list"
 $ sudo apt update
 $ sudo apt install open5gs
 ```
@@ -150,16 +152,18 @@ $ sudo apt install open5gs
 Other distributions can be installed by changing the path.
 
 ```
-https://download.opensuse.org/repositories/network:/osmocom:/nightly/Debian_10/
-https://download.opensuse.org/repositories/network:/osmocom:/nightly/Debian_Testing/
-https://download.opensuse.org/repositories/network:/osmocom:/nightly/Debian_Unstable/
-https://download.opensuse.org/repositories/network:/osmocom:/nightly/Raspbian_10/
-https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_18.04/
-https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_20.04/
-https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_20.10/
-https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_21.04/
-https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_21.10/
-https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_22.04/
+https://downloads.osmocom.org/packages/osmocom:/nightly/Debian_10/
+https://downloads.osmocom.org/packages/osmocom:/nightly/Debian_11/
+https://downloads.osmocom.org/packages/osmocom:/nightly/Debian_Testing/
+https://downloads.osmocom.org/packages/osmocom:/nightly/Debian_Unstable/
+https://downloads.osmocom.org/packages/osmocom:/nightly/Raspbian_10/
+https://downloads.osmocom.org/packages/osmocom:/nightly/Raspbian_11/
+https://downloads.osmocom.org/packages/osmocom:/nightly/xUbuntu_18.04/
+https://downloads.osmocom.org/packages/osmocom:/nightly/xUbuntu_20.04/
+https://downloads.osmocom.org/packages/osmocom:/nightly/xUbuntu_20.10/
+https://downloads.osmocom.org/packages/osmocom:/nightly/xUbuntu_21.04/
+https://downloads.osmocom.org/packages/osmocom:/nightly/xUbuntu_21.10/
+https://downloads.osmocom.org/packages/osmocom:/nightly/xUbuntu_22.04/
 ```
 
 #### openSUSE
