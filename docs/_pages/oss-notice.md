@@ -7,7 +7,7 @@ permalink: /oss-notice/
 
 The following sets forth attribution notices for third party software that may be contained in this repository.
 
-If you have any questions or concerns, please contact us at acetcom@gmail.com
+If you have any questions or concerns, please contact us at <a href="mailto:acetcom@gmail.com">acetcom@gmail.com</a>
 
 ---
 
@@ -27,7 +27,7 @@ If you have any questions or concerns, please contact us at acetcom@gmail.com
 - LICENSE: [LGPL-2.1-or-later](https://www.gnu.org/licenses/lgpl-3.0.html)
 
 ##### LIBGCRYPT
-- [https://gnupg.org/software/libgcrypt/index.html](https://gnupg.org/software/libgcrypt/index.html)
+- [https://gnupg.org/software/libgcrypt/](https://gnupg.org/software/libgcrypt/)
 - Copyright (C) The GnuPG Project
 - LICENSE: [LGPL-2.1-or-later](https://www.gnu.org/licenses/lgpl-3.0.html)
 
@@ -57,12 +57,12 @@ If you have any questions or concerns, please contact us at acetcom@gmail.com
 - LICENSE: [LGPL-2.1-or-later](https://www.gnu.org/licenses/lgpl-3.0.html)
 
 ##### libmongoc
-- [https://mongoc.org/libmongoc/current/index.html](https://mongoc.org/libmongoc/current/index.html)
+- [https://mongoc.org/libmongoc/current/](https://mongoc.org/libmongoc/current/)
 - Copyright 2017-present MongoDB, Inc.
 - LICENSE: [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
 ##### libbson
-- [http://mongoc.org/libbson/current/index.html](http://mongoc.org/libbson/current/index.html)
+- [http://mongoc.org/libbson/current/](http://mongoc.org/libbson/current/)
 - Copyright 2017-present MongoDB, Inc.
 - LICENSE: [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
@@ -102,11 +102,11 @@ If you have any questions or concerns, please contact us at acetcom@gmail.com
 - License: [BSD-2-Clause](https://opensource.org/licenses/BSD-2-Clause)
 
 ##### libtalloc
-- [https://talloc.samba.org/talloc/doc/html/index.html](https://talloc.samba.org/talloc/doc/html/index.html)
+- [https://talloc.samba.org/talloc/doc/html/](https://talloc.samba.org/talloc/doc/html/)
 - Copyright (C) Andrew Tridgell 2004-2005, Stefan Metzmacher 2006
 - LICENSE: [LGPL-2.1-or-later](https://www.gnu.org/licenses/lgpl-3.0.html)
 
 ##### usrsctp
 - [https://github.com/sctplab/usrsctp](https://github.com/sctplab/usrsctp)
 - Copyright (c) 2015, Randall Stewart and Michael Tuexen
- - License: [BSD-3-Clause](https://opensource.org/licenses/BSD-3-Clause)
+- License: [BSD-3-Clause](https://opensource.org/licenses/BSD-3-Clause)
