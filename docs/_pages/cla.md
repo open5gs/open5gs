@@ -1,6 +1,7 @@
 ---
 layout: page
 title: CLA
+subject : Copyright License Agreement
 permalink: /cla/
 ---
 

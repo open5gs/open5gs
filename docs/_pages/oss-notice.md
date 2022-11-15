@@ -1,6 +1,7 @@
 ---
 layout: page
 title: OSS Notice
+subject: OSS Notice
 permalink: /oss-notice/
 ---
 

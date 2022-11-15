@@ -1,7 +1,8 @@
 ---
 layout: page
-title: About
-permalink: /about/
+title: Features
+subject: Features
+permalink: /features/
 ---
 
 Open5GS is a C-language Open Source implementation of 5GC and EPC, i.e. the core network of NR/LTE network.

@@ -1,6 +1,7 @@
 ---
 layout: page
 title: Documentation
+subject: Documentation
 permalink: /docs/
 head_inline: "<style> ul { padding-bottom: 1em; } </style>"
 ---
