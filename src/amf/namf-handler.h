@@ -26,6 +26,7 @@ extern "C" {
 
 #include "context.h"
 
+int amf_namf_comm_map_message_class_to_container_type(int clazz);
 int amf_namf_comm_handle_n1_n2_message_transfer(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 int amf_namf_callback_handle_sm_context_status(
