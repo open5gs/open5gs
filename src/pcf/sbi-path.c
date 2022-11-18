@@ -96,10 +96,10 @@ int pcf_sbi_open(void)
     if (nf_instance)
         ogs_sbi_nf_fsm_init(nf_instance);
 
-    /* Build Subscription-Data */
-    ogs_sbi_subscription_data_build_default(
+    /* Setup Subscription-Data */
+    ogs_sbi_subscription_spec_add(
             OpenAPI_nf_type_BSF, OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT);
-    ogs_sbi_subscription_data_build_default(
+    ogs_sbi_subscription_spec_add(
             OpenAPI_nf_type_UDR, OGS_SBI_SERVICE_NAME_NUDR_DR);
 
     if (ogs_sbi_server_start_all(ogs_sbi_server_handler) != OGS_OK)
