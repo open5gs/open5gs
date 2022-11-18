@@ -187,10 +187,10 @@ static void app_context_prepare(void)
     self.time.nf_instance.no_heartbeat_margin = 1;
 
     /* 3600 seconds = 1 hour */
-    self.time.nf_instance.validity_duration = 3600;
+    self.time.nf_instance.validity_duration = 30;
 
     /* 86400 seconds = 1 day */
-    self.time.subscription.validity_duration = 86400;
+    self.time.subscription.validity_duration = 45;
 
     /*
      * Message Wait Duration : 10 seconds (Default)

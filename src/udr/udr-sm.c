@@ -293,7 +293,6 @@ void udr_state_operational(ogs_fsm_t *s, udr_event_t *e)
 
             ogs_assert(true ==
                 ogs_nnrf_nfm_send_nf_status_subscribe(
-                    subscription_data->client,
                     ogs_sbi_self()->nf_instance->nf_type,
                     subscription_data->req_nf_instance_id,
                     subscription_data->subscr_cond.nf_type,

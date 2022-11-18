@@ -81,7 +81,6 @@ export DEBEMAIL='acetcom@gmail.com'
   
   ```
   $ cat ./meson.build
-  $ cat ./docker/webui/Dockerfile
   $ cat ./webui/package.json
   $ cat ./webui/package-lock.json
   $ cat ./docs/assets/webui/install
