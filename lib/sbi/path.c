@@ -232,18 +232,33 @@ bool ogs_nnrf_nfm_send_nf_profile_retrieve(ogs_sbi_nf_instance_t *nf_instance,
 }
 
 bool ogs_nnrf_nfm_send_nf_status_subscribe(
-        ogs_sbi_subscription_data_t *subscription_data)
+        ogs_sbi_client_t *client,
+        OpenAPI_nf_type_e req_nf_type, char *req_nf_instance_id,
+        OpenAPI_nf_type_e subscr_cond_nf_type,
+        char *subscr_cond_service_name)
 {
     ogs_sbi_request_t *request = NULL;
-    ogs_sbi_client_t *client = NULL;
+    ogs_sbi_subscription_data_t *subscription_data = NULL;
 
+    ogs_assert(client);
+
+    subscription_data = ogs_sbi_subscription_data_add();
     ogs_assert(subscription_data);
 
-    request = ogs_nnrf_nfm_build_status_subscribe(subscription_data);
-    ogs_expect_or_return_val(request, false);
+    OGS_SBI_SETUP_CLIENT(subscription_data, client);
+    subscription_data->req_nf_type = req_nf_type;
+    if (req_nf_instance_id)
+        subscription_data->req_nf_instance_id = ogs_strdup(req_nf_instance_id);
+    subscription_data->subscr_cond.nf_type = subscr_cond_nf_type;
+    if (subscr_cond_service_name)
+        subscription_data->subscr_cond.service_name =
+            ogs_strdup(subscr_cond_service_name);
 
-    client = subscription_data->client;
-    ogs_assert(client);
+    request = ogs_nnrf_nfm_build_status_subscribe(subscription_data);
+    if (!request) {
+        ogs_error("No request");
+        return false;
+    }
 
     return ogs_sbi_scp_send_request(
             client, client->cb, request, subscription_data);

@@ -57,6 +57,7 @@ typedef struct ogs_sbi_context_s {
     ogs_uuid_t uuid;
 
     ogs_list_t nf_instance_list;
+    ogs_list_t subscription_spec_list;
     ogs_list_t subscription_data_list;
 
     ogs_sbi_nf_instance_t *nf_instance;     /* SELF NF Instance */
@@ -203,6 +204,16 @@ typedef struct ogs_sbi_nf_service_s {
     void *client;
 } ogs_sbi_nf_service_t;
 
+typedef struct ogs_sbi_subscription_spec_s {
+    ogs_lnode_t lnode;
+
+    struct {
+        OpenAPI_nf_type_e nf_type;          /* nfType */
+        char *service_name;                 /* ServiceName */
+    } subscr_cond;
+
+} ogs_sbi_subscription_spec_t;
+
 typedef struct ogs_sbi_subscription_data_s {
     ogs_lnode_t lnode;
 
@@ -220,7 +231,7 @@ typedef struct ogs_sbi_subscription_data_s {
 
     struct {
         OpenAPI_nf_type_e nf_type;          /* nfType */
-        char *service_name;           /* ServiceName */
+        char *service_name;                 /* ServiceName */
     } subscr_cond;
 
     uint64_t requester_features;
@@ -391,6 +402,12 @@ void ogs_sbi_xact_remove(ogs_sbi_xact_t *xact);
 void ogs_sbi_xact_remove_all(ogs_sbi_object_t *sbi_object);
 ogs_sbi_xact_t *ogs_sbi_xact_cycle(ogs_sbi_xact_t *xact);
 
+ogs_sbi_subscription_spec_t *ogs_sbi_subscription_spec_add(
+        OpenAPI_nf_type_e nf_type, const char *service_name);
+void ogs_sbi_subscription_spec_remove(
+        ogs_sbi_subscription_spec_t *subscription_spec);
+void ogs_sbi_subscription_spec_remove_all(void);
+
 ogs_sbi_subscription_data_t *ogs_sbi_subscription_data_add(void);
 void ogs_sbi_subscription_data_set_id(
         ogs_sbi_subscription_data_t *subscription_data, char *id);
@@ -400,8 +417,6 @@ void ogs_sbi_subscription_data_remove_all_by_nf_instance_id(
         char *nf_instance_id);
 void ogs_sbi_subscription_data_remove_all(void);
 ogs_sbi_subscription_data_t *ogs_sbi_subscription_data_find(char *id);
-void ogs_sbi_subscription_data_build_default(
-        OpenAPI_nf_type_e nf_type, const char *service_name);
 
 #ifdef __cplusplus
 }

@@ -116,12 +116,12 @@ int smf_sbi_open(void)
         ogs_sbi_nf_fsm_init(nf_instance);
     }
 
-    /* Build Subscription-Data */
-    ogs_sbi_subscription_data_build_default(
+    /* Setup Subscription-Data */
+    ogs_sbi_subscription_spec_add(
             OpenAPI_nf_type_AMF, OGS_SBI_SERVICE_NAME_NAMF_COMM);
-    ogs_sbi_subscription_data_build_default(
+    ogs_sbi_subscription_spec_add(
             OpenAPI_nf_type_PCF, OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL);
-    ogs_sbi_subscription_data_build_default(
+    ogs_sbi_subscription_spec_add(
             OpenAPI_nf_type_UDM, OGS_SBI_SERVICE_NAME_NUDM_SDM);
 
     if (ogs_sbi_server_start_all(server_cb) != OGS_OK)
