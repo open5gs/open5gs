@@ -380,9 +380,9 @@ ogs_pkbuf_t *ngap_build_downlink_nas_transport(
      * The UE Aggregate Maximum Bit Rate IE should be sent to the NG-RAN node
      * if the AMF has not sent it previously
      */
-    if (ran_ue->ue_ambr_sent == false && ue_ambr) {
+    if (ran_ue->ue_ambr_sent == false && ue_ambr &&
+        amf_ue->ue_ambr.downlink && amf_ue->ue_ambr.uplink) {
         ogs_assert(amf_ue);
-        ogs_assert(amf_ue->ue_ambr.downlink && amf_ue->ue_ambr.uplink);
 
         ie = CALLOC(1, sizeof(NGAP_DownlinkNASTransport_IEs_t));
         ASN_SEQUENCE_ADD(&DownlinkNASTransport->protocolIEs, ie);
@@ -520,8 +520,8 @@ ogs_pkbuf_t *ngap_ue_build_initial_context_setup_request(
      *
      * SHOULD NOT CHECK PREVIOUSLY SENT
      */
-    if (PDU_RES_SETUP_REQ_TRANSFER_NEEDED(amf_ue) == true) {
-        ogs_assert(amf_ue->ue_ambr.downlink && amf_ue->ue_ambr.uplink);
+    if (PDU_RES_SETUP_REQ_TRANSFER_NEEDED(amf_ue) == true &&
+        amf_ue->ue_ambr.downlink && amf_ue->ue_ambr.uplink) {
 
         ie = CALLOC(1, sizeof(NGAP_InitialContextSetupRequestIEs_t));
         ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
@@ -840,8 +840,8 @@ ogs_pkbuf_t *ngap_sess_build_initial_context_setup_request(
      *
      * SHOULD NOT CHECK PREVIOUSLY SENT
      */
-    if (gmmbuf || n2smbuf) {
-        ogs_assert(amf_ue->ue_ambr.downlink && amf_ue->ue_ambr.uplink);
+    if ((gmmbuf || n2smbuf) &&
+        amf_ue->ue_ambr.downlink && amf_ue->ue_ambr.uplink) {
 
         ie = CALLOC(1, sizeof(NGAP_InitialContextSetupRequestIEs_t));
         ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
@@ -1270,8 +1270,8 @@ ogs_pkbuf_t *ngap_ue_build_pdu_session_resource_setup_request(
      * if the AMF has not sent it previously.
      */
     if (ran_ue->ue_ambr_sent == false &&
-        PDU_RES_SETUP_REQ_TRANSFER_NEEDED(amf_ue) == true) {
-        ogs_assert(amf_ue->ue_ambr.downlink && amf_ue->ue_ambr.uplink);
+        PDU_RES_SETUP_REQ_TRANSFER_NEEDED(amf_ue) == true &&
+        amf_ue->ue_ambr.downlink && amf_ue->ue_ambr.uplink) {
 
         ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceSetupRequestIEs_t));
         ASN_SEQUENCE_ADD(&PDUSessionResourceSetupRequest->protocolIEs, ie);
@@ -1415,8 +1415,8 @@ ogs_pkbuf_t *ngap_sess_build_pdu_session_resource_setup_request(
      * The UE Aggregate Maximum Bit Rate IE should be sent to the NG-RAN node
      * if the AMF has not sent it previously.
      */
-    if (ran_ue->ue_ambr_sent == false) {
-        ogs_assert(amf_ue->ue_ambr.downlink && amf_ue->ue_ambr.uplink);
+    if (ran_ue->ue_ambr_sent == false &&
+        amf_ue->ue_ambr.downlink && amf_ue->ue_ambr.uplink) {
 
         ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceSetupRequestIEs_t));
         ASN_SEQUENCE_ADD(&PDUSessionResourceSetupRequest->protocolIEs, ie);
@@ -2021,8 +2021,8 @@ ogs_pkbuf_t *ngap_build_handover_request(ran_ue_t *target_ue)
     ogs_debug("    Group[%d] Cause[%d]",
             Cause->present, (int)Cause->choice.radioNetwork);
 
-    if (HANDOVER_REQUEST_TRANSFER_NEEDED(amf_ue) == true) {
-        ogs_assert(amf_ue->ue_ambr.downlink && amf_ue->ue_ambr.uplink);
+    if (HANDOVER_REQUEST_TRANSFER_NEEDED(amf_ue) == true &&
+        amf_ue->ue_ambr.downlink && amf_ue->ue_ambr.uplink) {
 
         ie = CALLOC(1, sizeof(NGAP_HandoverRequestIEs_t));
         ogs_assert(ie);
