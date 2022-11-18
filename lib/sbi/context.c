@@ -26,6 +26,7 @@ static int context_initialized = 0;
 static OGS_POOL(nf_instance_pool, ogs_sbi_nf_instance_t);
 static OGS_POOL(nf_service_pool, ogs_sbi_nf_service_t);
 static OGS_POOL(xact_pool, ogs_sbi_xact_t);
+static OGS_POOL(subscription_spec_pool, ogs_sbi_subscription_spec_t);
 static OGS_POOL(subscription_data_pool, ogs_sbi_subscription_data_t);
 static OGS_POOL(smf_info_pool, ogs_sbi_smf_info_t);
 static OGS_POOL(nf_info_pool, ogs_sbi_nf_info_t);
@@ -50,6 +51,9 @@ void ogs_sbi_context_init(void)
     ogs_pool_init(&nf_service_pool, ogs_app()->pool.nf_service);
 
     ogs_pool_init(&xact_pool, ogs_app()->pool.xact);
+
+    ogs_list_init(&self.subscription_spec_list);
+    ogs_pool_init(&subscription_spec_pool, ogs_app()->pool.subscription);
 
     ogs_list_init(&self.subscription_data_list);
     ogs_pool_init(&subscription_data_pool, ogs_app()->pool.subscription);
@@ -85,6 +89,9 @@ void ogs_sbi_context_final(void)
 
     ogs_sbi_subscription_data_remove_all();
     ogs_pool_final(&subscription_data_pool);
+
+    ogs_sbi_subscription_spec_remove_all();
+    ogs_pool_final(&subscription_spec_pool);
 
     ogs_pool_final(&xact_pool);
 
@@ -1717,6 +1724,49 @@ ogs_sbi_xact_t *ogs_sbi_xact_cycle(ogs_sbi_xact_t *xact)
     return ogs_pool_cycle(&xact_pool, xact);
 }
 
+ogs_sbi_subscription_spec_t *ogs_sbi_subscription_spec_add(
+        OpenAPI_nf_type_e nf_type, const char *service_name)
+{
+    ogs_sbi_subscription_spec_t *subscription_spec = NULL;
+
+    ogs_assert(nf_type);
+
+    ogs_pool_alloc(&subscription_spec_pool, &subscription_spec);
+    ogs_assert(subscription_spec);
+    memset(subscription_spec, 0, sizeof(ogs_sbi_subscription_spec_t));
+
+    subscription_spec->subscr_cond.nf_type = nf_type;
+    if (service_name)
+        subscription_spec->subscr_cond.service_name = ogs_strdup(service_name);
+
+    ogs_list_add(&ogs_sbi_self()->subscription_spec_list, subscription_spec);
+
+    return subscription_spec;
+}
+
+void ogs_sbi_subscription_spec_remove(
+        ogs_sbi_subscription_spec_t *subscription_spec)
+{
+    ogs_assert(subscription_spec);
+
+    ogs_list_remove(&ogs_sbi_self()->subscription_spec_list, subscription_spec);
+
+    if (subscription_spec->subscr_cond.service_name)
+        ogs_free(subscription_spec->subscr_cond.service_name);
+
+    ogs_pool_free(&subscription_spec_pool, subscription_spec);
+}
+
+void ogs_sbi_subscription_spec_remove_all(void)
+{
+    ogs_sbi_subscription_spec_t *subscription_spec = NULL;
+    ogs_sbi_subscription_spec_t *next_subscription_spec = NULL;
+
+    ogs_list_for_each_safe(&ogs_sbi_self()->subscription_spec_list,
+            next_subscription_spec, subscription_spec)
+        ogs_sbi_subscription_spec_remove(subscription_spec);
+}
+
 ogs_sbi_subscription_data_t *ogs_sbi_subscription_data_add(void)
 {
     ogs_sbi_subscription_data_t *subscription_data = NULL;
@@ -1813,25 +1863,4 @@ ogs_sbi_subscription_data_t *ogs_sbi_subscription_data_find(char *id)
     }
 
     return subscription_data;
-}
-
-void ogs_sbi_subscription_data_build_default(
-        OpenAPI_nf_type_e nf_type, const char *service_name)
-{
-    ogs_sbi_subscription_data_t *subscription_data = NULL;
-
-    ogs_assert(nf_type);
-
-    subscription_data = ogs_sbi_subscription_data_add();
-    ogs_assert(subscription_data);
-
-    subscription_data->req_nf_type =
-        NF_INSTANCE_TYPE(ogs_sbi_self()->nf_instance);
-    ogs_assert(subscription_data->req_nf_type);
-    if (NF_INSTANCE_ID(ogs_sbi_self()->nf_instance))
-        subscription_data->req_nf_instance_id =
-            ogs_strdup(NF_INSTANCE_ID(ogs_sbi_self()->nf_instance));
-    subscription_data->subscr_cond.nf_type = nf_type;
-    if (service_name)
-        subscription_data->subscr_cond.service_name = ogs_strdup(service_name);
 }

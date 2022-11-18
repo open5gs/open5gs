@@ -49,8 +49,8 @@ int ausf_sbi_open(void)
     if (nf_instance)
         ogs_sbi_nf_fsm_init(nf_instance);
 
-    /* Build Subscription-Data */
-    ogs_sbi_subscription_data_build_default(
+    /* Setup Subscription-Data */
+    ogs_sbi_subscription_spec_add(
             OpenAPI_nf_type_UDM, OGS_SBI_SERVICE_NAME_NUDM_UEAU);
 
     if (ogs_sbi_server_start_all(ogs_sbi_server_handler) != OGS_OK)

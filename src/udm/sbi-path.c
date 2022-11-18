@@ -70,8 +70,8 @@ int udm_sbi_open(void)
     if (nf_instance)
         ogs_sbi_nf_fsm_init(nf_instance);
 
-    /* Build Subscription-Data */
-    ogs_sbi_subscription_data_build_default(OpenAPI_nf_type_UDR, NULL);
+    /* Setup Subscription-Data */
+    ogs_sbi_subscription_spec_add(OpenAPI_nf_type_UDR, NULL);
 
     if (ogs_sbi_server_start_all(ogs_sbi_server_handler) != OGS_OK)
         return OGS_ERROR;

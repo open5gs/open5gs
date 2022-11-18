@@ -69,15 +69,15 @@ int scp_sbi_open(void)
     /* If the SCP has an NRF client and does not delegate to Next-SCP */
     if (nrf_client && !next_scp) {
 
-        /* Build Subscription-Data */
-        ogs_sbi_subscription_data_build_default(OpenAPI_nf_type_AMF, NULL);
-        ogs_sbi_subscription_data_build_default(OpenAPI_nf_type_AUSF, NULL);
-        ogs_sbi_subscription_data_build_default(OpenAPI_nf_type_BSF, NULL);
-        ogs_sbi_subscription_data_build_default(OpenAPI_nf_type_NSSF, NULL);
-        ogs_sbi_subscription_data_build_default(OpenAPI_nf_type_PCF, NULL);
-        ogs_sbi_subscription_data_build_default(OpenAPI_nf_type_SMF, NULL);
-        ogs_sbi_subscription_data_build_default(OpenAPI_nf_type_UDM, NULL);
-        ogs_sbi_subscription_data_build_default(OpenAPI_nf_type_UDR, NULL);
+        /* Setup Subscription-Data */
+        ogs_sbi_subscription_spec_add(OpenAPI_nf_type_AMF, NULL);
+        ogs_sbi_subscription_spec_add(OpenAPI_nf_type_AUSF, NULL);
+        ogs_sbi_subscription_spec_add(OpenAPI_nf_type_BSF, NULL);
+        ogs_sbi_subscription_spec_add(OpenAPI_nf_type_NSSF, NULL);
+        ogs_sbi_subscription_spec_add(OpenAPI_nf_type_PCF, NULL);
+        ogs_sbi_subscription_spec_add(OpenAPI_nf_type_SMF, NULL);
+        ogs_sbi_subscription_spec_add(OpenAPI_nf_type_UDM, NULL);
+        ogs_sbi_subscription_spec_add(OpenAPI_nf_type_UDR, NULL);
     }
 
     if (ogs_sbi_server_start_all(request_handler) != OGS_OK)
