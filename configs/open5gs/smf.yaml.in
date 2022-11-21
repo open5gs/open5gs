@@ -517,7 +517,7 @@ smf:
       - addr: 127.0.0.4
       - addr: ::1
     metrics:
-        addr: 127.0.0.4
+      - addr: 127.0.0.4
         port: 9090
     subnet:
       - addr: 10.45.0.1/16

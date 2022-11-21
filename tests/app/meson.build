@@ -18,7 +18,7 @@
 
 libtestapp_inc = include_directories('.')
 
-libtestepc_cc_args = '-DDEFAULT_CONFIG_FILENAME="@0@/configs/sample.yaml"'.format(meson.build_root())
+libtestepc_cc_args = '-DDEFAULT_CONFIG_FILENAME="@0@/configs/sample.yaml"'.format(open5gs_build_dir)
 
 libtestepc_sources = files('''
     epc-init.c
@@ -46,7 +46,7 @@ executable('epc',
     include_directories : srcinc,
     dependencies : libtestepc_dep)
 
-libtest5gc_cc_args = '-DDEFAULT_CONFIG_FILENAME="@0@/configs/sample.yaml"'.format(meson.build_root())
+libtest5gc_cc_args = '-DDEFAULT_CONFIG_FILENAME="@0@/configs/sample.yaml"'.format(open5gs_build_dir)
 
 libtest5gc_sources = files('''
     5gc-init.c
@@ -74,7 +74,7 @@ executable('5gc',
     include_directories : srcinc,
     dependencies : libtest5gc_dep)
 
-libtestapp_cc_args = '-DDEFAULT_CONFIG_FILENAME="@0@/configs/sample.yaml"'.format(meson.build_root())
+libtestapp_cc_args = '-DDEFAULT_CONFIG_FILENAME="@0@/configs/sample.yaml"'.format(open5gs_build_dir)
 
 libtestapp_sources = files('''
     app-init.c

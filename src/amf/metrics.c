@@ -65,12 +65,12 @@ amf_metrics_spec_def_t amf_metrics_spec_def_global[_AMF_METR_GLOB_MAX] = {
     .description = "gNodeBs",
 },
 };
-static int amf_metrics_init_inst_global(void)
+int amf_metrics_init_inst_global(void)
 {
     return amf_metrics_init_inst(amf_metrics_inst_global, amf_metrics_spec_global,
                 _AMF_METR_GLOB_MAX, 0, NULL);
 }
-static int amf_metrics_free_inst_global(void)
+int amf_metrics_free_inst_global(void)
 {
     return amf_metrics_free_inst(amf_metrics_inst_global, _AMF_METR_GLOB_MAX);
 }
@@ -90,7 +90,6 @@ int amf_metrics_open(void)
 int amf_metrics_close(void)
 {
     ogs_metrics_context_t *ctx = ogs_metrics_self();
-    amf_metrics_free_inst_global();
     ogs_metrics_context_close(ctx);
     return OGS_OK;
 }

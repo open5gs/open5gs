@@ -20,6 +20,7 @@ project('open5gs', 'c', 'cpp',
     license : 'AGPL-3.0-or-later',
     meson_version : '>= 0.43.0',
     default_options : [
+        'warning_level=1',
         'c_std=gnu89',
     ],
 )
@@ -32,6 +33,8 @@ libdir = join_paths(prefix, get_option('libdir'))
 sysconfdir = join_paths(prefix, get_option('sysconfdir'))
 localstatedir = join_paths(prefix, get_option('localstatedir'))
 
+open5gs_build_dir = meson.current_build_dir()
+
 cc = meson.get_compiler('c')
 host_system = host_machine.system()
 
@@ -39,15 +42,19 @@ git = find_program('git', required: false)
 #python = import('python')
 #python3 = python.find_installation('python3')
 python3 = find_program('python3', 'python')
+if meson.version().version_compare('>=0.55.0')
+python3_exe = join_paths(python3.full_path())
+else
 python3_exe = join_paths(python3.path())
+endif
 mkdir_p = 'import os; os.makedirs("@0@", exist_ok=True) if not os.environ.get("DESTDIR") else False;'
+symlink = 'import os; os.symlink("@0@", "@1@") if not os.environ.get("DESTDIR") and not os.path.islink("@1@") else False;'
 install_conf = 'import os; import shutil; shutil.copy("@0@", "@1@") if not os.environ.get("DESTDIR") and not os.path.isfile(os.path.join("@1@", os.path.split("@0@")[1])) else False;'
 cppcheck = find_program('cppcheck', required: false)
 clangtidy = find_program('run-clang-tidy', required: false) # requires clang-tools package
 if clangtidy.found() != true
     clangtidy = find_program('clang-tidy', required: false)
 endif
-
 
 meson.add_install_script(python3_exe, '-c',
         mkdir_p.format(join_paths(localstatedir, 'log', 'open5gs')))
@@ -57,7 +64,6 @@ if cc.get_id() == 'gcc' or cc.get_id() == 'clang'
     possible_cc_flags = [
         '-Wextra',
         '-Wlogical-op',
-        '-Werror=missing-include-dirs',
         '-Werror=pointer-arith',
         '-Werror=init-self',
         '-Wfloat-equal',
@@ -132,7 +138,8 @@ message('\n'.join([
   '        bindir:                       ' + bindir,
   '        sysconfdir:                   ' + sysconfdir,
   '        localstatedir:                ' + localstatedir,
-  '        source code location:         ' + meson.source_root(),
+  '        build location:               ' + meson.current_build_dir(),
+  '        source location:              ' + meson.current_source_dir(),
   '        compiler:                     ' + cc.get_id(),
   '        debugging support:            ' + get_option('buildtype'),
   '',
@@ -142,9 +149,10 @@ message('\n'.join([
 if cppcheck.found()
     run_target('analyze-cppcheck',
     command : [ 'misc/static_code_analyze.sh',
-        cppcheck.path(),
-        meson.build_root(),
-        meson.source_root()
+        meson.version().version_compare('>=0.55.0') ?
+          cppcheck.full_path() : cppcheck.path(),
+        meson.current_build_dir(),
+        meson.current_source_dir()
         ]
     )
 endif
@@ -152,9 +160,10 @@ endif
 if clangtidy.found()
     run_target('analyze-clang-tidy',
     command : [ 'misc/static_code_analyze.sh',
-        clangtidy.path(),
-        meson.build_root(),
-        meson.source_root()
+        meson.version().version_compare('>=0.55.0') ?
+          clangtidy.full_path() : clangtidy.path(),
+        meson.current_build_dir(),
+        meson.current_source_dir()
         ]
     )
 endif

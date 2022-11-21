@@ -12,25 +12,14 @@ When this method is used, any open5gs program exporting metrics becomes a
 Prometheus server, which is basically an HTTP server serving Prometheus data to
 the Prometheus scrapper.
 
-Note: Only open5gs-smfd supports exporting metrics so far, though other may
+Note: AMF, MME and SMF support exporting metrics so far, though other may
 hopefully follow soon.
 
 #### 1. Enable Prometheus support during build
 
 Open5GS programs use a generic internal API available in libogsmetrics. This
 library implements the API based on configuration passed during open5gs build
-time. By default, the library will be built using the `void` implementation,
-which is basically a NO-OP implementation.
-
-In order to use the Prometheus, the `prometheus` metrics implementation needs to
-be selected at build time:
-
-```
-meson configure -Dmetrics_impl=prometheus build
-```
-
-This will enable building the implementation under lib/metrics/prometheus/,
-which uses:
+time. By default, the library will be built under lib/metrics/prometheus/, which uses:
 
 * prometheus-client-c project (libprom): To generate the Prometheus expected
   output format of the metrics
@@ -45,9 +34,8 @@ building the prometheus libmetrics implementation.
 
 #### 2. Configuring for runtime
 
-By default the created Prometheus HTTP server will be listening on `0.0.0.0`
-port `9090`.
-This can be configured under the following config file options:
+A Prometheus HTTP server can be created from the following config file options.
+A HTTP server is not created if 'metrics' is not defined.
 
 ```
 #
@@ -57,12 +45,18 @@ This can be configured under the following config file options:
 #
 #  o Metrics Server(http://<any address>:9090)
 #    metrics:
-#      addr: 0.0.0.0
-#      port: 9090
+#      - addr: 0.0.0.0
+#        port: 9090
 #
-metrics:
-    addr: 0.0.0.0
-    port: 9090
+#  o Metrics Server(127.0.0.5:9090, [::1]:9090)
+#    metrics:
+#      - addr: 127.0.0.5
+#      - addr: ::1
+#
+amf:
+  metrics:
+    - addr: 127.0.0.5
+      port: 9090
 ```
 
 Note: You may want to change the default IP address or port if you are running

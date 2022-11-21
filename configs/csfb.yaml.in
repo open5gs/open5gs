@@ -5,13 +5,13 @@ logger:
 tls:
     enabled: no
     server:
-      cacert: @open5gs_builddir@/configs/open5gs/tls/ca.crt
-      key: @open5gs_builddir@/configs/open5gs/tls/testserver.key
-      cert: @open5gs_builddir@/configs/open5gs/tls/testserver.crt
+      cacert: @build_configs_dir@/open5gs/tls/ca.crt
+      key: @build_configs_dir@/open5gs/tls/testserver.key
+      cert: @build_configs_dir@/open5gs/tls/testserver.crt
     client:
-      cacert: @open5gs_builddir@/configs/open5gs/tls/ca.crt
-      key: @open5gs_builddir@/configs/open5gs/tls/testclient.key
-      cert: @open5gs_builddir@/configs/open5gs/tls/testclient.crt
+      cacert: @build_configs_dir@/open5gs/tls/ca.crt
+      key: @build_configs_dir@/open5gs/tls/testclient.key
+      cert: @build_configs_dir@/open5gs/tls/testclient.crt
 
 parameter:
 #    no_nrf: true
@@ -39,14 +39,14 @@ mme:
       listen_on: 127.0.0.2
       no_fwd: true
       load_extension:
-        - module: @freediameter_extensions_builddir@/dbg_msg_dumps.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dbg_msg_dumps.fdx
           conf: 0x8888
-        - module: @freediameter_extensions_builddir@/dict_rfc5777.fdx
-        - module: @freediameter_extensions_builddir@/dict_mip6i.fdx
-        - module: @freediameter_extensions_builddir@/dict_nasreq.fdx
-        - module: @freediameter_extensions_builddir@/dict_nas_mipv6.fdx
-        - module: @freediameter_extensions_builddir@/dict_dcca.fdx
-        - module: @freediameter_extensions_builddir@/dict_dcca_3gpp/dict_dcca_3gpp.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_rfc5777.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_mip6i.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nasreq.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nas_mipv6.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca_3gpp/dict_dcca_3gpp.fdx
       connect:
         - identity: hss.localdomain
           addr: 127.0.0.8
@@ -140,14 +140,14 @@ smf:
       listen_on: 127.0.0.4
       no_fwd: true
       load_extension:
-        - module: @freediameter_extensions_builddir@/dbg_msg_dumps.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dbg_msg_dumps.fdx
           conf: 0x8888
-        - module: @freediameter_extensions_builddir@/dict_rfc5777.fdx
-        - module: @freediameter_extensions_builddir@/dict_mip6i.fdx
-        - module: @freediameter_extensions_builddir@/dict_nasreq.fdx
-        - module: @freediameter_extensions_builddir@/dict_nas_mipv6.fdx
-        - module: @freediameter_extensions_builddir@/dict_dcca.fdx
-        - module: @freediameter_extensions_builddir@/dict_dcca_3gpp/dict_dcca_3gpp.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_rfc5777.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_mip6i.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nasreq.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nas_mipv6.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca_3gpp/dict_dcca_3gpp.fdx
       connect:
         - identity: pcrf.localdomain
           addr: 127.0.0.9
@@ -204,14 +204,14 @@ hss:
       listen_on: 127.0.0.8
       no_fwd: true
       load_extension:
-        - module: @freediameter_extensions_builddir@/dbg_msg_dumps.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dbg_msg_dumps.fdx
           conf: 0x8888
-        - module: @freediameter_extensions_builddir@/dict_rfc5777.fdx
-        - module: @freediameter_extensions_builddir@/dict_mip6i.fdx
-        - module: @freediameter_extensions_builddir@/dict_nasreq.fdx
-        - module: @freediameter_extensions_builddir@/dict_nas_mipv6.fdx
-        - module: @freediameter_extensions_builddir@/dict_dcca.fdx
-        - module: @freediameter_extensions_builddir@/dict_dcca_3gpp/dict_dcca_3gpp.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_rfc5777.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_mip6i.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nasreq.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nas_mipv6.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca_3gpp/dict_dcca_3gpp.fdx
       connect:
         - identity: mme.localdomain
           addr: 127.0.0.2
@@ -222,14 +222,14 @@ pcrf:
       listen_on: 127.0.0.9
       no_fwd: true
       load_extension:
-        - module: @freediameter_extensions_builddir@/dbg_msg_dumps.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dbg_msg_dumps.fdx
           conf: 0x8888
-        - module: @freediameter_extensions_builddir@/dict_rfc5777.fdx
-        - module: @freediameter_extensions_builddir@/dict_mip6i.fdx
-        - module: @freediameter_extensions_builddir@/dict_nasreq.fdx
-        - module: @freediameter_extensions_builddir@/dict_nas_mipv6.fdx
-        - module: @freediameter_extensions_builddir@/dict_dcca.fdx
-        - module: @freediameter_extensions_builddir@/dict_dcca_3gpp/dict_dcca_3gpp.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_rfc5777.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_mip6i.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nasreq.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nas_mipv6.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca_3gpp/dict_dcca_3gpp.fdx
       connect:
         - identity: smf.localdomain
           addr: 127.0.0.4

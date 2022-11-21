@@ -116,12 +116,12 @@ smf_metrics_spec_def_t smf_metrics_spec_def_global[_SMF_METR_GLOB_MAX] = {
     .description = "Active GTP peers",
 },
 };
-static int smf_metrics_init_inst_global(void)
+int smf_metrics_init_inst_global(void)
 {
     return smf_metrics_init_inst(smf_metrics_inst_global, smf_metrics_spec_global,
                 _SMF_METR_GLOB_MAX, 0, NULL);
 }
-static int smf_metrics_free_inst_global(void)
+int smf_metrics_free_inst_global(void)
 {
     return smf_metrics_free_inst(smf_metrics_inst_global, _SMF_METR_GLOB_MAX);
 }
@@ -195,7 +195,6 @@ int smf_metrics_open(void)
 int smf_metrics_close(void)
 {
     ogs_metrics_context_t *ctx = ogs_metrics_self();
-    smf_metrics_free_inst_global();
     ogs_metrics_context_close(ctx);
     return OGS_OK;
 }

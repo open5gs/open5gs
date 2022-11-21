@@ -344,7 +344,7 @@ amf:
     ngap:
       - addr: 127.0.0.5
     metrics:
-        addr: 127.0.0.5
+      - addr: 127.0.0.5
         port: 9090
     guami:
       - plmn_id:

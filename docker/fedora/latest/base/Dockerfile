@@ -12,6 +12,7 @@ RUN dnf -y install \
         flex \
         bison \
         git \
+        cmake \
         lksctp-tools-devel \
         libidn-devel \
         gnutls-devel \

@@ -28,6 +28,8 @@
 extern "C" {
 #endif
 
+typedef struct ogs_metrics_server_s ogs_metrics_server_t;
+
 typedef enum ogs_metrics_metric_type_s  {
     OGS_METRICS_METRIC_TYPE_COUNTER,
     OGS_METRICS_METRIC_TYPE_GAUGE,
@@ -40,6 +42,11 @@ void ogs_metrics_context_close(ogs_metrics_context_t *ctx);
 void ogs_metrics_context_final(void);
 ogs_metrics_context_t *ogs_metrics_self(void);
 int ogs_metrics_context_parse_config(const char *local);
+
+ogs_metrics_server_t *ogs_metrics_server_add(
+        ogs_sockaddr_t *addr, ogs_sockopt_t *option);
+void ogs_metrics_server_remove(ogs_metrics_server_t *server);
+void ogs_metrics_server_remove_all(void);
 
 typedef struct ogs_metrics_spec_s ogs_metrics_spec_t;
 ogs_metrics_spec_t *ogs_metrics_spec_new(

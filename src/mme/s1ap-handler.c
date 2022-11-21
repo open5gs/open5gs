@@ -1264,18 +1264,13 @@ void s1ap_handle_e_rab_setup_response(
             CriticalityDiagnostics->triggeringMessage;
         S1AP_Criticality_t *procedureCriticality =
             CriticalityDiagnostics->procedureCriticality;
-        if (procedureCode) {
-            ogs_debug("procedureCode: %lld",
-                    (long long)procedureCode);
-        }
-        if (triggeringMessage) {
-            ogs_debug("triggeringMessage: %lld",
-                    (long long)triggeringMessage);
-        }
-        if (procedureCriticality) {
+        if (procedureCode)
+            ogs_debug("procedureCode: %lld", (long long)*procedureCode);
+        if (triggeringMessage)
+            ogs_debug("triggeringMessage: %lld", (long long)*triggeringMessage);
+        if (procedureCriticality)
             ogs_debug("procedureCriticality: %lld",
-                    (long long)procedureCriticality);
-        }
+                    (long long)*procedureCriticality);
     }
 }
 

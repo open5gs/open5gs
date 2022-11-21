@@ -49,7 +49,7 @@ typedef struct ogs_sbi_discovery_config_s {
 typedef struct ogs_sbi_context_s {
     ogs_sbi_discovery_config_t discovery_config; /* SCP Discovery Delegated */
 
-    uint32_t sbi_port;                      /* SBI local port */
+    uint16_t sbi_port;                      /* SBI local port */
 
     ogs_list_t server_list;
     ogs_list_t client_list;

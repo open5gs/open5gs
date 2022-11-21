@@ -255,8 +255,8 @@ mme:
     gtpc:
       - addr: 127.0.0.2
     metrics:
-      addr: 127.0.0.2
-      port: 9090
+      - addr: 127.0.0.2
+        port: 9090
     gummei:
       plmn_id:
         mcc: 999

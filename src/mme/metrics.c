@@ -65,12 +65,12 @@ mme_metrics_spec_def_t mme_metrics_spec_def_global[_MME_METR_GLOB_MAX] = {
     .description = "eNodeBs",
 },
 };
-static int mme_metrics_init_inst_global(void)
+int mme_metrics_init_inst_global(void)
 {
     return mme_metrics_init_inst(mme_metrics_inst_global, mme_metrics_spec_global,
                 _MME_METR_GLOB_MAX, 0, NULL);
 }
-static int mme_metrics_free_inst_global(void)
+int mme_metrics_free_inst_global(void)
 {
     return mme_metrics_free_inst(mme_metrics_inst_global, _MME_METR_GLOB_MAX);
 }
@@ -90,7 +90,6 @@ int mme_metrics_open(void)
 int mme_metrics_close(void)
 {
     ogs_metrics_context_t *ctx = ogs_metrics_self();
-    mme_metrics_free_inst_global();
     ogs_metrics_context_close(ctx);
     return OGS_OK;
 }
