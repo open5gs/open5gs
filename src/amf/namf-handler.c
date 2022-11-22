@@ -471,7 +471,7 @@ int amf_namf_comm_handle_n1_n2_message_subscribe(ogs_sbi_stream_t *stream, ogs_s
     newSub->notify_url = ogs_strdup(N1N2SubscriptionData->n1_notify_callback_uri);
 
     amf_ue_n1_n2_subscription_add(amf_ue, newSub);
-    ogs_info("[N1] Registered subscription " PRIu64, newSub->id);
+    ogs_info("[N1] Registered subscription %" PRIu64, newSub->id);
 
 
     N1N2SubscriptionCreatedData.n1n2_notify_subscription_id = ogs_uint64_to_string(newSub->id);
@@ -531,7 +531,7 @@ int amf_namf_comm_handle_n1_n2_message_unsubscribe(ogs_sbi_stream_t *stream, ogs
 
     memset(&message,0,sizeof(message));
 
-    ogs_info("[N1] Removed subscription " PRIu64,sub);
+    ogs_info("[N1] Removed subscription %" PRIu64,sub);
 
     status = OGS_SBI_HTTP_STATUS_NO_CONTENT;
 
