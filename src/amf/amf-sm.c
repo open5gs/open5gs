@@ -157,29 +157,63 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXTS)
                 SWITCH(sbi_message.h.resource.component[2])
                 CASE(OGS_SBI_RESOURCE_NAME_N1_N2_MESSAGES)
-                    SWITCH(sbi_message.h.method)
-                    CASE(OGS_SBI_HTTP_METHOD_POST)
-                        rv = amf_namf_comm_handle_n1_n2_message_transfer(
-                                stream, &sbi_message);
-                        if (rv != OGS_OK) {
+                    SWITCH(sbi_message.h.resource.component[3])
+                    CASE(OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS)
+                        SWITCH(sbi_message.h.method)
+                        CASE(OGS_SBI_HTTP_METHOD_POST)
+                            rv = amf_namf_comm_handle_n1_n2_message_subscribe(stream,&sbi_message);
+                            if(rv != OGS_OK) {
+                                ogs_assert(true ==
+                                        ogs_sbi_server_send_error(stream,
+                                            OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                                            &sbi_message,
+                                            "Invalid N1N2Subscribe Data!", NULL));
+                            }
+                            break;
+                        CASE(OGS_SBI_HTTP_METHOD_DELETE)
+                            rv = amf_namf_comm_handle_n1_n2_message_unsubscribe(stream,&sbi_message);
+                            if(rv != OGS_OK) {
+                                ogs_assert(true ==
+                                        ogs_sbi_server_send_error(stream,
+                                            OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                                            &sbi_message,
+                                            "Invalid N1N2UnSubscribe Data!", NULL));
+                            }
+                            break;
+                        DEFAULT
+                        ogs_error("Invalid HTTP method [%s]",
+                                    sbi_message.h.method);
                             ogs_assert(true ==
                                 ogs_sbi_server_send_error(stream,
-                                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                                    &sbi_message,
-                                    "No N1N2MessageTransferReqData", NULL));
-                        }
+                                    OGS_SBI_HTTP_STATUS_FORBIDDEN, &sbi_message,
+                                    "Invalid HTTP method", sbi_message.h.method));
+                        END
                         break;
-
                     DEFAULT
-                        ogs_error("Invalid HTTP method [%s]",
-                                sbi_message.h.method);
-                        ogs_assert(true ==
-                            ogs_sbi_server_send_error(stream,
-                                OGS_SBI_HTTP_STATUS_FORBIDDEN, &sbi_message,
-                                "Invalid HTTP method", sbi_message.h.method));
+                        SWITCH(sbi_message.h.method)
+                        CASE(OGS_SBI_HTTP_METHOD_POST)
+                            rv = amf_namf_comm_handle_n1_n2_message_transfer(
+                                    stream, &sbi_message);
+                            if (rv != OGS_OK) {
+                                ogs_assert(true ==
+                                    ogs_sbi_server_send_error(stream,
+                                        OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                                        &sbi_message,
+                                        "No N1N2MessageTransferReqData", NULL));
+                            }
+                            break;
+
+                        DEFAULT
+                            ogs_error("Invalid HTTP method [%s]",
+                                    sbi_message.h.method);
+                            ogs_assert(true ==
+                                ogs_sbi_server_send_error(stream,
+                                    OGS_SBI_HTTP_STATUS_FORBIDDEN, &sbi_message,
+                                    "Invalid HTTP method", sbi_message.h.method));
+                        END
+                        break;
                     END
                     break;
-
                 DEFAULT
                     ogs_error("Invalid resource name [%s]",
                             sbi_message.h.resource.component[2]);
