@@ -191,8 +191,6 @@ static void gtp_message_test1(abts_case *tc, void *data)
             pkbuf, OGS_TLV_MODE_T1_L2_I1);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_pkbuf_free(pkbuf);
-
     ABTS_INT_EQUAL(tc, 1, req.imsi.presence);
     ABTS_INT_EQUAL(tc, 8, req.imsi.len);
     _value = (char*)"55153011 340010f4";
@@ -310,6 +308,8 @@ static void gtp_message_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 0, req.epdg_ldn.presence);
     ABTS_INT_EQUAL(tc, 0, req.mo_exception_data_counter.presence);
     ABTS_INT_EQUAL(tc, 0, req.ue_tcp_port.presence);
+
+    ogs_pkbuf_free(pkbuf);
 }
 
 abts_suite *test_gtp_message(abts_suite *suite)
