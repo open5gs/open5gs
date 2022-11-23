@@ -39,6 +39,8 @@ int amf_nudm_sdm_handle_provisioned(
                 recvmsg->AccessAndMobilitySubscriptionData->subscribed_ue_ambr;
             OpenAPI_nssai_t *NSSAI =
                 recvmsg->AccessAndMobilitySubscriptionData->nssai;
+            OpenAPI_list_t *RatRestrictions =
+                recvmsg->AccessAndMobilitySubscriptionData->rat_restrictions;
 
             OpenAPI_lnode_t *node = NULL;
 
@@ -132,10 +134,22 @@ int amf_nudm_sdm_handle_provisioned(
                     }
                 }
             }
+
+            OpenAPI_list_clear(amf_ue->rat_restrictions);
+            if (RatRestrictions) {
+                OpenAPI_list_for_each(RatRestrictions, node) {
+                    OpenAPI_list_add(amf_ue->rat_restrictions, node->data);
+                }
+            }
         }
 
         if (amf_update_allowed_nssai(amf_ue) == false) {
             ogs_error("No Allowed-NSSAI");
+            return OGS_ERROR;
+        }
+
+        if (amf_ue_is_rat_restricted(amf_ue)) {
+            ogs_error("Registration rejected due to RAT restrictions");
             return OGS_ERROR;
         }
 

@@ -510,6 +510,40 @@ cleanup:
     return OGS_OK;
 }
 
+static int network_deregister (
+        amf_ue_t *amf_ue, OpenAPI_deregistration_reason_e dereg_reason) {
+    if ((CM_CONNECTED(amf_ue)) &&
+        (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered)))
+    {
+        amf_ue->network_initiated_de_reg = true;
+
+        ogs_assert(OGS_OK ==
+            nas_5gs_send_de_registration_request(amf_ue, dereg_reason));
+
+        amf_sbi_send_release_all_sessions(
+            amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+
+        if ((ogs_list_count(&amf_ue->sess_list) == 0) &&
+            (PCF_AM_POLICY_ASSOCIATED(amf_ue)))
+        {
+            ogs_assert(true ==
+                amf_ue_sbi_discover_and_send(
+                    OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,
+                    amf_npcf_am_policy_control_build_delete, amf_ue, NULL));
+        }
+
+        OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_de_registered);
+        return OGS_OK;
+    }
+    else if (CM_IDLE(amf_ue)) {
+        /* TODO: need to page UE */
+        /*ngap_send_paging(amf_ue);*/
+        return OGS_OK;
+    } else {
+      return OGS_ERROR;
+    }
+}
+
 int amf_namf_callback_handle_dereg_notify(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
@@ -565,38 +599,12 @@ int amf_namf_callback_handle_dereg_notify(
      * session associated with non-emergency service as described in clause 4.3.4.
      */
 
-
-    if ((CM_CONNECTED(amf_ue)) &&
-        (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered)))
-    {
-        amf_ue->network_initiated_de_reg = true;
-
-        ogs_assert(OGS_OK ==
-            nas_5gs_send_de_registration_request(amf_ue,
-                DeregistrationData->dereg_reason));
-
-            amf_sbi_send_release_all_sessions(
-                amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
-
-            if ((ogs_list_count(&amf_ue->sess_list) == 0) &&
-                (PCF_AM_POLICY_ASSOCIATED(amf_ue)))
-            {
-                ogs_assert(true ==
-                    amf_ue_sbi_discover_and_send(
-                        OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,
-                        amf_npcf_am_policy_control_build_delete, amf_ue, NULL));
-            }
-
-            OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_de_registered);
-    }
-    else if (CM_IDLE(amf_ue)) {
-        /* TODO: need to page UE */
-        /*ngap_send_paging(amf_ue);*/
-    }
-    else {
-        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
-        ogs_error("[%s] Deregistration notification for UE in wrong state", amf_ue->supi);
-        goto cleanup;
+    if (network_deregister(
+            amf_ue, DeregistrationData->dereg_reason) == -1) {
+      status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+      ogs_error("[%s] Deregistration notification for UE in wrong state",
+                amf_ue->supi);
+      goto cleanup;
     }
 
 cleanup:
@@ -607,6 +615,114 @@ cleanup:
     ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
     return OGS_OK;
+}
+
+static int update_rat_res_add_one(cJSON *restriction,
+                                  OpenAPI_list_t *restrictions, long index)
+{
+    void *restr;
+
+    if (!cJSON_IsString(restriction)) {
+        ogs_error("Invalid type of ratRestriction element");
+        return OGS_ERROR;
+    }
+
+    restr = (void *) OpenAPI_rat_type_FromString(cJSON_GetStringValue(restriction));
+
+    if (index == restrictions->count) {
+        OpenAPI_list_add(restrictions, restr);
+    } else if (restrictions->count < index && index <= 0) {
+        OpenAPI_list_insert_prev(
+            restrictions, OpenAPI_list_find(restrictions, index), restr);
+    } else {
+        ogs_error("Can't add RAT restriction to invalid index");
+        return OGS_ERROR;
+    }
+    return OGS_OK;
+}
+
+static int update_rat_res_array(cJSON *json_restrictions,
+                                OpenAPI_list_t *restrictions)
+{
+    cJSON *restriction;
+
+    if (!cJSON_IsArray(json_restrictions)) {
+        ogs_error("Invalid type of ratRestrictions");
+        return OGS_ERROR;
+    }
+
+    OpenAPI_list_clear(restrictions);
+
+    cJSON_ArrayForEach(restriction, json_restrictions) {
+        if (update_rat_res_add_one(restriction, restrictions,
+                                   restrictions->count) != OGS_OK) {
+            return OGS_ERROR;
+        }
+    }
+    return OGS_OK;
+}
+
+static int update_rat_res(OpenAPI_change_item_t *item_change,
+                          OpenAPI_list_t *restrictions)
+{
+    cJSON* json = item_change->new_value->json;
+    cJSON* json_restrictions;
+
+    if (!item_change->path) {
+        return OGS_ERROR;
+    }
+
+    switch (item_change->op) {
+    case OpenAPI_change_type_REPLACE:
+    case OpenAPI_change_type_ADD:
+        if (!strcmp(item_change->path, "")) {
+            if (!cJSON_IsObject(json)) {
+                ogs_error("Invalid type of am-data");
+            }
+            json_restrictions = cJSON_GetObjectItemCaseSensitive(
+                                    json, "ratRestrictions");
+            if (json_restrictions) {
+                return update_rat_res_array(json_restrictions, restrictions);
+            } else {
+                return OGS_OK;
+            }
+        } else if (!strcmp(item_change->path, "/ratRestrictions")) {
+            return update_rat_res_array(json, restrictions);
+        } else if (strstr(item_change->path, "/ratRestrictions/") ==
+                   item_change->path) {
+            char *index = item_change->path + strlen("/ratRestrictions/");
+            long i = strcmp(index, "-") ? atol(index) : restrictions->count;
+
+            return update_rat_res_add_one(json, restrictions, i);
+        }
+        return OGS_OK;
+
+    case OpenAPI_change_type__REMOVE:
+        if (!strcmp(item_change->path, "")) {
+            OpenAPI_list_clear(restrictions);
+            return OGS_OK;
+        } else if (!strcmp(item_change->path, "/ratRestrictions")) {
+            OpenAPI_list_clear(restrictions);
+            return OGS_OK;
+        } else if (strstr(item_change->path, "/ratRestrictions/") ==
+                   item_change->path) {
+            char *index = item_change->path + strlen("/ratRestrictions/");
+            long i = atol(index);
+
+            if (restrictions->count < i && i <= 0) {
+            OpenAPI_list_remove(
+                restrictions, OpenAPI_list_find(restrictions, i));
+            } else {
+                ogs_error("Can't add RAT restriction to invalid index");
+                return OGS_ERROR;
+            }
+        }
+        return OGS_OK;
+
+    default:
+        return OGS_OK;
+    }
+
 }
 
 int amf_namf_callback_handle_sdm_data_change_notify(
@@ -669,27 +785,11 @@ int amf_namf_callback_handle_sdm_data_change_notify(
 
             OpenAPI_list_for_each(item->changes, node_ci)
             {
-                /*
-                OpenAPI_change_item_t *item_change = node_ci->data;
-                item_change->path;
-                item_change->from;
-                item_change->new_value;
-                item_change->orig_value;
-                */
-                /*
-                switch (item_change->op) {
-                    case OpenAPI_change_type_ADD:
-                        break;
-                    case OpenAPI_change_type_MOVE:
-                        break;
-                    case OpenAPI_change_type__REMOVE:
-                        break;
-                    case OpenAPI_change_type_REPLACE:
-                        break;
-                    default:
-                        break;
+                OpenAPI_change_item_t *change_item = node_ci->data;
+                if (update_rat_res(change_item, amf_ue->rat_restrictions)) {
+                    status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+                    goto cleanup;
                 }
-                */
             }
             break;
         DEFAULT
@@ -703,6 +803,19 @@ int amf_namf_callback_handle_sdm_data_change_notify(
 
         ueid = NULL;
         res_name = NULL;
+    }
+
+    if (amf_ue_is_rat_restricted(amf_ue)) {
+        if (network_deregister(amf_ue, OpenAPI_deregistration_reason_REREGISTRATION_REQUIRED) == -1) {
+            status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+            ogs_error("[%s] Deregistration notification for UE in wrong state",
+                      amf_ue->supi);
+            goto cleanup;
+        }
+        ogs_assert(true ==
+                amf_ue_sbi_discover_and_send(
+                    OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
+                    amf_nudm_sdm_build_subscription_delete, amf_ue, NULL));
     }
 
 cleanup:
