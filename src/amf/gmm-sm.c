@@ -164,20 +164,37 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
             break;
 
         CASE(OGS_SBI_SERVICE_NAME_NUDM_UECM)
+            if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED &&
+                sbi_message->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT &&
+                sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) {
+                ogs_error("[%s] HTTP response error [%d]",
+                        amf_ue->supi, sbi_message->res_status);
+                break;
+            }
 
             SWITCH(sbi_message->h.resource.component[1])
             CASE(OGS_SBI_RESOURCE_NAME_REGISTRATIONS)
-                if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED &&
-                    sbi_message->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT &&
-                    sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) {
-                    ogs_error("[%s] HTTP response error [%d]",
-                            amf_ue->supi, sbi_message->res_status);
-                    break;
-                }
-
                 SWITCH(sbi_message->h.method)
                 CASE(OGS_SBI_HTTP_METHOD_PUT)
                     ogs_warn("[%s] Ignore SBI message", amf_ue->supi);
+                    break;
+                CASE(OGS_SBI_HTTP_METHOD_PATCH)
+                    SWITCH(sbi_message->h.resource.component[2])
+                    CASE(OGS_SBI_RESOURCE_NAME_AMF_3GPP_ACCESS)
+                       if (amf_ue->data_change_subscription_id) {
+                            ogs_free(amf_ue->data_change_subscription_id);
+                            amf_ue->data_change_subscription_id = NULL;
+                        }
+                        ogs_assert(true ==
+                            amf_ue_sbi_discover_and_send(
+                                OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
+                                amf_nausf_auth_build_authenticate_delete,
+                                amf_ue, NULL));
+                        break;
+                    DEFAULT
+                        ogs_warn("Ignoring invalid resource name [%s]",
+                                 sbi_message->h.resource.component[2]);
+                    END
                     break;
 
                 DEFAULT
@@ -195,25 +212,72 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
             break;
 
         CASE(OGS_SBI_SERVICE_NAME_NUDM_SDM)
+            if ((sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) &&
+                (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED) &&
+                (sbi_message->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT)) {
+                ogs_error("[%s] HTTP response error [%d]",
+                          amf_ue->supi, sbi_message->res_status);
+                break;
+            }
 
             SWITCH(sbi_message->h.resource.component[1])
             CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
             CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA)
             CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA)
-            CASE(OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS)
-                if ((sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) &&
-                    (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED)) {
-                    ogs_error("[%s] HTTP response error [%d]",
-                            amf_ue->supi, sbi_message->res_status);
-                    break;
-                }
                 ogs_warn("[%s] Ignore SBI message", amf_ue->supi);
+                break;
+
+            CASE(OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS)
+                SWITCH(sbi_message->h.method)
+                CASE(OGS_SBI_HTTP_METHOD_DELETE)
+                    ogs_assert(true ==
+                        amf_ue_sbi_discover_and_send(
+                            OGS_SBI_SERVICE_TYPE_NUDM_UECM, NULL,
+                            amf_nudm_uecm_build_registration_delete,
+                            amf_ue, NULL));
+                    break;
+                DEFAULT
+                    ogs_warn("[%s] Ignore invalid HTTP method [%s]",
+                            amf_ue->suci, sbi_message->h.method);
+                END
                 break;
 
             DEFAULT
                 ogs_error("Invalid resource name [%s]",
                         sbi_message->h.resource.component[1]);
                 ogs_assert_if_reached();
+            END
+            break;
+
+        CASE(OGS_SBI_SERVICE_NAME_NAUSF_AUTH)
+            if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED &&
+                sbi_message->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT &&
+                sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) {
+                ogs_error("[%s] HTTP response error [%d]",
+                        amf_ue->supi, sbi_message->res_status);
+                break;
+            }
+            SWITCH(sbi_message->h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_5G_AKA)
+            CASE(OGS_SBI_RESOURCE_NAME_5G_AKA_CONFIRMATION)
+            CASE(OGS_SBI_RESOURCE_NAME_EAP_SESSION)
+                ogs_warn("[%s] Ignore SBI message", amf_ue->supi);
+                break;
+            CASE(OGS_SBI_RESOURCE_NAME_UE_AUTHENTICATIONS)
+                SWITCH(sbi_message->h.method)
+                CASE(OGS_SBI_HTTP_METHOD_DELETE)
+                    if (amf_ue->confirmation_url_for_5g_aka)
+                        ogs_free(amf_ue->confirmation_url_for_5g_aka);
+                    amf_ue->confirmation_url_for_5g_aka = NULL;
+                    break;
+                DEFAULT
+                    ogs_error("[%s] Invalid HTTP method [%s]",
+                            amf_ue->suci, sbi_message->h.method);
+                END
+                break;
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message->h.resource.component[1]);
             END
             break;
 

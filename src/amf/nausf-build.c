@@ -80,6 +80,25 @@ end:
     return request;
 }
 
+ogs_sbi_request_t *amf_nausf_auth_build_authenticate_delete(
+        amf_ue_t *amf_ue, void *data)
+{
+    ogs_sbi_message_t message;
+    ogs_sbi_request_t *request = NULL;
+
+    ogs_assert(amf_ue);
+    ogs_assert(amf_ue->confirmation_url_for_5g_aka);
+
+    memset(&message, 0, sizeof(message));
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_DELETE;
+    message.h.uri = amf_ue->confirmation_url_for_5g_aka;
+
+    request = ogs_sbi_build_request(&message);
+    ogs_expect(request);
+
+    return request;
+}
+
 ogs_sbi_request_t *amf_nausf_auth_build_authenticate_confirmation(
         amf_ue_t *amf_ue, void *data)
 {
