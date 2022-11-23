@@ -1325,6 +1325,8 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
     OGS_SBI_FEATURES_SET(amf_ue->am_policy_control_features,
             OGS_SBI_NPCF_AM_POLICY_CONTROL_UE_AMBR_AUTHORIZATION);
 
+    amf_ue->rat_restrictions = OpenAPI_list_create();
+
     ogs_list_init(&amf_ue->sess_list);
 
     /* Initialization */
@@ -1361,6 +1363,8 @@ void amf_ue_remove(amf_ue_t *amf_ue)
 
     /* Clear 5GSM Message */
     AMF_UE_CLEAR_5GSM_MESSAGE(amf_ue);
+
+    OpenAPI_list_free(amf_ue->rat_restrictions);
 
     /* Remove all session context */
     amf_sess_remove_all(amf_ue);
@@ -2518,4 +2522,21 @@ bool amf_update_allowed_nssai(amf_ue_t *amf_ue)
     }
 
     return true;
+}
+
+bool amf_ue_is_rat_restricted(amf_ue_t *amf_ue)
+{
+    OpenAPI_lnode_t *node = NULL;
+    OpenAPI_rat_type_e rat;
+
+    ogs_assert(amf_ue);
+
+    rat = amf_ue_rat_type(amf_ue);
+
+    OpenAPI_list_for_each(amf_ue->rat_restrictions, node) {
+        if (node->data == (void *)rat) {
+            return true;
+        }
+    }
+    return false;
 }

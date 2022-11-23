@@ -337,6 +337,7 @@ struct amf_ue_s {
     /* SubscribedInfo */
     ogs_bitrate_t   ue_ambr;
     int num_of_slice;
+    OpenAPI_list_t *rat_restrictions;
     ogs_slice_data_t slice[OGS_MAX_NUM_OF_SLICE];
 
     uint64_t        am_policy_control_features; /* SBI Features */
@@ -777,6 +778,7 @@ uint8_t amf_selected_enc_algorithm(amf_ue_t *amf_ue);
 void amf_clear_subscribed_info(amf_ue_t *amf_ue);
 
 bool amf_update_allowed_nssai(amf_ue_t *amf_ue);
+bool amf_ue_is_rat_restricted(amf_ue_t *amf_ue);
 
 #ifdef __cplusplus
 }
