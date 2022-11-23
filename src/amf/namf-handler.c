@@ -725,6 +725,86 @@ static int update_rat_res(OpenAPI_change_item_t *item_change,
 
 }
 
+static int update_ambr_check_one(cJSON *obj, uint64_t *limit,
+                                 bool *ambr_changed)
+{
+    if (!cJSON_IsString(obj)) {
+        ogs_error("Invalid type of subscribedUeAmbr");
+        return OGS_ERROR;
+    }
+    *limit = ogs_sbi_bitrate_from_string(obj->valuestring);
+    *ambr_changed = true;
+    return OGS_OK;
+}
+
+static int update_ambr_check_obj(cJSON *obj, ogs_bitrate_t *ambr,
+                                 bool *ambr_changed)
+{
+    if (!cJSON_IsObject(obj)) {
+        if (obj == NULL || cJSON_IsNull(obj)) {
+            /* Limit of 0 means unlimited. */
+            ambr->uplink = 0;
+            ambr->downlink = 0;
+            *ambr_changed = true;
+            return OGS_OK;
+        } else {
+            ogs_error("Invalid type of subscribedUeAmbr");
+            return OGS_ERROR;
+        }
+    }
+
+    if (update_ambr_check_one(
+            cJSON_GetObjectItemCaseSensitive(obj, "uplink"),
+            &ambr->uplink, ambr_changed)) {
+        return OGS_ERROR;
+    }
+    if (update_ambr_check_one(
+            cJSON_GetObjectItemCaseSensitive(obj, "downlink"),
+            &ambr->downlink, ambr_changed)) {
+        return OGS_ERROR;
+    }
+    return OGS_OK;
+}
+
+static int update_ambr(OpenAPI_change_item_t *item_change,
+                       ogs_bitrate_t *ambr, bool *ambr_changed)
+{
+    cJSON* json = item_change->new_value->json;
+
+    if (!item_change->path) {
+        return OGS_ERROR;
+    }
+
+    switch (item_change->op) {
+    case OpenAPI_change_type_REPLACE:
+    case OpenAPI_change_type_ADD:
+        if (!strcmp(item_change->path, "")) {
+            if (!cJSON_IsObject(json)) {
+                ogs_error("Invalid type of am-data");
+            }
+            return update_ambr_check_obj(
+                cJSON_GetObjectItemCaseSensitive(json, "subscribedUeAmbr"),
+                ambr, ambr_changed);
+        } else if (!strcmp(item_change->path, "/subscribedUeAmbr")) {
+            return update_ambr_check_obj(json, ambr, ambr_changed);
+        } else if (!strcmp(item_change->path, "/subscribedUeAmbr/uplink")) {
+            return update_ambr_check_one(json, &ambr->uplink, ambr_changed);
+        } else if (!strcmp(item_change->path, "/subscribedUeAmbr/downlink")) {
+            return update_ambr_check_one(json, &ambr->downlink, ambr_changed);
+        }
+        return OGS_OK;
+
+
+    case OpenAPI_change_type__REMOVE:
+        if (!strcmp(item_change->path, "/subscribedUeAmbr")) {
+            update_ambr_check_obj(NULL, ambr, ambr_changed);
+        }
+        return OGS_OK;
+    default:
+        return OGS_OK;
+    }
+}
+
 int amf_namf_callback_handle_sdm_data_change_notify(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
@@ -740,6 +820,8 @@ int amf_namf_callback_handle_sdm_data_change_notify(
 
     char *ueid = NULL;
     char *res_name = NULL;
+
+    bool ambr_changed = false;
 
     ogs_assert(stream);
     ogs_assert(recvmsg);
@@ -786,7 +868,9 @@ int amf_namf_callback_handle_sdm_data_change_notify(
             OpenAPI_list_for_each(item->changes, node_ci)
             {
                 OpenAPI_change_item_t *change_item = node_ci->data;
-                if (update_rat_res(change_item, amf_ue->rat_restrictions)) {
+                if (update_rat_res(change_item, amf_ue->rat_restrictions)
+                    || update_ambr(change_item, &amf_ue->ue_ambr,
+                                   &ambr_changed)) {
                     status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
                     goto cleanup;
                 }
@@ -816,6 +900,14 @@ int amf_namf_callback_handle_sdm_data_change_notify(
                 amf_ue_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
                     amf_nudm_sdm_build_subscription_delete, amf_ue, NULL));
+    } else if (ambr_changed) {
+        ogs_pkbuf_t *ngapbuf;
+
+        ngapbuf = ngap_build_ue_context_modification_request(amf_ue);
+        ogs_assert(ngapbuf);
+
+        if (nas_5gs_send_to_gnb(amf_ue, ngapbuf) != OGS_OK)
+            ogs_error("nas_5gs_send_to_gnb() failed");
     }
 
 cleanup:
