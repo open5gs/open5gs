@@ -1213,6 +1213,8 @@ static int parse_json(ogs_sbi_message_t *message,
                         }
                     }
                     break;
+                CASE(OGS_SBI_HTTP_METHOD_DELETE)
+                    break;
                 DEFAULT
                     rv = OGS_ERROR;
                     ogs_error("Unknown method [%s]", message->h.method);
