@@ -29,8 +29,11 @@ typedef struct OpenAPI_list_s {
 
 OpenAPI_list_t *OpenAPI_list_create(void);
 void OpenAPI_list_free(OpenAPI_list_t *listToFree);
+void OpenAPI_list_clear(OpenAPI_list_t *list);
 
 void OpenAPI_list_add(OpenAPI_list_t *list, void *dataToAddInList);
+void OpenAPI_list_insert_prev(
+    OpenAPI_list_t *list, OpenAPI_lnode_t *lnode, void *dataToAddInList);
 OpenAPI_lnode_t *OpenAPI_list_find(OpenAPI_list_t *list, long indexOfElement);
 void OpenAPI_list_remove(
     OpenAPI_list_t *list, OpenAPI_lnode_t *elementToRemove);

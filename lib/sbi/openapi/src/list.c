@@ -101,6 +101,16 @@ void OpenAPI_list_free(OpenAPI_list_t *list)
     }
 }
 
+void OpenAPI_list_clear(OpenAPI_list_t *list)
+{
+    if (list) {
+        OpenAPI_list_iterate_forward(list, OpenAPI_lnode_free, NULL);
+        list->first = NULL;
+        list->last = NULL;
+        list->count = 0;
+    }
+}
+
 void OpenAPI_list_add(OpenAPI_list_t *list, void *dataToAddInList)
 {
     OpenAPI_lnode_t *newListEntry = listEntry_create(dataToAddInList);
@@ -125,6 +135,27 @@ void OpenAPI_list_add(OpenAPI_list_t *list, void *dataToAddInList)
     newListEntry->next = NULL;
     list->last = newListEntry;
 
+    list->count++;
+}
+
+void OpenAPI_list_insert_prev(OpenAPI_list_t *list, OpenAPI_lnode_t *lnode,
+                              void *dataToAddInList)
+{
+    OpenAPI_lnode_t *newListEntry = listEntry_create(dataToAddInList);
+    if (newListEntry == NULL) {
+        ogs_assert_if_reached();
+        return;
+    } else if (lnode->prev == NULL) {
+        list->first = newListEntry;
+        lnode->prev = newListEntry;
+        newListEntry->prev = NULL;
+        newListEntry->next = lnode;
+    } else {
+        lnode->prev->next = newListEntry;
+        newListEntry->prev = lnode->prev;
+        newListEntry->next = lnode;
+        lnode->prev = newListEntry;
+    }
     list->count++;
 }
 
