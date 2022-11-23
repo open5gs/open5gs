@@ -145,11 +145,9 @@ void ngap_state_operational(ogs_fsm_t *s, amf_event_t *e)
             case NGAP_ProcedureCode_id_PDUSessionResourceRelease:
                 ngap_handle_pdu_session_resource_release_response(gnb, pdu);
                 break;
-#if 0
             case NGAP_ProcedureCode_id_UEContextModification:
                 ngap_handle_ue_context_modification_response(gnb, pdu);
                 break;
-#endif
             case NGAP_ProcedureCode_id_UEContextRelease:
                 ngap_handle_ue_context_release_complete(gnb, pdu);
                 break;
@@ -170,11 +168,9 @@ void ngap_state_operational(ogs_fsm_t *s, amf_event_t *e)
             case NGAP_ProcedureCode_id_InitialContextSetup :
                 ngap_handle_initial_context_setup_failure(gnb, pdu);
                 break;
-#if 0
             case NGAP_ProcedureCode_id_UEContextModification:
                 ngap_handle_ue_context_modification_failure(gnb, pdu);
                 break;
-#endif
             case NGAP_ProcedureCode_id_HandoverResourceAllocation :
                 ngap_handle_handover_failure(gnb, pdu);
                 break;
