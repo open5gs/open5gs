@@ -91,6 +91,11 @@ fi
 
 preinstall() {
 
+if [ ! -x /usr/bin/mongod ]; then
+    print_status "First You need to install MongoDB packages."
+    exit 1
+fi
+
 PRE_INSTALL_PKGS=""
 
 # Check that HTTPS transport is available to APT
@@ -221,35 +226,6 @@ if [ "X${DISTRO}" == "Xdebian" ]; then
     DISTRO=$NEWDISTRO
     print_status "Found \"${DISTRO}\" in /etc/debian_version..."
   fi
-fi
-
-print_status 'Removing Launchpad PPA Repository for MongoDB...'
-for i in /etc/apt/sources.list.d/mongodb-org*; do
-    exec_cmd "rm -f $i"
-done
-
-print_status 'Adding the MongoDB signing key to your keyring...'
-
-if [ -x /usr/bin/curl ]; then
-    exec_cmd_nobail "curl -sLf 'https://www.mongodb.org/static/pgp/server-6.0.asc' | apt-key add -"
-else
-    exec_cmd_nobail "wget -qO - 'https://www.mongodb.org/static/pgp/server-6.0.asc' | apt-key add -"
-fi
-
-print_status "Creating apt sources list file for the MongoDB repo..."
-
-exec_cmd "echo 'deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse' > /etc/apt/sources.list.d/mongodb-org-6.0.list"
-
-if [ ! -x /usr/bin/mongod ]; then
-    MONGODB_INSTALL_PKGS="${MONGODB_INSTALL_PKGS} mongodb-org"
-fi
-
-if [ "X${MONGODB_INSTALL_PKGS}" != "X" ]; then
-    print_status "Populating apt-get cache..."
-    exec_cmd 'apt-get update'
-
-    print_status "Installing packages required for setup:${MONGODB_INSTALL_PKGS}..."
-    exec_cmd "apt-get install -y${MONGODB_INSTALL_PKGS} > /dev/null 2>&1"
 fi
 }
 
