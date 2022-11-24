@@ -92,7 +92,7 @@ fi
 preinstall() {
 
 if [ ! -x /usr/bin/mongod ]; then
-    print_status "First You need to install MongoDB packages."
+    print_status "First you need to install MongoDB packages."
     exit 1
 fi
 
