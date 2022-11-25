@@ -75,6 +75,10 @@ void amf_nnrf_handle_nf_discover(
         case OGS_SBI_OBJ_SESS_TYPE:
             sess = (amf_sess_t *)sbi_object;
             ogs_assert(sess);
+                        
+            amf_ue = sess->amf_ue;
+            ogs_assert(amf_ue);
+                        
             ogs_error("[%d:%d] (NF discover) No [%s]", sess->psi, sess->pti,
                         ogs_sbi_service_type_to_name(service_type));
             if (sess->payload_container_type) {
