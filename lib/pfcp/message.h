@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by pfcp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2022-06-29 14:29:16.169884 by acetcom
+ * Created on: 2022-11-26 23:47:22.074293 by acetcom
  * from 29244-g91-modified.docx
  ******************************************************************************/
 
@@ -1870,7 +1870,8 @@ typedef struct ogs_pfcp_message_s {
    };
 } ogs_pfcp_message_t;
 
-int ogs_pfcp_parse_msg(ogs_pfcp_message_t *pfcp_message, ogs_pkbuf_t *pkbuf);
+ogs_pfcp_message_t *ogs_pfcp_parse_msg(ogs_pkbuf_t *pkbuf);
+void ogs_pfcp_message_free(ogs_pfcp_message_t *pfcp_message);
 ogs_pkbuf_t *ogs_pfcp_build_msg(ogs_pfcp_message_t *pfcp_message);
 
 #ifdef __cplusplus
