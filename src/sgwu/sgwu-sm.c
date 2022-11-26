@@ -86,7 +86,6 @@ void sgwu_state_operational(ogs_fsm_t *s, sgwu_event_t *e)
         ogs_fsm_dispatch(&node->sm, e);
         if (OGS_FSM_CHECK(&node->sm, sgwu_pfcp_state_exception)) {
             ogs_error("PFCP state machine exception");
-            break;
         }
 
         ogs_pkbuf_free(recvbuf);
