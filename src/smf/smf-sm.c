@@ -411,7 +411,6 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         ogs_fsm_dispatch(&pfcp_node->sm, e);
         if (OGS_FSM_CHECK(&pfcp_node->sm, smf_pfcp_state_exception)) {
             ogs_error("PFCP state machine exception");
-            break;
         }
 
         ogs_pkbuf_free(recvbuf);
