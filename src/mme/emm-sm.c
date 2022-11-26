@@ -56,11 +56,10 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e);
 
 void emm_state_de_registered(ogs_fsm_t *s, mme_event_t *e)
 {
+    int rv;
     mme_ue_t *mme_ue = NULL;
-    ogs_assert(s);
-    ogs_assert(e);
 
-    mme_sm_debug(e);
+    ogs_assert(e);
 
     mme_ue = e->mme_ue;
     ogs_assert(mme_ue);
@@ -72,21 +71,130 @@ void emm_state_de_registered(ogs_fsm_t *s, mme_event_t *e)
         break;
     case OGS_FSM_EXIT_SIG:
         break;
-    default:
-        break;
-    }
 
-    common_register_state(s, e);
+    case MME_EVENT_EMM_MESSAGE:
+        common_register_state(s, e);
+        break;
+
+    case MME_EVENT_EMM_TIMER:
+        switch (e->timer_id) {
+        case MME_TIMER_T3470:
+            if (mme_ue->t3470.retry_count >=
+                    mme_timer_cfg(MME_TIMER_T3470)->max_count) {
+                ogs_warn("Retransmission of Identity-Request failed. "
+                        "Stop retransmission");
+                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
+            } else {
+                ogs_assert(mme_ue->t3470.pkbuf);
+                rv = nas_eps_send_identity_request(mme_ue);
+                if (rv == OGS_OK) {
+                    mme_ue->t3470.retry_count++;
+                } else {
+                    ogs_error("nas_eps_send_identity_request() failed");
+                    OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
+                }
+            }
+            break;
+
+        default:
+            ogs_error("Unknown timer[%s:%d]",
+                    mme_timer_get_name(e->timer_id), e->timer_id);
+        }
+        break;
+
+    default:
+        ogs_error("Unknown event[%s]", mme_event_get_name(e));
+    }
 }
 
 void emm_state_registered(ogs_fsm_t *s, mme_event_t *e)
 {
-    ogs_assert(s);
+    int rv;
+    mme_ue_t *mme_ue = NULL;
+
     ogs_assert(e);
 
-    mme_sm_debug(e);
+    mme_ue = e->mme_ue;
+    ogs_assert(mme_ue);
 
-    common_register_state(s, e);
+    switch (e->id) {
+    case OGS_FSM_ENTRY_SIG:
+        break;
+    case OGS_FSM_EXIT_SIG:
+        break;
+
+    case MME_EVENT_EMM_MESSAGE:
+        common_register_state(s, e);
+        break;
+
+    case MME_EVENT_EMM_TIMER:
+        switch (e->timer_id) {
+        case MME_TIMER_T3413:
+            if (mme_ue->t3413.retry_count >=
+                    mme_timer_cfg(MME_TIMER_T3413)->max_count) {
+                /* Paging failed */
+                ogs_warn("Paging to IMSI[%s] failed. Stop paging",
+                        mme_ue->imsi_bcd);
+                CLEAR_MME_UE_TIMER(mme_ue->t3413);
+
+                ogs_assert(MME_PAGING_ONGOING(mme_ue));
+                mme_send_after_paging(mme_ue, true);
+            } else {
+                mme_ue->t3413.retry_count++;
+                /*
+                 * If t3413 is timeout, the saved pkbuf is used.
+                 * We don't have to set CNDomain.
+                 * So, we just set CNDomain to 0
+                 */
+                ogs_assert(OGS_OK == s1ap_send_paging(mme_ue, 0));
+            }
+            break;
+
+        case MME_TIMER_T3470:
+            if (mme_ue->t3470.retry_count >=
+                    mme_timer_cfg(MME_TIMER_T3470)->max_count) {
+                ogs_warn("Retransmission of Identity-Request failed. "
+                        "Stop retransmission");
+                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
+            } else {
+                ogs_assert(mme_ue->t3470.pkbuf);
+                rv = nas_eps_send_identity_request(mme_ue);
+                if (rv == OGS_OK) {
+                    mme_ue->t3470.retry_count++;
+                } else {
+                    ogs_error("nas_eps_send_identity_request() failed");
+                    OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
+                }
+            }
+            break;
+
+        case MME_TIMER_T3422:
+            if (mme_ue->t3422.retry_count >=
+                    mme_timer_cfg(MME_TIMER_T3422)->max_count) {
+                ogs_warn("Retransmission of Detach Request failed. "
+                        "Stop retransmission");
+                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
+            } else {
+                ogs_assert(mme_ue->t3422.pkbuf);
+                rv = nas_eps_send_detach_request(mme_ue);
+                if (rv == OGS_OK) {
+                    mme_ue->t3422.retry_count++;
+                } else {
+                    ogs_error("nas_eps_send_detach_request() failed");
+                    OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
+                }
+            }
+            break;
+
+        default:
+            ogs_error("Unknown timer[%s:%d]",
+                    mme_timer_get_name(e->timer_id), e->timer_id);
+        }
+        break;
+
+    default:
+        ogs_error("Unknown event[%s]", mme_event_get_name(e));
+    }
 }
 
 static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
@@ -104,11 +212,6 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
     ogs_assert(mme_ue);
 
     switch (e->id) {
-    case OGS_FSM_ENTRY_SIG:
-        break;
-    case OGS_FSM_EXIT_SIG:
-        break;
-
     case MME_EVENT_EMM_MESSAGE:
         message = e->nas_message;
         ogs_assert(message);
@@ -589,73 +692,9 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
         }
         break;
 
-    case MME_EVENT_EMM_TIMER:
-        switch (e->timer_id) {
-        case MME_TIMER_T3413:
-            if (mme_ue->t3413.retry_count >=
-                    mme_timer_cfg(MME_TIMER_T3413)->max_count) {
-                /* Paging failed */
-                ogs_warn("Paging to IMSI[%s] failed. Stop paging",
-                        mme_ue->imsi_bcd);
-                CLEAR_MME_UE_TIMER(mme_ue->t3413);
-
-                ogs_assert(MME_PAGING_ONGOING(mme_ue));
-                mme_send_after_paging(mme_ue, true);
-            } else {
-                mme_ue->t3413.retry_count++;
-                /*
-                 * If t3413 is timeout, the saved pkbuf is used.
-                 * We don't have to set CNDomain.
-                 * So, we just set CNDomain to 0
-                 */
-                ogs_assert(OGS_OK == s1ap_send_paging(mme_ue, 0));
-            }
-            break;
-
-        case MME_TIMER_T3470:
-            if (mme_ue->t3470.retry_count >=
-                    mme_timer_cfg(MME_TIMER_T3470)->max_count) {
-                ogs_warn("Retransmission of Identity-Request failed. "
-                        "Stop retransmission");
-                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
-            } else {
-                ogs_assert(mme_ue->t3470.pkbuf);
-                rv = nas_eps_send_identity_request(mme_ue);
-                if (rv == OGS_OK) {
-                    mme_ue->t3470.retry_count++;
-                } else {
-                    ogs_error("nas_eps_send_identity_request() failed");
-                    OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
-                }
-            }
-            break;
-
-        case MME_TIMER_T3422:
-            if (mme_ue->t3422.retry_count >=
-                    mme_timer_cfg(MME_TIMER_T3422)->max_count) {
-                ogs_warn("Retransmission of Detach Request failed. "
-                        "Stop retransmission");
-                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
-            } else {
-                ogs_assert(mme_ue->t3422.pkbuf);
-                rv = nas_eps_send_detach_request(mme_ue);
-                if (rv == OGS_OK) {
-                    mme_ue->t3422.retry_count++;
-                } else {
-                    ogs_error("nas_eps_send_detach_request() failed");
-                    OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
-                }
-            }
-            break;            
-
-        default:
-            ogs_error("Unknown timer[%s:%d]",
-                    mme_timer_get_name(e->timer_id), e->timer_id);
-        }
-        break;
-
     default:
-        ogs_error("Unknown event[%s]", mme_event_get_name(e));
+        ogs_fatal("Unknown event[%s]", mme_event_get_name(e));
+        ogs_assert_if_reached();
     }
 }
 
