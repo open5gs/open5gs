@@ -423,8 +423,21 @@ int emm_handle_detach_request(
     default: /* all other values */
         break;
     }
-    if (detach_request->detach_type.switch_off)
+    if (detach_request->detach_type.switch_off) {
         ogs_debug("    Switch-Off");
+
+        /*
+         * Issue #1917
+         *
+         * When the UE sends a Detach Request with Switch-Off,
+         * MME should remove the the stored UE Radio Capability.
+         *
+         * Otherwise, the Radio Capability will not match
+         * because the eNB will not query the Radio Capability
+         * when the UE changes USIM.
+         */
+        OGS_ASN_CLEAR_DATA(&mme_ue->ueRadioCapability);
+    }
 
     return OGS_OK;
 }
