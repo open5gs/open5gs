@@ -20,10 +20,17 @@
 #include "sbi-path.h"
 #include "ngap-path.h"
 #include "metrics.h"
+#include "amf-om.h"
+#include <fcntl.h>
+#include <unistd.h>
 
 static ogs_thread_t *thread;
 static void amf_main(void *data);
 static int initialized = 0;
+static void amf_om(void *data);
+static ogs_thread_t *om_thread;
+
+#define SA struct sockaddr
 
 int amf_initialize()
 {
@@ -64,6 +71,9 @@ int amf_initialize()
 
     thread = ogs_thread_create(amf_main, NULL);
     if (!thread) return OGS_ERROR;
+    
+    om_thread = ogs_thread_create(amf_om, NULL);
+    if (!om_thread) return OGS_ERROR;
 
     initialized = 1;
 
@@ -153,4 +163,34 @@ static void amf_main(void *data)
 done:
 
     ogs_fsm_fini(&amf_sm, 0);
+}
+
+static void amf_om(void *data) //non blocking socket version (info parse from yaml)
+{
+    int sockfd, connfd;
+    struct sockaddr_in cli;
+    int len = sizeof(cli);
+    
+    sockfd = om_sock_open();
+    if (!sockfd)
+        goto done;
+    
+    fcntl(sockfd, F_SETFL, O_NONBLOCK); //for nonblocking accept
+
+    for ( ;; ) {
+        if (ogs_get_queue(ogs_app()->queue)) {
+            ogs_debug("ogs_app()->queue->terminated is set to true\n");
+            close(connfd);
+            goto done;
+        }  
+        connfd = accept(sockfd, (SA*)&cli, (socklen_t*)&len);
+        if (connfd < 0) {
+            //ogs_debug("server accept failed...");
+        } else {
+            om_sock_core(connfd);   
+            ogs_debug("om client exited...\n");
+            close(connfd);
+        }        
+    }
+    done:   ;
 }

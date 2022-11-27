@@ -58,6 +58,8 @@ libamf_sources = files('''
 
     amf-sm.c
 
+    amf-om.c
+
     init.c
     metrics.c
 '''.split())

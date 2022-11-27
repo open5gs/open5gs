@@ -62,6 +62,8 @@ unsigned int ogs_queue_size(ogs_queue_t *queue);
 int ogs_queue_interrupt_all(ogs_queue_t *queue);
 int ogs_queue_term(ogs_queue_t *queue);
 
+bool ogs_get_queue(ogs_queue_t *queue);
+
 
 #ifdef __cplusplus
 }

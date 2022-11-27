@@ -181,6 +181,11 @@ int amf_context_parse_config(void)
     yaml_document_t *document = NULL;
     ogs_yaml_iter_t root_iter;
 
+    ogs_yaml_iter_t om_iter;
+    uint16_t om_port;
+    ogs_om_socknode_t *om_socknode;
+    om_socknode = malloc(sizeof(om_socknode)); 
+
     document = ogs_app()->document;
     ogs_assert(document);
 
@@ -827,6 +832,27 @@ int amf_context_parse_config(void)
                     /* handle config in sbi library */
                 } else if (!strcmp(amf_key, "metrics")) {
                     /* handle config in metrics library */
+                } else if (!strcmp(amf_key, "om")) {
+                                  
+                    ogs_yaml_iter_recurse(&amf_iter, &om_iter);
+                    while (ogs_yaml_iter_next(&om_iter)) {
+                        const char *om_key = ogs_yaml_iter_key(&om_iter);
+                        ogs_assert(om_key);
+                        if (!strcmp(om_key, "addr")) {
+                            const char *v = ogs_yaml_iter_value(&om_iter);
+                            om_socknode->addr = malloc(sizeof(v)); 
+                            om_socknode->addr = v;                                                      
+                        } else if (!strcmp(om_key, "port")) {
+                            const char *v = ogs_yaml_iter_value(&om_iter);
+                            if (v) om_port = atoi(v);
+                            om_socknode->port = om_port; 
+                        } else if (!strcmp(om_key, "family")) {
+                            const char *v = ogs_yaml_iter_value(&om_iter);
+                            if (!strcmp(v, "AF_INET"))
+                                om_socknode->family = AF_INET;
+                        }
+                    }
+                    self.om_sock = om_socknode;
                 } else
                     ogs_warn("unknown key `%s`", amf_key);
             }
@@ -1007,6 +1033,26 @@ void amf_gnb_remove_all()
 
     ogs_list_for_each_safe(&self.gnb_list, next_gnb, gnb)
         amf_gnb_remove(gnb);
+}
+
+bool amf_gnb_list(int *gnb_count, char *gnb_array)
+{
+    int rv;
+    amf_gnb_t *gnb = NULL, *next_gnb = NULL;
+    *gnb_count = ogs_list_count(&self.gnb_list);
+    if (*gnb_count>0) {
+        snprintf(gnb_array, strlen("[")+1, "%s", "[");
+        ogs_list_for_each_safe(&self.gnb_list, next_gnb, gnb) {
+            rv = snprintf(gnb_array + strlen(gnb_array), 6, "%d, ", gnb->gnb_id);
+            printf("rv : %d\n", rv);         
+        }
+        snprintf(gnb_array + strlen(gnb_array), strlen("]\n")+1, "%s", "]\n");
+        printf("gnb_array : %s\n", gnb_array);
+        return true;
+    } else {
+        return false;
+    }
+    
 }
 
 amf_gnb_t *amf_gnb_find_by_addr(ogs_sockaddr_t *addr)
