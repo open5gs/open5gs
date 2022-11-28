@@ -214,6 +214,25 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue,
     return true;
 }
 
+bool ausf_nudm_ueau_handle_auth_removal_ind(ausf_ue_t *ausf_ue,
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+{
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+
+    ogs_assert(ausf_ue);
+    ogs_assert(stream);
+
+    ausf_ue_remove(ausf_ue);
+
+    memset(&sendmsg, 0, sizeof(sendmsg));
+    response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+    ogs_assert(response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+    return true;
+}
+
 bool ausf_nudm_ueau_handle_result_confirmation_inform(ausf_ue_t *ausf_ue,
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {

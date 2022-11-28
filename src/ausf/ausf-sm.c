@@ -133,6 +133,7 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
                     }
                 }
                 break;
+            CASE(OGS_SBI_HTTP_METHOD_DELETE)
             CASE(OGS_SBI_HTTP_METHOD_PUT)
                 if (message.h.resource.component[1]) {
                     ausf_ue = ausf_ue_find_by_ctx_id(
