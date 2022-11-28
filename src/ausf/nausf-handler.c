@@ -112,3 +112,19 @@ bool ausf_nausf_auth_handle_authenticate_confirmation(ausf_ue_t *ausf_ue,
 
     return true;
 }
+
+bool ausf_nausf_auth_handle_authenticate_delete(ausf_ue_t *ausf_ue,
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+{
+    ogs_assert(ausf_ue);
+    ogs_assert(stream);
+    ogs_assert(recvmsg);
+
+    ogs_assert(true ==
+        ausf_sbi_discover_and_send(
+            OGS_SBI_SERVICE_TYPE_NUDM_UEAU, NULL,
+            ausf_nudm_ueau_build_auth_removal_ind,
+            ausf_ue, stream, NULL));
+
+    return true;
+}
