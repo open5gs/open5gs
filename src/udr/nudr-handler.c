@@ -195,10 +195,12 @@ bool udr_nudr_dr_handle_subscription_authentication(
     CASE(OGS_SBI_RESOURCE_NAME_AUTHENTICATION_STATUS)
         SWITCH(recvmsg->h.method)
         CASE(OGS_SBI_HTTP_METHOD_PUT)
+        CASE(OGS_SBI_HTTP_METHOD_DELETE)
             OpenAPI_auth_event_t *AuthEvent = NULL;
 
             AuthEvent = recvmsg->AuthEvent;
-            if (!AuthEvent) {
+            if (!AuthEvent &&
+                !strcmp(recvmsg->h.method, OGS_SBI_HTTP_METHOD_PUT)) {
                 ogs_error("[%s] No AuthEvent", supi);
                 ogs_assert(true ==
                     ogs_sbi_server_send_error(

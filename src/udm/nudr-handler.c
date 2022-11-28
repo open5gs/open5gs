@@ -338,20 +338,27 @@ bool udm_nudr_dr_handle_subscription_authentication(
 
         memset(&sendmsg, 0, sizeof(sendmsg));
 
-        memset(&header, 0, sizeof(header));
-        header.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDM_UEAU;
-        header.api.version = (char *)OGS_SBI_API_V1;
-        header.resource.component[0] = udm_ue->supi;
-        header.resource.component[1] =
-            (char *)OGS_SBI_RESOURCE_NAME_AUTH_EVENTS;
-        header.resource.component[2] = udm_ue->ctx_id;
+        if (AuthEvent->auth_removal_ind) {
+            OpenAPI_auth_event_free(AuthEvent);
+            udm_ue->auth_event = NULL;
+            response = ogs_sbi_build_response(&sendmsg,
+                    OGS_SBI_HTTP_STATUS_NO_CONTENT);
+        } else {
+            memset(&header, 0, sizeof(header));
+            header.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDM_UEAU;
+            header.api.version = (char *)OGS_SBI_API_V1;
+            header.resource.component[0] = udm_ue->supi;
+            header.resource.component[1] =
+                (char *)OGS_SBI_RESOURCE_NAME_AUTH_EVENTS;
+            header.resource.component[2] = udm_ue->ctx_id;
 
-        sendmsg.http.location = ogs_sbi_server_uri(server, &header);
-        sendmsg.AuthEvent = OpenAPI_auth_event_copy(
-                sendmsg.AuthEvent, udm_ue->auth_event);
+            sendmsg.http.location = ogs_sbi_server_uri(server, &header);
+            sendmsg.AuthEvent = OpenAPI_auth_event_copy(
+                    sendmsg.AuthEvent, udm_ue->auth_event);
 
-        response = ogs_sbi_build_response(&sendmsg,
-                OGS_SBI_HTTP_STATUS_CREATED);
+            response = ogs_sbi_build_response(&sendmsg,
+                    OGS_SBI_HTTP_STATUS_CREATED);
+        }
         ogs_assert(response);
         ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
