@@ -561,3 +561,30 @@ bool udm_nudm_sdm_handle_subscription_create(
 
     return true;
 }
+
+bool udm_nudm_sdm_handle_subscription_delete(
+    udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+{
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+    ogs_sbi_server_t *server = NULL;
+
+    ogs_assert(udm_ue);
+    ogs_assert(stream);
+    ogs_assert(recvmsg);
+
+    if (udm_ue->data_change_callback_uri) {
+        ogs_free(udm_ue->data_change_callback_uri);
+        udm_ue->data_change_callback_uri = NULL;
+    }
+
+    server = ogs_sbi_server_from_stream(stream);
+    ogs_assert(server);
+
+    memset(&sendmsg, 0, sizeof(sendmsg));
+    response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+    ogs_assert(response);
+    ogs_sbi_server_send_response(stream, response);
+
+    return true;
+}
