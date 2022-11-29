@@ -239,10 +239,10 @@ ED2(uint8_t spare:6;,
 /* 9.9.3.16 GPRS timer
  * See subclause 10.5.7.3 in 3GPP TS 24.008 [13].
  * M V 1 or  O TV 2 */
-#define OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_2_SS       0
-#define OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM       1
-#define OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH    2
-#define OGS_NAS_GRPS_TIMER_UNIT_DEACTIVATED             7
+#define OGS_NAS_GPRS_TIMER_UNIT_MULTIPLES_OF_2_SS       0
+#define OGS_NAS_GPRS_TIMER_UNIT_MULTIPLES_OF_1_MM       1
+#define OGS_NAS_GPRS_TIMER_UNIT_MULTIPLES_OF_DECI_HH    2
+#define OGS_NAS_GPRS_TIMER_UNIT_DEACTIVATED             7
 typedef struct ogs_nas_gprs_timer_s {
 ED2(uint8_t unit:3;,
     uint8_t value:5;)
@@ -253,26 +253,24 @@ ED2(uint8_t unit:3;,
  * O TLV 3 */
 typedef struct ogs_nas_gprs_timer_2_s {
     uint8_t length;
-ED2(uint8_t unit:3;,
-    uint8_t value:5;)
+    ogs_nas_gprs_timer_t t;
 } __attribute__ ((packed)) ogs_nas_gprs_timer_2_t;
 
 /* 9.9.3.16B GPRS timer 3
  * See subclause 10.5.7.4a in 3GPP TS 24.008 [13].
  * O TLV 3 */
-#define OGS_NAS_GRPS_TIMER_3_UNIT_MULTIPLES_OF_10_MM    0
-#define OGS_NAS_GRPS_TIMER_3_UNIT_MULTIPLES_OF_1_HH     1
-#define OGS_NAS_GRPS_TIMER_3_UNIT_MULTIPLES_OF_10_HH    2
-#define OGS_NAS_GRPS_TIMER_3_UNIT_MULTIPLES_OF_2_SS     3 
-#define OGS_NAS_GRPS_TIMER_3_UNIT_MULTIPLES_OF_30_SS    4
-#define OGS_NAS_GRPS_TIMER_3_UNIT_MULTIPLES_OF_1_MM     5
-#define OGS_NAS_GRPS_TIMER_3_UNIT_MULTIPLES_OF_320_HH   6
-#define OGS_NAS_GRPS_TIMER_3_UNIT_DEACTIVATED           7
+#define OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_10_MM    0
+#define OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_1_HH     1
+#define OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_10_HH    2
+#define OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_2_SS     3 
+#define OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_30_SS    4
+#define OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_1_MM     5
+#define OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_320_HH   6
+#define OGS_NAS_GPRS_TIMER_3_UNIT_DEACTIVATED           7
 
 typedef struct ogs_nas_gprs_timer_3_s {
     uint8_t length;
-ED2(uint8_t unit:3;,
-    uint8_t value:5;)
+    ogs_nas_gprs_timer_t t;
 } __attribute__ ((packed)) ogs_nas_gprs_timer_3_t;
 
 /* 9.9.3.18 IMEISV request

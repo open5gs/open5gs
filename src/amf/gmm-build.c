@@ -29,7 +29,7 @@ static uint16_t get_pdu_session_reactivation_result(amf_ue_t *amf_ue);
 
 ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
 {
-    int served_tai_index = 0;
+    int rv, served_tai_index = 0;
     ogs_pkbuf_t *pkbuf = NULL;
 
     ogs_nas_5gs_message_t message;
@@ -50,6 +50,7 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
     ogs_nas_pdu_session_reactivation_result_t *pdu_session_reactivation_result =
         &registration_accept->pdu_session_reactivation_result;
     ogs_nas_gprs_timer_3_t *t3512_value = &registration_accept->t3512_value;
+    ogs_nas_gprs_timer_2_t *t3502_value = &registration_accept->t3502_value;
 
     ogs_assert(amf_ue);
 
@@ -127,18 +128,24 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
     network_feature_support->ims_vops_3gpp = 1;
 
     /* Set T3512 */
-    registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_T3512_VALUE_PRESENT;
-    t3512_value->length = 1;
-    t3512_value->unit = OGS_NAS_GRPS_TIMER_3_UNIT_MULTIPLES_OF_1_HH;
-    t3512_value->value = 9;
+    if (amf_self()->time.t3512.value) {
+        rv = ogs_nas_gprs_timer_3_from_sec(
+                &t3512_value->t, amf_self()->time.t3512.value);
+        ogs_assert(rv == OGS_OK);
+        registration_accept->presencemask |=
+            OGS_NAS_5GS_REGISTRATION_ACCEPT_T3512_VALUE_PRESENT;
+        t3512_value->length = 1;
+    }
 
-#if 0
     /* Set T3502 */
-    registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_T3502_VALUE_PRESENT;
-    registration_accept->t3502_value.length = 1;
-    registration_accept->t3502_value.unit = OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM;
-    registration_accept->t3502_value.value = 12;
-#endif
+    if (amf_self()->time.t3502.value) {
+        rv = ogs_nas_gprs_timer_from_sec(
+                &t3502_value->t, amf_self()->time.t3502.value);
+        ogs_assert(rv == OGS_OK);
+        registration_accept->presencemask |=
+            OGS_NAS_5GS_REGISTRATION_ACCEPT_T3502_VALUE_PRESENT;
+        t3502_value->length = 1;
+    }
 
     if (amf_ue->nas.present.pdu_session_status) {
         registration_accept->presencemask |=
@@ -650,9 +657,9 @@ ogs_pkbuf_t *gmm_build_dl_nas_transport(amf_sess_t *sess,
         dl_nas_transport->presencemask |=
             OGS_NAS_5GS_DL_NAS_TRANSPORT_BACK_OFF_TIMER_VALUE_PRESENT;
         back_off_timer_value->length = 1;
-        back_off_timer_value->unit =
-            OGS_NAS_GRPS_TIMER_3_UNIT_MULTIPLES_OF_2_SS;
-        back_off_timer_value->value = backoff_time / 2;
+        back_off_timer_value->t.unit =
+            OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_2_SS;
+        back_off_timer_value->t.value = backoff_time / 2;
     }
 
     gmmbuf = nas_5gs_security_encode(amf_ue, &message);

@@ -279,3 +279,7 @@ udr:
     sbi:
       - addr: 127.0.0.20
         port: 7777
+
+time:
+  t3512:
+    value: 540     # 9 mintues * 60 = 540 seconds

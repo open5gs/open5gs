@@ -541,4 +541,13 @@ usrsctp:
 #  o Handover Wait Duration (500ms)
 #    handover:
 #        duration: 500
+#
+#  o Timers of 5GS mobility/session management
+#    t3502:
+#      value: 720  # 12 minutes * 60 = 720 seconds
+#    t3512:
+#      value: 3240 # 54 minutes * 60 = 3240 seconds
+#
 time:
+  t3512:
+    value: 540     # 9 mintues * 60 = 540 seconds
