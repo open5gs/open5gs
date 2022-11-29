@@ -294,17 +294,19 @@ $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
 
 Modify [/etc/open5gs/sgwu.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/sgwu.yaml.in) to set the GTP-U IP address.
 ```diff
-$ diff -u /etc/open5gs/sgwu.yaml.old /etc/open5gs/sgwu.yaml
---- sgwu.yaml    2020-09-05 20:50:39.393022566 -0400
-+++ sgwu.yaml.new    2020-09-05 20:51:06.667838823 -0400
-@@ -98,7 +98,7 @@ logger:
- #
- sgwu:
+$ diff --git a/configs/open5gs/sgwu.yaml.in b/configs/open5gs/sgwu.yaml.in
+index 8ccf94378..25b6884a3 100644
+--- a/configs/open5gs/sgwu.yaml.in
++++ b/configs/open5gs/sgwu.yaml.in
+@@ -100,7 +100,7 @@ sgwu:
      pfcp:
+       - addr: 127.0.0.6
+     gtpu:
 -      - addr: 127.0.0.6
 +      - addr: 10.11.0.6
-     gtpu:
-       - addr: 127.0.0.6
+
+ #
+ # sgwc:
 ```
 
 After changing config files, please restart Open5GS daemons.
