@@ -1,0 +1,8 @@
+
+//Installation
+1. Compile the source code -> gcc -o omclient omclient.c -lyaml
+2. Execute the program -> ./omclient
+
+//Commands
+gnb_list 	- list GNB IDs connected to AMF
+exit 		- shutdown client

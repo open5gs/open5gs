@@ -299,3 +299,12 @@ int ogs_queue_term(ogs_queue_t *queue)
     return ogs_queue_interrupt_all(queue);
 }
 
+bool ogs_get_queue(ogs_queue_t *queue)
+{   
+    if (queue->terminated) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}

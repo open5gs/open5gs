@@ -370,6 +370,10 @@ amf:
     network_name:
         full: Open5GS
     amf_name: open5gs-amf0
+    om:
+        addr: 127.0.0.1
+        port: 8081
+        family: AF_INET
 
 #
 # scp:

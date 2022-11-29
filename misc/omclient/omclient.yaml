@@ -1,0 +1,12 @@
+#
+# client socket:
+#
+#  o 
+#   - 
+
+#
+addr: '127.0.0.1'
+port: 8081
+family: AF_INET
+socktype: SOCK_STREAM
+

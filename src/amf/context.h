@@ -109,6 +109,8 @@ typedef struct amf_context_s {
     ogs_list_t      ngap_list;      /* AMF NGAP IPv4 Server List */
     ogs_list_t      ngap_list6;     /* AMF NGAP IPv6 Server List */
 
+    ogs_om_socknode_t   *om_sock;   /* socket node for om client */
+
 } amf_context_t;
 
 typedef struct amf_gnb_s {
@@ -641,6 +643,8 @@ void amf_ue_confirm_guti(amf_ue_t *amf_ue);
 amf_ue_t *amf_ue_add(ran_ue_t *ran_ue);
 void amf_ue_remove(amf_ue_t *amf_ue);
 void amf_ue_remove_all(void);
+
+bool amf_gnb_list(int *gnb_count, char *gnb_array);
 
 void amf_ue_fsm_init(amf_ue_t *amf_ue);
 void amf_ue_fsm_fini(amf_ue_t *amf_ue);
