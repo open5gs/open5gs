@@ -31,12 +31,20 @@ int ogs_gtpu_header_len(ogs_pkbuf_t *pkbuf)
     gtp_h = (ogs_gtp2_header_t *)pkbuf->data;
 
     len = OGS_GTPV1U_HEADER_LEN;
-    if (pkbuf->len < len) return -1;
+    if (pkbuf->len < len) {
+        ogs_error("the length of the packet is insufficient[%d:%d]",
+                pkbuf->len, len);
+        return -1;
+    }
 
     if (gtp_h->flags & OGS_GTPU_FLAGS_E) {
 
         len += OGS_GTPV1U_EXTENSION_HEADER_LEN;
-        if (pkbuf->len < len) return -1;
+        if (pkbuf->len < len) {
+            ogs_error("the length of the packet is insufficient[%d:%d]",
+                    pkbuf->len, len);
+            return -1;
+        }
 
         /*
          * TS29.281
@@ -51,7 +59,15 @@ int ogs_gtpu_header_len(ogs_pkbuf_t *pkbuf)
          * where n is a positive integer.
          */
             len += (*(++ext_h)) * 4;
-            if (pkbuf->len < len) return -1;
+            if (*ext_h == 0) {
+                ogs_error("No length in the Extension header");
+                return -1;
+            }
+            if (pkbuf->len < len) {
+                ogs_error("the length of the packet is insufficient[%d:%d]",
+                        pkbuf->len, len);
+                return -1;
+            }
         }
 
     } else if (gtp_h->flags & (OGS_GTPU_FLAGS_S|OGS_GTPU_FLAGS_PN)) {
@@ -68,7 +84,11 @@ int ogs_gtpu_header_len(ogs_pkbuf_t *pkbuf)
         len += 4;
     }
 
-    if (pkbuf->len < len) return -1;
+    if (pkbuf->len < len) {
+        ogs_error("the length of the packet is insufficient[%d:%d]",
+                pkbuf->len, len);
+        return -1;
+    }
 
     return len;
 }
