@@ -229,11 +229,6 @@ bool udm_nudm_ueau_handle_result_confirmation_inform(
         return false;
     }
 
-    if (udm_ue->auth_event) {
-        OpenAPI_auth_event_free(udm_ue->auth_event);
-        udm_ue->auth_event = NULL;
-    }
-
     udm_ue->auth_event = OpenAPI_auth_event_copy(
             udm_ue->auth_event, message->AuthEvent);
 
