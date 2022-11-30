@@ -1083,12 +1083,12 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                 nf_instance = sess->sbi.
                     service_type_array[service_type].nf_instance;
                 if (!nf_instance) {
-                    nf_instance =
-                        ogs_sbi_nf_instance_find_by_service_type(service_type);
-                    if (nf_instance)
-                        OGS_SBI_SETUP_NF_INSTANCE(
-                                sess->sbi.service_type_array[service_type],
-                                nf_instance);
+                    amf_sbi_select_nf(
+                            &sess->sbi,
+                            OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION,
+                            NULL);
+                    nf_instance = sess->sbi.
+                        service_type_array[service_type].nf_instance;
                 }
 
                 if (nf_instance) {
