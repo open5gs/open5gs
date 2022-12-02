@@ -82,8 +82,9 @@ void mme_s11_handle_create_session_response(
         ogs_gtp2_create_session_response_t *rsp)
 {
     int rv, i;
-    uint8_t cause_value = 0;
-    ogs_gtp2_cause_t *cause = NULL;
+    uint8_t cause_value = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
+    uint8_t session_cause = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
+    uint8_t bearer_cause = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
     ogs_gtp2_f_teid_t *sgw_s11_teid = NULL;
     ogs_gtp2_f_teid_t *pgw_s5c_teid = NULL;
     ogs_gtp2_f_teid_t *sgw_s1u_teid = NULL;
@@ -127,18 +128,29 @@ void mme_s11_handle_create_session_response(
     ogs_expect_or_return(rv == OGS_OK);
 
     /************************
+     * Getting Cause Value
+     ************************/
+    if (rsp->cause.presence && rsp->cause.data) {
+        ogs_gtp2_cause_t *cause = rsp->cause.data;
+        ogs_assert(cause);
+        session_cause = cause->value;
+    }
+
+    /************************
      * Check MME-UE Context
      ************************/
     cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
 
     if (!mme_ue_from_teid) {
-        ogs_error("No Context in TEID");
+        ogs_error("[%s] No Context in TEID [Cause:%d]",
+                mme_ue->imsi_bcd, session_cause);
         cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
         if (create_action == OGS_GTP_CREATE_IN_ATTACH_REQUEST) {
-            ogs_error("[%s] Attach reject", mme_ue->imsi_bcd);
+            ogs_error("[%s] Attach reject [Cause:%d]",
+                    mme_ue->imsi_bcd, session_cause);
             ogs_assert(OGS_OK == nas_eps_send_attach_reject(mme_ue,
                     OGS_NAS_EMM_CAUSE_NETWORK_FAILURE, OGS_NAS_ESM_CAUSE_NETWORK_FAILURE));
         }
@@ -152,7 +164,8 @@ void mme_s11_handle_create_session_response(
     ogs_assert(cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED);
 
     if (rsp->sender_f_teid_for_control_plane.presence == 0) {
-        ogs_error("No S11 TEID");
+        ogs_error("[%s] No S11 TEID [Cause:%d]",
+                mme_ue->imsi_bcd, session_cause);
         cause_value = OGS_GTP2_CAUSE_CONDITIONAL_IE_MISSING;
     }
 
@@ -163,7 +176,8 @@ void mme_s11_handle_create_session_response(
     } else {
 
         if (rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.presence == 0) {
-            ogs_error("No S5C TEID");
+            ogs_error("[%s] No S5C TEID [Cause:%d]",
+                    mme_ue->imsi_bcd, session_cause);
             cause_value = OGS_GTP2_CAUSE_CONDITIONAL_IE_MISSING;
         }
 
@@ -182,25 +196,29 @@ void mme_s11_handle_create_session_response(
                     rsp->pdn_address_allocation.len);
 
             if (!OGS_PDU_SESSION_TYPE_IS_VALID(paa.session_type)) {
-                ogs_error("Unknown PDN Type[%u]", paa.session_type);
+                ogs_error("[%s] Unknown PDN Type [Session:%u, Cause:%d]",
+                        mme_ue->imsi_bcd, paa.session_type, session_cause);
                 cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
             }
         } else {
-            ogs_error("No PDN Address Allocation");
+            ogs_error("[%s] No PDN Address Allocation [Cause:%d]",
+                    mme_ue->imsi_bcd, session_cause);
             cause_value = OGS_GTP2_CAUSE_CONDITIONAL_IE_MISSING;
         }
     }
 
     if (rsp->cause.presence == 0) {
-        ogs_error("No Cause");
+        ogs_error("[%s] No Cause [VALUE:%d]", mme_ue->imsi_bcd, session_cause);
         cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
         if (create_action == OGS_GTP_CREATE_IN_ATTACH_REQUEST) {
-            ogs_error("[%s] Attach reject", mme_ue->imsi_bcd);
+            ogs_error("[%s] Attach reject [Cause:%d]",
+                    mme_ue->imsi_bcd, session_cause);
             ogs_assert(OGS_OK == nas_eps_send_attach_reject(mme_ue,
-                    OGS_NAS_EMM_CAUSE_NETWORK_FAILURE, OGS_NAS_ESM_CAUSE_NETWORK_FAILURE));
+                    OGS_NAS_EMM_CAUSE_NETWORK_FAILURE,
+                    OGS_NAS_ESM_CAUSE_NETWORK_FAILURE));
         }
         mme_send_delete_session_or_mme_ue_context_release(mme_ue);
         return;
@@ -212,35 +230,38 @@ void mme_s11_handle_create_session_response(
     ogs_assert(cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED);
 
     for (i = 0; i < OGS_BEARER_PER_UE; i++) {
+        ogs_gtp2_cause_t *cause = NULL;
+
         if (rsp->bearer_contexts_created[i].cause.presence == 0) {
             break;
         }
-
         cause = rsp->bearer_contexts_created[i].cause.data;
-        ogs_assert(cause);
-        cause_value = cause->value;
-        if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-            ogs_error("GTP Bearer Cause [VALUE:%d]", cause_value);
+        if (cause == NULL) {
+            ogs_error("No Cause Data");
+            continue;
+        }
+        bearer_cause = cause->value;
+        if (bearer_cause != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
+            ogs_error("[%s] GTP Bearer Cause [VALUE:%d]",
+                    mme_ue->imsi_bcd, bearer_cause);
             if (create_action == OGS_GTP_CREATE_IN_ATTACH_REQUEST) {
                 ogs_error("[%s] Attach reject", mme_ue->imsi_bcd);
                 ogs_assert(OGS_OK == nas_eps_send_attach_reject(mme_ue,
-                        OGS_NAS_EMM_CAUSE_NETWORK_FAILURE, OGS_NAS_ESM_CAUSE_NETWORK_FAILURE));
+                        OGS_NAS_EMM_CAUSE_NETWORK_FAILURE,
+                        OGS_NAS_ESM_CAUSE_NETWORK_FAILURE));
             }
             mme_send_delete_session_or_mme_ue_context_release(mme_ue);
             return;
         }
     }
 
-    cause = rsp->cause.data;
-    ogs_assert(cause);
-    cause_value = cause->value;
-    if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED &&
-        cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED_PARTIALLY &&
-        cause_value !=
+    if (session_cause != OGS_GTP2_CAUSE_REQUEST_ACCEPTED &&
+        session_cause != OGS_GTP2_CAUSE_REQUEST_ACCEPTED_PARTIALLY &&
+        session_cause !=
             OGS_GTP2_CAUSE_NEW_PDN_TYPE_DUE_TO_NETWORK_PREFERENCE &&
-        cause_value !=
+        session_cause !=
             OGS_GTP2_CAUSE_NEW_PDN_TYPE_DUE_TO_SINGLE_ADDRESS_BEARER_ONLY) {
-        ogs_error("GTP Cause [Value:%d]", cause_value);
+        ogs_error("[%s] GTP Cause [VALUE:%d]", mme_ue->imsi_bcd, session_cause);
         if (create_action == OGS_GTP_CREATE_IN_ATTACH_REQUEST) {
             ogs_error("[%s] Attach reject", mme_ue->imsi_bcd);
             ogs_assert(OGS_OK == nas_eps_send_attach_reject(mme_ue,
@@ -404,9 +425,9 @@ void mme_s11_handle_modify_bearer_response(
         ogs_gtp2_modify_bearer_response_t *rsp)
 {
     int rv;
-    uint8_t cause_value = 0;
+    uint8_t cause_value = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
+    uint8_t session_cause = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
     int modify_action = 0;
-    ogs_gtp2_cause_t *cause = NULL;
 
     mme_ue_t *mme_ue = NULL;
     sgw_ue_t *sgw_ue = NULL;
@@ -429,12 +450,22 @@ void mme_s11_handle_modify_bearer_response(
     ogs_expect_or_return(rv == OGS_OK);
 
     /************************
+     * Getting Cause Value
+     ************************/
+    if (rsp->cause.presence && rsp->cause.data) {
+        ogs_gtp2_cause_t *cause = rsp->cause.data;
+        ogs_assert(cause);
+        session_cause = cause->value;
+    }
+
+    /************************
      * Check MME-UE Context
      ************************/
     cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
 
     if (!mme_ue_from_teid) {
-        ogs_error("No Context in TEID");
+        ogs_error("[%s] No Context in TEID [Cause:%d]",
+                mme_ue->imsi_bcd, session_cause);
         cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
     }
 
@@ -449,7 +480,7 @@ void mme_s11_handle_modify_bearer_response(
     ogs_assert(cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED);
 
     if (rsp->cause.presence == 0) {
-        ogs_error("No Cause");
+        ogs_error("[%s] No Cause [%d]", mme_ue->imsi_bcd, session_cause);
         cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
     }
 
@@ -463,11 +494,8 @@ void mme_s11_handle_modify_bearer_response(
      ********************/
     ogs_assert(cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED);
 
-    cause = rsp->cause.data;
-    ogs_assert(cause);
-    cause_value = cause->value;
-    if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_error("GTP Cause [Value:%d]", cause_value);
+    if (session_cause != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
+        ogs_error("[%s] GTP Cause [VALUE:%d]", mme_ue->imsi_bcd, session_cause);
         mme_send_delete_session_or_mme_ue_context_release(mme_ue);
         return;
     }
@@ -498,7 +526,7 @@ void mme_s11_handle_delete_session_response(
         ogs_gtp2_delete_session_response_t *rsp)
 {
     int rv;
-    uint8_t cause_value = 0;
+    uint8_t cause_value = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
     int action = 0;
     sgw_ue_t *source_ue = NULL, *target_ue = NULL;
     mme_sess_t *sess = NULL;
@@ -548,7 +576,7 @@ void mme_s11_handle_delete_session_response(
 
         cause_value = cause->value;
         if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED)
-            ogs_error("GTP Cause [Value:%d] - Ignored", cause_value);
+            ogs_error("GTP Cause [VALUE:%d] - Ignored", cause_value);
     }
 
     /********************
@@ -669,7 +697,7 @@ void mme_s11_handle_create_bearer_request(
         ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
         ogs_gtp2_create_bearer_request_t *req)
 {
-    uint8_t cause_value = 0;
+    uint8_t cause_value = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
     mme_bearer_t *bearer = NULL, *default_bearer = NULL;
     mme_sess_t *sess = NULL;
     sgw_ue_t *sgw_ue = NULL;
@@ -848,7 +876,7 @@ void mme_s11_handle_update_bearer_request(
         ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
         ogs_gtp2_update_bearer_request_t *req)
 {
-    uint8_t cause_value = 0;
+    uint8_t cause_value = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
     mme_bearer_t *bearer = NULL;
     mme_sess_t *sess = NULL;
     sgw_ue_t *sgw_ue = NULL;
@@ -985,7 +1013,7 @@ void mme_s11_handle_delete_bearer_request(
         ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
         ogs_gtp2_delete_bearer_request_t *req)
 {
-    uint8_t cause_value = 0;
+    uint8_t cause_value = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
 
     mme_bearer_t *bearer = NULL;
     mme_sess_t *sess = NULL;
@@ -1101,7 +1129,7 @@ void mme_s11_handle_release_access_bearers_response(
         ogs_gtp2_release_access_bearers_response_t *rsp)
 {
     int rv;
-    uint8_t cause_value = 0;
+    uint8_t cause_value = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
     int action = 0;
     enb_ue_t *enb_ue = NULL;
 
@@ -1144,7 +1172,7 @@ void mme_s11_handle_release_access_bearers_response(
 
         cause_value = cause->value;
         if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED)
-            ogs_error("GTP Cause [Value:%d, ACTION:%d]", cause_value, action);
+            ogs_error("GTP Cause [VALUE:%d, ACTION:%d]", cause_value, action);
     }
 
     /********************
@@ -1251,7 +1279,7 @@ void mme_s11_handle_downlink_data_notification(
         ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
         ogs_gtp2_downlink_data_notification_t *noti)
 {
-    uint8_t cause_value = 0;
+    uint8_t cause_value = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
 
     mme_bearer_t *bearer = NULL;
     sgw_ue_t *sgw_ue = NULL;
@@ -1391,8 +1419,8 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
         ogs_gtp2_create_indirect_data_forwarding_tunnel_response_t *rsp)
 {
     int rv;
-    uint8_t cause_value = 0;
-    ogs_gtp2_cause_t *cause = NULL;
+    uint8_t cause_value = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
+    uint8_t session_cause = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
     sgw_ue_t *sgw_ue = NULL;
     mme_bearer_t *bearer = NULL;
     mme_ue_t *mme_ue = NULL;
@@ -1418,12 +1446,22 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
     ogs_expect_or_return(rv == OGS_OK);
 
     /************************
+     * Getting Cause Value
+     ************************/
+    if (rsp->cause.presence && rsp->cause.data) {
+        ogs_gtp2_cause_t *cause = rsp->cause.data;
+        ogs_assert(cause);
+        session_cause = cause->value;
+    }
+
+    /************************
      * Check MME-UE Context
      ************************/
     cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
 
     if (!mme_ue_from_teid) {
-        ogs_error("No Context in TEID");
+        ogs_error("[%s] No Context in TEID [Cause:%d]",
+                mme_ue->imsi_bcd, session_cause);
         cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
     }
 
@@ -1438,7 +1476,7 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
     ogs_assert(cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED);
 
     if (rsp->cause.presence == 0) {
-        ogs_error("No Cause");
+        ogs_error("[%s] No Cause [VALUE:%d]", mme_ue->imsi_bcd, session_cause);
         cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
     }
 
@@ -1452,11 +1490,8 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
      ********************/
     ogs_assert(cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED);
 
-    cause = rsp->cause.data;
-    ogs_assert(cause);
-    cause_value = cause->value;
-    if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_error("GTP Cause [Value:%d]", cause_value);
+    if (session_cause != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
+        ogs_error("[%s] GTP Cause [VALUE:%d]", mme_ue->imsi_bcd, session_cause);
         mme_send_delete_session_or_mme_ue_context_release(mme_ue);
         return;
     }
@@ -1509,8 +1544,8 @@ void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
         ogs_gtp2_delete_indirect_data_forwarding_tunnel_response_t *rsp)
 {
     int rv;
-    uint8_t cause_value = 0;
-    ogs_gtp2_cause_t *cause = NULL;
+    uint8_t cause_value = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
+    uint8_t session_cause = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
     int action = 0;
     mme_ue_t *mme_ue = NULL;
     sgw_ue_t *sgw_ue = NULL;
@@ -1534,12 +1569,22 @@ void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
     ogs_expect_or_return(rv == OGS_OK);
 
     /************************
+     * Getting Cause Value
+     ************************/
+    if (rsp->cause.presence && rsp->cause.data) {
+        ogs_gtp2_cause_t *cause = rsp->cause.data;
+        ogs_assert(cause);
+        session_cause = cause->value;
+    }
+
+    /************************
      * Check MME-UE Context
      ************************/
     cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
 
     if (!mme_ue_from_teid) {
-        ogs_error("No Context in TEID");
+        ogs_error("[%s] No Context in TEID [Cause:%d]",
+                mme_ue->imsi_bcd, session_cause);
         cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
     }
 
@@ -1554,7 +1599,7 @@ void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
     ogs_assert(cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED);
 
     if (rsp->cause.presence == 0) {
-        ogs_error("No Cause");
+        ogs_error("[%s] No Cause [VALUE:%d]", mme_ue->imsi_bcd, session_cause);
         cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
     }
 
@@ -1568,11 +1613,8 @@ void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
      ********************/
     ogs_assert(cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED);
 
-    cause = rsp->cause.data;
-    ogs_assert(cause);
-    cause_value = cause->value;
-    if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_error("GTP Cause [Value:%d]", cause_value);
+    if (session_cause != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
+        ogs_error("GTP Cause [VALUE:%d]", session_cause);
         mme_send_delete_session_or_mme_ue_context_release(mme_ue);
         return;
     }
@@ -1604,7 +1646,7 @@ void mme_s11_handle_bearer_resource_failure_indication(
         ogs_gtp2_bearer_resource_failure_indication_t *ind)
 {
     int rv;
-    uint8_t cause_value = 0;
+    uint8_t cause_value = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
 
     mme_bearer_t *bearer = NULL;
     mme_sess_t *sess = NULL;
@@ -1640,7 +1682,7 @@ void mme_s11_handle_bearer_resource_failure_indication(
         ogs_assert(cause);
 
         cause_value = cause->value;
-        ogs_warn("GTP Cause [Value:%d] - Ignored", cause_value);
+        ogs_warn("GTP Cause [VALUE:%d] - Ignored", cause_value);
     } else {
         ogs_error("No Cause");
     }
