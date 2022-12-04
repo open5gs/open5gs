@@ -190,6 +190,10 @@ struct ran_ue_s {
 
     bool            part_of_ng_reset_requested;
 
+    struct {
+        uint16_t    activated; /* Activated PSI Mask */
+    } psimask;
+
     /* Related Context */
     amf_gnb_t       *gnb;
     amf_ue_t        *amf_ue;
