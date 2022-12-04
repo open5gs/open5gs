@@ -903,6 +903,11 @@ void ngap_handle_initial_context_setup_response(
             return;
         }
 
+        ogs_debug("    SUPI[%s] PSI[%d] OLD ACTIVATED[0x%x]",
+                amf_ue->supi, sess->psi, ran_ue->psimask.activated);
+        ran_ue->psimask.activated |= ((1 << sess->psi));
+        ogs_debug("    NEW ACTIVATED[0x%x]", ran_ue->psimask.activated);
+
         memset(&param, 0, sizeof(param));
         param.n2smbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
         ogs_assert(param.n2smbuf);
@@ -941,26 +946,14 @@ void ngap_handle_initial_context_setup_response(
          * after the transport of the 5GSM downlink signalling.
          */
         ogs_list_for_each(&amf_ue->sess_list, sess) {
-            ogs_pkbuf_t *ngapbuf = NULL;
-            ogs_pkbuf_t *gmmbuf = NULL;
-
             /* There is no Downlink Signalling Pending in this sesssion */
             if (sess->gsm_message.type == 0) continue;
 
             switch (sess->gsm_message.type) {
             case OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND:
-                gmmbuf = gmm_build_dl_nas_transport(sess,
-                        OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION,
-                        sess->gsm_message.n1buf, 0, 0);
-                ogs_assert(gmmbuf);
-
-                ngapbuf = ngap_build_pdu_session_resource_modify_request(
-                        sess, gmmbuf, sess->gsm_message.n2buf);
-                ogs_assert(ngapbuf);
-
-                if (nas_5gs_send_to_gnb(amf_ue, ngapbuf) != OGS_OK) {
-                    ogs_error("nas_5gs_send_to_gnb() failed");
-                }
+                ogs_expect(OGS_OK ==
+                        nas_send_pdu_session_modification_command(sess,
+                            sess->gsm_message.n1buf, sess->gsm_message.n2buf));
 
                 /* n1buf is de-allocated
                  * in gmm_build_dl_nas_transport() */
@@ -1642,6 +1635,11 @@ void ngap_handle_pdu_session_resource_setup_response(
                         NGAP_CauseRadioNetwork_unknown_PDU_session_ID));
                 return;
             }
+
+            ogs_debug("    SUPI[%s] PSI[%d] OLD ACTIVATED[0x%x]",
+                    amf_ue->supi, sess->psi, ran_ue->psimask.activated);
+            ran_ue->psimask.activated |= ((1 << sess->psi));
+            ogs_debug("    NEW ACTIVATED[0x%x]", ran_ue->psimask.activated);
 
             memset(&param, 0, sizeof(param));
             param.n2smbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);

@@ -791,6 +791,9 @@ static void test3_func(abts_case *tc, void *data)
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_PDUSessionResourceRelease,
+            test_ue->ngap_procedure_code);
 
     /* Send PDUSessionResourceReleaseResponse */
     sendbuf = testngap_build_pdu_session_resource_release_response(sess);
@@ -1533,6 +1536,9 @@ static void test5_func(abts_case *tc, void *data)
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_PDUSessionResourceRelease,
+            test_ue->ngap_procedure_code);
 
     /* Send PDUSessionResourceReleaseResponse */
     sendbuf = testngap_build_pdu_session_resource_release_response(sess);
