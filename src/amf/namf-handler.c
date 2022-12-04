@@ -30,6 +30,7 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
     int status;
 
     amf_ue_t *amf_ue = NULL;
+    ran_ue_t *ran_ue = NULL;
     amf_sess_t *sess = NULL;
 
     ogs_pkbuf_t *n1buf = NULL;
@@ -172,33 +173,31 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
         }
 
         if (gmmbuf) {
-            ran_ue_t *ran_ue = NULL;
-
             /***********************************
              * 4.3.2 PDU Session Establishment *
              ***********************************/
 
             ran_ue = ran_ue_cycle(amf_ue->ran_ue);
-            ogs_assert(ran_ue);
+            if (ran_ue) {
+                if (sess->pdu_session_establishment_accept) {
+                    ogs_pkbuf_free(sess->pdu_session_establishment_accept);
+                    sess->pdu_session_establishment_accept = NULL;
+                }
 
-            if (sess->pdu_session_establishment_accept) {
-                ogs_pkbuf_free(sess->pdu_session_establishment_accept);
-                sess->pdu_session_establishment_accept = NULL;
-            }
+                if (ran_ue->initial_context_setup_request_sent == true) {
+                    ngapbuf =
+                        ngap_sess_build_pdu_session_resource_setup_request(
+                            sess, gmmbuf, n2buf);
+                    ogs_assert(ngapbuf);
+                } else {
+                    ngapbuf = ngap_sess_build_initial_context_setup_request(
+                            sess, gmmbuf, n2buf);
+                    ogs_assert(ngapbuf);
 
-            if (ran_ue->initial_context_setup_request_sent == true) {
-                ngapbuf = ngap_sess_build_pdu_session_resource_setup_request(
-                        sess, gmmbuf, n2buf);
-                ogs_assert(ngapbuf);
-            } else {
-                ngapbuf = ngap_sess_build_initial_context_setup_request(
-                        sess, gmmbuf, n2buf);
-                ogs_assert(ngapbuf);
+                    ran_ue->initial_context_setup_request_sent = true;
+                }
 
-                ran_ue->initial_context_setup_request_sent = true;
-            }
-
-            if (SESSION_CONTEXT_IN_SMF(sess)) {
+                if (SESSION_CONTEXT_IN_SMF(sess)) {
                 /*
                  * [1-CLIENT] /nsmf-pdusession/v1/sm-contexts
                  * [2-SERVER] /namf-comm/v1/ue-contexts/{supi}/n1-n2-messages
@@ -207,10 +206,13 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
                  * sm-context-ref is created in [1-CLIENT].
                  * So, the PDU session establishment accpet can be transmitted.
                  */
-                if (nas_5gs_send_to_gnb(amf_ue, ngapbuf) != OGS_OK)
-                    ogs_error("nas_5gs_send_to_gnb() failed");
+                    ogs_expect(OGS_OK == ngap_send_to_ran_ue(ran_ue, ngapbuf));
+                } else {
+                    sess->pdu_session_establishment_accept = ngapbuf;
+                }
             } else {
-                sess->pdu_session_establishment_accept = ngapbuf;
+                ogs_warn("[%s] RAN-NG Context has already been removed",
+                            amf_ue->supi);
             }
 
         } else {
@@ -283,7 +285,7 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
 
             } else if (CM_CONNECTED(amf_ue)) {
                 ogs_assert(OGS_OK ==
-                    ngap_send_pdu_resource_setup_request(sess, n2buf));
+                    nas_send_pdu_session_setup_request(sess, NULL, n2buf));
 
             } else {
 
@@ -341,16 +343,8 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
             ogs_assert(OGS_OK == ngap_send_paging(amf_ue));
 
         } else if (CM_CONNECTED(amf_ue)) {
-            gmmbuf = gmm_build_dl_nas_transport(sess,
-                    OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, n1buf, 0, 0);
-            ogs_assert(gmmbuf);
-
-            ngapbuf = ngap_build_pdu_session_resource_modify_request(
-                    sess, gmmbuf, n2buf);
-            ogs_assert(ngapbuf);
-
-            if (nas_5gs_send_to_gnb(amf_ue, ngapbuf) != OGS_OK)
-                ogs_error("nas_5gs_send_to_gnb() failed");
+            ogs_expect(OGS_OK ==
+                nas_send_pdu_session_modification_command(sess, n1buf, n2buf));
 
         } else {
             ogs_fatal("[%s] Invalid AMF-UE state", amf_ue->supi);
@@ -382,13 +376,8 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
             }
 
         } else if (CM_CONNECTED(amf_ue)) {
-            ngapbuf = ngap_build_pdu_session_resource_release_command(
-                    sess, NULL, n2buf);
-            ogs_assert(ngapbuf);
-
-            if (nas_5gs_send_to_gnb(amf_ue, ngapbuf) != OGS_OK)
-                ogs_error("nas_5gs_send_to_gnb() failed");
-
+            ogs_expect(OGS_OK ==
+                nas_send_pdu_session_release_command(sess, NULL, n2buf));
         } else {
             ogs_fatal("[%s] Invalid AMF-UE state", amf_ue->supi);
             ogs_assert_if_reached();
