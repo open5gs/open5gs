@@ -3852,7 +3852,6 @@ void ngap_handle_ng_reset(
     char buf[OGS_ADDRSTRLEN];
     int i, old_xact_count = 0, new_xact_count = 0;
 
-
     NGAP_InitiatingMessage_t *initiatingMessage = NULL;
     NGAP_NGReset_t *NGReset = NULL;
 
@@ -4014,16 +4013,30 @@ void ngap_handle_ng_reset(
             ran_ue->part_of_ng_reset_requested = true;
 
             amf_ue = ran_ue->amf_ue;
-            ogs_assert(amf_ue);
+            /*
+             * Issues #1928
+             *
+             * By ran_ue_deassociate(amf_ue->ran_ue),
+             * 'ran_ue->amf_ue' could be NULL.
+             *
+             * As such, we should not use the ogs_assert() like the following.
+             * ogs_assert(ran_ue->amf_ue);
+             */
+            if (amf_ue) {
+                old_xact_count = amf_sess_xact_count(amf_ue);
 
-            old_xact_count = amf_sess_xact_count(amf_ue);
+                amf_sbi_send_deactivate_all_sessions(
+                    amf_ue, AMF_REMOVE_S1_CONTEXT_BY_RESET_PARTIAL,
+                    NGAP_Cause_PR_radioNetwork,
+                    NGAP_CauseRadioNetwork_failure_in_radio_interface_procedure);
 
-            amf_sbi_send_deactivate_all_sessions(
-                amf_ue, AMF_REMOVE_S1_CONTEXT_BY_RESET_PARTIAL,
-                NGAP_Cause_PR_radioNetwork,
-                NGAP_CauseRadioNetwork_failure_in_radio_interface_procedure);
-
-            new_xact_count = amf_sess_xact_count(amf_ue);
+                new_xact_count = amf_sess_xact_count(amf_ue);
+            } else {
+                ogs_warn("UE(amf-ue) context has already been removed");
+                ogs_warn("   AMF_UE_NGAP_ID[%lld] RAN_UE_NGAP_ID[%d]",
+                            (long long)ran_ue->amf_ue_ngap_id,
+                            ran_ue->ran_ue_ngap_id);
+            }
 
             if (old_xact_count == new_xact_count) ran_ue_remove(ran_ue);
         }
