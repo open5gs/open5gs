@@ -119,6 +119,8 @@ static void _gtpv1_tun_recv_common_cb(
         if (replybuf) {
             if (ogs_tun_write(fd, replybuf) != OGS_OK)
                 ogs_warn("ogs_tun_write() for reply failed");
+            
+            ogs_pkbuf_free(replybuf);
             goto cleanup;
         }
         if (eth_type != ETHERTYPE_IP && eth_type != ETHERTYPE_IPV6) {
