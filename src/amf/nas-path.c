@@ -458,29 +458,129 @@ int nas_5gs_send_configuration_update_command(
     return rv;
 }
 
+int nas_send_pdu_session_setup_request(amf_sess_t *sess,
+        ogs_pkbuf_t *n1smbuf, ogs_pkbuf_t *n2smbuf)
+{
+    int rv;
+
+    amf_ue_t *amf_ue = NULL;
+    ran_ue_t *ran_ue = NULL;
+
+    ogs_pkbuf_t *gmmbuf = NULL;
+    ogs_pkbuf_t *ngapbuf = NULL;
+
+    ogs_assert(sess);
+    amf_ue = amf_ue_cycle(sess->amf_ue);
+    if (!amf_ue) {
+        ogs_warn("UE(amf-ue) context has already been removed");
+        if (n1smbuf) ogs_pkbuf_free(n1smbuf);
+        ogs_pkbuf_free(n2smbuf);
+        return OGS_ERROR;
+    }
+    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+    if (!ran_ue) {
+        ogs_warn("NG context has already been removed");
+        if (n1smbuf) ogs_pkbuf_free(n1smbuf);
+        ogs_pkbuf_free(n2smbuf);
+        return OGS_ERROR;
+    }
+
+    if (n1smbuf) {
+        gmmbuf = gmm_build_dl_nas_transport(sess,
+                OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, n1smbuf, 0, 0);
+        if (!gmmbuf) {
+            ogs_error("gmm_build_dl_nas_transport() failed");
+            return OGS_ERROR;
+        }
+    }
+
+    if (ran_ue->ue_context_requested == true &&
+        ran_ue->initial_context_setup_request_sent == false) {
+        ngapbuf = ngap_sess_build_initial_context_setup_request(
+                sess, gmmbuf, n2smbuf);
+        if (!ngapbuf) {
+            ogs_error("ngap_sess_build_initial_context_setup_request() failed");
+            return OGS_ERROR;
+        }
+
+        rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
+        if (rv != OGS_OK) {
+            ogs_error("nas_5gs_send_to_gnb() failed");
+            return OGS_ERROR;
+        }
+
+        ran_ue->initial_context_setup_request_sent = true;
+    } else {
+        ngapbuf = ngap_sess_build_pdu_session_resource_setup_request(
+                sess, gmmbuf, n2smbuf);
+        if (!ngapbuf) {
+            ogs_error("ngap_sess_build_initial_context_setup_request() failed");
+            return OGS_ERROR;
+        }
+
+        rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
+        if (rv != OGS_OK) {
+            ogs_error("nas_5gs_send_to_gnb() failed");
+            return OGS_ERROR;
+        }
+    }
+
+    return rv;
+}
+
 int nas_send_pdu_session_modification_command(amf_sess_t *sess,
         ogs_pkbuf_t *n1smbuf, ogs_pkbuf_t *n2smbuf)
 {
     int rv;
 
     amf_ue_t *amf_ue = NULL;
+    ran_ue_t *ran_ue = NULL;
 
     ogs_pkbuf_t *gmmbuf = NULL;
     ogs_pkbuf_t *ngapbuf = NULL;
 
     ogs_assert(sess);
-    amf_ue = sess->amf_ue;
-    ogs_assert(amf_ue);
-    ogs_assert(n1smbuf);
-    ogs_assert(n2smbuf);
+    amf_ue = amf_ue_cycle(sess->amf_ue);
+    if (!amf_ue) {
+        ogs_warn("UE(amf-ue) context has already been removed");
+        if (n1smbuf) ogs_pkbuf_free(n1smbuf);
+        ogs_pkbuf_free(n2smbuf);
+        return OGS_ERROR;
+    }
+    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+    if (!ran_ue) {
+        ogs_warn("NG context has already been removed");
+        if (n1smbuf) ogs_pkbuf_free(n1smbuf);
+        ogs_pkbuf_free(n2smbuf);
+        return OGS_ERROR;
+    }
 
-    gmmbuf = gmm_build_dl_nas_transport(sess,
-            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, n1smbuf, 0, 0);
-    ogs_expect_or_return_val(gmmbuf, OGS_ERROR);
+    if (n1smbuf) {
+        gmmbuf = gmm_build_dl_nas_transport(sess,
+                OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, n1smbuf, 0, 0);
+        if (!gmmbuf) {
+            ogs_error("gmm_build_dl_nas_transport() failed");
+            return OGS_ERROR;
+        }
+    }
 
+    /*
+     * Issues #1925
+     *
+     * We should not check an activated PSI mask to send DownlinkNASTransport.
+     *
+     * PDUSessionResourceModifyRequest needs to activate QoSFlow with
+     * AddOrModifyQosFlow in the message.
+     *
+     * So, we should always use PDUSessionResourceModifyRequest instead of
+     * send with DownlinkNASTransport.
+     */
     ngapbuf = ngap_build_pdu_session_resource_modify_request(
             sess, gmmbuf, n2smbuf);
-    ogs_expect_or_return_val(ngapbuf, OGS_ERROR);
+    if (!ngapbuf) {
+        ogs_error("ngap_build_pdu_session_resource_modify_request() failed");
+        return OGS_ERROR;
+    }
 
     rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
     ogs_expect(rv == OGS_OK);
@@ -488,33 +588,88 @@ int nas_send_pdu_session_modification_command(amf_sess_t *sess,
     return rv;
 }
 
-
 int nas_send_pdu_session_release_command(amf_sess_t *sess,
         ogs_pkbuf_t *n1smbuf, ogs_pkbuf_t *n2smbuf)
 {
     int rv;
 
     amf_ue_t *amf_ue = NULL;
+    ran_ue_t *ran_ue = NULL;
 
     ogs_pkbuf_t *gmmbuf = NULL;
     ogs_pkbuf_t *ngapbuf = NULL;
 
-    ogs_assert(sess);
-    amf_ue = sess->amf_ue;
-    ogs_assert(amf_ue);
-    ogs_assert(n1smbuf);
     ogs_assert(n2smbuf);
+    ogs_assert(sess);
+    amf_ue = amf_ue_cycle(sess->amf_ue);
+    if (!amf_ue) {
+        ogs_warn("UE(amf-ue) context has already been removed");
+        if (n1smbuf) ogs_pkbuf_free(n1smbuf);
+        ogs_pkbuf_free(n2smbuf);
+        return OGS_ERROR;
+    }
+    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+    if (!ran_ue) {
+        ogs_warn("NG context has already been removed");
+        if (n1smbuf) ogs_pkbuf_free(n1smbuf);
+        ogs_pkbuf_free(n2smbuf);
+        return OGS_ERROR;
+    }
 
-    gmmbuf = gmm_build_dl_nas_transport(sess,
-            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, n1smbuf, 0, 0);
-    ogs_expect_or_return_val(gmmbuf, OGS_ERROR);
+    if (n1smbuf) {
+        gmmbuf = gmm_build_dl_nas_transport(sess,
+                OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, n1smbuf, 0, 0);
+        if (!gmmbuf) {
+            ogs_error("gmm_build_dl_nas_transport() failed");
+            return OGS_ERROR;
+        }
+    }
 
-    ngapbuf = ngap_build_pdu_session_resource_release_command(
-            sess, gmmbuf, n2smbuf);
-    ogs_expect_or_return_val(ngapbuf, OGS_ERROR);
+    /*
+     * Issues #1925
+     *
+     * We should CHECK an activated PSI mask to send DownlinkNASTransport.
+     *
+     * - RAN removed the PDU Session Resource in the following process..
+     * 1. UEContextReleaseRequest
+     * 2. UEContextReleaseCommand
+     * 3. UEContextReleaseComplete.
+     *
+     * - If Service Request has no UpdateDataStatus while waking up UE,
+     * 1. ServiceRequest
+     * 2. InitialContextSetupRequest
+     * 3. InitialContextSetupResponse
+     *
+     * - In this case, we should use the DownlinkNASTransport.
+     *   instead of PDUSessionResourceReleaseCommand
+     */
+    if (ran_ue->psimask.activated & (1 << sess->psi)) {
+        ngapbuf = ngap_build_pdu_session_resource_release_command(
+                sess, gmmbuf, n2smbuf);
+        if (!ngapbuf) {
+            ogs_error(
+                    "ngap_build_pdu_session_resource_release_command() failed");
+            return OGS_ERROR;
+        }
 
-    rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
-    ogs_expect(rv == OGS_OK);
+        rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
+        ogs_expect(rv == OGS_OK);
+    } else if (gmmbuf) {
+        ngapbuf = ngap_build_downlink_nas_transport(
+                ran_ue, gmmbuf, false, false);
+        if (!ngapbuf) {
+            ogs_error("ngap_build_downlink_nas_transport() failed");
+            return OGS_ERROR;
+        }
+
+        rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
+        ogs_expect(rv == OGS_OK);
+    } else {
+        ogs_error("ngap_build_pdu_session_resource_release_command() failed");
+        ogs_error("    ACTIVATED[0x%x] SUPI[%s] PSI[%d]",
+                ran_ue->psimask.activated, amf_ue->supi, sess->psi);
+        return OGS_ERROR;
+    }
 
     return rv;
 }

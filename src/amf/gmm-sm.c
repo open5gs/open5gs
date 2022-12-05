@@ -54,13 +54,20 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e);
 void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
 {
     amf_ue_t *amf_ue = NULL;
-    ogs_assert(s);
+    amf_sess_t *sess = NULL;
+
+    ogs_sbi_message_t *sbi_message = NULL;
+
     ogs_assert(e);
 
-    amf_sm_debug(e);
-
-    amf_ue = e->amf_ue;
-    ogs_assert(amf_ue);
+    if (e->sess) {
+        sess = e->sess;
+        amf_ue = sess->amf_ue;
+        ogs_assert(amf_ue);
+    } else {
+        amf_ue = e->amf_ue;
+        ogs_assert(amf_ue);
+    }
 
     switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
@@ -71,35 +78,254 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
         break;
     case OGS_FSM_EXIT_SIG:
         break;
-    default:
-        break;
-    }
 
-    common_register_state(s, e);
+    case AMF_EVENT_5GMM_MESSAGE:
+        common_register_state(s, e);
+        break;
+
+    case AMF_EVENT_5GMM_TIMER:
+        switch (e->h.timer_id) {
+        case AMF_TIMER_T3570:
+            if (amf_ue->t3570.retry_count >=
+                    amf_timer_cfg(AMF_TIMER_T3570)->max_count) {
+                ogs_warn("Retransmission of Identity-Request failed. "
+                        "Stop retransmission");
+                CLEAR_AMF_UE_TIMER(amf_ue->t3570);
+                OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
+            } else {
+                amf_ue->t3570.retry_count++;
+                ogs_assert(OGS_OK ==
+                    nas_5gs_send_identity_request(amf_ue));
+            }
+            break;
+
+        case AMF_TIMER_T3522:
+            if (amf_ue->t3522.retry_count >=
+                    amf_timer_cfg(AMF_TIMER_T3522)->max_count) {
+                ogs_warn("Retransmission of Deregistration-Request failed. "
+                        "Stop retransmission");
+                CLEAR_AMF_UE_TIMER(amf_ue->t3522);
+                OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
+            } else {
+                amf_ue->t3522.retry_count++;
+                ogs_assert(OGS_OK ==
+                    nas_5gs_send_de_registration_request(amf_ue,
+                        OpenAPI_deregistration_reason_NULL));
+            }
+            break;
+
+        default:
+            ogs_error("Unknown timer[%s:%d]",
+                    amf_timer_get_name(e->h.timer_id), e->h.timer_id);
+        }
+        break;
+
+    case OGS_EVENT_SBI_CLIENT:
+        sbi_message = e->h.sbi.message;
+        ogs_assert(sbi_message);
+
+        SWITCH(sbi_message->h.service.name)
+        CASE(OGS_SBI_SERVICE_NAME_NAUSF_AUTH)
+            SWITCH(sbi_message->h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_UE_AUTHENTICATIONS)
+
+                if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED &&
+                    sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) {
+                    if (sbi_message->res_status ==
+                            OGS_SBI_HTTP_STATUS_NOT_FOUND) {
+                        ogs_warn("[%s] Cannot find SUCI [%d]",
+                            amf_ue->suci, sbi_message->res_status);
+                    } else {
+                        ogs_error("[%s] HTTP response error [%d]",
+                            amf_ue->suci, sbi_message->res_status);
+                    }
+                    break;
+                }
+
+                SWITCH(sbi_message->h.method)
+                CASE(OGS_SBI_HTTP_METHOD_POST)
+                    ogs_warn("[%s] Ignore SBI message", amf_ue->suci);
+                    break;
+                CASE(OGS_SBI_HTTP_METHOD_PUT)
+                    ogs_warn("[%s] Ignore SBI message", amf_ue->suci);
+                    break;
+                DEFAULT
+                    ogs_error("[%s] Invalid HTTP method [%s]",
+                            amf_ue->suci, sbi_message->h.method);
+                    ogs_assert_if_reached();
+                END
+                break;
+
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message->h.resource.component[0]);
+                ogs_assert_if_reached();
+            END
+            break;
+
+        CASE(OGS_SBI_SERVICE_NAME_NUDM_UECM)
+            if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED &&
+                sbi_message->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT &&
+                sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) {
+                ogs_error("[%s] HTTP response error [%d]",
+                        amf_ue->supi, sbi_message->res_status);
+                break;
+            }
+
+            SWITCH(sbi_message->h.resource.component[1])
+            CASE(OGS_SBI_RESOURCE_NAME_REGISTRATIONS)
+                SWITCH(sbi_message->h.method)
+                CASE(OGS_SBI_HTTP_METHOD_PUT)
+                    ogs_warn("[%s] Ignore SBI message", amf_ue->supi);
+                    break;
+                CASE(OGS_SBI_HTTP_METHOD_PATCH)
+                    SWITCH(sbi_message->h.resource.component[2])
+                    CASE(OGS_SBI_RESOURCE_NAME_AMF_3GPP_ACCESS)
+                       if (amf_ue->data_change_subscription_id) {
+                            ogs_free(amf_ue->data_change_subscription_id);
+                            amf_ue->data_change_subscription_id = NULL;
+                        }
+                        ogs_assert(true ==
+                            amf_ue_sbi_discover_and_send(
+                                OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
+                                amf_nausf_auth_build_authenticate_delete,
+                                amf_ue, NULL));
+                        break;
+                    DEFAULT
+                        ogs_warn("Ignoring invalid resource name [%s]",
+                                 sbi_message->h.resource.component[2]);
+                    END
+                    break;
+
+                DEFAULT
+                    ogs_error("[%s] Invalid HTTP method [%s]",
+                            amf_ue->suci, sbi_message->h.method);
+                    ogs_assert_if_reached();
+                END
+                break;
+
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message->h.resource.component[1]);
+                ogs_assert_if_reached();
+            END
+            break;
+
+        CASE(OGS_SBI_SERVICE_NAME_NUDM_SDM)
+            if ((sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) &&
+                (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED) &&
+                (sbi_message->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT)) {
+                ogs_error("[%s] HTTP response error [%d]",
+                          amf_ue->supi, sbi_message->res_status);
+                break;
+            }
+
+            SWITCH(sbi_message->h.resource.component[1])
+            CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
+            CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA)
+            CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA)
+                ogs_warn("[%s] Ignore SBI message", amf_ue->supi);
+                break;
+
+            CASE(OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS)
+                SWITCH(sbi_message->h.method)
+                CASE(OGS_SBI_HTTP_METHOD_DELETE)
+                    ogs_assert(true ==
+                        amf_ue_sbi_discover_and_send(
+                            OGS_SBI_SERVICE_TYPE_NUDM_UECM, NULL,
+                            amf_nudm_uecm_build_registration_delete,
+                            amf_ue, NULL));
+                    break;
+                DEFAULT
+                    ogs_warn("[%s] Ignore invalid HTTP method [%s]",
+                            amf_ue->suci, sbi_message->h.method);
+                END
+                break;
+
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message->h.resource.component[1]);
+                ogs_assert_if_reached();
+            END
+            break;
+
+        CASE(OGS_SBI_SERVICE_NAME_NAUSF_AUTH)
+            if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED &&
+                sbi_message->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT &&
+                sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) {
+                ogs_error("[%s] HTTP response error [%d]",
+                        amf_ue->supi, sbi_message->res_status);
+                break;
+            }
+            SWITCH(sbi_message->h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_5G_AKA)
+            CASE(OGS_SBI_RESOURCE_NAME_5G_AKA_CONFIRMATION)
+            CASE(OGS_SBI_RESOURCE_NAME_EAP_SESSION)
+                ogs_warn("[%s] Ignore SBI message", amf_ue->supi);
+                break;
+            CASE(OGS_SBI_RESOURCE_NAME_UE_AUTHENTICATIONS)
+                SWITCH(sbi_message->h.method)
+                CASE(OGS_SBI_HTTP_METHOD_DELETE)
+                    if (amf_ue->confirmation_url_for_5g_aka)
+                        ogs_free(amf_ue->confirmation_url_for_5g_aka);
+                    amf_ue->confirmation_url_for_5g_aka = NULL;
+                    break;
+                DEFAULT
+                    ogs_error("[%s] Invalid HTTP method [%s]",
+                            amf_ue->suci, sbi_message->h.method);
+                END
+                break;
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message->h.resource.component[1]);
+            END
+            break;
+
+        CASE(OGS_SBI_SERVICE_NAME_NPCF_AM_POLICY_CONTROL)
+            SWITCH(sbi_message->h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_POLICIES)
+                SWITCH(sbi_message->h.method)
+                CASE(OGS_SBI_HTTP_METHOD_POST)
+                    ogs_warn("[%s] Ignore SBI message", amf_ue->suci);
+                    break;
+
+                CASE(OGS_SBI_HTTP_METHOD_DELETE)
+                    if (!amf_ue->network_initiated_de_reg)
+                        ogs_assert(OGS_OK ==
+                            nas_5gs_send_de_registration_accept(amf_ue));
+
+                    PCF_AM_POLICY_CLEAR(amf_ue);
+                    break;
+
+                DEFAULT
+                    ogs_error("Unknown method [%s]", sbi_message->h.method);
+                    ogs_assert_if_reached();
+                END
+                break;
+
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message->h.resource.component[0]);
+                ogs_assert_if_reached();
+            END
+            break;
+
+        DEFAULT
+            ogs_error("Invalid service name [%s]", sbi_message->h.service.name);
+            ogs_assert_if_reached();
+        END
+        break;
+
+    default:
+        ogs_error("Unknown event[%s]", amf_event_get_name(e));
+    }
 }
 
 void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
 {
-    ogs_assert(s);
-    ogs_assert(e);
-
-    amf_sm_debug(e);
-
-    common_register_state(s, e);
-}
-
-static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
-{
-    int rv, xact_count = 0;
-    ogs_nas_5gmm_cause_t gmm_cause;
-
     amf_ue_t *amf_ue = NULL;
     amf_sess_t *sess = NULL;
-    ran_ue_t *ran_ue = NULL;
-    ogs_nas_5gs_message_t *nas_message = NULL;
-    ogs_nas_security_header_type_t h;
 
-    ogs_sbi_response_t *sbi_response = NULL;
     ogs_sbi_message_t *sbi_message = NULL;
 
     ogs_assert(e);
@@ -119,6 +345,126 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
     case OGS_FSM_EXIT_SIG:
         break;
 
+    case AMF_EVENT_5GMM_MESSAGE:
+        common_register_state(s, e);
+        break;
+
+    case AMF_EVENT_5GMM_TIMER:
+        switch (e->h.timer_id) {
+        case AMF_TIMER_T3513:
+            if (amf_ue->t3513.retry_count >=
+                    amf_timer_cfg(AMF_TIMER_T3513)->max_count) {
+                amf_sess_t *sess = NULL;
+
+                /* Paging failed */
+                ogs_warn("[%s] Paging failed. Stop", amf_ue->supi);
+
+                ogs_list_for_each(&amf_ue->sess_list, sess) {
+                    if (sess->paging.ongoing == true &&
+                        sess->paging.n1n2_failure_txf_notif_uri != NULL) {
+                        ogs_assert(true ==
+                            amf_sbi_send_n1_n2_failure_notify(
+                                sess,
+                                OpenAPI_n1_n2_message_transfer_cause_UE_NOT_RESPONDING));
+                    }
+                }
+
+                /* Clear Paging Info */
+                AMF_UE_CLEAR_PAGING_INFO(amf_ue);
+
+                /* Clear N2 Transfer */
+                AMF_UE_CLEAR_N2_TRANSFER(
+                        amf_ue, pdu_session_resource_setup_request);
+
+                /* Clear 5GSM Message */
+                AMF_UE_CLEAR_5GSM_MESSAGE(amf_ue);
+
+                /* Clear t3513 Timers */
+                CLEAR_AMF_UE_TIMER(amf_ue->t3513);
+
+            } else {
+                amf_ue->t3513.retry_count++;
+                /* If t3513 is timeout, the saved pkbuf is used.  */
+                ogs_assert(OGS_OK == ngap_send_paging(amf_ue));
+            }
+            break;
+
+        case AMF_TIMER_T3555:
+            if (amf_ue->t3555.retry_count >=
+                    amf_timer_cfg(AMF_TIMER_T3555)->max_count) {
+                /* Configuration update command failed */
+                ogs_warn("[%s] Configuration update failed. Stop",
+                        amf_ue->supi);
+                CLEAR_AMF_UE_TIMER(amf_ue->t3555);
+
+            } else {
+                amf_ue->t3555.retry_count++;
+
+                /*
+                 * If t3555 is timeout, the saved pkbuf is used.
+                 * In this case, ack should be set to 1 for timer expiration
+                 */
+                ogs_assert(OGS_OK ==
+                    nas_5gs_send_configuration_update_command(amf_ue, NULL));
+            }
+            break;
+
+        case AMF_TIMER_T3570:
+            if (amf_ue->t3570.retry_count >=
+                    amf_timer_cfg(AMF_TIMER_T3570)->max_count) {
+                ogs_warn("Retransmission of Identity-Request failed. "
+                        "Stop retransmission");
+                CLEAR_AMF_UE_TIMER(amf_ue->t3570);
+                OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
+            } else {
+                amf_ue->t3570.retry_count++;
+                ogs_assert(OGS_OK ==
+                    nas_5gs_send_identity_request(amf_ue));
+            }
+            break;
+
+        default:
+            ogs_error("Unknown timer[%s:%d]",
+                    amf_timer_get_name(e->h.timer_id), e->h.timer_id);
+        }
+        break;
+
+    case OGS_EVENT_SBI_CLIENT:
+        sbi_message = e->h.sbi.message;
+        ogs_assert(sbi_message);
+
+        ogs_error("Invalid service name [%s]", sbi_message->h.service.name);
+        ogs_assert_if_reached();
+        break;
+
+    default:
+        ogs_error("Unknown event[%s]", amf_event_get_name(e));
+    }
+}
+
+static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
+{
+    int rv, xact_count = 0;
+    ogs_nas_5gmm_cause_t gmm_cause;
+
+    amf_ue_t *amf_ue = NULL;
+    amf_sess_t *sess = NULL;
+    ran_ue_t *ran_ue = NULL;
+    ogs_nas_5gs_message_t *nas_message = NULL;
+    ogs_nas_security_header_type_t h;
+
+    ogs_assert(e);
+
+    if (e->sess) {
+        sess = e->sess;
+        amf_ue = sess->amf_ue;
+        ogs_assert(amf_ue);
+    } else {
+        amf_ue = e->amf_ue;
+        ogs_assert(amf_ue);
+    }
+
+    switch (e->h.id) {
     case AMF_EVENT_5GMM_MESSAGE:
         nas_message = e->nas.message;
         ogs_assert(nas_message);
@@ -370,141 +716,9 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
         }
         break;
 
-    case AMF_EVENT_5GMM_TIMER:
-        switch (e->h.timer_id) {
-        case AMF_TIMER_T3513:
-            if (amf_ue->t3513.retry_count >=
-                    amf_timer_cfg(AMF_TIMER_T3513)->max_count) {
-                amf_sess_t *sess = NULL;
-
-                /* Paging failed */
-                ogs_warn("[%s] Paging failed. Stop", amf_ue->supi);
-
-                ogs_list_for_each(&amf_ue->sess_list, sess) {
-                    if (sess->paging.ongoing == true &&
-                        sess->paging.n1n2_failure_txf_notif_uri != NULL) {
-                        ogs_assert(true ==
-                            amf_sbi_send_n1_n2_failure_notify(
-                                sess,
-                                OpenAPI_n1_n2_message_transfer_cause_UE_NOT_RESPONDING));
-                    }
-                }
-
-                /* Clear Paging Info */
-                AMF_UE_CLEAR_PAGING_INFO(amf_ue);
-
-                /* Clear N2 Transfer */
-                AMF_UE_CLEAR_N2_TRANSFER(
-                        amf_ue, pdu_session_resource_setup_request);
-
-                /* Clear 5GSM Message */
-                AMF_UE_CLEAR_5GSM_MESSAGE(amf_ue);
-
-                /* Clear t3513 Timers */
-                CLEAR_AMF_UE_TIMER(amf_ue->t3513);
-
-            } else {
-                amf_ue->t3513.retry_count++;
-                /* If t3513 is timeout, the saved pkbuf is used.  */
-                ogs_assert(OGS_OK == ngap_send_paging(amf_ue));
-            }
-            break;
-
-        case AMF_TIMER_T3555:
-            if (amf_ue->t3555.retry_count >=
-                    amf_timer_cfg(AMF_TIMER_T3555)->max_count) {
-                /* Configuration update command failed */
-                ogs_warn("[%s] Configuration update failed. Stop",
-                        amf_ue->supi);
-                CLEAR_AMF_UE_TIMER(amf_ue->t3555);
-
-            } else {
-                amf_ue->t3555.retry_count++;
-
-                /*
-                 * If t3555 is timeout, the saved pkbuf is used.
-                 * In this case, ack should be set to 1 for timer expiration
-                 */
-                ogs_assert(OGS_OK ==
-                    nas_5gs_send_configuration_update_command(amf_ue, NULL));
-            }
-            break;
-
-        case AMF_TIMER_T3570:
-            if (amf_ue->t3570.retry_count >=
-                    amf_timer_cfg(AMF_TIMER_T3570)->max_count) {
-                ogs_warn("Retransmission of Identity-Request failed. "
-                        "Stop retransmission");
-                CLEAR_AMF_UE_TIMER(amf_ue->t3570);
-                OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
-            } else {
-                amf_ue->t3570.retry_count++;
-                ogs_assert(OGS_OK ==
-                    nas_5gs_send_identity_request(amf_ue));
-            }
-            break;
-
-        case AMF_TIMER_T3522:
-            if (amf_ue->t3522.retry_count >=
-                    amf_timer_cfg(AMF_TIMER_T3522)->max_count) {
-                ogs_warn("Retransmission of Deregistration-Request failed. "
-                        "Stop retransmission");
-                CLEAR_AMF_UE_TIMER(amf_ue->t3522);
-                OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
-            } else {
-                amf_ue->t3522.retry_count++;
-                ogs_assert(OGS_OK ==
-                    nas_5gs_send_de_registration_request(amf_ue,
-                        OpenAPI_deregistration_reason_NULL));
-            }
-            break;
-
-        default:
-            ogs_error("Unknown timer[%s:%d]",
-                    amf_timer_get_name(e->h.timer_id), e->h.timer_id);
-        }
-        break;
-
-    case OGS_EVENT_SBI_CLIENT:
-        sbi_response = e->h.sbi.response;
-        ogs_assert(sbi_response);
-        sbi_message = e->h.sbi.message;
-        ogs_assert(sbi_message);
-
-        SWITCH(sbi_message->h.service.name)
-        CASE(OGS_SBI_SERVICE_NAME_NPCF_AM_POLICY_CONTROL)
-            SWITCH(sbi_message->h.resource.component[0])
-            CASE(OGS_SBI_RESOURCE_NAME_POLICIES)
-                SWITCH(sbi_message->h.method)
-                CASE(OGS_SBI_HTTP_METHOD_DELETE)
-
-                    if (!amf_ue->network_initiated_de_reg)
-                        ogs_assert(OGS_OK ==
-                            nas_5gs_send_de_registration_accept(amf_ue));
-
-                    PCF_AM_POLICY_CLEAR(amf_ue);
-                    break;
-                DEFAULT
-                    ogs_error("Unknown method [%s]", sbi_message->h.method);
-                    ogs_assert_if_reached();
-                END
-                break;
-
-            DEFAULT
-                ogs_error("Invalid resource name [%s]",
-                        sbi_message->h.resource.component[0]);
-                ogs_assert_if_reached();
-            END
-            break;
-
-        DEFAULT
-            ogs_error("Invalid service name [%s]", sbi_message->h.service.name);
-            ogs_assert_if_reached();
-        END
-        break;
-
     default:
-        ogs_error("Unknown event[%s]", amf_event_get_name(e));
+        ogs_fatal("Unknown event[%s]", amf_event_get_name(e));
+        ogs_assert_if_reached();
     }
 }
 
@@ -523,7 +737,6 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
     ogs_nas_authentication_failure_parameter_t
         *authentication_failure_parameter = NULL;
 
-    ogs_sbi_response_t *sbi_response = NULL;
     ogs_sbi_message_t *sbi_message = NULL;
 
     ogs_assert(s);
@@ -685,8 +898,6 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
         }
         break;
     case OGS_EVENT_SBI_CLIENT:
-        sbi_response = e->h.sbi.response;
-        ogs_assert(sbi_response);
         sbi_message = e->h.sbi.message;
         ogs_assert(sbi_message);
 
@@ -958,7 +1169,6 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
     ogs_nas_5gs_message_t *nas_message = NULL;
     ogs_nas_security_header_type_t h;
 
-    ogs_sbi_response_t *sbi_response = NULL;
     ogs_sbi_message_t *sbi_message = NULL;
 
     gmm_configuration_update_command_param_t param;
@@ -984,8 +1194,6 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
         break;
 
     case OGS_EVENT_SBI_CLIENT:
-        sbi_response = e->h.sbi.response;
-        ogs_assert(sbi_response);
         sbi_message = e->h.sbi.message;
         ogs_assert(sbi_message);
 

@@ -103,8 +103,12 @@ ogs_sbi_request_t *udm_nudr_dr_build_update_authentication_status(
     message.h.resource.component[3] =
         (char *)OGS_SBI_RESOURCE_NAME_AUTHENTICATION_STATUS;
 
-    message.AuthEvent = OpenAPI_auth_event_copy(
-            message.AuthEvent, udm_ue->auth_event);
+    if (udm_ue->auth_event->auth_removal_ind) {
+            message.h.method = (char *)OGS_SBI_HTTP_METHOD_DELETE;
+    } else {
+        message.AuthEvent = OpenAPI_auth_event_copy(
+                message.AuthEvent, udm_ue->auth_event);
+    }
 
     request = ogs_sbi_build_request(&message);
     ogs_assert(request);

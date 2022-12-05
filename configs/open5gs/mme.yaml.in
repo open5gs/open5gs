@@ -429,4 +429,13 @@ usrsctp:
 #  o Handover Wait Duration (500ms)
 #    handover:
 #        duration: 500
+#
+#  o Timers of EPS mobility/session management
+#    t3402:
+#      value: 720  # 12 minutes * 60 = 720 seconds
+#    t3412:
+#      value: 3240 # 54 minutes * 60 = 3240 seconds
+#    t3423:
+#      value: 720  # 12 minutes * 60 = 720 seconds
+#
 time:

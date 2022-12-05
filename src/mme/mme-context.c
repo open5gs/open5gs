@@ -178,6 +178,8 @@ static int mme_context_prepare(void)
 
 static int mme_context_validation(void)
 {
+    ogs_nas_gprs_timer_t gprs_timer;
+
     if (self.diam_conf_path == NULL &&
         (self.diam_config->cnf_diamid == NULL ||
         self.diam_config->cnf_diamrlm == NULL ||
@@ -247,6 +249,21 @@ static int mme_context_validation(void)
     if (self.num_of_ciphering_order == 0) {
         ogs_error("no mme.security.ciphering_order in '%s'",
                 ogs_app()->file);
+        return OGS_ERROR;
+    }
+    if (ogs_nas_gprs_timer_from_sec(&gprs_timer, self.time.t3402.value) !=
+        OGS_OK) {
+        ogs_error("Not support GPRS Timer [%d]", (int)self.time.t3402.value);
+        return OGS_ERROR;
+    }
+    if (ogs_nas_gprs_timer_from_sec(&gprs_timer, self.time.t3412.value) !=
+        OGS_OK) {
+        ogs_error("Not support GPRS Timer [%d]", (int)self.time.t3412.value);
+        return OGS_ERROR;
+    }
+    if (ogs_nas_gprs_timer_from_sec(&gprs_timer, self.time.t3423.value) !=
+        OGS_OK) {
+        ogs_error("Not support GPRS Timer [%d]", (int)self.time.t3423.value);
         return OGS_ERROR;
     }
 
@@ -1543,6 +1560,73 @@ int mme_context_parse_config()
                     } while (ogs_yaml_iter_type(&gtpc_array) ==
                             YAML_SEQUENCE_NODE);
                 }
+            }
+        } else if (!strcmp(root_key, "time")) {
+            ogs_yaml_iter_t time_iter;
+            ogs_yaml_iter_recurse(&root_iter, &time_iter);
+            while (ogs_yaml_iter_next(&time_iter)) {
+                const char *time_key = ogs_yaml_iter_key(&time_iter);
+                ogs_assert(time_key);
+                if (!strcmp(time_key, "t3402")) {
+                    ogs_yaml_iter_t t3402_iter;
+                    ogs_yaml_iter_recurse(&time_iter, &t3402_iter);
+
+                    while (ogs_yaml_iter_next(&t3402_iter)) {
+                        const char *t3402_key =
+                            ogs_yaml_iter_key(&t3402_iter);
+                        ogs_assert(t3402_key);
+
+                        if (!strcmp(t3402_key, "value")) {
+                            const char *v = ogs_yaml_iter_value(&t3402_iter);
+                            if (v)
+                                self.time.t3402.value = atoll(v);
+                        } else
+                            ogs_warn("unknown key `%s`", t3402_key);
+                    }
+                } else if (!strcmp(time_key, "t3412")) {
+                    ogs_yaml_iter_t t3412_iter;
+                    ogs_yaml_iter_recurse(&time_iter, &t3412_iter);
+
+                    while (ogs_yaml_iter_next(&t3412_iter)) {
+                        const char *t3412_key =
+                            ogs_yaml_iter_key(&t3412_iter);
+                        ogs_assert(t3412_key);
+
+                        if (!strcmp(t3412_key, "value")) {
+                            const char *v = ogs_yaml_iter_value(&t3412_iter);
+                            if (v)
+                                self.time.t3412.value = atoll(v);
+                        } else
+                            ogs_warn("unknown key `%s`", t3412_key);
+                    }
+                } else if (!strcmp(time_key, "t3423")) {
+                    ogs_yaml_iter_t t3423_iter;
+                    ogs_yaml_iter_recurse(&time_iter, &t3423_iter);
+
+                    while (ogs_yaml_iter_next(&t3423_iter)) {
+                        const char *t3423_key =
+                            ogs_yaml_iter_key(&t3423_iter);
+                        ogs_assert(t3423_key);
+
+                        if (!strcmp(t3423_key, "value")) {
+                            const char *v = ogs_yaml_iter_value(&t3423_iter);
+                            if (v)
+                                self.time.t3423.value = atoll(v);
+                        } else
+                            ogs_warn("unknown key `%s`", t3423_key);
+                    }
+                } else if (!strcmp(time_key, "t3512")) {
+                    /* handle config in amf */
+                } else if (!strcmp(time_key, "nf_instance")) {
+                    /* handle config in app library */
+                } else if (!strcmp(time_key, "subscription")) {
+                    /* handle config in app library */
+                } else if (!strcmp(time_key, "message")) {
+                    /* handle config in app library */
+                } else if (!strcmp(time_key, "handover")) {
+                    /* handle config in app library */
+                } else
+                    ogs_warn("unknown key `%s`", time_key);
             }
         }
     }

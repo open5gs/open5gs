@@ -113,7 +113,7 @@ void ogs_log_hexdump_func(ogs_log_level_e level, int domain_id,
 
 #define ogs_assert_if_reached() \
     do { \
-        ogs_warn("%s: should not be reached.", OGS_FUNC); \
+        ogs_fatal("%s: should not be reached.", OGS_FUNC); \
         ogs_abort(); \
     } while(0)
 

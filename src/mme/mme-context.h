@@ -146,6 +146,11 @@ typedef struct mme_context_s {
     ogs_hash_t      *imsi_ue_hash;          /* hash table (IMSI : MME_UE) */
     ogs_hash_t      *guti_ue_hash;          /* hash table (GUTI : MME_UE) */
 
+    struct {
+        struct {
+            ogs_time_t value;       /* Timer Value(Seconds) */
+        } t3402, t3412, t3423;
+    } time;
 } mme_context_t;
 
 typedef struct mme_sgw_s {

@@ -682,7 +682,8 @@ for (k, v) in sorted_msg_list:
 f.write("   };\n");
 f.write("} ogs_pfcp_message_t;\n\n")
 
-f.write("""int ogs_pfcp_parse_msg(ogs_pfcp_message_t *pfcp_message, ogs_pkbuf_t *pkbuf);
+f.write("""ogs_pfcp_message_t *ogs_pfcp_parse_msg(ogs_pkbuf_t *pkbuf);
+void ogs_pfcp_message_free(ogs_pfcp_message_t *pfcp_message);
 ogs_pkbuf_t *ogs_pfcp_build_msg(ogs_pfcp_message_t *pfcp_message);
 
 #ifdef __cplusplus
@@ -761,20 +762,25 @@ for (k, v) in sorted_msg_list:
         f.write("}};\n\n")
 f.write("\n")
 
-f.write("""int ogs_pfcp_parse_msg(ogs_pfcp_message_t *pfcp_message, ogs_pkbuf_t *pkbuf)
+f.write("""ogs_pfcp_message_t *ogs_pfcp_parse_msg(ogs_pkbuf_t *pkbuf)
 {
     int rv = OGS_ERROR;
     ogs_pfcp_header_t *h = NULL;
     uint16_t size = 0;
 
-    ogs_assert(pfcp_message);
+    ogs_pfcp_message_t *pfcp_message = NULL;
+
     ogs_assert(pkbuf);
     ogs_assert(pkbuf->len);
 
     h = (ogs_pfcp_header_t *)pkbuf->data;
     ogs_assert(h);
 
-    memset(pfcp_message, 0, sizeof(ogs_pfcp_message_t));
+    pfcp_message = ogs_calloc(1, sizeof(*pfcp_message));
+    if (!pfcp_message) {
+        ogs_error("No memory");
+        return NULL;
+    }
 
     if (h->seid_presence)
         size = OGS_PFCP_HEADER_LEN;
@@ -791,7 +797,7 @@ f.write("""int ogs_pfcp_parse_msg(ogs_pfcp_message_t *pfcp_message, ogs_pkbuf_t 
     }
 
     if (pkbuf->len == 0)
-        return OGS_OK;
+        return pfcp_message;
 
     switch(pfcp_message->h.type)
     {
@@ -801,13 +807,25 @@ for (k, v) in sorted_msg_list:
         f.write("        case OGS_%s_TYPE:\n" % v_upper(k))
         f.write("            rv = ogs_tlv_parse_msg(&pfcp_message->%s,\n" % v_lower(k))
         f.write("                    &ogs_pfcp_msg_desc_%s, pkbuf, OGS_TLV_MODE_T2_L2);\n" % v_lower(k))
+        f.write("            ogs_expect(rv == OGS_OK);\n")
         f.write("            break;\n")
 f.write("""        default:
             ogs_warn("Not implemented(type:%d)", pfcp_message->h.type);
             break;
     }
 
-    return rv;
+    if (rv != OGS_OK) {
+        ogs_pfcp_message_free(pfcp_message);
+        return NULL;
+    }
+
+    return pfcp_message;
+}
+
+void ogs_pfcp_message_free(ogs_pfcp_message_t *pfcp_message)
+{
+    ogs_assert(pfcp_message);
+    ogs_free(pfcp_message);
 }
 
 """)

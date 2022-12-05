@@ -30,6 +30,7 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
     int status;
 
     amf_ue_t *amf_ue = NULL;
+    ran_ue_t *ran_ue = NULL;
     amf_sess_t *sess = NULL;
 
     ogs_pkbuf_t *n1buf = NULL;
@@ -172,33 +173,31 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
         }
 
         if (gmmbuf) {
-            ran_ue_t *ran_ue = NULL;
-
             /***********************************
              * 4.3.2 PDU Session Establishment *
              ***********************************/
 
             ran_ue = ran_ue_cycle(amf_ue->ran_ue);
-            ogs_assert(ran_ue);
+            if (ran_ue) {
+                if (sess->pdu_session_establishment_accept) {
+                    ogs_pkbuf_free(sess->pdu_session_establishment_accept);
+                    sess->pdu_session_establishment_accept = NULL;
+                }
 
-            if (sess->pdu_session_establishment_accept) {
-                ogs_pkbuf_free(sess->pdu_session_establishment_accept);
-                sess->pdu_session_establishment_accept = NULL;
-            }
+                if (ran_ue->initial_context_setup_request_sent == true) {
+                    ngapbuf =
+                        ngap_sess_build_pdu_session_resource_setup_request(
+                            sess, gmmbuf, n2buf);
+                    ogs_assert(ngapbuf);
+                } else {
+                    ngapbuf = ngap_sess_build_initial_context_setup_request(
+                            sess, gmmbuf, n2buf);
+                    ogs_assert(ngapbuf);
 
-            if (ran_ue->initial_context_setup_request_sent == true) {
-                ngapbuf = ngap_sess_build_pdu_session_resource_setup_request(
-                        sess, gmmbuf, n2buf);
-                ogs_assert(ngapbuf);
-            } else {
-                ngapbuf = ngap_sess_build_initial_context_setup_request(
-                        sess, gmmbuf, n2buf);
-                ogs_assert(ngapbuf);
+                    ran_ue->initial_context_setup_request_sent = true;
+                }
 
-                ran_ue->initial_context_setup_request_sent = true;
-            }
-
-            if (SESSION_CONTEXT_IN_SMF(sess)) {
+                if (SESSION_CONTEXT_IN_SMF(sess)) {
                 /*
                  * [1-CLIENT] /nsmf-pdusession/v1/sm-contexts
                  * [2-SERVER] /namf-comm/v1/ue-contexts/{supi}/n1-n2-messages
@@ -207,10 +206,13 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
                  * sm-context-ref is created in [1-CLIENT].
                  * So, the PDU session establishment accpet can be transmitted.
                  */
-                if (nas_5gs_send_to_gnb(amf_ue, ngapbuf) != OGS_OK)
-                    ogs_error("nas_5gs_send_to_gnb() failed");
+                    ogs_expect(OGS_OK == ngap_send_to_ran_ue(ran_ue, ngapbuf));
+                } else {
+                    sess->pdu_session_establishment_accept = ngapbuf;
+                }
             } else {
-                sess->pdu_session_establishment_accept = ngapbuf;
+                ogs_warn("[%s] RAN-NG Context has already been removed",
+                            amf_ue->supi);
             }
 
         } else {
@@ -283,7 +285,7 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
 
             } else if (CM_CONNECTED(amf_ue)) {
                 ogs_assert(OGS_OK ==
-                    ngap_send_pdu_resource_setup_request(sess, n2buf));
+                    nas_send_pdu_session_setup_request(sess, NULL, n2buf));
 
             } else {
 
@@ -341,16 +343,8 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
             ogs_assert(OGS_OK == ngap_send_paging(amf_ue));
 
         } else if (CM_CONNECTED(amf_ue)) {
-            gmmbuf = gmm_build_dl_nas_transport(sess,
-                    OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, n1buf, 0, 0);
-            ogs_assert(gmmbuf);
-
-            ngapbuf = ngap_build_pdu_session_resource_modify_request(
-                    sess, gmmbuf, n2buf);
-            ogs_assert(ngapbuf);
-
-            if (nas_5gs_send_to_gnb(amf_ue, ngapbuf) != OGS_OK)
-                ogs_error("nas_5gs_send_to_gnb() failed");
+            ogs_expect(OGS_OK ==
+                nas_send_pdu_session_modification_command(sess, n1buf, n2buf));
 
         } else {
             ogs_fatal("[%s] Invalid AMF-UE state", amf_ue->supi);
@@ -382,13 +376,8 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
             }
 
         } else if (CM_CONNECTED(amf_ue)) {
-            ngapbuf = ngap_build_pdu_session_resource_release_command(
-                    sess, NULL, n2buf);
-            ogs_assert(ngapbuf);
-
-            if (nas_5gs_send_to_gnb(amf_ue, ngapbuf) != OGS_OK)
-                ogs_error("nas_5gs_send_to_gnb() failed");
-
+            ogs_expect(OGS_OK ==
+                nas_send_pdu_session_release_command(sess, NULL, n2buf));
         } else {
             ogs_fatal("[%s] Invalid AMF-UE state", amf_ue->supi);
             ogs_assert_if_reached();
@@ -510,6 +499,40 @@ cleanup:
     return OGS_OK;
 }
 
+static int network_deregister (
+        amf_ue_t *amf_ue, OpenAPI_deregistration_reason_e dereg_reason) {
+    if ((CM_CONNECTED(amf_ue)) &&
+        (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered)))
+    {
+        amf_ue->network_initiated_de_reg = true;
+
+        ogs_assert(OGS_OK ==
+            nas_5gs_send_de_registration_request(amf_ue, dereg_reason));
+
+        amf_sbi_send_release_all_sessions(
+            amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+
+        if ((ogs_list_count(&amf_ue->sess_list) == 0) &&
+            (PCF_AM_POLICY_ASSOCIATED(amf_ue)))
+        {
+            ogs_assert(true ==
+                amf_ue_sbi_discover_and_send(
+                    OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,
+                    amf_npcf_am_policy_control_build_delete, amf_ue, NULL));
+        }
+
+        OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_de_registered);
+        return OGS_OK;
+    }
+    else if (CM_IDLE(amf_ue)) {
+        /* TODO: need to page UE */
+        /*ngap_send_paging(amf_ue);*/
+        return OGS_OK;
+    } else {
+      return OGS_ERROR;
+    }
+}
+
 int amf_namf_callback_handle_dereg_notify(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
@@ -565,38 +588,12 @@ int amf_namf_callback_handle_dereg_notify(
      * session associated with non-emergency service as described in clause 4.3.4.
      */
 
-
-    if ((CM_CONNECTED(amf_ue)) &&
-        (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered)))
-    {
-        amf_ue->network_initiated_de_reg = true;
-
-        ogs_assert(OGS_OK ==
-            nas_5gs_send_de_registration_request(amf_ue,
-                DeregistrationData->dereg_reason));
-
-            amf_sbi_send_release_all_sessions(
-                amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
-
-            if ((ogs_list_count(&amf_ue->sess_list) == 0) &&
-                (PCF_AM_POLICY_ASSOCIATED(amf_ue)))
-            {
-                ogs_assert(true ==
-                    amf_ue_sbi_discover_and_send(
-                        OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,
-                        amf_npcf_am_policy_control_build_delete, amf_ue, NULL));
-            }
-
-            OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_de_registered);
-    }
-    else if (CM_IDLE(amf_ue)) {
-        /* TODO: need to page UE */
-        /*ngap_send_paging(amf_ue);*/
-    }
-    else {
-        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
-        ogs_error("[%s] Deregistration notification for UE in wrong state", amf_ue->supi);
-        goto cleanup;
+    if (network_deregister(
+            amf_ue, DeregistrationData->dereg_reason) == -1) {
+      status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+      ogs_error("[%s] Deregistration notification for UE in wrong state",
+                amf_ue->supi);
+      goto cleanup;
     }
 
 cleanup:
@@ -607,6 +604,194 @@ cleanup:
     ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
     return OGS_OK;
+}
+
+static int update_rat_res_add_one(cJSON *restriction,
+                                  OpenAPI_list_t *restrictions, long index)
+{
+    void *restr;
+
+    if (!cJSON_IsString(restriction)) {
+        ogs_error("Invalid type of ratRestriction element");
+        return OGS_ERROR;
+    }
+
+    restr = (void *) OpenAPI_rat_type_FromString(cJSON_GetStringValue(restriction));
+
+    if (index == restrictions->count) {
+        OpenAPI_list_add(restrictions, restr);
+    } else if (restrictions->count < index && index <= 0) {
+        OpenAPI_list_insert_prev(
+            restrictions, OpenAPI_list_find(restrictions, index), restr);
+    } else {
+        ogs_error("Can't add RAT restriction to invalid index");
+        return OGS_ERROR;
+    }
+    return OGS_OK;
+}
+
+static int update_rat_res_array(cJSON *json_restrictions,
+                                OpenAPI_list_t *restrictions)
+{
+    cJSON *restriction;
+
+    if (!cJSON_IsArray(json_restrictions)) {
+        ogs_error("Invalid type of ratRestrictions");
+        return OGS_ERROR;
+    }
+
+    OpenAPI_list_clear(restrictions);
+
+    cJSON_ArrayForEach(restriction, json_restrictions) {
+        if (update_rat_res_add_one(restriction, restrictions,
+                                   restrictions->count) != OGS_OK) {
+            return OGS_ERROR;
+        }
+    }
+    return OGS_OK;
+}
+
+static int update_rat_res(OpenAPI_change_item_t *item_change,
+                          OpenAPI_list_t *restrictions)
+{
+    cJSON* json = item_change->new_value->json;
+    cJSON* json_restrictions;
+
+    if (!item_change->path) {
+        return OGS_ERROR;
+    }
+
+    switch (item_change->op) {
+    case OpenAPI_change_type_REPLACE:
+    case OpenAPI_change_type_ADD:
+        if (!strcmp(item_change->path, "")) {
+            if (!cJSON_IsObject(json)) {
+                ogs_error("Invalid type of am-data");
+            }
+            json_restrictions = cJSON_GetObjectItemCaseSensitive(
+                                    json, "ratRestrictions");
+            if (json_restrictions) {
+                return update_rat_res_array(json_restrictions, restrictions);
+            } else {
+                return OGS_OK;
+            }
+        } else if (!strcmp(item_change->path, "/ratRestrictions")) {
+            return update_rat_res_array(json, restrictions);
+        } else if (strstr(item_change->path, "/ratRestrictions/") ==
+                   item_change->path) {
+            char *index = item_change->path + strlen("/ratRestrictions/");
+            long i = strcmp(index, "-") ? atol(index) : restrictions->count;
+
+            return update_rat_res_add_one(json, restrictions, i);
+        }
+        return OGS_OK;
+
+    case OpenAPI_change_type__REMOVE:
+        if (!strcmp(item_change->path, "")) {
+            OpenAPI_list_clear(restrictions);
+            return OGS_OK;
+        } else if (!strcmp(item_change->path, "/ratRestrictions")) {
+            OpenAPI_list_clear(restrictions);
+            return OGS_OK;
+        } else if (strstr(item_change->path, "/ratRestrictions/") ==
+                   item_change->path) {
+            char *index = item_change->path + strlen("/ratRestrictions/");
+            long i = atol(index);
+
+            if (restrictions->count < i && i <= 0) {
+            OpenAPI_list_remove(
+                restrictions, OpenAPI_list_find(restrictions, i));
+            } else {
+                ogs_error("Can't add RAT restriction to invalid index");
+                return OGS_ERROR;
+            }
+        }
+        return OGS_OK;
+
+    default:
+        return OGS_OK;
+    }
+
+}
+
+static int update_ambr_check_one(cJSON *obj, uint64_t *limit,
+                                 bool *ambr_changed)
+{
+    if (!cJSON_IsString(obj)) {
+        ogs_error("Invalid type of subscribedUeAmbr");
+        return OGS_ERROR;
+    }
+    *limit = ogs_sbi_bitrate_from_string(obj->valuestring);
+    *ambr_changed = true;
+    return OGS_OK;
+}
+
+static int update_ambr_check_obj(cJSON *obj, ogs_bitrate_t *ambr,
+                                 bool *ambr_changed)
+{
+    if (!cJSON_IsObject(obj)) {
+        if (obj == NULL || cJSON_IsNull(obj)) {
+            /* Limit of 0 means unlimited. */
+            ambr->uplink = 0;
+            ambr->downlink = 0;
+            *ambr_changed = true;
+            return OGS_OK;
+        } else {
+            ogs_error("Invalid type of subscribedUeAmbr");
+            return OGS_ERROR;
+        }
+    }
+
+    if (update_ambr_check_one(
+            cJSON_GetObjectItemCaseSensitive(obj, "uplink"),
+            &ambr->uplink, ambr_changed)) {
+        return OGS_ERROR;
+    }
+    if (update_ambr_check_one(
+            cJSON_GetObjectItemCaseSensitive(obj, "downlink"),
+            &ambr->downlink, ambr_changed)) {
+        return OGS_ERROR;
+    }
+    return OGS_OK;
+}
+
+static int update_ambr(OpenAPI_change_item_t *item_change,
+                       ogs_bitrate_t *ambr, bool *ambr_changed)
+{
+    cJSON* json = item_change->new_value->json;
+
+    if (!item_change->path) {
+        return OGS_ERROR;
+    }
+
+    switch (item_change->op) {
+    case OpenAPI_change_type_REPLACE:
+    case OpenAPI_change_type_ADD:
+        if (!strcmp(item_change->path, "")) {
+            if (!cJSON_IsObject(json)) {
+                ogs_error("Invalid type of am-data");
+            }
+            return update_ambr_check_obj(
+                cJSON_GetObjectItemCaseSensitive(json, "subscribedUeAmbr"),
+                ambr, ambr_changed);
+        } else if (!strcmp(item_change->path, "/subscribedUeAmbr")) {
+            return update_ambr_check_obj(json, ambr, ambr_changed);
+        } else if (!strcmp(item_change->path, "/subscribedUeAmbr/uplink")) {
+            return update_ambr_check_one(json, &ambr->uplink, ambr_changed);
+        } else if (!strcmp(item_change->path, "/subscribedUeAmbr/downlink")) {
+            return update_ambr_check_one(json, &ambr->downlink, ambr_changed);
+        }
+        return OGS_OK;
+
+
+    case OpenAPI_change_type__REMOVE:
+        if (!strcmp(item_change->path, "/subscribedUeAmbr")) {
+            update_ambr_check_obj(NULL, ambr, ambr_changed);
+        }
+        return OGS_OK;
+    default:
+        return OGS_OK;
+    }
 }
 
 int amf_namf_callback_handle_sdm_data_change_notify(
@@ -624,6 +809,8 @@ int amf_namf_callback_handle_sdm_data_change_notify(
 
     char *ueid = NULL;
     char *res_name = NULL;
+
+    bool ambr_changed = false;
 
     ogs_assert(stream);
     ogs_assert(recvmsg);
@@ -669,27 +856,13 @@ int amf_namf_callback_handle_sdm_data_change_notify(
 
             OpenAPI_list_for_each(item->changes, node_ci)
             {
-                /*
-                OpenAPI_change_item_t *item_change = node_ci->data;
-                item_change->path;
-                item_change->from;
-                item_change->new_value;
-                item_change->orig_value;
-                */
-                /*
-                switch (item_change->op) {
-                    case OpenAPI_change_type_ADD:
-                        break;
-                    case OpenAPI_change_type_MOVE:
-                        break;
-                    case OpenAPI_change_type__REMOVE:
-                        break;
-                    case OpenAPI_change_type_REPLACE:
-                        break;
-                    default:
-                        break;
+                OpenAPI_change_item_t *change_item = node_ci->data;
+                if (update_rat_res(change_item, amf_ue->rat_restrictions)
+                    || update_ambr(change_item, &amf_ue->ue_ambr,
+                                   &ambr_changed)) {
+                    status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+                    goto cleanup;
                 }
-                */
             }
             break;
         DEFAULT
@@ -703,6 +876,27 @@ int amf_namf_callback_handle_sdm_data_change_notify(
 
         ueid = NULL;
         res_name = NULL;
+    }
+
+    if (amf_ue_is_rat_restricted(amf_ue)) {
+        if (network_deregister(amf_ue, OpenAPI_deregistration_reason_REREGISTRATION_REQUIRED) == -1) {
+            status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+            ogs_error("[%s] Deregistration notification for UE in wrong state",
+                      amf_ue->supi);
+            goto cleanup;
+        }
+        ogs_assert(true ==
+                amf_ue_sbi_discover_and_send(
+                    OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
+                    amf_nudm_sdm_build_subscription_delete, amf_ue, NULL));
+    } else if (ambr_changed) {
+        ogs_pkbuf_t *ngapbuf;
+
+        ngapbuf = ngap_build_ue_context_modification_request(amf_ue);
+        ogs_assert(ngapbuf);
+
+        if (nas_5gs_send_to_gnb(amf_ue, ngapbuf) != OGS_OK)
+            ogs_error("nas_5gs_send_to_gnb() failed");
     }
 
 cleanup:

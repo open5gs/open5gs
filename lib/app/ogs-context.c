@@ -635,6 +635,16 @@ int ogs_app_context_parse_config(void)
                         } else
                             ogs_warn("unknown key `%s`", msg_key);
                     }
+                } else if (!strcmp(time_key, "t3502")) {
+                    /* handle config in amf */
+                } else if (!strcmp(time_key, "t3512")) {
+                    /* handle config in amf */
+                } else if (!strcmp(time_key, "t3402")) {
+                    /* handle config in mme */
+                } else if (!strcmp(time_key, "t3412")) {
+                    /* handle config in mme */
+                } else if (!strcmp(time_key, "t3423")) {
+                    /* handle config in mme */
                 } else
                     ogs_warn("unknown key `%s`", time_key);
             }

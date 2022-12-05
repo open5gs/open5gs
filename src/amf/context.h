@@ -109,6 +109,12 @@ typedef struct amf_context_s {
     ogs_list_t      ngap_list;      /* AMF NGAP IPv4 Server List */
     ogs_list_t      ngap_list6;     /* AMF NGAP IPv6 Server List */
 
+    struct {
+        struct {
+            ogs_time_t value;       /* Timer Value(Seconds) */
+        } t3502, t3512;
+    } time;
+
 } amf_context_t;
 
 typedef struct amf_gnb_s {
@@ -189,6 +195,10 @@ struct ran_ue_s {
     uint8_t         ue_ctx_rel_action;
 
     bool            part_of_ng_reset_requested;
+
+    struct {
+        uint16_t    activated; /* Activated PSI Mask */
+    } psimask;
 
     /* Related Context */
     amf_gnb_t       *gnb;
@@ -337,6 +347,7 @@ struct amf_ue_s {
     /* SubscribedInfo */
     ogs_bitrate_t   ue_ambr;
     int num_of_slice;
+    OpenAPI_list_t *rat_restrictions;
     ogs_slice_data_t slice[OGS_MAX_NUM_OF_SLICE];
 
     uint64_t        am_policy_control_features; /* SBI Features */
@@ -777,6 +788,7 @@ uint8_t amf_selected_enc_algorithm(amf_ue_t *amf_ue);
 void amf_clear_subscribed_info(amf_ue_t *amf_ue);
 
 bool amf_update_allowed_nssai(amf_ue_t *amf_ue);
+bool amf_ue_is_rat_restricted(amf_ue_t *amf_ue);
 
 #ifdef __cplusplus
 }

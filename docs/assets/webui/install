@@ -96,6 +96,11 @@ if [ ! -x /usr/bin/mongod ]; then
     exit 1
 fi
 
+if [ ! -x /usr/bin/npm ]; then
+    print_status "First you need to install NPM packages."
+    exit 1
+fi
+
 PRE_INSTALL_PKGS=""
 
 # Check that HTTPS transport is available to APT
@@ -270,14 +275,22 @@ WantedBy=multi-user.target
 EOF"
 
 exec_cmd_nobail "systemctl daemon-reload"
-exec_cmd "systemctl enable open5gs-webui"
-exec_cmd "deb-systemd-invoke start open5gs-webui"
+exec_cmd_nobail "systemctl enable open5gs-webui"
+exec_cmd_nobail "deb-systemd-invoke start open5gs-webui"
 }
 
 postinstall() {
 
 print_status "Default Administrator Account [Username:admin, Password:1423]..."
-exec_cmd "mongosh open5gs ./${PACKAGE}-${VERSION}/docs/assets/webui/mongo-init.js"
+if [ -x /usr/bin/mongo ];
+then
+    exec_cmd "mongo open5gs ./${PACKAGE}-${VERSION}/docs/assets/webui/mongo-init.js"
+elif [ -x /usr/bin/mongosh ];
+then
+    exec_cmd "mongosh open5gs ./${PACKAGE}-${VERSION}/docs/assets/webui/mongo-init.js"
+else
+    echo "Failed to execute mongo-init.js"
+fi
 
 exec_cmd "rm -rf ./${PACKAGE}-${VERSION}"
 }

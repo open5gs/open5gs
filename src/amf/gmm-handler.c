@@ -273,6 +273,11 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_request(amf_ue_t *amf_ue,
         return OGS_5GMM_CAUSE_UE_SECURITY_CAPABILITIES_MISMATCH;
     }
 
+    if (amf_ue_is_rat_restricted(amf_ue)) {
+        ogs_error("Registration rejected due to RAT restrictions");
+        return OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED;
+    }
+
     return OGS_5GMM_CAUSE_REQUEST_ACCEPTED;
 }
 
@@ -664,8 +669,21 @@ int gmm_handle_deregistration_request(amf_ue_t *amf_ue,
             amf_ue->nas.ue.tsc, amf_ue->nas.amf.tsc,
             amf_ue->nas.ue.ksi, amf_ue->nas.amf.ksi);
 
-    if (deregistration_request->de_registration_type.switch_off)
+    if (deregistration_request->de_registration_type.switch_off) {
         ogs_debug("    Switch-Off");
+
+        /*
+         * Issue #1917
+         *
+         * When the UE sends a De-registration Request with Switch-Off,
+         * AMF should remove the the stored UE Radio Capability.
+         *
+         * Otherwise, the Radio Capability will not match
+         * because the gNB will not query the Radio Capability
+         * when the UE changes USIM.
+         */
+        OGS_ASN_CLEAR_DATA(&amf_ue->ueRadioCapability);
+    }
 
     ogs_info("[%s]    SUCI", amf_ue->suci);
 
@@ -1074,12 +1092,13 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                                 NF_INSTANCE_TYPE(ogs_sbi_self()->nf_instance);
                     ogs_assert(requester_nf_type);
 
-                    nf_instance = ogs_sbi_nf_instance_find_by_service_type(
-                                    service_type, requester_nf_type);
-                    if (nf_instance)
-                        OGS_SBI_SETUP_NF_INSTANCE(
-                                sess->sbi.service_type_array[service_type],
-                                nf_instance);
+                    amf_sbi_select_nf(
+                            &sess->sbi,
+                            OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION,
+                            requester_nf_type,
+                            NULL);
+                    nf_instance = sess->sbi.
+                        service_type_array[service_type].nf_instance;
                 }
 
                 if (nf_instance) {
