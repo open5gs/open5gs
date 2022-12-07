@@ -444,7 +444,7 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
 
 static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
 {
-    int rv, xact_count = 0;
+    int rv, i, xact_count = 0;
     ogs_nas_5gmm_cause_t gmm_cause;
 
     amf_ue_t *amf_ue = NULL;
@@ -644,6 +644,13 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
 
             gmm_handle_deregistration_request(
                     amf_ue, &nas_message->gmm.deregistration_request_from_ue);
+            ogs_assert(amf_ue->num_of_slice <= OGS_MAX_NUM_OF_SLICE);
+            for (i = 0; i < amf_ue->num_of_slice; i++) {
+                amf_metrics_inst_by_slice_add(&amf_ue->nr_tai.plmn_id,
+                        &amf_ue->slice[i].s_nssai,
+                        AMF_METR_GAUGE_RM_REGISTEREDSUBNBR, -1);
+            }
+            amf_ue->rm_state = RM_STATE_DEREGISTERED;
             OGS_FSM_TRAN(s, &gmm_state_de_registered);
             break;
 
@@ -659,6 +666,13 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
                     NGAP_Cause_PR_misc, NGAP_CauseMisc_om_intervention,
                     NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0));
 
+            ogs_assert(amf_ue->num_of_slice <= OGS_MAX_NUM_OF_SLICE);
+            for (i = 0; i < amf_ue->num_of_slice; i++) {
+                amf_metrics_inst_by_slice_add(&amf_ue->nr_tai.plmn_id,
+                        &amf_ue->slice[i].s_nssai,
+                        AMF_METR_GAUGE_RM_REGISTEREDSUBNBR, -1);
+            }
+            amf_ue->rm_state = RM_STATE_DEREGISTERED;
             OGS_FSM_TRAN(s, &gmm_state_de_registered);
             break;
 
@@ -1340,6 +1354,16 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
         switch (nas_message->gmm.h.message_type) {
         case OGS_NAS_5GS_REGISTRATION_COMPLETE:
             ogs_info("[%s] Registration complete", amf_ue->supi);
+            if (amf_ue->rm_state == RM_STATE_DEREGISTERED){
+                int i;
+                ogs_assert(amf_ue->num_of_slice <= OGS_MAX_NUM_OF_SLICE);
+                for (i = 0; i < amf_ue->num_of_slice; i++) {
+                    amf_metrics_inst_by_slice_add(&amf_ue->nr_tai.plmn_id,
+                            &amf_ue->slice[i].s_nssai,
+                            AMF_METR_GAUGE_RM_REGISTEREDSUBNBR, 1);
+                }
+            }
+            amf_ue->rm_state = RM_STATE_REGISTERED;
 
             CLEAR_AMF_UE_TIMER(amf_ue->t3550);
 
