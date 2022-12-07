@@ -178,6 +178,8 @@ uint8_t smf_5gc_n4_handle_session_establishment_response(
         if (rsp->cause.u8 != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
             ogs_error("PFCP Cause [%d] : Not Accepted", rsp->cause.u8);
             cause_value = rsp->cause.u8;
+            smf_metrics_inst_by_cause_add(cause_value,
+                    SMF_METR_CTR_SM_N4SESSIONESTABFAIL, 1);
         }
     } else {
         ogs_error("No Cause");
@@ -1146,6 +1148,8 @@ void smf_n4_handle_session_report_request(
     uint16_t pdr_id = 0;
     unsigned int i;
 
+    smf_metrics_inst_global_inc(SMF_METR_GLOB_CTR_SM_N4SESSIONREPORT);
+
     ogs_assert(pfcp_xact);
     ogs_assert(pfcp_req);
 
@@ -1321,6 +1325,7 @@ void smf_n4_handle_session_report_request(
         ogs_assert(OGS_OK ==
             smf_pfcp_send_session_report_response(
                 pfcp_xact, sess, OGS_PFCP_CAUSE_REQUEST_ACCEPTED));
+        smf_metrics_inst_global_inc(SMF_METR_GLOB_CTR_SM_N4SESSIONREPORTSUCC);
     } else {
         ogs_error("Not supported Report Type[%d]", report_type.value);
         ogs_assert(OGS_OK ==
