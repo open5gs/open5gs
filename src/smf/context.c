@@ -39,7 +39,7 @@ static int context_initialized = 0;
 static int num_of_smf_sess = 0;
 
 static void stats_add_smf_session(void);
-static void stats_remove_smf_session(void);
+static void stats_remove_smf_session(smf_sess_t *sess);
 
 int smf_ctf_config_init(smf_ctf_config_t *ctf_config)
 {
@@ -1797,7 +1797,7 @@ void smf_sess_remove(smf_sess_t *sess)
         smf_metrics_inst_global_dec(SMF_METR_GLOB_GAUGE_GTP2_SESSIONS_ACTIVE);
         break;
     }
-    stats_remove_smf_session();
+    stats_remove_smf_session(sess);
     ogs_pool_free(&smf_sess_pool, sess);
 }
 
@@ -2028,6 +2028,8 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
     qos_flow->sess = sess;
 
     ogs_list_add(&sess->bearer_list, qos_flow);
+    smf_metrics_inst_by_5qi_add(&sess->plmn_id, &sess->s_nssai,
+            sess->session.qos.index, SMF_METR_GAUGE_SM_QOSFLOWNBR, 1);
 
     return qos_flow;
 }
@@ -2437,6 +2439,10 @@ int smf_bearer_remove(smf_bearer_t *bearer)
 {
     ogs_assert(bearer);
     ogs_assert(bearer->sess);
+
+    smf_metrics_inst_by_5qi_add(&bearer->sess->plmn_id,
+            &bearer->sess->s_nssai, bearer->sess->session.qos.index,
+            SMF_METR_GAUGE_SM_QOSFLOWNBR, -1);
 
     ogs_list_remove(&bearer->sess->bearer_list, bearer);
 
@@ -3081,14 +3087,18 @@ void smf_pf_precedence_pool_final(smf_sess_t *sess)
 
 static void stats_add_smf_session(void)
 {
-    smf_metrics_inst_global_inc(SMF_METR_GLOB_GAUGE_SESSIONS_ACTIVE);
     num_of_smf_sess = num_of_smf_sess + 1;
     ogs_info("[Added] Number of SMF-Sessions is now %d", num_of_smf_sess);
 }
 
-static void stats_remove_smf_session(void)
+static void stats_remove_smf_session(smf_sess_t *sess)
 {
-    smf_metrics_inst_global_dec(SMF_METR_GLOB_GAUGE_SESSIONS_ACTIVE);
+    ogs_assert(sess);
+
+    if (sess->s_nssai.sst != 0) {
+        smf_metrics_inst_by_slice_add(&sess->plmn_id, &sess->s_nssai,
+                SMF_METR_GAUGE_SM_SESSIONNBR, -1);
+    }
     num_of_smf_sess = num_of_smf_sess - 1;
     ogs_info("[Removed] Number of SMF-Sessions is now %d", num_of_smf_sess);
 }
