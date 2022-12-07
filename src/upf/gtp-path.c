@@ -656,7 +656,7 @@ static void _get_dev_mac_addr(char *ifname, uint8_t *mac_addr)
     ogs_assert(fd);
     struct ifreq req;
     memset(&req, 0, sizeof(req));
-    strncpy(req.ifr_name, ifname, IF_NAMESIZE-1);
+    ogs_cpystrn(req.ifr_name, ifname, IF_NAMESIZE-1);
     ogs_assert(ioctl(fd, SIOCGIFHWADDR, &req) == 0);
     memcpy(mac_addr, req.ifr_hwaddr.sa_data, ETHER_ADDR_LEN);
 #else
