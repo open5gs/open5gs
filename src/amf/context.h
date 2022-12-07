@@ -408,6 +408,10 @@ struct amf_ue_s {
     char *data_change_subscription_id;
 
     ogs_list_t      sess_list;
+
+#define RM_STATE_DEREGISTERED   0
+#define RM_STATE_REGISTERED     1
+    uint8_t         rm_state;
 };
 
 typedef struct amf_sess_s {
