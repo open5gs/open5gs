@@ -130,7 +130,8 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_UE_AUTHENTICATIONS)
 
                 if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED &&
-                    sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) {
+                    sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK &&
+                    sbi_message->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT) {
                     if (sbi_message->res_status ==
                             OGS_SBI_HTTP_STATUS_NOT_FOUND) {
                         ogs_warn("[%s] Cannot find SUCI [%d]",
@@ -149,11 +150,22 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                 CASE(OGS_SBI_HTTP_METHOD_PUT)
                     ogs_warn("[%s] Ignore SBI message", amf_ue->suci);
                     break;
+                CASE(OGS_SBI_HTTP_METHOD_DELETE)
+                    if (amf_ue->confirmation_url_for_5g_aka)
+                        ogs_free(amf_ue->confirmation_url_for_5g_aka);
+                    amf_ue->confirmation_url_for_5g_aka = NULL;
+                    break;
                 DEFAULT
                     ogs_error("[%s] Invalid HTTP method [%s]",
                             amf_ue->suci, sbi_message->h.method);
                     ogs_assert_if_reached();
                 END
+                break;
+
+            CASE(OGS_SBI_RESOURCE_NAME_5G_AKA)
+            CASE(OGS_SBI_RESOURCE_NAME_5G_AKA_CONFIRMATION)
+            CASE(OGS_SBI_RESOURCE_NAME_EAP_SESSION)
+                ogs_warn("[%s] Ignore SBI message", amf_ue->supi);
                 break;
 
             DEFAULT
@@ -246,38 +258,6 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                 ogs_error("Invalid resource name [%s]",
                         sbi_message->h.resource.component[1]);
                 ogs_assert_if_reached();
-            END
-            break;
-
-        CASE(OGS_SBI_SERVICE_NAME_NAUSF_AUTH)
-            if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED &&
-                sbi_message->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT &&
-                sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) {
-                ogs_error("[%s] HTTP response error [%d]",
-                        amf_ue->supi, sbi_message->res_status);
-                break;
-            }
-            SWITCH(sbi_message->h.resource.component[0])
-            CASE(OGS_SBI_RESOURCE_NAME_5G_AKA)
-            CASE(OGS_SBI_RESOURCE_NAME_5G_AKA_CONFIRMATION)
-            CASE(OGS_SBI_RESOURCE_NAME_EAP_SESSION)
-                ogs_warn("[%s] Ignore SBI message", amf_ue->supi);
-                break;
-            CASE(OGS_SBI_RESOURCE_NAME_UE_AUTHENTICATIONS)
-                SWITCH(sbi_message->h.method)
-                CASE(OGS_SBI_HTTP_METHOD_DELETE)
-                    if (amf_ue->confirmation_url_for_5g_aka)
-                        ogs_free(amf_ue->confirmation_url_for_5g_aka);
-                    amf_ue->confirmation_url_for_5g_aka = NULL;
-                    break;
-                DEFAULT
-                    ogs_error("[%s] Invalid HTTP method [%s]",
-                            amf_ue->suci, sbi_message->h.method);
-                END
-                break;
-            DEFAULT
-                ogs_error("Invalid resource name [%s]",
-                        sbi_message->h.resource.component[1]);
             END
             break;
 
