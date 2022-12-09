@@ -200,10 +200,20 @@ tls:
 #  o Don't use SCP server => App fails if no NRF available.
 #      delegated: no
 #
+#  <Metrics Server>
+#
+#  o Metrics Server(http://<any address>:9090)
+#    metrics:
+#    - addr: 0.0.0.0
+#      port: 9090
+#
 pcf:
     sbi:
       - addr: 127.0.0.13
         port: 7777
+    metrics:
+      - addr: 127.0.0.13
+        port: 9090
 
 #
 # scp:

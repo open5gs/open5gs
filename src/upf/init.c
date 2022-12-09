@@ -20,6 +20,7 @@
 #include "context.h"
 #include "gtp-path.h"
 #include "pfcp-path.h"
+#include "metrics.h"
 
 static ogs_thread_t *thread;
 static void upf_main(void *data);
@@ -30,6 +31,7 @@ int upf_initialize()
 {
     int rv;
 
+    ogs_metrics_context_init();
     ogs_gtp_context_init(OGS_MAX_NUM_OF_GTPU_RESOURCE);
     ogs_pfcp_context_init();
 
@@ -46,6 +48,9 @@ int upf_initialize()
     rv = ogs_pfcp_context_parse_config("upf", "smf");
     if (rv != OGS_OK) return rv;
 
+    rv = ogs_metrics_context_parse_config("upf");
+    if (rv != OGS_OK) return rv;
+
     rv = upf_context_parse_config();
     if (rv != OGS_OK) return rv;
 
@@ -55,6 +60,9 @@ int upf_initialize()
 
     rv = ogs_pfcp_ue_pool_generate();
     if (rv != OGS_OK) return rv;
+
+    rv = upf_metrics_open();
+    if (rv != 0) return OGS_ERROR;
 
     rv = upf_pfcp_open();
     if (rv != OGS_OK) return rv;
@@ -80,11 +88,13 @@ void upf_terminate(void)
 
     upf_pfcp_close();
     upf_gtp_close();
+    upf_metrics_close();
 
     upf_context_final();
 
     ogs_pfcp_context_final();
     ogs_gtp_context_final();
+    ogs_metrics_context_final();
 
     ogs_pfcp_xact_final();
 

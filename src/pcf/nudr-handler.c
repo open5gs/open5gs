@@ -147,6 +147,9 @@ bool pcf_nudr_dr_handle_query_am_data(
 
         ogs_subscription_data_free(&subscription_data);
 
+        pcf_metrics_inst_by_plmn_add(&pcf_ue->guami.plmn_id,
+                PCF_METR_CTR_PA_POLICYAMASSOSUCC, 1);
+
         return true;
 
     DEFAULT

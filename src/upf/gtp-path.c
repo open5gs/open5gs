@@ -184,6 +184,10 @@ static void _gtpv1_tun_recv_common_cb(
     ogs_assert(true == ogs_pfcp_up_handle_pdr(
                 pdr, OGS_GTPU_MSGTYPE_GPDU, recvbuf, &report));
 
+    upf_metrics_inst_global_inc(UPF_METR_GLOB_CTR_GTP_OUTDATAPKTN3UPF);
+    upf_metrics_inst_by_qfi_add(pdr->qer->qfi,
+        UPF_METR_CTR_GTP_OUTDATAVOLUMEQOSLEVELN3UPF, recvbuf->len);
+
     if (report.type.downlink_data_report) {
         ogs_assert(pdr->sess);
         sess = UPF_SESS(pdr->sess);
@@ -360,6 +364,10 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
         ip_h = (struct ip *)pkbuf->data;
         ogs_assert(ip_h);
+
+        upf_metrics_inst_global_inc(UPF_METR_GLOB_CTR_GTP_INDATAPKTN3UPF);
+        upf_metrics_inst_by_qfi_add(qfi,
+                UPF_METR_CTR_GTP_INDATAVOLUMEQOSLEVELN3UPF, pkbuf->len);
 
         pfcp_object = ogs_pfcp_object_find_by_teid(teid);
         if (!pfcp_object) {
@@ -648,7 +656,7 @@ static void _get_dev_mac_addr(char *ifname, uint8_t *mac_addr)
     ogs_assert(fd);
     struct ifreq req;
     memset(&req, 0, sizeof(req));
-    strncpy(req.ifr_name, ifname, IF_NAMESIZE-1);
+    ogs_cpystrn(req.ifr_name, ifname, IF_NAMESIZE-1);
     ogs_assert(ioctl(fd, SIOCGIFHWADDR, &req) == 0);
     memcpy(mac_addr, req.ifr_hwaddr.sa_data, ETHER_ADDR_LEN);
 #else

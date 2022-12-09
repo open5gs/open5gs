@@ -26,6 +26,7 @@
 #include "ogs-dbi.h"
 
 #include "pcf-sm.h"
+#include "metrics.h"
 
 #ifdef __cplusplus
 extern "C" {

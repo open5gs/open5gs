@@ -27,6 +27,25 @@ static inline void amf_metrics_inst_global_inc(amf_metric_type_global_t t)
 static inline void amf_metrics_inst_global_dec(amf_metric_type_global_t t)
 { ogs_metrics_inst_dec(amf_metrics_inst_global[t]); }
 
+/* BY SLICE */
+typedef enum amf_metric_type_by_slice_s {
+    AMF_METR_GAUGE_RM_REGISTEREDSUBNBR = 0,
+    _AMF_METR_BY_SLICE_MAX,
+} amf_metric_type_by_slice_t;
+
+void amf_metrics_inst_by_slice_add(
+    ogs_plmn_id_t *plmn, ogs_s_nssai_t *snssai,
+    amf_metric_type_by_slice_t t, int val);
+
+/* BY CAUSE */
+typedef enum amf_metric_type_by_cause_s {
+    AMF_METR_CTR_RM_REG_INITFAIL = 0,
+    _AMF_METR_BY_CAUSE_MAX,
+} amf_metric_type_by_cause_t;
+
+void amf_metrics_inst_by_cause_add(
+    uint8_t cause, amf_metric_type_by_cause_t t, int val);
+
 int amf_metrics_open(void);
 int amf_metrics_close(void);
 

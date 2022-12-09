@@ -130,7 +130,8 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_UE_AUTHENTICATIONS)
 
                 if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED &&
-                    sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) {
+                    sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK &&
+                    sbi_message->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT) {
                     if (sbi_message->res_status ==
                             OGS_SBI_HTTP_STATUS_NOT_FOUND) {
                         ogs_warn("[%s] Cannot find SUCI [%d]",
@@ -149,11 +150,22 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                 CASE(OGS_SBI_HTTP_METHOD_PUT)
                     ogs_warn("[%s] Ignore SBI message", amf_ue->suci);
                     break;
+                CASE(OGS_SBI_HTTP_METHOD_DELETE)
+                    if (amf_ue->confirmation_url_for_5g_aka)
+                        ogs_free(amf_ue->confirmation_url_for_5g_aka);
+                    amf_ue->confirmation_url_for_5g_aka = NULL;
+                    break;
                 DEFAULT
                     ogs_error("[%s] Invalid HTTP method [%s]",
                             amf_ue->suci, sbi_message->h.method);
                     ogs_assert_if_reached();
                 END
+                break;
+
+            CASE(OGS_SBI_RESOURCE_NAME_5G_AKA)
+            CASE(OGS_SBI_RESOURCE_NAME_5G_AKA_CONFIRMATION)
+            CASE(OGS_SBI_RESOURCE_NAME_EAP_SESSION)
+                ogs_warn("[%s] Ignore SBI message", amf_ue->supi);
                 break;
 
             DEFAULT
@@ -246,38 +258,6 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                 ogs_error("Invalid resource name [%s]",
                         sbi_message->h.resource.component[1]);
                 ogs_assert_if_reached();
-            END
-            break;
-
-        CASE(OGS_SBI_SERVICE_NAME_NAUSF_AUTH)
-            if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED &&
-                sbi_message->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT &&
-                sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) {
-                ogs_error("[%s] HTTP response error [%d]",
-                        amf_ue->supi, sbi_message->res_status);
-                break;
-            }
-            SWITCH(sbi_message->h.resource.component[0])
-            CASE(OGS_SBI_RESOURCE_NAME_5G_AKA)
-            CASE(OGS_SBI_RESOURCE_NAME_5G_AKA_CONFIRMATION)
-            CASE(OGS_SBI_RESOURCE_NAME_EAP_SESSION)
-                ogs_warn("[%s] Ignore SBI message", amf_ue->supi);
-                break;
-            CASE(OGS_SBI_RESOURCE_NAME_UE_AUTHENTICATIONS)
-                SWITCH(sbi_message->h.method)
-                CASE(OGS_SBI_HTTP_METHOD_DELETE)
-                    if (amf_ue->confirmation_url_for_5g_aka)
-                        ogs_free(amf_ue->confirmation_url_for_5g_aka);
-                    amf_ue->confirmation_url_for_5g_aka = NULL;
-                    break;
-                DEFAULT
-                    ogs_error("[%s] Invalid HTTP method [%s]",
-                            amf_ue->suci, sbi_message->h.method);
-                END
-                break;
-            DEFAULT
-                ogs_error("Invalid resource name [%s]",
-                        sbi_message->h.resource.component[1]);
             END
             break;
 
@@ -444,7 +424,7 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
 
 static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
 {
-    int rv, xact_count = 0;
+    int rv, i, xact_count = 0;
     ogs_nas_5gmm_cause_t gmm_cause;
 
     amf_ue_t *amf_ue = NULL;
@@ -644,6 +624,13 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
 
             gmm_handle_deregistration_request(
                     amf_ue, &nas_message->gmm.deregistration_request_from_ue);
+            ogs_assert(amf_ue->num_of_slice <= OGS_MAX_NUM_OF_SLICE);
+            for (i = 0; i < amf_ue->num_of_slice; i++) {
+                amf_metrics_inst_by_slice_add(&amf_ue->nr_tai.plmn_id,
+                        &amf_ue->slice[i].s_nssai,
+                        AMF_METR_GAUGE_RM_REGISTEREDSUBNBR, -1);
+            }
+            amf_ue->rm_state = RM_STATE_DEREGISTERED;
             OGS_FSM_TRAN(s, &gmm_state_de_registered);
             break;
 
@@ -659,6 +646,13 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
                     NGAP_Cause_PR_misc, NGAP_CauseMisc_om_intervention,
                     NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0));
 
+            ogs_assert(amf_ue->num_of_slice <= OGS_MAX_NUM_OF_SLICE);
+            for (i = 0; i < amf_ue->num_of_slice; i++) {
+                amf_metrics_inst_by_slice_add(&amf_ue->nr_tai.plmn_id,
+                        &amf_ue->slice[i].s_nssai,
+                        AMF_METR_GAUGE_RM_REGISTEREDSUBNBR, -1);
+            }
+            amf_ue->rm_state = RM_STATE_DEREGISTERED;
             OGS_FSM_TRAN(s, &gmm_state_de_registered);
             break;
 
@@ -1340,6 +1334,16 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
         switch (nas_message->gmm.h.message_type) {
         case OGS_NAS_5GS_REGISTRATION_COMPLETE:
             ogs_info("[%s] Registration complete", amf_ue->supi);
+            if (amf_ue->rm_state == RM_STATE_DEREGISTERED){
+                int i;
+                ogs_assert(amf_ue->num_of_slice <= OGS_MAX_NUM_OF_SLICE);
+                for (i = 0; i < amf_ue->num_of_slice; i++) {
+                    amf_metrics_inst_by_slice_add(&amf_ue->nr_tai.plmn_id,
+                            &amf_ue->slice[i].s_nssai,
+                            AMF_METR_GAUGE_RM_REGISTEREDSUBNBR, 1);
+                }
+            }
+            amf_ue->rm_state = RM_STATE_REGISTERED;
 
             CLEAR_AMF_UE_TIMER(amf_ue->t3550);
 

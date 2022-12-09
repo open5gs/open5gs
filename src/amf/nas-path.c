@@ -158,6 +158,8 @@ int nas_5gs_send_registration_reject(
     int rv;
     ogs_pkbuf_t *gmmbuf = NULL;
 
+    amf_metrics_inst_by_cause_add(gmm_cause, AMF_METR_CTR_RM_REG_INITFAIL, 1);
+
     ogs_assert(amf_ue);
 
     ogs_warn("[%s] Registration reject [%d]", amf_ue->suci, gmm_cause);
@@ -378,6 +380,8 @@ int nas_5gs_send_authentication_reject(amf_ue_t *amf_ue)
 {
     int rv;
     ogs_pkbuf_t *gmmbuf = NULL;
+
+    amf_metrics_inst_by_cause_add(0, AMF_METR_CTR_RM_REG_INITFAIL, 1);
 
     ogs_assert(amf_ue);
 

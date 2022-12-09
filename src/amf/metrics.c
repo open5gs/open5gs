@@ -64,6 +64,7 @@ amf_metrics_spec_def_t amf_metrics_spec_def_global[_AMF_METR_GLOB_MAX] = {
     .name = "gnb",
     .description = "gNodeBs",
 },
+/* Global Counters: */
 };
 int amf_metrics_init_inst_global(void)
 {
@@ -75,6 +76,177 @@ int amf_metrics_free_inst_global(void)
     return amf_metrics_free_inst(amf_metrics_inst_global, _AMF_METR_GLOB_MAX);
 }
 
+/* BY SLICE */
+const char *labels_slice[] = {
+    "plmnid",
+    "snssai"
+};
+
+#define AMF_METR_BY_SLICE_GAUGE_ENTRY(_id, _name, _desc) \
+    [_id] = { \
+        .type = OGS_METRICS_METRIC_TYPE_GAUGE, \
+        .name = _name, \
+        .description = _desc, \
+        .num_labels = OGS_ARRAY_SIZE(labels_slice), \
+        .labels = labels_slice, \
+    },
+ogs_metrics_spec_t *amf_metrics_spec_by_slice[_AMF_METR_BY_SLICE_MAX];
+ogs_hash_t *metrics_hash_by_slice = NULL;   /* hash table for SLICE labels */
+amf_metrics_spec_def_t amf_metrics_spec_def_by_slice[_AMF_METR_BY_SLICE_MAX] = {
+/* Gauges: */
+AMF_METR_BY_SLICE_GAUGE_ENTRY(
+    AMF_METR_GAUGE_RM_REGISTEREDSUBNBR,
+    "fivegs_amffunction_rm_registeredsubnbr",
+    "Number of registered state subscribers per AMF")
+};
+void amf_metrics_init_by_slice(void);
+int amf_metrics_free_inst_by_slice(ogs_metrics_inst_t **inst);
+typedef struct amf_metric_key_by_slice_s {
+    ogs_plmn_id_t               plmn_id;
+    ogs_s_nssai_t               snssai;
+    amf_metric_type_by_slice_t  t;
+} amf_metric_key_by_slice_t;
+
+void amf_metrics_init_by_slice(void)
+{
+    metrics_hash_by_slice = ogs_hash_make();
+    ogs_assert(metrics_hash_by_slice);
+}
+
+void amf_metrics_inst_by_slice_add(ogs_plmn_id_t *plmn,
+        ogs_s_nssai_t *snssai, amf_metric_type_by_slice_t t, int val)
+{
+    ogs_metrics_inst_t *metrics = NULL;
+    amf_metric_key_by_slice_t *slice_key;
+
+    slice_key = ogs_calloc(1, sizeof(*slice_key));
+    ogs_assert(slice_key);
+
+    if (plmn) {
+        slice_key->plmn_id = *plmn;
+    }
+
+    if (snssai) {
+        slice_key->snssai = *snssai;
+    } else {
+        slice_key->snssai.sst = 0;
+        slice_key->snssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+    }
+
+    slice_key->t = t;
+
+    metrics = ogs_hash_get(metrics_hash_by_slice,
+            slice_key, sizeof(*slice_key));
+
+    if (!metrics) {
+        char plmn_id[OGS_PLMNIDSTRLEN] = "";
+        char *s_nssai = NULL;
+
+        if (plmn) {
+            ogs_plmn_id_to_string(plmn, plmn_id);
+        }
+
+        if (snssai) {
+            s_nssai = ogs_sbi_s_nssai_to_string_plain(snssai);
+        } else {
+            s_nssai = ogs_strdup("");
+        }
+
+        metrics = ogs_metrics_inst_new(amf_metrics_spec_by_slice[t],
+                amf_metrics_spec_def_by_slice->num_labels,
+                (const char *[]){ plmn_id, s_nssai });
+
+        ogs_assert(metrics);
+        ogs_hash_set(metrics_hash_by_slice,
+                slice_key, sizeof(*slice_key), metrics);
+
+        if (s_nssai)
+            ogs_free(s_nssai);
+    } else {
+        ogs_free(slice_key);
+    }
+
+    ogs_metrics_inst_add(metrics, val);
+}
+
+int amf_metrics_free_inst_by_slice(ogs_metrics_inst_t **inst)
+{
+    return amf_metrics_free_inst(inst, _AMF_METR_BY_SLICE_MAX);
+}
+
+/* BY CAUSE */
+const char *labels_cause[] = {
+    "cause"
+};
+
+#define AMF_METR_BY_CAUSE_CTR_ENTRY(_id, _name, _desc) \
+    [_id] = { \
+        .type = OGS_METRICS_METRIC_TYPE_COUNTER, \
+        .name = _name, \
+        .description = _desc, \
+        .num_labels = OGS_ARRAY_SIZE(labels_cause), \
+        .labels = labels_cause, \
+    },
+ogs_metrics_spec_t *amf_metrics_spec_by_cause[_AMF_METR_BY_CAUSE_MAX];
+ogs_hash_t *metrics_hash_by_cause = NULL;   /* hash table for CAUSE labels */
+amf_metrics_spec_def_t amf_metrics_spec_def_by_cause[_AMF_METR_BY_CAUSE_MAX] = {
+/* Counters: */
+AMF_METR_BY_CAUSE_CTR_ENTRY(
+    AMF_METR_CTR_RM_REG_INITFAIL,
+    "fivegs_amffunction_rm_reginitfail",
+    "Number of failed initial registrations at the AMF")
+};
+void amf_metrics_init_by_cause(void);
+int amf_metrics_free_inst_by_cause(ogs_metrics_inst_t **inst);
+typedef struct amf_metric_key_by_cause_s {
+    uint8_t                     cause;
+    amf_metric_type_by_cause_t  t;
+} amf_metric_key_by_cause_t;
+
+void amf_metrics_init_by_cause(void)
+{
+    metrics_hash_by_cause = ogs_hash_make();
+    ogs_assert(metrics_hash_by_cause);
+}
+
+void amf_metrics_inst_by_cause_add(uint8_t cause,
+        amf_metric_type_by_cause_t t, int val)
+{
+    ogs_metrics_inst_t *metrics = NULL;
+    amf_metric_key_by_cause_t *cause_key;
+
+    cause_key = ogs_calloc(1, sizeof(*cause_key));
+    ogs_assert(cause_key);
+
+    cause_key->cause = cause;
+    cause_key->t = t;
+
+    metrics = ogs_hash_get(metrics_hash_by_cause,
+            cause_key, sizeof(*cause_key));
+
+    if (!metrics) {
+        char cause_str[4];
+        ogs_snprintf(cause_str, sizeof(cause_str), "%d", cause);
+
+        metrics = ogs_metrics_inst_new(amf_metrics_spec_by_cause[t],
+                amf_metrics_spec_def_by_cause->num_labels,
+                (const char *[]){ cause_str });
+
+        ogs_assert(metrics);
+        ogs_hash_set(metrics_hash_by_cause,
+                cause_key, sizeof(*cause_key), metrics);
+    } else {
+        ogs_free(cause_key);
+    }
+
+    ogs_metrics_inst_add(metrics, val);
+}
+
+int amf_metrics_free_inst_by_cause(ogs_metrics_inst_t **inst)
+{
+    return amf_metrics_free_inst(inst, _AMF_METR_BY_CAUSE_MAX);
+}
+
 int amf_metrics_open(void)
 {
     ogs_metrics_context_t *ctx = ogs_metrics_self();
@@ -83,13 +255,55 @@ int amf_metrics_open(void)
     amf_metrics_init_spec(ctx, amf_metrics_spec_global, amf_metrics_spec_def_global,
             _AMF_METR_GLOB_MAX);
 
+    amf_metrics_init_spec(ctx, amf_metrics_spec_by_slice,
+            amf_metrics_spec_def_by_slice, _AMF_METR_BY_SLICE_MAX);
+    amf_metrics_init_spec(ctx, amf_metrics_spec_by_cause,
+            amf_metrics_spec_def_by_cause, _AMF_METR_BY_CAUSE_MAX);
+
     amf_metrics_init_inst_global();
+
+    amf_metrics_init_by_slice();
+    amf_metrics_init_by_cause();
+
     return 0;
 }
 
 int amf_metrics_close(void)
 {
+    ogs_hash_index_t *hi;
     ogs_metrics_context_t *ctx = ogs_metrics_self();
+
+    if (metrics_hash_by_slice) {
+        for (hi = ogs_hash_first(metrics_hash_by_slice); hi; hi = ogs_hash_next(hi)) {
+            amf_metric_key_by_slice_t *key =
+                (amf_metric_key_by_slice_t *)ogs_hash_this_key(hi);
+            //void *val = ogs_hash_this_val(hi);
+
+            ogs_hash_set(metrics_hash_by_slice, key, sizeof(*key), NULL);
+
+            ogs_free(key);
+            /* don't free val (metric ifself) -
+             * it will be free'd by ogs_metrics_context_final() */
+            //ogs_free(val);
+        }
+        ogs_hash_destroy(metrics_hash_by_slice);
+    }
+    if (metrics_hash_by_cause) {
+        for (hi = ogs_hash_first(metrics_hash_by_cause); hi; hi = ogs_hash_next(hi)) {
+            amf_metric_key_by_cause_t *key =
+                (amf_metric_key_by_cause_t *)ogs_hash_this_key(hi);
+            //void *val = ogs_hash_this_val(hi);
+
+            ogs_hash_set(metrics_hash_by_cause, key, sizeof(*key), NULL);
+
+            ogs_free(key);
+            /* don't free val (metric ifself) -
+             * it will be free'd by ogs_metrics_context_final() */
+            //ogs_free(val);
+        }
+        ogs_hash_destroy(metrics_hash_by_cause);
+    }
+
     ogs_metrics_context_close(ctx);
     return OGS_OK;
 }

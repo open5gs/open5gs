@@ -47,6 +47,8 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
     message.h.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_SM_POLICIES;
 
     memset(&SmPolicyContextData, 0, sizeof(SmPolicyContextData));
+    memset(&sNssai, 0, sizeof(sNssai));
+    memset(&SubsSessAmbr, 0, sizeof(SubsSessAmbr));
 
     SmPolicyContextData.supi = smf_ue->supi;
     if (!SmPolicyContextData.supi) {
@@ -105,7 +107,6 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
         }
     }
 
-    memset(&SubsSessAmbr, 0, sizeof(SubsSessAmbr));
     if (OGS_SBI_FEATURES_IS_SET(sess->smpolicycontrol_features,
                 OGS_SBI_NPCF_SMPOLICYCONTROL_DN_AUTHORIZATION)) {
         if (sess->session.ambr.uplink) {
@@ -161,7 +162,6 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
         }
     }
 
-    memset(&sNssai, 0, sizeof(sNssai));
     sNssai.sst = sess->s_nssai.sst;
     sNssai.sd = ogs_s_nssai_sd_to_string(sess->s_nssai.sd);
     SmPolicyContextData.slice_info = &sNssai;

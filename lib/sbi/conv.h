@@ -88,6 +88,7 @@ OpenAPI_pcc_rule_t *ogs_sbi_build_pcc_rule(
 void ogs_sbi_free_pcc_rule(OpenAPI_pcc_rule_t *PccRule);
 OpenAPI_qos_data_t *ogs_sbi_build_qos_data(ogs_pcc_rule_t *pcc_rule);
 void ogs_sbi_free_qos_data(OpenAPI_qos_data_t *QosData);
+char *ogs_sbi_s_nssai_to_string_plain(ogs_s_nssai_t *s_nssai);
 
 #ifdef __cplusplus
 }
