@@ -243,8 +243,11 @@ static void handle_nf_service(
                     NFServiceVersion->expiry);
     }
 
-    if (NFService->fqdn)
+    if (NFService->fqdn) {
+        if (nf_service->fqdn)
+            ogs_free(nf_service->fqdn);
         nf_service->fqdn = ogs_strdup(NFService->fqdn);
+    }
 
     OpenAPI_list_for_each(NFService->ip_end_points, node) {
         OpenAPI_ip_end_point_t *IpEndPoint = node->data;

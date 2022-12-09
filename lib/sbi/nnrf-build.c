@@ -522,8 +522,11 @@ static OpenAPI_nf_service_t *build_nf_service(
     NFService->scheme = nf_service->scheme;
     NFService->nf_service_status = nf_service->status;
 
-    if (nf_service->fqdn)
+    if (nf_service->fqdn) {
+        if (NFService->fqdn)
+            ogs_free(NFService->fqdn);
         NFService->fqdn = ogs_strdup(nf_service->fqdn);
+    }
 
     IpEndPointList = OpenAPI_list_create();
     if (!IpEndPointList) {
