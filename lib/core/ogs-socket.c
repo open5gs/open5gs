@@ -84,6 +84,8 @@ ogs_sock_t *ogs_sock_socket(int family, int type, int protocol)
     sock->family = family;
     sock->fd = socket(sock->family, type, protocol);
     if (sock->fd < 0) {
+        ogs_sock_destroy(sock);
+        
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
             "socket create(%d:%d:%d) failed", sock->family, type, protocol);
         return NULL;
