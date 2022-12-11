@@ -292,10 +292,6 @@ $ sudo ip6tables -t nat -A POSTROUTING -s 2001:db8:cafe::/48 ! -o ogstun -j MASQ
 Configure the firewall correctly. Some operating systems (Ubuntu) by default enable firewall rules to block traffic.
 ```bash
 $ sudo ufw status
-Status: inactive
-$ sudo ufw enable
-Firewall is active and enabled on system startup
-$ sudo ufw status
 Status: active
 $ sudo ufw disable
 Firewall stopped and disabled on system startup

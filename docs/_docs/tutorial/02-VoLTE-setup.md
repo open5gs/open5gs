@@ -777,7 +777,6 @@ ip6tables -t nat -A POSTROUTING -s fd1f:76f3:da9b:0101::/48 ! -o ogstun2 -j MASQ
 iptables -I INPUT -i ogstun2 -j ACCEPT
 ip6tables -I INPUT -i ogstun2 -j ACCEPT
 
-ufw enable
 ufw disable
 ```
 
