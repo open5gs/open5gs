@@ -37,7 +37,7 @@ example_conf = '''
     volte.yaml
     vonr.yaml
     slice.yaml
-    srslte.yaml
+    srsenb.yaml
     non3gpp.yaml
 '''.split()
 

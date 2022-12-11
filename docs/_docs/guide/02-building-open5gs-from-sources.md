@@ -468,37 +468,13 @@ To add subscriber information, you can do WebUI operations in the following orde
 **Note:** Subscribers added with this tool immediately register in the Open5GS HSS/UDR without the need to restart any daemon. However, if you use the WebUI to change subscriber profile, you must restart the Open5GS AMF/MME daemon for the changes to take effect.
 {: .notice--warning}
 
-### IP routing + NAT for UE internet connectivity
+#### Adding a route for the UE to have WAN connectivity {#UEInternet}
 ---
 
-To allow your phones to connect to the internet, you must run the following command on the host running Open5GS-PGW:
+In order to bridge between the PGWU/UPF and WAN (Internet), you must enable IP forwarding and add a NAT rule to your IP Tables.
 
+To enable forwarding and add the NAT rule, enter
 ```bash
-### Check IP Table 'forward'
-$ sudo iptables -L
-Chain INPUT (policy ACCEPT)
-target     prot opt source               destination
-
-Chain FORWARD (policy ACCEPT)
-target     prot opt source               destination
-
-Chain OUTPUT (policy ACCEPT)
-target     prot opt source               destination
-
-### Check IP Table 'nat'
-$ sudo iptables -L -t nat
-Chain PREROUTING (policy ACCEPT)
-target     prot opt source               destination
-
-Chain INPUT (policy ACCEPT)
-target     prot opt source               destination
-
-Chain OUTPUT (policy ACCEPT)
-target     prot opt source               destination
-
-Chain POSTROUTING (policy ACCEPT)
-target     prot opt source               destination
-
 ### Enable IPv4/IPv6 Forwarding
 $ sudo sysctl -w net.ipv4.ip_forward=1
 $ sudo sysctl -w net.ipv6.conf.all.forwarding=1
@@ -508,9 +484,26 @@ $ sudo iptables -t nat -A POSTROUTING -s 10.45.0.0/16 ! -o ogstun -j MASQUERADE
 $ sudo ip6tables -t nat -A POSTROUTING -s 2001:db8:cafe::/48 ! -o ogstun -j MASQUERADE
 ```
 
+Configure the firewall correctly. Some operating systems (Ubuntu) by default enable firewall rules to block traffic.
+```bash
+$ sudo ufw status
+Status: inactive
+$ sudo ufw enable
+Firewall is active and enabled on system startup
+$ sudo ufw status
+Status: active
+$ sudo ufw disable
+Firewall stopped and disabled on system startup
+$ sudo ufw status
+Status: inactive
+```
+
 Optionally, you may consider the settings below for security purposes.
 
 ```bash
+### Ensure that the packets in the `INPUT` chain to the `ogstun` interface are accepted
+$ sudo iptables -I INPUT -i ogstun -j ACCEPT
+
 ### Prevent UE's from connecting to the host on which UPF is running
 $ sudo iptables -I INPUT -s 10.45.0.0/16 -j DROP
 $ sudo ip6tables -I INPUT -s 2001:db8:cafe::/48 -j DROP
@@ -521,10 +514,7 @@ $ sudo ip6tables -I INPUT -s 2001:db8:cafe::/48 -j DROP
 $ sudo iptables -I FORWARD -s 10.45.0.0/16 -d x.x.x.x/y -j DROP
 ```
 
-**Note:** The above assumes you do not have any existing rules in the filter and nat tables. If a program such as docker has already set up rules, you may need to add the Open5GS related rules differently.
-{: .notice--danger}
-
-### Turn on your eNodeB and Phone
+## 5. Turn on your eNB/gNB and UE
 ---
 
 - You can see actual traffic through wireshark -- [[srsenb.pcapng]]({{ site.url }}{{ site.baseurl }}/assets/pcapng/srsenb.pcapng).

@@ -151,21 +151,6 @@ __DNN/APN Requested by UE not present in UDM/HSS:__
 Ensure the DNNs/APNs requested by the UE are present in the UDM/HSS.
 
 
-#### UE shows "5G" or "LTE" Connection but has no IP Connectivity to the outside World
-If your device shows as connected (Includes 5G/LTE symbol) there are a few simple things to check to diagnose connectivity issues:
-* The UPF can contact the outside world (Can resolve DNS, browse, etc)
-* Check if the interface connected to the internet is correctly `NAT` with the `ogstun` interface.
-   - Ensure that the packets in the `INPUT` chain to the `ogstun` interface are accepted 
-   ```
-   $ sudo iptables -I INPUT -i ogstun -j ACCEPT
-   ```
-* Check if the UE's IP can be pinged successfully by performing `ping <IP of UE>` -- [e.g. `ping 10.45.0.2`]
-* Configure the firewall correctly. Some operating systems (Ubuntu) by default enable firewall rules to block traffic
-   - Explicitly disable it to see if it resolves the problem of granting data access to the UE by doing
-   ```
-   $ sudo ufw disable
-   ```
-
 ## Further Debugging
 ---
 

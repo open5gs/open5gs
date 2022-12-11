@@ -12,9 +12,10 @@ head_inline: "<style> ul { padding-bottom: 1em; } </style>"
 
 - Tutorials
   - [Your First LTE](tutorial/01-your-first-lte)
+  - [5G SA COTS UE](https://docs.srsran.com/en/latest/app_notes/source/5g_sa_COTS/source/index.html) from [SRS](https://srs.io)
+  - [Metrics with Prometheus](tutorial/04-metrics-prometheus)
   - [VoLTE Setup with Kamailio IMS and Open5GS](tutorial/02-VoLTE-setup)
   - [Dockerized VoLTE Setup](tutorial/03-VoLTE-dockerized)
-  - [Metrics with Prometheus](tutorial/04-metrics-prometheus)
 
 - Inside Source Code
   - [Detailed Architecture of Open5GS](https://chowdera.com/2022/151/202205312246348316.html)
