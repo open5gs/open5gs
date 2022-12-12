@@ -572,3 +572,18 @@ pcf_app_t *pcf_app_find_by_app_session_id(char *app_session_id)
     ogs_assert(app_session_id);
     return pcf_app_find(atoll(app_session_id));
 }
+
+int get_pcf_load()
+{
+    if (ogs_pool_avail(&pcf_ue_pool) / ogs_pool_size(&pcf_ue_pool) <
+            ogs_pool_avail(&pcf_sess_pool) /
+            ogs_pool_avail(&pcf_sess_pool)) {
+        return (((ogs_pool_size(&pcf_ue_pool) -
+                ogs_pool_avail(&pcf_ue_pool)) * 100) /
+                ogs_pool_size(&pcf_ue_pool));
+    } else {
+        return (((ogs_pool_size(&pcf_sess_pool) -
+                ogs_pool_avail(&pcf_sess_pool)) * 100) /
+                ogs_pool_size(&pcf_sess_pool));
+    }
+}

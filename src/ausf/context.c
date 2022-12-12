@@ -224,3 +224,10 @@ ausf_ue_t *ausf_ue_cycle(ausf_ue_t *ausf_ue)
 {
     return ogs_pool_cycle(&ausf_ue_pool, ausf_ue);
 }
+
+int get_ue_load()
+{
+    return (((ogs_pool_size(&ausf_ue_pool) -
+            ogs_pool_avail(&ausf_ue_pool)) * 100) /
+            ogs_pool_size(&ausf_ue_pool));
+}

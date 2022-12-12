@@ -171,6 +171,7 @@ int pcf_app_remove(pcf_app_t *app);
 void pcf_app_remove_all(pcf_sess_t *sess);
 pcf_app_t *pcf_app_find(uint32_t index);
 pcf_app_t *pcf_app_find_by_app_session_id(char *app_session_id);
+int get_pcf_load(void);
 
 #ifdef __cplusplus
 }
