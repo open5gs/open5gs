@@ -2313,6 +2313,13 @@ static void stats_remove_ran_ue(void)
     ogs_info("[Removed] Number of gNB-UEs is now %d", num_of_ran_ue);
 }
 
+int get_ran_ue_load()
+{
+    return (((ogs_pool_size(&ran_ue_pool) -
+            ogs_pool_avail(&ran_ue_pool)) * 100) /
+            ogs_pool_size(&ran_ue_pool));
+}
+
 static void stats_add_amf_session(void)
 {
     amf_metrics_inst_global_inc(AMF_METR_GLOB_GAUGE_AMF_SESS);

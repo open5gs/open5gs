@@ -1217,7 +1217,8 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_update(void)
     ogs_sbi_request_t *request = NULL;
 
     OpenAPI_list_t *PatchItemList;
-    OpenAPI_patch_item_t item;
+    OpenAPI_patch_item_t StatusItem;
+    OpenAPI_patch_item_t LoadItem;
 
     nf_instance = ogs_sbi_self()->nf_instance;
     ogs_assert(nf_instance);
@@ -1239,17 +1240,28 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_update(void)
         goto end;
     }
 
-    memset(&item, 0, sizeof(item));
-    item.op = OpenAPI_patch_operation_replace;
-    item.path = (char *)"/nfStatus";
-    item.value = OpenAPI_any_type_create_string(
+    memset(&StatusItem, 0, sizeof(StatusItem));
+    StatusItem.op = OpenAPI_patch_operation_replace;
+    StatusItem.path = (char *)"/nfStatus";
+    StatusItem.value = OpenAPI_any_type_create_string(
         OpenAPI_nf_status_ToString(OpenAPI_nf_status_REGISTERED));
-    if (!item.value) {
-        ogs_error("No item.value");
+    if (!StatusItem.value) {
+        ogs_error("No status item.value");
         goto end;
     }
 
-    OpenAPI_list_add(PatchItemList, &item);
+    OpenAPI_list_add(PatchItemList, &StatusItem);
+
+    memset(&LoadItem, 0, sizeof(LoadItem));
+    LoadItem.op = OpenAPI_patch_operation_replace;
+    LoadItem.path = (char *)"/load";
+    LoadItem.value = OpenAPI_any_type_create_number(ogs_sbi_self()->nf_instance->load);
+    if (!LoadItem.value) {
+        ogs_error("No load item.value");
+        goto end;
+    }
+
+    OpenAPI_list_add(PatchItemList, &LoadItem);
 
     message.PatchItemList = PatchItemList;
 
@@ -1258,7 +1270,8 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_update(void)
 
 end:
     OpenAPI_list_free(PatchItemList);
-    OpenAPI_any_type_free(item.value);
+    OpenAPI_any_type_free(StatusItem.value);
+    OpenAPI_any_type_free(LoadItem.value);
 
     return request;
 }

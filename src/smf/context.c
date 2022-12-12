@@ -3103,6 +3103,13 @@ static void stats_remove_smf_session(smf_sess_t *sess)
     ogs_info("[Removed] Number of SMF-Sessions is now %d", num_of_smf_sess);
 }
 
+int get_sess_load()
+{
+    return (((ogs_pool_size(&smf_sess_pool) -
+            ogs_pool_avail(&smf_sess_pool)) * 100) /
+            ogs_pool_size(&smf_sess_pool));
+}
+
 int smf_integrity_protection_indication_value2enum(const char *value)
 {
     ogs_assert(value);

@@ -346,3 +346,10 @@ char *nssf_nsi_nrf_uri(nssf_nsi_t *nsi)
 
     return ogs_uridup(ogs_app_tls_server_enabled() == true, nsi->addr, &h);
 }
+
+int get_nsi_load()
+{
+    return (((ogs_pool_size(&nssf_nsi_pool) -
+            ogs_pool_avail(&nssf_nsi_pool)) * 100) /
+            ogs_pool_size(&nssf_nsi_pool));
+}
