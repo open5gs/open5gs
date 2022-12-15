@@ -2445,6 +2445,11 @@ void ngap_handle_path_switch_request(
     NGAP_PDUSessionResourceToBeSwitchedDLItem_t *PDUSessionItem = NULL;
     OCTET_STRING_t *transfer = NULL;
 
+    NGAP_PDUSessionResourceFailedToSetupListPSReq_t
+        *PDUSessionResourceFailedToSetupListPSReq = NULL;
+    NGAP_PDUSessionResourceFailedToSetupItemPSReq_t *PDUSessionFailedItem = NULL;
+    OCTET_STRING_t *failedTransfer = NULL;
+
     amf_nsmf_pdusession_sm_context_param_t param;
 
     ogs_assert(gnb);
@@ -2476,6 +2481,10 @@ void ngap_handle_path_switch_request(
         case NGAP_ProtocolIE_ID_id_PDUSessionResourceToBeSwitchedDLList:
             PDUSessionResourceToBeSwitchedDLList =
                 &ie->value.choice.PDUSessionResourceToBeSwitchedDLList;
+            break;
+        case NGAP_ProtocolIE_ID_id_PDUSessionResourceFailedToSetupListPSReq:
+            PDUSessionResourceFailedToSetupListPSReq =
+                &ie->value.choice.PDUSessionResourceFailedToSetupListPSReq;
             break;
         default:
             break;
@@ -2701,6 +2710,79 @@ void ngap_handle_path_switch_request(
         param.n2SmInfoType = OpenAPI_n2_sm_info_type_PATH_SWITCH_REQ;
         ogs_pkbuf_put_data(param.n2smbuf, transfer->buf, transfer->size);
 
+        param.toBeSwitched = 1;
+
+        ogs_expect(true ==
+            amf_sess_sbi_discover_and_send(
+                OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                amf_nsmf_pdusession_build_update_sm_context,
+                sess, AMF_UPDATE_SM_CONTEXT_PATH_SWITCH_REQUEST, &param));
+
+        ogs_pkbuf_free(param.n2smbuf);
+    }
+
+    if (PDUSessionResourceFailedToSetupListPSReq) {
+
+        for (i = 0; i < PDUSessionResourceFailedToSetupListPSReq->list.count; i++) {
+            amf_sess_t *sess = NULL;
+            PDUSessionFailedItem = (NGAP_PDUSessionResourceFailedToSetupItemPSReq_t *)
+            PDUSessionResourceFailedToSetupListPSReq->list.array[i];
+            if (!PDUSessionFailedItem) {
+                ogs_error("No NGAP_PDUSessionResourceFailedToSetupItemPSReq");
+                ogs_assert(OGS_OK ==
+                    ngap_send_error_indication2(amf_ue,
+                        NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error));
+                return;
+            }
+
+        failedTransfer = &PDUSessionFailedItem->pathSwitchRequestSetupFailedTransfer;
+
+        if (!failedTransfer) {
+            ogs_error("No pathSwitchRequestSetupFailedTransfer");
+            ogs_assert(OGS_OK ==
+                ngap_send_error_indication2(amf_ue,
+                    NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error));
+            return;
+        }
+
+        if (PDUSessionFailedItem->pDUSessionID ==
+                OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED) {
+            ogs_error("PDU Session Identity is unassigned");
+            ogs_assert(OGS_OK ==
+                ngap_send_error_indication2(amf_ue,
+                    NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error));
+            return;
+        }
+
+        sess = amf_sess_find_by_psi(amf_ue, PDUSessionFailedItem->pDUSessionID);
+        if (!sess) {
+            ogs_error("Cannot find PDU Session ID [%d]",
+                    (int)PDUSessionFailedItem->pDUSessionID);
+            ogs_assert(OGS_OK ==
+                ngap_send_error_indication2(amf_ue,
+                    NGAP_Cause_PR_radioNetwork,
+                    NGAP_CauseRadioNetwork_unknown_PDU_session_ID));
+            return;
+        }
+
+        if (!SESSION_CONTEXT_IN_SMF(sess)) {
+            ogs_error("Session Context is not in SMF [%d]",
+                    (int)PDUSessionFailedItem->pDUSessionID);
+            ogs_assert(OGS_OK ==
+                ngap_send_error_indication2(amf_ue,
+                    NGAP_Cause_PR_radioNetwork,
+                    NGAP_CauseRadioNetwork_unknown_PDU_session_ID));
+            return;
+        }
+
+        memset(&param, 0, sizeof(param));
+        param.n2smbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+        ogs_assert(param.n2smbuf);
+
+        param.n2SmInfoType = OpenAPI_n2_sm_info_type_PATH_SWITCH_SETUP_FAIL;
+        ogs_pkbuf_put_data(param.n2smbuf, failedTransfer->buf, failedTransfer->size);
+        param.failedToBeSwitched = 1;
+
         ogs_assert(true ==
             amf_sess_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
@@ -2708,6 +2790,11 @@ void ngap_handle_path_switch_request(
                 sess, AMF_UPDATE_SM_CONTEXT_PATH_SWITCH_REQUEST, &param));
 
         ogs_pkbuf_free(param.n2smbuf);
+
+        /* We have to store path_switch_request_fail now, because for this scenario
+        the answer "204 NO CONTENT" comes from SMF */
+        AMF_SESS_STORE_N2_TRANSFER(sess, path_switch_request_fail, param.n2smbuf);
+        }
     }
 }
 
