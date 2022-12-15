@@ -1346,8 +1346,11 @@ static ogs_sbi_client_t *find_client_by_fqdn(
     ogs_assert(scheme);
     ogs_assert(fqdn);
 
-    rv = ogs_getaddrinfo(&addr, AF_UNSPEC, fqdn,
-            port ? port : ogs_sbi_self()->sbi_port, 0);
+    if (!port)
+        port = scheme == OpenAPI_uri_scheme_https ?
+            OGS_SBI_HTTPS_PORT : OGS_SBI_HTTP_PORT;
+
+    rv = ogs_getaddrinfo(&addr, AF_UNSPEC, fqdn, port, 0);
     if (rv != OGS_OK) {
         ogs_error("Invalid NFProfile.fqdn");
         return NULL;
@@ -1398,11 +1401,24 @@ static void nf_service_associate_client(ogs_sbi_nf_service_t *nf_service)
 {
     ogs_sbi_client_t *client = NULL;
     ogs_sockaddr_t *addr = NULL;
+    int port = 0;
+    int i;
 
     ogs_assert(nf_service->scheme);
 
+    for (i = 0; i < nf_service->num_of_addr; i++) {
+        if (nf_service->addr[i].port) {
+            port = nf_service->addr[i].port;
+            break;
+        }
+    }
+
     if (nf_service->fqdn)
-        client = find_client_by_fqdn(nf_service->scheme, nf_service->fqdn, 0);
+        client = find_client_by_fqdn(
+                nf_service->scheme, nf_service->fqdn, port);
+    else if (nf_service->nf_instance->fqdn)
+        client = find_client_by_fqdn(
+                nf_service->scheme, nf_service->nf_instance->fqdn, port);
 
     if (!client) {
         /* At this point, CLIENT selection method is very simple. */
@@ -1420,6 +1436,9 @@ static void nf_service_associate_client(ogs_sbi_nf_service_t *nf_service)
             }
         }
     }
+
+    if (!client)
+        client = nf_service->nf_instance->client;
 
     if (client)
         OGS_SBI_SETUP_CLIENT(nf_service, client);

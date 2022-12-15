@@ -574,7 +574,8 @@ static OpenAPI_nf_service_t *build_nf_service(
                     return NULL;
                 }
             }
-            IpEndPoint->is_port = true;
+            IpEndPoint->is_port =
+                nf_service->addr[i].port ? true : false;
             IpEndPoint->port = nf_service->addr[i].port;
             OpenAPI_list_add(IpEndPointList, IpEndPoint);
         }
