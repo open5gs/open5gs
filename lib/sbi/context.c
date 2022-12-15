@@ -1297,8 +1297,6 @@ ogs_sbi_nf_service_t *ogs_sbi_nf_service_build_default(
         /* First FQDN is selected */
         if (!hostname) {
             hostname = ogs_gethostname(advertise);
-            if (hostname)
-                continue;
         }
 
         if (nf_service->num_of_addr < OGS_SBI_MAX_NUM_OF_IP_ADDRESS) {
