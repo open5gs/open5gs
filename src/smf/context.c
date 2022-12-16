@@ -2030,6 +2030,7 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
     ogs_list_add(&sess->bearer_list, qos_flow);
     smf_metrics_inst_by_5qi_add(&sess->plmn_id, &sess->s_nssai,
             sess->session.qos.index, SMF_METR_GAUGE_SM_QOSFLOWNBR, 1);
+    smf_metrics_inst_global_inc(SMF_METR_GLOB_GAUGE_BEARERS_ACTIVE);
 
     return qos_flow;
 }
