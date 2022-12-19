@@ -1272,7 +1272,7 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
 
                     } else if (trigger == OGS_PFCP_DELETE_TRIGGER_RAN_INITIATED) {
 
-                        OGS_FSM_TRAN(s, smf_gsm_state_session_will_deregister);
+                        OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
 
                     } else {
                         ogs_fatal("Unknown trigger [%d]", trigger);
