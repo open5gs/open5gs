@@ -294,6 +294,12 @@ struct amf_ue_s {
     ((__aMF)->security_context_available == 1) && \
      ((__aMF)->mac_failed == 0) && \
      ((__aMF)->nas.ue.ksi != OGS_NAS_KSI_NO_KEY_IS_AVAILABLE))
+
+#define SECURITY_CONTEXT_CLEAR(__aMF) \
+    (__aMF)->security_context_available = 0; \
+    (__aMF)->mac_failed = 0; \
+    (__aMF)->nas.ue.ksi = 0
+
     int             security_context_available;
     int             mac_failed;
 

@@ -522,6 +522,8 @@ static int network_deregister (
         }
 
         OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_de_registered);
+        SECURITY_CONTEXT_CLEAR(amf_ue);
+
         return OGS_OK;
     }
     else if (CM_IDLE(amf_ue)) {
@@ -529,7 +531,7 @@ static int network_deregister (
         /*ngap_send_paging(amf_ue);*/
         return OGS_OK;
     } else {
-      return OGS_ERROR;
+        return OGS_ERROR;
     }
 }
 
@@ -590,10 +592,10 @@ int amf_namf_callback_handle_dereg_notify(
 
     if (network_deregister(
             amf_ue, DeregistrationData->dereg_reason) == -1) {
-      status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
-      ogs_error("[%s] Deregistration notification for UE in wrong state",
+        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+        ogs_error("[%s] Deregistration notification for UE in wrong state",
                 amf_ue->supi);
-      goto cleanup;
+        goto cleanup;
     }
 
 cleanup:
