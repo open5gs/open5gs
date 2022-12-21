@@ -24,7 +24,8 @@ $ wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key ad
 Create the list file /etc/apt/sources.list.d/mongodb-org-6.0.list for your version of Ubuntu.
 
 ```bash
-$ echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+$ . /etc/lsb-release
+$ echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu ${DISTRIB_CODENAME}/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
 ```
 
 Install the MongoDB packages.
@@ -451,7 +452,7 @@ $ PORT=7777 npm run dev
 
 Connect to `http://127.0.0.1:3000` and login with **admin** account.
 
-> Username : admin  
+> Username : admin
 > Password : 1423
 
 **Note:**
