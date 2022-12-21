@@ -595,6 +595,16 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             sbi_xact = e->h.sbi.data;
             ogs_assert(sbi_xact);
 
+            sbi_xact = ogs_sbi_xact_cycle(sbi_xact);
+            if (!sbi_xact) {
+                /* message was received and put into an event list,
+                 * but not yet processed before timer expiration event
+                 * was put into event list
+                 */
+                ogs_error("SBI transaction has already been removed");
+                break;
+            }
+
             sbi_object = sbi_xact->sbi_object;
             ogs_assert(sbi_object);
 
