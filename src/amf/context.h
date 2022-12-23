@@ -368,6 +368,8 @@ struct amf_ue_s {
         CLEAR_AMF_UE_TIMER((__aMF)->t3555); \
         CLEAR_AMF_UE_TIMER((__aMF)->t3560); \
         CLEAR_AMF_UE_TIMER((__aMF)->t3570); \
+        CLEAR_AMF_UE_TIMER((__aMF)->mobile_reachable); \
+        CLEAR_AMF_UE_TIMER((__aMF)->implicit_deregistration); \
     } while(0);
 #define CLEAR_AMF_UE_TIMER(__aMF_UE_TIMER) \
     do { \
@@ -382,7 +384,7 @@ struct amf_ue_s {
         ogs_pkbuf_t     *pkbuf;
         ogs_timer_t     *timer;
         uint32_t        retry_count;;
-    } t3513, t3522, t3550, t3555, t3560, t3570;
+    } t3513, t3522, t3550, t3555, t3560, t3570, mobile_reachable, implicit_deregistration;
 
     /* UE Radio Capability */
     OCTET_STRING_t  ueRadioCapability;

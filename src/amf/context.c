@@ -1177,6 +1177,28 @@ void ran_ue_remove(ran_ue_t *ran_ue)
     ogs_pool_free(&ran_ue_pool, ran_ue);
 
     stats_remove_ran_ue();
+    if (ran_ue->amf_ue) {
+        if (ran_ue->amf_ue->rm_state == RM_STATE_REGISTERED) {
+            /* Start AMF_TIMER_MOBILE_REACHABLE
+             * TS 24.501
+             * 5.3.7 Handling of the periodic registration update timer and
+             * mobile reachable timer
+             * The network supervises the periodic registration update procedure
+             * of the UE by means of the mobile reachable timer.
+             * If the UE is not registered for emergency services,
+             * the mobile reachable timer shall be longer than the value of timer
+             * T3512. In this case, by default, the mobile reachable timer is
+             * 4 minutes greater than the value of timer T3512.
+             * The mobile reachable timer shall be reset and started with the
+             * value as indicated above, when the AMF releases the NAS signalling
+             * connection for the UE.
+             * TODO: If the UE is registered for emergency services, the AMF shall
+             * set the mobile reachable timer with a value equal to timer T3512.
+             */
+            ogs_timer_start(ran_ue->amf_ue->mobile_reachable.timer,
+                    ogs_time_from_sec(amf_self()->time.t3512.value + 240));
+        }
+    }
 }
 
 void ran_ue_switch_to_gnb(ran_ue_t *ran_ue, amf_gnb_t *new_gnb)
@@ -1378,6 +1400,22 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
         return NULL;
     }
     amf_ue->t3570.pkbuf = NULL;
+    amf_ue->mobile_reachable.timer = ogs_timer_add(
+            ogs_app()->timer_mgr, amf_timer_mobile_reachable_expire, amf_ue);
+    if (!amf_ue->mobile_reachable.timer) {
+        ogs_error("ogs_timer_add() failed");
+        ogs_pool_free(&amf_ue_pool, amf_ue);
+        return NULL;
+    }
+    amf_ue->mobile_reachable.pkbuf = NULL;
+    amf_ue->implicit_deregistration.timer = ogs_timer_add(
+            ogs_app()->timer_mgr, amf_timer_implicit_deregistration_expire, amf_ue);
+    if (!amf_ue->implicit_deregistration.timer) {
+        ogs_error("ogs_timer_add() failed");
+        ogs_pool_free(&amf_ue_pool, amf_ue);
+        return NULL;
+    }
+    amf_ue->implicit_deregistration.pkbuf = NULL;
 
     /* SBI Type */
     amf_ue->sbi.type = OGS_SBI_OBJ_UE_TYPE;
@@ -1482,6 +1520,8 @@ void amf_ue_remove(amf_ue_t *amf_ue)
     ogs_timer_delete(amf_ue->t3555.timer);
     ogs_timer_delete(amf_ue->t3560.timer);
     ogs_timer_delete(amf_ue->t3570.timer);
+    ogs_timer_delete(amf_ue->mobile_reachable.timer);
+    ogs_timer_delete(amf_ue->implicit_deregistration.timer);
 
     /* Free SBI object memory */
     ogs_sbi_object_free(&amf_ue->sbi);
@@ -1827,6 +1867,18 @@ void amf_ue_associate_ran_ue(amf_ue_t *amf_ue, ran_ue_t *ran_ue)
 
     amf_ue->ran_ue = ran_ue;
     ran_ue->amf_ue = amf_ue;
+
+    /* Clear mobile_reachable and implicit_deregistration Timers
+     * TS 24.501
+     * 5.3.7 Handling of the periodic registration update timer and
+     * mobile reachable timer
+     * The mobile reachable timer shall be stopped when a NAS signalling
+     * connection is established for the UE.
+     * The implicit de-registration timer shall be stopped when a NAS
+     * signalling connection is established for the UE.
+     */
+    CLEAR_AMF_UE_TIMER(amf_ue->mobile_reachable);
+    CLEAR_AMF_UE_TIMER(amf_ue->implicit_deregistration);
 }
 
 void ran_ue_deassociate(ran_ue_t *ran_ue)
