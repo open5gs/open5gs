@@ -618,6 +618,20 @@ bool smf_nsmf_handle_update_sm_context(
                     stream, OGS_SBI_HTTP_STATUS_NOT_FOUND,
                     "No PolicyAssociationId", NULL, NULL, NULL);
         }
+    } else if (SmContextUpdateData->serving_nf_id) {
+        if (sess->serving_nf_id) {
+            ogs_free(sess->serving_nf_id);
+        }
+        ogs_debug("Old serving_nf_id: %s, new serving_nf_id: %s",
+            sess->serving_nf_id, SmContextUpdateData->serving_nf_id);
+        sess->serving_nf_id = ogs_strdup(SmContextUpdateData->serving_nf_id);
+        ogs_assert(sess->serving_nf_id);
+
+        memset(&sendmsg, 0, sizeof(sendmsg));
+        response = ogs_sbi_build_response(
+            &sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+        ogs_assert(response);
+        ogs_assert(true == ogs_sbi_server_send_response(stream, response));
     } else {
         ogs_error("[%s:%d] No UpdateData", smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error(stream,
