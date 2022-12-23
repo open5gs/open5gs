@@ -197,11 +197,24 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                             ogs_free(amf_ue->data_change_subscription_id);
                             amf_ue->data_change_subscription_id = NULL;
                         }
-                        ogs_assert(true ==
-                            amf_ue_sbi_discover_and_send(
-                                OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
-                                amf_nausf_auth_build_authenticate_delete,
-                                amf_ue, NULL));
+                        if (amf_ue->network_initiated_de_reg) {
+                            amf_sbi_send_release_all_sessions(
+                                amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+                            if ((ogs_list_count(&amf_ue->sess_list) == 0) &&
+                                (PCF_AM_POLICY_ASSOCIATED(amf_ue)))
+                            {
+                                ogs_assert(true ==
+                                    amf_ue_sbi_discover_and_send(
+                                        OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,
+                                        amf_npcf_am_policy_control_build_delete, amf_ue, NULL));
+                            }
+                        } else {
+                            ogs_assert(true ==
+                                amf_ue_sbi_discover_and_send(
+                                    OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
+                                    amf_nausf_auth_build_authenticate_delete,
+                                    amf_ue, NULL));
+                        }
                         break;
                     DEFAULT
                         ogs_warn("Ignoring invalid resource name [%s]",
@@ -274,6 +287,7 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                         ogs_assert(OGS_OK ==
                             nas_5gs_send_de_registration_accept(amf_ue));
 
+                    amf_ue->network_initiated_de_reg = false;
                     PCF_AM_POLICY_CLEAR(amf_ue);
                     break;
 
@@ -403,6 +417,46 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
             }
             break;
 
+        case AMF_TIMER_MOBILE_REACHABLE:
+            ogs_info("[%s] Mobile Reachable timer expired", amf_ue->supi);
+            /* Clear mobile_reachable Timers */
+            CLEAR_AMF_UE_TIMER(amf_ue->mobile_reachable);
+            /* Start AMF_TIMER_IMPLICIT_DEREGISTRATION
+             * TS 24.501
+             * 5.3.7 Handling of the periodic registration update timer and
+             * mobile reachable timer
+             * Upon expiry of the mobile reachable timer the network shall
+             * start the implicit de-registration timer over 3GPP access.
+             * The default value of the implicit de-registration timer over
+             * 3GPP access is 4 minutes greater than the value of timer T3512.
+             */
+            ogs_timer_start(amf_ue->implicit_deregistration.timer,
+                    ogs_time_from_sec(amf_self()->time.t3512.value + 240));
+            break;
+        case AMF_TIMER_IMPLICIT_DEREGISTRATION:
+            ogs_info("[%s] Implicit de-reg timer expired, de-register UE",
+                    amf_ue->supi);
+            /* Clear implicit_deregistration Timers */
+            CLEAR_AMF_UE_TIMER(amf_ue->implicit_deregistration);
+            /* Implicitly de-register UE
+             * TS 24.501
+             * 5.3.7 Handling of the periodic registration update timer and
+             * mobile reachable timer
+             * If the implicit de-registration timer expires before the UE
+             * contacts the network, the network shall implicitly de-register
+             * the UE.
+             * TS 23.502
+             * 4.2.2.3.3 Network-initiated Deregistration
+             * The AMF does not send the Deregistration Request message to the UE
+             * for Implicit Deregistration.
+             */
+            ogs_assert(true == amf_ue_sbi_discover_and_send(
+                    OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
+                    amf_nudm_sdm_build_subscription_delete, amf_ue, NULL));
+            amf_ue->network_initiated_de_reg = true;
+            amf_ue->rm_state = RM_STATE_DEREGISTERED;
+            OGS_FSM_TRAN(s, &gmm_state_de_registered);
+            break;
         default:
             ogs_error("Unknown timer[%s:%d]",
                     amf_timer_get_name(e->h.timer_id), e->h.timer_id);
