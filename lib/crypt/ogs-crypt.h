@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -35,6 +35,7 @@
 #include "crypt/snow-3g.h"
 #include "crypt/zuc.h"
 #include "crypt/kasumi.h"
+#include "crypt/ecc.h"
 
 #include "crypt/ogs-kdf.h"
 #include "crypt/ogs-base64.h"
@@ -46,6 +47,7 @@ extern "C" {
 #endif
 
 #define OGS_KEY_LEN                     16
+#define OGS_IVEC_LEN                    16
 #define OGS_AMF_LEN                     2
 #define OGS_RAND_LEN                    16
 #define OGS_AUTN_LEN                    16
@@ -60,7 +62,13 @@ extern "C" {
 
 #define OGS_HASH_MME_LEN                8
 
+#define OGS_ECCKEY_LEN                  32
+#define OGS_MACTAG_LEN                  8
+
 #define OGS_KEYSTRLEN(x)                ((x*2)+1)
+
+int curve25519_donna(
+        uint8_t *mypublic, const uint8_t *secret, const uint8_t *basepoint);
 
 #ifdef __cplusplus
 }

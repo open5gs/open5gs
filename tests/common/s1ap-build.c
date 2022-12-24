@@ -456,7 +456,7 @@ ogs_pkbuf_t *tests1ap_build_ue_radio_capability_info_indication(
 
     UERadioCapability = &ie->value.choice.UERadioCapability;
 
-    OGS_HEX(_capability_captured, strlen(_capability_captured), tmp),
+    ogs_hex_from_string(_capability_captured, tmp, sizeof(tmp));
 
     UERadioCapability->size = 40;
     UERadioCapability->buf = CALLOC(UERadioCapability->size, sizeof(uint8_t));
@@ -1545,7 +1545,7 @@ ogs_pkbuf_t *test_s1ap_build_handover_required(
     Source_ToTarget_TransparentContainer =
         &ie->value.choice.Source_ToTarget_TransparentContainer;
 
-    OGS_HEX(_container, strlen(_container), tmp),
+    ogs_hex_from_string(_container, tmp, sizeof(tmp));
 
     Source_ToTarget_TransparentContainer->size = 206;
     Source_ToTarget_TransparentContainer->buf =
@@ -1696,7 +1696,7 @@ ogs_pkbuf_t *test_s1ap_build_handover_request_ack(test_ue_t *test_ue)
         &ie->value.choice.Target_ToSource_TransparentContainer;
 
     ogs_s1ap_buffer_to_OCTET_STRING(
-            OGS_HEX(payload, strlen(payload), hexbuf), 132,
+            ogs_hex_from_string(payload, hexbuf, sizeof(hexbuf)), 132,
             Target_ToSource_TransparentContainer);
 
     return ogs_s1ap_encode(&pdu);
@@ -2016,7 +2016,7 @@ ogs_pkbuf_t *test_s1ap_build_invalid_packet(int i)
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
     ogs_pkbuf_put_data(pkbuf,
-        OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
+        ogs_hex_from_string(payload[i], hexbuf, sizeof(hexbuf)), len[i]);
 
     return pkbuf;
 }
@@ -2060,7 +2060,7 @@ ogs_pkbuf_t *test_s1ap_build_enb_configuration_transfer(int i)
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
     ogs_pkbuf_put_data(pkbuf,
-        OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
+        ogs_hex_from_string(payload[i], hexbuf, sizeof(hexbuf)), len[i]);
 
     return pkbuf;
 }

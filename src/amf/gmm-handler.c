@@ -136,11 +136,11 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_request(amf_ue_t *amf_ue,
             (ogs_nas_5gs_mobile_identity_suci_t *)mobile_identity->buffer;
 
         if (mobile_identity_suci->protection_scheme_id !=
-                OGS_NAS_5GS_NULL_SCHEME &&
+                OGS_PROTECTION_SCHEME_NULL &&
             mobile_identity_suci->protection_scheme_id !=
-                OGS_NAS_5GS_ECIES_SCHEME_PROFILE_A &&
+                OGS_PROTECTION_SCHEME_PROFILE_A &&
             mobile_identity_suci->protection_scheme_id !=
-                OGS_NAS_5GS_ECIES_SCHEME_PROFILE_B) {
+                OGS_PROTECTION_SCHEME_PROFILE_B) {
             ogs_error("Invalid ProtectionSchemeID(%d) in SUCI",
                 mobile_identity_suci->protection_scheme_id);
             return OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE;
@@ -774,8 +774,12 @@ int gmm_handle_identity_response(amf_ue_t *amf_ue,
         mobile_identity_suci =
             (ogs_nas_5gs_mobile_identity_suci_t *)mobile_identity->buffer;
         if (mobile_identity_suci->protection_scheme_id !=
-                OGS_NAS_5GS_NULL_SCHEME) {
-            ogs_error("Not implemented ProtectionSchemeID(%d) in SUCI",
+                OGS_PROTECTION_SCHEME_NULL &&
+            mobile_identity_suci->protection_scheme_id !=
+                OGS_PROTECTION_SCHEME_PROFILE_A &&
+            mobile_identity_suci->protection_scheme_id !=
+                OGS_PROTECTION_SCHEME_PROFILE_B) {
+            ogs_error("Invalid ProtectionSchemeID(%d) in SUCI",
                 mobile_identity_suci->protection_scheme_id);
             return OGS_ERROR;
         }

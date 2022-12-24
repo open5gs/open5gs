@@ -15,7 +15,30 @@
  */
 
 /*
- * Copyright (C) 2019-2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2000-2012 Free Software Foundation, Inc.
+ * Copyright (C) 2017 Red Hat, Inc.
+ *
+ * Author: Nikos Mavrogiannopoulos
+ *
+ * This file is part of GnuTLS.
+ *
+ * The GnuTLS is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>
+ *
+ */
+
+/*
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -174,4 +197,255 @@ int ogs_base64_encode_binary(
 
     *p++ = '\0';
     return (int)(p - encoded);
+}
+
+/* copies data to result but removes newlines and <CR>
+ * returns the size of the data copied.
+ *
+ * It will fail with GNUTLS_E_BASE64_DECODING_ERROR if the
+ * end-result is the empty string.
+ */
+inline static int
+cpydata(const uint8_t *data, int data_size, uint8_t **result, int *result_size)
+{
+	int i, j;
+
+	*result = ogs_malloc(data_size + 1);
+	if (*result == NULL) {
+        ogs_error("ogs_malloc failed[%d]", data_size+1);
+        return OGS_ERROR;
+    }
+
+	for (j = i = 0; i < data_size; i++) {
+		if (data[i] == '\n' || data[i] == '\r' || data[i] == ' '
+		    || data[i] == '\t')
+			continue;
+		else if (data[i] == '-')
+			break;
+		(*result)[j] = data[i];
+		j++;
+	}
+
+	*result_size = j;
+	(*result)[j] = 0;
+
+	if (j==0) {
+        ogs_free(*result);
+        ogs_error("No Data");
+		return OGS_ERROR;
+	}
+
+	return j;
+}
+
+#define MEMSUB(x,y) ((ssize_t)((ptrdiff_t)x-(ptrdiff_t)y))
+#define ENDSTR "-----"
+int ogs_fbase64_decode(const char *header,
+        const uint8_t *data, size_t data_size, ogs_datum_t *result)
+{
+    static const char top[] = "-----BEGIN ";
+    static const char bottom[] = "-----END ";
+    uint8_t *rdata, *kdata;
+    int rdata_size;
+#define MAX_PEM_HEADER_LEN 128
+    char pem_header[MAX_PEM_HEADER_LEN];
+
+    uint8_t *bufcoded;
+    int bufcoded_len;
+    char *p, *last;
+
+    ogs_assert(header);
+    ogs_assert(data);
+    ogs_assert(data_size);
+    ogs_assert(result);
+
+    memset(result, 0, sizeof(*result));
+
+    p = pem_header;
+    last = pem_header + MAX_PEM_HEADER_LEN;
+
+    p = ogs_slprintf(p, last, "%s", top);
+    if (header != NULL)
+        p = ogs_slprintf(p, last, "%s", header);
+
+    rdata = memmem(data, data_size, pem_header, strlen(pem_header));
+    if (rdata == NULL) {
+        ogs_error("Cound not find [%s]", pem_header);
+        ogs_log_hexdump(OGS_LOG_ERROR, data, data_size);
+        return OGS_ERROR;
+    }
+
+    data_size -= MEMSUB(rdata, data);
+
+    if (data_size < 4 + strlen(bottom)) {
+        ogs_error("Not enough data (%d < 4 + %d)",
+                (int)data_size, (int)strlen(bottom));
+        ogs_log_hexdump(OGS_LOG_ERROR, data, data_size);
+        return OGS_ERROR;
+    }
+
+    kdata =
+        memmem(rdata + 1, data_size - 1, ENDSTR, sizeof(ENDSTR) - 1);
+    /* allow CR as well.
+     */
+    if (kdata == NULL) {
+        ogs_error("Cound not find [%s]", ENDSTR);
+        ogs_log_hexdump(OGS_LOG_ERROR, data, data_size);
+        return OGS_ERROR;
+    }
+    data_size -= strlen(ENDSTR);
+    data_size -= MEMSUB(kdata, rdata);
+
+    rdata = kdata + strlen(ENDSTR);
+
+    /* position is now after the ---BEGIN--- headers */
+
+    kdata = memmem(rdata, data_size, bottom, strlen(bottom));
+    if (kdata == NULL) {
+        ogs_error("Cound not find [%s]", bottom);
+        ogs_log_hexdump(OGS_LOG_ERROR, data, data_size);
+        return OGS_ERROR;
+    }
+
+    /* position of kdata is before the ----END--- footer
+     */
+    rdata_size = MEMSUB(kdata, rdata);
+
+    if (rdata_size < 4) {
+        ogs_error("Not enough data [%d]", rdata_size);
+        ogs_log_hexdump(OGS_LOG_ERROR, data, data_size);
+        return OGS_ERROR;
+    }
+
+    if (cpydata(rdata, rdata_size, &bufcoded, &bufcoded_len) == OGS_ERROR) {
+        ogs_error("cpydata() failed");
+        ogs_log_hexdump(OGS_LOG_ERROR, rdata, rdata_size);
+        return OGS_ERROR;
+    }
+
+    result->data = ogs_calloc(1, bufcoded_len);
+    if (result->data == NULL) {
+        ogs_error("ogs_calloc() failed [%d]", bufcoded_len);
+        ogs_free(bufcoded);
+        return OGS_ERROR;
+    }
+
+    result->size = ogs_base64_decode_binary(
+            result->data, (const char *)bufcoded);
+    if (result->size == 0) {
+        ogs_error("ogs_base64_decode_binary() failed");
+        ogs_log_hexdump(OGS_LOG_ERROR, bufcoded, bufcoded_len);
+        ogs_free(bufcoded);
+        return OGS_ERROR;
+    }
+
+    ogs_free(bufcoded);
+
+    return OGS_OK;
+}
+
+int ogs_pem_decode_curve25519_key(const char *filename, uint8_t *key)
+{
+    int rv;
+
+    uint8_t buf[OGS_HUGE_LEN];
+    size_t bytes_read;
+    ogs_datum_t result;
+
+#define CURVE25519_HEADER_LEN 16
+    const char *_header = "302e0201 00300506 032b656e 04220420";
+    uint8_t header[CURVE25519_HEADER_LEN];
+
+    ogs_assert(filename);
+    ogs_assert(key);
+
+    rv = ogs_file_read_full(filename, buf, OGS_HUGE_LEN, &bytes_read);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_file_read_full[%s] failed", filename);
+        return OGS_ERROR;
+    }
+
+    rv = ogs_fbase64_decode("PRIVATE KEY", buf, bytes_read, &result);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_fbase64_decode[%s] failed", filename);
+        ogs_log_hexdump(OGS_LOG_ERROR, result.data, result.size);
+        return OGS_ERROR;
+    }
+
+    rv = OGS_OK;
+
+    if (result.size != 48) {
+        ogs_error("Invalid size [%d]", (int)result.size);
+        rv = OGS_ERROR;
+        goto cleanup;
+    }
+
+    if (memcmp(ogs_hex_from_string(_header, header, sizeof(header)),
+                result.data, CURVE25519_HEADER_LEN) != 0) {
+        ogs_error("Invalid header [%d]", (int)result.size);
+        ogs_log_hexdump(OGS_LOG_FATAL, result.data, result.size);
+        rv = OGS_ERROR;
+        goto cleanup;
+    }
+
+    memcpy(key, result.data+CURVE25519_HEADER_LEN, OGS_ECCKEY_LEN);
+
+cleanup:
+    if (result.data)
+        ogs_free(result.data);
+
+    return rv;
+}
+
+int ogs_pem_decode_secp256r1_key(const char *filename, uint8_t *key)
+{
+    int rv;
+
+    uint8_t buf[OGS_HUGE_LEN];
+    size_t bytes_read;
+    ogs_datum_t result;
+
+#define SECP256R1_HEADER_LEN 7
+    const char *_header = "30770201 010420";
+    uint8_t header[SECP256R1_HEADER_LEN];
+
+    ogs_assert(filename);
+    ogs_assert(key);
+
+    rv = ogs_file_read_full(filename, buf, OGS_HUGE_LEN, &bytes_read);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_file_read_full[%s] failed", filename);
+        return OGS_ERROR;
+    }
+
+    rv = ogs_fbase64_decode("EC PRIVATE KEY", buf, bytes_read, &result);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_fbase64_decode[%s] failed", filename);
+        ogs_log_hexdump(OGS_LOG_ERROR, result.data, result.size);
+        return OGS_ERROR;
+    }
+
+    rv = OGS_OK;
+
+    if (result.size != 121) {
+        ogs_error("Invalid size [%d]", (int)result.size);
+        rv = OGS_ERROR;
+        goto cleanup;
+    }
+
+    if (memcmp(ogs_hex_from_string(_header, header, sizeof(header)),
+                result.data, SECP256R1_HEADER_LEN) != 0) {
+        ogs_error("Invalid header [%d]", (int)result.size);
+        ogs_log_hexdump(OGS_LOG_FATAL, result.data, result.size);
+        rv = OGS_ERROR;
+        goto cleanup;
+    }
+
+    memcpy(key, result.data+SECP256R1_HEADER_LEN, OGS_ECCKEY_LEN);
+
+cleanup:
+    if (result.data)
+        ogs_free(result.data);
+
+    return rv;
 }

@@ -348,7 +348,7 @@ static void test2_func(abts_case *tc, void *data)
     enb_pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(enb_pkbuf);
     ogs_pkbuf_put_data(enb_pkbuf, 
-            OGS_HEX(payload, strlen(payload), hexbuf), 38);
+            ogs_hex_from_string(payload, hexbuf, sizeof(hexbuf)), 38);
 
     result = ogs_s1ap_decode(&message, enb_pkbuf);
     ABTS_INT_EQUAL(tc, 0, result);
@@ -375,7 +375,7 @@ static void test3_func(abts_case *tc, void *data)
     enb_pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(enb_pkbuf);
     ogs_pkbuf_put_data(enb_pkbuf, 
-            OGS_HEX(payload, strlen(payload), hexbuf), 44);
+            ogs_hex_from_string(payload, hexbuf, sizeof(hexbuf)), 44);
 
     result = ogs_s1ap_decode(&message, enb_pkbuf);
     ABTS_INT_EQUAL(tc, 0, result);
@@ -401,7 +401,7 @@ static void test4_func(abts_case *tc, void *data)
     enb_pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(enb_pkbuf);
     ogs_pkbuf_put_data(enb_pkbuf,
-            OGS_HEX(payload, strlen(payload), hexbuf), 59);
+            ogs_hex_from_string(payload, hexbuf, sizeof(hexbuf)), 59);
 
     result = ogs_s1ap_decode(&message, enb_pkbuf);
     ABTS_INT_EQUAL(tc, 0, result);
@@ -425,7 +425,7 @@ static void test5_func(abts_case *tc, void *data)
     enb_pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(enb_pkbuf);
     ogs_pkbuf_put_data(enb_pkbuf,
-            OGS_HEX(payload, strlen(payload), hexbuf), 72);
+            ogs_hex_from_string(payload, hexbuf, sizeof(hexbuf)), 72);
 
     result = ogs_s1ap_decode(&message, enb_pkbuf);
     ABTS_INT_EQUAL(tc, 0, result);
@@ -592,7 +592,7 @@ static void test6_func(abts_case *tc, void *data)
     emmbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(emmbuf);
     ogs_pkbuf_put_data(emmbuf,
-            OGS_HEX(nas_payload, strlen(nas_payload), hexbuf), 13);
+            ogs_hex_from_string(nas_payload, hexbuf, sizeof(hexbuf)), 13);
 
     s1apbuf = test_build_uplink_nas_transport(1, 1, emmbuf);
     ABTS_PTR_NOTNULL(tc, s1apbuf);

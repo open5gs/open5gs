@@ -40,7 +40,7 @@ ogs_pkbuf_t *test_sgsap_location_update_accept(int i)
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
     ogs_pkbuf_put_data(pkbuf,
-        OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
+        ogs_hex_from_string(payload[i], hexbuf, sizeof(hexbuf)), len[i]);
 
     return pkbuf;
 }
@@ -64,7 +64,7 @@ ogs_pkbuf_t *test_sgsap_location_update_reject(int i)
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
     ogs_pkbuf_put_data(pkbuf,
-        OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
+        ogs_hex_from_string(payload[i], hexbuf, sizeof(hexbuf)), len[i]);
 
     return pkbuf;
 }
@@ -88,7 +88,7 @@ ogs_pkbuf_t *test_sgsap_imsi_detach_ack(int i)
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
     ogs_pkbuf_put_data(pkbuf,
-        OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
+        ogs_hex_from_string(payload[i], hexbuf, sizeof(hexbuf)), len[i]);
 
     return pkbuf;
 }
@@ -124,7 +124,7 @@ ogs_pkbuf_t *test_sgsap_paging_request(int i)
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
     ogs_pkbuf_put_data(pkbuf,
-        OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
+        ogs_hex_from_string(payload[i], hexbuf, sizeof(hexbuf)), len[i]);
 
     return pkbuf;
 }
@@ -148,7 +148,7 @@ ogs_pkbuf_t *test_sgsap_reset_indication(int i)
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
     ogs_pkbuf_put_data(pkbuf,
-        OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
+        ogs_hex_from_string(payload[i], hexbuf, sizeof(hexbuf)), len[i]);
 
     return pkbuf;
 }
@@ -172,7 +172,7 @@ ogs_pkbuf_t *test_sgsap_release_request(int i)
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
     ogs_pkbuf_put_data(pkbuf,
-        OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
+        ogs_hex_from_string(payload[i], hexbuf, sizeof(hexbuf)), len[i]);
 
     return pkbuf;
 }
@@ -193,7 +193,7 @@ ogs_pkbuf_t *test_sgsap_downlink_unitdata(int i)
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
     ogs_pkbuf_put_data(pkbuf,
-        OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
+        ogs_hex_from_string(payload[i], hexbuf, sizeof(hexbuf)), len[i]);
 
     return pkbuf;
 }
@@ -214,7 +214,7 @@ ogs_pkbuf_t *test_sgsap_mm_information_request(int i)
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
     ogs_pkbuf_put_data(pkbuf,
-        OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
+        ogs_hex_from_string(payload[i], hexbuf, sizeof(hexbuf)), len[i]);
 
     return pkbuf;
 }

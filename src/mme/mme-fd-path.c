@@ -138,9 +138,10 @@ static int mme_s6a_subscription_data_from_avp(struct avp *avp,
     ogs_assert(ret == 0);
     if (avpch1) {
         ret = fd_msg_avp_hdr(avpch1, &hdr);
-        memcpy(mme_ue->charging_characteristics,
-            OGS_HEX(hdr->avp_value->os.data, (int)hdr->avp_value->os.len, buf), 
-                OGS_CHRGCHARS_LEN);
+        ogs_ascii_to_hex(
+            (char*)hdr->avp_value->os.data, (int)hdr->avp_value->os.len,
+            buf, sizeof(buf));
+        memcpy(mme_ue->charging_characteristics, buf, OGS_CHRGCHARS_LEN);
         mme_ue->charging_characteristics_presence = true;
         *subdatamask = (*subdatamask | OGS_DIAM_S6A_SUBDATA_CC);
     }
@@ -342,10 +343,12 @@ static int mme_s6a_subscription_data_from_avp(struct avp *avp,
                 ogs_assert(ret == 0);
                 if (avpch3) {
                     ret = fd_msg_avp_hdr(avpch3, &hdr);
+                    ogs_ascii_to_hex(
+                        (char*)hdr->avp_value->os.data,
+                        (int)hdr->avp_value->os.len,
+                        buf, sizeof(buf));
                     memcpy(session->charging_characteristics,
-                        OGS_HEX(hdr->avp_value->os.data,
-                            (int)hdr->avp_value->os.len, buf),
-                            OGS_CHRGCHARS_LEN);
+                            buf, OGS_CHRGCHARS_LEN);
                     session->charging_characteristics_presence = true;
                 } else {
                     memcpy(session->charging_characteristics, 
@@ -1701,12 +1704,13 @@ static int mme_ogs_diam_s6a_idr_cb( struct msg **msg, struct avp *avp,
         memcpy(ida_ecgi,
                 ogs_nas_from_plmn_id(&ida_plmn_buf, &mme_ue->e_cgi.plmn_id), 3);
         memcpy(ida_ecgi + 3,
-                OGS_HEX(ida_cell_id_hex, sizeof(ida_cell_id_hex), buf), 5);
+                ogs_hex_from_string(ida_cell_id_hex, buf, sizeof(buf)), 5);
 
         ogs_snprintf(ida_tac_hex, sizeof(ida_tac_hex), "%04x", ida_tac);
         memcpy(ida_tai,
                 ogs_nas_from_plmn_id(&ida_plmn_buf, &mme_ue->tai.plmn_id), 3);
-        memcpy(ida_tai + 3, OGS_HEX(ida_tac_hex, sizeof(ida_tac_hex), buf), 2);
+        memcpy(ida_tai + 3,
+                ogs_hex_from_string(ida_tac_hex, buf, sizeof(buf)), 2);
 
         ida_age =
             (ogs_time_now() - mme_ue->ue_location_timestamp) / 1000000 / 60;

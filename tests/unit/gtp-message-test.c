@@ -109,7 +109,8 @@ static void gtp_message_test1(abts_case *tc, void *data)
 
     _value = (char*)"05766f6c7465036e 6732046d6e657406 6d6e63303130066d 6363353535046770 7273";
     req.access_point_name.presence = 1;
-    req.access_point_name.data = OGS_HEX(_value, strlen(_value), apnbuf);
+    req.access_point_name.data =
+        ogs_hex_from_string(_value, apnbuf, sizeof(apnbuf));
     req.access_point_name.len = sizeof(apnbuf);
 
     req.selection_mode.presence = 1;
@@ -183,8 +184,8 @@ static void gtp_message_test1(abts_case *tc, void *data)
             &req, OGS_TLV_MODE_T1_L2_I1);
     ABTS_PTR_NOTNULL(tc, pkbuf);
 
-    ABTS_TRUE(tc, memcmp(pkbuf->data,
-        OGS_HEX(_payload, strlen(_payload), hexbuf), pkbuf->len) == 0);
+    ABTS_TRUE(tc, memcmp(pkbuf->data, ogs_hex_from_string(
+                    _payload, hexbuf, sizeof(hexbuf)), pkbuf->len) == 0);
 
     memset(&req, 0, sizeof(req));
     rv = ogs_tlv_parse_msg(&req, &ogs_gtp2_tlv_desc_create_session_request,
@@ -194,19 +195,19 @@ static void gtp_message_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 1, req.imsi.presence);
     ABTS_INT_EQUAL(tc, 8, req.imsi.len);
     _value = (char*)"55153011 340010f4";
-    ABTS_TRUE(tc, memcmp(OGS_HEX(_value, strlen(_value), hexbuf),
+    ABTS_TRUE(tc, memcmp(ogs_hex_from_string(_value, hexbuf, sizeof(hexbuf)),
                 req.imsi.data, req.imsi.len) == 0);
 
     ABTS_INT_EQUAL(tc, 1, req.msisdn.presence);
     ABTS_INT_EQUAL(tc, 6, req.msisdn.len);
     _value = (char*)"94715276 0041";
-    ABTS_TRUE(tc, memcmp(OGS_HEX(_value, strlen(_value), hexbuf),
+    ABTS_TRUE(tc, memcmp(ogs_hex_from_string(_value, hexbuf, sizeof(hexbuf)),
                 req.msisdn.data, req.msisdn.len) == 0);
 
     ABTS_INT_EQUAL(tc, 1, req.me_identity.presence);
     ABTS_INT_EQUAL(tc, 8, req.me_identity.len);
     _value = (char*)"53612000 91788400";
-    ABTS_TRUE(tc, memcmp(OGS_HEX(_value, strlen(_value), hexbuf),
+    ABTS_TRUE(tc, memcmp(ogs_hex_from_string(_value, hexbuf, sizeof(hexbuf)),
         req.me_identity.data, req.me_identity.len) == 0);
 
     ABTS_INT_EQUAL(tc, 1, req.user_location_information.presence);

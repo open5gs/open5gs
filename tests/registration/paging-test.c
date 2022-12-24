@@ -48,15 +48,10 @@ static void cm_idle_paging_func(abts_case *tc, void *data)
     mobile_identity_suci.routing_indicator2 = 0xf;
     mobile_identity_suci.routing_indicator3 = 0xf;
     mobile_identity_suci.routing_indicator4 = 0xf;
-    mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
+    mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
-    mobile_identity_suci.scheme_output[0] = 0;
-    mobile_identity_suci.scheme_output[1] = 0;
-    mobile_identity_suci.scheme_output[2] = 0x20;
-    mobile_identity_suci.scheme_output[3] = 0x31;
-    mobile_identity_suci.scheme_output[4] = 0x90;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, 13);
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000203190");
     ogs_assert(test_ue);
 
     test_ue->nr_cgi.cell_id = 0x40001;
@@ -614,15 +609,10 @@ static void cm_connected_paging_func(abts_case *tc, void *data)
     mobile_identity_suci.routing_indicator2 = 0xf;
     mobile_identity_suci.routing_indicator3 = 0xf;
     mobile_identity_suci.routing_indicator4 = 0xf;
-    mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
+    mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
-    mobile_identity_suci.scheme_output[0] = 0;
-    mobile_identity_suci.scheme_output[1] = 0;
-    mobile_identity_suci.scheme_output[2] = 0x20;
-    mobile_identity_suci.scheme_output[3] = 0x31;
-    mobile_identity_suci.scheme_output[4] = 0x90;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, 13);
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000203190");
     ogs_assert(test_ue);
 
     test_ue->nr_cgi.cell_id = 0x40001;
@@ -959,15 +949,10 @@ static void cm_idle_error_indication_func(abts_case *tc, void *data)
     mobile_identity_suci.routing_indicator2 = 0xf;
     mobile_identity_suci.routing_indicator3 = 0xf;
     mobile_identity_suci.routing_indicator4 = 0xf;
-    mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
+    mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
-    mobile_identity_suci.scheme_output[0] = 0;
-    mobile_identity_suci.scheme_output[1] = 0;
-    mobile_identity_suci.scheme_output[2] = 0x20;
-    mobile_identity_suci.scheme_output[3] = 0x31;
-    mobile_identity_suci.scheme_output[4] = 0x90;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, 13);
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000203190");
     ogs_assert(test_ue);
 
     test_ue->nr_cgi.cell_id = 0x40001;
@@ -1306,15 +1291,10 @@ static void cm_connected_error_indication_func(abts_case *tc, void *data)
     mobile_identity_suci.routing_indicator2 = 0xf;
     mobile_identity_suci.routing_indicator3 = 0xf;
     mobile_identity_suci.routing_indicator4 = 0xf;
-    mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
+    mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
-    mobile_identity_suci.scheme_output[0] = 0;
-    mobile_identity_suci.scheme_output[1] = 0;
-    mobile_identity_suci.scheme_output[2] = 0x20;
-    mobile_identity_suci.scheme_output[3] = 0x31;
-    mobile_identity_suci.scheme_output[4] = 0x90;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, 13);
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000203190");
     ogs_assert(test_ue);
 
     test_ue->nr_cgi.cell_id = 0x40001;
@@ -1589,15 +1569,10 @@ static void vonr_qos_flow_test1_func(abts_case *tc, void *data)
     mobile_identity_suci.routing_indicator2 = 0xf;
     mobile_identity_suci.routing_indicator3 = 0xf;
     mobile_identity_suci.routing_indicator4 = 0xf;
-    mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
+    mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
-    mobile_identity_suci.scheme_output[0] = 0;
-    mobile_identity_suci.scheme_output[1] = 0;
-    mobile_identity_suci.scheme_output[2] = 0x20;
-    mobile_identity_suci.scheme_output[3] = 0x31;
-    mobile_identity_suci.scheme_output[4] = 0x90;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, 13);
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000203190");
     ogs_assert(test_ue);
 
     test_ue->nr_cgi.cell_id = 0x40001;
@@ -1989,15 +1964,10 @@ static void vonr_session_test2_func(abts_case *tc, void *data)
     mobile_identity_suci.routing_indicator2 = 0xf;
     mobile_identity_suci.routing_indicator3 = 0xf;
     mobile_identity_suci.routing_indicator4 = 0xf;
-    mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
+    mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
-    mobile_identity_suci.scheme_output[0] = 0;
-    mobile_identity_suci.scheme_output[1] = 0;
-    mobile_identity_suci.scheme_output[2] = 0x20;
-    mobile_identity_suci.scheme_output[3] = 0x31;
-    mobile_identity_suci.scheme_output[4] = 0x90;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, 13);
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000203190");
     ogs_assert(test_ue);
 
     test_ue->nr_cgi.cell_id = 0x40001;
@@ -2483,15 +2453,10 @@ static void registration_ue_context_test4_func(abts_case *tc, void *data)
     mobile_identity_suci.routing_indicator2 = 0xf;
     mobile_identity_suci.routing_indicator3 = 0xf;
     mobile_identity_suci.routing_indicator4 = 0xf;
-    mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
+    mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
-    mobile_identity_suci.scheme_output[0] = 0;
-    mobile_identity_suci.scheme_output[1] = 0;
-    mobile_identity_suci.scheme_output[2] = 0x20;
-    mobile_identity_suci.scheme_output[3] = 0x31;
-    mobile_identity_suci.scheme_output[4] = 0x90;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, 13);
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000203190");
     ogs_assert(test_ue);
 
     test_ue->nr_cgi.cell_id = 0x40001;
@@ -2877,15 +2842,10 @@ static void registration_idle_test1_func(abts_case *tc, void *data)
     mobile_identity_suci.routing_indicator2 = 0xf;
     mobile_identity_suci.routing_indicator3 = 0xf;
     mobile_identity_suci.routing_indicator4 = 0xf;
-    mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
+    mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
-    mobile_identity_suci.scheme_output[0] = 0;
-    mobile_identity_suci.scheme_output[1] = 0;
-    mobile_identity_suci.scheme_output[2] = 0x20;
-    mobile_identity_suci.scheme_output[3] = 0x31;
-    mobile_identity_suci.scheme_output[4] = 0x90;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, 13);
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000203190");
     ogs_assert(test_ue);
 
     test_ue->nr_cgi.cell_id = 0x40001;

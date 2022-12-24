@@ -297,7 +297,7 @@ typedef struct test_ue_s {
     uint8_t imsi_buf[OGS_MAX_IMSI_LEN];
     int imsi_len;
 
-    ogs_nas_5gs_mobile_identity_suci_t mobile_identity_suci;
+    ogs_nas_5gs_mobile_identity_t mobile_identity;
     ogs_nas_mobile_identity_imeisv_t mobile_identity_imeisv;
     bool mobile_identity_imeisv_presence;
     uint16_t mobile_identity_suci_length;
@@ -488,13 +488,9 @@ test_context_t *test_self(void);
 
 int test_context_parse_config(void);
 
-void test_ue_set_mobile_identity_suci(test_ue_t *test_ue,
-    ogs_nas_5gs_mobile_identity_suci_t *mobile_identity_suci,
-    uint16_t mobile_identity_suci_length);
-
 test_ue_t *test_ue_add_by_suci(
     ogs_nas_5gs_mobile_identity_suci_t *mobile_identity_suci,
-    uint16_t mobile_identity_suci_length);
+    const char *scheme_output);
 void test_ue_remove(test_ue_t *test_ue);
 void test_ue_remove_all(void);
 

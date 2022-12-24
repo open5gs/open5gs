@@ -22,6 +22,7 @@
 abts_suite *test_simple(abts_suite *suite);
 abts_suite *test_guti(abts_suite *suite);
 abts_suite *test_auth(abts_suite *suite);
+abts_suite *test_ecc(abts_suite *suite);
 abts_suite *test_idle(abts_suite *suite);
 abts_suite *test_dereg(abts_suite *suite);
 abts_suite *test_paging(abts_suite *suite);
@@ -38,6 +39,7 @@ const struct testlist {
     {test_simple},
     {test_guti},
     {test_auth},
+    {test_ecc},
     {test_idle},
     {test_dereg},
     {test_paging},
@@ -59,7 +61,9 @@ static void terminate(void)
     test_child_terminate();
     app_terminate();
 
+    ogs_sbi_context_final();
     test_5gc_final();
+
     ogs_app_terminate();
 }
 
@@ -69,7 +73,11 @@ static void initialize(const char *const argv[])
 
     rv = ogs_app_initialize(NULL, NULL, argv);
     ogs_assert(rv == OGS_OK);
+
     test_5gc_init();
+
+    ogs_sbi_context_init();
+    ogs_assert(ogs_sbi_context_parse_config(NULL, "nrf", "scp") == OGS_OK);
 
     rv = app_initialize(argv);
     ogs_assert(rv == OGS_OK);

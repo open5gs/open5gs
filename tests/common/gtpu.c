@@ -370,7 +370,7 @@ int test_gtpu_send_slacc_rs(ogs_socknode_t *node, test_bearer_t *bearer)
     ogs_pkbuf_put(pkbuf, 200-OGS_GTPV1U_5GC_HEADER_LEN);
     memset(pkbuf->data, 0, pkbuf->len);
 
-    OGS_HEX(payload, strlen(payload), tmp);
+    ogs_hex_from_string(payload, tmp, sizeof(tmp));
     memcpy(pkbuf->data, tmp, payload_len);
 
     ip6_h = pkbuf->data;
@@ -439,7 +439,7 @@ int test_gtpu_send_slacc_rs_with_unspecified_source_address(
     ogs_pkbuf_put(pkbuf, 200-OGS_GTPV1U_5GC_HEADER_LEN);
     memset(pkbuf->data, 0, pkbuf->len);
 
-    OGS_HEX(payload, strlen(payload), tmp);
+    ogs_hex_from_string(payload, tmp, sizeof(tmp));
     memcpy(pkbuf->data, tmp, payload_len);
 
     ogs_pkbuf_trim(pkbuf, payload_len);

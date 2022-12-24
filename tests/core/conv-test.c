@@ -35,16 +35,20 @@ static void conv_test2(abts_case *tc, void *data)
 
     char buffer[16];
 
-    ABTS_TRUE(tc, memcmp(k, OGS_HEX(K, strlen(K), buffer), 16) == 0);
+    ABTS_TRUE(tc, memcmp(k,
+                ogs_hex_from_string(K, buffer, sizeof(buffer)), 16) == 0);
 
-    ABTS_TRUE(tc, memcmp(op, OGS_HEX(OP, strlen(OP), buffer), 16) == 0);
+    ABTS_TRUE(tc, memcmp(op,
+                ogs_hex_from_string(OP, buffer, sizeof(buffer)), 16) == 0);
 
-    ABTS_TRUE(tc, memcmp(opc, OGS_HEX(OPc, strlen(OPc), buffer), 16) == 0);
+    ABTS_TRUE(tc, memcmp(opc,
+                ogs_hex_from_string(OPc, buffer, sizeof(buffer)), 16) == 0);
 
-    ABTS_TRUE(tc, memcmp(amf, OGS_HEX(AMF, strlen(AMF), buffer), 2) == 0);
+    ABTS_TRUE(tc, memcmp(amf,
+                ogs_hex_from_string(AMF, buffer, sizeof(buffer)), 2) == 0);
 
     ABTS_TRUE(tc, memcmp(lower, 
-                OGS_HEX(LOWER, strlen(LOWER), buffer), 4) == 0);
+                ogs_hex_from_string(LOWER, buffer, sizeof(buffer)), 4) == 0);
 }
 
 static void conv_test3(abts_case *tc, void *data)

@@ -48,3 +48,4 @@ foreach file : open5gs_conf
 endforeach
 
 subdir('tls')
+subdir('hnet')

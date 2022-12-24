@@ -60,6 +60,61 @@ tls:
       cert: @sysconfdir@/open5gs/tls/ausf.crt
 
 #
+# o Generate the private key as below.
+#   $ openssl genpkey -algorithm X25519 -out /etc/open5gs/hnet/curve25519-1.key
+#   $ openssl ecparam -name prime256v1 -genkey -conv_form compressed -out /etc/open5gs/hnet/secp256r1-2.key
+#
+# o The private and public keys can be viewed with the command.
+#   The public key is used when creating the SIM.
+#   $ openssl pkey -in /etc/open5gs/hnet/curve25519-1.key -text
+#   $ openssl ec -in /etc/open5gs/hnet/secp256r1-2.key -conv_form compressed -text
+#
+# hnet:
+#    o Home network public key identifier(PKI) value : 1
+#      Protection scheme identifier : ECIES scheme profile A
+#    - id: 1
+#      scheme: 1
+#      key: /etc/open5gs/hnet/curve25519-1.key
+#
+#    o Home network public key identifier(PKI) value : 2
+#      Protection scheme identifier : ECIES scheme profile B
+#    - id: 2
+#      scheme: 2
+#      key: /etc/open5gs/hnet/secp256r1-2.key
+#
+#    o Home network public key identifier(PKI) value : 3
+#      Protection scheme identifier : ECIES scheme profile A
+#    - id: 3
+#      scheme: 1
+#      key: /etc/open5gs/hnet/curve25519-1.key
+#
+#    o Home network public key identifier(PKI) value : 4
+#      Protection scheme identifier : ECIES scheme profile B
+#    - id: 4
+#      scheme: 2
+#      key: /etc/open5gs/hnet/secp256r1-2.key
+#
+hnet:
+  - id: 1
+    scheme: 1
+    key: @sysconfdir@/open5gs/hnet/curve25519-1.key
+  - id: 2
+    scheme: 2
+    key: @sysconfdir@/open5gs/hnet/secp256r1-2.key
+  - id: 3
+    scheme: 1
+    key: @sysconfdir@/open5gs/hnet/curve25519-3.key
+  - id: 4
+    scheme: 2
+    key: @sysconfdir@/open5gs/hnet/secp256r1-4.key
+  - id: 5
+    scheme: 1
+    key: @sysconfdir@/open5gs/hnet/curve25519-5.key
+  - id: 6
+    scheme: 2
+    key: @sysconfdir@/open5gs/hnet/secp256r1-6.key
+
+#
 # ausf:
 #
 #  <SBI Server>

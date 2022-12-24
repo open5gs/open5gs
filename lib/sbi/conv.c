@@ -20,6 +20,255 @@
 #include "ogs-sbi.h"
 #include "yuarel.h"
 
+static int parse_scheme_output(
+        char *_protection_scheme_id, char *_scheme_output,
+        ogs_datum_t *ecckey, ogs_datum_t *cipher_text, uint8_t *mactag)
+{
+    uint8_t protection_scheme_id;
+    uint8_t scheme_output_size;
+    uint8_t *scheme_output = NULL;
+    uint8_t *p = NULL;
+
+    ogs_assert(_protection_scheme_id);
+    ogs_assert(_scheme_output);
+    ogs_assert(ecckey);
+    ogs_assert(mactag);
+    ogs_assert(cipher_text);
+
+    scheme_output_size = strlen(_scheme_output)/2;
+    if (scheme_output_size <= ((OGS_ECCKEY_LEN+1) + OGS_MACTAG_LEN)) {
+        ogs_error("Not enought length [%d]", (int)strlen(_scheme_output));
+        return OGS_ERROR;
+    }
+
+    scheme_output = ogs_calloc(1, scheme_output_size);
+    ogs_assert(scheme_output);
+
+    ogs_ascii_to_hex(_scheme_output, strlen(_scheme_output),
+            scheme_output, scheme_output_size);
+
+    protection_scheme_id = atoi(_protection_scheme_id);
+    if (protection_scheme_id == OGS_PROTECTION_SCHEME_PROFILE_A) {
+        ecckey->size = OGS_ECCKEY_LEN;
+    } else if (protection_scheme_id == OGS_PROTECTION_SCHEME_PROFILE_B) {
+        ecckey->size = OGS_ECCKEY_LEN+1;
+    } else {
+        ogs_free(scheme_output);
+
+        ogs_fatal("Invalid protection scheme id [%s]", _protection_scheme_id);
+        ogs_assert_if_reached();
+
+        return OGS_ERROR;
+    }
+
+    cipher_text->size = OGS_MSIN_LEN;
+
+    p = scheme_output;
+    ecckey->data = ogs_memdup(p, ecckey->size);
+    ogs_assert(ecckey->data);
+
+    p += ecckey->size;
+    cipher_text->data = ogs_memdup(p, cipher_text->size);
+    ogs_assert(cipher_text->data);
+
+    p += cipher_text->size;
+    memcpy(mactag, p, OGS_MACTAG_LEN);
+
+    ogs_free(scheme_output);
+
+    return OGS_OK;
+}
+
+char *ogs_supi_from_suci(char *suci)
+{
+#define MAX_SUCI_TOKEN 16
+    char *array[MAX_SUCI_TOKEN];
+    char *p, *tmp;
+    int i;
+    char *supi = NULL;
+
+    ogs_assert(suci);
+    tmp = ogs_strdup(suci);
+    ogs_expect_or_return_val(tmp, NULL);
+
+    p = tmp;
+    i = 0;
+    while((array[i++] = strsep(&p, "-"))) {
+        /* Empty Body */
+    }
+
+    SWITCH(array[0])
+    CASE("suci")
+        SWITCH(array[1])
+        CASE("0")   /* SUPI format : IMSI */
+            if (array[2] && array[3] && array[5] && array[6] && array[7]) {
+                uint8_t protection_scheme_id = atoi(array[5]);
+                uint8_t home_network_pki_value = atoi(array[6]);
+
+                if (protection_scheme_id == OGS_PROTECTION_SCHEME_NULL) {
+                    supi = ogs_msprintf("imsi-%s%s%s",
+                            array[2], array[3], array[7]);
+                } else if (protection_scheme_id ==
+                            OGS_PROTECTION_SCHEME_PROFILE_A ||
+                        protection_scheme_id ==
+                            OGS_PROTECTION_SCHEME_PROFILE_B) {
+
+                    ogs_datum_t pubkey;
+                    ogs_datum_t cipher_text;
+                    ogs_datum_t plain_text;
+                    char *plain_bcd;
+                    uint8_t mactag1[OGS_MACTAG_LEN], mactag2[OGS_MACTAG_LEN];
+
+                    uint8_t z[OGS_ECCKEY_LEN];
+
+                    uint8_t ek[OGS_KEY_LEN];
+                    uint8_t icb[OGS_IVEC_LEN];
+                    uint8_t mk[OGS_SHA256_DIGEST_SIZE];
+
+                    if (home_network_pki_value <
+                            OGS_HOME_NETWORK_PKI_VALUE_MIN ||
+                        home_network_pki_value >
+                            OGS_HOME_NETWORK_PKI_VALUE_MAX) {
+                        ogs_error("Invalid HNET PKI Value [%s]", array[6]);
+                        break;
+                    }
+
+                    if (!ogs_sbi_self()->hnet[home_network_pki_value].avail) {
+                        ogs_error("HNET PKI Value Not Avaiable [%s]", array[6]);
+                        break;
+                    }
+
+                    if (ogs_sbi_self()->hnet[home_network_pki_value].scheme
+                            != protection_scheme_id) {
+                        ogs_error("Scheme Not Matched [%d != %s]",
+                            ogs_sbi_self()->hnet[protection_scheme_id].scheme,
+                            array[5]);
+                        break;
+                    }
+
+                    if (parse_scheme_output(
+                            array[5], array[7],
+                            &pubkey, &cipher_text, mactag1) != OGS_OK) {
+                        ogs_error("parse_scheme_output[%s] failed", array[7]);
+                        break;
+                    }
+
+                    if (protection_scheme_id ==
+                            OGS_PROTECTION_SCHEME_PROFILE_A) {
+                        curve25519_donna(z,
+                            ogs_sbi_self()->hnet[home_network_pki_value].key,
+                            pubkey.data);
+                    } else if (protection_scheme_id ==
+                            OGS_PROTECTION_SCHEME_PROFILE_B) {
+                        if (ecdh_shared_secret(
+                                pubkey.data,
+                                ogs_sbi_self()->
+                                    hnet[home_network_pki_value].key,
+                                z) != 1) {
+                            ogs_error("ecdh_shared_secret() failed");
+                            ogs_log_hexdump(OGS_LOG_ERROR,
+                                    pubkey.data, OGS_ECCKEY_LEN);
+                            ogs_log_hexdump(OGS_LOG_ERROR,
+                                ogs_sbi_self()->
+                                    hnet[home_network_pki_value].key,
+                                    OGS_ECCKEY_LEN);
+                            goto cleanup;
+                        }
+                    } else
+                        ogs_assert_if_reached();
+
+                    ogs_kdf_ansi_x963(
+                        z, OGS_ECCKEY_LEN, pubkey.data, pubkey.size,
+                        ek, icb, mk);
+
+                    ogs_hmac_sha256(
+                            mk, OGS_SHA256_DIGEST_SIZE,
+                            cipher_text.data, cipher_text.size,
+                            mactag2, OGS_MACTAG_LEN);
+
+                    if (memcmp(mactag1, mactag2, OGS_MACTAG_LEN) != 0) {
+                        ogs_error("MAC-tag not matched");
+                        ogs_log_hexdump(OGS_LOG_ERROR, mactag1, OGS_MACTAG_LEN);
+                        ogs_log_hexdump(OGS_LOG_ERROR, mactag2, OGS_MACTAG_LEN);
+                        goto cleanup;
+                    }
+
+                    plain_text.size = cipher_text.size;
+                    plain_text.data = ogs_calloc(1, plain_text.size);
+                    ogs_assert(plain_text.data);
+
+                    ogs_aes_ctr128_encrypt(
+                            ek, icb, cipher_text.data, cipher_text.size,
+                            plain_text.data);
+
+                    plain_bcd = ogs_calloc(1, plain_text.size*2+1);
+                    ogs_assert(plain_bcd);
+
+                    ogs_buffer_to_bcd(
+                        plain_text.data, plain_text.size, plain_bcd);
+
+                    supi = ogs_msprintf("imsi-%s%s%s",
+                            array[2], array[3], plain_bcd);
+                    ogs_assert(supi);
+
+                    if (plain_text.data)
+                        ogs_free(plain_text.data);
+                    ogs_free(plain_bcd);
+cleanup:
+                    if (pubkey.data)
+                        ogs_free(pubkey.data);
+                    if (cipher_text.data)
+                        ogs_free(cipher_text.data);
+                } else {
+                    ogs_error("Invalid Protection Scheme [%s]", array[5]);
+                }
+            }
+            break;
+        DEFAULT
+            ogs_error("Not implemented [%s]", array[1]);
+            break;
+        END
+        break;
+    DEFAULT
+        ogs_error("Not implemented [%s]", array[0]);
+        break;
+    END
+
+    ogs_free(tmp);
+    return supi;
+}
+
+char *ogs_supi_from_supi_or_suci(char *supi_or_suci)
+{
+    char *type = NULL;
+    char *supi = NULL;
+
+    ogs_assert(supi_or_suci);
+    type = ogs_id_get_type(supi_or_suci);
+    if (!type) {
+        ogs_error("ogs_id_get_type[%s] failed", supi_or_suci);
+        goto cleanup;
+    }
+    SWITCH(type)
+    CASE("imsi")
+        supi = ogs_strdup(supi_or_suci);
+        ogs_expect(supi);
+        break;
+    CASE("suci")
+        supi = ogs_supi_from_suci(supi_or_suci);
+        ogs_expect(supi);
+        break;
+    DEFAULT
+        ogs_error("Not implemented [%s]", type);
+        break;
+    END
+
+cleanup:
+    if (type)
+        ogs_free(type);
+    return supi;
+}
+
 char *ogs_uridup(bool https, ogs_sockaddr_t *addr, ogs_sbi_header_t *h)
 {
     char buf[OGS_ADDRSTRLEN];

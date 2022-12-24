@@ -805,26 +805,44 @@ int test_context_parse_config(void)
     return OGS_OK;
 }
 
-void test_ue_set_mobile_identity_suci(test_ue_t *test_ue,
+static void test_ue_set_mobile_identity(test_ue_t *test_ue,
     ogs_nas_5gs_mobile_identity_suci_t *mobile_identity_suci,
-    uint16_t mobile_identity_suci_length)
+    const char *scheme_output_string)
 {
-    ogs_nas_5gs_mobile_identity_t mobile_identity;
+    ogs_nas_5gs_mobile_identity_t *mobile_identity = NULL;
+    uint16_t scheme_output_size;
+    uint8_t *scheme_output = NULL;
 
     ogs_assert(test_ue);
     ogs_assert(mobile_identity_suci);
-    ogs_assert(mobile_identity_suci_length);
+    ogs_assert(scheme_output_string);
 
-    test_ue->mobile_identity_suci_length = mobile_identity_suci_length;
-    memcpy(&test_ue->mobile_identity_suci, mobile_identity_suci,
-            mobile_identity_suci_length);
+    scheme_output_size = strlen(scheme_output_string)/2;
+    scheme_output = ogs_calloc(1, scheme_output_size);
+    ogs_assert(scheme_output);
 
-    mobile_identity.length = test_ue->mobile_identity_suci_length;
-    mobile_identity.buffer = &test_ue->mobile_identity_suci;
+    scheme_output_size = ogs_ascii_to_hex(
+            scheme_output_string, strlen(scheme_output_string),
+            scheme_output, scheme_output_size);
+    ogs_assert(scheme_output_size);
+
+    mobile_identity = &test_ue->mobile_identity;
+
+    mobile_identity->length =
+        OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE + scheme_output_size;
+    mobile_identity->buffer = ogs_calloc(1, mobile_identity->length);
+    ogs_assert(mobile_identity->buffer);
+    memcpy(mobile_identity->buffer,
+            mobile_identity_suci, OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE);
+    memcpy((uint8_t *)mobile_identity->buffer +
+            OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE,
+            scheme_output, scheme_output_size);
+
+    ogs_free(scheme_output);
 
     if (test_ue->suci)
         ogs_free(test_ue->suci);
-    test_ue->suci = ogs_nas_5gs_suci_from_mobile_identity(&mobile_identity);
+    test_ue->suci = ogs_nas_5gs_suci_from_mobile_identity(mobile_identity);
     if (test_ue->supi)
         ogs_free(test_ue->supi);
     test_ue->supi = ogs_supi_from_suci(test_ue->suci);
@@ -890,13 +908,13 @@ static void test_ue_set_mobile_identity_imsisv(test_ue_t *test_ue)
 
 test_ue_t *test_ue_add_by_suci(
     ogs_nas_5gs_mobile_identity_suci_t *mobile_identity_suci,
-    uint16_t mobile_identity_suci_length)
+    const char *scheme_output)
 {
     int i, j;
     test_ue_t *test_ue = NULL;
 
     ogs_assert(mobile_identity_suci);
-    ogs_assert(mobile_identity_suci_length);
+    ogs_assert(scheme_output);
 
     ogs_pool_alloc(&test_ue_pool, &test_ue);
     ogs_assert(test_ue);
@@ -944,8 +962,7 @@ test_ue_t *test_ue_add_by_suci(
         }
     }
 
-    test_ue_set_mobile_identity_suci(
-            test_ue, mobile_identity_suci, mobile_identity_suci_length);
+    test_ue_set_mobile_identity(test_ue, mobile_identity_suci, scheme_output);
 
     test_ue_set_mobile_identity_imsi(test_ue);
     test_ue_set_mobile_identity_imsisv(test_ue);
@@ -960,6 +977,9 @@ void test_ue_remove(test_ue_t *test_ue)
     ogs_assert(test_ue);
 
     ogs_list_remove(&self.test_ue_list, test_ue);
+
+    if (test_ue->mobile_identity.buffer)
+        ogs_free(test_ue->mobile_identity.buffer);
 
     if (test_ue->suci)
         ogs_free(test_ue->suci);
@@ -1216,8 +1236,10 @@ int test_db_insert_ue(test_ue_t *test_ue, bson_t *doc)
     ogs_assert(test_ue);
     ogs_assert(doc);
 
-    OGS_HEX(test_ue->k_string, strlen(test_ue->k_string), test_ue->k);
-    OGS_HEX(test_ue->opc_string, strlen(test_ue->opc_string), test_ue->opc);
+    ogs_hex_from_string(
+            test_ue->k_string, test_ue->k, sizeof(test_ue->k));
+    ogs_hex_from_string(
+            test_ue->opc_string, test_ue->opc, sizeof(test_ue->opc));
 
     collection = mongoc_client_get_collection(
         ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");

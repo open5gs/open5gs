@@ -261,6 +261,7 @@ libcore_sources = files('''
     ogs-hash.h
     ogs-misc.h
     ogs-getopt.h
+    ogs-file.h
     abts.h
 
     ogs-abort.c
@@ -296,6 +297,7 @@ libcore_sources = files('''
     ogs-hash.c
     ogs-misc.c
     ogs-getopt.c
+    ogs-file.c
     ogs-core.c
     abts.c
 '''.split())

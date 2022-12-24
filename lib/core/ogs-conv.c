@@ -29,7 +29,7 @@
 
 #include "ogs-core.h"
 
-void *ogs_ascii_to_hex(char *in, int in_len, void *out, int out_len)
+int ogs_ascii_to_hex(char *in, int in_len, void *out, int out_len)
 {
     int i = 0, j = 0, k = 0, hex;
     uint8_t *out_p = out;
@@ -49,7 +49,7 @@ void *ogs_ascii_to_hex(char *in, int in_len, void *out, int out_len)
         i++;
     }
 
-    return out;
+    return j;
 }
 
 void *ogs_hex_to_ascii(void *in, int in_len, void *out, int out_len)

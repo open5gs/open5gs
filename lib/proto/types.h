@@ -58,6 +58,8 @@ extern "C" {
 
 #define OGS_CHRGCHARS_LEN               2
 
+#define OGS_MSIN_LEN                    5
+
 #define OGS_BCD_TO_BUFFER_LEN(x)        (((x)+1)/2)
 #define OGS_MAX_IMSI_BCD_LEN            15
 #define OGS_MAX_IMSI_LEN                \
@@ -176,9 +178,11 @@ ogs_amf_id_t *ogs_amf_id_build(ogs_amf_id_t *amf_id,
         uint8_t region, uint16_t set, uint8_t pointer);
 
 /************************************
- * SUPI/SUCI                       */
-char *ogs_supi_from_suci(char *suci);
-char *ogs_supi_from_supi_or_suci(char *supi_or_suci);
+ * 9.11.3.4 5GS mobile identity
+ * - Protection Scheme */
+#define OGS_PROTECTION_SCHEME_NULL 0
+#define OGS_PROTECTION_SCHEME_PROFILE_A 1
+#define OGS_PROTECTION_SCHEME_PROFILE_B 2
 
 /************************************
  * SUPI/GPSI                       */
@@ -780,6 +784,11 @@ int ogs_pcc_rule_install_flow_from_media(
         ogs_pcc_rule_t *pcc_rule, ogs_media_component_t *media_component);
 int ogs_pcc_rule_update_qos_from_media(
         ogs_pcc_rule_t *pcc_rule, ogs_media_component_t *media_component);
+
+typedef struct ogs_datum_s {
+    unsigned char *data;
+    unsigned int size;
+} ogs_datum_t;
 
 #ifdef __cplusplus
 }

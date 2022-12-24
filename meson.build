@@ -148,7 +148,7 @@ message('\n'.join([
 
 if cppcheck.found()
     run_target('analyze-cppcheck',
-    command : [ 'misc/static_code_analyze.sh',
+    command : [ 'misc/static-code-analyze.sh',
         meson.version().version_compare('>=0.55.0') ?
           cppcheck.full_path() : cppcheck.path(),
         meson.current_build_dir(),
@@ -159,7 +159,7 @@ endif
 
 if clangtidy.found()
     run_target('analyze-clang-tidy',
-    command : [ 'misc/static_code_analyze.sh',
+    command : [ 'misc/static-code-analyze.sh',
         meson.version().version_compare('>=0.55.0') ?
           clangtidy.full_path() : clangtidy.path(),
         meson.current_build_dir(),

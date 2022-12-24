@@ -295,8 +295,10 @@ ogs_pkbuf_t *testemm_build_authentication_response(test_ue_t *test_ue)
     message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = OGS_NAS_EPS_AUTHENTICATION_RESPONSE;
 
-    OGS_HEX(test_ue->k_string, strlen(test_ue->k_string), test_ue->k);
-    OGS_HEX(test_ue->opc_string, strlen(test_ue->opc_string), test_ue->opc);
+    ogs_hex_from_string(
+            test_ue->k_string, test_ue->k, sizeof(test_ue->k));
+    ogs_hex_from_string(
+            test_ue->opc_string, test_ue->opc, sizeof(test_ue->opc));
 
     milenage_f2345(test_ue->opc, test_ue->k, test_ue->rand,
             res, ck, ik, ak, NULL);
@@ -346,8 +348,10 @@ ogs_pkbuf_t *testemm_build_authentication_failure(
         authentication_failure->presencemask |=
             OGS_NAS_EPS_AUTHENTICATION_FAILURE_AUTHENTICATION_FAILURE_PARAMETER_PRESENT;
 
-        OGS_HEX(test_ue->k_string, strlen(test_ue->k_string), test_ue->k);
-        OGS_HEX(test_ue->opc_string, strlen(test_ue->opc_string), test_ue->opc);
+        ogs_hex_from_string(
+                test_ue->k_string, test_ue->k, sizeof(test_ue->k));
+        ogs_hex_from_string(
+                test_ue->opc_string, test_ue->opc, sizeof(test_ue->opc));
 
         milenage_f2345(test_ue->opc, test_ue->k, test_ue->rand,
                 NULL, NULL, NULL, NULL, ak);
@@ -895,7 +899,7 @@ ogs_pkbuf_t *testemm_build_uplink_nas_transport(test_ue_t *test_ue)
     message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = OGS_NAS_EPS_UPLINK_NAS_TRANSPORT;
 
-    OGS_HEX(payload, strlen(payload), hexbuf);
+    ogs_hex_from_string(payload, hexbuf, sizeof(hexbuf));
     nas_message_container->length = 106;
     memcpy(nas_message_container->buffer,
             hexbuf, nas_message_container->length);

@@ -13,6 +13,14 @@ tls:
       key: @build_configs_dir@/open5gs/tls/testclient.key
       cert: @build_configs_dir@/open5gs/tls/testclient.crt
 
+hnet:
+  - id: 1
+    scheme: 1
+    key: @build_configs_dir@/open5gs/hnet/curve25519-1.key
+  - id: 2
+    scheme: 2
+    key: @build_configs_dir@/open5gs/hnet/secp256r1-2.key
+
 parameter:
 #    no_nrf: true
 #    no_scp: true

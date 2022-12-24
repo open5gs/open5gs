@@ -2,7 +2,7 @@
 
 if [ 1 -ne $# ]
 then
-    echo You must specify output directory : ./make-certs.sh ../config/tls
+    echo You must specify output directory : ./make-certs.sh ../config/open5gs/tls
     exit;
 fi
 

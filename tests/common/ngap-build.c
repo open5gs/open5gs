@@ -736,7 +736,7 @@ ogs_pkbuf_t *testngap_build_ue_radio_capability_info_indication(
     asn_uint642INTEGER(AMF_UE_NGAP_ID, test_ue->amf_ue_ngap_id);
     *RAN_UE_NGAP_ID = test_ue->ran_ue_ngap_id;
 
-    OGS_HEX(_capability_captured, strlen(_capability_captured), tmp),
+    ogs_hex_from_string(_capability_captured, tmp, sizeof(tmp));
 
     UERadioCapability->size = 407;
     UERadioCapability->buf = CALLOC(UERadioCapability->size, sizeof(uint8_t));
@@ -1876,7 +1876,7 @@ ogs_pkbuf_t *testngap_build_handover_required(
     SourceToTarget_TransparentContainer =
         &ie->value.choice.SourceToTarget_TransparentContainer;
 
-    OGS_HEX(_container, strlen(_container), tmp),
+    ogs_hex_from_string(_container, tmp, sizeof(tmp));
 
     SourceToTarget_TransparentContainer->size = 32;
     SourceToTarget_TransparentContainer->buf =
@@ -1992,7 +1992,7 @@ ogs_pkbuf_t *testngap_build_handover_request_ack(test_ue_t *test_ue)
     TargetToSource_TransparentContainer =
         &ie->value.choice.TargetToSource_TransparentContainer;
 
-    OGS_HEX(_container, strlen(_container), tmp),
+    ogs_hex_from_string(_container, tmp, sizeof(tmp));
 
     TargetToSource_TransparentContainer->size = 4;
     TargetToSource_TransparentContainer->buf =

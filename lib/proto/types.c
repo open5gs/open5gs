@@ -143,7 +143,7 @@ ogs_amf_id_t *ogs_amf_id_from_string(ogs_amf_id_t *amf_id, const char *hex)
     ogs_assert(amf_id);
     ogs_assert(hex);
 
-    OGS_HEX(hex, strlen(hex), hexbuf);
+    ogs_hex_from_string(hex, hexbuf, sizeof(hexbuf));
 
     amf_id->region = hexbuf[0];
     amf_id->set1 = hexbuf[1];
@@ -192,78 +192,6 @@ ogs_amf_id_t *ogs_amf_id_build(ogs_amf_id_t *amf_id,
     amf_id->pointer = pointer;
 
     return amf_id;
-}
-
-char *ogs_supi_from_suci(char *suci)
-{
-#define MAX_SUCI_TOKEN 16
-    char *array[MAX_SUCI_TOKEN];
-    char *p, *tmp;
-    int i;
-    char *supi = NULL;
-
-    ogs_assert(suci);
-    tmp = ogs_strdup(suci);
-    ogs_expect_or_return_val(tmp, NULL);
-
-    p = tmp;
-    i = 0;
-    while((array[i++] = strsep(&p, "-"))) {
-        /* Empty Body */
-    }
-
-    SWITCH(array[0])
-    CASE("suci")
-        SWITCH(array[1])
-        CASE("0")   /* SUPI format : IMSI */
-            if (array[2] && array[3] && array[7])
-                supi = ogs_msprintf("imsi-%s%s%s",
-                        array[2], array[3], array[7]);
-
-            break;
-        DEFAULT
-            ogs_error("Not implemented [%s]", array[1]);
-            break;
-        END
-        break;
-    DEFAULT
-        ogs_error("Not implemented [%s]", array[0]);
-        break;
-    END
-
-    ogs_free(tmp);
-    return supi;
-}
-
-char *ogs_supi_from_supi_or_suci(char *supi_or_suci)
-{
-    char *type = NULL;
-    char *supi = NULL;
-
-    ogs_assert(supi_or_suci);
-    type = ogs_id_get_type(supi_or_suci);
-    if (!type) {
-        ogs_error("ogs_id_get_type[%s] failed", supi_or_suci);
-        goto cleanup;
-    }
-    SWITCH(type)
-    CASE("imsi")
-        supi = ogs_strdup(supi_or_suci);
-        ogs_expect(supi);
-        break;
-    CASE("suci")
-        supi = ogs_supi_from_suci(supi_or_suci);
-        ogs_expect(supi);
-        break;
-    DEFAULT
-        ogs_error("Not implemented [%s]", type);
-        break;
-    END
-
-cleanup:
-    if (type)
-        ogs_free(type);
-    return supi;
 }
 
 char *ogs_id_get_type(char *str)

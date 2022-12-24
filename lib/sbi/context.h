@@ -46,8 +46,32 @@ typedef struct ogs_sbi_discovery_config_s {
     bool prefer_requester_nf_instance_id;
 } ogs_sbi_discovery_config_t;
 
+typedef enum {
+    OGS_SBI_TLS_ENABLED_AUTO = 0,
+    OGS_SBI_TLS_ENABLED_YES,
+    OGS_SBI_TLS_ENABLED_NO,
+} ogs_sbi_tls_enabled_mode_e;
+
 typedef struct ogs_sbi_context_s {
     ogs_sbi_discovery_config_t discovery_config; /* SCP Discovery Delegated */
+
+    struct {
+        ogs_sbi_tls_enabled_mode_e enabled;
+        struct {
+            const char *cacert;
+            const char *cert;
+            const char *key;
+        } server, client;
+    } tls;
+
+#define OGS_HOME_NETWORK_PKI_VALUE_MIN 1
+#define OGS_HOME_NETWORK_PKI_VALUE_MAX 254
+
+    struct {
+        uint8_t avail;
+        uint8_t scheme;
+        uint8_t key[OGS_ECCKEY_LEN]; /* 32 bytes Private Key */
+    } hnet[OGS_HOME_NETWORK_PKI_VALUE_MAX+1]; /* PKI Value : 1 ~ 254 */
 
     uint16_t sbi_port;                      /* SBI local port */
 

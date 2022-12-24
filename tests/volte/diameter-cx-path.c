@@ -434,8 +434,10 @@ static void test_cx_send_mar(struct sess_state *sess_data)
         uint64_t sqn_ms;
         int i;
 
-        OGS_HEX(test_ue->k_string, strlen(test_ue->k_string), test_ue->k);
-        OGS_HEX(test_ue->opc_string, strlen(test_ue->opc_string), test_ue->opc);
+        ogs_hex_from_string(
+                test_ue->k_string, test_ue->k, sizeof(test_ue->k));
+        ogs_hex_from_string(
+                test_ue->opc_string, test_ue->opc, sizeof(test_ue->opc));
 
         milenage_f2345(test_ue->opc, test_ue->k, test_ue->rand,
                 NULL, NULL, NULL, NULL, ak);
