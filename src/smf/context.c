@@ -2441,9 +2441,10 @@ int smf_bearer_remove(smf_bearer_t *bearer)
     ogs_assert(bearer);
     ogs_assert(bearer->sess);
 
-    smf_metrics_inst_by_5qi_add(&bearer->sess->plmn_id,
-            &bearer->sess->s_nssai, bearer->sess->session.qos.index,
-            SMF_METR_GAUGE_SM_QOSFLOWNBR, -1);
+    if (SMF_IS_QOF_FLOW(bearer))
+        smf_metrics_inst_by_5qi_add(&bearer->sess->plmn_id,
+                &bearer->sess->s_nssai, bearer->sess->session.qos.index,
+                SMF_METR_GAUGE_SM_QOSFLOWNBR, -1);
 
     ogs_list_remove(&bearer->sess->bearer_list, bearer);
 
@@ -2473,7 +2474,7 @@ int smf_bearer_remove(smf_bearer_t *bearer)
 
     smf_pf_identifier_pool_final(bearer);
 
-    if (bearer->qfi_node)
+    if (SMF_IS_QOF_FLOW(bearer))
         ogs_pool_free(&bearer->sess->qfi_pool, bearer->qfi_node);
 
     ogs_pool_free(&smf_bearer_pool, bearer);

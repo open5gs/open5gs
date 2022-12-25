@@ -182,6 +182,7 @@ typedef struct smf_bearer_s {
     ogs_pfcp_urr_t  *urr;
     ogs_pfcp_qer_t  *qer;
 
+#define SMF_IS_QOF_FLOW(__bEARER) ((__bEARER)->qfi_node)
     uint8_t         *qfi_node;      /* Pool-Node for 5GC-QFI */
     uint8_t         qfi;            /* 5G Core QFI */
     uint8_t         ebi;            /* EPC EBI */
