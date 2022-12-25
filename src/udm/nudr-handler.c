@@ -197,6 +197,7 @@ bool udm_nudr_dr_handle_subscription_authentication(
             memset(&AuthenticationInfoResult,
                     0, sizeof(AuthenticationInfoResult));
 
+            AuthenticationInfoResult.supi = udm_ue->supi;
             AuthenticationInfoResult.auth_type = udm_ue->auth_type;
 
             ogs_random(udm_ue->rand, OGS_RAND_LEN);

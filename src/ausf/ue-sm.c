@@ -90,6 +90,16 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
             }
             break;
         CASE(OGS_SBI_HTTP_METHOD_PUT)
+            if (!ausf_ue->supi) {
+                ogs_error("[%s] No SUPI", ausf_ue->suci);
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(stream,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                        message, "[%s] No SUPI", ausf_ue->suci));
+                OGS_FSM_TRAN(s, ausf_ue_state_exception);
+                break;
+            }
+
             handled = ausf_nausf_auth_handle_authenticate_confirmation(
                     ausf_ue, stream, message);
             if (!handled) {
@@ -99,6 +109,16 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
             }
             break;
         CASE(OGS_SBI_HTTP_METHOD_DELETE)
+            if (!ausf_ue->supi) {
+                ogs_error("[%s] No SUPI", ausf_ue->suci);
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(stream,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                        message, "[%s] No SUPI", ausf_ue->suci));
+                OGS_FSM_TRAN(s, ausf_ue_state_exception);
+                break;
+            }
+
             handled = ausf_nausf_auth_handle_authenticate_delete(
                     ausf_ue, stream, message);
             if (!handled) {

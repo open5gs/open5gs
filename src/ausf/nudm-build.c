@@ -74,6 +74,7 @@ ogs_sbi_request_t *ausf_nudm_ueau_build_result_confirmation_inform(
     OpenAPI_auth_event_t *AuthEvent = NULL;
 
     ogs_assert(ausf_ue);
+    ogs_assert(ausf_ue->supi);
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
@@ -127,6 +128,7 @@ ogs_sbi_request_t *ausf_nudm_ueau_build_auth_removal_ind(
     OpenAPI_auth_event_t *AuthEvent = NULL;
 
     ogs_assert(ausf_ue);
+    ogs_assert(ausf_ue->supi);
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_PUT;

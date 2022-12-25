@@ -137,10 +137,6 @@ ausf_ue_t *ausf_ue_add(char *suci)
     ogs_assert(ausf_ue->suci);
     ogs_hash_set(self.suci_hash, ausf_ue->suci, strlen(ausf_ue->suci), ausf_ue);
 
-    ausf_ue->supi = ogs_supi_from_supi_or_suci(ausf_ue->suci);
-    ogs_assert(ausf_ue->supi);
-    ogs_hash_set(self.supi_hash, ausf_ue->supi, strlen(ausf_ue->supi), ausf_ue);
-
     memset(&e, 0, sizeof(e));
     e.ausf_ue = ausf_ue;
     ogs_fsm_init(&ausf_ue->sm, ausf_ue_state_initial, ausf_ue_state_final, &e);
@@ -172,9 +168,11 @@ void ausf_ue_remove(ausf_ue_t *ausf_ue)
     ogs_hash_set(self.suci_hash, ausf_ue->suci, strlen(ausf_ue->suci), NULL);
     ogs_free(ausf_ue->suci);
 
-    ogs_assert(ausf_ue->supi);
-    ogs_hash_set(self.supi_hash, ausf_ue->supi, strlen(ausf_ue->supi), NULL);
-    ogs_free(ausf_ue->supi);
+    if (ausf_ue->supi) {
+        ogs_hash_set(self.supi_hash,
+                ausf_ue->supi, strlen(ausf_ue->supi), NULL);
+        ogs_free(ausf_ue->supi);
+    }
 
     if (ausf_ue->auth_events_url)
         ogs_free(ausf_ue->auth_events_url);

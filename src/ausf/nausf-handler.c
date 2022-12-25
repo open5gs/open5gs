@@ -36,7 +36,7 @@ bool ausf_nausf_auth_handle_authenticate(ausf_ue_t *ausf_ue,
         ogs_error("[%s] No AuthenticationInfo", ausf_ue->suci);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                recvmsg, "[%s] No AuthenticationInfo", ausf_ue->suci));
+                recvmsg, "No AuthenticationInfo", ausf_ue->suci));
         return false;
     }
 
@@ -45,7 +45,7 @@ bool ausf_nausf_auth_handle_authenticate(ausf_ue_t *ausf_ue,
         ogs_error("[%s] No servingNetworkName", ausf_ue->suci);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                recvmsg, "[%s] No servingNetworkName", ausf_ue->suci));
+                recvmsg, "No servingNetworkName", ausf_ue->suci));
         return false;
     }
 
@@ -79,7 +79,7 @@ bool ausf_nausf_auth_handle_authenticate_confirmation(ausf_ue_t *ausf_ue,
         ogs_error("[%s] No ConfirmationData", ausf_ue->suci);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                recvmsg, "[%s] No ConfirmationData", ausf_ue->suci));
+                recvmsg, "No ConfirmationData", ausf_ue->suci));
         return false;
     }
 
@@ -88,7 +88,7 @@ bool ausf_nausf_auth_handle_authenticate_confirmation(ausf_ue_t *ausf_ue,
         ogs_error("[%s] No ConfirmationData.resStar", ausf_ue->suci);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                recvmsg, "[%s] No ConfirmationData.resStar", ausf_ue->suci));
+                recvmsg, "No ConfirmationData.resStar", ausf_ue->suci));
         return false;
     }
 

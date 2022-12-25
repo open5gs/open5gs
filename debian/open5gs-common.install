@@ -2,6 +2,4 @@ usr/lib/*/libogs*.so*
 usr/lib/*/libfd*.so*
 usr/lib/*/freeDiameter/*.fdx
 configs/open5gs/tls/ca.crt /etc/open5gs/tls
-configs/open5gs/hnet/curve25519-*.key /etc/open5gs/hnet
-configs/open5gs/hnet/secp256r1-*.key /etc/open5gs/hnet
 configs/logrotate/open5gs /etc/logrotate.d
