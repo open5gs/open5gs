@@ -124,7 +124,7 @@ void sgsap_handle_location_update_accept(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 error:
     ogs_assert(OGS_OK ==
         nas_eps_send_attach_reject(mme_ue,
-            OGS_NAS_EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED,
+            OGS_NAS_EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
             OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
     mme_send_delete_session_or_mme_ue_context_release(mme_ue);
 }
