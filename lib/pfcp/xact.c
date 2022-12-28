@@ -93,12 +93,12 @@ ogs_pfcp_xact_t *ogs_pfcp_xact_local_create(ogs_pfcp_node_t *node,
     xact->tm_response = ogs_timer_add(
             ogs_app()->timer_mgr, response_timeout, xact);
     ogs_assert(xact->tm_response);
-    xact->response_rcount = ogs_app()->time.message.pfcp.n1_response_rcount,
+    xact->response_rcount = ogs_app()->time.message.pfcp.n1_response_rcount;
 
     xact->tm_holding = ogs_timer_add(
             ogs_app()->timer_mgr, holding_timeout, xact);
     ogs_assert(xact->tm_holding);
-    xact->holding_rcount = ogs_app()->time.message.pfcp.n1_holding_rcount,
+    xact->holding_rcount = ogs_app()->time.message.pfcp.n1_holding_rcount;
 
     xact->tm_delayed_commit = ogs_timer_add(
             ogs_app()->timer_mgr, delayed_commit_timeout, xact);
@@ -138,12 +138,12 @@ static ogs_pfcp_xact_t *ogs_pfcp_xact_remote_create(
     xact->tm_response = ogs_timer_add(
             ogs_app()->timer_mgr, response_timeout, xact);
     ogs_assert(xact->tm_response);
-    xact->response_rcount = ogs_app()->time.message.pfcp.n1_response_rcount,
+    xact->response_rcount = ogs_app()->time.message.pfcp.n1_response_rcount;
 
     xact->tm_holding = ogs_timer_add(
             ogs_app()->timer_mgr, holding_timeout, xact);
     ogs_assert(xact->tm_holding);
-    xact->holding_rcount = ogs_app()->time.message.pfcp.n1_holding_rcount,
+    xact->holding_rcount = ogs_app()->time.message.pfcp.n1_holding_rcount;
 
     xact->tm_delayed_commit = ogs_timer_add(
             ogs_app()->timer_mgr, delayed_commit_timeout, xact);
