@@ -183,6 +183,13 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
         OpenAPI_sdm_subscription_free(message->SDMSubscription);
     if (message->ModificationNotification)
         OpenAPI_modification_notification_free(message->ModificationNotification);
+    if(message->N1N2SubscriptionCreate)
+        OpenAPI_ue_n1_n2_info_subscription_create_data_free(message->N1N2SubscriptionCreate);
+    if(message->N1N2SubscriptionCreated)
+        OpenAPI_ue_n1_n2_info_subscription_created_data_free(message->N1N2SubscriptionCreated);
+    if(message->N1MessageNotification){
+        OpenAPI_n1_message_notification_free(message->N1MessageNotification);
+    }
 
     /* HTTP Part */
     for (i = 0; i < message->num_of_part; i++) {
@@ -1059,6 +1066,18 @@ static char *build_json(ogs_sbi_message_t *message)
         item = OpenAPI_modification_notification_convertToJSON(
             message->ModificationNotification);
         ogs_assert(item);
+    }  else if (message->N1N2SubscriptionCreate) {
+        item = OpenAPI_ue_n1_n2_info_subscription_create_data_convertToJSON(
+            message->N1N2SubscriptionCreate);
+        ogs_assert(item);
+    } else if (message->N1N2SubscriptionCreated) {
+        item = OpenAPI_ue_n1_n2_info_subscription_created_data_convertToJSON(
+            message->N1N2SubscriptionCreated);
+        ogs_assert(item);
+    } else if(message->N1MessageNotification) {
+        item = OpenAPI_n1_message_notification_convertToJSON(
+            message->N1MessageNotification);
+        ogs_assert(item);
     }
 
     if (item) {
@@ -1641,26 +1660,51 @@ static int parse_json(ogs_sbi_message_t *message,
             CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXTS)
                 SWITCH(message->h.resource.component[2])
                 CASE(OGS_SBI_RESOURCE_NAME_N1_N2_MESSAGES)
-                    if (message->res_status == 0) {
-                        message->N1N2MessageTransferReqData =
-                            OpenAPI_n1_n2_message_transfer_req_data_parseFromJSON(item);
-                        if (!message->N1N2MessageTransferReqData) {
-                            rv = OGS_ERROR;
-                            ogs_error("JSON parse error");
+                    SWITCH(message->h.resource.component[3])
+                    CASE(OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS)
+                        if (message->res_status == 0) {
+                            message->N1N2SubscriptionCreate =
+                                OpenAPI_ue_n1_n2_info_subscription_create_data_parseFromJSON(item);
+                            if (!message->N1N2SubscriptionCreate) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
+                        } else if (message->res_status ==
+                                    OGS_SBI_HTTP_STATUS_OK ||
+                                    message->res_status ==
+                                        OGS_SBI_HTTP_STATUS_ACCEPTED ||
+                                    message->res_status ==
+                                        OGS_SBI_HTTP_STATUS_CREATED) {
+                            message->N1N2SubscriptionCreated =
+                                OpenAPI_ue_n1_n2_info_subscription_created_data_parseFromJSON(item);
+                            if (!message->N1N2SubscriptionCreated) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
                         }
-                    } else if (message->res_status ==
-                                OGS_SBI_HTTP_STATUS_OK ||
-                                message->res_status ==
-                                    OGS_SBI_HTTP_STATUS_ACCEPTED) {
-                        message->N1N2MessageTransferRspData =
-                            OpenAPI_n1_n2_message_transfer_rsp_data_parseFromJSON(item);
-                        if (!message->N1N2MessageTransferRspData) {
-                            rv = OGS_ERROR;
-                            ogs_error("JSON parse error");
-                        }
-                    }
                     break;
-
+                    DEFAULT
+                        if (message->res_status == 0) {
+                            message->N1N2MessageTransferReqData =
+                                OpenAPI_n1_n2_message_transfer_req_data_parseFromJSON(item);
+                            if (!message->N1N2MessageTransferReqData) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
+                        } else if (message->res_status ==
+                                    OGS_SBI_HTTP_STATUS_OK ||
+                                    message->res_status ==
+                                        OGS_SBI_HTTP_STATUS_ACCEPTED) {
+                            message->N1N2MessageTransferRspData =
+                                OpenAPI_n1_n2_message_transfer_rsp_data_parseFromJSON(item);
+                            if (!message->N1N2MessageTransferRspData) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
+                        }
+                    break;
+                    END
+                break;
                 DEFAULT
                     rv = OGS_ERROR;
                     ogs_error("Unknown resource name [%s]",

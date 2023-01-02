@@ -500,6 +500,10 @@ typedef struct ogs_sbi_message_s {
     OpenAPI_deregistration_data_t *DeregistrationData;
     OpenAPI_sdm_subscription_t *SDMSubscription;
     OpenAPI_modification_notification_t *ModificationNotification;
+    
+    OpenAPI_ue_n1_n2_info_subscription_create_data_t *N1N2SubscriptionCreate;
+    OpenAPI_ue_n1_n2_info_subscription_created_data_t *N1N2SubscriptionCreated;
+    OpenAPI_n1_message_notification_t *N1MessageNotification;
 
     ogs_sbi_links_t *links;
 

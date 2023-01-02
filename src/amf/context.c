@@ -19,6 +19,8 @@
 
 #include "ngap-path.h"
 
+#include "namf-n1n2-subscription.h"
+
 static amf_context_t self;
 
 int __amf_log_domain;
@@ -1402,6 +1404,8 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
 
     ogs_list_add(&self.amf_ue_list, amf_ue);
 
+    ogs_list_init(&amf_ue->n1_n2_subscriptions);
+
     ogs_info("[Added] Number of AMF-UEs is now %d",
             ogs_list_count(&self.amf_ue_list));
 
@@ -1482,6 +1486,9 @@ void amf_ue_remove(amf_ue_t *amf_ue)
     ogs_timer_delete(amf_ue->t3555.timer);
     ogs_timer_delete(amf_ue->t3560.timer);
     ogs_timer_delete(amf_ue->t3570.timer);
+
+    amf_ue_n1_n2_subscriptions_delete(amf_ue);
+    ogs_list_empty(&amf_ue->n1_n2_subscriptions);
 
     /* Free SBI object memory */
     ogs_sbi_object_free(&amf_ue->sbi);

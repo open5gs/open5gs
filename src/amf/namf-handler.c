@@ -24,6 +24,8 @@
 #include "ngap-path.h"
 #include "sbi-path.h"
 
+#include "namf-n1n2-subscription.h"
+
 int amf_namf_comm_handle_n1_n2_message_transfer(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
@@ -395,6 +397,135 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
 
     if (sendmsg.http.location)
         ogs_free(sendmsg.http.location);
+
+    return OGS_OK;
+}
+
+int amf_namf_comm_handle_n1_n2_message_subscribe(ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+{
+    int status;
+
+    amf_ue_t *amf_ue = NULL;
+
+    char *supi = NULL;
+
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+
+    OpenAPI_ue_n1_n2_info_subscription_create_data_t *N1N2SubscriptionData;
+    OpenAPI_ue_n1_n2_info_subscription_created_data_t N1N2SubscriptionCreatedData;
+
+    ogs_assert(stream);
+    ogs_assert(recvmsg);
+
+    N1N2SubscriptionData = recvmsg->N1N2SubscriptionCreate;
+    if (!N1N2SubscriptionData) {
+        ogs_error("No N1N2SubscriptionReqData");
+        return OGS_ERROR;
+    }
+
+    supi = recvmsg->h.resource.component[1];
+    if (!supi) {
+        ogs_error("No SUPI");
+        return OGS_ERROR;
+    }
+
+    amf_ue = amf_ue_find_by_supi(supi);
+    if (!amf_ue) {
+        ogs_error("No UE context [%s]", supi);
+        return OGS_ERROR;
+    }
+
+    memset(&sendmsg, 0, sizeof(sendmsg));
+    memset(&N1N2SubscriptionCreatedData, 0, sizeof(N1N2SubscriptionCreatedData));
+
+    N1_N2_Subscription_t *newSub;
+    newSub = ogs_calloc(1, sizeof(N1_N2_Subscription_t));
+
+    switch(N1N2SubscriptionData->n1_message_class){
+    case OpenAPI_n1_message_class_LPP:
+        newSub->msg_type = OGS_NAS_PAYLOAD_CONTAINER_LPP;
+        break;
+    case OpenAPI_n1_message_class_SMS:
+        newSub->msg_type = OGS_NAS_PAYLOAD_CONTAINER_SMS;
+        break;
+    default:
+       ogs_error("[%s] Unsupported N1Subscription Class! [%d]",
+                amf_ue->supi, N1N2SubscriptionData->n1_message_class);
+        return OGS_ERROR;
+    }
+
+    newSub->id = amf_ue_n1_n2_subscription_get_next_id();
+    newSub->supi = ogs_strdup(supi);
+    newSub->notify_url = ogs_strdup(N1N2SubscriptionData->n1_notify_callback_uri);
+
+    amf_ue_n1_n2_subscription_add(amf_ue, newSub);
+    ogs_info("[N1] Registered subscription %" PRIu64, newSub->id);
+
+
+    N1N2SubscriptionCreatedData.n1n2_notify_subscription_id = ogs_uint64_to_string(newSub->id);
+    sendmsg.N1N2SubscriptionCreated = &N1N2SubscriptionCreatedData;
+
+    status = OGS_SBI_HTTP_STATUS_CREATED;
+
+    response = ogs_sbi_build_response(&sendmsg, status);
+    ogs_assert(response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+    if(N1N2SubscriptionCreatedData.n1n2_notify_subscription_id){
+        ogs_free(N1N2SubscriptionCreatedData.n1n2_notify_subscription_id);
+    }
+
+    return OGS_OK;
+}
+
+int amf_namf_comm_handle_n1_n2_message_unsubscribe(ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+{
+    int status;
+
+    amf_ue_t *amf_ue = NULL;
+
+    char *supi = NULL;
+
+    ogs_sbi_message_t message;
+    ogs_sbi_response_t *response = NULL;
+
+    ogs_assert(stream);
+    ogs_assert(recvmsg);
+
+    supi = recvmsg->h.resource.component[1];
+    if (!supi) {
+        ogs_error("No SUPI");
+        return OGS_ERROR;
+    }
+
+    amf_ue = amf_ue_find_by_supi(supi);
+    if (!amf_ue) {
+        ogs_error("No UE context [%s]", supi);
+        return OGS_ERROR;
+    }
+
+    char *subId = recvmsg->h.resource.component[4];
+    if(!subId){
+            ogs_error("No Subscription ID");
+            return OGS_ERROR;
+    }
+
+    uint64_t sub = ogs_uint64_from_string(subId);
+
+    if((status = amf_ue_n1_n2_subscription_handle_delete(amf_ue, sub)) != OGS_OK){
+        ogs_error("Invalid Return code for deletion %d",status);
+        return status;
+    }
+
+    memset(&message,0,sizeof(message));
+
+    ogs_info("[N1] Removed subscription %" PRIu64,sub);
+
+    status = OGS_SBI_HTTP_STATUS_NO_CONTENT;
+
+    response = ogs_sbi_build_response(&message,status);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
     return OGS_OK;
 }

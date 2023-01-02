@@ -24,6 +24,7 @@
 #include "sbi-path.h"
 
 #include "gmm-handler.h"
+#include "namf-n1n2-subscription.h"
 
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __gmm_log_domain
@@ -1207,6 +1208,12 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                 break;
             }
         }
+        break;
+
+    case OGS_NAS_PAYLOAD_CONTAINER_SMS:
+    case OGS_NAS_PAYLOAD_CONTAINER_LPP:
+        ogs_assert(OGS_OK == amf_ue_n1_n2_subscription_forward(amf_ue,payload_container_type->value,payload_container));
+        return OGS_OK;
         break;
 
     default:

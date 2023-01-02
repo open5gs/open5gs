@@ -34,6 +34,10 @@ int amf_namf_callback_handle_dereg_notify(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 int amf_namf_callback_handle_sdm_data_change_notify(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
+int amf_namf_comm_handle_n1_n2_message_subscribe(
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
+int amf_namf_comm_handle_n1_n2_message_unsubscribe(
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 
 #ifdef __cplusplus
 }

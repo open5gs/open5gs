@@ -407,6 +407,9 @@ struct amf_ue_s {
     /* SubscriptionId of Subscription to Data Change Notification to UDM */
     char *data_change_subscription_id;
 
+    /* N1 UL Notify Subscriptions for specific UE */
+    ogs_list_t n1_n2_subscriptions;
+
     ogs_list_t      sess_list;
 
 #define RM_STATE_DEREGISTERED   0

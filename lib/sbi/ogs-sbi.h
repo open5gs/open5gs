@@ -79,6 +79,10 @@
 #include "model/modification_notification.h"
 #include "model/patch_item.h"
 
+#include "model/ue_n1_n2_info_subscription_create_data.h"
+#include "model/ue_n1_n2_info_subscription_created_data.h"
+#include "model/n1_message_notification.h"
+
 #include "custom/links.h"
 #include "custom/ue_authentication_ctx.h"
 

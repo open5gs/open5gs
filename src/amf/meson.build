@@ -60,6 +60,8 @@ libamf_sources = files('''
 
     init.c
     metrics.c
+
+    namf-n1n2-subscription.c
 '''.split())
 
 libamf = static_library('amf',
