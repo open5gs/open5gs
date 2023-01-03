@@ -35,6 +35,7 @@ ogs_pkbuf_t *smf_n4_build_session_establishment_request(
 
     ogs_pfcp_node_id_t node_id;
     ogs_pfcp_f_seid_t f_seid;
+    char apn_dnn[OGS_MAX_DNN_LEN+1];
     int len;
 
     ogs_debug("Session Establishment Request");
@@ -101,6 +102,20 @@ ogs_pkbuf_t *smf_n4_build_session_establishment_request(
     /* PDN Type */
     req->pdn_type.presence = 1;
     req->pdn_type.u8 = sess->session.session_type;
+
+    /* User ID*/
+    smf_n4_build_user_id(&req->user_id, sess->smf_ue);
+
+    /* S-NSSAI */
+    req->s_nssai.presence = 1;
+    req->s_nssai.len = 4;
+    req->s_nssai.data = &sess->s_nssai;
+    
+    /* APN/DNN */
+    len = ogs_fqdn_build(apn_dnn, sess->session.name, strlen(sess->session.name));
+    req->apn_dnn.presence = 1;
+    req->apn_dnn.len = len;
+    req->apn_dnn.data = apn_dnn;
 
     pfcp_message.h.type = type;
     pkbuf = ogs_pfcp_build_msg(&pfcp_message);
@@ -462,4 +477,43 @@ ogs_pkbuf_t *smf_n4_build_session_deletion_request(
 
     pfcp_message.h.type = type;
     return ogs_pfcp_build_msg(&pfcp_message);
+}
+
+void smf_n4_build_user_id(
+    ogs_pfcp_tlv_user_id_t *user_id, smf_ue_t *smf_ue)
+{
+    uint8_t len = 1;
+    uint8_t *data_ptr;
+    int imsi_len, imeisv_len;
+    ogs_pfcp_user_id_flags_t flags;
+
+    if (smf_ue->imsi_len) {
+        flags.imsif = 1;
+        imsi_len = (smf_ue->imsi_len + 1) / 2;
+	len += (imsi_len + 1);
+    }
+    if (smf_ue->imeisv_len) {
+        flags.imeif = 1;
+        imeisv_len = (smf_ue->imeisv_len + 1) / 2;
+        len += (imeisv_len + 1);
+    }
+
+    user_id->presence = 1;
+    user_id->len = len;
+    user_id->data = ogs_calloc(sizeof(char), len);
+
+    data_ptr = user_id->data;
+    data_ptr[0] = *(uint8_t*)&flags;
+    data_ptr++;
+
+    if (flags.imsif) {
+        *data_ptr++ = imsi_len;
+        ogs_bcd_to_buffer(smf_ue->imsi_bcd, data_ptr, &imsi_len);
+	data_ptr += imsi_len;
+    }
+    if (flags.imeif) {
+        *data_ptr++ = imeisv_len;
+        ogs_bcd_to_buffer(smf_ue->imeisv_bcd, data_ptr, &imeisv_len);
+        data_ptr += imeisv_len;
+    }
 }

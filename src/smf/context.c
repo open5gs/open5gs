@@ -1027,6 +1027,18 @@ smf_ue_t *smf_ue_add_by_supi(char *supi)
     return smf_ue;
 }
 
+void smf_ue_update_imeisv(smf_ue_t *smf_ue, char *imeisv) {
+    int imeisv_len = strlen(imeisv);
+    memcpy(smf_ue->imeisv_bcd, imeisv, imeisv_len);
+    smf_ue->imeisv_len = imeisv_len;
+}
+
+void smf_ue_update_imsi(smf_ue_t *smf_ue, char *imsi) {
+    int imsi_len = strlen(imsi);
+    memcpy(smf_ue->imsi_bcd, imsi, imsi_len);
+    smf_ue->imsi_len = imsi_len;
+}
+
 smf_ue_t *smf_ue_add_by_imsi(uint8_t *imsi, int imsi_len)
 {
     smf_ue_t *smf_ue;
@@ -1472,6 +1484,10 @@ smf_sess_t *smf_sess_add_by_sbi_message(ogs_sbi_message_t *message)
         smf_ue = smf_ue_add_by_supi(SmContextCreateData->supi);
         if (!smf_ue)
             return NULL;
+        if (strncmp(SmContextCreateData->supi, "imsi-", 5) == 0)
+            smf_ue_update_imsi(smf_ue, &SmContextCreateData->supi[5]);
+	if (strncmp(SmContextCreateData->pei, "imeisv-", 5) == 0)
+            smf_ue_update_imeisv(smf_ue, &SmContextCreateData->pei[7]);
     }
 
     sess = smf_sess_find_by_psi(smf_ue, SmContextCreateData->pdu_session_id);

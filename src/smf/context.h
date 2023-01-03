@@ -430,6 +430,8 @@ void smf_gtp_node_free(smf_gtp_node_t *smf_gnode);
 
 smf_ue_t *smf_ue_add_by_supi(char *supi);
 smf_ue_t *smf_ue_add_by_imsi(uint8_t *imsi, int imsi_len);
+void smf_ue_update_imsi(smf_ue_t *, char *imsi);
+void smf_ue_update_imeisv(smf_ue_t *, char *imeisv);
 void smf_ue_remove(smf_ue_t *smf_ue);
 void smf_ue_remove_all(void);
 smf_ue_t *smf_ue_find_by_supi(char *supi);

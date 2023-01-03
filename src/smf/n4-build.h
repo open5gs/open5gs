@@ -35,6 +35,7 @@ ogs_pkbuf_t *smf_n4_build_qos_flow_to_modify_list(
 ogs_pkbuf_t *smf_n4_build_session_deletion_request(
         uint8_t type, smf_sess_t *sess);
 
+void smf_n4_build_user_id(ogs_pfcp_tlv_user_id_t *user_id, smf_ue_t *smf_ue);
 #ifdef __cplusplus
 }
 #endif
