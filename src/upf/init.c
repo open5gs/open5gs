@@ -88,12 +88,13 @@ void upf_terminate(void)
 
     upf_pfcp_close();
     upf_gtp_close();
-    upf_metrics_close();
 
     upf_context_final();
 
     ogs_pfcp_context_final();
     ogs_gtp_context_final();
+
+    upf_metrics_close();
     ogs_metrics_context_final();
 
     ogs_pfcp_xact_final();
