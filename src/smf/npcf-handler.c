@@ -492,10 +492,12 @@ bool smf_npcf_smpolicycontrol_handle_create(
         ogs_pfcp_paa_to_ue_ip_addr(&sess->session.paa,
             &ul_pdr->ue_ip_addr, &ul_pdr->ue_ip_addr_len));
 
-    ogs_info("UE SUPI[%s] DNN[%s] IPv4[%s] IPv6[%s]",
+    ogs_info("UE SUPI[%s] DNN[%s] IPv4[%s] IPv6[%s] SST[%d] SD[%d] IMEISV[%s]",
         smf_ue->supi, sess->session.name,
         sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
-        sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
+        sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "", 
+        sess->s_nssai.sst, sess->s_nssai.sd.v, 
+        smf_ue->imeisv);
 
     /* Set UE-to-CP Flow-Description and Outer-Header-Creation */
     up2cp_pdr->flow_description[up2cp_pdr->num_of_flow++] =
