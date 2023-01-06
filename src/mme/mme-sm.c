@@ -439,6 +439,9 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                         S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
             }
             break;
+        case OGS_DIAM_S6A_CMD_CODE_PURGE_UE:
+            mme_s6a_handle_pua(mme_ue, s6a_message);
+            break;
         case OGS_DIAM_S6A_CMD_CODE_CANCEL_LOCATION:
             mme_s6a_handle_clr(mme_ue, s6a_message);
             break;

@@ -126,6 +126,31 @@ uint8_t mme_s6a_handle_ula(
     return OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED;
 }
 
+uint8_t mme_s6a_handle_pua(
+        mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
+{
+    ogs_diam_s6a_pua_message_t *pua_message = NULL;
+
+    ogs_assert(mme_ue);
+    ogs_assert(s6a_message);
+    pua_message = &s6a_message->pua_message;
+    ogs_assert(pua_message);
+
+    if (s6a_message->result_code != ER_DIAMETER_SUCCESS) {
+        ogs_error("Purge UE failed for IMSI[%s] [%d]", mme_ue->imsi_bcd,
+            s6a_message->result_code);
+        return OGS_ERROR;
+    }
+
+    if (pua_message->pua_flags & OGS_DIAM_S6A_PUA_FLAGS_FREEZE_MTMSI)
+        ogs_debug("Freeze M-TMSI requested but not implemented.");
+
+    mme_ue_hash_remove(mme_ue);
+    mme_ue_remove(mme_ue);
+
+    return OGS_OK;
+}
+
 uint8_t mme_s6a_handle_idr(
         mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
 {
