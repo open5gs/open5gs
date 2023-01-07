@@ -572,7 +572,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
                 next_rx_sess_data, rx_sess_data) {
             rv = pcrf_rx_send_asr(
                     rx_sess_data->sid, OGS_DIAM_RX_ABORT_CAUSE_BEARER_RELEASED);
-            ogs_assert(rv == OGS_OK);
+            ogs_expect(rv == OGS_OK);
 
             remove_rx_state(rx_sess_data);
         }

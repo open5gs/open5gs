@@ -426,6 +426,16 @@ int pcrf_rx_send_asr(uint8_t *rx_sid, uint32_t abort_cause)
 
     ogs_debug("[PCRF] Abort-Session-Request");
 
+    /* Retrieve session by Session-Id */
+    sidlen = strlen((char *)rx_sid);
+    ret = fd_sess_fromsid_msg((os0_t)(rx_sid), sidlen, &session, &new);
+    ogs_assert(ret == 0);
+    if (new) {
+        ogs_error("Cannot find Rx Session [ID:%s Cause:%d]",
+                    rx_sid, abort_cause);
+        return OGS_ERROR;
+    }
+
     /* Create the request */
     ret = fd_msg_new(ogs_diam_rx_cmd_asr, MSGFL_ALLOC_ETEID, &req);
     ogs_assert(ret == 0);
@@ -435,12 +445,6 @@ int pcrf_rx_send_asr(uint8_t *rx_sid, uint32_t abort_cause)
         ogs_assert(ret == 0);
         h->msg_appl = OGS_DIAM_RX_APPLICATION_ID;
     }
-
-    /* Retrieve session by Session-Id */
-    sidlen = strlen((char *)rx_sid);
-    ret = fd_sess_fromsid_msg((os0_t)(rx_sid), sidlen, &session, &new);
-    ogs_assert(ret == 0);
-    ogs_assert(new == 0);
 
     /* Add Session-Id to the message */
     ret = ogs_diam_message_session_id_set(req, (os0_t)(rx_sid), sidlen);
@@ -618,12 +622,6 @@ static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
     ogs_assert(msg);
     ogs_assert(sess);
 
-    ret = fd_sess_state_retrieve(pcrf_rx_reg, sess, &sess_data);
-    ogs_assert(ret == 0);
-    ogs_assert(sess_data);
-    ogs_assert(sess_data->rx_sid);
-    ogs_assert(sess_data->gx_sid);
-
     /* Initialize Message */
     memset(&rx_message, 0, sizeof(ogs_diam_rx_message_t));
     rx_message.cmd_code = OGS_DIAM_RX_CMD_CODE_SESSION_TERMINATION;
@@ -651,6 +649,15 @@ static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
+
+    ret = fd_sess_state_retrieve(pcrf_rx_reg, sess, &sess_data);
+    ogs_assert(ret == 0);
+    if (!sess_data) {
+        ogs_error("Cannot find session in Session-Termination-Request");
+        goto out;
+    }
+    ogs_assert(sess_data->rx_sid);
+    ogs_assert(sess_data->gx_sid);
 
     /* Get Termination-Cause */
     ret = fd_msg_search_avp(qry, ogs_diam_termination_cause, &avp);
