@@ -82,12 +82,12 @@ upf_metrics_spec_def_t upf_metrics_spec_def_global[_UPF_METR_GLOB_MAX] = {
     .description = "Active Sessions",
 },
 };
-static int upf_metrics_init_inst_global(void)
+int upf_metrics_init_inst_global(void)
 {
     return upf_metrics_init_inst(upf_metrics_inst_global, upf_metrics_spec_global,
                 _UPF_METR_GLOB_MAX, 0, NULL);
 }
-static int upf_metrics_free_inst_global(void)
+int upf_metrics_free_inst_global(void)
 {
     return upf_metrics_free_inst(upf_metrics_inst_global, _UPF_METR_GLOB_MAX);
 }
@@ -341,7 +341,6 @@ int upf_metrics_close(void)
 {
     ogs_hash_index_t *hi;
     ogs_metrics_context_t *ctx = ogs_metrics_self();
-    upf_metrics_free_inst_global();
 
     if (metrics_hash_by_qfi) {
         for (hi = ogs_hash_first(metrics_hash_by_qfi); hi; hi = ogs_hash_next(hi)) {

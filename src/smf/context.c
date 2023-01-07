@@ -2441,11 +2441,6 @@ int smf_bearer_remove(smf_bearer_t *bearer)
     ogs_assert(bearer);
     ogs_assert(bearer->sess);
 
-    if (SMF_IS_QOF_FLOW(bearer))
-        smf_metrics_inst_by_5qi_add(&bearer->sess->plmn_id,
-                &bearer->sess->s_nssai, bearer->sess->session.qos.index,
-                SMF_METR_GAUGE_SM_QOSFLOWNBR, -1);
-
     ogs_list_remove(&bearer->sess->bearer_list, bearer);
 
     ogs_assert(bearer->dl_pdr);
@@ -3097,10 +3092,6 @@ static void stats_remove_smf_session(smf_sess_t *sess)
 {
     ogs_assert(sess);
 
-    if (sess->s_nssai.sst != 0) {
-        smf_metrics_inst_by_slice_add(&sess->plmn_id, &sess->s_nssai,
-                SMF_METR_GAUGE_SM_SESSIONNBR, -1);
-    }
     num_of_smf_sess = num_of_smf_sess - 1;
     ogs_info("[Removed] Number of SMF-Sessions is now %d", num_of_smf_sess);
 }

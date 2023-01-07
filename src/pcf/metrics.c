@@ -52,12 +52,12 @@ pcf_metrics_spec_def_t pcf_metrics_spec_def_global[_PCF_METR_GLOB_MAX] = {
 /* Global Counters: */
 /* Global Gauges: */
 };
-static int pcf_metrics_init_inst_global(void)
+int pcf_metrics_init_inst_global(void)
 {
     return pcf_metrics_init_inst(pcf_metrics_inst_global,
             pcf_metrics_spec_global, _PCF_METR_GLOB_MAX, 0, NULL);
 }
-static int pcf_metrics_free_inst_global(void)
+int pcf_metrics_free_inst_global(void)
 {
     return pcf_metrics_free_inst(pcf_metrics_inst_global, _PCF_METR_GLOB_MAX);
 }
@@ -281,8 +281,6 @@ int pcf_metrics_close(void)
 {
     ogs_hash_index_t *hi;
     ogs_metrics_context_t *ctx = ogs_metrics_self();
-
-    pcf_metrics_free_inst_global();
 
     if (metrics_hash_by_slice) {
         for (hi = ogs_hash_first(metrics_hash_by_slice); hi; hi = ogs_hash_next(hi)) {

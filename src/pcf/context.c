@@ -320,11 +320,6 @@ void pcf_sess_remove(pcf_sess_t *sess)
         OpenAPI_subscribed_default_qos_free(sess->subscribed_default_qos);
 
     ogs_pool_free(&pcf_sess_pool, sess);
-
-    if (sess->s_nssai.sst != 0) {
-        pcf_metrics_inst_by_slice_add(&sess->pcf_ue->guami.plmn_id,
-                &sess->s_nssai, PCF_METR_GAUGE_PA_SESSIONNBR, -1);
-    }
 }
 
 void pcf_sess_remove_all(pcf_ue_t *pcf_ue)

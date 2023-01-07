@@ -12,6 +12,9 @@ typedef enum pcf_metric_type_global_s {
 } pcf_metric_type_global_t;
 extern ogs_metrics_inst_t *pcf_metrics_inst_global[_PCF_METR_GLOB_MAX];
 
+int pcf_metrics_init_inst_global(void);
+int pcf_metrics_free_inst_global(void);
+
 static inline void pcf_metrics_inst_global_set(pcf_metric_type_global_t t, int val)
 { ogs_metrics_inst_set(pcf_metrics_inst_global[t], val); }
 static inline void pcf_metrics_inst_global_add(pcf_metric_type_global_t t, int val)

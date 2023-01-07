@@ -296,6 +296,9 @@ void pcf_sm_state_deleted(ogs_fsm_t *s, pcf_event_t *e)
 
     switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
+        ogs_assert(sess->pcf_ue);
+        pcf_metrics_inst_by_slice_add(&sess->pcf_ue->guami.plmn_id,
+                &sess->s_nssai, PCF_METR_GAUGE_PA_SESSIONNBR, -1);
         break;
 
     case OGS_FSM_EXIT_SIG:
@@ -325,6 +328,9 @@ void pcf_sm_state_exception(ogs_fsm_t *s, pcf_event_t *e)
 
     switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
+        ogs_assert(sess->pcf_ue);
+        pcf_metrics_inst_by_slice_add(&sess->pcf_ue->guami.plmn_id,
+                &sess->s_nssai, PCF_METR_GAUGE_PA_SESSIONNBR, -1);
         break;
 
     case OGS_FSM_EXIT_SIG:

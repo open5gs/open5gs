@@ -495,8 +495,14 @@ void smf_5gc_n4_handle_session_modification_response(
             smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
 
             ogs_list_for_each_entry_safe(&sess->qos_flow_to_modify_list,
-                    next, qos_flow, to_modify_node)
+                    next, qos_flow, to_modify_node) {
+                smf_metrics_inst_by_5qi_add(
+                        &qos_flow->sess->plmn_id,
+                        &qos_flow->sess->s_nssai,
+                        qos_flow->sess->session.qos.index,
+                        SMF_METR_GAUGE_SM_QOSFLOWNBR, -1);
                 smf_bearer_remove(qos_flow);
+            }
 
         } else if (flags & OGS_PFCP_MODIFY_UE_REQUESTED) {
             ogs_pkbuf_t *n1smbuf = NULL, *n2smbuf = NULL;
@@ -521,8 +527,14 @@ void smf_5gc_n4_handle_session_modification_response(
                         OpenAPI_n2_sm_info_type_PDU_RES_MOD_REQ, n2smbuf);
 
             ogs_list_for_each_entry_safe(&sess->qos_flow_to_modify_list,
-                    next, qos_flow, to_modify_node)
+                    next, qos_flow, to_modify_node) {
+                smf_metrics_inst_by_5qi_add(
+                        &qos_flow->sess->plmn_id,
+                        &qos_flow->sess->s_nssai,
+                        qos_flow->sess->session.qos.index,
+                        SMF_METR_GAUGE_SM_QOSFLOWNBR, -1);
                 smf_bearer_remove(qos_flow);
+            }
 
         } else {
             ogs_fatal("Unknown flags [0x%llx]", (long long)flags);
