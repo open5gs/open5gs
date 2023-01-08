@@ -382,17 +382,10 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                     }
                 }
 
-                /* Clear Paging Info */
                 AMF_UE_CLEAR_PAGING_INFO(amf_ue);
-
-                /* Clear N2 Transfer */
                 AMF_UE_CLEAR_N2_TRANSFER(
                         amf_ue, pdu_session_resource_setup_request);
-
-                /* Clear 5GSM Message */
                 AMF_UE_CLEAR_5GSM_MESSAGE(amf_ue);
-
-                /* Clear t3513 Timers */
                 CLEAR_AMF_UE_TIMER(amf_ue->t3513);
 
             } else {
@@ -437,37 +430,58 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
             break;
 
         case AMF_TIMER_MOBILE_REACHABLE:
-            ogs_info("[%s] Mobile Reachable Timer Expired", amf_ue->supi);
-            /* Clear mobile_reachable Timers */
-            CLEAR_AMF_UE_TIMER(amf_ue->mobile_reachable);
-            /* Start AMF_TIMER_IMPLICIT_DEREGISTRATION
+
+            /*
              * TS 24.501
              * 5.3.7 Handling of the periodic registration update timer and
-             * mobile reachable timer
+             *
              * Upon expiry of the mobile reachable timer the network shall
              * start the implicit de-registration timer over 3GPP access.
              * The default value of the implicit de-registration timer over
              * 3GPP access is 4 minutes greater than the value of timer T3512.
              */
+
+            ogs_warn("[%s] Mobile Reachable Timer Expired", amf_ue->supi);
+
+            ogs_list_for_each(&amf_ue->sess_list, sess) {
+                if (sess->paging.ongoing == true &&
+                    sess->paging.n1n2_failure_txf_notif_uri != NULL) {
+                    ogs_assert(true ==
+                        amf_sbi_send_n1_n2_failure_notify(
+                            sess,
+                            OpenAPI_n1_n2_message_transfer_cause_UE_NOT_REACHABLE_FOR_SESSION));
+                }
+            }
+
+            /* Stop Paging */
+            AMF_UE_CLEAR_PAGING_INFO(amf_ue);
+            AMF_UE_CLEAR_N2_TRANSFER(
+                    amf_ue, pdu_session_resource_setup_request);
+            AMF_UE_CLEAR_5GSM_MESSAGE(amf_ue);
+            CLEAR_AMF_UE_TIMER(amf_ue->t3513);
+
             ogs_timer_start(amf_ue->implicit_deregistration.timer,
                     ogs_time_from_sec(amf_self()->time.t3512.value + 240));
             break;
         case AMF_TIMER_IMPLICIT_DEREGISTRATION:
-            ogs_info("[%s] Do Network-Initiated De-Register UE", amf_ue->supi);
-            /* Clear implicit_deregistration Timers */
-            CLEAR_AMF_UE_TIMER(amf_ue->implicit_deregistration);
-            /* Implicitly de-register UE
+
+            /*
              * TS 24.501
              * 5.3.7 Handling of the periodic registration update timer and
-             * mobile reachable timer
+             *
              * If the implicit de-registration timer expires before the UE
              * contacts the network, the network shall implicitly de-register
              * the UE.
+             *
              * TS 23.502
              * 4.2.2.3.3 Network-initiated Deregistration
-             * The AMF does not send the Deregistration Request message to the UE
-             * for Implicit Deregistration.
+             *
+             * The AMF does not send the Deregistration Request message
+             * to the UE for Implicit Deregistration.
              */
+
+            ogs_info("[%s] Do Network-initiated De-register UE", amf_ue->supi);
+
             ogs_assert(true == amf_ue_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
                     amf_nudm_sdm_build_subscription_delete,

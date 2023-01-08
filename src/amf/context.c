@@ -1843,18 +1843,6 @@ void amf_ue_associate_ran_ue(amf_ue_t *amf_ue, ran_ue_t *ran_ue)
 
     amf_ue->ran_ue = ran_ue;
     ran_ue->amf_ue = amf_ue;
-
-    /* Clear mobile_reachable and implicit_deregistration Timers
-     * TS 24.501
-     * 5.3.7 Handling of the periodic registration update timer and
-     * mobile reachable timer
-     * The mobile reachable timer shall be stopped when a NAS signalling
-     * connection is established for the UE.
-     * The implicit de-registration timer shall be stopped when a NAS
-     * signalling connection is established for the UE.
-     */
-    CLEAR_AMF_UE_TIMER(amf_ue->mobile_reachable);
-    CLEAR_AMF_UE_TIMER(amf_ue->implicit_deregistration);
 }
 
 void ran_ue_deassociate(ran_ue_t *ran_ue)

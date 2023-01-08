@@ -462,6 +462,18 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
                             NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0));
                 }
                 amf_ue_associate_ran_ue(amf_ue, ran_ue);
+
+                /*
+                 * TS 24.501
+                 * 5.3.7 Handling of the periodic registration update timer
+                 *
+                 * The mobile reachable timer shall be stopped
+                 * when a NAS signalling connection is established for the UE.
+                 * The implicit de-registration timer shall be stopped
+                 * when a NAS signalling connection is established for the UE.
+                 */
+                CLEAR_AMF_UE_TIMER(amf_ue->mobile_reachable);
+                CLEAR_AMF_UE_TIMER(amf_ue->implicit_deregistration);
             }
         }
     }

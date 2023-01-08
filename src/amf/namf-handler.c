@@ -272,16 +272,21 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
 
                 sendmsg.http.location = ogs_sbi_server_uri(server, &header);
 
-                /* Store Paging Info */
-                AMF_SESS_STORE_PAGING_INFO(
+                if (ogs_timer_running(
+                            amf_ue->implicit_deregistration.timer) == true) {
+                    ogs_warn("[%s] Paging failed. Stop", amf_ue->supi);
+                } else {
+                    /* Store Paging Info */
+                    AMF_SESS_STORE_PAGING_INFO(
                         sess, sendmsg.http.location,
                         N1N2MessageTransferReqData->n1n2_failure_txf_notif_uri);
 
-                /* Store N2 Transfer message */
-                AMF_SESS_STORE_N2_TRANSFER(
-                        sess, pdu_session_resource_setup_request, n2buf);
+                    /* Store N2 Transfer message */
+                    AMF_SESS_STORE_N2_TRANSFER(
+                            sess, pdu_session_resource_setup_request, n2buf);
 
-                ogs_assert(OGS_OK == ngap_send_paging(amf_ue));
+                    ogs_assert(OGS_OK == ngap_send_paging(amf_ue));
+                }
 
             } else if (CM_CONNECTED(amf_ue)) {
                 ogs_assert(OGS_OK ==
@@ -331,16 +336,21 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
 
             sendmsg.http.location = ogs_sbi_server_uri(server, &header);
 
-            /* Store Paging Info */
-            AMF_SESS_STORE_PAGING_INFO(
-                    sess, sendmsg.http.location, NULL);
+            if (ogs_timer_running(
+                        amf_ue->implicit_deregistration.timer) == true) {
+                ogs_warn("[%s] Paging failed. Stop", amf_ue->supi);
+            } else {
+                /* Store Paging Info */
+                AMF_SESS_STORE_PAGING_INFO(
+                        sess, sendmsg.http.location, NULL);
 
-            /* Store 5GSM Message */
-            AMF_SESS_STORE_5GSM_MESSAGE(sess,
-                    OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND,
-                    n1buf, n2buf);
+                /* Store 5GSM Message */
+                AMF_SESS_STORE_5GSM_MESSAGE(sess,
+                        OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND,
+                        n1buf, n2buf);
 
-            ogs_assert(OGS_OK == ngap_send_paging(amf_ue));
+                ogs_assert(OGS_OK == ngap_send_paging(amf_ue));
+            }
 
         } else if (CM_CONNECTED(amf_ue)) {
             ogs_expect(OGS_OK ==

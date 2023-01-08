@@ -369,29 +369,8 @@ int ngap_send_paging(amf_ue_t *amf_ue)
     int i, j;
     int rv;
 
-    if (amf_ue->implicit_deregistration.timer->running) {
-        /* Mobile Reachable timer has expired if implicit de-registration
-         * timer is running
-         * TS 24.501
-         * 5.3.7 Handling of the periodic registration update timer and
-         * mobile reachable timer
-         * The network behaviour upon expiry of the mobile reachable timer
-         * is network dependent, but typically the network stops sending
-         * paging messages to the UE on the first expiry
-         */
-        ogs_info("[%s] Paging ignored due to Mobile Reachable timer expiration",
-                amf_ue->supi);
-        /* Clear Paging Info */
-        AMF_UE_CLEAR_PAGING_INFO(amf_ue);
-
-        /* Clear N2 Transfer */
-        AMF_UE_CLEAR_N2_TRANSFER(
-                amf_ue, pdu_session_resource_setup_request);
-
-        /* Clear 5GSM Message */
-        AMF_UE_CLEAR_5GSM_MESSAGE(amf_ue);
-        return OGS_OK;
-    }
+    ogs_assert(ogs_timer_running(
+                amf_ue->implicit_deregistration.timer) == false);
 
     ogs_list_for_each(&amf_self()->gnb_list, gnb) {
         for (i = 0; i < gnb->num_of_supported_ta_list; i++) {
