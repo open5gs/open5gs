@@ -593,6 +593,7 @@ struct mme_ue_s {
     } gtp_counter[MAX_NUM_OF_GTP_COUNTER];
 
     ogs_list_t      bearer_to_modify_list;
+    ogs_list_t      bearer_to_delete_list;
 
     mme_csmap_t     *csmap;
 };
@@ -679,6 +680,7 @@ typedef struct mme_sess_s {
 typedef struct mme_bearer_s {
     ogs_lnode_t     lnode;
     ogs_lnode_t     to_modify_node;
+    ogs_lnode_t     to_delete_node;
 
     uint32_t        index;
     ogs_fsm_t       sm;             /* State Machine */

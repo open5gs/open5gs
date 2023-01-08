@@ -646,12 +646,29 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
 
             CLEAR_MME_UE_TIMER(mme_ue->t3422);
 
-            rv = s1ap_send_ue_context_release_command(enb_ue,
-                    S1AP_Cause_PR_nas, S1AP_CauseNas_detach,
-                    S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
-            ogs_expect(rv == OGS_OK);
+            switch (mme_ue->detach_type) {
+            case MME_DETACH_TYPE_MME_EXPLICIT:
+                rv = s1ap_send_ue_context_release_command(enb_ue,
+                        S1AP_Cause_PR_nas, S1AP_CauseNas_detach,
+                        S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0);
+                ogs_expect(rv == OGS_OK);
+                OGS_FSM_TRAN(s, &emm_state_de_registered);
+                break;
 
-            OGS_FSM_TRAN(s, &emm_state_de_registered);
+            case MME_DETACH_TYPE_HSS_EXPLICIT:
+                rv = s1ap_send_ue_context_release_command(enb_ue,
+                        S1AP_Cause_PR_nas, S1AP_CauseNas_detach,
+                        S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+                ogs_expect(rv == OGS_OK);
+                OGS_FSM_TRAN(s, &emm_state_de_registered);
+                break;
+
+            default:
+                ogs_error("[%s] Invalid Detach Type for Detach Accept",
+                        mme_ue->imsi_bcd);
+                break;
+            }
+
             break;
 
         case OGS_NAS_EPS_UPLINK_NAS_TRANSPORT:

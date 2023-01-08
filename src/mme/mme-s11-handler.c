@@ -1116,7 +1116,9 @@ void mme_s11_handle_delete_bearer_request(
     bearer->delete.xact = xact;
 
     if (ECM_IDLE(mme_ue)) {
-        MME_STORE_PAGING_INFO(mme_ue, MME_PAGING_TYPE_DELETE_BEARER, bearer);
+        ogs_list_init(&mme_ue->bearer_to_delete_list);
+        ogs_list_add(&mme_ue->bearer_to_delete_list, &bearer->to_delete_node);
+        MME_STORE_PAGING_INFO(mme_ue, MME_PAGING_TYPE_DELETE_BEARER, NULL);
         ogs_assert(OGS_OK == s1ap_send_paging(mme_ue, S1AP_CNDomain_ps));
     } else {
         ogs_assert(OGS_OK ==

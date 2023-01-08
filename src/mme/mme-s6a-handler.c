@@ -36,6 +36,9 @@ static uint8_t emm_cause_from_diameter(
 static uint8_t mme_ue_session_from_slice_data(mme_ue_t *mme_ue, 
     ogs_slice_data_t *slice_data);
 
+static uint8_t mme_apn_exist_in_slice_data(ogs_slice_data_t *slice_data, 
+    char *apn);
+
 uint8_t mme_s6a_handle_aia(
         mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
 {
@@ -132,6 +135,12 @@ uint8_t mme_s6a_handle_idr(
     ogs_diam_s6a_idr_message_t *idr_message = NULL;
     ogs_subscription_data_t *subscription_data = NULL;
     ogs_slice_data_t *slice_data = NULL;
+    mme_sess_t *sess = NULL;
+    mme_sess_t *sess_to_be_deleted[OGS_MAX_NUM_OF_SESS];
+    int num_sess_to_be_deleted = 0;
+    mme_bearer_t *bearer = NULL;
+    int i;
+
     int num_of_session;
 
     ogs_assert(mme_ue);
@@ -151,6 +160,21 @@ uint8_t mme_s6a_handle_idr(
 
         if (slice_data->all_apn_config_inc ==
                 OGS_ALL_APN_CONFIGURATIONS_INCLUDED) {
+
+            /* Collect list of active sessions no longer in subscription */
+            sess = mme_sess_first(mme_ue);
+            while (sess) {
+                if (!mme_apn_exist_in_slice_data(slice_data, 
+                        sess->session->name)) {
+                    sess_to_be_deleted[num_sess_to_be_deleted] = sess;
+                    num_sess_to_be_deleted++;
+                    ogs_warn("[%s] Subscription to active APN[%s] removed",
+                        mme_ue->imsi_bcd, sess->session->name);
+                }
+                sess = mme_sess_next(sess);
+            }
+
+
             mme_session_remove_all(mme_ue);
             num_of_session = mme_ue_session_from_slice_data(mme_ue, slice_data);
             if (num_of_session == 0) {
@@ -158,8 +182,44 @@ uint8_t mme_s6a_handle_idr(
                 return OGS_ERROR;
             }
             mme_ue->num_of_session = num_of_session;
+
+            /* If we're deleting all the bearers, then MME must send detach */
+            if (num_sess_to_be_deleted && 
+                    num_sess_to_be_deleted >= mme_sess_count(mme_ue)) {
+                ogs_warn("[%s] Requesting Detach.  Subscription for all active "
+                    "sessions removed", mme_ue->imsi_bcd);
+                mme_detach_explicit(mme_ue, true);
+            } else if (num_sess_to_be_deleted) {
+                if (ECM_IDLE(mme_ue)) {
+                    ogs_list_init(&mme_ue->bearer_to_delete_list);
+                    for (i = 0; i < num_sess_to_be_deleted; i++) {
+                        bearer = mme_default_bearer_in_sess(
+                            sess_to_be_deleted[i]); 
+                        ogs_list_add(&mme_ue->bearer_to_delete_list,
+                            &bearer->to_delete_node);
+                        ogs_assert(bearer);
+                        OGS_FSM_TRAN(&bearer->sm, 
+                            esm_state_pdn_will_disconnect);
+                    }
+                    MME_STORE_PAGING_INFO(mme_ue, MME_PAGING_TYPE_DELETE_BEARER,
+                        NULL);
+                    ogs_assert(OGS_OK == s1ap_send_paging(mme_ue, 
+                        S1AP_CNDomain_ps));
+                } else {
+                    for (i = 0; i < num_sess_to_be_deleted; i++) {
+                        mme_send_delete_session_by_sess_or_deactivate_bearer_context(
+                            mme_ue, sess_to_be_deleted[i]);
+                        bearer = mme_default_bearer_in_sess(
+                            sess_to_be_deleted[i]);
+                        ogs_assert(bearer);
+                        OGS_FSM_TRAN(&bearer->sm,
+                            esm_state_pdn_will_disconnect);
+                    }
+                }
+            }
+
         } else {
-            ogs_error ("[%d] Partial APN-Configuration Not Supported in IDR.",
+            ogs_error ("[%d] Partial APN-Configuration Not Supported in IDR",
                         slice_data->all_apn_config_inc);
             return OGS_ERROR;
         }
@@ -315,6 +375,24 @@ static uint8_t mme_ue_session_from_slice_data(mme_ue_t *mme_ue,
     }
 
     return i;
+}
+
+static uint8_t mme_apn_exist_in_slice_data(ogs_slice_data_t *slice_data, 
+    char *apn)
+{
+    int i = 0;
+
+    ogs_assert(slice_data);
+    ogs_assert(apn);
+
+    ogs_assert(slice_data->num_of_session <= OGS_MAX_NUM_OF_SESS);
+    for (i = 0; i < slice_data->num_of_session; i++) {
+        ogs_assert(slice_data->session[i].name);
+        if (ogs_strcasecmp(slice_data->session[i].name, apn) == 0)
+            return true;
+    }
+
+    return false;
 }
 
 /* 3GPP TS 29.272 Annex A; Table A.1:
