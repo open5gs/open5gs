@@ -1177,28 +1177,6 @@ void ran_ue_remove(ran_ue_t *ran_ue)
     ogs_pool_free(&ran_ue_pool, ran_ue);
 
     stats_remove_ran_ue();
-    if (ran_ue->amf_ue) {
-        if (ran_ue->amf_ue->rm_state == RM_STATE_REGISTERED) {
-            /* Start AMF_TIMER_MOBILE_REACHABLE
-             * TS 24.501
-             * 5.3.7 Handling of the periodic registration update timer and
-             * mobile reachable timer
-             * The network supervises the periodic registration update procedure
-             * of the UE by means of the mobile reachable timer.
-             * If the UE is not registered for emergency services,
-             * the mobile reachable timer shall be longer than the value of timer
-             * T3512. In this case, by default, the mobile reachable timer is
-             * 4 minutes greater than the value of timer T3512.
-             * The mobile reachable timer shall be reset and started with the
-             * value as indicated above, when the AMF releases the NAS signalling
-             * connection for the UE.
-             * TODO: If the UE is registered for emergency services, the AMF shall
-             * set the mobile reachable timer with a value equal to timer T3512.
-             */
-            ogs_timer_start(ran_ue->amf_ue->mobile_reachable.timer,
-                    ogs_time_from_sec(amf_self()->time.t3512.value + 240));
-        }
-    }
 }
 
 void ran_ue_switch_to_gnb(ran_ue_t *ran_ue, amf_gnb_t *new_gnb)
@@ -1433,8 +1411,6 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
     amf_ue->nas.access_type = OGS_ACCESS_TYPE_3GPP;
     amf_ue->nas.amf.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
     amf_ue->abba_len = 2;
-
-    amf_ue->rm_state = RM_STATE_DEREGISTERED;
 
     amf_ue_fsm_init(amf_ue);
 

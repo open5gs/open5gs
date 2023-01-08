@@ -740,7 +740,7 @@ int gmm_handle_authentication_response(amf_ue_t *amf_ue,
     ogs_assert(true ==
         amf_ue_sbi_discover_and_send(
             OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
-            amf_nausf_auth_build_authenticate_confirmation, amf_ue, NULL));
+            amf_nausf_auth_build_authenticate_confirmation, amf_ue, 0, NULL));
 
     return OGS_OK;
 }

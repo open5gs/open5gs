@@ -370,6 +370,8 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 break;
             }
 
+            state = sbi_xact->state;
+
             amf_ue = (amf_ue_t *)sbi_xact->sbi_object;
             ogs_assert(amf_ue);
 
@@ -382,6 +384,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
                 e->amf_ue = amf_ue;
                 e->h.sbi.message = &sbi_message;;
+                e->h.sbi.state = state;
 
                 ogs_fsm_dispatch(&amf_ue->sm, e);
             } else {
@@ -542,6 +545,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             e->amf_ue = amf_ue;
             e->sess = sess;
             e->h.sbi.message = &sbi_message;;
+            e->h.sbi.state = state;
 
             amf_nnssf_nsselection_handle_get(sess, &sbi_message);
             break;

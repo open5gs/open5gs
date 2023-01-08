@@ -23,7 +23,7 @@
 #include "nas-path.h"
 
 int amf_nudm_sdm_handle_provisioned(
-        amf_ue_t *amf_ue, ogs_sbi_message_t *recvmsg)
+        amf_ue_t *amf_ue, int state, ogs_sbi_message_t *recvmsg)
 {
     int i;
 
@@ -157,7 +157,7 @@ int amf_nudm_sdm_handle_provisioned(
             amf_ue_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
                 amf_nudm_sdm_build_get,
-                amf_ue, (char *)OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA));
+                amf_ue, state, (char *)OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA));
         break;
 
     CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA)
@@ -230,7 +230,8 @@ int amf_nudm_sdm_handle_provisioned(
             amf_ue_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
                 amf_nudm_sdm_build_get,
-                amf_ue, (char *)OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA));
+                amf_ue, state,
+                (char *)OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA));
         break;
 
     CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA)
@@ -241,14 +242,15 @@ int amf_nudm_sdm_handle_provisioned(
             ogs_assert(true ==
                 amf_ue_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,
-                    amf_npcf_am_policy_control_build_create, amf_ue, NULL));
+                    amf_npcf_am_policy_control_build_create,
+                    amf_ue, state, NULL));
         }
         else {
             ogs_assert(true ==
                 amf_ue_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
-                    amf_nudm_sdm_build_subscription, amf_ue,
-                    (char *)OGS_SBI_RESOURCE_NAME_AM_DATA));
+                    amf_nudm_sdm_build_subscription,
+                    amf_ue, state, (char *)OGS_SBI_RESOURCE_NAME_AM_DATA));
         }
         break;
 
@@ -300,7 +302,7 @@ int amf_nudm_sdm_handle_provisioned(
         ogs_assert(true ==
             amf_ue_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,
-                amf_npcf_am_policy_control_build_create, amf_ue, NULL));
+                amf_npcf_am_policy_control_build_create, amf_ue, state, NULL));
         break;
 
     DEFAULT

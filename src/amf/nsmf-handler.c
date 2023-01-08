@@ -236,7 +236,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                                     OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
                                     NULL,
                                     amf_npcf_am_policy_control_build_create,
-                                    amf_ue, NULL));
+                                    amf_ue, 0, NULL));
                         } else {
                             CLEAR_AMF_UE_TIMER(amf_ue->t3550);
                             ogs_assert(OGS_OK ==
@@ -821,7 +821,8 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
                 ogs_assert(true ==
                     amf_ue_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,
-                        amf_npcf_am_policy_control_build_create, amf_ue, NULL));
+                        amf_npcf_am_policy_control_build_create,
+                        amf_ue, 0, NULL));
             } else {
                 CLEAR_AMF_UE_TIMER(amf_ue->t3550);
                 ogs_assert(OGS_OK ==
@@ -866,7 +867,8 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
                 /* Not reached here */
                 ogs_assert_if_reached();
 
-            } else if (state == AMF_RELEASE_SM_CONTEXT_NO_STATE) {
+            } else if (state == AMF_RELEASE_SM_CONTEXT_NO_STATE ||
+                        state == AMF_NETWORK_INITIATED_DE_REGISTERED) {
                 /* NO_STATE */
 
                 if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_authentication)) {
@@ -874,7 +876,8 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
                     ogs_assert(true ==
                         amf_ue_sbi_discover_and_send(
                             OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
-                            amf_nausf_auth_build_authenticate, amf_ue, NULL));
+                            amf_nausf_auth_build_authenticate,
+                            amf_ue, 0, NULL));
 
                 } else if (OGS_FSM_CHECK(&amf_ue->sm,
                             gmm_state_de_registered)) {
@@ -893,7 +896,7 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
                         amf_ue_sbi_discover_and_send(
                             OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,
                             amf_npcf_am_policy_control_build_delete,
-                            amf_ue, NULL));
+                            amf_ue, state, NULL));
 
                 } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered)) {
                     /*

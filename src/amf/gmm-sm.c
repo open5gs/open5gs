@@ -53,10 +53,14 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e);
 
 void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
 {
+    int i;
+
     amf_ue_t *amf_ue = NULL;
     amf_sess_t *sess = NULL;
 
     ogs_sbi_message_t *sbi_message = NULL;
+
+    int state = 0;
 
     ogs_assert(e);
 
@@ -71,6 +75,12 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
 
     switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
+        ogs_assert(amf_ue->num_of_slice <= OGS_MAX_NUM_OF_SLICE);
+        for (i = 0; i < amf_ue->num_of_slice; i++) {
+            amf_metrics_inst_by_slice_add(&amf_ue->nr_tai.plmn_id,
+                    &amf_ue->slice[i].s_nssai,
+                    AMF_METR_GAUGE_RM_REGISTEREDSUBNBR, -1);
+        }
         AMF_UE_CLEAR_PAGING_INFO(amf_ue);
         AMF_UE_CLEAR_N2_TRANSFER(amf_ue, pdu_session_resource_setup_request);
         AMF_UE_CLEAR_5GSM_MESSAGE(amf_ue);
@@ -123,6 +133,7 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
     case OGS_EVENT_SBI_CLIENT:
         sbi_message = e->h.sbi.message;
         ogs_assert(sbi_message);
+        state = e->h.sbi.state;
 
         SWITCH(sbi_message->h.service.name)
         CASE(OGS_SBI_SERVICE_NAME_NAUSF_AUTH)
@@ -197,23 +208,24 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                             ogs_free(amf_ue->data_change_subscription_id);
                             amf_ue->data_change_subscription_id = NULL;
                         }
-                        if (amf_ue->network_initiated_de_reg) {
-                            amf_sbi_send_release_all_sessions(
-                                amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+
+                        if (state == AMF_NETWORK_INITIATED_DE_REGISTERED) {
+                            amf_sbi_send_release_all_sessions(amf_ue, state);
                             if ((ogs_list_count(&amf_ue->sess_list) == 0) &&
-                                (PCF_AM_POLICY_ASSOCIATED(amf_ue)))
-                            {
+                                (PCF_AM_POLICY_ASSOCIATED(amf_ue))) {
                                 ogs_assert(true ==
                                     amf_ue_sbi_discover_and_send(
-                                        OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,
-                                        amf_npcf_am_policy_control_build_delete, amf_ue, NULL));
+                                        OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
+                                        NULL,
+                                        amf_npcf_am_policy_control_build_delete,
+                                        amf_ue, state, NULL));
                             }
                         } else {
                             ogs_assert(true ==
                                 amf_ue_sbi_discover_and_send(
                                     OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
                                     amf_nausf_auth_build_authenticate_delete,
-                                    amf_ue, NULL));
+                                    amf_ue, state, NULL));
                         }
                         break;
                     DEFAULT
@@ -259,7 +271,7 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                         amf_ue_sbi_discover_and_send(
                             OGS_SBI_SERVICE_TYPE_NUDM_UECM, NULL,
                             amf_nudm_uecm_build_registration_delete,
-                            amf_ue, NULL));
+                            amf_ue, state, NULL));
                     break;
                 DEFAULT
                     ogs_warn("[%s] Ignore invalid HTTP method [%s]",
@@ -283,11 +295,10 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                     break;
 
                 CASE(OGS_SBI_HTTP_METHOD_DELETE)
-                    if (!amf_ue->network_initiated_de_reg)
+                    if (state != AMF_NETWORK_INITIATED_DE_REGISTERED)
                         ogs_assert(OGS_OK ==
                             nas_5gs_send_de_registration_accept(amf_ue));
 
-                    amf_ue->network_initiated_de_reg = false;
                     PCF_AM_POLICY_CLEAR(amf_ue);
                     break;
 
@@ -317,6 +328,8 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
 
 void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
 {
+    int i;
+
     amf_ue_t *amf_ue = NULL;
     amf_sess_t *sess = NULL;
 
@@ -335,6 +348,12 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
 
     switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
+        ogs_assert(amf_ue->num_of_slice <= OGS_MAX_NUM_OF_SLICE);
+        for (i = 0; i < amf_ue->num_of_slice; i++) {
+            amf_metrics_inst_by_slice_add(&amf_ue->nr_tai.plmn_id,
+                    &amf_ue->slice[i].s_nssai,
+                    AMF_METR_GAUGE_RM_REGISTEREDSUBNBR, 1);
+        }
         break;
     case OGS_FSM_EXIT_SIG:
         break;
@@ -418,7 +437,7 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
             break;
 
         case AMF_TIMER_MOBILE_REACHABLE:
-            ogs_info("[%s] Mobile Reachable timer expired", amf_ue->supi);
+            ogs_info("[%s] Mobile Reachable Timer Expired", amf_ue->supi);
             /* Clear mobile_reachable Timers */
             CLEAR_AMF_UE_TIMER(amf_ue->mobile_reachable);
             /* Start AMF_TIMER_IMPLICIT_DEREGISTRATION
@@ -434,8 +453,7 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                     ogs_time_from_sec(amf_self()->time.t3512.value + 240));
             break;
         case AMF_TIMER_IMPLICIT_DEREGISTRATION:
-            ogs_info("[%s] Implicit de-reg timer expired, de-register UE",
-                    amf_ue->supi);
+            ogs_info("[%s] Do Network-Initiated De-Register UE", amf_ue->supi);
             /* Clear implicit_deregistration Timers */
             CLEAR_AMF_UE_TIMER(amf_ue->implicit_deregistration);
             /* Implicitly de-register UE
@@ -452,9 +470,8 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
              */
             ogs_assert(true == amf_ue_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
-                    amf_nudm_sdm_build_subscription_delete, amf_ue, NULL));
-            amf_ue->network_initiated_de_reg = true;
-            amf_ue->rm_state = RM_STATE_DEREGISTERED;
+                    amf_nudm_sdm_build_subscription_delete,
+                    amf_ue, AMF_NETWORK_INITIATED_DE_REGISTERED, NULL));
             OGS_FSM_TRAN(s, &gmm_state_de_registered);
             break;
         default:
@@ -478,7 +495,7 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
 
 static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
 {
-    int rv, i, xact_count = 0;
+    int rv, xact_count = 0;
     ogs_nas_5gmm_cause_t gmm_cause;
 
     amf_ue_t *amf_ue = NULL;
@@ -560,7 +577,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
                                 OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
                                 NULL,
                                 amf_npcf_am_policy_control_build_create,
-                                amf_ue, NULL));
+                                amf_ue, 0, NULL));
                         OGS_FSM_TRAN(s, &gmm_state_initial_context_setup);
                         break;
                     }
@@ -583,7 +600,8 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
                     ogs_assert(true ==
                         amf_ue_sbi_discover_and_send(
                             OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
-                            amf_nausf_auth_build_authenticate, amf_ue, NULL));
+                            amf_nausf_auth_build_authenticate,
+                            amf_ue, 0, NULL));
                 }
 
                 OGS_FSM_TRAN(s, &gmm_state_authentication);
@@ -661,7 +679,8 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
                 ogs_assert(true ==
                     amf_ue_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
-                        amf_nausf_auth_build_authenticate, amf_ue, NULL));
+                        amf_nausf_auth_build_authenticate,
+                        amf_ue, 0, NULL));
             }
 
             OGS_FSM_TRAN(s, &gmm_state_authentication);
@@ -678,13 +697,6 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
 
             gmm_handle_deregistration_request(
                     amf_ue, &nas_message->gmm.deregistration_request_from_ue);
-            ogs_assert(amf_ue->num_of_slice <= OGS_MAX_NUM_OF_SLICE);
-            for (i = 0; i < amf_ue->num_of_slice; i++) {
-                amf_metrics_inst_by_slice_add(&amf_ue->nr_tai.plmn_id,
-                        &amf_ue->slice[i].s_nssai,
-                        AMF_METR_GAUGE_RM_REGISTEREDSUBNBR, -1);
-            }
-            amf_ue->rm_state = RM_STATE_DEREGISTERED;
             OGS_FSM_TRAN(s, &gmm_state_de_registered);
             break;
 
@@ -700,13 +712,6 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
                     NGAP_Cause_PR_misc, NGAP_CauseMisc_om_intervention,
                     NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0));
 
-            ogs_assert(amf_ue->num_of_slice <= OGS_MAX_NUM_OF_SLICE);
-            for (i = 0; i < amf_ue->num_of_slice; i++) {
-                amf_metrics_inst_by_slice_add(&amf_ue->nr_tai.plmn_id,
-                        &amf_ue->slice[i].s_nssai,
-                        AMF_METR_GAUGE_RM_REGISTEREDSUBNBR, -1);
-            }
-            amf_ue->rm_state = RM_STATE_DEREGISTERED;
             OGS_FSM_TRAN(s, &gmm_state_de_registered);
             break;
 
@@ -851,7 +856,8 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                 ogs_assert(true ==
                     amf_ue_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
-                        amf_nausf_auth_build_authenticate, amf_ue, NULL));
+                        amf_nausf_auth_build_authenticate,
+                        amf_ue, 0, NULL));
                 return;
 
             case OGS_5GMM_CAUSE_SYNCH_FAILURE:
@@ -865,7 +871,7 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                     amf_ue_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
                         amf_nausf_auth_build_authenticate,
-                        amf_ue, authentication_failure_parameter->auts));
+                        amf_ue, 0, authentication_failure_parameter->auts));
                 return;
 
             default:
@@ -897,7 +903,7 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
             ogs_assert(true ==
                 amf_ue_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
-                    amf_nausf_auth_build_authenticate, amf_ue, NULL));
+                    amf_nausf_auth_build_authenticate, amf_ue, 0, NULL));
             break;
 
         case OGS_NAS_5GS_5GMM_STATUS:
@@ -1106,7 +1112,7 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
             ogs_assert(true ==
                 amf_ue_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NUDM_UECM, NULL,
-                    amf_nudm_uecm_build_registration, amf_ue, NULL));
+                    amf_nudm_uecm_build_registration, amf_ue, 0, NULL));
 
             if (amf_ue->nas.message_type == OGS_NAS_5GS_REGISTRATION_REQUEST) {
                 OGS_FSM_TRAN(s, &gmm_state_initial_context_setup);
@@ -1142,7 +1148,7 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
             ogs_assert(true ==
                 amf_ue_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
-                    amf_nausf_auth_build_authenticate, amf_ue, NULL));
+                    amf_nausf_auth_build_authenticate, amf_ue, 0, NULL));
 
             OGS_FSM_TRAN(s, &gmm_state_authentication);
             break;
@@ -1209,7 +1215,7 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
 
 void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
 {
-    int rv, xact_count = 0;
+    int rv, state, xact_count = 0;
     ogs_nas_5gmm_cause_t gmm_cause;
 
     amf_ue_t *amf_ue = NULL;
@@ -1244,6 +1250,7 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
     case OGS_EVENT_SBI_CLIENT:
         sbi_message = e->h.sbi.message;
         ogs_assert(sbi_message);
+        state = e->h.sbi.state;
 
         SWITCH(sbi_message->h.service.name)
         CASE(OGS_SBI_SERVICE_NAME_NUDM_UECM)
@@ -1268,7 +1275,8 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                         amf_ue_sbi_discover_and_send(
                             OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
                             amf_nudm_sdm_build_get,
-                            amf_ue, (char *)OGS_SBI_RESOURCE_NAME_AM_DATA));
+                            amf_ue, state,
+                            (char *)OGS_SBI_RESOURCE_NAME_AM_DATA));
                     break;
 
                 DEFAULT
@@ -1303,7 +1311,8 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                     break;
                 }
 
-                rv = amf_nudm_sdm_handle_provisioned(amf_ue, sbi_message);
+                rv = amf_nudm_sdm_handle_provisioned(
+                        amf_ue, state, sbi_message);
                 if (rv != OGS_OK) {
                     ogs_error("[%s] amf_nudm_sdm_handle_provisioned(%s) failed",
                             amf_ue->supi, sbi_message->h.resource.component[1]);
@@ -1388,16 +1397,6 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
         switch (nas_message->gmm.h.message_type) {
         case OGS_NAS_5GS_REGISTRATION_COMPLETE:
             ogs_info("[%s] Registration complete", amf_ue->supi);
-            if (amf_ue->rm_state == RM_STATE_DEREGISTERED){
-                int i;
-                ogs_assert(amf_ue->num_of_slice <= OGS_MAX_NUM_OF_SLICE);
-                for (i = 0; i < amf_ue->num_of_slice; i++) {
-                    amf_metrics_inst_by_slice_add(&amf_ue->nr_tai.plmn_id,
-                            &amf_ue->slice[i].s_nssai,
-                            AMF_METR_GAUGE_RM_REGISTEREDSUBNBR, 1);
-                }
-            }
-            amf_ue->rm_state = RM_STATE_REGISTERED;
 
             CLEAR_AMF_UE_TIMER(amf_ue->t3550);
 
@@ -1480,7 +1479,8 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                 ogs_assert(true ==
                     amf_ue_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
-                        amf_nausf_auth_build_authenticate, amf_ue, NULL));
+                        amf_nausf_auth_build_authenticate,
+                        amf_ue, 0, NULL));
             }
             OGS_FSM_TRAN(s, &gmm_state_authentication);
             break;
@@ -1646,7 +1646,7 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
                                 OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
                                 NULL,
                                 amf_npcf_am_policy_control_build_create,
-                                amf_ue, NULL));
+                                amf_ue, 0, NULL));
                         OGS_FSM_TRAN(s, &gmm_state_initial_context_setup);
                         break;
                     }
@@ -1669,7 +1669,8 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
                     ogs_assert(true ==
                         amf_ue_sbi_discover_and_send(
                             OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
-                            amf_nausf_auth_build_authenticate, amf_ue, NULL));
+                            amf_nausf_auth_build_authenticate,
+                            amf_ue, 0, NULL));
                 }
 
                 OGS_FSM_TRAN(s, &gmm_state_authentication);

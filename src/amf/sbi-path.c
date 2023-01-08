@@ -90,7 +90,7 @@ bool amf_ue_sbi_discover_and_send(
         ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(amf_ue_t *amf_ue, void *data),
-        amf_ue_t *amf_ue, void *data)
+        amf_ue_t *amf_ue, int state, void *data)
 {
     ogs_sbi_xact_t *xact = NULL;
 
@@ -108,6 +108,8 @@ bool amf_ue_sbi_discover_and_send(
                 amf_ue, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT));
         return false;
     }
+
+    xact->state = state;
 
     if (ogs_sbi_discover_and_send(xact) != true) {
         ogs_error("amf_ue_sbi_discover_and_send() failed");

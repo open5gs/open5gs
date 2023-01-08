@@ -499,37 +499,38 @@ cleanup:
     return OGS_OK;
 }
 
-static int network_deregister (
-        amf_ue_t *amf_ue, OpenAPI_deregistration_reason_e dereg_reason) {
+static int do_network_initiated_de_register(
+        amf_ue_t *amf_ue, OpenAPI_deregistration_reason_e dereg_reason)
+{
     if ((CM_CONNECTED(amf_ue)) &&
-        (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered)))
-    {
-        amf_ue->network_initiated_de_reg = true;
+        (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered))) {
 
         ogs_assert(OGS_OK ==
             nas_5gs_send_de_registration_request(amf_ue, dereg_reason));
 
         amf_sbi_send_release_all_sessions(
-            amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+            amf_ue, AMF_NETWORK_INITIATED_DE_REGISTERED);
 
         if ((ogs_list_count(&amf_ue->sess_list) == 0) &&
-            (PCF_AM_POLICY_ASSOCIATED(amf_ue)))
-        {
+            (PCF_AM_POLICY_ASSOCIATED(amf_ue))) {
             ogs_assert(true ==
                 amf_ue_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,
-                    amf_npcf_am_policy_control_build_delete, amf_ue, NULL));
+                    amf_npcf_am_policy_control_build_delete,
+                    amf_ue, AMF_NETWORK_INITIATED_DE_REGISTERED, NULL));
         }
 
         OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_de_registered);
         return OGS_OK;
-    }
-    else if (CM_IDLE(amf_ue)) {
+
+    } else if (CM_IDLE(amf_ue)) {
         /* TODO: need to page UE */
-        /*ngap_send_paging(amf_ue);*/
-        return OGS_OK;
+        ogs_error("Not implemented : need to page UE");
+        return OGS_ERROR;
     } else {
-      return OGS_ERROR;
+        ogs_fatal("Invalid State");
+        ogs_assert_if_reached();
+        return OGS_ERROR;
     }
 }
 
@@ -588,8 +589,8 @@ int amf_namf_callback_handle_dereg_notify(
      * session associated with non-emergency service as described in clause 4.3.4.
      */
 
-    if (network_deregister(
-            amf_ue, DeregistrationData->dereg_reason) == -1) {
+    if (do_network_initiated_de_register(
+            amf_ue, DeregistrationData->dereg_reason) != OGS_OK) {
       status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
       ogs_error("[%s] Deregistration notification for UE in wrong state",
                 amf_ue->supi);
@@ -823,8 +824,7 @@ int amf_namf_callback_handle_sdm_data_change_notify(
     }
 
 
-    OpenAPI_list_for_each(ModificationNotification->notify_items, node)
-    {
+    OpenAPI_list_for_each(ModificationNotification->notify_items, node) {
         OpenAPI_notify_item_t *item = node->data;
 
         char *saveptr = NULL;
@@ -854,12 +854,11 @@ int amf_namf_callback_handle_sdm_data_change_notify(
         CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
             OpenAPI_lnode_t *node_ci;
 
-            OpenAPI_list_for_each(item->changes, node_ci)
-            {
+            OpenAPI_list_for_each(item->changes, node_ci) {
                 OpenAPI_change_item_t *change_item = node_ci->data;
-                if (update_rat_res(change_item, amf_ue->rat_restrictions)
-                    || update_ambr(change_item, &amf_ue->ue_ambr,
-                                   &ambr_changed)) {
+                if (update_rat_res(change_item, amf_ue->rat_restrictions) ||
+                        update_ambr(change_item, &amf_ue->ue_ambr,
+                            &ambr_changed)) {
                     status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
                     goto cleanup;
                 }
@@ -879,7 +878,8 @@ int amf_namf_callback_handle_sdm_data_change_notify(
     }
 
     if (amf_ue_is_rat_restricted(amf_ue)) {
-        if (network_deregister(amf_ue, OpenAPI_deregistration_reason_REREGISTRATION_REQUIRED) == -1) {
+        if (do_network_initiated_de_register(amf_ue,
+            OpenAPI_deregistration_reason_REREGISTRATION_REQUIRED) != OGS_OK) {
             status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
             ogs_error("[%s] Deregistration notification for UE in wrong state",
                       amf_ue->supi);
@@ -888,7 +888,7 @@ int amf_namf_callback_handle_sdm_data_change_notify(
         ogs_assert(true ==
                 amf_ue_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
-                    amf_nudm_sdm_build_subscription_delete, amf_ue, NULL));
+                    amf_nudm_sdm_build_subscription_delete, amf_ue, 0, NULL));
     } else if (ambr_changed) {
         ogs_pkbuf_t *ngapbuf;
 
