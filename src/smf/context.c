@@ -1028,21 +1028,20 @@ smf_ue_t *smf_ue_add_by_supi(char *supi)
 }
 
 void smf_ue_update_imeisv(smf_ue_t *smf_ue, char *imeisv) {
-    int imeisv_len = strlen(imeisv);
-    memcpy(smf_ue->imeisv_bcd, imeisv, imeisv_len);
+    int imeisv_len = (strlen(imeisv) + 1 ) / 2 ;
+    strcpy(smf_ue->imeisv_bcd, imeisv);
     smf_ue->imeisv_len = imeisv_len;
 }
 
 void smf_ue_update_imsi(smf_ue_t *smf_ue, char *imsi) {
-    int imsi_len = strlen(imsi);
-    memcpy(smf_ue->imsi_bcd, imsi, imsi_len);
+    int imsi_len = (strlen(imsi) + 1) / 2 ;
+    strcpy(smf_ue->imsi_bcd, imsi);
     smf_ue->imsi_len = imsi_len;
 }
 
 smf_ue_t *smf_ue_add_by_imsi(uint8_t *imsi, int imsi_len)
 {
     smf_ue_t *smf_ue;
-
     ogs_assert(imsi);
     ogs_assert(imsi_len);
 
