@@ -171,6 +171,9 @@ def get_cells(cells):
         tlv_more = "3"
     if ie_type == 'SDF Filter':
         tlv_more = "7"
+    if (ie_type == 'Framed-Route' or
+        ie_type == 'Framed-IPv6-Route'):
+        tlv_more = "7"
     if (ie_type == 'Usage Report Session Report Request' or
         ie_type == 'Usage Report Session Deletion Response' or
         ie_type == 'Usage Report Session Modification Response'):
