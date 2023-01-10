@@ -50,6 +50,7 @@ extern "C" {
 #define OGS_MAX_NUM_OF_FLOW_IN_BEARER   16
 
 #define OGS_MAX_NUM_OF_GTPU_RESOURCE    4
+#define OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI 8
 
 #define OGS_MAX_SDU_LEN                 8192
 #define OGS_MAX_PKT_LEN                 2048

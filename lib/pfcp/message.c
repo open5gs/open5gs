@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by pfcp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2022-11-26 23:47:22.086824 by acetcom
+ * Created on: 2023-01-10 12:02:27.807637 by mitmitmitm
  * from 29244-g91-modified.docx
  ******************************************************************************/
 
@@ -2189,8 +2189,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_pdi =
         &ogs_pfcp_tlv_desc_ethernet_packet_filter,
         &ogs_pfcp_tlv_desc_qfi,
         &ogs_pfcp_tlv_desc_framed_route,
+        &ogs_tlv_desc_more8,
         &ogs_pfcp_tlv_desc_framed_routing,
         &ogs_pfcp_tlv_desc_framed_ipv6_route,
+        &ogs_tlv_desc_more8,
         &ogs_pfcp_tlv_desc__interface_type,
         &ogs_pfcp_tlv_desc_ip_multicast_addressing_info_within_pfcp_session_establishment_request,
         NULL,
@@ -3099,8 +3101,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_create_traffic_endpoint =
         &ogs_pfcp_tlv_desc_ue_ip_address,
         &ogs_pfcp_tlv_desc_ethernet_pdu_session_information,
         &ogs_pfcp_tlv_desc_framed_route,
+        &ogs_tlv_desc_more8,
         &ogs_pfcp_tlv_desc_framed_routing,
         &ogs_pfcp_tlv_desc_framed_ipv6_route,
+        &ogs_tlv_desc_more8,
         &ogs_pfcp_tlv_desc_qfi,
         &ogs_pfcp_tlv_desc__interface_type,
         NULL,
