@@ -734,7 +734,8 @@ out:
     ogs_assert(ret == 0);
     ogs_debug("[PCRF] Session-Termination-Answer");
 
-    state_cleanup(sess_data, NULL, NULL);
+    if (sess_data)
+        state_cleanup(sess_data, NULL, NULL);
     ogs_ims_data_free(&rx_message.ims_data);
 
     return 0;
