@@ -756,7 +756,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
             if (amf_ue->next.m_tmsi) {
                 amf_ue_confirm_guti(amf_ue);
             } else {
-                ogs_error("[%s] No GUTI allocated", amf_ue->supi);
+                ogs_info("[%s] No GUTI allocated", amf_ue->supi);
             }
 
             CLEAR_AMF_UE_TIMER(amf_ue->t3555);
