@@ -366,6 +366,22 @@ ED6(uint8_t     spare1:3;,
     ogs_pfcp_pdr_t  *pdr;
 } ogs_pfcp_rule_t;
 
+typedef struct ogs_pfcp_user_id_flags_s {
+    union {
+        struct {
+        ED8(uint8_t spare:1;,
+            uint8_t peif:1;,
+            uint8_t gpsif:1;,
+            uint8_t supif:1;,
+            uint8_t naif:1;,
+            uint8_t msisdnf:1;,
+            uint8_t imeif:1;,
+            uint8_t imsif:1;)
+        };
+        uint8_t flags;
+    };
+} ogs_pfcp_user_id_flags_t;
+
 void ogs_pfcp_context_init(void);
 void ogs_pfcp_context_final(void);
 ogs_pfcp_context_t *ogs_pfcp_self(void);

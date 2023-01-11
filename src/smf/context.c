@@ -1027,10 +1027,21 @@ smf_ue_t *smf_ue_add_by_supi(char *supi)
     return smf_ue;
 }
 
+void smf_ue_update_imeisv(smf_ue_t *smf_ue, char *imeisv) {
+    int imeisv_len = (strlen(imeisv) + 1 ) / 2 ;
+    strcpy(smf_ue->imeisv_bcd, imeisv);
+    smf_ue->imeisv_len = imeisv_len;
+}
+
+void smf_ue_update_imsi(smf_ue_t *smf_ue, char *imsi) {
+    int imsi_len = (strlen(imsi) + 1) / 2 ;
+    strcpy(smf_ue->imsi_bcd, imsi);
+    smf_ue->imsi_len = imsi_len;
+}
+
 smf_ue_t *smf_ue_add_by_imsi(uint8_t *imsi, int imsi_len)
 {
     smf_ue_t *smf_ue;
-
     ogs_assert(imsi);
     ogs_assert(imsi_len);
 
@@ -1472,6 +1483,10 @@ smf_sess_t *smf_sess_add_by_sbi_message(ogs_sbi_message_t *message)
         smf_ue = smf_ue_add_by_supi(SmContextCreateData->supi);
         if (!smf_ue)
             return NULL;
+        if (strncmp(SmContextCreateData->supi, "imsi-", 5) == 0)
+            smf_ue_update_imsi(smf_ue, &SmContextCreateData->supi[5]);
+	if (strncmp(SmContextCreateData->pei, "imeisv-", 7) == 0)
+            smf_ue_update_imeisv(smf_ue, &SmContextCreateData->pei[7]);
     }
 
     sess = smf_sess_find_by_psi(smf_ue, SmContextCreateData->pdu_session_id);
@@ -1704,11 +1719,12 @@ void smf_sess_remove(smf_sess_t *sess)
     smf_ue = sess->smf_ue;
     ogs_assert(smf_ue);
 
-    ogs_info("Removed Session: UE IMSI:[%s] DNN:[%s:%d] IPv4:[%s] IPv6:[%s]",
+    ogs_info("Removed Session: UE IMSI:[%s] DNN:[%s:%d] IPv4:[%s] IPv6:[%s] SST[%d] SD[%d] IMEISV[%s]",
             smf_ue->supi ? smf_ue->supi : smf_ue->imsi_bcd,
             sess->session.name, sess->psi,
             sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
-            sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
+            sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "",
+            sess->s_nssai.sst, sess->s_nssai.sd.v,  smf_ue->imeisv);
 
     ogs_list_remove(&smf_ue->sess_list, sess);
 
