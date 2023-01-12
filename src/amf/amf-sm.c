@@ -693,6 +693,14 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                     break;
                 }
 
+                amf_ue = sess->amf_ue;
+                ogs_assert(amf_ue);
+                amf_ue = amf_ue_cycle(amf_ue);
+                if (!amf_ue) {
+                    ogs_error("UE(amf_ue) Context has already been removed");
+                    break;
+                }
+
                 ogs_error("[%d:%d] Cannot receive SBI message",
                         sess->psi, sess->pti);
                 if (sess->payload_container_type) {
