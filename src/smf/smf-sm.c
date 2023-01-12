@@ -928,7 +928,12 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         }
 
         ogs_assert(sess);
-        ogs_assert(OGS_FSM_STATE(&sess->sm));
+        sess = smf_sess_cycle(sess);
+        if (!sess) {
+            ogs_error("Session has already been removed");
+            ogs_pkbuf_free(pkbuf);
+            break;
+        }
 
         e->nas.message = &nas_message;
         ogs_fsm_dispatch(&sess->sm, e);
@@ -946,7 +951,12 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         ogs_assert(e->ngap.type);
 
         ogs_assert(sess);
-        ogs_assert(OGS_FSM_STATE(&sess->sm));
+        sess = smf_sess_cycle(sess);
+        if (!sess) {
+            ogs_error("Session has already been removed");
+            ogs_pkbuf_free(pkbuf);
+            break;
+        }
 
         ogs_fsm_dispatch(&sess->sm, e);
 
