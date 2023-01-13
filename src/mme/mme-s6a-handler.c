@@ -139,6 +139,8 @@ uint8_t mme_s6a_handle_pua(
     if (s6a_message->result_code != ER_DIAMETER_SUCCESS) {
         ogs_error("Purge UE failed for IMSI[%s] [%d]", mme_ue->imsi_bcd,
             s6a_message->result_code);
+        mme_ue_hash_remove(mme_ue);
+        mme_ue_remove(mme_ue);
         return OGS_ERROR;
     }
 

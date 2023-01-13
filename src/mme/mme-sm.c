@@ -436,7 +436,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                 ogs_assert(OGS_OK ==
                     s1ap_send_ue_context_release_command(enb_ue,
                         S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                        S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
+                        S1AP_UE_CTX_REL_UE_CONTEXT_PURGE_AND_REMOVE, 0));
             }
             break;
         case OGS_DIAM_S6A_CMD_CODE_PURGE_UE:
