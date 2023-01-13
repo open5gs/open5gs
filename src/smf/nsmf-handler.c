@@ -28,6 +28,7 @@ bool smf_nsmf_handle_create_sm_context(
 {
     bool rc;
     smf_ue_t *smf_ue = NULL;
+    char *type = NULL;
 
     ogs_nas_5gsm_header_t *gsm_header = NULL;
     ogs_pkbuf_t *n1smbuf = NULL;
@@ -162,6 +163,60 @@ bool smf_nsmf_handle_create_sm_context(
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST, "Invalid URI",
                 SmContextCreateData->sm_context_status_uri, n1smbuf);
         return false;
+    }
+
+    if (SmContextCreateData->supi) {
+        type = ogs_id_get_type(SmContextCreateData->supi);
+        if (type) {
+            if (strncmp(type, OGS_ID_SUPI_TYPE_IMSI,
+                        strlen(OGS_ID_SUPI_TYPE_IMSI)) == 0) {
+                char *imsi_bcd = ogs_id_get_value(SmContextCreateData->supi);
+
+                ogs_cpystrn(smf_ue->imsi_bcd, imsi_bcd,
+                        ogs_min(strlen(imsi_bcd), OGS_MAX_IMSI_BCD_LEN)+1);
+                ogs_bcd_to_buffer(smf_ue->imsi_bcd,
+                        smf_ue->imsi, &smf_ue->imsi_len);
+
+                ogs_free(imsi_bcd);
+            }
+            ogs_free(type);
+        }
+    }
+
+    if (SmContextCreateData->pei) {
+        type = ogs_id_get_type(SmContextCreateData->pei);
+        if (type) {
+            if (strncmp(type, OGS_ID_SUPI_TYPE_IMEISV,
+                        strlen(OGS_ID_SUPI_TYPE_IMEISV)) == 0) {
+                char *imeisv_bcd = ogs_id_get_value(SmContextCreateData->pei);
+
+                ogs_cpystrn(smf_ue->imeisv_bcd, imeisv_bcd,
+                        ogs_min(strlen(imeisv_bcd), OGS_MAX_IMEISV_BCD_LEN)+1);
+                ogs_bcd_to_buffer(smf_ue->imeisv_bcd,
+                        smf_ue->imeisv, &smf_ue->imeisv_len);
+
+                ogs_free(imeisv_bcd);
+            }
+            ogs_free(type);
+        }
+    }
+
+    if (SmContextCreateData->gpsi) {
+        type = ogs_id_get_type(SmContextCreateData->gpsi);
+        if (type) {
+            if (strncmp(type, OGS_ID_GPSI_TYPE_MSISDN,
+                        strlen(OGS_ID_GPSI_TYPE_MSISDN)) == 0) {
+                char *msisdn_bcd = ogs_id_get_value(SmContextCreateData->gpsi);
+
+                ogs_cpystrn(smf_ue->msisdn_bcd, msisdn_bcd,
+                        ogs_min(strlen(msisdn_bcd), OGS_MAX_MSISDN_BCD_LEN)+1);
+                ogs_bcd_to_buffer(smf_ue->msisdn_bcd,
+                        smf_ue->msisdn, &smf_ue->msisdn_len);
+
+                ogs_free(msisdn_bcd);
+            }
+            ogs_free(type);
+        }
     }
 
     ogs_sbi_parse_plmn_id_nid(&sess->plmn_id, servingNetwork);

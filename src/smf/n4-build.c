@@ -35,10 +35,17 @@ ogs_pkbuf_t *smf_n4_build_session_establishment_request(
 
     ogs_pfcp_node_id_t node_id;
     ogs_pfcp_f_seid_t f_seid;
+    char apn_dnn[OGS_MAX_DNN_LEN+1];
     int len;
+
+    smf_ue_t *smf_ue = NULL;
+    ogs_pfcp_user_id_t user_id;
+    char user_id_buf[sizeof(ogs_pfcp_user_id_t)];
 
     ogs_debug("Session Establishment Request");
     ogs_assert(sess);
+    smf_ue = sess->smf_ue;
+    ogs_assert(smf_ue);
 
     req = &pfcp_message.pfcp_session_establishment_request;
     memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
@@ -101,6 +108,46 @@ ogs_pkbuf_t *smf_n4_build_session_establishment_request(
     /* PDN Type */
     req->pdn_type.presence = 1;
     req->pdn_type.u8 = sess->session.session_type;
+
+    /* User ID */
+    memset(&user_id, 0, sizeof(ogs_pfcp_user_id_t));
+    if (smf_ue->imsi_len) {
+        user_id.imsif = 1;
+        user_id.imsi_len = smf_ue->imsi_len;
+        ogs_assert(smf_ue->imsi_len <= OGS_MAX_IMSI_LEN);
+        memcpy(user_id.imsi, smf_ue->imsi, smf_ue->imsi_len);
+    }
+    if (smf_ue->imeisv_len) {
+        user_id.imeif = 1;
+        user_id.imeisv_len = smf_ue->imeisv_len;
+        ogs_assert(smf_ue->imeisv_len <= OGS_MAX_IMEISV_LEN);
+        memcpy(user_id.imeisv, smf_ue->imeisv, smf_ue->imeisv_len);
+    }
+    if (smf_ue->msisdn_len) {
+        user_id.msisdnf = 1;
+        user_id.msisdn_len = smf_ue->msisdn_len;
+        ogs_assert(smf_ue->msisdn_len <= OGS_MAX_MSISDN_LEN);
+        memcpy(user_id.msisdn, smf_ue->msisdn, smf_ue->msisdn_len);
+    }
+
+    if (user_id.flags) {
+        ogs_pfcp_build_user_id(
+            &req->user_id, &user_id, user_id_buf, sizeof(user_id_buf));
+        req->user_id.presence = 1;
+    }
+
+    /* APN/DNN */
+    len = ogs_fqdn_build(apn_dnn, sess->session.name, strlen(sess->session.name));
+    req->apn_dnn.presence = 1;
+    req->apn_dnn.len = len;
+    req->apn_dnn.data = apn_dnn;
+
+    /* S-NSSAI */
+    if (!sess->epc) {
+        req->s_nssai.presence = 1;
+        req->s_nssai.len = 4;
+        req->s_nssai.data = &sess->s_nssai;
+    }
 
     pfcp_message.h.type = type;
     pkbuf = ogs_pfcp_build_msg(&pfcp_message);

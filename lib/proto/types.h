@@ -188,6 +188,7 @@ ogs_amf_id_t *ogs_amf_id_build(ogs_amf_id_t *amf_id,
  * SUPI/GPSI                       */
 #define OGS_ID_SUPI_TYPE_IMSI "imsi"
 #define OGS_ID_GPSI_TYPE_MSISDN "msisdn"
+#define OGS_ID_SUPI_TYPE_IMEISV "imeisv"
 char *ogs_id_get_type(char *str);
 char *ogs_id_get_value(char *str);
 

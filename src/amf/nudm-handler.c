@@ -57,21 +57,18 @@ int amf_nudm_sdm_handle_provisioned(
                         char *gpsi = NULL;
 
                         gpsi = ogs_id_get_type(node->data);
-                        ogs_assert(gpsi);
+                        if (gpsi) {
+                            if (strncmp(gpsi, OGS_ID_GPSI_TYPE_MSISDN,
+                                    strlen(OGS_ID_GPSI_TYPE_MSISDN)) == 0) {
+                                amf_ue->msisdn[amf_ue->num_of_msisdn] =
+                                    ogs_id_get_value(node->data);
+                                ogs_assert(amf_ue->
+                                        msisdn[amf_ue->num_of_msisdn]);
 
-                        if (strncmp(gpsi, OGS_ID_GPSI_TYPE_MSISDN,
-                                    strlen(OGS_ID_GPSI_TYPE_MSISDN)) != 0) {
-                            ogs_error("Unknown GPSI Type [%s]", gpsi);
-
-                        } else {
-                            amf_ue->msisdn[amf_ue->num_of_msisdn] =
-                                ogs_id_get_value(node->data);
-                            ogs_assert(amf_ue->msisdn[amf_ue->num_of_msisdn]);
-
-                            amf_ue->num_of_msisdn++;
+                                amf_ue->num_of_msisdn++;
+                            }
+                            ogs_free(gpsi);
                         }
-
-                        ogs_free(gpsi);
                     }
                 }
             }
