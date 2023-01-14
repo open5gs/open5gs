@@ -96,15 +96,16 @@ typedef struct ogs_gtp_xact_s {
 #define OGS_GTP_MODIFY_QOS_UPDATE ((uint64_t)1<<1)
     uint64_t        update_flags;
 
-#define OGS_GTP_DELETE_NO_ACTION                                1
-#define OGS_GTP_DELETE_SEND_AUTHENTICATION_REQUEST              2
-#define OGS_GTP_DELETE_SEND_DETACH_ACCEPT                       3
-#define OGS_GTP_DELETE_SEND_DEACTIVATE_BEARER_CONTEXT_REQUEST   4
-#define OGS_GTP_DELETE_SEND_RELEASE_WITH_UE_CONTEXT_REMOVE      5
-#define OGS_GTP_DELETE_SEND_RELEASE_WITH_S1_REMOVE_AND_UNLINK   6
-#define OGS_GTP_DELETE_HANDLE_PDN_CONNECTIVITY_REQUEST          7
-#define OGS_GTP_DELETE_UE_CONTEXT_REMOVE_PARTIAL                8
-#define OGS_GTP_DELETE_IN_PATH_SWITCH_REQUEST                   9
+#define OGS_GTP_DELETE_NO_ACTION                                        1
+#define OGS_GTP_DELETE_SEND_AUTHENTICATION_REQUEST                      2
+#define OGS_GTP_DELETE_SEND_DETACH_ACCEPT                               3
+#define OGS_GTP_DELETE_SEND_DEACTIVATE_BEARER_CONTEXT_REQUEST           4
+#define OGS_GTP_DELETE_SEND_RELEASE_WITH_UE_CONTEXT_REMOVE              5
+#define OGS_GTP_DELETE_SEND_RELEASE_WITH_UE_CONTEXT_PURGE_AND_REMOVE    6
+#define OGS_GTP_DELETE_SEND_RELEASE_WITH_S1_REMOVE_AND_UNLINK           7
+#define OGS_GTP_DELETE_HANDLE_PDN_CONNECTIVITY_REQUEST                  8
+#define OGS_GTP_DELETE_UE_CONTEXT_REMOVE_PARTIAL                        9
+#define OGS_GTP_DELETE_IN_PATH_SWITCH_REQUEST                           10
 
     int             delete_action;
 

@@ -346,7 +346,7 @@ int nas_eps_send_pdn_connectivity_reject(
             ogs_assert(OGS_OK ==
                 s1ap_send_ue_context_release_command(mme_ue->enb_ue,
                 S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
+                S1AP_UE_CTX_REL_UE_CONTEXT_PURGE_AND_REMOVE, 0));
         }
     } else {
         esmbuf = esm_build_pdn_connectivity_reject(

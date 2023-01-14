@@ -22,6 +22,7 @@
 
 #include "s1ap-path.h"
 #include "nas-path.h"
+#include "mme-fd-path.h"
 #include "mme-gtp-path.h"
 #include "sgsap-types.h"
 #include "sgsap-path.h"
@@ -1486,6 +1487,13 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
 
         mme_ue_hash_remove(mme_ue);
         mme_ue_remove(mme_ue);
+        break;
+    case S1AP_UE_CTX_REL_UE_CONTEXT_PURGE_AND_REMOVE:
+        ogs_debug("    Action: UE context remove");
+        enb_ue_remove(enb_ue);
+        ogs_expect_or_return(mme_ue);
+
+        mme_s6a_send_pur(mme_ue);
         break;
     case S1AP_UE_CTX_REL_S1_HANDOVER_COMPLETE:
         ogs_debug("    Action: S1 handover complete");

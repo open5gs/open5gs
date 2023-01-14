@@ -145,7 +145,7 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
                 ogs_assert(OGS_OK ==
                     s1ap_send_ue_context_release_command(mme_ue->enb_ue,
                         S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                        S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
+                        S1AP_UE_CTX_REL_UE_CONTEXT_PURGE_AND_REMOVE, 0));
                 OGS_FSM_TRAN(s, &esm_state_exception);
                 break;
             }
@@ -160,7 +160,7 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
                 ogs_assert(OGS_OK ==
                     s1ap_send_ue_context_release_command(mme_ue->enb_ue,
                         S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                        S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
+                        S1AP_UE_CTX_REL_UE_CONTEXT_PURGE_AND_REMOVE, 0));
                 OGS_FSM_TRAN(s, &esm_state_exception);
                 break;
             }
