@@ -262,11 +262,10 @@ struct enb_ue_s {
 #define S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE                   1
 #define S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK                2
 #define S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE                   3
-#define S1AP_UE_CTX_REL_UE_CONTEXT_PURGE_AND_REMOVE         4
-#define S1AP_UE_CTX_REL_S1_HANDOVER_COMPLETE                5
-#define S1AP_UE_CTX_REL_S1_HANDOVER_CANCEL                  6
-#define S1AP_UE_CTX_REL_S1_HANDOVER_FAILURE                 7
-#define S1AP_UE_CTX_REL_S1_PAGING                           8
+#define S1AP_UE_CTX_REL_S1_HANDOVER_COMPLETE                4
+#define S1AP_UE_CTX_REL_S1_HANDOVER_CANCEL                  5
+#define S1AP_UE_CTX_REL_S1_HANDOVER_FAILURE                 6
+#define S1AP_UE_CTX_REL_S1_PAGING                           7
     uint8_t         ue_ctx_rel_action;
 
     bool            part_of_s1_reset_requested;
@@ -396,6 +395,8 @@ struct mme_ue_s {
     } while(0)
     int             security_context_available;
     int             mac_failed;
+
+    bool            update_location_answer_received;
 
     /* Security Context */
     ogs_nas_ue_network_capability_t ue_network_capability;

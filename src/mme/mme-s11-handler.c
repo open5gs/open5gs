@@ -623,28 +623,18 @@ void mme_s11_handle_delete_session_response(
     } else if (action == OGS_GTP_DELETE_SEND_RELEASE_WITH_UE_CONTEXT_REMOVE) {
         if (mme_sess_count(mme_ue) == 1) /* Last Session */ {
             if (ECM_IDLE(mme_ue)) {
-                mme_ue_hash_remove(mme_ue);
-                mme_ue_remove(mme_ue);
+                if (mme_ue->update_location_answer_received == true) {
+                    mme_s6a_send_pur(mme_ue);
+                } else {
+                    mme_ue_hash_remove(mme_ue);
+                    mme_ue_remove(mme_ue);
+                }
             } else {
                 ogs_assert(mme_ue->enb_ue);
                 ogs_assert(OGS_OK ==
                     s1ap_send_ue_context_release_command(mme_ue->enb_ue,
                     S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                     S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
-            }
-        }
-
-    } else if (action == 
-            OGS_GTP_DELETE_SEND_RELEASE_WITH_UE_CONTEXT_PURGE_AND_REMOVE) {
-        if (mme_sess_count(mme_ue) == 1) /* Last Session */ {
-            if (ECM_IDLE(mme_ue)) {
-                mme_s6a_send_pur(mme_ue);
-            } else {
-                ogs_assert(mme_ue->enb_ue);
-                ogs_assert(OGS_OK ==
-                    s1ap_send_ue_context_release_command(mme_ue->enb_ue,
-                    S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                    S1AP_UE_CTX_REL_UE_CONTEXT_PURGE_AND_REMOVE, 0));
             }
         }
 
