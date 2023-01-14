@@ -1,3 +1,33 @@
+open5gs (2.5.7) unstable; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sat, 14 Jan 2023 11:18:40 +0900
+
+open5gs (2.5.7~kinetic) kinetic; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sat, 14 Jan 2023 11:17:17 +0900
+
+open5gs (2.5.7~jammy) jammy; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sat, 14 Jan 2023 11:15:53 +0900
+
+open5gs (2.5.7~bionic) bionic; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sat, 14 Jan 2023 11:14:32 +0900
+
+open5gs (2.5.7~focal) focal; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sat, 14 Jan 2023 11:12:57 +0900
+
 open5gs (2.5.6) unstable; urgency=medium
 
   * New NF - SCP(Service Communication Proxy)
