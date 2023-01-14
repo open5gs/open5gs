@@ -1485,7 +1485,7 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
         enb_ue_remove(enb_ue);
         ogs_expect_or_return(mme_ue);
 
-        if (mme_ue->update_location_answer_received == true) {
+        if (mme_ue->location_updated_but_not_canceled_yet == true) {
             mme_s6a_send_pur(mme_ue);
         } else {
             mme_ue_hash_remove(mme_ue);

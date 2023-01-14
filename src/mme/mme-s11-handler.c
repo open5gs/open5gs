@@ -623,7 +623,7 @@ void mme_s11_handle_delete_session_response(
     } else if (action == OGS_GTP_DELETE_SEND_RELEASE_WITH_UE_CONTEXT_REMOVE) {
         if (mme_sess_count(mme_ue) == 1) /* Last Session */ {
             if (ECM_IDLE(mme_ue)) {
-                if (mme_ue->update_location_answer_received == true) {
+                if (mme_ue->location_updated_but_not_canceled_yet == true) {
                     mme_s6a_send_pur(mme_ue);
                 } else {
                     mme_ue_hash_remove(mme_ue);
