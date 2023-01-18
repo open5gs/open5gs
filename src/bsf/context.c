@@ -188,6 +188,9 @@ void bsf_sess_remove(bsf_sess_t *sess)
         ogs_free(sess->ipv6prefix_string);
     }
 
+    OpenAPI_clear_and_free_string_list(sess->ipv4_frame_route_list);
+    OpenAPI_clear_and_free_string_list(sess->ipv6_frame_route_list);
+
     ogs_assert(sess->dnn);
     ogs_free(sess->dnn);
 
