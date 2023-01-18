@@ -314,6 +314,9 @@ void pcf_sess_remove(pcf_sess_t *sess)
     clear_ipv4addr(sess);
     clear_ipv6prefix(sess);
 
+    OpenAPI_clear_and_free_string_list(sess->ipv4_frame_route_list);
+    OpenAPI_clear_and_free_string_list(sess->ipv6_frame_route_list);
+
     if (sess->subscribed_sess_ambr)
         OpenAPI_ambr_free(sess->subscribed_sess_ambr);
     if (sess->subscribed_default_qos)
