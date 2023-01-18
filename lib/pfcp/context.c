@@ -929,6 +929,20 @@ ogs_pfcp_object_t *ogs_pfcp_object_find_by_teid(uint32_t teid)
             self.object_teid_hash, &teid, sizeof(teid));
 }
 
+int ogs_pfcp_object_count_by_teid(ogs_pfcp_sess_t *sess, uint32_t teid)
+{
+    ogs_pfcp_pdr_t *pdr = NULL;
+    int count = 0;
+
+    ogs_assert(sess);
+
+    ogs_list_for_each(&sess->pdr_list, pdr) {
+        if (pdr->f_teid.teid == teid) count++;
+    }
+
+    return count;
+}
+
 ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_by_choose_id(
         ogs_pfcp_sess_t *sess, uint8_t choose_id)
 {
@@ -997,9 +1011,21 @@ void ogs_pfcp_pdr_remove(ogs_pfcp_pdr_t *pdr)
 
     ogs_pfcp_rule_remove_all(pdr);
 
-    if (pdr->hash.teid.len)
-        ogs_hash_set(self.object_teid_hash,
-                &pdr->hash.teid.key, pdr->hash.teid.len, NULL);
+    if (pdr->hash.teid.len) {
+        /*
+         * Issues #2003
+         *
+         * In 5G Core, two PDRs can use different QFIDs for the same TEID.
+         * So, before deleting a TEID, we should check if there is a PDR
+         * using the same TEID.
+         *
+         * Since this PDR has already been deleted with ogs_list_remove() above,
+         * if the current list has a TEID count of 0, there are no other PDRs.
+         */
+        if (ogs_pfcp_object_count_by_teid(pdr->sess, pdr->f_teid.teid) == 0)
+            ogs_hash_set(self.object_teid_hash,
+                    &pdr->hash.teid.key, pdr->hash.teid.len, NULL);
+    }
 
     if (pdr->dnn)
         ogs_free(pdr->dnn);
