@@ -53,8 +53,6 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e);
 
 void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
 {
-    int i;
-
     amf_ue_t *amf_ue = NULL;
     amf_sess_t *sess = NULL;
 
@@ -75,12 +73,6 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
 
     switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
-        ogs_assert(amf_ue->num_of_slice <= OGS_MAX_NUM_OF_SLICE);
-        for (i = 0; i < amf_ue->num_of_slice; i++) {
-            amf_metrics_inst_by_slice_add(&amf_ue->nr_tai.plmn_id,
-                    &amf_ue->slice[i].s_nssai,
-                    AMF_METR_GAUGE_RM_REGISTEREDSUBNBR, -1);
-        }
         AMF_UE_CLEAR_PAGING_INFO(amf_ue);
         AMF_UE_CLEAR_N2_TRANSFER(amf_ue, pdu_session_resource_setup_request);
         AMF_UE_CLEAR_5GSM_MESSAGE(amf_ue);
@@ -356,6 +348,12 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
         }
         break;
     case OGS_FSM_EXIT_SIG:
+        ogs_assert(amf_ue->num_of_slice <= OGS_MAX_NUM_OF_SLICE);
+        for (i = 0; i < amf_ue->num_of_slice; i++) {
+            amf_metrics_inst_by_slice_add(&amf_ue->nr_tai.plmn_id,
+                    &amf_ue->slice[i].s_nssai,
+                    AMF_METR_GAUGE_RM_REGISTEREDSUBNBR, -1);
+        }
         break;
 
     case AMF_EVENT_5GMM_MESSAGE:
