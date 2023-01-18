@@ -1696,6 +1696,7 @@ void smf_sess_remove(smf_sess_t *sess)
     int i;
     smf_ue_t *smf_ue = NULL;
     smf_event_t e;
+    OpenAPI_lnode_t *node;
 
     char buf1[OGS_ADDRSTRLEN];
     char buf2[OGS_ADDRSTRLEN];
@@ -1759,6 +1760,13 @@ void smf_sess_remove(smf_sess_t *sess)
 
     if (sess->session.name)
         ogs_free(sess->session.name);
+
+    OpenAPI_list_for_each(sess->session.ipv4_framed_routes, node)
+        OpenAPI_frame_route_info_free(node->data);
+    OpenAPI_list_for_each(sess->session.ipv6_framed_routes, node)
+        OpenAPI_frame_route_info_free(node->data);
+    OpenAPI_list_free(sess->session.ipv4_framed_routes);
+    OpenAPI_list_free(sess->session.ipv6_framed_routes);
 
     if (sess->upf_n3_addr)
         ogs_freeaddrinfo(sess->upf_n3_addr);

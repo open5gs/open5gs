@@ -453,6 +453,9 @@ typedef struct ogs_pcc_rule_s {
         (__pCCrULE)->num_of_flow = 0; \
     } while(0)
 
+
+typedef struct OpenAPI_list_s OpenAPI_list_t;
+
 /**********************************
  * PDN Structure                 */
 typedef struct ogs_session_s {
@@ -484,6 +487,8 @@ typedef struct ogs_session_s {
 
     ogs_paa_t paa;
     ogs_ip_t ue_ip;
+    OpenAPI_list_t *ipv4_framed_routes;
+    OpenAPI_list_t *ipv6_framed_routes;
     ogs_ip_t smf_ip;
 } ogs_session_t;
 
