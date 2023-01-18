@@ -52,6 +52,9 @@ typedef struct bsf_sess_s {
     char *ipv4addr_string;
     char *ipv6prefix_string;
 
+    OpenAPI_list_t *ipv4_frame_route_list;
+    OpenAPI_list_t *ipv6_frame_route_list;
+
     uint32_t ipv4addr;
     struct {
         uint8_t len;
