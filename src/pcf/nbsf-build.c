@@ -59,6 +59,9 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
     PcfBinding.ipv4_addr = sess->ipv4addr_string;
     PcfBinding.ipv6_prefix = sess->ipv6prefix_string;
 
+    PcfBinding.ipv4_frame_route_list = sess->ipv4_frame_route_list;
+    PcfBinding.ipv6_frame_route_list = sess->ipv6_frame_route_list;
+
     if (!sess->dnn) {
         ogs_error("No DNN");
         goto end;

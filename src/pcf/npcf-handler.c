@@ -296,6 +296,30 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
             pcf_sess_set_ipv6prefix(
                 sess, SmPolicyContextData->ipv6_address_prefix));
 
+    if (SmPolicyContextData->ipv4_frame_route_list) {
+        OpenAPI_lnode_t *node = NULL;
+
+        OpenAPI_clear_and_free_string_list(sess->ipv4_frame_route_list);
+        sess->ipv4_frame_route_list = OpenAPI_list_create();
+        OpenAPI_list_for_each(SmPolicyContextData->ipv4_frame_route_list, node) {
+            if (!node->data)
+                continue;
+            OpenAPI_list_add(sess->ipv4_frame_route_list, ogs_strdup(node->data));
+        }
+    }
+
+    if (SmPolicyContextData->ipv6_frame_route_list) {
+        OpenAPI_lnode_t *node = NULL;
+
+        OpenAPI_clear_and_free_string_list(sess->ipv4_frame_route_list);
+        sess->ipv6_frame_route_list = OpenAPI_list_create();
+        OpenAPI_list_for_each(SmPolicyContextData->ipv6_frame_route_list, node) {
+            if (!node->data)
+                continue;
+            OpenAPI_list_add(sess->ipv6_frame_route_list, ogs_strdup(node->data));
+        }
+    }
+
     sess->s_nssai.sst = sliceInfo->sst;
     sess->s_nssai.sd = ogs_s_nssai_sd_from_string(sliceInfo->sd);
 
