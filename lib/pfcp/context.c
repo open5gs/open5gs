@@ -1004,6 +1004,8 @@ void ogs_pfcp_pdr_associate_qer(ogs_pfcp_pdr_t *pdr, ogs_pfcp_qer_t *qer)
 
 void ogs_pfcp_pdr_remove(ogs_pfcp_pdr_t *pdr)
 {
+    int i;
+
     ogs_assert(pdr);
     ogs_assert(pdr->sess);
 
@@ -1032,6 +1034,24 @@ void ogs_pfcp_pdr_remove(ogs_pfcp_pdr_t *pdr)
 
     if (pdr->id_node)
         ogs_pool_free(&pdr->sess->pdr_id_pool, pdr->id_node);
+
+    if (pdr->ipv4_framed_routes) {
+        for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
+            if (!pdr->ipv4_framed_routes[i])
+                break;
+            ogs_free(pdr->ipv4_framed_routes[i]);
+        }
+        ogs_free(pdr->ipv4_framed_routes);
+    }
+
+    if (pdr->ipv6_framed_routes) {
+        for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
+            if (!pdr->ipv6_framed_routes[i])
+                break;
+            ogs_free(pdr->ipv6_framed_routes[i]);
+        }
+        ogs_free(pdr->ipv6_framed_routes);
+    }
 
     ogs_pool_free(&ogs_pfcp_pdr_pool, pdr);
 }
