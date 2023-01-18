@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2023 by Ryan Dimsey <ryan@omnitouch.com.au>
  *
  * This file is part of Open5GS.
  *
@@ -17,36 +17,25 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TEST_FD_PATH_H
-#define TEST_FD_PATH_H
+#ifndef MME_S13_HANDLER_H
+#define MME_S13_HANDLER_H
+
+#include "mme-context.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "ogs-diameter-cx.h"
-#include "ogs-diameter-s6a.h"
-#include "ogs-diameter-s13.h"
-#include "ogs-diameter-swx.h"
+uint8_t mme_s13_handle_eca(
+        mme_ue_t *mme_ue, ogs_diam_s13_message_t *s13_message);
 
-#include "ogs-diameter-rx.h"
-#include "ogs-diameter-s6b.h"
-
-int test_fd_init(void);
-void test_fd_final(void);
-
-int test_swx_init(void);
-void test_swx_final(void);
-
-void test_swx_send(test_sess_t *sess, bool handover_ind,
-        int (*gtp_send)(test_sess_t *sess, bool handover_ind));
-
-int test_s6b_init(void);
-void test_s6b_final(void);
+/* The following have been exposed for testing purposes and
+ * should ever be called in practice */
+uint8_t validate_s13_message(ogs_diam_s13_message_t *s13_message);
+uint8_t validate_eca(ogs_diam_s13_eca_message_t eca_message, ogs_nas_eir_t eir_config);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* TEST_FD_PATH_H */
-
+#endif /* MME_S13_HANDLER_H */
