@@ -397,6 +397,7 @@ ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_or_add(
 void ogs_pfcp_object_teid_hash_set(
         ogs_pfcp_object_type_e type, ogs_pfcp_pdr_t *pdr);
 ogs_pfcp_object_t *ogs_pfcp_object_find_by_teid(uint32_t teid);
+int ogs_pfcp_object_count_by_teid(ogs_pfcp_sess_t *sess, uint32_t teid);
 
 ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_by_choose_id(
         ogs_pfcp_sess_t *sess, uint8_t choose_id);
