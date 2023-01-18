@@ -611,6 +611,36 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
                 amf_sbi_send_release_all_sessions(
                         amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
                 if (amf_sess_xact_count(amf_ue) == xact_count) {
+
+                    /*
+                    * TS24.501
+                    * 4.2.2.3.3 Network-initiated Deregistration
+                    *
+                    * (deregistrationReason:REREGISTRATION_REQUIRED):
+                    * Collision of De-registration and Re-registration
+                    * protection.
+                    *
+                    * If UE sends Re-registration immediatelly after
+                    * De-registration is accepted
+                    * (Figure 4.2.2.3.3-1: 1, 2, 6, 7, reregister, 3...),
+                    * the collision occurs:
+                    * -AM policies or nausf-auth events got in wrong states
+                    * -or double nausf-auth is sent
+                    *  (amf_nsmf_pdusession_handle_release_sm_context due
+                    *  to de-registration, gmm_state_authentication due to
+                    *  reregistration)
+                    *
+                    * Such a registration is rejected, UE has to repeat it.
+                    */
+                    if (ogs_list_count(&amf_ue->sess_list) != 0) {
+                        ogs_info("[%s] Registration rejected due to collision",
+                                amf_ue->suci);
+                        ogs_assert(OGS_OK ==
+                        nas_5gs_send_registration_reject(amf_ue,
+                                OGS_5GMM_CAUSE_CONGESTION));
+                        break;
+                    }
+
                     ogs_assert(true ==
                         amf_ue_sbi_discover_and_send(
                             OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
