@@ -91,4 +91,5 @@ libtestcommon_dep = declare_dependency(
                     libdiameter_cx_dep,
                     libdiameter_swx_dep,
                     libdiameter_s6b_dep,
+                    libdiameter_s13_dep,
                     libaf_dep])

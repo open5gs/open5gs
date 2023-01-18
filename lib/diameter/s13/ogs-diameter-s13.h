@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2023 by Ryan Dimsey <ryan@omnitouch.com.au>
  *
  * This file is part of Open5GS.
  *
@@ -17,33 +17,25 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef MME_FD_PATH_H
-#define MME_FD_PATH_H
+#ifndef OGS_DIMAETER_S13_H
+#define OGS_DIMAETER_S13_H
 
-#include "mme-context.h"
+#include "ogs-diameter-common.h"
+
+#define OGS_DIAMETER_INSIDE
+
+#include "diameter/s13/message.h"
+
+#undef OGS_DIAMETER_INSIDE
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int mme_fd_init(void);
-void mme_fd_final(void);
-
-/* MME Sends Authentication Information Request to HSS */
-void mme_s6a_send_air(mme_ue_t *mme_ue,
-    ogs_nas_authentication_failure_parameter_t
-        *authentication_failure_parameter);
-/* MME Sends Update Location Request to HSS */
-void mme_s6a_send_ulr(mme_ue_t *mme_ue);
-/* MME Sends Purge UE Request to HSS */
-void mme_s6a_send_pur(mme_ue_t *mme_ue);
-
-/* MME Sends ME Identity Check Request to EIR */
-void mme_s13_send_ecr(mme_ue_t *mme_ue);
+/* Nothing */
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* MME_FD_PATH_H */
-
+#endif /* OGS_DIMAETER_S13_H */

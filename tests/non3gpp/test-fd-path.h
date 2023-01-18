@@ -26,6 +26,7 @@ extern "C" {
 
 #include "ogs-diameter-cx.h"
 #include "ogs-diameter-s6a.h"
+#include "ogs-diameter-s13.h"
 #include "ogs-diameter-swx.h"
 
 #include "ogs-diameter-rx.h"

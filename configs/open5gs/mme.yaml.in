@@ -344,6 +344,9 @@ mme:
     network_name:
         full: Open5GS
     mme_name: open5gs-mme0
+    eir:
+        enabled: False
+        allowed_states: [ WHITELIST, BLACKLIST, GREYLIST ]
 
 #
 # <GTP-C Client>
