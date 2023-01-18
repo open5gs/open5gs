@@ -492,6 +492,53 @@ bool smf_npcf_smpolicycontrol_handle_create(
         ogs_pfcp_paa_to_ue_ip_addr(&sess->session.paa,
             &ul_pdr->ue_ip_addr, &ul_pdr->ue_ip_addr_len));
 
+    if (sess->session.ipv4_framed_routes &&
+        sess->pfcp_node->up_function_features.frrt) {
+        OpenAPI_frame_route_info_t *FrameRouteInfo = NULL;
+        int i = 0;
+        OpenAPI_list_for_each(sess->session.ipv4_framed_routes, node) {
+            FrameRouteInfo = node->data;
+            if (i >= OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI)
+                break;
+            if (!FrameRouteInfo)
+                continue;
+            if (!FrameRouteInfo->ipv4_mask) {
+                ogs_error("Invalid FrameRouteInfo");
+                continue;
+            }
+            if (!dl_pdr->ipv4_framed_routes) {
+                dl_pdr->ipv4_framed_routes =
+                    ogs_calloc(OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI,
+                               sizeof(dl_pdr->ipv4_framed_routes[0]));
+                ogs_assert(dl_pdr->ipv4_framed_routes);
+            }
+            dl_pdr->ipv4_framed_routes[i++] = ogs_strdup(FrameRouteInfo->ipv4_mask);
+        }
+    }
+
+    if (sess->session.ipv6_framed_routes &&
+        sess->pfcp_node->up_function_features.frrt) {
+        OpenAPI_frame_route_info_t *FrameRouteInfo = NULL;
+        int i = 0;
+        OpenAPI_list_for_each(sess->session.ipv6_framed_routes, node) {
+            FrameRouteInfo = node->data;
+            if (i >= OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI)
+                continue;
+            if (!FrameRouteInfo)
+                continue;
+            if (!FrameRouteInfo->ipv6_prefix) {
+                ogs_error("Invalid FrameRouteInfo");
+                continue;
+            }
+            if (!dl_pdr->ipv6_framed_routes) {
+                dl_pdr->ipv6_framed_routes =
+                    ogs_malloc(OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI);
+                ogs_assert(dl_pdr->ipv6_framed_routes);
+            }
+            dl_pdr->ipv6_framed_routes[i++] = ogs_strdup(FrameRouteInfo->ipv6_prefix);
+        }
+    }
+
     ogs_info("UE SUPI[%s] DNN[%s] IPv4[%s] IPv6[%s]",
         smf_ue->supi, sess->session.name,
         sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
