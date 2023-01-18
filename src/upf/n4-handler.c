@@ -138,6 +138,22 @@ void upf_n4_handle_session_establishment_request(
             }
         }
 
+        if (pdr->ipv4_framed_routes) {
+            cause_value =
+                upf_sess_set_ue_ipv4_framed_routes(sess,
+                        pdr->ipv4_framed_routes);
+            if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
+                goto cleanup;
+        }
+
+        if (pdr->ipv6_framed_routes) {
+            cause_value =
+                upf_sess_set_ue_ipv6_framed_routes(sess,
+                        pdr->ipv6_framed_routes);
+            if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
+                goto cleanup;
+        }
+
         /* Setup UPF-N3-TEID & QFI Hash */
         if (pdr->f_teid_len) {
             ogs_pfcp_object_type_e type = OGS_PFCP_OBJ_SESS_TYPE;

@@ -160,6 +160,9 @@ typedef struct ogs_pfcp_pdr_s {
     ogs_pfcp_ue_ip_addr_t   ue_ip_addr;
     int                     ue_ip_addr_len;
 
+    char                    **ipv4_framed_routes;
+    char                    **ipv6_framed_routes;
+
     ogs_pfcp_f_teid_t       f_teid;
     int                     f_teid_len;
 

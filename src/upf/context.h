@@ -45,14 +45,25 @@ extern int __upf_log_domain;
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __upf_log_domain
 
-typedef struct upf_context_s {
-    ogs_hash_t      *seid_hash;     /* hash table (SEID) */
-    ogs_hash_t      *f_seid_hash;   /* hash table (F-SEID) */
-    ogs_hash_t      *ipv4_hash;     /* hash table (IPv4 Address) */
-    ogs_hash_t      *ipv6_hash;     /* hash table (IPv6 Address) */
+struct upf_route_trie_node;
 
-    ogs_list_t      sess_list;
+typedef struct upf_context_s {
+    ogs_hash_t                 *seid_hash;     /* hash table (SEID) */
+    ogs_hash_t                 *f_seid_hash;   /* hash table (F-SEID) */
+    ogs_hash_t                 *ipv4_hash;     /* hash table (IPv4 Address) */
+    ogs_hash_t                 *ipv6_hash;     /* hash table (IPv6 Address) */
+    struct upf_route_trie_node *ipv4_framed_routes; /* IPv4 framed routes trie */
+    struct upf_route_trie_node *ipv6_framed_routes; /* IPv6 framed routes trie */
+
+    ogs_list_t                  sess_list;
 } upf_context_t;
+
+/* trie mapping from IP framed routes to session. */
+struct upf_route_trie_node {
+    struct upf_route_trie_node *left;
+    struct upf_route_trie_node *right;
+    upf_sess_t *sess;
+};
 
 /* Accounting: */
 typedef struct upf_sess_urr_acc_s {
@@ -99,6 +110,9 @@ typedef struct upf_sess_s {
     ogs_pfcp_ue_ip_t *ipv4;
     ogs_pfcp_ue_ip_t *ipv6;
 
+    ogs_ipsubnet_t   *ipv4_framed_routes;
+    ogs_ipsubnet_t   *ipv6_framed_routes;
+
     char            *gx_sid;            /* Gx Session ID */
     ogs_pfcp_node_t *pfcp_node;
 
@@ -126,6 +140,10 @@ upf_sess_t *upf_sess_find_by_ipv6(uint32_t *addr6);
 
 uint8_t upf_sess_set_ue_ip(upf_sess_t *sess,
         uint8_t session_type, ogs_pfcp_pdr_t *pdr);
+uint8_t upf_sess_set_ue_ipv4_framed_routes(upf_sess_t *sess,
+        char *framed_routes[]);
+uint8_t upf_sess_set_ue_ipv6_framed_routes(upf_sess_t *sess,
+        char *framed_routes[]);
 
 void upf_sess_urr_acc_add(upf_sess_t *sess, ogs_pfcp_urr_t *urr, size_t size, bool is_uplink);
 void upf_sess_urr_acc_fill_usage_report(upf_sess_t *sess, const ogs_pfcp_urr_t *urr,
