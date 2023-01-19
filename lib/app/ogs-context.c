@@ -525,6 +525,12 @@ int ogs_app_context_parse_config(void)
                     /* handle config in mme */
                 } else if (!strcmp(time_key, "t3423")) {
                     /* handle config in mme */
+                } else if (!strcmp(time_key, "mobile_reachable")) {
+                    /* handle config in mme */
+                } else if (!strcmp(time_key, "implicit_detach")) {
+                    /* handle config in mme */
+                } else if (!strcmp(time_key, "purge_ue")) {
+                    /* handle config in mme */
                 } else
                     ogs_warn("unknown key `%s`", time_key);
             }

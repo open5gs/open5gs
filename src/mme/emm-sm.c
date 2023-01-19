@@ -61,6 +61,8 @@ void emm_state_de_registered(ogs_fsm_t *s, mme_event_t *e)
 
     ogs_assert(e);
 
+    mme_sm_debug(e);
+
     mme_ue = e->mme_ue;
     ogs_assert(mme_ue);
 
@@ -68,6 +70,13 @@ void emm_state_de_registered(ogs_fsm_t *s, mme_event_t *e)
     case OGS_FSM_ENTRY_SIG:
         CLEAR_SERVICE_INDICATOR(mme_ue);
         CLEAR_MME_UE_ALL_TIMERS(mme_ue);
+
+        if (mme_self()->time.purge_ue.value > 0) {
+            ogs_debug("DB Purge Timer started for IMSI[%s]", mme_ue->imsi_bcd);
+            ogs_timer_start(mme_ue->t_purge_ue.timer,
+                ogs_time_from_sec(mme_self()->time.purge_ue.value));
+        }
+
         break;
     case OGS_FSM_EXIT_SIG:
         break;
@@ -96,6 +105,17 @@ void emm_state_de_registered(ogs_fsm_t *s, mme_event_t *e)
             }
             break;
 
+        case MME_TIMER_PURGE_UE:
+            ogs_info("[%s] Purge Timer expired, removing UE", mme_ue->imsi_bcd);
+            CLEAR_MME_UE_TIMER(mme_ue->t_purge_ue);
+            if (mme_ue->location_updated_but_not_canceled_yet == true) {
+                mme_s6a_send_pur(mme_ue);
+            } else {
+                mme_ue_hash_remove(mme_ue);
+                mme_ue_remove(mme_ue);
+            }
+            break;
+
         default:
             ogs_error("Unknown timer[%s:%d]",
                     mme_timer_get_name(e->timer_id), e->timer_id);
@@ -114,11 +134,14 @@ void emm_state_registered(ogs_fsm_t *s, mme_event_t *e)
 
     ogs_assert(e);
 
+    mme_sm_debug(e);
+
     mme_ue = e->mme_ue;
     ogs_assert(mme_ue);
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
+        CLEAR_MME_UE_TIMER(mme_ue->t_purge_ue);
         break;
     case OGS_FSM_EXIT_SIG:
         break;
@@ -186,6 +209,39 @@ void emm_state_registered(ogs_fsm_t *s, mme_event_t *e)
             }
             break;
 
+        case MME_TIMER_MOBILE_REACHABLE:
+            ogs_info("[%s] Mobile Reachable timer expired", mme_ue->imsi_bcd);
+            CLEAR_MME_UE_TIMER(mme_ue->t_mobile_reachable);
+            /* TS 24.301 5.3.5
+             * Upon expiry of the mobile reachable timer the network shall
+             * start the implicit detach timer.
+             */
+            if (mme_self()->time.implicit_detach.value > 0) {
+                ogs_debug("[%s] Starting Implicit Detach timer",
+                    mme_ue->imsi_bcd);
+                ogs_timer_start(mme_ue->t_implicit_detach.timer,
+                    ogs_time_from_sec(mme_self()->time.implicit_detach.value));
+            }
+            break;
+
+        case MME_TIMER_IMPLICIT_DETACH:
+            ogs_info("[%s] Implicit Detach timer expired, detaching UE",
+                mme_ue->imsi_bcd);
+            CLEAR_MME_UE_TIMER(mme_ue->t_implicit_detach);
+            /* TS 24.301 5.3.5
+             * If the implicit detach timer expires before the UE contacts
+             * the network, the network shall implicitly detach the UE.
+             */
+            mme_ue->detach_type = MME_DETACH_TYPE_MME_IMPLICIT;
+            if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
+                ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
+            } else {
+                mme_send_delete_session_or_detach(mme_ue);
+            }
+
+            OGS_FSM_TRAN(s, &emm_state_de_registered);
+            break;
+
         default:
             ogs_error("Unknown timer[%s:%d]",
                     mme_timer_get_name(e->timer_id), e->timer_id);
@@ -205,9 +261,11 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
     enb_ue_t *enb_ue = NULL;
     ogs_nas_eps_message_t *message = NULL;
     ogs_nas_security_header_type_t h;
-    
+
     ogs_assert(e);
-        
+
+    mme_sm_debug(e);
+
     mme_ue = e->mme_ue;
     ogs_assert(mme_ue);
 
@@ -632,6 +690,24 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 break;
             }
 
+            if (!MME_UE_HAVE_IMSI(mme_ue)) {
+                ogs_warn("Detach request : Unknown UE");
+                ogs_assert(OGS_OK ==
+                    nas_eps_send_service_reject(mme_ue,
+                    OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
+                OGS_FSM_TRAN(s, &emm_state_exception);
+                break;
+            }
+
+            if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
+                ogs_warn("No Security Context : IMSI[%s]", mme_ue->imsi_bcd);
+                ogs_assert(OGS_OK ==
+                    nas_eps_send_service_reject(mme_ue,
+                    OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
+                OGS_FSM_TRAN(s, &emm_state_exception);
+                break;
+            }
+
             if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
                 ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
             } else {
@@ -714,6 +790,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
+        CLEAR_MME_UE_TIMER(mme_ue->t_purge_ue);
         break;
     case OGS_FSM_EXIT_SIG:
         break;
@@ -883,6 +960,7 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
         CLEAR_MME_UE_TIMER(mme_ue->t3460);
+        CLEAR_MME_UE_TIMER(mme_ue->t_purge_ue);
         ogs_assert(OGS_OK ==
             nas_eps_send_security_mode_command(mme_ue));
         break;
@@ -1060,6 +1138,7 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
+        CLEAR_MME_UE_TIMER(mme_ue->t_purge_ue);
         break;
     case OGS_FSM_EXIT_SIG:
         break;
@@ -1272,6 +1351,7 @@ void emm_state_exception(ogs_fsm_t *s, mme_event_t *e)
     case OGS_FSM_ENTRY_SIG:
         CLEAR_SERVICE_INDICATOR(mme_ue);
         CLEAR_MME_UE_ALL_TIMERS(mme_ue);
+        CLEAR_MME_UE_TIMER(mme_ue->t_purge_ue);
         break;
     case OGS_FSM_EXIT_SIG:
         break;

@@ -260,7 +260,7 @@ void mme_s6a_handle_clr(mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
          */
         if (ECM_IDLE(mme_ue)) {
             MME_STORE_PAGING_INFO(mme_ue, MME_PAGING_TYPE_DETACH_TO_UE, NULL);
-            ogs_assert(OGS_OK == s1ap_send_paging(mme_ue, S1AP_CNDomain_ps));
+            mme_s1ap_page_if_attached(mme_ue, S1AP_CNDomain_ps);
         } else {
             ogs_assert(OGS_OK == nas_eps_send_detach_request(mme_ue));
             if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {

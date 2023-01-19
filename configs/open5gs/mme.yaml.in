@@ -432,10 +432,15 @@ usrsctp:
 #
 #  o Timers of EPS mobility/session management
 #    t3402:
-#      value: 720  # 12 minutes * 60 = 720 seconds
+#      value: 720   # 12 minutes * 60 = 720 seconds
 #    t3412:
-#      value: 3240 # 54 minutes * 60 = 3240 seconds
+#      value: 3240  # 54 minutes * 60 = 3240 seconds
 #    t3423:
-#      value: 720  # 12 minutes * 60 = 720 seconds
-#
+#      value: 720   # 12 minutes * 60 = 720 seconds
+#    mobile_reachable:
+#      value: 3480  # 54 minutes * 60 + 240 = 3480 seconds
+#    implicit_detach:
+#      value: 240   # 4 minutes * 60 = 240 seconds
+#    purge_ue:
+#      value: 86400 # 24 hours * 60 minutes * 60 = 86400 seconds
 time:

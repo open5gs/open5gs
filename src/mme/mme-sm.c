@@ -302,6 +302,9 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                         S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0));
             }
             enb_ue_associate_mme_ue(enb_ue, mme_ue);
+            ogs_debug("Mobile Reachable timer stopped for IMSI[%s]", 
+                mme_ue->imsi_bcd);
+            CLEAR_MME_UE_TIMER(mme_ue->t_mobile_reachable);
         }
 
         ogs_assert(mme_ue);
