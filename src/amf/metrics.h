@@ -46,8 +46,8 @@ typedef enum amf_metric_type_by_cause_s {
 void amf_metrics_inst_by_cause_add(
     uint8_t cause, amf_metric_type_by_cause_t t, int val);
 
-int amf_metrics_open(void);
-int amf_metrics_close(void);
+void amf_metrics_init(void);
+void amf_metrics_final(void);
 
 #ifdef __cplusplus
 }

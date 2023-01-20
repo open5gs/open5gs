@@ -28,8 +28,8 @@ static inline void mme_metrics_inst_global_inc(mme_metric_type_global_t t)
 static inline void mme_metrics_inst_global_dec(mme_metric_type_global_t t)
 { ogs_metrics_inst_dec(mme_metrics_inst_global[t]); }
 
-int mme_metrics_open(void);
-int mme_metrics_close(void);
+void mme_metrics_init(void);
+void mme_metrics_final(void);
 
 #ifdef __cplusplus
 }

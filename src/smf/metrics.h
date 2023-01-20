@@ -93,8 +93,8 @@ typedef enum smf_metric_type_by_cause_s {
 
 void smf_metrics_inst_by_cause_add(
     uint8_t cause, smf_metric_type_by_cause_t t, int val);
-int smf_metrics_open(void);
-int smf_metrics_close(void);
+void smf_metrics_init(void);
+void smf_metrics_final(void);
 
 #ifdef __cplusplus
 }

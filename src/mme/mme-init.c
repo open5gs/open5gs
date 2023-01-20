@@ -39,7 +39,9 @@ static int initialized = 0;
 int mme_initialize()
 {
     int rv;
-    ogs_metrics_context_init();
+
+    mme_metrics_init();
+
     ogs_gtp_context_init(OGS_MAX_NUM_OF_GTPU_RESOURCE);
     mme_context_init();
 
@@ -62,8 +64,7 @@ int mme_initialize()
     rv = mme_m_tmsi_pool_generate();
     if (rv != OGS_OK) return rv;
 
-    rv = mme_metrics_open();
-    if (rv != 0) return OGS_ERROR;
+    ogs_metrics_context_open(ogs_metrics_self());
 
     rv = mme_fd_init();
     if (rv != OGS_OK) return OGS_ERROR;
@@ -96,7 +97,8 @@ void mme_terminate(void)
     mme_gtp_close();
     sgsap_close();
     s1ap_close();
-    mme_metrics_close();
+
+    ogs_metrics_context_close(ogs_metrics_self());
 
     mme_fd_final();
 
@@ -106,7 +108,7 @@ void mme_terminate(void)
 
     ogs_gtp_xact_final();
 
-    ogs_metrics_context_final();
+    mme_metrics_final();
 }
 
 static void mme_main(void *data)
