@@ -552,7 +552,7 @@ static int response_handler(
             ogs_error("No NF-Instance ID");
     }
 
-    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+    ogs_expect(true == ogs_sbi_server_send_response(stream, response));
     scp_assoc_remove(assoc);
 
     return OGS_OK;
