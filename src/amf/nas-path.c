@@ -655,6 +655,7 @@ int nas_send_pdu_session_release_command(amf_sess_t *sess,
         rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
         ogs_expect(rv == OGS_OK);
     } else if (gmmbuf) {
+        ogs_pkbuf_free(n2smbuf);
         ngapbuf = ngap_build_downlink_nas_transport(
                 ran_ue, gmmbuf, false, false);
         if (!ngapbuf) {
