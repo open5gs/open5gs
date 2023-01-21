@@ -143,8 +143,8 @@ ogs_pfcp_rule_t *ogs_pfcp_pdr_rule_find_by_packet(
             proto = ip_h->ip_p;
             ip_hlen = (ip_h->ip_hl)*4;
 
-            src_addr = &ip_h->ip_src.s_addr;
-            dst_addr = &ip_h->ip_dst.s_addr;
+            src_addr = (void *)&ip_h->ip_src.s_addr;
+            dst_addr = (void *)&ip_h->ip_dst.s_addr;
             addr_len = OGS_IPV4_LEN;
         } else if (ip_h->ip_v == 6) {
             ip_h = NULL;
@@ -152,8 +152,8 @@ ogs_pfcp_rule_t *ogs_pfcp_pdr_rule_find_by_packet(
 
             decode_ipv6_header(ip6_h, &proto, &ip_hlen);
 
-            src_addr = (uint32_t *)ip6_h->ip6_src.s6_addr;
-            dst_addr = (uint32_t *)ip6_h->ip6_dst.s6_addr;
+            src_addr = (void *)ip6_h->ip6_src.s6_addr;
+            dst_addr = (void *)ip6_h->ip6_dst.s6_addr;
             addr_len = OGS_IPV6_LEN;
         } else {
             ogs_error("Invalid packet [IP version:%d, Packet Length:%d]",

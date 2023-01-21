@@ -317,7 +317,7 @@ static int response_handler(
     }
 
     ogs_assert(response);
-    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+    ogs_expect(true == ogs_sbi_server_send_response(stream, response));
     scp_conn_remove(conn);
 
     return OGS_OK;

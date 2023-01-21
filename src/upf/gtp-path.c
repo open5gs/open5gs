@@ -421,7 +421,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
         ogs_assert(far);
 
         if (ip_h->ip_v == 4 && sess->ipv4) {
-            src_addr = &ip_h->ip_src.s_addr;
+            src_addr = (void *)&ip_h->ip_src.s_addr;
             ogs_assert(src_addr);
 
             /*
@@ -452,7 +452,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
         } else if (ip_h->ip_v == 6 && sess->ipv6) {
             struct ip6_hdr *ip6_h = (struct ip6_hdr *)pkbuf->data;
             ogs_assert(ip6_h);
-            src_addr = (uint32_t *)ip6_h->ip6_src.s6_addr;
+            src_addr = (void *)ip6_h->ip6_src.s6_addr;
             ogs_assert(src_addr);
 
             /*
