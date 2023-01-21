@@ -51,7 +51,7 @@ extern "C" {
 
 #define OGS_MAX_NUM_OF_GTPU_RESOURCE    4
 
-#define OGS_MAX_SDU_LEN                 8192
+#define OGS_MAX_SDU_LEN                 OGS_HUGE_LEN
 #define OGS_MAX_PKT_LEN                 2048
 #define OGS_PLMN_ID_LEN                 3
 #define OGS_MAX_PLMN_ID_BCD_LEN         6

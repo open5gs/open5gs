@@ -54,7 +54,7 @@
 extern "C" {
 #endif
 
-#define OGS_HUGE_LEN        8192
+#define OGS_HUGE_LEN        16384
 
 #if defined(_WIN32)
 #define ogs_strtok_r strtok_s
