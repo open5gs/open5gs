@@ -322,6 +322,14 @@ void ogs_pfcp_build_create_pdr(
         message->pdi.framed_route[j].len = strlen(pdr->ipv4_framed_routes[j]);
     }
 
+    for (j = 0; j < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; j++) {
+        if (!pdr->ipv6_framed_routes || !pdr->ipv6_framed_routes[j])
+            break;
+        message->pdi.framed_ipv6_route[j].presence = 1;
+        message->pdi.framed_ipv6_route[j].data = pdr->ipv6_framed_routes[j];
+        message->pdi.framed_ipv6_route[j].len = strlen(pdr->ipv6_framed_routes[j]);
+    }
+
     if (pdr->f_teid_len) {
         memcpy(&pdrbuf[i].f_teid, &pdr->f_teid, pdr->f_teid_len);
         pdrbuf[i].f_teid.teid = htobe32(pdr->f_teid.teid);
