@@ -27,7 +27,7 @@
 int amf_namf_comm_handle_n1_n2_message_transfer(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
-    int status;
+    int status, r;
 
     amf_ue_t *amf_ue = NULL;
     ran_ue_t *ran_ue = NULL;
@@ -206,7 +206,9 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
                  * sm-context-ref is created in [1-CLIENT].
                  * So, the PDU session establishment accpet can be transmitted.
                  */
-                    ogs_expect(OGS_OK == ngap_send_to_ran_ue(ran_ue, ngapbuf));
+                    r = ngap_send_to_ran_ue(ran_ue, ngapbuf);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
                 } else {
                     sess->pdu_session_establishment_accept = ngapbuf;
                 }
@@ -285,12 +287,15 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
                     AMF_SESS_STORE_N2_TRANSFER(
                             sess, pdu_session_resource_setup_request, n2buf);
 
-                    ogs_assert(OGS_OK == ngap_send_paging(amf_ue));
+                    r = ngap_send_paging(amf_ue);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
                 }
 
             } else if (CM_CONNECTED(amf_ue)) {
-                ogs_assert(OGS_OK ==
-                    nas_send_pdu_session_setup_request(sess, NULL, n2buf));
+                r = nas_send_pdu_session_setup_request(sess, NULL, n2buf);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
 
             } else {
 
@@ -349,12 +354,15 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
                         OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND,
                         n1buf, n2buf);
 
-                ogs_assert(OGS_OK == ngap_send_paging(amf_ue));
+                r = ngap_send_paging(amf_ue);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
             }
 
         } else if (CM_CONNECTED(amf_ue)) {
-            ogs_expect(OGS_OK ==
-                nas_send_pdu_session_modification_command(sess, n1buf, n2buf));
+            r = nas_send_pdu_session_modification_command(sess, n1buf, n2buf);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
 
         } else {
             ogs_fatal("[%s] Invalid AMF-UE state", amf_ue->supi);
@@ -386,8 +394,9 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
             }
 
         } else if (CM_CONNECTED(amf_ue)) {
-            ogs_expect(OGS_OK ==
-                nas_send_pdu_session_release_command(sess, NULL, n2buf));
+            r = nas_send_pdu_session_release_command(sess, NULL, n2buf);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
         } else {
             ogs_fatal("[%s] Invalid AMF-UE state", amf_ue->supi);
             ogs_assert_if_reached();
@@ -512,11 +521,13 @@ cleanup:
 static int do_network_initiated_de_register(
         amf_ue_t *amf_ue, OpenAPI_deregistration_reason_e dereg_reason)
 {
+    int r;
     if ((CM_CONNECTED(amf_ue)) &&
         (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered))) {
 
-        ogs_assert(OGS_OK ==
-            nas_5gs_send_de_registration_request(amf_ue, dereg_reason));
+        r = nas_5gs_send_de_registration_request(amf_ue, dereg_reason);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
 
         amf_sbi_send_release_all_sessions(
             amf_ue, AMF_NETWORK_INITIATED_DE_REGISTERED);
@@ -809,6 +820,7 @@ int amf_namf_callback_handle_sdm_data_change_notify(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
     int status = OGS_SBI_HTTP_STATUS_NO_CONTENT;
+    int r;
 
     amf_ue_t *amf_ue = NULL;
 
@@ -905,8 +917,9 @@ int amf_namf_callback_handle_sdm_data_change_notify(
         ngapbuf = ngap_build_ue_context_modification_request(amf_ue);
         ogs_assert(ngapbuf);
 
-        if (nas_5gs_send_to_gnb(amf_ue, ngapbuf) != OGS_OK)
-            ogs_error("nas_5gs_send_to_gnb() failed");
+        r = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
     }
 
 cleanup:

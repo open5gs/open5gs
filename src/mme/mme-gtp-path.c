@@ -76,6 +76,7 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
 
 static void timeout(ogs_gtp_xact_t *xact, void *data)
 {
+    int r;
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
     mme_sess_t *sess = NULL;
@@ -131,10 +132,11 @@ static void timeout(ogs_gtp_xact_t *xact, void *data)
 
         enb_ue = enb_ue_cycle(mme_ue->enb_ue);
         if (enb_ue) {
-            ogs_assert(OGS_OK ==
-                s1ap_send_ue_context_release_command(enb_ue,
+            r = s1ap_send_ue_context_release_command(enb_ue,
                     S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                    S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
+                    S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
         } else {
             ogs_warn("No S1 Context");
         }

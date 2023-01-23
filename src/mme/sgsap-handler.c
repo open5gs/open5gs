@@ -30,6 +30,7 @@
 
 void sgsap_handle_location_update_accept(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 {
+    int r;
     ogs_tlv_t *root = NULL, *iter = NULL;
     mme_ue_t *mme_ue = NULL;
 
@@ -116,21 +117,24 @@ void sgsap_handle_location_update_accept(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
         ogs_debug("    P-TMSI[0x%08x]", mme_ue->p_tmsi);
     }
 
-    ogs_assert(OGS_OK ==
-        nas_eps_send_attach_accept(mme_ue));
+    r = nas_eps_send_attach_accept(mme_ue);
+    ogs_expect(r == OGS_OK);
+    ogs_assert(r != OGS_ERROR);
 
     return;
 
 error:
-    ogs_assert(OGS_OK ==
-        nas_eps_send_attach_reject(mme_ue,
+    r = nas_eps_send_attach_reject(mme_ue,
             OGS_NAS_EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
-            OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
+            OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+    ogs_expect(r == OGS_OK);
+    ogs_assert(r != OGS_ERROR);
     mme_send_delete_session_or_mme_ue_context_release(mme_ue);
 }
 
 void sgsap_handle_location_update_reject(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 {
+    int r;
     ogs_tlv_t *root = NULL, *iter = NULL;
     mme_ue_t *mme_ue = NULL;
 
@@ -203,9 +207,10 @@ void sgsap_handle_location_update_reject(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
                     ogs_plmn_id_hexdump(&lai->nas_plmn_id), lai->lac);
     }
 
-    ogs_assert(OGS_OK ==
-        nas_eps_send_attach_reject(mme_ue,
-            emm_cause, OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
+    r = nas_eps_send_attach_reject(mme_ue,
+            emm_cause, OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+    ogs_expect(r == OGS_OK);
+    ogs_assert(r != OGS_ERROR);
     mme_send_delete_session_or_mme_ue_context_release(mme_ue);
 
     return;
@@ -277,6 +282,7 @@ void sgsap_handle_detach_ack(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 
 void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 {
+    int r;
     ogs_tlv_t *root = NULL, *iter = NULL;
     mme_ue_t *mme_ue = NULL;
 
@@ -354,22 +360,25 @@ void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
                 /* UE will respond Extended Service Request in PS CNDomain*/
                 MME_STORE_PAGING_INFO(mme_ue,
                         MME_PAGING_TYPE_CS_CALL_SERVICE, NULL);
-                ogs_assert(OGS_OK ==
-                    s1ap_send_paging(mme_ue, S1AP_CNDomain_cs));
+                r = s1ap_send_paging(mme_ue, S1AP_CNDomain_cs);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
 
             } else if (SMS_SERVICE_INDICATOR(mme_ue)) {
                 /* UE will respond Service Request in PS CNDomain*/
                 MME_STORE_PAGING_INFO(mme_ue,
                         MME_PAGING_TYPE_SMS_SERVICE, NULL);
-                ogs_assert(OGS_OK ==
-                    s1ap_send_paging(mme_ue, S1AP_CNDomain_ps));
+                r = s1ap_send_paging(mme_ue, S1AP_CNDomain_ps);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
             } else
                 goto paging_reject;
 
         } else {
             if (CS_CALL_SERVICE_INDICATOR(mme_ue)) {
-                ogs_assert(OGS_OK ==
-                    nas_eps_send_cs_service_notification(mme_ue));
+                r = nas_eps_send_cs_service_notification(mme_ue);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
             } else if (SMS_SERVICE_INDICATOR(mme_ue)) {
                 ogs_assert(OGS_OK ==
                     sgsap_send_service_request(
@@ -395,6 +404,7 @@ paging_reject:
 
 void sgsap_handle_downlink_unitdata(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 {
+    int r;
     ogs_tlv_t *root = NULL, *iter = NULL;
     mme_ue_t *mme_ue = NULL;
 
@@ -455,9 +465,10 @@ void sgsap_handle_downlink_unitdata(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
             nas_message_container_buffer,
             nas_message_container_length);
 
-    ogs_assert(OGS_OK ==
-        nas_eps_send_downlink_nas_transport(mme_ue,
-            nas_message_container_buffer, nas_message_container_length));
+    r = nas_eps_send_downlink_nas_transport(mme_ue,
+            nas_message_container_buffer, nas_message_container_length);
+    ogs_expect(r == OGS_OK);
+    ogs_assert(r != OGS_ERROR);
 }
 
 void sgsap_handle_reset_indication(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
