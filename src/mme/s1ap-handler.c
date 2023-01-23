@@ -513,8 +513,7 @@ void s1ap_handle_uplink_nas_transport(
         memcpy(&mme_ue->e_cgi, &enb_ue->saved.e_cgi, sizeof(ogs_e_cgi_t));
         mme_ue->ue_location_timestamp = ogs_time_now();
     } else {
-        ogs_fatal("No UE Context in UplinkNASTransport");
-        ogs_assert_if_reached();
+        ogs_error("No UE Context in UplinkNASTransport");
     }
 
     s1ap_send_to_nas(enb_ue,
