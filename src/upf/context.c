@@ -769,7 +769,7 @@ static void upf_sess_urr_acc_timers_cb(void *data)
     ogs_pfcp_sess_t *pfcp_sess = urr->sess;
     upf_sess_t *sess = UPF_SESS(pfcp_sess);
 
-    ogs_warn("upf_time_threshold_cb() triggered! urr=%p", urr);
+    ogs_info("upf_time_threshold_cb() triggered! urr=%p", urr);
 
     if (urr->rep_triggers.quota_validity_time ||
         urr->rep_triggers.time_quota ||
