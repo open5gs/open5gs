@@ -409,6 +409,7 @@ int ngap_send_paging(amf_ue_t *amf_ue)
                     amf_ue->t3513.pkbuf = ogs_pkbuf_copy(ngapbuf);
                     if (!amf_ue->t3513.pkbuf) {
                         ogs_error("ogs_pkbuf_copy() failed");
+                        ogs_pkbuf_free(ngapbuf);
                         return OGS_ERROR;
                     }
 

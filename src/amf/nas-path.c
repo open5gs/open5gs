@@ -108,6 +108,7 @@ int nas_5gs_send_registration_accept(amf_ue_t *amf_ue)
         amf_ue->t3550.pkbuf = ogs_pkbuf_copy(gmmbuf);
         if (!amf_ue->t3550.pkbuf) {
             ogs_error("ogs_pkbuf_copy(amf_ue->t3550.pkbuf) failed");
+            ogs_pkbuf_free(gmmbuf);
             return OGS_ERROR;
         }
         ogs_timer_start(amf_ue->t3550.timer,
@@ -373,6 +374,7 @@ int nas_5gs_send_de_registration_request(amf_ue_t *amf_ue,
     amf_ue->t3522.pkbuf = ogs_pkbuf_copy(gmmbuf);
     if (!amf_ue->t3522.pkbuf) {
         ogs_error("ogs_pkbuf_copy(amf_ue->t3522.pkbuf) failed");
+        ogs_pkbuf_free(gmmbuf);
         return OGS_ERROR;
     }
     ogs_timer_start(amf_ue->t3522.timer,
@@ -406,6 +408,7 @@ int nas_5gs_send_identity_request(amf_ue_t *amf_ue)
     amf_ue->t3570.pkbuf = ogs_pkbuf_copy(gmmbuf);
     if (!amf_ue->t3570.pkbuf) {
         ogs_error("ogs_pkbuf_copy(amf_ue->t3570.pkbuf) failed");
+        ogs_pkbuf_free(gmmbuf);
         return OGS_ERROR;
     }
     ogs_timer_start(amf_ue->t3570.timer,
@@ -439,6 +442,7 @@ int nas_5gs_send_authentication_request(amf_ue_t *amf_ue)
     amf_ue->t3560.pkbuf = ogs_pkbuf_copy(gmmbuf);
     if (!amf_ue->t3560.pkbuf) {
         ogs_error("ogs_pkbuf_copy(amf_ue->t3560.pkbuf) failed");
+        ogs_pkbuf_free(gmmbuf);
         return OGS_ERROR;
     }
     ogs_timer_start(amf_ue->t3560.timer,
@@ -495,6 +499,7 @@ int nas_5gs_send_security_mode_command(amf_ue_t *amf_ue)
     amf_ue->t3560.pkbuf = ogs_pkbuf_copy(gmmbuf);
     if (!amf_ue->t3560.pkbuf) {
         ogs_error("ogs_pkbuf_copy(amf_ue->t3560.pkbuf) failed");
+        ogs_pkbuf_free(gmmbuf);
         return OGS_ERROR;
     }
     ogs_timer_start(amf_ue->t3560.timer,
@@ -522,6 +527,7 @@ int nas_5gs_send_configuration_update_command(
         amf_ue->t3555.pkbuf = ogs_pkbuf_copy(gmmbuf);
         if (!amf_ue->t3555.pkbuf) {
             ogs_error("ogs_pkbuf_copy(amf_ue->t3555.pkbuf) failed");
+            ogs_pkbuf_free(gmmbuf);
             return OGS_ERROR;
         }
         ogs_timer_start(amf_ue->t3555.timer,
@@ -542,6 +548,7 @@ int nas_5gs_send_configuration_update_command(
             amf_ue->t3555.pkbuf = ogs_pkbuf_copy(gmmbuf);
             if (!amf_ue->t3555.pkbuf) {
                 ogs_error("ogs_pkbuf_copy(amf_ue->t3555.pkbuf) failed");
+                ogs_pkbuf_free(gmmbuf);
                 return OGS_ERROR;
             }
             ogs_timer_start(amf_ue->t3555.timer,

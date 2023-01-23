@@ -1243,7 +1243,11 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
                 }
 
                 mme_ue->t3450.pkbuf = ogs_pkbuf_copy(emmbuf);
-                ogs_assert(mme_ue->t3450.pkbuf);
+                if (!mme_ue->t3450.pkbuf) {
+                    ogs_error("ogs_pkbuf_copy() failed");
+                    ogs_pkbuf_free(emmbuf);
+                    return;
+                }
 
                 ogs_timer_start(mme_ue->t3450.timer,
                         mme_timer_cfg(MME_TIMER_T3450)->duration);

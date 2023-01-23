@@ -139,6 +139,7 @@ int nas_eps_send_attach_accept(mme_ue_t *mme_ue)
     mme_ue->t3450.pkbuf = ogs_pkbuf_copy(emmbuf);
     if (!mme_ue->t3450.pkbuf) {
         ogs_error("ogs_pkbuf_copy(mme_ue->t3450.pkbuf) failed");
+        ogs_pkbuf_free(emmbuf);
         return OGS_ERROR;
     }
     ogs_timer_start(mme_ue->t3450.timer,
@@ -215,6 +216,7 @@ int nas_eps_send_identity_request(mme_ue_t *mme_ue)
     mme_ue->t3470.pkbuf = ogs_pkbuf_copy(emmbuf);
     if (!mme_ue->t3470.pkbuf) {
         ogs_error("ogs_pkbuf_copy(mme_ue->t3470.pkbuf) failed");
+        ogs_pkbuf_free(emmbuf);
         return OGS_ERROR;
     }
     ogs_timer_start(mme_ue->t3470.timer, 
@@ -248,6 +250,7 @@ int nas_eps_send_authentication_request(mme_ue_t *mme_ue)
     mme_ue->t3460.pkbuf = ogs_pkbuf_copy(emmbuf);
     if (!mme_ue->t3460.pkbuf) {
         ogs_error("ogs_pkbuf_copy(mme_ue->t3460.pkbuf) failed");
+        ogs_pkbuf_free(emmbuf);
         return OGS_ERROR;
     }
     ogs_timer_start(mme_ue->t3460.timer, 
@@ -281,6 +284,7 @@ int nas_eps_send_security_mode_command(mme_ue_t *mme_ue)
     mme_ue->t3460.pkbuf = ogs_pkbuf_copy(emmbuf);
     if (!mme_ue->t3460.pkbuf) {
         ogs_error("ogs_pkbuf_copy(mme_ue->t3460.pkbuf) failed");
+        ogs_pkbuf_free(emmbuf);
         return OGS_ERROR;
     }
     ogs_timer_start(mme_ue->t3460.timer, 
@@ -333,6 +337,7 @@ int nas_eps_send_detach_request(mme_ue_t *mme_ue)
     mme_ue->t3422.pkbuf = ogs_pkbuf_copy(emmbuf);
     if (!mme_ue->t3422.pkbuf) {
         ogs_error("ogs_pkbuf_copy(mme_ue->t3422.pkbuf) failed");
+        ogs_pkbuf_free(emmbuf);
         return OGS_ERROR;
     }
     ogs_timer_start(mme_ue->t3422.timer, 
@@ -446,6 +451,7 @@ int nas_eps_send_esm_information_request(mme_bearer_t *bearer)
     bearer->t3489.pkbuf = ogs_pkbuf_copy(esmbuf);
     if (!bearer->t3489.pkbuf) {
         ogs_error("ogs_pkbuf_copy(bearer->t3489) failed");
+        ogs_pkbuf_free(esmbuf);
         return OGS_ERROR;
     }
     ogs_timer_start(bearer->t3489.timer, 
@@ -669,6 +675,7 @@ int nas_eps_send_tau_accept(
         mme_ue->t3450.pkbuf = ogs_pkbuf_copy(emmbuf);
         if (!mme_ue->t3450.pkbuf) {
             ogs_error("ogs_pkbuf_copy(mme_ue->t3450.pkbuf) failed");
+            ogs_pkbuf_free(emmbuf);
             return OGS_ERROR;
         }
         ogs_timer_start(mme_ue->t3450.timer,

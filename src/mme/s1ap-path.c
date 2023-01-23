@@ -400,6 +400,7 @@ int s1ap_send_paging(mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain)
                 mme_ue->t3413.pkbuf = ogs_pkbuf_copy(s1apbuf);
                 if (!mme_ue->t3413.pkbuf) {
                     ogs_error("ogs_pkbuf_copy() failed");
+                    ogs_pkbuf_free(s1apbuf);
                     return OGS_ERROR;
                 }
 

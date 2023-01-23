@@ -318,7 +318,6 @@ ogs_pkbuf_t *ogs_pkbuf_copy_debug(ogs_pkbuf_t *pkbuf, const char *file_line)
     newbuf = ogs_pkbuf_alloc_debug(NULL, size, file_line);
     if (!newbuf) {
         ogs_error("ogs_pkbuf_alloc() failed [size=%d]", size);
-        ogs_pkbuf_free(pkbuf);
         return NULL;
     }
 
@@ -345,7 +344,6 @@ ogs_pkbuf_t *ogs_pkbuf_copy_debug(ogs_pkbuf_t *pkbuf, const char *file_line)
     ogs_pool_alloc(&pool->pkbuf, &newbuf);
     if (!newbuf) {
         ogs_error("ogs_pkbuf_copy() failed");
-        ogs_pkbuf_free(pkbuf);
         ogs_thread_mutex_unlock(&pool->mutex);
         return NULL;
     }
