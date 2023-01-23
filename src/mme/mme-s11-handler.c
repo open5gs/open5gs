@@ -125,7 +125,10 @@ void mme_s11_handle_create_session_response(
     }
 
     rv = ogs_gtp_xact_commit(xact);
-    ogs_expect_or_return(rv == OGS_OK);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_gtp_xact_commit() failed");
+        return;
+    }
 
     /************************
      * Getting Cause Value
@@ -461,7 +464,10 @@ void mme_s11_handle_modify_bearer_response(
     ogs_assert(sgw_ue);
 
     rv = ogs_gtp_xact_commit(xact);
-    ogs_expect_or_return(rv == OGS_OK);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_gtp_xact_commit() failed");
+        return;
+    }
 
     /************************
      * Getting Cause Value
@@ -576,7 +582,10 @@ void mme_s11_handle_delete_session_response(
     }
 
     rv = ogs_gtp_xact_commit(xact);
-    ogs_expect_or_return(rv == OGS_OK);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_gtp_xact_commit() failed");
+        return;
+    }
 
     /************************
      * Check MME-UE Context
@@ -627,7 +636,10 @@ void mme_s11_handle_delete_session_response(
     } else if (action ==
             OGS_GTP_DELETE_SEND_DEACTIVATE_BEARER_CONTEXT_REQUEST) {
         mme_bearer_t *bearer = mme_default_bearer_in_sess(sess);
-        ogs_expect_or_return(bearer);
+        if (!bearer) {
+            ogs_error("No Bearer");
+            return;
+        }
 
         r = nas_eps_send_deactivate_bearer_context_request(bearer);
         ogs_expect(r == OGS_OK);
@@ -842,9 +854,12 @@ void mme_s11_handle_create_bearer_request(
             ogs_gtp2_f_teid_to_ip(pgw_s5u_teid, &bearer->pgw_s5u_ip));
 
     /* Bearer QoS */
-    ogs_expect_or_return(ogs_gtp2_parse_bearer_qos(&bearer_qos,
-        &req->bearer_contexts.bearer_level_qos) ==
-        req->bearer_contexts.bearer_level_qos.len);
+    if (ogs_gtp2_parse_bearer_qos(
+                &bearer_qos, &req->bearer_contexts.bearer_level_qos) !=
+            req->bearer_contexts.bearer_level_qos.len) {
+        ogs_error("ogs_gtp2_parse_bearer_qos() failed");
+        return;
+    }
     bearer->qos.index = bearer_qos.qci;
     bearer->qos.arp.priority_level = bearer_qos.priority_level;
     bearer->qos.arp.pre_emption_capability =
@@ -882,7 +897,10 @@ void mme_s11_handle_create_bearer_request(
 
     /* Before Activate DEDICATED bearer, check DEFAULT bearer status */
     default_bearer = mme_default_bearer_in_sess(sess);
-    ogs_expect_or_return(default_bearer);
+    if (!default_bearer) {
+        ogs_error("No Default Bearer");
+        return;
+    }
 
     if (OGS_FSM_CHECK(&default_bearer->sm, esm_state_active)) {
         if (ECM_IDLE(mme_ue)) {
@@ -988,9 +1006,12 @@ void mme_s11_handle_update_bearer_request(
 
     if (req->bearer_contexts.bearer_level_qos.presence == 1) {
         /* Bearer QoS */
-        ogs_expect_or_return(ogs_gtp2_parse_bearer_qos(&bearer_qos,
-            &req->bearer_contexts.bearer_level_qos) ==
-            req->bearer_contexts.bearer_level_qos.len);
+        if (ogs_gtp2_parse_bearer_qos(
+                    &bearer_qos, &req->bearer_contexts.bearer_level_qos) !=
+                req->bearer_contexts.bearer_level_qos.len) {
+            ogs_error("ogs_gtp2_parse_bearer_qos() failed");
+            return;
+        }
         bearer->qos.index = bearer_qos.qci;
         bearer->qos.arp.priority_level = bearer_qos.priority_level;
         bearer->qos.arp.pre_emption_capability =
@@ -1195,7 +1216,10 @@ void mme_s11_handle_release_access_bearers_response(
     ogs_assert(sgw_ue);
 
     rv = ogs_gtp_xact_commit(xact);
-    ogs_expect_or_return(rv == OGS_OK);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_gtp_xact_commit() failed");
+        return;
+    }
 
     /***********************
      * Check MME-UE Context
@@ -1492,7 +1516,10 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
     ogs_assert(sgw_ue);
 
     rv = ogs_gtp_xact_commit(xact);
-    ogs_expect_or_return(rv == OGS_OK);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_gtp_xact_commit() failed");
+        return;
+    }
 
     /************************
      * Getting Cause Value
@@ -1562,7 +1589,10 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
 
         bearer = mme_bearer_find_by_ue_ebi(mme_ue,
                     rsp->bearer_contexts[i].eps_bearer_id.u8);
-        ogs_expect_or_return(bearer);
+        if (!bearer) {
+            ogs_error("No Bearer");
+            return;
+        }
 
         if (rsp->bearer_contexts[i].s4_u_sgsn_f_teid.presence) {
             teid = rsp->bearer_contexts[i].s4_u_sgsn_f_teid.data;
@@ -1617,7 +1647,10 @@ void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
     ogs_assert(sgw_ue);
 
     rv = ogs_gtp_xact_commit(xact);
-    ogs_expect_or_return(rv == OGS_OK);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_gtp_xact_commit() failed");
+        return;
+    }
 
     /************************
      * Getting Cause Value
@@ -1721,7 +1754,10 @@ void mme_s11_handle_bearer_resource_failure_indication(
     ogs_assert(sgw_ue);
 
     rv = ogs_gtp_xact_commit(xact);
-    ogs_expect_or_return(rv == OGS_OK);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_gtp_xact_commit() failed");
+        return;
+    }
 
     if (!mme_ue_from_teid)
         ogs_error("No Context in TEID");

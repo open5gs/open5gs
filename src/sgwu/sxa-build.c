@@ -42,7 +42,10 @@ ogs_pkbuf_t *sgwu_sxa_build_session_establishment_response(uint8_t type,
             ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
             ogs_app()->parameter.prefer_ipv4,
             &node_id, &len);
-    ogs_expect_or_return_val(rv == OGS_OK, NULL);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_pfcp_sockaddr_to_node_id() failed");
+        return NULL;
+    }
     rsp->node_id.presence = 1;
     rsp->node_id.data = &node_id;
     rsp->node_id.len = len;
@@ -55,7 +58,10 @@ ogs_pkbuf_t *sgwu_sxa_build_session_establishment_response(uint8_t type,
     rv = ogs_pfcp_sockaddr_to_f_seid(
             ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
             &f_seid, &len);
-    ogs_expect_or_return_val(rv == OGS_OK, NULL);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_pfcp_sockaddr_to_f_seid() failed");
+        return NULL;
+    }
     f_seid.seid = htobe64(sess->sgwu_sxa_seid);
     rsp->up_f_seid.presence = 1;
     rsp->up_f_seid.data = &f_seid;

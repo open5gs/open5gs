@@ -191,10 +191,16 @@ char *ogs_uint64_to_string(uint64_t x)
     char *str, *p, *dup;
 
     str = ogs_uint64_to_0string(x);
-    ogs_expect_or_return_val(str, NULL);
+    if (!str) {
+        ogs_error("ogs_uint64_to_0string[%lld] failed", (long long)x);
+        return NULL;
+    }
 
     p = ogs_left_trimcharacter(str, '0');
-    ogs_expect_or_return_val(p, NULL);
+    if (!p) {
+        ogs_error("ogs_left_trimcharacter[%s] failld", str);
+        return NULL;
+    }
 
     dup = ogs_strdup(p);
     ogs_free(str);

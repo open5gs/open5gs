@@ -39,7 +39,10 @@ ogs_socknode_t *ogs_socknode_new(ogs_sockaddr_t *addr)
     ogs_assert(addr);
 
     node = ogs_calloc(1, sizeof(ogs_socknode_t));
-    ogs_expect_or_return_val(node, NULL);
+    if (!node) {
+        ogs_error("ogs_calloc() failed");
+        return NULL;
+    }
 
     node->addr = addr;
 

@@ -27,7 +27,10 @@ bool ogs_pfcp_handle_heartbeat_request(
     ogs_assert(xact);
 
     rv = ogs_pfcp_send_heartbeat_response(xact);
-    ogs_expect_or_return_val(rv == OGS_OK, false);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_pfcp_send_heartbeat_response() failed");
+        return false;
+    }
 
     return true;
 }
@@ -192,7 +195,10 @@ bool ogs_pfcp_up_handle_pdr(
     memset(report, 0, sizeof(*report));
 
     sendbuf = ogs_pkbuf_copy(recvbuf);
-    ogs_expect_or_return_val(sendbuf, false);
+    if (!sendbuf) {
+        ogs_error("ogs_pkbuf_copy() failed");
+        return false;
+    }
 
     buffering = false;
 

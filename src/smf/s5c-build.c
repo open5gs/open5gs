@@ -83,7 +83,10 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
     rv = ogs_gtp2_sockaddr_to_f_teid(
             ogs_gtp_self()->gtpc_addr, ogs_gtp_self()->gtpc_addr6,
             &smf_s5c_teid, &len);
-    ogs_expect_or_return_val(rv == OGS_OK, NULL);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_gtp2_sockaddr_to_f_teid() failed");
+        return NULL;
+    }
     rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
         presence = 1;
     rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
@@ -185,7 +188,10 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
         rv = ogs_gtp2_sockaddr_to_f_teid(
             bearer->pgw_s5u_addr, bearer->pgw_s5u_addr6,
             &pgw_s5u_teid[i], &pgw_s5u_len[i]);
-        ogs_expect_or_return_val(rv == OGS_OK, NULL);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_gtp2_sockaddr_to_f_teid() failed");
+            return NULL;
+        }
 
         switch (sess->gtp_rat_type) {
         case OGS_GTP2_RAT_TYPE_EUTRAN:
@@ -374,7 +380,10 @@ ogs_pkbuf_t *smf_s5c_build_create_bearer_request(
     ogs_assert(bearer->pgw_s5u_addr || bearer->pgw_s5u_addr6);
     rv = ogs_gtp2_sockaddr_to_f_teid(
         bearer->pgw_s5u_addr, bearer->pgw_s5u_addr6, &pgw_s5u_teid, &len);
-    ogs_expect_or_return_val(rv == OGS_OK, NULL);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_gtp2_sockaddr_to_f_teid() failed");
+        return NULL;
+    }
     req->bearer_contexts.s4_u_sgsn_f_teid.presence = 1;
     req->bearer_contexts.s4_u_sgsn_f_teid.data = &pgw_s5u_teid;
     req->bearer_contexts.s4_u_sgsn_f_teid.len = len;

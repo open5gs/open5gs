@@ -70,7 +70,10 @@ ogs_pkbuf_t *ogs_pfcp_cp_build_association_setup_request(uint8_t type)
             ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
             ogs_app()->parameter.prefer_ipv4,
             &node_id, &node_id_len);
-    ogs_expect_or_return_val(rv == OGS_OK, NULL);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_pfcp_sockaddr_to_node_id() failed");
+        return NULL;
+    }
     req->node_id.presence = 1;
     req->node_id.data = &node_id;
     req->node_id.len = node_id_len;
@@ -103,7 +106,10 @@ ogs_pkbuf_t *ogs_pfcp_cp_build_association_setup_response(uint8_t type,
             ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
             ogs_app()->parameter.prefer_ipv4,
             &node_id, &node_id_len);
-    ogs_expect_or_return_val(rv == OGS_OK, NULL);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_pfcp_sockaddr_to_node_id() failed");
+        return NULL;
+    }
     rsp->node_id.presence = 1;
     rsp->node_id.data = &node_id;
     rsp->node_id.len = node_id_len;
@@ -143,7 +149,10 @@ ogs_pkbuf_t *ogs_pfcp_up_build_association_setup_request(uint8_t type)
             ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
             ogs_app()->parameter.prefer_ipv4,
             &node_id, &node_id_len);
-    ogs_expect_or_return_val(rv == OGS_OK, NULL);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_pfcp_sockaddr_to_node_id() failed");
+        return NULL;
+    }
     req->node_id.presence = 1;
     req->node_id.data = &node_id;
     req->node_id.len = node_id_len;
@@ -199,7 +208,10 @@ ogs_pkbuf_t *ogs_pfcp_up_build_association_setup_response(uint8_t type,
             ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
             ogs_app()->parameter.prefer_ipv4,
             &node_id, &node_id_len);
-    ogs_expect_or_return_val(rv == OGS_OK, NULL);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_pfcp_sockaddr_to_node_id() failed");
+        return NULL;
+    }
     rsp->node_id.presence = 1;
     rsp->node_id.data = &node_id;
     rsp->node_id.len = node_id_len;

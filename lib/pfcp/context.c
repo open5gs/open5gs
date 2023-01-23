@@ -766,11 +766,17 @@ int ogs_pfcp_setup_far_gtpu_node(ogs_pfcp_far_t *far)
     if (!gnode) {
         gnode = ogs_gtp_node_add_by_ip(
             &ogs_gtp_self()->gtpu_peer_list, &ip, ogs_gtp_self()->gtpu_port);
-        ogs_expect_or_return_val(gnode, OGS_ERROR);
+        if (!gnode) {
+            ogs_error("ogs_gtp_node_add_by_ip() failed");
+            return OGS_ERROR;
+        }
 
         rv = ogs_gtp_connect(
                 ogs_gtp_self()->gtpu_sock, ogs_gtp_self()->gtpu_sock6, gnode);
-        ogs_expect_or_return_val(rv == OGS_OK, rv);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_gtp_connect() failed");
+            return rv;
+        }
     }
 
     OGS_SETUP_GTP_NODE(far, gnode);
@@ -790,17 +796,26 @@ int ogs_pfcp_setup_pdr_gtpu_node(ogs_pfcp_pdr_t *pdr)
     if (pdr->f_teid_len == 0) return OGS_DONE;
 
     rv = ogs_pfcp_f_teid_to_ip(&pdr->f_teid, &ip);
-    ogs_expect_or_return_val(rv == OGS_OK, rv);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_pfcp_f_teid_to_ip() failed");
+        return rv;
+    }
 
     gnode = ogs_gtp_node_find_by_ip(&ogs_gtp_self()->gtpu_peer_list, &ip);
     if (!gnode) {
         gnode = ogs_gtp_node_add_by_ip(
             &ogs_gtp_self()->gtpu_peer_list, &ip, ogs_gtp_self()->gtpu_port);
-        ogs_expect_or_return_val(gnode, OGS_ERROR);
+        if (!gnode) {
+            ogs_error("ogs_gtp_node_add_by_ip() failed");
+            return OGS_ERROR;
+        }
 
         rv = ogs_gtp_connect(
                 ogs_gtp_self()->gtpu_sock, ogs_gtp_self()->gtpu_sock6, gnode);
-        ogs_expect_or_return_val(rv == OGS_OK, rv);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_gtp_connect() failed");
+            return rv;
+        }
     }
 
     OGS_SETUP_GTP_NODE(pdr, gnode);

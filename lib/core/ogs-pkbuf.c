@@ -374,31 +374,52 @@ static ogs_cluster_t *cluster_alloc(
 
     if (size <= OGS_CLUSTER_128_SIZE) {
         ogs_pool_alloc(&pool->cluster_128, (ogs_cluster_128_t**)&buffer);
-        ogs_expect_or_return_val(buffer, NULL);
+        if (!buffer) {
+            ogs_error("ogs_pool_alloc() failed");
+            return NULL;
+        }
         cluster->size = OGS_CLUSTER_128_SIZE;
     } else if (size <= OGS_CLUSTER_256_SIZE) {
         ogs_pool_alloc(&pool->cluster_256, (ogs_cluster_256_t**)&buffer);
-        ogs_expect_or_return_val(buffer, NULL);
+        if (!buffer) {
+            ogs_error("ogs_pool_alloc() failed");
+            return NULL;
+        }
         cluster->size = OGS_CLUSTER_256_SIZE;
     } else if (size <= OGS_CLUSTER_512_SIZE) {
         ogs_pool_alloc(&pool->cluster_512, (ogs_cluster_512_t**)&buffer);
-        ogs_expect_or_return_val(buffer, NULL);
+        if (!buffer) {
+            ogs_error("ogs_pool_alloc() failed");
+            return NULL;
+        }
         cluster->size = OGS_CLUSTER_512_SIZE;
     } else if (size <= OGS_CLUSTER_1024_SIZE) {
         ogs_pool_alloc(&pool->cluster_1024, (ogs_cluster_1024_t**)&buffer);
-        ogs_expect_or_return_val(buffer, NULL);
+        if (!buffer) {
+            ogs_error("ogs_pool_alloc() failed");
+            return NULL;
+        }
         cluster->size = OGS_CLUSTER_1024_SIZE;
     } else if (size <= OGS_CLUSTER_2048_SIZE) {
         ogs_pool_alloc(&pool->cluster_2048, (ogs_cluster_2048_t**)&buffer);
-        ogs_expect_or_return_val(buffer, NULL);
+        if (!buffer) {
+            ogs_error("ogs_pool_alloc() failed");
+            return NULL;
+        }
         cluster->size = OGS_CLUSTER_2048_SIZE;
     } else if (size <= OGS_CLUSTER_16384_SIZE) {
         ogs_pool_alloc(&pool->cluster_16384, (ogs_cluster_16384_t**)&buffer);
-        ogs_expect_or_return_val(buffer, NULL);
+        if (!buffer) {
+            ogs_error("ogs_pool_alloc() failed");
+            return NULL;
+        }
         cluster->size = OGS_CLUSTER_16384_SIZE;
     } else if (size <= OGS_CLUSTER_BIG_SIZE) {
         ogs_pool_alloc(&pool->cluster_big, (ogs_cluster_big_t**)&buffer);
-        ogs_expect_or_return_val(buffer, NULL);
+        if (!buffer) {
+            ogs_error("ogs_pool_alloc() failed");
+            return NULL;
+        }
         cluster->size = OGS_CLUSTER_BIG_SIZE;
     } else {
         ogs_fatal("invalid size = %d", size);

@@ -255,7 +255,7 @@ bool bsf_nbsf_management_handle_pcf_binding(
                     ogs_assert(sess->pcf_ip[i].addr || sess->pcf_ip[i].addr6);
 
                     PcfIpEndPoint = ogs_calloc(1, sizeof(*PcfIpEndPoint));
-                    ogs_expect_or_return_val(PcfIpEndPoint, NULL);
+                    ogs_assert(PcfIpEndPoint);
                     PcfIpEndPoint->ipv4_address = sess->pcf_ip[i].addr;
                     PcfIpEndPoint->ipv6_address = sess->pcf_ip[i].addr6;
 

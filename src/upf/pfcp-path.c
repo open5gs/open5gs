@@ -179,10 +179,16 @@ int upf_pfcp_send_session_establishment_response(
 
     n4buf = upf_n4_build_session_establishment_response(
             h.type, sess, created_pdr, num_of_created_pdr);
-    ogs_expect_or_return_val(n4buf, OGS_ERROR);
+    if (!n4buf) {
+        ogs_error("upf_n4_build_session_establishment_response() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_pfcp_xact_update_tx(xact, &h, n4buf);
-    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_pfcp_xact_update_tx() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_pfcp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
@@ -207,10 +213,16 @@ int upf_pfcp_send_session_modification_response(
 
     n4buf = upf_n4_build_session_modification_response(
             h.type, sess, created_pdr, num_of_created_pdr);
-    ogs_expect_or_return_val(n4buf, OGS_ERROR);
+    if (!n4buf) {
+        ogs_error("upf_n4_build_session_modification_response() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_pfcp_xact_update_tx(xact, &h, n4buf);
-    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_pfcp_xact_update_tx() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_pfcp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
@@ -232,10 +244,16 @@ int upf_pfcp_send_session_deletion_response(ogs_pfcp_xact_t *xact,
     h.seid = sess->smf_n4_f_seid.seid;
 
     n4buf = upf_n4_build_session_deletion_response(h.type, sess);
-    ogs_expect_or_return_val(n4buf, OGS_ERROR);
+    if (!n4buf) {
+        ogs_error("upf_n4_build_session_deletion_response() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_pfcp_xact_update_tx(xact, &h, n4buf);
-    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_pfcp_xact_update_tx() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_pfcp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
@@ -278,13 +296,23 @@ int upf_pfcp_send_session_report_request(
     h.seid = sess->smf_n4_f_seid.seid;
 
     xact = ogs_pfcp_xact_local_create(sess->pfcp_node, sess_timeout, sess);
-    ogs_expect_or_return_val(xact, OGS_ERROR);
+    if (!xact) {
+        ogs_error("ogs_pfcp_xact_local_create() failed");
+        return OGS_ERROR;
+    }
 
     n4buf = ogs_pfcp_build_session_report_request(h.type, report);
-    ogs_expect_or_return_val(n4buf, OGS_ERROR);
+    if (!n4buf) {
+        ogs_error("ogs_pfcp_build_session_report_request() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_pfcp_xact_update_tx(xact, &h, n4buf);
-    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_pfcp_xact_update_tx() failed");
+        return OGS_ERROR;
+    }
+
 
     rv = ogs_pfcp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);

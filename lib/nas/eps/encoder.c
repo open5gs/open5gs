@@ -3243,7 +3243,10 @@ ogs_pkbuf_t *ogs_nas_emm_encode(ogs_nas_eps_message_t *message)
     /* The Packet Buffer(ogs_pkbuf_t) for NAS message MUST make a HEADROOM. 
      * When calculating AES_CMAC, we need to use the headroom of the packet. */
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_expect_or_return_val(pkbuf, NULL);
+    if (!pkbuf) {
+        ogs_error("ogs_pkbuf_alloc() failed");
+        return NULL;
+    }
     ogs_pkbuf_reserve(pkbuf, OGS_NAS_HEADROOM);
     ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN-OGS_NAS_HEADROOM);
 
@@ -3429,7 +3432,10 @@ ogs_pkbuf_t *ogs_nas_esm_encode(ogs_nas_eps_message_t *message)
     /* The Packet Buffer(ogs_pkbuf_t) for NAS message MUST make a HEADROOM. 
      * When calculating AES_CMAC, we need to use the headroom of the packet. */
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_expect_or_return_val(pkbuf, NULL);
+    if (!pkbuf) {
+        ogs_error("ogs_pkbuf_alloc() failed");
+        return NULL;
+    }
     ogs_pkbuf_reserve(pkbuf, OGS_NAS_HEADROOM);
     ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN-OGS_NAS_HEADROOM);
 

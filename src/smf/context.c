@@ -966,7 +966,10 @@ smf_gtp_node_t *smf_gtp_node_new(ogs_gtp_node_t *gnode)
     char addr[OGS_ADDRSTRLEN];
 
     ogs_pool_alloc(&smf_gtp_node_pool, &smf_gnode);
-    ogs_expect_or_return_val(smf_gnode, NULL);
+    if (!smf_gnode) {
+        ogs_error("ogs_pool_alloc() failed");
+        return NULL;
+    }
     memset(smf_gnode, 0, sizeof(smf_gtp_node_t));
 
     addr[0] = '\0';

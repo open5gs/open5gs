@@ -135,7 +135,7 @@ af_sess_t *af_sess_add_by_ue_address(ogs_ip_t *ue_address)
     ogs_assert(ue_address->ipv4 || ue_address->ipv6);
 
     ogs_pool_alloc(&af_sess_pool, &sess);
-    ogs_expect_or_return_val(sess, NULL);
+    ogs_assert(sess);
     memset(sess, 0, sizeof *sess);
 
     sess->af_app_session_id = ogs_msprintf("%d",
@@ -144,15 +144,15 @@ af_sess_t *af_sess_add_by_ue_address(ogs_ip_t *ue_address)
 
     if (ue_address->ipv4) {
         sess->ipv4addr = ogs_ipv4_to_string(ue_address->addr);
-        ogs_expect_or_return_val(sess->ipv4addr, NULL);
+        ogs_assert(sess->ipv4addr);
     }
 
     if (ue_address->ipv6) {
         sess->ipv6addr = ogs_ipv6addr_to_string(ue_address->addr6);
-        ogs_expect_or_return_val(sess->ipv6addr, NULL);
+        ogs_assert(sess->ipv6addr);
         sess->ipv6prefix = ogs_ipv6prefix_to_string(
                 ue_address->addr6, OGS_IPV6_128_PREFIX_LEN);
-        ogs_expect_or_return_val(sess->ipv6prefix, NULL);
+        ogs_assert(sess->ipv6prefix);
     }
 
     OGS_SBI_FEATURES_SET(sess->policyauthorization_features,
@@ -240,7 +240,7 @@ bool af_sess_set_pcf_app_session_id(af_sess_t *sess, char *pcf_app_session_id)
     clear_pcf_app_session_id(sess);
 
     sess->pcf_app_session_id = ogs_strdup(pcf_app_session_id);
-    ogs_expect_or_return_val(sess->pcf_app_session_id, false);
+    ogs_assert(sess->pcf_app_session_id);
 
     ogs_hash_set(self.pcf_app_session_id_hash,
             &sess->pcf_app_session_id, strlen(sess->pcf_app_session_id), sess);

@@ -30,7 +30,10 @@ int ogs_gtp1_gsn_addr_to_sockaddr(const ogs_gtp1_gsn_addr_t *gsnaddr,
     switch (gsnaddr_len) {
     case OGS_GTP_GSN_ADDRESS_IPV4_LEN:
         addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
-        ogs_expect_or_return_val(addr, OGS_ERROR);
+        if (!addr) {
+            ogs_error("ogs_calloc() failed");
+            return OGS_ERROR;
+        }
         addr->ogs_sa_family = AF_INET;
         addr->ogs_sin_port = port;
         addr->sin.sin_addr.s_addr = gsnaddr->addr;
@@ -38,7 +41,10 @@ int ogs_gtp1_gsn_addr_to_sockaddr(const ogs_gtp1_gsn_addr_t *gsnaddr,
         break;
     case OGS_GTP_GSN_ADDRESS_IPV6_LEN:
         addr6 = ogs_calloc(1, sizeof(ogs_sockaddr_t));
-        ogs_expect_or_return_val(addr6, OGS_ERROR);
+        if (!addr6) {
+            ogs_error("ogs_calloc() failed");
+            return OGS_ERROR;
+        }
         addr6->ogs_sa_family = AF_INET6;
         addr6->ogs_sin_port = port;
         memcpy(addr6->sin6.sin6_addr.s6_addr, gsnaddr->addr6, OGS_IPV6_LEN);

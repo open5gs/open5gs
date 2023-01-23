@@ -81,25 +81,44 @@ char *ogs_nas_5gs_suci_from_mobile_identity(
         (ogs_nas_5gs_mobile_identity_suci_t *)mobile_identity->buffer;
     ogs_assert(mobile_identity_suci);
 
-    ogs_expect_or_return_val(mobile_identity_suci->h.supi_format ==
-            OGS_NAS_5GS_SUPI_FORMAT_IMSI, NULL);
-    ogs_expect_or_return_val(mobile_identity_suci->protection_scheme_id ==
-            OGS_PROTECTION_SCHEME_NULL || mobile_identity_suci->protection_scheme_id ==
-            OGS_PROTECTION_SCHEME_PROFILE_A || mobile_identity_suci->protection_scheme_id ==
-            OGS_PROTECTION_SCHEME_PROFILE_B, NULL);
+    if (mobile_identity_suci->h.supi_format !=
+            OGS_NAS_5GS_SUPI_FORMAT_IMSI) {
+        ogs_error("Not implemented SUPI format [%d]",
+            mobile_identity_suci->h.supi_format);
+        return NULL;
+    }
+    if (mobile_identity_suci->protection_scheme_id !=
+            OGS_PROTECTION_SCHEME_NULL &&
+        mobile_identity_suci->protection_scheme_id !=
+            OGS_PROTECTION_SCHEME_PROFILE_A &&
+        mobile_identity_suci->protection_scheme_id !=
+            OGS_PROTECTION_SCHEME_PROFILE_B) {
+        ogs_error("Not supported Protection-Scheme-Id [%d]",
+            mobile_identity_suci->protection_scheme_id);
+        return NULL;
+    }
 
     suci = ogs_msprintf("suci-%d-", mobile_identity_suci->h.supi_format);
-    ogs_expect_or_return_val(suci, NULL);
+    if (!suci) {
+        ogs_error("ogs_msprintf() failed");
+        return NULL;
+    }
 
     ogs_nas_to_plmn_id(&plmn_id, &mobile_identity_suci->nas_plmn_id);
     if (ogs_plmn_id_mnc_len(&plmn_id) == 2) {
         suci = ogs_mstrcatf(suci, "%03d-%02d-",
                 ogs_plmn_id_mcc(&plmn_id), ogs_plmn_id_mnc(&plmn_id));
-        ogs_expect_or_return_val(suci, NULL);
+        if (!suci) {
+            ogs_error("ogs_mstrcatf() failed");
+            return NULL;
+        }
     } else {
         suci = ogs_mstrcatf(suci, "%03d-%03d-",
                 ogs_plmn_id_mcc(&plmn_id), ogs_plmn_id_mnc(&plmn_id));
-        ogs_expect_or_return_val(suci, NULL);
+        if (!suci) {
+            ogs_error("ogs_mstrcatf() failed");
+            return NULL;
+        }
     }
 
     memset(routing_indicator, 0, sizeof(routing_indicator));

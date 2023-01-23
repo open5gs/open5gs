@@ -656,11 +656,17 @@ void sgwc_s11_handle_delete_session_request(
         message->h.teid = sess->pgw_s5c_teid;
 
         gtpbuf = ogs_gtp2_build_msg(message);
-        ogs_expect_or_return(gtpbuf);
+        if (!gtpbuf) {
+            ogs_error("ogs_gtp2_build_msg() failed");
+            return;
+        }
 
         s5c_xact = ogs_gtp_xact_local_create(
                 sess->gnode, &message->h, gtpbuf, gtp_sess_timeout, sess);
-        ogs_expect_or_return(s5c_xact);
+        if (!s5c_xact) {
+            ogs_error("ogs_gtp_xact_local_create() failed");
+            return;
+        }
         s5c_xact->local_teid = sess->sgw_s5c_teid;
 
         ogs_gtp_xact_associate(s11_xact, s5c_xact);
@@ -951,10 +957,16 @@ void sgwc_s11_handle_update_bearer_response(
     message->h.teid = sess->pgw_s5c_teid;
 
     pkbuf = ogs_gtp2_build_msg(message);
-    ogs_expect_or_return(pkbuf);
+    if (!pkbuf) {
+        ogs_error("ogs_gtp2_build_msg() failed");
+        return;
+    }
 
     rv = ogs_gtp_xact_update_tx(s5c_xact, &message->h, pkbuf);
-    ogs_expect_or_return(rv == OGS_OK);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_gtp_xact_update_tx() failed");
+        return;
+    }
 
     rv = ogs_gtp_xact_commit(s5c_xact);
     ogs_expect(rv == OGS_OK);
@@ -1470,11 +1482,17 @@ void sgwc_s11_handle_bearer_resource_command(
     message->h.teid = sess->pgw_s5c_teid;
 
     pkbuf = ogs_gtp2_build_msg(message);
-    ogs_expect_or_return(pkbuf);
+    if (!pkbuf) {
+        ogs_error("ogs_gtp2_build_msg() failed");
+        return;
+    }
 
     s5c_xact = ogs_gtp_xact_local_create(
             sess->gnode, &message->h, pkbuf, gtp_bearer_timeout, bearer);
-    ogs_expect_or_return(s5c_xact);
+    if (!s5c_xact) {
+        ogs_error("ogs_gtp_xact_local_create() failed");
+        return;
+    }
     s5c_xact->local_teid = sess->sgw_s5c_teid;
 
     ogs_gtp_xact_associate(s11_xact, s5c_xact);
