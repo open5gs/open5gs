@@ -372,7 +372,7 @@ static connection_t *connection_add(
         request->h.uri = uri;
     }
 
-    curl_easy_setopt(conn->easy, CURLOPT_BUFFERSIZE, OGS_MAX_SDU_LEN*2);
+    curl_easy_setopt(conn->easy, CURLOPT_BUFFERSIZE, OGS_MAX_SDU_LEN);
 
     /* HTTP Method */
     if (strcmp(request->h.method, OGS_SBI_HTTP_METHOD_PUT) == 0 ||

@@ -98,15 +98,19 @@ static void diam_gnutls_log_func(int level, const char *str)
 
 static void diam_log_func(int printlevel, const char *format, va_list ap)
 {
-    char buffer[OGS_HUGE_LEN*2];
+    char *buffer = NULL;
     int  ret = 0;
+
+    buffer = ogs_calloc(1, OGS_MAX_SDU_LEN);
+    ogs_assert(buffer);
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
-    ret = ogs_vsnprintf(buffer, OGS_HUGE_LEN*2, format, ap);
+    ret = ogs_vsnprintf(buffer, OGS_MAX_SDU_LEN, format, ap);
 #pragma GCC diagnostic pop
-    if (ret < 0 || ret > OGS_HUGE_LEN*2) {
+    if (ret < 0 || ret > OGS_MAX_SDU_LEN) {
         ogs_error("vsnprintf() failed[ret=%d]", ret);
+        ogs_free(buffer);
         return;
     }
 
@@ -142,4 +146,6 @@ static void diam_log_func(int printlevel, const char *format, va_list ap)
         diam_log_printf(OGS_LOG_ERROR, "[%d] %s\n", printlevel, buffer);
         break;
     }
+
+    ogs_free(buffer);
 }
