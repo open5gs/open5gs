@@ -633,6 +633,13 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
         uint8_t qos_index = 0;
         ogs_media_component_t *media_component = &ims_data.media_component[i];
 
+        if (media_component->media_type == OpenAPI_media_type_NULL) {
+            strerror = ogs_msprintf("[%s:%d] Media-Type is Required",
+                    pcf_ue->supi, sess->psi);
+            status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+            goto cleanup;
+        }
+
         switch(media_component->media_type) {
         case OpenAPI_media_type_AUDIO:
             qos_index = OGS_QOS_INDEX_1;
@@ -644,9 +651,9 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
             qos_index = OGS_QOS_INDEX_5;
             break;
         default:
-            strerror = ogs_msprintf("[%s:%d] Not implemented : [Media-Type:%d]",
+            strerror = ogs_msprintf("[%s:%d] Unknown Media-Type [%d]",
                     pcf_ue->supi, sess->psi, media_component->media_type);
-            status = OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR;
+            status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
             goto cleanup;
         }
 
@@ -1046,6 +1053,13 @@ bool pcf_npcf_policyauthorization_handle_update(
         uint8_t qos_index = 0;
         ogs_media_component_t *media_component = &ims_data.media_component[i];
 
+        if (media_component->media_type == OpenAPI_media_type_NULL) {
+            strerror = ogs_msprintf("[%s:%d] Media-Type is Required",
+                    pcf_ue->supi, sess->psi);
+            status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+            goto cleanup;
+        }
+
         switch(media_component->media_type) {
         case OpenAPI_media_type_AUDIO:
             qos_index = OGS_QOS_INDEX_1;
@@ -1057,9 +1071,9 @@ bool pcf_npcf_policyauthorization_handle_update(
             qos_index = OGS_QOS_INDEX_5;
             break;
         default:
-            strerror = ogs_msprintf("[%s:%d] Not implemented : [Media-Type:%d]",
+            strerror = ogs_msprintf("[%s:%d] Unknown Media-Type [%d]",
                     pcf_ue->supi, sess->psi, media_component->media_type);
-            status = OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR;
+            status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
             goto cleanup;
         }
 
