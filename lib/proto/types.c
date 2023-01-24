@@ -464,7 +464,7 @@ int ogs_sockaddr_to_ip(
         ogs_error("No IP");
         return OGS_ERROR;
     }
-    if (!addr && !addr) {
+    if (!addr && !addr6) {
         ogs_error("No Address");
         return OGS_ERROR;
     }
