@@ -136,7 +136,10 @@ typedef struct ogs_app_context_s {
         } subscription;
 
         struct {
-            ogs_time_t duration;
+            ogs_time_t sbi_duration;
+            ogs_time_t gtp_duration;
+            ogs_time_t pfcp_duration;
+
             struct {
                 ogs_time_t client_wait_duration;
                 ogs_time_t connection_deadline;

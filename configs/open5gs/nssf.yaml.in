@@ -402,5 +402,7 @@ max:
 #
 #  o Message Wait Duration (3000 ms)
 #    message:
-#        duration: 3000
+#        sbi_duration: 3000
+#        gtp_duration: 3000
+#        pfcp_duration: 3000
 time:

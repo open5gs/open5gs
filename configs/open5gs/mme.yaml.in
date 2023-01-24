@@ -420,7 +420,9 @@ usrsctp:
 #
 #  o Message Wait Duration (3000 ms)
 #    message:
-#        duration: 3000
+#        sbi_duration: 3000
+#        gtp_duration: 3000
+#        pfcp_duration: 3000
 #
 #  o Handover Wait Duration (Default : 300 ms)
 #    Time to wait for MME to send UEContextReleaseCommand

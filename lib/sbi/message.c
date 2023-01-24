@@ -576,9 +576,9 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
     ogs_sbi_header_set(request->http.headers,
             OGS_SBI_OPTIONAL_CUSTOM_SENDER_TIMESTAMP, sender_timestamp);
 
-    ogs_assert(ogs_time_to_msec(ogs_app()->time.message.duration));
+    ogs_assert(ogs_time_to_msec(ogs_app()->time.message.sbi_duration));
     max_rsp_time = ogs_msprintf("%d",
-            (int)ogs_time_to_msec(ogs_app()->time.message.duration));
+            (int)ogs_time_to_msec(ogs_app()->time.message.sbi_duration));
     ogs_sbi_header_set(request->http.headers,
             OGS_SBI_OPTIONAL_CUSTOM_MAX_RSP_TIME, max_rsp_time);
     ogs_free(max_rsp_time);

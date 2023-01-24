@@ -98,9 +98,11 @@ static void recalculate_pool_size(void)
 
 static void regenerate_all_timer_duration(void)
 {
-    ogs_assert(self.time.message.duration);
+    ogs_assert(self.time.message.sbi_duration);
+    ogs_assert(self.time.message.gtp_duration);
+    ogs_assert(self.time.message.pfcp_duration);
 
-    self.time.message.sbi.client_wait_duration = self.time.message.duration;
+    self.time.message.sbi.client_wait_duration = self.time.message.sbi_duration;
     self.time.message.sbi.connection_deadline =
         self.time.message.sbi.client_wait_duration + ogs_time_from_sec(1);
     self.time.message.sbi.nf_register_interval =
@@ -109,10 +111,8 @@ static void regenerate_all_timer_duration(void)
     self.time.message.sbi.nf_register_interval_in_exception =
                 ogs_time_from_sec(2);
 
-#define PFCP_N1_RESPONSE_RETRY_COUNT  3
-    self.time.message.pfcp.n1_response_rcount = PFCP_N1_RESPONSE_RETRY_COUNT;
     self.time.message.pfcp.t1_response_duration =
-        (self.time.message.duration /
+        (self.time.message.pfcp_duration /
          (self.time.message.pfcp.n1_response_rcount + 1));
     ogs_assert(self.time.message.pfcp.t1_response_duration);
 
@@ -131,10 +131,8 @@ static void regenerate_all_timer_duration(void)
         ogs_max(ogs_time_from_sec(10),
             self.time.message.sbi.client_wait_duration + ogs_time_from_sec(1));
 
-#define GTP_N3_RESPONSE_RETRY_COUNT  3
-    self.time.message.gtp.n3_response_rcount = GTP_N3_RESPONSE_RETRY_COUNT;
     self.time.message.gtp.t3_response_duration =
-        (self.time.message.duration /
+        (self.time.message.gtp_duration /
          (self.time.message.gtp.n3_response_rcount + 1));
     ogs_assert(self.time.message.gtp.t3_response_duration);
 
@@ -146,8 +144,10 @@ static void regenerate_all_timer_duration(void)
     ogs_assert(self.time.message.gtp.t3_holding_duration);
 
 #if 0
-    ogs_trace("%lld, %lld, %lld, %d, %lld, %d %lld, %d, %lld, %d, %lld",
-        (long long)self.time.message.duration,
+    ogs_trace("%lld, %lld, %lld, %lld, %lld, %d, %lld, %d %lld, %d, %lld, %d, %lld",
+        (long long)self.time.message.sbi_duration,
+        (long long)self.time.message.gtp_duration,
+        (long long)self.time.message.pfcp_duration,
         (long long)self.time.message.sbi.client_wait_duration,
         (long long)self.time.message.sbi.connection_deadline,
         self.time.message.pfcp.n1_response_rcount,
@@ -200,7 +200,14 @@ static void app_context_prepare(void)
      * It is recomended to set at least 9 seconds to reflect
      * the paging failure result to GTPv2-C or HTTP2(SBI).
      */
-    self.time.message.duration = ogs_time_from_sec(10);
+    self.time.message.sbi_duration = ogs_time_from_sec(10);
+    self.time.message.gtp_duration = ogs_time_from_sec(10);
+    self.time.message.pfcp_duration = ogs_time_from_sec(10);
+
+#define PFCP_N1_RESPONSE_RETRY_COUNT  3
+#define GTP_N3_RESPONSE_RETRY_COUNT  3
+    self.time.message.pfcp.n1_response_rcount = PFCP_N1_RESPONSE_RETRY_COUNT;
+    self.time.message.gtp.n3_response_rcount = GTP_N3_RESPONSE_RETRY_COUNT;
 
     /*
      * Handover Wait Duration : 300 ms (Default)
@@ -491,11 +498,37 @@ int ogs_app_context_parse_config(void)
                             ogs_yaml_iter_key(&msg_iter);
                         ogs_assert(msg_key);
 
-                        if (!strcmp(msg_key, "duration")) {
+                        if (!strcmp(msg_key, "sbi_duration")) {
                             const char *v = ogs_yaml_iter_value(&msg_iter);
                             if (v) {
-                                self.time.message.duration =
+                                self.time.message.sbi_duration =
                                     ogs_time_from_msec(atoll(v));
+                                regenerate_all_timer_duration();
+                            }
+                        } else if (!strcmp(msg_key, "gtp_duration")) {
+                            const char *v = ogs_yaml_iter_value(&msg_iter);
+                            if (v) {
+                                self.time.message.gtp_duration =
+                                    ogs_time_from_msec(atoll(v));
+                                regenerate_all_timer_duration();
+                            }
+                        } else if (!strcmp(msg_key, "pfcp_duration")) {
+                            const char *v = ogs_yaml_iter_value(&msg_iter);
+                            if (v) {
+                                self.time.message.pfcp_duration =
+                                    ogs_time_from_msec(atoll(v));
+                                regenerate_all_timer_duration();
+                            }
+                        } else if (!strcmp(msg_key, "pfcp_n1")) {
+                            const char *v = ogs_yaml_iter_value(&msg_iter);
+                            if (v) {
+                                self.time.message.pfcp.n1_response_rcount = atoi(v);
+                                regenerate_all_timer_duration();
+                            }
+                        } else if (!strcmp(msg_key, "gtp_n3")) {
+                            const char *v = ogs_yaml_iter_value(&msg_iter);
+                            if (v) {
+                                self.time.message.gtp.n3_response_rcount = atoi(v);
                                 regenerate_all_timer_duration();
                             }
                         } else
