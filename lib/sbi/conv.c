@@ -290,6 +290,11 @@ uint64_t ogs_sbi_bitrate_from_string(char *str)
     unit = strrchr(str, ' ');
     bitrate = atoll(str);
 
+    if (!unit) {
+        ogs_error("No Unit [%s]", str);
+        return bitrate;
+    }
+
     SWITCH(unit+1)
     CASE("Kbps")
         return bitrate * 1024;
