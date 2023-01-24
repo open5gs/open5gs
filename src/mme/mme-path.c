@@ -22,6 +22,7 @@
 #include "sgsap-path.h"
 #include "mme-gtp-path.h"
 #include "mme-path.h"
+#include "mme-fd-path.h"
 #include "mme-sm.h"
 
 void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
@@ -65,22 +66,23 @@ void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
     case MME_DETACH_TYPE_MME_IMPLICIT:
         ogs_debug("Implicit MME Detach");
         if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
-            if (ECM_IDLE(mme_ue)) {
-                mme_gtp_send_delete_all_sessions(mme_ue,
-                    OGS_GTP_DELETE_NO_ACTION);
-            } else {
-                mme_gtp_send_delete_all_sessions(mme_ue,
-                    OGS_GTP_DELETE_SEND_RELEASE_WITH_S1_REMOVE_AND_UNLINK);
-            }
+            mme_gtp_send_delete_all_sessions(mme_ue,
+                OGS_GTP_DELETE_SEND_RELEASE_WITH_UE_CONTEXT_REMOVE);
         } else {
             enb_ue_t *enb_ue = enb_ue_cycle(mme_ue->enb_ue);
             if (enb_ue) {
                 ogs_assert(OGS_OK ==
                     s1ap_send_ue_context_release_command(enb_ue,
                         S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                        S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0));
-            } else
-                ogs_error("ENB-S1 Context has already been removed");
+                        S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
+            } else {
+                if (mme_ue->location_updated_but_not_canceled_yet == true) {
+                    mme_s6a_send_pur(mme_ue);
+                } else {
+                    mme_ue_hash_remove(mme_ue);
+                    mme_ue_remove(mme_ue);
+                }
+            }
         }
         break;
 
@@ -275,27 +277,4 @@ void mme_send_after_paging(mme_ue_t *mme_ue, bool failed)
 cleanup:
     CLEAR_SERVICE_INDICATOR(mme_ue);
     MME_CLEAR_PAGING_INFO(mme_ue);
-}
-
-int mme_s1ap_page_if_attached(mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain)
-{
-    if (ogs_timer_running(mme_ue->t_implicit_detach.timer)) {
-        /*
-         * TS 24.301 5.3.7
-         * If ISR is not activated, the network behaviour upon expiry of the
-         * mobile reachable timer is network dependent, but typically the
-         * network stops sending paging messages to the UE on the first
-         * expiry, and may take other appropriate actions
-         */
-        ogs_debug("[%s] Paging ignored due to Mobile Reachable timer expiry",
-                mme_ue->imsi_bcd);
-
-        MME_CLEAR_PAGING_INFO(mme_ue);
-
-        return OGS_ERROR;
-    } else {
-        ogs_assert(OGS_OK == s1ap_send_paging(mme_ue, cn_domain));
-    }
-
-    return OGS_OK;
 }

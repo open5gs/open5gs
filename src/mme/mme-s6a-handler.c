@@ -259,8 +259,27 @@ void mme_s6a_handle_clr(mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
          * we need to check whether UE is IDLE or not.
          */
         if (ECM_IDLE(mme_ue)) {
-            MME_STORE_PAGING_INFO(mme_ue, MME_PAGING_TYPE_DETACH_TO_UE, NULL);
-            mme_s1ap_page_if_attached(mme_ue, S1AP_CNDomain_ps);
+            if (ogs_timer_running(mme_ue->t_implicit_detach.timer)) {
+                /*
+                * TS 24.301 5.3.7
+                * If ISR is not activated, the network behaviour upon expiry of
+                * the mobile reachable timer is network dependent, but typically
+                * the network stops sending paging messages to the UE on the
+                * first expiry, and may take other appropriate actions
+                */
+                ogs_debug("[%s] Paging stopped: Mobile Reachable timer expiry",
+                    mme_ue->imsi_bcd);
+                if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
+                    ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
+                } else {
+                    mme_send_delete_session_or_detach(mme_ue);
+                }
+            } else {
+                MME_STORE_PAGING_INFO(mme_ue,
+                    MME_PAGING_TYPE_DETACH_TO_UE, NULL);
+                ogs_assert(OGS_OK == s1ap_send_paging(mme_ue,
+                    S1AP_CNDomain_ps));
+            }
         } else {
             ogs_assert(OGS_OK == nas_eps_send_detach_request(mme_ue));
             if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {

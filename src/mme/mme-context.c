@@ -173,10 +173,6 @@ static int mme_context_prepare(void)
     self.diam_config->cnf_port = DIAMETER_PORT;
     self.diam_config->cnf_port_tls = DIAMETER_SECURE_PORT;
 
-    self.time.mobile_reachable.value = (54 * 60) + 240;
-    self.time.implicit_detach.value = 4 * 60;
-    self.time.purge_ue.value = 60 * 60 * 24;
-
     return OGS_OK;
 }
 
@@ -1619,54 +1615,6 @@ int mme_context_parse_config()
                         } else
                             ogs_warn("unknown key `%s`", t3423_key);
                     }
-                } else if (!strcmp(time_key, "mobile_reachable")) {
-                    ogs_yaml_iter_t mobile_reachable_iter;
-                    ogs_yaml_iter_recurse(&time_iter, &mobile_reachable_iter);
-
-                    while (ogs_yaml_iter_next(&mobile_reachable_iter)) {
-                        const char *mobile_reachable_key =
-                            ogs_yaml_iter_key(&mobile_reachable_iter);
-                        ogs_assert(mobile_reachable_key);
-
-                        if (!strcmp(mobile_reachable_key, "value")) {
-                            const char *v = ogs_yaml_iter_value(&mobile_reachable_iter);
-                            if (v)
-                                self.time.mobile_reachable.value = atoll(v);
-                        } else
-                            ogs_warn("unknown key `%s`", mobile_reachable_key);
-                    }
-                } else if (!strcmp(time_key, "implicit_detach")) {
-                    ogs_yaml_iter_t implicit_detach_iter;
-                    ogs_yaml_iter_recurse(&time_iter, &implicit_detach_iter);
-
-                    while (ogs_yaml_iter_next(&implicit_detach_iter)) {
-                        const char *implicit_detach_key =
-                            ogs_yaml_iter_key(&implicit_detach_iter);
-                        ogs_assert(implicit_detach_key);
-
-                        if (!strcmp(implicit_detach_key, "value")) {
-                            const char *v = ogs_yaml_iter_value(&implicit_detach_iter);
-                            if (v)
-                                self.time.implicit_detach.value = atoll(v);
-                        } else
-                            ogs_warn("unknown key `%s`", implicit_detach_key);
-                    }
-                } else if (!strcmp(time_key, "purge_ue")) {
-                    ogs_yaml_iter_t purge_ue_iter;
-                    ogs_yaml_iter_recurse(&time_iter, &purge_ue_iter);
-
-                    while (ogs_yaml_iter_next(&purge_ue_iter)) {
-                        const char *purge_ue_key =
-                            ogs_yaml_iter_key(&purge_ue_iter);
-                        ogs_assert(purge_ue_key);
-
-                        if (!strcmp(purge_ue_key, "value")) {
-                            const char *v = ogs_yaml_iter_value(&purge_ue_iter);
-                            if (v)
-                                self.time.purge_ue.value = atoll(v);
-                        } else
-                            ogs_warn("unknown key `%s`", purge_ue_key);
-                    }
                 } else if (!strcmp(time_key, "t3512")) {
                     /* handle config in amf */
                 } else if (!strcmp(time_key, "nf_instance")) {
@@ -2470,14 +2418,6 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
         return NULL;
     }
     mme_ue->t_implicit_detach.pkbuf = NULL;
-    mme_ue->t_purge_ue.timer = ogs_timer_add(
-            ogs_app()->timer_mgr, mme_timer_purge_ue_expire, mme_ue);
-    if (!mme_ue->t_purge_ue.timer) {
-        ogs_error("ogs_timer_add() failed");
-        ogs_pool_free(&mme_ue_pool, mme_ue);
-        return NULL;
-    }
-    mme_ue->t_purge_ue.pkbuf = NULL;
 
     mme_ebi_pool_init(mme_ue);
 
@@ -2571,7 +2511,6 @@ void mme_ue_remove(mme_ue_t *mme_ue)
     ogs_timer_delete(mme_ue->t3470.timer);
     ogs_timer_delete(mme_ue->t_mobile_reachable.timer);
     ogs_timer_delete(mme_ue->t_implicit_detach.timer);
-    ogs_timer_delete(mme_ue->t_purge_ue.timer);
 
     enb_ue_unlink(mme_ue);
 

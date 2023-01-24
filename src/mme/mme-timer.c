@@ -96,8 +96,6 @@ const char *mme_timer_get_name(mme_timer_e id)
         return "MME_TIMER_MOBILE_REACHABLE";
     case MME_TIMER_IMPLICIT_DETACH:
         return "MME_TIMER_IMPLICIT_DETACH";
-    case MME_TIMER_PURGE_UE:
-        return "MME_TIMER_PURGE_UE";
     case MME_TIMER_SGS_CLI_CONN_TO_SRV:
         return "MME_TIMER_SGS_CLI_CONN_TO_SRV";
     case MME_TIMER_S1_HOLDING:
@@ -173,10 +171,6 @@ void mme_timer_mobile_reachable_expire(void *data)
 void mme_timer_implicit_detach_expire(void *data)
 {
     emm_timer_event_send(MME_TIMER_IMPLICIT_DETACH, data);
-}
-void mme_timer_purge_ue_expire(void *data)
-{
-    emm_timer_event_send(MME_TIMER_PURGE_UE, data);
 }
 
 static void esm_timer_event_send(

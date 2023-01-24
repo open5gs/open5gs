@@ -1471,13 +1471,11 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
          */
         CLEAR_MME_UE_ALL_TIMERS(mme_ue);
 
-        if (mme_self()->time.mobile_reachable.value > 0) {
-            if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
-                ogs_debug("Mobile Reachable timer started for IMSI[%s]", 
-                    mme_ue->imsi_bcd);
-                ogs_timer_start(mme_ue->t_mobile_reachable.timer,
-                    ogs_time_from_sec(mme_self()->time.mobile_reachable.value));
-            }
+        if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
+            ogs_debug("Mobile Reachable timer started for IMSI[%s]",
+                mme_ue->imsi_bcd);
+            ogs_timer_start(mme_ue->t_mobile_reachable.timer,
+                ogs_time_from_sec(mme_self()->time.t3412.value + 240));
         }
     }
 
@@ -1563,7 +1561,7 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
         ogs_expect_or_return(mme_ue);
         enb_ue_unlink(mme_ue);
 
-        mme_s1ap_page_if_attached(mme_ue, S1AP_CNDomain_ps);
+        s1ap_send_paging(mme_ue, S1AP_CNDomain_ps);
         break;
     default:
         ogs_error("Invalid Action[%d]", enb_ue->ue_ctx_rel_action);

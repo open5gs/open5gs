@@ -32,8 +32,6 @@ void mme_send_release_access_bearer_or_ue_context_release(enb_ue_t *enb_ue);
 
 void mme_send_after_paging(mme_ue_t *mme_ue, bool failed);
 
-int mme_s1ap_page_if_attached(mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain);
-
 #ifdef __cplusplus
 }
 #endif
