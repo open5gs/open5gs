@@ -28,7 +28,8 @@
 #define OGS_CLUSTER_512_SIZE    512
 #define OGS_CLUSTER_1024_SIZE   1024
 #define OGS_CLUSTER_2048_SIZE   2048
-#define OGS_CLUSTER_16384_SIZE  16384
+#define OGS_CLUSTER_8192_SIZE   8192
+#define OGS_CLUSTER_32768_SIZE  32768
 
 /*
  *
@@ -48,7 +49,8 @@ typedef uint8_t ogs_cluster_256_t[OGS_CLUSTER_256_SIZE];
 typedef uint8_t ogs_cluster_512_t[OGS_CLUSTER_512_SIZE];
 typedef uint8_t ogs_cluster_1024_t[OGS_CLUSTER_1024_SIZE];
 typedef uint8_t ogs_cluster_2048_t[OGS_CLUSTER_2048_SIZE];
-typedef uint8_t ogs_cluster_16384_t[OGS_CLUSTER_16384_SIZE];
+typedef uint8_t ogs_cluster_8192_t[OGS_CLUSTER_8192_SIZE];
+typedef uint8_t ogs_cluster_32768_t[OGS_CLUSTER_32768_SIZE];
 typedef uint8_t ogs_cluster_big_t[OGS_CLUSTER_BIG_SIZE];
 
 OGS_STATIC_ASSERT(sizeof(ogs_cluster_128_t) % sizeof(void *) == 0);
@@ -56,7 +58,8 @@ OGS_STATIC_ASSERT(sizeof(ogs_cluster_256_t) % sizeof(void *) == 0);
 OGS_STATIC_ASSERT(sizeof(ogs_cluster_512_t) % sizeof(void *) == 0);
 OGS_STATIC_ASSERT(sizeof(ogs_cluster_1024_t) % sizeof(void *) == 0);
 OGS_STATIC_ASSERT(sizeof(ogs_cluster_2048_t) % sizeof(void *) == 0);
-OGS_STATIC_ASSERT(sizeof(ogs_cluster_16384_t) % sizeof(void *) == 0);
+OGS_STATIC_ASSERT(sizeof(ogs_cluster_8192_t) % sizeof(void *) == 0);
+OGS_STATIC_ASSERT(sizeof(ogs_cluster_32768_t) % sizeof(void *) == 0);
 OGS_STATIC_ASSERT(sizeof(ogs_cluster_big_t) % sizeof(void *) == 0);
 
 typedef struct ogs_pkbuf_pool_s {
@@ -68,7 +71,8 @@ typedef struct ogs_pkbuf_pool_s {
     OGS_POOL(cluster_512, ogs_cluster_512_t);
     OGS_POOL(cluster_1024, ogs_cluster_1024_t);
     OGS_POOL(cluster_2048, ogs_cluster_2048_t);
-    OGS_POOL(cluster_16384, ogs_cluster_16384_t);
+    OGS_POOL(cluster_8192, ogs_cluster_8192_t);
+    OGS_POOL(cluster_32768, ogs_cluster_32768_t);
     OGS_POOL(cluster_big, ogs_cluster_big_t);
 
     ogs_thread_mutex_t mutex;
@@ -116,7 +120,8 @@ void ogs_pkbuf_default_init(ogs_pkbuf_config_t *config)
     config->cluster_512_pool = 4096;
     config->cluster_1024_pool = 2048;
     config->cluster_2048_pool = 1024;
-    config->cluster_16384_pool = 512;
+    config->cluster_8192_pool = 256;
+    config->cluster_32768_pool = 64;
     config->cluster_big_pool = 8;
 #endif
 }
@@ -151,8 +156,8 @@ ogs_pkbuf_pool_t *ogs_pkbuf_pool_create(ogs_pkbuf_config_t *config)
 
     tmp = config->cluster_128_pool + config->cluster_256_pool +
         config->cluster_512_pool + config->cluster_1024_pool +
-        config->cluster_2048_pool + config->cluster_16384_pool +
-        config->cluster_big_pool;
+        config->cluster_2048_pool + config->cluster_8192_pool +
+        config->cluster_32768_pool + config->cluster_big_pool;
 
     ogs_pool_init(&pool->pkbuf, tmp);
     ogs_pool_init(&pool->cluster, tmp);
@@ -162,7 +167,8 @@ ogs_pkbuf_pool_t *ogs_pkbuf_pool_create(ogs_pkbuf_config_t *config)
     ogs_pool_init(&pool->cluster_512, config->cluster_512_pool);
     ogs_pool_init(&pool->cluster_1024, config->cluster_1024_pool);
     ogs_pool_init(&pool->cluster_2048, config->cluster_2048_pool);
-    ogs_pool_init(&pool->cluster_16384, config->cluster_16384_pool);
+    ogs_pool_init(&pool->cluster_8192, config->cluster_8192_pool);
+    ogs_pool_init(&pool->cluster_32768, config->cluster_32768_pool);
     ogs_pool_init(&pool->cluster_big, config->cluster_big_pool);
 #endif
 
@@ -200,7 +206,8 @@ void ogs_pkbuf_pool_destroy(ogs_pkbuf_pool_t *pool)
     ogs_pool_final(&pool->cluster_512);
     ogs_pool_final(&pool->cluster_1024);
     ogs_pool_final(&pool->cluster_2048);
-    ogs_pool_final(&pool->cluster_16384);
+    ogs_pool_final(&pool->cluster_8192);
+    ogs_pool_final(&pool->cluster_32768);
     ogs_pool_final(&pool->cluster_big);
 
     ogs_thread_mutex_destroy(&pool->mutex);
@@ -390,10 +397,20 @@ static ogs_cluster_t *cluster_alloc(
         ogs_pool_alloc(&pool->cluster_2048, (ogs_cluster_2048_t**)&buffer);
         ogs_expect_or_return_val(buffer, NULL);
         cluster->size = OGS_CLUSTER_2048_SIZE;
-    } else if (size <= OGS_CLUSTER_16384_SIZE) {
-        ogs_pool_alloc(&pool->cluster_16384, (ogs_cluster_16384_t**)&buffer);
-        ogs_expect_or_return_val(buffer, NULL);
-        cluster->size = OGS_CLUSTER_16384_SIZE;
+    } else if (size <= OGS_CLUSTER_8192_SIZE) {
+        ogs_pool_alloc(&pool->cluster_8192, (ogs_cluster_8192_t**)&buffer);
+        if (!buffer) {
+            ogs_error("ogs_pool_alloc() failed");
+            return NULL;
+        }
+        cluster->size = OGS_CLUSTER_8192_SIZE;
+    } else if (size <= OGS_CLUSTER_32768_SIZE) {
+        ogs_pool_alloc(&pool->cluster_32768, (ogs_cluster_32768_t**)&buffer);
+        if (!buffer) {
+            ogs_error("ogs_pool_alloc() failed");
+            return NULL;
+        }
+        cluster->size = OGS_CLUSTER_32768_SIZE;
     } else if (size <= OGS_CLUSTER_BIG_SIZE) {
         ogs_pool_alloc(&pool->cluster_big, (ogs_cluster_big_t**)&buffer);
         ogs_expect_or_return_val(buffer, NULL);
@@ -431,9 +448,13 @@ static void cluster_free(ogs_pkbuf_pool_t *pool, ogs_cluster_t *cluster)
         ogs_pool_free(
                 &pool->cluster_2048, (ogs_cluster_2048_t*)cluster->buffer);
         break;
-    case OGS_CLUSTER_16384_SIZE:
+    case OGS_CLUSTER_8192_SIZE:
         ogs_pool_free(
-                &pool->cluster_16384, (ogs_cluster_16384_t*)cluster->buffer);
+                &pool->cluster_8192, (ogs_cluster_8192_t*)cluster->buffer);
+        break;
+    case OGS_CLUSTER_32768_SIZE:
+        ogs_pool_free(
+                &pool->cluster_32768, (ogs_cluster_32768_t*)cluster->buffer);
         break;
     case OGS_CLUSTER_BIG_SIZE:
         ogs_pool_free(&pool->cluster_big, (ogs_cluster_big_t*)cluster->buffer);

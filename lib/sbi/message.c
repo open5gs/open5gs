@@ -2043,7 +2043,7 @@ static int on_part_data(
             } else {
                 offset = data->part[data->num_of_part].content_length;
                 if ((data->part[data->num_of_part].content_length + length) >
-                        OGS_HUGE_LEN) {
+                        OGS_MAX_SDU_LEN) {
                     ogs_error("Overflow length [%d:%d]",
                         (int)data->part[data->num_of_part].content_length,
                         (int)length);
@@ -2214,9 +2214,12 @@ static bool build_multipart(
     strcpy(boundary, "=-");
     ogs_base64_encode_binary(boundary + 2, digest, 16);
 
-    p = http->content = ogs_calloc(1, OGS_HUGE_LEN);
-    ogs_expect_or_return_val(p, false);
-    last = p + OGS_HUGE_LEN;
+    p = http->content = ogs_calloc(1, OGS_MAX_SDU_LEN);
+    if (!p) {
+        ogs_error("ogs_calloc() failed");
+        return false;
+    }
+    last = p + OGS_MAX_SDU_LEN;
 
     /* First boundary */
     p = ogs_slprintf(p, last, "--%s\r\n", boundary);
