@@ -132,8 +132,14 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     qos_rule[0].flow.identifier = qos_flow->qfi;
 
     rv = ogs_nas_build_qos_rules(authorized_qos_rules, qos_rule, 1);
-    ogs_expect_or_return_val(rv == OGS_OK, NULL);
-    ogs_expect_or_return_val(authorized_qos_rules->length, NULL);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_nas_build_qos_rules() failed");
+        return NULL;
+    }
+    if (!authorized_qos_rules->length) {
+        ogs_error("No length");
+        return NULL;
+    }
 
     /* Session-AMBR */
     session_ambr->length = 6;
@@ -203,8 +209,14 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
         OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_AUTHORIZED_QOS_FLOW_DESCRIPTIONS_PRESENT;
     rv = ogs_nas_build_qos_flow_descriptions(
             authorized_qos_flow_descriptions, qos_flow_description, 1);
-    ogs_expect_or_return_val(rv == OGS_OK, NULL);
-    ogs_expect_or_return_val(authorized_qos_flow_descriptions->length, NULL);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_nas_build_qos_flow_descriptions() failed");
+        return NULL;
+    }
+    if (!authorized_qos_flow_descriptions->length) {
+        ogs_error("No length");
+        return NULL;
+    }
 
     /* Extended protocol configuration options */
     if (sess->nas.ue_pco.buffer && sess->nas.ue_pco.length) {
@@ -363,8 +375,14 @@ ogs_pkbuf_t *gsm_build_pdu_session_modification_command(
         }
 
         rv = ogs_nas_build_qos_rules(authorized_qos_rules, qos_rule, i);
-        ogs_expect_or_return_val(rv == OGS_OK, NULL);
-        ogs_expect_or_return_val(authorized_qos_rules->length, NULL);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_nas_build_qos_rules() failed");
+            return NULL;
+        }
+        if (!authorized_qos_rules->length) {
+            ogs_error("No length");
+            return NULL;
+        }
 
         pdu_session_modification_command->presencemask |=
             OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_AUTHORIZED_QOS_RULES_PRESENT;
@@ -447,9 +465,14 @@ ogs_pkbuf_t *gsm_build_pdu_session_modification_command(
 
         rv = ogs_nas_build_qos_flow_descriptions(
                 authorized_qos_flow_descriptions, qos_flow_description, i);
-        ogs_expect_or_return_val(rv == OGS_OK, NULL);
-        ogs_expect_or_return_val(
-                authorized_qos_flow_descriptions->length, NULL);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_nas_build_qos_flow_descriptions() failed");
+            return NULL;
+        }
+        if (!authorized_qos_flow_descriptions->length) {
+            ogs_error("No length");
+            return NULL;
+        }
 
         pdu_session_modification_command->presencemask |=
             OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_AUTHORIZED_QOS_FLOW_DESCRIPTIONS_PRESENT;

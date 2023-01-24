@@ -205,7 +205,11 @@ bool nrf_nnrf_handle_nf_status_subscribe(
     if (SubscriptionData->req_nf_instance_id) {
         subscription_data->req_nf_instance_id =
             ogs_strdup(SubscriptionData->req_nf_instance_id);
-        ogs_expect_or_return_val(subscription_data->req_nf_instance_id, NULL);
+        if (!subscription_data->req_nf_instance_id) {
+            ogs_error("ogs_strdup() failed");
+            ogs_sbi_subscription_data_remove(subscription_data);
+            return NULL;
+        }
     }
 
     if (SubscriptionData->subscription_id) {
@@ -214,7 +218,11 @@ bool nrf_nnrf_handle_nf_status_subscribe(
         ogs_free(SubscriptionData->subscription_id);
     }
     SubscriptionData->subscription_id = ogs_strdup(subscription_data->id);
-    ogs_expect_or_return_val(SubscriptionData->subscription_id, NULL);
+    if (!SubscriptionData->subscription_id) {
+        ogs_error("ogs_strdup() failed");
+        ogs_sbi_subscription_data_remove(subscription_data);
+        return NULL;
+    }
 
     if (SubscriptionData->requester_features) {
         subscription_data->requester_features =
@@ -231,7 +239,11 @@ bool nrf_nnrf_handle_nf_status_subscribe(
             OGS_SBI_NNRF_NFM_SERVICE_MAP);
     SubscriptionData->nrf_supported_features =
         ogs_uint64_to_string(subscription_data->nrf_supported_features);
-    ogs_expect_or_return_val(SubscriptionData->nrf_supported_features, NULL);
+    if (!SubscriptionData->nrf_supported_features) {
+        ogs_error("ogs_strdup() failed");
+        ogs_sbi_subscription_data_remove(subscription_data);
+        return NULL;
+    }
 
     SubscrCond = SubscriptionData->subscr_cond;
     if (SubscrCond) {
@@ -404,7 +416,10 @@ bool nrf_nnrf_handle_nf_profile_retrieval(
     OGS_SBI_FEATURES_SET(supported_features, OGS_SBI_NNRF_NFM_SERVICE_MAP);
     sendmsg.NFProfile = ogs_nnrf_nfm_build_nf_profile(
             nf_instance, NULL, NULL, supported_features);
-    ogs_expect_or_return_val(sendmsg.NFProfile, NULL);
+    if (!sendmsg.NFProfile) {
+        ogs_error("ogs_nnrf_nfm_build_nf_profile() failed");
+        return false;
+    }
 
     response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
     ogs_assert(response);

@@ -55,7 +55,10 @@ ogs_sock_t *ogs_sock_create(void)
     ogs_sock_t *sock = NULL;
 
     sock = ogs_calloc(1, sizeof(*sock));
-    ogs_expect_or_return_val(sock, NULL);
+    if (!sock) {
+        ogs_error("ogs_calloc() failed");
+        return NULL;
+    }
 
     sock->fd = INVALID_SOCKET;
 

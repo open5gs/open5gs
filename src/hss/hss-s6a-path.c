@@ -1285,13 +1285,28 @@ static void hss_s6a_cla_cb(void *data, struct msg **msg)
 
     /* Search the session, retrieve its data */
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
-    ogs_expect_or_return(ret == 0);
-    ogs_expect_or_return(new == 0);
+    if (ret != 0) {
+        ogs_error("fd_msg_sess_get() failed");
+        return;
+    }
+    if (new != 0) {
+        ogs_error("fd_msg_sess_get() failed");
+        return;
+    }
 
     ret = fd_sess_state_retrieve(hss_s6a_reg, session, &sess_data);
-    ogs_expect_or_return(ret == 0);
-    ogs_expect_or_return(sess_data);
-    ogs_expect_or_return((void *)sess_data == data);
+    if (ret != 0) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
+    if (!sess_data) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
+    if ((void *)sess_data != data) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
 
     ret = fd_msg_free(*msg);
     ogs_assert(ret == 0);
@@ -1463,13 +1478,28 @@ static void hss_s6a_ida_cb(void *data, struct msg **msg)
 
     /* Search the session, retrieve its data */
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
-    ogs_expect_or_return(ret == 0);
-    ogs_expect_or_return(new == 0);
+    if (ret != 0) {
+        ogs_error("fd_msg_sess_get() failed");
+        return;
+    }
+    if (new != 0) {
+        ogs_error("fd_msg_sess_get() failed");
+        return;
+    }
 
     ret = fd_sess_state_retrieve(hss_s6a_reg, session, &sess_data);
-    ogs_expect_or_return(ret == 0);
-    ogs_expect_or_return(sess_data);
-    ogs_expect_or_return((void *)sess_data == data);
+    if (ret != 0) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
+    if (!sess_data) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
+    if ((void *)sess_data != data) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
 
     ret = fd_msg_free(*msg);
     ogs_assert(ret == 0);

@@ -548,7 +548,7 @@ ogs_nas_5gmm_cause_t gmm_handle_service_update(amf_ue_t *amf_ue,
 {
     amf_sess_t *sess = NULL;
     uint16_t psimask = 0;
-    int xact_count = 0;
+    int xact_count = 0, r;
 
     ogs_nas_uplink_data_status_t *uplink_data_status = NULL;
     ogs_nas_pdu_session_status_t *pdu_session_status = NULL;
@@ -634,9 +634,11 @@ ogs_nas_5gmm_cause_t gmm_handle_service_update(amf_ue_t *amf_ue,
         }
     }
 
-    if (amf_sess_xact_count(amf_ue) == xact_count)
-        ogs_assert(OGS_OK ==
-            nas_5gs_send_service_accept(amf_ue));
+    if (amf_sess_xact_count(amf_ue) == xact_count) {
+        r = nas_5gs_send_service_accept(amf_ue);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+    }
 
     return OGS_5GMM_CAUSE_REQUEST_ACCEPTED;
 }
@@ -644,6 +646,7 @@ ogs_nas_5gmm_cause_t gmm_handle_service_update(amf_ue_t *amf_ue,
 int gmm_handle_deregistration_request(amf_ue_t *amf_ue,
         ogs_nas_5gs_deregistration_request_from_ue_t *deregistration_request)
 {
+    int r;
     ogs_nas_de_registration_type_t *de_registration_type = NULL;
 
     ogs_assert(amf_ue);
@@ -690,9 +693,11 @@ int gmm_handle_deregistration_request(amf_ue_t *amf_ue,
     amf_sbi_send_release_all_sessions(
             amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
 
-    if (ogs_list_count(&amf_ue->sess_list) == 0)
-        ogs_assert(OGS_OK ==
-            nas_5gs_send_de_registration_accept(amf_ue));
+    if (ogs_list_count(&amf_ue->sess_list) == 0) {
+        r = nas_5gs_send_de_registration_accept(amf_ue);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+    }
 
     return OGS_OK;
 }
@@ -885,6 +890,7 @@ ogs_nas_5gmm_cause_t gmm_handle_security_mode_complete(amf_ue_t *amf_ue,
 int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
         ogs_nas_5gs_ul_nas_transport_t *ul_nas_transport)
 {
+    int r;
     ogs_slice_data_t *selected_slice = NULL;
     amf_sess_t *sess = NULL;
     amf_nsmf_pdusession_sm_context_param_t param;
@@ -906,34 +912,38 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
 
     if (!payload_container_type->value) {
         ogs_error("[%s] No Payload container type", amf_ue->supi);
-        ogs_assert(OGS_OK ==
-            nas_5gs_send_gmm_status(
-                amf_ue, OGS_5GMM_CAUSE_INVALID_MANDATORY_INFORMATION));
+        r = nas_5gs_send_gmm_status(
+                amf_ue, OGS_5GMM_CAUSE_INVALID_MANDATORY_INFORMATION);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
         return OGS_ERROR;
     }
 
     if (!payload_container->length) {
         ogs_error("[%s] No Payload container length", amf_ue->supi);
-        ogs_assert(OGS_OK ==
-            nas_5gs_send_gmm_status(
-                amf_ue, OGS_5GMM_CAUSE_INVALID_MANDATORY_INFORMATION));
+        r = nas_5gs_send_gmm_status(
+                amf_ue, OGS_5GMM_CAUSE_INVALID_MANDATORY_INFORMATION);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
         return OGS_ERROR;
     }
 
     if (!payload_container->buffer) {
         ogs_error("[%s] No Payload container buffer", amf_ue->supi);
-        ogs_assert(OGS_OK ==
-            nas_5gs_send_gmm_status(
-                amf_ue, OGS_5GMM_CAUSE_INVALID_MANDATORY_INFORMATION));
+        r = nas_5gs_send_gmm_status(
+                amf_ue, OGS_5GMM_CAUSE_INVALID_MANDATORY_INFORMATION);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
         return OGS_ERROR;
     }
 
     if ((ul_nas_transport->presencemask &
         OGS_NAS_5GS_UL_NAS_TRANSPORT_PDU_SESSION_ID_PRESENT) == 0) {
         ogs_error("[%s] No PDU session ID", amf_ue->supi);
-        ogs_assert(OGS_OK ==
-            nas_5gs_send_gmm_status(
-                amf_ue, OGS_5GMM_CAUSE_INVALID_MANDATORY_INFORMATION));
+        r = nas_5gs_send_gmm_status(
+                amf_ue, OGS_5GMM_CAUSE_INVALID_MANDATORY_INFORMATION);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
         return OGS_ERROR;
     }
 
@@ -941,9 +951,10 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
     if (*pdu_session_id == OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED) {
         ogs_error("[%s] PDU session identity is unassigned",
                 amf_ue->supi);
-        ogs_assert(OGS_OK ==
-            nas_5gs_send_gmm_status(
-                amf_ue, OGS_5GMM_CAUSE_INVALID_MANDATORY_INFORMATION));
+        r = nas_5gs_send_gmm_status(
+                amf_ue, OGS_5GMM_CAUSE_INVALID_MANDATORY_INFORMATION);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
         return OGS_ERROR;
     }
 
@@ -964,9 +975,10 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
             if (!sess) {
                 ogs_error("[%s] No Session Context [%d]",
                     amf_ue->supi, gsm_header->message_type);
-                ogs_assert(OGS_OK ==
-                    nas_5gs_send_gmm_status(amf_ue,
-                    OGS_5GMM_CAUSE_INSUFFICIENT_USER_PLANE_RESOURCES_FOR_THE_PDU_SESSION));
+                r = nas_5gs_send_gmm_status(amf_ue,
+                    OGS_5GMM_CAUSE_INSUFFICIENT_USER_PLANE_RESOURCES_FOR_THE_PDU_SESSION);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
                 return OGS_ERROR;
             }
         }
@@ -1072,8 +1084,10 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
             if (!selected_slice || !sess->dnn) {
                 ogs_warn("[%s] DNN Not Supported OR "
                             "Not Subscribed in the Slice", amf_ue->supi);
-                ogs_assert(OGS_OK ==
-                    nas_5gs_send_gmm_status(amf_ue, OGS_5GMM_CAUSE_DNN_NOT_SUPPORTED_OR_NOT_SUBSCRIBED_IN_THE_SLICE));
+                r = nas_5gs_send_gmm_status(amf_ue,
+                        OGS_5GMM_CAUSE_DNN_NOT_SUPPORTED_OR_NOT_SUBSCRIBED_IN_THE_SLICE);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
                 return OGS_ERROR;
             }
 
@@ -1137,9 +1151,10 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
             if (!SESSION_CONTEXT_IN_SMF(sess)) {
                 ogs_error("[%s:%d] Session Context is not in SMF [%d]",
                     amf_ue->supi, sess->psi, gsm_header->message_type);
-                ogs_assert(OGS_OK ==
-                    nas_5gs_send_back_gsm_message(sess,
-                        OGS_5GMM_CAUSE_DNN_NOT_SUPPORTED_OR_NOT_SUBSCRIBED_IN_THE_SLICE, 0));
+                r = nas_5gs_send_back_gsm_message(sess,
+                        OGS_5GMM_CAUSE_DNN_NOT_SUPPORTED_OR_NOT_SUBSCRIBED_IN_THE_SLICE, 0);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
                 return OGS_ERROR;
             }
 
@@ -1192,9 +1207,10 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                     memset(&param, 0, sizeof(param));
                     param.acknowledgement_requested = 1;
                     param.guti = 1;
-                    ogs_assert(OGS_OK ==
-                        nas_5gs_send_configuration_update_command(
-                            amf_ue, &param));
+                    r = nas_5gs_send_configuration_update_command(
+                            amf_ue, &param);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
 
                     AMF_UE_CLEAR_PAGING_INFO(amf_ue);
                 }
@@ -1212,9 +1228,10 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
     default:
         ogs_error("[%s] Unknown Payload container type [%d]",
             amf_ue->supi, payload_container_type->value);
-        ogs_assert(OGS_OK ==
-            nas_5gs_send_gmm_status(amf_ue,
-                OGS_5GMM_CAUSE_MESSAGE_TYPE_NON_EXISTENT_OR_NOT_IMPLEMENTED));
+        r = nas_5gs_send_gmm_status(amf_ue,
+                OGS_5GMM_CAUSE_MESSAGE_TYPE_NON_EXISTENT_OR_NOT_IMPLEMENTED);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
         return OGS_ERROR;
     }
 

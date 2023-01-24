@@ -382,6 +382,8 @@ static connection_t *connection_add(
         request->h.uri = uri;
     }
 
+    curl_easy_setopt(conn->easy, CURLOPT_BUFFERSIZE, OGS_MAX_SDU_LEN);
+
     curl_easy_setopt(conn->easy, CURLOPT_SSL_VERIFYPEER, 0);
     curl_easy_setopt(conn->easy, CURLOPT_SSL_VERIFYHOST, 0);
 

@@ -149,7 +149,10 @@ ogs_pkbuf_t *ogs_gtp2_handle_echo_req(ogs_pkbuf_t *pkb)
 
     pkb_resp = ogs_pkbuf_alloc(NULL,
             100 /* enough for ECHO_RSP; use smaller buffer */);
-    ogs_expect_or_return_val(pkb_resp, NULL);
+    if (!pkb_resp) {
+        ogs_error("ogs_pkbuf_alloc() failed");
+        return NULL;
+    }
     ogs_pkbuf_put(pkb_resp, 100);
     gtph_resp = (ogs_gtp2_header_t *)pkb_resp->data;
 
@@ -266,10 +269,16 @@ void ogs_gtp2_send_error_message(
     tlv->data = &cause;
 
     pkbuf = ogs_gtp2_build_msg(&errmsg);
-    ogs_expect_or_return(pkbuf);
+    if (!pkbuf) {
+        ogs_error("ogs_gtp2_build_msg() failed");
+        return;
+    }
 
     rv = ogs_gtp_xact_update_tx(xact, &errmsg.h, pkbuf);
-    ogs_expect_or_return(rv == OGS_OK);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_gtp_xact_update_tx() failed");
+        return;
+    }
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
@@ -292,7 +301,10 @@ void ogs_gtp2_send_echo_request(
     h.teid = 0;
 
     pkbuf = ogs_gtp2_build_echo_request(h.type, recovery, features);
-    ogs_expect_or_return(pkbuf);
+    if (!pkbuf) {
+        ogs_error("ogs_gtp2_build_echo_request() failed");
+        return;
+    }
 
     xact = ogs_gtp_xact_local_create(gnode, &h, pkbuf, NULL, NULL);
 
@@ -316,10 +328,16 @@ void ogs_gtp2_send_echo_response(ogs_gtp_xact_t *xact,
     h.teid = 0;
 
     pkbuf = ogs_gtp2_build_echo_response(h.type, recovery, features);
-    ogs_expect_or_return(pkbuf);
+    if (!pkbuf) {
+        ogs_error("ogs_gtp2_build_echo_response() failed");
+        return;
+    }
 
     rv = ogs_gtp_xact_update_tx(xact, &h, pkbuf);
-    ogs_expect_or_return(rv == OGS_OK);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_gtp_xact_update_tx() failed");
+        return;
+    }
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);

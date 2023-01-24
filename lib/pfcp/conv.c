@@ -81,12 +81,19 @@ int ogs_pfcp_f_seid_to_sockaddr(
     ogs_assert(list);
 
     addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
-    ogs_expect_or_return_val(addr, OGS_ERROR);
+    if (!addr) {
+        ogs_error("ogs_calloc() failed");
+        return OGS_ERROR;
+    }
     addr->ogs_sa_family = AF_INET;
     addr->ogs_sin_port = htobe16(port);
 
     addr6 = ogs_calloc(1, sizeof(ogs_sockaddr_t));
-    ogs_expect_or_return_val(addr6, OGS_ERROR);
+    if (!addr6) {
+        ogs_error("ogs_calloc() failed");
+        ogs_free(addr);
+        return OGS_ERROR;
+    }
     addr6->ogs_sa_family = AF_INET6;
     addr6->ogs_sin_port = htobe16(port);
 
@@ -185,8 +192,14 @@ int ogs_pfcp_sockaddr_to_f_teid(
 {
     const int hdr_len = 5;
 
-    ogs_expect_or_return_val(addr || addr6, OGS_ERROR);
-    ogs_expect_or_return_val(f_teid, OGS_ERROR);
+    if (!addr && !addr6) {
+        ogs_error("No addr");
+        return OGS_ERROR;
+    }
+    if (!f_teid) {
+        ogs_error("No F-TEID");
+        return OGS_ERROR;
+    }
     memset(f_teid, 0, sizeof *f_teid);
 
     if (addr && addr6) {
@@ -226,23 +239,35 @@ int ogs_pfcp_f_teid_to_sockaddr(
 
     if (f_teid->ipv4 && f_teid->ipv6) {
         *addr = ogs_calloc(1, sizeof(**addr));
-        ogs_expect_or_return_val(*addr, OGS_ERROR);
+        if (!(*addr)) {
+            ogs_error("ogs_calloc() failed");
+            return OGS_ERROR;
+        }
         (*addr)->sin.sin_addr.s_addr = f_teid->both.addr;
         (*addr)->ogs_sa_family = AF_INET;
 
         *addr6 = ogs_calloc(1, sizeof(**addr6));
-        ogs_expect_or_return_val(*addr6, OGS_ERROR);
+        if (!(*addr6)) {
+            ogs_error("ogs_calloc() failed");
+            return OGS_ERROR;
+        }
         memcpy((*addr6)->sin6.sin6_addr.s6_addr,
                 f_teid->both.addr6, OGS_IPV6_LEN);
         (*addr6)->ogs_sa_family = AF_INET6;
     } else if (f_teid->ipv4) {
         *addr = ogs_calloc(1, sizeof(**addr));
-        ogs_expect_or_return_val(*addr, OGS_ERROR);
+        if (!(*addr)) {
+            ogs_error("ogs_calloc() failed");
+            return OGS_ERROR;
+        }
         (*addr)->sin.sin_addr.s_addr = f_teid->addr;
         (*addr)->ogs_sa_family = AF_INET;
     } else if (f_teid->ipv6) {
         *addr6 = ogs_calloc(1, sizeof(**addr6));
-        ogs_expect_or_return_val(*addr6, OGS_ERROR);
+        if (!(*addr6)) {
+            ogs_error("ogs_calloc() failed");
+            return OGS_ERROR;
+        }
         memcpy((*addr6)->sin6.sin6_addr.s6_addr, f_teid->addr6, OGS_IPV6_LEN);
         (*addr6)->ogs_sa_family = AF_INET6;
     } else {

@@ -89,7 +89,10 @@ char *ogs_supi_from_suci(char *suci)
 
     ogs_assert(suci);
     tmp = ogs_strdup(suci);
-    ogs_expect_or_return_val(tmp, NULL);
+    if (!tmp) {
+        ogs_error("ogs_strdup() failed");
+        return NULL;
+    }
 
     p = tmp;
     i = 0;
@@ -537,6 +540,11 @@ uint64_t ogs_sbi_bitrate_from_string(char *str)
     unit = strrchr(str, ' ');
     bitrate = atoll(str);
 
+    if (!unit) {
+        ogs_error("No Unit [%s]", str);
+        return bitrate;
+    }
+
     SWITCH(unit+1)
     CASE("Kbps")
         return bitrate * 1024;
@@ -777,7 +785,10 @@ char *ogs_sbi_s_nssai_to_string(ogs_s_nssai_t *s_nssai)
     sNSSAI.sd = ogs_s_nssai_sd_to_string(s_nssai->sd);
 
     item = OpenAPI_snssai_convertToJSON(&sNSSAI);
-    ogs_expect_or_return_val(item, NULL);
+    if (!item) {
+        ogs_error("OpenAPI_snssai_convertToJSON() failed");
+        return NULL;
+    }
     if (sNSSAI.sd) ogs_free(sNSSAI.sd);
 
     v = cJSON_Print(item);
@@ -819,12 +830,23 @@ OpenAPI_plmn_id_t *ogs_sbi_build_plmn_id(ogs_plmn_id_t *plmn_id)
     ogs_assert(plmn_id);
 
     PlmnId = ogs_calloc(1, sizeof(*PlmnId));
-    ogs_expect_or_return_val(PlmnId, NULL);
+    if (!PlmnId) {
+        ogs_error("ogs_calloc() failed");
+        return NULL;
+    }
 
     PlmnId->mcc = ogs_plmn_id_mcc_string(plmn_id);
-    ogs_expect_or_return_val(PlmnId->mcc, NULL);
+    if (!PlmnId->mcc) {
+        ogs_error("ogs_plmn_id_mcc_string() failed");
+        ogs_sbi_free_plmn_id(PlmnId);
+        return NULL;
+    }
     PlmnId->mnc = ogs_plmn_id_mnc_string(plmn_id);
-    ogs_expect_or_return_val(PlmnId->mnc, NULL);
+    if (!PlmnId->mnc) {
+        ogs_error("ogs_plmn_id_mnc_string() failed");
+        ogs_sbi_free_plmn_id(PlmnId);
+        return NULL;
+    }
 
     return PlmnId;
 }
@@ -862,12 +884,23 @@ OpenAPI_plmn_id_nid_t *ogs_sbi_build_plmn_id_nid(ogs_plmn_id_t *plmn_id)
     ogs_assert(plmn_id);
 
     PlmnIdNid = ogs_calloc(1, sizeof(*PlmnIdNid));
-    ogs_expect_or_return_val(PlmnIdNid, NULL);
+    if (!PlmnIdNid) {
+        ogs_error("ogs_calloc() failed");
+        return NULL;
+    }
 
     PlmnIdNid->mcc = ogs_plmn_id_mcc_string(plmn_id);
-    ogs_expect_or_return_val(PlmnIdNid->mcc, NULL);
+    if (!PlmnIdNid->mcc) {
+        ogs_error("ogs_plmn_id_mcc_string() failed");
+        ogs_sbi_free_plmn_id_nid(PlmnIdNid);
+        return NULL;
+    }
     PlmnIdNid->mnc = ogs_plmn_id_mnc_string(plmn_id);
-    ogs_expect_or_return_val(PlmnIdNid->mnc, NULL);
+    if (!PlmnIdNid->mnc) {
+        ogs_error("ogs_plmn_id_mnc_string() failed");
+        ogs_sbi_free_plmn_id_nid(PlmnIdNid);
+        return NULL;
+    }
 
     return PlmnIdNid;
 }
@@ -907,12 +940,23 @@ OpenAPI_guami_t *ogs_sbi_build_guami(ogs_guami_t *guami)
     ogs_assert(guami);
 
     Guami = ogs_calloc(1, sizeof(*Guami));
-    ogs_assert(Guami);
+    if (!Guami) {
+        ogs_error("ogs_calloc() failed");
+        return NULL;
+    }
 
     Guami->plmn_id = ogs_sbi_build_plmn_id_nid(&guami->plmn_id);
-    ogs_expect_or_return_val(Guami->plmn_id, NULL);
+    if (!Guami->plmn_id) {
+        ogs_error("ogs_sbi_build_plmn_id_nid() failed");
+        ogs_sbi_free_guami(Guami);
+        return NULL;
+    }
     Guami->amf_id = ogs_amf_id_to_string(&guami->amf_id);
-    ogs_expect_or_return_val(Guami->amf_id, NULL);
+    if (!Guami->amf_id) {
+        ogs_error("ogs_amf_id_to_string() failed");
+        ogs_sbi_free_guami(Guami);
+        return NULL;
+    }
 
     return Guami;
 }
@@ -951,24 +995,49 @@ OpenAPI_nr_location_t *ogs_sbi_build_nr_location(
     ogs_assert(tai);
     ogs_assert(nr_cgi);
 
-    Tai = ogs_calloc(1, sizeof(*Tai));
-    ogs_expect_or_return_val(Tai, NULL);
-    Tai->plmn_id = ogs_sbi_build_plmn_id(&tai->plmn_id);
-    ogs_expect_or_return_val(Tai->plmn_id, NULL);
-    Tai->tac = ogs_uint24_to_0string(tai->tac);
-    ogs_expect_or_return_val(Tai->tac, NULL);
-
-    Ncgi = ogs_calloc(1, sizeof(*Ncgi));
-    ogs_expect_or_return_val(Ncgi, NULL);
-    Ncgi->plmn_id = ogs_sbi_build_plmn_id(&nr_cgi->plmn_id);
-    ogs_expect_or_return_val(Ncgi->plmn_id, NULL);
-    Ncgi->nr_cell_id = ogs_uint36_to_0string(nr_cgi->cell_id);
-    ogs_expect_or_return_val(Ncgi->nr_cell_id, NULL);
-
     NrLocation = ogs_calloc(1, sizeof(*NrLocation));
-    ogs_expect_or_return_val(NrLocation, NULL);
-    NrLocation->tai = Tai;
-    NrLocation->ncgi = Ncgi;
+    if (!NrLocation) {
+        ogs_error("ogs_calloc() failed");
+        return NULL;
+    }
+
+    NrLocation->tai = Tai = ogs_calloc(1, sizeof(*Tai));
+    if (!Tai) {
+        ogs_error("ogs_calloc() failed");
+        ogs_sbi_free_nr_location(NrLocation);
+        return NULL;
+    }
+    Tai->plmn_id = ogs_sbi_build_plmn_id(&tai->plmn_id);
+    if (!Tai->plmn_id) {
+        ogs_error("ogs_sbi_build_plmn_id() failed");
+        ogs_sbi_free_nr_location(NrLocation);
+        return NULL;
+    }
+    Tai->tac = ogs_uint24_to_0string(tai->tac);
+    if (!Tai->tac) {
+        ogs_error("ogs_uint24_to_0string() failed");
+        ogs_sbi_free_nr_location(NrLocation);
+        return NULL;
+    }
+
+    NrLocation->ncgi = Ncgi = ogs_calloc(1, sizeof(*Ncgi));
+    if (!Ncgi) {
+        ogs_error("ogs_calloc() failed");
+        ogs_sbi_free_nr_location(NrLocation);
+        return NULL;
+    }
+    Ncgi->plmn_id = ogs_sbi_build_plmn_id(&nr_cgi->plmn_id);
+    if (!Ncgi->plmn_id) {
+        ogs_error("ogs_sbi_build_plmn_id() failed");
+        ogs_sbi_free_nr_location(NrLocation);
+        return NULL;
+    }
+    Ncgi->nr_cell_id = ogs_uint36_to_0string(nr_cgi->cell_id);
+    if (!Ncgi->nr_cell_id) {
+        ogs_error("ogs_uint36_to_0string() failed");
+        ogs_sbi_free_nr_location(NrLocation);
+        return NULL;
+    }
 
     return NrLocation;
 }

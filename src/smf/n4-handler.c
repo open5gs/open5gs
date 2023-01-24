@@ -981,10 +981,16 @@ void smf_epc_n4_handle_session_modification_response(
 
             pkbuf = smf_s5c_build_delete_bearer_request(
                     h.type, bearer, gtp_pti, gtp_cause);
-            ogs_expect_or_return(pkbuf);
+            if (!pkbuf) {
+                ogs_error("smf_s5c_build_delete_bearer_request() failed");
+                return;
+            }
 
             rv = ogs_gtp_xact_update_tx(gtp_xact, &h, pkbuf);
-            ogs_expect_or_return(rv == OGS_OK);
+            if (rv != OGS_OK) {
+                ogs_error("ogs_gtp_xact_update_tx() failed");
+                return;
+            }
 
         /* IMPORTANT:
          *

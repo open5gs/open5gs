@@ -315,10 +315,10 @@ int upf_metrics_free_inst_by_dnn(ogs_metrics_inst_t **inst)
     return upf_metrics_free_inst(inst, _UPF_METR_BY_DNN_MAX);
 }
 
-int upf_metrics_open(void)
+void upf_metrics_init(void)
 {
     ogs_metrics_context_t *ctx = ogs_metrics_self();
-    ogs_metrics_context_open(ctx);
+    ogs_metrics_context_init();
 
     upf_metrics_init_spec(ctx, upf_metrics_spec_global, upf_metrics_spec_def_global,
             _UPF_METR_GLOB_MAX);
@@ -333,14 +333,11 @@ int upf_metrics_open(void)
     upf_metrics_init_by_qfi();
     upf_metrics_init_by_cause();
     upf_metrics_init_by_dnn();
-
-    return 0;
 }
 
-int upf_metrics_close(void)
+void upf_metrics_final(void)
 {
     ogs_hash_index_t *hi;
-    ogs_metrics_context_t *ctx = ogs_metrics_self();
 
     if (metrics_hash_by_qfi) {
         for (hi = ogs_hash_first(metrics_hash_by_qfi); hi; hi = ogs_hash_next(hi)) {
@@ -388,6 +385,5 @@ int upf_metrics_close(void)
         ogs_hash_destroy(metrics_hash_by_dnn);
     }
 
-    ogs_metrics_context_close(ctx);
-    return OGS_OK;
+    ogs_metrics_context_final();
 }

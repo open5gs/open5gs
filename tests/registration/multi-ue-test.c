@@ -58,6 +58,7 @@ static void test1_func(abts_case *tc, void *data)
     /* Receive NG-Setup Response */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
 
     for (i = 0; i < NUM_OF_TEST_UE; i++) {
         const char *scheme_output[] = {

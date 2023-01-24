@@ -25,6 +25,7 @@ int amf_nnssf_nsselection_handle_get(
         amf_sess_t *sess, ogs_sbi_message_t *recvmsg)
 {
     bool rc;
+    int r;
     OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
     ogs_sbi_client_t *client = NULL, *scp_client = NULL;
     ogs_sockaddr_t *addr = NULL;
@@ -44,34 +45,38 @@ int amf_nnssf_nsselection_handle_get(
     if (recvmsg->res_status != OGS_SBI_HTTP_STATUS_OK) {
         ogs_error("[%s] HTTP response error [%d]",
                 amf_ue->supi, recvmsg->res_status);
-        ogs_assert(OGS_OK ==
-            nas_5gs_send_gmm_status(amf_ue, recvmsg->res_status));
+        r = nas_5gs_send_gmm_status(amf_ue, recvmsg->res_status);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
         return OGS_ERROR;
     }
 
     AuthorizedNetworkSliceInfo = recvmsg->AuthorizedNetworkSliceInfo;
     if (!AuthorizedNetworkSliceInfo) {
         ogs_error("No AuthorizedNetworkSliceInfo");
-        ogs_assert(OGS_OK ==
-            nas_5gs_send_gmm_reject_from_sbi(
-                amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR));
+        r = nas_5gs_send_gmm_reject_from_sbi(
+                amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
         return OGS_ERROR;
     }
 
     NsiInformation = AuthorizedNetworkSliceInfo->nsi_information;
     if (!NsiInformation) {
         ogs_error("No NsiInformation");
-        ogs_assert(OGS_OK ==
-            nas_5gs_send_gmm_reject_from_sbi(
-                amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR));
+        r = nas_5gs_send_gmm_reject_from_sbi(
+                amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
         return OGS_ERROR;
     }
 
     if (!NsiInformation->nrf_id) {
         ogs_error("No nrfId");
-        ogs_assert(OGS_OK ==
-            nas_5gs_send_gmm_reject_from_sbi(
-                amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR));
+        r = nas_5gs_send_gmm_reject_from_sbi(
+                amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
         return OGS_ERROR;
     }
 
@@ -97,9 +102,10 @@ int amf_nnssf_nsselection_handle_get(
         if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
             ogs_error("[%s:%d] Invalid URI [%s]",
                     amf_ue->supi, sess->psi, NsiInformation->nrf_id);
-            ogs_assert(OGS_OK ==
-                nas_5gs_send_gmm_reject_from_sbi(
-                    amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR));
+            r = nas_5gs_send_gmm_reject_from_sbi(
+                    amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
             return OGS_ERROR;;
         }
 

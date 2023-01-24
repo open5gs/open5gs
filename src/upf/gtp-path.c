@@ -61,6 +61,36 @@ static ogs_pkbuf_pool_t *packet_pool = NULL;
 
 static void upf_gtp_handle_multicast(ogs_pkbuf_t *recvbuf);
 
+static int check_framed_routes(upf_sess_t *sess, int family, uint32_t *addr)
+{
+    int i = 0;
+    ogs_ipsubnet_t *routes = family == AF_INET ?
+        sess->ipv4_framed_routes : sess->ipv6_framed_routes;
+
+    if (!routes)
+        return false;
+
+    for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
+        uint32_t *sub = routes[i].sub;
+        uint32_t *mask = routes[i].mask;
+
+        if (!routes[i].family)
+            break;
+
+        if (family == AF_INET) {
+            if (sub[0] == (addr[0] & mask[0]))
+                return true;
+        } else {
+            if (sub[0] == (addr[0] & mask[0]) &&
+                sub[1] == (addr[1] & mask[1]) &&
+                sub[2] == (addr[2] & mask[2]) &&
+                sub[3] == (addr[3] & mask[3]))
+                return true;
+        }
+    }
+    return false;
+}
+
 static uint16_t _get_eth_type(uint8_t *data, uint len) {
     if (len > ETHER_HDR_LEN) {
         struct ether_header *hdr = (struct ether_header*)data;
@@ -429,7 +459,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
         ogs_assert(far);
 
         if (ip_h->ip_v == 4 && sess->ipv4) {
-            src_addr = &ip_h->ip_src.s_addr;
+            src_addr = (void *)&ip_h->ip_src.s_addr;
             ogs_assert(src_addr);
 
             /*
@@ -443,6 +473,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
                 if (src_addr[0] == sess->ipv4->addr[0]) {
                     /* Source IP address should be matched in uplink */
+                } else if (check_framed_routes(sess, AF_INET, src_addr)) {
+                    /* Or source IP address should match a framed route */
                 } else {
                     ogs_error("[DROP] Source IP-%d Spoofing APN:%s SrcIf:%d DstIf:%d TEID:0x%x",
                                 ip_h->ip_v, pdr->dnn, pdr->src_if, far->dst_if, teid);
@@ -460,7 +492,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
         } else if (ip_h->ip_v == 6 && sess->ipv6) {
             struct ip6_hdr *ip6_h = (struct ip6_hdr *)pkbuf->data;
             ogs_assert(ip6_h);
-            src_addr = (uint32_t *)ip6_h->ip6_src.s6_addr;
+            src_addr = (void *)ip6_h->ip6_src.s6_addr;
             ogs_assert(src_addr);
 
             /*
@@ -519,6 +551,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                      * If Global address
                      * 64 bit prefix should be matched
                      */
+                } else if (check_framed_routes(sess, AF_INET6, src_addr)) {
+                    /* Or source IP address should match a framed route */
                 } else {
                     ogs_error("[DROP] Source IP-%d Spoofing APN:%s SrcIf:%d DstIf:%d TEID:0x%x",
                                 ip_h->ip_v, pdr->dnn, pdr->src_if, far->dst_if, teid);

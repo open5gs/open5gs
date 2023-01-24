@@ -331,10 +331,16 @@ int smf_gtp1_send_create_pdp_context_response(
     h.teid = sess->sgw_s5c_teid;
 
     pkbuf = smf_gn_build_create_pdp_context_response(h.type, sess);
-    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
+    if (!pkbuf) {
+        ogs_error("smf_gn_build_create_pdp_context_response() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_gtp1_xact_update_tx(xact, &h, pkbuf);
-    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_gtp1_xact_update_tx() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
@@ -357,10 +363,16 @@ int smf_gtp1_send_delete_pdp_context_response(
     h.teid = sess->sgw_s5c_teid;
 
     pkbuf = smf_gn_build_delete_pdp_context_response(h.type, sess);
-    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
+    if (!pkbuf) {
+        ogs_error("smf_gn_build_delete_pdp_context_response() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_gtp1_xact_update_tx(xact, &h, pkbuf);
-    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_gtp1_xact_update_tx() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
@@ -390,11 +402,17 @@ int smf_gtp1_send_update_pdp_context_request(
 
     pkbuf = smf_gn_build_update_pdp_context_request(
                 h.type, bearer, pti, cause_value);
-    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
+    if (!pkbuf) {
+        ogs_error("smf_gn_build_update_pdp_context_request() failed");
+        return OGS_ERROR;
+    }
 
     xact = ogs_gtp1_xact_local_create(
             sess->gnode, &h, pkbuf, bearer_timeout, bearer);
-    ogs_expect_or_return_val(xact, OGS_ERROR);
+    if (!xact) {
+        ogs_error("ogs_gtp1_xact_local_create() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
@@ -424,10 +442,16 @@ int smf_gtp1_send_update_pdp_context_response(
 
     pkbuf = smf_gn_build_update_pdp_context_response(
                 h.type, sess, bearer);
-    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
+    if (!pkbuf) {
+        ogs_error("smf_gn_build_update_pdp_context_response() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_gtp1_xact_update_tx(xact, &h, pkbuf);
-    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_gtp1_xact_update_tx() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
@@ -450,10 +474,16 @@ int smf_gtp2_send_create_session_response(
     h.teid = sess->sgw_s5c_teid;
 
     pkbuf = smf_s5c_build_create_session_response(h.type, sess);
-    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
+    if (!pkbuf) {
+        ogs_error("smf_s5c_build_create_session_response() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_gtp_xact_update_tx(xact, &h, pkbuf);
-    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_gtp_xact_update_tx() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
@@ -479,10 +509,16 @@ int smf_gtp2_send_modify_bearer_response(
 
     pkbuf = smf_s5c_build_modify_bearer_response(
                 h.type, sess, req, sgw_relocation);
-    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
+    if (!pkbuf) {
+        ogs_error("smf_s5c_build_modify_bearer_response() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_gtp_xact_update_tx(xact, &h, pkbuf);
-    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_gtp_xact_update_tx() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
@@ -505,10 +541,16 @@ int smf_gtp2_send_delete_session_response(
     h.teid = sess->sgw_s5c_teid;
 
     pkbuf = smf_s5c_build_delete_session_response(h.type, sess);
-    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
+    if (!pkbuf) {
+        ogs_error("smf_s5c_build_delete_session_response() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_gtp_xact_update_tx(xact, &h, pkbuf);
-    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_gtp_xact_update_tx() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
@@ -537,11 +579,17 @@ int smf_gtp2_send_delete_bearer_request(
 
     pkbuf = smf_s5c_build_delete_bearer_request(
                 h.type, bearer, pti, cause_value);
-    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
+    if (!pkbuf) {
+        ogs_error("smf_s5c_build_delete_bearer_request() failed");
+        return OGS_ERROR;
+    }
 
     xact = ogs_gtp_xact_local_create(
             sess->gnode, &h, pkbuf, bearer_timeout, bearer);
-    ogs_expect_or_return_val(xact, OGS_ERROR);
+    if (!xact) {
+        ogs_error("ogs_gtp_xact_local_create() failed");
+        return OGS_ERROR;
+    }
     xact->local_teid = sess->smf_n4_teid;
 
     rv = ogs_gtp_xact_commit(xact);
@@ -603,7 +651,10 @@ static void send_router_advertisement(smf_sess_t *sess, uint8_t *ip6_dst)
     if (ogs_gtp_self()->link_local_addr) {
         OGS_ADDR(ogs_gtp_self()->link_local_addr, ipstr);
         rv = ogs_ipsubnet(&src_ipsub, ipstr, NULL);
-        ogs_expect_or_return(rv == OGS_OK);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_ipsubnet() failed");
+            return;
+        }
     } else {
         /* For the case of loopback used for GTPU link-local address is not
          * available, hence set the source IP to fe80::1

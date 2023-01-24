@@ -160,7 +160,10 @@ char *ogs_amf_id_to_string(ogs_amf_id_t *amf_id)
     ogs_assert(amf_id);
 
     str = ogs_calloc(1, OGS_AMFIDSTRLEN);
-    ogs_expect_or_return_val(str, NULL);
+    if (!str) {
+        ogs_error("ogs_calloc() failed");
+        return NULL;
+    }
 
     ogs_hex_to_ascii(amf_id, sizeof(ogs_amf_id_t), str, OGS_AMFIDSTRLEN);
 
@@ -457,8 +460,14 @@ int ogs_ip_to_sockaddr(ogs_ip_t *ip, uint16_t port, ogs_sockaddr_t **list)
 int ogs_sockaddr_to_ip(
         ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6, ogs_ip_t *ip)
 {
-    ogs_expect_or_return_val(ip, OGS_ERROR);
-    ogs_expect_or_return_val(addr || addr6, OGS_ERROR);
+    if (!ip) {
+        ogs_error("No IP");
+        return OGS_ERROR;
+    }
+    if (!addr && !addr6) {
+        ogs_error("No Address");
+        return OGS_ERROR;
+    }
 
     memset(ip, 0, sizeof(ogs_ip_t));
 
@@ -487,7 +496,10 @@ char *ogs_ipv4_to_string(uint32_t addr)
     char *buf = NULL;
 
     buf = ogs_calloc(1, OGS_ADDRSTRLEN);
-    ogs_expect_or_return_val(buf, NULL);
+    if (!buf) {
+        ogs_error("ogs_calloc() failed");
+        return NULL;
+    }
 
     return (char*)OGS_INET_NTOP(&addr, buf);
 }
@@ -498,7 +510,10 @@ char *ogs_ipv6addr_to_string(uint8_t *addr6)
     ogs_assert(addr6);
 
     buf = ogs_calloc(1, OGS_ADDRSTRLEN);
-    ogs_expect_or_return_val(buf, NULL);
+    if (!buf) {
+        ogs_error("ogs_calloc() failed");
+        return NULL;
+    }
 
     return (char *)OGS_INET6_NTOP(addr6, buf);
 }
@@ -513,7 +528,10 @@ char *ogs_ipv6prefix_to_string(uint8_t *addr6, uint8_t prefixlen)
     memcpy(tmp, addr6, prefixlen >> 3);
 
     buf = ogs_calloc(1, OGS_ADDRSTRLEN);
-    ogs_expect_or_return_val(buf, NULL);
+    if (!buf) {
+        ogs_error("ogs_calloc() failed");
+        return NULL;
+    }
 
     if (OGS_INET6_NTOP(tmp, buf) == NULL) {
         ogs_fatal("Invalid IPv6 address");
@@ -571,7 +589,10 @@ int ogs_ipv6prefix_from_string(uint8_t *addr6, uint8_t *prefixlen, char *string)
     ogs_assert(prefixlen);
     ogs_assert(string);
     pv = v = ogs_strdup(string);
-    ogs_expect_or_return_val(v, OGS_ERROR);
+    if (!v) {
+        ogs_error("ogs_strdup() failed");
+        return OGS_ERROR;
+    }
 
     ipstr = strsep(&v, "/");
     if (ipstr)
@@ -584,7 +605,10 @@ int ogs_ipv6prefix_from_string(uint8_t *addr6, uint8_t *prefixlen, char *string)
     }
 
     rv = ogs_inet_pton(AF_INET6, ipstr, &tmp);
-    ogs_expect_or_return_val(rv == OGS_OK, rv);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_inet_pton() failed");
+        return rv;
+    }
 
     memcpy(addr6, tmp.sin6.sin6_addr.s6_addr, OGS_IPV6_LEN);
     *prefixlen = atoi(mask_or_numbits);

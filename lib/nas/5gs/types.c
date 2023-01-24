@@ -383,7 +383,10 @@ int ogs_nas_build_qos_flow_descriptions(
     ogs_assert(num_of_flow_description);
 
     buffer = ogs_calloc(1, OGS_NAS_MAX_QOS_FLOW_DESCRIPTIONS_LEN);
-    ogs_expect_or_return_val(buffer, OGS_ERROR);
+    if (!buffer) {
+        ogs_error("ogs_calloc() failed");
+        return OGS_ERROR;
+    }
     length = 0;
 
     for (i = 0; i < num_of_flow_description; i++) {
@@ -528,7 +531,10 @@ int ogs_nas_build_qos_rules(ogs_nas_qos_rules_t *rules,
     ogs_assert(num_of_rule);
 
     buffer = ogs_calloc(1, OGS_NAS_MAX_QOS_RULES_LEN);
-    ogs_expect_or_return_val(buffer, OGS_ERROR);
+    if (!buffer) {
+        ogs_error("ogs_calloc() failed");
+        return OGS_ERROR;
+    }
     ogs_assert(buffer);
     length = 0;
 

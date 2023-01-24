@@ -68,7 +68,10 @@ ogs_pkbuf_t *ogs_gtp2_build_error_indication(
 
     pkbuf = ogs_pkbuf_alloc(
             NULL, 100 /* enough for Error Indiciation; use smaller buffer */);
-    ogs_expect_or_return_val(pkbuf, NULL);
+    if (!pkbuf) {
+        ogs_error("ogs_pkbuf_alloc() failed");
+        return NULL;
+    }
     ogs_pkbuf_reserve(pkbuf, OGS_GTPV1U_5GC_HEADER_LEN);
 
     /*

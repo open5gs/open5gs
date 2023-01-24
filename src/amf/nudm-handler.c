@@ -25,7 +25,7 @@
 int amf_nudm_sdm_handle_provisioned(
         amf_ue_t *amf_ue, int state, ogs_sbi_message_t *recvmsg)
 {
-    int i;
+    int i, r;
 
     ogs_assert(amf_ue);
     ogs_assert(recvmsg);
@@ -259,9 +259,10 @@ int amf_nudm_sdm_handle_provisioned(
 
         if (!recvmsg->http.location) {
             ogs_error("[%s] No http.location", amf_ue->supi);
-            ogs_assert(OGS_OK ==
-                nas_5gs_send_gmm_reject_from_sbi(
-                    amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR));
+            r = nas_5gs_send_gmm_reject_from_sbi(
+                    amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
             return OGS_ERROR;
         }
 
@@ -272,9 +273,10 @@ int amf_nudm_sdm_handle_provisioned(
         if (rv != OGS_OK) {
             ogs_error("[%s] Cannot parse http.location [%s]",
                 amf_ue->supi, recvmsg->http.location);
-            ogs_assert(OGS_OK ==
-                nas_5gs_send_gmm_reject_from_sbi(
-                    amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR));
+            r = nas_5gs_send_gmm_reject_from_sbi(
+                    amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
             return OGS_ERROR;
         }
 
@@ -283,9 +285,10 @@ int amf_nudm_sdm_handle_provisioned(
                 amf_ue->supi, recvmsg->http.location);
 
             ogs_sbi_header_free(&header);
-            ogs_assert(OGS_OK ==
-                nas_5gs_send_gmm_reject_from_sbi(
-                    amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR));
+            r = nas_5gs_send_gmm_reject_from_sbi(
+                    amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
             return OGS_ERROR;
         }
 

@@ -429,6 +429,10 @@ int ogs_app_context_parse_config(void)
                     const char *v = ogs_yaml_iter_value(&pool_iter);
                     if (v)
                         self.pool.defconfig.cluster_8192_pool = atoi(v);
+                } else if (!strcmp(pool_key, "32768")) {
+                    const char *v = ogs_yaml_iter_value(&pool_iter);
+                    if (v)
+                        self.pool.defconfig.cluster_32768_pool = atoi(v);
                 } else if (!strcmp(pool_key, "big")) {
                     const char *v = ogs_yaml_iter_value(&pool_iter);
                     if (v)

@@ -125,24 +125,6 @@ void ogs_log_hexdump_func(ogs_log_level_e level, int domain_id,
         } \
     } while (0)
 
-#define ogs_expect_or_return(expr) \
-    do { \
-        if (ogs_likely(expr)) ; \
-        else { \
-            ogs_error("%s: Expectation `%s' failed.", OGS_FUNC, #expr); \
-            return; \
-        } \
-    } while (0)
-
-#define ogs_expect_or_return_val(expr, val) \
-    do { \
-        if (ogs_likely(expr)) ; \
-        else { \
-            ogs_error("%s: Expectation `%s' failed.", OGS_FUNC, #expr); \
-            return (val); \
-        } \
-    } while (0)
-
 #ifdef __cplusplus
 }
 #endif

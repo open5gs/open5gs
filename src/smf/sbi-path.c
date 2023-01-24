@@ -392,7 +392,10 @@ bool smf_sbi_send_sm_context_status_notify(smf_sess_t *sess)
     ogs_assert(client);
 
     request = smf_namf_callback_build_sm_context_status(sess, NULL);
-    ogs_expect_or_return_val(request, false);
+    if (!request) {
+        ogs_error("smf_namf_callback_build_sm_context_status() failed");
+        return false;
+    }
 
     rc = ogs_sbi_send_request_to_client(
             client, client_notify_cb, request, NULL);

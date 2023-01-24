@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by pfcp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2022-11-26 23:47:22.074293 by acetcom
+ * Created on: 2023-01-10 12:02:27.782476 by mitmitmitm
  * from 29244-g91-modified.docx
  ******************************************************************************/
 
@@ -889,9 +889,9 @@ typedef struct ogs_pfcp_tlv_pdi_s {
     ogs_pfcp_tlv_ethernet_pdu_session_information_t ethernet_pdu_session_information;
     ogs_pfcp_tlv_ethernet_packet_filter_t ethernet_packet_filter;
     ogs_pfcp_tlv_qfi_t qfi;
-    ogs_pfcp_tlv_framed_route_t framed_route;
+    ogs_pfcp_tlv_framed_route_t framed_route[8];
     ogs_pfcp_tlv_framed_routing_t framed_routing;
-    ogs_pfcp_tlv_framed_ipv6_route_t framed_ipv6_route;
+    ogs_pfcp_tlv_framed_ipv6_route_t framed_ipv6_route[8];
     ogs_pfcp_tlv__interface_type_t source_interface_type;
     ogs_pfcp_tlv_ip_multicast_addressing_info_within_pfcp_session_establishment_request_t ip_multicast_addressing_info;
 } ogs_pfcp_tlv_pdi_t;
@@ -1364,9 +1364,9 @@ typedef struct ogs_pfcp_tlv_create_traffic_endpoint_s {
     ogs_pfcp_tlv_redundant_transmission_parameters_t redundant_transmission_detection_parameters;
     ogs_pfcp_tlv_ue_ip_address_t ue_ip_address;
     ogs_pfcp_tlv_ethernet_pdu_session_information_t ethernet_pdu_session_information;
-    ogs_pfcp_tlv_framed_route_t framed_route;
+    ogs_pfcp_tlv_framed_route_t framed_route[8];
     ogs_pfcp_tlv_framed_routing_t framed_routing;
-    ogs_pfcp_tlv_framed_ipv6_route_t framed_ipv6_route;
+    ogs_pfcp_tlv_framed_ipv6_route_t framed_ipv6_route[8];
     ogs_pfcp_tlv_qfi_t qfi;
     ogs_pfcp_tlv__interface_type_t source_interface_type;
 } ogs_pfcp_tlv_create_traffic_endpoint_t;
