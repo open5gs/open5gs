@@ -68,7 +68,7 @@ ogs_pkbuf_t *ngap_build_handover_preparation_failure(
 ogs_pkbuf_t *ngap_build_handover_command(ran_ue_t *source_ue);
 ogs_pkbuf_t *ngap_build_handover_cancel_ack(ran_ue_t *source_ue);
 
-ogs_pkbuf_t *ngap_build_uplink_ran_status_transfer(
+ogs_pkbuf_t *ngap_build_downlink_ran_status_transfer(
     ran_ue_t *target_ue,
     NGAP_RANStatusTransfer_TransparentContainer_t *transfer);
 

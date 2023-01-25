@@ -573,7 +573,7 @@ int ngap_send_downlink_ran_status_transfer(
     ogs_assert(target_ue);
     ogs_assert(transfer);
 
-    ngapbuf = ngap_build_uplink_ran_status_transfer(target_ue, transfer);
+    ngapbuf = ngap_build_downlink_ran_status_transfer(target_ue, transfer);
     if (!ngapbuf) {
         ogs_error("ngap_build_uplink_ran_status_transfer() failed");
         return OGS_ERROR;

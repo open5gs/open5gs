@@ -2218,7 +2218,8 @@ void s1ap_handle_enb_configuration_transfer(
         r = s1ap_send_mme_configuration_transfer(
                 target_enb, SONConfigurationTransfer);
         ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
+        /* ogs_asn_copy_ie() could be failed from received packet.
+         * So we should not use ogs_assert(r != OGS_ERROR).*/
     }
 }
 
@@ -2957,7 +2958,8 @@ void s1ap_handle_enb_status_transfer(
     r = s1ap_send_mme_status_transfer(target_ue,
             ENB_StatusTransfer_TransparentContainer);
     ogs_expect(r == OGS_OK);
-    ogs_assert(r != OGS_ERROR);
+    /* ogs_asn_copy_ie() could be failed from received packet.
+     * So we should not use ogs_assert(r != OGS_ERROR).*/
 }
 
 void s1ap_handle_handover_notification(

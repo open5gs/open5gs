@@ -2565,7 +2565,8 @@ void ngap_handle_uplink_ran_configuration_transfer(
         r = ngap_send_downlink_ran_configuration_transfer(
                 target_gnb, SONConfigurationTransfer);
         ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
+        /* ogs_asn_copy_ie() could be failed from received packet.
+         * So we should not use ogs_assert(r != OGS_ERROR).*/
     }
 }
 
@@ -3840,7 +3841,8 @@ void ngap_handle_uplink_ran_status_transfer(
     r = ngap_send_downlink_ran_status_transfer(
             target_ue, RANStatusTransfer_TransparentContainer);
     ogs_expect(r == OGS_OK);
-    ogs_assert(r != OGS_ERROR);
+    /* ogs_asn_copy_ie() could be failed from received packet.
+     * So we should not use ogs_assert(r != OGS_ERROR).*/
 }
 
 void ngap_handle_handover_notification(
