@@ -697,6 +697,64 @@ int ogs_dbi_subscription_data(char *supi,
 
                                         }
                                     }
+                                } else if (!strcmp(child4_key, "ipv4_framed_routes") &&
+                                    BSON_ITER_HOLDS_ARRAY(&child4_iter)) {
+                                    int i;
+
+                                    if (session->ipv4_framed_routes) {
+                                        for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
+                                            if (!session->ipv4_framed_routes[i])
+                                                break;
+                                            ogs_free(session->ipv4_framed_routes[i]);
+                                        }
+                                    } else {
+                                        session->ipv4_framed_routes = ogs_calloc(
+                                                OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI,
+                                                sizeof(session->ipv4_framed_routes[0]));
+                                    }
+                                    bson_iter_recurse(
+                                            &child4_iter, &child5_iter);
+                                    i = 0;
+                                    while (bson_iter_next(&child5_iter)) {
+                                        const char *v;
+
+                                        if (i >= OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI)
+                                            break;
+
+                                        if (!BSON_ITER_HOLDS_UTF8(&child5_iter))
+                                            continue;
+                                        v = bson_iter_utf8(&child5_iter, &length);
+                                        session->ipv4_framed_routes[i++] = ogs_strdup(v);
+                                    }
+                                } else if (!strcmp(child4_key, "ipv6_framed_routes") &&
+                                    BSON_ITER_HOLDS_ARRAY(&child4_iter)) {
+                                    int i;
+
+                                    if (session->ipv6_framed_routes) {
+                                        for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
+                                            if (!session->ipv6_framed_routes[i])
+                                                break;
+                                            ogs_free(session->ipv6_framed_routes[i]);
+                                        }
+                                    } else {
+                                        session->ipv6_framed_routes = ogs_calloc(
+                                                OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI,
+                                                sizeof(session->ipv6_framed_routes[0]));
+                                    }
+                                    bson_iter_recurse(
+                                            &child4_iter, &child5_iter);
+                                    i = 0;
+                                    while (bson_iter_next(&child5_iter)) {
+                                        const char *v;
+
+                                        if (i >= OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI)
+                                            break;
+
+                                        if (!BSON_ITER_HOLDS_UTF8(&child5_iter))
+                                            continue;
+                                        v = bson_iter_utf8(&child5_iter, &length);
+                                        session->ipv6_framed_routes[i++] = ogs_strdup(v);
+                                    }
                                 }
                             }
                             slice_data->num_of_session++;
