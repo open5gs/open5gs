@@ -356,7 +356,7 @@ int test_gtpu_send_slacc_rs(ogs_socknode_t *node, test_bearer_t *bearer)
     const char *payload =
         "6000000000083aff fe80000000000000 0000000000000002"
         "ff02000000000000 0000000000000002 85007d3500000000";
-    unsigned char tmp[OGS_MAX_SDU_LEN];
+    unsigned char tmp[OGS_HUGE_LEN];
     int payload_len = 48;
 
     ogs_assert(bearer);
@@ -425,7 +425,7 @@ int test_gtpu_send_slacc_rs_with_unspecified_source_address(
         "60000000"
         "00103afffe800000 0000000074ee25ff fee4b579ff020000 0000000000000000"
         "000000028500da95 00000000010176ee 25e4b579";
-    unsigned char tmp[OGS_MAX_SDU_LEN];
+    unsigned char tmp[OGS_HUGE_LEN];
     int payload_len = 56;
 
     ogs_assert(bearer);

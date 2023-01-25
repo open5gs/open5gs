@@ -34,7 +34,7 @@ static void gtp_message_test1(abts_case *tc, void *data)
         "005d001f00490001 0005500016004505 0000000000000000 0000000000000000"
         "0000000072000200 40005f0002005400";
     char *_value = NULL;
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     ogs_gtp2_create_session_request_t req;
     ogs_gtp2_uli_t uli;
