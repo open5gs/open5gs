@@ -2004,7 +2004,7 @@ void s1ap_handle_enb_configuration_transfer(
         mme_enb_t *enb, ogs_s1ap_message_t *message, ogs_pkbuf_t *pkbuf)
 {
     char buf[OGS_ADDRSTRLEN];
-    int i;
+    int i, r;
 
     S1AP_InitiatingMessage_t *initiatingMessage = NULL;
     S1AP_ENBConfigurationTransfer_t *ENBConfigurationTransfer = NULL;
@@ -2084,9 +2084,11 @@ void s1ap_handle_enb_configuration_transfer(
             return;
         }
 
-        ogs_assert(OGS_OK ==
-            s1ap_send_mme_configuration_transfer(
-                target_enb, SONConfigurationTransfer));
+        r = s1ap_send_mme_configuration_transfer(
+                target_enb, SONConfigurationTransfer);
+        ogs_expect(r == OGS_OK);
+        /* ogs_asn_copy_ie() could be failed from received packet.
+         * So we should not use ogs_assert(r != OGS_ERROR).*/
     }
 }
 
@@ -2684,7 +2686,7 @@ void s1ap_handle_enb_status_transfer(
         mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
     char buf[OGS_ADDRSTRLEN];
-    int i;
+    int i, r;
 
     S1AP_InitiatingMessage_t *initiatingMessage = NULL;
     S1AP_ENBStatusTransfer_t *ENBStatusTransfer = NULL;
@@ -2776,9 +2778,11 @@ void s1ap_handle_enb_status_transfer(
     ogs_debug("    Target : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
 
-    ogs_assert(OGS_OK ==
-        s1ap_send_mme_status_transfer(target_ue,
-            ENB_StatusTransfer_TransparentContainer));
+    r = s1ap_send_mme_status_transfer(target_ue,
+            ENB_StatusTransfer_TransparentContainer);
+    ogs_expect(r == OGS_OK);
+    /* ogs_asn_copy_ie() could be failed from received packet.
+     * So we should not use ogs_assert(r != OGS_ERROR).*/
 }
 
 void s1ap_handle_handover_notification(
