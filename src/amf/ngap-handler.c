@@ -2138,7 +2138,7 @@ void ngap_handle_uplink_ran_configuration_transfer(
         amf_gnb_t *gnb, ogs_ngap_message_t *message, ogs_pkbuf_t *pkbuf)
 {
     char buf[OGS_ADDRSTRLEN];
-    int i;
+    int i, r;
 
     NGAP_InitiatingMessage_t *initiatingMessage = NULL;
     NGAP_UplinkRANConfigurationTransfer_t
@@ -2251,9 +2251,11 @@ void ngap_handle_uplink_ran_configuration_transfer(
             return;
         }
 
-        ogs_assert(OGS_OK ==
-            ngap_send_downlink_ran_configuration_transfer(
-                target_gnb, SONConfigurationTransfer));
+        r = ngap_send_downlink_ran_configuration_transfer(
+                target_gnb, SONConfigurationTransfer);
+        ogs_expect(r == OGS_OK);
+        /* ogs_asn_copy_ie() could be failed from received packet.
+         * So we should not use ogs_assert(r != OGS_ERROR).*/
     }
 }
 
@@ -3352,7 +3354,7 @@ void ngap_handle_uplink_ran_status_transfer(
         amf_gnb_t *gnb, ogs_ngap_message_t *message)
 {
     char buf[OGS_ADDRSTRLEN];
-    int i;
+    int i, r;
 
     amf_ue_t *amf_ue = NULL;
     ran_ue_t *source_ue = NULL, *target_ue = NULL;
@@ -3457,9 +3459,11 @@ void ngap_handle_uplink_ran_status_transfer(
     ogs_debug("    Target : RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld] ",
         target_ue->ran_ue_ngap_id, (long long)target_ue->amf_ue_ngap_id);
 
-    ogs_assert(OGS_OK ==
-        ngap_send_downlink_ran_status_transfer(
-            target_ue, RANStatusTransfer_TransparentContainer));
+    r = ngap_send_downlink_ran_status_transfer(
+            target_ue, RANStatusTransfer_TransparentContainer);
+    ogs_expect(r == OGS_OK);
+    /* ogs_asn_copy_ie() could be failed from received packet.
+     * So we should not use ogs_assert(r != OGS_ERROR).*/
 }
 
 void ngap_handle_handover_notification(

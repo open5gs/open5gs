@@ -1551,7 +1551,11 @@ ogs_pkbuf_t *s1ap_build_mme_configuration_transfer(
 
     rv = ogs_asn_copy_ie(&asn_DEF_S1AP_SONConfigurationTransfer,
             son_configuration_transfer, SONConfigurationTransfer);
-    ogs_assert(rv == OGS_OK);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_asn_copy_ie() failed");
+        ogs_asn_free(&asn_DEF_S1AP_S1AP_PDU, &pdu);
+        return NULL;
+    }
 
     return ogs_s1ap_encode(&pdu);
 }
@@ -2371,7 +2375,11 @@ ogs_pkbuf_t *s1ap_build_mme_status_transfer(
             &asn_DEF_S1AP_ENB_StatusTransfer_TransparentContainer,
             enb_statustransfer_transparentContainer,
             ENB_StatusTransfer_TransparentContainer);
-    ogs_assert(rv == OGS_OK);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_asn_copy_ie() failed");
+        ogs_asn_free(&asn_DEF_S1AP_S1AP_PDU, &pdu);
+        return NULL;
+    }
 
     return ogs_s1ap_encode(&pdu);
 }

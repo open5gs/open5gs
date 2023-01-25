@@ -525,8 +525,11 @@ int ngap_send_downlink_ran_status_transfer(
     ogs_assert(target_ue);
     ogs_assert(transfer);
 
-    ngapbuf = ngap_build_uplink_ran_status_transfer(target_ue, transfer);
-    ogs_expect_or_return_val(ngapbuf, OGS_ERROR);
+    ngapbuf = ngap_build_downlink_ran_status_transfer(target_ue, transfer);
+    if (!ngapbuf) {
+        ogs_error("ngap_build_uplink_ran_status_transfer() failed");
+        return OGS_ERROR;
+    }
 
     rv = ngap_send_to_ran_ue(target_ue, ngapbuf);
     ogs_expect(rv == OGS_OK);
