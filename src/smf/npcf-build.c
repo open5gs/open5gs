@@ -108,35 +108,25 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
     }
 
     if (sess->session.ipv4_framed_routes) {
+        int i;
         OpenAPI_list_t *FrameRouteList = OpenAPI_list_create();
-        OpenAPI_lnode_t *node;
 
-        OpenAPI_list_for_each(sess->session.ipv4_framed_routes, node) {
-            OpenAPI_frame_route_info_t *route = node->data;
-            if (!route)
-                continue;
-            if (!route->ipv4_mask) {
-                ogs_error("Invalid FrameRouteInfo");
-                continue;
-            }
-            OpenAPI_list_add(FrameRouteList, ogs_strdup(route->ipv4_mask));
+        for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
+            const char *route = sess->session.ipv4_framed_routes[i];
+            if (!route) break;
+            OpenAPI_list_add(FrameRouteList, ogs_strdup(route));
         }
         SmPolicyContextData.ipv4_frame_route_list = FrameRouteList;
     }
 
     if (sess->session.ipv6_framed_routes) {
+        int i;
         OpenAPI_list_t *FrameRouteList = OpenAPI_list_create();
-        OpenAPI_lnode_t *node;
 
-        OpenAPI_list_for_each(sess->session.ipv6_framed_routes, node) {
-            OpenAPI_frame_route_info_t *route = node->data;
-            if (!route)
-                continue;
-            if (!route->ipv6_prefix) {
-                ogs_error("Invalid FrameRouteInfo");
-                continue;
-            }
-            OpenAPI_list_add(FrameRouteList, ogs_strdup(route->ipv6_prefix));
+        for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
+            const char *route = sess->session.ipv6_framed_routes[i];
+            if (!route) break;
+            OpenAPI_list_add(FrameRouteList, ogs_strdup(route));
         }
         SmPolicyContextData.ipv6_frame_route_list = FrameRouteList;
     }
