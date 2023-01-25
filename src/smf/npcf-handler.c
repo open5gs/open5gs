@@ -494,48 +494,33 @@ bool smf_npcf_smpolicycontrol_handle_create(
 
     if (sess->session.ipv4_framed_routes &&
         sess->pfcp_node->up_function_features.frrt) {
-        OpenAPI_frame_route_info_t *FrameRouteInfo = NULL;
         int i = 0;
-        OpenAPI_list_for_each(sess->session.ipv4_framed_routes, node) {
-            FrameRouteInfo = node->data;
-            if (i >= OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI)
-                break;
-            if (!FrameRouteInfo)
-                continue;
-            if (!FrameRouteInfo->ipv4_mask) {
-                ogs_error("Invalid FrameRouteInfo");
-                continue;
-            }
+        for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
+            const char *route = sess->session.ipv4_framed_routes[i];
+            if (!route) break;
             if (!dl_pdr->ipv4_framed_routes) {
                 dl_pdr->ipv4_framed_routes =
                     ogs_calloc(OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI,
                                sizeof(dl_pdr->ipv4_framed_routes[0]));
                 ogs_assert(dl_pdr->ipv4_framed_routes);
             }
-            dl_pdr->ipv4_framed_routes[i++] = ogs_strdup(FrameRouteInfo->ipv4_mask);
+            dl_pdr->ipv4_framed_routes[i] = ogs_strdup(route);
         }
     }
 
     if (sess->session.ipv6_framed_routes &&
         sess->pfcp_node->up_function_features.frrt) {
-        OpenAPI_frame_route_info_t *FrameRouteInfo = NULL;
         int i = 0;
-        OpenAPI_list_for_each(sess->session.ipv6_framed_routes, node) {
-            FrameRouteInfo = node->data;
-            if (i >= OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI)
-                continue;
-            if (!FrameRouteInfo)
-                continue;
-            if (!FrameRouteInfo->ipv6_prefix) {
-                ogs_error("Invalid FrameRouteInfo");
-                continue;
-            }
+        for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
+            const char *route = sess->session.ipv6_framed_routes[i];
+            if (!route) break;
             if (!dl_pdr->ipv6_framed_routes) {
                 dl_pdr->ipv6_framed_routes =
-                    ogs_malloc(OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI);
+                    ogs_calloc(OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI,
+                               sizeof(dl_pdr->ipv6_framed_routes[0]));
                 ogs_assert(dl_pdr->ipv6_framed_routes);
             }
-            dl_pdr->ipv6_framed_routes[i++] = ogs_strdup(FrameRouteInfo->ipv6_prefix);
+            dl_pdr->ipv6_framed_routes[i] = ogs_strdup(route);
         }
     }
 
