@@ -32,7 +32,7 @@ static void test1_func(abts_case *tc, void *data)
     ogs_ngap_message_t message;
     int i;
 
-    uint8_t tmp[OGS_MAX_SDU_LEN];
+    uint8_t tmp[OGS_HUGE_LEN];
     char *_gtp_payload = "34ff0024"
         "0000000100000085 010002004500001c 0c0b000040015a7a 0a2d00010a2d0002"
         "00000964cd7c291f";
@@ -511,7 +511,7 @@ static void test2_func(abts_case *tc, void *data)
     ogs_ngap_message_t message;
     int i;
 
-    uint8_t tmp[OGS_MAX_SDU_LEN];
+    uint8_t tmp[OGS_HUGE_LEN];
     char *_gtp_payload = "34ff0024"
         "0000000100000085 010002004500001c 0c0b000040015a7a 0a2d00010a2d0002"
         "00000964cd7c291f";
@@ -940,7 +940,7 @@ static void test3_func(abts_case *tc, void *data)
     ogs_ngap_message_t message;
     int i;
 
-    uint8_t tmp[OGS_MAX_SDU_LEN];
+    uint8_t tmp[OGS_HUGE_LEN];
     char *_gtp_payload = "34ff0024"
         "0000000100000085 010002004500001c 0c0b000040015a7a 0a2d00010a2d0002"
         "00000964cd7c291f";
@@ -1355,7 +1355,7 @@ static void test4_func(abts_case *tc, void *data)
     ogs_ngap_message_t message;
     int i;
 
-    uint8_t tmp[OGS_MAX_SDU_LEN];
+    uint8_t tmp[OGS_HUGE_LEN];
     char *_gtp_payload = "34ff0024"
         "0000000100000085 010002004500001c 0c0b000040015a7a 0a2d00010a2d0002"
         "00000964cd7c291f";
@@ -1698,7 +1698,7 @@ static void test5_func(abts_case *tc, void *data)
     ogs_ngap_message_t message;
     int i;
 
-    uint8_t tmp[OGS_MAX_SDU_LEN];
+    uint8_t tmp[OGS_HUGE_LEN];
     char *_gtp_payload = "34ff0024"
         "0000000100000085 010002004500001c 0c0b000040015a7a 0a2d00010a2d0002"
         "00000964cd7c291f";
@@ -1976,7 +1976,7 @@ static void test6_func(abts_case *tc, void *data)
     ogs_ngap_message_t message;
     int i;
 
-    uint8_t tmp[OGS_MAX_SDU_LEN];
+    uint8_t tmp[OGS_HUGE_LEN];
     char *_gtp_payload = "34ff0024"
         "0000000100000085 010002004500001c 0c0b000040015a7a 0a2d00010a2d0002"
         "00000964cd7c291f";

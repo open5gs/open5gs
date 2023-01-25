@@ -881,7 +881,7 @@ ogs_pkbuf_t *testemm_build_uplink_nas_transport(test_ue_t *test_ue)
     ogs_nas_eps_message_container_t *nas_message_container =
         &uplink_nas_transport->nas_message_container;
 
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
     const char *payload =
         "390167000300"
         "0581005155f55d11 030c914477680205 490000055ad2e2b1 252d467ff6de6c47"

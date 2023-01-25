@@ -343,7 +343,7 @@ static void test2_func(abts_case *tc, void *data)
     ogs_s1ap_message_t message;
     ogs_pkbuf_t *enb_pkbuf;
     int result;
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     enb_pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(enb_pkbuf);
@@ -370,7 +370,7 @@ static void test3_func(abts_case *tc, void *data)
     ogs_s1ap_message_t message;
     ogs_pkbuf_t *enb_pkbuf;
     int result;
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     enb_pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(enb_pkbuf);
@@ -396,7 +396,7 @@ static void test4_func(abts_case *tc, void *data)
     ogs_s1ap_message_t message;
     ogs_pkbuf_t *enb_pkbuf;
     int result;
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     enb_pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(enb_pkbuf);
@@ -420,7 +420,7 @@ static void test5_func(abts_case *tc, void *data)
     ogs_s1ap_message_t message;
     ogs_pkbuf_t *enb_pkbuf;
     int result;
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     enb_pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(enb_pkbuf);
@@ -587,7 +587,7 @@ static void test6_func(abts_case *tc, void *data)
 
     ogs_pkbuf_t *s1apbuf = NULL;
     ogs_pkbuf_t *emmbuf = NULL;
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     emmbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(emmbuf);

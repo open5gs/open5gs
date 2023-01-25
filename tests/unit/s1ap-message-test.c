@@ -32,7 +32,7 @@ static void s1ap_message_test1(abts_case *tc, void *data)
     ogs_s1ap_message_t message;
     ogs_pkbuf_t *pkbuf;
     int result;
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
@@ -62,7 +62,7 @@ static void s1ap_message_test2(abts_case *tc, void *data)
     ogs_s1ap_message_t message;
     ogs_pkbuf_t *pkbuf;
     int result;
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
@@ -87,7 +87,7 @@ static void s1ap_message_test3(abts_case *tc, void *data)
     ogs_s1ap_message_t message;
     ogs_pkbuf_t *pkbuf;
     int result;
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
@@ -113,7 +113,7 @@ static void s1ap_message_test4(abts_case *tc, void *data)
     ogs_s1ap_message_t message;
     ogs_pkbuf_t *pkbuf;
     int result;
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
@@ -138,7 +138,7 @@ static void s1ap_message_test5(abts_case *tc, void *data)
     ogs_s1ap_message_t message;
     ogs_pkbuf_t *pkbuf;
     int result;
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
@@ -163,7 +163,7 @@ static void s1ap_message_test6(abts_case *tc, void *data)
     ogs_s1ap_message_t message;
     ogs_pkbuf_t *pkbuf;
     int result;
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
@@ -188,7 +188,7 @@ static void s1ap_message_test7(abts_case *tc, void *data)
     ogs_s1ap_message_t message;
     ogs_pkbuf_t *pkbuf;
     int result;
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);

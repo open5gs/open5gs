@@ -32,7 +32,7 @@ static void ogs_nas_eps_message_test1(abts_case *tc, void *data)
     ogs_nas_eps_message_t message;
     ogs_pkbuf_t *pkbuf;
     int rv;
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
@@ -145,7 +145,7 @@ static void ogs_nas_eps_message_test3(abts_case *tc, void *data)
     ogs_nas_eps_message_t message;
     ogs_pkbuf_t *pkbuf;
     int rv;
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
@@ -205,7 +205,7 @@ static void ogs_nas_eps_message_test6(abts_case *tc, void *data)
 {
     /* Identity Request */
     const char *payload = "075501";
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     ogs_nas_eps_message_t message;
     ogs_nas_eps_identity_request_t *identity_request =
@@ -287,7 +287,7 @@ static void ogs_nas_eps_message_test8(abts_case *tc, void *data)
     ogs_nas_eps_message_t message;
     ogs_pkbuf_t *pkbuf;
     int rv;
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
     ogs_nas_eps_service_request_t *service_request =
         &message.emm.service_request;
     ogs_nas_ksi_and_sequence_number_t *ksi_and_sequence_number = 
