@@ -670,7 +670,7 @@ ogs_pkbuf_t *testngap_build_ue_radio_capability_info_indication(
     NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
     NGAP_UERadioCapability_t *UERadioCapability = NULL;
 
-    uint8_t tmp[OGS_MAX_SDU_LEN];
+    uint8_t tmp[OGS_HUGE_LEN];
     char *_capability_captured = "040ca1080f"
         "de1a00000074e5a0 31e000380a03c126 0c80038d80818804 804c0203018022a3"
         "6146b040d0d00012 0098087ad8202020 e1de38720c380020 64f1f570000f001c"
@@ -1740,7 +1740,7 @@ ogs_pkbuf_t *testngap_build_handover_required(
     NGAP_SourceToTarget_TransparentContainer_t
         *SourceToTarget_TransparentContainer = NULL;
 
-    uint8_t tmp[OGS_MAX_SDU_LEN];
+    uint8_t tmp[OGS_HUGE_LEN];
     char *_container =
         "40"
         "0300001100000a00 010002f839000102 0120000002f83900 0000001000000a";
@@ -1903,7 +1903,7 @@ ogs_pkbuf_t *testngap_build_handover_request_ack(test_ue_t *test_ue)
     NGAP_TargetToSource_TransparentContainer_t
         *TargetToSource_TransparentContainer = NULL;
 
-    uint8_t tmp[OGS_MAX_SDU_LEN];
+    uint8_t tmp[OGS_HUGE_LEN];
     char *_container =
         "00010000";
 
