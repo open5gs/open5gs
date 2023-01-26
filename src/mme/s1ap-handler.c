@@ -330,6 +330,9 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
                     ogs_assert(r != OGS_ERROR);
                 }
                 enb_ue_associate_mme_ue(enb_ue, mme_ue);
+                ogs_debug("Mobile Reachable timer stopped for IMSI[%s]", 
+                    mme_ue->imsi_bcd);
+                CLEAR_MME_UE_TIMER(mme_ue->t_mobile_reachable);
             }
         }
     }
@@ -1535,6 +1538,13 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
          * to prevent retransmission of NAS messages.
          */
         CLEAR_MME_UE_ALL_TIMERS(mme_ue);
+
+        if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
+            ogs_debug("Mobile Reachable timer started for IMSI[%s]",
+                mme_ue->imsi_bcd);
+            ogs_timer_start(mme_ue->t_mobile_reachable.timer,
+                ogs_time_from_sec(mme_self()->time.t3412.value + 240));
+        }
     }
 
     switch (enb_ue->ue_ctx_rel_action) {
@@ -3099,6 +3109,8 @@ void s1ap_handle_handover_notification(
             target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
 
     enb_ue_associate_mme_ue(target_ue, mme_ue);
+    ogs_debug("Mobile Reachable timer stopped for IMSI[%s]", mme_ue->imsi_bcd);
+    CLEAR_MME_UE_TIMER(mme_ue->t_mobile_reachable);
 
     memcpy(&target_ue->saved.tai.plmn_id, pLMNidentity->buf,
             sizeof(target_ue->saved.tai.plmn_id));
