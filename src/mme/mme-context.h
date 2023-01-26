@@ -517,6 +517,8 @@ struct mme_ue_s {
         CLEAR_MME_UE_TIMER((__mME)->t3450); \
         CLEAR_MME_UE_TIMER((__mME)->t3460); \
         CLEAR_MME_UE_TIMER((__mME)->t3470); \
+        CLEAR_MME_UE_TIMER((__mME)->t_mobile_reachable); \
+        CLEAR_MME_UE_TIMER((__mME)->t_implicit_detach); \
         \
         ogs_list_for_each(&mme_ue->sess_list, sess) { \
             ogs_list_for_each(&sess->bearer_list, bearer) { \
@@ -537,7 +539,8 @@ struct mme_ue_s {
         ogs_pkbuf_t     *pkbuf;
         ogs_timer_t     *timer;
         uint32_t        retry_count;;
-    } t3413, t3422, t3450, t3460, t3470;
+    } t3413, t3422, t3450, t3460, t3470, t_mobile_reachable, 
+        t_implicit_detach;
 
 #define CLEAR_SERVICE_INDICATOR(__mME) \
     do { \

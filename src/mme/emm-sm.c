@@ -61,6 +61,8 @@ void emm_state_de_registered(ogs_fsm_t *s, mme_event_t *e)
 
     ogs_assert(e);
 
+    mme_sm_debug(e);
+
     mme_ue = e->mme_ue;
     ogs_assert(mme_ue);
 
@@ -109,6 +111,8 @@ void emm_state_registered(ogs_fsm_t *s, mme_event_t *e)
     mme_ue_t *mme_ue = NULL;
 
     ogs_assert(e);
+
+    mme_sm_debug(e);
 
     mme_ue = e->mme_ue;
     ogs_assert(mme_ue);
@@ -176,6 +180,37 @@ void emm_state_registered(ogs_fsm_t *s, mme_event_t *e)
             }
             break;
 
+        case MME_TIMER_MOBILE_REACHABLE:
+            ogs_info("[%s] Mobile Reachable timer expired", mme_ue->imsi_bcd);
+            CLEAR_MME_UE_TIMER(mme_ue->t_mobile_reachable);
+            /* TS 24.301 5.3.5
+             * Upon expiry of the mobile reachable timer the network shall
+             * start the implicit detach timer.
+             */
+            ogs_debug("[%s] Starting Implicit Detach timer",
+                mme_ue->imsi_bcd);
+            ogs_timer_start(mme_ue->t_implicit_detach.timer,
+                ogs_time_from_sec(mme_self()->time.t3412.value + 240));
+            break;
+
+        case MME_TIMER_IMPLICIT_DETACH:
+            ogs_info("[%s] Implicit Detach timer expired, detaching UE",
+                mme_ue->imsi_bcd);
+            CLEAR_MME_UE_TIMER(mme_ue->t_implicit_detach);
+            /* TS 24.301 5.3.5
+             * If the implicit detach timer expires before the UE contacts
+             * the network, the network shall implicitly detach the UE.
+             */
+            mme_ue->detach_type = MME_DETACH_TYPE_MME_IMPLICIT;
+            if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
+                ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
+            } else {
+                mme_send_delete_session_or_detach(mme_ue);
+            }
+
+            OGS_FSM_TRAN(s, &emm_state_de_registered);
+            break;
+
         default:
             ogs_error("Unknown timer[%s:%d]",
                     mme_timer_get_name(e->timer_id), e->timer_id);
@@ -195,9 +230,11 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
     enb_ue_t *enb_ue = NULL;
     ogs_nas_eps_message_t *message = NULL;
     ogs_nas_security_header_type_t h;
-    
+
     ogs_assert(e);
-        
+
+    mme_sm_debug(e);
+
     mme_ue = e->mme_ue;
     ogs_assert(mme_ue);
 
@@ -637,6 +674,24 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             if (rv != OGS_OK) {
                 ogs_error("emm_handle_detach_request() failed");
                 OGS_FSM_TRAN(s, emm_state_exception);
+                break;
+            }
+
+            if (!MME_UE_HAVE_IMSI(mme_ue)) {
+                ogs_warn("Detach request : Unknown UE");
+                ogs_assert(OGS_OK ==
+                    nas_eps_send_service_reject(mme_ue,
+                    OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
+                OGS_FSM_TRAN(s, &emm_state_exception);
+                break;
+            }
+
+            if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
+                ogs_warn("No Security Context : IMSI[%s]", mme_ue->imsi_bcd);
+                ogs_assert(OGS_OK ==
+                    nas_eps_send_service_reject(mme_ue,
+                    OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
+                OGS_FSM_TRAN(s, &emm_state_exception);
                 break;
             }
 

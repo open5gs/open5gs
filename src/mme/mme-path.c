@@ -22,6 +22,7 @@
 #include "sgsap-path.h"
 #include "mme-gtp-path.h"
 #include "mme-path.h"
+#include "mme-fd-path.h"
 #include "mme-sm.h"
 
 void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
@@ -61,10 +62,31 @@ void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
         }
         break;
 
-    /* MME Implicit Detach, ie: Lost Communication */
+    /* MME Implicit Detach, ie: Lost Communication
+     * TS23.401 - V16.10.0
+     * Ch 5.3.8.3 MME-initiated Detach procedure (Without Step 1)
+     */
     case MME_DETACH_TYPE_MME_IMPLICIT:
-        ogs_fatal("Not Implemented : MME_DETACH_TYPE_MME_IMPLICIT");
-        ogs_assert_if_reached();
+        ogs_debug("Implicit MME Detach");
+        if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
+            mme_gtp_send_delete_all_sessions(mme_ue,
+                OGS_GTP_DELETE_SEND_RELEASE_WITH_UE_CONTEXT_REMOVE);
+        } else {
+            enb_ue_t *enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+            if (enb_ue) {
+                ogs_assert(OGS_OK ==
+                    s1ap_send_ue_context_release_command(enb_ue,
+                        S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                        S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
+            } else {
+                if (mme_ue->location_updated_but_not_canceled_yet == true) {
+                    mme_s6a_send_pur(mme_ue);
+                } else {
+                    mme_ue_hash_remove(mme_ue);
+                    mme_ue_remove(mme_ue);
+                }
+            }
+        }
         break;
 
     /* HSS Implicit Detach, ie: MME-UPDATE-PROCEDURE

@@ -2402,6 +2402,22 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
         return NULL;
     }
     mme_ue->t3470.pkbuf = NULL;
+    mme_ue->t_mobile_reachable.timer = ogs_timer_add(
+            ogs_app()->timer_mgr, mme_timer_mobile_reachable_expire, mme_ue);
+    if (!mme_ue->t_mobile_reachable.timer) {
+        ogs_error("ogs_timer_add() failed");
+        ogs_pool_free(&mme_ue_pool, mme_ue);
+        return NULL;
+    }
+    mme_ue->t_mobile_reachable.pkbuf = NULL;
+    mme_ue->t_implicit_detach.timer = ogs_timer_add(
+            ogs_app()->timer_mgr, mme_timer_implicit_detach_expire, mme_ue);
+    if (!mme_ue->t_implicit_detach.timer) {
+        ogs_error("ogs_timer_add() failed");
+        ogs_pool_free(&mme_ue_pool, mme_ue);
+        return NULL;
+    }
+    mme_ue->t_implicit_detach.pkbuf = NULL;
 
     mme_ebi_pool_init(mme_ue);
 
@@ -2493,6 +2509,8 @@ void mme_ue_remove(mme_ue_t *mme_ue)
     ogs_timer_delete(mme_ue->t3450.timer);
     ogs_timer_delete(mme_ue->t3460.timer);
     ogs_timer_delete(mme_ue->t3470.timer);
+    ogs_timer_delete(mme_ue->t_mobile_reachable.timer);
+    ogs_timer_delete(mme_ue->t_implicit_detach.timer);
 
     enb_ue_unlink(mme_ue);
 
