@@ -882,7 +882,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
             OGS_FSM_TRAN(s, &emm_state_exception);
             break;
         case OGS_NAS_EPS_DETACH_REQUEST:
-            ogs_warn("Detach request");
+            ogs_warn("[%s] Detach request", mme_ue->imsi_bcd);
             rv = emm_handle_detach_request(
                     mme_ue, &message->emm.detach_request_from_ue);
             if (rv != OGS_OK) {
@@ -891,7 +891,30 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
                 break;
             }
 
-            mme_send_delete_session_or_detach(mme_ue);
+            if (!MME_UE_HAVE_IMSI(mme_ue)) {
+                ogs_warn("Detach request : Unknown UE");
+                ogs_assert(OGS_OK ==
+                    nas_eps_send_service_reject(mme_ue,
+                    OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
+                OGS_FSM_TRAN(s, &emm_state_exception);
+                break;
+            }
+
+            if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
+                ogs_warn("No Security Context : IMSI[%s]", mme_ue->imsi_bcd);
+                ogs_assert(OGS_OK ==
+                    nas_eps_send_service_reject(mme_ue,
+                    OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
+                OGS_FSM_TRAN(s, &emm_state_exception);
+                break;
+            }
+
+            if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
+                ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
+            } else {
+                mme_send_delete_session_or_detach(mme_ue);
+            }
+
             OGS_FSM_TRAN(s, &emm_state_de_registered);
             break;
         default:
@@ -1059,7 +1082,7 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
             OGS_FSM_TRAN(s, &emm_state_exception);
             break;
         case OGS_NAS_EPS_DETACH_REQUEST:
-            ogs_warn("Detach request");
+            ogs_warn("[%s] Detach request", mme_ue->imsi_bcd);
             rv = emm_handle_detach_request(
                     mme_ue, &message->emm.detach_request_from_ue);
             if (rv != OGS_OK) {
@@ -1068,7 +1091,30 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
                 break;
             }
 
-            mme_send_delete_session_or_detach(mme_ue);
+            if (!MME_UE_HAVE_IMSI(mme_ue)) {
+                ogs_warn("Detach request : Unknown UE");
+                ogs_assert(OGS_OK ==
+                    nas_eps_send_service_reject(mme_ue,
+                    OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
+                OGS_FSM_TRAN(s, &emm_state_exception);
+                break;
+            }
+
+            if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
+                ogs_warn("No Security Context : IMSI[%s]", mme_ue->imsi_bcd);
+                ogs_assert(OGS_OK ==
+                    nas_eps_send_service_reject(mme_ue,
+                    OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
+                OGS_FSM_TRAN(s, &emm_state_exception);
+                break;
+            }
+
+            if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
+                ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
+            } else {
+                mme_send_delete_session_or_detach(mme_ue);
+            }
+
             OGS_FSM_TRAN(s, &emm_state_de_registered);
             break;
         default:
@@ -1257,7 +1303,7 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
             OGS_FSM_TRAN(s, &emm_state_exception);
             break;
         case OGS_NAS_EPS_DETACH_REQUEST:
-            ogs_warn("Detach request");
+            ogs_warn("[%s] Detach request", mme_ue->imsi_bcd);
             rv = emm_handle_detach_request(
                     mme_ue, &message->emm.detach_request_from_ue);
             if (rv != OGS_OK) {
@@ -1266,7 +1312,30 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
                 break;
             }
 
-            mme_send_delete_session_or_detach(mme_ue);
+            if (!MME_UE_HAVE_IMSI(mme_ue)) {
+                ogs_warn("Detach request : Unknown UE");
+                ogs_assert(OGS_OK ==
+                    nas_eps_send_service_reject(mme_ue,
+                    OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
+                OGS_FSM_TRAN(s, &emm_state_exception);
+                break;
+            }
+
+            if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
+                ogs_warn("No Security Context : IMSI[%s]", mme_ue->imsi_bcd);
+                ogs_assert(OGS_OK ==
+                    nas_eps_send_service_reject(mme_ue,
+                    OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
+                OGS_FSM_TRAN(s, &emm_state_exception);
+                break;
+            }
+
+            if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
+                ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
+            } else {
+                mme_send_delete_session_or_detach(mme_ue);
+            }
+
             OGS_FSM_TRAN(s, &emm_state_de_registered);
             break;
         case OGS_NAS_EPS_SECURITY_MODE_COMPLETE:
