@@ -330,7 +330,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
                     ogs_assert(r != OGS_ERROR);
                 }
                 enb_ue_associate_mme_ue(enb_ue, mme_ue);
-                ogs_debug("Mobile Reachable timer stopped for IMSI[%s]", 
+                ogs_debug("Mobile Reachable timer stopped for IMSI[%s]",
                     mme_ue->imsi_bcd);
                 CLEAR_MME_UE_TIMER(mme_ue->t_mobile_reachable);
             }

@@ -539,7 +539,7 @@ struct mme_ue_s {
         ogs_pkbuf_t     *pkbuf;
         ogs_timer_t     *timer;
         uint32_t        retry_count;;
-    } t3413, t3422, t3450, t3460, t3470, t_mobile_reachable, 
+    } t3413, t3422, t3450, t3460, t3470, t_mobile_reachable,
         t_implicit_detach;
 
 #define CLEAR_SERVICE_INDICATOR(__mME) \
