@@ -137,8 +137,8 @@ void emm_state_registered(ogs_fsm_t *s, mme_event_t *e)
                         mme_ue->imsi_bcd);
                 CLEAR_MME_UE_TIMER(mme_ue->t3413);
 
-                ogs_assert(MME_PAGING_ONGOING(mme_ue));
-                mme_send_after_paging(mme_ue, true);
+                if (MME_PAGING_ONGOING(mme_ue))
+                    mme_send_after_paging(mme_ue, true);
             } else {
                 mme_ue->t3413.retry_count++;
                 /*
