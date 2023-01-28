@@ -443,8 +443,7 @@ bool smf_npcf_smpolicycontrol_handle_create(
     smf_sess_select_upf(sess);
 
     /* Check if selected UPF is associated with SMF */
-    ogs_assert(sess->pfcp_node);
-    if (!OGS_FSM_CHECK(&sess->pfcp_node->sm, smf_pfcp_state_associated)) {
+    if (!sess->pfcp_node || !OGS_FSM_CHECK(&sess->pfcp_node->sm, smf_pfcp_state_associated)) {
         ogs_error("[%s] No associated UPF", smf_ue->supi);
         return false;
     }

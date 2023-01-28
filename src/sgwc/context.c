@@ -363,8 +363,9 @@ static ogs_pfcp_node_t *selected_sgwu_node(
         }
     }
 
-    ogs_error("No SGWUs are PFCP associated that are suited to RR");
-    return ogs_list_first(&ogs_pfcp_self()->pfcp_peer_list);
+    // If we get here, it means no suitable SGWU can be found
+    ogs_error("No SGWUs are PFCP associated that are suited to RR for UE TAC %u", sess->sgwc_ue->e_tai.tac);
+    return NULL;
 }
 
 void sgwc_sess_select_sgwu(sgwc_sess_t *sess)
@@ -384,6 +385,11 @@ void sgwc_sess_select_sgwu(sgwc_sess_t *sess)
     /* setup GTP session with selected SGW-U */
     ogs_pfcp_self()->pfcp_node =
         selected_sgwu_node(ogs_pfcp_self()->pfcp_node, sess);
+
+    if (ogs_pfcp_self()->pfcp_node == NULL) {
+        return;
+    }
+
     ogs_assert(ogs_pfcp_self()->pfcp_node);
     OGS_SETUP_PFCP_NODE(sess, ogs_pfcp_self()->pfcp_node);
     ogs_debug("UE using SGW-U on IP[%s]",

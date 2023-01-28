@@ -285,10 +285,9 @@ uint8_t smf_gn_handle_create_pdp_context_request(
     smf_sess_select_upf(sess);
 
     /* Check if selected PGW is associated with SMF */
-    ogs_assert(sess->pfcp_node);
-    if (!OGS_FSM_CHECK(&sess->pfcp_node->sm, smf_pfcp_state_associated))
+    if (!sess->pfcp_node || !OGS_FSM_CHECK(&sess->pfcp_node->sm, smf_pfcp_state_associated))
         return OGS_GTP1_CAUSE_NO_RESOURCES_AVAILABLE;
-
+    
     if ((pfcp_cause = smf_sess_set_ue_ip(sess)) != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
         cause_value = gtp_cause_from_pfcp(pfcp_cause, 1);
         return cause_value;

@@ -1155,8 +1155,9 @@ static ogs_pfcp_node_t *selected_upf_node(
         }
     }
 
-    ogs_error("No UPFs are PFCP associated that are suited to RR");
-    return ogs_list_first(&ogs_pfcp_self()->pfcp_peer_list);
+    // If we get here, it means no suitable UPF can be found
+    ogs_error("No UPFs are PFCP associated that are suited to RR for UE TAC %u", sess->e_tai.tac);
+    return NULL;
 }
 
 void smf_sess_select_upf(smf_sess_t *sess)
@@ -1176,6 +1177,11 @@ void smf_sess_select_upf(smf_sess_t *sess)
     /* setup GTP session with selected UPF */
     ogs_pfcp_self()->pfcp_node =
         selected_upf_node(ogs_pfcp_self()->pfcp_node, sess);
+
+    if (ogs_pfcp_self()->pfcp_node == NULL) {
+        return;
+    }
+
     ogs_assert(ogs_pfcp_self()->pfcp_node);
     OGS_SETUP_PFCP_NODE(sess, ogs_pfcp_self()->pfcp_node);
     ogs_debug("UE using UPF on IP[%s]",

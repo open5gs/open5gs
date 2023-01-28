@@ -258,8 +258,7 @@ void sgwc_s11_handle_create_session_request(
     sgwc_sess_select_sgwu(sess);
 
     /* Check if selected SGW-U is associated with SGW-C */
-    ogs_assert(sess->pfcp_node);
-    if (!OGS_FSM_CHECK(&sess->pfcp_node->sm, sgwc_pfcp_state_associated)) {
+    if (!sess->pfcp_node || !OGS_FSM_CHECK(&sess->pfcp_node->sm, sgwc_pfcp_state_associated)) {
         ogs_gtp_send_error_message(
                 s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
                 OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE,

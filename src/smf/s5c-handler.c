@@ -234,8 +234,7 @@ uint8_t smf_s5c_handle_create_session_request(
     smf_sess_select_upf(sess);
 
     /* Check if selected PGW is associated with SMF */
-    ogs_assert(sess->pfcp_node);
-    if (!OGS_FSM_CHECK(&sess->pfcp_node->sm, smf_pfcp_state_associated))
+    if (!sess->pfcp_node || !OGS_FSM_CHECK(&sess->pfcp_node->sm, smf_pfcp_state_associated))
         return OGS_GTP2_CAUSE_REMOTE_PEER_NOT_RESPONDING;
 
     /* UE IP Address */
