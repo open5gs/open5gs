@@ -371,17 +371,18 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             ogs_sbi_xact_remove(sbi_xact);
 
             amf_ue = amf_ue_cycle(amf_ue);
-
-            if (amf_ue) {
-                ogs_assert(OGS_FSM_STATE(&amf_ue->sm));
-
-                e->amf_ue = amf_ue;
-                e->h.sbi.message = &sbi_message;;
-
-                ogs_fsm_dispatch(&amf_ue->sm, e);
-            } else {
+            if (!amf_ue) {
                 ogs_error("UE(amf_ue) Context has already been removed");
+                break;
             }
+
+            ogs_assert(OGS_FSM_STATE(&amf_ue->sm));
+
+            e->amf_ue = amf_ue;
+            e->h.sbi.message = &sbi_message;;
+            e->h.sbi.state = state;
+
+            ogs_fsm_dispatch(&amf_ue->sm, e);
             break;
 
         CASE(OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION)
@@ -792,7 +793,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         if (ogs_nas_5gmm_decode(&nas_message, pkbuf) != OGS_OK) {
             ogs_error("ogs_nas_5gmm_decode() failed");
             ogs_pkbuf_free(pkbuf);
-            return;
+            break;
         }
 
         amf_ue = ran_ue->amf_ue;
@@ -800,7 +801,15 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             amf_ue = amf_ue_find_by_message(&nas_message);
             if (!amf_ue) {
                 amf_ue = amf_ue_add(ran_ue);
-                ogs_assert(amf_ue);
+                if (amf_ue == NULL) {
+                    ogs_expect(OGS_OK ==
+                        ngap_send_ran_ue_context_release_command(ran_ue,
+                            NGAP_Cause_PR_misc,
+                            NGAP_CauseMisc_control_processing_overload,
+                            NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0));
+                    ogs_pkbuf_free(pkbuf);
+                    break;
+                }
             } else {
                 /* Here, if the AMF_UE Context is found,
                  * the integrity check is not performed
@@ -819,7 +828,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                         ogs_error("[%s] nas_security_decode() failed",
                                 amf_ue->suci);
                         ogs_pkbuf_free(pkbuf);
-                        return;
+                        break;
                     }
                 }
             }
@@ -872,8 +881,12 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         ogs_pkbuf_free(pkbuf);
         break;
     case AMF_EVENT_5GMM_TIMER:
-        amf_ue = e->amf_ue;
-        ogs_assert(amf_ue);
+        amf_ue = amf_ue_cycle(e->amf_ue);
+        if (!amf_ue) {
+            ogs_error("UE(amf_ue) Context has already been removed");
+            break;
+        }
+
         ogs_assert(OGS_FSM_STATE(&amf_ue->sm));
 
         ogs_fsm_dispatch(&amf_ue->sm, e);
