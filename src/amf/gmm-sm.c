@@ -58,7 +58,10 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
 
     ogs_sbi_message_t *sbi_message = NULL;
 
+    ogs_assert(s);
     ogs_assert(e);
+
+    amf_sm_debug(e);
 
     if (e->sess) {
         sess = e->sess;
@@ -264,7 +267,10 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
 
     ogs_sbi_message_t *sbi_message = NULL;
 
+    ogs_assert(s);
     ogs_assert(e);
+
+    amf_sm_debug(e);
 
     if (e->sess) {
         sess = e->sess;
@@ -1432,7 +1438,9 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
     ogs_nas_5gs_message_t *nas_message = NULL;
     ogs_nas_security_header_type_t h;
 
+    ogs_assert(s);
     ogs_assert(e);
+
     amf_sm_debug(e);
 
     if (e->sess) {
