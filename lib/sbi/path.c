@@ -274,6 +274,21 @@ bool ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
                         nf_instance->id);
             }
 
+            if (discovery_option &&
+                discovery_option->requester_features) {
+                char *v = ogs_uint64_to_string(
+                        discovery_option->requester_features);
+                if (!v) {
+                    ogs_error("ogs_uint64_to_string[0x%llx] failed",
+                            (long long)discovery_option->requester_features);
+                    return false;
+                }
+
+                ogs_sbi_header_set(request->http.headers,
+                        OGS_SBI_CUSTOM_DISCOVERY_REQUESTER_FEATURES, v);
+                ogs_free(v);
+            }
+
             rc = ogs_sbi_client_send_via_scp(
                     scp_client, client_discover_cb, request, xact);
             ogs_expect(rc == true);

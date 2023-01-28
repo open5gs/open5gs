@@ -399,6 +399,20 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
                             discovery_option->service_names[0]);
             }
         }
+        if (discovery_option->requester_features) {
+            char *v = ogs_uint64_to_string(
+                    discovery_option->requester_features);
+            if (!v) {
+                ogs_error("ogs_uint64_to_string[0x%llx] failed",
+                        (long long)discovery_option->requester_features);
+                ogs_sbi_request_free(request);
+                return false;
+            }
+
+            ogs_sbi_header_set(request->http.params,
+                    OGS_SBI_PARAM_REQUESTER_FEATURES, v);
+            ogs_free(v);
+        }
     }
 
     /* URL Query Paramemter */
@@ -668,8 +682,7 @@ int ogs_sbi_parse_request(
         /* Discovery Option Parameter */
         } else if (!strcmp(ogs_hash_this_key(hi),
                     OGS_SBI_PARAM_TARGET_NF_INSTANCE_ID)) {
-            char *v = NULL;
-            v = ogs_hash_this_val(hi);
+            char *v = ogs_hash_this_val(hi);
 
             if (v) {
                 ogs_sbi_discovery_option_set_target_nf_instance_id(
@@ -678,8 +691,7 @@ int ogs_sbi_parse_request(
             }
         } else if (!strcmp(ogs_hash_this_key(hi),
                     OGS_SBI_PARAM_REQUESTER_NF_INSTANCE_ID)) {
-            char *v = NULL;
-            v = ogs_hash_this_val(hi);
+            char *v = ogs_hash_this_val(hi);
 
             if (v) {
                 ogs_sbi_discovery_option_set_requester_nf_instance_id(
@@ -688,12 +700,18 @@ int ogs_sbi_parse_request(
             }
         } else if (!strcmp(ogs_hash_this_key(hi),
                     OGS_SBI_PARAM_SERVICE_NAMES)) {
-            char *v = NULL;
-
-            v = ogs_hash_this_val(hi);
+            char *v = ogs_hash_this_val(hi);
             if (v) {
                 ogs_sbi_discovery_option_parse_service_names(
                         discovery_option, v);
+                discovery_option_presence = true;
+            }
+        } else if (!strcmp(ogs_hash_this_key(hi),
+                    OGS_SBI_PARAM_REQUESTER_FEATURES)) {
+            char *v = ogs_hash_this_val(hi);
+            if (v) {
+                discovery_option->requester_features =
+                    ogs_uint64_from_string(v);
                 discovery_option_presence = true;
             }
 

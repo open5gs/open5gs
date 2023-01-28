@@ -35,7 +35,6 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_register(void)
     ogs_sbi_request_t *request = NULL;
 
     OpenAPI_nf_profile_t *NFProfile = NULL;
-    uint64_t supported_features = 0;
 
     nf_instance = ogs_sbi_self()->nf_instance;
     ogs_assert(nf_instance);
@@ -51,10 +50,8 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_register(void)
 
     message.http.content_encoding = (char*)ogs_sbi_self()->content_encoding;
 
-    OGS_SBI_FEATURES_SET(supported_features, OGS_SBI_NNRF_NFM_SERVICE_MAP);
     NFProfile = ogs_nnrf_nfm_build_nf_profile(
-                    ogs_sbi_self()->nf_instance,
-                    NULL, NULL, supported_features);
+                    ogs_sbi_self()->nf_instance, NULL, NULL, true);
     if (!NFProfile) {
         ogs_error("No NFProfile");
         goto end;
@@ -77,7 +74,7 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
         ogs_sbi_nf_instance_t *nf_instance,
         const char *service_name,
         ogs_sbi_discovery_option_t *discovery_option,
-        uint64_t supported_features)
+        bool service_map)
 {
     ogs_sbi_nf_service_t *nf_service = NULL;
     ogs_sbi_nf_info_t *nf_info = NULL;
@@ -220,8 +217,7 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
         return NULL;
     }
 
-    if (OGS_SBI_FEATURES_IS_SET(
-        supported_features, OGS_SBI_NNRF_NFM_SERVICE_MAP)) {
+    if (service_map == true) {
         NFProfile->nf_service_list = NFServiceList;
     } else {
         NFProfile->nf_services = NFServiceList;
@@ -255,8 +251,7 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
             return NULL;
         }
 
-        if (OGS_SBI_FEATURES_IS_SET(
-            supported_features, OGS_SBI_NNRF_NFM_SERVICE_MAP)) {
+        if (service_map == true) {
             NFServiceMap = OpenAPI_map_create(nf_service->id, NFService);
             if (!NFServiceMap) {
                 ogs_error("No NFServiceMap");
