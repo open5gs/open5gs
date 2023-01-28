@@ -201,6 +201,11 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
                 service_type = ogs_sbi_service_type_from_name(
                                     discovery_option->service_names[0]);
             }
+        } else if (!strcasecmp(key,
+                    OGS_SBI_CUSTOM_DISCOVERY_REQUESTER_FEATURES)) {
+            if (val)
+                discovery_option->requester_features =
+                    ogs_uint64_from_string(val);
         } else if (!strcasecmp(key, OGS_SBI_SCHEME)) {
             /* ':scheme' will be automatically filled in later */
         } else if (!strcasecmp(key, OGS_SBI_AUTHORITY)) {

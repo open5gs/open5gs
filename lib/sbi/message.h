@@ -152,6 +152,8 @@ extern "C" {
 #define OGS_SBI_NNRF_NFM_SERVICE_MAP 1
 #define OGS_SBI_NNRF_NFM_EMPTY_OBJECTS_NRF_INFO 2
 
+#define OGS_SBI_NNRF_DISC_SERVICE_MAP 6
+
 #define OGS_SBI_NPCF_AM_POLICY_CONTROL_SLICE_SUPPORT 1
 #define OGS_SBI_NPCF_AM_POLICY_CONTROL_PENDING_TRANSACTION 2
 #define OGS_SBI_NPCF_AM_POLICY_CONTROL_UE_AMBR_AUTHORIZATION 3
@@ -272,6 +274,8 @@ extern "C" {
     OGS_SBI_CUSTOM_DISCOVERY_COMMON OGS_SBI_PARAM_REQUESTER_NF_INSTANCE_ID
 #define OGS_SBI_CUSTOM_DISCOVERY_SERVICE_NAMES  \
     OGS_SBI_CUSTOM_DISCOVERY_COMMON OGS_SBI_PARAM_SERVICE_NAMES
+#define OGS_SBI_CUSTOM_DISCOVERY_REQUESTER_FEATURES  \
+    OGS_SBI_CUSTOM_DISCOVERY_COMMON OGS_SBI_PARAM_REQUESTER_FEATURES
 #define OGS_SBI_CUSTOM_PRODUCER_ID       \
     OGS_SBI_CUSTOM_3GPP_COMMON "Producer-Id"
 #define OGS_SBI_CUSTOM_OCI               \
@@ -296,6 +300,7 @@ extern "C" {
 #define OGS_SBI_PARAM_TARGET_NF_INSTANCE_ID         "target-nf-instance-id"
 #define OGS_SBI_PARAM_REQUESTER_NF_INSTANCE_ID      "requester-nf-instance-id"
 #define OGS_SBI_PARAM_SERVICE_NAMES                 "service-names"
+#define OGS_SBI_PARAM_REQUESTER_FEATURES            "requester-features"
 
 #define OGS_SBI_PARAM_NF_ID                         "nf-id"
 #define OGS_SBI_PARAM_NF_TYPE                       "nf-type"
@@ -396,6 +401,8 @@ typedef struct ogs_sbi_discovery_option_s {
 
     int num_of_service_names;
     char *service_names[OGS_SBI_MAX_NUM_OF_SERVICE_TYPE];
+
+    uint64_t requester_features;
 } ogs_sbi_discovery_option_t;
 
 typedef struct ogs_sbi_message_s {

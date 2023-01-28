@@ -1677,6 +1677,10 @@ ogs_sbi_xact_t *ogs_sbi_xact_add(
     if (!discovery_option) {
         discovery_option = ogs_sbi_discovery_option_new();
         ogs_assert(discovery_option);
+
+        /* ALWAYS add Service-MAP to requester-features in Discovery Option */
+        OGS_SBI_FEATURES_SET(discovery_option->requester_features,
+                OGS_SBI_NNRF_DISC_SERVICE_MAP);
     }
 
     if (!discovery_option->num_of_service_names) {

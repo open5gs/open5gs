@@ -381,7 +381,6 @@ bool nrf_nnrf_handle_nf_profile_retrieval(
     ogs_sbi_message_t sendmsg;
     ogs_sbi_response_t *response = NULL;
     ogs_sbi_nf_instance_t *nf_instance = NULL;
-    uint64_t supported_features = 0;
 
     ogs_assert(stream);
     ogs_assert(recvmsg);
@@ -399,10 +398,12 @@ bool nrf_nnrf_handle_nf_profile_retrieval(
 
     memset(&sendmsg, 0, sizeof(sendmsg));
 
-    OGS_SBI_FEATURES_SET(supported_features, OGS_SBI_NNRF_NFM_SERVICE_MAP);
     sendmsg.NFProfile = ogs_nnrf_nfm_build_nf_profile(
-            nf_instance, NULL, NULL, supported_features);
-    ogs_expect_or_return_val(sendmsg.NFProfile, NULL);
+            nf_instance, NULL, NULL, true);
+    if (!sendmsg.NFProfile) {
+        ogs_error("ogs_nnrf_nfm_build_nf_profile() failed");
+        return false;
+    }
 
     response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
     ogs_assert(response);
@@ -424,7 +425,6 @@ bool nrf_nnrf_handle_nf_discover(
     OpenAPI_search_result_t *SearchResult = NULL;
     OpenAPI_nf_profile_t *NFProfile = NULL;
     OpenAPI_lnode_t *node = NULL;
-    uint64_t supported_features = 0;
     int i;
 
     ogs_assert(stream);
@@ -477,6 +477,10 @@ bool nrf_nnrf_handle_nf_discover(
                 ogs_debug("[%d] service-names[%s]", i,
                     discovery_option->service_names[i]);
         }
+        if (discovery_option->requester_features) {
+            ogs_debug("requester-features[0x%llx]",
+                (long long)discovery_option->requester_features);
+        }
     }
 
     i = 0;
@@ -504,10 +508,12 @@ bool nrf_nnrf_handle_nf_discover(
                 OpenAPI_nf_status_ToString(nf_instance->nf_status),
                 nf_instance->num_of_ipv4, nf_instance->num_of_ipv6);
 
-        OGS_SBI_FEATURES_SET(
-                supported_features, OGS_SBI_NNRF_NFM_SERVICE_MAP);
         NFProfile = ogs_nnrf_nfm_build_nf_profile(
-                nf_instance, NULL, discovery_option, supported_features);
+                nf_instance, NULL, discovery_option,
+                discovery_option &&
+                OGS_SBI_FEATURES_IS_SET(
+                    discovery_option->requester_features,
+                    OGS_SBI_NNRF_DISC_SERVICE_MAP) ? true : false);
         OpenAPI_list_add(SearchResult->nf_instances, NFProfile);
 
         i++;
