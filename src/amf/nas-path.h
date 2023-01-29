@@ -41,8 +41,10 @@ int nas_5gs_send_service_reject(
         amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t gmm_cause);
 
 int nas_5gs_send_de_registration_accept(amf_ue_t *amf_ue);
-int nas_5gs_send_de_registration_request(amf_ue_t *amf_ue,
-        OpenAPI_deregistration_reason_e dereg_reason);
+int nas_5gs_send_de_registration_request(
+        amf_ue_t *amf_ue,
+        OpenAPI_deregistration_reason_e dereg_reason,
+        ogs_nas_5gmm_cause_t gmm_cause);
 
 int nas_5gs_send_identity_request(amf_ue_t *amf_ue);
 

@@ -115,7 +115,7 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
             } else {
                 amf_ue->t3522.retry_count++;
                 r = nas_5gs_send_de_registration_request(amf_ue,
-                        OpenAPI_deregistration_reason_NULL);
+                        OpenAPI_deregistration_reason_NULL, 0);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
             }
@@ -206,7 +206,10 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                             amf_ue->data_change_subscription_id = NULL;
                         }
 
-                        if (state == AMF_NETWORK_INITIATED_DE_REGISTERED) {
+                        if (state ==
+                                AMF_NETWORK_INITIATED_IMPLICIT_DE_REGISTERED ||
+                            state ==
+                                AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED) {
                             amf_sbi_send_release_all_sessions(amf_ue, state);
                             if ((ogs_list_count(&amf_ue->sess_list) == 0) &&
                                 (PCF_AM_POLICY_ASSOCIATED(amf_ue))) {
@@ -292,10 +295,27 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                     break;
 
                 CASE(OGS_SBI_HTTP_METHOD_DELETE)
-                    if (state == AMF_NETWORK_INITIATED_DE_REGISTERED) {
-                        ogs_warn("[%s] AMF-UE Context Removed", amf_ue->supi);
+                    if (state == AMF_NETWORK_INITIATED_IMPLICIT_DE_REGISTERED) {
+                        ogs_warn("[%s] Implicit De-registered", amf_ue->supi);
                         OGS_FSM_TRAN(&amf_ue->sm,
                                 &gmm_state_ue_context_will_remove);
+
+                    } else if (state ==
+                            AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED) {
+                        ogs_warn("[%s] Explicit De-registered", amf_ue->supi);
+
+                        amf_ue->explict_de_registered.sbi_done = true;
+
+                        if (amf_ue->explict_de_registered.n1_done == true) {
+                            r = ngap_send_ran_ue_context_release_command(
+                                    amf_ue->ran_ue,
+                                    NGAP_Cause_PR_misc,
+                                    NGAP_CauseMisc_om_intervention,
+                                    NGAP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+                            ogs_expect(r == OGS_OK);
+                            ogs_assert(r != OGS_ERROR);
+                        }
+
                     } else {
                         r = nas_5gs_send_de_registration_accept(amf_ue);
                         ogs_expect(r == OGS_OK);
@@ -501,7 +521,9 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
             ogs_assert(true == amf_ue_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
                     amf_nudm_sdm_build_subscription_delete,
-                    amf_ue, AMF_NETWORK_INITIATED_DE_REGISTERED, NULL));
+                    amf_ue,
+                    AMF_NETWORK_INITIATED_IMPLICIT_DE_REGISTERED, NULL));
+
             OGS_FSM_TRAN(s, &gmm_state_de_registered);
             break;
         default:
@@ -740,16 +762,15 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
             ogs_info("[%s] Deregistration accept", amf_ue->supi);
             CLEAR_AMF_UE_TIMER(amf_ue->t3522);
 
-            /* De-associate NG with NAS/EMM */
-            ran_ue_deassociate(amf_ue->ran_ue);
+            amf_ue->explict_de_registered.n1_done = true;
 
-            r = ngap_send_ran_ue_context_release_command(amf_ue->ran_ue,
-                    NGAP_Cause_PR_misc, NGAP_CauseMisc_om_intervention,
-                    NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-
-            OGS_FSM_TRAN(s, &gmm_state_de_registered);
+            if (amf_ue->explict_de_registered.sbi_done == true) {
+                r = ngap_send_ran_ue_context_release_command(amf_ue->ran_ue,
+                        NGAP_Cause_PR_misc, NGAP_CauseMisc_om_intervention,
+                        NGAP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+            }
             break;
 
         case OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE:

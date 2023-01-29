@@ -911,7 +911,8 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
                 ogs_assert_if_reached();
 
             } else if (state == AMF_RELEASE_SM_CONTEXT_NO_STATE ||
-                        state == AMF_NETWORK_INITIATED_DE_REGISTERED) {
+                        state == AMF_NETWORK_INITIATED_IMPLICIT_DE_REGISTERED ||
+                        state == AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED) {
                 /* NO_STATE */
 
                 if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_authentication)) {

@@ -406,6 +406,24 @@ struct amf_ue_s {
     /* SubscriptionId of Subscription to Data Change Notification to UDM */
     char *data_change_subscription_id;
 
+    struct {
+        /*
+         * De-Registered Request
+         * De-Registered Accept
+         */
+        bool n1_done;
+
+        /*
+         * Nudm_SDM_Unsubscribe
+         * PATCH Nudm_UECM/registration/amf-3gpp-access
+         * PDU Session Release
+         * N4 Release
+         * DELETE Nbpsf-management
+         * DELETE Npcf-am_policy-control
+         */
+        bool sbi_done;
+    } explict_de_registered;
+
     ogs_list_t      sess_list;
 };
 
