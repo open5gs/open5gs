@@ -60,7 +60,10 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
 
     int r, state = 0;
 
+    ogs_assert(s);
     ogs_assert(e);
+
+    amf_sm_debug(e);
 
     if (e->sess) {
         sess = e->sess;
@@ -289,13 +292,17 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                     break;
 
                 CASE(OGS_SBI_HTTP_METHOD_DELETE)
-                    if (state != AMF_NETWORK_INITIATED_DE_REGISTERED) {
+                    if (state == AMF_NETWORK_INITIATED_DE_REGISTERED) {
+                        ogs_warn("[%s] AMF-UE Context Removed", amf_ue->supi);
+                        OGS_FSM_TRAN(&amf_ue->sm,
+                                &gmm_state_ue_context_will_remove);
+                    } else {
                         r = nas_5gs_send_de_registration_accept(amf_ue);
                         ogs_expect(r == OGS_OK);
                         ogs_assert(r != OGS_ERROR);
-                    }
 
-                    PCF_AM_POLICY_CLEAR(amf_ue);
+                        PCF_AM_POLICY_CLEAR(amf_ue);
+                    }
                     break;
 
                 DEFAULT
@@ -331,7 +338,10 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
 
     ogs_sbi_message_t *sbi_message = NULL;
 
+    ogs_assert(s);
     ogs_assert(e);
+
+    amf_sm_debug(e);
 
     if (e->sess) {
         sess = e->sess;
@@ -1578,6 +1588,38 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
     }
 }
 
+void gmm_state_ue_context_will_remove(ogs_fsm_t *s, amf_event_t *e)
+{
+    amf_ue_t *amf_ue = NULL;
+    amf_sess_t *sess = NULL;
+
+    ogs_assert(s);
+    ogs_assert(e);
+
+    amf_sm_debug(e);
+
+    if (e->sess) {
+        sess = e->sess;
+        amf_ue = sess->amf_ue;
+        ogs_assert(amf_ue);
+    } else {
+        amf_ue = e->amf_ue;
+        ogs_assert(amf_ue);
+    }
+
+    switch (e->h.id) {
+    case OGS_FSM_ENTRY_SIG:
+        amf_ue_remove(amf_ue);
+        break;
+
+    case OGS_FSM_EXIT_SIG:
+        break;
+
+    default:
+        ogs_error("Unknown event[%s]", amf_event_get_name(e));
+    }
+}
+
 void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
 {
     int xact_count = 0, r;
@@ -1589,7 +1631,9 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
     ogs_nas_5gs_message_t *nas_message = NULL;
     ogs_nas_security_header_type_t h;
 
+    ogs_assert(s);
     ogs_assert(e);
+
     amf_sm_debug(e);
 
     if (e->sess) {
