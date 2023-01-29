@@ -2158,8 +2158,21 @@ static int parse_multipart(
                 data.part[i].content_type;
             http->part[http->num_of_part].pkbuf =
                 ogs_pkbuf_alloc(NULL, data.part[i].content_length);
-            ogs_expect_or_return_val(
-                http->part[http->num_of_part].pkbuf, OGS_ERROR);
+            if (!(http->part[http->num_of_part].pkbuf)) {
+                ogs_error("ogs_pkbuf_copy() failed");
+
+                if (data.part[i].content_id)
+                    ogs_free(data.part[i].content_id);
+                if (data.part[i].content_type)
+                    ogs_free(data.part[i].content_type);
+                if (data.part[i].content)
+                    ogs_free(data.part[i].content);
+
+                if (data.header_field)
+                    ogs_free(data.header_field);
+
+                return OGS_ERROR;
+            }
             ogs_pkbuf_put_data(http->part[http->num_of_part].pkbuf,
                 data.part[i].content, data.part[i].content_length);
 
@@ -2169,8 +2182,24 @@ static int parse_multipart(
                 http->part[http->num_of_part].content_type;
             message->part[message->num_of_part].pkbuf =
                 ogs_pkbuf_copy(http->part[http->num_of_part].pkbuf);
-            ogs_expect_or_return_val(
-                message->part[message->num_of_part].pkbuf, OGS_ERROR);
+            if (!(message->part[http->num_of_part].pkbuf)) {
+                ogs_error("ogs_pkbuf_copy() failed");
+
+                if (data.part[i].content_id)
+                    ogs_free(data.part[i].content_id);
+                if (data.part[i].content_type)
+                    ogs_free(data.part[i].content_type);
+                if (data.part[i].content)
+                    ogs_free(data.part[i].content);
+
+                if (data.header_field)
+                    ogs_free(data.header_field);
+
+                if (http->part[http->num_of_part].pkbuf)
+                    ogs_pkbuf_free(http->part[http->num_of_part].pkbuf);
+
+                return OGS_ERROR;
+            }
 
             http->num_of_part++;
             message->num_of_part++;
