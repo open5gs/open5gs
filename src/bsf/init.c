@@ -29,8 +29,7 @@ int bsf_initialize()
 {
     int rv;
 
-    ogs_sbi_context_init();
-
+    ogs_sbi_context_init(OpenAPI_nf_type_BSF);
     bsf_context_init();
 
     rv = ogs_sbi_context_parse_config("bsf", "nrf", "scp");

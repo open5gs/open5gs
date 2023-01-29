@@ -30,7 +30,7 @@ int amf_initialize()
     int rv;
 
     ogs_metrics_context_init();
-    ogs_sbi_context_init();
+    ogs_sbi_context_init(OpenAPI_nf_type_AMF);
 
     amf_context_init();
 

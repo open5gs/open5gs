@@ -27,7 +27,7 @@ int pcf_initialize()
 {
     int rv;
 
-    ogs_sbi_context_init();
+    ogs_sbi_context_init(OpenAPI_nf_type_PCF);
 
     pcf_context_init();
 

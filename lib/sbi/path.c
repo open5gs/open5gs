@@ -336,15 +336,7 @@ bool ogs_sbi_discover_only(ogs_sbi_xact_t *xact)
     discovery_option = xact->discovery_option;
 
     /* NRF NF-Instance */
-    nf_instance = sbi_object->nf_type_array[OpenAPI_nf_type_NRF].nf_instance;
-    if (!nf_instance) {
-        nf_instance = ogs_sbi_nf_instance_find_by_discovery_param(
-                        OpenAPI_nf_type_NRF, requester_nf_type, NULL);
-        if (nf_instance)
-            OGS_SBI_SETUP_NF_INSTANCE(
-                sbi_object->nf_type_array[OpenAPI_nf_type_NRF], nf_instance);
-    }
-
+    nf_instance = ogs_sbi_self()->nrf_instance;
     if (nf_instance) {
         bool rc;
         ogs_sbi_client_t *client = NULL;

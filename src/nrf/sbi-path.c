@@ -59,7 +59,7 @@ int nrf_sbi_open(void)
     ogs_assert(nf_instance);
 
     /* Build NF instance information. */
-    ogs_sbi_nf_instance_build_default(nf_instance, OpenAPI_nf_type_NRF);
+    ogs_sbi_nf_instance_build_default(nf_instance);
 
     if (ogs_sbi_server_start_all(ogs_sbi_server_handler) != OGS_OK)
         return OGS_ERROR;
