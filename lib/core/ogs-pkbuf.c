@@ -317,11 +317,21 @@ ogs_pkbuf_t *ogs_pkbuf_copy_debug(ogs_pkbuf_t *pkbuf, const char *file_line)
 {
 #if OGS_USE_TALLOC
     ogs_pkbuf_t *newbuf;
+#else
+    ogs_pkbuf_pool_t *pool = NULL;
+    ogs_pkbuf_t *newbuf = NULL;
+#endif
     int size = 0;
 
     ogs_assert(pkbuf);
     size = pkbuf->end - pkbuf->head;
-    ogs_assert(size > 0);
+    if (size <= 0) {
+        ogs_error("Invalid argument[size=%d, head=%p, end=%p] in (%s)",
+                size, pkbuf->head, pkbuf->end, file_line);
+        return NULL;
+    }
+
+#if OGS_USE_TALLOC
     newbuf = ogs_pkbuf_alloc_debug(NULL, size, file_line);
     if (!newbuf) {
         ogs_error("ogs_pkbuf_alloc() failed [size=%d]", size);
@@ -339,10 +349,6 @@ ogs_pkbuf_t *ogs_pkbuf_copy_debug(ogs_pkbuf_t *pkbuf, const char *file_line)
 
     return newbuf;
 #else
-    ogs_pkbuf_pool_t *pool = NULL;
-    ogs_pkbuf_t *newbuf = NULL;
-
-    ogs_assert(pkbuf);
     pool = pkbuf->pool;
     ogs_assert(pool);
 
@@ -350,7 +356,7 @@ ogs_pkbuf_t *ogs_pkbuf_copy_debug(ogs_pkbuf_t *pkbuf, const char *file_line)
 
     ogs_pool_alloc(&pool->pkbuf, &newbuf);
     if (!newbuf) {
-        ogs_error("ogs_pkbuf_copy() failed");
+        ogs_error("ogs_pkbuf_copy() failed [size=%d]", size);
         ogs_thread_mutex_unlock(&pool->mutex);
         return NULL;
     }
