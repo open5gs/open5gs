@@ -353,6 +353,8 @@ bool nrf_nnrf_handle_nf_list_retrieval(
 
     i = 0;
     ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance) {
+        if (NF_INSTANCE_EXCLUDED_FROM_DISCOVERY(nf_instance))
+            continue;
 
         if (recvmsg->param.nf_type &&
             recvmsg->param.nf_type != nf_instance->nf_type)
@@ -499,6 +501,9 @@ bool nrf_nnrf_handle_nf_discover(
 
     i = 0;
     ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance) {
+        if (NF_INSTANCE_EXCLUDED_FROM_DISCOVERY(nf_instance))
+            continue;
+
         if (nf_instance->nf_type != recvmsg->param.target_nf_type)
             continue;
 

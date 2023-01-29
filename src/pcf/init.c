@@ -30,7 +30,7 @@ int pcf_initialize()
 
     pcf_metrics_init();
 
-    ogs_sbi_context_init();
+    ogs_sbi_context_init(OpenAPI_nf_type_PCF);
     pcf_context_init();
 
     rv = ogs_sbi_context_parse_config("pcf", "nrf", "scp");

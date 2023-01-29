@@ -40,7 +40,7 @@ int scp_sbi_open(void)
     ogs_sbi_nf_fsm_init(nf_instance);
 
     /* Build NF instance information. It will be transmitted to NRF. */
-    ogs_sbi_nf_instance_build_default(nf_instance, OpenAPI_nf_type_SCP);
+    ogs_sbi_nf_instance_build_default(nf_instance);
 
     /*
      * If the SCP is running in Model D,

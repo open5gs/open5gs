@@ -27,8 +27,7 @@ int ausf_initialize()
 {
     int rv;
 
-    ogs_sbi_context_init();
-
+    ogs_sbi_context_init(OpenAPI_nf_type_AUSF);
     ausf_context_init();
 
     rv = ogs_sbi_context_parse_config("ausf", "nrf", "scp");

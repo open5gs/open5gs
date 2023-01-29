@@ -31,7 +31,7 @@ int amf_initialize()
 
     amf_metrics_init();
 
-    ogs_sbi_context_init();
+    ogs_sbi_context_init(OpenAPI_nf_type_AMF);
     amf_context_init();
 
     rv = ogs_sbi_context_parse_config("amf", "nrf", "scp");

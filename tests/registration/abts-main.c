@@ -76,7 +76,7 @@ static void initialize(const char *const argv[])
 
     test_5gc_init();
 
-    ogs_sbi_context_init();
+    ogs_sbi_context_init(OpenAPI_nf_type_AMF);
     ogs_assert(ogs_sbi_context_parse_config(NULL, "nrf", "scp") == OGS_OK);
 
     rv = app_initialize(argv);
