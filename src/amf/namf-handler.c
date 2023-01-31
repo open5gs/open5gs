@@ -613,17 +613,20 @@ int amf_namf_callback_handle_dereg_notify(
     }
 
     if (UDM_SDM_SUBSCRIBED(amf_ue)) {
-        ogs_assert(true == amf_ue_sbi_discover_and_send(
+        r = amf_ue_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
                 amf_nudm_sdm_build_subscription_delete,
-                amf_ue, state, NULL));
+                amf_ue, state, NULL);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
     } else if (PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
-        ogs_assert(true ==
-            amf_ue_sbi_discover_and_send(
+        r = amf_ue_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
                 NULL,
                 amf_npcf_am_policy_control_build_delete,
-                amf_ue, state, NULL));
+                amf_ue, state, NULL);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
     }
 
 cleanup:
@@ -941,17 +944,20 @@ int amf_namf_callback_handle_sdm_data_change_notify(
         }
 
         if (UDM_SDM_SUBSCRIBED(amf_ue)) {
-            ogs_assert(true == amf_ue_sbi_discover_and_send(
+            r = amf_ue_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
                     amf_nudm_sdm_build_subscription_delete,
-                    amf_ue, state, NULL));
+                    amf_ue, state, NULL);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
         } else if (PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
-            ogs_assert(true ==
-                amf_ue_sbi_discover_and_send(
+            r = amf_ue_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
                     NULL,
                     amf_npcf_am_policy_control_build_delete,
-                    amf_ue, state, NULL));
+                    amf_ue, state, NULL);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
         }
 
     } else if (ambr_changed) {

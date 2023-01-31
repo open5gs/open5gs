@@ -25,6 +25,7 @@ bool pcf_npcf_am_policy_contrtol_handle_create(pcf_ue_t *pcf_ue,
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
 {
     bool rc;
+    int r;
 
     OpenAPI_policy_association_request_t *PolicyAssociationRequest = NULL;
     OpenAPI_guami_t *Guami = NULL;
@@ -155,11 +156,12 @@ bool pcf_npcf_am_policy_contrtol_handle_create(pcf_ue_t *pcf_ue,
         pcf_ue->subscribed_ue_ambr = OpenAPI_ambr_copy(
                 pcf_ue->subscribed_ue_ambr, PolicyAssociationRequest->ue_ambr);
 
-    ogs_assert(true ==
-        pcf_ue_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NUDR_DR, NULL,
-            pcf_nudr_dr_build_query_am_data, pcf_ue, stream, NULL));
+    r = pcf_ue_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NUDR_DR, NULL,
+            pcf_nudr_dr_build_query_am_data, pcf_ue, stream, NULL);
+    ogs_expect(r == OGS_OK);
+    ogs_assert(r != OGS_ERROR);
 
-    return true;
+    return (r == OGS_OK);
 }
 
 bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
@@ -167,6 +169,7 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
 {
     bool rc;
     int status = 0;
+    int r;
     char *strerror = NULL;
     pcf_ue_t *pcf_ue = NULL;
 
@@ -336,12 +339,13 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
         sess->subscribed_default_qos = OpenAPI_subscribed_default_qos_copy(
             sess->subscribed_default_qos, SmPolicyContextData->subs_def_qos);
 
-    ogs_assert(true ==
-        pcf_sess_sbi_discover_and_send(
+    r = pcf_sess_sbi_discover_and_send(
             OGS_SBI_SERVICE_TYPE_NUDR_DR, NULL,
-            pcf_nudr_dr_build_query_sm_data, sess, stream, NULL));
+            pcf_nudr_dr_build_query_sm_data, sess, stream, NULL);
+    ogs_expect(r == OGS_OK);
+    ogs_assert(r != OGS_ERROR);
 
-    return true;
+    return (r == OGS_OK);
 
 cleanup:
     ogs_assert(status);
@@ -357,6 +361,7 @@ cleanup:
 bool pcf_npcf_smpolicycontrol_handle_delete(pcf_sess_t *sess,
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
 {
+    int r;
     int status = 0;
     char *strerror = NULL;
     pcf_ue_t *pcf_ue = NULL;
@@ -391,10 +396,11 @@ bool pcf_npcf_smpolicycontrol_handle_delete(pcf_sess_t *sess,
         ogs_assert(response);
         ogs_assert(true == ogs_sbi_server_send_response(stream, response));
     } else {
-        ogs_assert(true ==
-            pcf_sess_sbi_discover_and_send(
+        r = pcf_sess_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NBSF_MANAGEMENT, NULL,
-                pcf_nbsf_management_build_de_register, sess, stream, NULL));
+                pcf_nbsf_management_build_de_register, sess, stream, NULL);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
     }
 
     return true;

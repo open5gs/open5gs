@@ -39,6 +39,7 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
 
     ogs_sbi_stream_t *stream = NULL;
     ogs_sbi_message_t *message = NULL;
+    int r;
 
     ogs_assert(s);
     ogs_assert(e);
@@ -158,11 +159,12 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
                 CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
                 CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA)
                 CASE(OGS_SBI_RESOURCE_NAME_SM_DATA)
-                    ogs_assert(true ==
-                        udm_sbi_discover_and_send(
+                    r = udm_sbi_discover_and_send(
                             OGS_SBI_SERVICE_TYPE_NUDR_DR, NULL,
                             udm_nudr_dr_build_query_subscription_provisioned,
-                            udm_ue, stream, message));
+                            udm_ue, stream, message);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
                     break;
 
                 CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA)

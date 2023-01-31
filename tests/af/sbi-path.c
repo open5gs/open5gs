@@ -67,6 +67,7 @@ void af_sbi_discover_and_send(
         af_sess_t *sess, void *data)
 {
     ogs_sbi_xact_t *xact = NULL;
+    int r;
 
     ogs_assert(service_type);
     ogs_assert(sess);
@@ -80,7 +81,8 @@ void af_sbi_discover_and_send(
         return;
     }
 
-    if (ogs_sbi_discover_and_send(xact) != true) {
+    r = ogs_sbi_discover_and_send(xact);
+    if (r != OGS_OK) {
         ogs_error("af_sbi_discover_and_send() failed");
         return;
     }

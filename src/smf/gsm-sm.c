@@ -748,6 +748,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
     ogs_gtp2_message_t *gtp2_message = NULL;
     uint8_t gtp1_cause, gtp2_cause;
     bool release;
+    int r;
 
     int state = 0;
 
@@ -1021,12 +1022,13 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 param.ran_nas_release.ngap_cause.value =
                     NGAP_CauseNas_normal_release;
 
-                ogs_assert(true ==
-                    smf_sbi_discover_and_send(
+                r = smf_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL, NULL,
                         smf_npcf_smpolicycontrol_build_delete,
                         sess, stream,
-                        OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED, &param));
+                        OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED, &param);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
             } else {
                 ogs_error("[%s:%d] No PolicyAssociationId",
                         smf_ue->supi, sess->psi);

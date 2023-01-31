@@ -287,6 +287,7 @@ bool smf_nsmf_handle_update_sm_context(
     smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
 {
     int i;
+    int r;
     smf_ue_t *smf_ue = NULL;
 
     ogs_sbi_message_t sendmsg;
@@ -660,12 +661,14 @@ bool smf_nsmf_handle_update_sm_context(
                 param.ue_location = true;
                 param.ue_timezone = true;
 
-                ogs_assert(true ==
-                    smf_sbi_discover_and_send(
+                r = smf_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL, NULL,
                         smf_npcf_smpolicycontrol_build_delete,
                         sess, stream,
-                        OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT, &param));
+                        OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT, &param);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+
             }
         } else {
             ogs_error("No PolicyAssociationId");
@@ -701,6 +704,7 @@ bool smf_nsmf_handle_update_sm_context(
 bool smf_nsmf_handle_release_sm_context(
     smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
 {
+    int r;
     smf_npcf_smpolicycontrol_param_t param;
 
     OpenAPI_sm_context_release_data_t *SmContextReleaseData = NULL;
@@ -751,12 +755,13 @@ bool smf_nsmf_handle_release_sm_context(
     }
 
     if (sess->policy_association_id) {
-        ogs_assert(true ==
-            smf_sbi_discover_and_send(
+        r = smf_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL, NULL,
                 smf_npcf_smpolicycontrol_build_delete,
                 sess, stream,
-                OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT, &param));
+                OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT, &param);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
     } else {
         ogs_error("No PolicyAssociationId");
         ogs_assert(true ==

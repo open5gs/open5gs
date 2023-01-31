@@ -23,6 +23,7 @@
 void pcf_nnrf_handle_nf_discover(
         ogs_sbi_xact_t *xact, ogs_sbi_message_t *recvmsg)
 {
+    int r;
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_object_t *sbi_object = NULL;
     ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
@@ -92,11 +93,12 @@ void pcf_nnrf_handle_nf_discover(
 
         ogs_assert(sess);
         ogs_assert(stream);
-        ogs_assert(true ==
-                pcf_sess_sbi_discover_and_send(
+        r = pcf_sess_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NBSF_MANAGEMENT, NULL,
                     pcf_nbsf_management_build_register,
-                    sess, stream, nf_instance));
+                    sess, stream, nf_instance);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
         break;
     default:
         ogs_assert(xact->request);

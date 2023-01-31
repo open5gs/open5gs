@@ -262,11 +262,12 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                             amf_ue->data_change_subscription_id = NULL;
                         }
 
-                        ogs_assert(true ==
-                            amf_ue_sbi_discover_and_send(
+                        r = amf_ue_sbi_discover_and_send(
                                 OGS_SBI_SERVICE_TYPE_NUDM_UECM, NULL,
                                 amf_nudm_uecm_build_registration_delete,
-                                amf_ue, state, NULL));
+                                amf_ue, state, NULL);
+                        ogs_expect(r == OGS_OK);
+                        ogs_assert(r != OGS_ERROR);
                     } else {
                         ogs_fatal("Invalid state [%d]", state);
                         ogs_assert_if_reached();
@@ -326,12 +327,13 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                         if (state == AMF_RELEASE_SM_CONTEXT_NO_STATE ||
                             state == AMF_UE_INITIATED_DE_REGISTERED) {
                             if (PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
-                                ogs_assert(true ==
-                                    amf_ue_sbi_discover_and_send(
+                                r = amf_ue_sbi_discover_and_send(
                                         OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
                                         NULL,
                                         amf_npcf_am_policy_control_build_delete,
-                                        amf_ue, state, NULL));
+                                        amf_ue, state, NULL);
+                                ogs_expect(r == OGS_OK);
+                                ogs_assert(r != OGS_ERROR);
                             } else {
                                 r = nas_5gs_send_de_registration_accept(amf_ue);
                                 ogs_expect(r == OGS_OK);
@@ -616,17 +618,20 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
             state = AMF_NETWORK_INITIATED_IMPLICIT_DE_REGISTERED;
 
             if (UDM_SDM_SUBSCRIBED(amf_ue)) {
-                ogs_assert(true == amf_ue_sbi_discover_and_send(
+                r = amf_ue_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
                         amf_nudm_sdm_build_subscription_delete,
-                        amf_ue, state, NULL));
+                        amf_ue, state, NULL);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
             } else if (PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
-                ogs_assert(true ==
-                    amf_ue_sbi_discover_and_send(
+                    r = amf_ue_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
                         NULL,
                         amf_npcf_am_policy_control_build_delete,
-                        amf_ue, state, NULL));
+                        amf_ue, state, NULL);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
             }
             break;
         default:
@@ -745,11 +750,12 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                             amf_ue->data_change_subscription_id = NULL;
                         }
 
-                        ogs_assert(true ==
-                            amf_ue_sbi_discover_and_send(
+                        r = amf_ue_sbi_discover_and_send(
                                 OGS_SBI_SERVICE_TYPE_NUDM_UECM, NULL,
                                 amf_nudm_uecm_build_registration_delete,
-                                amf_ue, state, NULL));
+                                amf_ue, state, NULL);
+                        ogs_expect(r == OGS_OK);
+                        ogs_assert(r != OGS_ERROR);
                     } else {
                         ogs_fatal("Invalid state [%d]", state);
                         ogs_assert_if_reached();
@@ -820,12 +826,13 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                             if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
                                 amf_sess_xact_count(amf_ue) == xact_count) {
                                 if (PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
-                                    ogs_assert(true ==
-                                        amf_ue_sbi_discover_and_send(
+                                    r = amf_ue_sbi_discover_and_send(
                                             OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
                                             NULL,
                                             amf_npcf_am_policy_control_build_delete,
-                                            amf_ue, state, NULL));
+                                            amf_ue, state, NULL);
+                                    ogs_expect(r == OGS_OK);
+                                    ogs_assert(r != OGS_ERROR);
                                 }
                             }
                         } else {
@@ -1019,12 +1026,13 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
                     }
 
                     if (!PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
-                        ogs_assert(true ==
-                            amf_ue_sbi_discover_and_send(
+                        r = amf_ue_sbi_discover_and_send(
                                 OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
                                 NULL,
                                 amf_npcf_am_policy_control_build_create,
-                                amf_ue, 0, NULL));
+                                amf_ue, 0, NULL);
+                        ogs_expect(r == OGS_OK);
+                        ogs_assert(r != OGS_ERROR);
                         OGS_FSM_TRAN(s, &gmm_state_initial_context_setup);
                         break;
                     }
@@ -1047,11 +1055,12 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
 
                 if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
                     amf_sess_xact_count(amf_ue) == xact_count) {
-                    ogs_assert(true ==
-                        amf_ue_sbi_discover_and_send(
+                    r = amf_ue_sbi_discover_and_send(
                             OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
                             amf_nausf_auth_build_authenticate,
-                            amf_ue, 0, NULL));
+                            amf_ue, 0, NULL);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
                 }
 
                 OGS_FSM_TRAN(s, &gmm_state_authentication);
@@ -1130,11 +1139,12 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
 
             if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
                 amf_sess_xact_count(amf_ue) == xact_count) {
-                ogs_assert(true ==
-                    amf_ue_sbi_discover_and_send(
+                r = amf_ue_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
                         amf_nausf_auth_build_authenticate,
-                        amf_ue, 0, NULL));
+                        amf_ue, 0, NULL);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
             }
 
             OGS_FSM_TRAN(s, &gmm_state_authentication);
@@ -1308,11 +1318,12 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
 
             case OGS_5GMM_CAUSE_NGKSI_ALREADY_IN_USE:
                 ogs_warn("Authentication failure(ngKSI already in use)");
-                ogs_assert(true ==
-                    amf_ue_sbi_discover_and_send(
+                r = amf_ue_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
                         amf_nausf_auth_build_authenticate,
-                        amf_ue, 0, NULL));
+                        amf_ue, 0, NULL);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
                 return;
 
             case OGS_5GMM_CAUSE_SYNCH_FAILURE:
@@ -1322,11 +1333,12 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                             authentication_failure_parameter->length);
                     break;
                 }
-                ogs_assert(true ==
-                    amf_ue_sbi_discover_and_send(
+                r = amf_ue_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
                         amf_nausf_auth_build_authenticate,
-                        amf_ue, 0, authentication_failure_parameter->auts));
+                        amf_ue, 0, authentication_failure_parameter->auts);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
                 return;
 
             default:
@@ -1357,10 +1369,11 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                 break;
             }
 
-            ogs_assert(true ==
-                amf_ue_sbi_discover_and_send(
+            r = amf_ue_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
-                    amf_nausf_auth_build_authenticate, amf_ue, 0, NULL));
+                    amf_nausf_auth_build_authenticate, amf_ue, 0, NULL);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
             break;
 
         case OGS_NAS_5GS_5GMM_STATUS:
@@ -1569,10 +1582,11 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
             ogs_kdf_nh_gnb(amf_ue->kamf, amf_ue->kgnb, amf_ue->nh);
             amf_ue->nhcc = 1;
 
-            ogs_assert(true ==
-                amf_ue_sbi_discover_and_send(
+            r = amf_ue_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NUDM_UECM, NULL,
-                    amf_nudm_uecm_build_registration, amf_ue, 0, NULL));
+                    amf_nudm_uecm_build_registration, amf_ue, 0, NULL);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
 
             if (amf_ue->nas.message_type == OGS_NAS_5GS_REGISTRATION_REQUEST) {
                 OGS_FSM_TRAN(s, &gmm_state_initial_context_setup);
@@ -1606,10 +1620,11 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
                 break;
             }
 
-            ogs_assert(true ==
-                amf_ue_sbi_discover_and_send(
+            r = amf_ue_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
-                    amf_nausf_auth_build_authenticate, amf_ue, 0, NULL));
+                    amf_nausf_auth_build_authenticate, amf_ue, 0, NULL);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
 
             OGS_FSM_TRAN(s, &gmm_state_authentication);
             break;
@@ -1731,12 +1746,13 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
 
                 SWITCH(sbi_message->h.method)
                 CASE(OGS_SBI_HTTP_METHOD_PUT)
-                    ogs_assert(true ==
-                        amf_ue_sbi_discover_and_send(
+                    r = amf_ue_sbi_discover_and_send(
                             OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
                             amf_nudm_sdm_build_get,
                             amf_ue, state,
-                            (char *)OGS_SBI_RESOURCE_NAME_AM_DATA));
+                            (char *)OGS_SBI_RESOURCE_NAME_AM_DATA);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
                     break;
 
                 DEFAULT
@@ -1945,11 +1961,12 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
 
             if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
                 amf_sess_xact_count(amf_ue) == xact_count) {
-                ogs_assert(true ==
-                    amf_ue_sbi_discover_and_send(
+                r = amf_ue_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
                         amf_nausf_auth_build_authenticate,
-                        amf_ue, 0, NULL));
+                        amf_ue, 0, NULL);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
             }
             OGS_FSM_TRAN(s, &gmm_state_authentication);
             break;
@@ -2149,12 +2166,13 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
                     }
 
                     if (!PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
-                        ogs_assert(true ==
-                            amf_ue_sbi_discover_and_send(
+                        r = amf_ue_sbi_discover_and_send(
                                 OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
                                 NULL,
                                 amf_npcf_am_policy_control_build_create,
-                                amf_ue, 0, NULL));
+                                amf_ue, 0, NULL);
+                        ogs_expect(r == OGS_OK);
+                        ogs_assert(r != OGS_ERROR);
                         OGS_FSM_TRAN(s, &gmm_state_initial_context_setup);
                         break;
                     }
@@ -2177,11 +2195,12 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
 
                 if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
                     amf_sess_xact_count(amf_ue) == xact_count) {
-                    ogs_assert(true ==
-                        amf_ue_sbi_discover_and_send(
+                    r = amf_ue_sbi_discover_and_send(
                             OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
                             amf_nausf_auth_build_authenticate,
-                            amf_ue, 0, NULL));
+                            amf_ue, 0, NULL);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
                 }
 
                 OGS_FSM_TRAN(s, &gmm_state_authentication);

@@ -122,7 +122,7 @@ bool pcf_sbi_send_request(
     return ogs_sbi_send_request_to_nf_instance(nf_instance, xact);
 }
 
-static bool pcf_sbi_discover_and_send(
+static int pcf_sbi_discover_and_send(
         ogs_sbi_object_t *sbi_object,
         ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
@@ -130,6 +130,7 @@ static bool pcf_sbi_discover_and_send(
         void *context, ogs_sbi_stream_t *stream, void *data)
 {
     ogs_sbi_xact_t *xact = NULL;
+    int r;
 
     ogs_assert(service_type);
     ogs_assert(sbi_object);
@@ -141,41 +142,45 @@ static bool pcf_sbi_discover_and_send(
             build, context, data);
     if (!xact) {
         ogs_error("ogs_sbi_xact_add() failed");
-        return false;
+        return OGS_ERROR;
     }
 
     xact->assoc_stream = stream;
 
-    if (ogs_sbi_discover_and_send(xact) != true) {
+    r = ogs_sbi_discover_and_send(xact);
+    if (r != OGS_OK) {
         ogs_error("ogs_sbi_discover_and_send() failed");
         ogs_sbi_xact_remove(xact);
-        return false;
+        return r;
     }
 
-    return true;
+    return OGS_OK;
 }
 
-bool pcf_ue_sbi_discover_and_send(
+int pcf_ue_sbi_discover_and_send(
         ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(pcf_ue_t *pcf_ue, void *data),
         pcf_ue_t *pcf_ue, ogs_sbi_stream_t *stream, void *data)
 {
-    if (pcf_sbi_discover_and_send(
+    int r;
+
+    r = pcf_sbi_discover_and_send(
                 &pcf_ue->sbi, service_type, discovery_option,
-                (ogs_sbi_build_f)build, pcf_ue, stream, data) != true) {
+                (ogs_sbi_build_f)build, pcf_ue, stream, data);
+    if (r != OGS_OK) {
         ogs_error("pcf_ue_sbi_discover_and_send() failed");
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
                 "Cannot discover", pcf_ue->supi));
-        return false;
+        return r;
     }
 
-    return true;
+    return OGS_OK;
 }
 
-bool pcf_sess_sbi_discover_only(
+int pcf_sess_sbi_discover_only(
         pcf_sess_t *sess, ogs_sbi_stream_t *stream,
         ogs_sbi_service_type_e service_type)
 {
@@ -187,7 +192,7 @@ bool pcf_sess_sbi_discover_only(
     xact = ogs_sbi_xact_add(&sess->sbi, service_type, NULL, NULL, NULL, NULL);
     if (!xact) {
         ogs_error("ogs_sbi_xact_add() failed");
-        return false;
+        return OGS_ERROR;
     }
 
     xact->assoc_stream = stream;
@@ -195,24 +200,27 @@ bool pcf_sess_sbi_discover_only(
     return ogs_sbi_discover_only(xact);
 }
 
-bool pcf_sess_sbi_discover_and_send(
+int pcf_sess_sbi_discover_and_send(
         ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(pcf_sess_t *sess, void *data),
         pcf_sess_t *sess, ogs_sbi_stream_t *stream, void *data)
 {
-    if (pcf_sbi_discover_and_send(
+    int r;
+
+    r = pcf_sbi_discover_and_send(
                 &sess->sbi, service_type, discovery_option,
-                (ogs_sbi_build_f)build, sess, stream, data) != true) {
+                (ogs_sbi_build_f)build, sess, stream, data);
+    if (r != OGS_OK) {
         ogs_error("pcf_sess_sbi_discover_and_send() failed");
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
                 "Cannot discover", NULL));
-        return false;
+        return r;
     }
 
-    return true;
+    return OGS_OK;
 }
 
 static int client_notify_cb(
