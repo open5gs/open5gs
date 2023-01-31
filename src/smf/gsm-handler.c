@@ -37,6 +37,7 @@ int gsm_handle_pdu_session_establishment_request(
                 integrity_protection_maximum_data_rate;
     ogs_nas_pdu_session_type_t *pdu_session_type = NULL;
     ogs_nas_ssc_mode_t *ssc_mode = NULL;
+    int r;
 
     ogs_assert(sess);
     ogs_assert(stream);
@@ -66,10 +67,11 @@ int gsm_handle_pdu_session_establishment_request(
                 extended_protocol_configuration_options);
     }
 
-    ogs_assert(true ==
-        smf_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
+    r = smf_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
             smf_nudm_sdm_build_get,
-            sess, stream, 0, (char *)OGS_SBI_RESOURCE_NAME_SM_DATA));
+            sess, stream, 0, (char *)OGS_SBI_RESOURCE_NAME_SM_DATA);
+    ogs_expect(r == OGS_OK);
+    ogs_assert(r != OGS_ERROR);
 
     return OGS_OK;
 }

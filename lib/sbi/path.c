@@ -165,7 +165,7 @@ static int client_discover_cb(
     return OGS_OK;
 }
 
-bool ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
+int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
 {
     bool rc;
     ogs_sbi_client_t *client = NULL, *scp_client = NULL;
@@ -226,7 +226,7 @@ bool ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
         rc = ogs_sbi_getaddr_from_uri(&scheme, &addr, request->h.uri);
         if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
             ogs_error("Invalid URL [%s]", request->h.uri);
-            return false;
+            return OGS_ERROR;
         }
         client = ogs_sbi_client_find(scheme, addr);
         ogs_freeaddrinfo(addr);
@@ -255,7 +255,7 @@ bool ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
             rc = ogs_sbi_client_send_via_scp(
                     scp_client, ogs_sbi_client_handler, request, xact);
             ogs_expect(rc == true);
-            return rc;
+            return (rc == true) ? OGS_OK : OGS_ERROR;
 
         } else {
             /*
@@ -281,7 +281,7 @@ bool ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
                 if (!v) {
                     ogs_error("ogs_uint64_to_string[0x%llx] failed",
                             (long long)discovery_option->requester_features);
-                    return false;
+                    return OGS_ERROR;
                 }
 
                 ogs_sbi_header_set(request->http.headers,
@@ -292,7 +292,7 @@ bool ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
             rc = ogs_sbi_client_send_via_scp(
                     scp_client, client_discover_cb, request, xact);
             ogs_expect(rc == true);
-            return rc;
+            return (rc == true) ? OGS_OK : OGS_ERROR;
         }
 
     } else if (client) {
@@ -304,7 +304,7 @@ bool ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
         rc = ogs_sbi_client_send_request(
                 client, ogs_sbi_client_handler, request, xact);
         ogs_expect(rc == true);
-        return rc;
+        return (rc == true) ? OGS_OK : OGS_ERROR;
 
     } else {
         /**********************************************
@@ -313,10 +313,10 @@ bool ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
         return ogs_sbi_discover_only(xact);
     }
 
-    return true;
+    return OGS_OK;
 }
 
-bool ogs_sbi_discover_only(ogs_sbi_xact_t *xact)
+int ogs_sbi_discover_only(ogs_sbi_xact_t *xact)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
 
@@ -351,14 +351,14 @@ bool ogs_sbi_discover_only(ogs_sbi_xact_t *xact)
         client = NF_INSTANCE_CLIENT(nf_instance);
         if (!client) {
             ogs_error("No Client");
-            return false;
+            return OGS_NOTFOUND;
         }
 
         request = ogs_nnrf_disc_build_discover(
                     target_nf_type, requester_nf_type, discovery_option);
         if (!request) {
             ogs_error("ogs_nnrf_disc_build_discover() failed");
-            return false;
+            return OGS_ERROR;
         }
 
         rc = ogs_sbi_client_send_request(
@@ -367,13 +367,13 @@ bool ogs_sbi_discover_only(ogs_sbi_xact_t *xact)
 
         ogs_sbi_request_free(request);
 
-        return rc;
+        return (rc == true) ? OGS_OK : OGS_ERROR;
     }
 
     ogs_error("Cannot discover [%s]",
                 ogs_sbi_service_type_to_name(service_type));
 
-    return false;
+    return OGS_NOTFOUND;
 }
 
 bool ogs_sbi_send_request_to_nf_instance(

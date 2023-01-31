@@ -93,10 +93,12 @@ int amf_nnssf_nsselection_handle_get(
         memset(&param, 0, sizeof(param));
         param.nrf_uri.nrf.id = sess->nssf.nrf.id;
 
-        amf_sess_sbi_discover_and_send(
+        r = amf_sess_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                 amf_nsmf_pdusession_build_create_sm_context,
                 sess, AMF_CREATE_SM_CONTEXT_NO_STATE, &param);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
     } else {
         rc = ogs_sbi_getaddr_from_uri(&scheme, &addr, NsiInformation->nrf_id);
         if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
@@ -118,8 +120,10 @@ int amf_nnssf_nsselection_handle_get(
         OGS_SBI_SETUP_CLIENT(&sess->nssf.nrf, client);
         ogs_freeaddrinfo(addr);
 
-        ogs_assert(true == amf_sess_sbi_discover_by_nsi(
-                    sess, OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL));
+        r = amf_sess_sbi_discover_by_nsi(
+                sess, OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
     }
 
     return OGS_OK;

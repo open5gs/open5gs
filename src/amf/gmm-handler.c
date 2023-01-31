@@ -685,17 +685,20 @@ int gmm_handle_deregistration_request(amf_ue_t *amf_ue,
     if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
         amf_sess_xact_count(amf_ue) == xact_count) {
         if (UDM_SDM_SUBSCRIBED(amf_ue)) {
-            ogs_assert(true == amf_ue_sbi_discover_and_send(
+            r = amf_ue_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
                     amf_nudm_sdm_build_subscription_delete,
-                    amf_ue, state, NULL));
+                    amf_ue, state, NULL);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
         } else if (PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
-            ogs_assert(true ==
-                amf_ue_sbi_discover_and_send(
+            r = amf_ue_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
                     NULL,
                     amf_npcf_am_policy_control_build_delete,
-                    amf_ue, state, NULL));
+                    amf_ue, state, NULL);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
         } else {
             r = nas_5gs_send_de_registration_accept(amf_ue);
             ogs_expect(r == OGS_OK);
@@ -712,6 +715,7 @@ int gmm_handle_authentication_response(amf_ue_t *amf_ue,
     ogs_nas_authentication_response_parameter_t
         *authentication_response_parameter = NULL;
     uint8_t hxres_star[OGS_MAX_RES_LEN];
+    int r;
 
     ogs_assert(amf_ue);
     ogs_assert(authentication_response);
@@ -746,10 +750,11 @@ int gmm_handle_authentication_response(amf_ue_t *amf_ue,
     memcpy(amf_ue->xres_star, authentication_response_parameter->res,
             authentication_response_parameter->length);
 
-    ogs_assert(true ==
-        amf_ue_sbi_discover_and_send(
+    r = amf_ue_sbi_discover_and_send(
             OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
-            amf_nausf_auth_build_authenticate_confirmation, amf_ue, 0, NULL));
+            amf_nausf_auth_build_authenticate_confirmation, amf_ue, 0, NULL);
+    ogs_expect(r == OGS_OK);
+    ogs_assert(r != OGS_ERROR);
 
     return OGS_OK;
 }
@@ -1124,16 +1129,18 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                 }
 
                 if (nf_instance) {
-                    ogs_assert(true ==
-                        amf_sess_sbi_discover_and_send(
+                    r = amf_sess_sbi_discover_and_send(
                             OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                             amf_nsmf_pdusession_build_create_sm_context,
-                            sess, AMF_CREATE_SM_CONTEXT_NO_STATE, NULL));
+                            sess, AMF_CREATE_SM_CONTEXT_NO_STATE, NULL);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
                 } else {
-                    ogs_assert(true ==
-                        amf_sess_sbi_discover_and_send(
+                    r = amf_sess_sbi_discover_and_send(
                             OGS_SBI_SERVICE_TYPE_NNSSF_NSSELECTION, NULL,
-                            amf_nnssf_nsselection_build_get, sess, 0, NULL));
+                            amf_nnssf_nsselection_build_get, sess, 0, NULL);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
                 }
 
             } else {
@@ -1142,12 +1149,13 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                 param.release = 1;
                 param.cause = OpenAPI_cause_REL_DUE_TO_DUPLICATE_SESSION_ID;
 
-                ogs_assert(true ==
-                    amf_sess_sbi_discover_and_send(
+                r = amf_sess_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                         amf_nsmf_pdusession_build_update_sm_context,
                         sess, AMF_UPDATE_SM_CONTEXT_DUPLICATED_PDU_SESSION_ID,
-                        &param));
+                        &param);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
             }
 
         } else {
@@ -1170,18 +1178,20 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                 param.ue_location = true;
                 param.ue_timezone = true;
 
-                ogs_assert(true ==
-                    amf_sess_sbi_discover_and_send(
+                r = amf_sess_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                         amf_nsmf_pdusession_build_update_sm_context,
-                        sess, AMF_UPDATE_SM_CONTEXT_N1_RELEASED, &param));
+                        sess, AMF_UPDATE_SM_CONTEXT_N1_RELEASED, &param);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
             } else {
 
-                ogs_assert(true ==
-                    amf_sess_sbi_discover_and_send(
+                r = amf_sess_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                         amf_nsmf_pdusession_build_update_sm_context,
-                        sess, AMF_UPDATE_SM_CONTEXT_MODIFIED, &param));
+                        sess, AMF_UPDATE_SM_CONTEXT_MODIFIED, &param);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
             }
 
             switch (gsm_header->message_type) {

@@ -23,6 +23,7 @@
 bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
         ogs_sbi_message_t *recvmsg)
 {
+    int r;
     char *strerror = NULL;
     smf_ue_t *smf_ue = NULL;
     ogs_pkbuf_t *n1smbuf = NULL;
@@ -333,10 +334,11 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
 
     ogs_free(sendmsg.http.location);
 
-    ogs_assert(true ==
-        smf_sbi_discover_and_send(
+    r = smf_sbi_discover_and_send(
             OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL, NULL,
-            smf_npcf_smpolicycontrol_build_create, sess, stream, 0, NULL));
+            smf_npcf_smpolicycontrol_build_create, sess, stream, 0, NULL);
+    ogs_expect(r == OGS_OK);
+    ogs_assert(r != OGS_ERROR);
 
     return true;
 
