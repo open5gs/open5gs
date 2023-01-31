@@ -423,10 +423,16 @@ void sgwc_s5c_handle_modify_bearer_response(
         message->h.teid = sgwc_ue->mme_s11_teid;
 
         pkbuf = ogs_gtp2_build_msg(message);
-        ogs_expect_or_return(pkbuf);
+        if (!pkbuf) {
+            ogs_error("ogs_gtp2_build_msg() failed");
+            return;
+        }
 
         rv = ogs_gtp_xact_update_tx(s11_xact, &message->h, pkbuf);
-        ogs_expect_or_return(rv == OGS_OK);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_gtp_xact_update_tx() failed");
+            return;
+        }
 
         rv = ogs_gtp_xact_commit(s11_xact);
         ogs_expect(rv == OGS_OK);
@@ -726,19 +732,28 @@ void sgwc_s5c_handle_update_bearer_request(
     message->h.teid = sgwc_ue->mme_s11_teid;
 
     pkbuf = ogs_gtp2_build_msg(message);
-    ogs_expect_or_return(pkbuf);
+    if (!pkbuf) {
+        ogs_error("ogs_gtp2_build_msg() failed");
+        return;
+    }
 
     s11_xact = s5c_xact->assoc_xact;
     if (!s11_xact) {
         s11_xact = ogs_gtp_xact_local_create(
                 sgwc_ue->gnode, &message->h, pkbuf, bearer_timeout, bearer);
-        ogs_expect_or_return(s11_xact);
+        if (!s11_xact) {
+            ogs_error("ogs_gtp_xact_local_create() failed");
+            return;
+        }
         s11_xact->local_teid = sgwc_ue->sgw_s11_teid;
 
         ogs_gtp_xact_associate(s5c_xact, s11_xact);
     } else {
         rv = ogs_gtp_xact_update_tx(s11_xact, &message->h, pkbuf);
-        ogs_expect_or_return(rv == OGS_OK);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_gtp_xact_update_tx() failed");
+            return;
+        }
     }
     s11_xact->local_teid = sgwc_ue->sgw_s11_teid;
 
@@ -858,7 +873,10 @@ void sgwc_s5c_handle_delete_bearer_request(
     message->h.teid = sgwc_ue->mme_s11_teid;
 
     pkbuf = ogs_gtp2_build_msg(message);
-    ogs_expect_or_return(pkbuf);
+    if (!pkbuf) {
+        ogs_error("ogs_gtp2_build_msg() failed");
+        return;
+    }
 
     s11_xact = s5c_xact->assoc_xact;
     if (!s11_xact) {
@@ -878,7 +896,10 @@ void sgwc_s5c_handle_delete_bearer_request(
         */
         s11_xact = ogs_gtp_xact_local_create(
                 sgwc_ue->gnode, &message->h, pkbuf, bearer_timeout, bearer);
-        ogs_expect_or_return(s11_xact);
+        if (!s11_xact) {
+            ogs_error("ogs_gtp_xact_local_create() failed");
+            return;
+        }
         s11_xact->local_teid = sgwc_ue->sgw_s11_teid;
 
         ogs_gtp_xact_associate(s5c_xact, s11_xact);
@@ -889,7 +910,10 @@ void sgwc_s5c_handle_delete_bearer_request(
         * 3. MME sends Delete Bearer Response(DEDICATED BEARER) to SGW/SMF.
         */
         rv = ogs_gtp_xact_update_tx(s11_xact, &message->h, pkbuf);
-        ogs_expect_or_return(rv == OGS_OK);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_gtp_xact_update_tx() failed");
+            return;
+        }
     }
     s11_xact->local_teid = sgwc_ue->sgw_s11_teid;
 

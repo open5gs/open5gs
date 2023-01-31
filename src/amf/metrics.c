@@ -247,10 +247,10 @@ int amf_metrics_free_inst_by_cause(ogs_metrics_inst_t **inst)
     return amf_metrics_free_inst(inst, _AMF_METR_BY_CAUSE_MAX);
 }
 
-int amf_metrics_open(void)
+void amf_metrics_init(void)
 {
     ogs_metrics_context_t *ctx = ogs_metrics_self();
-    ogs_metrics_context_open(ctx);
+    ogs_metrics_context_init();
 
     amf_metrics_init_spec(ctx, amf_metrics_spec_global, amf_metrics_spec_def_global,
             _AMF_METR_GLOB_MAX);
@@ -264,14 +264,11 @@ int amf_metrics_open(void)
 
     amf_metrics_init_by_slice();
     amf_metrics_init_by_cause();
-
-    return 0;
 }
 
-int amf_metrics_close(void)
+void amf_metrics_final(void)
 {
     ogs_hash_index_t *hi;
-    ogs_metrics_context_t *ctx = ogs_metrics_self();
 
     if (metrics_hash_by_slice) {
         for (hi = ogs_hash_first(metrics_hash_by_slice); hi; hi = ogs_hash_next(hi)) {
@@ -304,6 +301,5 @@ int amf_metrics_close(void)
         ogs_hash_destroy(metrics_hash_by_cause);
     }
 
-    ogs_metrics_context_close(ctx);
-    return OGS_OK;
+    ogs_metrics_context_final();
 }

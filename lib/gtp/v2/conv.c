@@ -28,7 +28,10 @@ int ogs_gtp2_f_teid_to_sockaddr(
     ogs_assert(list);
 
     addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
-    ogs_expect_or_return_val(addr, OGS_ERROR);
+    if (!addr) {
+        ogs_error("ogs_calloc() failed");
+        return OGS_ERROR;
+    }
     addr->ogs_sa_family = AF_INET;
     addr->ogs_sin_port = htobe16(port);
 

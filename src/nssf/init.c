@@ -27,8 +27,7 @@ int nssf_initialize()
 {
     int rv;
 
-    ogs_sbi_context_init();
-
+    ogs_sbi_context_init(OpenAPI_nf_type_NSSF);
     nssf_context_init();
 
     rv = ogs_sbi_context_parse_config("nssf", "nrf", "scp");

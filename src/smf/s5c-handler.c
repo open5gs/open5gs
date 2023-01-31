@@ -739,7 +739,10 @@ void smf_s5c_handle_create_bearer_response(
     /* Find the Bearer by PGW-S5U-TEID */
     ogs_assert(pgw_s5u_teid);
     bearer = smf_bearer_find_by_pgw_s5u_teid(sess, be32toh(pgw_s5u_teid->teid));
-    ogs_expect_or_return(bearer);
+    if (!bearer) {
+        ogs_error("smf_bearer_find_by_pgw_s5u_teid() failed");
+        return;
+    }
 
     /* Set EBI */
     bearer->ebi = rsp->bearer_contexts.eps_bearer_id.u8;
@@ -1380,10 +1383,16 @@ void smf_s5c_handle_bearer_resource_command(
         pkbuf = smf_s5c_build_update_bearer_request(
                 h.type, bearer, cmd->procedure_transaction_id.u8,
                 tft_update ? &tft : NULL, qos_update);
-        ogs_expect_or_return(pkbuf);
+        if (!pkbuf) {
+            ogs_error("smf_s5c_build_update_bearer_request() failed");
+            return;
+        }
 
         rv = ogs_gtp_xact_update_tx(xact, &h, pkbuf);
-        ogs_expect_or_return(rv == OGS_OK);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_gtp_xact_update_tx() failed");
+            return;
+        }
 
         if (tft_update)
             xact->update_flags |= OGS_GTP_MODIFY_TFT_UPDATE;

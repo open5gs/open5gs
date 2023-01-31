@@ -28,8 +28,9 @@ int pcf_initialize()
 {
     int rv;
 
-    ogs_metrics_context_init();
-    ogs_sbi_context_init();
+    pcf_metrics_init();
+
+    ogs_sbi_context_init(OpenAPI_nf_type_PCF);
     pcf_context_init();
 
     rv = ogs_sbi_context_parse_config("pcf", "nrf", "scp");
@@ -45,8 +46,7 @@ int pcf_initialize()
             ogs_app()->logger.domain, ogs_app()->logger.level);
     if (rv != OGS_OK) return rv;
 
-    rv = pcf_metrics_open();
-    if (rv != 0) return OGS_ERROR;
+    ogs_metrics_context_open(ogs_metrics_self());
 
     rv = ogs_dbi_init(ogs_app()->db_uri);
     if (rv != OGS_OK) return rv;
@@ -93,14 +93,15 @@ void pcf_terminate(void)
     ogs_timer_delete(t_termination_holding);
 
     pcf_sbi_close();
-    pcf_metrics_close();
+
+    ogs_metrics_context_close(ogs_metrics_self());
 
     ogs_dbi_final();
 
     pcf_context_final();
-
     ogs_sbi_context_final();
-    ogs_metrics_context_final();
+
+    pcf_metrics_final();
 }
 
 static void pcf_main(void *data)

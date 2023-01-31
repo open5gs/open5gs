@@ -107,6 +107,30 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
         }
     }
 
+    if (sess->session.ipv4_framed_routes) {
+        int i;
+        OpenAPI_list_t *FrameRouteList = OpenAPI_list_create();
+
+        for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
+            const char *route = sess->session.ipv4_framed_routes[i];
+            if (!route) break;
+            OpenAPI_list_add(FrameRouteList, ogs_strdup(route));
+        }
+        SmPolicyContextData.ipv4_frame_route_list = FrameRouteList;
+    }
+
+    if (sess->session.ipv6_framed_routes) {
+        int i;
+        OpenAPI_list_t *FrameRouteList = OpenAPI_list_create();
+
+        for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
+            const char *route = sess->session.ipv6_framed_routes[i];
+            if (!route) break;
+            OpenAPI_list_add(FrameRouteList, ogs_strdup(route));
+        }
+        SmPolicyContextData.ipv6_frame_route_list = FrameRouteList;
+    }
+
     if (OGS_SBI_FEATURES_IS_SET(sess->smpolicycontrol_features,
                 OGS_SBI_NPCF_SMPOLICYCONTROL_DN_AUTHORIZATION)) {
         if (sess->session.ambr.uplink) {
@@ -190,6 +214,9 @@ end:
         ogs_free(SmPolicyContextData.ipv4_address);
     if (SmPolicyContextData.ipv6_address_prefix)
         ogs_free(SmPolicyContextData.ipv6_address_prefix);
+
+    OpenAPI_clear_and_free_string_list(SmPolicyContextData.ipv4_frame_route_list);
+    OpenAPI_clear_and_free_string_list(SmPolicyContextData.ipv6_frame_route_list);
 
     return request;
 }

@@ -59,7 +59,7 @@ int nrf_sbi_open(void)
     ogs_assert(nf_instance);
 
     /* Build NF instance information. */
-    ogs_sbi_nf_instance_build_default(nf_instance, OpenAPI_nf_type_NRF);
+    ogs_sbi_nf_instance_build_default(nf_instance);
 
     if (ogs_sbi_server_start_all(ogs_sbi_server_handler) != OGS_OK)
         return OGS_ERROR;
@@ -84,11 +84,17 @@ bool nrf_nnrf_nfm_send_nf_status_notify(
 
     ogs_assert(subscription_data);
     client = subscription_data->client;
-    ogs_expect_or_return_val(client, false);
+    if (!client) {
+        ogs_error("No Client");
+        return false;
+    }
 
     request = nrf_nnrf_nfm_build_nf_status_notify(
                 subscription_data, event, nf_instance);
-    ogs_expect_or_return_val(request, false);
+    if (!request) {
+        ogs_error("nrf_nnrf_nfm_build_nf_status_notify() failed");
+        return false;
+    }
 
     rc = ogs_sbi_send_request_to_client(
             client, client_notify_cb, request, NULL);
@@ -103,6 +109,7 @@ bool nrf_nnrf_nfm_send_nf_status_notify_all(
         OpenAPI_notification_event_type_e event,
         ogs_sbi_nf_instance_t *nf_instance)
 {
+    bool rc;
     ogs_sbi_subscription_data_t *subscription_data = NULL;
 
     ogs_assert(nf_instance);
@@ -135,10 +142,12 @@ bool nrf_nnrf_nfm_send_nf_status_notify_all(
                 continue;
         }
 
-        ogs_expect_or_return_val(true ==
-            nrf_nnrf_nfm_send_nf_status_notify(
-                subscription_data, event, nf_instance),
-            false);
+        rc = nrf_nnrf_nfm_send_nf_status_notify(
+                subscription_data, event, nf_instance);
+        if (rc == false) {
+            ogs_error("nrf_nnrf_nfm_send_nf_status_notify() failed");
+            return rc;
+        }
     }
 
     return true;

@@ -298,13 +298,28 @@ static void test_swx_maa_cb(void *data, struct msg **msg)
 
     /* Search the session, retrieve its data */
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
-    ogs_expect_or_return(ret == 0);
-    ogs_expect_or_return(new == 0);
+    if (ret != 0) {
+        ogs_error("fd_msg_sess_get() failed");
+        return;
+    }
+    if (new != 0) {
+        ogs_error("fd_msg_sess_get() failed");
+        return;
+    }
 
     ret = fd_sess_state_retrieve(test_swx_reg, session, &sess_data);
-    ogs_expect_or_return(ret == 0);
-    ogs_expect_or_return(sess_data);
-    ogs_expect_or_return((void *)sess_data == data);
+    if (ret != 0) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
+    if (!sess_data) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
+    if ((void *)sess_data != data) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
 
     /* Value of Result Code */
     ret = fd_msg_search_avp(*msg, ogs_diam_result_code, &avp);
@@ -538,13 +553,28 @@ static void test_swx_saa_cb(void *data, struct msg **msg)
 
     /* Search the session, retrieve its data */
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
-    ogs_expect_or_return(ret == 0);
-    ogs_expect_or_return(new == 0);
+    if (ret != 0) {
+        ogs_error("fd_msg_sess_get() failed");
+        return;
+    }
+    if (new != 0) {
+        ogs_error("fd_msg_sess_get() failed");
+        return;
+    }
 
     ret = fd_sess_state_retrieve(test_swx_reg, session, &sess_data);
-    ogs_expect_or_return(ret == 0);
-    ogs_expect_or_return(sess_data);
-    ogs_expect_or_return((void *)sess_data == data);
+    if (ret != 0) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
+    if (!sess_data) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
+    if ((void *)sess_data != data) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
 
     sess = sess_data->sess;
     ogs_assert(sess);

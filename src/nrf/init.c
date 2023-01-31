@@ -27,8 +27,7 @@ int nrf_initialize()
 {
     int rv;
 
-    ogs_sbi_context_init();
-
+    ogs_sbi_context_init(OpenAPI_nf_type_NRF);
     nrf_context_init();
 
     rv = ogs_sbi_context_parse_config("nrf", NULL, "scp");

@@ -686,3 +686,61 @@ int16_t ogs_pfcp_parse_volume_measurement(
 
     return size;
 }
+
+int16_t ogs_pfcp_build_user_id(
+        ogs_tlv_octet_t *octet, ogs_pfcp_user_id_t *user_id,
+        void *data, int data_len)
+{
+    ogs_pfcp_user_id_t target;
+    int16_t size = 0;
+
+    ogs_assert(user_id);
+    ogs_assert(octet);
+    ogs_assert(data);
+    ogs_assert(data_len);
+
+    octet->data = data;
+    memcpy(&target, user_id, sizeof(ogs_pfcp_user_id_t));
+
+    ogs_assert(size + sizeof(target.flags) <= data_len);
+    memcpy((unsigned char *)octet->data + size,
+            &target.flags, sizeof(target.flags));
+    size += sizeof(target.flags);
+
+    if (target.imsif) {
+        ogs_assert(size + sizeof(target.imsi_len) <= data_len);
+        memcpy((unsigned char *)octet->data + size,
+                &target.imsi_len, sizeof(target.imsi_len));
+        size += sizeof(target.imsi_len);
+
+        ogs_assert(size + user_id->imsi_len <= data_len);
+        memcpy((char *)octet->data + size, user_id->imsi, user_id->imsi_len);
+        size += user_id->imsi_len;
+    }
+    if (target.imeif) {
+        ogs_assert(size + sizeof(target.imeisv_len) <= data_len);
+        memcpy((unsigned char *)octet->data + size,
+                &target.imeisv_len, sizeof(target.imeisv_len));
+        size += sizeof(target.imeisv_len);
+
+        ogs_assert(size + user_id->imeisv_len <= data_len);
+        memcpy((char *)octet->data + size,
+                user_id->imeisv, user_id->imeisv_len);
+        size += user_id->imeisv_len;
+    }
+    if (target.msisdnf) {
+        ogs_assert(size + sizeof(target.msisdn_len) <= data_len);
+        memcpy((unsigned char *)octet->data + size,
+                &target.msisdn_len, sizeof(target.msisdn_len));
+        size += sizeof(target.msisdn_len);
+
+        ogs_assert(size + user_id->msisdn_len <= data_len);
+        memcpy((char *)octet->data + size,
+                user_id->msisdn, user_id->msisdn_len);
+        size += user_id->msisdn_len;
+    }
+
+    octet->len = size;
+
+    return octet->len;
+}

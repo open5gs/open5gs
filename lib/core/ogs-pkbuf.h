@@ -69,6 +69,7 @@ typedef struct ogs_pkbuf_config_s {
     int cluster_1024_pool;
     int cluster_2048_pool;
     int cluster_8192_pool;
+    int cluster_32768_pool;
     int cluster_big_pool;
 } ogs_pkbuf_config_t;
 

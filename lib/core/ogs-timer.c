@@ -55,7 +55,10 @@ static void add_timer_node(
 ogs_timer_mgr_t *ogs_timer_mgr_create(unsigned int capacity)
 {
     ogs_timer_mgr_t *manager = ogs_calloc(1, sizeof *manager);
-    ogs_expect_or_return_val(manager, NULL);
+    if (!manager) {
+        ogs_error("ogs_calloc() failed");
+        return NULL;
+    }
 
     ogs_pool_init(&manager->pool, capacity);
 
@@ -87,7 +90,6 @@ ogs_timer_t *ogs_timer_add(
         ogs_fatal("ogs_pool_alloc() failed");
         return NULL;
     }
-    ogs_expect_or_return_val(timer, NULL);
 
     memset(timer, 0, sizeof *timer);
     timer->cb = cb;

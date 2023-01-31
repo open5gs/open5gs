@@ -1400,6 +1400,115 @@ int16_t ogs_pfcp_build_volume_measurement(ogs_tlv_octet_t *octet,
 int16_t ogs_pfcp_parse_volume_measurement(
         ogs_pfcp_volume_measurement_t *volume, ogs_tlv_octet_t *octet);
 
+/*
+ * 8.2.101 User ID
+ *
+ * The User ID IE type shall be encoded as shown in Figure 8.2.101-1.
+ *
+ * The following flags are coded within Octet 5:
+ *
+ * -Bit 1 – IMSIF: If this bit is set to "1",
+ *  then the Length of IMSI and IMSI fields shall be present,
+ *  otherwise these fields shall not be present.
+ * -Bit 2 – IMEIF: If this bit is set to "1",
+ *  then the Length of IMEI and IMEI fields shall be present,
+ *  otherwise these fields shall not be present.
+ * -Bit 3 – MSISDNF: If this bit is set to "1",
+ *  then the Length of MSISDN and MSISDN fields shall be present,
+ *  otherwise these fields shall not be present.
+ * -Bit 4 – NAIF: If this bit is set to "1",
+ *  then the Length of NAI and NAI fields shall be present,
+ *  otherwise these fields shall not be present.
+ * -Bit 5 – SUPIF: If this bit is set to "1",
+ *  then the Length of SUPI and SUPI fields shall be present,
+ *  otherwise these fields shall not be present.
+ * -Bit 6 – GPSIF: If this bit is set to "1",
+ *  then the Length of GPSI and GPSI fields shall be present,
+ *  otherwise these fields shall not be present.
+ * -Bit 7 – PEIF: If this bit is set to "1",
+ *  then the Length of PEI and PEI fields shall be present,
+ *  otherwise these fields shall not be present.
+ * - Bit 8: Spare, for future use and set to "0".
+ *
+ * One or more flags may be set to "1".
+ *
+ * For 5GS User Identities:
+ * -The SUPI field shall only be used for carrying a Global Cable Identifier
+ *  (GCI) or a Global Line Identifier (GLI). The IMSI and NAI, if received
+ *  by the SMF in the SUPI, shall be included in the IMSI and NAI field respectively.
+ * -The GPSI field shall only be used for carrying an External Identifier.
+ *  The MSISDN, if received by the SMF in the SUPI, shall be included
+ *  in the MSISDN field.
+ * -The PEI field shall only be used for carrying an MAC address or
+ *  an Extended Unique Identifier. The IMEI, if received by the SMF in the PEI,
+ *  shall be included in the IMEI field.
+ *
+ * The coding of IMSI field, from octets 7 to 'a' shall be encoded
+ * as the octets 5 to n+4 of the IMSI IE type
+ * specified in clause 8.3 of 3GPP TS 29.274 [9].
+ *
+ * The coding of IMEI field, in octets 'b+1' to 'c' shall be encoded
+ * as the octets 5 to n+4 of the MEI IE type
+ * specified in clause 8.10 of 3GPP TS 29.274 [9].
+ *
+ * The coding of MSISDN field, in octets 'd+1' to 'e' shall be encoded
+ * as the octets 5 to n+4 of the MSISDN IE type
+ * specified in clause 8.11 of 3GPP TS 29.274 [9].
+ *
+ * The coding of the SUPI field, in octets 'h+1' to 'i' shall be encoded
+ * as the Supi data type specified in clause 5.3.2 of 3GPP TS 29.571 [61].
+ *
+ * The coding of the GPSI field, in octets 'j+1' to 'k' shall be encoded
+ * as the Gpsi data type specified in clause 5.3.2 of 3GPP TS 29.571 [61].
+ *
+ * The coding of the PEI field, in octets 'l+1' to 'm' shall be encoded
+ * as the Pei data type specified in clause 5.3.2 of 3GPP TS 29.571 [61].
+ *
+ * The NAI field, in octets 'f+1' to 'g' shall be encoded as an Octet String
+ * (see IETF RFC 4282 [36]).
+ */
+typedef struct ogs_pfcp_user_id_flags_s {
+    union {
+        struct {
+ED8(uint8_t spare:1;,
+    uint8_t peif:1;,
+    uint8_t gpsif:1;,
+    uint8_t supif:1;,
+    uint8_t naif:1;,
+    uint8_t msisdnf:1;,
+    uint8_t imeif:1;,
+    uint8_t imsif:1;)
+        };
+    uint8_t flags;
+    };
+} ogs_pfcp_user_id_flags_t;
+
+typedef struct ogs_pfcp_user_id_s {
+    union {
+        struct {
+ED8(uint8_t spare:1;,
+    uint8_t peif:1;,
+    uint8_t gpsif:1;,
+    uint8_t supif:1;,
+    uint8_t naif:1;,
+    uint8_t msisdnf:1;,
+    uint8_t imeif:1;,
+    uint8_t imsif:1;)
+        };
+    uint8_t flags;
+    };
+
+    uint8_t imsi_len;
+    uint8_t imsi[OGS_MAX_IMSI_LEN];
+    uint8_t imeisv_len;
+    uint8_t imeisv[OGS_MAX_IMEISV_LEN];
+    uint8_t msisdn_len;
+    uint8_t msisdn[OGS_MAX_MSISDN_LEN];
+} ogs_pfcp_user_id_t;
+
+int16_t ogs_pfcp_build_user_id(
+        ogs_tlv_octet_t *octet, ogs_pfcp_user_id_t *user_id,
+        void *data, int data_len);
 
 #ifdef __cplusplus
 }

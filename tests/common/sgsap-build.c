@@ -35,7 +35,7 @@ ogs_pkbuf_t *test_sgsap_location_update_accept(int i)
         25,
         0,
     };
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
@@ -59,7 +59,7 @@ ogs_pkbuf_t *test_sgsap_location_update_reject(int i)
         0,
         0,
     };
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
@@ -83,7 +83,7 @@ ogs_pkbuf_t *test_sgsap_imsi_detach_ack(int i)
         0,
         0,
     };
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
@@ -119,7 +119,7 @@ ogs_pkbuf_t *test_sgsap_paging_request(int i)
         0,
         0,
     };
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
@@ -143,7 +143,7 @@ ogs_pkbuf_t *test_sgsap_reset_indication(int i)
         0,
         0,
     };
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
@@ -167,7 +167,7 @@ ogs_pkbuf_t *test_sgsap_release_request(int i)
         0,
         0,
     };
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
@@ -188,7 +188,7 @@ ogs_pkbuf_t *test_sgsap_downlink_unitdata(int i)
     uint16_t len[TEST_SGSAP_MAX_MESSAGE] = {
         51,
     };
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
@@ -209,7 +209,7 @@ ogs_pkbuf_t *test_sgsap_mm_information_request(int i)
     uint16_t len[TEST_SGSAP_MAX_MESSAGE] = {
         33,
     };
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);

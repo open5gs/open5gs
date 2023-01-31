@@ -35,6 +35,8 @@ void mme_s6a_send_air(mme_ue_t *mme_ue,
         *authentication_failure_parameter);
 /* MME Sends Update Location Request to HSS */
 void mme_s6a_send_ulr(mme_ue_t *mme_ue);
+/* MME Sends Purge UE Request to HSS */
+void mme_s6a_send_pur(mme_ue_t *mme_ue);
 
 /* MME Sends ME Identity Check Request to EIR */
 void mme_s13_send_ecr(mme_ue_t *mme_ue);

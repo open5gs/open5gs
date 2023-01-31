@@ -283,8 +283,10 @@ ogs_pkbuf_t *gmm_build_de_registration_accept(amf_ue_t *amf_ue)
     return nas_5gs_security_encode(amf_ue, &message);
 }
 
-ogs_pkbuf_t *gmm_build_de_registration_request(amf_ue_t *amf_ue,
-        OpenAPI_deregistration_reason_e dereg_reason)
+ogs_pkbuf_t *gmm_build_de_registration_request(
+        amf_ue_t *amf_ue,
+        OpenAPI_deregistration_reason_e dereg_reason,
+        ogs_nas_5gmm_cause_t gmm_cause)
 {
     ogs_nas_5gs_message_t message;
     ogs_nas_5gs_deregistration_request_to_ue_t *dereg_req =
@@ -307,12 +309,11 @@ ogs_pkbuf_t *gmm_build_de_registration_request(amf_ue_t *amf_ue,
         dereg_reason == OpenAPI_deregistration_reason_REREGISTRATION_REQUIRED;
     dereg_req->de_registration_type.access_type = OGS_ACCESS_TYPE_3GPP;
 
-    dereg_req->presencemask |=
-        OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_5GMM_CAUSE_PRESENT;
-    dereg_req->gmm_cause =
-        (dereg_reason == OpenAPI_deregistration_reason_REREGISTRATION_REQUIRED
-         ? OGS_5GMM_CAUSE_IMPLICITLY_DE_REGISTERED
-         : OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
+    if (gmm_cause) {
+        dereg_req->presencemask |=
+            OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_5GMM_CAUSE_PRESENT;
+        dereg_req->gmm_cause = gmm_cause;
+    }
 
     return nas_5gs_security_encode(amf_ue, &message);
 }

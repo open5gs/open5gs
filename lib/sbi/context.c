@@ -31,9 +31,11 @@ static OGS_POOL(subscription_data_pool, ogs_sbi_subscription_data_t);
 static OGS_POOL(smf_info_pool, ogs_sbi_smf_info_t);
 static OGS_POOL(nf_info_pool, ogs_sbi_nf_info_t);
 
-void ogs_sbi_context_init(void)
+void ogs_sbi_context_init(OpenAPI_nf_type_e nf_type)
 {
     char nf_instance_id[OGS_UUID_FORMATTED_LENGTH + 1];
+
+    ogs_assert(nf_type);
 
     ogs_assert(context_initialized == 0);
 
@@ -62,18 +64,21 @@ void ogs_sbi_context_init(void)
 
     ogs_pool_init(&nf_info_pool, ogs_app()->pool.nf * OGS_MAX_NUM_OF_NF_INFO);
 
-    /* Add AELF NF-Instance */
+    /* Add SELF NF-Instance */
     self.nf_instance = ogs_sbi_nf_instance_add();
     ogs_assert(self.nf_instance);
 
     ogs_uuid_get(&self.uuid);
     ogs_uuid_format(nf_instance_id, &self.uuid);
     ogs_sbi_nf_instance_set_id(self.nf_instance, nf_instance_id);
+    ogs_sbi_nf_instance_set_type(self.nf_instance, nf_type);
 
     /* Add NRF NF-Instance */
-    self.nrf_instance = ogs_sbi_nf_instance_add();
-    ogs_assert(self.nrf_instance);
-    ogs_sbi_nf_instance_set_type(self.nrf_instance, OpenAPI_nf_type_NRF);
+    if (nf_type != OpenAPI_nf_type_NRF) {
+        self.nrf_instance = ogs_sbi_nf_instance_add();
+        ogs_assert(self.nrf_instance);
+        ogs_sbi_nf_instance_set_type(self.nrf_instance, OpenAPI_nf_type_NRF);
+    }
 
     /* Add SCP NF-Instance */
     self.scp_instance = ogs_sbi_nf_instance_add();
@@ -1409,16 +1414,13 @@ ogs_sbi_nf_info_t *ogs_sbi_nf_info_find(
     return NULL;
 }
 
-void ogs_sbi_nf_instance_build_default(
-        ogs_sbi_nf_instance_t *nf_instance, OpenAPI_nf_type_e nf_type)
+void ogs_sbi_nf_instance_build_default(ogs_sbi_nf_instance_t *nf_instance)
 {
     ogs_sbi_server_t *server = NULL;
     char *hostname = NULL;
 
     ogs_assert(nf_instance);
-    ogs_assert(nf_type);
 
-    ogs_sbi_nf_instance_set_type(nf_instance, nf_type);
     ogs_sbi_nf_instance_set_status(nf_instance, OpenAPI_nf_status_REGISTERED);
 
     hostname = NULL;
@@ -1685,6 +1687,9 @@ bool ogs_sbi_discovery_param_is_matched(
     ogs_assert(target_nf_type);
     ogs_assert(requester_nf_type);
 
+    if (NF_INSTANCE_EXCLUDED_FROM_DISCOVERY(nf_instance))
+        return false;
+
     if (!OGS_FSM_CHECK(&nf_instance->sm, ogs_sbi_nf_state_registered))
         return false;
 
@@ -1798,7 +1803,6 @@ ogs_sbi_xact_t *ogs_sbi_xact_add(
         ogs_error("ogs_pool_alloc() failed");
         return NULL;
     }
-    ogs_expect_or_return_val(xact, NULL);
     memset(xact, 0, sizeof(ogs_sbi_xact_t));
 
     xact->sbi_object = sbi_object;
@@ -1815,6 +1819,10 @@ ogs_sbi_xact_t *ogs_sbi_xact_add(
     if (!discovery_option) {
         discovery_option = ogs_sbi_discovery_option_new();
         ogs_assert(discovery_option);
+
+        /* ALWAYS add Service-MAP to requester-features in Discovery Option */
+        OGS_SBI_FEATURES_SET(discovery_option->requester_features,
+                OGS_SBI_NNRF_DISC_SERVICE_MAP);
     }
 
     if (!discovery_option->num_of_service_names) {

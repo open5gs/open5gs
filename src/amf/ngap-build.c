@@ -1907,7 +1907,11 @@ ogs_pkbuf_t *ngap_build_downlink_ran_configuration_transfer(
 
     rv = ogs_asn_copy_ie(&asn_DEF_NGAP_SONConfigurationTransfer,
             transfer, SONConfigurationTransfer);
-    ogs_assert(rv == OGS_OK);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_asn_copy_ie() failed");
+        ogs_asn_free(&asn_DEF_NGAP_NGAP_PDU, &pdu);
+        return NULL;
+    }
 
     return ogs_ngap_encode(&pdu);
 }
@@ -2647,7 +2651,7 @@ ogs_pkbuf_t *ngap_build_handover_cancel_ack(ran_ue_t *source_ue)
     return ogs_ngap_encode(&pdu);
 }
 
-ogs_pkbuf_t *ngap_build_uplink_ran_status_transfer(
+ogs_pkbuf_t *ngap_build_downlink_ran_status_transfer(
     ran_ue_t *target_ue,
     NGAP_RANStatusTransfer_TransparentContainer_t *transfer)
 {
@@ -2722,7 +2726,11 @@ ogs_pkbuf_t *ngap_build_uplink_ran_status_transfer(
     rv = ogs_asn_copy_ie(
             &asn_DEF_NGAP_RANStatusTransfer_TransparentContainer,
             transfer, RANStatusTransfer_TransparentContainer);
-    ogs_assert(rv == OGS_OK);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_asn_copy_ie() failed");
+        ogs_asn_free(&asn_DEF_NGAP_NGAP_PDU, &pdu);
+        return NULL;
+    }
 
     return ogs_ngap_encode(&pdu);
 }

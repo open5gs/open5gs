@@ -21,56 +21,88 @@
 
 ogs_pkbuf_t *ogs_pfcp_build_heartbeat_request(uint8_t type)
 {
-    ogs_pfcp_message_t pfcp_message;
+    ogs_pfcp_message_t *pfcp_message = NULL;
     ogs_pfcp_heartbeat_request_t *req = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
 
     ogs_debug("Heartbeat Request");
 
-    req = &pfcp_message.pfcp_heartbeat_request;
-    memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
+    pfcp_message = ogs_calloc(1, sizeof(*pfcp_message));
+    if (!pfcp_message) {
+        ogs_error("ogs_calloc() failed");
+        return NULL;
+    }
+
+    req = &pfcp_message->pfcp_heartbeat_request;
 
     req->recovery_time_stamp.presence = 1;
     req->recovery_time_stamp.u32 = ogs_pfcp_self()->pfcp_started;
 
-    pfcp_message.h.type = type;
-    return ogs_pfcp_build_msg(&pfcp_message);
+    pfcp_message->h.type = type;
+    pkbuf = ogs_pfcp_build_msg(pfcp_message);
+    ogs_expect(pkbuf);
+
+    ogs_free(pfcp_message);
+
+    return pkbuf;
 }
 
 ogs_pkbuf_t *ogs_pfcp_build_heartbeat_response(uint8_t type)
 {
-    ogs_pfcp_message_t pfcp_message;
+    ogs_pfcp_message_t *pfcp_message = NULL;
     ogs_pfcp_heartbeat_response_t *rsp = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
 
     ogs_debug("Heartbeat Response");
 
-    rsp = &pfcp_message.pfcp_heartbeat_response;
-    memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
+    pfcp_message = ogs_calloc(1, sizeof(*pfcp_message));
+    if (!pfcp_message) {
+        ogs_error("ogs_calloc() failed");
+        return NULL;
+    }
+
+    rsp = &pfcp_message->pfcp_heartbeat_response;
 
     rsp->recovery_time_stamp.presence = 1;
     rsp->recovery_time_stamp.u32 = ogs_pfcp_self()->pfcp_started;
 
-    pfcp_message.h.type = type;
-    return ogs_pfcp_build_msg(&pfcp_message);
+    pfcp_message->h.type = type;
+    pkbuf = ogs_pfcp_build_msg(pfcp_message);
+    ogs_expect(pkbuf);
+
+    ogs_free(pfcp_message);
+
+    return pkbuf;
 }
 
 ogs_pkbuf_t *ogs_pfcp_cp_build_association_setup_request(uint8_t type)
 {
-    ogs_pfcp_message_t pfcp_message;
+    ogs_pfcp_message_t *pfcp_message = NULL;
     ogs_pfcp_association_setup_request_t *req = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
 
     ogs_pfcp_node_id_t node_id;
     int node_id_len = 0, rv;
 
     ogs_debug("Association Setup Request");
 
-    req = &pfcp_message.pfcp_association_setup_request;
-    memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
+    pfcp_message = ogs_calloc(1, sizeof(*pfcp_message));
+    if (!pfcp_message) {
+        ogs_error("ogs_calloc() failed");
+        return NULL;
+    }
+
+    req = &pfcp_message->pfcp_association_setup_request;
 
     rv = ogs_pfcp_sockaddr_to_node_id(
             ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
             ogs_app()->parameter.prefer_ipv4,
             &node_id, &node_id_len);
-    ogs_expect_or_return_val(rv == OGS_OK, NULL);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_pfcp_sockaddr_to_node_id() failed");
+        ogs_free(pfcp_message);
+        return NULL;
+    }
     req->node_id.presence = 1;
     req->node_id.data = &node_id;
     req->node_id.len = node_id_len;
@@ -81,29 +113,44 @@ ogs_pkbuf_t *ogs_pfcp_cp_build_association_setup_request(uint8_t type)
     req->cp_function_features.presence = 1;
     req->cp_function_features.u8 = ogs_pfcp_self()->cp_function_features.octet5;
 
-    pfcp_message.h.type = type;
-    return ogs_pfcp_build_msg(&pfcp_message);
+    pfcp_message->h.type = type;
+    pkbuf = ogs_pfcp_build_msg(pfcp_message);
+    ogs_expect(pkbuf);
+
+    ogs_free(pfcp_message);
+
+    return pkbuf;
 }
 
 ogs_pkbuf_t *ogs_pfcp_cp_build_association_setup_response(uint8_t type,
         uint8_t cause)
 {
-    ogs_pfcp_message_t pfcp_message;
+    ogs_pfcp_message_t *pfcp_message = NULL;
     ogs_pfcp_association_setup_response_t *rsp = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
 
     ogs_pfcp_node_id_t node_id;
     int node_id_len = 0, rv;
 
     ogs_debug("Association Setup Response");
 
-    rsp = &pfcp_message.pfcp_association_setup_response;
-    memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
+    pfcp_message = ogs_calloc(1, sizeof(*pfcp_message));
+    if (!pfcp_message) {
+        ogs_error("ogs_calloc() failed");
+        return NULL;
+    }
+
+    rsp = &pfcp_message->pfcp_association_setup_response;
 
     rv = ogs_pfcp_sockaddr_to_node_id(
             ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
             ogs_app()->parameter.prefer_ipv4,
             &node_id, &node_id_len);
-    ogs_expect_or_return_val(rv == OGS_OK, NULL);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_pfcp_sockaddr_to_node_id() failed");
+        ogs_free(pfcp_message);
+        return NULL;
+    }
     rsp->node_id.presence = 1;
     rsp->node_id.data = &node_id;
     rsp->node_id.len = node_id_len;
@@ -117,14 +164,20 @@ ogs_pkbuf_t *ogs_pfcp_cp_build_association_setup_response(uint8_t type,
     rsp->cp_function_features.presence = 1;
     rsp->cp_function_features.u8 = ogs_pfcp_self()->cp_function_features.octet5;
 
-    pfcp_message.h.type = type;
-    return ogs_pfcp_build_msg(&pfcp_message);
+    pfcp_message->h.type = type;
+    pkbuf = ogs_pfcp_build_msg(pfcp_message);
+    ogs_expect(pkbuf);
+
+    ogs_free(pfcp_message);
+
+    return pkbuf;
 }
 
 ogs_pkbuf_t *ogs_pfcp_up_build_association_setup_request(uint8_t type)
 {
-    ogs_pfcp_message_t pfcp_message;
+    ogs_pfcp_message_t *pfcp_message = NULL;
     ogs_pfcp_association_setup_request_t *req = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
 
     ogs_pfcp_node_id_t node_id;
     int node_id_len = 0;
@@ -136,14 +189,23 @@ ogs_pkbuf_t *ogs_pfcp_up_build_association_setup_request(uint8_t type)
 
     ogs_debug("Association Setup Request");
 
-    req = &pfcp_message.pfcp_association_setup_request;
-    memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
+    pfcp_message = ogs_calloc(1, sizeof(*pfcp_message));
+    if (!pfcp_message) {
+        ogs_error("ogs_calloc() failed");
+        return NULL;
+    }
+
+    req = &pfcp_message->pfcp_association_setup_request;
 
     rv = ogs_pfcp_sockaddr_to_node_id(
             ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
             ogs_app()->parameter.prefer_ipv4,
             &node_id, &node_id_len);
-    ogs_expect_or_return_val(rv == OGS_OK, NULL);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_pfcp_sockaddr_to_node_id() failed");
+        ogs_free(pfcp_message);
+        return NULL;
+    }
     req->node_id.presence = 1;
     req->node_id.data = &node_id;
     req->node_id.len = node_id_len;
@@ -172,15 +234,21 @@ ogs_pkbuf_t *ogs_pfcp_up_build_association_setup_request(uint8_t type)
         }
     }
 
-    pfcp_message.h.type = type;
-    return ogs_pfcp_build_msg(&pfcp_message);
+    pfcp_message->h.type = type;
+    pkbuf = ogs_pfcp_build_msg(pfcp_message);
+    ogs_expect(pkbuf);
+
+    ogs_free(pfcp_message);
+
+    return pkbuf;
 }
 
 ogs_pkbuf_t *ogs_pfcp_up_build_association_setup_response(uint8_t type,
         uint8_t cause)
 {
-    ogs_pfcp_message_t pfcp_message;
+    ogs_pfcp_message_t *pfcp_message = NULL;
     ogs_pfcp_association_setup_response_t *rsp = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
 
     ogs_pfcp_node_id_t node_id;
     int node_id_len = 0;
@@ -192,14 +260,23 @@ ogs_pkbuf_t *ogs_pfcp_up_build_association_setup_response(uint8_t type,
 
     ogs_debug("Association Setup Response");
 
-    rsp = &pfcp_message.pfcp_association_setup_response;
-    memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
+    pfcp_message = ogs_calloc(1, sizeof(*pfcp_message));
+    if (!pfcp_message) {
+        ogs_error("ogs_calloc() failed");
+        return NULL;
+    }
+
+    rsp = &pfcp_message->pfcp_association_setup_response;
 
     rv = ogs_pfcp_sockaddr_to_node_id(
             ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
             ogs_app()->parameter.prefer_ipv4,
             &node_id, &node_id_len);
-    ogs_expect_or_return_val(rv == OGS_OK, NULL);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_pfcp_sockaddr_to_node_id() failed");
+        ogs_free(pfcp_message);
+        return NULL;
+    }
     rsp->node_id.presence = 1;
     rsp->node_id.data = &node_id;
     rsp->node_id.len = node_id_len;
@@ -231,8 +308,13 @@ ogs_pkbuf_t *ogs_pfcp_up_build_association_setup_response(uint8_t type,
         }
     }
 
-    pfcp_message.h.type = type;
-    return ogs_pfcp_build_msg(&pfcp_message);
+    pfcp_message->h.type = type;
+    pkbuf = ogs_pfcp_build_msg(pfcp_message);
+    ogs_expect(pkbuf);
+
+    ogs_free(pfcp_message);
+
+    return pkbuf;
 }
 
 static struct {
@@ -312,6 +394,22 @@ void ogs_pfcp_build_create_pdr(
         message->pdi.ue_ip_address.presence = 1;
         message->pdi.ue_ip_address.data = &pdr->ue_ip_addr;
         message->pdi.ue_ip_address.len = pdr->ue_ip_addr_len;
+    }
+
+    for (j = 0; j < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; j++) {
+        if (!pdr->ipv4_framed_routes || !pdr->ipv4_framed_routes[j])
+            break;
+        message->pdi.framed_route[j].presence = 1;
+        message->pdi.framed_route[j].data = pdr->ipv4_framed_routes[j];
+        message->pdi.framed_route[j].len = strlen(pdr->ipv4_framed_routes[j]);
+    }
+
+    for (j = 0; j < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; j++) {
+        if (!pdr->ipv6_framed_routes || !pdr->ipv6_framed_routes[j])
+            break;
+        message->pdi.framed_ipv6_route[j].presence = 1;
+        message->pdi.framed_ipv6_route[j].data = pdr->ipv6_framed_routes[j];
+        message->pdi.framed_ipv6_route[j].len = strlen(pdr->ipv6_framed_routes[j]);
     }
 
     if (pdr->f_teid_len) {
@@ -789,8 +887,9 @@ static struct {
 ogs_pkbuf_t *ogs_pfcp_build_session_report_request(
         uint8_t type, ogs_pfcp_user_plane_report_t *report)
 {
-    ogs_pfcp_message_t pfcp_message;
+    ogs_pfcp_message_t *pfcp_message = NULL;
     ogs_pfcp_session_report_request_t *req = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
     ogs_pfcp_downlink_data_service_information_t info;
     unsigned int i;
 
@@ -798,8 +897,13 @@ ogs_pkbuf_t *ogs_pfcp_build_session_report_request(
 
     ogs_debug("PFCP session report request");
 
-    req = &pfcp_message.pfcp_session_report_request;
-    memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
+    pfcp_message = ogs_calloc(1, sizeof(*pfcp_message));
+    if (!pfcp_message) {
+        ogs_error("ogs_calloc() failed");
+        return NULL;
+    }
+
+    req = &pfcp_message->pfcp_session_report_request;
 
     req->report_type.presence = 1;
     req->report_type.u8 = report->type.value;
@@ -910,39 +1014,61 @@ ogs_pkbuf_t *ogs_pfcp_build_session_report_request(
             report->error_indication.remote_f_teid_len;
     }
 
-    pfcp_message.h.type = type;
-    return ogs_pfcp_build_msg(&pfcp_message);
+    pfcp_message->h.type = type;
+    pkbuf = ogs_pfcp_build_msg(pfcp_message);
+    ogs_expect(pkbuf);
+
+    ogs_free(pfcp_message);
+
+    return pkbuf;
 }
 
 ogs_pkbuf_t *ogs_pfcp_build_session_report_response(
         uint8_t type, uint8_t cause)
 {
-    ogs_pfcp_message_t pfcp_message;
+    ogs_pfcp_message_t *pfcp_message = NULL;
     ogs_pfcp_session_report_response_t *rsp = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
 
     ogs_debug("PFCP session report response");
 
-    rsp = &pfcp_message.pfcp_session_report_response;
-    memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
+    pfcp_message = ogs_calloc(1, sizeof(*pfcp_message));
+    if (!pfcp_message) {
+        ogs_error("ogs_calloc() failed");
+        return NULL;
+    }
+
+    rsp = &pfcp_message->pfcp_session_report_response;
 
     rsp->cause.presence = 1;
     rsp->cause.u8 = cause;
 
-    pfcp_message.h.type = type;
-    return ogs_pfcp_build_msg(&pfcp_message);
+    pfcp_message->h.type = type;
+    pkbuf = ogs_pfcp_build_msg(pfcp_message);
+    ogs_expect(pkbuf);
+
+    ogs_free(pfcp_message);
+
+    return pkbuf;
 }
 
 ogs_pkbuf_t *ogs_pfcp_build_session_deletion_response( uint8_t type, uint8_t cause,
         ogs_pfcp_user_plane_report_t *report)
 {
-    ogs_pfcp_message_t pfcp_message;
+    ogs_pfcp_message_t *pfcp_message = NULL;
     ogs_pfcp_session_deletion_response_t *rsp = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
     unsigned int i;
 
     ogs_debug("PFCP session deletion response");
 
-    rsp = &pfcp_message.pfcp_session_deletion_response;
-    memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
+    pfcp_message = ogs_calloc(1, sizeof(*pfcp_message));
+    if (!pfcp_message) {
+        ogs_error("ogs_calloc() failed");
+        return NULL;
+    }
+
+    rsp = &pfcp_message->pfcp_session_deletion_response;
 
     rsp->cause.presence = 1;
     rsp->cause.u8 = cause;
@@ -997,6 +1123,11 @@ ogs_pkbuf_t *ogs_pfcp_build_session_deletion_response( uint8_t type, uint8_t cau
             }
         }
     }
-    pfcp_message.h.type = type;
-    return ogs_pfcp_build_msg(&pfcp_message);
+    pfcp_message->h.type = type;
+    pkbuf = ogs_pfcp_build_msg(pfcp_message);
+    ogs_expect(pkbuf);
+
+    ogs_free(pfcp_message);
+
+    return pkbuf;
 }

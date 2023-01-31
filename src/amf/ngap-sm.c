@@ -39,6 +39,8 @@ void ngap_state_final(ogs_fsm_t *s, amf_event_t *e)
 
 void ngap_state_operational(ogs_fsm_t *s, amf_event_t *e)
 {
+    int r;
+
     amf_gnb_t *gnb = NULL;
     ogs_pkbuf_t *pkbuf = NULL;
 
@@ -192,7 +194,10 @@ void ngap_state_operational(ogs_fsm_t *s, amf_event_t *e)
             ogs_assert(e->ran_ue);
             ogs_assert(e->pkbuf);
 
-            ogs_expect(OGS_OK == ngap_send_to_ran_ue(e->ran_ue, e->pkbuf));
+            r = ngap_send_to_ran_ue(e->ran_ue, e->pkbuf);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+
             ogs_timer_delete(e->timer);
             break;
         default:

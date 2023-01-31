@@ -27,7 +27,10 @@ bool ogs_pfcp_handle_heartbeat_request(
     ogs_assert(xact);
 
     rv = ogs_pfcp_send_heartbeat_response(xact);
-    ogs_expect_or_return_val(rv == OGS_OK, false);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_pfcp_send_heartbeat_response() failed");
+        return false;
+    }
 
     return true;
 }
@@ -192,7 +195,10 @@ bool ogs_pfcp_up_handle_pdr(
     memset(report, 0, sizeof(*report));
 
     sendbuf = ogs_pkbuf_copy(recvbuf);
-    ogs_expect_or_return_val(sendbuf, false);
+    if (!sendbuf) {
+        ogs_error("ogs_pkbuf_copy() failed");
+        return false;
+    }
 
     buffering = false;
 
@@ -476,6 +482,58 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
             ogs_min(message->pdi.ue_ip_address.len, sizeof(pdr->ue_ip_addr));
         memcpy(&pdr->ue_ip_addr, message->pdi.ue_ip_address.data,
                 pdr->ue_ip_addr_len);
+    }
+
+    for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
+        if (!pdr->ipv4_framed_routes || !pdr->ipv4_framed_routes[i])
+            break;
+        ogs_free(pdr->ipv4_framed_routes[i]);
+        pdr->ipv4_framed_routes[i] = NULL;
+    }
+
+    for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
+        if (!pdr->ipv6_framed_routes || !pdr->ipv6_framed_routes[i])
+            break;
+        ogs_free(pdr->ipv6_framed_routes[i]);
+        pdr->ipv6_framed_routes[i] = NULL;
+    }
+
+    for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
+        char *route;
+
+        if (!message->pdi.framed_route[i].presence)
+            break;
+
+        if (!pdr->ipv4_framed_routes) {
+            pdr->ipv4_framed_routes = ogs_calloc(
+                    OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI, sizeof(pdr->ipv4_framed_routes[0]));
+            ogs_assert(pdr->ipv4_framed_routes);
+        }
+        route = ogs_malloc(message->pdi.framed_route[i].len + 1);
+        ogs_assert(route);
+        memcpy(route, message->pdi.framed_route[i].data,
+               message->pdi.framed_route[i].len);
+        route[message->pdi.framed_route[i].len] = '\0';
+        pdr->ipv4_framed_routes[i] = route;
+    }
+
+    for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
+        char *route;
+
+        if (!message->pdi.framed_ipv6_route[i].presence)
+            break;
+
+        if (!pdr->ipv6_framed_routes) {
+            pdr->ipv6_framed_routes = ogs_calloc(
+                    OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI, sizeof(pdr->ipv6_framed_routes[0]));
+            ogs_assert(pdr->ipv6_framed_routes);
+        }
+        route = ogs_malloc(message->pdi.framed_ipv6_route[i].len + 1);
+        ogs_assert(route);
+        memcpy(route, message->pdi.framed_ipv6_route[i].data,
+               message->pdi.framed_ipv6_route[i].len);
+        route[message->pdi.framed_ipv6_route[i].len] = '\0';
+        pdr->ipv6_framed_routes[i] = route;
     }
 
     memset(&pdr->outer_header_removal, 0, sizeof(pdr->outer_header_removal));

@@ -41,7 +41,7 @@ int smf_sbi_open(void)
     ogs_sbi_nf_fsm_init(nf_instance);
 
     /* Build NF instance information. It will be transmitted to NRF. */
-    ogs_sbi_nf_instance_build_default(nf_instance, OpenAPI_nf_type_SMF);
+    ogs_sbi_nf_instance_build_default(nf_instance);
     ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_AMF);
     ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_SCP);
 
@@ -392,7 +392,10 @@ bool smf_sbi_send_sm_context_status_notify(smf_sess_t *sess)
     ogs_assert(client);
 
     request = smf_namf_callback_build_sm_context_status(sess, NULL);
-    ogs_expect_or_return_val(request, false);
+    if (!request) {
+        ogs_error("smf_namf_callback_build_sm_context_status() failed");
+        return false;
+    }
 
     rc = ogs_sbi_send_request_to_client(
             client, client_notify_cb, request, NULL);

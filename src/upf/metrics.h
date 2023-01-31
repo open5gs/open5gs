@@ -59,8 +59,8 @@ typedef enum upf_metric_type_by_dnn_s {
 void upf_metrics_inst_by_dnn_add(
     char *dnn, upf_metric_type_by_dnn_t t, int val);
 
-int upf_metrics_open(void);
-int upf_metrics_close(void);
+void upf_metrics_init(void);
+void upf_metrics_final(void);
 
 #ifdef __cplusplus
 }

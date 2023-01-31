@@ -90,7 +90,7 @@ static void ngap_message_test2(abts_case *tc, void *data)
     ogs_ngap_message_t message;
     ogs_pkbuf_t *pkbuf;
     int result;
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     ogs_ngap_message_t *struct_ptr = NULL;
     size_t struct_size;
@@ -125,7 +125,7 @@ static void ngap_message_test3(abts_case *tc, void *data)
     ogs_ngap_message_t message;
     ogs_pkbuf_t *pkbuf;
     int result;
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     ogs_ngap_message_t *struct_ptr = NULL;
     size_t struct_size;
@@ -160,7 +160,7 @@ static void ngap_message_test4(abts_case *tc, void *data)
     ogs_ngap_message_t message;
     ogs_pkbuf_t *pkbuf;
     int result;
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     ogs_ngap_message_t *struct_ptr = NULL;
     size_t struct_size;

@@ -63,7 +63,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
     ogs_s1ap_message_t s1ap_message;
     ogs_pkbuf_t *pkbuf = NULL;
-    int rc;
+    int rc, r;
 
     ogs_nas_eps_message_t nas_message;
     enb_ue_t *enb_ue = NULL;
@@ -198,10 +198,11 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             ogs_fsm_dispatch(&enb->sm, e);
         } else {
             ogs_warn("Cannot decode S1AP message");
-            ogs_assert(OGS_OK ==
-                s1ap_send_error_indication(
+            r = s1ap_send_error_indication(
                     enb, NULL, NULL, S1AP_Cause_PR_protocol,
-                    S1AP_CauseProtocol_abstract_syntax_error_falsely_constructed_message));
+                    S1AP_CauseProtocol_abstract_syntax_error_falsely_constructed_message);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
         }
 
         ogs_s1ap_free(&s1ap_message);
@@ -219,7 +220,9 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             pkbuf = e->pkbuf;
             ogs_assert(pkbuf);
 
-            ogs_expect(OGS_OK == s1ap_send_to_enb_ue(enb_ue, pkbuf));
+            r = s1ap_send_to_enb_ue(enb_ue, pkbuf);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
             ogs_timer_delete(e->timer);
             break;
         case MME_TIMER_S1_HOLDING:
@@ -253,11 +256,12 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             if (!mme_ue) {
                 mme_ue = mme_ue_add(enb_ue);
                 if (mme_ue == NULL) {
-                    ogs_expect(OGS_OK ==
-                        s1ap_send_ue_context_release_command(enb_ue,
+                    r = s1ap_send_ue_context_release_command(enb_ue,
                             S1AP_Cause_PR_misc,
                             S1AP_CauseMisc_control_processing_overload,
-                            S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0));
+                            S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
                     ogs_pkbuf_free(pkbuf);
                     return;
                 }
@@ -298,12 +302,16 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                 /* De-associate S1 with NAS/EMM */
                 enb_ue_deassociate(mme_ue->enb_ue);
 
-                ogs_assert(OGS_OK ==
-                    s1ap_send_ue_context_release_command(mme_ue->enb_ue,
+                r = s1ap_send_ue_context_release_command(mme_ue->enb_ue,
                         S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                        S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0));
+                        S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
             }
             enb_ue_associate_mme_ue(enb_ue, mme_ue);
+            ogs_debug("Mobile Reachable timer stopped for IMSI[%s]",
+                mme_ue->imsi_bcd);
+            CLEAR_MME_UE_TIMER(mme_ue->t_mobile_reachable);
         }
 
         ogs_assert(mme_ue);
@@ -411,14 +419,16 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                     ogs_error("S1 context has already been removed");
                     break;
                 }
-                ogs_assert(OGS_OK ==
-                    nas_eps_send_attach_reject(mme_ue, emm_cause,
-                        OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
+                r = nas_eps_send_attach_reject(mme_ue, emm_cause,
+                        OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
 
-                ogs_assert(OGS_OK ==
-                    s1ap_send_ue_context_release_command(enb_ue,
+                r = s1ap_send_ue_context_release_command(enb_ue,
                         S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                        S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
+                        S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
             }
             break;
         case OGS_DIAM_S6A_CMD_CODE_UPDATE_LOCATION:
@@ -431,17 +441,25 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                     ogs_error("S1 context has already been removed");
                     break;
                 }
-                ogs_assert(OGS_OK ==
-                    nas_eps_send_attach_reject(mme_ue, emm_cause,
-                        OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
+                r = nas_eps_send_attach_reject(mme_ue, emm_cause,
+                        OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
 
-                ogs_assert(OGS_OK ==
-                    s1ap_send_ue_context_release_command(enb_ue,
+                r = s1ap_send_ue_context_release_command(enb_ue,
                         S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                        S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
+                        S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
             }
+
+            mme_ue->location_updated_but_not_canceled_yet = true;
+            break;
+        case OGS_DIAM_S6A_CMD_CODE_PURGE_UE:
+            mme_s6a_handle_pua(mme_ue, s6a_message);
             break;
         case OGS_DIAM_S6A_CMD_CODE_CANCEL_LOCATION:
+            mme_ue->location_updated_but_not_canceled_yet = false;
             mme_s6a_handle_clr(mme_ue, s6a_message);
             break;
         case OGS_DIAM_S6A_CMD_CODE_INSERT_SUBSCRIBER_DATA:

@@ -205,7 +205,11 @@ bool nrf_nnrf_handle_nf_status_subscribe(
     if (SubscriptionData->req_nf_instance_id) {
         subscription_data->req_nf_instance_id =
             ogs_strdup(SubscriptionData->req_nf_instance_id);
-        ogs_expect_or_return_val(subscription_data->req_nf_instance_id, NULL);
+        if (!subscription_data->req_nf_instance_id) {
+            ogs_error("ogs_strdup() failed");
+            ogs_sbi_subscription_data_remove(subscription_data);
+            return NULL;
+        }
     }
 
     if (SubscriptionData->subscription_id) {
@@ -214,7 +218,11 @@ bool nrf_nnrf_handle_nf_status_subscribe(
         ogs_free(SubscriptionData->subscription_id);
     }
     SubscriptionData->subscription_id = ogs_strdup(subscription_data->id);
-    ogs_expect_or_return_val(SubscriptionData->subscription_id, NULL);
+    if (!SubscriptionData->subscription_id) {
+        ogs_error("ogs_strdup() failed");
+        ogs_sbi_subscription_data_remove(subscription_data);
+        return NULL;
+    }
 
     if (SubscriptionData->requester_features) {
         subscription_data->requester_features =
@@ -231,7 +239,11 @@ bool nrf_nnrf_handle_nf_status_subscribe(
             OGS_SBI_NNRF_NFM_SERVICE_MAP);
     SubscriptionData->nrf_supported_features =
         ogs_uint64_to_string(subscription_data->nrf_supported_features);
-    ogs_expect_or_return_val(SubscriptionData->nrf_supported_features, NULL);
+    if (!SubscriptionData->nrf_supported_features) {
+        ogs_error("ogs_strdup() failed");
+        ogs_sbi_subscription_data_remove(subscription_data);
+        return NULL;
+    }
 
     SubscrCond = SubscriptionData->subscr_cond;
     if (SubscrCond) {
@@ -341,6 +353,8 @@ bool nrf_nnrf_handle_nf_list_retrieval(
 
     i = 0;
     ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance) {
+        if (NF_INSTANCE_EXCLUDED_FROM_DISCOVERY(nf_instance))
+            continue;
 
         if (recvmsg->param.nf_type &&
             recvmsg->param.nf_type != nf_instance->nf_type)
@@ -383,7 +397,6 @@ bool nrf_nnrf_handle_nf_profile_retrieval(
     ogs_sbi_message_t sendmsg;
     ogs_sbi_response_t *response = NULL;
     ogs_sbi_nf_instance_t *nf_instance = NULL;
-    uint64_t supported_features = 0;
 
     ogs_assert(stream);
     ogs_assert(recvmsg);
@@ -401,10 +414,12 @@ bool nrf_nnrf_handle_nf_profile_retrieval(
 
     memset(&sendmsg, 0, sizeof(sendmsg));
 
-    OGS_SBI_FEATURES_SET(supported_features, OGS_SBI_NNRF_NFM_SERVICE_MAP);
     sendmsg.NFProfile = ogs_nnrf_nfm_build_nf_profile(
-            nf_instance, NULL, NULL, supported_features);
-    ogs_expect_or_return_val(sendmsg.NFProfile, NULL);
+            nf_instance, NULL, NULL, true);
+    if (!sendmsg.NFProfile) {
+        ogs_error("ogs_nnrf_nfm_build_nf_profile() failed");
+        return false;
+    }
 
     response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
     ogs_assert(response);
@@ -426,7 +441,6 @@ bool nrf_nnrf_handle_nf_discover(
     OpenAPI_search_result_t *SearchResult = NULL;
     OpenAPI_nf_profile_t *NFProfile = NULL;
     OpenAPI_lnode_t *node = NULL;
-    uint64_t supported_features = 0;
     int i;
 
     ogs_assert(stream);
@@ -479,10 +493,17 @@ bool nrf_nnrf_handle_nf_discover(
                 ogs_debug("[%d] service-names[%s]", i,
                     discovery_option->service_names[i]);
         }
+        if (discovery_option->requester_features) {
+            ogs_debug("requester-features[0x%llx]",
+                (long long)discovery_option->requester_features);
+        }
     }
 
     i = 0;
     ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance) {
+        if (NF_INSTANCE_EXCLUDED_FROM_DISCOVERY(nf_instance))
+            continue;
+
         if (nf_instance->nf_type != recvmsg->param.target_nf_type)
             continue;
 
@@ -506,10 +527,12 @@ bool nrf_nnrf_handle_nf_discover(
                 OpenAPI_nf_status_ToString(nf_instance->nf_status),
                 nf_instance->num_of_ipv4, nf_instance->num_of_ipv6);
 
-        OGS_SBI_FEATURES_SET(
-                supported_features, OGS_SBI_NNRF_NFM_SERVICE_MAP);
         NFProfile = ogs_nnrf_nfm_build_nf_profile(
-                nf_instance, NULL, discovery_option, supported_features);
+                nf_instance, NULL, discovery_option,
+                discovery_option &&
+                OGS_SBI_FEATURES_IS_SET(
+                    discovery_option->requester_features,
+                    OGS_SBI_NNRF_DISC_SERVICE_MAP) ? true : false);
         OpenAPI_list_add(SearchResult->nf_instances, NFProfile);
 
         i++;

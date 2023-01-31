@@ -29,9 +29,9 @@ int amf_initialize()
 {
     int rv;
 
-    ogs_metrics_context_init();
-    ogs_sbi_context_init();
+    amf_metrics_init();
 
+    ogs_sbi_context_init(OpenAPI_nf_type_AMF);
     amf_context_init();
 
     rv = ogs_sbi_context_parse_config("amf", "nrf", "scp");
@@ -53,8 +53,7 @@ int amf_initialize()
             ogs_app()->logger.domain, ogs_app()->logger.level);
     if (rv != OGS_OK) return rv;
 
-    rv = amf_metrics_open();
-    if (rv != 0) return OGS_ERROR;
+    ogs_metrics_context_open(ogs_metrics_self());
 
     rv = amf_sbi_open();
     if (rv != OGS_OK) return rv;
@@ -102,11 +101,13 @@ void amf_terminate(void)
 
     ngap_close();
     amf_sbi_close();
-    amf_metrics_close();
+
+    ogs_metrics_context_close(ogs_metrics_self());
 
     amf_context_final();
     ogs_sbi_context_final();
-    ogs_metrics_context_final();
+
+    amf_metrics_final();
 }
 
 static void amf_main(void *data)

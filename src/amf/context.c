@@ -1620,7 +1620,12 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
             }
 
             suci = ogs_nas_5gs_suci_from_mobile_identity(mobile_identity);
-            ogs_assert(suci);
+            if (!suci) {
+                ogs_error("Cannot get the SUCI from Mobilie Identity");
+                ogs_log_hexdump(OGS_LOG_ERROR,
+                        mobile_identity->buffer, mobile_identity->length);
+                return NULL;
+            }
 
             amf_ue = amf_ue_find_by_suci(suci);
             if (amf_ue) {

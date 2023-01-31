@@ -76,6 +76,7 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
 
 static void timeout(ogs_gtp_xact_t *xact, void *data)
 {
+    int r;
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
     mme_sess_t *sess = NULL;
@@ -131,10 +132,11 @@ static void timeout(ogs_gtp_xact_t *xact, void *data)
 
         enb_ue = enb_ue_cycle(mme_ue->enb_ue);
         if (enb_ue) {
-            ogs_assert(OGS_OK ==
-                s1ap_send_ue_context_release_command(enb_ue,
+            r = s1ap_send_ue_context_release_command(enb_ue,
                     S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                    S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
+                    S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
         } else {
             ogs_warn("No S1 Context");
         }
@@ -223,10 +225,16 @@ int mme_gtp_send_create_session_request(mme_sess_t *sess, int create_action)
     h.teid = sgw_ue->sgw_s11_teid;
 
     pkbuf = mme_s11_build_create_session_request(h.type, sess, create_action);
-    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
+    if (!pkbuf) {
+        ogs_error("mme_s11_build_create_session_request() failed");
+        return OGS_ERROR;
+    }
 
     xact = ogs_gtp_xact_local_create(sgw_ue->gnode, &h, pkbuf, timeout, sess);
-    ogs_expect_or_return_val(xact, OGS_ERROR);
+    if (!xact) {
+        ogs_error("ogs_gtp_xact_local_create() failed");
+        return OGS_ERROR;
+    }
     xact->create_action = create_action;
     xact->local_teid = mme_ue->mme_s11_teid;
 
@@ -256,10 +264,16 @@ int mme_gtp_send_modify_bearer_request(
     h.teid = sgw_ue->sgw_s11_teid;
 
     pkbuf = mme_s11_build_modify_bearer_request(h.type, mme_ue, uli_presence);
-    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
+    if (!pkbuf) {
+        ogs_error("mme_s11_build_modify_bearer_request() failed");
+        return OGS_ERROR;
+    }
 
     xact = ogs_gtp_xact_local_create(sgw_ue->gnode, &h, pkbuf, timeout, mme_ue);
-    ogs_expect_or_return_val(xact, OGS_ERROR);
+    if (!xact) {
+        ogs_error("ogs_gtp_xact_local_create() failed");
+        return OGS_ERROR;
+    }
     xact->modify_action = modify_action;
     xact->local_teid = mme_ue->mme_s11_teid;
 
@@ -289,10 +303,16 @@ int mme_gtp_send_delete_session_request(
     h.teid = sgw_ue->sgw_s11_teid;
 
     s11buf = mme_s11_build_delete_session_request(h.type, sess, action);
-    ogs_expect_or_return_val(s11buf, OGS_ERROR);
+    if (!s11buf) {
+        ogs_error("mme_s11_build_delete_session_request() failed");
+        return OGS_ERROR;
+    }
 
     xact = ogs_gtp_xact_local_create(sgw_ue->gnode, &h, s11buf, timeout, sess);
-    ogs_expect_or_return_val(xact, OGS_ERROR);
+    if (!xact) {
+        ogs_error("ogs_gtp_xact_local_create() failed");
+        return OGS_ERROR;
+    }
     xact->delete_action = action;
     xact->local_teid = mme_ue->mme_s11_teid;
 
@@ -370,10 +390,16 @@ int mme_gtp_send_create_bearer_response(
     h.teid = sgw_ue->sgw_s11_teid;
 
     pkbuf = mme_s11_build_create_bearer_response(h.type, bearer, cause_value);
-    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
+    if (!pkbuf) {
+        ogs_error("mme_s11_build_create_bearer_response() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_gtp_xact_update_tx(xact, &h, pkbuf);
-    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_gtp_xact_update_tx() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
@@ -409,10 +435,16 @@ int mme_gtp_send_update_bearer_response(
     h.teid = sgw_ue->sgw_s11_teid;
 
     pkbuf = mme_s11_build_update_bearer_response(h.type, bearer, cause_value);
-    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
+    if (!pkbuf) {
+        ogs_error("mme_s11_build_update_bearer_response() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_gtp_xact_update_tx(xact, &h, pkbuf);
-    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_gtp_xact_update_tx() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
@@ -448,10 +480,16 @@ int mme_gtp_send_delete_bearer_response(
     h.teid = sgw_ue->sgw_s11_teid;
 
     pkbuf = mme_s11_build_delete_bearer_response(h.type, bearer, cause_value);
-    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
+    if (!pkbuf) {
+        ogs_error("mme_s11_build_delete_bearer_response() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_gtp_xact_update_tx(xact, &h, pkbuf);
-    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_gtp_xact_update_tx() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
@@ -477,10 +515,16 @@ int mme_gtp_send_release_access_bearers_request(mme_ue_t *mme_ue, int action)
     h.teid = sgw_ue->sgw_s11_teid;
 
     pkbuf = mme_s11_build_release_access_bearers_request(h.type);
-    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
+    if (!pkbuf) {
+        ogs_error("mme_s11_build_release_access_bearers_request() failed");
+        return OGS_ERROR;
+    }
 
     xact = ogs_gtp_xact_local_create(sgw_ue->gnode, &h, pkbuf, timeout, mme_ue);
-    ogs_expect_or_return_val(xact, OGS_ERROR);
+    if (!xact) {
+        ogs_error("ogs_gtp_xact_local_create() failed");
+        return OGS_ERROR;
+    }
     xact->release_action = action;
     xact->local_teid = mme_ue->mme_s11_teid;
 
@@ -568,10 +612,16 @@ int mme_gtp_send_downlink_data_notification_ack(
     h.teid = sgw_ue->sgw_s11_teid;
 
     s11buf = mme_s11_build_downlink_data_notification_ack(h.type, cause_value);
-    ogs_expect_or_return_val(s11buf, OGS_ERROR);
+    if (!s11buf) {
+        ogs_error("mme_s11_build_downlink_data_notification_ack() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_gtp_xact_update_tx(xact, &h, s11buf);
-    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_gtp_xact_update_tx() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
@@ -598,10 +648,17 @@ int mme_gtp_send_create_indirect_data_forwarding_tunnel_request(
 
     pkbuf = mme_s11_build_create_indirect_data_forwarding_tunnel_request(
             h.type, mme_ue);
-    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
+    if (!pkbuf) {
+        ogs_error("mme_s11_build_create_indirect_data_forwarding_"
+                "tunnel_request() failed");
+        return OGS_ERROR;
+    }
 
     xact = ogs_gtp_xact_local_create(sgw_ue->gnode, &h, pkbuf, timeout, mme_ue);
-    ogs_expect_or_return_val(xact, OGS_ERROR);
+    if (!xact) {
+        ogs_error("ogs_gtp_xact_local_create() failed");
+        return OGS_ERROR;
+    }
     xact->local_teid = mme_ue->mme_s11_teid;
 
     rv = ogs_gtp_xact_commit(xact);
@@ -629,11 +686,17 @@ int mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
     h.teid = sgw_ue->sgw_s11_teid;
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_TLV_MAX_HEADROOM);
-    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
+    if (!pkbuf) {
+        ogs_error("ogs_pkbuf_alloc() failed");
+        return OGS_ERROR;
+    }
     ogs_pkbuf_reserve(pkbuf, OGS_TLV_MAX_HEADROOM);
 
     xact = ogs_gtp_xact_local_create(sgw_ue->gnode, &h, pkbuf, timeout, mme_ue);
-    ogs_expect_or_return_val(xact, OGS_ERROR);
+    if (!xact) {
+        ogs_error("ogs_gtp_xact_local_create() failed");
+        return OGS_ERROR;
+    }
     xact->delete_indirect_action = action;
     xact->local_teid = mme_ue->mme_s11_teid;
 
@@ -665,10 +728,16 @@ int mme_gtp_send_bearer_resource_command(
     h.teid = sgw_ue->sgw_s11_teid;
 
     pkbuf = mme_s11_build_bearer_resource_command(h.type, bearer, nas_message);
-    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
+    if (!pkbuf) {
+        ogs_error("mme_s11_build_bearer_resource_command() failed");
+        return OGS_ERROR;
+    }
 
     xact = ogs_gtp_xact_local_create(sgw_ue->gnode, &h, pkbuf, timeout, bearer);
-    ogs_expect_or_return_val(xact, OGS_ERROR);
+    if (!xact) {
+        ogs_error("ogs_gtp_xact_local_create() failed");
+        return OGS_ERROR;
+    }
     xact->xid |= OGS_GTP_CMD_XACT_ID;
     xact->local_teid = mme_ue->mme_s11_teid;
 

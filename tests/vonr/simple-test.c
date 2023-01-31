@@ -33,7 +33,7 @@ static void test1_func(abts_case *tc, void *data)
     ogs_ngap_message_t message;
     int i;
 
-    uint8_t tmp[OGS_MAX_SDU_LEN];
+    uint8_t tmp[OGS_HUGE_LEN];
     char *_gtp_payload = "34ff0024"
         "0000000100000085 010002004500001c 0c0b000040015a7a 0a2d00010a2d0002"
         "00000964cd7c291f";
@@ -417,6 +417,20 @@ static void test1_func(abts_case *tc, void *data)
 
     /* Test Bearer Remove */
     test_bearer_remove(qos_flow);
+
+    /* Send GTP-U ICMP Packet */
+    qos_flow = test_qos_flow_find_by_qfi(sess, 1);
+    ogs_assert(qos_flow);
+    rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive GTP-U ICMP Packet */
+    recvbuf = testgnb_gtpu_read(gtpu);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Wait for PDU session resource modify complete */
+    ogs_msleep(100);
 
     /* Send UEContextReleaseRequest */
     sendbuf = testngap_build_ue_context_release_request(test_ue,

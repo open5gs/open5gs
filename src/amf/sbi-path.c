@@ -33,7 +33,7 @@ int amf_sbi_open(void)
     ogs_sbi_nf_fsm_init(nf_instance);
 
     /* Build NF instance information. It will be transmitted to NRF. */
-    ogs_sbi_nf_instance_build_default(nf_instance, OpenAPI_nf_type_AMF);
+    ogs_sbi_nf_instance_build_default(nf_instance);
     ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_SMF);
     ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_SCP);
 
@@ -92,6 +92,7 @@ bool amf_ue_sbi_discover_and_send(
         ogs_sbi_request_t *(*build)(amf_ue_t *amf_ue, void *data),
         amf_ue_t *amf_ue, int state, void *data)
 {
+    int r;
     ogs_sbi_xact_t *xact = NULL;
 
     ogs_assert(service_type);
@@ -103,9 +104,10 @@ bool amf_ue_sbi_discover_and_send(
             (ogs_sbi_build_f)build, amf_ue, data);
     if (!xact) {
         ogs_error("amf_ue_sbi_discover_and_send() failed");
-        ogs_assert(OGS_OK ==
-            nas_5gs_send_gmm_reject_from_sbi(
-                amf_ue, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT));
+        r = nas_5gs_send_gmm_reject_from_sbi(
+                amf_ue, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
         return false;
     }
 
@@ -114,9 +116,10 @@ bool amf_ue_sbi_discover_and_send(
     if (ogs_sbi_discover_and_send(xact) != true) {
         ogs_error("amf_ue_sbi_discover_and_send() failed");
         ogs_sbi_xact_remove(xact);
-        ogs_assert(OGS_OK ==
-            nas_5gs_send_gmm_reject_from_sbi(
-                amf_ue, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT));
+        r = nas_5gs_send_gmm_reject_from_sbi(
+                amf_ue, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
         return false;
     }
 
@@ -129,6 +132,7 @@ bool amf_sess_sbi_discover_and_send(
         ogs_sbi_request_t *(*build)(amf_sess_t *sess, void *data),
         amf_sess_t *sess, int state, void *data)
 {
+    int r;
     ogs_sbi_xact_t *xact = NULL;
 
     ogs_assert(service_type);
@@ -140,8 +144,10 @@ bool amf_sess_sbi_discover_and_send(
             (ogs_sbi_build_f)build, sess, data);
     if (!xact) {
         ogs_error("amf_sess_sbi_discover_and_send() failed");
-        ogs_assert(OGS_OK == nas_5gs_send_back_gsm_message(sess,
-            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME));
+        r = nas_5gs_send_back_gsm_message(sess,
+            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
         return false;
     }
 
@@ -150,8 +156,10 @@ bool amf_sess_sbi_discover_and_send(
     if (ogs_sbi_discover_and_send(xact) != true) {
         ogs_error("amf_sess_sbi_discover_and_send() failed");
         ogs_sbi_xact_remove(xact);
-        ogs_assert(OGS_OK == nas_5gs_send_back_gsm_message(sess,
-            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME));
+        r = nas_5gs_send_back_gsm_message(sess,
+            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
         return false;
     }
 
@@ -160,7 +168,7 @@ bool amf_sess_sbi_discover_and_send(
 static int client_discover_cb(
         int status, ogs_sbi_response_t *response, void *data)
 {
-    int rv;
+    int r, rv;
     ogs_sbi_message_t message;
 
     ogs_sbi_xact_t *xact = NULL;
@@ -216,24 +224,30 @@ static int client_discover_cb(
     rv = ogs_sbi_parse_response(&message, response);
     if (rv != OGS_OK) {
         ogs_error("cannot parse HTTP response");
-        ogs_assert(OGS_OK == nas_5gs_send_back_gsm_message(sess,
-            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME));
+        r = nas_5gs_send_back_gsm_message(sess,
+            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
 
         goto cleanup;
     }
 
     if (message.res_status != OGS_SBI_HTTP_STATUS_OK) {
         ogs_error("NF-Discover failed [%d]", message.res_status);
-        ogs_assert(OGS_OK == nas_5gs_send_back_gsm_message(sess,
-            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME));
+        r = nas_5gs_send_back_gsm_message(sess,
+            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
 
         goto cleanup;
     }
 
     if (!message.SearchResult) {
         ogs_error("No SearchResult");
-        ogs_assert(OGS_OK == nas_5gs_send_back_gsm_message(sess,
-            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME));
+        r = nas_5gs_send_back_gsm_message(sess,
+            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
 
         goto cleanup;
     }
@@ -247,10 +261,11 @@ static int client_discover_cb(
         ogs_error("[%s:%d] (NF discover) No [%s]",
                     amf_ue->supi, sess->psi,
                     ogs_sbi_service_type_to_name(service_type));
-        ogs_assert(OGS_OK ==
-            nas_5gs_send_back_gsm_message(sess,
+        r = nas_5gs_send_back_gsm_message(sess,
                 OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
-                AMF_NAS_BACKOFF_TIME));
+                AMF_NAS_BACKOFF_TIME);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
 
         goto cleanup;
     }
@@ -294,11 +309,18 @@ bool amf_sess_sbi_discover_by_nsi(
 
     xact = ogs_sbi_xact_add(
             &sess->sbi, service_type, discovery_option, NULL, NULL, NULL);
-    ogs_expect_or_return_val(xact, false);
+    if (!xact) {
+        ogs_error("ogs_sbi_xact_add() failed");
+        return false;
+    }
 
     xact->request = amf_nnrf_disc_build_discover(
                 sess->nssf.nrf.id, xact->service_type, xact->discovery_option);
-    ogs_expect_or_return_val(xact->request, false);
+    if (!xact->request) {
+        ogs_error("amf_nnrf_disc_build_discover() failed");
+        ogs_sbi_xact_remove(xact);
+        return false;
+    }
 
     return ogs_sbi_client_send_request(
             client, client_discover_cb, xact->request, xact);
@@ -460,7 +482,10 @@ bool amf_sbi_send_n1_n2_failure_notify(
     ogs_assert(client);
 
     request = amf_nsmf_callback_build_n1_n2_failure_notify(sess, cause);
-    ogs_expect_or_return_val(request, false);
+    if (!request) {
+        ogs_error("amf_nsmf_callback_build_n1_n2_failure_notify() failed");
+        return false;
+    }
 
     rc = ogs_sbi_send_request_to_client(
             client, client_notify_cb, request, NULL);

@@ -198,26 +198,41 @@ ogs_pkbuf_t *smf_gn_build_create_pdp_context_response(
         if (sess->sgw_s5c_ip.ipv4) {
             rv = ogs_gtp1_sockaddr_to_gsn_addr(ogs_gtp_self()->gtpc_addr, NULL,
                         &smf_gnc_gsnaddr, &gsn_len);
-            ogs_expect_or_return_val(rv == OGS_OK, NULL);
+            if (rv != OGS_OK) {
+                ogs_error("ogs_gtp1_sockaddr_to_gsn_addr() failed");
+                return NULL;
+            }
             rv = ogs_gtp1_sockaddr_to_gsn_addr(NULL, ogs_gtp_self()->gtpc_addr6,
                         &smf_gnc_altgsnaddr, &gsn_altlen);
-            ogs_expect_or_return_val(rv == OGS_OK, NULL);
+            if (rv != OGS_OK) {
+                ogs_error("ogs_gtp1_sockaddr_to_gsn_addr() failed");
+                return NULL;
+            }
         } else {
             rv = ogs_gtp1_sockaddr_to_gsn_addr(NULL, ogs_gtp_self()->gtpc_addr6,
                         &smf_gnc_gsnaddr, &gsn_len);
+            if (rv != OGS_OK) {
+                ogs_error("ogs_gtp1_sockaddr_to_gsn_addr() failed");
+                return NULL;
+            }
             rv = ogs_gtp1_sockaddr_to_gsn_addr(ogs_gtp_self()->gtpc_addr, NULL,
                         &smf_gnc_altgsnaddr, &gsn_altlen);
-            ogs_expect_or_return_val(rv == OGS_OK, NULL);
+            if (rv != OGS_OK) {
+                ogs_error("ogs_gtp1_sockaddr_to_gsn_addr() failed");
+                return NULL;
+            }
         }
         rsp->alternative_ggsn_address_for_control_plane.presence = 1;
         rsp->alternative_ggsn_address_for_control_plane.data = &smf_gnc_altgsnaddr;
         rsp->alternative_ggsn_address_for_control_plane.len = gsn_altlen;
-        ogs_expect_or_return_val(rv == OGS_OK, NULL);
     } else {
         rv = ogs_gtp1_sockaddr_to_gsn_addr(
                     ogs_gtp_self()->gtpc_addr, ogs_gtp_self()->gtpc_addr6,
                     &smf_gnc_gsnaddr, &gsn_len);
-        ogs_expect_or_return_val(rv == OGS_OK, NULL);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_gtp1_sockaddr_to_gsn_addr() failed");
+            return NULL;
+        }
     }
     rsp->ggsn_address_for_control_plane.presence = 1;
     rsp->ggsn_address_for_control_plane.data = &smf_gnc_gsnaddr;
@@ -229,16 +244,29 @@ ogs_pkbuf_t *smf_gn_build_create_pdp_context_response(
         if (bearer->sgw_s5u_ip.ipv4) {
             rv = ogs_gtp1_sockaddr_to_gsn_addr(bearer->pgw_s5u_addr, NULL,
                         &pgw_gnu_gsnaddr, &gsn_len);
-            ogs_expect_or_return_val(rv == OGS_OK, NULL);
+            if (rv != OGS_OK) {
+                ogs_error("ogs_gtp1_sockaddr_to_gsn_addr() failed");
+                return NULL;
+            }
             rv = ogs_gtp1_sockaddr_to_gsn_addr(NULL, bearer->pgw_s5u_addr6,
                         &pgw_gnu_altgsnaddr, &gsn_altlen);
-            ogs_expect_or_return_val(rv == OGS_OK, NULL);
+            if (rv != OGS_OK) {
+                ogs_error("ogs_gtp1_sockaddr_to_gsn_addr() failed");
+                return NULL;
+            }
         } else {
             rv = ogs_gtp1_sockaddr_to_gsn_addr(NULL, bearer->pgw_s5u_addr6,
                         &pgw_gnu_gsnaddr, &gsn_len);
+            if (rv != OGS_OK) {
+                ogs_error("ogs_gtp1_sockaddr_to_gsn_addr() failed");
+                return NULL;
+            }
             rv = ogs_gtp1_sockaddr_to_gsn_addr(bearer->pgw_s5u_addr, NULL,
                         &pgw_gnu_altgsnaddr, &gsn_altlen);
-            ogs_expect_or_return_val(rv == OGS_OK, NULL);
+            if (rv != OGS_OK) {
+                ogs_error("ogs_gtp1_sockaddr_to_gsn_addr() failed");
+                return NULL;
+            }
         }
         rsp->alternative_ggsn_address_for_user_traffic.presence = 1;
         rsp->alternative_ggsn_address_for_user_traffic.data = &pgw_gnu_altgsnaddr;
@@ -247,7 +275,10 @@ ogs_pkbuf_t *smf_gn_build_create_pdp_context_response(
         rv = ogs_gtp1_sockaddr_to_gsn_addr(
                 bearer->pgw_s5u_addr, bearer->pgw_s5u_addr6,
                 &pgw_gnu_gsnaddr, &gsn_len);
-        ogs_expect_or_return_val(rv == OGS_OK, NULL);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_gtp1_sockaddr_to_gsn_addr() failed");
+            return NULL;
+        }
     }
     rsp->ggsn_address_for_user_traffic.presence = 1;
     rsp->ggsn_address_for_user_traffic.data = &pgw_gnu_gsnaddr;
@@ -398,26 +429,41 @@ ogs_pkbuf_t *smf_gn_build_update_pdp_context_response(
         if (sess->sgw_s5c_ip.ipv4) {
             rv = ogs_gtp1_sockaddr_to_gsn_addr(ogs_gtp_self()->gtpc_addr, NULL,
                         &smf_gnc_gsnaddr, &gsn_len);
-            ogs_expect_or_return_val(rv == OGS_OK, NULL);
+            if (rv != OGS_OK) {
+                ogs_error("ogs_gtp1_sockaddr_to_gsn_addr() failed");
+                return NULL;
+            }
             rv = ogs_gtp1_sockaddr_to_gsn_addr(NULL, ogs_gtp_self()->gtpc_addr6,
                         &smf_gnc_altgsnaddr, &gsn_altlen);
-            ogs_expect_or_return_val(rv == OGS_OK, NULL);
+            if (rv != OGS_OK) {
+                ogs_error("ogs_gtp1_sockaddr_to_gsn_addr() failed");
+                return NULL;
+            }
         } else {
             rv = ogs_gtp1_sockaddr_to_gsn_addr(NULL, ogs_gtp_self()->gtpc_addr6,
                         &smf_gnc_gsnaddr, &gsn_len);
+            if (rv != OGS_OK) {
+                ogs_error("ogs_gtp1_sockaddr_to_gsn_addr() failed");
+                return NULL;
+            }
             rv = ogs_gtp1_sockaddr_to_gsn_addr(ogs_gtp_self()->gtpc_addr, NULL,
                         &smf_gnc_altgsnaddr, &gsn_altlen);
-            ogs_expect_or_return_val(rv == OGS_OK, NULL);
+            if (rv != OGS_OK) {
+                ogs_error("ogs_gtp1_sockaddr_to_gsn_addr() failed");
+                return NULL;
+            }
         }
         rsp->alternative_ggsn_address_for_control_plane.presence = 1;
         rsp->alternative_ggsn_address_for_control_plane.data = &smf_gnc_altgsnaddr;
         rsp->alternative_ggsn_address_for_control_plane.len = gsn_altlen;
-        ogs_expect_or_return_val(rv == OGS_OK, NULL);
     } else {
         rv = ogs_gtp1_sockaddr_to_gsn_addr(
                     ogs_gtp_self()->gtpc_addr, ogs_gtp_self()->gtpc_addr6,
                     &smf_gnc_gsnaddr, &gsn_len);
-        ogs_expect_or_return_val(rv == OGS_OK, NULL);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_gtp1_sockaddr_to_gsn_addr() failed");
+            return NULL;
+        }
     }
     rsp->ggsn_address_for_control_plane.presence = 1;
     rsp->ggsn_address_for_control_plane.data = &smf_gnc_gsnaddr;
@@ -429,16 +475,29 @@ ogs_pkbuf_t *smf_gn_build_update_pdp_context_response(
         if (bearer->sgw_s5u_ip.ipv4) {
             rv = ogs_gtp1_sockaddr_to_gsn_addr(bearer->pgw_s5u_addr, NULL,
                         &pgw_gnu_gsnaddr, &gsn_len);
-            ogs_expect_or_return_val(rv == OGS_OK, NULL);
+            if (rv != OGS_OK) {
+                ogs_error("ogs_gtp1_sockaddr_to_gsn_addr() failed");
+                return NULL;
+            }
             rv = ogs_gtp1_sockaddr_to_gsn_addr(NULL, bearer->pgw_s5u_addr6,
                         &pgw_gnu_altgsnaddr, &gsn_altlen);
-            ogs_expect_or_return_val(rv == OGS_OK, NULL);
+            if (rv != OGS_OK) {
+                ogs_error("ogs_gtp1_sockaddr_to_gsn_addr() failed");
+                return NULL;
+            }
         } else {
             rv = ogs_gtp1_sockaddr_to_gsn_addr(NULL, bearer->pgw_s5u_addr6,
                         &pgw_gnu_gsnaddr, &gsn_len);
+            if (rv != OGS_OK) {
+                ogs_error("ogs_gtp1_sockaddr_to_gsn_addr() failed");
+                return NULL;
+            }
             rv = ogs_gtp1_sockaddr_to_gsn_addr(bearer->pgw_s5u_addr, NULL,
                         &pgw_gnu_altgsnaddr, &gsn_altlen);
-            ogs_expect_or_return_val(rv == OGS_OK, NULL);
+            if (rv != OGS_OK) {
+                ogs_error("ogs_gtp1_sockaddr_to_gsn_addr() failed");
+                return NULL;
+            }
         }
         rsp->alternative_ggsn_address_for_user_traffic.presence = 1;
         rsp->alternative_ggsn_address_for_user_traffic.data = &pgw_gnu_altgsnaddr;
@@ -447,7 +506,10 @@ ogs_pkbuf_t *smf_gn_build_update_pdp_context_response(
         rv = ogs_gtp1_sockaddr_to_gsn_addr(
                 bearer->pgw_s5u_addr, bearer->pgw_s5u_addr6,
                 &pgw_gnu_gsnaddr, &gsn_len);
-        ogs_expect_or_return_val(rv == OGS_OK, NULL);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_gtp1_sockaddr_to_gsn_addr() failed");
+            return NULL;
+        }
     }
     rsp->ggsn_address_for_user_traffic.presence = 1;
     rsp->ggsn_address_for_user_traffic.data = &pgw_gnu_gsnaddr;

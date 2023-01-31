@@ -75,21 +75,18 @@ int mme_metrics_free_inst_global(void)
     return mme_metrics_free_inst(mme_metrics_inst_global, _MME_METR_GLOB_MAX);
 }
 
-int mme_metrics_open(void)
+void mme_metrics_init(void)
 {
     ogs_metrics_context_t *ctx = ogs_metrics_self();
-    ogs_metrics_context_open(ctx);
+    ogs_metrics_context_init();
 
     mme_metrics_init_spec(ctx, mme_metrics_spec_global, mme_metrics_spec_def_global,
             _MME_METR_GLOB_MAX);
 
     mme_metrics_init_inst_global();
-    return 0;
 }
 
-int mme_metrics_close(void)
+void mme_metrics_final(void)
 {
-    ogs_metrics_context_t *ctx = ogs_metrics_self();
-    ogs_metrics_context_close(ctx);
-    return OGS_OK;
+    ogs_metrics_context_final();
 }

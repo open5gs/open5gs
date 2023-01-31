@@ -40,7 +40,7 @@ int scp_sbi_open(void)
     ogs_sbi_nf_fsm_init(nf_instance);
 
     /* Build NF instance information. It will be transmitted to NRF. */
-    ogs_sbi_nf_instance_build_default(nf_instance, OpenAPI_nf_type_SCP);
+    ogs_sbi_nf_instance_build_default(nf_instance);
 
     /*
      * If the SCP is running in Model D,
@@ -201,6 +201,11 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
                 service_type = ogs_sbi_service_type_from_name(
                                     discovery_option->service_names[0]);
             }
+        } else if (!strcasecmp(key,
+                    OGS_SBI_CUSTOM_DISCOVERY_REQUESTER_FEATURES)) {
+            if (val)
+                discovery_option->requester_features =
+                    ogs_uint64_from_string(val);
         } else if (!strcasecmp(key, OGS_SBI_SCHEME)) {
             /* ':scheme' will be automatically filled in later */
         } else if (!strcasecmp(key, OGS_SBI_AUTHORITY)) {
@@ -555,7 +560,7 @@ static int response_handler(
             ogs_error("No NF-Instance ID");
     }
 
-    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+    ogs_expect(true == ogs_sbi_server_send_response(stream, response));
     scp_assoc_remove(assoc);
 
     return OGS_OK;

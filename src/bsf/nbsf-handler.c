@@ -103,6 +103,31 @@ bool bsf_nbsf_management_handle_pcf_binding(
                 ogs_assert(sess->pcf_fqdn);
             }
 
+
+            if (RecvPcfBinding->ipv4_frame_route_list) {
+                OpenAPI_lnode_t *node = NULL;
+
+                OpenAPI_clear_and_free_string_list(sess->ipv4_frame_route_list);
+                sess->ipv4_frame_route_list = OpenAPI_list_create();
+                OpenAPI_list_for_each(RecvPcfBinding->ipv4_frame_route_list, node) {
+                    if (!node->data)
+                        continue;
+                    OpenAPI_list_add(sess->ipv4_frame_route_list, ogs_strdup(node->data));
+                }
+            }
+
+            if (RecvPcfBinding->ipv6_frame_route_list) {
+                OpenAPI_lnode_t *node = NULL;
+
+                OpenAPI_clear_and_free_string_list(sess->ipv6_frame_route_list);
+                sess->ipv6_frame_route_list = OpenAPI_list_create();
+                OpenAPI_list_for_each(RecvPcfBinding->ipv6_frame_route_list, node) {
+                    if (!node->data)
+                        continue;
+                    OpenAPI_list_add(sess->ipv6_frame_route_list, ogs_strdup(node->data));
+                }
+            }
+
             sess->s_nssai.sst = RecvPcfBinding->snssai->sst;
             sess->s_nssai.sd =
                 ogs_s_nssai_sd_from_string(RecvPcfBinding->snssai->sd);
@@ -230,7 +255,7 @@ bool bsf_nbsf_management_handle_pcf_binding(
                     ogs_assert(sess->pcf_ip[i].addr || sess->pcf_ip[i].addr6);
 
                     PcfIpEndPoint = ogs_calloc(1, sizeof(*PcfIpEndPoint));
-                    ogs_expect_or_return_val(PcfIpEndPoint, NULL);
+                    ogs_assert(PcfIpEndPoint);
                     PcfIpEndPoint->ipv4_address = sess->pcf_ip[i].addr;
                     PcfIpEndPoint->ipv6_address = sess->pcf_ip[i].addr6;
 
