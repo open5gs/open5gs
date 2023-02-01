@@ -377,9 +377,6 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
             return OGS_ERROR;
         }
 
-        if (n1buf)
-            ogs_pkbuf_free(n1buf);
-
         if (CM_IDLE(amf_ue)) {
             if (n2buf)
                 ogs_pkbuf_free(n2buf);
@@ -394,7 +391,7 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
             }
 
         } else if (CM_CONNECTED(amf_ue)) {
-            r = nas_send_pdu_session_release_command(sess, NULL, n2buf);
+            r = nas_send_pdu_session_release_command(sess, n1buf, n2buf);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
         } else {

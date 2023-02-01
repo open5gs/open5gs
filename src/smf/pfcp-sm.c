@@ -315,6 +315,31 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
         }
         break;
     case SMF_EVT_N4_NO_HEARTBEAT:
+        node = e->pfcp_node;
+        ogs_assert(node);
+
+        smf_ue_t *smf_ue = NULL, *next = NULL;;
+
+        ogs_list_for_each_safe(&smf_self()->smf_ue_list, next, smf_ue) {
+            smf_sess_t *sess = NULL, *next = NULL;;
+            ogs_assert(smf_ue);
+
+            ogs_list_for_each_safe(&smf_ue->sess_list, next, sess) {
+                ogs_assert(sess);
+
+                if (node == sess->pfcp_node) {
+                    smf_npcf_smpolicycontrol_param_t param;
+
+                    memset(&param, 0, sizeof(param));
+                    ogs_assert(true ==
+                        smf_sbi_discover_and_send(
+                            OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL, NULL,
+                            smf_npcf_smpolicycontrol_build_delete,
+                            sess, NULL, OGS_PFCP_DELETE_TRIGGER_SMF_INITIATED, &param));
+                }
+            }
+        }
+
         ogs_warn("No Heartbeat from UPF [%s]:%d",
                     OGS_ADDR(addr, buf), OGS_PORT(addr));
         OGS_FSM_TRAN(s, smf_pfcp_state_will_associate);
