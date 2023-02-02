@@ -181,7 +181,6 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
             ogs_msprintf("%s: \"%s\"",
                     OGS_SBI_SERVICE_NAME_NNRF_DISC, param->nrf_uri.nrf.id);
     }
-
     request = ogs_sbi_build_request(&message);
     ogs_expect(request);
 
@@ -333,7 +332,17 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_update_sm_context(
     }
     SmContextUpdateData.cause = param->cause;
 
+    if (param->toBeSwitched){
+        SmContextUpdateData.is_to_be_switched = true;
+        SmContextUpdateData.to_be_switched = param->toBeSwitched;
+    }
+
+    if (param->failedToBeSwitched){
+        SmContextUpdateData.is_failed_to_be_switched = true;
+        SmContextUpdateData.failed_to_be_switched = param->failedToBeSwitched;
+    }
     request = ogs_sbi_build_request(&message);
+
     ogs_expect(request);
 
 end:

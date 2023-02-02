@@ -474,6 +474,26 @@ int ngap_send_path_switch_ack(amf_sess_t *sess)
     return rv;
 }
 
+int ngap_send_path_switch_failure(amf_sess_t *sess)
+{
+    int rv;
+
+    amf_ue_t *amf_ue = NULL;
+    ogs_pkbuf_t *ngapbuf = NULL;
+
+    ogs_assert(sess);
+    amf_ue = sess->amf_ue;
+    ogs_assert(amf_ue);
+
+    ngapbuf = ngap_build_path_switch_fail(amf_ue);
+    ogs_expect_or_return_val(ngapbuf, OGS_ERROR);
+
+    rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
+    ogs_expect(rv == OGS_OK);
+
+    return rv;
+}
+
 int ngap_send_handover_request(amf_ue_t *amf_ue)
 {
     int rv;

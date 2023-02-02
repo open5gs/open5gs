@@ -501,6 +501,78 @@ cleanup:
     return rv;
 }
 
+int ngap_handle_path_switch_request_setup_failed_transfer(
+        smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_pkbuf_t *pkbuf)
+{
+    smf_ue_t *smf_ue = NULL;
+    int rv;
+
+    NGAP_PathSwitchRequestSetupFailedTransfer_t message;
+    NGAP_Cause_t	 *cause;
+
+    ogs_assert(pkbuf);
+    ogs_assert(stream);
+
+    ogs_assert(sess);
+    smf_ue = sess->smf_ue;
+    ogs_assert(smf_ue);
+
+    ogs_debug("PathSwitchRequestSetupFailedTransfer");
+
+    rv = ogs_asn_decode(&asn_DEF_NGAP_PathSwitchRequestSetupFailedTransfer,
+            &message, sizeof(message), pkbuf);
+    if (rv != OGS_OK) {
+        ogs_error("[%s:%d] Cannot decode NGAP message",
+                smf_ue->supi, sess->psi);
+        smf_sbi_send_sm_context_update_error(stream,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                "No N2 SM Info Type", smf_ue->supi, NULL, NULL);
+        goto cleanup;
+    }
+
+    rv = OGS_ERROR;
+
+    cause = &message.cause;
+    if (!cause){
+        ogs_error("[%s:%d] No Cause", smf_ue->supi, sess->psi);
+            smf_sbi_send_sm_context_update_error(stream,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    "No Cause", smf_ue->supi, NULL, NULL);
+            goto cleanup;
+    }
+
+    if (sess->policy_association_id) {
+        smf_npcf_smpolicycontrol_param_t param;
+
+        memset(&param, 0, sizeof(param));
+
+        param.ran_nas_release.gsm_cause =
+            OGS_5GSM_CAUSE_SERVICE_OPTION_NOT_SUPPORTED;
+        param.ran_nas_release.ngap_cause.group = NGAP_Cause_PR_radioNetwork;
+        param.ran_nas_release.ngap_cause.value =
+            NGAP_CauseNas_normal_release;
+
+        ogs_assert(true ==
+            smf_sbi_discover_and_send(
+                OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL, NULL,
+                smf_npcf_smpolicycontrol_build_delete,
+                sess, stream,
+                OGS_PFCP_DELETE_TRIGGER_RAN_INITIATED, &param));
+    } else {
+        ogs_error("[%s:%d] No PolicyAssociationId",
+                smf_ue->supi, sess->psi);
+        OGS_FSM_TRAN(sess, smf_gsm_state_exception);
+        goto cleanup;
+    }
+
+    rv = OGS_OK;
+
+cleanup:
+
+    ogs_asn_free(&asn_DEF_NGAP_PathSwitchRequestSetupFailedTransfer, &message);
+    return rv;
+}
+
 int ngap_handle_handover_required_transfer(
         smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_pkbuf_t *pkbuf)
 {

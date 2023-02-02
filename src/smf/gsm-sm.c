@@ -180,6 +180,7 @@ static bool send_sbi_message_from_delete_trigger(
         smf_sbi_send_sm_context_updated_data_n1_n2_message(sess, stream,
                 n1smbuf, OpenAPI_n2_sm_info_type_PDU_RES_REL_CMD, n2smbuf);
     } else if (trigger == OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT ||
+                trigger == OGS_PFCP_DELETE_TRIGGER_RAN_INITIATED ||
                 trigger == OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT) {
         memset(&sendmsg, 0, sizeof(sendmsg));
 
@@ -1111,6 +1112,20 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             }
             break;
 
+        case OpenAPI_n2_sm_info_type_PATH_SWITCH_SETUP_FAIL:
+            /*
+            * Upon receipt of such a request, the SMF shall return a "204 No Content" response.
+            * The SMF shall decide whether to release the PDU session or deactivate the user plane
+            * connection of the PDU session, as specified in clause 4.9.1.2 of 3GPP TS 23.502.
+            */
+            rv = ngap_handle_path_switch_request_setup_failed_transfer(sess, stream, pkbuf);
+            if (rv != OGS_OK) {
+                ogs_error("[%s:%d] Cannot handle NGAP message",
+                        smf_ue->supi, sess->psi);
+                OGS_FSM_TRAN(s, smf_gsm_state_exception);
+            }
+            break;
+
         case OpenAPI_n2_sm_info_type_HANDOVER_REQUIRED:
             rv = ngap_handle_handover_required_transfer(sess, stream, pkbuf);
             if (rv != OGS_OK) {
@@ -1252,6 +1267,10 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
                             OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT ||
                                 trigger ==
                             OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT) {
+
+                        OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+
+                    } else if (trigger == OGS_PFCP_DELETE_TRIGGER_RAN_INITIATED) {
 
                         OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
 

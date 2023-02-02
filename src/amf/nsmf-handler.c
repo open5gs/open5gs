@@ -332,7 +332,6 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 ogs_assert(r != OGS_ERROR);
                 break;
 
-
             case OpenAPI_n2_sm_info_type_PDU_RES_REL_CMD:
                 if (!n1smbuf) {
                     ogs_error("[%s:%d] No N1 SM Content [%s]",
@@ -397,6 +396,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                     ogs_assert(r != OGS_ERROR);
 
                     AMF_UE_CLEAR_N2_TRANSFER(amf_ue, path_switch_request_ack);
+                    AMF_UE_CLEAR_N2_TRANSFER(amf_ue, path_switch_request_fail);
                 }
                 break;
 
@@ -600,8 +600,26 @@ int amf_nsmf_pdusession_handle_update_sm_context(
 
             } else if (state == AMF_UPDATE_SM_CONTEXT_PATH_SWITCH_REQUEST) {
 
-                /* Not reached here */
-                ogs_assert_if_reached();
+                /* Transfer msg is already stored */
+                if (AMF_SESSION_SYNC_DONE(amf_ue, state)) {
+
+                    int counter_path_switch_ack_msg = 0;
+                    ogs_list_for_each(&amf_ue->sess_list, sess) {
+                        if (sess->transfer.path_switch_request_ack)
+                            counter_path_switch_ack_msg++;
+                    }
+                    if (!counter_path_switch_ack_msg) {
+                        ogs_assert(OGS_OK ==
+                            ngap_send_path_switch_failure(sess));
+
+                    } else {
+                        ogs_assert(OGS_OK ==
+                            ngap_send_path_switch_ack(sess));
+
+                        AMF_UE_CLEAR_N2_TRANSFER(amf_ue, path_switch_request_fail);
+                        AMF_UE_CLEAR_N2_TRANSFER(amf_ue, path_switch_request_ack);
+                    }
+                }
 
             } else if (state == AMF_UPDATE_SM_CONTEXT_HANDOVER_REQUIRED) {
 
@@ -749,6 +767,9 @@ int amf_nsmf_pdusession_handle_update_sm_context(
         ogs_assert(amf_ue);
 
         SmContextUpdateError = recvmsg->SmContextUpdateError;
+
+        AMF_UE_CLEAR_N2_TRANSFER(amf_ue, path_switch_request_fail);
+
         if (!SmContextUpdateError) {
             ogs_error("[%d:%d] No SmContextUpdateError [%d]",
                     sess->psi, sess->pti, recvmsg->res_status);

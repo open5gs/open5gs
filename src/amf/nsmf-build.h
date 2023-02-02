@@ -57,6 +57,9 @@ typedef struct amf_nsmf_pdusession_sm_context_param_s {
             char *id;
         } nrf;
     } nrf_uri;
+
+    int toBeSwitched;
+    int failedToBeSwitched;
 } amf_nsmf_pdusession_sm_context_param_t;
 
 ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(

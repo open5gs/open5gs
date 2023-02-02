@@ -60,6 +60,7 @@ ogs_pkbuf_t *ngap_build_downlink_ran_configuration_transfer(
     NGAP_SONConfigurationTransfer_t *transfer);
 
 ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue);
+ogs_pkbuf_t *ngap_build_path_switch_fail(amf_ue_t *amf_ue);
 
 ogs_pkbuf_t *ngap_build_handover_request(ran_ue_t *target_ue);
 ogs_pkbuf_t *ngap_build_handover_preparation_failure(

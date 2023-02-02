@@ -1932,6 +1932,7 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
     NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
     NGAP_SecurityContext_t *SecurityContext = NULL;
     NGAP_PDUSessionResourceSwitchedList_t *PDUSessionResourceSwitchedList;
+    NGAP_PDUSessionResourceReleasedListPSAck_t *PDUSessionResourceReleasedListPSAck;
     NGAP_AllowedNSSAI_t *AllowedNSSAI = NULL;
 
     amf_ue = amf_ue_cycle(amf_ue);
@@ -2039,6 +2040,37 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
                 transfer->size);
     }
 
+    ogs_list_for_each(&amf_ue->sess_list, sess) {
+       if (!sess->transfer.path_switch_request_fail) continue;
+
+        OCTET_STRING_t *transfer = NULL;
+        NGAP_PDUSessionResourceReleasedItemPSAck_t *PDUSessionResourceReleasedItem = NULL;
+
+        if (!PDUSessionResourceReleasedListPSAck) {
+            ie = CALLOC(1, sizeof(NGAP_PathSwitchRequestAcknowledgeIEs_t));
+            ASN_SEQUENCE_ADD(&PathSwitchRequestAcknowledge->protocolIEs, ie);
+
+            ie->id = NGAP_ProtocolIE_ID_id_PDUSessionResourceReleasedListPSAck;
+            ie->criticality = NGAP_Criticality_ignore;
+            ie->value.present = NGAP_PathSwitchRequestAcknowledgeIEs__value_PR_PDUSessionResourceReleasedListPSAck;
+
+            PDUSessionResourceReleasedListPSAck =
+                &ie->value.choice.PDUSessionResourceReleasedListPSAck;
+        }
+
+        PDUSessionResourceReleasedItem =
+            CALLOC(1, sizeof(NGAP_PDUSessionResourceReleasedItemPSAck_t));
+         ASN_SEQUENCE_ADD(&PDUSessionResourceReleasedListPSAck->list, PDUSessionResourceReleasedItem);
+
+        PDUSessionResourceReleasedItem->pDUSessionID = sess->psi;
+
+        transfer = &PDUSessionResourceReleasedItem->pathSwitchRequestUnsuccessfulTransfer;
+        transfer->size = sess->transfer.path_switch_request_fail->len;
+        transfer->buf = CALLOC(transfer->size, sizeof(uint8_t));
+        memcpy(transfer->buf, sess->transfer.path_switch_request_fail->data,
+            transfer->size);
+    }
+
     ie = CALLOC(1, sizeof(NGAP_PathSwitchRequestAcknowledgeIEs_t));
     ASN_SEQUENCE_ADD(&PathSwitchRequestAcknowledge->protocolIEs, ie);
 
@@ -2070,6 +2102,97 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
         }
 
         ASN_SEQUENCE_ADD(&AllowedNSSAI->list, NGAP_AllowedNSSAI_Item);
+    }
+
+    return ogs_ngap_encode(&pdu);
+}
+
+ogs_pkbuf_t *ngap_build_path_switch_fail(amf_ue_t *amf_ue)
+{
+    ran_ue_t *ran_ue = NULL;
+    amf_sess_t *sess = NULL;
+
+    NGAP_NGAP_PDU_t pdu;
+    NGAP_UnsuccessfulOutcome_t *unsuccessfulOutcome = NULL;
+    NGAP_PathSwitchRequestFailure_t *PathSwitchRequestFailure = NULL;
+
+    NGAP_PathSwitchRequestFailureIEs_t *ie = NULL;
+    NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
+    NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
+
+    NGAP_PDUSessionResourceReleasedListPSFail_t *PDUSessionResourceReleasedListPSFail;
+
+    amf_ue = amf_ue_cycle(amf_ue);
+    ogs_assert(amf_ue);
+    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+    ogs_assert(ran_ue);
+
+    ogs_debug("PathSwitchFailure: RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
+        ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
+
+    memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
+    pdu.present = NGAP_NGAP_PDU_PR_unsuccessfulOutcome;
+    pdu.choice.unsuccessfulOutcome = CALLOC(1, sizeof(NGAP_UnsuccessfulOutcome_t));
+
+    unsuccessfulOutcome = pdu.choice.unsuccessfulOutcome;
+    unsuccessfulOutcome->procedureCode = NGAP_ProcedureCode_id_PathSwitchRequest;
+    unsuccessfulOutcome->criticality = NGAP_Criticality_reject;
+    unsuccessfulOutcome->value.present =
+        NGAP_UnsuccessfulOutcome__value_PR_PathSwitchRequestFailure;
+
+    PathSwitchRequestFailure =
+        &unsuccessfulOutcome->value.choice.PathSwitchRequestFailure;
+
+    ie = CALLOC(1, sizeof(NGAP_PathSwitchRequestFailureIEs_t));
+    ASN_SEQUENCE_ADD(&PathSwitchRequestFailure->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID;
+    ie->criticality = NGAP_Criticality_ignore;
+    ie->value.present =
+        NGAP_PathSwitchRequestFailureIEs__value_PR_AMF_UE_NGAP_ID;
+
+    AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
+
+    ie = CALLOC(1, sizeof(NGAP_PathSwitchRequestFailureIEs_t));
+    ASN_SEQUENCE_ADD(&PathSwitchRequestFailure->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID;
+    ie->criticality = NGAP_Criticality_ignore;
+    ie->value.present =
+        NGAP_PathSwitchRequestFailureIEs__value_PR_RAN_UE_NGAP_ID;
+
+    RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
+
+    asn_uint642INTEGER(AMF_UE_NGAP_ID, ran_ue->amf_ue_ngap_id);
+    *RAN_UE_NGAP_ID = ran_ue->ran_ue_ngap_id;
+
+    ie = CALLOC(1, sizeof(NGAP_PathSwitchRequestFailureIEs_t));
+    ASN_SEQUENCE_ADD(&PathSwitchRequestFailure->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_PDUSessionResourceReleasedListPSFail;
+    ie->criticality = NGAP_Criticality_ignore;
+    ie->value.present = NGAP_PathSwitchRequestFailureIEs__value_PR_PDUSessionResourceReleasedListPSFail;
+
+    PDUSessionResourceReleasedListPSFail =
+        &ie->value.choice.PDUSessionResourceReleasedListPSFail;
+
+    ogs_list_for_each(&amf_ue->sess_list, sess) {
+        OCTET_STRING_t *transfer = NULL;
+        NGAP_PDUSessionResourceReleasedItemPSFail_t *PDUSessionResourceReleasedItem = NULL;
+
+        if (!sess->transfer.path_switch_request_fail) continue;
+
+        PDUSessionResourceReleasedItem =
+            CALLOC(1, sizeof(NGAP_PDUSessionResourceReleasedItemPSFail_t));
+        ASN_SEQUENCE_ADD(&PDUSessionResourceReleasedListPSFail->list, PDUSessionResourceReleasedItem);
+
+        PDUSessionResourceReleasedItem->pDUSessionID = sess->psi;
+
+        transfer = &PDUSessionResourceReleasedItem->pathSwitchRequestUnsuccessfulTransfer;
+        transfer->size = sess->transfer.path_switch_request_fail->len;
+        transfer->buf = CALLOC(transfer->size, sizeof(uint8_t));
+        memcpy(transfer->buf, sess->transfer.path_switch_request_fail->data,
+                transfer->size);
     }
 
     return ogs_ngap_encode(&pdu);
