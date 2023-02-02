@@ -575,13 +575,25 @@ bool ogs_nnrf_nfm_handle_nf_status_notify(
     }
 
     if (NotificationData->event ==
-            OpenAPI_notification_event_type_NF_REGISTERED) {
+            OpenAPI_notification_event_type_NF_REGISTERED ||
+        NotificationData->event ==
+            OpenAPI_notification_event_type_NF_PROFILE_CHANGED) {
 
         OpenAPI_nf_profile_t *NFProfile = NULL;
 
         NFProfile = NotificationData->nf_profile;
         if (!NFProfile) {
-            ogs_error("No NFProfile");
+            if (NotificationData->event ==
+                    OpenAPI_notification_event_type_NF_REGISTERED) {
+                ogs_error("No NFProfile");
+            } else {
+                if (!NotificationData->profile_changes) {
+                    ogs_error("No nfProfile neither profileChanges");
+                } else {
+                    /* TODO: Handle "delta" changes */
+                    ogs_error("profileChanges not supported");
+                }
+            }
             ogs_assert(true ==
                 ogs_sbi_server_send_error(
                     stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
