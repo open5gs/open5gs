@@ -445,8 +445,9 @@ bool smf_npcf_smpolicycontrol_handle_create(
     /* Check if selected UPF is associated with SMF */
     ogs_assert(sess->pfcp_node);
     if (!OGS_FSM_CHECK(&sess->pfcp_node->sm, smf_pfcp_state_associated)) {
-        ogs_error("[%s] No associated UPF", smf_ue->supi);
-        return false;
+        strerror = ogs_msprintf("[%s:%d] No associated UPF",
+                smf_ue->supi, sess->psi);
+        goto cleanup;
     }
 
     /* Remove all previous QoS flow */

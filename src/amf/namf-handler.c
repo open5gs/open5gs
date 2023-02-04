@@ -378,6 +378,8 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
         }
 
         if (CM_IDLE(amf_ue)) {
+            if (n1buf)
+                ogs_pkbuf_free(n1buf);
             if (n2buf)
                 ogs_pkbuf_free(n2buf);
 
