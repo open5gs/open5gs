@@ -910,21 +910,110 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
                 /* Not reached here */
                 ogs_assert_if_reached();
 
-            } else if (state == AMF_RELEASE_SM_CONTEXT_NO_STATE ||
-                        state == AMF_NETWORK_INITIATED_IMPLICIT_DE_REGISTERED ||
-                        state == AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED) {
-                /* NO_STATE */
+            } else if (state == AMF_UE_INITIATED_DE_REGISTERED) {
 
-                if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_authentication)) {
-
-                    ogs_assert(true ==
-                        amf_ue_sbi_discover_and_send(
-                            OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
-                            amf_nausf_auth_build_authenticate,
-                            amf_ue, 0, NULL));
+                if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_de_registered)) {
+                    /*
+                     * 1. PDU session establishment request
+                     * 2. PDUSessionResourceSetupRequest +
+                     *    PDU session establishment accept
+                     * 3. PDUSessionResourceSetupResponse
+                     * 4. Deregistration request
+                     * 5. UEContextReleaseCommand
+                     * 6. UEContextReleaseComplete
+                     */
+                    if (UDM_SDM_SUBSCRIBED(amf_ue)) {
+                        ogs_assert(true == amf_ue_sbi_discover_and_send(
+                                OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
+                                amf_nudm_sdm_build_subscription_delete,
+                                amf_ue, state, NULL));
+                    } else if (PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
+                        ogs_assert(true ==
+                            amf_ue_sbi_discover_and_send(
+                                OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
+                                NULL,
+                                amf_npcf_am_policy_control_build_delete,
+                                amf_ue, state, NULL));
+                    } else {
+                        r = nas_5gs_send_de_registration_accept(amf_ue);
+                        ogs_expect(r == OGS_OK);
+                        ogs_assert(r != OGS_ERROR);
+                    }
 
                 } else if (OGS_FSM_CHECK(&amf_ue->sm,
-                            gmm_state_de_registered)) {
+                            gmm_state_authentication)) {
+                    ogs_fatal("Release SM Context in authentication");
+                    ogs_assert_if_reached();
+                } else if (OGS_FSM_CHECK(
+                            &amf_ue->sm, gmm_state_security_mode)) {
+                    ogs_fatal("Release SM Context in security-mode");
+                    ogs_assert_if_reached();
+                } else if (OGS_FSM_CHECK(&amf_ue->sm,
+                                gmm_state_initial_context_setup)) {
+                    ogs_fatal("Release SM Context in initial-context-setup");
+                    ogs_assert_if_reached();
+                } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered)) {
+                    ogs_fatal("Release SM Context in registered");
+                    ogs_assert_if_reached();
+                } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_exception)) {
+                    ogs_fatal("Release SM Context in exception");
+                    ogs_assert_if_reached();
+                } else {
+                    ogs_fatal("Release SM Context : INVALID STATE");
+                    ogs_assert_if_reached();
+                }
+
+            } else if (state == AMF_NETWORK_INITIATED_IMPLICIT_DE_REGISTERED ||
+                        state == AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED) {
+
+                if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_de_registered)) {
+                    ogs_fatal("Release SM Context in de-registered");
+                    ogs_assert_if_reached();
+                } else if (OGS_FSM_CHECK(&amf_ue->sm,
+                            gmm_state_authentication)) {
+                    ogs_fatal("Release SM Context in authentication");
+                    ogs_assert_if_reached();
+                } else if (OGS_FSM_CHECK(
+                            &amf_ue->sm, gmm_state_security_mode)) {
+                    ogs_fatal("Release SM Context in security-mode");
+                    ogs_assert_if_reached();
+                } else if (OGS_FSM_CHECK(&amf_ue->sm,
+                                gmm_state_initial_context_setup)) {
+                    ogs_fatal("Release SM Context in initial-context-setup");
+                    ogs_assert_if_reached();
+                } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered)) {
+                    /*
+                     * 1. Network-Initiated Implict-Explicit De-Registered
+                     * 5. Deregistration request
+                     * 5. Deregistration accept
+                     * 6. UEContextReleaseCommand
+                     * 7. UEContextReleaseComplete
+                     */
+                    if (UDM_SDM_SUBSCRIBED(amf_ue)) {
+                        ogs_assert(true == amf_ue_sbi_discover_and_send(
+                                OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
+                                amf_nudm_sdm_build_subscription_delete,
+                                amf_ue, state, NULL));
+                    } else if (PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
+                        ogs_assert(true ==
+                            amf_ue_sbi_discover_and_send(
+                                OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
+                                NULL,
+                                amf_npcf_am_policy_control_build_delete,
+                                amf_ue, state, NULL));
+                    }
+
+                } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_exception)) {
+                    ogs_fatal("Release SM Context in exception");
+                    ogs_assert_if_reached();
+                } else {
+                    ogs_fatal("Release SM Context : INVALID STATE");
+                    ogs_assert_if_reached();
+                }
+            } else if (state == AMF_RELEASE_SM_CONTEXT_NO_STATE) {
+                /* NO_STATE */
+
+                if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_de_registered)) {
                     /*
                      * 1. PDU session release request
                      * 2. PDUSessionResourceReleaseCommand +
@@ -935,13 +1024,40 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
                      * 6. UEContextReleaseCommand
                      * 7. UEContextReleaseComplete
                      */
+                    if (UDM_SDM_SUBSCRIBED(amf_ue)) {
+                        ogs_assert(true == amf_ue_sbi_discover_and_send(
+                                OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
+                                amf_nudm_sdm_build_subscription_delete,
+                                amf_ue, state, NULL));
+                    } else if (PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
+                        ogs_assert(true ==
+                            amf_ue_sbi_discover_and_send(
+                                OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
+                                NULL,
+                                amf_npcf_am_policy_control_build_delete,
+                                amf_ue, state, NULL));
+                    } else {
+                        r = nas_5gs_send_de_registration_accept(amf_ue);
+                        ogs_expect(r == OGS_OK);
+                        ogs_assert(r != OGS_ERROR);
+                    }
+                } else if (OGS_FSM_CHECK(&amf_ue->sm,
+                            gmm_state_authentication)) {
 
                     ogs_assert(true ==
                         amf_ue_sbi_discover_and_send(
-                            OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,
-                            amf_npcf_am_policy_control_build_delete,
-                            amf_ue, state, NULL));
+                            OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
+                            amf_nausf_auth_build_authenticate,
+                            amf_ue, 0, NULL));
 
+                } else if (OGS_FSM_CHECK(
+                            &amf_ue->sm, gmm_state_security_mode)) {
+                    ogs_fatal("Release SM Context in security-mode");
+                    ogs_assert_if_reached();
+                } else if (OGS_FSM_CHECK(&amf_ue->sm,
+                                gmm_state_initial_context_setup)) {
+                    ogs_fatal("Release SM Context in initial-context-setup");
+                    ogs_assert_if_reached();
                 } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered)) {
                     /*
                      * 1. PDU session release request
@@ -949,8 +1065,6 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
                      *    PDU session release command
                      * 3. PDUSessionResourceReleaseREsponse
                      * 4. PDU session release complete
-                     *
-                     * No Deregistration request in the above step
                      *
                      * So, Nothing to do!
                      */
@@ -967,14 +1081,6 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
 
-                } else if (OGS_FSM_CHECK(&amf_ue->sm,
-                                gmm_state_initial_context_setup)) {
-                    ogs_fatal("Release SM Context in initial-context-setup");
-                    ogs_assert_if_reached();
-                } else if (OGS_FSM_CHECK(
-                            &amf_ue->sm, gmm_state_security_mode)) {
-                    ogs_fatal("Release SM Context in security-mode");
-                    ogs_assert_if_reached();
                 } else {
                     ogs_fatal("Release SM Context : INVALID STATE");
                     ogs_assert_if_reached();

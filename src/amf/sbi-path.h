@@ -39,8 +39,9 @@ bool amf_sbi_send_request(
 
 #define AMF_CREATE_SM_CONTEXT_NO_STATE                  0
 
-#define AMF_NETWORK_INITIATED_IMPLICIT_DE_REGISTERED    1
-#define AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED    2
+#define AMF_UE_INITIATED_DE_REGISTERED                  1
+#define AMF_NETWORK_INITIATED_IMPLICIT_DE_REGISTERED    2
+#define AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED    3
 
 #define AMF_UPDATE_SM_CONTEXT_ACTIVATED                 11
 #define AMF_UPDATE_SM_CONTEXT_SETUP_FAIL                12
@@ -93,6 +94,9 @@ void amf_sbi_send_release_all_sessions(amf_ue_t *amf_ue, int state);
 
 bool amf_sbi_send_n1_n2_failure_notify(
         amf_sess_t *sess, OpenAPI_n1_n2_message_transfer_cause_e cause);
+
+bool amf_ue_have_session_release_pending(amf_ue_t *amf_ue);
+bool amf_sess_have_session_release_pending(amf_sess_t *sess);
 
 #ifdef __cplusplus
 }

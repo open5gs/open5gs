@@ -495,3 +495,40 @@ bool amf_sbi_send_n1_n2_failure_notify(
 
     return rc;
 }
+
+bool amf_ue_have_session_release_pending(amf_ue_t *amf_ue)
+{
+    amf_sess_t *sess = NULL;
+
+    ogs_assert(amf_ue);
+
+    ogs_list_for_each(&amf_ue->sess_list, sess) {
+        if (amf_sess_have_session_release_pending(sess) == true)
+            return true;
+    }
+
+    return false;
+}
+
+bool amf_sess_have_session_release_pending(amf_sess_t *sess)
+{
+    ogs_sbi_xact_t *xact = NULL;
+
+    ogs_assert(sess);
+
+    ogs_list_for_each(&sess->sbi.xact_list, xact) {
+        if (xact->state == AMF_UPDATE_SM_CONTEXT_N1_RELEASED)
+            return true;
+        if (xact->state == AMF_UPDATE_SM_CONTEXT_N2_RELEASED)
+            return true;
+    }
+
+    if (sess->n1_released == true)
+        return true;
+    if (sess->n2_released == true)
+        return true;
+    if (sess->resource_status == OpenAPI_resource_status_RELEASED)
+        return true;
+
+    return false;
+}

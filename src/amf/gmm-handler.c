@@ -646,7 +646,7 @@ ogs_nas_5gmm_cause_t gmm_handle_service_update(amf_ue_t *amf_ue,
 int gmm_handle_deregistration_request(amf_ue_t *amf_ue,
         ogs_nas_5gs_deregistration_request_from_ue_t *deregistration_request)
 {
-    int r;
+    int r, state, xact_count = 0;
     ogs_nas_de_registration_type_t *de_registration_type = NULL;
 
     ogs_assert(amf_ue);
@@ -690,13 +690,30 @@ int gmm_handle_deregistration_request(amf_ue_t *amf_ue,
 
     ogs_info("[%s]    SUCI", amf_ue->suci);
 
-    amf_sbi_send_release_all_sessions(
-            amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+    xact_count = amf_sess_xact_count(amf_ue);
 
-    if (ogs_list_count(&amf_ue->sess_list) == 0) {
-        r = nas_5gs_send_de_registration_accept(amf_ue);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
+    state = AMF_UE_INITIATED_DE_REGISTERED;
+    amf_sbi_send_release_all_sessions(amf_ue, state);
+
+    if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
+        amf_sess_xact_count(amf_ue) == xact_count) {
+        if (UDM_SDM_SUBSCRIBED(amf_ue)) {
+            ogs_assert(true == amf_ue_sbi_discover_and_send(
+                    OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
+                    amf_nudm_sdm_build_subscription_delete,
+                    amf_ue, state, NULL));
+        } else if (PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
+            ogs_assert(true ==
+                amf_ue_sbi_discover_and_send(
+                    OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
+                    NULL,
+                    amf_npcf_am_policy_control_build_delete,
+                    amf_ue, state, NULL));
+        } else {
+            r = nas_5gs_send_de_registration_accept(amf_ue);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+        }
     }
 
     return OGS_OK;
