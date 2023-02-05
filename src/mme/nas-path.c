@@ -145,6 +145,20 @@ int nas_eps_send_attach_accept(mme_ue_t *mme_ue)
     ogs_timer_start(mme_ue->t3450.timer,
             mme_timer_cfg(MME_TIMER_T3450)->duration);
 
+    /*
+     * Issue #2040
+     *
+     * TS24.301
+     * 5.5.1 Attach procedure
+     * 5.5.1.2 Attach procedure for EPS services
+     * 5.5.1.2.4 Attach accepted by the network
+     *
+     * If the attach request is accepted by the network,
+     * the MME shall delete the stored UE radio capability information
+     * or the UE radio capability ID, if any.
+     */
+    OGS_ASN_CLEAR_DATA(&mme_ue->ueRadioCapability);
+
     s1apbuf = s1ap_build_initial_context_setup_request(mme_ue, emmbuf);
     if (!s1apbuf) {
         ogs_error("s1ap_build_initial_context_setup_request() failed");

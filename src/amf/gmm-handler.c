@@ -672,21 +672,8 @@ int gmm_handle_deregistration_request(amf_ue_t *amf_ue,
             amf_ue->nas.ue.tsc, amf_ue->nas.amf.tsc,
             amf_ue->nas.ue.ksi, amf_ue->nas.amf.ksi);
 
-    if (deregistration_request->de_registration_type.switch_off) {
+    if (deregistration_request->de_registration_type.switch_off)
         ogs_debug("    Switch-Off");
-
-        /*
-         * Issue #1917
-         *
-         * When the UE sends a De-registration Request with Switch-Off,
-         * AMF should remove the the stored UE Radio Capability.
-         *
-         * Otherwise, the Radio Capability will not match
-         * because the gNB will not query the Radio Capability
-         * when the UE changes USIM.
-         */
-        OGS_ASN_CLEAR_DATA(&amf_ue->ueRadioCapability);
-    }
 
     ogs_info("[%s]    SUCI", amf_ue->suci);
 
