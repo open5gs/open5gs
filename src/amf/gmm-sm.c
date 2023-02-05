@@ -78,6 +78,28 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
         AMF_UE_CLEAR_N2_TRANSFER(amf_ue, pdu_session_resource_setup_request);
         AMF_UE_CLEAR_5GSM_MESSAGE(amf_ue);
         CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
+
+        /*
+         * Issue #2040
+         *
+         * TS24.501
+         * 5.5.2 De-registration procedure
+         * 5.5.2.1 General
+         *
+         * When the AMF enters the state 5GMM-DEREGISTERED for 3GPP access,
+         * the AMF shall delete the stored UE radio capability information
+         * or the UE radio capability ID, if any.
+         *
+         * (DEPRECATED) Issue #1917 (from Switch-Off to De-Registration)
+         *
+         * When the UE sends a De-registration Request with Switch-Off,
+         * AMF should remove the the stored UE Radio Capability.
+         *
+         * Otherwise, the Radio Capability will not match
+         * because the gNB will not query the Radio Capability
+         * when the UE changes USIM.
+         */
+        OGS_ASN_CLEAR_DATA(&amf_ue->ueRadioCapability);
         break;
     case OGS_FSM_EXIT_SIG:
         break;
