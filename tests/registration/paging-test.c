@@ -387,7 +387,7 @@ static void cm_idle_paging_func(abts_case *tc, void *data)
             NGAP_ProcedureCode_id_Paging,
             test_ue->ngap_procedure_code);
 
-    ogs_msleep(3000);
+    ogs_msleep(2100);
 #endif
 
     /*
