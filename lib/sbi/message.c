@@ -698,21 +698,10 @@ int ogs_sbi_parse_request(
             message->http.content_type = ogs_hash_this_val(hi);
         } else if (!ogs_strcasecmp(ogs_hash_this_key(hi), OGS_SBI_ACCEPT)) {
             message->http.accept = ogs_hash_this_val(hi);
-        } else if (!ogs_strcasecmp(ogs_hash_this_key(hi), OGS_SBI_USER_AGENT)) {
-            char *v = ogs_hash_this_val(hi);
-            if (v)
-                message->http.requester_nf_type =
-                    OpenAPI_nf_type_FromString(v);
         } else if (!ogs_strcasecmp(ogs_hash_this_key(hi),
                     OGS_SBI_CUSTOM_CALLBACK)) {
             message->http.custom.callback = ogs_hash_this_val(hi);
         }
-    }
-
-    if (!message->http.requester_nf_type) {
-        ogs_error("No User-Agent in HTTP2 Header");
-        ogs_sbi_message_free(message);
-        return OGS_ERROR;
     }
 
     if (parse_content(message, &request->http) != OGS_OK) {

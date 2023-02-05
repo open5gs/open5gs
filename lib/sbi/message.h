@@ -409,8 +409,6 @@ typedef struct ogs_sbi_message_s {
     ogs_sbi_header_t h;
 
     struct {
-        OpenAPI_nf_type_e requester_nf_type;
-
         char *accept;
         char *content_encoding;
         char *content_type;
