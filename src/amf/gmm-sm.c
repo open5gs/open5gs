@@ -1034,7 +1034,8 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
                 amf_sbi_send_release_all_sessions(
                         amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
 
-                if (ogs_list_count(&amf_ue->sess_list) == 0) {
+                if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
+                    amf_sess_xact_count(amf_ue) == xact_count) {
                     ogs_assert(true ==
                         amf_ue_sbi_discover_and_send(
                             OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
