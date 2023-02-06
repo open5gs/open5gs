@@ -522,6 +522,9 @@ ogs_nas_5gmm_cause_t gmm_handle_service_request(amf_ue_t *amf_ue,
     ngksi = &service_request->ngksi;
     ogs_assert(ngksi);
 
+    if (ngksi->type == OGS_NAS_SERVICE_TYPE_MOBILE_TERMINATED_SERVICES)
+        amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_MM_PAGING_5G_SUCC);
+
     /*
      * TS24.501
      * Ch 4.4.6 Protection of initial NAS signalling messages

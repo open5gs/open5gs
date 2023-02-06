@@ -65,6 +65,76 @@ amf_metrics_spec_def_t amf_metrics_spec_def_global[_AMF_METR_GLOB_MAX] = {
     .description = "gNodeBs",
 },
 /* Global Counters: */
+[AMF_METR_GLOB_CTR_RM_REG_INIT_REQ] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "fivegs_amffunction_rm_reginitreq",
+    .description = "Number of initial registration requests received by the AMF",
+},
+[AMF_METR_GLOB_CTR_RM_REG_INIT_SUCC] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "fivegs_amffunction_rm_reginitsucc",
+    .description = "Number of successful initial registrations at the AMF",
+},
+[AMF_METR_GLOB_CTR_RM_REG_MOB_REQ] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "fivegs_amffunction_rm_regmobreq",
+    .description = "Number of mobility registration update requests received by the AMF",
+},
+[AMF_METR_GLOB_CTR_RM_REG_MOB_SUCC] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "fivegs_amffunction_rm_regmobsucc",
+    .description = "Number of successful mobility registration updates at the AMF",
+},
+[AMF_METR_GLOB_CTR_RM_REG_PERIOD_REQ] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "fivegs_amffunction_rm_regperiodreq",
+    .description = "Number of periodic registration update requests received by the AMF",
+},
+[AMF_METR_GLOB_CTR_RM_REG_PERIOD_SUCC] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "fivegs_amffunction_rm_regperiodsucc",
+    .description = "Number of successful periodic registration update requests at the AMF",
+},
+[AMF_METR_GLOB_CTR_RM_REG_EMERG_REQ] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "fivegs_amffunction_rm_regemergreq",
+    .description = "Number of emergency registration requests received by the AMF",
+},
+[AMF_METR_GLOB_CTR_RM_REG_EMERG_SUCC] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "fivegs_amffunction_rm_regemergsucc",
+    .description = "Number of successful emergency registrations at the AMF",
+},
+[AMF_METR_GLOB_CTR_MM_PAGING_5G_REQ] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "fivegs_amffunction_mm_paging5greq",
+    .description = "Number of 5G paging procedures initiated at the AMF",
+},
+[AMF_METR_GLOB_CTR_MM_PAGING_5G_SUCC] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "fivegs_amffunction_mm_paging5gsucc",
+    .description = "Number of successful 5G paging procedures initiated at the AMF",
+},
+[AMF_METR_GLOB_CTR_AMF_AUTH_REQ] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "fivegs_amffunction_amf_authreq",
+    .description = "Number of authentication requests sent by the AMF",
+},
+[AMF_METR_GLOB_CTR_AMF_AUTH_REJECT] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "fivegs_amffunction_amf_authreject",
+    .description = "Number of authentication rejections sent by the AMF",
+},
+[AMF_METR_GLOB_CTR_MM_CONF_UPDATE] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "fivegs_amffunction_mm_confupdate",
+    .description = "Number of UE Configuration Update commands requested by the AMF",
+},
+[AMF_METR_GLOB_CTR_MM_CONF_UPDATE_SUCC] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "fivegs_amffunction_mm_confupdatesucc",
+    .description = "Number of UE Configuration Update complete messages received by the AMF",
+},
 };
 int amf_metrics_init_inst_global(void)
 {
@@ -95,7 +165,7 @@ ogs_hash_t *metrics_hash_by_slice = NULL;   /* hash table for SLICE labels */
 amf_metrics_spec_def_t amf_metrics_spec_def_by_slice[_AMF_METR_BY_SLICE_MAX] = {
 /* Gauges: */
 AMF_METR_BY_SLICE_GAUGE_ENTRY(
-    AMF_METR_GAUGE_RM_REGISTEREDSUBNBR,
+    AMF_METR_GAUGE_RM_REGISTERED_SUB_NBR,
     "fivegs_amffunction_rm_registeredsubnbr",
     "Number of registered state subscribers per AMF")
 };
@@ -192,9 +262,25 @@ ogs_hash_t *metrics_hash_by_cause = NULL;   /* hash table for CAUSE labels */
 amf_metrics_spec_def_t amf_metrics_spec_def_by_cause[_AMF_METR_BY_CAUSE_MAX] = {
 /* Counters: */
 AMF_METR_BY_CAUSE_CTR_ENTRY(
-    AMF_METR_CTR_RM_REG_INITFAIL,
+    AMF_METR_CTR_RM_REG_INIT_FAIL,
     "fivegs_amffunction_rm_reginitfail",
     "Number of failed initial registrations at the AMF")
+AMF_METR_BY_CAUSE_CTR_ENTRY(
+    AMF_METR_CTR_RM_REG_MOB_FAIL,
+    "fivegs_amffunction_rm_regmobfail",
+    "Number of failed mobility registration updates at the AMF")
+AMF_METR_BY_CAUSE_CTR_ENTRY(
+    AMF_METR_CTR_RM_REG_PERIOD_FAIL,
+    "fivegs_amffunction_rm_regperiodfail",
+    "Number of failed periodic registration update requests at the AMF")
+AMF_METR_BY_CAUSE_CTR_ENTRY(
+    AMF_METR_CTR_RM_REG_EMERG_FAIL,
+    "fivegs_amffunction_rm_regemergfail",
+    "Number of failed emergency registrations at the AMF")
+AMF_METR_BY_CAUSE_CTR_ENTRY(
+    AMF_METR_CTR_AMF_AUTH_FAIL,
+    "fivegs_amffunction_amf_authfail",
+    "Number of authentication failure messages received by the AMF")
 };
 void amf_metrics_init_by_cause(void);
 int amf_metrics_free_inst_by_cause(ogs_metrics_inst_t **inst);
