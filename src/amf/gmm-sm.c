@@ -456,7 +456,7 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
         for (i = 0; i < amf_ue->num_of_slice; i++) {
             amf_metrics_inst_by_slice_add(&amf_ue->nr_tai.plmn_id,
                     &amf_ue->slice[i].s_nssai,
-                    AMF_METR_GAUGE_RM_REGISTEREDSUBNBR, 1);
+                    AMF_METR_GAUGE_RM_REGISTERED_SUB_NBR, 1);
         }
         break;
     case OGS_FSM_EXIT_SIG:
@@ -464,7 +464,7 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
         for (i = 0; i < amf_ue->num_of_slice; i++) {
             amf_metrics_inst_by_slice_add(&amf_ue->nr_tai.plmn_id,
                     &amf_ue->slice[i].s_nssai,
-                    AMF_METR_GAUGE_RM_REGISTEREDSUBNBR, -1);
+                    AMF_METR_GAUGE_RM_REGISTERED_SUB_NBR, -1);
         }
         break;
 
@@ -978,6 +978,26 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
             gmm_cause = gmm_handle_registration_request(
                     amf_ue, h, e->ngap.code,
                     &nas_message->gmm.registration_request);
+
+            amf_metrics_reg_time_start(amf_ue);
+
+            switch (amf_ue->nas.registration.value) {
+            case OGS_NAS_5GS_REGISTRATION_TYPE_INITIAL:
+                amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_RM_REG_INIT_REQ);
+                break;
+            case OGS_NAS_5GS_REGISTRATION_TYPE_MOBILITY_UPDATING:
+                amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_RM_REG_MOB_REQ);
+                break;
+            case OGS_NAS_5GS_REGISTRATION_TYPE_PERIODIC_UPDATING:
+                amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_RM_REG_PERIOD_REQ);
+                break;
+            case OGS_NAS_5GS_REGISTRATION_TYPE_EMERGENCY:
+                amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_RM_REG_EMERG_REQ);
+                break;
+            default:
+                ogs_error("Unknown reg_type[%d]", amf_ue->nas.registration.value);
+            }
+
             if (gmm_cause != OGS_5GMM_CAUSE_REQUEST_ACCEPTED) {
                 ogs_error("gmm_handle_registration_request() failed [%d]",
                             gmm_cause);
@@ -1127,6 +1147,8 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
                 OGS_FSM_TRAN(s, gmm_state_exception);
                 break;
             }
+
+            amf_metrics_reg_time_start(amf_ue);
 
             amf_sbi_send_release_all_sessions(
                     amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
@@ -1932,6 +1954,23 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
 
+            switch (amf_ue->nas.registration.value) {
+            case OGS_NAS_5GS_REGISTRATION_TYPE_INITIAL:
+                amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_RM_REG_INIT_SUCC);
+                break;
+            case OGS_NAS_5GS_REGISTRATION_TYPE_MOBILITY_UPDATING:
+                amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_RM_REG_MOB_SUCC);
+                break;
+            case OGS_NAS_5GS_REGISTRATION_TYPE_PERIODIC_UPDATING:
+                amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_RM_REG_PERIOD_SUCC);
+                break;
+            case OGS_NAS_5GS_REGISTRATION_TYPE_EMERGENCY:
+                amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_RM_REG_EMERG_SUCC);
+                break;
+            default:
+                ogs_error("Unknown reg_type[%d]",
+                        amf_ue->nas.registration.value);
+            }
             OGS_FSM_TRAN(s, &gmm_state_registered);
             break;
 

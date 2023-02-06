@@ -180,6 +180,9 @@ int nas_5gs_send_registration_accept(amf_ue_t *amf_ue)
         }
     }
 
+    amf_metrics_reg_time_add(amf_metrics_reg_time_stop(amf_ue),
+            amf_ue->nas.registration.value);
+
     return rv;
 }
 
@@ -194,7 +197,28 @@ int nas_5gs_send_registration_reject(
         return OGS_NOTFOUND;
     }
 
-    amf_metrics_inst_by_cause_add(gmm_cause, AMF_METR_CTR_RM_REG_INITFAIL, 1);
+    amf_metrics_reg_time_stop(amf_ue);
+    switch (amf_ue->nas.registration.value) {
+    case OGS_NAS_5GS_REGISTRATION_TYPE_INITIAL:
+        amf_metrics_inst_by_cause_add(gmm_cause,
+                AMF_METR_CTR_RM_REG_INIT_FAIL, 1);
+        break;
+    case OGS_NAS_5GS_REGISTRATION_TYPE_MOBILITY_UPDATING:
+        amf_metrics_inst_by_cause_add(gmm_cause,
+                AMF_METR_CTR_RM_REG_MOB_FAIL, 1);
+        break;
+    case OGS_NAS_5GS_REGISTRATION_TYPE_PERIODIC_UPDATING:
+        amf_metrics_inst_by_cause_add(gmm_cause,
+                AMF_METR_CTR_RM_REG_PERIOD_FAIL, 1);
+        break;
+    case OGS_NAS_5GS_REGISTRATION_TYPE_EMERGENCY:
+        amf_metrics_inst_by_cause_add(gmm_cause,
+                AMF_METR_CTR_RM_REG_EMERG_FAIL, 1);
+        break;
+    default:
+        ogs_error("Unknown reg_type[%d]",
+                amf_ue->nas.registration.value);
+    }
 
     ogs_warn("[%s] Registration reject [%d]", amf_ue->suci, gmm_cause);
 
@@ -513,7 +537,7 @@ int nas_5gs_send_authentication_reject(amf_ue_t *amf_ue)
         return OGS_NOTFOUND;
     }
 
-    amf_metrics_inst_by_cause_add(0, AMF_METR_CTR_RM_REG_INITFAIL, 1);
+    amf_metrics_inst_by_cause_add(0, AMF_METR_CTR_RM_REG_INIT_FAIL, 1);
 
     ogs_warn("[%s] Authentication reject", amf_ue->suci);
 

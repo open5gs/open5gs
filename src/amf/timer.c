@@ -165,6 +165,14 @@ void amf_timer_t3570_expire(void *data)
 {
     gmm_timer_event_send(AMF_TIMER_T3570, data);
 }
+void amf_timer_mobile_reachable_expire(void *data)
+{
+    gmm_timer_event_send(AMF_TIMER_MOBILE_REACHABLE, data);
+}
+void amf_timer_implicit_deregistration_expire(void *data)
+{
+    gmm_timer_event_send(AMF_TIMER_IMPLICIT_DEREGISTRATION, data);
+}
 
 void amf_timer_ng_holding_timer_expire(void *data)
 {
@@ -188,12 +196,18 @@ void amf_timer_ng_holding_timer_expire(void *data)
     }
 }
 
-void amf_timer_mobile_reachable_expire(void *data)
+void amf_timer_metrics_granularity_period_expire(void *data)
 {
-    gmm_timer_event_send(AMF_TIMER_MOBILE_REACHABLE, data);
-}
+    int rv;
+    amf_event_t *e = NULL;
 
-void amf_timer_implicit_deregistration_expire(void *data)
-{
-    gmm_timer_event_send(AMF_TIMER_IMPLICIT_DEREGISTRATION, data);
+    e = amf_event_new(AMF_EVENT_5GMM_TIMER);
+    ogs_assert(e);
+    e->h.timer_id = AMF_TIMER_METRICS_GRANULARITY_PERIOD;
+
+    rv = ogs_queue_push(ogs_app()->queue, e);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
+        ogs_event_free(e);
+    }
 }
