@@ -82,6 +82,17 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
         /*
          * Issue #2040
          *
+         * TS23.501
+         * 5.4.4 UE Radio Capability handling
+         * 5.4.4.1 UE radio capability information storage in the AMF
+         *
+         * The AMF deletes the UE radio capability when the UE RM state
+         * in the AMF transitions to RM-DEREGISTERED. When the AMF receives
+         * Registration Request with the Registration type set to Initial
+         * Registration or when it receives the first Registration Request
+         * after E-UTRA/EPC Attach with Registration type set to Mobility
+         * Registration Update, the AMF deletes the UE radio capability.
+         *
          * TS24.501
          * 5.5.2 De-registration procedure
          * 5.5.2.1 General
