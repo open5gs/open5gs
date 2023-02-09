@@ -406,7 +406,7 @@ static bool server_send_rspmem_persistent(
     stream = ogs_pool_cycle(&stream_pool, stream);
     if (!stream) {
         ogs_error("stream has already been removed");
-        return false;
+        return true;
     }
 
     sbi_sess = stream->session;
