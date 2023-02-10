@@ -181,7 +181,6 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                         ogs_error("[%s] HTTP response error [%d]",
                             amf_ue->suci, sbi_message->res_status);
                     }
-                    break;
                 }
 
                 SWITCH(sbi_message->h.method)
@@ -222,7 +221,6 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                 (sbi_message->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT)) {
                 ogs_error("[%s] HTTP response error [%d]",
                           amf_ue->supi, sbi_message->res_status);
-                break;
             }
 
             SWITCH(sbi_message->h.resource.component[1])
@@ -292,7 +290,6 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                 sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) {
                 ogs_error("[%s] HTTP response error [%d]",
                         amf_ue->supi, sbi_message->res_status);
-                break;
             }
 
             SWITCH(sbi_message->h.resource.component[1])
@@ -663,7 +660,6 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                         ogs_error("[%s] HTTP response error [%d]",
                             amf_ue->suci, sbi_message->res_status);
                     }
-                    break;
                 }
 
                 SWITCH(sbi_message->h.method)
@@ -704,7 +700,6 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                 (sbi_message->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT)) {
                 ogs_error("[%s] HTTP response error [%d]",
                           amf_ue->supi, sbi_message->res_status);
-                break;
             }
 
             SWITCH(sbi_message->h.resource.component[1])
@@ -780,7 +775,6 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                 sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) {
                 ogs_error("[%s] HTTP response error [%d]",
                         amf_ue->supi, sbi_message->res_status);
-                break;
             }
 
             SWITCH(sbi_message->h.resource.component[1])

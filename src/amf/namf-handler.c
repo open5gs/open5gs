@@ -927,7 +927,8 @@ int amf_namf_callback_handle_sdm_data_change_notify(
         if (CM_CONNECTED(amf_ue)) {
             r = nas_5gs_send_de_registration_request(
                     amf_ue,
-                    OpenAPI_deregistration_reason_REREGISTRATION_REQUIRED, 0);
+                    OpenAPI_deregistration_reason_REREGISTRATION_REQUIRED,
+                    OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
 

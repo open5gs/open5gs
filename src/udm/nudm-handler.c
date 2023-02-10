@@ -421,10 +421,11 @@ bool udm_nudm_uecm_handle_registration_update(
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_FORBIDDEN,
                 message, "Guami mismatch", udm_ue->supi));
+        return false;
     }
 
-
     if (Amf3GppAccessRegistrationModification->is_purge_flag) {
+        ogs_assert(udm_ue->amf_3gpp_access_registration);
         udm_ue->amf_3gpp_access_registration->is_purge_flag =
                 Amf3GppAccessRegistrationModification->is_purge_flag;
         udm_ue->amf_3gpp_access_registration->purge_flag =
@@ -433,7 +434,6 @@ bool udm_nudm_uecm_handle_registration_update(
 
     PatchItemList = OpenAPI_list_create();
     ogs_assert(PatchItemList);
-
 
     if (Amf3GppAccessRegistrationModification->is_purge_flag) {
         memset(&item, 0, sizeof(item));
