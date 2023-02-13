@@ -459,9 +459,27 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             if (e->s1ap_code == S1AP_ProcedureCode_id_initialUEMessage) {
                 ogs_debug("    Iniital UE Message");
                 if (mme_ue->nas_eps.update.active_flag) {
-                    ogs_assert(OGS_OK ==
-                        nas_eps_send_tau_accept(mme_ue,
-                            S1AP_ProcedureCode_id_InitialContextSetup));
+
+    /*
+     * TS33.401
+     * 7 Security procedures between UE and EPS access network elements
+     * 7.2 Handling of user-related keys in E-UTRAN
+     * 7.2.7 Key handling for the TAU procedure when registered in E-UTRAN
+     *
+     * If the "active flag" is set in the TAU request message or
+     * the MME chooses to establish radio bearers when there is pending downlink
+     * UP data or pending downlink signalling, radio bearers will be established
+     * as part of the TAU procedure and a KeNB derivation is necessary.
+     */
+                    ogs_kdf_kenb(mme_ue->kasme, mme_ue->ul_count.i32,
+                            mme_ue->kenb);
+                    ogs_kdf_nh_enb(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
+                    mme_ue->nhcc = 1;
+
+                    r = nas_eps_send_tau_accept(mme_ue,
+                            S1AP_ProcedureCode_id_InitialContextSetup);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
                 } else {
                     ogs_assert(OGS_OK ==
                         nas_eps_send_tau_accept(mme_ue,
