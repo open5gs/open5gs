@@ -199,7 +199,7 @@ void emm_state_registered(ogs_fsm_t *s, mme_event_t *e)
 
 static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
 {
-    int rv;
+    int r, rv;
 
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
