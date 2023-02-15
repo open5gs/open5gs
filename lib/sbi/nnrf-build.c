@@ -1252,8 +1252,10 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_update(void)
     ogs_expect(request);
 
 end:
-    OpenAPI_list_free(PatchItemList);
-    OpenAPI_any_type_free(item.value);
+    if (item.value)
+        OpenAPI_any_type_free(item.value);
+    if (PatchItemList)
+        OpenAPI_list_free(PatchItemList);
 
     return request;
 }
