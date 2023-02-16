@@ -286,7 +286,6 @@ int ogs_pfcp_xact_update_tx(ogs_pfcp_xact_t *xact,
 
 static int ogs_pfcp_xact_update_rx(ogs_pfcp_xact_t *xact, uint8_t type)
 {
-    int rv = OGS_OK;
     char buf[OGS_ADDRSTRLEN];
     ogs_pfcp_xact_stage_t stage;
 
@@ -330,8 +329,7 @@ static int ogs_pfcp_xact_update_rx(ogs_pfcp_xact_t *xact, uint8_t type)
                             OGS_ADDR(&xact->node->addr,
                                 buf),
                             OGS_PORT(&xact->node->addr));
-                    rv = ogs_pfcp_sendto(xact->node, pkbuf);
-                    ogs_expect(rv == OGS_OK);
+                    ogs_expect(OGS_OK == ogs_pfcp_sendto(xact->node, pkbuf));
                 } else {
                     ogs_warn("[%d] %s Request Duplicated. Discard!"
                             " for step %d type %d peer [%s]:%d",
@@ -396,8 +394,7 @@ static int ogs_pfcp_xact_update_rx(ogs_pfcp_xact_t *xact, uint8_t type)
                             OGS_ADDR(&xact->node->addr,
                                 buf),
                             OGS_PORT(&xact->node->addr));
-                    rv = ogs_pfcp_sendto(xact->node, pkbuf);
-                    ogs_expect(rv == OGS_OK);
+                    ogs_expect(OGS_OK == ogs_pfcp_sendto(xact->node, pkbuf));
                 } else {
                     ogs_warn("[%d] %s Request Duplicated. Discard!"
                             " for step %d type %d peer [%s]:%d",
@@ -561,9 +558,7 @@ int ogs_pfcp_xact_commit(ogs_pfcp_xact_t *xact)
     pkbuf = xact->seq[xact->step-1].pkbuf;
     ogs_assert(pkbuf);
 
-    if (ogs_pfcp_sendto(xact->node, pkbuf) != OGS_OK) {
-        ogs_error("ogs_pfcp_sendto() failed");
-    }
+    ogs_expect(OGS_OK == ogs_pfcp_sendto(xact->node, pkbuf));
 
     return OGS_OK;
 }
@@ -603,9 +598,7 @@ static void response_timeout(void *data)
         pkbuf = xact->seq[xact->step-1].pkbuf;
         ogs_assert(pkbuf);
 
-        if (ogs_pfcp_sendto(xact->node, pkbuf) != OGS_OK) {
-            ogs_error("ogs_pfcp_sendto() failed");
-        }
+        ogs_expect(OGS_OK == ogs_pfcp_sendto(xact->node, pkbuf));
     } else {
         ogs_warn("[%d] %s No Reponse. Give up! "
                 "for step %d type %d peer [%s]:%d",
@@ -620,8 +613,6 @@ static void response_timeout(void *data)
 
         ogs_pfcp_xact_delete(xact);
     }
-
-    return;
 }
 
 static void holding_timeout(void *data)
