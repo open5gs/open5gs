@@ -1215,6 +1215,9 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_update(void)
     OpenAPI_patch_item_t StatusItem;
     OpenAPI_patch_item_t LoadItem;
 
+    memset(&StatusItem, 0, sizeof(StatusItem));
+    memset(&LoadItem, 0, sizeof(LoadItem));
+
     nf_instance = ogs_sbi_self()->nf_instance;
     ogs_assert(nf_instance);
     ogs_assert(nf_instance->id);
@@ -1235,7 +1238,6 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_update(void)
         goto end;
     }
 
-    memset(&StatusItem, 0, sizeof(StatusItem));
     StatusItem.op = OpenAPI_patch_operation_replace;
     StatusItem.path = (char *)"/nfStatus";
     StatusItem.value = OpenAPI_any_type_create_string(
@@ -1247,7 +1249,6 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_update(void)
 
     OpenAPI_list_add(PatchItemList, &StatusItem);
 
-    memset(&LoadItem, 0, sizeof(LoadItem));
     LoadItem.op = OpenAPI_patch_operation_replace;
     LoadItem.path = (char *)"/load";
     LoadItem.value = OpenAPI_any_type_create_number(nf_instance->load);
