@@ -624,8 +624,6 @@ static void response_timeout(void *data)
     }
 
     return;
-
-    ogs_pfcp_xact_delete(xact);
 }
 
 static void holding_timeout(void *data)
