@@ -8,7 +8,7 @@ body:
     attributes:
       values: > 
         ## Please note:
-        This form should only be used if _you can reporoduce_ the bug the current
+        This form should only be used if _you can reporoduce_ the bug the 
         *current* release of netbox. For installation, configuration or other help with Open5GS please
         use our [discussion forum](https://github.com/open5gs/open5gs/discussions).
   - type: input
