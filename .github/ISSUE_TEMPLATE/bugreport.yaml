@@ -6,7 +6,7 @@ assignees: []
 body:
   - type: markdown
     attributes:
-      values: > 
+      value: > 
         ## Please note:
         This form should only be used if _you can reporoduce_ the bug the current
         *current* release of netbox. For installation, configuration or other help with Open5GS please
