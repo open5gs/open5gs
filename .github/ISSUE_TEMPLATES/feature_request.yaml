@@ -1,6 +1,6 @@
 name: Feature request
 description: Propose an enhancement to Open5GS
-labels: ['enhancement', 'triage']
+labels: ['Enhancement', 'triage']
 body:
   - type: markdown
     attributes:
