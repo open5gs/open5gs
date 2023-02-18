@@ -7,13 +7,17 @@ body:
   - type: markdown
     attributes:
       value: > 
-        ## Please note:
-        This form should only be used if _you can reporoduce_ the bug the 
-        *current* release of netbox. For installation, configuration or other help with Open5GS please
+        **Please note**
+        
+        This form should only be used if _you can reporoduce_ the bug the in the *current* release of
+        Open5GS Stack. For installation, configuration or other help with Open5GS please
         use our [discussion forum](https://github.com/open5gs/open5gs/discussions).
+        
+        **This form is not for support requests.**
   - type: input
     attributes:
       label: Open5GS Release, Revision, or Tag
+      description: Please check if your issue has been resolved in the latest release.
       placeholder: v2.6.0
     validations:
       required: true
