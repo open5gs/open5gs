@@ -384,8 +384,24 @@ static connection_t *connection_add(
 
     curl_easy_setopt(conn->easy, CURLOPT_BUFFERSIZE, OGS_MAX_SDU_LEN);
 
-    curl_easy_setopt(conn->easy, CURLOPT_SSL_VERIFYPEER, 0);
-    curl_easy_setopt(conn->easy, CURLOPT_SSL_VERIFYHOST, 0);
+    if (ogs_app()->sbi.client.no_tls == false) {
+        ogs_assert(ogs_app()->sbi.client.key);
+        ogs_assert(ogs_app()->sbi.client.cert);
+        curl_easy_setopt(conn->easy, CURLOPT_SSLKEY,
+                ogs_app()->sbi.client.key);
+        curl_easy_setopt(conn->easy, CURLOPT_SSLCERT,
+                ogs_app()->sbi.client.cert);
+
+        if (ogs_app()->sbi.client.no_verify == false) {
+            if (ogs_app()->sbi.client.cacert) {
+                curl_easy_setopt(conn->easy, CURLOPT_CAINFO,
+                        ogs_app()->sbi.client.cacert);
+            }
+        } else {
+            curl_easy_setopt(conn->easy, CURLOPT_SSL_VERIFYPEER, 0);
+            curl_easy_setopt(conn->easy, CURLOPT_SSL_VERIFYHOST, 0);
+        }
+    }
 
     /* HTTP Method */
     if (strcmp(request->h.method, OGS_SBI_HTTP_METHOD_PUT) == 0 ||

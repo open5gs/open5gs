@@ -302,7 +302,7 @@ void af_sess_associate_pcf_client(af_sess_t *sess)
 
     ogs_assert(sess);
 
-    scheme = ogs_app_tls_client_enabled() == true ?
+    scheme = ogs_app()->sbi.client.no_tls == false ?
                 OpenAPI_uri_scheme_https : OpenAPI_uri_scheme_http;
 
     if (sess->pcf.fqdn && strlen(sess->pcf.fqdn))

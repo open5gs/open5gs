@@ -340,7 +340,7 @@ char *ogs_sbi_server_uri(ogs_sbi_server_t *server, ogs_sbi_header_t *h)
         advertise = server->node.addr;
     ogs_assert(advertise);
 
-    return ogs_uridup(ogs_app_tls_server_enabled() == true, advertise, h);
+    return ogs_uridup(ogs_app()->sbi.server.no_tls == false, advertise, h);
 }
 
 char *ogs_sbi_client_uri(ogs_sbi_client_t *client, ogs_sbi_header_t *h)
@@ -348,7 +348,7 @@ char *ogs_sbi_client_uri(ogs_sbi_client_t *client, ogs_sbi_header_t *h)
     ogs_assert(client);
 
     return ogs_uridup(
-            ogs_app_tls_client_enabled() == true &&
+            ogs_app()->sbi.client.no_tls == false &&
             client->scheme == OpenAPI_uri_scheme_https,
             client->node.addr, h);
 }

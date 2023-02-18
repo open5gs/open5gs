@@ -1,49 +1,53 @@
 #
-# logger:
-#
 #  o Set OGS_LOG_INFO to all domain level
 #   - If `level` is omitted, the default level is OGS_LOG_INFO)
 #   - If `domain` is omitted, the all domain level is set from 'level'
-#    (Nothing is needed)
+#    (Default values are used, so no configuration is required)
 #
 #  o Set OGS_LOG_ERROR to all domain level
 #   - `level` can be set with none, fatal, error, warn, info, debug, trace
+#  logger:
 #    level: error
 #
 #  o Set OGS_LOG_DEBUG to mme/emm domain level
+#  logger:
 #    level: debug
 #    domain: mme,emm
 #
 #  o Set OGS_LOG_TRACE to all domain level
+#  logger:
 #    level: trace
-#    domain: core,s1ap,nas,fd,gtp,mme,emm,esm,event,tlv,mem,sock
+#    domain: core,sbi,ausf,event,tlv,mem,sock
 #
 logger:
     file: @localstatedir@/log/open5gs/mme.log
 
 #
-# mme:
-#
 #  <S1AP Server>>
 #
 #  o S1AP Server(all address available)
+#  mme:
 #    s1ap:
 #
 #  o S1AP Server(0.0.0.0:36412)
+#  mme:
 #    s1ap:
 #      addr: 0.0.0.0
 #
 #  o S1AP Server(127.0.0.2:36412, [::1]:36412)
+#  mme:
 #    s1ap:
 #      - addr: 127.0.0.2
 #      - addr: ::1
 #
 #  o S1AP Server(different port)
+#  mme:
 #    s1ap:
 #      - addr: 127.0.0.2
 #        port: 36413
 #
 #  o S1AP Server(address available in `eth0` interface)
+#  mme:
 #    s1ap:
 #      dev: eth0
 #
@@ -51,6 +55,7 @@ logger:
 #    - sctp_nodelay : true
 #    - so_linger.l_onoff : false
 #
+#  mme:
 #    s1ap:
 #      addr: 127.0.0.2
 #      option:
@@ -70,6 +75,7 @@ logger:
 #    - sinit_max_attempts : 4
 #    - sinit_max_init_timeo : 8000(8secs)
 #
+#  mme:
 #    s1ap:
 #      addr: 127.0.0.2
 #      option:
@@ -87,9 +93,11 @@ logger:
 #  <GTP-C Server>>
 #
 #  o GTP-C Server(all address available)
+#  mme:
 #    gtpc:
 #
 #  o GTP-C Server(127.0.0.2:2123, [::1]:2123)
+#  mme:
 #    gtpc:
 #      - addr: 127.0.0.2
 #      - addr: ::1
@@ -97,6 +105,7 @@ logger:
 #  <SGsAP>
 #
 #  o Single MSC/VLR(127.0.0.2)
+#  mme:
 #    sgsap:
 #      addr: 127.0.0.2
 #      map:
@@ -123,6 +132,7 @@ logger:
 #          lac: 43692
 #
 #  o Multiple MSC/VLR
+#  mme:
 #    sgsap:
 #      - addr: 127.0.0.2
 #        port: 29119
@@ -178,6 +188,7 @@ logger:
 #  <Metrics Server>
 #
 #  o Metrics Server(http://<any address>:9090)
+#  mme:
 #    metrics:
 #      - addr: 0.0.0.0
 #        port: 9090
@@ -185,6 +196,7 @@ logger:
 #  <GUMMEI>
 #
 #  o Multiple GUMMEI
+#  mme:
 #    gummei:
 #      - plmn_id:
 #          mcc: 001
@@ -205,6 +217,7 @@ logger:
 #  <TAI>
 #
 #  o Multiple TAI
+#  mme:
 #    tai:
 #      - plmn_id:
 #          mcc: 001
@@ -235,17 +248,17 @@ logger:
 #
 #
 #  <Network Name>
-#
+#  mme:
 #    network_name:
 #        full: Open5GS
 #        short: Next
 #
 #  <MME Name>
-#
+#  mme:
 #    mme_name: open5gs-mme0
 #
 #  <Relative Capacity> - Default(255)
-#
+#  mme:
 #    relative_capacity: 100
 #
 mme:
@@ -276,25 +289,26 @@ mme:
     mme_name: open5gs-mme0
 
 #
-# sgwc:
-#
 # <GTP-C Client>
 #
 #  o Specify SGW addresses the GTP-C must connect to
 #
 #  o One SGW is defined.
 #    If prefer_ipv4 is not true, [fd69:f21d:873c:fa::2] is selected.
+#  sgwc:
 #    gtpc:
 #      addr:
 #        - 127.0.0.3
 #        - fd69:f21d:873c:fa::2
 #
 #  o Two SGW are defined. MME selects SGW with round-robin manner per UE
+#  sgwc:
 #    gtpc:
 #      - addr: 127.0.0.3
 #      - addr: fd69:f21d:873c:fa::2
 #
 #  o Three SGW are defined. MME selects SGW with round-robin manner per UE
+#  sgwc:
 #    gtpc:
 #      - addr
 #        - 127.0.0.3
@@ -306,30 +320,32 @@ mme:
 #
 # <SGW Selection Mode>
 #
-# o Round-Robin
+#  o Round-Robin
+#  sgwc:
+#    gtpc:
+#      addr: 127.0.0.3
+#      addr: 127.0.2.2
+#      addr: 127.0.4.2
 #
-#   gtpc:
-#     addr: 127.0.0.3
-#     addr: 127.0.2.2
-#     addr: 127.0.4.2
-#
-# o SGW selection by eNodeB TAC
+#  o SGW selection by eNodeB TAC
 #   (either single TAC or multiple TACs, DECIMAL representation)
 #
-#   gtpc:
-#     - addr: 127.0.0.3
-#       tac: 26000
-#     - addr: 127.0.2.2
-#       tac: [25000, 27000, 28000]
+#  sgwc:
+#    gtpc:
+#      - addr: 127.0.0.3
+#        tac: 26000
+#      - addr: 127.0.2.2
+#        tac: [25000, 27000, 28000]
 #
 # o SGW selection by e_cell_id(28bit)
 #   (either single or multiple e_cell_id, HEX representation)
 #
-#   gtpc:
-#     - addr: 127.0.0.3
-#       e_cell_id: abcde01
-#     - addr: 127.0.2.2
-#       e_cell_id: [12345, a9413, 98765]
+#  sgwc:
+#    gtpc:
+#      - addr: 127.0.0.3
+#        e_cell_id: abcde01
+#      - addr: 127.0.2.2
+#        e_cell_id: [12345, a9413, 98765]
 #
 sgwc:
     gtpc:
@@ -344,15 +360,18 @@ sgwc:
 #    - To use a different APN for each SMF, specify gtpc.apn as the APN name.
 #    - If the HSS uses WebUI to set the SMF IP for each UE,
 #      you can use a specific SMF node for each UE.
+#    (Default values are used, so no configuration is required)
 #
 #  o Two SMF are defined. 127.0.0.4:2123 is used.
 #    [fd69:f21d:873c:fa::3]:2123 is ignored.
+#  smf:
 #    gtpc:
 #      - addr: 127.0.0.4
 #      - addr: fd69:f21d:873c:fa::3
 #
 #  o One SMF is defined. if prefer_ipv4 is not true,
 #    [fd69:f21d:873c:fa::3] is selected.
+#  smf:
 #    gtpc:
 #      - addr:
 #        - 127.0.0.4
@@ -361,6 +380,7 @@ sgwc:
 #  o Two SMF are defined with a different APN.
 #    - Note that if SMF IP for UE is configured in HSS,
 #      the following configurion for this UE is ignored.
+#  smf:
 #    gtpc:
 #      - addr: 127.0.0.4
 #        apn: internet
@@ -368,6 +388,7 @@ sgwc:
 #        apn: volte
 #
 #  o If APN is omitted, the default APN uses the first SMF node.
+#  smf:
 #    gtpc:
 #      - addr: 127.0.0.4
 #      - addr: 127.0.0.5
@@ -379,30 +400,27 @@ smf:
         - ::1
 
 #
-# parameter:
-#
 #  o Disable use of IPv4 addresses (only IPv6)
-#      no_ipv4: true
+#  parameter:
+#    no_ipv4: true
 #
 #  o Disable use of IPv6 addresses (only IPv4)
-#      no_ipv6: true
+#  parameter:
+#    no_ipv6: true
 #
 #  o Prefer IPv4 instead of IPv6 for estabishing new GTP connections.
-#      prefer_ipv4: true
-#
-#  o Use OAI UE
-#    - Remove HashMME in Security-mode command message
-#    - Use the length 1 of EPS network feature support in Attach accept message
-#      use_openair: true
+#  parameter:
+#    prefer_ipv4: true
 #
 parameter:
 
 #
-# max:
-#
-# o Maximum Number of UE
+#  o Maximum Number of UE
+#  max:
 #    ue: 1024
-# o Maximum Number of Peer(S1AP/NGAP, DIAMETER, GTP, PFCP or SBI)
+#
+#  o Maximum Number of Peer(S1AP/NGAP, DIAMETER, GTP, PFCP or SBI)
+#  max:
 #    peer: 64
 #
 max:
@@ -414,23 +432,26 @@ max:
 usrsctp:
 
 #
-# time:
-#
 #  o Message Wait Duration (Default : 10,000 ms = 10 seconds)
+#    (Default values are used, so no configuration is required)
 #
 #  o Message Wait Duration (3000 ms)
+#  time:
 #    message:
 #        duration: 3000
 #
 #  o Handover Wait Duration (Default : 300 ms)
 #    Time to wait for MME to send UEContextReleaseCommand
 #    to the source eNB after receiving HandoverNotify
+#    (Default values are used, so no configuration is required)
 #
 #  o Handover Wait Duration (500ms)
+#  time:
 #    handover:
 #        duration: 500
 #
 #  o Timers of EPS mobility/session management
+#  time:
 #    t3402:
 #      value: 720  # 12 minutes * 60 = 720 seconds
 #    t3412:
