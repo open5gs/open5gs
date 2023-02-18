@@ -203,7 +203,6 @@ static int ogs_sbi_context_validation(
         }
     }
 
-
     return OGS_OK;
 }
 
@@ -703,87 +702,87 @@ int ogs_sbi_context_parse_config(
                             YAML_SEQUENCE_NODE);
                 }
             }
-        } else if (!strcmp(root_key, "hnet")) {
-            ogs_yaml_iter_t hnet_array, hnet_iter;
-            ogs_yaml_iter_recurse(&root_iter, &hnet_array);
-            do {
-                uint8_t id = 0, scheme = 0;
-                const char *filename = NULL;
-
-                if (ogs_yaml_iter_type(&hnet_array) ==
-                        YAML_MAPPING_NODE) {
-                    memcpy(&hnet_iter, &hnet_array,
-                            sizeof(ogs_yaml_iter_t));
-                } else if (ogs_yaml_iter_type(&hnet_array) ==
-                    YAML_SEQUENCE_NODE) {
-                    if (!ogs_yaml_iter_next(&hnet_array))
-                        break;
-                    ogs_yaml_iter_recurse(&hnet_array,
-                            &hnet_iter);
-                } else if (ogs_yaml_iter_type(&hnet_array) ==
-                    YAML_SCALAR_NODE) {
-                    break;
-                } else
-                    ogs_assert_if_reached();
-
-                while (ogs_yaml_iter_next(&hnet_iter)) {
-                    const char *hnet_key =
-                        ogs_yaml_iter_key(&hnet_iter);
-                    ogs_assert(hnet_key);
-                    if (!strcmp(hnet_key, "id")) {
-                        const char *v = ogs_yaml_iter_value(&hnet_iter);
-                        if (v) {
-                            if (atoi(v) >= 1 && atoi(v) <= 254) id = atoi(v);
-                        }
-                    } else if (!strcmp(hnet_key, "scheme")) {
-                        const char *v = ogs_yaml_iter_value(&hnet_iter);
-                        if (v) {
-                            if (atoi(v) == 1 || atoi(v) == 2)
-                                scheme = atoi(v);
-                        }
-                    } else if (!strcmp(hnet_key, "key")) {
-                        filename = ogs_yaml_iter_value(&hnet_iter);
-                    } else
-                        ogs_warn("unknown key `%s`", hnet_key);
-                }
-
-                if (id >= OGS_HOME_NETWORK_PKI_VALUE_MIN &&
-                    id <= OGS_HOME_NETWORK_PKI_VALUE_MAX &&
-                    filename) {
-                    if (scheme == OGS_PROTECTION_SCHEME_PROFILE_A) {
-                        rv = ogs_pem_decode_curve25519_key(
-                                filename, self.hnet[id].key);
-                        if (rv == OGS_OK) {
-                            self.hnet[id].avail = true;
-                            self.hnet[id].scheme = scheme;
-                        } else {
-                            ogs_error(
-                                    "ogs_pem_decode_curve25519_key[%s] failed",
-                                    filename);
-                        }
-                    } else if (scheme == OGS_PROTECTION_SCHEME_PROFILE_B) {
-                        rv = ogs_pem_decode_secp256r1_key(
-                                filename, self.hnet[id].key);
-                        if (rv == OGS_OK) {
-                            self.hnet[id].avail = true;
-                            self.hnet[id].scheme = scheme;
-                        } else {
-                            ogs_error(
-                                    "ogs_pem_decode_secp256r1_key[%s] failed",
-                                    filename);
-                        }
-                    } else
-                        ogs_error("Invalid scheme [%d]", scheme);
-                } else
-                    ogs_error("Invalid home network configuration "
-                            "[id:%d, filename:%s]", id, filename);
-            } while (ogs_yaml_iter_type(&hnet_array) ==
-                    YAML_SEQUENCE_NODE);
         }
     }
 
     rv = ogs_sbi_context_validation(local, nrf, scp);
     if (rv != OGS_OK) return rv;
+
+    return OGS_OK;
+}
+
+int ogs_sbi_context_parse_hnet_config(ogs_yaml_iter_t *root_iter)
+{
+    int rv;
+    ogs_yaml_iter_t hnet_array, hnet_iter;
+
+    ogs_assert(root_iter);
+    ogs_yaml_iter_recurse(root_iter, &hnet_array);
+    do {
+        uint8_t id = 0, scheme = 0;
+        const char *filename = NULL;
+
+        if (ogs_yaml_iter_type(&hnet_array) == YAML_MAPPING_NODE) {
+            memcpy(&hnet_iter, &hnet_array, sizeof(ogs_yaml_iter_t));
+        } else if (ogs_yaml_iter_type(&hnet_array) == YAML_SEQUENCE_NODE) {
+            if (!ogs_yaml_iter_next(&hnet_array))
+                break;
+            ogs_yaml_iter_recurse(&hnet_array, &hnet_iter);
+        } else if (ogs_yaml_iter_type(&hnet_array) == YAML_SCALAR_NODE) {
+            break;
+        } else
+            ogs_assert_if_reached();
+
+        while (ogs_yaml_iter_next(&hnet_iter)) {
+            const char *hnet_key = ogs_yaml_iter_key(&hnet_iter);
+            ogs_assert(hnet_key);
+            if (!strcmp(hnet_key, "id")) {
+                const char *v = ogs_yaml_iter_value(&hnet_iter);
+                if (v) {
+                    if (atoi(v) >= 1 && atoi(v) <= 254)
+                        id = atoi(v);
+                }
+            } else if (!strcmp(hnet_key, "scheme")) {
+                const char *v = ogs_yaml_iter_value(&hnet_iter);
+                if (v) {
+                    if (atoi(v) == 1 || atoi(v) == 2)
+                        scheme = atoi(v);
+                }
+            } else if (!strcmp(hnet_key, "key")) {
+                filename = ogs_yaml_iter_value(&hnet_iter);
+            } else
+                ogs_warn("unknown key `%s`", hnet_key);
+        }
+
+        if (id >= OGS_HOME_NETWORK_PKI_VALUE_MIN &&
+            id <= OGS_HOME_NETWORK_PKI_VALUE_MAX &&
+            filename) {
+            if (scheme == OGS_PROTECTION_SCHEME_PROFILE_A) {
+                rv = ogs_pem_decode_curve25519_key(
+                        filename, self.hnet[id].key);
+                if (rv == OGS_OK) {
+                    self.hnet[id].avail = true;
+                    self.hnet[id].scheme = scheme;
+                } else {
+                    ogs_error("ogs_pem_decode_curve25519_key"
+                            "[%s] failed", filename);
+                }
+            } else if (scheme == OGS_PROTECTION_SCHEME_PROFILE_B) {
+                rv = ogs_pem_decode_secp256r1_key(
+                        filename, self.hnet[id].key);
+                if (rv == OGS_OK) {
+                    self.hnet[id].avail = true;
+                    self.hnet[id].scheme = scheme;
+                } else {
+                    ogs_error("ogs_pem_decode_secp256r1_key[%s]"
+                            " failed", filename);
+                }
+            } else
+                ogs_error("Invalid scheme [%d]", scheme);
+        } else
+            ogs_error("Invalid home network configuration "
+                    "[id:%d, filename:%s]", id, filename);
+    } while (ogs_yaml_iter_type(&hnet_array) == YAML_SEQUENCE_NODE);
 
     return OGS_OK;
 }
