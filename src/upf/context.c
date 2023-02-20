@@ -534,7 +534,7 @@ static void add_framed_route_to_trie(ogs_ipsubnet_t *route, upf_sess_t *sess)
 
     for (i = 0; i <= nbits; i++) {
         int part = i / chunk_size;
-        int bit = (- i - 1) % chunk_size;
+        int bit = (nbits - i - 1) % chunk_size;
 
         if (!*trie)
             *trie = ogs_calloc(1, sizeof(**trie));
