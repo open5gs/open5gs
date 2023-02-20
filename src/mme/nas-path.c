@@ -32,8 +32,7 @@ int nas_eps_send_to_enb(mme_ue_t *mme_ue, ogs_pkbuf_t *pkbuf)
 
     ogs_assert(pkbuf);
 
-    mme_ue = mme_ue_cycle(mme_ue);
-    if (!mme_ue) {
+    if (!mme_ue_cycle(mme_ue)) {
         ogs_error("UE(mme-ue) context has already been removed");
         ogs_pkbuf_free(pkbuf);
         return OGS_NOTFOUND;
@@ -51,7 +50,11 @@ int nas_eps_send_emm_to_esm(mme_ue_t *mme_ue,
     int rv;
     ogs_pkbuf_t *esmbuf = NULL;
 
-    ogs_assert(mme_ue);
+    if (!mme_ue_cycle(mme_ue)) {
+        ogs_error("UE(mme-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
     ogs_assert(esm_message_container);
     ogs_assert(esm_message_container->length);
 
@@ -74,25 +77,22 @@ int nas_eps_send_to_downlink_nas_transport(mme_ue_t *mme_ue, ogs_pkbuf_t *pkbuf)
 {
     int rv;
     ogs_pkbuf_t *s1apbuf = NULL;
-    enb_ue_t *enb_ue = NULL;
 
     ogs_assert(pkbuf);
 
-    mme_ue = mme_ue_cycle(mme_ue);
-    if (!mme_ue) {
+    if (!mme_ue_cycle(mme_ue)) {
         ogs_error("UE(mme-ue) context has already been removed");
         ogs_pkbuf_free(pkbuf);
         return OGS_NOTFOUND;
     }
 
-    enb_ue = enb_ue_cycle(mme_ue->enb_ue);
-    if (!enb_ue) {
+    if (!enb_ue_cycle(mme_ue->enb_ue)) {
         ogs_error("S1 context has already been removed");
         ogs_pkbuf_free(pkbuf);
         return OGS_NOTFOUND;
     }
 
-    s1apbuf = s1ap_build_downlink_nas_transport(enb_ue, pkbuf);
+    s1apbuf = s1ap_build_downlink_nas_transport(mme_ue->enb_ue, pkbuf);
     if (!s1apbuf) {
         ogs_error("s1ap_build_downlink_nas_transport() failed");
         return OGS_ERROR;
@@ -112,7 +112,16 @@ int nas_eps_send_attach_accept(mme_ue_t *mme_ue)
     ogs_pkbuf_t *s1apbuf = NULL;
     ogs_pkbuf_t *esmbuf = NULL, *emmbuf = NULL;
 
-    ogs_assert(mme_ue);
+    if (!mme_ue_cycle(mme_ue)) {
+        ogs_error("UE(mme-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    if (!enb_ue_cycle(mme_ue->enb_ue)) {
+        ogs_error("S1 context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
     sess = mme_sess_first(mme_ue);
     ogs_assert(sess);
     ogs_assert(mme_sess_next(sess) == NULL);
@@ -178,9 +187,13 @@ int nas_eps_send_attach_reject(mme_ue_t *mme_ue,
     mme_sess_t *sess = NULL;
     ogs_pkbuf_t *esmbuf = NULL, *emmbuf = NULL;
 
-    mme_ue = mme_ue_cycle(mme_ue);
-    if (!mme_ue) {
+    if (!mme_ue_cycle(mme_ue)) {
         ogs_error("UE(mme-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    if (!enb_ue_cycle(mme_ue->enb_ue)) {
+        ogs_error("S1 context has already been removed");
         return OGS_NOTFOUND;
     }
 
@@ -213,7 +226,15 @@ int nas_eps_send_identity_request(mme_ue_t *mme_ue)
     int rv;
     ogs_pkbuf_t *emmbuf = NULL;
 
-    ogs_assert(mme_ue);
+    if (!mme_ue_cycle(mme_ue)) {
+        ogs_error("UE(mme-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    if (!enb_ue_cycle(mme_ue->enb_ue)) {
+        ogs_error("S1 context has already been removed");
+        return OGS_NOTFOUND;
+    }
 
     ogs_debug("Identity request");
 
@@ -247,7 +268,15 @@ int nas_eps_send_authentication_request(mme_ue_t *mme_ue)
     int rv;
     ogs_pkbuf_t *emmbuf = NULL;
 
-    ogs_assert(mme_ue);
+    if (!mme_ue_cycle(mme_ue)) {
+        ogs_error("UE(mme-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    if (!enb_ue_cycle(mme_ue->enb_ue)) {
+        ogs_error("S1 context has already been removed");
+        return OGS_NOTFOUND;
+    }
 
     ogs_debug("[%s] Authentication request", mme_ue->imsi_bcd);
 
@@ -281,7 +310,15 @@ int nas_eps_send_security_mode_command(mme_ue_t *mme_ue)
     int rv;
     ogs_pkbuf_t *emmbuf = NULL;
 
-    ogs_assert(mme_ue);
+    if (!mme_ue_cycle(mme_ue)) {
+        ogs_error("UE(mme-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    if (!enb_ue_cycle(mme_ue->enb_ue)) {
+        ogs_error("S1 context has already been removed");
+        return OGS_NOTFOUND;
+    }
 
     ogs_debug("[%s] Security mode command", mme_ue->imsi_bcd);
 
@@ -315,7 +352,15 @@ int nas_eps_send_authentication_reject(mme_ue_t *mme_ue)
     int rv;
     ogs_pkbuf_t *emmbuf = NULL;
 
-    ogs_assert(mme_ue);
+    if (!mme_ue_cycle(mme_ue)) {
+        ogs_error("UE(mme-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    if (!enb_ue_cycle(mme_ue->enb_ue)) {
+        ogs_error("S1 context has already been removed");
+        return OGS_NOTFOUND;
+    }
 
     ogs_debug("[%s] Authentication reject", mme_ue->imsi_bcd);
 
@@ -335,6 +380,16 @@ int nas_eps_send_detach_request(mme_ue_t *mme_ue)
 {
     int rv;
     ogs_pkbuf_t *emmbuf = NULL;
+
+    if (!mme_ue_cycle(mme_ue)) {
+        ogs_error("UE(mme-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    if (!enb_ue_cycle(mme_ue->enb_ue)) {
+        ogs_error("S1 context has already been removed");
+        return OGS_NOTFOUND;
+    }
 
     ogs_debug("[%s] Detach request to UE", mme_ue->imsi_bcd);
 
@@ -367,12 +422,14 @@ int nas_eps_send_detach_accept(mme_ue_t *mme_ue)
 {
     int rv;
  
-    enb_ue_t *enb_ue = NULL;
     ogs_pkbuf_t *emmbuf = NULL;
 
-    ogs_assert(mme_ue);
-    enb_ue = enb_ue_cycle(mme_ue->enb_ue);
-    if (!enb_ue) {
+    if (!mme_ue_cycle(mme_ue)) {
+        ogs_error("UE(mme-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    if (!enb_ue_cycle(mme_ue->enb_ue)) {
         ogs_error("S1 context has already been removed");
         return OGS_NOTFOUND;
     }
@@ -394,7 +451,7 @@ int nas_eps_send_detach_accept(mme_ue_t *mme_ue)
         }
     }
 
-    rv = s1ap_send_ue_context_release_command(enb_ue,
+    rv = s1ap_send_ue_context_release_command(mme_ue->enb_ue,
             S1AP_Cause_PR_nas, S1AP_CauseNas_detach,
             S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0);
     ogs_expect(rv == OGS_OK);
@@ -410,8 +467,17 @@ int nas_eps_send_pdn_connectivity_reject(
     ogs_pkbuf_t *esmbuf = NULL;
 
     ogs_assert(sess);
+
     mme_ue = sess->mme_ue;
-    ogs_assert(mme_ue);
+    if (!mme_ue_cycle(mme_ue)) {
+        ogs_error("UE(mme-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    if (!enb_ue_cycle(mme_ue->enb_ue)) {
+        ogs_error("S1 context has already been removed");
+        return OGS_NOTFOUND;
+    }
 
     if (create_action == OGS_GTP_CREATE_IN_ATTACH_REQUEST) {
         /* During the UE-attach process, we'll send Attach-Reject
@@ -449,8 +515,17 @@ int nas_eps_send_esm_information_request(mme_bearer_t *bearer)
     ogs_pkbuf_t *esmbuf = NULL;
 
     ogs_assert(bearer);
+
     mme_ue = bearer->mme_ue;
-    ogs_assert(mme_ue);
+    if (!mme_ue_cycle(mme_ue)) {
+        ogs_error("UE(mme-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    if (!enb_ue_cycle(mme_ue->enb_ue)) {
+        ogs_error("S1 context has already been removed");
+        return OGS_NOTFOUND;
+    }
 
     if (bearer->t3489.pkbuf) {
         esmbuf = bearer->t3489.pkbuf;
@@ -489,8 +564,17 @@ int nas_eps_send_activate_default_bearer_context_request(
     ogs_assert(bearer);
     sess = bearer->sess;
     ogs_assert(sess);
+
     mme_ue = bearer->mme_ue;
-    ogs_assert(mme_ue);
+    if (!mme_ue_cycle(mme_ue)) {
+        ogs_error("UE(mme-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    if (!enb_ue_cycle(mme_ue->enb_ue)) {
+        ogs_error("S1 context has already been removed");
+        return OGS_NOTFOUND;
+    }
 
     esmbuf = esm_build_activate_default_bearer_context_request(
                 sess, create_action);
@@ -520,8 +604,17 @@ int nas_eps_send_activate_dedicated_bearer_context_request(
     mme_ue_t *mme_ue = NULL;
 
     ogs_assert(bearer);
+
     mme_ue = bearer->mme_ue;
-    ogs_assert(mme_ue);
+    if (!mme_ue_cycle(mme_ue)) {
+        ogs_error("UE(mme-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    if (!enb_ue_cycle(mme_ue->enb_ue)) {
+        ogs_error("S1 context has already been removed");
+        return OGS_NOTFOUND;
+    }
 
     esmbuf = esm_build_activate_dedicated_bearer_context_request(bearer);
     if (!esmbuf) {
@@ -566,8 +659,17 @@ int nas_eps_send_modify_bearer_context_request(
     mme_ue_t *mme_ue = NULL;
 
     ogs_assert(bearer);
+
     mme_ue = bearer->mme_ue;
-    ogs_assert(mme_ue);
+    if (!mme_ue_cycle(mme_ue)) {
+        ogs_error("UE(mme-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    if (!enb_ue_cycle(mme_ue->enb_ue)) {
+        ogs_error("S1 context has already been removed");
+        return OGS_NOTFOUND;
+    }
 
     esmbuf = esm_build_modify_bearer_context_request(
             bearer, qos_presence, tft_presence);
@@ -601,8 +703,17 @@ int nas_eps_send_deactivate_bearer_context_request(mme_bearer_t *bearer)
     mme_ue_t *mme_ue = NULL;
 
     ogs_assert(bearer);
+
     mme_ue = bearer->mme_ue;
-    ogs_assert(mme_ue);
+    if (!mme_ue_cycle(mme_ue)) {
+        ogs_error("UE(mme-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    if (!enb_ue_cycle(mme_ue->enb_ue)) {
+        ogs_error("S1 context has already been removed");
+        return OGS_NOTFOUND;
+    }
 
     esmbuf = esm_build_deactivate_bearer_context_request(
             bearer, OGS_NAS_ESM_CAUSE_REGULAR_DEACTIVATION);
@@ -630,7 +741,16 @@ int nas_eps_send_bearer_resource_allocation_reject(
     int rv;
     ogs_pkbuf_t *esmbuf = NULL;
 
-    ogs_assert(mme_ue);
+    if (!mme_ue_cycle(mme_ue)) {
+        ogs_error("UE(mme-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    if (!enb_ue_cycle(mme_ue->enb_ue)) {
+        ogs_error("S1 context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
     ogs_assert(pti != OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED);
 
     esmbuf = esm_build_bearer_resource_allocation_reject(
@@ -652,7 +772,16 @@ int nas_eps_send_bearer_resource_modification_reject(
     int rv;
     ogs_pkbuf_t *esmbuf = NULL;
 
-    ogs_assert(mme_ue);
+    if (!mme_ue_cycle(mme_ue)) {
+        ogs_error("UE(mme-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    if (!enb_ue_cycle(mme_ue->enb_ue)) {
+        ogs_error("S1 context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
     ogs_assert(pti != OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED);
 
     esmbuf = esm_build_bearer_resource_modification_reject(
@@ -674,7 +803,15 @@ int nas_eps_send_tau_accept(
     int rv;
     ogs_pkbuf_t *emmbuf = NULL;
 
-    ogs_assert(mme_ue);
+    if (!mme_ue_cycle(mme_ue)) {
+        ogs_error("UE(mme-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    if (!enb_ue_cycle(mme_ue->enb_ue)) {
+        ogs_error("S1 context has already been removed");
+        return OGS_NOTFOUND;
+    }
 
     ogs_debug("[%s] Tracking area update accept", mme_ue->imsi_bcd);
 
@@ -720,7 +857,15 @@ int nas_eps_send_tau_reject(mme_ue_t *mme_ue, ogs_nas_emm_cause_t emm_cause)
     int rv;
     ogs_pkbuf_t *emmbuf = NULL;
 
-    ogs_assert(mme_ue);
+    if (!mme_ue_cycle(mme_ue)) {
+        ogs_error("UE(mme-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    if (!enb_ue_cycle(mme_ue->enb_ue)) {
+        ogs_error("S1 context has already been removed");
+        return OGS_NOTFOUND;
+    }
 
     ogs_debug("[%s] Tracking area update reject", mme_ue->imsi_bcd);
 
@@ -743,7 +888,15 @@ int nas_eps_send_service_reject(mme_ue_t *mme_ue,
     int rv;
     ogs_pkbuf_t *emmbuf = NULL;
 
-    ogs_assert(mme_ue);
+    if (!mme_ue_cycle(mme_ue)) {
+        ogs_error("UE(mme-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    if (!enb_ue_cycle(mme_ue->enb_ue)) {
+        ogs_error("S1 context has already been removed");
+        return OGS_NOTFOUND;
+    }
 
     ogs_debug("[%s] Service reject", mme_ue->imsi_bcd);
 
@@ -765,7 +918,15 @@ int nas_eps_send_cs_service_notification(mme_ue_t *mme_ue)
     int rv;
     ogs_pkbuf_t *emmbuf = NULL;
 
-    ogs_assert(mme_ue);
+    if (!mme_ue_cycle(mme_ue)) {
+        ogs_error("UE(mme-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    if (!enb_ue_cycle(mme_ue->enb_ue)) {
+        ogs_error("S1 context has already been removed");
+        return OGS_NOTFOUND;
+    }
 
     ogs_debug("[%s] CS Service Notification", mme_ue->imsi_bcd);
 
@@ -787,7 +948,16 @@ int nas_eps_send_downlink_nas_transport(
     int rv;
     ogs_pkbuf_t *emmbuf = NULL;
 
-    ogs_assert(mme_ue);
+    if (!mme_ue_cycle(mme_ue)) {
+        ogs_error("UE(mme-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    if (!enb_ue_cycle(mme_ue->enb_ue)) {
+        ogs_error("S1 context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
     ogs_assert(buffer);
     ogs_assert(length);
 

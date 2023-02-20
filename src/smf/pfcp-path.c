@@ -230,10 +230,11 @@ static void sess_5gc_timeout(ogs_pfcp_xact_t *xact, void *data)
         ogs_assert(strerror);
 
         ogs_error("%s", strerror);
-        ogs_assert(stream);
-        smf_sbi_send_sm_context_update_error(stream,
-                OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT,
-                strerror, NULL, NULL, NULL);
+        if (stream) {
+            smf_sbi_send_sm_context_update_error(stream,
+                    OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT,
+                    strerror, NULL, NULL, NULL);
+        }
         ogs_free(strerror);
         break;
     case OGS_PFCP_SESSION_DELETION_REQUEST_TYPE:

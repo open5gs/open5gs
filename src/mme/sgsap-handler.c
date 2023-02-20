@@ -402,6 +402,7 @@ void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
                     ogs_assert(OGS_OK ==
                         sgsap_send_paging_reject(
                             mme_ue, SGSAP_SGS_CAUSE_UE_UNREACHABLE));
+                    MME_CLEAR_PAGING_INFO(mme_ue);
                 } else {
                     /* UE will respond Extended Service Request in PS CNDomain*/
                     MME_STORE_PAGING_INFO(mme_ue,
@@ -426,6 +427,7 @@ void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
                     ogs_assert(OGS_OK ==
                         sgsap_send_paging_reject(
                             mme_ue, SGSAP_SGS_CAUSE_UE_UNREACHABLE));
+                    MME_CLEAR_PAGING_INFO(mme_ue);
                 } else {
                     /* UE will respond Service Request in PS CNDomain*/
                     MME_STORE_PAGING_INFO(mme_ue,
@@ -438,6 +440,7 @@ void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
                 goto paging_reject;
 
         } else {
+            MME_CLEAR_PAGING_INFO(mme_ue);
             if (CS_CALL_SERVICE_INDICATOR(mme_ue)) {
                 r = nas_eps_send_cs_service_notification(mme_ue);
                 ogs_expect(r == OGS_OK);

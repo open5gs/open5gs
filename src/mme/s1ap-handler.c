@@ -1572,7 +1572,6 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
         if (mme_ue->location_updated_but_not_canceled_yet == true) {
             mme_s6a_send_pur(mme_ue);
         } else {
-            mme_ue_hash_remove(mme_ue);
             mme_ue_remove(mme_ue);
         }
         break;
@@ -1973,7 +1972,7 @@ void s1ap_handle_path_switch_request(
         return;
     }
 
-    mme_ue = enb_ue->mme_ue;
+    mme_ue = mme_ue_cycle(enb_ue->mme_ue);
     if (!mme_ue) {
         ogs_error("No UE(mme-ue) context");
         return;

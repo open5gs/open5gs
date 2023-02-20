@@ -224,7 +224,7 @@ void emm_state_registered(ogs_fsm_t *s, mme_event_t *e)
 
 static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
 {
-    int r, rv;
+    int r, rv, xact_count = 0;
 
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
@@ -247,6 +247,8 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(enb_ue);
 
         h.type = e->nas_type;
+
+        xact_count = mme_ue_xact_count(mme_ue, OGS_GTP_LOCAL_ORIGINATOR);
 
         if (message->emm.h.security_header_type
                 == OGS_NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE) {
@@ -325,12 +327,15 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 break;
             }
 
-            if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
-                mme_gtp_send_delete_all_sessions(mme_ue,
-                        OGS_GTP_DELETE_SEND_AUTHENTICATION_REQUEST);
-            } else {
+            mme_gtp_send_delete_all_sessions(mme_ue,
+                    OGS_GTP_DELETE_SEND_AUTHENTICATION_REQUEST);
+
+            if (!MME_SESSION_RELEASE_PENDING(mme_ue) &&
+                mme_ue_xact_count(mme_ue, OGS_GTP_LOCAL_ORIGINATOR) ==
+                    xact_count) {
                 mme_s6a_send_air(mme_ue, NULL);
             }
+
             OGS_FSM_TRAN(s, &emm_state_authentication);
             break;
 
@@ -353,10 +358,12 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             }
 
             if (h.integrity_protected && SECURITY_CONTEXT_IS_VALID(mme_ue)) {
-                if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
-                    mme_gtp_send_delete_all_sessions(mme_ue,
-                        OGS_GTP_DELETE_HANDLE_PDN_CONNECTIVITY_REQUEST);
-                } else {
+                mme_gtp_send_delete_all_sessions(mme_ue,
+                    OGS_GTP_DELETE_HANDLE_PDN_CONNECTIVITY_REQUEST);
+
+                if (!MME_SESSION_RELEASE_PENDING(mme_ue) &&
+                    mme_ue_xact_count(mme_ue, OGS_GTP_LOCAL_ORIGINATOR) ==
+                        xact_count) {
                     rv = nas_eps_send_emm_to_esm(mme_ue,
                             &mme_ue->pdn_connectivity_request);
                     if (rv != OGS_OK) {
@@ -370,15 +377,21 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                         break;
                     }
                 }
+
                 OGS_FSM_TRAN(s, &emm_state_initial_context_setup);
+
             } else {
-                if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
-                    mme_gtp_send_delete_all_sessions(mme_ue,
-                        OGS_GTP_DELETE_SEND_AUTHENTICATION_REQUEST);
-                } else {
+                mme_gtp_send_delete_all_sessions(mme_ue,
+                    OGS_GTP_DELETE_SEND_AUTHENTICATION_REQUEST);
+
+                if (!MME_SESSION_RELEASE_PENDING(mme_ue) &&
+                    mme_ue_xact_count(mme_ue, OGS_GTP_LOCAL_ORIGINATOR) ==
+                        xact_count) {
                     mme_s6a_send_air(mme_ue, NULL);
                 }
+
                 OGS_FSM_TRAN(s, &emm_state_authentication);
+
             }
             break;
 
@@ -1174,7 +1187,7 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
 
 void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
 {
-    int r, rv;
+    int r, rv, xact_count;
     mme_ue_t *mme_ue = NULL;
     ogs_nas_eps_message_t *message = NULL;
     ogs_nas_security_header_type_t h;
@@ -1195,6 +1208,8 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
     case MME_EVENT_EMM_MESSAGE:
         message = e->nas_message;
         ogs_assert(message);
+
+        xact_count = mme_ue_xact_count(mme_ue, OGS_GTP_LOCAL_ORIGINATOR);
 
         if (message->emm.h.security_header_type
                 == OGS_NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE) {
@@ -1311,8 +1326,16 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
 
             mme_gtp_send_delete_all_sessions(mme_ue,
                 OGS_GTP_DELETE_SEND_AUTHENTICATION_REQUEST);
+
+            if (!MME_SESSION_RELEASE_PENDING(mme_ue) &&
+                mme_ue_xact_count(mme_ue, OGS_GTP_LOCAL_ORIGINATOR) ==
+                    xact_count) {
+                mme_s6a_send_air(mme_ue, NULL);
+            }
+
             OGS_FSM_TRAN(s, &emm_state_authentication);
             break;
+
         case OGS_NAS_EPS_EMM_STATUS:
             ogs_warn("EMM STATUS : IMSI[%s] Cause[%d]",
                     mme_ue->imsi_bcd,
@@ -1412,7 +1435,7 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
 
 void emm_state_exception(ogs_fsm_t *s, mme_event_t *e)
 {
-    int r, rv;
+    int r, rv, xact_count;
 
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
@@ -1442,6 +1465,8 @@ void emm_state_exception(ogs_fsm_t *s, mme_event_t *e)
 
         h.type = e->nas_type;
 
+        xact_count = mme_ue_xact_count(mme_ue, OGS_GTP_LOCAL_ORIGINATOR);
+
         switch (message->emm.h.message_type) {
         case OGS_NAS_EPS_ATTACH_REQUEST:
             ogs_warn("[%s] Attach request", mme_ue->imsi_bcd);
@@ -1464,10 +1489,12 @@ void emm_state_exception(ogs_fsm_t *s, mme_event_t *e)
             }
 
             if (h.integrity_protected && SECURITY_CONTEXT_IS_VALID(mme_ue)) {
-                if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
-                    mme_gtp_send_delete_all_sessions(mme_ue,
-                        OGS_GTP_DELETE_HANDLE_PDN_CONNECTIVITY_REQUEST);
-                } else {
+                mme_gtp_send_delete_all_sessions(mme_ue,
+                    OGS_GTP_DELETE_HANDLE_PDN_CONNECTIVITY_REQUEST);
+
+                if (!MME_SESSION_RELEASE_PENDING(mme_ue) &&
+                    mme_ue_xact_count(mme_ue, OGS_GTP_LOCAL_ORIGINATOR) ==
+                        xact_count) {
                     rv = nas_eps_send_emm_to_esm(mme_ue,
                             &mme_ue->pdn_connectivity_request);
                     if (rv != OGS_OK) {
@@ -1481,15 +1508,21 @@ void emm_state_exception(ogs_fsm_t *s, mme_event_t *e)
                         break;
                     }
                 }
+
                 OGS_FSM_TRAN(s, &emm_state_initial_context_setup);
+
             } else {
-                if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
-                    mme_gtp_send_delete_all_sessions(mme_ue,
-                        OGS_GTP_DELETE_SEND_AUTHENTICATION_REQUEST);
-                } else {
+                mme_gtp_send_delete_all_sessions(mme_ue,
+                    OGS_GTP_DELETE_SEND_AUTHENTICATION_REQUEST);
+
+                if (!MME_SESSION_RELEASE_PENDING(mme_ue) &&
+                    mme_ue_xact_count(mme_ue, OGS_GTP_LOCAL_ORIGINATOR) ==
+                        xact_count) {
                     mme_s6a_send_air(mme_ue, NULL);
                 }
+
                 OGS_FSM_TRAN(s, &emm_state_authentication);
+
             }
             break;
 

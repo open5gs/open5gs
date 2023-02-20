@@ -27,8 +27,7 @@ int nas_5gs_send_to_gnb(amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf)
     int rv;
     ogs_assert(pkbuf);
 
-    amf_ue = amf_ue_cycle(amf_ue);
-    if (!amf_ue) {
+    if (!amf_ue_cycle(amf_ue)) {
         ogs_error("UE(amf-ue) context has already been removed");
         ogs_pkbuf_free(pkbuf);
         return OGS_NOTFOUND;
@@ -48,8 +47,7 @@ int nas_5gs_send_to_downlink_nas_transport(amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf)
 
     ogs_assert(pkbuf);
 
-    amf_ue = amf_ue_cycle(amf_ue);
-    if (!amf_ue) {
+    if (!amf_ue_cycle(amf_ue)) {
         ogs_error("UE(amf-ue) context has already been removed");
         ogs_pkbuf_free(pkbuf);
         return OGS_NOTFOUND;
@@ -85,7 +83,11 @@ int nas_5gs_send_registration_accept(amf_ue_t *amf_ue)
     ogs_pkbuf_t *ngapbuf = NULL;
     ogs_pkbuf_t *gmmbuf = NULL;
 
-    ogs_assert(amf_ue);
+    if (!amf_ue_cycle(amf_ue)) {
+        ogs_error("UE(amf-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
     ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     if (!ran_ue) {
         ogs_error("NG context has already been removed");
@@ -187,9 +189,12 @@ int nas_5gs_send_registration_reject(
     int rv;
     ogs_pkbuf_t *gmmbuf = NULL;
 
-    amf_metrics_inst_by_cause_add(gmm_cause, AMF_METR_CTR_RM_REG_INITFAIL, 1);
+    if (!amf_ue_cycle(amf_ue)) {
+        ogs_error("UE(amf-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
 
-    ogs_assert(amf_ue);
+    amf_metrics_inst_by_cause_add(gmm_cause, AMF_METR_CTR_RM_REG_INITFAIL, 1);
 
     ogs_warn("[%s] Registration reject [%d]", amf_ue->suci, gmm_cause);
 
@@ -214,7 +219,11 @@ int nas_5gs_send_service_accept(amf_ue_t *amf_ue)
     ogs_pkbuf_t *gmmbuf = NULL;
     ogs_pkbuf_t *ngapbuf = NULL;
 
-    ogs_assert(amf_ue);
+    if (!amf_ue_cycle(amf_ue)) {
+        ogs_error("UE(amf-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
     ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     if (!ran_ue) {
         ogs_error("NG context has already been removed");
@@ -288,7 +297,15 @@ int nas_5gs_send_service_reject(
     int rv;
     ogs_pkbuf_t *gmmbuf = NULL;
 
-    ogs_assert(amf_ue);
+    if (!amf_ue_cycle(amf_ue)) {
+        ogs_error("UE(amf-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    if (!ran_ue_cycle(amf_ue->ran_ue)) {
+        ogs_error("NG context has already been removed");
+        return OGS_NOTFOUND;
+    }
 
     ogs_debug("[%s] Service reject", amf_ue->supi);
 
@@ -311,7 +328,11 @@ int nas_5gs_send_de_registration_accept(amf_ue_t *amf_ue)
     ran_ue_t *ran_ue = NULL;
     ogs_pkbuf_t *gmmbuf = NULL;
 
-    ogs_assert(amf_ue);
+    if (!amf_ue_cycle(amf_ue)) {
+        ogs_error("UE(amf-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
     ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     if (!ran_ue) {
         ogs_error("NG context has already been removed");
@@ -354,7 +375,11 @@ int nas_5gs_send_de_registration_request(
     ran_ue_t *ran_ue = NULL;
     ogs_pkbuf_t *gmmbuf = NULL;
 
-    ogs_assert(amf_ue);
+    if (!amf_ue_cycle(amf_ue)) {
+        ogs_error("UE(amf-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
     ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     if (!ran_ue) {
         ogs_error("NG context has already been removed");
@@ -394,7 +419,15 @@ int nas_5gs_send_identity_request(amf_ue_t *amf_ue)
     int rv;
     ogs_pkbuf_t *gmmbuf = NULL;
 
-    ogs_assert(amf_ue);
+    if (!amf_ue_cycle(amf_ue)) {
+        ogs_error("UE(amf-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    if (!ran_ue_cycle(amf_ue->ran_ue)) {
+        ogs_error("NG context has already been removed");
+        return OGS_NOTFOUND;
+    }
 
     ogs_debug("Identity request");
 
@@ -428,7 +461,15 @@ int nas_5gs_send_authentication_request(amf_ue_t *amf_ue)
     int rv;
     ogs_pkbuf_t *gmmbuf = NULL;
 
-    ogs_assert(amf_ue);
+    if (!amf_ue_cycle(amf_ue)) {
+        ogs_error("UE(amf-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    if (!ran_ue_cycle(amf_ue->ran_ue)) {
+        ogs_error("NG context has already been removed");
+        return OGS_NOTFOUND;
+    }
 
     ogs_debug("[%s] Authentication request", amf_ue->suci);
 
@@ -462,9 +503,17 @@ int nas_5gs_send_authentication_reject(amf_ue_t *amf_ue)
     int rv;
     ogs_pkbuf_t *gmmbuf = NULL;
 
-    amf_metrics_inst_by_cause_add(0, AMF_METR_CTR_RM_REG_INITFAIL, 1);
+    if (!amf_ue_cycle(amf_ue)) {
+        ogs_error("UE(amf-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
 
-    ogs_assert(amf_ue);
+    if (!ran_ue_cycle(amf_ue->ran_ue)) {
+        ogs_error("NG context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    amf_metrics_inst_by_cause_add(0, AMF_METR_CTR_RM_REG_INITFAIL, 1);
 
     ogs_warn("[%s] Authentication reject", amf_ue->suci);
 
@@ -485,7 +534,15 @@ int nas_5gs_send_security_mode_command(amf_ue_t *amf_ue)
     int rv;
     ogs_pkbuf_t *gmmbuf = NULL;
 
-    ogs_assert(amf_ue);
+    if (!amf_ue_cycle(amf_ue)) {
+        ogs_error("UE(amf-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    if (!ran_ue_cycle(amf_ue->ran_ue)) {
+        ogs_error("NG context has already been removed");
+        return OGS_NOTFOUND;
+    }
 
     ogs_debug("[%s] Security mode command", amf_ue->supi);
 
@@ -520,7 +577,15 @@ int nas_5gs_send_configuration_update_command(
     int rv;
     ogs_pkbuf_t *gmmbuf = NULL;
 
-    ogs_assert(amf_ue);
+    if (!amf_ue_cycle(amf_ue)) {
+        ogs_error("UE(amf-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    if (!ran_ue_cycle(amf_ue->ran_ue)) {
+        ogs_error("NG context has already been removed");
+        return OGS_NOTFOUND;
+    }
 
     ogs_info("[%s] Configuration update command", amf_ue->supi);
 
@@ -767,10 +832,25 @@ int nas_send_pdu_session_release_command(amf_sess_t *sess,
         rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
         ogs_expect(rv == OGS_OK);
     } else {
-        ogs_error("ngap_build_pdu_session_resource_release_command() failed");
-        ogs_error("    ACTIVATED[0x%x] SUPI[%s] PSI[%d]",
-                ran_ue->psimask.activated, amf_ue->supi, sess->psi);
-        return OGS_ERROR;
+        /*
+         * TS23.527
+         * 5.3 Restoration Procedures upon Loss of GTP-U contexts
+         * 5.3.2 Procedure for GTP-U Error Indication received from 5G-AN
+         *
+         * 1. gNB sent TP-U Error Indication to the UPF.
+         * 2. UPF sent PFCP Report to SMF.
+         * 3. SMF sent N1N2Transfer to AMF to release PDU Session
+         * 4. In AMF, there is no Activated Session.
+         *
+         * Since AMF does not yet have an activated PDU Session,
+         * it ignores it without requesting PDU release from gNB.
+         */
+        ogs_error("No session and N1 message");
+        ogs_error("    ACTIVATED[0x%x] N1[%p], SUPI[%s] PSI[%d]",
+                ran_ue->psimask.activated, gmmbuf, amf_ue->supi, sess->psi);
+
+        ogs_pkbuf_free(n2smbuf);
+        rv = OGS_OK;
     }
 
     return rv;
@@ -781,7 +861,15 @@ int nas_5gs_send_gmm_status(amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t cause)
     int rv;
     ogs_pkbuf_t *gmmbuf = NULL;
 
-    ogs_assert(amf_ue);
+    if (!amf_ue_cycle(amf_ue)) {
+        ogs_error("UE(amf-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    if (!ran_ue_cycle(amf_ue->ran_ue)) {
+        ogs_error("NG context has already been removed");
+        return OGS_NOTFOUND;
+    }
 
     ogs_debug("[%s] 5GMM status", amf_ue->supi);
 
@@ -801,7 +889,16 @@ int nas_5gs_send_gmm_reject(
         amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t gmm_cause)
 {
     int rv;
-    ogs_assert(amf_ue);
+
+    if (!amf_ue_cycle(amf_ue)) {
+        ogs_error("UE(amf-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    if (!ran_ue_cycle(amf_ue->ran_ue)) {
+        ogs_error("NG context has already been removed");
+        return OGS_NOTFOUND;
+    }
 
     switch(amf_ue->nas.message_type) {
     case OGS_NAS_5GS_REGISTRATION_REQUEST:
@@ -849,7 +946,16 @@ int nas_5gs_send_gmm_reject_from_sbi(amf_ue_t *amf_ue, int status)
 {
     int rv;
 
-    ogs_assert(amf_ue);
+    if (!amf_ue_cycle(amf_ue)) {
+        ogs_error("UE(amf-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    if (!ran_ue_cycle(amf_ue->ran_ue)) {
+        ogs_error("NG context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
     rv = nas_5gs_send_gmm_reject(amf_ue, gmm_cause_from_sbi(status));
     ogs_expect(rv == OGS_OK);
 
@@ -866,8 +972,17 @@ int nas_5gs_send_dl_nas_transport(amf_sess_t *sess,
     amf_ue_t *amf_ue = NULL;
 
     ogs_assert(sess);
+
     amf_ue = sess->amf_ue;
-    ogs_assert(amf_ue);
+    if (!amf_ue_cycle(amf_ue)) {
+        ogs_error("UE(amf-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    if (!ran_ue_cycle(amf_ue->ran_ue)) {
+        ogs_error("NG context has already been removed");
+        return OGS_NOTFOUND;
+    }
 
     ogs_assert(payload_container_type);
     ogs_assert(payload_container);
@@ -903,8 +1018,21 @@ int nas_5gs_send_gsm_reject(amf_sess_t *sess,
         uint8_t payload_container_type, ogs_pkbuf_t *payload_container)
 {
     int rv;
+    amf_ue_t *amf_ue = NULL;
 
     ogs_assert(sess);
+
+    amf_ue = sess->amf_ue;
+    if (!amf_ue_cycle(amf_ue)) {
+        ogs_error("UE(amf-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    if (!ran_ue_cycle(amf_ue->ran_ue)) {
+        ogs_error("NG context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
     ogs_assert(payload_container_type);
     ogs_assert(payload_container);
 
@@ -920,8 +1048,21 @@ int nas_5gs_send_back_gsm_message(
 {
     int rv;
     ogs_pkbuf_t *pbuf = NULL;
+    amf_ue_t *amf_ue = NULL;
 
     ogs_assert(sess);
+
+    amf_ue = sess->amf_ue;
+    if (!amf_ue_cycle(amf_ue)) {
+        ogs_error("UE(amf-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    if (!ran_ue_cycle(amf_ue->ran_ue)) {
+        ogs_error("NG context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
     ogs_assert(sess->payload_container_type);
     ogs_assert(sess->payload_container);
 

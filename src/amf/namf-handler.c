@@ -851,10 +851,9 @@ int amf_namf_callback_handle_sdm_data_change_notify(
     ModificationNotification = recvmsg->ModificationNotification;
     if (!ModificationNotification) {
         status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
-        ogs_error("[%s] No ModificationNotification", amf_ue->supi);
+        ogs_error("No ModificationNotification");
         goto cleanup;
     }
-
 
     OpenAPI_list_for_each(ModificationNotification->notify_items, node) {
         OpenAPI_notify_item_t *item = node->data;
@@ -909,67 +908,65 @@ int amf_namf_callback_handle_sdm_data_change_notify(
         res_name = NULL;
     }
 
-    if (amf_ue_is_rat_restricted(amf_ue)) {
-        /*
-         * - AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED
-         * 1. UDM_UECM_DeregistrationNotification
-         * 2. Deregistration request
-         * 3. UDM_SDM_Unsubscribe
-         * 4. UDM_UECM_Deregisration
-         * 5. PDU session release request
-         * 6. PDUSessionResourceReleaseCommand +
-         *    PDU session release command
-         * 7. PDUSessionResourceReleaseResponse
-         * 8. AM_Policy_Association_Termination
-         * 9.  Deregistration accept
-         * 10. Signalling Connecion Release
-         */
-        if (CM_CONNECTED(amf_ue)) {
-            r = nas_5gs_send_de_registration_request(
-                    amf_ue,
-                    OpenAPI_deregistration_reason_REREGISTRATION_REQUIRED,
-                    OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
+    if (amf_ue) {
+        if (amf_ue_is_rat_restricted(amf_ue)) {
+            /*
+             * - AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED
+             * 1. UDM_UECM_DeregistrationNotification
+             * 2. Deregistration request
+             * 3. UDM_SDM_Unsubscribe
+             * 4. UDM_UECM_Deregisration
+             * 5. PDU session release request
+             * 6. PDUSessionResourceReleaseCommand +
+             *    PDU session release command
+             * 7. PDUSessionResourceReleaseResponse
+             * 8. AM_Policy_Association_Termination
+             * 9.  Deregistration accept
+             * 10. Signalling Connecion Release
+             */
+            if (CM_CONNECTED(amf_ue)) {
+                r = nas_5gs_send_de_registration_request(
+                        amf_ue,
+                        OpenAPI_deregistration_reason_REREGISTRATION_REQUIRED, 0);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+
+                state = AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED;
+
+            } else if (CM_IDLE(amf_ue)) {
+                ogs_error("Not implemented : Use Implicit De-registration");
+
+                state = AMF_NETWORK_INITIATED_IMPLICIT_DE_REGISTERED;
+
+            } else {
+                ogs_fatal("Invalid State");
+                ogs_assert_if_reached();
+            }
+
+            if (UDM_SDM_SUBSCRIBED(amf_ue)) {
+                ogs_assert(true == amf_ue_sbi_discover_and_send(
+                        OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
+                        amf_nudm_sdm_build_subscription_delete,
+                        amf_ue, state, NULL));
+            } else if (PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
+                ogs_assert(true ==
+                    amf_ue_sbi_discover_and_send(
+                        OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
+                        NULL,
+                        amf_npcf_am_policy_control_build_delete,
+                        amf_ue, state, NULL));
+            }
+
+        } else if (ambr_changed) {
+            ogs_pkbuf_t *ngapbuf;
+
+            ngapbuf = ngap_build_ue_context_modification_request(amf_ue);
+            ogs_assert(ngapbuf);
+
+            r = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
-
-            state = AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED;
-
-        } else if (CM_IDLE(amf_ue)) {
-            ogs_error("Not implemented : Use Implicit De-registration");
-
-            state = AMF_NETWORK_INITIATED_IMPLICIT_DE_REGISTERED;
-
-        } else {
-            ogs_fatal("Invalid State");
-            ogs_assert_if_reached();
         }
-
-        if (UDM_SDM_SUBSCRIBED(amf_ue)) {
-            r = amf_ue_sbi_discover_and_send(
-                    OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
-                    amf_nudm_sdm_build_subscription_delete,
-                    amf_ue, state, NULL);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-        } else if (PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
-            r = amf_ue_sbi_discover_and_send(
-                    OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
-                    NULL,
-                    amf_npcf_am_policy_control_build_delete,
-                    amf_ue, state, NULL);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-        }
-
-    } else if (ambr_changed) {
-        ogs_pkbuf_t *ngapbuf;
-
-        ngapbuf = ngap_build_ue_context_modification_request(amf_ue);
-        ogs_assert(ngapbuf);
-
-        r = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
     }
 
 cleanup:

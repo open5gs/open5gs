@@ -27,16 +27,20 @@
 
 void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
 {
-    int r;
+    int r, xact_count;
     ogs_assert(mme_ue);
+
+    xact_count = mme_ue_xact_count(mme_ue, OGS_GTP_LOCAL_ORIGINATOR);
 
     switch (mme_ue->detach_type) {
     case MME_DETACH_TYPE_REQUEST_FROM_UE:
         ogs_debug("Detach Request from UE");
-        if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
-            mme_gtp_send_delete_all_sessions(
-                    mme_ue, OGS_GTP_DELETE_SEND_DETACH_ACCEPT);
-        } else {
+        mme_gtp_send_delete_all_sessions(
+                mme_ue, OGS_GTP_DELETE_SEND_DETACH_ACCEPT);
+
+        if (!MME_SESSION_RELEASE_PENDING(mme_ue) &&
+            mme_ue_xact_count(mme_ue, OGS_GTP_LOCAL_ORIGINATOR) ==
+                xact_count) {
             r = nas_eps_send_detach_accept(mme_ue);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
@@ -57,9 +61,7 @@ void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
      */
     case MME_DETACH_TYPE_HSS_EXPLICIT:
         ogs_debug("Explicit HSS Detach");
-        if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
-            mme_gtp_send_delete_all_sessions(mme_ue, OGS_GTP_DELETE_NO_ACTION);
-        }
+        mme_gtp_send_delete_all_sessions(mme_ue, OGS_GTP_DELETE_NO_ACTION);
         break;
 
     /* MME Implicit Detach, ie: Lost Communication
@@ -68,10 +70,12 @@ void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
      */
     case MME_DETACH_TYPE_MME_IMPLICIT:
         ogs_debug("Implicit MME Detach");
-        if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
-            mme_gtp_send_delete_all_sessions(mme_ue,
-                OGS_GTP_DELETE_SEND_RELEASE_WITH_UE_CONTEXT_REMOVE);
-        } else {
+        mme_gtp_send_delete_all_sessions(mme_ue,
+            OGS_GTP_DELETE_SEND_RELEASE_WITH_UE_CONTEXT_REMOVE);
+
+        if (!MME_SESSION_RELEASE_PENDING(mme_ue) &&
+            mme_ue_xact_count(mme_ue, OGS_GTP_LOCAL_ORIGINATOR) ==
+                xact_count) {
             enb_ue_t *enb_ue = enb_ue_cycle(mme_ue->enb_ue);
             if (enb_ue) {
                 ogs_assert(OGS_OK ==
@@ -82,7 +86,6 @@ void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
                 if (mme_ue->location_updated_but_not_canceled_yet == true) {
                     mme_s6a_send_pur(mme_ue);
                 } else {
-                    mme_ue_hash_remove(mme_ue);
                     mme_ue_remove(mme_ue);
                 }
             }
@@ -105,10 +108,8 @@ void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
      */
     case MME_DETACH_TYPE_HSS_IMPLICIT:
         ogs_debug("Implicit HSS Detach");
-        if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
-            mme_gtp_send_delete_all_sessions(mme_ue,
-                OGS_GTP_DELETE_SEND_RELEASE_WITH_UE_CONTEXT_REMOVE);
-        }
+        mme_gtp_send_delete_all_sessions(mme_ue,
+            OGS_GTP_DELETE_SEND_RELEASE_WITH_UE_CONTEXT_REMOVE);
         break;
 
     default:
@@ -119,13 +120,18 @@ void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
 
 void mme_send_delete_session_or_mme_ue_context_release(mme_ue_t *mme_ue)
 {
-    int r;
+    int r, xact_count = 0;
+
     ogs_assert(mme_ue);
 
-    if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
-        mme_gtp_send_delete_all_sessions(mme_ue,
-                OGS_GTP_DELETE_SEND_RELEASE_WITH_UE_CONTEXT_REMOVE);
-    } else {
+    xact_count = mme_ue_xact_count(mme_ue, OGS_GTP_LOCAL_ORIGINATOR);
+
+    mme_gtp_send_delete_all_sessions(mme_ue,
+            OGS_GTP_DELETE_SEND_RELEASE_WITH_UE_CONTEXT_REMOVE);
+
+    if (!MME_SESSION_RELEASE_PENDING(mme_ue) &&
+        mme_ue_xact_count(mme_ue, OGS_GTP_LOCAL_ORIGINATOR) ==
+            xact_count) {
         enb_ue_t *enb_ue = enb_ue_cycle(mme_ue->enb_ue);
         if (enb_ue) {
             r = s1ap_send_ue_context_release_command(enb_ue,

@@ -45,7 +45,16 @@ int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
     ogs_assert(req);
 
     ogs_assert(MME_UE_HAVE_IMSI(mme_ue));
-    ogs_assert(SECURITY_CONTEXT_IS_VALID(mme_ue));
+
+    if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
+        ogs_error("No Security Context : IMSI[%s]", mme_ue->imsi_bcd);
+        r = nas_eps_send_pdn_connectivity_reject(
+                sess, OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
+                create_action);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return OGS_ERROR;
+    }
 
     memcpy(&sess->request_type, &req->request_type, sizeof(sess->request_type));
 

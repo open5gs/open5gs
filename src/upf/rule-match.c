@@ -58,9 +58,9 @@ upf_sess_t *upf_sess_find_by_ue_ip_address(ogs_pkbuf_t *pkbuf)
 
     if (sess) {
         if (ip_h && sess->ipv4)
-            ogs_debug("PAA IPv4:%s", OGS_INET_NTOP(&sess->ipv4->addr, buf));
+            ogs_trace("PAA IPv4:%s", OGS_INET_NTOP(&sess->ipv4->addr, buf));
         if (ip6_h && sess->ipv6)
-            ogs_debug("PAA IPv6:%s", OGS_INET6_NTOP(&sess->ipv6->addr, buf));
+            ogs_trace("PAA IPv6:%s", OGS_INET6_NTOP(&sess->ipv6->addr, buf));
     }
 
     return sess;

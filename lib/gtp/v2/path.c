@@ -111,7 +111,7 @@ int ogs_gtp2_send_user_plane(
         }
     }
 
-    ogs_debug("SEND GTP-U[%d] to Peer[%s] : TEID[0x%x]",
+    ogs_trace("SEND GTP-U[%d] to Peer[%s] : TEID[0x%x]",
             gtp_hdesc->type, OGS_ADDR(&gnode->addr, buf), gtp_hdesc->teid);
     rv = ogs_gtp_sendto(gnode, pkbuf);
     if (rv != OGS_OK) {
