@@ -432,7 +432,7 @@ asn_encode_internal(const asn_codec_ctx_t *opt_codec_ctx,
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_JER_SUPPORT)
-    case ATS_BASIC_JER:
+    case ATS_JER:
         if(td->op->jer_encoder) {
             er = jer_encode(td, sptr, callback, callback_key);
             if(er.encoded == -1) {

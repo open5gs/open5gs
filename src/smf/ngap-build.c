@@ -180,13 +180,13 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
 
             if (smf_self()->security_indication.
                     maximum_integrity_protected_data_rate_downlink) {
-                NGAP_ProtocolExtensionContainer_9625P229_t *extContainer = NULL;
+                NGAP_ProtocolExtensionContainer_11905P297_t *extContainer = NULL;
                 NGAP_SecurityIndication_ExtIEs_t *extIe = NULL;
                 NGAP_MaximumIntegrityProtectedDataRate_t
                     *MaximumIntegrityProtectedDataRate = NULL;
 
                 extContainer = CALLOC(1,
-                        sizeof(NGAP_ProtocolExtensionContainer_9625P229_t));
+                        sizeof(NGAP_ProtocolExtensionContainer_11905P297_t));
                 ogs_assert(extContainer);
                 SecurityIndication->iE_Extensions =
                     (struct NGAP_ProtocolExtensionContainer *)extContainer;

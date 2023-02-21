@@ -33,8 +33,9 @@ SEQUENCE_OF_encode_aper(const asn_TYPE_descriptor_t *td,
     if(ct) {
         int not_in_root = (list->count < ct->lower_bound
                 || list->count > ct->upper_bound);
-        ASN_DEBUG("lb %ld ub %ld %s",
-                  ct->lower_bound, ct->upper_bound,
+        ASN_DEBUG("lb %lld ub %lld %s",
+                  (long long int)ct->lower_bound,
+                  (long long int)ct->upper_bound,
                   ct->flags & APC_EXTENSIBLE ? "ext" : "fix");
         if(ct->flags & APC_EXTENSIBLE) {
             /* Declare whether size is in extension root */

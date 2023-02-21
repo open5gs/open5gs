@@ -39,6 +39,8 @@ typedef struct NGAP_PagingeDRXInformation {
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_NGAP_PagingeDRXInformation;
+extern asn_SEQUENCE_specifics_t asn_SPC_NGAP_PagingeDRXInformation_specs_1;
+extern asn_TYPE_member_t asn_MBR_NGAP_PagingeDRXInformation_1[3];
 
 #ifdef __cplusplus
 }
