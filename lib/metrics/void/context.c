@@ -66,7 +66,8 @@ void ogs_metrics_context_close(ogs_metrics_context_t *ctx)
 ogs_metrics_spec_t *ogs_metrics_spec_new(
         ogs_metrics_context_t *ctx, ogs_metrics_metric_type_t type,
         const char *name, const char *description,
-        int initial_val, unsigned int num_labels, const char ** labels)
+        int initial_val, unsigned int num_labels, const char ** labels,
+        ogs_metrics_histogram_params_t *histogram_params)
 {
     return (ogs_metrics_spec_t *)&self;
 }

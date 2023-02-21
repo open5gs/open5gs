@@ -33,7 +33,25 @@ typedef struct ogs_metrics_server_s ogs_metrics_server_t;
 typedef enum ogs_metrics_metric_type_s  {
     OGS_METRICS_METRIC_TYPE_COUNTER,
     OGS_METRICS_METRIC_TYPE_GAUGE,
+    OGS_METRICS_METRIC_TYPE_HISTOGRAM,
 } ogs_metrics_metric_type_t;
+
+typedef enum ogs_metrics_histogram_bucket_type_s  {
+    OGS_METRICS_HISTOGRAM_BUCKET_TYPE_NO,
+    OGS_METRICS_HISTOGRAM_BUCKET_TYPE_VARIABLE,
+    OGS_METRICS_HISTOGRAM_BUCKET_TYPE_LINEAR,
+    OGS_METRICS_HISTOGRAM_BUCKET_TYPE_EXPONENTIAL,
+} ogs_metrics_histogram_bucket_type_t;
+
+typedef struct ogs_metrics_histogram_bucket_params_s {
+    ogs_metrics_histogram_bucket_type_t type;
+    unsigned int count;
+    float start;
+    union {
+        float exp_factor;
+        float lin_width;
+    };
+} ogs_metrics_histogram_params_t;
 
 typedef struct ogs_metrics_context_s ogs_metrics_context_t;
 void ogs_metrics_context_init(void);
@@ -52,7 +70,8 @@ typedef struct ogs_metrics_spec_s ogs_metrics_spec_t;
 ogs_metrics_spec_t *ogs_metrics_spec_new(
         ogs_metrics_context_t *ctx, ogs_metrics_metric_type_t type,
         const char *name, const char *description,
-        int initial_val, unsigned int num_labels, const char **labels);
+        int initial_val, unsigned int num_labels, const char **labels,
+        ogs_metrics_histogram_params_t *histogram_params);
 void ogs_metrics_spec_free(ogs_metrics_spec_t *spec);
 
 typedef struct ogs_metrics_inst_s ogs_metrics_inst_t;

@@ -10,6 +10,7 @@ typedef struct amf_metrics_spec_def_s {
     int initial_val;
     unsigned int num_labels;
     const char **labels;
+    ogs_metrics_histogram_params_t histogram_params;
 } amf_metrics_spec_def_t;
 
 /* Helper generic functions: */
@@ -39,7 +40,8 @@ static int amf_metrics_init_spec(ogs_metrics_context_t *ctx,
     for (i = 0; i < len; i++) {
         dst[i] = ogs_metrics_spec_new(ctx, src[i].type,
                 src[i].name, src[i].description,
-                src[i].initial_val, src[i].num_labels, src[i].labels);
+                src[i].initial_val, src[i].num_labels, src[i].labels,
+                &src[i].histogram_params);
     }
     return OGS_OK;
 }
@@ -104,6 +106,18 @@ amf_metrics_spec_def_t amf_metrics_spec_def_global[_AMF_METR_GLOB_MAX] = {
     .type = OGS_METRICS_METRIC_TYPE_COUNTER,
     .name = "fivegs_amffunction_rm_regemergsucc",
     .description = "Number of successful emergency registrations at the AMF",
+},
+/* Global Histograms: */
+[AMF_METR_GLOB_HIST_REG_TIME] = {
+    .type = OGS_METRICS_METRIC_TYPE_HISTOGRAM,
+    .name = "fivegs_amffunction_rm_regtime",
+    .description = "Time of registration procedure",
+    .histogram_params = {
+        .type = OGS_METRICS_HISTOGRAM_BUCKET_TYPE_EXPONENTIAL,
+        .count = 8,
+        .start = 20,
+        .exp_factor = 2
+        },
 },
 };
 int amf_metrics_init_inst_global(void)
@@ -422,6 +436,7 @@ int amf_metrics_reg_time_stop(amf_ue_t *amf_ue)
 {
     amf_metric_reg_req_t *reg_req = NULL;
     int timestamp = 0;
+    int now_ms = ogs_time_now() / 1000;
 
     ogs_assert(amf_ue);
     ogs_assert(amf_ue->suci);
@@ -434,8 +449,10 @@ int amf_metrics_reg_time_stop(amf_ue_t *amf_ue)
                 strlen(amf_ue->suci), NULL);
         ogs_free(reg_req);
     }
+    if ((now_ms < timestamp) || (timestamp == 0))
+        return 0;
 
-    return timestamp;
+    return now_ms - timestamp;
 }
 
 #define AMF_METRICS_REGISTRATION_TYPE_IDX_MAX 4
@@ -464,19 +481,13 @@ static int amf_metrics_reg_type_to_idx(int regtype)
     }
 }
 
-void amf_metrics_reg_time_add(int reg_req_ms, uint8_t reg_type)
+void amf_metrics_reg_time_add(int diff, uint8_t reg_type)
 {
-    int diff, idx;
-    int now_ms = ogs_time_now() / 1000;
-
-    if ((now_ms < reg_req_ms) || (reg_req_ms == 0))
-        return;
+    int idx;
 
     idx = amf_metrics_reg_type_to_idx(reg_type);
     if ((idx < 0) || (idx >= AMF_METRICS_REGISTRATION_TYPE_IDX_MAX))
         return;
-
-    diff = now_ms - reg_req_ms;
 
     amf_metrics_reg_time_all[idx] += diff;
     amf_metrics_reg_time_nr_reg[idx] += 1;

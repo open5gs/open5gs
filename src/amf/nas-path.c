@@ -180,8 +180,14 @@ int nas_5gs_send_registration_accept(amf_ue_t *amf_ue)
         }
     }
 
-    amf_metrics_reg_time_add(amf_metrics_reg_time_stop(amf_ue),
-            amf_ue->nas.registration.value);
+    int reg_duration_ms;
+    reg_duration_ms = amf_metrics_reg_time_stop(amf_ue);
+    if (reg_duration_ms > 0) {
+        amf_metrics_reg_time_add(reg_duration_ms,
+                amf_ue->nas.registration.value);
+        amf_metrics_inst_global_add(AMF_METR_GLOB_HIST_REG_TIME,
+                reg_duration_ms);
+    }
 
     return rv;
 }
