@@ -1198,6 +1198,8 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
         case OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE:
             ogs_debug("[%s] Configuration update complete", amf_ue->supi);
 
+            amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_MM_CONF_UPDATE_SUCC);
+
             /*
              * TS24.501
              * 5.3.3 Temporary identities
@@ -1319,6 +1321,9 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
 
             ogs_debug("[%s] Authentication failure [%d]", amf_ue->suci,
                     authentication_failure->gmm_cause);
+
+            amf_metrics_inst_by_cause_add(authentication_failure->gmm_cause,
+                    AMF_METR_CTR_AMF_AUTH_FAIL, 1);
 
             CLEAR_AMF_UE_TIMER(amf_ue->t3560);
 

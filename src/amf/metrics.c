@@ -107,6 +107,36 @@ amf_metrics_spec_def_t amf_metrics_spec_def_global[_AMF_METR_GLOB_MAX] = {
     .name = "fivegs_amffunction_rm_regemergsucc",
     .description = "Number of successful emergency registrations at the AMF",
 },
+[AMF_METR_GLOB_CTR_MM_PAGING_5G_REQ] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "fivegs_amffunction_mm_paging5greq",
+    .description = "Number of 5G paging procedures initiated at the AMF",
+},
+[AMF_METR_GLOB_CTR_MM_PAGING_5G_SUCC] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "fivegs_amffunction_mm_paging5gsucc",
+    .description = "Number of successful 5G paging procedures initiated at the AMF",
+},
+[AMF_METR_GLOB_CTR_AMF_AUTH_REQ] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "fivegs_amffunction_amf_authreq",
+    .description = "Number of authentication requests sent by the AMF",
+},
+[AMF_METR_GLOB_CTR_AMF_AUTH_REJECT] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "fivegs_amffunction_amf_authreject",
+    .description = "Number of authentication rejections sent by the AMF",
+},
+[AMF_METR_GLOB_CTR_MM_CONF_UPDATE] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "fivegs_amffunction_mm_confupdate",
+    .description = "Number of UE Configuration Update commands requested by the AMF",
+},
+[AMF_METR_GLOB_CTR_MM_CONF_UPDATE_SUCC] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "fivegs_amffunction_mm_confupdatesucc",
+    .description = "Number of UE Configuration Update complete messages received by the AMF",
+},
 /* Global Histograms: */
 [AMF_METR_GLOB_HIST_REG_TIME] = {
     .type = OGS_METRICS_METRIC_TYPE_HISTOGRAM,
@@ -261,6 +291,10 @@ AMF_METR_BY_CAUSE_CTR_ENTRY(
     AMF_METR_CTR_RM_REG_EMERG_FAIL,
     "fivegs_amffunction_rm_regemergfail",
     "Number of failed emergency registrations at the AMF")
+AMF_METR_BY_CAUSE_CTR_ENTRY(
+    AMF_METR_CTR_AMF_AUTH_FAIL,
+    "fivegs_amffunction_amf_authfail",
+    "Number of authentication failure messages received by the AMF")
 };
 void amf_metrics_init_by_cause(void);
 int amf_metrics_free_inst_by_cause(ogs_metrics_inst_t **inst);

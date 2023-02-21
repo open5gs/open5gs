@@ -449,6 +449,8 @@ int ngap_send_paging(amf_ue_t *amf_ue)
                         return OGS_ERROR;
                     }
 
+                    amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_MM_PAGING_5G_REQ);
+
                     rv = ngap_send_to_gnb(gnb, ngapbuf, NGAP_NON_UE_SIGNALLING);
                     if (rv != OGS_OK) {
                         ogs_error("ngap_send_to_gnb() failed");
