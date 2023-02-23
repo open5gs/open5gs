@@ -19,16 +19,44 @@
 
 #include "ogs-pfcp.h"
 
-int ogs_pfcp_sockaddr_to_node_id(
-    ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6, int prefer_ipv4,
-    ogs_pfcp_node_id_t *node_id, int *len)
+int ogs_pfcp_sockaddr_to_node_id(ogs_pfcp_node_id_t *node_id, int *len)
 {
     const int hdr_len = 1;
     char *hostname = NULL;
 
+    ogs_sockaddr_t *advertise = ogs_pfcp_self()->pfcp_advertise;
+    ogs_sockaddr_t *advertise6 = ogs_pfcp_self()->pfcp_advertise6;
+    ogs_sockaddr_t *addr = ogs_pfcp_self()->pfcp_addr;
+    ogs_sockaddr_t *addr6 = ogs_pfcp_self()->pfcp_addr6;
+    int prefer_ipv4 = ogs_app()->parameter.prefer_ipv4;
+
     ogs_assert(node_id);
 
     memset(node_id, 0, sizeof *node_id);
+
+    if (advertise || advertise6) {
+        hostname = ogs_gethostname(advertise ? advertise : advertise6);
+        if (hostname) {
+            node_id->type = OGS_PFCP_NODE_ID_FQDN;
+            *len = ogs_fqdn_build(node_id->fqdn,
+                        hostname, strlen(hostname)) + hdr_len;
+
+            return OGS_OK;
+        }
+    }
+
+    if (advertise && (prefer_ipv4 || !advertise6)) {
+        node_id->type = OGS_PFCP_NODE_ID_IPV4;
+        node_id->addr = advertise->sin.sin_addr.s_addr;
+        *len = OGS_IPV4_LEN + hdr_len;
+        return OGS_OK;
+    }
+    if (advertise6) {
+        node_id->type = OGS_PFCP_NODE_ID_IPV6;
+        memcpy(node_id->addr6, advertise6->sin6.sin6_addr.s6_addr, OGS_IPV6_LEN);
+        *len = OGS_IPV6_LEN + hdr_len;
+        return OGS_OK;
+    }
 
     if (addr) {
         hostname = ogs_gethostname(addr);

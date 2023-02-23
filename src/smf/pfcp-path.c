@@ -196,6 +196,9 @@ void smf_pfcp_close(void)
     ogs_list_for_each(&ogs_pfcp_self()->pfcp_peer_list, pfcp_node)
         pfcp_node_fsm_fini(pfcp_node);
 
+    ogs_freeaddrinfo(ogs_pfcp_self()->pfcp_advertise);
+    ogs_freeaddrinfo(ogs_pfcp_self()->pfcp_advertise6);
+
     ogs_socknode_remove_all(&ogs_pfcp_self()->pfcp_list);
     ogs_socknode_remove_all(&ogs_pfcp_self()->pfcp_list6);
 }

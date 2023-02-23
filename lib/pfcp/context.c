@@ -165,6 +165,8 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                         int family = AF_UNSPEC;
                         int i, num = 0;
                         const char *hostname[OGS_MAX_NUM_OF_HOSTNAME];
+                        int num_of_advertise = 0;
+                        const char *advertise[OGS_MAX_NUM_OF_HOSTNAME];
                         uint16_t port = self.pfcp_port;
                         const char *dev = NULL;
                         ogs_sockaddr_t *addr = NULL;
@@ -224,6 +226,27 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                 } while (
                                     ogs_yaml_iter_type(&hostname_iter) ==
                                         YAML_SEQUENCE_NODE);
+                            } else if (!strcmp(pfcp_key, "advertise")) {
+                                ogs_yaml_iter_t hostname_iter;
+                                ogs_yaml_iter_recurse(&pfcp_iter,
+                                        &hostname_iter);
+                                ogs_assert(ogs_yaml_iter_type(&hostname_iter) !=
+                                    YAML_MAPPING_NODE);
+
+                                do {
+                                    if (ogs_yaml_iter_type(&hostname_iter) ==
+                                            YAML_SEQUENCE_NODE) {
+                                        if (!ogs_yaml_iter_next(
+                                                    &hostname_iter))
+                                            break;
+                                    }
+
+                                    ogs_assert(num < OGS_MAX_NUM_OF_HOSTNAME);
+                                    advertise[num_of_advertise++] =
+                                        ogs_yaml_iter_value(&hostname_iter);
+                                } while (
+                                    ogs_yaml_iter_type(&hostname_iter) ==
+                                        YAML_SEQUENCE_NODE);
                             } else if (!strcmp(pfcp_key, "port")) {
                                 const char *v = ogs_yaml_iter_value(&pfcp_iter);
                                 if (v) {
@@ -260,6 +283,27 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                 ogs_socknode_add(
                                     &self.pfcp_list6, AF_INET6, addr,
                                     is_option ? &option : NULL);
+                            ogs_freeaddrinfo(addr);
+                        }
+
+                        addr = NULL;
+                        for (i = 0; i < num_of_advertise; i++) {
+                            rv = ogs_addaddrinfo(&addr,
+                                    family, advertise[i], port, 0);
+                            ogs_assert(rv == OGS_OK);
+                        }
+
+                        if (addr) {
+                            if (ogs_app()->parameter.no_ipv4 == 0 &&
+                                !self.pfcp_advertise) {
+                                ogs_copyaddrinfo(&self.pfcp_advertise, addr);
+                                ogs_filteraddrinfo(&self.pfcp_advertise, AF_INET);
+                            }
+                            if (ogs_app()->parameter.no_ipv6 == 0 &&
+                                !self.pfcp_advertise6) {
+                                ogs_copyaddrinfo(&self.pfcp_advertise6, addr);
+                                ogs_filteraddrinfo(&self.pfcp_advertise6, AF_INET);
+                            }
                             ogs_freeaddrinfo(addr);
                         }
 
@@ -465,6 +509,8 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                 } while (
                                     ogs_yaml_iter_type(&hostname_iter) ==
                                         YAML_SEQUENCE_NODE);
+                            } else if (!strcmp(pfcp_key, "advertise")) {
+                                /* Nothing in client */
                             } else if (!strcmp(pfcp_key, "port")) {
                                 const char *v = ogs_yaml_iter_value(&pfcp_iter);
                                 if (v) port = atoi(v);

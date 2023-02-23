@@ -274,6 +274,13 @@ sbi:
 #      option:
 #        so_bindtodevice: vrf-blue
 #
+#  o Provide custom PFCP address to be advertised to UPF in PFCP association
+#      request/respond
+#  smf:
+#    pfcp:
+#      - addr: 0.0.0.0
+#        advertise: open5gs-smf.svc.local
+#
 #  <GTP-C Server>
 #
 #  o GTP-C Server(127.0.0.4:2123, [fd69:f21d:873c:fa::3]:2123)

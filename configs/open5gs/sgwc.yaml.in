@@ -70,6 +70,13 @@ logger:
 #      option:
 #        so_bindtodevice: vrf-blue
 #
+#  o Provide custom PFCP address to be advertised in PFCP association
+#      request/respond
+#  sgwc:
+#    pfcp:
+#      - addr: 0.0.0.0
+#        advertise: open5gs-smf.svc.local
+#
 sgwc:
     gtpc:
       - addr: 127.0.0.3
