@@ -1352,6 +1352,83 @@ int mme_context_parse_config()
                                     YAML_SEQUENCE_NODE);
                         }
                     }
+                } else if (!strcmp(mme_key, "emergency_number_list")) {
+                    ogs_yaml_iter_t e_num_list_iter;
+                    ogs_yaml_iter_recurse(&mme_iter, &e_num_list_iter);
+                    int num_emergency_number_list_items = 0;
+
+                    /* Going through 'emergency_number_list' children */
+                    while (ogs_yaml_iter_next(&e_num_list_iter)) {
+                        const char *e_num_list_key = ogs_yaml_iter_key(&e_num_list_iter);
+                        ogs_assert(e_num_list_key);
+
+                        if (!strcmp(e_num_list_key, "eni")) {
+                            ogs_yaml_iter_t eni_iter;
+                            ogs_yaml_iter_recurse(&e_num_list_iter, &eni_iter);
+                            emergency_number_list_item_t *emergency_number = &self.emergency_number_list[num_emergency_number_list_items];
+
+                            /* Going through 'eni' children */
+                            while (ogs_yaml_iter_next(&eni_iter)) {
+                                const char *eni_key = ogs_yaml_iter_key(&eni_iter);
+                                ogs_assert(eni_key);
+
+                                if (!strcmp(eni_key, "services")) {
+                                    ogs_yaml_iter_t services_iter;
+                                    ogs_yaml_iter_recurse(&eni_iter, &services_iter);
+
+                                    /* Going through 'services' children */
+                                    while (ogs_yaml_iter_next(&services_iter)) {
+                                        const char *service_value = NULL;
+                                        service_value = ogs_yaml_iter_value(&services_iter);
+
+                                        if (service_value) {
+                                            if (strcmp(service_value, "MOUNTAIN_RESCUE") == 0) {
+                                                emergency_number->service_mountain_rescue = true;
+                                            } else if (strcmp(service_value, "MARINE_GUARD") == 0) {
+                                                emergency_number->service_marine_guard = true;
+                                            } else if (strcmp(service_value, "FIRE_BRIGADE") == 0) {
+                                                emergency_number->service_fire_brigade = true;
+                                            } else if (strcmp(service_value, "AMBULANCE") == 0) {
+                                                emergency_number->service_ambulance = true;
+                                            } else if (strcmp(service_value, "POLICE") == 0) {
+                                                emergency_number->service_police = true;
+                                            } else {
+                                                ogs_warn("'%s' is not a valid emergency service. "
+                                                        "Valid services include: MOUNTAIN_RESCUE, MARINE_GUARD, FIRE_BRIGADE, AMBULANCE, POLICE",
+                                                        service_value);
+                                            } 
+                                        }
+                                    }
+                                }
+                                else if (!strcmp(eni_key, "bcd")) {
+                                    const char *bcd_decimal = ogs_yaml_iter_value(&eni_iter);
+                                    if (bcd_decimal)
+                                        emergency_number->bcd_decimal = atoi(bcd_decimal);
+                                } 
+                                else {
+                                    ogs_warn("unknown key `%s`", eni_key);
+                                }
+                            }
+                            ++num_emergency_number_list_items;
+                        }
+                        else {
+                            ogs_warn("unknown key `%s`", e_num_list_key);
+                        }
+                    }
+                    self.num_emergency_number_list_items = num_emergency_number_list_items;
+                } else if (!strcmp(mme_key, "emergency_bearer_services")) {
+                    bool *emergency_bearer_services = &self.emergency_bearer_services;
+                    const char *c_emergency_bearer_services = ogs_yaml_iter_value(&mme_iter);
+
+                    if (!strcmp("True", c_emergency_bearer_services) || 
+                        !strcmp("true", c_emergency_bearer_services)) {
+                        ogs_info("Emergency bearer services have been enabled");
+                        *emergency_bearer_services = true;
+                    }
+                    else {
+                        ogs_info("Emergency bearer services have been disabled");
+                        *emergency_bearer_services = false;
+                    }
                 } else
                     ogs_warn("unknown key `%s`", mme_key);
             }
@@ -3410,8 +3487,23 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
     if (message->esm.h.message_type == OGS_NAS_EPS_PDN_CONNECTIVITY_REQUEST) {
         ogs_nas_eps_pdn_connectivity_request_t *pdn_connectivity_request =
             &message->esm.pdn_connectivity_request;
-        if (pdn_connectivity_request->presencemask &
+
+        if (OGS_NAS_EPS_REQUEST_TYPE_EMERGENCY == pdn_connectivity_request->request_type.value) {
+            /* Special case, make sure we don't get duplicate sos APNs */
+            char sos[] = "sos";
+            sess = mme_sess_find_by_apn(mme_ue, sos);
+            if (sess && create_action != OGS_GTP_CREATE_IN_ATTACH_REQUEST) {
+                ogs_assert(OGS_OK ==
+                    nas_eps_send_pdn_connectivity_reject(
+                        sess,
+                        OGS_NAS_ESM_CAUSE_MULTIPLE_PDN_CONNECTIONS_FOR_A_GIVEN_APN_NOT_ALLOWED,
+                        create_action));
+                ogs_warn("APN duplicated [%s]", sos);
+                return NULL;
+            }
+        } else if (pdn_connectivity_request->presencemask &
             OGS_NAS_EPS_PDN_CONNECTIVITY_REQUEST_ACCESS_POINT_NAME_PRESENT) {
+            /* Specific APN has been requested by the UE, make sure it doesn't already exist */
             sess = mme_sess_find_by_apn(mme_ue,
                     pdn_connectivity_request->access_point_name.apn);
             if (sess && create_action != OGS_GTP_CREATE_IN_ATTACH_REQUEST) {
@@ -3426,6 +3518,7 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
                 return NULL;
             }
         } else {
+            /* Default case, session assumed to be the first session in list */
             sess = mme_sess_first(mme_ue);
         }
 
@@ -3519,6 +3612,24 @@ ogs_session_t *mme_session_find_by_apn(mme_ue_t *mme_ue, char *apn)
         ogs_assert(session->name);
         if (ogs_strcasecmp(session->name, apn) == 0)
             return session;
+    }
+
+    return NULL;
+}
+
+ogs_session_t *mme_emergency_session(mme_ue_t *mme_ue)
+{
+    ogs_session_t *session = NULL;
+    int i = 0;
+
+    ogs_assert(mme_ue);
+    ogs_assert(mme_ue->num_of_session <= OGS_MAX_NUM_OF_SESS);
+
+    for (i = 0; i < mme_ue->num_of_session; i++) {
+        session = &mme_ue->session[i];
+        if (strstr(session->name, "sos")) {
+            return session;
+        }
     }
 
     return NULL;

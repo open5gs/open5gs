@@ -28,6 +28,7 @@ extern "C" {
 
 int emm_handle_attach_request(mme_ue_t *mme_ue,
         ogs_nas_eps_attach_request_t *attach_request, ogs_pkbuf_t *pkbuf);
+
 int emm_handle_attach_complete(
     mme_ue_t *mme_ue, ogs_nas_eps_attach_complete_t *attach_complete);
 

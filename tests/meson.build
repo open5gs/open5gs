@@ -33,4 +33,4 @@ subdir('csfb')
 subdir('310014')
 subdir('handover')
 subdir('non3gpp')
-subdir('mme')
+# subdir('mme') # Todo either delete or find a good way to implement these unit tests

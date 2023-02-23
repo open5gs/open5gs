@@ -373,8 +373,18 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 OGS_FSM_TRAN(s, &emm_state_initial_context_setup);
             } else {
                 if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
-                    mme_gtp_send_delete_all_sessions(mme_ue,
-                        OGS_GTP_DELETE_SEND_AUTHENTICATION_REQUEST);
+                    if (0 == ogs_list_count(&mme_ue->sess_list)) {
+                        /* If the context has no sessions we continue the attach as normal */
+                        mme_s6a_send_air(mme_ue, NULL);
+                    } else {
+                        /* If sessions exist, delete them all and we will continue
+                         * the attach from the Delete-Session-Response */
+                        
+                        /* Force send the Delete-Session-Requests */
+                        mme_ue->sgw_ue->session_context_will_deleted = 0;
+                        mme_gtp_send_delete_all_sessions(mme_ue,
+                            OGS_GTP_DELETE_SEND_AUTHENTICATION_REQUEST);
+                    }
                 } else {
                     mme_s6a_send_air(mme_ue, NULL);
                 }
@@ -1300,8 +1310,19 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
                 break;
             }
 
-            mme_gtp_send_delete_all_sessions(mme_ue,
-                OGS_GTP_DELETE_SEND_AUTHENTICATION_REQUEST);
+            if (0 == ogs_list_count(&mme_ue->sess_list)) {
+                /* If the context has no sessions we continue the attach as normal */
+                mme_s6a_send_air(mme_ue, NULL);
+            } else {
+                /* If sessions exist, delete them all and we will continue
+                 * the attach from the Delete-Session-Response */
+
+                /* Force send the Delete-Session-Requests */
+                mme_ue->sgw_ue->session_context_will_deleted = 0;
+                mme_gtp_send_delete_all_sessions(mme_ue,
+                    OGS_GTP_DELETE_SEND_AUTHENTICATION_REQUEST);
+            }
+
             OGS_FSM_TRAN(s, &emm_state_authentication);
             break;
         case OGS_NAS_EPS_EMM_STATUS:

@@ -44,8 +44,15 @@ int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
 
     ogs_assert(req);
 
-    ogs_assert(MME_UE_HAVE_IMSI(mme_ue));
-    ogs_assert(SECURITY_CONTEXT_IS_VALID(mme_ue));
+    if (false == MME_UE_HAVE_IMSI(mme_ue)) {
+        ogs_error("MME UE does not contain IMSI!");
+        return OGS_ERROR;
+    }
+
+    if (false == SECURITY_CONTEXT_IS_VALID(mme_ue)) {
+        ogs_error("MME UE secirity context is invalid!");
+        return OGS_ERROR;
+    }
 
     memcpy(&sess->request_type, &req->request_type, sizeof(sess->request_type));
 
@@ -114,7 +121,11 @@ int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
         return OGS_OK;
     }
 
-    if (!sess->session) {
+    if (OGS_NAS_EPS_REQUEST_TYPE_EMERGENCY == sess->request_type.value) {
+        /* Emergency APN */
+        sess->session = mme_emergency_session(mme_ue);
+    }
+    else if (!sess->session) {
         /* Default APN */
         sess->session = mme_default_session(mme_ue);
     }

@@ -277,6 +277,11 @@ mme:
     eir:
         enabled: False
         allowed_states: [ WHITELIST, BLACKLIST, GREYLIST ]
+    emergency_bearer_services: True
+    emergency_number_list:
+      eni:
+        services: [ MOUNTAIN_RESCUE, MARINE_GUARD, FIRE_BRIGADE, AMBULANCE, POLICE ]
+        bcd: 115
 
 #
 # sgwc:

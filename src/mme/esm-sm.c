@@ -105,6 +105,7 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("PDN Connectivity request");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
+
             rv = esm_handle_pdn_connectivity_request(
                     bearer, &message->esm.pdn_connectivity_request,
                     e->create_action);
@@ -178,8 +179,8 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
             }
             break;
         case OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT:
-            ogs_debug("Activate default EPS bearer context accept");
-            ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
+            ogs_debug("Activate default EPS bearer context accept\n");
+            ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]\n",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
             /* Check if Initial Context Setup Response or 
              *          E-RAB Setup Response is received */
@@ -195,8 +196,8 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
             OGS_FSM_TRAN(s, esm_state_active);
             break;
         case OGS_NAS_EPS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT:
-            ogs_debug("Activate dedicated EPS bearer context accept");
-            ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
+            ogs_debug("Activate dedicated EPS bearer context accept\n");
+            ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]\n",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
             /* Check if Initial Context Setup Response or 
              *          E-RAB Setup Response is received */
@@ -293,6 +294,7 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("PDN Connectivity request");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
+
             rv = esm_handle_pdn_connectivity_request(
                     bearer, &message->esm.pdn_connectivity_request,
                     e->create_action);
@@ -402,6 +404,7 @@ void esm_state_pdn_will_disconnect(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("PDN Connectivity request");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
+
             rv = esm_handle_pdn_connectivity_request(
                     bearer, &message->esm.pdn_connectivity_request,
                     e->create_action);
