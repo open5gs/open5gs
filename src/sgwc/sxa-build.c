@@ -48,10 +48,7 @@ ogs_pkbuf_t *sgwc_sxa_build_session_establishment_request(
     req = &pfcp_message->pfcp_session_establishment_request;
 
     /* Node ID */
-    rv = ogs_pfcp_sockaddr_to_node_id(
-            ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
-            ogs_app()->parameter.prefer_ipv4,
-            &node_id, &len);
+    rv = ogs_pfcp_sockaddr_to_node_id(&node_id, &len);
     if (rv != OGS_OK) {
         ogs_error("ogs_pfcp_sockaddr_to_node_id() failed");
         ogs_free(pfcp_message);

@@ -45,6 +45,13 @@ logger:
 #      option:
 #        so_bindtodevice: vrf-blue
 #
+#  o Provide custom PFCP address to be advertised to SMF in PFCP association
+#      request/respond
+#  upf:
+#    pfcp:
+#      - addr: 0.0.0.0
+#        advertise: open5gs-smf.svc.local
+#
 #  <GTP-U Server>>
 #
 #  o GTP-U Server(127.0.0.7:2152, [::1]:2152)
