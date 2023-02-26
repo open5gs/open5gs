@@ -57,10 +57,10 @@ cJSON *OpenAPI_iptv_config_data_patch_convertToJSON(OpenAPI_iptv_config_data_pat
             OpenAPI_multicast_access_control_convertToJSON(localKeyValue->value) :
             cJSON_CreateNull();
         if (itemLocal == NULL) {
-            ogs_error("OpenAPI_iptv_config_data_patch_convertToJSON() failed [multi_acc_ctrls]");
+            ogs_error("OpenAPI_iptv_config_data_patch_convertToJSON() failed [inner]");
             goto end;
         }
-        cJSON_AddItemToObject(multi_acc_ctrls, localKeyValue->key, itemLocal);
+        cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
             }
         }
     }
@@ -85,16 +85,16 @@ OpenAPI_iptv_config_data_patch_t *OpenAPI_iptv_config_data_patch_parseFromJSON(c
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(multi_acc_ctrls_local_map, multi_acc_ctrls) {
         cJSON *localMapObject = multi_acc_ctrls_local_map;
-        if (cJSON_IsObject(multi_acc_ctrls_local_map)) {
+        if (cJSON_IsObject(localMapObject)) {
             localMapKeyPair = OpenAPI_map_create(
                 ogs_strdup(localMapObject->string), OpenAPI_multicast_access_control_parseFromJSON(localMapObject));
-        } else if (cJSON_IsNull(multi_acc_ctrls_local_map)) {
+        } else if (cJSON_IsNull(localMapObject)) {
             localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
-            ogs_error("OpenAPI_iptv_config_data_patch_parseFromJSON() failed [multi_acc_ctrls]");
+            ogs_error("OpenAPI_iptv_config_data_patch_parseFromJSON() failed [inner]");
             goto end;
         }
-        OpenAPI_list_add(multi_acc_ctrlsList , localMapKeyPair);
+        OpenAPI_list_add(multi_acc_ctrlsList, localMapKeyPair);
     }
     }
 

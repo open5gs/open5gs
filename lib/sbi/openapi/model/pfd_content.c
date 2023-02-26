@@ -157,7 +157,7 @@ OpenAPI_pfd_content_t *OpenAPI_pfd_content_parseFromJSON(cJSON *pfd_contentJSON)
         ogs_error("OpenAPI_pfd_content_parseFromJSON() failed [flow_descriptions]");
         goto end;
     }
-    OpenAPI_list_add(flow_descriptionsList , ogs_strdup(flow_descriptions_local->valuestring));
+    OpenAPI_list_add(flow_descriptionsList, ogs_strdup(flow_descriptions_local->valuestring));
     }
     }
 
@@ -177,7 +177,7 @@ OpenAPI_pfd_content_t *OpenAPI_pfd_content_parseFromJSON(cJSON *pfd_contentJSON)
         ogs_error("OpenAPI_pfd_content_parseFromJSON() failed [urls]");
         goto end;
     }
-    OpenAPI_list_add(urlsList , ogs_strdup(urls_local->valuestring));
+    OpenAPI_list_add(urlsList, ogs_strdup(urls_local->valuestring));
     }
     }
 
@@ -197,7 +197,7 @@ OpenAPI_pfd_content_t *OpenAPI_pfd_content_parseFromJSON(cJSON *pfd_contentJSON)
         ogs_error("OpenAPI_pfd_content_parseFromJSON() failed [domain_names]");
         goto end;
     }
-    OpenAPI_list_add(domain_namesList , ogs_strdup(domain_names_local->valuestring));
+    OpenAPI_list_add(domain_namesList, ogs_strdup(domain_names_local->valuestring));
     }
     }
 

@@ -593,10 +593,10 @@ cJSON *OpenAPI_sm_policy_update_context_data_convertToJSON(OpenAPI_sm_policy_upd
             OpenAPI_presence_info_convertToJSON(localKeyValue->value) :
             cJSON_CreateNull();
         if (itemLocal == NULL) {
-            ogs_error("OpenAPI_sm_policy_update_context_data_convertToJSON() failed [rep_pra_infos]");
+            ogs_error("OpenAPI_sm_policy_update_context_data_convertToJSON() failed [inner]");
             goto end;
         }
-        cJSON_AddItemToObject(rep_pra_infos, localKeyValue->key, itemLocal);
+        cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
             }
         }
     }
@@ -1275,16 +1275,16 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(rep_pra_infos_local_map, rep_pra_infos) {
         cJSON *localMapObject = rep_pra_infos_local_map;
-        if (cJSON_IsObject(rep_pra_infos_local_map)) {
+        if (cJSON_IsObject(localMapObject)) {
             localMapKeyPair = OpenAPI_map_create(
                 ogs_strdup(localMapObject->string), OpenAPI_presence_info_parseFromJSON(localMapObject));
-        } else if (cJSON_IsNull(rep_pra_infos_local_map)) {
+        } else if (cJSON_IsNull(localMapObject)) {
             localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
-            ogs_error("OpenAPI_sm_policy_update_context_data_parseFromJSON() failed [rep_pra_infos]");
+            ogs_error("OpenAPI_sm_policy_update_context_data_parseFromJSON() failed [inner]");
             goto end;
         }
-        OpenAPI_list_add(rep_pra_infosList , localMapKeyPair);
+        OpenAPI_list_add(rep_pra_infosList, localMapKeyPair);
     }
     }
 
@@ -1513,7 +1513,7 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
         ogs_error("OpenAPI_sm_policy_update_context_data_parseFromJSON() failed [inter_grp_ids]");
         goto end;
     }
-    OpenAPI_list_add(inter_grp_idsList , ogs_strdup(inter_grp_ids_local->valuestring));
+    OpenAPI_list_add(inter_grp_idsList, ogs_strdup(inter_grp_ids_local->valuestring));
     }
     }
 

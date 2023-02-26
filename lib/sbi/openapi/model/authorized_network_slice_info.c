@@ -325,7 +325,7 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_p
         ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [candidate_amf_list]");
         goto end;
     }
-    OpenAPI_list_add(candidate_amf_listList , ogs_strdup(candidate_amf_list_local->valuestring));
+    OpenAPI_list_add(candidate_amf_listList, ogs_strdup(candidate_amf_list_local->valuestring));
     }
     }
 

@@ -153,6 +153,10 @@ cJSON *OpenAPI_dnn_upf_info_item_convertToJSON(OpenAPI_dnn_upf_info_item_t *dnn_
     if (dnn_upf_info_item->dnai_nw_instance_list) {
         OpenAPI_list_for_each(dnn_upf_info_item->dnai_nw_instance_list, dnai_nw_instance_list_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)dnai_nw_instance_list_node->data;
+        if (cJSON_AddStringToObject(localMapObject, localKeyValue->key, (char*)localKeyValue->value) == NULL) {
+            ogs_error("OpenAPI_dnn_upf_info_item_convertToJSON() failed [inner]");
+            goto end;
+        }
             }
         }
     }
@@ -191,7 +195,7 @@ OpenAPI_dnn_upf_info_item_t *OpenAPI_dnn_upf_info_item_parseFromJSON(cJSON *dnn_
         ogs_error("OpenAPI_dnn_upf_info_item_parseFromJSON() failed [dnai_list]");
         goto end;
     }
-    OpenAPI_list_add(dnai_listList , ogs_strdup(dnai_list_local->valuestring));
+    OpenAPI_list_add(dnai_listList, ogs_strdup(dnai_list_local->valuestring));
     }
     }
 
@@ -288,7 +292,12 @@ OpenAPI_dnn_upf_info_item_t *OpenAPI_dnn_upf_info_item_parseFromJSON(cJSON *dnn_
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(dnai_nw_instance_list_local_map, dnai_nw_instance_list) {
         cJSON *localMapObject = dnai_nw_instance_list_local_map;
-        OpenAPI_list_add(dnai_nw_instance_listList , localMapKeyPair);
+        if (!cJSON_IsString(localMapObject)) {
+            ogs_error("OpenAPI_dnn_upf_info_item_parseFromJSON() failed [inner]");
+            goto end;
+        }
+        localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string),ogs_strdup(localMapObject->valuestring));
+        OpenAPI_list_add(dnai_nw_instance_listList, localMapKeyPair);
     }
     }
 

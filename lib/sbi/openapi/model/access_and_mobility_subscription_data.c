@@ -260,6 +260,10 @@ cJSON *OpenAPI_access_and_mobility_subscription_data_convertToJSON(OpenAPI_acces
     if (access_and_mobility_subscription_data->shared_vn_group_data_ids) {
         OpenAPI_list_for_each(access_and_mobility_subscription_data->shared_vn_group_data_ids, shared_vn_group_data_ids_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)shared_vn_group_data_ids_node->data;
+        if (cJSON_AddStringToObject(localMapObject, localKeyValue->key, (char*)localKeyValue->value) == NULL) {
+            ogs_error("OpenAPI_access_and_mobility_subscription_data_convertToJSON() failed [inner]");
+            goto end;
+        }
             }
         }
     }
@@ -759,7 +763,7 @@ OpenAPI_access_and_mobility_subscription_data_t *OpenAPI_access_and_mobility_sub
         ogs_error("OpenAPI_access_and_mobility_subscription_data_parseFromJSON() failed [gpsis]");
         goto end;
     }
-    OpenAPI_list_add(gpsisList , ogs_strdup(gpsis_local->valuestring));
+    OpenAPI_list_add(gpsisList, ogs_strdup(gpsis_local->valuestring));
     }
     }
 
@@ -779,7 +783,7 @@ OpenAPI_access_and_mobility_subscription_data_t *OpenAPI_access_and_mobility_sub
         ogs_error("OpenAPI_access_and_mobility_subscription_data_parseFromJSON() failed [internal_group_ids]");
         goto end;
     }
-    OpenAPI_list_add(internal_group_idsList , ogs_strdup(internal_group_ids_local->valuestring));
+    OpenAPI_list_add(internal_group_idsList, ogs_strdup(internal_group_ids_local->valuestring));
     }
     }
 
@@ -796,7 +800,12 @@ OpenAPI_access_and_mobility_subscription_data_t *OpenAPI_access_and_mobility_sub
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(shared_vn_group_data_ids_local_map, shared_vn_group_data_ids) {
         cJSON *localMapObject = shared_vn_group_data_ids_local_map;
-        OpenAPI_list_add(shared_vn_group_data_idsList , localMapKeyPair);
+        if (!cJSON_IsString(localMapObject)) {
+            ogs_error("OpenAPI_access_and_mobility_subscription_data_parseFromJSON() failed [inner]");
+            goto end;
+        }
+        localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string),ogs_strdup(localMapObject->valuestring));
+        OpenAPI_list_add(shared_vn_group_data_idsList, localMapKeyPair);
     }
     }
 
@@ -1027,7 +1036,7 @@ OpenAPI_access_and_mobility_subscription_data_t *OpenAPI_access_and_mobility_sub
         ogs_error("OpenAPI_access_and_mobility_subscription_data_parseFromJSON() failed [shared_am_data_ids]");
         goto end;
     }
-    OpenAPI_list_add(shared_am_data_idsList , ogs_strdup(shared_am_data_ids_local->valuestring));
+    OpenAPI_list_add(shared_am_data_idsList, ogs_strdup(shared_am_data_ids_local->valuestring));
     }
     }
 
@@ -1058,7 +1067,7 @@ OpenAPI_access_and_mobility_subscription_data_t *OpenAPI_access_and_mobility_sub
         ogs_error("OpenAPI_access_and_mobility_subscription_data_parseFromJSON() failed [subscribed_dnn_list]");
         goto end;
     }
-    OpenAPI_list_add(subscribed_dnn_listList , ogs_strdup(subscribed_dnn_list_local->valuestring));
+    OpenAPI_list_add(subscribed_dnn_listList, ogs_strdup(subscribed_dnn_list_local->valuestring));
     }
     }
 

@@ -323,7 +323,7 @@ OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_parse
         ogs_error("OpenAPI_pdu_session_management_data_parseFromJSON() failed [ipv6_prefix]");
         goto end;
     }
-    OpenAPI_list_add(ipv6_prefixList , ogs_strdup(ipv6_prefix_local->valuestring));
+    OpenAPI_list_add(ipv6_prefixList, ogs_strdup(ipv6_prefix_local->valuestring));
     }
     }
 
@@ -343,7 +343,7 @@ OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_parse
         ogs_error("OpenAPI_pdu_session_management_data_parseFromJSON() failed [ipv6_addrs]");
         goto end;
     }
-    OpenAPI_list_add(ipv6_addrsList , ogs_strdup(ipv6_addrs_local->valuestring));
+    OpenAPI_list_add(ipv6_addrsList, ogs_strdup(ipv6_addrs_local->valuestring));
     }
     }
 

@@ -233,7 +233,7 @@ OpenAPI_sms_management_subscription_data_t *OpenAPI_sms_management_subscription_
         ogs_error("OpenAPI_sms_management_subscription_data_parseFromJSON() failed [shared_sms_mng_data_ids]");
         goto end;
     }
-    OpenAPI_list_add(shared_sms_mng_data_idsList , ogs_strdup(shared_sms_mng_data_ids_local->valuestring));
+    OpenAPI_list_add(shared_sms_mng_data_idsList, ogs_strdup(shared_sms_mng_data_ids_local->valuestring));
     }
     }
 

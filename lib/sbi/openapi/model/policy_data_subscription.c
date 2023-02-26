@@ -163,7 +163,7 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_parseFromJS
         ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [monitored_resource_uris]");
         goto end;
     }
-    OpenAPI_list_add(monitored_resource_urisList , ogs_strdup(monitored_resource_uris_local->valuestring));
+    OpenAPI_list_add(monitored_resource_urisList, ogs_strdup(monitored_resource_uris_local->valuestring));
     }
 
     cJSON *mon_res_items = cJSON_GetObjectItemCaseSensitive(policy_data_subscriptionJSON, "monResItems");

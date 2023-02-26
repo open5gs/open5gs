@@ -539,7 +539,7 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_parseFromJS
         ogs_error("OpenAPI_traffic_influ_data_patch_parseFromJSON() failed [headers]");
         goto end;
     }
-    OpenAPI_list_add(headersList , ogs_strdup(headers_local->valuestring));
+    OpenAPI_list_add(headersList, ogs_strdup(headers_local->valuestring));
     }
     }
 

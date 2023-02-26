@@ -86,6 +86,7 @@ libsbi_openapi_sources = files('''
     model/am_policy_data.c
     model/an_gw_address.c
     model/an_node_type.c
+    model/any_type.c
     model/apn_rate_status.c
     model/app_descriptor.c
     model/app_detection_info.c
@@ -497,6 +498,7 @@ libsbi_openapi_sources = files('''
     model/partial_record_method_any_of.c
     model/partial_record_method.c
     model/partial_success_report.c
+    model/patch_item.c
     model/patch_operation.c
     model/patch_result.c
     model/pc5_flow_bit_rates.c
@@ -593,6 +595,7 @@ libsbi_openapi_sources = files('''
     model/priority_sharing_indicator.c
     model/privacy_check_related_action.c
     model/problem_details_1.c
+    model/problem_details_2.c
     model/problem_details_add_info.c
     model/problem_details.c
     model/protection_result.c
@@ -869,6 +872,8 @@ libsbi_openapi_sources = files('''
     model/udr_info.c
     model/udsf_info.c
     model/ue_auth.c
+    model/ue_authentication_ctx.c
+    model/ue_authentication_ctx_5g_auth_data.c
     model/ue_camping_rep.c
     model/ue_context.c
     model/ue_context_cancel_relocate_data.c

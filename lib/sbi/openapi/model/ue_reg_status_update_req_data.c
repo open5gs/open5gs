@@ -135,7 +135,7 @@ OpenAPI_ue_reg_status_update_req_data_t *OpenAPI_ue_reg_status_update_req_data_p
         ogs_error("OpenAPI_ue_reg_status_update_req_data_parseFromJSON() failed [to_release_session_list]");
         goto end;
     }
-    OpenAPI_list_add(to_release_session_listList , &to_release_session_list_local->valuedouble);
+    OpenAPI_list_add(to_release_session_listList, &to_release_session_list_local->valuedouble);
     }
     }
 

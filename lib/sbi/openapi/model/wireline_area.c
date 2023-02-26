@@ -120,7 +120,7 @@ OpenAPI_wireline_area_t *OpenAPI_wireline_area_parseFromJSON(cJSON *wireline_are
         ogs_error("OpenAPI_wireline_area_parseFromJSON() failed [global_line_ids]");
         goto end;
     }
-    OpenAPI_list_add(global_line_idsList , ogs_strdup(global_line_ids_local->valuestring));
+    OpenAPI_list_add(global_line_idsList, ogs_strdup(global_line_ids_local->valuestring));
     }
     }
 
@@ -140,7 +140,7 @@ OpenAPI_wireline_area_t *OpenAPI_wireline_area_parseFromJSON(cJSON *wireline_are
         ogs_error("OpenAPI_wireline_area_parseFromJSON() failed [hfc_n_ids]");
         goto end;
     }
-    OpenAPI_list_add(hfc_n_idsList , ogs_strdup(hfc_n_ids_local->valuestring));
+    OpenAPI_list_add(hfc_n_idsList, ogs_strdup(hfc_n_ids_local->valuestring));
     }
     }
 

@@ -167,7 +167,7 @@ OpenAPI_assign_ebi_data_t *OpenAPI_assign_ebi_data_parseFromJSON(cJSON *assign_e
         ogs_error("OpenAPI_assign_ebi_data_parseFromJSON() failed [released_ebi_list]");
         goto end;
     }
-    OpenAPI_list_add(released_ebi_listList , &released_ebi_list_local->valuedouble);
+    OpenAPI_list_add(released_ebi_listList, &released_ebi_list_local->valuedouble);
     }
     }
 

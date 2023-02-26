@@ -56,6 +56,14 @@ cJSON *OpenAPI_pp_profile_data_convertToJSON(OpenAPI_pp_profile_data_t *pp_profi
     if (pp_profile_data->allowed_mtc_providers) {
         OpenAPI_list_for_each(pp_profile_data->allowed_mtc_providers, allowed_mtc_providers_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)allowed_mtc_providers_node->data;
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_allowed_mtc_provider_info_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_pp_profile_data_convertToJSON() failed [inner]");
+            goto end;
+        }
+        cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
             }
         }
     }
@@ -87,7 +95,16 @@ OpenAPI_pp_profile_data_t *OpenAPI_pp_profile_data_parseFromJSON(cJSON *pp_profi
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(allowed_mtc_providers_local_map, allowed_mtc_providers) {
         cJSON *localMapObject = allowed_mtc_providers_local_map;
-        OpenAPI_list_add(allowed_mtc_providersList , localMapKeyPair);
+        if (cJSON_IsObject(localMapObject)) {
+            localMapKeyPair = OpenAPI_map_create(
+                ogs_strdup(localMapObject->string), OpenAPI_allowed_mtc_provider_info_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(localMapObject)) {
+            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
+        } else {
+            ogs_error("OpenAPI_pp_profile_data_parseFromJSON() failed [inner]");
+            goto end;
+        }
+        OpenAPI_list_add(allowed_mtc_providersList, localMapKeyPair);
     }
     }
 

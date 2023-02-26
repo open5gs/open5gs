@@ -176,7 +176,7 @@ OpenAPI_traffic_influ_sub_t *OpenAPI_traffic_influ_sub_parseFromJSON(cJSON *traf
         ogs_error("OpenAPI_traffic_influ_sub_parseFromJSON() failed [dnns]");
         goto end;
     }
-    OpenAPI_list_add(dnnsList , ogs_strdup(dnns_local->valuestring));
+    OpenAPI_list_add(dnnsList, ogs_strdup(dnns_local->valuestring));
     }
     }
 
@@ -225,7 +225,7 @@ OpenAPI_traffic_influ_sub_t *OpenAPI_traffic_influ_sub_parseFromJSON(cJSON *traf
         ogs_error("OpenAPI_traffic_influ_sub_parseFromJSON() failed [internal_group_ids]");
         goto end;
     }
-    OpenAPI_list_add(internal_group_idsList , ogs_strdup(internal_group_ids_local->valuestring));
+    OpenAPI_list_add(internal_group_idsList, ogs_strdup(internal_group_ids_local->valuestring));
     }
     }
 
@@ -245,7 +245,7 @@ OpenAPI_traffic_influ_sub_t *OpenAPI_traffic_influ_sub_parseFromJSON(cJSON *traf
         ogs_error("OpenAPI_traffic_influ_sub_parseFromJSON() failed [supis]");
         goto end;
     }
-    OpenAPI_list_add(supisList , ogs_strdup(supis_local->valuestring));
+    OpenAPI_list_add(supisList, ogs_strdup(supis_local->valuestring));
     }
     }
 

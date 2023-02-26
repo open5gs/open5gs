@@ -1085,7 +1085,7 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_parseFromJSON(cJSON *hsmf_u
         ogs_error("OpenAPI_hsmf_update_data_parseFromJSON() failed [eps_bearer_id]");
         goto end;
     }
-    OpenAPI_list_add(eps_bearer_idList , &eps_bearer_id_local->valuedouble);
+    OpenAPI_list_add(eps_bearer_idList, &eps_bearer_id_local->valuedouble);
     }
     }
 
@@ -1114,7 +1114,7 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_parseFromJSON(cJSON *hsmf_u
         ogs_error("OpenAPI_hsmf_update_data_parseFromJSON() failed [revoke_ebi_list]");
         goto end;
     }
-    OpenAPI_list_add(revoke_ebi_listList , &revoke_ebi_list_local->valuedouble);
+    OpenAPI_list_add(revoke_ebi_listList, &revoke_ebi_list_local->valuedouble);
     }
     }
 
@@ -1419,7 +1419,7 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_parseFromJSON(cJSON *hsmf_u
         ogs_error("OpenAPI_hsmf_update_data_parseFromJSON() failed [dnai_list]");
         goto end;
     }
-    OpenAPI_list_add(dnai_listList , ogs_strdup(dnai_list_local->valuestring));
+    OpenAPI_list_add(dnai_listList, ogs_strdup(dnai_list_local->valuestring));
     }
     }
 

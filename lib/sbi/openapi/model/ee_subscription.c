@@ -89,10 +89,10 @@ cJSON *OpenAPI_ee_subscription_convertToJSON(OpenAPI_ee_subscription_t *ee_subsc
             OpenAPI_monitoring_configuration_convertToJSON(localKeyValue->value) :
             cJSON_CreateNull();
         if (itemLocal == NULL) {
-            ogs_error("OpenAPI_ee_subscription_convertToJSON() failed [monitoring_configurations]");
+            ogs_error("OpenAPI_ee_subscription_convertToJSON() failed [inner]");
             goto end;
         }
-        cJSON_AddItemToObject(monitoring_configurations, localKeyValue->key, itemLocal);
+        cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
             }
         }
 
@@ -198,16 +198,16 @@ OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_parseFromJSON(cJSON *ee_subsc
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(monitoring_configurations_local_map, monitoring_configurations) {
         cJSON *localMapObject = monitoring_configurations_local_map;
-        if (cJSON_IsObject(monitoring_configurations_local_map)) {
+        if (cJSON_IsObject(localMapObject)) {
             localMapKeyPair = OpenAPI_map_create(
                 ogs_strdup(localMapObject->string), OpenAPI_monitoring_configuration_parseFromJSON(localMapObject));
-        } else if (cJSON_IsNull(monitoring_configurations_local_map)) {
+        } else if (cJSON_IsNull(localMapObject)) {
             localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
-            ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [monitoring_configurations]");
+            ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [inner]");
             goto end;
         }
-        OpenAPI_list_add(monitoring_configurationsList , localMapKeyPair);
+        OpenAPI_list_add(monitoring_configurationsList, localMapKeyPair);
     }
 
     cJSON *reporting_options = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "reportingOptions");

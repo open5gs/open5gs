@@ -46,7 +46,7 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue,
     OpenAPI_authentication_info_result_t *AuthenticationInfoResult = NULL;
     OpenAPI_authentication_vector_t *AuthenticationVector = NULL;
     OpenAPI_ue_authentication_ctx_t UeAuthenticationCtx;
-    OpenAPI_av5g_aka_t AV5G_AKA;
+    OpenAPI_ue_authentication_ctx_5g_auth_data_t AV5G_AKA;
     OpenAPI_map_t *LinksValueScheme = NULL;
     OpenAPI_links_value_schema_t LinksValueSchemeValue;
 

@@ -93,7 +93,7 @@ OpenAPI_qos_flow_tunnel_t *OpenAPI_qos_flow_tunnel_parseFromJSON(cJSON *qos_flow
         ogs_error("OpenAPI_qos_flow_tunnel_parseFromJSON() failed [qfi_list]");
         goto end;
     }
-    OpenAPI_list_add(qfi_listList , &qfi_list_local->valuedouble);
+    OpenAPI_list_add(qfi_listList, &qfi_list_local->valuedouble);
     }
 
     cJSON *tunnel_info = cJSON_GetObjectItemCaseSensitive(qos_flow_tunnelJSON, "tunnelInfo");

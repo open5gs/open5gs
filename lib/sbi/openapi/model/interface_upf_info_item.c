@@ -140,7 +140,7 @@ OpenAPI_interface_upf_info_item_t *OpenAPI_interface_upf_info_item_parseFromJSON
         ogs_error("OpenAPI_interface_upf_info_item_parseFromJSON() failed [ipv4_endpoint_addresses]");
         goto end;
     }
-    OpenAPI_list_add(ipv4_endpoint_addressesList , ogs_strdup(ipv4_endpoint_addresses_local->valuestring));
+    OpenAPI_list_add(ipv4_endpoint_addressesList, ogs_strdup(ipv4_endpoint_addresses_local->valuestring));
     }
     }
 
@@ -160,7 +160,7 @@ OpenAPI_interface_upf_info_item_t *OpenAPI_interface_upf_info_item_parseFromJSON
         ogs_error("OpenAPI_interface_upf_info_item_parseFromJSON() failed [ipv6_endpoint_addresses]");
         goto end;
     }
-    OpenAPI_list_add(ipv6_endpoint_addressesList , ogs_strdup(ipv6_endpoint_addresses_local->valuestring));
+    OpenAPI_list_add(ipv6_endpoint_addressesList, ogs_strdup(ipv6_endpoint_addresses_local->valuestring));
     }
     }
 

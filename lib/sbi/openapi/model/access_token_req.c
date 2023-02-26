@@ -523,7 +523,7 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
         ogs_error("OpenAPI_access_token_req_parseFromJSON() failed [target_nsi_list]");
         goto end;
     }
-    OpenAPI_list_add(target_nsi_listList , ogs_strdup(target_nsi_list_local->valuestring));
+    OpenAPI_list_add(target_nsi_listList, ogs_strdup(target_nsi_list_local->valuestring));
     }
     }
 

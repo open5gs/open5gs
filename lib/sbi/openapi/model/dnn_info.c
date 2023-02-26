@@ -208,7 +208,7 @@ OpenAPI_dnn_info_t *OpenAPI_dnn_info_parseFromJSON(cJSON *dnn_infoJSON)
         ogs_error("OpenAPI_dnn_info_parseFromJSON() failed [smf_list]");
         goto end;
     }
-    OpenAPI_list_add(smf_listList , ogs_strdup(smf_list_local->valuestring));
+    OpenAPI_list_add(smf_listList, ogs_strdup(smf_list_local->valuestring));
     }
     }
 

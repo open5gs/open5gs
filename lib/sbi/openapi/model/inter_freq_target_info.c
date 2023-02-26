@@ -96,7 +96,7 @@ OpenAPI_inter_freq_target_info_t *OpenAPI_inter_freq_target_info_parseFromJSON(c
         ogs_error("OpenAPI_inter_freq_target_info_parseFromJSON() failed [cell_id_list]");
         goto end;
     }
-    OpenAPI_list_add(cell_id_listList , &cell_id_list_local->valuedouble);
+    OpenAPI_list_add(cell_id_listList, &cell_id_list_local->valuedouble);
     }
     }
 

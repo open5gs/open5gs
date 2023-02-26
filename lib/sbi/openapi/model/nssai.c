@@ -127,10 +127,10 @@ cJSON *OpenAPI_nssai_convertToJSON(OpenAPI_nssai_t *nssai)
             OpenAPI_additional_snssai_data_convertToJSON(localKeyValue->value) :
             cJSON_CreateNull();
         if (itemLocal == NULL) {
-            ogs_error("OpenAPI_nssai_convertToJSON() failed [additional_snssai_data]");
+            ogs_error("OpenAPI_nssai_convertToJSON() failed [inner]");
             goto end;
         }
-        cJSON_AddItemToObject(additional_snssai_data, localKeyValue->key, itemLocal);
+        cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
             }
         }
     }
@@ -233,16 +233,16 @@ OpenAPI_nssai_t *OpenAPI_nssai_parseFromJSON(cJSON *nssaiJSON)
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(additional_snssai_data_local_map, additional_snssai_data) {
         cJSON *localMapObject = additional_snssai_data_local_map;
-        if (cJSON_IsObject(additional_snssai_data_local_map)) {
+        if (cJSON_IsObject(localMapObject)) {
             localMapKeyPair = OpenAPI_map_create(
                 ogs_strdup(localMapObject->string), OpenAPI_additional_snssai_data_parseFromJSON(localMapObject));
-        } else if (cJSON_IsNull(additional_snssai_data_local_map)) {
+        } else if (cJSON_IsNull(localMapObject)) {
             localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
-            ogs_error("OpenAPI_nssai_parseFromJSON() failed [additional_snssai_data]");
+            ogs_error("OpenAPI_nssai_parseFromJSON() failed [inner]");
             goto end;
         }
-        OpenAPI_list_add(additional_snssai_dataList , localMapKeyPair);
+        OpenAPI_list_add(additional_snssai_dataList, localMapKeyPair);
     }
     }
 

@@ -99,7 +99,7 @@ OpenAPI_plmn_operator_class_t *OpenAPI_plmn_operator_class_parseFromJSON(cJSON *
         ogs_error("OpenAPI_plmn_operator_class_parseFromJSON() failed [lcs_client_ids]");
         goto end;
     }
-    OpenAPI_list_add(lcs_client_idsList , ogs_strdup(lcs_client_ids_local->valuestring));
+    OpenAPI_list_add(lcs_client_idsList, ogs_strdup(lcs_client_ids_local->valuestring));
     }
 
     plmn_operator_class_local_var = OpenAPI_plmn_operator_class_create (

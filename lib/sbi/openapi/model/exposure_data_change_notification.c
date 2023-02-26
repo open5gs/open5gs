@@ -175,7 +175,7 @@ OpenAPI_exposure_data_change_notification_t *OpenAPI_exposure_data_change_notifi
         ogs_error("OpenAPI_exposure_data_change_notification_parseFromJSON() failed [del_resources]");
         goto end;
     }
-    OpenAPI_list_add(del_resourcesList , ogs_strdup(del_resources_local->valuestring));
+    OpenAPI_list_add(del_resourcesList, ogs_strdup(del_resources_local->valuestring));
     }
     }
 

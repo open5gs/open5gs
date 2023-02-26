@@ -238,7 +238,7 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_parse
         ogs_error("OpenAPI_n2_information_notification_parseFromJSON() failed [to_release_session_list]");
         goto end;
     }
-    OpenAPI_list_add(to_release_session_listList , &to_release_session_list_local->valuedouble);
+    OpenAPI_list_add(to_release_session_listList, &to_release_session_list_local->valuedouble);
     }
     }
 

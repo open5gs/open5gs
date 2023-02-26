@@ -89,6 +89,14 @@ cJSON *OpenAPI_udsf_info_convertToJSON(OpenAPI_udsf_info_t *udsf_info)
     if (udsf_info->storage_id_ranges) {
         OpenAPI_list_for_each(udsf_info->storage_id_ranges, storage_id_ranges_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)storage_id_ranges_node->data;
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_identity_range_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_udsf_info_convertToJSON() failed [inner]");
+            goto end;
+        }
+        cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
             }
         }
     }
@@ -151,7 +159,16 @@ OpenAPI_udsf_info_t *OpenAPI_udsf_info_parseFromJSON(cJSON *udsf_infoJSON)
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(storage_id_ranges_local_map, storage_id_ranges) {
         cJSON *localMapObject = storage_id_ranges_local_map;
-        OpenAPI_list_add(storage_id_rangesList , localMapKeyPair);
+        if (cJSON_IsObject(localMapObject)) {
+            localMapKeyPair = OpenAPI_map_create(
+                ogs_strdup(localMapObject->string), OpenAPI_identity_range_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(localMapObject)) {
+            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
+        } else {
+            ogs_error("OpenAPI_udsf_info_parseFromJSON() failed [inner]");
+            goto end;
+        }
+        OpenAPI_list_add(storage_id_rangesList, localMapKeyPair);
     }
     }
 
