@@ -80,10 +80,10 @@ cJSON *OpenAPI_usage_mon_data_limit_convertToJSON(OpenAPI_usage_mon_data_limit_t
             OpenAPI_usage_mon_data_scope_convertToJSON(localKeyValue->value) :
             cJSON_CreateNull();
         if (itemLocal == NULL) {
-            ogs_error("OpenAPI_usage_mon_data_limit_convertToJSON() failed [scopes]");
+            ogs_error("OpenAPI_usage_mon_data_limit_convertToJSON() failed [inner]");
             goto end;
         }
-        cJSON_AddItemToObject(scopes, localKeyValue->key, itemLocal);
+        cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
             }
         }
     }
@@ -166,16 +166,16 @@ OpenAPI_usage_mon_data_limit_t *OpenAPI_usage_mon_data_limit_parseFromJSON(cJSON
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(scopes_local_map, scopes) {
         cJSON *localMapObject = scopes_local_map;
-        if (cJSON_IsObject(scopes_local_map)) {
+        if (cJSON_IsObject(localMapObject)) {
             localMapKeyPair = OpenAPI_map_create(
                 ogs_strdup(localMapObject->string), OpenAPI_usage_mon_data_scope_parseFromJSON(localMapObject));
-        } else if (cJSON_IsNull(scopes_local_map)) {
+        } else if (cJSON_IsNull(localMapObject)) {
             localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
-            ogs_error("OpenAPI_usage_mon_data_limit_parseFromJSON() failed [scopes]");
+            ogs_error("OpenAPI_usage_mon_data_limit_parseFromJSON() failed [inner]");
             goto end;
         }
-        OpenAPI_list_add(scopesList , localMapKeyPair);
+        OpenAPI_list_add(scopesList, localMapKeyPair);
     }
     }
 

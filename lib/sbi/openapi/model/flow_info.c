@@ -96,7 +96,7 @@ OpenAPI_flow_info_t *OpenAPI_flow_info_parseFromJSON(cJSON *flow_infoJSON)
         ogs_error("OpenAPI_flow_info_parseFromJSON() failed [flow_descriptions]");
         goto end;
     }
-    OpenAPI_list_add(flow_descriptionsList , ogs_strdup(flow_descriptions_local->valuestring));
+    OpenAPI_list_add(flow_descriptionsList, ogs_strdup(flow_descriptions_local->valuestring));
     }
     }
 

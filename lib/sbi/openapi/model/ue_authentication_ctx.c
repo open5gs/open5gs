@@ -6,8 +6,7 @@
 
 OpenAPI_ue_authentication_ctx_t *OpenAPI_ue_authentication_ctx_create(
     OpenAPI_auth_type_e auth_type,
-    OpenAPI_av5g_aka_t *_5g_auth_data,
-    char *eap_payload,
+    OpenAPI_ue_authentication_ctx_5g_auth_data_t *_5g_auth_data,
     OpenAPI_list_t* _links,
     char *serving_network_name
 )
@@ -17,7 +16,6 @@ OpenAPI_ue_authentication_ctx_t *OpenAPI_ue_authentication_ctx_create(
 
     ue_authentication_ctx_local_var->auth_type = auth_type;
     ue_authentication_ctx_local_var->_5g_auth_data = _5g_auth_data;
-    ue_authentication_ctx_local_var->eap_payload = eap_payload;
     ue_authentication_ctx_local_var->_links = _links;
     ue_authentication_ctx_local_var->serving_network_name = serving_network_name;
 
@@ -31,19 +29,15 @@ void OpenAPI_ue_authentication_ctx_free(OpenAPI_ue_authentication_ctx_t *ue_auth
     }
     OpenAPI_lnode_t *node;
     if (ue_authentication_ctx->_5g_auth_data) {
-        OpenAPI_av5g_aka_free(ue_authentication_ctx->_5g_auth_data);
+        OpenAPI_ue_authentication_ctx_5g_auth_data_free(ue_authentication_ctx->_5g_auth_data);
         ue_authentication_ctx->_5g_auth_data = NULL;
-    }
-    if (ue_authentication_ctx->eap_payload) {
-        ogs_free(ue_authentication_ctx->eap_payload);
-        ue_authentication_ctx->eap_payload = NULL;
     }
     if (ue_authentication_ctx->_links) {
         OpenAPI_list_for_each(ue_authentication_ctx->_links, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             OpenAPI_links_value_schema_free(localKeyValue->value);
-            ogs_free(localKeyValue);
+            OpenAPI_map_free(localKeyValue);
         }
         OpenAPI_list_free(ue_authentication_ctx->_links);
         ue_authentication_ctx->_links = NULL;
@@ -65,13 +59,20 @@ cJSON *OpenAPI_ue_authentication_ctx_convertToJSON(OpenAPI_ue_authentication_ctx
     }
 
     item = cJSON_CreateObject();
+    if (ue_authentication_ctx->auth_type == OpenAPI_auth_type_NULL) {
+        ogs_error("OpenAPI_ue_authentication_ctx_convertToJSON() failed [auth_type]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "authType", OpenAPI_auth_type_ToString(ue_authentication_ctx->auth_type)) == NULL) {
         ogs_error("OpenAPI_ue_authentication_ctx_convertToJSON() failed [auth_type]");
         goto end;
     }
 
-    if (ue_authentication_ctx->_5g_auth_data) {
-    cJSON *_5g_auth_data_local_JSON = OpenAPI_av5g_aka_convertToJSON(ue_authentication_ctx->_5g_auth_data);
+    if (!ue_authentication_ctx->_5g_auth_data) {
+        ogs_error("OpenAPI_ue_authentication_ctx_convertToJSON() failed [_5g_auth_data]");
+        return NULL;
+    }
+    cJSON *_5g_auth_data_local_JSON = OpenAPI_ue_authentication_ctx_5g_auth_data_convertToJSON(ue_authentication_ctx->_5g_auth_data);
     if (_5g_auth_data_local_JSON == NULL) {
         ogs_error("OpenAPI_ue_authentication_ctx_convertToJSON() failed [_5g_auth_data]");
         goto end;
@@ -81,30 +82,29 @@ cJSON *OpenAPI_ue_authentication_ctx_convertToJSON(OpenAPI_ue_authentication_ctx
         ogs_error("OpenAPI_ue_authentication_ctx_convertToJSON() failed [_5g_auth_data]");
         goto end;
     }
-    }
 
-    if (ue_authentication_ctx->eap_payload) {
-    if (cJSON_AddStringToObject(item, "EapPayload", ue_authentication_ctx->eap_payload) == NULL) {
-        ogs_error("OpenAPI_ue_authentication_ctx_convertToJSON() failed [eap_payload]");
-        goto end;
+    if (!ue_authentication_ctx->_links) {
+        ogs_error("OpenAPI_ue_authentication_ctx_convertToJSON() failed [_links]");
+        return NULL;
     }
-    }
-
     cJSON *_links = cJSON_AddObjectToObject(item, "_links");
     if (_links == NULL) {
         ogs_error("OpenAPI_ue_authentication_ctx_convertToJSON() failed [_links]");
         goto end;
     }
+    cJSON *localMapObject = _links;
     OpenAPI_lnode_t *_links_node;
     if (ue_authentication_ctx->_links) {
         OpenAPI_list_for_each(ue_authentication_ctx->_links, _links_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)_links_node->data;
-        cJSON *itemLocal = OpenAPI_links_value_schema_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_links_value_schema_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
-            ogs_error("OpenAPI_ue_authentication_ctx_convertToJSON() failed [_links]");
+            ogs_error("OpenAPI_ue_authentication_ctx_convertToJSON() failed [inner]");
             goto end;
         }
-        cJSON_AddItemToObject(_links, localKeyValue->key, itemLocal);
+        cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
             }
         }
 
@@ -122,81 +122,91 @@ end:
 OpenAPI_ue_authentication_ctx_t *OpenAPI_ue_authentication_ctx_parseFromJSON(cJSON *ue_authentication_ctxJSON)
 {
     OpenAPI_ue_authentication_ctx_t *ue_authentication_ctx_local_var = NULL;
-    cJSON *auth_type = cJSON_GetObjectItemCaseSensitive(ue_authentication_ctxJSON, "authType");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *auth_type = NULL;
+    OpenAPI_auth_type_e auth_typeVariable = 0;
+    cJSON *_5g_auth_data = NULL;
+    OpenAPI_ue_authentication_ctx_5g_auth_data_t *_5g_auth_data_local_nonprim = NULL;
+    cJSON *_links = NULL;
+    OpenAPI_list_t *_linksList = NULL;
+    cJSON *serving_network_name = NULL;
+    auth_type = cJSON_GetObjectItemCaseSensitive(ue_authentication_ctxJSON, "authType");
     if (!auth_type) {
         ogs_error("OpenAPI_ue_authentication_ctx_parseFromJSON() failed [auth_type]");
         goto end;
     }
-
-    OpenAPI_auth_type_e auth_typeVariable;
-    
     if (!cJSON_IsString(auth_type)) {
         ogs_error("OpenAPI_ue_authentication_ctx_parseFromJSON() failed [auth_type]");
         goto end;
     }
     auth_typeVariable = OpenAPI_auth_type_FromString(auth_type->valuestring);
 
-    cJSON *_5g_auth_data = cJSON_GetObjectItemCaseSensitive(ue_authentication_ctxJSON, "5gAuthData");
-
-    OpenAPI_av5g_aka_t *_5g_auth_data_local_nonprim = NULL;
-    if (_5g_auth_data) { 
-    _5g_auth_data_local_nonprim = OpenAPI_av5g_aka_parseFromJSON(_5g_auth_data);
-}
-
-    cJSON *eap_payload = cJSON_GetObjectItemCaseSensitive(ue_authentication_ctxJSON, "EapPayload");
-
-    if (eap_payload) { 
-    if (!cJSON_IsString(eap_payload)) {
-        ogs_error("OpenAPI_ue_authentication_ctx_parseFromJSON() failed [eap_payload]");
+    _5g_auth_data = cJSON_GetObjectItemCaseSensitive(ue_authentication_ctxJSON, "5gAuthData");
+    if (!_5g_auth_data) {
+        ogs_error("OpenAPI_ue_authentication_ctx_parseFromJSON() failed [_5g_auth_data]");
         goto end;
     }
-}
+    _5g_auth_data_local_nonprim = OpenAPI_ue_authentication_ctx_5g_auth_data_parseFromJSON(_5g_auth_data);
 
-    cJSON *_links = cJSON_GetObjectItemCaseSensitive(ue_authentication_ctxJSON, "_links");
+    _links = cJSON_GetObjectItemCaseSensitive(ue_authentication_ctxJSON, "_links");
     if (!_links) {
         ogs_error("OpenAPI_ue_authentication_ctx_parseFromJSON() failed [_links]");
         goto end;
     }
-
-    OpenAPI_list_t *_linksList;
-    
-    cJSON *_links_local_map;
-    if (!cJSON_IsObject(_links)) {
-        ogs_error("OpenAPI_ue_authentication_ctx_parseFromJSON() failed [_links]");
-        goto end;
-    }
-    _linksList = OpenAPI_list_create();
-    OpenAPI_map_t *localMapKeyPair = NULL;
-    cJSON_ArrayForEach(_links_local_map, _links) {
-        cJSON *localMapObject = _links_local_map;
-        if (!cJSON_IsObject(_links_local_map)) {
+        cJSON *_links_local_map = NULL;
+        if (!cJSON_IsObject(_links) && !cJSON_IsNull(_links)) {
             ogs_error("OpenAPI_ue_authentication_ctx_parseFromJSON() failed [_links]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            ogs_strdup(localMapObject->string), OpenAPI_links_value_schema_parseFromJSON(localMapObject));
-        OpenAPI_list_add(_linksList , localMapKeyPair);
-    }
+        if (cJSON_IsObject(_links)) {
+            _linksList = OpenAPI_list_create();
+            OpenAPI_map_t *localMapKeyPair = NULL;
+            cJSON_ArrayForEach(_links_local_map, _links) {
+                cJSON *localMapObject = _links_local_map;
+                if (cJSON_IsObject(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(
+                        ogs_strdup(localMapObject->string), OpenAPI_links_value_schema_parseFromJSON(localMapObject));
+                } else if (cJSON_IsNull(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
+                } else {
+                    ogs_error("OpenAPI_ue_authentication_ctx_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                OpenAPI_list_add(_linksList, localMapKeyPair);
+            }
+        }
 
-    cJSON *serving_network_name = cJSON_GetObjectItemCaseSensitive(ue_authentication_ctxJSON, "servingNetworkName");
-
-    if (serving_network_name) { 
-    if (!cJSON_IsString(serving_network_name)) {
+    serving_network_name = cJSON_GetObjectItemCaseSensitive(ue_authentication_ctxJSON, "servingNetworkName");
+    if (serving_network_name) {
+    if (!cJSON_IsString(serving_network_name) && !cJSON_IsNull(serving_network_name)) {
         ogs_error("OpenAPI_ue_authentication_ctx_parseFromJSON() failed [serving_network_name]");
         goto end;
     }
-}
+    }
 
     ue_authentication_ctx_local_var = OpenAPI_ue_authentication_ctx_create (
         auth_typeVariable,
-        _5g_auth_data ? _5g_auth_data_local_nonprim : NULL,
-        eap_payload ? ogs_strdup(eap_payload->valuestring) : NULL,
+        _5g_auth_data_local_nonprim,
         _linksList,
-        serving_network_name ? ogs_strdup(serving_network_name->valuestring) : NULL
+        serving_network_name && !cJSON_IsNull(serving_network_name) ? ogs_strdup(serving_network_name->valuestring) : NULL
     );
 
     return ue_authentication_ctx_local_var;
 end:
+    if (_5g_auth_data_local_nonprim) {
+        OpenAPI_ue_authentication_ctx_5g_auth_data_free(_5g_auth_data_local_nonprim);
+        _5g_auth_data_local_nonprim = NULL;
+    }
+    if (_linksList) {
+        OpenAPI_list_for_each(_linksList, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_links_value_schema_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(_linksList);
+        _linksList = NULL;
+    }
     return NULL;
 }
 

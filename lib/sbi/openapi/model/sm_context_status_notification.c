@@ -227,7 +227,7 @@ OpenAPI_sm_context_status_notification_t *OpenAPI_sm_context_status_notification
         ogs_error("OpenAPI_sm_context_status_notification_parseFromJSON() failed [notify_correlation_ids_forddn_failure]");
         goto end;
     }
-    OpenAPI_list_add(notify_correlation_ids_forddn_failureList , ogs_strdup(notify_correlation_ids_forddn_failure_local->valuestring));
+    OpenAPI_list_add(notify_correlation_ids_forddn_failureList, ogs_strdup(notify_correlation_ids_forddn_failure_local->valuestring));
     }
     }
 

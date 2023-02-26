@@ -78,6 +78,10 @@ cJSON *OpenAPI_sequence_number_convertToJSON(OpenAPI_sequence_number_t *sequence
     if (sequence_number->last_indexes) {
         OpenAPI_list_for_each(sequence_number->last_indexes, last_indexes_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)last_indexes_node->data;
+        if (cJSON_AddNumberToObject(localMapObject, localKeyValue->key, *(double *)localKeyValue->value) == NULL) {
+            ogs_error("OpenAPI_sequence_number_convertToJSON() failed [inner]");
+            goto end;
+        }
             }
         }
     }
@@ -136,7 +140,12 @@ OpenAPI_sequence_number_t *OpenAPI_sequence_number_parseFromJSON(cJSON *sequence
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(last_indexes_local_map, last_indexes) {
         cJSON *localMapObject = last_indexes_local_map;
-        OpenAPI_list_add(last_indexesList , localMapKeyPair);
+        if (!cJSON_IsNumber(localMapObject)) {
+            ogs_error("OpenAPI_sequence_number_parseFromJSON() failed [inner]");
+            goto end;
+        }
+        localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string),&localMapObject->valuedouble );
+        OpenAPI_list_add(last_indexesList, localMapKeyPair);
     }
     }
 

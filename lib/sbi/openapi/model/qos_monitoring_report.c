@@ -177,7 +177,7 @@ OpenAPI_qos_monitoring_report_t *OpenAPI_qos_monitoring_report_parseFromJSON(cJS
         ogs_error("OpenAPI_qos_monitoring_report_parseFromJSON() failed [ul_delays]");
         goto end;
     }
-    OpenAPI_list_add(ul_delaysList , &ul_delays_local->valuedouble);
+    OpenAPI_list_add(ul_delaysList, &ul_delays_local->valuedouble);
     }
     }
 
@@ -197,7 +197,7 @@ OpenAPI_qos_monitoring_report_t *OpenAPI_qos_monitoring_report_parseFromJSON(cJS
         ogs_error("OpenAPI_qos_monitoring_report_parseFromJSON() failed [dl_delays]");
         goto end;
     }
-    OpenAPI_list_add(dl_delaysList , &dl_delays_local->valuedouble);
+    OpenAPI_list_add(dl_delaysList, &dl_delays_local->valuedouble);
     }
     }
 
@@ -217,7 +217,7 @@ OpenAPI_qos_monitoring_report_t *OpenAPI_qos_monitoring_report_parseFromJSON(cJS
         ogs_error("OpenAPI_qos_monitoring_report_parseFromJSON() failed [rt_delays]");
         goto end;
     }
-    OpenAPI_list_add(rt_delaysList , &rt_delays_local->valuedouble);
+    OpenAPI_list_add(rt_delaysList, &rt_delays_local->valuedouble);
     }
     }
 

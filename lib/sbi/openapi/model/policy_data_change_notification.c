@@ -215,10 +215,10 @@ cJSON *OpenAPI_policy_data_change_notification_convertToJSON(OpenAPI_policy_data
             OpenAPI_operator_specific_data_container_convertToJSON(localKeyValue->value) :
             cJSON_CreateNull();
         if (itemLocal == NULL) {
-            ogs_error("OpenAPI_policy_data_change_notification_convertToJSON() failed [op_spec_data_map]");
+            ogs_error("OpenAPI_policy_data_change_notification_convertToJSON() failed [inner]");
             goto end;
         }
-        cJSON_AddItemToObject(op_spec_data_map, localKeyValue->key, itemLocal);
+        cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
             }
         }
     }
@@ -383,16 +383,16 @@ OpenAPI_policy_data_change_notification_t *OpenAPI_policy_data_change_notificati
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(op_spec_data_map_local_map, op_spec_data_map) {
         cJSON *localMapObject = op_spec_data_map_local_map;
-        if (cJSON_IsObject(op_spec_data_map_local_map)) {
+        if (cJSON_IsObject(localMapObject)) {
             localMapKeyPair = OpenAPI_map_create(
                 ogs_strdup(localMapObject->string), OpenAPI_operator_specific_data_container_parseFromJSON(localMapObject));
-        } else if (cJSON_IsNull(op_spec_data_map_local_map)) {
+        } else if (cJSON_IsNull(localMapObject)) {
             localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
-            ogs_error("OpenAPI_policy_data_change_notification_parseFromJSON() failed [op_spec_data_map]");
+            ogs_error("OpenAPI_policy_data_change_notification_parseFromJSON() failed [inner]");
             goto end;
         }
-        OpenAPI_list_add(op_spec_data_mapList , localMapKeyPair);
+        OpenAPI_list_add(op_spec_data_mapList, localMapKeyPair);
     }
     }
 
@@ -455,7 +455,7 @@ OpenAPI_policy_data_change_notification_t *OpenAPI_policy_data_change_notificati
         ogs_error("OpenAPI_policy_data_change_notification_parseFromJSON() failed [del_resources]");
         goto end;
     }
-    OpenAPI_list_add(del_resourcesList , ogs_strdup(del_resources_local->valuestring));
+    OpenAPI_list_add(del_resourcesList, ogs_strdup(del_resources_local->valuestring));
     }
     }
 

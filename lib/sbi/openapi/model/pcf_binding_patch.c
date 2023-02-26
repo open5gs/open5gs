@@ -233,7 +233,7 @@ OpenAPI_pcf_binding_patch_t *OpenAPI_pcf_binding_patch_parseFromJSON(cJSON *pcf_
         ogs_error("OpenAPI_pcf_binding_patch_parseFromJSON() failed [add_ipv6_prefixes]");
         goto end;
     }
-    OpenAPI_list_add(add_ipv6_prefixesList , ogs_strdup(add_ipv6_prefixes_local->valuestring));
+    OpenAPI_list_add(add_ipv6_prefixesList, ogs_strdup(add_ipv6_prefixes_local->valuestring));
     }
     }
 
@@ -262,7 +262,7 @@ OpenAPI_pcf_binding_patch_t *OpenAPI_pcf_binding_patch_parseFromJSON(cJSON *pcf_
         ogs_error("OpenAPI_pcf_binding_patch_parseFromJSON() failed [add_mac_addrs]");
         goto end;
     }
-    OpenAPI_list_add(add_mac_addrsList , ogs_strdup(add_mac_addrs_local->valuestring));
+    OpenAPI_list_add(add_mac_addrsList, ogs_strdup(add_mac_addrs_local->valuestring));
     }
     }
 

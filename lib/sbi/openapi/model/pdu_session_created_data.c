@@ -812,7 +812,7 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
         ogs_error("OpenAPI_pdu_session_created_data_parseFromJSON() failed [dnai_list]");
         goto end;
     }
-    OpenAPI_list_add(dnai_listList , ogs_strdup(dnai_list_local->valuestring));
+    OpenAPI_list_add(dnai_listList, ogs_strdup(dnai_list_local->valuestring));
     }
     }
 

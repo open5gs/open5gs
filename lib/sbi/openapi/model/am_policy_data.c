@@ -63,10 +63,10 @@ cJSON *OpenAPI_am_policy_data_convertToJSON(OpenAPI_am_policy_data_t *am_policy_
             OpenAPI_presence_info_convertToJSON(localKeyValue->value) :
             cJSON_CreateNull();
         if (itemLocal == NULL) {
-            ogs_error("OpenAPI_am_policy_data_convertToJSON() failed [pra_infos]");
+            ogs_error("OpenAPI_am_policy_data_convertToJSON() failed [inner]");
             goto end;
         }
-        cJSON_AddItemToObject(pra_infos, localKeyValue->key, itemLocal);
+        cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
             }
         }
     }
@@ -107,16 +107,16 @@ OpenAPI_am_policy_data_t *OpenAPI_am_policy_data_parseFromJSON(cJSON *am_policy_
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(pra_infos_local_map, pra_infos) {
         cJSON *localMapObject = pra_infos_local_map;
-        if (cJSON_IsObject(pra_infos_local_map)) {
+        if (cJSON_IsObject(localMapObject)) {
             localMapKeyPair = OpenAPI_map_create(
                 ogs_strdup(localMapObject->string), OpenAPI_presence_info_parseFromJSON(localMapObject));
-        } else if (cJSON_IsNull(pra_infos_local_map)) {
+        } else if (cJSON_IsNull(localMapObject)) {
             localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
-            ogs_error("OpenAPI_am_policy_data_parseFromJSON() failed [pra_infos]");
+            ogs_error("OpenAPI_am_policy_data_parseFromJSON() failed [inner]");
             goto end;
         }
-        OpenAPI_list_add(pra_infosList , localMapKeyPair);
+        OpenAPI_list_add(pra_infosList, localMapKeyPair);
     }
     }
 
@@ -136,7 +136,7 @@ OpenAPI_am_policy_data_t *OpenAPI_am_policy_data_parseFromJSON(cJSON *am_policy_
         ogs_error("OpenAPI_am_policy_data_parseFromJSON() failed [subsc_cats]");
         goto end;
     }
-    OpenAPI_list_add(subsc_catsList , ogs_strdup(subsc_cats_local->valuestring));
+    OpenAPI_list_add(subsc_catsList, ogs_strdup(subsc_cats_local->valuestring));
     }
     }
 

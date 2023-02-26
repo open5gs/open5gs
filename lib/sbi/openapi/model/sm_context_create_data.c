@@ -1245,7 +1245,7 @@ OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_parseFromJSON(c
         ogs_error("OpenAPI_sm_context_create_data_parseFromJSON() failed [additional_hsmf_uri]");
         goto end;
     }
-    OpenAPI_list_add(additional_hsmf_uriList , ogs_strdup(additional_hsmf_uri_local->valuestring));
+    OpenAPI_list_add(additional_hsmf_uriList, ogs_strdup(additional_hsmf_uri_local->valuestring));
     }
     }
 
@@ -1265,7 +1265,7 @@ OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_parseFromJSON(c
         ogs_error("OpenAPI_sm_context_create_data_parseFromJSON() failed [additional_hsmf_id]");
         goto end;
     }
-    OpenAPI_list_add(additional_hsmf_idList , ogs_strdup(additional_hsmf_id_local->valuestring));
+    OpenAPI_list_add(additional_hsmf_idList, ogs_strdup(additional_hsmf_id_local->valuestring));
     }
     }
 
@@ -1285,7 +1285,7 @@ OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_parseFromJSON(c
         ogs_error("OpenAPI_sm_context_create_data_parseFromJSON() failed [additional_smf_uri]");
         goto end;
     }
-    OpenAPI_list_add(additional_smf_uriList , ogs_strdup(additional_smf_uri_local->valuestring));
+    OpenAPI_list_add(additional_smf_uriList, ogs_strdup(additional_smf_uri_local->valuestring));
     }
     }
 
@@ -1305,7 +1305,7 @@ OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_parseFromJSON(c
         ogs_error("OpenAPI_sm_context_create_data_parseFromJSON() failed [additional_smf_id]");
         goto end;
     }
-    OpenAPI_list_add(additional_smf_idList , ogs_strdup(additional_smf_id_local->valuestring));
+    OpenAPI_list_add(additional_smf_idList, ogs_strdup(additional_smf_id_local->valuestring));
     }
     }
 
@@ -1334,7 +1334,7 @@ OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_parseFromJSON(c
         ogs_error("OpenAPI_sm_context_create_data_parseFromJSON() failed [pdu_sessions_activate_list]");
         goto end;
     }
-    OpenAPI_list_add(pdu_sessions_activate_listList , &pdu_sessions_activate_list_local->valuedouble);
+    OpenAPI_list_add(pdu_sessions_activate_listList, &pdu_sessions_activate_list_local->valuedouble);
     }
     }
 

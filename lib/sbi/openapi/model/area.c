@@ -88,7 +88,7 @@ OpenAPI_area_t *OpenAPI_area_parseFromJSON(cJSON *areaJSON)
         ogs_error("OpenAPI_area_parseFromJSON() failed [tacs]");
         goto end;
     }
-    OpenAPI_list_add(tacsList , ogs_strdup(tacs_local->valuestring));
+    OpenAPI_list_add(tacsList, ogs_strdup(tacs_local->valuestring));
     }
     }
 

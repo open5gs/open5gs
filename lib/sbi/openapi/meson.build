@@ -595,6 +595,7 @@ libsbi_openapi_sources = files('''
     model/priority_sharing_indicator.c
     model/privacy_check_related_action.c
     model/problem_details_1.c
+    model/problem_details_2.c
     model/problem_details_add_info.c
     model/problem_details.c
     model/protection_result.c
@@ -871,6 +872,8 @@ libsbi_openapi_sources = files('''
     model/udr_info.c
     model/udsf_info.c
     model/ue_auth.c
+    model/ue_authentication_ctx.c
+    model/ue_authentication_ctx_5g_auth_data.c
     model/ue_camping_rep.c
     model/ue_context.c
     model/ue_context_cancel_relocate_data.c

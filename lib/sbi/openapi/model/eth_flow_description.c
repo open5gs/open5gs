@@ -194,7 +194,7 @@ OpenAPI_eth_flow_description_t *OpenAPI_eth_flow_description_parseFromJSON(cJSON
         ogs_error("OpenAPI_eth_flow_description_parseFromJSON() failed [vlan_tags]");
         goto end;
     }
-    OpenAPI_list_add(vlan_tagsList , ogs_strdup(vlan_tags_local->valuestring));
+    OpenAPI_list_add(vlan_tagsList, ogs_strdup(vlan_tags_local->valuestring));
     }
     }
 

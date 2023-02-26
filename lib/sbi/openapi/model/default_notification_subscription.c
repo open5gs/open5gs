@@ -167,7 +167,7 @@ OpenAPI_default_notification_subscription_t *OpenAPI_default_notification_subscr
         ogs_error("OpenAPI_default_notification_subscription_parseFromJSON() failed [versions]");
         goto end;
     }
-    OpenAPI_list_add(versionsList , ogs_strdup(versions_local->valuestring));
+    OpenAPI_list_add(versionsList, ogs_strdup(versions_local->valuestring));
     }
     }
 

@@ -280,7 +280,7 @@ OpenAPI_sdm_subscription_1_t *OpenAPI_sdm_subscription_1_parseFromJSON(cJSON *sd
         ogs_error("OpenAPI_sdm_subscription_1_parseFromJSON() failed [monitored_resource_uris]");
         goto end;
     }
-    OpenAPI_list_add(monitored_resource_urisList , ogs_strdup(monitored_resource_uris_local->valuestring));
+    OpenAPI_list_add(monitored_resource_urisList, ogs_strdup(monitored_resource_uris_local->valuestring));
     }
 
     cJSON *single_nssai = cJSON_GetObjectItemCaseSensitive(sdm_subscription_1JSON, "singleNssai");

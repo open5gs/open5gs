@@ -86,7 +86,7 @@ OpenAPI_smf_change_info_t *OpenAPI_smf_change_info_parseFromJSON(cJSON *smf_chan
         ogs_error("OpenAPI_smf_change_info_parseFromJSON() failed [pdu_session_id_list]");
         goto end;
     }
-    OpenAPI_list_add(pdu_session_id_listList , &pdu_session_id_list_local->valuedouble);
+    OpenAPI_list_add(pdu_session_id_listList, &pdu_session_id_list_local->valuedouble);
     }
 
     cJSON *smf_change_ind = cJSON_GetObjectItemCaseSensitive(smf_change_infoJSON, "smfChangeInd");

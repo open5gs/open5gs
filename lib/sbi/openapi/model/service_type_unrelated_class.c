@@ -214,7 +214,7 @@ OpenAPI_service_type_unrelated_class_t *OpenAPI_service_type_unrelated_class_par
         ogs_error("OpenAPI_service_type_unrelated_class_parseFromJSON() failed [code_word_list]");
         goto end;
     }
-    OpenAPI_list_add(code_word_listList , ogs_strdup(code_word_list_local->valuestring));
+    OpenAPI_list_add(code_word_listList, ogs_strdup(code_word_list_local->valuestring));
     }
     }
 

@@ -118,7 +118,7 @@ OpenAPI_psa_information_t *OpenAPI_psa_information_parseFromJSON(cJSON *psa_info
         ogs_error("OpenAPI_psa_information_parseFromJSON() failed [dnai_list]");
         goto end;
     }
-    OpenAPI_list_add(dnai_listList , ogs_strdup(dnai_list_local->valuestring));
+    OpenAPI_list_add(dnai_listList, ogs_strdup(dnai_list_local->valuestring));
     }
     }
 

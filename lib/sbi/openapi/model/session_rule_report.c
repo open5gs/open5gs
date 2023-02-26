@@ -113,7 +113,7 @@ OpenAPI_session_rule_report_t *OpenAPI_session_rule_report_parseFromJSON(cJSON *
         ogs_error("OpenAPI_session_rule_report_parseFromJSON() failed [rule_ids]");
         goto end;
     }
-    OpenAPI_list_add(rule_idsList , ogs_strdup(rule_ids_local->valuestring));
+    OpenAPI_list_add(rule_idsList, ogs_strdup(rule_ids_local->valuestring));
     }
 
     cJSON *rule_status = cJSON_GetObjectItemCaseSensitive(session_rule_reportJSON, "ruleStatus");

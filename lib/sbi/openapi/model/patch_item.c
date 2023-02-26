@@ -87,7 +87,7 @@ OpenAPI_patch_item_t *OpenAPI_patch_item_parseFromJSON(cJSON *patch_itemJSON)
         goto end;
     }
 
-    OpenAPI_patch_operation_e opVariable = 0;
+    OpenAPI_patch_operation_e opVariable;
     if (!cJSON_IsString(op)) {
         ogs_error("OpenAPI_patch_item_parseFromJSON() failed [op]");
         goto end;

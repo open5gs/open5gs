@@ -811,7 +811,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [gpsi_list]");
         goto end;
     }
-    OpenAPI_list_add(gpsi_listList , ogs_strdup(gpsi_list_local->valuestring));
+    OpenAPI_list_add(gpsi_listList, ogs_strdup(gpsi_list_local->valuestring));
     }
     }
 
@@ -876,7 +876,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [group_list]");
         goto end;
     }
-    OpenAPI_list_add(group_listList , ogs_strdup(group_list_local->valuestring));
+    OpenAPI_list_add(group_listList, ogs_strdup(group_list_local->valuestring));
     }
     }
 

@@ -199,7 +199,7 @@ OpenAPI_nwdaf_cond_t *OpenAPI_nwdaf_cond_parseFromJSON(cJSON *nwdaf_condJSON)
         ogs_error("OpenAPI_nwdaf_cond_parseFromJSON() failed [analytics_ids]");
         goto end;
     }
-    OpenAPI_list_add(analytics_idsList , ogs_strdup(analytics_ids_local->valuestring));
+    OpenAPI_list_add(analytics_idsList, ogs_strdup(analytics_ids_local->valuestring));
     }
     }
 

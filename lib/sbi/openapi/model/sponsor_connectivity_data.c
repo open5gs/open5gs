@@ -79,7 +79,7 @@ OpenAPI_sponsor_connectivity_data_t *OpenAPI_sponsor_connectivity_data_parseFrom
         ogs_error("OpenAPI_sponsor_connectivity_data_parseFromJSON() failed [asp_ids]");
         goto end;
     }
-    OpenAPI_list_add(asp_idsList , ogs_strdup(asp_ids_local->valuestring));
+    OpenAPI_list_add(asp_idsList, ogs_strdup(asp_ids_local->valuestring));
     }
 
     sponsor_connectivity_data_local_var = OpenAPI_sponsor_connectivity_data_create (

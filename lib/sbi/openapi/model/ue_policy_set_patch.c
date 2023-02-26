@@ -76,10 +76,10 @@ cJSON *OpenAPI_ue_policy_set_patch_convertToJSON(OpenAPI_ue_policy_set_patch_t *
             OpenAPI_ue_policy_section_convertToJSON(localKeyValue->value) :
             cJSON_CreateNull();
         if (itemLocal == NULL) {
-            ogs_error("OpenAPI_ue_policy_set_patch_convertToJSON() failed [ue_policy_sections]");
+            ogs_error("OpenAPI_ue_policy_set_patch_convertToJSON() failed [inner]");
             goto end;
         }
-        cJSON_AddItemToObject(ue_policy_sections, localKeyValue->key, itemLocal);
+        cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
             }
         }
     }
@@ -150,16 +150,16 @@ OpenAPI_ue_policy_set_patch_t *OpenAPI_ue_policy_set_patch_parseFromJSON(cJSON *
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(ue_policy_sections_local_map, ue_policy_sections) {
         cJSON *localMapObject = ue_policy_sections_local_map;
-        if (cJSON_IsObject(ue_policy_sections_local_map)) {
+        if (cJSON_IsObject(localMapObject)) {
             localMapKeyPair = OpenAPI_map_create(
                 ogs_strdup(localMapObject->string), OpenAPI_ue_policy_section_parseFromJSON(localMapObject));
-        } else if (cJSON_IsNull(ue_policy_sections_local_map)) {
+        } else if (cJSON_IsNull(localMapObject)) {
             localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
-            ogs_error("OpenAPI_ue_policy_set_patch_parseFromJSON() failed [ue_policy_sections]");
+            ogs_error("OpenAPI_ue_policy_set_patch_parseFromJSON() failed [inner]");
             goto end;
         }
-        OpenAPI_list_add(ue_policy_sectionsList , localMapKeyPair);
+        OpenAPI_list_add(ue_policy_sectionsList, localMapKeyPair);
     }
     }
 
@@ -179,7 +179,7 @@ OpenAPI_ue_policy_set_patch_t *OpenAPI_ue_policy_set_patch_parseFromJSON(cJSON *
         ogs_error("OpenAPI_ue_policy_set_patch_parseFromJSON() failed [upsis]");
         goto end;
     }
-    OpenAPI_list_add(upsisList , ogs_strdup(upsis_local->valuestring));
+    OpenAPI_list_add(upsisList, ogs_strdup(upsis_local->valuestring));
     }
     }
 
@@ -217,7 +217,7 @@ OpenAPI_ue_policy_set_patch_t *OpenAPI_ue_policy_set_patch_parseFromJSON(cJSON *
         ogs_error("OpenAPI_ue_policy_set_patch_parseFromJSON() failed [os_ids]");
         goto end;
     }
-    OpenAPI_list_add(os_idsList , ogs_strdup(os_ids_local->valuestring));
+    OpenAPI_list_add(os_idsList, ogs_strdup(os_ids_local->valuestring));
     }
     }
 

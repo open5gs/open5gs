@@ -155,7 +155,7 @@ OpenAPI_sm_context_retrieve_data_t *OpenAPI_sm_context_retrieve_data_parseFromJS
         ogs_error("OpenAPI_sm_context_retrieve_data_parseFromJSON() failed [not_to_transfer_ebi_list]");
         goto end;
     }
-    OpenAPI_list_add(not_to_transfer_ebi_listList , &not_to_transfer_ebi_list_local->valuedouble);
+    OpenAPI_list_add(not_to_transfer_ebi_listList, &not_to_transfer_ebi_list_local->valuedouble);
     }
     }
 

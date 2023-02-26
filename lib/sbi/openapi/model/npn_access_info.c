@@ -78,7 +78,7 @@ OpenAPI_npn_access_info_t *OpenAPI_npn_access_info_parseFromJSON(cJSON *npn_acce
         ogs_error("OpenAPI_npn_access_info_parseFromJSON() failed [cell_cag_info]");
         goto end;
     }
-    OpenAPI_list_add(cell_cag_infoList , ogs_strdup(cell_cag_info_local->valuestring));
+    OpenAPI_list_add(cell_cag_infoList, ogs_strdup(cell_cag_info_local->valuestring));
     }
     }
 

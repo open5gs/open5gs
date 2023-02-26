@@ -98,7 +98,7 @@ OpenAPI_scheduled_communication_time_rm_t *OpenAPI_scheduled_communication_time_
         ogs_error("OpenAPI_scheduled_communication_time_rm_parseFromJSON() failed [days_of_week]");
         goto end;
     }
-    OpenAPI_list_add(days_of_weekList , &days_of_week_local->valuedouble);
+    OpenAPI_list_add(days_of_weekList, &days_of_week_local->valuedouble);
     }
     }
 
