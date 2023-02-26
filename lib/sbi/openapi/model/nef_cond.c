@@ -349,7 +349,7 @@ OpenAPI_nef_cond_t *OpenAPI_nef_cond_parseFromJSON(cJSON *nef_condJSON)
         ogs_error("OpenAPI_nef_cond_parseFromJSON() failed [served_fqdn_list]");
         goto end;
     }
-    OpenAPI_list_add(served_fqdn_listList , ogs_strdup(served_fqdn_list_local->valuestring));
+    OpenAPI_list_add(served_fqdn_listList, ogs_strdup(served_fqdn_list_local->valuestring));
     }
     }
 

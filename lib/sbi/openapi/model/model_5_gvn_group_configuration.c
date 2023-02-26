@@ -142,7 +142,7 @@ OpenAPI_model_5_gvn_group_configuration_t *OpenAPI_model_5_gvn_group_configurati
         ogs_error("OpenAPI_model_5_gvn_group_configuration_parseFromJSON() failed [members]");
         goto end;
     }
-    OpenAPI_list_add(membersList , ogs_strdup(members_local->valuestring));
+    OpenAPI_list_add(membersList, ogs_strdup(members_local->valuestring));
     }
     }
 

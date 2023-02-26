@@ -376,7 +376,7 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_parseFr
         ogs_error("OpenAPI_ext_amf_event_subscription_parseFromJSON() failed [binding_info]");
         goto end;
     }
-    OpenAPI_list_add(binding_infoList , ogs_strdup(binding_info_local->valuestring));
+    OpenAPI_list_add(binding_infoList, ogs_strdup(binding_info_local->valuestring));
     }
     }
 

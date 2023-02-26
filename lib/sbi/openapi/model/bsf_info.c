@@ -152,7 +152,7 @@ OpenAPI_bsf_info_t *OpenAPI_bsf_info_parseFromJSON(cJSON *bsf_infoJSON)
         ogs_error("OpenAPI_bsf_info_parseFromJSON() failed [dnn_list]");
         goto end;
     }
-    OpenAPI_list_add(dnn_listList , ogs_strdup(dnn_list_local->valuestring));
+    OpenAPI_list_add(dnn_listList, ogs_strdup(dnn_list_local->valuestring));
     }
     }
 
@@ -172,7 +172,7 @@ OpenAPI_bsf_info_t *OpenAPI_bsf_info_parseFromJSON(cJSON *bsf_infoJSON)
         ogs_error("OpenAPI_bsf_info_parseFromJSON() failed [ip_domain_list]");
         goto end;
     }
-    OpenAPI_list_add(ip_domain_listList , ogs_strdup(ip_domain_list_local->valuestring));
+    OpenAPI_list_add(ip_domain_listList, ogs_strdup(ip_domain_list_local->valuestring));
     }
     }
 

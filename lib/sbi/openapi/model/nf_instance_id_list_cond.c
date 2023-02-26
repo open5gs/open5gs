@@ -79,7 +79,7 @@ OpenAPI_nf_instance_id_list_cond_t *OpenAPI_nf_instance_id_list_cond_parseFromJS
         ogs_error("OpenAPI_nf_instance_id_list_cond_parseFromJSON() failed [nf_instance_id_list]");
         goto end;
     }
-    OpenAPI_list_add(nf_instance_id_listList , ogs_strdup(nf_instance_id_list_local->valuestring));
+    OpenAPI_list_add(nf_instance_id_listList, ogs_strdup(nf_instance_id_list_local->valuestring));
     }
 
     nf_instance_id_list_cond_local_var = OpenAPI_nf_instance_id_list_cond_create (

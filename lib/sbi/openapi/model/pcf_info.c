@@ -180,7 +180,7 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_parseFromJSON(cJSON *pcf_infoJSON)
         ogs_error("OpenAPI_pcf_info_parseFromJSON() failed [dnn_list]");
         goto end;
     }
-    OpenAPI_list_add(dnn_listList , ogs_strdup(dnn_list_local->valuestring));
+    OpenAPI_list_add(dnn_listList, ogs_strdup(dnn_list_local->valuestring));
     }
     }
 

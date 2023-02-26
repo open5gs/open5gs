@@ -362,7 +362,7 @@ OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_p
         ogs_error("OpenAPI_subscription_data_subscr_cond_parseFromJSON() failed [nsi_list]");
         goto end;
     }
-    OpenAPI_list_add(nsi_listList , ogs_strdup(nsi_list_local->valuestring));
+    OpenAPI_list_add(nsi_listList, ogs_strdup(nsi_list_local->valuestring));
     }
     }
 
@@ -409,7 +409,7 @@ OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_p
         ogs_error("OpenAPI_subscription_data_subscr_cond_parseFromJSON() failed [smf_serving_area]");
         goto end;
     }
-    OpenAPI_list_add(smf_serving_areaList , ogs_strdup(smf_serving_area_local->valuestring));
+    OpenAPI_list_add(smf_serving_areaList, ogs_strdup(smf_serving_area_local->valuestring));
     }
     }
 

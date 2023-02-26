@@ -561,7 +561,7 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
         ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [serving_scope]");
         goto end;
     }
-    OpenAPI_list_add(serving_scopeList , ogs_strdup(serving_scope_local->valuestring));
+    OpenAPI_list_add(serving_scopeList, ogs_strdup(serving_scope_local->valuestring));
     }
     }
 

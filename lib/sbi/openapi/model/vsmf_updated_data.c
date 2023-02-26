@@ -619,7 +619,7 @@ OpenAPI_vsmf_updated_data_t *OpenAPI_vsmf_updated_data_parseFromJSON(cJSON *vsmf
         ogs_error("OpenAPI_vsmf_updated_data_parseFromJSON() failed [released_ebi_list]");
         goto end;
     }
-    OpenAPI_list_add(released_ebi_listList , &released_ebi_list_local->valuedouble);
+    OpenAPI_list_add(released_ebi_listList, &released_ebi_list_local->valuedouble);
     }
     }
 

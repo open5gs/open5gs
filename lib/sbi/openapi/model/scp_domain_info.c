@@ -99,6 +99,10 @@ cJSON *OpenAPI_scp_domain_info_convertToJSON(OpenAPI_scp_domain_info_t *scp_doma
     if (scp_domain_info->scp_ports) {
         OpenAPI_list_for_each(scp_domain_info->scp_ports, scp_ports_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)scp_ports_node->data;
+        if (cJSON_AddNumberToObject(localMapObject, localKeyValue->key, *(double *)localKeyValue->value) == NULL) {
+            ogs_error("OpenAPI_scp_domain_info_convertToJSON() failed [inner]");
+            goto end;
+        }
             }
         }
     }
@@ -170,7 +174,12 @@ OpenAPI_scp_domain_info_t *OpenAPI_scp_domain_info_parseFromJSON(cJSON *scp_doma
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(scp_ports_local_map, scp_ports) {
         cJSON *localMapObject = scp_ports_local_map;
-        OpenAPI_list_add(scp_portsList , localMapKeyPair);
+        if (!cJSON_IsNumber(localMapObject)) {
+            ogs_error("OpenAPI_scp_domain_info_parseFromJSON() failed [inner]");
+            goto end;
+        }
+        localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string),&localMapObject->valuedouble );
+        OpenAPI_list_add(scp_portsList, localMapKeyPair);
     }
     }
 

@@ -474,7 +474,7 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
         ogs_error("OpenAPI_policy_association_request_parseFromJSON() failed [alt_notif_ipv4_addrs]");
         goto end;
     }
-    OpenAPI_list_add(alt_notif_ipv4_addrsList , ogs_strdup(alt_notif_ipv4_addrs_local->valuestring));
+    OpenAPI_list_add(alt_notif_ipv4_addrsList, ogs_strdup(alt_notif_ipv4_addrs_local->valuestring));
     }
     }
 
@@ -494,7 +494,7 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
         ogs_error("OpenAPI_policy_association_request_parseFromJSON() failed [alt_notif_ipv6_addrs]");
         goto end;
     }
-    OpenAPI_list_add(alt_notif_ipv6_addrsList , ogs_strdup(alt_notif_ipv6_addrs_local->valuestring));
+    OpenAPI_list_add(alt_notif_ipv6_addrsList, ogs_strdup(alt_notif_ipv6_addrs_local->valuestring));
     }
     }
 
@@ -514,7 +514,7 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
         ogs_error("OpenAPI_policy_association_request_parseFromJSON() failed [alt_notif_fqdns]");
         goto end;
     }
-    OpenAPI_list_add(alt_notif_fqdnsList , ogs_strdup(alt_notif_fqdns_local->valuestring));
+    OpenAPI_list_add(alt_notif_fqdnsList, ogs_strdup(alt_notif_fqdns_local->valuestring));
     }
     }
 
@@ -652,7 +652,7 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
         ogs_error("OpenAPI_policy_association_request_parseFromJSON() failed [group_ids]");
         goto end;
     }
-    OpenAPI_list_add(group_idsList , ogs_strdup(group_ids_local->valuestring));
+    OpenAPI_list_add(group_idsList, ogs_strdup(group_ids_local->valuestring));
     }
     }
 

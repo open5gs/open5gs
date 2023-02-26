@@ -556,7 +556,7 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
         ogs_error("OpenAPI_mm_context_parseFromJSON() failed [ns_instance_list]");
         goto end;
     }
-    OpenAPI_list_add(ns_instance_listList , ogs_strdup(ns_instance_list_local->valuestring));
+    OpenAPI_list_add(ns_instance_listList, ogs_strdup(ns_instance_list_local->valuestring));
     }
     }
 

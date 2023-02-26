@@ -614,7 +614,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [inter_grp_ids]");
         goto end;
     }
-    OpenAPI_list_add(inter_grp_idsList , ogs_strdup(inter_grp_ids_local->valuestring));
+    OpenAPI_list_add(inter_grp_idsList, ogs_strdup(inter_grp_ids_local->valuestring));
     }
     }
 
@@ -942,7 +942,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [ipv4_frame_route_list]");
         goto end;
     }
-    OpenAPI_list_add(ipv4_frame_route_listList , ogs_strdup(ipv4_frame_route_list_local->valuestring));
+    OpenAPI_list_add(ipv4_frame_route_listList, ogs_strdup(ipv4_frame_route_list_local->valuestring));
     }
     }
 
@@ -962,7 +962,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [ipv6_frame_route_list]");
         goto end;
     }
-    OpenAPI_list_add(ipv6_frame_route_listList , ogs_strdup(ipv6_frame_route_list_local->valuestring));
+    OpenAPI_list_add(ipv6_frame_route_listList, ogs_strdup(ipv6_frame_route_list_local->valuestring));
     }
     }
 

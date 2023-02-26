@@ -110,7 +110,7 @@ OpenAPI_twif_info_t *OpenAPI_twif_info_parseFromJSON(cJSON *twif_infoJSON)
         ogs_error("OpenAPI_twif_info_parseFromJSON() failed [ipv4_endpoint_addresses]");
         goto end;
     }
-    OpenAPI_list_add(ipv4_endpoint_addressesList , ogs_strdup(ipv4_endpoint_addresses_local->valuestring));
+    OpenAPI_list_add(ipv4_endpoint_addressesList, ogs_strdup(ipv4_endpoint_addresses_local->valuestring));
     }
     }
 
@@ -130,7 +130,7 @@ OpenAPI_twif_info_t *OpenAPI_twif_info_parseFromJSON(cJSON *twif_infoJSON)
         ogs_error("OpenAPI_twif_info_parseFromJSON() failed [ipv6_endpoint_addresses]");
         goto end;
     }
-    OpenAPI_list_add(ipv6_endpoint_addressesList , ogs_strdup(ipv6_endpoint_addresses_local->valuestring));
+    OpenAPI_list_add(ipv6_endpoint_addressesList, ogs_strdup(ipv6_endpoint_addresses_local->valuestring));
     }
     }
 

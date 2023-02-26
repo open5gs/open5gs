@@ -107,7 +107,7 @@ OpenAPI_flows_t *OpenAPI_flows_parseFromJSON(cJSON *flowsJSON)
         ogs_error("OpenAPI_flows_parseFromJSON() failed [cont_vers]");
         goto end;
     }
-    OpenAPI_list_add(cont_versList , &cont_vers_local->valuedouble);
+    OpenAPI_list_add(cont_versList, &cont_vers_local->valuedouble);
     }
     }
 
@@ -127,7 +127,7 @@ OpenAPI_flows_t *OpenAPI_flows_parseFromJSON(cJSON *flowsJSON)
         ogs_error("OpenAPI_flows_parseFromJSON() failed [f_nums]");
         goto end;
     }
-    OpenAPI_list_add(f_numsList , &f_nums_local->valuedouble);
+    OpenAPI_list_add(f_numsList, &f_nums_local->valuedouble);
     }
     }
 

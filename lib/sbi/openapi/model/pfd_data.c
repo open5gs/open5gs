@@ -100,7 +100,7 @@ OpenAPI_pfd_data_t *OpenAPI_pfd_data_parseFromJSON(cJSON *pfd_dataJSON)
         ogs_error("OpenAPI_pfd_data_parseFromJSON() failed [app_ids]");
         goto end;
     }
-    OpenAPI_list_add(app_idsList , ogs_strdup(app_ids_local->valuestring));
+    OpenAPI_list_add(app_idsList, ogs_strdup(app_ids_local->valuestring));
     }
     }
 
@@ -120,7 +120,7 @@ OpenAPI_pfd_data_t *OpenAPI_pfd_data_parseFromJSON(cJSON *pfd_dataJSON)
         ogs_error("OpenAPI_pfd_data_parseFromJSON() failed [af_ids]");
         goto end;
     }
-    OpenAPI_list_add(af_idsList , ogs_strdup(af_ids_local->valuestring));
+    OpenAPI_list_add(af_idsList, ogs_strdup(af_ids_local->valuestring));
     }
     }
 

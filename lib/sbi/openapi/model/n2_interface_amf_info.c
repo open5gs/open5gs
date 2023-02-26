@@ -110,7 +110,7 @@ OpenAPI_n2_interface_amf_info_t *OpenAPI_n2_interface_amf_info_parseFromJSON(cJS
         ogs_error("OpenAPI_n2_interface_amf_info_parseFromJSON() failed [ipv4_endpoint_address]");
         goto end;
     }
-    OpenAPI_list_add(ipv4_endpoint_addressList , ogs_strdup(ipv4_endpoint_address_local->valuestring));
+    OpenAPI_list_add(ipv4_endpoint_addressList, ogs_strdup(ipv4_endpoint_address_local->valuestring));
     }
     }
 
@@ -130,7 +130,7 @@ OpenAPI_n2_interface_amf_info_t *OpenAPI_n2_interface_amf_info_parseFromJSON(cJS
         ogs_error("OpenAPI_n2_interface_amf_info_parseFromJSON() failed [ipv6_endpoint_address]");
         goto end;
     }
-    OpenAPI_list_add(ipv6_endpoint_addressList , ogs_strdup(ipv6_endpoint_address_local->valuestring));
+    OpenAPI_list_add(ipv6_endpoint_addressList, ogs_strdup(ipv6_endpoint_address_local->valuestring));
     }
     }
 

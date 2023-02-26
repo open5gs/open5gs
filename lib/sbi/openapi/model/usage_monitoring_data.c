@@ -296,7 +296,7 @@ OpenAPI_usage_monitoring_data_t *OpenAPI_usage_monitoring_data_parseFromJSON(cJS
         ogs_error("OpenAPI_usage_monitoring_data_parseFromJSON() failed [ex_usage_pcc_rule_ids]");
         goto end;
     }
-    OpenAPI_list_add(ex_usage_pcc_rule_idsList , ogs_strdup(ex_usage_pcc_rule_ids_local->valuestring));
+    OpenAPI_list_add(ex_usage_pcc_rule_idsList, ogs_strdup(ex_usage_pcc_rule_ids_local->valuestring));
     }
     }
 

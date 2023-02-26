@@ -169,7 +169,7 @@ OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_parse
         ogs_error("OpenAPI_authentication_info_request_parseFromJSON() failed [cell_cag_info]");
         goto end;
     }
-    OpenAPI_list_add(cell_cag_infoList , ogs_strdup(cell_cag_info_local->valuestring));
+    OpenAPI_list_add(cell_cag_infoList, ogs_strdup(cell_cag_info_local->valuestring));
     }
     }
 

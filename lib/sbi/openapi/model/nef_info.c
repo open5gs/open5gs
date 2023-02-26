@@ -253,7 +253,7 @@ OpenAPI_nef_info_t *OpenAPI_nef_info_parseFromJSON(cJSON *nef_infoJSON)
         ogs_error("OpenAPI_nef_info_parseFromJSON() failed [served_fqdn_list]");
         goto end;
     }
-    OpenAPI_list_add(served_fqdn_listList , ogs_strdup(served_fqdn_list_local->valuestring));
+    OpenAPI_list_add(served_fqdn_listList, ogs_strdup(served_fqdn_list_local->valuestring));
     }
     }
 

@@ -419,7 +419,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [add_ipv6_prefixes]");
         goto end;
     }
-    OpenAPI_list_add(add_ipv6_prefixesList , ogs_strdup(add_ipv6_prefixes_local->valuestring));
+    OpenAPI_list_add(add_ipv6_prefixesList, ogs_strdup(add_ipv6_prefixes_local->valuestring));
     }
     }
 
@@ -457,7 +457,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [add_mac_addrs]");
         goto end;
     }
-    OpenAPI_list_add(add_mac_addrsList , ogs_strdup(add_mac_addrs_local->valuestring));
+    OpenAPI_list_add(add_mac_addrsList, ogs_strdup(add_mac_addrs_local->valuestring));
     }
     }
 
@@ -645,7 +645,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [ipv4_frame_route_list]");
         goto end;
     }
-    OpenAPI_list_add(ipv4_frame_route_listList , ogs_strdup(ipv4_frame_route_list_local->valuestring));
+    OpenAPI_list_add(ipv4_frame_route_listList, ogs_strdup(ipv4_frame_route_list_local->valuestring));
     }
     }
 
@@ -665,7 +665,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [ipv6_frame_route_list]");
         goto end;
     }
-    OpenAPI_list_add(ipv6_frame_route_listList , ogs_strdup(ipv6_frame_route_list_local->valuestring));
+    OpenAPI_list_add(ipv6_frame_route_listList, ogs_strdup(ipv6_frame_route_list_local->valuestring));
     }
     }
 

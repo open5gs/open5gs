@@ -1,0 +1,551 @@
+openapi: 3.0.0
+
+info:
+  version: '1.1.3'
+  title: 'Nudm_PP'
+  description: |
+    Nudm Parameter Provision Service.
+    © 2021, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.503 Unified Data Management Services, version 16.8.0
+  url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.503/'
+
+servers:
+  - url: '{apiRoot}/nudm-pp/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause clause 4.4 of 3GPP TS 29.501.
+
+security:
+  - oAuth2ClientCredentials:
+    - nudm-pp
+  - {}
+
+paths:
+  /{ueId}/pp-data:
+    patch:
+      summary: provision parameters
+      operationId: Update
+      tags:
+        - Subscription Data Update
+      parameters:
+        - name: ueId
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            anyOf:
+              - $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+              - $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/ExtGroupId'
+        - name: supported-features
+          in: query
+          description: Features required to be supported by the target NF
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      requestBody:
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/PpData'
+        required: true
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchResult'
+        '204':
+          description: Expected response to a valid request
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+  /5g-vn-groups/{extGroupId}:
+    put:
+      summary: create a 5G VN Group
+      operationId: Create 5G VN Group
+      tags:
+        - 5G VN Group Creation
+      parameters:
+        - name: extGroupId
+          in: path
+          description: External Identifier of the Group
+          required: true
+          schema:
+            $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/ExtGroupId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/5GVnGroupConfiguration'
+        required: true
+      responses:
+        '201':
+          description: Expected response to a valid request
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+    delete:
+      summary: delete a 5G VN Group
+      operationId: Delete 5G VN Group
+      tags:
+        - 5G VN Group Deletion
+      parameters:
+        - name: extGroupId
+          in: path
+          description: External Identifier of the Group
+          required: true
+          schema:
+            $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/ExtGroupId'
+        - name: mtc-provider-info
+          in: query
+          description: MTC Provider Information that originated the service operation
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/MtcProviderInformation'
+        - name: af-id
+          in: query
+          description: AF ID that originated the service operation
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Expected response to a valid request
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+    patch:
+      summary: modify a 5G VN Group
+      operationId: Modify 5G VN Group
+      tags:
+        - 5G VN Group Modification
+      parameters:
+        - name: extGroupId
+          in: path
+          description: External Identifier of the group
+          required: true
+          schema:
+            $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/ExtGroupId'
+        - name: supported-features
+          in: query
+          description: Features required to be supported by the target NF
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      requestBody:
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/5GVnGroupConfiguration'
+        required: true
+      responses:
+        '204':
+          description: Expected response to a valid request
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchResult'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+    get:
+      summary: get 5G VN Group
+      operationId: Get 5G VN Group
+      tags:
+        - 5G VN Group Modification
+      parameters:
+        - name: extGroupId
+          in: path
+          description: External Identifier of the group
+          required: true
+          schema:
+            $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/ExtGroupId'
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/5GVnGroupConfiguration'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nudm-pp: Access to the nudm-pp API
+
+
+  schemas:
+
+# COMPLEX TYPES:
+
+    PpData:
+      type: object
+      properties:
+        communicationCharacteristics:
+          $ref: '#/components/schemas/CommunicationCharacteristics'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        expectedUeBehaviourParameters:
+          $ref: '#/components/schemas/ExpectedUeBehaviour'
+        ecRestriction:
+          $ref: '#/components/schemas/EcRestriction'
+        acsInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AcsInfoRm'
+        stnSr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/StnSrRm'
+        lcsPrivacy:
+          $ref: '#/components/schemas/LcsPrivacy'
+        sorInfo:
+          $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/SorInfo'
+
+    CommunicationCharacteristics:
+      type: object
+      properties:
+        ppSubsRegTimer:
+          $ref: '#/components/schemas/PpSubsRegTimer'
+        ppActiveTime:
+          $ref: '#/components/schemas/PpActiveTime'
+        ppDlPacketCount:
+          $ref: '#/components/schemas/PpDlPacketCount'
+        ppDlPacketCountExt:
+          $ref: '#/components/schemas/PpDlPacketCountExt'
+        ppMaximumResponseTime:
+          $ref: '#/components/schemas/PpMaximumResponseTime'
+        ppMaximumLatency:
+          $ref: '#/components/schemas/PpMaximumLatency'
+
+
+    PpSubsRegTimer:
+      type: object
+      required:
+        - subsRegTimer
+        - afInstanceId
+        - referenceId
+      properties:
+        subsRegTimer:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        afInstanceId:
+          type: string
+        referenceId:
+          $ref: '#/components/schemas/ReferenceId'
+        validityTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        mtcProviderInformation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MtcProviderInformation'
+      nullable: true
+
+    PpActiveTime:
+      type: object
+      required:
+        - activeTime
+        - afInstanceId
+        - referenceId
+      properties:
+        activeTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        afInstanceId:
+          type: string
+        referenceId:
+          $ref: '#/components/schemas/ReferenceId'
+        validityTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        mtcProviderInformation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MtcProviderInformation'
+      nullable: true
+
+    5GVnGroupConfiguration:
+      type: object
+      properties:
+        5gVnGroupData:
+          $ref: '#/components/schemas/5GVnGroupData'
+        members:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+          minItems: 1
+        referenceId:
+          $ref: '#/components/schemas/ReferenceId'
+        afInstanceId:
+          type: string
+        internalGroupIdentifier:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/GroupId'
+        mtcProviderInformation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MtcProviderInformation'
+
+    5GVnGroupData:
+      type: object
+      required:
+        - dnn
+        - sNssai
+      properties:
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        sNssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        pduSessionTypes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionType'
+          minItems: 1
+        appDescriptors:
+          type: array
+          items:
+            $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/AppDescriptor'
+          minItems: 1
+        secondaryAuth:
+          type: boolean
+        dnAaaAddress:
+          $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/IpAddress'
+
+    ExpectedUeBehaviour:
+      type: object
+      required:
+        - afInstanceId
+        - referenceId
+      properties:
+        afInstanceId:
+          type: string
+        referenceId:
+          $ref: '#/components/schemas/ReferenceId'
+        stationaryIndication:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/StationaryIndicationRm'
+        communicationDurationTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSecRm'
+        scheduledCommunicationType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ScheduledCommunicationTypeRm'
+        periodicTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSecRm'
+        scheduledCommunicationTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ScheduledCommunicationTimeRm'
+        expectedUmts:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocationArea'
+          minItems: 1
+          nullable: true
+          description: Identifies the UE's expected geographical movement. The attribute is only applicable in 5G.
+        trafficProfile:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TrafficProfileRm'
+        batteryIndication:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/BatteryIndicationRm'
+        validityTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        mtcProviderInformation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MtcProviderInformation'
+
+    LocationArea:
+      type: object
+      properties:
+        geographicAreas:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+          minItems: 0
+          description: Identifies a list of geographic area of the user where the UE is located.
+        civicAddresses:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/CivicAddress'
+          minItems: 0
+          description: Identifies a list of civic addresses of the user where the UE is located.
+        nwAreaInfo:
+          $ref: '#/components/schemas/NetworkAreaInfo'
+
+    NetworkAreaInfo:
+      description: Describes a network area information in which the NF service consumer requests the number of UEs.
+      type: object
+      properties:
+        ecgis:
+          description: Contains a list of E-UTRA cell identities.
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ecgi'
+          minItems: 1
+        ncgis:
+          description: Contains a list of NR cell identities.
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ncgi'
+          minItems: 1
+        gRanNodeIds:
+          description: Contains a list of NG RAN nodes.
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/GlobalRanNodeId'
+          minItems: 1
+        tais:
+          description: Contains a list of tracking area identities.
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Tai'
+          minItems: 1
+
+    EcRestriction:
+      type: object
+      required:
+        - afInstanceId
+        - referenceId
+      properties:
+        afInstanceId:
+          type: string
+        referenceId:
+          $ref: '#/components/schemas/ReferenceId'
+        plmnEcInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlmnEcInfo'
+          minItems: 1
+        mtcProviderInformation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MtcProviderInformation'
+
+    PlmnEcInfo:
+      type: object
+      required:
+        - plmnId
+      properties:
+        plmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        ecRestrictionDataWb:
+          $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/EcRestrictionDataWb'
+        ecRestrictionDataNb:
+          type: boolean
+          default: false
+
+
+    PpDlPacketCountExt:
+      type: object
+      required:
+        - afInstanceId
+        - referenceId
+      properties:
+        afInstanceId:
+          type: string
+        referenceId:
+          $ref: '#/components/schemas/ReferenceId'
+        validityTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        mtcProviderInformation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MtcProviderInformation'
+      nullable: true
+
+    PpMaximumResponseTime:
+      type: object
+      required:
+        - maximumResponseTime
+        - afInstanceId
+        - referenceId
+      properties:
+        maximumResponseTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        afInstanceId:
+          type: string
+        referenceId:
+          $ref: '#/components/schemas/ReferenceId'
+        validityTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        mtcProviderInformation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MtcProviderInformation'
+      nullable: true
+
+    PpMaximumLatency:
+      type: object
+      required:
+        - maximumLatency
+        - afInstanceId
+        - referenceId
+      properties:
+        maximumLatency:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        afInstanceId:
+          type: string
+        referenceId:
+          $ref: '#/components/schemas/ReferenceId'
+        validityTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        mtcProviderInformation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MtcProviderInformation'
+      nullable: true
+
+    LcsPrivacy:
+      type: object
+      properties:
+        afInstanceId:
+          type: string
+        referenceId:
+          $ref: '#/components/schemas/ReferenceId'
+        lpi:
+          $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/Lpi'
+        mtcProviderInformation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MtcProviderInformation'
+
+
+# SIMPLE TYPES:
+
+    ReferenceId:
+      type: integer
+
+    PpDlPacketCount:
+      type: integer
+      nullable: true
+
+
+
+# ENUMS:
+

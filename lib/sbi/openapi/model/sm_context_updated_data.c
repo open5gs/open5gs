@@ -377,7 +377,7 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
         ogs_error("OpenAPI_sm_context_updated_data_parseFromJSON() failed [release_ebi_list]");
         goto end;
     }
-    OpenAPI_list_add(release_ebi_listList , &release_ebi_list_local->valuedouble);
+    OpenAPI_list_add(release_ebi_listList, &release_ebi_list_local->valuedouble);
     }
     }
 
@@ -480,7 +480,7 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
         ogs_error("OpenAPI_sm_context_updated_data_parseFromJSON() failed [eps_bearer_setup]");
         goto end;
     }
-    OpenAPI_list_add(eps_bearer_setupList , ogs_strdup(eps_bearer_setup_local->valuestring));
+    OpenAPI_list_add(eps_bearer_setupList, ogs_strdup(eps_bearer_setup_local->valuestring));
     }
     }
 
@@ -605,7 +605,7 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
         ogs_error("OpenAPI_sm_context_updated_data_parseFromJSON() failed [forwarding_bearer_contexts]");
         goto end;
     }
-    OpenAPI_list_add(forwarding_bearer_contextsList , ogs_strdup(forwarding_bearer_contexts_local->valuestring));
+    OpenAPI_list_add(forwarding_bearer_contextsList, ogs_strdup(forwarding_bearer_contexts_local->valuestring));
     }
     }
 

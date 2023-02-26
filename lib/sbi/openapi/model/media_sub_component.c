@@ -219,7 +219,7 @@ OpenAPI_media_sub_component_t *OpenAPI_media_sub_component_parseFromJSON(cJSON *
         ogs_error("OpenAPI_media_sub_component_parseFromJSON() failed [f_descs]");
         goto end;
     }
-    OpenAPI_list_add(f_descsList , ogs_strdup(f_descs_local->valuestring));
+    OpenAPI_list_add(f_descsList, ogs_strdup(f_descs_local->valuestring));
     }
     }
 

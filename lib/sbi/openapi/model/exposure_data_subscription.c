@@ -118,7 +118,7 @@ OpenAPI_exposure_data_subscription_t *OpenAPI_exposure_data_subscription_parseFr
         ogs_error("OpenAPI_exposure_data_subscription_parseFromJSON() failed [monitored_resource_uris]");
         goto end;
     }
-    OpenAPI_list_add(monitored_resource_urisList , ogs_strdup(monitored_resource_uris_local->valuestring));
+    OpenAPI_list_add(monitored_resource_urisList, ogs_strdup(monitored_resource_uris_local->valuestring));
     }
 
     cJSON *expiry = cJSON_GetObjectItemCaseSensitive(exposure_data_subscriptionJSON, "expiry");

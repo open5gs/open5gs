@@ -336,7 +336,7 @@ OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_parseFromJSON(cJSON *hsmf
         ogs_error("OpenAPI_hsmf_updated_data_parseFromJSON() failed [dnai_list]");
         goto end;
     }
-    OpenAPI_list_add(dnai_listList , ogs_strdup(dnai_list_local->valuestring));
+    OpenAPI_list_add(dnai_listList, ogs_strdup(dnai_list_local->valuestring));
     }
     }
 
