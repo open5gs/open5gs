@@ -7,7 +7,11 @@
 OpenAPI_ee_group_profile_data_t *OpenAPI_ee_group_profile_data_create(
     OpenAPI_list_t *restricted_event_types,
     OpenAPI_list_t* allowed_mtc_provider,
-    char *supported_features
+    char *supported_features,
+    bool is_iwk_epc_restricted,
+    int iwk_epc_restricted,
+    char *ext_group_id,
+    char *hss_group_id
 )
 {
     OpenAPI_ee_group_profile_data_t *ee_group_profile_data_local_var = ogs_malloc(sizeof(OpenAPI_ee_group_profile_data_t));
@@ -16,6 +20,10 @@ OpenAPI_ee_group_profile_data_t *OpenAPI_ee_group_profile_data_create(
     ee_group_profile_data_local_var->restricted_event_types = restricted_event_types;
     ee_group_profile_data_local_var->allowed_mtc_provider = allowed_mtc_provider;
     ee_group_profile_data_local_var->supported_features = supported_features;
+    ee_group_profile_data_local_var->is_iwk_epc_restricted = is_iwk_epc_restricted;
+    ee_group_profile_data_local_var->iwk_epc_restricted = iwk_epc_restricted;
+    ee_group_profile_data_local_var->ext_group_id = ext_group_id;
+    ee_group_profile_data_local_var->hss_group_id = hss_group_id;
 
     return ee_group_profile_data_local_var;
 }
@@ -47,6 +55,14 @@ void OpenAPI_ee_group_profile_data_free(OpenAPI_ee_group_profile_data_t *ee_grou
     if (ee_group_profile_data->supported_features) {
         ogs_free(ee_group_profile_data->supported_features);
         ee_group_profile_data->supported_features = NULL;
+    }
+    if (ee_group_profile_data->ext_group_id) {
+        ogs_free(ee_group_profile_data->ext_group_id);
+        ee_group_profile_data->ext_group_id = NULL;
+    }
+    if (ee_group_profile_data->hss_group_id) {
+        ogs_free(ee_group_profile_data->hss_group_id);
+        ee_group_profile_data->hss_group_id = NULL;
     }
     ogs_free(ee_group_profile_data);
 }
@@ -107,6 +123,27 @@ cJSON *OpenAPI_ee_group_profile_data_convertToJSON(OpenAPI_ee_group_profile_data
     }
     }
 
+    if (ee_group_profile_data->is_iwk_epc_restricted) {
+    if (cJSON_AddBoolToObject(item, "iwkEpcRestricted", ee_group_profile_data->iwk_epc_restricted) == NULL) {
+        ogs_error("OpenAPI_ee_group_profile_data_convertToJSON() failed [iwk_epc_restricted]");
+        goto end;
+    }
+    }
+
+    if (ee_group_profile_data->ext_group_id) {
+    if (cJSON_AddStringToObject(item, "extGroupId", ee_group_profile_data->ext_group_id) == NULL) {
+        ogs_error("OpenAPI_ee_group_profile_data_convertToJSON() failed [ext_group_id]");
+        goto end;
+    }
+    }
+
+    if (ee_group_profile_data->hss_group_id) {
+    if (cJSON_AddStringToObject(item, "hssGroupId", ee_group_profile_data->hss_group_id) == NULL) {
+        ogs_error("OpenAPI_ee_group_profile_data_convertToJSON() failed [hss_group_id]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -120,6 +157,9 @@ OpenAPI_ee_group_profile_data_t *OpenAPI_ee_group_profile_data_parseFromJSON(cJS
     cJSON *allowed_mtc_provider = NULL;
     OpenAPI_list_t *allowed_mtc_providerList = NULL;
     cJSON *supported_features = NULL;
+    cJSON *iwk_epc_restricted = NULL;
+    cJSON *ext_group_id = NULL;
+    cJSON *hss_group_id = NULL;
     restricted_event_types = cJSON_GetObjectItemCaseSensitive(ee_group_profile_dataJSON, "restrictedEventTypes");
     if (restricted_event_types) {
         cJSON *restricted_event_types_local = NULL;
@@ -181,10 +221,38 @@ OpenAPI_ee_group_profile_data_t *OpenAPI_ee_group_profile_data_parseFromJSON(cJS
     }
     }
 
+    iwk_epc_restricted = cJSON_GetObjectItemCaseSensitive(ee_group_profile_dataJSON, "iwkEpcRestricted");
+    if (iwk_epc_restricted) {
+    if (!cJSON_IsBool(iwk_epc_restricted)) {
+        ogs_error("OpenAPI_ee_group_profile_data_parseFromJSON() failed [iwk_epc_restricted]");
+        goto end;
+    }
+    }
+
+    ext_group_id = cJSON_GetObjectItemCaseSensitive(ee_group_profile_dataJSON, "extGroupId");
+    if (ext_group_id) {
+    if (!cJSON_IsString(ext_group_id) && !cJSON_IsNull(ext_group_id)) {
+        ogs_error("OpenAPI_ee_group_profile_data_parseFromJSON() failed [ext_group_id]");
+        goto end;
+    }
+    }
+
+    hss_group_id = cJSON_GetObjectItemCaseSensitive(ee_group_profile_dataJSON, "hssGroupId");
+    if (hss_group_id) {
+    if (!cJSON_IsString(hss_group_id) && !cJSON_IsNull(hss_group_id)) {
+        ogs_error("OpenAPI_ee_group_profile_data_parseFromJSON() failed [hss_group_id]");
+        goto end;
+    }
+    }
+
     ee_group_profile_data_local_var = OpenAPI_ee_group_profile_data_create (
         restricted_event_types ? restricted_event_typesList : NULL,
         allowed_mtc_provider ? allowed_mtc_providerList : NULL,
-        supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL
+        supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
+        iwk_epc_restricted ? true : false,
+        iwk_epc_restricted ? iwk_epc_restricted->valueint : 0,
+        ext_group_id && !cJSON_IsNull(ext_group_id) ? ogs_strdup(ext_group_id->valuestring) : NULL,
+        hss_group_id && !cJSON_IsNull(hss_group_id) ? ogs_strdup(hss_group_id->valuestring) : NULL
     );
 
     return ee_group_profile_data_local_var;

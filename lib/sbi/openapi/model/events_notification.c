@@ -5,6 +5,7 @@
 #include "events_notification.h"
 
 OpenAPI_events_notification_t *OpenAPI_events_notification_create(
+    OpenAPI_list_t *ad_reports,
     OpenAPI_access_type_e access_type,
     OpenAPI_additional_access_info_t *add_access_info,
     OpenAPI_additional_access_info_t *rel_access_info,
@@ -22,7 +23,9 @@ OpenAPI_events_notification_t *OpenAPI_events_notification_create(
     OpenAPI_list_t *qos_mon_reports,
     OpenAPI_list_t *ran_nas_rel_causes,
     OpenAPI_rat_type_e rat_type,
+    OpenAPI_satellite_backhaul_category_e sat_backhaul_category,
     OpenAPI_user_location_t *ue_loc,
+    char *ue_loc_time,
     char *ue_time_zone,
     OpenAPI_accumulated_usage_t *usg_rep,
     OpenAPI_bridge_management_container_t *tsn_bridge_man_cont,
@@ -33,6 +36,7 @@ OpenAPI_events_notification_t *OpenAPI_events_notification_create(
     OpenAPI_events_notification_t *events_notification_local_var = ogs_malloc(sizeof(OpenAPI_events_notification_t));
     ogs_assert(events_notification_local_var);
 
+    events_notification_local_var->ad_reports = ad_reports;
     events_notification_local_var->access_type = access_type;
     events_notification_local_var->add_access_info = add_access_info;
     events_notification_local_var->rel_access_info = rel_access_info;
@@ -50,7 +54,9 @@ OpenAPI_events_notification_t *OpenAPI_events_notification_create(
     events_notification_local_var->qos_mon_reports = qos_mon_reports;
     events_notification_local_var->ran_nas_rel_causes = ran_nas_rel_causes;
     events_notification_local_var->rat_type = rat_type;
+    events_notification_local_var->sat_backhaul_category = sat_backhaul_category;
     events_notification_local_var->ue_loc = ue_loc;
+    events_notification_local_var->ue_loc_time = ue_loc_time;
     events_notification_local_var->ue_time_zone = ue_time_zone;
     events_notification_local_var->usg_rep = usg_rep;
     events_notification_local_var->tsn_bridge_man_cont = tsn_bridge_man_cont;
@@ -66,6 +72,13 @@ void OpenAPI_events_notification_free(OpenAPI_events_notification_t *events_noti
 
     if (NULL == events_notification) {
         return;
+    }
+    if (events_notification->ad_reports) {
+        OpenAPI_list_for_each(events_notification->ad_reports, node) {
+            OpenAPI_app_detection_report_free(node->data);
+        }
+        OpenAPI_list_free(events_notification->ad_reports);
+        events_notification->ad_reports = NULL;
     }
     if (events_notification->add_access_info) {
         OpenAPI_additional_access_info_free(events_notification->add_access_info);
@@ -151,6 +164,10 @@ void OpenAPI_events_notification_free(OpenAPI_events_notification_t *events_noti
         OpenAPI_user_location_free(events_notification->ue_loc);
         events_notification->ue_loc = NULL;
     }
+    if (events_notification->ue_loc_time) {
+        ogs_free(events_notification->ue_loc_time);
+        events_notification->ue_loc_time = NULL;
+    }
     if (events_notification->ue_time_zone) {
         ogs_free(events_notification->ue_time_zone);
         events_notification->ue_time_zone = NULL;
@@ -188,6 +205,22 @@ cJSON *OpenAPI_events_notification_convertToJSON(OpenAPI_events_notification_t *
     }
 
     item = cJSON_CreateObject();
+    if (events_notification->ad_reports) {
+    cJSON *ad_reportsList = cJSON_AddArrayToObject(item, "adReports");
+    if (ad_reportsList == NULL) {
+        ogs_error("OpenAPI_events_notification_convertToJSON() failed [ad_reports]");
+        goto end;
+    }
+    OpenAPI_list_for_each(events_notification->ad_reports, node) {
+        cJSON *itemLocal = OpenAPI_app_detection_report_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_events_notification_convertToJSON() failed [ad_reports]");
+            goto end;
+        }
+        cJSON_AddItemToArray(ad_reportsList, itemLocal);
+    }
+    }
+
     if (events_notification->access_type != OpenAPI_access_type_NULL) {
     if (cJSON_AddStringToObject(item, "accessType", OpenAPI_access_type_ToString(events_notification->access_type)) == NULL) {
         ogs_error("OpenAPI_events_notification_convertToJSON() failed [access_type]");
@@ -413,6 +446,13 @@ cJSON *OpenAPI_events_notification_convertToJSON(OpenAPI_events_notification_t *
     }
     }
 
+    if (events_notification->sat_backhaul_category != OpenAPI_satellite_backhaul_category_NULL) {
+    if (cJSON_AddStringToObject(item, "satBackhaulCategory", OpenAPI_satellite_backhaul_category_ToString(events_notification->sat_backhaul_category)) == NULL) {
+        ogs_error("OpenAPI_events_notification_convertToJSON() failed [sat_backhaul_category]");
+        goto end;
+    }
+    }
+
     if (events_notification->ue_loc) {
     cJSON *ue_loc_local_JSON = OpenAPI_user_location_convertToJSON(events_notification->ue_loc);
     if (ue_loc_local_JSON == NULL) {
@@ -422,6 +462,13 @@ cJSON *OpenAPI_events_notification_convertToJSON(OpenAPI_events_notification_t *
     cJSON_AddItemToObject(item, "ueLoc", ue_loc_local_JSON);
     if (item->child == NULL) {
         ogs_error("OpenAPI_events_notification_convertToJSON() failed [ue_loc]");
+        goto end;
+    }
+    }
+
+    if (events_notification->ue_loc_time) {
+    if (cJSON_AddStringToObject(item, "ueLocTime", events_notification->ue_loc_time) == NULL) {
+        ogs_error("OpenAPI_events_notification_convertToJSON() failed [ue_loc_time]");
         goto end;
     }
     }
@@ -496,6 +543,8 @@ OpenAPI_events_notification_t *OpenAPI_events_notification_parseFromJSON(cJSON *
 {
     OpenAPI_events_notification_t *events_notification_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
+    cJSON *ad_reports = NULL;
+    OpenAPI_list_t *ad_reportsList = NULL;
     cJSON *access_type = NULL;
     OpenAPI_access_type_e access_typeVariable = 0;
     cJSON *add_access_info = NULL;
@@ -529,8 +578,11 @@ OpenAPI_events_notification_t *OpenAPI_events_notification_parseFromJSON(cJSON *
     OpenAPI_list_t *ran_nas_rel_causesList = NULL;
     cJSON *rat_type = NULL;
     OpenAPI_rat_type_e rat_typeVariable = 0;
+    cJSON *sat_backhaul_category = NULL;
+    OpenAPI_satellite_backhaul_category_e sat_backhaul_categoryVariable = 0;
     cJSON *ue_loc = NULL;
     OpenAPI_user_location_t *ue_loc_local_nonprim = NULL;
+    cJSON *ue_loc_time = NULL;
     cJSON *ue_time_zone = NULL;
     cJSON *usg_rep = NULL;
     OpenAPI_accumulated_usage_t *usg_rep_local_nonprim = NULL;
@@ -540,6 +592,31 @@ OpenAPI_events_notification_t *OpenAPI_events_notification_parseFromJSON(cJSON *
     OpenAPI_port_management_container_t *tsn_port_man_cont_dstt_local_nonprim = NULL;
     cJSON *tsn_port_man_cont_nwtts = NULL;
     OpenAPI_list_t *tsn_port_man_cont_nwttsList = NULL;
+    ad_reports = cJSON_GetObjectItemCaseSensitive(events_notificationJSON, "adReports");
+    if (ad_reports) {
+        cJSON *ad_reports_local = NULL;
+        if (!cJSON_IsArray(ad_reports)) {
+            ogs_error("OpenAPI_events_notification_parseFromJSON() failed [ad_reports]");
+            goto end;
+        }
+
+        ad_reportsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(ad_reports_local, ad_reports) {
+            if (!cJSON_IsObject(ad_reports_local)) {
+                ogs_error("OpenAPI_events_notification_parseFromJSON() failed [ad_reports]");
+                goto end;
+            }
+            OpenAPI_app_detection_report_t *ad_reportsItem = OpenAPI_app_detection_report_parseFromJSON(ad_reports_local);
+            if (!ad_reportsItem) {
+                ogs_error("No ad_reportsItem");
+                OpenAPI_list_free(ad_reportsList);
+                goto end;
+            }
+            OpenAPI_list_add(ad_reportsList, ad_reportsItem);
+        }
+    }
+
     access_type = cJSON_GetObjectItemCaseSensitive(events_notificationJSON, "accessType");
     if (access_type) {
     if (!cJSON_IsString(access_type)) {
@@ -804,9 +881,26 @@ OpenAPI_events_notification_t *OpenAPI_events_notification_parseFromJSON(cJSON *
     rat_typeVariable = OpenAPI_rat_type_FromString(rat_type->valuestring);
     }
 
+    sat_backhaul_category = cJSON_GetObjectItemCaseSensitive(events_notificationJSON, "satBackhaulCategory");
+    if (sat_backhaul_category) {
+    if (!cJSON_IsString(sat_backhaul_category)) {
+        ogs_error("OpenAPI_events_notification_parseFromJSON() failed [sat_backhaul_category]");
+        goto end;
+    }
+    sat_backhaul_categoryVariable = OpenAPI_satellite_backhaul_category_FromString(sat_backhaul_category->valuestring);
+    }
+
     ue_loc = cJSON_GetObjectItemCaseSensitive(events_notificationJSON, "ueLoc");
     if (ue_loc) {
     ue_loc_local_nonprim = OpenAPI_user_location_parseFromJSON(ue_loc);
+    }
+
+    ue_loc_time = cJSON_GetObjectItemCaseSensitive(events_notificationJSON, "ueLocTime");
+    if (ue_loc_time) {
+    if (!cJSON_IsString(ue_loc_time) && !cJSON_IsNull(ue_loc_time)) {
+        ogs_error("OpenAPI_events_notification_parseFromJSON() failed [ue_loc_time]");
+        goto end;
+    }
     }
 
     ue_time_zone = cJSON_GetObjectItemCaseSensitive(events_notificationJSON, "ueTimeZone");
@@ -858,6 +952,7 @@ OpenAPI_events_notification_t *OpenAPI_events_notification_parseFromJSON(cJSON *
     }
 
     events_notification_local_var = OpenAPI_events_notification_create (
+        ad_reports ? ad_reportsList : NULL,
         access_type ? access_typeVariable : 0,
         add_access_info ? add_access_info_local_nonprim : NULL,
         rel_access_info ? rel_access_info_local_nonprim : NULL,
@@ -875,7 +970,9 @@ OpenAPI_events_notification_t *OpenAPI_events_notification_parseFromJSON(cJSON *
         qos_mon_reports ? qos_mon_reportsList : NULL,
         ran_nas_rel_causes ? ran_nas_rel_causesList : NULL,
         rat_type ? rat_typeVariable : 0,
+        sat_backhaul_category ? sat_backhaul_categoryVariable : 0,
         ue_loc ? ue_loc_local_nonprim : NULL,
+        ue_loc_time && !cJSON_IsNull(ue_loc_time) ? ogs_strdup(ue_loc_time->valuestring) : NULL,
         ue_time_zone && !cJSON_IsNull(ue_time_zone) ? ogs_strdup(ue_time_zone->valuestring) : NULL,
         usg_rep ? usg_rep_local_nonprim : NULL,
         tsn_bridge_man_cont ? tsn_bridge_man_cont_local_nonprim : NULL,
@@ -885,6 +982,13 @@ OpenAPI_events_notification_t *OpenAPI_events_notification_parseFromJSON(cJSON *
 
     return events_notification_local_var;
 end:
+    if (ad_reportsList) {
+        OpenAPI_list_for_each(ad_reportsList, node) {
+            OpenAPI_app_detection_report_free(node->data);
+        }
+        OpenAPI_list_free(ad_reportsList);
+        ad_reportsList = NULL;
+    }
     if (add_access_info_local_nonprim) {
         OpenAPI_additional_access_info_free(add_access_info_local_nonprim);
         add_access_info_local_nonprim = NULL;

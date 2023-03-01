@@ -11,7 +11,8 @@ OpenAPI_pws_information_t *OpenAPI_pws_information_create(
     OpenAPI_list_t *bc_empty_area_list,
     bool is_send_ran_response,
     int send_ran_response,
-    char *omc_id
+    char *omc_id,
+    char *nf_id
 )
 {
     OpenAPI_pws_information_t *pws_information_local_var = ogs_malloc(sizeof(OpenAPI_pws_information_t));
@@ -24,6 +25,7 @@ OpenAPI_pws_information_t *OpenAPI_pws_information_create(
     pws_information_local_var->is_send_ran_response = is_send_ran_response;
     pws_information_local_var->send_ran_response = send_ran_response;
     pws_information_local_var->omc_id = omc_id;
+    pws_information_local_var->nf_id = nf_id;
 
     return pws_information_local_var;
 }
@@ -49,6 +51,10 @@ void OpenAPI_pws_information_free(OpenAPI_pws_information_t *pws_information)
     if (pws_information->omc_id) {
         ogs_free(pws_information->omc_id);
         pws_information->omc_id = NULL;
+    }
+    if (pws_information->nf_id) {
+        ogs_free(pws_information->nf_id);
+        pws_information->nf_id = NULL;
     }
     ogs_free(pws_information);
 }
@@ -119,6 +125,13 @@ cJSON *OpenAPI_pws_information_convertToJSON(OpenAPI_pws_information_t *pws_info
     }
     }
 
+    if (pws_information->nf_id) {
+    if (cJSON_AddStringToObject(item, "nfId", pws_information->nf_id) == NULL) {
+        ogs_error("OpenAPI_pws_information_convertToJSON() failed [nf_id]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -135,6 +148,7 @@ OpenAPI_pws_information_t *OpenAPI_pws_information_parseFromJSON(cJSON *pws_info
     OpenAPI_list_t *bc_empty_area_listList = NULL;
     cJSON *send_ran_response = NULL;
     cJSON *omc_id = NULL;
+    cJSON *nf_id = NULL;
     message_identifier = cJSON_GetObjectItemCaseSensitive(pws_informationJSON, "messageIdentifier");
     if (!message_identifier) {
         ogs_error("OpenAPI_pws_information_parseFromJSON() failed [message_identifier]");
@@ -203,6 +217,14 @@ OpenAPI_pws_information_t *OpenAPI_pws_information_parseFromJSON(cJSON *pws_info
     }
     }
 
+    nf_id = cJSON_GetObjectItemCaseSensitive(pws_informationJSON, "nfId");
+    if (nf_id) {
+    if (!cJSON_IsString(nf_id) && !cJSON_IsNull(nf_id)) {
+        ogs_error("OpenAPI_pws_information_parseFromJSON() failed [nf_id]");
+        goto end;
+    }
+    }
+
     pws_information_local_var = OpenAPI_pws_information_create (
         
         message_identifier->valuedouble,
@@ -212,7 +234,8 @@ OpenAPI_pws_information_t *OpenAPI_pws_information_parseFromJSON(cJSON *pws_info
         bc_empty_area_list ? bc_empty_area_listList : NULL,
         send_ran_response ? true : false,
         send_ran_response ? send_ran_response->valueint : 0,
-        omc_id && !cJSON_IsNull(omc_id) ? ogs_strdup(omc_id->valuestring) : NULL
+        omc_id && !cJSON_IsNull(omc_id) ? ogs_strdup(omc_id->valuestring) : NULL,
+        nf_id && !cJSON_IsNull(nf_id) ? ogs_strdup(nf_id->valuestring) : NULL
     );
 
     return pws_information_local_var;

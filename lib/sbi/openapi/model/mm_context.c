@@ -29,7 +29,8 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_create(
     bool is_an_n2_ap_id,
     int an_n2_ap_id,
     OpenAPI_list_t *nssaa_status_list,
-    OpenAPI_list_t *pending_nssai_mapping_list
+    OpenAPI_list_t *pending_nssai_mapping_list,
+    OpenAPI_uuaa_mm_status_e uuaa_mm_status
 )
 {
     OpenAPI_mm_context_t *mm_context_local_var = ogs_malloc(sizeof(OpenAPI_mm_context_t));
@@ -60,6 +61,7 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_create(
     mm_context_local_var->an_n2_ap_id = an_n2_ap_id;
     mm_context_local_var->nssaa_status_list = nssaa_status_list;
     mm_context_local_var->pending_nssai_mapping_list = pending_nssai_mapping_list;
+    mm_context_local_var->uuaa_mm_status = uuaa_mm_status;
 
     return mm_context_local_var;
 }
@@ -425,6 +427,13 @@ cJSON *OpenAPI_mm_context_convertToJSON(OpenAPI_mm_context_t *mm_context)
     }
     }
 
+    if (mm_context->uuaa_mm_status != OpenAPI_uuaa_mm_status_NULL) {
+    if (cJSON_AddStringToObject(item, "uuaaMmStatus", OpenAPI_uuaa_mm_status_ToString(mm_context->uuaa_mm_status)) == NULL) {
+        ogs_error("OpenAPI_mm_context_convertToJSON() failed [uuaa_mm_status]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -469,6 +478,8 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
     OpenAPI_list_t *nssaa_status_listList = NULL;
     cJSON *pending_nssai_mapping_list = NULL;
     OpenAPI_list_t *pending_nssai_mapping_listList = NULL;
+    cJSON *uuaa_mm_status = NULL;
+    OpenAPI_uuaa_mm_status_e uuaa_mm_statusVariable = 0;
     access_type = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "accessType");
     if (!access_type) {
         ogs_error("OpenAPI_mm_context_parseFromJSON() failed [access_type]");
@@ -725,6 +736,15 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
         }
     }
 
+    uuaa_mm_status = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "uuaaMmStatus");
+    if (uuaa_mm_status) {
+    if (!cJSON_IsString(uuaa_mm_status)) {
+        ogs_error("OpenAPI_mm_context_parseFromJSON() failed [uuaa_mm_status]");
+        goto end;
+    }
+    uuaa_mm_statusVariable = OpenAPI_uuaa_mm_status_FromString(uuaa_mm_status->valuestring);
+    }
+
     mm_context_local_var = OpenAPI_mm_context_create (
         access_typeVariable,
         nas_security_mode ? nas_security_mode_local_nonprim : NULL,
@@ -750,7 +770,8 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
         an_n2_ap_id ? true : false,
         an_n2_ap_id ? an_n2_ap_id->valuedouble : 0,
         nssaa_status_list ? nssaa_status_listList : NULL,
-        pending_nssai_mapping_list ? pending_nssai_mapping_listList : NULL
+        pending_nssai_mapping_list ? pending_nssai_mapping_listList : NULL,
+        uuaa_mm_status ? uuaa_mm_statusVariable : 0
     );
 
     return mm_context_local_var;

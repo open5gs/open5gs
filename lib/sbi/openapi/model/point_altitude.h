@@ -1,7 +1,7 @@
 /*
  * point_altitude.h
  *
- * 
+ * Ellipsoid point with altitude.
  */
 
 #ifndef _OpenAPI_point_altitude_H_

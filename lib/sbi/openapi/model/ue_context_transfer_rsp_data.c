@@ -7,6 +7,7 @@
 OpenAPI_ue_context_transfer_rsp_data_t *OpenAPI_ue_context_transfer_rsp_data_create(
     OpenAPI_ue_context_t *ue_context,
     OpenAPI_n2_info_content_t *ue_radio_capability,
+    OpenAPI_n2_info_content_t *ue_radio_capability_for_paging,
     OpenAPI_n2_info_content_t *ue_nbiot_radio_capability,
     char *supported_features
 )
@@ -16,6 +17,7 @@ OpenAPI_ue_context_transfer_rsp_data_t *OpenAPI_ue_context_transfer_rsp_data_cre
 
     ue_context_transfer_rsp_data_local_var->ue_context = ue_context;
     ue_context_transfer_rsp_data_local_var->ue_radio_capability = ue_radio_capability;
+    ue_context_transfer_rsp_data_local_var->ue_radio_capability_for_paging = ue_radio_capability_for_paging;
     ue_context_transfer_rsp_data_local_var->ue_nbiot_radio_capability = ue_nbiot_radio_capability;
     ue_context_transfer_rsp_data_local_var->supported_features = supported_features;
 
@@ -36,6 +38,10 @@ void OpenAPI_ue_context_transfer_rsp_data_free(OpenAPI_ue_context_transfer_rsp_d
     if (ue_context_transfer_rsp_data->ue_radio_capability) {
         OpenAPI_n2_info_content_free(ue_context_transfer_rsp_data->ue_radio_capability);
         ue_context_transfer_rsp_data->ue_radio_capability = NULL;
+    }
+    if (ue_context_transfer_rsp_data->ue_radio_capability_for_paging) {
+        OpenAPI_n2_info_content_free(ue_context_transfer_rsp_data->ue_radio_capability_for_paging);
+        ue_context_transfer_rsp_data->ue_radio_capability_for_paging = NULL;
     }
     if (ue_context_transfer_rsp_data->ue_nbiot_radio_capability) {
         OpenAPI_n2_info_content_free(ue_context_transfer_rsp_data->ue_nbiot_radio_capability);
@@ -87,6 +93,19 @@ cJSON *OpenAPI_ue_context_transfer_rsp_data_convertToJSON(OpenAPI_ue_context_tra
     }
     }
 
+    if (ue_context_transfer_rsp_data->ue_radio_capability_for_paging) {
+    cJSON *ue_radio_capability_for_paging_local_JSON = OpenAPI_n2_info_content_convertToJSON(ue_context_transfer_rsp_data->ue_radio_capability_for_paging);
+    if (ue_radio_capability_for_paging_local_JSON == NULL) {
+        ogs_error("OpenAPI_ue_context_transfer_rsp_data_convertToJSON() failed [ue_radio_capability_for_paging]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "ueRadioCapabilityForPaging", ue_radio_capability_for_paging_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_ue_context_transfer_rsp_data_convertToJSON() failed [ue_radio_capability_for_paging]");
+        goto end;
+    }
+    }
+
     if (ue_context_transfer_rsp_data->ue_nbiot_radio_capability) {
     cJSON *ue_nbiot_radio_capability_local_JSON = OpenAPI_n2_info_content_convertToJSON(ue_context_transfer_rsp_data->ue_nbiot_radio_capability);
     if (ue_nbiot_radio_capability_local_JSON == NULL) {
@@ -119,6 +138,8 @@ OpenAPI_ue_context_transfer_rsp_data_t *OpenAPI_ue_context_transfer_rsp_data_par
     OpenAPI_ue_context_t *ue_context_local_nonprim = NULL;
     cJSON *ue_radio_capability = NULL;
     OpenAPI_n2_info_content_t *ue_radio_capability_local_nonprim = NULL;
+    cJSON *ue_radio_capability_for_paging = NULL;
+    OpenAPI_n2_info_content_t *ue_radio_capability_for_paging_local_nonprim = NULL;
     cJSON *ue_nbiot_radio_capability = NULL;
     OpenAPI_n2_info_content_t *ue_nbiot_radio_capability_local_nonprim = NULL;
     cJSON *supported_features = NULL;
@@ -132,6 +153,11 @@ OpenAPI_ue_context_transfer_rsp_data_t *OpenAPI_ue_context_transfer_rsp_data_par
     ue_radio_capability = cJSON_GetObjectItemCaseSensitive(ue_context_transfer_rsp_dataJSON, "ueRadioCapability");
     if (ue_radio_capability) {
     ue_radio_capability_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(ue_radio_capability);
+    }
+
+    ue_radio_capability_for_paging = cJSON_GetObjectItemCaseSensitive(ue_context_transfer_rsp_dataJSON, "ueRadioCapabilityForPaging");
+    if (ue_radio_capability_for_paging) {
+    ue_radio_capability_for_paging_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(ue_radio_capability_for_paging);
     }
 
     ue_nbiot_radio_capability = cJSON_GetObjectItemCaseSensitive(ue_context_transfer_rsp_dataJSON, "ueNbiotRadioCapability");
@@ -150,6 +176,7 @@ OpenAPI_ue_context_transfer_rsp_data_t *OpenAPI_ue_context_transfer_rsp_data_par
     ue_context_transfer_rsp_data_local_var = OpenAPI_ue_context_transfer_rsp_data_create (
         ue_context_local_nonprim,
         ue_radio_capability ? ue_radio_capability_local_nonprim : NULL,
+        ue_radio_capability_for_paging ? ue_radio_capability_for_paging_local_nonprim : NULL,
         ue_nbiot_radio_capability ? ue_nbiot_radio_capability_local_nonprim : NULL,
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL
     );
@@ -163,6 +190,10 @@ end:
     if (ue_radio_capability_local_nonprim) {
         OpenAPI_n2_info_content_free(ue_radio_capability_local_nonprim);
         ue_radio_capability_local_nonprim = NULL;
+    }
+    if (ue_radio_capability_for_paging_local_nonprim) {
+        OpenAPI_n2_info_content_free(ue_radio_capability_for_paging_local_nonprim);
+        ue_radio_capability_for_paging_local_nonprim = NULL;
     }
     if (ue_nbiot_radio_capability_local_nonprim) {
         OpenAPI_n2_info_content_free(ue_nbiot_radio_capability_local_nonprim);

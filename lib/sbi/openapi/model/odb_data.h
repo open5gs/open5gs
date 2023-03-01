@@ -1,7 +1,7 @@
 /*
  * odb_data.h
  *
- * 
+ * Contains information regarding operater  determined  barring.
  */
 
 #ifndef _OpenAPI_odb_data_H_

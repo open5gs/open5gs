@@ -1,7 +1,7 @@
 /*
  * eutra_location.h
  *
- * 
+ * Contains the E-UTRA user location.
  */
 
 #ifndef _OpenAPI_eutra_location_H_

@@ -1,7 +1,7 @@
 /*
  * af_event_subscription.h
  *
- * describes the event information delivered in the subscription
+ * Describes the event information delivered in the subscription.
  */
 
 #ifndef _OpenAPI_af_event_subscription_H_

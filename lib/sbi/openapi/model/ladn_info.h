@@ -1,7 +1,7 @@
 /*
  * ladn_info.h
  *
- * 
+ * LADN Information
  */
 
 #ifndef _OpenAPI_ladn_info_H_

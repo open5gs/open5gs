@@ -10,7 +10,8 @@ OpenAPI_sm_context_retrieved_data_t *OpenAPI_sm_context_retrieved_data_create(
     OpenAPI_small_data_rate_status_t *small_data_rate_status,
     OpenAPI_apn_rate_status_t *apn_rate_status,
     bool is_dl_data_waiting_ind,
-    int dl_data_waiting_ind
+    int dl_data_waiting_ind,
+    OpenAPI_af_coordination_info_t *af_coordination_info
 )
 {
     OpenAPI_sm_context_retrieved_data_t *sm_context_retrieved_data_local_var = ogs_malloc(sizeof(OpenAPI_sm_context_retrieved_data_t));
@@ -22,6 +23,7 @@ OpenAPI_sm_context_retrieved_data_t *OpenAPI_sm_context_retrieved_data_create(
     sm_context_retrieved_data_local_var->apn_rate_status = apn_rate_status;
     sm_context_retrieved_data_local_var->is_dl_data_waiting_ind = is_dl_data_waiting_ind;
     sm_context_retrieved_data_local_var->dl_data_waiting_ind = dl_data_waiting_ind;
+    sm_context_retrieved_data_local_var->af_coordination_info = af_coordination_info;
 
     return sm_context_retrieved_data_local_var;
 }
@@ -48,6 +50,10 @@ void OpenAPI_sm_context_retrieved_data_free(OpenAPI_sm_context_retrieved_data_t 
     if (sm_context_retrieved_data->apn_rate_status) {
         OpenAPI_apn_rate_status_free(sm_context_retrieved_data->apn_rate_status);
         sm_context_retrieved_data->apn_rate_status = NULL;
+    }
+    if (sm_context_retrieved_data->af_coordination_info) {
+        OpenAPI_af_coordination_info_free(sm_context_retrieved_data->af_coordination_info);
+        sm_context_retrieved_data->af_coordination_info = NULL;
     }
     ogs_free(sm_context_retrieved_data);
 }
@@ -118,6 +124,19 @@ cJSON *OpenAPI_sm_context_retrieved_data_convertToJSON(OpenAPI_sm_context_retrie
     }
     }
 
+    if (sm_context_retrieved_data->af_coordination_info) {
+    cJSON *af_coordination_info_local_JSON = OpenAPI_af_coordination_info_convertToJSON(sm_context_retrieved_data->af_coordination_info);
+    if (af_coordination_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_sm_context_retrieved_data_convertToJSON() failed [af_coordination_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "afCoordinationInfo", af_coordination_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_sm_context_retrieved_data_convertToJSON() failed [af_coordination_info]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -134,6 +153,8 @@ OpenAPI_sm_context_retrieved_data_t *OpenAPI_sm_context_retrieved_data_parseFrom
     cJSON *apn_rate_status = NULL;
     OpenAPI_apn_rate_status_t *apn_rate_status_local_nonprim = NULL;
     cJSON *dl_data_waiting_ind = NULL;
+    cJSON *af_coordination_info = NULL;
+    OpenAPI_af_coordination_info_t *af_coordination_info_local_nonprim = NULL;
     ue_eps_pdn_connection = cJSON_GetObjectItemCaseSensitive(sm_context_retrieved_dataJSON, "ueEpsPdnConnection");
     if (!ue_eps_pdn_connection) {
         ogs_error("OpenAPI_sm_context_retrieved_data_parseFromJSON() failed [ue_eps_pdn_connection]");
@@ -167,13 +188,19 @@ OpenAPI_sm_context_retrieved_data_t *OpenAPI_sm_context_retrieved_data_parseFrom
     }
     }
 
+    af_coordination_info = cJSON_GetObjectItemCaseSensitive(sm_context_retrieved_dataJSON, "afCoordinationInfo");
+    if (af_coordination_info) {
+    af_coordination_info_local_nonprim = OpenAPI_af_coordination_info_parseFromJSON(af_coordination_info);
+    }
+
     sm_context_retrieved_data_local_var = OpenAPI_sm_context_retrieved_data_create (
         ogs_strdup(ue_eps_pdn_connection->valuestring),
         sm_context ? sm_context_local_nonprim : NULL,
         small_data_rate_status ? small_data_rate_status_local_nonprim : NULL,
         apn_rate_status ? apn_rate_status_local_nonprim : NULL,
         dl_data_waiting_ind ? true : false,
-        dl_data_waiting_ind ? dl_data_waiting_ind->valueint : 0
+        dl_data_waiting_ind ? dl_data_waiting_ind->valueint : 0,
+        af_coordination_info ? af_coordination_info_local_nonprim : NULL
     );
 
     return sm_context_retrieved_data_local_var;
@@ -189,6 +216,10 @@ end:
     if (apn_rate_status_local_nonprim) {
         OpenAPI_apn_rate_status_free(apn_rate_status_local_nonprim);
         apn_rate_status_local_nonprim = NULL;
+    }
+    if (af_coordination_info_local_nonprim) {
+        OpenAPI_af_coordination_info_free(af_coordination_info_local_nonprim);
+        af_coordination_info_local_nonprim = NULL;
     }
     return NULL;
 }

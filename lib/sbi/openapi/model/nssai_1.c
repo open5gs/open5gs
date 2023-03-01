@@ -9,7 +9,9 @@ OpenAPI_nssai_1_t *OpenAPI_nssai_1_create(
     OpenAPI_list_t *default_single_nssais,
     OpenAPI_list_t *single_nssais,
     char *provisioning_time,
-    OpenAPI_list_t* additional_snssai_data
+    OpenAPI_list_t* additional_snssai_data,
+    bool is_suppress_nssrg_ind,
+    int suppress_nssrg_ind
 )
 {
     OpenAPI_nssai_1_t *nssai_1_local_var = ogs_malloc(sizeof(OpenAPI_nssai_1_t));
@@ -20,6 +22,8 @@ OpenAPI_nssai_1_t *OpenAPI_nssai_1_create(
     nssai_1_local_var->single_nssais = single_nssais;
     nssai_1_local_var->provisioning_time = provisioning_time;
     nssai_1_local_var->additional_snssai_data = additional_snssai_data;
+    nssai_1_local_var->is_suppress_nssrg_ind = is_suppress_nssrg_ind;
+    nssai_1_local_var->suppress_nssrg_ind = suppress_nssrg_ind;
 
     return nssai_1_local_var;
 }
@@ -57,7 +61,7 @@ void OpenAPI_nssai_1_free(OpenAPI_nssai_1_t *nssai_1)
         OpenAPI_list_for_each(nssai_1->additional_snssai_data, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
-            OpenAPI_additional_snssai_data_free(localKeyValue->value);
+            OpenAPI_additional_snssai_data_1_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);
         }
         OpenAPI_list_free(nssai_1->additional_snssai_data);
@@ -136,7 +140,7 @@ cJSON *OpenAPI_nssai_1_convertToJSON(OpenAPI_nssai_1_t *nssai_1)
         OpenAPI_list_for_each(nssai_1->additional_snssai_data, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             cJSON *itemLocal = localKeyValue->value ?
-                OpenAPI_additional_snssai_data_convertToJSON(localKeyValue->value) :
+                OpenAPI_additional_snssai_data_1_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
             if (itemLocal == NULL) {
                 ogs_error("OpenAPI_nssai_1_convertToJSON() failed [inner]");
@@ -144,6 +148,13 @@ cJSON *OpenAPI_nssai_1_convertToJSON(OpenAPI_nssai_1_t *nssai_1)
             }
             cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
         }
+    }
+    }
+
+    if (nssai_1->is_suppress_nssrg_ind) {
+    if (cJSON_AddBoolToObject(item, "suppressNssrgInd", nssai_1->suppress_nssrg_ind) == NULL) {
+        ogs_error("OpenAPI_nssai_1_convertToJSON() failed [suppress_nssrg_ind]");
+        goto end;
     }
     }
 
@@ -163,6 +174,7 @@ OpenAPI_nssai_1_t *OpenAPI_nssai_1_parseFromJSON(cJSON *nssai_1JSON)
     cJSON *provisioning_time = NULL;
     cJSON *additional_snssai_data = NULL;
     OpenAPI_list_t *additional_snssai_dataList = NULL;
+    cJSON *suppress_nssrg_ind = NULL;
     supported_features = cJSON_GetObjectItemCaseSensitive(nssai_1JSON, "supportedFeatures");
     if (supported_features) {
     if (!cJSON_IsString(supported_features) && !cJSON_IsNull(supported_features)) {
@@ -245,7 +257,7 @@ OpenAPI_nssai_1_t *OpenAPI_nssai_1_parseFromJSON(cJSON *nssai_1JSON)
                 cJSON *localMapObject = additional_snssai_data_local_map;
                 if (cJSON_IsObject(localMapObject)) {
                     localMapKeyPair = OpenAPI_map_create(
-                        ogs_strdup(localMapObject->string), OpenAPI_additional_snssai_data_parseFromJSON(localMapObject));
+                        ogs_strdup(localMapObject->string), OpenAPI_additional_snssai_data_1_parseFromJSON(localMapObject));
                 } else if (cJSON_IsNull(localMapObject)) {
                     localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
                 } else {
@@ -257,12 +269,22 @@ OpenAPI_nssai_1_t *OpenAPI_nssai_1_parseFromJSON(cJSON *nssai_1JSON)
         }
     }
 
+    suppress_nssrg_ind = cJSON_GetObjectItemCaseSensitive(nssai_1JSON, "suppressNssrgInd");
+    if (suppress_nssrg_ind) {
+    if (!cJSON_IsBool(suppress_nssrg_ind)) {
+        ogs_error("OpenAPI_nssai_1_parseFromJSON() failed [suppress_nssrg_ind]");
+        goto end;
+    }
+    }
+
     nssai_1_local_var = OpenAPI_nssai_1_create (
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
         default_single_nssaisList,
         single_nssais ? single_nssaisList : NULL,
         provisioning_time && !cJSON_IsNull(provisioning_time) ? ogs_strdup(provisioning_time->valuestring) : NULL,
-        additional_snssai_data ? additional_snssai_dataList : NULL
+        additional_snssai_data ? additional_snssai_dataList : NULL,
+        suppress_nssrg_ind ? true : false,
+        suppress_nssrg_ind ? suppress_nssrg_ind->valueint : 0
     );
 
     return nssai_1_local_var;
@@ -285,7 +307,7 @@ end:
         OpenAPI_list_for_each(additional_snssai_dataList, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
             ogs_free(localKeyValue->key);
-            OpenAPI_additional_snssai_data_free(localKeyValue->value);
+            OpenAPI_additional_snssai_data_1_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);
         }
         OpenAPI_list_free(additional_snssai_dataList);

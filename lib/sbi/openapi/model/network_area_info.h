@@ -1,7 +1,7 @@
 /*
  * network_area_info.h
  *
- * Describes a network area information in which the NF service consumer requests the number of UEs.
+ * Describes a network area information in which the NF service consumer requests the number of UEs. 
  */
 
 #ifndef _OpenAPI_network_area_info_H_

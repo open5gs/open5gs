@@ -14,7 +14,8 @@ OpenAPI_reporting_options_t *OpenAPI_reporting_options_create(
     bool is_guard_time,
     int guard_time,
     bool is_report_period,
-    int report_period
+    int report_period,
+    OpenAPI_notification_flag_e notif_flag
 )
 {
     OpenAPI_reporting_options_t *reporting_options_local_var = ogs_malloc(sizeof(OpenAPI_reporting_options_t));
@@ -30,6 +31,7 @@ OpenAPI_reporting_options_t *OpenAPI_reporting_options_create(
     reporting_options_local_var->guard_time = guard_time;
     reporting_options_local_var->is_report_period = is_report_period;
     reporting_options_local_var->report_period = report_period;
+    reporting_options_local_var->notif_flag = notif_flag;
 
     return reporting_options_local_var;
 }
@@ -111,6 +113,13 @@ cJSON *OpenAPI_reporting_options_convertToJSON(OpenAPI_reporting_options_t *repo
     }
     }
 
+    if (reporting_options->notif_flag != OpenAPI_notification_flag_NULL) {
+    if (cJSON_AddStringToObject(item, "notifFlag", OpenAPI_notification_flag_ToString(reporting_options->notif_flag)) == NULL) {
+        ogs_error("OpenAPI_reporting_options_convertToJSON() failed [notif_flag]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -126,6 +135,8 @@ OpenAPI_reporting_options_t *OpenAPI_reporting_options_parseFromJSON(cJSON *repo
     cJSON *sampling_ratio = NULL;
     cJSON *guard_time = NULL;
     cJSON *report_period = NULL;
+    cJSON *notif_flag = NULL;
+    OpenAPI_notification_flag_e notif_flagVariable = 0;
     report_mode = cJSON_GetObjectItemCaseSensitive(reporting_optionsJSON, "reportMode");
     if (report_mode) {
     report_mode_local_nonprim = OpenAPI_event_report_mode_parseFromJSON(report_mode);
@@ -171,6 +182,15 @@ OpenAPI_reporting_options_t *OpenAPI_reporting_options_parseFromJSON(cJSON *repo
     }
     }
 
+    notif_flag = cJSON_GetObjectItemCaseSensitive(reporting_optionsJSON, "notifFlag");
+    if (notif_flag) {
+    if (!cJSON_IsString(notif_flag)) {
+        ogs_error("OpenAPI_reporting_options_parseFromJSON() failed [notif_flag]");
+        goto end;
+    }
+    notif_flagVariable = OpenAPI_notification_flag_FromString(notif_flag->valuestring);
+    }
+
     reporting_options_local_var = OpenAPI_reporting_options_create (
         report_mode ? report_mode_local_nonprim : NULL,
         max_num_of_reports ? true : false,
@@ -181,7 +201,8 @@ OpenAPI_reporting_options_t *OpenAPI_reporting_options_parseFromJSON(cJSON *repo
         guard_time ? true : false,
         guard_time ? guard_time->valuedouble : 0,
         report_period ? true : false,
-        report_period ? report_period->valuedouble : 0
+        report_period ? report_period->valuedouble : 0,
+        notif_flag ? notif_flagVariable : 0
     );
 
     return reporting_options_local_var;

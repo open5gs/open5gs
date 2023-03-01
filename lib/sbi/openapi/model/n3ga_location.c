@@ -11,6 +11,7 @@ OpenAPI_n3ga_location_t *OpenAPI_n3ga_location_create(
     char *ue_ipv6_addr,
     bool is_port_number,
     int port_number,
+    OpenAPI_transport_protocol_e protocol,
     OpenAPI_tnap_id_t *tnap_id,
     OpenAPI_twap_id_t *twap_id,
     OpenAPI_hfc_node_id_t *hfc_node_id,
@@ -28,6 +29,7 @@ OpenAPI_n3ga_location_t *OpenAPI_n3ga_location_create(
     n3ga_location_local_var->ue_ipv6_addr = ue_ipv6_addr;
     n3ga_location_local_var->is_port_number = is_port_number;
     n3ga_location_local_var->port_number = port_number;
+    n3ga_location_local_var->protocol = protocol;
     n3ga_location_local_var->tnap_id = tnap_id;
     n3ga_location_local_var->twap_id = twap_id;
     n3ga_location_local_var->hfc_node_id = hfc_node_id;
@@ -136,6 +138,13 @@ cJSON *OpenAPI_n3ga_location_convertToJSON(OpenAPI_n3ga_location_t *n3ga_locatio
     }
     }
 
+    if (n3ga_location->protocol != OpenAPI_transport_protocol_NULL) {
+    if (cJSON_AddStringToObject(item, "protocol", OpenAPI_transport_protocol_ToString(n3ga_location->protocol)) == NULL) {
+        ogs_error("OpenAPI_n3ga_location_convertToJSON() failed [protocol]");
+        goto end;
+    }
+    }
+
     if (n3ga_location->tnap_id) {
     cJSON *tnap_id_local_JSON = OpenAPI_tnap_id_convertToJSON(n3ga_location->tnap_id);
     if (tnap_id_local_JSON == NULL) {
@@ -210,6 +219,8 @@ OpenAPI_n3ga_location_t *OpenAPI_n3ga_location_parseFromJSON(cJSON *n3ga_locatio
     cJSON *ue_ipv4_addr = NULL;
     cJSON *ue_ipv6_addr = NULL;
     cJSON *port_number = NULL;
+    cJSON *protocol = NULL;
+    OpenAPI_transport_protocol_e protocolVariable = 0;
     cJSON *tnap_id = NULL;
     OpenAPI_tnap_id_t *tnap_id_local_nonprim = NULL;
     cJSON *twap_id = NULL;
@@ -255,6 +266,15 @@ OpenAPI_n3ga_location_t *OpenAPI_n3ga_location_parseFromJSON(cJSON *n3ga_locatio
         ogs_error("OpenAPI_n3ga_location_parseFromJSON() failed [port_number]");
         goto end;
     }
+    }
+
+    protocol = cJSON_GetObjectItemCaseSensitive(n3ga_locationJSON, "protocol");
+    if (protocol) {
+    if (!cJSON_IsString(protocol)) {
+        ogs_error("OpenAPI_n3ga_location_parseFromJSON() failed [protocol]");
+        goto end;
+    }
+    protocolVariable = OpenAPI_transport_protocol_FromString(protocol->valuestring);
     }
 
     tnap_id = cJSON_GetObjectItemCaseSensitive(n3ga_locationJSON, "tnapId");
@@ -304,6 +324,7 @@ OpenAPI_n3ga_location_t *OpenAPI_n3ga_location_parseFromJSON(cJSON *n3ga_locatio
         ue_ipv6_addr && !cJSON_IsNull(ue_ipv6_addr) ? ogs_strdup(ue_ipv6_addr->valuestring) : NULL,
         port_number ? true : false,
         port_number ? port_number->valuedouble : 0,
+        protocol ? protocolVariable : 0,
         tnap_id ? tnap_id_local_nonprim : NULL,
         twap_id ? twap_id_local_nonprim : NULL,
         hfc_node_id ? hfc_node_id_local_nonprim : NULL,

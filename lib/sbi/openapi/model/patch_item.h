@@ -1,7 +1,7 @@
 /*
  * patch_item.h
  *
- * 
+ * it contains information on data to be changed.
  */
 
 #ifndef _OpenAPI_patch_item_H_

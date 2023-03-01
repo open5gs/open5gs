@@ -1,7 +1,7 @@
 /*
  * qos_flow_notify_item.h
  *
- * 
+ * Notification related to a QoS flow
  */
 
 #ifndef _OpenAPI_qos_flow_notify_item_H_

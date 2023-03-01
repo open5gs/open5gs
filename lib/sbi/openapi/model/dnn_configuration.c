@@ -26,10 +26,27 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_create(
     int atsss_allowed,
     bool is_secondary_auth,
     int secondary_auth,
+    bool is_uav_secondary_auth,
+    int uav_secondary_auth,
     bool is_dn_aaa_ip_address_allocation,
     int dn_aaa_ip_address_allocation,
     OpenAPI_ip_address_t *dn_aaa_address,
-    char *iptv_acc_ctrl_info
+    OpenAPI_list_t *additional_dn_aaa_addresses,
+    char *dn_aaa_fqdn,
+    char *iptv_acc_ctrl_info,
+    OpenAPI_ip_index_t *ipv4_index,
+    OpenAPI_ip_index_t *ipv6_index,
+    OpenAPI_ecs_addr_config_info_t *ecs_addr_config_info,
+    OpenAPI_list_t *additional_ecs_addr_config_infos,
+    char *shared_ecs_addr_config_info,
+    OpenAPI_list_t *additional_shared_ecs_addr_config_info_ids,
+    bool is_eas_discovery_authorized,
+    int eas_discovery_authorized,
+    bool is_onboarding_ind,
+    int onboarding_ind,
+    OpenAPI_aerial_ue_indication_e aerial_ue_ind,
+    bool is_subscribed_max_ipv6_prefix_size,
+    int subscribed_max_ipv6_prefix_size
 )
 {
     OpenAPI_dnn_configuration_t *dnn_configuration_local_var = ogs_malloc(sizeof(OpenAPI_dnn_configuration_t));
@@ -56,10 +73,27 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_create(
     dnn_configuration_local_var->atsss_allowed = atsss_allowed;
     dnn_configuration_local_var->is_secondary_auth = is_secondary_auth;
     dnn_configuration_local_var->secondary_auth = secondary_auth;
+    dnn_configuration_local_var->is_uav_secondary_auth = is_uav_secondary_auth;
+    dnn_configuration_local_var->uav_secondary_auth = uav_secondary_auth;
     dnn_configuration_local_var->is_dn_aaa_ip_address_allocation = is_dn_aaa_ip_address_allocation;
     dnn_configuration_local_var->dn_aaa_ip_address_allocation = dn_aaa_ip_address_allocation;
     dnn_configuration_local_var->dn_aaa_address = dn_aaa_address;
+    dnn_configuration_local_var->additional_dn_aaa_addresses = additional_dn_aaa_addresses;
+    dnn_configuration_local_var->dn_aaa_fqdn = dn_aaa_fqdn;
     dnn_configuration_local_var->iptv_acc_ctrl_info = iptv_acc_ctrl_info;
+    dnn_configuration_local_var->ipv4_index = ipv4_index;
+    dnn_configuration_local_var->ipv6_index = ipv6_index;
+    dnn_configuration_local_var->ecs_addr_config_info = ecs_addr_config_info;
+    dnn_configuration_local_var->additional_ecs_addr_config_infos = additional_ecs_addr_config_infos;
+    dnn_configuration_local_var->shared_ecs_addr_config_info = shared_ecs_addr_config_info;
+    dnn_configuration_local_var->additional_shared_ecs_addr_config_info_ids = additional_shared_ecs_addr_config_info_ids;
+    dnn_configuration_local_var->is_eas_discovery_authorized = is_eas_discovery_authorized;
+    dnn_configuration_local_var->eas_discovery_authorized = eas_discovery_authorized;
+    dnn_configuration_local_var->is_onboarding_ind = is_onboarding_ind;
+    dnn_configuration_local_var->onboarding_ind = onboarding_ind;
+    dnn_configuration_local_var->aerial_ue_ind = aerial_ue_ind;
+    dnn_configuration_local_var->is_subscribed_max_ipv6_prefix_size = is_subscribed_max_ipv6_prefix_size;
+    dnn_configuration_local_var->subscribed_max_ipv6_prefix_size = subscribed_max_ipv6_prefix_size;
 
     return dnn_configuration_local_var;
 }
@@ -132,9 +166,50 @@ void OpenAPI_dnn_configuration_free(OpenAPI_dnn_configuration_t *dnn_configurati
         OpenAPI_ip_address_free(dnn_configuration->dn_aaa_address);
         dnn_configuration->dn_aaa_address = NULL;
     }
+    if (dnn_configuration->additional_dn_aaa_addresses) {
+        OpenAPI_list_for_each(dnn_configuration->additional_dn_aaa_addresses, node) {
+            OpenAPI_ip_address_free(node->data);
+        }
+        OpenAPI_list_free(dnn_configuration->additional_dn_aaa_addresses);
+        dnn_configuration->additional_dn_aaa_addresses = NULL;
+    }
+    if (dnn_configuration->dn_aaa_fqdn) {
+        ogs_free(dnn_configuration->dn_aaa_fqdn);
+        dnn_configuration->dn_aaa_fqdn = NULL;
+    }
     if (dnn_configuration->iptv_acc_ctrl_info) {
         ogs_free(dnn_configuration->iptv_acc_ctrl_info);
         dnn_configuration->iptv_acc_ctrl_info = NULL;
+    }
+    if (dnn_configuration->ipv4_index) {
+        OpenAPI_ip_index_free(dnn_configuration->ipv4_index);
+        dnn_configuration->ipv4_index = NULL;
+    }
+    if (dnn_configuration->ipv6_index) {
+        OpenAPI_ip_index_free(dnn_configuration->ipv6_index);
+        dnn_configuration->ipv6_index = NULL;
+    }
+    if (dnn_configuration->ecs_addr_config_info) {
+        OpenAPI_ecs_addr_config_info_free(dnn_configuration->ecs_addr_config_info);
+        dnn_configuration->ecs_addr_config_info = NULL;
+    }
+    if (dnn_configuration->additional_ecs_addr_config_infos) {
+        OpenAPI_list_for_each(dnn_configuration->additional_ecs_addr_config_infos, node) {
+            OpenAPI_ecs_addr_config_info_free(node->data);
+        }
+        OpenAPI_list_free(dnn_configuration->additional_ecs_addr_config_infos);
+        dnn_configuration->additional_ecs_addr_config_infos = NULL;
+    }
+    if (dnn_configuration->shared_ecs_addr_config_info) {
+        ogs_free(dnn_configuration->shared_ecs_addr_config_info);
+        dnn_configuration->shared_ecs_addr_config_info = NULL;
+    }
+    if (dnn_configuration->additional_shared_ecs_addr_config_info_ids) {
+        OpenAPI_list_for_each(dnn_configuration->additional_shared_ecs_addr_config_info_ids, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(dnn_configuration->additional_shared_ecs_addr_config_info_ids);
+        dnn_configuration->additional_shared_ecs_addr_config_info_ids = NULL;
     }
     ogs_free(dnn_configuration);
 }
@@ -342,6 +417,13 @@ cJSON *OpenAPI_dnn_configuration_convertToJSON(OpenAPI_dnn_configuration_t *dnn_
     }
     }
 
+    if (dnn_configuration->is_uav_secondary_auth) {
+    if (cJSON_AddBoolToObject(item, "uavSecondaryAuth", dnn_configuration->uav_secondary_auth) == NULL) {
+        ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [uav_secondary_auth]");
+        goto end;
+    }
+    }
+
     if (dnn_configuration->is_dn_aaa_ip_address_allocation) {
     if (cJSON_AddBoolToObject(item, "dnAaaIpAddressAllocation", dnn_configuration->dn_aaa_ip_address_allocation) == NULL) {
         ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [dn_aaa_ip_address_allocation]");
@@ -362,9 +444,136 @@ cJSON *OpenAPI_dnn_configuration_convertToJSON(OpenAPI_dnn_configuration_t *dnn_
     }
     }
 
+    if (dnn_configuration->additional_dn_aaa_addresses) {
+    cJSON *additional_dn_aaa_addressesList = cJSON_AddArrayToObject(item, "additionalDnAaaAddresses");
+    if (additional_dn_aaa_addressesList == NULL) {
+        ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [additional_dn_aaa_addresses]");
+        goto end;
+    }
+    OpenAPI_list_for_each(dnn_configuration->additional_dn_aaa_addresses, node) {
+        cJSON *itemLocal = OpenAPI_ip_address_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [additional_dn_aaa_addresses]");
+            goto end;
+        }
+        cJSON_AddItemToArray(additional_dn_aaa_addressesList, itemLocal);
+    }
+    }
+
+    if (dnn_configuration->dn_aaa_fqdn) {
+    if (cJSON_AddStringToObject(item, "dnAaaFqdn", dnn_configuration->dn_aaa_fqdn) == NULL) {
+        ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [dn_aaa_fqdn]");
+        goto end;
+    }
+    }
+
     if (dnn_configuration->iptv_acc_ctrl_info) {
     if (cJSON_AddStringToObject(item, "iptvAccCtrlInfo", dnn_configuration->iptv_acc_ctrl_info) == NULL) {
         ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [iptv_acc_ctrl_info]");
+        goto end;
+    }
+    }
+
+    if (dnn_configuration->ipv4_index) {
+    cJSON *ipv4_index_local_JSON = OpenAPI_ip_index_convertToJSON(dnn_configuration->ipv4_index);
+    if (ipv4_index_local_JSON == NULL) {
+        ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [ipv4_index]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "ipv4Index", ipv4_index_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [ipv4_index]");
+        goto end;
+    }
+    }
+
+    if (dnn_configuration->ipv6_index) {
+    cJSON *ipv6_index_local_JSON = OpenAPI_ip_index_convertToJSON(dnn_configuration->ipv6_index);
+    if (ipv6_index_local_JSON == NULL) {
+        ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [ipv6_index]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "ipv6Index", ipv6_index_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [ipv6_index]");
+        goto end;
+    }
+    }
+
+    if (dnn_configuration->ecs_addr_config_info) {
+    cJSON *ecs_addr_config_info_local_JSON = OpenAPI_ecs_addr_config_info_convertToJSON(dnn_configuration->ecs_addr_config_info);
+    if (ecs_addr_config_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [ecs_addr_config_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "ecsAddrConfigInfo", ecs_addr_config_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [ecs_addr_config_info]");
+        goto end;
+    }
+    }
+
+    if (dnn_configuration->additional_ecs_addr_config_infos) {
+    cJSON *additional_ecs_addr_config_infosList = cJSON_AddArrayToObject(item, "additionalEcsAddrConfigInfos");
+    if (additional_ecs_addr_config_infosList == NULL) {
+        ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [additional_ecs_addr_config_infos]");
+        goto end;
+    }
+    OpenAPI_list_for_each(dnn_configuration->additional_ecs_addr_config_infos, node) {
+        cJSON *itemLocal = OpenAPI_ecs_addr_config_info_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [additional_ecs_addr_config_infos]");
+            goto end;
+        }
+        cJSON_AddItemToArray(additional_ecs_addr_config_infosList, itemLocal);
+    }
+    }
+
+    if (dnn_configuration->shared_ecs_addr_config_info) {
+    if (cJSON_AddStringToObject(item, "sharedEcsAddrConfigInfo", dnn_configuration->shared_ecs_addr_config_info) == NULL) {
+        ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [shared_ecs_addr_config_info]");
+        goto end;
+    }
+    }
+
+    if (dnn_configuration->additional_shared_ecs_addr_config_info_ids) {
+    cJSON *additional_shared_ecs_addr_config_info_idsList = cJSON_AddArrayToObject(item, "additionalSharedEcsAddrConfigInfoIds");
+    if (additional_shared_ecs_addr_config_info_idsList == NULL) {
+        ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [additional_shared_ecs_addr_config_info_ids]");
+        goto end;
+    }
+    OpenAPI_list_for_each(dnn_configuration->additional_shared_ecs_addr_config_info_ids, node) {
+        if (cJSON_AddStringToObject(additional_shared_ecs_addr_config_info_idsList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [additional_shared_ecs_addr_config_info_ids]");
+            goto end;
+        }
+    }
+    }
+
+    if (dnn_configuration->is_eas_discovery_authorized) {
+    if (cJSON_AddBoolToObject(item, "easDiscoveryAuthorized", dnn_configuration->eas_discovery_authorized) == NULL) {
+        ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [eas_discovery_authorized]");
+        goto end;
+    }
+    }
+
+    if (dnn_configuration->is_onboarding_ind) {
+    if (cJSON_AddBoolToObject(item, "onboardingInd", dnn_configuration->onboarding_ind) == NULL) {
+        ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [onboarding_ind]");
+        goto end;
+    }
+    }
+
+    if (dnn_configuration->aerial_ue_ind != OpenAPI_aerial_ue_indication_NULL) {
+    if (cJSON_AddStringToObject(item, "aerialUeInd", OpenAPI_aerial_ue_indication_ToString(dnn_configuration->aerial_ue_ind)) == NULL) {
+        ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [aerial_ue_ind]");
+        goto end;
+    }
+    }
+
+    if (dnn_configuration->is_subscribed_max_ipv6_prefix_size) {
+    if (cJSON_AddNumberToObject(item, "subscribedMaxIpv6PrefixSize", dnn_configuration->subscribed_max_ipv6_prefix_size) == NULL) {
+        ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [subscribed_max_ipv6_prefix_size]");
         goto end;
     }
     }
@@ -405,10 +614,30 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_parseFromJSON(cJSON *dnn_
     OpenAPI_list_t *ipv6_frame_route_listList = NULL;
     cJSON *atsss_allowed = NULL;
     cJSON *secondary_auth = NULL;
+    cJSON *uav_secondary_auth = NULL;
     cJSON *dn_aaa_ip_address_allocation = NULL;
     cJSON *dn_aaa_address = NULL;
     OpenAPI_ip_address_t *dn_aaa_address_local_nonprim = NULL;
+    cJSON *additional_dn_aaa_addresses = NULL;
+    OpenAPI_list_t *additional_dn_aaa_addressesList = NULL;
+    cJSON *dn_aaa_fqdn = NULL;
     cJSON *iptv_acc_ctrl_info = NULL;
+    cJSON *ipv4_index = NULL;
+    OpenAPI_ip_index_t *ipv4_index_local_nonprim = NULL;
+    cJSON *ipv6_index = NULL;
+    OpenAPI_ip_index_t *ipv6_index_local_nonprim = NULL;
+    cJSON *ecs_addr_config_info = NULL;
+    OpenAPI_ecs_addr_config_info_t *ecs_addr_config_info_local_nonprim = NULL;
+    cJSON *additional_ecs_addr_config_infos = NULL;
+    OpenAPI_list_t *additional_ecs_addr_config_infosList = NULL;
+    cJSON *shared_ecs_addr_config_info = NULL;
+    cJSON *additional_shared_ecs_addr_config_info_ids = NULL;
+    OpenAPI_list_t *additional_shared_ecs_addr_config_info_idsList = NULL;
+    cJSON *eas_discovery_authorized = NULL;
+    cJSON *onboarding_ind = NULL;
+    cJSON *aerial_ue_ind = NULL;
+    OpenAPI_aerial_ue_indication_e aerial_ue_indVariable = 0;
+    cJSON *subscribed_max_ipv6_prefix_size = NULL;
     pdu_session_types = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "pduSessionTypes");
     if (!pdu_session_types) {
         ogs_error("OpenAPI_dnn_configuration_parseFromJSON() failed [pdu_session_types]");
@@ -580,6 +809,14 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_parseFromJSON(cJSON *dnn_
     }
     }
 
+    uav_secondary_auth = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "uavSecondaryAuth");
+    if (uav_secondary_auth) {
+    if (!cJSON_IsBool(uav_secondary_auth)) {
+        ogs_error("OpenAPI_dnn_configuration_parseFromJSON() failed [uav_secondary_auth]");
+        goto end;
+    }
+    }
+
     dn_aaa_ip_address_allocation = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "dnAaaIpAddressAllocation");
     if (dn_aaa_ip_address_allocation) {
     if (!cJSON_IsBool(dn_aaa_ip_address_allocation)) {
@@ -593,10 +830,145 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_parseFromJSON(cJSON *dnn_
     dn_aaa_address_local_nonprim = OpenAPI_ip_address_parseFromJSON(dn_aaa_address);
     }
 
+    additional_dn_aaa_addresses = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "additionalDnAaaAddresses");
+    if (additional_dn_aaa_addresses) {
+        cJSON *additional_dn_aaa_addresses_local = NULL;
+        if (!cJSON_IsArray(additional_dn_aaa_addresses)) {
+            ogs_error("OpenAPI_dnn_configuration_parseFromJSON() failed [additional_dn_aaa_addresses]");
+            goto end;
+        }
+
+        additional_dn_aaa_addressesList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(additional_dn_aaa_addresses_local, additional_dn_aaa_addresses) {
+            if (!cJSON_IsObject(additional_dn_aaa_addresses_local)) {
+                ogs_error("OpenAPI_dnn_configuration_parseFromJSON() failed [additional_dn_aaa_addresses]");
+                goto end;
+            }
+            OpenAPI_ip_address_t *additional_dn_aaa_addressesItem = OpenAPI_ip_address_parseFromJSON(additional_dn_aaa_addresses_local);
+            if (!additional_dn_aaa_addressesItem) {
+                ogs_error("No additional_dn_aaa_addressesItem");
+                OpenAPI_list_free(additional_dn_aaa_addressesList);
+                goto end;
+            }
+            OpenAPI_list_add(additional_dn_aaa_addressesList, additional_dn_aaa_addressesItem);
+        }
+    }
+
+    dn_aaa_fqdn = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "dnAaaFqdn");
+    if (dn_aaa_fqdn) {
+    if (!cJSON_IsString(dn_aaa_fqdn) && !cJSON_IsNull(dn_aaa_fqdn)) {
+        ogs_error("OpenAPI_dnn_configuration_parseFromJSON() failed [dn_aaa_fqdn]");
+        goto end;
+    }
+    }
+
     iptv_acc_ctrl_info = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "iptvAccCtrlInfo");
     if (iptv_acc_ctrl_info) {
     if (!cJSON_IsString(iptv_acc_ctrl_info) && !cJSON_IsNull(iptv_acc_ctrl_info)) {
         ogs_error("OpenAPI_dnn_configuration_parseFromJSON() failed [iptv_acc_ctrl_info]");
+        goto end;
+    }
+    }
+
+    ipv4_index = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "ipv4Index");
+    if (ipv4_index) {
+    ipv4_index_local_nonprim = OpenAPI_ip_index_parseFromJSON(ipv4_index);
+    }
+
+    ipv6_index = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "ipv6Index");
+    if (ipv6_index) {
+    ipv6_index_local_nonprim = OpenAPI_ip_index_parseFromJSON(ipv6_index);
+    }
+
+    ecs_addr_config_info = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "ecsAddrConfigInfo");
+    if (ecs_addr_config_info) {
+    ecs_addr_config_info_local_nonprim = OpenAPI_ecs_addr_config_info_parseFromJSON(ecs_addr_config_info);
+    }
+
+    additional_ecs_addr_config_infos = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "additionalEcsAddrConfigInfos");
+    if (additional_ecs_addr_config_infos) {
+        cJSON *additional_ecs_addr_config_infos_local = NULL;
+        if (!cJSON_IsArray(additional_ecs_addr_config_infos)) {
+            ogs_error("OpenAPI_dnn_configuration_parseFromJSON() failed [additional_ecs_addr_config_infos]");
+            goto end;
+        }
+
+        additional_ecs_addr_config_infosList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(additional_ecs_addr_config_infos_local, additional_ecs_addr_config_infos) {
+            if (!cJSON_IsObject(additional_ecs_addr_config_infos_local)) {
+                ogs_error("OpenAPI_dnn_configuration_parseFromJSON() failed [additional_ecs_addr_config_infos]");
+                goto end;
+            }
+            OpenAPI_ecs_addr_config_info_t *additional_ecs_addr_config_infosItem = OpenAPI_ecs_addr_config_info_parseFromJSON(additional_ecs_addr_config_infos_local);
+            if (!additional_ecs_addr_config_infosItem) {
+                ogs_error("No additional_ecs_addr_config_infosItem");
+                OpenAPI_list_free(additional_ecs_addr_config_infosList);
+                goto end;
+            }
+            OpenAPI_list_add(additional_ecs_addr_config_infosList, additional_ecs_addr_config_infosItem);
+        }
+    }
+
+    shared_ecs_addr_config_info = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "sharedEcsAddrConfigInfo");
+    if (shared_ecs_addr_config_info) {
+    if (!cJSON_IsString(shared_ecs_addr_config_info) && !cJSON_IsNull(shared_ecs_addr_config_info)) {
+        ogs_error("OpenAPI_dnn_configuration_parseFromJSON() failed [shared_ecs_addr_config_info]");
+        goto end;
+    }
+    }
+
+    additional_shared_ecs_addr_config_info_ids = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "additionalSharedEcsAddrConfigInfoIds");
+    if (additional_shared_ecs_addr_config_info_ids) {
+        cJSON *additional_shared_ecs_addr_config_info_ids_local = NULL;
+        if (!cJSON_IsArray(additional_shared_ecs_addr_config_info_ids)) {
+            ogs_error("OpenAPI_dnn_configuration_parseFromJSON() failed [additional_shared_ecs_addr_config_info_ids]");
+            goto end;
+        }
+
+        additional_shared_ecs_addr_config_info_idsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(additional_shared_ecs_addr_config_info_ids_local, additional_shared_ecs_addr_config_info_ids) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(additional_shared_ecs_addr_config_info_ids_local)) {
+                ogs_error("OpenAPI_dnn_configuration_parseFromJSON() failed [additional_shared_ecs_addr_config_info_ids]");
+                goto end;
+            }
+            OpenAPI_list_add(additional_shared_ecs_addr_config_info_idsList, ogs_strdup(additional_shared_ecs_addr_config_info_ids_local->valuestring));
+        }
+    }
+
+    eas_discovery_authorized = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "easDiscoveryAuthorized");
+    if (eas_discovery_authorized) {
+    if (!cJSON_IsBool(eas_discovery_authorized)) {
+        ogs_error("OpenAPI_dnn_configuration_parseFromJSON() failed [eas_discovery_authorized]");
+        goto end;
+    }
+    }
+
+    onboarding_ind = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "onboardingInd");
+    if (onboarding_ind) {
+    if (!cJSON_IsBool(onboarding_ind)) {
+        ogs_error("OpenAPI_dnn_configuration_parseFromJSON() failed [onboarding_ind]");
+        goto end;
+    }
+    }
+
+    aerial_ue_ind = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "aerialUeInd");
+    if (aerial_ue_ind) {
+    if (!cJSON_IsString(aerial_ue_ind)) {
+        ogs_error("OpenAPI_dnn_configuration_parseFromJSON() failed [aerial_ue_ind]");
+        goto end;
+    }
+    aerial_ue_indVariable = OpenAPI_aerial_ue_indication_FromString(aerial_ue_ind->valuestring);
+    }
+
+    subscribed_max_ipv6_prefix_size = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "subscribedMaxIpv6PrefixSize");
+    if (subscribed_max_ipv6_prefix_size) {
+    if (!cJSON_IsNumber(subscribed_max_ipv6_prefix_size)) {
+        ogs_error("OpenAPI_dnn_configuration_parseFromJSON() failed [subscribed_max_ipv6_prefix_size]");
         goto end;
     }
     }
@@ -623,10 +995,27 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_parseFromJSON(cJSON *dnn_
         atsss_allowed ? atsss_allowed->valueint : 0,
         secondary_auth ? true : false,
         secondary_auth ? secondary_auth->valueint : 0,
+        uav_secondary_auth ? true : false,
+        uav_secondary_auth ? uav_secondary_auth->valueint : 0,
         dn_aaa_ip_address_allocation ? true : false,
         dn_aaa_ip_address_allocation ? dn_aaa_ip_address_allocation->valueint : 0,
         dn_aaa_address ? dn_aaa_address_local_nonprim : NULL,
-        iptv_acc_ctrl_info && !cJSON_IsNull(iptv_acc_ctrl_info) ? ogs_strdup(iptv_acc_ctrl_info->valuestring) : NULL
+        additional_dn_aaa_addresses ? additional_dn_aaa_addressesList : NULL,
+        dn_aaa_fqdn && !cJSON_IsNull(dn_aaa_fqdn) ? ogs_strdup(dn_aaa_fqdn->valuestring) : NULL,
+        iptv_acc_ctrl_info && !cJSON_IsNull(iptv_acc_ctrl_info) ? ogs_strdup(iptv_acc_ctrl_info->valuestring) : NULL,
+        ipv4_index ? ipv4_index_local_nonprim : NULL,
+        ipv6_index ? ipv6_index_local_nonprim : NULL,
+        ecs_addr_config_info ? ecs_addr_config_info_local_nonprim : NULL,
+        additional_ecs_addr_config_infos ? additional_ecs_addr_config_infosList : NULL,
+        shared_ecs_addr_config_info && !cJSON_IsNull(shared_ecs_addr_config_info) ? ogs_strdup(shared_ecs_addr_config_info->valuestring) : NULL,
+        additional_shared_ecs_addr_config_info_ids ? additional_shared_ecs_addr_config_info_idsList : NULL,
+        eas_discovery_authorized ? true : false,
+        eas_discovery_authorized ? eas_discovery_authorized->valueint : 0,
+        onboarding_ind ? true : false,
+        onboarding_ind ? onboarding_ind->valueint : 0,
+        aerial_ue_ind ? aerial_ue_indVariable : 0,
+        subscribed_max_ipv6_prefix_size ? true : false,
+        subscribed_max_ipv6_prefix_size ? subscribed_max_ipv6_prefix_size->valuedouble : 0
     );
 
     return dnn_configuration_local_var;
@@ -683,6 +1072,39 @@ end:
     if (dn_aaa_address_local_nonprim) {
         OpenAPI_ip_address_free(dn_aaa_address_local_nonprim);
         dn_aaa_address_local_nonprim = NULL;
+    }
+    if (additional_dn_aaa_addressesList) {
+        OpenAPI_list_for_each(additional_dn_aaa_addressesList, node) {
+            OpenAPI_ip_address_free(node->data);
+        }
+        OpenAPI_list_free(additional_dn_aaa_addressesList);
+        additional_dn_aaa_addressesList = NULL;
+    }
+    if (ipv4_index_local_nonprim) {
+        OpenAPI_ip_index_free(ipv4_index_local_nonprim);
+        ipv4_index_local_nonprim = NULL;
+    }
+    if (ipv6_index_local_nonprim) {
+        OpenAPI_ip_index_free(ipv6_index_local_nonprim);
+        ipv6_index_local_nonprim = NULL;
+    }
+    if (ecs_addr_config_info_local_nonprim) {
+        OpenAPI_ecs_addr_config_info_free(ecs_addr_config_info_local_nonprim);
+        ecs_addr_config_info_local_nonprim = NULL;
+    }
+    if (additional_ecs_addr_config_infosList) {
+        OpenAPI_list_for_each(additional_ecs_addr_config_infosList, node) {
+            OpenAPI_ecs_addr_config_info_free(node->data);
+        }
+        OpenAPI_list_free(additional_ecs_addr_config_infosList);
+        additional_ecs_addr_config_infosList = NULL;
+    }
+    if (additional_shared_ecs_addr_config_info_idsList) {
+        OpenAPI_list_for_each(additional_shared_ecs_addr_config_info_idsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(additional_shared_ecs_addr_config_info_idsList);
+        additional_shared_ecs_addr_config_info_idsList = NULL;
     }
     return NULL;
 }

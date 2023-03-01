@@ -30,6 +30,13 @@ typedef struct OpenAPI_smsf_registration_s {
     struct OpenAPI_network_node_diameter_address_s *smsf_diameter_address;
     char *registration_time;
     struct OpenAPI_context_info_s *context_info;
+    char *data_restoration_callback_uri;
+    OpenAPI_list_t *reset_ids;
+    bool is_smsf_sbi_sup_ind;
+    int smsf_sbi_sup_ind;
+    bool is_udr_restart_ind;
+    int udr_restart_ind;
+    char *last_synchronization_time;
 } OpenAPI_smsf_registration_t;
 
 OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_create(
@@ -40,7 +47,14 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_create(
     char *smsf_map_address,
     OpenAPI_network_node_diameter_address_t *smsf_diameter_address,
     char *registration_time,
-    OpenAPI_context_info_t *context_info
+    OpenAPI_context_info_t *context_info,
+    char *data_restoration_callback_uri,
+    OpenAPI_list_t *reset_ids,
+    bool is_smsf_sbi_sup_ind,
+    int smsf_sbi_sup_ind,
+    bool is_udr_restart_ind,
+    int udr_restart_ind,
+    char *last_synchronization_time
 );
 void OpenAPI_smsf_registration_free(OpenAPI_smsf_registration_t *smsf_registration);
 OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_parseFromJSON(cJSON *smsf_registrationJSON);

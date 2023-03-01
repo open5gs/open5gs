@@ -6,7 +6,8 @@
 
 OpenAPI_sm_policy_snssai_data_t *OpenAPI_sm_policy_snssai_data_create(
     OpenAPI_snssai_t *snssai,
-    OpenAPI_list_t* sm_policy_dnn_data
+    OpenAPI_list_t* sm_policy_dnn_data,
+    OpenAPI_slice_mbr_1_t *ue_slice_mbr
 )
 {
     OpenAPI_sm_policy_snssai_data_t *sm_policy_snssai_data_local_var = ogs_malloc(sizeof(OpenAPI_sm_policy_snssai_data_t));
@@ -14,6 +15,7 @@ OpenAPI_sm_policy_snssai_data_t *OpenAPI_sm_policy_snssai_data_create(
 
     sm_policy_snssai_data_local_var->snssai = snssai;
     sm_policy_snssai_data_local_var->sm_policy_dnn_data = sm_policy_dnn_data;
+    sm_policy_snssai_data_local_var->ue_slice_mbr = ue_slice_mbr;
 
     return sm_policy_snssai_data_local_var;
 }
@@ -38,6 +40,10 @@ void OpenAPI_sm_policy_snssai_data_free(OpenAPI_sm_policy_snssai_data_t *sm_poli
         }
         OpenAPI_list_free(sm_policy_snssai_data->sm_policy_dnn_data);
         sm_policy_snssai_data->sm_policy_dnn_data = NULL;
+    }
+    if (sm_policy_snssai_data->ue_slice_mbr) {
+        OpenAPI_slice_mbr_1_free(sm_policy_snssai_data->ue_slice_mbr);
+        sm_policy_snssai_data->ue_slice_mbr = NULL;
     }
     ogs_free(sm_policy_snssai_data);
 }
@@ -90,6 +96,19 @@ cJSON *OpenAPI_sm_policy_snssai_data_convertToJSON(OpenAPI_sm_policy_snssai_data
     }
     }
 
+    if (sm_policy_snssai_data->ue_slice_mbr) {
+    cJSON *ue_slice_mbr_local_JSON = OpenAPI_slice_mbr_1_convertToJSON(sm_policy_snssai_data->ue_slice_mbr);
+    if (ue_slice_mbr_local_JSON == NULL) {
+        ogs_error("OpenAPI_sm_policy_snssai_data_convertToJSON() failed [ue_slice_mbr]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "ueSliceMbr", ue_slice_mbr_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_sm_policy_snssai_data_convertToJSON() failed [ue_slice_mbr]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -102,6 +121,8 @@ OpenAPI_sm_policy_snssai_data_t *OpenAPI_sm_policy_snssai_data_parseFromJSON(cJS
     OpenAPI_snssai_t *snssai_local_nonprim = NULL;
     cJSON *sm_policy_dnn_data = NULL;
     OpenAPI_list_t *sm_policy_dnn_dataList = NULL;
+    cJSON *ue_slice_mbr = NULL;
+    OpenAPI_slice_mbr_1_t *ue_slice_mbr_local_nonprim = NULL;
     snssai = cJSON_GetObjectItemCaseSensitive(sm_policy_snssai_dataJSON, "snssai");
     if (!snssai) {
         ogs_error("OpenAPI_sm_policy_snssai_data_parseFromJSON() failed [snssai]");
@@ -135,9 +156,15 @@ OpenAPI_sm_policy_snssai_data_t *OpenAPI_sm_policy_snssai_data_parseFromJSON(cJS
         }
     }
 
+    ue_slice_mbr = cJSON_GetObjectItemCaseSensitive(sm_policy_snssai_dataJSON, "ueSliceMbr");
+    if (ue_slice_mbr) {
+    ue_slice_mbr_local_nonprim = OpenAPI_slice_mbr_1_parseFromJSON(ue_slice_mbr);
+    }
+
     sm_policy_snssai_data_local_var = OpenAPI_sm_policy_snssai_data_create (
         snssai_local_nonprim,
-        sm_policy_dnn_data ? sm_policy_dnn_dataList : NULL
+        sm_policy_dnn_data ? sm_policy_dnn_dataList : NULL,
+        ue_slice_mbr ? ue_slice_mbr_local_nonprim : NULL
     );
 
     return sm_policy_snssai_data_local_var;
@@ -155,6 +182,10 @@ end:
         }
         OpenAPI_list_free(sm_policy_dnn_dataList);
         sm_policy_dnn_dataList = NULL;
+    }
+    if (ue_slice_mbr_local_nonprim) {
+        OpenAPI_slice_mbr_1_free(ue_slice_mbr_local_nonprim);
+        ue_slice_mbr_local_nonprim = NULL;
     }
     return NULL;
 }

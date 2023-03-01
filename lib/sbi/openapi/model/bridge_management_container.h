@@ -1,7 +1,7 @@
 /*
  * bridge_management_container.h
  *
- * 
+ * Contains the UMIC.
  */
 
 #ifndef _OpenAPI_bridge_management_container_H_

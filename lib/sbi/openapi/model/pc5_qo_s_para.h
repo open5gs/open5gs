@@ -1,7 +1,7 @@
 /*
  * pc5_qo_s_para.h
  *
- * 
+ * Contains policy data on the PC5 QoS parameters.
  */
 
 #ifndef _OpenAPI_pc5_qo_s_para_H_

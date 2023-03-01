@@ -1,7 +1,7 @@
 /*
  * policy_association_update_request.h
  *
- * 
+ * Represents information that the NF service consumer provides when requesting the update of a policy association. 
  */
 
 #ifndef _OpenAPI_policy_association_update_request_H_
@@ -16,6 +16,7 @@
 #include "ambr.h"
 #include "guami.h"
 #include "mapping_of_snssai.h"
+#include "nwdaf_data.h"
 #include "presence_info.h"
 #include "rat_type.h"
 #include "request_trigger.h"
@@ -23,6 +24,7 @@
 #include "smf_selection_data.h"
 #include "snssai.h"
 #include "trace_data.h"
+#include "ue_slice_mbr.h"
 #include "user_location.h"
 #include "wireline_service_area_restriction.h"
 
@@ -43,15 +45,18 @@ typedef struct OpenAPI_policy_association_update_request_s {
     int rfsp;
     struct OpenAPI_smf_selection_data_s *smf_sel_info;
     struct OpenAPI_ambr_s *ue_ambr;
+    OpenAPI_list_t *ue_slice_mbrs;
     OpenAPI_list_t* pra_statuses;
     struct OpenAPI_user_location_s *user_loc;
     OpenAPI_list_t *allowed_snssais;
+    OpenAPI_list_t *target_snssais;
     OpenAPI_list_t *mapping_snssais;
     OpenAPI_list_t *access_types;
     OpenAPI_list_t *rat_types;
     OpenAPI_list_t *n3g_allowed_snssais;
     struct OpenAPI_trace_data_s *trace_req;
     struct OpenAPI_guami_s *guami;
+    OpenAPI_list_t *nwdaf_datas;
 } OpenAPI_policy_association_update_request_t;
 
 OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_request_create(
@@ -66,15 +71,18 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
     int rfsp,
     OpenAPI_smf_selection_data_t *smf_sel_info,
     OpenAPI_ambr_t *ue_ambr,
+    OpenAPI_list_t *ue_slice_mbrs,
     OpenAPI_list_t* pra_statuses,
     OpenAPI_user_location_t *user_loc,
     OpenAPI_list_t *allowed_snssais,
+    OpenAPI_list_t *target_snssais,
     OpenAPI_list_t *mapping_snssais,
     OpenAPI_list_t *access_types,
     OpenAPI_list_t *rat_types,
     OpenAPI_list_t *n3g_allowed_snssais,
     OpenAPI_trace_data_t *trace_req,
-    OpenAPI_guami_t *guami
+    OpenAPI_guami_t *guami,
+    OpenAPI_list_t *nwdaf_datas
 );
 void OpenAPI_policy_association_update_request_free(OpenAPI_policy_association_update_request_t *policy_association_update_request);
 OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_request_parseFromJSON(cJSON *policy_association_update_requestJSON);

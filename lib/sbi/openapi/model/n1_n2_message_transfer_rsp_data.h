@@ -1,7 +1,7 @@
 /*
  * n1_n2_message_transfer_rsp_data.h
  *
- * 
+ * Data within a N1/N2 message transfer response
  */
 
 #ifndef _OpenAPI_n1_n2_message_transfer_rsp_data_H_

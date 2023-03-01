@@ -80,13 +80,11 @@ cJSON *OpenAPI_charging_information_convertToJSON(OpenAPI_charging_information_t
         goto end;
     }
 
-    if (!charging_information->secondary_chf_address) {
-        ogs_error("OpenAPI_charging_information_convertToJSON() failed [secondary_chf_address]");
-        return NULL;
-    }
+    if (charging_information->secondary_chf_address) {
     if (cJSON_AddStringToObject(item, "secondaryChfAddress", charging_information->secondary_chf_address) == NULL) {
         ogs_error("OpenAPI_charging_information_convertToJSON() failed [secondary_chf_address]");
         goto end;
+    }
     }
 
     if (charging_information->primary_chf_set_id) {
@@ -142,13 +140,11 @@ OpenAPI_charging_information_t *OpenAPI_charging_information_parseFromJSON(cJSON
     }
 
     secondary_chf_address = cJSON_GetObjectItemCaseSensitive(charging_informationJSON, "secondaryChfAddress");
-    if (!secondary_chf_address) {
+    if (secondary_chf_address) {
+    if (!cJSON_IsString(secondary_chf_address) && !cJSON_IsNull(secondary_chf_address)) {
         ogs_error("OpenAPI_charging_information_parseFromJSON() failed [secondary_chf_address]");
         goto end;
     }
-    if (!cJSON_IsString(secondary_chf_address)) {
-        ogs_error("OpenAPI_charging_information_parseFromJSON() failed [secondary_chf_address]");
-        goto end;
     }
 
     primary_chf_set_id = cJSON_GetObjectItemCaseSensitive(charging_informationJSON, "primaryChfSetId");
@@ -185,7 +181,7 @@ OpenAPI_charging_information_t *OpenAPI_charging_information_parseFromJSON(cJSON
 
     charging_information_local_var = OpenAPI_charging_information_create (
         ogs_strdup(primary_chf_address->valuestring),
-        ogs_strdup(secondary_chf_address->valuestring),
+        secondary_chf_address && !cJSON_IsNull(secondary_chf_address) ? ogs_strdup(secondary_chf_address->valuestring) : NULL,
         primary_chf_set_id && !cJSON_IsNull(primary_chf_set_id) ? ogs_strdup(primary_chf_set_id->valuestring) : NULL,
         primary_chf_instance_id && !cJSON_IsNull(primary_chf_instance_id) ? ogs_strdup(primary_chf_instance_id->valuestring) : NULL,
         secondary_chf_set_id && !cJSON_IsNull(secondary_chf_set_id) ? ogs_strdup(secondary_chf_set_id->valuestring) : NULL,

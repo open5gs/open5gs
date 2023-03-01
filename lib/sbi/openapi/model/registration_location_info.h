@@ -13,6 +13,7 @@
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
 #include "access_type.h"
+#include "guami.h"
 #include "plmn_id.h"
 #include "vgmlc_address.h"
 
@@ -23,6 +24,7 @@ extern "C" {
 typedef struct OpenAPI_registration_location_info_s OpenAPI_registration_location_info_t;
 typedef struct OpenAPI_registration_location_info_s {
     char *amf_instance_id;
+    struct OpenAPI_guami_s *guami;
     struct OpenAPI_plmn_id_s *plmn_id;
     struct OpenAPI_vgmlc_address_s *vgmlc_address;
     OpenAPI_list_t *access_type_list;
@@ -30,6 +32,7 @@ typedef struct OpenAPI_registration_location_info_s {
 
 OpenAPI_registration_location_info_t *OpenAPI_registration_location_info_create(
     char *amf_instance_id,
+    OpenAPI_guami_t *guami,
     OpenAPI_plmn_id_t *plmn_id,
     OpenAPI_vgmlc_address_t *vgmlc_address,
     OpenAPI_list_t *access_type_list

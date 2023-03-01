@@ -1,7 +1,7 @@
 /*
  * ebi_arp_mapping.h
  *
- * 
+ * EBI to ARP mapping
  */
 
 #ifndef _OpenAPI_ebi_arp_mapping_H_

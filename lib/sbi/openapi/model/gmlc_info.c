@@ -5,13 +5,15 @@
 #include "gmlc_info.h"
 
 OpenAPI_gmlc_info_t *OpenAPI_gmlc_info_create(
-    OpenAPI_list_t *serving_client_types
+    OpenAPI_list_t *serving_client_types,
+    OpenAPI_list_t *gmlc_numbers
 )
 {
     OpenAPI_gmlc_info_t *gmlc_info_local_var = ogs_malloc(sizeof(OpenAPI_gmlc_info_t));
     ogs_assert(gmlc_info_local_var);
 
     gmlc_info_local_var->serving_client_types = serving_client_types;
+    gmlc_info_local_var->gmlc_numbers = gmlc_numbers;
 
     return gmlc_info_local_var;
 }
@@ -29,6 +31,13 @@ void OpenAPI_gmlc_info_free(OpenAPI_gmlc_info_t *gmlc_info)
         }
         OpenAPI_list_free(gmlc_info->serving_client_types);
         gmlc_info->serving_client_types = NULL;
+    }
+    if (gmlc_info->gmlc_numbers) {
+        OpenAPI_list_for_each(gmlc_info->gmlc_numbers, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(gmlc_info->gmlc_numbers);
+        gmlc_info->gmlc_numbers = NULL;
     }
     ogs_free(gmlc_info);
 }
@@ -60,6 +69,20 @@ cJSON *OpenAPI_gmlc_info_convertToJSON(OpenAPI_gmlc_info_t *gmlc_info)
     }
     }
 
+    if (gmlc_info->gmlc_numbers) {
+    cJSON *gmlc_numbersList = cJSON_AddArrayToObject(item, "gmlcNumbers");
+    if (gmlc_numbersList == NULL) {
+        ogs_error("OpenAPI_gmlc_info_convertToJSON() failed [gmlc_numbers]");
+        goto end;
+    }
+    OpenAPI_list_for_each(gmlc_info->gmlc_numbers, node) {
+        if (cJSON_AddStringToObject(gmlc_numbersList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_gmlc_info_convertToJSON() failed [gmlc_numbers]");
+            goto end;
+        }
+    }
+    }
+
 end:
     return item;
 }
@@ -70,6 +93,8 @@ OpenAPI_gmlc_info_t *OpenAPI_gmlc_info_parseFromJSON(cJSON *gmlc_infoJSON)
     OpenAPI_lnode_t *node = NULL;
     cJSON *serving_client_types = NULL;
     OpenAPI_list_t *serving_client_typesList = NULL;
+    cJSON *gmlc_numbers = NULL;
+    OpenAPI_list_t *gmlc_numbersList = NULL;
     serving_client_types = cJSON_GetObjectItemCaseSensitive(gmlc_infoJSON, "servingClientTypes");
     if (serving_client_types) {
         cJSON *serving_client_types_local = NULL;
@@ -95,8 +120,30 @@ OpenAPI_gmlc_info_t *OpenAPI_gmlc_info_parseFromJSON(cJSON *gmlc_infoJSON)
         }
     }
 
+    gmlc_numbers = cJSON_GetObjectItemCaseSensitive(gmlc_infoJSON, "gmlcNumbers");
+    if (gmlc_numbers) {
+        cJSON *gmlc_numbers_local = NULL;
+        if (!cJSON_IsArray(gmlc_numbers)) {
+            ogs_error("OpenAPI_gmlc_info_parseFromJSON() failed [gmlc_numbers]");
+            goto end;
+        }
+
+        gmlc_numbersList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(gmlc_numbers_local, gmlc_numbers) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(gmlc_numbers_local)) {
+                ogs_error("OpenAPI_gmlc_info_parseFromJSON() failed [gmlc_numbers]");
+                goto end;
+            }
+            OpenAPI_list_add(gmlc_numbersList, ogs_strdup(gmlc_numbers_local->valuestring));
+        }
+    }
+
     gmlc_info_local_var = OpenAPI_gmlc_info_create (
-        serving_client_types ? serving_client_typesList : NULL
+        serving_client_types ? serving_client_typesList : NULL,
+        gmlc_numbers ? gmlc_numbersList : NULL
     );
 
     return gmlc_info_local_var;
@@ -107,6 +154,13 @@ end:
         }
         OpenAPI_list_free(serving_client_typesList);
         serving_client_typesList = NULL;
+    }
+    if (gmlc_numbersList) {
+        OpenAPI_list_for_each(gmlc_numbersList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(gmlc_numbersList);
+        gmlc_numbersList = NULL;
     }
     return NULL;
 }

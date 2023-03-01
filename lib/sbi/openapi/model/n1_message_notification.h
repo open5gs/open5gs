@@ -1,7 +1,7 @@
 /*
  * n1_message_notification.h
  *
- * 
+ * Data within a N1 message notification request
  */
 
 #ifndef _OpenAPI_n1_message_notification_H_

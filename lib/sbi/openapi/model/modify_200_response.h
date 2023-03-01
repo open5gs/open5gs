@@ -18,6 +18,7 @@
 #include "report_item.h"
 #include "sdm_subscription.h"
 #include "snssai.h"
+#include "ue_context_in_smf_data_sub_filter.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,6 +42,12 @@ typedef struct OpenAPI_modify_200_response_s {
     OpenAPI_list_t *report;
     char *supported_features;
     struct OpenAPI_context_info_s *context_info;
+    bool is_nf_change_filter;
+    int nf_change_filter;
+    bool is_unique_subscription;
+    int unique_subscription;
+    OpenAPI_list_t *reset_ids;
+    struct OpenAPI_ue_context_in_smf_data_sub_filter_s *ue_con_smf_data_sub_filter;
 } OpenAPI_modify_200_response_t;
 
 OpenAPI_modify_200_response_t *OpenAPI_modify_200_response_create(
@@ -59,7 +66,13 @@ OpenAPI_modify_200_response_t *OpenAPI_modify_200_response_create(
     int immediate_report,
     OpenAPI_list_t *report,
     char *supported_features,
-    OpenAPI_context_info_t *context_info
+    OpenAPI_context_info_t *context_info,
+    bool is_nf_change_filter,
+    int nf_change_filter,
+    bool is_unique_subscription,
+    int unique_subscription,
+    OpenAPI_list_t *reset_ids,
+    OpenAPI_ue_context_in_smf_data_sub_filter_t *ue_con_smf_data_sub_filter
 );
 void OpenAPI_modify_200_response_free(OpenAPI_modify_200_response_t *modify_200_response);
 OpenAPI_modify_200_response_t *OpenAPI_modify_200_response_parseFromJSON(cJSON *modify_200_responseJSON);

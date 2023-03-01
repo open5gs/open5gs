@@ -8,7 +8,7 @@ OpenAPI_bdt_data_t *OpenAPI_bdt_data_create(
     char *asp_id,
     OpenAPI_transfer_policy_t *trans_policy,
     char *bdt_ref_id,
-    OpenAPI_network_area_info_1_t *nw_area_info,
+    OpenAPI_network_area_info_2_t *nw_area_info,
     bool is_num_of_ues,
     int num_of_ues,
     OpenAPI_usage_threshold_t *vol_per_ue,
@@ -16,7 +16,8 @@ OpenAPI_bdt_data_t *OpenAPI_bdt_data_create(
     OpenAPI_snssai_t *snssai,
     char *traffic_des,
     OpenAPI_bdt_policy_status_t *bdtp_status,
-    char *supp_feat
+    char *supp_feat,
+    OpenAPI_list_t *reset_ids
 )
 {
     OpenAPI_bdt_data_t *bdt_data_local_var = ogs_malloc(sizeof(OpenAPI_bdt_data_t));
@@ -34,6 +35,7 @@ OpenAPI_bdt_data_t *OpenAPI_bdt_data_create(
     bdt_data_local_var->traffic_des = traffic_des;
     bdt_data_local_var->bdtp_status = bdtp_status;
     bdt_data_local_var->supp_feat = supp_feat;
+    bdt_data_local_var->reset_ids = reset_ids;
 
     return bdt_data_local_var;
 }
@@ -58,7 +60,7 @@ void OpenAPI_bdt_data_free(OpenAPI_bdt_data_t *bdt_data)
         bdt_data->bdt_ref_id = NULL;
     }
     if (bdt_data->nw_area_info) {
-        OpenAPI_network_area_info_1_free(bdt_data->nw_area_info);
+        OpenAPI_network_area_info_2_free(bdt_data->nw_area_info);
         bdt_data->nw_area_info = NULL;
     }
     if (bdt_data->vol_per_ue) {
@@ -84,6 +86,13 @@ void OpenAPI_bdt_data_free(OpenAPI_bdt_data_t *bdt_data)
     if (bdt_data->supp_feat) {
         ogs_free(bdt_data->supp_feat);
         bdt_data->supp_feat = NULL;
+    }
+    if (bdt_data->reset_ids) {
+        OpenAPI_list_for_each(bdt_data->reset_ids, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(bdt_data->reset_ids);
+        bdt_data->reset_ids = NULL;
     }
     ogs_free(bdt_data);
 }
@@ -131,7 +140,7 @@ cJSON *OpenAPI_bdt_data_convertToJSON(OpenAPI_bdt_data_t *bdt_data)
     }
 
     if (bdt_data->nw_area_info) {
-    cJSON *nw_area_info_local_JSON = OpenAPI_network_area_info_1_convertToJSON(bdt_data->nw_area_info);
+    cJSON *nw_area_info_local_JSON = OpenAPI_network_area_info_2_convertToJSON(bdt_data->nw_area_info);
     if (nw_area_info_local_JSON == NULL) {
         ogs_error("OpenAPI_bdt_data_convertToJSON() failed [nw_area_info]");
         goto end;
@@ -210,6 +219,20 @@ cJSON *OpenAPI_bdt_data_convertToJSON(OpenAPI_bdt_data_t *bdt_data)
     }
     }
 
+    if (bdt_data->reset_ids) {
+    cJSON *reset_idsList = cJSON_AddArrayToObject(item, "resetIds");
+    if (reset_idsList == NULL) {
+        ogs_error("OpenAPI_bdt_data_convertToJSON() failed [reset_ids]");
+        goto end;
+    }
+    OpenAPI_list_for_each(bdt_data->reset_ids, node) {
+        if (cJSON_AddStringToObject(reset_idsList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_bdt_data_convertToJSON() failed [reset_ids]");
+            goto end;
+        }
+    }
+    }
+
 end:
     return item;
 }
@@ -223,7 +246,7 @@ OpenAPI_bdt_data_t *OpenAPI_bdt_data_parseFromJSON(cJSON *bdt_dataJSON)
     OpenAPI_transfer_policy_t *trans_policy_local_nonprim = NULL;
     cJSON *bdt_ref_id = NULL;
     cJSON *nw_area_info = NULL;
-    OpenAPI_network_area_info_1_t *nw_area_info_local_nonprim = NULL;
+    OpenAPI_network_area_info_2_t *nw_area_info_local_nonprim = NULL;
     cJSON *num_of_ues = NULL;
     cJSON *vol_per_ue = NULL;
     OpenAPI_usage_threshold_t *vol_per_ue_local_nonprim = NULL;
@@ -234,6 +257,8 @@ OpenAPI_bdt_data_t *OpenAPI_bdt_data_parseFromJSON(cJSON *bdt_dataJSON)
     cJSON *bdtp_status = NULL;
     OpenAPI_bdt_policy_status_t *bdtp_status_local_nonprim = NULL;
     cJSON *supp_feat = NULL;
+    cJSON *reset_ids = NULL;
+    OpenAPI_list_t *reset_idsList = NULL;
     asp_id = cJSON_GetObjectItemCaseSensitive(bdt_dataJSON, "aspId");
     if (!asp_id) {
         ogs_error("OpenAPI_bdt_data_parseFromJSON() failed [asp_id]");
@@ -261,7 +286,7 @@ OpenAPI_bdt_data_t *OpenAPI_bdt_data_parseFromJSON(cJSON *bdt_dataJSON)
 
     nw_area_info = cJSON_GetObjectItemCaseSensitive(bdt_dataJSON, "nwAreaInfo");
     if (nw_area_info) {
-    nw_area_info_local_nonprim = OpenAPI_network_area_info_1_parseFromJSON(nw_area_info);
+    nw_area_info_local_nonprim = OpenAPI_network_area_info_2_parseFromJSON(nw_area_info);
     }
 
     num_of_ues = cJSON_GetObjectItemCaseSensitive(bdt_dataJSON, "numOfUes");
@@ -311,6 +336,27 @@ OpenAPI_bdt_data_t *OpenAPI_bdt_data_parseFromJSON(cJSON *bdt_dataJSON)
     }
     }
 
+    reset_ids = cJSON_GetObjectItemCaseSensitive(bdt_dataJSON, "resetIds");
+    if (reset_ids) {
+        cJSON *reset_ids_local = NULL;
+        if (!cJSON_IsArray(reset_ids)) {
+            ogs_error("OpenAPI_bdt_data_parseFromJSON() failed [reset_ids]");
+            goto end;
+        }
+
+        reset_idsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(reset_ids_local, reset_ids) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(reset_ids_local)) {
+                ogs_error("OpenAPI_bdt_data_parseFromJSON() failed [reset_ids]");
+                goto end;
+            }
+            OpenAPI_list_add(reset_idsList, ogs_strdup(reset_ids_local->valuestring));
+        }
+    }
+
     bdt_data_local_var = OpenAPI_bdt_data_create (
         ogs_strdup(asp_id->valuestring),
         trans_policy_local_nonprim,
@@ -323,7 +369,8 @@ OpenAPI_bdt_data_t *OpenAPI_bdt_data_parseFromJSON(cJSON *bdt_dataJSON)
         snssai ? snssai_local_nonprim : NULL,
         traffic_des && !cJSON_IsNull(traffic_des) ? ogs_strdup(traffic_des->valuestring) : NULL,
         bdtp_status ? bdtp_status_local_nonprim : NULL,
-        supp_feat && !cJSON_IsNull(supp_feat) ? ogs_strdup(supp_feat->valuestring) : NULL
+        supp_feat && !cJSON_IsNull(supp_feat) ? ogs_strdup(supp_feat->valuestring) : NULL,
+        reset_ids ? reset_idsList : NULL
     );
 
     return bdt_data_local_var;
@@ -333,7 +380,7 @@ end:
         trans_policy_local_nonprim = NULL;
     }
     if (nw_area_info_local_nonprim) {
-        OpenAPI_network_area_info_1_free(nw_area_info_local_nonprim);
+        OpenAPI_network_area_info_2_free(nw_area_info_local_nonprim);
         nw_area_info_local_nonprim = NULL;
     }
     if (vol_per_ue_local_nonprim) {
@@ -347,6 +394,13 @@ end:
     if (bdtp_status_local_nonprim) {
         OpenAPI_bdt_policy_status_free(bdtp_status_local_nonprim);
         bdtp_status_local_nonprim = NULL;
+    }
+    if (reset_idsList) {
+        OpenAPI_list_for_each(reset_idsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(reset_idsList);
+        reset_idsList = NULL;
     }
     return NULL;
 }

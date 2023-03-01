@@ -1,7 +1,7 @@
 /*
  * steering_info.h
  *
- * 
+ * Contains a combination of one PLMN identity and zero or more access technologies.
  */
 
 #ifndef _OpenAPI_steering_info_H_

@@ -1,7 +1,7 @@
 /*
  * limit_id_to_monitoring_key.h
  *
- * Contains the limit identifier and the corresponding monitoring key for a given S-NSSAI and DNN.
+ * Contains the limit identifier and the corresponding monitoring key for a given S-NSSAI and DNN. 
  */
 
 #ifndef _OpenAPI_limit_id_to_monitoring_key_H_

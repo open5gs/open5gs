@@ -1,7 +1,7 @@
 /*
  * ee_profile_data.h
  *
- * 
+ * Event Exposure Profile Data.
  */
 
 #ifndef _OpenAPI_ee_profile_data_H_
@@ -24,12 +24,20 @@ typedef struct OpenAPI_ee_profile_data_s {
     OpenAPI_list_t *restricted_event_types;
     char *supported_features;
     OpenAPI_list_t* allowed_mtc_provider;
+    bool is_iwk_epc_restricted;
+    int iwk_epc_restricted;
+    char *imsi;
+    char *hss_group_id;
 } OpenAPI_ee_profile_data_t;
 
 OpenAPI_ee_profile_data_t *OpenAPI_ee_profile_data_create(
     OpenAPI_list_t *restricted_event_types,
     char *supported_features,
-    OpenAPI_list_t* allowed_mtc_provider
+    OpenAPI_list_t* allowed_mtc_provider,
+    bool is_iwk_epc_restricted,
+    int iwk_epc_restricted,
+    char *imsi,
+    char *hss_group_id
 );
 void OpenAPI_ee_profile_data_free(OpenAPI_ee_profile_data_t *ee_profile_data);
 OpenAPI_ee_profile_data_t *OpenAPI_ee_profile_data_parseFromJSON(cJSON *ee_profile_dataJSON);

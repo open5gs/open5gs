@@ -20,7 +20,8 @@ OpenAPI_sm_context_created_data_t *OpenAPI_sm_context_created_data_create(
     char *recovery_time,
     char *supported_features,
     char *selected_smf_id,
-    char *selected_old_smf_id
+    char *selected_old_smf_id,
+    char *inter_plmn_api_root
 )
 {
     OpenAPI_sm_context_created_data_t *sm_context_created_data_local_var = ogs_malloc(sizeof(OpenAPI_sm_context_created_data_t));
@@ -42,6 +43,7 @@ OpenAPI_sm_context_created_data_t *OpenAPI_sm_context_created_data_create(
     sm_context_created_data_local_var->supported_features = supported_features;
     sm_context_created_data_local_var->selected_smf_id = selected_smf_id;
     sm_context_created_data_local_var->selected_old_smf_id = selected_old_smf_id;
+    sm_context_created_data_local_var->inter_plmn_api_root = inter_plmn_api_root;
 
     return sm_context_created_data_local_var;
 }
@@ -99,6 +101,10 @@ void OpenAPI_sm_context_created_data_free(OpenAPI_sm_context_created_data_t *sm_
     if (sm_context_created_data->selected_old_smf_id) {
         ogs_free(sm_context_created_data->selected_old_smf_id);
         sm_context_created_data->selected_old_smf_id = NULL;
+    }
+    if (sm_context_created_data->inter_plmn_api_root) {
+        ogs_free(sm_context_created_data->inter_plmn_api_root);
+        sm_context_created_data->inter_plmn_api_root = NULL;
     }
     ogs_free(sm_context_created_data);
 }
@@ -240,6 +246,13 @@ cJSON *OpenAPI_sm_context_created_data_convertToJSON(OpenAPI_sm_context_created_
     }
     }
 
+    if (sm_context_created_data->inter_plmn_api_root) {
+    if (cJSON_AddStringToObject(item, "interPlmnApiRoot", sm_context_created_data->inter_plmn_api_root) == NULL) {
+        ogs_error("OpenAPI_sm_context_created_data_convertToJSON() failed [inter_plmn_api_root]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -269,6 +282,7 @@ OpenAPI_sm_context_created_data_t *OpenAPI_sm_context_created_data_parseFromJSON
     cJSON *supported_features = NULL;
     cJSON *selected_smf_id = NULL;
     cJSON *selected_old_smf_id = NULL;
+    cJSON *inter_plmn_api_root = NULL;
     h_smf_uri = cJSON_GetObjectItemCaseSensitive(sm_context_created_dataJSON, "hSmfUri");
     if (h_smf_uri) {
     if (!cJSON_IsString(h_smf_uri) && !cJSON_IsNull(h_smf_uri)) {
@@ -403,6 +417,14 @@ OpenAPI_sm_context_created_data_t *OpenAPI_sm_context_created_data_parseFromJSON
     }
     }
 
+    inter_plmn_api_root = cJSON_GetObjectItemCaseSensitive(sm_context_created_dataJSON, "interPlmnApiRoot");
+    if (inter_plmn_api_root) {
+    if (!cJSON_IsString(inter_plmn_api_root) && !cJSON_IsNull(inter_plmn_api_root)) {
+        ogs_error("OpenAPI_sm_context_created_data_parseFromJSON() failed [inter_plmn_api_root]");
+        goto end;
+    }
+    }
+
     sm_context_created_data_local_var = OpenAPI_sm_context_created_data_create (
         h_smf_uri && !cJSON_IsNull(h_smf_uri) ? ogs_strdup(h_smf_uri->valuestring) : NULL,
         smf_uri && !cJSON_IsNull(smf_uri) ? ogs_strdup(smf_uri->valuestring) : NULL,
@@ -419,7 +441,8 @@ OpenAPI_sm_context_created_data_t *OpenAPI_sm_context_created_data_parseFromJSON
         recovery_time && !cJSON_IsNull(recovery_time) ? ogs_strdup(recovery_time->valuestring) : NULL,
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
         selected_smf_id && !cJSON_IsNull(selected_smf_id) ? ogs_strdup(selected_smf_id->valuestring) : NULL,
-        selected_old_smf_id && !cJSON_IsNull(selected_old_smf_id) ? ogs_strdup(selected_old_smf_id->valuestring) : NULL
+        selected_old_smf_id && !cJSON_IsNull(selected_old_smf_id) ? ogs_strdup(selected_old_smf_id->valuestring) : NULL,
+        inter_plmn_api_root && !cJSON_IsNull(inter_plmn_api_root) ? ogs_strdup(inter_plmn_api_root->valuestring) : NULL
     );
 
     return sm_context_created_data_local_var;

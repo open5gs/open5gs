@@ -5,14 +5,18 @@
 #include "access_net_charging_identifier.h"
 
 OpenAPI_access_net_charging_identifier_t *OpenAPI_access_net_charging_identifier_create(
+    bool is_acc_net_cha_id_value,
     int acc_net_cha_id_value,
+    char *acc_net_charg_id_string,
     OpenAPI_list_t *flows
 )
 {
     OpenAPI_access_net_charging_identifier_t *access_net_charging_identifier_local_var = ogs_malloc(sizeof(OpenAPI_access_net_charging_identifier_t));
     ogs_assert(access_net_charging_identifier_local_var);
 
+    access_net_charging_identifier_local_var->is_acc_net_cha_id_value = is_acc_net_cha_id_value;
     access_net_charging_identifier_local_var->acc_net_cha_id_value = acc_net_cha_id_value;
+    access_net_charging_identifier_local_var->acc_net_charg_id_string = acc_net_charg_id_string;
     access_net_charging_identifier_local_var->flows = flows;
 
     return access_net_charging_identifier_local_var;
@@ -24,6 +28,10 @@ void OpenAPI_access_net_charging_identifier_free(OpenAPI_access_net_charging_ide
 
     if (NULL == access_net_charging_identifier) {
         return;
+    }
+    if (access_net_charging_identifier->acc_net_charg_id_string) {
+        ogs_free(access_net_charging_identifier->acc_net_charg_id_string);
+        access_net_charging_identifier->acc_net_charg_id_string = NULL;
     }
     if (access_net_charging_identifier->flows) {
         OpenAPI_list_for_each(access_net_charging_identifier->flows, node) {
@@ -46,9 +54,18 @@ cJSON *OpenAPI_access_net_charging_identifier_convertToJSON(OpenAPI_access_net_c
     }
 
     item = cJSON_CreateObject();
+    if (access_net_charging_identifier->is_acc_net_cha_id_value) {
     if (cJSON_AddNumberToObject(item, "accNetChaIdValue", access_net_charging_identifier->acc_net_cha_id_value) == NULL) {
         ogs_error("OpenAPI_access_net_charging_identifier_convertToJSON() failed [acc_net_cha_id_value]");
         goto end;
+    }
+    }
+
+    if (access_net_charging_identifier->acc_net_charg_id_string) {
+    if (cJSON_AddStringToObject(item, "accNetChargIdString", access_net_charging_identifier->acc_net_charg_id_string) == NULL) {
+        ogs_error("OpenAPI_access_net_charging_identifier_convertToJSON() failed [acc_net_charg_id_string]");
+        goto end;
+    }
     }
 
     if (access_net_charging_identifier->flows) {
@@ -76,16 +93,23 @@ OpenAPI_access_net_charging_identifier_t *OpenAPI_access_net_charging_identifier
     OpenAPI_access_net_charging_identifier_t *access_net_charging_identifier_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *acc_net_cha_id_value = NULL;
+    cJSON *acc_net_charg_id_string = NULL;
     cJSON *flows = NULL;
     OpenAPI_list_t *flowsList = NULL;
     acc_net_cha_id_value = cJSON_GetObjectItemCaseSensitive(access_net_charging_identifierJSON, "accNetChaIdValue");
-    if (!acc_net_cha_id_value) {
-        ogs_error("OpenAPI_access_net_charging_identifier_parseFromJSON() failed [acc_net_cha_id_value]");
-        goto end;
-    }
+    if (acc_net_cha_id_value) {
     if (!cJSON_IsNumber(acc_net_cha_id_value)) {
         ogs_error("OpenAPI_access_net_charging_identifier_parseFromJSON() failed [acc_net_cha_id_value]");
         goto end;
+    }
+    }
+
+    acc_net_charg_id_string = cJSON_GetObjectItemCaseSensitive(access_net_charging_identifierJSON, "accNetChargIdString");
+    if (acc_net_charg_id_string) {
+    if (!cJSON_IsString(acc_net_charg_id_string) && !cJSON_IsNull(acc_net_charg_id_string)) {
+        ogs_error("OpenAPI_access_net_charging_identifier_parseFromJSON() failed [acc_net_charg_id_string]");
+        goto end;
+    }
     }
 
     flows = cJSON_GetObjectItemCaseSensitive(access_net_charging_identifierJSON, "flows");
@@ -114,8 +138,9 @@ OpenAPI_access_net_charging_identifier_t *OpenAPI_access_net_charging_identifier
     }
 
     access_net_charging_identifier_local_var = OpenAPI_access_net_charging_identifier_create (
-        
-        acc_net_cha_id_value->valuedouble,
+        acc_net_cha_id_value ? true : false,
+        acc_net_cha_id_value ? acc_net_cha_id_value->valuedouble : 0,
+        acc_net_charg_id_string && !cJSON_IsNull(acc_net_charg_id_string) ? ogs_strdup(acc_net_charg_id_string->valuestring) : NULL,
         flows ? flowsList : NULL
     );
 

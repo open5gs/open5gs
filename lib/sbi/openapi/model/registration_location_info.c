@@ -6,6 +6,7 @@
 
 OpenAPI_registration_location_info_t *OpenAPI_registration_location_info_create(
     char *amf_instance_id,
+    OpenAPI_guami_t *guami,
     OpenAPI_plmn_id_t *plmn_id,
     OpenAPI_vgmlc_address_t *vgmlc_address,
     OpenAPI_list_t *access_type_list
@@ -15,6 +16,7 @@ OpenAPI_registration_location_info_t *OpenAPI_registration_location_info_create(
     ogs_assert(registration_location_info_local_var);
 
     registration_location_info_local_var->amf_instance_id = amf_instance_id;
+    registration_location_info_local_var->guami = guami;
     registration_location_info_local_var->plmn_id = plmn_id;
     registration_location_info_local_var->vgmlc_address = vgmlc_address;
     registration_location_info_local_var->access_type_list = access_type_list;
@@ -32,6 +34,10 @@ void OpenAPI_registration_location_info_free(OpenAPI_registration_location_info_
     if (registration_location_info->amf_instance_id) {
         ogs_free(registration_location_info->amf_instance_id);
         registration_location_info->amf_instance_id = NULL;
+    }
+    if (registration_location_info->guami) {
+        OpenAPI_guami_free(registration_location_info->guami);
+        registration_location_info->guami = NULL;
     }
     if (registration_location_info->plmn_id) {
         OpenAPI_plmn_id_free(registration_location_info->plmn_id);
@@ -66,6 +72,19 @@ cJSON *OpenAPI_registration_location_info_convertToJSON(OpenAPI_registration_loc
     if (cJSON_AddStringToObject(item, "amfInstanceId", registration_location_info->amf_instance_id) == NULL) {
         ogs_error("OpenAPI_registration_location_info_convertToJSON() failed [amf_instance_id]");
         goto end;
+    }
+
+    if (registration_location_info->guami) {
+    cJSON *guami_local_JSON = OpenAPI_guami_convertToJSON(registration_location_info->guami);
+    if (guami_local_JSON == NULL) {
+        ogs_error("OpenAPI_registration_location_info_convertToJSON() failed [guami]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "guami", guami_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_registration_location_info_convertToJSON() failed [guami]");
+        goto end;
+    }
     }
 
     if (registration_location_info->plmn_id) {
@@ -119,6 +138,8 @@ OpenAPI_registration_location_info_t *OpenAPI_registration_location_info_parseFr
     OpenAPI_registration_location_info_t *registration_location_info_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *amf_instance_id = NULL;
+    cJSON *guami = NULL;
+    OpenAPI_guami_t *guami_local_nonprim = NULL;
     cJSON *plmn_id = NULL;
     OpenAPI_plmn_id_t *plmn_id_local_nonprim = NULL;
     cJSON *vgmlc_address = NULL;
@@ -133,6 +154,11 @@ OpenAPI_registration_location_info_t *OpenAPI_registration_location_info_parseFr
     if (!cJSON_IsString(amf_instance_id)) {
         ogs_error("OpenAPI_registration_location_info_parseFromJSON() failed [amf_instance_id]");
         goto end;
+    }
+
+    guami = cJSON_GetObjectItemCaseSensitive(registration_location_infoJSON, "guami");
+    if (guami) {
+    guami_local_nonprim = OpenAPI_guami_parseFromJSON(guami);
     }
 
     plmn_id = cJSON_GetObjectItemCaseSensitive(registration_location_infoJSON, "plmnId");
@@ -168,6 +194,7 @@ OpenAPI_registration_location_info_t *OpenAPI_registration_location_info_parseFr
 
     registration_location_info_local_var = OpenAPI_registration_location_info_create (
         ogs_strdup(amf_instance_id->valuestring),
+        guami ? guami_local_nonprim : NULL,
         plmn_id ? plmn_id_local_nonprim : NULL,
         vgmlc_address ? vgmlc_address_local_nonprim : NULL,
         access_type_listList
@@ -175,6 +202,10 @@ OpenAPI_registration_location_info_t *OpenAPI_registration_location_info_parseFr
 
     return registration_location_info_local_var;
 end:
+    if (guami_local_nonprim) {
+        OpenAPI_guami_free(guami_local_nonprim);
+        guami_local_nonprim = NULL;
+    }
     if (plmn_id_local_nonprim) {
         OpenAPI_plmn_id_free(plmn_id_local_nonprim);
         plmn_id_local_nonprim = NULL;

@@ -1,7 +1,7 @@
 /*
  * vsmf_update_data.h
  *
- * 
+ * Data within Update Request towards V-SMF, or from SMF to I-SMF
  */
 
 #ifndef _OpenAPI_vsmf_update_data_H_
@@ -17,6 +17,7 @@
 #include "cause.h"
 #include "ebi_arp_mapping.h"
 #include "eps_bearer_info.h"
+#include "eps_pdn_cnx_info.h"
 #include "ma_release_indication.h"
 #include "n4_information.h"
 #include "qos_flow_add_modify_request_item.h"
@@ -46,6 +47,8 @@ typedef struct OpenAPI_vsmf_update_data_s {
     bool is_always_on_granted;
     int always_on_granted;
     char *hsmf_pdu_session_uri;
+    char *new_smf_id;
+    char *new_smf_pdu_session_uri;
     char *supported_features;
     OpenAPI_cause_e cause;
     char *n1sm_cause;
@@ -59,9 +62,15 @@ typedef struct OpenAPI_vsmf_update_data_s {
     struct OpenAPI_n4_information_s *n4_info;
     struct OpenAPI_n4_information_s *n4_info_ext1;
     struct OpenAPI_n4_information_s *n4_info_ext2;
+    struct OpenAPI_n4_information_s *n4_info_ext3;
     bool is_small_data_rate_control_enabled;
     int small_data_rate_control_enabled;
     struct OpenAPI_qos_monitoring_info_s *qos_monitoring_info;
+    struct OpenAPI_eps_pdn_cnx_info_s *eps_pdn_cnx_info;
+    bool is_n9_data_forwarding_ind;
+    int n9_data_forwarding_ind;
+    bool is_n9_inactivity_timer;
+    int n9_inactivity_timer;
 } OpenAPI_vsmf_update_data_t;
 
 OpenAPI_vsmf_update_data_t *OpenAPI_vsmf_update_data_create(
@@ -79,6 +88,8 @@ OpenAPI_vsmf_update_data_t *OpenAPI_vsmf_update_data_create(
     bool is_always_on_granted,
     int always_on_granted,
     char *hsmf_pdu_session_uri,
+    char *new_smf_id,
+    char *new_smf_pdu_session_uri,
     char *supported_features,
     OpenAPI_cause_e cause,
     char *n1sm_cause,
@@ -92,9 +103,15 @@ OpenAPI_vsmf_update_data_t *OpenAPI_vsmf_update_data_create(
     OpenAPI_n4_information_t *n4_info,
     OpenAPI_n4_information_t *n4_info_ext1,
     OpenAPI_n4_information_t *n4_info_ext2,
+    OpenAPI_n4_information_t *n4_info_ext3,
     bool is_small_data_rate_control_enabled,
     int small_data_rate_control_enabled,
-    OpenAPI_qos_monitoring_info_t *qos_monitoring_info
+    OpenAPI_qos_monitoring_info_t *qos_monitoring_info,
+    OpenAPI_eps_pdn_cnx_info_t *eps_pdn_cnx_info,
+    bool is_n9_data_forwarding_ind,
+    int n9_data_forwarding_ind,
+    bool is_n9_inactivity_timer,
+    int n9_inactivity_timer
 );
 void OpenAPI_vsmf_update_data_free(OpenAPI_vsmf_update_data_t *vsmf_update_data);
 OpenAPI_vsmf_update_data_t *OpenAPI_vsmf_update_data_parseFromJSON(cJSON *vsmf_update_dataJSON);

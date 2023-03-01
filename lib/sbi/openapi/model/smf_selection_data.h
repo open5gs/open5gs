@@ -1,7 +1,7 @@
 /*
  * smf_selection_data.h
  *
- * 
+ * Represents the SMF Selection information that may be replaced by the PCF.
  */
 
 #ifndef _OpenAPI_smf_selection_data_H_

@@ -9,7 +9,8 @@ OpenAPI_partial_success_report_t *OpenAPI_partial_success_report_create(
     OpenAPI_list_t *rule_reports,
     OpenAPI_list_t *sess_rule_reports,
     OpenAPI_ue_camping_rep_t *ue_camping_rep,
-    OpenAPI_list_t *policy_dec_failure_reports
+    OpenAPI_list_t *policy_dec_failure_reports,
+    OpenAPI_list_t *invalid_policy_decs
 )
 {
     OpenAPI_partial_success_report_t *partial_success_report_local_var = ogs_malloc(sizeof(OpenAPI_partial_success_report_t));
@@ -20,6 +21,7 @@ OpenAPI_partial_success_report_t *OpenAPI_partial_success_report_create(
     partial_success_report_local_var->sess_rule_reports = sess_rule_reports;
     partial_success_report_local_var->ue_camping_rep = ue_camping_rep;
     partial_success_report_local_var->policy_dec_failure_reports = policy_dec_failure_reports;
+    partial_success_report_local_var->invalid_policy_decs = invalid_policy_decs;
 
     return partial_success_report_local_var;
 }
@@ -52,6 +54,13 @@ void OpenAPI_partial_success_report_free(OpenAPI_partial_success_report_t *parti
     if (partial_success_report->policy_dec_failure_reports) {
         OpenAPI_list_free(partial_success_report->policy_dec_failure_reports);
         partial_success_report->policy_dec_failure_reports = NULL;
+    }
+    if (partial_success_report->invalid_policy_decs) {
+        OpenAPI_list_for_each(partial_success_report->invalid_policy_decs, node) {
+            OpenAPI_invalid_param_free(node->data);
+        }
+        OpenAPI_list_free(partial_success_report->invalid_policy_decs);
+        partial_success_report->invalid_policy_decs = NULL;
     }
     ogs_free(partial_success_report);
 }
@@ -135,6 +144,22 @@ cJSON *OpenAPI_partial_success_report_convertToJSON(OpenAPI_partial_success_repo
     }
     }
 
+    if (partial_success_report->invalid_policy_decs) {
+    cJSON *invalid_policy_decsList = cJSON_AddArrayToObject(item, "invalidPolicyDecs");
+    if (invalid_policy_decsList == NULL) {
+        ogs_error("OpenAPI_partial_success_report_convertToJSON() failed [invalid_policy_decs]");
+        goto end;
+    }
+    OpenAPI_list_for_each(partial_success_report->invalid_policy_decs, node) {
+        cJSON *itemLocal = OpenAPI_invalid_param_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_partial_success_report_convertToJSON() failed [invalid_policy_decs]");
+            goto end;
+        }
+        cJSON_AddItemToArray(invalid_policy_decsList, itemLocal);
+    }
+    }
+
 end:
     return item;
 }
@@ -153,6 +178,8 @@ OpenAPI_partial_success_report_t *OpenAPI_partial_success_report_parseFromJSON(c
     OpenAPI_ue_camping_rep_t *ue_camping_rep_local_nonprim = NULL;
     cJSON *policy_dec_failure_reports = NULL;
     OpenAPI_list_t *policy_dec_failure_reportsList = NULL;
+    cJSON *invalid_policy_decs = NULL;
+    OpenAPI_list_t *invalid_policy_decsList = NULL;
     failure_cause = cJSON_GetObjectItemCaseSensitive(partial_success_reportJSON, "failureCause");
     if (!failure_cause) {
         ogs_error("OpenAPI_partial_success_report_parseFromJSON() failed [failure_cause]");
@@ -238,12 +265,38 @@ OpenAPI_partial_success_report_t *OpenAPI_partial_success_report_parseFromJSON(c
         }
     }
 
+    invalid_policy_decs = cJSON_GetObjectItemCaseSensitive(partial_success_reportJSON, "invalidPolicyDecs");
+    if (invalid_policy_decs) {
+        cJSON *invalid_policy_decs_local = NULL;
+        if (!cJSON_IsArray(invalid_policy_decs)) {
+            ogs_error("OpenAPI_partial_success_report_parseFromJSON() failed [invalid_policy_decs]");
+            goto end;
+        }
+
+        invalid_policy_decsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(invalid_policy_decs_local, invalid_policy_decs) {
+            if (!cJSON_IsObject(invalid_policy_decs_local)) {
+                ogs_error("OpenAPI_partial_success_report_parseFromJSON() failed [invalid_policy_decs]");
+                goto end;
+            }
+            OpenAPI_invalid_param_t *invalid_policy_decsItem = OpenAPI_invalid_param_parseFromJSON(invalid_policy_decs_local);
+            if (!invalid_policy_decsItem) {
+                ogs_error("No invalid_policy_decsItem");
+                OpenAPI_list_free(invalid_policy_decsList);
+                goto end;
+            }
+            OpenAPI_list_add(invalid_policy_decsList, invalid_policy_decsItem);
+        }
+    }
+
     partial_success_report_local_var = OpenAPI_partial_success_report_create (
         failure_causeVariable,
         rule_reports ? rule_reportsList : NULL,
         sess_rule_reports ? sess_rule_reportsList : NULL,
         ue_camping_rep ? ue_camping_rep_local_nonprim : NULL,
-        policy_dec_failure_reports ? policy_dec_failure_reportsList : NULL
+        policy_dec_failure_reports ? policy_dec_failure_reportsList : NULL,
+        invalid_policy_decs ? invalid_policy_decsList : NULL
     );
 
     return partial_success_report_local_var;
@@ -269,6 +322,13 @@ end:
     if (policy_dec_failure_reportsList) {
         OpenAPI_list_free(policy_dec_failure_reportsList);
         policy_dec_failure_reportsList = NULL;
+    }
+    if (invalid_policy_decsList) {
+        OpenAPI_list_for_each(invalid_policy_decsList, node) {
+            OpenAPI_invalid_param_free(node->data);
+        }
+        OpenAPI_list_free(invalid_policy_decsList);
+        invalid_policy_decsList = NULL;
     }
     return NULL;
 }

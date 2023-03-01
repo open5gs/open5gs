@@ -1,7 +1,7 @@
 /*
  * secondary_rat_usage_info.h
  *
- * 
+ * Secondary RAT Usage Information to report usage data for a secondary RAT for QoS flows and/or the whole PDU session. 
  */
 
 #ifndef _OpenAPI_secondary_rat_usage_info_H_

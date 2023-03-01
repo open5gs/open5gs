@@ -1,7 +1,7 @@
 /*
  * up_security_info.h
  *
- * 
+ * User Plane Security Information
  */
 
 #ifndef _OpenAPI_up_security_info_H_

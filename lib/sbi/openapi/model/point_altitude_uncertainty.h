@@ -1,7 +1,7 @@
 /*
  * point_altitude_uncertainty.h
  *
- * 
+ * Ellipsoid point with altitude and uncertainty ellipsoid.
  */
 
 #ifndef _OpenAPI_point_altitude_uncertainty_H_

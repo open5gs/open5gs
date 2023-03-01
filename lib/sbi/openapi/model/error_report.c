@@ -9,7 +9,7 @@ OpenAPI_error_report_t *OpenAPI_error_report_create(
     OpenAPI_list_t *rule_reports,
     OpenAPI_list_t *sess_rule_reports,
     OpenAPI_list_t *pol_dec_failure_reports,
-    char *alt_qos_param_id
+    OpenAPI_list_t *invalid_policy_decs
 )
 {
     OpenAPI_error_report_t *error_report_local_var = ogs_malloc(sizeof(OpenAPI_error_report_t));
@@ -19,7 +19,7 @@ OpenAPI_error_report_t *OpenAPI_error_report_create(
     error_report_local_var->rule_reports = rule_reports;
     error_report_local_var->sess_rule_reports = sess_rule_reports;
     error_report_local_var->pol_dec_failure_reports = pol_dec_failure_reports;
-    error_report_local_var->alt_qos_param_id = alt_qos_param_id;
+    error_report_local_var->invalid_policy_decs = invalid_policy_decs;
 
     return error_report_local_var;
 }
@@ -53,9 +53,12 @@ void OpenAPI_error_report_free(OpenAPI_error_report_t *error_report)
         OpenAPI_list_free(error_report->pol_dec_failure_reports);
         error_report->pol_dec_failure_reports = NULL;
     }
-    if (error_report->alt_qos_param_id) {
-        ogs_free(error_report->alt_qos_param_id);
-        error_report->alt_qos_param_id = NULL;
+    if (error_report->invalid_policy_decs) {
+        OpenAPI_list_for_each(error_report->invalid_policy_decs, node) {
+            OpenAPI_invalid_param_free(node->data);
+        }
+        OpenAPI_list_free(error_report->invalid_policy_decs);
+        error_report->invalid_policy_decs = NULL;
     }
     ogs_free(error_report);
 }
@@ -130,10 +133,19 @@ cJSON *OpenAPI_error_report_convertToJSON(OpenAPI_error_report_t *error_report)
     }
     }
 
-    if (error_report->alt_qos_param_id) {
-    if (cJSON_AddStringToObject(item, "altQosParamId", error_report->alt_qos_param_id) == NULL) {
-        ogs_error("OpenAPI_error_report_convertToJSON() failed [alt_qos_param_id]");
+    if (error_report->invalid_policy_decs) {
+    cJSON *invalid_policy_decsList = cJSON_AddArrayToObject(item, "invalidPolicyDecs");
+    if (invalid_policy_decsList == NULL) {
+        ogs_error("OpenAPI_error_report_convertToJSON() failed [invalid_policy_decs]");
         goto end;
+    }
+    OpenAPI_list_for_each(error_report->invalid_policy_decs, node) {
+        cJSON *itemLocal = OpenAPI_invalid_param_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_error_report_convertToJSON() failed [invalid_policy_decs]");
+            goto end;
+        }
+        cJSON_AddItemToArray(invalid_policy_decsList, itemLocal);
     }
     }
 
@@ -153,7 +165,8 @@ OpenAPI_error_report_t *OpenAPI_error_report_parseFromJSON(cJSON *error_reportJS
     OpenAPI_list_t *sess_rule_reportsList = NULL;
     cJSON *pol_dec_failure_reports = NULL;
     OpenAPI_list_t *pol_dec_failure_reportsList = NULL;
-    cJSON *alt_qos_param_id = NULL;
+    cJSON *invalid_policy_decs = NULL;
+    OpenAPI_list_t *invalid_policy_decsList = NULL;
     error = cJSON_GetObjectItemCaseSensitive(error_reportJSON, "error");
     if (error) {
     error_local_nonprim = OpenAPI_problem_details_parseFromJSON(error);
@@ -228,12 +241,29 @@ OpenAPI_error_report_t *OpenAPI_error_report_parseFromJSON(cJSON *error_reportJS
         }
     }
 
-    alt_qos_param_id = cJSON_GetObjectItemCaseSensitive(error_reportJSON, "altQosParamId");
-    if (alt_qos_param_id) {
-    if (!cJSON_IsString(alt_qos_param_id) && !cJSON_IsNull(alt_qos_param_id)) {
-        ogs_error("OpenAPI_error_report_parseFromJSON() failed [alt_qos_param_id]");
-        goto end;
-    }
+    invalid_policy_decs = cJSON_GetObjectItemCaseSensitive(error_reportJSON, "invalidPolicyDecs");
+    if (invalid_policy_decs) {
+        cJSON *invalid_policy_decs_local = NULL;
+        if (!cJSON_IsArray(invalid_policy_decs)) {
+            ogs_error("OpenAPI_error_report_parseFromJSON() failed [invalid_policy_decs]");
+            goto end;
+        }
+
+        invalid_policy_decsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(invalid_policy_decs_local, invalid_policy_decs) {
+            if (!cJSON_IsObject(invalid_policy_decs_local)) {
+                ogs_error("OpenAPI_error_report_parseFromJSON() failed [invalid_policy_decs]");
+                goto end;
+            }
+            OpenAPI_invalid_param_t *invalid_policy_decsItem = OpenAPI_invalid_param_parseFromJSON(invalid_policy_decs_local);
+            if (!invalid_policy_decsItem) {
+                ogs_error("No invalid_policy_decsItem");
+                OpenAPI_list_free(invalid_policy_decsList);
+                goto end;
+            }
+            OpenAPI_list_add(invalid_policy_decsList, invalid_policy_decsItem);
+        }
     }
 
     error_report_local_var = OpenAPI_error_report_create (
@@ -241,7 +271,7 @@ OpenAPI_error_report_t *OpenAPI_error_report_parseFromJSON(cJSON *error_reportJS
         rule_reports ? rule_reportsList : NULL,
         sess_rule_reports ? sess_rule_reportsList : NULL,
         pol_dec_failure_reports ? pol_dec_failure_reportsList : NULL,
-        alt_qos_param_id && !cJSON_IsNull(alt_qos_param_id) ? ogs_strdup(alt_qos_param_id->valuestring) : NULL
+        invalid_policy_decs ? invalid_policy_decsList : NULL
     );
 
     return error_report_local_var;
@@ -267,6 +297,13 @@ end:
     if (pol_dec_failure_reportsList) {
         OpenAPI_list_free(pol_dec_failure_reportsList);
         pol_dec_failure_reportsList = NULL;
+    }
+    if (invalid_policy_decsList) {
+        OpenAPI_list_for_each(invalid_policy_decsList, node) {
+            OpenAPI_invalid_param_free(node->data);
+        }
+        OpenAPI_list_free(invalid_policy_decsList);
+        invalid_policy_decsList = NULL;
     }
     return NULL;
 }

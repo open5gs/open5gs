@@ -1,7 +1,7 @@
 /*
  * usage_monitoring_data.h
  *
- * 
+ * Contains usage monitoring related control information.
  */
 
 #ifndef _OpenAPI_usage_monitoring_data_H_

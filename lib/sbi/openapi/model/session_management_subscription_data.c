@@ -15,7 +15,8 @@ OpenAPI_session_management_subscription_data_t *OpenAPI_session_management_subsc
     char *shared_trace_data_id,
     OpenAPI_list_t* expected_ue_behaviours_list,
     OpenAPI_list_t* suggested_packet_num_dl_list,
-    char *_3gpp_charging_characteristics
+    char *_3gpp_charging_characteristics,
+    char *supported_features
 )
 {
     OpenAPI_session_management_subscription_data_t *session_management_subscription_data_local_var = ogs_malloc(sizeof(OpenAPI_session_management_subscription_data_t));
@@ -32,6 +33,7 @@ OpenAPI_session_management_subscription_data_t *OpenAPI_session_management_subsc
     session_management_subscription_data_local_var->expected_ue_behaviours_list = expected_ue_behaviours_list;
     session_management_subscription_data_local_var->suggested_packet_num_dl_list = suggested_packet_num_dl_list;
     session_management_subscription_data_local_var->_3gpp_charging_characteristics = _3gpp_charging_characteristics;
+    session_management_subscription_data_local_var->supported_features = supported_features;
 
     return session_management_subscription_data_local_var;
 }
@@ -109,6 +111,10 @@ void OpenAPI_session_management_subscription_data_free(OpenAPI_session_managemen
     if (session_management_subscription_data->_3gpp_charging_characteristics) {
         ogs_free(session_management_subscription_data->_3gpp_charging_characteristics);
         session_management_subscription_data->_3gpp_charging_characteristics = NULL;
+    }
+    if (session_management_subscription_data->supported_features) {
+        ogs_free(session_management_subscription_data->supported_features);
+        session_management_subscription_data->supported_features = NULL;
     }
     ogs_free(session_management_subscription_data);
 }
@@ -278,6 +284,13 @@ cJSON *OpenAPI_session_management_subscription_data_convertToJSON(OpenAPI_sessio
     }
     }
 
+    if (session_management_subscription_data->supported_features) {
+    if (cJSON_AddStringToObject(item, "supportedFeatures", session_management_subscription_data->supported_features) == NULL) {
+        ogs_error("OpenAPI_session_management_subscription_data_convertToJSON() failed [supported_features]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -305,6 +318,7 @@ OpenAPI_session_management_subscription_data_t *OpenAPI_session_management_subsc
     cJSON *suggested_packet_num_dl_list = NULL;
     OpenAPI_list_t *suggested_packet_num_dl_listList = NULL;
     cJSON *_3gpp_charging_characteristics = NULL;
+    cJSON *supported_features = NULL;
     single_nssai = cJSON_GetObjectItemCaseSensitive(session_management_subscription_dataJSON, "singleNssai");
     if (!single_nssai) {
         ogs_error("OpenAPI_session_management_subscription_data_parseFromJSON() failed [single_nssai]");
@@ -473,6 +487,14 @@ OpenAPI_session_management_subscription_data_t *OpenAPI_session_management_subsc
     }
     }
 
+    supported_features = cJSON_GetObjectItemCaseSensitive(session_management_subscription_dataJSON, "supportedFeatures");
+    if (supported_features) {
+    if (!cJSON_IsString(supported_features) && !cJSON_IsNull(supported_features)) {
+        ogs_error("OpenAPI_session_management_subscription_data_parseFromJSON() failed [supported_features]");
+        goto end;
+    }
+    }
+
     session_management_subscription_data_local_var = OpenAPI_session_management_subscription_data_create (
         single_nssai_local_nonprim,
         dnn_configurations ? dnn_configurationsList : NULL,
@@ -484,7 +506,8 @@ OpenAPI_session_management_subscription_data_t *OpenAPI_session_management_subsc
         shared_trace_data_id && !cJSON_IsNull(shared_trace_data_id) ? ogs_strdup(shared_trace_data_id->valuestring) : NULL,
         expected_ue_behaviours_list ? expected_ue_behaviours_listList : NULL,
         suggested_packet_num_dl_list ? suggested_packet_num_dl_listList : NULL,
-        _3gpp_charging_characteristics && !cJSON_IsNull(_3gpp_charging_characteristics) ? ogs_strdup(_3gpp_charging_characteristics->valuestring) : NULL
+        _3gpp_charging_characteristics && !cJSON_IsNull(_3gpp_charging_characteristics) ? ogs_strdup(_3gpp_charging_characteristics->valuestring) : NULL,
+        supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL
     );
 
     return session_management_subscription_data_local_var;

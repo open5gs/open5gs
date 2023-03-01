@@ -16,6 +16,8 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_create(
     OpenAPI_af_sig_protocol_e af_sig_protocol,
     bool is_app_reloc,
     int app_reloc,
+    bool is_eas_redis_ind,
+    int eas_redis_ind,
     OpenAPI_list_t *ref_qos_data,
     OpenAPI_list_t *ref_alt_qos_params,
     OpenAPI_list_t *ref_tc_data,
@@ -29,10 +31,14 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_create(
     int addr_preser_ind,
     OpenAPI_tscai_input_container_t *tscai_input_dl,
     OpenAPI_tscai_input_container_t *tscai_input_ul,
+    bool is_tscai_time_dom,
+    int tscai_time_dom,
     OpenAPI_downlink_data_notification_control_t *dd_notif_ctrl,
     OpenAPI_downlink_data_notification_control_rm_t *dd_notif_ctrl2,
     bool is_dis_ue_notif,
-    int dis_ue_notif
+    int dis_ue_notif,
+    bool is_pack_filt_all_prec,
+    int pack_filt_all_prec
 )
 {
     OpenAPI_pcc_rule_t *pcc_rule_local_var = ogs_malloc(sizeof(OpenAPI_pcc_rule_t));
@@ -49,6 +55,8 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_create(
     pcc_rule_local_var->af_sig_protocol = af_sig_protocol;
     pcc_rule_local_var->is_app_reloc = is_app_reloc;
     pcc_rule_local_var->app_reloc = app_reloc;
+    pcc_rule_local_var->is_eas_redis_ind = is_eas_redis_ind;
+    pcc_rule_local_var->eas_redis_ind = eas_redis_ind;
     pcc_rule_local_var->ref_qos_data = ref_qos_data;
     pcc_rule_local_var->ref_alt_qos_params = ref_alt_qos_params;
     pcc_rule_local_var->ref_tc_data = ref_tc_data;
@@ -62,10 +70,14 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_create(
     pcc_rule_local_var->addr_preser_ind = addr_preser_ind;
     pcc_rule_local_var->tscai_input_dl = tscai_input_dl;
     pcc_rule_local_var->tscai_input_ul = tscai_input_ul;
+    pcc_rule_local_var->is_tscai_time_dom = is_tscai_time_dom;
+    pcc_rule_local_var->tscai_time_dom = tscai_time_dom;
     pcc_rule_local_var->dd_notif_ctrl = dd_notif_ctrl;
     pcc_rule_local_var->dd_notif_ctrl2 = dd_notif_ctrl2;
     pcc_rule_local_var->is_dis_ue_notif = is_dis_ue_notif;
     pcc_rule_local_var->dis_ue_notif = dis_ue_notif;
+    pcc_rule_local_var->is_pack_filt_all_prec = is_pack_filt_all_prec;
+    pcc_rule_local_var->pack_filt_all_prec = pack_filt_all_prec;
 
     return pcc_rule_local_var;
 }
@@ -253,6 +265,13 @@ cJSON *OpenAPI_pcc_rule_convertToJSON(OpenAPI_pcc_rule_t *pcc_rule)
     }
     }
 
+    if (pcc_rule->is_eas_redis_ind) {
+    if (cJSON_AddBoolToObject(item, "easRedisInd", pcc_rule->eas_redis_ind) == NULL) {
+        ogs_error("OpenAPI_pcc_rule_convertToJSON() failed [eas_redis_ind]");
+        goto end;
+    }
+    }
+
     if (pcc_rule->ref_qos_data) {
     cJSON *ref_qos_dataList = cJSON_AddArrayToObject(item, "refQosData");
     if (ref_qos_dataList == NULL) {
@@ -405,6 +424,13 @@ cJSON *OpenAPI_pcc_rule_convertToJSON(OpenAPI_pcc_rule_t *pcc_rule)
     }
     }
 
+    if (pcc_rule->is_tscai_time_dom) {
+    if (cJSON_AddNumberToObject(item, "tscaiTimeDom", pcc_rule->tscai_time_dom) == NULL) {
+        ogs_error("OpenAPI_pcc_rule_convertToJSON() failed [tscai_time_dom]");
+        goto end;
+    }
+    }
+
     if (pcc_rule->dd_notif_ctrl) {
     cJSON *dd_notif_ctrl_local_JSON = OpenAPI_downlink_data_notification_control_convertToJSON(pcc_rule->dd_notif_ctrl);
     if (dd_notif_ctrl_local_JSON == NULL) {
@@ -438,6 +464,13 @@ cJSON *OpenAPI_pcc_rule_convertToJSON(OpenAPI_pcc_rule_t *pcc_rule)
     }
     }
 
+    if (pcc_rule->is_pack_filt_all_prec) {
+    if (cJSON_AddNumberToObject(item, "packFiltAllPrec", pcc_rule->pack_filt_all_prec) == NULL) {
+        ogs_error("OpenAPI_pcc_rule_convertToJSON() failed [pack_filt_all_prec]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -456,6 +489,7 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
     cJSON *af_sig_protocol = NULL;
     OpenAPI_af_sig_protocol_e af_sig_protocolVariable = 0;
     cJSON *app_reloc = NULL;
+    cJSON *eas_redis_ind = NULL;
     cJSON *ref_qos_data = NULL;
     OpenAPI_list_t *ref_qos_dataList = NULL;
     cJSON *ref_alt_qos_params = NULL;
@@ -478,11 +512,13 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
     OpenAPI_tscai_input_container_t *tscai_input_dl_local_nonprim = NULL;
     cJSON *tscai_input_ul = NULL;
     OpenAPI_tscai_input_container_t *tscai_input_ul_local_nonprim = NULL;
+    cJSON *tscai_time_dom = NULL;
     cJSON *dd_notif_ctrl = NULL;
     OpenAPI_downlink_data_notification_control_t *dd_notif_ctrl_local_nonprim = NULL;
     cJSON *dd_notif_ctrl2 = NULL;
     OpenAPI_downlink_data_notification_control_rm_t *dd_notif_ctrl2_local_nonprim = NULL;
     cJSON *dis_ue_notif = NULL;
+    cJSON *pack_filt_all_prec = NULL;
     flow_infos = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "flowInfos");
     if (flow_infos) {
         cJSON *flow_infos_local = NULL;
@@ -563,6 +599,14 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
     if (app_reloc) {
     if (!cJSON_IsBool(app_reloc)) {
         ogs_error("OpenAPI_pcc_rule_parseFromJSON() failed [app_reloc]");
+        goto end;
+    }
+    }
+
+    eas_redis_ind = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "easRedisInd");
+    if (eas_redis_ind) {
+    if (!cJSON_IsBool(eas_redis_ind)) {
+        ogs_error("OpenAPI_pcc_rule_parseFromJSON() failed [eas_redis_ind]");
         goto end;
     }
     }
@@ -761,6 +805,14 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
     tscai_input_ul_local_nonprim = OpenAPI_tscai_input_container_parseFromJSON(tscai_input_ul);
     }
 
+    tscai_time_dom = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "tscaiTimeDom");
+    if (tscai_time_dom) {
+    if (!cJSON_IsNumber(tscai_time_dom)) {
+        ogs_error("OpenAPI_pcc_rule_parseFromJSON() failed [tscai_time_dom]");
+        goto end;
+    }
+    }
+
     dd_notif_ctrl = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "ddNotifCtrl");
     if (dd_notif_ctrl) {
     dd_notif_ctrl_local_nonprim = OpenAPI_downlink_data_notification_control_parseFromJSON(dd_notif_ctrl);
@@ -779,6 +831,14 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
     }
     }
 
+    pack_filt_all_prec = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "packFiltAllPrec");
+    if (pack_filt_all_prec) {
+    if (!cJSON_IsNumber(pack_filt_all_prec)) {
+        ogs_error("OpenAPI_pcc_rule_parseFromJSON() failed [pack_filt_all_prec]");
+        goto end;
+    }
+    }
+
     pcc_rule_local_var = OpenAPI_pcc_rule_create (
         flow_infos ? flow_infosList : NULL,
         app_id && !cJSON_IsNull(app_id) ? ogs_strdup(app_id->valuestring) : NULL,
@@ -791,6 +851,8 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
         af_sig_protocol ? af_sig_protocolVariable : 0,
         app_reloc ? true : false,
         app_reloc ? app_reloc->valueint : 0,
+        eas_redis_ind ? true : false,
+        eas_redis_ind ? eas_redis_ind->valueint : 0,
         ref_qos_data ? ref_qos_dataList : NULL,
         ref_alt_qos_params ? ref_alt_qos_paramsList : NULL,
         ref_tc_data ? ref_tc_dataList : NULL,
@@ -804,10 +866,14 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
         addr_preser_ind ? addr_preser_ind->valueint : 0,
         tscai_input_dl ? tscai_input_dl_local_nonprim : NULL,
         tscai_input_ul ? tscai_input_ul_local_nonprim : NULL,
+        tscai_time_dom ? true : false,
+        tscai_time_dom ? tscai_time_dom->valuedouble : 0,
         dd_notif_ctrl ? dd_notif_ctrl_local_nonprim : NULL,
         dd_notif_ctrl2 ? dd_notif_ctrl2_local_nonprim : NULL,
         dis_ue_notif ? true : false,
-        dis_ue_notif ? dis_ue_notif->valueint : 0
+        dis_ue_notif ? dis_ue_notif->valueint : 0,
+        pack_filt_all_prec ? true : false,
+        pack_filt_all_prec ? pack_filt_all_prec->valuedouble : 0
     );
 
     return pcc_rule_local_var;

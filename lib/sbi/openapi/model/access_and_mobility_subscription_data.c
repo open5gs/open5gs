@@ -7,11 +7,12 @@
 OpenAPI_access_and_mobility_subscription_data_t *OpenAPI_access_and_mobility_subscription_data_create(
     char *supported_features,
     OpenAPI_list_t *gpsis,
+    char *hss_group_id,
     OpenAPI_list_t *internal_group_ids,
     OpenAPI_list_t* shared_vn_group_data_ids,
     OpenAPI_ambr_rm_t *subscribed_ue_ambr,
     OpenAPI_nssai_t *nssai,
-    OpenAPI_list_t *rat_restrictions,
+    OpenAPI_set_t *rat_restrictions,
     OpenAPI_list_t *forbidden_areas,
     OpenAPI_service_area_restriction_t *service_area_restriction,
     OpenAPI_list_t *core_network_type_restrictions,
@@ -34,6 +35,7 @@ OpenAPI_access_and_mobility_subscription_data_t *OpenAPI_access_and_mobility_sub
     int soraf_retrieval,
     OpenAPI_list_t *sor_update_indicator_list,
     OpenAPI_upu_info_t *upu_info,
+    char *routing_indicator,
     bool is_mico_allowed,
     int mico_allowed,
     OpenAPI_list_t *shared_am_data_ids,
@@ -56,14 +58,20 @@ OpenAPI_access_and_mobility_subscription_data_t *OpenAPI_access_and_mobility_sub
     bool is_ec_restriction_data_nb,
     int ec_restriction_data_nb,
     OpenAPI_expected_ue_behaviour_data_t *expected_ue_behaviour_list,
-    OpenAPI_list_t *primary_rat_restrictions,
-    OpenAPI_list_t *secondary_rat_restrictions,
+    OpenAPI_set_t *primary_rat_restrictions,
+    OpenAPI_set_t *secondary_rat_restrictions,
     OpenAPI_list_t *edrx_parameters_list,
     OpenAPI_list_t *ptw_parameters_list,
     bool is_iab_operation_allowed,
     int iab_operation_allowed,
+    OpenAPI_list_t* adjacent_plmn_restrictions,
     OpenAPI_list_t *wireline_forbidden_areas,
-    OpenAPI_wireline_service_area_restriction_t *wireline_service_area_restriction
+    OpenAPI_wireline_service_area_restriction_t *wireline_service_area_restriction,
+    OpenAPI_list_t *pcf_selection_assistance_infos,
+    OpenAPI_aerial_ue_subscription_info_t *aerial_ue_sub_info,
+    OpenAPI_roaming_restrictions_t *roaming_restrictions,
+    bool is_remote_prov_ind,
+    int remote_prov_ind
 )
 {
     OpenAPI_access_and_mobility_subscription_data_t *access_and_mobility_subscription_data_local_var = ogs_malloc(sizeof(OpenAPI_access_and_mobility_subscription_data_t));
@@ -71,6 +79,7 @@ OpenAPI_access_and_mobility_subscription_data_t *OpenAPI_access_and_mobility_sub
 
     access_and_mobility_subscription_data_local_var->supported_features = supported_features;
     access_and_mobility_subscription_data_local_var->gpsis = gpsis;
+    access_and_mobility_subscription_data_local_var->hss_group_id = hss_group_id;
     access_and_mobility_subscription_data_local_var->internal_group_ids = internal_group_ids;
     access_and_mobility_subscription_data_local_var->shared_vn_group_data_ids = shared_vn_group_data_ids;
     access_and_mobility_subscription_data_local_var->subscribed_ue_ambr = subscribed_ue_ambr;
@@ -98,6 +107,7 @@ OpenAPI_access_and_mobility_subscription_data_t *OpenAPI_access_and_mobility_sub
     access_and_mobility_subscription_data_local_var->soraf_retrieval = soraf_retrieval;
     access_and_mobility_subscription_data_local_var->sor_update_indicator_list = sor_update_indicator_list;
     access_and_mobility_subscription_data_local_var->upu_info = upu_info;
+    access_and_mobility_subscription_data_local_var->routing_indicator = routing_indicator;
     access_and_mobility_subscription_data_local_var->is_mico_allowed = is_mico_allowed;
     access_and_mobility_subscription_data_local_var->mico_allowed = mico_allowed;
     access_and_mobility_subscription_data_local_var->shared_am_data_ids = shared_am_data_ids;
@@ -126,8 +136,14 @@ OpenAPI_access_and_mobility_subscription_data_t *OpenAPI_access_and_mobility_sub
     access_and_mobility_subscription_data_local_var->ptw_parameters_list = ptw_parameters_list;
     access_and_mobility_subscription_data_local_var->is_iab_operation_allowed = is_iab_operation_allowed;
     access_and_mobility_subscription_data_local_var->iab_operation_allowed = iab_operation_allowed;
+    access_and_mobility_subscription_data_local_var->adjacent_plmn_restrictions = adjacent_plmn_restrictions;
     access_and_mobility_subscription_data_local_var->wireline_forbidden_areas = wireline_forbidden_areas;
     access_and_mobility_subscription_data_local_var->wireline_service_area_restriction = wireline_service_area_restriction;
+    access_and_mobility_subscription_data_local_var->pcf_selection_assistance_infos = pcf_selection_assistance_infos;
+    access_and_mobility_subscription_data_local_var->aerial_ue_sub_info = aerial_ue_sub_info;
+    access_and_mobility_subscription_data_local_var->roaming_restrictions = roaming_restrictions;
+    access_and_mobility_subscription_data_local_var->is_remote_prov_ind = is_remote_prov_ind;
+    access_and_mobility_subscription_data_local_var->remote_prov_ind = remote_prov_ind;
 
     return access_and_mobility_subscription_data_local_var;
 }
@@ -149,6 +165,10 @@ void OpenAPI_access_and_mobility_subscription_data_free(OpenAPI_access_and_mobil
         }
         OpenAPI_list_free(access_and_mobility_subscription_data->gpsis);
         access_and_mobility_subscription_data->gpsis = NULL;
+    }
+    if (access_and_mobility_subscription_data->hss_group_id) {
+        ogs_free(access_and_mobility_subscription_data->hss_group_id);
+        access_and_mobility_subscription_data->hss_group_id = NULL;
     }
     if (access_and_mobility_subscription_data->internal_group_ids) {
         OpenAPI_list_for_each(access_and_mobility_subscription_data->internal_group_ids, node) {
@@ -205,6 +225,10 @@ void OpenAPI_access_and_mobility_subscription_data_free(OpenAPI_access_and_mobil
     if (access_and_mobility_subscription_data->upu_info) {
         OpenAPI_upu_info_free(access_and_mobility_subscription_data->upu_info);
         access_and_mobility_subscription_data->upu_info = NULL;
+    }
+    if (access_and_mobility_subscription_data->routing_indicator) {
+        ogs_free(access_and_mobility_subscription_data->routing_indicator);
+        access_and_mobility_subscription_data->routing_indicator = NULL;
     }
     if (access_and_mobility_subscription_data->shared_am_data_ids) {
         OpenAPI_list_for_each(access_and_mobility_subscription_data->shared_am_data_ids, node) {
@@ -274,6 +298,16 @@ void OpenAPI_access_and_mobility_subscription_data_free(OpenAPI_access_and_mobil
         OpenAPI_list_free(access_and_mobility_subscription_data->ptw_parameters_list);
         access_and_mobility_subscription_data->ptw_parameters_list = NULL;
     }
+    if (access_and_mobility_subscription_data->adjacent_plmn_restrictions) {
+        OpenAPI_list_for_each(access_and_mobility_subscription_data->adjacent_plmn_restrictions, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_plmn_restriction_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(access_and_mobility_subscription_data->adjacent_plmn_restrictions);
+        access_and_mobility_subscription_data->adjacent_plmn_restrictions = NULL;
+    }
     if (access_and_mobility_subscription_data->wireline_forbidden_areas) {
         OpenAPI_list_for_each(access_and_mobility_subscription_data->wireline_forbidden_areas, node) {
             OpenAPI_wireline_area_free(node->data);
@@ -284,6 +318,21 @@ void OpenAPI_access_and_mobility_subscription_data_free(OpenAPI_access_and_mobil
     if (access_and_mobility_subscription_data->wireline_service_area_restriction) {
         OpenAPI_wireline_service_area_restriction_free(access_and_mobility_subscription_data->wireline_service_area_restriction);
         access_and_mobility_subscription_data->wireline_service_area_restriction = NULL;
+    }
+    if (access_and_mobility_subscription_data->pcf_selection_assistance_infos) {
+        OpenAPI_list_for_each(access_and_mobility_subscription_data->pcf_selection_assistance_infos, node) {
+            OpenAPI_pcf_selection_assistance_info_free(node->data);
+        }
+        OpenAPI_list_free(access_and_mobility_subscription_data->pcf_selection_assistance_infos);
+        access_and_mobility_subscription_data->pcf_selection_assistance_infos = NULL;
+    }
+    if (access_and_mobility_subscription_data->aerial_ue_sub_info) {
+        OpenAPI_aerial_ue_subscription_info_free(access_and_mobility_subscription_data->aerial_ue_sub_info);
+        access_and_mobility_subscription_data->aerial_ue_sub_info = NULL;
+    }
+    if (access_and_mobility_subscription_data->roaming_restrictions) {
+        OpenAPI_roaming_restrictions_free(access_and_mobility_subscription_data->roaming_restrictions);
+        access_and_mobility_subscription_data->roaming_restrictions = NULL;
     }
     ogs_free(access_and_mobility_subscription_data);
 }
@@ -317,6 +366,13 @@ cJSON *OpenAPI_access_and_mobility_subscription_data_convertToJSON(OpenAPI_acces
             ogs_error("OpenAPI_access_and_mobility_subscription_data_convertToJSON() failed [gpsis]");
             goto end;
         }
+    }
+    }
+
+    if (access_and_mobility_subscription_data->hss_group_id) {
+    if (cJSON_AddStringToObject(item, "hssGroupId", access_and_mobility_subscription_data->hss_group_id) == NULL) {
+        ogs_error("OpenAPI_access_and_mobility_subscription_data_convertToJSON() failed [hss_group_id]");
+        goto end;
     }
     }
 
@@ -527,6 +583,13 @@ cJSON *OpenAPI_access_and_mobility_subscription_data_convertToJSON(OpenAPI_acces
     cJSON_AddItemToObject(item, "upuInfo", upu_info_local_JSON);
     if (item->child == NULL) {
         ogs_error("OpenAPI_access_and_mobility_subscription_data_convertToJSON() failed [upu_info]");
+        goto end;
+    }
+    }
+
+    if (access_and_mobility_subscription_data->routing_indicator) {
+    if (cJSON_AddStringToObject(item, "routingIndicator", access_and_mobility_subscription_data->routing_indicator) == NULL) {
+        ogs_error("OpenAPI_access_and_mobility_subscription_data_convertToJSON() failed [routing_indicator]");
         goto end;
     }
     }
@@ -761,6 +824,28 @@ cJSON *OpenAPI_access_and_mobility_subscription_data_convertToJSON(OpenAPI_acces
     }
     }
 
+    if (access_and_mobility_subscription_data->adjacent_plmn_restrictions) {
+    cJSON *adjacent_plmn_restrictions = cJSON_AddObjectToObject(item, "adjacentPlmnRestrictions");
+    if (adjacent_plmn_restrictions == NULL) {
+        ogs_error("OpenAPI_access_and_mobility_subscription_data_convertToJSON() failed [adjacent_plmn_restrictions]");
+        goto end;
+    }
+    cJSON *localMapObject = adjacent_plmn_restrictions;
+    if (access_and_mobility_subscription_data->adjacent_plmn_restrictions) {
+        OpenAPI_list_for_each(access_and_mobility_subscription_data->adjacent_plmn_restrictions, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            cJSON *itemLocal = localKeyValue->value ?
+                OpenAPI_plmn_restriction_convertToJSON(localKeyValue->value) :
+                cJSON_CreateNull();
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_access_and_mobility_subscription_data_convertToJSON() failed [inner]");
+                goto end;
+            }
+            cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
+        }
+    }
+    }
+
     if (access_and_mobility_subscription_data->wireline_forbidden_areas) {
     cJSON *wireline_forbidden_areasList = cJSON_AddArrayToObject(item, "wirelineForbiddenAreas");
     if (wireline_forbidden_areasList == NULL) {
@@ -790,6 +875,55 @@ cJSON *OpenAPI_access_and_mobility_subscription_data_convertToJSON(OpenAPI_acces
     }
     }
 
+    if (access_and_mobility_subscription_data->pcf_selection_assistance_infos) {
+    cJSON *pcf_selection_assistance_infosList = cJSON_AddArrayToObject(item, "pcfSelectionAssistanceInfos");
+    if (pcf_selection_assistance_infosList == NULL) {
+        ogs_error("OpenAPI_access_and_mobility_subscription_data_convertToJSON() failed [pcf_selection_assistance_infos]");
+        goto end;
+    }
+    OpenAPI_list_for_each(access_and_mobility_subscription_data->pcf_selection_assistance_infos, node) {
+        cJSON *itemLocal = OpenAPI_pcf_selection_assistance_info_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_access_and_mobility_subscription_data_convertToJSON() failed [pcf_selection_assistance_infos]");
+            goto end;
+        }
+        cJSON_AddItemToArray(pcf_selection_assistance_infosList, itemLocal);
+    }
+    }
+
+    if (access_and_mobility_subscription_data->aerial_ue_sub_info) {
+    cJSON *aerial_ue_sub_info_local_JSON = OpenAPI_aerial_ue_subscription_info_convertToJSON(access_and_mobility_subscription_data->aerial_ue_sub_info);
+    if (aerial_ue_sub_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_access_and_mobility_subscription_data_convertToJSON() failed [aerial_ue_sub_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "aerialUeSubInfo", aerial_ue_sub_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_access_and_mobility_subscription_data_convertToJSON() failed [aerial_ue_sub_info]");
+        goto end;
+    }
+    }
+
+    if (access_and_mobility_subscription_data->roaming_restrictions) {
+    cJSON *roaming_restrictions_local_JSON = OpenAPI_roaming_restrictions_convertToJSON(access_and_mobility_subscription_data->roaming_restrictions);
+    if (roaming_restrictions_local_JSON == NULL) {
+        ogs_error("OpenAPI_access_and_mobility_subscription_data_convertToJSON() failed [roaming_restrictions]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "roamingRestrictions", roaming_restrictions_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_access_and_mobility_subscription_data_convertToJSON() failed [roaming_restrictions]");
+        goto end;
+    }
+    }
+
+    if (access_and_mobility_subscription_data->is_remote_prov_ind) {
+    if (cJSON_AddBoolToObject(item, "remoteProvInd", access_and_mobility_subscription_data->remote_prov_ind) == NULL) {
+        ogs_error("OpenAPI_access_and_mobility_subscription_data_convertToJSON() failed [remote_prov_ind]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -801,6 +935,7 @@ OpenAPI_access_and_mobility_subscription_data_t *OpenAPI_access_and_mobility_sub
     cJSON *supported_features = NULL;
     cJSON *gpsis = NULL;
     OpenAPI_list_t *gpsisList = NULL;
+    cJSON *hss_group_id = NULL;
     cJSON *internal_group_ids = NULL;
     OpenAPI_list_t *internal_group_idsList = NULL;
     cJSON *shared_vn_group_data_ids = NULL;
@@ -831,6 +966,7 @@ OpenAPI_access_and_mobility_subscription_data_t *OpenAPI_access_and_mobility_sub
     OpenAPI_list_t *sor_update_indicator_listList = NULL;
     cJSON *upu_info = NULL;
     OpenAPI_upu_info_t *upu_info_local_nonprim = NULL;
+    cJSON *routing_indicator = NULL;
     cJSON *mico_allowed = NULL;
     cJSON *shared_am_data_ids = NULL;
     OpenAPI_list_t *shared_am_data_idsList = NULL;
@@ -866,10 +1002,19 @@ OpenAPI_access_and_mobility_subscription_data_t *OpenAPI_access_and_mobility_sub
     cJSON *ptw_parameters_list = NULL;
     OpenAPI_list_t *ptw_parameters_listList = NULL;
     cJSON *iab_operation_allowed = NULL;
+    cJSON *adjacent_plmn_restrictions = NULL;
+    OpenAPI_list_t *adjacent_plmn_restrictionsList = NULL;
     cJSON *wireline_forbidden_areas = NULL;
     OpenAPI_list_t *wireline_forbidden_areasList = NULL;
     cJSON *wireline_service_area_restriction = NULL;
     OpenAPI_wireline_service_area_restriction_t *wireline_service_area_restriction_local_nonprim = NULL;
+    cJSON *pcf_selection_assistance_infos = NULL;
+    OpenAPI_list_t *pcf_selection_assistance_infosList = NULL;
+    cJSON *aerial_ue_sub_info = NULL;
+    OpenAPI_aerial_ue_subscription_info_t *aerial_ue_sub_info_local_nonprim = NULL;
+    cJSON *roaming_restrictions = NULL;
+    OpenAPI_roaming_restrictions_t *roaming_restrictions_local_nonprim = NULL;
+    cJSON *remote_prov_ind = NULL;
     supported_features = cJSON_GetObjectItemCaseSensitive(access_and_mobility_subscription_dataJSON, "supportedFeatures");
     if (supported_features) {
     if (!cJSON_IsString(supported_features) && !cJSON_IsNull(supported_features)) {
@@ -897,6 +1042,14 @@ OpenAPI_access_and_mobility_subscription_data_t *OpenAPI_access_and_mobility_sub
             }
             OpenAPI_list_add(gpsisList, ogs_strdup(gpsis_local->valuestring));
         }
+    }
+
+    hss_group_id = cJSON_GetObjectItemCaseSensitive(access_and_mobility_subscription_dataJSON, "hssGroupId");
+    if (hss_group_id) {
+    if (!cJSON_IsString(hss_group_id) && !cJSON_IsNull(hss_group_id)) {
+        ogs_error("OpenAPI_access_and_mobility_subscription_data_parseFromJSON() failed [hss_group_id]");
+        goto end;
+    }
     }
 
     internal_group_ids = cJSON_GetObjectItemCaseSensitive(access_and_mobility_subscription_dataJSON, "internalGroupIds");
@@ -1113,6 +1266,14 @@ OpenAPI_access_and_mobility_subscription_data_t *OpenAPI_access_and_mobility_sub
     upu_info = cJSON_GetObjectItemCaseSensitive(access_and_mobility_subscription_dataJSON, "upuInfo");
     if (upu_info) {
     upu_info_local_nonprim = OpenAPI_upu_info_parseFromJSON(upu_info);
+    }
+
+    routing_indicator = cJSON_GetObjectItemCaseSensitive(access_and_mobility_subscription_dataJSON, "routingIndicator");
+    if (routing_indicator) {
+    if (!cJSON_IsString(routing_indicator) && !cJSON_IsNull(routing_indicator)) {
+        ogs_error("OpenAPI_access_and_mobility_subscription_data_parseFromJSON() failed [routing_indicator]");
+        goto end;
+    }
     }
 
     mico_allowed = cJSON_GetObjectItemCaseSensitive(access_and_mobility_subscription_dataJSON, "micoAllowed");
@@ -1360,6 +1521,32 @@ OpenAPI_access_and_mobility_subscription_data_t *OpenAPI_access_and_mobility_sub
     }
     }
 
+    adjacent_plmn_restrictions = cJSON_GetObjectItemCaseSensitive(access_and_mobility_subscription_dataJSON, "adjacentPlmnRestrictions");
+    if (adjacent_plmn_restrictions) {
+        cJSON *adjacent_plmn_restrictions_local_map = NULL;
+        if (!cJSON_IsObject(adjacent_plmn_restrictions) && !cJSON_IsNull(adjacent_plmn_restrictions)) {
+            ogs_error("OpenAPI_access_and_mobility_subscription_data_parseFromJSON() failed [adjacent_plmn_restrictions]");
+            goto end;
+        }
+        if (cJSON_IsObject(adjacent_plmn_restrictions)) {
+            adjacent_plmn_restrictionsList = OpenAPI_list_create();
+            OpenAPI_map_t *localMapKeyPair = NULL;
+            cJSON_ArrayForEach(adjacent_plmn_restrictions_local_map, adjacent_plmn_restrictions) {
+                cJSON *localMapObject = adjacent_plmn_restrictions_local_map;
+                if (cJSON_IsObject(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(
+                        ogs_strdup(localMapObject->string), OpenAPI_plmn_restriction_parseFromJSON(localMapObject));
+                } else if (cJSON_IsNull(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
+                } else {
+                    ogs_error("OpenAPI_access_and_mobility_subscription_data_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                OpenAPI_list_add(adjacent_plmn_restrictionsList, localMapKeyPair);
+            }
+        }
+    }
+
     wireline_forbidden_areas = cJSON_GetObjectItemCaseSensitive(access_and_mobility_subscription_dataJSON, "wirelineForbiddenAreas");
     if (wireline_forbidden_areas) {
         cJSON *wireline_forbidden_areas_local = NULL;
@@ -1390,9 +1577,53 @@ OpenAPI_access_and_mobility_subscription_data_t *OpenAPI_access_and_mobility_sub
     wireline_service_area_restriction_local_nonprim = OpenAPI_wireline_service_area_restriction_parseFromJSON(wireline_service_area_restriction);
     }
 
+    pcf_selection_assistance_infos = cJSON_GetObjectItemCaseSensitive(access_and_mobility_subscription_dataJSON, "pcfSelectionAssistanceInfos");
+    if (pcf_selection_assistance_infos) {
+        cJSON *pcf_selection_assistance_infos_local = NULL;
+        if (!cJSON_IsArray(pcf_selection_assistance_infos)) {
+            ogs_error("OpenAPI_access_and_mobility_subscription_data_parseFromJSON() failed [pcf_selection_assistance_infos]");
+            goto end;
+        }
+
+        pcf_selection_assistance_infosList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(pcf_selection_assistance_infos_local, pcf_selection_assistance_infos) {
+            if (!cJSON_IsObject(pcf_selection_assistance_infos_local)) {
+                ogs_error("OpenAPI_access_and_mobility_subscription_data_parseFromJSON() failed [pcf_selection_assistance_infos]");
+                goto end;
+            }
+            OpenAPI_pcf_selection_assistance_info_t *pcf_selection_assistance_infosItem = OpenAPI_pcf_selection_assistance_info_parseFromJSON(pcf_selection_assistance_infos_local);
+            if (!pcf_selection_assistance_infosItem) {
+                ogs_error("No pcf_selection_assistance_infosItem");
+                OpenAPI_list_free(pcf_selection_assistance_infosList);
+                goto end;
+            }
+            OpenAPI_list_add(pcf_selection_assistance_infosList, pcf_selection_assistance_infosItem);
+        }
+    }
+
+    aerial_ue_sub_info = cJSON_GetObjectItemCaseSensitive(access_and_mobility_subscription_dataJSON, "aerialUeSubInfo");
+    if (aerial_ue_sub_info) {
+    aerial_ue_sub_info_local_nonprim = OpenAPI_aerial_ue_subscription_info_parseFromJSON(aerial_ue_sub_info);
+    }
+
+    roaming_restrictions = cJSON_GetObjectItemCaseSensitive(access_and_mobility_subscription_dataJSON, "roamingRestrictions");
+    if (roaming_restrictions) {
+    roaming_restrictions_local_nonprim = OpenAPI_roaming_restrictions_parseFromJSON(roaming_restrictions);
+    }
+
+    remote_prov_ind = cJSON_GetObjectItemCaseSensitive(access_and_mobility_subscription_dataJSON, "remoteProvInd");
+    if (remote_prov_ind) {
+    if (!cJSON_IsBool(remote_prov_ind)) {
+        ogs_error("OpenAPI_access_and_mobility_subscription_data_parseFromJSON() failed [remote_prov_ind]");
+        goto end;
+    }
+    }
+
     access_and_mobility_subscription_data_local_var = OpenAPI_access_and_mobility_subscription_data_create (
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
         gpsis ? gpsisList : NULL,
+        hss_group_id && !cJSON_IsNull(hss_group_id) ? ogs_strdup(hss_group_id->valuestring) : NULL,
         internal_group_ids ? internal_group_idsList : NULL,
         shared_vn_group_data_ids ? shared_vn_group_data_idsList : NULL,
         subscribed_ue_ambr ? subscribed_ue_ambr_local_nonprim : NULL,
@@ -1420,6 +1651,7 @@ OpenAPI_access_and_mobility_subscription_data_t *OpenAPI_access_and_mobility_sub
         soraf_retrieval ? soraf_retrieval->valueint : 0,
         sor_update_indicator_list ? sor_update_indicator_listList : NULL,
         upu_info ? upu_info_local_nonprim : NULL,
+        routing_indicator && !cJSON_IsNull(routing_indicator) ? ogs_strdup(routing_indicator->valuestring) : NULL,
         mico_allowed ? true : false,
         mico_allowed ? mico_allowed->valueint : 0,
         shared_am_data_ids ? shared_am_data_idsList : NULL,
@@ -1448,8 +1680,14 @@ OpenAPI_access_and_mobility_subscription_data_t *OpenAPI_access_and_mobility_sub
         ptw_parameters_list ? ptw_parameters_listList : NULL,
         iab_operation_allowed ? true : false,
         iab_operation_allowed ? iab_operation_allowed->valueint : 0,
+        adjacent_plmn_restrictions ? adjacent_plmn_restrictionsList : NULL,
         wireline_forbidden_areas ? wireline_forbidden_areasList : NULL,
-        wireline_service_area_restriction ? wireline_service_area_restriction_local_nonprim : NULL
+        wireline_service_area_restriction ? wireline_service_area_restriction_local_nonprim : NULL,
+        pcf_selection_assistance_infos ? pcf_selection_assistance_infosList : NULL,
+        aerial_ue_sub_info ? aerial_ue_sub_info_local_nonprim : NULL,
+        roaming_restrictions ? roaming_restrictions_local_nonprim : NULL,
+        remote_prov_ind ? true : false,
+        remote_prov_ind ? remote_prov_ind->valueint : 0
     );
 
     return access_and_mobility_subscription_data_local_var;
@@ -1573,6 +1811,16 @@ end:
         OpenAPI_list_free(ptw_parameters_listList);
         ptw_parameters_listList = NULL;
     }
+    if (adjacent_plmn_restrictionsList) {
+        OpenAPI_list_for_each(adjacent_plmn_restrictionsList, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_plmn_restriction_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(adjacent_plmn_restrictionsList);
+        adjacent_plmn_restrictionsList = NULL;
+    }
     if (wireline_forbidden_areasList) {
         OpenAPI_list_for_each(wireline_forbidden_areasList, node) {
             OpenAPI_wireline_area_free(node->data);
@@ -1583,6 +1831,21 @@ end:
     if (wireline_service_area_restriction_local_nonprim) {
         OpenAPI_wireline_service_area_restriction_free(wireline_service_area_restriction_local_nonprim);
         wireline_service_area_restriction_local_nonprim = NULL;
+    }
+    if (pcf_selection_assistance_infosList) {
+        OpenAPI_list_for_each(pcf_selection_assistance_infosList, node) {
+            OpenAPI_pcf_selection_assistance_info_free(node->data);
+        }
+        OpenAPI_list_free(pcf_selection_assistance_infosList);
+        pcf_selection_assistance_infosList = NULL;
+    }
+    if (aerial_ue_sub_info_local_nonprim) {
+        OpenAPI_aerial_ue_subscription_info_free(aerial_ue_sub_info_local_nonprim);
+        aerial_ue_sub_info_local_nonprim = NULL;
+    }
+    if (roaming_restrictions_local_nonprim) {
+        OpenAPI_roaming_restrictions_free(roaming_restrictions_local_nonprim);
+        roaming_restrictions_local_nonprim = NULL;
     }
     return NULL;
 }

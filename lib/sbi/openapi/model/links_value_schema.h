@@ -1,7 +1,7 @@
 /*
  * links_value_schema.h
  *
- * 
+ * A list of mutually exclusive alternatives of 1 or more links.
  */
 
 #ifndef _OpenAPI_links_value_schema_H_

@@ -9,8 +9,10 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_create(
     char *notif_id,
     OpenAPI_list_t *monitored_resource_uris,
     OpenAPI_list_t *mon_res_items,
+    OpenAPI_list_t *excluded_res_items,
     char *expiry,
-    char *supported_features
+    char *supported_features,
+    OpenAPI_list_t *reset_ids
 )
 {
     OpenAPI_policy_data_subscription_t *policy_data_subscription_local_var = ogs_malloc(sizeof(OpenAPI_policy_data_subscription_t));
@@ -20,8 +22,10 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_create(
     policy_data_subscription_local_var->notif_id = notif_id;
     policy_data_subscription_local_var->monitored_resource_uris = monitored_resource_uris;
     policy_data_subscription_local_var->mon_res_items = mon_res_items;
+    policy_data_subscription_local_var->excluded_res_items = excluded_res_items;
     policy_data_subscription_local_var->expiry = expiry;
     policy_data_subscription_local_var->supported_features = supported_features;
+    policy_data_subscription_local_var->reset_ids = reset_ids;
 
     return policy_data_subscription_local_var;
 }
@@ -55,6 +59,13 @@ void OpenAPI_policy_data_subscription_free(OpenAPI_policy_data_subscription_t *p
         OpenAPI_list_free(policy_data_subscription->mon_res_items);
         policy_data_subscription->mon_res_items = NULL;
     }
+    if (policy_data_subscription->excluded_res_items) {
+        OpenAPI_list_for_each(policy_data_subscription->excluded_res_items, node) {
+            OpenAPI_resource_item_free(node->data);
+        }
+        OpenAPI_list_free(policy_data_subscription->excluded_res_items);
+        policy_data_subscription->excluded_res_items = NULL;
+    }
     if (policy_data_subscription->expiry) {
         ogs_free(policy_data_subscription->expiry);
         policy_data_subscription->expiry = NULL;
@@ -62,6 +73,13 @@ void OpenAPI_policy_data_subscription_free(OpenAPI_policy_data_subscription_t *p
     if (policy_data_subscription->supported_features) {
         ogs_free(policy_data_subscription->supported_features);
         policy_data_subscription->supported_features = NULL;
+    }
+    if (policy_data_subscription->reset_ids) {
+        OpenAPI_list_for_each(policy_data_subscription->reset_ids, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(policy_data_subscription->reset_ids);
+        policy_data_subscription->reset_ids = NULL;
     }
     ogs_free(policy_data_subscription);
 }
@@ -125,6 +143,22 @@ cJSON *OpenAPI_policy_data_subscription_convertToJSON(OpenAPI_policy_data_subscr
     }
     }
 
+    if (policy_data_subscription->excluded_res_items) {
+    cJSON *excluded_res_itemsList = cJSON_AddArrayToObject(item, "excludedResItems");
+    if (excluded_res_itemsList == NULL) {
+        ogs_error("OpenAPI_policy_data_subscription_convertToJSON() failed [excluded_res_items]");
+        goto end;
+    }
+    OpenAPI_list_for_each(policy_data_subscription->excluded_res_items, node) {
+        cJSON *itemLocal = OpenAPI_resource_item_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_policy_data_subscription_convertToJSON() failed [excluded_res_items]");
+            goto end;
+        }
+        cJSON_AddItemToArray(excluded_res_itemsList, itemLocal);
+    }
+    }
+
     if (policy_data_subscription->expiry) {
     if (cJSON_AddStringToObject(item, "expiry", policy_data_subscription->expiry) == NULL) {
         ogs_error("OpenAPI_policy_data_subscription_convertToJSON() failed [expiry]");
@@ -136,6 +170,20 @@ cJSON *OpenAPI_policy_data_subscription_convertToJSON(OpenAPI_policy_data_subscr
     if (cJSON_AddStringToObject(item, "supportedFeatures", policy_data_subscription->supported_features) == NULL) {
         ogs_error("OpenAPI_policy_data_subscription_convertToJSON() failed [supported_features]");
         goto end;
+    }
+    }
+
+    if (policy_data_subscription->reset_ids) {
+    cJSON *reset_idsList = cJSON_AddArrayToObject(item, "resetIds");
+    if (reset_idsList == NULL) {
+        ogs_error("OpenAPI_policy_data_subscription_convertToJSON() failed [reset_ids]");
+        goto end;
+    }
+    OpenAPI_list_for_each(policy_data_subscription->reset_ids, node) {
+        if (cJSON_AddStringToObject(reset_idsList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_policy_data_subscription_convertToJSON() failed [reset_ids]");
+            goto end;
+        }
     }
     }
 
@@ -153,8 +201,12 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_parseFromJS
     OpenAPI_list_t *monitored_resource_urisList = NULL;
     cJSON *mon_res_items = NULL;
     OpenAPI_list_t *mon_res_itemsList = NULL;
+    cJSON *excluded_res_items = NULL;
+    OpenAPI_list_t *excluded_res_itemsList = NULL;
     cJSON *expiry = NULL;
     cJSON *supported_features = NULL;
+    cJSON *reset_ids = NULL;
+    OpenAPI_list_t *reset_idsList = NULL;
     notification_uri = cJSON_GetObjectItemCaseSensitive(policy_data_subscriptionJSON, "notificationUri");
     if (!notification_uri) {
         ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [notification_uri]");
@@ -221,6 +273,31 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_parseFromJS
         }
     }
 
+    excluded_res_items = cJSON_GetObjectItemCaseSensitive(policy_data_subscriptionJSON, "excludedResItems");
+    if (excluded_res_items) {
+        cJSON *excluded_res_items_local = NULL;
+        if (!cJSON_IsArray(excluded_res_items)) {
+            ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [excluded_res_items]");
+            goto end;
+        }
+
+        excluded_res_itemsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(excluded_res_items_local, excluded_res_items) {
+            if (!cJSON_IsObject(excluded_res_items_local)) {
+                ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [excluded_res_items]");
+                goto end;
+            }
+            OpenAPI_resource_item_t *excluded_res_itemsItem = OpenAPI_resource_item_parseFromJSON(excluded_res_items_local);
+            if (!excluded_res_itemsItem) {
+                ogs_error("No excluded_res_itemsItem");
+                OpenAPI_list_free(excluded_res_itemsList);
+                goto end;
+            }
+            OpenAPI_list_add(excluded_res_itemsList, excluded_res_itemsItem);
+        }
+    }
+
     expiry = cJSON_GetObjectItemCaseSensitive(policy_data_subscriptionJSON, "expiry");
     if (expiry) {
     if (!cJSON_IsString(expiry) && !cJSON_IsNull(expiry)) {
@@ -237,13 +314,36 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_parseFromJS
     }
     }
 
+    reset_ids = cJSON_GetObjectItemCaseSensitive(policy_data_subscriptionJSON, "resetIds");
+    if (reset_ids) {
+        cJSON *reset_ids_local = NULL;
+        if (!cJSON_IsArray(reset_ids)) {
+            ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [reset_ids]");
+            goto end;
+        }
+
+        reset_idsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(reset_ids_local, reset_ids) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(reset_ids_local)) {
+                ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [reset_ids]");
+                goto end;
+            }
+            OpenAPI_list_add(reset_idsList, ogs_strdup(reset_ids_local->valuestring));
+        }
+    }
+
     policy_data_subscription_local_var = OpenAPI_policy_data_subscription_create (
         ogs_strdup(notification_uri->valuestring),
         notif_id && !cJSON_IsNull(notif_id) ? ogs_strdup(notif_id->valuestring) : NULL,
         monitored_resource_urisList,
         mon_res_items ? mon_res_itemsList : NULL,
+        excluded_res_items ? excluded_res_itemsList : NULL,
         expiry && !cJSON_IsNull(expiry) ? ogs_strdup(expiry->valuestring) : NULL,
-        supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL
+        supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
+        reset_ids ? reset_idsList : NULL
     );
 
     return policy_data_subscription_local_var;
@@ -261,6 +361,20 @@ end:
         }
         OpenAPI_list_free(mon_res_itemsList);
         mon_res_itemsList = NULL;
+    }
+    if (excluded_res_itemsList) {
+        OpenAPI_list_for_each(excluded_res_itemsList, node) {
+            OpenAPI_resource_item_free(node->data);
+        }
+        OpenAPI_list_free(excluded_res_itemsList);
+        excluded_res_itemsList = NULL;
+    }
+    if (reset_idsList) {
+        OpenAPI_list_for_each(reset_idsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(reset_idsList);
+        reset_idsList = NULL;
     }
     return NULL;
 }

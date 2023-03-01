@@ -11,7 +11,9 @@ OpenAPI_qos_flow_setup_item_t *OpenAPI_qos_flow_setup_item_create(
     int ebi,
     char *qos_flow_description,
     OpenAPI_qos_flow_profile_t *qos_flow_profile,
-    OpenAPI_qos_flow_access_type_e associated_an_type
+    OpenAPI_qos_flow_access_type_e associated_an_type,
+    bool is_default_qos_rule_ind,
+    int default_qos_rule_ind
 )
 {
     OpenAPI_qos_flow_setup_item_t *qos_flow_setup_item_local_var = ogs_malloc(sizeof(OpenAPI_qos_flow_setup_item_t));
@@ -24,6 +26,8 @@ OpenAPI_qos_flow_setup_item_t *OpenAPI_qos_flow_setup_item_create(
     qos_flow_setup_item_local_var->qos_flow_description = qos_flow_description;
     qos_flow_setup_item_local_var->qos_flow_profile = qos_flow_profile;
     qos_flow_setup_item_local_var->associated_an_type = associated_an_type;
+    qos_flow_setup_item_local_var->is_default_qos_rule_ind = is_default_qos_rule_ind;
+    qos_flow_setup_item_local_var->default_qos_rule_ind = default_qos_rule_ind;
 
     return qos_flow_setup_item_local_var;
 }
@@ -109,6 +113,13 @@ cJSON *OpenAPI_qos_flow_setup_item_convertToJSON(OpenAPI_qos_flow_setup_item_t *
     }
     }
 
+    if (qos_flow_setup_item->is_default_qos_rule_ind) {
+    if (cJSON_AddBoolToObject(item, "defaultQosRuleInd", qos_flow_setup_item->default_qos_rule_ind) == NULL) {
+        ogs_error("OpenAPI_qos_flow_setup_item_convertToJSON() failed [default_qos_rule_ind]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -125,6 +136,7 @@ OpenAPI_qos_flow_setup_item_t *OpenAPI_qos_flow_setup_item_parseFromJSON(cJSON *
     OpenAPI_qos_flow_profile_t *qos_flow_profile_local_nonprim = NULL;
     cJSON *associated_an_type = NULL;
     OpenAPI_qos_flow_access_type_e associated_an_typeVariable = 0;
+    cJSON *default_qos_rule_ind = NULL;
     qfi = cJSON_GetObjectItemCaseSensitive(qos_flow_setup_itemJSON, "qfi");
     if (!qfi) {
         ogs_error("OpenAPI_qos_flow_setup_item_parseFromJSON() failed [qfi]");
@@ -175,6 +187,14 @@ OpenAPI_qos_flow_setup_item_t *OpenAPI_qos_flow_setup_item_parseFromJSON(cJSON *
     associated_an_typeVariable = OpenAPI_qos_flow_access_type_FromString(associated_an_type->valuestring);
     }
 
+    default_qos_rule_ind = cJSON_GetObjectItemCaseSensitive(qos_flow_setup_itemJSON, "defaultQosRuleInd");
+    if (default_qos_rule_ind) {
+    if (!cJSON_IsBool(default_qos_rule_ind)) {
+        ogs_error("OpenAPI_qos_flow_setup_item_parseFromJSON() failed [default_qos_rule_ind]");
+        goto end;
+    }
+    }
+
     qos_flow_setup_item_local_var = OpenAPI_qos_flow_setup_item_create (
         
         qfi->valuedouble,
@@ -183,7 +203,9 @@ OpenAPI_qos_flow_setup_item_t *OpenAPI_qos_flow_setup_item_parseFromJSON(cJSON *
         ebi ? ebi->valuedouble : 0,
         qos_flow_description && !cJSON_IsNull(qos_flow_description) ? ogs_strdup(qos_flow_description->valuestring) : NULL,
         qos_flow_profile ? qos_flow_profile_local_nonprim : NULL,
-        associated_an_type ? associated_an_typeVariable : 0
+        associated_an_type ? associated_an_typeVariable : 0,
+        default_qos_rule_ind ? true : false,
+        default_qos_rule_ind ? default_qos_rule_ind->valueint : 0
     );
 
     return qos_flow_setup_item_local_var;

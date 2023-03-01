@@ -6,7 +6,7 @@
 
 OpenAPI_atom_t *OpenAPI_atom_create(
     char *attr,
-    char *value,
+    OpenAPI_any_type_t *value,
     bool is_negative,
     int negative
 )
@@ -34,7 +34,7 @@ void OpenAPI_atom_free(OpenAPI_atom_t *atom)
         atom->attr = NULL;
     }
     if (atom->value) {
-        ogs_free(atom->value);
+        OpenAPI_any_type_free(atom->value);
         atom->value = NULL;
     }
     ogs_free(atom);
@@ -64,7 +64,13 @@ cJSON *OpenAPI_atom_convertToJSON(OpenAPI_atom_t *atom)
         ogs_error("OpenAPI_atom_convertToJSON() failed [value]");
         return NULL;
     }
-    if (cJSON_AddStringToObject(item, "value", atom->value) == NULL) {
+    cJSON *value_object = OpenAPI_any_type_convertToJSON(atom->value);
+    if (value_object == NULL) {
+        ogs_error("OpenAPI_atom_convertToJSON() failed [value]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "value", value_object);
+    if (item->child == NULL) {
         ogs_error("OpenAPI_atom_convertToJSON() failed [value]");
         goto end;
     }
@@ -86,6 +92,7 @@ OpenAPI_atom_t *OpenAPI_atom_parseFromJSON(cJSON *atomJSON)
     OpenAPI_lnode_t *node = NULL;
     cJSON *attr = NULL;
     cJSON *value = NULL;
+    OpenAPI_any_type_t *value_local_object = NULL;
     cJSON *negative = NULL;
     attr = cJSON_GetObjectItemCaseSensitive(atomJSON, "attr");
     if (!attr) {
@@ -102,10 +109,7 @@ OpenAPI_atom_t *OpenAPI_atom_parseFromJSON(cJSON *atomJSON)
         ogs_error("OpenAPI_atom_parseFromJSON() failed [value]");
         goto end;
     }
-    if (!cJSON_IsString(value)) {
-        ogs_error("OpenAPI_atom_parseFromJSON() failed [value]");
-        goto end;
-    }
+    value_local_object = OpenAPI_any_type_parseFromJSON(value);
 
     negative = cJSON_GetObjectItemCaseSensitive(atomJSON, "negative");
     if (negative) {
@@ -117,13 +121,17 @@ OpenAPI_atom_t *OpenAPI_atom_parseFromJSON(cJSON *atomJSON)
 
     atom_local_var = OpenAPI_atom_create (
         ogs_strdup(attr->valuestring),
-        ogs_strdup(value->valuestring),
+        value_local_object,
         negative ? true : false,
         negative ? negative->valueint : 0
     );
 
     return atom_local_var;
 end:
+    if (value_local_object) {
+        OpenAPI_any_type_free(value_local_object);
+        value_local_object = NULL;
+    }
     return NULL;
 }
 

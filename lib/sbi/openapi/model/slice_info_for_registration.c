@@ -14,7 +14,13 @@ OpenAPI_slice_info_for_registration_t *OpenAPI_slice_info_for_registration_creat
     int default_configured_snssai_ind,
     OpenAPI_list_t *mapping_of_nssai,
     bool is_request_mapping,
-    int request_mapping
+    int request_mapping,
+    bool is_ue_sup_nssrg_ind,
+    int ue_sup_nssrg_ind,
+    bool is_suppress_nssrg_ind,
+    int suppress_nssrg_ind,
+    bool is_nsag_supported,
+    int nsag_supported
 )
 {
     OpenAPI_slice_info_for_registration_t *slice_info_for_registration_local_var = ogs_malloc(sizeof(OpenAPI_slice_info_for_registration_t));
@@ -30,6 +36,12 @@ OpenAPI_slice_info_for_registration_t *OpenAPI_slice_info_for_registration_creat
     slice_info_for_registration_local_var->mapping_of_nssai = mapping_of_nssai;
     slice_info_for_registration_local_var->is_request_mapping = is_request_mapping;
     slice_info_for_registration_local_var->request_mapping = request_mapping;
+    slice_info_for_registration_local_var->is_ue_sup_nssrg_ind = is_ue_sup_nssrg_ind;
+    slice_info_for_registration_local_var->ue_sup_nssrg_ind = ue_sup_nssrg_ind;
+    slice_info_for_registration_local_var->is_suppress_nssrg_ind = is_suppress_nssrg_ind;
+    slice_info_for_registration_local_var->suppress_nssrg_ind = suppress_nssrg_ind;
+    slice_info_for_registration_local_var->is_nsag_supported = is_nsag_supported;
+    slice_info_for_registration_local_var->nsag_supported = nsag_supported;
 
     return slice_info_for_registration_local_var;
 }
@@ -195,6 +207,27 @@ cJSON *OpenAPI_slice_info_for_registration_convertToJSON(OpenAPI_slice_info_for_
     }
     }
 
+    if (slice_info_for_registration->is_ue_sup_nssrg_ind) {
+    if (cJSON_AddBoolToObject(item, "ueSupNssrgInd", slice_info_for_registration->ue_sup_nssrg_ind) == NULL) {
+        ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [ue_sup_nssrg_ind]");
+        goto end;
+    }
+    }
+
+    if (slice_info_for_registration->is_suppress_nssrg_ind) {
+    if (cJSON_AddBoolToObject(item, "suppressNssrgInd", slice_info_for_registration->suppress_nssrg_ind) == NULL) {
+        ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [suppress_nssrg_ind]");
+        goto end;
+    }
+    }
+
+    if (slice_info_for_registration->is_nsag_supported) {
+    if (cJSON_AddBoolToObject(item, "nsagSupported", slice_info_for_registration->nsag_supported) == NULL) {
+        ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [nsag_supported]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -217,6 +250,9 @@ OpenAPI_slice_info_for_registration_t *OpenAPI_slice_info_for_registration_parse
     cJSON *mapping_of_nssai = NULL;
     OpenAPI_list_t *mapping_of_nssaiList = NULL;
     cJSON *request_mapping = NULL;
+    cJSON *ue_sup_nssrg_ind = NULL;
+    cJSON *suppress_nssrg_ind = NULL;
+    cJSON *nsag_supported = NULL;
     subscribed_nssai = cJSON_GetObjectItemCaseSensitive(slice_info_for_registrationJSON, "subscribedNssai");
     if (subscribed_nssai) {
         cJSON *subscribed_nssai_local = NULL;
@@ -343,6 +379,30 @@ OpenAPI_slice_info_for_registration_t *OpenAPI_slice_info_for_registration_parse
     }
     }
 
+    ue_sup_nssrg_ind = cJSON_GetObjectItemCaseSensitive(slice_info_for_registrationJSON, "ueSupNssrgInd");
+    if (ue_sup_nssrg_ind) {
+    if (!cJSON_IsBool(ue_sup_nssrg_ind)) {
+        ogs_error("OpenAPI_slice_info_for_registration_parseFromJSON() failed [ue_sup_nssrg_ind]");
+        goto end;
+    }
+    }
+
+    suppress_nssrg_ind = cJSON_GetObjectItemCaseSensitive(slice_info_for_registrationJSON, "suppressNssrgInd");
+    if (suppress_nssrg_ind) {
+    if (!cJSON_IsBool(suppress_nssrg_ind)) {
+        ogs_error("OpenAPI_slice_info_for_registration_parseFromJSON() failed [suppress_nssrg_ind]");
+        goto end;
+    }
+    }
+
+    nsag_supported = cJSON_GetObjectItemCaseSensitive(slice_info_for_registrationJSON, "nsagSupported");
+    if (nsag_supported) {
+    if (!cJSON_IsBool(nsag_supported)) {
+        ogs_error("OpenAPI_slice_info_for_registration_parseFromJSON() failed [nsag_supported]");
+        goto end;
+    }
+    }
+
     slice_info_for_registration_local_var = OpenAPI_slice_info_for_registration_create (
         subscribed_nssai ? subscribed_nssaiList : NULL,
         allowed_nssai_current_access ? allowed_nssai_current_access_local_nonprim : NULL,
@@ -353,7 +413,13 @@ OpenAPI_slice_info_for_registration_t *OpenAPI_slice_info_for_registration_parse
         default_configured_snssai_ind ? default_configured_snssai_ind->valueint : 0,
         mapping_of_nssai ? mapping_of_nssaiList : NULL,
         request_mapping ? true : false,
-        request_mapping ? request_mapping->valueint : 0
+        request_mapping ? request_mapping->valueint : 0,
+        ue_sup_nssrg_ind ? true : false,
+        ue_sup_nssrg_ind ? ue_sup_nssrg_ind->valueint : 0,
+        suppress_nssrg_ind ? true : false,
+        suppress_nssrg_ind ? suppress_nssrg_ind->valueint : 0,
+        nsag_supported ? true : false,
+        nsag_supported ? nsag_supported->valueint : 0
     );
 
     return slice_info_for_registration_local_var;

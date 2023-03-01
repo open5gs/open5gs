@@ -1,7 +1,7 @@
 /*
  * pdu_session_create_error.h
  *
- * 
+ * Error within Create Response
  */
 
 #ifndef _OpenAPI_pdu_session_create_error_H_

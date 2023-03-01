@@ -12,7 +12,9 @@ OpenAPI_amf_info_t *OpenAPI_amf_info_create(
     OpenAPI_list_t *tai_range_list,
     OpenAPI_list_t *backup_info_amf_failure,
     OpenAPI_list_t *backup_info_amf_removal,
-    OpenAPI_n2_interface_amf_info_t *n2_interface_amf_info
+    OpenAPI_n2_interface_amf_info_t *n2_interface_amf_info,
+    bool is_amf_onboarding_capability,
+    int amf_onboarding_capability
 )
 {
     OpenAPI_amf_info_t *amf_info_local_var = ogs_malloc(sizeof(OpenAPI_amf_info_t));
@@ -26,6 +28,8 @@ OpenAPI_amf_info_t *OpenAPI_amf_info_create(
     amf_info_local_var->backup_info_amf_failure = backup_info_amf_failure;
     amf_info_local_var->backup_info_amf_removal = backup_info_amf_removal;
     amf_info_local_var->n2_interface_amf_info = n2_interface_amf_info;
+    amf_info_local_var->is_amf_onboarding_capability = is_amf_onboarding_capability;
+    amf_info_local_var->amf_onboarding_capability = amf_onboarding_capability;
 
     return amf_info_local_var;
 }
@@ -211,6 +215,13 @@ cJSON *OpenAPI_amf_info_convertToJSON(OpenAPI_amf_info_t *amf_info)
     }
     }
 
+    if (amf_info->is_amf_onboarding_capability) {
+    if (cJSON_AddBoolToObject(item, "amfOnboardingCapability", amf_info->amf_onboarding_capability) == NULL) {
+        ogs_error("OpenAPI_amf_info_convertToJSON() failed [amf_onboarding_capability]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -233,6 +244,7 @@ OpenAPI_amf_info_t *OpenAPI_amf_info_parseFromJSON(cJSON *amf_infoJSON)
     OpenAPI_list_t *backup_info_amf_removalList = NULL;
     cJSON *n2_interface_amf_info = NULL;
     OpenAPI_n2_interface_amf_info_t *n2_interface_amf_info_local_nonprim = NULL;
+    cJSON *amf_onboarding_capability = NULL;
     amf_set_id = cJSON_GetObjectItemCaseSensitive(amf_infoJSON, "amfSetId");
     if (!amf_set_id) {
         ogs_error("OpenAPI_amf_info_parseFromJSON() failed [amf_set_id]");
@@ -385,6 +397,14 @@ OpenAPI_amf_info_t *OpenAPI_amf_info_parseFromJSON(cJSON *amf_infoJSON)
     n2_interface_amf_info_local_nonprim = OpenAPI_n2_interface_amf_info_parseFromJSON(n2_interface_amf_info);
     }
 
+    amf_onboarding_capability = cJSON_GetObjectItemCaseSensitive(amf_infoJSON, "amfOnboardingCapability");
+    if (amf_onboarding_capability) {
+    if (!cJSON_IsBool(amf_onboarding_capability)) {
+        ogs_error("OpenAPI_amf_info_parseFromJSON() failed [amf_onboarding_capability]");
+        goto end;
+    }
+    }
+
     amf_info_local_var = OpenAPI_amf_info_create (
         ogs_strdup(amf_set_id->valuestring),
         ogs_strdup(amf_region_id->valuestring),
@@ -393,7 +413,9 @@ OpenAPI_amf_info_t *OpenAPI_amf_info_parseFromJSON(cJSON *amf_infoJSON)
         tai_range_list ? tai_range_listList : NULL,
         backup_info_amf_failure ? backup_info_amf_failureList : NULL,
         backup_info_amf_removal ? backup_info_amf_removalList : NULL,
-        n2_interface_amf_info ? n2_interface_amf_info_local_nonprim : NULL
+        n2_interface_amf_info ? n2_interface_amf_info_local_nonprim : NULL,
+        amf_onboarding_capability ? true : false,
+        amf_onboarding_capability ? amf_onboarding_capability->valueint : 0
     );
 
     return amf_info_local_var;

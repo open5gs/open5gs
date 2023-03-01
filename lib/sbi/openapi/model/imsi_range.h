@@ -1,7 +1,7 @@
 /*
  * imsi_range.h
  *
- * A range of IMSIs (subscriber identities), either based on a numeric range, or based on regular-expression matching
+ * A range of IMSIs (subscriber identities), either based on a numeric range, or based on regular-expression matching 
  */
 
 #ifndef _OpenAPI_imsi_range_H_

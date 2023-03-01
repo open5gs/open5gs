@@ -14,6 +14,7 @@
 #include "../include/binary.h"
 #include "data_set_id.h"
 #include "identity_range.h"
+#include "shared_data_id_range.h"
 #include "supi_range.h"
 
 #ifdef __cplusplus
@@ -27,6 +28,7 @@ typedef struct OpenAPI_udr_info_s {
     OpenAPI_list_t *gpsi_ranges;
     OpenAPI_list_t *external_group_identifiers_ranges;
     OpenAPI_list_t *supported_data_sets;
+    OpenAPI_list_t *shared_data_id_ranges;
 } OpenAPI_udr_info_t;
 
 OpenAPI_udr_info_t *OpenAPI_udr_info_create(
@@ -34,7 +36,8 @@ OpenAPI_udr_info_t *OpenAPI_udr_info_create(
     OpenAPI_list_t *supi_ranges,
     OpenAPI_list_t *gpsi_ranges,
     OpenAPI_list_t *external_group_identifiers_ranges,
-    OpenAPI_list_t *supported_data_sets
+    OpenAPI_list_t *supported_data_sets,
+    OpenAPI_list_t *shared_data_id_ranges
 );
 void OpenAPI_udr_info_free(OpenAPI_udr_info_t *udr_info);
 OpenAPI_udr_info_t *OpenAPI_udr_info_parseFromJSON(cJSON *udr_infoJSON);

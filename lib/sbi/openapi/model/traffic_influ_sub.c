@@ -11,7 +11,8 @@ OpenAPI_traffic_influ_sub_t *OpenAPI_traffic_influ_sub_create(
     OpenAPI_list_t *supis,
     char *notification_uri,
     char *expiry,
-    char *supported_features
+    char *supported_features,
+    OpenAPI_list_t *reset_ids
 )
 {
     OpenAPI_traffic_influ_sub_t *traffic_influ_sub_local_var = ogs_malloc(sizeof(OpenAPI_traffic_influ_sub_t));
@@ -24,6 +25,7 @@ OpenAPI_traffic_influ_sub_t *OpenAPI_traffic_influ_sub_create(
     traffic_influ_sub_local_var->notification_uri = notification_uri;
     traffic_influ_sub_local_var->expiry = expiry;
     traffic_influ_sub_local_var->supported_features = supported_features;
+    traffic_influ_sub_local_var->reset_ids = reset_ids;
 
     return traffic_influ_sub_local_var;
 }
@@ -74,6 +76,13 @@ void OpenAPI_traffic_influ_sub_free(OpenAPI_traffic_influ_sub_t *traffic_influ_s
     if (traffic_influ_sub->supported_features) {
         ogs_free(traffic_influ_sub->supported_features);
         traffic_influ_sub->supported_features = NULL;
+    }
+    if (traffic_influ_sub->reset_ids) {
+        OpenAPI_list_for_each(traffic_influ_sub->reset_ids, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(traffic_influ_sub->reset_ids);
+        traffic_influ_sub->reset_ids = NULL;
     }
     ogs_free(traffic_influ_sub);
 }
@@ -170,6 +179,20 @@ cJSON *OpenAPI_traffic_influ_sub_convertToJSON(OpenAPI_traffic_influ_sub_t *traf
     }
     }
 
+    if (traffic_influ_sub->reset_ids) {
+    cJSON *reset_idsList = cJSON_AddArrayToObject(item, "resetIds");
+    if (reset_idsList == NULL) {
+        ogs_error("OpenAPI_traffic_influ_sub_convertToJSON() failed [reset_ids]");
+        goto end;
+    }
+    OpenAPI_list_for_each(traffic_influ_sub->reset_ids, node) {
+        if (cJSON_AddStringToObject(reset_idsList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_traffic_influ_sub_convertToJSON() failed [reset_ids]");
+            goto end;
+        }
+    }
+    }
+
 end:
     return item;
 }
@@ -189,6 +212,8 @@ OpenAPI_traffic_influ_sub_t *OpenAPI_traffic_influ_sub_parseFromJSON(cJSON *traf
     cJSON *notification_uri = NULL;
     cJSON *expiry = NULL;
     cJSON *supported_features = NULL;
+    cJSON *reset_ids = NULL;
+    OpenAPI_list_t *reset_idsList = NULL;
     dnns = cJSON_GetObjectItemCaseSensitive(traffic_influ_subJSON, "dnns");
     if (dnns) {
         cJSON *dnns_local = NULL;
@@ -303,6 +328,27 @@ OpenAPI_traffic_influ_sub_t *OpenAPI_traffic_influ_sub_parseFromJSON(cJSON *traf
     }
     }
 
+    reset_ids = cJSON_GetObjectItemCaseSensitive(traffic_influ_subJSON, "resetIds");
+    if (reset_ids) {
+        cJSON *reset_ids_local = NULL;
+        if (!cJSON_IsArray(reset_ids)) {
+            ogs_error("OpenAPI_traffic_influ_sub_parseFromJSON() failed [reset_ids]");
+            goto end;
+        }
+
+        reset_idsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(reset_ids_local, reset_ids) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(reset_ids_local)) {
+                ogs_error("OpenAPI_traffic_influ_sub_parseFromJSON() failed [reset_ids]");
+                goto end;
+            }
+            OpenAPI_list_add(reset_idsList, ogs_strdup(reset_ids_local->valuestring));
+        }
+    }
+
     traffic_influ_sub_local_var = OpenAPI_traffic_influ_sub_create (
         dnns ? dnnsList : NULL,
         snssais ? snssaisList : NULL,
@@ -310,7 +356,8 @@ OpenAPI_traffic_influ_sub_t *OpenAPI_traffic_influ_sub_parseFromJSON(cJSON *traf
         supis ? supisList : NULL,
         ogs_strdup(notification_uri->valuestring),
         expiry && !cJSON_IsNull(expiry) ? ogs_strdup(expiry->valuestring) : NULL,
-        supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL
+        supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
+        reset_ids ? reset_idsList : NULL
     );
 
     return traffic_influ_sub_local_var;
@@ -342,6 +389,13 @@ end:
         }
         OpenAPI_list_free(supisList);
         supisList = NULL;
+    }
+    if (reset_idsList) {
+        OpenAPI_list_for_each(reset_idsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(reset_idsList);
+        reset_idsList = NULL;
     }
     return NULL;
 }

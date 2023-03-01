@@ -1,7 +1,7 @@
 /*
  * sm_context_create_error.h
  *
- * 
+ * Error within Create SM Context Response
  */
 
 #ifndef _OpenAPI_sm_context_create_error_H_

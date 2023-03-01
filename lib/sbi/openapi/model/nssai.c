@@ -9,7 +9,9 @@ OpenAPI_nssai_t *OpenAPI_nssai_create(
     OpenAPI_list_t *default_single_nssais,
     OpenAPI_list_t *single_nssais,
     char *provisioning_time,
-    OpenAPI_list_t* additional_snssai_data
+    OpenAPI_list_t* additional_snssai_data,
+    bool is_suppress_nssrg_ind,
+    int suppress_nssrg_ind
 )
 {
     OpenAPI_nssai_t *nssai_local_var = ogs_malloc(sizeof(OpenAPI_nssai_t));
@@ -20,6 +22,8 @@ OpenAPI_nssai_t *OpenAPI_nssai_create(
     nssai_local_var->single_nssais = single_nssais;
     nssai_local_var->provisioning_time = provisioning_time;
     nssai_local_var->additional_snssai_data = additional_snssai_data;
+    nssai_local_var->is_suppress_nssrg_ind = is_suppress_nssrg_ind;
+    nssai_local_var->suppress_nssrg_ind = suppress_nssrg_ind;
 
     return nssai_local_var;
 }
@@ -147,6 +151,13 @@ cJSON *OpenAPI_nssai_convertToJSON(OpenAPI_nssai_t *nssai)
     }
     }
 
+    if (nssai->is_suppress_nssrg_ind) {
+    if (cJSON_AddBoolToObject(item, "suppressNssrgInd", nssai->suppress_nssrg_ind) == NULL) {
+        ogs_error("OpenAPI_nssai_convertToJSON() failed [suppress_nssrg_ind]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -163,6 +174,7 @@ OpenAPI_nssai_t *OpenAPI_nssai_parseFromJSON(cJSON *nssaiJSON)
     cJSON *provisioning_time = NULL;
     cJSON *additional_snssai_data = NULL;
     OpenAPI_list_t *additional_snssai_dataList = NULL;
+    cJSON *suppress_nssrg_ind = NULL;
     supported_features = cJSON_GetObjectItemCaseSensitive(nssaiJSON, "supportedFeatures");
     if (supported_features) {
     if (!cJSON_IsString(supported_features) && !cJSON_IsNull(supported_features)) {
@@ -257,12 +269,22 @@ OpenAPI_nssai_t *OpenAPI_nssai_parseFromJSON(cJSON *nssaiJSON)
         }
     }
 
+    suppress_nssrg_ind = cJSON_GetObjectItemCaseSensitive(nssaiJSON, "suppressNssrgInd");
+    if (suppress_nssrg_ind) {
+    if (!cJSON_IsBool(suppress_nssrg_ind)) {
+        ogs_error("OpenAPI_nssai_parseFromJSON() failed [suppress_nssrg_ind]");
+        goto end;
+    }
+    }
+
     nssai_local_var = OpenAPI_nssai_create (
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
         default_single_nssaisList,
         single_nssais ? single_nssaisList : NULL,
         provisioning_time && !cJSON_IsNull(provisioning_time) ? ogs_strdup(provisioning_time->valuestring) : NULL,
-        additional_snssai_data ? additional_snssai_dataList : NULL
+        additional_snssai_data ? additional_snssai_dataList : NULL,
+        suppress_nssrg_ind ? true : false,
+        suppress_nssrg_ind ? suppress_nssrg_ind->valueint : 0
     );
 
     return nssai_local_var;

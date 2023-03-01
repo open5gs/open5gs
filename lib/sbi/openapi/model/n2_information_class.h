@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_n2_information_class_NULL = 0, OpenAPI_n2_information_class_SM, OpenAPI_n2_information_class_NRPPa, OpenAPI_n2_information_class_PWS, OpenAPI_n2_information_class_PWS_BCAL, OpenAPI_n2_information_class_PWS_RF, OpenAPI_n2_information_class_RAN, OpenAPI_n2_information_class_V2X } OpenAPI_n2_information_class_e;
+typedef enum { OpenAPI_n2_information_class_NULL = 0, OpenAPI_n2_information_class_SM, OpenAPI_n2_information_class_NRPPa, OpenAPI_n2_information_class_PWS, OpenAPI_n2_information_class_PWS_BCAL, OpenAPI_n2_information_class_PWS_RF, OpenAPI_n2_information_class_RAN, OpenAPI_n2_information_class_V2X, OpenAPI_n2_information_class_PROSE } OpenAPI_n2_information_class_e;
 
 char* OpenAPI_n2_information_class_ToString(OpenAPI_n2_information_class_e n2_information_class);
 

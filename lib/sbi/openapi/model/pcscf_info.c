@@ -10,6 +10,9 @@ OpenAPI_pcscf_info_t *OpenAPI_pcscf_info_create(
     char *gm_fqdn,
     OpenAPI_list_t *gm_ipv4_addresses,
     OpenAPI_list_t *gm_ipv6_addresses,
+    char *mw_fqdn,
+    OpenAPI_list_t *mw_ipv4_addresses,
+    OpenAPI_list_t *mw_ipv6_addresses,
     OpenAPI_list_t *served_ipv4_address_ranges,
     OpenAPI_list_t *served_ipv6_prefix_ranges
 )
@@ -22,6 +25,9 @@ OpenAPI_pcscf_info_t *OpenAPI_pcscf_info_create(
     pcscf_info_local_var->gm_fqdn = gm_fqdn;
     pcscf_info_local_var->gm_ipv4_addresses = gm_ipv4_addresses;
     pcscf_info_local_var->gm_ipv6_addresses = gm_ipv6_addresses;
+    pcscf_info_local_var->mw_fqdn = mw_fqdn;
+    pcscf_info_local_var->mw_ipv4_addresses = mw_ipv4_addresses;
+    pcscf_info_local_var->mw_ipv6_addresses = mw_ipv6_addresses;
     pcscf_info_local_var->served_ipv4_address_ranges = served_ipv4_address_ranges;
     pcscf_info_local_var->served_ipv6_prefix_ranges = served_ipv6_prefix_ranges;
 
@@ -63,6 +69,24 @@ void OpenAPI_pcscf_info_free(OpenAPI_pcscf_info_t *pcscf_info)
         }
         OpenAPI_list_free(pcscf_info->gm_ipv6_addresses);
         pcscf_info->gm_ipv6_addresses = NULL;
+    }
+    if (pcscf_info->mw_fqdn) {
+        ogs_free(pcscf_info->mw_fqdn);
+        pcscf_info->mw_fqdn = NULL;
+    }
+    if (pcscf_info->mw_ipv4_addresses) {
+        OpenAPI_list_for_each(pcscf_info->mw_ipv4_addresses, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(pcscf_info->mw_ipv4_addresses);
+        pcscf_info->mw_ipv4_addresses = NULL;
+    }
+    if (pcscf_info->mw_ipv6_addresses) {
+        OpenAPI_list_for_each(pcscf_info->mw_ipv6_addresses, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(pcscf_info->mw_ipv6_addresses);
+        pcscf_info->mw_ipv6_addresses = NULL;
     }
     if (pcscf_info->served_ipv4_address_ranges) {
         OpenAPI_list_for_each(pcscf_info->served_ipv4_address_ranges, node) {
@@ -155,6 +179,41 @@ cJSON *OpenAPI_pcscf_info_convertToJSON(OpenAPI_pcscf_info_t *pcscf_info)
     }
     }
 
+    if (pcscf_info->mw_fqdn) {
+    if (cJSON_AddStringToObject(item, "mwFqdn", pcscf_info->mw_fqdn) == NULL) {
+        ogs_error("OpenAPI_pcscf_info_convertToJSON() failed [mw_fqdn]");
+        goto end;
+    }
+    }
+
+    if (pcscf_info->mw_ipv4_addresses) {
+    cJSON *mw_ipv4_addressesList = cJSON_AddArrayToObject(item, "mwIpv4Addresses");
+    if (mw_ipv4_addressesList == NULL) {
+        ogs_error("OpenAPI_pcscf_info_convertToJSON() failed [mw_ipv4_addresses]");
+        goto end;
+    }
+    OpenAPI_list_for_each(pcscf_info->mw_ipv4_addresses, node) {
+        if (cJSON_AddStringToObject(mw_ipv4_addressesList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_pcscf_info_convertToJSON() failed [mw_ipv4_addresses]");
+            goto end;
+        }
+    }
+    }
+
+    if (pcscf_info->mw_ipv6_addresses) {
+    cJSON *mw_ipv6_addressesList = cJSON_AddArrayToObject(item, "mwIpv6Addresses");
+    if (mw_ipv6_addressesList == NULL) {
+        ogs_error("OpenAPI_pcscf_info_convertToJSON() failed [mw_ipv6_addresses]");
+        goto end;
+    }
+    OpenAPI_list_for_each(pcscf_info->mw_ipv6_addresses, node) {
+        if (cJSON_AddStringToObject(mw_ipv6_addressesList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_pcscf_info_convertToJSON() failed [mw_ipv6_addresses]");
+            goto end;
+        }
+    }
+    }
+
     if (pcscf_info->served_ipv4_address_ranges) {
     cJSON *served_ipv4_address_rangesList = cJSON_AddArrayToObject(item, "servedIpv4AddressRanges");
     if (served_ipv4_address_rangesList == NULL) {
@@ -204,6 +263,11 @@ OpenAPI_pcscf_info_t *OpenAPI_pcscf_info_parseFromJSON(cJSON *pcscf_infoJSON)
     OpenAPI_list_t *gm_ipv4_addressesList = NULL;
     cJSON *gm_ipv6_addresses = NULL;
     OpenAPI_list_t *gm_ipv6_addressesList = NULL;
+    cJSON *mw_fqdn = NULL;
+    cJSON *mw_ipv4_addresses = NULL;
+    OpenAPI_list_t *mw_ipv4_addressesList = NULL;
+    cJSON *mw_ipv6_addresses = NULL;
+    OpenAPI_list_t *mw_ipv6_addressesList = NULL;
     cJSON *served_ipv4_address_ranges = NULL;
     OpenAPI_list_t *served_ipv4_address_rangesList = NULL;
     cJSON *served_ipv6_prefix_ranges = NULL;
@@ -298,6 +362,56 @@ OpenAPI_pcscf_info_t *OpenAPI_pcscf_info_parseFromJSON(cJSON *pcscf_infoJSON)
         }
     }
 
+    mw_fqdn = cJSON_GetObjectItemCaseSensitive(pcscf_infoJSON, "mwFqdn");
+    if (mw_fqdn) {
+    if (!cJSON_IsString(mw_fqdn) && !cJSON_IsNull(mw_fqdn)) {
+        ogs_error("OpenAPI_pcscf_info_parseFromJSON() failed [mw_fqdn]");
+        goto end;
+    }
+    }
+
+    mw_ipv4_addresses = cJSON_GetObjectItemCaseSensitive(pcscf_infoJSON, "mwIpv4Addresses");
+    if (mw_ipv4_addresses) {
+        cJSON *mw_ipv4_addresses_local = NULL;
+        if (!cJSON_IsArray(mw_ipv4_addresses)) {
+            ogs_error("OpenAPI_pcscf_info_parseFromJSON() failed [mw_ipv4_addresses]");
+            goto end;
+        }
+
+        mw_ipv4_addressesList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(mw_ipv4_addresses_local, mw_ipv4_addresses) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(mw_ipv4_addresses_local)) {
+                ogs_error("OpenAPI_pcscf_info_parseFromJSON() failed [mw_ipv4_addresses]");
+                goto end;
+            }
+            OpenAPI_list_add(mw_ipv4_addressesList, ogs_strdup(mw_ipv4_addresses_local->valuestring));
+        }
+    }
+
+    mw_ipv6_addresses = cJSON_GetObjectItemCaseSensitive(pcscf_infoJSON, "mwIpv6Addresses");
+    if (mw_ipv6_addresses) {
+        cJSON *mw_ipv6_addresses_local = NULL;
+        if (!cJSON_IsArray(mw_ipv6_addresses)) {
+            ogs_error("OpenAPI_pcscf_info_parseFromJSON() failed [mw_ipv6_addresses]");
+            goto end;
+        }
+
+        mw_ipv6_addressesList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(mw_ipv6_addresses_local, mw_ipv6_addresses) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(mw_ipv6_addresses_local)) {
+                ogs_error("OpenAPI_pcscf_info_parseFromJSON() failed [mw_ipv6_addresses]");
+                goto end;
+            }
+            OpenAPI_list_add(mw_ipv6_addressesList, ogs_strdup(mw_ipv6_addresses_local->valuestring));
+        }
+    }
+
     served_ipv4_address_ranges = cJSON_GetObjectItemCaseSensitive(pcscf_infoJSON, "servedIpv4AddressRanges");
     if (served_ipv4_address_ranges) {
         cJSON *served_ipv4_address_ranges_local = NULL;
@@ -354,6 +468,9 @@ OpenAPI_pcscf_info_t *OpenAPI_pcscf_info_parseFromJSON(cJSON *pcscf_infoJSON)
         gm_fqdn && !cJSON_IsNull(gm_fqdn) ? ogs_strdup(gm_fqdn->valuestring) : NULL,
         gm_ipv4_addresses ? gm_ipv4_addressesList : NULL,
         gm_ipv6_addresses ? gm_ipv6_addressesList : NULL,
+        mw_fqdn && !cJSON_IsNull(mw_fqdn) ? ogs_strdup(mw_fqdn->valuestring) : NULL,
+        mw_ipv4_addresses ? mw_ipv4_addressesList : NULL,
+        mw_ipv6_addresses ? mw_ipv6_addressesList : NULL,
         served_ipv4_address_ranges ? served_ipv4_address_rangesList : NULL,
         served_ipv6_prefix_ranges ? served_ipv6_prefix_rangesList : NULL
     );
@@ -384,6 +501,20 @@ end:
         }
         OpenAPI_list_free(gm_ipv6_addressesList);
         gm_ipv6_addressesList = NULL;
+    }
+    if (mw_ipv4_addressesList) {
+        OpenAPI_list_for_each(mw_ipv4_addressesList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(mw_ipv4_addressesList);
+        mw_ipv4_addressesList = NULL;
+    }
+    if (mw_ipv6_addressesList) {
+        OpenAPI_list_for_each(mw_ipv6_addressesList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(mw_ipv6_addressesList);
+        mw_ipv6_addressesList = NULL;
     }
     if (served_ipv4_address_rangesList) {
         OpenAPI_list_for_each(served_ipv4_address_rangesList, node) {

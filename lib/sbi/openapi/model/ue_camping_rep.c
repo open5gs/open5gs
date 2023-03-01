@@ -11,7 +11,8 @@ OpenAPI_ue_camping_rep_t *OpenAPI_ue_camping_rep_create(
     OpenAPI_plmn_id_nid_t *serving_network,
     OpenAPI_user_location_t *user_location_info,
     char *ue_time_zone,
-    OpenAPI_net_loc_access_support_e net_loc_acc_supp
+    OpenAPI_net_loc_access_support_e net_loc_acc_supp,
+    OpenAPI_satellite_backhaul_category_e sat_backhaul_category
 )
 {
     OpenAPI_ue_camping_rep_t *ue_camping_rep_local_var = ogs_malloc(sizeof(OpenAPI_ue_camping_rep_t));
@@ -24,6 +25,7 @@ OpenAPI_ue_camping_rep_t *OpenAPI_ue_camping_rep_create(
     ue_camping_rep_local_var->user_location_info = user_location_info;
     ue_camping_rep_local_var->ue_time_zone = ue_time_zone;
     ue_camping_rep_local_var->net_loc_acc_supp = net_loc_acc_supp;
+    ue_camping_rep_local_var->sat_backhaul_category = sat_backhaul_category;
 
     return ue_camping_rep_local_var;
 }
@@ -132,6 +134,13 @@ cJSON *OpenAPI_ue_camping_rep_convertToJSON(OpenAPI_ue_camping_rep_t *ue_camping
     }
     }
 
+    if (ue_camping_rep->sat_backhaul_category != OpenAPI_satellite_backhaul_category_NULL) {
+    if (cJSON_AddStringToObject(item, "satBackhaulCategory", OpenAPI_satellite_backhaul_category_ToString(ue_camping_rep->sat_backhaul_category)) == NULL) {
+        ogs_error("OpenAPI_ue_camping_rep_convertToJSON() failed [sat_backhaul_category]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -153,6 +162,8 @@ OpenAPI_ue_camping_rep_t *OpenAPI_ue_camping_rep_parseFromJSON(cJSON *ue_camping
     cJSON *ue_time_zone = NULL;
     cJSON *net_loc_acc_supp = NULL;
     OpenAPI_net_loc_access_support_e net_loc_acc_suppVariable = 0;
+    cJSON *sat_backhaul_category = NULL;
+    OpenAPI_satellite_backhaul_category_e sat_backhaul_categoryVariable = 0;
     access_type = cJSON_GetObjectItemCaseSensitive(ue_camping_repJSON, "accessType");
     if (access_type) {
     if (!cJSON_IsString(access_type)) {
@@ -203,6 +214,15 @@ OpenAPI_ue_camping_rep_t *OpenAPI_ue_camping_rep_parseFromJSON(cJSON *ue_camping
     net_loc_acc_suppVariable = OpenAPI_net_loc_access_support_FromString(net_loc_acc_supp->valuestring);
     }
 
+    sat_backhaul_category = cJSON_GetObjectItemCaseSensitive(ue_camping_repJSON, "satBackhaulCategory");
+    if (sat_backhaul_category) {
+    if (!cJSON_IsString(sat_backhaul_category)) {
+        ogs_error("OpenAPI_ue_camping_rep_parseFromJSON() failed [sat_backhaul_category]");
+        goto end;
+    }
+    sat_backhaul_categoryVariable = OpenAPI_satellite_backhaul_category_FromString(sat_backhaul_category->valuestring);
+    }
+
     ue_camping_rep_local_var = OpenAPI_ue_camping_rep_create (
         access_type ? access_typeVariable : 0,
         rat_type ? rat_typeVariable : 0,
@@ -210,7 +230,8 @@ OpenAPI_ue_camping_rep_t *OpenAPI_ue_camping_rep_parseFromJSON(cJSON *ue_camping
         serving_network ? serving_network_local_nonprim : NULL,
         user_location_info ? user_location_info_local_nonprim : NULL,
         ue_time_zone && !cJSON_IsNull(ue_time_zone) ? ogs_strdup(ue_time_zone->valuestring) : NULL,
-        net_loc_acc_supp ? net_loc_acc_suppVariable : 0
+        net_loc_acc_supp ? net_loc_acc_suppVariable : 0,
+        sat_backhaul_category ? sat_backhaul_categoryVariable : 0
     );
 
     return ue_camping_rep_local_var;

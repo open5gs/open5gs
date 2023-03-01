@@ -31,6 +31,9 @@ typedef struct OpenAPI_events_subsc_req_data_s {
     OpenAPI_list_t *req_anis;
     struct OpenAPI_usage_threshold_s *usg_thres;
     char *notif_corre_id;
+    OpenAPI_list_t *af_app_ids;
+    bool is_direct_notif_ind;
+    int direct_notif_ind;
 } OpenAPI_events_subsc_req_data_t;
 
 OpenAPI_events_subsc_req_data_t *OpenAPI_events_subsc_req_data_create(
@@ -40,7 +43,10 @@ OpenAPI_events_subsc_req_data_t *OpenAPI_events_subsc_req_data_create(
     OpenAPI_qos_monitoring_information_t *qos_mon,
     OpenAPI_list_t *req_anis,
     OpenAPI_usage_threshold_t *usg_thres,
-    char *notif_corre_id
+    char *notif_corre_id,
+    OpenAPI_list_t *af_app_ids,
+    bool is_direct_notif_ind,
+    int direct_notif_ind
 );
 void OpenAPI_events_subsc_req_data_free(OpenAPI_events_subsc_req_data_t *events_subsc_req_data);
 OpenAPI_events_subsc_req_data_t *OpenAPI_events_subsc_req_data_parseFromJSON(cJSON *events_subsc_req_dataJSON);

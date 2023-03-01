@@ -5,13 +5,17 @@
 #include "redundant_pdu_session_information.h"
 
 OpenAPI_redundant_pdu_session_information_t *OpenAPI_redundant_pdu_session_information_create(
-    OpenAPI_rsn_e rsn
+    OpenAPI_rsn_e rsn,
+    bool is_pdu_session_pair_id,
+    int pdu_session_pair_id
 )
 {
     OpenAPI_redundant_pdu_session_information_t *redundant_pdu_session_information_local_var = ogs_malloc(sizeof(OpenAPI_redundant_pdu_session_information_t));
     ogs_assert(redundant_pdu_session_information_local_var);
 
     redundant_pdu_session_information_local_var->rsn = rsn;
+    redundant_pdu_session_information_local_var->is_pdu_session_pair_id = is_pdu_session_pair_id;
+    redundant_pdu_session_information_local_var->pdu_session_pair_id = pdu_session_pair_id;
 
     return redundant_pdu_session_information_local_var;
 }
@@ -46,6 +50,13 @@ cJSON *OpenAPI_redundant_pdu_session_information_convertToJSON(OpenAPI_redundant
         goto end;
     }
 
+    if (redundant_pdu_session_information->is_pdu_session_pair_id) {
+    if (cJSON_AddNumberToObject(item, "pduSessionPairId", redundant_pdu_session_information->pdu_session_pair_id) == NULL) {
+        ogs_error("OpenAPI_redundant_pdu_session_information_convertToJSON() failed [pdu_session_pair_id]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -56,6 +67,7 @@ OpenAPI_redundant_pdu_session_information_t *OpenAPI_redundant_pdu_session_infor
     OpenAPI_lnode_t *node = NULL;
     cJSON *rsn = NULL;
     OpenAPI_rsn_e rsnVariable = 0;
+    cJSON *pdu_session_pair_id = NULL;
     rsn = cJSON_GetObjectItemCaseSensitive(redundant_pdu_session_informationJSON, "rsn");
     if (!rsn) {
         ogs_error("OpenAPI_redundant_pdu_session_information_parseFromJSON() failed [rsn]");
@@ -67,8 +79,18 @@ OpenAPI_redundant_pdu_session_information_t *OpenAPI_redundant_pdu_session_infor
     }
     rsnVariable = OpenAPI_rsn_FromString(rsn->valuestring);
 
+    pdu_session_pair_id = cJSON_GetObjectItemCaseSensitive(redundant_pdu_session_informationJSON, "pduSessionPairId");
+    if (pdu_session_pair_id) {
+    if (!cJSON_IsNumber(pdu_session_pair_id)) {
+        ogs_error("OpenAPI_redundant_pdu_session_information_parseFromJSON() failed [pdu_session_pair_id]");
+        goto end;
+    }
+    }
+
     redundant_pdu_session_information_local_var = OpenAPI_redundant_pdu_session_information_create (
-        rsnVariable
+        rsnVariable,
+        pdu_session_pair_id ? true : false,
+        pdu_session_pair_id ? pdu_session_pair_id->valuedouble : 0
     );
 
     return redundant_pdu_session_information_local_var;

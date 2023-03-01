@@ -17,6 +17,7 @@ OpenAPI_app_session_context_req_data_t *OpenAPI_app_session_context_req_data_cre
     char *mc_video_id,
     OpenAPI_list_t* med_components,
     char *ip_domain,
+    OpenAPI_mps_action_e mps_action,
     char *mps_id,
     char *mcs_id,
     OpenAPI_preemption_control_information_e preempt_control_info,
@@ -53,6 +54,7 @@ OpenAPI_app_session_context_req_data_t *OpenAPI_app_session_context_req_data_cre
     app_session_context_req_data_local_var->mc_video_id = mc_video_id;
     app_session_context_req_data_local_var->med_components = med_components;
     app_session_context_req_data_local_var->ip_domain = ip_domain;
+    app_session_context_req_data_local_var->mps_action = mps_action;
     app_session_context_req_data_local_var->mps_id = mps_id;
     app_session_context_req_data_local_var->mcs_id = mcs_id;
     app_session_context_req_data_local_var->preempt_control_info = preempt_control_info;
@@ -321,6 +323,13 @@ cJSON *OpenAPI_app_session_context_req_data_convertToJSON(OpenAPI_app_session_co
     }
     }
 
+    if (app_session_context_req_data->mps_action != OpenAPI_mps_action_NULL) {
+    if (cJSON_AddStringToObject(item, "mpsAction", OpenAPI_mps_action_ToString(app_session_context_req_data->mps_action)) == NULL) {
+        ogs_error("OpenAPI_app_session_context_req_data_convertToJSON() failed [mps_action]");
+        goto end;
+    }
+    }
+
     if (app_session_context_req_data->mps_id) {
     if (cJSON_AddStringToObject(item, "mpsId", app_session_context_req_data->mps_id) == NULL) {
         ogs_error("OpenAPI_app_session_context_req_data_convertToJSON() failed [mps_id]");
@@ -509,6 +518,8 @@ OpenAPI_app_session_context_req_data_t *OpenAPI_app_session_context_req_data_par
     cJSON *med_components = NULL;
     OpenAPI_list_t *med_componentsList = NULL;
     cJSON *ip_domain = NULL;
+    cJSON *mps_action = NULL;
+    OpenAPI_mps_action_e mps_actionVariable = 0;
     cJSON *mps_id = NULL;
     cJSON *mcs_id = NULL;
     cJSON *preempt_control_info = NULL;
@@ -643,6 +654,15 @@ OpenAPI_app_session_context_req_data_t *OpenAPI_app_session_context_req_data_par
         ogs_error("OpenAPI_app_session_context_req_data_parseFromJSON() failed [ip_domain]");
         goto end;
     }
+    }
+
+    mps_action = cJSON_GetObjectItemCaseSensitive(app_session_context_req_dataJSON, "mpsAction");
+    if (mps_action) {
+    if (!cJSON_IsString(mps_action)) {
+        ogs_error("OpenAPI_app_session_context_req_data_parseFromJSON() failed [mps_action]");
+        goto end;
+    }
+    mps_actionVariable = OpenAPI_mps_action_FromString(mps_action->valuestring);
     }
 
     mps_id = cJSON_GetObjectItemCaseSensitive(app_session_context_req_dataJSON, "mpsId");
@@ -826,6 +846,7 @@ OpenAPI_app_session_context_req_data_t *OpenAPI_app_session_context_req_data_par
         mc_video_id && !cJSON_IsNull(mc_video_id) ? ogs_strdup(mc_video_id->valuestring) : NULL,
         med_components ? med_componentsList : NULL,
         ip_domain && !cJSON_IsNull(ip_domain) ? ogs_strdup(ip_domain->valuestring) : NULL,
+        mps_action ? mps_actionVariable : 0,
         mps_id && !cJSON_IsNull(mps_id) ? ogs_strdup(mps_id->valuestring) : NULL,
         mcs_id && !cJSON_IsNull(mcs_id) ? ogs_strdup(mcs_id->valuestring) : NULL,
         preempt_control_info ? preempt_control_infoVariable : 0,

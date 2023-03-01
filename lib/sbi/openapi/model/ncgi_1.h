@@ -1,7 +1,7 @@
 /*
  * ncgi_1.h
  *
- * 
+ * Contains the NCGI (NR Cell Global Identity), as described in 3GPP 23.003
  */
 
 #ifndef _OpenAPI_ncgi_1_H_

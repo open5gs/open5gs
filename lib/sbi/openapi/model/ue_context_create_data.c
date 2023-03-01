@@ -11,6 +11,7 @@ OpenAPI_ue_context_create_data_t *OpenAPI_ue_context_create_data_create(
     OpenAPI_list_t *pdu_session_list,
     char *n2_notify_uri,
     OpenAPI_n2_info_content_t *ue_radio_capability,
+    OpenAPI_n2_info_content_t *ue_radio_capability_for_paging,
     OpenAPI_ng_ap_cause_t *ngap_cause,
     char *supported_features,
     OpenAPI_plmn_id_nid_t *serving_network
@@ -25,6 +26,7 @@ OpenAPI_ue_context_create_data_t *OpenAPI_ue_context_create_data_create(
     ue_context_create_data_local_var->pdu_session_list = pdu_session_list;
     ue_context_create_data_local_var->n2_notify_uri = n2_notify_uri;
     ue_context_create_data_local_var->ue_radio_capability = ue_radio_capability;
+    ue_context_create_data_local_var->ue_radio_capability_for_paging = ue_radio_capability_for_paging;
     ue_context_create_data_local_var->ngap_cause = ngap_cause;
     ue_context_create_data_local_var->supported_features = supported_features;
     ue_context_create_data_local_var->serving_network = serving_network;
@@ -65,6 +67,10 @@ void OpenAPI_ue_context_create_data_free(OpenAPI_ue_context_create_data_t *ue_co
     if (ue_context_create_data->ue_radio_capability) {
         OpenAPI_n2_info_content_free(ue_context_create_data->ue_radio_capability);
         ue_context_create_data->ue_radio_capability = NULL;
+    }
+    if (ue_context_create_data->ue_radio_capability_for_paging) {
+        OpenAPI_n2_info_content_free(ue_context_create_data->ue_radio_capability_for_paging);
+        ue_context_create_data->ue_radio_capability_for_paging = NULL;
     }
     if (ue_context_create_data->ngap_cause) {
         OpenAPI_ng_ap_cause_free(ue_context_create_data->ngap_cause);
@@ -175,6 +181,19 @@ cJSON *OpenAPI_ue_context_create_data_convertToJSON(OpenAPI_ue_context_create_da
     }
     }
 
+    if (ue_context_create_data->ue_radio_capability_for_paging) {
+    cJSON *ue_radio_capability_for_paging_local_JSON = OpenAPI_n2_info_content_convertToJSON(ue_context_create_data->ue_radio_capability_for_paging);
+    if (ue_radio_capability_for_paging_local_JSON == NULL) {
+        ogs_error("OpenAPI_ue_context_create_data_convertToJSON() failed [ue_radio_capability_for_paging]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "ueRadioCapabilityForPaging", ue_radio_capability_for_paging_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_ue_context_create_data_convertToJSON() failed [ue_radio_capability_for_paging]");
+        goto end;
+    }
+    }
+
     if (ue_context_create_data->ngap_cause) {
     cJSON *ngap_cause_local_JSON = OpenAPI_ng_ap_cause_convertToJSON(ue_context_create_data->ngap_cause);
     if (ngap_cause_local_JSON == NULL) {
@@ -227,6 +246,8 @@ OpenAPI_ue_context_create_data_t *OpenAPI_ue_context_create_data_parseFromJSON(c
     cJSON *n2_notify_uri = NULL;
     cJSON *ue_radio_capability = NULL;
     OpenAPI_n2_info_content_t *ue_radio_capability_local_nonprim = NULL;
+    cJSON *ue_radio_capability_for_paging = NULL;
+    OpenAPI_n2_info_content_t *ue_radio_capability_for_paging_local_nonprim = NULL;
     cJSON *ngap_cause = NULL;
     OpenAPI_ng_ap_cause_t *ngap_cause_local_nonprim = NULL;
     cJSON *supported_features = NULL;
@@ -293,6 +314,11 @@ OpenAPI_ue_context_create_data_t *OpenAPI_ue_context_create_data_parseFromJSON(c
     ue_radio_capability_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(ue_radio_capability);
     }
 
+    ue_radio_capability_for_paging = cJSON_GetObjectItemCaseSensitive(ue_context_create_dataJSON, "ueRadioCapabilityForPaging");
+    if (ue_radio_capability_for_paging) {
+    ue_radio_capability_for_paging_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(ue_radio_capability_for_paging);
+    }
+
     ngap_cause = cJSON_GetObjectItemCaseSensitive(ue_context_create_dataJSON, "ngapCause");
     if (ngap_cause) {
     ngap_cause_local_nonprim = OpenAPI_ng_ap_cause_parseFromJSON(ngap_cause);
@@ -318,6 +344,7 @@ OpenAPI_ue_context_create_data_t *OpenAPI_ue_context_create_data_parseFromJSON(c
         pdu_session_listList,
         n2_notify_uri && !cJSON_IsNull(n2_notify_uri) ? ogs_strdup(n2_notify_uri->valuestring) : NULL,
         ue_radio_capability ? ue_radio_capability_local_nonprim : NULL,
+        ue_radio_capability_for_paging ? ue_radio_capability_for_paging_local_nonprim : NULL,
         ngap_cause ? ngap_cause_local_nonprim : NULL,
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
         serving_network ? serving_network_local_nonprim : NULL
@@ -347,6 +374,10 @@ end:
     if (ue_radio_capability_local_nonprim) {
         OpenAPI_n2_info_content_free(ue_radio_capability_local_nonprim);
         ue_radio_capability_local_nonprim = NULL;
+    }
+    if (ue_radio_capability_for_paging_local_nonprim) {
+        OpenAPI_n2_info_content_free(ue_radio_capability_for_paging_local_nonprim);
+        ue_radio_capability_for_paging_local_nonprim = NULL;
     }
     if (ngap_cause_local_nonprim) {
         OpenAPI_ng_ap_cause_free(ngap_cause_local_nonprim);

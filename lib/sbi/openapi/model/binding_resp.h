@@ -1,7 +1,7 @@
 /*
  * binding_resp.h
  *
- * 
+ * Contains the binding information for a PCF for a PDU Session.
  */
 
 #ifndef _OpenAPI_binding_resp_H_

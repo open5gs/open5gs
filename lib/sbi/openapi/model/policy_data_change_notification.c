@@ -21,7 +21,9 @@ OpenAPI_policy_data_change_notification_t *OpenAPI_policy_data_change_notificati
     OpenAPI_plmn_id_1_t *plmn_id,
     OpenAPI_list_t *del_resources,
     char *notif_id,
-    OpenAPI_list_t *reported_fragments
+    OpenAPI_list_t *reported_fragments,
+    OpenAPI_slice_policy_data_t *slice_policy_data,
+    OpenAPI_snssai_t *snssai
 )
 {
     OpenAPI_policy_data_change_notification_t *policy_data_change_notification_local_var = ogs_malloc(sizeof(OpenAPI_policy_data_change_notification_t));
@@ -44,6 +46,8 @@ OpenAPI_policy_data_change_notification_t *OpenAPI_policy_data_change_notificati
     policy_data_change_notification_local_var->del_resources = del_resources;
     policy_data_change_notification_local_var->notif_id = notif_id;
     policy_data_change_notification_local_var->reported_fragments = reported_fragments;
+    policy_data_change_notification_local_var->slice_policy_data = slice_policy_data;
+    policy_data_change_notification_local_var->snssai = snssai;
 
     return policy_data_change_notification_local_var;
 }
@@ -134,6 +138,14 @@ void OpenAPI_policy_data_change_notification_free(OpenAPI_policy_data_change_not
         }
         OpenAPI_list_free(policy_data_change_notification->reported_fragments);
         policy_data_change_notification->reported_fragments = NULL;
+    }
+    if (policy_data_change_notification->slice_policy_data) {
+        OpenAPI_slice_policy_data_free(policy_data_change_notification->slice_policy_data);
+        policy_data_change_notification->slice_policy_data = NULL;
+    }
+    if (policy_data_change_notification->snssai) {
+        OpenAPI_snssai_free(policy_data_change_notification->snssai);
+        policy_data_change_notification->snssai = NULL;
     }
     ogs_free(policy_data_change_notification);
 }
@@ -353,6 +365,32 @@ cJSON *OpenAPI_policy_data_change_notification_convertToJSON(OpenAPI_policy_data
     }
     }
 
+    if (policy_data_change_notification->slice_policy_data) {
+    cJSON *slice_policy_data_local_JSON = OpenAPI_slice_policy_data_convertToJSON(policy_data_change_notification->slice_policy_data);
+    if (slice_policy_data_local_JSON == NULL) {
+        ogs_error("OpenAPI_policy_data_change_notification_convertToJSON() failed [slice_policy_data]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "slicePolicyData", slice_policy_data_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_policy_data_change_notification_convertToJSON() failed [slice_policy_data]");
+        goto end;
+    }
+    }
+
+    if (policy_data_change_notification->snssai) {
+    cJSON *snssai_local_JSON = OpenAPI_snssai_convertToJSON(policy_data_change_notification->snssai);
+    if (snssai_local_JSON == NULL) {
+        ogs_error("OpenAPI_policy_data_change_notification_convertToJSON() failed [snssai]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "snssai", snssai_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_policy_data_change_notification_convertToJSON() failed [snssai]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -390,6 +428,10 @@ OpenAPI_policy_data_change_notification_t *OpenAPI_policy_data_change_notificati
     cJSON *notif_id = NULL;
     cJSON *reported_fragments = NULL;
     OpenAPI_list_t *reported_fragmentsList = NULL;
+    cJSON *slice_policy_data = NULL;
+    OpenAPI_slice_policy_data_t *slice_policy_data_local_nonprim = NULL;
+    cJSON *snssai = NULL;
+    OpenAPI_snssai_t *snssai_local_nonprim = NULL;
     am_policy_data = cJSON_GetObjectItemCaseSensitive(policy_data_change_notificationJSON, "amPolicyData");
     if (am_policy_data) {
     am_policy_data_local_nonprim = OpenAPI_am_policy_data_parseFromJSON(am_policy_data);
@@ -547,6 +589,16 @@ OpenAPI_policy_data_change_notification_t *OpenAPI_policy_data_change_notificati
         }
     }
 
+    slice_policy_data = cJSON_GetObjectItemCaseSensitive(policy_data_change_notificationJSON, "slicePolicyData");
+    if (slice_policy_data) {
+    slice_policy_data_local_nonprim = OpenAPI_slice_policy_data_parseFromJSON(slice_policy_data);
+    }
+
+    snssai = cJSON_GetObjectItemCaseSensitive(policy_data_change_notificationJSON, "snssai");
+    if (snssai) {
+    snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    }
+
     policy_data_change_notification_local_var = OpenAPI_policy_data_change_notification_create (
         am_policy_data ? am_policy_data_local_nonprim : NULL,
         ue_policy_set ? ue_policy_set_local_nonprim : NULL,
@@ -564,7 +616,9 @@ OpenAPI_policy_data_change_notification_t *OpenAPI_policy_data_change_notificati
         plmn_id ? plmn_id_local_nonprim : NULL,
         del_resources ? del_resourcesList : NULL,
         notif_id && !cJSON_IsNull(notif_id) ? ogs_strdup(notif_id->valuestring) : NULL,
-        reported_fragments ? reported_fragmentsList : NULL
+        reported_fragments ? reported_fragmentsList : NULL,
+        slice_policy_data ? slice_policy_data_local_nonprim : NULL,
+        snssai ? snssai_local_nonprim : NULL
     );
 
     return policy_data_change_notification_local_var;
@@ -628,6 +682,14 @@ end:
         }
         OpenAPI_list_free(reported_fragmentsList);
         reported_fragmentsList = NULL;
+    }
+    if (slice_policy_data_local_nonprim) {
+        OpenAPI_slice_policy_data_free(slice_policy_data_local_nonprim);
+        slice_policy_data_local_nonprim = NULL;
+    }
+    if (snssai_local_nonprim) {
+        OpenAPI_snssai_free(snssai_local_nonprim);
+        snssai_local_nonprim = NULL;
     }
     return NULL;
 }

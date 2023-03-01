@@ -50,9 +50,15 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_create(
     char *smf_id,
     char *recovery_time,
     OpenAPI_ma_pdu_indication_e ma_pdu_ind,
-    OpenAPI_atsss_capability_t *atsss_capab,
+    OpenAPI_npcf_atsss_capability_e atsss_capab,
     OpenAPI_list_t *ipv4_frame_route_list,
-    OpenAPI_list_t *ipv6_frame_route_list
+    OpenAPI_list_t *ipv6_frame_route_list,
+    OpenAPI_satellite_backhaul_category_e sat_backhaul_category,
+    OpenAPI_pcf_ue_callback_info_t *pcf_ue_info,
+    OpenAPI_list_t *pvs_info,
+    bool is_onboard_ind,
+    int onboard_ind,
+    OpenAPI_list_t *nwdaf_datas
 )
 {
     OpenAPI_sm_policy_context_data_t *sm_policy_context_data_local_var = ogs_malloc(sizeof(OpenAPI_sm_policy_context_data_t));
@@ -106,6 +112,12 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_create(
     sm_policy_context_data_local_var->atsss_capab = atsss_capab;
     sm_policy_context_data_local_var->ipv4_frame_route_list = ipv4_frame_route_list;
     sm_policy_context_data_local_var->ipv6_frame_route_list = ipv6_frame_route_list;
+    sm_policy_context_data_local_var->sat_backhaul_category = sat_backhaul_category;
+    sm_policy_context_data_local_var->pcf_ue_info = pcf_ue_info;
+    sm_policy_context_data_local_var->pvs_info = pvs_info;
+    sm_policy_context_data_local_var->is_onboard_ind = is_onboard_ind;
+    sm_policy_context_data_local_var->onboard_ind = onboard_ind;
+    sm_policy_context_data_local_var->nwdaf_datas = nwdaf_datas;
 
     return sm_policy_context_data_local_var;
 }
@@ -224,10 +236,6 @@ void OpenAPI_sm_policy_context_data_free(OpenAPI_sm_policy_context_data_t *sm_po
         ogs_free(sm_policy_context_data->recovery_time);
         sm_policy_context_data->recovery_time = NULL;
     }
-    if (sm_policy_context_data->atsss_capab) {
-        OpenAPI_atsss_capability_free(sm_policy_context_data->atsss_capab);
-        sm_policy_context_data->atsss_capab = NULL;
-    }
     if (sm_policy_context_data->ipv4_frame_route_list) {
         OpenAPI_list_for_each(sm_policy_context_data->ipv4_frame_route_list, node) {
             ogs_free(node->data);
@@ -241,6 +249,24 @@ void OpenAPI_sm_policy_context_data_free(OpenAPI_sm_policy_context_data_t *sm_po
         }
         OpenAPI_list_free(sm_policy_context_data->ipv6_frame_route_list);
         sm_policy_context_data->ipv6_frame_route_list = NULL;
+    }
+    if (sm_policy_context_data->pcf_ue_info) {
+        OpenAPI_pcf_ue_callback_info_free(sm_policy_context_data->pcf_ue_info);
+        sm_policy_context_data->pcf_ue_info = NULL;
+    }
+    if (sm_policy_context_data->pvs_info) {
+        OpenAPI_list_for_each(sm_policy_context_data->pvs_info, node) {
+            OpenAPI_server_addressing_info_free(node->data);
+        }
+        OpenAPI_list_free(sm_policy_context_data->pvs_info);
+        sm_policy_context_data->pvs_info = NULL;
+    }
+    if (sm_policy_context_data->nwdaf_datas) {
+        OpenAPI_list_for_each(sm_policy_context_data->nwdaf_datas, node) {
+            OpenAPI_nwdaf_data_free(node->data);
+        }
+        OpenAPI_list_free(sm_policy_context_data->nwdaf_datas);
+        sm_policy_context_data->nwdaf_datas = NULL;
     }
     ogs_free(sm_policy_context_data);
 }
@@ -610,14 +636,8 @@ cJSON *OpenAPI_sm_policy_context_data_convertToJSON(OpenAPI_sm_policy_context_da
     }
     }
 
-    if (sm_policy_context_data->atsss_capab) {
-    cJSON *atsss_capab_local_JSON = OpenAPI_atsss_capability_convertToJSON(sm_policy_context_data->atsss_capab);
-    if (atsss_capab_local_JSON == NULL) {
-        ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [atsss_capab]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "atsssCapab", atsss_capab_local_JSON);
-    if (item->child == NULL) {
+    if (sm_policy_context_data->atsss_capab != OpenAPI_npcf_atsss_capability_NULL) {
+    if (cJSON_AddStringToObject(item, "atsssCapab", OpenAPI_npcf_atsss_capability_ToString(sm_policy_context_data->atsss_capab)) == NULL) {
         ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [atsss_capab]");
         goto end;
     }
@@ -648,6 +668,65 @@ cJSON *OpenAPI_sm_policy_context_data_convertToJSON(OpenAPI_sm_policy_context_da
             ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [ipv6_frame_route_list]");
             goto end;
         }
+    }
+    }
+
+    if (sm_policy_context_data->sat_backhaul_category != OpenAPI_satellite_backhaul_category_NULL) {
+    if (cJSON_AddStringToObject(item, "satBackhaulCategory", OpenAPI_satellite_backhaul_category_ToString(sm_policy_context_data->sat_backhaul_category)) == NULL) {
+        ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [sat_backhaul_category]");
+        goto end;
+    }
+    }
+
+    if (sm_policy_context_data->pcf_ue_info) {
+    cJSON *pcf_ue_info_local_JSON = OpenAPI_pcf_ue_callback_info_convertToJSON(sm_policy_context_data->pcf_ue_info);
+    if (pcf_ue_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [pcf_ue_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "pcfUeInfo", pcf_ue_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [pcf_ue_info]");
+        goto end;
+    }
+    }
+
+    if (sm_policy_context_data->pvs_info) {
+    cJSON *pvs_infoList = cJSON_AddArrayToObject(item, "pvsInfo");
+    if (pvs_infoList == NULL) {
+        ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [pvs_info]");
+        goto end;
+    }
+    OpenAPI_list_for_each(sm_policy_context_data->pvs_info, node) {
+        cJSON *itemLocal = OpenAPI_server_addressing_info_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [pvs_info]");
+            goto end;
+        }
+        cJSON_AddItemToArray(pvs_infoList, itemLocal);
+    }
+    }
+
+    if (sm_policy_context_data->is_onboard_ind) {
+    if (cJSON_AddBoolToObject(item, "onboardInd", sm_policy_context_data->onboard_ind) == NULL) {
+        ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [onboard_ind]");
+        goto end;
+    }
+    }
+
+    if (sm_policy_context_data->nwdaf_datas) {
+    cJSON *nwdaf_datasList = cJSON_AddArrayToObject(item, "nwdafDatas");
+    if (nwdaf_datasList == NULL) {
+        ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [nwdaf_datas]");
+        goto end;
+    }
+    OpenAPI_list_for_each(sm_policy_context_data->nwdaf_datas, node) {
+        cJSON *itemLocal = OpenAPI_nwdaf_data_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [nwdaf_datas]");
+            goto end;
+        }
+        cJSON_AddItemToArray(nwdaf_datasList, itemLocal);
     }
     }
 
@@ -717,11 +796,20 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
     cJSON *ma_pdu_ind = NULL;
     OpenAPI_ma_pdu_indication_e ma_pdu_indVariable = 0;
     cJSON *atsss_capab = NULL;
-    OpenAPI_atsss_capability_t *atsss_capab_local_nonprim = NULL;
+    OpenAPI_npcf_atsss_capability_e atsss_capabVariable = 0;
     cJSON *ipv4_frame_route_list = NULL;
     OpenAPI_list_t *ipv4_frame_route_listList = NULL;
     cJSON *ipv6_frame_route_list = NULL;
     OpenAPI_list_t *ipv6_frame_route_listList = NULL;
+    cJSON *sat_backhaul_category = NULL;
+    OpenAPI_satellite_backhaul_category_e sat_backhaul_categoryVariable = 0;
+    cJSON *pcf_ue_info = NULL;
+    OpenAPI_pcf_ue_callback_info_t *pcf_ue_info_local_nonprim = NULL;
+    cJSON *pvs_info = NULL;
+    OpenAPI_list_t *pvs_infoList = NULL;
+    cJSON *onboard_ind = NULL;
+    cJSON *nwdaf_datas = NULL;
+    OpenAPI_list_t *nwdaf_datasList = NULL;
     acc_net_ch_id = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "accNetChId");
     if (acc_net_ch_id) {
     acc_net_ch_id_local_nonprim = OpenAPI_acc_net_ch_id_parseFromJSON(acc_net_ch_id);
@@ -1034,7 +1122,11 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
 
     atsss_capab = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "atsssCapab");
     if (atsss_capab) {
-    atsss_capab_local_nonprim = OpenAPI_atsss_capability_parseFromJSON(atsss_capab);
+    if (!cJSON_IsString(atsss_capab)) {
+        ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [atsss_capab]");
+        goto end;
+    }
+    atsss_capabVariable = OpenAPI_npcf_atsss_capability_FromString(atsss_capab->valuestring);
     }
 
     ipv4_frame_route_list = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "ipv4FrameRouteList");
@@ -1076,6 +1168,78 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
                 goto end;
             }
             OpenAPI_list_add(ipv6_frame_route_listList, ogs_strdup(ipv6_frame_route_list_local->valuestring));
+        }
+    }
+
+    sat_backhaul_category = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "satBackhaulCategory");
+    if (sat_backhaul_category) {
+    if (!cJSON_IsString(sat_backhaul_category)) {
+        ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [sat_backhaul_category]");
+        goto end;
+    }
+    sat_backhaul_categoryVariable = OpenAPI_satellite_backhaul_category_FromString(sat_backhaul_category->valuestring);
+    }
+
+    pcf_ue_info = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "pcfUeInfo");
+    if (pcf_ue_info) {
+    pcf_ue_info_local_nonprim = OpenAPI_pcf_ue_callback_info_parseFromJSON(pcf_ue_info);
+    }
+
+    pvs_info = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "pvsInfo");
+    if (pvs_info) {
+        cJSON *pvs_info_local = NULL;
+        if (!cJSON_IsArray(pvs_info)) {
+            ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [pvs_info]");
+            goto end;
+        }
+
+        pvs_infoList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(pvs_info_local, pvs_info) {
+            if (!cJSON_IsObject(pvs_info_local)) {
+                ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [pvs_info]");
+                goto end;
+            }
+            OpenAPI_server_addressing_info_t *pvs_infoItem = OpenAPI_server_addressing_info_parseFromJSON(pvs_info_local);
+            if (!pvs_infoItem) {
+                ogs_error("No pvs_infoItem");
+                OpenAPI_list_free(pvs_infoList);
+                goto end;
+            }
+            OpenAPI_list_add(pvs_infoList, pvs_infoItem);
+        }
+    }
+
+    onboard_ind = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "onboardInd");
+    if (onboard_ind) {
+    if (!cJSON_IsBool(onboard_ind)) {
+        ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [onboard_ind]");
+        goto end;
+    }
+    }
+
+    nwdaf_datas = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "nwdafDatas");
+    if (nwdaf_datas) {
+        cJSON *nwdaf_datas_local = NULL;
+        if (!cJSON_IsArray(nwdaf_datas)) {
+            ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [nwdaf_datas]");
+            goto end;
+        }
+
+        nwdaf_datasList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(nwdaf_datas_local, nwdaf_datas) {
+            if (!cJSON_IsObject(nwdaf_datas_local)) {
+                ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [nwdaf_datas]");
+                goto end;
+            }
+            OpenAPI_nwdaf_data_t *nwdaf_datasItem = OpenAPI_nwdaf_data_parseFromJSON(nwdaf_datas_local);
+            if (!nwdaf_datasItem) {
+                ogs_error("No nwdaf_datasItem");
+                OpenAPI_list_free(nwdaf_datasList);
+                goto end;
+            }
+            OpenAPI_list_add(nwdaf_datasList, nwdaf_datasItem);
         }
     }
 
@@ -1126,9 +1290,15 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
         smf_id && !cJSON_IsNull(smf_id) ? ogs_strdup(smf_id->valuestring) : NULL,
         recovery_time && !cJSON_IsNull(recovery_time) ? ogs_strdup(recovery_time->valuestring) : NULL,
         ma_pdu_ind ? ma_pdu_indVariable : 0,
-        atsss_capab ? atsss_capab_local_nonprim : NULL,
+        atsss_capab ? atsss_capabVariable : 0,
         ipv4_frame_route_list ? ipv4_frame_route_listList : NULL,
-        ipv6_frame_route_list ? ipv6_frame_route_listList : NULL
+        ipv6_frame_route_list ? ipv6_frame_route_listList : NULL,
+        sat_backhaul_category ? sat_backhaul_categoryVariable : 0,
+        pcf_ue_info ? pcf_ue_info_local_nonprim : NULL,
+        pvs_info ? pvs_infoList : NULL,
+        onboard_ind ? true : false,
+        onboard_ind ? onboard_ind->valueint : 0,
+        nwdaf_datas ? nwdaf_datasList : NULL
     );
 
     return sm_policy_context_data_local_var;
@@ -1184,10 +1354,6 @@ end:
         OpenAPI_serving_nf_identity_free(serv_nf_id_local_nonprim);
         serv_nf_id_local_nonprim = NULL;
     }
-    if (atsss_capab_local_nonprim) {
-        OpenAPI_atsss_capability_free(atsss_capab_local_nonprim);
-        atsss_capab_local_nonprim = NULL;
-    }
     if (ipv4_frame_route_listList) {
         OpenAPI_list_for_each(ipv4_frame_route_listList, node) {
             ogs_free(node->data);
@@ -1201,6 +1367,24 @@ end:
         }
         OpenAPI_list_free(ipv6_frame_route_listList);
         ipv6_frame_route_listList = NULL;
+    }
+    if (pcf_ue_info_local_nonprim) {
+        OpenAPI_pcf_ue_callback_info_free(pcf_ue_info_local_nonprim);
+        pcf_ue_info_local_nonprim = NULL;
+    }
+    if (pvs_infoList) {
+        OpenAPI_list_for_each(pvs_infoList, node) {
+            OpenAPI_server_addressing_info_free(node->data);
+        }
+        OpenAPI_list_free(pvs_infoList);
+        pvs_infoList = NULL;
+    }
+    if (nwdaf_datasList) {
+        OpenAPI_list_for_each(nwdaf_datasList, node) {
+            OpenAPI_nwdaf_data_free(node->data);
+        }
+        OpenAPI_list_free(nwdaf_datasList);
+        nwdaf_datasList = NULL;
     }
     return NULL;
 }

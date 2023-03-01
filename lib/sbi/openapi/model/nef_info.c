@@ -10,7 +10,13 @@ OpenAPI_nef_info_t *OpenAPI_nef_info_create(
     OpenAPI_af_event_exposure_data_t *af_ee_data,
     OpenAPI_list_t *gpsi_ranges,
     OpenAPI_list_t *external_group_identifiers_ranges,
-    OpenAPI_list_t *served_fqdn_list
+    OpenAPI_list_t *served_fqdn_list,
+    OpenAPI_list_t *tai_list,
+    OpenAPI_list_t *tai_range_list,
+    OpenAPI_list_t *dnai_list,
+    OpenAPI_list_t *un_trust_af_info_list,
+    bool is_uas_nf_functionality_ind,
+    int uas_nf_functionality_ind
 )
 {
     OpenAPI_nef_info_t *nef_info_local_var = ogs_malloc(sizeof(OpenAPI_nef_info_t));
@@ -22,6 +28,12 @@ OpenAPI_nef_info_t *OpenAPI_nef_info_create(
     nef_info_local_var->gpsi_ranges = gpsi_ranges;
     nef_info_local_var->external_group_identifiers_ranges = external_group_identifiers_ranges;
     nef_info_local_var->served_fqdn_list = served_fqdn_list;
+    nef_info_local_var->tai_list = tai_list;
+    nef_info_local_var->tai_range_list = tai_range_list;
+    nef_info_local_var->dnai_list = dnai_list;
+    nef_info_local_var->un_trust_af_info_list = un_trust_af_info_list;
+    nef_info_local_var->is_uas_nf_functionality_ind = is_uas_nf_functionality_ind;
+    nef_info_local_var->uas_nf_functionality_ind = uas_nf_functionality_ind;
 
     return nef_info_local_var;
 }
@@ -65,6 +77,34 @@ void OpenAPI_nef_info_free(OpenAPI_nef_info_t *nef_info)
         }
         OpenAPI_list_free(nef_info->served_fqdn_list);
         nef_info->served_fqdn_list = NULL;
+    }
+    if (nef_info->tai_list) {
+        OpenAPI_list_for_each(nef_info->tai_list, node) {
+            OpenAPI_tai_free(node->data);
+        }
+        OpenAPI_list_free(nef_info->tai_list);
+        nef_info->tai_list = NULL;
+    }
+    if (nef_info->tai_range_list) {
+        OpenAPI_list_for_each(nef_info->tai_range_list, node) {
+            OpenAPI_tai_range_free(node->data);
+        }
+        OpenAPI_list_free(nef_info->tai_range_list);
+        nef_info->tai_range_list = NULL;
+    }
+    if (nef_info->dnai_list) {
+        OpenAPI_list_for_each(nef_info->dnai_list, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(nef_info->dnai_list);
+        nef_info->dnai_list = NULL;
+    }
+    if (nef_info->un_trust_af_info_list) {
+        OpenAPI_list_for_each(nef_info->un_trust_af_info_list, node) {
+            OpenAPI_un_trust_af_info_free(node->data);
+        }
+        OpenAPI_list_free(nef_info->un_trust_af_info_list);
+        nef_info->un_trust_af_info_list = NULL;
     }
     ogs_free(nef_info);
 }
@@ -159,6 +199,75 @@ cJSON *OpenAPI_nef_info_convertToJSON(OpenAPI_nef_info_t *nef_info)
     }
     }
 
+    if (nef_info->tai_list) {
+    cJSON *tai_listList = cJSON_AddArrayToObject(item, "taiList");
+    if (tai_listList == NULL) {
+        ogs_error("OpenAPI_nef_info_convertToJSON() failed [tai_list]");
+        goto end;
+    }
+    OpenAPI_list_for_each(nef_info->tai_list, node) {
+        cJSON *itemLocal = OpenAPI_tai_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_nef_info_convertToJSON() failed [tai_list]");
+            goto end;
+        }
+        cJSON_AddItemToArray(tai_listList, itemLocal);
+    }
+    }
+
+    if (nef_info->tai_range_list) {
+    cJSON *tai_range_listList = cJSON_AddArrayToObject(item, "taiRangeList");
+    if (tai_range_listList == NULL) {
+        ogs_error("OpenAPI_nef_info_convertToJSON() failed [tai_range_list]");
+        goto end;
+    }
+    OpenAPI_list_for_each(nef_info->tai_range_list, node) {
+        cJSON *itemLocal = OpenAPI_tai_range_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_nef_info_convertToJSON() failed [tai_range_list]");
+            goto end;
+        }
+        cJSON_AddItemToArray(tai_range_listList, itemLocal);
+    }
+    }
+
+    if (nef_info->dnai_list) {
+    cJSON *dnai_listList = cJSON_AddArrayToObject(item, "dnaiList");
+    if (dnai_listList == NULL) {
+        ogs_error("OpenAPI_nef_info_convertToJSON() failed [dnai_list]");
+        goto end;
+    }
+    OpenAPI_list_for_each(nef_info->dnai_list, node) {
+        if (cJSON_AddStringToObject(dnai_listList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_nef_info_convertToJSON() failed [dnai_list]");
+            goto end;
+        }
+    }
+    }
+
+    if (nef_info->un_trust_af_info_list) {
+    cJSON *un_trust_af_info_listList = cJSON_AddArrayToObject(item, "unTrustAfInfoList");
+    if (un_trust_af_info_listList == NULL) {
+        ogs_error("OpenAPI_nef_info_convertToJSON() failed [un_trust_af_info_list]");
+        goto end;
+    }
+    OpenAPI_list_for_each(nef_info->un_trust_af_info_list, node) {
+        cJSON *itemLocal = OpenAPI_un_trust_af_info_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_nef_info_convertToJSON() failed [un_trust_af_info_list]");
+            goto end;
+        }
+        cJSON_AddItemToArray(un_trust_af_info_listList, itemLocal);
+    }
+    }
+
+    if (nef_info->is_uas_nf_functionality_ind) {
+    if (cJSON_AddBoolToObject(item, "uasNfFunctionalityInd", nef_info->uas_nf_functionality_ind) == NULL) {
+        ogs_error("OpenAPI_nef_info_convertToJSON() failed [uas_nf_functionality_ind]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -178,6 +287,15 @@ OpenAPI_nef_info_t *OpenAPI_nef_info_parseFromJSON(cJSON *nef_infoJSON)
     OpenAPI_list_t *external_group_identifiers_rangesList = NULL;
     cJSON *served_fqdn_list = NULL;
     OpenAPI_list_t *served_fqdn_listList = NULL;
+    cJSON *tai_list = NULL;
+    OpenAPI_list_t *tai_listList = NULL;
+    cJSON *tai_range_list = NULL;
+    OpenAPI_list_t *tai_range_listList = NULL;
+    cJSON *dnai_list = NULL;
+    OpenAPI_list_t *dnai_listList = NULL;
+    cJSON *un_trust_af_info_list = NULL;
+    OpenAPI_list_t *un_trust_af_info_listList = NULL;
+    cJSON *uas_nf_functionality_ind = NULL;
     nef_id = cJSON_GetObjectItemCaseSensitive(nef_infoJSON, "nefId");
     if (nef_id) {
     if (!cJSON_IsString(nef_id) && !cJSON_IsNull(nef_id)) {
@@ -267,13 +385,123 @@ OpenAPI_nef_info_t *OpenAPI_nef_info_parseFromJSON(cJSON *nef_infoJSON)
         }
     }
 
+    tai_list = cJSON_GetObjectItemCaseSensitive(nef_infoJSON, "taiList");
+    if (tai_list) {
+        cJSON *tai_list_local = NULL;
+        if (!cJSON_IsArray(tai_list)) {
+            ogs_error("OpenAPI_nef_info_parseFromJSON() failed [tai_list]");
+            goto end;
+        }
+
+        tai_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(tai_list_local, tai_list) {
+            if (!cJSON_IsObject(tai_list_local)) {
+                ogs_error("OpenAPI_nef_info_parseFromJSON() failed [tai_list]");
+                goto end;
+            }
+            OpenAPI_tai_t *tai_listItem = OpenAPI_tai_parseFromJSON(tai_list_local);
+            if (!tai_listItem) {
+                ogs_error("No tai_listItem");
+                OpenAPI_list_free(tai_listList);
+                goto end;
+            }
+            OpenAPI_list_add(tai_listList, tai_listItem);
+        }
+    }
+
+    tai_range_list = cJSON_GetObjectItemCaseSensitive(nef_infoJSON, "taiRangeList");
+    if (tai_range_list) {
+        cJSON *tai_range_list_local = NULL;
+        if (!cJSON_IsArray(tai_range_list)) {
+            ogs_error("OpenAPI_nef_info_parseFromJSON() failed [tai_range_list]");
+            goto end;
+        }
+
+        tai_range_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(tai_range_list_local, tai_range_list) {
+            if (!cJSON_IsObject(tai_range_list_local)) {
+                ogs_error("OpenAPI_nef_info_parseFromJSON() failed [tai_range_list]");
+                goto end;
+            }
+            OpenAPI_tai_range_t *tai_range_listItem = OpenAPI_tai_range_parseFromJSON(tai_range_list_local);
+            if (!tai_range_listItem) {
+                ogs_error("No tai_range_listItem");
+                OpenAPI_list_free(tai_range_listList);
+                goto end;
+            }
+            OpenAPI_list_add(tai_range_listList, tai_range_listItem);
+        }
+    }
+
+    dnai_list = cJSON_GetObjectItemCaseSensitive(nef_infoJSON, "dnaiList");
+    if (dnai_list) {
+        cJSON *dnai_list_local = NULL;
+        if (!cJSON_IsArray(dnai_list)) {
+            ogs_error("OpenAPI_nef_info_parseFromJSON() failed [dnai_list]");
+            goto end;
+        }
+
+        dnai_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(dnai_list_local, dnai_list) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(dnai_list_local)) {
+                ogs_error("OpenAPI_nef_info_parseFromJSON() failed [dnai_list]");
+                goto end;
+            }
+            OpenAPI_list_add(dnai_listList, ogs_strdup(dnai_list_local->valuestring));
+        }
+    }
+
+    un_trust_af_info_list = cJSON_GetObjectItemCaseSensitive(nef_infoJSON, "unTrustAfInfoList");
+    if (un_trust_af_info_list) {
+        cJSON *un_trust_af_info_list_local = NULL;
+        if (!cJSON_IsArray(un_trust_af_info_list)) {
+            ogs_error("OpenAPI_nef_info_parseFromJSON() failed [un_trust_af_info_list]");
+            goto end;
+        }
+
+        un_trust_af_info_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(un_trust_af_info_list_local, un_trust_af_info_list) {
+            if (!cJSON_IsObject(un_trust_af_info_list_local)) {
+                ogs_error("OpenAPI_nef_info_parseFromJSON() failed [un_trust_af_info_list]");
+                goto end;
+            }
+            OpenAPI_un_trust_af_info_t *un_trust_af_info_listItem = OpenAPI_un_trust_af_info_parseFromJSON(un_trust_af_info_list_local);
+            if (!un_trust_af_info_listItem) {
+                ogs_error("No un_trust_af_info_listItem");
+                OpenAPI_list_free(un_trust_af_info_listList);
+                goto end;
+            }
+            OpenAPI_list_add(un_trust_af_info_listList, un_trust_af_info_listItem);
+        }
+    }
+
+    uas_nf_functionality_ind = cJSON_GetObjectItemCaseSensitive(nef_infoJSON, "uasNfFunctionalityInd");
+    if (uas_nf_functionality_ind) {
+    if (!cJSON_IsBool(uas_nf_functionality_ind)) {
+        ogs_error("OpenAPI_nef_info_parseFromJSON() failed [uas_nf_functionality_ind]");
+        goto end;
+    }
+    }
+
     nef_info_local_var = OpenAPI_nef_info_create (
         nef_id && !cJSON_IsNull(nef_id) ? ogs_strdup(nef_id->valuestring) : NULL,
         pfd_data ? pfd_data_local_nonprim : NULL,
         af_ee_data ? af_ee_data_local_nonprim : NULL,
         gpsi_ranges ? gpsi_rangesList : NULL,
         external_group_identifiers_ranges ? external_group_identifiers_rangesList : NULL,
-        served_fqdn_list ? served_fqdn_listList : NULL
+        served_fqdn_list ? served_fqdn_listList : NULL,
+        tai_list ? tai_listList : NULL,
+        tai_range_list ? tai_range_listList : NULL,
+        dnai_list ? dnai_listList : NULL,
+        un_trust_af_info_list ? un_trust_af_info_listList : NULL,
+        uas_nf_functionality_ind ? true : false,
+        uas_nf_functionality_ind ? uas_nf_functionality_ind->valueint : 0
     );
 
     return nef_info_local_var;
@@ -306,6 +534,34 @@ end:
         }
         OpenAPI_list_free(served_fqdn_listList);
         served_fqdn_listList = NULL;
+    }
+    if (tai_listList) {
+        OpenAPI_list_for_each(tai_listList, node) {
+            OpenAPI_tai_free(node->data);
+        }
+        OpenAPI_list_free(tai_listList);
+        tai_listList = NULL;
+    }
+    if (tai_range_listList) {
+        OpenAPI_list_for_each(tai_range_listList, node) {
+            OpenAPI_tai_range_free(node->data);
+        }
+        OpenAPI_list_free(tai_range_listList);
+        tai_range_listList = NULL;
+    }
+    if (dnai_listList) {
+        OpenAPI_list_for_each(dnai_listList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(dnai_listList);
+        dnai_listList = NULL;
+    }
+    if (un_trust_af_info_listList) {
+        OpenAPI_list_for_each(un_trust_af_info_listList, node) {
+            OpenAPI_un_trust_af_info_free(node->data);
+        }
+        OpenAPI_list_free(un_trust_af_info_listList);
+        un_trust_af_info_listList = NULL;
     }
     return NULL;
 }

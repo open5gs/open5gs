@@ -8,7 +8,8 @@ OpenAPI_sm_policy_data_t *OpenAPI_sm_policy_data_create(
     OpenAPI_list_t* sm_policy_snssai_data,
     OpenAPI_list_t* um_data_limits,
     OpenAPI_list_t* um_data,
-    char *supp_feat
+    char *supp_feat,
+    OpenAPI_list_t *reset_ids
 )
 {
     OpenAPI_sm_policy_data_t *sm_policy_data_local_var = ogs_malloc(sizeof(OpenAPI_sm_policy_data_t));
@@ -18,6 +19,7 @@ OpenAPI_sm_policy_data_t *OpenAPI_sm_policy_data_create(
     sm_policy_data_local_var->um_data_limits = um_data_limits;
     sm_policy_data_local_var->um_data = um_data;
     sm_policy_data_local_var->supp_feat = supp_feat;
+    sm_policy_data_local_var->reset_ids = reset_ids;
 
     return sm_policy_data_local_var;
 }
@@ -62,6 +64,13 @@ void OpenAPI_sm_policy_data_free(OpenAPI_sm_policy_data_t *sm_policy_data)
     if (sm_policy_data->supp_feat) {
         ogs_free(sm_policy_data->supp_feat);
         sm_policy_data->supp_feat = NULL;
+    }
+    if (sm_policy_data->reset_ids) {
+        OpenAPI_list_for_each(sm_policy_data->reset_ids, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(sm_policy_data->reset_ids);
+        sm_policy_data->reset_ids = NULL;
     }
     ogs_free(sm_policy_data);
 }
@@ -152,6 +161,20 @@ cJSON *OpenAPI_sm_policy_data_convertToJSON(OpenAPI_sm_policy_data_t *sm_policy_
     }
     }
 
+    if (sm_policy_data->reset_ids) {
+    cJSON *reset_idsList = cJSON_AddArrayToObject(item, "resetIds");
+    if (reset_idsList == NULL) {
+        ogs_error("OpenAPI_sm_policy_data_convertToJSON() failed [reset_ids]");
+        goto end;
+    }
+    OpenAPI_list_for_each(sm_policy_data->reset_ids, node) {
+        if (cJSON_AddStringToObject(reset_idsList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_sm_policy_data_convertToJSON() failed [reset_ids]");
+            goto end;
+        }
+    }
+    }
+
 end:
     return item;
 }
@@ -167,6 +190,8 @@ OpenAPI_sm_policy_data_t *OpenAPI_sm_policy_data_parseFromJSON(cJSON *sm_policy_
     cJSON *um_data = NULL;
     OpenAPI_list_t *um_dataList = NULL;
     cJSON *supp_feat = NULL;
+    cJSON *reset_ids = NULL;
+    OpenAPI_list_t *reset_idsList = NULL;
     sm_policy_snssai_data = cJSON_GetObjectItemCaseSensitive(sm_policy_dataJSON, "smPolicySnssaiData");
     if (!sm_policy_snssai_data) {
         ogs_error("OpenAPI_sm_policy_data_parseFromJSON() failed [sm_policy_snssai_data]");
@@ -255,11 +280,33 @@ OpenAPI_sm_policy_data_t *OpenAPI_sm_policy_data_parseFromJSON(cJSON *sm_policy_
     }
     }
 
+    reset_ids = cJSON_GetObjectItemCaseSensitive(sm_policy_dataJSON, "resetIds");
+    if (reset_ids) {
+        cJSON *reset_ids_local = NULL;
+        if (!cJSON_IsArray(reset_ids)) {
+            ogs_error("OpenAPI_sm_policy_data_parseFromJSON() failed [reset_ids]");
+            goto end;
+        }
+
+        reset_idsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(reset_ids_local, reset_ids) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(reset_ids_local)) {
+                ogs_error("OpenAPI_sm_policy_data_parseFromJSON() failed [reset_ids]");
+                goto end;
+            }
+            OpenAPI_list_add(reset_idsList, ogs_strdup(reset_ids_local->valuestring));
+        }
+    }
+
     sm_policy_data_local_var = OpenAPI_sm_policy_data_create (
         sm_policy_snssai_dataList,
         um_data_limits ? um_data_limitsList : NULL,
         um_data ? um_dataList : NULL,
-        supp_feat && !cJSON_IsNull(supp_feat) ? ogs_strdup(supp_feat->valuestring) : NULL
+        supp_feat && !cJSON_IsNull(supp_feat) ? ogs_strdup(supp_feat->valuestring) : NULL,
+        reset_ids ? reset_idsList : NULL
     );
 
     return sm_policy_data_local_var;
@@ -293,6 +340,13 @@ end:
         }
         OpenAPI_list_free(um_dataList);
         um_dataList = NULL;
+    }
+    if (reset_idsList) {
+        OpenAPI_list_for_each(reset_idsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(reset_idsList);
+        reset_idsList = NULL;
     }
     return NULL;
 }

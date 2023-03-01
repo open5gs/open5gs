@@ -30,7 +30,8 @@ OpenAPI_n1_n2_message_transfer_req_data_t *OpenAPI_n1_n2_message_transfer_req_da
     int ma_accepted_ind,
     bool is_ext_buf_support,
     int ext_buf_support,
-    OpenAPI_access_type_e target_access
+    OpenAPI_access_type_e target_access,
+    char *nf_id
 )
 {
     OpenAPI_n1_n2_message_transfer_req_data_t *n1_n2_message_transfer_req_data_local_var = ogs_malloc(sizeof(OpenAPI_n1_n2_message_transfer_req_data_t));
@@ -62,6 +63,7 @@ OpenAPI_n1_n2_message_transfer_req_data_t *OpenAPI_n1_n2_message_transfer_req_da
     n1_n2_message_transfer_req_data_local_var->is_ext_buf_support = is_ext_buf_support;
     n1_n2_message_transfer_req_data_local_var->ext_buf_support = ext_buf_support;
     n1_n2_message_transfer_req_data_local_var->target_access = target_access;
+    n1_n2_message_transfer_req_data_local_var->nf_id = nf_id;
 
     return n1_n2_message_transfer_req_data_local_var;
 }
@@ -108,6 +110,10 @@ void OpenAPI_n1_n2_message_transfer_req_data_free(OpenAPI_n1_n2_message_transfer
     if (n1_n2_message_transfer_req_data->old_guami) {
         OpenAPI_guami_free(n1_n2_message_transfer_req_data->old_guami);
         n1_n2_message_transfer_req_data->old_guami = NULL;
+    }
+    if (n1_n2_message_transfer_req_data->nf_id) {
+        ogs_free(n1_n2_message_transfer_req_data->nf_id);
+        n1_n2_message_transfer_req_data->nf_id = NULL;
     }
     ogs_free(n1_n2_message_transfer_req_data);
 }
@@ -285,6 +291,13 @@ cJSON *OpenAPI_n1_n2_message_transfer_req_data_convertToJSON(OpenAPI_n1_n2_messa
     }
     }
 
+    if (n1_n2_message_transfer_req_data->nf_id) {
+    if (cJSON_AddStringToObject(item, "nfId", n1_n2_message_transfer_req_data->nf_id) == NULL) {
+        ogs_error("OpenAPI_n1_n2_message_transfer_req_data_convertToJSON() failed [nf_id]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -318,6 +331,7 @@ OpenAPI_n1_n2_message_transfer_req_data_t *OpenAPI_n1_n2_message_transfer_req_da
     cJSON *ext_buf_support = NULL;
     cJSON *target_access = NULL;
     OpenAPI_access_type_e target_accessVariable = 0;
+    cJSON *nf_id = NULL;
     n1_message_container = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_req_dataJSON, "n1MessageContainer");
     if (n1_message_container) {
     n1_message_container_local_nonprim = OpenAPI_n1_message_container_parseFromJSON(n1_message_container);
@@ -445,6 +459,14 @@ OpenAPI_n1_n2_message_transfer_req_data_t *OpenAPI_n1_n2_message_transfer_req_da
     target_accessVariable = OpenAPI_access_type_FromString(target_access->valuestring);
     }
 
+    nf_id = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_req_dataJSON, "nfId");
+    if (nf_id) {
+    if (!cJSON_IsString(nf_id) && !cJSON_IsNull(nf_id)) {
+        ogs_error("OpenAPI_n1_n2_message_transfer_req_data_parseFromJSON() failed [nf_id]");
+        goto end;
+    }
+    }
+
     n1_n2_message_transfer_req_data_local_var = OpenAPI_n1_n2_message_transfer_req_data_create (
         n1_message_container ? n1_message_container_local_nonprim : NULL,
         n2_info_container ? n2_info_container_local_nonprim : NULL,
@@ -471,7 +493,8 @@ OpenAPI_n1_n2_message_transfer_req_data_t *OpenAPI_n1_n2_message_transfer_req_da
         ma_accepted_ind ? ma_accepted_ind->valueint : 0,
         ext_buf_support ? true : false,
         ext_buf_support ? ext_buf_support->valueint : 0,
-        target_access ? target_accessVariable : 0
+        target_access ? target_accessVariable : 0,
+        nf_id && !cJSON_IsNull(nf_id) ? ogs_strdup(nf_id->valuestring) : NULL
     );
 
     return n1_n2_message_transfer_req_data_local_var;

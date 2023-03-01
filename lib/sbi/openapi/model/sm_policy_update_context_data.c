@@ -27,6 +27,8 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_c
     char *auth_prof_index,
     OpenAPI_subscribed_default_qos_t *subs_def_qos,
     OpenAPI_vplmn_qos_t *vplmn_qos,
+    bool is_vplmn_qos_not_app,
+    int vplmn_qos_not_app,
     bool is_num_of_pack_filter,
     int num_of_pack_filter,
     OpenAPI_list_t *accu_usage_reports,
@@ -47,17 +49,23 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_c
     OpenAPI_serving_nf_identity_t *serv_nf_id,
     OpenAPI_trace_data_t *trace_req,
     OpenAPI_ma_pdu_indication_e ma_pdu_ind,
-    OpenAPI_atsss_capability_t *atsss_capab,
+    OpenAPI_npcf_atsss_capability_e atsss_capab,
     OpenAPI_tsn_bridge_info_t *tsn_bridge_info,
     OpenAPI_bridge_management_container_t *tsn_bridge_man_cont,
     OpenAPI_port_management_container_t *tsn_port_man_cont_dstt,
     OpenAPI_list_t *tsn_port_man_cont_nwtts,
     OpenAPI_list_t *mul_addr_infos,
     OpenAPI_list_t *policy_dec_failure_reports,
+    OpenAPI_list_t *invalid_policy_decs,
     OpenAPI_list_t *traffic_descriptors,
     char *pcc_rule_id,
+    OpenAPI_list_t *types_of_notif,
     OpenAPI_list_t *inter_grp_ids,
-    OpenAPI_list_t *types_of_notif
+    OpenAPI_satellite_backhaul_category_e sat_backhaul_category,
+    OpenAPI_pcf_ue_callback_info_t *pcf_ue_info,
+    OpenAPI_list_t *nwdaf_datas,
+    bool is_an_gw_status,
+    int an_gw_status
 )
 {
     OpenAPI_sm_policy_update_context_data_t *sm_policy_update_context_data_local_var = ogs_malloc(sizeof(OpenAPI_sm_policy_update_context_data_t));
@@ -85,6 +93,8 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_c
     sm_policy_update_context_data_local_var->auth_prof_index = auth_prof_index;
     sm_policy_update_context_data_local_var->subs_def_qos = subs_def_qos;
     sm_policy_update_context_data_local_var->vplmn_qos = vplmn_qos;
+    sm_policy_update_context_data_local_var->is_vplmn_qos_not_app = is_vplmn_qos_not_app;
+    sm_policy_update_context_data_local_var->vplmn_qos_not_app = vplmn_qos_not_app;
     sm_policy_update_context_data_local_var->is_num_of_pack_filter = is_num_of_pack_filter;
     sm_policy_update_context_data_local_var->num_of_pack_filter = num_of_pack_filter;
     sm_policy_update_context_data_local_var->accu_usage_reports = accu_usage_reports;
@@ -112,10 +122,16 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_c
     sm_policy_update_context_data_local_var->tsn_port_man_cont_nwtts = tsn_port_man_cont_nwtts;
     sm_policy_update_context_data_local_var->mul_addr_infos = mul_addr_infos;
     sm_policy_update_context_data_local_var->policy_dec_failure_reports = policy_dec_failure_reports;
+    sm_policy_update_context_data_local_var->invalid_policy_decs = invalid_policy_decs;
     sm_policy_update_context_data_local_var->traffic_descriptors = traffic_descriptors;
     sm_policy_update_context_data_local_var->pcc_rule_id = pcc_rule_id;
-    sm_policy_update_context_data_local_var->inter_grp_ids = inter_grp_ids;
     sm_policy_update_context_data_local_var->types_of_notif = types_of_notif;
+    sm_policy_update_context_data_local_var->inter_grp_ids = inter_grp_ids;
+    sm_policy_update_context_data_local_var->sat_backhaul_category = sat_backhaul_category;
+    sm_policy_update_context_data_local_var->pcf_ue_info = pcf_ue_info;
+    sm_policy_update_context_data_local_var->nwdaf_datas = nwdaf_datas;
+    sm_policy_update_context_data_local_var->is_an_gw_status = is_an_gw_status;
+    sm_policy_update_context_data_local_var->an_gw_status = an_gw_status;
 
     return sm_policy_update_context_data_local_var;
 }
@@ -278,10 +294,6 @@ void OpenAPI_sm_policy_update_context_data_free(OpenAPI_sm_policy_update_context
         OpenAPI_trace_data_free(sm_policy_update_context_data->trace_req);
         sm_policy_update_context_data->trace_req = NULL;
     }
-    if (sm_policy_update_context_data->atsss_capab) {
-        OpenAPI_atsss_capability_free(sm_policy_update_context_data->atsss_capab);
-        sm_policy_update_context_data->atsss_capab = NULL;
-    }
     if (sm_policy_update_context_data->tsn_bridge_info) {
         OpenAPI_tsn_bridge_info_free(sm_policy_update_context_data->tsn_bridge_info);
         sm_policy_update_context_data->tsn_bridge_info = NULL;
@@ -312,6 +324,13 @@ void OpenAPI_sm_policy_update_context_data_free(OpenAPI_sm_policy_update_context
         OpenAPI_list_free(sm_policy_update_context_data->policy_dec_failure_reports);
         sm_policy_update_context_data->policy_dec_failure_reports = NULL;
     }
+    if (sm_policy_update_context_data->invalid_policy_decs) {
+        OpenAPI_list_for_each(sm_policy_update_context_data->invalid_policy_decs, node) {
+            OpenAPI_invalid_param_free(node->data);
+        }
+        OpenAPI_list_free(sm_policy_update_context_data->invalid_policy_decs);
+        sm_policy_update_context_data->invalid_policy_decs = NULL;
+    }
     if (sm_policy_update_context_data->traffic_descriptors) {
         OpenAPI_list_for_each(sm_policy_update_context_data->traffic_descriptors, node) {
             OpenAPI_ddd_traffic_descriptor_free(node->data);
@@ -323,6 +342,10 @@ void OpenAPI_sm_policy_update_context_data_free(OpenAPI_sm_policy_update_context
         ogs_free(sm_policy_update_context_data->pcc_rule_id);
         sm_policy_update_context_data->pcc_rule_id = NULL;
     }
+    if (sm_policy_update_context_data->types_of_notif) {
+        OpenAPI_list_free(sm_policy_update_context_data->types_of_notif);
+        sm_policy_update_context_data->types_of_notif = NULL;
+    }
     if (sm_policy_update_context_data->inter_grp_ids) {
         OpenAPI_list_for_each(sm_policy_update_context_data->inter_grp_ids, node) {
             ogs_free(node->data);
@@ -330,9 +353,16 @@ void OpenAPI_sm_policy_update_context_data_free(OpenAPI_sm_policy_update_context
         OpenAPI_list_free(sm_policy_update_context_data->inter_grp_ids);
         sm_policy_update_context_data->inter_grp_ids = NULL;
     }
-    if (sm_policy_update_context_data->types_of_notif) {
-        OpenAPI_list_free(sm_policy_update_context_data->types_of_notif);
-        sm_policy_update_context_data->types_of_notif = NULL;
+    if (sm_policy_update_context_data->pcf_ue_info) {
+        OpenAPI_pcf_ue_callback_info_free(sm_policy_update_context_data->pcf_ue_info);
+        sm_policy_update_context_data->pcf_ue_info = NULL;
+    }
+    if (sm_policy_update_context_data->nwdaf_datas) {
+        OpenAPI_list_for_each(sm_policy_update_context_data->nwdaf_datas, node) {
+            OpenAPI_nwdaf_data_free(node->data);
+        }
+        OpenAPI_list_free(sm_policy_update_context_data->nwdaf_datas);
+        sm_policy_update_context_data->nwdaf_datas = NULL;
     }
     ogs_free(sm_policy_update_context_data);
 }
@@ -560,6 +590,13 @@ cJSON *OpenAPI_sm_policy_update_context_data_convertToJSON(OpenAPI_sm_policy_upd
     }
     }
 
+    if (sm_policy_update_context_data->is_vplmn_qos_not_app) {
+    if (cJSON_AddBoolToObject(item, "vplmnQosNotApp", sm_policy_update_context_data->vplmn_qos_not_app) == NULL) {
+        ogs_error("OpenAPI_sm_policy_update_context_data_convertToJSON() failed [vplmn_qos_not_app]");
+        goto end;
+    }
+    }
+
     if (sm_policy_update_context_data->is_num_of_pack_filter) {
     if (cJSON_AddNumberToObject(item, "numOfPackFilter", sm_policy_update_context_data->num_of_pack_filter) == NULL) {
         ogs_error("OpenAPI_sm_policy_update_context_data_convertToJSON() failed [num_of_pack_filter]");
@@ -766,14 +803,8 @@ cJSON *OpenAPI_sm_policy_update_context_data_convertToJSON(OpenAPI_sm_policy_upd
     }
     }
 
-    if (sm_policy_update_context_data->atsss_capab) {
-    cJSON *atsss_capab_local_JSON = OpenAPI_atsss_capability_convertToJSON(sm_policy_update_context_data->atsss_capab);
-    if (atsss_capab_local_JSON == NULL) {
-        ogs_error("OpenAPI_sm_policy_update_context_data_convertToJSON() failed [atsss_capab]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "atsssCapab", atsss_capab_local_JSON);
-    if (item->child == NULL) {
+    if (sm_policy_update_context_data->atsss_capab != OpenAPI_npcf_atsss_capability_NULL) {
+    if (cJSON_AddStringToObject(item, "atsssCapab", OpenAPI_npcf_atsss_capability_ToString(sm_policy_update_context_data->atsss_capab)) == NULL) {
         ogs_error("OpenAPI_sm_policy_update_context_data_convertToJSON() failed [atsss_capab]");
         goto end;
     }
@@ -864,6 +895,22 @@ cJSON *OpenAPI_sm_policy_update_context_data_convertToJSON(OpenAPI_sm_policy_upd
     }
     }
 
+    if (sm_policy_update_context_data->invalid_policy_decs) {
+    cJSON *invalid_policy_decsList = cJSON_AddArrayToObject(item, "invalidPolicyDecs");
+    if (invalid_policy_decsList == NULL) {
+        ogs_error("OpenAPI_sm_policy_update_context_data_convertToJSON() failed [invalid_policy_decs]");
+        goto end;
+    }
+    OpenAPI_list_for_each(sm_policy_update_context_data->invalid_policy_decs, node) {
+        cJSON *itemLocal = OpenAPI_invalid_param_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_sm_policy_update_context_data_convertToJSON() failed [invalid_policy_decs]");
+            goto end;
+        }
+        cJSON_AddItemToArray(invalid_policy_decsList, itemLocal);
+    }
+    }
+
     if (sm_policy_update_context_data->traffic_descriptors) {
     cJSON *traffic_descriptorsList = cJSON_AddArrayToObject(item, "trafficDescriptors");
     if (traffic_descriptorsList == NULL) {
@@ -887,6 +934,20 @@ cJSON *OpenAPI_sm_policy_update_context_data_convertToJSON(OpenAPI_sm_policy_upd
     }
     }
 
+    if (sm_policy_update_context_data->types_of_notif != OpenAPI_dl_data_delivery_status_NULL) {
+    cJSON *types_of_notifList = cJSON_AddArrayToObject(item, "typesOfNotif");
+    if (types_of_notifList == NULL) {
+        ogs_error("OpenAPI_sm_policy_update_context_data_convertToJSON() failed [types_of_notif]");
+        goto end;
+    }
+    OpenAPI_list_for_each(sm_policy_update_context_data->types_of_notif, node) {
+        if (cJSON_AddStringToObject(types_of_notifList, "", OpenAPI_dl_data_delivery_status_ToString((intptr_t)node->data)) == NULL) {
+            ogs_error("OpenAPI_sm_policy_update_context_data_convertToJSON() failed [types_of_notif]");
+            goto end;
+        }
+    }
+    }
+
     if (sm_policy_update_context_data->inter_grp_ids) {
     cJSON *inter_grp_idsList = cJSON_AddArrayToObject(item, "interGrpIds");
     if (inter_grp_idsList == NULL) {
@@ -901,17 +962,46 @@ cJSON *OpenAPI_sm_policy_update_context_data_convertToJSON(OpenAPI_sm_policy_upd
     }
     }
 
-    if (sm_policy_update_context_data->types_of_notif != OpenAPI_dl_data_delivery_status_NULL) {
-    cJSON *types_of_notifList = cJSON_AddArrayToObject(item, "typesOfNotif");
-    if (types_of_notifList == NULL) {
-        ogs_error("OpenAPI_sm_policy_update_context_data_convertToJSON() failed [types_of_notif]");
+    if (sm_policy_update_context_data->sat_backhaul_category != OpenAPI_satellite_backhaul_category_NULL) {
+    if (cJSON_AddStringToObject(item, "satBackhaulCategory", OpenAPI_satellite_backhaul_category_ToString(sm_policy_update_context_data->sat_backhaul_category)) == NULL) {
+        ogs_error("OpenAPI_sm_policy_update_context_data_convertToJSON() failed [sat_backhaul_category]");
         goto end;
     }
-    OpenAPI_list_for_each(sm_policy_update_context_data->types_of_notif, node) {
-        if (cJSON_AddStringToObject(types_of_notifList, "", OpenAPI_dl_data_delivery_status_ToString((intptr_t)node->data)) == NULL) {
-            ogs_error("OpenAPI_sm_policy_update_context_data_convertToJSON() failed [types_of_notif]");
+    }
+
+    if (sm_policy_update_context_data->pcf_ue_info) {
+    cJSON *pcf_ue_info_local_JSON = OpenAPI_pcf_ue_callback_info_convertToJSON(sm_policy_update_context_data->pcf_ue_info);
+    if (pcf_ue_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_sm_policy_update_context_data_convertToJSON() failed [pcf_ue_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "pcfUeInfo", pcf_ue_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_sm_policy_update_context_data_convertToJSON() failed [pcf_ue_info]");
+        goto end;
+    }
+    }
+
+    if (sm_policy_update_context_data->nwdaf_datas) {
+    cJSON *nwdaf_datasList = cJSON_AddArrayToObject(item, "nwdafDatas");
+    if (nwdaf_datasList == NULL) {
+        ogs_error("OpenAPI_sm_policy_update_context_data_convertToJSON() failed [nwdaf_datas]");
+        goto end;
+    }
+    OpenAPI_list_for_each(sm_policy_update_context_data->nwdaf_datas, node) {
+        cJSON *itemLocal = OpenAPI_nwdaf_data_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_sm_policy_update_context_data_convertToJSON() failed [nwdaf_datas]");
             goto end;
         }
+        cJSON_AddItemToArray(nwdaf_datasList, itemLocal);
+    }
+    }
+
+    if (sm_policy_update_context_data->is_an_gw_status) {
+    if (cJSON_AddBoolToObject(item, "anGwStatus", sm_policy_update_context_data->an_gw_status) == NULL) {
+        ogs_error("OpenAPI_sm_policy_update_context_data_convertToJSON() failed [an_gw_status]");
+        goto end;
     }
     }
 
@@ -956,6 +1046,7 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
     OpenAPI_subscribed_default_qos_t *subs_def_qos_local_nonprim = NULL;
     cJSON *vplmn_qos = NULL;
     OpenAPI_vplmn_qos_t *vplmn_qos_local_nonprim = NULL;
+    cJSON *vplmn_qos_not_app = NULL;
     cJSON *num_of_pack_filter = NULL;
     cJSON *accu_usage_reports = NULL;
     OpenAPI_list_t *accu_usage_reportsList = NULL;
@@ -987,7 +1078,7 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
     cJSON *ma_pdu_ind = NULL;
     OpenAPI_ma_pdu_indication_e ma_pdu_indVariable = 0;
     cJSON *atsss_capab = NULL;
-    OpenAPI_atsss_capability_t *atsss_capab_local_nonprim = NULL;
+    OpenAPI_npcf_atsss_capability_e atsss_capabVariable = 0;
     cJSON *tsn_bridge_info = NULL;
     OpenAPI_tsn_bridge_info_t *tsn_bridge_info_local_nonprim = NULL;
     cJSON *tsn_bridge_man_cont = NULL;
@@ -1000,13 +1091,22 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
     OpenAPI_list_t *mul_addr_infosList = NULL;
     cJSON *policy_dec_failure_reports = NULL;
     OpenAPI_list_t *policy_dec_failure_reportsList = NULL;
+    cJSON *invalid_policy_decs = NULL;
+    OpenAPI_list_t *invalid_policy_decsList = NULL;
     cJSON *traffic_descriptors = NULL;
     OpenAPI_list_t *traffic_descriptorsList = NULL;
     cJSON *pcc_rule_id = NULL;
-    cJSON *inter_grp_ids = NULL;
-    OpenAPI_list_t *inter_grp_idsList = NULL;
     cJSON *types_of_notif = NULL;
     OpenAPI_list_t *types_of_notifList = NULL;
+    cJSON *inter_grp_ids = NULL;
+    OpenAPI_list_t *inter_grp_idsList = NULL;
+    cJSON *sat_backhaul_category = NULL;
+    OpenAPI_satellite_backhaul_category_e sat_backhaul_categoryVariable = 0;
+    cJSON *pcf_ue_info = NULL;
+    OpenAPI_pcf_ue_callback_info_t *pcf_ue_info_local_nonprim = NULL;
+    cJSON *nwdaf_datas = NULL;
+    OpenAPI_list_t *nwdaf_datasList = NULL;
+    cJSON *an_gw_status = NULL;
     rep_policy_ctrl_req_triggers = cJSON_GetObjectItemCaseSensitive(sm_policy_update_context_dataJSON, "repPolicyCtrlReqTriggers");
     if (rep_policy_ctrl_req_triggers) {
         cJSON *rep_policy_ctrl_req_triggers_local = NULL;
@@ -1190,6 +1290,14 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
     vplmn_qos = cJSON_GetObjectItemCaseSensitive(sm_policy_update_context_dataJSON, "vplmnQos");
     if (vplmn_qos) {
     vplmn_qos_local_nonprim = OpenAPI_vplmn_qos_parseFromJSON(vplmn_qos);
+    }
+
+    vplmn_qos_not_app = cJSON_GetObjectItemCaseSensitive(sm_policy_update_context_dataJSON, "vplmnQosNotApp");
+    if (vplmn_qos_not_app) {
+    if (!cJSON_IsBool(vplmn_qos_not_app)) {
+        ogs_error("OpenAPI_sm_policy_update_context_data_parseFromJSON() failed [vplmn_qos_not_app]");
+        goto end;
+    }
     }
 
     num_of_pack_filter = cJSON_GetObjectItemCaseSensitive(sm_policy_update_context_dataJSON, "numOfPackFilter");
@@ -1444,7 +1552,11 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
 
     atsss_capab = cJSON_GetObjectItemCaseSensitive(sm_policy_update_context_dataJSON, "atsssCapab");
     if (atsss_capab) {
-    atsss_capab_local_nonprim = OpenAPI_atsss_capability_parseFromJSON(atsss_capab);
+    if (!cJSON_IsString(atsss_capab)) {
+        ogs_error("OpenAPI_sm_policy_update_context_data_parseFromJSON() failed [atsss_capab]");
+        goto end;
+    }
+    atsss_capabVariable = OpenAPI_npcf_atsss_capability_FromString(atsss_capab->valuestring);
     }
 
     tsn_bridge_info = cJSON_GetObjectItemCaseSensitive(sm_policy_update_context_dataJSON, "tsnBridgeInfo");
@@ -1531,6 +1643,31 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
         }
     }
 
+    invalid_policy_decs = cJSON_GetObjectItemCaseSensitive(sm_policy_update_context_dataJSON, "invalidPolicyDecs");
+    if (invalid_policy_decs) {
+        cJSON *invalid_policy_decs_local = NULL;
+        if (!cJSON_IsArray(invalid_policy_decs)) {
+            ogs_error("OpenAPI_sm_policy_update_context_data_parseFromJSON() failed [invalid_policy_decs]");
+            goto end;
+        }
+
+        invalid_policy_decsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(invalid_policy_decs_local, invalid_policy_decs) {
+            if (!cJSON_IsObject(invalid_policy_decs_local)) {
+                ogs_error("OpenAPI_sm_policy_update_context_data_parseFromJSON() failed [invalid_policy_decs]");
+                goto end;
+            }
+            OpenAPI_invalid_param_t *invalid_policy_decsItem = OpenAPI_invalid_param_parseFromJSON(invalid_policy_decs_local);
+            if (!invalid_policy_decsItem) {
+                ogs_error("No invalid_policy_decsItem");
+                OpenAPI_list_free(invalid_policy_decsList);
+                goto end;
+            }
+            OpenAPI_list_add(invalid_policy_decsList, invalid_policy_decsItem);
+        }
+    }
+
     traffic_descriptors = cJSON_GetObjectItemCaseSensitive(sm_policy_update_context_dataJSON, "trafficDescriptors");
     if (traffic_descriptors) {
         cJSON *traffic_descriptors_local = NULL;
@@ -1564,6 +1701,25 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
     }
     }
 
+    types_of_notif = cJSON_GetObjectItemCaseSensitive(sm_policy_update_context_dataJSON, "typesOfNotif");
+    if (types_of_notif) {
+        cJSON *types_of_notif_local = NULL;
+        if (!cJSON_IsArray(types_of_notif)) {
+            ogs_error("OpenAPI_sm_policy_update_context_data_parseFromJSON() failed [types_of_notif]");
+            goto end;
+        }
+
+        types_of_notifList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(types_of_notif_local, types_of_notif) {
+            if (!cJSON_IsString(types_of_notif_local)) {
+                ogs_error("OpenAPI_sm_policy_update_context_data_parseFromJSON() failed [types_of_notif]");
+                goto end;
+            }
+            OpenAPI_list_add(types_of_notifList, (void *)OpenAPI_dl_data_delivery_status_FromString(types_of_notif_local->valuestring));
+        }
+    }
+
     inter_grp_ids = cJSON_GetObjectItemCaseSensitive(sm_policy_update_context_dataJSON, "interGrpIds");
     if (inter_grp_ids) {
         cJSON *inter_grp_ids_local = NULL;
@@ -1585,23 +1741,51 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
         }
     }
 
-    types_of_notif = cJSON_GetObjectItemCaseSensitive(sm_policy_update_context_dataJSON, "typesOfNotif");
-    if (types_of_notif) {
-        cJSON *types_of_notif_local = NULL;
-        if (!cJSON_IsArray(types_of_notif)) {
-            ogs_error("OpenAPI_sm_policy_update_context_data_parseFromJSON() failed [types_of_notif]");
+    sat_backhaul_category = cJSON_GetObjectItemCaseSensitive(sm_policy_update_context_dataJSON, "satBackhaulCategory");
+    if (sat_backhaul_category) {
+    if (!cJSON_IsString(sat_backhaul_category)) {
+        ogs_error("OpenAPI_sm_policy_update_context_data_parseFromJSON() failed [sat_backhaul_category]");
+        goto end;
+    }
+    sat_backhaul_categoryVariable = OpenAPI_satellite_backhaul_category_FromString(sat_backhaul_category->valuestring);
+    }
+
+    pcf_ue_info = cJSON_GetObjectItemCaseSensitive(sm_policy_update_context_dataJSON, "pcfUeInfo");
+    if (pcf_ue_info) {
+    pcf_ue_info_local_nonprim = OpenAPI_pcf_ue_callback_info_parseFromJSON(pcf_ue_info);
+    }
+
+    nwdaf_datas = cJSON_GetObjectItemCaseSensitive(sm_policy_update_context_dataJSON, "nwdafDatas");
+    if (nwdaf_datas) {
+        cJSON *nwdaf_datas_local = NULL;
+        if (!cJSON_IsArray(nwdaf_datas)) {
+            ogs_error("OpenAPI_sm_policy_update_context_data_parseFromJSON() failed [nwdaf_datas]");
             goto end;
         }
 
-        types_of_notifList = OpenAPI_list_create();
+        nwdaf_datasList = OpenAPI_list_create();
 
-        cJSON_ArrayForEach(types_of_notif_local, types_of_notif) {
-            if (!cJSON_IsString(types_of_notif_local)) {
-                ogs_error("OpenAPI_sm_policy_update_context_data_parseFromJSON() failed [types_of_notif]");
+        cJSON_ArrayForEach(nwdaf_datas_local, nwdaf_datas) {
+            if (!cJSON_IsObject(nwdaf_datas_local)) {
+                ogs_error("OpenAPI_sm_policy_update_context_data_parseFromJSON() failed [nwdaf_datas]");
                 goto end;
             }
-            OpenAPI_list_add(types_of_notifList, (void *)OpenAPI_dl_data_delivery_status_FromString(types_of_notif_local->valuestring));
+            OpenAPI_nwdaf_data_t *nwdaf_datasItem = OpenAPI_nwdaf_data_parseFromJSON(nwdaf_datas_local);
+            if (!nwdaf_datasItem) {
+                ogs_error("No nwdaf_datasItem");
+                OpenAPI_list_free(nwdaf_datasList);
+                goto end;
+            }
+            OpenAPI_list_add(nwdaf_datasList, nwdaf_datasItem);
         }
+    }
+
+    an_gw_status = cJSON_GetObjectItemCaseSensitive(sm_policy_update_context_dataJSON, "anGwStatus");
+    if (an_gw_status) {
+    if (!cJSON_IsBool(an_gw_status)) {
+        ogs_error("OpenAPI_sm_policy_update_context_data_parseFromJSON() failed [an_gw_status]");
+        goto end;
+    }
     }
 
     sm_policy_update_context_data_local_var = OpenAPI_sm_policy_update_context_data_create (
@@ -1627,6 +1811,8 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
         auth_prof_index && !cJSON_IsNull(auth_prof_index) ? ogs_strdup(auth_prof_index->valuestring) : NULL,
         subs_def_qos ? subs_def_qos_local_nonprim : NULL,
         vplmn_qos ? vplmn_qos_local_nonprim : NULL,
+        vplmn_qos_not_app ? true : false,
+        vplmn_qos_not_app ? vplmn_qos_not_app->valueint : 0,
         num_of_pack_filter ? true : false,
         num_of_pack_filter ? num_of_pack_filter->valuedouble : 0,
         accu_usage_reports ? accu_usage_reportsList : NULL,
@@ -1647,17 +1833,23 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
         serv_nf_id ? serv_nf_id_local_nonprim : NULL,
         trace_req ? trace_req_local_nonprim : NULL,
         ma_pdu_ind ? ma_pdu_indVariable : 0,
-        atsss_capab ? atsss_capab_local_nonprim : NULL,
+        atsss_capab ? atsss_capabVariable : 0,
         tsn_bridge_info ? tsn_bridge_info_local_nonprim : NULL,
         tsn_bridge_man_cont ? tsn_bridge_man_cont_local_nonprim : NULL,
         tsn_port_man_cont_dstt ? tsn_port_man_cont_dstt_local_nonprim : NULL,
         tsn_port_man_cont_nwtts ? tsn_port_man_cont_nwttsList : NULL,
         mul_addr_infos ? mul_addr_infosList : NULL,
         policy_dec_failure_reports ? policy_dec_failure_reportsList : NULL,
+        invalid_policy_decs ? invalid_policy_decsList : NULL,
         traffic_descriptors ? traffic_descriptorsList : NULL,
         pcc_rule_id && !cJSON_IsNull(pcc_rule_id) ? ogs_strdup(pcc_rule_id->valuestring) : NULL,
+        types_of_notif ? types_of_notifList : NULL,
         inter_grp_ids ? inter_grp_idsList : NULL,
-        types_of_notif ? types_of_notifList : NULL
+        sat_backhaul_category ? sat_backhaul_categoryVariable : 0,
+        pcf_ue_info ? pcf_ue_info_local_nonprim : NULL,
+        nwdaf_datas ? nwdaf_datasList : NULL,
+        an_gw_status ? true : false,
+        an_gw_status ? an_gw_status->valueint : 0
     );
 
     return sm_policy_update_context_data_local_var;
@@ -1765,10 +1957,6 @@ end:
         OpenAPI_trace_data_free(trace_req_local_nonprim);
         trace_req_local_nonprim = NULL;
     }
-    if (atsss_capab_local_nonprim) {
-        OpenAPI_atsss_capability_free(atsss_capab_local_nonprim);
-        atsss_capab_local_nonprim = NULL;
-    }
     if (tsn_bridge_info_local_nonprim) {
         OpenAPI_tsn_bridge_info_free(tsn_bridge_info_local_nonprim);
         tsn_bridge_info_local_nonprim = NULL;
@@ -1799,12 +1987,23 @@ end:
         OpenAPI_list_free(policy_dec_failure_reportsList);
         policy_dec_failure_reportsList = NULL;
     }
+    if (invalid_policy_decsList) {
+        OpenAPI_list_for_each(invalid_policy_decsList, node) {
+            OpenAPI_invalid_param_free(node->data);
+        }
+        OpenAPI_list_free(invalid_policy_decsList);
+        invalid_policy_decsList = NULL;
+    }
     if (traffic_descriptorsList) {
         OpenAPI_list_for_each(traffic_descriptorsList, node) {
             OpenAPI_ddd_traffic_descriptor_free(node->data);
         }
         OpenAPI_list_free(traffic_descriptorsList);
         traffic_descriptorsList = NULL;
+    }
+    if (types_of_notifList) {
+        OpenAPI_list_free(types_of_notifList);
+        types_of_notifList = NULL;
     }
     if (inter_grp_idsList) {
         OpenAPI_list_for_each(inter_grp_idsList, node) {
@@ -1813,9 +2012,16 @@ end:
         OpenAPI_list_free(inter_grp_idsList);
         inter_grp_idsList = NULL;
     }
-    if (types_of_notifList) {
-        OpenAPI_list_free(types_of_notifList);
-        types_of_notifList = NULL;
+    if (pcf_ue_info_local_nonprim) {
+        OpenAPI_pcf_ue_callback_info_free(pcf_ue_info_local_nonprim);
+        pcf_ue_info_local_nonprim = NULL;
+    }
+    if (nwdaf_datasList) {
+        OpenAPI_list_for_each(nwdaf_datasList, node) {
+            OpenAPI_nwdaf_data_free(node->data);
+        }
+        OpenAPI_list_free(nwdaf_datasList);
+        nwdaf_datasList = NULL;
     }
     return NULL;
 }

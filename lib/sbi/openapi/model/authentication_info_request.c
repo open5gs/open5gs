@@ -11,7 +11,11 @@ OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_creat
     char *ausf_instance_id,
     OpenAPI_list_t *cell_cag_info,
     bool is_n5gc_ind,
-    int n5gc_ind
+    int n5gc_ind,
+    bool is_nswo_ind,
+    int nswo_ind,
+    bool is_disaster_roaming_ind,
+    int disaster_roaming_ind
 )
 {
     OpenAPI_authentication_info_request_t *authentication_info_request_local_var = ogs_malloc(sizeof(OpenAPI_authentication_info_request_t));
@@ -24,6 +28,10 @@ OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_creat
     authentication_info_request_local_var->cell_cag_info = cell_cag_info;
     authentication_info_request_local_var->is_n5gc_ind = is_n5gc_ind;
     authentication_info_request_local_var->n5gc_ind = n5gc_ind;
+    authentication_info_request_local_var->is_nswo_ind = is_nswo_ind;
+    authentication_info_request_local_var->nswo_ind = nswo_ind;
+    authentication_info_request_local_var->is_disaster_roaming_ind = is_disaster_roaming_ind;
+    authentication_info_request_local_var->disaster_roaming_ind = disaster_roaming_ind;
 
     return authentication_info_request_local_var;
 }
@@ -131,6 +139,20 @@ cJSON *OpenAPI_authentication_info_request_convertToJSON(OpenAPI_authentication_
     }
     }
 
+    if (authentication_info_request->is_nswo_ind) {
+    if (cJSON_AddBoolToObject(item, "nswoInd", authentication_info_request->nswo_ind) == NULL) {
+        ogs_error("OpenAPI_authentication_info_request_convertToJSON() failed [nswo_ind]");
+        goto end;
+    }
+    }
+
+    if (authentication_info_request->is_disaster_roaming_ind) {
+    if (cJSON_AddBoolToObject(item, "disasterRoamingInd", authentication_info_request->disaster_roaming_ind) == NULL) {
+        ogs_error("OpenAPI_authentication_info_request_convertToJSON() failed [disaster_roaming_ind]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -147,6 +169,8 @@ OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_parse
     cJSON *cell_cag_info = NULL;
     OpenAPI_list_t *cell_cag_infoList = NULL;
     cJSON *n5gc_ind = NULL;
+    cJSON *nswo_ind = NULL;
+    cJSON *disaster_roaming_ind = NULL;
     supported_features = cJSON_GetObjectItemCaseSensitive(authentication_info_requestJSON, "supportedFeatures");
     if (supported_features) {
     if (!cJSON_IsString(supported_features) && !cJSON_IsNull(supported_features)) {
@@ -209,6 +233,22 @@ OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_parse
     }
     }
 
+    nswo_ind = cJSON_GetObjectItemCaseSensitive(authentication_info_requestJSON, "nswoInd");
+    if (nswo_ind) {
+    if (!cJSON_IsBool(nswo_ind)) {
+        ogs_error("OpenAPI_authentication_info_request_parseFromJSON() failed [nswo_ind]");
+        goto end;
+    }
+    }
+
+    disaster_roaming_ind = cJSON_GetObjectItemCaseSensitive(authentication_info_requestJSON, "disasterRoamingInd");
+    if (disaster_roaming_ind) {
+    if (!cJSON_IsBool(disaster_roaming_ind)) {
+        ogs_error("OpenAPI_authentication_info_request_parseFromJSON() failed [disaster_roaming_ind]");
+        goto end;
+    }
+    }
+
     authentication_info_request_local_var = OpenAPI_authentication_info_request_create (
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
         ogs_strdup(serving_network_name->valuestring),
@@ -216,7 +256,11 @@ OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_parse
         ogs_strdup(ausf_instance_id->valuestring),
         cell_cag_info ? cell_cag_infoList : NULL,
         n5gc_ind ? true : false,
-        n5gc_ind ? n5gc_ind->valueint : 0
+        n5gc_ind ? n5gc_ind->valueint : 0,
+        nswo_ind ? true : false,
+        nswo_ind ? nswo_ind->valueint : 0,
+        disaster_roaming_ind ? true : false,
+        disaster_roaming_ind ? disaster_roaming_ind->valueint : 0
     );
 
     return authentication_info_request_local_var;

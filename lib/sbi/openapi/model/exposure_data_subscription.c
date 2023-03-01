@@ -8,7 +8,8 @@ OpenAPI_exposure_data_subscription_t *OpenAPI_exposure_data_subscription_create(
     char *notification_uri,
     OpenAPI_list_t *monitored_resource_uris,
     char *expiry,
-    char *supported_features
+    char *supported_features,
+    OpenAPI_list_t *reset_ids
 )
 {
     OpenAPI_exposure_data_subscription_t *exposure_data_subscription_local_var = ogs_malloc(sizeof(OpenAPI_exposure_data_subscription_t));
@@ -18,6 +19,7 @@ OpenAPI_exposure_data_subscription_t *OpenAPI_exposure_data_subscription_create(
     exposure_data_subscription_local_var->monitored_resource_uris = monitored_resource_uris;
     exposure_data_subscription_local_var->expiry = expiry;
     exposure_data_subscription_local_var->supported_features = supported_features;
+    exposure_data_subscription_local_var->reset_ids = reset_ids;
 
     return exposure_data_subscription_local_var;
 }
@@ -47,6 +49,13 @@ void OpenAPI_exposure_data_subscription_free(OpenAPI_exposure_data_subscription_
     if (exposure_data_subscription->supported_features) {
         ogs_free(exposure_data_subscription->supported_features);
         exposure_data_subscription->supported_features = NULL;
+    }
+    if (exposure_data_subscription->reset_ids) {
+        OpenAPI_list_for_each(exposure_data_subscription->reset_ids, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(exposure_data_subscription->reset_ids);
+        exposure_data_subscription->reset_ids = NULL;
     }
     ogs_free(exposure_data_subscription);
 }
@@ -101,6 +110,20 @@ cJSON *OpenAPI_exposure_data_subscription_convertToJSON(OpenAPI_exposure_data_su
     }
     }
 
+    if (exposure_data_subscription->reset_ids) {
+    cJSON *reset_idsList = cJSON_AddArrayToObject(item, "resetIds");
+    if (reset_idsList == NULL) {
+        ogs_error("OpenAPI_exposure_data_subscription_convertToJSON() failed [reset_ids]");
+        goto end;
+    }
+    OpenAPI_list_for_each(exposure_data_subscription->reset_ids, node) {
+        if (cJSON_AddStringToObject(reset_idsList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_exposure_data_subscription_convertToJSON() failed [reset_ids]");
+            goto end;
+        }
+    }
+    }
+
 end:
     return item;
 }
@@ -114,6 +137,8 @@ OpenAPI_exposure_data_subscription_t *OpenAPI_exposure_data_subscription_parseFr
     OpenAPI_list_t *monitored_resource_urisList = NULL;
     cJSON *expiry = NULL;
     cJSON *supported_features = NULL;
+    cJSON *reset_ids = NULL;
+    OpenAPI_list_t *reset_idsList = NULL;
     notification_uri = cJSON_GetObjectItemCaseSensitive(exposure_data_subscriptionJSON, "notificationUri");
     if (!notification_uri) {
         ogs_error("OpenAPI_exposure_data_subscription_parseFromJSON() failed [notification_uri]");
@@ -163,11 +188,33 @@ OpenAPI_exposure_data_subscription_t *OpenAPI_exposure_data_subscription_parseFr
     }
     }
 
+    reset_ids = cJSON_GetObjectItemCaseSensitive(exposure_data_subscriptionJSON, "resetIds");
+    if (reset_ids) {
+        cJSON *reset_ids_local = NULL;
+        if (!cJSON_IsArray(reset_ids)) {
+            ogs_error("OpenAPI_exposure_data_subscription_parseFromJSON() failed [reset_ids]");
+            goto end;
+        }
+
+        reset_idsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(reset_ids_local, reset_ids) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(reset_ids_local)) {
+                ogs_error("OpenAPI_exposure_data_subscription_parseFromJSON() failed [reset_ids]");
+                goto end;
+            }
+            OpenAPI_list_add(reset_idsList, ogs_strdup(reset_ids_local->valuestring));
+        }
+    }
+
     exposure_data_subscription_local_var = OpenAPI_exposure_data_subscription_create (
         ogs_strdup(notification_uri->valuestring),
         monitored_resource_urisList,
         expiry && !cJSON_IsNull(expiry) ? ogs_strdup(expiry->valuestring) : NULL,
-        supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL
+        supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
+        reset_ids ? reset_idsList : NULL
     );
 
     return exposure_data_subscription_local_var;
@@ -178,6 +225,13 @@ end:
         }
         OpenAPI_list_free(monitored_resource_urisList);
         monitored_resource_urisList = NULL;
+    }
+    if (reset_idsList) {
+        OpenAPI_list_for_each(reset_idsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(reset_idsList);
+        reset_idsList = NULL;
     }
     return NULL;
 }

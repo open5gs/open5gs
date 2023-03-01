@@ -111,7 +111,7 @@ cJSON *OpenAPI_v2x_context_convertToJSON(OpenAPI_v2x_context_t *v2x_context)
         ogs_error("OpenAPI_v2x_context_convertToJSON() failed [pc5_qo_s_para]");
         goto end;
     }
-    cJSON_AddItemToObject(item, "Pc5QoSPara", pc5_qo_s_para_local_JSON);
+    cJSON_AddItemToObject(item, "pc5QoSPara", pc5_qo_s_para_local_JSON);
     if (item->child == NULL) {
         ogs_error("OpenAPI_v2x_context_convertToJSON() failed [pc5_qo_s_para]");
         goto end;
@@ -160,7 +160,7 @@ OpenAPI_v2x_context_t *OpenAPI_v2x_context_parseFromJSON(cJSON *v2x_contextJSON)
     }
     }
 
-    pc5_qo_s_para = cJSON_GetObjectItemCaseSensitive(v2x_contextJSON, "Pc5QoSPara");
+    pc5_qo_s_para = cJSON_GetObjectItemCaseSensitive(v2x_contextJSON, "pc5QoSPara");
     if (pc5_qo_s_para) {
     pc5_qo_s_para_local_nonprim = OpenAPI_pc5_qo_s_para_parseFromJSON(pc5_qo_s_para);
     }

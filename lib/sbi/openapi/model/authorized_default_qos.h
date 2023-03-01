@@ -1,7 +1,7 @@
 /*
  * authorized_default_qos.h
  *
- * 
+ * Represents the Authorized Default QoS.
  */
 
 #ifndef _OpenAPI_authorized_default_qos_H_

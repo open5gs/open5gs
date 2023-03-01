@@ -10,7 +10,8 @@ OpenAPI_udm_info_t *OpenAPI_udm_info_create(
     OpenAPI_list_t *gpsi_ranges,
     OpenAPI_list_t *external_group_identifiers_ranges,
     OpenAPI_list_t *routing_indicators,
-    OpenAPI_list_t *internal_group_identifiers_ranges
+    OpenAPI_list_t *internal_group_identifiers_ranges,
+    OpenAPI_list_t *suci_infos
 )
 {
     OpenAPI_udm_info_t *udm_info_local_var = ogs_malloc(sizeof(OpenAPI_udm_info_t));
@@ -22,6 +23,7 @@ OpenAPI_udm_info_t *OpenAPI_udm_info_create(
     udm_info_local_var->external_group_identifiers_ranges = external_group_identifiers_ranges;
     udm_info_local_var->routing_indicators = routing_indicators;
     udm_info_local_var->internal_group_identifiers_ranges = internal_group_identifiers_ranges;
+    udm_info_local_var->suci_infos = suci_infos;
 
     return udm_info_local_var;
 }
@@ -71,6 +73,13 @@ void OpenAPI_udm_info_free(OpenAPI_udm_info_t *udm_info)
         }
         OpenAPI_list_free(udm_info->internal_group_identifiers_ranges);
         udm_info->internal_group_identifiers_ranges = NULL;
+    }
+    if (udm_info->suci_infos) {
+        OpenAPI_list_for_each(udm_info->suci_infos, node) {
+            OpenAPI_suci_info_free(node->data);
+        }
+        OpenAPI_list_free(udm_info->suci_infos);
+        udm_info->suci_infos = NULL;
     }
     ogs_free(udm_info);
 }
@@ -171,6 +180,22 @@ cJSON *OpenAPI_udm_info_convertToJSON(OpenAPI_udm_info_t *udm_info)
     }
     }
 
+    if (udm_info->suci_infos) {
+    cJSON *suci_infosList = cJSON_AddArrayToObject(item, "suciInfos");
+    if (suci_infosList == NULL) {
+        ogs_error("OpenAPI_udm_info_convertToJSON() failed [suci_infos]");
+        goto end;
+    }
+    OpenAPI_list_for_each(udm_info->suci_infos, node) {
+        cJSON *itemLocal = OpenAPI_suci_info_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_udm_info_convertToJSON() failed [suci_infos]");
+            goto end;
+        }
+        cJSON_AddItemToArray(suci_infosList, itemLocal);
+    }
+    }
+
 end:
     return item;
 }
@@ -190,6 +215,8 @@ OpenAPI_udm_info_t *OpenAPI_udm_info_parseFromJSON(cJSON *udm_infoJSON)
     OpenAPI_list_t *routing_indicatorsList = NULL;
     cJSON *internal_group_identifiers_ranges = NULL;
     OpenAPI_list_t *internal_group_identifiers_rangesList = NULL;
+    cJSON *suci_infos = NULL;
+    OpenAPI_list_t *suci_infosList = NULL;
     group_id = cJSON_GetObjectItemCaseSensitive(udm_infoJSON, "groupId");
     if (group_id) {
     if (!cJSON_IsString(group_id) && !cJSON_IsNull(group_id)) {
@@ -319,13 +346,39 @@ OpenAPI_udm_info_t *OpenAPI_udm_info_parseFromJSON(cJSON *udm_infoJSON)
         }
     }
 
+    suci_infos = cJSON_GetObjectItemCaseSensitive(udm_infoJSON, "suciInfos");
+    if (suci_infos) {
+        cJSON *suci_infos_local = NULL;
+        if (!cJSON_IsArray(suci_infos)) {
+            ogs_error("OpenAPI_udm_info_parseFromJSON() failed [suci_infos]");
+            goto end;
+        }
+
+        suci_infosList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(suci_infos_local, suci_infos) {
+            if (!cJSON_IsObject(suci_infos_local)) {
+                ogs_error("OpenAPI_udm_info_parseFromJSON() failed [suci_infos]");
+                goto end;
+            }
+            OpenAPI_suci_info_t *suci_infosItem = OpenAPI_suci_info_parseFromJSON(suci_infos_local);
+            if (!suci_infosItem) {
+                ogs_error("No suci_infosItem");
+                OpenAPI_list_free(suci_infosList);
+                goto end;
+            }
+            OpenAPI_list_add(suci_infosList, suci_infosItem);
+        }
+    }
+
     udm_info_local_var = OpenAPI_udm_info_create (
         group_id && !cJSON_IsNull(group_id) ? ogs_strdup(group_id->valuestring) : NULL,
         supi_ranges ? supi_rangesList : NULL,
         gpsi_ranges ? gpsi_rangesList : NULL,
         external_group_identifiers_ranges ? external_group_identifiers_rangesList : NULL,
         routing_indicators ? routing_indicatorsList : NULL,
-        internal_group_identifiers_ranges ? internal_group_identifiers_rangesList : NULL
+        internal_group_identifiers_ranges ? internal_group_identifiers_rangesList : NULL,
+        suci_infos ? suci_infosList : NULL
     );
 
     return udm_info_local_var;
@@ -364,6 +417,13 @@ end:
         }
         OpenAPI_list_free(internal_group_identifiers_rangesList);
         internal_group_identifiers_rangesList = NULL;
+    }
+    if (suci_infosList) {
+        OpenAPI_list_for_each(suci_infosList, node) {
+            OpenAPI_suci_info_free(node->data);
+        }
+        OpenAPI_list_free(suci_infosList);
+        suci_infosList = NULL;
     }
     return NULL;
 }

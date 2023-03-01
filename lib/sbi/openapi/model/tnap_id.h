@@ -1,7 +1,7 @@
 /*
  * tnap_id.h
  *
- * 
+ * Contain the TNAP Identifier see clause5.6.2 of 3GPP TS 23.501.
  */
 
 #ifndef _OpenAPI_tnap_id_H_

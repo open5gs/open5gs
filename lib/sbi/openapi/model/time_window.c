@@ -80,7 +80,7 @@ OpenAPI_time_window_t *OpenAPI_time_window_parseFromJSON(cJSON *time_windowJSON)
         ogs_error("OpenAPI_time_window_parseFromJSON() failed [start_time]");
         goto end;
     }
-    if (!cJSON_IsString(start_time)) {
+    if (!cJSON_IsString(start_time) && !cJSON_IsNull(start_time)) {
         ogs_error("OpenAPI_time_window_parseFromJSON() failed [start_time]");
         goto end;
     }
@@ -90,7 +90,7 @@ OpenAPI_time_window_t *OpenAPI_time_window_parseFromJSON(cJSON *time_windowJSON)
         ogs_error("OpenAPI_time_window_parseFromJSON() failed [stop_time]");
         goto end;
     }
-    if (!cJSON_IsString(stop_time)) {
+    if (!cJSON_IsString(stop_time) && !cJSON_IsNull(stop_time)) {
         ogs_error("OpenAPI_time_window_parseFromJSON() failed [stop_time]");
         goto end;
     }

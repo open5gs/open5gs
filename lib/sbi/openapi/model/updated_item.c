@@ -6,7 +6,7 @@
 
 OpenAPI_updated_item_t *OpenAPI_updated_item_create(
     char *item,
-    char *value
+    OpenAPI_any_type_t *value
 )
 {
     OpenAPI_updated_item_t *updated_item_local_var = ogs_malloc(sizeof(OpenAPI_updated_item_t));
@@ -30,7 +30,7 @@ void OpenAPI_updated_item_free(OpenAPI_updated_item_t *updated_item)
         updated_item->item = NULL;
     }
     if (updated_item->value) {
-        ogs_free(updated_item->value);
+        OpenAPI_any_type_free(updated_item->value);
         updated_item->value = NULL;
     }
     ogs_free(updated_item);
@@ -60,7 +60,13 @@ cJSON *OpenAPI_updated_item_convertToJSON(OpenAPI_updated_item_t *updated_item)
         ogs_error("OpenAPI_updated_item_convertToJSON() failed [value]");
         return NULL;
     }
-    if (cJSON_AddStringToObject(item, "value", updated_item->value) == NULL) {
+    cJSON *value_object = OpenAPI_any_type_convertToJSON(updated_item->value);
+    if (value_object == NULL) {
+        ogs_error("OpenAPI_updated_item_convertToJSON() failed [value]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "value", value_object);
+    if (item->child == NULL) {
         ogs_error("OpenAPI_updated_item_convertToJSON() failed [value]");
         goto end;
     }
@@ -75,6 +81,7 @@ OpenAPI_updated_item_t *OpenAPI_updated_item_parseFromJSON(cJSON *updated_itemJS
     OpenAPI_lnode_t *node = NULL;
     cJSON *item = NULL;
     cJSON *value = NULL;
+    OpenAPI_any_type_t *value_local_object = NULL;
     item = cJSON_GetObjectItemCaseSensitive(updated_itemJSON, "item");
     if (!item) {
         ogs_error("OpenAPI_updated_item_parseFromJSON() failed [item]");
@@ -90,18 +97,19 @@ OpenAPI_updated_item_t *OpenAPI_updated_item_parseFromJSON(cJSON *updated_itemJS
         ogs_error("OpenAPI_updated_item_parseFromJSON() failed [value]");
         goto end;
     }
-    if (!cJSON_IsString(value)) {
-        ogs_error("OpenAPI_updated_item_parseFromJSON() failed [value]");
-        goto end;
-    }
+    value_local_object = OpenAPI_any_type_parseFromJSON(value);
 
     updated_item_local_var = OpenAPI_updated_item_create (
         ogs_strdup(item->valuestring),
-        ogs_strdup(value->valuestring)
+        value_local_object
     );
 
     return updated_item_local_var;
 end:
+    if (value_local_object) {
+        OpenAPI_any_type_free(value_local_object);
+        value_local_object = NULL;
+    }
     return NULL;
 }
 

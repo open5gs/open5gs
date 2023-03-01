@@ -10,7 +10,9 @@ OpenAPI_steering_mode_t *OpenAPI_steering_mode_create(
     OpenAPI_access_type_rm_t *standby,
     bool is__3g_load,
     int _3g_load,
-    OpenAPI_access_type_e prio_acc
+    OpenAPI_access_type_e prio_acc,
+    OpenAPI_threshold_value_t *thres_value,
+    OpenAPI_steer_mode_indicator_e steer_mode_ind
 )
 {
     OpenAPI_steering_mode_t *steering_mode_local_var = ogs_malloc(sizeof(OpenAPI_steering_mode_t));
@@ -22,6 +24,8 @@ OpenAPI_steering_mode_t *OpenAPI_steering_mode_create(
     steering_mode_local_var->is__3g_load = is__3g_load;
     steering_mode_local_var->_3g_load = _3g_load;
     steering_mode_local_var->prio_acc = prio_acc;
+    steering_mode_local_var->thres_value = thres_value;
+    steering_mode_local_var->steer_mode_ind = steer_mode_ind;
 
     return steering_mode_local_var;
 }
@@ -36,6 +40,10 @@ void OpenAPI_steering_mode_free(OpenAPI_steering_mode_t *steering_mode)
     if (steering_mode->standby) {
         OpenAPI_access_type_rm_free(steering_mode->standby);
         steering_mode->standby = NULL;
+    }
+    if (steering_mode->thres_value) {
+        OpenAPI_threshold_value_free(steering_mode->thres_value);
+        steering_mode->thres_value = NULL;
     }
     ogs_free(steering_mode);
 }
@@ -94,6 +102,26 @@ cJSON *OpenAPI_steering_mode_convertToJSON(OpenAPI_steering_mode_t *steering_mod
     }
     }
 
+    if (steering_mode->thres_value) {
+    cJSON *thres_value_local_JSON = OpenAPI_threshold_value_convertToJSON(steering_mode->thres_value);
+    if (thres_value_local_JSON == NULL) {
+        ogs_error("OpenAPI_steering_mode_convertToJSON() failed [thres_value]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "thresValue", thres_value_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_steering_mode_convertToJSON() failed [thres_value]");
+        goto end;
+    }
+    }
+
+    if (steering_mode->steer_mode_ind != OpenAPI_steer_mode_indicator_NULL) {
+    if (cJSON_AddStringToObject(item, "steerModeInd", OpenAPI_steer_mode_indicator_ToString(steering_mode->steer_mode_ind)) == NULL) {
+        ogs_error("OpenAPI_steering_mode_convertToJSON() failed [steer_mode_ind]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -111,6 +139,10 @@ OpenAPI_steering_mode_t *OpenAPI_steering_mode_parseFromJSON(cJSON *steering_mod
     cJSON *_3g_load = NULL;
     cJSON *prio_acc = NULL;
     OpenAPI_access_type_e prio_accVariable = 0;
+    cJSON *thres_value = NULL;
+    OpenAPI_threshold_value_t *thres_value_local_nonprim = NULL;
+    cJSON *steer_mode_ind = NULL;
+    OpenAPI_steer_mode_indicator_e steer_mode_indVariable = 0;
     steer_mode_value = cJSON_GetObjectItemCaseSensitive(steering_modeJSON, "steerModeValue");
     if (!steer_mode_value) {
         ogs_error("OpenAPI_steering_mode_parseFromJSON() failed [steer_mode_value]");
@@ -153,13 +185,29 @@ OpenAPI_steering_mode_t *OpenAPI_steering_mode_parseFromJSON(cJSON *steering_mod
     prio_accVariable = OpenAPI_access_type_FromString(prio_acc->valuestring);
     }
 
+    thres_value = cJSON_GetObjectItemCaseSensitive(steering_modeJSON, "thresValue");
+    if (thres_value) {
+    thres_value_local_nonprim = OpenAPI_threshold_value_parseFromJSON(thres_value);
+    }
+
+    steer_mode_ind = cJSON_GetObjectItemCaseSensitive(steering_modeJSON, "steerModeInd");
+    if (steer_mode_ind) {
+    if (!cJSON_IsString(steer_mode_ind)) {
+        ogs_error("OpenAPI_steering_mode_parseFromJSON() failed [steer_mode_ind]");
+        goto end;
+    }
+    steer_mode_indVariable = OpenAPI_steer_mode_indicator_FromString(steer_mode_ind->valuestring);
+    }
+
     steering_mode_local_var = OpenAPI_steering_mode_create (
         steer_mode_valueVariable,
         active ? activeVariable : 0,
         standby ? standby_local_nonprim : NULL,
         _3g_load ? true : false,
         _3g_load ? _3g_load->valuedouble : 0,
-        prio_acc ? prio_accVariable : 0
+        prio_acc ? prio_accVariable : 0,
+        thres_value ? thres_value_local_nonprim : NULL,
+        steer_mode_ind ? steer_mode_indVariable : 0
     );
 
     return steering_mode_local_var;
@@ -167,6 +215,10 @@ end:
     if (standby_local_nonprim) {
         OpenAPI_access_type_rm_free(standby_local_nonprim);
         standby_local_nonprim = NULL;
+    }
+    if (thres_value_local_nonprim) {
+        OpenAPI_threshold_value_free(thres_value_local_nonprim);
+        thres_value_local_nonprim = NULL;
     }
     return NULL;
 }

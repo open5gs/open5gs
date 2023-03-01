@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "any_type.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,12 +21,12 @@ extern "C" {
 typedef struct OpenAPI_updated_item_s OpenAPI_updated_item_t;
 typedef struct OpenAPI_updated_item_s {
     char *item;
-    char *value;
+    OpenAPI_any_type_t *value;
 } OpenAPI_updated_item_t;
 
 OpenAPI_updated_item_t *OpenAPI_updated_item_create(
     char *item,
-    char *value
+    OpenAPI_any_type_t *value
 );
 void OpenAPI_updated_item_free(OpenAPI_updated_item_t *updated_item);
 OpenAPI_updated_item_t *OpenAPI_updated_item_parseFromJSON(cJSON *updated_itemJSON);

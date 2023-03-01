@@ -18,6 +18,7 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_create(
     int data_forwarding,
     OpenAPI_list_t *n3_dl_forwarding_tnl_list,
     OpenAPI_list_t *n3_ul_forwarding_tnl_list,
+    OpenAPI_tunnel_info_t *n9_ul_forwarding_tunnel,
     OpenAPI_cause_e cause,
     bool is_ma_accepted_ind,
     int ma_accepted_ind,
@@ -25,7 +26,9 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_create(
     char *forwarding_f_teid,
     OpenAPI_list_t *forwarding_bearer_contexts,
     char *selected_smf_id,
-    char *selected_old_smf_id
+    char *selected_old_smf_id,
+    char *inter_plmn_api_root,
+    OpenAPI_anchor_smf_features_t *anchor_smf_features
 )
 {
     OpenAPI_sm_context_updated_data_t *sm_context_updated_data_local_var = ogs_malloc(sizeof(OpenAPI_sm_context_updated_data_t));
@@ -44,6 +47,7 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_create(
     sm_context_updated_data_local_var->data_forwarding = data_forwarding;
     sm_context_updated_data_local_var->n3_dl_forwarding_tnl_list = n3_dl_forwarding_tnl_list;
     sm_context_updated_data_local_var->n3_ul_forwarding_tnl_list = n3_ul_forwarding_tnl_list;
+    sm_context_updated_data_local_var->n9_ul_forwarding_tunnel = n9_ul_forwarding_tunnel;
     sm_context_updated_data_local_var->cause = cause;
     sm_context_updated_data_local_var->is_ma_accepted_ind = is_ma_accepted_ind;
     sm_context_updated_data_local_var->ma_accepted_ind = ma_accepted_ind;
@@ -52,6 +56,8 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_create(
     sm_context_updated_data_local_var->forwarding_bearer_contexts = forwarding_bearer_contexts;
     sm_context_updated_data_local_var->selected_smf_id = selected_smf_id;
     sm_context_updated_data_local_var->selected_old_smf_id = selected_old_smf_id;
+    sm_context_updated_data_local_var->inter_plmn_api_root = inter_plmn_api_root;
+    sm_context_updated_data_local_var->anchor_smf_features = anchor_smf_features;
 
     return sm_context_updated_data_local_var;
 }
@@ -113,6 +119,10 @@ void OpenAPI_sm_context_updated_data_free(OpenAPI_sm_context_updated_data_t *sm_
         OpenAPI_list_free(sm_context_updated_data->n3_ul_forwarding_tnl_list);
         sm_context_updated_data->n3_ul_forwarding_tnl_list = NULL;
     }
+    if (sm_context_updated_data->n9_ul_forwarding_tunnel) {
+        OpenAPI_tunnel_info_free(sm_context_updated_data->n9_ul_forwarding_tunnel);
+        sm_context_updated_data->n9_ul_forwarding_tunnel = NULL;
+    }
     if (sm_context_updated_data->supported_features) {
         ogs_free(sm_context_updated_data->supported_features);
         sm_context_updated_data->supported_features = NULL;
@@ -135,6 +145,14 @@ void OpenAPI_sm_context_updated_data_free(OpenAPI_sm_context_updated_data_t *sm_
     if (sm_context_updated_data->selected_old_smf_id) {
         ogs_free(sm_context_updated_data->selected_old_smf_id);
         sm_context_updated_data->selected_old_smf_id = NULL;
+    }
+    if (sm_context_updated_data->inter_plmn_api_root) {
+        ogs_free(sm_context_updated_data->inter_plmn_api_root);
+        sm_context_updated_data->inter_plmn_api_root = NULL;
+    }
+    if (sm_context_updated_data->anchor_smf_features) {
+        OpenAPI_anchor_smf_features_free(sm_context_updated_data->anchor_smf_features);
+        sm_context_updated_data->anchor_smf_features = NULL;
     }
     ogs_free(sm_context_updated_data);
 }
@@ -296,6 +314,19 @@ cJSON *OpenAPI_sm_context_updated_data_convertToJSON(OpenAPI_sm_context_updated_
     }
     }
 
+    if (sm_context_updated_data->n9_ul_forwarding_tunnel) {
+    cJSON *n9_ul_forwarding_tunnel_local_JSON = OpenAPI_tunnel_info_convertToJSON(sm_context_updated_data->n9_ul_forwarding_tunnel);
+    if (n9_ul_forwarding_tunnel_local_JSON == NULL) {
+        ogs_error("OpenAPI_sm_context_updated_data_convertToJSON() failed [n9_ul_forwarding_tunnel]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "n9UlForwardingTunnel", n9_ul_forwarding_tunnel_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_sm_context_updated_data_convertToJSON() failed [n9_ul_forwarding_tunnel]");
+        goto end;
+    }
+    }
+
     if (sm_context_updated_data->cause != OpenAPI_cause_NULL) {
     if (cJSON_AddStringToObject(item, "cause", OpenAPI_cause_ToString(sm_context_updated_data->cause)) == NULL) {
         ogs_error("OpenAPI_sm_context_updated_data_convertToJSON() failed [cause]");
@@ -352,6 +383,26 @@ cJSON *OpenAPI_sm_context_updated_data_convertToJSON(OpenAPI_sm_context_updated_
     }
     }
 
+    if (sm_context_updated_data->inter_plmn_api_root) {
+    if (cJSON_AddStringToObject(item, "interPlmnApiRoot", sm_context_updated_data->inter_plmn_api_root) == NULL) {
+        ogs_error("OpenAPI_sm_context_updated_data_convertToJSON() failed [inter_plmn_api_root]");
+        goto end;
+    }
+    }
+
+    if (sm_context_updated_data->anchor_smf_features) {
+    cJSON *anchor_smf_features_local_JSON = OpenAPI_anchor_smf_features_convertToJSON(sm_context_updated_data->anchor_smf_features);
+    if (anchor_smf_features_local_JSON == NULL) {
+        ogs_error("OpenAPI_sm_context_updated_data_convertToJSON() failed [anchor_smf_features]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "anchorSmfFeatures", anchor_smf_features_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_sm_context_updated_data_convertToJSON() failed [anchor_smf_features]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -383,6 +434,8 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
     OpenAPI_list_t *n3_dl_forwarding_tnl_listList = NULL;
     cJSON *n3_ul_forwarding_tnl_list = NULL;
     OpenAPI_list_t *n3_ul_forwarding_tnl_listList = NULL;
+    cJSON *n9_ul_forwarding_tunnel = NULL;
+    OpenAPI_tunnel_info_t *n9_ul_forwarding_tunnel_local_nonprim = NULL;
     cJSON *cause = NULL;
     OpenAPI_cause_e causeVariable = 0;
     cJSON *ma_accepted_ind = NULL;
@@ -392,6 +445,9 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
     OpenAPI_list_t *forwarding_bearer_contextsList = NULL;
     cJSON *selected_smf_id = NULL;
     cJSON *selected_old_smf_id = NULL;
+    cJSON *inter_plmn_api_root = NULL;
+    cJSON *anchor_smf_features = NULL;
+    OpenAPI_anchor_smf_features_t *anchor_smf_features_local_nonprim = NULL;
     up_cnx_state = cJSON_GetObjectItemCaseSensitive(sm_context_updated_dataJSON, "upCnxState");
     if (up_cnx_state) {
     if (!cJSON_IsString(up_cnx_state)) {
@@ -585,6 +641,11 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
         }
     }
 
+    n9_ul_forwarding_tunnel = cJSON_GetObjectItemCaseSensitive(sm_context_updated_dataJSON, "n9UlForwardingTunnel");
+    if (n9_ul_forwarding_tunnel) {
+    n9_ul_forwarding_tunnel_local_nonprim = OpenAPI_tunnel_info_parseFromJSON(n9_ul_forwarding_tunnel);
+    }
+
     cause = cJSON_GetObjectItemCaseSensitive(sm_context_updated_dataJSON, "cause");
     if (cause) {
     if (!cJSON_IsString(cause)) {
@@ -655,6 +716,19 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
     }
     }
 
+    inter_plmn_api_root = cJSON_GetObjectItemCaseSensitive(sm_context_updated_dataJSON, "interPlmnApiRoot");
+    if (inter_plmn_api_root) {
+    if (!cJSON_IsString(inter_plmn_api_root) && !cJSON_IsNull(inter_plmn_api_root)) {
+        ogs_error("OpenAPI_sm_context_updated_data_parseFromJSON() failed [inter_plmn_api_root]");
+        goto end;
+    }
+    }
+
+    anchor_smf_features = cJSON_GetObjectItemCaseSensitive(sm_context_updated_dataJSON, "anchorSmfFeatures");
+    if (anchor_smf_features) {
+    anchor_smf_features_local_nonprim = OpenAPI_anchor_smf_features_parseFromJSON(anchor_smf_features);
+    }
+
     sm_context_updated_data_local_var = OpenAPI_sm_context_updated_data_create (
         up_cnx_state ? up_cnx_stateVariable : 0,
         ho_state ? ho_stateVariable : 0,
@@ -669,6 +743,7 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
         data_forwarding ? data_forwarding->valueint : 0,
         n3_dl_forwarding_tnl_list ? n3_dl_forwarding_tnl_listList : NULL,
         n3_ul_forwarding_tnl_list ? n3_ul_forwarding_tnl_listList : NULL,
+        n9_ul_forwarding_tunnel ? n9_ul_forwarding_tunnel_local_nonprim : NULL,
         cause ? causeVariable : 0,
         ma_accepted_ind ? true : false,
         ma_accepted_ind ? ma_accepted_ind->valueint : 0,
@@ -676,7 +751,9 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
         forwarding_f_teid && !cJSON_IsNull(forwarding_f_teid) ? ogs_strdup(forwarding_f_teid->valuestring) : NULL,
         forwarding_bearer_contexts ? forwarding_bearer_contextsList : NULL,
         selected_smf_id && !cJSON_IsNull(selected_smf_id) ? ogs_strdup(selected_smf_id->valuestring) : NULL,
-        selected_old_smf_id && !cJSON_IsNull(selected_old_smf_id) ? ogs_strdup(selected_old_smf_id->valuestring) : NULL
+        selected_old_smf_id && !cJSON_IsNull(selected_old_smf_id) ? ogs_strdup(selected_old_smf_id->valuestring) : NULL,
+        inter_plmn_api_root && !cJSON_IsNull(inter_plmn_api_root) ? ogs_strdup(inter_plmn_api_root->valuestring) : NULL,
+        anchor_smf_features ? anchor_smf_features_local_nonprim : NULL
     );
 
     return sm_context_updated_data_local_var;
@@ -731,12 +808,20 @@ end:
         OpenAPI_list_free(n3_ul_forwarding_tnl_listList);
         n3_ul_forwarding_tnl_listList = NULL;
     }
+    if (n9_ul_forwarding_tunnel_local_nonprim) {
+        OpenAPI_tunnel_info_free(n9_ul_forwarding_tunnel_local_nonprim);
+        n9_ul_forwarding_tunnel_local_nonprim = NULL;
+    }
     if (forwarding_bearer_contextsList) {
         OpenAPI_list_for_each(forwarding_bearer_contextsList, node) {
             ogs_free(node->data);
         }
         OpenAPI_list_free(forwarding_bearer_contextsList);
         forwarding_bearer_contextsList = NULL;
+    }
+    if (anchor_smf_features_local_nonprim) {
+        OpenAPI_anchor_smf_features_free(anchor_smf_features_local_nonprim);
+        anchor_smf_features_local_nonprim = NULL;
     }
     return NULL;
 }

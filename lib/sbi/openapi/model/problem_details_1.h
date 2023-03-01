@@ -1,7 +1,7 @@
 /*
  * problem_details_1.h
  *
- * 
+ * Provides additional information in an error response.
  */
 
 #ifndef _OpenAPI_problem_details_1_H_

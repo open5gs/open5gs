@@ -1,7 +1,7 @@
 /*
  * mm_context.h
  *
- * 
+ * Represents a Mobility Management Context in UE Context
  */
 
 #ifndef _OpenAPI_mm_context_H_
@@ -21,6 +21,7 @@
 #include "nssai_mapping.h"
 #include "snssai.h"
 #include "ue_differentiation_info.h"
+#include "uuaa_mm_status.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -53,6 +54,7 @@ typedef struct OpenAPI_mm_context_s {
     int an_n2_ap_id;
     OpenAPI_list_t *nssaa_status_list;
     OpenAPI_list_t *pending_nssai_mapping_list;
+    OpenAPI_uuaa_mm_status_e uuaa_mm_status;
 } OpenAPI_mm_context_t;
 
 OpenAPI_mm_context_t *OpenAPI_mm_context_create(
@@ -80,7 +82,8 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_create(
     bool is_an_n2_ap_id,
     int an_n2_ap_id,
     OpenAPI_list_t *nssaa_status_list,
-    OpenAPI_list_t *pending_nssai_mapping_list
+    OpenAPI_list_t *pending_nssai_mapping_list,
+    OpenAPI_uuaa_mm_status_e uuaa_mm_status
 );
 void OpenAPI_mm_context_free(OpenAPI_mm_context_t *mm_context);
 OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON);

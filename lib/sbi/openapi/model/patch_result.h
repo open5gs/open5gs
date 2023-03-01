@@ -1,7 +1,7 @@
 /*
  * patch_result.h
  *
- * 
+ * The execution report result on failed modification.
  */
 
 #ifndef _OpenAPI_patch_result_H_

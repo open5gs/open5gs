@@ -1,7 +1,7 @@
 /*
  * snssai_route_selection_descriptor.h
  *
- * Contains the route selector parameters (DNNs, PDU session types, SSC modes and ATSSS information) per SNSSAI
+ * Contains the route selector parameters (DNNs, PDU session types, SSC modes and ATSSS information) per SNSSAI 
  */
 
 #ifndef _OpenAPI_snssai_route_selection_descriptor_H_

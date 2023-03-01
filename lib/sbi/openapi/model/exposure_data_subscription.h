@@ -1,7 +1,7 @@
 /*
  * exposure_data_subscription.h
  *
- * 
+ * Represents a Subscription to Notifications about Exposure Data.
  */
 
 #ifndef _OpenAPI_exposure_data_subscription_H_
@@ -23,13 +23,15 @@ typedef struct OpenAPI_exposure_data_subscription_s {
     OpenAPI_list_t *monitored_resource_uris;
     char *expiry;
     char *supported_features;
+    OpenAPI_list_t *reset_ids;
 } OpenAPI_exposure_data_subscription_t;
 
 OpenAPI_exposure_data_subscription_t *OpenAPI_exposure_data_subscription_create(
     char *notification_uri,
     OpenAPI_list_t *monitored_resource_uris,
     char *expiry,
-    char *supported_features
+    char *supported_features,
+    OpenAPI_list_t *reset_ids
 );
 void OpenAPI_exposure_data_subscription_free(OpenAPI_exposure_data_subscription_t *exposure_data_subscription);
 OpenAPI_exposure_data_subscription_t *OpenAPI_exposure_data_subscription_parseFromJSON(cJSON *exposure_data_subscriptionJSON);

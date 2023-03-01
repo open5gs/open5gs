@@ -49,7 +49,11 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_create(
     bool is_ipv6_index,
     int ipv6_index,
     OpenAPI_ip_address_t *dn_aaa_address,
-    OpenAPI_redundant_pdu_session_information_t *redundant_pdu_session_info
+    OpenAPI_redundant_pdu_session_information_t *redundant_pdu_session_info,
+    bool is_nspu_support_ind,
+    int nspu_support_ind,
+    char *inter_plmn_api_root,
+    char *intra_plmn_api_root
 )
 {
     OpenAPI_pdu_session_created_data_t *pdu_session_created_data_local_var = ogs_malloc(sizeof(OpenAPI_pdu_session_created_data_t));
@@ -100,6 +104,10 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_create(
     pdu_session_created_data_local_var->ipv6_index = ipv6_index;
     pdu_session_created_data_local_var->dn_aaa_address = dn_aaa_address;
     pdu_session_created_data_local_var->redundant_pdu_session_info = redundant_pdu_session_info;
+    pdu_session_created_data_local_var->is_nspu_support_ind = is_nspu_support_ind;
+    pdu_session_created_data_local_var->nspu_support_ind = nspu_support_ind;
+    pdu_session_created_data_local_var->inter_plmn_api_root = inter_plmn_api_root;
+    pdu_session_created_data_local_var->intra_plmn_api_root = intra_plmn_api_root;
 
     return pdu_session_created_data_local_var;
 }
@@ -223,6 +231,14 @@ void OpenAPI_pdu_session_created_data_free(OpenAPI_pdu_session_created_data_t *p
     if (pdu_session_created_data->redundant_pdu_session_info) {
         OpenAPI_redundant_pdu_session_information_free(pdu_session_created_data->redundant_pdu_session_info);
         pdu_session_created_data->redundant_pdu_session_info = NULL;
+    }
+    if (pdu_session_created_data->inter_plmn_api_root) {
+        ogs_free(pdu_session_created_data->inter_plmn_api_root);
+        pdu_session_created_data->inter_plmn_api_root = NULL;
+    }
+    if (pdu_session_created_data->intra_plmn_api_root) {
+        ogs_free(pdu_session_created_data->intra_plmn_api_root);
+        pdu_session_created_data->intra_plmn_api_root = NULL;
     }
     ogs_free(pdu_session_created_data);
 }
@@ -592,6 +608,27 @@ cJSON *OpenAPI_pdu_session_created_data_convertToJSON(OpenAPI_pdu_session_create
     }
     }
 
+    if (pdu_session_created_data->is_nspu_support_ind) {
+    if (cJSON_AddBoolToObject(item, "nspuSupportInd", pdu_session_created_data->nspu_support_ind) == NULL) {
+        ogs_error("OpenAPI_pdu_session_created_data_convertToJSON() failed [nspu_support_ind]");
+        goto end;
+    }
+    }
+
+    if (pdu_session_created_data->inter_plmn_api_root) {
+    if (cJSON_AddStringToObject(item, "interPlmnApiRoot", pdu_session_created_data->inter_plmn_api_root) == NULL) {
+        ogs_error("OpenAPI_pdu_session_created_data_convertToJSON() failed [inter_plmn_api_root]");
+        goto end;
+    }
+    }
+
+    if (pdu_session_created_data->intra_plmn_api_root) {
+    if (cJSON_AddStringToObject(item, "intraPlmnApiRoot", pdu_session_created_data->intra_plmn_api_root) == NULL) {
+        ogs_error("OpenAPI_pdu_session_created_data_convertToJSON() failed [intra_plmn_api_root]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -654,6 +691,9 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
     OpenAPI_ip_address_t *dn_aaa_address_local_nonprim = NULL;
     cJSON *redundant_pdu_session_info = NULL;
     OpenAPI_redundant_pdu_session_information_t *redundant_pdu_session_info_local_nonprim = NULL;
+    cJSON *nspu_support_ind = NULL;
+    cJSON *inter_plmn_api_root = NULL;
+    cJSON *intra_plmn_api_root = NULL;
     pdu_session_type = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "pduSessionType");
     if (!pdu_session_type) {
         ogs_error("OpenAPI_pdu_session_created_data_parseFromJSON() failed [pdu_session_type]");
@@ -971,6 +1011,30 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
     redundant_pdu_session_info_local_nonprim = OpenAPI_redundant_pdu_session_information_parseFromJSON(redundant_pdu_session_info);
     }
 
+    nspu_support_ind = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "nspuSupportInd");
+    if (nspu_support_ind) {
+    if (!cJSON_IsBool(nspu_support_ind)) {
+        ogs_error("OpenAPI_pdu_session_created_data_parseFromJSON() failed [nspu_support_ind]");
+        goto end;
+    }
+    }
+
+    inter_plmn_api_root = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "interPlmnApiRoot");
+    if (inter_plmn_api_root) {
+    if (!cJSON_IsString(inter_plmn_api_root) && !cJSON_IsNull(inter_plmn_api_root)) {
+        ogs_error("OpenAPI_pdu_session_created_data_parseFromJSON() failed [inter_plmn_api_root]");
+        goto end;
+    }
+    }
+
+    intra_plmn_api_root = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "intraPlmnApiRoot");
+    if (intra_plmn_api_root) {
+    if (!cJSON_IsString(intra_plmn_api_root) && !cJSON_IsNull(intra_plmn_api_root)) {
+        ogs_error("OpenAPI_pdu_session_created_data_parseFromJSON() failed [intra_plmn_api_root]");
+        goto end;
+    }
+    }
+
     pdu_session_created_data_local_var = OpenAPI_pdu_session_created_data_create (
         pdu_session_typeVariable,
         ogs_strdup(ssc_mode->valuestring),
@@ -1016,7 +1080,11 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
         ipv6_index ? true : false,
         ipv6_index ? ipv6_index->valuedouble : 0,
         dn_aaa_address ? dn_aaa_address_local_nonprim : NULL,
-        redundant_pdu_session_info ? redundant_pdu_session_info_local_nonprim : NULL
+        redundant_pdu_session_info ? redundant_pdu_session_info_local_nonprim : NULL,
+        nspu_support_ind ? true : false,
+        nspu_support_ind ? nspu_support_ind->valueint : 0,
+        inter_plmn_api_root && !cJSON_IsNull(inter_plmn_api_root) ? ogs_strdup(inter_plmn_api_root->valuestring) : NULL,
+        intra_plmn_api_root && !cJSON_IsNull(intra_plmn_api_root) ? ogs_strdup(intra_plmn_api_root->valuestring) : NULL
     );
 
     return pdu_session_created_data_local_var;

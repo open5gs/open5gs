@@ -1,7 +1,7 @@
 /*
  * atom.h
  *
- * 
+ * contains a search parameter and its positive or negative content.
  */
 
 #ifndef _OpenAPI_atom_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "any_type.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,14 +21,14 @@ extern "C" {
 typedef struct OpenAPI_atom_s OpenAPI_atom_t;
 typedef struct OpenAPI_atom_s {
     char *attr;
-    char *value;
+    OpenAPI_any_type_t *value;
     bool is_negative;
     int negative;
 } OpenAPI_atom_t;
 
 OpenAPI_atom_t *OpenAPI_atom_create(
     char *attr,
-    char *value,
+    OpenAPI_any_type_t *value,
     bool is_negative,
     int negative
 );

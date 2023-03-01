@@ -9,8 +9,9 @@ OpenAPI_usage_mon_data_t *OpenAPI_usage_mon_data_create(
     OpenAPI_list_t* scopes,
     OpenAPI_usage_mon_level_t *um_level,
     OpenAPI_usage_threshold_t *allowed_usage,
-    OpenAPI_time_period_t *reset_time,
-    char *supp_feat
+    char *reset_time,
+    char *supp_feat,
+    OpenAPI_list_t *reset_ids
 )
 {
     OpenAPI_usage_mon_data_t *usage_mon_data_local_var = ogs_malloc(sizeof(OpenAPI_usage_mon_data_t));
@@ -22,6 +23,7 @@ OpenAPI_usage_mon_data_t *OpenAPI_usage_mon_data_create(
     usage_mon_data_local_var->allowed_usage = allowed_usage;
     usage_mon_data_local_var->reset_time = reset_time;
     usage_mon_data_local_var->supp_feat = supp_feat;
+    usage_mon_data_local_var->reset_ids = reset_ids;
 
     return usage_mon_data_local_var;
 }
@@ -56,12 +58,19 @@ void OpenAPI_usage_mon_data_free(OpenAPI_usage_mon_data_t *usage_mon_data)
         usage_mon_data->allowed_usage = NULL;
     }
     if (usage_mon_data->reset_time) {
-        OpenAPI_time_period_free(usage_mon_data->reset_time);
+        ogs_free(usage_mon_data->reset_time);
         usage_mon_data->reset_time = NULL;
     }
     if (usage_mon_data->supp_feat) {
         ogs_free(usage_mon_data->supp_feat);
         usage_mon_data->supp_feat = NULL;
+    }
+    if (usage_mon_data->reset_ids) {
+        OpenAPI_list_for_each(usage_mon_data->reset_ids, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(usage_mon_data->reset_ids);
+        usage_mon_data->reset_ids = NULL;
     }
     ogs_free(usage_mon_data);
 }
@@ -135,13 +144,7 @@ cJSON *OpenAPI_usage_mon_data_convertToJSON(OpenAPI_usage_mon_data_t *usage_mon_
     }
 
     if (usage_mon_data->reset_time) {
-    cJSON *reset_time_local_JSON = OpenAPI_time_period_convertToJSON(usage_mon_data->reset_time);
-    if (reset_time_local_JSON == NULL) {
-        ogs_error("OpenAPI_usage_mon_data_convertToJSON() failed [reset_time]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "resetTime", reset_time_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "resetTime", usage_mon_data->reset_time) == NULL) {
         ogs_error("OpenAPI_usage_mon_data_convertToJSON() failed [reset_time]");
         goto end;
     }
@@ -151,6 +154,20 @@ cJSON *OpenAPI_usage_mon_data_convertToJSON(OpenAPI_usage_mon_data_t *usage_mon_
     if (cJSON_AddStringToObject(item, "suppFeat", usage_mon_data->supp_feat) == NULL) {
         ogs_error("OpenAPI_usage_mon_data_convertToJSON() failed [supp_feat]");
         goto end;
+    }
+    }
+
+    if (usage_mon_data->reset_ids) {
+    cJSON *reset_idsList = cJSON_AddArrayToObject(item, "resetIds");
+    if (reset_idsList == NULL) {
+        ogs_error("OpenAPI_usage_mon_data_convertToJSON() failed [reset_ids]");
+        goto end;
+    }
+    OpenAPI_list_for_each(usage_mon_data->reset_ids, node) {
+        if (cJSON_AddStringToObject(reset_idsList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_usage_mon_data_convertToJSON() failed [reset_ids]");
+            goto end;
+        }
     }
     }
 
@@ -170,8 +187,9 @@ OpenAPI_usage_mon_data_t *OpenAPI_usage_mon_data_parseFromJSON(cJSON *usage_mon_
     cJSON *allowed_usage = NULL;
     OpenAPI_usage_threshold_t *allowed_usage_local_nonprim = NULL;
     cJSON *reset_time = NULL;
-    OpenAPI_time_period_t *reset_time_local_nonprim = NULL;
     cJSON *supp_feat = NULL;
+    cJSON *reset_ids = NULL;
+    OpenAPI_list_t *reset_idsList = NULL;
     limit_id = cJSON_GetObjectItemCaseSensitive(usage_mon_dataJSON, "limitId");
     if (!limit_id) {
         ogs_error("OpenAPI_usage_mon_data_parseFromJSON() failed [limit_id]");
@@ -220,7 +238,10 @@ OpenAPI_usage_mon_data_t *OpenAPI_usage_mon_data_parseFromJSON(cJSON *usage_mon_
 
     reset_time = cJSON_GetObjectItemCaseSensitive(usage_mon_dataJSON, "resetTime");
     if (reset_time) {
-    reset_time_local_nonprim = OpenAPI_time_period_parseFromJSON(reset_time);
+    if (!cJSON_IsString(reset_time) && !cJSON_IsNull(reset_time)) {
+        ogs_error("OpenAPI_usage_mon_data_parseFromJSON() failed [reset_time]");
+        goto end;
+    }
     }
 
     supp_feat = cJSON_GetObjectItemCaseSensitive(usage_mon_dataJSON, "suppFeat");
@@ -231,13 +252,35 @@ OpenAPI_usage_mon_data_t *OpenAPI_usage_mon_data_parseFromJSON(cJSON *usage_mon_
     }
     }
 
+    reset_ids = cJSON_GetObjectItemCaseSensitive(usage_mon_dataJSON, "resetIds");
+    if (reset_ids) {
+        cJSON *reset_ids_local = NULL;
+        if (!cJSON_IsArray(reset_ids)) {
+            ogs_error("OpenAPI_usage_mon_data_parseFromJSON() failed [reset_ids]");
+            goto end;
+        }
+
+        reset_idsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(reset_ids_local, reset_ids) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(reset_ids_local)) {
+                ogs_error("OpenAPI_usage_mon_data_parseFromJSON() failed [reset_ids]");
+                goto end;
+            }
+            OpenAPI_list_add(reset_idsList, ogs_strdup(reset_ids_local->valuestring));
+        }
+    }
+
     usage_mon_data_local_var = OpenAPI_usage_mon_data_create (
         ogs_strdup(limit_id->valuestring),
         scopes ? scopesList : NULL,
         um_level ? um_level_local_nonprim : NULL,
         allowed_usage ? allowed_usage_local_nonprim : NULL,
-        reset_time ? reset_time_local_nonprim : NULL,
-        supp_feat && !cJSON_IsNull(supp_feat) ? ogs_strdup(supp_feat->valuestring) : NULL
+        reset_time && !cJSON_IsNull(reset_time) ? ogs_strdup(reset_time->valuestring) : NULL,
+        supp_feat && !cJSON_IsNull(supp_feat) ? ogs_strdup(supp_feat->valuestring) : NULL,
+        reset_ids ? reset_idsList : NULL
     );
 
     return usage_mon_data_local_var;
@@ -260,9 +303,12 @@ end:
         OpenAPI_usage_threshold_free(allowed_usage_local_nonprim);
         allowed_usage_local_nonprim = NULL;
     }
-    if (reset_time_local_nonprim) {
-        OpenAPI_time_period_free(reset_time_local_nonprim);
-        reset_time_local_nonprim = NULL;
+    if (reset_idsList) {
+        OpenAPI_list_for_each(reset_idsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(reset_idsList);
+        reset_idsList = NULL;
     }
     return NULL;
 }

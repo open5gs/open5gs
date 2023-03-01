@@ -22,7 +22,8 @@ OpenAPI_create_ue_context_request_t *OpenAPI_create_ue_context_request_create(
     OpenAPI_binary_t* binary_data_n2_information_ext13,
     OpenAPI_binary_t* binary_data_n2_information_ext14,
     OpenAPI_binary_t* binary_data_n2_information_ext15,
-    OpenAPI_binary_t* binary_data_n2_information_ext16
+    OpenAPI_binary_t* binary_data_n2_information_ext16,
+    OpenAPI_binary_t* binary_data_n2_information_ext17
 )
 {
     OpenAPI_create_ue_context_request_t *create_ue_context_request_local_var = ogs_malloc(sizeof(OpenAPI_create_ue_context_request_t));
@@ -46,6 +47,7 @@ OpenAPI_create_ue_context_request_t *OpenAPI_create_ue_context_request_create(
     create_ue_context_request_local_var->binary_data_n2_information_ext14 = binary_data_n2_information_ext14;
     create_ue_context_request_local_var->binary_data_n2_information_ext15 = binary_data_n2_information_ext15;
     create_ue_context_request_local_var->binary_data_n2_information_ext16 = binary_data_n2_information_ext16;
+    create_ue_context_request_local_var->binary_data_n2_information_ext17 = binary_data_n2_information_ext17;
 
     return create_ue_context_request_local_var;
 }
@@ -128,6 +130,10 @@ void OpenAPI_create_ue_context_request_free(OpenAPI_create_ue_context_request_t 
     if (create_ue_context_request->binary_data_n2_information_ext16) {
         ogs_free(create_ue_context_request->binary_data_n2_information_ext16->data);
         create_ue_context_request->binary_data_n2_information_ext16 = NULL;
+    }
+    if (create_ue_context_request->binary_data_n2_information_ext17) {
+        ogs_free(create_ue_context_request->binary_data_n2_information_ext17->data);
+        create_ue_context_request->binary_data_n2_information_ext17 = NULL;
     }
     ogs_free(create_ue_context_request);
 }
@@ -309,6 +315,15 @@ cJSON *OpenAPI_create_ue_context_request_convertToJSON(OpenAPI_create_ue_context
     ogs_free(encoded_str_binary_data_n2_information_ext16);
     }
 
+    if (create_ue_context_request->binary_data_n2_information_ext17) {
+    char* encoded_str_binary_data_n2_information_ext17 = OpenAPI_base64encode(create_ue_context_request->binary_data_n2_information_ext17->data,create_ue_context_request->binary_data_n2_information_ext17->len);
+    if (cJSON_AddStringToObject(item, "binaryDataN2InformationExt17", encoded_str_binary_data_n2_information_ext17) == NULL) {
+        ogs_error("OpenAPI_create_ue_context_request_convertToJSON() failed [binary_data_n2_information_ext17]");
+        goto end;
+    }
+    ogs_free(encoded_str_binary_data_n2_information_ext17);
+    }
+
 end:
     return item;
 }
@@ -353,6 +368,8 @@ OpenAPI_create_ue_context_request_t *OpenAPI_create_ue_context_request_parseFrom
     OpenAPI_binary_t *decoded_str_binary_data_n2_information_ext15 = NULL;
     cJSON *binary_data_n2_information_ext16 = NULL;
     OpenAPI_binary_t *decoded_str_binary_data_n2_information_ext16 = NULL;
+    cJSON *binary_data_n2_information_ext17 = NULL;
+    OpenAPI_binary_t *decoded_str_binary_data_n2_information_ext17 = NULL;
     json_data = cJSON_GetObjectItemCaseSensitive(create_ue_context_requestJSON, "jsonData");
     if (json_data) {
     json_data_local_nonprim = OpenAPI_ue_context_create_data_parseFromJSON(json_data);
@@ -613,6 +630,21 @@ OpenAPI_create_ue_context_request_t *OpenAPI_create_ue_context_request_parseFrom
     }
     }
 
+    binary_data_n2_information_ext17 = cJSON_GetObjectItemCaseSensitive(create_ue_context_requestJSON, "binaryDataN2InformationExt17");
+    if (binary_data_n2_information_ext17) {
+    decoded_str_binary_data_n2_information_ext17 = ogs_malloc(sizeof(OpenAPI_binary_t));
+    ogs_assert(decoded_str_binary_data_n2_information_ext17);
+    if (!cJSON_IsString(binary_data_n2_information_ext17)) {
+        ogs_error("OpenAPI_create_ue_context_request_parseFromJSON() failed [binary_data_n2_information_ext17]");
+        goto end;
+    }
+    decoded_str_binary_data_n2_information_ext17->data = OpenAPI_base64decode(binary_data_n2_information_ext17->valuestring, strlen(binary_data_n2_information_ext17->valuestring), &decoded_str_binary_data_n2_information_ext17->len);
+    if (!decoded_str_binary_data_n2_information_ext17->data) {
+        ogs_error("OpenAPI_create_ue_context_request_parseFromJSON() failed [binary_data_n2_information_ext17]");
+        goto end;
+    }
+    }
+
     create_ue_context_request_local_var = OpenAPI_create_ue_context_request_create (
         json_data ? json_data_local_nonprim : NULL,
         binary_data_n2_information ? decoded_str_binary_data_n2_information : NULL,
@@ -631,7 +663,8 @@ OpenAPI_create_ue_context_request_t *OpenAPI_create_ue_context_request_parseFrom
         binary_data_n2_information_ext13 ? decoded_str_binary_data_n2_information_ext13 : NULL,
         binary_data_n2_information_ext14 ? decoded_str_binary_data_n2_information_ext14 : NULL,
         binary_data_n2_information_ext15 ? decoded_str_binary_data_n2_information_ext15 : NULL,
-        binary_data_n2_information_ext16 ? decoded_str_binary_data_n2_information_ext16 : NULL
+        binary_data_n2_information_ext16 ? decoded_str_binary_data_n2_information_ext16 : NULL,
+        binary_data_n2_information_ext17 ? decoded_str_binary_data_n2_information_ext17 : NULL
     );
 
     return create_ue_context_request_local_var;

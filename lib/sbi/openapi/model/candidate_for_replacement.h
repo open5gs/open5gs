@@ -1,7 +1,7 @@
 /*
  * candidate_for_replacement.h
  *
- * 
+ * Represents a list of candidate DNNs for replacement for an S-NSSAI.
  */
 
 #ifndef _OpenAPI_candidate_for_replacement_H_

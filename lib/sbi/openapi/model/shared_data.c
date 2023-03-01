@@ -12,7 +12,10 @@ OpenAPI_shared_data_t *OpenAPI_shared_data_create(
     OpenAPI_list_t* shared_dnn_configurations,
     OpenAPI_trace_data_t *shared_trace_data,
     OpenAPI_list_t* shared_snssai_infos,
-    OpenAPI_list_t* shared_vn_group_datas
+    OpenAPI_list_t* shared_vn_group_datas,
+    OpenAPI_list_t* treatment_instructions,
+    OpenAPI_session_management_subscription_data_t *shared_sm_subs_data,
+    OpenAPI_ecs_addr_config_info_t *shared_ecs_addr_config_info
 )
 {
     OpenAPI_shared_data_t *shared_data_local_var = ogs_malloc(sizeof(OpenAPI_shared_data_t));
@@ -26,6 +29,9 @@ OpenAPI_shared_data_t *OpenAPI_shared_data_create(
     shared_data_local_var->shared_trace_data = shared_trace_data;
     shared_data_local_var->shared_snssai_infos = shared_snssai_infos;
     shared_data_local_var->shared_vn_group_datas = shared_vn_group_datas;
+    shared_data_local_var->treatment_instructions = treatment_instructions;
+    shared_data_local_var->shared_sm_subs_data = shared_sm_subs_data;
+    shared_data_local_var->shared_ecs_addr_config_info = shared_ecs_addr_config_info;
 
     return shared_data_local_var;
 }
@@ -86,6 +92,23 @@ void OpenAPI_shared_data_free(OpenAPI_shared_data_t *shared_data)
         }
         OpenAPI_list_free(shared_data->shared_vn_group_datas);
         shared_data->shared_vn_group_datas = NULL;
+    }
+    if (shared_data->treatment_instructions) {
+        OpenAPI_list_for_each(shared_data->treatment_instructions, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(shared_data->treatment_instructions);
+        shared_data->treatment_instructions = NULL;
+    }
+    if (shared_data->shared_sm_subs_data) {
+        OpenAPI_session_management_subscription_data_free(shared_data->shared_sm_subs_data);
+        shared_data->shared_sm_subs_data = NULL;
+    }
+    if (shared_data->shared_ecs_addr_config_info) {
+        OpenAPI_ecs_addr_config_info_free(shared_data->shared_ecs_addr_config_info);
+        shared_data->shared_ecs_addr_config_info = NULL;
     }
     ogs_free(shared_data);
 }
@@ -228,6 +251,50 @@ cJSON *OpenAPI_shared_data_convertToJSON(OpenAPI_shared_data_t *shared_data)
     }
     }
 
+    if (shared_data->treatment_instructions != OpenAPI_shared_data_treatment_instruction_NULL) {
+    cJSON *treatment_instructions = cJSON_AddObjectToObject(item, "treatmentInstructions");
+    if (treatment_instructions == NULL) {
+        ogs_error("OpenAPI_shared_data_convertToJSON() failed [treatment_instructions]");
+        goto end;
+    }
+    cJSON *localMapObject = treatment_instructions;
+    if (shared_data->treatment_instructions) {
+        OpenAPI_list_for_each(shared_data->treatment_instructions, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (cJSON_AddStringToObject(localMapObject, localKeyValue->key, OpenAPI_shared_data_treatment_instruction_ToString((intptr_t)localKeyValue->value)) == NULL) {
+                ogs_error("OpenAPI_shared_data_convertToJSON() failed [treatment_instructions]");
+                goto end;
+            }
+        }
+    }
+    }
+
+    if (shared_data->shared_sm_subs_data) {
+    cJSON *shared_sm_subs_data_local_JSON = OpenAPI_session_management_subscription_data_convertToJSON(shared_data->shared_sm_subs_data);
+    if (shared_sm_subs_data_local_JSON == NULL) {
+        ogs_error("OpenAPI_shared_data_convertToJSON() failed [shared_sm_subs_data]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "sharedSmSubsData", shared_sm_subs_data_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_shared_data_convertToJSON() failed [shared_sm_subs_data]");
+        goto end;
+    }
+    }
+
+    if (shared_data->shared_ecs_addr_config_info) {
+    cJSON *shared_ecs_addr_config_info_local_JSON = OpenAPI_ecs_addr_config_info_convertToJSON(shared_data->shared_ecs_addr_config_info);
+    if (shared_ecs_addr_config_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_shared_data_convertToJSON() failed [shared_ecs_addr_config_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "sharedEcsAddrConfigInfo", shared_ecs_addr_config_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_shared_data_convertToJSON() failed [shared_ecs_addr_config_info]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -251,6 +318,12 @@ OpenAPI_shared_data_t *OpenAPI_shared_data_parseFromJSON(cJSON *shared_dataJSON)
     OpenAPI_list_t *shared_snssai_infosList = NULL;
     cJSON *shared_vn_group_datas = NULL;
     OpenAPI_list_t *shared_vn_group_datasList = NULL;
+    cJSON *treatment_instructions = NULL;
+    OpenAPI_list_t *treatment_instructionsList = NULL;
+    cJSON *shared_sm_subs_data = NULL;
+    OpenAPI_session_management_subscription_data_t *shared_sm_subs_data_local_nonprim = NULL;
+    cJSON *shared_ecs_addr_config_info = NULL;
+    OpenAPI_ecs_addr_config_info_t *shared_ecs_addr_config_info_local_nonprim = NULL;
     shared_data_id = cJSON_GetObjectItemCaseSensitive(shared_dataJSON, "sharedDataId");
     if (!shared_data_id) {
         ogs_error("OpenAPI_shared_data_parseFromJSON() failed [shared_data_id]");
@@ -359,6 +432,38 @@ OpenAPI_shared_data_t *OpenAPI_shared_data_parseFromJSON(cJSON *shared_dataJSON)
         }
     }
 
+    treatment_instructions = cJSON_GetObjectItemCaseSensitive(shared_dataJSON, "treatmentInstructions");
+    if (treatment_instructions) {
+        cJSON *treatment_instructions_local_map = NULL;
+        if (!cJSON_IsObject(treatment_instructions) && !cJSON_IsNull(treatment_instructions)) {
+            ogs_error("OpenAPI_shared_data_parseFromJSON() failed [treatment_instructions]");
+            goto end;
+        }
+        if (cJSON_IsObject(treatment_instructions)) {
+            treatment_instructionsList = OpenAPI_list_create();
+            OpenAPI_map_t *localMapKeyPair = NULL;
+            cJSON_ArrayForEach(treatment_instructions_local_map, treatment_instructions) {
+                cJSON *localMapObject = treatment_instructions_local_map;
+                if (!cJSON_IsString(localMapObject)) {
+                    ogs_error("OpenAPI_shared_data_parseFromJSON() failed [treatment_instructions]");
+                    goto end;
+                }
+                localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), (void *)OpenAPI_shared_data_treatment_instruction_FromString(localMapObject->string));
+                OpenAPI_list_add(treatment_instructionsList, localMapKeyPair);
+            }
+        }
+    }
+
+    shared_sm_subs_data = cJSON_GetObjectItemCaseSensitive(shared_dataJSON, "sharedSmSubsData");
+    if (shared_sm_subs_data) {
+    shared_sm_subs_data_local_nonprim = OpenAPI_session_management_subscription_data_parseFromJSON(shared_sm_subs_data);
+    }
+
+    shared_ecs_addr_config_info = cJSON_GetObjectItemCaseSensitive(shared_dataJSON, "sharedEcsAddrConfigInfo");
+    if (shared_ecs_addr_config_info) {
+    shared_ecs_addr_config_info_local_nonprim = OpenAPI_ecs_addr_config_info_parseFromJSON(shared_ecs_addr_config_info);
+    }
+
     shared_data_local_var = OpenAPI_shared_data_create (
         ogs_strdup(shared_data_id->valuestring),
         shared_am_data ? shared_am_data_local_nonprim : NULL,
@@ -367,7 +472,10 @@ OpenAPI_shared_data_t *OpenAPI_shared_data_parseFromJSON(cJSON *shared_dataJSON)
         shared_dnn_configurations ? shared_dnn_configurationsList : NULL,
         shared_trace_data ? shared_trace_data_local_nonprim : NULL,
         shared_snssai_infos ? shared_snssai_infosList : NULL,
-        shared_vn_group_datas ? shared_vn_group_datasList : NULL
+        shared_vn_group_datas ? shared_vn_group_datasList : NULL,
+        treatment_instructions ? treatment_instructionsList : NULL,
+        shared_sm_subs_data ? shared_sm_subs_data_local_nonprim : NULL,
+        shared_ecs_addr_config_info ? shared_ecs_addr_config_info_local_nonprim : NULL
     );
 
     return shared_data_local_var;
@@ -417,6 +525,23 @@ end:
         }
         OpenAPI_list_free(shared_vn_group_datasList);
         shared_vn_group_datasList = NULL;
+    }
+    if (treatment_instructionsList) {
+        OpenAPI_list_for_each(treatment_instructionsList, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(treatment_instructionsList);
+        treatment_instructionsList = NULL;
+    }
+    if (shared_sm_subs_data_local_nonprim) {
+        OpenAPI_session_management_subscription_data_free(shared_sm_subs_data_local_nonprim);
+        shared_sm_subs_data_local_nonprim = NULL;
+    }
+    if (shared_ecs_addr_config_info_local_nonprim) {
+        OpenAPI_ecs_addr_config_info_free(shared_ecs_addr_config_info_local_nonprim);
+        shared_ecs_addr_config_info_local_nonprim = NULL;
     }
     return NULL;
 }

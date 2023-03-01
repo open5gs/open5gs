@@ -1,7 +1,7 @@
 /*
  * plmn_id_nid.h
  *
- * 
+ * Contains the serving core network operator PLMN ID and, for an SNPN, the NID that together with the PLMN ID identifies the SNPN. 
  */
 
 #ifndef _OpenAPI_plmn_id_nid_H_

@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_data_ind_any_of_NULL = 0, OpenAPI_data_ind_any_of_PFD, OpenAPI_data_ind_any_of_IPTV, OpenAPI_data_ind_any_of_BDT, OpenAPI_data_ind_any_of_SVC_PARAM } OpenAPI_data_ind_any_of_e;
+typedef enum { OpenAPI_data_ind_any_of_NULL = 0, OpenAPI_data_ind_any_of_PFD, OpenAPI_data_ind_any_of_IPTV, OpenAPI_data_ind_any_of_BDT, OpenAPI_data_ind_any_of_SVC_PARAM, OpenAPI_data_ind_any_of_AM } OpenAPI_data_ind_any_of_e;
 
 char* OpenAPI_data_ind_any_of_ToString(OpenAPI_data_ind_any_of_e data_ind_any_of);
 

@@ -1,7 +1,7 @@
 /*
  * sm_context_retrieved_data.h
  *
- * 
+ * Data within Retrieve SM Context Response
  */
 
 #ifndef _OpenAPI_sm_context_retrieved_data_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "af_coordination_info.h"
 #include "apn_rate_status.h"
 #include "sm_context.h"
 #include "small_data_rate_status.h"
@@ -28,6 +29,7 @@ typedef struct OpenAPI_sm_context_retrieved_data_s {
     struct OpenAPI_apn_rate_status_s *apn_rate_status;
     bool is_dl_data_waiting_ind;
     int dl_data_waiting_ind;
+    struct OpenAPI_af_coordination_info_s *af_coordination_info;
 } OpenAPI_sm_context_retrieved_data_t;
 
 OpenAPI_sm_context_retrieved_data_t *OpenAPI_sm_context_retrieved_data_create(
@@ -36,7 +38,8 @@ OpenAPI_sm_context_retrieved_data_t *OpenAPI_sm_context_retrieved_data_create(
     OpenAPI_small_data_rate_status_t *small_data_rate_status,
     OpenAPI_apn_rate_status_t *apn_rate_status,
     bool is_dl_data_waiting_ind,
-    int dl_data_waiting_ind
+    int dl_data_waiting_ind,
+    OpenAPI_af_coordination_info_t *af_coordination_info
 );
 void OpenAPI_sm_context_retrieved_data_free(OpenAPI_sm_context_retrieved_data_t *sm_context_retrieved_data);
 OpenAPI_sm_context_retrieved_data_t *OpenAPI_sm_context_retrieved_data_parseFromJSON(cJSON *sm_context_retrieved_dataJSON);

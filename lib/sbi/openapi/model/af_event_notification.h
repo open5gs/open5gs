@@ -1,7 +1,7 @@
 /*
  * af_event_notification.h
  *
- * describes the event information delivered in the notification
+ * Describes the event information delivered in the notification.
  */
 
 #ifndef _OpenAPI_af_event_notification_H_

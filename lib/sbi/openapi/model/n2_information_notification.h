@@ -1,7 +1,7 @@
 /*
  * n2_information_notification.h
  *
- * 
+ * Data within a N2 information notification request
  */
 
 #ifndef _OpenAPI_n2_information_notification_H_

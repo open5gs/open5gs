@@ -1,7 +1,7 @@
 /*
  * qos_data.h
  *
- * 
+ * Contains the QoS parameters.
  */
 
 #ifndef _OpenAPI_qos_data_H_

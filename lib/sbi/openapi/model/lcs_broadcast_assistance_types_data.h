@@ -19,11 +19,11 @@ extern "C" {
 
 typedef struct OpenAPI_lcs_broadcast_assistance_types_data_s OpenAPI_lcs_broadcast_assistance_types_data_t;
 typedef struct OpenAPI_lcs_broadcast_assistance_types_data_s {
-    OpenAPI_list_t *location_assistance_type;
+    OpenAPI_binary_t* location_assistance_type;
 } OpenAPI_lcs_broadcast_assistance_types_data_t;
 
 OpenAPI_lcs_broadcast_assistance_types_data_t *OpenAPI_lcs_broadcast_assistance_types_data_create(
-    OpenAPI_list_t *location_assistance_type
+    OpenAPI_binary_t* location_assistance_type
 );
 void OpenAPI_lcs_broadcast_assistance_types_data_free(OpenAPI_lcs_broadcast_assistance_types_data_t *lcs_broadcast_assistance_types_data);
 OpenAPI_lcs_broadcast_assistance_types_data_t *OpenAPI_lcs_broadcast_assistance_types_data_parseFromJSON(cJSON *lcs_broadcast_assistance_types_dataJSON);

@@ -1,7 +1,7 @@
 /*
  * nef_cond.h
  *
- * Subscription to a set of NF Instances (NEFs), identified by Event ID(s) provided by AF, S-NSSAI(s), AF Instance ID, Application Identifier, External Identifier, External Group Identifier, or domain name.
+ * Subscription to a set of NF Instances (NEFs), identified by Event ID(s) provided by AF, S-NSSAI(s), AF Instance ID, Application Identifier, External Identifier, External Group Identifier, or domain name. 
  */
 
 #ifndef _OpenAPI_nef_cond_H_

@@ -1,7 +1,7 @@
 /*
  * ambr.h
  *
- * 
+ * Contains the maximum aggregated uplink and downlink bit rates.
  */
 
 #ifndef _OpenAPI_ambr_H_

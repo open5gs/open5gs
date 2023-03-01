@@ -5,7 +5,7 @@
 #include "vsmf_update_error.h"
 
 OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_create(
-    OpenAPI_problem_details_t *error,
+    OpenAPI_ext_problem_details_t *error,
     bool is_pti,
     int pti,
     char *n1sm_cause,
@@ -18,7 +18,8 @@ OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_create(
     char *recovery_time,
     OpenAPI_n4_information_t *n4_info,
     OpenAPI_n4_information_t *n4_info_ext1,
-    OpenAPI_n4_information_t *n4_info_ext2
+    OpenAPI_n4_information_t *n4_info_ext2,
+    OpenAPI_n4_information_t *n4_info_ext3
 )
 {
     OpenAPI_vsmf_update_error_t *vsmf_update_error_local_var = ogs_malloc(sizeof(OpenAPI_vsmf_update_error_t));
@@ -38,6 +39,7 @@ OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_create(
     vsmf_update_error_local_var->n4_info = n4_info;
     vsmf_update_error_local_var->n4_info_ext1 = n4_info_ext1;
     vsmf_update_error_local_var->n4_info_ext2 = n4_info_ext2;
+    vsmf_update_error_local_var->n4_info_ext3 = n4_info_ext3;
 
     return vsmf_update_error_local_var;
 }
@@ -50,7 +52,7 @@ void OpenAPI_vsmf_update_error_free(OpenAPI_vsmf_update_error_t *vsmf_update_err
         return;
     }
     if (vsmf_update_error->error) {
-        OpenAPI_problem_details_free(vsmf_update_error->error);
+        OpenAPI_ext_problem_details_free(vsmf_update_error->error);
         vsmf_update_error->error = NULL;
     }
     if (vsmf_update_error->n1sm_cause) {
@@ -92,6 +94,10 @@ void OpenAPI_vsmf_update_error_free(OpenAPI_vsmf_update_error_t *vsmf_update_err
         OpenAPI_n4_information_free(vsmf_update_error->n4_info_ext2);
         vsmf_update_error->n4_info_ext2 = NULL;
     }
+    if (vsmf_update_error->n4_info_ext3) {
+        OpenAPI_n4_information_free(vsmf_update_error->n4_info_ext3);
+        vsmf_update_error->n4_info_ext3 = NULL;
+    }
     ogs_free(vsmf_update_error);
 }
 
@@ -110,7 +116,7 @@ cJSON *OpenAPI_vsmf_update_error_convertToJSON(OpenAPI_vsmf_update_error_t *vsmf
         ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [error]");
         return NULL;
     }
-    cJSON *error_local_JSON = OpenAPI_problem_details_convertToJSON(vsmf_update_error->error);
+    cJSON *error_local_JSON = OpenAPI_ext_problem_details_convertToJSON(vsmf_update_error->error);
     if (error_local_JSON == NULL) {
         ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [error]");
         goto end;
@@ -243,6 +249,19 @@ cJSON *OpenAPI_vsmf_update_error_convertToJSON(OpenAPI_vsmf_update_error_t *vsmf
     }
     }
 
+    if (vsmf_update_error->n4_info_ext3) {
+    cJSON *n4_info_ext3_local_JSON = OpenAPI_n4_information_convertToJSON(vsmf_update_error->n4_info_ext3);
+    if (n4_info_ext3_local_JSON == NULL) {
+        ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [n4_info_ext3]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "n4InfoExt3", n4_info_ext3_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [n4_info_ext3]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -252,7 +271,7 @@ OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_parseFromJSON(cJSON *vsmf
     OpenAPI_vsmf_update_error_t *vsmf_update_error_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *error = NULL;
-    OpenAPI_problem_details_t *error_local_nonprim = NULL;
+    OpenAPI_ext_problem_details_t *error_local_nonprim = NULL;
     cJSON *pti = NULL;
     cJSON *n1sm_cause = NULL;
     cJSON *n1_sm_info_from_ue = NULL;
@@ -271,12 +290,14 @@ OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_parseFromJSON(cJSON *vsmf
     OpenAPI_n4_information_t *n4_info_ext1_local_nonprim = NULL;
     cJSON *n4_info_ext2 = NULL;
     OpenAPI_n4_information_t *n4_info_ext2_local_nonprim = NULL;
+    cJSON *n4_info_ext3 = NULL;
+    OpenAPI_n4_information_t *n4_info_ext3_local_nonprim = NULL;
     error = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "error");
     if (!error) {
         ogs_error("OpenAPI_vsmf_update_error_parseFromJSON() failed [error]");
         goto end;
     }
-    error_local_nonprim = OpenAPI_problem_details_parseFromJSON(error);
+    error_local_nonprim = OpenAPI_ext_problem_details_parseFromJSON(error);
 
     pti = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "pti");
     if (pti) {
@@ -365,6 +386,11 @@ OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_parseFromJSON(cJSON *vsmf
     n4_info_ext2_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info_ext2);
     }
 
+    n4_info_ext3 = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "n4InfoExt3");
+    if (n4_info_ext3) {
+    n4_info_ext3_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info_ext3);
+    }
+
     vsmf_update_error_local_var = OpenAPI_vsmf_update_error_create (
         error_local_nonprim,
         pti ? true : false,
@@ -379,13 +405,14 @@ OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_parseFromJSON(cJSON *vsmf
         recovery_time && !cJSON_IsNull(recovery_time) ? ogs_strdup(recovery_time->valuestring) : NULL,
         n4_info ? n4_info_local_nonprim : NULL,
         n4_info_ext1 ? n4_info_ext1_local_nonprim : NULL,
-        n4_info_ext2 ? n4_info_ext2_local_nonprim : NULL
+        n4_info_ext2 ? n4_info_ext2_local_nonprim : NULL,
+        n4_info_ext3 ? n4_info_ext3_local_nonprim : NULL
     );
 
     return vsmf_update_error_local_var;
 end:
     if (error_local_nonprim) {
-        OpenAPI_problem_details_free(error_local_nonprim);
+        OpenAPI_ext_problem_details_free(error_local_nonprim);
         error_local_nonprim = NULL;
     }
     if (n1_sm_info_from_ue_local_nonprim) {
@@ -418,6 +445,10 @@ end:
     if (n4_info_ext2_local_nonprim) {
         OpenAPI_n4_information_free(n4_info_ext2_local_nonprim);
         n4_info_ext2_local_nonprim = NULL;
+    }
+    if (n4_info_ext3_local_nonprim) {
+        OpenAPI_n4_information_free(n4_info_ext3_local_nonprim);
+        n4_info_ext3_local_nonprim = NULL;
     }
     return NULL;
 }

@@ -1,7 +1,7 @@
 /*
  * alternative_qos_profile.h
  *
- * 
+ * Alternative QoS Profile
  */
 
 #ifndef _OpenAPI_alternative_qos_profile_H_

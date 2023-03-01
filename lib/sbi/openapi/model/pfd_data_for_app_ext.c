@@ -8,7 +8,10 @@ OpenAPI_pfd_data_for_app_ext_t *OpenAPI_pfd_data_for_app_ext_create(
     char *application_id,
     OpenAPI_list_t *pfds,
     char *caching_time,
-    char *supp_feat
+    char *supp_feat,
+    OpenAPI_list_t *reset_ids,
+    bool is_allowed_delay,
+    int allowed_delay
 )
 {
     OpenAPI_pfd_data_for_app_ext_t *pfd_data_for_app_ext_local_var = ogs_malloc(sizeof(OpenAPI_pfd_data_for_app_ext_t));
@@ -18,6 +21,9 @@ OpenAPI_pfd_data_for_app_ext_t *OpenAPI_pfd_data_for_app_ext_create(
     pfd_data_for_app_ext_local_var->pfds = pfds;
     pfd_data_for_app_ext_local_var->caching_time = caching_time;
     pfd_data_for_app_ext_local_var->supp_feat = supp_feat;
+    pfd_data_for_app_ext_local_var->reset_ids = reset_ids;
+    pfd_data_for_app_ext_local_var->is_allowed_delay = is_allowed_delay;
+    pfd_data_for_app_ext_local_var->allowed_delay = allowed_delay;
 
     return pfd_data_for_app_ext_local_var;
 }
@@ -47,6 +53,13 @@ void OpenAPI_pfd_data_for_app_ext_free(OpenAPI_pfd_data_for_app_ext_t *pfd_data_
     if (pfd_data_for_app_ext->supp_feat) {
         ogs_free(pfd_data_for_app_ext->supp_feat);
         pfd_data_for_app_ext->supp_feat = NULL;
+    }
+    if (pfd_data_for_app_ext->reset_ids) {
+        OpenAPI_list_for_each(pfd_data_for_app_ext->reset_ids, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(pfd_data_for_app_ext->reset_ids);
+        pfd_data_for_app_ext->reset_ids = NULL;
     }
     ogs_free(pfd_data_for_app_ext);
 }
@@ -103,6 +116,27 @@ cJSON *OpenAPI_pfd_data_for_app_ext_convertToJSON(OpenAPI_pfd_data_for_app_ext_t
     }
     }
 
+    if (pfd_data_for_app_ext->reset_ids) {
+    cJSON *reset_idsList = cJSON_AddArrayToObject(item, "resetIds");
+    if (reset_idsList == NULL) {
+        ogs_error("OpenAPI_pfd_data_for_app_ext_convertToJSON() failed [reset_ids]");
+        goto end;
+    }
+    OpenAPI_list_for_each(pfd_data_for_app_ext->reset_ids, node) {
+        if (cJSON_AddStringToObject(reset_idsList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_pfd_data_for_app_ext_convertToJSON() failed [reset_ids]");
+            goto end;
+        }
+    }
+    }
+
+    if (pfd_data_for_app_ext->is_allowed_delay) {
+    if (cJSON_AddNumberToObject(item, "allowedDelay", pfd_data_for_app_ext->allowed_delay) == NULL) {
+        ogs_error("OpenAPI_pfd_data_for_app_ext_convertToJSON() failed [allowed_delay]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -116,6 +150,9 @@ OpenAPI_pfd_data_for_app_ext_t *OpenAPI_pfd_data_for_app_ext_parseFromJSON(cJSON
     OpenAPI_list_t *pfdsList = NULL;
     cJSON *caching_time = NULL;
     cJSON *supp_feat = NULL;
+    cJSON *reset_ids = NULL;
+    OpenAPI_list_t *reset_idsList = NULL;
+    cJSON *allowed_delay = NULL;
     application_id = cJSON_GetObjectItemCaseSensitive(pfd_data_for_app_extJSON, "applicationId");
     if (!application_id) {
         ogs_error("OpenAPI_pfd_data_for_app_ext_parseFromJSON() failed [application_id]");
@@ -169,11 +206,43 @@ OpenAPI_pfd_data_for_app_ext_t *OpenAPI_pfd_data_for_app_ext_parseFromJSON(cJSON
     }
     }
 
+    reset_ids = cJSON_GetObjectItemCaseSensitive(pfd_data_for_app_extJSON, "resetIds");
+    if (reset_ids) {
+        cJSON *reset_ids_local = NULL;
+        if (!cJSON_IsArray(reset_ids)) {
+            ogs_error("OpenAPI_pfd_data_for_app_ext_parseFromJSON() failed [reset_ids]");
+            goto end;
+        }
+
+        reset_idsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(reset_ids_local, reset_ids) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(reset_ids_local)) {
+                ogs_error("OpenAPI_pfd_data_for_app_ext_parseFromJSON() failed [reset_ids]");
+                goto end;
+            }
+            OpenAPI_list_add(reset_idsList, ogs_strdup(reset_ids_local->valuestring));
+        }
+    }
+
+    allowed_delay = cJSON_GetObjectItemCaseSensitive(pfd_data_for_app_extJSON, "allowedDelay");
+    if (allowed_delay) {
+    if (!cJSON_IsNumber(allowed_delay)) {
+        ogs_error("OpenAPI_pfd_data_for_app_ext_parseFromJSON() failed [allowed_delay]");
+        goto end;
+    }
+    }
+
     pfd_data_for_app_ext_local_var = OpenAPI_pfd_data_for_app_ext_create (
         ogs_strdup(application_id->valuestring),
         pfdsList,
         caching_time && !cJSON_IsNull(caching_time) ? ogs_strdup(caching_time->valuestring) : NULL,
-        supp_feat && !cJSON_IsNull(supp_feat) ? ogs_strdup(supp_feat->valuestring) : NULL
+        supp_feat && !cJSON_IsNull(supp_feat) ? ogs_strdup(supp_feat->valuestring) : NULL,
+        reset_ids ? reset_idsList : NULL,
+        allowed_delay ? true : false,
+        allowed_delay ? allowed_delay->valuedouble : 0
     );
 
     return pfd_data_for_app_ext_local_var;
@@ -184,6 +253,13 @@ end:
         }
         OpenAPI_list_free(pfdsList);
         pfdsList = NULL;
+    }
+    if (reset_idsList) {
+        OpenAPI_list_for_each(reset_idsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(reset_idsList);
+        reset_idsList = NULL;
     }
     return NULL;
 }

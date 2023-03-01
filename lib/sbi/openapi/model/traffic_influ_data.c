@@ -21,7 +21,7 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_create(
     char *valid_start_time,
     char *valid_end_time,
     OpenAPI_list_t *temp_validities,
-    OpenAPI_network_area_info_1_t *nw_area_info,
+    OpenAPI_network_area_info_2_t *nw_area_info,
     char *up_path_chg_notif_uri,
     OpenAPI_list_t *headers,
     OpenAPI_list_t *subscribed_events,
@@ -30,8 +30,15 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_create(
     int af_ack_ind,
     bool is_addr_preser_ind,
     int addr_preser_ind,
+    bool is_max_allowed_up_lat,
+    int max_allowed_up_lat,
+    bool is_sim_conn_ind,
+    int sim_conn_ind,
+    bool is_sim_conn_term,
+    int sim_conn_term,
     char *supported_features,
-    char *res_uri
+    char *res_uri,
+    OpenAPI_list_t *reset_ids
 )
 {
     OpenAPI_traffic_influ_data_t *traffic_influ_data_local_var = ogs_malloc(sizeof(OpenAPI_traffic_influ_data_t));
@@ -62,8 +69,15 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_create(
     traffic_influ_data_local_var->af_ack_ind = af_ack_ind;
     traffic_influ_data_local_var->is_addr_preser_ind = is_addr_preser_ind;
     traffic_influ_data_local_var->addr_preser_ind = addr_preser_ind;
+    traffic_influ_data_local_var->is_max_allowed_up_lat = is_max_allowed_up_lat;
+    traffic_influ_data_local_var->max_allowed_up_lat = max_allowed_up_lat;
+    traffic_influ_data_local_var->is_sim_conn_ind = is_sim_conn_ind;
+    traffic_influ_data_local_var->sim_conn_ind = sim_conn_ind;
+    traffic_influ_data_local_var->is_sim_conn_term = is_sim_conn_term;
+    traffic_influ_data_local_var->sim_conn_term = sim_conn_term;
     traffic_influ_data_local_var->supported_features = supported_features;
     traffic_influ_data_local_var->res_uri = res_uri;
+    traffic_influ_data_local_var->reset_ids = reset_ids;
 
     return traffic_influ_data_local_var;
 }
@@ -136,7 +150,7 @@ void OpenAPI_traffic_influ_data_free(OpenAPI_traffic_influ_data_t *traffic_influ
         traffic_influ_data->temp_validities = NULL;
     }
     if (traffic_influ_data->nw_area_info) {
-        OpenAPI_network_area_info_1_free(traffic_influ_data->nw_area_info);
+        OpenAPI_network_area_info_2_free(traffic_influ_data->nw_area_info);
         traffic_influ_data->nw_area_info = NULL;
     }
     if (traffic_influ_data->up_path_chg_notif_uri) {
@@ -164,6 +178,13 @@ void OpenAPI_traffic_influ_data_free(OpenAPI_traffic_influ_data_t *traffic_influ
     if (traffic_influ_data->res_uri) {
         ogs_free(traffic_influ_data->res_uri);
         traffic_influ_data->res_uri = NULL;
+    }
+    if (traffic_influ_data->reset_ids) {
+        OpenAPI_list_for_each(traffic_influ_data->reset_ids, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(traffic_influ_data->reset_ids);
+        traffic_influ_data->reset_ids = NULL;
     }
     ogs_free(traffic_influ_data);
 }
@@ -320,7 +341,7 @@ cJSON *OpenAPI_traffic_influ_data_convertToJSON(OpenAPI_traffic_influ_data_t *tr
     }
 
     if (traffic_influ_data->nw_area_info) {
-    cJSON *nw_area_info_local_JSON = OpenAPI_network_area_info_1_convertToJSON(traffic_influ_data->nw_area_info);
+    cJSON *nw_area_info_local_JSON = OpenAPI_network_area_info_2_convertToJSON(traffic_influ_data->nw_area_info);
     if (nw_area_info_local_JSON == NULL) {
         ogs_error("OpenAPI_traffic_influ_data_convertToJSON() failed [nw_area_info]");
         goto end;
@@ -390,6 +411,27 @@ cJSON *OpenAPI_traffic_influ_data_convertToJSON(OpenAPI_traffic_influ_data_t *tr
     }
     }
 
+    if (traffic_influ_data->is_max_allowed_up_lat) {
+    if (cJSON_AddNumberToObject(item, "maxAllowedUpLat", traffic_influ_data->max_allowed_up_lat) == NULL) {
+        ogs_error("OpenAPI_traffic_influ_data_convertToJSON() failed [max_allowed_up_lat]");
+        goto end;
+    }
+    }
+
+    if (traffic_influ_data->is_sim_conn_ind) {
+    if (cJSON_AddBoolToObject(item, "simConnInd", traffic_influ_data->sim_conn_ind) == NULL) {
+        ogs_error("OpenAPI_traffic_influ_data_convertToJSON() failed [sim_conn_ind]");
+        goto end;
+    }
+    }
+
+    if (traffic_influ_data->is_sim_conn_term) {
+    if (cJSON_AddNumberToObject(item, "simConnTerm", traffic_influ_data->sim_conn_term) == NULL) {
+        ogs_error("OpenAPI_traffic_influ_data_convertToJSON() failed [sim_conn_term]");
+        goto end;
+    }
+    }
+
     if (traffic_influ_data->supported_features) {
     if (cJSON_AddStringToObject(item, "supportedFeatures", traffic_influ_data->supported_features) == NULL) {
         ogs_error("OpenAPI_traffic_influ_data_convertToJSON() failed [supported_features]");
@@ -401,6 +443,20 @@ cJSON *OpenAPI_traffic_influ_data_convertToJSON(OpenAPI_traffic_influ_data_t *tr
     if (cJSON_AddStringToObject(item, "resUri", traffic_influ_data->res_uri) == NULL) {
         ogs_error("OpenAPI_traffic_influ_data_convertToJSON() failed [res_uri]");
         goto end;
+    }
+    }
+
+    if (traffic_influ_data->reset_ids) {
+    cJSON *reset_idsList = cJSON_AddArrayToObject(item, "resetIds");
+    if (reset_idsList == NULL) {
+        ogs_error("OpenAPI_traffic_influ_data_convertToJSON() failed [reset_ids]");
+        goto end;
+    }
+    OpenAPI_list_for_each(traffic_influ_data->reset_ids, node) {
+        if (cJSON_AddStringToObject(reset_idsList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_traffic_influ_data_convertToJSON() failed [reset_ids]");
+            goto end;
+        }
     }
     }
 
@@ -432,7 +488,7 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
     cJSON *temp_validities = NULL;
     OpenAPI_list_t *temp_validitiesList = NULL;
     cJSON *nw_area_info = NULL;
-    OpenAPI_network_area_info_1_t *nw_area_info_local_nonprim = NULL;
+    OpenAPI_network_area_info_2_t *nw_area_info_local_nonprim = NULL;
     cJSON *up_path_chg_notif_uri = NULL;
     cJSON *headers = NULL;
     OpenAPI_list_t *headersList = NULL;
@@ -442,8 +498,13 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
     OpenAPI_dnai_change_type_e dnai_chg_typeVariable = 0;
     cJSON *af_ack_ind = NULL;
     cJSON *addr_preser_ind = NULL;
+    cJSON *max_allowed_up_lat = NULL;
+    cJSON *sim_conn_ind = NULL;
+    cJSON *sim_conn_term = NULL;
     cJSON *supported_features = NULL;
     cJSON *res_uri = NULL;
+    cJSON *reset_ids = NULL;
+    OpenAPI_list_t *reset_idsList = NULL;
     up_path_chg_notif_corre_id = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "upPathChgNotifCorreId");
     if (up_path_chg_notif_corre_id) {
     if (!cJSON_IsString(up_path_chg_notif_corre_id) && !cJSON_IsNull(up_path_chg_notif_corre_id)) {
@@ -623,7 +684,7 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
 
     nw_area_info = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "nwAreaInfo");
     if (nw_area_info) {
-    nw_area_info_local_nonprim = OpenAPI_network_area_info_1_parseFromJSON(nw_area_info);
+    nw_area_info_local_nonprim = OpenAPI_network_area_info_2_parseFromJSON(nw_area_info);
     }
 
     up_path_chg_notif_uri = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "upPathChgNotifUri");
@@ -705,6 +766,30 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
     }
     }
 
+    max_allowed_up_lat = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "maxAllowedUpLat");
+    if (max_allowed_up_lat) {
+    if (!cJSON_IsNumber(max_allowed_up_lat)) {
+        ogs_error("OpenAPI_traffic_influ_data_parseFromJSON() failed [max_allowed_up_lat]");
+        goto end;
+    }
+    }
+
+    sim_conn_ind = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "simConnInd");
+    if (sim_conn_ind) {
+    if (!cJSON_IsBool(sim_conn_ind)) {
+        ogs_error("OpenAPI_traffic_influ_data_parseFromJSON() failed [sim_conn_ind]");
+        goto end;
+    }
+    }
+
+    sim_conn_term = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "simConnTerm");
+    if (sim_conn_term) {
+    if (!cJSON_IsNumber(sim_conn_term)) {
+        ogs_error("OpenAPI_traffic_influ_data_parseFromJSON() failed [sim_conn_term]");
+        goto end;
+    }
+    }
+
     supported_features = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "supportedFeatures");
     if (supported_features) {
     if (!cJSON_IsString(supported_features) && !cJSON_IsNull(supported_features)) {
@@ -719,6 +804,27 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
         ogs_error("OpenAPI_traffic_influ_data_parseFromJSON() failed [res_uri]");
         goto end;
     }
+    }
+
+    reset_ids = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "resetIds");
+    if (reset_ids) {
+        cJSON *reset_ids_local = NULL;
+        if (!cJSON_IsArray(reset_ids)) {
+            ogs_error("OpenAPI_traffic_influ_data_parseFromJSON() failed [reset_ids]");
+            goto end;
+        }
+
+        reset_idsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(reset_ids_local, reset_ids) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(reset_ids_local)) {
+                ogs_error("OpenAPI_traffic_influ_data_parseFromJSON() failed [reset_ids]");
+                goto end;
+            }
+            OpenAPI_list_add(reset_idsList, ogs_strdup(reset_ids_local->valuestring));
+        }
     }
 
     traffic_influ_data_local_var = OpenAPI_traffic_influ_data_create (
@@ -747,8 +853,15 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
         af_ack_ind ? af_ack_ind->valueint : 0,
         addr_preser_ind ? true : false,
         addr_preser_ind ? addr_preser_ind->valueint : 0,
+        max_allowed_up_lat ? true : false,
+        max_allowed_up_lat ? max_allowed_up_lat->valuedouble : 0,
+        sim_conn_ind ? true : false,
+        sim_conn_ind ? sim_conn_ind->valueint : 0,
+        sim_conn_term ? true : false,
+        sim_conn_term ? sim_conn_term->valuedouble : 0,
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
-        res_uri && !cJSON_IsNull(res_uri) ? ogs_strdup(res_uri->valuestring) : NULL
+        res_uri && !cJSON_IsNull(res_uri) ? ogs_strdup(res_uri->valuestring) : NULL,
+        reset_ids ? reset_idsList : NULL
     );
 
     return traffic_influ_data_local_var;
@@ -786,7 +899,7 @@ end:
         temp_validitiesList = NULL;
     }
     if (nw_area_info_local_nonprim) {
-        OpenAPI_network_area_info_1_free(nw_area_info_local_nonprim);
+        OpenAPI_network_area_info_2_free(nw_area_info_local_nonprim);
         nw_area_info_local_nonprim = NULL;
     }
     if (headersList) {
@@ -802,6 +915,13 @@ end:
         }
         OpenAPI_list_free(subscribed_eventsList);
         subscribed_eventsList = NULL;
+    }
+    if (reset_idsList) {
+        OpenAPI_list_for_each(reset_idsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(reset_idsList);
+        reset_idsList = NULL;
     }
     return NULL;
 }

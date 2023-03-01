@@ -24,6 +24,8 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_create(
     int offline,
     bool is_online,
     int online,
+    bool is_offline_ch_only,
+    int offline_ch_only,
     OpenAPI_list_t *policy_ctrl_req_triggers,
     OpenAPI_list_t *last_req_rule_data,
     OpenAPI_requested_usage_data_t *last_req_usage_data,
@@ -64,6 +66,8 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_create(
     sm_policy_decision_local_var->offline = offline;
     sm_policy_decision_local_var->is_online = is_online;
     sm_policy_decision_local_var->online = online;
+    sm_policy_decision_local_var->is_offline_ch_only = is_offline_ch_only;
+    sm_policy_decision_local_var->offline_ch_only = offline_ch_only;
     sm_policy_decision_local_var->policy_ctrl_req_triggers = policy_ctrl_req_triggers;
     sm_policy_decision_local_var->last_req_rule_data = last_req_rule_data;
     sm_policy_decision_local_var->last_req_usage_data = last_req_usage_data;
@@ -493,6 +497,13 @@ cJSON *OpenAPI_sm_policy_decision_convertToJSON(OpenAPI_sm_policy_decision_t *sm
     }
     }
 
+    if (sm_policy_decision->is_offline_ch_only) {
+    if (cJSON_AddBoolToObject(item, "offlineChOnly", sm_policy_decision->offline_ch_only) == NULL) {
+        ogs_error("OpenAPI_sm_policy_decision_convertToJSON() failed [offline_ch_only]");
+        goto end;
+    }
+    }
+
     if (sm_policy_decision->policy_ctrl_req_triggers != OpenAPI_policy_control_request_trigger_NULL) {
     cJSON *policy_ctrl_req_triggersList = cJSON_AddArrayToObject(item, "policyCtrlReqTriggers");
     if (policy_ctrl_req_triggersList == NULL) {
@@ -675,6 +686,7 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_parseFromJSON(cJSON *sm
     cJSON *revalidation_time = NULL;
     cJSON *offline = NULL;
     cJSON *online = NULL;
+    cJSON *offline_ch_only = NULL;
     cJSON *policy_ctrl_req_triggers = NULL;
     OpenAPI_list_t *policy_ctrl_req_triggersList = NULL;
     cJSON *last_req_rule_data = NULL;
@@ -976,6 +988,14 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_parseFromJSON(cJSON *sm
     }
     }
 
+    offline_ch_only = cJSON_GetObjectItemCaseSensitive(sm_policy_decisionJSON, "offlineChOnly");
+    if (offline_ch_only) {
+    if (!cJSON_IsBool(offline_ch_only)) {
+        ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed [offline_ch_only]");
+        goto end;
+    }
+    }
+
     policy_ctrl_req_triggers = cJSON_GetObjectItemCaseSensitive(sm_policy_decisionJSON, "policyCtrlReqTriggers");
     if (policy_ctrl_req_triggers) {
         cJSON *policy_ctrl_req_triggers_local = NULL;
@@ -1156,6 +1176,8 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_parseFromJSON(cJSON *sm
         offline ? offline->valueint : 0,
         online ? true : false,
         online ? online->valueint : 0,
+        offline_ch_only ? true : false,
+        offline_ch_only ? offline_ch_only->valueint : 0,
         policy_ctrl_req_triggers ? policy_ctrl_req_triggersList : NULL,
         last_req_rule_data ? last_req_rule_dataList : NULL,
         last_req_usage_data ? last_req_usage_data_local_nonprim : NULL,

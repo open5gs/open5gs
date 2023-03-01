@@ -11,7 +11,7 @@ OpenAPI_usage_mon_data_limit_t *OpenAPI_usage_mon_data_limit_create(
     char *start_date,
     char *end_date,
     OpenAPI_usage_threshold_t *usage_limit,
-    char *reset_period
+    OpenAPI_time_period_t *reset_period
 )
 {
     OpenAPI_usage_mon_data_limit_t *usage_mon_data_limit_local_var = ogs_malloc(sizeof(OpenAPI_usage_mon_data_limit_t));
@@ -66,7 +66,7 @@ void OpenAPI_usage_mon_data_limit_free(OpenAPI_usage_mon_data_limit_t *usage_mon
         usage_mon_data_limit->usage_limit = NULL;
     }
     if (usage_mon_data_limit->reset_period) {
-        ogs_free(usage_mon_data_limit->reset_period);
+        OpenAPI_time_period_free(usage_mon_data_limit->reset_period);
         usage_mon_data_limit->reset_period = NULL;
     }
     ogs_free(usage_mon_data_limit);
@@ -155,7 +155,13 @@ cJSON *OpenAPI_usage_mon_data_limit_convertToJSON(OpenAPI_usage_mon_data_limit_t
     }
 
     if (usage_mon_data_limit->reset_period) {
-    if (cJSON_AddStringToObject(item, "resetPeriod", usage_mon_data_limit->reset_period) == NULL) {
+    cJSON *reset_period_local_JSON = OpenAPI_time_period_convertToJSON(usage_mon_data_limit->reset_period);
+    if (reset_period_local_JSON == NULL) {
+        ogs_error("OpenAPI_usage_mon_data_limit_convertToJSON() failed [reset_period]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "resetPeriod", reset_period_local_JSON);
+    if (item->child == NULL) {
         ogs_error("OpenAPI_usage_mon_data_limit_convertToJSON() failed [reset_period]");
         goto end;
     }
@@ -179,6 +185,7 @@ OpenAPI_usage_mon_data_limit_t *OpenAPI_usage_mon_data_limit_parseFromJSON(cJSON
     cJSON *usage_limit = NULL;
     OpenAPI_usage_threshold_t *usage_limit_local_nonprim = NULL;
     cJSON *reset_period = NULL;
+    OpenAPI_time_period_t *reset_period_local_nonprim = NULL;
     limit_id = cJSON_GetObjectItemCaseSensitive(usage_mon_data_limitJSON, "limitId");
     if (!limit_id) {
         ogs_error("OpenAPI_usage_mon_data_limit_parseFromJSON() failed [limit_id]");
@@ -243,10 +250,7 @@ OpenAPI_usage_mon_data_limit_t *OpenAPI_usage_mon_data_limit_parseFromJSON(cJSON
 
     reset_period = cJSON_GetObjectItemCaseSensitive(usage_mon_data_limitJSON, "resetPeriod");
     if (reset_period) {
-    if (!cJSON_IsString(reset_period) && !cJSON_IsNull(reset_period)) {
-        ogs_error("OpenAPI_usage_mon_data_limit_parseFromJSON() failed [reset_period]");
-        goto end;
-    }
+    reset_period_local_nonprim = OpenAPI_time_period_parseFromJSON(reset_period);
     }
 
     usage_mon_data_limit_local_var = OpenAPI_usage_mon_data_limit_create (
@@ -256,7 +260,7 @@ OpenAPI_usage_mon_data_limit_t *OpenAPI_usage_mon_data_limit_parseFromJSON(cJSON
         start_date && !cJSON_IsNull(start_date) ? ogs_strdup(start_date->valuestring) : NULL,
         end_date && !cJSON_IsNull(end_date) ? ogs_strdup(end_date->valuestring) : NULL,
         usage_limit ? usage_limit_local_nonprim : NULL,
-        reset_period && !cJSON_IsNull(reset_period) ? ogs_strdup(reset_period->valuestring) : NULL
+        reset_period ? reset_period_local_nonprim : NULL
     );
 
     return usage_mon_data_limit_local_var;
@@ -278,6 +282,10 @@ end:
     if (usage_limit_local_nonprim) {
         OpenAPI_usage_threshold_free(usage_limit_local_nonprim);
         usage_limit_local_nonprim = NULL;
+    }
+    if (reset_period_local_nonprim) {
+        OpenAPI_time_period_free(reset_period_local_nonprim);
+        reset_period_local_nonprim = NULL;
     }
     return NULL;
 }

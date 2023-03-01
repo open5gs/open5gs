@@ -1,7 +1,7 @@
 /*
  * ip_multicast_address_info.h
  *
- * 
+ * Contains the IP multicast addressing information.
  */
 
 #ifndef _OpenAPI_ip_multicast_address_info_H_

@@ -1,7 +1,7 @@
 /*
  * point.h
  *
- * 
+ * Ellipsoid Point.
  */
 
 #ifndef _OpenAPI_point_H_

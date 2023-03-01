@@ -1,7 +1,7 @@
 /*
  * ddn_failure_subs.h
  *
- * 
+ * DDN Failure Subscription
  */
 
 #ifndef _OpenAPI_ddn_failure_subs_H_

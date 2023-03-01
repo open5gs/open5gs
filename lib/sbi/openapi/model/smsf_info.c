@@ -6,7 +6,8 @@
 
 OpenAPI_smsf_info_t *OpenAPI_smsf_info_create(
     char *smsf_instance_id,
-    OpenAPI_plmn_id_t *plmn_id
+    OpenAPI_plmn_id_t *plmn_id,
+    char *smsf_set_id
 )
 {
     OpenAPI_smsf_info_t *smsf_info_local_var = ogs_malloc(sizeof(OpenAPI_smsf_info_t));
@@ -14,6 +15,7 @@ OpenAPI_smsf_info_t *OpenAPI_smsf_info_create(
 
     smsf_info_local_var->smsf_instance_id = smsf_instance_id;
     smsf_info_local_var->plmn_id = plmn_id;
+    smsf_info_local_var->smsf_set_id = smsf_set_id;
 
     return smsf_info_local_var;
 }
@@ -32,6 +34,10 @@ void OpenAPI_smsf_info_free(OpenAPI_smsf_info_t *smsf_info)
     if (smsf_info->plmn_id) {
         OpenAPI_plmn_id_free(smsf_info->plmn_id);
         smsf_info->plmn_id = NULL;
+    }
+    if (smsf_info->smsf_set_id) {
+        ogs_free(smsf_info->smsf_set_id);
+        smsf_info->smsf_set_id = NULL;
     }
     ogs_free(smsf_info);
 }
@@ -71,6 +77,13 @@ cJSON *OpenAPI_smsf_info_convertToJSON(OpenAPI_smsf_info_t *smsf_info)
         goto end;
     }
 
+    if (smsf_info->smsf_set_id) {
+    if (cJSON_AddStringToObject(item, "smsfSetId", smsf_info->smsf_set_id) == NULL) {
+        ogs_error("OpenAPI_smsf_info_convertToJSON() failed [smsf_set_id]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -82,6 +95,7 @@ OpenAPI_smsf_info_t *OpenAPI_smsf_info_parseFromJSON(cJSON *smsf_infoJSON)
     cJSON *smsf_instance_id = NULL;
     cJSON *plmn_id = NULL;
     OpenAPI_plmn_id_t *plmn_id_local_nonprim = NULL;
+    cJSON *smsf_set_id = NULL;
     smsf_instance_id = cJSON_GetObjectItemCaseSensitive(smsf_infoJSON, "smsfInstanceId");
     if (!smsf_instance_id) {
         ogs_error("OpenAPI_smsf_info_parseFromJSON() failed [smsf_instance_id]");
@@ -99,9 +113,18 @@ OpenAPI_smsf_info_t *OpenAPI_smsf_info_parseFromJSON(cJSON *smsf_infoJSON)
     }
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
 
+    smsf_set_id = cJSON_GetObjectItemCaseSensitive(smsf_infoJSON, "smsfSetId");
+    if (smsf_set_id) {
+    if (!cJSON_IsString(smsf_set_id) && !cJSON_IsNull(smsf_set_id)) {
+        ogs_error("OpenAPI_smsf_info_parseFromJSON() failed [smsf_set_id]");
+        goto end;
+    }
+    }
+
     smsf_info_local_var = OpenAPI_smsf_info_create (
         ogs_strdup(smsf_instance_id->valuestring),
-        plmn_id_local_nonprim
+        plmn_id_local_nonprim,
+        smsf_set_id && !cJSON_IsNull(smsf_set_id) ? ogs_strdup(smsf_set_id->valuestring) : NULL
     );
 
     return smsf_info_local_var;

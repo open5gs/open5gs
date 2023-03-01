@@ -1,7 +1,7 @@
 /*
  * app_detection_info.h
  *
- * 
+ * Contains the detected application&#39;s traffic information.
  */
 
 #ifndef _OpenAPI_app_detection_info_H_

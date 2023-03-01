@@ -1,7 +1,7 @@
 /*
  * notify_item.h
  *
- * 
+ * Indicates changes on a resource.
  */
 
 #ifndef _OpenAPI_notify_item_H_

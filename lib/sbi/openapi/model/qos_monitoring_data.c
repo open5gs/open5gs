@@ -19,7 +19,9 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_create(
     bool is_rep_period,
     int rep_period,
     char *notify_uri,
-    char *notify_corre_id
+    char *notify_corre_id,
+    bool is_direct_notif_ind,
+    int direct_notif_ind
 )
 {
     OpenAPI_qos_monitoring_data_t *qos_monitoring_data_local_var = ogs_malloc(sizeof(OpenAPI_qos_monitoring_data_t));
@@ -40,6 +42,8 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_create(
     qos_monitoring_data_local_var->rep_period = rep_period;
     qos_monitoring_data_local_var->notify_uri = notify_uri;
     qos_monitoring_data_local_var->notify_corre_id = notify_corre_id;
+    qos_monitoring_data_local_var->is_direct_notif_ind = is_direct_notif_ind;
+    qos_monitoring_data_local_var->direct_notif_ind = direct_notif_ind;
 
     return qos_monitoring_data_local_var;
 }
@@ -175,6 +179,13 @@ cJSON *OpenAPI_qos_monitoring_data_convertToJSON(OpenAPI_qos_monitoring_data_t *
     }
     }
 
+    if (qos_monitoring_data->is_direct_notif_ind) {
+    if (cJSON_AddBoolToObject(item, "directNotifInd", qos_monitoring_data->direct_notif_ind) == NULL) {
+        ogs_error("OpenAPI_qos_monitoring_data_convertToJSON() failed [direct_notif_ind]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -195,6 +206,7 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_parseFromJSON(cJSON *
     cJSON *rep_period = NULL;
     cJSON *notify_uri = NULL;
     cJSON *notify_corre_id = NULL;
+    cJSON *direct_notif_ind = NULL;
     qm_id = cJSON_GetObjectItemCaseSensitive(qos_monitoring_dataJSON, "qmId");
     if (!qm_id) {
         ogs_error("OpenAPI_qos_monitoring_data_parseFromJSON() failed [qm_id]");
@@ -303,6 +315,14 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_parseFromJSON(cJSON *
     }
     }
 
+    direct_notif_ind = cJSON_GetObjectItemCaseSensitive(qos_monitoring_dataJSON, "directNotifInd");
+    if (direct_notif_ind) {
+    if (!cJSON_IsBool(direct_notif_ind)) {
+        ogs_error("OpenAPI_qos_monitoring_data_parseFromJSON() failed [direct_notif_ind]");
+        goto end;
+    }
+    }
+
     qos_monitoring_data_local_var = OpenAPI_qos_monitoring_data_create (
         ogs_strdup(qm_id->valuestring),
         req_qos_mon_paramsList,
@@ -318,7 +338,9 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_parseFromJSON(cJSON *
         rep_period ? true : false,
         rep_period ? rep_period->valuedouble : 0,
         notify_uri && !cJSON_IsNull(notify_uri) ? ogs_strdup(notify_uri->valuestring) : NULL,
-        notify_corre_id && !cJSON_IsNull(notify_corre_id) ? ogs_strdup(notify_corre_id->valuestring) : NULL
+        notify_corre_id && !cJSON_IsNull(notify_corre_id) ? ogs_strdup(notify_corre_id->valuestring) : NULL,
+        direct_notif_ind ? true : false,
+        direct_notif_ind ? direct_notif_ind->valueint : 0
     );
 
     return qos_monitoring_data_local_var;

@@ -1,7 +1,7 @@
 /*
  * allowed_snssai.h
  *
- * 
+ * Contains the authorized S-NSSAI and optional mapped home S-NSSAI and network slice instance information 
  */
 
 #ifndef _OpenAPI_allowed_snssai_H_

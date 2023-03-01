@@ -1,7 +1,7 @@
 /*
  * bdt_policy_data_patch.h
  *
- * 
+ * Represents modification instructions to be performed on the applied BDT policy data. 
  */
 
 #ifndef _OpenAPI_bdt_policy_data_patch_H_

@@ -1,7 +1,7 @@
 /*
  * change_item.h
  *
- * 
+ * It contains data which need to be changed.
  */
 
 #ifndef _OpenAPI_change_item_H_

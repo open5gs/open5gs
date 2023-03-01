@@ -1,7 +1,7 @@
 /*
  * media_sub_component_rm.h
  *
- * This data type is defined in the same way as the MediaSubComponent data type, but with the OpenAPI nullable property set to true. Removable attributes marBwDl and marBwUl are defined with the corresponding removable data type.
+ * This data type is defined in the same way as the MediaSubComponent data type, but with the OpenAPI nullable property set to true. Removable attributes marBwDl and marBwUl are defined with the corresponding removable data type. 
  */
 
 #ifndef _OpenAPI_media_sub_component_rm_H_

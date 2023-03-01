@@ -15,7 +15,12 @@ OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_create(
     int epc_applied_ind,
     char *scef_diam_host,
     char *scef_diam_realm,
-    char *notify_correlation_id
+    char *notify_correlation_id,
+    char *second_callback_ref,
+    char *gpsi,
+    OpenAPI_list_t *exclude_gpsi_list,
+    OpenAPI_list_t *include_gpsi_list,
+    char *data_restoration_callback_uri
 )
 {
     OpenAPI_ee_subscription_t *ee_subscription_local_var = ogs_malloc(sizeof(OpenAPI_ee_subscription_t));
@@ -32,6 +37,11 @@ OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_create(
     ee_subscription_local_var->scef_diam_host = scef_diam_host;
     ee_subscription_local_var->scef_diam_realm = scef_diam_realm;
     ee_subscription_local_var->notify_correlation_id = notify_correlation_id;
+    ee_subscription_local_var->second_callback_ref = second_callback_ref;
+    ee_subscription_local_var->gpsi = gpsi;
+    ee_subscription_local_var->exclude_gpsi_list = exclude_gpsi_list;
+    ee_subscription_local_var->include_gpsi_list = include_gpsi_list;
+    ee_subscription_local_var->data_restoration_callback_uri = data_restoration_callback_uri;
 
     return ee_subscription_local_var;
 }
@@ -84,6 +94,32 @@ void OpenAPI_ee_subscription_free(OpenAPI_ee_subscription_t *ee_subscription)
     if (ee_subscription->notify_correlation_id) {
         ogs_free(ee_subscription->notify_correlation_id);
         ee_subscription->notify_correlation_id = NULL;
+    }
+    if (ee_subscription->second_callback_ref) {
+        ogs_free(ee_subscription->second_callback_ref);
+        ee_subscription->second_callback_ref = NULL;
+    }
+    if (ee_subscription->gpsi) {
+        ogs_free(ee_subscription->gpsi);
+        ee_subscription->gpsi = NULL;
+    }
+    if (ee_subscription->exclude_gpsi_list) {
+        OpenAPI_list_for_each(ee_subscription->exclude_gpsi_list, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(ee_subscription->exclude_gpsi_list);
+        ee_subscription->exclude_gpsi_list = NULL;
+    }
+    if (ee_subscription->include_gpsi_list) {
+        OpenAPI_list_for_each(ee_subscription->include_gpsi_list, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(ee_subscription->include_gpsi_list);
+        ee_subscription->include_gpsi_list = NULL;
+    }
+    if (ee_subscription->data_restoration_callback_uri) {
+        ogs_free(ee_subscription->data_restoration_callback_uri);
+        ee_subscription->data_restoration_callback_uri = NULL;
     }
     ogs_free(ee_subscription);
 }
@@ -200,6 +236,55 @@ cJSON *OpenAPI_ee_subscription_convertToJSON(OpenAPI_ee_subscription_t *ee_subsc
     }
     }
 
+    if (ee_subscription->second_callback_ref) {
+    if (cJSON_AddStringToObject(item, "secondCallbackRef", ee_subscription->second_callback_ref) == NULL) {
+        ogs_error("OpenAPI_ee_subscription_convertToJSON() failed [second_callback_ref]");
+        goto end;
+    }
+    }
+
+    if (ee_subscription->gpsi) {
+    if (cJSON_AddStringToObject(item, "gpsi", ee_subscription->gpsi) == NULL) {
+        ogs_error("OpenAPI_ee_subscription_convertToJSON() failed [gpsi]");
+        goto end;
+    }
+    }
+
+    if (ee_subscription->exclude_gpsi_list) {
+    cJSON *exclude_gpsi_listList = cJSON_AddArrayToObject(item, "excludeGpsiList");
+    if (exclude_gpsi_listList == NULL) {
+        ogs_error("OpenAPI_ee_subscription_convertToJSON() failed [exclude_gpsi_list]");
+        goto end;
+    }
+    OpenAPI_list_for_each(ee_subscription->exclude_gpsi_list, node) {
+        if (cJSON_AddStringToObject(exclude_gpsi_listList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_ee_subscription_convertToJSON() failed [exclude_gpsi_list]");
+            goto end;
+        }
+    }
+    }
+
+    if (ee_subscription->include_gpsi_list) {
+    cJSON *include_gpsi_listList = cJSON_AddArrayToObject(item, "includeGpsiList");
+    if (include_gpsi_listList == NULL) {
+        ogs_error("OpenAPI_ee_subscription_convertToJSON() failed [include_gpsi_list]");
+        goto end;
+    }
+    OpenAPI_list_for_each(ee_subscription->include_gpsi_list, node) {
+        if (cJSON_AddStringToObject(include_gpsi_listList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_ee_subscription_convertToJSON() failed [include_gpsi_list]");
+            goto end;
+        }
+    }
+    }
+
+    if (ee_subscription->data_restoration_callback_uri) {
+    if (cJSON_AddStringToObject(item, "dataRestorationCallbackUri", ee_subscription->data_restoration_callback_uri) == NULL) {
+        ogs_error("OpenAPI_ee_subscription_convertToJSON() failed [data_restoration_callback_uri]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -221,6 +306,13 @@ OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_parseFromJSON(cJSON *ee_subsc
     cJSON *scef_diam_host = NULL;
     cJSON *scef_diam_realm = NULL;
     cJSON *notify_correlation_id = NULL;
+    cJSON *second_callback_ref = NULL;
+    cJSON *gpsi = NULL;
+    cJSON *exclude_gpsi_list = NULL;
+    OpenAPI_list_t *exclude_gpsi_listList = NULL;
+    cJSON *include_gpsi_list = NULL;
+    OpenAPI_list_t *include_gpsi_listList = NULL;
+    cJSON *data_restoration_callback_uri = NULL;
     callback_reference = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "callbackReference");
     if (!callback_reference) {
         ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [callback_reference]");
@@ -317,6 +409,72 @@ OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_parseFromJSON(cJSON *ee_subsc
     }
     }
 
+    second_callback_ref = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "secondCallbackRef");
+    if (second_callback_ref) {
+    if (!cJSON_IsString(second_callback_ref) && !cJSON_IsNull(second_callback_ref)) {
+        ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [second_callback_ref]");
+        goto end;
+    }
+    }
+
+    gpsi = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "gpsi");
+    if (gpsi) {
+    if (!cJSON_IsString(gpsi) && !cJSON_IsNull(gpsi)) {
+        ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [gpsi]");
+        goto end;
+    }
+    }
+
+    exclude_gpsi_list = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "excludeGpsiList");
+    if (exclude_gpsi_list) {
+        cJSON *exclude_gpsi_list_local = NULL;
+        if (!cJSON_IsArray(exclude_gpsi_list)) {
+            ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [exclude_gpsi_list]");
+            goto end;
+        }
+
+        exclude_gpsi_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(exclude_gpsi_list_local, exclude_gpsi_list) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(exclude_gpsi_list_local)) {
+                ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [exclude_gpsi_list]");
+                goto end;
+            }
+            OpenAPI_list_add(exclude_gpsi_listList, ogs_strdup(exclude_gpsi_list_local->valuestring));
+        }
+    }
+
+    include_gpsi_list = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "includeGpsiList");
+    if (include_gpsi_list) {
+        cJSON *include_gpsi_list_local = NULL;
+        if (!cJSON_IsArray(include_gpsi_list)) {
+            ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [include_gpsi_list]");
+            goto end;
+        }
+
+        include_gpsi_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(include_gpsi_list_local, include_gpsi_list) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(include_gpsi_list_local)) {
+                ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [include_gpsi_list]");
+                goto end;
+            }
+            OpenAPI_list_add(include_gpsi_listList, ogs_strdup(include_gpsi_list_local->valuestring));
+        }
+    }
+
+    data_restoration_callback_uri = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "dataRestorationCallbackUri");
+    if (data_restoration_callback_uri) {
+    if (!cJSON_IsString(data_restoration_callback_uri) && !cJSON_IsNull(data_restoration_callback_uri)) {
+        ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [data_restoration_callback_uri]");
+        goto end;
+    }
+    }
+
     ee_subscription_local_var = OpenAPI_ee_subscription_create (
         ogs_strdup(callback_reference->valuestring),
         monitoring_configurationsList,
@@ -328,7 +486,12 @@ OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_parseFromJSON(cJSON *ee_subsc
         epc_applied_ind ? epc_applied_ind->valueint : 0,
         scef_diam_host && !cJSON_IsNull(scef_diam_host) ? ogs_strdup(scef_diam_host->valuestring) : NULL,
         scef_diam_realm && !cJSON_IsNull(scef_diam_realm) ? ogs_strdup(scef_diam_realm->valuestring) : NULL,
-        notify_correlation_id && !cJSON_IsNull(notify_correlation_id) ? ogs_strdup(notify_correlation_id->valuestring) : NULL
+        notify_correlation_id && !cJSON_IsNull(notify_correlation_id) ? ogs_strdup(notify_correlation_id->valuestring) : NULL,
+        second_callback_ref && !cJSON_IsNull(second_callback_ref) ? ogs_strdup(second_callback_ref->valuestring) : NULL,
+        gpsi && !cJSON_IsNull(gpsi) ? ogs_strdup(gpsi->valuestring) : NULL,
+        exclude_gpsi_list ? exclude_gpsi_listList : NULL,
+        include_gpsi_list ? include_gpsi_listList : NULL,
+        data_restoration_callback_uri && !cJSON_IsNull(data_restoration_callback_uri) ? ogs_strdup(data_restoration_callback_uri->valuestring) : NULL
     );
 
     return ee_subscription_local_var;
@@ -350,6 +513,20 @@ end:
     if (context_info_local_nonprim) {
         OpenAPI_context_info_free(context_info_local_nonprim);
         context_info_local_nonprim = NULL;
+    }
+    if (exclude_gpsi_listList) {
+        OpenAPI_list_for_each(exclude_gpsi_listList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(exclude_gpsi_listList);
+        exclude_gpsi_listList = NULL;
+    }
+    if (include_gpsi_listList) {
+        OpenAPI_list_for_each(include_gpsi_listList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(include_gpsi_listList);
+        include_gpsi_listList = NULL;
     }
     return NULL;
 }

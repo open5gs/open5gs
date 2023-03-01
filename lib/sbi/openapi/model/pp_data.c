@@ -12,7 +12,8 @@ OpenAPI_pp_data_t *OpenAPI_pp_data_create(
     OpenAPI_acs_info_rm_t *acs_info,
     char *stn_sr,
     OpenAPI_lcs_privacy_t *lcs_privacy,
-    OpenAPI_sor_info_t *sor_info
+    OpenAPI_sor_info_t *sor_info,
+    OpenAPI_model_5_mbs_authorization_info_t *_5mbs_authorization_info
 )
 {
     OpenAPI_pp_data_t *pp_data_local_var = ogs_malloc(sizeof(OpenAPI_pp_data_t));
@@ -26,6 +27,7 @@ OpenAPI_pp_data_t *OpenAPI_pp_data_create(
     pp_data_local_var->stn_sr = stn_sr;
     pp_data_local_var->lcs_privacy = lcs_privacy;
     pp_data_local_var->sor_info = sor_info;
+    pp_data_local_var->_5mbs_authorization_info = _5mbs_authorization_info;
 
     return pp_data_local_var;
 }
@@ -68,6 +70,10 @@ void OpenAPI_pp_data_free(OpenAPI_pp_data_t *pp_data)
     if (pp_data->sor_info) {
         OpenAPI_sor_info_free(pp_data->sor_info);
         pp_data->sor_info = NULL;
+    }
+    if (pp_data->_5mbs_authorization_info) {
+        OpenAPI_model_5_mbs_authorization_info_free(pp_data->_5mbs_authorization_info);
+        pp_data->_5mbs_authorization_info = NULL;
     }
     ogs_free(pp_data);
 }
@@ -175,6 +181,19 @@ cJSON *OpenAPI_pp_data_convertToJSON(OpenAPI_pp_data_t *pp_data)
     }
     }
 
+    if (pp_data->_5mbs_authorization_info) {
+    cJSON *_5mbs_authorization_info_local_JSON = OpenAPI_model_5_mbs_authorization_info_convertToJSON(pp_data->_5mbs_authorization_info);
+    if (_5mbs_authorization_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_pp_data_convertToJSON() failed [_5mbs_authorization_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "5mbsAuthorizationInfo", _5mbs_authorization_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_pp_data_convertToJSON() failed [_5mbs_authorization_info]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -197,6 +216,8 @@ OpenAPI_pp_data_t *OpenAPI_pp_data_parseFromJSON(cJSON *pp_dataJSON)
     OpenAPI_lcs_privacy_t *lcs_privacy_local_nonprim = NULL;
     cJSON *sor_info = NULL;
     OpenAPI_sor_info_t *sor_info_local_nonprim = NULL;
+    cJSON *_5mbs_authorization_info = NULL;
+    OpenAPI_model_5_mbs_authorization_info_t *_5mbs_authorization_info_local_nonprim = NULL;
     communication_characteristics = cJSON_GetObjectItemCaseSensitive(pp_dataJSON, "communicationCharacteristics");
     if (communication_characteristics) {
     communication_characteristics_local_nonprim = OpenAPI_communication_characteristics_parseFromJSON(communication_characteristics);
@@ -243,6 +264,11 @@ OpenAPI_pp_data_t *OpenAPI_pp_data_parseFromJSON(cJSON *pp_dataJSON)
     sor_info_local_nonprim = OpenAPI_sor_info_parseFromJSON(sor_info);
     }
 
+    _5mbs_authorization_info = cJSON_GetObjectItemCaseSensitive(pp_dataJSON, "5mbsAuthorizationInfo");
+    if (_5mbs_authorization_info) {
+    _5mbs_authorization_info_local_nonprim = OpenAPI_model_5_mbs_authorization_info_parseFromJSON(_5mbs_authorization_info);
+    }
+
     pp_data_local_var = OpenAPI_pp_data_create (
         communication_characteristics ? communication_characteristics_local_nonprim : NULL,
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
@@ -251,7 +277,8 @@ OpenAPI_pp_data_t *OpenAPI_pp_data_parseFromJSON(cJSON *pp_dataJSON)
         acs_info ? acs_info_local_nonprim : NULL,
         stn_sr && !cJSON_IsNull(stn_sr) ? ogs_strdup(stn_sr->valuestring) : NULL,
         lcs_privacy ? lcs_privacy_local_nonprim : NULL,
-        sor_info ? sor_info_local_nonprim : NULL
+        sor_info ? sor_info_local_nonprim : NULL,
+        _5mbs_authorization_info ? _5mbs_authorization_info_local_nonprim : NULL
     );
 
     return pp_data_local_var;
@@ -279,6 +306,10 @@ end:
     if (sor_info_local_nonprim) {
         OpenAPI_sor_info_free(sor_info_local_nonprim);
         sor_info_local_nonprim = NULL;
+    }
+    if (_5mbs_authorization_info_local_nonprim) {
+        OpenAPI_model_5_mbs_authorization_info_free(_5mbs_authorization_info_local_nonprim);
+        _5mbs_authorization_info_local_nonprim = NULL;
     }
     return NULL;
 }

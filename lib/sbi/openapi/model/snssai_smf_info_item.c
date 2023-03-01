@@ -5,7 +5,7 @@
 #include "snssai_smf_info_item.h"
 
 OpenAPI_snssai_smf_info_item_t *OpenAPI_snssai_smf_info_item_create(
-    OpenAPI_snssai_t *s_nssai,
+    OpenAPI_ext_snssai_t *s_nssai,
     OpenAPI_list_t *dnn_smf_info_list
 )
 {
@@ -26,7 +26,7 @@ void OpenAPI_snssai_smf_info_item_free(OpenAPI_snssai_smf_info_item_t *snssai_sm
         return;
     }
     if (snssai_smf_info_item->s_nssai) {
-        OpenAPI_snssai_free(snssai_smf_info_item->s_nssai);
+        OpenAPI_ext_snssai_free(snssai_smf_info_item->s_nssai);
         snssai_smf_info_item->s_nssai = NULL;
     }
     if (snssai_smf_info_item->dnn_smf_info_list) {
@@ -54,7 +54,7 @@ cJSON *OpenAPI_snssai_smf_info_item_convertToJSON(OpenAPI_snssai_smf_info_item_t
         ogs_error("OpenAPI_snssai_smf_info_item_convertToJSON() failed [s_nssai]");
         return NULL;
     }
-    cJSON *s_nssai_local_JSON = OpenAPI_snssai_convertToJSON(snssai_smf_info_item->s_nssai);
+    cJSON *s_nssai_local_JSON = OpenAPI_ext_snssai_convertToJSON(snssai_smf_info_item->s_nssai);
     if (s_nssai_local_JSON == NULL) {
         ogs_error("OpenAPI_snssai_smf_info_item_convertToJSON() failed [s_nssai]");
         goto end;
@@ -92,7 +92,7 @@ OpenAPI_snssai_smf_info_item_t *OpenAPI_snssai_smf_info_item_parseFromJSON(cJSON
     OpenAPI_snssai_smf_info_item_t *snssai_smf_info_item_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *s_nssai = NULL;
-    OpenAPI_snssai_t *s_nssai_local_nonprim = NULL;
+    OpenAPI_ext_snssai_t *s_nssai_local_nonprim = NULL;
     cJSON *dnn_smf_info_list = NULL;
     OpenAPI_list_t *dnn_smf_info_listList = NULL;
     s_nssai = cJSON_GetObjectItemCaseSensitive(snssai_smf_info_itemJSON, "sNssai");
@@ -100,7 +100,7 @@ OpenAPI_snssai_smf_info_item_t *OpenAPI_snssai_smf_info_item_parseFromJSON(cJSON
         ogs_error("OpenAPI_snssai_smf_info_item_parseFromJSON() failed [s_nssai]");
         goto end;
     }
-    s_nssai_local_nonprim = OpenAPI_snssai_parseFromJSON(s_nssai);
+    s_nssai_local_nonprim = OpenAPI_ext_snssai_parseFromJSON(s_nssai);
 
     dnn_smf_info_list = cJSON_GetObjectItemCaseSensitive(snssai_smf_info_itemJSON, "dnnSmfInfoList");
     if (!dnn_smf_info_list) {
@@ -137,7 +137,7 @@ OpenAPI_snssai_smf_info_item_t *OpenAPI_snssai_smf_info_item_parseFromJSON(cJSON
     return snssai_smf_info_item_local_var;
 end:
     if (s_nssai_local_nonprim) {
-        OpenAPI_snssai_free(s_nssai_local_nonprim);
+        OpenAPI_ext_snssai_free(s_nssai_local_nonprim);
         s_nssai_local_nonprim = NULL;
     }
     if (dnn_smf_info_listList) {

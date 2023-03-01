@@ -8,7 +8,12 @@ OpenAPI_pdu_session_tsn_bridge_t *OpenAPI_pdu_session_tsn_bridge_create(
     OpenAPI_tsn_bridge_info_t *tsn_bridge_info,
     OpenAPI_bridge_management_container_t *tsn_bridge_man_cont,
     OpenAPI_port_management_container_t *tsn_port_man_cont_dstt,
-    OpenAPI_list_t *tsn_port_man_cont_nwtts
+    OpenAPI_list_t *tsn_port_man_cont_nwtts,
+    char *ue_ipv4_addr,
+    char *dnn,
+    OpenAPI_snssai_t *snssai,
+    char *ip_domain,
+    char *ue_ipv6_addr_prefix
 )
 {
     OpenAPI_pdu_session_tsn_bridge_t *pdu_session_tsn_bridge_local_var = ogs_malloc(sizeof(OpenAPI_pdu_session_tsn_bridge_t));
@@ -18,6 +23,11 @@ OpenAPI_pdu_session_tsn_bridge_t *OpenAPI_pdu_session_tsn_bridge_create(
     pdu_session_tsn_bridge_local_var->tsn_bridge_man_cont = tsn_bridge_man_cont;
     pdu_session_tsn_bridge_local_var->tsn_port_man_cont_dstt = tsn_port_man_cont_dstt;
     pdu_session_tsn_bridge_local_var->tsn_port_man_cont_nwtts = tsn_port_man_cont_nwtts;
+    pdu_session_tsn_bridge_local_var->ue_ipv4_addr = ue_ipv4_addr;
+    pdu_session_tsn_bridge_local_var->dnn = dnn;
+    pdu_session_tsn_bridge_local_var->snssai = snssai;
+    pdu_session_tsn_bridge_local_var->ip_domain = ip_domain;
+    pdu_session_tsn_bridge_local_var->ue_ipv6_addr_prefix = ue_ipv6_addr_prefix;
 
     return pdu_session_tsn_bridge_local_var;
 }
@@ -47,6 +57,26 @@ void OpenAPI_pdu_session_tsn_bridge_free(OpenAPI_pdu_session_tsn_bridge_t *pdu_s
         }
         OpenAPI_list_free(pdu_session_tsn_bridge->tsn_port_man_cont_nwtts);
         pdu_session_tsn_bridge->tsn_port_man_cont_nwtts = NULL;
+    }
+    if (pdu_session_tsn_bridge->ue_ipv4_addr) {
+        ogs_free(pdu_session_tsn_bridge->ue_ipv4_addr);
+        pdu_session_tsn_bridge->ue_ipv4_addr = NULL;
+    }
+    if (pdu_session_tsn_bridge->dnn) {
+        ogs_free(pdu_session_tsn_bridge->dnn);
+        pdu_session_tsn_bridge->dnn = NULL;
+    }
+    if (pdu_session_tsn_bridge->snssai) {
+        OpenAPI_snssai_free(pdu_session_tsn_bridge->snssai);
+        pdu_session_tsn_bridge->snssai = NULL;
+    }
+    if (pdu_session_tsn_bridge->ip_domain) {
+        ogs_free(pdu_session_tsn_bridge->ip_domain);
+        pdu_session_tsn_bridge->ip_domain = NULL;
+    }
+    if (pdu_session_tsn_bridge->ue_ipv6_addr_prefix) {
+        ogs_free(pdu_session_tsn_bridge->ue_ipv6_addr_prefix);
+        pdu_session_tsn_bridge->ue_ipv6_addr_prefix = NULL;
     }
     ogs_free(pdu_session_tsn_bridge);
 }
@@ -119,6 +149,47 @@ cJSON *OpenAPI_pdu_session_tsn_bridge_convertToJSON(OpenAPI_pdu_session_tsn_brid
     }
     }
 
+    if (pdu_session_tsn_bridge->ue_ipv4_addr) {
+    if (cJSON_AddStringToObject(item, "ueIpv4Addr", pdu_session_tsn_bridge->ue_ipv4_addr) == NULL) {
+        ogs_error("OpenAPI_pdu_session_tsn_bridge_convertToJSON() failed [ue_ipv4_addr]");
+        goto end;
+    }
+    }
+
+    if (pdu_session_tsn_bridge->dnn) {
+    if (cJSON_AddStringToObject(item, "dnn", pdu_session_tsn_bridge->dnn) == NULL) {
+        ogs_error("OpenAPI_pdu_session_tsn_bridge_convertToJSON() failed [dnn]");
+        goto end;
+    }
+    }
+
+    if (pdu_session_tsn_bridge->snssai) {
+    cJSON *snssai_local_JSON = OpenAPI_snssai_convertToJSON(pdu_session_tsn_bridge->snssai);
+    if (snssai_local_JSON == NULL) {
+        ogs_error("OpenAPI_pdu_session_tsn_bridge_convertToJSON() failed [snssai]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "snssai", snssai_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_pdu_session_tsn_bridge_convertToJSON() failed [snssai]");
+        goto end;
+    }
+    }
+
+    if (pdu_session_tsn_bridge->ip_domain) {
+    if (cJSON_AddStringToObject(item, "ipDomain", pdu_session_tsn_bridge->ip_domain) == NULL) {
+        ogs_error("OpenAPI_pdu_session_tsn_bridge_convertToJSON() failed [ip_domain]");
+        goto end;
+    }
+    }
+
+    if (pdu_session_tsn_bridge->ue_ipv6_addr_prefix) {
+    if (cJSON_AddStringToObject(item, "ueIpv6AddrPrefix", pdu_session_tsn_bridge->ue_ipv6_addr_prefix) == NULL) {
+        ogs_error("OpenAPI_pdu_session_tsn_bridge_convertToJSON() failed [ue_ipv6_addr_prefix]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -135,6 +206,12 @@ OpenAPI_pdu_session_tsn_bridge_t *OpenAPI_pdu_session_tsn_bridge_parseFromJSON(c
     OpenAPI_port_management_container_t *tsn_port_man_cont_dstt_local_nonprim = NULL;
     cJSON *tsn_port_man_cont_nwtts = NULL;
     OpenAPI_list_t *tsn_port_man_cont_nwttsList = NULL;
+    cJSON *ue_ipv4_addr = NULL;
+    cJSON *dnn = NULL;
+    cJSON *snssai = NULL;
+    OpenAPI_snssai_t *snssai_local_nonprim = NULL;
+    cJSON *ip_domain = NULL;
+    cJSON *ue_ipv6_addr_prefix = NULL;
     tsn_bridge_info = cJSON_GetObjectItemCaseSensitive(pdu_session_tsn_bridgeJSON, "tsnBridgeInfo");
     if (!tsn_bridge_info) {
         ogs_error("OpenAPI_pdu_session_tsn_bridge_parseFromJSON() failed [tsn_bridge_info]");
@@ -177,11 +254,53 @@ OpenAPI_pdu_session_tsn_bridge_t *OpenAPI_pdu_session_tsn_bridge_parseFromJSON(c
         }
     }
 
+    ue_ipv4_addr = cJSON_GetObjectItemCaseSensitive(pdu_session_tsn_bridgeJSON, "ueIpv4Addr");
+    if (ue_ipv4_addr) {
+    if (!cJSON_IsString(ue_ipv4_addr) && !cJSON_IsNull(ue_ipv4_addr)) {
+        ogs_error("OpenAPI_pdu_session_tsn_bridge_parseFromJSON() failed [ue_ipv4_addr]");
+        goto end;
+    }
+    }
+
+    dnn = cJSON_GetObjectItemCaseSensitive(pdu_session_tsn_bridgeJSON, "dnn");
+    if (dnn) {
+    if (!cJSON_IsString(dnn) && !cJSON_IsNull(dnn)) {
+        ogs_error("OpenAPI_pdu_session_tsn_bridge_parseFromJSON() failed [dnn]");
+        goto end;
+    }
+    }
+
+    snssai = cJSON_GetObjectItemCaseSensitive(pdu_session_tsn_bridgeJSON, "snssai");
+    if (snssai) {
+    snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    }
+
+    ip_domain = cJSON_GetObjectItemCaseSensitive(pdu_session_tsn_bridgeJSON, "ipDomain");
+    if (ip_domain) {
+    if (!cJSON_IsString(ip_domain) && !cJSON_IsNull(ip_domain)) {
+        ogs_error("OpenAPI_pdu_session_tsn_bridge_parseFromJSON() failed [ip_domain]");
+        goto end;
+    }
+    }
+
+    ue_ipv6_addr_prefix = cJSON_GetObjectItemCaseSensitive(pdu_session_tsn_bridgeJSON, "ueIpv6AddrPrefix");
+    if (ue_ipv6_addr_prefix) {
+    if (!cJSON_IsString(ue_ipv6_addr_prefix) && !cJSON_IsNull(ue_ipv6_addr_prefix)) {
+        ogs_error("OpenAPI_pdu_session_tsn_bridge_parseFromJSON() failed [ue_ipv6_addr_prefix]");
+        goto end;
+    }
+    }
+
     pdu_session_tsn_bridge_local_var = OpenAPI_pdu_session_tsn_bridge_create (
         tsn_bridge_info_local_nonprim,
         tsn_bridge_man_cont ? tsn_bridge_man_cont_local_nonprim : NULL,
         tsn_port_man_cont_dstt ? tsn_port_man_cont_dstt_local_nonprim : NULL,
-        tsn_port_man_cont_nwtts ? tsn_port_man_cont_nwttsList : NULL
+        tsn_port_man_cont_nwtts ? tsn_port_man_cont_nwttsList : NULL,
+        ue_ipv4_addr && !cJSON_IsNull(ue_ipv4_addr) ? ogs_strdup(ue_ipv4_addr->valuestring) : NULL,
+        dnn && !cJSON_IsNull(dnn) ? ogs_strdup(dnn->valuestring) : NULL,
+        snssai ? snssai_local_nonprim : NULL,
+        ip_domain && !cJSON_IsNull(ip_domain) ? ogs_strdup(ip_domain->valuestring) : NULL,
+        ue_ipv6_addr_prefix && !cJSON_IsNull(ue_ipv6_addr_prefix) ? ogs_strdup(ue_ipv6_addr_prefix->valuestring) : NULL
     );
 
     return pdu_session_tsn_bridge_local_var;
@@ -204,6 +323,10 @@ end:
         }
         OpenAPI_list_free(tsn_port_man_cont_nwttsList);
         tsn_port_man_cont_nwttsList = NULL;
+    }
+    if (snssai_local_nonprim) {
+        OpenAPI_snssai_free(snssai_local_nonprim);
+        snssai_local_nonprim = NULL;
     }
     return NULL;
 }

@@ -1,7 +1,7 @@
 /*
  * notif_condition.h
  *
- * Condition (list of attributes in the NF Profile) to determine whether a notification must be sent by NRF
+ * Condition (list of attributes in the NF Profile) to determine whether a notification must be sent by NRF 
  */
 
 #ifndef _OpenAPI_notif_condition_H_

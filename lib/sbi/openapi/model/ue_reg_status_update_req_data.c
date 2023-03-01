@@ -9,7 +9,9 @@ OpenAPI_ue_reg_status_update_req_data_t *OpenAPI_ue_reg_status_update_req_data_c
     OpenAPI_list_t *to_release_session_list,
     bool is_pcf_reselected_ind,
     int pcf_reselected_ind,
-    OpenAPI_list_t *smf_change_info_list
+    OpenAPI_list_t *smf_change_info_list,
+    OpenAPI_list_t *analytics_not_used_list,
+    OpenAPI_list_t *to_release_session_info
 )
 {
     OpenAPI_ue_reg_status_update_req_data_t *ue_reg_status_update_req_data_local_var = ogs_malloc(sizeof(OpenAPI_ue_reg_status_update_req_data_t));
@@ -20,6 +22,8 @@ OpenAPI_ue_reg_status_update_req_data_t *OpenAPI_ue_reg_status_update_req_data_c
     ue_reg_status_update_req_data_local_var->is_pcf_reselected_ind = is_pcf_reselected_ind;
     ue_reg_status_update_req_data_local_var->pcf_reselected_ind = pcf_reselected_ind;
     ue_reg_status_update_req_data_local_var->smf_change_info_list = smf_change_info_list;
+    ue_reg_status_update_req_data_local_var->analytics_not_used_list = analytics_not_used_list;
+    ue_reg_status_update_req_data_local_var->to_release_session_info = to_release_session_info;
 
     return ue_reg_status_update_req_data_local_var;
 }
@@ -44,6 +48,20 @@ void OpenAPI_ue_reg_status_update_req_data_free(OpenAPI_ue_reg_status_update_req
         }
         OpenAPI_list_free(ue_reg_status_update_req_data->smf_change_info_list);
         ue_reg_status_update_req_data->smf_change_info_list = NULL;
+    }
+    if (ue_reg_status_update_req_data->analytics_not_used_list) {
+        OpenAPI_list_for_each(ue_reg_status_update_req_data->analytics_not_used_list, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(ue_reg_status_update_req_data->analytics_not_used_list);
+        ue_reg_status_update_req_data->analytics_not_used_list = NULL;
+    }
+    if (ue_reg_status_update_req_data->to_release_session_info) {
+        OpenAPI_list_for_each(ue_reg_status_update_req_data->to_release_session_info, node) {
+            OpenAPI_release_session_info_free(node->data);
+        }
+        OpenAPI_list_free(ue_reg_status_update_req_data->to_release_session_info);
+        ue_reg_status_update_req_data->to_release_session_info = NULL;
     }
     ogs_free(ue_reg_status_update_req_data);
 }
@@ -105,6 +123,36 @@ cJSON *OpenAPI_ue_reg_status_update_req_data_convertToJSON(OpenAPI_ue_reg_status
     }
     }
 
+    if (ue_reg_status_update_req_data->analytics_not_used_list) {
+    cJSON *analytics_not_used_listList = cJSON_AddArrayToObject(item, "analyticsNotUsedList");
+    if (analytics_not_used_listList == NULL) {
+        ogs_error("OpenAPI_ue_reg_status_update_req_data_convertToJSON() failed [analytics_not_used_list]");
+        goto end;
+    }
+    OpenAPI_list_for_each(ue_reg_status_update_req_data->analytics_not_used_list, node) {
+        if (cJSON_AddStringToObject(analytics_not_used_listList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_ue_reg_status_update_req_data_convertToJSON() failed [analytics_not_used_list]");
+            goto end;
+        }
+    }
+    }
+
+    if (ue_reg_status_update_req_data->to_release_session_info) {
+    cJSON *to_release_session_infoList = cJSON_AddArrayToObject(item, "toReleaseSessionInfo");
+    if (to_release_session_infoList == NULL) {
+        ogs_error("OpenAPI_ue_reg_status_update_req_data_convertToJSON() failed [to_release_session_info]");
+        goto end;
+    }
+    OpenAPI_list_for_each(ue_reg_status_update_req_data->to_release_session_info, node) {
+        cJSON *itemLocal = OpenAPI_release_session_info_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_ue_reg_status_update_req_data_convertToJSON() failed [to_release_session_info]");
+            goto end;
+        }
+        cJSON_AddItemToArray(to_release_session_infoList, itemLocal);
+    }
+    }
+
 end:
     return item;
 }
@@ -120,6 +168,10 @@ OpenAPI_ue_reg_status_update_req_data_t *OpenAPI_ue_reg_status_update_req_data_p
     cJSON *pcf_reselected_ind = NULL;
     cJSON *smf_change_info_list = NULL;
     OpenAPI_list_t *smf_change_info_listList = NULL;
+    cJSON *analytics_not_used_list = NULL;
+    OpenAPI_list_t *analytics_not_used_listList = NULL;
+    cJSON *to_release_session_info = NULL;
+    OpenAPI_list_t *to_release_session_infoList = NULL;
     transfer_status = cJSON_GetObjectItemCaseSensitive(ue_reg_status_update_req_dataJSON, "transferStatus");
     if (!transfer_status) {
         ogs_error("OpenAPI_ue_reg_status_update_req_data_parseFromJSON() failed [transfer_status]");
@@ -191,12 +243,60 @@ OpenAPI_ue_reg_status_update_req_data_t *OpenAPI_ue_reg_status_update_req_data_p
         }
     }
 
+    analytics_not_used_list = cJSON_GetObjectItemCaseSensitive(ue_reg_status_update_req_dataJSON, "analyticsNotUsedList");
+    if (analytics_not_used_list) {
+        cJSON *analytics_not_used_list_local = NULL;
+        if (!cJSON_IsArray(analytics_not_used_list)) {
+            ogs_error("OpenAPI_ue_reg_status_update_req_data_parseFromJSON() failed [analytics_not_used_list]");
+            goto end;
+        }
+
+        analytics_not_used_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(analytics_not_used_list_local, analytics_not_used_list) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(analytics_not_used_list_local)) {
+                ogs_error("OpenAPI_ue_reg_status_update_req_data_parseFromJSON() failed [analytics_not_used_list]");
+                goto end;
+            }
+            OpenAPI_list_add(analytics_not_used_listList, ogs_strdup(analytics_not_used_list_local->valuestring));
+        }
+    }
+
+    to_release_session_info = cJSON_GetObjectItemCaseSensitive(ue_reg_status_update_req_dataJSON, "toReleaseSessionInfo");
+    if (to_release_session_info) {
+        cJSON *to_release_session_info_local = NULL;
+        if (!cJSON_IsArray(to_release_session_info)) {
+            ogs_error("OpenAPI_ue_reg_status_update_req_data_parseFromJSON() failed [to_release_session_info]");
+            goto end;
+        }
+
+        to_release_session_infoList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(to_release_session_info_local, to_release_session_info) {
+            if (!cJSON_IsObject(to_release_session_info_local)) {
+                ogs_error("OpenAPI_ue_reg_status_update_req_data_parseFromJSON() failed [to_release_session_info]");
+                goto end;
+            }
+            OpenAPI_release_session_info_t *to_release_session_infoItem = OpenAPI_release_session_info_parseFromJSON(to_release_session_info_local);
+            if (!to_release_session_infoItem) {
+                ogs_error("No to_release_session_infoItem");
+                OpenAPI_list_free(to_release_session_infoList);
+                goto end;
+            }
+            OpenAPI_list_add(to_release_session_infoList, to_release_session_infoItem);
+        }
+    }
+
     ue_reg_status_update_req_data_local_var = OpenAPI_ue_reg_status_update_req_data_create (
         transfer_statusVariable,
         to_release_session_list ? to_release_session_listList : NULL,
         pcf_reselected_ind ? true : false,
         pcf_reselected_ind ? pcf_reselected_ind->valueint : 0,
-        smf_change_info_list ? smf_change_info_listList : NULL
+        smf_change_info_list ? smf_change_info_listList : NULL,
+        analytics_not_used_list ? analytics_not_used_listList : NULL,
+        to_release_session_info ? to_release_session_infoList : NULL
     );
 
     return ue_reg_status_update_req_data_local_var;
@@ -214,6 +314,20 @@ end:
         }
         OpenAPI_list_free(smf_change_info_listList);
         smf_change_info_listList = NULL;
+    }
+    if (analytics_not_used_listList) {
+        OpenAPI_list_for_each(analytics_not_used_listList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(analytics_not_used_listList);
+        analytics_not_used_listList = NULL;
+    }
+    if (to_release_session_infoList) {
+        OpenAPI_list_for_each(to_release_session_infoList, node) {
+            OpenAPI_release_session_info_free(node->data);
+        }
+        OpenAPI_list_free(to_release_session_infoList);
+        to_release_session_infoList = NULL;
     }
     return NULL;
 }

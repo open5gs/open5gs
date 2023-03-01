@@ -1,7 +1,7 @@
 /*
  * spatial_validity.h
  *
- * describes explicitly the route to an Application location
+ * Describes explicitly the route to an Application location.
  */
 
 #ifndef _OpenAPI_spatial_validity_H_

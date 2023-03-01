@@ -10,7 +10,8 @@ OpenAPI_qos_flow_item_t *OpenAPI_qos_flow_item_create(
     bool is_current_qos_profile_index,
     int current_qos_profile_index,
     bool is_null_qo_s_profile_index,
-    int null_qo_s_profile_index
+    int null_qo_s_profile_index,
+    OpenAPI_ng_ap_cause_t *ng_ap_cause
 )
 {
     OpenAPI_qos_flow_item_t *qos_flow_item_local_var = ogs_malloc(sizeof(OpenAPI_qos_flow_item_t));
@@ -22,6 +23,7 @@ OpenAPI_qos_flow_item_t *OpenAPI_qos_flow_item_create(
     qos_flow_item_local_var->current_qos_profile_index = current_qos_profile_index;
     qos_flow_item_local_var->is_null_qo_s_profile_index = is_null_qo_s_profile_index;
     qos_flow_item_local_var->null_qo_s_profile_index = null_qo_s_profile_index;
+    qos_flow_item_local_var->ng_ap_cause = ng_ap_cause;
 
     return qos_flow_item_local_var;
 }
@@ -32,6 +34,10 @@ void OpenAPI_qos_flow_item_free(OpenAPI_qos_flow_item_t *qos_flow_item)
 
     if (NULL == qos_flow_item) {
         return;
+    }
+    if (qos_flow_item->ng_ap_cause) {
+        OpenAPI_ng_ap_cause_free(qos_flow_item->ng_ap_cause);
+        qos_flow_item->ng_ap_cause = NULL;
     }
     ogs_free(qos_flow_item);
 }
@@ -73,6 +79,19 @@ cJSON *OpenAPI_qos_flow_item_convertToJSON(OpenAPI_qos_flow_item_t *qos_flow_ite
     }
     }
 
+    if (qos_flow_item->ng_ap_cause) {
+    cJSON *ng_ap_cause_local_JSON = OpenAPI_ng_ap_cause_convertToJSON(qos_flow_item->ng_ap_cause);
+    if (ng_ap_cause_local_JSON == NULL) {
+        ogs_error("OpenAPI_qos_flow_item_convertToJSON() failed [ng_ap_cause]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "ngApCause", ng_ap_cause_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_qos_flow_item_convertToJSON() failed [ng_ap_cause]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -86,6 +105,8 @@ OpenAPI_qos_flow_item_t *OpenAPI_qos_flow_item_parseFromJSON(cJSON *qos_flow_ite
     OpenAPI_cause_e causeVariable = 0;
     cJSON *current_qos_profile_index = NULL;
     cJSON *null_qo_s_profile_index = NULL;
+    cJSON *ng_ap_cause = NULL;
+    OpenAPI_ng_ap_cause_t *ng_ap_cause_local_nonprim = NULL;
     qfi = cJSON_GetObjectItemCaseSensitive(qos_flow_itemJSON, "qfi");
     if (!qfi) {
         ogs_error("OpenAPI_qos_flow_item_parseFromJSON() failed [qfi]");
@@ -121,6 +142,11 @@ OpenAPI_qos_flow_item_t *OpenAPI_qos_flow_item_parseFromJSON(cJSON *qos_flow_ite
     }
     }
 
+    ng_ap_cause = cJSON_GetObjectItemCaseSensitive(qos_flow_itemJSON, "ngApCause");
+    if (ng_ap_cause) {
+    ng_ap_cause_local_nonprim = OpenAPI_ng_ap_cause_parseFromJSON(ng_ap_cause);
+    }
+
     qos_flow_item_local_var = OpenAPI_qos_flow_item_create (
         
         qfi->valuedouble,
@@ -128,11 +154,16 @@ OpenAPI_qos_flow_item_t *OpenAPI_qos_flow_item_parseFromJSON(cJSON *qos_flow_ite
         current_qos_profile_index ? true : false,
         current_qos_profile_index ? current_qos_profile_index->valuedouble : 0,
         null_qo_s_profile_index ? true : false,
-        null_qo_s_profile_index ? null_qo_s_profile_index->valueint : 0
+        null_qo_s_profile_index ? null_qo_s_profile_index->valueint : 0,
+        ng_ap_cause ? ng_ap_cause_local_nonprim : NULL
     );
 
     return qos_flow_item_local_var;
 end:
+    if (ng_ap_cause_local_nonprim) {
+        OpenAPI_ng_ap_cause_free(ng_ap_cause_local_nonprim);
+        ng_ap_cause_local_nonprim = NULL;
+    }
     return NULL;
 }
 

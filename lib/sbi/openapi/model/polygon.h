@@ -1,7 +1,7 @@
 /*
  * polygon.h
  *
- * 
+ * Polygon.
  */
 
 #ifndef _OpenAPI_polygon_H_

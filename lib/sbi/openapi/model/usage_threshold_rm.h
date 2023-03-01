@@ -1,7 +1,7 @@
 /*
  * usage_threshold_rm.h
  *
- * 
+ * Represents the same as the UsageThreshold data type but with the nullable:true property.
  */
 
 #ifndef _OpenAPI_usage_threshold_rm_H_

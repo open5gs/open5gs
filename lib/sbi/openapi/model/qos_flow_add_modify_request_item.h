@@ -1,7 +1,7 @@
 /*
  * qos_flow_add_modify_request_item.h
  *
- * 
+ * Individual QoS flow requested to be created or modified
  */
 
 #ifndef _OpenAPI_qos_flow_add_modify_request_item_H_

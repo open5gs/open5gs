@@ -1,7 +1,7 @@
 /*
  * smsc_data.h
  *
- * 
+ * Addresses of SM-Service Center entities with SMS wating to be delivered to the UE.
  */
 
 #ifndef _OpenAPI_smsc_data_H_

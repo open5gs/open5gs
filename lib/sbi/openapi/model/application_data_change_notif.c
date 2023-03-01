@@ -9,7 +9,8 @@ OpenAPI_application_data_change_notif_t *OpenAPI_application_data_change_notif_c
     OpenAPI_pfd_change_notification_t *pfd_data,
     OpenAPI_bdt_policy_data_t *bdt_policy_data,
     char *res_uri,
-    OpenAPI_service_parameter_data_t *ser_param_data
+    OpenAPI_service_parameter_data_t *ser_param_data,
+    OpenAPI_am_influ_data_t *am_influ_data
 )
 {
     OpenAPI_application_data_change_notif_t *application_data_change_notif_local_var = ogs_malloc(sizeof(OpenAPI_application_data_change_notif_t));
@@ -20,6 +21,7 @@ OpenAPI_application_data_change_notif_t *OpenAPI_application_data_change_notif_c
     application_data_change_notif_local_var->bdt_policy_data = bdt_policy_data;
     application_data_change_notif_local_var->res_uri = res_uri;
     application_data_change_notif_local_var->ser_param_data = ser_param_data;
+    application_data_change_notif_local_var->am_influ_data = am_influ_data;
 
     return application_data_change_notif_local_var;
 }
@@ -50,6 +52,10 @@ void OpenAPI_application_data_change_notif_free(OpenAPI_application_data_change_
     if (application_data_change_notif->ser_param_data) {
         OpenAPI_service_parameter_data_free(application_data_change_notif->ser_param_data);
         application_data_change_notif->ser_param_data = NULL;
+    }
+    if (application_data_change_notif->am_influ_data) {
+        OpenAPI_am_influ_data_free(application_data_change_notif->am_influ_data);
+        application_data_change_notif->am_influ_data = NULL;
     }
     ogs_free(application_data_change_notif);
 }
@@ -126,6 +132,19 @@ cJSON *OpenAPI_application_data_change_notif_convertToJSON(OpenAPI_application_d
     }
     }
 
+    if (application_data_change_notif->am_influ_data) {
+    cJSON *am_influ_data_local_JSON = OpenAPI_am_influ_data_convertToJSON(application_data_change_notif->am_influ_data);
+    if (am_influ_data_local_JSON == NULL) {
+        ogs_error("OpenAPI_application_data_change_notif_convertToJSON() failed [am_influ_data]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "amInfluData", am_influ_data_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_application_data_change_notif_convertToJSON() failed [am_influ_data]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -143,6 +162,8 @@ OpenAPI_application_data_change_notif_t *OpenAPI_application_data_change_notif_p
     cJSON *res_uri = NULL;
     cJSON *ser_param_data = NULL;
     OpenAPI_service_parameter_data_t *ser_param_data_local_nonprim = NULL;
+    cJSON *am_influ_data = NULL;
+    OpenAPI_am_influ_data_t *am_influ_data_local_nonprim = NULL;
     iptv_config_data = cJSON_GetObjectItemCaseSensitive(application_data_change_notifJSON, "iptvConfigData");
     if (iptv_config_data) {
     iptv_config_data_local_nonprim = OpenAPI_iptv_config_data_parseFromJSON(iptv_config_data);
@@ -173,12 +194,18 @@ OpenAPI_application_data_change_notif_t *OpenAPI_application_data_change_notif_p
     ser_param_data_local_nonprim = OpenAPI_service_parameter_data_parseFromJSON(ser_param_data);
     }
 
+    am_influ_data = cJSON_GetObjectItemCaseSensitive(application_data_change_notifJSON, "amInfluData");
+    if (am_influ_data) {
+    am_influ_data_local_nonprim = OpenAPI_am_influ_data_parseFromJSON(am_influ_data);
+    }
+
     application_data_change_notif_local_var = OpenAPI_application_data_change_notif_create (
         iptv_config_data ? iptv_config_data_local_nonprim : NULL,
         pfd_data ? pfd_data_local_nonprim : NULL,
         bdt_policy_data ? bdt_policy_data_local_nonprim : NULL,
         ogs_strdup(res_uri->valuestring),
-        ser_param_data ? ser_param_data_local_nonprim : NULL
+        ser_param_data ? ser_param_data_local_nonprim : NULL,
+        am_influ_data ? am_influ_data_local_nonprim : NULL
     );
 
     return application_data_change_notif_local_var;
@@ -198,6 +225,10 @@ end:
     if (ser_param_data_local_nonprim) {
         OpenAPI_service_parameter_data_free(ser_param_data_local_nonprim);
         ser_param_data_local_nonprim = NULL;
+    }
+    if (am_influ_data_local_nonprim) {
+        OpenAPI_am_influ_data_free(am_influ_data_local_nonprim);
+        am_influ_data_local_nonprim = NULL;
     }
     return NULL;
 }

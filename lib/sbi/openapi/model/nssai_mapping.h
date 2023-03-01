@@ -1,7 +1,7 @@
 /*
  * nssai_mapping.h
  *
- * 
+ * Represents the mapping between a S-NSSAI in serving PLMN to a S-NSSAI in home PLMN
  */
 
 #ifndef _OpenAPI_nssai_mapping_H_

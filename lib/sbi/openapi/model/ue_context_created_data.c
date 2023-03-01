@@ -11,7 +11,8 @@ OpenAPI_ue_context_created_data_t *OpenAPI_ue_context_created_data_create(
     OpenAPI_list_t *failed_session_list,
     char *supported_features,
     bool is_pcf_reselected_ind,
-    int pcf_reselected_ind
+    int pcf_reselected_ind,
+    OpenAPI_list_t *analytics_not_used_list
 )
 {
     OpenAPI_ue_context_created_data_t *ue_context_created_data_local_var = ogs_malloc(sizeof(OpenAPI_ue_context_created_data_t));
@@ -24,6 +25,7 @@ OpenAPI_ue_context_created_data_t *OpenAPI_ue_context_created_data_create(
     ue_context_created_data_local_var->supported_features = supported_features;
     ue_context_created_data_local_var->is_pcf_reselected_ind = is_pcf_reselected_ind;
     ue_context_created_data_local_var->pcf_reselected_ind = pcf_reselected_ind;
+    ue_context_created_data_local_var->analytics_not_used_list = analytics_not_used_list;
 
     return ue_context_created_data_local_var;
 }
@@ -60,6 +62,13 @@ void OpenAPI_ue_context_created_data_free(OpenAPI_ue_context_created_data_t *ue_
     if (ue_context_created_data->supported_features) {
         ogs_free(ue_context_created_data->supported_features);
         ue_context_created_data->supported_features = NULL;
+    }
+    if (ue_context_created_data->analytics_not_used_list) {
+        OpenAPI_list_for_each(ue_context_created_data->analytics_not_used_list, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(ue_context_created_data->analytics_not_used_list);
+        ue_context_created_data->analytics_not_used_list = NULL;
     }
     ogs_free(ue_context_created_data);
 }
@@ -153,6 +162,20 @@ cJSON *OpenAPI_ue_context_created_data_convertToJSON(OpenAPI_ue_context_created_
     }
     }
 
+    if (ue_context_created_data->analytics_not_used_list) {
+    cJSON *analytics_not_used_listList = cJSON_AddArrayToObject(item, "analyticsNotUsedList");
+    if (analytics_not_used_listList == NULL) {
+        ogs_error("OpenAPI_ue_context_created_data_convertToJSON() failed [analytics_not_used_list]");
+        goto end;
+    }
+    OpenAPI_list_for_each(ue_context_created_data->analytics_not_used_list, node) {
+        if (cJSON_AddStringToObject(analytics_not_used_listList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_ue_context_created_data_convertToJSON() failed [analytics_not_used_list]");
+            goto end;
+        }
+    }
+    }
+
 end:
     return item;
 }
@@ -171,6 +194,8 @@ OpenAPI_ue_context_created_data_t *OpenAPI_ue_context_created_data_parseFromJSON
     OpenAPI_list_t *failed_session_listList = NULL;
     cJSON *supported_features = NULL;
     cJSON *pcf_reselected_ind = NULL;
+    cJSON *analytics_not_used_list = NULL;
+    OpenAPI_list_t *analytics_not_used_listList = NULL;
     ue_context = cJSON_GetObjectItemCaseSensitive(ue_context_created_dataJSON, "ueContext");
     if (!ue_context) {
         ogs_error("OpenAPI_ue_context_created_data_parseFromJSON() failed [ue_context]");
@@ -253,6 +278,27 @@ OpenAPI_ue_context_created_data_t *OpenAPI_ue_context_created_data_parseFromJSON
     }
     }
 
+    analytics_not_used_list = cJSON_GetObjectItemCaseSensitive(ue_context_created_dataJSON, "analyticsNotUsedList");
+    if (analytics_not_used_list) {
+        cJSON *analytics_not_used_list_local = NULL;
+        if (!cJSON_IsArray(analytics_not_used_list)) {
+            ogs_error("OpenAPI_ue_context_created_data_parseFromJSON() failed [analytics_not_used_list]");
+            goto end;
+        }
+
+        analytics_not_used_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(analytics_not_used_list_local, analytics_not_used_list) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(analytics_not_used_list_local)) {
+                ogs_error("OpenAPI_ue_context_created_data_parseFromJSON() failed [analytics_not_used_list]");
+                goto end;
+            }
+            OpenAPI_list_add(analytics_not_used_listList, ogs_strdup(analytics_not_used_list_local->valuestring));
+        }
+    }
+
     ue_context_created_data_local_var = OpenAPI_ue_context_created_data_create (
         ue_context_local_nonprim,
         target_to_source_data_local_nonprim,
@@ -260,7 +306,8 @@ OpenAPI_ue_context_created_data_t *OpenAPI_ue_context_created_data_parseFromJSON
         failed_session_list ? failed_session_listList : NULL,
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
         pcf_reselected_ind ? true : false,
-        pcf_reselected_ind ? pcf_reselected_ind->valueint : 0
+        pcf_reselected_ind ? pcf_reselected_ind->valueint : 0,
+        analytics_not_used_list ? analytics_not_used_listList : NULL
     );
 
     return ue_context_created_data_local_var;
@@ -286,6 +333,13 @@ end:
         }
         OpenAPI_list_free(failed_session_listList);
         failed_session_listList = NULL;
+    }
+    if (analytics_not_used_listList) {
+        OpenAPI_list_for_each(analytics_not_used_listList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(analytics_not_used_listList);
+        analytics_not_used_listList = NULL;
     }
     return NULL;
 }

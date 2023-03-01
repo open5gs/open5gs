@@ -15,6 +15,7 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_create(
     bool is_ue_ip_addr_ind,
     int ue_ip_addr_ind,
     OpenAPI_list_t *tai_list,
+    OpenAPI_list_t *tai_range_list,
     OpenAPI_w_agf_info_t *w_agf_info,
     OpenAPI_tngf_info_t *tngf_info,
     OpenAPI_twif_info_t *twif_info,
@@ -25,7 +26,8 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_create(
     bool is_ipups,
     int ipups,
     bool is_data_forwarding,
-    int data_forwarding
+    int data_forwarding,
+    char *supported_pfcp_features
 )
 {
     OpenAPI_upf_info_t *upf_info_local_var = ogs_malloc(sizeof(OpenAPI_upf_info_t));
@@ -41,6 +43,7 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_create(
     upf_info_local_var->is_ue_ip_addr_ind = is_ue_ip_addr_ind;
     upf_info_local_var->ue_ip_addr_ind = ue_ip_addr_ind;
     upf_info_local_var->tai_list = tai_list;
+    upf_info_local_var->tai_range_list = tai_range_list;
     upf_info_local_var->w_agf_info = w_agf_info;
     upf_info_local_var->tngf_info = tngf_info;
     upf_info_local_var->twif_info = twif_info;
@@ -52,6 +55,7 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_create(
     upf_info_local_var->ipups = ipups;
     upf_info_local_var->is_data_forwarding = is_data_forwarding;
     upf_info_local_var->data_forwarding = data_forwarding;
+    upf_info_local_var->supported_pfcp_features = supported_pfcp_features;
 
     return upf_info_local_var;
 }
@@ -99,6 +103,13 @@ void OpenAPI_upf_info_free(OpenAPI_upf_info_t *upf_info)
         OpenAPI_list_free(upf_info->tai_list);
         upf_info->tai_list = NULL;
     }
+    if (upf_info->tai_range_list) {
+        OpenAPI_list_for_each(upf_info->tai_range_list, node) {
+            OpenAPI_tai_range_free(node->data);
+        }
+        OpenAPI_list_free(upf_info->tai_range_list);
+        upf_info->tai_range_list = NULL;
+    }
     if (upf_info->w_agf_info) {
         OpenAPI_w_agf_info_free(upf_info->w_agf_info);
         upf_info->w_agf_info = NULL;
@@ -110,6 +121,10 @@ void OpenAPI_upf_info_free(OpenAPI_upf_info_t *upf_info)
     if (upf_info->twif_info) {
         OpenAPI_twif_info_free(upf_info->twif_info);
         upf_info->twif_info = NULL;
+    }
+    if (upf_info->supported_pfcp_features) {
+        ogs_free(upf_info->supported_pfcp_features);
+        upf_info->supported_pfcp_features = NULL;
     }
     ogs_free(upf_info);
 }
@@ -230,6 +245,22 @@ cJSON *OpenAPI_upf_info_convertToJSON(OpenAPI_upf_info_t *upf_info)
     }
     }
 
+    if (upf_info->tai_range_list) {
+    cJSON *tai_range_listList = cJSON_AddArrayToObject(item, "taiRangeList");
+    if (tai_range_listList == NULL) {
+        ogs_error("OpenAPI_upf_info_convertToJSON() failed [tai_range_list]");
+        goto end;
+    }
+    OpenAPI_list_for_each(upf_info->tai_range_list, node) {
+        cJSON *itemLocal = OpenAPI_tai_range_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_upf_info_convertToJSON() failed [tai_range_list]");
+            goto end;
+        }
+        cJSON_AddItemToArray(tai_range_listList, itemLocal);
+    }
+    }
+
     if (upf_info->w_agf_info) {
     cJSON *w_agf_info_local_JSON = OpenAPI_w_agf_info_convertToJSON(upf_info->w_agf_info);
     if (w_agf_info_local_JSON == NULL) {
@@ -297,6 +328,13 @@ cJSON *OpenAPI_upf_info_convertToJSON(OpenAPI_upf_info_t *upf_info)
     }
     }
 
+    if (upf_info->supported_pfcp_features) {
+    if (cJSON_AddStringToObject(item, "supportedPfcpFeatures", upf_info->supported_pfcp_features) == NULL) {
+        ogs_error("OpenAPI_upf_info_convertToJSON() failed [supported_pfcp_features]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -319,6 +357,8 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_parseFromJSON(cJSON *upf_infoJSON)
     cJSON *ue_ip_addr_ind = NULL;
     cJSON *tai_list = NULL;
     OpenAPI_list_t *tai_listList = NULL;
+    cJSON *tai_range_list = NULL;
+    OpenAPI_list_t *tai_range_listList = NULL;
     cJSON *w_agf_info = NULL;
     OpenAPI_w_agf_info_t *w_agf_info_local_nonprim = NULL;
     cJSON *tngf_info = NULL;
@@ -329,6 +369,7 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_parseFromJSON(cJSON *upf_infoJSON)
     cJSON *redundant_gtpu = NULL;
     cJSON *ipups = NULL;
     cJSON *data_forwarding = NULL;
+    cJSON *supported_pfcp_features = NULL;
     s_nssai_upf_info_list = cJSON_GetObjectItemCaseSensitive(upf_infoJSON, "sNssaiUpfInfoList");
     if (!s_nssai_upf_info_list) {
         ogs_error("OpenAPI_upf_info_parseFromJSON() failed [s_nssai_upf_info_list]");
@@ -467,6 +508,31 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_parseFromJSON(cJSON *upf_infoJSON)
         }
     }
 
+    tai_range_list = cJSON_GetObjectItemCaseSensitive(upf_infoJSON, "taiRangeList");
+    if (tai_range_list) {
+        cJSON *tai_range_list_local = NULL;
+        if (!cJSON_IsArray(tai_range_list)) {
+            ogs_error("OpenAPI_upf_info_parseFromJSON() failed [tai_range_list]");
+            goto end;
+        }
+
+        tai_range_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(tai_range_list_local, tai_range_list) {
+            if (!cJSON_IsObject(tai_range_list_local)) {
+                ogs_error("OpenAPI_upf_info_parseFromJSON() failed [tai_range_list]");
+                goto end;
+            }
+            OpenAPI_tai_range_t *tai_range_listItem = OpenAPI_tai_range_parseFromJSON(tai_range_list_local);
+            if (!tai_range_listItem) {
+                ogs_error("No tai_range_listItem");
+                OpenAPI_list_free(tai_range_listList);
+                goto end;
+            }
+            OpenAPI_list_add(tai_range_listList, tai_range_listItem);
+        }
+    }
+
     w_agf_info = cJSON_GetObjectItemCaseSensitive(upf_infoJSON, "wAgfInfo");
     if (w_agf_info) {
     w_agf_info_local_nonprim = OpenAPI_w_agf_info_parseFromJSON(w_agf_info);
@@ -514,6 +580,14 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_parseFromJSON(cJSON *upf_infoJSON)
     }
     }
 
+    supported_pfcp_features = cJSON_GetObjectItemCaseSensitive(upf_infoJSON, "supportedPfcpFeatures");
+    if (supported_pfcp_features) {
+    if (!cJSON_IsString(supported_pfcp_features) && !cJSON_IsNull(supported_pfcp_features)) {
+        ogs_error("OpenAPI_upf_info_parseFromJSON() failed [supported_pfcp_features]");
+        goto end;
+    }
+    }
+
     upf_info_local_var = OpenAPI_upf_info_create (
         s_nssai_upf_info_listList,
         smf_serving_area ? smf_serving_areaList : NULL,
@@ -525,6 +599,7 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_parseFromJSON(cJSON *upf_infoJSON)
         ue_ip_addr_ind ? true : false,
         ue_ip_addr_ind ? ue_ip_addr_ind->valueint : 0,
         tai_list ? tai_listList : NULL,
+        tai_range_list ? tai_range_listList : NULL,
         w_agf_info ? w_agf_info_local_nonprim : NULL,
         tngf_info ? tngf_info_local_nonprim : NULL,
         twif_info ? twif_info_local_nonprim : NULL,
@@ -535,7 +610,8 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_parseFromJSON(cJSON *upf_infoJSON)
         ipups ? true : false,
         ipups ? ipups->valueint : 0,
         data_forwarding ? true : false,
-        data_forwarding ? data_forwarding->valueint : 0
+        data_forwarding ? data_forwarding->valueint : 0,
+        supported_pfcp_features && !cJSON_IsNull(supported_pfcp_features) ? ogs_strdup(supported_pfcp_features->valuestring) : NULL
     );
 
     return upf_info_local_var;
@@ -575,6 +651,13 @@ end:
         }
         OpenAPI_list_free(tai_listList);
         tai_listList = NULL;
+    }
+    if (tai_range_listList) {
+        OpenAPI_list_for_each(tai_range_listList, node) {
+            OpenAPI_tai_range_free(node->data);
+        }
+        OpenAPI_list_free(tai_range_listList);
+        tai_range_listList = NULL;
     }
     if (w_agf_info_local_nonprim) {
         OpenAPI_w_agf_info_free(w_agf_info_local_nonprim);

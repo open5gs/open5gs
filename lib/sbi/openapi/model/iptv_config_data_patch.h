@@ -1,7 +1,7 @@
 /*
  * iptv_config_data_patch.h
  *
- * 
+ * Represents the parameters to request the modification of an IPTV Configuration resource. 
  */
 
 #ifndef _OpenAPI_iptv_config_data_patch_H_

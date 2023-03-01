@@ -37,7 +37,8 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_create(
     char *vendor_id,
     OpenAPI_list_t* supported_vendor_specific_features,
     bool is_oauth2_required,
-    int oauth2_required
+    int oauth2_required,
+    OpenAPI_plmn_oauth2_t *per_plmn_oauth2_req_list
 )
 {
     OpenAPI_nf_service_t *nf_service_local_var = ogs_malloc(sizeof(OpenAPI_nf_service_t));
@@ -76,6 +77,7 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_create(
     nf_service_local_var->supported_vendor_specific_features = supported_vendor_specific_features;
     nf_service_local_var->is_oauth2_required = is_oauth2_required;
     nf_service_local_var->oauth2_required = oauth2_required;
+    nf_service_local_var->per_plmn_oauth2_req_list = per_plmn_oauth2_req_list;
 
     return nf_service_local_var;
 }
@@ -226,6 +228,10 @@ void OpenAPI_nf_service_free(OpenAPI_nf_service_t *nf_service)
         }
         OpenAPI_list_free(nf_service->supported_vendor_specific_features);
         nf_service->supported_vendor_specific_features = NULL;
+    }
+    if (nf_service->per_plmn_oauth2_req_list) {
+        OpenAPI_plmn_oauth2_free(nf_service->per_plmn_oauth2_req_list);
+        nf_service->per_plmn_oauth2_req_list = NULL;
     }
     ogs_free(nf_service);
 }
@@ -576,6 +582,19 @@ cJSON *OpenAPI_nf_service_convertToJSON(OpenAPI_nf_service_t *nf_service)
     }
     }
 
+    if (nf_service->per_plmn_oauth2_req_list) {
+    cJSON *per_plmn_oauth2_req_list_local_JSON = OpenAPI_plmn_oauth2_convertToJSON(nf_service->per_plmn_oauth2_req_list);
+    if (per_plmn_oauth2_req_list_local_JSON == NULL) {
+        ogs_error("OpenAPI_nf_service_convertToJSON() failed [per_plmn_oauth2_req_list]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "perPlmnOauth2ReqList", per_plmn_oauth2_req_list_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_nf_service_convertToJSON() failed [per_plmn_oauth2_req_list]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -629,6 +648,8 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_parseFromJSON(cJSON *nf_serviceJSON)
     cJSON *supported_vendor_specific_features = NULL;
     OpenAPI_list_t *supported_vendor_specific_featuresList = NULL;
     cJSON *oauth2_required = NULL;
+    cJSON *per_plmn_oauth2_req_list = NULL;
+    OpenAPI_plmn_oauth2_t *per_plmn_oauth2_req_list_local_nonprim = NULL;
     service_instance_id = cJSON_GetObjectItemCaseSensitive(nf_serviceJSON, "serviceInstanceId");
     if (!service_instance_id) {
         ogs_error("OpenAPI_nf_service_parseFromJSON() failed [service_instance_id]");
@@ -1088,6 +1109,11 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_parseFromJSON(cJSON *nf_serviceJSON)
     }
     }
 
+    per_plmn_oauth2_req_list = cJSON_GetObjectItemCaseSensitive(nf_serviceJSON, "perPlmnOauth2ReqList");
+    if (per_plmn_oauth2_req_list) {
+    per_plmn_oauth2_req_list_local_nonprim = OpenAPI_plmn_oauth2_parseFromJSON(per_plmn_oauth2_req_list);
+    }
+
     nf_service_local_var = OpenAPI_nf_service_create (
         ogs_strdup(service_instance_id->valuestring),
         ogs_strdup(service_name->valuestring),
@@ -1121,7 +1147,8 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_parseFromJSON(cJSON *nf_serviceJSON)
         vendor_id && !cJSON_IsNull(vendor_id) ? ogs_strdup(vendor_id->valuestring) : NULL,
         supported_vendor_specific_features ? supported_vendor_specific_featuresList : NULL,
         oauth2_required ? true : false,
-        oauth2_required ? oauth2_required->valueint : 0
+        oauth2_required ? oauth2_required->valueint : 0,
+        per_plmn_oauth2_req_list ? per_plmn_oauth2_req_list_local_nonprim : NULL
     );
 
     return nf_service_local_var;
@@ -1229,6 +1256,10 @@ end:
         }
         OpenAPI_list_free(supported_vendor_specific_featuresList);
         supported_vendor_specific_featuresList = NULL;
+    }
+    if (per_plmn_oauth2_req_list_local_nonprim) {
+        OpenAPI_plmn_oauth2_free(per_plmn_oauth2_req_list_local_nonprim);
+        per_plmn_oauth2_req_list_local_nonprim = NULL;
     }
     return NULL;
 }

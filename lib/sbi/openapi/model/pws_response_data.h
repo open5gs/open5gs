@@ -1,7 +1,7 @@
 /*
  * pws_response_data.h
  *
- * 
+ * Data related PWS included in a N2 Information Transfer response
  */
 
 #ifndef _OpenAPI_pws_response_data_H_

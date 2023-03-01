@@ -9,6 +9,7 @@ OpenAPI_media_component_rm_t *OpenAPI_media_component_rm_create(
     OpenAPI_af_routing_requirement_rm_t *af_rout_req,
     char *qos_reference,
     OpenAPI_list_t *alt_ser_reqs,
+    OpenAPI_list_t *alt_ser_reqs_data,
     bool is_dis_ue_notif,
     int dis_ue_notif,
     bool is_cont_ver,
@@ -47,7 +48,9 @@ OpenAPI_media_component_rm_t *OpenAPI_media_component_rm_create(
     int sharing_key_ul,
     OpenAPI_tsn_qos_container_rm_t *tsn_qos,
     OpenAPI_tscai_input_container_t *tscai_input_dl,
-    OpenAPI_tscai_input_container_t *tscai_input_ul
+    OpenAPI_tscai_input_container_t *tscai_input_ul,
+    bool is_tscai_time_dom,
+    int tscai_time_dom
 )
 {
     OpenAPI_media_component_rm_t *media_component_rm_local_var = ogs_malloc(sizeof(OpenAPI_media_component_rm_t));
@@ -57,6 +60,7 @@ OpenAPI_media_component_rm_t *OpenAPI_media_component_rm_create(
     media_component_rm_local_var->af_rout_req = af_rout_req;
     media_component_rm_local_var->qos_reference = qos_reference;
     media_component_rm_local_var->alt_ser_reqs = alt_ser_reqs;
+    media_component_rm_local_var->alt_ser_reqs_data = alt_ser_reqs_data;
     media_component_rm_local_var->is_dis_ue_notif = is_dis_ue_notif;
     media_component_rm_local_var->dis_ue_notif = dis_ue_notif;
     media_component_rm_local_var->is_cont_ver = is_cont_ver;
@@ -96,6 +100,8 @@ OpenAPI_media_component_rm_t *OpenAPI_media_component_rm_create(
     media_component_rm_local_var->tsn_qos = tsn_qos;
     media_component_rm_local_var->tscai_input_dl = tscai_input_dl;
     media_component_rm_local_var->tscai_input_ul = tscai_input_ul;
+    media_component_rm_local_var->is_tscai_time_dom = is_tscai_time_dom;
+    media_component_rm_local_var->tscai_time_dom = tscai_time_dom;
 
     return media_component_rm_local_var;
 }
@@ -125,6 +131,13 @@ void OpenAPI_media_component_rm_free(OpenAPI_media_component_rm_t *media_compone
         }
         OpenAPI_list_free(media_component_rm->alt_ser_reqs);
         media_component_rm->alt_ser_reqs = NULL;
+    }
+    if (media_component_rm->alt_ser_reqs_data) {
+        OpenAPI_list_for_each(media_component_rm->alt_ser_reqs_data, node) {
+            OpenAPI_alternative_service_requirements_data_free(node->data);
+        }
+        OpenAPI_list_free(media_component_rm->alt_ser_reqs_data);
+        media_component_rm->alt_ser_reqs_data = NULL;
     }
     if (media_component_rm->codecs) {
         OpenAPI_list_for_each(media_component_rm->codecs, node) {
@@ -259,6 +272,22 @@ cJSON *OpenAPI_media_component_rm_convertToJSON(OpenAPI_media_component_rm_t *me
             ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [alt_ser_reqs]");
             goto end;
         }
+    }
+    }
+
+    if (media_component_rm->alt_ser_reqs_data) {
+    cJSON *alt_ser_reqs_dataList = cJSON_AddArrayToObject(item, "altSerReqsData");
+    if (alt_ser_reqs_dataList == NULL) {
+        ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [alt_ser_reqs_data]");
+        goto end;
+    }
+    OpenAPI_list_for_each(media_component_rm->alt_ser_reqs_data, node) {
+        cJSON *itemLocal = OpenAPI_alternative_service_requirements_data_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [alt_ser_reqs_data]");
+            goto end;
+        }
+        cJSON_AddItemToArray(alt_ser_reqs_dataList, itemLocal);
     }
     }
 
@@ -529,6 +558,13 @@ cJSON *OpenAPI_media_component_rm_convertToJSON(OpenAPI_media_component_rm_t *me
     }
     }
 
+    if (media_component_rm->is_tscai_time_dom) {
+    if (cJSON_AddNumberToObject(item, "tscaiTimeDom", media_component_rm->tscai_time_dom) == NULL) {
+        ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [tscai_time_dom]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -543,6 +579,8 @@ OpenAPI_media_component_rm_t *OpenAPI_media_component_rm_parseFromJSON(cJSON *me
     cJSON *qos_reference = NULL;
     cJSON *alt_ser_reqs = NULL;
     OpenAPI_list_t *alt_ser_reqsList = NULL;
+    cJSON *alt_ser_reqs_data = NULL;
+    OpenAPI_list_t *alt_ser_reqs_dataList = NULL;
     cJSON *dis_ue_notif = NULL;
     cJSON *cont_ver = NULL;
     cJSON *codecs = NULL;
@@ -585,6 +623,7 @@ OpenAPI_media_component_rm_t *OpenAPI_media_component_rm_parseFromJSON(cJSON *me
     OpenAPI_tscai_input_container_t *tscai_input_dl_local_nonprim = NULL;
     cJSON *tscai_input_ul = NULL;
     OpenAPI_tscai_input_container_t *tscai_input_ul_local_nonprim = NULL;
+    cJSON *tscai_time_dom = NULL;
     af_app_id = cJSON_GetObjectItemCaseSensitive(media_component_rmJSON, "afAppId");
     if (af_app_id) {
     if (!cJSON_IsString(af_app_id) && !cJSON_IsNull(af_app_id)) {
@@ -624,6 +663,31 @@ OpenAPI_media_component_rm_t *OpenAPI_media_component_rm_parseFromJSON(cJSON *me
                 goto end;
             }
             OpenAPI_list_add(alt_ser_reqsList, ogs_strdup(alt_ser_reqs_local->valuestring));
+        }
+    }
+
+    alt_ser_reqs_data = cJSON_GetObjectItemCaseSensitive(media_component_rmJSON, "altSerReqsData");
+    if (alt_ser_reqs_data) {
+        cJSON *alt_ser_reqs_data_local = NULL;
+        if (!cJSON_IsArray(alt_ser_reqs_data)) {
+            ogs_error("OpenAPI_media_component_rm_parseFromJSON() failed [alt_ser_reqs_data]");
+            goto end;
+        }
+
+        alt_ser_reqs_dataList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(alt_ser_reqs_data_local, alt_ser_reqs_data) {
+            if (!cJSON_IsObject(alt_ser_reqs_data_local)) {
+                ogs_error("OpenAPI_media_component_rm_parseFromJSON() failed [alt_ser_reqs_data]");
+                goto end;
+            }
+            OpenAPI_alternative_service_requirements_data_t *alt_ser_reqs_dataItem = OpenAPI_alternative_service_requirements_data_parseFromJSON(alt_ser_reqs_data_local);
+            if (!alt_ser_reqs_dataItem) {
+                ogs_error("No alt_ser_reqs_dataItem");
+                OpenAPI_list_free(alt_ser_reqs_dataList);
+                goto end;
+            }
+            OpenAPI_list_add(alt_ser_reqs_dataList, alt_ser_reqs_dataItem);
         }
     }
 
@@ -897,11 +961,20 @@ OpenAPI_media_component_rm_t *OpenAPI_media_component_rm_parseFromJSON(cJSON *me
     tscai_input_ul_local_nonprim = OpenAPI_tscai_input_container_parseFromJSON(tscai_input_ul);
     }
 
+    tscai_time_dom = cJSON_GetObjectItemCaseSensitive(media_component_rmJSON, "tscaiTimeDom");
+    if (tscai_time_dom) {
+    if (!cJSON_IsNumber(tscai_time_dom)) {
+        ogs_error("OpenAPI_media_component_rm_parseFromJSON() failed [tscai_time_dom]");
+        goto end;
+    }
+    }
+
     media_component_rm_local_var = OpenAPI_media_component_rm_create (
         af_app_id && !cJSON_IsNull(af_app_id) ? ogs_strdup(af_app_id->valuestring) : NULL,
         af_rout_req ? af_rout_req_local_nonprim : NULL,
         qos_reference && !cJSON_IsNull(qos_reference) ? ogs_strdup(qos_reference->valuestring) : NULL,
         alt_ser_reqs ? alt_ser_reqsList : NULL,
+        alt_ser_reqs_data ? alt_ser_reqs_dataList : NULL,
         dis_ue_notif ? true : false,
         dis_ue_notif ? dis_ue_notif->valueint : 0,
         cont_ver ? true : false,
@@ -941,7 +1014,9 @@ OpenAPI_media_component_rm_t *OpenAPI_media_component_rm_parseFromJSON(cJSON *me
         sharing_key_ul ? sharing_key_ul->valuedouble : 0,
         tsn_qos ? tsn_qos_local_nonprim : NULL,
         tscai_input_dl ? tscai_input_dl_local_nonprim : NULL,
-        tscai_input_ul ? tscai_input_ul_local_nonprim : NULL
+        tscai_input_ul ? tscai_input_ul_local_nonprim : NULL,
+        tscai_time_dom ? true : false,
+        tscai_time_dom ? tscai_time_dom->valuedouble : 0
     );
 
     return media_component_rm_local_var;
@@ -956,6 +1031,13 @@ end:
         }
         OpenAPI_list_free(alt_ser_reqsList);
         alt_ser_reqsList = NULL;
+    }
+    if (alt_ser_reqs_dataList) {
+        OpenAPI_list_for_each(alt_ser_reqs_dataList, node) {
+            OpenAPI_alternative_service_requirements_data_free(node->data);
+        }
+        OpenAPI_list_free(alt_ser_reqs_dataList);
+        alt_ser_reqs_dataList = NULL;
     }
     if (codecsList) {
         OpenAPI_list_for_each(codecsList, node) {

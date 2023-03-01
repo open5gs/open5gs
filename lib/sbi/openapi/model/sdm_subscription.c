@@ -18,9 +18,15 @@ OpenAPI_sdm_subscription_t *OpenAPI_sdm_subscription_create(
     OpenAPI_plmn_id_t *plmn_id,
     bool is_immediate_report,
     int immediate_report,
-    OpenAPI_subscription_data_sets_t *report,
+    OpenAPI_immediate_report_t *report,
     char *supported_features,
-    OpenAPI_context_info_t *context_info
+    OpenAPI_context_info_t *context_info,
+    bool is_nf_change_filter,
+    int nf_change_filter,
+    bool is_unique_subscription,
+    int unique_subscription,
+    OpenAPI_list_t *reset_ids,
+    OpenAPI_ue_context_in_smf_data_sub_filter_t *ue_con_smf_data_sub_filter
 )
 {
     OpenAPI_sdm_subscription_t *sdm_subscription_local_var = ogs_malloc(sizeof(OpenAPI_sdm_subscription_t));
@@ -42,6 +48,12 @@ OpenAPI_sdm_subscription_t *OpenAPI_sdm_subscription_create(
     sdm_subscription_local_var->report = report;
     sdm_subscription_local_var->supported_features = supported_features;
     sdm_subscription_local_var->context_info = context_info;
+    sdm_subscription_local_var->is_nf_change_filter = is_nf_change_filter;
+    sdm_subscription_local_var->nf_change_filter = nf_change_filter;
+    sdm_subscription_local_var->is_unique_subscription = is_unique_subscription;
+    sdm_subscription_local_var->unique_subscription = unique_subscription;
+    sdm_subscription_local_var->reset_ids = reset_ids;
+    sdm_subscription_local_var->ue_con_smf_data_sub_filter = ue_con_smf_data_sub_filter;
 
     return sdm_subscription_local_var;
 }
@@ -93,7 +105,7 @@ void OpenAPI_sdm_subscription_free(OpenAPI_sdm_subscription_t *sdm_subscription)
         sdm_subscription->plmn_id = NULL;
     }
     if (sdm_subscription->report) {
-        OpenAPI_subscription_data_sets_free(sdm_subscription->report);
+        OpenAPI_immediate_report_free(sdm_subscription->report);
         sdm_subscription->report = NULL;
     }
     if (sdm_subscription->supported_features) {
@@ -103,6 +115,17 @@ void OpenAPI_sdm_subscription_free(OpenAPI_sdm_subscription_t *sdm_subscription)
     if (sdm_subscription->context_info) {
         OpenAPI_context_info_free(sdm_subscription->context_info);
         sdm_subscription->context_info = NULL;
+    }
+    if (sdm_subscription->reset_ids) {
+        OpenAPI_list_for_each(sdm_subscription->reset_ids, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(sdm_subscription->reset_ids);
+        sdm_subscription->reset_ids = NULL;
+    }
+    if (sdm_subscription->ue_con_smf_data_sub_filter) {
+        OpenAPI_ue_context_in_smf_data_sub_filter_free(sdm_subscription->ue_con_smf_data_sub_filter);
+        sdm_subscription->ue_con_smf_data_sub_filter = NULL;
     }
     ogs_free(sdm_subscription);
 }
@@ -221,7 +244,7 @@ cJSON *OpenAPI_sdm_subscription_convertToJSON(OpenAPI_sdm_subscription_t *sdm_su
     }
 
     if (sdm_subscription->report) {
-    cJSON *report_local_JSON = OpenAPI_subscription_data_sets_convertToJSON(sdm_subscription->report);
+    cJSON *report_local_JSON = OpenAPI_immediate_report_convertToJSON(sdm_subscription->report);
     if (report_local_JSON == NULL) {
         ogs_error("OpenAPI_sdm_subscription_convertToJSON() failed [report]");
         goto end;
@@ -253,6 +276,47 @@ cJSON *OpenAPI_sdm_subscription_convertToJSON(OpenAPI_sdm_subscription_t *sdm_su
     }
     }
 
+    if (sdm_subscription->is_nf_change_filter) {
+    if (cJSON_AddBoolToObject(item, "nfChangeFilter", sdm_subscription->nf_change_filter) == NULL) {
+        ogs_error("OpenAPI_sdm_subscription_convertToJSON() failed [nf_change_filter]");
+        goto end;
+    }
+    }
+
+    if (sdm_subscription->is_unique_subscription) {
+    if (cJSON_AddBoolToObject(item, "uniqueSubscription", sdm_subscription->unique_subscription) == NULL) {
+        ogs_error("OpenAPI_sdm_subscription_convertToJSON() failed [unique_subscription]");
+        goto end;
+    }
+    }
+
+    if (sdm_subscription->reset_ids) {
+    cJSON *reset_idsList = cJSON_AddArrayToObject(item, "resetIds");
+    if (reset_idsList == NULL) {
+        ogs_error("OpenAPI_sdm_subscription_convertToJSON() failed [reset_ids]");
+        goto end;
+    }
+    OpenAPI_list_for_each(sdm_subscription->reset_ids, node) {
+        if (cJSON_AddStringToObject(reset_idsList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_sdm_subscription_convertToJSON() failed [reset_ids]");
+            goto end;
+        }
+    }
+    }
+
+    if (sdm_subscription->ue_con_smf_data_sub_filter) {
+    cJSON *ue_con_smf_data_sub_filter_local_JSON = OpenAPI_ue_context_in_smf_data_sub_filter_convertToJSON(sdm_subscription->ue_con_smf_data_sub_filter);
+    if (ue_con_smf_data_sub_filter_local_JSON == NULL) {
+        ogs_error("OpenAPI_sdm_subscription_convertToJSON() failed [ue_con_smf_data_sub_filter]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "ueConSmfDataSubFilter", ue_con_smf_data_sub_filter_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_sdm_subscription_convertToJSON() failed [ue_con_smf_data_sub_filter]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -276,10 +340,16 @@ OpenAPI_sdm_subscription_t *OpenAPI_sdm_subscription_parseFromJSON(cJSON *sdm_su
     OpenAPI_plmn_id_t *plmn_id_local_nonprim = NULL;
     cJSON *immediate_report = NULL;
     cJSON *report = NULL;
-    OpenAPI_subscription_data_sets_t *report_local_nonprim = NULL;
+    OpenAPI_immediate_report_t *report_local_nonprim = NULL;
     cJSON *supported_features = NULL;
     cJSON *context_info = NULL;
     OpenAPI_context_info_t *context_info_local_nonprim = NULL;
+    cJSON *nf_change_filter = NULL;
+    cJSON *unique_subscription = NULL;
+    cJSON *reset_ids = NULL;
+    OpenAPI_list_t *reset_idsList = NULL;
+    cJSON *ue_con_smf_data_sub_filter = NULL;
+    OpenAPI_ue_context_in_smf_data_sub_filter_t *ue_con_smf_data_sub_filter_local_nonprim = NULL;
     nf_instance_id = cJSON_GetObjectItemCaseSensitive(sdm_subscriptionJSON, "nfInstanceId");
     if (!nf_instance_id) {
         ogs_error("OpenAPI_sdm_subscription_parseFromJSON() failed [nf_instance_id]");
@@ -383,7 +453,7 @@ OpenAPI_sdm_subscription_t *OpenAPI_sdm_subscription_parseFromJSON(cJSON *sdm_su
 
     report = cJSON_GetObjectItemCaseSensitive(sdm_subscriptionJSON, "report");
     if (report) {
-    report_local_nonprim = OpenAPI_subscription_data_sets_parseFromJSON(report);
+    report_local_nonprim = OpenAPI_immediate_report_parseFromJSON(report);
     }
 
     supported_features = cJSON_GetObjectItemCaseSensitive(sdm_subscriptionJSON, "supportedFeatures");
@@ -397,6 +467,48 @@ OpenAPI_sdm_subscription_t *OpenAPI_sdm_subscription_parseFromJSON(cJSON *sdm_su
     context_info = cJSON_GetObjectItemCaseSensitive(sdm_subscriptionJSON, "contextInfo");
     if (context_info) {
     context_info_local_nonprim = OpenAPI_context_info_parseFromJSON(context_info);
+    }
+
+    nf_change_filter = cJSON_GetObjectItemCaseSensitive(sdm_subscriptionJSON, "nfChangeFilter");
+    if (nf_change_filter) {
+    if (!cJSON_IsBool(nf_change_filter)) {
+        ogs_error("OpenAPI_sdm_subscription_parseFromJSON() failed [nf_change_filter]");
+        goto end;
+    }
+    }
+
+    unique_subscription = cJSON_GetObjectItemCaseSensitive(sdm_subscriptionJSON, "uniqueSubscription");
+    if (unique_subscription) {
+    if (!cJSON_IsBool(unique_subscription)) {
+        ogs_error("OpenAPI_sdm_subscription_parseFromJSON() failed [unique_subscription]");
+        goto end;
+    }
+    }
+
+    reset_ids = cJSON_GetObjectItemCaseSensitive(sdm_subscriptionJSON, "resetIds");
+    if (reset_ids) {
+        cJSON *reset_ids_local = NULL;
+        if (!cJSON_IsArray(reset_ids)) {
+            ogs_error("OpenAPI_sdm_subscription_parseFromJSON() failed [reset_ids]");
+            goto end;
+        }
+
+        reset_idsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(reset_ids_local, reset_ids) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(reset_ids_local)) {
+                ogs_error("OpenAPI_sdm_subscription_parseFromJSON() failed [reset_ids]");
+                goto end;
+            }
+            OpenAPI_list_add(reset_idsList, ogs_strdup(reset_ids_local->valuestring));
+        }
+    }
+
+    ue_con_smf_data_sub_filter = cJSON_GetObjectItemCaseSensitive(sdm_subscriptionJSON, "ueConSmfDataSubFilter");
+    if (ue_con_smf_data_sub_filter) {
+    ue_con_smf_data_sub_filter_local_nonprim = OpenAPI_ue_context_in_smf_data_sub_filter_parseFromJSON(ue_con_smf_data_sub_filter);
     }
 
     sdm_subscription_local_var = OpenAPI_sdm_subscription_create (
@@ -415,7 +527,13 @@ OpenAPI_sdm_subscription_t *OpenAPI_sdm_subscription_parseFromJSON(cJSON *sdm_su
         immediate_report ? immediate_report->valueint : 0,
         report ? report_local_nonprim : NULL,
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
-        context_info ? context_info_local_nonprim : NULL
+        context_info ? context_info_local_nonprim : NULL,
+        nf_change_filter ? true : false,
+        nf_change_filter ? nf_change_filter->valueint : 0,
+        unique_subscription ? true : false,
+        unique_subscription ? unique_subscription->valueint : 0,
+        reset_ids ? reset_idsList : NULL,
+        ue_con_smf_data_sub_filter ? ue_con_smf_data_sub_filter_local_nonprim : NULL
     );
 
     return sdm_subscription_local_var;
@@ -436,12 +554,23 @@ end:
         plmn_id_local_nonprim = NULL;
     }
     if (report_local_nonprim) {
-        OpenAPI_subscription_data_sets_free(report_local_nonprim);
+        OpenAPI_immediate_report_free(report_local_nonprim);
         report_local_nonprim = NULL;
     }
     if (context_info_local_nonprim) {
         OpenAPI_context_info_free(context_info_local_nonprim);
         context_info_local_nonprim = NULL;
+    }
+    if (reset_idsList) {
+        OpenAPI_list_for_each(reset_idsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(reset_idsList);
+        reset_idsList = NULL;
+    }
+    if (ue_con_smf_data_sub_filter_local_nonprim) {
+        OpenAPI_ue_context_in_smf_data_sub_filter_free(ue_con_smf_data_sub_filter_local_nonprim);
+        ue_con_smf_data_sub_filter_local_nonprim = NULL;
     }
     return NULL;
 }

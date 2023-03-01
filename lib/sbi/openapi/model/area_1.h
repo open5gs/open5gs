@@ -1,7 +1,7 @@
 /*
  * area_1.h
  *
- * 
+ * Provides area information.
  */
 
 #ifndef _OpenAPI_area_1_H_

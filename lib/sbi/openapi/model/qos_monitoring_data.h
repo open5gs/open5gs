@@ -1,7 +1,7 @@
 /*
  * qos_monitoring_data.h
  *
- * 
+ * Contains QoS monitoring related control information.
  */
 
 #ifndef _OpenAPI_qos_monitoring_data_H_
@@ -36,6 +36,8 @@ typedef struct OpenAPI_qos_monitoring_data_s {
     int rep_period;
     char *notify_uri;
     char *notify_corre_id;
+    bool is_direct_notif_ind;
+    int direct_notif_ind;
 } OpenAPI_qos_monitoring_data_t;
 
 OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_create(
@@ -53,7 +55,9 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_create(
     bool is_rep_period,
     int rep_period,
     char *notify_uri,
-    char *notify_corre_id
+    char *notify_corre_id,
+    bool is_direct_notif_ind,
+    int direct_notif_ind
 );
 void OpenAPI_qos_monitoring_data_free(OpenAPI_qos_monitoring_data_t *qos_monitoring_data);
 OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_parseFromJSON(cJSON *qos_monitoring_dataJSON);

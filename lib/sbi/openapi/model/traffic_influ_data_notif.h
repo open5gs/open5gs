@@ -1,7 +1,7 @@
 /*
  * traffic_influ_data_notif.h
  *
- * 
+ * Represents traffic influence data for notification.
  */
 
 #ifndef _OpenAPI_traffic_influ_data_notif_H_

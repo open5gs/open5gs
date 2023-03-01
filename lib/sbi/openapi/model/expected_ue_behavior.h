@@ -1,7 +1,7 @@
 /*
  * expected_ue_behavior.h
  *
- * 
+ * Represents the expected UE behavior (e.g. UE moving trajectory) and its validity period
  */
 
 #ifndef _OpenAPI_expected_ue_behavior_H_

@@ -1,7 +1,7 @@
 /*
  * n2_information_transfer_rsp_data.h
  *
- * 
+ * Data within a successful response to the N2 Information Transfer request to transfer N2 Information to the AN
  */
 
 #ifndef _OpenAPI_n2_information_transfer_rsp_data_H_

@@ -4,6 +4,29 @@
 #include <stdio.h>
 #include "hsmf_update_data.h"
 
+char *OpenAPI_sm_policy_notify_indhsmf_update_data_ToString(OpenAPI_hsmf_update_data_sm_policy_notify_ind_e sm_policy_notify_ind)
+{
+    const char *sm_policy_notify_indArray[] =  { "NULL", "true" };
+    size_t sizeofArray = sizeof(sm_policy_notify_indArray) / sizeof(sm_policy_notify_indArray[0]);
+    if (sm_policy_notify_ind < sizeofArray)
+        return (char *)sm_policy_notify_indArray[sm_policy_notify_ind];
+    else
+        return (char *)"Unknown";
+}
+
+OpenAPI_hsmf_update_data_sm_policy_notify_ind_e OpenAPI_sm_policy_notify_indhsmf_update_data_FromString(char* sm_policy_notify_ind)
+{
+    int stringToReturn = 0;
+    const char *sm_policy_notify_indArray[] =  { "NULL", "true" };
+    size_t sizeofArray = sizeof(sm_policy_notify_indArray) / sizeof(sm_policy_notify_indArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(sm_policy_notify_ind, sm_policy_notify_indArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
+    }
+    return 0;
+}
 OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_create(
     OpenAPI_request_indication_e request_indication,
     char *pei,
@@ -69,7 +92,14 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_create(
     OpenAPI_security_result_t *security_result,
     OpenAPI_up_security_info_t *up_security_info,
     char *amf_nf_id,
-    OpenAPI_guami_t *guami
+    OpenAPI_guami_t *guami,
+    OpenAPI_list_t *secondary_rat_usage_data_report_container,
+    OpenAPI_hsmf_update_data_sm_policy_notify_ind_e sm_policy_notify_ind,
+    OpenAPI_pcf_ue_callback_info_t *pcf_ue_callback_info,
+    OpenAPI_satellite_backhaul_category_e satellite_backhaul_cat,
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_ul,
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dl,
+    OpenAPI_up_cnx_state_e up_cnx_state
 )
 {
     OpenAPI_hsmf_update_data_t *hsmf_update_data_local_var = ogs_malloc(sizeof(OpenAPI_hsmf_update_data_t));
@@ -140,6 +170,13 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_create(
     hsmf_update_data_local_var->up_security_info = up_security_info;
     hsmf_update_data_local_var->amf_nf_id = amf_nf_id;
     hsmf_update_data_local_var->guami = guami;
+    hsmf_update_data_local_var->secondary_rat_usage_data_report_container = secondary_rat_usage_data_report_container;
+    hsmf_update_data_local_var->sm_policy_notify_ind = sm_policy_notify_ind;
+    hsmf_update_data_local_var->pcf_ue_callback_info = pcf_ue_callback_info;
+    hsmf_update_data_local_var->satellite_backhaul_cat = satellite_backhaul_cat;
+    hsmf_update_data_local_var->max_integrity_protected_data_rate_ul = max_integrity_protected_data_rate_ul;
+    hsmf_update_data_local_var->max_integrity_protected_data_rate_dl = max_integrity_protected_data_rate_dl;
+    hsmf_update_data_local_var->up_cnx_state = up_cnx_state;
 
     return hsmf_update_data_local_var;
 }
@@ -329,6 +366,17 @@ void OpenAPI_hsmf_update_data_free(OpenAPI_hsmf_update_data_t *hsmf_update_data)
     if (hsmf_update_data->guami) {
         OpenAPI_guami_free(hsmf_update_data->guami);
         hsmf_update_data->guami = NULL;
+    }
+    if (hsmf_update_data->secondary_rat_usage_data_report_container) {
+        OpenAPI_list_for_each(hsmf_update_data->secondary_rat_usage_data_report_container, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(hsmf_update_data->secondary_rat_usage_data_report_container);
+        hsmf_update_data->secondary_rat_usage_data_report_container = NULL;
+    }
+    if (hsmf_update_data->pcf_ue_callback_info) {
+        OpenAPI_pcf_ue_callback_info_free(hsmf_update_data->pcf_ue_callback_info);
+        hsmf_update_data->pcf_ue_callback_info = NULL;
     }
     ogs_free(hsmf_update_data);
 }
@@ -927,6 +975,68 @@ cJSON *OpenAPI_hsmf_update_data_convertToJSON(OpenAPI_hsmf_update_data_t *hsmf_u
     }
     }
 
+    if (hsmf_update_data->secondary_rat_usage_data_report_container) {
+    cJSON *secondary_rat_usage_data_report_containerList = cJSON_AddArrayToObject(item, "secondaryRatUsageDataReportContainer");
+    if (secondary_rat_usage_data_report_containerList == NULL) {
+        ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [secondary_rat_usage_data_report_container]");
+        goto end;
+    }
+    OpenAPI_list_for_each(hsmf_update_data->secondary_rat_usage_data_report_container, node) {
+        if (cJSON_AddStringToObject(secondary_rat_usage_data_report_containerList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [secondary_rat_usage_data_report_container]");
+            goto end;
+        }
+    }
+    }
+
+    if (hsmf_update_data->sm_policy_notify_ind != OpenAPI_hsmf_update_data_SMPOLICYNOTIFYIND_NULL) {
+    if (cJSON_AddStringToObject(item, "smPolicyNotifyInd", OpenAPI_sm_policy_notify_indhsmf_update_data_ToString(hsmf_update_data->sm_policy_notify_ind)) == NULL) {
+        ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [sm_policy_notify_ind]");
+        goto end;
+    }
+    }
+
+    if (hsmf_update_data->pcf_ue_callback_info) {
+    cJSON *pcf_ue_callback_info_local_JSON = OpenAPI_pcf_ue_callback_info_convertToJSON(hsmf_update_data->pcf_ue_callback_info);
+    if (pcf_ue_callback_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [pcf_ue_callback_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "pcfUeCallbackInfo", pcf_ue_callback_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [pcf_ue_callback_info]");
+        goto end;
+    }
+    }
+
+    if (hsmf_update_data->satellite_backhaul_cat != OpenAPI_satellite_backhaul_category_NULL) {
+    if (cJSON_AddStringToObject(item, "satelliteBackhaulCat", OpenAPI_satellite_backhaul_category_ToString(hsmf_update_data->satellite_backhaul_cat)) == NULL) {
+        ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [satellite_backhaul_cat]");
+        goto end;
+    }
+    }
+
+    if (hsmf_update_data->max_integrity_protected_data_rate_ul != OpenAPI_max_integrity_protected_data_rate_NULL) {
+    if (cJSON_AddStringToObject(item, "maxIntegrityProtectedDataRateUl", OpenAPI_max_integrity_protected_data_rate_ToString(hsmf_update_data->max_integrity_protected_data_rate_ul)) == NULL) {
+        ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [max_integrity_protected_data_rate_ul]");
+        goto end;
+    }
+    }
+
+    if (hsmf_update_data->max_integrity_protected_data_rate_dl != OpenAPI_max_integrity_protected_data_rate_NULL) {
+    if (cJSON_AddStringToObject(item, "maxIntegrityProtectedDataRateDl", OpenAPI_max_integrity_protected_data_rate_ToString(hsmf_update_data->max_integrity_protected_data_rate_dl)) == NULL) {
+        ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [max_integrity_protected_data_rate_dl]");
+        goto end;
+    }
+    }
+
+    if (hsmf_update_data->up_cnx_state != OpenAPI_up_cnx_state_NULL) {
+    if (cJSON_AddStringToObject(item, "upCnxState", OpenAPI_up_cnx_state_ToString(hsmf_update_data->up_cnx_state)) == NULL) {
+        ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [up_cnx_state]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -1028,6 +1138,20 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_parseFromJSON(cJSON *hsmf_u
     cJSON *amf_nf_id = NULL;
     cJSON *guami = NULL;
     OpenAPI_guami_t *guami_local_nonprim = NULL;
+    cJSON *secondary_rat_usage_data_report_container = NULL;
+    OpenAPI_list_t *secondary_rat_usage_data_report_containerList = NULL;
+    cJSON *sm_policy_notify_ind = NULL;
+    OpenAPI_hsmf_update_data_sm_policy_notify_ind_e sm_policy_notify_indVariable = 0;
+    cJSON *pcf_ue_callback_info = NULL;
+    OpenAPI_pcf_ue_callback_info_t *pcf_ue_callback_info_local_nonprim = NULL;
+    cJSON *satellite_backhaul_cat = NULL;
+    OpenAPI_satellite_backhaul_category_e satellite_backhaul_catVariable = 0;
+    cJSON *max_integrity_protected_data_rate_ul = NULL;
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_ulVariable = 0;
+    cJSON *max_integrity_protected_data_rate_dl = NULL;
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dlVariable = 0;
+    cJSON *up_cnx_state = NULL;
+    OpenAPI_up_cnx_state_e up_cnx_stateVariable = 0;
     request_indication = cJSON_GetObjectItemCaseSensitive(hsmf_update_dataJSON, "requestIndication");
     if (!request_indication) {
         ogs_error("OpenAPI_hsmf_update_data_parseFromJSON() failed [request_indication]");
@@ -1583,6 +1707,77 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_parseFromJSON(cJSON *hsmf_u
     guami_local_nonprim = OpenAPI_guami_parseFromJSON(guami);
     }
 
+    secondary_rat_usage_data_report_container = cJSON_GetObjectItemCaseSensitive(hsmf_update_dataJSON, "secondaryRatUsageDataReportContainer");
+    if (secondary_rat_usage_data_report_container) {
+        cJSON *secondary_rat_usage_data_report_container_local = NULL;
+        if (!cJSON_IsArray(secondary_rat_usage_data_report_container)) {
+            ogs_error("OpenAPI_hsmf_update_data_parseFromJSON() failed [secondary_rat_usage_data_report_container]");
+            goto end;
+        }
+
+        secondary_rat_usage_data_report_containerList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(secondary_rat_usage_data_report_container_local, secondary_rat_usage_data_report_container) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(secondary_rat_usage_data_report_container_local)) {
+                ogs_error("OpenAPI_hsmf_update_data_parseFromJSON() failed [secondary_rat_usage_data_report_container]");
+                goto end;
+            }
+            OpenAPI_list_add(secondary_rat_usage_data_report_containerList, ogs_strdup(secondary_rat_usage_data_report_container_local->valuestring));
+        }
+    }
+
+    sm_policy_notify_ind = cJSON_GetObjectItemCaseSensitive(hsmf_update_dataJSON, "smPolicyNotifyInd");
+    if (sm_policy_notify_ind) {
+    if (!cJSON_IsString(sm_policy_notify_ind)) {
+        ogs_error("OpenAPI_hsmf_update_data_parseFromJSON() failed [sm_policy_notify_ind]");
+        goto end;
+    }
+    sm_policy_notify_indVariable = OpenAPI_sm_policy_notify_indhsmf_update_data_FromString(sm_policy_notify_ind->valuestring);
+    }
+
+    pcf_ue_callback_info = cJSON_GetObjectItemCaseSensitive(hsmf_update_dataJSON, "pcfUeCallbackInfo");
+    if (pcf_ue_callback_info) {
+    pcf_ue_callback_info_local_nonprim = OpenAPI_pcf_ue_callback_info_parseFromJSON(pcf_ue_callback_info);
+    }
+
+    satellite_backhaul_cat = cJSON_GetObjectItemCaseSensitive(hsmf_update_dataJSON, "satelliteBackhaulCat");
+    if (satellite_backhaul_cat) {
+    if (!cJSON_IsString(satellite_backhaul_cat)) {
+        ogs_error("OpenAPI_hsmf_update_data_parseFromJSON() failed [satellite_backhaul_cat]");
+        goto end;
+    }
+    satellite_backhaul_catVariable = OpenAPI_satellite_backhaul_category_FromString(satellite_backhaul_cat->valuestring);
+    }
+
+    max_integrity_protected_data_rate_ul = cJSON_GetObjectItemCaseSensitive(hsmf_update_dataJSON, "maxIntegrityProtectedDataRateUl");
+    if (max_integrity_protected_data_rate_ul) {
+    if (!cJSON_IsString(max_integrity_protected_data_rate_ul)) {
+        ogs_error("OpenAPI_hsmf_update_data_parseFromJSON() failed [max_integrity_protected_data_rate_ul]");
+        goto end;
+    }
+    max_integrity_protected_data_rate_ulVariable = OpenAPI_max_integrity_protected_data_rate_FromString(max_integrity_protected_data_rate_ul->valuestring);
+    }
+
+    max_integrity_protected_data_rate_dl = cJSON_GetObjectItemCaseSensitive(hsmf_update_dataJSON, "maxIntegrityProtectedDataRateDl");
+    if (max_integrity_protected_data_rate_dl) {
+    if (!cJSON_IsString(max_integrity_protected_data_rate_dl)) {
+        ogs_error("OpenAPI_hsmf_update_data_parseFromJSON() failed [max_integrity_protected_data_rate_dl]");
+        goto end;
+    }
+    max_integrity_protected_data_rate_dlVariable = OpenAPI_max_integrity_protected_data_rate_FromString(max_integrity_protected_data_rate_dl->valuestring);
+    }
+
+    up_cnx_state = cJSON_GetObjectItemCaseSensitive(hsmf_update_dataJSON, "upCnxState");
+    if (up_cnx_state) {
+    if (!cJSON_IsString(up_cnx_state)) {
+        ogs_error("OpenAPI_hsmf_update_data_parseFromJSON() failed [up_cnx_state]");
+        goto end;
+    }
+    up_cnx_stateVariable = OpenAPI_up_cnx_state_FromString(up_cnx_state->valuestring);
+    }
+
     hsmf_update_data_local_var = OpenAPI_hsmf_update_data_create (
         request_indicationVariable,
         pei && !cJSON_IsNull(pei) ? ogs_strdup(pei->valuestring) : NULL,
@@ -1648,7 +1843,14 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_parseFromJSON(cJSON *hsmf_u
         security_result ? security_result_local_nonprim : NULL,
         up_security_info ? up_security_info_local_nonprim : NULL,
         amf_nf_id && !cJSON_IsNull(amf_nf_id) ? ogs_strdup(amf_nf_id->valuestring) : NULL,
-        guami ? guami_local_nonprim : NULL
+        guami ? guami_local_nonprim : NULL,
+        secondary_rat_usage_data_report_container ? secondary_rat_usage_data_report_containerList : NULL,
+        sm_policy_notify_ind ? sm_policy_notify_indVariable : 0,
+        pcf_ue_callback_info ? pcf_ue_callback_info_local_nonprim : NULL,
+        satellite_backhaul_cat ? satellite_backhaul_catVariable : 0,
+        max_integrity_protected_data_rate_ul ? max_integrity_protected_data_rate_ulVariable : 0,
+        max_integrity_protected_data_rate_dl ? max_integrity_protected_data_rate_dlVariable : 0,
+        up_cnx_state ? up_cnx_stateVariable : 0
     );
 
     return hsmf_update_data_local_var;
@@ -1791,6 +1993,17 @@ end:
     if (guami_local_nonprim) {
         OpenAPI_guami_free(guami_local_nonprim);
         guami_local_nonprim = NULL;
+    }
+    if (secondary_rat_usage_data_report_containerList) {
+        OpenAPI_list_for_each(secondary_rat_usage_data_report_containerList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(secondary_rat_usage_data_report_containerList);
+        secondary_rat_usage_data_report_containerList = NULL;
+    }
+    if (pcf_ue_callback_info_local_nonprim) {
+        OpenAPI_pcf_ue_callback_info_free(pcf_ue_callback_info_local_nonprim);
+        pcf_ue_callback_info_local_nonprim = NULL;
     }
     return NULL;
 }

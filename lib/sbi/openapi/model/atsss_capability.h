@@ -1,7 +1,7 @@
 /*
  * atsss_capability.h
  *
- * 
+ * Containes Capability to support procedures related to Access Traffic Steering, Switching, Splitting. 
  */
 
 #ifndef _OpenAPI_atsss_capability_H_

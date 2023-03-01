@@ -1,7 +1,7 @@
 /*
  * cn_assisted_ran_para.h
  *
- * 
+ * SMF derived CN assisted RAN parameters tuning
  */
 
 #ifndef _OpenAPI_cn_assisted_ran_para_H_

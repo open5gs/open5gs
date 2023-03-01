@@ -1,7 +1,7 @@
 /*
  * mo_exp_data_counter.h
  *
- * 
+ * Contain the MO Exception Data Counter.
  */
 
 #ifndef _OpenAPI_mo_exp_data_counter_H_

@@ -7,7 +7,7 @@
 OpenAPI_subscription_data_t *OpenAPI_subscription_data_create(
     char *nf_status_notification_uri,
     char *req_nf_instance_id,
-    OpenAPI_subscription_data_subscr_cond_t *subscr_cond,
+    OpenAPI_subscr_cond_t *subscr_cond,
     char *subscription_id,
     char *validity_time,
     OpenAPI_list_t *req_notif_events,
@@ -22,7 +22,12 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_create(
     OpenAPI_list_t *req_snpn_list,
     OpenAPI_list_t *serving_scope,
     char *requester_features,
-    char *nrf_supported_features
+    char *nrf_supported_features,
+    char *hnrf_uri,
+    bool is_onboarding_capability,
+    int onboarding_capability,
+    char *target_hni,
+    char *preferred_locality
 )
 {
     OpenAPI_subscription_data_t *subscription_data_local_var = ogs_malloc(sizeof(OpenAPI_subscription_data_t));
@@ -46,6 +51,11 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_create(
     subscription_data_local_var->serving_scope = serving_scope;
     subscription_data_local_var->requester_features = requester_features;
     subscription_data_local_var->nrf_supported_features = nrf_supported_features;
+    subscription_data_local_var->hnrf_uri = hnrf_uri;
+    subscription_data_local_var->is_onboarding_capability = is_onboarding_capability;
+    subscription_data_local_var->onboarding_capability = onboarding_capability;
+    subscription_data_local_var->target_hni = target_hni;
+    subscription_data_local_var->preferred_locality = preferred_locality;
 
     return subscription_data_local_var;
 }
@@ -66,7 +76,7 @@ void OpenAPI_subscription_data_free(OpenAPI_subscription_data_t *subscription_da
         subscription_data->req_nf_instance_id = NULL;
     }
     if (subscription_data->subscr_cond) {
-        OpenAPI_subscription_data_subscr_cond_free(subscription_data->subscr_cond);
+        OpenAPI_subscr_cond_free(subscription_data->subscr_cond);
         subscription_data->subscr_cond = NULL;
     }
     if (subscription_data->subscription_id) {
@@ -99,7 +109,7 @@ void OpenAPI_subscription_data_free(OpenAPI_subscription_data_t *subscription_da
     }
     if (subscription_data->req_snssais) {
         OpenAPI_list_for_each(subscription_data->req_snssais, node) {
-            OpenAPI_snssai_free(node->data);
+            OpenAPI_ext_snssai_free(node->data);
         }
         OpenAPI_list_free(subscription_data->req_snssais);
         subscription_data->req_snssais = NULL;
@@ -140,6 +150,18 @@ void OpenAPI_subscription_data_free(OpenAPI_subscription_data_t *subscription_da
         ogs_free(subscription_data->nrf_supported_features);
         subscription_data->nrf_supported_features = NULL;
     }
+    if (subscription_data->hnrf_uri) {
+        ogs_free(subscription_data->hnrf_uri);
+        subscription_data->hnrf_uri = NULL;
+    }
+    if (subscription_data->target_hni) {
+        ogs_free(subscription_data->target_hni);
+        subscription_data->target_hni = NULL;
+    }
+    if (subscription_data->preferred_locality) {
+        ogs_free(subscription_data->preferred_locality);
+        subscription_data->preferred_locality = NULL;
+    }
     ogs_free(subscription_data);
 }
 
@@ -171,7 +193,7 @@ cJSON *OpenAPI_subscription_data_convertToJSON(OpenAPI_subscription_data_t *subs
     }
 
     if (subscription_data->subscr_cond) {
-    cJSON *subscr_cond_local_JSON = OpenAPI_subscription_data_subscr_cond_convertToJSON(subscription_data->subscr_cond);
+    cJSON *subscr_cond_local_JSON = OpenAPI_subscr_cond_convertToJSON(subscription_data->subscr_cond);
     if (subscr_cond_local_JSON == NULL) {
         ogs_error("OpenAPI_subscription_data_convertToJSON() failed [subscr_cond]");
         goto end;
@@ -265,7 +287,7 @@ cJSON *OpenAPI_subscription_data_convertToJSON(OpenAPI_subscription_data_t *subs
         goto end;
     }
     OpenAPI_list_for_each(subscription_data->req_snssais, node) {
-        cJSON *itemLocal = OpenAPI_snssai_convertToJSON(node->data);
+        cJSON *itemLocal = OpenAPI_ext_snssai_convertToJSON(node->data);
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_subscription_data_convertToJSON() failed [req_snssais]");
             goto end;
@@ -350,6 +372,34 @@ cJSON *OpenAPI_subscription_data_convertToJSON(OpenAPI_subscription_data_t *subs
     }
     }
 
+    if (subscription_data->hnrf_uri) {
+    if (cJSON_AddStringToObject(item, "hnrfUri", subscription_data->hnrf_uri) == NULL) {
+        ogs_error("OpenAPI_subscription_data_convertToJSON() failed [hnrf_uri]");
+        goto end;
+    }
+    }
+
+    if (subscription_data->is_onboarding_capability) {
+    if (cJSON_AddBoolToObject(item, "onboardingCapability", subscription_data->onboarding_capability) == NULL) {
+        ogs_error("OpenAPI_subscription_data_convertToJSON() failed [onboarding_capability]");
+        goto end;
+    }
+    }
+
+    if (subscription_data->target_hni) {
+    if (cJSON_AddStringToObject(item, "targetHni", subscription_data->target_hni) == NULL) {
+        ogs_error("OpenAPI_subscription_data_convertToJSON() failed [target_hni]");
+        goto end;
+    }
+    }
+
+    if (subscription_data->preferred_locality) {
+    if (cJSON_AddStringToObject(item, "preferredLocality", subscription_data->preferred_locality) == NULL) {
+        ogs_error("OpenAPI_subscription_data_convertToJSON() failed [preferred_locality]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -361,7 +411,7 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
     cJSON *nf_status_notification_uri = NULL;
     cJSON *req_nf_instance_id = NULL;
     cJSON *subscr_cond = NULL;
-    OpenAPI_subscription_data_subscr_cond_t *subscr_cond_local_nonprim = NULL;
+    OpenAPI_subscr_cond_t *subscr_cond_local_nonprim = NULL;
     cJSON *subscription_id = NULL;
     cJSON *validity_time = NULL;
     cJSON *req_notif_events = NULL;
@@ -386,6 +436,10 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
     OpenAPI_list_t *serving_scopeList = NULL;
     cJSON *requester_features = NULL;
     cJSON *nrf_supported_features = NULL;
+    cJSON *hnrf_uri = NULL;
+    cJSON *onboarding_capability = NULL;
+    cJSON *target_hni = NULL;
+    cJSON *preferred_locality = NULL;
     nf_status_notification_uri = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "nfStatusNotificationUri");
     if (!nf_status_notification_uri) {
         ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [nf_status_notification_uri]");
@@ -406,7 +460,7 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
 
     subscr_cond = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "subscrCond");
     if (subscr_cond) {
-    subscr_cond_local_nonprim = OpenAPI_subscription_data_subscr_cond_parseFromJSON(subscr_cond);
+    subscr_cond_local_nonprim = OpenAPI_subscr_cond_parseFromJSON(subscr_cond);
     }
 
     subscription_id = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "subscriptionId");
@@ -494,7 +548,7 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
                 ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [req_snssais]");
                 goto end;
             }
-            OpenAPI_snssai_t *req_snssaisItem = OpenAPI_snssai_parseFromJSON(req_snssais_local);
+            OpenAPI_ext_snssai_t *req_snssaisItem = OpenAPI_ext_snssai_parseFromJSON(req_snssais_local);
             if (!req_snssaisItem) {
                 ogs_error("No req_snssaisItem");
                 OpenAPI_list_free(req_snssaisList);
@@ -616,6 +670,38 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
     }
     }
 
+    hnrf_uri = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "hnrfUri");
+    if (hnrf_uri) {
+    if (!cJSON_IsString(hnrf_uri) && !cJSON_IsNull(hnrf_uri)) {
+        ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [hnrf_uri]");
+        goto end;
+    }
+    }
+
+    onboarding_capability = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "onboardingCapability");
+    if (onboarding_capability) {
+    if (!cJSON_IsBool(onboarding_capability)) {
+        ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [onboarding_capability]");
+        goto end;
+    }
+    }
+
+    target_hni = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "targetHni");
+    if (target_hni) {
+    if (!cJSON_IsString(target_hni) && !cJSON_IsNull(target_hni)) {
+        ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [target_hni]");
+        goto end;
+    }
+    }
+
+    preferred_locality = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "preferredLocality");
+    if (preferred_locality) {
+    if (!cJSON_IsString(preferred_locality) && !cJSON_IsNull(preferred_locality)) {
+        ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [preferred_locality]");
+        goto end;
+    }
+    }
+
     subscription_data_local_var = OpenAPI_subscription_data_create (
         ogs_strdup(nf_status_notification_uri->valuestring),
         req_nf_instance_id && !cJSON_IsNull(req_nf_instance_id) ? ogs_strdup(req_nf_instance_id->valuestring) : NULL,
@@ -634,13 +720,18 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
         req_snpn_list ? req_snpn_listList : NULL,
         serving_scope ? serving_scopeList : NULL,
         requester_features && !cJSON_IsNull(requester_features) ? ogs_strdup(requester_features->valuestring) : NULL,
-        nrf_supported_features && !cJSON_IsNull(nrf_supported_features) ? ogs_strdup(nrf_supported_features->valuestring) : NULL
+        nrf_supported_features && !cJSON_IsNull(nrf_supported_features) ? ogs_strdup(nrf_supported_features->valuestring) : NULL,
+        hnrf_uri && !cJSON_IsNull(hnrf_uri) ? ogs_strdup(hnrf_uri->valuestring) : NULL,
+        onboarding_capability ? true : false,
+        onboarding_capability ? onboarding_capability->valueint : 0,
+        target_hni && !cJSON_IsNull(target_hni) ? ogs_strdup(target_hni->valuestring) : NULL,
+        preferred_locality && !cJSON_IsNull(preferred_locality) ? ogs_strdup(preferred_locality->valuestring) : NULL
     );
 
     return subscription_data_local_var;
 end:
     if (subscr_cond_local_nonprim) {
-        OpenAPI_subscription_data_subscr_cond_free(subscr_cond_local_nonprim);
+        OpenAPI_subscr_cond_free(subscr_cond_local_nonprim);
         subscr_cond_local_nonprim = NULL;
     }
     if (req_notif_eventsList) {
@@ -657,7 +748,7 @@ end:
     }
     if (req_snssaisList) {
         OpenAPI_list_for_each(req_snssaisList, node) {
-            OpenAPI_snssai_free(node->data);
+            OpenAPI_ext_snssai_free(node->data);
         }
         OpenAPI_list_free(req_snssaisList);
         req_snssaisList = NULL;

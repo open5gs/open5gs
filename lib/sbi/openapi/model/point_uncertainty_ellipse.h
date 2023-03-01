@@ -1,7 +1,7 @@
 /*
  * point_uncertainty_ellipse.h
  *
- * 
+ * Ellipsoid point with uncertainty ellipse.
  */
 
 #ifndef _OpenAPI_point_uncertainty_ellipse_H_

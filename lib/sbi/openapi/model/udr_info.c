@@ -9,7 +9,8 @@ OpenAPI_udr_info_t *OpenAPI_udr_info_create(
     OpenAPI_list_t *supi_ranges,
     OpenAPI_list_t *gpsi_ranges,
     OpenAPI_list_t *external_group_identifiers_ranges,
-    OpenAPI_list_t *supported_data_sets
+    OpenAPI_list_t *supported_data_sets,
+    OpenAPI_list_t *shared_data_id_ranges
 )
 {
     OpenAPI_udr_info_t *udr_info_local_var = ogs_malloc(sizeof(OpenAPI_udr_info_t));
@@ -20,6 +21,7 @@ OpenAPI_udr_info_t *OpenAPI_udr_info_create(
     udr_info_local_var->gpsi_ranges = gpsi_ranges;
     udr_info_local_var->external_group_identifiers_ranges = external_group_identifiers_ranges;
     udr_info_local_var->supported_data_sets = supported_data_sets;
+    udr_info_local_var->shared_data_id_ranges = shared_data_id_ranges;
 
     return udr_info_local_var;
 }
@@ -59,6 +61,13 @@ void OpenAPI_udr_info_free(OpenAPI_udr_info_t *udr_info)
     if (udr_info->supported_data_sets) {
         OpenAPI_list_free(udr_info->supported_data_sets);
         udr_info->supported_data_sets = NULL;
+    }
+    if (udr_info->shared_data_id_ranges) {
+        OpenAPI_list_for_each(udr_info->shared_data_id_ranges, node) {
+            OpenAPI_shared_data_id_range_free(node->data);
+        }
+        OpenAPI_list_free(udr_info->shared_data_id_ranges);
+        udr_info->shared_data_id_ranges = NULL;
     }
     ogs_free(udr_info);
 }
@@ -143,6 +152,22 @@ cJSON *OpenAPI_udr_info_convertToJSON(OpenAPI_udr_info_t *udr_info)
     }
     }
 
+    if (udr_info->shared_data_id_ranges) {
+    cJSON *shared_data_id_rangesList = cJSON_AddArrayToObject(item, "sharedDataIdRanges");
+    if (shared_data_id_rangesList == NULL) {
+        ogs_error("OpenAPI_udr_info_convertToJSON() failed [shared_data_id_ranges]");
+        goto end;
+    }
+    OpenAPI_list_for_each(udr_info->shared_data_id_ranges, node) {
+        cJSON *itemLocal = OpenAPI_shared_data_id_range_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_udr_info_convertToJSON() failed [shared_data_id_ranges]");
+            goto end;
+        }
+        cJSON_AddItemToArray(shared_data_id_rangesList, itemLocal);
+    }
+    }
+
 end:
     return item;
 }
@@ -160,6 +185,8 @@ OpenAPI_udr_info_t *OpenAPI_udr_info_parseFromJSON(cJSON *udr_infoJSON)
     OpenAPI_list_t *external_group_identifiers_rangesList = NULL;
     cJSON *supported_data_sets = NULL;
     OpenAPI_list_t *supported_data_setsList = NULL;
+    cJSON *shared_data_id_ranges = NULL;
+    OpenAPI_list_t *shared_data_id_rangesList = NULL;
     group_id = cJSON_GetObjectItemCaseSensitive(udr_infoJSON, "groupId");
     if (group_id) {
     if (!cJSON_IsString(group_id) && !cJSON_IsNull(group_id)) {
@@ -262,12 +289,38 @@ OpenAPI_udr_info_t *OpenAPI_udr_info_parseFromJSON(cJSON *udr_infoJSON)
         }
     }
 
+    shared_data_id_ranges = cJSON_GetObjectItemCaseSensitive(udr_infoJSON, "sharedDataIdRanges");
+    if (shared_data_id_ranges) {
+        cJSON *shared_data_id_ranges_local = NULL;
+        if (!cJSON_IsArray(shared_data_id_ranges)) {
+            ogs_error("OpenAPI_udr_info_parseFromJSON() failed [shared_data_id_ranges]");
+            goto end;
+        }
+
+        shared_data_id_rangesList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(shared_data_id_ranges_local, shared_data_id_ranges) {
+            if (!cJSON_IsObject(shared_data_id_ranges_local)) {
+                ogs_error("OpenAPI_udr_info_parseFromJSON() failed [shared_data_id_ranges]");
+                goto end;
+            }
+            OpenAPI_shared_data_id_range_t *shared_data_id_rangesItem = OpenAPI_shared_data_id_range_parseFromJSON(shared_data_id_ranges_local);
+            if (!shared_data_id_rangesItem) {
+                ogs_error("No shared_data_id_rangesItem");
+                OpenAPI_list_free(shared_data_id_rangesList);
+                goto end;
+            }
+            OpenAPI_list_add(shared_data_id_rangesList, shared_data_id_rangesItem);
+        }
+    }
+
     udr_info_local_var = OpenAPI_udr_info_create (
         group_id && !cJSON_IsNull(group_id) ? ogs_strdup(group_id->valuestring) : NULL,
         supi_ranges ? supi_rangesList : NULL,
         gpsi_ranges ? gpsi_rangesList : NULL,
         external_group_identifiers_ranges ? external_group_identifiers_rangesList : NULL,
-        supported_data_sets ? supported_data_setsList : NULL
+        supported_data_sets ? supported_data_setsList : NULL,
+        shared_data_id_ranges ? shared_data_id_rangesList : NULL
     );
 
     return udr_info_local_var;
@@ -296,6 +349,13 @@ end:
     if (supported_data_setsList) {
         OpenAPI_list_free(supported_data_setsList);
         supported_data_setsList = NULL;
+    }
+    if (shared_data_id_rangesList) {
+        OpenAPI_list_for_each(shared_data_id_rangesList, node) {
+            OpenAPI_shared_data_id_range_free(node->data);
+        }
+        OpenAPI_list_free(shared_data_id_rangesList);
+        shared_data_id_rangesList = NULL;
     }
     return NULL;
 }

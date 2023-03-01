@@ -1,7 +1,7 @@
 /*
  * port_management_container.h
  *
- * 
+ * Contains the port management information container for a port.
  */
 
 #ifndef _OpenAPI_port_management_container_H_

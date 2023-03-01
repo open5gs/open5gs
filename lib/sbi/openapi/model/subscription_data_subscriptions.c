@@ -11,7 +11,10 @@ OpenAPI_subscription_data_subscriptions_t *OpenAPI_subscription_data_subscriptio
     OpenAPI_list_t *monitored_resource_uris,
     char *expiry,
     OpenAPI_sdm_subscription_1_t *sdm_subscription,
+    OpenAPI_hss_subscription_info_t *hss_subscription_info,
     char *subscription_id,
+    bool is_unique_subscription,
+    int unique_subscription,
     char *supported_features
 )
 {
@@ -24,7 +27,10 @@ OpenAPI_subscription_data_subscriptions_t *OpenAPI_subscription_data_subscriptio
     subscription_data_subscriptions_local_var->monitored_resource_uris = monitored_resource_uris;
     subscription_data_subscriptions_local_var->expiry = expiry;
     subscription_data_subscriptions_local_var->sdm_subscription = sdm_subscription;
+    subscription_data_subscriptions_local_var->hss_subscription_info = hss_subscription_info;
     subscription_data_subscriptions_local_var->subscription_id = subscription_id;
+    subscription_data_subscriptions_local_var->is_unique_subscription = is_unique_subscription;
+    subscription_data_subscriptions_local_var->unique_subscription = unique_subscription;
     subscription_data_subscriptions_local_var->supported_features = supported_features;
 
     return subscription_data_subscriptions_local_var;
@@ -63,6 +69,10 @@ void OpenAPI_subscription_data_subscriptions_free(OpenAPI_subscription_data_subs
     if (subscription_data_subscriptions->sdm_subscription) {
         OpenAPI_sdm_subscription_1_free(subscription_data_subscriptions->sdm_subscription);
         subscription_data_subscriptions->sdm_subscription = NULL;
+    }
+    if (subscription_data_subscriptions->hss_subscription_info) {
+        OpenAPI_hss_subscription_info_free(subscription_data_subscriptions->hss_subscription_info);
+        subscription_data_subscriptions->hss_subscription_info = NULL;
     }
     if (subscription_data_subscriptions->subscription_id) {
         ogs_free(subscription_data_subscriptions->subscription_id);
@@ -145,6 +155,19 @@ cJSON *OpenAPI_subscription_data_subscriptions_convertToJSON(OpenAPI_subscriptio
     }
     }
 
+    if (subscription_data_subscriptions->hss_subscription_info) {
+    cJSON *hss_subscription_info_local_JSON = OpenAPI_hss_subscription_info_convertToJSON(subscription_data_subscriptions->hss_subscription_info);
+    if (hss_subscription_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_subscription_data_subscriptions_convertToJSON() failed [hss_subscription_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "hssSubscriptionInfo", hss_subscription_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_subscription_data_subscriptions_convertToJSON() failed [hss_subscription_info]");
+        goto end;
+    }
+    }
+
     if (subscription_data_subscriptions->subscription_id) {
     if (cJSON_AddStringToObject(item, "subscriptionId", subscription_data_subscriptions->subscription_id) == NULL) {
         ogs_error("OpenAPI_subscription_data_subscriptions_convertToJSON() failed [subscription_id]");
@@ -152,8 +175,15 @@ cJSON *OpenAPI_subscription_data_subscriptions_convertToJSON(OpenAPI_subscriptio
     }
     }
 
+    if (subscription_data_subscriptions->is_unique_subscription) {
+    if (cJSON_AddBoolToObject(item, "uniqueSubscription", subscription_data_subscriptions->unique_subscription) == NULL) {
+        ogs_error("OpenAPI_subscription_data_subscriptions_convertToJSON() failed [unique_subscription]");
+        goto end;
+    }
+    }
+
     if (subscription_data_subscriptions->supported_features) {
-    if (cJSON_AddStringToObject(item, "supported-features", subscription_data_subscriptions->supported_features) == NULL) {
+    if (cJSON_AddStringToObject(item, "supportedFeatures", subscription_data_subscriptions->supported_features) == NULL) {
         ogs_error("OpenAPI_subscription_data_subscriptions_convertToJSON() failed [supported_features]");
         goto end;
     }
@@ -175,7 +205,10 @@ OpenAPI_subscription_data_subscriptions_t *OpenAPI_subscription_data_subscriptio
     cJSON *expiry = NULL;
     cJSON *sdm_subscription = NULL;
     OpenAPI_sdm_subscription_1_t *sdm_subscription_local_nonprim = NULL;
+    cJSON *hss_subscription_info = NULL;
+    OpenAPI_hss_subscription_info_t *hss_subscription_info_local_nonprim = NULL;
     cJSON *subscription_id = NULL;
+    cJSON *unique_subscription = NULL;
     cJSON *supported_features = NULL;
     ue_id = cJSON_GetObjectItemCaseSensitive(subscription_data_subscriptionsJSON, "ueId");
     if (ue_id) {
@@ -239,6 +272,11 @@ OpenAPI_subscription_data_subscriptions_t *OpenAPI_subscription_data_subscriptio
     sdm_subscription_local_nonprim = OpenAPI_sdm_subscription_1_parseFromJSON(sdm_subscription);
     }
 
+    hss_subscription_info = cJSON_GetObjectItemCaseSensitive(subscription_data_subscriptionsJSON, "hssSubscriptionInfo");
+    if (hss_subscription_info) {
+    hss_subscription_info_local_nonprim = OpenAPI_hss_subscription_info_parseFromJSON(hss_subscription_info);
+    }
+
     subscription_id = cJSON_GetObjectItemCaseSensitive(subscription_data_subscriptionsJSON, "subscriptionId");
     if (subscription_id) {
     if (!cJSON_IsString(subscription_id) && !cJSON_IsNull(subscription_id)) {
@@ -247,7 +285,15 @@ OpenAPI_subscription_data_subscriptions_t *OpenAPI_subscription_data_subscriptio
     }
     }
 
-    supported_features = cJSON_GetObjectItemCaseSensitive(subscription_data_subscriptionsJSON, "supported-features");
+    unique_subscription = cJSON_GetObjectItemCaseSensitive(subscription_data_subscriptionsJSON, "uniqueSubscription");
+    if (unique_subscription) {
+    if (!cJSON_IsBool(unique_subscription)) {
+        ogs_error("OpenAPI_subscription_data_subscriptions_parseFromJSON() failed [unique_subscription]");
+        goto end;
+    }
+    }
+
+    supported_features = cJSON_GetObjectItemCaseSensitive(subscription_data_subscriptionsJSON, "supportedFeatures");
     if (supported_features) {
     if (!cJSON_IsString(supported_features) && !cJSON_IsNull(supported_features)) {
         ogs_error("OpenAPI_subscription_data_subscriptions_parseFromJSON() failed [supported_features]");
@@ -262,7 +308,10 @@ OpenAPI_subscription_data_subscriptions_t *OpenAPI_subscription_data_subscriptio
         monitored_resource_urisList,
         expiry && !cJSON_IsNull(expiry) ? ogs_strdup(expiry->valuestring) : NULL,
         sdm_subscription ? sdm_subscription_local_nonprim : NULL,
+        hss_subscription_info ? hss_subscription_info_local_nonprim : NULL,
         subscription_id && !cJSON_IsNull(subscription_id) ? ogs_strdup(subscription_id->valuestring) : NULL,
+        unique_subscription ? true : false,
+        unique_subscription ? unique_subscription->valueint : 0,
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL
     );
 
@@ -278,6 +327,10 @@ end:
     if (sdm_subscription_local_nonprim) {
         OpenAPI_sdm_subscription_1_free(sdm_subscription_local_nonprim);
         sdm_subscription_local_nonprim = NULL;
+    }
+    if (hss_subscription_info_local_nonprim) {
+        OpenAPI_hss_subscription_info_free(hss_subscription_info_local_nonprim);
+        hss_subscription_info_local_nonprim = NULL;
     }
     return NULL;
 }

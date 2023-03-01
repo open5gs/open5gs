@@ -7,7 +7,8 @@
 OpenAPI_ue_context_transfer_200_response_t *OpenAPI_ue_context_transfer_200_response_create(
     OpenAPI_ue_context_transfer_rsp_data_t *json_data,
     OpenAPI_binary_t* binary_data_n2_information,
-    OpenAPI_binary_t* binary_data_n2_information_ext1
+    OpenAPI_binary_t* binary_data_n2_information_ext1,
+    OpenAPI_binary_t* binary_data_n2_information_ext2
 )
 {
     OpenAPI_ue_context_transfer_200_response_t *ue_context_transfer_200_response_local_var = ogs_malloc(sizeof(OpenAPI_ue_context_transfer_200_response_t));
@@ -16,6 +17,7 @@ OpenAPI_ue_context_transfer_200_response_t *OpenAPI_ue_context_transfer_200_resp
     ue_context_transfer_200_response_local_var->json_data = json_data;
     ue_context_transfer_200_response_local_var->binary_data_n2_information = binary_data_n2_information;
     ue_context_transfer_200_response_local_var->binary_data_n2_information_ext1 = binary_data_n2_information_ext1;
+    ue_context_transfer_200_response_local_var->binary_data_n2_information_ext2 = binary_data_n2_information_ext2;
 
     return ue_context_transfer_200_response_local_var;
 }
@@ -38,6 +40,10 @@ void OpenAPI_ue_context_transfer_200_response_free(OpenAPI_ue_context_transfer_2
     if (ue_context_transfer_200_response->binary_data_n2_information_ext1) {
         ogs_free(ue_context_transfer_200_response->binary_data_n2_information_ext1->data);
         ue_context_transfer_200_response->binary_data_n2_information_ext1 = NULL;
+    }
+    if (ue_context_transfer_200_response->binary_data_n2_information_ext2) {
+        ogs_free(ue_context_transfer_200_response->binary_data_n2_information_ext2->data);
+        ue_context_transfer_200_response->binary_data_n2_information_ext2 = NULL;
     }
     ogs_free(ue_context_transfer_200_response);
 }
@@ -84,6 +90,15 @@ cJSON *OpenAPI_ue_context_transfer_200_response_convertToJSON(OpenAPI_ue_context
     ogs_free(encoded_str_binary_data_n2_information_ext1);
     }
 
+    if (ue_context_transfer_200_response->binary_data_n2_information_ext2) {
+    char* encoded_str_binary_data_n2_information_ext2 = OpenAPI_base64encode(ue_context_transfer_200_response->binary_data_n2_information_ext2->data,ue_context_transfer_200_response->binary_data_n2_information_ext2->len);
+    if (cJSON_AddStringToObject(item, "binaryDataN2InformationExt2", encoded_str_binary_data_n2_information_ext2) == NULL) {
+        ogs_error("OpenAPI_ue_context_transfer_200_response_convertToJSON() failed [binary_data_n2_information_ext2]");
+        goto end;
+    }
+    ogs_free(encoded_str_binary_data_n2_information_ext2);
+    }
+
 end:
     return item;
 }
@@ -98,6 +113,8 @@ OpenAPI_ue_context_transfer_200_response_t *OpenAPI_ue_context_transfer_200_resp
     OpenAPI_binary_t *decoded_str_binary_data_n2_information = NULL;
     cJSON *binary_data_n2_information_ext1 = NULL;
     OpenAPI_binary_t *decoded_str_binary_data_n2_information_ext1 = NULL;
+    cJSON *binary_data_n2_information_ext2 = NULL;
+    OpenAPI_binary_t *decoded_str_binary_data_n2_information_ext2 = NULL;
     json_data = cJSON_GetObjectItemCaseSensitive(ue_context_transfer_200_responseJSON, "jsonData");
     if (json_data) {
     json_data_local_nonprim = OpenAPI_ue_context_transfer_rsp_data_parseFromJSON(json_data);
@@ -133,10 +150,26 @@ OpenAPI_ue_context_transfer_200_response_t *OpenAPI_ue_context_transfer_200_resp
     }
     }
 
+    binary_data_n2_information_ext2 = cJSON_GetObjectItemCaseSensitive(ue_context_transfer_200_responseJSON, "binaryDataN2InformationExt2");
+    if (binary_data_n2_information_ext2) {
+    decoded_str_binary_data_n2_information_ext2 = ogs_malloc(sizeof(OpenAPI_binary_t));
+    ogs_assert(decoded_str_binary_data_n2_information_ext2);
+    if (!cJSON_IsString(binary_data_n2_information_ext2)) {
+        ogs_error("OpenAPI_ue_context_transfer_200_response_parseFromJSON() failed [binary_data_n2_information_ext2]");
+        goto end;
+    }
+    decoded_str_binary_data_n2_information_ext2->data = OpenAPI_base64decode(binary_data_n2_information_ext2->valuestring, strlen(binary_data_n2_information_ext2->valuestring), &decoded_str_binary_data_n2_information_ext2->len);
+    if (!decoded_str_binary_data_n2_information_ext2->data) {
+        ogs_error("OpenAPI_ue_context_transfer_200_response_parseFromJSON() failed [binary_data_n2_information_ext2]");
+        goto end;
+    }
+    }
+
     ue_context_transfer_200_response_local_var = OpenAPI_ue_context_transfer_200_response_create (
         json_data ? json_data_local_nonprim : NULL,
         binary_data_n2_information ? decoded_str_binary_data_n2_information : NULL,
-        binary_data_n2_information_ext1 ? decoded_str_binary_data_n2_information_ext1 : NULL
+        binary_data_n2_information_ext1 ? decoded_str_binary_data_n2_information_ext1 : NULL,
+        binary_data_n2_information_ext2 ? decoded_str_binary_data_n2_information_ext2 : NULL
     );
 
     return ue_context_transfer_200_response_local_var;

@@ -1,7 +1,7 @@
 /*
  * nrppa_information.h
  *
- * 
+ * Represents a NRPPa related N2 information data part
  */
 
 #ifndef _OpenAPI_nrppa_information_H_

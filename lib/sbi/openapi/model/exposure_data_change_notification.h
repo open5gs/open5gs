@@ -1,7 +1,7 @@
 /*
  * exposure_data_change_notification.h
  *
- * 
+ * Represents changed exposure data for one UE for which Notification was requested.
  */
 
 #ifndef _OpenAPI_exposure_data_change_notification_H_

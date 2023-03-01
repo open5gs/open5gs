@@ -1,7 +1,7 @@
 /*
  * ue_authentication_ctx.h
  *
- * 
+ * Contains the information related to the resource generated to handle the UE authentication. It contains at least the UE id, Serving Network, the Authentication Method and related EAP information or related 5G-AKA information.
  */
 
 #ifndef _OpenAPI_ue_authentication_ctx_H_

@@ -1,7 +1,7 @@
 /*
  * sequence_number.h
  *
- * 
+ * Contains the SQN.
  */
 
 #ifndef _OpenAPI_sequence_number_H_

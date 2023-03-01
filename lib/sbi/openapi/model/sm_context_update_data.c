@@ -4,6 +4,29 @@
 #include <stdio.h>
 #include "sm_context_update_data.h"
 
+char *OpenAPI_sm_policy_notify_indsm_context_update_data_ToString(OpenAPI_sm_context_update_data_sm_policy_notify_ind_e sm_policy_notify_ind)
+{
+    const char *sm_policy_notify_indArray[] =  { "NULL", "true" };
+    size_t sizeofArray = sizeof(sm_policy_notify_indArray) / sizeof(sm_policy_notify_indArray[0]);
+    if (sm_policy_notify_ind < sizeofArray)
+        return (char *)sm_policy_notify_indArray[sm_policy_notify_ind];
+    else
+        return (char *)"Unknown";
+}
+
+OpenAPI_sm_context_update_data_sm_policy_notify_ind_e OpenAPI_sm_policy_notify_indsm_context_update_data_FromString(char* sm_policy_notify_ind)
+{
+    int stringToReturn = 0;
+    const char *sm_policy_notify_indArray[] =  { "NULL", "true" };
+    size_t sizeofArray = sizeof(sm_policy_notify_indArray) / sizeof(sm_policy_notify_indArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(sm_policy_notify_ind, sm_policy_notify_indArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
+    }
+    return 0;
+}
 OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
     char *pei,
     char *serving_nf_id,
@@ -35,6 +58,9 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
     OpenAPI_tunnel_info_t *n9_forwarding_tunnel,
     OpenAPI_list_t *n9_dl_forwarding_tnl_list,
     OpenAPI_list_t *n9_ul_forwarding_tnl_list,
+    OpenAPI_tunnel_info_t *n9_dl_forwarding_tunnel,
+    bool is_n9_inactivity_timer,
+    int n9_inactivity_timer,
     OpenAPI_list_t *eps_bearer_setup,
     OpenAPI_list_t *revoke_ebi_list,
     bool is_release,
@@ -62,7 +88,13 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
     int extended_nas_sm_timer_ind,
     char *forwarding_f_teid,
     OpenAPI_list_t *forwarding_bearer_contexts,
-    OpenAPI_ddn_failure_subs_t *ddn_failure_subs
+    OpenAPI_ddn_failure_subs_t *ddn_failure_subs,
+    bool is_skip_n2_pdu_session_res_rel_ind,
+    int skip_n2_pdu_session_res_rel_ind,
+    OpenAPI_list_t *secondary_rat_usage_data_report_container,
+    OpenAPI_sm_context_update_data_sm_policy_notify_ind_e sm_policy_notify_ind,
+    OpenAPI_pcf_ue_callback_info_t *pcf_ue_callback_info,
+    OpenAPI_satellite_backhaul_category_e satellite_backhaul_cat
 )
 {
     OpenAPI_sm_context_update_data_t *sm_context_update_data_local_var = ogs_malloc(sizeof(OpenAPI_sm_context_update_data_t));
@@ -98,6 +130,9 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
     sm_context_update_data_local_var->n9_forwarding_tunnel = n9_forwarding_tunnel;
     sm_context_update_data_local_var->n9_dl_forwarding_tnl_list = n9_dl_forwarding_tnl_list;
     sm_context_update_data_local_var->n9_ul_forwarding_tnl_list = n9_ul_forwarding_tnl_list;
+    sm_context_update_data_local_var->n9_dl_forwarding_tunnel = n9_dl_forwarding_tunnel;
+    sm_context_update_data_local_var->is_n9_inactivity_timer = is_n9_inactivity_timer;
+    sm_context_update_data_local_var->n9_inactivity_timer = n9_inactivity_timer;
     sm_context_update_data_local_var->eps_bearer_setup = eps_bearer_setup;
     sm_context_update_data_local_var->revoke_ebi_list = revoke_ebi_list;
     sm_context_update_data_local_var->is_release = is_release;
@@ -126,6 +161,12 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
     sm_context_update_data_local_var->forwarding_f_teid = forwarding_f_teid;
     sm_context_update_data_local_var->forwarding_bearer_contexts = forwarding_bearer_contexts;
     sm_context_update_data_local_var->ddn_failure_subs = ddn_failure_subs;
+    sm_context_update_data_local_var->is_skip_n2_pdu_session_res_rel_ind = is_skip_n2_pdu_session_res_rel_ind;
+    sm_context_update_data_local_var->skip_n2_pdu_session_res_rel_ind = skip_n2_pdu_session_res_rel_ind;
+    sm_context_update_data_local_var->secondary_rat_usage_data_report_container = secondary_rat_usage_data_report_container;
+    sm_context_update_data_local_var->sm_policy_notify_ind = sm_policy_notify_ind;
+    sm_context_update_data_local_var->pcf_ue_callback_info = pcf_ue_callback_info;
+    sm_context_update_data_local_var->satellite_backhaul_cat = satellite_backhaul_cat;
 
     return sm_context_update_data_local_var;
 }
@@ -210,6 +251,10 @@ void OpenAPI_sm_context_update_data_free(OpenAPI_sm_context_update_data_t *sm_co
         OpenAPI_list_free(sm_context_update_data->n9_ul_forwarding_tnl_list);
         sm_context_update_data->n9_ul_forwarding_tnl_list = NULL;
     }
+    if (sm_context_update_data->n9_dl_forwarding_tunnel) {
+        OpenAPI_tunnel_info_free(sm_context_update_data->n9_dl_forwarding_tunnel);
+        sm_context_update_data->n9_dl_forwarding_tunnel = NULL;
+    }
     if (sm_context_update_data->eps_bearer_setup) {
         OpenAPI_list_for_each(sm_context_update_data->eps_bearer_setup, node) {
             ogs_free(node->data);
@@ -266,6 +311,17 @@ void OpenAPI_sm_context_update_data_free(OpenAPI_sm_context_update_data_t *sm_co
     if (sm_context_update_data->ddn_failure_subs) {
         OpenAPI_ddn_failure_subs_free(sm_context_update_data->ddn_failure_subs);
         sm_context_update_data->ddn_failure_subs = NULL;
+    }
+    if (sm_context_update_data->secondary_rat_usage_data_report_container) {
+        OpenAPI_list_for_each(sm_context_update_data->secondary_rat_usage_data_report_container, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(sm_context_update_data->secondary_rat_usage_data_report_container);
+        sm_context_update_data->secondary_rat_usage_data_report_container = NULL;
+    }
+    if (sm_context_update_data->pcf_ue_callback_info) {
+        OpenAPI_pcf_ue_callback_info_free(sm_context_update_data->pcf_ue_callback_info);
+        sm_context_update_data->pcf_ue_callback_info = NULL;
     }
     ogs_free(sm_context_update_data);
 }
@@ -545,6 +601,26 @@ cJSON *OpenAPI_sm_context_update_data_convertToJSON(OpenAPI_sm_context_update_da
     }
     }
 
+    if (sm_context_update_data->n9_dl_forwarding_tunnel) {
+    cJSON *n9_dl_forwarding_tunnel_local_JSON = OpenAPI_tunnel_info_convertToJSON(sm_context_update_data->n9_dl_forwarding_tunnel);
+    if (n9_dl_forwarding_tunnel_local_JSON == NULL) {
+        ogs_error("OpenAPI_sm_context_update_data_convertToJSON() failed [n9_dl_forwarding_tunnel]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "n9DlForwardingTunnel", n9_dl_forwarding_tunnel_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_sm_context_update_data_convertToJSON() failed [n9_dl_forwarding_tunnel]");
+        goto end;
+    }
+    }
+
+    if (sm_context_update_data->is_n9_inactivity_timer) {
+    if (cJSON_AddNumberToObject(item, "n9InactivityTimer", sm_context_update_data->n9_inactivity_timer) == NULL) {
+        ogs_error("OpenAPI_sm_context_update_data_convertToJSON() failed [n9_inactivity_timer]");
+        goto end;
+    }
+    }
+
     if (sm_context_update_data->eps_bearer_setup) {
     cJSON *eps_bearer_setupList = cJSON_AddArrayToObject(item, "epsBearerSetup");
     if (eps_bearer_setupList == NULL) {
@@ -762,6 +838,54 @@ cJSON *OpenAPI_sm_context_update_data_convertToJSON(OpenAPI_sm_context_update_da
     }
     }
 
+    if (sm_context_update_data->is_skip_n2_pdu_session_res_rel_ind) {
+    if (cJSON_AddBoolToObject(item, "skipN2PduSessionResRelInd", sm_context_update_data->skip_n2_pdu_session_res_rel_ind) == NULL) {
+        ogs_error("OpenAPI_sm_context_update_data_convertToJSON() failed [skip_n2_pdu_session_res_rel_ind]");
+        goto end;
+    }
+    }
+
+    if (sm_context_update_data->secondary_rat_usage_data_report_container) {
+    cJSON *secondary_rat_usage_data_report_containerList = cJSON_AddArrayToObject(item, "secondaryRatUsageDataReportContainer");
+    if (secondary_rat_usage_data_report_containerList == NULL) {
+        ogs_error("OpenAPI_sm_context_update_data_convertToJSON() failed [secondary_rat_usage_data_report_container]");
+        goto end;
+    }
+    OpenAPI_list_for_each(sm_context_update_data->secondary_rat_usage_data_report_container, node) {
+        if (cJSON_AddStringToObject(secondary_rat_usage_data_report_containerList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_sm_context_update_data_convertToJSON() failed [secondary_rat_usage_data_report_container]");
+            goto end;
+        }
+    }
+    }
+
+    if (sm_context_update_data->sm_policy_notify_ind != OpenAPI_sm_context_update_data_SMPOLICYNOTIFYIND_NULL) {
+    if (cJSON_AddStringToObject(item, "smPolicyNotifyInd", OpenAPI_sm_policy_notify_indsm_context_update_data_ToString(sm_context_update_data->sm_policy_notify_ind)) == NULL) {
+        ogs_error("OpenAPI_sm_context_update_data_convertToJSON() failed [sm_policy_notify_ind]");
+        goto end;
+    }
+    }
+
+    if (sm_context_update_data->pcf_ue_callback_info) {
+    cJSON *pcf_ue_callback_info_local_JSON = OpenAPI_pcf_ue_callback_info_convertToJSON(sm_context_update_data->pcf_ue_callback_info);
+    if (pcf_ue_callback_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_sm_context_update_data_convertToJSON() failed [pcf_ue_callback_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "pcfUeCallbackInfo", pcf_ue_callback_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_sm_context_update_data_convertToJSON() failed [pcf_ue_callback_info]");
+        goto end;
+    }
+    }
+
+    if (sm_context_update_data->satellite_backhaul_cat != OpenAPI_satellite_backhaul_category_NULL) {
+    if (cJSON_AddStringToObject(item, "satelliteBackhaulCat", OpenAPI_satellite_backhaul_category_ToString(sm_context_update_data->satellite_backhaul_cat)) == NULL) {
+        ogs_error("OpenAPI_sm_context_update_data_convertToJSON() failed [satellite_backhaul_cat]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -816,6 +940,9 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_parseFromJSON(c
     OpenAPI_list_t *n9_dl_forwarding_tnl_listList = NULL;
     cJSON *n9_ul_forwarding_tnl_list = NULL;
     OpenAPI_list_t *n9_ul_forwarding_tnl_listList = NULL;
+    cJSON *n9_dl_forwarding_tunnel = NULL;
+    OpenAPI_tunnel_info_t *n9_dl_forwarding_tunnel_local_nonprim = NULL;
+    cJSON *n9_inactivity_timer = NULL;
     cJSON *eps_bearer_setup = NULL;
     OpenAPI_list_t *eps_bearer_setupList = NULL;
     cJSON *revoke_ebi_list = NULL;
@@ -852,6 +979,15 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_parseFromJSON(c
     OpenAPI_list_t *forwarding_bearer_contextsList = NULL;
     cJSON *ddn_failure_subs = NULL;
     OpenAPI_ddn_failure_subs_t *ddn_failure_subs_local_nonprim = NULL;
+    cJSON *skip_n2_pdu_session_res_rel_ind = NULL;
+    cJSON *secondary_rat_usage_data_report_container = NULL;
+    OpenAPI_list_t *secondary_rat_usage_data_report_containerList = NULL;
+    cJSON *sm_policy_notify_ind = NULL;
+    OpenAPI_sm_context_update_data_sm_policy_notify_ind_e sm_policy_notify_indVariable = 0;
+    cJSON *pcf_ue_callback_info = NULL;
+    OpenAPI_pcf_ue_callback_info_t *pcf_ue_callback_info_local_nonprim = NULL;
+    cJSON *satellite_backhaul_cat = NULL;
+    OpenAPI_satellite_backhaul_category_e satellite_backhaul_catVariable = 0;
     pei = cJSON_GetObjectItemCaseSensitive(sm_context_update_dataJSON, "pei");
     if (pei) {
     if (!cJSON_IsString(pei) && !cJSON_IsNull(pei)) {
@@ -1103,6 +1239,19 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_parseFromJSON(c
         }
     }
 
+    n9_dl_forwarding_tunnel = cJSON_GetObjectItemCaseSensitive(sm_context_update_dataJSON, "n9DlForwardingTunnel");
+    if (n9_dl_forwarding_tunnel) {
+    n9_dl_forwarding_tunnel_local_nonprim = OpenAPI_tunnel_info_parseFromJSON(n9_dl_forwarding_tunnel);
+    }
+
+    n9_inactivity_timer = cJSON_GetObjectItemCaseSensitive(sm_context_update_dataJSON, "n9InactivityTimer");
+    if (n9_inactivity_timer) {
+    if (!cJSON_IsNumber(n9_inactivity_timer)) {
+        ogs_error("OpenAPI_sm_context_update_data_parseFromJSON() failed [n9_inactivity_timer]");
+        goto end;
+    }
+    }
+
     eps_bearer_setup = cJSON_GetObjectItemCaseSensitive(sm_context_update_dataJSON, "epsBearerSetup");
     if (eps_bearer_setup) {
         cJSON *eps_bearer_setup_local = NULL;
@@ -1307,6 +1456,58 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_parseFromJSON(c
     ddn_failure_subs_local_nonprim = OpenAPI_ddn_failure_subs_parseFromJSON(ddn_failure_subs);
     }
 
+    skip_n2_pdu_session_res_rel_ind = cJSON_GetObjectItemCaseSensitive(sm_context_update_dataJSON, "skipN2PduSessionResRelInd");
+    if (skip_n2_pdu_session_res_rel_ind) {
+    if (!cJSON_IsBool(skip_n2_pdu_session_res_rel_ind)) {
+        ogs_error("OpenAPI_sm_context_update_data_parseFromJSON() failed [skip_n2_pdu_session_res_rel_ind]");
+        goto end;
+    }
+    }
+
+    secondary_rat_usage_data_report_container = cJSON_GetObjectItemCaseSensitive(sm_context_update_dataJSON, "secondaryRatUsageDataReportContainer");
+    if (secondary_rat_usage_data_report_container) {
+        cJSON *secondary_rat_usage_data_report_container_local = NULL;
+        if (!cJSON_IsArray(secondary_rat_usage_data_report_container)) {
+            ogs_error("OpenAPI_sm_context_update_data_parseFromJSON() failed [secondary_rat_usage_data_report_container]");
+            goto end;
+        }
+
+        secondary_rat_usage_data_report_containerList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(secondary_rat_usage_data_report_container_local, secondary_rat_usage_data_report_container) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(secondary_rat_usage_data_report_container_local)) {
+                ogs_error("OpenAPI_sm_context_update_data_parseFromJSON() failed [secondary_rat_usage_data_report_container]");
+                goto end;
+            }
+            OpenAPI_list_add(secondary_rat_usage_data_report_containerList, ogs_strdup(secondary_rat_usage_data_report_container_local->valuestring));
+        }
+    }
+
+    sm_policy_notify_ind = cJSON_GetObjectItemCaseSensitive(sm_context_update_dataJSON, "smPolicyNotifyInd");
+    if (sm_policy_notify_ind) {
+    if (!cJSON_IsString(sm_policy_notify_ind)) {
+        ogs_error("OpenAPI_sm_context_update_data_parseFromJSON() failed [sm_policy_notify_ind]");
+        goto end;
+    }
+    sm_policy_notify_indVariable = OpenAPI_sm_policy_notify_indsm_context_update_data_FromString(sm_policy_notify_ind->valuestring);
+    }
+
+    pcf_ue_callback_info = cJSON_GetObjectItemCaseSensitive(sm_context_update_dataJSON, "pcfUeCallbackInfo");
+    if (pcf_ue_callback_info) {
+    pcf_ue_callback_info_local_nonprim = OpenAPI_pcf_ue_callback_info_parseFromJSON(pcf_ue_callback_info);
+    }
+
+    satellite_backhaul_cat = cJSON_GetObjectItemCaseSensitive(sm_context_update_dataJSON, "satelliteBackhaulCat");
+    if (satellite_backhaul_cat) {
+    if (!cJSON_IsString(satellite_backhaul_cat)) {
+        ogs_error("OpenAPI_sm_context_update_data_parseFromJSON() failed [satellite_backhaul_cat]");
+        goto end;
+    }
+    satellite_backhaul_catVariable = OpenAPI_satellite_backhaul_category_FromString(satellite_backhaul_cat->valuestring);
+    }
+
     sm_context_update_data_local_var = OpenAPI_sm_context_update_data_create (
         pei && !cJSON_IsNull(pei) ? ogs_strdup(pei->valuestring) : NULL,
         serving_nf_id && !cJSON_IsNull(serving_nf_id) ? ogs_strdup(serving_nf_id->valuestring) : NULL,
@@ -1338,6 +1539,9 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_parseFromJSON(c
         n9_forwarding_tunnel ? n9_forwarding_tunnel_local_nonprim : NULL,
         n9_dl_forwarding_tnl_list ? n9_dl_forwarding_tnl_listList : NULL,
         n9_ul_forwarding_tnl_list ? n9_ul_forwarding_tnl_listList : NULL,
+        n9_dl_forwarding_tunnel ? n9_dl_forwarding_tunnel_local_nonprim : NULL,
+        n9_inactivity_timer ? true : false,
+        n9_inactivity_timer ? n9_inactivity_timer->valuedouble : 0,
         eps_bearer_setup ? eps_bearer_setupList : NULL,
         revoke_ebi_list ? revoke_ebi_listList : NULL,
         release ? true : false,
@@ -1365,7 +1569,13 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_parseFromJSON(c
         extended_nas_sm_timer_ind ? extended_nas_sm_timer_ind->valueint : 0,
         forwarding_f_teid && !cJSON_IsNull(forwarding_f_teid) ? ogs_strdup(forwarding_f_teid->valuestring) : NULL,
         forwarding_bearer_contexts ? forwarding_bearer_contextsList : NULL,
-        ddn_failure_subs ? ddn_failure_subs_local_nonprim : NULL
+        ddn_failure_subs ? ddn_failure_subs_local_nonprim : NULL,
+        skip_n2_pdu_session_res_rel_ind ? true : false,
+        skip_n2_pdu_session_res_rel_ind ? skip_n2_pdu_session_res_rel_ind->valueint : 0,
+        secondary_rat_usage_data_report_container ? secondary_rat_usage_data_report_containerList : NULL,
+        sm_policy_notify_ind ? sm_policy_notify_indVariable : 0,
+        pcf_ue_callback_info ? pcf_ue_callback_info_local_nonprim : NULL,
+        satellite_backhaul_cat ? satellite_backhaul_catVariable : 0
     );
 
     return sm_context_update_data_local_var;
@@ -1423,6 +1633,10 @@ end:
         OpenAPI_list_free(n9_ul_forwarding_tnl_listList);
         n9_ul_forwarding_tnl_listList = NULL;
     }
+    if (n9_dl_forwarding_tunnel_local_nonprim) {
+        OpenAPI_tunnel_info_free(n9_dl_forwarding_tunnel_local_nonprim);
+        n9_dl_forwarding_tunnel_local_nonprim = NULL;
+    }
     if (eps_bearer_setupList) {
         OpenAPI_list_for_each(eps_bearer_setupList, node) {
             ogs_free(node->data);
@@ -1471,6 +1685,17 @@ end:
     if (ddn_failure_subs_local_nonprim) {
         OpenAPI_ddn_failure_subs_free(ddn_failure_subs_local_nonprim);
         ddn_failure_subs_local_nonprim = NULL;
+    }
+    if (secondary_rat_usage_data_report_containerList) {
+        OpenAPI_list_for_each(secondary_rat_usage_data_report_containerList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(secondary_rat_usage_data_report_containerList);
+        secondary_rat_usage_data_report_containerList = NULL;
+    }
+    if (pcf_ue_callback_info_local_nonprim) {
+        OpenAPI_pcf_ue_callback_info_free(pcf_ue_callback_info_local_nonprim);
+        pcf_ue_callback_info_local_nonprim = NULL;
     }
     return NULL;
 }

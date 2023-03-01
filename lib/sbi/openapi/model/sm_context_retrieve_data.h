@@ -1,7 +1,7 @@
 /*
  * sm_context_retrieve_data.h
  *
- * 
+ * Data within Retrieve SM Context Request
  */
 
 #ifndef _OpenAPI_sm_context_retrieve_data_H_

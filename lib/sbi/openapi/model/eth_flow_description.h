@@ -1,7 +1,7 @@
 /*
  * eth_flow_description.h
  *
- * Identifies an Ethernet flow
+ * Identifies an Ethernet flow.
  */
 
 #ifndef _OpenAPI_eth_flow_description_H_

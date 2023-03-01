@@ -1,7 +1,7 @@
 /*
  * ellipsoid_arc.h
  *
- * 
+ * Ellipsoid Arc.
  */
 
 #ifndef _OpenAPI_ellipsoid_arc_H_

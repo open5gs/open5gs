@@ -38,6 +38,7 @@ typedef struct OpenAPI_create_ue_context_request_s {
     OpenAPI_binary_t* binary_data_n2_information_ext14;
     OpenAPI_binary_t* binary_data_n2_information_ext15;
     OpenAPI_binary_t* binary_data_n2_information_ext16;
+    OpenAPI_binary_t* binary_data_n2_information_ext17;
 } OpenAPI_create_ue_context_request_t;
 
 OpenAPI_create_ue_context_request_t *OpenAPI_create_ue_context_request_create(
@@ -58,7 +59,8 @@ OpenAPI_create_ue_context_request_t *OpenAPI_create_ue_context_request_create(
     OpenAPI_binary_t* binary_data_n2_information_ext13,
     OpenAPI_binary_t* binary_data_n2_information_ext14,
     OpenAPI_binary_t* binary_data_n2_information_ext15,
-    OpenAPI_binary_t* binary_data_n2_information_ext16
+    OpenAPI_binary_t* binary_data_n2_information_ext16,
+    OpenAPI_binary_t* binary_data_n2_information_ext17
 );
 void OpenAPI_create_ue_context_request_free(OpenAPI_create_ue_context_request_t *create_ue_context_request);
 OpenAPI_create_ue_context_request_t *OpenAPI_create_ue_context_request_parseFromJSON(cJSON *create_ue_context_requestJSON);

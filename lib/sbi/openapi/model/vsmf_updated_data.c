@@ -21,7 +21,8 @@ OpenAPI_vsmf_updated_data_t *OpenAPI_vsmf_updated_data_create(
     OpenAPI_list_t *secondary_rat_usage_info,
     OpenAPI_n4_information_t *n4_info,
     OpenAPI_n4_information_t *n4_info_ext1,
-    OpenAPI_n4_information_t *n4_info_ext2
+    OpenAPI_n4_information_t *n4_info_ext2,
+    OpenAPI_n4_information_t *n4_info_ext3
 )
 {
     OpenAPI_vsmf_updated_data_t *vsmf_updated_data_local_var = ogs_malloc(sizeof(OpenAPI_vsmf_updated_data_t));
@@ -44,6 +45,7 @@ OpenAPI_vsmf_updated_data_t *OpenAPI_vsmf_updated_data_create(
     vsmf_updated_data_local_var->n4_info = n4_info;
     vsmf_updated_data_local_var->n4_info_ext1 = n4_info_ext1;
     vsmf_updated_data_local_var->n4_info_ext2 = n4_info_ext2;
+    vsmf_updated_data_local_var->n4_info_ext3 = n4_info_ext3;
 
     return vsmf_updated_data_local_var;
 }
@@ -149,6 +151,10 @@ void OpenAPI_vsmf_updated_data_free(OpenAPI_vsmf_updated_data_t *vsmf_updated_da
     if (vsmf_updated_data->n4_info_ext2) {
         OpenAPI_n4_information_free(vsmf_updated_data->n4_info_ext2);
         vsmf_updated_data->n4_info_ext2 = NULL;
+    }
+    if (vsmf_updated_data->n4_info_ext3) {
+        OpenAPI_n4_information_free(vsmf_updated_data->n4_info_ext3);
+        vsmf_updated_data->n4_info_ext3 = NULL;
     }
     ogs_free(vsmf_updated_data);
 }
@@ -404,6 +410,19 @@ cJSON *OpenAPI_vsmf_updated_data_convertToJSON(OpenAPI_vsmf_updated_data_t *vsmf
     }
     }
 
+    if (vsmf_updated_data->n4_info_ext3) {
+    cJSON *n4_info_ext3_local_JSON = OpenAPI_n4_information_convertToJSON(vsmf_updated_data->n4_info_ext3);
+    if (n4_info_ext3_local_JSON == NULL) {
+        ogs_error("OpenAPI_vsmf_updated_data_convertToJSON() failed [n4_info_ext3]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "n4InfoExt3", n4_info_ext3_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_vsmf_updated_data_convertToJSON() failed [n4_info_ext3]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -445,6 +464,8 @@ OpenAPI_vsmf_updated_data_t *OpenAPI_vsmf_updated_data_parseFromJSON(cJSON *vsmf
     OpenAPI_n4_information_t *n4_info_ext1_local_nonprim = NULL;
     cJSON *n4_info_ext2 = NULL;
     OpenAPI_n4_information_t *n4_info_ext2_local_nonprim = NULL;
+    cJSON *n4_info_ext3 = NULL;
+    OpenAPI_n4_information_t *n4_info_ext3_local_nonprim = NULL;
     qos_flows_add_mod_list = cJSON_GetObjectItemCaseSensitive(vsmf_updated_dataJSON, "qosFlowsAddModList");
     if (qos_flows_add_mod_list) {
         cJSON *qos_flows_add_mod_list_local = NULL;
@@ -715,6 +736,11 @@ OpenAPI_vsmf_updated_data_t *OpenAPI_vsmf_updated_data_parseFromJSON(cJSON *vsmf
     n4_info_ext2_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info_ext2);
     }
 
+    n4_info_ext3 = cJSON_GetObjectItemCaseSensitive(vsmf_updated_dataJSON, "n4InfoExt3");
+    if (n4_info_ext3) {
+    n4_info_ext3_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info_ext3);
+    }
+
     vsmf_updated_data_local_var = OpenAPI_vsmf_updated_data_create (
         qos_flows_add_mod_list ? qos_flows_add_mod_listList : NULL,
         qos_flows_rel_list ? qos_flows_rel_listList : NULL,
@@ -732,7 +758,8 @@ OpenAPI_vsmf_updated_data_t *OpenAPI_vsmf_updated_data_parseFromJSON(cJSON *vsmf
         secondary_rat_usage_info ? secondary_rat_usage_infoList : NULL,
         n4_info ? n4_info_local_nonprim : NULL,
         n4_info_ext1 ? n4_info_ext1_local_nonprim : NULL,
-        n4_info_ext2 ? n4_info_ext2_local_nonprim : NULL
+        n4_info_ext2 ? n4_info_ext2_local_nonprim : NULL,
+        n4_info_ext3 ? n4_info_ext3_local_nonprim : NULL
     );
 
     return vsmf_updated_data_local_var;
@@ -827,6 +854,10 @@ end:
     if (n4_info_ext2_local_nonprim) {
         OpenAPI_n4_information_free(n4_info_ext2_local_nonprim);
         n4_info_ext2_local_nonprim = NULL;
+    }
+    if (n4_info_ext3_local_nonprim) {
+        OpenAPI_n4_information_free(n4_info_ext3_local_nonprim);
+        n4_info_ext3_local_nonprim = NULL;
     }
     return NULL;
 }

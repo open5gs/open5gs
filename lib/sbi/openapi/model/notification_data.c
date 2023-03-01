@@ -9,7 +9,8 @@ OpenAPI_notification_data_t *OpenAPI_notification_data_create(
     char *nf_instance_uri,
     OpenAPI_nf_profile_t *nf_profile,
     OpenAPI_list_t *profile_changes,
-    OpenAPI_condition_event_type_e condition_event
+    OpenAPI_condition_event_type_e condition_event,
+    OpenAPI_subscription_context_t *subscription_context
 )
 {
     OpenAPI_notification_data_t *notification_data_local_var = ogs_malloc(sizeof(OpenAPI_notification_data_t));
@@ -20,6 +21,7 @@ OpenAPI_notification_data_t *OpenAPI_notification_data_create(
     notification_data_local_var->nf_profile = nf_profile;
     notification_data_local_var->profile_changes = profile_changes;
     notification_data_local_var->condition_event = condition_event;
+    notification_data_local_var->subscription_context = subscription_context;
 
     return notification_data_local_var;
 }
@@ -45,6 +47,10 @@ void OpenAPI_notification_data_free(OpenAPI_notification_data_t *notification_da
         }
         OpenAPI_list_free(notification_data->profile_changes);
         notification_data->profile_changes = NULL;
+    }
+    if (notification_data->subscription_context) {
+        OpenAPI_subscription_context_free(notification_data->subscription_context);
+        notification_data->subscription_context = NULL;
     }
     ogs_free(notification_data);
 }
@@ -114,6 +120,19 @@ cJSON *OpenAPI_notification_data_convertToJSON(OpenAPI_notification_data_t *noti
     }
     }
 
+    if (notification_data->subscription_context) {
+    cJSON *subscription_context_local_JSON = OpenAPI_subscription_context_convertToJSON(notification_data->subscription_context);
+    if (subscription_context_local_JSON == NULL) {
+        ogs_error("OpenAPI_notification_data_convertToJSON() failed [subscription_context]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "subscriptionContext", subscription_context_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_notification_data_convertToJSON() failed [subscription_context]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -131,6 +150,8 @@ OpenAPI_notification_data_t *OpenAPI_notification_data_parseFromJSON(cJSON *noti
     OpenAPI_list_t *profile_changesList = NULL;
     cJSON *condition_event = NULL;
     OpenAPI_condition_event_type_e condition_eventVariable = 0;
+    cJSON *subscription_context = NULL;
+    OpenAPI_subscription_context_t *subscription_context_local_nonprim = NULL;
     event = cJSON_GetObjectItemCaseSensitive(notification_dataJSON, "event");
     if (!event) {
         ogs_error("OpenAPI_notification_data_parseFromJSON() failed [event]");
@@ -191,12 +212,18 @@ OpenAPI_notification_data_t *OpenAPI_notification_data_parseFromJSON(cJSON *noti
     condition_eventVariable = OpenAPI_condition_event_type_FromString(condition_event->valuestring);
     }
 
+    subscription_context = cJSON_GetObjectItemCaseSensitive(notification_dataJSON, "subscriptionContext");
+    if (subscription_context) {
+    subscription_context_local_nonprim = OpenAPI_subscription_context_parseFromJSON(subscription_context);
+    }
+
     notification_data_local_var = OpenAPI_notification_data_create (
         eventVariable,
         ogs_strdup(nf_instance_uri->valuestring),
         nf_profile ? nf_profile_local_nonprim : NULL,
         profile_changes ? profile_changesList : NULL,
-        condition_event ? condition_eventVariable : 0
+        condition_event ? condition_eventVariable : 0,
+        subscription_context ? subscription_context_local_nonprim : NULL
     );
 
     return notification_data_local_var;
@@ -211,6 +238,10 @@ end:
         }
         OpenAPI_list_free(profile_changesList);
         profile_changesList = NULL;
+    }
+    if (subscription_context_local_nonprim) {
+        OpenAPI_subscription_context_free(subscription_context_local_nonprim);
+        subscription_context_local_nonprim = NULL;
     }
     return NULL;
 }

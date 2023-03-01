@@ -1,7 +1,7 @@
 /*
  * ue_context_transfer_rsp_data.h
  *
- * 
+ * Data within a successful response to the UE Context Transfer request
  */
 
 #ifndef _OpenAPI_ue_context_transfer_rsp_data_H_
@@ -23,6 +23,7 @@ typedef struct OpenAPI_ue_context_transfer_rsp_data_s OpenAPI_ue_context_transfe
 typedef struct OpenAPI_ue_context_transfer_rsp_data_s {
     struct OpenAPI_ue_context_s *ue_context;
     struct OpenAPI_n2_info_content_s *ue_radio_capability;
+    struct OpenAPI_n2_info_content_s *ue_radio_capability_for_paging;
     struct OpenAPI_n2_info_content_s *ue_nbiot_radio_capability;
     char *supported_features;
 } OpenAPI_ue_context_transfer_rsp_data_t;
@@ -30,6 +31,7 @@ typedef struct OpenAPI_ue_context_transfer_rsp_data_s {
 OpenAPI_ue_context_transfer_rsp_data_t *OpenAPI_ue_context_transfer_rsp_data_create(
     OpenAPI_ue_context_t *ue_context,
     OpenAPI_n2_info_content_t *ue_radio_capability,
+    OpenAPI_n2_info_content_t *ue_radio_capability_for_paging,
     OpenAPI_n2_info_content_t *ue_nbiot_radio_capability,
     char *supported_features
 );

@@ -1,7 +1,7 @@
 /*
  * n2_sm_information.h
  *
- * 
+ * Represents the session management SMF related N2 information data part
  */
 
 #ifndef _OpenAPI_n2_sm_information_H_

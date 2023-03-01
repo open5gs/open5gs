@@ -10,7 +10,9 @@ OpenAPI_eap_session_t *OpenAPI_eap_session_create(
     OpenAPI_list_t* _links,
     OpenAPI_auth_result_e auth_result,
     char *supi,
-    char *supported_features
+    char *supported_features,
+    OpenAPI_list_t *pvs_info,
+    char *msk
 )
 {
     OpenAPI_eap_session_t *eap_session_local_var = ogs_malloc(sizeof(OpenAPI_eap_session_t));
@@ -22,6 +24,8 @@ OpenAPI_eap_session_t *OpenAPI_eap_session_create(
     eap_session_local_var->auth_result = auth_result;
     eap_session_local_var->supi = supi;
     eap_session_local_var->supported_features = supported_features;
+    eap_session_local_var->pvs_info = pvs_info;
+    eap_session_local_var->msk = msk;
 
     return eap_session_local_var;
 }
@@ -58,6 +62,17 @@ void OpenAPI_eap_session_free(OpenAPI_eap_session_t *eap_session)
     if (eap_session->supported_features) {
         ogs_free(eap_session->supported_features);
         eap_session->supported_features = NULL;
+    }
+    if (eap_session->pvs_info) {
+        OpenAPI_list_for_each(eap_session->pvs_info, node) {
+            OpenAPI_server_addressing_info_free(node->data);
+        }
+        OpenAPI_list_free(eap_session->pvs_info);
+        eap_session->pvs_info = NULL;
+    }
+    if (eap_session->msk) {
+        ogs_free(eap_session->msk);
+        eap_session->msk = NULL;
     }
     ogs_free(eap_session);
 }
@@ -132,6 +147,29 @@ cJSON *OpenAPI_eap_session_convertToJSON(OpenAPI_eap_session_t *eap_session)
     }
     }
 
+    if (eap_session->pvs_info) {
+    cJSON *pvs_infoList = cJSON_AddArrayToObject(item, "pvsInfo");
+    if (pvs_infoList == NULL) {
+        ogs_error("OpenAPI_eap_session_convertToJSON() failed [pvs_info]");
+        goto end;
+    }
+    OpenAPI_list_for_each(eap_session->pvs_info, node) {
+        cJSON *itemLocal = OpenAPI_server_addressing_info_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_eap_session_convertToJSON() failed [pvs_info]");
+            goto end;
+        }
+        cJSON_AddItemToArray(pvs_infoList, itemLocal);
+    }
+    }
+
+    if (eap_session->msk) {
+    if (cJSON_AddStringToObject(item, "msk", eap_session->msk) == NULL) {
+        ogs_error("OpenAPI_eap_session_convertToJSON() failed [msk]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -148,6 +186,9 @@ OpenAPI_eap_session_t *OpenAPI_eap_session_parseFromJSON(cJSON *eap_sessionJSON)
     OpenAPI_auth_result_e auth_resultVariable = 0;
     cJSON *supi = NULL;
     cJSON *supported_features = NULL;
+    cJSON *pvs_info = NULL;
+    OpenAPI_list_t *pvs_infoList = NULL;
+    cJSON *msk = NULL;
     eap_payload = cJSON_GetObjectItemCaseSensitive(eap_sessionJSON, "eapPayload");
     if (!eap_payload) {
         ogs_error("OpenAPI_eap_session_parseFromJSON() failed [eap_payload]");
@@ -217,13 +258,48 @@ OpenAPI_eap_session_t *OpenAPI_eap_session_parseFromJSON(cJSON *eap_sessionJSON)
     }
     }
 
+    pvs_info = cJSON_GetObjectItemCaseSensitive(eap_sessionJSON, "pvsInfo");
+    if (pvs_info) {
+        cJSON *pvs_info_local = NULL;
+        if (!cJSON_IsArray(pvs_info)) {
+            ogs_error("OpenAPI_eap_session_parseFromJSON() failed [pvs_info]");
+            goto end;
+        }
+
+        pvs_infoList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(pvs_info_local, pvs_info) {
+            if (!cJSON_IsObject(pvs_info_local)) {
+                ogs_error("OpenAPI_eap_session_parseFromJSON() failed [pvs_info]");
+                goto end;
+            }
+            OpenAPI_server_addressing_info_t *pvs_infoItem = OpenAPI_server_addressing_info_parseFromJSON(pvs_info_local);
+            if (!pvs_infoItem) {
+                ogs_error("No pvs_infoItem");
+                OpenAPI_list_free(pvs_infoList);
+                goto end;
+            }
+            OpenAPI_list_add(pvs_infoList, pvs_infoItem);
+        }
+    }
+
+    msk = cJSON_GetObjectItemCaseSensitive(eap_sessionJSON, "msk");
+    if (msk) {
+    if (!cJSON_IsString(msk) && !cJSON_IsNull(msk)) {
+        ogs_error("OpenAPI_eap_session_parseFromJSON() failed [msk]");
+        goto end;
+    }
+    }
+
     eap_session_local_var = OpenAPI_eap_session_create (
         ogs_strdup(eap_payload->valuestring),
         k_seaf && !cJSON_IsNull(k_seaf) ? ogs_strdup(k_seaf->valuestring) : NULL,
         _links ? _linksList : NULL,
         auth_result ? auth_resultVariable : 0,
         supi && !cJSON_IsNull(supi) ? ogs_strdup(supi->valuestring) : NULL,
-        supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL
+        supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
+        pvs_info ? pvs_infoList : NULL,
+        msk && !cJSON_IsNull(msk) ? ogs_strdup(msk->valuestring) : NULL
     );
 
     return eap_session_local_var;
@@ -237,6 +313,13 @@ end:
         }
         OpenAPI_list_free(_linksList);
         _linksList = NULL;
+    }
+    if (pvs_infoList) {
+        OpenAPI_list_for_each(pvs_infoList, node) {
+            OpenAPI_server_addressing_info_free(node->data);
+        }
+        OpenAPI_list_free(pvs_infoList);
+        pvs_infoList = NULL;
     }
     return NULL;
 }

@@ -12,6 +12,7 @@ OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_create(
     OpenAPI_list_t *dnai_list,
     char *supported_features,
     OpenAPI_roaming_charging_profile_t *roaming_charging_profile,
+    char *home_provided_charging_id,
     OpenAPI_up_security_t *up_security,
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_ul,
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dl,
@@ -22,7 +23,9 @@ OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_create(
     OpenAPI_eps_pdn_cnx_info_t *eps_pdn_cnx_info,
     OpenAPI_list_t *eps_bearer_info,
     bool is_pti,
-    int pti
+    int pti,
+    char *inter_plmn_api_root,
+    char *intra_plmn_api_root
 )
 {
     OpenAPI_hsmf_updated_data_t *hsmf_updated_data_local_var = ogs_malloc(sizeof(OpenAPI_hsmf_updated_data_t));
@@ -35,6 +38,7 @@ OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_create(
     hsmf_updated_data_local_var->dnai_list = dnai_list;
     hsmf_updated_data_local_var->supported_features = supported_features;
     hsmf_updated_data_local_var->roaming_charging_profile = roaming_charging_profile;
+    hsmf_updated_data_local_var->home_provided_charging_id = home_provided_charging_id;
     hsmf_updated_data_local_var->up_security = up_security;
     hsmf_updated_data_local_var->max_integrity_protected_data_rate_ul = max_integrity_protected_data_rate_ul;
     hsmf_updated_data_local_var->max_integrity_protected_data_rate_dl = max_integrity_protected_data_rate_dl;
@@ -46,6 +50,8 @@ OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_create(
     hsmf_updated_data_local_var->eps_bearer_info = eps_bearer_info;
     hsmf_updated_data_local_var->is_pti = is_pti;
     hsmf_updated_data_local_var->pti = pti;
+    hsmf_updated_data_local_var->inter_plmn_api_root = inter_plmn_api_root;
+    hsmf_updated_data_local_var->intra_plmn_api_root = intra_plmn_api_root;
 
     return hsmf_updated_data_local_var;
 }
@@ -88,6 +94,10 @@ void OpenAPI_hsmf_updated_data_free(OpenAPI_hsmf_updated_data_t *hsmf_updated_da
         OpenAPI_roaming_charging_profile_free(hsmf_updated_data->roaming_charging_profile);
         hsmf_updated_data->roaming_charging_profile = NULL;
     }
+    if (hsmf_updated_data->home_provided_charging_id) {
+        ogs_free(hsmf_updated_data->home_provided_charging_id);
+        hsmf_updated_data->home_provided_charging_id = NULL;
+    }
     if (hsmf_updated_data->up_security) {
         OpenAPI_up_security_free(hsmf_updated_data->up_security);
         hsmf_updated_data->up_security = NULL;
@@ -113,6 +123,14 @@ void OpenAPI_hsmf_updated_data_free(OpenAPI_hsmf_updated_data_t *hsmf_updated_da
         }
         OpenAPI_list_free(hsmf_updated_data->eps_bearer_info);
         hsmf_updated_data->eps_bearer_info = NULL;
+    }
+    if (hsmf_updated_data->inter_plmn_api_root) {
+        ogs_free(hsmf_updated_data->inter_plmn_api_root);
+        hsmf_updated_data->inter_plmn_api_root = NULL;
+    }
+    if (hsmf_updated_data->intra_plmn_api_root) {
+        ogs_free(hsmf_updated_data->intra_plmn_api_root);
+        hsmf_updated_data->intra_plmn_api_root = NULL;
     }
     ogs_free(hsmf_updated_data);
 }
@@ -210,6 +228,13 @@ cJSON *OpenAPI_hsmf_updated_data_convertToJSON(OpenAPI_hsmf_updated_data_t *hsmf
     cJSON_AddItemToObject(item, "roamingChargingProfile", roaming_charging_profile_local_JSON);
     if (item->child == NULL) {
         ogs_error("OpenAPI_hsmf_updated_data_convertToJSON() failed [roaming_charging_profile]");
+        goto end;
+    }
+    }
+
+    if (hsmf_updated_data->home_provided_charging_id) {
+    if (cJSON_AddStringToObject(item, "homeProvidedChargingId", hsmf_updated_data->home_provided_charging_id) == NULL) {
+        ogs_error("OpenAPI_hsmf_updated_data_convertToJSON() failed [home_provided_charging_id]");
         goto end;
     }
     }
@@ -313,6 +338,20 @@ cJSON *OpenAPI_hsmf_updated_data_convertToJSON(OpenAPI_hsmf_updated_data_t *hsmf
     }
     }
 
+    if (hsmf_updated_data->inter_plmn_api_root) {
+    if (cJSON_AddStringToObject(item, "interPlmnApiRoot", hsmf_updated_data->inter_plmn_api_root) == NULL) {
+        ogs_error("OpenAPI_hsmf_updated_data_convertToJSON() failed [inter_plmn_api_root]");
+        goto end;
+    }
+    }
+
+    if (hsmf_updated_data->intra_plmn_api_root) {
+    if (cJSON_AddStringToObject(item, "intraPlmnApiRoot", hsmf_updated_data->intra_plmn_api_root) == NULL) {
+        ogs_error("OpenAPI_hsmf_updated_data_convertToJSON() failed [intra_plmn_api_root]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -334,6 +373,7 @@ OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_parseFromJSON(cJSON *hsmf
     cJSON *supported_features = NULL;
     cJSON *roaming_charging_profile = NULL;
     OpenAPI_roaming_charging_profile_t *roaming_charging_profile_local_nonprim = NULL;
+    cJSON *home_provided_charging_id = NULL;
     cJSON *up_security = NULL;
     OpenAPI_up_security_t *up_security_local_nonprim = NULL;
     cJSON *max_integrity_protected_data_rate_ul = NULL;
@@ -350,6 +390,8 @@ OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_parseFromJSON(cJSON *hsmf
     cJSON *eps_bearer_info = NULL;
     OpenAPI_list_t *eps_bearer_infoList = NULL;
     cJSON *pti = NULL;
+    cJSON *inter_plmn_api_root = NULL;
+    cJSON *intra_plmn_api_root = NULL;
     n1_sm_info_to_ue = cJSON_GetObjectItemCaseSensitive(hsmf_updated_dataJSON, "n1SmInfoToUe");
     if (n1_sm_info_to_ue) {
     n1_sm_info_to_ue_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(n1_sm_info_to_ue);
@@ -402,6 +444,14 @@ OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_parseFromJSON(cJSON *hsmf
     roaming_charging_profile = cJSON_GetObjectItemCaseSensitive(hsmf_updated_dataJSON, "roamingChargingProfile");
     if (roaming_charging_profile) {
     roaming_charging_profile_local_nonprim = OpenAPI_roaming_charging_profile_parseFromJSON(roaming_charging_profile);
+    }
+
+    home_provided_charging_id = cJSON_GetObjectItemCaseSensitive(hsmf_updated_dataJSON, "homeProvidedChargingId");
+    if (home_provided_charging_id) {
+    if (!cJSON_IsString(home_provided_charging_id) && !cJSON_IsNull(home_provided_charging_id)) {
+        ogs_error("OpenAPI_hsmf_updated_data_parseFromJSON() failed [home_provided_charging_id]");
+        goto end;
+    }
     }
 
     up_security = cJSON_GetObjectItemCaseSensitive(hsmf_updated_dataJSON, "upSecurity");
@@ -503,6 +553,22 @@ OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_parseFromJSON(cJSON *hsmf
     }
     }
 
+    inter_plmn_api_root = cJSON_GetObjectItemCaseSensitive(hsmf_updated_dataJSON, "interPlmnApiRoot");
+    if (inter_plmn_api_root) {
+    if (!cJSON_IsString(inter_plmn_api_root) && !cJSON_IsNull(inter_plmn_api_root)) {
+        ogs_error("OpenAPI_hsmf_updated_data_parseFromJSON() failed [inter_plmn_api_root]");
+        goto end;
+    }
+    }
+
+    intra_plmn_api_root = cJSON_GetObjectItemCaseSensitive(hsmf_updated_dataJSON, "intraPlmnApiRoot");
+    if (intra_plmn_api_root) {
+    if (!cJSON_IsString(intra_plmn_api_root) && !cJSON_IsNull(intra_plmn_api_root)) {
+        ogs_error("OpenAPI_hsmf_updated_data_parseFromJSON() failed [intra_plmn_api_root]");
+        goto end;
+    }
+    }
+
     hsmf_updated_data_local_var = OpenAPI_hsmf_updated_data_create (
         n1_sm_info_to_ue ? n1_sm_info_to_ue_local_nonprim : NULL,
         n4_info ? n4_info_local_nonprim : NULL,
@@ -511,6 +577,7 @@ OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_parseFromJSON(cJSON *hsmf
         dnai_list ? dnai_listList : NULL,
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
         roaming_charging_profile ? roaming_charging_profile_local_nonprim : NULL,
+        home_provided_charging_id && !cJSON_IsNull(home_provided_charging_id) ? ogs_strdup(home_provided_charging_id->valuestring) : NULL,
         up_security ? up_security_local_nonprim : NULL,
         max_integrity_protected_data_rate_ul ? max_integrity_protected_data_rate_ulVariable : 0,
         max_integrity_protected_data_rate_dl ? max_integrity_protected_data_rate_dlVariable : 0,
@@ -521,7 +588,9 @@ OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_parseFromJSON(cJSON *hsmf
         eps_pdn_cnx_info ? eps_pdn_cnx_info_local_nonprim : NULL,
         eps_bearer_info ? eps_bearer_infoList : NULL,
         pti ? true : false,
-        pti ? pti->valuedouble : 0
+        pti ? pti->valuedouble : 0,
+        inter_plmn_api_root && !cJSON_IsNull(inter_plmn_api_root) ? ogs_strdup(inter_plmn_api_root->valuestring) : NULL,
+        intra_plmn_api_root && !cJSON_IsNull(intra_plmn_api_root) ? ogs_strdup(intra_plmn_api_root->valuestring) : NULL
     );
 
     return hsmf_updated_data_local_var;

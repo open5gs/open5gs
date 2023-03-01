@@ -1,7 +1,7 @@
 /*
  * configured_snssai.h
  *
- * 
+ * Contains the configured S-NSSAI(s) authorized by the NSSF in the serving PLMN and optional mapped home S-NSSAI
  */
 
 #ifndef _OpenAPI_configured_snssai_H_

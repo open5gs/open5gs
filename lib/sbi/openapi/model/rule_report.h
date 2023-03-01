@@ -1,7 +1,7 @@
 /*
  * rule_report.h
  *
- * 
+ * Reports the status of PCC.
  */
 
 #ifndef _OpenAPI_rule_report_H_
@@ -29,6 +29,7 @@ typedef struct OpenAPI_rule_report_s {
     OpenAPI_failure_code_e failure_code;
     struct OpenAPI_final_unit_action_s *fin_unit_act;
     OpenAPI_list_t *ran_nas_rel_causes;
+    char *alt_qos_param_id;
 } OpenAPI_rule_report_t;
 
 OpenAPI_rule_report_t *OpenAPI_rule_report_create(
@@ -37,7 +38,8 @@ OpenAPI_rule_report_t *OpenAPI_rule_report_create(
     OpenAPI_list_t *cont_vers,
     OpenAPI_failure_code_e failure_code,
     OpenAPI_final_unit_action_t *fin_unit_act,
-    OpenAPI_list_t *ran_nas_rel_causes
+    OpenAPI_list_t *ran_nas_rel_causes,
+    char *alt_qos_param_id
 );
 void OpenAPI_rule_report_free(OpenAPI_rule_report_t *rule_report);
 OpenAPI_rule_report_t *OpenAPI_rule_report_parseFromJSON(cJSON *rule_reportJSON);

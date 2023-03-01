@@ -12,7 +12,11 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_create(
     char *rx_diam_host,
     char *rx_diam_realm,
     bool is_v2x_support_ind,
-    int v2x_support_ind
+    int v2x_support_ind,
+    bool is_prose_support_ind,
+    int prose_support_ind,
+    OpenAPI_pro_se_capability_t *prose_capability,
+    OpenAPI_v2x_capability_t *v2x_capability
 )
 {
     OpenAPI_pcf_info_t *pcf_info_local_var = ogs_malloc(sizeof(OpenAPI_pcf_info_t));
@@ -26,6 +30,10 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_create(
     pcf_info_local_var->rx_diam_realm = rx_diam_realm;
     pcf_info_local_var->is_v2x_support_ind = is_v2x_support_ind;
     pcf_info_local_var->v2x_support_ind = v2x_support_ind;
+    pcf_info_local_var->is_prose_support_ind = is_prose_support_ind;
+    pcf_info_local_var->prose_support_ind = prose_support_ind;
+    pcf_info_local_var->prose_capability = prose_capability;
+    pcf_info_local_var->v2x_capability = v2x_capability;
 
     return pcf_info_local_var;
 }
@@ -69,6 +77,14 @@ void OpenAPI_pcf_info_free(OpenAPI_pcf_info_t *pcf_info)
     if (pcf_info->rx_diam_realm) {
         ogs_free(pcf_info->rx_diam_realm);
         pcf_info->rx_diam_realm = NULL;
+    }
+    if (pcf_info->prose_capability) {
+        OpenAPI_pro_se_capability_free(pcf_info->prose_capability);
+        pcf_info->prose_capability = NULL;
+    }
+    if (pcf_info->v2x_capability) {
+        OpenAPI_v2x_capability_free(pcf_info->v2x_capability);
+        pcf_info->v2x_capability = NULL;
     }
     ogs_free(pcf_info);
 }
@@ -158,6 +174,39 @@ cJSON *OpenAPI_pcf_info_convertToJSON(OpenAPI_pcf_info_t *pcf_info)
     }
     }
 
+    if (pcf_info->is_prose_support_ind) {
+    if (cJSON_AddBoolToObject(item, "proseSupportInd", pcf_info->prose_support_ind) == NULL) {
+        ogs_error("OpenAPI_pcf_info_convertToJSON() failed [prose_support_ind]");
+        goto end;
+    }
+    }
+
+    if (pcf_info->prose_capability) {
+    cJSON *prose_capability_local_JSON = OpenAPI_pro_se_capability_convertToJSON(pcf_info->prose_capability);
+    if (prose_capability_local_JSON == NULL) {
+        ogs_error("OpenAPI_pcf_info_convertToJSON() failed [prose_capability]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "proseCapability", prose_capability_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_pcf_info_convertToJSON() failed [prose_capability]");
+        goto end;
+    }
+    }
+
+    if (pcf_info->v2x_capability) {
+    cJSON *v2x_capability_local_JSON = OpenAPI_v2x_capability_convertToJSON(pcf_info->v2x_capability);
+    if (v2x_capability_local_JSON == NULL) {
+        ogs_error("OpenAPI_pcf_info_convertToJSON() failed [v2x_capability]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "v2xCapability", v2x_capability_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_pcf_info_convertToJSON() failed [v2x_capability]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -176,6 +225,11 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_parseFromJSON(cJSON *pcf_infoJSON)
     cJSON *rx_diam_host = NULL;
     cJSON *rx_diam_realm = NULL;
     cJSON *v2x_support_ind = NULL;
+    cJSON *prose_support_ind = NULL;
+    cJSON *prose_capability = NULL;
+    OpenAPI_pro_se_capability_t *prose_capability_local_nonprim = NULL;
+    cJSON *v2x_capability = NULL;
+    OpenAPI_v2x_capability_t *v2x_capability_local_nonprim = NULL;
     group_id = cJSON_GetObjectItemCaseSensitive(pcf_infoJSON, "groupId");
     if (group_id) {
     if (!cJSON_IsString(group_id) && !cJSON_IsNull(group_id)) {
@@ -279,6 +333,24 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_parseFromJSON(cJSON *pcf_infoJSON)
     }
     }
 
+    prose_support_ind = cJSON_GetObjectItemCaseSensitive(pcf_infoJSON, "proseSupportInd");
+    if (prose_support_ind) {
+    if (!cJSON_IsBool(prose_support_ind)) {
+        ogs_error("OpenAPI_pcf_info_parseFromJSON() failed [prose_support_ind]");
+        goto end;
+    }
+    }
+
+    prose_capability = cJSON_GetObjectItemCaseSensitive(pcf_infoJSON, "proseCapability");
+    if (prose_capability) {
+    prose_capability_local_nonprim = OpenAPI_pro_se_capability_parseFromJSON(prose_capability);
+    }
+
+    v2x_capability = cJSON_GetObjectItemCaseSensitive(pcf_infoJSON, "v2xCapability");
+    if (v2x_capability) {
+    v2x_capability_local_nonprim = OpenAPI_v2x_capability_parseFromJSON(v2x_capability);
+    }
+
     pcf_info_local_var = OpenAPI_pcf_info_create (
         group_id && !cJSON_IsNull(group_id) ? ogs_strdup(group_id->valuestring) : NULL,
         dnn_list ? dnn_listList : NULL,
@@ -287,7 +359,11 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_parseFromJSON(cJSON *pcf_infoJSON)
         rx_diam_host && !cJSON_IsNull(rx_diam_host) ? ogs_strdup(rx_diam_host->valuestring) : NULL,
         rx_diam_realm && !cJSON_IsNull(rx_diam_realm) ? ogs_strdup(rx_diam_realm->valuestring) : NULL,
         v2x_support_ind ? true : false,
-        v2x_support_ind ? v2x_support_ind->valueint : 0
+        v2x_support_ind ? v2x_support_ind->valueint : 0,
+        prose_support_ind ? true : false,
+        prose_support_ind ? prose_support_ind->valueint : 0,
+        prose_capability ? prose_capability_local_nonprim : NULL,
+        v2x_capability ? v2x_capability_local_nonprim : NULL
     );
 
     return pcf_info_local_var;
@@ -312,6 +388,14 @@ end:
         }
         OpenAPI_list_free(gpsi_rangesList);
         gpsi_rangesList = NULL;
+    }
+    if (prose_capability_local_nonprim) {
+        OpenAPI_pro_se_capability_free(prose_capability_local_nonprim);
+        prose_capability_local_nonprim = NULL;
+    }
+    if (v2x_capability_local_nonprim) {
+        OpenAPI_v2x_capability_free(v2x_capability_local_nonprim);
+        v2x_capability_local_nonprim = NULL;
     }
     return NULL;
 }

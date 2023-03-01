@@ -17,6 +17,8 @@ OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_cre
     char *amf_service_name_pcscf_rest,
     bool is_initial_registration_ind,
     int initial_registration_ind,
+    bool is_emergency_registration_ind,
+    int emergency_registration_ind,
     OpenAPI_guami_t *guami,
     OpenAPI_list_t *backup_amf_info,
     bool is_dr_flag,
@@ -33,7 +35,23 @@ OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_cre
     OpenAPI_context_info_t *context_info,
     bool is_no_ee_subscription_ind,
     int no_ee_subscription_ind,
-    char *supi
+    char *supi,
+    OpenAPI_ue_reachable_ind_e ue_reachable_ind,
+    bool is_re_registration_required,
+    int re_registration_required,
+    bool is_admin_dereg_sub_withdrawn,
+    int admin_dereg_sub_withdrawn,
+    char *data_restoration_callback_uri,
+    OpenAPI_list_t *reset_ids,
+    bool is_disaster_roaming_ind,
+    int disaster_roaming_ind,
+    bool is_ue_mint_capability,
+    int ue_mint_capability,
+    bool is_sor_snpn_si_supported,
+    int sor_snpn_si_supported,
+    bool is_udr_restart_ind,
+    int udr_restart_ind,
+    char *last_synchronization_time
 )
 {
     OpenAPI_amf3_gpp_access_registration_t *amf3_gpp_access_registration_local_var = ogs_malloc(sizeof(OpenAPI_amf3_gpp_access_registration_t));
@@ -51,6 +69,8 @@ OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_cre
     amf3_gpp_access_registration_local_var->amf_service_name_pcscf_rest = amf_service_name_pcscf_rest;
     amf3_gpp_access_registration_local_var->is_initial_registration_ind = is_initial_registration_ind;
     amf3_gpp_access_registration_local_var->initial_registration_ind = initial_registration_ind;
+    amf3_gpp_access_registration_local_var->is_emergency_registration_ind = is_emergency_registration_ind;
+    amf3_gpp_access_registration_local_var->emergency_registration_ind = emergency_registration_ind;
     amf3_gpp_access_registration_local_var->guami = guami;
     amf3_gpp_access_registration_local_var->backup_amf_info = backup_amf_info;
     amf3_gpp_access_registration_local_var->is_dr_flag = is_dr_flag;
@@ -68,6 +88,22 @@ OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_cre
     amf3_gpp_access_registration_local_var->is_no_ee_subscription_ind = is_no_ee_subscription_ind;
     amf3_gpp_access_registration_local_var->no_ee_subscription_ind = no_ee_subscription_ind;
     amf3_gpp_access_registration_local_var->supi = supi;
+    amf3_gpp_access_registration_local_var->ue_reachable_ind = ue_reachable_ind;
+    amf3_gpp_access_registration_local_var->is_re_registration_required = is_re_registration_required;
+    amf3_gpp_access_registration_local_var->re_registration_required = re_registration_required;
+    amf3_gpp_access_registration_local_var->is_admin_dereg_sub_withdrawn = is_admin_dereg_sub_withdrawn;
+    amf3_gpp_access_registration_local_var->admin_dereg_sub_withdrawn = admin_dereg_sub_withdrawn;
+    amf3_gpp_access_registration_local_var->data_restoration_callback_uri = data_restoration_callback_uri;
+    amf3_gpp_access_registration_local_var->reset_ids = reset_ids;
+    amf3_gpp_access_registration_local_var->is_disaster_roaming_ind = is_disaster_roaming_ind;
+    amf3_gpp_access_registration_local_var->disaster_roaming_ind = disaster_roaming_ind;
+    amf3_gpp_access_registration_local_var->is_ue_mint_capability = is_ue_mint_capability;
+    amf3_gpp_access_registration_local_var->ue_mint_capability = ue_mint_capability;
+    amf3_gpp_access_registration_local_var->is_sor_snpn_si_supported = is_sor_snpn_si_supported;
+    amf3_gpp_access_registration_local_var->sor_snpn_si_supported = sor_snpn_si_supported;
+    amf3_gpp_access_registration_local_var->is_udr_restart_ind = is_udr_restart_ind;
+    amf3_gpp_access_registration_local_var->udr_restart_ind = udr_restart_ind;
+    amf3_gpp_access_registration_local_var->last_synchronization_time = last_synchronization_time;
 
     return amf3_gpp_access_registration_local_var;
 }
@@ -141,6 +177,21 @@ void OpenAPI_amf3_gpp_access_registration_free(OpenAPI_amf3_gpp_access_registrat
     if (amf3_gpp_access_registration->supi) {
         ogs_free(amf3_gpp_access_registration->supi);
         amf3_gpp_access_registration->supi = NULL;
+    }
+    if (amf3_gpp_access_registration->data_restoration_callback_uri) {
+        ogs_free(amf3_gpp_access_registration->data_restoration_callback_uri);
+        amf3_gpp_access_registration->data_restoration_callback_uri = NULL;
+    }
+    if (amf3_gpp_access_registration->reset_ids) {
+        OpenAPI_list_for_each(amf3_gpp_access_registration->reset_ids, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(amf3_gpp_access_registration->reset_ids);
+        amf3_gpp_access_registration->reset_ids = NULL;
+    }
+    if (amf3_gpp_access_registration->last_synchronization_time) {
+        ogs_free(amf3_gpp_access_registration->last_synchronization_time);
+        amf3_gpp_access_registration->last_synchronization_time = NULL;
     }
     ogs_free(amf3_gpp_access_registration);
 }
@@ -226,6 +277,13 @@ cJSON *OpenAPI_amf3_gpp_access_registration_convertToJSON(OpenAPI_amf3_gpp_acces
     if (amf3_gpp_access_registration->is_initial_registration_ind) {
     if (cJSON_AddBoolToObject(item, "initialRegistrationInd", amf3_gpp_access_registration->initial_registration_ind) == NULL) {
         ogs_error("OpenAPI_amf3_gpp_access_registration_convertToJSON() failed [initial_registration_ind]");
+        goto end;
+    }
+    }
+
+    if (amf3_gpp_access_registration->is_emergency_registration_ind) {
+    if (cJSON_AddBoolToObject(item, "emergencyRegistrationInd", amf3_gpp_access_registration->emergency_registration_ind) == NULL) {
+        ogs_error("OpenAPI_amf3_gpp_access_registration_convertToJSON() failed [emergency_registration_ind]");
         goto end;
     }
     }
@@ -358,6 +416,83 @@ cJSON *OpenAPI_amf3_gpp_access_registration_convertToJSON(OpenAPI_amf3_gpp_acces
     }
     }
 
+    if (amf3_gpp_access_registration->ue_reachable_ind != OpenAPI_ue_reachable_ind_NULL) {
+    if (cJSON_AddStringToObject(item, "ueReachableInd", OpenAPI_ue_reachable_ind_ToString(amf3_gpp_access_registration->ue_reachable_ind)) == NULL) {
+        ogs_error("OpenAPI_amf3_gpp_access_registration_convertToJSON() failed [ue_reachable_ind]");
+        goto end;
+    }
+    }
+
+    if (amf3_gpp_access_registration->is_re_registration_required) {
+    if (cJSON_AddBoolToObject(item, "reRegistrationRequired", amf3_gpp_access_registration->re_registration_required) == NULL) {
+        ogs_error("OpenAPI_amf3_gpp_access_registration_convertToJSON() failed [re_registration_required]");
+        goto end;
+    }
+    }
+
+    if (amf3_gpp_access_registration->is_admin_dereg_sub_withdrawn) {
+    if (cJSON_AddBoolToObject(item, "adminDeregSubWithdrawn", amf3_gpp_access_registration->admin_dereg_sub_withdrawn) == NULL) {
+        ogs_error("OpenAPI_amf3_gpp_access_registration_convertToJSON() failed [admin_dereg_sub_withdrawn]");
+        goto end;
+    }
+    }
+
+    if (amf3_gpp_access_registration->data_restoration_callback_uri) {
+    if (cJSON_AddStringToObject(item, "dataRestorationCallbackUri", amf3_gpp_access_registration->data_restoration_callback_uri) == NULL) {
+        ogs_error("OpenAPI_amf3_gpp_access_registration_convertToJSON() failed [data_restoration_callback_uri]");
+        goto end;
+    }
+    }
+
+    if (amf3_gpp_access_registration->reset_ids) {
+    cJSON *reset_idsList = cJSON_AddArrayToObject(item, "resetIds");
+    if (reset_idsList == NULL) {
+        ogs_error("OpenAPI_amf3_gpp_access_registration_convertToJSON() failed [reset_ids]");
+        goto end;
+    }
+    OpenAPI_list_for_each(amf3_gpp_access_registration->reset_ids, node) {
+        if (cJSON_AddStringToObject(reset_idsList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_amf3_gpp_access_registration_convertToJSON() failed [reset_ids]");
+            goto end;
+        }
+    }
+    }
+
+    if (amf3_gpp_access_registration->is_disaster_roaming_ind) {
+    if (cJSON_AddBoolToObject(item, "disasterRoamingInd", amf3_gpp_access_registration->disaster_roaming_ind) == NULL) {
+        ogs_error("OpenAPI_amf3_gpp_access_registration_convertToJSON() failed [disaster_roaming_ind]");
+        goto end;
+    }
+    }
+
+    if (amf3_gpp_access_registration->is_ue_mint_capability) {
+    if (cJSON_AddBoolToObject(item, "ueMINTCapability", amf3_gpp_access_registration->ue_mint_capability) == NULL) {
+        ogs_error("OpenAPI_amf3_gpp_access_registration_convertToJSON() failed [ue_mint_capability]");
+        goto end;
+    }
+    }
+
+    if (amf3_gpp_access_registration->is_sor_snpn_si_supported) {
+    if (cJSON_AddBoolToObject(item, "sorSnpnSiSupported", amf3_gpp_access_registration->sor_snpn_si_supported) == NULL) {
+        ogs_error("OpenAPI_amf3_gpp_access_registration_convertToJSON() failed [sor_snpn_si_supported]");
+        goto end;
+    }
+    }
+
+    if (amf3_gpp_access_registration->is_udr_restart_ind) {
+    if (cJSON_AddBoolToObject(item, "udrRestartInd", amf3_gpp_access_registration->udr_restart_ind) == NULL) {
+        ogs_error("OpenAPI_amf3_gpp_access_registration_convertToJSON() failed [udr_restart_ind]");
+        goto end;
+    }
+    }
+
+    if (amf3_gpp_access_registration->last_synchronization_time) {
+    if (cJSON_AddStringToObject(item, "lastSynchronizationTime", amf3_gpp_access_registration->last_synchronization_time) == NULL) {
+        ogs_error("OpenAPI_amf3_gpp_access_registration_convertToJSON() failed [last_synchronization_time]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -377,6 +512,7 @@ OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_par
     cJSON *pcscf_restoration_callback_uri = NULL;
     cJSON *amf_service_name_pcscf_rest = NULL;
     cJSON *initial_registration_ind = NULL;
+    cJSON *emergency_registration_ind = NULL;
     cJSON *guami = NULL;
     OpenAPI_guami_t *guami_local_nonprim = NULL;
     cJSON *backup_amf_info = NULL;
@@ -396,6 +532,18 @@ OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_par
     OpenAPI_context_info_t *context_info_local_nonprim = NULL;
     cJSON *no_ee_subscription_ind = NULL;
     cJSON *supi = NULL;
+    cJSON *ue_reachable_ind = NULL;
+    OpenAPI_ue_reachable_ind_e ue_reachable_indVariable = 0;
+    cJSON *re_registration_required = NULL;
+    cJSON *admin_dereg_sub_withdrawn = NULL;
+    cJSON *data_restoration_callback_uri = NULL;
+    cJSON *reset_ids = NULL;
+    OpenAPI_list_t *reset_idsList = NULL;
+    cJSON *disaster_roaming_ind = NULL;
+    cJSON *ue_mint_capability = NULL;
+    cJSON *sor_snpn_si_supported = NULL;
+    cJSON *udr_restart_ind = NULL;
+    cJSON *last_synchronization_time = NULL;
     amf_instance_id = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registrationJSON, "amfInstanceId");
     if (!amf_instance_id) {
         ogs_error("OpenAPI_amf3_gpp_access_registration_parseFromJSON() failed [amf_instance_id]");
@@ -477,6 +625,14 @@ OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_par
     if (initial_registration_ind) {
     if (!cJSON_IsBool(initial_registration_ind)) {
         ogs_error("OpenAPI_amf3_gpp_access_registration_parseFromJSON() failed [initial_registration_ind]");
+        goto end;
+    }
+    }
+
+    emergency_registration_ind = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registrationJSON, "emergencyRegistrationInd");
+    if (emergency_registration_ind) {
+    if (!cJSON_IsBool(emergency_registration_ind)) {
+        ogs_error("OpenAPI_amf3_gpp_access_registration_parseFromJSON() failed [emergency_registration_ind]");
         goto end;
     }
     }
@@ -595,6 +751,100 @@ OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_par
     }
     }
 
+    ue_reachable_ind = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registrationJSON, "ueReachableInd");
+    if (ue_reachable_ind) {
+    if (!cJSON_IsString(ue_reachable_ind)) {
+        ogs_error("OpenAPI_amf3_gpp_access_registration_parseFromJSON() failed [ue_reachable_ind]");
+        goto end;
+    }
+    ue_reachable_indVariable = OpenAPI_ue_reachable_ind_FromString(ue_reachable_ind->valuestring);
+    }
+
+    re_registration_required = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registrationJSON, "reRegistrationRequired");
+    if (re_registration_required) {
+    if (!cJSON_IsBool(re_registration_required)) {
+        ogs_error("OpenAPI_amf3_gpp_access_registration_parseFromJSON() failed [re_registration_required]");
+        goto end;
+    }
+    }
+
+    admin_dereg_sub_withdrawn = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registrationJSON, "adminDeregSubWithdrawn");
+    if (admin_dereg_sub_withdrawn) {
+    if (!cJSON_IsBool(admin_dereg_sub_withdrawn)) {
+        ogs_error("OpenAPI_amf3_gpp_access_registration_parseFromJSON() failed [admin_dereg_sub_withdrawn]");
+        goto end;
+    }
+    }
+
+    data_restoration_callback_uri = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registrationJSON, "dataRestorationCallbackUri");
+    if (data_restoration_callback_uri) {
+    if (!cJSON_IsString(data_restoration_callback_uri) && !cJSON_IsNull(data_restoration_callback_uri)) {
+        ogs_error("OpenAPI_amf3_gpp_access_registration_parseFromJSON() failed [data_restoration_callback_uri]");
+        goto end;
+    }
+    }
+
+    reset_ids = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registrationJSON, "resetIds");
+    if (reset_ids) {
+        cJSON *reset_ids_local = NULL;
+        if (!cJSON_IsArray(reset_ids)) {
+            ogs_error("OpenAPI_amf3_gpp_access_registration_parseFromJSON() failed [reset_ids]");
+            goto end;
+        }
+
+        reset_idsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(reset_ids_local, reset_ids) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(reset_ids_local)) {
+                ogs_error("OpenAPI_amf3_gpp_access_registration_parseFromJSON() failed [reset_ids]");
+                goto end;
+            }
+            OpenAPI_list_add(reset_idsList, ogs_strdup(reset_ids_local->valuestring));
+        }
+    }
+
+    disaster_roaming_ind = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registrationJSON, "disasterRoamingInd");
+    if (disaster_roaming_ind) {
+    if (!cJSON_IsBool(disaster_roaming_ind)) {
+        ogs_error("OpenAPI_amf3_gpp_access_registration_parseFromJSON() failed [disaster_roaming_ind]");
+        goto end;
+    }
+    }
+
+    ue_mint_capability = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registrationJSON, "ueMINTCapability");
+    if (ue_mint_capability) {
+    if (!cJSON_IsBool(ue_mint_capability)) {
+        ogs_error("OpenAPI_amf3_gpp_access_registration_parseFromJSON() failed [ue_mint_capability]");
+        goto end;
+    }
+    }
+
+    sor_snpn_si_supported = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registrationJSON, "sorSnpnSiSupported");
+    if (sor_snpn_si_supported) {
+    if (!cJSON_IsBool(sor_snpn_si_supported)) {
+        ogs_error("OpenAPI_amf3_gpp_access_registration_parseFromJSON() failed [sor_snpn_si_supported]");
+        goto end;
+    }
+    }
+
+    udr_restart_ind = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registrationJSON, "udrRestartInd");
+    if (udr_restart_ind) {
+    if (!cJSON_IsBool(udr_restart_ind)) {
+        ogs_error("OpenAPI_amf3_gpp_access_registration_parseFromJSON() failed [udr_restart_ind]");
+        goto end;
+    }
+    }
+
+    last_synchronization_time = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registrationJSON, "lastSynchronizationTime");
+    if (last_synchronization_time) {
+    if (!cJSON_IsString(last_synchronization_time) && !cJSON_IsNull(last_synchronization_time)) {
+        ogs_error("OpenAPI_amf3_gpp_access_registration_parseFromJSON() failed [last_synchronization_time]");
+        goto end;
+    }
+    }
+
     amf3_gpp_access_registration_local_var = OpenAPI_amf3_gpp_access_registration_create (
         ogs_strdup(amf_instance_id->valuestring),
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
@@ -608,6 +858,8 @@ OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_par
         amf_service_name_pcscf_rest && !cJSON_IsNull(amf_service_name_pcscf_rest) ? ogs_strdup(amf_service_name_pcscf_rest->valuestring) : NULL,
         initial_registration_ind ? true : false,
         initial_registration_ind ? initial_registration_ind->valueint : 0,
+        emergency_registration_ind ? true : false,
+        emergency_registration_ind ? emergency_registration_ind->valueint : 0,
         guami_local_nonprim,
         backup_amf_info ? backup_amf_infoList : NULL,
         dr_flag ? true : false,
@@ -624,7 +876,23 @@ OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_par
         context_info ? context_info_local_nonprim : NULL,
         no_ee_subscription_ind ? true : false,
         no_ee_subscription_ind ? no_ee_subscription_ind->valueint : 0,
-        supi && !cJSON_IsNull(supi) ? ogs_strdup(supi->valuestring) : NULL
+        supi && !cJSON_IsNull(supi) ? ogs_strdup(supi->valuestring) : NULL,
+        ue_reachable_ind ? ue_reachable_indVariable : 0,
+        re_registration_required ? true : false,
+        re_registration_required ? re_registration_required->valueint : 0,
+        admin_dereg_sub_withdrawn ? true : false,
+        admin_dereg_sub_withdrawn ? admin_dereg_sub_withdrawn->valueint : 0,
+        data_restoration_callback_uri && !cJSON_IsNull(data_restoration_callback_uri) ? ogs_strdup(data_restoration_callback_uri->valuestring) : NULL,
+        reset_ids ? reset_idsList : NULL,
+        disaster_roaming_ind ? true : false,
+        disaster_roaming_ind ? disaster_roaming_ind->valueint : 0,
+        ue_mint_capability ? true : false,
+        ue_mint_capability ? ue_mint_capability->valueint : 0,
+        sor_snpn_si_supported ? true : false,
+        sor_snpn_si_supported ? sor_snpn_si_supported->valueint : 0,
+        udr_restart_ind ? true : false,
+        udr_restart_ind ? udr_restart_ind->valueint : 0,
+        last_synchronization_time && !cJSON_IsNull(last_synchronization_time) ? ogs_strdup(last_synchronization_time->valuestring) : NULL
     );
 
     return amf3_gpp_access_registration_local_var;
@@ -651,6 +919,13 @@ end:
     if (context_info_local_nonprim) {
         OpenAPI_context_info_free(context_info_local_nonprim);
         context_info_local_nonprim = NULL;
+    }
+    if (reset_idsList) {
+        OpenAPI_list_for_each(reset_idsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(reset_idsList);
+        reset_idsList = NULL;
     }
     return NULL;
 }

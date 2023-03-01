@@ -10,7 +10,8 @@ OpenAPI_rule_report_t *OpenAPI_rule_report_create(
     OpenAPI_list_t *cont_vers,
     OpenAPI_failure_code_e failure_code,
     OpenAPI_final_unit_action_t *fin_unit_act,
-    OpenAPI_list_t *ran_nas_rel_causes
+    OpenAPI_list_t *ran_nas_rel_causes,
+    char *alt_qos_param_id
 )
 {
     OpenAPI_rule_report_t *rule_report_local_var = ogs_malloc(sizeof(OpenAPI_rule_report_t));
@@ -22,6 +23,7 @@ OpenAPI_rule_report_t *OpenAPI_rule_report_create(
     rule_report_local_var->failure_code = failure_code;
     rule_report_local_var->fin_unit_act = fin_unit_act;
     rule_report_local_var->ran_nas_rel_causes = ran_nas_rel_causes;
+    rule_report_local_var->alt_qos_param_id = alt_qos_param_id;
 
     return rule_report_local_var;
 }
@@ -57,6 +59,10 @@ void OpenAPI_rule_report_free(OpenAPI_rule_report_t *rule_report)
         }
         OpenAPI_list_free(rule_report->ran_nas_rel_causes);
         rule_report->ran_nas_rel_causes = NULL;
+    }
+    if (rule_report->alt_qos_param_id) {
+        ogs_free(rule_report->alt_qos_param_id);
+        rule_report->alt_qos_param_id = NULL;
     }
     ogs_free(rule_report);
 }
@@ -147,6 +153,13 @@ cJSON *OpenAPI_rule_report_convertToJSON(OpenAPI_rule_report_t *rule_report)
     }
     }
 
+    if (rule_report->alt_qos_param_id) {
+    if (cJSON_AddStringToObject(item, "altQosParamId", rule_report->alt_qos_param_id) == NULL) {
+        ogs_error("OpenAPI_rule_report_convertToJSON() failed [alt_qos_param_id]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -167,6 +180,7 @@ OpenAPI_rule_report_t *OpenAPI_rule_report_parseFromJSON(cJSON *rule_reportJSON)
     OpenAPI_final_unit_action_t *fin_unit_act_local_nonprim = NULL;
     cJSON *ran_nas_rel_causes = NULL;
     OpenAPI_list_t *ran_nas_rel_causesList = NULL;
+    cJSON *alt_qos_param_id = NULL;
     pcc_rule_ids = cJSON_GetObjectItemCaseSensitive(rule_reportJSON, "pccRuleIds");
     if (!pcc_rule_ids) {
         ogs_error("OpenAPI_rule_report_parseFromJSON() failed [pcc_rule_ids]");
@@ -267,13 +281,22 @@ OpenAPI_rule_report_t *OpenAPI_rule_report_parseFromJSON(cJSON *rule_reportJSON)
         }
     }
 
+    alt_qos_param_id = cJSON_GetObjectItemCaseSensitive(rule_reportJSON, "altQosParamId");
+    if (alt_qos_param_id) {
+    if (!cJSON_IsString(alt_qos_param_id) && !cJSON_IsNull(alt_qos_param_id)) {
+        ogs_error("OpenAPI_rule_report_parseFromJSON() failed [alt_qos_param_id]");
+        goto end;
+    }
+    }
+
     rule_report_local_var = OpenAPI_rule_report_create (
         pcc_rule_idsList,
         rule_statusVariable,
         cont_vers ? cont_versList : NULL,
         failure_code ? failure_codeVariable : 0,
         fin_unit_act ? fin_unit_act_local_nonprim : NULL,
-        ran_nas_rel_causes ? ran_nas_rel_causesList : NULL
+        ran_nas_rel_causes ? ran_nas_rel_causesList : NULL,
+        alt_qos_param_id && !cJSON_IsNull(alt_qos_param_id) ? ogs_strdup(alt_qos_param_id->valuestring) : NULL
     );
 
     return rule_report_local_var;

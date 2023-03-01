@@ -14,7 +14,8 @@ OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_create(
     int andsp_ind,
     char *pei,
     OpenAPI_list_t *os_ids,
-    char *supp_feat
+    char *supp_feat,
+    OpenAPI_list_t *reset_ids
 )
 {
     OpenAPI_ue_policy_set_t *ue_policy_set_local_var = ogs_malloc(sizeof(OpenAPI_ue_policy_set_t));
@@ -30,6 +31,7 @@ OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_create(
     ue_policy_set_local_var->pei = pei;
     ue_policy_set_local_var->os_ids = os_ids;
     ue_policy_set_local_var->supp_feat = supp_feat;
+    ue_policy_set_local_var->reset_ids = reset_ids;
 
     return ue_policy_set_local_var;
 }
@@ -99,6 +101,13 @@ void OpenAPI_ue_policy_set_free(OpenAPI_ue_policy_set_t *ue_policy_set)
     if (ue_policy_set->supp_feat) {
         ogs_free(ue_policy_set->supp_feat);
         ue_policy_set->supp_feat = NULL;
+    }
+    if (ue_policy_set->reset_ids) {
+        OpenAPI_list_for_each(ue_policy_set->reset_ids, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(ue_policy_set->reset_ids);
+        ue_policy_set->reset_ids = NULL;
     }
     ogs_free(ue_policy_set);
 }
@@ -243,6 +252,20 @@ cJSON *OpenAPI_ue_policy_set_convertToJSON(OpenAPI_ue_policy_set_t *ue_policy_se
     }
     }
 
+    if (ue_policy_set->reset_ids) {
+    cJSON *reset_idsList = cJSON_AddArrayToObject(item, "resetIds");
+    if (reset_idsList == NULL) {
+        ogs_error("OpenAPI_ue_policy_set_convertToJSON() failed [reset_ids]");
+        goto end;
+    }
+    OpenAPI_list_for_each(ue_policy_set->reset_ids, node) {
+        if (cJSON_AddStringToObject(reset_idsList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_ue_policy_set_convertToJSON() failed [reset_ids]");
+            goto end;
+        }
+    }
+    }
+
 end:
     return item;
 }
@@ -266,6 +289,8 @@ OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_parseFromJSON(cJSON *ue_policy_se
     cJSON *os_ids = NULL;
     OpenAPI_list_t *os_idsList = NULL;
     cJSON *supp_feat = NULL;
+    cJSON *reset_ids = NULL;
+    OpenAPI_list_t *reset_idsList = NULL;
     pra_infos = cJSON_GetObjectItemCaseSensitive(ue_policy_setJSON, "praInfos");
     if (pra_infos) {
         cJSON *pra_infos_local_map = NULL;
@@ -431,6 +456,27 @@ OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_parseFromJSON(cJSON *ue_policy_se
     }
     }
 
+    reset_ids = cJSON_GetObjectItemCaseSensitive(ue_policy_setJSON, "resetIds");
+    if (reset_ids) {
+        cJSON *reset_ids_local = NULL;
+        if (!cJSON_IsArray(reset_ids)) {
+            ogs_error("OpenAPI_ue_policy_set_parseFromJSON() failed [reset_ids]");
+            goto end;
+        }
+
+        reset_idsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(reset_ids_local, reset_ids) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(reset_ids_local)) {
+                ogs_error("OpenAPI_ue_policy_set_parseFromJSON() failed [reset_ids]");
+                goto end;
+            }
+            OpenAPI_list_add(reset_idsList, ogs_strdup(reset_ids_local->valuestring));
+        }
+    }
+
     ue_policy_set_local_var = OpenAPI_ue_policy_set_create (
         pra_infos ? pra_infosList : NULL,
         subsc_cats ? subsc_catsList : NULL,
@@ -441,7 +487,8 @@ OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_parseFromJSON(cJSON *ue_policy_se
         andsp_ind ? andsp_ind->valueint : 0,
         pei && !cJSON_IsNull(pei) ? ogs_strdup(pei->valuestring) : NULL,
         os_ids ? os_idsList : NULL,
-        supp_feat && !cJSON_IsNull(supp_feat) ? ogs_strdup(supp_feat->valuestring) : NULL
+        supp_feat && !cJSON_IsNull(supp_feat) ? ogs_strdup(supp_feat->valuestring) : NULL,
+        reset_ids ? reset_idsList : NULL
     );
 
     return ue_policy_set_local_var;
@@ -496,6 +543,13 @@ end:
         }
         OpenAPI_list_free(os_idsList);
         os_idsList = NULL;
+    }
+    if (reset_idsList) {
+        OpenAPI_list_for_each(reset_idsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(reset_idsList);
+        reset_idsList = NULL;
     }
     return NULL;
 }

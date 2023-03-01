@@ -31,28 +31,28 @@ void OpenAPI_network_area_info_1_free(OpenAPI_network_area_info_1_t *network_are
     }
     if (network_area_info_1->ecgis) {
         OpenAPI_list_for_each(network_area_info_1->ecgis, node) {
-            OpenAPI_ecgi_1_free(node->data);
+            OpenAPI_ecgi_free(node->data);
         }
         OpenAPI_list_free(network_area_info_1->ecgis);
         network_area_info_1->ecgis = NULL;
     }
     if (network_area_info_1->ncgis) {
         OpenAPI_list_for_each(network_area_info_1->ncgis, node) {
-            OpenAPI_ncgi_1_free(node->data);
+            OpenAPI_ncgi_free(node->data);
         }
         OpenAPI_list_free(network_area_info_1->ncgis);
         network_area_info_1->ncgis = NULL;
     }
     if (network_area_info_1->g_ran_node_ids) {
         OpenAPI_list_for_each(network_area_info_1->g_ran_node_ids, node) {
-            OpenAPI_global_ran_node_id_1_free(node->data);
+            OpenAPI_global_ran_node_id_free(node->data);
         }
         OpenAPI_list_free(network_area_info_1->g_ran_node_ids);
         network_area_info_1->g_ran_node_ids = NULL;
     }
     if (network_area_info_1->tais) {
         OpenAPI_list_for_each(network_area_info_1->tais, node) {
-            OpenAPI_tai_1_free(node->data);
+            OpenAPI_tai_free(node->data);
         }
         OpenAPI_list_free(network_area_info_1->tais);
         network_area_info_1->tais = NULL;
@@ -78,7 +78,7 @@ cJSON *OpenAPI_network_area_info_1_convertToJSON(OpenAPI_network_area_info_1_t *
         goto end;
     }
     OpenAPI_list_for_each(network_area_info_1->ecgis, node) {
-        cJSON *itemLocal = OpenAPI_ecgi_1_convertToJSON(node->data);
+        cJSON *itemLocal = OpenAPI_ecgi_convertToJSON(node->data);
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_network_area_info_1_convertToJSON() failed [ecgis]");
             goto end;
@@ -94,7 +94,7 @@ cJSON *OpenAPI_network_area_info_1_convertToJSON(OpenAPI_network_area_info_1_t *
         goto end;
     }
     OpenAPI_list_for_each(network_area_info_1->ncgis, node) {
-        cJSON *itemLocal = OpenAPI_ncgi_1_convertToJSON(node->data);
+        cJSON *itemLocal = OpenAPI_ncgi_convertToJSON(node->data);
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_network_area_info_1_convertToJSON() failed [ncgis]");
             goto end;
@@ -110,7 +110,7 @@ cJSON *OpenAPI_network_area_info_1_convertToJSON(OpenAPI_network_area_info_1_t *
         goto end;
     }
     OpenAPI_list_for_each(network_area_info_1->g_ran_node_ids, node) {
-        cJSON *itemLocal = OpenAPI_global_ran_node_id_1_convertToJSON(node->data);
+        cJSON *itemLocal = OpenAPI_global_ran_node_id_convertToJSON(node->data);
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_network_area_info_1_convertToJSON() failed [g_ran_node_ids]");
             goto end;
@@ -126,7 +126,7 @@ cJSON *OpenAPI_network_area_info_1_convertToJSON(OpenAPI_network_area_info_1_t *
         goto end;
     }
     OpenAPI_list_for_each(network_area_info_1->tais, node) {
-        cJSON *itemLocal = OpenAPI_tai_1_convertToJSON(node->data);
+        cJSON *itemLocal = OpenAPI_tai_convertToJSON(node->data);
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_network_area_info_1_convertToJSON() failed [tais]");
             goto end;
@@ -166,7 +166,7 @@ OpenAPI_network_area_info_1_t *OpenAPI_network_area_info_1_parseFromJSON(cJSON *
                 ogs_error("OpenAPI_network_area_info_1_parseFromJSON() failed [ecgis]");
                 goto end;
             }
-            OpenAPI_ecgi_1_t *ecgisItem = OpenAPI_ecgi_1_parseFromJSON(ecgis_local);
+            OpenAPI_ecgi_t *ecgisItem = OpenAPI_ecgi_parseFromJSON(ecgis_local);
             if (!ecgisItem) {
                 ogs_error("No ecgisItem");
                 OpenAPI_list_free(ecgisList);
@@ -191,7 +191,7 @@ OpenAPI_network_area_info_1_t *OpenAPI_network_area_info_1_parseFromJSON(cJSON *
                 ogs_error("OpenAPI_network_area_info_1_parseFromJSON() failed [ncgis]");
                 goto end;
             }
-            OpenAPI_ncgi_1_t *ncgisItem = OpenAPI_ncgi_1_parseFromJSON(ncgis_local);
+            OpenAPI_ncgi_t *ncgisItem = OpenAPI_ncgi_parseFromJSON(ncgis_local);
             if (!ncgisItem) {
                 ogs_error("No ncgisItem");
                 OpenAPI_list_free(ncgisList);
@@ -216,7 +216,7 @@ OpenAPI_network_area_info_1_t *OpenAPI_network_area_info_1_parseFromJSON(cJSON *
                 ogs_error("OpenAPI_network_area_info_1_parseFromJSON() failed [g_ran_node_ids]");
                 goto end;
             }
-            OpenAPI_global_ran_node_id_1_t *g_ran_node_idsItem = OpenAPI_global_ran_node_id_1_parseFromJSON(g_ran_node_ids_local);
+            OpenAPI_global_ran_node_id_t *g_ran_node_idsItem = OpenAPI_global_ran_node_id_parseFromJSON(g_ran_node_ids_local);
             if (!g_ran_node_idsItem) {
                 ogs_error("No g_ran_node_idsItem");
                 OpenAPI_list_free(g_ran_node_idsList);
@@ -241,7 +241,7 @@ OpenAPI_network_area_info_1_t *OpenAPI_network_area_info_1_parseFromJSON(cJSON *
                 ogs_error("OpenAPI_network_area_info_1_parseFromJSON() failed [tais]");
                 goto end;
             }
-            OpenAPI_tai_1_t *taisItem = OpenAPI_tai_1_parseFromJSON(tais_local);
+            OpenAPI_tai_t *taisItem = OpenAPI_tai_parseFromJSON(tais_local);
             if (!taisItem) {
                 ogs_error("No taisItem");
                 OpenAPI_list_free(taisList);
@@ -262,28 +262,28 @@ OpenAPI_network_area_info_1_t *OpenAPI_network_area_info_1_parseFromJSON(cJSON *
 end:
     if (ecgisList) {
         OpenAPI_list_for_each(ecgisList, node) {
-            OpenAPI_ecgi_1_free(node->data);
+            OpenAPI_ecgi_free(node->data);
         }
         OpenAPI_list_free(ecgisList);
         ecgisList = NULL;
     }
     if (ncgisList) {
         OpenAPI_list_for_each(ncgisList, node) {
-            OpenAPI_ncgi_1_free(node->data);
+            OpenAPI_ncgi_free(node->data);
         }
         OpenAPI_list_free(ncgisList);
         ncgisList = NULL;
     }
     if (g_ran_node_idsList) {
         OpenAPI_list_for_each(g_ran_node_idsList, node) {
-            OpenAPI_global_ran_node_id_1_free(node->data);
+            OpenAPI_global_ran_node_id_free(node->data);
         }
         OpenAPI_list_free(g_ran_node_idsList);
         g_ran_node_idsList = NULL;
     }
     if (taisList) {
         OpenAPI_list_for_each(taisList, node) {
-            OpenAPI_tai_1_free(node->data);
+            OpenAPI_tai_free(node->data);
         }
         OpenAPI_list_free(taisList);
         taisList = NULL;

@@ -1,7 +1,7 @@
 /*
  * session_rule_report.h
  *
- * 
+ * Represents reporting of the status of a session rule.
  */
 
 #ifndef _OpenAPI_session_rule_report_H_

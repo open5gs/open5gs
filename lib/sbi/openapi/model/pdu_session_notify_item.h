@@ -1,7 +1,7 @@
 /*
  * pdu_session_notify_item.h
  *
- * 
+ * Notification related to a PDU session
  */
 
 #ifndef _OpenAPI_pdu_session_notify_item_H_

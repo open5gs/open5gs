@@ -1,7 +1,7 @@
 /*
  * internal_group_id_range.h
  *
- * A range of Group IDs (internal group identities), either based on a numeric range, or based on regular-expression matching
+ * A range of Group IDs (internal group identities), either based on a numeric range, or based on regular-expression matching 
  */
 
 #ifndef _OpenAPI_internal_group_id_range_H_

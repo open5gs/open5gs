@@ -1,7 +1,7 @@
 /*
  * ext_problem_details.h
  *
- * 
+ * Extended Problem Details
  */
 
 #ifndef _OpenAPI_ext_problem_details_H_

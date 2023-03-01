@@ -8,7 +8,8 @@ OpenAPI_assign_ebi_data_t *OpenAPI_assign_ebi_data_create(
     int pdu_session_id,
     OpenAPI_list_t *arp_list,
     OpenAPI_list_t *released_ebi_list,
-    OpenAPI_guami_t *old_guami
+    OpenAPI_guami_t *old_guami,
+    OpenAPI_list_t *modified_ebi_list
 )
 {
     OpenAPI_assign_ebi_data_t *assign_ebi_data_local_var = ogs_malloc(sizeof(OpenAPI_assign_ebi_data_t));
@@ -18,6 +19,7 @@ OpenAPI_assign_ebi_data_t *OpenAPI_assign_ebi_data_create(
     assign_ebi_data_local_var->arp_list = arp_list;
     assign_ebi_data_local_var->released_ebi_list = released_ebi_list;
     assign_ebi_data_local_var->old_guami = old_guami;
+    assign_ebi_data_local_var->modified_ebi_list = modified_ebi_list;
 
     return assign_ebi_data_local_var;
 }
@@ -46,6 +48,13 @@ void OpenAPI_assign_ebi_data_free(OpenAPI_assign_ebi_data_t *assign_ebi_data)
     if (assign_ebi_data->old_guami) {
         OpenAPI_guami_free(assign_ebi_data->old_guami);
         assign_ebi_data->old_guami = NULL;
+    }
+    if (assign_ebi_data->modified_ebi_list) {
+        OpenAPI_list_for_each(assign_ebi_data->modified_ebi_list, node) {
+            OpenAPI_ebi_arp_mapping_free(node->data);
+        }
+        OpenAPI_list_free(assign_ebi_data->modified_ebi_list);
+        assign_ebi_data->modified_ebi_list = NULL;
     }
     ogs_free(assign_ebi_data);
 }
@@ -109,6 +118,22 @@ cJSON *OpenAPI_assign_ebi_data_convertToJSON(OpenAPI_assign_ebi_data_t *assign_e
     }
     }
 
+    if (assign_ebi_data->modified_ebi_list) {
+    cJSON *modified_ebi_listList = cJSON_AddArrayToObject(item, "modifiedEbiList");
+    if (modified_ebi_listList == NULL) {
+        ogs_error("OpenAPI_assign_ebi_data_convertToJSON() failed [modified_ebi_list]");
+        goto end;
+    }
+    OpenAPI_list_for_each(assign_ebi_data->modified_ebi_list, node) {
+        cJSON *itemLocal = OpenAPI_ebi_arp_mapping_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_assign_ebi_data_convertToJSON() failed [modified_ebi_list]");
+            goto end;
+        }
+        cJSON_AddItemToArray(modified_ebi_listList, itemLocal);
+    }
+    }
+
 end:
     return item;
 }
@@ -124,6 +149,8 @@ OpenAPI_assign_ebi_data_t *OpenAPI_assign_ebi_data_parseFromJSON(cJSON *assign_e
     OpenAPI_list_t *released_ebi_listList = NULL;
     cJSON *old_guami = NULL;
     OpenAPI_guami_t *old_guami_local_nonprim = NULL;
+    cJSON *modified_ebi_list = NULL;
+    OpenAPI_list_t *modified_ebi_listList = NULL;
     pdu_session_id = cJSON_GetObjectItemCaseSensitive(assign_ebi_dataJSON, "pduSessionId");
     if (!pdu_session_id) {
         ogs_error("OpenAPI_assign_ebi_data_parseFromJSON() failed [pdu_session_id]");
@@ -191,12 +218,38 @@ OpenAPI_assign_ebi_data_t *OpenAPI_assign_ebi_data_parseFromJSON(cJSON *assign_e
     old_guami_local_nonprim = OpenAPI_guami_parseFromJSON(old_guami);
     }
 
+    modified_ebi_list = cJSON_GetObjectItemCaseSensitive(assign_ebi_dataJSON, "modifiedEbiList");
+    if (modified_ebi_list) {
+        cJSON *modified_ebi_list_local = NULL;
+        if (!cJSON_IsArray(modified_ebi_list)) {
+            ogs_error("OpenAPI_assign_ebi_data_parseFromJSON() failed [modified_ebi_list]");
+            goto end;
+        }
+
+        modified_ebi_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(modified_ebi_list_local, modified_ebi_list) {
+            if (!cJSON_IsObject(modified_ebi_list_local)) {
+                ogs_error("OpenAPI_assign_ebi_data_parseFromJSON() failed [modified_ebi_list]");
+                goto end;
+            }
+            OpenAPI_ebi_arp_mapping_t *modified_ebi_listItem = OpenAPI_ebi_arp_mapping_parseFromJSON(modified_ebi_list_local);
+            if (!modified_ebi_listItem) {
+                ogs_error("No modified_ebi_listItem");
+                OpenAPI_list_free(modified_ebi_listList);
+                goto end;
+            }
+            OpenAPI_list_add(modified_ebi_listList, modified_ebi_listItem);
+        }
+    }
+
     assign_ebi_data_local_var = OpenAPI_assign_ebi_data_create (
         
         pdu_session_id->valuedouble,
         arp_list ? arp_listList : NULL,
         released_ebi_list ? released_ebi_listList : NULL,
-        old_guami ? old_guami_local_nonprim : NULL
+        old_guami ? old_guami_local_nonprim : NULL,
+        modified_ebi_list ? modified_ebi_listList : NULL
     );
 
     return assign_ebi_data_local_var;
@@ -218,6 +271,13 @@ end:
     if (old_guami_local_nonprim) {
         OpenAPI_guami_free(old_guami_local_nonprim);
         old_guami_local_nonprim = NULL;
+    }
+    if (modified_ebi_listList) {
+        OpenAPI_list_for_each(modified_ebi_listList, node) {
+            OpenAPI_ebi_arp_mapping_free(node->data);
+        }
+        OpenAPI_list_free(modified_ebi_listList);
+        modified_ebi_listList = NULL;
     }
     return NULL;
 }

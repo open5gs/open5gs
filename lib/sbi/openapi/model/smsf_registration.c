@@ -12,7 +12,14 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_create(
     char *smsf_map_address,
     OpenAPI_network_node_diameter_address_t *smsf_diameter_address,
     char *registration_time,
-    OpenAPI_context_info_t *context_info
+    OpenAPI_context_info_t *context_info,
+    char *data_restoration_callback_uri,
+    OpenAPI_list_t *reset_ids,
+    bool is_smsf_sbi_sup_ind,
+    int smsf_sbi_sup_ind,
+    bool is_udr_restart_ind,
+    int udr_restart_ind,
+    char *last_synchronization_time
 )
 {
     OpenAPI_smsf_registration_t *smsf_registration_local_var = ogs_malloc(sizeof(OpenAPI_smsf_registration_t));
@@ -26,6 +33,13 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_create(
     smsf_registration_local_var->smsf_diameter_address = smsf_diameter_address;
     smsf_registration_local_var->registration_time = registration_time;
     smsf_registration_local_var->context_info = context_info;
+    smsf_registration_local_var->data_restoration_callback_uri = data_restoration_callback_uri;
+    smsf_registration_local_var->reset_ids = reset_ids;
+    smsf_registration_local_var->is_smsf_sbi_sup_ind = is_smsf_sbi_sup_ind;
+    smsf_registration_local_var->smsf_sbi_sup_ind = smsf_sbi_sup_ind;
+    smsf_registration_local_var->is_udr_restart_ind = is_udr_restart_ind;
+    smsf_registration_local_var->udr_restart_ind = udr_restart_ind;
+    smsf_registration_local_var->last_synchronization_time = last_synchronization_time;
 
     return smsf_registration_local_var;
 }
@@ -68,6 +82,21 @@ void OpenAPI_smsf_registration_free(OpenAPI_smsf_registration_t *smsf_registrati
     if (smsf_registration->context_info) {
         OpenAPI_context_info_free(smsf_registration->context_info);
         smsf_registration->context_info = NULL;
+    }
+    if (smsf_registration->data_restoration_callback_uri) {
+        ogs_free(smsf_registration->data_restoration_callback_uri);
+        smsf_registration->data_restoration_callback_uri = NULL;
+    }
+    if (smsf_registration->reset_ids) {
+        OpenAPI_list_for_each(smsf_registration->reset_ids, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(smsf_registration->reset_ids);
+        smsf_registration->reset_ids = NULL;
+    }
+    if (smsf_registration->last_synchronization_time) {
+        ogs_free(smsf_registration->last_synchronization_time);
+        smsf_registration->last_synchronization_time = NULL;
     }
     ogs_free(smsf_registration);
 }
@@ -161,6 +190,48 @@ cJSON *OpenAPI_smsf_registration_convertToJSON(OpenAPI_smsf_registration_t *smsf
     }
     }
 
+    if (smsf_registration->data_restoration_callback_uri) {
+    if (cJSON_AddStringToObject(item, "dataRestorationCallbackUri", smsf_registration->data_restoration_callback_uri) == NULL) {
+        ogs_error("OpenAPI_smsf_registration_convertToJSON() failed [data_restoration_callback_uri]");
+        goto end;
+    }
+    }
+
+    if (smsf_registration->reset_ids) {
+    cJSON *reset_idsList = cJSON_AddArrayToObject(item, "resetIds");
+    if (reset_idsList == NULL) {
+        ogs_error("OpenAPI_smsf_registration_convertToJSON() failed [reset_ids]");
+        goto end;
+    }
+    OpenAPI_list_for_each(smsf_registration->reset_ids, node) {
+        if (cJSON_AddStringToObject(reset_idsList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_smsf_registration_convertToJSON() failed [reset_ids]");
+            goto end;
+        }
+    }
+    }
+
+    if (smsf_registration->is_smsf_sbi_sup_ind) {
+    if (cJSON_AddBoolToObject(item, "smsfSbiSupInd", smsf_registration->smsf_sbi_sup_ind) == NULL) {
+        ogs_error("OpenAPI_smsf_registration_convertToJSON() failed [smsf_sbi_sup_ind]");
+        goto end;
+    }
+    }
+
+    if (smsf_registration->is_udr_restart_ind) {
+    if (cJSON_AddBoolToObject(item, "udrRestartInd", smsf_registration->udr_restart_ind) == NULL) {
+        ogs_error("OpenAPI_smsf_registration_convertToJSON() failed [udr_restart_ind]");
+        goto end;
+    }
+    }
+
+    if (smsf_registration->last_synchronization_time) {
+    if (cJSON_AddStringToObject(item, "lastSynchronizationTime", smsf_registration->last_synchronization_time) == NULL) {
+        ogs_error("OpenAPI_smsf_registration_convertToJSON() failed [last_synchronization_time]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -180,6 +251,12 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_parseFromJSON(cJSON *smsf
     cJSON *registration_time = NULL;
     cJSON *context_info = NULL;
     OpenAPI_context_info_t *context_info_local_nonprim = NULL;
+    cJSON *data_restoration_callback_uri = NULL;
+    cJSON *reset_ids = NULL;
+    OpenAPI_list_t *reset_idsList = NULL;
+    cJSON *smsf_sbi_sup_ind = NULL;
+    cJSON *udr_restart_ind = NULL;
+    cJSON *last_synchronization_time = NULL;
     smsf_instance_id = cJSON_GetObjectItemCaseSensitive(smsf_registrationJSON, "smsfInstanceId");
     if (!smsf_instance_id) {
         ogs_error("OpenAPI_smsf_registration_parseFromJSON() failed [smsf_instance_id]");
@@ -239,6 +316,59 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_parseFromJSON(cJSON *smsf
     context_info_local_nonprim = OpenAPI_context_info_parseFromJSON(context_info);
     }
 
+    data_restoration_callback_uri = cJSON_GetObjectItemCaseSensitive(smsf_registrationJSON, "dataRestorationCallbackUri");
+    if (data_restoration_callback_uri) {
+    if (!cJSON_IsString(data_restoration_callback_uri) && !cJSON_IsNull(data_restoration_callback_uri)) {
+        ogs_error("OpenAPI_smsf_registration_parseFromJSON() failed [data_restoration_callback_uri]");
+        goto end;
+    }
+    }
+
+    reset_ids = cJSON_GetObjectItemCaseSensitive(smsf_registrationJSON, "resetIds");
+    if (reset_ids) {
+        cJSON *reset_ids_local = NULL;
+        if (!cJSON_IsArray(reset_ids)) {
+            ogs_error("OpenAPI_smsf_registration_parseFromJSON() failed [reset_ids]");
+            goto end;
+        }
+
+        reset_idsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(reset_ids_local, reset_ids) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(reset_ids_local)) {
+                ogs_error("OpenAPI_smsf_registration_parseFromJSON() failed [reset_ids]");
+                goto end;
+            }
+            OpenAPI_list_add(reset_idsList, ogs_strdup(reset_ids_local->valuestring));
+        }
+    }
+
+    smsf_sbi_sup_ind = cJSON_GetObjectItemCaseSensitive(smsf_registrationJSON, "smsfSbiSupInd");
+    if (smsf_sbi_sup_ind) {
+    if (!cJSON_IsBool(smsf_sbi_sup_ind)) {
+        ogs_error("OpenAPI_smsf_registration_parseFromJSON() failed [smsf_sbi_sup_ind]");
+        goto end;
+    }
+    }
+
+    udr_restart_ind = cJSON_GetObjectItemCaseSensitive(smsf_registrationJSON, "udrRestartInd");
+    if (udr_restart_ind) {
+    if (!cJSON_IsBool(udr_restart_ind)) {
+        ogs_error("OpenAPI_smsf_registration_parseFromJSON() failed [udr_restart_ind]");
+        goto end;
+    }
+    }
+
+    last_synchronization_time = cJSON_GetObjectItemCaseSensitive(smsf_registrationJSON, "lastSynchronizationTime");
+    if (last_synchronization_time) {
+    if (!cJSON_IsString(last_synchronization_time) && !cJSON_IsNull(last_synchronization_time)) {
+        ogs_error("OpenAPI_smsf_registration_parseFromJSON() failed [last_synchronization_time]");
+        goto end;
+    }
+    }
+
     smsf_registration_local_var = OpenAPI_smsf_registration_create (
         ogs_strdup(smsf_instance_id->valuestring),
         smsf_set_id && !cJSON_IsNull(smsf_set_id) ? ogs_strdup(smsf_set_id->valuestring) : NULL,
@@ -247,7 +377,14 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_parseFromJSON(cJSON *smsf
         smsf_map_address && !cJSON_IsNull(smsf_map_address) ? ogs_strdup(smsf_map_address->valuestring) : NULL,
         smsf_diameter_address ? smsf_diameter_address_local_nonprim : NULL,
         registration_time && !cJSON_IsNull(registration_time) ? ogs_strdup(registration_time->valuestring) : NULL,
-        context_info ? context_info_local_nonprim : NULL
+        context_info ? context_info_local_nonprim : NULL,
+        data_restoration_callback_uri && !cJSON_IsNull(data_restoration_callback_uri) ? ogs_strdup(data_restoration_callback_uri->valuestring) : NULL,
+        reset_ids ? reset_idsList : NULL,
+        smsf_sbi_sup_ind ? true : false,
+        smsf_sbi_sup_ind ? smsf_sbi_sup_ind->valueint : 0,
+        udr_restart_ind ? true : false,
+        udr_restart_ind ? udr_restart_ind->valueint : 0,
+        last_synchronization_time && !cJSON_IsNull(last_synchronization_time) ? ogs_strdup(last_synchronization_time->valuestring) : NULL
     );
 
     return smsf_registration_local_var;
@@ -263,6 +400,13 @@ end:
     if (context_info_local_nonprim) {
         OpenAPI_context_info_free(context_info_local_nonprim);
         context_info_local_nonprim = NULL;
+    }
+    if (reset_idsList) {
+        OpenAPI_list_for_each(reset_idsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(reset_idsList);
+        reset_idsList = NULL;
     }
     return NULL;
 }

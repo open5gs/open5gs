@@ -43,13 +43,11 @@ cJSON *OpenAPI_pdu_session_types_1_convertToJSON(OpenAPI_pdu_session_types_1_t *
     }
 
     item = cJSON_CreateObject();
-    if (pdu_session_types_1->default_session_type == OpenAPI_pdu_session_type_NULL) {
-        ogs_error("OpenAPI_pdu_session_types_1_convertToJSON() failed [default_session_type]");
-        return NULL;
-    }
+    if (pdu_session_types_1->default_session_type != OpenAPI_pdu_session_type_NULL) {
     if (cJSON_AddStringToObject(item, "defaultSessionType", OpenAPI_pdu_session_type_ToString(pdu_session_types_1->default_session_type)) == NULL) {
         ogs_error("OpenAPI_pdu_session_types_1_convertToJSON() failed [default_session_type]");
         goto end;
+    }
     }
 
     if (pdu_session_types_1->allowed_session_types != OpenAPI_pdu_session_type_NULL) {
@@ -79,15 +77,13 @@ OpenAPI_pdu_session_types_1_t *OpenAPI_pdu_session_types_1_parseFromJSON(cJSON *
     cJSON *allowed_session_types = NULL;
     OpenAPI_list_t *allowed_session_typesList = NULL;
     default_session_type = cJSON_GetObjectItemCaseSensitive(pdu_session_types_1JSON, "defaultSessionType");
-    if (!default_session_type) {
-        ogs_error("OpenAPI_pdu_session_types_1_parseFromJSON() failed [default_session_type]");
-        goto end;
-    }
+    if (default_session_type) {
     if (!cJSON_IsString(default_session_type)) {
         ogs_error("OpenAPI_pdu_session_types_1_parseFromJSON() failed [default_session_type]");
         goto end;
     }
     default_session_typeVariable = OpenAPI_pdu_session_type_FromString(default_session_type->valuestring);
+    }
 
     allowed_session_types = cJSON_GetObjectItemCaseSensitive(pdu_session_types_1JSON, "allowedSessionTypes");
     if (allowed_session_types) {
@@ -109,7 +105,7 @@ OpenAPI_pdu_session_types_1_t *OpenAPI_pdu_session_types_1_parseFromJSON(cJSON *
     }
 
     pdu_session_types_1_local_var = OpenAPI_pdu_session_types_1_create (
-        default_session_typeVariable,
+        default_session_type ? default_session_typeVariable : 0,
         allowed_session_types ? allowed_session_typesList : NULL
     );
 

@@ -1,7 +1,7 @@
 /*
  * presence_info_rm.h
  *
- * 
+ * This data type is defined in the same way as the &#39;PresenceInfo&#39; data type, but with the OpenAPI &#39;nullable: true&#39; property.  If the additionalPraId IE is present, this IE shall state the presence information of the UE for the individual PRA identified by the additionalPraId IE;  If the additionalPraId IE is not present, this IE shall state the presence information of the UE for the PRA identified by the praId IE.  
  */
 
 #ifndef _OpenAPI_presence_info_rm_H_

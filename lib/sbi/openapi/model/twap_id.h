@@ -1,7 +1,7 @@
 /*
  * twap_id.h
  *
- * 
+ * Contain the TWAP Identifier as defined in clause 4.2.8.5.3 of 3GPP TS 23.501 or the WLAN location information as defined in clause 4.5.7.2.8 of 3GPP TS 23.402. 
  */
 
 #ifndef _OpenAPI_twap_id_H_

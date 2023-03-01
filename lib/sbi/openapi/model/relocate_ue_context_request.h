@@ -21,7 +21,7 @@ extern "C" {
 typedef struct OpenAPI_relocate_ue_context_request_s OpenAPI_relocate_ue_context_request_t;
 typedef struct OpenAPI_relocate_ue_context_request_s {
     struct OpenAPI_ue_context_relocate_data_s *json_data;
-    OpenAPI_binary_t* binary_data_gtpc_message;
+    OpenAPI_binary_t* binary_data_forward_relocation_request;
     OpenAPI_binary_t* binary_data_n2_information;
     OpenAPI_binary_t* binary_data_n2_information_ext1;
     OpenAPI_binary_t* binary_data_n2_information_ext2;
@@ -43,7 +43,7 @@ typedef struct OpenAPI_relocate_ue_context_request_s {
 
 OpenAPI_relocate_ue_context_request_t *OpenAPI_relocate_ue_context_request_create(
     OpenAPI_ue_context_relocate_data_t *json_data,
-    OpenAPI_binary_t* binary_data_gtpc_message,
+    OpenAPI_binary_t* binary_data_forward_relocation_request,
     OpenAPI_binary_t* binary_data_n2_information,
     OpenAPI_binary_t* binary_data_n2_information_ext1,
     OpenAPI_binary_t* binary_data_n2_information_ext2,

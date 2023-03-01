@@ -1,7 +1,7 @@
 /*
  * supported_gad_shapes.h
  *
- * 
+ * Indicates supported GAD shapes.
  */
 
 #ifndef _OpenAPI_supported_gad_shapes_H_

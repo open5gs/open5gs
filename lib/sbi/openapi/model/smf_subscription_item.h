@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "context_info.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,11 +22,13 @@ typedef struct OpenAPI_smf_subscription_item_s OpenAPI_smf_subscription_item_t;
 typedef struct OpenAPI_smf_subscription_item_s {
     char *smf_instance_id;
     char *subscription_id;
+    struct OpenAPI_context_info_s *context_info;
 } OpenAPI_smf_subscription_item_t;
 
 OpenAPI_smf_subscription_item_t *OpenAPI_smf_subscription_item_create(
     char *smf_instance_id,
-    char *subscription_id
+    char *subscription_id,
+    OpenAPI_context_info_t *context_info
 );
 void OpenAPI_smf_subscription_item_free(OpenAPI_smf_subscription_item_t *smf_subscription_item);
 OpenAPI_smf_subscription_item_t *OpenAPI_smf_subscription_item_parseFromJSON(cJSON *smf_subscription_itemJSON);

@@ -1,7 +1,7 @@
 /*
  * tunnel_info.h
  *
- * 
+ * Tunnel Information
  */
 
 #ifndef _OpenAPI_tunnel_info_H_

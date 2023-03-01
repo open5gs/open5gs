@@ -1,7 +1,7 @@
 /*
  * acs_info_1.h
  *
- * 
+ * The ACS information for the 5G-RG is defined in BBF TR-069 [42] or in BBF TR-369
  */
 
 #ifndef _OpenAPI_acs_info_1_H_

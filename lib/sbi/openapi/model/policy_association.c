@@ -11,10 +11,16 @@ OpenAPI_policy_association_t *OpenAPI_policy_association_create(
     OpenAPI_wireline_service_area_restriction_t *wl_serv_area_res,
     bool is_rfsp,
     int rfsp,
+    bool is_target_rfsp,
+    int target_rfsp,
     OpenAPI_smf_selection_data_t *smf_sel_info,
     OpenAPI_ambr_t *ue_ambr,
+    OpenAPI_list_t *ue_slice_mbrs,
     OpenAPI_list_t* pras,
-    char *supp_feat
+    char *supp_feat,
+    OpenAPI_pcf_ue_callback_info_t *pcf_ue_info,
+    OpenAPI_list_t *match_pdus,
+    OpenAPI_as_time_distribution_param_t *as_time_dis_param
 )
 {
     OpenAPI_policy_association_t *policy_association_local_var = ogs_malloc(sizeof(OpenAPI_policy_association_t));
@@ -26,10 +32,16 @@ OpenAPI_policy_association_t *OpenAPI_policy_association_create(
     policy_association_local_var->wl_serv_area_res = wl_serv_area_res;
     policy_association_local_var->is_rfsp = is_rfsp;
     policy_association_local_var->rfsp = rfsp;
+    policy_association_local_var->is_target_rfsp = is_target_rfsp;
+    policy_association_local_var->target_rfsp = target_rfsp;
     policy_association_local_var->smf_sel_info = smf_sel_info;
     policy_association_local_var->ue_ambr = ue_ambr;
+    policy_association_local_var->ue_slice_mbrs = ue_slice_mbrs;
     policy_association_local_var->pras = pras;
     policy_association_local_var->supp_feat = supp_feat;
+    policy_association_local_var->pcf_ue_info = pcf_ue_info;
+    policy_association_local_var->match_pdus = match_pdus;
+    policy_association_local_var->as_time_dis_param = as_time_dis_param;
 
     return policy_association_local_var;
 }
@@ -65,6 +77,13 @@ void OpenAPI_policy_association_free(OpenAPI_policy_association_t *policy_associ
         OpenAPI_ambr_free(policy_association->ue_ambr);
         policy_association->ue_ambr = NULL;
     }
+    if (policy_association->ue_slice_mbrs) {
+        OpenAPI_list_for_each(policy_association->ue_slice_mbrs, node) {
+            OpenAPI_ue_slice_mbr_free(node->data);
+        }
+        OpenAPI_list_free(policy_association->ue_slice_mbrs);
+        policy_association->ue_slice_mbrs = NULL;
+    }
     if (policy_association->pras) {
         OpenAPI_list_for_each(policy_association->pras, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
@@ -78,6 +97,21 @@ void OpenAPI_policy_association_free(OpenAPI_policy_association_t *policy_associ
     if (policy_association->supp_feat) {
         ogs_free(policy_association->supp_feat);
         policy_association->supp_feat = NULL;
+    }
+    if (policy_association->pcf_ue_info) {
+        OpenAPI_pcf_ue_callback_info_free(policy_association->pcf_ue_info);
+        policy_association->pcf_ue_info = NULL;
+    }
+    if (policy_association->match_pdus) {
+        OpenAPI_list_for_each(policy_association->match_pdus, node) {
+            OpenAPI_pdu_session_info_free(node->data);
+        }
+        OpenAPI_list_free(policy_association->match_pdus);
+        policy_association->match_pdus = NULL;
+    }
+    if (policy_association->as_time_dis_param) {
+        OpenAPI_as_time_distribution_param_free(policy_association->as_time_dis_param);
+        policy_association->as_time_dis_param = NULL;
     }
     ogs_free(policy_association);
 }
@@ -153,6 +187,13 @@ cJSON *OpenAPI_policy_association_convertToJSON(OpenAPI_policy_association_t *po
     }
     }
 
+    if (policy_association->is_target_rfsp) {
+    if (cJSON_AddNumberToObject(item, "targetRfsp", policy_association->target_rfsp) == NULL) {
+        ogs_error("OpenAPI_policy_association_convertToJSON() failed [target_rfsp]");
+        goto end;
+    }
+    }
+
     if (policy_association->smf_sel_info) {
     cJSON *smf_sel_info_local_JSON = OpenAPI_smf_selection_data_convertToJSON(policy_association->smf_sel_info);
     if (smf_sel_info_local_JSON == NULL) {
@@ -176,6 +217,22 @@ cJSON *OpenAPI_policy_association_convertToJSON(OpenAPI_policy_association_t *po
     if (item->child == NULL) {
         ogs_error("OpenAPI_policy_association_convertToJSON() failed [ue_ambr]");
         goto end;
+    }
+    }
+
+    if (policy_association->ue_slice_mbrs) {
+    cJSON *ue_slice_mbrsList = cJSON_AddArrayToObject(item, "ueSliceMbrs");
+    if (ue_slice_mbrsList == NULL) {
+        ogs_error("OpenAPI_policy_association_convertToJSON() failed [ue_slice_mbrs]");
+        goto end;
+    }
+    OpenAPI_list_for_each(policy_association->ue_slice_mbrs, node) {
+        cJSON *itemLocal = OpenAPI_ue_slice_mbr_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_policy_association_convertToJSON() failed [ue_slice_mbrs]");
+            goto end;
+        }
+        cJSON_AddItemToArray(ue_slice_mbrsList, itemLocal);
     }
     }
 
@@ -210,6 +267,48 @@ cJSON *OpenAPI_policy_association_convertToJSON(OpenAPI_policy_association_t *po
         goto end;
     }
 
+    if (policy_association->pcf_ue_info) {
+    cJSON *pcf_ue_info_local_JSON = OpenAPI_pcf_ue_callback_info_convertToJSON(policy_association->pcf_ue_info);
+    if (pcf_ue_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_policy_association_convertToJSON() failed [pcf_ue_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "pcfUeInfo", pcf_ue_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_policy_association_convertToJSON() failed [pcf_ue_info]");
+        goto end;
+    }
+    }
+
+    if (policy_association->match_pdus) {
+    cJSON *match_pdusList = cJSON_AddArrayToObject(item, "matchPdus");
+    if (match_pdusList == NULL) {
+        ogs_error("OpenAPI_policy_association_convertToJSON() failed [match_pdus]");
+        goto end;
+    }
+    OpenAPI_list_for_each(policy_association->match_pdus, node) {
+        cJSON *itemLocal = OpenAPI_pdu_session_info_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_policy_association_convertToJSON() failed [match_pdus]");
+            goto end;
+        }
+        cJSON_AddItemToArray(match_pdusList, itemLocal);
+    }
+    }
+
+    if (policy_association->as_time_dis_param) {
+    cJSON *as_time_dis_param_local_JSON = OpenAPI_as_time_distribution_param_convertToJSON(policy_association->as_time_dis_param);
+    if (as_time_dis_param_local_JSON == NULL) {
+        ogs_error("OpenAPI_policy_association_convertToJSON() failed [as_time_dis_param]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "asTimeDisParam", as_time_dis_param_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_policy_association_convertToJSON() failed [as_time_dis_param]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -227,13 +326,22 @@ OpenAPI_policy_association_t *OpenAPI_policy_association_parseFromJSON(cJSON *po
     cJSON *wl_serv_area_res = NULL;
     OpenAPI_wireline_service_area_restriction_t *wl_serv_area_res_local_nonprim = NULL;
     cJSON *rfsp = NULL;
+    cJSON *target_rfsp = NULL;
     cJSON *smf_sel_info = NULL;
     OpenAPI_smf_selection_data_t *smf_sel_info_local_nonprim = NULL;
     cJSON *ue_ambr = NULL;
     OpenAPI_ambr_t *ue_ambr_local_nonprim = NULL;
+    cJSON *ue_slice_mbrs = NULL;
+    OpenAPI_list_t *ue_slice_mbrsList = NULL;
     cJSON *pras = NULL;
     OpenAPI_list_t *prasList = NULL;
     cJSON *supp_feat = NULL;
+    cJSON *pcf_ue_info = NULL;
+    OpenAPI_pcf_ue_callback_info_t *pcf_ue_info_local_nonprim = NULL;
+    cJSON *match_pdus = NULL;
+    OpenAPI_list_t *match_pdusList = NULL;
+    cJSON *as_time_dis_param = NULL;
+    OpenAPI_as_time_distribution_param_t *as_time_dis_param_local_nonprim = NULL;
     request = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "request");
     if (request) {
     request_local_nonprim = OpenAPI_policy_association_request_parseFromJSON(request);
@@ -276,6 +384,14 @@ OpenAPI_policy_association_t *OpenAPI_policy_association_parseFromJSON(cJSON *po
     }
     }
 
+    target_rfsp = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "targetRfsp");
+    if (target_rfsp) {
+    if (!cJSON_IsNumber(target_rfsp)) {
+        ogs_error("OpenAPI_policy_association_parseFromJSON() failed [target_rfsp]");
+        goto end;
+    }
+    }
+
     smf_sel_info = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "smfSelInfo");
     if (smf_sel_info) {
     smf_sel_info_local_nonprim = OpenAPI_smf_selection_data_parseFromJSON(smf_sel_info);
@@ -284,6 +400,31 @@ OpenAPI_policy_association_t *OpenAPI_policy_association_parseFromJSON(cJSON *po
     ue_ambr = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "ueAmbr");
     if (ue_ambr) {
     ue_ambr_local_nonprim = OpenAPI_ambr_parseFromJSON(ue_ambr);
+    }
+
+    ue_slice_mbrs = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "ueSliceMbrs");
+    if (ue_slice_mbrs) {
+        cJSON *ue_slice_mbrs_local = NULL;
+        if (!cJSON_IsArray(ue_slice_mbrs)) {
+            ogs_error("OpenAPI_policy_association_parseFromJSON() failed [ue_slice_mbrs]");
+            goto end;
+        }
+
+        ue_slice_mbrsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(ue_slice_mbrs_local, ue_slice_mbrs) {
+            if (!cJSON_IsObject(ue_slice_mbrs_local)) {
+                ogs_error("OpenAPI_policy_association_parseFromJSON() failed [ue_slice_mbrs]");
+                goto end;
+            }
+            OpenAPI_ue_slice_mbr_t *ue_slice_mbrsItem = OpenAPI_ue_slice_mbr_parseFromJSON(ue_slice_mbrs_local);
+            if (!ue_slice_mbrsItem) {
+                ogs_error("No ue_slice_mbrsItem");
+                OpenAPI_list_free(ue_slice_mbrsList);
+                goto end;
+            }
+            OpenAPI_list_add(ue_slice_mbrsList, ue_slice_mbrsItem);
+        }
     }
 
     pras = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "pras");
@@ -322,6 +463,41 @@ OpenAPI_policy_association_t *OpenAPI_policy_association_parseFromJSON(cJSON *po
         goto end;
     }
 
+    pcf_ue_info = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "pcfUeInfo");
+    if (pcf_ue_info) {
+    pcf_ue_info_local_nonprim = OpenAPI_pcf_ue_callback_info_parseFromJSON(pcf_ue_info);
+    }
+
+    match_pdus = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "matchPdus");
+    if (match_pdus) {
+        cJSON *match_pdus_local = NULL;
+        if (!cJSON_IsArray(match_pdus)) {
+            ogs_error("OpenAPI_policy_association_parseFromJSON() failed [match_pdus]");
+            goto end;
+        }
+
+        match_pdusList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(match_pdus_local, match_pdus) {
+            if (!cJSON_IsObject(match_pdus_local)) {
+                ogs_error("OpenAPI_policy_association_parseFromJSON() failed [match_pdus]");
+                goto end;
+            }
+            OpenAPI_pdu_session_info_t *match_pdusItem = OpenAPI_pdu_session_info_parseFromJSON(match_pdus_local);
+            if (!match_pdusItem) {
+                ogs_error("No match_pdusItem");
+                OpenAPI_list_free(match_pdusList);
+                goto end;
+            }
+            OpenAPI_list_add(match_pdusList, match_pdusItem);
+        }
+    }
+
+    as_time_dis_param = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "asTimeDisParam");
+    if (as_time_dis_param) {
+    as_time_dis_param_local_nonprim = OpenAPI_as_time_distribution_param_parseFromJSON(as_time_dis_param);
+    }
+
     policy_association_local_var = OpenAPI_policy_association_create (
         request ? request_local_nonprim : NULL,
         triggers ? triggersList : NULL,
@@ -329,10 +505,16 @@ OpenAPI_policy_association_t *OpenAPI_policy_association_parseFromJSON(cJSON *po
         wl_serv_area_res ? wl_serv_area_res_local_nonprim : NULL,
         rfsp ? true : false,
         rfsp ? rfsp->valuedouble : 0,
+        target_rfsp ? true : false,
+        target_rfsp ? target_rfsp->valuedouble : 0,
         smf_sel_info ? smf_sel_info_local_nonprim : NULL,
         ue_ambr ? ue_ambr_local_nonprim : NULL,
+        ue_slice_mbrs ? ue_slice_mbrsList : NULL,
         pras ? prasList : NULL,
-        ogs_strdup(supp_feat->valuestring)
+        ogs_strdup(supp_feat->valuestring),
+        pcf_ue_info ? pcf_ue_info_local_nonprim : NULL,
+        match_pdus ? match_pdusList : NULL,
+        as_time_dis_param ? as_time_dis_param_local_nonprim : NULL
     );
 
     return policy_association_local_var;
@@ -361,6 +543,13 @@ end:
         OpenAPI_ambr_free(ue_ambr_local_nonprim);
         ue_ambr_local_nonprim = NULL;
     }
+    if (ue_slice_mbrsList) {
+        OpenAPI_list_for_each(ue_slice_mbrsList, node) {
+            OpenAPI_ue_slice_mbr_free(node->data);
+        }
+        OpenAPI_list_free(ue_slice_mbrsList);
+        ue_slice_mbrsList = NULL;
+    }
     if (prasList) {
         OpenAPI_list_for_each(prasList, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
@@ -370,6 +559,21 @@ end:
         }
         OpenAPI_list_free(prasList);
         prasList = NULL;
+    }
+    if (pcf_ue_info_local_nonprim) {
+        OpenAPI_pcf_ue_callback_info_free(pcf_ue_info_local_nonprim);
+        pcf_ue_info_local_nonprim = NULL;
+    }
+    if (match_pdusList) {
+        OpenAPI_list_for_each(match_pdusList, node) {
+            OpenAPI_pdu_session_info_free(node->data);
+        }
+        OpenAPI_list_free(match_pdusList);
+        match_pdusList = NULL;
+    }
+    if (as_time_dis_param_local_nonprim) {
+        OpenAPI_as_time_distribution_param_free(as_time_dis_param_local_nonprim);
+        as_time_dis_param_local_nonprim = NULL;
     }
     return NULL;
 }

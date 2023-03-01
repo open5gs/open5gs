@@ -1,7 +1,7 @@
 /*
  * indirect_data_forwarding_tunnel_info.h
  *
- * 
+ * Indirect Data Forwarding Tunnel Information
  */
 
 #ifndef _OpenAPI_indirect_data_forwarding_tunnel_info_H_

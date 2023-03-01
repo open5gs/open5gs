@@ -1,7 +1,7 @@
 /*
  * qos_flow_release_request_item.h
  *
- * 
+ * Individual QoS flow requested to be released
  */
 
 #ifndef _OpenAPI_qos_flow_release_request_item_H_

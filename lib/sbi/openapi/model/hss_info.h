@@ -14,6 +14,7 @@
 #include "../include/binary.h"
 #include "identity_range.h"
 #include "imsi_range.h"
+#include "network_node_diameter_address.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,6 +27,8 @@ typedef struct OpenAPI_hss_info_s {
     OpenAPI_list_t *ims_private_identity_ranges;
     OpenAPI_list_t *ims_public_identity_ranges;
     OpenAPI_list_t *msisdn_ranges;
+    OpenAPI_list_t *external_group_identifiers_ranges;
+    struct OpenAPI_network_node_diameter_address_s *hss_diameter_address;
 } OpenAPI_hss_info_t;
 
 OpenAPI_hss_info_t *OpenAPI_hss_info_create(
@@ -33,7 +36,9 @@ OpenAPI_hss_info_t *OpenAPI_hss_info_create(
     OpenAPI_list_t *imsi_ranges,
     OpenAPI_list_t *ims_private_identity_ranges,
     OpenAPI_list_t *ims_public_identity_ranges,
-    OpenAPI_list_t *msisdn_ranges
+    OpenAPI_list_t *msisdn_ranges,
+    OpenAPI_list_t *external_group_identifiers_ranges,
+    OpenAPI_network_node_diameter_address_t *hss_diameter_address
 );
 void OpenAPI_hss_info_free(OpenAPI_hss_info_t *hss_info);
 OpenAPI_hss_info_t *OpenAPI_hss_info_parseFromJSON(cJSON *hss_infoJSON);

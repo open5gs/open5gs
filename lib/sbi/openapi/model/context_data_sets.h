@@ -1,7 +1,7 @@
 /*
  * context_data_sets.h
  *
- * 
+ * Contains the context data sets.
  */
 
 #ifndef _OpenAPI_context_data_sets_H_
@@ -16,6 +16,8 @@
 #include "amf_non3_gpp_access_registration.h"
 #include "ee_subscription.h"
 #include "ip_sm_gw_registration.h"
+#include "pei_update_info.h"
+#include "roaming_info_update.h"
 #include "sdm_subscription.h"
 #include "smf_registration.h"
 #include "smsf_registration.h"
@@ -36,6 +38,8 @@ typedef struct OpenAPI_context_data_sets_s {
     OpenAPI_list_t *subscription_data_subscriptions;
     OpenAPI_list_t *smf_registrations;
     struct OpenAPI_ip_sm_gw_registration_s *ip_sm_gw;
+    struct OpenAPI_roaming_info_update_s *roaming_info;
+    struct OpenAPI_pei_update_info_s *pei_info;
 } OpenAPI_context_data_sets_t;
 
 OpenAPI_context_data_sets_t *OpenAPI_context_data_sets_create(
@@ -47,7 +51,9 @@ OpenAPI_context_data_sets_t *OpenAPI_context_data_sets_create(
     OpenAPI_smsf_registration_t *smsf_non3_gpp_access,
     OpenAPI_list_t *subscription_data_subscriptions,
     OpenAPI_list_t *smf_registrations,
-    OpenAPI_ip_sm_gw_registration_t *ip_sm_gw
+    OpenAPI_ip_sm_gw_registration_t *ip_sm_gw,
+    OpenAPI_roaming_info_update_t *roaming_info,
+    OpenAPI_pei_update_info_t *pei_info
 );
 void OpenAPI_context_data_sets_free(OpenAPI_context_data_sets_t *context_data_sets);
 OpenAPI_context_data_sets_t *OpenAPI_context_data_sets_parseFromJSON(cJSON *context_data_setsJSON);

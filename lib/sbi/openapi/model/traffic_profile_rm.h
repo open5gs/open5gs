@@ -1,7 +1,7 @@
 /*
  * traffic_profile_rm.h
  *
- * 
+ * This enumeration is defined in the same way as the &#39;TrafficProfile&#39; enumeration, but with the OpenAPI &#39;nullable: true&#39; property.  
  */
 
 #ifndef _OpenAPI_traffic_profile_rm_H_

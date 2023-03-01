@@ -1,7 +1,7 @@
 /*
  * ue_context_transfer_req_data.h
  *
- * 
+ * Data within a UE Context Transfer Request to start transferring of an individual ueContext resource from old AMF to new AMF
  */
 
 #ifndef _OpenAPI_ue_context_transfer_req_data_H_

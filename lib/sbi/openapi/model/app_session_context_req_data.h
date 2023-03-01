@@ -17,6 +17,7 @@
 #include "bridge_management_container.h"
 #include "events_subsc_req_data.h"
 #include "media_component.h"
+#include "mps_action.h"
 #include "port_management_container.h"
 #include "preemption_control_information.h"
 #include "reserv_priority.h"
@@ -42,6 +43,7 @@ typedef struct OpenAPI_app_session_context_req_data_s {
     char *mc_video_id;
     OpenAPI_list_t* med_components;
     char *ip_domain;
+    OpenAPI_mps_action_e mps_action;
     char *mps_id;
     char *mcs_id;
     OpenAPI_preemption_control_information_e preempt_control_info;
@@ -76,6 +78,7 @@ OpenAPI_app_session_context_req_data_t *OpenAPI_app_session_context_req_data_cre
     char *mc_video_id,
     OpenAPI_list_t* med_components,
     char *ip_domain,
+    OpenAPI_mps_action_e mps_action,
     char *mps_id,
     char *mcs_id,
     OpenAPI_preemption_control_information_e preempt_control_info,

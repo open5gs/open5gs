@@ -1,7 +1,7 @@
 /*
  * ref_to_binary_data.h
  *
- * 
+ * This parameter provides information about the referenced binary body data.
  */
 
 #ifndef _OpenAPI_ref_to_binary_data_H_

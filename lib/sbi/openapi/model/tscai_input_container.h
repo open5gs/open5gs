@@ -22,12 +22,20 @@ typedef struct OpenAPI_tscai_input_container_s {
     bool is_periodicity;
     int periodicity;
     char *burst_arrival_time;
+    bool is_sur_time_in_num_msg;
+    int sur_time_in_num_msg;
+    bool is_sur_time_in_time;
+    int sur_time_in_time;
 } OpenAPI_tscai_input_container_t;
 
 OpenAPI_tscai_input_container_t *OpenAPI_tscai_input_container_create(
     bool is_periodicity,
     int periodicity,
-    char *burst_arrival_time
+    char *burst_arrival_time,
+    bool is_sur_time_in_num_msg,
+    int sur_time_in_num_msg,
+    bool is_sur_time_in_time,
+    int sur_time_in_time
 );
 void OpenAPI_tscai_input_container_free(OpenAPI_tscai_input_container_t *tscai_input_container);
 OpenAPI_tscai_input_container_t *OpenAPI_tscai_input_container_parseFromJSON(cJSON *tscai_input_containerJSON);

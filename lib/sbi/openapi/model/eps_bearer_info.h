@@ -1,7 +1,7 @@
 /*
  * eps_bearer_info.h
  *
- * 
+ * EPS Bearer Information from H-SMF to V-SMF, or from SMF to I-SMF
  */
 
 #ifndef _OpenAPI_eps_bearer_info_H_

@@ -7,6 +7,8 @@
 OpenAPI_nr_location_t *OpenAPI_nr_location_create(
     OpenAPI_tai_t *tai,
     OpenAPI_ncgi_t *ncgi,
+    bool is_ignore_ncgi,
+    int ignore_ncgi,
     bool is_age_of_location_information,
     int age_of_location_information,
     char *ue_location_timestamp,
@@ -20,6 +22,8 @@ OpenAPI_nr_location_t *OpenAPI_nr_location_create(
 
     nr_location_local_var->tai = tai;
     nr_location_local_var->ncgi = ncgi;
+    nr_location_local_var->is_ignore_ncgi = is_ignore_ncgi;
+    nr_location_local_var->ignore_ncgi = ignore_ncgi;
     nr_location_local_var->is_age_of_location_information = is_age_of_location_information;
     nr_location_local_var->age_of_location_information = age_of_location_information;
     nr_location_local_var->ue_location_timestamp = ue_location_timestamp;
@@ -105,6 +109,13 @@ cJSON *OpenAPI_nr_location_convertToJSON(OpenAPI_nr_location_t *nr_location)
         goto end;
     }
 
+    if (nr_location->is_ignore_ncgi) {
+    if (cJSON_AddBoolToObject(item, "ignoreNcgi", nr_location->ignore_ncgi) == NULL) {
+        ogs_error("OpenAPI_nr_location_convertToJSON() failed [ignore_ncgi]");
+        goto end;
+    }
+    }
+
     if (nr_location->is_age_of_location_information) {
     if (cJSON_AddNumberToObject(item, "ageOfLocationInformation", nr_location->age_of_location_information) == NULL) {
         ogs_error("OpenAPI_nr_location_convertToJSON() failed [age_of_location_information]");
@@ -158,6 +169,7 @@ OpenAPI_nr_location_t *OpenAPI_nr_location_parseFromJSON(cJSON *nr_locationJSON)
     OpenAPI_tai_t *tai_local_nonprim = NULL;
     cJSON *ncgi = NULL;
     OpenAPI_ncgi_t *ncgi_local_nonprim = NULL;
+    cJSON *ignore_ncgi = NULL;
     cJSON *age_of_location_information = NULL;
     cJSON *ue_location_timestamp = NULL;
     cJSON *geographical_information = NULL;
@@ -177,6 +189,14 @@ OpenAPI_nr_location_t *OpenAPI_nr_location_parseFromJSON(cJSON *nr_locationJSON)
         goto end;
     }
     ncgi_local_nonprim = OpenAPI_ncgi_parseFromJSON(ncgi);
+
+    ignore_ncgi = cJSON_GetObjectItemCaseSensitive(nr_locationJSON, "ignoreNcgi");
+    if (ignore_ncgi) {
+    if (!cJSON_IsBool(ignore_ncgi)) {
+        ogs_error("OpenAPI_nr_location_parseFromJSON() failed [ignore_ncgi]");
+        goto end;
+    }
+    }
 
     age_of_location_information = cJSON_GetObjectItemCaseSensitive(nr_locationJSON, "ageOfLocationInformation");
     if (age_of_location_information) {
@@ -218,6 +238,8 @@ OpenAPI_nr_location_t *OpenAPI_nr_location_parseFromJSON(cJSON *nr_locationJSON)
     nr_location_local_var = OpenAPI_nr_location_create (
         tai_local_nonprim,
         ncgi_local_nonprim,
+        ignore_ncgi ? true : false,
+        ignore_ncgi ? ignore_ncgi->valueint : 0,
         age_of_location_information ? true : false,
         age_of_location_information ? age_of_location_information->valuedouble : 0,
         ue_location_timestamp && !cJSON_IsNull(ue_location_timestamp) ? ogs_strdup(ue_location_timestamp->valuestring) : NULL,

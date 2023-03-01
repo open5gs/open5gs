@@ -1,7 +1,7 @@
 /*
  * pdu_session_management_data.h
  *
- * 
+ * Represents Session management data for a UE and a PDU session.
  */
 
 #ifndef _OpenAPI_pdu_session_management_data_H_
@@ -22,7 +22,7 @@ extern "C" {
 
 typedef struct OpenAPI_pdu_session_management_data_s OpenAPI_pdu_session_management_data_t;
 typedef struct OpenAPI_pdu_session_management_data_s {
-    struct OpenAPI_pdu_session_status_s *pdu_session_status;
+    OpenAPI_pdu_session_status_e pdu_session_status;
     char *pdu_session_status_ts;
     char *dnai;
     char *dnai_ts;
@@ -37,10 +37,11 @@ typedef struct OpenAPI_pdu_session_management_data_s {
     bool is_pdu_session_id;
     int pdu_session_id;
     char *supp_feat;
+    OpenAPI_list_t *reset_ids;
 } OpenAPI_pdu_session_management_data_t;
 
 OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_create(
-    OpenAPI_pdu_session_status_t *pdu_session_status,
+    OpenAPI_pdu_session_status_e pdu_session_status,
     char *pdu_session_status_ts,
     char *dnai,
     char *dnai_ts,
@@ -54,7 +55,8 @@ OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_creat
     char *dnn,
     bool is_pdu_session_id,
     int pdu_session_id,
-    char *supp_feat
+    char *supp_feat,
+    OpenAPI_list_t *reset_ids
 );
 void OpenAPI_pdu_session_management_data_free(OpenAPI_pdu_session_management_data_t *pdu_session_management_data);
 OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_parseFromJSON(cJSON *pdu_session_management_dataJSON);

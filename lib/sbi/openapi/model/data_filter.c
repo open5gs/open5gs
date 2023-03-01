@@ -13,7 +13,10 @@ OpenAPI_data_filter_t *OpenAPI_data_filter_create(
     OpenAPI_list_t *app_ids,
     OpenAPI_list_t *ue_ipv4s,
     OpenAPI_list_t *ue_ipv6s,
-    OpenAPI_list_t *ue_macs
+    OpenAPI_list_t *ue_macs,
+    bool is_any_ue_ind,
+    int any_ue_ind,
+    OpenAPI_list_t *dnn_snssai_infos
 )
 {
     OpenAPI_data_filter_t *data_filter_local_var = ogs_malloc(sizeof(OpenAPI_data_filter_t));
@@ -28,6 +31,9 @@ OpenAPI_data_filter_t *OpenAPI_data_filter_create(
     data_filter_local_var->ue_ipv4s = ue_ipv4s;
     data_filter_local_var->ue_ipv6s = ue_ipv6s;
     data_filter_local_var->ue_macs = ue_macs;
+    data_filter_local_var->is_any_ue_ind = is_any_ue_ind;
+    data_filter_local_var->any_ue_ind = any_ue_ind;
+    data_filter_local_var->dnn_snssai_infos = dnn_snssai_infos;
 
     return data_filter_local_var;
 }
@@ -98,6 +104,13 @@ void OpenAPI_data_filter_free(OpenAPI_data_filter_t *data_filter)
         }
         OpenAPI_list_free(data_filter->ue_macs);
         data_filter->ue_macs = NULL;
+    }
+    if (data_filter->dnn_snssai_infos) {
+        OpenAPI_list_for_each(data_filter->dnn_snssai_infos, node) {
+            OpenAPI_dnn_snssai_information_free(node->data);
+        }
+        OpenAPI_list_free(data_filter->dnn_snssai_infos);
+        data_filter->dnn_snssai_infos = NULL;
     }
     ogs_free(data_filter);
 }
@@ -242,6 +255,29 @@ cJSON *OpenAPI_data_filter_convertToJSON(OpenAPI_data_filter_t *data_filter)
     }
     }
 
+    if (data_filter->is_any_ue_ind) {
+    if (cJSON_AddBoolToObject(item, "anyUeInd", data_filter->any_ue_ind) == NULL) {
+        ogs_error("OpenAPI_data_filter_convertToJSON() failed [any_ue_ind]");
+        goto end;
+    }
+    }
+
+    if (data_filter->dnn_snssai_infos) {
+    cJSON *dnn_snssai_infosList = cJSON_AddArrayToObject(item, "dnnSnssaiInfos");
+    if (dnn_snssai_infosList == NULL) {
+        ogs_error("OpenAPI_data_filter_convertToJSON() failed [dnn_snssai_infos]");
+        goto end;
+    }
+    OpenAPI_list_for_each(data_filter->dnn_snssai_infos, node) {
+        cJSON *itemLocal = OpenAPI_dnn_snssai_information_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_data_filter_convertToJSON() failed [dnn_snssai_infos]");
+            goto end;
+        }
+        cJSON_AddItemToArray(dnn_snssai_infosList, itemLocal);
+    }
+    }
+
 end:
     return item;
 }
@@ -268,6 +304,9 @@ OpenAPI_data_filter_t *OpenAPI_data_filter_parseFromJSON(cJSON *data_filterJSON)
     OpenAPI_list_t *ue_ipv6sList = NULL;
     cJSON *ue_macs = NULL;
     OpenAPI_list_t *ue_macsList = NULL;
+    cJSON *any_ue_ind = NULL;
+    cJSON *dnn_snssai_infos = NULL;
+    OpenAPI_list_t *dnn_snssai_infosList = NULL;
     data_ind = cJSON_GetObjectItemCaseSensitive(data_filterJSON, "dataInd");
     if (!data_ind) {
         ogs_error("OpenAPI_data_filter_parseFromJSON() failed [data_ind]");
@@ -447,6 +486,39 @@ OpenAPI_data_filter_t *OpenAPI_data_filter_parseFromJSON(cJSON *data_filterJSON)
         }
     }
 
+    any_ue_ind = cJSON_GetObjectItemCaseSensitive(data_filterJSON, "anyUeInd");
+    if (any_ue_ind) {
+    if (!cJSON_IsBool(any_ue_ind)) {
+        ogs_error("OpenAPI_data_filter_parseFromJSON() failed [any_ue_ind]");
+        goto end;
+    }
+    }
+
+    dnn_snssai_infos = cJSON_GetObjectItemCaseSensitive(data_filterJSON, "dnnSnssaiInfos");
+    if (dnn_snssai_infos) {
+        cJSON *dnn_snssai_infos_local = NULL;
+        if (!cJSON_IsArray(dnn_snssai_infos)) {
+            ogs_error("OpenAPI_data_filter_parseFromJSON() failed [dnn_snssai_infos]");
+            goto end;
+        }
+
+        dnn_snssai_infosList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(dnn_snssai_infos_local, dnn_snssai_infos) {
+            if (!cJSON_IsObject(dnn_snssai_infos_local)) {
+                ogs_error("OpenAPI_data_filter_parseFromJSON() failed [dnn_snssai_infos]");
+                goto end;
+            }
+            OpenAPI_dnn_snssai_information_t *dnn_snssai_infosItem = OpenAPI_dnn_snssai_information_parseFromJSON(dnn_snssai_infos_local);
+            if (!dnn_snssai_infosItem) {
+                ogs_error("No dnn_snssai_infosItem");
+                OpenAPI_list_free(dnn_snssai_infosList);
+                goto end;
+            }
+            OpenAPI_list_add(dnn_snssai_infosList, dnn_snssai_infosItem);
+        }
+    }
+
     data_filter_local_var = OpenAPI_data_filter_create (
         data_ind_local_nonprim,
         dnns ? dnnsList : NULL,
@@ -456,7 +528,10 @@ OpenAPI_data_filter_t *OpenAPI_data_filter_parseFromJSON(cJSON *data_filterJSON)
         app_ids ? app_idsList : NULL,
         ue_ipv4s ? ue_ipv4sList : NULL,
         ue_ipv6s ? ue_ipv6sList : NULL,
-        ue_macs ? ue_macsList : NULL
+        ue_macs ? ue_macsList : NULL,
+        any_ue_ind ? true : false,
+        any_ue_ind ? any_ue_ind->valueint : 0,
+        dnn_snssai_infos ? dnn_snssai_infosList : NULL
     );
 
     return data_filter_local_var;
@@ -520,6 +595,13 @@ end:
         }
         OpenAPI_list_free(ue_macsList);
         ue_macsList = NULL;
+    }
+    if (dnn_snssai_infosList) {
+        OpenAPI_list_for_each(dnn_snssai_infosList, node) {
+            OpenAPI_dnn_snssai_information_free(node->data);
+        }
+        OpenAPI_list_free(dnn_snssai_infosList);
+        dnn_snssai_infosList = NULL;
     }
     return NULL;
 }

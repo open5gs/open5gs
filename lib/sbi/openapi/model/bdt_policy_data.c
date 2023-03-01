@@ -10,7 +10,8 @@ OpenAPI_bdt_policy_data_t *OpenAPI_bdt_policy_data_create(
     char *bdt_ref_id,
     char *dnn,
     OpenAPI_snssai_t *snssai,
-    char *res_uri
+    char *res_uri,
+    OpenAPI_list_t *reset_ids
 )
 {
     OpenAPI_bdt_policy_data_t *bdt_policy_data_local_var = ogs_malloc(sizeof(OpenAPI_bdt_policy_data_t));
@@ -22,6 +23,7 @@ OpenAPI_bdt_policy_data_t *OpenAPI_bdt_policy_data_create(
     bdt_policy_data_local_var->dnn = dnn;
     bdt_policy_data_local_var->snssai = snssai;
     bdt_policy_data_local_var->res_uri = res_uri;
+    bdt_policy_data_local_var->reset_ids = reset_ids;
 
     return bdt_policy_data_local_var;
 }
@@ -56,6 +58,13 @@ void OpenAPI_bdt_policy_data_free(OpenAPI_bdt_policy_data_t *bdt_policy_data)
     if (bdt_policy_data->res_uri) {
         ogs_free(bdt_policy_data->res_uri);
         bdt_policy_data->res_uri = NULL;
+    }
+    if (bdt_policy_data->reset_ids) {
+        OpenAPI_list_for_each(bdt_policy_data->reset_ids, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(bdt_policy_data->reset_ids);
+        bdt_policy_data->reset_ids = NULL;
     }
     ogs_free(bdt_policy_data);
 }
@@ -121,6 +130,20 @@ cJSON *OpenAPI_bdt_policy_data_convertToJSON(OpenAPI_bdt_policy_data_t *bdt_poli
     }
     }
 
+    if (bdt_policy_data->reset_ids) {
+    cJSON *reset_idsList = cJSON_AddArrayToObject(item, "resetIds");
+    if (reset_idsList == NULL) {
+        ogs_error("OpenAPI_bdt_policy_data_convertToJSON() failed [reset_ids]");
+        goto end;
+    }
+    OpenAPI_list_for_each(bdt_policy_data->reset_ids, node) {
+        if (cJSON_AddStringToObject(reset_idsList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_bdt_policy_data_convertToJSON() failed [reset_ids]");
+            goto end;
+        }
+    }
+    }
+
 end:
     return item;
 }
@@ -136,6 +159,8 @@ OpenAPI_bdt_policy_data_t *OpenAPI_bdt_policy_data_parseFromJSON(cJSON *bdt_poli
     cJSON *snssai = NULL;
     OpenAPI_snssai_t *snssai_local_nonprim = NULL;
     cJSON *res_uri = NULL;
+    cJSON *reset_ids = NULL;
+    OpenAPI_list_t *reset_idsList = NULL;
     inter_group_id = cJSON_GetObjectItemCaseSensitive(bdt_policy_dataJSON, "interGroupId");
     if (inter_group_id) {
     if (!cJSON_IsString(inter_group_id) && !cJSON_IsNull(inter_group_id)) {
@@ -183,13 +208,35 @@ OpenAPI_bdt_policy_data_t *OpenAPI_bdt_policy_data_parseFromJSON(cJSON *bdt_poli
     }
     }
 
+    reset_ids = cJSON_GetObjectItemCaseSensitive(bdt_policy_dataJSON, "resetIds");
+    if (reset_ids) {
+        cJSON *reset_ids_local = NULL;
+        if (!cJSON_IsArray(reset_ids)) {
+            ogs_error("OpenAPI_bdt_policy_data_parseFromJSON() failed [reset_ids]");
+            goto end;
+        }
+
+        reset_idsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(reset_ids_local, reset_ids) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(reset_ids_local)) {
+                ogs_error("OpenAPI_bdt_policy_data_parseFromJSON() failed [reset_ids]");
+                goto end;
+            }
+            OpenAPI_list_add(reset_idsList, ogs_strdup(reset_ids_local->valuestring));
+        }
+    }
+
     bdt_policy_data_local_var = OpenAPI_bdt_policy_data_create (
         inter_group_id && !cJSON_IsNull(inter_group_id) ? ogs_strdup(inter_group_id->valuestring) : NULL,
         supi && !cJSON_IsNull(supi) ? ogs_strdup(supi->valuestring) : NULL,
         ogs_strdup(bdt_ref_id->valuestring),
         dnn && !cJSON_IsNull(dnn) ? ogs_strdup(dnn->valuestring) : NULL,
         snssai ? snssai_local_nonprim : NULL,
-        res_uri && !cJSON_IsNull(res_uri) ? ogs_strdup(res_uri->valuestring) : NULL
+        res_uri && !cJSON_IsNull(res_uri) ? ogs_strdup(res_uri->valuestring) : NULL,
+        reset_ids ? reset_idsList : NULL
     );
 
     return bdt_policy_data_local_var;
@@ -197,6 +244,13 @@ end:
     if (snssai_local_nonprim) {
         OpenAPI_snssai_free(snssai_local_nonprim);
         snssai_local_nonprim = NULL;
+    }
+    if (reset_idsList) {
+        OpenAPI_list_for_each(reset_idsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(reset_idsList);
+        reset_idsList = NULL;
     }
     return NULL;
 }

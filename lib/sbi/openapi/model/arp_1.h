@@ -1,7 +1,7 @@
 /*
  * arp_1.h
  *
- * 
+ * Contains Allocation and Retention Priority information.
  */
 
 #ifndef _OpenAPI_arp_1_H_

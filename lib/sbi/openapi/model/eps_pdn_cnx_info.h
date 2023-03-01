@@ -1,7 +1,7 @@
 /*
  * eps_pdn_cnx_info.h
  *
- * 
+ * EPS PDN Connection Information from H-SMF to V-SMF, or from SMF to I-SMF
  */
 
 #ifndef _OpenAPI_eps_pdn_cnx_info_H_

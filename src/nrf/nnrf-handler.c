@@ -165,7 +165,7 @@ bool nrf_nnrf_handle_nf_status_subscribe(
     int status;
     ogs_sbi_response_t *response = NULL;
     OpenAPI_subscription_data_t *SubscriptionData = NULL;
-    OpenAPI_subscription_data_subscr_cond_t *SubscrCond = NULL;
+    OpenAPI_subscr_cond_t *SubscrCond = NULL;
     ogs_sbi_subscription_data_t *subscription_data = NULL;
     ogs_sbi_client_t *client = NULL;
     OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;

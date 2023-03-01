@@ -8,7 +8,9 @@ OpenAPI_sor_data_t *OpenAPI_sor_data_create(
     char *provisioning_time,
     OpenAPI_ue_update_status_e ue_update_status,
     char *sor_xmac_iue,
-    char *sor_mac_iue
+    char *sor_mac_iue,
+    bool is_me_support_of_sor_cmci,
+    int me_support_of_sor_cmci
 )
 {
     OpenAPI_sor_data_t *sor_data_local_var = ogs_malloc(sizeof(OpenAPI_sor_data_t));
@@ -18,6 +20,8 @@ OpenAPI_sor_data_t *OpenAPI_sor_data_create(
     sor_data_local_var->ue_update_status = ue_update_status;
     sor_data_local_var->sor_xmac_iue = sor_xmac_iue;
     sor_data_local_var->sor_mac_iue = sor_mac_iue;
+    sor_data_local_var->is_me_support_of_sor_cmci = is_me_support_of_sor_cmci;
+    sor_data_local_var->me_support_of_sor_cmci = me_support_of_sor_cmci;
 
     return sor_data_local_var;
 }
@@ -87,6 +91,13 @@ cJSON *OpenAPI_sor_data_convertToJSON(OpenAPI_sor_data_t *sor_data)
     }
     }
 
+    if (sor_data->is_me_support_of_sor_cmci) {
+    if (cJSON_AddBoolToObject(item, "meSupportOfSorCmci", sor_data->me_support_of_sor_cmci) == NULL) {
+        ogs_error("OpenAPI_sor_data_convertToJSON() failed [me_support_of_sor_cmci]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -100,6 +111,7 @@ OpenAPI_sor_data_t *OpenAPI_sor_data_parseFromJSON(cJSON *sor_dataJSON)
     OpenAPI_ue_update_status_e ue_update_statusVariable = 0;
     cJSON *sor_xmac_iue = NULL;
     cJSON *sor_mac_iue = NULL;
+    cJSON *me_support_of_sor_cmci = NULL;
     provisioning_time = cJSON_GetObjectItemCaseSensitive(sor_dataJSON, "provisioningTime");
     if (!provisioning_time) {
         ogs_error("OpenAPI_sor_data_parseFromJSON() failed [provisioning_time]");
@@ -137,11 +149,21 @@ OpenAPI_sor_data_t *OpenAPI_sor_data_parseFromJSON(cJSON *sor_dataJSON)
     }
     }
 
+    me_support_of_sor_cmci = cJSON_GetObjectItemCaseSensitive(sor_dataJSON, "meSupportOfSorCmci");
+    if (me_support_of_sor_cmci) {
+    if (!cJSON_IsBool(me_support_of_sor_cmci)) {
+        ogs_error("OpenAPI_sor_data_parseFromJSON() failed [me_support_of_sor_cmci]");
+        goto end;
+    }
+    }
+
     sor_data_local_var = OpenAPI_sor_data_create (
         ogs_strdup(provisioning_time->valuestring),
         ue_update_statusVariable,
         sor_xmac_iue && !cJSON_IsNull(sor_xmac_iue) ? ogs_strdup(sor_xmac_iue->valuestring) : NULL,
-        sor_mac_iue && !cJSON_IsNull(sor_mac_iue) ? ogs_strdup(sor_mac_iue->valuestring) : NULL
+        sor_mac_iue && !cJSON_IsNull(sor_mac_iue) ? ogs_strdup(sor_mac_iue->valuestring) : NULL,
+        me_support_of_sor_cmci ? true : false,
+        me_support_of_sor_cmci ? me_support_of_sor_cmci->valueint : 0
     );
 
     return sor_data_local_var;

@@ -25,7 +25,8 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_create(
     char *current_plmn_ts,
     OpenAPI_list_t *rat_type,
     char *rat_types_ts,
-    char *supp_feat
+    char *supp_feat,
+    OpenAPI_list_t *reset_ids
 )
 {
     OpenAPI_access_and_mobility_data_t *access_and_mobility_data_local_var = ogs_malloc(sizeof(OpenAPI_access_and_mobility_data_t));
@@ -52,6 +53,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_create(
     access_and_mobility_data_local_var->rat_type = rat_type;
     access_and_mobility_data_local_var->rat_types_ts = rat_types_ts;
     access_and_mobility_data_local_var->supp_feat = supp_feat;
+    access_and_mobility_data_local_var->reset_ids = reset_ids;
 
     return access_and_mobility_data_local_var;
 }
@@ -136,6 +138,13 @@ void OpenAPI_access_and_mobility_data_free(OpenAPI_access_and_mobility_data_t *a
     if (access_and_mobility_data->supp_feat) {
         ogs_free(access_and_mobility_data->supp_feat);
         access_and_mobility_data->supp_feat = NULL;
+    }
+    if (access_and_mobility_data->reset_ids) {
+        OpenAPI_list_for_each(access_and_mobility_data->reset_ids, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(access_and_mobility_data->reset_ids);
+        access_and_mobility_data->reset_ids = NULL;
     }
     ogs_free(access_and_mobility_data);
 }
@@ -334,6 +343,20 @@ cJSON *OpenAPI_access_and_mobility_data_convertToJSON(OpenAPI_access_and_mobilit
     }
     }
 
+    if (access_and_mobility_data->reset_ids) {
+    cJSON *reset_idsList = cJSON_AddArrayToObject(item, "resetIds");
+    if (reset_idsList == NULL) {
+        ogs_error("OpenAPI_access_and_mobility_data_convertToJSON() failed [reset_ids]");
+        goto end;
+    }
+    OpenAPI_list_for_each(access_and_mobility_data->reset_ids, node) {
+        if (cJSON_AddStringToObject(reset_idsList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_access_and_mobility_data_convertToJSON() failed [reset_ids]");
+            goto end;
+        }
+    }
+    }
+
 end:
     return item;
 }
@@ -370,6 +393,8 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
     OpenAPI_list_t *rat_typeList = NULL;
     cJSON *rat_types_ts = NULL;
     cJSON *supp_feat = NULL;
+    cJSON *reset_ids = NULL;
+    OpenAPI_list_t *reset_idsList = NULL;
     location = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "location");
     if (location) {
     location_local_nonprim = OpenAPI_user_location_parseFromJSON(location);
@@ -568,6 +593,27 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
     }
     }
 
+    reset_ids = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "resetIds");
+    if (reset_ids) {
+        cJSON *reset_ids_local = NULL;
+        if (!cJSON_IsArray(reset_ids)) {
+            ogs_error("OpenAPI_access_and_mobility_data_parseFromJSON() failed [reset_ids]");
+            goto end;
+        }
+
+        reset_idsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(reset_ids_local, reset_ids) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(reset_ids_local)) {
+                ogs_error("OpenAPI_access_and_mobility_data_parseFromJSON() failed [reset_ids]");
+                goto end;
+            }
+            OpenAPI_list_add(reset_idsList, ogs_strdup(reset_ids_local->valuestring));
+        }
+    }
+
     access_and_mobility_data_local_var = OpenAPI_access_and_mobility_data_create (
         location ? location_local_nonprim : NULL,
         location_ts && !cJSON_IsNull(location_ts) ? ogs_strdup(location_ts->valuestring) : NULL,
@@ -589,7 +635,8 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
         current_plmn_ts && !cJSON_IsNull(current_plmn_ts) ? ogs_strdup(current_plmn_ts->valuestring) : NULL,
         rat_type ? rat_typeList : NULL,
         rat_types_ts && !cJSON_IsNull(rat_types_ts) ? ogs_strdup(rat_types_ts->valuestring) : NULL,
-        supp_feat && !cJSON_IsNull(supp_feat) ? ogs_strdup(supp_feat->valuestring) : NULL
+        supp_feat && !cJSON_IsNull(supp_feat) ? ogs_strdup(supp_feat->valuestring) : NULL,
+        reset_ids ? reset_idsList : NULL
     );
 
     return access_and_mobility_data_local_var;
@@ -623,6 +670,13 @@ end:
     if (rat_typeList) {
         OpenAPI_list_free(rat_typeList);
         rat_typeList = NULL;
+    }
+    if (reset_idsList) {
+        OpenAPI_list_for_each(reset_idsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(reset_idsList);
+        reset_idsList = NULL;
     }
     return NULL;
 }

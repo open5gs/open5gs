@@ -1,7 +1,7 @@
 /*
  * ecgi_1.h
  *
- * 
+ * Contains the ECGI (E-UTRAN Cell Global Identity), as described in 3GPP 23.003
  */
 
 #ifndef _OpenAPI_ecgi_1_H_

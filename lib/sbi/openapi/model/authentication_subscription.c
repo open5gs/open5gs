@@ -15,10 +15,14 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_creat
     char *enc_topc_key,
     bool is_vector_generation_in_hss,
     int vector_generation_in_hss,
+    char *hss_group_id,
     OpenAPI_auth_method_e n5gc_auth_method,
     bool is_rg_authentication_ind,
     int rg_authentication_ind,
-    char *supi
+    char *supi,
+    bool is_akma_allowed,
+    int akma_allowed,
+    char *routing_id
 )
 {
     OpenAPI_authentication_subscription_t *authentication_subscription_local_var = ogs_malloc(sizeof(OpenAPI_authentication_subscription_t));
@@ -34,10 +38,14 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_creat
     authentication_subscription_local_var->enc_topc_key = enc_topc_key;
     authentication_subscription_local_var->is_vector_generation_in_hss = is_vector_generation_in_hss;
     authentication_subscription_local_var->vector_generation_in_hss = vector_generation_in_hss;
+    authentication_subscription_local_var->hss_group_id = hss_group_id;
     authentication_subscription_local_var->n5gc_auth_method = n5gc_auth_method;
     authentication_subscription_local_var->is_rg_authentication_ind = is_rg_authentication_ind;
     authentication_subscription_local_var->rg_authentication_ind = rg_authentication_ind;
     authentication_subscription_local_var->supi = supi;
+    authentication_subscription_local_var->is_akma_allowed = is_akma_allowed;
+    authentication_subscription_local_var->akma_allowed = akma_allowed;
+    authentication_subscription_local_var->routing_id = routing_id;
 
     return authentication_subscription_local_var;
 }
@@ -77,9 +85,17 @@ void OpenAPI_authentication_subscription_free(OpenAPI_authentication_subscriptio
         ogs_free(authentication_subscription->enc_topc_key);
         authentication_subscription->enc_topc_key = NULL;
     }
+    if (authentication_subscription->hss_group_id) {
+        ogs_free(authentication_subscription->hss_group_id);
+        authentication_subscription->hss_group_id = NULL;
+    }
     if (authentication_subscription->supi) {
         ogs_free(authentication_subscription->supi);
         authentication_subscription->supi = NULL;
+    }
+    if (authentication_subscription->routing_id) {
+        ogs_free(authentication_subscription->routing_id);
+        authentication_subscription->routing_id = NULL;
     }
     ogs_free(authentication_subscription);
 }
@@ -166,6 +182,13 @@ cJSON *OpenAPI_authentication_subscription_convertToJSON(OpenAPI_authentication_
     }
     }
 
+    if (authentication_subscription->hss_group_id) {
+    if (cJSON_AddStringToObject(item, "hssGroupId", authentication_subscription->hss_group_id) == NULL) {
+        ogs_error("OpenAPI_authentication_subscription_convertToJSON() failed [hss_group_id]");
+        goto end;
+    }
+    }
+
     if (authentication_subscription->n5gc_auth_method != OpenAPI_auth_method_NULL) {
     if (cJSON_AddStringToObject(item, "n5gcAuthMethod", OpenAPI_auth_method_ToString(authentication_subscription->n5gc_auth_method)) == NULL) {
         ogs_error("OpenAPI_authentication_subscription_convertToJSON() failed [n5gc_auth_method]");
@@ -183,6 +206,20 @@ cJSON *OpenAPI_authentication_subscription_convertToJSON(OpenAPI_authentication_
     if (authentication_subscription->supi) {
     if (cJSON_AddStringToObject(item, "supi", authentication_subscription->supi) == NULL) {
         ogs_error("OpenAPI_authentication_subscription_convertToJSON() failed [supi]");
+        goto end;
+    }
+    }
+
+    if (authentication_subscription->is_akma_allowed) {
+    if (cJSON_AddBoolToObject(item, "akmaAllowed", authentication_subscription->akma_allowed) == NULL) {
+        ogs_error("OpenAPI_authentication_subscription_convertToJSON() failed [akma_allowed]");
+        goto end;
+    }
+    }
+
+    if (authentication_subscription->routing_id) {
+    if (cJSON_AddStringToObject(item, "routingId", authentication_subscription->routing_id) == NULL) {
+        ogs_error("OpenAPI_authentication_subscription_convertToJSON() failed [routing_id]");
         goto end;
     }
     }
@@ -206,10 +243,13 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_parse
     cJSON *enc_opc_key = NULL;
     cJSON *enc_topc_key = NULL;
     cJSON *vector_generation_in_hss = NULL;
+    cJSON *hss_group_id = NULL;
     cJSON *n5gc_auth_method = NULL;
     OpenAPI_auth_method_e n5gc_auth_methodVariable = 0;
     cJSON *rg_authentication_ind = NULL;
     cJSON *supi = NULL;
+    cJSON *akma_allowed = NULL;
+    cJSON *routing_id = NULL;
     authentication_method = cJSON_GetObjectItemCaseSensitive(authentication_subscriptionJSON, "authenticationMethod");
     if (!authentication_method) {
         ogs_error("OpenAPI_authentication_subscription_parseFromJSON() failed [authentication_method]");
@@ -282,6 +322,14 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_parse
     }
     }
 
+    hss_group_id = cJSON_GetObjectItemCaseSensitive(authentication_subscriptionJSON, "hssGroupId");
+    if (hss_group_id) {
+    if (!cJSON_IsString(hss_group_id) && !cJSON_IsNull(hss_group_id)) {
+        ogs_error("OpenAPI_authentication_subscription_parseFromJSON() failed [hss_group_id]");
+        goto end;
+    }
+    }
+
     n5gc_auth_method = cJSON_GetObjectItemCaseSensitive(authentication_subscriptionJSON, "n5gcAuthMethod");
     if (n5gc_auth_method) {
     if (!cJSON_IsString(n5gc_auth_method)) {
@@ -307,6 +355,22 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_parse
     }
     }
 
+    akma_allowed = cJSON_GetObjectItemCaseSensitive(authentication_subscriptionJSON, "akmaAllowed");
+    if (akma_allowed) {
+    if (!cJSON_IsBool(akma_allowed)) {
+        ogs_error("OpenAPI_authentication_subscription_parseFromJSON() failed [akma_allowed]");
+        goto end;
+    }
+    }
+
+    routing_id = cJSON_GetObjectItemCaseSensitive(authentication_subscriptionJSON, "routingId");
+    if (routing_id) {
+    if (!cJSON_IsString(routing_id) && !cJSON_IsNull(routing_id)) {
+        ogs_error("OpenAPI_authentication_subscription_parseFromJSON() failed [routing_id]");
+        goto end;
+    }
+    }
+
     authentication_subscription_local_var = OpenAPI_authentication_subscription_create (
         authentication_methodVariable,
         enc_permanent_key && !cJSON_IsNull(enc_permanent_key) ? ogs_strdup(enc_permanent_key->valuestring) : NULL,
@@ -318,10 +382,14 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_parse
         enc_topc_key && !cJSON_IsNull(enc_topc_key) ? ogs_strdup(enc_topc_key->valuestring) : NULL,
         vector_generation_in_hss ? true : false,
         vector_generation_in_hss ? vector_generation_in_hss->valueint : 0,
+        hss_group_id && !cJSON_IsNull(hss_group_id) ? ogs_strdup(hss_group_id->valuestring) : NULL,
         n5gc_auth_method ? n5gc_auth_methodVariable : 0,
         rg_authentication_ind ? true : false,
         rg_authentication_ind ? rg_authentication_ind->valueint : 0,
-        supi && !cJSON_IsNull(supi) ? ogs_strdup(supi->valuestring) : NULL
+        supi && !cJSON_IsNull(supi) ? ogs_strdup(supi->valuestring) : NULL,
+        akma_allowed ? true : false,
+        akma_allowed ? akma_allowed->valueint : 0,
+        routing_id && !cJSON_IsNull(routing_id) ? ogs_strdup(routing_id->valuestring) : NULL
     );
 
     return authentication_subscription_local_var;

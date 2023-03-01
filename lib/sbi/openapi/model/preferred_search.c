@@ -16,7 +16,15 @@ OpenAPI_preferred_search_t *OpenAPI_preferred_search_create(
     bool is_preferred_locality_match_ind,
     int preferred_locality_match_ind,
     bool is_other_locality_ind,
-    int other_locality_ind
+    int other_locality_ind,
+    bool is_preferred_vendor_specific_features_ind,
+    int preferred_vendor_specific_features_ind,
+    bool is_preferred_collocated_nf_type_ind,
+    int preferred_collocated_nf_type_ind,
+    bool is_preferred_pgw_match_ind,
+    int preferred_pgw_match_ind,
+    bool is_preferred_analytics_delays_ind,
+    int preferred_analytics_delays_ind
 )
 {
     OpenAPI_preferred_search_t *preferred_search_local_var = ogs_malloc(sizeof(OpenAPI_preferred_search_t));
@@ -34,6 +42,14 @@ OpenAPI_preferred_search_t *OpenAPI_preferred_search_create(
     preferred_search_local_var->preferred_locality_match_ind = preferred_locality_match_ind;
     preferred_search_local_var->is_other_locality_ind = is_other_locality_ind;
     preferred_search_local_var->other_locality_ind = other_locality_ind;
+    preferred_search_local_var->is_preferred_vendor_specific_features_ind = is_preferred_vendor_specific_features_ind;
+    preferred_search_local_var->preferred_vendor_specific_features_ind = preferred_vendor_specific_features_ind;
+    preferred_search_local_var->is_preferred_collocated_nf_type_ind = is_preferred_collocated_nf_type_ind;
+    preferred_search_local_var->preferred_collocated_nf_type_ind = preferred_collocated_nf_type_ind;
+    preferred_search_local_var->is_preferred_pgw_match_ind = is_preferred_pgw_match_ind;
+    preferred_search_local_var->preferred_pgw_match_ind = preferred_pgw_match_ind;
+    preferred_search_local_var->is_preferred_analytics_delays_ind = is_preferred_analytics_delays_ind;
+    preferred_search_local_var->preferred_analytics_delays_ind = preferred_analytics_delays_ind;
 
     return preferred_search_local_var;
 }
@@ -101,6 +117,34 @@ cJSON *OpenAPI_preferred_search_convertToJSON(OpenAPI_preferred_search_t *prefer
     }
     }
 
+    if (preferred_search->is_preferred_vendor_specific_features_ind) {
+    if (cJSON_AddBoolToObject(item, "preferredVendorSpecificFeaturesInd", preferred_search->preferred_vendor_specific_features_ind) == NULL) {
+        ogs_error("OpenAPI_preferred_search_convertToJSON() failed [preferred_vendor_specific_features_ind]");
+        goto end;
+    }
+    }
+
+    if (preferred_search->is_preferred_collocated_nf_type_ind) {
+    if (cJSON_AddBoolToObject(item, "preferredCollocatedNfTypeInd", preferred_search->preferred_collocated_nf_type_ind) == NULL) {
+        ogs_error("OpenAPI_preferred_search_convertToJSON() failed [preferred_collocated_nf_type_ind]");
+        goto end;
+    }
+    }
+
+    if (preferred_search->is_preferred_pgw_match_ind) {
+    if (cJSON_AddBoolToObject(item, "preferredPgwMatchInd", preferred_search->preferred_pgw_match_ind) == NULL) {
+        ogs_error("OpenAPI_preferred_search_convertToJSON() failed [preferred_pgw_match_ind]");
+        goto end;
+    }
+    }
+
+    if (preferred_search->is_preferred_analytics_delays_ind) {
+    if (cJSON_AddBoolToObject(item, "preferredAnalyticsDelaysInd", preferred_search->preferred_analytics_delays_ind) == NULL) {
+        ogs_error("OpenAPI_preferred_search_convertToJSON() failed [preferred_analytics_delays_ind]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -115,6 +159,10 @@ OpenAPI_preferred_search_t *OpenAPI_preferred_search_parseFromJSON(cJSON *prefer
     cJSON *other_api_versions_ind = NULL;
     cJSON *preferred_locality_match_ind = NULL;
     cJSON *other_locality_ind = NULL;
+    cJSON *preferred_vendor_specific_features_ind = NULL;
+    cJSON *preferred_collocated_nf_type_ind = NULL;
+    cJSON *preferred_pgw_match_ind = NULL;
+    cJSON *preferred_analytics_delays_ind = NULL;
     preferred_tai_match_ind = cJSON_GetObjectItemCaseSensitive(preferred_searchJSON, "preferredTaiMatchInd");
     if (preferred_tai_match_ind) {
     if (!cJSON_IsBool(preferred_tai_match_ind)) {
@@ -163,6 +211,38 @@ OpenAPI_preferred_search_t *OpenAPI_preferred_search_parseFromJSON(cJSON *prefer
     }
     }
 
+    preferred_vendor_specific_features_ind = cJSON_GetObjectItemCaseSensitive(preferred_searchJSON, "preferredVendorSpecificFeaturesInd");
+    if (preferred_vendor_specific_features_ind) {
+    if (!cJSON_IsBool(preferred_vendor_specific_features_ind)) {
+        ogs_error("OpenAPI_preferred_search_parseFromJSON() failed [preferred_vendor_specific_features_ind]");
+        goto end;
+    }
+    }
+
+    preferred_collocated_nf_type_ind = cJSON_GetObjectItemCaseSensitive(preferred_searchJSON, "preferredCollocatedNfTypeInd");
+    if (preferred_collocated_nf_type_ind) {
+    if (!cJSON_IsBool(preferred_collocated_nf_type_ind)) {
+        ogs_error("OpenAPI_preferred_search_parseFromJSON() failed [preferred_collocated_nf_type_ind]");
+        goto end;
+    }
+    }
+
+    preferred_pgw_match_ind = cJSON_GetObjectItemCaseSensitive(preferred_searchJSON, "preferredPgwMatchInd");
+    if (preferred_pgw_match_ind) {
+    if (!cJSON_IsBool(preferred_pgw_match_ind)) {
+        ogs_error("OpenAPI_preferred_search_parseFromJSON() failed [preferred_pgw_match_ind]");
+        goto end;
+    }
+    }
+
+    preferred_analytics_delays_ind = cJSON_GetObjectItemCaseSensitive(preferred_searchJSON, "preferredAnalyticsDelaysInd");
+    if (preferred_analytics_delays_ind) {
+    if (!cJSON_IsBool(preferred_analytics_delays_ind)) {
+        ogs_error("OpenAPI_preferred_search_parseFromJSON() failed [preferred_analytics_delays_ind]");
+        goto end;
+    }
+    }
+
     preferred_search_local_var = OpenAPI_preferred_search_create (
         preferred_tai_match_ind ? true : false,
         preferred_tai_match_ind ? preferred_tai_match_ind->valueint : 0,
@@ -175,7 +255,15 @@ OpenAPI_preferred_search_t *OpenAPI_preferred_search_parseFromJSON(cJSON *prefer
         preferred_locality_match_ind ? true : false,
         preferred_locality_match_ind ? preferred_locality_match_ind->valueint : 0,
         other_locality_ind ? true : false,
-        other_locality_ind ? other_locality_ind->valueint : 0
+        other_locality_ind ? other_locality_ind->valueint : 0,
+        preferred_vendor_specific_features_ind ? true : false,
+        preferred_vendor_specific_features_ind ? preferred_vendor_specific_features_ind->valueint : 0,
+        preferred_collocated_nf_type_ind ? true : false,
+        preferred_collocated_nf_type_ind ? preferred_collocated_nf_type_ind->valueint : 0,
+        preferred_pgw_match_ind ? true : false,
+        preferred_pgw_match_ind ? preferred_pgw_match_ind->valueint : 0,
+        preferred_analytics_delays_ind ? true : false,
+        preferred_analytics_delays_ind ? preferred_analytics_delays_ind->valueint : 0
     );
 
     return preferred_search_local_var;

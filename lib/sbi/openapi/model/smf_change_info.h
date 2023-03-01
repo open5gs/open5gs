@@ -1,7 +1,7 @@
 /*
  * smf_change_info.h
  *
- * 
+ * SMF change information for PDU session(s)
  */
 
 #ifndef _OpenAPI_smf_change_info_H_

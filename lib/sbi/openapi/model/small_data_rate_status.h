@@ -1,7 +1,7 @@
 /*
  * small_data_rate_status.h
  *
- * 
+ * It indicates theSmall Data Rate Control Status
  */
 
 #ifndef _OpenAPI_small_data_rate_status_H_

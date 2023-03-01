@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "ip_index.h"
 #include "ipv4_address_range.h"
 #include "ipv6_prefix_range.h"
 #include "pdu_session_type.h"
@@ -27,6 +28,8 @@ typedef struct OpenAPI_dnn_upf_info_item_s {
     OpenAPI_list_t *pdu_session_types;
     OpenAPI_list_t *ipv4_address_ranges;
     OpenAPI_list_t *ipv6_prefix_ranges;
+    OpenAPI_list_t *ipv4_index_list;
+    OpenAPI_list_t *ipv6_index_list;
     OpenAPI_list_t* dnai_nw_instance_list;
 } OpenAPI_dnn_upf_info_item_t;
 
@@ -36,6 +39,8 @@ OpenAPI_dnn_upf_info_item_t *OpenAPI_dnn_upf_info_item_create(
     OpenAPI_list_t *pdu_session_types,
     OpenAPI_list_t *ipv4_address_ranges,
     OpenAPI_list_t *ipv6_prefix_ranges,
+    OpenAPI_list_t *ipv4_index_list,
+    OpenAPI_list_t *ipv6_index_list,
     OpenAPI_list_t* dnai_nw_instance_list
 );
 void OpenAPI_dnn_upf_info_item_free(OpenAPI_dnn_upf_info_item_t *dnn_upf_info_item);

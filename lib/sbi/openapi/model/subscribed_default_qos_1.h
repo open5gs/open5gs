@@ -1,7 +1,7 @@
 /*
  * subscribed_default_qos_1.h
  *
- * 
+ * Provides the subsribed 5QI and the ARP, it may contain the priority level.
  */
 
 #ifndef _OpenAPI_subscribed_default_qos_1_H_
