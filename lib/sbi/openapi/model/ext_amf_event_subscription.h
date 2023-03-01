@@ -14,8 +14,6 @@
 #include "../include/binary.h"
 #include "amf_event.h"
 #include "amf_event_mode.h"
-#include "amf_event_subscription.h"
-#include "amf_event_subscription_add_info.h"
 #include "nf_type.h"
 
 #ifdef __cplusplus

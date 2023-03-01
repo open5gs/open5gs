@@ -1,0 +1,454 @@
+openapi: 3.0.0
+info:
+  title: 3gpp-chargeable-party
+  version: 1.2.1
+  description: |
+    API for Chargeable Party management.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 29.122 V17.7.0 T8 reference point for Northbound APIs
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.122/'
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+servers:
+  - url: '{apiRoot}/3gpp-chargeable-party/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122.
+paths:
+  /{scsAsId}/transactions:
+    get:
+      summary: Read all or queried chargeable party transaction resources for a given SCS/AS.
+      operationId: FetchAllChargeablePartyTransactions
+      tags:
+        - Chargeable Party Transaction Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of SCS/AS
+          required: true
+          schema:
+            type: string
+        - name: ip-addrs
+          in: query
+          description: The IP address(es) of the requested UE(s).
+          required: false
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'TS29571_CommonData.yaml#/components/schemas/IpAddr'
+                minItems: 1
+        - name: ip-domain
+          in: query
+          description: The IPv4 address domain identifier. The attribute may only be provided if IPv4 address is included in the ip-addrs query parameter.
+          required: false
+          schema:
+            type: string
+        - name: mac-addrs
+          in: query
+          description: The MAC address(es) of the requested UE(s).
+          required: false
+          schema:
+            type: array
+            items:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/MacAddr48'
+            minItems: 1
+      responses:
+        '200':
+          description: OK (successful query of Chargeable Party resource)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChargeableParty'
+                minItems: 0
+                description: individual BDT policy subscription.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    post:
+      summary:  Create a new chargeable party transaction resource.
+      operationId: CreateChargeablePartyTransaction
+      tags:
+        - Chargeable Party Transaction Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of SCS/AS
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: representation of the Chargeable Party resource to be Created in the SCEF
+        required: true
+        content:
+          application/json: 
+            schema:
+              $ref: '#/components/schemas/ChargeableParty'
+      callbacks:
+        eventNotification:
+          '{$request.body#/notificationDestination}':
+            post:
+              requestBody:  # contents of the callback message
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: 'TS29122_CommonData.yaml#/components/schemas/NotificationData'
+              responses:
+                '204':
+                  description: No Content (The successful acknowledgement of the notification)
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      responses:
+        '201':
+          description: successful creation of a chargeable party resource
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargeableParty'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /{scsAsId}/transactions/{transactionId}:
+    get:
+      summary: Read a chargeable party resource for a given SCS/AS and a transaction Id.
+      operationId: FetchIndChargeablePartyTransaction
+      tags:
+        - Individual chargeable party resource Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of SCS/AS
+          required: true
+          schema:
+            type: string
+        - name: transactionId
+          in: path
+          description: Identifier of transaction
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK (successful query of a chargeable party resource)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargeableParty'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary:  Updates a existing chargeable party resource for a given SCS/AS and transaction Id.
+      operationId: UpdateChargeablePartyTransaction
+      tags:
+        - Individual chargeable party resource Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of SCS/AS
+          required: true
+          schema:
+            type: string
+        - name: transactionId
+          in: path
+          description: Identifier of transaction
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: representation of the chargeable party resource to be udpated in the SCEF
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/ChargeablePartyPatch'
+      responses:
+        '200':
+          description: successful update of a chargeable party resource
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargeableParty'
+        '204':
+          description: No Content
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary:  Deletes a chargeable party resource for a given SCS/AS and a transcation Id.
+      operationId: DeleteChargeablePartyTransaction
+      tags:
+        - Individual chargeable party resource Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of SCS/AS
+          required: true
+          schema:
+            type: string
+        - name: transactionId
+          in: path
+          description: Identifier of transaction
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: successful deletion of an resouce of chargeable party
+        '200':
+          description: OK (Successful deletion of the existing subscription)
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29122_CommonData.yaml#/components/schemas/NotificationData'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+  schemas: 
+    ChargeableParty:
+      description: Represents the configuration of a chargeable party.
+      type: object
+      properties:
+        self:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        requestTestNotification:
+          type: boolean
+          description: Set to true by the SCS/AS to request the SCEF to send a test notification as defined in clause 5.2.5.3. Set to false or omitted otherwise.
+        websockNotifConfig:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/WebsockNotifConfig'
+        exterAppId:
+          type: string
+          description: Identifies the external Application Identifier.
+        ipv4Addr:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Ipv4Addr'
+        ipDomain:
+          type: string
+        ipv6Addr :
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Ipv6Addr'
+        macAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MacAddr48'
+        flowInfo:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/FlowInfo'
+          minItems: 1
+          description: Describes the application flows.
+        ethFlowInfo:
+          type: array
+          items:
+            $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/EthFlowDescription'
+          minItems: 1
+          description: Identifies Ethernet packet flows.
+        sponsorInformation:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/SponsorInformation'
+        sponsoringEnabled:
+          type: boolean
+          description: >
+            Indicates whether the sponsoring data connectivity is enabled (true) or not (false).
+        referenceId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/BdtReferenceId'
+        servAuthInfo:
+          $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/ServAuthInfo'
+        usageThreshold:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/UsageThreshold'
+        events:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/Event'
+          minItems: 1
+          description: Represents the list of event(s) to which the SCS/AS requests to subscribe to.
+      required:
+        - notificationDestination
+        - sponsorInformation
+        - sponsoringEnabled
+    ChargeablePartyPatch:
+      description: Represents a modification request of a chargeable party resource.
+      type: object
+      properties:
+        flowInfo:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/FlowInfo'
+          minItems: 1
+          description: Describes the IP flows.
+        exterAppId:
+          type: string
+          description: Identifies the external Application Identifier.
+        ethFlowInfo:
+          type: array
+          items:
+            $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/EthFlowDescription'
+          minItems: 1
+          description: Identifies Ethernet packet flows.
+        sponsoringEnabled:
+          type: boolean
+          description: >
+            Indicates whether the sponsoring data connectivity is enabled (true) or not (false).
+        referenceId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/BdtReferenceId'
+        usageThreshold:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/UsageThresholdRm'
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        events:
+          description: Represents the list of event(s) to which the SCS/AS requests to subscribe to.
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/Event'
+          minItems: 1
+

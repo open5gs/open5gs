@@ -1,0 +1,179 @@
+openapi: 3.0.0
+
+info:
+  version: 1.2.0
+  title: Nausf_SoRProtection Service
+  description: |
+    AUSF SoR Protection Service.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.509 V17.6.0; 5G System; Authentication Server Services
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.509'
+
+servers:
+  - url: '{apiRoot}/nausf-sorprotection/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501.
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+      - nausf-sorprotection
+
+paths:
+  /{supi}/ue-sor:
+    post:
+      parameters:
+        - name: supi
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SorInfo'
+        required: true
+      responses:
+        '200':
+          description: SorSecurityInfo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SorSecurityInfo'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '503':
+          description: Service Unavailable
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nausf-sorprotection: Access to the Nausf_SoRProtection API
+  schemas:
+
+#
+# COMPLEX TYPES:
+#
+
+    SorInfo:
+      description: Contains the Steering Information.
+      type: object
+      properties:
+        steeringContainer:
+          $ref: '#/components/schemas/SteeringContainer'
+        ackInd:
+          $ref: '#/components/schemas/AckInd'
+        sorHeader:
+          $ref: '#/components/schemas/SorHeader'
+        sorTransparentInfo:
+          $ref: '#/components/schemas/SorTransparentInfo'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - ackInd
+
+    SorSecurityInfo:
+      description: Contains the material generated for securing of SoR. It contains at least the SoR-MAC-IAUSF and CounterSoR.
+      type: object
+      properties:
+        sorMacIausf:
+          $ref: '#/components/schemas/SorMac'
+        counterSor:
+          $ref: '#/components/schemas/CounterSor'
+        sorXmacIue:
+          $ref: '#/components/schemas/SorMac'
+      required:
+        - sorMacIausf
+        - counterSor
+
+    SteeringContainer:
+      description: Contains the information sent to UE.
+      oneOf:
+        - type: array
+          items:
+            $ref: '#/components/schemas/SteeringInfo'
+          minItems: 1
+        - $ref: '#/components/schemas/SecuredPacket'
+
+    SteeringInfo:
+      description: Contains a combination of one PLMN identity and zero or more access technologies.
+      type: object
+      properties:
+        plmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        accessTechList:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccessTech'
+          minItems: 1
+      required:
+        - plmnId
+
+#
+# SIMPLE TYPES:
+#
+
+    SorMac:
+      description: MAC value for protecting SOR procedure (SoR-MAC-IAUSF and SoR-XMAC-IUE).
+      type: string
+      pattern: '^[A-Fa-f0-9]{32}$'
+
+    CounterSor:
+      description: CounterSoR.
+      type: string
+      pattern: '^[A-Fa-f0-9]{4}$'
+
+    AckInd:
+      description: Contains indication whether the acknowledgement from UE is needed.
+      type: boolean
+
+    SecuredPacket:
+      description: Contains a secure packet.
+      type: string
+      format: byte
+
+    SorHeader:
+      $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+
+    SorTransparentInfo:
+      $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+
+#
+# ENUMS:
+
+    AccessTech:
+      description: Represents the access technology
+      anyOf:
+      - type: string
+        enum:
+        - NR
+        - EUTRAN_IN_WBS1_MODE_AND_NBS1_MODE
+        - EUTRAN_IN_NBS1_MODE_ONLY
+        - EUTRAN_IN_WBS1_MODE_ONLY
+        - UTRAN
+        - GSM_AND_ECGSM_IoT
+        - GSM_WITHOUT_ECGSM_IoT
+        - ECGSM_IoT_ONLY
+        - CDMA_1xRTT
+        - CDMA_HRPD
+        - GSM_COMPACT
+      - type: string
+

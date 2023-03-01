@@ -20,16 +20,18 @@ OpenAPI_problem_details_add_info_t *OpenAPI_problem_details_add_info_create(
 
 void OpenAPI_problem_details_add_info_free(OpenAPI_problem_details_add_info_t *problem_details_add_info)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == problem_details_add_info) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(problem_details_add_info);
 }
 
 cJSON *OpenAPI_problem_details_add_info_convertToJSON(OpenAPI_problem_details_add_info_t *problem_details_add_info)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (problem_details_add_info == NULL) {
         ogs_error("OpenAPI_problem_details_add_info_convertToJSON() failed [ProblemDetailsAddInfo]");
@@ -51,8 +53,9 @@ end:
 OpenAPI_problem_details_add_info_t *OpenAPI_problem_details_add_info_parseFromJSON(cJSON *problem_details_add_infoJSON)
 {
     OpenAPI_problem_details_add_info_t *problem_details_add_info_local_var = NULL;
-    cJSON *remote_error = cJSON_GetObjectItemCaseSensitive(problem_details_add_infoJSON, "remoteError");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *remote_error = NULL;
+    remote_error = cJSON_GetObjectItemCaseSensitive(problem_details_add_infoJSON, "remoteError");
     if (remote_error) {
     if (!cJSON_IsBool(remote_error)) {
         ogs_error("OpenAPI_problem_details_add_info_parseFromJSON() failed [remote_error]");

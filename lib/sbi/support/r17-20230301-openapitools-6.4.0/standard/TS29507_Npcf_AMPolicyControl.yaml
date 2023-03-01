@@ -1,0 +1,808 @@
+openapi: 3.0.0
+info:
+  version: 1.2.0
+  title: Npcf_AMPolicyControl
+  description: |
+    Access and Mobility Policy Control Service.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 29.507 V17.7.0; 5G System; Access and Mobility Policy Control Service.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.507/'
+servers:
+  - url: '{apiRoot}/npcf-am-policy-control/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - npcf-am-policy-control
+paths:
+  /policies:
+    post:
+      operationId: CreateIndividualAMPolicyAssociation
+      summary: Create individual AM policy association.
+      tags:
+        - AM Policy Associations (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyAssociationRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyAssociation'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure
+                {apiRoot}/npcf-am-policy-control/v1/policies/{polAssoId}
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        policyUpdateNotification:
+          '{$request.body#/notificationUri}/update': 
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/PolicyUpdate'
+              responses: 
+                '200':
+                  description: >
+                     OK. The current applicable values corresponding to the policy control request
+                     trigger is reported
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/AmRequestedValueRep'
+                '204':
+                  description: No Content, Notification was successful.
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+        policyAssocitionTerminationRequestNotification:
+          '{$request.body#/notificationUri}/terminate': 
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/TerminationNotification'
+              responses:
+                '204':
+                  description: No Content, Notification was successful.
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  /policies/{polAssoId}:
+    get:
+      operationId: ReadIndividualAMPolicyAssociation
+      summary: Read individual AM policy association.
+      tags:
+        - Individual AM Policy Association (Document)
+      parameters:
+        - name: polAssoId
+          in: path
+          description: Identifier of a policy association
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK. Resource representation is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyAssociation'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      operationId: DeleteIndividualAMPolicyAssociation
+      summary: Delete individual AM policy association.
+      tags:
+        - Individual AM Policy Association (Document)
+      parameters:
+        - name: polAssoId
+          in: path
+          description: Identifier of a policy association
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content. Resource was successfully deleted.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  /policies/{polAssoId}/update:
+    post:
+      operationId: ReportObservedEventTriggersForIndividualAMPolicyAssociation
+      summary: >
+        Report observed event triggers and obtain updated policies for an individual AM
+        policy association.
+      tags:
+        - Individual AM Policy Association (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyAssociationUpdateRequest'
+      parameters:
+        - name: polAssoId
+          in: path
+          description: Identifier of a policy association
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK. Updated policies are returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyUpdate'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            npcf-am-policy-control: Access to the Npcf_AMPolicyControl API
+  schemas:
+    PolicyAssociation:
+      description: Represents an individual AM Policy Association resource.
+      type: object
+      properties:
+        request:
+          $ref: '#/components/schemas/PolicyAssociationRequest'
+        triggers:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequestTrigger'
+          minItems: 1
+          description: Request Triggers that the PCF subscribes.
+        servAreaRes:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ServiceAreaRestriction'
+        wlServAreaRes:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/WirelineServiceAreaRestriction'
+        rfsp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RfspIndex'
+        targetRfsp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RfspIndex'
+        smfSelInfo:
+          $ref: '#/components/schemas/SmfSelectionData'
+        ueAmbr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ambr'
+        ueSliceMbrs:
+          type: array
+          items:
+            $ref: '#/components/schemas/UeSliceMbr'
+          minProperties: 1
+          description: >
+             One or more UE-Slice-MBR(s) for S-NSSAI(s) of serving PLMN as part of the AMF Access and
+             Mobility Policy as determined by the PCF.
+        pras:
+          type: object
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PresenceInfo'
+          minProperties: 1
+          description: >
+            Contains the presence reporting area(s) for which reporting was requested.
+            The praId attribute within the PresenceInfo data type is the key of the map.
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        pcfUeInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PcfUeCallbackInfo'
+        matchPdus:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionInfo'
+          nullable: true
+        asTimeDisParam:
+          $ref: '#/components/schemas/AsTimeDistributionParam'
+      required:
+        - suppFeat
+    PolicyAssociationRequest: 
+      description: >
+        Information which the NF service consumer provides when requesting the creation of a policy
+        association. The serviveName property corresponds to the serviceName in the main body
+        of the specification.
+      type: object
+      properties:
+        notificationUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        altNotifIpv4Addrs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+          minItems: 1
+          description: Alternate or backup IPv4 Address(es) where to send Notifications.
+        altNotifIpv6Addrs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+          minItems: 1
+          description: Alternate or backup IPv6 Address(es) where to send Notifications. 
+        altNotifFqdns:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Fqdn'
+          minItems: 1
+          description: Alternate or backup FQDN(s) where to send Notifications.
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        accessType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+        accessTypes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+          minItems: 1
+        pei:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Pei'
+        userLoc:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        timeZone:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TimeZone'
+        servingPlmn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+        ratType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+        ratTypes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+          minItems: 1
+        groupIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/GroupId'
+          minItems: 1
+        servAreaRes:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ServiceAreaRestriction'
+        wlServAreaRes:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/WirelineServiceAreaRestriction'
+        rfsp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RfspIndex'
+        ueAmbr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ambr'
+        ueSliceMbrs:
+          type: array
+          items:
+            $ref: '#/components/schemas/UeSliceMbr'
+          minProperties: 1
+          description: >
+            The subscribed UE Slice-MBR for each subscribed S-NSSAI of the home PLMN mapping  to
+            a S-NSSAI of the serving PLMN Shall be provided when available.
+        allowedSnssais:
+          description: array of allowed S-NSSAIs for the 3GPP access. 
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+        targetSnssais:
+          description: array of target S-NSSAIs. 
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+        mappingSnssais:
+          description: >
+            mapping of each S-NSSAI of the Allowed NSSAI to the corresponding S-NSSAI of the HPLMN. 
+          type: array
+          items:
+            $ref: 'TS29531_Nnssf_NSSelection.yaml#/components/schemas/MappingOfSnssai'
+          minItems: 1
+        n3gAllowedSnssais:
+          description: array of allowed S-NSSAIs for the Non-3GPP access. 
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+        guami:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Guami'
+        serviveName:
+          $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/ServiceName'
+        traceReq:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TraceData'
+        nwdafDatas:
+          type: array
+          items:
+            $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/NwdafData'
+          minItems: 1
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - notificationUri
+        - suppFeat
+        - supi
+    PolicyAssociationUpdateRequest:
+      description: >
+        Represents information that the NF service consumer provides when requesting the update of
+        a policy association.
+      type: object
+      properties:
+        notificationUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        altNotifIpv4Addrs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+          minItems: 1
+          description: Alternate or backup IPv4 Address(es) where to send Notifications.
+        altNotifIpv6Addrs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+          minItems: 1
+          description: Alternate or backup IPv6 Address(es) where to send Notifications. 
+        altNotifFqdns:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Fqdn'
+          minItems: 1
+          description: Alternate or backup FQDN(s) where to send Notifications.
+        triggers:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequestTrigger'
+          minItems: 1
+          description: Request Triggers that the NF service consumer observes.
+        servAreaRes:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ServiceAreaRestriction'
+        wlServAreaRes:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/WirelineServiceAreaRestriction'
+        rfsp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RfspIndex'
+        smfSelInfo:
+          $ref: '#/components/schemas/SmfSelectionData'
+        ueAmbr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ambr'
+        ueSliceMbrs:
+          type: array
+          items:
+            $ref: '#/components/schemas/UeSliceMbr'
+          minProperties: 1
+          description: >
+            The subscribed UE-Slice-MBR for each subscribed S-NSSAI of the home PLMN mapping
+            to a S-NSSAI of the serving PLMN Shall be provided for the "UE_SLICE_MBR_CH"
+            policy control request trigger.
+        praStatuses:
+          type: object
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PresenceInfo'
+          minProperties: 1
+          description: >
+            Contains the UE presence status for tracking area for which changes of the UE presence
+            occurred. The praId attribute within the PresenceInfo data type is the key of the map.
+        userLoc:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        allowedSnssais:
+          description: array of allowed S-NSSAIs for the 3GPP access. 
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+        targetSnssais:
+          description: array of target S-NSSAIs. 
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+        mappingSnssais:
+          description: >
+            mapping of each S-NSSAI of the Allowed NSSAI to the corresponding S-NSSAI of the HPLMN. 
+          type: array
+          items:
+            $ref: 'TS29531_Nnssf_NSSelection.yaml#/components/schemas/MappingOfSnssai'
+          minItems: 1
+        accessTypes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+          minItems: 1
+        ratTypes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+          minItems: 1
+        n3gAllowedSnssais:
+          description: array of allowed S-NSSAIs for the Non-3GPP access. 
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+        traceReq:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TraceData'
+        guami:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Guami'
+        nwdafDatas:
+          type: array
+          items:
+            $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/NwdafData'
+          minItems: 1
+          nullable: true
+    PolicyUpdate:
+      description: >
+        Represents updated policies that the PCF provides in a notification or in a reply to an
+        Update Request.
+      type: object
+      properties:
+        resourceUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        triggers:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequestTrigger'
+          minItems: 1
+          nullable: true
+          description: Request Triggers that the PCF subscribes.
+        servAreaRes:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ServiceAreaRestriction'
+        wlServAreaRes:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/WirelineServiceAreaRestriction'
+        rfsp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RfspIndex'
+        targetRfsp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RfspIndex'
+        smfSelInfo:
+          $ref: '#/components/schemas/SmfSelectionData'
+        ueAmbr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ambr'
+        ueSliceMbrs:
+          type: array
+          items:
+            $ref: '#/components/schemas/UeSliceMbr'
+          minProperties: 1
+          description: >
+            One or more UE-Slice-MBR(s) for S-NSSAI(s) of serving PLMN the allowed NSSAI as
+            part of the AMF Access and Mobility Policy as determined by the PCF.
+        pras:
+          type: object
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PresenceInfoRm'
+          description: >
+            Contains the presence reporting area(s) for which reporting was requested. The praId
+            attribute within the PresenceInfo data type is the key of the map.
+          minProperties: 1
+          nullable: true
+        pcfUeInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PcfUeCallbackInfo'
+        matchPdus:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionInfo'
+          nullable: true
+        asTimeDisParam:
+          $ref: '#/components/schemas/AsTimeDistributionParam'
+      required:
+        - resourceUri
+    TerminationNotification:
+      description: >
+        Represents a request to terminate a policy Association that the PCF provides in a
+        notification.
+      type: object
+      properties:
+        resourceUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        cause:
+          $ref: '#/components/schemas/PolicyAssociationReleaseCause'
+      required:
+        - resourceUri
+        - cause
+    SmfSelectionData:
+      description: Represents the SMF Selection information that may be replaced by the PCF.
+      type: object
+      properties:
+        unsuppDnn:
+          type: boolean
+        candidates:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/CandidateForReplacement'
+          minProperties: 1
+          description: >
+            Contains the list of DNNs per S-NSSAI that are candidates for replacement. The snssai
+            attribute within the CandidateForReplacement data type is the key of the map.
+          nullable: true
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        mappingSnssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+      nullable: true
+    CandidateForReplacement:
+      description: Represents a list of candidate DNNs for replacement for an S-NSSAI.
+      type: object
+      properties:
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        dnns:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+          minItems: 1
+          nullable: true
+      required:
+        - snssai
+      nullable: true
+    AmRequestedValueRep:
+      description: >
+        Represents the current applicable values corresponding to the policy control request
+        triggers.
+      type: object
+      properties:
+        userLoc:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        praStatuses:
+          type: object
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PresenceInfo'
+          minProperties: 1
+          description: >
+            Contains the UE presence statuses for tracking areas. The praId attribute within the
+            PresenceInfo data type is the key of the map.
+        accessTypes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+          minItems: 1
+        ratTypes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+        allowedSnssais:
+          description: array of allowed S-NSSAIs for the 3GPP access. 
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        n3gAllowedSnssais:
+          description: array of allowed S-NSSAIs for the Non-3GPP access. 
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+    AsTimeDistributionParam:
+      description: Contains the 5G acess stratum time distribution parameters.
+      type: object
+      properties:
+        asTimeDistInd:
+          type: boolean
+        uuErrorBudget:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UintegerRm'
+      nullable: true
+    UeSliceMbr:
+      description: Contains a UE-Slice-MBR and the related information.
+      type: object
+      properties:
+        sliceMbr:
+          type: object
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SliceMbr'
+          minProperties: 1
+          description: Contains the MBR for uplink and the MBR for downlink.
+        servingSnssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        mappedHomeSnssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+      required:
+        - sliceMbr
+        - servingSnssai
+      nullable: true
+
+    RequestTrigger:
+      anyOf:
+      - type: string
+        enum:
+          - LOC_CH
+          - PRA_CH
+          - SERV_AREA_CH
+          - RFSP_CH
+          - ALLOWED_NSSAI_CH
+          - UE_AMBR_CH
+          - UE_SLICE_MBR_CH
+          - SMF_SELECT_CH
+          - ACCESS_TYPE_CH
+          - NWDAF_DATA_CH
+          - TARGET_NSSAI
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Possible values are:
+        - LOC_CH: Location change (tracking area). The tracking area of the UE has changed.
+        - PRA_CH: Change of UE presence in PRA. The AMF reports the current presence status
+          of the UE in a Presence Reporting Area, and notifies that the UE enters/leaves the
+          Presence Reporting Area.
+        - SERV_AREA_CH: Service Area Restriction change. The UDM notifies the AMF that the
+          subscribed service area restriction information has changed.
+        - RFSP_CH: RFSP index change. The UDM notifies the AMF that the subscribed RFSP index has
+          changed.
+        - ALLOWED_NSSAI_CH: Allowed NSSAI change. The AMF notifies that the set of UE allowed
+          S-NSSAIs has changed.
+        - UE_AMBR_CH: UE-AMBR change. The UDM notifies the AMF that the subscribed UE-AMBR has
+          changed.
+        - SMF_SELECT_CH: SMF selection information change. The UE requested for an unsupported
+          DNN or UE requested for a DNN within the list of DNN candidates for replacement per
+          S-NSSAI.
+        - ACCESS_TYPE_CH: Access Type change. The AMF notifies that the access type and the RAT
+          type combinations available in the AMF for a UE with simultaneous 3GPP and non-3GPP
+          connectivity has changed. 
+        - UE_SLICE_MBR_CH: UE-Slice-MBR change. The NF service consumer notifies any changes 
+          in the subscribed UE-Slice-MBR for each subscribed S-NSSAI of the home PLMN mapping 
+          to a S-NSSAI of the serving PLMN.
+        - NWDAF_DATA_CH: NDWAF DATA CHANGE. The AMF notifies that the NWDAF instance IDs used
+          for the UE and/or associated Analytics IDs used for the UE and available in the AMF
+          have changed.
+        - TARGET_NSSAI: Generation of Target NSSAI. The NF service consumer notifies that the
+          Target NSSAI was generated.
+    PolicyAssociationReleaseCause:
+      anyOf:
+      - type: string
+        enum:
+          - UNSPECIFIED
+          - UE_SUBSCRIPTION
+          - INSUFFICIENT_RES
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Possible values are:
+        - UNSPECIFIED: This value is used for unspecified reasons.
+        - UE_SUBSCRIPTION: This value is used to indicate that the session needs to be
+          terminated because the subscription of UE has changed (e.g. was removed).
+        - INSUFFICIENT_RES: This value is used to indicate that the server is overloaded and
+          needs to abort the session.
+

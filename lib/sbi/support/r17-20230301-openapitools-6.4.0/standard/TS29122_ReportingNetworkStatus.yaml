@@ -1,0 +1,427 @@
+openapi: 3.0.0
+info:
+  title: 3gpp-network-status-reporting
+  version: 1.2.0
+  description: |
+    API for reporting network status.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 29.122 V17.6.0 T8 reference point for Northbound APIs
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.122/'
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+servers:
+  - url: '{apiRoot}/3gpp-net-stat-report/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122.
+paths:
+  /{scsAsId}/subscriptions:
+    parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of the SCS/AS
+          required: true
+          schema:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/ScsAsId'
+    get:
+      summary: Read all network status reporting subscription resources for a given SCS/AS.
+      operationId: FetchAllNwStatusReportSubscriptions
+      tags:
+        - Network Status Reporting Subscriptions
+      responses:
+        '200':
+          description: The requested information was returned successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NetworkStatusReportingSubscription'
+                minItems: 0
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    post:
+      summary: Create a new network status reporting subscription resource.
+      operationId: CreateNwStatusReportSubscription
+      tags:
+        - Network Status Reporting Subscriptions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NetworkStatusReportingSubscription'
+      callbacks:
+        notificationDestination:
+          '{request.body#/notificationDestination}':
+            post:
+              requestBody:  # contents of the callback message
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/NetworkStatusReportingNotification'
+              responses:
+                '204':
+                  description: No Content (successful notification)
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      responses:
+        '201':
+          description: The subscription was created successfully. The URI of the created resource shall be returned in the "Location" HTTP header.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkStatusReportingSubscription'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /{scsAsId}/subscriptions/{subscriptionId}:
+    parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of the SCS/AS
+          required: true
+          schema:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/ScsAsId'
+        - name: subscriptionId
+          in: path
+          description: Identifier of the subscription resource of type string
+          required: true
+          schema:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/ResourceId'
+    get:
+      summary: Read an active network status reporting subscription resource.
+      operationId: FetchIndNwStatusReportSubscription
+      tags:
+        - Individual Network Status Reporting subscription
+      responses:
+        '200':
+          description: The requested information was returned successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkStatusReportingSubscription'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    put:
+      summary: Modify an existing subscription resource to update a subscription.
+      operationId: UpdateIndNwStatusReportSubscription
+      tags:
+        - Individual Network Status Reporting subscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NetworkStatusReportingSubscription'
+      responses:
+        '200':
+          description: The subscription was updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkStatusReportingSubscription'
+        '204':
+          description: No Content. The subscription was updated successfully.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    patch:
+      summary: Modify an existing Individual Network Status Reporting Subscription resource.
+      operationId: ModifyIndNwStatusReportSubscription
+      tags:
+        - Individual Network Status Reporting Subscription
+      requestBody:
+        description: Contains the parameters to modify an existing Individual Network Status Reporting Subscription resource.
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/NetStatusRepSubsPatch'
+      responses:
+        '200':
+          description: OK. The modification of the Individual Network Status Reporting Subscription resource was successfull. The SCEF shall return an updated representation of the resource within the NetworkStatusReportingSubscription data structure in the response message body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkStatusReportingSubscription'
+        '204':
+          description: No Content. The modification of the Individual Network Status Reporting Subscription resource was successfull and no content is to be sent in the response message body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: Delete an existing continuous network status reporting subscription resource.
+      operationId: DeleteIndNwStatusReportSubscription
+      tags:
+        - Individual Network Status Reporting subscription
+      responses:
+        '204':
+          description: The subscription was updated successfully.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+  schemas: 
+    NetworkStatusReportingSubscription:
+      description: Represents a subscription to network status information reporting.
+      type: object
+      properties:
+        self:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        requestTestNotification:
+          type: boolean
+          description: Set to true by the SCS/AS to request the SCEF to send a test notification as defined in clause 5.2.5.3. Set to false or omitted otherwise.
+        websockNotifConfig:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/WebsockNotifConfig'
+        locationArea:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea'
+        timeDuration:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        thresholdValues:
+          type: array
+          items:
+            $ref: '#/components/schemas/CongestionValue'
+          minItems: 1
+          description: Identifies a list of congestion level(s) with exact value that the SCS/AS requests to be informed of when reached.
+        thresholdTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/CongestionType'
+          minItems: 1
+          description: Identifies a list of congestion level(s) with abstracted value that the SCS/AS requests to be informed of when reached.
+      required:
+        - notificationDestination
+        - locationArea
+      not:
+        required: [thresholdValues, thresholdTypes]
+
+    NetStatusRepSubsPatch:
+      description: Represents the parameters to request the modification of network status reporting subscription.
+      type: object
+      properties:
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        locationArea:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea'
+        timeDuration:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTimeRm'
+        thresholdValues:
+          type: array
+          items:
+            $ref: '#/components/schemas/CongestionValue'
+          minItems: 1
+        thresholdTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/CongestionType'
+          minItems: 1
+      not:
+        required: [thresholdValues, thresholdTypes]
+
+    NetworkStatusReportingNotification:
+      description: Represents a network status reporting notification.
+      type: object
+      properties:
+        subscription:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        nsiValue:
+          $ref: '#/components/schemas/CongestionValue'
+        nsiType:
+          $ref: '#/components/schemas/CongestionType'
+      required:
+        - subscription
+      not:
+        required: [nsiValue, nsiType]
+    CongestionValue:
+      type: integer
+      minimum: 0
+      maximum: 31
+      description: Unsigned integer with valid values between 0 and 31. The value 0 indicates that there is no congestion. The value 1 is the lowest congestion level and value 31 is the highest congestion level.
+    CongestionType:
+      anyOf:
+      - type: string
+        enum:
+          - HIGH
+          - MEDIUM
+          - LOW
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - HIGH: The congestion status is high.
+        - MEDIUM: The congestion status is medium.
+        - LOW: The congestion status is low.

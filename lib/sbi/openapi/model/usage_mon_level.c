@@ -16,16 +16,18 @@ OpenAPI_usage_mon_level_t *OpenAPI_usage_mon_level_create(
 
 void OpenAPI_usage_mon_level_free(OpenAPI_usage_mon_level_t *usage_mon_level)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == usage_mon_level) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(usage_mon_level);
 }
 
 cJSON *OpenAPI_usage_mon_level_convertToJSON(OpenAPI_usage_mon_level_t *usage_mon_level)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (usage_mon_level == NULL) {
         ogs_error("OpenAPI_usage_mon_level_convertToJSON() failed [UsageMonLevel]");
@@ -40,6 +42,7 @@ end:
 OpenAPI_usage_mon_level_t *OpenAPI_usage_mon_level_parseFromJSON(cJSON *usage_mon_levelJSON)
 {
     OpenAPI_usage_mon_level_t *usage_mon_level_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
     usage_mon_level_local_var = OpenAPI_usage_mon_level_create (
     );
 

@@ -12,7 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "trace_data_1.h"
+#include "trace_data.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,7 +34,7 @@ typedef struct OpenAPI_sms_management_subscription_data_s {
     bool is_mo_sms_barring_roaming;
     int mo_sms_barring_roaming;
     OpenAPI_list_t *shared_sms_mng_data_ids;
-    struct OpenAPI_trace_data_1_s *trace_data;
+    struct OpenAPI_trace_data_s *trace_data;
 } OpenAPI_sms_management_subscription_data_t;
 
 OpenAPI_sms_management_subscription_data_t *OpenAPI_sms_management_subscription_data_create(
@@ -52,7 +52,7 @@ OpenAPI_sms_management_subscription_data_t *OpenAPI_sms_management_subscription_
     bool is_mo_sms_barring_roaming,
     int mo_sms_barring_roaming,
     OpenAPI_list_t *shared_sms_mng_data_ids,
-    OpenAPI_trace_data_1_t *trace_data
+    OpenAPI_trace_data_t *trace_data
 );
 void OpenAPI_sms_management_subscription_data_free(OpenAPI_sms_management_subscription_data_t *sms_management_subscription_data);
 OpenAPI_sms_management_subscription_data_t *OpenAPI_sms_management_subscription_data_parseFromJSON(cJSON *sms_management_subscription_dataJSON);

@@ -20,18 +20,26 @@ OpenAPI_hss_authentication_info_result_t *OpenAPI_hss_authentication_info_result
 
 void OpenAPI_hss_authentication_info_result_free(OpenAPI_hss_authentication_info_result_t *hss_authentication_info_result)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == hss_authentication_info_result) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(hss_authentication_info_result->supported_features);
-    OpenAPI_hss_authentication_vectors_free(hss_authentication_info_result->hss_authentication_vectors);
+    if (hss_authentication_info_result->supported_features) {
+        ogs_free(hss_authentication_info_result->supported_features);
+        hss_authentication_info_result->supported_features = NULL;
+    }
+    if (hss_authentication_info_result->hss_authentication_vectors) {
+        OpenAPI_hss_authentication_vectors_free(hss_authentication_info_result->hss_authentication_vectors);
+        hss_authentication_info_result->hss_authentication_vectors = NULL;
+    }
     ogs_free(hss_authentication_info_result);
 }
 
 cJSON *OpenAPI_hss_authentication_info_result_convertToJSON(OpenAPI_hss_authentication_info_result_t *hss_authentication_info_result)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (hss_authentication_info_result == NULL) {
         ogs_error("OpenAPI_hss_authentication_info_result_convertToJSON() failed [HssAuthenticationInfoResult]");
@@ -46,6 +54,10 @@ cJSON *OpenAPI_hss_authentication_info_result_convertToJSON(OpenAPI_hss_authenti
     }
     }
 
+    if (!hss_authentication_info_result->hss_authentication_vectors) {
+        ogs_error("OpenAPI_hss_authentication_info_result_convertToJSON() failed [hss_authentication_vectors]");
+        return NULL;
+    }
     cJSON *hss_authentication_vectors_local_JSON = OpenAPI_hss_authentication_vectors_convertToJSON(hss_authentication_info_result->hss_authentication_vectors);
     if (hss_authentication_vectors_local_JSON == NULL) {
         ogs_error("OpenAPI_hss_authentication_info_result_convertToJSON() failed [hss_authentication_vectors]");
@@ -64,31 +76,36 @@ end:
 OpenAPI_hss_authentication_info_result_t *OpenAPI_hss_authentication_info_result_parseFromJSON(cJSON *hss_authentication_info_resultJSON)
 {
     OpenAPI_hss_authentication_info_result_t *hss_authentication_info_result_local_var = NULL;
-    cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_resultJSON, "supportedFeatures");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *supported_features = NULL;
+    cJSON *hss_authentication_vectors = NULL;
+    OpenAPI_hss_authentication_vectors_t *hss_authentication_vectors_local_nonprim = NULL;
+    supported_features = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_resultJSON, "supportedFeatures");
     if (supported_features) {
-    if (!cJSON_IsString(supported_features)) {
+    if (!cJSON_IsString(supported_features) && !cJSON_IsNull(supported_features)) {
         ogs_error("OpenAPI_hss_authentication_info_result_parseFromJSON() failed [supported_features]");
         goto end;
     }
     }
 
-    cJSON *hss_authentication_vectors = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_resultJSON, "hssAuthenticationVectors");
+    hss_authentication_vectors = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_resultJSON, "hssAuthenticationVectors");
     if (!hss_authentication_vectors) {
         ogs_error("OpenAPI_hss_authentication_info_result_parseFromJSON() failed [hss_authentication_vectors]");
         goto end;
     }
-
-    OpenAPI_hss_authentication_vectors_t *hss_authentication_vectors_local_nonprim = NULL;
     hss_authentication_vectors_local_nonprim = OpenAPI_hss_authentication_vectors_parseFromJSON(hss_authentication_vectors);
 
     hss_authentication_info_result_local_var = OpenAPI_hss_authentication_info_result_create (
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
+        supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
         hss_authentication_vectors_local_nonprim
     );
 
     return hss_authentication_info_result_local_var;
 end:
+    if (hss_authentication_vectors_local_nonprim) {
+        OpenAPI_hss_authentication_vectors_free(hss_authentication_vectors_local_nonprim);
+        hss_authentication_vectors_local_nonprim = NULL;
+    }
     return NULL;
 }
 

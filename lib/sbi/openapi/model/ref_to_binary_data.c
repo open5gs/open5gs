@@ -18,17 +18,22 @@ OpenAPI_ref_to_binary_data_t *OpenAPI_ref_to_binary_data_create(
 
 void OpenAPI_ref_to_binary_data_free(OpenAPI_ref_to_binary_data_t *ref_to_binary_data)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == ref_to_binary_data) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(ref_to_binary_data->content_id);
+    if (ref_to_binary_data->content_id) {
+        ogs_free(ref_to_binary_data->content_id);
+        ref_to_binary_data->content_id = NULL;
+    }
     ogs_free(ref_to_binary_data);
 }
 
 cJSON *OpenAPI_ref_to_binary_data_convertToJSON(OpenAPI_ref_to_binary_data_t *ref_to_binary_data)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (ref_to_binary_data == NULL) {
         ogs_error("OpenAPI_ref_to_binary_data_convertToJSON() failed [RefToBinaryData]");
@@ -36,6 +41,10 @@ cJSON *OpenAPI_ref_to_binary_data_convertToJSON(OpenAPI_ref_to_binary_data_t *re
     }
 
     item = cJSON_CreateObject();
+    if (!ref_to_binary_data->content_id) {
+        ogs_error("OpenAPI_ref_to_binary_data_convertToJSON() failed [content_id]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "contentId", ref_to_binary_data->content_id) == NULL) {
         ogs_error("OpenAPI_ref_to_binary_data_convertToJSON() failed [content_id]");
         goto end;
@@ -48,12 +57,13 @@ end:
 OpenAPI_ref_to_binary_data_t *OpenAPI_ref_to_binary_data_parseFromJSON(cJSON *ref_to_binary_dataJSON)
 {
     OpenAPI_ref_to_binary_data_t *ref_to_binary_data_local_var = NULL;
-    cJSON *content_id = cJSON_GetObjectItemCaseSensitive(ref_to_binary_dataJSON, "contentId");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *content_id = NULL;
+    content_id = cJSON_GetObjectItemCaseSensitive(ref_to_binary_dataJSON, "contentId");
     if (!content_id) {
         ogs_error("OpenAPI_ref_to_binary_data_parseFromJSON() failed [content_id]");
         goto end;
     }
-
     if (!cJSON_IsString(content_id)) {
         ogs_error("OpenAPI_ref_to_binary_data_parseFromJSON() failed [content_id]");
         goto end;

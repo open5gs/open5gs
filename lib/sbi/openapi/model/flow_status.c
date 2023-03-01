@@ -6,7 +6,7 @@
 
 char* OpenAPI_flow_status_ToString(OpenAPI_flow_status_e flow_status)
 {
-    const char *flow_statusArray[] =  { "NULL", "ENABLED_UPLINK", "ENABLED_DOWNLINK", "ENABLED", "DISABLED", "REMOVED" };
+    const char *flow_statusArray[] =  { "NULL", "ENABLED-UPLINK", "ENABLED-DOWNLINK", "ENABLED", "DISABLED", "REMOVED" };
     size_t sizeofArray = sizeof(flow_statusArray) / sizeof(flow_statusArray[0]);
     if (flow_status < sizeofArray)
         return (char *)flow_statusArray[flow_status];
@@ -17,7 +17,7 @@ char* OpenAPI_flow_status_ToString(OpenAPI_flow_status_e flow_status)
 OpenAPI_flow_status_e OpenAPI_flow_status_FromString(char* flow_status)
 {
     int stringToReturn = 0;
-    const char *flow_statusArray[] =  { "NULL", "ENABLED_UPLINK", "ENABLED_DOWNLINK", "ENABLED", "DISABLED", "REMOVED" };
+    const char *flow_statusArray[] =  { "NULL", "ENABLED-UPLINK", "ENABLED-DOWNLINK", "ENABLED", "DISABLED", "REMOVED" };
     size_t sizeofArray = sizeof(flow_statusArray) / sizeof(flow_statusArray[0]);
     while (stringToReturn < sizeofArray) {
         if (strcmp(flow_status, flow_statusArray[stringToReturn]) == 0) {

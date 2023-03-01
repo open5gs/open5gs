@@ -22,22 +22,33 @@ OpenAPI_lcs_privacy_data_t *OpenAPI_lcs_privacy_data_create(
 
 void OpenAPI_lcs_privacy_data_free(OpenAPI_lcs_privacy_data_t *lcs_privacy_data)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == lcs_privacy_data) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_lpi_free(lcs_privacy_data->lpi);
-    OpenAPI_unrelated_class_free(lcs_privacy_data->unrelated_class);
-    OpenAPI_list_for_each(lcs_privacy_data->plmn_operator_classes, node) {
-        OpenAPI_plmn_operator_class_free(node->data);
+    if (lcs_privacy_data->lpi) {
+        OpenAPI_lpi_free(lcs_privacy_data->lpi);
+        lcs_privacy_data->lpi = NULL;
     }
-    OpenAPI_list_free(lcs_privacy_data->plmn_operator_classes);
+    if (lcs_privacy_data->unrelated_class) {
+        OpenAPI_unrelated_class_free(lcs_privacy_data->unrelated_class);
+        lcs_privacy_data->unrelated_class = NULL;
+    }
+    if (lcs_privacy_data->plmn_operator_classes) {
+        OpenAPI_list_for_each(lcs_privacy_data->plmn_operator_classes, node) {
+            OpenAPI_plmn_operator_class_free(node->data);
+        }
+        OpenAPI_list_free(lcs_privacy_data->plmn_operator_classes);
+        lcs_privacy_data->plmn_operator_classes = NULL;
+    }
     ogs_free(lcs_privacy_data);
 }
 
 cJSON *OpenAPI_lcs_privacy_data_convertToJSON(OpenAPI_lcs_privacy_data_t *lcs_privacy_data)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (lcs_privacy_data == NULL) {
         ogs_error("OpenAPI_lcs_privacy_data_convertToJSON() failed [LcsPrivacyData]");
@@ -77,17 +88,13 @@ cJSON *OpenAPI_lcs_privacy_data_convertToJSON(OpenAPI_lcs_privacy_data_t *lcs_pr
         ogs_error("OpenAPI_lcs_privacy_data_convertToJSON() failed [plmn_operator_classes]");
         goto end;
     }
-
-    OpenAPI_lnode_t *plmn_operator_classes_node;
-    if (lcs_privacy_data->plmn_operator_classes) {
-        OpenAPI_list_for_each(lcs_privacy_data->plmn_operator_classes, plmn_operator_classes_node) {
-            cJSON *itemLocal = OpenAPI_plmn_operator_class_convertToJSON(plmn_operator_classes_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_lcs_privacy_data_convertToJSON() failed [plmn_operator_classes]");
-                goto end;
-            }
-            cJSON_AddItemToArray(plmn_operator_classesList, itemLocal);
+    OpenAPI_list_for_each(lcs_privacy_data->plmn_operator_classes, node) {
+        cJSON *itemLocal = OpenAPI_plmn_operator_class_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_lcs_privacy_data_convertToJSON() failed [plmn_operator_classes]");
+            goto end;
         }
+        cJSON_AddItemToArray(plmn_operator_classesList, itemLocal);
     }
     }
 
@@ -98,47 +105,46 @@ end:
 OpenAPI_lcs_privacy_data_t *OpenAPI_lcs_privacy_data_parseFromJSON(cJSON *lcs_privacy_dataJSON)
 {
     OpenAPI_lcs_privacy_data_t *lcs_privacy_data_local_var = NULL;
-    cJSON *lpi = cJSON_GetObjectItemCaseSensitive(lcs_privacy_dataJSON, "lpi");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *lpi = NULL;
     OpenAPI_lpi_t *lpi_local_nonprim = NULL;
+    cJSON *unrelated_class = NULL;
+    OpenAPI_unrelated_class_t *unrelated_class_local_nonprim = NULL;
+    cJSON *plmn_operator_classes = NULL;
+    OpenAPI_list_t *plmn_operator_classesList = NULL;
+    lpi = cJSON_GetObjectItemCaseSensitive(lcs_privacy_dataJSON, "lpi");
     if (lpi) {
     lpi_local_nonprim = OpenAPI_lpi_parseFromJSON(lpi);
     }
 
-    cJSON *unrelated_class = cJSON_GetObjectItemCaseSensitive(lcs_privacy_dataJSON, "unrelatedClass");
-
-    OpenAPI_unrelated_class_t *unrelated_class_local_nonprim = NULL;
+    unrelated_class = cJSON_GetObjectItemCaseSensitive(lcs_privacy_dataJSON, "unrelatedClass");
     if (unrelated_class) {
     unrelated_class_local_nonprim = OpenAPI_unrelated_class_parseFromJSON(unrelated_class);
     }
 
-    cJSON *plmn_operator_classes = cJSON_GetObjectItemCaseSensitive(lcs_privacy_dataJSON, "plmnOperatorClasses");
-
-    OpenAPI_list_t *plmn_operator_classesList;
+    plmn_operator_classes = cJSON_GetObjectItemCaseSensitive(lcs_privacy_dataJSON, "plmnOperatorClasses");
     if (plmn_operator_classes) {
-    cJSON *plmn_operator_classes_local_nonprimitive;
-    if (!cJSON_IsArray(plmn_operator_classes)){
-        ogs_error("OpenAPI_lcs_privacy_data_parseFromJSON() failed [plmn_operator_classes]");
-        goto end;
-    }
-
-    plmn_operator_classesList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(plmn_operator_classes_local_nonprimitive, plmn_operator_classes ) {
-        if (!cJSON_IsObject(plmn_operator_classes_local_nonprimitive)) {
+        cJSON *plmn_operator_classes_local = NULL;
+        if (!cJSON_IsArray(plmn_operator_classes)) {
             ogs_error("OpenAPI_lcs_privacy_data_parseFromJSON() failed [plmn_operator_classes]");
             goto end;
         }
-        OpenAPI_plmn_operator_class_t *plmn_operator_classesItem = OpenAPI_plmn_operator_class_parseFromJSON(plmn_operator_classes_local_nonprimitive);
 
-        if (!plmn_operator_classesItem) {
-            ogs_error("No plmn_operator_classesItem");
-            OpenAPI_list_free(plmn_operator_classesList);
-            goto end;
+        plmn_operator_classesList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(plmn_operator_classes_local, plmn_operator_classes) {
+            if (!cJSON_IsObject(plmn_operator_classes_local)) {
+                ogs_error("OpenAPI_lcs_privacy_data_parseFromJSON() failed [plmn_operator_classes]");
+                goto end;
+            }
+            OpenAPI_plmn_operator_class_t *plmn_operator_classesItem = OpenAPI_plmn_operator_class_parseFromJSON(plmn_operator_classes_local);
+            if (!plmn_operator_classesItem) {
+                ogs_error("No plmn_operator_classesItem");
+                OpenAPI_list_free(plmn_operator_classesList);
+                goto end;
+            }
+            OpenAPI_list_add(plmn_operator_classesList, plmn_operator_classesItem);
         }
-
-        OpenAPI_list_add(plmn_operator_classesList, plmn_operator_classesItem);
-    }
     }
 
     lcs_privacy_data_local_var = OpenAPI_lcs_privacy_data_create (
@@ -149,6 +155,21 @@ OpenAPI_lcs_privacy_data_t *OpenAPI_lcs_privacy_data_parseFromJSON(cJSON *lcs_pr
 
     return lcs_privacy_data_local_var;
 end:
+    if (lpi_local_nonprim) {
+        OpenAPI_lpi_free(lpi_local_nonprim);
+        lpi_local_nonprim = NULL;
+    }
+    if (unrelated_class_local_nonprim) {
+        OpenAPI_unrelated_class_free(unrelated_class_local_nonprim);
+        unrelated_class_local_nonprim = NULL;
+    }
+    if (plmn_operator_classesList) {
+        OpenAPI_list_for_each(plmn_operator_classesList, node) {
+            OpenAPI_plmn_operator_class_free(node->data);
+        }
+        OpenAPI_list_free(plmn_operator_classesList);
+        plmn_operator_classesList = NULL;
+    }
     return NULL;
 }
 

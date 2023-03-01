@@ -2,51 +2,51 @@ name: Meson Continuous Integration
 on: [push, pull_request]
 
 jobs:
-#  macos-latest:
-#    name: Build and Test on MacOS Latest
-#    runs-on: macos-latest
-#    steps:
-##    - name: Install MongoDB with Package Manager
-##      run: |
-##          brew tap mongodb/brew
-##          brew install mongodb-community
-##          brew services start mongodb-community
-#    - name: Create the TUN device with the interface name `ogstun`.
+  macos-latest:
+    name: Build and Test on MacOS Latest
+    runs-on: macos-latest
+    steps:
+#    - name: Install MongoDB with Package Manager
 #      run: |
-#          sudo ifconfig lo0 alias 127.0.0.2 netmask 255.255.255.255
-#          sudo ifconfig lo0 alias 127.0.0.3 netmask 255.255.255.255
-#          sudo ifconfig lo0 alias 127.0.0.4 netmask 255.255.255.255
-#          sudo ifconfig lo0 alias 127.0.0.5 netmask 255.255.255.255
-#          sudo ifconfig lo0 alias 127.0.0.5 netmask 255.255.255.255
-#          sudo ifconfig lo0 alias 127.0.0.6 netmask 255.255.255.255
-#          sudo ifconfig lo0 alias 127.0.0.7 netmask 255.255.255.255
-#          sudo ifconfig lo0 alias 127.0.0.8 netmask 255.255.255.255
-#          sudo ifconfig lo0 alias 127.0.0.9 netmask 255.255.255.255
-#          sudo ifconfig lo0 alias 127.0.0.10 netmask 255.255.255.255
-#          sudo ifconfig lo0 alias 127.0.0.11 netmask 255.255.255.255
-#          sudo ifconfig lo0 alias 127.0.0.12 netmask 255.255.255.255
-#          sudo ifconfig lo0 alias 127.0.0.13 netmask 255.255.255.255
-#          sudo ifconfig lo0 alias 127.0.0.14 netmask 255.255.255.255
-#          sudo ifconfig lo0 alias 127.0.0.15 netmask 255.255.255.255
-#          sudo ifconfig lo0 alias 127.0.0.16 netmask 255.255.255.255
-#          sudo ifconfig lo0 alias 127.0.0.17 netmask 255.255.255.255
-#          sudo ifconfig lo0 alias 127.0.0.18 netmask 255.255.255.255
-#          sudo ifconfig lo0 alias 127.0.0.19 netmask 255.255.255.255
-#          sudo ifconfig lo0 alias 127.0.0.20 netmask 255.255.255.255
-#          sudo ifconfig lo0 alias 127.0.1.10 netmask 255.255.255.255
-#    - name: Install the dependencies for building the source code.
-#      run: brew install mongo-c-driver libidn libmicrohttpd nghttp2 bison libusrsctp libtins talloc meson
-#    - name: Check out repository code
-#      uses: actions/checkout@main
-#    - name: Setup Meson Build
-#      run: PATH="/usr/local/opt/bison/bin:$PATH" PKG_CONFIG_PATH="/usr/local/opt/openssl/lib/pkgconfig:$PKG_CONFIG_PATH" meson setup build
-#      env:
-#        CC: gcc
-#    - name : Build Open5GS
-#      run: ninja -C build
-#    - name: Test Open5GS
-#      run: sudo meson test -C build -v crypt unit
-#
+#          brew tap mongodb/brew
+#          brew install mongodb-community
+#          brew services start mongodb-community
+    - name: Create the TUN device with the interface name `ogstun`.
+      run: |
+          sudo ifconfig lo0 alias 127.0.0.2 netmask 255.255.255.255
+          sudo ifconfig lo0 alias 127.0.0.3 netmask 255.255.255.255
+          sudo ifconfig lo0 alias 127.0.0.4 netmask 255.255.255.255
+          sudo ifconfig lo0 alias 127.0.0.5 netmask 255.255.255.255
+          sudo ifconfig lo0 alias 127.0.0.5 netmask 255.255.255.255
+          sudo ifconfig lo0 alias 127.0.0.6 netmask 255.255.255.255
+          sudo ifconfig lo0 alias 127.0.0.7 netmask 255.255.255.255
+          sudo ifconfig lo0 alias 127.0.0.8 netmask 255.255.255.255
+          sudo ifconfig lo0 alias 127.0.0.9 netmask 255.255.255.255
+          sudo ifconfig lo0 alias 127.0.0.10 netmask 255.255.255.255
+          sudo ifconfig lo0 alias 127.0.0.11 netmask 255.255.255.255
+          sudo ifconfig lo0 alias 127.0.0.12 netmask 255.255.255.255
+          sudo ifconfig lo0 alias 127.0.0.13 netmask 255.255.255.255
+          sudo ifconfig lo0 alias 127.0.0.14 netmask 255.255.255.255
+          sudo ifconfig lo0 alias 127.0.0.15 netmask 255.255.255.255
+          sudo ifconfig lo0 alias 127.0.0.16 netmask 255.255.255.255
+          sudo ifconfig lo0 alias 127.0.0.17 netmask 255.255.255.255
+          sudo ifconfig lo0 alias 127.0.0.18 netmask 255.255.255.255
+          sudo ifconfig lo0 alias 127.0.0.19 netmask 255.255.255.255
+          sudo ifconfig lo0 alias 127.0.0.20 netmask 255.255.255.255
+          sudo ifconfig lo0 alias 127.0.1.10 netmask 255.255.255.255
+    - name: Install the dependencies for building the source code.
+      run: brew install mongo-c-driver libidn libmicrohttpd nghttp2 bison libusrsctp libtins talloc meson
+    - name: Check out repository code
+      uses: actions/checkout@main
+    - name: Setup Meson Build
+      run: PATH="/usr/local/opt/bison/bin:$PATH" PKG_CONFIG_PATH="/usr/local/opt/openssl/lib/pkgconfig:$PKG_CONFIG_PATH" meson setup build
+      env:
+        CC: gcc
+    - name : Build Open5GS
+      run: ninja -C build
+    - name: Test Open5GS
+      run: sudo meson test -C build -v crypt unit
+
   ubuntu-latest:
     name: Build and Test on Ubuntu Latest
     runs-on: ubuntu-latest

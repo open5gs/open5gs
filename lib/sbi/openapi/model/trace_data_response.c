@@ -20,18 +20,26 @@ OpenAPI_trace_data_response_t *OpenAPI_trace_data_response_create(
 
 void OpenAPI_trace_data_response_free(OpenAPI_trace_data_response_t *trace_data_response)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == trace_data_response) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_trace_data_free(trace_data_response->trace_data);
-    ogs_free(trace_data_response->shared_trace_data_id);
+    if (trace_data_response->trace_data) {
+        OpenAPI_trace_data_free(trace_data_response->trace_data);
+        trace_data_response->trace_data = NULL;
+    }
+    if (trace_data_response->shared_trace_data_id) {
+        ogs_free(trace_data_response->shared_trace_data_id);
+        trace_data_response->shared_trace_data_id = NULL;
+    }
     ogs_free(trace_data_response);
 }
 
 cJSON *OpenAPI_trace_data_response_convertToJSON(OpenAPI_trace_data_response_t *trace_data_response)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (trace_data_response == NULL) {
         ogs_error("OpenAPI_trace_data_response_convertToJSON() failed [TraceDataResponse]");
@@ -66,17 +74,18 @@ end:
 OpenAPI_trace_data_response_t *OpenAPI_trace_data_response_parseFromJSON(cJSON *trace_data_responseJSON)
 {
     OpenAPI_trace_data_response_t *trace_data_response_local_var = NULL;
-    cJSON *trace_data = cJSON_GetObjectItemCaseSensitive(trace_data_responseJSON, "traceData");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *trace_data = NULL;
     OpenAPI_trace_data_t *trace_data_local_nonprim = NULL;
+    cJSON *shared_trace_data_id = NULL;
+    trace_data = cJSON_GetObjectItemCaseSensitive(trace_data_responseJSON, "traceData");
     if (trace_data) {
     trace_data_local_nonprim = OpenAPI_trace_data_parseFromJSON(trace_data);
     }
 
-    cJSON *shared_trace_data_id = cJSON_GetObjectItemCaseSensitive(trace_data_responseJSON, "sharedTraceDataId");
-
+    shared_trace_data_id = cJSON_GetObjectItemCaseSensitive(trace_data_responseJSON, "sharedTraceDataId");
     if (shared_trace_data_id) {
-    if (!cJSON_IsString(shared_trace_data_id)) {
+    if (!cJSON_IsString(shared_trace_data_id) && !cJSON_IsNull(shared_trace_data_id)) {
         ogs_error("OpenAPI_trace_data_response_parseFromJSON() failed [shared_trace_data_id]");
         goto end;
     }
@@ -84,11 +93,15 @@ OpenAPI_trace_data_response_t *OpenAPI_trace_data_response_parseFromJSON(cJSON *
 
     trace_data_response_local_var = OpenAPI_trace_data_response_create (
         trace_data ? trace_data_local_nonprim : NULL,
-        shared_trace_data_id ? ogs_strdup(shared_trace_data_id->valuestring) : NULL
+        shared_trace_data_id && !cJSON_IsNull(shared_trace_data_id) ? ogs_strdup(shared_trace_data_id->valuestring) : NULL
     );
 
     return trace_data_response_local_var;
 end:
+    if (trace_data_local_nonprim) {
+        OpenAPI_trace_data_free(trace_data_local_nonprim);
+        trace_data_local_nonprim = NULL;
+    }
     return NULL;
 }
 

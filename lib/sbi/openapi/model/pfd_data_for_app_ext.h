@@ -13,8 +13,6 @@
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
 #include "pfd_content.h"
-#include "pfd_data_for_app.h"
-#include "pfd_data_for_app_ext_all_of.h"
 
 #ifdef __cplusplus
 extern "C" {

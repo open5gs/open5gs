@@ -24,20 +24,34 @@ OpenAPI_ip_multicast_address_info_t *OpenAPI_ip_multicast_address_info_create(
 
 void OpenAPI_ip_multicast_address_info_free(OpenAPI_ip_multicast_address_info_t *ip_multicast_address_info)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == ip_multicast_address_info) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(ip_multicast_address_info->src_ipv4_addr);
-    ogs_free(ip_multicast_address_info->ipv4_mul_addr);
-    ogs_free(ip_multicast_address_info->src_ipv6_addr);
-    ogs_free(ip_multicast_address_info->ipv6_mul_addr);
+    if (ip_multicast_address_info->src_ipv4_addr) {
+        ogs_free(ip_multicast_address_info->src_ipv4_addr);
+        ip_multicast_address_info->src_ipv4_addr = NULL;
+    }
+    if (ip_multicast_address_info->ipv4_mul_addr) {
+        ogs_free(ip_multicast_address_info->ipv4_mul_addr);
+        ip_multicast_address_info->ipv4_mul_addr = NULL;
+    }
+    if (ip_multicast_address_info->src_ipv6_addr) {
+        ogs_free(ip_multicast_address_info->src_ipv6_addr);
+        ip_multicast_address_info->src_ipv6_addr = NULL;
+    }
+    if (ip_multicast_address_info->ipv6_mul_addr) {
+        ogs_free(ip_multicast_address_info->ipv6_mul_addr);
+        ip_multicast_address_info->ipv6_mul_addr = NULL;
+    }
     ogs_free(ip_multicast_address_info);
 }
 
 cJSON *OpenAPI_ip_multicast_address_info_convertToJSON(OpenAPI_ip_multicast_address_info_t *ip_multicast_address_info)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (ip_multicast_address_info == NULL) {
         ogs_error("OpenAPI_ip_multicast_address_info_convertToJSON() failed [IpMulticastAddressInfo]");
@@ -80,47 +94,48 @@ end:
 OpenAPI_ip_multicast_address_info_t *OpenAPI_ip_multicast_address_info_parseFromJSON(cJSON *ip_multicast_address_infoJSON)
 {
     OpenAPI_ip_multicast_address_info_t *ip_multicast_address_info_local_var = NULL;
-    cJSON *src_ipv4_addr = cJSON_GetObjectItemCaseSensitive(ip_multicast_address_infoJSON, "srcIpv4Addr");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *src_ipv4_addr = NULL;
+    cJSON *ipv4_mul_addr = NULL;
+    cJSON *src_ipv6_addr = NULL;
+    cJSON *ipv6_mul_addr = NULL;
+    src_ipv4_addr = cJSON_GetObjectItemCaseSensitive(ip_multicast_address_infoJSON, "srcIpv4Addr");
     if (src_ipv4_addr) {
-    if (!cJSON_IsString(src_ipv4_addr)) {
+    if (!cJSON_IsString(src_ipv4_addr) && !cJSON_IsNull(src_ipv4_addr)) {
         ogs_error("OpenAPI_ip_multicast_address_info_parseFromJSON() failed [src_ipv4_addr]");
         goto end;
     }
     }
 
-    cJSON *ipv4_mul_addr = cJSON_GetObjectItemCaseSensitive(ip_multicast_address_infoJSON, "ipv4MulAddr");
-
+    ipv4_mul_addr = cJSON_GetObjectItemCaseSensitive(ip_multicast_address_infoJSON, "ipv4MulAddr");
     if (ipv4_mul_addr) {
-    if (!cJSON_IsString(ipv4_mul_addr)) {
+    if (!cJSON_IsString(ipv4_mul_addr) && !cJSON_IsNull(ipv4_mul_addr)) {
         ogs_error("OpenAPI_ip_multicast_address_info_parseFromJSON() failed [ipv4_mul_addr]");
         goto end;
     }
     }
 
-    cJSON *src_ipv6_addr = cJSON_GetObjectItemCaseSensitive(ip_multicast_address_infoJSON, "srcIpv6Addr");
-
+    src_ipv6_addr = cJSON_GetObjectItemCaseSensitive(ip_multicast_address_infoJSON, "srcIpv6Addr");
     if (src_ipv6_addr) {
-    if (!cJSON_IsString(src_ipv6_addr)) {
+    if (!cJSON_IsString(src_ipv6_addr) && !cJSON_IsNull(src_ipv6_addr)) {
         ogs_error("OpenAPI_ip_multicast_address_info_parseFromJSON() failed [src_ipv6_addr]");
         goto end;
     }
     }
 
-    cJSON *ipv6_mul_addr = cJSON_GetObjectItemCaseSensitive(ip_multicast_address_infoJSON, "ipv6MulAddr");
-
+    ipv6_mul_addr = cJSON_GetObjectItemCaseSensitive(ip_multicast_address_infoJSON, "ipv6MulAddr");
     if (ipv6_mul_addr) {
-    if (!cJSON_IsString(ipv6_mul_addr)) {
+    if (!cJSON_IsString(ipv6_mul_addr) && !cJSON_IsNull(ipv6_mul_addr)) {
         ogs_error("OpenAPI_ip_multicast_address_info_parseFromJSON() failed [ipv6_mul_addr]");
         goto end;
     }
     }
 
     ip_multicast_address_info_local_var = OpenAPI_ip_multicast_address_info_create (
-        src_ipv4_addr ? ogs_strdup(src_ipv4_addr->valuestring) : NULL,
-        ipv4_mul_addr ? ogs_strdup(ipv4_mul_addr->valuestring) : NULL,
-        src_ipv6_addr ? ogs_strdup(src_ipv6_addr->valuestring) : NULL,
-        ipv6_mul_addr ? ogs_strdup(ipv6_mul_addr->valuestring) : NULL
+        src_ipv4_addr && !cJSON_IsNull(src_ipv4_addr) ? ogs_strdup(src_ipv4_addr->valuestring) : NULL,
+        ipv4_mul_addr && !cJSON_IsNull(ipv4_mul_addr) ? ogs_strdup(ipv4_mul_addr->valuestring) : NULL,
+        src_ipv6_addr && !cJSON_IsNull(src_ipv6_addr) ? ogs_strdup(src_ipv6_addr->valuestring) : NULL,
+        ipv6_mul_addr && !cJSON_IsNull(ipv6_mul_addr) ? ogs_strdup(ipv6_mul_addr->valuestring) : NULL
     );
 
     return ip_multicast_address_info_local_var;

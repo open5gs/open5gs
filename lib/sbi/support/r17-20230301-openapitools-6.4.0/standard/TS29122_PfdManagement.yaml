@@ -1,0 +1,760 @@
+openapi: 3.0.0
+info:
+  title: 3gpp-pfd-management
+  version: 1.2.0
+  description: |
+    API for PFD management.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 29.122 V17.6.0 T8 reference point for Northbound APIs
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.122/'
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+servers:
+  - url: '{apiRoot}/3gpp-pfd-management/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122.
+paths:
+  /{scsAsId}/transactions:
+    parameters:
+      - name: scsAsId
+        in: path
+        description: Identifier of the SCS/AS as defined in clause 5.2.4 of 3GPP TS 29.122.
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Read all or queried PFDs for a given SCS/AS.
+      operationId: FetchAllPFDManagementTransactions
+      tags:
+        - PFD Management Transactions
+      parameters:
+        - name: external-app-ids
+          in: query
+          description: The external application identifier(s) of the requested PFD data.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+            minItems: 1
+      responses:
+        '200':
+          description: OK. All or queried transactions related to the request URI are returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PfdManagement'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    post:
+      summary: Create PFDs for a given SCS/AS and one or more external Application Identifier(s).
+      operationId: CreatePFDManagementTransaction
+      tags:
+        - PFD Management Transactions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PfdManagement'
+        description: Create a new transaction for PFD management.
+      responses:
+        '201':
+          description: Created. The transaction was created successfully. The SCEF shall return the created transaction in the response payload body. PfdReport may be included to provide detailed failure information for some applications.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PfdManagement'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          description: The PFDs for all applications were not created successfully. PfdReport is included with detailed information.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PfdReport'
+                minItems: 1
+            application/problem+json:
+              schema:
+                $ref: 'TS29122_CommonData.yaml#/components/schemas/ProblemDetails'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        notificationDestination:
+          '{request.body#/notificationDestination}':
+            post:
+              requestBody:  # contents of the callback message
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/PfdReport'
+                      minItems: 1
+              responses:
+                '204':
+                  description: No Content (successful notification)
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+  /{scsAsId}/transactions/{transactionId}:
+    parameters:
+      - name: scsAsId
+        in: path
+        description: Identifier of the SCS/AS as defined in clause 5.2.4 of 3GPP TS 29.122.
+        required: true
+        schema:
+          type: string
+      - name: transactionId
+        in: path
+        description: Transaction ID
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Read all PFDs for a given SCS/AS and a transaction for one or more external Application Identifier(s).
+      operationId: FetchIndPFDManagementTransaction
+      tags:
+        - Individual PFD Management Transaction
+      responses:
+        '200':
+          description: OK. The transaction information related to the request URI is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PfdManagement'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    put:
+      summary: Update PFDs for a given SCS/AS and a transaction for one or more external Application Identifier(s).
+      operationId: UpdateIndPFDManagementTransaction
+      tags:
+        - Individual PFD Management Transaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PfdManagement'
+        description: Change information in PFD management transaction.
+      responses:
+        '200':
+          description: OK. The transaction was modified successfully. The SCEF shall return an updated transaction in the response payload body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PfdManagement'
+        '204':
+          description: No Content.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          description: The PFDs for all applications were not updated successfully. PfdReport is included with detailed information.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PfdReport'
+                minItems: 1
+            application/problem+json:
+              schema:
+                $ref: 'TS29122_CommonData.yaml#/components/schemas/ProblemDetails'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    patch:
+      summary: Modify an existing PFD Management Transaction resource.
+      operationId: ModifyIndPFDManagementTransaction
+      tags:
+        - Individual PFD Management Transaction
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/PfdManagementPatch'
+      responses:
+        '200':
+          description: OK. The PFD Management Transaction was modified successfully. The SCEF shall return an updated representation of the resource in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PfdManagement'
+        '204':
+          description: No Content.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          description: The PFDs for all applications were not modified successfully. A set of PFD Report(s) is included with detailed information.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PfdReport'
+                minItems: 1
+            application/problem+json:
+              schema:
+                $ref: 'TS29122_CommonData.yaml#/components/schemas/ProblemDetails'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: Delete PFDs for a given SCS/AS and a transaction for one or more external Application Identifier(s).
+      operationId: DeleteIndPFDManagementTransaction
+      tags:
+        - Individual PFD Management Transaction
+      responses:
+        '204':
+          description: No Content. The transaction was deleted successfully. The payload body shall be empty.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+  /{scsAsId}/transactions/{transactionId}/applications/{appId}:
+    parameters:
+      - name: scsAsId
+        in: path
+        description: Identifier of the SCS/AS as defined in clause 5.2.4 of 3GPP TS 29.122.
+        required: true
+        schema:
+          type: string
+      - name: transactionId
+        in: path
+        description: Transaction ID
+        required: true
+        schema:
+          type: string
+      - name: appId
+        in: path
+        description: Identifier of the application
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Read PFDs at individual application level.
+      operationId: FetchIndApplicationPFDManagement
+      tags:
+        - Individual Application PFD Management
+      responses:
+        '200':
+          description: OK. The application information related to the request URI is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PfdData'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    put:
+      summary: Update PFDs at individual application level.
+      operationId: UpdateIndApplicationPFDManagement
+      tags:
+        - Individual Application PFD Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PfdData'
+        description: Change information in application.
+      responses:
+        '200':
+          description: OK. The application resource was modified successfully. The SCEF shall return an updated application resource in the response payload body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PfdData'
+        '204':
+          description: No Content.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          description: The PFDs for the application were not updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PfdReport'
+            application/problem+json:
+              schema:
+                $ref: 'TS29122_CommonData.yaml#/components/schemas/ProblemDetails'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '409':
+          description: The PFDs for the application were not updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PfdReport'
+            application/problem+json:
+              schema:
+                $ref: 'TS29122_CommonData.yaml#/components/schemas/ProblemDetails'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          description: The PFDs for the application were not updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PfdReport'
+            application/problem+json:
+              schema:
+                $ref: 'TS29122_CommonData.yaml#/components/schemas/ProblemDetails'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    patch:
+      summary: Update PFDs at individual application level.
+      operationId: ModifyIndApplicationPFDManagement
+      tags:
+        - Individual Application PFD Management
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/PfdData'
+        description: Change information in PFD management transaction.
+      responses:
+        '200':
+          description: OK. The transaction was modified successfully. The SCEF shall return an updated transaction in the response payload body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PfdData'
+        '204':
+          description: No Content
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          description: The PFDs for the application were not updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PfdReport'
+            application/problem+json:
+              schema:
+                $ref: 'TS29122_CommonData.yaml#/components/schemas/ProblemDetails'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '409':
+          description: The PFDs for the application were not updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PfdReport'
+            application/problem+json:
+              schema:
+                $ref: 'TS29122_CommonData.yaml#/components/schemas/ProblemDetails'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          description: The PFDs for the application were not updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PfdReport'
+            application/problem+json:
+              schema:
+                $ref: 'TS29122_CommonData.yaml#/components/schemas/ProblemDetails'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: Delete PFDs at individual application level.
+      operationId: DeleteIndApplicationPFDManagement
+      tags:
+        - Individual Application PFD Management
+      responses:
+        '204':
+          description: No Content. The application was deleted successfully. The payload body shall be empty.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+  schemas: 
+    PfdManagement:
+      description: Represents a PFD management resource for a PFD management request.
+      type: object
+      properties:
+        self:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        pfdDatas:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PfdData'
+          minProperties: 1
+          description: Each element uniquely identifies the PFDs for an external application identifier. Each element is identified in the map via an external application identifier as key. The response shall include successfully provisioned PFD data of application(s).
+        pfdReports:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PfdReport'
+          minProperties: 1
+          description: Supplied by the SCEF and contains the external application identifiers for which PFD(s) are not added or modified successfully. The failure reason is also included. Each element provides the related information for one or more external application identifier(s) and is identified in the map via the failure identifier as key.
+          readOnly: true
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        requestTestNotification:
+          type: boolean
+          description: Set to true by the SCS/AS to request the SCEF to send a test notification as defined in clause 5.2.5.3. Set to false or omitted otherwise.
+        websockNotifConfig:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/WebsockNotifConfig'
+      required:
+        - pfdDatas
+    PfdData:
+      description: Represents a PFD request to add, update or remove PFD(s) for one external application identifier.
+      type: object
+      properties:
+        externalAppId:
+          type: string
+          description: Each element uniquely external application identifier
+        self:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        pfds:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Pfd'
+          description: Contains the PFDs of the external application identifier. Each PFD is identified in the map via a key containing the PFD identifier. 
+        allowedDelay:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSecRm'
+        cachingTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSecRo'
+      required:
+        - externalAppId
+        - pfds
+    Pfd:
+      description: Represents a PFD for an external Application Identifier.
+      type: object
+      properties:
+        pfdId:
+          type: string
+          description: Identifies a PDF of an application identifier.
+        flowDescriptions:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Represents a 3-tuple with protocol, server ip and server port for UL/DL application traffic. The content of the string has the same encoding as the IPFilterRule AVP value as defined in IETF RFC 6733.
+        urls:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Indicates a URL or a regular expression which is used to match the significant parts of the URL.
+        domainNames:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Indicates an FQDN or a regular expression as a domain name matching criteria.
+        dnProtocol:
+          $ref: '#/components/schemas/DomainNameProtocol'
+      required:
+        - pfdId
+    PfdReport:
+      description: Represents a PFD report indicating the external application identifier(s) which PFD(s) are not added or modified successfully and the corresponding failure cause(s).
+      type: object
+      properties:
+        externalAppIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Identifies the external application identifier(s) which PFD(s) are not added or modified successfully
+        failureCode:
+          $ref: '#/components/schemas/FailureCode'
+        cachingTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        locationArea:
+          $ref: '#/components/schemas/UserPlaneLocationArea'
+      required:
+        - externalAppIds
+        - failureCode
+    UserPlaneLocationArea:
+      description: Represents location area(s) of the user plane functions which are unable to enforce the provisioned PFD(s) successfully.
+      type: object
+      properties:
+        locationArea:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea'
+        locationArea5G:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        dnais:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnai'
+          minItems: 0
+          description: Identifies a list of DNAI which the user plane functions support.
+    PfdManagementPatch:
+      description: Represents the parameters to request the modification of a PFD management transaction resource.
+      type: object
+      properties:
+        pfdDatas:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PfdData'
+          minProperties: 1
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+    FailureCode:
+      anyOf:
+      - type: string
+        enum:
+          - MALFUNCTION
+          - RESOURCE_LIMITATION
+          - SHORT_DELAY
+          - APP_ID_DUPLICATED
+          - PARTIAL_FAILURE
+          - OTHER_REASON
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - MALFUNCTION: This value indicates that something functions wrongly in PFD provisioning or the PFD provisioning does not function at all.
+        - RESOURCE_LIMITATION: This value indicates there is resource limitation for PFD storage.
+        - SHORT_DELAY: This value indicates that the allowed delay is too short and PFD(s) are not stored.
+        - APP_ID_DUPLICATED: The received external application identifier(s) are already provisioned.
+        - PARTIAL_FAILURE: The PFD(s) are not provisioned to all PCEFs/TDFs/SMFs.
+        - OTHER_REASON: Other reason unspecified.
+    DomainNameProtocol:
+      anyOf:
+      - type: string
+        enum:
+          - DNS_QNAME
+          - TLS_SNI
+          - TLS_SAN
+          - TSL_SCN
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - DNS_QNAME: Identifies the DNS protocol and the question name in DNS query.
+        - TLS_SNI: Identifies the Server Name Indication in TLS ClientHello message.
+        - TLS_SAN: Identifies the Subject Alternative Name in TLS ServerCertificate message.
+        - TLS_SCN: Identifies the Subject Common Name in TLS ServerCertificate message.

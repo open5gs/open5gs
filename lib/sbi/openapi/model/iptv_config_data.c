@@ -32,30 +32,56 @@ OpenAPI_iptv_config_data_t *OpenAPI_iptv_config_data_create(
 
 void OpenAPI_iptv_config_data_free(OpenAPI_iptv_config_data_t *iptv_config_data)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == iptv_config_data) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(iptv_config_data->supi);
-    ogs_free(iptv_config_data->inter_group_id);
-    ogs_free(iptv_config_data->dnn);
-    OpenAPI_snssai_free(iptv_config_data->snssai);
-    ogs_free(iptv_config_data->af_app_id);
-    OpenAPI_list_for_each(iptv_config_data->multi_acc_ctrls, node) {
-        OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
-        ogs_free(localKeyValue->key);
-        OpenAPI_multicast_access_control_free(localKeyValue->value);
-        ogs_free(localKeyValue);
+    if (iptv_config_data->supi) {
+        ogs_free(iptv_config_data->supi);
+        iptv_config_data->supi = NULL;
     }
-    OpenAPI_list_free(iptv_config_data->multi_acc_ctrls);
-    ogs_free(iptv_config_data->supp_feat);
-    ogs_free(iptv_config_data->res_uri);
+    if (iptv_config_data->inter_group_id) {
+        ogs_free(iptv_config_data->inter_group_id);
+        iptv_config_data->inter_group_id = NULL;
+    }
+    if (iptv_config_data->dnn) {
+        ogs_free(iptv_config_data->dnn);
+        iptv_config_data->dnn = NULL;
+    }
+    if (iptv_config_data->snssai) {
+        OpenAPI_snssai_free(iptv_config_data->snssai);
+        iptv_config_data->snssai = NULL;
+    }
+    if (iptv_config_data->af_app_id) {
+        ogs_free(iptv_config_data->af_app_id);
+        iptv_config_data->af_app_id = NULL;
+    }
+    if (iptv_config_data->multi_acc_ctrls) {
+        OpenAPI_list_for_each(iptv_config_data->multi_acc_ctrls, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_multicast_access_control_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(iptv_config_data->multi_acc_ctrls);
+        iptv_config_data->multi_acc_ctrls = NULL;
+    }
+    if (iptv_config_data->supp_feat) {
+        ogs_free(iptv_config_data->supp_feat);
+        iptv_config_data->supp_feat = NULL;
+    }
+    if (iptv_config_data->res_uri) {
+        ogs_free(iptv_config_data->res_uri);
+        iptv_config_data->res_uri = NULL;
+    }
     ogs_free(iptv_config_data);
 }
 
 cJSON *OpenAPI_iptv_config_data_convertToJSON(OpenAPI_iptv_config_data_t *iptv_config_data)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (iptv_config_data == NULL) {
         ogs_error("OpenAPI_iptv_config_data_convertToJSON() failed [IptvConfigData]");
@@ -97,31 +123,38 @@ cJSON *OpenAPI_iptv_config_data_convertToJSON(OpenAPI_iptv_config_data_t *iptv_c
     }
     }
 
+    if (!iptv_config_data->af_app_id) {
+        ogs_error("OpenAPI_iptv_config_data_convertToJSON() failed [af_app_id]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "afAppId", iptv_config_data->af_app_id) == NULL) {
         ogs_error("OpenAPI_iptv_config_data_convertToJSON() failed [af_app_id]");
         goto end;
     }
 
+    if (!iptv_config_data->multi_acc_ctrls) {
+        ogs_error("OpenAPI_iptv_config_data_convertToJSON() failed [multi_acc_ctrls]");
+        return NULL;
+    }
     cJSON *multi_acc_ctrls = cJSON_AddObjectToObject(item, "multiAccCtrls");
     if (multi_acc_ctrls == NULL) {
         ogs_error("OpenAPI_iptv_config_data_convertToJSON() failed [multi_acc_ctrls]");
         goto end;
     }
     cJSON *localMapObject = multi_acc_ctrls;
-    OpenAPI_lnode_t *multi_acc_ctrls_node;
     if (iptv_config_data->multi_acc_ctrls) {
-        OpenAPI_list_for_each(iptv_config_data->multi_acc_ctrls, multi_acc_ctrls_node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)multi_acc_ctrls_node->data;
-        cJSON *itemLocal = localKeyValue->value ?
-            OpenAPI_multicast_access_control_convertToJSON(localKeyValue->value) :
-            cJSON_CreateNull();
-        if (itemLocal == NULL) {
-            ogs_error("OpenAPI_iptv_config_data_convertToJSON() failed [inner]");
-            goto end;
-        }
-        cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
+        OpenAPI_list_for_each(iptv_config_data->multi_acc_ctrls, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            cJSON *itemLocal = localKeyValue->value ?
+                OpenAPI_multicast_access_control_convertToJSON(localKeyValue->value) :
+                cJSON_CreateNull();
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_iptv_config_data_convertToJSON() failed [inner]");
+                goto end;
             }
+            cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
         }
+    }
 
     if (iptv_config_data->supp_feat) {
     if (cJSON_AddStringToObject(item, "suppFeat", iptv_config_data->supp_feat) == NULL) {
@@ -144,110 +177,127 @@ end:
 OpenAPI_iptv_config_data_t *OpenAPI_iptv_config_data_parseFromJSON(cJSON *iptv_config_dataJSON)
 {
     OpenAPI_iptv_config_data_t *iptv_config_data_local_var = NULL;
-    cJSON *supi = cJSON_GetObjectItemCaseSensitive(iptv_config_dataJSON, "supi");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *supi = NULL;
+    cJSON *inter_group_id = NULL;
+    cJSON *dnn = NULL;
+    cJSON *snssai = NULL;
+    OpenAPI_snssai_t *snssai_local_nonprim = NULL;
+    cJSON *af_app_id = NULL;
+    cJSON *multi_acc_ctrls = NULL;
+    OpenAPI_list_t *multi_acc_ctrlsList = NULL;
+    cJSON *supp_feat = NULL;
+    cJSON *res_uri = NULL;
+    supi = cJSON_GetObjectItemCaseSensitive(iptv_config_dataJSON, "supi");
     if (supi) {
-    if (!cJSON_IsString(supi)) {
+    if (!cJSON_IsString(supi) && !cJSON_IsNull(supi)) {
         ogs_error("OpenAPI_iptv_config_data_parseFromJSON() failed [supi]");
         goto end;
     }
     }
 
-    cJSON *inter_group_id = cJSON_GetObjectItemCaseSensitive(iptv_config_dataJSON, "interGroupId");
-
+    inter_group_id = cJSON_GetObjectItemCaseSensitive(iptv_config_dataJSON, "interGroupId");
     if (inter_group_id) {
-    if (!cJSON_IsString(inter_group_id)) {
+    if (!cJSON_IsString(inter_group_id) && !cJSON_IsNull(inter_group_id)) {
         ogs_error("OpenAPI_iptv_config_data_parseFromJSON() failed [inter_group_id]");
         goto end;
     }
     }
 
-    cJSON *dnn = cJSON_GetObjectItemCaseSensitive(iptv_config_dataJSON, "dnn");
-
+    dnn = cJSON_GetObjectItemCaseSensitive(iptv_config_dataJSON, "dnn");
     if (dnn) {
-    if (!cJSON_IsString(dnn)) {
+    if (!cJSON_IsString(dnn) && !cJSON_IsNull(dnn)) {
         ogs_error("OpenAPI_iptv_config_data_parseFromJSON() failed [dnn]");
         goto end;
     }
     }
 
-    cJSON *snssai = cJSON_GetObjectItemCaseSensitive(iptv_config_dataJSON, "snssai");
-
-    OpenAPI_snssai_t *snssai_local_nonprim = NULL;
+    snssai = cJSON_GetObjectItemCaseSensitive(iptv_config_dataJSON, "snssai");
     if (snssai) {
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
     }
 
-    cJSON *af_app_id = cJSON_GetObjectItemCaseSensitive(iptv_config_dataJSON, "afAppId");
+    af_app_id = cJSON_GetObjectItemCaseSensitive(iptv_config_dataJSON, "afAppId");
     if (!af_app_id) {
         ogs_error("OpenAPI_iptv_config_data_parseFromJSON() failed [af_app_id]");
         goto end;
     }
-
     if (!cJSON_IsString(af_app_id)) {
         ogs_error("OpenAPI_iptv_config_data_parseFromJSON() failed [af_app_id]");
         goto end;
     }
 
-    cJSON *multi_acc_ctrls = cJSON_GetObjectItemCaseSensitive(iptv_config_dataJSON, "multiAccCtrls");
+    multi_acc_ctrls = cJSON_GetObjectItemCaseSensitive(iptv_config_dataJSON, "multiAccCtrls");
     if (!multi_acc_ctrls) {
         ogs_error("OpenAPI_iptv_config_data_parseFromJSON() failed [multi_acc_ctrls]");
         goto end;
     }
-
-    OpenAPI_list_t *multi_acc_ctrlsList;
-    cJSON *multi_acc_ctrls_local_map;
-    if (!cJSON_IsObject(multi_acc_ctrls)) {
-        ogs_error("OpenAPI_iptv_config_data_parseFromJSON() failed [multi_acc_ctrls]");
-        goto end;
-    }
-    multi_acc_ctrlsList = OpenAPI_list_create();
-    OpenAPI_map_t *localMapKeyPair = NULL;
-    cJSON_ArrayForEach(multi_acc_ctrls_local_map, multi_acc_ctrls) {
-        cJSON *localMapObject = multi_acc_ctrls_local_map;
-        if (cJSON_IsObject(localMapObject)) {
-            localMapKeyPair = OpenAPI_map_create(
-                ogs_strdup(localMapObject->string), OpenAPI_multicast_access_control_parseFromJSON(localMapObject));
-        } else if (cJSON_IsNull(localMapObject)) {
-            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
-        } else {
-            ogs_error("OpenAPI_iptv_config_data_parseFromJSON() failed [inner]");
+        cJSON *multi_acc_ctrls_local_map = NULL;
+        if (!cJSON_IsObject(multi_acc_ctrls) && !cJSON_IsNull(multi_acc_ctrls)) {
+            ogs_error("OpenAPI_iptv_config_data_parseFromJSON() failed [multi_acc_ctrls]");
             goto end;
         }
-        OpenAPI_list_add(multi_acc_ctrlsList, localMapKeyPair);
-    }
+        if (cJSON_IsObject(multi_acc_ctrls)) {
+            multi_acc_ctrlsList = OpenAPI_list_create();
+            OpenAPI_map_t *localMapKeyPair = NULL;
+            cJSON_ArrayForEach(multi_acc_ctrls_local_map, multi_acc_ctrls) {
+                cJSON *localMapObject = multi_acc_ctrls_local_map;
+                if (cJSON_IsObject(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(
+                        ogs_strdup(localMapObject->string), OpenAPI_multicast_access_control_parseFromJSON(localMapObject));
+                } else if (cJSON_IsNull(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
+                } else {
+                    ogs_error("OpenAPI_iptv_config_data_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                OpenAPI_list_add(multi_acc_ctrlsList, localMapKeyPair);
+            }
+        }
 
-    cJSON *supp_feat = cJSON_GetObjectItemCaseSensitive(iptv_config_dataJSON, "suppFeat");
-
+    supp_feat = cJSON_GetObjectItemCaseSensitive(iptv_config_dataJSON, "suppFeat");
     if (supp_feat) {
-    if (!cJSON_IsString(supp_feat)) {
+    if (!cJSON_IsString(supp_feat) && !cJSON_IsNull(supp_feat)) {
         ogs_error("OpenAPI_iptv_config_data_parseFromJSON() failed [supp_feat]");
         goto end;
     }
     }
 
-    cJSON *res_uri = cJSON_GetObjectItemCaseSensitive(iptv_config_dataJSON, "resUri");
-
+    res_uri = cJSON_GetObjectItemCaseSensitive(iptv_config_dataJSON, "resUri");
     if (res_uri) {
-    if (!cJSON_IsString(res_uri)) {
+    if (!cJSON_IsString(res_uri) && !cJSON_IsNull(res_uri)) {
         ogs_error("OpenAPI_iptv_config_data_parseFromJSON() failed [res_uri]");
         goto end;
     }
     }
 
     iptv_config_data_local_var = OpenAPI_iptv_config_data_create (
-        supi ? ogs_strdup(supi->valuestring) : NULL,
-        inter_group_id ? ogs_strdup(inter_group_id->valuestring) : NULL,
-        dnn ? ogs_strdup(dnn->valuestring) : NULL,
+        supi && !cJSON_IsNull(supi) ? ogs_strdup(supi->valuestring) : NULL,
+        inter_group_id && !cJSON_IsNull(inter_group_id) ? ogs_strdup(inter_group_id->valuestring) : NULL,
+        dnn && !cJSON_IsNull(dnn) ? ogs_strdup(dnn->valuestring) : NULL,
         snssai ? snssai_local_nonprim : NULL,
         ogs_strdup(af_app_id->valuestring),
         multi_acc_ctrlsList,
-        supp_feat ? ogs_strdup(supp_feat->valuestring) : NULL,
-        res_uri ? ogs_strdup(res_uri->valuestring) : NULL
+        supp_feat && !cJSON_IsNull(supp_feat) ? ogs_strdup(supp_feat->valuestring) : NULL,
+        res_uri && !cJSON_IsNull(res_uri) ? ogs_strdup(res_uri->valuestring) : NULL
     );
 
     return iptv_config_data_local_var;
 end:
+    if (snssai_local_nonprim) {
+        OpenAPI_snssai_free(snssai_local_nonprim);
+        snssai_local_nonprim = NULL;
+    }
+    if (multi_acc_ctrlsList) {
+        OpenAPI_list_for_each(multi_acc_ctrlsList, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_multicast_access_control_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(multi_acc_ctrlsList);
+        multi_acc_ctrlsList = NULL;
+    }
     return NULL;
 }
 

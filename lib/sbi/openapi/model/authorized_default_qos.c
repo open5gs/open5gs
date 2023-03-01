@@ -46,21 +46,38 @@ OpenAPI_authorized_default_qos_t *OpenAPI_authorized_default_qos_create(
 
 void OpenAPI_authorized_default_qos_free(OpenAPI_authorized_default_qos_t *authorized_default_qos)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == authorized_default_qos) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_arp_free(authorized_default_qos->arp);
-    ogs_free(authorized_default_qos->maxbr_ul);
-    ogs_free(authorized_default_qos->maxbr_dl);
-    ogs_free(authorized_default_qos->gbr_ul);
-    ogs_free(authorized_default_qos->gbr_dl);
+    if (authorized_default_qos->arp) {
+        OpenAPI_arp_free(authorized_default_qos->arp);
+        authorized_default_qos->arp = NULL;
+    }
+    if (authorized_default_qos->maxbr_ul) {
+        ogs_free(authorized_default_qos->maxbr_ul);
+        authorized_default_qos->maxbr_ul = NULL;
+    }
+    if (authorized_default_qos->maxbr_dl) {
+        ogs_free(authorized_default_qos->maxbr_dl);
+        authorized_default_qos->maxbr_dl = NULL;
+    }
+    if (authorized_default_qos->gbr_ul) {
+        ogs_free(authorized_default_qos->gbr_ul);
+        authorized_default_qos->gbr_ul = NULL;
+    }
+    if (authorized_default_qos->gbr_dl) {
+        ogs_free(authorized_default_qos->gbr_dl);
+        authorized_default_qos->gbr_dl = NULL;
+    }
     ogs_free(authorized_default_qos);
 }
 
 cJSON *OpenAPI_authorized_default_qos_convertToJSON(OpenAPI_authorized_default_qos_t *authorized_default_qos)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (authorized_default_qos == NULL) {
         ogs_error("OpenAPI_authorized_default_qos_convertToJSON() failed [AuthorizedDefaultQos]");
@@ -151,8 +168,19 @@ end:
 OpenAPI_authorized_default_qos_t *OpenAPI_authorized_default_qos_parseFromJSON(cJSON *authorized_default_qosJSON)
 {
     OpenAPI_authorized_default_qos_t *authorized_default_qos_local_var = NULL;
-    cJSON *_5qi = cJSON_GetObjectItemCaseSensitive(authorized_default_qosJSON, "5qi");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *_5qi = NULL;
+    cJSON *arp = NULL;
+    OpenAPI_arp_t *arp_local_nonprim = NULL;
+    cJSON *priority_level = NULL;
+    cJSON *aver_window = NULL;
+    cJSON *max_data_burst_vol = NULL;
+    cJSON *maxbr_ul = NULL;
+    cJSON *maxbr_dl = NULL;
+    cJSON *gbr_ul = NULL;
+    cJSON *gbr_dl = NULL;
+    cJSON *ext_max_data_burst_vol = NULL;
+    _5qi = cJSON_GetObjectItemCaseSensitive(authorized_default_qosJSON, "5qi");
     if (_5qi) {
     if (!cJSON_IsNumber(_5qi)) {
         ogs_error("OpenAPI_authorized_default_qos_parseFromJSON() failed [_5qi]");
@@ -160,15 +188,12 @@ OpenAPI_authorized_default_qos_t *OpenAPI_authorized_default_qos_parseFromJSON(c
     }
     }
 
-    cJSON *arp = cJSON_GetObjectItemCaseSensitive(authorized_default_qosJSON, "arp");
-
-    OpenAPI_arp_t *arp_local_nonprim = NULL;
+    arp = cJSON_GetObjectItemCaseSensitive(authorized_default_qosJSON, "arp");
     if (arp) {
     arp_local_nonprim = OpenAPI_arp_parseFromJSON(arp);
     }
 
-    cJSON *priority_level = cJSON_GetObjectItemCaseSensitive(authorized_default_qosJSON, "priorityLevel");
-
+    priority_level = cJSON_GetObjectItemCaseSensitive(authorized_default_qosJSON, "priorityLevel");
     if (priority_level) {
     if (!cJSON_IsNumber(priority_level)) {
         ogs_error("OpenAPI_authorized_default_qos_parseFromJSON() failed [priority_level]");
@@ -176,8 +201,7 @@ OpenAPI_authorized_default_qos_t *OpenAPI_authorized_default_qos_parseFromJSON(c
     }
     }
 
-    cJSON *aver_window = cJSON_GetObjectItemCaseSensitive(authorized_default_qosJSON, "averWindow");
-
+    aver_window = cJSON_GetObjectItemCaseSensitive(authorized_default_qosJSON, "averWindow");
     if (aver_window) {
     if (!cJSON_IsNumber(aver_window)) {
         ogs_error("OpenAPI_authorized_default_qos_parseFromJSON() failed [aver_window]");
@@ -185,8 +209,7 @@ OpenAPI_authorized_default_qos_t *OpenAPI_authorized_default_qos_parseFromJSON(c
     }
     }
 
-    cJSON *max_data_burst_vol = cJSON_GetObjectItemCaseSensitive(authorized_default_qosJSON, "maxDataBurstVol");
-
+    max_data_burst_vol = cJSON_GetObjectItemCaseSensitive(authorized_default_qosJSON, "maxDataBurstVol");
     if (max_data_burst_vol) {
     if (!cJSON_IsNumber(max_data_burst_vol)) {
         ogs_error("OpenAPI_authorized_default_qos_parseFromJSON() failed [max_data_burst_vol]");
@@ -194,44 +217,39 @@ OpenAPI_authorized_default_qos_t *OpenAPI_authorized_default_qos_parseFromJSON(c
     }
     }
 
-    cJSON *maxbr_ul = cJSON_GetObjectItemCaseSensitive(authorized_default_qosJSON, "maxbrUl");
-
+    maxbr_ul = cJSON_GetObjectItemCaseSensitive(authorized_default_qosJSON, "maxbrUl");
     if (maxbr_ul) {
-    if (!cJSON_IsString(maxbr_ul)) {
+    if (!cJSON_IsString(maxbr_ul) && !cJSON_IsNull(maxbr_ul)) {
         ogs_error("OpenAPI_authorized_default_qos_parseFromJSON() failed [maxbr_ul]");
         goto end;
     }
     }
 
-    cJSON *maxbr_dl = cJSON_GetObjectItemCaseSensitive(authorized_default_qosJSON, "maxbrDl");
-
+    maxbr_dl = cJSON_GetObjectItemCaseSensitive(authorized_default_qosJSON, "maxbrDl");
     if (maxbr_dl) {
-    if (!cJSON_IsString(maxbr_dl)) {
+    if (!cJSON_IsString(maxbr_dl) && !cJSON_IsNull(maxbr_dl)) {
         ogs_error("OpenAPI_authorized_default_qos_parseFromJSON() failed [maxbr_dl]");
         goto end;
     }
     }
 
-    cJSON *gbr_ul = cJSON_GetObjectItemCaseSensitive(authorized_default_qosJSON, "gbrUl");
-
+    gbr_ul = cJSON_GetObjectItemCaseSensitive(authorized_default_qosJSON, "gbrUl");
     if (gbr_ul) {
-    if (!cJSON_IsString(gbr_ul)) {
+    if (!cJSON_IsString(gbr_ul) && !cJSON_IsNull(gbr_ul)) {
         ogs_error("OpenAPI_authorized_default_qos_parseFromJSON() failed [gbr_ul]");
         goto end;
     }
     }
 
-    cJSON *gbr_dl = cJSON_GetObjectItemCaseSensitive(authorized_default_qosJSON, "gbrDl");
-
+    gbr_dl = cJSON_GetObjectItemCaseSensitive(authorized_default_qosJSON, "gbrDl");
     if (gbr_dl) {
-    if (!cJSON_IsString(gbr_dl)) {
+    if (!cJSON_IsString(gbr_dl) && !cJSON_IsNull(gbr_dl)) {
         ogs_error("OpenAPI_authorized_default_qos_parseFromJSON() failed [gbr_dl]");
         goto end;
     }
     }
 
-    cJSON *ext_max_data_burst_vol = cJSON_GetObjectItemCaseSensitive(authorized_default_qosJSON, "extMaxDataBurstVol");
-
+    ext_max_data_burst_vol = cJSON_GetObjectItemCaseSensitive(authorized_default_qosJSON, "extMaxDataBurstVol");
     if (ext_max_data_burst_vol) {
     if (!cJSON_IsNumber(ext_max_data_burst_vol)) {
         ogs_error("OpenAPI_authorized_default_qos_parseFromJSON() failed [ext_max_data_burst_vol]");
@@ -249,16 +267,20 @@ OpenAPI_authorized_default_qos_t *OpenAPI_authorized_default_qos_parseFromJSON(c
         aver_window ? aver_window->valuedouble : 0,
         max_data_burst_vol ? true : false,
         max_data_burst_vol ? max_data_burst_vol->valuedouble : 0,
-        maxbr_ul ? ogs_strdup(maxbr_ul->valuestring) : NULL,
-        maxbr_dl ? ogs_strdup(maxbr_dl->valuestring) : NULL,
-        gbr_ul ? ogs_strdup(gbr_ul->valuestring) : NULL,
-        gbr_dl ? ogs_strdup(gbr_dl->valuestring) : NULL,
+        maxbr_ul && !cJSON_IsNull(maxbr_ul) ? ogs_strdup(maxbr_ul->valuestring) : NULL,
+        maxbr_dl && !cJSON_IsNull(maxbr_dl) ? ogs_strdup(maxbr_dl->valuestring) : NULL,
+        gbr_ul && !cJSON_IsNull(gbr_ul) ? ogs_strdup(gbr_ul->valuestring) : NULL,
+        gbr_dl && !cJSON_IsNull(gbr_dl) ? ogs_strdup(gbr_dl->valuestring) : NULL,
         ext_max_data_burst_vol ? true : false,
         ext_max_data_burst_vol ? ext_max_data_burst_vol->valuedouble : 0
     );
 
     return authorized_default_qos_local_var;
 end:
+    if (arp_local_nonprim) {
+        OpenAPI_arp_free(arp_local_nonprim);
+        arp_local_nonprim = NULL;
+    }
     return NULL;
 }
 

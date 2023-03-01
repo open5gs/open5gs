@@ -18,17 +18,22 @@ OpenAPI_pcscf_restoration_notification_t *OpenAPI_pcscf_restoration_notification
 
 void OpenAPI_pcscf_restoration_notification_free(OpenAPI_pcscf_restoration_notification_t *pcscf_restoration_notification)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == pcscf_restoration_notification) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(pcscf_restoration_notification->supi);
+    if (pcscf_restoration_notification->supi) {
+        ogs_free(pcscf_restoration_notification->supi);
+        pcscf_restoration_notification->supi = NULL;
+    }
     ogs_free(pcscf_restoration_notification);
 }
 
 cJSON *OpenAPI_pcscf_restoration_notification_convertToJSON(OpenAPI_pcscf_restoration_notification_t *pcscf_restoration_notification)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (pcscf_restoration_notification == NULL) {
         ogs_error("OpenAPI_pcscf_restoration_notification_convertToJSON() failed [PcscfRestorationNotification]");
@@ -36,6 +41,10 @@ cJSON *OpenAPI_pcscf_restoration_notification_convertToJSON(OpenAPI_pcscf_restor
     }
 
     item = cJSON_CreateObject();
+    if (!pcscf_restoration_notification->supi) {
+        ogs_error("OpenAPI_pcscf_restoration_notification_convertToJSON() failed [supi]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "supi", pcscf_restoration_notification->supi) == NULL) {
         ogs_error("OpenAPI_pcscf_restoration_notification_convertToJSON() failed [supi]");
         goto end;
@@ -48,12 +57,13 @@ end:
 OpenAPI_pcscf_restoration_notification_t *OpenAPI_pcscf_restoration_notification_parseFromJSON(cJSON *pcscf_restoration_notificationJSON)
 {
     OpenAPI_pcscf_restoration_notification_t *pcscf_restoration_notification_local_var = NULL;
-    cJSON *supi = cJSON_GetObjectItemCaseSensitive(pcscf_restoration_notificationJSON, "supi");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *supi = NULL;
+    supi = cJSON_GetObjectItemCaseSensitive(pcscf_restoration_notificationJSON, "supi");
     if (!supi) {
         ogs_error("OpenAPI_pcscf_restoration_notification_parseFromJSON() failed [supi]");
         goto end;
     }
-
     if (!cJSON_IsString(supi)) {
         ogs_error("OpenAPI_pcscf_restoration_notification_parseFromJSON() failed [supi]");
         goto end;

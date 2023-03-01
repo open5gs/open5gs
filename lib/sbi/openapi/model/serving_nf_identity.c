@@ -22,19 +22,30 @@ OpenAPI_serving_nf_identity_t *OpenAPI_serving_nf_identity_create(
 
 void OpenAPI_serving_nf_identity_free(OpenAPI_serving_nf_identity_t *serving_nf_identity)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == serving_nf_identity) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(serving_nf_identity->serv_nf_inst_id);
-    OpenAPI_guami_free(serving_nf_identity->guami);
-    OpenAPI_an_gw_address_free(serving_nf_identity->an_gw_addr);
+    if (serving_nf_identity->serv_nf_inst_id) {
+        ogs_free(serving_nf_identity->serv_nf_inst_id);
+        serving_nf_identity->serv_nf_inst_id = NULL;
+    }
+    if (serving_nf_identity->guami) {
+        OpenAPI_guami_free(serving_nf_identity->guami);
+        serving_nf_identity->guami = NULL;
+    }
+    if (serving_nf_identity->an_gw_addr) {
+        OpenAPI_an_gw_address_free(serving_nf_identity->an_gw_addr);
+        serving_nf_identity->an_gw_addr = NULL;
+    }
     ogs_free(serving_nf_identity);
 }
 
 cJSON *OpenAPI_serving_nf_identity_convertToJSON(OpenAPI_serving_nf_identity_t *serving_nf_identity)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (serving_nf_identity == NULL) {
         ogs_error("OpenAPI_serving_nf_identity_convertToJSON() failed [ServingNfIdentity]");
@@ -82,37 +93,46 @@ end:
 OpenAPI_serving_nf_identity_t *OpenAPI_serving_nf_identity_parseFromJSON(cJSON *serving_nf_identityJSON)
 {
     OpenAPI_serving_nf_identity_t *serving_nf_identity_local_var = NULL;
-    cJSON *serv_nf_inst_id = cJSON_GetObjectItemCaseSensitive(serving_nf_identityJSON, "servNfInstId");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *serv_nf_inst_id = NULL;
+    cJSON *guami = NULL;
+    OpenAPI_guami_t *guami_local_nonprim = NULL;
+    cJSON *an_gw_addr = NULL;
+    OpenAPI_an_gw_address_t *an_gw_addr_local_nonprim = NULL;
+    serv_nf_inst_id = cJSON_GetObjectItemCaseSensitive(serving_nf_identityJSON, "servNfInstId");
     if (serv_nf_inst_id) {
-    if (!cJSON_IsString(serv_nf_inst_id)) {
+    if (!cJSON_IsString(serv_nf_inst_id) && !cJSON_IsNull(serv_nf_inst_id)) {
         ogs_error("OpenAPI_serving_nf_identity_parseFromJSON() failed [serv_nf_inst_id]");
         goto end;
     }
     }
 
-    cJSON *guami = cJSON_GetObjectItemCaseSensitive(serving_nf_identityJSON, "guami");
-
-    OpenAPI_guami_t *guami_local_nonprim = NULL;
+    guami = cJSON_GetObjectItemCaseSensitive(serving_nf_identityJSON, "guami");
     if (guami) {
     guami_local_nonprim = OpenAPI_guami_parseFromJSON(guami);
     }
 
-    cJSON *an_gw_addr = cJSON_GetObjectItemCaseSensitive(serving_nf_identityJSON, "anGwAddr");
-
-    OpenAPI_an_gw_address_t *an_gw_addr_local_nonprim = NULL;
+    an_gw_addr = cJSON_GetObjectItemCaseSensitive(serving_nf_identityJSON, "anGwAddr");
     if (an_gw_addr) {
     an_gw_addr_local_nonprim = OpenAPI_an_gw_address_parseFromJSON(an_gw_addr);
     }
 
     serving_nf_identity_local_var = OpenAPI_serving_nf_identity_create (
-        serv_nf_inst_id ? ogs_strdup(serv_nf_inst_id->valuestring) : NULL,
+        serv_nf_inst_id && !cJSON_IsNull(serv_nf_inst_id) ? ogs_strdup(serv_nf_inst_id->valuestring) : NULL,
         guami ? guami_local_nonprim : NULL,
         an_gw_addr ? an_gw_addr_local_nonprim : NULL
     );
 
     return serving_nf_identity_local_var;
 end:
+    if (guami_local_nonprim) {
+        OpenAPI_guami_free(guami_local_nonprim);
+        guami_local_nonprim = NULL;
+    }
+    if (an_gw_addr_local_nonprim) {
+        OpenAPI_an_gw_address_free(an_gw_addr_local_nonprim);
+        an_gw_addr_local_nonprim = NULL;
+    }
     return NULL;
 }
 

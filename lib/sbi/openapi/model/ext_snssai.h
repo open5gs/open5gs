@@ -13,8 +13,6 @@
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
 #include "sd_range.h"
-#include "snssai.h"
-#include "snssai_extension.h"
 
 #ifdef __cplusplus
 extern "C" {

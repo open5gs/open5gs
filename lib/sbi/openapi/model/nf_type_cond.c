@@ -18,16 +18,18 @@ OpenAPI_nf_type_cond_t *OpenAPI_nf_type_cond_create(
 
 void OpenAPI_nf_type_cond_free(OpenAPI_nf_type_cond_t *nf_type_cond)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == nf_type_cond) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(nf_type_cond);
 }
 
 cJSON *OpenAPI_nf_type_cond_convertToJSON(OpenAPI_nf_type_cond_t *nf_type_cond)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (nf_type_cond == NULL) {
         ogs_error("OpenAPI_nf_type_cond_convertToJSON() failed [NfTypeCond]");
@@ -35,6 +37,10 @@ cJSON *OpenAPI_nf_type_cond_convertToJSON(OpenAPI_nf_type_cond_t *nf_type_cond)
     }
 
     item = cJSON_CreateObject();
+    if (nf_type_cond->nf_type == OpenAPI_nf_type_NULL) {
+        ogs_error("OpenAPI_nf_type_cond_convertToJSON() failed [nf_type]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "nfType", OpenAPI_nf_type_ToString(nf_type_cond->nf_type)) == NULL) {
         ogs_error("OpenAPI_nf_type_cond_convertToJSON() failed [nf_type]");
         goto end;
@@ -47,13 +53,14 @@ end:
 OpenAPI_nf_type_cond_t *OpenAPI_nf_type_cond_parseFromJSON(cJSON *nf_type_condJSON)
 {
     OpenAPI_nf_type_cond_t *nf_type_cond_local_var = NULL;
-    cJSON *nf_type = cJSON_GetObjectItemCaseSensitive(nf_type_condJSON, "nfType");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *nf_type = NULL;
+    OpenAPI_nf_type_e nf_typeVariable = 0;
+    nf_type = cJSON_GetObjectItemCaseSensitive(nf_type_condJSON, "nfType");
     if (!nf_type) {
         ogs_error("OpenAPI_nf_type_cond_parseFromJSON() failed [nf_type]");
         goto end;
     }
-
-    OpenAPI_nf_type_e nf_typeVariable;
     if (!cJSON_IsString(nf_type)) {
         ogs_error("OpenAPI_nf_type_cond_parseFromJSON() failed [nf_type]");
         goto end;

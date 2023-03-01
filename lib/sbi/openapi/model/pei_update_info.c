@@ -18,17 +18,22 @@ OpenAPI_pei_update_info_t *OpenAPI_pei_update_info_create(
 
 void OpenAPI_pei_update_info_free(OpenAPI_pei_update_info_t *pei_update_info)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == pei_update_info) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(pei_update_info->pei);
+    if (pei_update_info->pei) {
+        ogs_free(pei_update_info->pei);
+        pei_update_info->pei = NULL;
+    }
     ogs_free(pei_update_info);
 }
 
 cJSON *OpenAPI_pei_update_info_convertToJSON(OpenAPI_pei_update_info_t *pei_update_info)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (pei_update_info == NULL) {
         ogs_error("OpenAPI_pei_update_info_convertToJSON() failed [PeiUpdateInfo]");
@@ -36,6 +41,10 @@ cJSON *OpenAPI_pei_update_info_convertToJSON(OpenAPI_pei_update_info_t *pei_upda
     }
 
     item = cJSON_CreateObject();
+    if (!pei_update_info->pei) {
+        ogs_error("OpenAPI_pei_update_info_convertToJSON() failed [pei]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "pei", pei_update_info->pei) == NULL) {
         ogs_error("OpenAPI_pei_update_info_convertToJSON() failed [pei]");
         goto end;
@@ -48,12 +57,13 @@ end:
 OpenAPI_pei_update_info_t *OpenAPI_pei_update_info_parseFromJSON(cJSON *pei_update_infoJSON)
 {
     OpenAPI_pei_update_info_t *pei_update_info_local_var = NULL;
-    cJSON *pei = cJSON_GetObjectItemCaseSensitive(pei_update_infoJSON, "pei");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *pei = NULL;
+    pei = cJSON_GetObjectItemCaseSensitive(pei_update_infoJSON, "pei");
     if (!pei) {
         ogs_error("OpenAPI_pei_update_info_parseFromJSON() failed [pei]");
         goto end;
     }
-
     if (!cJSON_IsString(pei)) {
         ogs_error("OpenAPI_pei_update_info_parseFromJSON() failed [pei]");
         goto end;

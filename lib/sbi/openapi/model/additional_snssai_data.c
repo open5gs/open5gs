@@ -20,16 +20,18 @@ OpenAPI_additional_snssai_data_t *OpenAPI_additional_snssai_data_create(
 
 void OpenAPI_additional_snssai_data_free(OpenAPI_additional_snssai_data_t *additional_snssai_data)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == additional_snssai_data) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(additional_snssai_data);
 }
 
 cJSON *OpenAPI_additional_snssai_data_convertToJSON(OpenAPI_additional_snssai_data_t *additional_snssai_data)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (additional_snssai_data == NULL) {
         ogs_error("OpenAPI_additional_snssai_data_convertToJSON() failed [AdditionalSnssaiData]");
@@ -51,8 +53,9 @@ end:
 OpenAPI_additional_snssai_data_t *OpenAPI_additional_snssai_data_parseFromJSON(cJSON *additional_snssai_dataJSON)
 {
     OpenAPI_additional_snssai_data_t *additional_snssai_data_local_var = NULL;
-    cJSON *required_authn_authz = cJSON_GetObjectItemCaseSensitive(additional_snssai_dataJSON, "requiredAuthnAuthz");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *required_authn_authz = NULL;
+    required_authn_authz = cJSON_GetObjectItemCaseSensitive(additional_snssai_dataJSON, "requiredAuthnAuthz");
     if (required_authn_authz) {
     if (!cJSON_IsBool(required_authn_authz)) {
         ogs_error("OpenAPI_additional_snssai_data_parseFromJSON() failed [required_authn_authz]");

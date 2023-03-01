@@ -26,20 +26,34 @@ OpenAPI_av_eps_aka_t *OpenAPI_av_eps_aka_create(
 
 void OpenAPI_av_eps_aka_free(OpenAPI_av_eps_aka_t *av_eps_aka)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == av_eps_aka) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(av_eps_aka->rand);
-    ogs_free(av_eps_aka->xres);
-    ogs_free(av_eps_aka->autn);
-    ogs_free(av_eps_aka->kasme);
+    if (av_eps_aka->rand) {
+        ogs_free(av_eps_aka->rand);
+        av_eps_aka->rand = NULL;
+    }
+    if (av_eps_aka->xres) {
+        ogs_free(av_eps_aka->xres);
+        av_eps_aka->xres = NULL;
+    }
+    if (av_eps_aka->autn) {
+        ogs_free(av_eps_aka->autn);
+        av_eps_aka->autn = NULL;
+    }
+    if (av_eps_aka->kasme) {
+        ogs_free(av_eps_aka->kasme);
+        av_eps_aka->kasme = NULL;
+    }
     ogs_free(av_eps_aka);
 }
 
 cJSON *OpenAPI_av_eps_aka_convertToJSON(OpenAPI_av_eps_aka_t *av_eps_aka)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (av_eps_aka == NULL) {
         ogs_error("OpenAPI_av_eps_aka_convertToJSON() failed [AvEpsAka]");
@@ -47,26 +61,46 @@ cJSON *OpenAPI_av_eps_aka_convertToJSON(OpenAPI_av_eps_aka_t *av_eps_aka)
     }
 
     item = cJSON_CreateObject();
+    if (av_eps_aka->av_type == OpenAPI_hss_av_type_NULL) {
+        ogs_error("OpenAPI_av_eps_aka_convertToJSON() failed [av_type]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "avType", OpenAPI_hss_av_type_ToString(av_eps_aka->av_type)) == NULL) {
         ogs_error("OpenAPI_av_eps_aka_convertToJSON() failed [av_type]");
         goto end;
     }
 
+    if (!av_eps_aka->rand) {
+        ogs_error("OpenAPI_av_eps_aka_convertToJSON() failed [rand]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "rand", av_eps_aka->rand) == NULL) {
         ogs_error("OpenAPI_av_eps_aka_convertToJSON() failed [rand]");
         goto end;
     }
 
+    if (!av_eps_aka->xres) {
+        ogs_error("OpenAPI_av_eps_aka_convertToJSON() failed [xres]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "xres", av_eps_aka->xres) == NULL) {
         ogs_error("OpenAPI_av_eps_aka_convertToJSON() failed [xres]");
         goto end;
     }
 
+    if (!av_eps_aka->autn) {
+        ogs_error("OpenAPI_av_eps_aka_convertToJSON() failed [autn]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "autn", av_eps_aka->autn) == NULL) {
         ogs_error("OpenAPI_av_eps_aka_convertToJSON() failed [autn]");
         goto end;
     }
 
+    if (!av_eps_aka->kasme) {
+        ogs_error("OpenAPI_av_eps_aka_convertToJSON() failed [kasme]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "kasme", av_eps_aka->kasme) == NULL) {
         ogs_error("OpenAPI_av_eps_aka_convertToJSON() failed [kasme]");
         goto end;
@@ -79,58 +113,59 @@ end:
 OpenAPI_av_eps_aka_t *OpenAPI_av_eps_aka_parseFromJSON(cJSON *av_eps_akaJSON)
 {
     OpenAPI_av_eps_aka_t *av_eps_aka_local_var = NULL;
-    cJSON *av_type = cJSON_GetObjectItemCaseSensitive(av_eps_akaJSON, "avType");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *av_type = NULL;
+    OpenAPI_hss_av_type_e av_typeVariable = 0;
+    cJSON *rand = NULL;
+    cJSON *xres = NULL;
+    cJSON *autn = NULL;
+    cJSON *kasme = NULL;
+    av_type = cJSON_GetObjectItemCaseSensitive(av_eps_akaJSON, "avType");
     if (!av_type) {
         ogs_error("OpenAPI_av_eps_aka_parseFromJSON() failed [av_type]");
         goto end;
     }
-
-    OpenAPI_hss_av_type_e av_typeVariable;
     if (!cJSON_IsString(av_type)) {
         ogs_error("OpenAPI_av_eps_aka_parseFromJSON() failed [av_type]");
         goto end;
     }
     av_typeVariable = OpenAPI_hss_av_type_FromString(av_type->valuestring);
 
-    cJSON *rand = cJSON_GetObjectItemCaseSensitive(av_eps_akaJSON, "rand");
+    rand = cJSON_GetObjectItemCaseSensitive(av_eps_akaJSON, "rand");
     if (!rand) {
         ogs_error("OpenAPI_av_eps_aka_parseFromJSON() failed [rand]");
         goto end;
     }
-
     if (!cJSON_IsString(rand)) {
         ogs_error("OpenAPI_av_eps_aka_parseFromJSON() failed [rand]");
         goto end;
     }
 
-    cJSON *xres = cJSON_GetObjectItemCaseSensitive(av_eps_akaJSON, "xres");
+    xres = cJSON_GetObjectItemCaseSensitive(av_eps_akaJSON, "xres");
     if (!xres) {
         ogs_error("OpenAPI_av_eps_aka_parseFromJSON() failed [xres]");
         goto end;
     }
-
     if (!cJSON_IsString(xres)) {
         ogs_error("OpenAPI_av_eps_aka_parseFromJSON() failed [xres]");
         goto end;
     }
 
-    cJSON *autn = cJSON_GetObjectItemCaseSensitive(av_eps_akaJSON, "autn");
+    autn = cJSON_GetObjectItemCaseSensitive(av_eps_akaJSON, "autn");
     if (!autn) {
         ogs_error("OpenAPI_av_eps_aka_parseFromJSON() failed [autn]");
         goto end;
     }
-
     if (!cJSON_IsString(autn)) {
         ogs_error("OpenAPI_av_eps_aka_parseFromJSON() failed [autn]");
         goto end;
     }
 
-    cJSON *kasme = cJSON_GetObjectItemCaseSensitive(av_eps_akaJSON, "kasme");
+    kasme = cJSON_GetObjectItemCaseSensitive(av_eps_akaJSON, "kasme");
     if (!kasme) {
         ogs_error("OpenAPI_av_eps_aka_parseFromJSON() failed [kasme]");
         goto end;
     }
-
     if (!cJSON_IsString(kasme)) {
         ogs_error("OpenAPI_av_eps_aka_parseFromJSON() failed [kasme]");
         goto end;

@@ -20,20 +20,25 @@ OpenAPI_amf_event_subscription_add_info_t *OpenAPI_amf_event_subscription_add_in
 
 void OpenAPI_amf_event_subscription_add_info_free(OpenAPI_amf_event_subscription_add_info_t *amf_event_subscription_add_info)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == amf_event_subscription_add_info) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_list_for_each(amf_event_subscription_add_info->binding_info, node) {
-        ogs_free(node->data);
+    if (amf_event_subscription_add_info->binding_info) {
+        OpenAPI_list_for_each(amf_event_subscription_add_info->binding_info, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(amf_event_subscription_add_info->binding_info);
+        amf_event_subscription_add_info->binding_info = NULL;
     }
-    OpenAPI_list_free(amf_event_subscription_add_info->binding_info);
     ogs_free(amf_event_subscription_add_info);
 }
 
 cJSON *OpenAPI_amf_event_subscription_add_info_convertToJSON(OpenAPI_amf_event_subscription_add_info_t *amf_event_subscription_add_info)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (amf_event_subscription_add_info == NULL) {
         ogs_error("OpenAPI_amf_event_subscription_add_info_convertToJSON() failed [AmfEventSubscriptionAddInfo]");
@@ -42,22 +47,20 @@ cJSON *OpenAPI_amf_event_subscription_add_info_convertToJSON(OpenAPI_amf_event_s
 
     item = cJSON_CreateObject();
     if (amf_event_subscription_add_info->binding_info) {
-    cJSON *binding_info = cJSON_AddArrayToObject(item, "bindingInfo");
-    if (binding_info == NULL) {
+    cJSON *binding_infoList = cJSON_AddArrayToObject(item, "bindingInfo");
+    if (binding_infoList == NULL) {
         ogs_error("OpenAPI_amf_event_subscription_add_info_convertToJSON() failed [binding_info]");
         goto end;
     }
-
-    OpenAPI_lnode_t *binding_info_node;
-    OpenAPI_list_for_each(amf_event_subscription_add_info->binding_info, binding_info_node)  {
-    if (cJSON_AddStringToObject(binding_info, "", (char*)binding_info_node->data) == NULL) {
-        ogs_error("OpenAPI_amf_event_subscription_add_info_convertToJSON() failed [binding_info]");
-        goto end;
+    OpenAPI_list_for_each(amf_event_subscription_add_info->binding_info, node) {
+        if (cJSON_AddStringToObject(binding_infoList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_amf_event_subscription_add_info_convertToJSON() failed [binding_info]");
+            goto end;
+        }
     }
-                    }
     }
 
-    if (amf_event_subscription_add_info->subscribing_nf_type) {
+    if (amf_event_subscription_add_info->subscribing_nf_type != OpenAPI_nf_type_NULL) {
     if (cJSON_AddStringToObject(item, "subscribingNfType", OpenAPI_nf_type_ToString(amf_event_subscription_add_info->subscribing_nf_type)) == NULL) {
         ogs_error("OpenAPI_amf_event_subscription_add_info_convertToJSON() failed [subscribing_nf_type]");
         goto end;
@@ -71,29 +74,33 @@ end:
 OpenAPI_amf_event_subscription_add_info_t *OpenAPI_amf_event_subscription_add_info_parseFromJSON(cJSON *amf_event_subscription_add_infoJSON)
 {
     OpenAPI_amf_event_subscription_add_info_t *amf_event_subscription_add_info_local_var = NULL;
-    cJSON *binding_info = cJSON_GetObjectItemCaseSensitive(amf_event_subscription_add_infoJSON, "bindingInfo");
-
-    OpenAPI_list_t *binding_infoList;
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *binding_info = NULL;
+    OpenAPI_list_t *binding_infoList = NULL;
+    cJSON *subscribing_nf_type = NULL;
+    OpenAPI_nf_type_e subscribing_nf_typeVariable = 0;
+    binding_info = cJSON_GetObjectItemCaseSensitive(amf_event_subscription_add_infoJSON, "bindingInfo");
     if (binding_info) {
-    cJSON *binding_info_local;
-    if (!cJSON_IsArray(binding_info)) {
-        ogs_error("OpenAPI_amf_event_subscription_add_info_parseFromJSON() failed [binding_info]");
-        goto end;
-    }
-    binding_infoList = OpenAPI_list_create();
+        cJSON *binding_info_local = NULL;
+        if (!cJSON_IsArray(binding_info)) {
+            ogs_error("OpenAPI_amf_event_subscription_add_info_parseFromJSON() failed [binding_info]");
+            goto end;
+        }
 
-    cJSON_ArrayForEach(binding_info_local, binding_info) {
-    if (!cJSON_IsString(binding_info_local)) {
-        ogs_error("OpenAPI_amf_event_subscription_add_info_parseFromJSON() failed [binding_info]");
-        goto end;
-    }
-    OpenAPI_list_add(binding_infoList, ogs_strdup(binding_info_local->valuestring));
-    }
+        binding_infoList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(binding_info_local, binding_info) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(binding_info_local)) {
+                ogs_error("OpenAPI_amf_event_subscription_add_info_parseFromJSON() failed [binding_info]");
+                goto end;
+            }
+            OpenAPI_list_add(binding_infoList, ogs_strdup(binding_info_local->valuestring));
+        }
     }
 
-    cJSON *subscribing_nf_type = cJSON_GetObjectItemCaseSensitive(amf_event_subscription_add_infoJSON, "subscribingNfType");
-
-    OpenAPI_nf_type_e subscribing_nf_typeVariable;
+    subscribing_nf_type = cJSON_GetObjectItemCaseSensitive(amf_event_subscription_add_infoJSON, "subscribingNfType");
     if (subscribing_nf_type) {
     if (!cJSON_IsString(subscribing_nf_type)) {
         ogs_error("OpenAPI_amf_event_subscription_add_info_parseFromJSON() failed [subscribing_nf_type]");
@@ -109,6 +116,13 @@ OpenAPI_amf_event_subscription_add_info_t *OpenAPI_amf_event_subscription_add_in
 
     return amf_event_subscription_add_info_local_var;
 end:
+    if (binding_infoList) {
+        OpenAPI_list_for_each(binding_infoList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(binding_infoList);
+        binding_infoList = NULL;
+    }
     return NULL;
 }
 

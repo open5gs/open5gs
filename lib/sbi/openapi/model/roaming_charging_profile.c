@@ -20,21 +20,29 @@ OpenAPI_roaming_charging_profile_t *OpenAPI_roaming_charging_profile_create(
 
 void OpenAPI_roaming_charging_profile_free(OpenAPI_roaming_charging_profile_t *roaming_charging_profile)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == roaming_charging_profile) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_list_for_each(roaming_charging_profile->triggers, node) {
-        OpenAPI_trigger_free(node->data);
+    if (roaming_charging_profile->triggers) {
+        OpenAPI_list_for_each(roaming_charging_profile->triggers, node) {
+            OpenAPI_trigger_free(node->data);
+        }
+        OpenAPI_list_free(roaming_charging_profile->triggers);
+        roaming_charging_profile->triggers = NULL;
     }
-    OpenAPI_list_free(roaming_charging_profile->triggers);
-    OpenAPI_partial_record_method_free(roaming_charging_profile->partial_record_method);
+    if (roaming_charging_profile->partial_record_method) {
+        OpenAPI_partial_record_method_free(roaming_charging_profile->partial_record_method);
+        roaming_charging_profile->partial_record_method = NULL;
+    }
     ogs_free(roaming_charging_profile);
 }
 
 cJSON *OpenAPI_roaming_charging_profile_convertToJSON(OpenAPI_roaming_charging_profile_t *roaming_charging_profile)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (roaming_charging_profile == NULL) {
         ogs_error("OpenAPI_roaming_charging_profile_convertToJSON() failed [RoamingChargingProfile]");
@@ -48,17 +56,13 @@ cJSON *OpenAPI_roaming_charging_profile_convertToJSON(OpenAPI_roaming_charging_p
         ogs_error("OpenAPI_roaming_charging_profile_convertToJSON() failed [triggers]");
         goto end;
     }
-
-    OpenAPI_lnode_t *triggers_node;
-    if (roaming_charging_profile->triggers) {
-        OpenAPI_list_for_each(roaming_charging_profile->triggers, triggers_node) {
-            cJSON *itemLocal = OpenAPI_trigger_convertToJSON(triggers_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_roaming_charging_profile_convertToJSON() failed [triggers]");
-                goto end;
-            }
-            cJSON_AddItemToArray(triggersList, itemLocal);
+    OpenAPI_list_for_each(roaming_charging_profile->triggers, node) {
+        cJSON *itemLocal = OpenAPI_trigger_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_roaming_charging_profile_convertToJSON() failed [triggers]");
+            goto end;
         }
+        cJSON_AddItemToArray(triggersList, itemLocal);
     }
     }
 
@@ -82,38 +86,37 @@ end:
 OpenAPI_roaming_charging_profile_t *OpenAPI_roaming_charging_profile_parseFromJSON(cJSON *roaming_charging_profileJSON)
 {
     OpenAPI_roaming_charging_profile_t *roaming_charging_profile_local_var = NULL;
-    cJSON *triggers = cJSON_GetObjectItemCaseSensitive(roaming_charging_profileJSON, "triggers");
-
-    OpenAPI_list_t *triggersList;
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *triggers = NULL;
+    OpenAPI_list_t *triggersList = NULL;
+    cJSON *partial_record_method = NULL;
+    OpenAPI_partial_record_method_t *partial_record_method_local_nonprim = NULL;
+    triggers = cJSON_GetObjectItemCaseSensitive(roaming_charging_profileJSON, "triggers");
     if (triggers) {
-    cJSON *triggers_local_nonprimitive;
-    if (!cJSON_IsArray(triggers)){
-        ogs_error("OpenAPI_roaming_charging_profile_parseFromJSON() failed [triggers]");
-        goto end;
-    }
-
-    triggersList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(triggers_local_nonprimitive, triggers ) {
-        if (!cJSON_IsObject(triggers_local_nonprimitive)) {
+        cJSON *triggers_local = NULL;
+        if (!cJSON_IsArray(triggers)) {
             ogs_error("OpenAPI_roaming_charging_profile_parseFromJSON() failed [triggers]");
             goto end;
         }
-        OpenAPI_trigger_t *triggersItem = OpenAPI_trigger_parseFromJSON(triggers_local_nonprimitive);
 
-        if (!triggersItem) {
-            ogs_error("No triggersItem");
-            OpenAPI_list_free(triggersList);
-            goto end;
+        triggersList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(triggers_local, triggers) {
+            if (!cJSON_IsObject(triggers_local)) {
+                ogs_error("OpenAPI_roaming_charging_profile_parseFromJSON() failed [triggers]");
+                goto end;
+            }
+            OpenAPI_trigger_t *triggersItem = OpenAPI_trigger_parseFromJSON(triggers_local);
+            if (!triggersItem) {
+                ogs_error("No triggersItem");
+                OpenAPI_list_free(triggersList);
+                goto end;
+            }
+            OpenAPI_list_add(triggersList, triggersItem);
         }
-
-        OpenAPI_list_add(triggersList, triggersItem);
-    }
     }
 
-    cJSON *partial_record_method = cJSON_GetObjectItemCaseSensitive(roaming_charging_profileJSON, "partialRecordMethod");
-
-    OpenAPI_partial_record_method_t *partial_record_method_local_nonprim = NULL;
+    partial_record_method = cJSON_GetObjectItemCaseSensitive(roaming_charging_profileJSON, "partialRecordMethod");
     if (partial_record_method) {
     partial_record_method_local_nonprim = OpenAPI_partial_record_method_parseFromJSON(partial_record_method);
     }
@@ -125,6 +128,17 @@ OpenAPI_roaming_charging_profile_t *OpenAPI_roaming_charging_profile_parseFromJS
 
     return roaming_charging_profile_local_var;
 end:
+    if (triggersList) {
+        OpenAPI_list_for_each(triggersList, node) {
+            OpenAPI_trigger_free(node->data);
+        }
+        OpenAPI_list_free(triggersList);
+        triggersList = NULL;
+    }
+    if (partial_record_method_local_nonprim) {
+        OpenAPI_partial_record_method_free(partial_record_method_local_nonprim);
+        partial_record_method_local_nonprim = NULL;
+    }
     return NULL;
 }
 

@@ -16,16 +16,18 @@ OpenAPI_partial_record_method_t *OpenAPI_partial_record_method_create(
 
 void OpenAPI_partial_record_method_free(OpenAPI_partial_record_method_t *partial_record_method)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == partial_record_method) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(partial_record_method);
 }
 
 cJSON *OpenAPI_partial_record_method_convertToJSON(OpenAPI_partial_record_method_t *partial_record_method)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (partial_record_method == NULL) {
         ogs_error("OpenAPI_partial_record_method_convertToJSON() failed [PartialRecordMethod]");
@@ -40,6 +42,7 @@ end:
 OpenAPI_partial_record_method_t *OpenAPI_partial_record_method_parseFromJSON(cJSON *partial_record_methodJSON)
 {
     OpenAPI_partial_record_method_t *partial_record_method_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
     partial_record_method_local_var = OpenAPI_partial_record_method_create (
     );
 

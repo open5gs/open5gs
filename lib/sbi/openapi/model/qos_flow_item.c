@@ -28,16 +28,18 @@ OpenAPI_qos_flow_item_t *OpenAPI_qos_flow_item_create(
 
 void OpenAPI_qos_flow_item_free(OpenAPI_qos_flow_item_t *qos_flow_item)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == qos_flow_item) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(qos_flow_item);
 }
 
 cJSON *OpenAPI_qos_flow_item_convertToJSON(OpenAPI_qos_flow_item_t *qos_flow_item)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (qos_flow_item == NULL) {
         ogs_error("OpenAPI_qos_flow_item_convertToJSON() failed [QosFlowItem]");
@@ -50,7 +52,7 @@ cJSON *OpenAPI_qos_flow_item_convertToJSON(OpenAPI_qos_flow_item_t *qos_flow_ite
         goto end;
     }
 
-    if (qos_flow_item->cause) {
+    if (qos_flow_item->cause != OpenAPI_cause_NULL) {
     if (cJSON_AddStringToObject(item, "cause", OpenAPI_cause_ToString(qos_flow_item->cause)) == NULL) {
         ogs_error("OpenAPI_qos_flow_item_convertToJSON() failed [cause]");
         goto end;
@@ -78,20 +80,23 @@ end:
 OpenAPI_qos_flow_item_t *OpenAPI_qos_flow_item_parseFromJSON(cJSON *qos_flow_itemJSON)
 {
     OpenAPI_qos_flow_item_t *qos_flow_item_local_var = NULL;
-    cJSON *qfi = cJSON_GetObjectItemCaseSensitive(qos_flow_itemJSON, "qfi");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *qfi = NULL;
+    cJSON *cause = NULL;
+    OpenAPI_cause_e causeVariable = 0;
+    cJSON *current_qos_profile_index = NULL;
+    cJSON *null_qo_s_profile_index = NULL;
+    qfi = cJSON_GetObjectItemCaseSensitive(qos_flow_itemJSON, "qfi");
     if (!qfi) {
         ogs_error("OpenAPI_qos_flow_item_parseFromJSON() failed [qfi]");
         goto end;
     }
-
     if (!cJSON_IsNumber(qfi)) {
         ogs_error("OpenAPI_qos_flow_item_parseFromJSON() failed [qfi]");
         goto end;
     }
 
-    cJSON *cause = cJSON_GetObjectItemCaseSensitive(qos_flow_itemJSON, "cause");
-
-    OpenAPI_cause_e causeVariable;
+    cause = cJSON_GetObjectItemCaseSensitive(qos_flow_itemJSON, "cause");
     if (cause) {
     if (!cJSON_IsString(cause)) {
         ogs_error("OpenAPI_qos_flow_item_parseFromJSON() failed [cause]");
@@ -100,8 +105,7 @@ OpenAPI_qos_flow_item_t *OpenAPI_qos_flow_item_parseFromJSON(cJSON *qos_flow_ite
     causeVariable = OpenAPI_cause_FromString(cause->valuestring);
     }
 
-    cJSON *current_qos_profile_index = cJSON_GetObjectItemCaseSensitive(qos_flow_itemJSON, "currentQosProfileIndex");
-
+    current_qos_profile_index = cJSON_GetObjectItemCaseSensitive(qos_flow_itemJSON, "currentQosProfileIndex");
     if (current_qos_profile_index) {
     if (!cJSON_IsNumber(current_qos_profile_index)) {
         ogs_error("OpenAPI_qos_flow_item_parseFromJSON() failed [current_qos_profile_index]");
@@ -109,8 +113,7 @@ OpenAPI_qos_flow_item_t *OpenAPI_qos_flow_item_parseFromJSON(cJSON *qos_flow_ite
     }
     }
 
-    cJSON *null_qo_s_profile_index = cJSON_GetObjectItemCaseSensitive(qos_flow_itemJSON, "nullQoSProfileIndex");
-
+    null_qo_s_profile_index = cJSON_GetObjectItemCaseSensitive(qos_flow_itemJSON, "nullQoSProfileIndex");
     if (null_qo_s_profile_index) {
     if (!cJSON_IsBool(null_qo_s_profile_index)) {
         ogs_error("OpenAPI_qos_flow_item_parseFromJSON() failed [null_qo_s_profile_index]");

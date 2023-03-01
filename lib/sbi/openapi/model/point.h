@@ -14,7 +14,6 @@
 #include "../include/binary.h"
 #include "gad_shape.h"
 #include "geographical_coordinates.h"
-#include "point_all_of.h"
 #include "supported_gad_shapes.h"
 
 #ifdef __cplusplus

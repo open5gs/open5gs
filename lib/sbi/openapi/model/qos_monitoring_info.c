@@ -20,16 +20,18 @@ OpenAPI_qos_monitoring_info_t *OpenAPI_qos_monitoring_info_create(
 
 void OpenAPI_qos_monitoring_info_free(OpenAPI_qos_monitoring_info_t *qos_monitoring_info)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == qos_monitoring_info) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(qos_monitoring_info);
 }
 
 cJSON *OpenAPI_qos_monitoring_info_convertToJSON(OpenAPI_qos_monitoring_info_t *qos_monitoring_info)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (qos_monitoring_info == NULL) {
         ogs_error("OpenAPI_qos_monitoring_info_convertToJSON() failed [QosMonitoringInfo]");
@@ -51,8 +53,9 @@ end:
 OpenAPI_qos_monitoring_info_t *OpenAPI_qos_monitoring_info_parseFromJSON(cJSON *qos_monitoring_infoJSON)
 {
     OpenAPI_qos_monitoring_info_t *qos_monitoring_info_local_var = NULL;
-    cJSON *qos_monitoring_ind = cJSON_GetObjectItemCaseSensitive(qos_monitoring_infoJSON, "qosMonitoringInd");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *qos_monitoring_ind = NULL;
+    qos_monitoring_ind = cJSON_GetObjectItemCaseSensitive(qos_monitoring_infoJSON, "qosMonitoringInd");
     if (qos_monitoring_ind) {
     if (!cJSON_IsBool(qos_monitoring_ind)) {
         ogs_error("OpenAPI_qos_monitoring_info_parseFromJSON() failed [qos_monitoring_ind]");

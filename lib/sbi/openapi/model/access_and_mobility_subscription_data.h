@@ -28,7 +28,7 @@
 #include "service_area_restriction.h"
 #include "sor_info.h"
 #include "sor_update_indicator.h"
-#include "trace_data_1.h"
+#include "trace_data.h"
 #include "upu_info.h"
 #include "wireline_area.h"
 #include "wireline_service_area_restriction.h"
@@ -77,7 +77,7 @@ typedef struct OpenAPI_access_and_mobility_subscription_data_s {
     int service_gap_time;
     OpenAPI_mdt_user_consent_e mdt_user_consent;
     struct OpenAPI_mdt_configuration_s *mdt_configuration;
-    struct OpenAPI_trace_data_1_s *trace_data;
+    struct OpenAPI_trace_data_s *trace_data;
     struct OpenAPI_cag_data_s *cag_data;
     char *stn_sr;
     char *c_msisdn;
@@ -139,7 +139,7 @@ OpenAPI_access_and_mobility_subscription_data_t *OpenAPI_access_and_mobility_sub
     int service_gap_time,
     OpenAPI_mdt_user_consent_e mdt_user_consent,
     OpenAPI_mdt_configuration_t *mdt_configuration,
-    OpenAPI_trace_data_1_t *trace_data,
+    OpenAPI_trace_data_t *trace_data,
     OpenAPI_cag_data_t *cag_data,
     char *stn_sr,
     char *c_msisdn,

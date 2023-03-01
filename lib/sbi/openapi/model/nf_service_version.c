@@ -22,19 +22,30 @@ OpenAPI_nf_service_version_t *OpenAPI_nf_service_version_create(
 
 void OpenAPI_nf_service_version_free(OpenAPI_nf_service_version_t *nf_service_version)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == nf_service_version) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(nf_service_version->api_version_in_uri);
-    ogs_free(nf_service_version->api_full_version);
-    ogs_free(nf_service_version->expiry);
+    if (nf_service_version->api_version_in_uri) {
+        ogs_free(nf_service_version->api_version_in_uri);
+        nf_service_version->api_version_in_uri = NULL;
+    }
+    if (nf_service_version->api_full_version) {
+        ogs_free(nf_service_version->api_full_version);
+        nf_service_version->api_full_version = NULL;
+    }
+    if (nf_service_version->expiry) {
+        ogs_free(nf_service_version->expiry);
+        nf_service_version->expiry = NULL;
+    }
     ogs_free(nf_service_version);
 }
 
 cJSON *OpenAPI_nf_service_version_convertToJSON(OpenAPI_nf_service_version_t *nf_service_version)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (nf_service_version == NULL) {
         ogs_error("OpenAPI_nf_service_version_convertToJSON() failed [NFServiceVersion]");
@@ -42,11 +53,19 @@ cJSON *OpenAPI_nf_service_version_convertToJSON(OpenAPI_nf_service_version_t *nf
     }
 
     item = cJSON_CreateObject();
+    if (!nf_service_version->api_version_in_uri) {
+        ogs_error("OpenAPI_nf_service_version_convertToJSON() failed [api_version_in_uri]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "apiVersionInUri", nf_service_version->api_version_in_uri) == NULL) {
         ogs_error("OpenAPI_nf_service_version_convertToJSON() failed [api_version_in_uri]");
         goto end;
     }
 
+    if (!nf_service_version->api_full_version) {
+        ogs_error("OpenAPI_nf_service_version_convertToJSON() failed [api_full_version]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "apiFullVersion", nf_service_version->api_full_version) == NULL) {
         ogs_error("OpenAPI_nf_service_version_convertToJSON() failed [api_full_version]");
         goto end;
@@ -66,32 +85,33 @@ end:
 OpenAPI_nf_service_version_t *OpenAPI_nf_service_version_parseFromJSON(cJSON *nf_service_versionJSON)
 {
     OpenAPI_nf_service_version_t *nf_service_version_local_var = NULL;
-    cJSON *api_version_in_uri = cJSON_GetObjectItemCaseSensitive(nf_service_versionJSON, "apiVersionInUri");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *api_version_in_uri = NULL;
+    cJSON *api_full_version = NULL;
+    cJSON *expiry = NULL;
+    api_version_in_uri = cJSON_GetObjectItemCaseSensitive(nf_service_versionJSON, "apiVersionInUri");
     if (!api_version_in_uri) {
         ogs_error("OpenAPI_nf_service_version_parseFromJSON() failed [api_version_in_uri]");
         goto end;
     }
-
     if (!cJSON_IsString(api_version_in_uri)) {
         ogs_error("OpenAPI_nf_service_version_parseFromJSON() failed [api_version_in_uri]");
         goto end;
     }
 
-    cJSON *api_full_version = cJSON_GetObjectItemCaseSensitive(nf_service_versionJSON, "apiFullVersion");
+    api_full_version = cJSON_GetObjectItemCaseSensitive(nf_service_versionJSON, "apiFullVersion");
     if (!api_full_version) {
         ogs_error("OpenAPI_nf_service_version_parseFromJSON() failed [api_full_version]");
         goto end;
     }
-
     if (!cJSON_IsString(api_full_version)) {
         ogs_error("OpenAPI_nf_service_version_parseFromJSON() failed [api_full_version]");
         goto end;
     }
 
-    cJSON *expiry = cJSON_GetObjectItemCaseSensitive(nf_service_versionJSON, "expiry");
-
+    expiry = cJSON_GetObjectItemCaseSensitive(nf_service_versionJSON, "expiry");
     if (expiry) {
-    if (!cJSON_IsString(expiry)) {
+    if (!cJSON_IsString(expiry) && !cJSON_IsNull(expiry)) {
         ogs_error("OpenAPI_nf_service_version_parseFromJSON() failed [expiry]");
         goto end;
     }
@@ -100,7 +120,7 @@ OpenAPI_nf_service_version_t *OpenAPI_nf_service_version_parseFromJSON(cJSON *nf
     nf_service_version_local_var = OpenAPI_nf_service_version_create (
         ogs_strdup(api_version_in_uri->valuestring),
         ogs_strdup(api_full_version->valuestring),
-        expiry ? ogs_strdup(expiry->valuestring) : NULL
+        expiry && !cJSON_IsNull(expiry) ? ogs_strdup(expiry->valuestring) : NULL
     );
 
     return nf_service_version_local_var;

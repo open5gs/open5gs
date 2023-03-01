@@ -40,43 +40,81 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_c
 
 void OpenAPI_authorized_network_slice_info_free(OpenAPI_authorized_network_slice_info_t *authorized_network_slice_info)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == authorized_network_slice_info) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_list_for_each(authorized_network_slice_info->allowed_nssai_list, node) {
-        OpenAPI_allowed_nssai_free(node->data);
+    if (authorized_network_slice_info->allowed_nssai_list) {
+        OpenAPI_list_for_each(authorized_network_slice_info->allowed_nssai_list, node) {
+            OpenAPI_allowed_nssai_free(node->data);
+        }
+        OpenAPI_list_free(authorized_network_slice_info->allowed_nssai_list);
+        authorized_network_slice_info->allowed_nssai_list = NULL;
     }
-    OpenAPI_list_free(authorized_network_slice_info->allowed_nssai_list);
-    OpenAPI_list_for_each(authorized_network_slice_info->configured_nssai, node) {
-        OpenAPI_configured_snssai_free(node->data);
+    if (authorized_network_slice_info->configured_nssai) {
+        OpenAPI_list_for_each(authorized_network_slice_info->configured_nssai, node) {
+            OpenAPI_configured_snssai_free(node->data);
+        }
+        OpenAPI_list_free(authorized_network_slice_info->configured_nssai);
+        authorized_network_slice_info->configured_nssai = NULL;
     }
-    OpenAPI_list_free(authorized_network_slice_info->configured_nssai);
-    ogs_free(authorized_network_slice_info->target_amf_set);
-    OpenAPI_list_for_each(authorized_network_slice_info->candidate_amf_list, node) {
-        ogs_free(node->data);
+    if (authorized_network_slice_info->target_amf_set) {
+        ogs_free(authorized_network_slice_info->target_amf_set);
+        authorized_network_slice_info->target_amf_set = NULL;
     }
-    OpenAPI_list_free(authorized_network_slice_info->candidate_amf_list);
-    OpenAPI_list_for_each(authorized_network_slice_info->rejected_nssai_in_plmn, node) {
-        OpenAPI_snssai_free(node->data);
+    if (authorized_network_slice_info->candidate_amf_list) {
+        OpenAPI_list_for_each(authorized_network_slice_info->candidate_amf_list, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(authorized_network_slice_info->candidate_amf_list);
+        authorized_network_slice_info->candidate_amf_list = NULL;
     }
-    OpenAPI_list_free(authorized_network_slice_info->rejected_nssai_in_plmn);
-    OpenAPI_list_for_each(authorized_network_slice_info->rejected_nssai_in_ta, node) {
-        OpenAPI_snssai_free(node->data);
+    if (authorized_network_slice_info->rejected_nssai_in_plmn) {
+        OpenAPI_list_for_each(authorized_network_slice_info->rejected_nssai_in_plmn, node) {
+            OpenAPI_snssai_free(node->data);
+        }
+        OpenAPI_list_free(authorized_network_slice_info->rejected_nssai_in_plmn);
+        authorized_network_slice_info->rejected_nssai_in_plmn = NULL;
     }
-    OpenAPI_list_free(authorized_network_slice_info->rejected_nssai_in_ta);
-    OpenAPI_nsi_information_free(authorized_network_slice_info->nsi_information);
-    ogs_free(authorized_network_slice_info->supported_features);
-    ogs_free(authorized_network_slice_info->nrf_amf_set);
-    ogs_free(authorized_network_slice_info->nrf_amf_set_nf_mgt_uri);
-    ogs_free(authorized_network_slice_info->nrf_amf_set_access_token_uri);
-    ogs_free(authorized_network_slice_info->target_amf_service_set);
+    if (authorized_network_slice_info->rejected_nssai_in_ta) {
+        OpenAPI_list_for_each(authorized_network_slice_info->rejected_nssai_in_ta, node) {
+            OpenAPI_snssai_free(node->data);
+        }
+        OpenAPI_list_free(authorized_network_slice_info->rejected_nssai_in_ta);
+        authorized_network_slice_info->rejected_nssai_in_ta = NULL;
+    }
+    if (authorized_network_slice_info->nsi_information) {
+        OpenAPI_nsi_information_free(authorized_network_slice_info->nsi_information);
+        authorized_network_slice_info->nsi_information = NULL;
+    }
+    if (authorized_network_slice_info->supported_features) {
+        ogs_free(authorized_network_slice_info->supported_features);
+        authorized_network_slice_info->supported_features = NULL;
+    }
+    if (authorized_network_slice_info->nrf_amf_set) {
+        ogs_free(authorized_network_slice_info->nrf_amf_set);
+        authorized_network_slice_info->nrf_amf_set = NULL;
+    }
+    if (authorized_network_slice_info->nrf_amf_set_nf_mgt_uri) {
+        ogs_free(authorized_network_slice_info->nrf_amf_set_nf_mgt_uri);
+        authorized_network_slice_info->nrf_amf_set_nf_mgt_uri = NULL;
+    }
+    if (authorized_network_slice_info->nrf_amf_set_access_token_uri) {
+        ogs_free(authorized_network_slice_info->nrf_amf_set_access_token_uri);
+        authorized_network_slice_info->nrf_amf_set_access_token_uri = NULL;
+    }
+    if (authorized_network_slice_info->target_amf_service_set) {
+        ogs_free(authorized_network_slice_info->target_amf_service_set);
+        authorized_network_slice_info->target_amf_service_set = NULL;
+    }
     ogs_free(authorized_network_slice_info);
 }
 
 cJSON *OpenAPI_authorized_network_slice_info_convertToJSON(OpenAPI_authorized_network_slice_info_t *authorized_network_slice_info)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (authorized_network_slice_info == NULL) {
         ogs_error("OpenAPI_authorized_network_slice_info_convertToJSON() failed [AuthorizedNetworkSliceInfo]");
@@ -90,17 +128,13 @@ cJSON *OpenAPI_authorized_network_slice_info_convertToJSON(OpenAPI_authorized_ne
         ogs_error("OpenAPI_authorized_network_slice_info_convertToJSON() failed [allowed_nssai_list]");
         goto end;
     }
-
-    OpenAPI_lnode_t *allowed_nssai_list_node;
-    if (authorized_network_slice_info->allowed_nssai_list) {
-        OpenAPI_list_for_each(authorized_network_slice_info->allowed_nssai_list, allowed_nssai_list_node) {
-            cJSON *itemLocal = OpenAPI_allowed_nssai_convertToJSON(allowed_nssai_list_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_authorized_network_slice_info_convertToJSON() failed [allowed_nssai_list]");
-                goto end;
-            }
-            cJSON_AddItemToArray(allowed_nssai_listList, itemLocal);
+    OpenAPI_list_for_each(authorized_network_slice_info->allowed_nssai_list, node) {
+        cJSON *itemLocal = OpenAPI_allowed_nssai_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_authorized_network_slice_info_convertToJSON() failed [allowed_nssai_list]");
+            goto end;
         }
+        cJSON_AddItemToArray(allowed_nssai_listList, itemLocal);
     }
     }
 
@@ -110,17 +144,13 @@ cJSON *OpenAPI_authorized_network_slice_info_convertToJSON(OpenAPI_authorized_ne
         ogs_error("OpenAPI_authorized_network_slice_info_convertToJSON() failed [configured_nssai]");
         goto end;
     }
-
-    OpenAPI_lnode_t *configured_nssai_node;
-    if (authorized_network_slice_info->configured_nssai) {
-        OpenAPI_list_for_each(authorized_network_slice_info->configured_nssai, configured_nssai_node) {
-            cJSON *itemLocal = OpenAPI_configured_snssai_convertToJSON(configured_nssai_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_authorized_network_slice_info_convertToJSON() failed [configured_nssai]");
-                goto end;
-            }
-            cJSON_AddItemToArray(configured_nssaiList, itemLocal);
+    OpenAPI_list_for_each(authorized_network_slice_info->configured_nssai, node) {
+        cJSON *itemLocal = OpenAPI_configured_snssai_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_authorized_network_slice_info_convertToJSON() failed [configured_nssai]");
+            goto end;
         }
+        cJSON_AddItemToArray(configured_nssaiList, itemLocal);
     }
     }
 
@@ -132,19 +162,17 @@ cJSON *OpenAPI_authorized_network_slice_info_convertToJSON(OpenAPI_authorized_ne
     }
 
     if (authorized_network_slice_info->candidate_amf_list) {
-    cJSON *candidate_amf_list = cJSON_AddArrayToObject(item, "candidateAmfList");
-    if (candidate_amf_list == NULL) {
+    cJSON *candidate_amf_listList = cJSON_AddArrayToObject(item, "candidateAmfList");
+    if (candidate_amf_listList == NULL) {
         ogs_error("OpenAPI_authorized_network_slice_info_convertToJSON() failed [candidate_amf_list]");
         goto end;
     }
-
-    OpenAPI_lnode_t *candidate_amf_list_node;
-    OpenAPI_list_for_each(authorized_network_slice_info->candidate_amf_list, candidate_amf_list_node)  {
-    if (cJSON_AddStringToObject(candidate_amf_list, "", (char*)candidate_amf_list_node->data) == NULL) {
-        ogs_error("OpenAPI_authorized_network_slice_info_convertToJSON() failed [candidate_amf_list]");
-        goto end;
+    OpenAPI_list_for_each(authorized_network_slice_info->candidate_amf_list, node) {
+        if (cJSON_AddStringToObject(candidate_amf_listList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_authorized_network_slice_info_convertToJSON() failed [candidate_amf_list]");
+            goto end;
+        }
     }
-                    }
     }
 
     if (authorized_network_slice_info->rejected_nssai_in_plmn) {
@@ -153,17 +181,13 @@ cJSON *OpenAPI_authorized_network_slice_info_convertToJSON(OpenAPI_authorized_ne
         ogs_error("OpenAPI_authorized_network_slice_info_convertToJSON() failed [rejected_nssai_in_plmn]");
         goto end;
     }
-
-    OpenAPI_lnode_t *rejected_nssai_in_plmn_node;
-    if (authorized_network_slice_info->rejected_nssai_in_plmn) {
-        OpenAPI_list_for_each(authorized_network_slice_info->rejected_nssai_in_plmn, rejected_nssai_in_plmn_node) {
-            cJSON *itemLocal = OpenAPI_snssai_convertToJSON(rejected_nssai_in_plmn_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_authorized_network_slice_info_convertToJSON() failed [rejected_nssai_in_plmn]");
-                goto end;
-            }
-            cJSON_AddItemToArray(rejected_nssai_in_plmnList, itemLocal);
+    OpenAPI_list_for_each(authorized_network_slice_info->rejected_nssai_in_plmn, node) {
+        cJSON *itemLocal = OpenAPI_snssai_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_authorized_network_slice_info_convertToJSON() failed [rejected_nssai_in_plmn]");
+            goto end;
         }
+        cJSON_AddItemToArray(rejected_nssai_in_plmnList, itemLocal);
     }
     }
 
@@ -173,17 +197,13 @@ cJSON *OpenAPI_authorized_network_slice_info_convertToJSON(OpenAPI_authorized_ne
         ogs_error("OpenAPI_authorized_network_slice_info_convertToJSON() failed [rejected_nssai_in_ta]");
         goto end;
     }
-
-    OpenAPI_lnode_t *rejected_nssai_in_ta_node;
-    if (authorized_network_slice_info->rejected_nssai_in_ta) {
-        OpenAPI_list_for_each(authorized_network_slice_info->rejected_nssai_in_ta, rejected_nssai_in_ta_node) {
-            cJSON *itemLocal = OpenAPI_snssai_convertToJSON(rejected_nssai_in_ta_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_authorized_network_slice_info_convertToJSON() failed [rejected_nssai_in_ta]");
-                goto end;
-            }
-            cJSON_AddItemToArray(rejected_nssai_in_taList, itemLocal);
+    OpenAPI_list_for_each(authorized_network_slice_info->rejected_nssai_in_ta, node) {
+        cJSON *itemLocal = OpenAPI_snssai_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_authorized_network_slice_info_convertToJSON() failed [rejected_nssai_in_ta]");
+            goto end;
         }
+        cJSON_AddItemToArray(rejected_nssai_in_taList, itemLocal);
     }
     }
 
@@ -242,198 +262,194 @@ end:
 OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_parseFromJSON(cJSON *authorized_network_slice_infoJSON)
 {
     OpenAPI_authorized_network_slice_info_t *authorized_network_slice_info_local_var = NULL;
-    cJSON *allowed_nssai_list = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "allowedNssaiList");
-
-    OpenAPI_list_t *allowed_nssai_listList;
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *allowed_nssai_list = NULL;
+    OpenAPI_list_t *allowed_nssai_listList = NULL;
+    cJSON *configured_nssai = NULL;
+    OpenAPI_list_t *configured_nssaiList = NULL;
+    cJSON *target_amf_set = NULL;
+    cJSON *candidate_amf_list = NULL;
+    OpenAPI_list_t *candidate_amf_listList = NULL;
+    cJSON *rejected_nssai_in_plmn = NULL;
+    OpenAPI_list_t *rejected_nssai_in_plmnList = NULL;
+    cJSON *rejected_nssai_in_ta = NULL;
+    OpenAPI_list_t *rejected_nssai_in_taList = NULL;
+    cJSON *nsi_information = NULL;
+    OpenAPI_nsi_information_t *nsi_information_local_nonprim = NULL;
+    cJSON *supported_features = NULL;
+    cJSON *nrf_amf_set = NULL;
+    cJSON *nrf_amf_set_nf_mgt_uri = NULL;
+    cJSON *nrf_amf_set_access_token_uri = NULL;
+    cJSON *target_amf_service_set = NULL;
+    allowed_nssai_list = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "allowedNssaiList");
     if (allowed_nssai_list) {
-    cJSON *allowed_nssai_list_local_nonprimitive;
-    if (!cJSON_IsArray(allowed_nssai_list)){
-        ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [allowed_nssai_list]");
-        goto end;
-    }
-
-    allowed_nssai_listList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(allowed_nssai_list_local_nonprimitive, allowed_nssai_list ) {
-        if (!cJSON_IsObject(allowed_nssai_list_local_nonprimitive)) {
+        cJSON *allowed_nssai_list_local = NULL;
+        if (!cJSON_IsArray(allowed_nssai_list)) {
             ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [allowed_nssai_list]");
             goto end;
         }
-        OpenAPI_allowed_nssai_t *allowed_nssai_listItem = OpenAPI_allowed_nssai_parseFromJSON(allowed_nssai_list_local_nonprimitive);
 
-        if (!allowed_nssai_listItem) {
-            ogs_error("No allowed_nssai_listItem");
-            OpenAPI_list_free(allowed_nssai_listList);
-            goto end;
+        allowed_nssai_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(allowed_nssai_list_local, allowed_nssai_list) {
+            if (!cJSON_IsObject(allowed_nssai_list_local)) {
+                ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [allowed_nssai_list]");
+                goto end;
+            }
+            OpenAPI_allowed_nssai_t *allowed_nssai_listItem = OpenAPI_allowed_nssai_parseFromJSON(allowed_nssai_list_local);
+            if (!allowed_nssai_listItem) {
+                ogs_error("No allowed_nssai_listItem");
+                OpenAPI_list_free(allowed_nssai_listList);
+                goto end;
+            }
+            OpenAPI_list_add(allowed_nssai_listList, allowed_nssai_listItem);
         }
-
-        OpenAPI_list_add(allowed_nssai_listList, allowed_nssai_listItem);
-    }
     }
 
-    cJSON *configured_nssai = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "configuredNssai");
-
-    OpenAPI_list_t *configured_nssaiList;
+    configured_nssai = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "configuredNssai");
     if (configured_nssai) {
-    cJSON *configured_nssai_local_nonprimitive;
-    if (!cJSON_IsArray(configured_nssai)){
-        ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [configured_nssai]");
-        goto end;
-    }
-
-    configured_nssaiList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(configured_nssai_local_nonprimitive, configured_nssai ) {
-        if (!cJSON_IsObject(configured_nssai_local_nonprimitive)) {
+        cJSON *configured_nssai_local = NULL;
+        if (!cJSON_IsArray(configured_nssai)) {
             ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [configured_nssai]");
             goto end;
         }
-        OpenAPI_configured_snssai_t *configured_nssaiItem = OpenAPI_configured_snssai_parseFromJSON(configured_nssai_local_nonprimitive);
 
-        if (!configured_nssaiItem) {
-            ogs_error("No configured_nssaiItem");
-            OpenAPI_list_free(configured_nssaiList);
-            goto end;
+        configured_nssaiList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(configured_nssai_local, configured_nssai) {
+            if (!cJSON_IsObject(configured_nssai_local)) {
+                ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [configured_nssai]");
+                goto end;
+            }
+            OpenAPI_configured_snssai_t *configured_nssaiItem = OpenAPI_configured_snssai_parseFromJSON(configured_nssai_local);
+            if (!configured_nssaiItem) {
+                ogs_error("No configured_nssaiItem");
+                OpenAPI_list_free(configured_nssaiList);
+                goto end;
+            }
+            OpenAPI_list_add(configured_nssaiList, configured_nssaiItem);
         }
-
-        OpenAPI_list_add(configured_nssaiList, configured_nssaiItem);
-    }
     }
 
-    cJSON *target_amf_set = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "targetAmfSet");
-
+    target_amf_set = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "targetAmfSet");
     if (target_amf_set) {
-    if (!cJSON_IsString(target_amf_set)) {
+    if (!cJSON_IsString(target_amf_set) && !cJSON_IsNull(target_amf_set)) {
         ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [target_amf_set]");
         goto end;
     }
     }
 
-    cJSON *candidate_amf_list = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "candidateAmfList");
-
-    OpenAPI_list_t *candidate_amf_listList;
+    candidate_amf_list = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "candidateAmfList");
     if (candidate_amf_list) {
-    cJSON *candidate_amf_list_local;
-    if (!cJSON_IsArray(candidate_amf_list)) {
-        ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [candidate_amf_list]");
-        goto end;
-    }
-    candidate_amf_listList = OpenAPI_list_create();
+        cJSON *candidate_amf_list_local = NULL;
+        if (!cJSON_IsArray(candidate_amf_list)) {
+            ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [candidate_amf_list]");
+            goto end;
+        }
 
-    cJSON_ArrayForEach(candidate_amf_list_local, candidate_amf_list) {
-    if (!cJSON_IsString(candidate_amf_list_local)) {
-        ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [candidate_amf_list]");
-        goto end;
-    }
-    OpenAPI_list_add(candidate_amf_listList, ogs_strdup(candidate_amf_list_local->valuestring));
-    }
+        candidate_amf_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(candidate_amf_list_local, candidate_amf_list) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(candidate_amf_list_local)) {
+                ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [candidate_amf_list]");
+                goto end;
+            }
+            OpenAPI_list_add(candidate_amf_listList, ogs_strdup(candidate_amf_list_local->valuestring));
+        }
     }
 
-    cJSON *rejected_nssai_in_plmn = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "rejectedNssaiInPlmn");
-
-    OpenAPI_list_t *rejected_nssai_in_plmnList;
+    rejected_nssai_in_plmn = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "rejectedNssaiInPlmn");
     if (rejected_nssai_in_plmn) {
-    cJSON *rejected_nssai_in_plmn_local_nonprimitive;
-    if (!cJSON_IsArray(rejected_nssai_in_plmn)){
-        ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [rejected_nssai_in_plmn]");
-        goto end;
-    }
-
-    rejected_nssai_in_plmnList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(rejected_nssai_in_plmn_local_nonprimitive, rejected_nssai_in_plmn ) {
-        if (!cJSON_IsObject(rejected_nssai_in_plmn_local_nonprimitive)) {
+        cJSON *rejected_nssai_in_plmn_local = NULL;
+        if (!cJSON_IsArray(rejected_nssai_in_plmn)) {
             ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [rejected_nssai_in_plmn]");
             goto end;
         }
-        OpenAPI_snssai_t *rejected_nssai_in_plmnItem = OpenAPI_snssai_parseFromJSON(rejected_nssai_in_plmn_local_nonprimitive);
 
-        if (!rejected_nssai_in_plmnItem) {
-            ogs_error("No rejected_nssai_in_plmnItem");
-            OpenAPI_list_free(rejected_nssai_in_plmnList);
-            goto end;
+        rejected_nssai_in_plmnList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(rejected_nssai_in_plmn_local, rejected_nssai_in_plmn) {
+            if (!cJSON_IsObject(rejected_nssai_in_plmn_local)) {
+                ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [rejected_nssai_in_plmn]");
+                goto end;
+            }
+            OpenAPI_snssai_t *rejected_nssai_in_plmnItem = OpenAPI_snssai_parseFromJSON(rejected_nssai_in_plmn_local);
+            if (!rejected_nssai_in_plmnItem) {
+                ogs_error("No rejected_nssai_in_plmnItem");
+                OpenAPI_list_free(rejected_nssai_in_plmnList);
+                goto end;
+            }
+            OpenAPI_list_add(rejected_nssai_in_plmnList, rejected_nssai_in_plmnItem);
         }
-
-        OpenAPI_list_add(rejected_nssai_in_plmnList, rejected_nssai_in_plmnItem);
-    }
     }
 
-    cJSON *rejected_nssai_in_ta = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "rejectedNssaiInTa");
-
-    OpenAPI_list_t *rejected_nssai_in_taList;
+    rejected_nssai_in_ta = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "rejectedNssaiInTa");
     if (rejected_nssai_in_ta) {
-    cJSON *rejected_nssai_in_ta_local_nonprimitive;
-    if (!cJSON_IsArray(rejected_nssai_in_ta)){
-        ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [rejected_nssai_in_ta]");
-        goto end;
-    }
-
-    rejected_nssai_in_taList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(rejected_nssai_in_ta_local_nonprimitive, rejected_nssai_in_ta ) {
-        if (!cJSON_IsObject(rejected_nssai_in_ta_local_nonprimitive)) {
+        cJSON *rejected_nssai_in_ta_local = NULL;
+        if (!cJSON_IsArray(rejected_nssai_in_ta)) {
             ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [rejected_nssai_in_ta]");
             goto end;
         }
-        OpenAPI_snssai_t *rejected_nssai_in_taItem = OpenAPI_snssai_parseFromJSON(rejected_nssai_in_ta_local_nonprimitive);
 
-        if (!rejected_nssai_in_taItem) {
-            ogs_error("No rejected_nssai_in_taItem");
-            OpenAPI_list_free(rejected_nssai_in_taList);
-            goto end;
+        rejected_nssai_in_taList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(rejected_nssai_in_ta_local, rejected_nssai_in_ta) {
+            if (!cJSON_IsObject(rejected_nssai_in_ta_local)) {
+                ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [rejected_nssai_in_ta]");
+                goto end;
+            }
+            OpenAPI_snssai_t *rejected_nssai_in_taItem = OpenAPI_snssai_parseFromJSON(rejected_nssai_in_ta_local);
+            if (!rejected_nssai_in_taItem) {
+                ogs_error("No rejected_nssai_in_taItem");
+                OpenAPI_list_free(rejected_nssai_in_taList);
+                goto end;
+            }
+            OpenAPI_list_add(rejected_nssai_in_taList, rejected_nssai_in_taItem);
         }
-
-        OpenAPI_list_add(rejected_nssai_in_taList, rejected_nssai_in_taItem);
-    }
     }
 
-    cJSON *nsi_information = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "nsiInformation");
-
-    OpenAPI_nsi_information_t *nsi_information_local_nonprim = NULL;
+    nsi_information = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "nsiInformation");
     if (nsi_information) {
     nsi_information_local_nonprim = OpenAPI_nsi_information_parseFromJSON(nsi_information);
     }
 
-    cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "supportedFeatures");
-
+    supported_features = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "supportedFeatures");
     if (supported_features) {
-    if (!cJSON_IsString(supported_features)) {
+    if (!cJSON_IsString(supported_features) && !cJSON_IsNull(supported_features)) {
         ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [supported_features]");
         goto end;
     }
     }
 
-    cJSON *nrf_amf_set = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "nrfAmfSet");
-
+    nrf_amf_set = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "nrfAmfSet");
     if (nrf_amf_set) {
-    if (!cJSON_IsString(nrf_amf_set)) {
+    if (!cJSON_IsString(nrf_amf_set) && !cJSON_IsNull(nrf_amf_set)) {
         ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [nrf_amf_set]");
         goto end;
     }
     }
 
-    cJSON *nrf_amf_set_nf_mgt_uri = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "nrfAmfSetNfMgtUri");
-
+    nrf_amf_set_nf_mgt_uri = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "nrfAmfSetNfMgtUri");
     if (nrf_amf_set_nf_mgt_uri) {
-    if (!cJSON_IsString(nrf_amf_set_nf_mgt_uri)) {
+    if (!cJSON_IsString(nrf_amf_set_nf_mgt_uri) && !cJSON_IsNull(nrf_amf_set_nf_mgt_uri)) {
         ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [nrf_amf_set_nf_mgt_uri]");
         goto end;
     }
     }
 
-    cJSON *nrf_amf_set_access_token_uri = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "nrfAmfSetAccessTokenUri");
-
+    nrf_amf_set_access_token_uri = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "nrfAmfSetAccessTokenUri");
     if (nrf_amf_set_access_token_uri) {
-    if (!cJSON_IsString(nrf_amf_set_access_token_uri)) {
+    if (!cJSON_IsString(nrf_amf_set_access_token_uri) && !cJSON_IsNull(nrf_amf_set_access_token_uri)) {
         ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [nrf_amf_set_access_token_uri]");
         goto end;
     }
     }
 
-    cJSON *target_amf_service_set = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "targetAmfServiceSet");
-
+    target_amf_service_set = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "targetAmfServiceSet");
     if (target_amf_service_set) {
-    if (!cJSON_IsString(target_amf_service_set)) {
+    if (!cJSON_IsString(target_amf_service_set) && !cJSON_IsNull(target_amf_service_set)) {
         ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [target_amf_service_set]");
         goto end;
     }
@@ -442,20 +458,59 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_p
     authorized_network_slice_info_local_var = OpenAPI_authorized_network_slice_info_create (
         allowed_nssai_list ? allowed_nssai_listList : NULL,
         configured_nssai ? configured_nssaiList : NULL,
-        target_amf_set ? ogs_strdup(target_amf_set->valuestring) : NULL,
+        target_amf_set && !cJSON_IsNull(target_amf_set) ? ogs_strdup(target_amf_set->valuestring) : NULL,
         candidate_amf_list ? candidate_amf_listList : NULL,
         rejected_nssai_in_plmn ? rejected_nssai_in_plmnList : NULL,
         rejected_nssai_in_ta ? rejected_nssai_in_taList : NULL,
         nsi_information ? nsi_information_local_nonprim : NULL,
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
-        nrf_amf_set ? ogs_strdup(nrf_amf_set->valuestring) : NULL,
-        nrf_amf_set_nf_mgt_uri ? ogs_strdup(nrf_amf_set_nf_mgt_uri->valuestring) : NULL,
-        nrf_amf_set_access_token_uri ? ogs_strdup(nrf_amf_set_access_token_uri->valuestring) : NULL,
-        target_amf_service_set ? ogs_strdup(target_amf_service_set->valuestring) : NULL
+        supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
+        nrf_amf_set && !cJSON_IsNull(nrf_amf_set) ? ogs_strdup(nrf_amf_set->valuestring) : NULL,
+        nrf_amf_set_nf_mgt_uri && !cJSON_IsNull(nrf_amf_set_nf_mgt_uri) ? ogs_strdup(nrf_amf_set_nf_mgt_uri->valuestring) : NULL,
+        nrf_amf_set_access_token_uri && !cJSON_IsNull(nrf_amf_set_access_token_uri) ? ogs_strdup(nrf_amf_set_access_token_uri->valuestring) : NULL,
+        target_amf_service_set && !cJSON_IsNull(target_amf_service_set) ? ogs_strdup(target_amf_service_set->valuestring) : NULL
     );
 
     return authorized_network_slice_info_local_var;
 end:
+    if (allowed_nssai_listList) {
+        OpenAPI_list_for_each(allowed_nssai_listList, node) {
+            OpenAPI_allowed_nssai_free(node->data);
+        }
+        OpenAPI_list_free(allowed_nssai_listList);
+        allowed_nssai_listList = NULL;
+    }
+    if (configured_nssaiList) {
+        OpenAPI_list_for_each(configured_nssaiList, node) {
+            OpenAPI_configured_snssai_free(node->data);
+        }
+        OpenAPI_list_free(configured_nssaiList);
+        configured_nssaiList = NULL;
+    }
+    if (candidate_amf_listList) {
+        OpenAPI_list_for_each(candidate_amf_listList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(candidate_amf_listList);
+        candidate_amf_listList = NULL;
+    }
+    if (rejected_nssai_in_plmnList) {
+        OpenAPI_list_for_each(rejected_nssai_in_plmnList, node) {
+            OpenAPI_snssai_free(node->data);
+        }
+        OpenAPI_list_free(rejected_nssai_in_plmnList);
+        rejected_nssai_in_plmnList = NULL;
+    }
+    if (rejected_nssai_in_taList) {
+        OpenAPI_list_for_each(rejected_nssai_in_taList, node) {
+            OpenAPI_snssai_free(node->data);
+        }
+        OpenAPI_list_free(rejected_nssai_in_taList);
+        rejected_nssai_in_taList = NULL;
+    }
+    if (nsi_information_local_nonprim) {
+        OpenAPI_nsi_information_free(nsi_information_local_nonprim);
+        nsi_information_local_nonprim = NULL;
+    }
     return NULL;
 }
 

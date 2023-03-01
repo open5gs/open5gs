@@ -20,18 +20,26 @@ OpenAPI_nssai_mapping_t *OpenAPI_nssai_mapping_create(
 
 void OpenAPI_nssai_mapping_free(OpenAPI_nssai_mapping_t *nssai_mapping)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == nssai_mapping) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_snssai_free(nssai_mapping->mapped_snssai);
-    OpenAPI_snssai_free(nssai_mapping->h_snssai);
+    if (nssai_mapping->mapped_snssai) {
+        OpenAPI_snssai_free(nssai_mapping->mapped_snssai);
+        nssai_mapping->mapped_snssai = NULL;
+    }
+    if (nssai_mapping->h_snssai) {
+        OpenAPI_snssai_free(nssai_mapping->h_snssai);
+        nssai_mapping->h_snssai = NULL;
+    }
     ogs_free(nssai_mapping);
 }
 
 cJSON *OpenAPI_nssai_mapping_convertToJSON(OpenAPI_nssai_mapping_t *nssai_mapping)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (nssai_mapping == NULL) {
         ogs_error("OpenAPI_nssai_mapping_convertToJSON() failed [NssaiMapping]");
@@ -39,6 +47,10 @@ cJSON *OpenAPI_nssai_mapping_convertToJSON(OpenAPI_nssai_mapping_t *nssai_mappin
     }
 
     item = cJSON_CreateObject();
+    if (!nssai_mapping->mapped_snssai) {
+        ogs_error("OpenAPI_nssai_mapping_convertToJSON() failed [mapped_snssai]");
+        return NULL;
+    }
     cJSON *mapped_snssai_local_JSON = OpenAPI_snssai_convertToJSON(nssai_mapping->mapped_snssai);
     if (mapped_snssai_local_JSON == NULL) {
         ogs_error("OpenAPI_nssai_mapping_convertToJSON() failed [mapped_snssai]");
@@ -50,6 +62,10 @@ cJSON *OpenAPI_nssai_mapping_convertToJSON(OpenAPI_nssai_mapping_t *nssai_mappin
         goto end;
     }
 
+    if (!nssai_mapping->h_snssai) {
+        ogs_error("OpenAPI_nssai_mapping_convertToJSON() failed [h_snssai]");
+        return NULL;
+    }
     cJSON *h_snssai_local_JSON = OpenAPI_snssai_convertToJSON(nssai_mapping->h_snssai);
     if (h_snssai_local_JSON == NULL) {
         ogs_error("OpenAPI_nssai_mapping_convertToJSON() failed [h_snssai]");
@@ -68,22 +84,23 @@ end:
 OpenAPI_nssai_mapping_t *OpenAPI_nssai_mapping_parseFromJSON(cJSON *nssai_mappingJSON)
 {
     OpenAPI_nssai_mapping_t *nssai_mapping_local_var = NULL;
-    cJSON *mapped_snssai = cJSON_GetObjectItemCaseSensitive(nssai_mappingJSON, "mappedSnssai");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *mapped_snssai = NULL;
+    OpenAPI_snssai_t *mapped_snssai_local_nonprim = NULL;
+    cJSON *h_snssai = NULL;
+    OpenAPI_snssai_t *h_snssai_local_nonprim = NULL;
+    mapped_snssai = cJSON_GetObjectItemCaseSensitive(nssai_mappingJSON, "mappedSnssai");
     if (!mapped_snssai) {
         ogs_error("OpenAPI_nssai_mapping_parseFromJSON() failed [mapped_snssai]");
         goto end;
     }
-
-    OpenAPI_snssai_t *mapped_snssai_local_nonprim = NULL;
     mapped_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(mapped_snssai);
 
-    cJSON *h_snssai = cJSON_GetObjectItemCaseSensitive(nssai_mappingJSON, "hSnssai");
+    h_snssai = cJSON_GetObjectItemCaseSensitive(nssai_mappingJSON, "hSnssai");
     if (!h_snssai) {
         ogs_error("OpenAPI_nssai_mapping_parseFromJSON() failed [h_snssai]");
         goto end;
     }
-
-    OpenAPI_snssai_t *h_snssai_local_nonprim = NULL;
     h_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(h_snssai);
 
     nssai_mapping_local_var = OpenAPI_nssai_mapping_create (
@@ -93,6 +110,14 @@ OpenAPI_nssai_mapping_t *OpenAPI_nssai_mapping_parseFromJSON(cJSON *nssai_mappin
 
     return nssai_mapping_local_var;
 end:
+    if (mapped_snssai_local_nonprim) {
+        OpenAPI_snssai_free(mapped_snssai_local_nonprim);
+        mapped_snssai_local_nonprim = NULL;
+    }
+    if (h_snssai_local_nonprim) {
+        OpenAPI_snssai_free(h_snssai_local_nonprim);
+        h_snssai_local_nonprim = NULL;
+    }
     return NULL;
 }
 

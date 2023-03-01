@@ -26,19 +26,30 @@ OpenAPI_emergency_info_1_t *OpenAPI_emergency_info_1_create(
 
 void OpenAPI_emergency_info_1_free(OpenAPI_emergency_info_1_t *emergency_info_1)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == emergency_info_1) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(emergency_info_1->pgw_fqdn);
-    OpenAPI_ip_address_1_free(emergency_info_1->pgw_ip_address);
-    ogs_free(emergency_info_1->smf_instance_id);
+    if (emergency_info_1->pgw_fqdn) {
+        ogs_free(emergency_info_1->pgw_fqdn);
+        emergency_info_1->pgw_fqdn = NULL;
+    }
+    if (emergency_info_1->pgw_ip_address) {
+        OpenAPI_ip_address_1_free(emergency_info_1->pgw_ip_address);
+        emergency_info_1->pgw_ip_address = NULL;
+    }
+    if (emergency_info_1->smf_instance_id) {
+        ogs_free(emergency_info_1->smf_instance_id);
+        emergency_info_1->smf_instance_id = NULL;
+    }
     ogs_free(emergency_info_1);
 }
 
 cJSON *OpenAPI_emergency_info_1_convertToJSON(OpenAPI_emergency_info_1_t *emergency_info_1)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (emergency_info_1 == NULL) {
         ogs_error("OpenAPI_emergency_info_1_convertToJSON() failed [EmergencyInfo_1]");
@@ -87,33 +98,34 @@ end:
 OpenAPI_emergency_info_1_t *OpenAPI_emergency_info_1_parseFromJSON(cJSON *emergency_info_1JSON)
 {
     OpenAPI_emergency_info_1_t *emergency_info_1_local_var = NULL;
-    cJSON *pgw_fqdn = cJSON_GetObjectItemCaseSensitive(emergency_info_1JSON, "pgwFqdn");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *pgw_fqdn = NULL;
+    cJSON *pgw_ip_address = NULL;
+    OpenAPI_ip_address_1_t *pgw_ip_address_local_nonprim = NULL;
+    cJSON *smf_instance_id = NULL;
+    cJSON *epdg_ind = NULL;
+    pgw_fqdn = cJSON_GetObjectItemCaseSensitive(emergency_info_1JSON, "pgwFqdn");
     if (pgw_fqdn) {
-    if (!cJSON_IsString(pgw_fqdn)) {
+    if (!cJSON_IsString(pgw_fqdn) && !cJSON_IsNull(pgw_fqdn)) {
         ogs_error("OpenAPI_emergency_info_1_parseFromJSON() failed [pgw_fqdn]");
         goto end;
     }
     }
 
-    cJSON *pgw_ip_address = cJSON_GetObjectItemCaseSensitive(emergency_info_1JSON, "pgwIpAddress");
-
-    OpenAPI_ip_address_1_t *pgw_ip_address_local_nonprim = NULL;
+    pgw_ip_address = cJSON_GetObjectItemCaseSensitive(emergency_info_1JSON, "pgwIpAddress");
     if (pgw_ip_address) {
     pgw_ip_address_local_nonprim = OpenAPI_ip_address_1_parseFromJSON(pgw_ip_address);
     }
 
-    cJSON *smf_instance_id = cJSON_GetObjectItemCaseSensitive(emergency_info_1JSON, "smfInstanceId");
-
+    smf_instance_id = cJSON_GetObjectItemCaseSensitive(emergency_info_1JSON, "smfInstanceId");
     if (smf_instance_id) {
-    if (!cJSON_IsString(smf_instance_id)) {
+    if (!cJSON_IsString(smf_instance_id) && !cJSON_IsNull(smf_instance_id)) {
         ogs_error("OpenAPI_emergency_info_1_parseFromJSON() failed [smf_instance_id]");
         goto end;
     }
     }
 
-    cJSON *epdg_ind = cJSON_GetObjectItemCaseSensitive(emergency_info_1JSON, "epdgInd");
-
+    epdg_ind = cJSON_GetObjectItemCaseSensitive(emergency_info_1JSON, "epdgInd");
     if (epdg_ind) {
     if (!cJSON_IsBool(epdg_ind)) {
         ogs_error("OpenAPI_emergency_info_1_parseFromJSON() failed [epdg_ind]");
@@ -122,15 +134,19 @@ OpenAPI_emergency_info_1_t *OpenAPI_emergency_info_1_parseFromJSON(cJSON *emerge
     }
 
     emergency_info_1_local_var = OpenAPI_emergency_info_1_create (
-        pgw_fqdn ? ogs_strdup(pgw_fqdn->valuestring) : NULL,
+        pgw_fqdn && !cJSON_IsNull(pgw_fqdn) ? ogs_strdup(pgw_fqdn->valuestring) : NULL,
         pgw_ip_address ? pgw_ip_address_local_nonprim : NULL,
-        smf_instance_id ? ogs_strdup(smf_instance_id->valuestring) : NULL,
+        smf_instance_id && !cJSON_IsNull(smf_instance_id) ? ogs_strdup(smf_instance_id->valuestring) : NULL,
         epdg_ind ? true : false,
         epdg_ind ? epdg_ind->valueint : 0
     );
 
     return emergency_info_1_local_var;
 end:
+    if (pgw_ip_address_local_nonprim) {
+        OpenAPI_ip_address_1_free(pgw_ip_address_local_nonprim);
+        pgw_ip_address_local_nonprim = NULL;
+    }
     return NULL;
 }
 

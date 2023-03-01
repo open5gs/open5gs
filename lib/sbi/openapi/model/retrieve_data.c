@@ -20,16 +20,18 @@ OpenAPI_retrieve_data_t *OpenAPI_retrieve_data_create(
 
 void OpenAPI_retrieve_data_free(OpenAPI_retrieve_data_t *retrieve_data)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == retrieve_data) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(retrieve_data);
 }
 
 cJSON *OpenAPI_retrieve_data_convertToJSON(OpenAPI_retrieve_data_t *retrieve_data)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (retrieve_data == NULL) {
         ogs_error("OpenAPI_retrieve_data_convertToJSON() failed [RetrieveData]");
@@ -51,8 +53,9 @@ end:
 OpenAPI_retrieve_data_t *OpenAPI_retrieve_data_parseFromJSON(cJSON *retrieve_dataJSON)
 {
     OpenAPI_retrieve_data_t *retrieve_data_local_var = NULL;
-    cJSON *small_data_rate_status_req = cJSON_GetObjectItemCaseSensitive(retrieve_dataJSON, "smallDataRateStatusReq");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *small_data_rate_status_req = NULL;
+    small_data_rate_status_req = cJSON_GetObjectItemCaseSensitive(retrieve_dataJSON, "smallDataRateStatusReq");
     if (small_data_rate_status_req) {
     if (!cJSON_IsBool(small_data_rate_status_req)) {
         ogs_error("OpenAPI_retrieve_data_parseFromJSON() failed [small_data_rate_status_req]");

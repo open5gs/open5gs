@@ -20,18 +20,26 @@ OpenAPI_vendor_specific_feature_t *OpenAPI_vendor_specific_feature_create(
 
 void OpenAPI_vendor_specific_feature_free(OpenAPI_vendor_specific_feature_t *vendor_specific_feature)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == vendor_specific_feature) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(vendor_specific_feature->feature_name);
-    ogs_free(vendor_specific_feature->feature_version);
+    if (vendor_specific_feature->feature_name) {
+        ogs_free(vendor_specific_feature->feature_name);
+        vendor_specific_feature->feature_name = NULL;
+    }
+    if (vendor_specific_feature->feature_version) {
+        ogs_free(vendor_specific_feature->feature_version);
+        vendor_specific_feature->feature_version = NULL;
+    }
     ogs_free(vendor_specific_feature);
 }
 
 cJSON *OpenAPI_vendor_specific_feature_convertToJSON(OpenAPI_vendor_specific_feature_t *vendor_specific_feature)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (vendor_specific_feature == NULL) {
         ogs_error("OpenAPI_vendor_specific_feature_convertToJSON() failed [VendorSpecificFeature]");
@@ -39,11 +47,19 @@ cJSON *OpenAPI_vendor_specific_feature_convertToJSON(OpenAPI_vendor_specific_fea
     }
 
     item = cJSON_CreateObject();
+    if (!vendor_specific_feature->feature_name) {
+        ogs_error("OpenAPI_vendor_specific_feature_convertToJSON() failed [feature_name]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "featureName", vendor_specific_feature->feature_name) == NULL) {
         ogs_error("OpenAPI_vendor_specific_feature_convertToJSON() failed [feature_name]");
         goto end;
     }
 
+    if (!vendor_specific_feature->feature_version) {
+        ogs_error("OpenAPI_vendor_specific_feature_convertToJSON() failed [feature_version]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "featureVersion", vendor_specific_feature->feature_version) == NULL) {
         ogs_error("OpenAPI_vendor_specific_feature_convertToJSON() failed [feature_version]");
         goto end;
@@ -56,23 +72,24 @@ end:
 OpenAPI_vendor_specific_feature_t *OpenAPI_vendor_specific_feature_parseFromJSON(cJSON *vendor_specific_featureJSON)
 {
     OpenAPI_vendor_specific_feature_t *vendor_specific_feature_local_var = NULL;
-    cJSON *feature_name = cJSON_GetObjectItemCaseSensitive(vendor_specific_featureJSON, "featureName");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *feature_name = NULL;
+    cJSON *feature_version = NULL;
+    feature_name = cJSON_GetObjectItemCaseSensitive(vendor_specific_featureJSON, "featureName");
     if (!feature_name) {
         ogs_error("OpenAPI_vendor_specific_feature_parseFromJSON() failed [feature_name]");
         goto end;
     }
-
     if (!cJSON_IsString(feature_name)) {
         ogs_error("OpenAPI_vendor_specific_feature_parseFromJSON() failed [feature_name]");
         goto end;
     }
 
-    cJSON *feature_version = cJSON_GetObjectItemCaseSensitive(vendor_specific_featureJSON, "featureVersion");
+    feature_version = cJSON_GetObjectItemCaseSensitive(vendor_specific_featureJSON, "featureVersion");
     if (!feature_version) {
         ogs_error("OpenAPI_vendor_specific_feature_parseFromJSON() failed [feature_version]");
         goto end;
     }
-
     if (!cJSON_IsString(feature_version)) {
         ogs_error("OpenAPI_vendor_specific_feature_parseFromJSON() failed [feature_version]");
         goto end;

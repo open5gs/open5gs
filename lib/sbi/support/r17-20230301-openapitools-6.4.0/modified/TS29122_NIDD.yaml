@@ -1,0 +1,1233 @@
+openapi: 3.0.0
+info:
+  title: 3gpp-nidd
+  version: 1.2.1
+  description: |
+    API for non IP data delivery.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 29.122 V17.7.0 T8 reference point for Northbound APIs
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.122/'
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+servers:
+  - url: '{apiRoot}/3gpp-nidd/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122.
+paths:
+  /{scsAsId}/configurations:
+    parameters:
+      - name: scsAsId
+        description: String identifying the SCS/AS.
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Read all NIDD configuration resources for a given SCS/AS.
+      operationId: FetchAllNIDDConfigurations
+      tags:
+        - NIDD configurations
+      responses:
+        '200':
+          description: all NIDD configurations.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NiddConfiguration'
+                minItems: 0
+                description: individual NIDD configuration.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    post:
+      summary: Create a new NIDD configuration resource.
+      operationId: CreateNIDDConfiguration
+      tags:
+        - NIDD configurations
+      requestBody:
+        description: Contains the data to create a NIDD configuration.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NiddConfiguration'
+      responses:
+        '201':
+          description: NIDD configuration is successfully created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NiddConfiguration'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        niddNotifications:
+          '{$request.body#/notificationDestination}':
+            post:
+              requestBody:
+                description: Notification for NIDD configuration status, MO NIDD, MT NIDD delivery report. 
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      oneOf:
+                      - $ref: '#/components/schemas/NiddConfigurationStatusNotification'
+                      - $ref: '#/components/schemas/NiddUplinkDataNotification'
+                      - $ref: '#/components/schemas/NiddDownlinkDataDeliveryStatusNotification'
+                      - $ref: '#/components/schemas/GmdNiddDownlinkDataDeliveryNotification'
+                      - $ref: '#/components/schemas/ManagePortNotification'
+              responses:
+                '204':
+                  description: Expected response to a successful callback processing without a body
+                '200':
+                  description: Expected response to a successful callback processing with a body
+                  content:
+                    application/json:
+                      schema:
+                        $ref: 'TS29122_CommonData.yaml#/components/schemas/Acknowledgement'
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+  /{scsAsId}/configurations/{configurationId}:
+    parameters:
+      - name: scsAsId
+        description: String identifying the SCS/AS.
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: configurationId
+        description: String identifying the individual NIDD configuration resource in the SCEF.
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Read an NIDD configuration resource.
+      operationId: FetchIndNIDDConfiguration
+      tags:
+        - Individual NIDD configuration
+      responses:
+        '200':
+          description: The individual NIDD configuration is successfully retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NiddConfiguration'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    patch:
+      summary: Modify an existing NIDD configuration resource.
+      operationId: ModifyNIDDConfiguration
+      tags:
+        - Individual NIDD configuration
+      requestBody:
+        description: Contains information to be applied to the individual NIDD configuration.
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/NiddConfigurationPatch'
+      responses:
+        '200':
+          description: The Individual NIDD configuration is modified successfully and a representation of that resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NiddConfiguration'
+        '204':
+          description: The Individual NIDD configuration is modified successfully and no content is to be sent in the response message body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: Delete an existing NIDD configuration resource.
+      operationId: DeleteNIDDConfiguration
+      tags:
+        - Individual NIDD configuration
+      responses:
+        '204':
+          description: The Individual NIDD configuration is deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /{scsAsId}/configurations/{configurationId}/downlink-data-deliveries:
+    parameters:
+      - name: scsAsId
+        description: String identifying the SCS/AS.
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: configurationId
+        description: String identifying the individual NIDD configuration resource in the SCEF.
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Read all pending NIDD downlink data delivery resources related to a particular NIDD configuration resource.
+      operationId: FetchAllDownlinkDataDeliveries
+      tags:
+        - NIDD downlink data deliveries
+      responses:
+        '200':
+          description: all NIDD downlink data deliveries.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NiddDownlinkDataTransfer'
+                minItems: 0
+                description: individual NIDD downlink data delivery.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    post:
+      summary: Create an NIDD downlink data delivery resource related to a particular NIDD configuration resource.
+      operationId: CreateDownlinkDataDelivery
+      tags:
+        - NIDD downlink data deliveries
+      requestBody:
+        description: Contains the data to create a NIDD downlink data delivery.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NiddDownlinkDataTransfer'
+      responses:
+        '200':
+          description: NIDD downlink data delivery is successful.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NiddDownlinkDataTransfer'
+        '201':
+          description: NIDD downlink data delivery is pending.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NiddDownlinkDataTransfer'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          description: The NIDD downlink data delivery request was not successful.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NiddDownlinkDataDeliveryFailure'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+  /{scsAsId}/configurations/{configurationId}/downlink-data-deliveries/{downlinkDataDeliveryId}:
+    parameters:
+      - name: scsAsId
+        description: String identifying the SCS/AS.
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: configurationId
+        description: String identifying the individual NIDD configuration resource in the SCEF.
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: downlinkDataDeliveryId
+        description: String identifying the individual NIDD downlink data delivery in the SCEF.
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Read pending NIDD downlink data delivery resource.
+      operationId: FetchIndDownlinkDataDelivery
+      tags:
+        - Individual NIDD downlink data delivery
+      responses:
+        '200':
+          description: The individual NIDD downlink data delivery is successfully retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NiddDownlinkDataTransfer'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    put:
+      summary: Replace an NIDD downlink data delivery resource.
+      operationId: UpdateIndDownlinkDataDelivery
+      tags:
+        - Individual NIDD downlink data delivery
+      requestBody:
+        description: Contains information to be applied to the individual NIDD downlink data delivery.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NiddDownlinkDataTransfer'
+      responses:
+        '200':
+          description: The pending NIDD downlink data is replaced sucessfully but delivery is pending.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NiddDownlinkDataTransfer'
+        '204':
+          description: The NIDD downlink data delivery has been replaced successfully and no content is to be sent in the response message body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '409':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/409'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          description: The NIDD downlink data replacement request was not successful.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NiddDownlinkDataDeliveryFailure'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    patch:
+      summary: Modify an existing Individual NIDD downlink data delivery resource.
+      operationId: ModifyIndDownlinkDataDelivery
+      tags:
+        - Individual NIDD downlink data delivery
+      requestBody:
+        description: Contains the parameters to update an individual NIDD downlink data delivery resource.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NiddDownlinkDataTransferPatch'
+      responses:
+        '200':
+          description: OK. The modification of the Individual NIDD downlink data delivery resource was successful and an updated representation of the resource within the NiddDownlinkDataTransfer data structure in the response message body is returned by the SCEF.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NiddDownlinkDataTransfer'
+        '204':
+          description: No Content. The modification of the Individual NIDD downlink data delivery resource was successful and no content is to be sent in the response message body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '409':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/409'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          description: Internal Server Error. The NIDD downlink data modification request was not successful.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NiddDownlinkDataDeliveryFailure'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: Delete an NIDD downlink data delivery resource.
+      operationId: DeleteIndDownlinkDataDelivery
+      tags:
+        - Individual NIDD downlink data delivery
+      responses:
+        '204':
+          description: The pending NIDD downlink data is deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '409':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/409'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          description: The NIDD downlink data cancellation request was not successful.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NiddDownlinkDataDeliveryFailure'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+  /{scsAsId}/configurations/{configurationId}/rds-ports:
+    parameters:
+      - name: scsAsId
+        description: String identifying the SCS/AS.
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: configurationId
+        description: String identifying the individual NIDD configuration resource in the SCEF.
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Read all RDS ManagePort Configurations.
+      operationId: FetchAllManagePortConfigurations
+      tags:
+        - ManagePort Configurations
+      responses:
+        '200':
+          description: all ManagePort configurations.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ManagePort'
+                minItems: 0
+                description: individual ManagePort configuration.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+  /{scsAsId}/configurations/{configurationId}/rds-ports/{portId}:
+    parameters:
+      - name: scsAsId
+        description: String identifying the SCS/AS.
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: configurationId
+        description: String identifying the individual NIDD configuration resource in the SCEF.
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: portId
+        description: The UE port number.
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: '^(ue([0-9]|(1[0-5]))-ef([0-9]|(1[0-5])))$'
+    get:
+      summary: Read an Individual ManagePort Configuration resource to query port numbers.
+      operationId: FetchIndManagePortConfiguration
+      tags:
+        - Individual ManagePort Configuration
+      responses:
+        '200':
+          description: The individual ManagePort configuration is successfully retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManagePort'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    put:
+      summary: Create a new Individual ManagePort Configuration resource to reserve port numbers.
+      operationId: UpdateIndManagePortConfiguration
+      tags:
+        - Individual ManagePort Configuration
+      requestBody:
+        description: Contains information to be applied to the individual ManagePort configuration.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ManagePort'
+      responses:
+        '201':
+          description: The individual ManagePort configuration is created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManagePort'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '202':
+          description: The request is accepted and under processing.
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '409':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/409'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          description: The request was not successful.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/RdsDownlinkDataDeliveryFailure'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: Delete an Individual ManagePort Configuration resource to release port numbers.
+      operationId: DeleteIndManagePortConfiguration
+      tags:
+        - Individual ManagePort Configuration
+      responses:
+        '202':
+          description: The request is accepted and under processing.
+        '204':
+          description: The individual ManagePort configuration is deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '409':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/409'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          description: The request was not successful.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/RdsDownlinkDataDeliveryFailure'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+  schemas: 
+    NiddConfiguration:
+      description: Represents the configuration for NIDD.
+      type: object
+      properties:
+        self:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        mtcProviderId:
+          type: string
+          description: Identifies the MTC Service Provider and/or MTC Application.
+        externalId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalId'
+        msisdn:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Msisdn'
+        externalGroupId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalGroupId'
+        duration:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        reliableDataService:
+          type: boolean
+          description: >
+            Indicates whether the reliable data service (as defined in clause 4.5.14.3 of 3GPP TS 
+            23.682) acknowledgement is requested (true) or not (false). Default value is false.
+        rdsPorts:
+          type: array
+          items:
+            $ref: '#/components/schemas/RdsPort'
+          minItems: 1
+          description: Indicates the static port configuration that is used for reliable data transfer between specific applications using RDS (as defined in clause 5.2.4 and 5.2.5 of 3GPP TS 24.250).
+        pdnEstablishmentOption:
+          $ref: '#/components/schemas/PdnEstablishmentOptions'
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        requestTestNotification:
+          type: boolean
+          description: Set to true by the SCS/AS to request the SCEF to send a test notification as defined in clause 5.2.5.3. Set to false or omitted otherwise.
+        websockNotifConfig:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/WebsockNotifConfig'
+        maximumPacketSize:
+          type: integer
+          minimum: 1
+          description: The Maximum Packet Size is the maximum NIDD packet size that was transferred to the UE by the SCEF in the PCO, see clause 4.5.14.1 of 3GPP TS 23.682. If no maximum packet size was provided to the UE by the SCEF, the SCEF sends a default configured max packet size to SCS/AS. Unit  bit.
+          readOnly: true
+        niddDownlinkDataTransfers:
+          type: array
+          items:
+            $ref: '#/components/schemas/NiddDownlinkDataTransfer'
+          minItems: 1
+          description: The downlink data deliveries that needed to be executed by the SCEF. The cardinality of the property shall be 0..1 in the request and 0..N in the response (i.e. response may contain multiple buffered MT NIDD).
+        status:
+          $ref: '#/components/schemas/NiddStatus'
+      required:
+        - notificationDestination
+      oneOf:
+        - required: [externalId]
+        - required: [msisdn]
+        - required: [externalGroupId]
+    NiddDownlinkDataTransfer:
+      description: Represents the received NIDD downlink data from the SCS/AS.
+      type: object
+      properties:
+        externalId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalId'
+        externalGroupId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalGroupId'
+        msisdn:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Msisdn'
+        self:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        data:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Bytes'
+        reliableDataService:
+          type: boolean
+          description: >
+            Indicates whether the reliable data service (as defined in clause 4.5.14.3 of 3GPP TS 
+            23.682) acknowledgement is requested (true) or not (false). Default value is false.
+        rdsPort:
+          $ref: '#/components/schemas/RdsPort'
+        maximumLatency:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        priority:
+          type: integer
+          description: It is used to indicate the priority of the non-IP data packet relative to other non-IP data packets.
+        pdnEstablishmentOption:
+          $ref: '#/components/schemas/PdnEstablishmentOptions'
+        deliveryStatus:
+          $ref: '#/components/schemas/DeliveryStatus'
+        requestedRetransmissionTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - data
+      oneOf:
+        - required: [externalId]
+        - required: [msisdn]
+        - required: [externalGroupId]
+    NiddUplinkDataNotification:
+      description: Represents NIDD uplink data to be notified to the SCS/AS.
+      type: object
+      properties:
+        niddConfiguration:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        externalId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalId'
+        msisdn:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Msisdn'
+        data:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Bytes'
+        reliableDataService:
+          type: boolean
+          description: >
+            Indicates whether the reliable data service acknowledgement is requested (true) or
+            not (false).
+        rdsPort:
+          $ref: '#/components/schemas/RdsPort'
+      required:
+        - niddConfiguration
+        - data
+      oneOf:
+        - required: [externalId]
+        - required: [msisdn]
+    NiddDownlinkDataDeliveryStatusNotification:
+      description: Represents the delivery status of a specific NIDD downlink data delivery.
+      type: object
+      properties:
+        niddDownlinkDataTransfer:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        deliveryStatus:
+          $ref: '#/components/schemas/DeliveryStatus'
+        requestedRetransmissionTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - niddDownlinkDataTransfer
+        - deliveryStatus
+    NiddConfigurationStatusNotification:
+      description: Represents an NIDD configuration status notification.
+      type: object
+      properties:
+        niddConfiguration:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        externalId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalId'
+        msisdn:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Msisdn'
+        status:
+          $ref: '#/components/schemas/NiddStatus'
+        rdsCapIndication:
+          type: boolean
+          description: It indicates whether the network capability for the reliable data service is enabled or not.
+        rdsPort:
+          $ref: '#/components/schemas/RdsPort'
+      required:
+        - niddConfiguration
+        - status
+      oneOf:
+        - required: [externalId]
+        - required: [msisdn]
+    GmdNiddDownlinkDataDeliveryNotification:
+      description: Represents the delivery status of a specific group NIDD downlink data delivery.
+      type: object
+      properties:
+        niddDownlinkDataTransfer:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        gmdResults:
+          type: array
+          items:
+            $ref: '#/components/schemas/GmdResult'
+          minItems: 1
+          description: Indicates the group message delivery result.
+      required:
+        - niddDownlinkDataTransfer
+        - gmdResults
+    RdsPort:
+      description: Represents the port configuration for Reliable Data Transfer.
+      type: object
+      properties:
+        portUE:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Port'
+        portSCEF:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Port'
+      required:
+        - portUE
+        - portSCEF
+    GmdResult:
+      description: Represents the group message delivery result.
+      type: object
+      properties:
+        externalId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalId'
+        msisdn:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Msisdn'
+        deliveryStatus:
+          $ref: '#/components/schemas/DeliveryStatus'
+        requestedRetransmissionTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - deliveryStatus
+      oneOf:
+        - required: [externalId]
+        - required: [msisdn]
+    NiddDownlinkDataDeliveryFailure:
+      description: Represents information related to a failure delivery result.
+      type: object
+      properties:
+        problemDetail:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ProblemDetails'
+        requestedRetransmissionTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - problemDetail
+    ManagePort:
+      description: Represents the configuration of a RDS dynamic port management.
+      type: object
+      properties:
+        self:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        appId:
+          type: string
+          description: Identifies the application.
+        manageEntity:
+          $ref: '#/components/schemas/ManageEntity'
+        skipUeInquiry:
+          type: boolean
+          description: Indicate whether to skip UE inquiry.
+        supportedFormats:
+          type: array
+          items:
+            $ref: '#/components/schemas/SerializationFormat'
+          minItems: 1
+          description: Indicates the serialization format(s) that are supported by the SCS/AS on the associated RDS port.
+        configuredFormat:
+          $ref: '#/components/schemas/SerializationFormat'
+      required:
+        - appId
+    ManagePortNotification:
+      description: Represents a ManagePort notification of port numbers that are reserved.
+      type: object
+      properties:
+        niddConfiguration:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        externalId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalId'
+        msisdn:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Msisdn'
+        managedPorts:
+          type: array
+          items:
+            $ref: '#/components/schemas/ManagePort'
+          minItems: 1
+          description: Indicates the reserved RDS port configuration information.
+      required:
+        - niddConfiguration
+      oneOf:
+        - required: [externalId]
+        - required: [msisdn] 
+    RdsDownlinkDataDeliveryFailure:
+      description: Represents the failure delivery result for RDS.
+      allOf:
+        - $ref: 'TS29122_CommonData.yaml#/components/schemas/ProblemDetails'
+        - type: object
+          properties:
+            requestedRetransmissionTime:
+              $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+            supportedUeFormats:
+              type: array
+              items:
+                $ref: '#/components/schemas/SerializationFormat'
+              minItems: 1
+              description: Indicates the serialization format(s) that are supported by the UE on the associated RDS port.
+
+    NiddDownlinkDataTransferPatch:
+      description: Represents the parameters to request the modification of an Individual NIDD Downlink Data Delivery resource.
+      type: object
+      properties:
+        data:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Bytes'
+        reliableDataService:
+          type: boolean
+          description: >
+            Indicates whether the reliable data service (as defined in clause 4.5.14.3 of 3GPP TS 
+            23.682) acknowledgement is requested (true) or not (false).
+        rdsPort:
+          $ref: '#/components/schemas/RdsPort'
+        maximumLatency:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        priority:
+          type: integer
+          description: It is used to indicate the priority of the non-IP data packet relative to other non-IP data packets.
+        pdnEstablishmentOption:
+          $ref: '#/components/schemas/PdnEstablishmentOptions'
+
+    PdnEstablishmentOptions:
+      anyOf:
+      - type: string
+        enum:
+          - WAIT_FOR_UE
+          - INDICATE_ERROR
+          - SEND_TRIGGER
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - WAIT_FOR_UE: wait for the UE to establish the PDN connection 
+        - INDICATE_ERROR: respond with an error cause
+        - SEND_TRIGGER: send a device trigger
+    PdnEstablishmentOptionsRm:
+      description: Represents the same information as the PdnEstablishmentOptions data type with the difference that it allows also the null value.
+      anyOf: 
+        - $ref: '#/components/schemas/PdnEstablishmentOptions'
+        - $ref: 'TS29571_CommonData.yaml#/components/schemas/NullValue'
+    DeliveryStatus:
+      anyOf:
+      - type: string
+        enum:
+          - SUCCESS
+          - SUCCESS_NEXT_HOP_ACKNOWLEDGED
+          - SUCCESS_NEXT_HOP_UNACKNOWLEDGED
+          - SUCCESS_ACKNOWLEDGED
+          - SUCCESS_UNACKNOWLEDGED
+          - TRIGGERED
+          - BUFFERING
+          - BUFFERING_TEMPORARILY_NOT_REACHABLE
+          - SENDING
+          - FAILURE
+          - FAILURE_RDS_DISABLED
+          - FAILURE_NEXT_HOP
+          - FAILURE_TIMEOUT
+          - FAILURE_TEMPORARILY_NOT_REACHABLE
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - SUCCESS: Success but details not provided
+        - SUCCESS_NEXT_HOP_ACKNOWLEDGED: Successful delivery to the next hop with acknowledgment.
+        - SUCCESS_NEXT_HOP_UNACKNOWLEDGED: Successful delivery to the next hop without acknowledgment
+        - SUCCESS_ACKNOWLEDGED: Reliable delivery was acknowledged by the UE
+        - SUCCESS_UNACKNOWLEDGED: Reliable delivery was not acknowledged by the UE
+        - TRIGGERED: The SCEF triggered the device and is buffering the data.
+        - BUFFERING: The SCEF is buffering the data due to no PDN connection established.
+        - BUFFERING_TEMPORARILY_NOT_REACHABLE: The SCEF has been informed that the UE is temporarily not reachable but is buffering the data
+        - SENDING: The SCEF has forwarded the data, but they may be stored elsewhere
+        - FAILURE: Delivery failure but details not provided
+        - FAILURE_RDS_DISABLED: RDS was disabled
+        - FAILURE_NEXT_HOP: Unsuccessful delivery to the next hop.
+        - FAILURE_TIMEOUT: Unsuccessful delivery due to timeout. 
+        - FAILURE_TEMPORARILY_NOT_REACHABLE: The SCEF has been informed that the UE is temporarily not reachable without buffering the data.
+      readOnly: true
+    NiddStatus:
+      anyOf:
+      - type: string
+        enum:
+          - ACTIVE
+          - TERMINATED_UE_NOT_AUTHORIZED
+          - TERMINATED
+          - RDS_PORT_UNKNOWN
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - ACTIVE: The NIDD configuration is active.
+        - TERMINATED_UE_NOT_AUTHORIZED: The NIDD configuration was terminated because the UE´s authorisation was revoked.
+        - TERMINATED: The NIDD configuration was terminated.
+        - RDS_PORT_UNKNOWN: The RDS port is unknown.
+      readOnly: true
+    ManageEntity:
+      anyOf:
+      - type: string
+        enum:
+          - UE
+          - AS
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - UE: Representing the UE.
+        - AS: Representing the Application Server.
+      readOnly: true
+    SerializationFormat:
+      anyOf:
+      - type: string
+        enum:
+          - CBOR
+          - JSON
+          - XML
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - CBOR: The CBOR Serialzition format 
+        - JSON: The JSON Serialzition format
+        - XML: The XML Serialzition format
+    NiddConfigurationPatch:
+      description: Represents the parameters to update a NIDD configuration.
+      type: object
+      properties:
+        duration:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTimeRm'
+        reliableDataService:
+          type: boolean
+          description: >
+            Indicates whether the reliable data service (as defined in clause 4.5.14.3 of 3GPP TS 
+            23.682) acknowledgement is requested (true) or not (false).
+          nullable: true
+        rdsPorts:
+          type: array
+          items:
+            $ref: '#/components/schemas/RdsPort'
+          minItems: 1
+          description: Indicates the static port configuration that is used for reliable data transfer between specific applications using RDS (as defined in clause 5.2.4 and 5.2.5 of 3GPP TS 24.250).
+        pdnEstablishmentOption:
+          $ref: '#/components/schemas/PdnEstablishmentOptionsRm'
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+

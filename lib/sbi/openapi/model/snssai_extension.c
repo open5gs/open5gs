@@ -22,20 +22,25 @@ OpenAPI_snssai_extension_t *OpenAPI_snssai_extension_create(
 
 void OpenAPI_snssai_extension_free(OpenAPI_snssai_extension_t *snssai_extension)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == snssai_extension) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_list_for_each(snssai_extension->sd_ranges, node) {
-        OpenAPI_sd_range_free(node->data);
+    if (snssai_extension->sd_ranges) {
+        OpenAPI_list_for_each(snssai_extension->sd_ranges, node) {
+            OpenAPI_sd_range_free(node->data);
+        }
+        OpenAPI_list_free(snssai_extension->sd_ranges);
+        snssai_extension->sd_ranges = NULL;
     }
-    OpenAPI_list_free(snssai_extension->sd_ranges);
     ogs_free(snssai_extension);
 }
 
 cJSON *OpenAPI_snssai_extension_convertToJSON(OpenAPI_snssai_extension_t *snssai_extension)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (snssai_extension == NULL) {
         ogs_error("OpenAPI_snssai_extension_convertToJSON() failed [SnssaiExtension]");
@@ -49,17 +54,13 @@ cJSON *OpenAPI_snssai_extension_convertToJSON(OpenAPI_snssai_extension_t *snssai
         ogs_error("OpenAPI_snssai_extension_convertToJSON() failed [sd_ranges]");
         goto end;
     }
-
-    OpenAPI_lnode_t *sd_ranges_node;
-    if (snssai_extension->sd_ranges) {
-        OpenAPI_list_for_each(snssai_extension->sd_ranges, sd_ranges_node) {
-            cJSON *itemLocal = OpenAPI_sd_range_convertToJSON(sd_ranges_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_snssai_extension_convertToJSON() failed [sd_ranges]");
-                goto end;
-            }
-            cJSON_AddItemToArray(sd_rangesList, itemLocal);
+    OpenAPI_list_for_each(snssai_extension->sd_ranges, node) {
+        cJSON *itemLocal = OpenAPI_sd_range_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_snssai_extension_convertToJSON() failed [sd_ranges]");
+            goto end;
         }
+        cJSON_AddItemToArray(sd_rangesList, itemLocal);
     }
     }
 
@@ -77,37 +78,36 @@ end:
 OpenAPI_snssai_extension_t *OpenAPI_snssai_extension_parseFromJSON(cJSON *snssai_extensionJSON)
 {
     OpenAPI_snssai_extension_t *snssai_extension_local_var = NULL;
-    cJSON *sd_ranges = cJSON_GetObjectItemCaseSensitive(snssai_extensionJSON, "sdRanges");
-
-    OpenAPI_list_t *sd_rangesList;
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *sd_ranges = NULL;
+    OpenAPI_list_t *sd_rangesList = NULL;
+    cJSON *wildcard_sd = NULL;
+    sd_ranges = cJSON_GetObjectItemCaseSensitive(snssai_extensionJSON, "sdRanges");
     if (sd_ranges) {
-    cJSON *sd_ranges_local_nonprimitive;
-    if (!cJSON_IsArray(sd_ranges)){
-        ogs_error("OpenAPI_snssai_extension_parseFromJSON() failed [sd_ranges]");
-        goto end;
-    }
-
-    sd_rangesList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(sd_ranges_local_nonprimitive, sd_ranges ) {
-        if (!cJSON_IsObject(sd_ranges_local_nonprimitive)) {
+        cJSON *sd_ranges_local = NULL;
+        if (!cJSON_IsArray(sd_ranges)) {
             ogs_error("OpenAPI_snssai_extension_parseFromJSON() failed [sd_ranges]");
             goto end;
         }
-        OpenAPI_sd_range_t *sd_rangesItem = OpenAPI_sd_range_parseFromJSON(sd_ranges_local_nonprimitive);
 
-        if (!sd_rangesItem) {
-            ogs_error("No sd_rangesItem");
-            OpenAPI_list_free(sd_rangesList);
-            goto end;
+        sd_rangesList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(sd_ranges_local, sd_ranges) {
+            if (!cJSON_IsObject(sd_ranges_local)) {
+                ogs_error("OpenAPI_snssai_extension_parseFromJSON() failed [sd_ranges]");
+                goto end;
+            }
+            OpenAPI_sd_range_t *sd_rangesItem = OpenAPI_sd_range_parseFromJSON(sd_ranges_local);
+            if (!sd_rangesItem) {
+                ogs_error("No sd_rangesItem");
+                OpenAPI_list_free(sd_rangesList);
+                goto end;
+            }
+            OpenAPI_list_add(sd_rangesList, sd_rangesItem);
         }
-
-        OpenAPI_list_add(sd_rangesList, sd_rangesItem);
-    }
     }
 
-    cJSON *wildcard_sd = cJSON_GetObjectItemCaseSensitive(snssai_extensionJSON, "wildcardSd");
-
+    wildcard_sd = cJSON_GetObjectItemCaseSensitive(snssai_extensionJSON, "wildcardSd");
     if (wildcard_sd) {
     if (!cJSON_IsBool(wildcard_sd)) {
         ogs_error("OpenAPI_snssai_extension_parseFromJSON() failed [wildcard_sd]");
@@ -123,6 +123,13 @@ OpenAPI_snssai_extension_t *OpenAPI_snssai_extension_parseFromJSON(cJSON *snssai
 
     return snssai_extension_local_var;
 end:
+    if (sd_rangesList) {
+        OpenAPI_list_for_each(sd_rangesList, node) {
+            OpenAPI_sd_range_free(node->data);
+        }
+        OpenAPI_list_free(sd_rangesList);
+        sd_rangesList = NULL;
+    }
     return NULL;
 }
 

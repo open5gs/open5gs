@@ -43,7 +43,7 @@ typedef struct OpenAPI_sm_context_updated_data_s {
     bool is_ma_accepted_ind;
     int ma_accepted_ind;
     char *supported_features;
-    char forwarding_f_teid;
+    char *forwarding_f_teid;
     OpenAPI_list_t *forwarding_bearer_contexts;
     char *selected_smf_id;
     char *selected_old_smf_id;
@@ -67,7 +67,7 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_create(
     bool is_ma_accepted_ind,
     int ma_accepted_ind,
     char *supported_features,
-    char forwarding_f_teid,
+    char *forwarding_f_teid,
     OpenAPI_list_t *forwarding_bearer_contexts,
     char *selected_smf_id,
     char *selected_old_smf_id
