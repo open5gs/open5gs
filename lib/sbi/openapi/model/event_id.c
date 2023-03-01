@@ -16,16 +16,18 @@ OpenAPI_event_id_t *OpenAPI_event_id_create(
 
 void OpenAPI_event_id_free(OpenAPI_event_id_t *event_id)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == event_id) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(event_id);
 }
 
 cJSON *OpenAPI_event_id_convertToJSON(OpenAPI_event_id_t *event_id)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (event_id == NULL) {
         ogs_error("OpenAPI_event_id_convertToJSON() failed [EventId]");
@@ -40,6 +42,7 @@ end:
 OpenAPI_event_id_t *OpenAPI_event_id_parseFromJSON(cJSON *event_idJSON)
 {
     OpenAPI_event_id_t *event_id_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
     event_id_local_var = OpenAPI_event_id_create (
     );
 

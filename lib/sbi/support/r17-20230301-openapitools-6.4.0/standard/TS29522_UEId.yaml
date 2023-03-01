@@ -1,0 +1,111 @@
+openapi: 3.0.0
+
+info:
+  title: 3gpp-ueid
+  version: 1.0.1
+  description: |
+    API for UE ID service.
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.522 V17.7.0; 5G System; Network Exposure Function Northbound APIs.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.522/'
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/3gpp-ueid/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in subclause 5.2.4 of 3GPP TS 29.122.
+
+paths:
+  /retrieve:
+    post:
+      summary: Retrieve AF specific UE ID.
+      operationId: RetrieveUEId
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UeIdReq'
+      responses:
+        '200':
+          description: The requested information was returned successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UeIdInfo'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+  schemas: 
+    UeIdReq:
+      description: Represents the parameters to request the retrieval of AF specific UE ID.
+      type: object
+      properties:
+        afId:
+          type: string
+        appPortId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Port'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        ipDomain:
+          type: string
+        mtcProviderId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MtcProviderInformation'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        ueIpAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/IpAddr'
+        ueMacAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MacAddr48'
+      required:
+        - afId
+      oneOf:
+        - required: [ueIpAddr]
+        - required: [ueMacAddr]
+    UeIdInfo:
+      description: Represents UE ID information.
+      type: object
+      properties:
+        externalId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalId'
+      required:
+        - externalId

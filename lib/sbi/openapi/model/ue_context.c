@@ -15,7 +15,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_create(
     char *pcf_group_id,
     char *routing_indicator,
     OpenAPI_list_t *group_list,
-    char drx_parameter,
+    char *drx_parameter,
     bool is_sub_rfsp,
     int sub_rfsp,
     bool is_used_rfsp,
@@ -23,7 +23,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_create(
     OpenAPI_ambr_t *sub_ue_ambr,
     char *smsf_id,
     OpenAPI_seaf_data_t *seaf_data,
-    char _5g_mm_capability,
+    char *_5g_mm_capability,
     char *pcf_id,
     char *pcf_set_id,
     char *pcf_amp_service_set_id,
@@ -46,7 +46,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_create(
     char *service_gap_expiry_time,
     char *stn_sr,
     char *c_msisdn,
-    char ms_classmark2,
+    char *ms_classmark2,
     OpenAPI_list_t *supported_codec_list,
     OpenAPI_list_t *small_data_rate_status_infos,
     OpenAPI_list_t *restricted_primary_rat_list,
@@ -134,81 +134,218 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_create(
 
 void OpenAPI_ue_context_free(OpenAPI_ue_context_t *ue_context)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == ue_context) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(ue_context->supi);
-    OpenAPI_list_for_each(ue_context->gpsi_list, node) {
-        ogs_free(node->data);
+    if (ue_context->supi) {
+        ogs_free(ue_context->supi);
+        ue_context->supi = NULL;
     }
-    OpenAPI_list_free(ue_context->gpsi_list);
-    ogs_free(ue_context->pei);
-    ogs_free(ue_context->udm_group_id);
-    ogs_free(ue_context->ausf_group_id);
-    ogs_free(ue_context->pcf_group_id);
-    ogs_free(ue_context->routing_indicator);
-    OpenAPI_list_for_each(ue_context->group_list, node) {
-        ogs_free(node->data);
+    if (ue_context->gpsi_list) {
+        OpenAPI_list_for_each(ue_context->gpsi_list, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(ue_context->gpsi_list);
+        ue_context->gpsi_list = NULL;
     }
-    OpenAPI_list_free(ue_context->group_list);
-    OpenAPI_ambr_free(ue_context->sub_ue_ambr);
-    ogs_free(ue_context->smsf_id);
-    OpenAPI_seaf_data_free(ue_context->seaf_data);
-    ogs_free(ue_context->pcf_id);
-    ogs_free(ue_context->pcf_set_id);
-    ogs_free(ue_context->pcf_amp_service_set_id);
-    ogs_free(ue_context->pcf_uep_service_set_id);
-    ogs_free(ue_context->pcf_am_policy_uri);
-    OpenAPI_list_free(ue_context->am_policy_req_trigger_list);
-    ogs_free(ue_context->pcf_ue_policy_uri);
-    OpenAPI_list_free(ue_context->ue_policy_req_trigger_list);
-    ogs_free(ue_context->hpcf_id);
-    ogs_free(ue_context->hpcf_set_id);
-    OpenAPI_list_free(ue_context->restricted_rat_list);
-    OpenAPI_list_for_each(ue_context->forbidden_area_list, node) {
-        OpenAPI_area_free(node->data);
+    if (ue_context->pei) {
+        ogs_free(ue_context->pei);
+        ue_context->pei = NULL;
     }
-    OpenAPI_list_free(ue_context->forbidden_area_list);
-    OpenAPI_service_area_restriction_free(ue_context->service_area_restriction);
-    OpenAPI_list_free(ue_context->restricted_core_nw_type_list);
-    OpenAPI_list_for_each(ue_context->event_subscription_list, node) {
-        OpenAPI_ext_amf_event_subscription_free(node->data);
+    if (ue_context->udm_group_id) {
+        ogs_free(ue_context->udm_group_id);
+        ue_context->udm_group_id = NULL;
     }
-    OpenAPI_list_free(ue_context->event_subscription_list);
-    OpenAPI_list_for_each(ue_context->mm_context_list, node) {
-        OpenAPI_mm_context_free(node->data);
+    if (ue_context->ausf_group_id) {
+        ogs_free(ue_context->ausf_group_id);
+        ue_context->ausf_group_id = NULL;
     }
-    OpenAPI_list_free(ue_context->mm_context_list);
-    OpenAPI_list_for_each(ue_context->session_context_list, node) {
-        OpenAPI_pdu_session_context_free(node->data);
+    if (ue_context->pcf_group_id) {
+        ogs_free(ue_context->pcf_group_id);
+        ue_context->pcf_group_id = NULL;
     }
-    OpenAPI_list_free(ue_context->session_context_list);
-    OpenAPI_trace_data_free(ue_context->trace_data);
-    ogs_free(ue_context->service_gap_expiry_time);
-    ogs_free(ue_context->stn_sr);
-    ogs_free(ue_context->c_msisdn);
-    OpenAPI_list_for_each(ue_context->supported_codec_list, node) {
-        ogs_free(node->data);
+    if (ue_context->routing_indicator) {
+        ogs_free(ue_context->routing_indicator);
+        ue_context->routing_indicator = NULL;
     }
-    OpenAPI_list_free(ue_context->supported_codec_list);
-    OpenAPI_list_for_each(ue_context->small_data_rate_status_infos, node) {
-        OpenAPI_small_data_rate_status_info_free(node->data);
+    if (ue_context->group_list) {
+        OpenAPI_list_for_each(ue_context->group_list, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(ue_context->group_list);
+        ue_context->group_list = NULL;
     }
-    OpenAPI_list_free(ue_context->small_data_rate_status_infos);
-    OpenAPI_list_free(ue_context->restricted_primary_rat_list);
-    OpenAPI_list_free(ue_context->restricted_secondary_rat_list);
-    OpenAPI_v2x_context_free(ue_context->v2x_context);
-    OpenAPI_mo_exp_data_counter_free(ue_context->mo_exp_data_counter);
-    OpenAPI_cag_data_free(ue_context->cag_data);
-    OpenAPI_immediate_mdt_conf_free(ue_context->immediate_mdt_conf);
-    OpenAPI_ec_restriction_data_wb_free(ue_context->ec_restriction_data_wb);
+    if (ue_context->drx_parameter) {
+        ogs_free(ue_context->drx_parameter);
+        ue_context->drx_parameter = NULL;
+    }
+    if (ue_context->sub_ue_ambr) {
+        OpenAPI_ambr_free(ue_context->sub_ue_ambr);
+        ue_context->sub_ue_ambr = NULL;
+    }
+    if (ue_context->smsf_id) {
+        ogs_free(ue_context->smsf_id);
+        ue_context->smsf_id = NULL;
+    }
+    if (ue_context->seaf_data) {
+        OpenAPI_seaf_data_free(ue_context->seaf_data);
+        ue_context->seaf_data = NULL;
+    }
+    if (ue_context->_5g_mm_capability) {
+        ogs_free(ue_context->_5g_mm_capability);
+        ue_context->_5g_mm_capability = NULL;
+    }
+    if (ue_context->pcf_id) {
+        ogs_free(ue_context->pcf_id);
+        ue_context->pcf_id = NULL;
+    }
+    if (ue_context->pcf_set_id) {
+        ogs_free(ue_context->pcf_set_id);
+        ue_context->pcf_set_id = NULL;
+    }
+    if (ue_context->pcf_amp_service_set_id) {
+        ogs_free(ue_context->pcf_amp_service_set_id);
+        ue_context->pcf_amp_service_set_id = NULL;
+    }
+    if (ue_context->pcf_uep_service_set_id) {
+        ogs_free(ue_context->pcf_uep_service_set_id);
+        ue_context->pcf_uep_service_set_id = NULL;
+    }
+    if (ue_context->pcf_am_policy_uri) {
+        ogs_free(ue_context->pcf_am_policy_uri);
+        ue_context->pcf_am_policy_uri = NULL;
+    }
+    if (ue_context->am_policy_req_trigger_list) {
+        OpenAPI_list_free(ue_context->am_policy_req_trigger_list);
+        ue_context->am_policy_req_trigger_list = NULL;
+    }
+    if (ue_context->pcf_ue_policy_uri) {
+        ogs_free(ue_context->pcf_ue_policy_uri);
+        ue_context->pcf_ue_policy_uri = NULL;
+    }
+    if (ue_context->ue_policy_req_trigger_list) {
+        OpenAPI_list_free(ue_context->ue_policy_req_trigger_list);
+        ue_context->ue_policy_req_trigger_list = NULL;
+    }
+    if (ue_context->hpcf_id) {
+        ogs_free(ue_context->hpcf_id);
+        ue_context->hpcf_id = NULL;
+    }
+    if (ue_context->hpcf_set_id) {
+        ogs_free(ue_context->hpcf_set_id);
+        ue_context->hpcf_set_id = NULL;
+    }
+    if (ue_context->restricted_rat_list) {
+        OpenAPI_list_free(ue_context->restricted_rat_list);
+        ue_context->restricted_rat_list = NULL;
+    }
+    if (ue_context->forbidden_area_list) {
+        OpenAPI_list_for_each(ue_context->forbidden_area_list, node) {
+            OpenAPI_area_free(node->data);
+        }
+        OpenAPI_list_free(ue_context->forbidden_area_list);
+        ue_context->forbidden_area_list = NULL;
+    }
+    if (ue_context->service_area_restriction) {
+        OpenAPI_service_area_restriction_free(ue_context->service_area_restriction);
+        ue_context->service_area_restriction = NULL;
+    }
+    if (ue_context->restricted_core_nw_type_list) {
+        OpenAPI_list_free(ue_context->restricted_core_nw_type_list);
+        ue_context->restricted_core_nw_type_list = NULL;
+    }
+    if (ue_context->event_subscription_list) {
+        OpenAPI_list_for_each(ue_context->event_subscription_list, node) {
+            OpenAPI_ext_amf_event_subscription_free(node->data);
+        }
+        OpenAPI_list_free(ue_context->event_subscription_list);
+        ue_context->event_subscription_list = NULL;
+    }
+    if (ue_context->mm_context_list) {
+        OpenAPI_list_for_each(ue_context->mm_context_list, node) {
+            OpenAPI_mm_context_free(node->data);
+        }
+        OpenAPI_list_free(ue_context->mm_context_list);
+        ue_context->mm_context_list = NULL;
+    }
+    if (ue_context->session_context_list) {
+        OpenAPI_list_for_each(ue_context->session_context_list, node) {
+            OpenAPI_pdu_session_context_free(node->data);
+        }
+        OpenAPI_list_free(ue_context->session_context_list);
+        ue_context->session_context_list = NULL;
+    }
+    if (ue_context->trace_data) {
+        OpenAPI_trace_data_free(ue_context->trace_data);
+        ue_context->trace_data = NULL;
+    }
+    if (ue_context->service_gap_expiry_time) {
+        ogs_free(ue_context->service_gap_expiry_time);
+        ue_context->service_gap_expiry_time = NULL;
+    }
+    if (ue_context->stn_sr) {
+        ogs_free(ue_context->stn_sr);
+        ue_context->stn_sr = NULL;
+    }
+    if (ue_context->c_msisdn) {
+        ogs_free(ue_context->c_msisdn);
+        ue_context->c_msisdn = NULL;
+    }
+    if (ue_context->ms_classmark2) {
+        ogs_free(ue_context->ms_classmark2);
+        ue_context->ms_classmark2 = NULL;
+    }
+    if (ue_context->supported_codec_list) {
+        OpenAPI_list_for_each(ue_context->supported_codec_list, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(ue_context->supported_codec_list);
+        ue_context->supported_codec_list = NULL;
+    }
+    if (ue_context->small_data_rate_status_infos) {
+        OpenAPI_list_for_each(ue_context->small_data_rate_status_infos, node) {
+            OpenAPI_small_data_rate_status_info_free(node->data);
+        }
+        OpenAPI_list_free(ue_context->small_data_rate_status_infos);
+        ue_context->small_data_rate_status_infos = NULL;
+    }
+    if (ue_context->restricted_primary_rat_list) {
+        OpenAPI_list_free(ue_context->restricted_primary_rat_list);
+        ue_context->restricted_primary_rat_list = NULL;
+    }
+    if (ue_context->restricted_secondary_rat_list) {
+        OpenAPI_list_free(ue_context->restricted_secondary_rat_list);
+        ue_context->restricted_secondary_rat_list = NULL;
+    }
+    if (ue_context->v2x_context) {
+        OpenAPI_v2x_context_free(ue_context->v2x_context);
+        ue_context->v2x_context = NULL;
+    }
+    if (ue_context->mo_exp_data_counter) {
+        OpenAPI_mo_exp_data_counter_free(ue_context->mo_exp_data_counter);
+        ue_context->mo_exp_data_counter = NULL;
+    }
+    if (ue_context->cag_data) {
+        OpenAPI_cag_data_free(ue_context->cag_data);
+        ue_context->cag_data = NULL;
+    }
+    if (ue_context->immediate_mdt_conf) {
+        OpenAPI_immediate_mdt_conf_free(ue_context->immediate_mdt_conf);
+        ue_context->immediate_mdt_conf = NULL;
+    }
+    if (ue_context->ec_restriction_data_wb) {
+        OpenAPI_ec_restriction_data_wb_free(ue_context->ec_restriction_data_wb);
+        ue_context->ec_restriction_data_wb = NULL;
+    }
     ogs_free(ue_context);
 }
 
 cJSON *OpenAPI_ue_context_convertToJSON(OpenAPI_ue_context_t *ue_context)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (ue_context == NULL) {
         ogs_error("OpenAPI_ue_context_convertToJSON() failed [UeContext]");
@@ -231,19 +368,17 @@ cJSON *OpenAPI_ue_context_convertToJSON(OpenAPI_ue_context_t *ue_context)
     }
 
     if (ue_context->gpsi_list) {
-    cJSON *gpsi_list = cJSON_AddArrayToObject(item, "gpsiList");
-    if (gpsi_list == NULL) {
+    cJSON *gpsi_listList = cJSON_AddArrayToObject(item, "gpsiList");
+    if (gpsi_listList == NULL) {
         ogs_error("OpenAPI_ue_context_convertToJSON() failed [gpsi_list]");
         goto end;
     }
-
-    OpenAPI_lnode_t *gpsi_list_node;
-    OpenAPI_list_for_each(ue_context->gpsi_list, gpsi_list_node)  {
-    if (cJSON_AddStringToObject(gpsi_list, "", (char*)gpsi_list_node->data) == NULL) {
-        ogs_error("OpenAPI_ue_context_convertToJSON() failed [gpsi_list]");
-        goto end;
+    OpenAPI_list_for_each(ue_context->gpsi_list, node) {
+        if (cJSON_AddStringToObject(gpsi_listList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_ue_context_convertToJSON() failed [gpsi_list]");
+            goto end;
+        }
     }
-                    }
     }
 
     if (ue_context->pei) {
@@ -282,23 +417,21 @@ cJSON *OpenAPI_ue_context_convertToJSON(OpenAPI_ue_context_t *ue_context)
     }
 
     if (ue_context->group_list) {
-    cJSON *group_list = cJSON_AddArrayToObject(item, "groupList");
-    if (group_list == NULL) {
+    cJSON *group_listList = cJSON_AddArrayToObject(item, "groupList");
+    if (group_listList == NULL) {
         ogs_error("OpenAPI_ue_context_convertToJSON() failed [group_list]");
         goto end;
     }
-
-    OpenAPI_lnode_t *group_list_node;
-    OpenAPI_list_for_each(ue_context->group_list, group_list_node)  {
-    if (cJSON_AddStringToObject(group_list, "", (char*)group_list_node->data) == NULL) {
-        ogs_error("OpenAPI_ue_context_convertToJSON() failed [group_list]");
-        goto end;
+    OpenAPI_list_for_each(ue_context->group_list, node) {
+        if (cJSON_AddStringToObject(group_listList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_ue_context_convertToJSON() failed [group_list]");
+            goto end;
+        }
     }
-                    }
     }
 
     if (ue_context->drx_parameter) {
-    if (cJSON_AddNumberToObject(item, "drxParameter", ue_context->drx_parameter) == NULL) {
+    if (cJSON_AddStringToObject(item, "drxParameter", ue_context->drx_parameter) == NULL) {
         ogs_error("OpenAPI_ue_context_convertToJSON() failed [drx_parameter]");
         goto end;
     }
@@ -352,7 +485,7 @@ cJSON *OpenAPI_ue_context_convertToJSON(OpenAPI_ue_context_t *ue_context)
     }
 
     if (ue_context->_5g_mm_capability) {
-    if (cJSON_AddNumberToObject(item, "5gMmCapability", ue_context->_5g_mm_capability) == NULL) {
+    if (cJSON_AddStringToObject(item, "5gMmCapability", ue_context->_5g_mm_capability) == NULL) {
         ogs_error("OpenAPI_ue_context_convertToJSON() failed [_5g_mm_capability]");
         goto end;
     }
@@ -386,7 +519,7 @@ cJSON *OpenAPI_ue_context_convertToJSON(OpenAPI_ue_context_t *ue_context)
     }
     }
 
-    if (ue_context->pcf_binding) {
+    if (ue_context->pcf_binding != OpenAPI_sbi_binding_level_NULL) {
     if (cJSON_AddStringToObject(item, "pcfBinding", OpenAPI_sbi_binding_level_ToString(ue_context->pcf_binding)) == NULL) {
         ogs_error("OpenAPI_ue_context_convertToJSON() failed [pcf_binding]");
         goto end;
@@ -400,15 +533,14 @@ cJSON *OpenAPI_ue_context_convertToJSON(OpenAPI_ue_context_t *ue_context)
     }
     }
 
-    if (ue_context->am_policy_req_trigger_list) {
-    cJSON *am_policy_req_trigger_list = cJSON_AddArrayToObject(item, "amPolicyReqTriggerList");
-    if (am_policy_req_trigger_list == NULL) {
+    if (ue_context->am_policy_req_trigger_list != OpenAPI_policy_req_trigger_NULL) {
+    cJSON *am_policy_req_trigger_listList = cJSON_AddArrayToObject(item, "amPolicyReqTriggerList");
+    if (am_policy_req_trigger_listList == NULL) {
         ogs_error("OpenAPI_ue_context_convertToJSON() failed [am_policy_req_trigger_list]");
         goto end;
     }
-    OpenAPI_lnode_t *am_policy_req_trigger_list_node;
-    OpenAPI_list_for_each(ue_context->am_policy_req_trigger_list, am_policy_req_trigger_list_node) {
-        if (cJSON_AddStringToObject(am_policy_req_trigger_list, "", OpenAPI_policy_req_trigger_ToString((intptr_t)am_policy_req_trigger_list_node->data)) == NULL) {
+    OpenAPI_list_for_each(ue_context->am_policy_req_trigger_list, node) {
+        if (cJSON_AddStringToObject(am_policy_req_trigger_listList, "", OpenAPI_policy_req_trigger_ToString((intptr_t)node->data)) == NULL) {
             ogs_error("OpenAPI_ue_context_convertToJSON() failed [am_policy_req_trigger_list]");
             goto end;
         }
@@ -422,15 +554,14 @@ cJSON *OpenAPI_ue_context_convertToJSON(OpenAPI_ue_context_t *ue_context)
     }
     }
 
-    if (ue_context->ue_policy_req_trigger_list) {
-    cJSON *ue_policy_req_trigger_list = cJSON_AddArrayToObject(item, "uePolicyReqTriggerList");
-    if (ue_policy_req_trigger_list == NULL) {
+    if (ue_context->ue_policy_req_trigger_list != OpenAPI_policy_req_trigger_NULL) {
+    cJSON *ue_policy_req_trigger_listList = cJSON_AddArrayToObject(item, "uePolicyReqTriggerList");
+    if (ue_policy_req_trigger_listList == NULL) {
         ogs_error("OpenAPI_ue_context_convertToJSON() failed [ue_policy_req_trigger_list]");
         goto end;
     }
-    OpenAPI_lnode_t *ue_policy_req_trigger_list_node;
-    OpenAPI_list_for_each(ue_context->ue_policy_req_trigger_list, ue_policy_req_trigger_list_node) {
-        if (cJSON_AddStringToObject(ue_policy_req_trigger_list, "", OpenAPI_policy_req_trigger_ToString((intptr_t)ue_policy_req_trigger_list_node->data)) == NULL) {
+    OpenAPI_list_for_each(ue_context->ue_policy_req_trigger_list, node) {
+        if (cJSON_AddStringToObject(ue_policy_req_trigger_listList, "", OpenAPI_policy_req_trigger_ToString((intptr_t)node->data)) == NULL) {
             ogs_error("OpenAPI_ue_context_convertToJSON() failed [ue_policy_req_trigger_list]");
             goto end;
         }
@@ -451,15 +582,14 @@ cJSON *OpenAPI_ue_context_convertToJSON(OpenAPI_ue_context_t *ue_context)
     }
     }
 
-    if (ue_context->restricted_rat_list) {
-    cJSON *restricted_rat_list = cJSON_AddArrayToObject(item, "restrictedRatList");
-    if (restricted_rat_list == NULL) {
+    if (ue_context->restricted_rat_list != OpenAPI_rat_type_NULL) {
+    cJSON *restricted_rat_listList = cJSON_AddArrayToObject(item, "restrictedRatList");
+    if (restricted_rat_listList == NULL) {
         ogs_error("OpenAPI_ue_context_convertToJSON() failed [restricted_rat_list]");
         goto end;
     }
-    OpenAPI_lnode_t *restricted_rat_list_node;
-    OpenAPI_list_for_each(ue_context->restricted_rat_list, restricted_rat_list_node) {
-        if (cJSON_AddStringToObject(restricted_rat_list, "", OpenAPI_rat_type_ToString((intptr_t)restricted_rat_list_node->data)) == NULL) {
+    OpenAPI_list_for_each(ue_context->restricted_rat_list, node) {
+        if (cJSON_AddStringToObject(restricted_rat_listList, "", OpenAPI_rat_type_ToString((intptr_t)node->data)) == NULL) {
             ogs_error("OpenAPI_ue_context_convertToJSON() failed [restricted_rat_list]");
             goto end;
         }
@@ -472,17 +602,13 @@ cJSON *OpenAPI_ue_context_convertToJSON(OpenAPI_ue_context_t *ue_context)
         ogs_error("OpenAPI_ue_context_convertToJSON() failed [forbidden_area_list]");
         goto end;
     }
-
-    OpenAPI_lnode_t *forbidden_area_list_node;
-    if (ue_context->forbidden_area_list) {
-        OpenAPI_list_for_each(ue_context->forbidden_area_list, forbidden_area_list_node) {
-            cJSON *itemLocal = OpenAPI_area_convertToJSON(forbidden_area_list_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_ue_context_convertToJSON() failed [forbidden_area_list]");
-                goto end;
-            }
-            cJSON_AddItemToArray(forbidden_area_listList, itemLocal);
+    OpenAPI_list_for_each(ue_context->forbidden_area_list, node) {
+        cJSON *itemLocal = OpenAPI_area_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_ue_context_convertToJSON() failed [forbidden_area_list]");
+            goto end;
         }
+        cJSON_AddItemToArray(forbidden_area_listList, itemLocal);
     }
     }
 
@@ -499,15 +625,14 @@ cJSON *OpenAPI_ue_context_convertToJSON(OpenAPI_ue_context_t *ue_context)
     }
     }
 
-    if (ue_context->restricted_core_nw_type_list) {
-    cJSON *restricted_core_nw_type_list = cJSON_AddArrayToObject(item, "restrictedCoreNwTypeList");
-    if (restricted_core_nw_type_list == NULL) {
+    if (ue_context->restricted_core_nw_type_list != OpenAPI_core_network_type_NULL) {
+    cJSON *restricted_core_nw_type_listList = cJSON_AddArrayToObject(item, "restrictedCoreNwTypeList");
+    if (restricted_core_nw_type_listList == NULL) {
         ogs_error("OpenAPI_ue_context_convertToJSON() failed [restricted_core_nw_type_list]");
         goto end;
     }
-    OpenAPI_lnode_t *restricted_core_nw_type_list_node;
-    OpenAPI_list_for_each(ue_context->restricted_core_nw_type_list, restricted_core_nw_type_list_node) {
-        if (cJSON_AddStringToObject(restricted_core_nw_type_list, "", OpenAPI_core_network_type_ToString((intptr_t)restricted_core_nw_type_list_node->data)) == NULL) {
+    OpenAPI_list_for_each(ue_context->restricted_core_nw_type_list, node) {
+        if (cJSON_AddStringToObject(restricted_core_nw_type_listList, "", OpenAPI_core_network_type_ToString((intptr_t)node->data)) == NULL) {
             ogs_error("OpenAPI_ue_context_convertToJSON() failed [restricted_core_nw_type_list]");
             goto end;
         }
@@ -520,17 +645,13 @@ cJSON *OpenAPI_ue_context_convertToJSON(OpenAPI_ue_context_t *ue_context)
         ogs_error("OpenAPI_ue_context_convertToJSON() failed [event_subscription_list]");
         goto end;
     }
-
-    OpenAPI_lnode_t *event_subscription_list_node;
-    if (ue_context->event_subscription_list) {
-        OpenAPI_list_for_each(ue_context->event_subscription_list, event_subscription_list_node) {
-            cJSON *itemLocal = OpenAPI_ext_amf_event_subscription_convertToJSON(event_subscription_list_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_ue_context_convertToJSON() failed [event_subscription_list]");
-                goto end;
-            }
-            cJSON_AddItemToArray(event_subscription_listList, itemLocal);
+    OpenAPI_list_for_each(ue_context->event_subscription_list, node) {
+        cJSON *itemLocal = OpenAPI_ext_amf_event_subscription_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_ue_context_convertToJSON() failed [event_subscription_list]");
+            goto end;
         }
+        cJSON_AddItemToArray(event_subscription_listList, itemLocal);
     }
     }
 
@@ -540,17 +661,13 @@ cJSON *OpenAPI_ue_context_convertToJSON(OpenAPI_ue_context_t *ue_context)
         ogs_error("OpenAPI_ue_context_convertToJSON() failed [mm_context_list]");
         goto end;
     }
-
-    OpenAPI_lnode_t *mm_context_list_node;
-    if (ue_context->mm_context_list) {
-        OpenAPI_list_for_each(ue_context->mm_context_list, mm_context_list_node) {
-            cJSON *itemLocal = OpenAPI_mm_context_convertToJSON(mm_context_list_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_ue_context_convertToJSON() failed [mm_context_list]");
-                goto end;
-            }
-            cJSON_AddItemToArray(mm_context_listList, itemLocal);
+    OpenAPI_list_for_each(ue_context->mm_context_list, node) {
+        cJSON *itemLocal = OpenAPI_mm_context_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_ue_context_convertToJSON() failed [mm_context_list]");
+            goto end;
         }
+        cJSON_AddItemToArray(mm_context_listList, itemLocal);
     }
     }
 
@@ -560,17 +677,13 @@ cJSON *OpenAPI_ue_context_convertToJSON(OpenAPI_ue_context_t *ue_context)
         ogs_error("OpenAPI_ue_context_convertToJSON() failed [session_context_list]");
         goto end;
     }
-
-    OpenAPI_lnode_t *session_context_list_node;
-    if (ue_context->session_context_list) {
-        OpenAPI_list_for_each(ue_context->session_context_list, session_context_list_node) {
-            cJSON *itemLocal = OpenAPI_pdu_session_context_convertToJSON(session_context_list_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_ue_context_convertToJSON() failed [session_context_list]");
-                goto end;
-            }
-            cJSON_AddItemToArray(session_context_listList, itemLocal);
+    OpenAPI_list_for_each(ue_context->session_context_list, node) {
+        cJSON *itemLocal = OpenAPI_pdu_session_context_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_ue_context_convertToJSON() failed [session_context_list]");
+            goto end;
         }
+        cJSON_AddItemToArray(session_context_listList, itemLocal);
     }
     }
 
@@ -609,22 +722,24 @@ cJSON *OpenAPI_ue_context_convertToJSON(OpenAPI_ue_context_t *ue_context)
     }
 
     if (ue_context->ms_classmark2) {
-    if (cJSON_AddNumberToObject(item, "msClassmark2", ue_context->ms_classmark2) == NULL) {
+    if (cJSON_AddStringToObject(item, "msClassmark2", ue_context->ms_classmark2) == NULL) {
         ogs_error("OpenAPI_ue_context_convertToJSON() failed [ms_classmark2]");
         goto end;
     }
     }
 
     if (ue_context->supported_codec_list) {
-    cJSON *supported_codec_list = cJSON_AddArrayToObject(item, "supportedCodecList");
-    if (supported_codec_list == NULL) {
+    cJSON *supported_codec_listList = cJSON_AddArrayToObject(item, "supportedCodecList");
+    if (supported_codec_listList == NULL) {
         ogs_error("OpenAPI_ue_context_convertToJSON() failed [supported_codec_list]");
         goto end;
     }
-
-    OpenAPI_lnode_t *supported_codec_list_node;
-    OpenAPI_list_for_each(ue_context->supported_codec_list, supported_codec_list_node)  {
-                    }
+    OpenAPI_list_for_each(ue_context->supported_codec_list, node) {
+        if (cJSON_AddStringToObject(supported_codec_listList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_ue_context_convertToJSON() failed [supported_codec_list]");
+            goto end;
+        }
+    }
     }
 
     if (ue_context->small_data_rate_status_infos) {
@@ -633,44 +748,38 @@ cJSON *OpenAPI_ue_context_convertToJSON(OpenAPI_ue_context_t *ue_context)
         ogs_error("OpenAPI_ue_context_convertToJSON() failed [small_data_rate_status_infos]");
         goto end;
     }
-
-    OpenAPI_lnode_t *small_data_rate_status_infos_node;
-    if (ue_context->small_data_rate_status_infos) {
-        OpenAPI_list_for_each(ue_context->small_data_rate_status_infos, small_data_rate_status_infos_node) {
-            cJSON *itemLocal = OpenAPI_small_data_rate_status_info_convertToJSON(small_data_rate_status_infos_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_ue_context_convertToJSON() failed [small_data_rate_status_infos]");
-                goto end;
-            }
-            cJSON_AddItemToArray(small_data_rate_status_infosList, itemLocal);
+    OpenAPI_list_for_each(ue_context->small_data_rate_status_infos, node) {
+        cJSON *itemLocal = OpenAPI_small_data_rate_status_info_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_ue_context_convertToJSON() failed [small_data_rate_status_infos]");
+            goto end;
         }
+        cJSON_AddItemToArray(small_data_rate_status_infosList, itemLocal);
     }
     }
 
-    if (ue_context->restricted_primary_rat_list) {
-    cJSON *restricted_primary_rat_list = cJSON_AddArrayToObject(item, "restrictedPrimaryRatList");
-    if (restricted_primary_rat_list == NULL) {
+    if (ue_context->restricted_primary_rat_list != OpenAPI_rat_type_NULL) {
+    cJSON *restricted_primary_rat_listList = cJSON_AddArrayToObject(item, "restrictedPrimaryRatList");
+    if (restricted_primary_rat_listList == NULL) {
         ogs_error("OpenAPI_ue_context_convertToJSON() failed [restricted_primary_rat_list]");
         goto end;
     }
-    OpenAPI_lnode_t *restricted_primary_rat_list_node;
-    OpenAPI_list_for_each(ue_context->restricted_primary_rat_list, restricted_primary_rat_list_node) {
-        if (cJSON_AddStringToObject(restricted_primary_rat_list, "", OpenAPI_rat_type_ToString((intptr_t)restricted_primary_rat_list_node->data)) == NULL) {
+    OpenAPI_list_for_each(ue_context->restricted_primary_rat_list, node) {
+        if (cJSON_AddStringToObject(restricted_primary_rat_listList, "", OpenAPI_rat_type_ToString((intptr_t)node->data)) == NULL) {
             ogs_error("OpenAPI_ue_context_convertToJSON() failed [restricted_primary_rat_list]");
             goto end;
         }
     }
     }
 
-    if (ue_context->restricted_secondary_rat_list) {
-    cJSON *restricted_secondary_rat_list = cJSON_AddArrayToObject(item, "restrictedSecondaryRatList");
-    if (restricted_secondary_rat_list == NULL) {
+    if (ue_context->restricted_secondary_rat_list != OpenAPI_rat_type_NULL) {
+    cJSON *restricted_secondary_rat_listList = cJSON_AddArrayToObject(item, "restrictedSecondaryRatList");
+    if (restricted_secondary_rat_listList == NULL) {
         ogs_error("OpenAPI_ue_context_convertToJSON() failed [restricted_secondary_rat_list]");
         goto end;
     }
-    OpenAPI_lnode_t *restricted_secondary_rat_list_node;
-    OpenAPI_list_for_each(ue_context->restricted_secondary_rat_list, restricted_secondary_rat_list_node) {
-        if (cJSON_AddStringToObject(restricted_secondary_rat_list, "", OpenAPI_rat_type_ToString((intptr_t)restricted_secondary_rat_list_node->data)) == NULL) {
+    OpenAPI_list_for_each(ue_context->restricted_secondary_rat_list, node) {
+        if (cJSON_AddStringToObject(restricted_secondary_rat_listList, "", OpenAPI_rat_type_ToString((intptr_t)node->data)) == NULL) {
             ogs_error("OpenAPI_ue_context_convertToJSON() failed [restricted_secondary_rat_list]");
             goto end;
         }
@@ -777,17 +886,92 @@ end:
 OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
 {
     OpenAPI_ue_context_t *ue_context_local_var = NULL;
-    cJSON *supi = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "supi");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *supi = NULL;
+    cJSON *supi_unauth_ind = NULL;
+    cJSON *gpsi_list = NULL;
+    OpenAPI_list_t *gpsi_listList = NULL;
+    cJSON *pei = NULL;
+    cJSON *udm_group_id = NULL;
+    cJSON *ausf_group_id = NULL;
+    cJSON *pcf_group_id = NULL;
+    cJSON *routing_indicator = NULL;
+    cJSON *group_list = NULL;
+    OpenAPI_list_t *group_listList = NULL;
+    cJSON *drx_parameter = NULL;
+    cJSON *sub_rfsp = NULL;
+    cJSON *used_rfsp = NULL;
+    cJSON *sub_ue_ambr = NULL;
+    OpenAPI_ambr_t *sub_ue_ambr_local_nonprim = NULL;
+    cJSON *smsf_id = NULL;
+    cJSON *seaf_data = NULL;
+    OpenAPI_seaf_data_t *seaf_data_local_nonprim = NULL;
+    cJSON *_5g_mm_capability = NULL;
+    cJSON *pcf_id = NULL;
+    cJSON *pcf_set_id = NULL;
+    cJSON *pcf_amp_service_set_id = NULL;
+    cJSON *pcf_uep_service_set_id = NULL;
+    cJSON *pcf_binding = NULL;
+    OpenAPI_sbi_binding_level_e pcf_bindingVariable = 0;
+    cJSON *pcf_am_policy_uri = NULL;
+    cJSON *am_policy_req_trigger_list = NULL;
+    OpenAPI_list_t *am_policy_req_trigger_listList = NULL;
+    cJSON *pcf_ue_policy_uri = NULL;
+    cJSON *ue_policy_req_trigger_list = NULL;
+    OpenAPI_list_t *ue_policy_req_trigger_listList = NULL;
+    cJSON *hpcf_id = NULL;
+    cJSON *hpcf_set_id = NULL;
+    cJSON *restricted_rat_list = NULL;
+    OpenAPI_list_t *restricted_rat_listList = NULL;
+    cJSON *forbidden_area_list = NULL;
+    OpenAPI_list_t *forbidden_area_listList = NULL;
+    cJSON *service_area_restriction = NULL;
+    OpenAPI_service_area_restriction_t *service_area_restriction_local_nonprim = NULL;
+    cJSON *restricted_core_nw_type_list = NULL;
+    OpenAPI_list_t *restricted_core_nw_type_listList = NULL;
+    cJSON *event_subscription_list = NULL;
+    OpenAPI_list_t *event_subscription_listList = NULL;
+    cJSON *mm_context_list = NULL;
+    OpenAPI_list_t *mm_context_listList = NULL;
+    cJSON *session_context_list = NULL;
+    OpenAPI_list_t *session_context_listList = NULL;
+    cJSON *trace_data = NULL;
+    OpenAPI_trace_data_t *trace_data_local_nonprim = NULL;
+    cJSON *service_gap_expiry_time = NULL;
+    cJSON *stn_sr = NULL;
+    cJSON *c_msisdn = NULL;
+    cJSON *ms_classmark2 = NULL;
+    cJSON *supported_codec_list = NULL;
+    OpenAPI_list_t *supported_codec_listList = NULL;
+    cJSON *small_data_rate_status_infos = NULL;
+    OpenAPI_list_t *small_data_rate_status_infosList = NULL;
+    cJSON *restricted_primary_rat_list = NULL;
+    OpenAPI_list_t *restricted_primary_rat_listList = NULL;
+    cJSON *restricted_secondary_rat_list = NULL;
+    OpenAPI_list_t *restricted_secondary_rat_listList = NULL;
+    cJSON *v2x_context = NULL;
+    OpenAPI_v2x_context_t *v2x_context_local_nonprim = NULL;
+    cJSON *lte_cat_m_ind = NULL;
+    cJSON *mo_exp_data_counter = NULL;
+    OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter_local_nonprim = NULL;
+    cJSON *cag_data = NULL;
+    OpenAPI_cag_data_t *cag_data_local_nonprim = NULL;
+    cJSON *management_mdt_ind = NULL;
+    cJSON *immediate_mdt_conf = NULL;
+    OpenAPI_immediate_mdt_conf_t *immediate_mdt_conf_local_nonprim = NULL;
+    cJSON *ec_restriction_data_wb = NULL;
+    OpenAPI_ec_restriction_data_wb_t *ec_restriction_data_wb_local_nonprim = NULL;
+    cJSON *ec_restriction_data_nb = NULL;
+    cJSON *iab_operation_allowed = NULL;
+    supi = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "supi");
     if (supi) {
-    if (!cJSON_IsString(supi)) {
+    if (!cJSON_IsString(supi) && !cJSON_IsNull(supi)) {
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [supi]");
         goto end;
     }
     }
 
-    cJSON *supi_unauth_ind = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "supiUnauthInd");
-
+    supi_unauth_ind = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "supiUnauthInd");
     if (supi_unauth_ind) {
     if (!cJSON_IsBool(supi_unauth_ind)) {
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [supi_unauth_ind]");
@@ -795,102 +979,97 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
     }
     }
 
-    cJSON *gpsi_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "gpsiList");
-
-    OpenAPI_list_t *gpsi_listList;
+    gpsi_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "gpsiList");
     if (gpsi_list) {
-    cJSON *gpsi_list_local;
-    if (!cJSON_IsArray(gpsi_list)) {
-        ogs_error("OpenAPI_ue_context_parseFromJSON() failed [gpsi_list]");
-        goto end;
-    }
-    gpsi_listList = OpenAPI_list_create();
+        cJSON *gpsi_list_local = NULL;
+        if (!cJSON_IsArray(gpsi_list)) {
+            ogs_error("OpenAPI_ue_context_parseFromJSON() failed [gpsi_list]");
+            goto end;
+        }
 
-    cJSON_ArrayForEach(gpsi_list_local, gpsi_list) {
-    if (!cJSON_IsString(gpsi_list_local)) {
-        ogs_error("OpenAPI_ue_context_parseFromJSON() failed [gpsi_list]");
-        goto end;
-    }
-    OpenAPI_list_add(gpsi_listList, ogs_strdup(gpsi_list_local->valuestring));
-    }
+        gpsi_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(gpsi_list_local, gpsi_list) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(gpsi_list_local)) {
+                ogs_error("OpenAPI_ue_context_parseFromJSON() failed [gpsi_list]");
+                goto end;
+            }
+            OpenAPI_list_add(gpsi_listList, ogs_strdup(gpsi_list_local->valuestring));
+        }
     }
 
-    cJSON *pei = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "pei");
-
+    pei = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "pei");
     if (pei) {
-    if (!cJSON_IsString(pei)) {
+    if (!cJSON_IsString(pei) && !cJSON_IsNull(pei)) {
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [pei]");
         goto end;
     }
     }
 
-    cJSON *udm_group_id = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "udmGroupId");
-
+    udm_group_id = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "udmGroupId");
     if (udm_group_id) {
-    if (!cJSON_IsString(udm_group_id)) {
+    if (!cJSON_IsString(udm_group_id) && !cJSON_IsNull(udm_group_id)) {
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [udm_group_id]");
         goto end;
     }
     }
 
-    cJSON *ausf_group_id = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "ausfGroupId");
-
+    ausf_group_id = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "ausfGroupId");
     if (ausf_group_id) {
-    if (!cJSON_IsString(ausf_group_id)) {
+    if (!cJSON_IsString(ausf_group_id) && !cJSON_IsNull(ausf_group_id)) {
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [ausf_group_id]");
         goto end;
     }
     }
 
-    cJSON *pcf_group_id = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "pcfGroupId");
-
+    pcf_group_id = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "pcfGroupId");
     if (pcf_group_id) {
-    if (!cJSON_IsString(pcf_group_id)) {
+    if (!cJSON_IsString(pcf_group_id) && !cJSON_IsNull(pcf_group_id)) {
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [pcf_group_id]");
         goto end;
     }
     }
 
-    cJSON *routing_indicator = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "routingIndicator");
-
+    routing_indicator = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "routingIndicator");
     if (routing_indicator) {
-    if (!cJSON_IsString(routing_indicator)) {
+    if (!cJSON_IsString(routing_indicator) && !cJSON_IsNull(routing_indicator)) {
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [routing_indicator]");
         goto end;
     }
     }
 
-    cJSON *group_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "groupList");
-
-    OpenAPI_list_t *group_listList;
+    group_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "groupList");
     if (group_list) {
-    cJSON *group_list_local;
-    if (!cJSON_IsArray(group_list)) {
-        ogs_error("OpenAPI_ue_context_parseFromJSON() failed [group_list]");
-        goto end;
-    }
-    group_listList = OpenAPI_list_create();
+        cJSON *group_list_local = NULL;
+        if (!cJSON_IsArray(group_list)) {
+            ogs_error("OpenAPI_ue_context_parseFromJSON() failed [group_list]");
+            goto end;
+        }
 
-    cJSON_ArrayForEach(group_list_local, group_list) {
-    if (!cJSON_IsString(group_list_local)) {
-        ogs_error("OpenAPI_ue_context_parseFromJSON() failed [group_list]");
-        goto end;
-    }
-    OpenAPI_list_add(group_listList, ogs_strdup(group_list_local->valuestring));
-    }
+        group_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(group_list_local, group_list) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(group_list_local)) {
+                ogs_error("OpenAPI_ue_context_parseFromJSON() failed [group_list]");
+                goto end;
+            }
+            OpenAPI_list_add(group_listList, ogs_strdup(group_list_local->valuestring));
+        }
     }
 
-    cJSON *drx_parameter = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "drxParameter");
-
+    drx_parameter = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "drxParameter");
     if (drx_parameter) {
-    if (!cJSON_IsNumber(drx_parameter)) {
+    if (!cJSON_IsString(drx_parameter) && !cJSON_IsNull(drx_parameter)) {
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [drx_parameter]");
         goto end;
     }
     }
 
-    cJSON *sub_rfsp = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "subRfsp");
-
+    sub_rfsp = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "subRfsp");
     if (sub_rfsp) {
     if (!cJSON_IsNumber(sub_rfsp)) {
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [sub_rfsp]");
@@ -898,8 +1077,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
     }
     }
 
-    cJSON *used_rfsp = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "usedRfsp");
-
+    used_rfsp = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "usedRfsp");
     if (used_rfsp) {
     if (!cJSON_IsNumber(used_rfsp)) {
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [used_rfsp]");
@@ -907,77 +1085,65 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
     }
     }
 
-    cJSON *sub_ue_ambr = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "subUeAmbr");
-
-    OpenAPI_ambr_t *sub_ue_ambr_local_nonprim = NULL;
+    sub_ue_ambr = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "subUeAmbr");
     if (sub_ue_ambr) {
     sub_ue_ambr_local_nonprim = OpenAPI_ambr_parseFromJSON(sub_ue_ambr);
     }
 
-    cJSON *smsf_id = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "smsfId");
-
+    smsf_id = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "smsfId");
     if (smsf_id) {
-    if (!cJSON_IsString(smsf_id)) {
+    if (!cJSON_IsString(smsf_id) && !cJSON_IsNull(smsf_id)) {
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [smsf_id]");
         goto end;
     }
     }
 
-    cJSON *seaf_data = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "seafData");
-
-    OpenAPI_seaf_data_t *seaf_data_local_nonprim = NULL;
+    seaf_data = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "seafData");
     if (seaf_data) {
     seaf_data_local_nonprim = OpenAPI_seaf_data_parseFromJSON(seaf_data);
     }
 
-    cJSON *_5g_mm_capability = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "5gMmCapability");
-
+    _5g_mm_capability = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "5gMmCapability");
     if (_5g_mm_capability) {
-    if (!cJSON_IsNumber(_5g_mm_capability)) {
+    if (!cJSON_IsString(_5g_mm_capability) && !cJSON_IsNull(_5g_mm_capability)) {
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [_5g_mm_capability]");
         goto end;
     }
     }
 
-    cJSON *pcf_id = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "pcfId");
-
+    pcf_id = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "pcfId");
     if (pcf_id) {
-    if (!cJSON_IsString(pcf_id)) {
+    if (!cJSON_IsString(pcf_id) && !cJSON_IsNull(pcf_id)) {
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [pcf_id]");
         goto end;
     }
     }
 
-    cJSON *pcf_set_id = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "pcfSetId");
-
+    pcf_set_id = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "pcfSetId");
     if (pcf_set_id) {
-    if (!cJSON_IsString(pcf_set_id)) {
+    if (!cJSON_IsString(pcf_set_id) && !cJSON_IsNull(pcf_set_id)) {
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [pcf_set_id]");
         goto end;
     }
     }
 
-    cJSON *pcf_amp_service_set_id = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "pcfAmpServiceSetId");
-
+    pcf_amp_service_set_id = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "pcfAmpServiceSetId");
     if (pcf_amp_service_set_id) {
-    if (!cJSON_IsString(pcf_amp_service_set_id)) {
+    if (!cJSON_IsString(pcf_amp_service_set_id) && !cJSON_IsNull(pcf_amp_service_set_id)) {
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [pcf_amp_service_set_id]");
         goto end;
     }
     }
 
-    cJSON *pcf_uep_service_set_id = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "pcfUepServiceSetId");
-
+    pcf_uep_service_set_id = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "pcfUepServiceSetId");
     if (pcf_uep_service_set_id) {
-    if (!cJSON_IsString(pcf_uep_service_set_id)) {
+    if (!cJSON_IsString(pcf_uep_service_set_id) && !cJSON_IsNull(pcf_uep_service_set_id)) {
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [pcf_uep_service_set_id]");
         goto end;
     }
     }
 
-    cJSON *pcf_binding = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "pcfBinding");
-
-    OpenAPI_sbi_binding_level_e pcf_bindingVariable;
+    pcf_binding = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "pcfBinding");
     if (pcf_binding) {
     if (!cJSON_IsString(pcf_binding)) {
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [pcf_binding]");
@@ -986,393 +1152,346 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
     pcf_bindingVariable = OpenAPI_sbi_binding_level_FromString(pcf_binding->valuestring);
     }
 
-    cJSON *pcf_am_policy_uri = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "pcfAmPolicyUri");
-
+    pcf_am_policy_uri = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "pcfAmPolicyUri");
     if (pcf_am_policy_uri) {
-    if (!cJSON_IsString(pcf_am_policy_uri)) {
+    if (!cJSON_IsString(pcf_am_policy_uri) && !cJSON_IsNull(pcf_am_policy_uri)) {
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [pcf_am_policy_uri]");
         goto end;
     }
     }
 
-    cJSON *am_policy_req_trigger_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "amPolicyReqTriggerList");
-
-    OpenAPI_list_t *am_policy_req_trigger_listList;
+    am_policy_req_trigger_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "amPolicyReqTriggerList");
     if (am_policy_req_trigger_list) {
-    cJSON *am_policy_req_trigger_list_local_nonprimitive;
-    if (!cJSON_IsArray(am_policy_req_trigger_list)) {
-        ogs_error("OpenAPI_ue_context_parseFromJSON() failed [am_policy_req_trigger_list]");
-        goto end;
-    }
-
-    am_policy_req_trigger_listList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(am_policy_req_trigger_list_local_nonprimitive, am_policy_req_trigger_list ) {
-        if (!cJSON_IsString(am_policy_req_trigger_list_local_nonprimitive)){
+        cJSON *am_policy_req_trigger_list_local = NULL;
+        if (!cJSON_IsArray(am_policy_req_trigger_list)) {
             ogs_error("OpenAPI_ue_context_parseFromJSON() failed [am_policy_req_trigger_list]");
             goto end;
         }
 
-        OpenAPI_list_add(am_policy_req_trigger_listList, (void *)OpenAPI_policy_req_trigger_FromString(am_policy_req_trigger_list_local_nonprimitive->valuestring));
-    }
+        am_policy_req_trigger_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(am_policy_req_trigger_list_local, am_policy_req_trigger_list) {
+            if (!cJSON_IsString(am_policy_req_trigger_list_local)) {
+                ogs_error("OpenAPI_ue_context_parseFromJSON() failed [am_policy_req_trigger_list]");
+                goto end;
+            }
+            OpenAPI_list_add(am_policy_req_trigger_listList, (void *)OpenAPI_policy_req_trigger_FromString(am_policy_req_trigger_list_local->valuestring));
+        }
     }
 
-    cJSON *pcf_ue_policy_uri = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "pcfUePolicyUri");
-
+    pcf_ue_policy_uri = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "pcfUePolicyUri");
     if (pcf_ue_policy_uri) {
-    if (!cJSON_IsString(pcf_ue_policy_uri)) {
+    if (!cJSON_IsString(pcf_ue_policy_uri) && !cJSON_IsNull(pcf_ue_policy_uri)) {
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [pcf_ue_policy_uri]");
         goto end;
     }
     }
 
-    cJSON *ue_policy_req_trigger_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "uePolicyReqTriggerList");
-
-    OpenAPI_list_t *ue_policy_req_trigger_listList;
+    ue_policy_req_trigger_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "uePolicyReqTriggerList");
     if (ue_policy_req_trigger_list) {
-    cJSON *ue_policy_req_trigger_list_local_nonprimitive;
-    if (!cJSON_IsArray(ue_policy_req_trigger_list)) {
-        ogs_error("OpenAPI_ue_context_parseFromJSON() failed [ue_policy_req_trigger_list]");
-        goto end;
-    }
-
-    ue_policy_req_trigger_listList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(ue_policy_req_trigger_list_local_nonprimitive, ue_policy_req_trigger_list ) {
-        if (!cJSON_IsString(ue_policy_req_trigger_list_local_nonprimitive)){
+        cJSON *ue_policy_req_trigger_list_local = NULL;
+        if (!cJSON_IsArray(ue_policy_req_trigger_list)) {
             ogs_error("OpenAPI_ue_context_parseFromJSON() failed [ue_policy_req_trigger_list]");
             goto end;
         }
 
-        OpenAPI_list_add(ue_policy_req_trigger_listList, (void *)OpenAPI_policy_req_trigger_FromString(ue_policy_req_trigger_list_local_nonprimitive->valuestring));
-    }
+        ue_policy_req_trigger_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(ue_policy_req_trigger_list_local, ue_policy_req_trigger_list) {
+            if (!cJSON_IsString(ue_policy_req_trigger_list_local)) {
+                ogs_error("OpenAPI_ue_context_parseFromJSON() failed [ue_policy_req_trigger_list]");
+                goto end;
+            }
+            OpenAPI_list_add(ue_policy_req_trigger_listList, (void *)OpenAPI_policy_req_trigger_FromString(ue_policy_req_trigger_list_local->valuestring));
+        }
     }
 
-    cJSON *hpcf_id = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "hpcfId");
-
+    hpcf_id = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "hpcfId");
     if (hpcf_id) {
-    if (!cJSON_IsString(hpcf_id)) {
+    if (!cJSON_IsString(hpcf_id) && !cJSON_IsNull(hpcf_id)) {
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [hpcf_id]");
         goto end;
     }
     }
 
-    cJSON *hpcf_set_id = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "hpcfSetId");
-
+    hpcf_set_id = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "hpcfSetId");
     if (hpcf_set_id) {
-    if (!cJSON_IsString(hpcf_set_id)) {
+    if (!cJSON_IsString(hpcf_set_id) && !cJSON_IsNull(hpcf_set_id)) {
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [hpcf_set_id]");
         goto end;
     }
     }
 
-    cJSON *restricted_rat_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "restrictedRatList");
-
-    OpenAPI_list_t *restricted_rat_listList;
+    restricted_rat_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "restrictedRatList");
     if (restricted_rat_list) {
-    cJSON *restricted_rat_list_local_nonprimitive;
-    if (!cJSON_IsArray(restricted_rat_list)) {
-        ogs_error("OpenAPI_ue_context_parseFromJSON() failed [restricted_rat_list]");
-        goto end;
-    }
-
-    restricted_rat_listList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(restricted_rat_list_local_nonprimitive, restricted_rat_list ) {
-        if (!cJSON_IsString(restricted_rat_list_local_nonprimitive)){
+        cJSON *restricted_rat_list_local = NULL;
+        if (!cJSON_IsArray(restricted_rat_list)) {
             ogs_error("OpenAPI_ue_context_parseFromJSON() failed [restricted_rat_list]");
             goto end;
         }
 
-        OpenAPI_list_add(restricted_rat_listList, (void *)OpenAPI_rat_type_FromString(restricted_rat_list_local_nonprimitive->valuestring));
-    }
+        restricted_rat_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(restricted_rat_list_local, restricted_rat_list) {
+            if (!cJSON_IsString(restricted_rat_list_local)) {
+                ogs_error("OpenAPI_ue_context_parseFromJSON() failed [restricted_rat_list]");
+                goto end;
+            }
+            OpenAPI_list_add(restricted_rat_listList, (void *)OpenAPI_rat_type_FromString(restricted_rat_list_local->valuestring));
+        }
     }
 
-    cJSON *forbidden_area_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "forbiddenAreaList");
-
-    OpenAPI_list_t *forbidden_area_listList;
+    forbidden_area_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "forbiddenAreaList");
     if (forbidden_area_list) {
-    cJSON *forbidden_area_list_local_nonprimitive;
-    if (!cJSON_IsArray(forbidden_area_list)){
-        ogs_error("OpenAPI_ue_context_parseFromJSON() failed [forbidden_area_list]");
-        goto end;
-    }
-
-    forbidden_area_listList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(forbidden_area_list_local_nonprimitive, forbidden_area_list ) {
-        if (!cJSON_IsObject(forbidden_area_list_local_nonprimitive)) {
+        cJSON *forbidden_area_list_local = NULL;
+        if (!cJSON_IsArray(forbidden_area_list)) {
             ogs_error("OpenAPI_ue_context_parseFromJSON() failed [forbidden_area_list]");
             goto end;
         }
-        OpenAPI_area_t *forbidden_area_listItem = OpenAPI_area_parseFromJSON(forbidden_area_list_local_nonprimitive);
 
-        if (!forbidden_area_listItem) {
-            ogs_error("No forbidden_area_listItem");
-            OpenAPI_list_free(forbidden_area_listList);
-            goto end;
+        forbidden_area_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(forbidden_area_list_local, forbidden_area_list) {
+            if (!cJSON_IsObject(forbidden_area_list_local)) {
+                ogs_error("OpenAPI_ue_context_parseFromJSON() failed [forbidden_area_list]");
+                goto end;
+            }
+            OpenAPI_area_t *forbidden_area_listItem = OpenAPI_area_parseFromJSON(forbidden_area_list_local);
+            if (!forbidden_area_listItem) {
+                ogs_error("No forbidden_area_listItem");
+                OpenAPI_list_free(forbidden_area_listList);
+                goto end;
+            }
+            OpenAPI_list_add(forbidden_area_listList, forbidden_area_listItem);
         }
-
-        OpenAPI_list_add(forbidden_area_listList, forbidden_area_listItem);
-    }
     }
 
-    cJSON *service_area_restriction = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "serviceAreaRestriction");
-
-    OpenAPI_service_area_restriction_t *service_area_restriction_local_nonprim = NULL;
+    service_area_restriction = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "serviceAreaRestriction");
     if (service_area_restriction) {
     service_area_restriction_local_nonprim = OpenAPI_service_area_restriction_parseFromJSON(service_area_restriction);
     }
 
-    cJSON *restricted_core_nw_type_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "restrictedCoreNwTypeList");
-
-    OpenAPI_list_t *restricted_core_nw_type_listList;
+    restricted_core_nw_type_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "restrictedCoreNwTypeList");
     if (restricted_core_nw_type_list) {
-    cJSON *restricted_core_nw_type_list_local_nonprimitive;
-    if (!cJSON_IsArray(restricted_core_nw_type_list)) {
-        ogs_error("OpenAPI_ue_context_parseFromJSON() failed [restricted_core_nw_type_list]");
-        goto end;
-    }
-
-    restricted_core_nw_type_listList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(restricted_core_nw_type_list_local_nonprimitive, restricted_core_nw_type_list ) {
-        if (!cJSON_IsString(restricted_core_nw_type_list_local_nonprimitive)){
+        cJSON *restricted_core_nw_type_list_local = NULL;
+        if (!cJSON_IsArray(restricted_core_nw_type_list)) {
             ogs_error("OpenAPI_ue_context_parseFromJSON() failed [restricted_core_nw_type_list]");
             goto end;
         }
 
-        OpenAPI_list_add(restricted_core_nw_type_listList, (void *)OpenAPI_core_network_type_FromString(restricted_core_nw_type_list_local_nonprimitive->valuestring));
-    }
+        restricted_core_nw_type_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(restricted_core_nw_type_list_local, restricted_core_nw_type_list) {
+            if (!cJSON_IsString(restricted_core_nw_type_list_local)) {
+                ogs_error("OpenAPI_ue_context_parseFromJSON() failed [restricted_core_nw_type_list]");
+                goto end;
+            }
+            OpenAPI_list_add(restricted_core_nw_type_listList, (void *)OpenAPI_core_network_type_FromString(restricted_core_nw_type_list_local->valuestring));
+        }
     }
 
-    cJSON *event_subscription_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "eventSubscriptionList");
-
-    OpenAPI_list_t *event_subscription_listList;
+    event_subscription_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "eventSubscriptionList");
     if (event_subscription_list) {
-    cJSON *event_subscription_list_local_nonprimitive;
-    if (!cJSON_IsArray(event_subscription_list)){
-        ogs_error("OpenAPI_ue_context_parseFromJSON() failed [event_subscription_list]");
-        goto end;
-    }
-
-    event_subscription_listList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(event_subscription_list_local_nonprimitive, event_subscription_list ) {
-        if (!cJSON_IsObject(event_subscription_list_local_nonprimitive)) {
+        cJSON *event_subscription_list_local = NULL;
+        if (!cJSON_IsArray(event_subscription_list)) {
             ogs_error("OpenAPI_ue_context_parseFromJSON() failed [event_subscription_list]");
             goto end;
         }
-        OpenAPI_ext_amf_event_subscription_t *event_subscription_listItem = OpenAPI_ext_amf_event_subscription_parseFromJSON(event_subscription_list_local_nonprimitive);
 
-        if (!event_subscription_listItem) {
-            ogs_error("No event_subscription_listItem");
-            OpenAPI_list_free(event_subscription_listList);
-            goto end;
+        event_subscription_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(event_subscription_list_local, event_subscription_list) {
+            if (!cJSON_IsObject(event_subscription_list_local)) {
+                ogs_error("OpenAPI_ue_context_parseFromJSON() failed [event_subscription_list]");
+                goto end;
+            }
+            OpenAPI_ext_amf_event_subscription_t *event_subscription_listItem = OpenAPI_ext_amf_event_subscription_parseFromJSON(event_subscription_list_local);
+            if (!event_subscription_listItem) {
+                ogs_error("No event_subscription_listItem");
+                OpenAPI_list_free(event_subscription_listList);
+                goto end;
+            }
+            OpenAPI_list_add(event_subscription_listList, event_subscription_listItem);
         }
-
-        OpenAPI_list_add(event_subscription_listList, event_subscription_listItem);
-    }
     }
 
-    cJSON *mm_context_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "mmContextList");
-
-    OpenAPI_list_t *mm_context_listList;
+    mm_context_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "mmContextList");
     if (mm_context_list) {
-    cJSON *mm_context_list_local_nonprimitive;
-    if (!cJSON_IsArray(mm_context_list)){
-        ogs_error("OpenAPI_ue_context_parseFromJSON() failed [mm_context_list]");
-        goto end;
-    }
-
-    mm_context_listList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(mm_context_list_local_nonprimitive, mm_context_list ) {
-        if (!cJSON_IsObject(mm_context_list_local_nonprimitive)) {
+        cJSON *mm_context_list_local = NULL;
+        if (!cJSON_IsArray(mm_context_list)) {
             ogs_error("OpenAPI_ue_context_parseFromJSON() failed [mm_context_list]");
             goto end;
         }
-        OpenAPI_mm_context_t *mm_context_listItem = OpenAPI_mm_context_parseFromJSON(mm_context_list_local_nonprimitive);
 
-        if (!mm_context_listItem) {
-            ogs_error("No mm_context_listItem");
-            OpenAPI_list_free(mm_context_listList);
-            goto end;
+        mm_context_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(mm_context_list_local, mm_context_list) {
+            if (!cJSON_IsObject(mm_context_list_local)) {
+                ogs_error("OpenAPI_ue_context_parseFromJSON() failed [mm_context_list]");
+                goto end;
+            }
+            OpenAPI_mm_context_t *mm_context_listItem = OpenAPI_mm_context_parseFromJSON(mm_context_list_local);
+            if (!mm_context_listItem) {
+                ogs_error("No mm_context_listItem");
+                OpenAPI_list_free(mm_context_listList);
+                goto end;
+            }
+            OpenAPI_list_add(mm_context_listList, mm_context_listItem);
         }
-
-        OpenAPI_list_add(mm_context_listList, mm_context_listItem);
-    }
     }
 
-    cJSON *session_context_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "sessionContextList");
-
-    OpenAPI_list_t *session_context_listList;
+    session_context_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "sessionContextList");
     if (session_context_list) {
-    cJSON *session_context_list_local_nonprimitive;
-    if (!cJSON_IsArray(session_context_list)){
-        ogs_error("OpenAPI_ue_context_parseFromJSON() failed [session_context_list]");
-        goto end;
-    }
-
-    session_context_listList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(session_context_list_local_nonprimitive, session_context_list ) {
-        if (!cJSON_IsObject(session_context_list_local_nonprimitive)) {
+        cJSON *session_context_list_local = NULL;
+        if (!cJSON_IsArray(session_context_list)) {
             ogs_error("OpenAPI_ue_context_parseFromJSON() failed [session_context_list]");
             goto end;
         }
-        OpenAPI_pdu_session_context_t *session_context_listItem = OpenAPI_pdu_session_context_parseFromJSON(session_context_list_local_nonprimitive);
 
-        if (!session_context_listItem) {
-            ogs_error("No session_context_listItem");
-            OpenAPI_list_free(session_context_listList);
-            goto end;
+        session_context_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(session_context_list_local, session_context_list) {
+            if (!cJSON_IsObject(session_context_list_local)) {
+                ogs_error("OpenAPI_ue_context_parseFromJSON() failed [session_context_list]");
+                goto end;
+            }
+            OpenAPI_pdu_session_context_t *session_context_listItem = OpenAPI_pdu_session_context_parseFromJSON(session_context_list_local);
+            if (!session_context_listItem) {
+                ogs_error("No session_context_listItem");
+                OpenAPI_list_free(session_context_listList);
+                goto end;
+            }
+            OpenAPI_list_add(session_context_listList, session_context_listItem);
         }
-
-        OpenAPI_list_add(session_context_listList, session_context_listItem);
-    }
     }
 
-    cJSON *trace_data = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "traceData");
-
-    OpenAPI_trace_data_t *trace_data_local_nonprim = NULL;
+    trace_data = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "traceData");
     if (trace_data) {
     trace_data_local_nonprim = OpenAPI_trace_data_parseFromJSON(trace_data);
     }
 
-    cJSON *service_gap_expiry_time = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "serviceGapExpiryTime");
-
+    service_gap_expiry_time = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "serviceGapExpiryTime");
     if (service_gap_expiry_time) {
-    if (!cJSON_IsString(service_gap_expiry_time)) {
+    if (!cJSON_IsString(service_gap_expiry_time) && !cJSON_IsNull(service_gap_expiry_time)) {
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [service_gap_expiry_time]");
         goto end;
     }
     }
 
-    cJSON *stn_sr = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "stnSr");
-
+    stn_sr = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "stnSr");
     if (stn_sr) {
-    if (!cJSON_IsString(stn_sr)) {
+    if (!cJSON_IsString(stn_sr) && !cJSON_IsNull(stn_sr)) {
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [stn_sr]");
         goto end;
     }
     }
 
-    cJSON *c_msisdn = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "cMsisdn");
-
+    c_msisdn = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "cMsisdn");
     if (c_msisdn) {
-    if (!cJSON_IsString(c_msisdn)) {
+    if (!cJSON_IsString(c_msisdn) && !cJSON_IsNull(c_msisdn)) {
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [c_msisdn]");
         goto end;
     }
     }
 
-    cJSON *ms_classmark2 = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "msClassmark2");
-
+    ms_classmark2 = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "msClassmark2");
     if (ms_classmark2) {
-    if (!cJSON_IsNumber(ms_classmark2)) {
+    if (!cJSON_IsString(ms_classmark2) && !cJSON_IsNull(ms_classmark2)) {
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [ms_classmark2]");
         goto end;
     }
     }
 
-    cJSON *supported_codec_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "supportedCodecList");
-
-    OpenAPI_list_t *supported_codec_listList;
+    supported_codec_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "supportedCodecList");
     if (supported_codec_list) {
-    cJSON *supported_codec_list_local;
-    if (!cJSON_IsArray(supported_codec_list)) {
-        ogs_error("OpenAPI_ue_context_parseFromJSON() failed [supported_codec_list]");
-        goto end;
-    }
-    supported_codec_listList = OpenAPI_list_create();
+        cJSON *supported_codec_list_local = NULL;
+        if (!cJSON_IsArray(supported_codec_list)) {
+            ogs_error("OpenAPI_ue_context_parseFromJSON() failed [supported_codec_list]");
+            goto end;
+        }
 
-    cJSON_ArrayForEach(supported_codec_list_local, supported_codec_list) {
-    }
+        supported_codec_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(supported_codec_list_local, supported_codec_list) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(supported_codec_list_local)) {
+                ogs_error("OpenAPI_ue_context_parseFromJSON() failed [supported_codec_list]");
+                goto end;
+            }
+            OpenAPI_list_add(supported_codec_listList, ogs_strdup(supported_codec_list_local->valuestring));
+        }
     }
 
-    cJSON *small_data_rate_status_infos = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "smallDataRateStatusInfos");
-
-    OpenAPI_list_t *small_data_rate_status_infosList;
+    small_data_rate_status_infos = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "smallDataRateStatusInfos");
     if (small_data_rate_status_infos) {
-    cJSON *small_data_rate_status_infos_local_nonprimitive;
-    if (!cJSON_IsArray(small_data_rate_status_infos)){
-        ogs_error("OpenAPI_ue_context_parseFromJSON() failed [small_data_rate_status_infos]");
-        goto end;
-    }
-
-    small_data_rate_status_infosList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(small_data_rate_status_infos_local_nonprimitive, small_data_rate_status_infos ) {
-        if (!cJSON_IsObject(small_data_rate_status_infos_local_nonprimitive)) {
+        cJSON *small_data_rate_status_infos_local = NULL;
+        if (!cJSON_IsArray(small_data_rate_status_infos)) {
             ogs_error("OpenAPI_ue_context_parseFromJSON() failed [small_data_rate_status_infos]");
             goto end;
         }
-        OpenAPI_small_data_rate_status_info_t *small_data_rate_status_infosItem = OpenAPI_small_data_rate_status_info_parseFromJSON(small_data_rate_status_infos_local_nonprimitive);
 
-        if (!small_data_rate_status_infosItem) {
-            ogs_error("No small_data_rate_status_infosItem");
-            OpenAPI_list_free(small_data_rate_status_infosList);
-            goto end;
+        small_data_rate_status_infosList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(small_data_rate_status_infos_local, small_data_rate_status_infos) {
+            if (!cJSON_IsObject(small_data_rate_status_infos_local)) {
+                ogs_error("OpenAPI_ue_context_parseFromJSON() failed [small_data_rate_status_infos]");
+                goto end;
+            }
+            OpenAPI_small_data_rate_status_info_t *small_data_rate_status_infosItem = OpenAPI_small_data_rate_status_info_parseFromJSON(small_data_rate_status_infos_local);
+            if (!small_data_rate_status_infosItem) {
+                ogs_error("No small_data_rate_status_infosItem");
+                OpenAPI_list_free(small_data_rate_status_infosList);
+                goto end;
+            }
+            OpenAPI_list_add(small_data_rate_status_infosList, small_data_rate_status_infosItem);
         }
-
-        OpenAPI_list_add(small_data_rate_status_infosList, small_data_rate_status_infosItem);
-    }
     }
 
-    cJSON *restricted_primary_rat_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "restrictedPrimaryRatList");
-
-    OpenAPI_list_t *restricted_primary_rat_listList;
+    restricted_primary_rat_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "restrictedPrimaryRatList");
     if (restricted_primary_rat_list) {
-    cJSON *restricted_primary_rat_list_local_nonprimitive;
-    if (!cJSON_IsArray(restricted_primary_rat_list)) {
-        ogs_error("OpenAPI_ue_context_parseFromJSON() failed [restricted_primary_rat_list]");
-        goto end;
-    }
-
-    restricted_primary_rat_listList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(restricted_primary_rat_list_local_nonprimitive, restricted_primary_rat_list ) {
-        if (!cJSON_IsString(restricted_primary_rat_list_local_nonprimitive)){
+        cJSON *restricted_primary_rat_list_local = NULL;
+        if (!cJSON_IsArray(restricted_primary_rat_list)) {
             ogs_error("OpenAPI_ue_context_parseFromJSON() failed [restricted_primary_rat_list]");
             goto end;
         }
 
-        OpenAPI_list_add(restricted_primary_rat_listList, (void *)OpenAPI_rat_type_FromString(restricted_primary_rat_list_local_nonprimitive->valuestring));
-    }
+        restricted_primary_rat_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(restricted_primary_rat_list_local, restricted_primary_rat_list) {
+            if (!cJSON_IsString(restricted_primary_rat_list_local)) {
+                ogs_error("OpenAPI_ue_context_parseFromJSON() failed [restricted_primary_rat_list]");
+                goto end;
+            }
+            OpenAPI_list_add(restricted_primary_rat_listList, (void *)OpenAPI_rat_type_FromString(restricted_primary_rat_list_local->valuestring));
+        }
     }
 
-    cJSON *restricted_secondary_rat_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "restrictedSecondaryRatList");
-
-    OpenAPI_list_t *restricted_secondary_rat_listList;
+    restricted_secondary_rat_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "restrictedSecondaryRatList");
     if (restricted_secondary_rat_list) {
-    cJSON *restricted_secondary_rat_list_local_nonprimitive;
-    if (!cJSON_IsArray(restricted_secondary_rat_list)) {
-        ogs_error("OpenAPI_ue_context_parseFromJSON() failed [restricted_secondary_rat_list]");
-        goto end;
-    }
-
-    restricted_secondary_rat_listList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(restricted_secondary_rat_list_local_nonprimitive, restricted_secondary_rat_list ) {
-        if (!cJSON_IsString(restricted_secondary_rat_list_local_nonprimitive)){
+        cJSON *restricted_secondary_rat_list_local = NULL;
+        if (!cJSON_IsArray(restricted_secondary_rat_list)) {
             ogs_error("OpenAPI_ue_context_parseFromJSON() failed [restricted_secondary_rat_list]");
             goto end;
         }
 
-        OpenAPI_list_add(restricted_secondary_rat_listList, (void *)OpenAPI_rat_type_FromString(restricted_secondary_rat_list_local_nonprimitive->valuestring));
-    }
+        restricted_secondary_rat_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(restricted_secondary_rat_list_local, restricted_secondary_rat_list) {
+            if (!cJSON_IsString(restricted_secondary_rat_list_local)) {
+                ogs_error("OpenAPI_ue_context_parseFromJSON() failed [restricted_secondary_rat_list]");
+                goto end;
+            }
+            OpenAPI_list_add(restricted_secondary_rat_listList, (void *)OpenAPI_rat_type_FromString(restricted_secondary_rat_list_local->valuestring));
+        }
     }
 
-    cJSON *v2x_context = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "v2xContext");
-
-    OpenAPI_v2x_context_t *v2x_context_local_nonprim = NULL;
+    v2x_context = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "v2xContext");
     if (v2x_context) {
     v2x_context_local_nonprim = OpenAPI_v2x_context_parseFromJSON(v2x_context);
     }
 
-    cJSON *lte_cat_m_ind = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "lteCatMInd");
-
+    lte_cat_m_ind = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "lteCatMInd");
     if (lte_cat_m_ind) {
     if (!cJSON_IsBool(lte_cat_m_ind)) {
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [lte_cat_m_ind]");
@@ -1380,22 +1499,17 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
     }
     }
 
-    cJSON *mo_exp_data_counter = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "moExpDataCounter");
-
-    OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter_local_nonprim = NULL;
+    mo_exp_data_counter = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "moExpDataCounter");
     if (mo_exp_data_counter) {
     mo_exp_data_counter_local_nonprim = OpenAPI_mo_exp_data_counter_parseFromJSON(mo_exp_data_counter);
     }
 
-    cJSON *cag_data = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "cagData");
-
-    OpenAPI_cag_data_t *cag_data_local_nonprim = NULL;
+    cag_data = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "cagData");
     if (cag_data) {
     cag_data_local_nonprim = OpenAPI_cag_data_parseFromJSON(cag_data);
     }
 
-    cJSON *management_mdt_ind = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "managementMdtInd");
-
+    management_mdt_ind = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "managementMdtInd");
     if (management_mdt_ind) {
     if (!cJSON_IsBool(management_mdt_ind)) {
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [management_mdt_ind]");
@@ -1403,22 +1517,17 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
     }
     }
 
-    cJSON *immediate_mdt_conf = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "immediateMdtConf");
-
-    OpenAPI_immediate_mdt_conf_t *immediate_mdt_conf_local_nonprim = NULL;
+    immediate_mdt_conf = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "immediateMdtConf");
     if (immediate_mdt_conf) {
     immediate_mdt_conf_local_nonprim = OpenAPI_immediate_mdt_conf_parseFromJSON(immediate_mdt_conf);
     }
 
-    cJSON *ec_restriction_data_wb = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "ecRestrictionDataWb");
-
-    OpenAPI_ec_restriction_data_wb_t *ec_restriction_data_wb_local_nonprim = NULL;
+    ec_restriction_data_wb = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "ecRestrictionDataWb");
     if (ec_restriction_data_wb) {
     ec_restriction_data_wb_local_nonprim = OpenAPI_ec_restriction_data_wb_parseFromJSON(ec_restriction_data_wb);
     }
 
-    cJSON *ec_restriction_data_nb = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "ecRestrictionDataNb");
-
+    ec_restriction_data_nb = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "ecRestrictionDataNb");
     if (ec_restriction_data_nb) {
     if (!cJSON_IsBool(ec_restriction_data_nb)) {
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [ec_restriction_data_nb]");
@@ -1426,8 +1535,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
     }
     }
 
-    cJSON *iab_operation_allowed = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "iabOperationAllowed");
-
+    iab_operation_allowed = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "iabOperationAllowed");
     if (iab_operation_allowed) {
     if (!cJSON_IsBool(iab_operation_allowed)) {
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [iab_operation_allowed]");
@@ -1436,36 +1544,36 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
     }
 
     ue_context_local_var = OpenAPI_ue_context_create (
-        supi ? ogs_strdup(supi->valuestring) : NULL,
+        supi && !cJSON_IsNull(supi) ? ogs_strdup(supi->valuestring) : NULL,
         supi_unauth_ind ? true : false,
         supi_unauth_ind ? supi_unauth_ind->valueint : 0,
         gpsi_list ? gpsi_listList : NULL,
-        pei ? ogs_strdup(pei->valuestring) : NULL,
-        udm_group_id ? ogs_strdup(udm_group_id->valuestring) : NULL,
-        ausf_group_id ? ogs_strdup(ausf_group_id->valuestring) : NULL,
-        pcf_group_id ? ogs_strdup(pcf_group_id->valuestring) : NULL,
-        routing_indicator ? ogs_strdup(routing_indicator->valuestring) : NULL,
+        pei && !cJSON_IsNull(pei) ? ogs_strdup(pei->valuestring) : NULL,
+        udm_group_id && !cJSON_IsNull(udm_group_id) ? ogs_strdup(udm_group_id->valuestring) : NULL,
+        ausf_group_id && !cJSON_IsNull(ausf_group_id) ? ogs_strdup(ausf_group_id->valuestring) : NULL,
+        pcf_group_id && !cJSON_IsNull(pcf_group_id) ? ogs_strdup(pcf_group_id->valuestring) : NULL,
+        routing_indicator && !cJSON_IsNull(routing_indicator) ? ogs_strdup(routing_indicator->valuestring) : NULL,
         group_list ? group_listList : NULL,
-        drx_parameter ? drx_parameter->valueint : 0,
+        drx_parameter && !cJSON_IsNull(drx_parameter) ? ogs_strdup(drx_parameter->valuestring) : NULL,
         sub_rfsp ? true : false,
         sub_rfsp ? sub_rfsp->valuedouble : 0,
         used_rfsp ? true : false,
         used_rfsp ? used_rfsp->valuedouble : 0,
         sub_ue_ambr ? sub_ue_ambr_local_nonprim : NULL,
-        smsf_id ? ogs_strdup(smsf_id->valuestring) : NULL,
+        smsf_id && !cJSON_IsNull(smsf_id) ? ogs_strdup(smsf_id->valuestring) : NULL,
         seaf_data ? seaf_data_local_nonprim : NULL,
-        _5g_mm_capability ? _5g_mm_capability->valueint : 0,
-        pcf_id ? ogs_strdup(pcf_id->valuestring) : NULL,
-        pcf_set_id ? ogs_strdup(pcf_set_id->valuestring) : NULL,
-        pcf_amp_service_set_id ? ogs_strdup(pcf_amp_service_set_id->valuestring) : NULL,
-        pcf_uep_service_set_id ? ogs_strdup(pcf_uep_service_set_id->valuestring) : NULL,
+        _5g_mm_capability && !cJSON_IsNull(_5g_mm_capability) ? ogs_strdup(_5g_mm_capability->valuestring) : NULL,
+        pcf_id && !cJSON_IsNull(pcf_id) ? ogs_strdup(pcf_id->valuestring) : NULL,
+        pcf_set_id && !cJSON_IsNull(pcf_set_id) ? ogs_strdup(pcf_set_id->valuestring) : NULL,
+        pcf_amp_service_set_id && !cJSON_IsNull(pcf_amp_service_set_id) ? ogs_strdup(pcf_amp_service_set_id->valuestring) : NULL,
+        pcf_uep_service_set_id && !cJSON_IsNull(pcf_uep_service_set_id) ? ogs_strdup(pcf_uep_service_set_id->valuestring) : NULL,
         pcf_binding ? pcf_bindingVariable : 0,
-        pcf_am_policy_uri ? ogs_strdup(pcf_am_policy_uri->valuestring) : NULL,
+        pcf_am_policy_uri && !cJSON_IsNull(pcf_am_policy_uri) ? ogs_strdup(pcf_am_policy_uri->valuestring) : NULL,
         am_policy_req_trigger_list ? am_policy_req_trigger_listList : NULL,
-        pcf_ue_policy_uri ? ogs_strdup(pcf_ue_policy_uri->valuestring) : NULL,
+        pcf_ue_policy_uri && !cJSON_IsNull(pcf_ue_policy_uri) ? ogs_strdup(pcf_ue_policy_uri->valuestring) : NULL,
         ue_policy_req_trigger_list ? ue_policy_req_trigger_listList : NULL,
-        hpcf_id ? ogs_strdup(hpcf_id->valuestring) : NULL,
-        hpcf_set_id ? ogs_strdup(hpcf_set_id->valuestring) : NULL,
+        hpcf_id && !cJSON_IsNull(hpcf_id) ? ogs_strdup(hpcf_id->valuestring) : NULL,
+        hpcf_set_id && !cJSON_IsNull(hpcf_set_id) ? ogs_strdup(hpcf_set_id->valuestring) : NULL,
         restricted_rat_list ? restricted_rat_listList : NULL,
         forbidden_area_list ? forbidden_area_listList : NULL,
         service_area_restriction ? service_area_restriction_local_nonprim : NULL,
@@ -1474,10 +1582,10 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         mm_context_list ? mm_context_listList : NULL,
         session_context_list ? session_context_listList : NULL,
         trace_data ? trace_data_local_nonprim : NULL,
-        service_gap_expiry_time ? ogs_strdup(service_gap_expiry_time->valuestring) : NULL,
-        stn_sr ? ogs_strdup(stn_sr->valuestring) : NULL,
-        c_msisdn ? ogs_strdup(c_msisdn->valuestring) : NULL,
-        ms_classmark2 ? ms_classmark2->valueint : 0,
+        service_gap_expiry_time && !cJSON_IsNull(service_gap_expiry_time) ? ogs_strdup(service_gap_expiry_time->valuestring) : NULL,
+        stn_sr && !cJSON_IsNull(stn_sr) ? ogs_strdup(stn_sr->valuestring) : NULL,
+        c_msisdn && !cJSON_IsNull(c_msisdn) ? ogs_strdup(c_msisdn->valuestring) : NULL,
+        ms_classmark2 && !cJSON_IsNull(ms_classmark2) ? ogs_strdup(ms_classmark2->valuestring) : NULL,
         supported_codec_list ? supported_codec_listList : NULL,
         small_data_rate_status_infos ? small_data_rate_status_infosList : NULL,
         restricted_primary_rat_list ? restricted_primary_rat_listList : NULL,
@@ -1499,6 +1607,122 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
 
     return ue_context_local_var;
 end:
+    if (gpsi_listList) {
+        OpenAPI_list_for_each(gpsi_listList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(gpsi_listList);
+        gpsi_listList = NULL;
+    }
+    if (group_listList) {
+        OpenAPI_list_for_each(group_listList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(group_listList);
+        group_listList = NULL;
+    }
+    if (sub_ue_ambr_local_nonprim) {
+        OpenAPI_ambr_free(sub_ue_ambr_local_nonprim);
+        sub_ue_ambr_local_nonprim = NULL;
+    }
+    if (seaf_data_local_nonprim) {
+        OpenAPI_seaf_data_free(seaf_data_local_nonprim);
+        seaf_data_local_nonprim = NULL;
+    }
+    if (am_policy_req_trigger_listList) {
+        OpenAPI_list_free(am_policy_req_trigger_listList);
+        am_policy_req_trigger_listList = NULL;
+    }
+    if (ue_policy_req_trigger_listList) {
+        OpenAPI_list_free(ue_policy_req_trigger_listList);
+        ue_policy_req_trigger_listList = NULL;
+    }
+    if (restricted_rat_listList) {
+        OpenAPI_list_free(restricted_rat_listList);
+        restricted_rat_listList = NULL;
+    }
+    if (forbidden_area_listList) {
+        OpenAPI_list_for_each(forbidden_area_listList, node) {
+            OpenAPI_area_free(node->data);
+        }
+        OpenAPI_list_free(forbidden_area_listList);
+        forbidden_area_listList = NULL;
+    }
+    if (service_area_restriction_local_nonprim) {
+        OpenAPI_service_area_restriction_free(service_area_restriction_local_nonprim);
+        service_area_restriction_local_nonprim = NULL;
+    }
+    if (restricted_core_nw_type_listList) {
+        OpenAPI_list_free(restricted_core_nw_type_listList);
+        restricted_core_nw_type_listList = NULL;
+    }
+    if (event_subscription_listList) {
+        OpenAPI_list_for_each(event_subscription_listList, node) {
+            OpenAPI_ext_amf_event_subscription_free(node->data);
+        }
+        OpenAPI_list_free(event_subscription_listList);
+        event_subscription_listList = NULL;
+    }
+    if (mm_context_listList) {
+        OpenAPI_list_for_each(mm_context_listList, node) {
+            OpenAPI_mm_context_free(node->data);
+        }
+        OpenAPI_list_free(mm_context_listList);
+        mm_context_listList = NULL;
+    }
+    if (session_context_listList) {
+        OpenAPI_list_for_each(session_context_listList, node) {
+            OpenAPI_pdu_session_context_free(node->data);
+        }
+        OpenAPI_list_free(session_context_listList);
+        session_context_listList = NULL;
+    }
+    if (trace_data_local_nonprim) {
+        OpenAPI_trace_data_free(trace_data_local_nonprim);
+        trace_data_local_nonprim = NULL;
+    }
+    if (supported_codec_listList) {
+        OpenAPI_list_for_each(supported_codec_listList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(supported_codec_listList);
+        supported_codec_listList = NULL;
+    }
+    if (small_data_rate_status_infosList) {
+        OpenAPI_list_for_each(small_data_rate_status_infosList, node) {
+            OpenAPI_small_data_rate_status_info_free(node->data);
+        }
+        OpenAPI_list_free(small_data_rate_status_infosList);
+        small_data_rate_status_infosList = NULL;
+    }
+    if (restricted_primary_rat_listList) {
+        OpenAPI_list_free(restricted_primary_rat_listList);
+        restricted_primary_rat_listList = NULL;
+    }
+    if (restricted_secondary_rat_listList) {
+        OpenAPI_list_free(restricted_secondary_rat_listList);
+        restricted_secondary_rat_listList = NULL;
+    }
+    if (v2x_context_local_nonprim) {
+        OpenAPI_v2x_context_free(v2x_context_local_nonprim);
+        v2x_context_local_nonprim = NULL;
+    }
+    if (mo_exp_data_counter_local_nonprim) {
+        OpenAPI_mo_exp_data_counter_free(mo_exp_data_counter_local_nonprim);
+        mo_exp_data_counter_local_nonprim = NULL;
+    }
+    if (cag_data_local_nonprim) {
+        OpenAPI_cag_data_free(cag_data_local_nonprim);
+        cag_data_local_nonprim = NULL;
+    }
+    if (immediate_mdt_conf_local_nonprim) {
+        OpenAPI_immediate_mdt_conf_free(immediate_mdt_conf_local_nonprim);
+        immediate_mdt_conf_local_nonprim = NULL;
+    }
+    if (ec_restriction_data_wb_local_nonprim) {
+        OpenAPI_ec_restriction_data_wb_free(ec_restriction_data_wb_local_nonprim);
+        ec_restriction_data_wb_local_nonprim = NULL;
+    }
     return NULL;
 }
 

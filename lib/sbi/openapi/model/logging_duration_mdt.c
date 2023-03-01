@@ -6,7 +6,7 @@
 
 char* OpenAPI_logging_duration_mdt_ToString(OpenAPI_logging_duration_mdt_e logging_duration_mdt)
 {
-    const char *logging_duration_mdtArray[] =  { "NULL", "_600", "_1200", "_2400", "_3600", "_5400", "_7200" };
+    const char *logging_duration_mdtArray[] =  { "NULL", "600", "1200", "2400", "3600", "5400", "7200" };
     size_t sizeofArray = sizeof(logging_duration_mdtArray) / sizeof(logging_duration_mdtArray[0]);
     if (logging_duration_mdt < sizeofArray)
         return (char *)logging_duration_mdtArray[logging_duration_mdt];
@@ -17,7 +17,7 @@ char* OpenAPI_logging_duration_mdt_ToString(OpenAPI_logging_duration_mdt_e loggi
 OpenAPI_logging_duration_mdt_e OpenAPI_logging_duration_mdt_FromString(char* logging_duration_mdt)
 {
     int stringToReturn = 0;
-    const char *logging_duration_mdtArray[] =  { "NULL", "_600", "_1200", "_2400", "_3600", "_5400", "_7200" };
+    const char *logging_duration_mdtArray[] =  { "NULL", "600", "1200", "2400", "3600", "5400", "7200" };
     size_t sizeofArray = sizeof(logging_duration_mdtArray) / sizeof(logging_duration_mdtArray[0]);
     while (stringToReturn < sizeofArray) {
         if (strcmp(logging_duration_mdt, logging_duration_mdtArray[stringToReturn]) == 0) {

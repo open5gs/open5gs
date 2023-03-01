@@ -16,16 +16,18 @@ OpenAPI_location_accuracy_t *OpenAPI_location_accuracy_create(
 
 void OpenAPI_location_accuracy_free(OpenAPI_location_accuracy_t *location_accuracy)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == location_accuracy) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(location_accuracy);
 }
 
 cJSON *OpenAPI_location_accuracy_convertToJSON(OpenAPI_location_accuracy_t *location_accuracy)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (location_accuracy == NULL) {
         ogs_error("OpenAPI_location_accuracy_convertToJSON() failed [LocationAccuracy]");
@@ -40,6 +42,7 @@ end:
 OpenAPI_location_accuracy_t *OpenAPI_location_accuracy_parseFromJSON(cJSON *location_accuracyJSON)
 {
     OpenAPI_location_accuracy_t *location_accuracy_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
     location_accuracy_local_var = OpenAPI_location_accuracy_create (
     );
 

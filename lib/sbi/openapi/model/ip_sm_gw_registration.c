@@ -24,18 +24,26 @@ OpenAPI_ip_sm_gw_registration_t *OpenAPI_ip_sm_gw_registration_create(
 
 void OpenAPI_ip_sm_gw_registration_free(OpenAPI_ip_sm_gw_registration_t *ip_sm_gw_registration)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == ip_sm_gw_registration) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(ip_sm_gw_registration->ip_sm_gw_map_address);
-    OpenAPI_network_node_diameter_address_free(ip_sm_gw_registration->ip_sm_gw_diameter_address);
+    if (ip_sm_gw_registration->ip_sm_gw_map_address) {
+        ogs_free(ip_sm_gw_registration->ip_sm_gw_map_address);
+        ip_sm_gw_registration->ip_sm_gw_map_address = NULL;
+    }
+    if (ip_sm_gw_registration->ip_sm_gw_diameter_address) {
+        OpenAPI_network_node_diameter_address_free(ip_sm_gw_registration->ip_sm_gw_diameter_address);
+        ip_sm_gw_registration->ip_sm_gw_diameter_address = NULL;
+    }
     ogs_free(ip_sm_gw_registration);
 }
 
 cJSON *OpenAPI_ip_sm_gw_registration_convertToJSON(OpenAPI_ip_sm_gw_registration_t *ip_sm_gw_registration)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (ip_sm_gw_registration == NULL) {
         ogs_error("OpenAPI_ip_sm_gw_registration_convertToJSON() failed [IpSmGwRegistration]");
@@ -77,24 +85,25 @@ end:
 OpenAPI_ip_sm_gw_registration_t *OpenAPI_ip_sm_gw_registration_parseFromJSON(cJSON *ip_sm_gw_registrationJSON)
 {
     OpenAPI_ip_sm_gw_registration_t *ip_sm_gw_registration_local_var = NULL;
-    cJSON *ip_sm_gw_map_address = cJSON_GetObjectItemCaseSensitive(ip_sm_gw_registrationJSON, "ipSmGwMapAddress");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *ip_sm_gw_map_address = NULL;
+    cJSON *ip_sm_gw_diameter_address = NULL;
+    OpenAPI_network_node_diameter_address_t *ip_sm_gw_diameter_address_local_nonprim = NULL;
+    cJSON *unri_indicator = NULL;
+    ip_sm_gw_map_address = cJSON_GetObjectItemCaseSensitive(ip_sm_gw_registrationJSON, "ipSmGwMapAddress");
     if (ip_sm_gw_map_address) {
-    if (!cJSON_IsString(ip_sm_gw_map_address)) {
+    if (!cJSON_IsString(ip_sm_gw_map_address) && !cJSON_IsNull(ip_sm_gw_map_address)) {
         ogs_error("OpenAPI_ip_sm_gw_registration_parseFromJSON() failed [ip_sm_gw_map_address]");
         goto end;
     }
     }
 
-    cJSON *ip_sm_gw_diameter_address = cJSON_GetObjectItemCaseSensitive(ip_sm_gw_registrationJSON, "ipSmGwDiameterAddress");
-
-    OpenAPI_network_node_diameter_address_t *ip_sm_gw_diameter_address_local_nonprim = NULL;
+    ip_sm_gw_diameter_address = cJSON_GetObjectItemCaseSensitive(ip_sm_gw_registrationJSON, "ipSmGwDiameterAddress");
     if (ip_sm_gw_diameter_address) {
     ip_sm_gw_diameter_address_local_nonprim = OpenAPI_network_node_diameter_address_parseFromJSON(ip_sm_gw_diameter_address);
     }
 
-    cJSON *unri_indicator = cJSON_GetObjectItemCaseSensitive(ip_sm_gw_registrationJSON, "unriIndicator");
-
+    unri_indicator = cJSON_GetObjectItemCaseSensitive(ip_sm_gw_registrationJSON, "unriIndicator");
     if (unri_indicator) {
     if (!cJSON_IsBool(unri_indicator)) {
         ogs_error("OpenAPI_ip_sm_gw_registration_parseFromJSON() failed [unri_indicator]");
@@ -103,7 +112,7 @@ OpenAPI_ip_sm_gw_registration_t *OpenAPI_ip_sm_gw_registration_parseFromJSON(cJS
     }
 
     ip_sm_gw_registration_local_var = OpenAPI_ip_sm_gw_registration_create (
-        ip_sm_gw_map_address ? ogs_strdup(ip_sm_gw_map_address->valuestring) : NULL,
+        ip_sm_gw_map_address && !cJSON_IsNull(ip_sm_gw_map_address) ? ogs_strdup(ip_sm_gw_map_address->valuestring) : NULL,
         ip_sm_gw_diameter_address ? ip_sm_gw_diameter_address_local_nonprim : NULL,
         unri_indicator ? true : false,
         unri_indicator ? unri_indicator->valueint : 0
@@ -111,6 +120,10 @@ OpenAPI_ip_sm_gw_registration_t *OpenAPI_ip_sm_gw_registration_parseFromJSON(cJS
 
     return ip_sm_gw_registration_local_var;
 end:
+    if (ip_sm_gw_diameter_address_local_nonprim) {
+        OpenAPI_network_node_diameter_address_free(ip_sm_gw_diameter_address_local_nonprim);
+        ip_sm_gw_diameter_address_local_nonprim = NULL;
+    }
     return NULL;
 }
 

@@ -20,14 +20,14 @@ extern "C" {
 typedef struct OpenAPI_eps_bearer_info_s OpenAPI_eps_bearer_info_t;
 typedef struct OpenAPI_eps_bearer_info_s {
     int ebi;
-    char pgw_s8u_fteid;
-    char bearer_level_qo_s;
+    char *pgw_s8u_fteid;
+    char *bearer_level_qo_s;
 } OpenAPI_eps_bearer_info_t;
 
 OpenAPI_eps_bearer_info_t *OpenAPI_eps_bearer_info_create(
     int ebi,
-    char pgw_s8u_fteid,
-    char bearer_level_qo_s
+    char *pgw_s8u_fteid,
+    char *bearer_level_qo_s
 );
 void OpenAPI_eps_bearer_info_free(OpenAPI_eps_bearer_info_t *eps_bearer_info);
 OpenAPI_eps_bearer_info_t *OpenAPI_eps_bearer_info_parseFromJSON(cJSON *eps_bearer_infoJSON);

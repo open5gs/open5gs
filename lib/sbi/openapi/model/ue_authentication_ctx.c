@@ -24,10 +24,11 @@ OpenAPI_ue_authentication_ctx_t *OpenAPI_ue_authentication_ctx_create(
 
 void OpenAPI_ue_authentication_ctx_free(OpenAPI_ue_authentication_ctx_t *ue_authentication_ctx)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == ue_authentication_ctx) {
         return;
     }
-    OpenAPI_lnode_t *node;
     if (ue_authentication_ctx->_5g_auth_data) {
         OpenAPI_ue_authentication_ctx_5g_auth_data_free(ue_authentication_ctx->_5g_auth_data);
         ue_authentication_ctx->_5g_auth_data = NULL;
@@ -52,6 +53,7 @@ void OpenAPI_ue_authentication_ctx_free(OpenAPI_ue_authentication_ctx_t *ue_auth
 cJSON *OpenAPI_ue_authentication_ctx_convertToJSON(OpenAPI_ue_authentication_ctx_t *ue_authentication_ctx)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (ue_authentication_ctx == NULL) {
         ogs_error("OpenAPI_ue_authentication_ctx_convertToJSON() failed [UEAuthenticationCtx]");
@@ -93,20 +95,19 @@ cJSON *OpenAPI_ue_authentication_ctx_convertToJSON(OpenAPI_ue_authentication_ctx
         goto end;
     }
     cJSON *localMapObject = _links;
-    OpenAPI_lnode_t *_links_node;
     if (ue_authentication_ctx->_links) {
-        OpenAPI_list_for_each(ue_authentication_ctx->_links, _links_node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)_links_node->data;
-        cJSON *itemLocal = localKeyValue->value ?
-            OpenAPI_links_value_schema_convertToJSON(localKeyValue->value) :
-            cJSON_CreateNull();
-        if (itemLocal == NULL) {
-            ogs_error("OpenAPI_ue_authentication_ctx_convertToJSON() failed [inner]");
-            goto end;
-        }
-        cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
+        OpenAPI_list_for_each(ue_authentication_ctx->_links, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            cJSON *itemLocal = localKeyValue->value ?
+                OpenAPI_links_value_schema_convertToJSON(localKeyValue->value) :
+                cJSON_CreateNull();
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_ue_authentication_ctx_convertToJSON() failed [inner]");
+                goto end;
             }
+            cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
         }
+    }
 
     if (ue_authentication_ctx->serving_network_name) {
     if (cJSON_AddStringToObject(item, "servingNetworkName", ue_authentication_ctx->serving_network_name) == NULL) {

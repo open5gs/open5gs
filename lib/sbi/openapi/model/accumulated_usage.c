@@ -32,16 +32,18 @@ OpenAPI_accumulated_usage_t *OpenAPI_accumulated_usage_create(
 
 void OpenAPI_accumulated_usage_free(OpenAPI_accumulated_usage_t *accumulated_usage)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == accumulated_usage) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(accumulated_usage);
 }
 
 cJSON *OpenAPI_accumulated_usage_convertToJSON(OpenAPI_accumulated_usage_t *accumulated_usage)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (accumulated_usage == NULL) {
         ogs_error("OpenAPI_accumulated_usage_convertToJSON() failed [AccumulatedUsage]");
@@ -84,8 +86,12 @@ end:
 OpenAPI_accumulated_usage_t *OpenAPI_accumulated_usage_parseFromJSON(cJSON *accumulated_usageJSON)
 {
     OpenAPI_accumulated_usage_t *accumulated_usage_local_var = NULL;
-    cJSON *duration = cJSON_GetObjectItemCaseSensitive(accumulated_usageJSON, "duration");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *duration = NULL;
+    cJSON *total_volume = NULL;
+    cJSON *downlink_volume = NULL;
+    cJSON *uplink_volume = NULL;
+    duration = cJSON_GetObjectItemCaseSensitive(accumulated_usageJSON, "duration");
     if (duration) {
     if (!cJSON_IsNumber(duration)) {
         ogs_error("OpenAPI_accumulated_usage_parseFromJSON() failed [duration]");
@@ -93,8 +99,7 @@ OpenAPI_accumulated_usage_t *OpenAPI_accumulated_usage_parseFromJSON(cJSON *accu
     }
     }
 
-    cJSON *total_volume = cJSON_GetObjectItemCaseSensitive(accumulated_usageJSON, "totalVolume");
-
+    total_volume = cJSON_GetObjectItemCaseSensitive(accumulated_usageJSON, "totalVolume");
     if (total_volume) {
     if (!cJSON_IsNumber(total_volume)) {
         ogs_error("OpenAPI_accumulated_usage_parseFromJSON() failed [total_volume]");
@@ -102,8 +107,7 @@ OpenAPI_accumulated_usage_t *OpenAPI_accumulated_usage_parseFromJSON(cJSON *accu
     }
     }
 
-    cJSON *downlink_volume = cJSON_GetObjectItemCaseSensitive(accumulated_usageJSON, "downlinkVolume");
-
+    downlink_volume = cJSON_GetObjectItemCaseSensitive(accumulated_usageJSON, "downlinkVolume");
     if (downlink_volume) {
     if (!cJSON_IsNumber(downlink_volume)) {
         ogs_error("OpenAPI_accumulated_usage_parseFromJSON() failed [downlink_volume]");
@@ -111,8 +115,7 @@ OpenAPI_accumulated_usage_t *OpenAPI_accumulated_usage_parseFromJSON(cJSON *accu
     }
     }
 
-    cJSON *uplink_volume = cJSON_GetObjectItemCaseSensitive(accumulated_usageJSON, "uplinkVolume");
-
+    uplink_volume = cJSON_GetObjectItemCaseSensitive(accumulated_usageJSON, "uplinkVolume");
     if (uplink_volume) {
     if (!cJSON_IsNumber(uplink_volume)) {
         ogs_error("OpenAPI_accumulated_usage_parseFromJSON() failed [uplink_volume]");

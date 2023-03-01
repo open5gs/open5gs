@@ -18,17 +18,22 @@ OpenAPI_retrieved_data_t *OpenAPI_retrieved_data_create(
 
 void OpenAPI_retrieved_data_free(OpenAPI_retrieved_data_t *retrieved_data)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == retrieved_data) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_small_data_rate_status_free(retrieved_data->small_data_rate_status);
+    if (retrieved_data->small_data_rate_status) {
+        OpenAPI_small_data_rate_status_free(retrieved_data->small_data_rate_status);
+        retrieved_data->small_data_rate_status = NULL;
+    }
     ogs_free(retrieved_data);
 }
 
 cJSON *OpenAPI_retrieved_data_convertToJSON(OpenAPI_retrieved_data_t *retrieved_data)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (retrieved_data == NULL) {
         ogs_error("OpenAPI_retrieved_data_convertToJSON() failed [RetrievedData]");
@@ -56,9 +61,10 @@ end:
 OpenAPI_retrieved_data_t *OpenAPI_retrieved_data_parseFromJSON(cJSON *retrieved_dataJSON)
 {
     OpenAPI_retrieved_data_t *retrieved_data_local_var = NULL;
-    cJSON *small_data_rate_status = cJSON_GetObjectItemCaseSensitive(retrieved_dataJSON, "smallDataRateStatus");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *small_data_rate_status = NULL;
     OpenAPI_small_data_rate_status_t *small_data_rate_status_local_nonprim = NULL;
+    small_data_rate_status = cJSON_GetObjectItemCaseSensitive(retrieved_dataJSON, "smallDataRateStatus");
     if (small_data_rate_status) {
     small_data_rate_status_local_nonprim = OpenAPI_small_data_rate_status_parseFromJSON(small_data_rate_status);
     }
@@ -69,6 +75,10 @@ OpenAPI_retrieved_data_t *OpenAPI_retrieved_data_parseFromJSON(cJSON *retrieved_
 
     return retrieved_data_local_var;
 end:
+    if (small_data_rate_status_local_nonprim) {
+        OpenAPI_small_data_rate_status_free(small_data_rate_status_local_nonprim);
+        small_data_rate_status_local_nonprim = NULL;
+    }
     return NULL;
 }
 

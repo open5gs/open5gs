@@ -20,18 +20,26 @@ OpenAPI_ipv4_address_range_t *OpenAPI_ipv4_address_range_create(
 
 void OpenAPI_ipv4_address_range_free(OpenAPI_ipv4_address_range_t *ipv4_address_range)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == ipv4_address_range) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(ipv4_address_range->start);
-    ogs_free(ipv4_address_range->end);
+    if (ipv4_address_range->start) {
+        ogs_free(ipv4_address_range->start);
+        ipv4_address_range->start = NULL;
+    }
+    if (ipv4_address_range->end) {
+        ogs_free(ipv4_address_range->end);
+        ipv4_address_range->end = NULL;
+    }
     ogs_free(ipv4_address_range);
 }
 
 cJSON *OpenAPI_ipv4_address_range_convertToJSON(OpenAPI_ipv4_address_range_t *ipv4_address_range)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (ipv4_address_range == NULL) {
         ogs_error("OpenAPI_ipv4_address_range_convertToJSON() failed [Ipv4AddressRange]");
@@ -60,27 +68,28 @@ end:
 OpenAPI_ipv4_address_range_t *OpenAPI_ipv4_address_range_parseFromJSON(cJSON *ipv4_address_rangeJSON)
 {
     OpenAPI_ipv4_address_range_t *ipv4_address_range_local_var = NULL;
-    cJSON *start = cJSON_GetObjectItemCaseSensitive(ipv4_address_rangeJSON, "start");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *start = NULL;
+    cJSON *end = NULL;
+    start = cJSON_GetObjectItemCaseSensitive(ipv4_address_rangeJSON, "start");
     if (start) {
-    if (!cJSON_IsString(start)) {
+    if (!cJSON_IsString(start) && !cJSON_IsNull(start)) {
         ogs_error("OpenAPI_ipv4_address_range_parseFromJSON() failed [start]");
         goto end;
     }
     }
 
-    cJSON *end = cJSON_GetObjectItemCaseSensitive(ipv4_address_rangeJSON, "end");
-
+    end = cJSON_GetObjectItemCaseSensitive(ipv4_address_rangeJSON, "end");
     if (end) {
-    if (!cJSON_IsString(end)) {
+    if (!cJSON_IsString(end) && !cJSON_IsNull(end)) {
         ogs_error("OpenAPI_ipv4_address_range_parseFromJSON() failed [end]");
         goto end;
     }
     }
 
     ipv4_address_range_local_var = OpenAPI_ipv4_address_range_create (
-        start ? ogs_strdup(start->valuestring) : NULL,
-        end ? ogs_strdup(end->valuestring) : NULL
+        start && !cJSON_IsNull(start) ? ogs_strdup(start->valuestring) : NULL,
+        end && !cJSON_IsNull(end) ? ogs_strdup(end->valuestring) : NULL
     );
 
     return ipv4_address_range_local_var;

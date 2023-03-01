@@ -20,17 +20,22 @@ OpenAPI_termination_notification_t *OpenAPI_termination_notification_create(
 
 void OpenAPI_termination_notification_free(OpenAPI_termination_notification_t *termination_notification)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == termination_notification) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(termination_notification->resource_uri);
+    if (termination_notification->resource_uri) {
+        ogs_free(termination_notification->resource_uri);
+        termination_notification->resource_uri = NULL;
+    }
     ogs_free(termination_notification);
 }
 
 cJSON *OpenAPI_termination_notification_convertToJSON(OpenAPI_termination_notification_t *termination_notification)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (termination_notification == NULL) {
         ogs_error("OpenAPI_termination_notification_convertToJSON() failed [TerminationNotification]");
@@ -38,11 +43,19 @@ cJSON *OpenAPI_termination_notification_convertToJSON(OpenAPI_termination_notifi
     }
 
     item = cJSON_CreateObject();
+    if (!termination_notification->resource_uri) {
+        ogs_error("OpenAPI_termination_notification_convertToJSON() failed [resource_uri]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "resourceUri", termination_notification->resource_uri) == NULL) {
         ogs_error("OpenAPI_termination_notification_convertToJSON() failed [resource_uri]");
         goto end;
     }
 
+    if (termination_notification->cause == OpenAPI_sm_policy_association_release_cause_NULL) {
+        ogs_error("OpenAPI_termination_notification_convertToJSON() failed [cause]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "cause", OpenAPI_sm_policy_association_release_cause_ToString(termination_notification->cause)) == NULL) {
         ogs_error("OpenAPI_termination_notification_convertToJSON() failed [cause]");
         goto end;
@@ -55,24 +68,25 @@ end:
 OpenAPI_termination_notification_t *OpenAPI_termination_notification_parseFromJSON(cJSON *termination_notificationJSON)
 {
     OpenAPI_termination_notification_t *termination_notification_local_var = NULL;
-    cJSON *resource_uri = cJSON_GetObjectItemCaseSensitive(termination_notificationJSON, "resourceUri");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *resource_uri = NULL;
+    cJSON *cause = NULL;
+    OpenAPI_sm_policy_association_release_cause_e causeVariable = 0;
+    resource_uri = cJSON_GetObjectItemCaseSensitive(termination_notificationJSON, "resourceUri");
     if (!resource_uri) {
         ogs_error("OpenAPI_termination_notification_parseFromJSON() failed [resource_uri]");
         goto end;
     }
-
     if (!cJSON_IsString(resource_uri)) {
         ogs_error("OpenAPI_termination_notification_parseFromJSON() failed [resource_uri]");
         goto end;
     }
 
-    cJSON *cause = cJSON_GetObjectItemCaseSensitive(termination_notificationJSON, "cause");
+    cause = cJSON_GetObjectItemCaseSensitive(termination_notificationJSON, "cause");
     if (!cause) {
         ogs_error("OpenAPI_termination_notification_parseFromJSON() failed [cause]");
         goto end;
     }
-
-    OpenAPI_sm_policy_association_release_cause_e causeVariable;
     if (!cJSON_IsString(cause)) {
         ogs_error("OpenAPI_termination_notification_parseFromJSON() failed [cause]");
         goto end;

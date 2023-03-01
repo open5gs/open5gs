@@ -28,17 +28,22 @@ OpenAPI_steering_mode_t *OpenAPI_steering_mode_create(
 
 void OpenAPI_steering_mode_free(OpenAPI_steering_mode_t *steering_mode)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == steering_mode) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_access_type_rm_free(steering_mode->standby);
+    if (steering_mode->standby) {
+        OpenAPI_access_type_rm_free(steering_mode->standby);
+        steering_mode->standby = NULL;
+    }
     ogs_free(steering_mode);
 }
 
 cJSON *OpenAPI_steering_mode_convertToJSON(OpenAPI_steering_mode_t *steering_mode)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (steering_mode == NULL) {
         ogs_error("OpenAPI_steering_mode_convertToJSON() failed [SteeringMode]");
@@ -46,12 +51,16 @@ cJSON *OpenAPI_steering_mode_convertToJSON(OpenAPI_steering_mode_t *steering_mod
     }
 
     item = cJSON_CreateObject();
+    if (steering_mode->steer_mode_value == OpenAPI_steer_mode_value_NULL) {
+        ogs_error("OpenAPI_steering_mode_convertToJSON() failed [steer_mode_value]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "steerModeValue", OpenAPI_steer_mode_value_ToString(steering_mode->steer_mode_value)) == NULL) {
         ogs_error("OpenAPI_steering_mode_convertToJSON() failed [steer_mode_value]");
         goto end;
     }
 
-    if (steering_mode->active) {
+    if (steering_mode->active != OpenAPI_access_type_NULL) {
     if (cJSON_AddStringToObject(item, "active", OpenAPI_access_type_ToString(steering_mode->active)) == NULL) {
         ogs_error("OpenAPI_steering_mode_convertToJSON() failed [active]");
         goto end;
@@ -78,7 +87,7 @@ cJSON *OpenAPI_steering_mode_convertToJSON(OpenAPI_steering_mode_t *steering_mod
     }
     }
 
-    if (steering_mode->prio_acc) {
+    if (steering_mode->prio_acc != OpenAPI_access_type_NULL) {
     if (cJSON_AddStringToObject(item, "prioAcc", OpenAPI_access_type_ToString(steering_mode->prio_acc)) == NULL) {
         ogs_error("OpenAPI_steering_mode_convertToJSON() failed [prio_acc]");
         goto end;
@@ -92,22 +101,28 @@ end:
 OpenAPI_steering_mode_t *OpenAPI_steering_mode_parseFromJSON(cJSON *steering_modeJSON)
 {
     OpenAPI_steering_mode_t *steering_mode_local_var = NULL;
-    cJSON *steer_mode_value = cJSON_GetObjectItemCaseSensitive(steering_modeJSON, "steerModeValue");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *steer_mode_value = NULL;
+    OpenAPI_steer_mode_value_e steer_mode_valueVariable = 0;
+    cJSON *active = NULL;
+    OpenAPI_access_type_e activeVariable = 0;
+    cJSON *standby = NULL;
+    OpenAPI_access_type_rm_t *standby_local_nonprim = NULL;
+    cJSON *_3g_load = NULL;
+    cJSON *prio_acc = NULL;
+    OpenAPI_access_type_e prio_accVariable = 0;
+    steer_mode_value = cJSON_GetObjectItemCaseSensitive(steering_modeJSON, "steerModeValue");
     if (!steer_mode_value) {
         ogs_error("OpenAPI_steering_mode_parseFromJSON() failed [steer_mode_value]");
         goto end;
     }
-
-    OpenAPI_steer_mode_value_e steer_mode_valueVariable;
     if (!cJSON_IsString(steer_mode_value)) {
         ogs_error("OpenAPI_steering_mode_parseFromJSON() failed [steer_mode_value]");
         goto end;
     }
     steer_mode_valueVariable = OpenAPI_steer_mode_value_FromString(steer_mode_value->valuestring);
 
-    cJSON *active = cJSON_GetObjectItemCaseSensitive(steering_modeJSON, "active");
-
-    OpenAPI_access_type_e activeVariable;
+    active = cJSON_GetObjectItemCaseSensitive(steering_modeJSON, "active");
     if (active) {
     if (!cJSON_IsString(active)) {
         ogs_error("OpenAPI_steering_mode_parseFromJSON() failed [active]");
@@ -116,15 +131,12 @@ OpenAPI_steering_mode_t *OpenAPI_steering_mode_parseFromJSON(cJSON *steering_mod
     activeVariable = OpenAPI_access_type_FromString(active->valuestring);
     }
 
-    cJSON *standby = cJSON_GetObjectItemCaseSensitive(steering_modeJSON, "standby");
-
-    OpenAPI_access_type_rm_t *standby_local_nonprim = NULL;
+    standby = cJSON_GetObjectItemCaseSensitive(steering_modeJSON, "standby");
     if (standby) {
     standby_local_nonprim = OpenAPI_access_type_rm_parseFromJSON(standby);
     }
 
-    cJSON *_3g_load = cJSON_GetObjectItemCaseSensitive(steering_modeJSON, "3gLoad");
-
+    _3g_load = cJSON_GetObjectItemCaseSensitive(steering_modeJSON, "3gLoad");
     if (_3g_load) {
     if (!cJSON_IsNumber(_3g_load)) {
         ogs_error("OpenAPI_steering_mode_parseFromJSON() failed [_3g_load]");
@@ -132,9 +144,7 @@ OpenAPI_steering_mode_t *OpenAPI_steering_mode_parseFromJSON(cJSON *steering_mod
     }
     }
 
-    cJSON *prio_acc = cJSON_GetObjectItemCaseSensitive(steering_modeJSON, "prioAcc");
-
-    OpenAPI_access_type_e prio_accVariable;
+    prio_acc = cJSON_GetObjectItemCaseSensitive(steering_modeJSON, "prioAcc");
     if (prio_acc) {
     if (!cJSON_IsString(prio_acc)) {
         ogs_error("OpenAPI_steering_mode_parseFromJSON() failed [prio_acc]");
@@ -154,6 +164,10 @@ OpenAPI_steering_mode_t *OpenAPI_steering_mode_parseFromJSON(cJSON *steering_mod
 
     return steering_mode_local_var;
 end:
+    if (standby_local_nonprim) {
+        OpenAPI_access_type_rm_free(standby_local_nonprim);
+        standby_local_nonprim = NULL;
+    }
     return NULL;
 }
 

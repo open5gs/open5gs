@@ -5,7 +5,7 @@
 #include "steering_info.h"
 
 OpenAPI_steering_info_t *OpenAPI_steering_info_create(
-    OpenAPI_plmn_id_1_t *plmn_id,
+    OpenAPI_plmn_id_t *plmn_id,
     OpenAPI_list_t *access_tech_list
 )
 {
@@ -20,21 +20,29 @@ OpenAPI_steering_info_t *OpenAPI_steering_info_create(
 
 void OpenAPI_steering_info_free(OpenAPI_steering_info_t *steering_info)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == steering_info) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_plmn_id_1_free(steering_info->plmn_id);
-    OpenAPI_list_for_each(steering_info->access_tech_list, node) {
-        OpenAPI_access_tech_free(node->data);
+    if (steering_info->plmn_id) {
+        OpenAPI_plmn_id_free(steering_info->plmn_id);
+        steering_info->plmn_id = NULL;
     }
-    OpenAPI_list_free(steering_info->access_tech_list);
+    if (steering_info->access_tech_list) {
+        OpenAPI_list_for_each(steering_info->access_tech_list, node) {
+            OpenAPI_access_tech_free(node->data);
+        }
+        OpenAPI_list_free(steering_info->access_tech_list);
+        steering_info->access_tech_list = NULL;
+    }
     ogs_free(steering_info);
 }
 
 cJSON *OpenAPI_steering_info_convertToJSON(OpenAPI_steering_info_t *steering_info)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (steering_info == NULL) {
         ogs_error("OpenAPI_steering_info_convertToJSON() failed [SteeringInfo]");
@@ -42,7 +50,11 @@ cJSON *OpenAPI_steering_info_convertToJSON(OpenAPI_steering_info_t *steering_inf
     }
 
     item = cJSON_CreateObject();
-    cJSON *plmn_id_local_JSON = OpenAPI_plmn_id_1_convertToJSON(steering_info->plmn_id);
+    if (!steering_info->plmn_id) {
+        ogs_error("OpenAPI_steering_info_convertToJSON() failed [plmn_id]");
+        return NULL;
+    }
+    cJSON *plmn_id_local_JSON = OpenAPI_plmn_id_convertToJSON(steering_info->plmn_id);
     if (plmn_id_local_JSON == NULL) {
         ogs_error("OpenAPI_steering_info_convertToJSON() failed [plmn_id]");
         goto end;
@@ -59,17 +71,13 @@ cJSON *OpenAPI_steering_info_convertToJSON(OpenAPI_steering_info_t *steering_inf
         ogs_error("OpenAPI_steering_info_convertToJSON() failed [access_tech_list]");
         goto end;
     }
-
-    OpenAPI_lnode_t *access_tech_list_node;
-    if (steering_info->access_tech_list) {
-        OpenAPI_list_for_each(steering_info->access_tech_list, access_tech_list_node) {
-            cJSON *itemLocal = OpenAPI_access_tech_convertToJSON(access_tech_list_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_steering_info_convertToJSON() failed [access_tech_list]");
-                goto end;
-            }
-            cJSON_AddItemToArray(access_tech_listList, itemLocal);
+    OpenAPI_list_for_each(steering_info->access_tech_list, node) {
+        cJSON *itemLocal = OpenAPI_access_tech_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_steering_info_convertToJSON() failed [access_tech_list]");
+            goto end;
         }
+        cJSON_AddItemToArray(access_tech_listList, itemLocal);
     }
     }
 
@@ -80,42 +88,41 @@ end:
 OpenAPI_steering_info_t *OpenAPI_steering_info_parseFromJSON(cJSON *steering_infoJSON)
 {
     OpenAPI_steering_info_t *steering_info_local_var = NULL;
-    cJSON *plmn_id = cJSON_GetObjectItemCaseSensitive(steering_infoJSON, "plmnId");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *plmn_id = NULL;
+    OpenAPI_plmn_id_t *plmn_id_local_nonprim = NULL;
+    cJSON *access_tech_list = NULL;
+    OpenAPI_list_t *access_tech_listList = NULL;
+    plmn_id = cJSON_GetObjectItemCaseSensitive(steering_infoJSON, "plmnId");
     if (!plmn_id) {
         ogs_error("OpenAPI_steering_info_parseFromJSON() failed [plmn_id]");
         goto end;
     }
+    plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
 
-    OpenAPI_plmn_id_1_t *plmn_id_local_nonprim = NULL;
-    plmn_id_local_nonprim = OpenAPI_plmn_id_1_parseFromJSON(plmn_id);
-
-    cJSON *access_tech_list = cJSON_GetObjectItemCaseSensitive(steering_infoJSON, "accessTechList");
-
-    OpenAPI_list_t *access_tech_listList;
+    access_tech_list = cJSON_GetObjectItemCaseSensitive(steering_infoJSON, "accessTechList");
     if (access_tech_list) {
-    cJSON *access_tech_list_local_nonprimitive;
-    if (!cJSON_IsArray(access_tech_list)){
-        ogs_error("OpenAPI_steering_info_parseFromJSON() failed [access_tech_list]");
-        goto end;
-    }
-
-    access_tech_listList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(access_tech_list_local_nonprimitive, access_tech_list ) {
-        if (!cJSON_IsObject(access_tech_list_local_nonprimitive)) {
+        cJSON *access_tech_list_local = NULL;
+        if (!cJSON_IsArray(access_tech_list)) {
             ogs_error("OpenAPI_steering_info_parseFromJSON() failed [access_tech_list]");
             goto end;
         }
-        OpenAPI_access_tech_t *access_tech_listItem = OpenAPI_access_tech_parseFromJSON(access_tech_list_local_nonprimitive);
 
-        if (!access_tech_listItem) {
-            ogs_error("No access_tech_listItem");
-            OpenAPI_list_free(access_tech_listList);
-            goto end;
+        access_tech_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(access_tech_list_local, access_tech_list) {
+            if (!cJSON_IsObject(access_tech_list_local)) {
+                ogs_error("OpenAPI_steering_info_parseFromJSON() failed [access_tech_list]");
+                goto end;
+            }
+            OpenAPI_access_tech_t *access_tech_listItem = OpenAPI_access_tech_parseFromJSON(access_tech_list_local);
+            if (!access_tech_listItem) {
+                ogs_error("No access_tech_listItem");
+                OpenAPI_list_free(access_tech_listList);
+                goto end;
+            }
+            OpenAPI_list_add(access_tech_listList, access_tech_listItem);
         }
-
-        OpenAPI_list_add(access_tech_listList, access_tech_listItem);
-    }
     }
 
     steering_info_local_var = OpenAPI_steering_info_create (
@@ -125,6 +132,17 @@ OpenAPI_steering_info_t *OpenAPI_steering_info_parseFromJSON(cJSON *steering_inf
 
     return steering_info_local_var;
 end:
+    if (plmn_id_local_nonprim) {
+        OpenAPI_plmn_id_free(plmn_id_local_nonprim);
+        plmn_id_local_nonprim = NULL;
+    }
+    if (access_tech_listList) {
+        OpenAPI_list_for_each(access_tech_listList, node) {
+            OpenAPI_access_tech_free(node->data);
+        }
+        OpenAPI_list_free(access_tech_listList);
+        access_tech_listList = NULL;
+    }
     return NULL;
 }
 

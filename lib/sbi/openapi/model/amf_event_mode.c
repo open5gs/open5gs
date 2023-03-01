@@ -32,18 +32,26 @@ OpenAPI_amf_event_mode_t *OpenAPI_amf_event_mode_create(
 
 void OpenAPI_amf_event_mode_free(OpenAPI_amf_event_mode_t *amf_event_mode)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == amf_event_mode) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_amf_event_trigger_free(amf_event_mode->trigger);
-    ogs_free(amf_event_mode->expiry);
+    if (amf_event_mode->trigger) {
+        OpenAPI_amf_event_trigger_free(amf_event_mode->trigger);
+        amf_event_mode->trigger = NULL;
+    }
+    if (amf_event_mode->expiry) {
+        ogs_free(amf_event_mode->expiry);
+        amf_event_mode->expiry = NULL;
+    }
     ogs_free(amf_event_mode);
 }
 
 cJSON *OpenAPI_amf_event_mode_convertToJSON(OpenAPI_amf_event_mode_t *amf_event_mode)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (amf_event_mode == NULL) {
         ogs_error("OpenAPI_amf_event_mode_convertToJSON() failed [AmfEventMode]");
@@ -51,6 +59,10 @@ cJSON *OpenAPI_amf_event_mode_convertToJSON(OpenAPI_amf_event_mode_t *amf_event_
     }
 
     item = cJSON_CreateObject();
+    if (!amf_event_mode->trigger) {
+        ogs_error("OpenAPI_amf_event_mode_convertToJSON() failed [trigger]");
+        return NULL;
+    }
     cJSON *trigger_local_JSON = OpenAPI_amf_event_trigger_convertToJSON(amf_event_mode->trigger);
     if (trigger_local_JSON == NULL) {
         ogs_error("OpenAPI_amf_event_mode_convertToJSON() failed [trigger]");
@@ -97,17 +109,21 @@ end:
 OpenAPI_amf_event_mode_t *OpenAPI_amf_event_mode_parseFromJSON(cJSON *amf_event_modeJSON)
 {
     OpenAPI_amf_event_mode_t *amf_event_mode_local_var = NULL;
-    cJSON *trigger = cJSON_GetObjectItemCaseSensitive(amf_event_modeJSON, "trigger");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *trigger = NULL;
+    OpenAPI_amf_event_trigger_t *trigger_local_nonprim = NULL;
+    cJSON *max_reports = NULL;
+    cJSON *expiry = NULL;
+    cJSON *rep_period = NULL;
+    cJSON *samp_ratio = NULL;
+    trigger = cJSON_GetObjectItemCaseSensitive(amf_event_modeJSON, "trigger");
     if (!trigger) {
         ogs_error("OpenAPI_amf_event_mode_parseFromJSON() failed [trigger]");
         goto end;
     }
-
-    OpenAPI_amf_event_trigger_t *trigger_local_nonprim = NULL;
     trigger_local_nonprim = OpenAPI_amf_event_trigger_parseFromJSON(trigger);
 
-    cJSON *max_reports = cJSON_GetObjectItemCaseSensitive(amf_event_modeJSON, "maxReports");
-
+    max_reports = cJSON_GetObjectItemCaseSensitive(amf_event_modeJSON, "maxReports");
     if (max_reports) {
     if (!cJSON_IsNumber(max_reports)) {
         ogs_error("OpenAPI_amf_event_mode_parseFromJSON() failed [max_reports]");
@@ -115,17 +131,15 @@ OpenAPI_amf_event_mode_t *OpenAPI_amf_event_mode_parseFromJSON(cJSON *amf_event_
     }
     }
 
-    cJSON *expiry = cJSON_GetObjectItemCaseSensitive(amf_event_modeJSON, "expiry");
-
+    expiry = cJSON_GetObjectItemCaseSensitive(amf_event_modeJSON, "expiry");
     if (expiry) {
-    if (!cJSON_IsString(expiry)) {
+    if (!cJSON_IsString(expiry) && !cJSON_IsNull(expiry)) {
         ogs_error("OpenAPI_amf_event_mode_parseFromJSON() failed [expiry]");
         goto end;
     }
     }
 
-    cJSON *rep_period = cJSON_GetObjectItemCaseSensitive(amf_event_modeJSON, "repPeriod");
-
+    rep_period = cJSON_GetObjectItemCaseSensitive(amf_event_modeJSON, "repPeriod");
     if (rep_period) {
     if (!cJSON_IsNumber(rep_period)) {
         ogs_error("OpenAPI_amf_event_mode_parseFromJSON() failed [rep_period]");
@@ -133,8 +147,7 @@ OpenAPI_amf_event_mode_t *OpenAPI_amf_event_mode_parseFromJSON(cJSON *amf_event_
     }
     }
 
-    cJSON *samp_ratio = cJSON_GetObjectItemCaseSensitive(amf_event_modeJSON, "sampRatio");
-
+    samp_ratio = cJSON_GetObjectItemCaseSensitive(amf_event_modeJSON, "sampRatio");
     if (samp_ratio) {
     if (!cJSON_IsNumber(samp_ratio)) {
         ogs_error("OpenAPI_amf_event_mode_parseFromJSON() failed [samp_ratio]");
@@ -146,7 +159,7 @@ OpenAPI_amf_event_mode_t *OpenAPI_amf_event_mode_parseFromJSON(cJSON *amf_event_
         trigger_local_nonprim,
         max_reports ? true : false,
         max_reports ? max_reports->valuedouble : 0,
-        expiry ? ogs_strdup(expiry->valuestring) : NULL,
+        expiry && !cJSON_IsNull(expiry) ? ogs_strdup(expiry->valuestring) : NULL,
         rep_period ? true : false,
         rep_period ? rep_period->valuedouble : 0,
         samp_ratio ? true : false,
@@ -155,6 +168,10 @@ OpenAPI_amf_event_mode_t *OpenAPI_amf_event_mode_parseFromJSON(cJSON *amf_event_
 
     return amf_event_mode_local_var;
 end:
+    if (trigger_local_nonprim) {
+        OpenAPI_amf_event_trigger_free(trigger_local_nonprim);
+        trigger_local_nonprim = NULL;
+    }
     return NULL;
 }
 

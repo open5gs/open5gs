@@ -18,17 +18,22 @@ OpenAPI_service_name_cond_t *OpenAPI_service_name_cond_create(
 
 void OpenAPI_service_name_cond_free(OpenAPI_service_name_cond_t *service_name_cond)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == service_name_cond) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(service_name_cond->service_name);
+    if (service_name_cond->service_name) {
+        ogs_free(service_name_cond->service_name);
+        service_name_cond->service_name = NULL;
+    }
     ogs_free(service_name_cond);
 }
 
 cJSON *OpenAPI_service_name_cond_convertToJSON(OpenAPI_service_name_cond_t *service_name_cond)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (service_name_cond == NULL) {
         ogs_error("OpenAPI_service_name_cond_convertToJSON() failed [ServiceNameCond]");
@@ -36,6 +41,10 @@ cJSON *OpenAPI_service_name_cond_convertToJSON(OpenAPI_service_name_cond_t *serv
     }
 
     item = cJSON_CreateObject();
+    if (!service_name_cond->service_name) {
+        ogs_error("OpenAPI_service_name_cond_convertToJSON() failed [service_name]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "serviceName", service_name_cond->service_name) == NULL) {
         ogs_error("OpenAPI_service_name_cond_convertToJSON() failed [service_name]");
         goto end;
@@ -48,12 +57,13 @@ end:
 OpenAPI_service_name_cond_t *OpenAPI_service_name_cond_parseFromJSON(cJSON *service_name_condJSON)
 {
     OpenAPI_service_name_cond_t *service_name_cond_local_var = NULL;
-    cJSON *service_name = cJSON_GetObjectItemCaseSensitive(service_name_condJSON, "serviceName");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *service_name = NULL;
+    service_name = cJSON_GetObjectItemCaseSensitive(service_name_condJSON, "serviceName");
     if (!service_name) {
         ogs_error("OpenAPI_service_name_cond_parseFromJSON() failed [service_name]");
         goto end;
     }
-
     if (!cJSON_IsString(service_name)) {
         ogs_error("OpenAPI_service_name_cond_parseFromJSON() failed [service_name]");
         goto end;

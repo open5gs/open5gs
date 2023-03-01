@@ -20,16 +20,18 @@ OpenAPI_ng_ap_cause_t *OpenAPI_ng_ap_cause_create(
 
 void OpenAPI_ng_ap_cause_free(OpenAPI_ng_ap_cause_t *ng_ap_cause)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == ng_ap_cause) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(ng_ap_cause);
 }
 
 cJSON *OpenAPI_ng_ap_cause_convertToJSON(OpenAPI_ng_ap_cause_t *ng_ap_cause)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (ng_ap_cause == NULL) {
         ogs_error("OpenAPI_ng_ap_cause_convertToJSON() failed [NgApCause]");
@@ -54,23 +56,24 @@ end:
 OpenAPI_ng_ap_cause_t *OpenAPI_ng_ap_cause_parseFromJSON(cJSON *ng_ap_causeJSON)
 {
     OpenAPI_ng_ap_cause_t *ng_ap_cause_local_var = NULL;
-    cJSON *group = cJSON_GetObjectItemCaseSensitive(ng_ap_causeJSON, "group");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *group = NULL;
+    cJSON *value = NULL;
+    group = cJSON_GetObjectItemCaseSensitive(ng_ap_causeJSON, "group");
     if (!group) {
         ogs_error("OpenAPI_ng_ap_cause_parseFromJSON() failed [group]");
         goto end;
     }
-
     if (!cJSON_IsNumber(group)) {
         ogs_error("OpenAPI_ng_ap_cause_parseFromJSON() failed [group]");
         goto end;
     }
 
-    cJSON *value = cJSON_GetObjectItemCaseSensitive(ng_ap_causeJSON, "value");
+    value = cJSON_GetObjectItemCaseSensitive(ng_ap_causeJSON, "value");
     if (!value) {
         ogs_error("OpenAPI_ng_ap_cause_parseFromJSON() failed [value]");
         goto end;
     }
-
     if (!cJSON_IsNumber(value)) {
         ogs_error("OpenAPI_ng_ap_cause_parseFromJSON() failed [value]");
         goto end;

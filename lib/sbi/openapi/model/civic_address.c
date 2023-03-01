@@ -84,50 +84,154 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_create(
 
 void OpenAPI_civic_address_free(OpenAPI_civic_address_t *civic_address)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == civic_address) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(civic_address->country);
-    ogs_free(civic_address->a1);
-    ogs_free(civic_address->a2);
-    ogs_free(civic_address->a3);
-    ogs_free(civic_address->a4);
-    ogs_free(civic_address->a5);
-    ogs_free(civic_address->a6);
-    ogs_free(civic_address->prd);
-    ogs_free(civic_address->pod);
-    ogs_free(civic_address->sts);
-    ogs_free(civic_address->hno);
-    ogs_free(civic_address->hns);
-    ogs_free(civic_address->lmk);
-    ogs_free(civic_address->loc);
-    ogs_free(civic_address->nam);
-    ogs_free(civic_address->pc);
-    ogs_free(civic_address->bld);
-    ogs_free(civic_address->unit);
-    ogs_free(civic_address->flr);
-    ogs_free(civic_address->room);
-    ogs_free(civic_address->plc);
-    ogs_free(civic_address->pcn);
-    ogs_free(civic_address->pobox);
-    ogs_free(civic_address->addcode);
-    ogs_free(civic_address->seat);
-    ogs_free(civic_address->rd);
-    ogs_free(civic_address->rdsec);
-    ogs_free(civic_address->rdbr);
-    ogs_free(civic_address->rdsubbr);
-    ogs_free(civic_address->prm);
-    ogs_free(civic_address->pom);
-    ogs_free(civic_address->usage_rules);
-    ogs_free(civic_address->method);
-    ogs_free(civic_address->provided_by);
+    if (civic_address->country) {
+        ogs_free(civic_address->country);
+        civic_address->country = NULL;
+    }
+    if (civic_address->a1) {
+        ogs_free(civic_address->a1);
+        civic_address->a1 = NULL;
+    }
+    if (civic_address->a2) {
+        ogs_free(civic_address->a2);
+        civic_address->a2 = NULL;
+    }
+    if (civic_address->a3) {
+        ogs_free(civic_address->a3);
+        civic_address->a3 = NULL;
+    }
+    if (civic_address->a4) {
+        ogs_free(civic_address->a4);
+        civic_address->a4 = NULL;
+    }
+    if (civic_address->a5) {
+        ogs_free(civic_address->a5);
+        civic_address->a5 = NULL;
+    }
+    if (civic_address->a6) {
+        ogs_free(civic_address->a6);
+        civic_address->a6 = NULL;
+    }
+    if (civic_address->prd) {
+        ogs_free(civic_address->prd);
+        civic_address->prd = NULL;
+    }
+    if (civic_address->pod) {
+        ogs_free(civic_address->pod);
+        civic_address->pod = NULL;
+    }
+    if (civic_address->sts) {
+        ogs_free(civic_address->sts);
+        civic_address->sts = NULL;
+    }
+    if (civic_address->hno) {
+        ogs_free(civic_address->hno);
+        civic_address->hno = NULL;
+    }
+    if (civic_address->hns) {
+        ogs_free(civic_address->hns);
+        civic_address->hns = NULL;
+    }
+    if (civic_address->lmk) {
+        ogs_free(civic_address->lmk);
+        civic_address->lmk = NULL;
+    }
+    if (civic_address->loc) {
+        ogs_free(civic_address->loc);
+        civic_address->loc = NULL;
+    }
+    if (civic_address->nam) {
+        ogs_free(civic_address->nam);
+        civic_address->nam = NULL;
+    }
+    if (civic_address->pc) {
+        ogs_free(civic_address->pc);
+        civic_address->pc = NULL;
+    }
+    if (civic_address->bld) {
+        ogs_free(civic_address->bld);
+        civic_address->bld = NULL;
+    }
+    if (civic_address->unit) {
+        ogs_free(civic_address->unit);
+        civic_address->unit = NULL;
+    }
+    if (civic_address->flr) {
+        ogs_free(civic_address->flr);
+        civic_address->flr = NULL;
+    }
+    if (civic_address->room) {
+        ogs_free(civic_address->room);
+        civic_address->room = NULL;
+    }
+    if (civic_address->plc) {
+        ogs_free(civic_address->plc);
+        civic_address->plc = NULL;
+    }
+    if (civic_address->pcn) {
+        ogs_free(civic_address->pcn);
+        civic_address->pcn = NULL;
+    }
+    if (civic_address->pobox) {
+        ogs_free(civic_address->pobox);
+        civic_address->pobox = NULL;
+    }
+    if (civic_address->addcode) {
+        ogs_free(civic_address->addcode);
+        civic_address->addcode = NULL;
+    }
+    if (civic_address->seat) {
+        ogs_free(civic_address->seat);
+        civic_address->seat = NULL;
+    }
+    if (civic_address->rd) {
+        ogs_free(civic_address->rd);
+        civic_address->rd = NULL;
+    }
+    if (civic_address->rdsec) {
+        ogs_free(civic_address->rdsec);
+        civic_address->rdsec = NULL;
+    }
+    if (civic_address->rdbr) {
+        ogs_free(civic_address->rdbr);
+        civic_address->rdbr = NULL;
+    }
+    if (civic_address->rdsubbr) {
+        ogs_free(civic_address->rdsubbr);
+        civic_address->rdsubbr = NULL;
+    }
+    if (civic_address->prm) {
+        ogs_free(civic_address->prm);
+        civic_address->prm = NULL;
+    }
+    if (civic_address->pom) {
+        ogs_free(civic_address->pom);
+        civic_address->pom = NULL;
+    }
+    if (civic_address->usage_rules) {
+        ogs_free(civic_address->usage_rules);
+        civic_address->usage_rules = NULL;
+    }
+    if (civic_address->method) {
+        ogs_free(civic_address->method);
+        civic_address->method = NULL;
+    }
+    if (civic_address->provided_by) {
+        ogs_free(civic_address->provided_by);
+        civic_address->provided_by = NULL;
+    }
     ogs_free(civic_address);
 }
 
 cJSON *OpenAPI_civic_address_convertToJSON(OpenAPI_civic_address_t *civic_address)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (civic_address == NULL) {
         ogs_error("OpenAPI_civic_address_convertToJSON() failed [CivicAddress]");
@@ -380,347 +484,348 @@ end:
 OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addressJSON)
 {
     OpenAPI_civic_address_t *civic_address_local_var = NULL;
-    cJSON *country = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "country");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *country = NULL;
+    cJSON *a1 = NULL;
+    cJSON *a2 = NULL;
+    cJSON *a3 = NULL;
+    cJSON *a4 = NULL;
+    cJSON *a5 = NULL;
+    cJSON *a6 = NULL;
+    cJSON *prd = NULL;
+    cJSON *pod = NULL;
+    cJSON *sts = NULL;
+    cJSON *hno = NULL;
+    cJSON *hns = NULL;
+    cJSON *lmk = NULL;
+    cJSON *loc = NULL;
+    cJSON *nam = NULL;
+    cJSON *pc = NULL;
+    cJSON *bld = NULL;
+    cJSON *unit = NULL;
+    cJSON *flr = NULL;
+    cJSON *room = NULL;
+    cJSON *plc = NULL;
+    cJSON *pcn = NULL;
+    cJSON *pobox = NULL;
+    cJSON *addcode = NULL;
+    cJSON *seat = NULL;
+    cJSON *rd = NULL;
+    cJSON *rdsec = NULL;
+    cJSON *rdbr = NULL;
+    cJSON *rdsubbr = NULL;
+    cJSON *prm = NULL;
+    cJSON *pom = NULL;
+    cJSON *usage_rules = NULL;
+    cJSON *method = NULL;
+    cJSON *provided_by = NULL;
+    country = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "country");
     if (country) {
-    if (!cJSON_IsString(country)) {
+    if (!cJSON_IsString(country) && !cJSON_IsNull(country)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [country]");
         goto end;
     }
     }
 
-    cJSON *a1 = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "A1");
-
+    a1 = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "A1");
     if (a1) {
-    if (!cJSON_IsString(a1)) {
+    if (!cJSON_IsString(a1) && !cJSON_IsNull(a1)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [a1]");
         goto end;
     }
     }
 
-    cJSON *a2 = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "A2");
-
+    a2 = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "A2");
     if (a2) {
-    if (!cJSON_IsString(a2)) {
+    if (!cJSON_IsString(a2) && !cJSON_IsNull(a2)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [a2]");
         goto end;
     }
     }
 
-    cJSON *a3 = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "A3");
-
+    a3 = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "A3");
     if (a3) {
-    if (!cJSON_IsString(a3)) {
+    if (!cJSON_IsString(a3) && !cJSON_IsNull(a3)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [a3]");
         goto end;
     }
     }
 
-    cJSON *a4 = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "A4");
-
+    a4 = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "A4");
     if (a4) {
-    if (!cJSON_IsString(a4)) {
+    if (!cJSON_IsString(a4) && !cJSON_IsNull(a4)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [a4]");
         goto end;
     }
     }
 
-    cJSON *a5 = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "A5");
-
+    a5 = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "A5");
     if (a5) {
-    if (!cJSON_IsString(a5)) {
+    if (!cJSON_IsString(a5) && !cJSON_IsNull(a5)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [a5]");
         goto end;
     }
     }
 
-    cJSON *a6 = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "A6");
-
+    a6 = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "A6");
     if (a6) {
-    if (!cJSON_IsString(a6)) {
+    if (!cJSON_IsString(a6) && !cJSON_IsNull(a6)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [a6]");
         goto end;
     }
     }
 
-    cJSON *prd = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "PRD");
-
+    prd = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "PRD");
     if (prd) {
-    if (!cJSON_IsString(prd)) {
+    if (!cJSON_IsString(prd) && !cJSON_IsNull(prd)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [prd]");
         goto end;
     }
     }
 
-    cJSON *pod = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "POD");
-
+    pod = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "POD");
     if (pod) {
-    if (!cJSON_IsString(pod)) {
+    if (!cJSON_IsString(pod) && !cJSON_IsNull(pod)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [pod]");
         goto end;
     }
     }
 
-    cJSON *sts = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "STS");
-
+    sts = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "STS");
     if (sts) {
-    if (!cJSON_IsString(sts)) {
+    if (!cJSON_IsString(sts) && !cJSON_IsNull(sts)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [sts]");
         goto end;
     }
     }
 
-    cJSON *hno = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "HNO");
-
+    hno = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "HNO");
     if (hno) {
-    if (!cJSON_IsString(hno)) {
+    if (!cJSON_IsString(hno) && !cJSON_IsNull(hno)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [hno]");
         goto end;
     }
     }
 
-    cJSON *hns = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "HNS");
-
+    hns = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "HNS");
     if (hns) {
-    if (!cJSON_IsString(hns)) {
+    if (!cJSON_IsString(hns) && !cJSON_IsNull(hns)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [hns]");
         goto end;
     }
     }
 
-    cJSON *lmk = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "LMK");
-
+    lmk = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "LMK");
     if (lmk) {
-    if (!cJSON_IsString(lmk)) {
+    if (!cJSON_IsString(lmk) && !cJSON_IsNull(lmk)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [lmk]");
         goto end;
     }
     }
 
-    cJSON *loc = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "LOC");
-
+    loc = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "LOC");
     if (loc) {
-    if (!cJSON_IsString(loc)) {
+    if (!cJSON_IsString(loc) && !cJSON_IsNull(loc)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [loc]");
         goto end;
     }
     }
 
-    cJSON *nam = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "NAM");
-
+    nam = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "NAM");
     if (nam) {
-    if (!cJSON_IsString(nam)) {
+    if (!cJSON_IsString(nam) && !cJSON_IsNull(nam)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [nam]");
         goto end;
     }
     }
 
-    cJSON *pc = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "PC");
-
+    pc = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "PC");
     if (pc) {
-    if (!cJSON_IsString(pc)) {
+    if (!cJSON_IsString(pc) && !cJSON_IsNull(pc)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [pc]");
         goto end;
     }
     }
 
-    cJSON *bld = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "BLD");
-
+    bld = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "BLD");
     if (bld) {
-    if (!cJSON_IsString(bld)) {
+    if (!cJSON_IsString(bld) && !cJSON_IsNull(bld)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [bld]");
         goto end;
     }
     }
 
-    cJSON *unit = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "UNIT");
-
+    unit = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "UNIT");
     if (unit) {
-    if (!cJSON_IsString(unit)) {
+    if (!cJSON_IsString(unit) && !cJSON_IsNull(unit)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [unit]");
         goto end;
     }
     }
 
-    cJSON *flr = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "FLR");
-
+    flr = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "FLR");
     if (flr) {
-    if (!cJSON_IsString(flr)) {
+    if (!cJSON_IsString(flr) && !cJSON_IsNull(flr)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [flr]");
         goto end;
     }
     }
 
-    cJSON *room = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "ROOM");
-
+    room = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "ROOM");
     if (room) {
-    if (!cJSON_IsString(room)) {
+    if (!cJSON_IsString(room) && !cJSON_IsNull(room)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [room]");
         goto end;
     }
     }
 
-    cJSON *plc = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "PLC");
-
+    plc = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "PLC");
     if (plc) {
-    if (!cJSON_IsString(plc)) {
+    if (!cJSON_IsString(plc) && !cJSON_IsNull(plc)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [plc]");
         goto end;
     }
     }
 
-    cJSON *pcn = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "PCN");
-
+    pcn = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "PCN");
     if (pcn) {
-    if (!cJSON_IsString(pcn)) {
+    if (!cJSON_IsString(pcn) && !cJSON_IsNull(pcn)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [pcn]");
         goto end;
     }
     }
 
-    cJSON *pobox = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "POBOX");
-
+    pobox = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "POBOX");
     if (pobox) {
-    if (!cJSON_IsString(pobox)) {
+    if (!cJSON_IsString(pobox) && !cJSON_IsNull(pobox)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [pobox]");
         goto end;
     }
     }
 
-    cJSON *addcode = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "ADDCODE");
-
+    addcode = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "ADDCODE");
     if (addcode) {
-    if (!cJSON_IsString(addcode)) {
+    if (!cJSON_IsString(addcode) && !cJSON_IsNull(addcode)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [addcode]");
         goto end;
     }
     }
 
-    cJSON *seat = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "SEAT");
-
+    seat = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "SEAT");
     if (seat) {
-    if (!cJSON_IsString(seat)) {
+    if (!cJSON_IsString(seat) && !cJSON_IsNull(seat)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [seat]");
         goto end;
     }
     }
 
-    cJSON *rd = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "RD");
-
+    rd = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "RD");
     if (rd) {
-    if (!cJSON_IsString(rd)) {
+    if (!cJSON_IsString(rd) && !cJSON_IsNull(rd)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [rd]");
         goto end;
     }
     }
 
-    cJSON *rdsec = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "RDSEC");
-
+    rdsec = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "RDSEC");
     if (rdsec) {
-    if (!cJSON_IsString(rdsec)) {
+    if (!cJSON_IsString(rdsec) && !cJSON_IsNull(rdsec)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [rdsec]");
         goto end;
     }
     }
 
-    cJSON *rdbr = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "RDBR");
-
+    rdbr = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "RDBR");
     if (rdbr) {
-    if (!cJSON_IsString(rdbr)) {
+    if (!cJSON_IsString(rdbr) && !cJSON_IsNull(rdbr)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [rdbr]");
         goto end;
     }
     }
 
-    cJSON *rdsubbr = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "RDSUBBR");
-
+    rdsubbr = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "RDSUBBR");
     if (rdsubbr) {
-    if (!cJSON_IsString(rdsubbr)) {
+    if (!cJSON_IsString(rdsubbr) && !cJSON_IsNull(rdsubbr)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [rdsubbr]");
         goto end;
     }
     }
 
-    cJSON *prm = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "PRM");
-
+    prm = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "PRM");
     if (prm) {
-    if (!cJSON_IsString(prm)) {
+    if (!cJSON_IsString(prm) && !cJSON_IsNull(prm)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [prm]");
         goto end;
     }
     }
 
-    cJSON *pom = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "POM");
-
+    pom = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "POM");
     if (pom) {
-    if (!cJSON_IsString(pom)) {
+    if (!cJSON_IsString(pom) && !cJSON_IsNull(pom)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [pom]");
         goto end;
     }
     }
 
-    cJSON *usage_rules = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "usageRules");
-
+    usage_rules = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "usageRules");
     if (usage_rules) {
-    if (!cJSON_IsString(usage_rules)) {
+    if (!cJSON_IsString(usage_rules) && !cJSON_IsNull(usage_rules)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [usage_rules]");
         goto end;
     }
     }
 
-    cJSON *method = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "method");
-
+    method = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "method");
     if (method) {
-    if (!cJSON_IsString(method)) {
+    if (!cJSON_IsString(method) && !cJSON_IsNull(method)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [method]");
         goto end;
     }
     }
 
-    cJSON *provided_by = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "providedBy");
-
+    provided_by = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "providedBy");
     if (provided_by) {
-    if (!cJSON_IsString(provided_by)) {
+    if (!cJSON_IsString(provided_by) && !cJSON_IsNull(provided_by)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [provided_by]");
         goto end;
     }
     }
 
     civic_address_local_var = OpenAPI_civic_address_create (
-        country ? ogs_strdup(country->valuestring) : NULL,
-        a1 ? ogs_strdup(a1->valuestring) : NULL,
-        a2 ? ogs_strdup(a2->valuestring) : NULL,
-        a3 ? ogs_strdup(a3->valuestring) : NULL,
-        a4 ? ogs_strdup(a4->valuestring) : NULL,
-        a5 ? ogs_strdup(a5->valuestring) : NULL,
-        a6 ? ogs_strdup(a6->valuestring) : NULL,
-        prd ? ogs_strdup(prd->valuestring) : NULL,
-        pod ? ogs_strdup(pod->valuestring) : NULL,
-        sts ? ogs_strdup(sts->valuestring) : NULL,
-        hno ? ogs_strdup(hno->valuestring) : NULL,
-        hns ? ogs_strdup(hns->valuestring) : NULL,
-        lmk ? ogs_strdup(lmk->valuestring) : NULL,
-        loc ? ogs_strdup(loc->valuestring) : NULL,
-        nam ? ogs_strdup(nam->valuestring) : NULL,
-        pc ? ogs_strdup(pc->valuestring) : NULL,
-        bld ? ogs_strdup(bld->valuestring) : NULL,
-        unit ? ogs_strdup(unit->valuestring) : NULL,
-        flr ? ogs_strdup(flr->valuestring) : NULL,
-        room ? ogs_strdup(room->valuestring) : NULL,
-        plc ? ogs_strdup(plc->valuestring) : NULL,
-        pcn ? ogs_strdup(pcn->valuestring) : NULL,
-        pobox ? ogs_strdup(pobox->valuestring) : NULL,
-        addcode ? ogs_strdup(addcode->valuestring) : NULL,
-        seat ? ogs_strdup(seat->valuestring) : NULL,
-        rd ? ogs_strdup(rd->valuestring) : NULL,
-        rdsec ? ogs_strdup(rdsec->valuestring) : NULL,
-        rdbr ? ogs_strdup(rdbr->valuestring) : NULL,
-        rdsubbr ? ogs_strdup(rdsubbr->valuestring) : NULL,
-        prm ? ogs_strdup(prm->valuestring) : NULL,
-        pom ? ogs_strdup(pom->valuestring) : NULL,
-        usage_rules ? ogs_strdup(usage_rules->valuestring) : NULL,
-        method ? ogs_strdup(method->valuestring) : NULL,
-        provided_by ? ogs_strdup(provided_by->valuestring) : NULL
+        country && !cJSON_IsNull(country) ? ogs_strdup(country->valuestring) : NULL,
+        a1 && !cJSON_IsNull(a1) ? ogs_strdup(a1->valuestring) : NULL,
+        a2 && !cJSON_IsNull(a2) ? ogs_strdup(a2->valuestring) : NULL,
+        a3 && !cJSON_IsNull(a3) ? ogs_strdup(a3->valuestring) : NULL,
+        a4 && !cJSON_IsNull(a4) ? ogs_strdup(a4->valuestring) : NULL,
+        a5 && !cJSON_IsNull(a5) ? ogs_strdup(a5->valuestring) : NULL,
+        a6 && !cJSON_IsNull(a6) ? ogs_strdup(a6->valuestring) : NULL,
+        prd && !cJSON_IsNull(prd) ? ogs_strdup(prd->valuestring) : NULL,
+        pod && !cJSON_IsNull(pod) ? ogs_strdup(pod->valuestring) : NULL,
+        sts && !cJSON_IsNull(sts) ? ogs_strdup(sts->valuestring) : NULL,
+        hno && !cJSON_IsNull(hno) ? ogs_strdup(hno->valuestring) : NULL,
+        hns && !cJSON_IsNull(hns) ? ogs_strdup(hns->valuestring) : NULL,
+        lmk && !cJSON_IsNull(lmk) ? ogs_strdup(lmk->valuestring) : NULL,
+        loc && !cJSON_IsNull(loc) ? ogs_strdup(loc->valuestring) : NULL,
+        nam && !cJSON_IsNull(nam) ? ogs_strdup(nam->valuestring) : NULL,
+        pc && !cJSON_IsNull(pc) ? ogs_strdup(pc->valuestring) : NULL,
+        bld && !cJSON_IsNull(bld) ? ogs_strdup(bld->valuestring) : NULL,
+        unit && !cJSON_IsNull(unit) ? ogs_strdup(unit->valuestring) : NULL,
+        flr && !cJSON_IsNull(flr) ? ogs_strdup(flr->valuestring) : NULL,
+        room && !cJSON_IsNull(room) ? ogs_strdup(room->valuestring) : NULL,
+        plc && !cJSON_IsNull(plc) ? ogs_strdup(plc->valuestring) : NULL,
+        pcn && !cJSON_IsNull(pcn) ? ogs_strdup(pcn->valuestring) : NULL,
+        pobox && !cJSON_IsNull(pobox) ? ogs_strdup(pobox->valuestring) : NULL,
+        addcode && !cJSON_IsNull(addcode) ? ogs_strdup(addcode->valuestring) : NULL,
+        seat && !cJSON_IsNull(seat) ? ogs_strdup(seat->valuestring) : NULL,
+        rd && !cJSON_IsNull(rd) ? ogs_strdup(rd->valuestring) : NULL,
+        rdsec && !cJSON_IsNull(rdsec) ? ogs_strdup(rdsec->valuestring) : NULL,
+        rdbr && !cJSON_IsNull(rdbr) ? ogs_strdup(rdbr->valuestring) : NULL,
+        rdsubbr && !cJSON_IsNull(rdsubbr) ? ogs_strdup(rdsubbr->valuestring) : NULL,
+        prm && !cJSON_IsNull(prm) ? ogs_strdup(prm->valuestring) : NULL,
+        pom && !cJSON_IsNull(pom) ? ogs_strdup(pom->valuestring) : NULL,
+        usage_rules && !cJSON_IsNull(usage_rules) ? ogs_strdup(usage_rules->valuestring) : NULL,
+        method && !cJSON_IsNull(method) ? ogs_strdup(method->valuestring) : NULL,
+        provided_by && !cJSON_IsNull(provided_by) ? ogs_strdup(provided_by->valuestring) : NULL
     );
 
     return civic_address_local_var;

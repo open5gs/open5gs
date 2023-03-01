@@ -18,17 +18,22 @@ OpenAPI_v2x_information_t *OpenAPI_v2x_information_create(
 
 void OpenAPI_v2x_information_free(OpenAPI_v2x_information_t *v2x_information)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == v2x_information) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_n2_info_content_free(v2x_information->n2_pc5_pol);
+    if (v2x_information->n2_pc5_pol) {
+        OpenAPI_n2_info_content_free(v2x_information->n2_pc5_pol);
+        v2x_information->n2_pc5_pol = NULL;
+    }
     ogs_free(v2x_information);
 }
 
 cJSON *OpenAPI_v2x_information_convertToJSON(OpenAPI_v2x_information_t *v2x_information)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (v2x_information == NULL) {
         ogs_error("OpenAPI_v2x_information_convertToJSON() failed [V2xInformation]");
@@ -56,9 +61,10 @@ end:
 OpenAPI_v2x_information_t *OpenAPI_v2x_information_parseFromJSON(cJSON *v2x_informationJSON)
 {
     OpenAPI_v2x_information_t *v2x_information_local_var = NULL;
-    cJSON *n2_pc5_pol = cJSON_GetObjectItemCaseSensitive(v2x_informationJSON, "n2Pc5Pol");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *n2_pc5_pol = NULL;
     OpenAPI_n2_info_content_t *n2_pc5_pol_local_nonprim = NULL;
+    n2_pc5_pol = cJSON_GetObjectItemCaseSensitive(v2x_informationJSON, "n2Pc5Pol");
     if (n2_pc5_pol) {
     n2_pc5_pol_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(n2_pc5_pol);
     }
@@ -69,6 +75,10 @@ OpenAPI_v2x_information_t *OpenAPI_v2x_information_parseFromJSON(cJSON *v2x_info
 
     return v2x_information_local_var;
 end:
+    if (n2_pc5_pol_local_nonprim) {
+        OpenAPI_n2_info_content_free(n2_pc5_pol_local_nonprim);
+        n2_pc5_pol_local_nonprim = NULL;
+    }
     return NULL;
 }
 

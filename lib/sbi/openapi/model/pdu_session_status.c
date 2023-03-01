@@ -16,16 +16,18 @@ OpenAPI_pdu_session_status_t *OpenAPI_pdu_session_status_create(
 
 void OpenAPI_pdu_session_status_free(OpenAPI_pdu_session_status_t *pdu_session_status)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == pdu_session_status) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(pdu_session_status);
 }
 
 cJSON *OpenAPI_pdu_session_status_convertToJSON(OpenAPI_pdu_session_status_t *pdu_session_status)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (pdu_session_status == NULL) {
         ogs_error("OpenAPI_pdu_session_status_convertToJSON() failed [PduSessionStatus]");
@@ -40,6 +42,7 @@ end:
 OpenAPI_pdu_session_status_t *OpenAPI_pdu_session_status_parseFromJSON(cJSON *pdu_session_statusJSON)
 {
     OpenAPI_pdu_session_status_t *pdu_session_status_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
     pdu_session_status_local_var = OpenAPI_pdu_session_status_create (
     );
 

@@ -1,0 +1,94 @@
+openapi: 3.0.0
+info:
+  version: '1.1.0'
+  title: 'Nudm_ReportSMDeliveryStatus'
+  description: |
+    UDM Report SM Delivery Status Service.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.503 Unified Data Management Services, version 17.8.0
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.503/'
+
+servers:
+  - url: '{apiRoot}/nudm-rsds/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501.
+
+security:
+  - oAuth2ClientCredentials:
+    - nudm-rsds
+  - {}
+
+paths:
+  /{ueIdentity}/sm-delivery-status:
+    post:
+      summary: Report the SM Delivery Status
+      operationId: ReportSMDeliveryStatus
+      tags:
+        - Report SM Delivery Status
+      parameters:
+        - name: ueIdentity
+          in: path
+          description: Represents the scope of the UE for which the Service Specific Parameters are authorized. Contains the GPSI of the user or the external group ID.
+          required: true
+          schema:
+            type: string
+            pattern: '^(msisdn-[0-9]{5,15}|.+|extid-[^@]+@[^@]+|extgroupid-[^@]+@[^@]+)$'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SmDeliveryStatus'
+        required: true
+      responses:
+        '204':
+          description: Successful response
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nudm-rsds: Access to the nudm-rsds API
+
+
+  schemas:
+
+# COMPLEX TYPES:
+
+    SmDeliveryStatus:
+      description: Represents SM Delivery Status.
+      type: object
+      required:
+        - gpsi
+        - smStatusReport
+      properties:
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        smStatusReport:
+          type: string
+
+
+# SIMPLE TYPES:
+
+
+# ENUMS:
+

@@ -18,17 +18,22 @@ OpenAPI_ue_context_relocated_data_t *OpenAPI_ue_context_relocated_data_create(
 
 void OpenAPI_ue_context_relocated_data_free(OpenAPI_ue_context_relocated_data_t *ue_context_relocated_data)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == ue_context_relocated_data) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_ue_context_free(ue_context_relocated_data->ue_context);
+    if (ue_context_relocated_data->ue_context) {
+        OpenAPI_ue_context_free(ue_context_relocated_data->ue_context);
+        ue_context_relocated_data->ue_context = NULL;
+    }
     ogs_free(ue_context_relocated_data);
 }
 
 cJSON *OpenAPI_ue_context_relocated_data_convertToJSON(OpenAPI_ue_context_relocated_data_t *ue_context_relocated_data)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (ue_context_relocated_data == NULL) {
         ogs_error("OpenAPI_ue_context_relocated_data_convertToJSON() failed [UeContextRelocatedData]");
@@ -56,9 +61,10 @@ end:
 OpenAPI_ue_context_relocated_data_t *OpenAPI_ue_context_relocated_data_parseFromJSON(cJSON *ue_context_relocated_dataJSON)
 {
     OpenAPI_ue_context_relocated_data_t *ue_context_relocated_data_local_var = NULL;
-    cJSON *ue_context = cJSON_GetObjectItemCaseSensitive(ue_context_relocated_dataJSON, "ueContext");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *ue_context = NULL;
     OpenAPI_ue_context_t *ue_context_local_nonprim = NULL;
+    ue_context = cJSON_GetObjectItemCaseSensitive(ue_context_relocated_dataJSON, "ueContext");
     if (ue_context) {
     ue_context_local_nonprim = OpenAPI_ue_context_parseFromJSON(ue_context);
     }
@@ -69,6 +75,10 @@ OpenAPI_ue_context_relocated_data_t *OpenAPI_ue_context_relocated_data_parseFrom
 
     return ue_context_relocated_data_local_var;
 end:
+    if (ue_context_local_nonprim) {
+        OpenAPI_ue_context_free(ue_context_local_nonprim);
+        ue_context_local_nonprim = NULL;
+    }
     return NULL;
 }
 

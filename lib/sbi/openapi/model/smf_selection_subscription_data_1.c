@@ -22,25 +22,36 @@ OpenAPI_smf_selection_subscription_data_1_t *OpenAPI_smf_selection_subscription_
 
 void OpenAPI_smf_selection_subscription_data_1_free(OpenAPI_smf_selection_subscription_data_1_t *smf_selection_subscription_data_1)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == smf_selection_subscription_data_1) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(smf_selection_subscription_data_1->supported_features);
-    OpenAPI_list_for_each(smf_selection_subscription_data_1->subscribed_snssai_infos, node) {
-        OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
-        ogs_free(localKeyValue->key);
-        OpenAPI_snssai_info_free(localKeyValue->value);
-        ogs_free(localKeyValue);
+    if (smf_selection_subscription_data_1->supported_features) {
+        ogs_free(smf_selection_subscription_data_1->supported_features);
+        smf_selection_subscription_data_1->supported_features = NULL;
     }
-    OpenAPI_list_free(smf_selection_subscription_data_1->subscribed_snssai_infos);
-    ogs_free(smf_selection_subscription_data_1->shared_snssai_infos_id);
+    if (smf_selection_subscription_data_1->subscribed_snssai_infos) {
+        OpenAPI_list_for_each(smf_selection_subscription_data_1->subscribed_snssai_infos, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_snssai_info_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(smf_selection_subscription_data_1->subscribed_snssai_infos);
+        smf_selection_subscription_data_1->subscribed_snssai_infos = NULL;
+    }
+    if (smf_selection_subscription_data_1->shared_snssai_infos_id) {
+        ogs_free(smf_selection_subscription_data_1->shared_snssai_infos_id);
+        smf_selection_subscription_data_1->shared_snssai_infos_id = NULL;
+    }
     ogs_free(smf_selection_subscription_data_1);
 }
 
 cJSON *OpenAPI_smf_selection_subscription_data_1_convertToJSON(OpenAPI_smf_selection_subscription_data_1_t *smf_selection_subscription_data_1)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (smf_selection_subscription_data_1 == NULL) {
         ogs_error("OpenAPI_smf_selection_subscription_data_1_convertToJSON() failed [SmfSelectionSubscriptionData_1]");
@@ -62,20 +73,19 @@ cJSON *OpenAPI_smf_selection_subscription_data_1_convertToJSON(OpenAPI_smf_selec
         goto end;
     }
     cJSON *localMapObject = subscribed_snssai_infos;
-    OpenAPI_lnode_t *subscribed_snssai_infos_node;
     if (smf_selection_subscription_data_1->subscribed_snssai_infos) {
-        OpenAPI_list_for_each(smf_selection_subscription_data_1->subscribed_snssai_infos, subscribed_snssai_infos_node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)subscribed_snssai_infos_node->data;
-        cJSON *itemLocal = localKeyValue->value ?
-            OpenAPI_snssai_info_convertToJSON(localKeyValue->value) :
-            cJSON_CreateNull();
-        if (itemLocal == NULL) {
-            ogs_error("OpenAPI_smf_selection_subscription_data_1_convertToJSON() failed [inner]");
-            goto end;
-        }
-        cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
+        OpenAPI_list_for_each(smf_selection_subscription_data_1->subscribed_snssai_infos, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            cJSON *itemLocal = localKeyValue->value ?
+                OpenAPI_snssai_info_convertToJSON(localKeyValue->value) :
+                cJSON_CreateNull();
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_smf_selection_subscription_data_1_convertToJSON() failed [inner]");
+                goto end;
             }
+            cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
         }
+    }
     }
 
     if (smf_selection_subscription_data_1->shared_snssai_infos_id) {
@@ -92,58 +102,71 @@ end:
 OpenAPI_smf_selection_subscription_data_1_t *OpenAPI_smf_selection_subscription_data_1_parseFromJSON(cJSON *smf_selection_subscription_data_1JSON)
 {
     OpenAPI_smf_selection_subscription_data_1_t *smf_selection_subscription_data_1_local_var = NULL;
-    cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(smf_selection_subscription_data_1JSON, "supportedFeatures");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *supported_features = NULL;
+    cJSON *subscribed_snssai_infos = NULL;
+    OpenAPI_list_t *subscribed_snssai_infosList = NULL;
+    cJSON *shared_snssai_infos_id = NULL;
+    supported_features = cJSON_GetObjectItemCaseSensitive(smf_selection_subscription_data_1JSON, "supportedFeatures");
     if (supported_features) {
-    if (!cJSON_IsString(supported_features)) {
+    if (!cJSON_IsString(supported_features) && !cJSON_IsNull(supported_features)) {
         ogs_error("OpenAPI_smf_selection_subscription_data_1_parseFromJSON() failed [supported_features]");
         goto end;
     }
     }
 
-    cJSON *subscribed_snssai_infos = cJSON_GetObjectItemCaseSensitive(smf_selection_subscription_data_1JSON, "subscribedSnssaiInfos");
-
-    OpenAPI_list_t *subscribed_snssai_infosList;
+    subscribed_snssai_infos = cJSON_GetObjectItemCaseSensitive(smf_selection_subscription_data_1JSON, "subscribedSnssaiInfos");
     if (subscribed_snssai_infos) {
-    cJSON *subscribed_snssai_infos_local_map;
-    if (!cJSON_IsObject(subscribed_snssai_infos)) {
-        ogs_error("OpenAPI_smf_selection_subscription_data_1_parseFromJSON() failed [subscribed_snssai_infos]");
-        goto end;
-    }
-    subscribed_snssai_infosList = OpenAPI_list_create();
-    OpenAPI_map_t *localMapKeyPair = NULL;
-    cJSON_ArrayForEach(subscribed_snssai_infos_local_map, subscribed_snssai_infos) {
-        cJSON *localMapObject = subscribed_snssai_infos_local_map;
-        if (cJSON_IsObject(localMapObject)) {
-            localMapKeyPair = OpenAPI_map_create(
-                ogs_strdup(localMapObject->string), OpenAPI_snssai_info_parseFromJSON(localMapObject));
-        } else if (cJSON_IsNull(localMapObject)) {
-            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
-        } else {
-            ogs_error("OpenAPI_smf_selection_subscription_data_1_parseFromJSON() failed [inner]");
+        cJSON *subscribed_snssai_infos_local_map = NULL;
+        if (!cJSON_IsObject(subscribed_snssai_infos) && !cJSON_IsNull(subscribed_snssai_infos)) {
+            ogs_error("OpenAPI_smf_selection_subscription_data_1_parseFromJSON() failed [subscribed_snssai_infos]");
             goto end;
         }
-        OpenAPI_list_add(subscribed_snssai_infosList, localMapKeyPair);
-    }
+        if (cJSON_IsObject(subscribed_snssai_infos)) {
+            subscribed_snssai_infosList = OpenAPI_list_create();
+            OpenAPI_map_t *localMapKeyPair = NULL;
+            cJSON_ArrayForEach(subscribed_snssai_infos_local_map, subscribed_snssai_infos) {
+                cJSON *localMapObject = subscribed_snssai_infos_local_map;
+                if (cJSON_IsObject(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(
+                        ogs_strdup(localMapObject->string), OpenAPI_snssai_info_parseFromJSON(localMapObject));
+                } else if (cJSON_IsNull(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
+                } else {
+                    ogs_error("OpenAPI_smf_selection_subscription_data_1_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                OpenAPI_list_add(subscribed_snssai_infosList, localMapKeyPair);
+            }
+        }
     }
 
-    cJSON *shared_snssai_infos_id = cJSON_GetObjectItemCaseSensitive(smf_selection_subscription_data_1JSON, "sharedSnssaiInfosId");
-
+    shared_snssai_infos_id = cJSON_GetObjectItemCaseSensitive(smf_selection_subscription_data_1JSON, "sharedSnssaiInfosId");
     if (shared_snssai_infos_id) {
-    if (!cJSON_IsString(shared_snssai_infos_id)) {
+    if (!cJSON_IsString(shared_snssai_infos_id) && !cJSON_IsNull(shared_snssai_infos_id)) {
         ogs_error("OpenAPI_smf_selection_subscription_data_1_parseFromJSON() failed [shared_snssai_infos_id]");
         goto end;
     }
     }
 
     smf_selection_subscription_data_1_local_var = OpenAPI_smf_selection_subscription_data_1_create (
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
+        supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
         subscribed_snssai_infos ? subscribed_snssai_infosList : NULL,
-        shared_snssai_infos_id ? ogs_strdup(shared_snssai_infos_id->valuestring) : NULL
+        shared_snssai_infos_id && !cJSON_IsNull(shared_snssai_infos_id) ? ogs_strdup(shared_snssai_infos_id->valuestring) : NULL
     );
 
     return smf_selection_subscription_data_1_local_var;
 end:
+    if (subscribed_snssai_infosList) {
+        OpenAPI_list_for_each(subscribed_snssai_infosList, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_snssai_info_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(subscribed_snssai_infosList);
+        subscribed_snssai_infosList = NULL;
+    }
     return NULL;
 }
 

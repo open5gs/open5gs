@@ -20,18 +20,26 @@ OpenAPI_sm_context_released_data_t *OpenAPI_sm_context_released_data_create(
 
 void OpenAPI_sm_context_released_data_free(OpenAPI_sm_context_released_data_t *sm_context_released_data)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == sm_context_released_data) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_small_data_rate_status_free(sm_context_released_data->small_data_rate_status);
-    OpenAPI_apn_rate_status_free(sm_context_released_data->apn_rate_status);
+    if (sm_context_released_data->small_data_rate_status) {
+        OpenAPI_small_data_rate_status_free(sm_context_released_data->small_data_rate_status);
+        sm_context_released_data->small_data_rate_status = NULL;
+    }
+    if (sm_context_released_data->apn_rate_status) {
+        OpenAPI_apn_rate_status_free(sm_context_released_data->apn_rate_status);
+        sm_context_released_data->apn_rate_status = NULL;
+    }
     ogs_free(sm_context_released_data);
 }
 
 cJSON *OpenAPI_sm_context_released_data_convertToJSON(OpenAPI_sm_context_released_data_t *sm_context_released_data)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (sm_context_released_data == NULL) {
         ogs_error("OpenAPI_sm_context_released_data_convertToJSON() failed [SmContextReleasedData]");
@@ -72,16 +80,17 @@ end:
 OpenAPI_sm_context_released_data_t *OpenAPI_sm_context_released_data_parseFromJSON(cJSON *sm_context_released_dataJSON)
 {
     OpenAPI_sm_context_released_data_t *sm_context_released_data_local_var = NULL;
-    cJSON *small_data_rate_status = cJSON_GetObjectItemCaseSensitive(sm_context_released_dataJSON, "smallDataRateStatus");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *small_data_rate_status = NULL;
     OpenAPI_small_data_rate_status_t *small_data_rate_status_local_nonprim = NULL;
+    cJSON *apn_rate_status = NULL;
+    OpenAPI_apn_rate_status_t *apn_rate_status_local_nonprim = NULL;
+    small_data_rate_status = cJSON_GetObjectItemCaseSensitive(sm_context_released_dataJSON, "smallDataRateStatus");
     if (small_data_rate_status) {
     small_data_rate_status_local_nonprim = OpenAPI_small_data_rate_status_parseFromJSON(small_data_rate_status);
     }
 
-    cJSON *apn_rate_status = cJSON_GetObjectItemCaseSensitive(sm_context_released_dataJSON, "apnRateStatus");
-
-    OpenAPI_apn_rate_status_t *apn_rate_status_local_nonprim = NULL;
+    apn_rate_status = cJSON_GetObjectItemCaseSensitive(sm_context_released_dataJSON, "apnRateStatus");
     if (apn_rate_status) {
     apn_rate_status_local_nonprim = OpenAPI_apn_rate_status_parseFromJSON(apn_rate_status);
     }
@@ -93,6 +102,14 @@ OpenAPI_sm_context_released_data_t *OpenAPI_sm_context_released_data_parseFromJS
 
     return sm_context_released_data_local_var;
 end:
+    if (small_data_rate_status_local_nonprim) {
+        OpenAPI_small_data_rate_status_free(small_data_rate_status_local_nonprim);
+        small_data_rate_status_local_nonprim = NULL;
+    }
+    if (apn_rate_status_local_nonprim) {
+        OpenAPI_apn_rate_status_free(apn_rate_status_local_nonprim);
+        apn_rate_status_local_nonprim = NULL;
+    }
     return NULL;
 }
 

@@ -26,7 +26,7 @@ typedef struct OpenAPI_pcc_rule_s OpenAPI_pcc_rule_t;
 typedef struct OpenAPI_pcc_rule_s {
     OpenAPI_list_t *flow_infos;
     char *app_id;
-    char app_descriptor;
+    char *app_descriptor;
     bool is_cont_ver;
     int cont_ver;
     char *pcc_rule_id;
@@ -57,7 +57,7 @@ typedef struct OpenAPI_pcc_rule_s {
 OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_create(
     OpenAPI_list_t *flow_infos,
     char *app_id,
-    char app_descriptor,
+    char *app_descriptor,
     bool is_cont_ver,
     int cont_ver,
     char *pcc_rule_id,

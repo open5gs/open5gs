@@ -22,24 +22,32 @@ OpenAPI_secondary_rat_usage_info_t *OpenAPI_secondary_rat_usage_info_create(
 
 void OpenAPI_secondary_rat_usage_info_free(OpenAPI_secondary_rat_usage_info_t *secondary_rat_usage_info)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == secondary_rat_usage_info) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_list_for_each(secondary_rat_usage_info->qos_flows_usage_data, node) {
-        OpenAPI_qos_flow_usage_report_free(node->data);
+    if (secondary_rat_usage_info->qos_flows_usage_data) {
+        OpenAPI_list_for_each(secondary_rat_usage_info->qos_flows_usage_data, node) {
+            OpenAPI_qos_flow_usage_report_free(node->data);
+        }
+        OpenAPI_list_free(secondary_rat_usage_info->qos_flows_usage_data);
+        secondary_rat_usage_info->qos_flows_usage_data = NULL;
     }
-    OpenAPI_list_free(secondary_rat_usage_info->qos_flows_usage_data);
-    OpenAPI_list_for_each(secondary_rat_usage_info->pdu_session_usage_data, node) {
-        OpenAPI_volume_timed_report_free(node->data);
+    if (secondary_rat_usage_info->pdu_session_usage_data) {
+        OpenAPI_list_for_each(secondary_rat_usage_info->pdu_session_usage_data, node) {
+            OpenAPI_volume_timed_report_free(node->data);
+        }
+        OpenAPI_list_free(secondary_rat_usage_info->pdu_session_usage_data);
+        secondary_rat_usage_info->pdu_session_usage_data = NULL;
     }
-    OpenAPI_list_free(secondary_rat_usage_info->pdu_session_usage_data);
     ogs_free(secondary_rat_usage_info);
 }
 
 cJSON *OpenAPI_secondary_rat_usage_info_convertToJSON(OpenAPI_secondary_rat_usage_info_t *secondary_rat_usage_info)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (secondary_rat_usage_info == NULL) {
         ogs_error("OpenAPI_secondary_rat_usage_info_convertToJSON() failed [SecondaryRatUsageInfo]");
@@ -47,6 +55,10 @@ cJSON *OpenAPI_secondary_rat_usage_info_convertToJSON(OpenAPI_secondary_rat_usag
     }
 
     item = cJSON_CreateObject();
+    if (secondary_rat_usage_info->secondary_rat_type == OpenAPI_rat_type_NULL) {
+        ogs_error("OpenAPI_secondary_rat_usage_info_convertToJSON() failed [secondary_rat_type]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "secondaryRatType", OpenAPI_rat_type_ToString(secondary_rat_usage_info->secondary_rat_type)) == NULL) {
         ogs_error("OpenAPI_secondary_rat_usage_info_convertToJSON() failed [secondary_rat_type]");
         goto end;
@@ -58,17 +70,13 @@ cJSON *OpenAPI_secondary_rat_usage_info_convertToJSON(OpenAPI_secondary_rat_usag
         ogs_error("OpenAPI_secondary_rat_usage_info_convertToJSON() failed [qos_flows_usage_data]");
         goto end;
     }
-
-    OpenAPI_lnode_t *qos_flows_usage_data_node;
-    if (secondary_rat_usage_info->qos_flows_usage_data) {
-        OpenAPI_list_for_each(secondary_rat_usage_info->qos_flows_usage_data, qos_flows_usage_data_node) {
-            cJSON *itemLocal = OpenAPI_qos_flow_usage_report_convertToJSON(qos_flows_usage_data_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_secondary_rat_usage_info_convertToJSON() failed [qos_flows_usage_data]");
-                goto end;
-            }
-            cJSON_AddItemToArray(qos_flows_usage_dataList, itemLocal);
+    OpenAPI_list_for_each(secondary_rat_usage_info->qos_flows_usage_data, node) {
+        cJSON *itemLocal = OpenAPI_qos_flow_usage_report_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_secondary_rat_usage_info_convertToJSON() failed [qos_flows_usage_data]");
+            goto end;
         }
+        cJSON_AddItemToArray(qos_flows_usage_dataList, itemLocal);
     }
     }
 
@@ -78,17 +86,13 @@ cJSON *OpenAPI_secondary_rat_usage_info_convertToJSON(OpenAPI_secondary_rat_usag
         ogs_error("OpenAPI_secondary_rat_usage_info_convertToJSON() failed [pdu_session_usage_data]");
         goto end;
     }
-
-    OpenAPI_lnode_t *pdu_session_usage_data_node;
-    if (secondary_rat_usage_info->pdu_session_usage_data) {
-        OpenAPI_list_for_each(secondary_rat_usage_info->pdu_session_usage_data, pdu_session_usage_data_node) {
-            cJSON *itemLocal = OpenAPI_volume_timed_report_convertToJSON(pdu_session_usage_data_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_secondary_rat_usage_info_convertToJSON() failed [pdu_session_usage_data]");
-                goto end;
-            }
-            cJSON_AddItemToArray(pdu_session_usage_dataList, itemLocal);
+    OpenAPI_list_for_each(secondary_rat_usage_info->pdu_session_usage_data, node) {
+        cJSON *itemLocal = OpenAPI_volume_timed_report_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_secondary_rat_usage_info_convertToJSON() failed [pdu_session_usage_data]");
+            goto end;
         }
+        cJSON_AddItemToArray(pdu_session_usage_dataList, itemLocal);
     }
     }
 
@@ -99,75 +103,72 @@ end:
 OpenAPI_secondary_rat_usage_info_t *OpenAPI_secondary_rat_usage_info_parseFromJSON(cJSON *secondary_rat_usage_infoJSON)
 {
     OpenAPI_secondary_rat_usage_info_t *secondary_rat_usage_info_local_var = NULL;
-    cJSON *secondary_rat_type = cJSON_GetObjectItemCaseSensitive(secondary_rat_usage_infoJSON, "secondaryRatType");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *secondary_rat_type = NULL;
+    OpenAPI_rat_type_e secondary_rat_typeVariable = 0;
+    cJSON *qos_flows_usage_data = NULL;
+    OpenAPI_list_t *qos_flows_usage_dataList = NULL;
+    cJSON *pdu_session_usage_data = NULL;
+    OpenAPI_list_t *pdu_session_usage_dataList = NULL;
+    secondary_rat_type = cJSON_GetObjectItemCaseSensitive(secondary_rat_usage_infoJSON, "secondaryRatType");
     if (!secondary_rat_type) {
         ogs_error("OpenAPI_secondary_rat_usage_info_parseFromJSON() failed [secondary_rat_type]");
         goto end;
     }
-
-    OpenAPI_rat_type_e secondary_rat_typeVariable;
     if (!cJSON_IsString(secondary_rat_type)) {
         ogs_error("OpenAPI_secondary_rat_usage_info_parseFromJSON() failed [secondary_rat_type]");
         goto end;
     }
     secondary_rat_typeVariable = OpenAPI_rat_type_FromString(secondary_rat_type->valuestring);
 
-    cJSON *qos_flows_usage_data = cJSON_GetObjectItemCaseSensitive(secondary_rat_usage_infoJSON, "qosFlowsUsageData");
-
-    OpenAPI_list_t *qos_flows_usage_dataList;
+    qos_flows_usage_data = cJSON_GetObjectItemCaseSensitive(secondary_rat_usage_infoJSON, "qosFlowsUsageData");
     if (qos_flows_usage_data) {
-    cJSON *qos_flows_usage_data_local_nonprimitive;
-    if (!cJSON_IsArray(qos_flows_usage_data)){
-        ogs_error("OpenAPI_secondary_rat_usage_info_parseFromJSON() failed [qos_flows_usage_data]");
-        goto end;
-    }
-
-    qos_flows_usage_dataList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(qos_flows_usage_data_local_nonprimitive, qos_flows_usage_data ) {
-        if (!cJSON_IsObject(qos_flows_usage_data_local_nonprimitive)) {
+        cJSON *qos_flows_usage_data_local = NULL;
+        if (!cJSON_IsArray(qos_flows_usage_data)) {
             ogs_error("OpenAPI_secondary_rat_usage_info_parseFromJSON() failed [qos_flows_usage_data]");
             goto end;
         }
-        OpenAPI_qos_flow_usage_report_t *qos_flows_usage_dataItem = OpenAPI_qos_flow_usage_report_parseFromJSON(qos_flows_usage_data_local_nonprimitive);
 
-        if (!qos_flows_usage_dataItem) {
-            ogs_error("No qos_flows_usage_dataItem");
-            OpenAPI_list_free(qos_flows_usage_dataList);
-            goto end;
+        qos_flows_usage_dataList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(qos_flows_usage_data_local, qos_flows_usage_data) {
+            if (!cJSON_IsObject(qos_flows_usage_data_local)) {
+                ogs_error("OpenAPI_secondary_rat_usage_info_parseFromJSON() failed [qos_flows_usage_data]");
+                goto end;
+            }
+            OpenAPI_qos_flow_usage_report_t *qos_flows_usage_dataItem = OpenAPI_qos_flow_usage_report_parseFromJSON(qos_flows_usage_data_local);
+            if (!qos_flows_usage_dataItem) {
+                ogs_error("No qos_flows_usage_dataItem");
+                OpenAPI_list_free(qos_flows_usage_dataList);
+                goto end;
+            }
+            OpenAPI_list_add(qos_flows_usage_dataList, qos_flows_usage_dataItem);
         }
-
-        OpenAPI_list_add(qos_flows_usage_dataList, qos_flows_usage_dataItem);
-    }
     }
 
-    cJSON *pdu_session_usage_data = cJSON_GetObjectItemCaseSensitive(secondary_rat_usage_infoJSON, "pduSessionUsageData");
-
-    OpenAPI_list_t *pdu_session_usage_dataList;
+    pdu_session_usage_data = cJSON_GetObjectItemCaseSensitive(secondary_rat_usage_infoJSON, "pduSessionUsageData");
     if (pdu_session_usage_data) {
-    cJSON *pdu_session_usage_data_local_nonprimitive;
-    if (!cJSON_IsArray(pdu_session_usage_data)){
-        ogs_error("OpenAPI_secondary_rat_usage_info_parseFromJSON() failed [pdu_session_usage_data]");
-        goto end;
-    }
-
-    pdu_session_usage_dataList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(pdu_session_usage_data_local_nonprimitive, pdu_session_usage_data ) {
-        if (!cJSON_IsObject(pdu_session_usage_data_local_nonprimitive)) {
+        cJSON *pdu_session_usage_data_local = NULL;
+        if (!cJSON_IsArray(pdu_session_usage_data)) {
             ogs_error("OpenAPI_secondary_rat_usage_info_parseFromJSON() failed [pdu_session_usage_data]");
             goto end;
         }
-        OpenAPI_volume_timed_report_t *pdu_session_usage_dataItem = OpenAPI_volume_timed_report_parseFromJSON(pdu_session_usage_data_local_nonprimitive);
 
-        if (!pdu_session_usage_dataItem) {
-            ogs_error("No pdu_session_usage_dataItem");
-            OpenAPI_list_free(pdu_session_usage_dataList);
-            goto end;
+        pdu_session_usage_dataList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(pdu_session_usage_data_local, pdu_session_usage_data) {
+            if (!cJSON_IsObject(pdu_session_usage_data_local)) {
+                ogs_error("OpenAPI_secondary_rat_usage_info_parseFromJSON() failed [pdu_session_usage_data]");
+                goto end;
+            }
+            OpenAPI_volume_timed_report_t *pdu_session_usage_dataItem = OpenAPI_volume_timed_report_parseFromJSON(pdu_session_usage_data_local);
+            if (!pdu_session_usage_dataItem) {
+                ogs_error("No pdu_session_usage_dataItem");
+                OpenAPI_list_free(pdu_session_usage_dataList);
+                goto end;
+            }
+            OpenAPI_list_add(pdu_session_usage_dataList, pdu_session_usage_dataItem);
         }
-
-        OpenAPI_list_add(pdu_session_usage_dataList, pdu_session_usage_dataItem);
-    }
     }
 
     secondary_rat_usage_info_local_var = OpenAPI_secondary_rat_usage_info_create (
@@ -178,6 +179,20 @@ OpenAPI_secondary_rat_usage_info_t *OpenAPI_secondary_rat_usage_info_parseFromJS
 
     return secondary_rat_usage_info_local_var;
 end:
+    if (qos_flows_usage_dataList) {
+        OpenAPI_list_for_each(qos_flows_usage_dataList, node) {
+            OpenAPI_qos_flow_usage_report_free(node->data);
+        }
+        OpenAPI_list_free(qos_flows_usage_dataList);
+        qos_flows_usage_dataList = NULL;
+    }
+    if (pdu_session_usage_dataList) {
+        OpenAPI_list_for_each(pdu_session_usage_dataList, node) {
+            OpenAPI_volume_timed_report_free(node->data);
+        }
+        OpenAPI_list_free(pdu_session_usage_dataList);
+        pdu_session_usage_dataList = NULL;
+    }
     return NULL;
 }
 

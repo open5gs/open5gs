@@ -26,18 +26,26 @@ OpenAPI_location_reporting_configuration_t *OpenAPI_location_reporting_configura
 
 void OpenAPI_location_reporting_configuration_free(OpenAPI_location_reporting_configuration_t *location_reporting_configuration)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == location_reporting_configuration) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_location_accuracy_free(location_reporting_configuration->accuracy);
-    OpenAPI_location_accuracy_free(location_reporting_configuration->n3gpp_accuracy);
+    if (location_reporting_configuration->accuracy) {
+        OpenAPI_location_accuracy_free(location_reporting_configuration->accuracy);
+        location_reporting_configuration->accuracy = NULL;
+    }
+    if (location_reporting_configuration->n3gpp_accuracy) {
+        OpenAPI_location_accuracy_free(location_reporting_configuration->n3gpp_accuracy);
+        location_reporting_configuration->n3gpp_accuracy = NULL;
+    }
     ogs_free(location_reporting_configuration);
 }
 
 cJSON *OpenAPI_location_reporting_configuration_convertToJSON(OpenAPI_location_reporting_configuration_t *location_reporting_configuration)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (location_reporting_configuration == NULL) {
         ogs_error("OpenAPI_location_reporting_configuration_convertToJSON() failed [LocationReportingConfiguration]");
@@ -90,19 +98,24 @@ end:
 OpenAPI_location_reporting_configuration_t *OpenAPI_location_reporting_configuration_parseFromJSON(cJSON *location_reporting_configurationJSON)
 {
     OpenAPI_location_reporting_configuration_t *location_reporting_configuration_local_var = NULL;
-    cJSON *current_location = cJSON_GetObjectItemCaseSensitive(location_reporting_configurationJSON, "currentLocation");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *current_location = NULL;
+    cJSON *one_time = NULL;
+    cJSON *accuracy = NULL;
+    OpenAPI_location_accuracy_t *accuracy_local_nonprim = NULL;
+    cJSON *n3gpp_accuracy = NULL;
+    OpenAPI_location_accuracy_t *n3gpp_accuracy_local_nonprim = NULL;
+    current_location = cJSON_GetObjectItemCaseSensitive(location_reporting_configurationJSON, "currentLocation");
     if (!current_location) {
         ogs_error("OpenAPI_location_reporting_configuration_parseFromJSON() failed [current_location]");
         goto end;
     }
-
     if (!cJSON_IsBool(current_location)) {
         ogs_error("OpenAPI_location_reporting_configuration_parseFromJSON() failed [current_location]");
         goto end;
     }
 
-    cJSON *one_time = cJSON_GetObjectItemCaseSensitive(location_reporting_configurationJSON, "oneTime");
-
+    one_time = cJSON_GetObjectItemCaseSensitive(location_reporting_configurationJSON, "oneTime");
     if (one_time) {
     if (!cJSON_IsBool(one_time)) {
         ogs_error("OpenAPI_location_reporting_configuration_parseFromJSON() failed [one_time]");
@@ -110,16 +123,12 @@ OpenAPI_location_reporting_configuration_t *OpenAPI_location_reporting_configura
     }
     }
 
-    cJSON *accuracy = cJSON_GetObjectItemCaseSensitive(location_reporting_configurationJSON, "accuracy");
-
-    OpenAPI_location_accuracy_t *accuracy_local_nonprim = NULL;
+    accuracy = cJSON_GetObjectItemCaseSensitive(location_reporting_configurationJSON, "accuracy");
     if (accuracy) {
     accuracy_local_nonprim = OpenAPI_location_accuracy_parseFromJSON(accuracy);
     }
 
-    cJSON *n3gpp_accuracy = cJSON_GetObjectItemCaseSensitive(location_reporting_configurationJSON, "n3gppAccuracy");
-
-    OpenAPI_location_accuracy_t *n3gpp_accuracy_local_nonprim = NULL;
+    n3gpp_accuracy = cJSON_GetObjectItemCaseSensitive(location_reporting_configurationJSON, "n3gppAccuracy");
     if (n3gpp_accuracy) {
     n3gpp_accuracy_local_nonprim = OpenAPI_location_accuracy_parseFromJSON(n3gpp_accuracy);
     }
@@ -135,6 +144,14 @@ OpenAPI_location_reporting_configuration_t *OpenAPI_location_reporting_configura
 
     return location_reporting_configuration_local_var;
 end:
+    if (accuracy_local_nonprim) {
+        OpenAPI_location_accuracy_free(accuracy_local_nonprim);
+        accuracy_local_nonprim = NULL;
+    }
+    if (n3gpp_accuracy_local_nonprim) {
+        OpenAPI_location_accuracy_free(n3gpp_accuracy_local_nonprim);
+        n3gpp_accuracy_local_nonprim = NULL;
+    }
     return NULL;
 }
 

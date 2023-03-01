@@ -19,12 +19,12 @@ extern "C" {
 
 typedef struct OpenAPI_ue_policy_section_s OpenAPI_ue_policy_section_t;
 typedef struct OpenAPI_ue_policy_section_s {
-    char ue_policy_section_info;
+    char *ue_policy_section_info;
     char *upsi;
 } OpenAPI_ue_policy_section_t;
 
 OpenAPI_ue_policy_section_t *OpenAPI_ue_policy_section_create(
-    char ue_policy_section_info,
+    char *ue_policy_section_info,
     char *upsi
 );
 void OpenAPI_ue_policy_section_free(OpenAPI_ue_policy_section_t *ue_policy_section);

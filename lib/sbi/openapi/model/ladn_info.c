@@ -20,17 +20,22 @@ OpenAPI_ladn_info_t *OpenAPI_ladn_info_create(
 
 void OpenAPI_ladn_info_free(OpenAPI_ladn_info_t *ladn_info)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == ladn_info) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(ladn_info->ladn);
+    if (ladn_info->ladn) {
+        ogs_free(ladn_info->ladn);
+        ladn_info->ladn = NULL;
+    }
     ogs_free(ladn_info);
 }
 
 cJSON *OpenAPI_ladn_info_convertToJSON(OpenAPI_ladn_info_t *ladn_info)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (ladn_info == NULL) {
         ogs_error("OpenAPI_ladn_info_convertToJSON() failed [LadnInfo]");
@@ -38,12 +43,16 @@ cJSON *OpenAPI_ladn_info_convertToJSON(OpenAPI_ladn_info_t *ladn_info)
     }
 
     item = cJSON_CreateObject();
+    if (!ladn_info->ladn) {
+        ogs_error("OpenAPI_ladn_info_convertToJSON() failed [ladn]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "ladn", ladn_info->ladn) == NULL) {
         ogs_error("OpenAPI_ladn_info_convertToJSON() failed [ladn]");
         goto end;
     }
 
-    if (ladn_info->presence) {
+    if (ladn_info->presence != OpenAPI_presence_state_NULL) {
     if (cJSON_AddStringToObject(item, "presence", OpenAPI_presence_state_ToString(ladn_info->presence)) == NULL) {
         ogs_error("OpenAPI_ladn_info_convertToJSON() failed [presence]");
         goto end;
@@ -57,20 +66,21 @@ end:
 OpenAPI_ladn_info_t *OpenAPI_ladn_info_parseFromJSON(cJSON *ladn_infoJSON)
 {
     OpenAPI_ladn_info_t *ladn_info_local_var = NULL;
-    cJSON *ladn = cJSON_GetObjectItemCaseSensitive(ladn_infoJSON, "ladn");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *ladn = NULL;
+    cJSON *presence = NULL;
+    OpenAPI_presence_state_e presenceVariable = 0;
+    ladn = cJSON_GetObjectItemCaseSensitive(ladn_infoJSON, "ladn");
     if (!ladn) {
         ogs_error("OpenAPI_ladn_info_parseFromJSON() failed [ladn]");
         goto end;
     }
-
     if (!cJSON_IsString(ladn)) {
         ogs_error("OpenAPI_ladn_info_parseFromJSON() failed [ladn]");
         goto end;
     }
 
-    cJSON *presence = cJSON_GetObjectItemCaseSensitive(ladn_infoJSON, "presence");
-
-    OpenAPI_presence_state_e presenceVariable;
+    presence = cJSON_GetObjectItemCaseSensitive(ladn_infoJSON, "presence");
     if (presence) {
     if (!cJSON_IsString(presence)) {
         ogs_error("OpenAPI_ladn_info_parseFromJSON() failed [presence]");

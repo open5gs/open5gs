@@ -22,18 +22,26 @@ OpenAPI_point_altitude_t *OpenAPI_point_altitude_create(
 
 void OpenAPI_point_altitude_free(OpenAPI_point_altitude_t *point_altitude)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == point_altitude) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_supported_gad_shapes_free(point_altitude->shape);
-    OpenAPI_geographical_coordinates_free(point_altitude->point);
+    if (point_altitude->shape) {
+        OpenAPI_supported_gad_shapes_free(point_altitude->shape);
+        point_altitude->shape = NULL;
+    }
+    if (point_altitude->point) {
+        OpenAPI_geographical_coordinates_free(point_altitude->point);
+        point_altitude->point = NULL;
+    }
     ogs_free(point_altitude);
 }
 
 cJSON *OpenAPI_point_altitude_convertToJSON(OpenAPI_point_altitude_t *point_altitude)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (point_altitude == NULL) {
         ogs_error("OpenAPI_point_altitude_convertToJSON() failed [PointAltitude]");
@@ -41,6 +49,10 @@ cJSON *OpenAPI_point_altitude_convertToJSON(OpenAPI_point_altitude_t *point_alti
     }
 
     item = cJSON_CreateObject();
+    if (!point_altitude->shape) {
+        ogs_error("OpenAPI_point_altitude_convertToJSON() failed [shape]");
+        return NULL;
+    }
     cJSON *shape_local_JSON = OpenAPI_supported_gad_shapes_convertToJSON(point_altitude->shape);
     if (shape_local_JSON == NULL) {
         ogs_error("OpenAPI_point_altitude_convertToJSON() failed [shape]");
@@ -52,6 +64,10 @@ cJSON *OpenAPI_point_altitude_convertToJSON(OpenAPI_point_altitude_t *point_alti
         goto end;
     }
 
+    if (!point_altitude->point) {
+        ogs_error("OpenAPI_point_altitude_convertToJSON() failed [point]");
+        return NULL;
+    }
     cJSON *point_local_JSON = OpenAPI_geographical_coordinates_convertToJSON(point_altitude->point);
     if (point_local_JSON == NULL) {
         ogs_error("OpenAPI_point_altitude_convertToJSON() failed [point]");
@@ -75,30 +91,31 @@ end:
 OpenAPI_point_altitude_t *OpenAPI_point_altitude_parseFromJSON(cJSON *point_altitudeJSON)
 {
     OpenAPI_point_altitude_t *point_altitude_local_var = NULL;
-    cJSON *shape = cJSON_GetObjectItemCaseSensitive(point_altitudeJSON, "shape");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *shape = NULL;
+    OpenAPI_supported_gad_shapes_t *shape_local_nonprim = NULL;
+    cJSON *point = NULL;
+    OpenAPI_geographical_coordinates_t *point_local_nonprim = NULL;
+    cJSON *altitude = NULL;
+    shape = cJSON_GetObjectItemCaseSensitive(point_altitudeJSON, "shape");
     if (!shape) {
         ogs_error("OpenAPI_point_altitude_parseFromJSON() failed [shape]");
         goto end;
     }
-
-    OpenAPI_supported_gad_shapes_t *shape_local_nonprim = NULL;
     shape_local_nonprim = OpenAPI_supported_gad_shapes_parseFromJSON(shape);
 
-    cJSON *point = cJSON_GetObjectItemCaseSensitive(point_altitudeJSON, "point");
+    point = cJSON_GetObjectItemCaseSensitive(point_altitudeJSON, "point");
     if (!point) {
         ogs_error("OpenAPI_point_altitude_parseFromJSON() failed [point]");
         goto end;
     }
-
-    OpenAPI_geographical_coordinates_t *point_local_nonprim = NULL;
     point_local_nonprim = OpenAPI_geographical_coordinates_parseFromJSON(point);
 
-    cJSON *altitude = cJSON_GetObjectItemCaseSensitive(point_altitudeJSON, "altitude");
+    altitude = cJSON_GetObjectItemCaseSensitive(point_altitudeJSON, "altitude");
     if (!altitude) {
         ogs_error("OpenAPI_point_altitude_parseFromJSON() failed [altitude]");
         goto end;
     }
-
     if (!cJSON_IsNumber(altitude)) {
         ogs_error("OpenAPI_point_altitude_parseFromJSON() failed [altitude]");
         goto end;
@@ -113,6 +130,14 @@ OpenAPI_point_altitude_t *OpenAPI_point_altitude_parseFromJSON(cJSON *point_alti
 
     return point_altitude_local_var;
 end:
+    if (shape_local_nonprim) {
+        OpenAPI_supported_gad_shapes_free(shape_local_nonprim);
+        shape_local_nonprim = NULL;
+    }
+    if (point_local_nonprim) {
+        OpenAPI_geographical_coordinates_free(point_local_nonprim);
+        point_local_nonprim = NULL;
+    }
     return NULL;
 }
 

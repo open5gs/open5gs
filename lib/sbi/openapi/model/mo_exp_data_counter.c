@@ -20,17 +20,22 @@ OpenAPI_mo_exp_data_counter_t *OpenAPI_mo_exp_data_counter_create(
 
 void OpenAPI_mo_exp_data_counter_free(OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == mo_exp_data_counter) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(mo_exp_data_counter->time_stamp);
+    if (mo_exp_data_counter->time_stamp) {
+        ogs_free(mo_exp_data_counter->time_stamp);
+        mo_exp_data_counter->time_stamp = NULL;
+    }
     ogs_free(mo_exp_data_counter);
 }
 
 cJSON *OpenAPI_mo_exp_data_counter_convertToJSON(OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (mo_exp_data_counter == NULL) {
         ogs_error("OpenAPI_mo_exp_data_counter_convertToJSON() failed [MoExpDataCounter]");
@@ -57,21 +62,22 @@ end:
 OpenAPI_mo_exp_data_counter_t *OpenAPI_mo_exp_data_counter_parseFromJSON(cJSON *mo_exp_data_counterJSON)
 {
     OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter_local_var = NULL;
-    cJSON *counter = cJSON_GetObjectItemCaseSensitive(mo_exp_data_counterJSON, "counter");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *counter = NULL;
+    cJSON *time_stamp = NULL;
+    counter = cJSON_GetObjectItemCaseSensitive(mo_exp_data_counterJSON, "counter");
     if (!counter) {
         ogs_error("OpenAPI_mo_exp_data_counter_parseFromJSON() failed [counter]");
         goto end;
     }
-
     if (!cJSON_IsNumber(counter)) {
         ogs_error("OpenAPI_mo_exp_data_counter_parseFromJSON() failed [counter]");
         goto end;
     }
 
-    cJSON *time_stamp = cJSON_GetObjectItemCaseSensitive(mo_exp_data_counterJSON, "timeStamp");
-
+    time_stamp = cJSON_GetObjectItemCaseSensitive(mo_exp_data_counterJSON, "timeStamp");
     if (time_stamp) {
-    if (!cJSON_IsString(time_stamp)) {
+    if (!cJSON_IsString(time_stamp) && !cJSON_IsNull(time_stamp)) {
         ogs_error("OpenAPI_mo_exp_data_counter_parseFromJSON() failed [time_stamp]");
         goto end;
     }
@@ -80,7 +86,7 @@ OpenAPI_mo_exp_data_counter_t *OpenAPI_mo_exp_data_counter_parseFromJSON(cJSON *
     mo_exp_data_counter_local_var = OpenAPI_mo_exp_data_counter_create (
         
         counter->valuedouble,
-        time_stamp ? ogs_strdup(time_stamp->valuestring) : NULL
+        time_stamp && !cJSON_IsNull(time_stamp) ? ogs_strdup(time_stamp->valuestring) : NULL
     );
 
     return mo_exp_data_counter_local_var;

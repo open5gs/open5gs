@@ -32,19 +32,30 @@ OpenAPI_ue_differentiation_info_t *OpenAPI_ue_differentiation_info_create(
 
 void OpenAPI_ue_differentiation_info_free(OpenAPI_ue_differentiation_info_t *ue_differentiation_info)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == ue_differentiation_info) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_scheduled_communication_time_free(ue_differentiation_info->scheduled_com_time);
-    OpenAPI_battery_indication_free(ue_differentiation_info->battery_ind);
-    ogs_free(ue_differentiation_info->validity_time);
+    if (ue_differentiation_info->scheduled_com_time) {
+        OpenAPI_scheduled_communication_time_free(ue_differentiation_info->scheduled_com_time);
+        ue_differentiation_info->scheduled_com_time = NULL;
+    }
+    if (ue_differentiation_info->battery_ind) {
+        OpenAPI_battery_indication_free(ue_differentiation_info->battery_ind);
+        ue_differentiation_info->battery_ind = NULL;
+    }
+    if (ue_differentiation_info->validity_time) {
+        ogs_free(ue_differentiation_info->validity_time);
+        ue_differentiation_info->validity_time = NULL;
+    }
     ogs_free(ue_differentiation_info);
 }
 
 cJSON *OpenAPI_ue_differentiation_info_convertToJSON(OpenAPI_ue_differentiation_info_t *ue_differentiation_info)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (ue_differentiation_info == NULL) {
         ogs_error("OpenAPI_ue_differentiation_info_convertToJSON() failed [UeDifferentiationInfo]");
@@ -52,7 +63,7 @@ cJSON *OpenAPI_ue_differentiation_info_convertToJSON(OpenAPI_ue_differentiation_
     }
 
     item = cJSON_CreateObject();
-    if (ue_differentiation_info->periodic_com_ind) {
+    if (ue_differentiation_info->periodic_com_ind != OpenAPI_periodic_communication_indicator_NULL) {
     if (cJSON_AddStringToObject(item, "periodicComInd", OpenAPI_periodic_communication_indicator_ToString(ue_differentiation_info->periodic_com_ind)) == NULL) {
         ogs_error("OpenAPI_ue_differentiation_info_convertToJSON() failed [periodic_com_ind]");
         goto end;
@@ -79,14 +90,14 @@ cJSON *OpenAPI_ue_differentiation_info_convertToJSON(OpenAPI_ue_differentiation_
     }
     }
 
-    if (ue_differentiation_info->stationary_ind) {
+    if (ue_differentiation_info->stationary_ind != OpenAPI_stationary_indication_NULL) {
     if (cJSON_AddStringToObject(item, "stationaryInd", OpenAPI_stationary_indication_ToString(ue_differentiation_info->stationary_ind)) == NULL) {
         ogs_error("OpenAPI_ue_differentiation_info_convertToJSON() failed [stationary_ind]");
         goto end;
     }
     }
 
-    if (ue_differentiation_info->traffic_profile) {
+    if (ue_differentiation_info->traffic_profile != OpenAPI_traffic_profile_NULL) {
     if (cJSON_AddStringToObject(item, "trafficProfile", OpenAPI_traffic_profile_ToString(ue_differentiation_info->traffic_profile)) == NULL) {
         ogs_error("OpenAPI_ue_differentiation_info_convertToJSON() failed [traffic_profile]");
         goto end;
@@ -120,9 +131,20 @@ end:
 OpenAPI_ue_differentiation_info_t *OpenAPI_ue_differentiation_info_parseFromJSON(cJSON *ue_differentiation_infoJSON)
 {
     OpenAPI_ue_differentiation_info_t *ue_differentiation_info_local_var = NULL;
-    cJSON *periodic_com_ind = cJSON_GetObjectItemCaseSensitive(ue_differentiation_infoJSON, "periodicComInd");
-
-    OpenAPI_periodic_communication_indicator_e periodic_com_indVariable;
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *periodic_com_ind = NULL;
+    OpenAPI_periodic_communication_indicator_e periodic_com_indVariable = 0;
+    cJSON *periodic_time = NULL;
+    cJSON *scheduled_com_time = NULL;
+    OpenAPI_scheduled_communication_time_t *scheduled_com_time_local_nonprim = NULL;
+    cJSON *stationary_ind = NULL;
+    OpenAPI_stationary_indication_e stationary_indVariable = 0;
+    cJSON *traffic_profile = NULL;
+    OpenAPI_traffic_profile_e traffic_profileVariable = 0;
+    cJSON *battery_ind = NULL;
+    OpenAPI_battery_indication_t *battery_ind_local_nonprim = NULL;
+    cJSON *validity_time = NULL;
+    periodic_com_ind = cJSON_GetObjectItemCaseSensitive(ue_differentiation_infoJSON, "periodicComInd");
     if (periodic_com_ind) {
     if (!cJSON_IsString(periodic_com_ind)) {
         ogs_error("OpenAPI_ue_differentiation_info_parseFromJSON() failed [periodic_com_ind]");
@@ -131,8 +153,7 @@ OpenAPI_ue_differentiation_info_t *OpenAPI_ue_differentiation_info_parseFromJSON
     periodic_com_indVariable = OpenAPI_periodic_communication_indicator_FromString(periodic_com_ind->valuestring);
     }
 
-    cJSON *periodic_time = cJSON_GetObjectItemCaseSensitive(ue_differentiation_infoJSON, "periodicTime");
-
+    periodic_time = cJSON_GetObjectItemCaseSensitive(ue_differentiation_infoJSON, "periodicTime");
     if (periodic_time) {
     if (!cJSON_IsNumber(periodic_time)) {
         ogs_error("OpenAPI_ue_differentiation_info_parseFromJSON() failed [periodic_time]");
@@ -140,16 +161,12 @@ OpenAPI_ue_differentiation_info_t *OpenAPI_ue_differentiation_info_parseFromJSON
     }
     }
 
-    cJSON *scheduled_com_time = cJSON_GetObjectItemCaseSensitive(ue_differentiation_infoJSON, "scheduledComTime");
-
-    OpenAPI_scheduled_communication_time_t *scheduled_com_time_local_nonprim = NULL;
+    scheduled_com_time = cJSON_GetObjectItemCaseSensitive(ue_differentiation_infoJSON, "scheduledComTime");
     if (scheduled_com_time) {
     scheduled_com_time_local_nonprim = OpenAPI_scheduled_communication_time_parseFromJSON(scheduled_com_time);
     }
 
-    cJSON *stationary_ind = cJSON_GetObjectItemCaseSensitive(ue_differentiation_infoJSON, "stationaryInd");
-
-    OpenAPI_stationary_indication_e stationary_indVariable;
+    stationary_ind = cJSON_GetObjectItemCaseSensitive(ue_differentiation_infoJSON, "stationaryInd");
     if (stationary_ind) {
     if (!cJSON_IsString(stationary_ind)) {
         ogs_error("OpenAPI_ue_differentiation_info_parseFromJSON() failed [stationary_ind]");
@@ -158,9 +175,7 @@ OpenAPI_ue_differentiation_info_t *OpenAPI_ue_differentiation_info_parseFromJSON
     stationary_indVariable = OpenAPI_stationary_indication_FromString(stationary_ind->valuestring);
     }
 
-    cJSON *traffic_profile = cJSON_GetObjectItemCaseSensitive(ue_differentiation_infoJSON, "trafficProfile");
-
-    OpenAPI_traffic_profile_e traffic_profileVariable;
+    traffic_profile = cJSON_GetObjectItemCaseSensitive(ue_differentiation_infoJSON, "trafficProfile");
     if (traffic_profile) {
     if (!cJSON_IsString(traffic_profile)) {
         ogs_error("OpenAPI_ue_differentiation_info_parseFromJSON() failed [traffic_profile]");
@@ -169,17 +184,14 @@ OpenAPI_ue_differentiation_info_t *OpenAPI_ue_differentiation_info_parseFromJSON
     traffic_profileVariable = OpenAPI_traffic_profile_FromString(traffic_profile->valuestring);
     }
 
-    cJSON *battery_ind = cJSON_GetObjectItemCaseSensitive(ue_differentiation_infoJSON, "batteryInd");
-
-    OpenAPI_battery_indication_t *battery_ind_local_nonprim = NULL;
+    battery_ind = cJSON_GetObjectItemCaseSensitive(ue_differentiation_infoJSON, "batteryInd");
     if (battery_ind) {
     battery_ind_local_nonprim = OpenAPI_battery_indication_parseFromJSON(battery_ind);
     }
 
-    cJSON *validity_time = cJSON_GetObjectItemCaseSensitive(ue_differentiation_infoJSON, "validityTime");
-
+    validity_time = cJSON_GetObjectItemCaseSensitive(ue_differentiation_infoJSON, "validityTime");
     if (validity_time) {
-    if (!cJSON_IsString(validity_time)) {
+    if (!cJSON_IsString(validity_time) && !cJSON_IsNull(validity_time)) {
         ogs_error("OpenAPI_ue_differentiation_info_parseFromJSON() failed [validity_time]");
         goto end;
     }
@@ -193,11 +205,19 @@ OpenAPI_ue_differentiation_info_t *OpenAPI_ue_differentiation_info_parseFromJSON
         stationary_ind ? stationary_indVariable : 0,
         traffic_profile ? traffic_profileVariable : 0,
         battery_ind ? battery_ind_local_nonprim : NULL,
-        validity_time ? ogs_strdup(validity_time->valuestring) : NULL
+        validity_time && !cJSON_IsNull(validity_time) ? ogs_strdup(validity_time->valuestring) : NULL
     );
 
     return ue_differentiation_info_local_var;
 end:
+    if (scheduled_com_time_local_nonprim) {
+        OpenAPI_scheduled_communication_time_free(scheduled_com_time_local_nonprim);
+        scheduled_com_time_local_nonprim = NULL;
+    }
+    if (battery_ind_local_nonprim) {
+        OpenAPI_battery_indication_free(battery_ind_local_nonprim);
+        battery_ind_local_nonprim = NULL;
+    }
     return NULL;
 }
 

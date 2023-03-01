@@ -39,7 +39,7 @@ jobs:
     - name: Check out repository code
       uses: actions/checkout@main
     - name: Setup Meson Build
-      run: PATH="/usr/local/opt/bison/bin:$PATH" meson setup build
+      run: PATH="/usr/local/opt/bison/bin:$PATH" PKG_CONFIG_PATH="/usr/local/opt/openssl/lib/pkgconfig:$PKG_CONFIG_PATH" meson setup build
       env:
         CC: gcc
     - name : Build Open5GS

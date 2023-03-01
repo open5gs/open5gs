@@ -30,19 +30,30 @@ OpenAPI_auth_event_t *OpenAPI_auth_event_create(
 
 void OpenAPI_auth_event_free(OpenAPI_auth_event_t *auth_event)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == auth_event) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(auth_event->nf_instance_id);
-    ogs_free(auth_event->time_stamp);
-    ogs_free(auth_event->serving_network_name);
+    if (auth_event->nf_instance_id) {
+        ogs_free(auth_event->nf_instance_id);
+        auth_event->nf_instance_id = NULL;
+    }
+    if (auth_event->time_stamp) {
+        ogs_free(auth_event->time_stamp);
+        auth_event->time_stamp = NULL;
+    }
+    if (auth_event->serving_network_name) {
+        ogs_free(auth_event->serving_network_name);
+        auth_event->serving_network_name = NULL;
+    }
     ogs_free(auth_event);
 }
 
 cJSON *OpenAPI_auth_event_convertToJSON(OpenAPI_auth_event_t *auth_event)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (auth_event == NULL) {
         ogs_error("OpenAPI_auth_event_convertToJSON() failed [AuthEvent]");
@@ -50,6 +61,10 @@ cJSON *OpenAPI_auth_event_convertToJSON(OpenAPI_auth_event_t *auth_event)
     }
 
     item = cJSON_CreateObject();
+    if (!auth_event->nf_instance_id) {
+        ogs_error("OpenAPI_auth_event_convertToJSON() failed [nf_instance_id]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "nfInstanceId", auth_event->nf_instance_id) == NULL) {
         ogs_error("OpenAPI_auth_event_convertToJSON() failed [nf_instance_id]");
         goto end;
@@ -60,16 +75,28 @@ cJSON *OpenAPI_auth_event_convertToJSON(OpenAPI_auth_event_t *auth_event)
         goto end;
     }
 
+    if (!auth_event->time_stamp) {
+        ogs_error("OpenAPI_auth_event_convertToJSON() failed [time_stamp]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "timeStamp", auth_event->time_stamp) == NULL) {
         ogs_error("OpenAPI_auth_event_convertToJSON() failed [time_stamp]");
         goto end;
     }
 
+    if (auth_event->auth_type == OpenAPI_auth_type_NULL) {
+        ogs_error("OpenAPI_auth_event_convertToJSON() failed [auth_type]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "authType", OpenAPI_auth_type_ToString(auth_event->auth_type)) == NULL) {
         ogs_error("OpenAPI_auth_event_convertToJSON() failed [auth_type]");
         goto end;
     }
 
+    if (!auth_event->serving_network_name) {
+        ogs_error("OpenAPI_auth_event_convertToJSON() failed [serving_network_name]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "servingNetworkName", auth_event->serving_network_name) == NULL) {
         ogs_error("OpenAPI_auth_event_convertToJSON() failed [serving_network_name]");
         goto end;
@@ -89,65 +116,66 @@ end:
 OpenAPI_auth_event_t *OpenAPI_auth_event_parseFromJSON(cJSON *auth_eventJSON)
 {
     OpenAPI_auth_event_t *auth_event_local_var = NULL;
-    cJSON *nf_instance_id = cJSON_GetObjectItemCaseSensitive(auth_eventJSON, "nfInstanceId");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *nf_instance_id = NULL;
+    cJSON *success = NULL;
+    cJSON *time_stamp = NULL;
+    cJSON *auth_type = NULL;
+    OpenAPI_auth_type_e auth_typeVariable = 0;
+    cJSON *serving_network_name = NULL;
+    cJSON *auth_removal_ind = NULL;
+    nf_instance_id = cJSON_GetObjectItemCaseSensitive(auth_eventJSON, "nfInstanceId");
     if (!nf_instance_id) {
         ogs_error("OpenAPI_auth_event_parseFromJSON() failed [nf_instance_id]");
         goto end;
     }
-
     if (!cJSON_IsString(nf_instance_id)) {
         ogs_error("OpenAPI_auth_event_parseFromJSON() failed [nf_instance_id]");
         goto end;
     }
 
-    cJSON *success = cJSON_GetObjectItemCaseSensitive(auth_eventJSON, "success");
+    success = cJSON_GetObjectItemCaseSensitive(auth_eventJSON, "success");
     if (!success) {
         ogs_error("OpenAPI_auth_event_parseFromJSON() failed [success]");
         goto end;
     }
-
     if (!cJSON_IsBool(success)) {
         ogs_error("OpenAPI_auth_event_parseFromJSON() failed [success]");
         goto end;
     }
 
-    cJSON *time_stamp = cJSON_GetObjectItemCaseSensitive(auth_eventJSON, "timeStamp");
+    time_stamp = cJSON_GetObjectItemCaseSensitive(auth_eventJSON, "timeStamp");
     if (!time_stamp) {
         ogs_error("OpenAPI_auth_event_parseFromJSON() failed [time_stamp]");
         goto end;
     }
-
-    if (!cJSON_IsString(time_stamp)) {
+    if (!cJSON_IsString(time_stamp) && !cJSON_IsNull(time_stamp)) {
         ogs_error("OpenAPI_auth_event_parseFromJSON() failed [time_stamp]");
         goto end;
     }
 
-    cJSON *auth_type = cJSON_GetObjectItemCaseSensitive(auth_eventJSON, "authType");
+    auth_type = cJSON_GetObjectItemCaseSensitive(auth_eventJSON, "authType");
     if (!auth_type) {
         ogs_error("OpenAPI_auth_event_parseFromJSON() failed [auth_type]");
         goto end;
     }
-
-    OpenAPI_auth_type_e auth_typeVariable;
     if (!cJSON_IsString(auth_type)) {
         ogs_error("OpenAPI_auth_event_parseFromJSON() failed [auth_type]");
         goto end;
     }
     auth_typeVariable = OpenAPI_auth_type_FromString(auth_type->valuestring);
 
-    cJSON *serving_network_name = cJSON_GetObjectItemCaseSensitive(auth_eventJSON, "servingNetworkName");
+    serving_network_name = cJSON_GetObjectItemCaseSensitive(auth_eventJSON, "servingNetworkName");
     if (!serving_network_name) {
         ogs_error("OpenAPI_auth_event_parseFromJSON() failed [serving_network_name]");
         goto end;
     }
-
     if (!cJSON_IsString(serving_network_name)) {
         ogs_error("OpenAPI_auth_event_parseFromJSON() failed [serving_network_name]");
         goto end;
     }
 
-    cJSON *auth_removal_ind = cJSON_GetObjectItemCaseSensitive(auth_eventJSON, "authRemovalInd");
-
+    auth_removal_ind = cJSON_GetObjectItemCaseSensitive(auth_eventJSON, "authRemovalInd");
     if (auth_removal_ind) {
     if (!cJSON_IsBool(auth_removal_ind)) {
         ogs_error("OpenAPI_auth_event_parseFromJSON() failed [auth_removal_ind]");

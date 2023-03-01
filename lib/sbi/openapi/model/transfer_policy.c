@@ -26,19 +26,30 @@ OpenAPI_transfer_policy_t *OpenAPI_transfer_policy_create(
 
 void OpenAPI_transfer_policy_free(OpenAPI_transfer_policy_t *transfer_policy)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == transfer_policy) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(transfer_policy->max_bit_rate_dl);
-    ogs_free(transfer_policy->max_bit_rate_ul);
-    OpenAPI_time_window_free(transfer_policy->rec_time_int);
+    if (transfer_policy->max_bit_rate_dl) {
+        ogs_free(transfer_policy->max_bit_rate_dl);
+        transfer_policy->max_bit_rate_dl = NULL;
+    }
+    if (transfer_policy->max_bit_rate_ul) {
+        ogs_free(transfer_policy->max_bit_rate_ul);
+        transfer_policy->max_bit_rate_ul = NULL;
+    }
+    if (transfer_policy->rec_time_int) {
+        OpenAPI_time_window_free(transfer_policy->rec_time_int);
+        transfer_policy->rec_time_int = NULL;
+    }
     ogs_free(transfer_policy);
 }
 
 cJSON *OpenAPI_transfer_policy_convertToJSON(OpenAPI_transfer_policy_t *transfer_policy)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (transfer_policy == NULL) {
         ogs_error("OpenAPI_transfer_policy_convertToJSON() failed [TransferPolicy]");
@@ -65,6 +76,10 @@ cJSON *OpenAPI_transfer_policy_convertToJSON(OpenAPI_transfer_policy_t *transfer
         goto end;
     }
 
+    if (!transfer_policy->rec_time_int) {
+        ogs_error("OpenAPI_transfer_policy_convertToJSON() failed [rec_time_int]");
+        return NULL;
+    }
     cJSON *rec_time_int_local_JSON = OpenAPI_time_window_convertToJSON(transfer_policy->rec_time_int);
     if (rec_time_int_local_JSON == NULL) {
         ogs_error("OpenAPI_transfer_policy_convertToJSON() failed [rec_time_int]");
@@ -88,58 +103,59 @@ end:
 OpenAPI_transfer_policy_t *OpenAPI_transfer_policy_parseFromJSON(cJSON *transfer_policyJSON)
 {
     OpenAPI_transfer_policy_t *transfer_policy_local_var = NULL;
-    cJSON *max_bit_rate_dl = cJSON_GetObjectItemCaseSensitive(transfer_policyJSON, "maxBitRateDl");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *max_bit_rate_dl = NULL;
+    cJSON *max_bit_rate_ul = NULL;
+    cJSON *rating_group = NULL;
+    cJSON *rec_time_int = NULL;
+    OpenAPI_time_window_t *rec_time_int_local_nonprim = NULL;
+    cJSON *trans_policy_id = NULL;
+    max_bit_rate_dl = cJSON_GetObjectItemCaseSensitive(transfer_policyJSON, "maxBitRateDl");
     if (max_bit_rate_dl) {
-    if (!cJSON_IsString(max_bit_rate_dl)) {
+    if (!cJSON_IsString(max_bit_rate_dl) && !cJSON_IsNull(max_bit_rate_dl)) {
         ogs_error("OpenAPI_transfer_policy_parseFromJSON() failed [max_bit_rate_dl]");
         goto end;
     }
     }
 
-    cJSON *max_bit_rate_ul = cJSON_GetObjectItemCaseSensitive(transfer_policyJSON, "maxBitRateUl");
-
+    max_bit_rate_ul = cJSON_GetObjectItemCaseSensitive(transfer_policyJSON, "maxBitRateUl");
     if (max_bit_rate_ul) {
-    if (!cJSON_IsString(max_bit_rate_ul)) {
+    if (!cJSON_IsString(max_bit_rate_ul) && !cJSON_IsNull(max_bit_rate_ul)) {
         ogs_error("OpenAPI_transfer_policy_parseFromJSON() failed [max_bit_rate_ul]");
         goto end;
     }
     }
 
-    cJSON *rating_group = cJSON_GetObjectItemCaseSensitive(transfer_policyJSON, "ratingGroup");
+    rating_group = cJSON_GetObjectItemCaseSensitive(transfer_policyJSON, "ratingGroup");
     if (!rating_group) {
         ogs_error("OpenAPI_transfer_policy_parseFromJSON() failed [rating_group]");
         goto end;
     }
-
     if (!cJSON_IsNumber(rating_group)) {
         ogs_error("OpenAPI_transfer_policy_parseFromJSON() failed [rating_group]");
         goto end;
     }
 
-    cJSON *rec_time_int = cJSON_GetObjectItemCaseSensitive(transfer_policyJSON, "recTimeInt");
+    rec_time_int = cJSON_GetObjectItemCaseSensitive(transfer_policyJSON, "recTimeInt");
     if (!rec_time_int) {
         ogs_error("OpenAPI_transfer_policy_parseFromJSON() failed [rec_time_int]");
         goto end;
     }
-
-    OpenAPI_time_window_t *rec_time_int_local_nonprim = NULL;
     rec_time_int_local_nonprim = OpenAPI_time_window_parseFromJSON(rec_time_int);
 
-    cJSON *trans_policy_id = cJSON_GetObjectItemCaseSensitive(transfer_policyJSON, "transPolicyId");
+    trans_policy_id = cJSON_GetObjectItemCaseSensitive(transfer_policyJSON, "transPolicyId");
     if (!trans_policy_id) {
         ogs_error("OpenAPI_transfer_policy_parseFromJSON() failed [trans_policy_id]");
         goto end;
     }
-
     if (!cJSON_IsNumber(trans_policy_id)) {
         ogs_error("OpenAPI_transfer_policy_parseFromJSON() failed [trans_policy_id]");
         goto end;
     }
 
     transfer_policy_local_var = OpenAPI_transfer_policy_create (
-        max_bit_rate_dl ? ogs_strdup(max_bit_rate_dl->valuestring) : NULL,
-        max_bit_rate_ul ? ogs_strdup(max_bit_rate_ul->valuestring) : NULL,
+        max_bit_rate_dl && !cJSON_IsNull(max_bit_rate_dl) ? ogs_strdup(max_bit_rate_dl->valuestring) : NULL,
+        max_bit_rate_ul && !cJSON_IsNull(max_bit_rate_ul) ? ogs_strdup(max_bit_rate_ul->valuestring) : NULL,
         
         rating_group->valuedouble,
         rec_time_int_local_nonprim,
@@ -149,6 +165,10 @@ OpenAPI_transfer_policy_t *OpenAPI_transfer_policy_parseFromJSON(cJSON *transfer
 
     return transfer_policy_local_var;
 end:
+    if (rec_time_int_local_nonprim) {
+        OpenAPI_time_window_free(rec_time_int_local_nonprim);
+        rec_time_int_local_nonprim = NULL;
+    }
     return NULL;
 }
 

@@ -12,7 +12,6 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "ellipsoid_arc_all_of.h"
 #include "gad_shape.h"
 #include "geographical_coordinates.h"
 #include "supported_gad_shapes.h"

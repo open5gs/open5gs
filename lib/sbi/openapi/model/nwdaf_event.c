@@ -16,16 +16,18 @@ OpenAPI_nwdaf_event_t *OpenAPI_nwdaf_event_create(
 
 void OpenAPI_nwdaf_event_free(OpenAPI_nwdaf_event_t *nwdaf_event)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == nwdaf_event) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(nwdaf_event);
 }
 
 cJSON *OpenAPI_nwdaf_event_convertToJSON(OpenAPI_nwdaf_event_t *nwdaf_event)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (nwdaf_event == NULL) {
         ogs_error("OpenAPI_nwdaf_event_convertToJSON() failed [NwdafEvent]");
@@ -40,6 +42,7 @@ end:
 OpenAPI_nwdaf_event_t *OpenAPI_nwdaf_event_parseFromJSON(cJSON *nwdaf_eventJSON)
 {
     OpenAPI_nwdaf_event_t *nwdaf_event_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
     nwdaf_event_local_var = OpenAPI_nwdaf_event_create (
     );
 

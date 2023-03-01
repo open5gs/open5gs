@@ -20,16 +20,18 @@ OpenAPI_additional_access_info_t *OpenAPI_additional_access_info_create(
 
 void OpenAPI_additional_access_info_free(OpenAPI_additional_access_info_t *additional_access_info)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == additional_access_info) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(additional_access_info);
 }
 
 cJSON *OpenAPI_additional_access_info_convertToJSON(OpenAPI_additional_access_info_t *additional_access_info)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (additional_access_info == NULL) {
         ogs_error("OpenAPI_additional_access_info_convertToJSON() failed [AdditionalAccessInfo]");
@@ -37,12 +39,16 @@ cJSON *OpenAPI_additional_access_info_convertToJSON(OpenAPI_additional_access_in
     }
 
     item = cJSON_CreateObject();
+    if (additional_access_info->access_type == OpenAPI_access_type_NULL) {
+        ogs_error("OpenAPI_additional_access_info_convertToJSON() failed [access_type]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "accessType", OpenAPI_access_type_ToString(additional_access_info->access_type)) == NULL) {
         ogs_error("OpenAPI_additional_access_info_convertToJSON() failed [access_type]");
         goto end;
     }
 
-    if (additional_access_info->rat_type) {
+    if (additional_access_info->rat_type != OpenAPI_rat_type_NULL) {
     if (cJSON_AddStringToObject(item, "ratType", OpenAPI_rat_type_ToString(additional_access_info->rat_type)) == NULL) {
         ogs_error("OpenAPI_additional_access_info_convertToJSON() failed [rat_type]");
         goto end;
@@ -56,22 +62,23 @@ end:
 OpenAPI_additional_access_info_t *OpenAPI_additional_access_info_parseFromJSON(cJSON *additional_access_infoJSON)
 {
     OpenAPI_additional_access_info_t *additional_access_info_local_var = NULL;
-    cJSON *access_type = cJSON_GetObjectItemCaseSensitive(additional_access_infoJSON, "accessType");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *access_type = NULL;
+    OpenAPI_access_type_e access_typeVariable = 0;
+    cJSON *rat_type = NULL;
+    OpenAPI_rat_type_e rat_typeVariable = 0;
+    access_type = cJSON_GetObjectItemCaseSensitive(additional_access_infoJSON, "accessType");
     if (!access_type) {
         ogs_error("OpenAPI_additional_access_info_parseFromJSON() failed [access_type]");
         goto end;
     }
-
-    OpenAPI_access_type_e access_typeVariable;
     if (!cJSON_IsString(access_type)) {
         ogs_error("OpenAPI_additional_access_info_parseFromJSON() failed [access_type]");
         goto end;
     }
     access_typeVariable = OpenAPI_access_type_FromString(access_type->valuestring);
 
-    cJSON *rat_type = cJSON_GetObjectItemCaseSensitive(additional_access_infoJSON, "ratType");
-
-    OpenAPI_rat_type_e rat_typeVariable;
+    rat_type = cJSON_GetObjectItemCaseSensitive(additional_access_infoJSON, "ratType");
     if (rat_type) {
     if (!cJSON_IsString(rat_type)) {
         ogs_error("OpenAPI_additional_access_info_parseFromJSON() failed [rat_type]");

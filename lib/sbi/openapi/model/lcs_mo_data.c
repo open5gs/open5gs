@@ -18,17 +18,22 @@ OpenAPI_lcs_mo_data_t *OpenAPI_lcs_mo_data_create(
 
 void OpenAPI_lcs_mo_data_free(OpenAPI_lcs_mo_data_t *lcs_mo_data)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == lcs_mo_data) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_list_free(lcs_mo_data->allowed_service_classes);
+    if (lcs_mo_data->allowed_service_classes) {
+        OpenAPI_list_free(lcs_mo_data->allowed_service_classes);
+        lcs_mo_data->allowed_service_classes = NULL;
+    }
     ogs_free(lcs_mo_data);
 }
 
 cJSON *OpenAPI_lcs_mo_data_convertToJSON(OpenAPI_lcs_mo_data_t *lcs_mo_data)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (lcs_mo_data == NULL) {
         ogs_error("OpenAPI_lcs_mo_data_convertToJSON() failed [LcsMoData]");
@@ -36,14 +41,17 @@ cJSON *OpenAPI_lcs_mo_data_convertToJSON(OpenAPI_lcs_mo_data_t *lcs_mo_data)
     }
 
     item = cJSON_CreateObject();
-    cJSON *allowed_service_classes = cJSON_AddArrayToObject(item, "allowedServiceClasses");
-    if (allowed_service_classes == NULL) {
+    if (lcs_mo_data->allowed_service_classes == OpenAPI_lcs_mo_service_class_NULL) {
+        ogs_error("OpenAPI_lcs_mo_data_convertToJSON() failed [allowed_service_classes]");
+        return NULL;
+    }
+    cJSON *allowed_service_classesList = cJSON_AddArrayToObject(item, "allowedServiceClasses");
+    if (allowed_service_classesList == NULL) {
         ogs_error("OpenAPI_lcs_mo_data_convertToJSON() failed [allowed_service_classes]");
         goto end;
     }
-    OpenAPI_lnode_t *allowed_service_classes_node;
-    OpenAPI_list_for_each(lcs_mo_data->allowed_service_classes, allowed_service_classes_node) {
-        if (cJSON_AddStringToObject(allowed_service_classes, "", OpenAPI_lcs_mo_service_class_ToString((intptr_t)allowed_service_classes_node->data)) == NULL) {
+    OpenAPI_list_for_each(lcs_mo_data->allowed_service_classes, node) {
+        if (cJSON_AddStringToObject(allowed_service_classesList, "", OpenAPI_lcs_mo_service_class_ToString((intptr_t)node->data)) == NULL) {
             ogs_error("OpenAPI_lcs_mo_data_convertToJSON() failed [allowed_service_classes]");
             goto end;
         }
@@ -56,29 +64,29 @@ end:
 OpenAPI_lcs_mo_data_t *OpenAPI_lcs_mo_data_parseFromJSON(cJSON *lcs_mo_dataJSON)
 {
     OpenAPI_lcs_mo_data_t *lcs_mo_data_local_var = NULL;
-    cJSON *allowed_service_classes = cJSON_GetObjectItemCaseSensitive(lcs_mo_dataJSON, "allowedServiceClasses");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *allowed_service_classes = NULL;
+    OpenAPI_list_t *allowed_service_classesList = NULL;
+    allowed_service_classes = cJSON_GetObjectItemCaseSensitive(lcs_mo_dataJSON, "allowedServiceClasses");
     if (!allowed_service_classes) {
         ogs_error("OpenAPI_lcs_mo_data_parseFromJSON() failed [allowed_service_classes]");
         goto end;
     }
-
-    OpenAPI_list_t *allowed_service_classesList;
-    cJSON *allowed_service_classes_local_nonprimitive;
-    if (!cJSON_IsArray(allowed_service_classes)) {
-        ogs_error("OpenAPI_lcs_mo_data_parseFromJSON() failed [allowed_service_classes]");
-        goto end;
-    }
-
-    allowed_service_classesList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(allowed_service_classes_local_nonprimitive, allowed_service_classes ) {
-        if (!cJSON_IsString(allowed_service_classes_local_nonprimitive)){
+        cJSON *allowed_service_classes_local = NULL;
+        if (!cJSON_IsArray(allowed_service_classes)) {
             ogs_error("OpenAPI_lcs_mo_data_parseFromJSON() failed [allowed_service_classes]");
             goto end;
         }
 
-        OpenAPI_list_add(allowed_service_classesList, (void *)OpenAPI_lcs_mo_service_class_FromString(allowed_service_classes_local_nonprimitive->valuestring));
-    }
+        allowed_service_classesList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(allowed_service_classes_local, allowed_service_classes) {
+            if (!cJSON_IsString(allowed_service_classes_local)) {
+                ogs_error("OpenAPI_lcs_mo_data_parseFromJSON() failed [allowed_service_classes]");
+                goto end;
+            }
+            OpenAPI_list_add(allowed_service_classesList, (void *)OpenAPI_lcs_mo_service_class_FromString(allowed_service_classes_local->valuestring));
+        }
 
     lcs_mo_data_local_var = OpenAPI_lcs_mo_data_create (
         allowed_service_classesList
@@ -86,6 +94,10 @@ OpenAPI_lcs_mo_data_t *OpenAPI_lcs_mo_data_parseFromJSON(cJSON *lcs_mo_dataJSON)
 
     return lcs_mo_data_local_var;
 end:
+    if (allowed_service_classesList) {
+        OpenAPI_list_free(allowed_service_classesList);
+        allowed_service_classesList = NULL;
+    }
     return NULL;
 }
 

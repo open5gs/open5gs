@@ -151,6 +151,7 @@ libsbi_openapi_sources = files('''
     model/cag_data.c
     model/cag_info_1.c
     model/cag_info.c
+    model/cancel_relocate_ue_context_request.c
     model/candidate_for_replacement.c
     model/cause.c
     model/ce_mode_b_ind.c
@@ -181,6 +182,9 @@ libsbi_openapi_sources = files('''
     model/context_data_sets.c
     model/context_info.c
     model/core_network_type.c
+    model/create_ue_context_201_response.c
+    model/create_ue_context_403_response.c
+    model/create_ue_context_request.c
     model/credit_management_status.c
     model/data_change_notify.c
     model/data_filter.c
@@ -215,6 +219,7 @@ libsbi_openapi_sources = files('''
     model/downlink_data_notification_control.c
     model/downlink_data_notification_control_rm.c
     model/dynamic5_qi.c
+    model/eap_auth_method_200_response.c
     model/eap_session.c
     model/ebi_arp_mapping.c
     model/ecgi_1.c
@@ -284,6 +289,7 @@ libsbi_openapi_sources = files('''
     model/gbr_qos_flow_information.c
     model/geographical_coordinates.c
     model/geographic_area.c
+    model/get_nf_instances_200_response.c
     model/global_ran_node_id_1.c
     model/global_ran_node_id.c
     model/gmlc_info.c
@@ -310,12 +316,6 @@ libsbi_openapi_sources = files('''
     model/imsi_range.c
     model/ims_vo_ps.c
     model/indirect_data_forwarding_tunnel_info.c
-    model/inline_object_1.c
-    model/inline_object_2.c
-    model/inline_object_3.c
-    model/inline_object_4.c
-    model/inline_object.c
-    model/inline_response_200.c
     model/integrity_algorithm.c
     model/interface_upf_info_item.c
     model/inter_freq_target_info_1.c
@@ -395,6 +395,7 @@ libsbi_openapi_sources = files('''
     model/model_5_gvn_group_configuration.c
     model/model_5_gvn_group_data.c
     model/modification_notification.c
+    model/modify_200_response.c
     model/mo_exp_data_counter.c
     model/monitoring_configuration.c
     model/mtc_provider.c
@@ -412,6 +413,7 @@ libsbi_openapi_sources = files('''
     model/n2_info_container.c
     model/n2_info_content.c
     model/n2_info_notification_rsp_data.c
+    model/n2_info_notify_handover_complete_200_response.c
     model/n2_info_notify_reason.c
     model/n2_information_class.c
     model/n2_information_notification.c
@@ -458,8 +460,10 @@ libsbi_openapi_sources = files('''
     model/nidd_information.c
     model/node_type.c
     model/non_dynamic5_qi.c
+    model/non_ue_n2_info_notify_request.c
     model/non_ue_n2_info_subscription_create_data.c
     model/non_ue_n2_info_subscription_created_data.c
+    model/non_ue_n2_message_transfer_request.c
     model/notif_condition.c
     model/notification_cause.c
     model/notification_control.c
@@ -469,6 +473,7 @@ libsbi_openapi_sources = files('''
     model/notification_item.c
     model/notification_type.c
     model/notify_item.c
+    model/npcf_af_event.c
     model/npn_access_info.c
     model/nrf_info.c
     model/nr_location.c
@@ -648,6 +653,10 @@ libsbi_openapi_sources = files('''
     model/registration_reason.c
     model/release_data.c
     model/released_data.c
+    model/release_pdu_session_200_response.c
+    model/release_pdu_session_request.c
+    model/release_sm_context_request.c
+    model/relocate_ue_context_request.c
     model/report_amount_mdt.c
     model/reporting_frequency.c
     model/reporting_level.c
@@ -708,6 +717,7 @@ libsbi_openapi_sources = files('''
     model/secondary_rat_usage_report.c
     model/security_result.c
     model/send_mo_data_req_data.c
+    model/send_mo_data_request.c
     model/sensor_measurement.c
     model/sequence_number.c
     model/serv_auth_info.c
@@ -849,8 +859,10 @@ libsbi_openapi_sources = files('''
     model/traffic_profile.c
     model/traffic_profile_rm.c
     model/transfer_mo_data_req_data.c
+    model/transfer_mo_data_request.c
     model/transfer_mt_data_add_info.c
     model/transfer_mt_data_error.c
+    model/transfer_mt_data_ismf_request.c
     model/transfer_mt_data_req_data.c
     model/transfer_policy.c
     model/transfer_reason.c
@@ -872,8 +884,8 @@ libsbi_openapi_sources = files('''
     model/udr_info.c
     model/udsf_info.c
     model/ue_auth.c
-    model/ue_authentication_ctx.c
     model/ue_authentication_ctx_5g_auth_data.c
+    model/ue_authentication_ctx.c
     model/ue_camping_rep.c
     model/ue_context.c
     model/ue_context_cancel_relocate_data.c
@@ -889,7 +901,9 @@ libsbi_openapi_sources = files('''
     model/ue_context_release.c
     model/ue_context_relocate_data.c
     model/ue_context_relocated_data.c
+    model/ue_context_transfer_200_response.c
     model/ue_context_transfer_req_data.c
+    model/ue_context_transfer_request.c
     model/ue_context_transfer_rsp_data.c
     model/ue_context_transfer_status.c
     model/ue_differentiation_info.c
@@ -914,6 +928,12 @@ libsbi_openapi_sources = files('''
     model/up_cnx_state.c
     model/up_confidentiality.c
     model/updated_item.c
+    model/update_pdu_session_200_response.c
+    model/update_pdu_session_400_response.c
+    model/update_pdu_session_request.c
+    model/update_sm_context_200_response.c
+    model/update_sm_context_400_response.c
+    model/update_sm_context_request.c
     model/upf_cond.c
     model/upf_info.c
     model/up_integrity.c

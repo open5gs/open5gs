@@ -18,17 +18,22 @@ OpenAPI_extended_problem_details_all_of_t *OpenAPI_extended_problem_details_all_
 
 void OpenAPI_extended_problem_details_all_of_free(OpenAPI_extended_problem_details_all_of_t *extended_problem_details_all_of)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == extended_problem_details_all_of) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_acceptable_service_info_free(extended_problem_details_all_of->acceptable_serv_info);
+    if (extended_problem_details_all_of->acceptable_serv_info) {
+        OpenAPI_acceptable_service_info_free(extended_problem_details_all_of->acceptable_serv_info);
+        extended_problem_details_all_of->acceptable_serv_info = NULL;
+    }
     ogs_free(extended_problem_details_all_of);
 }
 
 cJSON *OpenAPI_extended_problem_details_all_of_convertToJSON(OpenAPI_extended_problem_details_all_of_t *extended_problem_details_all_of)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (extended_problem_details_all_of == NULL) {
         ogs_error("OpenAPI_extended_problem_details_all_of_convertToJSON() failed [ExtendedProblemDetails_allOf]");
@@ -56,9 +61,10 @@ end:
 OpenAPI_extended_problem_details_all_of_t *OpenAPI_extended_problem_details_all_of_parseFromJSON(cJSON *extended_problem_details_all_ofJSON)
 {
     OpenAPI_extended_problem_details_all_of_t *extended_problem_details_all_of_local_var = NULL;
-    cJSON *acceptable_serv_info = cJSON_GetObjectItemCaseSensitive(extended_problem_details_all_ofJSON, "acceptableServInfo");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *acceptable_serv_info = NULL;
     OpenAPI_acceptable_service_info_t *acceptable_serv_info_local_nonprim = NULL;
+    acceptable_serv_info = cJSON_GetObjectItemCaseSensitive(extended_problem_details_all_ofJSON, "acceptableServInfo");
     if (acceptable_serv_info) {
     acceptable_serv_info_local_nonprim = OpenAPI_acceptable_service_info_parseFromJSON(acceptable_serv_info);
     }
@@ -69,6 +75,10 @@ OpenAPI_extended_problem_details_all_of_t *OpenAPI_extended_problem_details_all_
 
     return extended_problem_details_all_of_local_var;
 end:
+    if (acceptable_serv_info_local_nonprim) {
+        OpenAPI_acceptable_service_info_free(acceptable_serv_info_local_nonprim);
+        acceptable_serv_info_local_nonprim = NULL;
+    }
     return NULL;
 }
 

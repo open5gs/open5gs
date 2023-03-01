@@ -36,24 +36,41 @@ OpenAPI_gbr_qos_flow_information_t *OpenAPI_gbr_qos_flow_information_create(
 
 void OpenAPI_gbr_qos_flow_information_free(OpenAPI_gbr_qos_flow_information_t *gbr_qos_flow_information)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == gbr_qos_flow_information) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(gbr_qos_flow_information->max_fbr_dl);
-    ogs_free(gbr_qos_flow_information->max_fbr_ul);
-    ogs_free(gbr_qos_flow_information->gua_fbr_dl);
-    ogs_free(gbr_qos_flow_information->gua_fbr_ul);
-    OpenAPI_list_for_each(gbr_qos_flow_information->alternative_qos_profile_list, node) {
-        OpenAPI_alternative_qos_profile_free(node->data);
+    if (gbr_qos_flow_information->max_fbr_dl) {
+        ogs_free(gbr_qos_flow_information->max_fbr_dl);
+        gbr_qos_flow_information->max_fbr_dl = NULL;
     }
-    OpenAPI_list_free(gbr_qos_flow_information->alternative_qos_profile_list);
+    if (gbr_qos_flow_information->max_fbr_ul) {
+        ogs_free(gbr_qos_flow_information->max_fbr_ul);
+        gbr_qos_flow_information->max_fbr_ul = NULL;
+    }
+    if (gbr_qos_flow_information->gua_fbr_dl) {
+        ogs_free(gbr_qos_flow_information->gua_fbr_dl);
+        gbr_qos_flow_information->gua_fbr_dl = NULL;
+    }
+    if (gbr_qos_flow_information->gua_fbr_ul) {
+        ogs_free(gbr_qos_flow_information->gua_fbr_ul);
+        gbr_qos_flow_information->gua_fbr_ul = NULL;
+    }
+    if (gbr_qos_flow_information->alternative_qos_profile_list) {
+        OpenAPI_list_for_each(gbr_qos_flow_information->alternative_qos_profile_list, node) {
+            OpenAPI_alternative_qos_profile_free(node->data);
+        }
+        OpenAPI_list_free(gbr_qos_flow_information->alternative_qos_profile_list);
+        gbr_qos_flow_information->alternative_qos_profile_list = NULL;
+    }
     ogs_free(gbr_qos_flow_information);
 }
 
 cJSON *OpenAPI_gbr_qos_flow_information_convertToJSON(OpenAPI_gbr_qos_flow_information_t *gbr_qos_flow_information)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (gbr_qos_flow_information == NULL) {
         ogs_error("OpenAPI_gbr_qos_flow_information_convertToJSON() failed [GbrQosFlowInformation]");
@@ -61,27 +78,43 @@ cJSON *OpenAPI_gbr_qos_flow_information_convertToJSON(OpenAPI_gbr_qos_flow_infor
     }
 
     item = cJSON_CreateObject();
+    if (!gbr_qos_flow_information->max_fbr_dl) {
+        ogs_error("OpenAPI_gbr_qos_flow_information_convertToJSON() failed [max_fbr_dl]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "maxFbrDl", gbr_qos_flow_information->max_fbr_dl) == NULL) {
         ogs_error("OpenAPI_gbr_qos_flow_information_convertToJSON() failed [max_fbr_dl]");
         goto end;
     }
 
+    if (!gbr_qos_flow_information->max_fbr_ul) {
+        ogs_error("OpenAPI_gbr_qos_flow_information_convertToJSON() failed [max_fbr_ul]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "maxFbrUl", gbr_qos_flow_information->max_fbr_ul) == NULL) {
         ogs_error("OpenAPI_gbr_qos_flow_information_convertToJSON() failed [max_fbr_ul]");
         goto end;
     }
 
+    if (!gbr_qos_flow_information->gua_fbr_dl) {
+        ogs_error("OpenAPI_gbr_qos_flow_information_convertToJSON() failed [gua_fbr_dl]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "guaFbrDl", gbr_qos_flow_information->gua_fbr_dl) == NULL) {
         ogs_error("OpenAPI_gbr_qos_flow_information_convertToJSON() failed [gua_fbr_dl]");
         goto end;
     }
 
+    if (!gbr_qos_flow_information->gua_fbr_ul) {
+        ogs_error("OpenAPI_gbr_qos_flow_information_convertToJSON() failed [gua_fbr_ul]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "guaFbrUl", gbr_qos_flow_information->gua_fbr_ul) == NULL) {
         ogs_error("OpenAPI_gbr_qos_flow_information_convertToJSON() failed [gua_fbr_ul]");
         goto end;
     }
 
-    if (gbr_qos_flow_information->notif_control) {
+    if (gbr_qos_flow_information->notif_control != OpenAPI_notification_control_NULL) {
     if (cJSON_AddStringToObject(item, "notifControl", OpenAPI_notification_control_ToString(gbr_qos_flow_information->notif_control)) == NULL) {
         ogs_error("OpenAPI_gbr_qos_flow_information_convertToJSON() failed [notif_control]");
         goto end;
@@ -108,17 +141,13 @@ cJSON *OpenAPI_gbr_qos_flow_information_convertToJSON(OpenAPI_gbr_qos_flow_infor
         ogs_error("OpenAPI_gbr_qos_flow_information_convertToJSON() failed [alternative_qos_profile_list]");
         goto end;
     }
-
-    OpenAPI_lnode_t *alternative_qos_profile_list_node;
-    if (gbr_qos_flow_information->alternative_qos_profile_list) {
-        OpenAPI_list_for_each(gbr_qos_flow_information->alternative_qos_profile_list, alternative_qos_profile_list_node) {
-            cJSON *itemLocal = OpenAPI_alternative_qos_profile_convertToJSON(alternative_qos_profile_list_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_gbr_qos_flow_information_convertToJSON() failed [alternative_qos_profile_list]");
-                goto end;
-            }
-            cJSON_AddItemToArray(alternative_qos_profile_listList, itemLocal);
+    OpenAPI_list_for_each(gbr_qos_flow_information->alternative_qos_profile_list, node) {
+        cJSON *itemLocal = OpenAPI_alternative_qos_profile_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_gbr_qos_flow_information_convertToJSON() failed [alternative_qos_profile_list]");
+            goto end;
         }
+        cJSON_AddItemToArray(alternative_qos_profile_listList, itemLocal);
     }
     }
 
@@ -129,53 +158,58 @@ end:
 OpenAPI_gbr_qos_flow_information_t *OpenAPI_gbr_qos_flow_information_parseFromJSON(cJSON *gbr_qos_flow_informationJSON)
 {
     OpenAPI_gbr_qos_flow_information_t *gbr_qos_flow_information_local_var = NULL;
-    cJSON *max_fbr_dl = cJSON_GetObjectItemCaseSensitive(gbr_qos_flow_informationJSON, "maxFbrDl");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *max_fbr_dl = NULL;
+    cJSON *max_fbr_ul = NULL;
+    cJSON *gua_fbr_dl = NULL;
+    cJSON *gua_fbr_ul = NULL;
+    cJSON *notif_control = NULL;
+    OpenAPI_notification_control_e notif_controlVariable = 0;
+    cJSON *max_packet_loss_rate_dl = NULL;
+    cJSON *max_packet_loss_rate_ul = NULL;
+    cJSON *alternative_qos_profile_list = NULL;
+    OpenAPI_list_t *alternative_qos_profile_listList = NULL;
+    max_fbr_dl = cJSON_GetObjectItemCaseSensitive(gbr_qos_flow_informationJSON, "maxFbrDl");
     if (!max_fbr_dl) {
         ogs_error("OpenAPI_gbr_qos_flow_information_parseFromJSON() failed [max_fbr_dl]");
         goto end;
     }
-
     if (!cJSON_IsString(max_fbr_dl)) {
         ogs_error("OpenAPI_gbr_qos_flow_information_parseFromJSON() failed [max_fbr_dl]");
         goto end;
     }
 
-    cJSON *max_fbr_ul = cJSON_GetObjectItemCaseSensitive(gbr_qos_flow_informationJSON, "maxFbrUl");
+    max_fbr_ul = cJSON_GetObjectItemCaseSensitive(gbr_qos_flow_informationJSON, "maxFbrUl");
     if (!max_fbr_ul) {
         ogs_error("OpenAPI_gbr_qos_flow_information_parseFromJSON() failed [max_fbr_ul]");
         goto end;
     }
-
     if (!cJSON_IsString(max_fbr_ul)) {
         ogs_error("OpenAPI_gbr_qos_flow_information_parseFromJSON() failed [max_fbr_ul]");
         goto end;
     }
 
-    cJSON *gua_fbr_dl = cJSON_GetObjectItemCaseSensitive(gbr_qos_flow_informationJSON, "guaFbrDl");
+    gua_fbr_dl = cJSON_GetObjectItemCaseSensitive(gbr_qos_flow_informationJSON, "guaFbrDl");
     if (!gua_fbr_dl) {
         ogs_error("OpenAPI_gbr_qos_flow_information_parseFromJSON() failed [gua_fbr_dl]");
         goto end;
     }
-
     if (!cJSON_IsString(gua_fbr_dl)) {
         ogs_error("OpenAPI_gbr_qos_flow_information_parseFromJSON() failed [gua_fbr_dl]");
         goto end;
     }
 
-    cJSON *gua_fbr_ul = cJSON_GetObjectItemCaseSensitive(gbr_qos_flow_informationJSON, "guaFbrUl");
+    gua_fbr_ul = cJSON_GetObjectItemCaseSensitive(gbr_qos_flow_informationJSON, "guaFbrUl");
     if (!gua_fbr_ul) {
         ogs_error("OpenAPI_gbr_qos_flow_information_parseFromJSON() failed [gua_fbr_ul]");
         goto end;
     }
-
     if (!cJSON_IsString(gua_fbr_ul)) {
         ogs_error("OpenAPI_gbr_qos_flow_information_parseFromJSON() failed [gua_fbr_ul]");
         goto end;
     }
 
-    cJSON *notif_control = cJSON_GetObjectItemCaseSensitive(gbr_qos_flow_informationJSON, "notifControl");
-
-    OpenAPI_notification_control_e notif_controlVariable;
+    notif_control = cJSON_GetObjectItemCaseSensitive(gbr_qos_flow_informationJSON, "notifControl");
     if (notif_control) {
     if (!cJSON_IsString(notif_control)) {
         ogs_error("OpenAPI_gbr_qos_flow_information_parseFromJSON() failed [notif_control]");
@@ -184,8 +218,7 @@ OpenAPI_gbr_qos_flow_information_t *OpenAPI_gbr_qos_flow_information_parseFromJS
     notif_controlVariable = OpenAPI_notification_control_FromString(notif_control->valuestring);
     }
 
-    cJSON *max_packet_loss_rate_dl = cJSON_GetObjectItemCaseSensitive(gbr_qos_flow_informationJSON, "maxPacketLossRateDl");
-
+    max_packet_loss_rate_dl = cJSON_GetObjectItemCaseSensitive(gbr_qos_flow_informationJSON, "maxPacketLossRateDl");
     if (max_packet_loss_rate_dl) {
     if (!cJSON_IsNumber(max_packet_loss_rate_dl)) {
         ogs_error("OpenAPI_gbr_qos_flow_information_parseFromJSON() failed [max_packet_loss_rate_dl]");
@@ -193,8 +226,7 @@ OpenAPI_gbr_qos_flow_information_t *OpenAPI_gbr_qos_flow_information_parseFromJS
     }
     }
 
-    cJSON *max_packet_loss_rate_ul = cJSON_GetObjectItemCaseSensitive(gbr_qos_flow_informationJSON, "maxPacketLossRateUl");
-
+    max_packet_loss_rate_ul = cJSON_GetObjectItemCaseSensitive(gbr_qos_flow_informationJSON, "maxPacketLossRateUl");
     if (max_packet_loss_rate_ul) {
     if (!cJSON_IsNumber(max_packet_loss_rate_ul)) {
         ogs_error("OpenAPI_gbr_qos_flow_information_parseFromJSON() failed [max_packet_loss_rate_ul]");
@@ -202,33 +234,29 @@ OpenAPI_gbr_qos_flow_information_t *OpenAPI_gbr_qos_flow_information_parseFromJS
     }
     }
 
-    cJSON *alternative_qos_profile_list = cJSON_GetObjectItemCaseSensitive(gbr_qos_flow_informationJSON, "alternativeQosProfileList");
-
-    OpenAPI_list_t *alternative_qos_profile_listList;
+    alternative_qos_profile_list = cJSON_GetObjectItemCaseSensitive(gbr_qos_flow_informationJSON, "alternativeQosProfileList");
     if (alternative_qos_profile_list) {
-    cJSON *alternative_qos_profile_list_local_nonprimitive;
-    if (!cJSON_IsArray(alternative_qos_profile_list)){
-        ogs_error("OpenAPI_gbr_qos_flow_information_parseFromJSON() failed [alternative_qos_profile_list]");
-        goto end;
-    }
-
-    alternative_qos_profile_listList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(alternative_qos_profile_list_local_nonprimitive, alternative_qos_profile_list ) {
-        if (!cJSON_IsObject(alternative_qos_profile_list_local_nonprimitive)) {
+        cJSON *alternative_qos_profile_list_local = NULL;
+        if (!cJSON_IsArray(alternative_qos_profile_list)) {
             ogs_error("OpenAPI_gbr_qos_flow_information_parseFromJSON() failed [alternative_qos_profile_list]");
             goto end;
         }
-        OpenAPI_alternative_qos_profile_t *alternative_qos_profile_listItem = OpenAPI_alternative_qos_profile_parseFromJSON(alternative_qos_profile_list_local_nonprimitive);
 
-        if (!alternative_qos_profile_listItem) {
-            ogs_error("No alternative_qos_profile_listItem");
-            OpenAPI_list_free(alternative_qos_profile_listList);
-            goto end;
+        alternative_qos_profile_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(alternative_qos_profile_list_local, alternative_qos_profile_list) {
+            if (!cJSON_IsObject(alternative_qos_profile_list_local)) {
+                ogs_error("OpenAPI_gbr_qos_flow_information_parseFromJSON() failed [alternative_qos_profile_list]");
+                goto end;
+            }
+            OpenAPI_alternative_qos_profile_t *alternative_qos_profile_listItem = OpenAPI_alternative_qos_profile_parseFromJSON(alternative_qos_profile_list_local);
+            if (!alternative_qos_profile_listItem) {
+                ogs_error("No alternative_qos_profile_listItem");
+                OpenAPI_list_free(alternative_qos_profile_listList);
+                goto end;
+            }
+            OpenAPI_list_add(alternative_qos_profile_listList, alternative_qos_profile_listItem);
         }
-
-        OpenAPI_list_add(alternative_qos_profile_listList, alternative_qos_profile_listItem);
-    }
     }
 
     gbr_qos_flow_information_local_var = OpenAPI_gbr_qos_flow_information_create (
@@ -246,6 +274,13 @@ OpenAPI_gbr_qos_flow_information_t *OpenAPI_gbr_qos_flow_information_parseFromJS
 
     return gbr_qos_flow_information_local_var;
 end:
+    if (alternative_qos_profile_listList) {
+        OpenAPI_list_for_each(alternative_qos_profile_listList, node) {
+            OpenAPI_alternative_qos_profile_free(node->data);
+        }
+        OpenAPI_list_free(alternative_qos_profile_listList);
+        alternative_qos_profile_listList = NULL;
+    }
     return NULL;
 }
 

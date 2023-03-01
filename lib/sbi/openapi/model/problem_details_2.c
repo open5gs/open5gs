@@ -32,10 +32,11 @@ OpenAPI_problem_details_2_t *OpenAPI_problem_details_2_create(
 
 void OpenAPI_problem_details_2_free(OpenAPI_problem_details_2_t *problem_details_2)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == problem_details_2) {
         return;
     }
-    OpenAPI_lnode_t *node;
     if (problem_details_2->type) {
         ogs_free(problem_details_2->type);
         problem_details_2->type = NULL;
@@ -69,6 +70,7 @@ void OpenAPI_problem_details_2_free(OpenAPI_problem_details_2_t *problem_details
 cJSON *OpenAPI_problem_details_2_convertToJSON(OpenAPI_problem_details_2_t *problem_details_2)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (problem_details_2 == NULL) {
         ogs_error("OpenAPI_problem_details_2_convertToJSON() failed [ProblemDetails_2]");
@@ -124,17 +126,13 @@ cJSON *OpenAPI_problem_details_2_convertToJSON(OpenAPI_problem_details_2_t *prob
         ogs_error("OpenAPI_problem_details_2_convertToJSON() failed [invalid_params]");
         goto end;
     }
-
-    OpenAPI_lnode_t *invalid_params_node;
-    if (problem_details_2->invalid_params) {
-        OpenAPI_list_for_each(problem_details_2->invalid_params, invalid_params_node) {
-            cJSON *itemLocal = OpenAPI_invalid_param_1_convertToJSON(invalid_params_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_problem_details_2_convertToJSON() failed [invalid_params]");
-                goto end;
-            }
-            cJSON_AddItemToArray(invalid_paramsList, itemLocal);
+    OpenAPI_list_for_each(problem_details_2->invalid_params, node) {
+        cJSON *itemLocal = OpenAPI_invalid_param_1_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_problem_details_2_convertToJSON() failed [invalid_params]");
+            goto end;
         }
+        cJSON_AddItemToArray(invalid_paramsList, itemLocal);
     }
     }
 
@@ -204,27 +202,25 @@ OpenAPI_problem_details_2_t *OpenAPI_problem_details_2_parseFromJSON(cJSON *prob
 
     invalid_params = cJSON_GetObjectItemCaseSensitive(problem_details_2JSON, "invalidParams");
     if (invalid_params) {
-        cJSON *invalid_params_local_nonprimitive;
-        if (!cJSON_IsArray(invalid_params)){
+        cJSON *invalid_params_local = NULL;
+        if (!cJSON_IsArray(invalid_params)) {
             ogs_error("OpenAPI_problem_details_2_parseFromJSON() failed [invalid_params]");
             goto end;
         }
 
         invalid_paramsList = OpenAPI_list_create();
 
-        cJSON_ArrayForEach(invalid_params_local_nonprimitive, invalid_params ) {
-            if (!cJSON_IsObject(invalid_params_local_nonprimitive)) {
+        cJSON_ArrayForEach(invalid_params_local, invalid_params) {
+            if (!cJSON_IsObject(invalid_params_local)) {
                 ogs_error("OpenAPI_problem_details_2_parseFromJSON() failed [invalid_params]");
                 goto end;
             }
-            OpenAPI_invalid_param_1_t *invalid_paramsItem = OpenAPI_invalid_param_1_parseFromJSON(invalid_params_local_nonprimitive);
-
+            OpenAPI_invalid_param_1_t *invalid_paramsItem = OpenAPI_invalid_param_1_parseFromJSON(invalid_params_local);
             if (!invalid_paramsItem) {
                 ogs_error("No invalid_paramsItem");
                 OpenAPI_list_free(invalid_paramsList);
                 goto end;
             }
-
             OpenAPI_list_add(invalid_paramsList, invalid_paramsItem);
         }
     }

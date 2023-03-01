@@ -1,0 +1,638 @@
+openapi: 3.0.0
+
+info:
+  version: '1.1.0'
+  title: 'Nhss_imsUECM'
+  description: |
+    Nhss UE Context Management Service for IMS.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.562 Home Subscriber Server (HSS) Services, version 17.5.0
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.562/'
+
+servers:
+  - url: '{apiRoot}/nhss-ims-uecm/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501.
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - nhss-ims-uecm
+
+paths:
+
+  /{impu}/authorize:
+    post:
+      summary: >
+        Authorize IMS Identities to register in the network or establish multimedia sessions
+        and return CSCF location if it is stored
+      operationId: Authorize
+      tags:
+        - Authorize (Custom Operation)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nhss-ims-uecm
+        - oAuth2ClientCredentials:
+          - nhss-ims-uecm
+          - nhss-ims-uecm:authorize:invoke
+      parameters:
+        - name: impu
+          in: path
+          description: Public identity of the user.
+          required: true
+          schema:
+              $ref: '#/components/schemas/Impu'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthorizationRequest'
+        required: true
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationResponse'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        deregistrationeNotification:
+          '{request.body#/deregCallbackUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/DeregistrationData'
+              responses:
+                '204':
+                  description: Successful Notification response
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /{imsUeId}/scscf-registration:
+    put:
+      summary: SCSCF registration information
+      operationId: SCSCF registration
+      tags:
+        - S-CSCF Registration (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nhss-ims-uecm
+        - oAuth2ClientCredentials:
+          - nhss-ims-uecm
+          - nhss-ims-uecm:registration:create
+      parameters:
+        - name: imsUeId
+          in: path
+          description: IMS Identity
+          required: true
+          schema:
+            $ref: '#/components/schemas/ImsUeId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScscfRegistration'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScscfRegistration'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure:
+                {apiRoot}/nhss-ims-uecm/v1/{impu}/scscf-registration
+              required: true
+              schema:
+                type: string
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScscfRegistration'
+        '204':
+          description: No content
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ExtendedProblemDetails'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /{impu}/scscf-registration/scscf-restoration-info:
+    put:
+      summary: Update the S-CSCF restoration information of the UE
+      operationId: UpdateScscfRestorationInfo
+      tags:
+        - S-CSCF Restoration Information (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nhss-ims-uecm
+        - oAuth2ClientCredentials:
+          - nhss-ims-uecm
+          - nhss-ims-uecm:restoration:modify
+      parameters:
+        - name: impu
+          in: path
+          description: Public identity of the user.
+          required: true
+          schema:
+            $ref: '#/components/schemas/Impu'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScscfRestorationInfoRequest'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScscfRestorationInfoResponse'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure:
+                {apiRoot}/nhss-ims-uecm/v1/{impu}/scscf-registration/scscf-restoration-info
+              required: true
+              schema:
+                type: string
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScscfRestorationInfoResponse'
+        '204':
+          description: No content
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    get:
+      summary: Retrieve the S-CSCF restoration information of the UE
+      operationId: GetScscfRestorationInfo
+      tags:
+       - S-CSCF Restoration Information (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nhss-ims-uecm
+        - oAuth2ClientCredentials:
+          - nhss-ims-uecm
+          - nhss-ims-uecm:restoration:read
+      parameters:
+        - name: impu
+          in: path
+          description: Public identity of the user.
+          required: true
+          schema:
+            $ref: '#/components/schemas/Impu'
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScscfRestorationInfoResponse'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Delete the S-CSCF restoration information of the UE
+      operationId: DeleteScscfRestorationInfo
+      tags:
+       - S-CSCF Restoration Information (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nhss-ims-uecm
+        - oAuth2ClientCredentials:
+          - nhss-ims-uecm
+          - nhss-ims-uecm:restoration:modify
+      parameters:
+        - name: impu
+          in: path
+          description: Public identity of the user.
+          required: true
+          schema:
+            $ref: '#/components/schemas/Impu'
+      responses:
+        '204':
+          description: No content
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nhss-ims-uecm: Access to the Nhss IMS UE Context Management API
+            nhss-ims-uecm:authorize:invoke: Access to invoke the Authorize custom operation
+            nhss-ims-uecm:registration:create: Access to create the S-CSCF Registration resource
+            nhss-ims-uecm:restoration:read: Access to read the S-CSCF Restoration resource
+            nhss-ims-uecm:restoration:modify: >-
+              Access to create/update/delete the S-CSCF Restoration resource
+
+  schemas:
+
+#
+# COMPLEX TYPES:
+#
+
+    AuthorizationRequest:
+      description: Ims authorization request data
+      type: object
+      required:
+        - authorizationType
+      properties:
+        impi:
+          $ref: '#/components/schemas/Impi'
+        authorizationType:
+          $ref: '#/components/schemas/AuthorizationType'
+        visitedNetworkIdentifier:
+          type: string
+        emergencyIndicator:
+          type: boolean
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    AuthorizationResponse:
+      description: Ims Registration authorization information result
+      type: object
+      properties:
+        authorizationResult:
+          $ref: '#/components/schemas/AuthorizationResult'
+        cscfServerName:
+          type: string
+        scscfSelectionAssistanceInfo:
+          $ref: 'TS29562_Nhss_imsSDM.yaml#/components/schemas/ScscfSelectionAssistanceInformation'
+      required:
+        - authorizationResult
+      oneOf:
+        - required:
+          - cscfServerName
+        - required:
+          - scscfSelectionAssistanceInfo
+
+    ScscfRegistration:
+      description: Scscf Registration
+      type: object
+      required:
+        - imsRegistrationType
+        - cscfServerName
+      properties:
+        impi:
+          $ref: '#/components/schemas/Impi'
+        imsRegistrationType:
+          $ref: '#/components/schemas/ImsRegistrationType'
+        cscfServerName:
+          type: string
+        scscfInstanceId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        deregCallbackUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        associatedImpis:
+          type: array
+          items:
+            $ref: '#/components/schemas/Impi'
+        associatedRegisteredImpis:
+          type: array
+          items:
+            $ref: '#/components/schemas/Impi'
+        irsImpus:
+          type: array
+          items:
+            $ref: '#/components/schemas/Impu'
+          minItems: 1
+          uniqueItems: true
+        wildcardedPui:
+          $ref: '#/components/schemas/Impu'
+        looseRouteIndicator:
+          $ref: '#/components/schemas/LooseRouteIndication'
+        wildcardedPsi:
+          $ref: '#/components/schemas/Impu'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        multipleRegistrationIndicator:
+          type: boolean
+        pcscfRestorationIndicator:
+          type: boolean
+          default: false
+        scscfReselectionIndicator:
+          type: boolean
+          default: false
+
+    ExtendedProblemDetails:
+      description: >
+        Extension of the ProblemDetails data type, to include additional information
+        in an error response message
+      allOf:
+      - $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+      - $ref: '#/components/schemas/AdditionalInfo'
+
+    AdditionalInfo:
+      description: >
+        Additional information to be sent on error response messages, along with the
+        common content in ProblemDetails
+      type: object
+      properties:
+        scscfServerName:
+          type: string
+
+    ScscfRestorationInfo:
+      description: S-CSCF restoration information
+      type: object
+      properties:
+        userName:
+          $ref: '#/components/schemas/Impi'
+        restorationInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/RestorationInfo'
+        registrationTimeOut:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        sipAuthenticationScheme:
+            $ref: 'TS29562_Nhss_imsUEAU.yaml#/components/schemas/SipAuthenticationScheme'
+
+    ScscfRestorationInfoRequest:
+      description: S-CSCF restoration information request
+      type: object
+      properties:
+        scscfRestorationInfoRequest:
+          $ref: '#/components/schemas/ScscfRestorationInfo'
+
+    ScscfRestorationInfoResponse:
+      description: S-CSCF restoration information response
+      type: object
+      properties:
+        scscfRestorationInfoResponse:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScscfRestorationInfo'
+
+    RestorationInfo:
+      description: >
+        The information relevant to a specific registration required for an S-CSCF
+        to handle the requests for a user
+      type: object
+      required:
+        - path
+        - contact
+      properties:
+        path:
+          type: string
+        contact:
+          type: string
+        initialCSeqSequenceNumber:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        callIdSipHeader:
+          type: string
+        uesubscriptionInfo:
+          $ref: '#/components/schemas/UeSubscriptionInfo'
+        pcscfSubscriptionInfo:
+          $ref: '#/components/schemas/PcscfSubscriptionInfo'
+        imsSdmSubscriptions:
+          description: >
+            A map (list of key-value pairs where subscriptionId serves as key) of ImsSdmSubscription
+          type: object
+          additionalProperties:
+            $ref: 'TS29562_Nhss_imsSDM.yaml#/components/schemas/ImsSdmSubscription'
+
+    UeSubscriptionInfo:
+      description: Subscription information of the UE for the SIP Registration State event
+      type: object
+      required:
+        - callIdSipHeader
+        - fromSipHeader
+        - toSipHeader
+        - recordRoute
+        - contact
+      properties:
+        callIdSipHeader:
+          type: string
+        fromSipHeader:
+          type: string
+        toSipHeader:
+          type: string
+        recordRoute:
+          type: string
+        contact:
+          type: string
+
+    PcscfSubscriptionInfo:
+      description: Subscription information of the P-CSCF for the SIP Registration State event
+      type: object
+      required:
+        - callIdSipHeader
+        - fromSipHeader
+        - toSipHeader
+        - contact
+      properties:
+        callIdSipHeader:
+          type: string
+        fromSipHeader:
+          type: string
+        toSipHeader:
+          type: string
+        contact:
+          type: string
+
+    DeregistrationData:
+      description: Data related to the de-registration information of a S-CSCF in HSS
+      type: object
+      required:
+        - deregReason
+        - impi
+      properties:
+        deregReason:
+          $ref: '#/components/schemas/DeregistrationReason'
+        impi:
+          $ref: '#/components/schemas/Impi'
+        associatedImpis:
+          type: array
+          items:
+            $ref: '#/components/schemas/Impi'
+        emergencyRegisteredIdentities:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmergencyRegisteredIdentity'
+          minItems: 1
+
+    EmergencyRegisteredIdentity:
+      description: >
+        A pair of private and public user identities which have not been de-registered
+        due to emergency registration
+      type: object
+      required:
+        - impi
+        - impu
+      properties:
+        impi:
+          $ref: '#/components/schemas/Impi'
+        impu:
+          $ref: '#/components/schemas/Impu'
+
+    DeregistrationReason:
+      description: >
+        Contains the reason for the network initiated de-registration (including a reason code,
+        and a human-readable reason text)
+      type: object
+      required:
+        - reasonCode
+        - reasonText
+      properties:
+        reasonCode:
+          $ref: '#/components/schemas/DeregistrationReasonCode'
+        reasonText:
+          type: string
+
+#
+# SIMPLE TYPES
+#
+
+    ImsUeId:
+      description: IMS UE Identity (IMPU or IMPI)
+      type: string
+      pattern: '^(impu-sip\:([a-zA-Z0-9_\-.!~*()&=+$,;?\/]+)\@([A-Za-z0-9]+([-A-Za-z0-9]+)\.)+[a-z]{2,}|impu-tel\:\+[0-9]{5,15}|impi-.+|.+)$'
+
+    Impu:
+      description: IMS Public Identity of the UE (sip URI or tel URI)
+      type: string
+      pattern: '^(sip\:([a-zA-Z0-9_\-.!~*()&=+$,;?\/]+)\@([A-Za-z0-9]+([-A-Za-z0-9]+)\.)+[a-z]{2,}|tel\:\+[0-9]{5,15})$'
+
+    Impi:
+      description: IMS Private Identity of the UE
+      type: string
+
+#
+# ENUMS:
+#
+
+    AuthorizationType:
+      description: Represents the type of authorization requested by the UE
+      anyOf:
+        - type: string
+          enum:
+          - REGISTRATION
+          - DEREGISTRATION
+        - type: string
+
+    AuthorizationResult:
+      description: Represents the details of the granted authorization to the UE
+      anyOf:
+        - type: string
+          enum:
+          - FIRST_REGISTRATION
+          - SUBSEQUENT_REGISTRATION
+        - type: string
+
+    ImsRegistrationType:
+      description: Represents the type of registration associated to the REGISTER request
+      anyOf:
+        - type: string
+          enum:
+          - INITIAL_REGISTRATION
+          - RE_REGISTRATION
+          - TIMEOUT_DEREGISTRATION
+          - USER_DEREGISTRATION
+          - ADMINISTRATIVE_DEREGISTRATION
+          - AUTHENTICATION_FAILURE
+          - AUTHENTICATION_TIMEOUT
+          - UNREGISTERED_USER
+        - type: string
+
+    LooseRouteIndication:
+      description: Indicates whether the loose routing mechanism is required to serve the user
+      anyOf:
+        - type: string
+          enum:
+          - LOOSE_ROUTE_NOT_REQUIRED
+          - LOOSE_ROUTE_REQUIRED
+        - type: string
+
+    DeregistrationReasonCode:
+      description: Indicates the reason for the network-initiated deregistration
+      anyOf:
+        - type: string
+          enum:
+          - PERMANENT_TERMINATION
+          - NEW_SERVER_ASSIGNED
+          - REMOVE_S-CSCF
+          - SERVER_CHANGE
+        - type: string

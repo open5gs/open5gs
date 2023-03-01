@@ -24,20 +24,34 @@ OpenAPI_v2x_subscription_data_t *OpenAPI_v2x_subscription_data_create(
 
 void OpenAPI_v2x_subscription_data_free(OpenAPI_v2x_subscription_data_t *v2x_subscription_data)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == v2x_subscription_data) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_nr_v2x_auth_free(v2x_subscription_data->nr_v2x_services_auth);
-    OpenAPI_lte_v2x_auth_free(v2x_subscription_data->lte_v2x_services_auth);
-    ogs_free(v2x_subscription_data->nr_ue_pc5_ambr);
-    ogs_free(v2x_subscription_data->lte_pc5_ambr);
+    if (v2x_subscription_data->nr_v2x_services_auth) {
+        OpenAPI_nr_v2x_auth_free(v2x_subscription_data->nr_v2x_services_auth);
+        v2x_subscription_data->nr_v2x_services_auth = NULL;
+    }
+    if (v2x_subscription_data->lte_v2x_services_auth) {
+        OpenAPI_lte_v2x_auth_free(v2x_subscription_data->lte_v2x_services_auth);
+        v2x_subscription_data->lte_v2x_services_auth = NULL;
+    }
+    if (v2x_subscription_data->nr_ue_pc5_ambr) {
+        ogs_free(v2x_subscription_data->nr_ue_pc5_ambr);
+        v2x_subscription_data->nr_ue_pc5_ambr = NULL;
+    }
+    if (v2x_subscription_data->lte_pc5_ambr) {
+        ogs_free(v2x_subscription_data->lte_pc5_ambr);
+        v2x_subscription_data->lte_pc5_ambr = NULL;
+    }
     ogs_free(v2x_subscription_data);
 }
 
 cJSON *OpenAPI_v2x_subscription_data_convertToJSON(OpenAPI_v2x_subscription_data_t *v2x_subscription_data)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (v2x_subscription_data == NULL) {
         ogs_error("OpenAPI_v2x_subscription_data_convertToJSON() failed [V2xSubscriptionData]");
@@ -92,33 +106,34 @@ end:
 OpenAPI_v2x_subscription_data_t *OpenAPI_v2x_subscription_data_parseFromJSON(cJSON *v2x_subscription_dataJSON)
 {
     OpenAPI_v2x_subscription_data_t *v2x_subscription_data_local_var = NULL;
-    cJSON *nr_v2x_services_auth = cJSON_GetObjectItemCaseSensitive(v2x_subscription_dataJSON, "nrV2xServicesAuth");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *nr_v2x_services_auth = NULL;
     OpenAPI_nr_v2x_auth_t *nr_v2x_services_auth_local_nonprim = NULL;
+    cJSON *lte_v2x_services_auth = NULL;
+    OpenAPI_lte_v2x_auth_t *lte_v2x_services_auth_local_nonprim = NULL;
+    cJSON *nr_ue_pc5_ambr = NULL;
+    cJSON *lte_pc5_ambr = NULL;
+    nr_v2x_services_auth = cJSON_GetObjectItemCaseSensitive(v2x_subscription_dataJSON, "nrV2xServicesAuth");
     if (nr_v2x_services_auth) {
     nr_v2x_services_auth_local_nonprim = OpenAPI_nr_v2x_auth_parseFromJSON(nr_v2x_services_auth);
     }
 
-    cJSON *lte_v2x_services_auth = cJSON_GetObjectItemCaseSensitive(v2x_subscription_dataJSON, "lteV2xServicesAuth");
-
-    OpenAPI_lte_v2x_auth_t *lte_v2x_services_auth_local_nonprim = NULL;
+    lte_v2x_services_auth = cJSON_GetObjectItemCaseSensitive(v2x_subscription_dataJSON, "lteV2xServicesAuth");
     if (lte_v2x_services_auth) {
     lte_v2x_services_auth_local_nonprim = OpenAPI_lte_v2x_auth_parseFromJSON(lte_v2x_services_auth);
     }
 
-    cJSON *nr_ue_pc5_ambr = cJSON_GetObjectItemCaseSensitive(v2x_subscription_dataJSON, "nrUePc5Ambr");
-
+    nr_ue_pc5_ambr = cJSON_GetObjectItemCaseSensitive(v2x_subscription_dataJSON, "nrUePc5Ambr");
     if (nr_ue_pc5_ambr) {
-    if (!cJSON_IsString(nr_ue_pc5_ambr)) {
+    if (!cJSON_IsString(nr_ue_pc5_ambr) && !cJSON_IsNull(nr_ue_pc5_ambr)) {
         ogs_error("OpenAPI_v2x_subscription_data_parseFromJSON() failed [nr_ue_pc5_ambr]");
         goto end;
     }
     }
 
-    cJSON *lte_pc5_ambr = cJSON_GetObjectItemCaseSensitive(v2x_subscription_dataJSON, "ltePc5Ambr");
-
+    lte_pc5_ambr = cJSON_GetObjectItemCaseSensitive(v2x_subscription_dataJSON, "ltePc5Ambr");
     if (lte_pc5_ambr) {
-    if (!cJSON_IsString(lte_pc5_ambr)) {
+    if (!cJSON_IsString(lte_pc5_ambr) && !cJSON_IsNull(lte_pc5_ambr)) {
         ogs_error("OpenAPI_v2x_subscription_data_parseFromJSON() failed [lte_pc5_ambr]");
         goto end;
     }
@@ -127,12 +142,20 @@ OpenAPI_v2x_subscription_data_t *OpenAPI_v2x_subscription_data_parseFromJSON(cJS
     v2x_subscription_data_local_var = OpenAPI_v2x_subscription_data_create (
         nr_v2x_services_auth ? nr_v2x_services_auth_local_nonprim : NULL,
         lte_v2x_services_auth ? lte_v2x_services_auth_local_nonprim : NULL,
-        nr_ue_pc5_ambr ? ogs_strdup(nr_ue_pc5_ambr->valuestring) : NULL,
-        lte_pc5_ambr ? ogs_strdup(lte_pc5_ambr->valuestring) : NULL
+        nr_ue_pc5_ambr && !cJSON_IsNull(nr_ue_pc5_ambr) ? ogs_strdup(nr_ue_pc5_ambr->valuestring) : NULL,
+        lte_pc5_ambr && !cJSON_IsNull(lte_pc5_ambr) ? ogs_strdup(lte_pc5_ambr->valuestring) : NULL
     );
 
     return v2x_subscription_data_local_var;
 end:
+    if (nr_v2x_services_auth_local_nonprim) {
+        OpenAPI_nr_v2x_auth_free(nr_v2x_services_auth_local_nonprim);
+        nr_v2x_services_auth_local_nonprim = NULL;
+    }
+    if (lte_v2x_services_auth_local_nonprim) {
+        OpenAPI_lte_v2x_auth_free(lte_v2x_services_auth_local_nonprim);
+        lte_v2x_services_auth_local_nonprim = NULL;
+    }
     return NULL;
 }
 

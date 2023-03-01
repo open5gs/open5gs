@@ -20,18 +20,26 @@ OpenAPI_allowed_mtc_provider_info_t *OpenAPI_allowed_mtc_provider_info_create(
 
 void OpenAPI_allowed_mtc_provider_info_free(OpenAPI_allowed_mtc_provider_info_t *allowed_mtc_provider_info)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == allowed_mtc_provider_info) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(allowed_mtc_provider_info->mtc_provider_information);
-    ogs_free(allowed_mtc_provider_info->af_id);
+    if (allowed_mtc_provider_info->mtc_provider_information) {
+        ogs_free(allowed_mtc_provider_info->mtc_provider_information);
+        allowed_mtc_provider_info->mtc_provider_information = NULL;
+    }
+    if (allowed_mtc_provider_info->af_id) {
+        ogs_free(allowed_mtc_provider_info->af_id);
+        allowed_mtc_provider_info->af_id = NULL;
+    }
     ogs_free(allowed_mtc_provider_info);
 }
 
 cJSON *OpenAPI_allowed_mtc_provider_info_convertToJSON(OpenAPI_allowed_mtc_provider_info_t *allowed_mtc_provider_info)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (allowed_mtc_provider_info == NULL) {
         ogs_error("OpenAPI_allowed_mtc_provider_info_convertToJSON() failed [AllowedMtcProviderInfo]");
@@ -60,27 +68,28 @@ end:
 OpenAPI_allowed_mtc_provider_info_t *OpenAPI_allowed_mtc_provider_info_parseFromJSON(cJSON *allowed_mtc_provider_infoJSON)
 {
     OpenAPI_allowed_mtc_provider_info_t *allowed_mtc_provider_info_local_var = NULL;
-    cJSON *mtc_provider_information = cJSON_GetObjectItemCaseSensitive(allowed_mtc_provider_infoJSON, "mtcProviderInformation");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *mtc_provider_information = NULL;
+    cJSON *af_id = NULL;
+    mtc_provider_information = cJSON_GetObjectItemCaseSensitive(allowed_mtc_provider_infoJSON, "mtcProviderInformation");
     if (mtc_provider_information) {
-    if (!cJSON_IsString(mtc_provider_information)) {
+    if (!cJSON_IsString(mtc_provider_information) && !cJSON_IsNull(mtc_provider_information)) {
         ogs_error("OpenAPI_allowed_mtc_provider_info_parseFromJSON() failed [mtc_provider_information]");
         goto end;
     }
     }
 
-    cJSON *af_id = cJSON_GetObjectItemCaseSensitive(allowed_mtc_provider_infoJSON, "afId");
-
+    af_id = cJSON_GetObjectItemCaseSensitive(allowed_mtc_provider_infoJSON, "afId");
     if (af_id) {
-    if (!cJSON_IsString(af_id)) {
+    if (!cJSON_IsString(af_id) && !cJSON_IsNull(af_id)) {
         ogs_error("OpenAPI_allowed_mtc_provider_info_parseFromJSON() failed [af_id]");
         goto end;
     }
     }
 
     allowed_mtc_provider_info_local_var = OpenAPI_allowed_mtc_provider_info_create (
-        mtc_provider_information ? ogs_strdup(mtc_provider_information->valuestring) : NULL,
-        af_id ? ogs_strdup(af_id->valuestring) : NULL
+        mtc_provider_information && !cJSON_IsNull(mtc_provider_information) ? ogs_strdup(mtc_provider_information->valuestring) : NULL,
+        af_id && !cJSON_IsNull(af_id) ? ogs_strdup(af_id->valuestring) : NULL
     );
 
     return allowed_mtc_provider_info_local_var;

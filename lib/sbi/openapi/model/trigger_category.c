@@ -16,16 +16,18 @@ OpenAPI_trigger_category_t *OpenAPI_trigger_category_create(
 
 void OpenAPI_trigger_category_free(OpenAPI_trigger_category_t *trigger_category)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == trigger_category) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(trigger_category);
 }
 
 cJSON *OpenAPI_trigger_category_convertToJSON(OpenAPI_trigger_category_t *trigger_category)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (trigger_category == NULL) {
         ogs_error("OpenAPI_trigger_category_convertToJSON() failed [TriggerCategory]");
@@ -40,6 +42,7 @@ end:
 OpenAPI_trigger_category_t *OpenAPI_trigger_category_parseFromJSON(cJSON *trigger_categoryJSON)
 {
     OpenAPI_trigger_category_t *trigger_category_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
     trigger_category_local_var = OpenAPI_trigger_category_create (
     );
 

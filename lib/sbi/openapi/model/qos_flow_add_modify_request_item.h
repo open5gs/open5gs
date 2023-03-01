@@ -24,8 +24,8 @@ typedef struct OpenAPI_qos_flow_add_modify_request_item_s {
     int qfi;
     bool is_ebi;
     int ebi;
-    char qos_rules;
-    char qos_flow_description;
+    char *qos_rules;
+    char *qos_flow_description;
     struct OpenAPI_qos_flow_profile_s *qos_flow_profile;
     OpenAPI_qos_flow_access_type_e associated_an_type;
 } OpenAPI_qos_flow_add_modify_request_item_t;
@@ -34,8 +34,8 @@ OpenAPI_qos_flow_add_modify_request_item_t *OpenAPI_qos_flow_add_modify_request_
     int qfi,
     bool is_ebi,
     int ebi,
-    char qos_rules,
-    char qos_flow_description,
+    char *qos_rules,
+    char *qos_flow_description,
     OpenAPI_qos_flow_profile_t *qos_flow_profile,
     OpenAPI_qos_flow_access_type_e associated_an_type
 );

@@ -18,17 +18,22 @@ OpenAPI_ue_context_in_amf_data_t *OpenAPI_ue_context_in_amf_data_create(
 
 void OpenAPI_ue_context_in_amf_data_free(OpenAPI_ue_context_in_amf_data_t *ue_context_in_amf_data)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == ue_context_in_amf_data) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_eps_interworking_info_free(ue_context_in_amf_data->eps_interworking_info);
+    if (ue_context_in_amf_data->eps_interworking_info) {
+        OpenAPI_eps_interworking_info_free(ue_context_in_amf_data->eps_interworking_info);
+        ue_context_in_amf_data->eps_interworking_info = NULL;
+    }
     ogs_free(ue_context_in_amf_data);
 }
 
 cJSON *OpenAPI_ue_context_in_amf_data_convertToJSON(OpenAPI_ue_context_in_amf_data_t *ue_context_in_amf_data)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (ue_context_in_amf_data == NULL) {
         ogs_error("OpenAPI_ue_context_in_amf_data_convertToJSON() failed [UeContextInAmfData]");
@@ -56,9 +61,10 @@ end:
 OpenAPI_ue_context_in_amf_data_t *OpenAPI_ue_context_in_amf_data_parseFromJSON(cJSON *ue_context_in_amf_dataJSON)
 {
     OpenAPI_ue_context_in_amf_data_t *ue_context_in_amf_data_local_var = NULL;
-    cJSON *eps_interworking_info = cJSON_GetObjectItemCaseSensitive(ue_context_in_amf_dataJSON, "epsInterworkingInfo");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *eps_interworking_info = NULL;
     OpenAPI_eps_interworking_info_t *eps_interworking_info_local_nonprim = NULL;
+    eps_interworking_info = cJSON_GetObjectItemCaseSensitive(ue_context_in_amf_dataJSON, "epsInterworkingInfo");
     if (eps_interworking_info) {
     eps_interworking_info_local_nonprim = OpenAPI_eps_interworking_info_parseFromJSON(eps_interworking_info);
     }
@@ -69,6 +75,10 @@ OpenAPI_ue_context_in_amf_data_t *OpenAPI_ue_context_in_amf_data_parseFromJSON(c
 
     return ue_context_in_amf_data_local_var;
 end:
+    if (eps_interworking_info_local_nonprim) {
+        OpenAPI_eps_interworking_info_free(eps_interworking_info_local_nonprim);
+        eps_interworking_info_local_nonprim = NULL;
+    }
     return NULL;
 }
 

@@ -21,13 +21,13 @@ typedef struct OpenAPI_tnap_id_s OpenAPI_tnap_id_t;
 typedef struct OpenAPI_tnap_id_s {
     char *ss_id;
     char *bss_id;
-    char civic_address;
+    char *civic_address;
 } OpenAPI_tnap_id_t;
 
 OpenAPI_tnap_id_t *OpenAPI_tnap_id_create(
     char *ss_id,
     char *bss_id,
-    char civic_address
+    char *civic_address
 );
 void OpenAPI_tnap_id_free(OpenAPI_tnap_id_t *tnap_id);
 OpenAPI_tnap_id_t *OpenAPI_tnap_id_parseFromJSON(cJSON *tnap_idJSON);

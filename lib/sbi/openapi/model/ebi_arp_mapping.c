@@ -20,17 +20,22 @@ OpenAPI_ebi_arp_mapping_t *OpenAPI_ebi_arp_mapping_create(
 
 void OpenAPI_ebi_arp_mapping_free(OpenAPI_ebi_arp_mapping_t *ebi_arp_mapping)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == ebi_arp_mapping) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_arp_free(ebi_arp_mapping->arp);
+    if (ebi_arp_mapping->arp) {
+        OpenAPI_arp_free(ebi_arp_mapping->arp);
+        ebi_arp_mapping->arp = NULL;
+    }
     ogs_free(ebi_arp_mapping);
 }
 
 cJSON *OpenAPI_ebi_arp_mapping_convertToJSON(OpenAPI_ebi_arp_mapping_t *ebi_arp_mapping)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (ebi_arp_mapping == NULL) {
         ogs_error("OpenAPI_ebi_arp_mapping_convertToJSON() failed [EbiArpMapping]");
@@ -43,6 +48,10 @@ cJSON *OpenAPI_ebi_arp_mapping_convertToJSON(OpenAPI_ebi_arp_mapping_t *ebi_arp_
         goto end;
     }
 
+    if (!ebi_arp_mapping->arp) {
+        ogs_error("OpenAPI_ebi_arp_mapping_convertToJSON() failed [arp]");
+        return NULL;
+    }
     cJSON *arp_local_JSON = OpenAPI_arp_convertToJSON(ebi_arp_mapping->arp);
     if (arp_local_JSON == NULL) {
         ogs_error("OpenAPI_ebi_arp_mapping_convertToJSON() failed [arp]");
@@ -61,24 +70,25 @@ end:
 OpenAPI_ebi_arp_mapping_t *OpenAPI_ebi_arp_mapping_parseFromJSON(cJSON *ebi_arp_mappingJSON)
 {
     OpenAPI_ebi_arp_mapping_t *ebi_arp_mapping_local_var = NULL;
-    cJSON *eps_bearer_id = cJSON_GetObjectItemCaseSensitive(ebi_arp_mappingJSON, "epsBearerId");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *eps_bearer_id = NULL;
+    cJSON *arp = NULL;
+    OpenAPI_arp_t *arp_local_nonprim = NULL;
+    eps_bearer_id = cJSON_GetObjectItemCaseSensitive(ebi_arp_mappingJSON, "epsBearerId");
     if (!eps_bearer_id) {
         ogs_error("OpenAPI_ebi_arp_mapping_parseFromJSON() failed [eps_bearer_id]");
         goto end;
     }
-
     if (!cJSON_IsNumber(eps_bearer_id)) {
         ogs_error("OpenAPI_ebi_arp_mapping_parseFromJSON() failed [eps_bearer_id]");
         goto end;
     }
 
-    cJSON *arp = cJSON_GetObjectItemCaseSensitive(ebi_arp_mappingJSON, "arp");
+    arp = cJSON_GetObjectItemCaseSensitive(ebi_arp_mappingJSON, "arp");
     if (!arp) {
         ogs_error("OpenAPI_ebi_arp_mapping_parseFromJSON() failed [arp]");
         goto end;
     }
-
-    OpenAPI_arp_t *arp_local_nonprim = NULL;
     arp_local_nonprim = OpenAPI_arp_parseFromJSON(arp);
 
     ebi_arp_mapping_local_var = OpenAPI_ebi_arp_mapping_create (
@@ -89,6 +99,10 @@ OpenAPI_ebi_arp_mapping_t *OpenAPI_ebi_arp_mapping_parseFromJSON(cJSON *ebi_arp_
 
     return ebi_arp_mapping_local_var;
 end:
+    if (arp_local_nonprim) {
+        OpenAPI_arp_free(arp_local_nonprim);
+        arp_local_nonprim = NULL;
+    }
     return NULL;
 }
 

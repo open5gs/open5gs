@@ -20,18 +20,26 @@ OpenAPI_eps_iwk_pgw_t *OpenAPI_eps_iwk_pgw_create(
 
 void OpenAPI_eps_iwk_pgw_free(OpenAPI_eps_iwk_pgw_t *eps_iwk_pgw)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == eps_iwk_pgw) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(eps_iwk_pgw->pgw_fqdn);
-    ogs_free(eps_iwk_pgw->smf_instance_id);
+    if (eps_iwk_pgw->pgw_fqdn) {
+        ogs_free(eps_iwk_pgw->pgw_fqdn);
+        eps_iwk_pgw->pgw_fqdn = NULL;
+    }
+    if (eps_iwk_pgw->smf_instance_id) {
+        ogs_free(eps_iwk_pgw->smf_instance_id);
+        eps_iwk_pgw->smf_instance_id = NULL;
+    }
     ogs_free(eps_iwk_pgw);
 }
 
 cJSON *OpenAPI_eps_iwk_pgw_convertToJSON(OpenAPI_eps_iwk_pgw_t *eps_iwk_pgw)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (eps_iwk_pgw == NULL) {
         ogs_error("OpenAPI_eps_iwk_pgw_convertToJSON() failed [EpsIwkPgw]");
@@ -39,11 +47,19 @@ cJSON *OpenAPI_eps_iwk_pgw_convertToJSON(OpenAPI_eps_iwk_pgw_t *eps_iwk_pgw)
     }
 
     item = cJSON_CreateObject();
+    if (!eps_iwk_pgw->pgw_fqdn) {
+        ogs_error("OpenAPI_eps_iwk_pgw_convertToJSON() failed [pgw_fqdn]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "pgwFqdn", eps_iwk_pgw->pgw_fqdn) == NULL) {
         ogs_error("OpenAPI_eps_iwk_pgw_convertToJSON() failed [pgw_fqdn]");
         goto end;
     }
 
+    if (!eps_iwk_pgw->smf_instance_id) {
+        ogs_error("OpenAPI_eps_iwk_pgw_convertToJSON() failed [smf_instance_id]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "smfInstanceId", eps_iwk_pgw->smf_instance_id) == NULL) {
         ogs_error("OpenAPI_eps_iwk_pgw_convertToJSON() failed [smf_instance_id]");
         goto end;
@@ -56,23 +72,24 @@ end:
 OpenAPI_eps_iwk_pgw_t *OpenAPI_eps_iwk_pgw_parseFromJSON(cJSON *eps_iwk_pgwJSON)
 {
     OpenAPI_eps_iwk_pgw_t *eps_iwk_pgw_local_var = NULL;
-    cJSON *pgw_fqdn = cJSON_GetObjectItemCaseSensitive(eps_iwk_pgwJSON, "pgwFqdn");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *pgw_fqdn = NULL;
+    cJSON *smf_instance_id = NULL;
+    pgw_fqdn = cJSON_GetObjectItemCaseSensitive(eps_iwk_pgwJSON, "pgwFqdn");
     if (!pgw_fqdn) {
         ogs_error("OpenAPI_eps_iwk_pgw_parseFromJSON() failed [pgw_fqdn]");
         goto end;
     }
-
     if (!cJSON_IsString(pgw_fqdn)) {
         ogs_error("OpenAPI_eps_iwk_pgw_parseFromJSON() failed [pgw_fqdn]");
         goto end;
     }
 
-    cJSON *smf_instance_id = cJSON_GetObjectItemCaseSensitive(eps_iwk_pgwJSON, "smfInstanceId");
+    smf_instance_id = cJSON_GetObjectItemCaseSensitive(eps_iwk_pgwJSON, "smfInstanceId");
     if (!smf_instance_id) {
         ogs_error("OpenAPI_eps_iwk_pgw_parseFromJSON() failed [smf_instance_id]");
         goto end;
     }
-
     if (!cJSON_IsString(smf_instance_id)) {
         ogs_error("OpenAPI_eps_iwk_pgw_parseFromJSON() failed [smf_instance_id]");
         goto end;

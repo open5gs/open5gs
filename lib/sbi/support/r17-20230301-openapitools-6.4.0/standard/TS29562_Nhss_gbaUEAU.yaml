@@ -1,0 +1,184 @@
+openapi: 3.0.0
+
+info:
+  version: '1.0.0'
+  title: 'Nhss_gbaUEAU'
+  description: |
+    Nhss UE Authentication Service for GBA.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.562 Home Subscriber Server (HSS) Services, version 17.5.0
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.562/'
+
+servers:
+  - url: '{apiRoot}/nhss-gba-ueau/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501.
+
+security:
+  - oAuth2ClientCredentials:
+    - nhss-gba-ueau
+  - {}
+
+paths:
+  /{ueId}/security-information/generate-auth-data:
+    post:
+      summary: Generate GBA authentication data for the UE
+      operationId: GenerateAuthData
+      tags:
+        - Generate Auth Data (Custom Operation)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nhss-gba-ueau
+        - oAuth2ClientCredentials:
+          - nhss-gba-ueau
+          - nhss-gba-ueau:generate-auth-data:invoke
+      parameters:
+        - name: ueId
+          in: path
+          description: UE identity of the user
+          required: true
+          schema:
+            $ref: '#/components/schemas/UeId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthenticationInfoRequest'
+        required: true
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationInfoResult'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nhss-gba-ueau: Access to the nhss-gba-ueau API
+            nhss-gba-ueau:generate-auth-data:invoke: >
+              Access to invoke the Generate Auth Data custom operation
+
+  schemas:
+
+#
+# COMPLEX TYPES:
+#
+
+    AuthenticationInfoRequest:
+      description: >
+        Contains input data to the authentication request message (e.g. authentication
+        scheme, resynchronization information)
+      type: object
+      properties:
+        authenticationScheme:
+          $ref: '#/components/schemas/AuthenticationScheme'
+        resynchronizationInfo:
+          $ref: 'TS29562_Nhss_imsUEAU.yaml#/components/schemas/ResynchronizationInfo'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    AuthenticationInfoResult:
+      description: >
+        Contains authentication information returned in the authentication response message
+        (e.g. authentication vector, digest authentication parameters)
+      type: object
+      properties:
+        impi:
+          $ref: '#/components/schemas/Impi'
+        3gAkaAv:
+          $ref: 'TS29562_Nhss_imsUEAU.yaml#/components/schemas/3GAkaAv'
+        digestAuth:
+          $ref: '#/components/schemas/DigestAuthentication'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    DigestAuthentication:
+      description: Parameters used for the Digest authentication scheme
+      type: object
+      required:
+        - digestRealm
+        - digestAlgorithm
+        - digestQop
+        - ha1
+      properties:
+        digestRealm:
+          type: string
+        digestAlgorithm:
+          $ref: '#/components/schemas/DigestAlgorithm'
+        digestQop:
+          $ref: '#/components/schemas/DigestQop'
+        ha1:
+          type: string
+
+#
+# SIMPLE TYPES:
+#
+
+    UeId:
+      $ref: 'TS29562_Nhss_gbaSDM.yaml#/components/schemas/UeId'
+
+    Impi:
+      description: IMS Private Identity of the UE
+      type: string
+
+#
+# ENUMS:
+#
+
+    AuthenticationScheme:
+      description: Authentication scheme to be used in the authentication request message
+      anyOf:
+        - type: string
+          enum:
+          - DIGEST_AKAV1_MD5
+          - DIGEST_HTTP
+        - type: string
+
+    DigestAlgorithm:
+      description: Algorithm used for the Digest authentication scheme
+      anyOf:
+        - type: string
+          enum:
+          - MD5
+          - MD5_SESS
+        - type: string
+
+    DigestQop:
+      description: Quality of Protection for the Digest authentication scheme
+      anyOf:
+        - type: string
+          enum:
+          - AUTH
+          - AUTH_INT
+        - type: string

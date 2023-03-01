@@ -20,18 +20,26 @@ OpenAPI_service_parameter_data_patch_t *OpenAPI_service_parameter_data_patch_cre
 
 void OpenAPI_service_parameter_data_patch_free(OpenAPI_service_parameter_data_patch_t *service_parameter_data_patch)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == service_parameter_data_patch) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(service_parameter_data_patch->param_over_pc5);
-    ogs_free(service_parameter_data_patch->param_over_uu);
+    if (service_parameter_data_patch->param_over_pc5) {
+        ogs_free(service_parameter_data_patch->param_over_pc5);
+        service_parameter_data_patch->param_over_pc5 = NULL;
+    }
+    if (service_parameter_data_patch->param_over_uu) {
+        ogs_free(service_parameter_data_patch->param_over_uu);
+        service_parameter_data_patch->param_over_uu = NULL;
+    }
     ogs_free(service_parameter_data_patch);
 }
 
 cJSON *OpenAPI_service_parameter_data_patch_convertToJSON(OpenAPI_service_parameter_data_patch_t *service_parameter_data_patch)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (service_parameter_data_patch == NULL) {
         ogs_error("OpenAPI_service_parameter_data_patch_convertToJSON() failed [ServiceParameterDataPatch]");
@@ -60,27 +68,28 @@ end:
 OpenAPI_service_parameter_data_patch_t *OpenAPI_service_parameter_data_patch_parseFromJSON(cJSON *service_parameter_data_patchJSON)
 {
     OpenAPI_service_parameter_data_patch_t *service_parameter_data_patch_local_var = NULL;
-    cJSON *param_over_pc5 = cJSON_GetObjectItemCaseSensitive(service_parameter_data_patchJSON, "paramOverPc5");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *param_over_pc5 = NULL;
+    cJSON *param_over_uu = NULL;
+    param_over_pc5 = cJSON_GetObjectItemCaseSensitive(service_parameter_data_patchJSON, "paramOverPc5");
     if (param_over_pc5) {
-    if (!cJSON_IsString(param_over_pc5)) {
+    if (!cJSON_IsString(param_over_pc5) && !cJSON_IsNull(param_over_pc5)) {
         ogs_error("OpenAPI_service_parameter_data_patch_parseFromJSON() failed [param_over_pc5]");
         goto end;
     }
     }
 
-    cJSON *param_over_uu = cJSON_GetObjectItemCaseSensitive(service_parameter_data_patchJSON, "paramOverUu");
-
+    param_over_uu = cJSON_GetObjectItemCaseSensitive(service_parameter_data_patchJSON, "paramOverUu");
     if (param_over_uu) {
-    if (!cJSON_IsString(param_over_uu)) {
+    if (!cJSON_IsString(param_over_uu) && !cJSON_IsNull(param_over_uu)) {
         ogs_error("OpenAPI_service_parameter_data_patch_parseFromJSON() failed [param_over_uu]");
         goto end;
     }
     }
 
     service_parameter_data_patch_local_var = OpenAPI_service_parameter_data_patch_create (
-        param_over_pc5 ? ogs_strdup(param_over_pc5->valuestring) : NULL,
-        param_over_uu ? ogs_strdup(param_over_uu->valuestring) : NULL
+        param_over_pc5 && !cJSON_IsNull(param_over_pc5) ? ogs_strdup(param_over_pc5->valuestring) : NULL,
+        param_over_uu && !cJSON_IsNull(param_over_uu) ? ogs_strdup(param_over_uu->valuestring) : NULL
     );
 
     return service_parameter_data_patch_local_var;
