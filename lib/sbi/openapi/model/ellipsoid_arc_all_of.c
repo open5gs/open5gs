@@ -28,17 +28,22 @@ OpenAPI_ellipsoid_arc_all_of_t *OpenAPI_ellipsoid_arc_all_of_create(
 
 void OpenAPI_ellipsoid_arc_all_of_free(OpenAPI_ellipsoid_arc_all_of_t *ellipsoid_arc_all_of)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == ellipsoid_arc_all_of) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_geographical_coordinates_free(ellipsoid_arc_all_of->point);
+    if (ellipsoid_arc_all_of->point) {
+        OpenAPI_geographical_coordinates_free(ellipsoid_arc_all_of->point);
+        ellipsoid_arc_all_of->point = NULL;
+    }
     ogs_free(ellipsoid_arc_all_of);
 }
 
 cJSON *OpenAPI_ellipsoid_arc_all_of_convertToJSON(OpenAPI_ellipsoid_arc_all_of_t *ellipsoid_arc_all_of)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (ellipsoid_arc_all_of == NULL) {
         ogs_error("OpenAPI_ellipsoid_arc_all_of_convertToJSON() failed [EllipsoidArc_allOf]");
@@ -46,6 +51,10 @@ cJSON *OpenAPI_ellipsoid_arc_all_of_convertToJSON(OpenAPI_ellipsoid_arc_all_of_t
     }
 
     item = cJSON_CreateObject();
+    if (!ellipsoid_arc_all_of->point) {
+        ogs_error("OpenAPI_ellipsoid_arc_all_of_convertToJSON() failed [point]");
+        return NULL;
+    }
     cJSON *point_local_JSON = OpenAPI_geographical_coordinates_convertToJSON(ellipsoid_arc_all_of->point);
     if (point_local_JSON == NULL) {
         ogs_error("OpenAPI_ellipsoid_arc_all_of_convertToJSON() failed [point]");
@@ -89,65 +98,66 @@ end:
 OpenAPI_ellipsoid_arc_all_of_t *OpenAPI_ellipsoid_arc_all_of_parseFromJSON(cJSON *ellipsoid_arc_all_ofJSON)
 {
     OpenAPI_ellipsoid_arc_all_of_t *ellipsoid_arc_all_of_local_var = NULL;
-    cJSON *point = cJSON_GetObjectItemCaseSensitive(ellipsoid_arc_all_ofJSON, "point");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *point = NULL;
+    OpenAPI_geographical_coordinates_t *point_local_nonprim = NULL;
+    cJSON *inner_radius = NULL;
+    cJSON *uncertainty_radius = NULL;
+    cJSON *offset_angle = NULL;
+    cJSON *included_angle = NULL;
+    cJSON *confidence = NULL;
+    point = cJSON_GetObjectItemCaseSensitive(ellipsoid_arc_all_ofJSON, "point");
     if (!point) {
         ogs_error("OpenAPI_ellipsoid_arc_all_of_parseFromJSON() failed [point]");
         goto end;
     }
-
-    OpenAPI_geographical_coordinates_t *point_local_nonprim = NULL;
     point_local_nonprim = OpenAPI_geographical_coordinates_parseFromJSON(point);
 
-    cJSON *inner_radius = cJSON_GetObjectItemCaseSensitive(ellipsoid_arc_all_ofJSON, "innerRadius");
+    inner_radius = cJSON_GetObjectItemCaseSensitive(ellipsoid_arc_all_ofJSON, "innerRadius");
     if (!inner_radius) {
         ogs_error("OpenAPI_ellipsoid_arc_all_of_parseFromJSON() failed [inner_radius]");
         goto end;
     }
-
     if (!cJSON_IsNumber(inner_radius)) {
         ogs_error("OpenAPI_ellipsoid_arc_all_of_parseFromJSON() failed [inner_radius]");
         goto end;
     }
 
-    cJSON *uncertainty_radius = cJSON_GetObjectItemCaseSensitive(ellipsoid_arc_all_ofJSON, "uncertaintyRadius");
+    uncertainty_radius = cJSON_GetObjectItemCaseSensitive(ellipsoid_arc_all_ofJSON, "uncertaintyRadius");
     if (!uncertainty_radius) {
         ogs_error("OpenAPI_ellipsoid_arc_all_of_parseFromJSON() failed [uncertainty_radius]");
         goto end;
     }
-
     if (!cJSON_IsNumber(uncertainty_radius)) {
         ogs_error("OpenAPI_ellipsoid_arc_all_of_parseFromJSON() failed [uncertainty_radius]");
         goto end;
     }
 
-    cJSON *offset_angle = cJSON_GetObjectItemCaseSensitive(ellipsoid_arc_all_ofJSON, "offsetAngle");
+    offset_angle = cJSON_GetObjectItemCaseSensitive(ellipsoid_arc_all_ofJSON, "offsetAngle");
     if (!offset_angle) {
         ogs_error("OpenAPI_ellipsoid_arc_all_of_parseFromJSON() failed [offset_angle]");
         goto end;
     }
-
     if (!cJSON_IsNumber(offset_angle)) {
         ogs_error("OpenAPI_ellipsoid_arc_all_of_parseFromJSON() failed [offset_angle]");
         goto end;
     }
 
-    cJSON *included_angle = cJSON_GetObjectItemCaseSensitive(ellipsoid_arc_all_ofJSON, "includedAngle");
+    included_angle = cJSON_GetObjectItemCaseSensitive(ellipsoid_arc_all_ofJSON, "includedAngle");
     if (!included_angle) {
         ogs_error("OpenAPI_ellipsoid_arc_all_of_parseFromJSON() failed [included_angle]");
         goto end;
     }
-
     if (!cJSON_IsNumber(included_angle)) {
         ogs_error("OpenAPI_ellipsoid_arc_all_of_parseFromJSON() failed [included_angle]");
         goto end;
     }
 
-    cJSON *confidence = cJSON_GetObjectItemCaseSensitive(ellipsoid_arc_all_ofJSON, "confidence");
+    confidence = cJSON_GetObjectItemCaseSensitive(ellipsoid_arc_all_ofJSON, "confidence");
     if (!confidence) {
         ogs_error("OpenAPI_ellipsoid_arc_all_of_parseFromJSON() failed [confidence]");
         goto end;
     }
-
     if (!cJSON_IsNumber(confidence)) {
         ogs_error("OpenAPI_ellipsoid_arc_all_of_parseFromJSON() failed [confidence]");
         goto end;
@@ -169,6 +179,10 @@ OpenAPI_ellipsoid_arc_all_of_t *OpenAPI_ellipsoid_arc_all_of_parseFromJSON(cJSON
 
     return ellipsoid_arc_all_of_local_var;
 end:
+    if (point_local_nonprim) {
+        OpenAPI_geographical_coordinates_free(point_local_nonprim);
+        point_local_nonprim = NULL;
+    }
     return NULL;
 }
 

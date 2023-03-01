@@ -24,16 +24,18 @@ OpenAPI_mme_capabilities_t *OpenAPI_mme_capabilities_create(
 
 void OpenAPI_mme_capabilities_free(OpenAPI_mme_capabilities_t *mme_capabilities)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == mme_capabilities) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(mme_capabilities);
 }
 
 cJSON *OpenAPI_mme_capabilities_convertToJSON(OpenAPI_mme_capabilities_t *mme_capabilities)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (mme_capabilities == NULL) {
         ogs_error("OpenAPI_mme_capabilities_convertToJSON() failed [MmeCapabilities]");
@@ -62,8 +64,10 @@ end:
 OpenAPI_mme_capabilities_t *OpenAPI_mme_capabilities_parseFromJSON(cJSON *mme_capabilitiesJSON)
 {
     OpenAPI_mme_capabilities_t *mme_capabilities_local_var = NULL;
-    cJSON *non_ip_supported = cJSON_GetObjectItemCaseSensitive(mme_capabilitiesJSON, "nonIpSupported");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *non_ip_supported = NULL;
+    cJSON *ethernet_supported = NULL;
+    non_ip_supported = cJSON_GetObjectItemCaseSensitive(mme_capabilitiesJSON, "nonIpSupported");
     if (non_ip_supported) {
     if (!cJSON_IsBool(non_ip_supported)) {
         ogs_error("OpenAPI_mme_capabilities_parseFromJSON() failed [non_ip_supported]");
@@ -71,8 +75,7 @@ OpenAPI_mme_capabilities_t *OpenAPI_mme_capabilities_parseFromJSON(cJSON *mme_ca
     }
     }
 
-    cJSON *ethernet_supported = cJSON_GetObjectItemCaseSensitive(mme_capabilitiesJSON, "ethernetSupported");
-
+    ethernet_supported = cJSON_GetObjectItemCaseSensitive(mme_capabilitiesJSON, "ethernetSupported");
     if (ethernet_supported) {
     if (!cJSON_IsBool(ethernet_supported)) {
         ogs_error("OpenAPI_mme_capabilities_parseFromJSON() failed [ethernet_supported]");

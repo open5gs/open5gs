@@ -20,18 +20,26 @@ OpenAPI_ipv6_prefix_range_t *OpenAPI_ipv6_prefix_range_create(
 
 void OpenAPI_ipv6_prefix_range_free(OpenAPI_ipv6_prefix_range_t *ipv6_prefix_range)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == ipv6_prefix_range) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(ipv6_prefix_range->start);
-    ogs_free(ipv6_prefix_range->end);
+    if (ipv6_prefix_range->start) {
+        ogs_free(ipv6_prefix_range->start);
+        ipv6_prefix_range->start = NULL;
+    }
+    if (ipv6_prefix_range->end) {
+        ogs_free(ipv6_prefix_range->end);
+        ipv6_prefix_range->end = NULL;
+    }
     ogs_free(ipv6_prefix_range);
 }
 
 cJSON *OpenAPI_ipv6_prefix_range_convertToJSON(OpenAPI_ipv6_prefix_range_t *ipv6_prefix_range)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (ipv6_prefix_range == NULL) {
         ogs_error("OpenAPI_ipv6_prefix_range_convertToJSON() failed [Ipv6PrefixRange]");
@@ -60,27 +68,28 @@ end:
 OpenAPI_ipv6_prefix_range_t *OpenAPI_ipv6_prefix_range_parseFromJSON(cJSON *ipv6_prefix_rangeJSON)
 {
     OpenAPI_ipv6_prefix_range_t *ipv6_prefix_range_local_var = NULL;
-    cJSON *start = cJSON_GetObjectItemCaseSensitive(ipv6_prefix_rangeJSON, "start");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *start = NULL;
+    cJSON *end = NULL;
+    start = cJSON_GetObjectItemCaseSensitive(ipv6_prefix_rangeJSON, "start");
     if (start) {
-    if (!cJSON_IsString(start)) {
+    if (!cJSON_IsString(start) && !cJSON_IsNull(start)) {
         ogs_error("OpenAPI_ipv6_prefix_range_parseFromJSON() failed [start]");
         goto end;
     }
     }
 
-    cJSON *end = cJSON_GetObjectItemCaseSensitive(ipv6_prefix_rangeJSON, "end");
-
+    end = cJSON_GetObjectItemCaseSensitive(ipv6_prefix_rangeJSON, "end");
     if (end) {
-    if (!cJSON_IsString(end)) {
+    if (!cJSON_IsString(end) && !cJSON_IsNull(end)) {
         ogs_error("OpenAPI_ipv6_prefix_range_parseFromJSON() failed [end]");
         goto end;
     }
     }
 
     ipv6_prefix_range_local_var = OpenAPI_ipv6_prefix_range_create (
-        start ? ogs_strdup(start->valuestring) : NULL,
-        end ? ogs_strdup(end->valuestring) : NULL
+        start && !cJSON_IsNull(start) ? ogs_strdup(start->valuestring) : NULL,
+        end && !cJSON_IsNull(end) ? ogs_strdup(end->valuestring) : NULL
     );
 
     return ipv6_prefix_range_local_var;

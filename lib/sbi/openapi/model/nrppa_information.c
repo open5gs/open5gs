@@ -22,19 +22,30 @@ OpenAPI_nrppa_information_t *OpenAPI_nrppa_information_create(
 
 void OpenAPI_nrppa_information_free(OpenAPI_nrppa_information_t *nrppa_information)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == nrppa_information) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(nrppa_information->nf_id);
-    OpenAPI_n2_info_content_free(nrppa_information->nrppa_pdu);
-    ogs_free(nrppa_information->service_instance_id);
+    if (nrppa_information->nf_id) {
+        ogs_free(nrppa_information->nf_id);
+        nrppa_information->nf_id = NULL;
+    }
+    if (nrppa_information->nrppa_pdu) {
+        OpenAPI_n2_info_content_free(nrppa_information->nrppa_pdu);
+        nrppa_information->nrppa_pdu = NULL;
+    }
+    if (nrppa_information->service_instance_id) {
+        ogs_free(nrppa_information->service_instance_id);
+        nrppa_information->service_instance_id = NULL;
+    }
     ogs_free(nrppa_information);
 }
 
 cJSON *OpenAPI_nrppa_information_convertToJSON(OpenAPI_nrppa_information_t *nrppa_information)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (nrppa_information == NULL) {
         ogs_error("OpenAPI_nrppa_information_convertToJSON() failed [NrppaInformation]");
@@ -42,11 +53,19 @@ cJSON *OpenAPI_nrppa_information_convertToJSON(OpenAPI_nrppa_information_t *nrpp
     }
 
     item = cJSON_CreateObject();
+    if (!nrppa_information->nf_id) {
+        ogs_error("OpenAPI_nrppa_information_convertToJSON() failed [nf_id]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "nfId", nrppa_information->nf_id) == NULL) {
         ogs_error("OpenAPI_nrppa_information_convertToJSON() failed [nf_id]");
         goto end;
     }
 
+    if (!nrppa_information->nrppa_pdu) {
+        ogs_error("OpenAPI_nrppa_information_convertToJSON() failed [nrppa_pdu]");
+        return NULL;
+    }
     cJSON *nrppa_pdu_local_JSON = OpenAPI_n2_info_content_convertToJSON(nrppa_information->nrppa_pdu);
     if (nrppa_pdu_local_JSON == NULL) {
         ogs_error("OpenAPI_nrppa_information_convertToJSON() failed [nrppa_pdu]");
@@ -72,30 +91,31 @@ end:
 OpenAPI_nrppa_information_t *OpenAPI_nrppa_information_parseFromJSON(cJSON *nrppa_informationJSON)
 {
     OpenAPI_nrppa_information_t *nrppa_information_local_var = NULL;
-    cJSON *nf_id = cJSON_GetObjectItemCaseSensitive(nrppa_informationJSON, "nfId");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *nf_id = NULL;
+    cJSON *nrppa_pdu = NULL;
+    OpenAPI_n2_info_content_t *nrppa_pdu_local_nonprim = NULL;
+    cJSON *service_instance_id = NULL;
+    nf_id = cJSON_GetObjectItemCaseSensitive(nrppa_informationJSON, "nfId");
     if (!nf_id) {
         ogs_error("OpenAPI_nrppa_information_parseFromJSON() failed [nf_id]");
         goto end;
     }
-
     if (!cJSON_IsString(nf_id)) {
         ogs_error("OpenAPI_nrppa_information_parseFromJSON() failed [nf_id]");
         goto end;
     }
 
-    cJSON *nrppa_pdu = cJSON_GetObjectItemCaseSensitive(nrppa_informationJSON, "nrppaPdu");
+    nrppa_pdu = cJSON_GetObjectItemCaseSensitive(nrppa_informationJSON, "nrppaPdu");
     if (!nrppa_pdu) {
         ogs_error("OpenAPI_nrppa_information_parseFromJSON() failed [nrppa_pdu]");
         goto end;
     }
-
-    OpenAPI_n2_info_content_t *nrppa_pdu_local_nonprim = NULL;
     nrppa_pdu_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(nrppa_pdu);
 
-    cJSON *service_instance_id = cJSON_GetObjectItemCaseSensitive(nrppa_informationJSON, "serviceInstanceId");
-
+    service_instance_id = cJSON_GetObjectItemCaseSensitive(nrppa_informationJSON, "serviceInstanceId");
     if (service_instance_id) {
-    if (!cJSON_IsString(service_instance_id)) {
+    if (!cJSON_IsString(service_instance_id) && !cJSON_IsNull(service_instance_id)) {
         ogs_error("OpenAPI_nrppa_information_parseFromJSON() failed [service_instance_id]");
         goto end;
     }
@@ -104,11 +124,15 @@ OpenAPI_nrppa_information_t *OpenAPI_nrppa_information_parseFromJSON(cJSON *nrpp
     nrppa_information_local_var = OpenAPI_nrppa_information_create (
         ogs_strdup(nf_id->valuestring),
         nrppa_pdu_local_nonprim,
-        service_instance_id ? ogs_strdup(service_instance_id->valuestring) : NULL
+        service_instance_id && !cJSON_IsNull(service_instance_id) ? ogs_strdup(service_instance_id->valuestring) : NULL
     );
 
     return nrppa_information_local_var;
 end:
+    if (nrppa_pdu_local_nonprim) {
+        OpenAPI_n2_info_content_free(nrppa_pdu_local_nonprim);
+        nrppa_pdu_local_nonprim = NULL;
+    }
     return NULL;
 }
 

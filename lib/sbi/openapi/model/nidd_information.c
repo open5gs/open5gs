@@ -22,19 +22,30 @@ OpenAPI_nidd_information_t *OpenAPI_nidd_information_create(
 
 void OpenAPI_nidd_information_free(OpenAPI_nidd_information_t *nidd_information)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == nidd_information) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(nidd_information->af_id);
-    ogs_free(nidd_information->gpsi);
-    ogs_free(nidd_information->ext_group_id);
+    if (nidd_information->af_id) {
+        ogs_free(nidd_information->af_id);
+        nidd_information->af_id = NULL;
+    }
+    if (nidd_information->gpsi) {
+        ogs_free(nidd_information->gpsi);
+        nidd_information->gpsi = NULL;
+    }
+    if (nidd_information->ext_group_id) {
+        ogs_free(nidd_information->ext_group_id);
+        nidd_information->ext_group_id = NULL;
+    }
     ogs_free(nidd_information);
 }
 
 cJSON *OpenAPI_nidd_information_convertToJSON(OpenAPI_nidd_information_t *nidd_information)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (nidd_information == NULL) {
         ogs_error("OpenAPI_nidd_information_convertToJSON() failed [NiddInformation]");
@@ -42,6 +53,10 @@ cJSON *OpenAPI_nidd_information_convertToJSON(OpenAPI_nidd_information_t *nidd_i
     }
 
     item = cJSON_CreateObject();
+    if (!nidd_information->af_id) {
+        ogs_error("OpenAPI_nidd_information_convertToJSON() failed [af_id]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "afId", nidd_information->af_id) == NULL) {
         ogs_error("OpenAPI_nidd_information_convertToJSON() failed [af_id]");
         goto end;
@@ -68,30 +83,31 @@ end:
 OpenAPI_nidd_information_t *OpenAPI_nidd_information_parseFromJSON(cJSON *nidd_informationJSON)
 {
     OpenAPI_nidd_information_t *nidd_information_local_var = NULL;
-    cJSON *af_id = cJSON_GetObjectItemCaseSensitive(nidd_informationJSON, "afId");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *af_id = NULL;
+    cJSON *gpsi = NULL;
+    cJSON *ext_group_id = NULL;
+    af_id = cJSON_GetObjectItemCaseSensitive(nidd_informationJSON, "afId");
     if (!af_id) {
         ogs_error("OpenAPI_nidd_information_parseFromJSON() failed [af_id]");
         goto end;
     }
-
     if (!cJSON_IsString(af_id)) {
         ogs_error("OpenAPI_nidd_information_parseFromJSON() failed [af_id]");
         goto end;
     }
 
-    cJSON *gpsi = cJSON_GetObjectItemCaseSensitive(nidd_informationJSON, "gpsi");
-
+    gpsi = cJSON_GetObjectItemCaseSensitive(nidd_informationJSON, "gpsi");
     if (gpsi) {
-    if (!cJSON_IsString(gpsi)) {
+    if (!cJSON_IsString(gpsi) && !cJSON_IsNull(gpsi)) {
         ogs_error("OpenAPI_nidd_information_parseFromJSON() failed [gpsi]");
         goto end;
     }
     }
 
-    cJSON *ext_group_id = cJSON_GetObjectItemCaseSensitive(nidd_informationJSON, "extGroupId");
-
+    ext_group_id = cJSON_GetObjectItemCaseSensitive(nidd_informationJSON, "extGroupId");
     if (ext_group_id) {
-    if (!cJSON_IsString(ext_group_id)) {
+    if (!cJSON_IsString(ext_group_id) && !cJSON_IsNull(ext_group_id)) {
         ogs_error("OpenAPI_nidd_information_parseFromJSON() failed [ext_group_id]");
         goto end;
     }
@@ -99,8 +115,8 @@ OpenAPI_nidd_information_t *OpenAPI_nidd_information_parseFromJSON(cJSON *nidd_i
 
     nidd_information_local_var = OpenAPI_nidd_information_create (
         ogs_strdup(af_id->valuestring),
-        gpsi ? ogs_strdup(gpsi->valuestring) : NULL,
-        ext_group_id ? ogs_strdup(ext_group_id->valuestring) : NULL
+        gpsi && !cJSON_IsNull(gpsi) ? ogs_strdup(gpsi->valuestring) : NULL,
+        ext_group_id && !cJSON_IsNull(ext_group_id) ? ogs_strdup(ext_group_id->valuestring) : NULL
     );
 
     return nidd_information_local_var;

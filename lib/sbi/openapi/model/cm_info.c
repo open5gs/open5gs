@@ -20,17 +20,22 @@ OpenAPI_cm_info_t *OpenAPI_cm_info_create(
 
 void OpenAPI_cm_info_free(OpenAPI_cm_info_t *cm_info)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == cm_info) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_cm_state_free(cm_info->cm_state);
+    if (cm_info->cm_state) {
+        OpenAPI_cm_state_free(cm_info->cm_state);
+        cm_info->cm_state = NULL;
+    }
     ogs_free(cm_info);
 }
 
 cJSON *OpenAPI_cm_info_convertToJSON(OpenAPI_cm_info_t *cm_info)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (cm_info == NULL) {
         ogs_error("OpenAPI_cm_info_convertToJSON() failed [CmInfo]");
@@ -38,6 +43,10 @@ cJSON *OpenAPI_cm_info_convertToJSON(OpenAPI_cm_info_t *cm_info)
     }
 
     item = cJSON_CreateObject();
+    if (!cm_info->cm_state) {
+        ogs_error("OpenAPI_cm_info_convertToJSON() failed [cm_state]");
+        return NULL;
+    }
     cJSON *cm_state_local_JSON = OpenAPI_cm_state_convertToJSON(cm_info->cm_state);
     if (cm_state_local_JSON == NULL) {
         ogs_error("OpenAPI_cm_info_convertToJSON() failed [cm_state]");
@@ -49,6 +58,10 @@ cJSON *OpenAPI_cm_info_convertToJSON(OpenAPI_cm_info_t *cm_info)
         goto end;
     }
 
+    if (cm_info->access_type == OpenAPI_access_type_NULL) {
+        ogs_error("OpenAPI_cm_info_convertToJSON() failed [access_type]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "accessType", OpenAPI_access_type_ToString(cm_info->access_type)) == NULL) {
         ogs_error("OpenAPI_cm_info_convertToJSON() failed [access_type]");
         goto end;
@@ -61,22 +74,23 @@ end:
 OpenAPI_cm_info_t *OpenAPI_cm_info_parseFromJSON(cJSON *cm_infoJSON)
 {
     OpenAPI_cm_info_t *cm_info_local_var = NULL;
-    cJSON *cm_state = cJSON_GetObjectItemCaseSensitive(cm_infoJSON, "cmState");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *cm_state = NULL;
+    OpenAPI_cm_state_t *cm_state_local_nonprim = NULL;
+    cJSON *access_type = NULL;
+    OpenAPI_access_type_e access_typeVariable = 0;
+    cm_state = cJSON_GetObjectItemCaseSensitive(cm_infoJSON, "cmState");
     if (!cm_state) {
         ogs_error("OpenAPI_cm_info_parseFromJSON() failed [cm_state]");
         goto end;
     }
-
-    OpenAPI_cm_state_t *cm_state_local_nonprim = NULL;
     cm_state_local_nonprim = OpenAPI_cm_state_parseFromJSON(cm_state);
 
-    cJSON *access_type = cJSON_GetObjectItemCaseSensitive(cm_infoJSON, "accessType");
+    access_type = cJSON_GetObjectItemCaseSensitive(cm_infoJSON, "accessType");
     if (!access_type) {
         ogs_error("OpenAPI_cm_info_parseFromJSON() failed [access_type]");
         goto end;
     }
-
-    OpenAPI_access_type_e access_typeVariable;
     if (!cJSON_IsString(access_type)) {
         ogs_error("OpenAPI_cm_info_parseFromJSON() failed [access_type]");
         goto end;
@@ -90,6 +104,10 @@ OpenAPI_cm_info_t *OpenAPI_cm_info_parseFromJSON(cJSON *cm_infoJSON)
 
     return cm_info_local_var;
 end:
+    if (cm_state_local_nonprim) {
+        OpenAPI_cm_state_free(cm_state_local_nonprim);
+        cm_state_local_nonprim = NULL;
+    }
     return NULL;
 }
 

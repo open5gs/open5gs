@@ -22,10 +22,11 @@ OpenAPI_ue_authentication_ctx_5g_auth_data_t *OpenAPI_ue_authentication_ctx_5g_a
 
 void OpenAPI_ue_authentication_ctx_5g_auth_data_free(OpenAPI_ue_authentication_ctx_5g_auth_data_t *ue_authentication_ctx_5g_auth_data)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == ue_authentication_ctx_5g_auth_data) {
         return;
     }
-    OpenAPI_lnode_t *node;
     if (ue_authentication_ctx_5g_auth_data->rand) {
         ogs_free(ue_authentication_ctx_5g_auth_data->rand);
         ue_authentication_ctx_5g_auth_data->rand = NULL;
@@ -44,6 +45,7 @@ void OpenAPI_ue_authentication_ctx_5g_auth_data_free(OpenAPI_ue_authentication_c
 cJSON *OpenAPI_ue_authentication_ctx_5g_auth_data_convertToJSON(OpenAPI_ue_authentication_ctx_5g_auth_data_t *ue_authentication_ctx_5g_auth_data)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (ue_authentication_ctx_5g_auth_data == NULL) {
         ogs_error("OpenAPI_ue_authentication_ctx_5g_auth_data_convertToJSON() failed [UEAuthenticationCtx_5gAuthData]");

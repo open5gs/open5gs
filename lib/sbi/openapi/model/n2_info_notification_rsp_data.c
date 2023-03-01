@@ -18,17 +18,22 @@ OpenAPI_n2_info_notification_rsp_data_t *OpenAPI_n2_info_notification_rsp_data_c
 
 void OpenAPI_n2_info_notification_rsp_data_free(OpenAPI_n2_info_notification_rsp_data_t *n2_info_notification_rsp_data)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == n2_info_notification_rsp_data) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_n2_info_content_free(n2_info_notification_rsp_data->n2_info_content);
+    if (n2_info_notification_rsp_data->n2_info_content) {
+        OpenAPI_n2_info_content_free(n2_info_notification_rsp_data->n2_info_content);
+        n2_info_notification_rsp_data->n2_info_content = NULL;
+    }
     ogs_free(n2_info_notification_rsp_data);
 }
 
 cJSON *OpenAPI_n2_info_notification_rsp_data_convertToJSON(OpenAPI_n2_info_notification_rsp_data_t *n2_info_notification_rsp_data)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (n2_info_notification_rsp_data == NULL) {
         ogs_error("OpenAPI_n2_info_notification_rsp_data_convertToJSON() failed [N2InfoNotificationRspData]");
@@ -56,9 +61,10 @@ end:
 OpenAPI_n2_info_notification_rsp_data_t *OpenAPI_n2_info_notification_rsp_data_parseFromJSON(cJSON *n2_info_notification_rsp_dataJSON)
 {
     OpenAPI_n2_info_notification_rsp_data_t *n2_info_notification_rsp_data_local_var = NULL;
-    cJSON *n2_info_content = cJSON_GetObjectItemCaseSensitive(n2_info_notification_rsp_dataJSON, "n2InfoContent");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *n2_info_content = NULL;
     OpenAPI_n2_info_content_t *n2_info_content_local_nonprim = NULL;
+    n2_info_content = cJSON_GetObjectItemCaseSensitive(n2_info_notification_rsp_dataJSON, "n2InfoContent");
     if (n2_info_content) {
     n2_info_content_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(n2_info_content);
     }
@@ -69,6 +75,10 @@ OpenAPI_n2_info_notification_rsp_data_t *OpenAPI_n2_info_notification_rsp_data_p
 
     return n2_info_notification_rsp_data_local_var;
 end:
+    if (n2_info_content_local_nonprim) {
+        OpenAPI_n2_info_content_free(n2_info_content_local_nonprim);
+        n2_info_content_local_nonprim = NULL;
+    }
     return NULL;
 }
 

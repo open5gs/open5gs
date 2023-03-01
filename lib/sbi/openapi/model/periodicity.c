@@ -16,16 +16,18 @@ OpenAPI_periodicity_t *OpenAPI_periodicity_create(
 
 void OpenAPI_periodicity_free(OpenAPI_periodicity_t *periodicity)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == periodicity) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(periodicity);
 }
 
 cJSON *OpenAPI_periodicity_convertToJSON(OpenAPI_periodicity_t *periodicity)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (periodicity == NULL) {
         ogs_error("OpenAPI_periodicity_convertToJSON() failed [Periodicity]");
@@ -40,6 +42,7 @@ end:
 OpenAPI_periodicity_t *OpenAPI_periodicity_parseFromJSON(cJSON *periodicityJSON)
 {
     OpenAPI_periodicity_t *periodicity_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
     periodicity_local_var = OpenAPI_periodicity_create (
     );
 

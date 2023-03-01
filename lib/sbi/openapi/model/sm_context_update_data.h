@@ -97,7 +97,7 @@ typedef struct OpenAPI_sm_context_update_data_s {
     struct OpenAPI_mo_exp_data_counter_s *mo_exp_data_counter;
     bool is_extended_nas_sm_timer_ind;
     int extended_nas_sm_timer_ind;
-    char forwarding_f_teid;
+    char *forwarding_f_teid;
     OpenAPI_list_t *forwarding_bearer_contexts;
     struct OpenAPI_ddn_failure_subs_s *ddn_failure_subs;
 } OpenAPI_sm_context_update_data_t;
@@ -158,7 +158,7 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
     OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter,
     bool is_extended_nas_sm_timer_ind,
     int extended_nas_sm_timer_ind,
-    char forwarding_f_teid,
+    char *forwarding_f_teid,
     OpenAPI_list_t *forwarding_bearer_contexts,
     OpenAPI_ddn_failure_subs_t *ddn_failure_subs
 );

@@ -18,20 +18,25 @@ OpenAPI_enhanced_coverage_restriction_data_t *OpenAPI_enhanced_coverage_restrict
 
 void OpenAPI_enhanced_coverage_restriction_data_free(OpenAPI_enhanced_coverage_restriction_data_t *enhanced_coverage_restriction_data)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == enhanced_coverage_restriction_data) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_list_for_each(enhanced_coverage_restriction_data->plmn_ec_info_list, node) {
-        OpenAPI_plmn_ec_info_free(node->data);
+    if (enhanced_coverage_restriction_data->plmn_ec_info_list) {
+        OpenAPI_list_for_each(enhanced_coverage_restriction_data->plmn_ec_info_list, node) {
+            OpenAPI_plmn_ec_info_free(node->data);
+        }
+        OpenAPI_list_free(enhanced_coverage_restriction_data->plmn_ec_info_list);
+        enhanced_coverage_restriction_data->plmn_ec_info_list = NULL;
     }
-    OpenAPI_list_free(enhanced_coverage_restriction_data->plmn_ec_info_list);
     ogs_free(enhanced_coverage_restriction_data);
 }
 
 cJSON *OpenAPI_enhanced_coverage_restriction_data_convertToJSON(OpenAPI_enhanced_coverage_restriction_data_t *enhanced_coverage_restriction_data)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (enhanced_coverage_restriction_data == NULL) {
         ogs_error("OpenAPI_enhanced_coverage_restriction_data_convertToJSON() failed [EnhancedCoverageRestrictionData]");
@@ -45,17 +50,13 @@ cJSON *OpenAPI_enhanced_coverage_restriction_data_convertToJSON(OpenAPI_enhanced
         ogs_error("OpenAPI_enhanced_coverage_restriction_data_convertToJSON() failed [plmn_ec_info_list]");
         goto end;
     }
-
-    OpenAPI_lnode_t *plmn_ec_info_list_node;
-    if (enhanced_coverage_restriction_data->plmn_ec_info_list) {
-        OpenAPI_list_for_each(enhanced_coverage_restriction_data->plmn_ec_info_list, plmn_ec_info_list_node) {
-            cJSON *itemLocal = OpenAPI_plmn_ec_info_convertToJSON(plmn_ec_info_list_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_enhanced_coverage_restriction_data_convertToJSON() failed [plmn_ec_info_list]");
-                goto end;
-            }
-            cJSON_AddItemToArray(plmn_ec_info_listList, itemLocal);
+    OpenAPI_list_for_each(enhanced_coverage_restriction_data->plmn_ec_info_list, node) {
+        cJSON *itemLocal = OpenAPI_plmn_ec_info_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_enhanced_coverage_restriction_data_convertToJSON() failed [plmn_ec_info_list]");
+            goto end;
         }
+        cJSON_AddItemToArray(plmn_ec_info_listList, itemLocal);
     }
     }
 
@@ -66,33 +67,32 @@ end:
 OpenAPI_enhanced_coverage_restriction_data_t *OpenAPI_enhanced_coverage_restriction_data_parseFromJSON(cJSON *enhanced_coverage_restriction_dataJSON)
 {
     OpenAPI_enhanced_coverage_restriction_data_t *enhanced_coverage_restriction_data_local_var = NULL;
-    cJSON *plmn_ec_info_list = cJSON_GetObjectItemCaseSensitive(enhanced_coverage_restriction_dataJSON, "plmnEcInfoList");
-
-    OpenAPI_list_t *plmn_ec_info_listList;
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *plmn_ec_info_list = NULL;
+    OpenAPI_list_t *plmn_ec_info_listList = NULL;
+    plmn_ec_info_list = cJSON_GetObjectItemCaseSensitive(enhanced_coverage_restriction_dataJSON, "plmnEcInfoList");
     if (plmn_ec_info_list) {
-    cJSON *plmn_ec_info_list_local_nonprimitive;
-    if (!cJSON_IsArray(plmn_ec_info_list)){
-        ogs_error("OpenAPI_enhanced_coverage_restriction_data_parseFromJSON() failed [plmn_ec_info_list]");
-        goto end;
-    }
-
-    plmn_ec_info_listList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(plmn_ec_info_list_local_nonprimitive, plmn_ec_info_list ) {
-        if (!cJSON_IsObject(plmn_ec_info_list_local_nonprimitive)) {
+        cJSON *plmn_ec_info_list_local = NULL;
+        if (!cJSON_IsArray(plmn_ec_info_list)) {
             ogs_error("OpenAPI_enhanced_coverage_restriction_data_parseFromJSON() failed [plmn_ec_info_list]");
             goto end;
         }
-        OpenAPI_plmn_ec_info_t *plmn_ec_info_listItem = OpenAPI_plmn_ec_info_parseFromJSON(plmn_ec_info_list_local_nonprimitive);
 
-        if (!plmn_ec_info_listItem) {
-            ogs_error("No plmn_ec_info_listItem");
-            OpenAPI_list_free(plmn_ec_info_listList);
-            goto end;
+        plmn_ec_info_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(plmn_ec_info_list_local, plmn_ec_info_list) {
+            if (!cJSON_IsObject(plmn_ec_info_list_local)) {
+                ogs_error("OpenAPI_enhanced_coverage_restriction_data_parseFromJSON() failed [plmn_ec_info_list]");
+                goto end;
+            }
+            OpenAPI_plmn_ec_info_t *plmn_ec_info_listItem = OpenAPI_plmn_ec_info_parseFromJSON(plmn_ec_info_list_local);
+            if (!plmn_ec_info_listItem) {
+                ogs_error("No plmn_ec_info_listItem");
+                OpenAPI_list_free(plmn_ec_info_listList);
+                goto end;
+            }
+            OpenAPI_list_add(plmn_ec_info_listList, plmn_ec_info_listItem);
         }
-
-        OpenAPI_list_add(plmn_ec_info_listList, plmn_ec_info_listItem);
-    }
     }
 
     enhanced_coverage_restriction_data_local_var = OpenAPI_enhanced_coverage_restriction_data_create (
@@ -101,6 +101,13 @@ OpenAPI_enhanced_coverage_restriction_data_t *OpenAPI_enhanced_coverage_restrict
 
     return enhanced_coverage_restriction_data_local_var;
 end:
+    if (plmn_ec_info_listList) {
+        OpenAPI_list_for_each(plmn_ec_info_listList, node) {
+            OpenAPI_plmn_ec_info_free(node->data);
+        }
+        OpenAPI_list_free(plmn_ec_info_listList);
+        plmn_ec_info_listList = NULL;
+    }
     return NULL;
 }
 

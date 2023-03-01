@@ -1,0 +1,394 @@
+openapi: 3.0.0
+
+info:
+  version: 2.2.2
+  title: 'Nudr_DataRepository API OpenAPI file'
+  description: |
+    Unified Data Repository Service.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.504 V17.9.0; 5G System; Unified Data Repository Services; Stage 3
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.504/'
+
+servers:
+  - description: API root
+    url: '{apiRoot}/nudr-dr/v2'
+    variables:
+      apiRoot:
+        default: https://example.com
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+      - nudr-dr
+
+paths:
+  /subscription-data/{ueId}/authentication-data/authentication-subscription:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1authentication-data~1authentication-subscription'
+  /subscription-data/{ueId}/authentication-data/authentication-status:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1authentication-data~1authentication-status'
+  /subscription-data/{ueId}/authentication-data/authentication-status/{servingNetworkName}:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1authentication-data~1authentication-status~1%7BservingNetworkName%7D'
+  /subscription-data/{ueId}/ue-update-confirmation-data/sor-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1ue-update-confirmation-data~1sor-data'
+  /subscription-data/{ueId}/ue-update-confirmation-data/upu-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1ue-update-confirmation-data~1upu-data'
+  /subscription-data/{ueId}/ue-update-confirmation-data/subscribed-cag:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1ue-update-confirmation-data~1subscribed-cag'
+  /subscription-data/{ueId}/ue-update-confirmation-data/subscribed-snssais:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1ue-update-confirmation-data~1subscribed-snssais'
+  /subscription-data/{ueId}/{servingPlmnId}/provisioned-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1%7BservingPlmnId%7D~1provisioned-data'
+  /subscription-data/{ueId}/{servingPlmnId}/provisioned-data/am-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1%7BservingPlmnId%7D~1provisioned-data~1am-data'
+  /subscription-data/{ueId}/{servingPlmnId}/provisioned-data/smf-selection-subscription-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1%7BservingPlmnId%7D~1provisioned-data~1smf-selection-subscription-data'
+  /subscription-data/{ueId}/{servingPlmnId}/provisioned-data/sm-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1%7BservingPlmnId%7D~1provisioned-data~1sm-data'
+  /subscription-data/{ueId}/{servingPlmnId}/provisioned-data/lcs-bca-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1%7BservingPlmnId%7D~1provisioned-data~1lcs-bca-data'
+  /subscription-data/{ueId}/context-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1context-data'
+  /subscription-data/{ueId}/context-data/amf-3gpp-access:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1context-data~1amf-3gpp-access'
+  /subscription-data/{ueId}/context-data/amf-non-3gpp-access:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1context-data~1amf-non-3gpp-access'
+  /subscription-data/{ueId}/context-data/smf-registrations:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1context-data~1smf-registrations'
+  /subscription-data/{ueId}/context-data/smf-registrations/{pduSessionId}:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1context-data~1smf-registrations~1%7BpduSessionId%7D'
+  /subscription-data/{ueId}/operator-specific-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1operator-specific-data'
+  /subscription-data/{ueId}/context-data/smsf-3gpp-access:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1context-data~1smsf-3gpp-access'
+  /subscription-data/{ueId}/context-data/smsf-non-3gpp-access:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1context-data~1smsf-non-3gpp-access'
+  /subscription-data/{ueId}/context-data/location:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1context-data~1location'
+  /subscription-data/{ueId}/context-data/ip-sm-gw:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1context-data~1ip-sm-gw'
+  /subscription-data/{ueId}/context-data/mwd:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1context-data~1mwd'
+  /subscription-data/{ueId}/context-data/roaming-information:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1context-data~1roaming-information'
+  /subscription-data/{ueId}/context-data/pei-info:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1context-data~1pei-info'
+  /subscription-data/{ueId}/{servingPlmnId}/provisioned-data/sms-mng-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1%7BservingPlmnId%7D~1provisioned-data~1sms-mng-data'
+  /subscription-data/{ueId}/{servingPlmnId}/provisioned-data/sms-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1%7BservingPlmnId%7D~1provisioned-data~1sms-data'
+  /subscription-data/{ueId}/lcs-privacy-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1lcs-privacy-data'
+  /subscription-data/{ueId}/lcs-mo-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1lcs-mo-data'
+  /subscription-data/{ueId}/pp-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1pp-data'
+  /subscription-data/{ueId}/context-data/ee-subscriptions:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1context-data~1ee-subscriptions'
+  /subscription-data/{ueId}/context-data/ee-subscriptions/{subsId}:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1context-data~1ee-subscriptions~1%7BsubsId%7D'
+  /subscription-data/{ueId}/context-data/ee-subscriptions/{subsId}/amf-subscriptions:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1context-data~1ee-subscriptions~1%7BsubsId%7D~1amf-subscriptions'
+  /subscription-data/{ueId}/context-data/ee-subscriptions/{subsId}/smf-subscriptions:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1context-data~1ee-subscriptions~1%7BsubsId%7D~1smf-subscriptions'
+  /subscription-data/{ueId}/context-data/ee-subscriptions/{subsId}/hss-subscriptions:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1context-data~1ee-subscriptions~1%7BsubsId%7D~1hss-subscriptions'
+  /subscription-data/group-data/{ueGroupId}/ee-subscriptions:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1group-data~1%7BueGroupId%7D~1ee-subscriptions'
+  /subscription-data/group-data/{ueGroupId}/ee-subscriptions/{subsId}:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1group-data~1%7BueGroupId%7D~1ee-subscriptions~1%7BsubsId%7D'
+  /subscription-data/group-data/{ueGroupId}/ee-subscriptions/{subsId}/amf-subscriptions:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1group-data~1%7BueGroupId%7D~1ee-subscriptions~1%7BsubsId%7D~1amf-subscriptions'
+  /subscription-data/group-data/{ueGroupId}/ee-subscriptions/{subsId}/smf-subscriptions:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1group-data~1%7BueGroupId%7D~1ee-subscriptions~1%7BsubsId%7D~1smf-subscriptions'
+  /subscription-data/group-data/{ueGroupId}/ee-subscriptions/{subsId}/hss-subscriptions:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1group-data~1%7BueGroupId%7D~1ee-subscriptions~1%7BsubsId%7D~1hss-subscriptions'
+  /subscription-data/group-data/{ueGroupId}/ee-profile-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1group-data~1%7BueGroupId%7D~1ee-profile-data'
+  /subscription-data/group-data/5g-vn-groups:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1group-data~15g-vn-groups'
+  /subscription-data/group-data/5g-vn-groups/{externalGroupId}:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1group-data~15g-vn-groups~1%7BexternalGroupId%7D'
+  /subscription-data/group-data/5g-vn-groups/internal:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1group-data~15g-vn-groups~1internal'
+  /subscription-data/group-data/5g-vn-groups/pp-profile-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1group-data~15g-vn-groups~1pp-profile-data'
+  /subscription-data/{ueId}/ee-profile-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1ee-profile-data'
+  /subscription-data/{ueId}/context-data/sdm-subscriptions:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1context-data~1sdm-subscriptions'
+  /subscription-data/{ueId}/context-data/sdm-subscriptions/{subsId}:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1context-data~1sdm-subscriptions~1%7BsubsId%7D'
+  /subscription-data/{ueId}/context-data/nidd-authorizations:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1context-data~1nidd-authorizations'
+  /subscription-data/{ueId}/context-data/sdm-subscriptions/{subsId}/hss-sdm-subscriptions:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1context-data~1sdm-subscriptions~1%7BsubsId%7D~1hss-sdm-subscriptions'
+  /subscription-data/shared-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1shared-data'
+  /subscription-data/shared-data/{sharedDataId}:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1shared-data~1%7BsharedDataId%7D'
+  /subscription-data/subs-to-notify:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1subs-to-notify'
+  /subscription-data/subs-to-notify/{subsId}:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1subs-to-notify~1%7BsubsId%7D'
+  /subscription-data/{ueId}/{servingPlmnId}/provisioned-data/trace-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1%7BservingPlmnId%7D~1provisioned-data~1trace-data'
+  /subscription-data/{ueId}/identity-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1identity-data'
+  /subscription-data/{ueId}/operator-determined-barring-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1operator-determined-barring-data'
+  /subscription-data/{ueId}/nidd-authorization-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1nidd-authorization-data'
+  /subscription-data/{ueId}/service-specific-authorization-data/{serviceType}:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1service-specific-authorization-data~1%7BserviceType%7D'
+  /subscription-data/{ueId}/v2x-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1v2x-data'
+  /subscription-data/{ueId}/pp-profile-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1pp-profile-data'
+  /subscription-data/{ueId}/coverage-restriction-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1coverage-restriction-data'
+  /subscription-data/group-data/group-identifiers:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1group-data~1group-identifiers'
+  /subscription-data/{ueId}/prose-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1prose-data'
+  /subscription-data/{ueId}/pp-data-store:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1pp-data-store'
+  /subscription-data/{ueId}/context-data/service-specific-authorizations/{serviceType}:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1context-data~1service-specific-authorizations~1%7BserviceType%7D'
+  /subscription-data/{ueId}/5mbs-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~15mbs-data'
+  /subscription-data/{ueId}/uc-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1uc-data'
+  /policy-data/ues/{ueId}:
+    $ref: 'TS29519_Policy_Data.yaml#/paths/~1policy-data~1ues~1%7BueId%7D'
+  /policy-data/ues/{ueId}/am-data:
+    $ref: 'TS29519_Policy_Data.yaml#/paths/~1policy-data~1ues~1%7BueId%7D~1am-data'
+  /policy-data/ues/{ueId}/ue-policy-set:
+    $ref: 'TS29519_Policy_Data.yaml#/paths/~1policy-data~1ues~1%7BueId%7D~1ue-policy-set'
+  /policy-data/ues/{ueId}/sm-data:
+    $ref: 'TS29519_Policy_Data.yaml#/paths/~1policy-data~1ues~1%7BueId%7D~1sm-data'
+  /policy-data/ues/{ueId}/sm-data/{usageMonId}:
+    $ref: 'TS29519_Policy_Data.yaml#/paths/~1policy-data~1ues~1%7BueId%7D~1sm-data~1%7BusageMonId%7D'
+  /policy-data/sponsor-connectivity-data/{sponsorId}:
+    $ref: 'TS29519_Policy_Data.yaml#/paths/~1policy-data~1sponsor-connectivity-data~1%7BsponsorId%7D'
+  /policy-data/bdt-data:
+    $ref: 'TS29519_Policy_Data.yaml#/paths/~1policy-data~1bdt-data'
+  /policy-data/bdt-data/{bdtReferenceId}:
+    $ref: 'TS29519_Policy_Data.yaml#/paths/~1policy-data~1bdt-data~1%7BbdtReferenceId%7D'
+  /policy-data/subs-to-notify:
+    $ref: 'TS29519_Policy_Data.yaml#/paths/~1policy-data~1subs-to-notify'
+  /policy-data/subs-to-notify/{subsId}:
+    $ref: 'TS29519_Policy_Data.yaml#/paths/~1policy-data~1subs-to-notify~1%7BsubsId%7D'
+  /policy-data/ues/{ueId}/operator-specific-data:
+    $ref: 'TS29519_Policy_Data.yaml#/paths/~1policy-data~1ues~1%7BueId%7D~1operator-specific-data'
+  /application-data/pfds:
+    $ref: 'TS29519_Application_Data.yaml#/paths/~1application-data~1pfds'
+  /application-data/pfds/{appId}:
+    $ref: 'TS29519_Application_Data.yaml#/paths/~1application-data~1pfds~1%7BappId%7D'
+  /application-data/influenceData:
+    $ref: 'TS29519_Application_Data.yaml#/paths/~1application-data~1influenceData'
+# The path segment is left not following the naming convention as defined in 3GPP TS 29.501 due to backward compatibility consideration.
+  /application-data/influenceData/{influenceId}:
+    $ref: 'TS29519_Application_Data.yaml#/paths/~1application-data~1influenceData~1%7BinfluenceId%7D'
+# The path segment is left not following the naming convention as defined in 3GPP TS 29.501 due to backward compatibility consideration.
+  /policy-data/plmns/{plmnId}/ue-policy-set:
+    $ref: 'TS29519_Policy_Data.yaml#/paths/~1policy-data~1plmns~1%7BplmnId%7D~1ue-policy-set'
+  /application-data/bdtPolicyData:
+    $ref: 'TS29519_Application_Data.yaml#/paths/~1application-data~1bdtPolicyData'
+# The path segment is left not following the naming convention as defined in 3GPP TS 29.501 due to backward compatibility consideration.
+  /application-data/bdtPolicyData/{bdtPolicyId}:
+    $ref: 'TS29519_Application_Data.yaml#/paths/~1application-data~1bdtPolicyData~1%7BbdtPolicyId%7D'
+# The path segment is left not following the naming convention as defined in 3GPP TS 29.501 due to backward compatibility consideration.
+  /application-data/iptvConfigData:
+    $ref: 'TS29519_Application_Data.yaml#/paths/~1application-data~1iptvConfigData'
+# The path segment is left not following the naming convention as defined in 3GPP TS 29.501 due to backward compatibility consideration.
+  /application-data/iptvConfigData/{configurationId}:
+    $ref: 'TS29519_Application_Data.yaml#/paths/~1application-data~1iptvConfigData~1%7BconfigurationId%7D'
+# The path segment is left not following the naming convention as defined in 3GPP TS 29.501 due to backward compatibility consideration.
+  /application-data/serviceParamData:
+    $ref: 'TS29519_Application_Data.yaml#/paths/~1application-data~1serviceParamData'
+# The path segment is left not following the naming convention as defined in 3GPP TS 29.501 due to backward compatibility consideration.
+  /application-data/serviceParamData/{serviceParamId}:
+    $ref: 'TS29519_Application_Data.yaml#/paths/~1application-data~1serviceParamData~1%7BserviceParamId%7D'
+# The path segment is left not following the naming convention as defined in 3GPP TS 29.501 due to backward compatibility consideration.
+  /application-data/influenceData/subs-to-notify:
+    $ref: 'TS29519_Application_Data.yaml#/paths/~1application-data~1influenceData~1subs-to-notify'
+# The path segment is left not following the naming convention as defined in 3GPP TS 29.501 due to backward compatibility consideration.
+  /application-data/influenceData/subs-to-notify/{subscriptionId}:
+    $ref: 'TS29519_Application_Data.yaml#/paths/~1application-data~1influenceData~1subs-to-notify~1%7BsubscriptionId%7D'
+# The path segment is left not following the naming convention as defined in 3GPP TS 29.501 due to backward compatibility consideration.
+  /application-data/subs-to-notify:
+    $ref: 'TS29519_Application_Data.yaml#/paths/~1application-data~1subs-to-notify'
+  /application-data/subs-to-notify/{subsId}:
+    $ref: 'TS29519_Application_Data.yaml#/paths/~1application-data~1subs-to-notify~1%7BsubsId%7D'
+  /exposure-data/{ueId}/access-and-mobility-data:
+    $ref: 'TS29519_Exposure_Data.yaml#/paths/~1exposure-data~1%7BueId%7D~1access-and-mobility-data'
+  /exposure-data/{ueId}/session-management-data/{pduSessionId}:
+    $ref: 'TS29519_Exposure_Data.yaml#/paths/~1exposure-data~1%7BueId%7D~1session-management-data~1%7BpduSessionId%7D'
+  /exposure-data/subs-to-notify:
+    $ref: 'TS29519_Exposure_Data.yaml#/paths/~1exposure-data~1subs-to-notify'
+  /exposure-data/subs-to-notify/{subId}:
+    $ref: 'TS29519_Exposure_Data.yaml#/paths/~1exposure-data~1subs-to-notify~1%7BsubId%7D'
+  /data-restoration-events:
+    post:
+    # This is a pseudo operation, clients shall NOT invoke this method!
+      summary: subscribe to data restoration notifications
+      operationId: CreateIndividualSubcription
+      tags:
+        - Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {}
+      responses:
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        restorationNotification:
+          '{dataRestorationCallbackUri}':
+          # The URI in {dataRestorationCallbackUri} is the default endpoint discovered from NRF.
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/DataRestorationNotification'
+              responses:
+                '204':
+                  description: No Content, Notification was succesfull
+                '307':
+                  description: Temporary Redirect
+                  content:
+                    application/json:
+                      schema:
+                        $ref: 'TS29571_CommonData.yaml#/components/schemas/RedirectResponse'
+                  headers:
+                    Location:
+                      description: 'The URI pointing to the resource located on the redirect target NF service consumer'
+                      required: true
+                      schema:
+                        type: string
+                '308':
+                  description: Permanent Redirect
+                  content:
+                    application/json:
+                      schema:
+                        $ref: 'TS29571_CommonData.yaml#/components/schemas/RedirectResponse'
+                  headers:
+                    Location:
+                      description: 'The URI pointing to the resource located on the redirect target NF service consumer'
+                      required: true
+                      schema:
+                        type: string
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nudr-dr: Access to the Nudr_DataRepository API
+            nudr-dr:subscription-data: Access to the SubscriptionData data set
+            nudr-dr:subscription-data:authentication-subscription:read: Access to read the AuthenticationSubscription resource of the SubscriptionData data set
+            nudr-dr:subscription-data:authentication-subscription:modify: Access to update the AuthenticationSubscription resource of the SubscriptionData data set
+            nudr-dr:subscription-data:registrations:write: Write access to NF registration resources of the SubscriptionData data set
+            nudr-dr:policy-data: Access to the PolicyData data set
+            nudr-dr:policy-data:ues:read: Access to read the UEs resource
+            nudr-dr:policy-data:ues:am-data:read: Access to read the UEs Access and Mobility policy data
+            nudr-dr:policy-data:ues:ue-policy-set:read: Access to read the UEs Policy Set data
+            nudr-dr:policy-data:ues:ue-policy-set:create: Access to create the UEs Policy Set data
+            nudr-dr:policy-data:ues:ue-policy-set:modify: Access to update the UEs Policy Set data
+            nudr-dr:policy-data:ues:sm-data:read: Access to read the UEs Session Management Policy data
+            nudr-dr:policy-data:ues:sm-data:modify: Access to update the UEs Session Management Policy data
+            nudr-dr:policy-data:ues:sm-data:create: Access to create the UEs Session Management Policy data
+            nudr-dr:policy-data:sponsor-connectivity-data:read: Access to read the sponsored Connectivity Data
+            nudr-dr:policy-data:bdt-data:read: Access to read the BDT data resource
+            nudr-dr:policy-data:bdt-data:create: Access to create the BDT data resource
+            nudr-dr:policy-data:bdt-data:modify: Access to update the BDT data resource
+            nudr-dr:policy-data:subs-to-notify:create: Access to create Subscriptions resources
+            nudr-dr:policy-data:subs-to-notify:modify: Access to update Subscriptions resources
+            nudr-dr:policy-data:ues:operator-specific-data:read: Access to read the UEs operator specific policy data
+            nudr-dr:policy-data:ues:operator-specific-data:modify: Access to update the UEs operator specific policy data
+            nudr-dr:policy-data:ues:operator-specific-data:create: Access to create the UEs operator specific policy data
+            nudr-dr:policy-data:slice-control-data:read: Access to read Slice specific Policy Control Data
+            nudr-dr:policy-data:slice-control-data:modify: Access to update Slice specific Policy Control Data
+            nudr-dr:exposure-data: Access to the ExposureData data set
+            nudr-dr:exposure-data:access-and-mobility-data:create: Access to create ExposureData
+            nudr-dr:exposure-data:access-and-mobility-data:read: Access to read ExposureData
+            nudr-dr:exposure-data:access-and-mobility-data:modify: Access to update ExposureData
+            nudr-dr:exposure-data:session-management-data:create: Access to create ExposureData
+            nudr-dr:exposure-data:session-management-data:read: Access to read ExposureData
+            nudr-dr:exposure-data:session-management-data:modify: Access to update ExposureData
+            nudr-dr:exposure-data:subs-to-notify:create: Access to create Subscriptions resources
+            nudr-dr:exposure-data:subs-to-notify:modify: Access to update Subscriptions resources
+            nudr-dr:application-data: Access to the ApplicationData data set
+            nudr-dr:application-data:pfds:read: Access to read PFDData
+            nudr-dr:application-data:pfds:modify: Access to update PFDData
+            nudr-dr:application-data:pfds:create: Access to create PFDData
+            nudr-dr:application-data:influence-data:read: Access to read Traffic Influence Data
+            nudr-dr:application-data:influence-data:create: Access to create Traffic Influence Data.
+            nudr-dr:application-data:influence-data:modify: Access to update Traffic Influence Data
+            nudr-dr:application-data:influence-data:subscriptions:read: Access to read Traffic Influence Data Subscriptions
+            nudr-dr:application-data:influence-data:subscriptions:create: Access to create Traffic Influence Data Subscriptions
+            nudr-dr:application-data:influence-data:subscriptions:modify: Access to update Traffic Influence Data Subscriptions
+            nudr-dr:application-data:bdt-policy-data:read: Access to read BDT Policy Data
+            nudr-dr:application-data:bdt-policy-data:create: Access to create BDT Policy Data
+            nudr-dr:application-data:bdt-policy-data:modify: Access to update BDT Policy Data
+            nudr-dr:application-data:iptv-config-data:read: Access to read IPTV Configuration Data
+            nudr-dr:application-data:iptv-config-data:create: Access to create IPTV Configuration Data
+            nudr-dr:application-data:iptv-config-data:modify: Access to update IPTV Configuration Data
+            nudr-dr:application-data:service-param-data:read: Access to read Service Parameter Data
+            nudr-dr:application-data:service-param-data:create: Access to create Service Parameter Data
+            nudr-dr:application-data:service-param-data:modify: Access to update Service Parameter Data
+            nudr-dr:application-data:am-influence-data:read: Access to read AM Influence Data
+            nudr-dr:application-data:am-influence-data:create: Access to create AM Influence Data
+            nudr-dr:application-data:am-influence-data:modify: Access to update AM Influence Data
+            nudr-dr:application-data:subs-to-notify:create: Access to create Subscriptions resources
+            nudr-dr:application-data:subs-to-notify:read: Access to read Subscriptions resources
+            nudr-dr:application-data:subs-to-notify:modify: Access to update Subscriptions resources
+            nudr-dr:application-data:eas-deploy-data:read: Access to read EAS Deployment Information Data
+            nudr-dr:application-data:eas-deploy-data:create: Access to create EAS Deployment Information Data
+            nudr-dr:application-data:eas-deploy-data:modify: Access to update EAS Deployment Information Data
+
+  schemas:
+    DataRestorationNotification:
+      description: Contains identities representing those UEs potentially affected by a data-loss event at the UDR
+      type: object
+      properties:
+        supiRanges:
+          type: array
+          items:
+            $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/SupiRange'
+          minItems: 1
+        gpsiRanges:
+          type: array
+          items:
+            $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/IdentityRange'
+          minItems: 1
+        resetIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        sNssaiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+        dnnList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+          minItems: 1
+        udrGroupId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfGroupId'

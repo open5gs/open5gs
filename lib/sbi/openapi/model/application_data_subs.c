@@ -24,23 +24,37 @@ OpenAPI_application_data_subs_t *OpenAPI_application_data_subs_create(
 
 void OpenAPI_application_data_subs_free(OpenAPI_application_data_subs_t *application_data_subs)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == application_data_subs) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(application_data_subs->notification_uri);
-    OpenAPI_list_for_each(application_data_subs->data_filters, node) {
-        OpenAPI_data_filter_free(node->data);
+    if (application_data_subs->notification_uri) {
+        ogs_free(application_data_subs->notification_uri);
+        application_data_subs->notification_uri = NULL;
     }
-    OpenAPI_list_free(application_data_subs->data_filters);
-    ogs_free(application_data_subs->expiry);
-    ogs_free(application_data_subs->supported_features);
+    if (application_data_subs->data_filters) {
+        OpenAPI_list_for_each(application_data_subs->data_filters, node) {
+            OpenAPI_data_filter_free(node->data);
+        }
+        OpenAPI_list_free(application_data_subs->data_filters);
+        application_data_subs->data_filters = NULL;
+    }
+    if (application_data_subs->expiry) {
+        ogs_free(application_data_subs->expiry);
+        application_data_subs->expiry = NULL;
+    }
+    if (application_data_subs->supported_features) {
+        ogs_free(application_data_subs->supported_features);
+        application_data_subs->supported_features = NULL;
+    }
     ogs_free(application_data_subs);
 }
 
 cJSON *OpenAPI_application_data_subs_convertToJSON(OpenAPI_application_data_subs_t *application_data_subs)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (application_data_subs == NULL) {
         ogs_error("OpenAPI_application_data_subs_convertToJSON() failed [ApplicationDataSubs]");
@@ -48,6 +62,10 @@ cJSON *OpenAPI_application_data_subs_convertToJSON(OpenAPI_application_data_subs
     }
 
     item = cJSON_CreateObject();
+    if (!application_data_subs->notification_uri) {
+        ogs_error("OpenAPI_application_data_subs_convertToJSON() failed [notification_uri]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "notificationUri", application_data_subs->notification_uri) == NULL) {
         ogs_error("OpenAPI_application_data_subs_convertToJSON() failed [notification_uri]");
         goto end;
@@ -59,17 +77,13 @@ cJSON *OpenAPI_application_data_subs_convertToJSON(OpenAPI_application_data_subs
         ogs_error("OpenAPI_application_data_subs_convertToJSON() failed [data_filters]");
         goto end;
     }
-
-    OpenAPI_lnode_t *data_filters_node;
-    if (application_data_subs->data_filters) {
-        OpenAPI_list_for_each(application_data_subs->data_filters, data_filters_node) {
-            cJSON *itemLocal = OpenAPI_data_filter_convertToJSON(data_filters_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_application_data_subs_convertToJSON() failed [data_filters]");
-                goto end;
-            }
-            cJSON_AddItemToArray(data_filtersList, itemLocal);
+    OpenAPI_list_for_each(application_data_subs->data_filters, node) {
+        cJSON *itemLocal = OpenAPI_data_filter_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_application_data_subs_convertToJSON() failed [data_filters]");
+            goto end;
         }
+        cJSON_AddItemToArray(data_filtersList, itemLocal);
     }
     }
 
@@ -94,59 +108,58 @@ end:
 OpenAPI_application_data_subs_t *OpenAPI_application_data_subs_parseFromJSON(cJSON *application_data_subsJSON)
 {
     OpenAPI_application_data_subs_t *application_data_subs_local_var = NULL;
-    cJSON *notification_uri = cJSON_GetObjectItemCaseSensitive(application_data_subsJSON, "notificationUri");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *notification_uri = NULL;
+    cJSON *data_filters = NULL;
+    OpenAPI_list_t *data_filtersList = NULL;
+    cJSON *expiry = NULL;
+    cJSON *supported_features = NULL;
+    notification_uri = cJSON_GetObjectItemCaseSensitive(application_data_subsJSON, "notificationUri");
     if (!notification_uri) {
         ogs_error("OpenAPI_application_data_subs_parseFromJSON() failed [notification_uri]");
         goto end;
     }
-
     if (!cJSON_IsString(notification_uri)) {
         ogs_error("OpenAPI_application_data_subs_parseFromJSON() failed [notification_uri]");
         goto end;
     }
 
-    cJSON *data_filters = cJSON_GetObjectItemCaseSensitive(application_data_subsJSON, "dataFilters");
-
-    OpenAPI_list_t *data_filtersList;
+    data_filters = cJSON_GetObjectItemCaseSensitive(application_data_subsJSON, "dataFilters");
     if (data_filters) {
-    cJSON *data_filters_local_nonprimitive;
-    if (!cJSON_IsArray(data_filters)){
-        ogs_error("OpenAPI_application_data_subs_parseFromJSON() failed [data_filters]");
-        goto end;
-    }
-
-    data_filtersList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(data_filters_local_nonprimitive, data_filters ) {
-        if (!cJSON_IsObject(data_filters_local_nonprimitive)) {
+        cJSON *data_filters_local = NULL;
+        if (!cJSON_IsArray(data_filters)) {
             ogs_error("OpenAPI_application_data_subs_parseFromJSON() failed [data_filters]");
             goto end;
         }
-        OpenAPI_data_filter_t *data_filtersItem = OpenAPI_data_filter_parseFromJSON(data_filters_local_nonprimitive);
 
-        if (!data_filtersItem) {
-            ogs_error("No data_filtersItem");
-            OpenAPI_list_free(data_filtersList);
-            goto end;
+        data_filtersList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(data_filters_local, data_filters) {
+            if (!cJSON_IsObject(data_filters_local)) {
+                ogs_error("OpenAPI_application_data_subs_parseFromJSON() failed [data_filters]");
+                goto end;
+            }
+            OpenAPI_data_filter_t *data_filtersItem = OpenAPI_data_filter_parseFromJSON(data_filters_local);
+            if (!data_filtersItem) {
+                ogs_error("No data_filtersItem");
+                OpenAPI_list_free(data_filtersList);
+                goto end;
+            }
+            OpenAPI_list_add(data_filtersList, data_filtersItem);
         }
-
-        OpenAPI_list_add(data_filtersList, data_filtersItem);
-    }
     }
 
-    cJSON *expiry = cJSON_GetObjectItemCaseSensitive(application_data_subsJSON, "expiry");
-
+    expiry = cJSON_GetObjectItemCaseSensitive(application_data_subsJSON, "expiry");
     if (expiry) {
-    if (!cJSON_IsString(expiry)) {
+    if (!cJSON_IsString(expiry) && !cJSON_IsNull(expiry)) {
         ogs_error("OpenAPI_application_data_subs_parseFromJSON() failed [expiry]");
         goto end;
     }
     }
 
-    cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(application_data_subsJSON, "supportedFeatures");
-
+    supported_features = cJSON_GetObjectItemCaseSensitive(application_data_subsJSON, "supportedFeatures");
     if (supported_features) {
-    if (!cJSON_IsString(supported_features)) {
+    if (!cJSON_IsString(supported_features) && !cJSON_IsNull(supported_features)) {
         ogs_error("OpenAPI_application_data_subs_parseFromJSON() failed [supported_features]");
         goto end;
     }
@@ -155,12 +168,19 @@ OpenAPI_application_data_subs_t *OpenAPI_application_data_subs_parseFromJSON(cJS
     application_data_subs_local_var = OpenAPI_application_data_subs_create (
         ogs_strdup(notification_uri->valuestring),
         data_filters ? data_filtersList : NULL,
-        expiry ? ogs_strdup(expiry->valuestring) : NULL,
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL
+        expiry && !cJSON_IsNull(expiry) ? ogs_strdup(expiry->valuestring) : NULL,
+        supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL
     );
 
     return application_data_subs_local_var;
 end:
+    if (data_filtersList) {
+        OpenAPI_list_for_each(data_filtersList, node) {
+            OpenAPI_data_filter_free(node->data);
+        }
+        OpenAPI_list_free(data_filtersList);
+        data_filtersList = NULL;
+    }
     return NULL;
 }
 

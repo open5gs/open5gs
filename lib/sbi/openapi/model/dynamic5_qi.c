@@ -48,17 +48,22 @@ OpenAPI_dynamic5_qi_t *OpenAPI_dynamic5_qi_create(
 
 void OpenAPI_dynamic5_qi_free(OpenAPI_dynamic5_qi_t *dynamic5_qi)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == dynamic5_qi) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(dynamic5_qi->packet_err_rate);
+    if (dynamic5_qi->packet_err_rate) {
+        ogs_free(dynamic5_qi->packet_err_rate);
+        dynamic5_qi->packet_err_rate = NULL;
+    }
     ogs_free(dynamic5_qi);
 }
 
 cJSON *OpenAPI_dynamic5_qi_convertToJSON(OpenAPI_dynamic5_qi_t *dynamic5_qi)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (dynamic5_qi == NULL) {
         ogs_error("OpenAPI_dynamic5_qi_convertToJSON() failed [Dynamic5Qi]");
@@ -66,6 +71,10 @@ cJSON *OpenAPI_dynamic5_qi_convertToJSON(OpenAPI_dynamic5_qi_t *dynamic5_qi)
     }
 
     item = cJSON_CreateObject();
+    if (dynamic5_qi->resource_type == OpenAPI_qos_resource_type_NULL) {
+        ogs_error("OpenAPI_dynamic5_qi_convertToJSON() failed [resource_type]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "resourceType", OpenAPI_qos_resource_type_ToString(dynamic5_qi->resource_type)) == NULL) {
         ogs_error("OpenAPI_dynamic5_qi_convertToJSON() failed [resource_type]");
         goto end;
@@ -81,6 +90,10 @@ cJSON *OpenAPI_dynamic5_qi_convertToJSON(OpenAPI_dynamic5_qi_t *dynamic5_qi)
         goto end;
     }
 
+    if (!dynamic5_qi->packet_err_rate) {
+        ogs_error("OpenAPI_dynamic5_qi_convertToJSON() failed [packet_err_rate]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "packetErrRate", dynamic5_qi->packet_err_rate) == NULL) {
         ogs_error("OpenAPI_dynamic5_qi_convertToJSON() failed [packet_err_rate]");
         goto end;
@@ -135,54 +148,60 @@ end:
 OpenAPI_dynamic5_qi_t *OpenAPI_dynamic5_qi_parseFromJSON(cJSON *dynamic5_qiJSON)
 {
     OpenAPI_dynamic5_qi_t *dynamic5_qi_local_var = NULL;
-    cJSON *resource_type = cJSON_GetObjectItemCaseSensitive(dynamic5_qiJSON, "resourceType");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *resource_type = NULL;
+    OpenAPI_qos_resource_type_e resource_typeVariable = 0;
+    cJSON *priority_level = NULL;
+    cJSON *packet_delay_budget = NULL;
+    cJSON *packet_err_rate = NULL;
+    cJSON *aver_window = NULL;
+    cJSON *max_data_burst_vol = NULL;
+    cJSON *ext_max_data_burst_vol = NULL;
+    cJSON *ext_packet_del_budget = NULL;
+    cJSON *cn_packet_delay_budget_dl = NULL;
+    cJSON *cn_packet_delay_budget_ul = NULL;
+    resource_type = cJSON_GetObjectItemCaseSensitive(dynamic5_qiJSON, "resourceType");
     if (!resource_type) {
         ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [resource_type]");
         goto end;
     }
-
-    OpenAPI_qos_resource_type_e resource_typeVariable;
     if (!cJSON_IsString(resource_type)) {
         ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [resource_type]");
         goto end;
     }
     resource_typeVariable = OpenAPI_qos_resource_type_FromString(resource_type->valuestring);
 
-    cJSON *priority_level = cJSON_GetObjectItemCaseSensitive(dynamic5_qiJSON, "priorityLevel");
+    priority_level = cJSON_GetObjectItemCaseSensitive(dynamic5_qiJSON, "priorityLevel");
     if (!priority_level) {
         ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [priority_level]");
         goto end;
     }
-
     if (!cJSON_IsNumber(priority_level)) {
         ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [priority_level]");
         goto end;
     }
 
-    cJSON *packet_delay_budget = cJSON_GetObjectItemCaseSensitive(dynamic5_qiJSON, "packetDelayBudget");
+    packet_delay_budget = cJSON_GetObjectItemCaseSensitive(dynamic5_qiJSON, "packetDelayBudget");
     if (!packet_delay_budget) {
         ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [packet_delay_budget]");
         goto end;
     }
-
     if (!cJSON_IsNumber(packet_delay_budget)) {
         ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [packet_delay_budget]");
         goto end;
     }
 
-    cJSON *packet_err_rate = cJSON_GetObjectItemCaseSensitive(dynamic5_qiJSON, "packetErrRate");
+    packet_err_rate = cJSON_GetObjectItemCaseSensitive(dynamic5_qiJSON, "packetErrRate");
     if (!packet_err_rate) {
         ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [packet_err_rate]");
         goto end;
     }
-
     if (!cJSON_IsString(packet_err_rate)) {
         ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [packet_err_rate]");
         goto end;
     }
 
-    cJSON *aver_window = cJSON_GetObjectItemCaseSensitive(dynamic5_qiJSON, "averWindow");
-
+    aver_window = cJSON_GetObjectItemCaseSensitive(dynamic5_qiJSON, "averWindow");
     if (aver_window) {
     if (!cJSON_IsNumber(aver_window)) {
         ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [aver_window]");
@@ -190,8 +209,7 @@ OpenAPI_dynamic5_qi_t *OpenAPI_dynamic5_qi_parseFromJSON(cJSON *dynamic5_qiJSON)
     }
     }
 
-    cJSON *max_data_burst_vol = cJSON_GetObjectItemCaseSensitive(dynamic5_qiJSON, "maxDataBurstVol");
-
+    max_data_burst_vol = cJSON_GetObjectItemCaseSensitive(dynamic5_qiJSON, "maxDataBurstVol");
     if (max_data_burst_vol) {
     if (!cJSON_IsNumber(max_data_burst_vol)) {
         ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [max_data_burst_vol]");
@@ -199,8 +217,7 @@ OpenAPI_dynamic5_qi_t *OpenAPI_dynamic5_qi_parseFromJSON(cJSON *dynamic5_qiJSON)
     }
     }
 
-    cJSON *ext_max_data_burst_vol = cJSON_GetObjectItemCaseSensitive(dynamic5_qiJSON, "extMaxDataBurstVol");
-
+    ext_max_data_burst_vol = cJSON_GetObjectItemCaseSensitive(dynamic5_qiJSON, "extMaxDataBurstVol");
     if (ext_max_data_burst_vol) {
     if (!cJSON_IsNumber(ext_max_data_burst_vol)) {
         ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [ext_max_data_burst_vol]");
@@ -208,8 +225,7 @@ OpenAPI_dynamic5_qi_t *OpenAPI_dynamic5_qi_parseFromJSON(cJSON *dynamic5_qiJSON)
     }
     }
 
-    cJSON *ext_packet_del_budget = cJSON_GetObjectItemCaseSensitive(dynamic5_qiJSON, "extPacketDelBudget");
-
+    ext_packet_del_budget = cJSON_GetObjectItemCaseSensitive(dynamic5_qiJSON, "extPacketDelBudget");
     if (ext_packet_del_budget) {
     if (!cJSON_IsNumber(ext_packet_del_budget)) {
         ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [ext_packet_del_budget]");
@@ -217,8 +233,7 @@ OpenAPI_dynamic5_qi_t *OpenAPI_dynamic5_qi_parseFromJSON(cJSON *dynamic5_qiJSON)
     }
     }
 
-    cJSON *cn_packet_delay_budget_dl = cJSON_GetObjectItemCaseSensitive(dynamic5_qiJSON, "cnPacketDelayBudgetDl");
-
+    cn_packet_delay_budget_dl = cJSON_GetObjectItemCaseSensitive(dynamic5_qiJSON, "cnPacketDelayBudgetDl");
     if (cn_packet_delay_budget_dl) {
     if (!cJSON_IsNumber(cn_packet_delay_budget_dl)) {
         ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [cn_packet_delay_budget_dl]");
@@ -226,8 +241,7 @@ OpenAPI_dynamic5_qi_t *OpenAPI_dynamic5_qi_parseFromJSON(cJSON *dynamic5_qiJSON)
     }
     }
 
-    cJSON *cn_packet_delay_budget_ul = cJSON_GetObjectItemCaseSensitive(dynamic5_qiJSON, "cnPacketDelayBudgetUl");
-
+    cn_packet_delay_budget_ul = cJSON_GetObjectItemCaseSensitive(dynamic5_qiJSON, "cnPacketDelayBudgetUl");
     if (cn_packet_delay_budget_ul) {
     if (!cJSON_IsNumber(cn_packet_delay_budget_ul)) {
         ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [cn_packet_delay_budget_ul]");

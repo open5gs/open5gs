@@ -26,19 +26,30 @@ OpenAPI_pgw_info_t *OpenAPI_pgw_info_create(
 
 void OpenAPI_pgw_info_free(OpenAPI_pgw_info_t *pgw_info)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == pgw_info) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(pgw_info->dnn);
-    ogs_free(pgw_info->pgw_fqdn);
-    OpenAPI_plmn_id_free(pgw_info->plmn_id);
+    if (pgw_info->dnn) {
+        ogs_free(pgw_info->dnn);
+        pgw_info->dnn = NULL;
+    }
+    if (pgw_info->pgw_fqdn) {
+        ogs_free(pgw_info->pgw_fqdn);
+        pgw_info->pgw_fqdn = NULL;
+    }
+    if (pgw_info->plmn_id) {
+        OpenAPI_plmn_id_free(pgw_info->plmn_id);
+        pgw_info->plmn_id = NULL;
+    }
     ogs_free(pgw_info);
 }
 
 cJSON *OpenAPI_pgw_info_convertToJSON(OpenAPI_pgw_info_t *pgw_info)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (pgw_info == NULL) {
         ogs_error("OpenAPI_pgw_info_convertToJSON() failed [PgwInfo]");
@@ -46,11 +57,19 @@ cJSON *OpenAPI_pgw_info_convertToJSON(OpenAPI_pgw_info_t *pgw_info)
     }
 
     item = cJSON_CreateObject();
+    if (!pgw_info->dnn) {
+        ogs_error("OpenAPI_pgw_info_convertToJSON() failed [dnn]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "dnn", pgw_info->dnn) == NULL) {
         ogs_error("OpenAPI_pgw_info_convertToJSON() failed [dnn]");
         goto end;
     }
 
+    if (!pgw_info->pgw_fqdn) {
+        ogs_error("OpenAPI_pgw_info_convertToJSON() failed [pgw_fqdn]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "pgwFqdn", pgw_info->pgw_fqdn) == NULL) {
         ogs_error("OpenAPI_pgw_info_convertToJSON() failed [pgw_fqdn]");
         goto end;
@@ -83,37 +102,38 @@ end:
 OpenAPI_pgw_info_t *OpenAPI_pgw_info_parseFromJSON(cJSON *pgw_infoJSON)
 {
     OpenAPI_pgw_info_t *pgw_info_local_var = NULL;
-    cJSON *dnn = cJSON_GetObjectItemCaseSensitive(pgw_infoJSON, "dnn");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *dnn = NULL;
+    cJSON *pgw_fqdn = NULL;
+    cJSON *plmn_id = NULL;
+    OpenAPI_plmn_id_t *plmn_id_local_nonprim = NULL;
+    cJSON *epdg_ind = NULL;
+    dnn = cJSON_GetObjectItemCaseSensitive(pgw_infoJSON, "dnn");
     if (!dnn) {
         ogs_error("OpenAPI_pgw_info_parseFromJSON() failed [dnn]");
         goto end;
     }
-
     if (!cJSON_IsString(dnn)) {
         ogs_error("OpenAPI_pgw_info_parseFromJSON() failed [dnn]");
         goto end;
     }
 
-    cJSON *pgw_fqdn = cJSON_GetObjectItemCaseSensitive(pgw_infoJSON, "pgwFqdn");
+    pgw_fqdn = cJSON_GetObjectItemCaseSensitive(pgw_infoJSON, "pgwFqdn");
     if (!pgw_fqdn) {
         ogs_error("OpenAPI_pgw_info_parseFromJSON() failed [pgw_fqdn]");
         goto end;
     }
-
     if (!cJSON_IsString(pgw_fqdn)) {
         ogs_error("OpenAPI_pgw_info_parseFromJSON() failed [pgw_fqdn]");
         goto end;
     }
 
-    cJSON *plmn_id = cJSON_GetObjectItemCaseSensitive(pgw_infoJSON, "plmnId");
-
-    OpenAPI_plmn_id_t *plmn_id_local_nonprim = NULL;
+    plmn_id = cJSON_GetObjectItemCaseSensitive(pgw_infoJSON, "plmnId");
     if (plmn_id) {
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
     }
 
-    cJSON *epdg_ind = cJSON_GetObjectItemCaseSensitive(pgw_infoJSON, "epdgInd");
-
+    epdg_ind = cJSON_GetObjectItemCaseSensitive(pgw_infoJSON, "epdgInd");
     if (epdg_ind) {
     if (!cJSON_IsBool(epdg_ind)) {
         ogs_error("OpenAPI_pgw_info_parseFromJSON() failed [epdg_ind]");
@@ -131,6 +151,10 @@ OpenAPI_pgw_info_t *OpenAPI_pgw_info_parseFromJSON(cJSON *pgw_infoJSON)
 
     return pgw_info_local_var;
 end:
+    if (plmn_id_local_nonprim) {
+        OpenAPI_plmn_id_free(plmn_id_local_nonprim);
+        plmn_id_local_nonprim = NULL;
+    }
     return NULL;
 }
 

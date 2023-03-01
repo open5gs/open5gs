@@ -20,17 +20,22 @@ OpenAPI_gnb_id_t *OpenAPI_gnb_id_create(
 
 void OpenAPI_gnb_id_free(OpenAPI_gnb_id_t *gnb_id)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == gnb_id) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(gnb_id->g_nb_value);
+    if (gnb_id->g_nb_value) {
+        ogs_free(gnb_id->g_nb_value);
+        gnb_id->g_nb_value = NULL;
+    }
     ogs_free(gnb_id);
 }
 
 cJSON *OpenAPI_gnb_id_convertToJSON(OpenAPI_gnb_id_t *gnb_id)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (gnb_id == NULL) {
         ogs_error("OpenAPI_gnb_id_convertToJSON() failed [GNbId]");
@@ -43,6 +48,10 @@ cJSON *OpenAPI_gnb_id_convertToJSON(OpenAPI_gnb_id_t *gnb_id)
         goto end;
     }
 
+    if (!gnb_id->g_nb_value) {
+        ogs_error("OpenAPI_gnb_id_convertToJSON() failed [g_nb_value]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "gNBValue", gnb_id->g_nb_value) == NULL) {
         ogs_error("OpenAPI_gnb_id_convertToJSON() failed [g_nb_value]");
         goto end;
@@ -55,23 +64,24 @@ end:
 OpenAPI_gnb_id_t *OpenAPI_gnb_id_parseFromJSON(cJSON *gnb_idJSON)
 {
     OpenAPI_gnb_id_t *gnb_id_local_var = NULL;
-    cJSON *bit_length = cJSON_GetObjectItemCaseSensitive(gnb_idJSON, "bitLength");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *bit_length = NULL;
+    cJSON *g_nb_value = NULL;
+    bit_length = cJSON_GetObjectItemCaseSensitive(gnb_idJSON, "bitLength");
     if (!bit_length) {
         ogs_error("OpenAPI_gnb_id_parseFromJSON() failed [bit_length]");
         goto end;
     }
-
     if (!cJSON_IsNumber(bit_length)) {
         ogs_error("OpenAPI_gnb_id_parseFromJSON() failed [bit_length]");
         goto end;
     }
 
-    cJSON *g_nb_value = cJSON_GetObjectItemCaseSensitive(gnb_idJSON, "gNBValue");
+    g_nb_value = cJSON_GetObjectItemCaseSensitive(gnb_idJSON, "gNBValue");
     if (!g_nb_value) {
         ogs_error("OpenAPI_gnb_id_parseFromJSON() failed [g_nb_value]");
         goto end;
     }
-
     if (!cJSON_IsString(g_nb_value)) {
         ogs_error("OpenAPI_gnb_id_parseFromJSON() failed [g_nb_value]");
         goto end;

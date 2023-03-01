@@ -101,13 +101,13 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     ogs_assert(EventList);
 
     Event = ogs_calloc(1, sizeof(*Event));
-    ogs_expect_or_return_val(Event, NULL);
-    Event->event = OpenAPI_af_event_CHARGING_CORRELATION;
+    ogs_assert(Event);
+    Event->event = OpenAPI_npcf_af_event_CHARGING_CORRELATION;
     OpenAPI_list_add(EventList, Event);
 
     Event = ogs_calloc(1, sizeof(*Event));
-    ogs_expect_or_return_val(Event, NULL);
-    Event->event = OpenAPI_af_event_ANI_REPORT;
+    ogs_assert(Event);
+    Event->event = OpenAPI_npcf_af_event_ANI_REPORT;
     Event->notif_method = OpenAPI_af_notif_method_ONE_TIME;
     OpenAPI_list_add(EventList, Event);
 
@@ -704,13 +704,13 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create_video(
     ogs_assert(EventList);
 
     Event = ogs_calloc(1, sizeof(*Event));
-    ogs_expect_or_return_val(Event, NULL);
-    Event->event = OpenAPI_af_event_CHARGING_CORRELATION;
+    ogs_assert(Event);
+    Event->event = OpenAPI_npcf_af_event_CHARGING_CORRELATION;
     OpenAPI_list_add(EventList, Event);
 
     Event = ogs_calloc(1, sizeof(*Event));
-    ogs_expect_or_return_val(Event, NULL);
-    Event->event = OpenAPI_af_event_ANI_REPORT;
+    ogs_assert(Event);
+    Event->event = OpenAPI_npcf_af_event_ANI_REPORT;
     Event->notif_method = OpenAPI_af_notif_method_ONE_TIME;
     OpenAPI_list_add(EventList, Event);
 

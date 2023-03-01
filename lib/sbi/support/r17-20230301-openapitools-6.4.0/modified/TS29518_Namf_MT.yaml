@@ -1,0 +1,384 @@
+openapi: 3.0.0
+
+info:
+  version: 1.2.1
+  title: Namf_MT
+  description: |
+    AMF Mobile Terminated Service.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+      - namf-mt
+
+externalDocs:
+  description: 3GPP TS 29.518 V17.8.0; 5G System; Access and Mobility Management Services
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.518/'
+
+servers:
+  - url: '{apiRoot}/namf-mt/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+paths:
+  '/ue-contexts/{ueContextId}':
+    get:
+      summary: Namf_MT Provide Domain Selection Info service Operation
+      tags:
+        - ueContext (Document)
+      operationId: Provide Domain Selection Info
+      parameters:
+        - name: ueContextId
+          in: path
+          description: UE Context Identifier
+          required: true
+          schema:
+            type: string
+            pattern: '^(imsi-[0-9]{5,15}|nai-.+|gli-.+|gci-.+|.+)$'
+        - name: info-class
+          in: query
+          description: UE Context Information Class
+          schema:
+            $ref: '#/components/schemas/UeContextInfoClass'
+        - name: supported-features
+          in: query
+          description: Supported Features
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        - name: old-guami
+          in: query
+          description: Old GUAMI
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/Guami'
+      responses:
+        '200':
+          description: Requested UE Context Information returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UeContextInfo'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '409':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/409'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+  /ue-contexts/{ueContextId}/ue-reachind:
+    put:
+      summary: Namf_MT EnableUEReachability service Operation
+      tags:
+        - ueReachInd (Document)
+      operationId: EnableUeReachability
+      parameters:
+        - name: ueContextId
+          in: path
+          description: UE Context Identifier
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnableUeReachabilityReqData'
+        required: true
+      responses:
+        '200':
+          description: UE has become reachable as desired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnableUeReachabilityRspData'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailsEnableUeReachability'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '409':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/409'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        '504':
+          description: Gateway Timeout
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailsEnableUeReachability'
+        default:
+          description: Unexpected error
+
+  /ue-contexts:
+    post:
+      summary: Namf_MT EnableGroupReachability service Operation
+      tags:
+        - ueContexts (collection)
+      operationId: EnableGroupReachability
+      requestBody:
+        description: list of UEs requested to be made reachable for the related TMGI
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnableGroupReachabilityReqData'
+        required: true
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnableGroupReachabilityRspData'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        '504':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/504'
+        default:
+          description: Unexpected error
+      callbacks:
+        reachabilityNotification:
+          '{request.body#/reachabilityNotifyUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/ReachabilityNotificationData'
+              responses:
+                '204':
+                  description: UE reachability notification response
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  description: Unexpected error
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            namf-mt: Access to the Namf_MT API
+  schemas:
+    EnableUeReachabilityReqData:
+      description: Data within the Enable UE Reachability Request
+      type: object
+      properties:
+        reachability:
+          $ref: 'TS29518_Namf_EventExposure.yaml#/components/schemas/UeReachability'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        oldGuami:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Guami'
+        extBufSupport:
+          type: boolean
+          default: false
+      required:
+        - reachability
+    EnableUeReachabilityRspData:
+      description: Data within the Enable UE Reachability Response
+      type: object
+      properties:
+        reachability:
+          $ref: 'TS29518_Namf_EventExposure.yaml#/components/schemas/UeReachability'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - reachability
+    UeContextInfo:
+      description: UE Context Information
+      type: object
+      properties:
+        supportVoPS:
+          type: boolean
+        supportVoPSn3gpp:
+          type: boolean
+        lastActTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        accessType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+        ratType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+    ProblemDetailsEnableUeReachability:
+      description: Enable UE Reachability Error Detail
+      allOf:
+      - $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+      - $ref: '#/components/schemas/AdditionInfoEnableUeReachability'
+    AdditionInfoEnableUeReachability:
+      description: Additional information to be returned in EnableUeReachability error response
+      type: object
+      properties:
+        maxWaitingTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+    EnableGroupReachabilityReqData:
+      description: Data within the Enable Group Reachability Request
+      type: object
+      properties:
+        ueInfoList:
+          type: array
+          items:
+            $ref: '#/components/schemas/UeInfo'
+          minItems: 1
+        tmgi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Tmgi'
+        reachabilityNotifyUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        mbsServiceAreaInfoList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/MbsServiceAreaInfo'
+          minItems: 1
+        arp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Arp'
+        5qi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/5Qi'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - ueInfoList
+        - tmgi
+    EnableGroupReachabilityRspData:
+      description: Data within the Enable Group Reachability Response
+      type: object
+      properties:
+        ueConnectedList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+          minItems: 1
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    UeInfo:
+      description: list of UEs requested to be made reachable for the MBS Session
+      type: object
+      properties:
+        ueList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+          minItems: 1
+        pduSessionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionId'
+      required:
+        - ueList
+
+    ReachabilityNotificationData:
+      description: Data within the UE Reachability Info Notify
+      type: object
+      properties:
+        reachableUeList:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReachableUeInfo'
+          minItems: 1
+        unreachableUeList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+          minItems: 1
+    ReachableUeInfo:
+      description: Contains the reachable UE Information
+      type: object
+      properties:
+        ueList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+          minItems: 1
+        userLocation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+      required:
+        - ueList
+
+    UeContextInfoClass:
+      description: Indicates the UE Context information class
+      anyOf:
+      - type: string
+        enum:
+          - TADS
+      - type: string

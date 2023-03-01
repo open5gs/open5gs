@@ -20,17 +20,22 @@ OpenAPI_suggested_packet_num_dl_t *OpenAPI_suggested_packet_num_dl_create(
 
 void OpenAPI_suggested_packet_num_dl_free(OpenAPI_suggested_packet_num_dl_t *suggested_packet_num_dl)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == suggested_packet_num_dl) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(suggested_packet_num_dl->validity_time);
+    if (suggested_packet_num_dl->validity_time) {
+        ogs_free(suggested_packet_num_dl->validity_time);
+        suggested_packet_num_dl->validity_time = NULL;
+    }
     ogs_free(suggested_packet_num_dl);
 }
 
 cJSON *OpenAPI_suggested_packet_num_dl_convertToJSON(OpenAPI_suggested_packet_num_dl_t *suggested_packet_num_dl)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (suggested_packet_num_dl == NULL) {
         ogs_error("OpenAPI_suggested_packet_num_dl_convertToJSON() failed [SuggestedPacketNumDl]");
@@ -57,21 +62,22 @@ end:
 OpenAPI_suggested_packet_num_dl_t *OpenAPI_suggested_packet_num_dl_parseFromJSON(cJSON *suggested_packet_num_dlJSON)
 {
     OpenAPI_suggested_packet_num_dl_t *suggested_packet_num_dl_local_var = NULL;
-    cJSON *suggested_packet_num_dl = cJSON_GetObjectItemCaseSensitive(suggested_packet_num_dlJSON, "suggestedPacketNumDl");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *suggested_packet_num_dl = NULL;
+    cJSON *validity_time = NULL;
+    suggested_packet_num_dl = cJSON_GetObjectItemCaseSensitive(suggested_packet_num_dlJSON, "suggestedPacketNumDl");
     if (!suggested_packet_num_dl) {
         ogs_error("OpenAPI_suggested_packet_num_dl_parseFromJSON() failed [suggested_packet_num_dl]");
         goto end;
     }
-
     if (!cJSON_IsNumber(suggested_packet_num_dl)) {
         ogs_error("OpenAPI_suggested_packet_num_dl_parseFromJSON() failed [suggested_packet_num_dl]");
         goto end;
     }
 
-    cJSON *validity_time = cJSON_GetObjectItemCaseSensitive(suggested_packet_num_dlJSON, "validityTime");
-
+    validity_time = cJSON_GetObjectItemCaseSensitive(suggested_packet_num_dlJSON, "validityTime");
     if (validity_time) {
-    if (!cJSON_IsString(validity_time)) {
+    if (!cJSON_IsString(validity_time) && !cJSON_IsNull(validity_time)) {
         ogs_error("OpenAPI_suggested_packet_num_dl_parseFromJSON() failed [validity_time]");
         goto end;
     }
@@ -80,7 +86,7 @@ OpenAPI_suggested_packet_num_dl_t *OpenAPI_suggested_packet_num_dl_parseFromJSON
     suggested_packet_num_dl_local_var = OpenAPI_suggested_packet_num_dl_create (
         
         suggested_packet_num_dl->valuedouble,
-        validity_time ? ogs_strdup(validity_time->valuestring) : NULL
+        validity_time && !cJSON_IsNull(validity_time) ? ogs_strdup(validity_time->valuestring) : NULL
     );
 
     return suggested_packet_num_dl_local_var;

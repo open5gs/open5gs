@@ -52,7 +52,7 @@ typedef struct OpenAPI_pdu_session_create_data_s {
     struct OpenAPI_plmn_id_nid_s *serving_network;
     OpenAPI_request_type_e request_type;
     OpenAPI_list_t *eps_bearer_id;
-    char pgw_s8c_fteid;
+    char *pgw_s8c_fteid;
     char *vsmf_pdu_session_uri;
     char *ismf_pdu_session_uri;
     struct OpenAPI_tunnel_info_s *vcn_tunnel_info;
@@ -129,7 +129,7 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_create(
     OpenAPI_plmn_id_nid_t *serving_network,
     OpenAPI_request_type_e request_type,
     OpenAPI_list_t *eps_bearer_id,
-    char pgw_s8c_fteid,
+    char *pgw_s8c_fteid,
     char *vsmf_pdu_session_uri,
     char *ismf_pdu_session_uri,
     OpenAPI_tunnel_info_t *vcn_tunnel_info,

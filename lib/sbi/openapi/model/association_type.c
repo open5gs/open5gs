@@ -16,16 +16,18 @@ OpenAPI_association_type_t *OpenAPI_association_type_create(
 
 void OpenAPI_association_type_free(OpenAPI_association_type_t *association_type)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == association_type) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(association_type);
 }
 
 cJSON *OpenAPI_association_type_convertToJSON(OpenAPI_association_type_t *association_type)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (association_type == NULL) {
         ogs_error("OpenAPI_association_type_convertToJSON() failed [AssociationType]");
@@ -40,6 +42,7 @@ end:
 OpenAPI_association_type_t *OpenAPI_association_type_parseFromJSON(cJSON *association_typeJSON)
 {
     OpenAPI_association_type_t *association_type_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
     association_type_local_var = OpenAPI_association_type_create (
     );
 

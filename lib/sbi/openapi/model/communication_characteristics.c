@@ -30,21 +30,38 @@ OpenAPI_communication_characteristics_t *OpenAPI_communication_characteristics_c
 
 void OpenAPI_communication_characteristics_free(OpenAPI_communication_characteristics_t *communication_characteristics)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == communication_characteristics) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_pp_subs_reg_timer_free(communication_characteristics->pp_subs_reg_timer);
-    OpenAPI_pp_active_time_free(communication_characteristics->pp_active_time);
-    OpenAPI_pp_dl_packet_count_ext_free(communication_characteristics->pp_dl_packet_count_ext);
-    OpenAPI_pp_maximum_response_time_free(communication_characteristics->pp_maximum_response_time);
-    OpenAPI_pp_maximum_latency_free(communication_characteristics->pp_maximum_latency);
+    if (communication_characteristics->pp_subs_reg_timer) {
+        OpenAPI_pp_subs_reg_timer_free(communication_characteristics->pp_subs_reg_timer);
+        communication_characteristics->pp_subs_reg_timer = NULL;
+    }
+    if (communication_characteristics->pp_active_time) {
+        OpenAPI_pp_active_time_free(communication_characteristics->pp_active_time);
+        communication_characteristics->pp_active_time = NULL;
+    }
+    if (communication_characteristics->pp_dl_packet_count_ext) {
+        OpenAPI_pp_dl_packet_count_ext_free(communication_characteristics->pp_dl_packet_count_ext);
+        communication_characteristics->pp_dl_packet_count_ext = NULL;
+    }
+    if (communication_characteristics->pp_maximum_response_time) {
+        OpenAPI_pp_maximum_response_time_free(communication_characteristics->pp_maximum_response_time);
+        communication_characteristics->pp_maximum_response_time = NULL;
+    }
+    if (communication_characteristics->pp_maximum_latency) {
+        OpenAPI_pp_maximum_latency_free(communication_characteristics->pp_maximum_latency);
+        communication_characteristics->pp_maximum_latency = NULL;
+    }
     ogs_free(communication_characteristics);
 }
 
 cJSON *OpenAPI_communication_characteristics_convertToJSON(OpenAPI_communication_characteristics_t *communication_characteristics)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (communication_characteristics == NULL) {
         ogs_error("OpenAPI_communication_characteristics_convertToJSON() failed [CommunicationCharacteristics]");
@@ -131,22 +148,29 @@ end:
 OpenAPI_communication_characteristics_t *OpenAPI_communication_characteristics_parseFromJSON(cJSON *communication_characteristicsJSON)
 {
     OpenAPI_communication_characteristics_t *communication_characteristics_local_var = NULL;
-    cJSON *pp_subs_reg_timer = cJSON_GetObjectItemCaseSensitive(communication_characteristicsJSON, "ppSubsRegTimer");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *pp_subs_reg_timer = NULL;
     OpenAPI_pp_subs_reg_timer_t *pp_subs_reg_timer_local_nonprim = NULL;
+    cJSON *pp_active_time = NULL;
+    OpenAPI_pp_active_time_t *pp_active_time_local_nonprim = NULL;
+    cJSON *pp_dl_packet_count = NULL;
+    cJSON *pp_dl_packet_count_ext = NULL;
+    OpenAPI_pp_dl_packet_count_ext_t *pp_dl_packet_count_ext_local_nonprim = NULL;
+    cJSON *pp_maximum_response_time = NULL;
+    OpenAPI_pp_maximum_response_time_t *pp_maximum_response_time_local_nonprim = NULL;
+    cJSON *pp_maximum_latency = NULL;
+    OpenAPI_pp_maximum_latency_t *pp_maximum_latency_local_nonprim = NULL;
+    pp_subs_reg_timer = cJSON_GetObjectItemCaseSensitive(communication_characteristicsJSON, "ppSubsRegTimer");
     if (pp_subs_reg_timer) {
     pp_subs_reg_timer_local_nonprim = OpenAPI_pp_subs_reg_timer_parseFromJSON(pp_subs_reg_timer);
     }
 
-    cJSON *pp_active_time = cJSON_GetObjectItemCaseSensitive(communication_characteristicsJSON, "ppActiveTime");
-
-    OpenAPI_pp_active_time_t *pp_active_time_local_nonprim = NULL;
+    pp_active_time = cJSON_GetObjectItemCaseSensitive(communication_characteristicsJSON, "ppActiveTime");
     if (pp_active_time) {
     pp_active_time_local_nonprim = OpenAPI_pp_active_time_parseFromJSON(pp_active_time);
     }
 
-    cJSON *pp_dl_packet_count = cJSON_GetObjectItemCaseSensitive(communication_characteristicsJSON, "ppDlPacketCount");
-
+    pp_dl_packet_count = cJSON_GetObjectItemCaseSensitive(communication_characteristicsJSON, "ppDlPacketCount");
     if (pp_dl_packet_count) {
     if (!cJSON_IsNumber(pp_dl_packet_count)) {
         ogs_error("OpenAPI_communication_characteristics_parseFromJSON() failed [pp_dl_packet_count]");
@@ -154,23 +178,17 @@ OpenAPI_communication_characteristics_t *OpenAPI_communication_characteristics_p
     }
     }
 
-    cJSON *pp_dl_packet_count_ext = cJSON_GetObjectItemCaseSensitive(communication_characteristicsJSON, "ppDlPacketCountExt");
-
-    OpenAPI_pp_dl_packet_count_ext_t *pp_dl_packet_count_ext_local_nonprim = NULL;
+    pp_dl_packet_count_ext = cJSON_GetObjectItemCaseSensitive(communication_characteristicsJSON, "ppDlPacketCountExt");
     if (pp_dl_packet_count_ext) {
     pp_dl_packet_count_ext_local_nonprim = OpenAPI_pp_dl_packet_count_ext_parseFromJSON(pp_dl_packet_count_ext);
     }
 
-    cJSON *pp_maximum_response_time = cJSON_GetObjectItemCaseSensitive(communication_characteristicsJSON, "ppMaximumResponseTime");
-
-    OpenAPI_pp_maximum_response_time_t *pp_maximum_response_time_local_nonprim = NULL;
+    pp_maximum_response_time = cJSON_GetObjectItemCaseSensitive(communication_characteristicsJSON, "ppMaximumResponseTime");
     if (pp_maximum_response_time) {
     pp_maximum_response_time_local_nonprim = OpenAPI_pp_maximum_response_time_parseFromJSON(pp_maximum_response_time);
     }
 
-    cJSON *pp_maximum_latency = cJSON_GetObjectItemCaseSensitive(communication_characteristicsJSON, "ppMaximumLatency");
-
-    OpenAPI_pp_maximum_latency_t *pp_maximum_latency_local_nonprim = NULL;
+    pp_maximum_latency = cJSON_GetObjectItemCaseSensitive(communication_characteristicsJSON, "ppMaximumLatency");
     if (pp_maximum_latency) {
     pp_maximum_latency_local_nonprim = OpenAPI_pp_maximum_latency_parseFromJSON(pp_maximum_latency);
     }
@@ -187,6 +205,26 @@ OpenAPI_communication_characteristics_t *OpenAPI_communication_characteristics_p
 
     return communication_characteristics_local_var;
 end:
+    if (pp_subs_reg_timer_local_nonprim) {
+        OpenAPI_pp_subs_reg_timer_free(pp_subs_reg_timer_local_nonprim);
+        pp_subs_reg_timer_local_nonprim = NULL;
+    }
+    if (pp_active_time_local_nonprim) {
+        OpenAPI_pp_active_time_free(pp_active_time_local_nonprim);
+        pp_active_time_local_nonprim = NULL;
+    }
+    if (pp_dl_packet_count_ext_local_nonprim) {
+        OpenAPI_pp_dl_packet_count_ext_free(pp_dl_packet_count_ext_local_nonprim);
+        pp_dl_packet_count_ext_local_nonprim = NULL;
+    }
+    if (pp_maximum_response_time_local_nonprim) {
+        OpenAPI_pp_maximum_response_time_free(pp_maximum_response_time_local_nonprim);
+        pp_maximum_response_time_local_nonprim = NULL;
+    }
+    if (pp_maximum_latency_local_nonprim) {
+        OpenAPI_pp_maximum_latency_free(pp_maximum_latency_local_nonprim);
+        pp_maximum_latency_local_nonprim = NULL;
+    }
     return NULL;
 }
 

@@ -16,16 +16,18 @@ OpenAPI_preemption_control_information_rm_t *OpenAPI_preemption_control_informat
 
 void OpenAPI_preemption_control_information_rm_free(OpenAPI_preemption_control_information_rm_t *preemption_control_information_rm)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == preemption_control_information_rm) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(preemption_control_information_rm);
 }
 
 cJSON *OpenAPI_preemption_control_information_rm_convertToJSON(OpenAPI_preemption_control_information_rm_t *preemption_control_information_rm)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (preemption_control_information_rm == NULL) {
         ogs_error("OpenAPI_preemption_control_information_rm_convertToJSON() failed [PreemptionControlInformationRm]");
@@ -40,6 +42,7 @@ end:
 OpenAPI_preemption_control_information_rm_t *OpenAPI_preemption_control_information_rm_parseFromJSON(cJSON *preemption_control_information_rmJSON)
 {
     OpenAPI_preemption_control_information_rm_t *preemption_control_information_rm_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
     preemption_control_information_rm_local_var = OpenAPI_preemption_control_information_rm_create (
     );
 

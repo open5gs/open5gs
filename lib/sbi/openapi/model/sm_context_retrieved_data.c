@@ -28,20 +28,34 @@ OpenAPI_sm_context_retrieved_data_t *OpenAPI_sm_context_retrieved_data_create(
 
 void OpenAPI_sm_context_retrieved_data_free(OpenAPI_sm_context_retrieved_data_t *sm_context_retrieved_data)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == sm_context_retrieved_data) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(sm_context_retrieved_data->ue_eps_pdn_connection);
-    OpenAPI_sm_context_free(sm_context_retrieved_data->sm_context);
-    OpenAPI_small_data_rate_status_free(sm_context_retrieved_data->small_data_rate_status);
-    OpenAPI_apn_rate_status_free(sm_context_retrieved_data->apn_rate_status);
+    if (sm_context_retrieved_data->ue_eps_pdn_connection) {
+        ogs_free(sm_context_retrieved_data->ue_eps_pdn_connection);
+        sm_context_retrieved_data->ue_eps_pdn_connection = NULL;
+    }
+    if (sm_context_retrieved_data->sm_context) {
+        OpenAPI_sm_context_free(sm_context_retrieved_data->sm_context);
+        sm_context_retrieved_data->sm_context = NULL;
+    }
+    if (sm_context_retrieved_data->small_data_rate_status) {
+        OpenAPI_small_data_rate_status_free(sm_context_retrieved_data->small_data_rate_status);
+        sm_context_retrieved_data->small_data_rate_status = NULL;
+    }
+    if (sm_context_retrieved_data->apn_rate_status) {
+        OpenAPI_apn_rate_status_free(sm_context_retrieved_data->apn_rate_status);
+        sm_context_retrieved_data->apn_rate_status = NULL;
+    }
     ogs_free(sm_context_retrieved_data);
 }
 
 cJSON *OpenAPI_sm_context_retrieved_data_convertToJSON(OpenAPI_sm_context_retrieved_data_t *sm_context_retrieved_data)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (sm_context_retrieved_data == NULL) {
         ogs_error("OpenAPI_sm_context_retrieved_data_convertToJSON() failed [SmContextRetrievedData]");
@@ -49,6 +63,10 @@ cJSON *OpenAPI_sm_context_retrieved_data_convertToJSON(OpenAPI_sm_context_retrie
     }
 
     item = cJSON_CreateObject();
+    if (!sm_context_retrieved_data->ue_eps_pdn_connection) {
+        ogs_error("OpenAPI_sm_context_retrieved_data_convertToJSON() failed [ue_eps_pdn_connection]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "ueEpsPdnConnection", sm_context_retrieved_data->ue_eps_pdn_connection) == NULL) {
         ogs_error("OpenAPI_sm_context_retrieved_data_convertToJSON() failed [ue_eps_pdn_connection]");
         goto end;
@@ -107,40 +125,41 @@ end:
 OpenAPI_sm_context_retrieved_data_t *OpenAPI_sm_context_retrieved_data_parseFromJSON(cJSON *sm_context_retrieved_dataJSON)
 {
     OpenAPI_sm_context_retrieved_data_t *sm_context_retrieved_data_local_var = NULL;
-    cJSON *ue_eps_pdn_connection = cJSON_GetObjectItemCaseSensitive(sm_context_retrieved_dataJSON, "ueEpsPdnConnection");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *ue_eps_pdn_connection = NULL;
+    cJSON *sm_context = NULL;
+    OpenAPI_sm_context_t *sm_context_local_nonprim = NULL;
+    cJSON *small_data_rate_status = NULL;
+    OpenAPI_small_data_rate_status_t *small_data_rate_status_local_nonprim = NULL;
+    cJSON *apn_rate_status = NULL;
+    OpenAPI_apn_rate_status_t *apn_rate_status_local_nonprim = NULL;
+    cJSON *dl_data_waiting_ind = NULL;
+    ue_eps_pdn_connection = cJSON_GetObjectItemCaseSensitive(sm_context_retrieved_dataJSON, "ueEpsPdnConnection");
     if (!ue_eps_pdn_connection) {
         ogs_error("OpenAPI_sm_context_retrieved_data_parseFromJSON() failed [ue_eps_pdn_connection]");
         goto end;
     }
-
     if (!cJSON_IsString(ue_eps_pdn_connection)) {
         ogs_error("OpenAPI_sm_context_retrieved_data_parseFromJSON() failed [ue_eps_pdn_connection]");
         goto end;
     }
 
-    cJSON *sm_context = cJSON_GetObjectItemCaseSensitive(sm_context_retrieved_dataJSON, "smContext");
-
-    OpenAPI_sm_context_t *sm_context_local_nonprim = NULL;
+    sm_context = cJSON_GetObjectItemCaseSensitive(sm_context_retrieved_dataJSON, "smContext");
     if (sm_context) {
     sm_context_local_nonprim = OpenAPI_sm_context_parseFromJSON(sm_context);
     }
 
-    cJSON *small_data_rate_status = cJSON_GetObjectItemCaseSensitive(sm_context_retrieved_dataJSON, "smallDataRateStatus");
-
-    OpenAPI_small_data_rate_status_t *small_data_rate_status_local_nonprim = NULL;
+    small_data_rate_status = cJSON_GetObjectItemCaseSensitive(sm_context_retrieved_dataJSON, "smallDataRateStatus");
     if (small_data_rate_status) {
     small_data_rate_status_local_nonprim = OpenAPI_small_data_rate_status_parseFromJSON(small_data_rate_status);
     }
 
-    cJSON *apn_rate_status = cJSON_GetObjectItemCaseSensitive(sm_context_retrieved_dataJSON, "apnRateStatus");
-
-    OpenAPI_apn_rate_status_t *apn_rate_status_local_nonprim = NULL;
+    apn_rate_status = cJSON_GetObjectItemCaseSensitive(sm_context_retrieved_dataJSON, "apnRateStatus");
     if (apn_rate_status) {
     apn_rate_status_local_nonprim = OpenAPI_apn_rate_status_parseFromJSON(apn_rate_status);
     }
 
-    cJSON *dl_data_waiting_ind = cJSON_GetObjectItemCaseSensitive(sm_context_retrieved_dataJSON, "dlDataWaitingInd");
-
+    dl_data_waiting_ind = cJSON_GetObjectItemCaseSensitive(sm_context_retrieved_dataJSON, "dlDataWaitingInd");
     if (dl_data_waiting_ind) {
     if (!cJSON_IsBool(dl_data_waiting_ind)) {
         ogs_error("OpenAPI_sm_context_retrieved_data_parseFromJSON() failed [dl_data_waiting_ind]");
@@ -159,6 +178,18 @@ OpenAPI_sm_context_retrieved_data_t *OpenAPI_sm_context_retrieved_data_parseFrom
 
     return sm_context_retrieved_data_local_var;
 end:
+    if (sm_context_local_nonprim) {
+        OpenAPI_sm_context_free(sm_context_local_nonprim);
+        sm_context_local_nonprim = NULL;
+    }
+    if (small_data_rate_status_local_nonprim) {
+        OpenAPI_small_data_rate_status_free(small_data_rate_status_local_nonprim);
+        small_data_rate_status_local_nonprim = NULL;
+    }
+    if (apn_rate_status_local_nonprim) {
+        OpenAPI_apn_rate_status_free(apn_rate_status_local_nonprim);
+        apn_rate_status_local_nonprim = NULL;
+    }
     return NULL;
 }
 

@@ -16,16 +16,18 @@ OpenAPI_stationary_indication_rm_t *OpenAPI_stationary_indication_rm_create(
 
 void OpenAPI_stationary_indication_rm_free(OpenAPI_stationary_indication_rm_t *stationary_indication_rm)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == stationary_indication_rm) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(stationary_indication_rm);
 }
 
 cJSON *OpenAPI_stationary_indication_rm_convertToJSON(OpenAPI_stationary_indication_rm_t *stationary_indication_rm)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (stationary_indication_rm == NULL) {
         ogs_error("OpenAPI_stationary_indication_rm_convertToJSON() failed [StationaryIndicationRm]");
@@ -40,6 +42,7 @@ end:
 OpenAPI_stationary_indication_rm_t *OpenAPI_stationary_indication_rm_parseFromJSON(cJSON *stationary_indication_rmJSON)
 {
     OpenAPI_stationary_indication_rm_t *stationary_indication_rm_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
     stationary_indication_rm_local_var = OpenAPI_stationary_indication_rm_create (
     );
 

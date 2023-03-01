@@ -22,19 +22,30 @@ OpenAPI_send_mo_data_req_data_t *OpenAPI_send_mo_data_req_data_create(
 
 void OpenAPI_send_mo_data_req_data_free(OpenAPI_send_mo_data_req_data_t *send_mo_data_req_data)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == send_mo_data_req_data) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_ref_to_binary_data_free(send_mo_data_req_data->mo_data);
-    OpenAPI_mo_exp_data_counter_free(send_mo_data_req_data->mo_exp_data_counter);
-    OpenAPI_user_location_free(send_mo_data_req_data->ue_location);
+    if (send_mo_data_req_data->mo_data) {
+        OpenAPI_ref_to_binary_data_free(send_mo_data_req_data->mo_data);
+        send_mo_data_req_data->mo_data = NULL;
+    }
+    if (send_mo_data_req_data->mo_exp_data_counter) {
+        OpenAPI_mo_exp_data_counter_free(send_mo_data_req_data->mo_exp_data_counter);
+        send_mo_data_req_data->mo_exp_data_counter = NULL;
+    }
+    if (send_mo_data_req_data->ue_location) {
+        OpenAPI_user_location_free(send_mo_data_req_data->ue_location);
+        send_mo_data_req_data->ue_location = NULL;
+    }
     ogs_free(send_mo_data_req_data);
 }
 
 cJSON *OpenAPI_send_mo_data_req_data_convertToJSON(OpenAPI_send_mo_data_req_data_t *send_mo_data_req_data)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (send_mo_data_req_data == NULL) {
         ogs_error("OpenAPI_send_mo_data_req_data_convertToJSON() failed [SendMoDataReqData]");
@@ -42,6 +53,10 @@ cJSON *OpenAPI_send_mo_data_req_data_convertToJSON(OpenAPI_send_mo_data_req_data
     }
 
     item = cJSON_CreateObject();
+    if (!send_mo_data_req_data->mo_data) {
+        ogs_error("OpenAPI_send_mo_data_req_data_convertToJSON() failed [mo_data]");
+        return NULL;
+    }
     cJSON *mo_data_local_JSON = OpenAPI_ref_to_binary_data_convertToJSON(send_mo_data_req_data->mo_data);
     if (mo_data_local_JSON == NULL) {
         ogs_error("OpenAPI_send_mo_data_req_data_convertToJSON() failed [mo_data]");
@@ -86,25 +101,26 @@ end:
 OpenAPI_send_mo_data_req_data_t *OpenAPI_send_mo_data_req_data_parseFromJSON(cJSON *send_mo_data_req_dataJSON)
 {
     OpenAPI_send_mo_data_req_data_t *send_mo_data_req_data_local_var = NULL;
-    cJSON *mo_data = cJSON_GetObjectItemCaseSensitive(send_mo_data_req_dataJSON, "moData");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *mo_data = NULL;
+    OpenAPI_ref_to_binary_data_t *mo_data_local_nonprim = NULL;
+    cJSON *mo_exp_data_counter = NULL;
+    OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter_local_nonprim = NULL;
+    cJSON *ue_location = NULL;
+    OpenAPI_user_location_t *ue_location_local_nonprim = NULL;
+    mo_data = cJSON_GetObjectItemCaseSensitive(send_mo_data_req_dataJSON, "moData");
     if (!mo_data) {
         ogs_error("OpenAPI_send_mo_data_req_data_parseFromJSON() failed [mo_data]");
         goto end;
     }
-
-    OpenAPI_ref_to_binary_data_t *mo_data_local_nonprim = NULL;
     mo_data_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(mo_data);
 
-    cJSON *mo_exp_data_counter = cJSON_GetObjectItemCaseSensitive(send_mo_data_req_dataJSON, "moExpDataCounter");
-
-    OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter_local_nonprim = NULL;
+    mo_exp_data_counter = cJSON_GetObjectItemCaseSensitive(send_mo_data_req_dataJSON, "moExpDataCounter");
     if (mo_exp_data_counter) {
     mo_exp_data_counter_local_nonprim = OpenAPI_mo_exp_data_counter_parseFromJSON(mo_exp_data_counter);
     }
 
-    cJSON *ue_location = cJSON_GetObjectItemCaseSensitive(send_mo_data_req_dataJSON, "ueLocation");
-
-    OpenAPI_user_location_t *ue_location_local_nonprim = NULL;
+    ue_location = cJSON_GetObjectItemCaseSensitive(send_mo_data_req_dataJSON, "ueLocation");
     if (ue_location) {
     ue_location_local_nonprim = OpenAPI_user_location_parseFromJSON(ue_location);
     }
@@ -117,6 +133,18 @@ OpenAPI_send_mo_data_req_data_t *OpenAPI_send_mo_data_req_data_parseFromJSON(cJS
 
     return send_mo_data_req_data_local_var;
 end:
+    if (mo_data_local_nonprim) {
+        OpenAPI_ref_to_binary_data_free(mo_data_local_nonprim);
+        mo_data_local_nonprim = NULL;
+    }
+    if (mo_exp_data_counter_local_nonprim) {
+        OpenAPI_mo_exp_data_counter_free(mo_exp_data_counter_local_nonprim);
+        mo_exp_data_counter_local_nonprim = NULL;
+    }
+    if (ue_location_local_nonprim) {
+        OpenAPI_user_location_free(ue_location_local_nonprim);
+        ue_location_local_nonprim = NULL;
+    }
     return NULL;
 }
 

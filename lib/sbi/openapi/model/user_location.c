@@ -22,19 +22,30 @@ OpenAPI_user_location_t *OpenAPI_user_location_create(
 
 void OpenAPI_user_location_free(OpenAPI_user_location_t *user_location)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == user_location) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_eutra_location_free(user_location->eutra_location);
-    OpenAPI_nr_location_free(user_location->nr_location);
-    OpenAPI_n3ga_location_free(user_location->n3ga_location);
+    if (user_location->eutra_location) {
+        OpenAPI_eutra_location_free(user_location->eutra_location);
+        user_location->eutra_location = NULL;
+    }
+    if (user_location->nr_location) {
+        OpenAPI_nr_location_free(user_location->nr_location);
+        user_location->nr_location = NULL;
+    }
+    if (user_location->n3ga_location) {
+        OpenAPI_n3ga_location_free(user_location->n3ga_location);
+        user_location->n3ga_location = NULL;
+    }
     ogs_free(user_location);
 }
 
 cJSON *OpenAPI_user_location_convertToJSON(OpenAPI_user_location_t *user_location)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (user_location == NULL) {
         ogs_error("OpenAPI_user_location_convertToJSON() failed [UserLocation]");
@@ -88,23 +99,24 @@ end:
 OpenAPI_user_location_t *OpenAPI_user_location_parseFromJSON(cJSON *user_locationJSON)
 {
     OpenAPI_user_location_t *user_location_local_var = NULL;
-    cJSON *eutra_location = cJSON_GetObjectItemCaseSensitive(user_locationJSON, "eutraLocation");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *eutra_location = NULL;
     OpenAPI_eutra_location_t *eutra_location_local_nonprim = NULL;
+    cJSON *nr_location = NULL;
+    OpenAPI_nr_location_t *nr_location_local_nonprim = NULL;
+    cJSON *n3ga_location = NULL;
+    OpenAPI_n3ga_location_t *n3ga_location_local_nonprim = NULL;
+    eutra_location = cJSON_GetObjectItemCaseSensitive(user_locationJSON, "eutraLocation");
     if (eutra_location) {
     eutra_location_local_nonprim = OpenAPI_eutra_location_parseFromJSON(eutra_location);
     }
 
-    cJSON *nr_location = cJSON_GetObjectItemCaseSensitive(user_locationJSON, "nrLocation");
-
-    OpenAPI_nr_location_t *nr_location_local_nonprim = NULL;
+    nr_location = cJSON_GetObjectItemCaseSensitive(user_locationJSON, "nrLocation");
     if (nr_location) {
     nr_location_local_nonprim = OpenAPI_nr_location_parseFromJSON(nr_location);
     }
 
-    cJSON *n3ga_location = cJSON_GetObjectItemCaseSensitive(user_locationJSON, "n3gaLocation");
-
-    OpenAPI_n3ga_location_t *n3ga_location_local_nonprim = NULL;
+    n3ga_location = cJSON_GetObjectItemCaseSensitive(user_locationJSON, "n3gaLocation");
     if (n3ga_location) {
     n3ga_location_local_nonprim = OpenAPI_n3ga_location_parseFromJSON(n3ga_location);
     }
@@ -117,6 +129,18 @@ OpenAPI_user_location_t *OpenAPI_user_location_parseFromJSON(cJSON *user_locatio
 
     return user_location_local_var;
 end:
+    if (eutra_location_local_nonprim) {
+        OpenAPI_eutra_location_free(eutra_location_local_nonprim);
+        eutra_location_local_nonprim = NULL;
+    }
+    if (nr_location_local_nonprim) {
+        OpenAPI_nr_location_free(nr_location_local_nonprim);
+        nr_location_local_nonprim = NULL;
+    }
+    if (n3ga_location_local_nonprim) {
+        OpenAPI_n3ga_location_free(n3ga_location_local_nonprim);
+        n3ga_location_local_nonprim = NULL;
+    }
     return NULL;
 }
 

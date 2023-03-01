@@ -1,0 +1,649 @@
+openapi: 3.0.0
+
+info:
+  title: 3gpp-mbs-ud-ingest
+  version: 1.0.1
+  description: |
+    API for MBS User Data Ingest Session.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.522 V17.8.0; 5G System; Network Exposure Function Northbound APIs.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.522/'
+
+servers:
+  - url: '{apiRoot}/3gpp-mbs-ud-ingest/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /sessions:
+    get:
+      summary: Retrieve all the active MBS User Data Ingest Sessions managed by the NEF.
+      tags:
+        - MBS User Data Ingest Sessions (Collection)
+      operationId: RetrieveMBSUserDataIngestSessions
+      responses:
+        '200':
+          description: >
+            OK. All the active MBS User Data Ingest Sessions managed by the NEF are returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'TS29580_Nmbsf_MBSUserDataIngestSession.yaml#/components/schemas/MBSUserDataIngSession'
+                minItems: 0
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    post:
+      summary: Request the creation of a new Individual MBS User Data Ingest Session resource.
+      tags:
+        - MBS User Data Ingest Sessions (Collection)
+      operationId: CreateMBSUserDataIngestSession
+      requestBody:
+        description: >
+          Contains the parameters to request the creation of a new MBS User Data Ingest Session 
+          at the NEF.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: 'TS29580_Nmbsf_MBSUserDataIngestSession.yaml#/components/schemas/MBSUserDataIngSession'
+      responses:
+        '201':
+          description: >
+            Created. A new MBS User Data Ingest Session is successfully created and a representation 
+            of the created Individual MBS User Data Ingest Session resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29580_Nmbsf_MBSUserDataIngestSession.yaml#/components/schemas/MBSUserDataIngSession'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure
+                {apiRoot}/3gpp-mbs-ud-ingest/v1/sessions/{sessionId}
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+  /sessions/{sessionId}:
+    parameters:
+      - name: sessionId
+        in: path
+        description: Identifier of the Individual MBS User Data Ingest Session resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual MBS User Data Ingest Session resource.
+      tags:
+        - Individual MBS User Data Ingest Session (Document)
+      operationId: RetrieveIndivMBSUserDataIngestSession
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual MBS User Data Ingest Session resource is successfully 
+            returned.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29580_Nmbsf_MBSUserDataIngestSession.yaml#/components/schemas/MBSUserDataIngSession'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual MBS User Data Ingest Session resource.
+      tags:
+        - Individual MBS User Data Ingest Session (Document)
+      operationId: UpdateIndivMBSUserDataIngestSession
+      requestBody:
+        description: >
+          Contains the updated representation of the Individual MBS User Data Ingest Session 
+          resource.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: 'TS29580_Nmbsf_MBSUserDataIngestSession.yaml#/components/schemas/MBSUserDataIngSession'
+      responses:
+        '200':
+          description: >
+            OK. The concerned Individual MBS User Data Ingest Session resource is successfully 
+            updated and a representation of the updated resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29580_Nmbsf_MBSUserDataIngestSession.yaml#/components/schemas/MBSUserDataIngSession'
+        '204':
+          description: >
+            No Content. The concerned Individual MBS User Data Ingest Session resource is 
+            successfully updated.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual MBS User Data Ingest Session resource.
+      tags:
+        - Individual MBS User Data Ingest Session (Document)
+      operationId: ModifyIndivMBSUserDataIngestSession
+      requestBody:
+        description: >
+          Contains the parameters to request the modification of the Individual MBS User Data Ingest 
+          Session resource.
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: 'TS29580_Nmbsf_MBSUserDataIngestSession.yaml#/components/schemas/MBSUserDataIngSessionPatch'
+      responses:
+        '200':
+          description: >
+            OK. The concerned Individual MBS User Data Ingest Session resource is successfully 
+            modified and a representation of the updated resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29580_Nmbsf_MBSUserDataIngestSession.yaml#/components/schemas/MBSUserDataIngSession'
+        '204':
+          description: >
+            No Content. The concerned Individual MBS User Data Ingest Session resource is 
+            successfully modified.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Deletes an existing Individual MBS User Data Ingest Session resource.
+      tags:
+        - Individual MBS User Data Ingest Session (Document)
+      operationId: DeleteIndivMBSUserDataIngestSession
+      responses:
+        '204':
+          description: >
+            No Content. The Individual MBS User Data Ingest Session resource is successfully 
+            deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+  /status-subscriptions:
+    get:
+      summary: Retrieve all the active MBS User Data Ingest Session Status Subscriptions resources managed by the NEF.
+      tags:
+        - MBS User Data Ingest Session Status Subscriptions (Collection)
+      operationId: RetrieveMBSUserDataIngStatSubscs
+      responses:
+        '200':
+          description: >
+            OK. All the active MBS User Data Ingest Session Status Subscriptions managed by the NEF 
+            are returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'TS29580_Nmbsf_MBSUserDataIngestSession.yaml#/components/schemas/MBSUserDataIngStatSubsc'
+                minItems: 0
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    post:
+      summary: Creates a new Individual MBS User Data Ingest Session Status Subscription resource.
+      tags:
+        - MBS User Data Ingest Session Status Subscriptions (Collection)
+      operationId: CreateMBSUserDataIngStatSubsc
+      requestBody:
+        description: >
+          Contains the parameters to request the creation of a new MBS User Data Ingest Session
+          Status Subscription resource.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: 'TS29580_Nmbsf_MBSUserDataIngestSession.yaml#/components/schemas/MBSUserDataIngStatSubsc'
+      responses:
+        '201':
+          description: >
+            Created. Successful creation of a new Individual MBS User Data Ingest Session 
+            Status Subscription resource.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29580_Nmbsf_MBSUserDataIngestSession.yaml#/components/schemas/MBSUserDataIngStatSubsc'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        mbsUserDataIngestSessionStatusNotif:
+          '{request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: 'TS29580_Nmbsf_MBSUserDataIngestSession.yaml#/components/schemas/MBSUserDataIngStatNotif'
+              responses:
+                '204':
+                  description: No Content. Successful reception of the notification.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+  /status-subscriptions/{subscriptionId}:
+    parameters:
+      - name: subscriptionId
+        in: path
+        description: >
+          Identifier of the Individual MBS User Data Ingest Session Status Subscription resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual MBS User Data Ingest Session Status Subscription resource.
+      tags:
+        - Individual MBS User Data Ingest Session Status Subscription (Document)
+      operationId: RetrieveIndMBSUserDataIngStatSubsc
+      responses:
+        '200':
+          description: >
+            OK. Successful retrieval of the requested Individual MBS User Data Ingest Session
+            Status Subscription resource.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29580_Nmbsf_MBSUserDataIngestSession.yaml#/components/schemas/MBSUserDataIngStatSubsc'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual MBS User Data Ingest Session Status Subscription resource.
+      tags:
+        - Individual MBS User Data Ingest Session Status Subscription (Document)
+      operationId: UpdateIndMBSUserDataIngStatSubsc
+      requestBody:
+        description: >
+          Contains the updated representation of the Individual MBS User Data Ingest Session Status
+          Subscription resource.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: 'TS29580_Nmbsf_MBSUserDataIngestSession.yaml#/components/schemas/MBSUserDataIngStatSubsc'
+      responses:
+        '200':
+          description: >
+            OK. The concerned Individual MBS User Data Ingest Session Status Subscription resource
+            is successfully updated and a representation of the updated resource is returned in the
+            response body.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29580_Nmbsf_MBSUserDataIngestSession.yaml#/components/schemas/MBSUserDataIngStatSubsc'
+        '204':
+          description: >
+            No Content. The concerned Individual MBS User Data Ingest Session Status Subscription
+            resource is successfully updated and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual MBS User Data Ingest Session Status Subscription resource.
+      tags:
+        - Individual MBS User Data Ingest Session Status Subscription (Document)
+      operationId: ModifyIndMBSUserDataIngStatSubsc
+      requestBody:
+        description: >
+          Contains the parameters to request the modification of the Individual MBS User Data Ingest
+          Session Status Subscription resource.
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: 'TS29580_Nmbsf_MBSUserDataIngestSession.yaml#/components/schemas/MBSUserDataIngStatSubscPatch'
+      responses:
+        '200':
+          description: >
+            OK. The concerned Individual MBS User Data Ingest Session Status Subscription resource
+            is successfully modified and a representation of the updated resource is returned in the
+            response body.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29580_Nmbsf_MBSUserDataIngestSession.yaml#/components/schemas/MBSUserDataIngStatSubsc'
+        '204':
+          description: >
+            No Content. The concerned Individual MBS User Data Ingest Session Status Subscription
+            resource is successfully modified and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Deletes an existing Individual MBS User Data Ingest Session Status Subscription resource.
+      tags:
+        - Individual MBS User Data Ingest Session Status Subscription (Document)
+      operationId: DeleteIndMBSUserDataIngStatSubsc
+      responses:
+        '204':
+          description: >
+            No Content. Successful deletion of the existing Individual MBS User Data Ingest Session 
+            Status Subscription resource.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+#
+# STRUCTURED DATA TYPES
+#
+
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#

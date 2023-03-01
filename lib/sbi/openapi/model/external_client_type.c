@@ -16,16 +16,18 @@ OpenAPI_external_client_type_t *OpenAPI_external_client_type_create(
 
 void OpenAPI_external_client_type_free(OpenAPI_external_client_type_t *external_client_type)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == external_client_type) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(external_client_type);
 }
 
 cJSON *OpenAPI_external_client_type_convertToJSON(OpenAPI_external_client_type_t *external_client_type)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (external_client_type == NULL) {
         ogs_error("OpenAPI_external_client_type_convertToJSON() failed [ExternalClientType]");
@@ -40,6 +42,7 @@ end:
 OpenAPI_external_client_type_t *OpenAPI_external_client_type_parseFromJSON(cJSON *external_client_typeJSON)
 {
     OpenAPI_external_client_type_t *external_client_type_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
     external_client_type_local_var = OpenAPI_external_client_type_create (
     );
 

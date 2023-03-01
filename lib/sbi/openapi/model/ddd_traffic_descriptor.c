@@ -26,19 +26,30 @@ OpenAPI_ddd_traffic_descriptor_t *OpenAPI_ddd_traffic_descriptor_create(
 
 void OpenAPI_ddd_traffic_descriptor_free(OpenAPI_ddd_traffic_descriptor_t *ddd_traffic_descriptor)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == ddd_traffic_descriptor) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(ddd_traffic_descriptor->ipv4_addr);
-    ogs_free(ddd_traffic_descriptor->ipv6_addr);
-    ogs_free(ddd_traffic_descriptor->mac_addr);
+    if (ddd_traffic_descriptor->ipv4_addr) {
+        ogs_free(ddd_traffic_descriptor->ipv4_addr);
+        ddd_traffic_descriptor->ipv4_addr = NULL;
+    }
+    if (ddd_traffic_descriptor->ipv6_addr) {
+        ogs_free(ddd_traffic_descriptor->ipv6_addr);
+        ddd_traffic_descriptor->ipv6_addr = NULL;
+    }
+    if (ddd_traffic_descriptor->mac_addr) {
+        ogs_free(ddd_traffic_descriptor->mac_addr);
+        ddd_traffic_descriptor->mac_addr = NULL;
+    }
     ogs_free(ddd_traffic_descriptor);
 }
 
 cJSON *OpenAPI_ddd_traffic_descriptor_convertToJSON(OpenAPI_ddd_traffic_descriptor_t *ddd_traffic_descriptor)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (ddd_traffic_descriptor == NULL) {
         ogs_error("OpenAPI_ddd_traffic_descriptor_convertToJSON() failed [DddTrafficDescriptor]");
@@ -81,26 +92,28 @@ end:
 OpenAPI_ddd_traffic_descriptor_t *OpenAPI_ddd_traffic_descriptor_parseFromJSON(cJSON *ddd_traffic_descriptorJSON)
 {
     OpenAPI_ddd_traffic_descriptor_t *ddd_traffic_descriptor_local_var = NULL;
-    cJSON *ipv4_addr = cJSON_GetObjectItemCaseSensitive(ddd_traffic_descriptorJSON, "ipv4Addr");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *ipv4_addr = NULL;
+    cJSON *ipv6_addr = NULL;
+    cJSON *port_number = NULL;
+    cJSON *mac_addr = NULL;
+    ipv4_addr = cJSON_GetObjectItemCaseSensitive(ddd_traffic_descriptorJSON, "ipv4Addr");
     if (ipv4_addr) {
-    if (!cJSON_IsString(ipv4_addr)) {
+    if (!cJSON_IsString(ipv4_addr) && !cJSON_IsNull(ipv4_addr)) {
         ogs_error("OpenAPI_ddd_traffic_descriptor_parseFromJSON() failed [ipv4_addr]");
         goto end;
     }
     }
 
-    cJSON *ipv6_addr = cJSON_GetObjectItemCaseSensitive(ddd_traffic_descriptorJSON, "ipv6Addr");
-
+    ipv6_addr = cJSON_GetObjectItemCaseSensitive(ddd_traffic_descriptorJSON, "ipv6Addr");
     if (ipv6_addr) {
-    if (!cJSON_IsString(ipv6_addr)) {
+    if (!cJSON_IsString(ipv6_addr) && !cJSON_IsNull(ipv6_addr)) {
         ogs_error("OpenAPI_ddd_traffic_descriptor_parseFromJSON() failed [ipv6_addr]");
         goto end;
     }
     }
 
-    cJSON *port_number = cJSON_GetObjectItemCaseSensitive(ddd_traffic_descriptorJSON, "portNumber");
-
+    port_number = cJSON_GetObjectItemCaseSensitive(ddd_traffic_descriptorJSON, "portNumber");
     if (port_number) {
     if (!cJSON_IsNumber(port_number)) {
         ogs_error("OpenAPI_ddd_traffic_descriptor_parseFromJSON() failed [port_number]");
@@ -108,21 +121,20 @@ OpenAPI_ddd_traffic_descriptor_t *OpenAPI_ddd_traffic_descriptor_parseFromJSON(c
     }
     }
 
-    cJSON *mac_addr = cJSON_GetObjectItemCaseSensitive(ddd_traffic_descriptorJSON, "macAddr");
-
+    mac_addr = cJSON_GetObjectItemCaseSensitive(ddd_traffic_descriptorJSON, "macAddr");
     if (mac_addr) {
-    if (!cJSON_IsString(mac_addr)) {
+    if (!cJSON_IsString(mac_addr) && !cJSON_IsNull(mac_addr)) {
         ogs_error("OpenAPI_ddd_traffic_descriptor_parseFromJSON() failed [mac_addr]");
         goto end;
     }
     }
 
     ddd_traffic_descriptor_local_var = OpenAPI_ddd_traffic_descriptor_create (
-        ipv4_addr ? ogs_strdup(ipv4_addr->valuestring) : NULL,
-        ipv6_addr ? ogs_strdup(ipv6_addr->valuestring) : NULL,
+        ipv4_addr && !cJSON_IsNull(ipv4_addr) ? ogs_strdup(ipv4_addr->valuestring) : NULL,
+        ipv6_addr && !cJSON_IsNull(ipv6_addr) ? ogs_strdup(ipv6_addr->valuestring) : NULL,
         port_number ? true : false,
         port_number ? port_number->valuedouble : 0,
-        mac_addr ? ogs_strdup(mac_addr->valuestring) : NULL
+        mac_addr && !cJSON_IsNull(mac_addr) ? ogs_strdup(mac_addr->valuestring) : NULL
     );
 
     return ddd_traffic_descriptor_local_var;

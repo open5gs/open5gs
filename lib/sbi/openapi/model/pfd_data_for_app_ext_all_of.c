@@ -18,17 +18,22 @@ OpenAPI_pfd_data_for_app_ext_all_of_t *OpenAPI_pfd_data_for_app_ext_all_of_creat
 
 void OpenAPI_pfd_data_for_app_ext_all_of_free(OpenAPI_pfd_data_for_app_ext_all_of_t *pfd_data_for_app_ext_all_of)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == pfd_data_for_app_ext_all_of) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(pfd_data_for_app_ext_all_of->supp_feat);
+    if (pfd_data_for_app_ext_all_of->supp_feat) {
+        ogs_free(pfd_data_for_app_ext_all_of->supp_feat);
+        pfd_data_for_app_ext_all_of->supp_feat = NULL;
+    }
     ogs_free(pfd_data_for_app_ext_all_of);
 }
 
 cJSON *OpenAPI_pfd_data_for_app_ext_all_of_convertToJSON(OpenAPI_pfd_data_for_app_ext_all_of_t *pfd_data_for_app_ext_all_of)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (pfd_data_for_app_ext_all_of == NULL) {
         ogs_error("OpenAPI_pfd_data_for_app_ext_all_of_convertToJSON() failed [PfdDataForAppExt_allOf]");
@@ -50,17 +55,18 @@ end:
 OpenAPI_pfd_data_for_app_ext_all_of_t *OpenAPI_pfd_data_for_app_ext_all_of_parseFromJSON(cJSON *pfd_data_for_app_ext_all_ofJSON)
 {
     OpenAPI_pfd_data_for_app_ext_all_of_t *pfd_data_for_app_ext_all_of_local_var = NULL;
-    cJSON *supp_feat = cJSON_GetObjectItemCaseSensitive(pfd_data_for_app_ext_all_ofJSON, "suppFeat");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *supp_feat = NULL;
+    supp_feat = cJSON_GetObjectItemCaseSensitive(pfd_data_for_app_ext_all_ofJSON, "suppFeat");
     if (supp_feat) {
-    if (!cJSON_IsString(supp_feat)) {
+    if (!cJSON_IsString(supp_feat) && !cJSON_IsNull(supp_feat)) {
         ogs_error("OpenAPI_pfd_data_for_app_ext_all_of_parseFromJSON() failed [supp_feat]");
         goto end;
     }
     }
 
     pfd_data_for_app_ext_all_of_local_var = OpenAPI_pfd_data_for_app_ext_all_of_create (
-        supp_feat ? ogs_strdup(supp_feat->valuestring) : NULL
+        supp_feat && !cJSON_IsNull(supp_feat) ? ogs_strdup(supp_feat->valuestring) : NULL
     );
 
     return pfd_data_for_app_ext_all_of_local_var;

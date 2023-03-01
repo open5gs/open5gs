@@ -40,23 +40,37 @@ OpenAPI_geographic_area_t *OpenAPI_geographic_area_create(
 
 void OpenAPI_geographic_area_free(OpenAPI_geographic_area_t *geographic_area)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == geographic_area) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_supported_gad_shapes_free(geographic_area->shape);
-    OpenAPI_geographical_coordinates_free(geographic_area->point);
-    OpenAPI_uncertainty_ellipse_free(geographic_area->uncertainty_ellipse);
-    OpenAPI_list_for_each(geographic_area->point_list, node) {
-        OpenAPI_geographical_coordinates_free(node->data);
+    if (geographic_area->shape) {
+        OpenAPI_supported_gad_shapes_free(geographic_area->shape);
+        geographic_area->shape = NULL;
     }
-    OpenAPI_list_free(geographic_area->point_list);
+    if (geographic_area->point) {
+        OpenAPI_geographical_coordinates_free(geographic_area->point);
+        geographic_area->point = NULL;
+    }
+    if (geographic_area->uncertainty_ellipse) {
+        OpenAPI_uncertainty_ellipse_free(geographic_area->uncertainty_ellipse);
+        geographic_area->uncertainty_ellipse = NULL;
+    }
+    if (geographic_area->point_list) {
+        OpenAPI_list_for_each(geographic_area->point_list, node) {
+            OpenAPI_geographical_coordinates_free(node->data);
+        }
+        OpenAPI_list_free(geographic_area->point_list);
+        geographic_area->point_list = NULL;
+    }
     ogs_free(geographic_area);
 }
 
 cJSON *OpenAPI_geographic_area_convertToJSON(OpenAPI_geographic_area_t *geographic_area)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (geographic_area == NULL) {
         ogs_error("OpenAPI_geographic_area_convertToJSON() failed [GeographicArea]");
@@ -64,6 +78,10 @@ cJSON *OpenAPI_geographic_area_convertToJSON(OpenAPI_geographic_area_t *geograph
     }
 
     item = cJSON_CreateObject();
+    if (!geographic_area->shape) {
+        ogs_error("OpenAPI_geographic_area_convertToJSON() failed [shape]");
+        return NULL;
+    }
     cJSON *shape_local_JSON = OpenAPI_supported_gad_shapes_convertToJSON(geographic_area->shape);
     if (shape_local_JSON == NULL) {
         ogs_error("OpenAPI_geographic_area_convertToJSON() failed [shape]");
@@ -75,6 +93,10 @@ cJSON *OpenAPI_geographic_area_convertToJSON(OpenAPI_geographic_area_t *geograph
         goto end;
     }
 
+    if (!geographic_area->point) {
+        ogs_error("OpenAPI_geographic_area_convertToJSON() failed [point]");
+        return NULL;
+    }
     cJSON *point_local_JSON = OpenAPI_geographical_coordinates_convertToJSON(geographic_area->point);
     if (point_local_JSON == NULL) {
         ogs_error("OpenAPI_geographic_area_convertToJSON() failed [point]");
@@ -91,6 +113,10 @@ cJSON *OpenAPI_geographic_area_convertToJSON(OpenAPI_geographic_area_t *geograph
         goto end;
     }
 
+    if (!geographic_area->uncertainty_ellipse) {
+        ogs_error("OpenAPI_geographic_area_convertToJSON() failed [uncertainty_ellipse]");
+        return NULL;
+    }
     cJSON *uncertainty_ellipse_local_JSON = OpenAPI_uncertainty_ellipse_convertToJSON(geographic_area->uncertainty_ellipse);
     if (uncertainty_ellipse_local_JSON == NULL) {
         ogs_error("OpenAPI_geographic_area_convertToJSON() failed [uncertainty_ellipse]");
@@ -107,22 +133,22 @@ cJSON *OpenAPI_geographic_area_convertToJSON(OpenAPI_geographic_area_t *geograph
         goto end;
     }
 
+    if (!geographic_area->point_list) {
+        ogs_error("OpenAPI_geographic_area_convertToJSON() failed [point_list]");
+        return NULL;
+    }
     cJSON *point_listList = cJSON_AddArrayToObject(item, "pointList");
     if (point_listList == NULL) {
         ogs_error("OpenAPI_geographic_area_convertToJSON() failed [point_list]");
         goto end;
     }
-
-    OpenAPI_lnode_t *point_list_node;
-    if (geographic_area->point_list) {
-        OpenAPI_list_for_each(geographic_area->point_list, point_list_node) {
-            cJSON *itemLocal = OpenAPI_geographical_coordinates_convertToJSON(point_list_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_geographic_area_convertToJSON() failed [point_list]");
-                goto end;
-            }
-            cJSON_AddItemToArray(point_listList, itemLocal);
+    OpenAPI_list_for_each(geographic_area->point_list, node) {
+        cJSON *itemLocal = OpenAPI_geographical_coordinates_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_geographic_area_convertToJSON() failed [point_list]");
+            goto end;
         }
+        cJSON_AddItemToArray(point_listList, itemLocal);
     }
 
     if (cJSON_AddNumberToObject(item, "altitude", geographic_area->altitude) == NULL) {
@@ -162,147 +188,146 @@ end:
 OpenAPI_geographic_area_t *OpenAPI_geographic_area_parseFromJSON(cJSON *geographic_areaJSON)
 {
     OpenAPI_geographic_area_t *geographic_area_local_var = NULL;
-    cJSON *shape = cJSON_GetObjectItemCaseSensitive(geographic_areaJSON, "shape");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *shape = NULL;
+    OpenAPI_supported_gad_shapes_t *shape_local_nonprim = NULL;
+    cJSON *point = NULL;
+    OpenAPI_geographical_coordinates_t *point_local_nonprim = NULL;
+    cJSON *uncertainty = NULL;
+    cJSON *uncertainty_ellipse = NULL;
+    OpenAPI_uncertainty_ellipse_t *uncertainty_ellipse_local_nonprim = NULL;
+    cJSON *confidence = NULL;
+    cJSON *point_list = NULL;
+    OpenAPI_list_t *point_listList = NULL;
+    cJSON *altitude = NULL;
+    cJSON *uncertainty_altitude = NULL;
+    cJSON *inner_radius = NULL;
+    cJSON *uncertainty_radius = NULL;
+    cJSON *offset_angle = NULL;
+    cJSON *included_angle = NULL;
+    shape = cJSON_GetObjectItemCaseSensitive(geographic_areaJSON, "shape");
     if (!shape) {
         ogs_error("OpenAPI_geographic_area_parseFromJSON() failed [shape]");
         goto end;
     }
-
-    OpenAPI_supported_gad_shapes_t *shape_local_nonprim = NULL;
     shape_local_nonprim = OpenAPI_supported_gad_shapes_parseFromJSON(shape);
 
-    cJSON *point = cJSON_GetObjectItemCaseSensitive(geographic_areaJSON, "point");
+    point = cJSON_GetObjectItemCaseSensitive(geographic_areaJSON, "point");
     if (!point) {
         ogs_error("OpenAPI_geographic_area_parseFromJSON() failed [point]");
         goto end;
     }
-
-    OpenAPI_geographical_coordinates_t *point_local_nonprim = NULL;
     point_local_nonprim = OpenAPI_geographical_coordinates_parseFromJSON(point);
 
-    cJSON *uncertainty = cJSON_GetObjectItemCaseSensitive(geographic_areaJSON, "uncertainty");
+    uncertainty = cJSON_GetObjectItemCaseSensitive(geographic_areaJSON, "uncertainty");
     if (!uncertainty) {
         ogs_error("OpenAPI_geographic_area_parseFromJSON() failed [uncertainty]");
         goto end;
     }
-
     if (!cJSON_IsNumber(uncertainty)) {
         ogs_error("OpenAPI_geographic_area_parseFromJSON() failed [uncertainty]");
         goto end;
     }
 
-    cJSON *uncertainty_ellipse = cJSON_GetObjectItemCaseSensitive(geographic_areaJSON, "uncertaintyEllipse");
+    uncertainty_ellipse = cJSON_GetObjectItemCaseSensitive(geographic_areaJSON, "uncertaintyEllipse");
     if (!uncertainty_ellipse) {
         ogs_error("OpenAPI_geographic_area_parseFromJSON() failed [uncertainty_ellipse]");
         goto end;
     }
-
-    OpenAPI_uncertainty_ellipse_t *uncertainty_ellipse_local_nonprim = NULL;
     uncertainty_ellipse_local_nonprim = OpenAPI_uncertainty_ellipse_parseFromJSON(uncertainty_ellipse);
 
-    cJSON *confidence = cJSON_GetObjectItemCaseSensitive(geographic_areaJSON, "confidence");
+    confidence = cJSON_GetObjectItemCaseSensitive(geographic_areaJSON, "confidence");
     if (!confidence) {
         ogs_error("OpenAPI_geographic_area_parseFromJSON() failed [confidence]");
         goto end;
     }
-
     if (!cJSON_IsNumber(confidence)) {
         ogs_error("OpenAPI_geographic_area_parseFromJSON() failed [confidence]");
         goto end;
     }
 
-    cJSON *point_list = cJSON_GetObjectItemCaseSensitive(geographic_areaJSON, "pointList");
+    point_list = cJSON_GetObjectItemCaseSensitive(geographic_areaJSON, "pointList");
     if (!point_list) {
         ogs_error("OpenAPI_geographic_area_parseFromJSON() failed [point_list]");
         goto end;
     }
-
-    OpenAPI_list_t *point_listList;
-    cJSON *point_list_local_nonprimitive;
-    if (!cJSON_IsArray(point_list)){
-        ogs_error("OpenAPI_geographic_area_parseFromJSON() failed [point_list]");
-        goto end;
-    }
-
-    point_listList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(point_list_local_nonprimitive, point_list ) {
-        if (!cJSON_IsObject(point_list_local_nonprimitive)) {
+        cJSON *point_list_local = NULL;
+        if (!cJSON_IsArray(point_list)) {
             ogs_error("OpenAPI_geographic_area_parseFromJSON() failed [point_list]");
             goto end;
         }
-        OpenAPI_geographical_coordinates_t *point_listItem = OpenAPI_geographical_coordinates_parseFromJSON(point_list_local_nonprimitive);
 
-        if (!point_listItem) {
-            ogs_error("No point_listItem");
-            OpenAPI_list_free(point_listList);
-            goto end;
+        point_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(point_list_local, point_list) {
+            if (!cJSON_IsObject(point_list_local)) {
+                ogs_error("OpenAPI_geographic_area_parseFromJSON() failed [point_list]");
+                goto end;
+            }
+            OpenAPI_geographical_coordinates_t *point_listItem = OpenAPI_geographical_coordinates_parseFromJSON(point_list_local);
+            if (!point_listItem) {
+                ogs_error("No point_listItem");
+                OpenAPI_list_free(point_listList);
+                goto end;
+            }
+            OpenAPI_list_add(point_listList, point_listItem);
         }
 
-        OpenAPI_list_add(point_listList, point_listItem);
-    }
-
-    cJSON *altitude = cJSON_GetObjectItemCaseSensitive(geographic_areaJSON, "altitude");
+    altitude = cJSON_GetObjectItemCaseSensitive(geographic_areaJSON, "altitude");
     if (!altitude) {
         ogs_error("OpenAPI_geographic_area_parseFromJSON() failed [altitude]");
         goto end;
     }
-
     if (!cJSON_IsNumber(altitude)) {
         ogs_error("OpenAPI_geographic_area_parseFromJSON() failed [altitude]");
         goto end;
     }
 
-    cJSON *uncertainty_altitude = cJSON_GetObjectItemCaseSensitive(geographic_areaJSON, "uncertaintyAltitude");
+    uncertainty_altitude = cJSON_GetObjectItemCaseSensitive(geographic_areaJSON, "uncertaintyAltitude");
     if (!uncertainty_altitude) {
         ogs_error("OpenAPI_geographic_area_parseFromJSON() failed [uncertainty_altitude]");
         goto end;
     }
-
     if (!cJSON_IsNumber(uncertainty_altitude)) {
         ogs_error("OpenAPI_geographic_area_parseFromJSON() failed [uncertainty_altitude]");
         goto end;
     }
 
-    cJSON *inner_radius = cJSON_GetObjectItemCaseSensitive(geographic_areaJSON, "innerRadius");
+    inner_radius = cJSON_GetObjectItemCaseSensitive(geographic_areaJSON, "innerRadius");
     if (!inner_radius) {
         ogs_error("OpenAPI_geographic_area_parseFromJSON() failed [inner_radius]");
         goto end;
     }
-
     if (!cJSON_IsNumber(inner_radius)) {
         ogs_error("OpenAPI_geographic_area_parseFromJSON() failed [inner_radius]");
         goto end;
     }
 
-    cJSON *uncertainty_radius = cJSON_GetObjectItemCaseSensitive(geographic_areaJSON, "uncertaintyRadius");
+    uncertainty_radius = cJSON_GetObjectItemCaseSensitive(geographic_areaJSON, "uncertaintyRadius");
     if (!uncertainty_radius) {
         ogs_error("OpenAPI_geographic_area_parseFromJSON() failed [uncertainty_radius]");
         goto end;
     }
-
     if (!cJSON_IsNumber(uncertainty_radius)) {
         ogs_error("OpenAPI_geographic_area_parseFromJSON() failed [uncertainty_radius]");
         goto end;
     }
 
-    cJSON *offset_angle = cJSON_GetObjectItemCaseSensitive(geographic_areaJSON, "offsetAngle");
+    offset_angle = cJSON_GetObjectItemCaseSensitive(geographic_areaJSON, "offsetAngle");
     if (!offset_angle) {
         ogs_error("OpenAPI_geographic_area_parseFromJSON() failed [offset_angle]");
         goto end;
     }
-
     if (!cJSON_IsNumber(offset_angle)) {
         ogs_error("OpenAPI_geographic_area_parseFromJSON() failed [offset_angle]");
         goto end;
     }
 
-    cJSON *included_angle = cJSON_GetObjectItemCaseSensitive(geographic_areaJSON, "includedAngle");
+    included_angle = cJSON_GetObjectItemCaseSensitive(geographic_areaJSON, "includedAngle");
     if (!included_angle) {
         ogs_error("OpenAPI_geographic_area_parseFromJSON() failed [included_angle]");
         goto end;
     }
-
     if (!cJSON_IsNumber(included_angle)) {
         ogs_error("OpenAPI_geographic_area_parseFromJSON() failed [included_angle]");
         goto end;
@@ -333,6 +358,25 @@ OpenAPI_geographic_area_t *OpenAPI_geographic_area_parseFromJSON(cJSON *geograph
 
     return geographic_area_local_var;
 end:
+    if (shape_local_nonprim) {
+        OpenAPI_supported_gad_shapes_free(shape_local_nonprim);
+        shape_local_nonprim = NULL;
+    }
+    if (point_local_nonprim) {
+        OpenAPI_geographical_coordinates_free(point_local_nonprim);
+        point_local_nonprim = NULL;
+    }
+    if (uncertainty_ellipse_local_nonprim) {
+        OpenAPI_uncertainty_ellipse_free(uncertainty_ellipse_local_nonprim);
+        uncertainty_ellipse_local_nonprim = NULL;
+    }
+    if (point_listList) {
+        OpenAPI_list_for_each(point_listList, node) {
+            OpenAPI_geographical_coordinates_free(node->data);
+        }
+        OpenAPI_list_free(point_listList);
+        point_listList = NULL;
+    }
     return NULL;
 }
 

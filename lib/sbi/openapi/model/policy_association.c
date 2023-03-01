@@ -36,30 +36,56 @@ OpenAPI_policy_association_t *OpenAPI_policy_association_create(
 
 void OpenAPI_policy_association_free(OpenAPI_policy_association_t *policy_association)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == policy_association) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_policy_association_request_free(policy_association->request);
-    OpenAPI_list_free(policy_association->triggers);
-    OpenAPI_service_area_restriction_free(policy_association->serv_area_res);
-    OpenAPI_wireline_service_area_restriction_free(policy_association->wl_serv_area_res);
-    OpenAPI_smf_selection_data_free(policy_association->smf_sel_info);
-    OpenAPI_ambr_free(policy_association->ue_ambr);
-    OpenAPI_list_for_each(policy_association->pras, node) {
-        OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
-        ogs_free(localKeyValue->key);
-        OpenAPI_presence_info_free(localKeyValue->value);
-        ogs_free(localKeyValue);
+    if (policy_association->request) {
+        OpenAPI_policy_association_request_free(policy_association->request);
+        policy_association->request = NULL;
     }
-    OpenAPI_list_free(policy_association->pras);
-    ogs_free(policy_association->supp_feat);
+    if (policy_association->triggers) {
+        OpenAPI_list_free(policy_association->triggers);
+        policy_association->triggers = NULL;
+    }
+    if (policy_association->serv_area_res) {
+        OpenAPI_service_area_restriction_free(policy_association->serv_area_res);
+        policy_association->serv_area_res = NULL;
+    }
+    if (policy_association->wl_serv_area_res) {
+        OpenAPI_wireline_service_area_restriction_free(policy_association->wl_serv_area_res);
+        policy_association->wl_serv_area_res = NULL;
+    }
+    if (policy_association->smf_sel_info) {
+        OpenAPI_smf_selection_data_free(policy_association->smf_sel_info);
+        policy_association->smf_sel_info = NULL;
+    }
+    if (policy_association->ue_ambr) {
+        OpenAPI_ambr_free(policy_association->ue_ambr);
+        policy_association->ue_ambr = NULL;
+    }
+    if (policy_association->pras) {
+        OpenAPI_list_for_each(policy_association->pras, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_presence_info_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(policy_association->pras);
+        policy_association->pras = NULL;
+    }
+    if (policy_association->supp_feat) {
+        ogs_free(policy_association->supp_feat);
+        policy_association->supp_feat = NULL;
+    }
     ogs_free(policy_association);
 }
 
 cJSON *OpenAPI_policy_association_convertToJSON(OpenAPI_policy_association_t *policy_association)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (policy_association == NULL) {
         ogs_error("OpenAPI_policy_association_convertToJSON() failed [PolicyAssociation]");
@@ -80,15 +106,14 @@ cJSON *OpenAPI_policy_association_convertToJSON(OpenAPI_policy_association_t *po
     }
     }
 
-    if (policy_association->triggers) {
-    cJSON *triggers = cJSON_AddArrayToObject(item, "triggers");
-    if (triggers == NULL) {
+    if (policy_association->triggers != OpenAPI_request_trigger_NULL) {
+    cJSON *triggersList = cJSON_AddArrayToObject(item, "triggers");
+    if (triggersList == NULL) {
         ogs_error("OpenAPI_policy_association_convertToJSON() failed [triggers]");
         goto end;
     }
-    OpenAPI_lnode_t *triggers_node;
-    OpenAPI_list_for_each(policy_association->triggers, triggers_node) {
-        if (cJSON_AddStringToObject(triggers, "", OpenAPI_request_trigger_ToString((intptr_t)triggers_node->data)) == NULL) {
+    OpenAPI_list_for_each(policy_association->triggers, node) {
+        if (cJSON_AddStringToObject(triggersList, "", OpenAPI_request_trigger_ToString((intptr_t)node->data)) == NULL) {
             ogs_error("OpenAPI_policy_association_convertToJSON() failed [triggers]");
             goto end;
         }
@@ -161,22 +186,25 @@ cJSON *OpenAPI_policy_association_convertToJSON(OpenAPI_policy_association_t *po
         goto end;
     }
     cJSON *localMapObject = pras;
-    OpenAPI_lnode_t *pras_node;
     if (policy_association->pras) {
-        OpenAPI_list_for_each(policy_association->pras, pras_node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)pras_node->data;
-        cJSON *itemLocal = localKeyValue->value ?
-            OpenAPI_presence_info_convertToJSON(localKeyValue->value) :
-            cJSON_CreateNull();
-        if (itemLocal == NULL) {
-            ogs_error("OpenAPI_policy_association_convertToJSON() failed [inner]");
-            goto end;
-        }
-        cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
+        OpenAPI_list_for_each(policy_association->pras, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            cJSON *itemLocal = localKeyValue->value ?
+                OpenAPI_presence_info_convertToJSON(localKeyValue->value) :
+                cJSON_CreateNull();
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_policy_association_convertToJSON() failed [inner]");
+                goto end;
             }
+            cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
         }
     }
+    }
 
+    if (!policy_association->supp_feat) {
+        ogs_error("OpenAPI_policy_association_convertToJSON() failed [supp_feat]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "suppFeat", policy_association->supp_feat) == NULL) {
         ogs_error("OpenAPI_policy_association_convertToJSON() failed [supp_feat]");
         goto end;
@@ -189,51 +217,58 @@ end:
 OpenAPI_policy_association_t *OpenAPI_policy_association_parseFromJSON(cJSON *policy_associationJSON)
 {
     OpenAPI_policy_association_t *policy_association_local_var = NULL;
-    cJSON *request = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "request");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *request = NULL;
     OpenAPI_policy_association_request_t *request_local_nonprim = NULL;
+    cJSON *triggers = NULL;
+    OpenAPI_list_t *triggersList = NULL;
+    cJSON *serv_area_res = NULL;
+    OpenAPI_service_area_restriction_t *serv_area_res_local_nonprim = NULL;
+    cJSON *wl_serv_area_res = NULL;
+    OpenAPI_wireline_service_area_restriction_t *wl_serv_area_res_local_nonprim = NULL;
+    cJSON *rfsp = NULL;
+    cJSON *smf_sel_info = NULL;
+    OpenAPI_smf_selection_data_t *smf_sel_info_local_nonprim = NULL;
+    cJSON *ue_ambr = NULL;
+    OpenAPI_ambr_t *ue_ambr_local_nonprim = NULL;
+    cJSON *pras = NULL;
+    OpenAPI_list_t *prasList = NULL;
+    cJSON *supp_feat = NULL;
+    request = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "request");
     if (request) {
     request_local_nonprim = OpenAPI_policy_association_request_parseFromJSON(request);
     }
 
-    cJSON *triggers = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "triggers");
-
-    OpenAPI_list_t *triggersList;
+    triggers = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "triggers");
     if (triggers) {
-    cJSON *triggers_local_nonprimitive;
-    if (!cJSON_IsArray(triggers)) {
-        ogs_error("OpenAPI_policy_association_parseFromJSON() failed [triggers]");
-        goto end;
-    }
-
-    triggersList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(triggers_local_nonprimitive, triggers ) {
-        if (!cJSON_IsString(triggers_local_nonprimitive)){
+        cJSON *triggers_local = NULL;
+        if (!cJSON_IsArray(triggers)) {
             ogs_error("OpenAPI_policy_association_parseFromJSON() failed [triggers]");
             goto end;
         }
 
-        OpenAPI_list_add(triggersList, (void *)OpenAPI_request_trigger_FromString(triggers_local_nonprimitive->valuestring));
-    }
+        triggersList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(triggers_local, triggers) {
+            if (!cJSON_IsString(triggers_local)) {
+                ogs_error("OpenAPI_policy_association_parseFromJSON() failed [triggers]");
+                goto end;
+            }
+            OpenAPI_list_add(triggersList, (void *)OpenAPI_request_trigger_FromString(triggers_local->valuestring));
+        }
     }
 
-    cJSON *serv_area_res = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "servAreaRes");
-
-    OpenAPI_service_area_restriction_t *serv_area_res_local_nonprim = NULL;
+    serv_area_res = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "servAreaRes");
     if (serv_area_res) {
     serv_area_res_local_nonprim = OpenAPI_service_area_restriction_parseFromJSON(serv_area_res);
     }
 
-    cJSON *wl_serv_area_res = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "wlServAreaRes");
-
-    OpenAPI_wireline_service_area_restriction_t *wl_serv_area_res_local_nonprim = NULL;
+    wl_serv_area_res = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "wlServAreaRes");
     if (wl_serv_area_res) {
     wl_serv_area_res_local_nonprim = OpenAPI_wireline_service_area_restriction_parseFromJSON(wl_serv_area_res);
     }
 
-    cJSON *rfsp = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "rfsp");
-
+    rfsp = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "rfsp");
     if (rfsp) {
     if (!cJSON_IsNumber(rfsp)) {
         ogs_error("OpenAPI_policy_association_parseFromJSON() failed [rfsp]");
@@ -241,52 +276,47 @@ OpenAPI_policy_association_t *OpenAPI_policy_association_parseFromJSON(cJSON *po
     }
     }
 
-    cJSON *smf_sel_info = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "smfSelInfo");
-
-    OpenAPI_smf_selection_data_t *smf_sel_info_local_nonprim = NULL;
+    smf_sel_info = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "smfSelInfo");
     if (smf_sel_info) {
     smf_sel_info_local_nonprim = OpenAPI_smf_selection_data_parseFromJSON(smf_sel_info);
     }
 
-    cJSON *ue_ambr = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "ueAmbr");
-
-    OpenAPI_ambr_t *ue_ambr_local_nonprim = NULL;
+    ue_ambr = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "ueAmbr");
     if (ue_ambr) {
     ue_ambr_local_nonprim = OpenAPI_ambr_parseFromJSON(ue_ambr);
     }
 
-    cJSON *pras = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "pras");
-
-    OpenAPI_list_t *prasList;
+    pras = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "pras");
     if (pras) {
-    cJSON *pras_local_map;
-    if (!cJSON_IsObject(pras)) {
-        ogs_error("OpenAPI_policy_association_parseFromJSON() failed [pras]");
-        goto end;
-    }
-    prasList = OpenAPI_list_create();
-    OpenAPI_map_t *localMapKeyPair = NULL;
-    cJSON_ArrayForEach(pras_local_map, pras) {
-        cJSON *localMapObject = pras_local_map;
-        if (cJSON_IsObject(localMapObject)) {
-            localMapKeyPair = OpenAPI_map_create(
-                ogs_strdup(localMapObject->string), OpenAPI_presence_info_parseFromJSON(localMapObject));
-        } else if (cJSON_IsNull(localMapObject)) {
-            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
-        } else {
-            ogs_error("OpenAPI_policy_association_parseFromJSON() failed [inner]");
+        cJSON *pras_local_map = NULL;
+        if (!cJSON_IsObject(pras) && !cJSON_IsNull(pras)) {
+            ogs_error("OpenAPI_policy_association_parseFromJSON() failed [pras]");
             goto end;
         }
-        OpenAPI_list_add(prasList, localMapKeyPair);
-    }
+        if (cJSON_IsObject(pras)) {
+            prasList = OpenAPI_list_create();
+            OpenAPI_map_t *localMapKeyPair = NULL;
+            cJSON_ArrayForEach(pras_local_map, pras) {
+                cJSON *localMapObject = pras_local_map;
+                if (cJSON_IsObject(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(
+                        ogs_strdup(localMapObject->string), OpenAPI_presence_info_parseFromJSON(localMapObject));
+                } else if (cJSON_IsNull(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
+                } else {
+                    ogs_error("OpenAPI_policy_association_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                OpenAPI_list_add(prasList, localMapKeyPair);
+            }
+        }
     }
 
-    cJSON *supp_feat = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "suppFeat");
+    supp_feat = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "suppFeat");
     if (!supp_feat) {
         ogs_error("OpenAPI_policy_association_parseFromJSON() failed [supp_feat]");
         goto end;
     }
-
     if (!cJSON_IsString(supp_feat)) {
         ogs_error("OpenAPI_policy_association_parseFromJSON() failed [supp_feat]");
         goto end;
@@ -307,6 +337,40 @@ OpenAPI_policy_association_t *OpenAPI_policy_association_parseFromJSON(cJSON *po
 
     return policy_association_local_var;
 end:
+    if (request_local_nonprim) {
+        OpenAPI_policy_association_request_free(request_local_nonprim);
+        request_local_nonprim = NULL;
+    }
+    if (triggersList) {
+        OpenAPI_list_free(triggersList);
+        triggersList = NULL;
+    }
+    if (serv_area_res_local_nonprim) {
+        OpenAPI_service_area_restriction_free(serv_area_res_local_nonprim);
+        serv_area_res_local_nonprim = NULL;
+    }
+    if (wl_serv_area_res_local_nonprim) {
+        OpenAPI_wireline_service_area_restriction_free(wl_serv_area_res_local_nonprim);
+        wl_serv_area_res_local_nonprim = NULL;
+    }
+    if (smf_sel_info_local_nonprim) {
+        OpenAPI_smf_selection_data_free(smf_sel_info_local_nonprim);
+        smf_sel_info_local_nonprim = NULL;
+    }
+    if (ue_ambr_local_nonprim) {
+        OpenAPI_ambr_free(ue_ambr_local_nonprim);
+        ue_ambr_local_nonprim = NULL;
+    }
+    if (prasList) {
+        OpenAPI_list_for_each(prasList, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_presence_info_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(prasList);
+        prasList = NULL;
+    }
     return NULL;
 }
 

@@ -24,20 +24,34 @@ OpenAPI_operator_specific_data_container_t *OpenAPI_operator_specific_data_conta
 
 void OpenAPI_operator_specific_data_container_free(OpenAPI_operator_specific_data_container_t *operator_specific_data_container)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == operator_specific_data_container) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(operator_specific_data_container->data_type);
-    ogs_free(operator_specific_data_container->data_type_definition);
-    ogs_free(operator_specific_data_container->value);
-    ogs_free(operator_specific_data_container->supported_features);
+    if (operator_specific_data_container->data_type) {
+        ogs_free(operator_specific_data_container->data_type);
+        operator_specific_data_container->data_type = NULL;
+    }
+    if (operator_specific_data_container->data_type_definition) {
+        ogs_free(operator_specific_data_container->data_type_definition);
+        operator_specific_data_container->data_type_definition = NULL;
+    }
+    if (operator_specific_data_container->value) {
+        ogs_free(operator_specific_data_container->value);
+        operator_specific_data_container->value = NULL;
+    }
+    if (operator_specific_data_container->supported_features) {
+        ogs_free(operator_specific_data_container->supported_features);
+        operator_specific_data_container->supported_features = NULL;
+    }
     ogs_free(operator_specific_data_container);
 }
 
 cJSON *OpenAPI_operator_specific_data_container_convertToJSON(OpenAPI_operator_specific_data_container_t *operator_specific_data_container)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (operator_specific_data_container == NULL) {
         ogs_error("OpenAPI_operator_specific_data_container_convertToJSON() failed [OperatorSpecificDataContainer]");
@@ -45,6 +59,10 @@ cJSON *OpenAPI_operator_specific_data_container_convertToJSON(OpenAPI_operator_s
     }
 
     item = cJSON_CreateObject();
+    if (!operator_specific_data_container->data_type) {
+        ogs_error("OpenAPI_operator_specific_data_container_convertToJSON() failed [data_type]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "dataType", operator_specific_data_container->data_type) == NULL) {
         ogs_error("OpenAPI_operator_specific_data_container_convertToJSON() failed [data_type]");
         goto end;
@@ -57,6 +75,10 @@ cJSON *OpenAPI_operator_specific_data_container_convertToJSON(OpenAPI_operator_s
     }
     }
 
+    if (!operator_specific_data_container->value) {
+        ogs_error("OpenAPI_operator_specific_data_container_convertToJSON() failed [value]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "value", operator_specific_data_container->value) == NULL) {
         ogs_error("OpenAPI_operator_specific_data_container_convertToJSON() failed [value]");
         goto end;
@@ -76,41 +98,42 @@ end:
 OpenAPI_operator_specific_data_container_t *OpenAPI_operator_specific_data_container_parseFromJSON(cJSON *operator_specific_data_containerJSON)
 {
     OpenAPI_operator_specific_data_container_t *operator_specific_data_container_local_var = NULL;
-    cJSON *data_type = cJSON_GetObjectItemCaseSensitive(operator_specific_data_containerJSON, "dataType");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *data_type = NULL;
+    cJSON *data_type_definition = NULL;
+    cJSON *value = NULL;
+    cJSON *supported_features = NULL;
+    data_type = cJSON_GetObjectItemCaseSensitive(operator_specific_data_containerJSON, "dataType");
     if (!data_type) {
         ogs_error("OpenAPI_operator_specific_data_container_parseFromJSON() failed [data_type]");
         goto end;
     }
-
     if (!cJSON_IsString(data_type)) {
         ogs_error("OpenAPI_operator_specific_data_container_parseFromJSON() failed [data_type]");
         goto end;
     }
 
-    cJSON *data_type_definition = cJSON_GetObjectItemCaseSensitive(operator_specific_data_containerJSON, "dataTypeDefinition");
-
+    data_type_definition = cJSON_GetObjectItemCaseSensitive(operator_specific_data_containerJSON, "dataTypeDefinition");
     if (data_type_definition) {
-    if (!cJSON_IsString(data_type_definition)) {
+    if (!cJSON_IsString(data_type_definition) && !cJSON_IsNull(data_type_definition)) {
         ogs_error("OpenAPI_operator_specific_data_container_parseFromJSON() failed [data_type_definition]");
         goto end;
     }
     }
 
-    cJSON *value = cJSON_GetObjectItemCaseSensitive(operator_specific_data_containerJSON, "value");
+    value = cJSON_GetObjectItemCaseSensitive(operator_specific_data_containerJSON, "value");
     if (!value) {
         ogs_error("OpenAPI_operator_specific_data_container_parseFromJSON() failed [value]");
         goto end;
     }
-
     if (!cJSON_IsString(value)) {
         ogs_error("OpenAPI_operator_specific_data_container_parseFromJSON() failed [value]");
         goto end;
     }
 
-    cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(operator_specific_data_containerJSON, "supportedFeatures");
-
+    supported_features = cJSON_GetObjectItemCaseSensitive(operator_specific_data_containerJSON, "supportedFeatures");
     if (supported_features) {
-    if (!cJSON_IsString(supported_features)) {
+    if (!cJSON_IsString(supported_features) && !cJSON_IsNull(supported_features)) {
         ogs_error("OpenAPI_operator_specific_data_container_parseFromJSON() failed [supported_features]");
         goto end;
     }
@@ -118,9 +141,9 @@ OpenAPI_operator_specific_data_container_t *OpenAPI_operator_specific_data_conta
 
     operator_specific_data_container_local_var = OpenAPI_operator_specific_data_container_create (
         ogs_strdup(data_type->valuestring),
-        data_type_definition ? ogs_strdup(data_type_definition->valuestring) : NULL,
+        data_type_definition && !cJSON_IsNull(data_type_definition) ? ogs_strdup(data_type_definition->valuestring) : NULL,
         ogs_strdup(value->valuestring),
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL
+        supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL
     );
 
     return operator_specific_data_container_local_var;

@@ -20,18 +20,26 @@ OpenAPI_n1_n2_message_transfer_error_t *OpenAPI_n1_n2_message_transfer_error_cre
 
 void OpenAPI_n1_n2_message_transfer_error_free(OpenAPI_n1_n2_message_transfer_error_t *n1_n2_message_transfer_error)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == n1_n2_message_transfer_error) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_problem_details_free(n1_n2_message_transfer_error->error);
-    OpenAPI_n1_n2_msg_txfr_err_detail_free(n1_n2_message_transfer_error->err_info);
+    if (n1_n2_message_transfer_error->error) {
+        OpenAPI_problem_details_free(n1_n2_message_transfer_error->error);
+        n1_n2_message_transfer_error->error = NULL;
+    }
+    if (n1_n2_message_transfer_error->err_info) {
+        OpenAPI_n1_n2_msg_txfr_err_detail_free(n1_n2_message_transfer_error->err_info);
+        n1_n2_message_transfer_error->err_info = NULL;
+    }
     ogs_free(n1_n2_message_transfer_error);
 }
 
 cJSON *OpenAPI_n1_n2_message_transfer_error_convertToJSON(OpenAPI_n1_n2_message_transfer_error_t *n1_n2_message_transfer_error)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (n1_n2_message_transfer_error == NULL) {
         ogs_error("OpenAPI_n1_n2_message_transfer_error_convertToJSON() failed [N1N2MessageTransferError]");
@@ -39,6 +47,10 @@ cJSON *OpenAPI_n1_n2_message_transfer_error_convertToJSON(OpenAPI_n1_n2_message_
     }
 
     item = cJSON_CreateObject();
+    if (!n1_n2_message_transfer_error->error) {
+        ogs_error("OpenAPI_n1_n2_message_transfer_error_convertToJSON() failed [error]");
+        return NULL;
+    }
     cJSON *error_local_JSON = OpenAPI_problem_details_convertToJSON(n1_n2_message_transfer_error->error);
     if (error_local_JSON == NULL) {
         ogs_error("OpenAPI_n1_n2_message_transfer_error_convertToJSON() failed [error]");
@@ -70,18 +82,19 @@ end:
 OpenAPI_n1_n2_message_transfer_error_t *OpenAPI_n1_n2_message_transfer_error_parseFromJSON(cJSON *n1_n2_message_transfer_errorJSON)
 {
     OpenAPI_n1_n2_message_transfer_error_t *n1_n2_message_transfer_error_local_var = NULL;
-    cJSON *error = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_errorJSON, "error");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *error = NULL;
+    OpenAPI_problem_details_t *error_local_nonprim = NULL;
+    cJSON *err_info = NULL;
+    OpenAPI_n1_n2_msg_txfr_err_detail_t *err_info_local_nonprim = NULL;
+    error = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_errorJSON, "error");
     if (!error) {
         ogs_error("OpenAPI_n1_n2_message_transfer_error_parseFromJSON() failed [error]");
         goto end;
     }
-
-    OpenAPI_problem_details_t *error_local_nonprim = NULL;
     error_local_nonprim = OpenAPI_problem_details_parseFromJSON(error);
 
-    cJSON *err_info = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_errorJSON, "errInfo");
-
-    OpenAPI_n1_n2_msg_txfr_err_detail_t *err_info_local_nonprim = NULL;
+    err_info = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_errorJSON, "errInfo");
     if (err_info) {
     err_info_local_nonprim = OpenAPI_n1_n2_msg_txfr_err_detail_parseFromJSON(err_info);
     }
@@ -93,6 +106,14 @@ OpenAPI_n1_n2_message_transfer_error_t *OpenAPI_n1_n2_message_transfer_error_par
 
     return n1_n2_message_transfer_error_local_var;
 end:
+    if (error_local_nonprim) {
+        OpenAPI_problem_details_free(error_local_nonprim);
+        error_local_nonprim = NULL;
+    }
+    if (err_info_local_nonprim) {
+        OpenAPI_n1_n2_msg_txfr_err_detail_free(err_info_local_nonprim);
+        err_info_local_nonprim = NULL;
+    }
     return NULL;
 }
 

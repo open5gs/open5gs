@@ -38,31 +38,60 @@ OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_create(
 
 void OpenAPI_ee_subscription_free(OpenAPI_ee_subscription_t *ee_subscription)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == ee_subscription) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(ee_subscription->callback_reference);
-    OpenAPI_list_for_each(ee_subscription->monitoring_configurations, node) {
-        OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
-        ogs_free(localKeyValue->key);
-        OpenAPI_monitoring_configuration_free(localKeyValue->value);
-        ogs_free(localKeyValue);
+    if (ee_subscription->callback_reference) {
+        ogs_free(ee_subscription->callback_reference);
+        ee_subscription->callback_reference = NULL;
     }
-    OpenAPI_list_free(ee_subscription->monitoring_configurations);
-    OpenAPI_reporting_options_free(ee_subscription->reporting_options);
-    ogs_free(ee_subscription->supported_features);
-    ogs_free(ee_subscription->subscription_id);
-    OpenAPI_context_info_free(ee_subscription->context_info);
-    ogs_free(ee_subscription->scef_diam_host);
-    ogs_free(ee_subscription->scef_diam_realm);
-    ogs_free(ee_subscription->notify_correlation_id);
+    if (ee_subscription->monitoring_configurations) {
+        OpenAPI_list_for_each(ee_subscription->monitoring_configurations, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_monitoring_configuration_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(ee_subscription->monitoring_configurations);
+        ee_subscription->monitoring_configurations = NULL;
+    }
+    if (ee_subscription->reporting_options) {
+        OpenAPI_reporting_options_free(ee_subscription->reporting_options);
+        ee_subscription->reporting_options = NULL;
+    }
+    if (ee_subscription->supported_features) {
+        ogs_free(ee_subscription->supported_features);
+        ee_subscription->supported_features = NULL;
+    }
+    if (ee_subscription->subscription_id) {
+        ogs_free(ee_subscription->subscription_id);
+        ee_subscription->subscription_id = NULL;
+    }
+    if (ee_subscription->context_info) {
+        OpenAPI_context_info_free(ee_subscription->context_info);
+        ee_subscription->context_info = NULL;
+    }
+    if (ee_subscription->scef_diam_host) {
+        ogs_free(ee_subscription->scef_diam_host);
+        ee_subscription->scef_diam_host = NULL;
+    }
+    if (ee_subscription->scef_diam_realm) {
+        ogs_free(ee_subscription->scef_diam_realm);
+        ee_subscription->scef_diam_realm = NULL;
+    }
+    if (ee_subscription->notify_correlation_id) {
+        ogs_free(ee_subscription->notify_correlation_id);
+        ee_subscription->notify_correlation_id = NULL;
+    }
     ogs_free(ee_subscription);
 }
 
 cJSON *OpenAPI_ee_subscription_convertToJSON(OpenAPI_ee_subscription_t *ee_subscription)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (ee_subscription == NULL) {
         ogs_error("OpenAPI_ee_subscription_convertToJSON() failed [EeSubscription]");
@@ -70,31 +99,38 @@ cJSON *OpenAPI_ee_subscription_convertToJSON(OpenAPI_ee_subscription_t *ee_subsc
     }
 
     item = cJSON_CreateObject();
+    if (!ee_subscription->callback_reference) {
+        ogs_error("OpenAPI_ee_subscription_convertToJSON() failed [callback_reference]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "callbackReference", ee_subscription->callback_reference) == NULL) {
         ogs_error("OpenAPI_ee_subscription_convertToJSON() failed [callback_reference]");
         goto end;
     }
 
+    if (!ee_subscription->monitoring_configurations) {
+        ogs_error("OpenAPI_ee_subscription_convertToJSON() failed [monitoring_configurations]");
+        return NULL;
+    }
     cJSON *monitoring_configurations = cJSON_AddObjectToObject(item, "monitoringConfigurations");
     if (monitoring_configurations == NULL) {
         ogs_error("OpenAPI_ee_subscription_convertToJSON() failed [monitoring_configurations]");
         goto end;
     }
     cJSON *localMapObject = monitoring_configurations;
-    OpenAPI_lnode_t *monitoring_configurations_node;
     if (ee_subscription->monitoring_configurations) {
-        OpenAPI_list_for_each(ee_subscription->monitoring_configurations, monitoring_configurations_node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)monitoring_configurations_node->data;
-        cJSON *itemLocal = localKeyValue->value ?
-            OpenAPI_monitoring_configuration_convertToJSON(localKeyValue->value) :
-            cJSON_CreateNull();
-        if (itemLocal == NULL) {
-            ogs_error("OpenAPI_ee_subscription_convertToJSON() failed [inner]");
-            goto end;
-        }
-        cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
+        OpenAPI_list_for_each(ee_subscription->monitoring_configurations, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            cJSON *itemLocal = localKeyValue->value ?
+                OpenAPI_monitoring_configuration_convertToJSON(localKeyValue->value) :
+                cJSON_CreateNull();
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_ee_subscription_convertToJSON() failed [inner]");
+                goto end;
             }
+            cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
         }
+    }
 
     if (ee_subscription->reporting_options) {
     cJSON *reporting_options_local_JSON = OpenAPI_reporting_options_convertToJSON(ee_subscription->reporting_options);
@@ -171,79 +207,85 @@ end:
 OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_parseFromJSON(cJSON *ee_subscriptionJSON)
 {
     OpenAPI_ee_subscription_t *ee_subscription_local_var = NULL;
-    cJSON *callback_reference = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "callbackReference");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *callback_reference = NULL;
+    cJSON *monitoring_configurations = NULL;
+    OpenAPI_list_t *monitoring_configurationsList = NULL;
+    cJSON *reporting_options = NULL;
+    OpenAPI_reporting_options_t *reporting_options_local_nonprim = NULL;
+    cJSON *supported_features = NULL;
+    cJSON *subscription_id = NULL;
+    cJSON *context_info = NULL;
+    OpenAPI_context_info_t *context_info_local_nonprim = NULL;
+    cJSON *epc_applied_ind = NULL;
+    cJSON *scef_diam_host = NULL;
+    cJSON *scef_diam_realm = NULL;
+    cJSON *notify_correlation_id = NULL;
+    callback_reference = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "callbackReference");
     if (!callback_reference) {
         ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [callback_reference]");
         goto end;
     }
-
     if (!cJSON_IsString(callback_reference)) {
         ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [callback_reference]");
         goto end;
     }
 
-    cJSON *monitoring_configurations = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "monitoringConfigurations");
+    monitoring_configurations = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "monitoringConfigurations");
     if (!monitoring_configurations) {
         ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [monitoring_configurations]");
         goto end;
     }
-
-    OpenAPI_list_t *monitoring_configurationsList;
-    cJSON *monitoring_configurations_local_map;
-    if (!cJSON_IsObject(monitoring_configurations)) {
-        ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [monitoring_configurations]");
-        goto end;
-    }
-    monitoring_configurationsList = OpenAPI_list_create();
-    OpenAPI_map_t *localMapKeyPair = NULL;
-    cJSON_ArrayForEach(monitoring_configurations_local_map, monitoring_configurations) {
-        cJSON *localMapObject = monitoring_configurations_local_map;
-        if (cJSON_IsObject(localMapObject)) {
-            localMapKeyPair = OpenAPI_map_create(
-                ogs_strdup(localMapObject->string), OpenAPI_monitoring_configuration_parseFromJSON(localMapObject));
-        } else if (cJSON_IsNull(localMapObject)) {
-            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
-        } else {
-            ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [inner]");
+        cJSON *monitoring_configurations_local_map = NULL;
+        if (!cJSON_IsObject(monitoring_configurations) && !cJSON_IsNull(monitoring_configurations)) {
+            ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [monitoring_configurations]");
             goto end;
         }
-        OpenAPI_list_add(monitoring_configurationsList, localMapKeyPair);
-    }
+        if (cJSON_IsObject(monitoring_configurations)) {
+            monitoring_configurationsList = OpenAPI_list_create();
+            OpenAPI_map_t *localMapKeyPair = NULL;
+            cJSON_ArrayForEach(monitoring_configurations_local_map, monitoring_configurations) {
+                cJSON *localMapObject = monitoring_configurations_local_map;
+                if (cJSON_IsObject(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(
+                        ogs_strdup(localMapObject->string), OpenAPI_monitoring_configuration_parseFromJSON(localMapObject));
+                } else if (cJSON_IsNull(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
+                } else {
+                    ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                OpenAPI_list_add(monitoring_configurationsList, localMapKeyPair);
+            }
+        }
 
-    cJSON *reporting_options = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "reportingOptions");
-
-    OpenAPI_reporting_options_t *reporting_options_local_nonprim = NULL;
+    reporting_options = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "reportingOptions");
     if (reporting_options) {
     reporting_options_local_nonprim = OpenAPI_reporting_options_parseFromJSON(reporting_options);
     }
 
-    cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "supportedFeatures");
-
+    supported_features = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "supportedFeatures");
     if (supported_features) {
-    if (!cJSON_IsString(supported_features)) {
+    if (!cJSON_IsString(supported_features) && !cJSON_IsNull(supported_features)) {
         ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [supported_features]");
         goto end;
     }
     }
 
-    cJSON *subscription_id = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "subscriptionId");
-
+    subscription_id = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "subscriptionId");
     if (subscription_id) {
-    if (!cJSON_IsString(subscription_id)) {
+    if (!cJSON_IsString(subscription_id) && !cJSON_IsNull(subscription_id)) {
         ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [subscription_id]");
         goto end;
     }
     }
 
-    cJSON *context_info = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "contextInfo");
-
-    OpenAPI_context_info_t *context_info_local_nonprim = NULL;
+    context_info = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "contextInfo");
     if (context_info) {
     context_info_local_nonprim = OpenAPI_context_info_parseFromJSON(context_info);
     }
 
-    cJSON *epc_applied_ind = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "epcAppliedInd");
-
+    epc_applied_ind = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "epcAppliedInd");
     if (epc_applied_ind) {
     if (!cJSON_IsBool(epc_applied_ind)) {
         ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [epc_applied_ind]");
@@ -251,28 +293,25 @@ OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_parseFromJSON(cJSON *ee_subsc
     }
     }
 
-    cJSON *scef_diam_host = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "scefDiamHost");
-
+    scef_diam_host = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "scefDiamHost");
     if (scef_diam_host) {
-    if (!cJSON_IsString(scef_diam_host)) {
+    if (!cJSON_IsString(scef_diam_host) && !cJSON_IsNull(scef_diam_host)) {
         ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [scef_diam_host]");
         goto end;
     }
     }
 
-    cJSON *scef_diam_realm = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "scefDiamRealm");
-
+    scef_diam_realm = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "scefDiamRealm");
     if (scef_diam_realm) {
-    if (!cJSON_IsString(scef_diam_realm)) {
+    if (!cJSON_IsString(scef_diam_realm) && !cJSON_IsNull(scef_diam_realm)) {
         ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [scef_diam_realm]");
         goto end;
     }
     }
 
-    cJSON *notify_correlation_id = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "notifyCorrelationId");
-
+    notify_correlation_id = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "notifyCorrelationId");
     if (notify_correlation_id) {
-    if (!cJSON_IsString(notify_correlation_id)) {
+    if (!cJSON_IsString(notify_correlation_id) && !cJSON_IsNull(notify_correlation_id)) {
         ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [notify_correlation_id]");
         goto end;
     }
@@ -282,18 +321,36 @@ OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_parseFromJSON(cJSON *ee_subsc
         ogs_strdup(callback_reference->valuestring),
         monitoring_configurationsList,
         reporting_options ? reporting_options_local_nonprim : NULL,
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
-        subscription_id ? ogs_strdup(subscription_id->valuestring) : NULL,
+        supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
+        subscription_id && !cJSON_IsNull(subscription_id) ? ogs_strdup(subscription_id->valuestring) : NULL,
         context_info ? context_info_local_nonprim : NULL,
         epc_applied_ind ? true : false,
         epc_applied_ind ? epc_applied_ind->valueint : 0,
-        scef_diam_host ? ogs_strdup(scef_diam_host->valuestring) : NULL,
-        scef_diam_realm ? ogs_strdup(scef_diam_realm->valuestring) : NULL,
-        notify_correlation_id ? ogs_strdup(notify_correlation_id->valuestring) : NULL
+        scef_diam_host && !cJSON_IsNull(scef_diam_host) ? ogs_strdup(scef_diam_host->valuestring) : NULL,
+        scef_diam_realm && !cJSON_IsNull(scef_diam_realm) ? ogs_strdup(scef_diam_realm->valuestring) : NULL,
+        notify_correlation_id && !cJSON_IsNull(notify_correlation_id) ? ogs_strdup(notify_correlation_id->valuestring) : NULL
     );
 
     return ee_subscription_local_var;
 end:
+    if (monitoring_configurationsList) {
+        OpenAPI_list_for_each(monitoring_configurationsList, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_monitoring_configuration_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(monitoring_configurationsList);
+        monitoring_configurationsList = NULL;
+    }
+    if (reporting_options_local_nonprim) {
+        OpenAPI_reporting_options_free(reporting_options_local_nonprim);
+        reporting_options_local_nonprim = NULL;
+    }
+    if (context_info_local_nonprim) {
+        OpenAPI_context_info_free(context_info_local_nonprim);
+        context_info_local_nonprim = NULL;
+    }
     return NULL;
 }
 

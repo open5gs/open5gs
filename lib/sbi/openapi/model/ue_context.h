@@ -47,7 +47,7 @@ typedef struct OpenAPI_ue_context_s {
     char *pcf_group_id;
     char *routing_indicator;
     OpenAPI_list_t *group_list;
-    char drx_parameter;
+    char *drx_parameter;
     bool is_sub_rfsp;
     int sub_rfsp;
     bool is_used_rfsp;
@@ -55,7 +55,7 @@ typedef struct OpenAPI_ue_context_s {
     struct OpenAPI_ambr_s *sub_ue_ambr;
     char *smsf_id;
     struct OpenAPI_seaf_data_s *seaf_data;
-    char _5g_mm_capability;
+    char *_5g_mm_capability;
     char *pcf_id;
     char *pcf_set_id;
     char *pcf_amp_service_set_id;
@@ -78,7 +78,7 @@ typedef struct OpenAPI_ue_context_s {
     char *service_gap_expiry_time;
     char *stn_sr;
     char *c_msisdn;
-    char ms_classmark2;
+    char *ms_classmark2;
     OpenAPI_list_t *supported_codec_list;
     OpenAPI_list_t *small_data_rate_status_infos;
     OpenAPI_list_t *restricted_primary_rat_list;
@@ -109,7 +109,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_create(
     char *pcf_group_id,
     char *routing_indicator,
     OpenAPI_list_t *group_list,
-    char drx_parameter,
+    char *drx_parameter,
     bool is_sub_rfsp,
     int sub_rfsp,
     bool is_used_rfsp,
@@ -117,7 +117,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_create(
     OpenAPI_ambr_t *sub_ue_ambr,
     char *smsf_id,
     OpenAPI_seaf_data_t *seaf_data,
-    char _5g_mm_capability,
+    char *_5g_mm_capability,
     char *pcf_id,
     char *pcf_set_id,
     char *pcf_amp_service_set_id,
@@ -140,7 +140,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_create(
     char *service_gap_expiry_time,
     char *stn_sr,
     char *c_msisdn,
-    char ms_classmark2,
+    char *ms_classmark2,
     OpenAPI_list_t *supported_codec_list,
     OpenAPI_list_t *small_data_rate_status_infos,
     OpenAPI_list_t *restricted_primary_rat_list,

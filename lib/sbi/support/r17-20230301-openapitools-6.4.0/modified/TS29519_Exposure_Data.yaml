@@ -1,0 +1,831 @@
+openapi: 3.0.0
+info:
+  version: '-'
+  title: Unified Data Repository Service API file for structured data for exposure
+  description: |
+    The API version is defined in 3GPP TS 29.504  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+externalDocs:
+  description: >
+    3GPP TS 29.519 V17.7.0; 5G System; Usage of the Unified Data Repository Service for Policy Data,
+    Application Data and Structured Data for Exposure.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.519/'
+
+paths:
+  /exposure-data/{ueId}/access-and-mobility-data:
+    put:
+      summary: Creates and updates the access and mobility exposure data for a UE
+      operationId: CreateOrReplaceAccessAndMobilityData
+      tags:
+        - AccessAndMobilityData
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:exposure-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:exposure-data
+          - nudr-dr:exposure-data:access-and-mobility-data:create
+      parameters:
+        - name: ueId
+          in: path
+          description: UE id
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccessAndMobilityData'
+      responses:
+        '201':
+          description: >
+            Successful case. The resource has been successfully created and a response
+            body containing a representation of the access and mobility data shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessAndMobilityData'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '200':
+          description: >
+            Successful case. The resource has been successfully updated and a response
+            body containing a representation of the access and mobility data shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessAndMobilityData'
+        '204':
+          description: Successful case. The resource has been successfully updated and no additional content is to be sent in the response message.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    get:
+      summary: Retrieves the access and mobility exposure data for a UE
+      operationId: QueryAccessAndMobilityData
+      tags:
+        - AccessAndMobilityData
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:exposure-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:exposure-data
+          - nudr-dr:exposure-data:access-and-mobility-data:read
+      parameters:
+        - name: ueId
+          in: path
+          description: UE id
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+        - name: supp-feat
+          in: query
+          description: Supported Features
+          required: false
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: The response body contains the access and mobility data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessAndMobilityData'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: Deletes the access and mobility exposure data for a UE
+      operationId: DeleteAccessAndMobilityData
+      tags:
+        - AccessAndMobilityData
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:exposure-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:exposure-data
+          - nudr-dr:exposure-data:access-and-mobility-data:modify
+      parameters:
+        - name: ueId
+          in: path
+          description: UE id
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+      responses:  
+        '204':
+          description: Upon success, an empty response body shall be returned
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    patch:
+      summary: Updates the access and mobility exposure data for a UE
+      operationId: UpdateAccessAndMobilityData
+      tags:
+        - AccessAndMobilityData
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:exposure-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:exposure-data
+          - nudr-dr:exposure-data:access-and-mobility-data:modify
+      parameters:
+        - name: ueId
+          in: path
+          description: UE id
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/AccessAndMobilityData'
+      responses:
+        '204':
+          description: >
+            Successful case. The resource has been successfully updated and no additional
+            content is to be sent in the response message.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  /exposure-data/{ueId}/session-management-data/{pduSessionId}:
+    put:
+      summary: Creates and updates the session management data for a UE and for an individual PDU session
+      operationId: CreateOrReplaceSessionManagementData
+      tags:
+        - PduSessionManagementData
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:exposure-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:exposure-data
+          - nudr-dr:exposure-data:session-management-data:create
+      parameters:
+        - name: ueId
+          in: path
+          description: UE id
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+        - name: pduSessionId
+          in: path
+          description: PDU session id
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PduSessionManagementData'
+      responses:  
+        '201':
+          description: >
+            Successful case. The resource has been successfully created and a response
+            body containing a representation of the session management data shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PduSessionManagementData'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '200':
+          description: >
+            Successful case. The resource has been successfully updated and a response body
+            containing a representation of the session management data shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PduSessionManagementData'
+        '204':
+          description: >
+            Successful case. The resource has been successfully updated and no additional
+            content is to be sent in the response message.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    get:
+      summary: Retrieves the session management data for a UE and for an individual PDU session
+      operationId: QuerySessionManagementData
+      tags:
+        - PduSessionManagementData
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:exposure-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:exposure-data
+          - nudr-dr:exposure-data:session-management-data:read
+      parameters:
+        - name: ueId
+          in: path
+          description: UE id
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+        - name: pduSessionId
+          in: path
+          description: PDU session id
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionId'
+        - name: ipv4-addr
+          in: query
+          description: IPv4 Address of the UE
+          required: false
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        - name: ipv6-prefix
+          in: query
+          description: IPv6 Address Prefix of the UE
+          required: false
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+        - name: dnn
+          in: query
+          description: DNN of the UE
+          required: false
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        - name: fields
+          in: query
+          description: attributes to be retrieved
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+            minItems: 1
+        - name: supp-feat
+          in: query
+          description: Supported Features
+          required: false
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: The response body contains the session management data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PduSessionManagementData'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: Deletes the session management data for a UE and for an individual PDU session
+      operationId: DeleteSessionManagementData
+      tags:
+        - PduSessionManagementData
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:exposure-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:exposure-data
+          - nudr-dr:exposure-data:session-management-data:modify
+      parameters:
+        - name: ueId
+          in: path
+          description: UE id
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+        - name: pduSessionId
+          in: path
+          description: PDU session id
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionId'
+      responses:  
+        '204':
+          description: Upon success, an empty response body shall be returned
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  /exposure-data/subs-to-notify:
+    post:
+      summary: Create a subscription to receive notification of exposure data changes
+      operationId: CreateIndividualExposureDataSubscription
+      tags:
+        - ExposureDataSubscriptions (Collection)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:exposure-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:exposure-data
+          - nudr-dr:exposure-data:subs-to-notify:create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExposureDataSubscription'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExposureDataSubscription'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        exposureDataChangeNotification:
+          '{$request.body#/notificationUri}': 
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/ExposureDataChangeNotification'
+                      minItems: 1
+              responses:
+                '204':
+                  description: No Content, Notification was successful
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  /exposure-data/subs-to-notify/{subId}:
+    put:
+      summary: updates a subscription to receive notifications of exposure data changes
+      operationId: ReplaceIndividualExposureDataSubscription
+      tags:
+        - IndividualExposureDataSubscription (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:exposure-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:exposure-data
+          - nudr-dr:exposure-data:subs-to-notify:modify
+      parameters:
+        - name: subId
+          in: path
+          description: Subscription id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExposureDataSubscription'
+      responses:  
+        '200':
+          description: >
+            Resource was successfully modified and a body with the modified subscription
+            to notifications about exposure data is returned..
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExposureDataSubscription'
+        '204':
+          description: The individual subscription resource was successfully modified.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: Deletes the individual Exposure Data subscription
+      operationId: DeleteIndividualExposureDataSubscription
+      tags:
+        - IndividualExposureDataSubscription (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:exposure-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:exposure-data
+          - nudr-dr:exposure-data:subs-to-notify:modify
+      parameters:
+        - name: subId
+          in: path
+          description: Subscription id
+          required: true
+          schema:
+            type: string
+      responses:  
+        '204':
+          description: Resource was successfully deleted.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+components:
+  schemas:
+    AccessAndMobilityData:
+      description: Represents Access and Mobility data for a UE.
+      type: object
+      properties:
+        location:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        locationTs:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        timeZone:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TimeZone'
+        timeZoneTs:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        accessType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+        regStates:
+          type: array
+          items:
+            $ref: 'TS29518_Namf_EventExposure.yaml#/components/schemas/RmInfo'
+        regStatesTs:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        connStates:
+          type: array
+          items:
+            $ref: 'TS29518_Namf_EventExposure.yaml#/components/schemas/CmInfo'
+        connStatesTs:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        reachabilityStatus:
+          $ref: 'TS29518_Namf_EventExposure.yaml#/components/schemas/UeReachability'
+        reachabilityStatusTs:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        smsOverNasStatus:
+          $ref: 'TS29518_Namf_Communication.yaml#/components/schemas/SmsSupport'
+        smsOverNasStatusTs:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        roamingStatus:
+          type: boolean
+          description: >
+            True  The serving PLMN of the UE is different from the HPLMN of the UE; False
+            The serving PLMN of the UE is the HPLMN of the UE.
+        roamingStatusTs:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        currentPlmn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        currentPlmnTs:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        ratType:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+        ratTypesTs:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        resetIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+    PduSessionManagementData:
+      description: Represents Session management data for a UE and a PDU session.
+      type: object
+      properties:
+        pduSessionStatus:
+          $ref: '#/components/schemas/PduSessionStatus'
+        pduSessionStatusTs:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        dnai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnai'
+        dnaiTs:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        n6TrafficRoutingInfo:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/RouteToLocation'
+        n6TrafficRoutingInfoTs:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        ipv4Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        ipv6Prefix:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+          minItems: 1
+          description: UE IPv6 prefix.
+        ipv6Addrs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+          minItems: 1
+        pduSessType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionType'
+        ipAddrTs:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        pduSessionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionId'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        resetIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+    ExposureDataSubscription:
+      description: Represents a Subscription to Notifications about Exposure Data.
+      type: object
+      properties:
+        notificationUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        monitoredResourceUris:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+          minItems: 1
+        expiry:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        resetIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+      required:
+        - notificationUri
+        - monitoredResourceUris
+    ExposureDataChangeNotification:
+      description: Represents changed exposure data for one UE for which Notification was requested.
+      type: object
+      properties:
+        ueId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+        accessAndMobilityData:
+          $ref: '#/components/schemas/AccessAndMobilityData'
+        pduSessionManagementData:
+          type: array
+          items:
+            $ref: '#/components/schemas/PduSessionManagementData'
+          minItems: 1
+        delResources:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+          minItems: 1
+    PduSessionStatus:
+#      anyOf:
+#      - type: string
+        enum:
+          - "ACTIVE"
+          - "RELEASED"
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#        - "ACTIVE"
+#        - "RELEASED"
