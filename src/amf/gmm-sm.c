@@ -33,6 +33,15 @@
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __gmm_log_domain
 
+typedef enum {
+    GMM_COMMON_STATE_DEREGISTERED,
+    GMM_COMMON_STATE_REGISTERED,
+} gmm_common_state_e;
+
+static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
+        gmm_common_state_e state);
+
+
 void gmm_state_initial(ogs_fsm_t *s, amf_event_t *e)
 {
     ogs_assert(s);
@@ -48,8 +57,6 @@ void gmm_state_final(ogs_fsm_t *s, amf_event_t *e)
 
     amf_sm_debug(e);
 }
-
-static void common_register_state(ogs_fsm_t *s, amf_event_t *e);
 
 void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
 {
@@ -116,7 +123,7 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
         break;
 
     case AMF_EVENT_5GMM_MESSAGE:
-        common_register_state(s, e);
+        common_register_state(s, e, GMM_COMMON_STATE_DEREGISTERED);
         break;
 
     case AMF_EVENT_5GMM_TIMER:
@@ -319,7 +326,7 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
         break;
 
     case AMF_EVENT_5GMM_MESSAGE:
-        common_register_state(s, e);
+        common_register_state(s, e, GMM_COMMON_STATE_REGISTERED);
         break;
 
     case AMF_EVENT_5GMM_TIMER:
@@ -415,7 +422,8 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
     }
 }
 
-static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
+static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
+        gmm_common_state_e state)
 {
     int rv, xact_count = 0;
     ogs_nas_5gmm_cause_t gmm_cause;
@@ -531,6 +539,17 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
 
         case OGS_NAS_5GS_SERVICE_REQUEST:
             ogs_info("Service request");
+
+            if (state != GMM_COMMON_STATE_REGISTERED) {
+                ogs_info("[%s] Handling service request failed [Not registered]",
+                            amf_ue->suci);
+                r = nas_5gs_send_service_reject(amf_ue,
+                    OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                ogs_expect(r == OGS_OK);
+                ogs_expect(r != OGS_ERROR);
+                OGS_FSM_TRAN(s, gmm_state_exception);
+                break;
+            }
 
             gmm_cause = gmm_handle_service_request(
                     amf_ue, h, e->ngap.code, &nas_message->gmm.service_request);
