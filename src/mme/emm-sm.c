@@ -36,6 +36,15 @@
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __emm_log_domain
 
+typedef enum {
+    EMM_COMMON_STATE_DEREGISTERED,
+    EMM_COMMON_STATE_REGISTERED,
+} emm_common_state_e;
+
+static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
+        emm_common_state_e state);
+
+
 void emm_state_initial(ogs_fsm_t *s, mme_event_t *e)
 {
     ogs_assert(s);
@@ -52,7 +61,6 @@ void emm_state_final(ogs_fsm_t *s, mme_event_t *e)
     mme_sm_debug(e);
 }
 
-static void common_register_state(ogs_fsm_t *s, mme_event_t *e);
 
 void emm_state_de_registered(ogs_fsm_t *s, mme_event_t *e)
 {
@@ -75,7 +83,7 @@ void emm_state_de_registered(ogs_fsm_t *s, mme_event_t *e)
         break;
 
     case MME_EVENT_EMM_MESSAGE:
-        common_register_state(s, e);
+        common_register_state(s, e, EMM_COMMON_STATE_DEREGISTERED);
         break;
 
     case MME_EVENT_EMM_TIMER:
@@ -124,7 +132,7 @@ void emm_state_registered(ogs_fsm_t *s, mme_event_t *e)
         break;
 
     case MME_EVENT_EMM_MESSAGE:
-        common_register_state(s, e);
+        common_register_state(s, e, EMM_COMMON_STATE_REGISTERED);
         break;
 
     case MME_EVENT_EMM_TIMER:
@@ -222,7 +230,8 @@ void emm_state_registered(ogs_fsm_t *s, mme_event_t *e)
     }
 }
 
-static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
+static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
+        emm_common_state_e state)
 {
     int r, rv, xact_count = 0;
 
@@ -561,6 +570,17 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
 
         case OGS_NAS_EPS_EXTENDED_SERVICE_REQUEST:
             ogs_info("[%s] Extended service request", mme_ue->imsi_bcd);
+
+            if (state != EMM_COMMON_STATE_REGISTERED) {
+                ogs_info("Service request : Not registered[%s]",
+                    MME_UE_HAVE_IMSI(mme_ue) ? mme_ue->imsi_bcd : "Unknown IMSI");
+                r = nas_eps_send_service_reject(mme_ue,
+                    OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+                OGS_FSM_TRAN(s, &emm_state_exception);
+            }
+
             rv = emm_handle_extended_service_request(
                     mme_ue, &message->emm.extended_service_request);
             if (rv != OGS_OK) {
