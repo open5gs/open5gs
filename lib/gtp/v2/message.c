@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by gtp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2022-06-30 08:56:57.201419 by ubuntu
+ * Created on: 2023-03-05 00:10:47.974480 by acetcom
  * from 29274-g30.docx
  ******************************************************************************/
 
@@ -2709,7 +2709,10 @@ int ogs_gtp2_parse_msg(ogs_gtp2_message_t *gtp2_message, ogs_pkbuf_t *pkbuf)
     else
         size = OGS_GTPV2C_HEADER_LEN-OGS_GTP2_TEID_LEN;
 
-    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+        ogs_error("ogs_pkbuf_pull() failed [len:%d]", pkbuf->len);
+        return OGS_ERROR;
+    }
     memcpy(&gtp2_message->h, pkbuf->data - size, size);
 
     if (h->teid_presence)

@@ -702,7 +702,10 @@ f.write("""int ogs_gtp2_parse_msg(ogs_gtp2_message_t *gtp2_message, ogs_pkbuf_t 
     else
         size = OGS_GTPV2C_HEADER_LEN-OGS_GTP2_TEID_LEN;
 
-    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+        ogs_error("ogs_pkbuf_pull() failed [len:%d]", pkbuf->len);
+        return OGS_ERROR;
+    }
     memcpy(&gtp2_message->h, pkbuf->data - size, size);
 
     if (h->teid_presence)
