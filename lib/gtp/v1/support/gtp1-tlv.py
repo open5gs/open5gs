@@ -614,7 +614,10 @@ f.write("""int ogs_gtp1_parse_msg(ogs_gtp1_message_t *gtp1_message, ogs_pkbuf_t 
     else
         size = OGS_GTPV1C_HEADER_LEN - 4;
 
-    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+        ogs_error("ogs_pkbuf_pull() failed [len:%d]", pkbuf->len);
+        return OGS_ERROR;
+    }
     memcpy(&gtp1_message->h, pkbuf->data - size, size);
 
     gtp1_message->h.teid = be32toh(gtp1_message->h.teid);
