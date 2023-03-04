@@ -1078,7 +1078,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                 r = nas_5gs_send_service_reject(amf_ue,
                     OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                 ogs_expect(r == OGS_OK);
-                ogs_expect(r != OGS_ERROR);
+                ogs_assert(r != OGS_ERROR);
                 OGS_FSM_TRAN(s, gmm_state_exception);
                 break;
             }

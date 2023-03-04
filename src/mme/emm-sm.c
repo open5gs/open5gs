@@ -262,6 +262,18 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
         if (message->emm.h.security_header_type
                 == OGS_NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE) {
             ogs_info("[%s] Service request", mme_ue->imsi_bcd);
+
+            if (state != EMM_COMMON_STATE_REGISTERED) {
+                ogs_info("Service request : Not registered[%s]",
+                        mme_ue->imsi_bcd);
+                r = nas_eps_send_service_reject(mme_ue,
+                    OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+                OGS_FSM_TRAN(s, &emm_state_exception);
+                break;
+            }
+
             rv = emm_handle_service_request(
                     mme_ue, &message->emm.service_request);
             if (rv != OGS_OK) {
@@ -281,7 +293,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
             }
 
             if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
-                ogs_warn("No Security Context : IMSI[%s]", mme_ue->imsi_bcd);
+                ogs_error("No Security Context : IMSI[%s]", mme_ue->imsi_bcd);
                 r = nas_eps_send_service_reject(mme_ue,
                     OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                 ogs_expect(r == OGS_OK);
@@ -291,7 +303,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
             }
 
             if (!SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
-                ogs_warn("No Session Context : IMSI[%s]", mme_ue->imsi_bcd);
+                ogs_error("No Session Context : IMSI[%s]", mme_ue->imsi_bcd);
                 r = nas_eps_send_service_reject(mme_ue,
                     OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                 ogs_expect(r == OGS_OK);
@@ -301,7 +313,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
             }
 
             if (!ACTIVE_EPS_BEARERS_IS_AVAIABLE(mme_ue)) {
-                ogs_warn("No active EPS bearers : IMSI[%s]", mme_ue->imsi_bcd);
+                ogs_error("No active EPS bearers : IMSI[%s]", mme_ue->imsi_bcd);
                 r = nas_eps_send_service_reject(mme_ue,
                         OGS_NAS_EMM_CAUSE_NO_EPS_BEARER_CONTEXT_ACTIVATED);
                 ogs_expect(r == OGS_OK);
@@ -570,16 +582,6 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
 
         case OGS_NAS_EPS_EXTENDED_SERVICE_REQUEST:
             ogs_info("[%s] Extended service request", mme_ue->imsi_bcd);
-
-            if (state != EMM_COMMON_STATE_REGISTERED) {
-                ogs_info("Service request : Not registered[%s]",
-                    MME_UE_HAVE_IMSI(mme_ue) ? mme_ue->imsi_bcd : "Unknown IMSI");
-                r = nas_eps_send_service_reject(mme_ue,
-                    OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-                OGS_FSM_TRAN(s, &emm_state_exception);
-            }
 
             rv = emm_handle_extended_service_request(
                     mme_ue, &message->emm.extended_service_request);
