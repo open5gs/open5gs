@@ -787,7 +787,11 @@ f.write("""ogs_pfcp_message_t *ogs_pfcp_parse_msg(ogs_pkbuf_t *pkbuf)
     else
         size = OGS_PFCP_HEADER_LEN-OGS_PFCP_SEID_LEN;
 
-    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+        ogs_error("ogs_pkbuf_pull() failed [len:%d]", pkbuf->len);
+        ogs_pfcp_message_free(pfcp_message);
+        return NULL;
+    }
     memcpy(&pfcp_message->h, pkbuf->data - size, size);
 
     if (h->seid_presence) {

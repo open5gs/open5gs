@@ -21,7 +21,7 @@
 /*******************************************************************************
  * This file had been created by gtp1-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2022-06-30 08:56:31.641366 by ubuntu
+ * Created on: 2023-03-05 00:10:59.164127 by acetcom
  * from 29060-g00.docx
  ******************************************************************************/
 
@@ -2284,7 +2284,10 @@ int ogs_gtp1_parse_msg(ogs_gtp1_message_t *gtp1_message, ogs_pkbuf_t *pkbuf)
     else
         size = OGS_GTPV1C_HEADER_LEN - 4;
 
-    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+        ogs_error("ogs_pkbuf_pull() failed [len:%d]", pkbuf->len);
+        return OGS_ERROR;
+    }
     memcpy(&gtp1_message->h, pkbuf->data - size, size);
 
     gtp1_message->h.teid = be32toh(gtp1_message->h.teid);
