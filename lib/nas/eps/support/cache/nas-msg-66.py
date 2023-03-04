@@ -26,4 +26,9 @@ ies.append({ "iei" : "7A", "value" : "Extended emergency number list", "type" : 
 ies.append({ "iei" : "7C", "value" : "Ciphering key data", "type" : "Ciphering key data", "reference" : "9.9.3.56", "presence" : "O", "format" : "TLV-E", "length" : "35-2291"})
 ies.append({ "iei" : "66", "value" : "UE radio capability ID", "type" : "UE radio capability ID", "reference" : "9.9.3.60", "presence" : "O", "format" : "TLV", "length" : "3-n"})
 ies.append({ "iei" : "B-", "value" : "UE radio capability ID deletion indication", "type" : "UE radio capability ID deletion indication", "reference" : "9.9.3.61", "presence" : "O", "format" : "TV", "length" : "1"})
+ies.append({ "iei" : "35", "value" : "Negotiated WUS assistance information", "type" : "WUS assistance information", "reference" : "9.9.3.62", "presence" : "O", "format" : "TLV", "length" : "3-n"})
+ies.append({ "iei" : "36", "value" : "Negotiated DRX parameter in NB-S1 mode", "type" : "NB-S1 DRX parameter", "reference" : "9.9.3.63", "presence" : "O", "format" : "TLV", "length" : "3"})
+ies.append({ "iei" : "38", "value" : "Negotiated IMSI offset", "type" : "IMSI offset", "reference" : "9.9.3.64", "presence" : "O", "format" : "TLV", "length" : "4"})
+ies.append({ "iei" : "1D", "value" : "Forbidden TAI for the list of forbidden tracking areas for roaming", "type" : "Tracking area identity list", "reference" : "9.9.3.33", "presence" : "O", "format" : "TLV", "length" : "8-98"})
+ies.append({ "iei" : "1E", "value" : "Forbidden TAI for the list of forbidden tracking areas forregional provision of service", "type" : "Tracking area identity list", "reference" : "9.9.3.33", "presence" : "O", "format" : "TLV", "length" : "8-98"})
 msg_list[key]["ies"] = ies

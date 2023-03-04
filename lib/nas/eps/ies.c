@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -28,8 +28,8 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2022-01-22 09:24:28.368722 by acetcom
- * from 24301-g40.docx
+ * Created on: 2023-03-02 22:57:51.846548 by acetcom
+ * from 24301-h90.docx
  ******************************************************************************/
 
 #include "ogs-nas-eps.h"
@@ -2405,7 +2405,7 @@ int ogs_nas_eps_encode_ciphering_key_sequence_number(ogs_pkbuf_t *pkbuf, ogs_nas
 }
 
 /* 9.9.3.5 CSFB response
- * O TV 1 */
+ * C TV 1 */
 int ogs_nas_eps_decode_csfb_response(ogs_nas_csfb_response_t *csfb_response, ogs_pkbuf_t *pkbuf)
 {
     int size = sizeof(ogs_nas_csfb_response_t);
@@ -2750,17 +2750,61 @@ int ogs_nas_eps_encode_n1_ue_network_capability(ogs_pkbuf_t *pkbuf, ogs_nas_n1_u
     return size;
 }
 
-/* 9.9.3.59 UE radio capability ID request
- * O TV 1 */
-int ogs_nas_eps_decode_ue_radio_capability_id_request(ogs_nas_ue_radio_capability_id_request_t *ue_radio_capability_id_request, ogs_pkbuf_t *pkbuf)
+/* 9.9.3.58 UE radio capability ID availability
+ * O TLV 3 */
+int ogs_nas_eps_decode_ue_radio_capability_id_availability(ogs_nas_ue_radio_capability_id_availability_t *ue_radio_capability_id_availability, ogs_pkbuf_t *pkbuf)
 {
-    int size = sizeof(ogs_nas_ue_radio_capability_id_request_t);
+    int size = 0;
+    ogs_nas_ue_radio_capability_id_availability_t *source = (ogs_nas_ue_radio_capability_id_availability_t *)pkbuf->data;
+
+    ue_radio_capability_id_availability->length = source->length;
+    size = ue_radio_capability_id_availability->length + sizeof(ue_radio_capability_id_availability->length);
 
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
        ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
        return -1;
     }
 
+    if (sizeof(*ue_radio_capability_id_availability) < size) return -1;
+    memcpy(ue_radio_capability_id_availability, pkbuf->data - size, size);
+
+    ogs_trace("  UE_RADIO_CAPABILITY_ID_AVAILABILITY - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+int ogs_nas_eps_encode_ue_radio_capability_id_availability(ogs_pkbuf_t *pkbuf, ogs_nas_ue_radio_capability_id_availability_t *ue_radio_capability_id_availability)
+{
+    int size = ue_radio_capability_id_availability->length + sizeof(ue_radio_capability_id_availability->length);
+    ogs_nas_ue_radio_capability_id_availability_t target;
+
+    memcpy(&target, ue_radio_capability_id_availability, sizeof(ogs_nas_ue_radio_capability_id_availability_t));
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, &target, size);
+
+    ogs_trace("  UE_RADIO_CAPABILITY_ID_AVAILABILITY - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+/* 9.9.3.59 UE radio capability ID request
+ * O TLV 3 */
+int ogs_nas_eps_decode_ue_radio_capability_id_request(ogs_nas_ue_radio_capability_id_request_t *ue_radio_capability_id_request, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_ue_radio_capability_id_request_t *source = (ogs_nas_ue_radio_capability_id_request_t *)pkbuf->data;
+
+    ue_radio_capability_id_request->length = source->length;
+    size = ue_radio_capability_id_request->length + sizeof(ue_radio_capability_id_request->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    if (sizeof(*ue_radio_capability_id_request) < size) return -1;
     memcpy(ue_radio_capability_id_request, pkbuf->data - size, size);
 
     ogs_trace("  UE_RADIO_CAPABILITY_ID_REQUEST - ");
@@ -2771,10 +2815,12 @@ int ogs_nas_eps_decode_ue_radio_capability_id_request(ogs_nas_ue_radio_capabilit
 
 int ogs_nas_eps_encode_ue_radio_capability_id_request(ogs_pkbuf_t *pkbuf, ogs_nas_ue_radio_capability_id_request_t *ue_radio_capability_id_request)
 {
-    int size = sizeof(ogs_nas_ue_radio_capability_id_request_t);
+    int size = ue_radio_capability_id_request->length + sizeof(ue_radio_capability_id_request->length);
+    ogs_nas_ue_radio_capability_id_request_t target;
 
+    memcpy(&target, ue_radio_capability_id_request, sizeof(ogs_nas_ue_radio_capability_id_request_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
-    memcpy(pkbuf->data - size, ue_radio_capability_id_request, size);
+    memcpy(pkbuf->data - size, &target, size);
 
     ogs_trace("  UE_RADIO_CAPABILITY_ID_REQUEST - ");
     ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
@@ -2887,6 +2933,240 @@ int ogs_nas_eps_encode_ue_radio_capability_id_deletion_indication(ogs_pkbuf_t *p
     memcpy(pkbuf->data - size, ue_radio_capability_id_deletion_indication, size);
 
     ogs_trace("  UE_RADIO_CAPABILITY_ID_DELETION_INDICATION - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+/* 9.9.3.62 WUS assistance information
+ * O TLV 3-n */
+int ogs_nas_eps_decode_wus_assistance_information(ogs_nas_wus_assistance_information_t *wus_assistance_information, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_wus_assistance_information_t *source = (ogs_nas_wus_assistance_information_t *)pkbuf->data;
+
+    wus_assistance_information->length = source->length;
+    size = wus_assistance_information->length + sizeof(wus_assistance_information->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    if (sizeof(*wus_assistance_information) < size) return -1;
+    memcpy(wus_assistance_information, pkbuf->data - size, size);
+
+    ogs_trace("  WUS_ASSISTANCE_INFORMATION - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+int ogs_nas_eps_encode_wus_assistance_information(ogs_pkbuf_t *pkbuf, ogs_nas_wus_assistance_information_t *wus_assistance_information)
+{
+    int size = wus_assistance_information->length + sizeof(wus_assistance_information->length);
+    ogs_nas_wus_assistance_information_t target;
+
+    memcpy(&target, wus_assistance_information, sizeof(ogs_nas_wus_assistance_information_t));
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, &target, size);
+
+    ogs_trace("  WUS_ASSISTANCE_INFORMATION - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+/* 9.9.3.63 NB-S1 DRX parameter
+ * O TLV 3 */
+int ogs_nas_eps_decode_nb_s1_drx_parameter(ogs_nas_nb_s1_drx_parameter_t *nb_s1_drx_parameter, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_nb_s1_drx_parameter_t *source = (ogs_nas_nb_s1_drx_parameter_t *)pkbuf->data;
+
+    nb_s1_drx_parameter->length = source->length;
+    size = nb_s1_drx_parameter->length + sizeof(nb_s1_drx_parameter->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    if (sizeof(*nb_s1_drx_parameter) < size) return -1;
+    memcpy(nb_s1_drx_parameter, pkbuf->data - size, size);
+
+    ogs_trace("  NB_S1_DRX_PARAMETER - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+int ogs_nas_eps_encode_nb_s1_drx_parameter(ogs_pkbuf_t *pkbuf, ogs_nas_nb_s1_drx_parameter_t *nb_s1_drx_parameter)
+{
+    int size = nb_s1_drx_parameter->length + sizeof(nb_s1_drx_parameter->length);
+    ogs_nas_nb_s1_drx_parameter_t target;
+
+    memcpy(&target, nb_s1_drx_parameter, sizeof(ogs_nas_nb_s1_drx_parameter_t));
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, &target, size);
+
+    ogs_trace("  NB_S1_DRX_PARAMETER - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+/* 9.9.3.64 IMSI offset
+ * O TLV 4 */
+int ogs_nas_eps_decode_imsi_offset(ogs_nas_imsi_offset_t *imsi_offset, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_imsi_offset_t *source = (ogs_nas_imsi_offset_t *)pkbuf->data;
+
+    imsi_offset->length = source->length;
+    size = imsi_offset->length + sizeof(imsi_offset->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    if (sizeof(*imsi_offset) < size) return -1;
+    memcpy(imsi_offset, pkbuf->data - size, size);
+
+    ogs_trace("  IMSI_OFFSET - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+int ogs_nas_eps_encode_imsi_offset(ogs_pkbuf_t *pkbuf, ogs_nas_imsi_offset_t *imsi_offset)
+{
+    int size = imsi_offset->length + sizeof(imsi_offset->length);
+    ogs_nas_imsi_offset_t target;
+
+    memcpy(&target, imsi_offset, sizeof(ogs_nas_imsi_offset_t));
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, &target, size);
+
+    ogs_trace("  IMSI_OFFSET - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+/* 9.9.3.65 UE request type
+ * O TLV 3 */
+int ogs_nas_eps_decode_ue_request_type(ogs_nas_ue_request_type_t *ue_request_type, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_ue_request_type_t *source = (ogs_nas_ue_request_type_t *)pkbuf->data;
+
+    ue_request_type->length = source->length;
+    size = ue_request_type->length + sizeof(ue_request_type->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    if (sizeof(*ue_request_type) < size) return -1;
+    memcpy(ue_request_type, pkbuf->data - size, size);
+
+    ogs_trace("  UE_REQUEST_TYPE - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+int ogs_nas_eps_encode_ue_request_type(ogs_pkbuf_t *pkbuf, ogs_nas_ue_request_type_t *ue_request_type)
+{
+    int size = ue_request_type->length + sizeof(ue_request_type->length);
+    ogs_nas_ue_request_type_t target;
+
+    memcpy(&target, ue_request_type, sizeof(ogs_nas_ue_request_type_t));
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, &target, size);
+
+    ogs_trace("  UE_REQUEST_TYPE - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+/* 9.9.3.66 Paging restriction
+ * O TLV 3-5 */
+int ogs_nas_eps_decode_paging_restriction(ogs_nas_paging_restriction_t *paging_restriction, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_paging_restriction_t *source = (ogs_nas_paging_restriction_t *)pkbuf->data;
+
+    paging_restriction->length = source->length;
+    size = paging_restriction->length + sizeof(paging_restriction->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    if (sizeof(*paging_restriction) < size) return -1;
+    memcpy(paging_restriction, pkbuf->data - size, size);
+
+    ogs_trace("  PAGING_RESTRICTION - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+int ogs_nas_eps_encode_paging_restriction(ogs_pkbuf_t *pkbuf, ogs_nas_paging_restriction_t *paging_restriction)
+{
+    int size = paging_restriction->length + sizeof(paging_restriction->length);
+    ogs_nas_paging_restriction_t target;
+
+    memcpy(&target, paging_restriction, sizeof(ogs_nas_paging_restriction_t));
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, &target, size);
+
+    ogs_trace("  PAGING_RESTRICTION - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+/* 9.9.3.67 EPS additional request result
+ * O TLV 3 */
+int ogs_nas_eps_decode_eps_additional_request_result(ogs_nas_eps_additional_request_result_t *eps_additional_request_result, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_eps_additional_request_result_t *source = (ogs_nas_eps_additional_request_result_t *)pkbuf->data;
+
+    eps_additional_request_result->length = source->length;
+    size = eps_additional_request_result->length + sizeof(eps_additional_request_result->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    if (sizeof(*eps_additional_request_result) < size) return -1;
+    memcpy(eps_additional_request_result, pkbuf->data - size, size);
+
+    ogs_trace("  EPS_ADDITIONAL_REQUEST_RESULT - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+int ogs_nas_eps_encode_eps_additional_request_result(ogs_pkbuf_t *pkbuf, ogs_nas_eps_additional_request_result_t *eps_additional_request_result)
+{
+    int size = eps_additional_request_result->length + sizeof(eps_additional_request_result->length);
+    ogs_nas_eps_additional_request_result_t target;
+
+    memcpy(&target, eps_additional_request_result, sizeof(ogs_nas_eps_additional_request_result_t));
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, &target, size);
+
+    ogs_trace("  EPS_ADDITIONAL_REQUEST_RESULT - ");
     ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
     return size;

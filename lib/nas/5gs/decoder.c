@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -28,8 +28,8 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.2.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2022-07-11 07:09:47.173881 by ubuntu
- * from 24501-g41.docx
+ * Created on: 2023-03-04 20:50:00.889117 by acetcom
+ * from 24501-h90.docx
  ******************************************************************************/
 
 #include "ogs-nas-5gs.h"
@@ -431,6 +431,86 @@ int ogs_nas_5gs_decode_registration_request(ogs_nas_5gs_message_t *message, ogs_
             registration_request->presencemask |= OGS_NAS_5GS_REGISTRATION_REQUEST_N5GC_INDICATION_PRESENT;
             decoded += size;
             break;
+        case OGS_NAS_5GS_REGISTRATION_REQUEST_REQUESTED_NB_N1_MODE_DRX_PARAMETERS_TYPE:
+            size = ogs_nas_5gs_decode_nb_n1_mode_drx_parameters(&registration_request->requested_nb_n1_mode_drx_parameters, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_nb_n1_mode_drx_parameters() failed");
+               return size;
+            }
+
+            registration_request->presencemask |= OGS_NAS_5GS_REGISTRATION_REQUEST_REQUESTED_NB_N1_MODE_DRX_PARAMETERS_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_REGISTRATION_REQUEST_UE_REQUEST_TYPE_TYPE:
+            size = ogs_nas_5gs_decode_ue_request_type(&registration_request->ue_request_type, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_ue_request_type() failed");
+               return size;
+            }
+
+            registration_request->presencemask |= OGS_NAS_5GS_REGISTRATION_REQUEST_UE_REQUEST_TYPE_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_REGISTRATION_REQUEST_PAGING_RESTRICTION_TYPE:
+            size = ogs_nas_5gs_decode_paging_restriction(&registration_request->paging_restriction, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_paging_restriction() failed");
+               return size;
+            }
+
+            registration_request->presencemask |= OGS_NAS_5GS_REGISTRATION_REQUEST_PAGING_RESTRICTION_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_REGISTRATION_REQUEST_SERVICE_LEVEL_AA_CONTAINER_TYPE:
+            size = ogs_nas_5gs_decode_service_level_aa_container(&registration_request->service_level_aa_container, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_service_level_aa_container() failed");
+               return size;
+            }
+
+            registration_request->presencemask |= OGS_NAS_5GS_REGISTRATION_REQUEST_SERVICE_LEVEL_AA_CONTAINER_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_REGISTRATION_REQUEST_NID_TYPE:
+            size = ogs_nas_5gs_decode_nid(&registration_request->nid, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_nid() failed");
+               return size;
+            }
+
+            registration_request->presencemask |= OGS_NAS_5GS_REGISTRATION_REQUEST_NID_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_REGISTRATION_REQUEST_MS_DETERMINED_PLMN_WITH_DISASTER_CONDITION_TYPE:
+            size = ogs_nas_5gs_decode_plmn_identity(&registration_request->ms_determined_plmn_with_disaster_condition, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_plmn_identity() failed");
+               return size;
+            }
+
+            registration_request->presencemask |= OGS_NAS_5GS_REGISTRATION_REQUEST_MS_DETERMINED_PLMN_WITH_DISASTER_CONDITION_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_REGISTRATION_REQUEST_REQUESTED_PEIPS_ASSISTANCE_INFORMATION_TYPE:
+            size = ogs_nas_5gs_decode_peips_assistance_information(&registration_request->requested_peips_assistance_information, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_peips_assistance_information() failed");
+               return size;
+            }
+
+            registration_request->presencemask |= OGS_NAS_5GS_REGISTRATION_REQUEST_REQUESTED_PEIPS_ASSISTANCE_INFORMATION_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_REGISTRATION_REQUEST_REQUESTED_T3512_VALUE_TYPE:
+            size = ogs_nas_5gs_decode_gprs_timer_3(&registration_request->requested_t3512_value, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_gprs_timer_3() failed");
+               return size;
+            }
+
+            registration_request->presencemask |= OGS_NAS_5GS_REGISTRATION_REQUEST_REQUESTED_T3512_VALUE_PRESENT;
+            decoded += size;
+            break;
         default:
             ogs_error("Unknown type(0x%x) or not implemented\n", type);
             break;
@@ -757,9 +837,9 @@ int ogs_nas_5gs_decode_registration_accept(ogs_nas_5gs_message_t *message, ogs_p
             decoded += size;
             break;
         case OGS_NAS_5GS_REGISTRATION_ACCEPT_T3448_VALUE_TYPE:
-            size = ogs_nas_5gs_decode_gprs_timer_3(&registration_accept->t3448_value, pkbuf);
+            size = ogs_nas_5gs_decode_gprs_timer_2(&registration_accept->t3448_value, pkbuf);
             if (size < 0) {
-               ogs_error("ogs_nas_5gs_decode_gprs_timer_3() failed");
+               ogs_error("ogs_nas_5gs_decode_gprs_timer_2() failed");
                return size;
             }
 
@@ -846,6 +926,138 @@ int ogs_nas_5gs_decode_registration_accept(ogs_nas_5gs_message_t *message, ogs_p
             }
 
             registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_NEGOTIATED_WUS_ASSISTANCE_INFORMATION_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_REGISTRATION_ACCEPT_NEGOTIATED_NB_N1_MODE_DRX_PARAMETERS_TYPE:
+            size = ogs_nas_5gs_decode_nb_n1_mode_drx_parameters(&registration_accept->negotiated_nb_n1_mode_drx_parameters, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_nb_n1_mode_drx_parameters() failed");
+               return size;
+            }
+
+            registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_NEGOTIATED_NB_N1_MODE_DRX_PARAMETERS_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_REGISTRATION_ACCEPT_EXTENDED_REJECTED_NSSAI_TYPE:
+            size = ogs_nas_5gs_decode_extended_rejected_nssai(&registration_accept->extended_rejected_nssai, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_extended_rejected_nssai() failed");
+               return size;
+            }
+
+            registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_EXTENDED_REJECTED_NSSAI_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_REGISTRATION_ACCEPT_SERVICE_LEVEL_AA_CONTAINER_TYPE:
+            size = ogs_nas_5gs_decode_service_level_aa_container(&registration_accept->service_level_aa_container, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_service_level_aa_container() failed");
+               return size;
+            }
+
+            registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_SERVICE_LEVEL_AA_CONTAINER_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_REGISTRATION_ACCEPT_NEGOTIATED_PEIPS_ASSISTANCE_INFORMATION_TYPE:
+            size = ogs_nas_5gs_decode_peips_assistance_information(&registration_accept->negotiated_peips_assistance_information, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_peips_assistance_information() failed");
+               return size;
+            }
+
+            registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_NEGOTIATED_PEIPS_ASSISTANCE_INFORMATION_PRESENT;
+            decoded += size;
+            break;
+#if 0 /* Modified by acetcom */
+        case OGS_NAS_5GS_REGISTRATION_ACCEPT_5GS_ADDITIONAL_REQUEST_RESULT_TYPE:
+            size = ogs_nas_5gs_decode_5gs_additional_request_result(&registration_accept->additional_request_result, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_5gs_additional_request_result() failed");
+               return size;
+            }
+
+            registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_5GS_ADDITIONAL_REQUEST_RESULT_PRESENT;
+            decoded += size;
+            break;
+#endif
+        case OGS_NAS_5GS_REGISTRATION_ACCEPT_NSSRG_INFORMATION_TYPE:
+            size = ogs_nas_5gs_decode_nssrg_information(&registration_accept->nssrg_information, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_nssrg_information() failed");
+               return size;
+            }
+
+            registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_NSSRG_INFORMATION_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_REGISTRATION_ACCEPT_DISASTER_ROAMING_WAIT_RANGE_TYPE:
+            size = ogs_nas_5gs_decode_registration_wait_range(&registration_accept->disaster_roaming_wait_range, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_registration_wait_range() failed");
+               return size;
+            }
+
+            registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_DISASTER_ROAMING_WAIT_RANGE_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_REGISTRATION_ACCEPT_DISASTER_RETURN_WAIT_RANGE_TYPE:
+            size = ogs_nas_5gs_decode_registration_wait_range(&registration_accept->disaster_return_wait_range, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_registration_wait_range() failed");
+               return size;
+            }
+
+            registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_DISASTER_RETURN_WAIT_RANGE_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_REGISTRATION_ACCEPT_LIST_OF_PLMNS_TO_BE_USED_IN_DISASTER_CONDITION_TYPE:
+            size = ogs_nas_5gs_decode_list_of_plmns_to_be_used_in_disaster_condition(&registration_accept->list_of_plmns_to_be_used_in_disaster_condition, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_list_of_plmns_to_be_used_in_disaster_condition() failed");
+               return size;
+            }
+
+            registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_LIST_OF_PLMNS_TO_BE_USED_IN_DISASTER_CONDITION_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_REGISTRATION_ACCEPT_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_TYPE:
+            size = ogs_nas_5gs_decode_5gs_tracking_area_identity_list(&registration_accept->forbidden_tai_for_the_list_of_forbidden_tracking_areas_for_roaming, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_5gs_tracking_area_identity_list() failed");
+               return size;
+            }
+
+            registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_REGISTRATION_ACCEPT_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_TYPE:
+            size = ogs_nas_5gs_decode_5gs_tracking_area_identity_list(&registration_accept->forbidden_tai_for_the_list_of_forbidden_tracking_areas_forregional_provision_of_service, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_5gs_tracking_area_identity_list() failed");
+               return size;
+            }
+
+            registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_REGISTRATION_ACCEPT_EXTENDED_CAG_INFORMATION_LIST_TYPE:
+            size = ogs_nas_5gs_decode_extended_cag_information_list(&registration_accept->extended_cag_information_list, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_extended_cag_information_list() failed");
+               return size;
+            }
+
+            registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_EXTENDED_CAG_INFORMATION_LIST_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_REGISTRATION_ACCEPT_NSAG_INFORMATION_TYPE:
+            size = ogs_nas_5gs_decode_nsag_information(&registration_accept->nsag_information, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_nsag_information() failed");
+               return size;
+            }
+
+            registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_NSAG_INFORMATION_PRESENT;
             decoded += size;
             break;
         default:
@@ -964,6 +1176,76 @@ int ogs_nas_5gs_decode_registration_reject(ogs_nas_5gs_message_t *message, ogs_p
             registration_reject->presencemask |= OGS_NAS_5GS_REGISTRATION_REJECT_REJECTED_NSSAI_PRESENT;
             decoded += size;
             break;
+        case OGS_NAS_5GS_REGISTRATION_REJECT_CAG_INFORMATION_LIST_TYPE:
+            size = ogs_nas_5gs_decode_cag_information_list(&registration_reject->cag_information_list, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_cag_information_list() failed");
+               return size;
+            }
+
+            registration_reject->presencemask |= OGS_NAS_5GS_REGISTRATION_REJECT_CAG_INFORMATION_LIST_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_REGISTRATION_REJECT_EXTENDED_REJECTED_NSSAI_TYPE:
+            size = ogs_nas_5gs_decode_extended_rejected_nssai(&registration_reject->extended_rejected_nssai, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_extended_rejected_nssai() failed");
+               return size;
+            }
+
+            registration_reject->presencemask |= OGS_NAS_5GS_REGISTRATION_REJECT_EXTENDED_REJECTED_NSSAI_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_REGISTRATION_REJECT_DISASTER_RETURN_WAIT_RANGE_TYPE:
+            size = ogs_nas_5gs_decode_registration_wait_range(&registration_reject->disaster_return_wait_range, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_registration_wait_range() failed");
+               return size;
+            }
+
+            registration_reject->presencemask |= OGS_NAS_5GS_REGISTRATION_REJECT_DISASTER_RETURN_WAIT_RANGE_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_REGISTRATION_REJECT_EXTENDED_CAG_INFORMATION_LIST_TYPE:
+            size = ogs_nas_5gs_decode_extended_cag_information_list(&registration_reject->extended_cag_information_list, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_extended_cag_information_list() failed");
+               return size;
+            }
+
+            registration_reject->presencemask |= OGS_NAS_5GS_REGISTRATION_REJECT_EXTENDED_CAG_INFORMATION_LIST_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_REGISTRATION_REJECT_LOWER_BOUND_TIMER_VALUE_TYPE:
+            size = ogs_nas_5gs_decode_gprs_timer_3(&registration_reject->lower_bound_timer_value, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_gprs_timer_3() failed");
+               return size;
+            }
+
+            registration_reject->presencemask |= OGS_NAS_5GS_REGISTRATION_REJECT_LOWER_BOUND_TIMER_VALUE_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_REGISTRATION_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_TYPE:
+            size = ogs_nas_5gs_decode_5gs_tracking_area_identity_list(&registration_reject->forbidden_tai_for_the_list_of_forbidden_tracking_areas_for_roaming, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_5gs_tracking_area_identity_list() failed");
+               return size;
+            }
+
+            registration_reject->presencemask |= OGS_NAS_5GS_REGISTRATION_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_REGISTRATION_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_TYPE:
+            size = ogs_nas_5gs_decode_5gs_tracking_area_identity_list(&registration_reject->forbidden_tai_for_the_list_of_forbidden_tracking_areas_forregional_provision_of_service, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_5gs_tracking_area_identity_list() failed");
+               return size;
+            }
+
+            registration_reject->presencemask |= OGS_NAS_5GS_REGISTRATION_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_PRESENT;
+            decoded += size;
+            break;
         default:
             ogs_error("Unknown type(0x%x) or not implemented\n", type);
             break;
@@ -1058,6 +1340,76 @@ int ogs_nas_5gs_decode_deregistration_request_to_ue(ogs_nas_5gs_message_t *messa
             deregistration_request_to_ue->presencemask |= OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_REJECTED_NSSAI_PRESENT;
             decoded += size;
             break;
+        case OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_CAG_INFORMATION_LIST_TYPE:
+            size = ogs_nas_5gs_decode_cag_information_list(&deregistration_request_to_ue->cag_information_list, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_cag_information_list() failed");
+               return size;
+            }
+
+            deregistration_request_to_ue->presencemask |= OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_CAG_INFORMATION_LIST_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_EXTENDED_REJECTED_NSSAI_TYPE:
+            size = ogs_nas_5gs_decode_extended_rejected_nssai(&deregistration_request_to_ue->extended_rejected_nssai, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_extended_rejected_nssai() failed");
+               return size;
+            }
+
+            deregistration_request_to_ue->presencemask |= OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_EXTENDED_REJECTED_NSSAI_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_DISASTER_RETURN_WAIT_RANGE_TYPE:
+            size = ogs_nas_5gs_decode_registration_wait_range(&deregistration_request_to_ue->disaster_return_wait_range, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_registration_wait_range() failed");
+               return size;
+            }
+
+            deregistration_request_to_ue->presencemask |= OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_DISASTER_RETURN_WAIT_RANGE_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_EXTENDED_CAG_INFORMATION_LIST_TYPE:
+            size = ogs_nas_5gs_decode_extended_cag_information_list(&deregistration_request_to_ue->extended_cag_information_list, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_extended_cag_information_list() failed");
+               return size;
+            }
+
+            deregistration_request_to_ue->presencemask |= OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_EXTENDED_CAG_INFORMATION_LIST_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_LOWER_BOUND_TIMER_VALUE_TYPE:
+            size = ogs_nas_5gs_decode_gprs_timer_3(&deregistration_request_to_ue->lower_bound_timer_value, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_gprs_timer_3() failed");
+               return size;
+            }
+
+            deregistration_request_to_ue->presencemask |= OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_LOWER_BOUND_TIMER_VALUE_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_TYPE:
+            size = ogs_nas_5gs_decode_5gs_tracking_area_identity_list(&deregistration_request_to_ue->forbidden_tai_for_the_list_of_forbidden_tracking_areas_for_roaming, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_5gs_tracking_area_identity_list() failed");
+               return size;
+            }
+
+            deregistration_request_to_ue->presencemask |= OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_TYPE:
+            size = ogs_nas_5gs_decode_5gs_tracking_area_identity_list(&deregistration_request_to_ue->forbidden_tai_for_the_list_of_forbidden_tracking_areas_forregional_provision_of_service, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_5gs_tracking_area_identity_list() failed");
+               return size;
+            }
+
+            deregistration_request_to_ue->presencemask |= OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_PRESENT;
+            decoded += size;
+            break;
         default:
             ogs_error("Unknown type(0x%x) or not implemented\n", type);
             break;
@@ -1143,6 +1495,26 @@ int ogs_nas_5gs_decode_service_request(ogs_nas_5gs_message_t *message, ogs_pkbuf
             service_request->presencemask |= OGS_NAS_5GS_SERVICE_REQUEST_NAS_MESSAGE_CONTAINER_PRESENT;
             decoded += size;
             break;
+        case OGS_NAS_5GS_SERVICE_REQUEST_UE_REQUEST_TYPE_TYPE:
+            size = ogs_nas_5gs_decode_ue_request_type(&service_request->ue_request_type, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_ue_request_type() failed");
+               return size;
+            }
+
+            service_request->presencemask |= OGS_NAS_5GS_SERVICE_REQUEST_UE_REQUEST_TYPE_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_SERVICE_REQUEST_PAGING_RESTRICTION_TYPE:
+            size = ogs_nas_5gs_decode_paging_restriction(&service_request->paging_restriction, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_paging_restriction() failed");
+               return size;
+            }
+
+            service_request->presencemask |= OGS_NAS_5GS_SERVICE_REQUEST_PAGING_RESTRICTION_PRESENT;
+            decoded += size;
+            break;
         default:
             ogs_error("Unknown type(0x%x) or not implemented\n", type);
             break;
@@ -1211,13 +1583,73 @@ int ogs_nas_5gs_decode_service_reject(ogs_nas_5gs_message_t *message, ogs_pkbuf_
             decoded += size;
             break;
         case OGS_NAS_5GS_SERVICE_REJECT_T3448_VALUE_TYPE:
-            size = ogs_nas_5gs_decode_gprs_timer_3(&service_reject->t3448_value, pkbuf);
+            size = ogs_nas_5gs_decode_gprs_timer_2(&service_reject->t3448_value, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_gprs_timer_2() failed");
+               return size;
+            }
+
+            service_reject->presencemask |= OGS_NAS_5GS_SERVICE_REJECT_T3448_VALUE_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_SERVICE_REJECT_CAG_INFORMATION_LIST_TYPE:
+            size = ogs_nas_5gs_decode_cag_information_list(&service_reject->cag_information_list, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_cag_information_list() failed");
+               return size;
+            }
+
+            service_reject->presencemask |= OGS_NAS_5GS_SERVICE_REJECT_CAG_INFORMATION_LIST_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_SERVICE_REJECT_DISASTER_RETURN_WAIT_RANGE_TYPE:
+            size = ogs_nas_5gs_decode_registration_wait_range(&service_reject->disaster_return_wait_range, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_registration_wait_range() failed");
+               return size;
+            }
+
+            service_reject->presencemask |= OGS_NAS_5GS_SERVICE_REJECT_DISASTER_RETURN_WAIT_RANGE_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_SERVICE_REJECT_EXTENDED_CAG_INFORMATION_LIST_TYPE:
+            size = ogs_nas_5gs_decode_extended_cag_information_list(&service_reject->extended_cag_information_list, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_extended_cag_information_list() failed");
+               return size;
+            }
+
+            service_reject->presencemask |= OGS_NAS_5GS_SERVICE_REJECT_EXTENDED_CAG_INFORMATION_LIST_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_SERVICE_REJECT_LOWER_BOUND_TIMER_VALUE_TYPE:
+            size = ogs_nas_5gs_decode_gprs_timer_3(&service_reject->lower_bound_timer_value, pkbuf);
             if (size < 0) {
                ogs_error("ogs_nas_5gs_decode_gprs_timer_3() failed");
                return size;
             }
 
-            service_reject->presencemask |= OGS_NAS_5GS_SERVICE_REJECT_T3448_VALUE_PRESENT;
+            service_reject->presencemask |= OGS_NAS_5GS_SERVICE_REJECT_LOWER_BOUND_TIMER_VALUE_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_SERVICE_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_TYPE:
+            size = ogs_nas_5gs_decode_5gs_tracking_area_identity_list(&service_reject->forbidden_tai_for_the_list_of_forbidden_tracking_areas_for_roaming, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_5gs_tracking_area_identity_list() failed");
+               return size;
+            }
+
+            service_reject->presencemask |= OGS_NAS_5GS_SERVICE_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_SERVICE_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_TYPE:
+            size = ogs_nas_5gs_decode_5gs_tracking_area_identity_list(&service_reject->forbidden_tai_for_the_list_of_forbidden_tracking_areas_forregional_provision_of_service, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_5gs_tracking_area_identity_list() failed");
+               return size;
+            }
+
+            service_reject->presencemask |= OGS_NAS_5GS_SERVICE_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_PRESENT;
             decoded += size;
             break;
         default:
@@ -1290,13 +1722,43 @@ int ogs_nas_5gs_decode_service_accept(ogs_nas_5gs_message_t *message, ogs_pkbuf_
             decoded += size;
             break;
         case OGS_NAS_5GS_SERVICE_ACCEPT_T3448_VALUE_TYPE:
-            size = ogs_nas_5gs_decode_gprs_timer_3(&service_accept->t3448_value, pkbuf);
+            size = ogs_nas_5gs_decode_gprs_timer_2(&service_accept->t3448_value, pkbuf);
             if (size < 0) {
-               ogs_error("ogs_nas_5gs_decode_gprs_timer_3() failed");
+               ogs_error("ogs_nas_5gs_decode_gprs_timer_2() failed");
                return size;
             }
 
             service_accept->presencemask |= OGS_NAS_5GS_SERVICE_ACCEPT_T3448_VALUE_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_SERVICE_ACCEPT_5GS_ADDITIONAL_REQUEST_RESULT_TYPE:
+            size = ogs_nas_5gs_decode_5gs_additional_request_result(&service_accept->additional_request_result, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_5gs_additional_request_result() failed");
+               return size;
+            }
+
+            service_accept->presencemask |= OGS_NAS_5GS_SERVICE_ACCEPT_5GS_ADDITIONAL_REQUEST_RESULT_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_SERVICE_ACCEPT_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_TYPE:
+            size = ogs_nas_5gs_decode_5gs_tracking_area_identity_list(&service_accept->forbidden_tai_for_the_list_of_forbidden_tracking_areas_for_roaming, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_5gs_tracking_area_identity_list() failed");
+               return size;
+            }
+
+            service_accept->presencemask |= OGS_NAS_5GS_SERVICE_ACCEPT_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_SERVICE_ACCEPT_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_TYPE:
+            size = ogs_nas_5gs_decode_5gs_tracking_area_identity_list(&service_accept->forbidden_tai_for_the_list_of_forbidden_tracking_areas_forregional_provision_of_service, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_5gs_tracking_area_identity_list() failed");
+               return size;
+            }
+
+            service_accept->presencemask |= OGS_NAS_5GS_SERVICE_ACCEPT_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_PRESENT;
             decoded += size;
             break;
         default:
@@ -1566,6 +2028,120 @@ int ogs_nas_5gs_decode_configuration_update_command(ogs_nas_5gs_message_t *messa
             }
 
             configuration_update_command->presencemask |= OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_TRUNCATED_5G_S_TMSI_CONFIGURATION_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_ADDITIONAL_CONFIGURATION_INDICATION_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
+            size = ogs_nas_5gs_decode_additional_configuration_indication(&configuration_update_command->additional_configuration_indication, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_additional_configuration_indication() failed");
+               return size;
+            }
+
+            configuration_update_command->presencemask |= OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_ADDITIONAL_CONFIGURATION_INDICATION_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_EXTENDED_REJECTED_NSSAI_TYPE:
+            size = ogs_nas_5gs_decode_extended_rejected_nssai(&configuration_update_command->extended_rejected_nssai, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_extended_rejected_nssai() failed");
+               return size;
+            }
+
+            configuration_update_command->presencemask |= OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_EXTENDED_REJECTED_NSSAI_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_SERVICE_LEVEL_AA_CONTAINER_TYPE:
+            size = ogs_nas_5gs_decode_service_level_aa_container(&configuration_update_command->service_level_aa_container, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_service_level_aa_container() failed");
+               return size;
+            }
+
+            configuration_update_command->presencemask |= OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_SERVICE_LEVEL_AA_CONTAINER_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_NSSRG_INFORMATION_TYPE:
+            size = ogs_nas_5gs_decode_nssrg_information(&configuration_update_command->nssrg_information, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_nssrg_information() failed");
+               return size;
+            }
+
+            configuration_update_command->presencemask |= OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_NSSRG_INFORMATION_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_DISASTER_ROAMING_WAIT_RANGE_TYPE:
+            size = ogs_nas_5gs_decode_registration_wait_range(&configuration_update_command->disaster_roaming_wait_range, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_registration_wait_range() failed");
+               return size;
+            }
+
+            configuration_update_command->presencemask |= OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_DISASTER_ROAMING_WAIT_RANGE_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_DISASTER_RETURN_WAIT_RANGE_TYPE:
+            size = ogs_nas_5gs_decode_registration_wait_range(&configuration_update_command->disaster_return_wait_range, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_registration_wait_range() failed");
+               return size;
+            }
+
+            configuration_update_command->presencemask |= OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_DISASTER_RETURN_WAIT_RANGE_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_LIST_OF_PLMNS_TO_BE_USED_IN_DISASTER_CONDITION_TYPE:
+            size = ogs_nas_5gs_decode_list_of_plmns_to_be_used_in_disaster_condition(&configuration_update_command->list_of_plmns_to_be_used_in_disaster_condition, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_list_of_plmns_to_be_used_in_disaster_condition() failed");
+               return size;
+            }
+
+            configuration_update_command->presencemask |= OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_LIST_OF_PLMNS_TO_BE_USED_IN_DISASTER_CONDITION_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_EXTENDED_CAG_INFORMATION_LIST_TYPE:
+            size = ogs_nas_5gs_decode_extended_cag_information_list(&configuration_update_command->extended_cag_information_list, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_extended_cag_information_list() failed");
+               return size;
+            }
+
+            configuration_update_command->presencemask |= OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_EXTENDED_CAG_INFORMATION_LIST_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_UPDATED_PEIPS_ASSISTANCE_INFORMATION_TYPE:
+            size = ogs_nas_5gs_decode_peips_assistance_information(&configuration_update_command->updated_peips_assistance_information, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_peips_assistance_information() failed");
+               return size;
+            }
+
+            configuration_update_command->presencemask |= OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_UPDATED_PEIPS_ASSISTANCE_INFORMATION_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_NSAG_INFORMATION_TYPE:
+            size = ogs_nas_5gs_decode_nsag_information(&configuration_update_command->nsag_information, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_nsag_information() failed");
+               return size;
+            }
+
+            configuration_update_command->presencemask |= OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_NSAG_INFORMATION_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_PRIORITY_INDICATOR_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
+            size = ogs_nas_5gs_decode_priority_indicator(&configuration_update_command->priority_indicator, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_priority_indicator() failed");
+               return size;
+            }
+
+            configuration_update_command->presencemask |= OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_PRIORITY_INDICATOR_PRESENT;
             decoded += size;
             break;
         default:
@@ -2357,6 +2933,16 @@ int ogs_nas_5gs_decode_dl_nas_transport(ogs_nas_5gs_message_t *message, ogs_pkbu
             dl_nas_transport->presencemask |= OGS_NAS_5GS_DL_NAS_TRANSPORT_BACK_OFF_TIMER_VALUE_PRESENT;
             decoded += size;
             break;
+        case OGS_NAS_5GS_DL_NAS_TRANSPORT_LOWER_BOUND_TIMER_VALUE_TYPE:
+            size = ogs_nas_5gs_decode_gprs_timer_3(&dl_nas_transport->lower_bound_timer_value, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_gprs_timer_3() failed");
+               return size;
+            }
+
+            dl_nas_transport->presencemask |= OGS_NAS_5GS_DL_NAS_TRANSPORT_LOWER_BOUND_TIMER_VALUE_PRESENT;
+            decoded += size;
+            break;
         default:
             ogs_error("Unknown type(0x%x) or not implemented\n", type);
             break;
@@ -2470,14 +3056,14 @@ int ogs_nas_5gs_decode_pdu_session_establishment_request(ogs_nas_5gs_message_t *
             pdu_session_establishment_request->presencemask |= OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
             decoded += size;
             break;
-        case OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_HEADER_COMPRESSION_CONFIGURATION_TYPE:
-            size = ogs_nas_5gs_decode_header_compression_configuration(&pdu_session_establishment_request->header_compression_configuration, pkbuf);
+        case OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_IP_HEADER_COMPRESSION_CONFIGURATION_TYPE:
+            size = ogs_nas_5gs_decode_ip_header_compression_configuration(&pdu_session_establishment_request->ip_header_compression_configuration, pkbuf);
             if (size < 0) {
-               ogs_error("ogs_nas_5gs_decode_header_compression_configuration() failed");
+               ogs_error("ogs_nas_5gs_decode_ip_header_compression_configuration() failed");
                return size;
             }
 
-            pdu_session_establishment_request->presencemask |= OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_HEADER_COMPRESSION_CONFIGURATION_PRESENT;
+            pdu_session_establishment_request->presencemask |= OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_IP_HEADER_COMPRESSION_CONFIGURATION_PRESENT;
             decoded += size;
             break;
         case OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_DS_TT_ETHERNET_PORT_MAC_ADDRESS_TYPE:
@@ -2508,6 +3094,66 @@ int ogs_nas_5gs_decode_pdu_session_establishment_request(ogs_nas_5gs_message_t *
             }
 
             pdu_session_establishment_request->presencemask |= OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_PORT_MANAGEMENT_INFORMATION_CONTAINER_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_ETHERNET_HEADER_COMPRESSION_CONFIGURATION_TYPE:
+            size = ogs_nas_5gs_decode_ethernet_header_compression_configuration(&pdu_session_establishment_request->ethernet_header_compression_configuration, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_ethernet_header_compression_configuration() failed");
+               return size;
+            }
+
+            pdu_session_establishment_request->presencemask |= OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_ETHERNET_HEADER_COMPRESSION_CONFIGURATION_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_SUGGESTED_INTERFACE_IDENTIFIER_TYPE:
+            size = ogs_nas_5gs_decode_pdu_address(&pdu_session_establishment_request->suggested_interface_identifier, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_pdu_address() failed");
+               return size;
+            }
+
+            pdu_session_establishment_request->presencemask |= OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_SUGGESTED_INTERFACE_IDENTIFIER_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_SERVICE_LEVEL_AA_CONTAINER_TYPE:
+            size = ogs_nas_5gs_decode_service_level_aa_container(&pdu_session_establishment_request->service_level_aa_container, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_service_level_aa_container() failed");
+               return size;
+            }
+
+            pdu_session_establishment_request->presencemask |= OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_SERVICE_LEVEL_AA_CONTAINER_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_REQUESTED_MBS_CONTAINER_TYPE:
+            size = ogs_nas_5gs_decode_requested_mbs_container(&pdu_session_establishment_request->requested_mbs_container, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_requested_mbs_container() failed");
+               return size;
+            }
+
+            pdu_session_establishment_request->presencemask |= OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_REQUESTED_MBS_CONTAINER_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_PDU_SESSION_PAIR_ID_TYPE:
+            size = ogs_nas_5gs_decode_pdu_session_pair_id(&pdu_session_establishment_request->pdu_session_pair_id, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_pdu_session_pair_id() failed");
+               return size;
+            }
+
+            pdu_session_establishment_request->presencemask |= OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_PDU_SESSION_PAIR_ID_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_RSN_TYPE:
+            size = ogs_nas_5gs_decode_rsn(&pdu_session_establishment_request->rsn, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_rsn() failed");
+               return size;
+            }
+
+            pdu_session_establishment_request->presencemask |= OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_RSN_PRESENT;
             decoded += size;
             break;
         default:
@@ -2707,14 +3353,44 @@ int ogs_nas_5gs_decode_pdu_session_establishment_accept(ogs_nas_5gs_message_t *m
             pdu_session_establishment_accept->presencemask |= OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_CONTROL_PLANE_ONLY_INDICATION_PRESENT;
             decoded += size;
             break;
-        case OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_HEADER_COMPRESSION_CONFIGURATION_TYPE:
-            size = ogs_nas_5gs_decode_header_compression_configuration(&pdu_session_establishment_accept->header_compression_configuration, pkbuf);
+        case OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_IP_HEADER_COMPRESSION_CONFIGURATION_TYPE:
+            size = ogs_nas_5gs_decode_ip_header_compression_configuration(&pdu_session_establishment_accept->ip_header_compression_configuration, pkbuf);
             if (size < 0) {
-               ogs_error("ogs_nas_5gs_decode_header_compression_configuration() failed");
+               ogs_error("ogs_nas_5gs_decode_ip_header_compression_configuration() failed");
                return size;
             }
 
-            pdu_session_establishment_accept->presencemask |= OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_HEADER_COMPRESSION_CONFIGURATION_PRESENT;
+            pdu_session_establishment_accept->presencemask |= OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_IP_HEADER_COMPRESSION_CONFIGURATION_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_ETHERNET_HEADER_COMPRESSION_CONFIGURATION_TYPE:
+            size = ogs_nas_5gs_decode_ethernet_header_compression_configuration(&pdu_session_establishment_accept->ethernet_header_compression_configuration, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_ethernet_header_compression_configuration() failed");
+               return size;
+            }
+
+            pdu_session_establishment_accept->presencemask |= OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_ETHERNET_HEADER_COMPRESSION_CONFIGURATION_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_SERVICE_LEVEL_AA_CONTAINER_TYPE:
+            size = ogs_nas_5gs_decode_service_level_aa_container(&pdu_session_establishment_accept->service_level_aa_container, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_service_level_aa_container() failed");
+               return size;
+            }
+
+            pdu_session_establishment_accept->presencemask |= OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_SERVICE_LEVEL_AA_CONTAINER_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_RECEIVED_MBS_CONTAINER_TYPE:
+            size = ogs_nas_5gs_decode_received_mbs_container(&pdu_session_establishment_accept->received_mbs_container, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_received_mbs_container() failed");
+               return size;
+            }
+
+            pdu_session_establishment_accept->presencemask |= OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_RECEIVED_MBS_CONTAINER_PRESENT;
             decoded += size;
             break;
         default:
@@ -2786,6 +3462,16 @@ int ogs_nas_5gs_decode_pdu_session_establishment_reject(ogs_nas_5gs_message_t *m
             pdu_session_establishment_reject->presencemask |= OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REJECT_EAP_MESSAGE_PRESENT;
             decoded += size;
             break;
+        case OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REJECT_5GSM_CONGESTION_RE_ATTEMPT_INDICATOR_TYPE:
+            size = ogs_nas_5gs_decode_5gsm_congestion_re_attempt_indicator(&pdu_session_establishment_reject->gsm_congestion_re_attempt_indicator, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_5gsm_congestion_re_attempt_indicator() failed");
+               return size;
+            }
+
+            pdu_session_establishment_reject->presencemask |= OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REJECT_5GSM_CONGESTION_RE_ATTEMPT_INDICATOR_PRESENT;
+            decoded += size;
+            break;
         case OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE:
             size = ogs_nas_5gs_decode_extended_protocol_configuration_options(&pdu_session_establishment_reject->extended_protocol_configuration_options, pkbuf);
             if (size < 0) {
@@ -2806,14 +3492,14 @@ int ogs_nas_5gs_decode_pdu_session_establishment_reject(ogs_nas_5gs_message_t *m
             pdu_session_establishment_reject->presencemask |= OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REJECT_RE_ATTEMPT_INDICATOR_PRESENT;
             decoded += size;
             break;
-        case OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REJECT_5GSM_CONGESTION_RE_ATTEMPT_INDICATOR_TYPE:
-            size = ogs_nas_5gs_decode_5gsm_congestion_re_attempt_indicator(&pdu_session_establishment_reject->gsm_congestion_re_attempt_indicator, pkbuf);
+        case OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REJECT_SERVICE_LEVEL_AA_CONTAINER_TYPE:
+            size = ogs_nas_5gs_decode_service_level_aa_container(&pdu_session_establishment_reject->service_level_aa_container, pkbuf);
             if (size < 0) {
-               ogs_error("ogs_nas_5gs_decode_5gsm_congestion_re_attempt_indicator() failed");
+               ogs_error("ogs_nas_5gs_decode_service_level_aa_container() failed");
                return size;
             }
 
-            pdu_session_establishment_reject->presencemask |= OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REJECT_5GSM_CONGESTION_RE_ATTEMPT_INDICATOR_PRESENT;
+            pdu_session_establishment_reject->presencemask |= OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REJECT_SERVICE_LEVEL_AA_CONTAINER_PRESENT;
             decoded += size;
             break;
         default:
@@ -3090,14 +3776,44 @@ int ogs_nas_5gs_decode_pdu_session_modification_request(ogs_nas_5gs_message_t *m
             pdu_session_modification_request->presencemask |= OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_PORT_MANAGEMENT_INFORMATION_CONTAINER_PRESENT;
             decoded += size;
             break;
-        case OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_HEADER_COMPRESSION_CONFIGURATION_TYPE:
-            size = ogs_nas_5gs_decode_header_compression_configuration(&pdu_session_modification_request->header_compression_configuration, pkbuf);
+        case OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_IP_HEADER_COMPRESSION_CONFIGURATION_TYPE:
+            size = ogs_nas_5gs_decode_header_compression_configuration(&pdu_session_modification_request->ip_header_compression_configuration, pkbuf);
             if (size < 0) {
                ogs_error("ogs_nas_5gs_decode_header_compression_configuration() failed");
                return size;
             }
 
-            pdu_session_modification_request->presencemask |= OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_HEADER_COMPRESSION_CONFIGURATION_PRESENT;
+            pdu_session_modification_request->presencemask |= OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_IP_HEADER_COMPRESSION_CONFIGURATION_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_ETHERNET_HEADER_COMPRESSION_CONFIGURATION_TYPE:
+            size = ogs_nas_5gs_decode_ethernet_header_compression_configuration(&pdu_session_modification_request->ethernet_header_compression_configuration, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_ethernet_header_compression_configuration() failed");
+               return size;
+            }
+
+            pdu_session_modification_request->presencemask |= OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_ETHERNET_HEADER_COMPRESSION_CONFIGURATION_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_REQUESTED_MBS_CONTAINER_TYPE:
+            size = ogs_nas_5gs_decode_requested_mbs_container(&pdu_session_modification_request->requested_mbs_container, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_requested_mbs_container() failed");
+               return size;
+            }
+
+            pdu_session_modification_request->presencemask |= OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_REQUESTED_MBS_CONTAINER_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_SERVICE_LEVEL_AA_CONTAINER_TYPE:
+            size = ogs_nas_5gs_decode_service_level_aa_container(&pdu_session_modification_request->service_level_aa_container, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_service_level_aa_container() failed");
+               return size;
+            }
+
+            pdu_session_modification_request->presencemask |= OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_SERVICE_LEVEL_AA_CONTAINER_PRESENT;
             decoded += size;
             break;
         default:
@@ -3147,6 +3863,16 @@ int ogs_nas_5gs_decode_pdu_session_modification_reject(ogs_nas_5gs_message_t *me
             pdu_session_modification_reject->presencemask |= OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REJECT_BACK_OFF_TIMER_VALUE_PRESENT;
             decoded += size;
             break;
+        case OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REJECT_5GSM_CONGESTION_RE_ATTEMPT_INDICATOR_TYPE:
+            size = ogs_nas_5gs_decode_5gsm_congestion_re_attempt_indicator(&pdu_session_modification_reject->gsm_congestion_re_attempt_indicator, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_5gsm_congestion_re_attempt_indicator() failed");
+               return size;
+            }
+
+            pdu_session_modification_reject->presencemask |= OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REJECT_5GSM_CONGESTION_RE_ATTEMPT_INDICATOR_PRESENT;
+            decoded += size;
+            break;
         case OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE:
             size = ogs_nas_5gs_decode_extended_protocol_configuration_options(&pdu_session_modification_reject->extended_protocol_configuration_options, pkbuf);
             if (size < 0) {
@@ -3165,16 +3891,6 @@ int ogs_nas_5gs_decode_pdu_session_modification_reject(ogs_nas_5gs_message_t *me
             }
 
             pdu_session_modification_reject->presencemask |= OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REJECT_RE_ATTEMPT_INDICATOR_PRESENT;
-            decoded += size;
-            break;
-        case OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REJECT_5GSM_CONGESTION_RE_ATTEMPT_INDICATOR_TYPE:
-            size = ogs_nas_5gs_decode_5gsm_congestion_re_attempt_indicator(&pdu_session_modification_reject->gsm_congestion_re_attempt_indicator, pkbuf);
-            if (size < 0) {
-               ogs_error("ogs_nas_5gs_decode_5gsm_congestion_re_attempt_indicator() failed");
-               return size;
-            }
-
-            pdu_session_modification_reject->presencemask |= OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REJECT_5GSM_CONGESTION_RE_ATTEMPT_INDICATOR_PRESENT;
             decoded += size;
             break;
         default:
@@ -3298,14 +4014,14 @@ int ogs_nas_5gs_decode_pdu_session_modification_command(ogs_nas_5gs_message_t *m
             pdu_session_modification_command->presencemask |= OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_ATSSS_CONTAINER_PRESENT;
             decoded += size;
             break;
-        case OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_HEADER_COMPRESSION_CONFIGURATION_TYPE:
-            size = ogs_nas_5gs_decode_header_compression_configuration(&pdu_session_modification_command->header_compression_configuration, pkbuf);
+        case OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_IP_HEADER_COMPRESSION_CONFIGURATION_TYPE:
+            size = ogs_nas_5gs_decode_ip_header_compression_configuration(&pdu_session_modification_command->ip_header_compression_configuration, pkbuf);
             if (size < 0) {
-               ogs_error("ogs_nas_5gs_decode_header_compression_configuration() failed");
+               ogs_error("ogs_nas_5gs_decode_ip_header_compression_configuration() failed");
                return size;
             }
 
-            pdu_session_modification_command->presencemask |= OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_HEADER_COMPRESSION_CONFIGURATION_PRESENT;
+            pdu_session_modification_command->presencemask |= OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_IP_HEADER_COMPRESSION_CONFIGURATION_PRESENT;
             decoded += size;
             break;
         case OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_PORT_MANAGEMENT_INFORMATION_CONTAINER_TYPE:
@@ -3326,6 +4042,36 @@ int ogs_nas_5gs_decode_pdu_session_modification_command(ogs_nas_5gs_message_t *m
             }
 
             pdu_session_modification_command->presencemask |= OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_SERVING_PLMN_RATE_CONTROL_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_ETHERNET_HEADER_COMPRESSION_CONFIGURATION_TYPE:
+            size = ogs_nas_5gs_decode_ethernet_header_compression_configuration(&pdu_session_modification_command->ethernet_header_compression_configuration, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_ethernet_header_compression_configuration() failed");
+               return size;
+            }
+
+            pdu_session_modification_command->presencemask |= OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_ETHERNET_HEADER_COMPRESSION_CONFIGURATION_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_RECEIVED_MBS_CONTAINER_TYPE:
+            size = ogs_nas_5gs_decode_received_mbs_container(&pdu_session_modification_command->received_mbs_container, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_received_mbs_container() failed");
+               return size;
+            }
+
+            pdu_session_modification_command->presencemask |= OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_RECEIVED_MBS_CONTAINER_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_SERVICE_LEVEL_AA_CONTAINER_TYPE:
+            size = ogs_nas_5gs_decode_service_level_aa_container(&pdu_session_modification_command->service_level_aa_container, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_service_level_aa_container() failed");
+               return size;
+            }
+
+            pdu_session_modification_command->presencemask |= OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_SERVICE_LEVEL_AA_CONTAINER_PRESENT;
             decoded += size;
             break;
         default:
@@ -3607,6 +4353,16 @@ int ogs_nas_5gs_decode_pdu_session_release_command(ogs_nas_5gs_message_t *messag
             }
 
             pdu_session_release_command->presencemask |= OGS_NAS_5GS_PDU_SESSION_RELEASE_COMMAND_ACCESS_TYPE_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMMAND_SERVICE_LEVEL_AA_CONTAINER_TYPE:
+            size = ogs_nas_5gs_decode_service_level_aa_container(&pdu_session_release_command->service_level_aa_container, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_decode_service_level_aa_container() failed");
+               return size;
+            }
+
+            pdu_session_release_command->presencemask |= OGS_NAS_5GS_PDU_SESSION_RELEASE_COMMAND_SERVICE_LEVEL_AA_CONTAINER_PRESENT;
             decoded += size;
             break;
         default:

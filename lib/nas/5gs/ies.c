@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -28,8 +28,8 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.2.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2022-07-11 07:09:47.151738 by ubuntu
- * from 24501-g41.docx
+ * Created on: 2023-03-04 20:50:00.874596 by acetcom
+ * from 24501-h90.docx
  ******************************************************************************/
 
 #include "ogs-nas-5gs.h"
@@ -80,6 +80,52 @@ int ogs_nas_5gs_encode_additional_information(ogs_pkbuf_t *pkbuf, ogs_nas_additi
     ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
     return size;
+}
+
+/* 9.11.2.10 Service-level-AA container
+ * O TLV-E 6-n */
+int ogs_nas_5gs_decode_service_level_aa_container(ogs_nas_service_level_aa_container_t *service_level_aa_container, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_service_level_aa_container_t *source = (ogs_nas_service_level_aa_container_t *)pkbuf->data;
+
+    service_level_aa_container->length = be16toh(source->length);
+    size = service_level_aa_container->length + sizeof(service_level_aa_container->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    service_level_aa_container->buffer = pkbuf->data - size + sizeof(service_level_aa_container->length);
+
+    ogs_trace("  SERVICE_LEVEL_AA_CONTAINER - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, (void*)service_level_aa_container->buffer, service_level_aa_container->length);
+
+    return size;
+}
+
+int ogs_nas_5gs_encode_service_level_aa_container(ogs_pkbuf_t *pkbuf, ogs_nas_service_level_aa_container_t *service_level_aa_container)
+{
+    int size = 0;
+    int target;
+
+    ogs_assert(service_level_aa_container);
+    ogs_assert(service_level_aa_container->buffer);
+
+    size = sizeof(service_level_aa_container->length);
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    target = htobe16(service_level_aa_container->length);
+    memcpy(pkbuf->data - size, &target, size);
+
+    size = service_level_aa_container->length;
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, service_level_aa_container->buffer, size);
+
+    ogs_trace("  SERVICE_LEVEL_AA_CONTAINER - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return service_level_aa_container->length + sizeof(service_level_aa_container->length);
 }
 
 /* 9.11.2.1A Access type
@@ -794,7 +840,7 @@ int ogs_nas_5gs_encode_cag_information_list(ogs_pkbuf_t *pkbuf, ogs_nas_cag_info
 }
 
 /* 9.11.3.18C Ciphering key data
- * O TLV-E x-n */
+ * O TLV-E 34-n */
 int ogs_nas_5gs_decode_ciphering_key_data(ogs_nas_ciphering_key_data_t *ciphering_key_data, ogs_pkbuf_t *pkbuf)
 {
     int size = 0;
@@ -1151,7 +1197,7 @@ int ogs_nas_5gs_encode_extended_emergency_number_list(ogs_pkbuf_t *pkbuf, ogs_na
 }
 
 /* 9.11.3.26A Extended DRX parameters
- * O TLV 3 */
+ * O TLV 3-4 */
 int ogs_nas_5gs_decode_extended_drx_parameters(ogs_nas_extended_drx_parameters_t *extended_drx_parameters, ogs_pkbuf_t *pkbuf)
 {
     int size = 0;
@@ -1815,7 +1861,7 @@ int ogs_nas_5gs_encode_nssai_inclusion_mode(ogs_pkbuf_t *pkbuf, ogs_nas_nssai_in
 }
 
 /* 9.11.3.38 Operator-defined access category definitions
- * O TLV-E 3-n */
+ * O TLV-E 3-8323 */
 int ogs_nas_5gs_decode_operator_defined_access_category_definitions(ogs_nas_operator_defined_access_category_definitions_t *operator_defined_access_category_definitions, ogs_pkbuf_t *pkbuf)
 {
     int size = 0;
@@ -3016,7 +3062,7 @@ int ogs_nas_5gs_encode_wus_assistance_information(ogs_pkbuf_t *pkbuf, ogs_nas_wu
 }
 
 /* 9.11.3.72 N5GC indication
- * O T 1 */
+ * O TV 1 */
 int ogs_nas_5gs_decode_n5gc_indication(ogs_nas_n5gc_indication_t *n5gc_indication, ogs_pkbuf_t *pkbuf)
 {
     int size = sizeof(ogs_nas_n5gc_indication_t);
@@ -3042,6 +3088,233 @@ int ogs_nas_5gs_encode_n5gc_indication(ogs_pkbuf_t *pkbuf, ogs_nas_n5gc_indicati
     memcpy(pkbuf->data - size, n5gc_indication, size);
 
     ogs_trace("  N5GC_INDICATION - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+/* 9.11.3.73 NB-N1 mode DRX parameters
+ * O TLV 3 */
+int ogs_nas_5gs_decode_nb_n1_mode_drx_parameters(ogs_nas_nb_n1_mode_drx_parameters_t *nb_n1_mode_drx_parameters, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_nb_n1_mode_drx_parameters_t *source = (ogs_nas_nb_n1_mode_drx_parameters_t *)pkbuf->data;
+
+    nb_n1_mode_drx_parameters->length = source->length;
+    size = nb_n1_mode_drx_parameters->length + sizeof(nb_n1_mode_drx_parameters->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    if (sizeof(*nb_n1_mode_drx_parameters) < size) return -1;
+    memcpy(nb_n1_mode_drx_parameters, pkbuf->data - size, size);
+
+    ogs_trace("  NB_N1_MODE_DRX_PARAMETERS - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+int ogs_nas_5gs_encode_nb_n1_mode_drx_parameters(ogs_pkbuf_t *pkbuf, ogs_nas_nb_n1_mode_drx_parameters_t *nb_n1_mode_drx_parameters)
+{
+    int size = nb_n1_mode_drx_parameters->length + sizeof(nb_n1_mode_drx_parameters->length);
+    ogs_nas_nb_n1_mode_drx_parameters_t target;
+
+    memcpy(&target, nb_n1_mode_drx_parameters, sizeof(ogs_nas_nb_n1_mode_drx_parameters_t));
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, &target, size);
+
+    ogs_trace("  NB_N1_MODE_DRX_PARAMETERS - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+/* 9.11.3.74 Additional configuration indication
+ * O TV 1 */
+int ogs_nas_5gs_decode_additional_configuration_indication(ogs_nas_additional_configuration_indication_t *additional_configuration_indication, ogs_pkbuf_t *pkbuf)
+{
+    int size = sizeof(ogs_nas_additional_configuration_indication_t);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    memcpy(additional_configuration_indication, pkbuf->data - size, size);
+
+    ogs_trace("  ADDITIONAL_CONFIGURATION_INDICATION - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+int ogs_nas_5gs_encode_additional_configuration_indication(ogs_pkbuf_t *pkbuf, ogs_nas_additional_configuration_indication_t *additional_configuration_indication)
+{
+    int size = sizeof(ogs_nas_additional_configuration_indication_t);
+
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, additional_configuration_indication, size);
+
+    ogs_trace("  ADDITIONAL_CONFIGURATION_INDICATION - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+/* 9.11.3.75 Extended rejected NSSAI
+ * O TLV 5-90 */
+int ogs_nas_5gs_decode_extended_rejected_nssai(ogs_nas_extended_rejected_nssai_t *extended_rejected_nssai, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_extended_rejected_nssai_t *source = (ogs_nas_extended_rejected_nssai_t *)pkbuf->data;
+
+    extended_rejected_nssai->length = source->length;
+    size = extended_rejected_nssai->length + sizeof(extended_rejected_nssai->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    if (sizeof(*extended_rejected_nssai) < size) return -1;
+    memcpy(extended_rejected_nssai, pkbuf->data - size, size);
+
+    ogs_trace("  EXTENDED_REJECTED_NSSAI - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+int ogs_nas_5gs_encode_extended_rejected_nssai(ogs_pkbuf_t *pkbuf, ogs_nas_extended_rejected_nssai_t *extended_rejected_nssai)
+{
+    int size = extended_rejected_nssai->length + sizeof(extended_rejected_nssai->length);
+    ogs_nas_extended_rejected_nssai_t target;
+
+    memcpy(&target, extended_rejected_nssai, sizeof(ogs_nas_extended_rejected_nssai_t));
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, &target, size);
+
+    ogs_trace("  EXTENDED_REJECTED_NSSAI - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+/* 9.11.3.76 UE request type
+ * O TLV 3 */
+int ogs_nas_5gs_decode_ue_request_type(ogs_nas_ue_request_type_t *ue_request_type, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_ue_request_type_t *source = (ogs_nas_ue_request_type_t *)pkbuf->data;
+
+    ue_request_type->length = source->length;
+    size = ue_request_type->length + sizeof(ue_request_type->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    if (sizeof(*ue_request_type) < size) return -1;
+    memcpy(ue_request_type, pkbuf->data - size, size);
+
+    ogs_trace("  UE_REQUEST_TYPE - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+int ogs_nas_5gs_encode_ue_request_type(ogs_pkbuf_t *pkbuf, ogs_nas_ue_request_type_t *ue_request_type)
+{
+    int size = ue_request_type->length + sizeof(ue_request_type->length);
+    ogs_nas_ue_request_type_t target;
+
+    memcpy(&target, ue_request_type, sizeof(ogs_nas_ue_request_type_t));
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, &target, size);
+
+    ogs_trace("  UE_REQUEST_TYPE - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+/* 9.11.3.77 Paging restriction
+ * O TLV 3-35 */
+int ogs_nas_5gs_decode_paging_restriction(ogs_nas_paging_restriction_t *paging_restriction, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_paging_restriction_t *source = (ogs_nas_paging_restriction_t *)pkbuf->data;
+
+    paging_restriction->length = source->length;
+    size = paging_restriction->length + sizeof(paging_restriction->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    if (sizeof(*paging_restriction) < size) return -1;
+    memcpy(paging_restriction, pkbuf->data - size, size);
+
+    ogs_trace("  PAGING_RESTRICTION - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+int ogs_nas_5gs_encode_paging_restriction(ogs_pkbuf_t *pkbuf, ogs_nas_paging_restriction_t *paging_restriction)
+{
+    int size = paging_restriction->length + sizeof(paging_restriction->length);
+    ogs_nas_paging_restriction_t target;
+
+    memcpy(&target, paging_restriction, sizeof(ogs_nas_paging_restriction_t));
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, &target, size);
+
+    ogs_trace("  PAGING_RESTRICTION - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+/* 9.11.3.79 NID
+ * O TLV 8 */
+int ogs_nas_5gs_decode_nid(ogs_nas_nid_t *nid, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_nid_t *source = (ogs_nas_nid_t *)pkbuf->data;
+
+    nid->length = source->length;
+    size = nid->length + sizeof(nid->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    if (sizeof(*nid) < size) return -1;
+    memcpy(nid, pkbuf->data - size, size);
+
+    ogs_trace("  NID - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+int ogs_nas_5gs_encode_nid(ogs_pkbuf_t *pkbuf, ogs_nas_nid_t *nid)
+{
+    int size = nid->length + sizeof(nid->length);
+    ogs_nas_nid_t target;
+
+    memcpy(&target, nid, sizeof(ogs_nas_nid_t));
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, &target, size);
+
+    ogs_trace("  NID - ");
     ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
     return size;
@@ -3085,6 +3358,339 @@ int ogs_nas_5gs_encode_5gs_tracking_area_identity(ogs_pkbuf_t *pkbuf, ogs_nas_5g
     return size;
 }
 
+/* 9.11.3.80 PEIPS assistance information
+ * O TLV 3-n */
+int ogs_nas_5gs_decode_peips_assistance_information(ogs_nas_peips_assistance_information_t *peips_assistance_information, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_peips_assistance_information_t *source = (ogs_nas_peips_assistance_information_t *)pkbuf->data;
+
+    peips_assistance_information->length = source->length;
+    size = peips_assistance_information->length + sizeof(peips_assistance_information->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    if (sizeof(*peips_assistance_information) < size) return -1;
+    memcpy(peips_assistance_information, pkbuf->data - size, size);
+
+    ogs_trace("  PEIPS_ASSISTANCE_INFORMATION - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+int ogs_nas_5gs_encode_peips_assistance_information(ogs_pkbuf_t *pkbuf, ogs_nas_peips_assistance_information_t *peips_assistance_information)
+{
+    int size = peips_assistance_information->length + sizeof(peips_assistance_information->length);
+    ogs_nas_peips_assistance_information_t target;
+
+    memcpy(&target, peips_assistance_information, sizeof(ogs_nas_peips_assistance_information_t));
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, &target, size);
+
+    ogs_trace("  PEIPS_ASSISTANCE_INFORMATION - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+/* 9.11.3.81 5GS additional request result
+ * O TLV 3 */
+int ogs_nas_5gs_decode_5gs_additional_request_result(ogs_nas_5gs_additional_request_result_t *additional_request_result, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_5gs_additional_request_result_t *source = (ogs_nas_5gs_additional_request_result_t *)pkbuf->data;
+
+    additional_request_result->length = source->length;
+    size = additional_request_result->length + sizeof(additional_request_result->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    if (sizeof(*additional_request_result) < size) return -1;
+    memcpy(additional_request_result, pkbuf->data - size, size);
+
+    ogs_trace("  5GS_ADDITIONAL_REQUEST_RESULT - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+int ogs_nas_5gs_encode_5gs_additional_request_result(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_additional_request_result_t *additional_request_result)
+{
+    int size = additional_request_result->length + sizeof(additional_request_result->length);
+    ogs_nas_5gs_additional_request_result_t target;
+
+    memcpy(&target, additional_request_result, sizeof(ogs_nas_5gs_additional_request_result_t));
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, &target, size);
+
+    ogs_trace("  5GS_ADDITIONAL_REQUEST_RESULT - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+/* 9.11.3.82 NSSRG information
+ * O TLV-E 7-4099 */
+int ogs_nas_5gs_decode_nssrg_information(ogs_nas_nssrg_information_t *nssrg_information, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_nssrg_information_t *source = (ogs_nas_nssrg_information_t *)pkbuf->data;
+
+    nssrg_information->length = be16toh(source->length);
+    size = nssrg_information->length + sizeof(nssrg_information->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    nssrg_information->buffer = pkbuf->data - size + sizeof(nssrg_information->length);
+
+    ogs_trace("  NSSRG_INFORMATION - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, (void*)nssrg_information->buffer, nssrg_information->length);
+
+    return size;
+}
+
+int ogs_nas_5gs_encode_nssrg_information(ogs_pkbuf_t *pkbuf, ogs_nas_nssrg_information_t *nssrg_information)
+{
+    int size = 0;
+    int target;
+
+    ogs_assert(nssrg_information);
+    ogs_assert(nssrg_information->buffer);
+
+    size = sizeof(nssrg_information->length);
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    target = htobe16(nssrg_information->length);
+    memcpy(pkbuf->data - size, &target, size);
+
+    size = nssrg_information->length;
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, nssrg_information->buffer, size);
+
+    ogs_trace("  NSSRG_INFORMATION - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return nssrg_information->length + sizeof(nssrg_information->length);
+}
+
+/* 9.11.3.83 List of PLMNs to be used in disaster condition
+ * O TLV 2-n */
+int ogs_nas_5gs_decode_list_of_plmns_to_be_used_in_disaster_condition(ogs_nas_list_of_plmns_to_be_used_in_disaster_condition_t *list_of_plmns_to_be_used_in_disaster_condition, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_list_of_plmns_to_be_used_in_disaster_condition_t *source = (ogs_nas_list_of_plmns_to_be_used_in_disaster_condition_t *)pkbuf->data;
+
+    list_of_plmns_to_be_used_in_disaster_condition->length = source->length;
+    size = list_of_plmns_to_be_used_in_disaster_condition->length + sizeof(list_of_plmns_to_be_used_in_disaster_condition->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    if (sizeof(*list_of_plmns_to_be_used_in_disaster_condition) < size) return -1;
+    memcpy(list_of_plmns_to_be_used_in_disaster_condition, pkbuf->data - size, size);
+
+    ogs_trace("  LIST_OF_PLMNS_TO_BE_USED_IN_DISASTER_CONDITION - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+int ogs_nas_5gs_encode_list_of_plmns_to_be_used_in_disaster_condition(ogs_pkbuf_t *pkbuf, ogs_nas_list_of_plmns_to_be_used_in_disaster_condition_t *list_of_plmns_to_be_used_in_disaster_condition)
+{
+    int size = list_of_plmns_to_be_used_in_disaster_condition->length + sizeof(list_of_plmns_to_be_used_in_disaster_condition->length);
+    ogs_nas_list_of_plmns_to_be_used_in_disaster_condition_t target;
+
+    memcpy(&target, list_of_plmns_to_be_used_in_disaster_condition, sizeof(ogs_nas_list_of_plmns_to_be_used_in_disaster_condition_t));
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, &target, size);
+
+    ogs_trace("  LIST_OF_PLMNS_TO_BE_USED_IN_DISASTER_CONDITION - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+/* 9.11.3.84 Registration wait range
+ * O TLV 4 */
+int ogs_nas_5gs_decode_registration_wait_range(ogs_nas_registration_wait_range_t *registration_wait_range, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_registration_wait_range_t *source = (ogs_nas_registration_wait_range_t *)pkbuf->data;
+
+    registration_wait_range->length = source->length;
+    size = registration_wait_range->length + sizeof(registration_wait_range->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    if (sizeof(*registration_wait_range) < size) return -1;
+    memcpy(registration_wait_range, pkbuf->data - size, size);
+
+    ogs_trace("  REGISTRATION_WAIT_RANGE - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+int ogs_nas_5gs_encode_registration_wait_range(ogs_pkbuf_t *pkbuf, ogs_nas_registration_wait_range_t *registration_wait_range)
+{
+    int size = registration_wait_range->length + sizeof(registration_wait_range->length);
+    ogs_nas_registration_wait_range_t target;
+
+    memcpy(&target, registration_wait_range, sizeof(ogs_nas_registration_wait_range_t));
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, &target, size);
+
+    ogs_trace("  REGISTRATION_WAIT_RANGE - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+/* 9.11.3.85 PLMN identity
+ * O TLV 5 */
+int ogs_nas_5gs_decode_plmn_identity(ogs_nas_plmn_identity_t *plmn_identity, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_plmn_identity_t *source = (ogs_nas_plmn_identity_t *)pkbuf->data;
+
+    plmn_identity->length = source->length;
+    size = plmn_identity->length + sizeof(plmn_identity->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    if (sizeof(*plmn_identity) < size) return -1;
+    memcpy(plmn_identity, pkbuf->data - size, size);
+
+    ogs_trace("  PLMN_IDENTITY - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+int ogs_nas_5gs_encode_plmn_identity(ogs_pkbuf_t *pkbuf, ogs_nas_plmn_identity_t *plmn_identity)
+{
+    int size = plmn_identity->length + sizeof(plmn_identity->length);
+    ogs_nas_plmn_identity_t target;
+
+    memcpy(&target, plmn_identity, sizeof(ogs_nas_plmn_identity_t));
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, &target, size);
+
+    ogs_trace("  PLMN_IDENTITY - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+/* 9.11.3.86 Extended CAG information list
+ * O TLV-E 3-n */
+int ogs_nas_5gs_decode_extended_cag_information_list(ogs_nas_extended_cag_information_list_t *extended_cag_information_list, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_extended_cag_information_list_t *source = (ogs_nas_extended_cag_information_list_t *)pkbuf->data;
+
+    extended_cag_information_list->length = be16toh(source->length);
+    size = extended_cag_information_list->length + sizeof(extended_cag_information_list->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    extended_cag_information_list->buffer = pkbuf->data - size + sizeof(extended_cag_information_list->length);
+
+    ogs_trace("  EXTENDED_CAG_INFORMATION_LIST - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, (void*)extended_cag_information_list->buffer, extended_cag_information_list->length);
+
+    return size;
+}
+
+int ogs_nas_5gs_encode_extended_cag_information_list(ogs_pkbuf_t *pkbuf, ogs_nas_extended_cag_information_list_t *extended_cag_information_list)
+{
+    int size = 0;
+    int target;
+
+    ogs_assert(extended_cag_information_list);
+    ogs_assert(extended_cag_information_list->buffer);
+
+    size = sizeof(extended_cag_information_list->length);
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    target = htobe16(extended_cag_information_list->length);
+    memcpy(pkbuf->data - size, &target, size);
+
+    size = extended_cag_information_list->length;
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, extended_cag_information_list->buffer, size);
+
+    ogs_trace("  EXTENDED_CAG_INFORMATION_LIST - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return extended_cag_information_list->length + sizeof(extended_cag_information_list->length);
+}
+
+/* 9.11.3.87 NSAG information
+ * O TLV-E 9-3143 */
+int ogs_nas_5gs_decode_nsag_information(ogs_nas_nsag_information_t *nsag_information, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_nsag_information_t *source = (ogs_nas_nsag_information_t *)pkbuf->data;
+
+    nsag_information->length = be16toh(source->length);
+    size = nsag_information->length + sizeof(nsag_information->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    nsag_information->buffer = pkbuf->data - size + sizeof(nsag_information->length);
+
+    ogs_trace("  NSAG_INFORMATION - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, (void*)nsag_information->buffer, nsag_information->length);
+
+    return size;
+}
+
+int ogs_nas_5gs_encode_nsag_information(ogs_pkbuf_t *pkbuf, ogs_nas_nsag_information_t *nsag_information)
+{
+    int size = 0;
+    int target;
+
+    ogs_assert(nsag_information);
+    ogs_assert(nsag_information->buffer);
+
+    size = sizeof(nsag_information->length);
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    target = htobe16(nsag_information->length);
+    memcpy(pkbuf->data - size, &target, size);
+
+    size = nsag_information->length;
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, nsag_information->buffer, size);
+
+    ogs_trace("  NSAG_INFORMATION - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return nsag_information->length + sizeof(nsag_information->length);
+}
+
 /* 9.11.3.9 5GS tracking area identity list
  * O TLV 9-114 */
 int ogs_nas_5gs_decode_5gs_tracking_area_identity_list(ogs_nas_5gs_tracking_area_identity_list_t *tracking_area_identity_list, ogs_pkbuf_t *pkbuf)
@@ -3119,6 +3725,38 @@ int ogs_nas_5gs_encode_5gs_tracking_area_identity_list(ogs_pkbuf_t *pkbuf, ogs_n
     memcpy(pkbuf->data - size, &target, size);
 
     ogs_trace("  5GS_TRACKING_AREA_IDENTITY_LIST - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+/* 9.11.3.91 Priority indicator
+ * O TV 1 */
+int ogs_nas_5gs_decode_priority_indicator(ogs_nas_priority_indicator_t *priority_indicator, ogs_pkbuf_t *pkbuf)
+{
+    int size = sizeof(ogs_nas_priority_indicator_t);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    memcpy(priority_indicator, pkbuf->data - size, size);
+
+    ogs_trace("  PRIORITY_INDICATOR - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+int ogs_nas_5gs_encode_priority_indicator(ogs_pkbuf_t *pkbuf, ogs_nas_priority_indicator_t *priority_indicator)
+{
+    int size = sizeof(ogs_nas_priority_indicator_t);
+
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, priority_indicator, size);
+
+    ogs_trace("  PRIORITY_INDICATOR - ");
     ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
     return size;
@@ -3203,7 +3841,7 @@ int ogs_nas_5gs_encode_5gsm_capability(ogs_pkbuf_t *pkbuf, ogs_nas_5gsm_capabili
 }
 
 /* 9.11.4.10 PDU address
- * O TLV 7, 11 or 15 */
+ * O TLV 11 */
 int ogs_nas_5gs_decode_pdu_address(ogs_nas_pdu_address_t *pdu_address, ogs_pkbuf_t *pkbuf)
 {
     int size = 0;
@@ -3749,6 +4387,45 @@ int ogs_nas_5gs_encode_control_plane_only_indication(ogs_pkbuf_t *pkbuf, ogs_nas
     return size;
 }
 
+/* 9.11.4.24 IP header compression configuration
+ * O TLV 5-257 */
+int ogs_nas_5gs_decode_ip_header_compression_configuration(ogs_nas_ip_header_compression_configuration_t *ip_header_compression_configuration, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_ip_header_compression_configuration_t *source = (ogs_nas_ip_header_compression_configuration_t *)pkbuf->data;
+
+    ip_header_compression_configuration->length = source->length;
+    size = ip_header_compression_configuration->length + sizeof(ip_header_compression_configuration->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    if (sizeof(*ip_header_compression_configuration) < size) return -1;
+    memcpy(ip_header_compression_configuration, pkbuf->data - size, size);
+
+    ogs_trace("  IP_HEADER_COMPRESSION_CONFIGURATION - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+int ogs_nas_5gs_encode_ip_header_compression_configuration(ogs_pkbuf_t *pkbuf, ogs_nas_ip_header_compression_configuration_t *ip_header_compression_configuration)
+{
+    int size = ip_header_compression_configuration->length + sizeof(ip_header_compression_configuration->length);
+    ogs_nas_ip_header_compression_configuration_t target;
+
+    memcpy(&target, ip_header_compression_configuration, sizeof(ogs_nas_ip_header_compression_configuration_t));
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, &target, size);
+
+    ogs_trace("  IP_HEADER_COMPRESSION_CONFIGURATION - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
 /* 9.11.4.24 Header compression configuration
  * O TLV 5-257 */
 int ogs_nas_5gs_decode_header_compression_configuration(ogs_nas_header_compression_configuration_t *header_compression_configuration, ogs_pkbuf_t *pkbuf)
@@ -3871,7 +4548,7 @@ int ogs_nas_5gs_encode_ue_ds_tt_residence_time(ogs_pkbuf_t *pkbuf, ogs_nas_ue_ds
 }
 
 /* 9.11.4.27 Port management information container
- * O TLV-E 4-65538 */
+ * O TLV-E 8-65538 */
 int ogs_nas_5gs_decode_port_management_information_container(ogs_nas_port_management_information_container_t *port_management_information_container, ogs_pkbuf_t *pkbuf)
 {
     int size = 0;
@@ -3916,6 +4593,45 @@ int ogs_nas_5gs_encode_port_management_information_container(ogs_pkbuf_t *pkbuf,
     return port_management_information_container->length + sizeof(port_management_information_container->length);
 }
 
+/* 9.11.4.28 Ethernet header compression configuration
+ * O TLV 3 */
+int ogs_nas_5gs_decode_ethernet_header_compression_configuration(ogs_nas_ethernet_header_compression_configuration_t *ethernet_header_compression_configuration, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_ethernet_header_compression_configuration_t *source = (ogs_nas_ethernet_header_compression_configuration_t *)pkbuf->data;
+
+    ethernet_header_compression_configuration->length = source->length;
+    size = ethernet_header_compression_configuration->length + sizeof(ethernet_header_compression_configuration->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    if (sizeof(*ethernet_header_compression_configuration) < size) return -1;
+    memcpy(ethernet_header_compression_configuration, pkbuf->data - size, size);
+
+    ogs_trace("  ETHERNET_HEADER_COMPRESSION_CONFIGURATION - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+int ogs_nas_5gs_encode_ethernet_header_compression_configuration(ogs_pkbuf_t *pkbuf, ogs_nas_ethernet_header_compression_configuration_t *ethernet_header_compression_configuration)
+{
+    int size = ethernet_header_compression_configuration->length + sizeof(ethernet_header_compression_configuration->length);
+    ogs_nas_ethernet_header_compression_configuration_t target;
+
+    memcpy(&target, ethernet_header_compression_configuration, sizeof(ogs_nas_ethernet_header_compression_configuration_t));
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, &target, size);
+
+    ogs_trace("  ETHERNET_HEADER_COMPRESSION_CONFIGURATION - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
 /* 9.11.4.3 Always-on PDU session indication
  * O TV 1 */
 int ogs_nas_5gs_decode_always_on_pdu_session_indication(ogs_nas_always_on_pdu_session_indication_t *always_on_pdu_session_indication, ogs_pkbuf_t *pkbuf)
@@ -3943,6 +4659,176 @@ int ogs_nas_5gs_encode_always_on_pdu_session_indication(ogs_pkbuf_t *pkbuf, ogs_
     memcpy(pkbuf->data - size, always_on_pdu_session_indication, size);
 
     ogs_trace("  ALWAYS_ON_PDU_SESSION_INDICATION - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+/* 9.11.4.30 Requested MBS container
+ * O TLV-E 8-65538 */
+int ogs_nas_5gs_decode_requested_mbs_container(ogs_nas_requested_mbs_container_t *requested_mbs_container, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_requested_mbs_container_t *source = (ogs_nas_requested_mbs_container_t *)pkbuf->data;
+
+    requested_mbs_container->length = be16toh(source->length);
+    size = requested_mbs_container->length + sizeof(requested_mbs_container->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    requested_mbs_container->buffer = pkbuf->data - size + sizeof(requested_mbs_container->length);
+
+    ogs_trace("  REQUESTED_MBS_CONTAINER - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, (void*)requested_mbs_container->buffer, requested_mbs_container->length);
+
+    return size;
+}
+
+int ogs_nas_5gs_encode_requested_mbs_container(ogs_pkbuf_t *pkbuf, ogs_nas_requested_mbs_container_t *requested_mbs_container)
+{
+    int size = 0;
+    int target;
+
+    ogs_assert(requested_mbs_container);
+    ogs_assert(requested_mbs_container->buffer);
+
+    size = sizeof(requested_mbs_container->length);
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    target = htobe16(requested_mbs_container->length);
+    memcpy(pkbuf->data - size, &target, size);
+
+    size = requested_mbs_container->length;
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, requested_mbs_container->buffer, size);
+
+    ogs_trace("  REQUESTED_MBS_CONTAINER - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return requested_mbs_container->length + sizeof(requested_mbs_container->length);
+}
+
+/* 9.11.4.31 Received MBS container
+ * O TLV-E 9-65538 */
+int ogs_nas_5gs_decode_received_mbs_container(ogs_nas_received_mbs_container_t *received_mbs_container, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_received_mbs_container_t *source = (ogs_nas_received_mbs_container_t *)pkbuf->data;
+
+    received_mbs_container->length = be16toh(source->length);
+    size = received_mbs_container->length + sizeof(received_mbs_container->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    received_mbs_container->buffer = pkbuf->data - size + sizeof(received_mbs_container->length);
+
+    ogs_trace("  RECEIVED_MBS_CONTAINER - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, (void*)received_mbs_container->buffer, received_mbs_container->length);
+
+    return size;
+}
+
+int ogs_nas_5gs_encode_received_mbs_container(ogs_pkbuf_t *pkbuf, ogs_nas_received_mbs_container_t *received_mbs_container)
+{
+    int size = 0;
+    int target;
+
+    ogs_assert(received_mbs_container);
+    ogs_assert(received_mbs_container->buffer);
+
+    size = sizeof(received_mbs_container->length);
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    target = htobe16(received_mbs_container->length);
+    memcpy(pkbuf->data - size, &target, size);
+
+    size = received_mbs_container->length;
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, received_mbs_container->buffer, size);
+
+    ogs_trace("  RECEIVED_MBS_CONTAINER - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return received_mbs_container->length + sizeof(received_mbs_container->length);
+}
+
+/* 9.11.4.32 PDU session pair ID
+ * O TLV 3 */
+int ogs_nas_5gs_decode_pdu_session_pair_id(ogs_nas_pdu_session_pair_id_t *pdu_session_pair_id, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_pdu_session_pair_id_t *source = (ogs_nas_pdu_session_pair_id_t *)pkbuf->data;
+
+    pdu_session_pair_id->length = source->length;
+    size = pdu_session_pair_id->length + sizeof(pdu_session_pair_id->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    if (sizeof(*pdu_session_pair_id) < size) return -1;
+    memcpy(pdu_session_pair_id, pkbuf->data - size, size);
+
+    ogs_trace("  PDU_SESSION_PAIR_ID - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+int ogs_nas_5gs_encode_pdu_session_pair_id(ogs_pkbuf_t *pkbuf, ogs_nas_pdu_session_pair_id_t *pdu_session_pair_id)
+{
+    int size = pdu_session_pair_id->length + sizeof(pdu_session_pair_id->length);
+    ogs_nas_pdu_session_pair_id_t target;
+
+    memcpy(&target, pdu_session_pair_id, sizeof(ogs_nas_pdu_session_pair_id_t));
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, &target, size);
+
+    ogs_trace("  PDU_SESSION_PAIR_ID - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+/* 9.11.4.33 RSN
+ * O TLV 3 */
+int ogs_nas_5gs_decode_rsn(ogs_nas_rsn_t *rsn, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_rsn_t *source = (ogs_nas_rsn_t *)pkbuf->data;
+
+    rsn->length = source->length;
+    size = rsn->length + sizeof(rsn->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    if (sizeof(*rsn) < size) return -1;
+    memcpy(rsn, pkbuf->data - size, size);
+
+    ogs_trace("  RSN - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+int ogs_nas_5gs_encode_rsn(ogs_pkbuf_t *pkbuf, ogs_nas_rsn_t *rsn)
+{
+    int size = rsn->length + sizeof(rsn->length);
+    ogs_nas_rsn_t target;
+
+    memcpy(&target, rsn, sizeof(ogs_nas_rsn_t));
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, &target, size);
+
+    ogs_trace("  RSN - ");
     ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
     return size;

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -28,8 +28,8 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2022-01-22 09:24:28.380730 by acetcom
- * from 24301-g40.docx
+ * Created on: 2023-03-02 22:57:51.860294 by acetcom
+ * from 24301-h90.docx
  ******************************************************************************/
 
 #include "ogs-nas-eps.h"
@@ -375,6 +375,46 @@ int ogs_nas_eps_decode_attach_request(ogs_nas_eps_message_t *message, ogs_pkbuf_
             attach_request->presencemask |= OGS_NAS_EPS_ATTACH_REQUEST_N1_UE_NETWORK_CAPABILITY_PRESENT;
             decoded += size;
             break;
+        case OGS_NAS_EPS_ATTACH_REQUEST_UE_RADIO_CAPABILITY_ID_AVAILABILITY_TYPE:
+            size = ogs_nas_eps_decode_ue_radio_capability_id_availability(&attach_request->ue_radio_capability_id_availability, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_ue_radio_capability_id_availability() failed");
+               return size;
+            }
+
+            attach_request->presencemask |= OGS_NAS_EPS_ATTACH_REQUEST_UE_RADIO_CAPABILITY_ID_AVAILABILITY_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_EPS_ATTACH_REQUEST_REQUESTED_WUS_ASSISTANCE_INFORMATION_TYPE:
+            size = ogs_nas_eps_decode_wus_assistance_information(&attach_request->requested_wus_assistance_information, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_wus_assistance_information() failed");
+               return size;
+            }
+
+            attach_request->presencemask |= OGS_NAS_EPS_ATTACH_REQUEST_REQUESTED_WUS_ASSISTANCE_INFORMATION_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_EPS_ATTACH_REQUEST_DRX_PARAMETER_IN_NB_S1_MODE_TYPE:
+            size = ogs_nas_eps_decode_nb_s1_drx_parameter(&attach_request->drx_parameter_in_nb_s1_mode, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_nb_s1_drx_parameter() failed");
+               return size;
+            }
+
+            attach_request->presencemask |= OGS_NAS_EPS_ATTACH_REQUEST_DRX_PARAMETER_IN_NB_S1_MODE_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_EPS_ATTACH_REQUEST_REQUESTED_IMSI_OFFSET_TYPE:
+            size = ogs_nas_eps_decode_imsi_offset(&attach_request->requested_imsi_offset, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_imsi_offset() failed");
+               return size;
+            }
+
+            attach_request->presencemask |= OGS_NAS_EPS_ATTACH_REQUEST_REQUESTED_IMSI_OFFSET_PRESENT;
+            decoded += size;
+            break;
         default:
             ogs_warn("Unknown type(0x%x) or not implemented\n", type);
             break;
@@ -676,6 +716,56 @@ int ogs_nas_eps_decode_attach_accept(ogs_nas_eps_message_t *message, ogs_pkbuf_t
             attach_accept->presencemask |= OGS_NAS_EPS_ATTACH_ACCEPT_UE_RADIO_CAPABILITY_ID_DELETION_INDICATION_PRESENT;
             decoded += size;
             break;
+        case OGS_NAS_EPS_ATTACH_ACCEPT_NEGOTIATED_WUS_ASSISTANCE_INFORMATION_TYPE:
+            size = ogs_nas_eps_decode_wus_assistance_information(&attach_accept->negotiated_wus_assistance_information, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_wus_assistance_information() failed");
+               return size;
+            }
+
+            attach_accept->presencemask |= OGS_NAS_EPS_ATTACH_ACCEPT_NEGOTIATED_WUS_ASSISTANCE_INFORMATION_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_EPS_ATTACH_ACCEPT_NEGOTIATED_DRX_PARAMETER_IN_NB_S1_MODE_TYPE:
+            size = ogs_nas_eps_decode_nb_s1_drx_parameter(&attach_accept->negotiated_drx_parameter_in_nb_s1_mode, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_nb_s1_drx_parameter() failed");
+               return size;
+            }
+
+            attach_accept->presencemask |= OGS_NAS_EPS_ATTACH_ACCEPT_NEGOTIATED_DRX_PARAMETER_IN_NB_S1_MODE_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_EPS_ATTACH_ACCEPT_NEGOTIATED_IMSI_OFFSET_TYPE:
+            size = ogs_nas_eps_decode_imsi_offset(&attach_accept->negotiated_imsi_offset, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_imsi_offset() failed");
+               return size;
+            }
+
+            attach_accept->presencemask |= OGS_NAS_EPS_ATTACH_ACCEPT_NEGOTIATED_IMSI_OFFSET_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_EPS_ATTACH_ACCEPT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_TYPE:
+            size = ogs_nas_eps_decode_tracking_area_identity_list(&attach_accept->forbidden_tai_for_the_list_of_forbidden_tracking_areas_for_roaming, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_tracking_area_identity_list() failed");
+               return size;
+            }
+
+            attach_accept->presencemask |= OGS_NAS_EPS_ATTACH_ACCEPT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_EPS_ATTACH_ACCEPT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_TYPE:
+            size = ogs_nas_eps_decode_tracking_area_identity_list(&attach_accept->forbidden_tai_for_the_list_of_forbidden_tracking_areas_forregional_provision_of_service, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_tracking_area_identity_list() failed");
+               return size;
+            }
+
+            attach_accept->presencemask |= OGS_NAS_EPS_ATTACH_ACCEPT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_PRESENT;
+            decoded += size;
+            break;
         default:
             ogs_warn("Unknown type(0x%x) or not implemented\n", type);
             break;
@@ -774,6 +864,36 @@ int ogs_nas_eps_decode_attach_reject(ogs_nas_eps_message_t *message, ogs_pkbuf_t
             attach_reject->presencemask |= OGS_NAS_EPS_ATTACH_REJECT_EXTENDED_EMM_CAUSE_PRESENT;
             decoded += size;
             break;
+        case OGS_NAS_EPS_ATTACH_REJECT_LOWER_BOUND_TIMER_VALUE_TYPE:
+            size = ogs_nas_eps_decode_gprs_timer_3(&attach_reject->lower_bound_timer_value, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_gprs_timer_3() failed");
+               return size;
+            }
+
+            attach_reject->presencemask |= OGS_NAS_EPS_ATTACH_REJECT_LOWER_BOUND_TIMER_VALUE_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_EPS_ATTACH_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_TYPE:
+            size = ogs_nas_eps_decode_tracking_area_identity_list(&attach_reject->forbidden_tai_for_the_list_of_forbidden_tracking_areas_for_roaming, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_tracking_area_identity_list() failed");
+               return size;
+            }
+
+            attach_reject->presencemask |= OGS_NAS_EPS_ATTACH_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_EPS_ATTACH_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_TYPE:
+            size = ogs_nas_eps_decode_tracking_area_identity_list(&attach_reject->forbidden_tai_for_the_list_of_forbidden_tracking_areas_forregional_provision_of_service, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_tracking_area_identity_list() failed");
+               return size;
+            }
+
+            attach_reject->presencemask |= OGS_NAS_EPS_ATTACH_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_PRESENT;
+            decoded += size;
+            break;
         default:
             ogs_warn("Unknown type(0x%x) or not implemented\n", type);
             break;
@@ -846,6 +966,36 @@ int ogs_nas_eps_decode_detach_request_to_ue(ogs_nas_eps_message_t *message, ogs_
             }
 
             detach_request_to_ue->presencemask |= OGS_NAS_EPS_DETACH_REQUEST_EMM_CAUSE_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_EPS_DETACH_REQUEST_LOWER_BOUND_TIMER_VALUE_TYPE:
+            size = ogs_nas_eps_decode_gprs_timer_3(&detach_request_to_ue->lower_bound_timer_value, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_gprs_timer_3() failed");
+               return size;
+            }
+
+            detach_request_to_ue->presencemask |= OGS_NAS_EPS_DETACH_REQUEST_LOWER_BOUND_TIMER_VALUE_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_EPS_DETACH_REQUEST_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_TYPE:
+            size = ogs_nas_eps_decode_tracking_area_identity_list(&detach_request_to_ue->forbidden_tai_for_the_list_of_forbidden_tracking_areas_for_roaming, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_tracking_area_identity_list() failed");
+               return size;
+            }
+
+            detach_request_to_ue->presencemask |= OGS_NAS_EPS_DETACH_REQUEST_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_EPS_DETACH_REQUEST_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_TYPE:
+            size = ogs_nas_eps_decode_tracking_area_identity_list(&detach_request_to_ue->forbidden_tai_for_the_list_of_forbidden_tracking_areas_forregional_provision_of_service, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_tracking_area_identity_list() failed");
+               return size;
+            }
+
+            detach_request_to_ue->presencemask |= OGS_NAS_EPS_DETACH_REQUEST_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_PRESENT;
             decoded += size;
             break;
         default:
@@ -1199,6 +1349,66 @@ int ogs_nas_eps_decode_tracking_area_update_request(ogs_nas_eps_message_t *messa
             tracking_area_update_request->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_N1_UE_NETWORK_CAPABILITY_PRESENT;
             decoded += size;
             break;
+        case OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_UE_RADIO_CAPABILITY_ID_AVAILABILITY_TYPE:
+            size = ogs_nas_eps_decode_ue_radio_capability_id_availability(&tracking_area_update_request->ue_radio_capability_id_availability, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_ue_radio_capability_id_availability() failed");
+               return size;
+            }
+
+            tracking_area_update_request->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_UE_RADIO_CAPABILITY_ID_AVAILABILITY_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_REQUESTED_WUS_ASSISTANCE_INFORMATION_TYPE:
+            size = ogs_nas_eps_decode_wus_assistance_information(&tracking_area_update_request->requested_wus_assistance_information, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_wus_assistance_information() failed");
+               return size;
+            }
+
+            tracking_area_update_request->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_REQUESTED_WUS_ASSISTANCE_INFORMATION_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_DRX_PARAMETER_IN_NB_S1_MODE_TYPE:
+            size = ogs_nas_eps_decode_nb_s1_drx_parameter(&tracking_area_update_request->drx_parameter_in_nb_s1_mode, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_nb_s1_drx_parameter() failed");
+               return size;
+            }
+
+            tracking_area_update_request->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_DRX_PARAMETER_IN_NB_S1_MODE_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_REQUESTED_IMSI_OFFSET_TYPE:
+            size = ogs_nas_eps_decode_imsi_offset(&tracking_area_update_request->requested_imsi_offset, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_imsi_offset() failed");
+               return size;
+            }
+
+            tracking_area_update_request->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_REQUESTED_IMSI_OFFSET_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_UE_REQUEST_TYPE_TYPE:
+            size = ogs_nas_eps_decode_ue_request_type(&tracking_area_update_request->ue_request_type, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_ue_request_type() failed");
+               return size;
+            }
+
+            tracking_area_update_request->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_UE_REQUEST_TYPE_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_PAGING_RESTRICTION_TYPE:
+            size = ogs_nas_eps_decode_paging_restriction(&tracking_area_update_request->paging_restriction, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_paging_restriction() failed");
+               return size;
+            }
+
+            tracking_area_update_request->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_PAGING_RESTRICTION_PRESENT;
+            decoded += size;
+            break;
         default:
             ogs_warn("Unknown type(0x%x) or not implemented\n", type);
             break;
@@ -1516,6 +1726,66 @@ int ogs_nas_eps_decode_tracking_area_update_accept(ogs_nas_eps_message_t *messag
             tracking_area_update_accept->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_UE_RADIO_CAPABILITY_ID_DELETION_INDICATION_PRESENT;
             decoded += size;
             break;
+        case OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_NEGOTIATED_WUS_ASSISTANCE_INFORMATION_TYPE:
+            size = ogs_nas_eps_decode_wus_assistance_information(&tracking_area_update_accept->negotiated_wus_assistance_information, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_wus_assistance_information() failed");
+               return size;
+            }
+
+            tracking_area_update_accept->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_NEGOTIATED_WUS_ASSISTANCE_INFORMATION_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_NEGOTIATED_DRX_PARAMETER_IN_NB_S1_MODE_TYPE:
+            size = ogs_nas_eps_decode_nb_s1_drx_parameter(&tracking_area_update_accept->negotiated_drx_parameter_in_nb_s1_mode, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_nb_s1_drx_parameter() failed");
+               return size;
+            }
+
+            tracking_area_update_accept->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_NEGOTIATED_DRX_PARAMETER_IN_NB_S1_MODE_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_NEGOTIATED_IMSI_OFFSET_TYPE:
+            size = ogs_nas_eps_decode_imsi_offset(&tracking_area_update_accept->negotiated_imsi_offset, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_imsi_offset() failed");
+               return size;
+            }
+
+            tracking_area_update_accept->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_NEGOTIATED_IMSI_OFFSET_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_EPS_ADDITIONAL_REQUEST_RESULT_TYPE:
+            size = ogs_nas_eps_decode_eps_additional_request_result(&tracking_area_update_accept->eps_additional_request_result, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_eps_additional_request_result() failed");
+               return size;
+            }
+
+            tracking_area_update_accept->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_EPS_ADDITIONAL_REQUEST_RESULT_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_TYPE:
+            size = ogs_nas_eps_decode_tracking_area_identity_list(&tracking_area_update_accept->forbidden_tai_for_the_list_of_forbidden_tracking_areas_for_roaming, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_tracking_area_identity_list() failed");
+               return size;
+            }
+
+            tracking_area_update_accept->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_TYPE:
+            size = ogs_nas_eps_decode_tracking_area_identity_list(&tracking_area_update_accept->forbidden_tai_for_the_list_of_forbidden_tracking_areas_forregional_provision_of_service, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_tracking_area_identity_list() failed");
+               return size;
+            }
+
+            tracking_area_update_accept->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_PRESENT;
+            decoded += size;
+            break;
         default:
             ogs_warn("Unknown type(0x%x) or not implemented\n", type);
             break;
@@ -1573,6 +1843,36 @@ int ogs_nas_eps_decode_tracking_area_update_reject(ogs_nas_eps_message_t *messag
             }
 
             tracking_area_update_reject->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_REJECT_EXTENDED_EMM_CAUSE_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_EPS_TRACKING_AREA_UPDATE_REJECT_LOWER_BOUND_TIMER_VALUE_TYPE:
+            size = ogs_nas_eps_decode_gprs_timer_3(&tracking_area_update_reject->lower_bound_timer_value, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_gprs_timer_3() failed");
+               return size;
+            }
+
+            tracking_area_update_reject->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_REJECT_LOWER_BOUND_TIMER_VALUE_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_EPS_TRACKING_AREA_UPDATE_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_TYPE:
+            size = ogs_nas_eps_decode_tracking_area_identity_list(&tracking_area_update_reject->forbidden_tai_for_the_list_of_forbidden_tracking_areas_for_roaming, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_tracking_area_identity_list() failed");
+               return size;
+            }
+
+            tracking_area_update_reject->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_EPS_TRACKING_AREA_UPDATE_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_TYPE:
+            size = ogs_nas_eps_decode_tracking_area_identity_list(&tracking_area_update_reject->forbidden_tai_for_the_list_of_forbidden_tracking_areas_forregional_provision_of_service, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_tracking_area_identity_list() failed");
+               return size;
+            }
+
+            tracking_area_update_reject->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_PRESENT;
             decoded += size;
             break;
         default:
@@ -1654,6 +1954,26 @@ int ogs_nas_eps_decode_extended_service_request(ogs_nas_eps_message_t *message, 
             extended_service_request->presencemask |= OGS_NAS_EPS_EXTENDED_SERVICE_REQUEST_DEVICE_PROPERTIES_PRESENT;
             decoded += size;
             break;
+        case OGS_NAS_EPS_EXTENDED_SERVICE_REQUEST_UE_REQUEST_TYPE_TYPE:
+            size = ogs_nas_eps_decode_ue_request_type(&extended_service_request->ue_request_type, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_ue_request_type() failed");
+               return size;
+            }
+
+            extended_service_request->presencemask |= OGS_NAS_EPS_EXTENDED_SERVICE_REQUEST_UE_REQUEST_TYPE_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_EPS_EXTENDED_SERVICE_REQUEST_PAGING_RESTRICTION_TYPE:
+            size = ogs_nas_eps_decode_paging_restriction(&extended_service_request->paging_restriction, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_paging_restriction() failed");
+               return size;
+            }
+
+            extended_service_request->presencemask |= OGS_NAS_EPS_EXTENDED_SERVICE_REQUEST_PAGING_RESTRICTION_PRESENT;
+            decoded += size;
+            break;
         default:
             ogs_warn("Unknown type(0x%x) or not implemented\n", type);
             break;
@@ -1718,6 +2038,16 @@ int ogs_nas_eps_decode_service_reject(ogs_nas_eps_message_t *message, ogs_pkbuf_
         decoded += size;
 
         switch (type) {
+        case OGS_NAS_EPS_SERVICE_REJECT_T3442_VALUE_TYPE:
+            size = ogs_nas_eps_decode_gprs_timer(&service_reject->t3442_value, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_gprs_timer() failed");
+               return size;
+            }
+
+            service_reject->presencemask |= OGS_NAS_EPS_SERVICE_REJECT_T3442_VALUE_PRESENT;
+            decoded += size;
+            break;
         case OGS_NAS_EPS_SERVICE_REJECT_T3346_VALUE_TYPE:
             size = ogs_nas_eps_decode_gprs_timer_2(&service_reject->t3346_value, pkbuf);
             if (size < 0) {
@@ -1736,6 +2066,36 @@ int ogs_nas_eps_decode_service_reject(ogs_nas_eps_message_t *message, ogs_pkbuf_
             }
 
             service_reject->presencemask |= OGS_NAS_EPS_SERVICE_REJECT_T3448_VALUE_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_EPS_SERVICE_REJECT_LOWER_BOUND_TIMER_VALUE_TYPE:
+            size = ogs_nas_eps_decode_gprs_timer_3(&service_reject->lower_bound_timer_value, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_gprs_timer_3() failed");
+               return size;
+            }
+
+            service_reject->presencemask |= OGS_NAS_EPS_SERVICE_REJECT_LOWER_BOUND_TIMER_VALUE_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_EPS_SERVICE_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_TYPE:
+            size = ogs_nas_eps_decode_tracking_area_identity_list(&service_reject->forbidden_tai_for_the_list_of_forbidden_tracking_areas_for_roaming, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_tracking_area_identity_list() failed");
+               return size;
+            }
+
+            service_reject->presencemask |= OGS_NAS_EPS_SERVICE_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_PRESENT;
+            decoded += size;
+            break;
+        case OGS_NAS_EPS_SERVICE_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_TYPE:
+            size = ogs_nas_eps_decode_tracking_area_identity_list(&service_reject->forbidden_tai_for_the_list_of_forbidden_tracking_areas_forregional_provision_of_service, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_eps_decode_tracking_area_identity_list() failed");
+               return size;
+            }
+
+            service_reject->presencemask |= OGS_NAS_EPS_SERVICE_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_PRESENT;
             decoded += size;
             break;
         default:
@@ -2062,8 +2422,6 @@ int ogs_nas_eps_decode_security_mode_command(ogs_nas_eps_message_t *message, ogs
             decoded += size;
             break;
         case OGS_NAS_EPS_SECURITY_MODE_COMMAND_UE_RADIO_CAPABILITY_ID_REQUEST_TYPE:
-            decoded--;
-            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_ue_radio_capability_id_request(&security_mode_command->ue_radio_capability_id_request, pkbuf);
             if (size < 0) {
                ogs_error("ogs_nas_eps_decode_ue_radio_capability_id_request() failed");

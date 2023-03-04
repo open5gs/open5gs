@@ -700,7 +700,7 @@ typedef struct ogs_nas_emergency_number_list_s {
 /* 9.9.3.37A Extended emergency number list
  * O TLV-E 7-65535 */
 typedef struct ogs_nas_extended_emergency_number_list_s {
-    uint8_t length;
+    uint16_t length;
     void *buffer;
 } ogs_nas_extended_emergency_number_list_t;
 
@@ -732,6 +732,28 @@ ED3(uint8_t type:4;,
     uint8_t spare:1;,
     uint8_t value:3;)
 } __attribute__ ((packed)) ogs_nas_ue_radio_capability_id_deletion_indication_t;
+
+/* 9.9.3.65 UE request type
+ * O TLV 3
+ * 9.11.3.76 UE request type
+ * O TLV 3 */
+typedef struct ogs_nas_ue_request_type_s {
+    uint8_t length;
+ED2(uint8_t spare:4;,
+    uint8_t type:4;)
+} __attribute__ ((packed)) ogs_nas_ue_request_type_t;
+
+/* 9.9.3.66 Paging restriction
+ * O TLV 3-5
+ * 9.11.3.77 Paging restriction
+ * O TLV 3-35 */
+typedef struct ogs_nas_paging_restriction_s {
+    uint8_t length;
+ED2(uint8_t spare1:4;,
+    uint8_t type:4;)
+    uint16_t ebi;
+    uint8_t spare2[30];
+} __attribute__ ((packed)) ogs_nas_paging_restriction_t;
 
 /* 9.9.4.2 APN aggregate maximum bit rate
  * O TLV 4-8  */
@@ -793,6 +815,7 @@ ED2(uint8_t reserved:5;,
             uint32_t addr;
         } both;
     };
+    uint8_t smf_ipv6_link_local_address[OGS_IPV6_LEN];
 } __attribute__ ((packed)) ogs_nas_pdu_address_t;
 
 /* 9.9.4.14 Request type

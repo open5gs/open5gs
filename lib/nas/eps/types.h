@@ -745,13 +745,45 @@ typedef struct ogs_nas_n1_ue_network_capability_s {
     };
 } ogs_nas_n1_ue_network_capability_t;
 
+/* 9.9.3.58 UE radio capability ID availability
+ * O TLV 3 */
+typedef struct ogs_nas_ue_radio_capability_id_availability_s {
+    uint8_t length;
+ED2(uint8_t spare:5;,
+    uint8_t value:3;)
+} __attribute__ ((packed)) ogs_nas_ue_radio_capability_id_availability_t;
+
 /* 9.9.3.59 UE radio capability ID request
- * O TV 1 */
+ * O TLV 3 */
 typedef struct ogs_nas_ue_radio_capability_id_request_s {
+    uint8_t length;
 ED3(uint8_t type:4;,
     uint8_t spare:3;,
     uint8_t ue_radio_capability_id_available:1;)
 } __attribute__ ((packed)) ogs_nas_ue_radio_capability_id_request_t;
+
+/* 9.9.3.63 NB-S1 DRX parameter
+ * O TLV 3 */
+typedef struct ogs_nas_nb_s1_drx_parameter_s {
+    uint8_t length;
+ED2(uint8_t spare:4;,
+    uint8_t value:4;)
+} __attribute__ ((packed)) ogs_nas_nb_s1_drx_parameter_t;
+
+/* 9.9.3.64 IMSI offset
+ * O TLV 4 */
+typedef struct ogs_nas_imsi_offset_s {
+    uint8_t length;
+    uint16_t value;
+} __attribute__ ((packed)) ogs_nas_imsi_offset_t;
+
+/* 9.9.3.67 EPS additional request result
+ * O TLV 3 */
+typedef struct ogs_nas_eps_additional_request_result_s {
+    uint8_t length;
+ED2(uint8_t spare:6;,
+    uint8_t prd:2;)
+} __attribute__ ((packed)) ogs_nas_eps_additional_request_result_t;
 
 /* 9.9.4.1 Access point name
  * See subclause 10.5.6.1 in 3GPP TS 24.008 [13].
