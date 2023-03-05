@@ -6,6 +6,7 @@
 
 openapi_generator_cli="openapi-generator-cli"
 
+$openapi_generator_cli generate -i ./modified/TS29573_N32_Handshake.yaml -c ./openapi-generator/config.yaml -g c -o ../../openapi || exit 1
 $openapi_generator_cli generate -i ./modified/TS29504_Nudr_DR.yaml -c ./openapi-generator/config.yaml -g c -o ../../openapi || exit 1
 $openapi_generator_cli generate -i ./modified/TS29521_Nbsf_Management.yaml -c ./openapi-generator/config.yaml -g c -o ../../openapi || exit 1
 $openapi_generator_cli generate -i ./modified/TS29531_Nnssf_NSSelection.yaml -c ./openapi-generator/config.yaml -g c -o ../../openapi || exit 1

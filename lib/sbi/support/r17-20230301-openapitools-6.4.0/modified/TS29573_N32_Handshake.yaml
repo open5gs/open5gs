@@ -165,23 +165,23 @@ paths:
 components:
   schemas:
     SecurityCapability:
-      description: Enumeration of security capabilities
-      anyOf:
-        - type: string
+#      description: Enumeration of security capabilities
+#      anyOf:
+#        - type: string
           enum:
             - TLS
             - PRINS
             - NONE
-        - type: string
+#        - type: string
     ApiSignature:
       description: API URI of the service operation
       oneOf:
         - $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
         - $ref: '#/components/schemas/CallbackName'
     HttpMethod:
-      description: Enumeration of HTTP methods
-      anyOf:
-        - type: string
+#      description: Enumeration of HTTP methods
+#      anyOf:
+#        - type: string
           enum:
             - GET
             - PUT
@@ -192,12 +192,12 @@ components:
             - OPTIONS
             - CONNECT
             - TRACE
-        - type: string
+#        - type: string
 
     IeType:
-      description: Enumeration of types of IEs (i.e kind of IE) to specify the protection policy
-      anyOf:
-        - type: string
+#      description: Enumeration of types of IEs (i.e kind of IE) to specify the protection policy
+#      anyOf:
+#        - type: string
           enum:
             - UEID
             - LOCATION
@@ -206,18 +206,18 @@ components:
             - AUTHORIZATION_TOKEN
             - OTHER
             - NONSENSITIVE
-        - type: string
+#        - type: string
 
     IeLocation:
-      description: Location of the IE in a HTTP message
-      anyOf:
-        - type: string
+#      description: Location of the IE in a HTTP message
+#      anyOf:
+#        - type: string
           enum:
             - URI_PARAM
             - HEADER
             - BODY
             - MULTIPART_BINARY
-        - type: string
+#        - type: string
 
     IeInfo:
       description: Protection and modification policy for the IE
@@ -504,9 +504,9 @@ components:
           type: string
 
     N32fErrorType:
-      description: Type of error while processing N32-f message
-      anyOf:
-        - type: string
+#      description: Type of error while processing N32-f message
+#      anyOf:
+#        - type: string
           enum:
             - INTEGRITY_CHECK_FAILED
             - INTEGRITY_CHECK_ON_MODIFICATIONS_FAILED
@@ -517,21 +517,21 @@ components:
             - INTEGRITY_KEY_EXPIRED
             - ENCRYPTION_KEY_EXPIRED
             - POLICY_MISMATCH
-        - type: string
+#        - type: string
     FailureReason:
-      description: Reason for failure to reconstruct a HTTP/2 message from N32-f message
-      anyOf:
-        - type: string
+#      description: Reason for failure to reconstruct a HTTP/2 message from N32-f message
+#      anyOf:
+#        - type: string
           enum:
             - INVALID_JSON_POINTER
             - INVALID_INDEX_TO_ENCRYPTED_BLOCK
             - INVALID_HTTP_HEADER
-        - type: string
+#        - type: string
 
     N32Purpose:
-      description: Usage purpose of establishing N32 connectivity
-      anyOf:
-        - type: string
+#      description: Usage purpose of establishing N32 connectivity
+#      anyOf:
+#        - type: string
           enum:
             - ROAMING
             - INTER_PLMN_MOBILITY
@@ -543,4 +543,4 @@ components:
             - SNPN_INTERCONNECT_TEST
             - DISASTER_ROAMING
             - DISASTER_ROAMING_TEST
-        - type: string
+#        - type: string
