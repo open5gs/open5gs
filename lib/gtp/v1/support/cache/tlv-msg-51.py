@@ -11,7 +11,9 @@ ies.append({ "ie_value" : "Radio Priority LCS", "presence" : "Optional", "refere
 ies.append({ "ie_value" : "MM Context", "presence" : "Conditional", "reference" : "7.7.28"})
 ies.append({ "ie_value" : "PDP Context", "presence" : "Conditional", "reference" : "7.7.29"})
 ies.append({ "ie_value" : "SGSN Address for Control Plane", "presence" : "Conditional", "reference" : "7.7.32"})
-ies.append({ "ie_value" : "PDP Context Prioritization ", "presence" : "Optional", "reference" : "7.7.45"})
+ies.append({ "ie_value" : "Alternative GGSN Address for control Plane", "presence" : "Optional", "reference" : "7.7.32"})
+ies.append({ "ie_value" : "Alternative GGSN Address for user traffic", "presence" : "Optional", "reference" : "7.7.32"})
+ies.append({ "ie_value" : "PDP Context Prioritization", "presence" : "Optional", "reference" : "7.7.45"})
 ies.append({ "ie_value" : "MBMS UE Context", "presence" : "Optional", "reference" : "7.7.55"})
 ies.append({ "ie_value" : "Subscribed RFSP Index", "presence" : "Optional", "reference" : "7.7.88"})
 ies.append({ "ie_value" : "RFSP Index in use", "presence" : "Optional", "reference" : "7.7.88"})
@@ -29,6 +31,4 @@ ies.append({ "ie_value" : "UE Usage Type", "presence" : "Optional", "reference" 
 ies.append({ "ie_value" : "Extended Common Flags II", "presence" : "Optional", "reference" : "7.7.118"})
 ies.append({ "ie_value" : "UE SCEF PDN Connection", "presence" : "Optional", "reference" : "7.7.121"})
 ies.append({ "ie_value" : "IOV_updates counter", "presence" : "Optional", "reference" : "7.7.122"})
-ies.append({ "ie_value" : "Alternative GGSN Address for control Plane", "presence" : "Optional", "reference" : "7.7.32"})
-ies.append({ "ie_value" : "Alternative GGSN Address for user traffic", "presence" : "Optional", "reference" : "7.7.32"})
 msg_list[key]["ies"] = ies

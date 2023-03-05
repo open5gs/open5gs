@@ -356,9 +356,9 @@ msg_list["Forward Relocation Response"]["table"] = 41
 msg_list["Forward Relocation Complete"]["table"] = 42
 msg_list["Relocation Cancel Request"]["table"] = 43
 msg_list["Relocation Cancel Response"]["table"] = 44
-msg_list["Forward SRNS Context"]["table"] = 45
-msg_list["Forward Relocation Complete Acknowledge"]["table"] = 46
-msg_list["Forward SRNS Context Acknowledge"]["table"] = 47
+msg_list["Forward Relocation Complete Acknowledge"]["table"] = 45
+msg_list["Forward SRNS Context Acknowledge"]["table"] = 46
+msg_list["Forward SRNS Context"]["table"] = 47
 msg_list["UE Registration Query Request"]["table"] = 49
 msg_list["UE Registration Query Response"]["table"] = 50
 msg_list["RAN Information Relay"]["table"] = 48
@@ -387,10 +387,11 @@ msg_list["MBMS Session Update Response"]["table"] = 70
 for key in msg_list.keys():
     if "table" in msg_list[key].keys():
         d_info("[" + key + "]")
-        if key == "Delete MBMS Context Request":
-            d_info('skipping, broken in source document')
-            # FIXME: manually generate the cells for each row
-            continue
+# Manually modify the standard document by acetcom
+#        if key == "Delete MBMS Context Request":
+#            d_info('skipping, broken in source document')
+#            # FIXME: manually generate the cells for each row
+#            continue
         cachefile = cachedir + "tlv-msg-" + msg_list[key]["type"] + ".py"
         if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
             exec(open(cachefile).read())
