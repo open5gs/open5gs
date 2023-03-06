@@ -10,7 +10,7 @@ Open5GS is a C-language Open Source implementation of 5GC and EPC, i.e. the core
 #### Supported Features
 ---
 
-- Release-16 compliant
+- Release-17 compliant
 - AES, Snow3G, ZUC algorithms for encryption
 - Support of USIM cards using Milenage
 - IPv6 support

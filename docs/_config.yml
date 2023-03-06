@@ -17,7 +17,7 @@ title: Open5GS
 email: acetcom@gmail.com
 description: >- # this means to ignore newlines until "baseurl:"
   Open5GS is a C-language implementation of 5G Core and EPC,
-  i.e. the core network of NR/LTE network (Release-16)
+  i.e. the core network of NR/LTE network (Release-17)
 baseurl: "/open5gs" # the subpath of your site, e.g. /blog
 url: "https://open5gs.org" # the base hostname & protocol for your site, e.g. http://example.com
 author: "Sukchan Lee"
