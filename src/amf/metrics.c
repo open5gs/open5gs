@@ -10,6 +10,7 @@ typedef struct amf_metrics_spec_def_s {
     int initial_val;
     unsigned int num_labels;
     const char **labels;
+    ogs_metrics_histogram_params_t histogram_params;
 } amf_metrics_spec_def_t;
 
 /* Helper generic functions: */
@@ -39,8 +40,10 @@ static int amf_metrics_init_spec(ogs_metrics_context_t *ctx,
     for (i = 0; i < len; i++) {
         dst[i] = ogs_metrics_spec_new(ctx, src[i].type,
                 src[i].name, src[i].description,
-                src[i].initial_val, src[i].num_labels, src[i].labels);
+                src[i].initial_val, src[i].num_labels, src[i].labels,
+                &src[i].histogram_params);
     }
+
     return OGS_OK;
 }
 
@@ -134,6 +137,18 @@ amf_metrics_spec_def_t amf_metrics_spec_def_global[_AMF_METR_GLOB_MAX] = {
     .type = OGS_METRICS_METRIC_TYPE_COUNTER,
     .name = "fivegs_amffunction_mm_confupdatesucc",
     .description = "Number of UE Configuration Update complete messages received by the AMF",
+},
+/* Global Histograms: */
+[AMF_METR_GLOB_HIST_REG_TIME] = {
+    .type = OGS_METRICS_METRIC_TYPE_HISTOGRAM,
+    .name = "fivegs_amffunction_rm_regtime",
+    .description = "Time of registration procedure",
+    .histogram_params = {
+        .type = OGS_METRICS_HISTOGRAM_BUCKET_TYPE_EXPONENTIAL,
+        .count = 8,
+        .exp.start = 20,
+        .exp.factor = 2,
+    },
 },
 };
 int amf_metrics_init_inst_global(void)
