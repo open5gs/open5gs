@@ -1,3 +1,9 @@
+open5gs (2.5.9) unstable; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Mon, 06 Mar 2023 21:43:02 +0900
+
 open5gs (2.5.8) unstable; urgency=medium
 
   * Bug Fixed
