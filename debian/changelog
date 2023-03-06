@@ -1,3 +1,9 @@
+open5gs (2.6.0) unstable; urgency=medium
+
+  * Upgrade to Release-17
+
+ -- Sukchan Lee <acetcom@gmail.com>  Mon, 06 Mar 2023 22:29:58 +0900
+
 open5gs (2.6.0~kinetic) kinetic; urgency=medium
 
   * Upgrade to Release-17
