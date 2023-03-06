@@ -41,6 +41,7 @@ typedef enum {
     AMF_TIMER_T3570,
     AMF_TIMER_MOBILE_REACHABLE,
     AMF_TIMER_IMPLICIT_DEREGISTRATION,
+    AMF_TIMER_METRICS_GRANULARITY_PERIOD,
 
     MAX_NUM_OF_AMF_TIMER,
 
@@ -69,6 +70,8 @@ void amf_timer_ng_holding_timer_expire(void *data);
 
 void amf_timer_mobile_reachable_expire(void *data);
 void amf_timer_implicit_deregistration_expire(void *data);
+
+void amf_timer_metrics_granularity_period_expire(void *data);
 
 #ifdef __cplusplus
 }
