@@ -261,6 +261,10 @@ void upf_pfcp_state_associated(ogs_fsm_t *s, upf_event_t *e)
         }
         break;
     case UPF_EVT_N4_NO_HEARTBEAT:
+
+        /* 'node' context was removed in ogs_pfcp_xact_delete(xact)
+         * So, we should not use PFCP node here */
+
         ogs_warn("No Heartbeat from SMF [%s]:%d",
                     OGS_ADDR(addr, buf), OGS_PORT(addr));
         OGS_FSM_TRAN(s, upf_pfcp_state_will_associate);

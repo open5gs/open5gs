@@ -158,7 +158,6 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
 
     ogs_sockaddr_t *addr = NULL;
     smf_sess_t *sess = NULL;
-    int r;
 
     ogs_assert(s);
     ogs_assert(e);
@@ -316,31 +315,9 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
         }
         break;
     case SMF_EVT_N4_NO_HEARTBEAT:
-        node = e->pfcp_node;
-        ogs_assert(node);
 
-        smf_ue_t *smf_ue = NULL, *next = NULL;;
-
-        ogs_list_for_each_safe(&smf_self()->smf_ue_list, next, smf_ue) {
-            smf_sess_t *sess = NULL, *next = NULL;;
-            ogs_assert(smf_ue);
-
-            ogs_list_for_each_safe(&smf_ue->sess_list, next, sess) {
-                ogs_assert(sess);
-
-                if (node == sess->pfcp_node) {
-                    smf_npcf_smpolicycontrol_param_t param;
-
-                    memset(&param, 0, sizeof(param));
-                    r = smf_sbi_discover_and_send(
-                            OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL, NULL,
-                            smf_npcf_smpolicycontrol_build_delete,
-                            sess, NULL, OGS_PFCP_DELETE_TRIGGER_SMF_INITIATED, &param);
-                    ogs_expect(r == OGS_OK);
-                    ogs_assert(r != OGS_ERROR);
-                }
-            }
-        }
+        /* 'node' context was removed in ogs_pfcp_xact_delete(xact)
+         * So, we should not use PFCP node here */
 
         ogs_warn("No Heartbeat from UPF [%s]:%d",
                     OGS_ADDR(addr, buf), OGS_PORT(addr));
@@ -372,17 +349,44 @@ void smf_pfcp_state_exception(ogs_fsm_t *s, smf_event_t *e)
 
 static void node_timeout(ogs_pfcp_xact_t *xact, void *data)
 {
-    int rv;
+    int r, rv;
 
     smf_event_t *e = NULL;
     uint8_t type;
+    ogs_pfcp_node_t *node = NULL;
+    smf_ue_t *smf_ue = NULL, *next_ue = NULL;;
 
     ogs_assert(xact);
     type = xact->seq[0].type;
 
     switch (type) {
     case OGS_PFCP_HEARTBEAT_REQUEST_TYPE:
-        ogs_assert(data);
+        node = data;
+        ogs_assert(node);
+
+        ogs_list_for_each_safe(&smf_self()->smf_ue_list, next_ue, smf_ue) {
+            smf_sess_t *sess = NULL, *next_sess = NULL;;
+            ogs_assert(smf_ue);
+
+            ogs_list_for_each_safe(&smf_ue->sess_list, next_sess, sess) {
+                ogs_assert(sess);
+                ogs_assert(sess->sm_context_ref);
+
+                if (node == sess->pfcp_node) {
+                    smf_npcf_smpolicycontrol_param_t param;
+
+                    ogs_assert(sess->sm_context_ref);
+                    memset(&param, 0, sizeof(param));
+                    r = smf_sbi_discover_and_send(
+                            OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL, NULL,
+                            smf_npcf_smpolicycontrol_build_delete,
+                            sess, NULL, OGS_PFCP_DELETE_TRIGGER_SMF_INITIATED,
+                            &param);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+                }
+            }
+        }
 
         e = smf_event_new(SMF_EVT_N4_NO_HEARTBEAT);
         e->pfcp_node = data;
