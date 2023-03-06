@@ -1,7 +1,7 @@
 /*
  * area_of_validity.h
  *
- * 
+ * Area of validity information for N2 information transfer
  */
 
 #ifndef _OpenAPI_area_of_validity_H_

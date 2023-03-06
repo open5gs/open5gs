@@ -39,8 +39,9 @@ bool amf_sbi_send_request(
 
 #define AMF_CREATE_SM_CONTEXT_NO_STATE                  0
 
-#define AMF_NETWORK_INITIATED_IMPLICIT_DE_REGISTERED    1
-#define AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED    2
+#define AMF_UE_INITIATED_DE_REGISTERED                  1
+#define AMF_NETWORK_INITIATED_IMPLICIT_DE_REGISTERED    2
+#define AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED    3
 
 #define AMF_UPDATE_SM_CONTEXT_ACTIVATED                 11
 #define AMF_UPDATE_SM_CONTEXT_SETUP_FAIL                12
@@ -64,18 +65,18 @@ bool amf_sbi_send_request(
 #define AMF_REMOVE_S1_CONTEXT_BY_RESET_ALL              52
 #define AMF_REMOVE_S1_CONTEXT_BY_RESET_PARTIAL          53
 
-bool amf_ue_sbi_discover_and_send(
+int amf_ue_sbi_discover_and_send(
         ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(amf_ue_t *amf_ue, void *data),
         amf_ue_t *amf_ue, int state, void *data);
-bool amf_sess_sbi_discover_and_send(
+int amf_sess_sbi_discover_and_send(
         ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(amf_sess_t *sess, void *data),
         amf_sess_t *sess, int state, void *data);
 
-bool amf_sess_sbi_discover_by_nsi(
+int amf_sess_sbi_discover_by_nsi(
         amf_sess_t *sess,
         ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option);
@@ -93,6 +94,9 @@ void amf_sbi_send_release_all_sessions(amf_ue_t *amf_ue, int state);
 
 bool amf_sbi_send_n1_n2_failure_notify(
         amf_sess_t *sess, OpenAPI_n1_n2_message_transfer_cause_e cause);
+
+bool amf_ue_have_session_release_pending(amf_ue_t *amf_ue);
+bool amf_sess_have_session_release_pending(amf_sess_t *sess);
 
 #ifdef __cplusplus
 }

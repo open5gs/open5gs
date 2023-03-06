@@ -18,17 +18,22 @@ OpenAPI_gad_shape_t *OpenAPI_gad_shape_create(
 
 void OpenAPI_gad_shape_free(OpenAPI_gad_shape_t *gad_shape)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == gad_shape) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_supported_gad_shapes_free(gad_shape->shape);
+    if (gad_shape->shape) {
+        OpenAPI_supported_gad_shapes_free(gad_shape->shape);
+        gad_shape->shape = NULL;
+    }
     ogs_free(gad_shape);
 }
 
 cJSON *OpenAPI_gad_shape_convertToJSON(OpenAPI_gad_shape_t *gad_shape)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (gad_shape == NULL) {
         ogs_error("OpenAPI_gad_shape_convertToJSON() failed [GADShape]");
@@ -36,6 +41,10 @@ cJSON *OpenAPI_gad_shape_convertToJSON(OpenAPI_gad_shape_t *gad_shape)
     }
 
     item = cJSON_CreateObject();
+    if (!gad_shape->shape) {
+        ogs_error("OpenAPI_gad_shape_convertToJSON() failed [shape]");
+        return NULL;
+    }
     cJSON *shape_local_JSON = OpenAPI_supported_gad_shapes_convertToJSON(gad_shape->shape);
     if (shape_local_JSON == NULL) {
         ogs_error("OpenAPI_gad_shape_convertToJSON() failed [shape]");
@@ -54,13 +63,14 @@ end:
 OpenAPI_gad_shape_t *OpenAPI_gad_shape_parseFromJSON(cJSON *gad_shapeJSON)
 {
     OpenAPI_gad_shape_t *gad_shape_local_var = NULL;
-    cJSON *shape = cJSON_GetObjectItemCaseSensitive(gad_shapeJSON, "shape");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *shape = NULL;
+    OpenAPI_supported_gad_shapes_t *shape_local_nonprim = NULL;
+    shape = cJSON_GetObjectItemCaseSensitive(gad_shapeJSON, "shape");
     if (!shape) {
         ogs_error("OpenAPI_gad_shape_parseFromJSON() failed [shape]");
         goto end;
     }
-
-    OpenAPI_supported_gad_shapes_t *shape_local_nonprim = NULL;
     shape_local_nonprim = OpenAPI_supported_gad_shapes_parseFromJSON(shape);
 
     gad_shape_local_var = OpenAPI_gad_shape_create (
@@ -69,6 +79,10 @@ OpenAPI_gad_shape_t *OpenAPI_gad_shape_parseFromJSON(cJSON *gad_shapeJSON)
 
     return gad_shape_local_var;
 end:
+    if (shape_local_nonprim) {
+        OpenAPI_supported_gad_shapes_free(shape_local_nonprim);
+        shape_local_nonprim = NULL;
+    }
     return NULL;
 }
 

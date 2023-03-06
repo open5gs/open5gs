@@ -1,7 +1,7 @@
 /*
  * subscription_data.h
  *
- * Information of a subscription to notifications to NRF events, included in subscription requests and responses
+ * Information of a subscription to notifications to NRF events, included in subscription requests and responses 
  */
 
 #ifndef _OpenAPI_subscription_data_H_
@@ -12,14 +12,14 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "ext_snssai.h"
 #include "nf_type.h"
 #include "notif_condition.h"
 #include "notification_event_type.h"
 #include "plmn_id.h"
 #include "plmn_id_nid.h"
 #include "plmn_snssai.h"
-#include "snssai.h"
-#include "subscription_data_subscr_cond.h"
+#include "subscr_cond.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,7 +29,7 @@ typedef struct OpenAPI_subscription_data_s OpenAPI_subscription_data_t;
 typedef struct OpenAPI_subscription_data_s {
     char *nf_status_notification_uri;
     char *req_nf_instance_id;
-    struct OpenAPI_subscription_data_subscr_cond_s *subscr_cond;
+    struct OpenAPI_subscr_cond_s *subscr_cond;
     char *subscription_id;
     char *validity_time;
     OpenAPI_list_t *req_notif_events;
@@ -45,12 +45,17 @@ typedef struct OpenAPI_subscription_data_s {
     OpenAPI_list_t *serving_scope;
     char *requester_features;
     char *nrf_supported_features;
+    char *hnrf_uri;
+    bool is_onboarding_capability;
+    int onboarding_capability;
+    char *target_hni;
+    char *preferred_locality;
 } OpenAPI_subscription_data_t;
 
 OpenAPI_subscription_data_t *OpenAPI_subscription_data_create(
     char *nf_status_notification_uri,
     char *req_nf_instance_id,
-    OpenAPI_subscription_data_subscr_cond_t *subscr_cond,
+    OpenAPI_subscr_cond_t *subscr_cond,
     char *subscription_id,
     char *validity_time,
     OpenAPI_list_t *req_notif_events,
@@ -65,7 +70,12 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_create(
     OpenAPI_list_t *req_snpn_list,
     OpenAPI_list_t *serving_scope,
     char *requester_features,
-    char *nrf_supported_features
+    char *nrf_supported_features,
+    char *hnrf_uri,
+    bool is_onboarding_capability,
+    int onboarding_capability,
+    char *target_hni,
+    char *preferred_locality
 );
 void OpenAPI_subscription_data_free(OpenAPI_subscription_data_t *subscription_data);
 OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subscription_dataJSON);

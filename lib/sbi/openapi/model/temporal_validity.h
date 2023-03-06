@@ -1,7 +1,7 @@
 /*
  * temporal_validity.h
  *
- * Indicates the time interval(s) during which the AF request is to be applied
+ * Indicates the time interval(s) during which the AF request is to be applied.
  */
 
 #ifndef _OpenAPI_temporal_validity_H_

@@ -18,17 +18,22 @@ OpenAPI_n2_ran_information_t *OpenAPI_n2_ran_information_create(
 
 void OpenAPI_n2_ran_information_free(OpenAPI_n2_ran_information_t *n2_ran_information)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == n2_ran_information) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_n2_info_content_free(n2_ran_information->n2_info_content);
+    if (n2_ran_information->n2_info_content) {
+        OpenAPI_n2_info_content_free(n2_ran_information->n2_info_content);
+        n2_ran_information->n2_info_content = NULL;
+    }
     ogs_free(n2_ran_information);
 }
 
 cJSON *OpenAPI_n2_ran_information_convertToJSON(OpenAPI_n2_ran_information_t *n2_ran_information)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (n2_ran_information == NULL) {
         ogs_error("OpenAPI_n2_ran_information_convertToJSON() failed [N2RanInformation]");
@@ -36,6 +41,10 @@ cJSON *OpenAPI_n2_ran_information_convertToJSON(OpenAPI_n2_ran_information_t *n2
     }
 
     item = cJSON_CreateObject();
+    if (!n2_ran_information->n2_info_content) {
+        ogs_error("OpenAPI_n2_ran_information_convertToJSON() failed [n2_info_content]");
+        return NULL;
+    }
     cJSON *n2_info_content_local_JSON = OpenAPI_n2_info_content_convertToJSON(n2_ran_information->n2_info_content);
     if (n2_info_content_local_JSON == NULL) {
         ogs_error("OpenAPI_n2_ran_information_convertToJSON() failed [n2_info_content]");
@@ -54,13 +63,14 @@ end:
 OpenAPI_n2_ran_information_t *OpenAPI_n2_ran_information_parseFromJSON(cJSON *n2_ran_informationJSON)
 {
     OpenAPI_n2_ran_information_t *n2_ran_information_local_var = NULL;
-    cJSON *n2_info_content = cJSON_GetObjectItemCaseSensitive(n2_ran_informationJSON, "n2InfoContent");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *n2_info_content = NULL;
+    OpenAPI_n2_info_content_t *n2_info_content_local_nonprim = NULL;
+    n2_info_content = cJSON_GetObjectItemCaseSensitive(n2_ran_informationJSON, "n2InfoContent");
     if (!n2_info_content) {
         ogs_error("OpenAPI_n2_ran_information_parseFromJSON() failed [n2_info_content]");
         goto end;
     }
-
-    OpenAPI_n2_info_content_t *n2_info_content_local_nonprim = NULL;
     n2_info_content_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(n2_info_content);
 
     n2_ran_information_local_var = OpenAPI_n2_ran_information_create (
@@ -69,6 +79,10 @@ OpenAPI_n2_ran_information_t *OpenAPI_n2_ran_information_parseFromJSON(cJSON *n2
 
     return n2_ran_information_local_var;
 end:
+    if (n2_info_content_local_nonprim) {
+        OpenAPI_n2_info_content_free(n2_info_content_local_nonprim);
+        n2_info_content_local_nonprim = NULL;
+    }
     return NULL;
 }
 

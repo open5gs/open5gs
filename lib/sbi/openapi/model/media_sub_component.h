@@ -1,7 +1,7 @@
 /*
  * media_sub_component.h
  *
- * Identifies a media subcomponent
+ * Identifies a media subcomponent.
  */
 
 #ifndef _OpenAPI_media_sub_component_H_

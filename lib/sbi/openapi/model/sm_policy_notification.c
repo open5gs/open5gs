@@ -20,18 +20,26 @@ OpenAPI_sm_policy_notification_t *OpenAPI_sm_policy_notification_create(
 
 void OpenAPI_sm_policy_notification_free(OpenAPI_sm_policy_notification_t *sm_policy_notification)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == sm_policy_notification) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(sm_policy_notification->resource_uri);
-    OpenAPI_sm_policy_decision_free(sm_policy_notification->sm_policy_decision);
+    if (sm_policy_notification->resource_uri) {
+        ogs_free(sm_policy_notification->resource_uri);
+        sm_policy_notification->resource_uri = NULL;
+    }
+    if (sm_policy_notification->sm_policy_decision) {
+        OpenAPI_sm_policy_decision_free(sm_policy_notification->sm_policy_decision);
+        sm_policy_notification->sm_policy_decision = NULL;
+    }
     ogs_free(sm_policy_notification);
 }
 
 cJSON *OpenAPI_sm_policy_notification_convertToJSON(OpenAPI_sm_policy_notification_t *sm_policy_notification)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (sm_policy_notification == NULL) {
         ogs_error("OpenAPI_sm_policy_notification_convertToJSON() failed [SmPolicyNotification]");
@@ -66,29 +74,34 @@ end:
 OpenAPI_sm_policy_notification_t *OpenAPI_sm_policy_notification_parseFromJSON(cJSON *sm_policy_notificationJSON)
 {
     OpenAPI_sm_policy_notification_t *sm_policy_notification_local_var = NULL;
-    cJSON *resource_uri = cJSON_GetObjectItemCaseSensitive(sm_policy_notificationJSON, "resourceUri");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *resource_uri = NULL;
+    cJSON *sm_policy_decision = NULL;
+    OpenAPI_sm_policy_decision_t *sm_policy_decision_local_nonprim = NULL;
+    resource_uri = cJSON_GetObjectItemCaseSensitive(sm_policy_notificationJSON, "resourceUri");
     if (resource_uri) {
-    if (!cJSON_IsString(resource_uri)) {
+    if (!cJSON_IsString(resource_uri) && !cJSON_IsNull(resource_uri)) {
         ogs_error("OpenAPI_sm_policy_notification_parseFromJSON() failed [resource_uri]");
         goto end;
     }
     }
 
-    cJSON *sm_policy_decision = cJSON_GetObjectItemCaseSensitive(sm_policy_notificationJSON, "smPolicyDecision");
-
-    OpenAPI_sm_policy_decision_t *sm_policy_decision_local_nonprim = NULL;
+    sm_policy_decision = cJSON_GetObjectItemCaseSensitive(sm_policy_notificationJSON, "smPolicyDecision");
     if (sm_policy_decision) {
     sm_policy_decision_local_nonprim = OpenAPI_sm_policy_decision_parseFromJSON(sm_policy_decision);
     }
 
     sm_policy_notification_local_var = OpenAPI_sm_policy_notification_create (
-        resource_uri ? ogs_strdup(resource_uri->valuestring) : NULL,
+        resource_uri && !cJSON_IsNull(resource_uri) ? ogs_strdup(resource_uri->valuestring) : NULL,
         sm_policy_decision ? sm_policy_decision_local_nonprim : NULL
     );
 
     return sm_policy_notification_local_var;
 end:
+    if (sm_policy_decision_local_nonprim) {
+        OpenAPI_sm_policy_decision_free(sm_policy_decision_local_nonprim);
+        sm_policy_decision_local_nonprim = NULL;
+    }
     return NULL;
 }
 

@@ -1,7 +1,7 @@
 /*
  * traffic_influ_data_patch.h
  *
- * 
+ * Represents the Traffic Influence Data to be updated in the UDR.
  */
 
 #ifndef _OpenAPI_traffic_influ_data_patch_H_
@@ -14,9 +14,8 @@
 #include "../include/binary.h"
 #include "eth_flow_description.h"
 #include "flow_info.h"
-#include "network_area_info_1.h"
+#include "network_area_info_2.h"
 #include "route_to_location.h"
-#include "snssai.h"
 #include "temporal_validity.h"
 
 #ifdef __cplusplus
@@ -28,11 +27,7 @@ typedef struct OpenAPI_traffic_influ_data_patch_s {
     char *up_path_chg_notif_corre_id;
     bool is_app_relo_ind;
     int app_relo_ind;
-    char *dnn;
     OpenAPI_list_t *eth_traffic_filters;
-    struct OpenAPI_snssai_s *snssai;
-    char *internal_group_id;
-    char *supi;
     OpenAPI_list_t *traffic_filters;
     OpenAPI_list_t *traffic_routes;
     bool is_traff_corre_ind;
@@ -40,24 +35,26 @@ typedef struct OpenAPI_traffic_influ_data_patch_s {
     char *valid_start_time;
     char *valid_end_time;
     OpenAPI_list_t *temp_validities;
-    struct OpenAPI_network_area_info_1_s *nw_area_info;
+    struct OpenAPI_network_area_info_2_s *nw_area_info;
     char *up_path_chg_notif_uri;
     OpenAPI_list_t *headers;
     bool is_af_ack_ind;
     int af_ack_ind;
     bool is_addr_preser_ind;
     int addr_preser_ind;
+    bool is_max_allowed_up_lat;
+    int max_allowed_up_lat;
+    bool is_sim_conn_ind;
+    int sim_conn_ind;
+    bool is_sim_conn_term;
+    int sim_conn_term;
 } OpenAPI_traffic_influ_data_patch_t;
 
 OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_create(
     char *up_path_chg_notif_corre_id,
     bool is_app_relo_ind,
     int app_relo_ind,
-    char *dnn,
     OpenAPI_list_t *eth_traffic_filters,
-    OpenAPI_snssai_t *snssai,
-    char *internal_group_id,
-    char *supi,
     OpenAPI_list_t *traffic_filters,
     OpenAPI_list_t *traffic_routes,
     bool is_traff_corre_ind,
@@ -65,13 +62,19 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_create(
     char *valid_start_time,
     char *valid_end_time,
     OpenAPI_list_t *temp_validities,
-    OpenAPI_network_area_info_1_t *nw_area_info,
+    OpenAPI_network_area_info_2_t *nw_area_info,
     char *up_path_chg_notif_uri,
     OpenAPI_list_t *headers,
     bool is_af_ack_ind,
     int af_ack_ind,
     bool is_addr_preser_ind,
-    int addr_preser_ind
+    int addr_preser_ind,
+    bool is_max_allowed_up_lat,
+    int max_allowed_up_lat,
+    bool is_sim_conn_ind,
+    int sim_conn_ind,
+    bool is_sim_conn_term,
+    int sim_conn_term
 );
 void OpenAPI_traffic_influ_data_patch_free(OpenAPI_traffic_influ_data_patch_t *traffic_influ_data_patch);
 OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_parseFromJSON(cJSON *traffic_influ_data_patchJSON);

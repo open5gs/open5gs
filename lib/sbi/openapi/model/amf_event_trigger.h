@@ -1,7 +1,7 @@
 /*
  * amf_event_trigger.h
  *
- * 
+ * Describes how AMF should generate the report for the event
  */
 
 #ifndef _OpenAPI_amf_event_trigger_H_

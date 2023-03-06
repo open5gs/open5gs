@@ -9,7 +9,9 @@ OpenAPI_registration_data_sets_t *OpenAPI_registration_data_sets_create(
     OpenAPI_amf_non3_gpp_access_registration_t *amf_non3_gpp,
     OpenAPI_smf_registration_info_t *smf_registration,
     OpenAPI_smsf_registration_t *smsf3_gpp,
-    OpenAPI_smsf_registration_t *smsf_non3_gpp
+    OpenAPI_smsf_registration_t *smsf_non3_gpp,
+    OpenAPI_ip_sm_gw_registration_t *ip_sm_gw,
+    OpenAPI_nwdaf_registration_info_t *nwdaf_registration
 )
 {
     OpenAPI_registration_data_sets_t *registration_data_sets_local_var = ogs_malloc(sizeof(OpenAPI_registration_data_sets_t));
@@ -20,27 +22,54 @@ OpenAPI_registration_data_sets_t *OpenAPI_registration_data_sets_create(
     registration_data_sets_local_var->smf_registration = smf_registration;
     registration_data_sets_local_var->smsf3_gpp = smsf3_gpp;
     registration_data_sets_local_var->smsf_non3_gpp = smsf_non3_gpp;
+    registration_data_sets_local_var->ip_sm_gw = ip_sm_gw;
+    registration_data_sets_local_var->nwdaf_registration = nwdaf_registration;
 
     return registration_data_sets_local_var;
 }
 
 void OpenAPI_registration_data_sets_free(OpenAPI_registration_data_sets_t *registration_data_sets)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == registration_data_sets) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_amf3_gpp_access_registration_free(registration_data_sets->amf3_gpp);
-    OpenAPI_amf_non3_gpp_access_registration_free(registration_data_sets->amf_non3_gpp);
-    OpenAPI_smf_registration_info_free(registration_data_sets->smf_registration);
-    OpenAPI_smsf_registration_free(registration_data_sets->smsf3_gpp);
-    OpenAPI_smsf_registration_free(registration_data_sets->smsf_non3_gpp);
+    if (registration_data_sets->amf3_gpp) {
+        OpenAPI_amf3_gpp_access_registration_free(registration_data_sets->amf3_gpp);
+        registration_data_sets->amf3_gpp = NULL;
+    }
+    if (registration_data_sets->amf_non3_gpp) {
+        OpenAPI_amf_non3_gpp_access_registration_free(registration_data_sets->amf_non3_gpp);
+        registration_data_sets->amf_non3_gpp = NULL;
+    }
+    if (registration_data_sets->smf_registration) {
+        OpenAPI_smf_registration_info_free(registration_data_sets->smf_registration);
+        registration_data_sets->smf_registration = NULL;
+    }
+    if (registration_data_sets->smsf3_gpp) {
+        OpenAPI_smsf_registration_free(registration_data_sets->smsf3_gpp);
+        registration_data_sets->smsf3_gpp = NULL;
+    }
+    if (registration_data_sets->smsf_non3_gpp) {
+        OpenAPI_smsf_registration_free(registration_data_sets->smsf_non3_gpp);
+        registration_data_sets->smsf_non3_gpp = NULL;
+    }
+    if (registration_data_sets->ip_sm_gw) {
+        OpenAPI_ip_sm_gw_registration_free(registration_data_sets->ip_sm_gw);
+        registration_data_sets->ip_sm_gw = NULL;
+    }
+    if (registration_data_sets->nwdaf_registration) {
+        OpenAPI_nwdaf_registration_info_free(registration_data_sets->nwdaf_registration);
+        registration_data_sets->nwdaf_registration = NULL;
+    }
     ogs_free(registration_data_sets);
 }
 
 cJSON *OpenAPI_registration_data_sets_convertToJSON(OpenAPI_registration_data_sets_t *registration_data_sets)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (registration_data_sets == NULL) {
         ogs_error("OpenAPI_registration_data_sets_convertToJSON() failed [RegistrationDataSets]");
@@ -113,6 +142,32 @@ cJSON *OpenAPI_registration_data_sets_convertToJSON(OpenAPI_registration_data_se
     }
     }
 
+    if (registration_data_sets->ip_sm_gw) {
+    cJSON *ip_sm_gw_local_JSON = OpenAPI_ip_sm_gw_registration_convertToJSON(registration_data_sets->ip_sm_gw);
+    if (ip_sm_gw_local_JSON == NULL) {
+        ogs_error("OpenAPI_registration_data_sets_convertToJSON() failed [ip_sm_gw]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "ipSmGw", ip_sm_gw_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_registration_data_sets_convertToJSON() failed [ip_sm_gw]");
+        goto end;
+    }
+    }
+
+    if (registration_data_sets->nwdaf_registration) {
+    cJSON *nwdaf_registration_local_JSON = OpenAPI_nwdaf_registration_info_convertToJSON(registration_data_sets->nwdaf_registration);
+    if (nwdaf_registration_local_JSON == NULL) {
+        ogs_error("OpenAPI_registration_data_sets_convertToJSON() failed [nwdaf_registration]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "nwdafRegistration", nwdaf_registration_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_registration_data_sets_convertToJSON() failed [nwdaf_registration]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -120,39 +175,54 @@ end:
 OpenAPI_registration_data_sets_t *OpenAPI_registration_data_sets_parseFromJSON(cJSON *registration_data_setsJSON)
 {
     OpenAPI_registration_data_sets_t *registration_data_sets_local_var = NULL;
-    cJSON *amf3_gpp = cJSON_GetObjectItemCaseSensitive(registration_data_setsJSON, "amf3Gpp");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *amf3_gpp = NULL;
     OpenAPI_amf3_gpp_access_registration_t *amf3_gpp_local_nonprim = NULL;
+    cJSON *amf_non3_gpp = NULL;
+    OpenAPI_amf_non3_gpp_access_registration_t *amf_non3_gpp_local_nonprim = NULL;
+    cJSON *smf_registration = NULL;
+    OpenAPI_smf_registration_info_t *smf_registration_local_nonprim = NULL;
+    cJSON *smsf3_gpp = NULL;
+    OpenAPI_smsf_registration_t *smsf3_gpp_local_nonprim = NULL;
+    cJSON *smsf_non3_gpp = NULL;
+    OpenAPI_smsf_registration_t *smsf_non3_gpp_local_nonprim = NULL;
+    cJSON *ip_sm_gw = NULL;
+    OpenAPI_ip_sm_gw_registration_t *ip_sm_gw_local_nonprim = NULL;
+    cJSON *nwdaf_registration = NULL;
+    OpenAPI_nwdaf_registration_info_t *nwdaf_registration_local_nonprim = NULL;
+    amf3_gpp = cJSON_GetObjectItemCaseSensitive(registration_data_setsJSON, "amf3Gpp");
     if (amf3_gpp) {
     amf3_gpp_local_nonprim = OpenAPI_amf3_gpp_access_registration_parseFromJSON(amf3_gpp);
     }
 
-    cJSON *amf_non3_gpp = cJSON_GetObjectItemCaseSensitive(registration_data_setsJSON, "amfNon3Gpp");
-
-    OpenAPI_amf_non3_gpp_access_registration_t *amf_non3_gpp_local_nonprim = NULL;
+    amf_non3_gpp = cJSON_GetObjectItemCaseSensitive(registration_data_setsJSON, "amfNon3Gpp");
     if (amf_non3_gpp) {
     amf_non3_gpp_local_nonprim = OpenAPI_amf_non3_gpp_access_registration_parseFromJSON(amf_non3_gpp);
     }
 
-    cJSON *smf_registration = cJSON_GetObjectItemCaseSensitive(registration_data_setsJSON, "smfRegistration");
-
-    OpenAPI_smf_registration_info_t *smf_registration_local_nonprim = NULL;
+    smf_registration = cJSON_GetObjectItemCaseSensitive(registration_data_setsJSON, "smfRegistration");
     if (smf_registration) {
     smf_registration_local_nonprim = OpenAPI_smf_registration_info_parseFromJSON(smf_registration);
     }
 
-    cJSON *smsf3_gpp = cJSON_GetObjectItemCaseSensitive(registration_data_setsJSON, "smsf3Gpp");
-
-    OpenAPI_smsf_registration_t *smsf3_gpp_local_nonprim = NULL;
+    smsf3_gpp = cJSON_GetObjectItemCaseSensitive(registration_data_setsJSON, "smsf3Gpp");
     if (smsf3_gpp) {
     smsf3_gpp_local_nonprim = OpenAPI_smsf_registration_parseFromJSON(smsf3_gpp);
     }
 
-    cJSON *smsf_non3_gpp = cJSON_GetObjectItemCaseSensitive(registration_data_setsJSON, "smsfNon3Gpp");
-
-    OpenAPI_smsf_registration_t *smsf_non3_gpp_local_nonprim = NULL;
+    smsf_non3_gpp = cJSON_GetObjectItemCaseSensitive(registration_data_setsJSON, "smsfNon3Gpp");
     if (smsf_non3_gpp) {
     smsf_non3_gpp_local_nonprim = OpenAPI_smsf_registration_parseFromJSON(smsf_non3_gpp);
+    }
+
+    ip_sm_gw = cJSON_GetObjectItemCaseSensitive(registration_data_setsJSON, "ipSmGw");
+    if (ip_sm_gw) {
+    ip_sm_gw_local_nonprim = OpenAPI_ip_sm_gw_registration_parseFromJSON(ip_sm_gw);
+    }
+
+    nwdaf_registration = cJSON_GetObjectItemCaseSensitive(registration_data_setsJSON, "nwdafRegistration");
+    if (nwdaf_registration) {
+    nwdaf_registration_local_nonprim = OpenAPI_nwdaf_registration_info_parseFromJSON(nwdaf_registration);
     }
 
     registration_data_sets_local_var = OpenAPI_registration_data_sets_create (
@@ -160,11 +230,41 @@ OpenAPI_registration_data_sets_t *OpenAPI_registration_data_sets_parseFromJSON(c
         amf_non3_gpp ? amf_non3_gpp_local_nonprim : NULL,
         smf_registration ? smf_registration_local_nonprim : NULL,
         smsf3_gpp ? smsf3_gpp_local_nonprim : NULL,
-        smsf_non3_gpp ? smsf_non3_gpp_local_nonprim : NULL
+        smsf_non3_gpp ? smsf_non3_gpp_local_nonprim : NULL,
+        ip_sm_gw ? ip_sm_gw_local_nonprim : NULL,
+        nwdaf_registration ? nwdaf_registration_local_nonprim : NULL
     );
 
     return registration_data_sets_local_var;
 end:
+    if (amf3_gpp_local_nonprim) {
+        OpenAPI_amf3_gpp_access_registration_free(amf3_gpp_local_nonprim);
+        amf3_gpp_local_nonprim = NULL;
+    }
+    if (amf_non3_gpp_local_nonprim) {
+        OpenAPI_amf_non3_gpp_access_registration_free(amf_non3_gpp_local_nonprim);
+        amf_non3_gpp_local_nonprim = NULL;
+    }
+    if (smf_registration_local_nonprim) {
+        OpenAPI_smf_registration_info_free(smf_registration_local_nonprim);
+        smf_registration_local_nonprim = NULL;
+    }
+    if (smsf3_gpp_local_nonprim) {
+        OpenAPI_smsf_registration_free(smsf3_gpp_local_nonprim);
+        smsf3_gpp_local_nonprim = NULL;
+    }
+    if (smsf_non3_gpp_local_nonprim) {
+        OpenAPI_smsf_registration_free(smsf_non3_gpp_local_nonprim);
+        smsf_non3_gpp_local_nonprim = NULL;
+    }
+    if (ip_sm_gw_local_nonprim) {
+        OpenAPI_ip_sm_gw_registration_free(ip_sm_gw_local_nonprim);
+        ip_sm_gw_local_nonprim = NULL;
+    }
+    if (nwdaf_registration_local_nonprim) {
+        OpenAPI_nwdaf_registration_info_free(nwdaf_registration_local_nonprim);
+        nwdaf_registration_local_nonprim = NULL;
+    }
     return NULL;
 }
 

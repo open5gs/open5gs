@@ -1,7 +1,7 @@
 /*
  * transfer_mt_data_error.h
  *
- * 
+ * Transfer MT Data Error Response
  */
 
 #ifndef _OpenAPI_transfer_mt_data_error_H_
@@ -15,8 +15,6 @@
 #include "access_token_err.h"
 #include "access_token_req.h"
 #include "invalid_param.h"
-#include "problem_details.h"
-#include "transfer_mt_data_add_info.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -36,6 +34,8 @@ typedef struct OpenAPI_transfer_mt_data_error_s {
     struct OpenAPI_access_token_err_s *access_token_error;
     struct OpenAPI_access_token_req_s *access_token_request;
     char *nrf_id;
+    bool is_remote_error;
+    int remote_error;
     bool is_max_waiting_time;
     int max_waiting_time;
 } OpenAPI_transfer_mt_data_error_t;
@@ -53,6 +53,8 @@ OpenAPI_transfer_mt_data_error_t *OpenAPI_transfer_mt_data_error_create(
     OpenAPI_access_token_err_t *access_token_error,
     OpenAPI_access_token_req_t *access_token_request,
     char *nrf_id,
+    bool is_remote_error,
+    int remote_error,
     bool is_max_waiting_time,
     int max_waiting_time
 );

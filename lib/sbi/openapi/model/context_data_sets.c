@@ -13,7 +13,9 @@ OpenAPI_context_data_sets_t *OpenAPI_context_data_sets_create(
     OpenAPI_smsf_registration_t *smsf_non3_gpp_access,
     OpenAPI_list_t *subscription_data_subscriptions,
     OpenAPI_list_t *smf_registrations,
-    OpenAPI_ip_sm_gw_registration_t *ip_sm_gw
+    OpenAPI_ip_sm_gw_registration_t *ip_sm_gw,
+    OpenAPI_roaming_info_update_t *roaming_info,
+    OpenAPI_pei_update_info_t *pei_info
 )
 {
     OpenAPI_context_data_sets_t *context_data_sets_local_var = ogs_malloc(sizeof(OpenAPI_context_data_sets_t));
@@ -28,43 +30,82 @@ OpenAPI_context_data_sets_t *OpenAPI_context_data_sets_create(
     context_data_sets_local_var->subscription_data_subscriptions = subscription_data_subscriptions;
     context_data_sets_local_var->smf_registrations = smf_registrations;
     context_data_sets_local_var->ip_sm_gw = ip_sm_gw;
+    context_data_sets_local_var->roaming_info = roaming_info;
+    context_data_sets_local_var->pei_info = pei_info;
 
     return context_data_sets_local_var;
 }
 
 void OpenAPI_context_data_sets_free(OpenAPI_context_data_sets_t *context_data_sets)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == context_data_sets) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_amf3_gpp_access_registration_free(context_data_sets->amf3_gpp);
-    OpenAPI_amf_non3_gpp_access_registration_free(context_data_sets->amf_non3_gpp);
-    OpenAPI_list_for_each(context_data_sets->sdm_subscriptions, node) {
-        OpenAPI_sdm_subscription_free(node->data);
+    if (context_data_sets->amf3_gpp) {
+        OpenAPI_amf3_gpp_access_registration_free(context_data_sets->amf3_gpp);
+        context_data_sets->amf3_gpp = NULL;
     }
-    OpenAPI_list_free(context_data_sets->sdm_subscriptions);
-    OpenAPI_list_for_each(context_data_sets->ee_subscriptions, node) {
-        OpenAPI_ee_subscription_free(node->data);
+    if (context_data_sets->amf_non3_gpp) {
+        OpenAPI_amf_non3_gpp_access_registration_free(context_data_sets->amf_non3_gpp);
+        context_data_sets->amf_non3_gpp = NULL;
     }
-    OpenAPI_list_free(context_data_sets->ee_subscriptions);
-    OpenAPI_smsf_registration_free(context_data_sets->smsf3_gpp_access);
-    OpenAPI_smsf_registration_free(context_data_sets->smsf_non3_gpp_access);
-    OpenAPI_list_for_each(context_data_sets->subscription_data_subscriptions, node) {
-        OpenAPI_subscription_data_subscriptions_free(node->data);
+    if (context_data_sets->sdm_subscriptions) {
+        OpenAPI_list_for_each(context_data_sets->sdm_subscriptions, node) {
+            OpenAPI_sdm_subscription_free(node->data);
+        }
+        OpenAPI_list_free(context_data_sets->sdm_subscriptions);
+        context_data_sets->sdm_subscriptions = NULL;
     }
-    OpenAPI_list_free(context_data_sets->subscription_data_subscriptions);
-    OpenAPI_list_for_each(context_data_sets->smf_registrations, node) {
-        OpenAPI_smf_registration_free(node->data);
+    if (context_data_sets->ee_subscriptions) {
+        OpenAPI_list_for_each(context_data_sets->ee_subscriptions, node) {
+            OpenAPI_ee_subscription_free(node->data);
+        }
+        OpenAPI_list_free(context_data_sets->ee_subscriptions);
+        context_data_sets->ee_subscriptions = NULL;
     }
-    OpenAPI_list_free(context_data_sets->smf_registrations);
-    OpenAPI_ip_sm_gw_registration_free(context_data_sets->ip_sm_gw);
+    if (context_data_sets->smsf3_gpp_access) {
+        OpenAPI_smsf_registration_free(context_data_sets->smsf3_gpp_access);
+        context_data_sets->smsf3_gpp_access = NULL;
+    }
+    if (context_data_sets->smsf_non3_gpp_access) {
+        OpenAPI_smsf_registration_free(context_data_sets->smsf_non3_gpp_access);
+        context_data_sets->smsf_non3_gpp_access = NULL;
+    }
+    if (context_data_sets->subscription_data_subscriptions) {
+        OpenAPI_list_for_each(context_data_sets->subscription_data_subscriptions, node) {
+            OpenAPI_subscription_data_subscriptions_free(node->data);
+        }
+        OpenAPI_list_free(context_data_sets->subscription_data_subscriptions);
+        context_data_sets->subscription_data_subscriptions = NULL;
+    }
+    if (context_data_sets->smf_registrations) {
+        OpenAPI_list_for_each(context_data_sets->smf_registrations, node) {
+            OpenAPI_smf_registration_free(node->data);
+        }
+        OpenAPI_list_free(context_data_sets->smf_registrations);
+        context_data_sets->smf_registrations = NULL;
+    }
+    if (context_data_sets->ip_sm_gw) {
+        OpenAPI_ip_sm_gw_registration_free(context_data_sets->ip_sm_gw);
+        context_data_sets->ip_sm_gw = NULL;
+    }
+    if (context_data_sets->roaming_info) {
+        OpenAPI_roaming_info_update_free(context_data_sets->roaming_info);
+        context_data_sets->roaming_info = NULL;
+    }
+    if (context_data_sets->pei_info) {
+        OpenAPI_pei_update_info_free(context_data_sets->pei_info);
+        context_data_sets->pei_info = NULL;
+    }
     ogs_free(context_data_sets);
 }
 
 cJSON *OpenAPI_context_data_sets_convertToJSON(OpenAPI_context_data_sets_t *context_data_sets)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (context_data_sets == NULL) {
         ogs_error("OpenAPI_context_data_sets_convertToJSON() failed [ContextDataSets]");
@@ -104,17 +145,13 @@ cJSON *OpenAPI_context_data_sets_convertToJSON(OpenAPI_context_data_sets_t *cont
         ogs_error("OpenAPI_context_data_sets_convertToJSON() failed [sdm_subscriptions]");
         goto end;
     }
-
-    OpenAPI_lnode_t *sdm_subscriptions_node;
-    if (context_data_sets->sdm_subscriptions) {
-        OpenAPI_list_for_each(context_data_sets->sdm_subscriptions, sdm_subscriptions_node) {
-            cJSON *itemLocal = OpenAPI_sdm_subscription_convertToJSON(sdm_subscriptions_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_context_data_sets_convertToJSON() failed [sdm_subscriptions]");
-                goto end;
-            }
-            cJSON_AddItemToArray(sdm_subscriptionsList, itemLocal);
+    OpenAPI_list_for_each(context_data_sets->sdm_subscriptions, node) {
+        cJSON *itemLocal = OpenAPI_sdm_subscription_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_context_data_sets_convertToJSON() failed [sdm_subscriptions]");
+            goto end;
         }
+        cJSON_AddItemToArray(sdm_subscriptionsList, itemLocal);
     }
     }
 
@@ -124,17 +161,13 @@ cJSON *OpenAPI_context_data_sets_convertToJSON(OpenAPI_context_data_sets_t *cont
         ogs_error("OpenAPI_context_data_sets_convertToJSON() failed [ee_subscriptions]");
         goto end;
     }
-
-    OpenAPI_lnode_t *ee_subscriptions_node;
-    if (context_data_sets->ee_subscriptions) {
-        OpenAPI_list_for_each(context_data_sets->ee_subscriptions, ee_subscriptions_node) {
-            cJSON *itemLocal = OpenAPI_ee_subscription_convertToJSON(ee_subscriptions_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_context_data_sets_convertToJSON() failed [ee_subscriptions]");
-                goto end;
-            }
-            cJSON_AddItemToArray(ee_subscriptionsList, itemLocal);
+    OpenAPI_list_for_each(context_data_sets->ee_subscriptions, node) {
+        cJSON *itemLocal = OpenAPI_ee_subscription_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_context_data_sets_convertToJSON() failed [ee_subscriptions]");
+            goto end;
         }
+        cJSON_AddItemToArray(ee_subscriptionsList, itemLocal);
     }
     }
 
@@ -170,17 +203,13 @@ cJSON *OpenAPI_context_data_sets_convertToJSON(OpenAPI_context_data_sets_t *cont
         ogs_error("OpenAPI_context_data_sets_convertToJSON() failed [subscription_data_subscriptions]");
         goto end;
     }
-
-    OpenAPI_lnode_t *subscription_data_subscriptions_node;
-    if (context_data_sets->subscription_data_subscriptions) {
-        OpenAPI_list_for_each(context_data_sets->subscription_data_subscriptions, subscription_data_subscriptions_node) {
-            cJSON *itemLocal = OpenAPI_subscription_data_subscriptions_convertToJSON(subscription_data_subscriptions_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_context_data_sets_convertToJSON() failed [subscription_data_subscriptions]");
-                goto end;
-            }
-            cJSON_AddItemToArray(subscription_data_subscriptionsList, itemLocal);
+    OpenAPI_list_for_each(context_data_sets->subscription_data_subscriptions, node) {
+        cJSON *itemLocal = OpenAPI_subscription_data_subscriptions_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_context_data_sets_convertToJSON() failed [subscription_data_subscriptions]");
+            goto end;
         }
+        cJSON_AddItemToArray(subscription_data_subscriptionsList, itemLocal);
     }
     }
 
@@ -190,17 +219,13 @@ cJSON *OpenAPI_context_data_sets_convertToJSON(OpenAPI_context_data_sets_t *cont
         ogs_error("OpenAPI_context_data_sets_convertToJSON() failed [smf_registrations]");
         goto end;
     }
-
-    OpenAPI_lnode_t *smf_registrations_node;
-    if (context_data_sets->smf_registrations) {
-        OpenAPI_list_for_each(context_data_sets->smf_registrations, smf_registrations_node) {
-            cJSON *itemLocal = OpenAPI_smf_registration_convertToJSON(smf_registrations_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_context_data_sets_convertToJSON() failed [smf_registrations]");
-                goto end;
-            }
-            cJSON_AddItemToArray(smf_registrationsList, itemLocal);
+    OpenAPI_list_for_each(context_data_sets->smf_registrations, node) {
+        cJSON *itemLocal = OpenAPI_smf_registration_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_context_data_sets_convertToJSON() failed [smf_registrations]");
+            goto end;
         }
+        cJSON_AddItemToArray(smf_registrationsList, itemLocal);
     }
     }
 
@@ -217,6 +242,32 @@ cJSON *OpenAPI_context_data_sets_convertToJSON(OpenAPI_context_data_sets_t *cont
     }
     }
 
+    if (context_data_sets->roaming_info) {
+    cJSON *roaming_info_local_JSON = OpenAPI_roaming_info_update_convertToJSON(context_data_sets->roaming_info);
+    if (roaming_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_context_data_sets_convertToJSON() failed [roaming_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "roamingInfo", roaming_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_context_data_sets_convertToJSON() failed [roaming_info]");
+        goto end;
+    }
+    }
+
+    if (context_data_sets->pei_info) {
+    cJSON *pei_info_local_JSON = OpenAPI_pei_update_info_convertToJSON(context_data_sets->pei_info);
+    if (pei_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_context_data_sets_convertToJSON() failed [pei_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "peiInfo", pei_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_context_data_sets_convertToJSON() failed [pei_info]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -224,155 +275,162 @@ end:
 OpenAPI_context_data_sets_t *OpenAPI_context_data_sets_parseFromJSON(cJSON *context_data_setsJSON)
 {
     OpenAPI_context_data_sets_t *context_data_sets_local_var = NULL;
-    cJSON *amf3_gpp = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "amf3Gpp");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *amf3_gpp = NULL;
     OpenAPI_amf3_gpp_access_registration_t *amf3_gpp_local_nonprim = NULL;
+    cJSON *amf_non3_gpp = NULL;
+    OpenAPI_amf_non3_gpp_access_registration_t *amf_non3_gpp_local_nonprim = NULL;
+    cJSON *sdm_subscriptions = NULL;
+    OpenAPI_list_t *sdm_subscriptionsList = NULL;
+    cJSON *ee_subscriptions = NULL;
+    OpenAPI_list_t *ee_subscriptionsList = NULL;
+    cJSON *smsf3_gpp_access = NULL;
+    OpenAPI_smsf_registration_t *smsf3_gpp_access_local_nonprim = NULL;
+    cJSON *smsf_non3_gpp_access = NULL;
+    OpenAPI_smsf_registration_t *smsf_non3_gpp_access_local_nonprim = NULL;
+    cJSON *subscription_data_subscriptions = NULL;
+    OpenAPI_list_t *subscription_data_subscriptionsList = NULL;
+    cJSON *smf_registrations = NULL;
+    OpenAPI_list_t *smf_registrationsList = NULL;
+    cJSON *ip_sm_gw = NULL;
+    OpenAPI_ip_sm_gw_registration_t *ip_sm_gw_local_nonprim = NULL;
+    cJSON *roaming_info = NULL;
+    OpenAPI_roaming_info_update_t *roaming_info_local_nonprim = NULL;
+    cJSON *pei_info = NULL;
+    OpenAPI_pei_update_info_t *pei_info_local_nonprim = NULL;
+    amf3_gpp = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "amf3Gpp");
     if (amf3_gpp) {
     amf3_gpp_local_nonprim = OpenAPI_amf3_gpp_access_registration_parseFromJSON(amf3_gpp);
     }
 
-    cJSON *amf_non3_gpp = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "amfNon3Gpp");
-
-    OpenAPI_amf_non3_gpp_access_registration_t *amf_non3_gpp_local_nonprim = NULL;
+    amf_non3_gpp = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "amfNon3Gpp");
     if (amf_non3_gpp) {
     amf_non3_gpp_local_nonprim = OpenAPI_amf_non3_gpp_access_registration_parseFromJSON(amf_non3_gpp);
     }
 
-    cJSON *sdm_subscriptions = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "sdmSubscriptions");
-
-    OpenAPI_list_t *sdm_subscriptionsList;
+    sdm_subscriptions = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "sdmSubscriptions");
     if (sdm_subscriptions) {
-    cJSON *sdm_subscriptions_local_nonprimitive;
-    if (!cJSON_IsArray(sdm_subscriptions)){
-        ogs_error("OpenAPI_context_data_sets_parseFromJSON() failed [sdm_subscriptions]");
-        goto end;
-    }
-
-    sdm_subscriptionsList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(sdm_subscriptions_local_nonprimitive, sdm_subscriptions ) {
-        if (!cJSON_IsObject(sdm_subscriptions_local_nonprimitive)) {
+        cJSON *sdm_subscriptions_local = NULL;
+        if (!cJSON_IsArray(sdm_subscriptions)) {
             ogs_error("OpenAPI_context_data_sets_parseFromJSON() failed [sdm_subscriptions]");
             goto end;
         }
-        OpenAPI_sdm_subscription_t *sdm_subscriptionsItem = OpenAPI_sdm_subscription_parseFromJSON(sdm_subscriptions_local_nonprimitive);
 
-        if (!sdm_subscriptionsItem) {
-            ogs_error("No sdm_subscriptionsItem");
-            OpenAPI_list_free(sdm_subscriptionsList);
-            goto end;
+        sdm_subscriptionsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(sdm_subscriptions_local, sdm_subscriptions) {
+            if (!cJSON_IsObject(sdm_subscriptions_local)) {
+                ogs_error("OpenAPI_context_data_sets_parseFromJSON() failed [sdm_subscriptions]");
+                goto end;
+            }
+            OpenAPI_sdm_subscription_t *sdm_subscriptionsItem = OpenAPI_sdm_subscription_parseFromJSON(sdm_subscriptions_local);
+            if (!sdm_subscriptionsItem) {
+                ogs_error("No sdm_subscriptionsItem");
+                OpenAPI_list_free(sdm_subscriptionsList);
+                goto end;
+            }
+            OpenAPI_list_add(sdm_subscriptionsList, sdm_subscriptionsItem);
         }
-
-        OpenAPI_list_add(sdm_subscriptionsList, sdm_subscriptionsItem);
-    }
     }
 
-    cJSON *ee_subscriptions = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "eeSubscriptions");
-
-    OpenAPI_list_t *ee_subscriptionsList;
+    ee_subscriptions = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "eeSubscriptions");
     if (ee_subscriptions) {
-    cJSON *ee_subscriptions_local_nonprimitive;
-    if (!cJSON_IsArray(ee_subscriptions)){
-        ogs_error("OpenAPI_context_data_sets_parseFromJSON() failed [ee_subscriptions]");
-        goto end;
-    }
-
-    ee_subscriptionsList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(ee_subscriptions_local_nonprimitive, ee_subscriptions ) {
-        if (!cJSON_IsObject(ee_subscriptions_local_nonprimitive)) {
+        cJSON *ee_subscriptions_local = NULL;
+        if (!cJSON_IsArray(ee_subscriptions)) {
             ogs_error("OpenAPI_context_data_sets_parseFromJSON() failed [ee_subscriptions]");
             goto end;
         }
-        OpenAPI_ee_subscription_t *ee_subscriptionsItem = OpenAPI_ee_subscription_parseFromJSON(ee_subscriptions_local_nonprimitive);
 
-        if (!ee_subscriptionsItem) {
-            ogs_error("No ee_subscriptionsItem");
-            OpenAPI_list_free(ee_subscriptionsList);
-            goto end;
+        ee_subscriptionsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(ee_subscriptions_local, ee_subscriptions) {
+            if (!cJSON_IsObject(ee_subscriptions_local)) {
+                ogs_error("OpenAPI_context_data_sets_parseFromJSON() failed [ee_subscriptions]");
+                goto end;
+            }
+            OpenAPI_ee_subscription_t *ee_subscriptionsItem = OpenAPI_ee_subscription_parseFromJSON(ee_subscriptions_local);
+            if (!ee_subscriptionsItem) {
+                ogs_error("No ee_subscriptionsItem");
+                OpenAPI_list_free(ee_subscriptionsList);
+                goto end;
+            }
+            OpenAPI_list_add(ee_subscriptionsList, ee_subscriptionsItem);
         }
-
-        OpenAPI_list_add(ee_subscriptionsList, ee_subscriptionsItem);
-    }
     }
 
-    cJSON *smsf3_gpp_access = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "smsf3GppAccess");
-
-    OpenAPI_smsf_registration_t *smsf3_gpp_access_local_nonprim = NULL;
+    smsf3_gpp_access = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "smsf3GppAccess");
     if (smsf3_gpp_access) {
     smsf3_gpp_access_local_nonprim = OpenAPI_smsf_registration_parseFromJSON(smsf3_gpp_access);
     }
 
-    cJSON *smsf_non3_gpp_access = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "smsfNon3GppAccess");
-
-    OpenAPI_smsf_registration_t *smsf_non3_gpp_access_local_nonprim = NULL;
+    smsf_non3_gpp_access = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "smsfNon3GppAccess");
     if (smsf_non3_gpp_access) {
     smsf_non3_gpp_access_local_nonprim = OpenAPI_smsf_registration_parseFromJSON(smsf_non3_gpp_access);
     }
 
-    cJSON *subscription_data_subscriptions = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "subscriptionDataSubscriptions");
-
-    OpenAPI_list_t *subscription_data_subscriptionsList;
+    subscription_data_subscriptions = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "subscriptionDataSubscriptions");
     if (subscription_data_subscriptions) {
-    cJSON *subscription_data_subscriptions_local_nonprimitive;
-    if (!cJSON_IsArray(subscription_data_subscriptions)){
-        ogs_error("OpenAPI_context_data_sets_parseFromJSON() failed [subscription_data_subscriptions]");
-        goto end;
-    }
-
-    subscription_data_subscriptionsList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(subscription_data_subscriptions_local_nonprimitive, subscription_data_subscriptions ) {
-        if (!cJSON_IsObject(subscription_data_subscriptions_local_nonprimitive)) {
+        cJSON *subscription_data_subscriptions_local = NULL;
+        if (!cJSON_IsArray(subscription_data_subscriptions)) {
             ogs_error("OpenAPI_context_data_sets_parseFromJSON() failed [subscription_data_subscriptions]");
             goto end;
         }
-        OpenAPI_subscription_data_subscriptions_t *subscription_data_subscriptionsItem = OpenAPI_subscription_data_subscriptions_parseFromJSON(subscription_data_subscriptions_local_nonprimitive);
 
-        if (!subscription_data_subscriptionsItem) {
-            ogs_error("No subscription_data_subscriptionsItem");
-            OpenAPI_list_free(subscription_data_subscriptionsList);
-            goto end;
+        subscription_data_subscriptionsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(subscription_data_subscriptions_local, subscription_data_subscriptions) {
+            if (!cJSON_IsObject(subscription_data_subscriptions_local)) {
+                ogs_error("OpenAPI_context_data_sets_parseFromJSON() failed [subscription_data_subscriptions]");
+                goto end;
+            }
+            OpenAPI_subscription_data_subscriptions_t *subscription_data_subscriptionsItem = OpenAPI_subscription_data_subscriptions_parseFromJSON(subscription_data_subscriptions_local);
+            if (!subscription_data_subscriptionsItem) {
+                ogs_error("No subscription_data_subscriptionsItem");
+                OpenAPI_list_free(subscription_data_subscriptionsList);
+                goto end;
+            }
+            OpenAPI_list_add(subscription_data_subscriptionsList, subscription_data_subscriptionsItem);
         }
-
-        OpenAPI_list_add(subscription_data_subscriptionsList, subscription_data_subscriptionsItem);
-    }
     }
 
-    cJSON *smf_registrations = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "smfRegistrations");
-
-    OpenAPI_list_t *smf_registrationsList;
+    smf_registrations = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "smfRegistrations");
     if (smf_registrations) {
-    cJSON *smf_registrations_local_nonprimitive;
-    if (!cJSON_IsArray(smf_registrations)){
-        ogs_error("OpenAPI_context_data_sets_parseFromJSON() failed [smf_registrations]");
-        goto end;
-    }
-
-    smf_registrationsList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(smf_registrations_local_nonprimitive, smf_registrations ) {
-        if (!cJSON_IsObject(smf_registrations_local_nonprimitive)) {
+        cJSON *smf_registrations_local = NULL;
+        if (!cJSON_IsArray(smf_registrations)) {
             ogs_error("OpenAPI_context_data_sets_parseFromJSON() failed [smf_registrations]");
             goto end;
         }
-        OpenAPI_smf_registration_t *smf_registrationsItem = OpenAPI_smf_registration_parseFromJSON(smf_registrations_local_nonprimitive);
 
-        if (!smf_registrationsItem) {
-            ogs_error("No smf_registrationsItem");
-            OpenAPI_list_free(smf_registrationsList);
-            goto end;
+        smf_registrationsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(smf_registrations_local, smf_registrations) {
+            if (!cJSON_IsObject(smf_registrations_local)) {
+                ogs_error("OpenAPI_context_data_sets_parseFromJSON() failed [smf_registrations]");
+                goto end;
+            }
+            OpenAPI_smf_registration_t *smf_registrationsItem = OpenAPI_smf_registration_parseFromJSON(smf_registrations_local);
+            if (!smf_registrationsItem) {
+                ogs_error("No smf_registrationsItem");
+                OpenAPI_list_free(smf_registrationsList);
+                goto end;
+            }
+            OpenAPI_list_add(smf_registrationsList, smf_registrationsItem);
         }
-
-        OpenAPI_list_add(smf_registrationsList, smf_registrationsItem);
-    }
     }
 
-    cJSON *ip_sm_gw = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "ipSmGw");
-
-    OpenAPI_ip_sm_gw_registration_t *ip_sm_gw_local_nonprim = NULL;
+    ip_sm_gw = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "ipSmGw");
     if (ip_sm_gw) {
     ip_sm_gw_local_nonprim = OpenAPI_ip_sm_gw_registration_parseFromJSON(ip_sm_gw);
+    }
+
+    roaming_info = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "roamingInfo");
+    if (roaming_info) {
+    roaming_info_local_nonprim = OpenAPI_roaming_info_update_parseFromJSON(roaming_info);
+    }
+
+    pei_info = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "peiInfo");
+    if (pei_info) {
+    pei_info_local_nonprim = OpenAPI_pei_update_info_parseFromJSON(pei_info);
     }
 
     context_data_sets_local_var = OpenAPI_context_data_sets_create (
@@ -384,11 +442,69 @@ OpenAPI_context_data_sets_t *OpenAPI_context_data_sets_parseFromJSON(cJSON *cont
         smsf_non3_gpp_access ? smsf_non3_gpp_access_local_nonprim : NULL,
         subscription_data_subscriptions ? subscription_data_subscriptionsList : NULL,
         smf_registrations ? smf_registrationsList : NULL,
-        ip_sm_gw ? ip_sm_gw_local_nonprim : NULL
+        ip_sm_gw ? ip_sm_gw_local_nonprim : NULL,
+        roaming_info ? roaming_info_local_nonprim : NULL,
+        pei_info ? pei_info_local_nonprim : NULL
     );
 
     return context_data_sets_local_var;
 end:
+    if (amf3_gpp_local_nonprim) {
+        OpenAPI_amf3_gpp_access_registration_free(amf3_gpp_local_nonprim);
+        amf3_gpp_local_nonprim = NULL;
+    }
+    if (amf_non3_gpp_local_nonprim) {
+        OpenAPI_amf_non3_gpp_access_registration_free(amf_non3_gpp_local_nonprim);
+        amf_non3_gpp_local_nonprim = NULL;
+    }
+    if (sdm_subscriptionsList) {
+        OpenAPI_list_for_each(sdm_subscriptionsList, node) {
+            OpenAPI_sdm_subscription_free(node->data);
+        }
+        OpenAPI_list_free(sdm_subscriptionsList);
+        sdm_subscriptionsList = NULL;
+    }
+    if (ee_subscriptionsList) {
+        OpenAPI_list_for_each(ee_subscriptionsList, node) {
+            OpenAPI_ee_subscription_free(node->data);
+        }
+        OpenAPI_list_free(ee_subscriptionsList);
+        ee_subscriptionsList = NULL;
+    }
+    if (smsf3_gpp_access_local_nonprim) {
+        OpenAPI_smsf_registration_free(smsf3_gpp_access_local_nonprim);
+        smsf3_gpp_access_local_nonprim = NULL;
+    }
+    if (smsf_non3_gpp_access_local_nonprim) {
+        OpenAPI_smsf_registration_free(smsf_non3_gpp_access_local_nonprim);
+        smsf_non3_gpp_access_local_nonprim = NULL;
+    }
+    if (subscription_data_subscriptionsList) {
+        OpenAPI_list_for_each(subscription_data_subscriptionsList, node) {
+            OpenAPI_subscription_data_subscriptions_free(node->data);
+        }
+        OpenAPI_list_free(subscription_data_subscriptionsList);
+        subscription_data_subscriptionsList = NULL;
+    }
+    if (smf_registrationsList) {
+        OpenAPI_list_for_each(smf_registrationsList, node) {
+            OpenAPI_smf_registration_free(node->data);
+        }
+        OpenAPI_list_free(smf_registrationsList);
+        smf_registrationsList = NULL;
+    }
+    if (ip_sm_gw_local_nonprim) {
+        OpenAPI_ip_sm_gw_registration_free(ip_sm_gw_local_nonprim);
+        ip_sm_gw_local_nonprim = NULL;
+    }
+    if (roaming_info_local_nonprim) {
+        OpenAPI_roaming_info_update_free(roaming_info_local_nonprim);
+        roaming_info_local_nonprim = NULL;
+    }
+    if (pei_info_local_nonprim) {
+        OpenAPI_pei_update_info_free(pei_info_local_nonprim);
+        pei_info_local_nonprim = NULL;
+    }
     return NULL;
 }
 

@@ -27,6 +27,10 @@ typedef struct OpenAPI_authentication_info_request_s {
     OpenAPI_list_t *cell_cag_info;
     bool is_n5gc_ind;
     int n5gc_ind;
+    bool is_nswo_ind;
+    int nswo_ind;
+    bool is_disaster_roaming_ind;
+    int disaster_roaming_ind;
 } OpenAPI_authentication_info_request_t;
 
 OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_create(
@@ -36,7 +40,11 @@ OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_creat
     char *ausf_instance_id,
     OpenAPI_list_t *cell_cag_info,
     bool is_n5gc_ind,
-    int n5gc_ind
+    int n5gc_ind,
+    bool is_nswo_ind,
+    int nswo_ind,
+    bool is_disaster_roaming_ind,
+    int disaster_roaming_ind
 );
 void OpenAPI_authentication_info_request_free(OpenAPI_authentication_info_request_t *authentication_info_request);
 OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_parseFromJSON(cJSON *authentication_info_requestJSON);

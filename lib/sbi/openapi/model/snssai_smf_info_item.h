@@ -13,7 +13,7 @@
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
 #include "dnn_smf_info_item.h"
-#include "snssai.h"
+#include "ext_snssai.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,12 +21,12 @@ extern "C" {
 
 typedef struct OpenAPI_snssai_smf_info_item_s OpenAPI_snssai_smf_info_item_t;
 typedef struct OpenAPI_snssai_smf_info_item_s {
-    struct OpenAPI_snssai_s *s_nssai;
+    struct OpenAPI_ext_snssai_s *s_nssai;
     OpenAPI_list_t *dnn_smf_info_list;
 } OpenAPI_snssai_smf_info_item_t;
 
 OpenAPI_snssai_smf_info_item_t *OpenAPI_snssai_smf_info_item_create(
-    OpenAPI_snssai_t *s_nssai,
+    OpenAPI_ext_snssai_t *s_nssai,
     OpenAPI_list_t *dnn_smf_info_list
 );
 void OpenAPI_snssai_smf_info_item_free(OpenAPI_snssai_smf_info_item_t *snssai_smf_info_item);

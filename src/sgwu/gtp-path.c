@@ -90,7 +90,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
     teid = be32toh(gtp_h->teid);
 
-    ogs_debug("[RECV] GPU-U Type [%d] from [%s] : TEID[0x%x]",
+    ogs_trace("[RECV] GPU-U Type [%d] from [%s] : TEID[0x%x]",
             gtp_h->type, OGS_ADDR(&from, buf), teid);
 
     qfi = 0;
@@ -110,7 +110,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                 OGS_GTP2_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER) {
             if (extension_header->pdu_type ==
                 OGS_GTP2_EXTENSION_HEADER_PDU_TYPE_UL_PDU_SESSION_INFORMATION) {
-                    ogs_debug("   QFI [0x%x]",
+                    ogs_trace("   QFI [0x%x]",
                             extension_header->qos_flow_identifier);
                     qfi = extension_header->qos_flow_identifier;
             }

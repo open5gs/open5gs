@@ -1,7 +1,7 @@
 /*
  * events_subsc_req_data_rm.h
  *
- * this data type is defined in the same way as the EventsSubscReqData data type, but with the OpenAPI nullable property set to true.
+ * This data type is defined in the same way as the EventsSubscReqData data type, but with the OpenAPI nullable property set to true.
  */
 
 #ifndef _OpenAPI_events_subsc_req_data_rm_H_
@@ -31,6 +31,8 @@ typedef struct OpenAPI_events_subsc_req_data_rm_s {
     OpenAPI_list_t *req_anis;
     struct OpenAPI_usage_threshold_rm_s *usg_thres;
     char *notif_corre_id;
+    bool is_direct_notif_ind;
+    int direct_notif_ind;
 } OpenAPI_events_subsc_req_data_rm_t;
 
 OpenAPI_events_subsc_req_data_rm_t *OpenAPI_events_subsc_req_data_rm_create(
@@ -40,7 +42,9 @@ OpenAPI_events_subsc_req_data_rm_t *OpenAPI_events_subsc_req_data_rm_create(
     OpenAPI_qos_monitoring_information_rm_t *qos_mon,
     OpenAPI_list_t *req_anis,
     OpenAPI_usage_threshold_rm_t *usg_thres,
-    char *notif_corre_id
+    char *notif_corre_id,
+    bool is_direct_notif_ind,
+    int direct_notif_ind
 );
 void OpenAPI_events_subsc_req_data_rm_free(OpenAPI_events_subsc_req_data_rm_t *events_subsc_req_data_rm);
 OpenAPI_events_subsc_req_data_rm_t *OpenAPI_events_subsc_req_data_rm_parseFromJSON(cJSON *events_subsc_req_data_rmJSON);

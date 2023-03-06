@@ -30,8 +30,8 @@ int ogs_sbi_server_handler(ogs_sbi_request_t *request, void *data);
 int ogs_sbi_client_handler(
         int status, ogs_sbi_response_t *response, void *data);
 
-bool ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact);
-bool ogs_sbi_discover_only(ogs_sbi_xact_t *xact);
+int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact);
+int ogs_sbi_discover_only(ogs_sbi_xact_t *xact);
 
 bool ogs_sbi_send_request_to_nf_instance(
         ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact);

@@ -24,12 +24,20 @@ typedef struct OpenAPI_ee_group_profile_data_s {
     OpenAPI_list_t *restricted_event_types;
     OpenAPI_list_t* allowed_mtc_provider;
     char *supported_features;
+    bool is_iwk_epc_restricted;
+    int iwk_epc_restricted;
+    char *ext_group_id;
+    char *hss_group_id;
 } OpenAPI_ee_group_profile_data_t;
 
 OpenAPI_ee_group_profile_data_t *OpenAPI_ee_group_profile_data_create(
     OpenAPI_list_t *restricted_event_types,
     OpenAPI_list_t* allowed_mtc_provider,
-    char *supported_features
+    char *supported_features,
+    bool is_iwk_epc_restricted,
+    int iwk_epc_restricted,
+    char *ext_group_id,
+    char *hss_group_id
 );
 void OpenAPI_ee_group_profile_data_free(OpenAPI_ee_group_profile_data_t *ee_group_profile_data);
 OpenAPI_ee_group_profile_data_t *OpenAPI_ee_group_profile_data_parseFromJSON(cJSON *ee_group_profile_dataJSON);

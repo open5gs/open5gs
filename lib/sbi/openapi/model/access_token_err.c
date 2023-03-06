@@ -45,18 +45,26 @@ OpenAPI_access_token_err_t *OpenAPI_access_token_err_create(
 
 void OpenAPI_access_token_err_free(OpenAPI_access_token_err_t *access_token_err)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == access_token_err) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(access_token_err->error_description);
-    ogs_free(access_token_err->error_uri);
+    if (access_token_err->error_description) {
+        ogs_free(access_token_err->error_description);
+        access_token_err->error_description = NULL;
+    }
+    if (access_token_err->error_uri) {
+        ogs_free(access_token_err->error_uri);
+        access_token_err->error_uri = NULL;
+    }
     ogs_free(access_token_err);
 }
 
 cJSON *OpenAPI_access_token_err_convertToJSON(OpenAPI_access_token_err_t *access_token_err)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (access_token_err == NULL) {
         ogs_error("OpenAPI_access_token_err_convertToJSON() failed [AccessTokenErr]");
@@ -64,6 +72,10 @@ cJSON *OpenAPI_access_token_err_convertToJSON(OpenAPI_access_token_err_t *access
     }
 
     item = cJSON_CreateObject();
+    if (access_token_err->error == OpenAPI_access_token_err_ERROR_NULL) {
+        ogs_error("OpenAPI_access_token_err_convertToJSON() failed [error]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "error", OpenAPI_erroraccess_token_err_ToString(access_token_err->error)) == NULL) {
         ogs_error("OpenAPI_access_token_err_convertToJSON() failed [error]");
         goto end;
@@ -90,32 +102,33 @@ end:
 OpenAPI_access_token_err_t *OpenAPI_access_token_err_parseFromJSON(cJSON *access_token_errJSON)
 {
     OpenAPI_access_token_err_t *access_token_err_local_var = NULL;
-    cJSON *error = cJSON_GetObjectItemCaseSensitive(access_token_errJSON, "error");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *error = NULL;
+    OpenAPI_access_token_err_error_e errorVariable = 0;
+    cJSON *error_description = NULL;
+    cJSON *error_uri = NULL;
+    error = cJSON_GetObjectItemCaseSensitive(access_token_errJSON, "error");
     if (!error) {
         ogs_error("OpenAPI_access_token_err_parseFromJSON() failed [error]");
         goto end;
     }
-
-    OpenAPI_access_token_err_error_e errorVariable;
     if (!cJSON_IsString(error)) {
         ogs_error("OpenAPI_access_token_err_parseFromJSON() failed [error]");
         goto end;
     }
     errorVariable = OpenAPI_erroraccess_token_err_FromString(error->valuestring);
 
-    cJSON *error_description = cJSON_GetObjectItemCaseSensitive(access_token_errJSON, "error_description");
-
+    error_description = cJSON_GetObjectItemCaseSensitive(access_token_errJSON, "error_description");
     if (error_description) {
-    if (!cJSON_IsString(error_description)) {
+    if (!cJSON_IsString(error_description) && !cJSON_IsNull(error_description)) {
         ogs_error("OpenAPI_access_token_err_parseFromJSON() failed [error_description]");
         goto end;
     }
     }
 
-    cJSON *error_uri = cJSON_GetObjectItemCaseSensitive(access_token_errJSON, "error_uri");
-
+    error_uri = cJSON_GetObjectItemCaseSensitive(access_token_errJSON, "error_uri");
     if (error_uri) {
-    if (!cJSON_IsString(error_uri)) {
+    if (!cJSON_IsString(error_uri) && !cJSON_IsNull(error_uri)) {
         ogs_error("OpenAPI_access_token_err_parseFromJSON() failed [error_uri]");
         goto end;
     }
@@ -123,8 +136,8 @@ OpenAPI_access_token_err_t *OpenAPI_access_token_err_parseFromJSON(cJSON *access
 
     access_token_err_local_var = OpenAPI_access_token_err_create (
         errorVariable,
-        error_description ? ogs_strdup(error_description->valuestring) : NULL,
-        error_uri ? ogs_strdup(error_uri->valuestring) : NULL
+        error_description && !cJSON_IsNull(error_description) ? ogs_strdup(error_description->valuestring) : NULL,
+        error_uri && !cJSON_IsNull(error_uri) ? ogs_strdup(error_uri->valuestring) : NULL
     );
 
     return access_token_err_local_var;

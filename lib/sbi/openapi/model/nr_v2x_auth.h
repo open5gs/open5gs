@@ -1,7 +1,7 @@
 /*
  * nr_v2x_auth.h
  *
- * 
+ * Contains NR V2X services authorized information.
  */
 
 #ifndef _OpenAPI_nr_v2x_auth_H_

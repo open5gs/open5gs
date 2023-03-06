@@ -13,6 +13,7 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
     char *mcptt_id,
     char *mc_video_id,
     OpenAPI_list_t* med_components,
+    OpenAPI_mps_action_e mps_action,
     char *mps_id,
     char *mcs_id,
     OpenAPI_preemption_control_information_rm_t *preempt_control_info,
@@ -37,6 +38,7 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
     app_session_context_update_data_local_var->mcptt_id = mcptt_id;
     app_session_context_update_data_local_var->mc_video_id = mc_video_id;
     app_session_context_update_data_local_var->med_components = med_components;
+    app_session_context_update_data_local_var->mps_action = mps_action;
     app_session_context_update_data_local_var->mps_id = mps_id;
     app_session_context_update_data_local_var->mcs_id = mcs_id;
     app_session_context_update_data_local_var->preempt_control_info = preempt_control_info;
@@ -54,40 +56,87 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
 
 void OpenAPI_app_session_context_update_data_free(OpenAPI_app_session_context_update_data_t *app_session_context_update_data)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == app_session_context_update_data) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(app_session_context_update_data->af_app_id);
-    OpenAPI_af_routing_requirement_rm_free(app_session_context_update_data->af_rout_req);
-    ogs_free(app_session_context_update_data->asp_id);
-    ogs_free(app_session_context_update_data->bdt_ref_id);
-    OpenAPI_events_subsc_req_data_rm_free(app_session_context_update_data->ev_subsc);
-    ogs_free(app_session_context_update_data->mcptt_id);
-    ogs_free(app_session_context_update_data->mc_video_id);
-    OpenAPI_list_for_each(app_session_context_update_data->med_components, node) {
-        OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
-        ogs_free(localKeyValue->key);
-        OpenAPI_media_component_rm_free(localKeyValue->value);
-        ogs_free(localKeyValue);
+    if (app_session_context_update_data->af_app_id) {
+        ogs_free(app_session_context_update_data->af_app_id);
+        app_session_context_update_data->af_app_id = NULL;
     }
-    OpenAPI_list_free(app_session_context_update_data->med_components);
-    ogs_free(app_session_context_update_data->mps_id);
-    ogs_free(app_session_context_update_data->mcs_id);
-    OpenAPI_preemption_control_information_rm_free(app_session_context_update_data->preempt_control_info);
-    ogs_free(app_session_context_update_data->spon_id);
-    OpenAPI_bridge_management_container_free(app_session_context_update_data->tsn_bridge_man_cont);
-    OpenAPI_port_management_container_free(app_session_context_update_data->tsn_port_man_cont_dstt);
-    OpenAPI_list_for_each(app_session_context_update_data->tsn_port_man_cont_nwtts, node) {
-        OpenAPI_port_management_container_free(node->data);
+    if (app_session_context_update_data->af_rout_req) {
+        OpenAPI_af_routing_requirement_rm_free(app_session_context_update_data->af_rout_req);
+        app_session_context_update_data->af_rout_req = NULL;
     }
-    OpenAPI_list_free(app_session_context_update_data->tsn_port_man_cont_nwtts);
+    if (app_session_context_update_data->asp_id) {
+        ogs_free(app_session_context_update_data->asp_id);
+        app_session_context_update_data->asp_id = NULL;
+    }
+    if (app_session_context_update_data->bdt_ref_id) {
+        ogs_free(app_session_context_update_data->bdt_ref_id);
+        app_session_context_update_data->bdt_ref_id = NULL;
+    }
+    if (app_session_context_update_data->ev_subsc) {
+        OpenAPI_events_subsc_req_data_rm_free(app_session_context_update_data->ev_subsc);
+        app_session_context_update_data->ev_subsc = NULL;
+    }
+    if (app_session_context_update_data->mcptt_id) {
+        ogs_free(app_session_context_update_data->mcptt_id);
+        app_session_context_update_data->mcptt_id = NULL;
+    }
+    if (app_session_context_update_data->mc_video_id) {
+        ogs_free(app_session_context_update_data->mc_video_id);
+        app_session_context_update_data->mc_video_id = NULL;
+    }
+    if (app_session_context_update_data->med_components) {
+        OpenAPI_list_for_each(app_session_context_update_data->med_components, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_media_component_rm_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(app_session_context_update_data->med_components);
+        app_session_context_update_data->med_components = NULL;
+    }
+    if (app_session_context_update_data->mps_id) {
+        ogs_free(app_session_context_update_data->mps_id);
+        app_session_context_update_data->mps_id = NULL;
+    }
+    if (app_session_context_update_data->mcs_id) {
+        ogs_free(app_session_context_update_data->mcs_id);
+        app_session_context_update_data->mcs_id = NULL;
+    }
+    if (app_session_context_update_data->preempt_control_info) {
+        OpenAPI_preemption_control_information_rm_free(app_session_context_update_data->preempt_control_info);
+        app_session_context_update_data->preempt_control_info = NULL;
+    }
+    if (app_session_context_update_data->spon_id) {
+        ogs_free(app_session_context_update_data->spon_id);
+        app_session_context_update_data->spon_id = NULL;
+    }
+    if (app_session_context_update_data->tsn_bridge_man_cont) {
+        OpenAPI_bridge_management_container_free(app_session_context_update_data->tsn_bridge_man_cont);
+        app_session_context_update_data->tsn_bridge_man_cont = NULL;
+    }
+    if (app_session_context_update_data->tsn_port_man_cont_dstt) {
+        OpenAPI_port_management_container_free(app_session_context_update_data->tsn_port_man_cont_dstt);
+        app_session_context_update_data->tsn_port_man_cont_dstt = NULL;
+    }
+    if (app_session_context_update_data->tsn_port_man_cont_nwtts) {
+        OpenAPI_list_for_each(app_session_context_update_data->tsn_port_man_cont_nwtts, node) {
+            OpenAPI_port_management_container_free(node->data);
+        }
+        OpenAPI_list_free(app_session_context_update_data->tsn_port_man_cont_nwtts);
+        app_session_context_update_data->tsn_port_man_cont_nwtts = NULL;
+    }
     ogs_free(app_session_context_update_data);
 }
 
 cJSON *OpenAPI_app_session_context_update_data_convertToJSON(OpenAPI_app_session_context_update_data_t *app_session_context_update_data)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (app_session_context_update_data == NULL) {
         ogs_error("OpenAPI_app_session_context_update_data_convertToJSON() failed [AppSessionContextUpdateData]");
@@ -163,20 +212,26 @@ cJSON *OpenAPI_app_session_context_update_data_convertToJSON(OpenAPI_app_session
         goto end;
     }
     cJSON *localMapObject = med_components;
-    OpenAPI_lnode_t *med_components_node;
     if (app_session_context_update_data->med_components) {
-        OpenAPI_list_for_each(app_session_context_update_data->med_components, med_components_node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)med_components_node->data;
-        cJSON *itemLocal = localKeyValue->value ?
-            OpenAPI_media_component_rm_convertToJSON(localKeyValue->value) :
-            cJSON_CreateNull();
-        if (itemLocal == NULL) {
-            ogs_error("OpenAPI_app_session_context_update_data_convertToJSON() failed [med_components]");
-            goto end;
-        }
-        cJSON_AddItemToObject(med_components, localKeyValue->key, itemLocal);
+        OpenAPI_list_for_each(app_session_context_update_data->med_components, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            cJSON *itemLocal = localKeyValue->value ?
+                OpenAPI_media_component_rm_convertToJSON(localKeyValue->value) :
+                cJSON_CreateNull();
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_app_session_context_update_data_convertToJSON() failed [inner]");
+                goto end;
             }
+            cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
         }
+    }
+    }
+
+    if (app_session_context_update_data->mps_action != OpenAPI_mps_action_NULL) {
+    if (cJSON_AddStringToObject(item, "mpsAction", OpenAPI_mps_action_ToString(app_session_context_update_data->mps_action)) == NULL) {
+        ogs_error("OpenAPI_app_session_context_update_data_convertToJSON() failed [mps_action]");
+        goto end;
+    }
     }
 
     if (app_session_context_update_data->mps_id) {
@@ -206,21 +261,21 @@ cJSON *OpenAPI_app_session_context_update_data_convertToJSON(OpenAPI_app_session
     }
     }
 
-    if (app_session_context_update_data->res_prio) {
+    if (app_session_context_update_data->res_prio != OpenAPI_reserv_priority_NULL) {
     if (cJSON_AddStringToObject(item, "resPrio", OpenAPI_reserv_priority_ToString(app_session_context_update_data->res_prio)) == NULL) {
         ogs_error("OpenAPI_app_session_context_update_data_convertToJSON() failed [res_prio]");
         goto end;
     }
     }
 
-    if (app_session_context_update_data->serv_inf_status) {
+    if (app_session_context_update_data->serv_inf_status != OpenAPI_service_info_status_NULL) {
     if (cJSON_AddStringToObject(item, "servInfStatus", OpenAPI_service_info_status_ToString(app_session_context_update_data->serv_inf_status)) == NULL) {
         ogs_error("OpenAPI_app_session_context_update_data_convertToJSON() failed [serv_inf_status]");
         goto end;
     }
     }
 
-    if (app_session_context_update_data->sip_fork_ind) {
+    if (app_session_context_update_data->sip_fork_ind != OpenAPI_sip_forking_indication_NULL) {
     if (cJSON_AddStringToObject(item, "sipForkInd", OpenAPI_sip_forking_indication_ToString(app_session_context_update_data->sip_fork_ind)) == NULL) {
         ogs_error("OpenAPI_app_session_context_update_data_convertToJSON() failed [sip_fork_ind]");
         goto end;
@@ -234,7 +289,7 @@ cJSON *OpenAPI_app_session_context_update_data_convertToJSON(OpenAPI_app_session
     }
     }
 
-    if (app_session_context_update_data->spon_status) {
+    if (app_session_context_update_data->spon_status != OpenAPI_sponsoring_status_NULL) {
     if (cJSON_AddStringToObject(item, "sponStatus", OpenAPI_sponsoring_status_ToString(app_session_context_update_data->spon_status)) == NULL) {
         ogs_error("OpenAPI_app_session_context_update_data_convertToJSON() failed [spon_status]");
         goto end;
@@ -273,17 +328,13 @@ cJSON *OpenAPI_app_session_context_update_data_convertToJSON(OpenAPI_app_session
         ogs_error("OpenAPI_app_session_context_update_data_convertToJSON() failed [tsn_port_man_cont_nwtts]");
         goto end;
     }
-
-    OpenAPI_lnode_t *tsn_port_man_cont_nwtts_node;
-    if (app_session_context_update_data->tsn_port_man_cont_nwtts) {
-        OpenAPI_list_for_each(app_session_context_update_data->tsn_port_man_cont_nwtts, tsn_port_man_cont_nwtts_node) {
-            cJSON *itemLocal = OpenAPI_port_management_container_convertToJSON(tsn_port_man_cont_nwtts_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_app_session_context_update_data_convertToJSON() failed [tsn_port_man_cont_nwtts]");
-                goto end;
-            }
-            cJSON_AddItemToArray(tsn_port_man_cont_nwttsList, itemLocal);
+    OpenAPI_list_for_each(app_session_context_update_data->tsn_port_man_cont_nwtts, node) {
+        cJSON *itemLocal = OpenAPI_port_management_container_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_app_session_context_update_data_convertToJSON() failed [tsn_port_man_cont_nwtts]");
+            goto end;
         }
+        cJSON_AddItemToArray(tsn_port_man_cont_nwttsList, itemLocal);
     }
     }
 
@@ -294,119 +345,146 @@ end:
 OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_data_parseFromJSON(cJSON *app_session_context_update_dataJSON)
 {
     OpenAPI_app_session_context_update_data_t *app_session_context_update_data_local_var = NULL;
-    cJSON *af_app_id = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "afAppId");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *af_app_id = NULL;
+    cJSON *af_rout_req = NULL;
+    OpenAPI_af_routing_requirement_rm_t *af_rout_req_local_nonprim = NULL;
+    cJSON *asp_id = NULL;
+    cJSON *bdt_ref_id = NULL;
+    cJSON *ev_subsc = NULL;
+    OpenAPI_events_subsc_req_data_rm_t *ev_subsc_local_nonprim = NULL;
+    cJSON *mcptt_id = NULL;
+    cJSON *mc_video_id = NULL;
+    cJSON *med_components = NULL;
+    OpenAPI_list_t *med_componentsList = NULL;
+    cJSON *mps_action = NULL;
+    OpenAPI_mps_action_e mps_actionVariable = 0;
+    cJSON *mps_id = NULL;
+    cJSON *mcs_id = NULL;
+    cJSON *preempt_control_info = NULL;
+    OpenAPI_preemption_control_information_rm_t *preempt_control_info_local_nonprim = NULL;
+    cJSON *res_prio = NULL;
+    OpenAPI_reserv_priority_e res_prioVariable = 0;
+    cJSON *serv_inf_status = NULL;
+    OpenAPI_service_info_status_e serv_inf_statusVariable = 0;
+    cJSON *sip_fork_ind = NULL;
+    OpenAPI_sip_forking_indication_e sip_fork_indVariable = 0;
+    cJSON *spon_id = NULL;
+    cJSON *spon_status = NULL;
+    OpenAPI_sponsoring_status_e spon_statusVariable = 0;
+    cJSON *tsn_bridge_man_cont = NULL;
+    OpenAPI_bridge_management_container_t *tsn_bridge_man_cont_local_nonprim = NULL;
+    cJSON *tsn_port_man_cont_dstt = NULL;
+    OpenAPI_port_management_container_t *tsn_port_man_cont_dstt_local_nonprim = NULL;
+    cJSON *tsn_port_man_cont_nwtts = NULL;
+    OpenAPI_list_t *tsn_port_man_cont_nwttsList = NULL;
+    af_app_id = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "afAppId");
     if (af_app_id) {
-    if (!cJSON_IsString(af_app_id)) {
+    if (!cJSON_IsString(af_app_id) && !cJSON_IsNull(af_app_id)) {
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [af_app_id]");
         goto end;
     }
     }
 
-    cJSON *af_rout_req = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "afRoutReq");
-
-    OpenAPI_af_routing_requirement_rm_t *af_rout_req_local_nonprim = NULL;
+    af_rout_req = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "afRoutReq");
     if (af_rout_req) {
     af_rout_req_local_nonprim = OpenAPI_af_routing_requirement_rm_parseFromJSON(af_rout_req);
     }
 
-    cJSON *asp_id = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "aspId");
-
+    asp_id = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "aspId");
     if (asp_id) {
-    if (!cJSON_IsString(asp_id)) {
+    if (!cJSON_IsString(asp_id) && !cJSON_IsNull(asp_id)) {
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [asp_id]");
         goto end;
     }
     }
 
-    cJSON *bdt_ref_id = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "bdtRefId");
-
+    bdt_ref_id = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "bdtRefId");
     if (bdt_ref_id) {
-    if (!cJSON_IsString(bdt_ref_id)) {
+    if (!cJSON_IsString(bdt_ref_id) && !cJSON_IsNull(bdt_ref_id)) {
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [bdt_ref_id]");
         goto end;
     }
     }
 
-    cJSON *ev_subsc = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "evSubsc");
-
-    OpenAPI_events_subsc_req_data_rm_t *ev_subsc_local_nonprim = NULL;
+    ev_subsc = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "evSubsc");
     if (ev_subsc) {
     ev_subsc_local_nonprim = OpenAPI_events_subsc_req_data_rm_parseFromJSON(ev_subsc);
     }
 
-    cJSON *mcptt_id = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "mcpttId");
-
+    mcptt_id = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "mcpttId");
     if (mcptt_id) {
-    if (!cJSON_IsString(mcptt_id)) {
+    if (!cJSON_IsString(mcptt_id) && !cJSON_IsNull(mcptt_id)) {
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [mcptt_id]");
         goto end;
     }
     }
 
-    cJSON *mc_video_id = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "mcVideoId");
-
+    mc_video_id = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "mcVideoId");
     if (mc_video_id) {
-    if (!cJSON_IsString(mc_video_id)) {
+    if (!cJSON_IsString(mc_video_id) && !cJSON_IsNull(mc_video_id)) {
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [mc_video_id]");
         goto end;
     }
     }
 
-    cJSON *med_components = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "medComponents");
-
-    OpenAPI_list_t *med_componentsList;
+    med_components = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "medComponents");
     if (med_components) {
-    cJSON *med_components_local_map;
-    if (!cJSON_IsObject(med_components)) {
-        ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [med_components]");
-        goto end;
-    }
-    med_componentsList = OpenAPI_list_create();
-    OpenAPI_map_t *localMapKeyPair = NULL;
-    cJSON_ArrayForEach(med_components_local_map, med_components) {
-        cJSON *localMapObject = med_components_local_map;
-        if (cJSON_IsObject(med_components_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(
-                ogs_strdup(localMapObject->string), OpenAPI_media_component_rm_parseFromJSON(localMapObject));
-        } else if (cJSON_IsNull(med_components_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
-        } else {
+        cJSON *med_components_local_map = NULL;
+        if (!cJSON_IsObject(med_components) && !cJSON_IsNull(med_components)) {
             ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [med_components]");
             goto end;
         }
-        OpenAPI_list_add(med_componentsList , localMapKeyPair);
-    }
+        if (cJSON_IsObject(med_components)) {
+            med_componentsList = OpenAPI_list_create();
+            OpenAPI_map_t *localMapKeyPair = NULL;
+            cJSON_ArrayForEach(med_components_local_map, med_components) {
+                cJSON *localMapObject = med_components_local_map;
+                if (cJSON_IsObject(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(
+                        ogs_strdup(localMapObject->string), OpenAPI_media_component_rm_parseFromJSON(localMapObject));
+                } else if (cJSON_IsNull(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
+                } else {
+                    ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                OpenAPI_list_add(med_componentsList, localMapKeyPair);
+            }
+        }
     }
 
-    cJSON *mps_id = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "mpsId");
+    mps_action = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "mpsAction");
+    if (mps_action) {
+    if (!cJSON_IsString(mps_action)) {
+        ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [mps_action]");
+        goto end;
+    }
+    mps_actionVariable = OpenAPI_mps_action_FromString(mps_action->valuestring);
+    }
 
+    mps_id = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "mpsId");
     if (mps_id) {
-    if (!cJSON_IsString(mps_id)) {
+    if (!cJSON_IsString(mps_id) && !cJSON_IsNull(mps_id)) {
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [mps_id]");
         goto end;
     }
     }
 
-    cJSON *mcs_id = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "mcsId");
-
+    mcs_id = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "mcsId");
     if (mcs_id) {
-    if (!cJSON_IsString(mcs_id)) {
+    if (!cJSON_IsString(mcs_id) && !cJSON_IsNull(mcs_id)) {
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [mcs_id]");
         goto end;
     }
     }
 
-    cJSON *preempt_control_info = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "preemptControlInfo");
-
-    OpenAPI_preemption_control_information_rm_t *preempt_control_info_local_nonprim = NULL;
+    preempt_control_info = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "preemptControlInfo");
     if (preempt_control_info) {
     preempt_control_info_local_nonprim = OpenAPI_preemption_control_information_rm_parseFromJSON(preempt_control_info);
     }
 
-    cJSON *res_prio = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "resPrio");
-
-    OpenAPI_reserv_priority_e res_prioVariable;
+    res_prio = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "resPrio");
     if (res_prio) {
     if (!cJSON_IsString(res_prio)) {
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [res_prio]");
@@ -415,9 +493,7 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
     res_prioVariable = OpenAPI_reserv_priority_FromString(res_prio->valuestring);
     }
 
-    cJSON *serv_inf_status = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "servInfStatus");
-
-    OpenAPI_service_info_status_e serv_inf_statusVariable;
+    serv_inf_status = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "servInfStatus");
     if (serv_inf_status) {
     if (!cJSON_IsString(serv_inf_status)) {
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [serv_inf_status]");
@@ -426,9 +502,7 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
     serv_inf_statusVariable = OpenAPI_service_info_status_FromString(serv_inf_status->valuestring);
     }
 
-    cJSON *sip_fork_ind = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "sipForkInd");
-
-    OpenAPI_sip_forking_indication_e sip_fork_indVariable;
+    sip_fork_ind = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "sipForkInd");
     if (sip_fork_ind) {
     if (!cJSON_IsString(sip_fork_ind)) {
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [sip_fork_ind]");
@@ -437,18 +511,15 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
     sip_fork_indVariable = OpenAPI_sip_forking_indication_FromString(sip_fork_ind->valuestring);
     }
 
-    cJSON *spon_id = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "sponId");
-
+    spon_id = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "sponId");
     if (spon_id) {
-    if (!cJSON_IsString(spon_id)) {
+    if (!cJSON_IsString(spon_id) && !cJSON_IsNull(spon_id)) {
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [spon_id]");
         goto end;
     }
     }
 
-    cJSON *spon_status = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "sponStatus");
-
-    OpenAPI_sponsoring_status_e spon_statusVariable;
+    spon_status = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "sponStatus");
     if (spon_status) {
     if (!cJSON_IsString(spon_status)) {
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [spon_status]");
@@ -457,65 +528,58 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
     spon_statusVariable = OpenAPI_sponsoring_status_FromString(spon_status->valuestring);
     }
 
-    cJSON *tsn_bridge_man_cont = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "tsnBridgeManCont");
-
-    OpenAPI_bridge_management_container_t *tsn_bridge_man_cont_local_nonprim = NULL;
+    tsn_bridge_man_cont = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "tsnBridgeManCont");
     if (tsn_bridge_man_cont) {
     tsn_bridge_man_cont_local_nonprim = OpenAPI_bridge_management_container_parseFromJSON(tsn_bridge_man_cont);
     }
 
-    cJSON *tsn_port_man_cont_dstt = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "tsnPortManContDstt");
-
-    OpenAPI_port_management_container_t *tsn_port_man_cont_dstt_local_nonprim = NULL;
+    tsn_port_man_cont_dstt = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "tsnPortManContDstt");
     if (tsn_port_man_cont_dstt) {
     tsn_port_man_cont_dstt_local_nonprim = OpenAPI_port_management_container_parseFromJSON(tsn_port_man_cont_dstt);
     }
 
-    cJSON *tsn_port_man_cont_nwtts = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "tsnPortManContNwtts");
-
-    OpenAPI_list_t *tsn_port_man_cont_nwttsList;
+    tsn_port_man_cont_nwtts = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "tsnPortManContNwtts");
     if (tsn_port_man_cont_nwtts) {
-    cJSON *tsn_port_man_cont_nwtts_local_nonprimitive;
-    if (!cJSON_IsArray(tsn_port_man_cont_nwtts)){
-        ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [tsn_port_man_cont_nwtts]");
-        goto end;
-    }
-
-    tsn_port_man_cont_nwttsList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(tsn_port_man_cont_nwtts_local_nonprimitive, tsn_port_man_cont_nwtts ) {
-        if (!cJSON_IsObject(tsn_port_man_cont_nwtts_local_nonprimitive)) {
+        cJSON *tsn_port_man_cont_nwtts_local = NULL;
+        if (!cJSON_IsArray(tsn_port_man_cont_nwtts)) {
             ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [tsn_port_man_cont_nwtts]");
             goto end;
         }
-        OpenAPI_port_management_container_t *tsn_port_man_cont_nwttsItem = OpenAPI_port_management_container_parseFromJSON(tsn_port_man_cont_nwtts_local_nonprimitive);
 
-        if (!tsn_port_man_cont_nwttsItem) {
-            ogs_error("No tsn_port_man_cont_nwttsItem");
-            OpenAPI_list_free(tsn_port_man_cont_nwttsList);
-            goto end;
+        tsn_port_man_cont_nwttsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(tsn_port_man_cont_nwtts_local, tsn_port_man_cont_nwtts) {
+            if (!cJSON_IsObject(tsn_port_man_cont_nwtts_local)) {
+                ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [tsn_port_man_cont_nwtts]");
+                goto end;
+            }
+            OpenAPI_port_management_container_t *tsn_port_man_cont_nwttsItem = OpenAPI_port_management_container_parseFromJSON(tsn_port_man_cont_nwtts_local);
+            if (!tsn_port_man_cont_nwttsItem) {
+                ogs_error("No tsn_port_man_cont_nwttsItem");
+                OpenAPI_list_free(tsn_port_man_cont_nwttsList);
+                goto end;
+            }
+            OpenAPI_list_add(tsn_port_man_cont_nwttsList, tsn_port_man_cont_nwttsItem);
         }
-
-        OpenAPI_list_add(tsn_port_man_cont_nwttsList, tsn_port_man_cont_nwttsItem);
-    }
     }
 
     app_session_context_update_data_local_var = OpenAPI_app_session_context_update_data_create (
-        af_app_id ? ogs_strdup(af_app_id->valuestring) : NULL,
+        af_app_id && !cJSON_IsNull(af_app_id) ? ogs_strdup(af_app_id->valuestring) : NULL,
         af_rout_req ? af_rout_req_local_nonprim : NULL,
-        asp_id ? ogs_strdup(asp_id->valuestring) : NULL,
-        bdt_ref_id ? ogs_strdup(bdt_ref_id->valuestring) : NULL,
+        asp_id && !cJSON_IsNull(asp_id) ? ogs_strdup(asp_id->valuestring) : NULL,
+        bdt_ref_id && !cJSON_IsNull(bdt_ref_id) ? ogs_strdup(bdt_ref_id->valuestring) : NULL,
         ev_subsc ? ev_subsc_local_nonprim : NULL,
-        mcptt_id ? ogs_strdup(mcptt_id->valuestring) : NULL,
-        mc_video_id ? ogs_strdup(mc_video_id->valuestring) : NULL,
+        mcptt_id && !cJSON_IsNull(mcptt_id) ? ogs_strdup(mcptt_id->valuestring) : NULL,
+        mc_video_id && !cJSON_IsNull(mc_video_id) ? ogs_strdup(mc_video_id->valuestring) : NULL,
         med_components ? med_componentsList : NULL,
-        mps_id ? ogs_strdup(mps_id->valuestring) : NULL,
-        mcs_id ? ogs_strdup(mcs_id->valuestring) : NULL,
+        mps_action ? mps_actionVariable : 0,
+        mps_id && !cJSON_IsNull(mps_id) ? ogs_strdup(mps_id->valuestring) : NULL,
+        mcs_id && !cJSON_IsNull(mcs_id) ? ogs_strdup(mcs_id->valuestring) : NULL,
         preempt_control_info ? preempt_control_info_local_nonprim : NULL,
         res_prio ? res_prioVariable : 0,
         serv_inf_status ? serv_inf_statusVariable : 0,
         sip_fork_ind ? sip_fork_indVariable : 0,
-        spon_id ? ogs_strdup(spon_id->valuestring) : NULL,
+        spon_id && !cJSON_IsNull(spon_id) ? ogs_strdup(spon_id->valuestring) : NULL,
         spon_status ? spon_statusVariable : 0,
         tsn_bridge_man_cont ? tsn_bridge_man_cont_local_nonprim : NULL,
         tsn_port_man_cont_dstt ? tsn_port_man_cont_dstt_local_nonprim : NULL,
@@ -524,6 +588,43 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
 
     return app_session_context_update_data_local_var;
 end:
+    if (af_rout_req_local_nonprim) {
+        OpenAPI_af_routing_requirement_rm_free(af_rout_req_local_nonprim);
+        af_rout_req_local_nonprim = NULL;
+    }
+    if (ev_subsc_local_nonprim) {
+        OpenAPI_events_subsc_req_data_rm_free(ev_subsc_local_nonprim);
+        ev_subsc_local_nonprim = NULL;
+    }
+    if (med_componentsList) {
+        OpenAPI_list_for_each(med_componentsList, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_media_component_rm_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(med_componentsList);
+        med_componentsList = NULL;
+    }
+    if (preempt_control_info_local_nonprim) {
+        OpenAPI_preemption_control_information_rm_free(preempt_control_info_local_nonprim);
+        preempt_control_info_local_nonprim = NULL;
+    }
+    if (tsn_bridge_man_cont_local_nonprim) {
+        OpenAPI_bridge_management_container_free(tsn_bridge_man_cont_local_nonprim);
+        tsn_bridge_man_cont_local_nonprim = NULL;
+    }
+    if (tsn_port_man_cont_dstt_local_nonprim) {
+        OpenAPI_port_management_container_free(tsn_port_man_cont_dstt_local_nonprim);
+        tsn_port_man_cont_dstt_local_nonprim = NULL;
+    }
+    if (tsn_port_man_cont_nwttsList) {
+        OpenAPI_list_for_each(tsn_port_man_cont_nwttsList, node) {
+            OpenAPI_port_management_container_free(node->data);
+        }
+        OpenAPI_list_free(tsn_port_man_cont_nwttsList);
+        tsn_port_man_cont_nwttsList = NULL;
+    }
     return NULL;
 }
 

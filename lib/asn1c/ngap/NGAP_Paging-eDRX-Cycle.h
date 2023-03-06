@@ -45,13 +45,13 @@ typedef long	 NGAP_Paging_eDRX_Cycle_t;
 /* Implementation */
 extern asn_per_constraints_t asn_PER_type_NGAP_Paging_eDRX_Cycle_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_NGAP_Paging_eDRX_Cycle;
-extern const asn_INTEGER_specifics_t asn_SPC_Paging_eDRX_Cycle_specs_1;
-asn_struct_free_f Paging_eDRX_Cycle_free;
-asn_struct_print_f Paging_eDRX_Cycle_print;
-asn_constr_check_f Paging_eDRX_Cycle_constraint;
-jer_type_encoder_f Paging_eDRX_Cycle_encode_jer;
-per_type_decoder_f Paging_eDRX_Cycle_decode_aper;
-per_type_encoder_f Paging_eDRX_Cycle_encode_aper;
+extern const asn_INTEGER_specifics_t asn_SPC_NGAP_Paging_eDRX_Cycle_specs_1;
+asn_struct_free_f NGAP_Paging_eDRX_Cycle_free;
+asn_struct_print_f NGAP_Paging_eDRX_Cycle_print;
+asn_constr_check_f NGAP_Paging_eDRX_Cycle_constraint;
+jer_type_encoder_f NGAP_Paging_eDRX_Cycle_encode_jer;
+per_type_decoder_f NGAP_Paging_eDRX_Cycle_decode_aper;
+per_type_encoder_f NGAP_Paging_eDRX_Cycle_encode_aper;
 
 #ifdef __cplusplus
 }

@@ -1,7 +1,7 @@
 /*
  * plmn_route_selection_descriptor.h
  *
- * Contains the route selection descriptors (combinations of SNSSAI, DNNs, PDU session types, SSC modes and ATSSS information) allowed by subscription to the UE for a serving PLMN
+ * Contains the route selection descriptors (combinations of SNSSAI, DNNs, PDU session types, SSC modes and ATSSS information) allowed by subscription to the UE for a serving PLMN 
  */
 
 #ifndef _OpenAPI_plmn_route_selection_descriptor_H_

@@ -1,7 +1,7 @@
 /*
  * gbr_qos_flow_information.h
  *
- * 
+ * GBR QoS flow information
  */
 
 #ifndef _OpenAPI_gbr_qos_flow_information_H_

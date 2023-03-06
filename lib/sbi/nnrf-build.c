@@ -653,7 +653,7 @@ static OpenAPI_smf_info_t *build_smf_info(ogs_sbi_nf_info_t *nf_info)
 
     OpenAPI_list_t *sNssaiSmfInfoList = NULL;
     OpenAPI_snssai_smf_info_item_t *sNssaiSmfInfoItem = NULL;
-    OpenAPI_snssai_t *sNssai = NULL;
+    OpenAPI_ext_snssai_t *sNssai = NULL;
     OpenAPI_list_t *DnnSmfInfoList = NULL;
     OpenAPI_dnn_smf_info_item_t *DnnSmfInfoItem = NULL;
 
@@ -1045,7 +1045,7 @@ static void free_smf_info(OpenAPI_smf_info_t *SmfInfo)
 {
     OpenAPI_list_t *sNssaiSmfInfoList = NULL;
     OpenAPI_snssai_smf_info_item_t *sNssaiSmfInfoItem = NULL;
-    OpenAPI_snssai_t *sNssai = NULL;
+    OpenAPI_ext_snssai_t *sNssai = NULL;
     OpenAPI_list_t *DnnSmfInfoList = NULL;
     OpenAPI_dnn_smf_info_item_t *DnnSmfInfoItem = NULL;
 
@@ -1211,9 +1211,12 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_update(void)
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
 
-    OpenAPI_list_t *PatchItemList;
+    OpenAPI_list_t *PatchItemList = NULL;
     OpenAPI_patch_item_t StatusItem;
     OpenAPI_patch_item_t LoadItem;
+
+    memset(&StatusItem, 0, sizeof(StatusItem));
+    memset(&LoadItem, 0, sizeof(LoadItem));
 
     nf_instance = ogs_sbi_self()->nf_instance;
     ogs_assert(nf_instance);
@@ -1235,7 +1238,6 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_update(void)
         goto end;
     }
 
-    memset(&StatusItem, 0, sizeof(StatusItem));
     StatusItem.op = OpenAPI_patch_operation_replace;
     StatusItem.path = (char *)"/nfStatus";
     StatusItem.value = OpenAPI_any_type_create_string(
@@ -1247,10 +1249,9 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_update(void)
 
     OpenAPI_list_add(PatchItemList, &StatusItem);
 
-    memset(&LoadItem, 0, sizeof(LoadItem));
     LoadItem.op = OpenAPI_patch_operation_replace;
     LoadItem.path = (char *)"/load";
-    LoadItem.value = OpenAPI_any_type_create_number(ogs_sbi_self()->nf_instance->load);
+    LoadItem.value = OpenAPI_any_type_create_number(nf_instance->load);
     if (!LoadItem.value) {
         ogs_error("No load item.value");
         goto end;
@@ -1264,9 +1265,12 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_update(void)
     ogs_expect(request);
 
 end:
-    OpenAPI_list_free(PatchItemList);
-    OpenAPI_any_type_free(StatusItem.value);
-    OpenAPI_any_type_free(LoadItem.value);
+    if (LoadItem.value)
+        OpenAPI_any_type_free(LoadItem.value);
+    if (StatusItem.value)
+        OpenAPI_any_type_free(StatusItem.value);
+    if (PatchItemList)
+        OpenAPI_list_free(PatchItemList);
 
     return request;
 }
@@ -1305,7 +1309,7 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_status_subscribe(
     ogs_sbi_server_t *server = NULL;
 
     OpenAPI_subscription_data_t *SubscriptionData = NULL;
-    OpenAPI_subscription_data_subscr_cond_t SubscrCond;
+    OpenAPI_subscr_cond_t SubscrCond;
 
     ogs_assert(subscription_data);
     ogs_assert(subscription_data->req_nf_type);

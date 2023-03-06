@@ -1,7 +1,7 @@
 /*
  * gad_shape.h
  *
- * 
+ * Common base type for GAD shapes.
  */
 
 #ifndef _OpenAPI_gad_shape_H_

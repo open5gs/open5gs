@@ -1,7 +1,7 @@
 /*
  * assigned_ebi_data.h
  *
- * 
+ * Data within a successful response to an EBI assignment request
  */
 
 #ifndef _OpenAPI_assigned_ebi_data_H_
@@ -25,13 +25,15 @@ typedef struct OpenAPI_assigned_ebi_data_s {
     OpenAPI_list_t *assigned_ebi_list;
     OpenAPI_list_t *failed_arp_list;
     OpenAPI_list_t *released_ebi_list;
+    OpenAPI_list_t *modified_ebi_list;
 } OpenAPI_assigned_ebi_data_t;
 
 OpenAPI_assigned_ebi_data_t *OpenAPI_assigned_ebi_data_create(
     int pdu_session_id,
     OpenAPI_list_t *assigned_ebi_list,
     OpenAPI_list_t *failed_arp_list,
-    OpenAPI_list_t *released_ebi_list
+    OpenAPI_list_t *released_ebi_list,
+    OpenAPI_list_t *modified_ebi_list
 );
 void OpenAPI_assigned_ebi_data_free(OpenAPI_assigned_ebi_data_t *assigned_ebi_data);
 OpenAPI_assigned_ebi_data_t *OpenAPI_assigned_ebi_data_parseFromJSON(cJSON *assigned_ebi_dataJSON);

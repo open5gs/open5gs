@@ -1,7 +1,7 @@
 /*
  * ec_restriction_data_wb.h
  *
- * 
+ * Enhanced Coverage Restriction Data for WB-N1 mode
  */
 
 #ifndef _OpenAPI_ec_restriction_data_wb_H_

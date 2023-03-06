@@ -1,0 +1,36 @@
+/*
+ * get_multiple_pp_data_entries_ue_id_parameter.h
+ *
+ * 
+ */
+
+#ifndef _OpenAPI_get_multiple_pp_data_entries_ue_id_parameter_H_
+#define _OpenAPI_get_multiple_pp_data_entries_ue_id_parameter_H_
+
+#include <string.h>
+#include "../external/cJSON.h"
+#include "../include/list.h"
+#include "../include/keyValuePair.h"
+#include "../include/binary.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct OpenAPI_get_multiple_pp_data_entries_ue_id_parameter_s OpenAPI_get_multiple_pp_data_entries_ue_id_parameter_t;
+typedef struct OpenAPI_get_multiple_pp_data_entries_ue_id_parameter_s {
+} OpenAPI_get_multiple_pp_data_entries_ue_id_parameter_t;
+
+OpenAPI_get_multiple_pp_data_entries_ue_id_parameter_t *OpenAPI_get_multiple_pp_data_entries_ue_id_parameter_create(
+);
+void OpenAPI_get_multiple_pp_data_entries_ue_id_parameter_free(OpenAPI_get_multiple_pp_data_entries_ue_id_parameter_t *get_multiple_pp_data_entries_ue_id_parameter);
+OpenAPI_get_multiple_pp_data_entries_ue_id_parameter_t *OpenAPI_get_multiple_pp_data_entries_ue_id_parameter_parseFromJSON(cJSON *get_multiple_pp_data_entries_ue_id_parameterJSON);
+cJSON *OpenAPI_get_multiple_pp_data_entries_ue_id_parameter_convertToJSON(OpenAPI_get_multiple_pp_data_entries_ue_id_parameter_t *get_multiple_pp_data_entries_ue_id_parameter);
+OpenAPI_get_multiple_pp_data_entries_ue_id_parameter_t *OpenAPI_get_multiple_pp_data_entries_ue_id_parameter_copy(OpenAPI_get_multiple_pp_data_entries_ue_id_parameter_t *dst, OpenAPI_get_multiple_pp_data_entries_ue_id_parameter_t *src);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* _OpenAPI_get_multiple_pp_data_entries_ue_id_parameter_H_ */
+

@@ -1,7 +1,7 @@
 /*
  * notification_item.h
  *
- * Identifies a data change notification when the change occurs in a fragment (subset of resource data) of a given resource.
+ * Identifies a data change notification when the change occurs in a fragment (subset of resource data) of a given resource. 
  */
 
 #ifndef _OpenAPI_notification_item_H_

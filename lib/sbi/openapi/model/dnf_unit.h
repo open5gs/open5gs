@@ -1,7 +1,7 @@
 /*
  * dnf_unit.h
  *
- * 
+ * During the processing of dnfUnits attribute, all the members in the array shall be  interpreted as logically concatenated with logical \&quot;OR\&quot;. 
  */
 
 #ifndef _OpenAPI_dnf_unit_H_

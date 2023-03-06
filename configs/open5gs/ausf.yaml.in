@@ -1,20 +1,21 @@
 #
-# logger:
-#
 #  o Set OGS_LOG_INFO to all domain level
 #   - If `level` is omitted, the default level is OGS_LOG_INFO)
 #   - If `domain` is omitted, the all domain level is set from 'level'
-#    (Nothing is needed)
+#    (Default values are used, so no configuration is required)
 #
 #  o Set OGS_LOG_ERROR to all domain level
 #   - `level` can be set with none, fatal, error, warn, info, debug, trace
+#  logger:
 #    level: error
 #
 #  o Set OGS_LOG_DEBUG to mme/emm domain level
+#  logger:
 #    level: debug
 #    domain: mme,emm
 #
 #  o Set OGS_LOG_TRACE to all domain level
+#  logger:
 #    level: trace
 #    domain: core,sbi,ausf,event,tlv,mem,sock
 #
@@ -22,52 +23,69 @@ logger:
     file: @localstatedir@/log/open5gs/ausf.log
 
 #
-# tls:
-#    enabled: auto|yes|no
-#    - auto: Default. Use TLS only if key/cert is available
-#    - yes:  Use TLS always;
-#            reject if no key/cert available
-#    - no:   Don't use TLS if there is an key/cert available
+#  o TLS enable/disable
+#  sbi:
+#    server|client:
+#      no_tls: false|true
+#    - false: (Default) Use TLS
+#    - true:  TLS disabled
 #
-#    o Server-side Key and Certficiate
+#  o Verification enable/disable
+#  sbi:
+#    server|client:
+#      no_verify: false|true
+#    - false: (Default) Verify the PEER
+#    - true:  Skip the verification step
+#
+#  o Server-side does not use TLS
+#  sbi:
 #    server:
-#      key: /etc/open5gs/tls/ausf.key
-#      cert: /etc/open5gs/tls/ausf.crt
+#      no_tls: true
 #
-#    o Client-side does not use TLS
+#  o Client-side skips the verification step
+#  sbi:
 #    client:
-#      enabled: no
-#      key: /etc/open5gs/tls/ausf.key
-#      cert: /etc/open5gs/tls/ausf.crt
+#      no_verify: true
+#      key: /etc/open5gs/tls/amf.key
+#      cert: /etc/open5gs/tls/amf.crt
 #
-#    o Use the specified certificate to verify client
+#  o Use the specified certificate while verifying the client
+#  sbi:
 #    server
 #      cacert: /etc/open5gs/tls/ca.crt
 #
-#    o Use the specified certificate to verify server
+#  o Use the specified certificate while verifying the server
+#  sbi:
 #    client
 #      cacert: /etc/open5gs/tls/ca.crt
 #
-tls:
-    enabled: no
+sbi:
     server:
+      no_tls: true
       cacert: @sysconfdir@/open5gs/tls/ca.crt
       key: @sysconfdir@/open5gs/tls/ausf.key
       cert: @sysconfdir@/open5gs/tls/ausf.crt
     client:
+      no_tls: true
       cacert: @sysconfdir@/open5gs/tls/ca.crt
       key: @sysconfdir@/open5gs/tls/ausf.key
       cert: @sysconfdir@/open5gs/tls/ausf.crt
 
 #
-# ausf:
-#
 #  <SBI Server>
 #
 #  o SBI Server(http://<all address available>:80)
+#  sbi:
+#    server:
+#      no_tls: true
+#  ausf:
 #    sbi:
 #
 #  o SBI Server(http://<any address>:7777)
+#  sbi:
+#    server:
+#      no_tls: true
+#  ausf:
 #    sbi:
 #      - addr:
 #          - 0.0.0.0
@@ -75,17 +93,17 @@ tls:
 #        port: 7777
 #
 #  o SBI Server(https://<all address available>:443)
-#  tls:
+#  sbi:
 #    server:
 #      key: /etc/open5gs/tls/ausf.key
 #      cert: /etc/open5gs/tls/ausf.crt
 #  ausf:
 #    sbi:
 #
-#  o SBI Server(http://127.0.0.11:80, http://[::1]:80)
-#  tls:
-#    enabled: no
+#  o SBI Server(https://127.0.0.11:443, https://[::1]:443) without verification
+#  sbi:
 #    server:
+#      no_verify: true
 #      key: /etc/open5gs/tls/ausf.key
 #      cert: /etc/open5gs/tls/ausf.crt
 #  ausf:
@@ -94,29 +112,48 @@ tls:
 #      - addr: ::1
 #
 #  o SBI Server(https://ausf.open5gs.org:443)
-#    Use the specified certificate to verify client
+#    Use the specified certificate while verifying the client
 #
-#  tls:
+#  sbi:
 #    server:
 #      cacert: /etc/open5gs/tls/ca.crt
+#      key: /etc/open5gs/tls/ausf.key
+#      cert: /etc/open5gs/tls/ausf.crt
 #  ausf:
 #    sbi:
 #      - name: ausf.open5gs.org
 #
 #  o SBI Server(http://127.0.0.11:7777)
+#  sbi:
+#    server:
+#      no_tls: true
+#  ausf:
 #    sbi:
 #      - addr: 127.0.0.11
 #        port: 7777
 #
 #  o SBI Server(http://<eth0 IP address>:80)
+#  sbi:
+#    server:
+#      no_tls: true
+#  ausf:
 #    sbi:
 #      - dev: eth0
 #
 #  o Provide custom SBI address to be advertised to NRF
+#  sbi:
+#    server:
+#      no_tls: true
+#  ausf:
 #    sbi:
 #      - dev: eth0
 #        advertise: open5gs-ausf.svc.local
 #
+#  o Another example of advertising on NRF
+#  sbi:
+#    server:
+#      no_tls: true
+#  ausf:
 #    sbi:
 #      - addr: localhost
 #        advertise:
@@ -127,6 +164,10 @@ tls:
 #    - tcp_nodelay : true
 #    - so_linger.l_onoff : false
 #
+#  sbi:
+#    server:
+#      no_tls: true
+#  ausf:
 #    sbi:
 #      addr: 127.0.0.11
 #      option:
@@ -138,9 +179,11 @@ tls:
 #  <NF Service>
 #
 #  o NF Service Name(Default : all NF services available)
+#  ausf:
 #    service_name:
 #
 #  o NF Service Name(Only some NF services are available)
+#  ausf:
 #    service_name:
 #      - nausf-auth
 #
@@ -148,12 +191,21 @@ tls:
 #
 #  o (Default) If you do not set Query Parameter as shown below,
 #
+#  sbi:
+#    server:
+#      no_tls: true
+#  ausf:
 #    sbi:
 #      - addr: 127.0.0.11
 #        port: 7777
 #
 #    - 'service-names' is included.
 #
+#  o Service-Names are not included
+#  sbi:
+#    server:
+#      no_tls: true
+#  ausf:
 #    sbi:
 #      - addr: 127.0.0.11
 #        port: 7777
@@ -172,6 +224,10 @@ tls:
 #
 #  o (Default) If you do not set Delegated Discovery as shown below,
 #
+#  sbi:
+#    server:
+#      no_tls: true
+#  ausf:
 #    sbi:
 #      - addr: 127.0.0.11
 #        port: 7777
@@ -179,6 +235,10 @@ tls:
 #    - Use SCP if SCP avaiable. Otherwise NRF is used.
 #      => App fails if both NRF and SCP are unavailable.
 #
+#  sbi:
+#    server:
+#      no_tls: true
+#  ausf:
 #    sbi:
 #      - addr: 127.0.0.11
 #        port: 7777
@@ -197,31 +257,36 @@ ausf:
         port: 7777
 
 #
-# scp:
-#
 #  <SBI Client>>
 #
 #  o SBI Client(http://127.0.1.10:7777)
+#  sbi:
+#    client:
+#      no_tls: true
+#  scp:
 #    sbi:
 #      addr: 127.0.1.10
 #      port: 7777
 #
-#  o SBI Client(https://127.0.1.10:443, https://[::1]:443)
-#  tls:
+#  o SBI Client(https://127.0.1.10:443, https://[::1]:443) without verification
+#  sbi:
 #    client:
-#      key: /etc/open5gs/tls/ausf.key
-#      cert: /etc/open5gs/tls/ausf.crt
+#      no_verify: true
+#      key: /etc/open5gs/tls/amf.key
+#      cert: /etc/open5gs/tls/amf.crt
 #  scp:
 #    sbi:
 #      - addr: 127.0.1.10
 #      - addr: ::1
 #
 #  o SBI Client(https://scp.open5gs.org:443)
-#    Use the specified certificate to verify server
+#    Use the specified certificate while verifying the server
 #
-#  tls:
+#  sbi:
 #    client:
 #      cacert: /etc/open5gs/tls/ca.crt
+#      key: /etc/open5gs/tls/amf.key
+#      cert: /etc/open5gs/tls/amf.crt
 #  scp:
 #    sbi:
 #      - name: scp.open5gs.org
@@ -229,6 +294,10 @@ ausf:
 #  o SBI Client(http://[fd69:f21d:873c:fb::1]:80)
 #    If prefer_ipv4 is true, http://127.0.1.10:80 is selected.
 #
+#  sbi:
+#    client:
+#      no_tls: true
+#  scp:
 #    sbi:
 #      addr:
 #        - 127.0.1.10
@@ -238,6 +307,10 @@ ausf:
 #    - tcp_nodelay : true
 #    - so_linger.l_onoff : false
 #
+#  sbi:
+#    client:
+#      no_tls: true
+#  scp:
 #    sbi:
 #      addr: 127.0.1.10
 #      option:
@@ -253,31 +326,36 @@ scp:
         port: 7777
 
 #
-# nrf:
-#
 #  <SBI Client>>
 #
 #  o SBI Client(http://127.0.0.10:7777)
+#  sbi:
+#    client:
+#      no_tls: true
+#  nrf:
 #    sbi:
 #      addr: 127.0.0.10
 #      port: 7777
 #
-#  o SBI Client(https://127.0.0.10:443, https://[::1]:443)
-#  tls:
+#  o SBI Client(https://127.0.0.10:443, https://[::1]:443) without verification
+#  sbi:
 #    client:
-#      key: /etc/open5gs/tls/ausf.key
-#      cert: /etc/open5gs/tls/ausf.crt
+#      no_verify: true
+#      key: /etc/open5gs/tls/amf.key
+#      cert: /etc/open5gs/tls/amf.crt
 #  nrf:
 #    sbi:
 #      - addr: 127.0.0.10
 #      - addr: ::1
 #
 #  o SBI Client(https://nrf.open5gs.org:443)
-#    Use the specified certificate to verify server
+#    Use the specified certificate while verifying the server
 #
-#  tls:
+#  sbi:
 #    client:
 #      cacert: /etc/open5gs/tls/ca.crt
+#      key: /etc/open5gs/tls/amf.key
+#      cert: /etc/open5gs/tls/amf.crt
 #  nrf:
 #    sbi:
 #      - name: nrf.open5gs.org
@@ -294,6 +372,10 @@ scp:
 #    - tcp_nodelay : true
 #    - so_linger.l_onoff : false
 #
+#  sbi:
+#    client:
+#      no_tls: true
+#  nrf:
 #    sbi:
 #      addr: 127.0.0.10
 #      option:
@@ -310,46 +392,50 @@ scp:
 #        port: 7777
 
 #
-# parameter:
-#
 #  o Disable use of IPv4 addresses (only IPv6)
-#      no_ipv4: true
+#  parameter:
+#    no_ipv4: true
 #
 #  o Disable use of IPv6 addresses (only IPv4)
-#      no_ipv6: true
+#  parameter:
+#    no_ipv6: true
 #
 #  o Prefer IPv4 instead of IPv6 for estabishing new GTP connections.
-#      prefer_ipv4: true
+#  parameter:
+#    prefer_ipv4: true
 #
 parameter:
 
 #
-# max:
-#
-# o Maximum Number of UE
+#  o Maximum Number of UE
+#  max:
 #    ue: 1024
-# o Maximum Number of Peer(S1AP/NGAP, DIAMETER, GTP, PFCP or SBI)
+#
+#  o Maximum Number of Peer(S1AP/NGAP, DIAMETER, GTP, PFCP or SBI)
+#  max:
 #    peer: 64
 #
 max:
 
 #
-# time:
-#
 #  o NF Instance Heartbeat (Default : 0)
 #    NFs will not send heart-beat timer in NFProfile
 #    NRF will send heart-beat timer in NFProfile
+#    (Default values are used, so no configuration is required)
 #
 #  o NF Instance Heartbeat (20 seconds)
 #    NFs will send heart-beat timer (20 seconds) in NFProfile
 #    NRF can change heart-beat timer in NFProfile
 #
+#  time:
 #    nf_instance:
 #      heartbeat: 20
 #
 #  o Message Wait Duration (Default : 10,000 ms = 10 seconds)
+#    (Default values are used, so no configuration is required)
 #
 #  o Message Wait Duration (3000 ms)
+#  time:
 #    message:
 #        duration: 3000
 time:

@@ -332,33 +332,12 @@ void mme_gtp_send_delete_all_sessions(mme_ue_t *mme_ue, int action)
     ogs_assert(sgw_ue);
     ogs_assert(action);
 
-    if (SESSION_CONTEXT_WILL_DELETED(mme_ue)) {
-        ogs_warn("[%s] Delete-Session-Request has already sent",
-                mme_ue->imsi_bcd);
-        return;
-    }
-
-    sgw_ue->session_context_will_deleted = 1;
-
-    sess = mme_sess_first(mme_ue);
-    while (sess != NULL) {
-        next_sess = mme_sess_next(sess);
-
+    ogs_list_for_each_safe(&mme_ue->sess_list, next_sess, sess) {
         if (MME_HAVE_SGW_S1U_PATH(sess)) {
-            mme_bearer_t *bearer = mme_default_bearer_in_sess(sess);
-            ogs_assert(bearer);
-
-            if (bearer &&
-                OGS_FSM_CHECK(&bearer->sm, esm_state_pdn_will_disconnect)) {
-                ogs_warn("PDN will disconnect[EBI:%d]", bearer->ebi);
-            } else {
-                mme_gtp_send_delete_session_request(sgw_ue, sess, action);
-            }
+            mme_gtp_send_delete_session_request(sgw_ue, sess, action);
         } else {
             mme_sess_remove(sess);
         }
-
-        sess = next_sess;
     }
 }
 

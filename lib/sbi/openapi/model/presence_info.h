@@ -1,7 +1,7 @@
 /*
  * presence_info.h
  *
- * 
+ * If the additionalPraId IE is present, this IE shall state the presence information of the UE for the individual PRA identified by the additionalPraId IE;  If the additionalPraId IE is not present, this IE shall state the presence information of the UE for the PRA identified by the praId IE. 
  */
 
 #ifndef _OpenAPI_presence_info_H_

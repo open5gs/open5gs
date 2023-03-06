@@ -587,8 +587,8 @@ static int tlv_parse_leaf(void *msg, ogs_tlv_desc_t *desc, ogs_tlv_t *tlv)
         break;
     }
     default:
-        ogs_assert_if_reached();
-        break;
+        ogs_error("Unknown type[%d]", desc->ctype);
+        return OGS_ERROR;
     }
 
     return OGS_OK;

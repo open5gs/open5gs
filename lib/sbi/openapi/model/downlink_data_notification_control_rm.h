@@ -1,7 +1,7 @@
 /*
  * downlink_data_notification_control_rm.h
  *
- * this data type is defined in the same way as the DownlinkDataNotificationControl data type, but with the OpenAPI nullable property set to true.
+ * This data type is defined in the same way as the DownlinkDataNotificationControl data type, but with the nullable:true property.
  */
 
 #ifndef _OpenAPI_downlink_data_notification_control_rm_H_

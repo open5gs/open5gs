@@ -18,16 +18,18 @@ OpenAPI_lte_m_ind_t *OpenAPI_lte_m_ind_create(
 
 void OpenAPI_lte_m_ind_free(OpenAPI_lte_m_ind_t *lte_m_ind)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == lte_m_ind) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(lte_m_ind);
 }
 
 cJSON *OpenAPI_lte_m_ind_convertToJSON(OpenAPI_lte_m_ind_t *lte_m_ind)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (lte_m_ind == NULL) {
         ogs_error("OpenAPI_lte_m_ind_convertToJSON() failed [LteMInd]");
@@ -47,12 +49,13 @@ end:
 OpenAPI_lte_m_ind_t *OpenAPI_lte_m_ind_parseFromJSON(cJSON *lte_m_indJSON)
 {
     OpenAPI_lte_m_ind_t *lte_m_ind_local_var = NULL;
-    cJSON *lte_cat_m_ind = cJSON_GetObjectItemCaseSensitive(lte_m_indJSON, "lteCatMInd");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *lte_cat_m_ind = NULL;
+    lte_cat_m_ind = cJSON_GetObjectItemCaseSensitive(lte_m_indJSON, "lteCatMInd");
     if (!lte_cat_m_ind) {
         ogs_error("OpenAPI_lte_m_ind_parseFromJSON() failed [lte_cat_m_ind]");
         goto end;
     }
-
     if (!cJSON_IsBool(lte_cat_m_ind)) {
         ogs_error("OpenAPI_lte_m_ind_parseFromJSON() failed [lte_cat_m_ind]");
         goto end;

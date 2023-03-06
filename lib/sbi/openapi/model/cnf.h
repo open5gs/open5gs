@@ -1,7 +1,7 @@
 /*
  * cnf.h
  *
- * 
+ * A conjunctive normal form
  */
 
 #ifndef _OpenAPI_cnf_H_

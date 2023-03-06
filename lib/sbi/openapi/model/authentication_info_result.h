@@ -14,6 +14,7 @@
 #include "../include/binary.h"
 #include "auth_type.h"
 #include "authentication_vector.h"
+#include "server_addressing_info.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,13 +26,25 @@ typedef struct OpenAPI_authentication_info_result_s {
     char *supported_features;
     struct OpenAPI_authentication_vector_s *authentication_vector;
     char *supi;
+    bool is_akma_ind;
+    int akma_ind;
+    bool is_auth_aaa;
+    int auth_aaa;
+    char *routing_id;
+    OpenAPI_list_t *pvs_info;
 } OpenAPI_authentication_info_result_t;
 
 OpenAPI_authentication_info_result_t *OpenAPI_authentication_info_result_create(
     OpenAPI_auth_type_e auth_type,
     char *supported_features,
     OpenAPI_authentication_vector_t *authentication_vector,
-    char *supi
+    char *supi,
+    bool is_akma_ind,
+    int akma_ind,
+    bool is_auth_aaa,
+    int auth_aaa,
+    char *routing_id,
+    OpenAPI_list_t *pvs_info
 );
 void OpenAPI_authentication_info_result_free(OpenAPI_authentication_info_result_t *authentication_info_result);
 OpenAPI_authentication_info_result_t *OpenAPI_authentication_info_result_parseFromJSON(cJSON *authentication_info_resultJSON);

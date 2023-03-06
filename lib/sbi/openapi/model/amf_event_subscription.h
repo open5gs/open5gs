@@ -1,7 +1,7 @@
 /*
  * amf_event_subscription.h
  *
- * 
+ * Represents an individual event subscription resource on AMF
  */
 
 #ifndef _OpenAPI_amf_event_subscription_H_
@@ -30,6 +30,10 @@ typedef struct OpenAPI_amf_event_subscription_s {
     char *subs_change_notify_correlation_id;
     char *supi;
     char *group_id;
+    OpenAPI_list_t *exclude_supi_list;
+    OpenAPI_list_t *exclude_gpsi_list;
+    OpenAPI_list_t *include_supi_list;
+    OpenAPI_list_t *include_gpsi_list;
     char *gpsi;
     char *pei;
     bool is_any_ue;
@@ -47,6 +51,10 @@ OpenAPI_amf_event_subscription_t *OpenAPI_amf_event_subscription_create(
     char *subs_change_notify_correlation_id,
     char *supi,
     char *group_id,
+    OpenAPI_list_t *exclude_supi_list,
+    OpenAPI_list_t *exclude_gpsi_list,
+    OpenAPI_list_t *include_supi_list,
+    OpenAPI_list_t *include_gpsi_list,
     char *gpsi,
     char *pei,
     bool is_any_ue,

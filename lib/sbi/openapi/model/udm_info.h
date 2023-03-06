@@ -14,6 +14,7 @@
 #include "../include/binary.h"
 #include "identity_range.h"
 #include "internal_group_id_range.h"
+#include "suci_info.h"
 #include "supi_range.h"
 
 #ifdef __cplusplus
@@ -28,6 +29,7 @@ typedef struct OpenAPI_udm_info_s {
     OpenAPI_list_t *external_group_identifiers_ranges;
     OpenAPI_list_t *routing_indicators;
     OpenAPI_list_t *internal_group_identifiers_ranges;
+    OpenAPI_list_t *suci_infos;
 } OpenAPI_udm_info_t;
 
 OpenAPI_udm_info_t *OpenAPI_udm_info_create(
@@ -36,7 +38,8 @@ OpenAPI_udm_info_t *OpenAPI_udm_info_create(
     OpenAPI_list_t *gpsi_ranges,
     OpenAPI_list_t *external_group_identifiers_ranges,
     OpenAPI_list_t *routing_indicators,
-    OpenAPI_list_t *internal_group_identifiers_ranges
+    OpenAPI_list_t *internal_group_identifiers_ranges,
+    OpenAPI_list_t *suci_infos
 );
 void OpenAPI_udm_info_free(OpenAPI_udm_info_t *udm_info);
 OpenAPI_udm_info_t *OpenAPI_udm_info_parseFromJSON(cJSON *udm_infoJSON);

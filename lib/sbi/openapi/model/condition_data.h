@@ -1,7 +1,7 @@
 /*
  * condition_data.h
  *
- * 
+ * Contains conditions of applicability for a rule.
  */
 
 #ifndef _OpenAPI_condition_data_H_

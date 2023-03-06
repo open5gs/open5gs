@@ -1,7 +1,7 @@
 /*
  * cm_state.h
  *
- * 
+ * Describes the connection management state of a UE
  */
 
 #ifndef _OpenAPI_cm_state_H_

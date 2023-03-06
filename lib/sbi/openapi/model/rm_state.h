@@ -1,7 +1,7 @@
 /*
  * rm_state.h
  *
- * 
+ * Describes the registration management state of a UE
  */
 
 #ifndef _OpenAPI_rm_state_H_

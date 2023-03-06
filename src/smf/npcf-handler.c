@@ -445,8 +445,9 @@ bool smf_npcf_smpolicycontrol_handle_create(
     /* Check if selected UPF is associated with SMF */
     ogs_assert(sess->pfcp_node);
     if (!OGS_FSM_CHECK(&sess->pfcp_node->sm, smf_pfcp_state_associated)) {
-        ogs_error("[%s] No associated UPF", smf_ue->supi);
-        return false;
+        strerror = ogs_msprintf("[%s:%d] No associated UPF",
+                smf_ue->supi, sess->psi);
+        goto cleanup;
     }
 
     /* Remove all previous QoS flow */
@@ -701,6 +702,7 @@ bool smf_npcf_smpolicycontrol_handle_terminate_notify(
 {
     smf_ue_t *smf_ue = NULL;
     smf_npcf_smpolicycontrol_param_t param;
+    int r;
 
     ogs_assert(sess);
     ogs_assert(stream);
@@ -712,11 +714,12 @@ bool smf_npcf_smpolicycontrol_handle_terminate_notify(
     ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
 
     memset(&param, 0, sizeof(param));
-    ogs_assert(true ==
-        smf_sbi_discover_and_send(
+    r = smf_sbi_discover_and_send(
             OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL, NULL,
             smf_npcf_smpolicycontrol_build_delete,
-            sess, NULL, OGS_PFCP_DELETE_TRIGGER_PCF_INITIATED, &param));
+            sess, NULL, OGS_PFCP_DELETE_TRIGGER_PCF_INITIATED, &param);
+    ogs_expect(r == OGS_OK);
+    ogs_assert(r != OGS_ERROR);
 
     return true;
 }

@@ -6,7 +6,7 @@
 
 char* OpenAPI_auth_type_ToString(OpenAPI_auth_type_e auth_type)
 {
-    const char *auth_typeArray[] =  { "NULL", "5G_AKA", "EAP_AKA_PRIME", "EAP_TLS" };
+    const char *auth_typeArray[] =  { "NULL", "5G_AKA", "EAP_AKA_PRIME", "EAP_TLS", "EAP_TTLS" };
     size_t sizeofArray = sizeof(auth_typeArray) / sizeof(auth_typeArray[0]);
     if (auth_type < sizeofArray)
         return (char *)auth_typeArray[auth_type];
@@ -17,7 +17,7 @@ char* OpenAPI_auth_type_ToString(OpenAPI_auth_type_e auth_type)
 OpenAPI_auth_type_e OpenAPI_auth_type_FromString(char* auth_type)
 {
     int stringToReturn = 0;
-    const char *auth_typeArray[] =  { "NULL", "5G_AKA", "EAP_AKA_PRIME", "EAP_TLS" };
+    const char *auth_typeArray[] =  { "NULL", "5G_AKA", "EAP_AKA_PRIME", "EAP_TLS", "EAP_TTLS" };
     size_t sizeofArray = sizeof(auth_typeArray) / sizeof(auth_typeArray[0]);
     while (stringToReturn < sizeofArray) {
         if (strcmp(auth_type, auth_typeArray[stringToReturn]) == 0) {

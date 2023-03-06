@@ -28,26 +28,40 @@ OpenAPI_smf_selection_data_t *OpenAPI_smf_selection_data_create(
 
 void OpenAPI_smf_selection_data_free(OpenAPI_smf_selection_data_t *smf_selection_data)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == smf_selection_data) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_list_for_each(smf_selection_data->candidates, node) {
-        OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
-        ogs_free(localKeyValue->key);
-        OpenAPI_candidate_for_replacement_free(localKeyValue->value);
-        ogs_free(localKeyValue);
+    if (smf_selection_data->candidates) {
+        OpenAPI_list_for_each(smf_selection_data->candidates, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_candidate_for_replacement_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(smf_selection_data->candidates);
+        smf_selection_data->candidates = NULL;
     }
-    OpenAPI_list_free(smf_selection_data->candidates);
-    OpenAPI_snssai_free(smf_selection_data->snssai);
-    OpenAPI_snssai_free(smf_selection_data->mapping_snssai);
-    ogs_free(smf_selection_data->dnn);
+    if (smf_selection_data->snssai) {
+        OpenAPI_snssai_free(smf_selection_data->snssai);
+        smf_selection_data->snssai = NULL;
+    }
+    if (smf_selection_data->mapping_snssai) {
+        OpenAPI_snssai_free(smf_selection_data->mapping_snssai);
+        smf_selection_data->mapping_snssai = NULL;
+    }
+    if (smf_selection_data->dnn) {
+        ogs_free(smf_selection_data->dnn);
+        smf_selection_data->dnn = NULL;
+    }
     ogs_free(smf_selection_data);
 }
 
 cJSON *OpenAPI_smf_selection_data_convertToJSON(OpenAPI_smf_selection_data_t *smf_selection_data)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (smf_selection_data == NULL) {
         ogs_error("OpenAPI_smf_selection_data_convertToJSON() failed [SmfSelectionData]");
@@ -69,20 +83,19 @@ cJSON *OpenAPI_smf_selection_data_convertToJSON(OpenAPI_smf_selection_data_t *sm
         goto end;
     }
     cJSON *localMapObject = candidates;
-    OpenAPI_lnode_t *candidates_node;
     if (smf_selection_data->candidates) {
-        OpenAPI_list_for_each(smf_selection_data->candidates, candidates_node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)candidates_node->data;
-        cJSON *itemLocal = localKeyValue->value ?
-            OpenAPI_candidate_for_replacement_convertToJSON(localKeyValue->value) :
-            cJSON_CreateNull();
-        if (itemLocal == NULL) {
-            ogs_error("OpenAPI_smf_selection_data_convertToJSON() failed [candidates]");
-            goto end;
-        }
-        cJSON_AddItemToObject(candidates, localKeyValue->key, itemLocal);
+        OpenAPI_list_for_each(smf_selection_data->candidates, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            cJSON *itemLocal = localKeyValue->value ?
+                OpenAPI_candidate_for_replacement_convertToJSON(localKeyValue->value) :
+                cJSON_CreateNull();
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_smf_selection_data_convertToJSON() failed [inner]");
+                goto end;
             }
+            cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
         }
+    }
     }
 
     if (smf_selection_data->snssai) {
@@ -125,8 +138,16 @@ end:
 OpenAPI_smf_selection_data_t *OpenAPI_smf_selection_data_parseFromJSON(cJSON *smf_selection_dataJSON)
 {
     OpenAPI_smf_selection_data_t *smf_selection_data_local_var = NULL;
-    cJSON *unsupp_dnn = cJSON_GetObjectItemCaseSensitive(smf_selection_dataJSON, "unsuppDnn");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *unsupp_dnn = NULL;
+    cJSON *candidates = NULL;
+    OpenAPI_list_t *candidatesList = NULL;
+    cJSON *snssai = NULL;
+    OpenAPI_snssai_t *snssai_local_nonprim = NULL;
+    cJSON *mapping_snssai = NULL;
+    OpenAPI_snssai_t *mapping_snssai_local_nonprim = NULL;
+    cJSON *dnn = NULL;
+    unsupp_dnn = cJSON_GetObjectItemCaseSensitive(smf_selection_dataJSON, "unsuppDnn");
     if (unsupp_dnn) {
     if (!cJSON_IsBool(unsupp_dnn)) {
         ogs_error("OpenAPI_smf_selection_data_parseFromJSON() failed [unsupp_dnn]");
@@ -134,50 +155,45 @@ OpenAPI_smf_selection_data_t *OpenAPI_smf_selection_data_parseFromJSON(cJSON *sm
     }
     }
 
-    cJSON *candidates = cJSON_GetObjectItemCaseSensitive(smf_selection_dataJSON, "candidates");
-
-    OpenAPI_list_t *candidatesList;
+    candidates = cJSON_GetObjectItemCaseSensitive(smf_selection_dataJSON, "candidates");
     if (candidates) {
-    cJSON *candidates_local_map;
-    if (!cJSON_IsObject(candidates)) {
-        ogs_error("OpenAPI_smf_selection_data_parseFromJSON() failed [candidates]");
-        goto end;
-    }
-    candidatesList = OpenAPI_list_create();
-    OpenAPI_map_t *localMapKeyPair = NULL;
-    cJSON_ArrayForEach(candidates_local_map, candidates) {
-        cJSON *localMapObject = candidates_local_map;
-        if (cJSON_IsObject(candidates_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(
-                ogs_strdup(localMapObject->string), OpenAPI_candidate_for_replacement_parseFromJSON(localMapObject));
-        } else if (cJSON_IsNull(candidates_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
-        } else {
+        cJSON *candidates_local_map = NULL;
+        if (!cJSON_IsObject(candidates) && !cJSON_IsNull(candidates)) {
             ogs_error("OpenAPI_smf_selection_data_parseFromJSON() failed [candidates]");
             goto end;
         }
-        OpenAPI_list_add(candidatesList , localMapKeyPair);
-    }
+        if (cJSON_IsObject(candidates)) {
+            candidatesList = OpenAPI_list_create();
+            OpenAPI_map_t *localMapKeyPair = NULL;
+            cJSON_ArrayForEach(candidates_local_map, candidates) {
+                cJSON *localMapObject = candidates_local_map;
+                if (cJSON_IsObject(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(
+                        ogs_strdup(localMapObject->string), OpenAPI_candidate_for_replacement_parseFromJSON(localMapObject));
+                } else if (cJSON_IsNull(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
+                } else {
+                    ogs_error("OpenAPI_smf_selection_data_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                OpenAPI_list_add(candidatesList, localMapKeyPair);
+            }
+        }
     }
 
-    cJSON *snssai = cJSON_GetObjectItemCaseSensitive(smf_selection_dataJSON, "snssai");
-
-    OpenAPI_snssai_t *snssai_local_nonprim = NULL;
+    snssai = cJSON_GetObjectItemCaseSensitive(smf_selection_dataJSON, "snssai");
     if (snssai) {
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
     }
 
-    cJSON *mapping_snssai = cJSON_GetObjectItemCaseSensitive(smf_selection_dataJSON, "mappingSnssai");
-
-    OpenAPI_snssai_t *mapping_snssai_local_nonprim = NULL;
+    mapping_snssai = cJSON_GetObjectItemCaseSensitive(smf_selection_dataJSON, "mappingSnssai");
     if (mapping_snssai) {
     mapping_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(mapping_snssai);
     }
 
-    cJSON *dnn = cJSON_GetObjectItemCaseSensitive(smf_selection_dataJSON, "dnn");
-
+    dnn = cJSON_GetObjectItemCaseSensitive(smf_selection_dataJSON, "dnn");
     if (dnn) {
-    if (!cJSON_IsString(dnn)) {
+    if (!cJSON_IsString(dnn) && !cJSON_IsNull(dnn)) {
         ogs_error("OpenAPI_smf_selection_data_parseFromJSON() failed [dnn]");
         goto end;
     }
@@ -189,11 +205,29 @@ OpenAPI_smf_selection_data_t *OpenAPI_smf_selection_data_parseFromJSON(cJSON *sm
         candidates ? candidatesList : NULL,
         snssai ? snssai_local_nonprim : NULL,
         mapping_snssai ? mapping_snssai_local_nonprim : NULL,
-        dnn ? ogs_strdup(dnn->valuestring) : NULL
+        dnn && !cJSON_IsNull(dnn) ? ogs_strdup(dnn->valuestring) : NULL
     );
 
     return smf_selection_data_local_var;
 end:
+    if (candidatesList) {
+        OpenAPI_list_for_each(candidatesList, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_candidate_for_replacement_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(candidatesList);
+        candidatesList = NULL;
+    }
+    if (snssai_local_nonprim) {
+        OpenAPI_snssai_free(snssai_local_nonprim);
+        snssai_local_nonprim = NULL;
+    }
+    if (mapping_snssai_local_nonprim) {
+        OpenAPI_snssai_free(mapping_snssai_local_nonprim);
+        mapping_snssai_local_nonprim = NULL;
+    }
     return NULL;
 }
 

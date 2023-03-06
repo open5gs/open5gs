@@ -20,10 +20,12 @@ extern "C" {
 typedef struct OpenAPI_nf_service_set_cond_s OpenAPI_nf_service_set_cond_t;
 typedef struct OpenAPI_nf_service_set_cond_s {
     char *nf_service_set_id;
+    char *nf_set_id;
 } OpenAPI_nf_service_set_cond_t;
 
 OpenAPI_nf_service_set_cond_t *OpenAPI_nf_service_set_cond_create(
-    char *nf_service_set_id
+    char *nf_service_set_id,
+    char *nf_set_id
 );
 void OpenAPI_nf_service_set_cond_free(OpenAPI_nf_service_set_cond_t *nf_service_set_cond);
 OpenAPI_nf_service_set_cond_t *OpenAPI_nf_service_set_cond_parseFromJSON(cJSON *nf_service_set_condJSON);

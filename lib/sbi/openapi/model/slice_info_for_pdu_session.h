@@ -1,7 +1,7 @@
 /*
  * slice_info_for_pdu_session.h
  *
- * 
+ * Contains the slice information requested during PDU Session establishment procedure
  */
 
 #ifndef _OpenAPI_slice_info_for_pdu_session_H_

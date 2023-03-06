@@ -1,7 +1,7 @@
 /*
  * policy_update.h
  *
- * 
+ * Represents updated policies that the PCF provides in a notification or in a reply to an Update Request. 
  */
 
 #ifndef _OpenAPI_policy_update_H_
@@ -13,10 +13,14 @@
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
 #include "ambr.h"
+#include "as_time_distribution_param.h"
+#include "pcf_ue_callback_info.h"
+#include "pdu_session_info.h"
 #include "presence_info_rm.h"
 #include "request_trigger.h"
 #include "service_area_restriction.h"
 #include "smf_selection_data.h"
+#include "ue_slice_mbr.h"
 #include "wireline_service_area_restriction.h"
 
 #ifdef __cplusplus
@@ -31,9 +35,15 @@ typedef struct OpenAPI_policy_update_s {
     struct OpenAPI_wireline_service_area_restriction_s *wl_serv_area_res;
     bool is_rfsp;
     int rfsp;
+    bool is_target_rfsp;
+    int target_rfsp;
     struct OpenAPI_smf_selection_data_s *smf_sel_info;
     struct OpenAPI_ambr_s *ue_ambr;
+    OpenAPI_list_t *ue_slice_mbrs;
     OpenAPI_list_t* pras;
+    struct OpenAPI_pcf_ue_callback_info_s *pcf_ue_info;
+    OpenAPI_list_t *match_pdus;
+    struct OpenAPI_as_time_distribution_param_s *as_time_dis_param;
 } OpenAPI_policy_update_t;
 
 OpenAPI_policy_update_t *OpenAPI_policy_update_create(
@@ -43,9 +53,15 @@ OpenAPI_policy_update_t *OpenAPI_policy_update_create(
     OpenAPI_wireline_service_area_restriction_t *wl_serv_area_res,
     bool is_rfsp,
     int rfsp,
+    bool is_target_rfsp,
+    int target_rfsp,
     OpenAPI_smf_selection_data_t *smf_sel_info,
     OpenAPI_ambr_t *ue_ambr,
-    OpenAPI_list_t* pras
+    OpenAPI_list_t *ue_slice_mbrs,
+    OpenAPI_list_t* pras,
+    OpenAPI_pcf_ue_callback_info_t *pcf_ue_info,
+    OpenAPI_list_t *match_pdus,
+    OpenAPI_as_time_distribution_param_t *as_time_dis_param
 );
 void OpenAPI_policy_update_free(OpenAPI_policy_update_t *policy_update);
 OpenAPI_policy_update_t *OpenAPI_policy_update_parseFromJSON(cJSON *policy_updateJSON);

@@ -28,22 +28,33 @@ OpenAPI_ue_initiated_resource_request_t *OpenAPI_ue_initiated_resource_request_c
 
 void OpenAPI_ue_initiated_resource_request_free(OpenAPI_ue_initiated_resource_request_t *ue_initiated_resource_request)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == ue_initiated_resource_request) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(ue_initiated_resource_request->pcc_rule_id);
-    OpenAPI_list_for_each(ue_initiated_resource_request->pack_filt_info, node) {
-        OpenAPI_packet_filter_info_free(node->data);
+    if (ue_initiated_resource_request->pcc_rule_id) {
+        ogs_free(ue_initiated_resource_request->pcc_rule_id);
+        ue_initiated_resource_request->pcc_rule_id = NULL;
     }
-    OpenAPI_list_free(ue_initiated_resource_request->pack_filt_info);
-    OpenAPI_requested_qos_free(ue_initiated_resource_request->req_qos);
+    if (ue_initiated_resource_request->pack_filt_info) {
+        OpenAPI_list_for_each(ue_initiated_resource_request->pack_filt_info, node) {
+            OpenAPI_packet_filter_info_free(node->data);
+        }
+        OpenAPI_list_free(ue_initiated_resource_request->pack_filt_info);
+        ue_initiated_resource_request->pack_filt_info = NULL;
+    }
+    if (ue_initiated_resource_request->req_qos) {
+        OpenAPI_requested_qos_free(ue_initiated_resource_request->req_qos);
+        ue_initiated_resource_request->req_qos = NULL;
+    }
     ogs_free(ue_initiated_resource_request);
 }
 
 cJSON *OpenAPI_ue_initiated_resource_request_convertToJSON(OpenAPI_ue_initiated_resource_request_t *ue_initiated_resource_request)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (ue_initiated_resource_request == NULL) {
         ogs_error("OpenAPI_ue_initiated_resource_request_convertToJSON() failed [UeInitiatedResourceRequest]");
@@ -58,6 +69,10 @@ cJSON *OpenAPI_ue_initiated_resource_request_convertToJSON(OpenAPI_ue_initiated_
     }
     }
 
+    if (ue_initiated_resource_request->rule_op == OpenAPI_rule_operation_NULL) {
+        ogs_error("OpenAPI_ue_initiated_resource_request_convertToJSON() failed [rule_op]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "ruleOp", OpenAPI_rule_operation_ToString(ue_initiated_resource_request->rule_op)) == NULL) {
         ogs_error("OpenAPI_ue_initiated_resource_request_convertToJSON() failed [rule_op]");
         goto end;
@@ -70,22 +85,22 @@ cJSON *OpenAPI_ue_initiated_resource_request_convertToJSON(OpenAPI_ue_initiated_
     }
     }
 
+    if (!ue_initiated_resource_request->pack_filt_info) {
+        ogs_error("OpenAPI_ue_initiated_resource_request_convertToJSON() failed [pack_filt_info]");
+        return NULL;
+    }
     cJSON *pack_filt_infoList = cJSON_AddArrayToObject(item, "packFiltInfo");
     if (pack_filt_infoList == NULL) {
         ogs_error("OpenAPI_ue_initiated_resource_request_convertToJSON() failed [pack_filt_info]");
         goto end;
     }
-
-    OpenAPI_lnode_t *pack_filt_info_node;
-    if (ue_initiated_resource_request->pack_filt_info) {
-        OpenAPI_list_for_each(ue_initiated_resource_request->pack_filt_info, pack_filt_info_node) {
-            cJSON *itemLocal = OpenAPI_packet_filter_info_convertToJSON(pack_filt_info_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_ue_initiated_resource_request_convertToJSON() failed [pack_filt_info]");
-                goto end;
-            }
-            cJSON_AddItemToArray(pack_filt_infoList, itemLocal);
+    OpenAPI_list_for_each(ue_initiated_resource_request->pack_filt_info, node) {
+        cJSON *itemLocal = OpenAPI_packet_filter_info_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_ue_initiated_resource_request_convertToJSON() failed [pack_filt_info]");
+            goto end;
         }
+        cJSON_AddItemToArray(pack_filt_infoList, itemLocal);
     }
 
     if (ue_initiated_resource_request->req_qos) {
@@ -108,30 +123,35 @@ end:
 OpenAPI_ue_initiated_resource_request_t *OpenAPI_ue_initiated_resource_request_parseFromJSON(cJSON *ue_initiated_resource_requestJSON)
 {
     OpenAPI_ue_initiated_resource_request_t *ue_initiated_resource_request_local_var = NULL;
-    cJSON *pcc_rule_id = cJSON_GetObjectItemCaseSensitive(ue_initiated_resource_requestJSON, "pccRuleId");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *pcc_rule_id = NULL;
+    cJSON *rule_op = NULL;
+    OpenAPI_rule_operation_e rule_opVariable = 0;
+    cJSON *precedence = NULL;
+    cJSON *pack_filt_info = NULL;
+    OpenAPI_list_t *pack_filt_infoList = NULL;
+    cJSON *req_qos = NULL;
+    OpenAPI_requested_qos_t *req_qos_local_nonprim = NULL;
+    pcc_rule_id = cJSON_GetObjectItemCaseSensitive(ue_initiated_resource_requestJSON, "pccRuleId");
     if (pcc_rule_id) {
-    if (!cJSON_IsString(pcc_rule_id)) {
+    if (!cJSON_IsString(pcc_rule_id) && !cJSON_IsNull(pcc_rule_id)) {
         ogs_error("OpenAPI_ue_initiated_resource_request_parseFromJSON() failed [pcc_rule_id]");
         goto end;
     }
     }
 
-    cJSON *rule_op = cJSON_GetObjectItemCaseSensitive(ue_initiated_resource_requestJSON, "ruleOp");
+    rule_op = cJSON_GetObjectItemCaseSensitive(ue_initiated_resource_requestJSON, "ruleOp");
     if (!rule_op) {
         ogs_error("OpenAPI_ue_initiated_resource_request_parseFromJSON() failed [rule_op]");
         goto end;
     }
-
-    OpenAPI_rule_operation_e rule_opVariable;
     if (!cJSON_IsString(rule_op)) {
         ogs_error("OpenAPI_ue_initiated_resource_request_parseFromJSON() failed [rule_op]");
         goto end;
     }
     rule_opVariable = OpenAPI_rule_operation_FromString(rule_op->valuestring);
 
-    cJSON *precedence = cJSON_GetObjectItemCaseSensitive(ue_initiated_resource_requestJSON, "precedence");
-
+    precedence = cJSON_GetObjectItemCaseSensitive(ue_initiated_resource_requestJSON, "precedence");
     if (precedence) {
     if (!cJSON_IsNumber(precedence)) {
         ogs_error("OpenAPI_ue_initiated_resource_request_parseFromJSON() failed [precedence]");
@@ -139,46 +159,40 @@ OpenAPI_ue_initiated_resource_request_t *OpenAPI_ue_initiated_resource_request_p
     }
     }
 
-    cJSON *pack_filt_info = cJSON_GetObjectItemCaseSensitive(ue_initiated_resource_requestJSON, "packFiltInfo");
+    pack_filt_info = cJSON_GetObjectItemCaseSensitive(ue_initiated_resource_requestJSON, "packFiltInfo");
     if (!pack_filt_info) {
         ogs_error("OpenAPI_ue_initiated_resource_request_parseFromJSON() failed [pack_filt_info]");
         goto end;
     }
-
-    OpenAPI_list_t *pack_filt_infoList;
-    cJSON *pack_filt_info_local_nonprimitive;
-    if (!cJSON_IsArray(pack_filt_info)){
-        ogs_error("OpenAPI_ue_initiated_resource_request_parseFromJSON() failed [pack_filt_info]");
-        goto end;
-    }
-
-    pack_filt_infoList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(pack_filt_info_local_nonprimitive, pack_filt_info ) {
-        if (!cJSON_IsObject(pack_filt_info_local_nonprimitive)) {
+        cJSON *pack_filt_info_local = NULL;
+        if (!cJSON_IsArray(pack_filt_info)) {
             ogs_error("OpenAPI_ue_initiated_resource_request_parseFromJSON() failed [pack_filt_info]");
             goto end;
         }
-        OpenAPI_packet_filter_info_t *pack_filt_infoItem = OpenAPI_packet_filter_info_parseFromJSON(pack_filt_info_local_nonprimitive);
 
-        if (!pack_filt_infoItem) {
-            ogs_error("No pack_filt_infoItem");
-            OpenAPI_list_free(pack_filt_infoList);
-            goto end;
+        pack_filt_infoList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(pack_filt_info_local, pack_filt_info) {
+            if (!cJSON_IsObject(pack_filt_info_local)) {
+                ogs_error("OpenAPI_ue_initiated_resource_request_parseFromJSON() failed [pack_filt_info]");
+                goto end;
+            }
+            OpenAPI_packet_filter_info_t *pack_filt_infoItem = OpenAPI_packet_filter_info_parseFromJSON(pack_filt_info_local);
+            if (!pack_filt_infoItem) {
+                ogs_error("No pack_filt_infoItem");
+                OpenAPI_list_free(pack_filt_infoList);
+                goto end;
+            }
+            OpenAPI_list_add(pack_filt_infoList, pack_filt_infoItem);
         }
 
-        OpenAPI_list_add(pack_filt_infoList, pack_filt_infoItem);
-    }
-
-    cJSON *req_qos = cJSON_GetObjectItemCaseSensitive(ue_initiated_resource_requestJSON, "reqQos");
-
-    OpenAPI_requested_qos_t *req_qos_local_nonprim = NULL;
+    req_qos = cJSON_GetObjectItemCaseSensitive(ue_initiated_resource_requestJSON, "reqQos");
     if (req_qos) {
     req_qos_local_nonprim = OpenAPI_requested_qos_parseFromJSON(req_qos);
     }
 
     ue_initiated_resource_request_local_var = OpenAPI_ue_initiated_resource_request_create (
-        pcc_rule_id ? ogs_strdup(pcc_rule_id->valuestring) : NULL,
+        pcc_rule_id && !cJSON_IsNull(pcc_rule_id) ? ogs_strdup(pcc_rule_id->valuestring) : NULL,
         rule_opVariable,
         precedence ? true : false,
         precedence ? precedence->valuedouble : 0,
@@ -188,6 +202,17 @@ OpenAPI_ue_initiated_resource_request_t *OpenAPI_ue_initiated_resource_request_p
 
     return ue_initiated_resource_request_local_var;
 end:
+    if (pack_filt_infoList) {
+        OpenAPI_list_for_each(pack_filt_infoList, node) {
+            OpenAPI_packet_filter_info_free(node->data);
+        }
+        OpenAPI_list_free(pack_filt_infoList);
+        pack_filt_infoList = NULL;
+    }
+    if (req_qos_local_nonprim) {
+        OpenAPI_requested_qos_free(req_qos_local_nonprim);
+        req_qos_local_nonprim = NULL;
+    }
     return NULL;
 }
 

@@ -127,8 +127,12 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
             }
+
+            CLEAR_SGW_S1U_PATH(sess);
+
             OGS_FSM_TRAN(s, esm_state_pdn_will_disconnect);
             break;
+
         case OGS_NAS_EPS_ESM_INFORMATION_RESPONSE:
             ogs_debug("ESM information response");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
@@ -318,8 +322,12 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
             }
+
+            CLEAR_SGW_S1U_PATH(sess);
+
             OGS_FSM_TRAN(s, esm_state_pdn_will_disconnect);
             break;
+
         case OGS_NAS_EPS_MODIFY_EPS_BEARER_CONTEXT_ACCEPT:
             ogs_debug("Modify EPS bearer context accept");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",

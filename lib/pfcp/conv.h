@@ -28,9 +28,7 @@
 extern "C" {
 #endif
 
-int ogs_pfcp_sockaddr_to_node_id(
-    ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6, int prefer_ipv4,
-    ogs_pfcp_node_id_t *node_id, int *len);
+int ogs_pfcp_sockaddr_to_node_id(ogs_pfcp_node_id_t *node_id, int *len);
 
 int ogs_pfcp_f_seid_to_sockaddr(
     ogs_pfcp_f_seid_t *f_seid, uint16_t port, ogs_sockaddr_t **list);

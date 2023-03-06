@@ -27,6 +27,8 @@ typedef struct OpenAPI_auth_event_s {
     char *serving_network_name;
     bool is_auth_removal_ind;
     int auth_removal_ind;
+    char *nf_set_id;
+    OpenAPI_list_t *reset_ids;
 } OpenAPI_auth_event_t;
 
 OpenAPI_auth_event_t *OpenAPI_auth_event_create(
@@ -36,7 +38,9 @@ OpenAPI_auth_event_t *OpenAPI_auth_event_create(
     OpenAPI_auth_type_e auth_type,
     char *serving_network_name,
     bool is_auth_removal_ind,
-    int auth_removal_ind
+    int auth_removal_ind,
+    char *nf_set_id,
+    OpenAPI_list_t *reset_ids
 );
 void OpenAPI_auth_event_free(OpenAPI_auth_event_t *auth_event);
 OpenAPI_auth_event_t *OpenAPI_auth_event_parseFromJSON(cJSON *auth_eventJSON);

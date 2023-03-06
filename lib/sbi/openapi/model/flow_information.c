@@ -34,22 +34,42 @@ OpenAPI_flow_information_t *OpenAPI_flow_information_create(
 
 void OpenAPI_flow_information_free(OpenAPI_flow_information_t *flow_information)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == flow_information) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(flow_information->flow_description);
-    OpenAPI_eth_flow_description_free(flow_information->eth_flow_description);
-    ogs_free(flow_information->pack_filt_id);
-    ogs_free(flow_information->tos_traffic_class);
-    ogs_free(flow_information->spi);
-    ogs_free(flow_information->flow_label);
+    if (flow_information->flow_description) {
+        ogs_free(flow_information->flow_description);
+        flow_information->flow_description = NULL;
+    }
+    if (flow_information->eth_flow_description) {
+        OpenAPI_eth_flow_description_free(flow_information->eth_flow_description);
+        flow_information->eth_flow_description = NULL;
+    }
+    if (flow_information->pack_filt_id) {
+        ogs_free(flow_information->pack_filt_id);
+        flow_information->pack_filt_id = NULL;
+    }
+    if (flow_information->tos_traffic_class) {
+        ogs_free(flow_information->tos_traffic_class);
+        flow_information->tos_traffic_class = NULL;
+    }
+    if (flow_information->spi) {
+        ogs_free(flow_information->spi);
+        flow_information->spi = NULL;
+    }
+    if (flow_information->flow_label) {
+        ogs_free(flow_information->flow_label);
+        flow_information->flow_label = NULL;
+    }
     ogs_free(flow_information);
 }
 
 cJSON *OpenAPI_flow_information_convertToJSON(OpenAPI_flow_information_t *flow_information)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (flow_information == NULL) {
         ogs_error("OpenAPI_flow_information_convertToJSON() failed [FlowInformation]");
@@ -112,7 +132,7 @@ cJSON *OpenAPI_flow_information_convertToJSON(OpenAPI_flow_information_t *flow_i
     }
     }
 
-    if (flow_information->flow_direction) {
+    if (flow_information->flow_direction != OpenAPI_flow_direction_NULL) {
     if (cJSON_AddStringToObject(item, "flowDirection", OpenAPI_flow_direction_ToString(flow_information->flow_direction)) == NULL) {
         ogs_error("OpenAPI_flow_information_convertToJSON() failed [flow_direction]");
         goto end;
@@ -126,33 +146,39 @@ end:
 OpenAPI_flow_information_t *OpenAPI_flow_information_parseFromJSON(cJSON *flow_informationJSON)
 {
     OpenAPI_flow_information_t *flow_information_local_var = NULL;
-    cJSON *flow_description = cJSON_GetObjectItemCaseSensitive(flow_informationJSON, "flowDescription");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *flow_description = NULL;
+    cJSON *eth_flow_description = NULL;
+    OpenAPI_eth_flow_description_t *eth_flow_description_local_nonprim = NULL;
+    cJSON *pack_filt_id = NULL;
+    cJSON *packet_filter_usage = NULL;
+    cJSON *tos_traffic_class = NULL;
+    cJSON *spi = NULL;
+    cJSON *flow_label = NULL;
+    cJSON *flow_direction = NULL;
+    OpenAPI_flow_direction_e flow_directionVariable = 0;
+    flow_description = cJSON_GetObjectItemCaseSensitive(flow_informationJSON, "flowDescription");
     if (flow_description) {
-    if (!cJSON_IsString(flow_description)) {
+    if (!cJSON_IsString(flow_description) && !cJSON_IsNull(flow_description)) {
         ogs_error("OpenAPI_flow_information_parseFromJSON() failed [flow_description]");
         goto end;
     }
     }
 
-    cJSON *eth_flow_description = cJSON_GetObjectItemCaseSensitive(flow_informationJSON, "ethFlowDescription");
-
-    OpenAPI_eth_flow_description_t *eth_flow_description_local_nonprim = NULL;
+    eth_flow_description = cJSON_GetObjectItemCaseSensitive(flow_informationJSON, "ethFlowDescription");
     if (eth_flow_description) {
     eth_flow_description_local_nonprim = OpenAPI_eth_flow_description_parseFromJSON(eth_flow_description);
     }
 
-    cJSON *pack_filt_id = cJSON_GetObjectItemCaseSensitive(flow_informationJSON, "packFiltId");
-
+    pack_filt_id = cJSON_GetObjectItemCaseSensitive(flow_informationJSON, "packFiltId");
     if (pack_filt_id) {
-    if (!cJSON_IsString(pack_filt_id)) {
+    if (!cJSON_IsString(pack_filt_id) && !cJSON_IsNull(pack_filt_id)) {
         ogs_error("OpenAPI_flow_information_parseFromJSON() failed [pack_filt_id]");
         goto end;
     }
     }
 
-    cJSON *packet_filter_usage = cJSON_GetObjectItemCaseSensitive(flow_informationJSON, "packetFilterUsage");
-
+    packet_filter_usage = cJSON_GetObjectItemCaseSensitive(flow_informationJSON, "packetFilterUsage");
     if (packet_filter_usage) {
     if (!cJSON_IsBool(packet_filter_usage)) {
         ogs_error("OpenAPI_flow_information_parseFromJSON() failed [packet_filter_usage]");
@@ -160,36 +186,31 @@ OpenAPI_flow_information_t *OpenAPI_flow_information_parseFromJSON(cJSON *flow_i
     }
     }
 
-    cJSON *tos_traffic_class = cJSON_GetObjectItemCaseSensitive(flow_informationJSON, "tosTrafficClass");
-
+    tos_traffic_class = cJSON_GetObjectItemCaseSensitive(flow_informationJSON, "tosTrafficClass");
     if (tos_traffic_class) {
-    if (!cJSON_IsString(tos_traffic_class)) {
+    if (!cJSON_IsString(tos_traffic_class) && !cJSON_IsNull(tos_traffic_class)) {
         ogs_error("OpenAPI_flow_information_parseFromJSON() failed [tos_traffic_class]");
         goto end;
     }
     }
 
-    cJSON *spi = cJSON_GetObjectItemCaseSensitive(flow_informationJSON, "spi");
-
+    spi = cJSON_GetObjectItemCaseSensitive(flow_informationJSON, "spi");
     if (spi) {
-    if (!cJSON_IsString(spi)) {
+    if (!cJSON_IsString(spi) && !cJSON_IsNull(spi)) {
         ogs_error("OpenAPI_flow_information_parseFromJSON() failed [spi]");
         goto end;
     }
     }
 
-    cJSON *flow_label = cJSON_GetObjectItemCaseSensitive(flow_informationJSON, "flowLabel");
-
+    flow_label = cJSON_GetObjectItemCaseSensitive(flow_informationJSON, "flowLabel");
     if (flow_label) {
-    if (!cJSON_IsString(flow_label)) {
+    if (!cJSON_IsString(flow_label) && !cJSON_IsNull(flow_label)) {
         ogs_error("OpenAPI_flow_information_parseFromJSON() failed [flow_label]");
         goto end;
     }
     }
 
-    cJSON *flow_direction = cJSON_GetObjectItemCaseSensitive(flow_informationJSON, "flowDirection");
-
-    OpenAPI_flow_direction_e flow_directionVariable;
+    flow_direction = cJSON_GetObjectItemCaseSensitive(flow_informationJSON, "flowDirection");
     if (flow_direction) {
     if (!cJSON_IsString(flow_direction)) {
         ogs_error("OpenAPI_flow_information_parseFromJSON() failed [flow_direction]");
@@ -199,19 +220,23 @@ OpenAPI_flow_information_t *OpenAPI_flow_information_parseFromJSON(cJSON *flow_i
     }
 
     flow_information_local_var = OpenAPI_flow_information_create (
-        flow_description ? ogs_strdup(flow_description->valuestring) : NULL,
+        flow_description && !cJSON_IsNull(flow_description) ? ogs_strdup(flow_description->valuestring) : NULL,
         eth_flow_description ? eth_flow_description_local_nonprim : NULL,
-        pack_filt_id ? ogs_strdup(pack_filt_id->valuestring) : NULL,
+        pack_filt_id && !cJSON_IsNull(pack_filt_id) ? ogs_strdup(pack_filt_id->valuestring) : NULL,
         packet_filter_usage ? true : false,
         packet_filter_usage ? packet_filter_usage->valueint : 0,
-        tos_traffic_class ? ogs_strdup(tos_traffic_class->valuestring) : NULL,
-        spi ? ogs_strdup(spi->valuestring) : NULL,
-        flow_label ? ogs_strdup(flow_label->valuestring) : NULL,
+        tos_traffic_class && !cJSON_IsNull(tos_traffic_class) ? ogs_strdup(tos_traffic_class->valuestring) : NULL,
+        spi && !cJSON_IsNull(spi) ? ogs_strdup(spi->valuestring) : NULL,
+        flow_label && !cJSON_IsNull(flow_label) ? ogs_strdup(flow_label->valuestring) : NULL,
         flow_direction ? flow_directionVariable : 0
     );
 
     return flow_information_local_var;
 end:
+    if (eth_flow_description_local_nonprim) {
+        OpenAPI_eth_flow_description_free(eth_flow_description_local_nonprim);
+        eth_flow_description_local_nonprim = NULL;
+    }
     return NULL;
 }
 

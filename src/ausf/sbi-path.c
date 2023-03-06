@@ -73,13 +73,14 @@ bool ausf_sbi_send_request(
     return ogs_sbi_send_request_to_nf_instance(nf_instance, xact);
 }
 
-bool ausf_sbi_discover_and_send(
+int ausf_sbi_discover_and_send(
         ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(ausf_ue_t *ausf_ue, void *data),
         ausf_ue_t *ausf_ue, ogs_sbi_stream_t *stream, void *data)
 {
     ogs_sbi_xact_t *xact = NULL;
+    int r;
 
     ogs_assert(service_type);
     ogs_assert(ausf_ue);
@@ -95,20 +96,21 @@ bool ausf_sbi_discover_and_send(
             ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
                 "Cannot discover", ausf_ue->suci));
-        return false;
+        return OGS_ERROR;
     }
 
     xact->assoc_stream = stream;
 
-    if (ogs_sbi_discover_and_send(xact) != true) {
+    r = ogs_sbi_discover_and_send(xact);
+    if (r != OGS_OK) {
         ogs_error("ausf_sbi_discover_and_send() failed");
         ogs_sbi_xact_remove(xact);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
                 "Cannot discover", ausf_ue->suci));
-        return false;
+        return r;
     }
     
-    return true;
+    return OGS_OK;
 }

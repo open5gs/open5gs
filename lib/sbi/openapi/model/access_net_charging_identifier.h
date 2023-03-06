@@ -20,12 +20,16 @@ extern "C" {
 
 typedef struct OpenAPI_access_net_charging_identifier_s OpenAPI_access_net_charging_identifier_t;
 typedef struct OpenAPI_access_net_charging_identifier_s {
+    bool is_acc_net_cha_id_value;
     int acc_net_cha_id_value;
+    char *acc_net_charg_id_string;
     OpenAPI_list_t *flows;
 } OpenAPI_access_net_charging_identifier_t;
 
 OpenAPI_access_net_charging_identifier_t *OpenAPI_access_net_charging_identifier_create(
+    bool is_acc_net_cha_id_value,
     int acc_net_cha_id_value,
+    char *acc_net_charg_id_string,
     OpenAPI_list_t *flows
 );
 void OpenAPI_access_net_charging_identifier_free(OpenAPI_access_net_charging_identifier_t *access_net_charging_identifier);

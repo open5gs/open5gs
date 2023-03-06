@@ -1,7 +1,7 @@
 /*
  * policy_association_request.h
  *
- * Information which the NF service consumer provides when requesting the creation of a policy association. The serviveName property corresponds to the serviceName in the main body of the specification.
+ * Information which the NF service consumer provides when requesting the creation of a policy association. The serviveName property corresponds to the serviceName in the main body of the specification. 
  */
 
 #ifndef _OpenAPI_policy_association_request_H_
@@ -16,11 +16,13 @@
 #include "ambr.h"
 #include "guami.h"
 #include "mapping_of_snssai.h"
+#include "nwdaf_data.h"
 #include "plmn_id_nid.h"
 #include "rat_type.h"
 #include "service_area_restriction.h"
 #include "snssai.h"
 #include "trace_data.h"
+#include "ue_slice_mbr.h"
 #include "user_location.h"
 #include "wireline_service_area_restriction.h"
 
@@ -50,12 +52,15 @@ typedef struct OpenAPI_policy_association_request_s {
     bool is_rfsp;
     int rfsp;
     struct OpenAPI_ambr_s *ue_ambr;
+    OpenAPI_list_t *ue_slice_mbrs;
     OpenAPI_list_t *allowed_snssais;
+    OpenAPI_list_t *target_snssais;
     OpenAPI_list_t *mapping_snssais;
     OpenAPI_list_t *n3g_allowed_snssais;
     struct OpenAPI_guami_s *guami;
     char *service_name;
     struct OpenAPI_trace_data_s *trace_req;
+    OpenAPI_list_t *nwdaf_datas;
     char *supp_feat;
 } OpenAPI_policy_association_request_t;
 
@@ -80,12 +85,15 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_create(
     bool is_rfsp,
     int rfsp,
     OpenAPI_ambr_t *ue_ambr,
+    OpenAPI_list_t *ue_slice_mbrs,
     OpenAPI_list_t *allowed_snssais,
+    OpenAPI_list_t *target_snssais,
     OpenAPI_list_t *mapping_snssais,
     OpenAPI_list_t *n3g_allowed_snssais,
     OpenAPI_guami_t *guami,
     char *service_name,
     OpenAPI_trace_data_t *trace_req,
+    OpenAPI_list_t *nwdaf_datas,
     char *supp_feat
 );
 void OpenAPI_policy_association_request_free(OpenAPI_policy_association_request_t *policy_association_request);

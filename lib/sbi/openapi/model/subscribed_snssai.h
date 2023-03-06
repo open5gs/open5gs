@@ -1,7 +1,7 @@
 /*
  * subscribed_snssai.h
  *
- * 
+ * Contains the subscribed S-NSSAI
  */
 
 #ifndef _OpenAPI_subscribed_snssai_H_
@@ -23,12 +23,14 @@ typedef struct OpenAPI_subscribed_snssai_s {
     struct OpenAPI_snssai_s *subscribed_snssai;
     bool is_default_indication;
     int default_indication;
+    OpenAPI_list_t *subscribed_ns_srg_list;
 } OpenAPI_subscribed_snssai_t;
 
 OpenAPI_subscribed_snssai_t *OpenAPI_subscribed_snssai_create(
     OpenAPI_snssai_t *subscribed_snssai,
     bool is_default_indication,
-    int default_indication
+    int default_indication,
+    OpenAPI_list_t *subscribed_ns_srg_list
 );
 void OpenAPI_subscribed_snssai_free(OpenAPI_subscribed_snssai_t *subscribed_snssai);
 OpenAPI_subscribed_snssai_t *OpenAPI_subscribed_snssai_parseFromJSON(cJSON *subscribed_snssaiJSON);

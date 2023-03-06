@@ -1,7 +1,7 @@
 /*
  * slice_info_for_registration.h
  *
- * 
+ * Contains the slice information requested during a Registration procedure
  */
 
 #ifndef _OpenAPI_slice_info_for_registration_H_
@@ -33,6 +33,12 @@ typedef struct OpenAPI_slice_info_for_registration_s {
     OpenAPI_list_t *mapping_of_nssai;
     bool is_request_mapping;
     int request_mapping;
+    bool is_ue_sup_nssrg_ind;
+    int ue_sup_nssrg_ind;
+    bool is_suppress_nssrg_ind;
+    int suppress_nssrg_ind;
+    bool is_nsag_supported;
+    int nsag_supported;
 } OpenAPI_slice_info_for_registration_t;
 
 OpenAPI_slice_info_for_registration_t *OpenAPI_slice_info_for_registration_create(
@@ -45,7 +51,13 @@ OpenAPI_slice_info_for_registration_t *OpenAPI_slice_info_for_registration_creat
     int default_configured_snssai_ind,
     OpenAPI_list_t *mapping_of_nssai,
     bool is_request_mapping,
-    int request_mapping
+    int request_mapping,
+    bool is_ue_sup_nssrg_ind,
+    int ue_sup_nssrg_ind,
+    bool is_suppress_nssrg_ind,
+    int suppress_nssrg_ind,
+    bool is_nsag_supported,
+    int nsag_supported
 );
 void OpenAPI_slice_info_for_registration_free(OpenAPI_slice_info_for_registration_t *slice_info_for_registration);
 OpenAPI_slice_info_for_registration_t *OpenAPI_slice_info_for_registration_parseFromJSON(cJSON *slice_info_for_registrationJSON);

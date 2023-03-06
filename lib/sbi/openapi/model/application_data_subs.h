@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "am_influ_data.h"
 #include "data_filter.h"
 
 #ifdef __cplusplus
@@ -23,14 +24,22 @@ typedef struct OpenAPI_application_data_subs_s {
     char *notification_uri;
     OpenAPI_list_t *data_filters;
     char *expiry;
+    bool is_imm_rep;
+    int imm_rep;
+    OpenAPI_list_t *am_influ_entries;
     char *supported_features;
+    OpenAPI_list_t *reset_ids;
 } OpenAPI_application_data_subs_t;
 
 OpenAPI_application_data_subs_t *OpenAPI_application_data_subs_create(
     char *notification_uri,
     OpenAPI_list_t *data_filters,
     char *expiry,
-    char *supported_features
+    bool is_imm_rep,
+    int imm_rep,
+    OpenAPI_list_t *am_influ_entries,
+    char *supported_features,
+    OpenAPI_list_t *reset_ids
 );
 void OpenAPI_application_data_subs_free(OpenAPI_application_data_subs_t *application_data_subs);
 OpenAPI_application_data_subs_t *OpenAPI_application_data_subs_parseFromJSON(cJSON *application_data_subsJSON);

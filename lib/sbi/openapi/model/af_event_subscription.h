@@ -1,7 +1,7 @@
 /*
  * af_event_subscription.h
  *
- * describes the event information delivered in the subscription
+ * Describes the event information delivered in the subscription.
  */
 
 #ifndef _OpenAPI_af_event_subscription_H_
@@ -12,8 +12,8 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "af_event.h"
 #include "af_notif_method.h"
+#include "npcf_af_event.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,7 +21,7 @@ extern "C" {
 
 typedef struct OpenAPI_af_event_subscription_s OpenAPI_af_event_subscription_t;
 typedef struct OpenAPI_af_event_subscription_s {
-    OpenAPI_af_event_e event;
+    OpenAPI_npcf_af_event_e event;
     OpenAPI_af_notif_method_e notif_method;
     bool is_rep_period;
     int rep_period;
@@ -30,7 +30,7 @@ typedef struct OpenAPI_af_event_subscription_s {
 } OpenAPI_af_event_subscription_t;
 
 OpenAPI_af_event_subscription_t *OpenAPI_af_event_subscription_create(
-    OpenAPI_af_event_e event,
+    OpenAPI_npcf_af_event_e event,
     OpenAPI_af_notif_method_e notif_method,
     bool is_rep_period,
     int rep_period,

@@ -143,7 +143,6 @@ uint8_t mme_s6a_handle_pua(
     if (s6a_message->result_code != ER_DIAMETER_SUCCESS) {
         ogs_error("Purge UE failed for IMSI[%s] [%d]", mme_ue->imsi_bcd,
             s6a_message->result_code);
-        mme_ue_hash_remove(mme_ue);
         mme_ue_remove(mme_ue);
         return OGS_ERROR;
     }
@@ -151,7 +150,6 @@ uint8_t mme_s6a_handle_pua(
     if (pua_message->pua_flags & OGS_DIAM_S6A_PUA_FLAGS_FREEZE_MTMSI)
         ogs_debug("Freeze M-TMSI requested but not implemented.");
 
-    mme_ue_hash_remove(mme_ue);
     mme_ue_remove(mme_ue);
 
     return OGS_OK;
@@ -226,7 +224,6 @@ void mme_s6a_handle_clr(mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
      */
     if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_de_registered)) {
         ogs_warn("UE has already been de-registered");
-        mme_ue_hash_remove(mme_ue);
         mme_ue_remove(mme_ue);
         return;
     }
@@ -279,6 +276,7 @@ void mme_s6a_handle_clr(mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
                 } else {
                     mme_send_delete_session_or_detach(mme_ue);
                 }
+                MME_CLEAR_PAGING_INFO(mme_ue);
             } else {
                 MME_STORE_PAGING_INFO(mme_ue,
                     MME_PAGING_TYPE_DETACH_TO_UE, NULL);
@@ -287,6 +285,7 @@ void mme_s6a_handle_clr(mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
                 ogs_assert(r != OGS_ERROR);
             }
         } else {
+            MME_CLEAR_PAGING_INFO(mme_ue);
             r = nas_eps_send_detach_request(mme_ue);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);

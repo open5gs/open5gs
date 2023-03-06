@@ -11,7 +11,7 @@ OpenAPI_usage_mon_data_limit_t *OpenAPI_usage_mon_data_limit_create(
     char *start_date,
     char *end_date,
     OpenAPI_usage_threshold_t *usage_limit,
-    char *reset_period
+    OpenAPI_time_period_t *reset_period
 )
 {
     OpenAPI_usage_mon_data_limit_t *usage_mon_data_limit_local_var = ogs_malloc(sizeof(OpenAPI_usage_mon_data_limit_t));
@@ -30,29 +30,52 @@ OpenAPI_usage_mon_data_limit_t *OpenAPI_usage_mon_data_limit_create(
 
 void OpenAPI_usage_mon_data_limit_free(OpenAPI_usage_mon_data_limit_t *usage_mon_data_limit)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == usage_mon_data_limit) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(usage_mon_data_limit->limit_id);
-    OpenAPI_list_for_each(usage_mon_data_limit->scopes, node) {
-        OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
-        ogs_free(localKeyValue->key);
-        OpenAPI_usage_mon_data_scope_free(localKeyValue->value);
-        ogs_free(localKeyValue);
+    if (usage_mon_data_limit->limit_id) {
+        ogs_free(usage_mon_data_limit->limit_id);
+        usage_mon_data_limit->limit_id = NULL;
     }
-    OpenAPI_list_free(usage_mon_data_limit->scopes);
-    OpenAPI_usage_mon_level_free(usage_mon_data_limit->um_level);
-    ogs_free(usage_mon_data_limit->start_date);
-    ogs_free(usage_mon_data_limit->end_date);
-    OpenAPI_usage_threshold_free(usage_mon_data_limit->usage_limit);
-    ogs_free(usage_mon_data_limit->reset_period);
+    if (usage_mon_data_limit->scopes) {
+        OpenAPI_list_for_each(usage_mon_data_limit->scopes, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_usage_mon_data_scope_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(usage_mon_data_limit->scopes);
+        usage_mon_data_limit->scopes = NULL;
+    }
+    if (usage_mon_data_limit->um_level) {
+        OpenAPI_usage_mon_level_free(usage_mon_data_limit->um_level);
+        usage_mon_data_limit->um_level = NULL;
+    }
+    if (usage_mon_data_limit->start_date) {
+        ogs_free(usage_mon_data_limit->start_date);
+        usage_mon_data_limit->start_date = NULL;
+    }
+    if (usage_mon_data_limit->end_date) {
+        ogs_free(usage_mon_data_limit->end_date);
+        usage_mon_data_limit->end_date = NULL;
+    }
+    if (usage_mon_data_limit->usage_limit) {
+        OpenAPI_usage_threshold_free(usage_mon_data_limit->usage_limit);
+        usage_mon_data_limit->usage_limit = NULL;
+    }
+    if (usage_mon_data_limit->reset_period) {
+        OpenAPI_time_period_free(usage_mon_data_limit->reset_period);
+        usage_mon_data_limit->reset_period = NULL;
+    }
     ogs_free(usage_mon_data_limit);
 }
 
 cJSON *OpenAPI_usage_mon_data_limit_convertToJSON(OpenAPI_usage_mon_data_limit_t *usage_mon_data_limit)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (usage_mon_data_limit == NULL) {
         ogs_error("OpenAPI_usage_mon_data_limit_convertToJSON() failed [UsageMonDataLimit]");
@@ -60,6 +83,10 @@ cJSON *OpenAPI_usage_mon_data_limit_convertToJSON(OpenAPI_usage_mon_data_limit_t
     }
 
     item = cJSON_CreateObject();
+    if (!usage_mon_data_limit->limit_id) {
+        ogs_error("OpenAPI_usage_mon_data_limit_convertToJSON() failed [limit_id]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "limitId", usage_mon_data_limit->limit_id) == NULL) {
         ogs_error("OpenAPI_usage_mon_data_limit_convertToJSON() failed [limit_id]");
         goto end;
@@ -72,20 +99,19 @@ cJSON *OpenAPI_usage_mon_data_limit_convertToJSON(OpenAPI_usage_mon_data_limit_t
         goto end;
     }
     cJSON *localMapObject = scopes;
-    OpenAPI_lnode_t *scopes_node;
     if (usage_mon_data_limit->scopes) {
-        OpenAPI_list_for_each(usage_mon_data_limit->scopes, scopes_node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)scopes_node->data;
-        cJSON *itemLocal = localKeyValue->value ?
-            OpenAPI_usage_mon_data_scope_convertToJSON(localKeyValue->value) :
-            cJSON_CreateNull();
-        if (itemLocal == NULL) {
-            ogs_error("OpenAPI_usage_mon_data_limit_convertToJSON() failed [scopes]");
-            goto end;
-        }
-        cJSON_AddItemToObject(scopes, localKeyValue->key, itemLocal);
+        OpenAPI_list_for_each(usage_mon_data_limit->scopes, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            cJSON *itemLocal = localKeyValue->value ?
+                OpenAPI_usage_mon_data_scope_convertToJSON(localKeyValue->value) :
+                cJSON_CreateNull();
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_usage_mon_data_limit_convertToJSON() failed [inner]");
+                goto end;
             }
+            cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
         }
+    }
     }
 
     if (usage_mon_data_limit->um_level) {
@@ -129,7 +155,13 @@ cJSON *OpenAPI_usage_mon_data_limit_convertToJSON(OpenAPI_usage_mon_data_limit_t
     }
 
     if (usage_mon_data_limit->reset_period) {
-    if (cJSON_AddStringToObject(item, "resetPeriod", usage_mon_data_limit->reset_period) == NULL) {
+    cJSON *reset_period_local_JSON = OpenAPI_time_period_convertToJSON(usage_mon_data_limit->reset_period);
+    if (reset_period_local_JSON == NULL) {
+        ogs_error("OpenAPI_usage_mon_data_limit_convertToJSON() failed [reset_period]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "resetPeriod", reset_period_local_JSON);
+    if (item->child == NULL) {
         ogs_error("OpenAPI_usage_mon_data_limit_convertToJSON() failed [reset_period]");
         goto end;
     }
@@ -142,96 +174,119 @@ end:
 OpenAPI_usage_mon_data_limit_t *OpenAPI_usage_mon_data_limit_parseFromJSON(cJSON *usage_mon_data_limitJSON)
 {
     OpenAPI_usage_mon_data_limit_t *usage_mon_data_limit_local_var = NULL;
-    cJSON *limit_id = cJSON_GetObjectItemCaseSensitive(usage_mon_data_limitJSON, "limitId");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *limit_id = NULL;
+    cJSON *scopes = NULL;
+    OpenAPI_list_t *scopesList = NULL;
+    cJSON *um_level = NULL;
+    OpenAPI_usage_mon_level_t *um_level_local_nonprim = NULL;
+    cJSON *start_date = NULL;
+    cJSON *end_date = NULL;
+    cJSON *usage_limit = NULL;
+    OpenAPI_usage_threshold_t *usage_limit_local_nonprim = NULL;
+    cJSON *reset_period = NULL;
+    OpenAPI_time_period_t *reset_period_local_nonprim = NULL;
+    limit_id = cJSON_GetObjectItemCaseSensitive(usage_mon_data_limitJSON, "limitId");
     if (!limit_id) {
         ogs_error("OpenAPI_usage_mon_data_limit_parseFromJSON() failed [limit_id]");
         goto end;
     }
-
     if (!cJSON_IsString(limit_id)) {
         ogs_error("OpenAPI_usage_mon_data_limit_parseFromJSON() failed [limit_id]");
         goto end;
     }
 
-    cJSON *scopes = cJSON_GetObjectItemCaseSensitive(usage_mon_data_limitJSON, "scopes");
-
-    OpenAPI_list_t *scopesList;
+    scopes = cJSON_GetObjectItemCaseSensitive(usage_mon_data_limitJSON, "scopes");
     if (scopes) {
-    cJSON *scopes_local_map;
-    if (!cJSON_IsObject(scopes)) {
-        ogs_error("OpenAPI_usage_mon_data_limit_parseFromJSON() failed [scopes]");
-        goto end;
-    }
-    scopesList = OpenAPI_list_create();
-    OpenAPI_map_t *localMapKeyPair = NULL;
-    cJSON_ArrayForEach(scopes_local_map, scopes) {
-        cJSON *localMapObject = scopes_local_map;
-        if (cJSON_IsObject(scopes_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(
-                ogs_strdup(localMapObject->string), OpenAPI_usage_mon_data_scope_parseFromJSON(localMapObject));
-        } else if (cJSON_IsNull(scopes_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
-        } else {
+        cJSON *scopes_local_map = NULL;
+        if (!cJSON_IsObject(scopes) && !cJSON_IsNull(scopes)) {
             ogs_error("OpenAPI_usage_mon_data_limit_parseFromJSON() failed [scopes]");
             goto end;
         }
-        OpenAPI_list_add(scopesList , localMapKeyPair);
-    }
+        if (cJSON_IsObject(scopes)) {
+            scopesList = OpenAPI_list_create();
+            OpenAPI_map_t *localMapKeyPair = NULL;
+            cJSON_ArrayForEach(scopes_local_map, scopes) {
+                cJSON *localMapObject = scopes_local_map;
+                if (cJSON_IsObject(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(
+                        ogs_strdup(localMapObject->string), OpenAPI_usage_mon_data_scope_parseFromJSON(localMapObject));
+                } else if (cJSON_IsNull(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
+                } else {
+                    ogs_error("OpenAPI_usage_mon_data_limit_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                OpenAPI_list_add(scopesList, localMapKeyPair);
+            }
+        }
     }
 
-    cJSON *um_level = cJSON_GetObjectItemCaseSensitive(usage_mon_data_limitJSON, "umLevel");
-
-    OpenAPI_usage_mon_level_t *um_level_local_nonprim = NULL;
+    um_level = cJSON_GetObjectItemCaseSensitive(usage_mon_data_limitJSON, "umLevel");
     if (um_level) {
     um_level_local_nonprim = OpenAPI_usage_mon_level_parseFromJSON(um_level);
     }
 
-    cJSON *start_date = cJSON_GetObjectItemCaseSensitive(usage_mon_data_limitJSON, "startDate");
-
+    start_date = cJSON_GetObjectItemCaseSensitive(usage_mon_data_limitJSON, "startDate");
     if (start_date) {
-    if (!cJSON_IsString(start_date)) {
+    if (!cJSON_IsString(start_date) && !cJSON_IsNull(start_date)) {
         ogs_error("OpenAPI_usage_mon_data_limit_parseFromJSON() failed [start_date]");
         goto end;
     }
     }
 
-    cJSON *end_date = cJSON_GetObjectItemCaseSensitive(usage_mon_data_limitJSON, "endDate");
-
+    end_date = cJSON_GetObjectItemCaseSensitive(usage_mon_data_limitJSON, "endDate");
     if (end_date) {
-    if (!cJSON_IsString(end_date)) {
+    if (!cJSON_IsString(end_date) && !cJSON_IsNull(end_date)) {
         ogs_error("OpenAPI_usage_mon_data_limit_parseFromJSON() failed [end_date]");
         goto end;
     }
     }
 
-    cJSON *usage_limit = cJSON_GetObjectItemCaseSensitive(usage_mon_data_limitJSON, "usageLimit");
-
-    OpenAPI_usage_threshold_t *usage_limit_local_nonprim = NULL;
+    usage_limit = cJSON_GetObjectItemCaseSensitive(usage_mon_data_limitJSON, "usageLimit");
     if (usage_limit) {
     usage_limit_local_nonprim = OpenAPI_usage_threshold_parseFromJSON(usage_limit);
     }
 
-    cJSON *reset_period = cJSON_GetObjectItemCaseSensitive(usage_mon_data_limitJSON, "resetPeriod");
-
+    reset_period = cJSON_GetObjectItemCaseSensitive(usage_mon_data_limitJSON, "resetPeriod");
     if (reset_period) {
-    if (!cJSON_IsString(reset_period)) {
-        ogs_error("OpenAPI_usage_mon_data_limit_parseFromJSON() failed [reset_period]");
-        goto end;
-    }
+    reset_period_local_nonprim = OpenAPI_time_period_parseFromJSON(reset_period);
     }
 
     usage_mon_data_limit_local_var = OpenAPI_usage_mon_data_limit_create (
         ogs_strdup(limit_id->valuestring),
         scopes ? scopesList : NULL,
         um_level ? um_level_local_nonprim : NULL,
-        start_date ? ogs_strdup(start_date->valuestring) : NULL,
-        end_date ? ogs_strdup(end_date->valuestring) : NULL,
+        start_date && !cJSON_IsNull(start_date) ? ogs_strdup(start_date->valuestring) : NULL,
+        end_date && !cJSON_IsNull(end_date) ? ogs_strdup(end_date->valuestring) : NULL,
         usage_limit ? usage_limit_local_nonprim : NULL,
-        reset_period ? ogs_strdup(reset_period->valuestring) : NULL
+        reset_period ? reset_period_local_nonprim : NULL
     );
 
     return usage_mon_data_limit_local_var;
 end:
+    if (scopesList) {
+        OpenAPI_list_for_each(scopesList, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_usage_mon_data_scope_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(scopesList);
+        scopesList = NULL;
+    }
+    if (um_level_local_nonprim) {
+        OpenAPI_usage_mon_level_free(um_level_local_nonprim);
+        um_level_local_nonprim = NULL;
+    }
+    if (usage_limit_local_nonprim) {
+        OpenAPI_usage_threshold_free(usage_limit_local_nonprim);
+        usage_limit_local_nonprim = NULL;
+    }
+    if (reset_period_local_nonprim) {
+        OpenAPI_time_period_free(reset_period_local_nonprim);
+        reset_period_local_nonprim = NULL;
+    }
     return NULL;
 }
 

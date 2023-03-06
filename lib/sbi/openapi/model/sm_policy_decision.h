@@ -1,7 +1,7 @@
 /*
  * sm_policy_decision.h
  *
- * 
+ * Contains the SM policies authorized by the PCF.
  */
 
 #ifndef _OpenAPI_sm_policy_decision_H_
@@ -56,6 +56,8 @@ typedef struct OpenAPI_sm_policy_decision_s {
     int offline;
     bool is_online;
     int online;
+    bool is_offline_ch_only;
+    int offline_ch_only;
     OpenAPI_list_t *policy_ctrl_req_triggers;
     OpenAPI_list_t *last_req_rule_data;
     struct OpenAPI_requested_usage_data_s *last_req_usage_data;
@@ -94,6 +96,8 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_create(
     int offline,
     bool is_online,
     int online,
+    bool is_offline_ch_only,
+    int offline_ch_only,
     OpenAPI_list_t *policy_ctrl_req_triggers,
     OpenAPI_list_t *last_req_rule_data,
     OpenAPI_requested_usage_data_t *last_req_usage_data,

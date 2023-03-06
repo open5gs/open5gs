@@ -1,7 +1,7 @@
 /*
  * sm_context_create_data.h
  *
- * 
+ * Data within Create SM Context Request
  */
 
 #ifndef _OpenAPI_sm_context_create_data_H_
@@ -22,12 +22,15 @@
 #include "ho_state.h"
 #include "n2_sm_info_type.h"
 #include "ng_ran_target_id.h"
+#include "pcf_ue_callback_info.h"
 #include "plmn_id_nid.h"
 #include "presence_state.h"
 #include "rat_type.h"
 #include "ref_to_binary_data.h"
 #include "request_type.h"
+#include "satellite_backhaul_category.h"
 #include "sbi_binding_level.h"
+#include "server_addressing_info.h"
 #include "small_data_rate_status.h"
 #include "snssai.h"
 #include "tngf_info.h"
@@ -91,6 +94,8 @@ typedef struct OpenAPI_sm_context_create_data_s {
     struct OpenAPI_trace_data_s *trace_data;
     char *udm_group_id;
     char *routing_indicator;
+    bool is_h_nw_pub_key_id;
+    int h_nw_pub_key_id;
     OpenAPI_eps_interworking_indication_e eps_interworking_ind;
     bool is_indirect_forwarding_flag;
     int indirect_forwarding_flag;
@@ -113,6 +118,7 @@ typedef struct OpenAPI_sm_context_create_data_s {
     struct OpenAPI_ref_to_binary_data_s *n2_sm_info_ext1;
     OpenAPI_n2_sm_info_type_e n2_sm_info_type_ext1;
     char *sm_context_ref;
+    struct OpenAPI_plmn_id_nid_s *sm_context_smf_plmn_id;
     char *sm_context_smf_id;
     char *sm_context_smf_set_id;
     char *sm_context_smf_service_set_id;
@@ -134,6 +140,32 @@ typedef struct OpenAPI_sm_context_create_data_s {
     struct OpenAPI_twif_info_s *twif_info;
     bool is_ran_unchanged_ind;
     int ran_unchanged_ind;
+    bool is_same_pcf_selection_ind;
+    int same_pcf_selection_ind;
+    char *target_dnai;
+    char *nrf_management_uri;
+    char *nrf_discovery_uri;
+    char *nrf_access_token_uri;
+    OpenAPI_list_t* nrf_oauth2_required;
+    char *smf_binding_info;
+    OpenAPI_list_t *pvs_info;
+    bool is_onboarding_ind;
+    int onboarding_ind;
+    char *old_pdu_session_ref;
+    bool is_sm_policy_notify_ind;
+    int sm_policy_notify_ind;
+    struct OpenAPI_pcf_ue_callback_info_s *pcf_ue_callback_info;
+    OpenAPI_satellite_backhaul_category_e satellite_backhaul_cat;
+    bool is_upip_supported;
+    int upip_supported;
+    bool is_uav_authenticated;
+    int uav_authenticated;
+    bool is_disaster_roaming_ind;
+    int disaster_roaming_ind;
+    bool is_anchor_smf_oauth2_required;
+    int anchor_smf_oauth2_required;
+    bool is_sm_context_smf_oauth2_required;
+    int sm_context_smf_oauth2_required;
 } OpenAPI_sm_context_create_data_t;
 
 OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_create(
@@ -185,6 +217,8 @@ OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_create(
     OpenAPI_trace_data_t *trace_data,
     char *udm_group_id,
     char *routing_indicator,
+    bool is_h_nw_pub_key_id,
+    int h_nw_pub_key_id,
     OpenAPI_eps_interworking_indication_e eps_interworking_ind,
     bool is_indirect_forwarding_flag,
     int indirect_forwarding_flag,
@@ -207,6 +241,7 @@ OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_create(
     OpenAPI_ref_to_binary_data_t *n2_sm_info_ext1,
     OpenAPI_n2_sm_info_type_e n2_sm_info_type_ext1,
     char *sm_context_ref,
+    OpenAPI_plmn_id_nid_t *sm_context_smf_plmn_id,
     char *sm_context_smf_id,
     char *sm_context_smf_set_id,
     char *sm_context_smf_service_set_id,
@@ -227,7 +262,33 @@ OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_create(
     OpenAPI_tngf_info_t *tngf_info,
     OpenAPI_twif_info_t *twif_info,
     bool is_ran_unchanged_ind,
-    int ran_unchanged_ind
+    int ran_unchanged_ind,
+    bool is_same_pcf_selection_ind,
+    int same_pcf_selection_ind,
+    char *target_dnai,
+    char *nrf_management_uri,
+    char *nrf_discovery_uri,
+    char *nrf_access_token_uri,
+    OpenAPI_list_t* nrf_oauth2_required,
+    char *smf_binding_info,
+    OpenAPI_list_t *pvs_info,
+    bool is_onboarding_ind,
+    int onboarding_ind,
+    char *old_pdu_session_ref,
+    bool is_sm_policy_notify_ind,
+    int sm_policy_notify_ind,
+    OpenAPI_pcf_ue_callback_info_t *pcf_ue_callback_info,
+    OpenAPI_satellite_backhaul_category_e satellite_backhaul_cat,
+    bool is_upip_supported,
+    int upip_supported,
+    bool is_uav_authenticated,
+    int uav_authenticated,
+    bool is_disaster_roaming_ind,
+    int disaster_roaming_ind,
+    bool is_anchor_smf_oauth2_required,
+    int anchor_smf_oauth2_required,
+    bool is_sm_context_smf_oauth2_required,
+    int sm_context_smf_oauth2_required
 );
 void OpenAPI_sm_context_create_data_free(OpenAPI_sm_context_create_data_t *sm_context_create_data);
 OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_parseFromJSON(cJSON *sm_context_create_dataJSON);

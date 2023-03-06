@@ -1,7 +1,7 @@
 /*
  * sm_policy_update_context_data.h
  *
- * 
+ * Contains the policy control request trigger(s) that were met and the corresponding new value(s) or the error report of the policy enforcement.
  */
 
 #ifndef _OpenAPI_sm_policy_update_context_data_H_
@@ -18,13 +18,16 @@
 #include "additional_access_info.h"
 #include "ambr.h"
 #include "app_detection_info.h"
-#include "atsss_capability.h"
 #include "bridge_management_container.h"
 #include "credit_management_status.h"
 #include "ddd_traffic_descriptor.h"
 #include "dl_data_delivery_status.h"
+#include "invalid_param.h"
 #include "ip_multicast_address_info.h"
 #include "ma_pdu_indication.h"
+#include "npcf_atsss_capability.h"
+#include "nwdaf_data.h"
+#include "pcf_ue_callback_info.h"
 #include "plmn_id_nid.h"
 #include "policy_control_request_trigger.h"
 #include "policy_decision_failure_code.h"
@@ -35,6 +38,7 @@
 #include "qos_notification_control_info.h"
 #include "rat_type.h"
 #include "rule_report.h"
+#include "satellite_backhaul_category.h"
 #include "serving_nf_identity.h"
 #include "session_rule_report.h"
 #include "subscribed_default_qos.h"
@@ -72,6 +76,8 @@ typedef struct OpenAPI_sm_policy_update_context_data_s {
     char *auth_prof_index;
     struct OpenAPI_subscribed_default_qos_s *subs_def_qos;
     struct OpenAPI_vplmn_qos_s *vplmn_qos;
+    bool is_vplmn_qos_not_app;
+    int vplmn_qos_not_app;
     bool is_num_of_pack_filter;
     int num_of_pack_filter;
     OpenAPI_list_t *accu_usage_reports;
@@ -92,17 +98,23 @@ typedef struct OpenAPI_sm_policy_update_context_data_s {
     struct OpenAPI_serving_nf_identity_s *serv_nf_id;
     struct OpenAPI_trace_data_s *trace_req;
     OpenAPI_ma_pdu_indication_e ma_pdu_ind;
-    struct OpenAPI_atsss_capability_s *atsss_capab;
+    OpenAPI_npcf_atsss_capability_e atsss_capab;
     struct OpenAPI_tsn_bridge_info_s *tsn_bridge_info;
     struct OpenAPI_bridge_management_container_s *tsn_bridge_man_cont;
     struct OpenAPI_port_management_container_s *tsn_port_man_cont_dstt;
     OpenAPI_list_t *tsn_port_man_cont_nwtts;
     OpenAPI_list_t *mul_addr_infos;
     OpenAPI_list_t *policy_dec_failure_reports;
+    OpenAPI_list_t *invalid_policy_decs;
     OpenAPI_list_t *traffic_descriptors;
     char *pcc_rule_id;
-    OpenAPI_list_t *inter_grp_ids;
     OpenAPI_list_t *types_of_notif;
+    OpenAPI_list_t *inter_grp_ids;
+    OpenAPI_satellite_backhaul_category_e sat_backhaul_category;
+    struct OpenAPI_pcf_ue_callback_info_s *pcf_ue_info;
+    OpenAPI_list_t *nwdaf_datas;
+    bool is_an_gw_status;
+    int an_gw_status;
 } OpenAPI_sm_policy_update_context_data_t;
 
 OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_create(
@@ -128,6 +140,8 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_c
     char *auth_prof_index,
     OpenAPI_subscribed_default_qos_t *subs_def_qos,
     OpenAPI_vplmn_qos_t *vplmn_qos,
+    bool is_vplmn_qos_not_app,
+    int vplmn_qos_not_app,
     bool is_num_of_pack_filter,
     int num_of_pack_filter,
     OpenAPI_list_t *accu_usage_reports,
@@ -148,17 +162,23 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_c
     OpenAPI_serving_nf_identity_t *serv_nf_id,
     OpenAPI_trace_data_t *trace_req,
     OpenAPI_ma_pdu_indication_e ma_pdu_ind,
-    OpenAPI_atsss_capability_t *atsss_capab,
+    OpenAPI_npcf_atsss_capability_e atsss_capab,
     OpenAPI_tsn_bridge_info_t *tsn_bridge_info,
     OpenAPI_bridge_management_container_t *tsn_bridge_man_cont,
     OpenAPI_port_management_container_t *tsn_port_man_cont_dstt,
     OpenAPI_list_t *tsn_port_man_cont_nwtts,
     OpenAPI_list_t *mul_addr_infos,
     OpenAPI_list_t *policy_dec_failure_reports,
+    OpenAPI_list_t *invalid_policy_decs,
     OpenAPI_list_t *traffic_descriptors,
     char *pcc_rule_id,
+    OpenAPI_list_t *types_of_notif,
     OpenAPI_list_t *inter_grp_ids,
-    OpenAPI_list_t *types_of_notif
+    OpenAPI_satellite_backhaul_category_e sat_backhaul_category,
+    OpenAPI_pcf_ue_callback_info_t *pcf_ue_info,
+    OpenAPI_list_t *nwdaf_datas,
+    bool is_an_gw_status,
+    int an_gw_status
 );
 void OpenAPI_sm_policy_update_context_data_free(OpenAPI_sm_policy_update_context_data_t *sm_policy_update_context_data);
 OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_parseFromJSON(cJSON *sm_policy_update_context_dataJSON);

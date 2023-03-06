@@ -1,7 +1,7 @@
 /*
  * ambr_rm.h
  *
- * 
+ * This data type is defined in the same way as the &#39;Ambr&#39; data type, but with the OpenAPI &#39;nullable: true&#39; property.\&quot; 
  */
 
 #ifndef _OpenAPI_ambr_rm_H_

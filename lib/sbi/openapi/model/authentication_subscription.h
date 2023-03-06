@@ -1,7 +1,7 @@
 /*
  * authentication_subscription.h
  *
- * 
+ * A UE&#39;s authentication data.
  */
 
 #ifndef _OpenAPI_authentication_subscription_H_
@@ -31,10 +31,14 @@ typedef struct OpenAPI_authentication_subscription_s {
     char *enc_topc_key;
     bool is_vector_generation_in_hss;
     int vector_generation_in_hss;
+    char *hss_group_id;
     OpenAPI_auth_method_e n5gc_auth_method;
     bool is_rg_authentication_ind;
     int rg_authentication_ind;
     char *supi;
+    bool is_akma_allowed;
+    int akma_allowed;
+    char *routing_id;
 } OpenAPI_authentication_subscription_t;
 
 OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_create(
@@ -48,10 +52,14 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_creat
     char *enc_topc_key,
     bool is_vector_generation_in_hss,
     int vector_generation_in_hss,
+    char *hss_group_id,
     OpenAPI_auth_method_e n5gc_auth_method,
     bool is_rg_authentication_ind,
     int rg_authentication_ind,
-    char *supi
+    char *supi,
+    bool is_akma_allowed,
+    int akma_allowed,
+    char *routing_id
 );
 void OpenAPI_authentication_subscription_free(OpenAPI_authentication_subscription_t *authentication_subscription);
 OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_parseFromJSON(cJSON *authentication_subscriptionJSON);

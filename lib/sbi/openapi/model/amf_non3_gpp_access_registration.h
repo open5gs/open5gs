@@ -47,6 +47,19 @@ typedef struct OpenAPI_amf_non3_gpp_access_registration_s {
     bool is_no_ee_subscription_ind;
     int no_ee_subscription_ind;
     char *supi;
+    bool is_re_registration_required;
+    int re_registration_required;
+    bool is_admin_dereg_sub_withdrawn;
+    int admin_dereg_sub_withdrawn;
+    char *data_restoration_callback_uri;
+    OpenAPI_list_t *reset_ids;
+    bool is_disaster_roaming_ind;
+    int disaster_roaming_ind;
+    bool is_sor_snpn_si_supported;
+    int sor_snpn_si_supported;
+    bool is_udr_restart_ind;
+    int udr_restart_ind;
+    char *last_synchronization_time;
 } OpenAPI_amf_non3_gpp_access_registration_t;
 
 OpenAPI_amf_non3_gpp_access_registration_t *OpenAPI_amf_non3_gpp_access_registration_create(
@@ -71,7 +84,20 @@ OpenAPI_amf_non3_gpp_access_registration_t *OpenAPI_amf_non3_gpp_access_registra
     OpenAPI_context_info_t *context_info,
     bool is_no_ee_subscription_ind,
     int no_ee_subscription_ind,
-    char *supi
+    char *supi,
+    bool is_re_registration_required,
+    int re_registration_required,
+    bool is_admin_dereg_sub_withdrawn,
+    int admin_dereg_sub_withdrawn,
+    char *data_restoration_callback_uri,
+    OpenAPI_list_t *reset_ids,
+    bool is_disaster_roaming_ind,
+    int disaster_roaming_ind,
+    bool is_sor_snpn_si_supported,
+    int sor_snpn_si_supported,
+    bool is_udr_restart_ind,
+    int udr_restart_ind,
+    char *last_synchronization_time
 );
 void OpenAPI_amf_non3_gpp_access_registration_free(OpenAPI_amf_non3_gpp_access_registration_t *amf_non3_gpp_access_registration);
 OpenAPI_amf_non3_gpp_access_registration_t *OpenAPI_amf_non3_gpp_access_registration_parseFromJSON(cJSON *amf_non3_gpp_access_registrationJSON);

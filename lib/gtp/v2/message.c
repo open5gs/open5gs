@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -20,8 +20,8 @@
 /*******************************************************************************
  * This file had been created by gtp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2022-06-30 08:56:57.201419 by ubuntu
- * from 29274-g30.docx
+ * Created on: 2023-03-05 11:59:11.018342 by acetcom
+ * from 29274-h70.docx
  ******************************************************************************/
 
 #include "ogs-gtp.h"
@@ -67,6 +67,17 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_stn_sr_0 =
     0,
     0,
     sizeof(ogs_gtp2_tlv_stn_sr_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_srvcc_cause_0 =
+{
+    OGS_TLV_VAR_STR,
+    "SRVCC Cause",
+    OGS_GTP2_SRVCC_CAUSE_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp2_tlv_srvcc_cause_t),
     { NULL }
 };
 
@@ -902,6 +913,28 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_fqdn_1 =
     OGS_GTP2_FQDN_TYPE,
     0,
     1,
+    sizeof(ogs_gtp2_tlv_fqdn_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_fqdn_2 =
+{
+    OGS_TLV_VAR_STR,
+    "FQDN",
+    OGS_GTP2_FQDN_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp2_tlv_fqdn_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_fqdn_3 =
+{
+    OGS_TLV_VAR_STR,
+    "FQDN",
+    OGS_GTP2_FQDN_TYPE,
+    0,
+    3,
     sizeof(ogs_gtp2_tlv_fqdn_t),
     { NULL }
 };
@@ -1742,6 +1775,94 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_pc5_qos_flow_0 =
     { NULL }
 };
 
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_sgi_ptp_tunnel_address_0 =
+{
+    OGS_TLV_VAR_STR,
+    "SGi PtP Tunnel Address",
+    OGS_GTP2_SGI_PTP_TUNNEL_ADDRESS_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp2_tlv_sgi_ptp_tunnel_address_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_pgw_fqdn_0 =
+{
+    OGS_TLV_VAR_STR,
+    "PGW FQDN",
+    OGS_GTP2_PGW_FQDN_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp2_tlv_pgw_fqdn_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_pgw_fqdn_1 =
+{
+    OGS_TLV_VAR_STR,
+    "PGW FQDN",
+    OGS_GTP2_PGW_FQDN_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp2_tlv_pgw_fqdn_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_group_id_0 =
+{
+    OGS_TLV_VAR_STR,
+    "Group Id",
+    OGS_GTP2_GROUP_ID_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp2_tlv_group_id_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_group_id_1 =
+{
+    OGS_TLV_VAR_STR,
+    "Group Id",
+    OGS_GTP2_GROUP_ID_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp2_tlv_group_id_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_pscell_id_0 =
+{
+    OGS_TLV_VAR_STR,
+    "PSCell ID",
+    OGS_GTP2_PSCELL_ID_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp2_tlv_pscell_id_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_up_security_policy_0 =
+{
+    OGS_TLV_VAR_STR,
+    "UP Security Policy",
+    OGS_GTP2_UP_SECURITY_POLICY_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp2_tlv_up_security_policy_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_alternative_imsi_0 =
+{
+    OGS_TLV_VAR_STR,
+    "Alternative IMSI",
+    OGS_GTP2_ALTERNATIVE_IMSI_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp2_tlv_alternative_imsi_t),
+    { NULL }
+};
+
 ogs_tlv_desc_t ogs_gtp2_tlv_desc_pc5_qos_parameters_0 =
 {
     OGS_TLV_COMPOUND,
@@ -1768,6 +1889,28 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_remote_ue_context_0 =
     {
         &ogs_gtp2_tlv_desc_remote_user_id_0,
         &ogs_gtp2_tlv_desc_remote_ue_ip_information_0,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_pgw_change_info_0 =
+{
+    OGS_TLV_COMPOUND,
+    "PGW Change Info",
+    OGS_GTP2_PGW_CHANGE_INFO_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp2_tlv_pgw_change_info_t),
+    {
+        &ogs_gtp2_tlv_desc_pgw_fqdn_0,
+        &ogs_gtp2_tlv_desc_ip_address_0,
+        &ogs_gtp2_tlv_desc_pgw_fqdn_1,
+        &ogs_gtp2_tlv_desc_group_id_0,
+        &ogs_gtp2_tlv_desc_ip_address_1,
+        &ogs_gtp2_tlv_desc_ip_address_3,
+        &ogs_gtp2_tlv_desc_fq_csid_0,
+        &ogs_gtp2_tlv_desc_ip_address_2,
+        &ogs_gtp2_tlv_desc_group_id_1,
         NULL,
     }
 };
@@ -1900,6 +2043,8 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_pdn_connection_0 =
         &ogs_gtp2_tlv_desc_remote_ue_context_0,
         &ogs_gtp2_tlv_desc_pdn_type_0,
         &ogs_gtp2_tlv_desc_header_compression_configuration_0,
+        &ogs_gtp2_tlv_desc_pgw_change_info_0,
+        &ogs_gtp2_tlv_desc_up_security_policy_0,
         NULL,
     }
 };
@@ -2151,6 +2296,12 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_create_session_response =
         &ogs_gtp2_tlv_desc_f_container_0,
         &ogs_gtp2_tlv_desc_charging_id_0,
         &ogs_gtp2_tlv_desc_epco_0,
+        &ogs_gtp2_tlv_desc_fqdn_1,
+        &ogs_gtp2_tlv_desc_sgi_ptp_tunnel_address_0,
+        &ogs_gtp2_tlv_desc_pgw_change_info_0,
+        &ogs_gtp2_tlv_desc_fqdn_3,
+        &ogs_gtp2_tlv_desc_ip_address_1,
+        &ogs_gtp2_tlv_desc_up_security_policy_0,
     NULL,
 }};
 
@@ -2173,6 +2324,7 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_modify_bearer_request =
         &ogs_gtp2_tlv_desc_recovery_0,
         &ogs_gtp2_tlv_desc_ue_time_zone_0,
         &ogs_gtp2_tlv_desc_fq_csid_0,
+        &ogs_gtp2_tlv_desc_fq_csid_1,
         &ogs_gtp2_tlv_desc_uci_0,
         &ogs_gtp2_tlv_desc_ip_address_1,
         &ogs_gtp2_tlv_desc_port_number_1,
@@ -2193,6 +2345,7 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_modify_bearer_request =
         &ogs_gtp2_tlv_desc_twan_identifier_0,
         &ogs_gtp2_tlv_desc_twan_identifier_timestamp_0,
         &ogs_gtp2_tlv_desc_secondary_rat_usage_data_report_0,
+        &ogs_gtp2_tlv_desc_pscell_id_0,
     NULL,
 }};
 
@@ -2227,6 +2380,7 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_modify_bearer_response =
         &ogs_gtp2_tlv_desc_overload_control_information_0,
         &ogs_gtp2_tlv_desc_overload_control_information_1,
         &ogs_gtp2_tlv_desc_charging_id_0,
+        &ogs_gtp2_tlv_desc_pgw_change_info_0,
     NULL,
 }};
 
@@ -2257,6 +2411,7 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_delete_session_request =
         &ogs_gtp2_tlv_desc_epco_0,
         &ogs_gtp2_tlv_desc_port_number_1,
         &ogs_gtp2_tlv_desc_secondary_rat_usage_data_report_0,
+        &ogs_gtp2_tlv_desc_pscell_id_0,
     NULL,
 }};
 
@@ -2319,6 +2474,7 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_delete_bearer_command =
         &ogs_gtp2_tlv_desc_overload_control_information_1,
         &ogs_gtp2_tlv_desc_f_teid_0,
         &ogs_gtp2_tlv_desc_secondary_rat_usage_data_report_0,
+        &ogs_gtp2_tlv_desc_pscell_id_0,
     NULL,
 }};
 
@@ -2359,6 +2515,7 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_bearer_resource_command =
         &ogs_gtp2_tlv_desc_f_container_0,
         &ogs_gtp2_tlv_desc_epco_0,
         &ogs_gtp2_tlv_desc_f_teid_2,
+        &ogs_gtp2_tlv_desc_pscell_id_0,
     NULL,
 }};
 
@@ -2411,6 +2568,7 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_create_bearer_request =
         &ogs_gtp2_tlv_desc_overload_control_information_0,
         &ogs_gtp2_tlv_desc_overload_control_information_1,
         &ogs_gtp2_tlv_desc_f_container_0,
+        &ogs_gtp2_tlv_desc_pgw_change_info_0,
     NULL,
 }};
 
@@ -2423,6 +2581,7 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_create_bearer_response =
         &ogs_gtp2_tlv_desc_bearer_context_0,
         &ogs_gtp2_tlv_desc_recovery_0,
         &ogs_gtp2_tlv_desc_fq_csid_0,
+        &ogs_gtp2_tlv_desc_fq_csid_1,
         &ogs_gtp2_tlv_desc_fq_csid_2,
         &ogs_gtp2_tlv_desc_fq_csid_3,
         &ogs_gtp2_tlv_desc_pco_0,
@@ -2439,6 +2598,7 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_create_bearer_response =
         &ogs_gtp2_tlv_desc_port_number_0,
         &ogs_gtp2_tlv_desc_f_container_0,
         &ogs_gtp2_tlv_desc_port_number_1,
+        &ogs_gtp2_tlv_desc_pscell_id_0,
     NULL,
 }};
 
@@ -2464,6 +2624,7 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_update_bearer_request =
         &ogs_gtp2_tlv_desc_overload_control_information_0,
         &ogs_gtp2_tlv_desc_overload_control_information_1,
         &ogs_gtp2_tlv_desc_f_container_0,
+        &ogs_gtp2_tlv_desc_pgw_change_info_0,
     NULL,
 }};
 
@@ -2494,6 +2655,7 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_update_bearer_response =
         &ogs_gtp2_tlv_desc_port_number_0,
         &ogs_gtp2_tlv_desc_f_container_0,
         &ogs_gtp2_tlv_desc_port_number_1,
+        &ogs_gtp2_tlv_desc_pscell_id_0,
     NULL,
 }};
 
@@ -2519,6 +2681,7 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_delete_bearer_request =
         &ogs_gtp2_tlv_desc_f_container_0,
         &ogs_gtp2_tlv_desc_apn_rate_control_status_0,
         &ogs_gtp2_tlv_desc_epco_0,
+        &ogs_gtp2_tlv_desc_pgw_change_info_0,
     NULL,
 }};
 
@@ -2551,6 +2714,7 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_delete_bearer_response =
         &ogs_gtp2_tlv_desc_f_container_0,
         &ogs_gtp2_tlv_desc_port_number_1,
         &ogs_gtp2_tlv_desc_secondary_rat_usage_data_report_0,
+        &ogs_gtp2_tlv_desc_pscell_id_0,
     NULL,
 }};
 
@@ -2609,6 +2773,7 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_release_access_bearers_request =
         &ogs_gtp2_tlv_desc_node_type_0,
         &ogs_gtp2_tlv_desc_indication_0,
         &ogs_gtp2_tlv_desc_secondary_rat_usage_data_report_0,
+        &ogs_gtp2_tlv_desc_pscell_id_0,
     NULL,
 }};
 
@@ -2670,6 +2835,7 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_modify_access_bearers_request =
         &ogs_gtp2_tlv_desc_bearer_context_1,
         &ogs_gtp2_tlv_desc_recovery_0,
         &ogs_gtp2_tlv_desc_secondary_rat_usage_data_report_0,
+        &ogs_gtp2_tlv_desc_pscell_id_0,
     NULL,
 }};
 
@@ -2709,7 +2875,10 @@ int ogs_gtp2_parse_msg(ogs_gtp2_message_t *gtp2_message, ogs_pkbuf_t *pkbuf)
     else
         size = OGS_GTPV2C_HEADER_LEN-OGS_GTP2_TEID_LEN;
 
-    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+        ogs_error("ogs_pkbuf_pull() failed [len:%d]", pkbuf->len);
+        return OGS_ERROR;
+    }
     memcpy(&gtp2_message->h, pkbuf->data - size, size);
 
     if (h->teid_presence)

@@ -1,7 +1,7 @@
 /*
  * transfer_mt_data_req_data.h
  *
- * 
+ * Data within Transfer MT Data Request
  */
 
 #ifndef _OpenAPI_transfer_mt_data_req_data_H_

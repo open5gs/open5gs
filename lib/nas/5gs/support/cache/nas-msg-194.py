@@ -3,7 +3,7 @@ ies.append({ "iei" : "", "value" : "Selected PDU session type", "type" : "PDU se
 ies.append({ "iei" : "", "value" : "Authorized QoS rules", "type" : "QoS rules", "reference" : "9.11.4.13", "presence" : "M", "format" : "LV-E", "length" : "6-65538"})
 ies.append({ "iei" : "", "value" : "Session AMBR", "type" : "Session-AMBR", "reference" : "9.11.4.14", "presence" : "M", "format" : "LV", "length" : "7"})
 ies.append({ "iei" : "59", "value" : "5GSM cause", "type" : "5GSM cause", "reference" : "9.11.4.2", "presence" : "O", "format" : "TV", "length" : "2"})
-ies.append({ "iei" : "29", "value" : "PDU address", "type" : "PDU address", "reference" : "9.11.4.10", "presence" : "O", "format" : "TLV", "length" : "7, 11 or 15"})
+ies.append({ "iei" : "29", "value" : "PDU address", "type" : "PDU address", "reference" : "9.11.4.10", "presence" : "O", "format" : "TLV", "length" : "7-31"})
 ies.append({ "iei" : "56", "value" : "RQ timer value", "type" : "GPRS timer", "reference" : "9.11.2.3", "presence" : "O", "format" : "TV", "length" : "2"})
 ies.append({ "iei" : "22", "value" : "S-NSSAI", "type" : "S-NSSAI", "reference" : "9.11.2.8", "presence" : "O", "format" : "TLV", "length" : "3-10"})
 ies.append({ "iei" : "8-", "value" : "Always-on PDU session indication", "type" : "Always-on PDU session indication", "reference" : "9.11.4.3", "presence" : "O", "format" : "TV", "length" : "1"})
@@ -16,5 +16,8 @@ ies.append({ "iei" : "17", "value" : "5GSM network feature support", "type" : "5
 ies.append({ "iei" : "18", "value" : "Serving PLMN rate control", "type" : "Serving PLMN rate control", "reference" : "9.11.4.20", "presence" : "O", "format" : "TLV", "length" : "4"})
 ies.append({ "iei" : "77", "value" : "ATSSS container", "type" : "ATSSS container", "reference" : "9.11.4.22", "presence" : "O", "format" : "TLV-E", "length" : "3-65538"})
 ies.append({ "iei" : "C-", "value" : "Control plane only indication", "type" : "Control plane only indication", "reference" : "9.11.4.23", "presence" : "O", "format" : "TV", "length" : "1"})
-ies.append({ "iei" : "66", "value" : "Header compression configuration", "type" : "Header compression configuration", "reference" : "9.11.4.24", "presence" : "O", "format" : "TLV", "length" : "5-257"})
+ies.append({ "iei" : "66", "value" : "IP header compression configuration", "type" : "IP header compression configuration", "reference" : "9.11.4.24", "presence" : "O", "format" : "TLV", "length" : "5-257"})
+ies.append({ "iei" : "1F", "value" : "Ethernet header compression configuration", "type" : "Ethernet header compression configuration", "reference" : "9.11.4.28", "presence" : "O", "format" : "TLV", "length" : "3"})
+ies.append({ "iei" : "72", "value" : "Service-level-AA container", "type" : "Service-level-AA container", "reference" : "9.11.2.10", "presence" : "O", "format" : "TLV-E", "length" : "6-n"})
+ies.append({ "iei" : "71", "value" : "Received MBS container", "type" : "Received MBS container", "reference" : "9.11.4.31", "presence" : "O", "format" : "TLV-E", "length" : "9-65538"})
 msg_list[key]["ies"] = ies

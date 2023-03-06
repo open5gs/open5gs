@@ -1,7 +1,7 @@
 /*
  * exemption_ind.h
  *
- * 
+ * Exemption Indication
  */
 
 #ifndef _OpenAPI_exemption_ind_H_

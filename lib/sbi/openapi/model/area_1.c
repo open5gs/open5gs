@@ -20,21 +20,29 @@ OpenAPI_area_1_t *OpenAPI_area_1_create(
 
 void OpenAPI_area_1_free(OpenAPI_area_1_t *area_1)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == area_1) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_list_for_each(area_1->tacs, node) {
-        ogs_free(node->data);
+    if (area_1->tacs) {
+        OpenAPI_list_for_each(area_1->tacs, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(area_1->tacs);
+        area_1->tacs = NULL;
     }
-    OpenAPI_list_free(area_1->tacs);
-    ogs_free(area_1->area_code);
+    if (area_1->area_code) {
+        ogs_free(area_1->area_code);
+        area_1->area_code = NULL;
+    }
     ogs_free(area_1);
 }
 
 cJSON *OpenAPI_area_1_convertToJSON(OpenAPI_area_1_t *area_1)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (area_1 == NULL) {
         ogs_error("OpenAPI_area_1_convertToJSON() failed [Area_1]");
@@ -43,19 +51,17 @@ cJSON *OpenAPI_area_1_convertToJSON(OpenAPI_area_1_t *area_1)
 
     item = cJSON_CreateObject();
     if (area_1->tacs) {
-    cJSON *tacs = cJSON_AddArrayToObject(item, "tacs");
-    if (tacs == NULL) {
+    cJSON *tacsList = cJSON_AddArrayToObject(item, "tacs");
+    if (tacsList == NULL) {
         ogs_error("OpenAPI_area_1_convertToJSON() failed [tacs]");
         goto end;
     }
-
-    OpenAPI_lnode_t *tacs_node;
-    OpenAPI_list_for_each(area_1->tacs, tacs_node)  {
-    if (cJSON_AddStringToObject(tacs, "", (char*)tacs_node->data) == NULL) {
-        ogs_error("OpenAPI_area_1_convertToJSON() failed [tacs]");
-        goto end;
+    OpenAPI_list_for_each(area_1->tacs, node) {
+        if (cJSON_AddStringToObject(tacsList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_area_1_convertToJSON() failed [tacs]");
+            goto end;
+        }
     }
-                    }
     }
 
     if (area_1->area_code) {
@@ -72,30 +78,34 @@ end:
 OpenAPI_area_1_t *OpenAPI_area_1_parseFromJSON(cJSON *area_1JSON)
 {
     OpenAPI_area_1_t *area_1_local_var = NULL;
-    cJSON *tacs = cJSON_GetObjectItemCaseSensitive(area_1JSON, "tacs");
-
-    OpenAPI_list_t *tacsList;
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *tacs = NULL;
+    OpenAPI_list_t *tacsList = NULL;
+    cJSON *area_code = NULL;
+    tacs = cJSON_GetObjectItemCaseSensitive(area_1JSON, "tacs");
     if (tacs) {
-    cJSON *tacs_local;
-    if (!cJSON_IsArray(tacs)) {
-        ogs_error("OpenAPI_area_1_parseFromJSON() failed [tacs]");
-        goto end;
-    }
-    tacsList = OpenAPI_list_create();
+        cJSON *tacs_local = NULL;
+        if (!cJSON_IsArray(tacs)) {
+            ogs_error("OpenAPI_area_1_parseFromJSON() failed [tacs]");
+            goto end;
+        }
 
-    cJSON_ArrayForEach(tacs_local, tacs) {
-    if (!cJSON_IsString(tacs_local)) {
-        ogs_error("OpenAPI_area_1_parseFromJSON() failed [tacs]");
-        goto end;
-    }
-    OpenAPI_list_add(tacsList , ogs_strdup(tacs_local->valuestring));
-    }
+        tacsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(tacs_local, tacs) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(tacs_local)) {
+                ogs_error("OpenAPI_area_1_parseFromJSON() failed [tacs]");
+                goto end;
+            }
+            OpenAPI_list_add(tacsList, ogs_strdup(tacs_local->valuestring));
+        }
     }
 
-    cJSON *area_code = cJSON_GetObjectItemCaseSensitive(area_1JSON, "areaCode");
-
+    area_code = cJSON_GetObjectItemCaseSensitive(area_1JSON, "areaCode");
     if (area_code) {
-    if (!cJSON_IsString(area_code)) {
+    if (!cJSON_IsString(area_code) && !cJSON_IsNull(area_code)) {
         ogs_error("OpenAPI_area_1_parseFromJSON() failed [area_code]");
         goto end;
     }
@@ -103,11 +113,18 @@ OpenAPI_area_1_t *OpenAPI_area_1_parseFromJSON(cJSON *area_1JSON)
 
     area_1_local_var = OpenAPI_area_1_create (
         tacs ? tacsList : NULL,
-        area_code ? ogs_strdup(area_code->valuestring) : NULL
+        area_code && !cJSON_IsNull(area_code) ? ogs_strdup(area_code->valuestring) : NULL
     );
 
     return area_1_local_var;
 end:
+    if (tacsList) {
+        OpenAPI_list_for_each(tacsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(tacsList);
+        tacsList = NULL;
+    }
     return NULL;
 }
 

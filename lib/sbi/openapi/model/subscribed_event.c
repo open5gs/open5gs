@@ -16,16 +16,18 @@ OpenAPI_subscribed_event_t *OpenAPI_subscribed_event_create(
 
 void OpenAPI_subscribed_event_free(OpenAPI_subscribed_event_t *subscribed_event)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == subscribed_event) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(subscribed_event);
 }
 
 cJSON *OpenAPI_subscribed_event_convertToJSON(OpenAPI_subscribed_event_t *subscribed_event)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (subscribed_event == NULL) {
         ogs_error("OpenAPI_subscribed_event_convertToJSON() failed [SubscribedEvent]");
@@ -40,6 +42,7 @@ end:
 OpenAPI_subscribed_event_t *OpenAPI_subscribed_event_parseFromJSON(cJSON *subscribed_eventJSON)
 {
     OpenAPI_subscribed_event_t *subscribed_event_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
     subscribed_event_local_var = OpenAPI_subscribed_event_create (
     );
 

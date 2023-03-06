@@ -16,11 +16,14 @@
 #include "lcs_broadcast_assistance_types_data.h"
 #include "lcs_mo_data.h"
 #include "lcs_privacy_data.h"
-#include "session_management_subscription_data.h"
+#include "mbs_subscription_data.h"
+#include "prose_subscription_data.h"
+#include "sm_subs_data.h"
 #include "smf_selection_subscription_data.h"
 #include "sms_management_subscription_data.h"
 #include "sms_subscription_data.h"
-#include "trace_data_1.h"
+#include "trace_data.h"
+#include "uc_subscription_data.h"
 #include "ue_context_in_amf_data.h"
 #include "ue_context_in_smf_data.h"
 #include "ue_context_in_smsf_data.h"
@@ -38,13 +41,16 @@ typedef struct OpenAPI_subscription_data_sets_s {
     struct OpenAPI_ue_context_in_smf_data_s *uec_smf_data;
     struct OpenAPI_ue_context_in_smsf_data_s *uec_smsf_data;
     struct OpenAPI_sms_subscription_data_s *sms_subs_data;
-    OpenAPI_list_t *sm_data;
-    struct OpenAPI_trace_data_1_s *trace_data;
+    struct OpenAPI_sm_subs_data_s *sm_data;
+    struct OpenAPI_trace_data_s *trace_data;
     struct OpenAPI_sms_management_subscription_data_s *sms_mng_data;
     struct OpenAPI_lcs_privacy_data_s *lcs_privacy_data;
     struct OpenAPI_lcs_mo_data_s *lcs_mo_data;
     struct OpenAPI_v2x_subscription_data_s *v2x_data;
     struct OpenAPI_lcs_broadcast_assistance_types_data_s *lcs_broadcast_assistance_types_data;
+    struct OpenAPI_prose_subscription_data_s *prose_data;
+    struct OpenAPI_mbs_subscription_data_s *mbs_data;
+    struct OpenAPI_uc_subscription_data_s *uc_data;
 } OpenAPI_subscription_data_sets_t;
 
 OpenAPI_subscription_data_sets_t *OpenAPI_subscription_data_sets_create(
@@ -54,13 +60,16 @@ OpenAPI_subscription_data_sets_t *OpenAPI_subscription_data_sets_create(
     OpenAPI_ue_context_in_smf_data_t *uec_smf_data,
     OpenAPI_ue_context_in_smsf_data_t *uec_smsf_data,
     OpenAPI_sms_subscription_data_t *sms_subs_data,
-    OpenAPI_list_t *sm_data,
-    OpenAPI_trace_data_1_t *trace_data,
+    OpenAPI_sm_subs_data_t *sm_data,
+    OpenAPI_trace_data_t *trace_data,
     OpenAPI_sms_management_subscription_data_t *sms_mng_data,
     OpenAPI_lcs_privacy_data_t *lcs_privacy_data,
     OpenAPI_lcs_mo_data_t *lcs_mo_data,
     OpenAPI_v2x_subscription_data_t *v2x_data,
-    OpenAPI_lcs_broadcast_assistance_types_data_t *lcs_broadcast_assistance_types_data
+    OpenAPI_lcs_broadcast_assistance_types_data_t *lcs_broadcast_assistance_types_data,
+    OpenAPI_prose_subscription_data_t *prose_data,
+    OpenAPI_mbs_subscription_data_t *mbs_data,
+    OpenAPI_uc_subscription_data_t *uc_data
 );
 void OpenAPI_subscription_data_sets_free(OpenAPI_subscription_data_sets_t *subscription_data_sets);
 OpenAPI_subscription_data_sets_t *OpenAPI_subscription_data_sets_parseFromJSON(cJSON *subscription_data_setsJSON);

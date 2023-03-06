@@ -1,7 +1,7 @@
 /*
  * vsmf_updated_data.h
  *
- * 
+ * Data within Update Response from V-SMF, or from I-SMF to SMF
  */
 
 #ifndef _OpenAPI_vsmf_updated_data_H_
@@ -44,6 +44,7 @@ typedef struct OpenAPI_vsmf_updated_data_s {
     struct OpenAPI_n4_information_s *n4_info;
     struct OpenAPI_n4_information_s *n4_info_ext1;
     struct OpenAPI_n4_information_s *n4_info_ext2;
+    struct OpenAPI_n4_information_s *n4_info_ext3;
 } OpenAPI_vsmf_updated_data_t;
 
 OpenAPI_vsmf_updated_data_t *OpenAPI_vsmf_updated_data_create(
@@ -63,7 +64,8 @@ OpenAPI_vsmf_updated_data_t *OpenAPI_vsmf_updated_data_create(
     OpenAPI_list_t *secondary_rat_usage_info,
     OpenAPI_n4_information_t *n4_info,
     OpenAPI_n4_information_t *n4_info_ext1,
-    OpenAPI_n4_information_t *n4_info_ext2
+    OpenAPI_n4_information_t *n4_info_ext2,
+    OpenAPI_n4_information_t *n4_info_ext3
 );
 void OpenAPI_vsmf_updated_data_free(OpenAPI_vsmf_updated_data_t *vsmf_updated_data);
 OpenAPI_vsmf_updated_data_t *OpenAPI_vsmf_updated_data_parseFromJSON(cJSON *vsmf_updated_dataJSON);

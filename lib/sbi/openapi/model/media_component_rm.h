@@ -1,7 +1,7 @@
 /*
  * media_component_rm.h
  *
- * This data type is defined in the same way as the MediaComponent data type, but with the OpenAPI nullable property set to true
+ * This data type is defined in the same way as the MediaComponent data type, but with the OpenAPI nullable property set to true.
  */
 
 #ifndef _OpenAPI_media_component_rm_H_
@@ -13,6 +13,7 @@
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
 #include "af_routing_requirement_rm.h"
+#include "alternative_service_requirements_data.h"
 #include "flow_status.h"
 #include "media_sub_component_rm.h"
 #include "media_type.h"
@@ -33,6 +34,7 @@ typedef struct OpenAPI_media_component_rm_s {
     struct OpenAPI_af_routing_requirement_rm_s *af_rout_req;
     char *qos_reference;
     OpenAPI_list_t *alt_ser_reqs;
+    OpenAPI_list_t *alt_ser_reqs_data;
     bool is_dis_ue_notif;
     int dis_ue_notif;
     bool is_cont_ver;
@@ -72,6 +74,8 @@ typedef struct OpenAPI_media_component_rm_s {
     struct OpenAPI_tsn_qos_container_rm_s *tsn_qos;
     struct OpenAPI_tscai_input_container_s *tscai_input_dl;
     struct OpenAPI_tscai_input_container_s *tscai_input_ul;
+    bool is_tscai_time_dom;
+    int tscai_time_dom;
 } OpenAPI_media_component_rm_t;
 
 OpenAPI_media_component_rm_t *OpenAPI_media_component_rm_create(
@@ -79,6 +83,7 @@ OpenAPI_media_component_rm_t *OpenAPI_media_component_rm_create(
     OpenAPI_af_routing_requirement_rm_t *af_rout_req,
     char *qos_reference,
     OpenAPI_list_t *alt_ser_reqs,
+    OpenAPI_list_t *alt_ser_reqs_data,
     bool is_dis_ue_notif,
     int dis_ue_notif,
     bool is_cont_ver,
@@ -117,7 +122,9 @@ OpenAPI_media_component_rm_t *OpenAPI_media_component_rm_create(
     int sharing_key_ul,
     OpenAPI_tsn_qos_container_rm_t *tsn_qos,
     OpenAPI_tscai_input_container_t *tscai_input_dl,
-    OpenAPI_tscai_input_container_t *tscai_input_ul
+    OpenAPI_tscai_input_container_t *tscai_input_ul,
+    bool is_tscai_time_dom,
+    int tscai_time_dom
 );
 void OpenAPI_media_component_rm_free(OpenAPI_media_component_rm_t *media_component_rm);
 OpenAPI_media_component_rm_t *OpenAPI_media_component_rm_parseFromJSON(cJSON *media_component_rmJSON);

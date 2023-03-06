@@ -13,6 +13,7 @@
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
 #include "event_report_mode.h"
+#include "notification_flag.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,6 +31,7 @@ typedef struct OpenAPI_reporting_options_s {
     int guard_time;
     bool is_report_period;
     int report_period;
+    OpenAPI_notification_flag_e notif_flag;
 } OpenAPI_reporting_options_t;
 
 OpenAPI_reporting_options_t *OpenAPI_reporting_options_create(
@@ -42,7 +44,8 @@ OpenAPI_reporting_options_t *OpenAPI_reporting_options_create(
     bool is_guard_time,
     int guard_time,
     bool is_report_period,
-    int report_period
+    int report_period,
+    OpenAPI_notification_flag_e notif_flag
 );
 void OpenAPI_reporting_options_free(OpenAPI_reporting_options_t *reporting_options);
 OpenAPI_reporting_options_t *OpenAPI_reporting_options_parseFromJSON(cJSON *reporting_optionsJSON);

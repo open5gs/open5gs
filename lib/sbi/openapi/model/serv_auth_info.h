@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_serv_auth_info_NULL = 0, OpenAPI_serv_auth_info_TP_NOT_KNOWN, OpenAPI_serv_auth_info_TP_EXPIRED, OpenAPI_serv_auth_info_TP_NOT_YET_OCURRED } OpenAPI_serv_auth_info_e;
+typedef enum { OpenAPI_serv_auth_info_NULL = 0, OpenAPI_serv_auth_info_TP_NOT_KNOWN, OpenAPI_serv_auth_info_TP_EXPIRED, OpenAPI_serv_auth_info_TP_NOT_YET_OCURRED, OpenAPI_serv_auth_info_ROUT_REQ_NOT_AUTHORIZED } OpenAPI_serv_auth_info_e;
 
 char* OpenAPI_serv_auth_info_ToString(OpenAPI_serv_auth_info_e serv_auth_info);
 

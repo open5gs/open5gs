@@ -36,6 +36,7 @@ typedef struct OpenAPI_session_management_subscription_data_1_s {
     OpenAPI_list_t* expected_ue_behaviours_list;
     OpenAPI_list_t* suggested_packet_num_dl_list;
     char *_3gpp_charging_characteristics;
+    char *supported_features;
 } OpenAPI_session_management_subscription_data_1_t;
 
 OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_subscription_data_1_create(
@@ -49,7 +50,8 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
     char *shared_trace_data_id,
     OpenAPI_list_t* expected_ue_behaviours_list,
     OpenAPI_list_t* suggested_packet_num_dl_list,
-    char *_3gpp_charging_characteristics
+    char *_3gpp_charging_characteristics,
+    char *supported_features
 );
 void OpenAPI_session_management_subscription_data_1_free(OpenAPI_session_management_subscription_data_1_t *session_management_subscription_data_1);
 OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_subscription_data_1_parseFromJSON(cJSON *session_management_subscription_data_1JSON);

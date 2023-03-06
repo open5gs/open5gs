@@ -177,6 +177,7 @@ bool pcf_nudr_dr_handle_query_sm_data(
     char *strerror = NULL;
     pcf_ue_t *pcf_ue = NULL;
     ogs_sbi_server_t *server = NULL;
+    int r;
 
     ogs_assert(sess);
     pcf_ue = sess->pcf_ue;
@@ -215,14 +216,16 @@ bool pcf_nudr_dr_handle_query_sm_data(
         }
 
         if (nf_instance) {
-            ogs_assert(true ==
-                    pcf_sess_sbi_discover_and_send(
+            r = pcf_sess_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NBSF_MANAGEMENT, NULL,
                         pcf_nbsf_management_build_register,
-                        sess, stream, nf_instance));
+                        sess, stream, nf_instance);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
         } else {
-            ogs_expect(true ==
-                    pcf_sess_sbi_discover_only(sess, stream, service_type));
+            r = pcf_sess_sbi_discover_only(sess, stream, service_type);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
         }
 
         return true;

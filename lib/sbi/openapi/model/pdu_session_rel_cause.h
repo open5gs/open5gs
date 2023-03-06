@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_pdu_session_rel_cause_NULL = 0, OpenAPI_pdu_session_rel_cause_PS_TO_CS_HO } OpenAPI_pdu_session_rel_cause_e;
+typedef enum { OpenAPI_pdu_session_rel_cause_NULL = 0, OpenAPI_pdu_session_rel_cause_PS_TO_CS_HO, OpenAPI_pdu_session_rel_cause_RULE_ERROR } OpenAPI_pdu_session_rel_cause_e;
 
 char* OpenAPI_pdu_session_rel_cause_ToString(OpenAPI_pdu_session_rel_cause_e pdu_session_rel_cause);
 

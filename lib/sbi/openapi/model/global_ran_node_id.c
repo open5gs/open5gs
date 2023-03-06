@@ -32,24 +32,50 @@ OpenAPI_global_ran_node_id_t *OpenAPI_global_ran_node_id_create(
 
 void OpenAPI_global_ran_node_id_free(OpenAPI_global_ran_node_id_t *global_ran_node_id)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == global_ran_node_id) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_plmn_id_free(global_ran_node_id->plmn_id);
-    ogs_free(global_ran_node_id->n3_iwf_id);
-    OpenAPI_gnb_id_free(global_ran_node_id->g_nb_id);
-    ogs_free(global_ran_node_id->nge_nb_id);
-    ogs_free(global_ran_node_id->wagf_id);
-    ogs_free(global_ran_node_id->tngf_id);
-    ogs_free(global_ran_node_id->nid);
-    ogs_free(global_ran_node_id->e_nb_id);
+    if (global_ran_node_id->plmn_id) {
+        OpenAPI_plmn_id_free(global_ran_node_id->plmn_id);
+        global_ran_node_id->plmn_id = NULL;
+    }
+    if (global_ran_node_id->n3_iwf_id) {
+        ogs_free(global_ran_node_id->n3_iwf_id);
+        global_ran_node_id->n3_iwf_id = NULL;
+    }
+    if (global_ran_node_id->g_nb_id) {
+        OpenAPI_gnb_id_free(global_ran_node_id->g_nb_id);
+        global_ran_node_id->g_nb_id = NULL;
+    }
+    if (global_ran_node_id->nge_nb_id) {
+        ogs_free(global_ran_node_id->nge_nb_id);
+        global_ran_node_id->nge_nb_id = NULL;
+    }
+    if (global_ran_node_id->wagf_id) {
+        ogs_free(global_ran_node_id->wagf_id);
+        global_ran_node_id->wagf_id = NULL;
+    }
+    if (global_ran_node_id->tngf_id) {
+        ogs_free(global_ran_node_id->tngf_id);
+        global_ran_node_id->tngf_id = NULL;
+    }
+    if (global_ran_node_id->nid) {
+        ogs_free(global_ran_node_id->nid);
+        global_ran_node_id->nid = NULL;
+    }
+    if (global_ran_node_id->e_nb_id) {
+        ogs_free(global_ran_node_id->e_nb_id);
+        global_ran_node_id->e_nb_id = NULL;
+    }
     ogs_free(global_ran_node_id);
 }
 
 cJSON *OpenAPI_global_ran_node_id_convertToJSON(OpenAPI_global_ran_node_id_t *global_ran_node_id)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (global_ran_node_id == NULL) {
         ogs_error("OpenAPI_global_ran_node_id_convertToJSON() failed [GlobalRanNodeId]");
@@ -57,6 +83,10 @@ cJSON *OpenAPI_global_ran_node_id_convertToJSON(OpenAPI_global_ran_node_id_t *gl
     }
 
     item = cJSON_CreateObject();
+    if (!global_ran_node_id->plmn_id) {
+        ogs_error("OpenAPI_global_ran_node_id_convertToJSON() failed [plmn_id]");
+        return NULL;
+    }
     cJSON *plmn_id_local_JSON = OpenAPI_plmn_id_convertToJSON(global_ran_node_id->plmn_id);
     if (plmn_id_local_JSON == NULL) {
         ogs_error("OpenAPI_global_ran_node_id_convertToJSON() failed [plmn_id]");
@@ -130,71 +160,72 @@ end:
 OpenAPI_global_ran_node_id_t *OpenAPI_global_ran_node_id_parseFromJSON(cJSON *global_ran_node_idJSON)
 {
     OpenAPI_global_ran_node_id_t *global_ran_node_id_local_var = NULL;
-    cJSON *plmn_id = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "plmnId");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *plmn_id = NULL;
+    OpenAPI_plmn_id_t *plmn_id_local_nonprim = NULL;
+    cJSON *n3_iwf_id = NULL;
+    cJSON *g_nb_id = NULL;
+    OpenAPI_gnb_id_t *g_nb_id_local_nonprim = NULL;
+    cJSON *nge_nb_id = NULL;
+    cJSON *wagf_id = NULL;
+    cJSON *tngf_id = NULL;
+    cJSON *nid = NULL;
+    cJSON *e_nb_id = NULL;
+    plmn_id = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "plmnId");
     if (!plmn_id) {
         ogs_error("OpenAPI_global_ran_node_id_parseFromJSON() failed [plmn_id]");
         goto end;
     }
-
-    OpenAPI_plmn_id_t *plmn_id_local_nonprim = NULL;
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
 
-    cJSON *n3_iwf_id = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "n3IwfId");
-
+    n3_iwf_id = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "n3IwfId");
     if (n3_iwf_id) {
-    if (!cJSON_IsString(n3_iwf_id)) {
+    if (!cJSON_IsString(n3_iwf_id) && !cJSON_IsNull(n3_iwf_id)) {
         ogs_error("OpenAPI_global_ran_node_id_parseFromJSON() failed [n3_iwf_id]");
         goto end;
     }
     }
 
-    cJSON *g_nb_id = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "gNbId");
-
-    OpenAPI_gnb_id_t *g_nb_id_local_nonprim = NULL;
+    g_nb_id = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "gNbId");
     if (g_nb_id) {
     g_nb_id_local_nonprim = OpenAPI_gnb_id_parseFromJSON(g_nb_id);
     }
 
-    cJSON *nge_nb_id = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "ngeNbId");
-
+    nge_nb_id = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "ngeNbId");
     if (nge_nb_id) {
-    if (!cJSON_IsString(nge_nb_id)) {
+    if (!cJSON_IsString(nge_nb_id) && !cJSON_IsNull(nge_nb_id)) {
         ogs_error("OpenAPI_global_ran_node_id_parseFromJSON() failed [nge_nb_id]");
         goto end;
     }
     }
 
-    cJSON *wagf_id = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "wagfId");
-
+    wagf_id = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "wagfId");
     if (wagf_id) {
-    if (!cJSON_IsString(wagf_id)) {
+    if (!cJSON_IsString(wagf_id) && !cJSON_IsNull(wagf_id)) {
         ogs_error("OpenAPI_global_ran_node_id_parseFromJSON() failed [wagf_id]");
         goto end;
     }
     }
 
-    cJSON *tngf_id = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "tngfId");
-
+    tngf_id = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "tngfId");
     if (tngf_id) {
-    if (!cJSON_IsString(tngf_id)) {
+    if (!cJSON_IsString(tngf_id) && !cJSON_IsNull(tngf_id)) {
         ogs_error("OpenAPI_global_ran_node_id_parseFromJSON() failed [tngf_id]");
         goto end;
     }
     }
 
-    cJSON *nid = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "nid");
-
+    nid = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "nid");
     if (nid) {
-    if (!cJSON_IsString(nid)) {
+    if (!cJSON_IsString(nid) && !cJSON_IsNull(nid)) {
         ogs_error("OpenAPI_global_ran_node_id_parseFromJSON() failed [nid]");
         goto end;
     }
     }
 
-    cJSON *e_nb_id = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "eNbId");
-
+    e_nb_id = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "eNbId");
     if (e_nb_id) {
-    if (!cJSON_IsString(e_nb_id)) {
+    if (!cJSON_IsString(e_nb_id) && !cJSON_IsNull(e_nb_id)) {
         ogs_error("OpenAPI_global_ran_node_id_parseFromJSON() failed [e_nb_id]");
         goto end;
     }
@@ -202,17 +233,25 @@ OpenAPI_global_ran_node_id_t *OpenAPI_global_ran_node_id_parseFromJSON(cJSON *gl
 
     global_ran_node_id_local_var = OpenAPI_global_ran_node_id_create (
         plmn_id_local_nonprim,
-        n3_iwf_id ? ogs_strdup(n3_iwf_id->valuestring) : NULL,
+        n3_iwf_id && !cJSON_IsNull(n3_iwf_id) ? ogs_strdup(n3_iwf_id->valuestring) : NULL,
         g_nb_id ? g_nb_id_local_nonprim : NULL,
-        nge_nb_id ? ogs_strdup(nge_nb_id->valuestring) : NULL,
-        wagf_id ? ogs_strdup(wagf_id->valuestring) : NULL,
-        tngf_id ? ogs_strdup(tngf_id->valuestring) : NULL,
-        nid ? ogs_strdup(nid->valuestring) : NULL,
-        e_nb_id ? ogs_strdup(e_nb_id->valuestring) : NULL
+        nge_nb_id && !cJSON_IsNull(nge_nb_id) ? ogs_strdup(nge_nb_id->valuestring) : NULL,
+        wagf_id && !cJSON_IsNull(wagf_id) ? ogs_strdup(wagf_id->valuestring) : NULL,
+        tngf_id && !cJSON_IsNull(tngf_id) ? ogs_strdup(tngf_id->valuestring) : NULL,
+        nid && !cJSON_IsNull(nid) ? ogs_strdup(nid->valuestring) : NULL,
+        e_nb_id && !cJSON_IsNull(e_nb_id) ? ogs_strdup(e_nb_id->valuestring) : NULL
     );
 
     return global_ran_node_id_local_var;
 end:
+    if (plmn_id_local_nonprim) {
+        OpenAPI_plmn_id_free(plmn_id_local_nonprim);
+        plmn_id_local_nonprim = NULL;
+    }
+    if (g_nb_id_local_nonprim) {
+        OpenAPI_gnb_id_free(g_nb_id_local_nonprim);
+        g_nb_id_local_nonprim = NULL;
+    }
     return NULL;
 }
 

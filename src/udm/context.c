@@ -106,6 +106,9 @@ int udm_context_parse_config(void)
                     /* handle config in sbi library */
                 } else if (!strcmp(udm_key, "discovery")) {
                     /* handle config in sbi library */
+                } else if (!strcmp(udm_key, "hnet")) {
+                    rv = ogs_sbi_context_parse_hnet_config(&udm_iter);
+                    if (rv != OGS_OK) return rv;
                 } else
                     ogs_warn("unknown key `%s`", udm_key);
             }

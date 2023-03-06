@@ -1,7 +1,7 @@
 /*
  * hfc_node_id.h
  *
- * 
+ * REpresents the HFC Node Identifer received over NGAP.
  */
 
 #ifndef _OpenAPI_hfc_node_id_H_

@@ -30,19 +30,30 @@ OpenAPI_hss_authentication_info_request_t *OpenAPI_hss_authentication_info_reque
 
 void OpenAPI_hss_authentication_info_request_free(OpenAPI_hss_authentication_info_request_t *hss_authentication_info_request)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == hss_authentication_info_request) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(hss_authentication_info_request->supported_features);
-    OpenAPI_plmn_id_free(hss_authentication_info_request->serving_network_id);
-    OpenAPI_resynchronization_info_free(hss_authentication_info_request->resynchronization_info);
+    if (hss_authentication_info_request->supported_features) {
+        ogs_free(hss_authentication_info_request->supported_features);
+        hss_authentication_info_request->supported_features = NULL;
+    }
+    if (hss_authentication_info_request->serving_network_id) {
+        OpenAPI_plmn_id_free(hss_authentication_info_request->serving_network_id);
+        hss_authentication_info_request->serving_network_id = NULL;
+    }
+    if (hss_authentication_info_request->resynchronization_info) {
+        OpenAPI_resynchronization_info_free(hss_authentication_info_request->resynchronization_info);
+        hss_authentication_info_request->resynchronization_info = NULL;
+    }
     ogs_free(hss_authentication_info_request);
 }
 
 cJSON *OpenAPI_hss_authentication_info_request_convertToJSON(OpenAPI_hss_authentication_info_request_t *hss_authentication_info_request)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (hss_authentication_info_request == NULL) {
         ogs_error("OpenAPI_hss_authentication_info_request_convertToJSON() failed [HssAuthenticationInfoRequest]");
@@ -57,6 +68,10 @@ cJSON *OpenAPI_hss_authentication_info_request_convertToJSON(OpenAPI_hss_authent
     }
     }
 
+    if (hss_authentication_info_request->hss_auth_type == OpenAPI_hss_auth_type_NULL) {
+        ogs_error("OpenAPI_hss_authentication_info_request_convertToJSON() failed [hss_auth_type]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "hssAuthType", OpenAPI_hss_auth_type_ToString(hss_authentication_info_request->hss_auth_type)) == NULL) {
         ogs_error("OpenAPI_hss_authentication_info_request_convertToJSON() failed [hss_auth_type]");
         goto end;
@@ -67,7 +82,7 @@ cJSON *OpenAPI_hss_authentication_info_request_convertToJSON(OpenAPI_hss_authent
         goto end;
     }
 
-    if (hss_authentication_info_request->requesting_node_type) {
+    if (hss_authentication_info_request->requesting_node_type != OpenAPI_node_type_NULL) {
     if (cJSON_AddStringToObject(item, "requestingNodeType", OpenAPI_node_type_ToString(hss_authentication_info_request->requesting_node_type)) == NULL) {
         ogs_error("OpenAPI_hss_authentication_info_request_convertToJSON() failed [requesting_node_type]");
         goto end;
@@ -100,7 +115,7 @@ cJSON *OpenAPI_hss_authentication_info_request_convertToJSON(OpenAPI_hss_authent
     }
     }
 
-    if (hss_authentication_info_request->an_id) {
+    if (hss_authentication_info_request->an_id != OpenAPI_access_network_id_NULL) {
     if (cJSON_AddStringToObject(item, "anId", OpenAPI_access_network_id_ToString(hss_authentication_info_request->an_id)) == NULL) {
         ogs_error("OpenAPI_hss_authentication_info_request_convertToJSON() failed [an_id]");
         goto end;
@@ -114,42 +129,49 @@ end:
 OpenAPI_hss_authentication_info_request_t *OpenAPI_hss_authentication_info_request_parseFromJSON(cJSON *hss_authentication_info_requestJSON)
 {
     OpenAPI_hss_authentication_info_request_t *hss_authentication_info_request_local_var = NULL;
-    cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_requestJSON, "supportedFeatures");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *supported_features = NULL;
+    cJSON *hss_auth_type = NULL;
+    OpenAPI_hss_auth_type_e hss_auth_typeVariable = 0;
+    cJSON *num_of_requested_vectors = NULL;
+    cJSON *requesting_node_type = NULL;
+    OpenAPI_node_type_e requesting_node_typeVariable = 0;
+    cJSON *serving_network_id = NULL;
+    OpenAPI_plmn_id_t *serving_network_id_local_nonprim = NULL;
+    cJSON *resynchronization_info = NULL;
+    OpenAPI_resynchronization_info_t *resynchronization_info_local_nonprim = NULL;
+    cJSON *an_id = NULL;
+    OpenAPI_access_network_id_e an_idVariable = 0;
+    supported_features = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_requestJSON, "supportedFeatures");
     if (supported_features) {
-    if (!cJSON_IsString(supported_features)) {
+    if (!cJSON_IsString(supported_features) && !cJSON_IsNull(supported_features)) {
         ogs_error("OpenAPI_hss_authentication_info_request_parseFromJSON() failed [supported_features]");
         goto end;
     }
     }
 
-    cJSON *hss_auth_type = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_requestJSON, "hssAuthType");
+    hss_auth_type = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_requestJSON, "hssAuthType");
     if (!hss_auth_type) {
         ogs_error("OpenAPI_hss_authentication_info_request_parseFromJSON() failed [hss_auth_type]");
         goto end;
     }
-
-    OpenAPI_hss_auth_type_e hss_auth_typeVariable;
     if (!cJSON_IsString(hss_auth_type)) {
         ogs_error("OpenAPI_hss_authentication_info_request_parseFromJSON() failed [hss_auth_type]");
         goto end;
     }
     hss_auth_typeVariable = OpenAPI_hss_auth_type_FromString(hss_auth_type->valuestring);
 
-    cJSON *num_of_requested_vectors = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_requestJSON, "numOfRequestedVectors");
+    num_of_requested_vectors = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_requestJSON, "numOfRequestedVectors");
     if (!num_of_requested_vectors) {
         ogs_error("OpenAPI_hss_authentication_info_request_parseFromJSON() failed [num_of_requested_vectors]");
         goto end;
     }
-
     if (!cJSON_IsNumber(num_of_requested_vectors)) {
         ogs_error("OpenAPI_hss_authentication_info_request_parseFromJSON() failed [num_of_requested_vectors]");
         goto end;
     }
 
-    cJSON *requesting_node_type = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_requestJSON, "requestingNodeType");
-
-    OpenAPI_node_type_e requesting_node_typeVariable;
+    requesting_node_type = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_requestJSON, "requestingNodeType");
     if (requesting_node_type) {
     if (!cJSON_IsString(requesting_node_type)) {
         ogs_error("OpenAPI_hss_authentication_info_request_parseFromJSON() failed [requesting_node_type]");
@@ -158,23 +180,17 @@ OpenAPI_hss_authentication_info_request_t *OpenAPI_hss_authentication_info_reque
     requesting_node_typeVariable = OpenAPI_node_type_FromString(requesting_node_type->valuestring);
     }
 
-    cJSON *serving_network_id = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_requestJSON, "servingNetworkId");
-
-    OpenAPI_plmn_id_t *serving_network_id_local_nonprim = NULL;
+    serving_network_id = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_requestJSON, "servingNetworkId");
     if (serving_network_id) {
     serving_network_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(serving_network_id);
     }
 
-    cJSON *resynchronization_info = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_requestJSON, "resynchronizationInfo");
-
-    OpenAPI_resynchronization_info_t *resynchronization_info_local_nonprim = NULL;
+    resynchronization_info = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_requestJSON, "resynchronizationInfo");
     if (resynchronization_info) {
     resynchronization_info_local_nonprim = OpenAPI_resynchronization_info_parseFromJSON(resynchronization_info);
     }
 
-    cJSON *an_id = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_requestJSON, "anId");
-
-    OpenAPI_access_network_id_e an_idVariable;
+    an_id = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_requestJSON, "anId");
     if (an_id) {
     if (!cJSON_IsString(an_id)) {
         ogs_error("OpenAPI_hss_authentication_info_request_parseFromJSON() failed [an_id]");
@@ -184,7 +200,7 @@ OpenAPI_hss_authentication_info_request_t *OpenAPI_hss_authentication_info_reque
     }
 
     hss_authentication_info_request_local_var = OpenAPI_hss_authentication_info_request_create (
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
+        supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
         hss_auth_typeVariable,
         
         num_of_requested_vectors->valuedouble,
@@ -196,6 +212,14 @@ OpenAPI_hss_authentication_info_request_t *OpenAPI_hss_authentication_info_reque
 
     return hss_authentication_info_request_local_var;
 end:
+    if (serving_network_id_local_nonprim) {
+        OpenAPI_plmn_id_free(serving_network_id_local_nonprim);
+        serving_network_id_local_nonprim = NULL;
+    }
+    if (resynchronization_info_local_nonprim) {
+        OpenAPI_resynchronization_info_free(resynchronization_info_local_nonprim);
+        resynchronization_info_local_nonprim = NULL;
+    }
     return NULL;
 }
 

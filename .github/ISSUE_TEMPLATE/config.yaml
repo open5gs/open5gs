@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+contact_links:
+        - name: Open5GS Contribution Guide
+          url: https://github.com/open5gs/open5gs/wiki/Contribution-guide
+          about: Contribution guide detailing how you can help the project
+        - name: Project Sponsorship
+          url: https://github.com/sponsors/acetcom
+          name: Support the Open5GS developer using GitHub sponsorship
+

@@ -22,19 +22,30 @@ OpenAPI_route_to_location_t *OpenAPI_route_to_location_create(
 
 void OpenAPI_route_to_location_free(OpenAPI_route_to_location_t *route_to_location)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == route_to_location) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(route_to_location->dnai);
-    OpenAPI_route_information_free(route_to_location->route_info);
-    ogs_free(route_to_location->route_prof_id);
+    if (route_to_location->dnai) {
+        ogs_free(route_to_location->dnai);
+        route_to_location->dnai = NULL;
+    }
+    if (route_to_location->route_info) {
+        OpenAPI_route_information_free(route_to_location->route_info);
+        route_to_location->route_info = NULL;
+    }
+    if (route_to_location->route_prof_id) {
+        ogs_free(route_to_location->route_prof_id);
+        route_to_location->route_prof_id = NULL;
+    }
     ogs_free(route_to_location);
 }
 
 cJSON *OpenAPI_route_to_location_convertToJSON(OpenAPI_route_to_location_t *route_to_location)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (route_to_location == NULL) {
         ogs_error("OpenAPI_route_to_location_convertToJSON() failed [RouteToLocation]");
@@ -42,6 +53,10 @@ cJSON *OpenAPI_route_to_location_convertToJSON(OpenAPI_route_to_location_t *rout
     }
 
     item = cJSON_CreateObject();
+    if (!route_to_location->dnai) {
+        ogs_error("OpenAPI_route_to_location_convertToJSON() failed [dnai]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "dnai", route_to_location->dnai) == NULL) {
         ogs_error("OpenAPI_route_to_location_convertToJSON() failed [dnai]");
         goto end;
@@ -74,28 +89,29 @@ end:
 OpenAPI_route_to_location_t *OpenAPI_route_to_location_parseFromJSON(cJSON *route_to_locationJSON)
 {
     OpenAPI_route_to_location_t *route_to_location_local_var = NULL;
-    cJSON *dnai = cJSON_GetObjectItemCaseSensitive(route_to_locationJSON, "dnai");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *dnai = NULL;
+    cJSON *route_info = NULL;
+    OpenAPI_route_information_t *route_info_local_nonprim = NULL;
+    cJSON *route_prof_id = NULL;
+    dnai = cJSON_GetObjectItemCaseSensitive(route_to_locationJSON, "dnai");
     if (!dnai) {
         ogs_error("OpenAPI_route_to_location_parseFromJSON() failed [dnai]");
         goto end;
     }
-
     if (!cJSON_IsString(dnai)) {
         ogs_error("OpenAPI_route_to_location_parseFromJSON() failed [dnai]");
         goto end;
     }
 
-    cJSON *route_info = cJSON_GetObjectItemCaseSensitive(route_to_locationJSON, "routeInfo");
-
-    OpenAPI_route_information_t *route_info_local_nonprim = NULL;
+    route_info = cJSON_GetObjectItemCaseSensitive(route_to_locationJSON, "routeInfo");
     if (route_info) {
     route_info_local_nonprim = OpenAPI_route_information_parseFromJSON(route_info);
     }
 
-    cJSON *route_prof_id = cJSON_GetObjectItemCaseSensitive(route_to_locationJSON, "routeProfId");
-
+    route_prof_id = cJSON_GetObjectItemCaseSensitive(route_to_locationJSON, "routeProfId");
     if (route_prof_id) {
-    if (!cJSON_IsString(route_prof_id)) {
+    if (!cJSON_IsString(route_prof_id) && !cJSON_IsNull(route_prof_id)) {
         ogs_error("OpenAPI_route_to_location_parseFromJSON() failed [route_prof_id]");
         goto end;
     }
@@ -104,11 +120,15 @@ OpenAPI_route_to_location_t *OpenAPI_route_to_location_parseFromJSON(cJSON *rout
     route_to_location_local_var = OpenAPI_route_to_location_create (
         ogs_strdup(dnai->valuestring),
         route_info ? route_info_local_nonprim : NULL,
-        route_prof_id ? ogs_strdup(route_prof_id->valuestring) : NULL
+        route_prof_id && !cJSON_IsNull(route_prof_id) ? ogs_strdup(route_prof_id->valuestring) : NULL
     );
 
     return route_to_location_local_var;
 end:
+    if (route_info_local_nonprim) {
+        OpenAPI_route_information_free(route_info_local_nonprim);
+        route_info_local_nonprim = NULL;
+    }
     return NULL;
 }
 

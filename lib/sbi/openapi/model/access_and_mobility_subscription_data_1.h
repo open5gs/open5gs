@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "aerial_ue_subscription_info_1.h"
 #include "ambr_rm.h"
 #include "area_1.h"
 #include "cag_data_1.h"
@@ -23,9 +24,13 @@
 #include "mdt_user_consent.h"
 #include "nssai_1.h"
 #include "odb_packet_services.h"
+#include "pcf_selection_assistance_info_1.h"
+#include "plmn_restriction_1.h"
 #include "ptw_parameters_1.h"
 #include "rat_type.h"
+#include "roaming_restrictions.h"
 #include "service_area_restriction_1.h"
+#include "set.h"
 #include "sor_info_1.h"
 #include "sor_update_indicator.h"
 #include "trace_data.h"
@@ -41,11 +46,12 @@ typedef struct OpenAPI_access_and_mobility_subscription_data_1_s OpenAPI_access_
 typedef struct OpenAPI_access_and_mobility_subscription_data_1_s {
     char *supported_features;
     OpenAPI_list_t *gpsis;
+    char *hss_group_id;
     OpenAPI_list_t *internal_group_ids;
     OpenAPI_list_t* shared_vn_group_data_ids;
     struct OpenAPI_ambr_rm_s *subscribed_ue_ambr;
     struct OpenAPI_nssai_1_s *nssai;
-    OpenAPI_list_t *rat_restrictions;
+    OpenAPI_set_t *rat_restrictions;
     OpenAPI_list_t *forbidden_areas;
     struct OpenAPI_service_area_restriction_1_s *service_area_restriction;
     OpenAPI_list_t *core_network_type_restrictions;
@@ -68,6 +74,7 @@ typedef struct OpenAPI_access_and_mobility_subscription_data_1_s {
     int soraf_retrieval;
     OpenAPI_list_t *sor_update_indicator_list;
     struct OpenAPI_upu_info_1_s *upu_info;
+    char *routing_indicator;
     bool is_mico_allowed;
     int mico_allowed;
     OpenAPI_list_t *shared_am_data_ids;
@@ -90,24 +97,31 @@ typedef struct OpenAPI_access_and_mobility_subscription_data_1_s {
     bool is_ec_restriction_data_nb;
     int ec_restriction_data_nb;
     struct OpenAPI_expected_ue_behaviour_data_1_s *expected_ue_behaviour_list;
-    OpenAPI_list_t *primary_rat_restrictions;
-    OpenAPI_list_t *secondary_rat_restrictions;
+    OpenAPI_set_t *primary_rat_restrictions;
+    OpenAPI_set_t *secondary_rat_restrictions;
     OpenAPI_list_t *edrx_parameters_list;
     OpenAPI_list_t *ptw_parameters_list;
     bool is_iab_operation_allowed;
     int iab_operation_allowed;
+    OpenAPI_list_t* adjacent_plmn_restrictions;
     OpenAPI_list_t *wireline_forbidden_areas;
     struct OpenAPI_wireline_service_area_restriction_1_s *wireline_service_area_restriction;
+    OpenAPI_list_t *pcf_selection_assistance_infos;
+    struct OpenAPI_aerial_ue_subscription_info_1_s *aerial_ue_sub_info;
+    struct OpenAPI_roaming_restrictions_s *roaming_restrictions;
+    bool is_remote_prov_ind;
+    int remote_prov_ind;
 } OpenAPI_access_and_mobility_subscription_data_1_t;
 
 OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_subscription_data_1_create(
     char *supported_features,
     OpenAPI_list_t *gpsis,
+    char *hss_group_id,
     OpenAPI_list_t *internal_group_ids,
     OpenAPI_list_t* shared_vn_group_data_ids,
     OpenAPI_ambr_rm_t *subscribed_ue_ambr,
     OpenAPI_nssai_1_t *nssai,
-    OpenAPI_list_t *rat_restrictions,
+    OpenAPI_set_t *rat_restrictions,
     OpenAPI_list_t *forbidden_areas,
     OpenAPI_service_area_restriction_1_t *service_area_restriction,
     OpenAPI_list_t *core_network_type_restrictions,
@@ -130,6 +144,7 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
     int soraf_retrieval,
     OpenAPI_list_t *sor_update_indicator_list,
     OpenAPI_upu_info_1_t *upu_info,
+    char *routing_indicator,
     bool is_mico_allowed,
     int mico_allowed,
     OpenAPI_list_t *shared_am_data_ids,
@@ -152,14 +167,20 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
     bool is_ec_restriction_data_nb,
     int ec_restriction_data_nb,
     OpenAPI_expected_ue_behaviour_data_1_t *expected_ue_behaviour_list,
-    OpenAPI_list_t *primary_rat_restrictions,
-    OpenAPI_list_t *secondary_rat_restrictions,
+    OpenAPI_set_t *primary_rat_restrictions,
+    OpenAPI_set_t *secondary_rat_restrictions,
     OpenAPI_list_t *edrx_parameters_list,
     OpenAPI_list_t *ptw_parameters_list,
     bool is_iab_operation_allowed,
     int iab_operation_allowed,
+    OpenAPI_list_t* adjacent_plmn_restrictions,
     OpenAPI_list_t *wireline_forbidden_areas,
-    OpenAPI_wireline_service_area_restriction_1_t *wireline_service_area_restriction
+    OpenAPI_wireline_service_area_restriction_1_t *wireline_service_area_restriction,
+    OpenAPI_list_t *pcf_selection_assistance_infos,
+    OpenAPI_aerial_ue_subscription_info_1_t *aerial_ue_sub_info,
+    OpenAPI_roaming_restrictions_t *roaming_restrictions,
+    bool is_remote_prov_ind,
+    int remote_prov_ind
 );
 void OpenAPI_access_and_mobility_subscription_data_1_free(OpenAPI_access_and_mobility_subscription_data_1_t *access_and_mobility_subscription_data_1);
 OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_subscription_data_1_parseFromJSON(cJSON *access_and_mobility_subscription_data_1JSON);

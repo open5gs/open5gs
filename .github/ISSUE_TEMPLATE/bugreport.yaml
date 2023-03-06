@@ -1,0 +1,58 @@
+name: Bug Report
+description: File a bug report or issue
+title: "[Bug]: "
+labels: ['triage']
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: > 
+        **Please note**
+        
+        This form should only be used if _you can reporoduce_ the bug the in the *current* release of
+        Open5GS Stack. For installation, configuration or other help with Open5GS please
+        use our [discussion forum](https://github.com/open5gs/open5gs/discussions).
+        
+        **This form is not for support requests.**
+  - type: input
+    attributes:
+      label: Open5GS Release, Revision, or Tag
+      description: Please check if your issue has been resolved in the latest release.
+      placeholder: v2.6.0
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Steps to reproduce
+      description: >
+        Please describe in detail the steps needed to reproduce this bug. These steps
+        should reproduce the issue on the most current release of Open5GS. Be sure to
+        include configuration and platform details.
+        Please include logs from the relevant daemons as well as any relevant packet captures.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Logs
+      description: Provide any relevant captured logs for the issue
+      render: shell
+  - type: textarea
+    attributes:
+      label: Expected behaviour
+      description: What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Observed Behaviour
+      description: What's the observed behaviour?
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: eNodeB/gNodeB
+      description: If using an eNB or gNB, please identify which vendor/version
+  - type: input
+    attributes:
+      label: UE Models and versions
+      description: Which UE hardware model and version or simulator version are you using?

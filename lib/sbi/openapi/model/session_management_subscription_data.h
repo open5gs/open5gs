@@ -17,7 +17,7 @@
 #include "odb_packet_services.h"
 #include "snssai.h"
 #include "suggested_packet_num_dl.h"
-#include "trace_data_1.h"
+#include "trace_data.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -31,11 +31,12 @@ typedef struct OpenAPI_session_management_subscription_data_s {
     OpenAPI_list_t* shared_vn_group_data_ids;
     char *shared_dnn_configurations_id;
     OpenAPI_odb_packet_services_e odb_packet_services;
-    struct OpenAPI_trace_data_1_s *trace_data;
+    struct OpenAPI_trace_data_s *trace_data;
     char *shared_trace_data_id;
     OpenAPI_list_t* expected_ue_behaviours_list;
     OpenAPI_list_t* suggested_packet_num_dl_list;
     char *_3gpp_charging_characteristics;
+    char *supported_features;
 } OpenAPI_session_management_subscription_data_t;
 
 OpenAPI_session_management_subscription_data_t *OpenAPI_session_management_subscription_data_create(
@@ -45,11 +46,12 @@ OpenAPI_session_management_subscription_data_t *OpenAPI_session_management_subsc
     OpenAPI_list_t* shared_vn_group_data_ids,
     char *shared_dnn_configurations_id,
     OpenAPI_odb_packet_services_e odb_packet_services,
-    OpenAPI_trace_data_1_t *trace_data,
+    OpenAPI_trace_data_t *trace_data,
     char *shared_trace_data_id,
     OpenAPI_list_t* expected_ue_behaviours_list,
     OpenAPI_list_t* suggested_packet_num_dl_list,
-    char *_3gpp_charging_characteristics
+    char *_3gpp_charging_characteristics,
+    char *supported_features
 );
 void OpenAPI_session_management_subscription_data_free(OpenAPI_session_management_subscription_data_t *session_management_subscription_data);
 OpenAPI_session_management_subscription_data_t *OpenAPI_session_management_subscription_data_parseFromJSON(cJSON *session_management_subscription_dataJSON);

@@ -1,7 +1,7 @@
 /*
  * pc5_flow_bit_rates.h
  *
- * 
+ * it shall represent the PC5 Flow Bit Rates
  */
 
 #ifndef _OpenAPI_pc5_flow_bit_rates_H_

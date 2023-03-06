@@ -1,7 +1,7 @@
 /*
  * global_ran_node_id.h
  *
- * 
+ * One of the six attributes n3IwfId, gNbIdm, ngeNbId, wagfId, tngfId, eNbId shall be present. 
  */
 
 #ifndef _OpenAPI_global_ran_node_id_H_

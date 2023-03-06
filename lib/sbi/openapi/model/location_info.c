@@ -5,42 +5,43 @@
 #include "location_info.h"
 
 OpenAPI_location_info_t *OpenAPI_location_info_create(
-    char *supi,
-    char *gpsi,
-    OpenAPI_list_t *registration_location_info_list,
-    char *supported_features
+    OpenAPI_user_location_t *loc,
+    bool is_ratio,
+    int ratio,
+    bool is_confidence,
+    int confidence
 )
 {
     OpenAPI_location_info_t *location_info_local_var = ogs_malloc(sizeof(OpenAPI_location_info_t));
     ogs_assert(location_info_local_var);
 
-    location_info_local_var->supi = supi;
-    location_info_local_var->gpsi = gpsi;
-    location_info_local_var->registration_location_info_list = registration_location_info_list;
-    location_info_local_var->supported_features = supported_features;
+    location_info_local_var->loc = loc;
+    location_info_local_var->is_ratio = is_ratio;
+    location_info_local_var->ratio = ratio;
+    location_info_local_var->is_confidence = is_confidence;
+    location_info_local_var->confidence = confidence;
 
     return location_info_local_var;
 }
 
 void OpenAPI_location_info_free(OpenAPI_location_info_t *location_info)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == location_info) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(location_info->supi);
-    ogs_free(location_info->gpsi);
-    OpenAPI_list_for_each(location_info->registration_location_info_list, node) {
-        OpenAPI_registration_location_info_free(node->data);
+    if (location_info->loc) {
+        OpenAPI_user_location_free(location_info->loc);
+        location_info->loc = NULL;
     }
-    OpenAPI_list_free(location_info->registration_location_info_list);
-    ogs_free(location_info->supported_features);
     ogs_free(location_info);
 }
 
 cJSON *OpenAPI_location_info_convertToJSON(OpenAPI_location_info_t *location_info)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (location_info == NULL) {
         ogs_error("OpenAPI_location_info_convertToJSON() failed [LocationInfo]");
@@ -48,41 +49,31 @@ cJSON *OpenAPI_location_info_convertToJSON(OpenAPI_location_info_t *location_inf
     }
 
     item = cJSON_CreateObject();
-    if (location_info->supi) {
-    if (cJSON_AddStringToObject(item, "supi", location_info->supi) == NULL) {
-        ogs_error("OpenAPI_location_info_convertToJSON() failed [supi]");
+    if (!location_info->loc) {
+        ogs_error("OpenAPI_location_info_convertToJSON() failed [loc]");
+        return NULL;
+    }
+    cJSON *loc_local_JSON = OpenAPI_user_location_convertToJSON(location_info->loc);
+    if (loc_local_JSON == NULL) {
+        ogs_error("OpenAPI_location_info_convertToJSON() failed [loc]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "loc", loc_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_location_info_convertToJSON() failed [loc]");
+        goto end;
+    }
+
+    if (location_info->is_ratio) {
+    if (cJSON_AddNumberToObject(item, "ratio", location_info->ratio) == NULL) {
+        ogs_error("OpenAPI_location_info_convertToJSON() failed [ratio]");
         goto end;
     }
     }
 
-    if (location_info->gpsi) {
-    if (cJSON_AddStringToObject(item, "gpsi", location_info->gpsi) == NULL) {
-        ogs_error("OpenAPI_location_info_convertToJSON() failed [gpsi]");
-        goto end;
-    }
-    }
-
-    cJSON *registration_location_info_listList = cJSON_AddArrayToObject(item, "registrationLocationInfoList");
-    if (registration_location_info_listList == NULL) {
-        ogs_error("OpenAPI_location_info_convertToJSON() failed [registration_location_info_list]");
-        goto end;
-    }
-
-    OpenAPI_lnode_t *registration_location_info_list_node;
-    if (location_info->registration_location_info_list) {
-        OpenAPI_list_for_each(location_info->registration_location_info_list, registration_location_info_list_node) {
-            cJSON *itemLocal = OpenAPI_registration_location_info_convertToJSON(registration_location_info_list_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_location_info_convertToJSON() failed [registration_location_info_list]");
-                goto end;
-            }
-            cJSON_AddItemToArray(registration_location_info_listList, itemLocal);
-        }
-    }
-
-    if (location_info->supported_features) {
-    if (cJSON_AddStringToObject(item, "supportedFeatures", location_info->supported_features) == NULL) {
-        ogs_error("OpenAPI_location_info_convertToJSON() failed [supported_features]");
+    if (location_info->is_confidence) {
+    if (cJSON_AddNumberToObject(item, "confidence", location_info->confidence) == NULL) {
+        ogs_error("OpenAPI_location_info_convertToJSON() failed [confidence]");
         goto end;
     }
     }
@@ -94,73 +85,48 @@ end:
 OpenAPI_location_info_t *OpenAPI_location_info_parseFromJSON(cJSON *location_infoJSON)
 {
     OpenAPI_location_info_t *location_info_local_var = NULL;
-    cJSON *supi = cJSON_GetObjectItemCaseSensitive(location_infoJSON, "supi");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *loc = NULL;
+    OpenAPI_user_location_t *loc_local_nonprim = NULL;
+    cJSON *ratio = NULL;
+    cJSON *confidence = NULL;
+    loc = cJSON_GetObjectItemCaseSensitive(location_infoJSON, "loc");
+    if (!loc) {
+        ogs_error("OpenAPI_location_info_parseFromJSON() failed [loc]");
+        goto end;
+    }
+    loc_local_nonprim = OpenAPI_user_location_parseFromJSON(loc);
 
-    if (supi) {
-    if (!cJSON_IsString(supi)) {
-        ogs_error("OpenAPI_location_info_parseFromJSON() failed [supi]");
+    ratio = cJSON_GetObjectItemCaseSensitive(location_infoJSON, "ratio");
+    if (ratio) {
+    if (!cJSON_IsNumber(ratio)) {
+        ogs_error("OpenAPI_location_info_parseFromJSON() failed [ratio]");
         goto end;
     }
     }
 
-    cJSON *gpsi = cJSON_GetObjectItemCaseSensitive(location_infoJSON, "gpsi");
-
-    if (gpsi) {
-    if (!cJSON_IsString(gpsi)) {
-        ogs_error("OpenAPI_location_info_parseFromJSON() failed [gpsi]");
-        goto end;
-    }
-    }
-
-    cJSON *registration_location_info_list = cJSON_GetObjectItemCaseSensitive(location_infoJSON, "registrationLocationInfoList");
-    if (!registration_location_info_list) {
-        ogs_error("OpenAPI_location_info_parseFromJSON() failed [registration_location_info_list]");
-        goto end;
-    }
-
-    OpenAPI_list_t *registration_location_info_listList;
-    cJSON *registration_location_info_list_local_nonprimitive;
-    if (!cJSON_IsArray(registration_location_info_list)){
-        ogs_error("OpenAPI_location_info_parseFromJSON() failed [registration_location_info_list]");
-        goto end;
-    }
-
-    registration_location_info_listList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(registration_location_info_list_local_nonprimitive, registration_location_info_list ) {
-        if (!cJSON_IsObject(registration_location_info_list_local_nonprimitive)) {
-            ogs_error("OpenAPI_location_info_parseFromJSON() failed [registration_location_info_list]");
-            goto end;
-        }
-        OpenAPI_registration_location_info_t *registration_location_info_listItem = OpenAPI_registration_location_info_parseFromJSON(registration_location_info_list_local_nonprimitive);
-
-        if (!registration_location_info_listItem) {
-            ogs_error("No registration_location_info_listItem");
-            OpenAPI_list_free(registration_location_info_listList);
-            goto end;
-        }
-
-        OpenAPI_list_add(registration_location_info_listList, registration_location_info_listItem);
-    }
-
-    cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(location_infoJSON, "supportedFeatures");
-
-    if (supported_features) {
-    if (!cJSON_IsString(supported_features)) {
-        ogs_error("OpenAPI_location_info_parseFromJSON() failed [supported_features]");
+    confidence = cJSON_GetObjectItemCaseSensitive(location_infoJSON, "confidence");
+    if (confidence) {
+    if (!cJSON_IsNumber(confidence)) {
+        ogs_error("OpenAPI_location_info_parseFromJSON() failed [confidence]");
         goto end;
     }
     }
 
     location_info_local_var = OpenAPI_location_info_create (
-        supi ? ogs_strdup(supi->valuestring) : NULL,
-        gpsi ? ogs_strdup(gpsi->valuestring) : NULL,
-        registration_location_info_listList,
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL
+        loc_local_nonprim,
+        ratio ? true : false,
+        ratio ? ratio->valuedouble : 0,
+        confidence ? true : false,
+        confidence ? confidence->valuedouble : 0
     );
 
     return location_info_local_var;
 end:
+    if (loc_local_nonprim) {
+        OpenAPI_user_location_free(loc_local_nonprim);
+        loc_local_nonprim = NULL;
+    }
     return NULL;
 }
 

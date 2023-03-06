@@ -1,7 +1,7 @@
 /*
  * lte_v2x_auth.h
  *
- * 
+ * Contains LTE V2X services authorized information.
  */
 
 #ifndef _OpenAPI_lte_v2x_auth_H_

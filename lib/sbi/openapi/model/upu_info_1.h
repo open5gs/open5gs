@@ -21,20 +21,26 @@ extern "C" {
 typedef struct OpenAPI_upu_info_1_s OpenAPI_upu_info_1_t;
 typedef struct OpenAPI_upu_info_1_s {
     OpenAPI_list_t *upu_data_list;
+    bool is_upu_reg_ind;
     int upu_reg_ind;
+    bool is_upu_ack_ind;
     int upu_ack_ind;
     char *upu_mac_iausf;
     char *counter_upu;
     char *provisioning_time;
+    char *upu_transparent_container;
 } OpenAPI_upu_info_1_t;
 
 OpenAPI_upu_info_1_t *OpenAPI_upu_info_1_create(
     OpenAPI_list_t *upu_data_list,
+    bool is_upu_reg_ind,
     int upu_reg_ind,
+    bool is_upu_ack_ind,
     int upu_ack_ind,
     char *upu_mac_iausf,
     char *counter_upu,
-    char *provisioning_time
+    char *provisioning_time,
+    char *upu_transparent_container
 );
 void OpenAPI_upu_info_1_free(OpenAPI_upu_info_1_t *upu_info_1);
 OpenAPI_upu_info_1_t *OpenAPI_upu_info_1_parseFromJSON(cJSON *upu_info_1JSON);

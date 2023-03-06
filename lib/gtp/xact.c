@@ -38,8 +38,6 @@ static ogs_gtp_xact_stage_t ogs_gtp2_xact_get_stage(uint8_t type, uint32_t xid);
 static ogs_gtp_xact_stage_t ogs_gtp1_xact_get_stage(uint8_t type, uint32_t xid);
 static int ogs_gtp_xact_delete(ogs_gtp_xact_t *xact);
 static int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type);
-static ogs_gtp_xact_t *ogs_gtp_xact_find_by_xid(
-        ogs_gtp_node_t *gnode, uint8_t type, uint8_t gtp_version, uint32_t xid);
 
 static void response_timeout(void *data);
 static void holding_timeout(void *data);
@@ -443,7 +441,6 @@ int ogs_gtp_xact_update_tx(ogs_gtp_xact_t *xact,
 
 static int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
 {
-    int rv = OGS_OK;
     char buf[OGS_ADDRSTRLEN];
     ogs_gtp_xact_stage_t stage;
 
@@ -491,8 +488,7 @@ static int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
                             OGS_ADDR(&xact->gnode->addr,
                                 buf),
                             OGS_PORT(&xact->gnode->addr));
-                    rv = ogs_gtp_sendto(xact->gnode, pkbuf);
-                    ogs_expect(rv == OGS_OK);
+                    ogs_expect(OGS_OK == ogs_gtp_sendto(xact->gnode, pkbuf));
                 } else {
                     ogs_warn("[%d] %s Request Duplicated. Discard!"
                             " for step %d type %d peer [%s]:%d",
@@ -557,8 +553,7 @@ static int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
                             OGS_ADDR(&xact->gnode->addr,
                                 buf),
                             OGS_PORT(&xact->gnode->addr));
-                    rv = ogs_gtp_sendto(xact->gnode, pkbuf);
-                    ogs_expect(rv == OGS_OK);
+                    ogs_expect(OGS_OK == ogs_gtp_sendto(xact->gnode, pkbuf));
                 } else {
                     ogs_warn("[%d] %s Request Duplicated. Discard!"
                             " for step %d type %d peer [%s]:%d",
@@ -726,11 +721,7 @@ int ogs_gtp_xact_commit(ogs_gtp_xact_t *xact)
     pkbuf = xact->seq[xact->step-1].pkbuf;
     ogs_assert(pkbuf);
 
-    if (ogs_gtp_sendto(xact->gnode, pkbuf) != OGS_OK) {
-        ogs_error("ogs_gtp_sendto() failed");
-        ogs_gtp_xact_delete(xact);
-        return OGS_ERROR;
-    }
+    ogs_expect(OGS_OK == ogs_gtp_sendto(xact->gnode, pkbuf));
 
     return OGS_OK;
 }
@@ -761,10 +752,7 @@ static void response_timeout(void *data)
         pkbuf = xact->seq[xact->step-1].pkbuf;
         ogs_assert(pkbuf);
 
-        if (ogs_gtp_sendto(xact->gnode, pkbuf) != OGS_OK) {
-            ogs_error("ogs_gtp_sendto() failed");
-            goto out;
-        }
+        ogs_expect(OGS_OK == ogs_gtp_sendto(xact->gnode, pkbuf));
     } else {
         ogs_warn("[%d] %s No Reponse. Give up! "
                 "for step %d type %d peer [%s]:%d",
@@ -779,11 +767,6 @@ static void response_timeout(void *data)
 
         ogs_gtp_xact_delete(xact);
     }
-
-    return;
-
-out:
-    ogs_gtp_xact_delete(xact);
 }
 
 static void holding_timeout(void *data)
@@ -821,13 +804,19 @@ static void holding_timeout(void *data)
 int ogs_gtp1_xact_receive(
         ogs_gtp_node_t *gnode, ogs_gtp1_header_t *h, ogs_gtp_xact_t **xact)
 {
-    char buf[OGS_ADDRSTRLEN];
     int rv;
+    char buf[OGS_ADDRSTRLEN];
+
+    uint8_t type;
+    uint32_t sqn, xid;
+    ogs_gtp_xact_stage_t stage;
+    ogs_list_t *list = NULL;
     ogs_gtp_xact_t *new = NULL;
-    uint16_t sqn;
 
     ogs_assert(gnode);
     ogs_assert(h);
+
+    type = h->type;
 
     if (!h->s) {
         ogs_error("ogs_gtp_xact_update_rx() failed, pkt has no SQN");
@@ -835,7 +824,41 @@ int ogs_gtp1_xact_receive(
     }
     sqn = h->sqn;
 
-    new = ogs_gtp_xact_find_by_xid(gnode, h->type, 1, OGS_GTP1_SQN_TO_XID(sqn));
+    xid = OGS_GTP1_SQN_TO_XID(sqn);
+    stage = ogs_gtp1_xact_get_stage(type, xid);
+
+    switch (stage) {
+    case GTP_XACT_INITIAL_STAGE:
+        list = &gnode->remote_list;
+        break;
+    case GTP_XACT_INTERMEDIATE_STAGE:
+        list = &gnode->local_list;
+        break;
+    case GTP_XACT_FINAL_STAGE:
+        list = &gnode->local_list; // FIXME: is this correct?
+        break;
+    default:
+        ogs_error("[%d] Unexpected type %u from GTPv1 peer [%s]:%d",
+                xid, type, OGS_ADDR(&gnode->addr, buf), OGS_PORT(&gnode->addr));
+        return OGS_ERROR;
+    }
+
+    ogs_assert(list);
+    ogs_list_for_each(list, new) {
+        if (new->gtp_version == 1 && new->xid == xid) {
+            ogs_debug("[%d] %s Find GTPv%u peer [%s]:%d",
+                    new->xid,
+                    new->org == OGS_GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
+                    new->gtp_version,
+                    OGS_ADDR(&gnode->addr, buf),
+                    OGS_PORT(&gnode->addr));
+            break;
+        }
+    }
+
+    ogs_debug("[%d] Cannot find xact type %u from GTPv1 peer [%s]:%d",
+            xid, type, OGS_ADDR(&gnode->addr, buf), OGS_PORT(&gnode->addr));
+
     if (!new)
         new = ogs_gtp_xact_remote_create(gnode, 1, sqn);
     ogs_assert(new);
@@ -846,7 +869,7 @@ int ogs_gtp1_xact_receive(
             OGS_ADDR(&gnode->addr, buf),
             OGS_PORT(&gnode->addr));
 
-    rv = ogs_gtp_xact_update_rx(new, h->type);
+    rv = ogs_gtp_xact_update_rx(new, type);
     if (rv == OGS_ERROR) {
         ogs_error("ogs_gtp_xact_update_rx() failed");
         ogs_gtp_xact_delete(new);
@@ -862,18 +885,69 @@ int ogs_gtp1_xact_receive(
 int ogs_gtp_xact_receive(
         ogs_gtp_node_t *gnode, ogs_gtp2_header_t *h, ogs_gtp_xact_t **xact)
 {
-    char buf[OGS_ADDRSTRLEN];
     int rv;
+    char buf[OGS_ADDRSTRLEN];
+
+    uint8_t type;
+    uint32_t sqn, xid;
+    ogs_gtp_xact_stage_t stage;
+    ogs_list_t *list = NULL;
     ogs_gtp_xact_t *new = NULL;
-    uint32_t sqn;
 
     ogs_assert(gnode);
     ogs_assert(h);
 
+    type = h->type;
+
     if (h->teid_presence) sqn = h->sqn;
     else sqn = h->sqn_only;
 
-    new = ogs_gtp_xact_find_by_xid(gnode, h->type, 2, OGS_GTP2_SQN_TO_XID(sqn));
+    xid = OGS_GTP2_SQN_TO_XID(sqn);
+    stage = ogs_gtp2_xact_get_stage(type, xid);
+
+    switch (stage) {
+    case GTP_XACT_INITIAL_STAGE:
+        list = &gnode->remote_list;
+        break;
+    case GTP_XACT_INTERMEDIATE_STAGE:
+        list = &gnode->local_list;
+        break;
+    case GTP_XACT_FINAL_STAGE:
+        if (xid & OGS_GTP_CMD_XACT_ID) {
+            if (type == OGS_GTP2_MODIFY_BEARER_FAILURE_INDICATION_TYPE ||
+                type == OGS_GTP2_DELETE_BEARER_FAILURE_INDICATION_TYPE ||
+                type == OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE) {
+                list = &gnode->local_list;
+            } else {
+                list = &gnode->remote_list;
+            }
+        } else {
+            list = &gnode->local_list;
+        }
+        break;
+    default:
+        ogs_error("[%d] Unexpected type %u from GTPv2 peer [%s]:%d",
+                xid, type, OGS_ADDR(&gnode->addr, buf), OGS_PORT(&gnode->addr));
+        return OGS_ERROR;
+    }
+
+    ogs_assert(list);
+    ogs_list_for_each(list, new) {
+        if (new->gtp_version == 2 && new->xid == xid) {
+            ogs_debug("[%d] %s Find GTPv%u peer [%s]:%d",
+                    new->xid,
+                    new->org == OGS_GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
+                    new->gtp_version,
+                    OGS_ADDR(&gnode->addr, buf),
+                    OGS_PORT(&gnode->addr));
+            break;
+        }
+    }
+
+    ogs_debug("[%d] Cannot find xact type %u from GTPv2 peer [%s]:%d",
+            xid, type,
+            OGS_ADDR(&gnode->addr, buf), OGS_PORT(&gnode->addr));
+
     if (!new)
         new = ogs_gtp_xact_remote_create(gnode, 2, sqn);
     ogs_assert(new);
@@ -884,7 +958,7 @@ int ogs_gtp_xact_receive(
             OGS_ADDR(&gnode->addr, buf),
             OGS_PORT(&gnode->addr));
 
-    rv = ogs_gtp_xact_update_rx(new, h->type);
+    rv = ogs_gtp_xact_update_rx(new, type);
     if (rv == OGS_ERROR) {
         ogs_error("ogs_gtp_xact_update_rx() failed");
         ogs_gtp_xact_delete(new);
@@ -1024,75 +1098,6 @@ static ogs_gtp_xact_stage_t ogs_gtp2_xact_get_stage(uint8_t type, uint32_t xid)
     }
 
     return stage;
-}
-
-static ogs_gtp_xact_t *ogs_gtp_xact_find_by_xid(
-        ogs_gtp_node_t *gnode, uint8_t type, uint8_t gtp_version, uint32_t xid)
-{
-    char buf[OGS_ADDRSTRLEN];
-
-    ogs_list_t *list = NULL;
-    ogs_gtp_xact_t *xact = NULL;
-    ogs_gtp_xact_stage_t stage;
-
-    ogs_assert(gnode);
-
-    if (gtp_version == 1)
-        stage = ogs_gtp1_xact_get_stage(type, xid);
-    else
-        stage = ogs_gtp2_xact_get_stage(type, xid);
-
-    switch (stage) {
-    case GTP_XACT_INITIAL_STAGE:
-        list = &gnode->remote_list;
-        break;
-    case GTP_XACT_INTERMEDIATE_STAGE:
-        list = &gnode->local_list;
-        break;
-    case GTP_XACT_FINAL_STAGE:
-        switch (gtp_version) {
-        case 1:
-            list = &gnode->local_list; // FIXME: is this correct?
-            break;
-        case 2:
-        default:
-            if (xid & OGS_GTP_CMD_XACT_ID) {
-                if (type == OGS_GTP2_MODIFY_BEARER_FAILURE_INDICATION_TYPE ||
-                    type == OGS_GTP2_DELETE_BEARER_FAILURE_INDICATION_TYPE ||
-                    type == OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE) {
-                    list = &gnode->local_list;
-                } else {
-                    list = &gnode->remote_list;
-                }
-            } else {
-                list = &gnode->local_list;
-            }
-            break;
-        }
-        break;
-    default:
-        ogs_warn("Unexpected stage %u.", stage);
-        ogs_assert_if_reached();
-        return NULL;
-    }
-
-    ogs_assert(list);
-    ogs_list_for_each(list, xact) {
-        if (xact->gtp_version == gtp_version && xact->xid == xid) {
-            ogs_debug("[%d] %s Find GTPv%u peer [%s]:%d",
-                    xact->xid,
-                    xact->org == OGS_GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-                    xact->gtp_version,
-                    OGS_ADDR(&gnode->addr, buf),
-                    OGS_PORT(&gnode->addr));
-            return xact;
-        }
-    }
-
-    ogs_debug("[%d] Cannot find xact type %u from GTPv%u peer [%s]:%d",
-            xid, type, gtp_version,
-            OGS_ADDR(&gnode->addr, buf), OGS_PORT(&gnode->addr));
-    return NULL;
 }
 
 void ogs_gtp_xact_associate(ogs_gtp_xact_t *xact1, ogs_gtp_xact_t *xact2)

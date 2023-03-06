@@ -1,7 +1,7 @@
 /*
  * auth_result.h
  *
- * 
+ * Indicates the result of the authentication.
  */
 
 #ifndef _OpenAPI_auth_result_H_

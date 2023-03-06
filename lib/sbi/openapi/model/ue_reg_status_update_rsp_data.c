@@ -18,16 +18,18 @@ OpenAPI_ue_reg_status_update_rsp_data_t *OpenAPI_ue_reg_status_update_rsp_data_c
 
 void OpenAPI_ue_reg_status_update_rsp_data_free(OpenAPI_ue_reg_status_update_rsp_data_t *ue_reg_status_update_rsp_data)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == ue_reg_status_update_rsp_data) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(ue_reg_status_update_rsp_data);
 }
 
 cJSON *OpenAPI_ue_reg_status_update_rsp_data_convertToJSON(OpenAPI_ue_reg_status_update_rsp_data_t *ue_reg_status_update_rsp_data)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (ue_reg_status_update_rsp_data == NULL) {
         ogs_error("OpenAPI_ue_reg_status_update_rsp_data_convertToJSON() failed [UeRegStatusUpdateRspData]");
@@ -47,12 +49,13 @@ end:
 OpenAPI_ue_reg_status_update_rsp_data_t *OpenAPI_ue_reg_status_update_rsp_data_parseFromJSON(cJSON *ue_reg_status_update_rsp_dataJSON)
 {
     OpenAPI_ue_reg_status_update_rsp_data_t *ue_reg_status_update_rsp_data_local_var = NULL;
-    cJSON *reg_status_transfer_complete = cJSON_GetObjectItemCaseSensitive(ue_reg_status_update_rsp_dataJSON, "regStatusTransferComplete");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *reg_status_transfer_complete = NULL;
+    reg_status_transfer_complete = cJSON_GetObjectItemCaseSensitive(ue_reg_status_update_rsp_dataJSON, "regStatusTransferComplete");
     if (!reg_status_transfer_complete) {
         ogs_error("OpenAPI_ue_reg_status_update_rsp_data_parseFromJSON() failed [reg_status_transfer_complete]");
         goto end;
     }
-
     if (!cJSON_IsBool(reg_status_transfer_complete)) {
         ogs_error("OpenAPI_ue_reg_status_update_rsp_data_parseFromJSON() failed [reg_status_transfer_complete]");
         goto end;

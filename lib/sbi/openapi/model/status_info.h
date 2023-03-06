@@ -1,7 +1,7 @@
 /*
  * status_info.h
  *
- * 
+ * Status of SM context or of PDU session
  */
 
 #ifndef _OpenAPI_status_info_H_

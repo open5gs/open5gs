@@ -6,7 +6,7 @@
 
 char* OpenAPI_up_interface_type_ToString(OpenAPI_up_interface_type_e up_interface_type)
 {
-    const char *up_interface_typeArray[] =  { "NULL", "N3", "N6", "N9", "DATA_FORWARDING" };
+    const char *up_interface_typeArray[] =  { "NULL", "N3", "N6", "N9", "DATA_FORWARDING", "N3MB", "N6MB", "N19MB", "NMB9" };
     size_t sizeofArray = sizeof(up_interface_typeArray) / sizeof(up_interface_typeArray[0]);
     if (up_interface_type < sizeofArray)
         return (char *)up_interface_typeArray[up_interface_type];
@@ -17,7 +17,7 @@ char* OpenAPI_up_interface_type_ToString(OpenAPI_up_interface_type_e up_interfac
 OpenAPI_up_interface_type_e OpenAPI_up_interface_type_FromString(char* up_interface_type)
 {
     int stringToReturn = 0;
-    const char *up_interface_typeArray[] =  { "NULL", "N3", "N6", "N9", "DATA_FORWARDING" };
+    const char *up_interface_typeArray[] =  { "NULL", "N3", "N6", "N9", "DATA_FORWARDING", "N3MB", "N6MB", "N19MB", "NMB9" };
     size_t sizeofArray = sizeof(up_interface_typeArray) / sizeof(up_interface_typeArray[0]);
     while (stringToReturn < sizeofArray) {
         if (strcmp(up_interface_type, up_interface_typeArray[stringToReturn]) == 0) {

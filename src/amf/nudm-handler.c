@@ -150,11 +150,12 @@ int amf_nudm_sdm_handle_provisioned(
             return OGS_ERROR;
         }
 
-        ogs_assert(true ==
-            amf_ue_sbi_discover_and_send(
+        r = amf_ue_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
                 amf_nudm_sdm_build_get,
-                amf_ue, state, (char *)OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA));
+                amf_ue, state, (char *)OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
         break;
 
     CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA)
@@ -223,12 +224,13 @@ int amf_nudm_sdm_handle_provisioned(
                 }
             }
         }
-        ogs_assert(true ==
-            amf_ue_sbi_discover_and_send(
+        r = amf_ue_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
                 amf_nudm_sdm_build_get,
                 amf_ue, state,
-                (char *)OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA));
+                (char *)OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
         break;
 
     CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA)
@@ -236,18 +238,20 @@ int amf_nudm_sdm_handle_provisioned(
         if (amf_ue->data_change_subscription_id) {
             /* we already have a SDM subscription to UDM; continue without
              * subscribing again */
-            ogs_assert(true ==
-                amf_ue_sbi_discover_and_send(
+            r = amf_ue_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,
                     amf_npcf_am_policy_control_build_create,
-                    amf_ue, state, NULL));
+                    amf_ue, state, NULL);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
         }
         else {
-            ogs_assert(true ==
-                amf_ue_sbi_discover_and_send(
+            r = amf_ue_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
                     amf_nudm_sdm_build_subscription,
-                    amf_ue, state, (char *)OGS_SBI_RESOURCE_NAME_AM_DATA));
+                    amf_ue, state, (char *)OGS_SBI_RESOURCE_NAME_AM_DATA);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
         }
         break;
 
@@ -299,10 +303,11 @@ int amf_nudm_sdm_handle_provisioned(
 
         ogs_sbi_header_free(&header);
 
-        ogs_assert(true ==
-            amf_ue_sbi_discover_and_send(
+        r = amf_ue_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,
-                amf_npcf_am_policy_control_build_create, amf_ue, state, NULL));
+                amf_npcf_am_policy_control_build_create, amf_ue, state, NULL);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
         break;
 
     DEFAULT

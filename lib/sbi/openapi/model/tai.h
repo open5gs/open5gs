@@ -1,7 +1,7 @@
 /*
  * tai.h
  *
- * 
+ * Contains the tracking area identity as described in 3GPP 23.003
  */
 
 #ifndef _OpenAPI_tai_H_

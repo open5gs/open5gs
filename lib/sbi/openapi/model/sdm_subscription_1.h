@@ -13,9 +13,10 @@
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
 #include "context_info.h"
+#include "immediate_report.h"
 #include "plmn_id_1.h"
 #include "snssai.h"
-#include "subscription_data_sets_1.h"
+#include "ue_context_in_smf_data_sub_filter_1.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -36,9 +37,15 @@ typedef struct OpenAPI_sdm_subscription_1_s {
     struct OpenAPI_plmn_id_1_s *plmn_id;
     bool is_immediate_report;
     int immediate_report;
-    struct OpenAPI_subscription_data_sets_1_s *report;
+    struct OpenAPI_immediate_report_s *report;
     char *supported_features;
     struct OpenAPI_context_info_s *context_info;
+    bool is_nf_change_filter;
+    int nf_change_filter;
+    bool is_unique_subscription;
+    int unique_subscription;
+    OpenAPI_list_t *reset_ids;
+    struct OpenAPI_ue_context_in_smf_data_sub_filter_1_s *ue_con_smf_data_sub_filter;
 } OpenAPI_sdm_subscription_1_t;
 
 OpenAPI_sdm_subscription_1_t *OpenAPI_sdm_subscription_1_create(
@@ -55,9 +62,15 @@ OpenAPI_sdm_subscription_1_t *OpenAPI_sdm_subscription_1_create(
     OpenAPI_plmn_id_1_t *plmn_id,
     bool is_immediate_report,
     int immediate_report,
-    OpenAPI_subscription_data_sets_1_t *report,
+    OpenAPI_immediate_report_t *report,
     char *supported_features,
-    OpenAPI_context_info_t *context_info
+    OpenAPI_context_info_t *context_info,
+    bool is_nf_change_filter,
+    int nf_change_filter,
+    bool is_unique_subscription,
+    int unique_subscription,
+    OpenAPI_list_t *reset_ids,
+    OpenAPI_ue_context_in_smf_data_sub_filter_1_t *ue_con_smf_data_sub_filter
 );
 void OpenAPI_sdm_subscription_1_free(OpenAPI_sdm_subscription_1_t *sdm_subscription_1);
 OpenAPI_sdm_subscription_1_t *OpenAPI_sdm_subscription_1_parseFromJSON(cJSON *sdm_subscription_1JSON);

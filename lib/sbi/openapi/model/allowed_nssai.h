@@ -1,7 +1,7 @@
 /*
  * allowed_nssai.h
  *
- * 
+ * Contains an array of allowed S-NSSAI that constitute the allowed NSSAI information for the authorized network slice information 
  */
 
 #ifndef _OpenAPI_allowed_nssai_H_

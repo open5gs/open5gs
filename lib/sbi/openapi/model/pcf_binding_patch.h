@@ -1,7 +1,7 @@
 /*
  * pcf_binding_patch.h
  *
- * 
+ * Identifies an Individual PCF binding used in an HTTP Patch method.
  */
 
 #ifndef _OpenAPI_pcf_binding_patch_H_

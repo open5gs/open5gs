@@ -21,8 +21,8 @@
 /*******************************************************************************
  * This file had been created by gtp1-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2022-06-30 08:56:31.627300 by ubuntu
- * from 29060-g00.docx
+ * Created on: 2023-03-05 12:29:34.536821 by acetcom
+ * from 29060-h40.docx
  ******************************************************************************/
 
 #if !defined(OGS_GTP_INSIDE) && !defined(OGS_GTP_COMPILATION)
@@ -856,7 +856,9 @@ typedef struct ogs_gtp1_sgsn_context_response_s {
     ogs_gtp1_tlv_mm_context_t mm_context;
     ogs_gtp1_tlv_pdp_context_t pdp_context;
     ogs_gtp1_tlv_gsn_address_t sgsn_address_for_control_plane;
-    ogs_gtp1_tlv_pdp_context_prioritization_t pdp_context_prioritization_;
+    ogs_gtp1_tlv_gsn_address_t alternative_ggsn_address_for_control_plane;
+    ogs_gtp1_tlv_gsn_address_t alternative_ggsn_address_for_user_traffic;
+    ogs_gtp1_tlv_pdp_context_prioritization_t pdp_context_prioritization;
     ogs_gtp1_tlv_mbms_ue_context_t mbms_ue_context;
     ogs_gtp1_tlv_rfsp_index_t subscribed_rfsp_index;
     ogs_gtp1_tlv_rfsp_index_t rfsp_index_in_use;
@@ -874,8 +876,6 @@ typedef struct ogs_gtp1_sgsn_context_response_s {
     ogs_gtp1_tlv_extended_common_flags_ii_t extended_common_flags_ii;
     ogs_gtp1_tlv_scef_pdn_connection_t ue_scef_pdn_connection;
     ogs_gtp1_tlv_iov_updates_counter_t iov_updates_counter;
-    ogs_gtp1_tlv_gsn_address_t alternative_ggsn_address_for_control_plane;
-    ogs_gtp1_tlv_gsn_address_t alternative_ggsn_address_for_user_traffic;
 } ogs_gtp1_sgsn_context_response_t;
 
 typedef struct ogs_gtp1_sgsn_context_acknowledge_s {
@@ -895,13 +895,15 @@ typedef struct ogs_gtp1_forward_relocation_request_s {
     ogs_gtp1_tlv_mm_context_t mm_context;
     ogs_gtp1_tlv_pdp_context_t pdp_context;
     ogs_gtp1_tlv_gsn_address_t sgsn_address_for_control_plane;
+    ogs_gtp1_tlv_gsn_address_t alternative_ggsn_address_for_control_plane;
+    ogs_gtp1_tlv_gsn_address_t alternative_ggsn_address_for_user_traffic;
     ogs_gtp1_tlv_target_identification_t target_identification;
     ogs_gtp1_tlv_utran_transparent_container_t utran_transparent_container;
-    ogs_gtp1_tlv_pdp_context_prioritization_t pdp_context_prioritization_;
+    ogs_gtp1_tlv_pdp_context_prioritization_t pdp_context_prioritization;
     ogs_gtp1_tlv_mbms_ue_context_t mbms_ue_context;
     ogs_gtp1_tlv_selected_plmn_id_t selected_plmn_id;
     ogs_gtp1_tlv_bss_container_t bss_container;
-    ogs_gtp1_tlv_cell_identification_t cell_identification_;
+    ogs_gtp1_tlv_cell_identification_t cell_identification;
     ogs_gtp1_tlv_bssgp_cause_t bssgp_cause;
     ogs_gtp1_tlv_ps_handover_xid_parameters_t ps_handover_xid_parameters;
     ogs_gtp1_tlv_direct_tunnel_flags_t direct_tunnel_flags;
@@ -928,8 +930,6 @@ typedef struct ogs_gtp1_forward_relocation_request_s {
     ogs_gtp1_tlv_ue_usage_type_t ue_usage_type;
     ogs_gtp1_tlv_extended_common_flags_ii_t extended_common_flags_ii;
     ogs_gtp1_tlv_scef_pdn_connection_t ue_scef_pdn_connection;
-    ogs_gtp1_tlv_gsn_address_t alternative_ggsn_address_for_control_plane;
-    ogs_gtp1_tlv_gsn_address_t alternative_ggsn_address_for_user_traffic;
 } ogs_gtp1_forward_relocation_request_t;
 
 typedef struct ogs_gtp1_forward_relocation_response_s {
@@ -965,7 +965,9 @@ typedef struct ogs_gtp1_relocation_cancel_response_s {
 } ogs_gtp1_relocation_cancel_response_t;
 
 typedef struct ogs_gtp1_forward_srns_context_s {
-    ogs_gtp1_tlv_cause_t cause;
+    ogs_gtp1_tlv_rab_context_t rab_context;
+    ogs_gtp1_tlv_source_rnc_pdcp_context_info_t source_rnc_pdcp_context_info;
+    ogs_gtp1_tlv_pdu_numbers_t pdu_numbers;
 } ogs_gtp1_forward_srns_context_t;
 
 typedef struct ogs_gtp1_forward_relocation_complete_acknowledge_s {
@@ -973,9 +975,7 @@ typedef struct ogs_gtp1_forward_relocation_complete_acknowledge_s {
 } ogs_gtp1_forward_relocation_complete_acknowledge_t;
 
 typedef struct ogs_gtp1_forward_srns_context_acknowledge_s {
-    ogs_gtp1_tlv_rab_context_t rab_context;
-    ogs_gtp1_tlv_source_rnc_pdcp_context_info_t source_rnc_pdcp_context_info;
-    ogs_gtp1_tlv_pdu_numbers_t pdu_numbers;
+    ogs_gtp1_tlv_cause_t cause;
 } ogs_gtp1_forward_srns_context_acknowledge_t;
 
 typedef struct ogs_gtp1_ue_registration_query_request_s {
@@ -983,7 +983,7 @@ typedef struct ogs_gtp1_ue_registration_query_request_s {
 } ogs_gtp1_ue_registration_query_request_t;
 
 typedef struct ogs_gtp1_ue_registration_query_response_s {
-    ogs_gtp1_tlv_cause_t cause_;
+    ogs_gtp1_tlv_cause_t cause;
     ogs_gtp1_tlv_imsi_t imsi;
     ogs_gtp1_tlv_selected_plmn_id_t selected_plmn_id;
 } ogs_gtp1_ue_registration_query_response_t;
@@ -1086,6 +1086,15 @@ typedef struct ogs_gtp1_update_mbms_context_response_s {
     ogs_gtp1_tlv_charging_gateway_address_t alternative_charging_gateway_address;
 } ogs_gtp1_update_mbms_context_response_t;
 
+typedef struct ogs_gtp1_delete_mbms_context_request_s {
+    ogs_gtp1_tlv_imsi_t imsi;
+    ogs_gtp1_tlv_tunnel_endpoint_identifier_control_plane_t tunnel_endpoint_identifier_control_plane;
+    ogs_gtp1_tlv_end_user_address_t end_user_address;
+    ogs_gtp1_tlv_access_point_name_t access_point_name;
+    ogs_gtp1_tlv_mbms_protocol_configuration_options_t mbms_protocol_configuration_options;
+    ogs_gtp1_tlv_enhanced_nsapi_t enhanced_nsapi;
+} ogs_gtp1_delete_mbms_context_request_t;
+
 typedef struct ogs_gtp1_delete_mbms_context_response_s {
     ogs_gtp1_tlv_cause_t cause;
     ogs_gtp1_tlv_mbms_protocol_configuration_options_t mbms_protocol_configuration_options;
@@ -1129,11 +1138,11 @@ typedef struct ogs_gtp1_mbms_session_start_request_s {
     ogs_gtp1_tlv_mbms_service_area_t mbms_service_area;
     ogs_gtp1_tlv_mbms_session_identifier_t mbms_session_identifier;
     ogs_gtp1_tlv_mbms_2g_3g_indicator_t mbms_2g_3g_indicator;
-    ogs_gtp1_tlv_mbms_session_duration_t mbms_session_duration_;
+    ogs_gtp1_tlv_mbms_session_duration_t mbms_session_duration;
     ogs_gtp1_tlv_mbms_session_repetition_number_t mbms_session_repetition_number;
     ogs_gtp1_tlv_mbms_time_to_data_transfer_t mbms_time_to_data_transfer;
     ogs_gtp1_tlv_mbms_flow_identifier_t mbms_flow_identifier;
-    ogs_gtp1_tlv_mbms_ip_multicast_distribution_t mbms_ip_multicast_distribution_;
+    ogs_gtp1_tlv_mbms_ip_multicast_distribution_t mbms_ip_multicast_distribution;
 } ogs_gtp1_mbms_session_start_request_t;
 
 typedef struct ogs_gtp1_mbms_session_start_response_s {
@@ -1226,6 +1235,7 @@ typedef struct ogs_gtp1_message_s {
         ogs_gtp1_create_mbms_context_response_t create_mbms_context_response;
         ogs_gtp1_update_mbms_context_request_t update_mbms_context_request;
         ogs_gtp1_update_mbms_context_response_t update_mbms_context_response;
+        ogs_gtp1_delete_mbms_context_request_t delete_mbms_context_request;
         ogs_gtp1_delete_mbms_context_response_t delete_mbms_context_response;
         ogs_gtp1_mbms_registration_request_t mbms_registration_request;
         ogs_gtp1_mbms_registration_response_t mbms_registration_response;

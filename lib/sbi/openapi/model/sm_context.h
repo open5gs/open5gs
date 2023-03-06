@@ -1,7 +1,7 @@
 /*
  * sm_context.h
  *
- * 
+ * Complete SM Context
  */
 
 #ifndef _OpenAPI_sm_context_H_
@@ -24,6 +24,7 @@
 #include "qos_flow_tunnel.h"
 #include "redundant_pdu_session_information.h"
 #include "roaming_charging_profile.h"
+#include "satellite_backhaul_category.h"
 #include "sbi_binding_level.h"
 #include "snssai.h"
 #include "tunnel_info.h"
@@ -45,12 +46,16 @@ typedef struct OpenAPI_sm_context_s {
     char *h_smf_uri;
     char *smf_uri;
     char *pdu_session_ref;
+    char *inter_plmn_api_root;
+    char *intra_plmn_api_root;
     char *pcf_id;
     char *pcf_group_id;
     char *pcf_set_id;
     OpenAPI_dnn_selection_mode_e sel_mode;
     char *udm_group_id;
     char *routing_indicator;
+    bool is_h_nw_pub_key_id;
+    int h_nw_pub_key_id;
     struct OpenAPI_ambr_s *session_ambr;
     OpenAPI_list_t *qos_flows_list;
     char *h_smf_instance_id;
@@ -65,6 +70,7 @@ typedef struct OpenAPI_sm_context_s {
     struct OpenAPI_eps_pdn_cnx_info_s *eps_pdn_cnx_info;
     OpenAPI_list_t *eps_bearer_info;
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate;
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dl;
     bool is_always_on_granted;
     int always_on_granted;
     struct OpenAPI_up_security_s *up_security;
@@ -87,6 +93,19 @@ typedef struct OpenAPI_sm_context_s {
     OpenAPI_list_t *add_ran_tunnel_info;
     struct OpenAPI_qos_flow_tunnel_s *red_ran_tunnel_info;
     OpenAPI_list_t *add_red_ran_tunnel_info;
+    bool is_nspu_support_ind;
+    int nspu_support_ind;
+    char *smf_binding_info;
+    OpenAPI_satellite_backhaul_category_e satellite_backhaul_cat;
+    char *ssc_mode;
+    bool is_dlset_support_ind;
+    int dlset_support_ind;
+    bool is_n9fsc_support_ind;
+    int n9fsc_support_ind;
+    bool is_disaster_roaming_ind;
+    int disaster_roaming_ind;
+    bool is_anchor_smf_oauth2_required;
+    int anchor_smf_oauth2_required;
 } OpenAPI_sm_context_t;
 
 OpenAPI_sm_context_t *OpenAPI_sm_context_create(
@@ -100,12 +119,16 @@ OpenAPI_sm_context_t *OpenAPI_sm_context_create(
     char *h_smf_uri,
     char *smf_uri,
     char *pdu_session_ref,
+    char *inter_plmn_api_root,
+    char *intra_plmn_api_root,
     char *pcf_id,
     char *pcf_group_id,
     char *pcf_set_id,
     OpenAPI_dnn_selection_mode_e sel_mode,
     char *udm_group_id,
     char *routing_indicator,
+    bool is_h_nw_pub_key_id,
+    int h_nw_pub_key_id,
     OpenAPI_ambr_t *session_ambr,
     OpenAPI_list_t *qos_flows_list,
     char *h_smf_instance_id,
@@ -120,6 +143,7 @@ OpenAPI_sm_context_t *OpenAPI_sm_context_create(
     OpenAPI_eps_pdn_cnx_info_t *eps_pdn_cnx_info,
     OpenAPI_list_t *eps_bearer_info,
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate,
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dl,
     bool is_always_on_granted,
     int always_on_granted,
     OpenAPI_up_security_t *up_security,
@@ -141,7 +165,20 @@ OpenAPI_sm_context_t *OpenAPI_sm_context_create(
     OpenAPI_qos_flow_tunnel_t *ran_tunnel_info,
     OpenAPI_list_t *add_ran_tunnel_info,
     OpenAPI_qos_flow_tunnel_t *red_ran_tunnel_info,
-    OpenAPI_list_t *add_red_ran_tunnel_info
+    OpenAPI_list_t *add_red_ran_tunnel_info,
+    bool is_nspu_support_ind,
+    int nspu_support_ind,
+    char *smf_binding_info,
+    OpenAPI_satellite_backhaul_category_e satellite_backhaul_cat,
+    char *ssc_mode,
+    bool is_dlset_support_ind,
+    int dlset_support_ind,
+    bool is_n9fsc_support_ind,
+    int n9fsc_support_ind,
+    bool is_disaster_roaming_ind,
+    int disaster_roaming_ind,
+    bool is_anchor_smf_oauth2_required,
+    int anchor_smf_oauth2_required
 );
 void OpenAPI_sm_context_free(OpenAPI_sm_context_t *sm_context);
 OpenAPI_sm_context_t *OpenAPI_sm_context_parseFromJSON(cJSON *sm_contextJSON);

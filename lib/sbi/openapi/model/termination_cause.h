@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_termination_cause_NULL = 0, OpenAPI_termination_cause_ALL_SDF_DEACTIVATION, OpenAPI_termination_cause_PDU_SESSION_TERMINATION, OpenAPI_termination_cause_PS_TO_CS_HO } OpenAPI_termination_cause_e;
+typedef enum { OpenAPI_termination_cause_NULL = 0, OpenAPI_termination_cause_ALL_SDF_DEACTIVATION, OpenAPI_termination_cause_PDU_SESSION_TERMINATION, OpenAPI_termination_cause_PS_TO_CS_HO, OpenAPI_termination_cause_INSUFFICIENT_SERVER_RESOURCES, OpenAPI_termination_cause_INSUFFICIENT_QOS_FLOW_RESOURCES, OpenAPI_termination_cause_SPONSORED_DATA_CONNECTIVITY_DISALLOWED } OpenAPI_termination_cause_e;
 
 char* OpenAPI_termination_cause_ToString(OpenAPI_termination_cause_e termination_cause);
 

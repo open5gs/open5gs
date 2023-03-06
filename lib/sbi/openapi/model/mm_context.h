@@ -1,7 +1,7 @@
 /*
  * mm_context.h
  *
- * 
+ * Represents a Mobility Management Context in UE Context
  */
 
 #ifndef _OpenAPI_mm_context_H_
@@ -21,6 +21,7 @@
 #include "nssai_mapping.h"
 #include "snssai.h"
 #include "ue_differentiation_info.h"
+#include "uuaa_mm_status.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,16 +36,16 @@ typedef struct OpenAPI_mm_context_s {
     int nas_downlink_count;
     bool is_nas_uplink_count;
     int nas_uplink_count;
-    char ue_security_capability;
-    char s1_ue_network_capability;
+    char *ue_security_capability;
+    char *s1_ue_network_capability;
     OpenAPI_list_t *allowed_nssai;
     OpenAPI_list_t *nssai_mapping_list;
     OpenAPI_list_t *allowed_home_nssai;
     OpenAPI_list_t *ns_instance_list;
     struct OpenAPI_expected_ue_behavior_s *expected_u_ebehavior;
     struct OpenAPI_ue_differentiation_info_s *ue_differentiation_info;
-    char plmn_assi_ue_radio_cap_id;
-    char man_assi_ue_radio_cap_id;
+    char *plmn_assi_ue_radio_cap_id;
+    char *man_assi_ue_radio_cap_id;
     char *ucmf_dic_entry_id;
     struct OpenAPI_global_ran_node_id_s *n3_iwf_id;
     struct OpenAPI_global_ran_node_id_s *wagf_id;
@@ -53,6 +54,7 @@ typedef struct OpenAPI_mm_context_s {
     int an_n2_ap_id;
     OpenAPI_list_t *nssaa_status_list;
     OpenAPI_list_t *pending_nssai_mapping_list;
+    OpenAPI_uuaa_mm_status_e uuaa_mm_status;
 } OpenAPI_mm_context_t;
 
 OpenAPI_mm_context_t *OpenAPI_mm_context_create(
@@ -63,16 +65,16 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_create(
     int nas_downlink_count,
     bool is_nas_uplink_count,
     int nas_uplink_count,
-    char ue_security_capability,
-    char s1_ue_network_capability,
+    char *ue_security_capability,
+    char *s1_ue_network_capability,
     OpenAPI_list_t *allowed_nssai,
     OpenAPI_list_t *nssai_mapping_list,
     OpenAPI_list_t *allowed_home_nssai,
     OpenAPI_list_t *ns_instance_list,
     OpenAPI_expected_ue_behavior_t *expected_u_ebehavior,
     OpenAPI_ue_differentiation_info_t *ue_differentiation_info,
-    char plmn_assi_ue_radio_cap_id,
-    char man_assi_ue_radio_cap_id,
+    char *plmn_assi_ue_radio_cap_id,
+    char *man_assi_ue_radio_cap_id,
     char *ucmf_dic_entry_id,
     OpenAPI_global_ran_node_id_t *n3_iwf_id,
     OpenAPI_global_ran_node_id_t *wagf_id,
@@ -80,7 +82,8 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_create(
     bool is_an_n2_ap_id,
     int an_n2_ap_id,
     OpenAPI_list_t *nssaa_status_list,
-    OpenAPI_list_t *pending_nssai_mapping_list
+    OpenAPI_list_t *pending_nssai_mapping_list,
+    OpenAPI_uuaa_mm_status_e uuaa_mm_status
 );
 void OpenAPI_mm_context_free(OpenAPI_mm_context_t *mm_context);
 OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON);

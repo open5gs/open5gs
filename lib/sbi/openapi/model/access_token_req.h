@@ -40,10 +40,13 @@ typedef struct OpenAPI_access_token_req_s {
     char *requester_fqdn;
     OpenAPI_list_t *requester_snpn_list;
     struct OpenAPI_plmn_id_s *target_plmn;
+    struct OpenAPI_plmn_id_nid_s *target_snpn;
     OpenAPI_list_t *target_snssai_list;
     OpenAPI_list_t *target_nsi_list;
     char *target_nf_set_id;
     char *target_nf_service_set_id;
+    char *hnrf_access_token_uri;
+    char *source_nf_instance_id;
 } OpenAPI_access_token_req_t;
 
 OpenAPI_access_token_req_t *OpenAPI_access_token_req_create(
@@ -59,10 +62,13 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_create(
     char *requester_fqdn,
     OpenAPI_list_t *requester_snpn_list,
     OpenAPI_plmn_id_t *target_plmn,
+    OpenAPI_plmn_id_nid_t *target_snpn,
     OpenAPI_list_t *target_snssai_list,
     OpenAPI_list_t *target_nsi_list,
     char *target_nf_set_id,
-    char *target_nf_service_set_id
+    char *target_nf_service_set_id,
+    char *hnrf_access_token_uri,
+    char *source_nf_instance_id
 );
 void OpenAPI_access_token_req_free(OpenAPI_access_token_req_t *access_token_req);
 OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access_token_reqJSON);

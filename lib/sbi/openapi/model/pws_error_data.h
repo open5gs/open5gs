@@ -1,7 +1,7 @@
 /*
  * pws_error_data.h
  *
- * 
+ * Data related to PWS error included in a N2 Information Transfer failure response
  */
 
 #ifndef _OpenAPI_pws_error_data_H_

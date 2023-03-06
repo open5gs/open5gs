@@ -13,9 +13,12 @@
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
 #include "acs_info.h"
+#include "aerial_ue_indication.h"
 #include "ambr.h"
+#include "ecs_addr_config_info.h"
 #include "frame_route_info.h"
 #include "ip_address.h"
+#include "ip_index.h"
 #include "nidd_information.h"
 #include "pdu_session_continuity_ind.h"
 #include "pdu_session_types.h"
@@ -50,10 +53,27 @@ typedef struct OpenAPI_dnn_configuration_s {
     int atsss_allowed;
     bool is_secondary_auth;
     int secondary_auth;
+    bool is_uav_secondary_auth;
+    int uav_secondary_auth;
     bool is_dn_aaa_ip_address_allocation;
     int dn_aaa_ip_address_allocation;
     struct OpenAPI_ip_address_s *dn_aaa_address;
+    OpenAPI_list_t *additional_dn_aaa_addresses;
+    char *dn_aaa_fqdn;
     char *iptv_acc_ctrl_info;
+    struct OpenAPI_ip_index_s *ipv4_index;
+    struct OpenAPI_ip_index_s *ipv6_index;
+    struct OpenAPI_ecs_addr_config_info_s *ecs_addr_config_info;
+    OpenAPI_list_t *additional_ecs_addr_config_infos;
+    char *shared_ecs_addr_config_info;
+    OpenAPI_list_t *additional_shared_ecs_addr_config_info_ids;
+    bool is_eas_discovery_authorized;
+    int eas_discovery_authorized;
+    bool is_onboarding_ind;
+    int onboarding_ind;
+    OpenAPI_aerial_ue_indication_e aerial_ue_ind;
+    bool is_subscribed_max_ipv6_prefix_size;
+    int subscribed_max_ipv6_prefix_size;
 } OpenAPI_dnn_configuration_t;
 
 OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_create(
@@ -78,10 +98,27 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_create(
     int atsss_allowed,
     bool is_secondary_auth,
     int secondary_auth,
+    bool is_uav_secondary_auth,
+    int uav_secondary_auth,
     bool is_dn_aaa_ip_address_allocation,
     int dn_aaa_ip_address_allocation,
     OpenAPI_ip_address_t *dn_aaa_address,
-    char *iptv_acc_ctrl_info
+    OpenAPI_list_t *additional_dn_aaa_addresses,
+    char *dn_aaa_fqdn,
+    char *iptv_acc_ctrl_info,
+    OpenAPI_ip_index_t *ipv4_index,
+    OpenAPI_ip_index_t *ipv6_index,
+    OpenAPI_ecs_addr_config_info_t *ecs_addr_config_info,
+    OpenAPI_list_t *additional_ecs_addr_config_infos,
+    char *shared_ecs_addr_config_info,
+    OpenAPI_list_t *additional_shared_ecs_addr_config_info_ids,
+    bool is_eas_discovery_authorized,
+    int eas_discovery_authorized,
+    bool is_onboarding_ind,
+    int onboarding_ind,
+    OpenAPI_aerial_ue_indication_e aerial_ue_ind,
+    bool is_subscribed_max_ipv6_prefix_size,
+    int subscribed_max_ipv6_prefix_size
 );
 void OpenAPI_dnn_configuration_free(OpenAPI_dnn_configuration_t *dnn_configuration);
 OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_parseFromJSON(cJSON *dnn_configurationJSON);

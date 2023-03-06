@@ -1,7 +1,7 @@
 /*
  * nas_security_mode.h
  *
- * 
+ * Indicates the NAS Security Mode
  */
 
 #ifndef _OpenAPI_nas_security_mode_H_

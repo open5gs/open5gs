@@ -1,7 +1,7 @@
 /*
  * route_to_location.h
  *
- * 
+ * At least one of the \&quot;routeInfo\&quot; attribute and the \&quot;routeProfId\&quot; attribute shall be included in the \&quot;RouteToLocation\&quot; data type. 
  */
 
 #ifndef _OpenAPI_route_to_location_H_

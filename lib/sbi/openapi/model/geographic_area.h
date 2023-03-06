@@ -1,7 +1,7 @@
 /*
  * geographic_area.h
  *
- * 
+ * Geographic area specified by different shape.
  */
 
 #ifndef _OpenAPI_geographic_area_H_

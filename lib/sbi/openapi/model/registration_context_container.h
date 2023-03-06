@@ -1,7 +1,7 @@
 /*
  * registration_context_container.h
  *
- * 
+ * Registration Context Container used to send the UE context information, N1 message from UE, AN address etc during Registration with AMF re-allocation procedure
  */
 
 #ifndef _OpenAPI_registration_context_container_H_

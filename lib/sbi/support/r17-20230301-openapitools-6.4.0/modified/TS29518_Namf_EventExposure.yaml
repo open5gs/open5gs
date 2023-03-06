@@ -1,0 +1,1042 @@
+openapi: 3.0.0
+
+info:
+  version: 1.2.1
+  title: Namf_EventExposure
+  description: |
+    AMF Event Exposure Service.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+      - namf-evts
+
+externalDocs:
+  description: 3GPP TS 29.518 V17.7.0; 5G System; Access and Mobility Management Services
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.518/'
+
+servers:
+  - url: '{apiRoot}/namf-evts/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+paths:
+  /subscriptions:
+    post:
+      summary: Namf_EventExposure Subscribe service Operation
+      tags:
+        - Subscriptions collection (Collection)
+      operationId: CreateSubscription
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AmfCreateEventSubscription'
+        required: true
+      responses:
+        '201':
+          description: Subsription Created
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource, according to the structure: {apiRoot}/namf-evts/<apiVersion>/subscriptions/{subscriptionId}'
+              required: true
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AmfCreatedEventSubscription'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+      callbacks:
+        onEventReport:
+          '{$request.body#/subscription/eventNotifyUri}':
+            post:
+              summary: Event Notificaiton Delivery
+              requestBody:
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/AmfEventNotification'
+                required: true
+              responses:
+                '204':
+                  description: Successful acknowledgement
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  description: Unexpected error
+        onSubscriptionIdChangeEvtReport:
+          '{$request.body#/subscription/subsChangeNotifyUri}':
+            post:
+              summary: Event Notificaiton Delivery For Subscription Id Change
+              requestBody:
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/AmfEventNotification'
+                required: true
+              responses:
+                '204':
+                  description: Successful acknowledgement
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  description: Unexpected error
+  /subscriptions/{subscriptionId}:
+    patch:
+      summary: Namf_EventExposure Subscribe Modify service Operation
+      tags:
+        - Individual subscription (Document)
+      operationId: ModifySubscription
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          description: Unique ID of the subscription to be modified
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json-patch+json:
+            schema:
+              oneOf:
+                - type: array
+                  items:
+                   $ref: '#/components/schemas/AmfUpdateEventSubscriptionItem'
+                  minItems: 1
+                - type: array
+                  items:
+                   $ref: '#/components/schemas/AmfUpdateEventOptionItem'
+                  minItems: 1
+                  maxItems: 1
+        required: true
+      responses:
+        '200':
+          description: Subsription modified successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AmfUpdatedEventSubscription'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+    delete:
+      summary: Namf_EventExposure Unsubscribe service Operation
+      tags:
+        - Individual subscription (Document)
+      operationId: DeleteSubscription
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          description: Unique ID of the subscription to be deleted
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Subsription deleted successfully
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            namf-evts: Access to the Namf_EventExposure API
+  schemas:
+    AmfEventSubscription:
+      description: Represents an individual event subscription resource on AMF
+      type: object
+      properties:
+        eventList:
+          type: array
+          items:
+            $ref: '#/components/schemas/AmfEvent'
+          minItems: 1
+        eventNotifyUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        notifyCorrelationId:
+          type: string
+        nfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        subsChangeNotifyUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        subsChangeNotifyCorrelationId:
+          type: string
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        groupId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/GroupId'
+        excludeSupiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+          minItems: 1
+        excludeGpsiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+          minItems: 1
+        includeSupiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+          minItems: 1
+        includeGpsiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+          minItems: 1
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        pei:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Pei'
+        anyUE:
+          type: boolean
+        options:
+          $ref: '#/components/schemas/AmfEventMode'
+        sourceNfType:
+          $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/NFType'
+      required:
+        - eventList
+        - eventNotifyUri
+        - notifyCorrelationId
+        - nfId
+    AmfEvent:
+      description: Describes an event to be subscribed
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/AmfEventType'
+        immediateFlag:
+          type: boolean
+          default: false
+        areaList:
+          type: array
+          items:
+            $ref: '#/components/schemas/AmfEventArea'
+          minItems: 1
+        locationFilterList:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocationFilter'
+          minItems: 1
+        refId:
+          $ref: 'TS29503_Nudm_EE.yaml#/components/schemas/ReferenceId'
+        trafficDescriptorList:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrafficDescriptor'
+          minItems: 1
+        reportUeReachable:
+          type: boolean
+          default: false
+        reachabilityFilter:
+          $ref: '#/components/schemas/ReachabilityFilter'
+        udmDetectInd:
+          type: boolean
+          default: false
+        maxReports:
+          type: integer
+        presenceInfoList:
+          type: object
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PresenceInfo'
+          minProperties: 1
+          description: A map(list of key-value pairs) where praId serves as key.
+        maxResponseTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        targetArea:
+          $ref: '#/components/schemas/TargetArea'
+        snssaiFilter:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/ExtSnssai'
+          minItems: 1
+        ueInAreaFilter:
+          $ref: '#/components/schemas/UeInAreaFilter'
+        minInterval:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        nextReport:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        idleStatusInd:
+          type: boolean
+          default: false
+        dispersionArea:
+          $ref: '#/components/schemas/DispersionArea'
+      required:
+        - type
+    AmfEventNotification:
+      description: Data within a AMF Event Notification request
+      type: object
+      properties:
+        notifyCorrelationId:
+          type: string
+        subsChangeNotifyCorrelationId:
+          type: string
+        reportList:
+          type: array
+          items:
+            $ref: '#/components/schemas/AmfEventReport'
+          minItems: 1
+        eventSubsSyncInfo:
+          $ref: '#/components/schemas/AmfEventSubsSyncInfo'
+    AmfEventReport:
+      description: Represents a report triggered by a subscribed event type
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/AmfEventType'
+        state:
+          $ref: '#/components/schemas/AmfEventState'
+        timeStamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        subscriptionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        anyUe:
+          type: boolean
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        areaList:
+          type: array
+          items:
+            $ref: '#/components/schemas/AmfEventArea'
+          minItems: 1
+        refId:
+          $ref: 'TS29503_Nudm_EE.yaml#/components/schemas/ReferenceId'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        pei:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Pei'
+        location:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        additionalLocation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        timezone:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TimeZone'
+        accessTypeList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+          minItems: 1
+        rmInfoList:
+          type: array
+          items:
+            $ref: '#/components/schemas/RmInfo'
+          minItems: 1
+        cmInfoList:
+          type: array
+          items:
+            $ref: '#/components/schemas/CmInfo'
+          minItems: 1
+        reachability:
+          $ref: '#/components/schemas/UeReachability'
+        commFailure:
+          $ref: '#/components/schemas/CommunicationFailure'
+        lossOfConnectReason:
+          $ref: '#/components/schemas/LossOfConnectivityReason'
+        numberOfUes:
+          type: integer
+        5gsUserStateList:
+          type: array
+          items:
+            $ref: '#/components/schemas/5GsUserStateInfo'
+          minItems: 1
+        typeCode:
+          type: string
+          pattern: '^imeitac-[0-9]{8}$'
+        registrationNumber:
+          type: integer
+        maxAvailabilityTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        ueIdExt:
+          type: array
+          items:
+            $ref: '#/components/schemas/UEIdExt'
+          minItems: 1
+        snssaiTaiList:
+          type: array
+          items:
+            $ref: '#/components/schemas/SnssaiTaiMapping'
+          minItems: 1
+        idleStatusIndication:
+          $ref: '#/components/schemas/IdleStatusIndication'
+        ueAccessBehaviorTrends:
+          type: array
+          items:
+            $ref: '#/components/schemas/UeAccessBehaviorReportItem'
+          minItems: 1
+        ueLocationTrends:
+          type: array
+          items:
+            $ref: '#/components/schemas/UeLocationTrendsReportItem'
+          minItems: 1
+        mmTransLocationReportList:
+          type: array
+          items:
+            $ref: '#/components/schemas/MmTransactionLocationReportItem'
+          minItems: 1
+        mmTransSliceReportList:
+          type: array
+          items:
+            $ref: '#/components/schemas/MmTransactionSliceReportItem'
+          minItems: 1
+      required:
+        - type
+        - state
+        - timeStamp
+    AmfEventMode:
+      description: Describes how the reports shall be generated by a subscribed event
+      type: object
+      properties:
+        trigger:
+          $ref: '#/components/schemas/AmfEventTrigger'
+        maxReports:
+          type: integer
+        expiry:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        repPeriod:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        sampRatio:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SamplingRatio'
+        partitioningCriteria:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PartitioningCriteria'
+          minItems: 1
+        notifFlag:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NotificationFlag'
+      required:
+        - trigger
+    AmfEventState:
+      description: Represents the state of a subscribed event
+      type: object
+      properties:
+        active:
+          type: boolean
+        remainReports:
+          type: integer
+        remainDuration:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+      required:
+        - active
+    RmInfo:
+      description: Represents the registration state of a UE for an access type
+      type: object
+      properties:
+        rmState:
+          $ref: '#/components/schemas/RmState'
+        accessType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+      required:
+        - rmState
+        - accessType
+    CmInfo:
+      description: Represents the connection management state of a UE for an access type
+      type: object
+      properties:
+        cmState:
+          $ref: '#/components/schemas/CmState'
+        accessType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+      required:
+        - cmState
+        - accessType
+    CommunicationFailure:
+      description: Describes a communication failure detected by AMF
+      type: object
+      properties:
+        nasReleaseCode:
+          type: string
+        ranReleaseCode:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NgApCause'
+    AmfCreateEventSubscription:
+      description: Data within a create AMF event subscription request
+      type: object
+      properties:
+        subscription:
+          $ref: '#/components/schemas/AmfEventSubscription'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        oldGuami:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Guami'
+      required:
+        - subscription
+    AmfCreatedEventSubscription:
+      description: Data within a create AMF event subscription response
+      type: object
+      properties:
+        subscription:
+          $ref: '#/components/schemas/AmfEventSubscription'
+        subscriptionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        reportList:
+          type: array
+          items:
+            $ref: '#/components/schemas/AmfEventReport'
+          minItems: 1
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - subscription
+        - subscriptionId
+    AmfUpdateEventSubscriptionItem:
+      description: Document describing the modification(s) to an AMF Event Subscription
+      type: object
+      properties:
+        op:
+          type: string
+          enum:
+            - add
+            - remove
+            - replace
+        path:
+          type: string
+          pattern: '^\/eventList\/-|(\/eventList\/0|\/eventList\/[1-9][0-9]*){1}(\/presenceInfoList\/0|\/presenceInfoList\/[1-9][0-9]*)?|\/excludeSupiList|\/excludeGpsiList$'
+        value:
+          $ref: '#/components/schemas/AmfEvent'
+        presenceInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PresenceInfo'
+        excludeSupiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+          minItems: 1
+        excludeGpsiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+          minItems: 1
+        includeSupiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+          minItems: 1
+        includeGpsiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+          minItems: 1
+      required:
+        - op
+        - path
+    AmfUpdateEventOptionItem:
+      description: Document describing the modifications to AMF event subscription options
+      type: object
+      properties:
+        op:
+          type: string
+          enum:
+            - replace
+        path:
+          type: string
+          pattern: '\/options\/expiry$'
+        value:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        notifFlag:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NotificationFlag'
+      required:
+        - op
+        - path
+        - value
+    AmfUpdatedEventSubscription:
+      description: Represents a successful update on an AMF Event Subscription
+      type: object
+      properties:
+        subscription:
+          $ref: '#/components/schemas/AmfEventSubscription'
+        reportList:
+          type: array
+          items:
+            $ref: '#/components/schemas/AmfEventReport'
+          minItems: 1
+      required:
+        - subscription
+    AmfEventArea:
+      description: Represents an area to be monitored by an AMF event
+      type: object
+      properties:
+        presenceInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PresenceInfo'
+        ladnInfo:
+          $ref: '#/components/schemas/LadnInfo'
+        sNssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        nsiId:
+          $ref: 'TS29531_Nnssf_NSSelection.yaml#/components/schemas/NsiId'
+    LadnInfo:
+      description: LADN Information
+      type: object
+      properties:
+        ladn:
+          type: string
+        presence:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PresenceState'
+      required:
+        - ladn
+    5GsUserStateInfo:
+      description: Represents the 5GS User state of the UE for an access type
+      type: object
+      properties:
+        5gsUserState:
+          $ref: '#/components/schemas/5GsUserState'
+        accessType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+      required:
+        - 5gsUserState
+        - accessType
+    TrafficDescriptor:
+      description: Represents the Traffic Descriptor
+      type: object
+      properties:
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        sNssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        dddTrafficDescriptorList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/DddTrafficDescriptor'
+          minItems: 1
+    UEIdExt:
+      description: UE Identity
+      type: object
+      properties:
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+
+    AmfEventSubsSyncInfo:
+      description: AMF Event Subscriptions Information for synchronization
+      type: object
+      properties:
+        subscriptionList:
+          type: array
+          items:
+            $ref: '#/components/schemas/AmfEventSubscriptionInfo'
+          minItems: 1
+      required:
+        - subscriptionList
+
+    AmfEventSubscriptionInfo:
+      description: Individual AMF Event Subscription Information
+      type: object
+      properties:
+        subId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        notifyCorrelationId:
+          type: string
+        refIdList:
+          type: array
+          items:
+            $ref: 'TS29503_Nudm_EE.yaml#/components/schemas/ReferenceId'
+          minItems: 1
+        oldSubId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+      required:
+        - subId
+        - refIdList
+
+    TargetArea:
+      description: TA list or TAI range list or any TA
+      type: object
+      properties:
+        taList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Tai'
+          minItems: 1
+        taiRangeList:
+          type: array
+          items:
+            $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/TaiRange'
+          minItems: 1
+        anyTa:
+          type: boolean
+          default: false
+
+    SnssaiTaiMapping:
+      description: List of restricted or unrestricted S-NSSAIs per TAI(s)
+      type: object
+      properties:
+        reportingArea:
+          $ref: '#/components/schemas/TargetArea'
+        accessTypeList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+          minItems: 1
+        supportedSnssaiList:
+          type: array
+          items:
+            $ref: '#/components/schemas/SupportedSnssai'
+          minItems: 1
+      required:
+        - reportingArea
+
+    UeAccessBehaviorReportItem:
+      description: Report Item for UE Access Behavior Trends event.
+      type: object
+      properties:
+        stateTransitionType:
+          $ref: '#/components/schemas/AccessStateTransitionType'
+        spacing:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        duration:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+      required:
+        - stateTransitionType
+        - spacing
+        - duration
+
+    IdleStatusIndication:
+      description: Represents the idle status indication.
+      type: object
+      properties:
+        timeStamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        activeTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        subsRegTimer:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        edrxCycleLength:
+          type: integer
+        suggestedNumOfDlPackets:
+          type: integer
+
+    UeInAreaFilter:
+      description: Additional filters for UE in Area Report event
+      type: object
+      properties:
+        ueType:
+          $ref: '#/components/schemas/UeType'
+        aerialSrvDnnInd:
+          type: boolean
+          default: false
+
+    SupportedSnssai:
+      description: Supported S-NSSAIs
+      type: object
+      properties:
+        sNssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ExtSnssai'
+        restrictionInd:
+          type: boolean
+          default: false
+      required:
+        - sNssai
+
+    UeLocationTrendsReportItem:
+      description: Report Item for UE Location Trends event.
+      type: object
+      properties:
+        tai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Tai'
+        ncgi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ncgi'
+        ecgi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ecgi'
+        n3gaLocation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/N3gaLocation'
+        spacing:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        duration:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        timestamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - spacing
+        - duration
+        - timestamp
+
+    DispersionArea:
+      description: Dispersion Area
+      type: object
+      properties:
+        taiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Tai'
+          minItems: 1
+        ncgiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ncgi'
+          minItems: 1
+        ecgiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ecgi'
+          minItems: 1
+        n3gaInd:
+          type: boolean
+          default: false
+
+    MmTransactionLocationReportItem:
+      description: UE MM Transaction Report Item per Location
+      type: object
+      properties:
+        tai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Tai'
+        ncgi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ncgi'
+        ecgi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ecgi'
+        n3gaLocation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/N3gaLocation'
+        timestamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        transactions:
+          type: integer
+      required:
+        - timestamp
+        - transactions
+
+    MmTransactionSliceReportItem:
+      description: UE MM Transaction Report Item per Slice
+      type: object
+      properties:
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        timestamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        transactions:
+          type: integer
+      required:
+        - timestamp
+        - transactions
+
+    AmfEventType:
+      description: Describes the supported event types of Namf_EventExposure Service
+      anyOf:
+      - type: string
+        enum:
+          - LOCATION_REPORT
+          - PRESENCE_IN_AOI_REPORT
+          - TIMEZONE_REPORT
+          - ACCESS_TYPE_REPORT
+          - REGISTRATION_STATE_REPORT
+          - CONNECTIVITY_STATE_REPORT
+          - REACHABILITY_REPORT
+          - COMMUNICATION_FAILURE_REPORT
+          - UES_IN_AREA_REPORT
+          - SUBSCRIPTION_ID_CHANGE
+          - SUBSCRIPTION_ID_ADDITION
+          - LOSS_OF_CONNECTIVITY
+          - 5GS_USER_STATE_REPORT
+          - AVAILABILITY_AFTER_DDN_FAILURE
+          - TYPE_ALLOCATION_CODE_REPORT
+          - FREQUENT_MOBILITY_REGISTRATION_REPORT
+          - SNSSAI_TA_MAPPING_REPORT
+          - UE_LOCATION_TRENDS
+          - UE_ACCESS_BEHAVIOR_TRENDS
+          - UE_MM_TRANSACTION_REPORT
+      - type: string
+    AmfEventTrigger:
+      description: Describes how AMF should generate the report for the event
+      anyOf:
+      - type: string
+        enum:
+          - ONE_TIME
+          - CONTINUOUS
+          - PERIODIC
+      - type: string
+    LocationFilter :
+      description: Describes the supported filters of LOCATION_REPORT event type
+      anyOf:
+      - type: string
+        enum:
+          - TAI
+          - CELL_ID
+          - RAN_NODE
+          - N3IWF
+          - UE_IP
+          - UDP_PORT
+          - TNAP_ID
+          - GLI
+          - TWAP_ID
+      - type: string
+    UeReachability:
+      description: Describes the reachability of the UE
+      anyOf:
+      - type: string
+        enum:
+          - UNREACHABLE
+          - REACHABLE
+          - REGULATORY_ONLY
+      - type: string
+    RmState:
+      description: Describes the registration management state of a UE
+      anyOf:
+      - type: string
+        enum:
+          - REGISTERED
+          - DEREGISTERED
+      - type: string
+    CmState:
+      description: Describes the connection management state of a UE
+      anyOf:
+      - type: string
+        enum:
+          - IDLE
+          - CONNECTED
+      - type: string
+    5GsUserState:
+      description: Describes the 5GS User State of a UE
+      anyOf:
+      - type: string
+        enum:
+          - DEREGISTERED
+          - CONNECTED_NOT_REACHABLE_FOR_PAGING
+          - CONNECTED_REACHABLE_FOR_PAGING
+          - NOT_PROVIDED_FROM_AMF
+      - type: string
+    LossOfConnectivityReason:
+      description: Describes the reason for loss of connectivity
+      anyOf:
+      - type: string
+        enum:
+          - DEREGISTERED
+          - MAX_DETECTION_TIME_EXPIRED
+          - PURGED
+      - type: string
+
+    ReachabilityFilter:
+      description: Event filter for REACHABILITY_REPORT event type
+      anyOf:
+      - type: string
+        enum:
+          - UE_REACHABILITY_STATUS_CHANGE
+          - UE_REACHABLE_DL_TRAFFIC
+      - type: string
+
+    UeType:
+      description: Describes the type of UEs
+      anyOf:
+      - type: string
+        enum:
+          - AERIAL_UE
+      - type: string
+
+    AccessStateTransitionType:
+      description: Access State Transition Type.
+      anyOf:
+      - type: string
+        enum:
+          - ACCESS_TYPE_CHANGE_3GPP
+          - ACCESS_TYPE_CHANGE_N3GPP
+          - RM_STATE_CHANGE_DEREGISTERED
+          - RM_STATE_CHANGE_REGISTERED
+          - CM_STATE_CHANGE_IDLE
+          - CM_STATE_CHANGE_CONNECTED
+          - HANDOVER
+          - MOBILITY_REGISTRATION_UPDATE
+      - type: string

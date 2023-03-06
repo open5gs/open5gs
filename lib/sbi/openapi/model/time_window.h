@@ -1,7 +1,7 @@
 /*
  * time_window.h
  *
- * 
+ * Represents a time window identified by a start time and a stop time.
  */
 
 #ifndef _OpenAPI_time_window_H_

@@ -94,10 +94,7 @@ ogs_pkbuf_t *ogs_pfcp_cp_build_association_setup_request(uint8_t type)
 
     req = &pfcp_message->pfcp_association_setup_request;
 
-    rv = ogs_pfcp_sockaddr_to_node_id(
-            ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
-            ogs_app()->parameter.prefer_ipv4,
-            &node_id, &node_id_len);
+    rv = ogs_pfcp_sockaddr_to_node_id(&node_id, &node_id_len);
     if (rv != OGS_OK) {
         ogs_error("ogs_pfcp_sockaddr_to_node_id() failed");
         ogs_free(pfcp_message);
@@ -142,10 +139,7 @@ ogs_pkbuf_t *ogs_pfcp_cp_build_association_setup_response(uint8_t type,
 
     rsp = &pfcp_message->pfcp_association_setup_response;
 
-    rv = ogs_pfcp_sockaddr_to_node_id(
-            ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
-            ogs_app()->parameter.prefer_ipv4,
-            &node_id, &node_id_len);
+    rv = ogs_pfcp_sockaddr_to_node_id(&node_id, &node_id_len);
     if (rv != OGS_OK) {
         ogs_error("ogs_pfcp_sockaddr_to_node_id() failed");
         ogs_free(pfcp_message);
@@ -197,10 +191,7 @@ ogs_pkbuf_t *ogs_pfcp_up_build_association_setup_request(uint8_t type)
 
     req = &pfcp_message->pfcp_association_setup_request;
 
-    rv = ogs_pfcp_sockaddr_to_node_id(
-            ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
-            ogs_app()->parameter.prefer_ipv4,
-            &node_id, &node_id_len);
+    rv = ogs_pfcp_sockaddr_to_node_id(&node_id, &node_id_len);
     if (rv != OGS_OK) {
         ogs_error("ogs_pfcp_sockaddr_to_node_id() failed");
         ogs_free(pfcp_message);
@@ -268,10 +259,7 @@ ogs_pkbuf_t *ogs_pfcp_up_build_association_setup_response(uint8_t type,
 
     rsp = &pfcp_message->pfcp_association_setup_response;
 
-    rv = ogs_pfcp_sockaddr_to_node_id(
-            ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
-            ogs_app()->parameter.prefer_ipv4,
-            &node_id, &node_id_len);
+    rv = ogs_pfcp_sockaddr_to_node_id(&node_id, &node_id_len);
     if (rv != OGS_OK) {
         ogs_error("ogs_pfcp_sockaddr_to_node_id() failed");
         ogs_free(pfcp_message);

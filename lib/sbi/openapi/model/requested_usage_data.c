@@ -22,20 +22,25 @@ OpenAPI_requested_usage_data_t *OpenAPI_requested_usage_data_create(
 
 void OpenAPI_requested_usage_data_free(OpenAPI_requested_usage_data_t *requested_usage_data)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == requested_usage_data) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_list_for_each(requested_usage_data->ref_um_ids, node) {
-        ogs_free(node->data);
+    if (requested_usage_data->ref_um_ids) {
+        OpenAPI_list_for_each(requested_usage_data->ref_um_ids, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(requested_usage_data->ref_um_ids);
+        requested_usage_data->ref_um_ids = NULL;
     }
-    OpenAPI_list_free(requested_usage_data->ref_um_ids);
     ogs_free(requested_usage_data);
 }
 
 cJSON *OpenAPI_requested_usage_data_convertToJSON(OpenAPI_requested_usage_data_t *requested_usage_data)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (requested_usage_data == NULL) {
         ogs_error("OpenAPI_requested_usage_data_convertToJSON() failed [RequestedUsageData]");
@@ -44,19 +49,17 @@ cJSON *OpenAPI_requested_usage_data_convertToJSON(OpenAPI_requested_usage_data_t
 
     item = cJSON_CreateObject();
     if (requested_usage_data->ref_um_ids) {
-    cJSON *ref_um_ids = cJSON_AddArrayToObject(item, "refUmIds");
-    if (ref_um_ids == NULL) {
+    cJSON *ref_um_idsList = cJSON_AddArrayToObject(item, "refUmIds");
+    if (ref_um_idsList == NULL) {
         ogs_error("OpenAPI_requested_usage_data_convertToJSON() failed [ref_um_ids]");
         goto end;
     }
-
-    OpenAPI_lnode_t *ref_um_ids_node;
-    OpenAPI_list_for_each(requested_usage_data->ref_um_ids, ref_um_ids_node)  {
-    if (cJSON_AddStringToObject(ref_um_ids, "", (char*)ref_um_ids_node->data) == NULL) {
-        ogs_error("OpenAPI_requested_usage_data_convertToJSON() failed [ref_um_ids]");
-        goto end;
+    OpenAPI_list_for_each(requested_usage_data->ref_um_ids, node) {
+        if (cJSON_AddStringToObject(ref_um_idsList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_requested_usage_data_convertToJSON() failed [ref_um_ids]");
+            goto end;
+        }
     }
-                    }
     }
 
     if (requested_usage_data->is_all_um_ids) {
@@ -73,28 +76,32 @@ end:
 OpenAPI_requested_usage_data_t *OpenAPI_requested_usage_data_parseFromJSON(cJSON *requested_usage_dataJSON)
 {
     OpenAPI_requested_usage_data_t *requested_usage_data_local_var = NULL;
-    cJSON *ref_um_ids = cJSON_GetObjectItemCaseSensitive(requested_usage_dataJSON, "refUmIds");
-
-    OpenAPI_list_t *ref_um_idsList;
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *ref_um_ids = NULL;
+    OpenAPI_list_t *ref_um_idsList = NULL;
+    cJSON *all_um_ids = NULL;
+    ref_um_ids = cJSON_GetObjectItemCaseSensitive(requested_usage_dataJSON, "refUmIds");
     if (ref_um_ids) {
-    cJSON *ref_um_ids_local;
-    if (!cJSON_IsArray(ref_um_ids)) {
-        ogs_error("OpenAPI_requested_usage_data_parseFromJSON() failed [ref_um_ids]");
-        goto end;
-    }
-    ref_um_idsList = OpenAPI_list_create();
+        cJSON *ref_um_ids_local = NULL;
+        if (!cJSON_IsArray(ref_um_ids)) {
+            ogs_error("OpenAPI_requested_usage_data_parseFromJSON() failed [ref_um_ids]");
+            goto end;
+        }
 
-    cJSON_ArrayForEach(ref_um_ids_local, ref_um_ids) {
-    if (!cJSON_IsString(ref_um_ids_local)) {
-        ogs_error("OpenAPI_requested_usage_data_parseFromJSON() failed [ref_um_ids]");
-        goto end;
-    }
-    OpenAPI_list_add(ref_um_idsList , ogs_strdup(ref_um_ids_local->valuestring));
-    }
+        ref_um_idsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(ref_um_ids_local, ref_um_ids) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(ref_um_ids_local)) {
+                ogs_error("OpenAPI_requested_usage_data_parseFromJSON() failed [ref_um_ids]");
+                goto end;
+            }
+            OpenAPI_list_add(ref_um_idsList, ogs_strdup(ref_um_ids_local->valuestring));
+        }
     }
 
-    cJSON *all_um_ids = cJSON_GetObjectItemCaseSensitive(requested_usage_dataJSON, "allUmIds");
-
+    all_um_ids = cJSON_GetObjectItemCaseSensitive(requested_usage_dataJSON, "allUmIds");
     if (all_um_ids) {
     if (!cJSON_IsBool(all_um_ids)) {
         ogs_error("OpenAPI_requested_usage_data_parseFromJSON() failed [all_um_ids]");
@@ -110,6 +117,13 @@ OpenAPI_requested_usage_data_t *OpenAPI_requested_usage_data_parseFromJSON(cJSON
 
     return requested_usage_data_local_var;
 end:
+    if (ref_um_idsList) {
+        OpenAPI_list_for_each(ref_um_idsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(ref_um_idsList);
+        ref_um_idsList = NULL;
+    }
     return NULL;
 }
 

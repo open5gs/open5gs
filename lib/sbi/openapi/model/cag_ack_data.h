@@ -1,7 +1,7 @@
 /*
  * cag_ack_data.h
  *
- * 
+ * Used to store the status of the latest CAG data update.
  */
 
 #ifndef _OpenAPI_cag_ack_data_H_

@@ -1,128 +1,134 @@
 #
-# logger:
-#
 #  o Set OGS_LOG_INFO to all domain level
 #   - If `level` is omitted, the default level is OGS_LOG_INFO)
 #   - If `domain` is omitted, the all domain level is set from 'level'
-#    (Nothing is needed)
+#    (Default values are used, so no configuration is required)
 #
 #  o Set OGS_LOG_ERROR to all domain level
 #   - `level` can be set with none, fatal, error, warn, info, debug, trace
+#  logger:
 #    level: error
 #
 #  o Set OGS_LOG_DEBUG to mme/emm domain level
+#  logger:
 #    level: debug
 #    domain: mme,emm
 #
 #  o Set OGS_LOG_TRACE to all domain level
+#  logger:
 #    level: trace
-#    domain: core,sbi,udm,event,tlv,mem,sock
+#    domain: core,sbi,ausf,event,tlv,mem,sock
 #
 logger:
     file: @localstatedir@/log/open5gs/udm.log
 
 #
-# tls:
-#    enabled: auto|yes|no
-#    - auto: Default. Use TLS only if key/cert is available
-#    - yes:  Use TLS always;
-#            reject if no key/cert available
-#    - no:   Don't use TLS if there is an key/cert available
+#  o TLS enable/disable
+#  sbi:
+#    server|client:
+#      no_tls: false|true
+#    - false: (Default) Use TLS
+#    - true:  TLS disabled
 #
-#    o Server-side Key and Certficiate
+#  o Verification enable/disable
+#  sbi:
+#    server|client:
+#      no_verify: false|true
+#    - false: (Default) Verify the PEER
+#    - true:  Skip the verification step
+#
+#  o Server-side does not use TLS
+#  sbi:
 #    server:
-#      key: /etc/open5gs/tls/udm.key
-#      cert: /etc/open5gs/tls/udm.crt
+#      no_tls: true
 #
-#    o Client-side does not use TLS
+#  o Client-side skips the verification step
+#  sbi:
 #    client:
-#      enabled: no
-#      key: /etc/open5gs/tls/udm.key
-#      cert: /etc/open5gs/tls/udm.crt
+#      no_verify: true
+#      key: /etc/open5gs/tls/amf.key
+#      cert: /etc/open5gs/tls/amf.crt
 #
-#    o Use the specified certificate to verify client
+#  o Use the specified certificate while verifying the client
+#  sbi:
 #    server
 #      cacert: /etc/open5gs/tls/ca.crt
 #
-#    o Use the specified certificate to verify server
+#  o Use the specified certificate while verifying the server
+#  sbi:
 #    client
 #      cacert: /etc/open5gs/tls/ca.crt
 #
-tls:
-    enabled: no
+sbi:
     server:
+      no_tls: true
       cacert: @sysconfdir@/open5gs/tls/ca.crt
       key: @sysconfdir@/open5gs/tls/udm.key
       cert: @sysconfdir@/open5gs/tls/udm.crt
     client:
+      no_tls: true
       cacert: @sysconfdir@/open5gs/tls/ca.crt
       key: @sysconfdir@/open5gs/tls/udm.key
       cert: @sysconfdir@/open5gs/tls/udm.crt
 
 #
-# o Generate the private key as below.
-#   $ openssl genpkey -algorithm X25519 -out /etc/open5gs/hnet/curve25519-1.key
-#   $ openssl ecparam -name prime256v1 -genkey -conv_form compressed -out /etc/open5gs/hnet/secp256r1-2.key
+#  <Home Network Public Key>
 #
-# o The private and public keys can be viewed with the command.
-#   The public key is used when creating the SIM.
-#   $ openssl pkey -in /etc/open5gs/hnet/curve25519-1.key -text
-#   $ openssl ec -in /etc/open5gs/hnet/secp256r1-2.key -conv_form compressed -text
+#  o Generate the private key as below.
+#    $ openssl genpkey -algorithm X25519 -out /etc/open5gs/hnet/curve25519-1.key
+#    $ openssl ecparam -name prime256v1 -genkey -conv_form compressed -out /etc/open5gs/hnet/secp256r1-2.key
 #
-# hnet:
-#    o Home network public key identifier(PKI) value : 1
-#      Protection scheme identifier : ECIES scheme profile A
-#    - id: 1
-#      scheme: 1
-#      key: /etc/open5gs/hnet/curve25519-1.key
+#  o The private and public keys can be viewed with the command.
+#    The public key is used when creating the SIM.
+#    $ openssl pkey -in /etc/open5gs/hnet/curve25519-1.key -text
+#    $ openssl ec -in /etc/open5gs/hnet/secp256r1-2.key -conv_form compressed -text
 #
-#    o Home network public key identifier(PKI) value : 2
-#      Protection scheme identifier : ECIES scheme profile B
-#    - id: 2
-#      scheme: 2
-#      key: /etc/open5gs/hnet/secp256r1-2.key
+#  o Home network public key identifier(PKI) value : 1
+#    Protection scheme identifier : ECIES scheme profile A
+#  udm:
+#    hnet:
+#      - id: 1
+#        scheme: 1
+#        key: /etc/open5gs/hnet/curve25519-1.key
 #
-#    o Home network public key identifier(PKI) value : 3
-#      Protection scheme identifier : ECIES scheme profile A
-#    - id: 3
-#      scheme: 1
-#      key: /etc/open5gs/hnet/curve25519-1.key
+#  o Home network public key identifier(PKI) value : 2
+#    Protection scheme identifier : ECIES scheme profile B
+#  udm:
+#    hnet:
+#      - id: 2
+#        scheme: 2
+#        key: /etc/open5gs/hnet/secp256r1-2.key
 #
-#    o Home network public key identifier(PKI) value : 4
-#      Protection scheme identifier : ECIES scheme profile B
-#    - id: 4
-#      scheme: 2
-#      key: /etc/open5gs/hnet/secp256r1-2.key
+#  o Home network public key identifier(PKI) value : 3
+#    Protection scheme identifier : ECIES scheme profile A
+#  udm:
+#    hnet:
+#      - id: 3
+#        scheme: 1
+#        key: /etc/open5gs/hnet/curve25519-1.key
 #
-hnet:
-  - id: 1
-    scheme: 1
-    key: @sysconfdir@/open5gs/hnet/curve25519-1.key
-  - id: 2
-    scheme: 2
-    key: @sysconfdir@/open5gs/hnet/secp256r1-2.key
-  - id: 3
-    scheme: 1
-    key: @sysconfdir@/open5gs/hnet/curve25519-3.key
-  - id: 4
-    scheme: 2
-    key: @sysconfdir@/open5gs/hnet/secp256r1-4.key
-  - id: 5
-    scheme: 1
-    key: @sysconfdir@/open5gs/hnet/curve25519-5.key
-  - id: 6
-    scheme: 2
-    key: @sysconfdir@/open5gs/hnet/secp256r1-6.key
-
-#
-# udm:
+#  o Home network public key identifier(PKI) value : 4
+#    Protection scheme identifier : ECIES scheme profile B
+#  udm:
+#    hnet:
+#      - id: 4
+#        scheme: 2
+#        key: /etc/open5gs/hnet/secp256r1-2.key
 #
 #  <SBI Server>
 #
 #  o SBI Server(http://<all address available>:80)
+#  sbi:
+#    server:
+#      no_tls: true
+#  udm:
 #    sbi:
 #
 #  o SBI Server(http://<any address>:7777)
+#  sbi:
+#    server:
+#      no_tls: true
+#  udm:
 #    sbi:
 #      - addr:
 #          - 0.0.0.0
@@ -130,48 +136,67 @@ hnet:
 #        port: 7777
 #
 #  o SBI Server(https://<all address available>:443)
-#  tls:
+#  sbi:
 #    server:
 #      key: /etc/open5gs/tls/udm.key
 #      cert: /etc/open5gs/tls/udm.crt
 #  udm:
 #    sbi:
 #
-#  o SBI Server(http://127.0.0.5:80, http://[::1]:80)
-#  tls:
-#    enabled: no
+#  o SBI Server(https://127.0.0.12:443, https://[::1]:443) without verification
+#  sbi:
 #    server:
+#      no_verify: true
 #      key: /etc/open5gs/tls/udm.key
 #      cert: /etc/open5gs/tls/udm.crt
 #  udm:
 #    sbi:
-#      - addr: 127.0.0.5
+#      - addr: 127.0.0.12
 #      - addr: ::1
 #
 #  o SBI Server(https://udm.open5gs.org:443)
-#    Use the specified certificate to verify client
+#    Use the specified certificate while verifying the client
 #
-#  tls:
+#  sbi:
 #    server:
 #      cacert: /etc/open5gs/tls/ca.crt
+#      key: /etc/open5gs/tls/udm.key
+#      cert: /etc/open5gs/tls/udm.crt
 #  udm:
 #    sbi:
 #      - name: udm.open5gs.org
 #
 #  o SBI Server(http://127.0.0.12:7777)
+#  sbi:
+#    server:
+#      no_tls: true
+#  udm:
 #    sbi:
 #      - addr: 127.0.0.12
 #        port: 7777
 #
 #  o SBI Server(http://<eth0 IP address>:80)
+#  sbi:
+#    server:
+#      no_tls: true
+#  udm:
 #    sbi:
 #      - dev: eth0
 #
 #  o Provide custom SBI address to be advertised to NRF
+#  sbi:
+#    server:
+#      no_tls: true
+#  udm:
 #    sbi:
 #      - dev: eth0
 #        advertise: open5gs-udm.svc.local
 #
+#  o Another example of advertising on NRF
+#  sbi:
+#    server:
+#      no_tls: true
+#  udm:
 #    sbi:
 #      - addr: localhost
 #        advertise:
@@ -182,6 +207,10 @@ hnet:
 #    - tcp_nodelay : true
 #    - so_linger.l_onoff : false
 #
+#  sbi:
+#    server:
+#      no_tls: true
+#  udm:
 #    sbi:
 #      addr: 127.0.0.12
 #      option:
@@ -193,9 +222,11 @@ hnet:
 #  <NF Service>
 #
 #  o NF Service Name(Default : all NF services available)
+#  udm:
 #    service_name:
 #
 #  o NF Service Name(Only some NF services are available)
+#  udm:
 #    service_name:
 #      - nudm-sdm
 #      - nudm-uecm
@@ -205,12 +236,21 @@ hnet:
 #
 #  o (Default) If you do not set Query Parameter as shown below,
 #
+#  sbi:
+#    server:
+#      no_tls: true
+#  udm:
 #    sbi:
 #      - addr: 127.0.0.12
 #        port: 7777
 #
 #    - 'service-names' is included.
 #
+#  o Service-Names are not included
+#  sbi:
+#    server:
+#      no_tls: true
+#  udm:
 #    sbi:
 #      - addr: 127.0.0.12
 #        port: 7777
@@ -229,6 +269,10 @@ hnet:
 #
 #  o (Default) If you do not set Delegated Discovery as shown below,
 #
+#  sbi:
+#    server:
+#      no_tls: true
+#  udm:
 #    sbi:
 #      - addr: 127.0.0.12
 #        port: 7777
@@ -236,6 +280,10 @@ hnet:
 #    - Use SCP if SCP avaiable. Otherwise NRF is used.
 #      => App fails if both NRF and SCP are unavailable.
 #
+#  sbi:
+#    server:
+#      no_tls: true
+#  udm:
 #    sbi:
 #      - addr: 127.0.0.12
 #        port: 7777
@@ -249,39 +297,71 @@ hnet:
 #      delegated: no
 #
 udm:
+    hnet:
+      - id: 1
+        scheme: 1
+        key: @sysconfdir@/open5gs/hnet/curve25519-1.key
+      - id: 2
+        scheme: 2
+        key: @sysconfdir@/open5gs/hnet/secp256r1-2.key
+      - id: 3
+        scheme: 1
+        key: @sysconfdir@/open5gs/hnet/curve25519-3.key
+      - id: 4
+        scheme: 2
+        key: @sysconfdir@/open5gs/hnet/secp256r1-4.key
+      - id: 5
+        scheme: 1
+        key: @sysconfdir@/open5gs/hnet/curve25519-5.key
+      - id: 6
+        scheme: 2
+        key: @sysconfdir@/open5gs/hnet/secp256r1-6.key
     sbi:
       - addr: 127.0.0.12
         port: 7777
 
 #
-# scp:
-#
 #  <SBI Client>>
 #
 #  o SBI Client(http://127.0.1.10:7777)
+#  sbi:
+#    client:
+#      no_tls: true
+#  scp:
 #    sbi:
 #      addr: 127.0.1.10
 #      port: 7777
 #
-#  o SBI Client(https://127.0.1.10:443, http://scp.open5gs.org:80)
+#  o SBI Client(https://127.0.1.10:443, https://[::1]:443) without verification
+#  sbi:
+#    client:
+#      no_verify: true
+#      key: /etc/open5gs/tls/amf.key
+#      cert: /etc/open5gs/tls/amf.crt
+#  scp:
 #    sbi:
 #      - addr: 127.0.1.10
-#        tls:
-#          key: /etc/open5gs/tls/udm.key
-#          cert: /etc/open5gs/tls/udm.crt
-#      - name: scp.open5gs.org
+#      - addr: ::1
 #
 #  o SBI Client(https://scp.open5gs.org:443)
-#    Use the specified certificate to verify peer
+#    Use the specified certificate while verifying the server
 #
+#  sbi:
+#    client:
+#      cacert: /etc/open5gs/tls/ca.crt
+#      key: /etc/open5gs/tls/amf.key
+#      cert: /etc/open5gs/tls/amf.crt
+#  scp:
 #    sbi:
 #      - name: scp.open5gs.org
-#        tls:
-#          cacert: /etc/open5gs/tls/ca.crt
 #
 #  o SBI Client(http://[fd69:f21d:873c:fb::1]:80)
 #    If prefer_ipv4 is true, http://127.0.1.10:80 is selected.
 #
+#  sbi:
+#    client:
+#      no_tls: true
+#  scp:
 #    sbi:
 #      addr:
 #        - 127.0.1.10
@@ -291,6 +371,10 @@ udm:
 #    - tcp_nodelay : true
 #    - so_linger.l_onoff : false
 #
+#  sbi:
+#    client:
+#      no_tls: true
+#  scp:
 #    sbi:
 #      addr: 127.0.1.10
 #      option:
@@ -306,31 +390,36 @@ scp:
         port: 7777
 
 #
-# nrf:
-#
 #  <SBI Client>>
 #
 #  o SBI Client(http://127.0.0.10:7777)
+#  sbi:
+#    client:
+#      no_tls: true
+#  nrf:
 #    sbi:
 #      addr: 127.0.0.10
 #      port: 7777
 #
-#  o SBI Client(https://127.0.0.10:443, https://[::1]:443)
-#  tls:
+#  o SBI Client(https://127.0.0.10:443, https://[::1]:443) without verification
+#  sbi:
 #    client:
-#      key: /etc/open5gs/tls/udm.key
-#      cert: /etc/open5gs/tls/udm.crt
+#      no_verify: true
+#      key: /etc/open5gs/tls/amf.key
+#      cert: /etc/open5gs/tls/amf.crt
 #  nrf:
 #    sbi:
 #      - addr: 127.0.0.10
 #      - addr: ::1
 #
 #  o SBI Client(https://nrf.open5gs.org:443)
-#    Use the specified certificate to verify server
+#    Use the specified certificate while verifying the server
 #
-#  tls:
+#  sbi:
 #    client:
 #      cacert: /etc/open5gs/tls/ca.crt
+#      key: /etc/open5gs/tls/amf.key
+#      cert: /etc/open5gs/tls/amf.crt
 #  nrf:
 #    sbi:
 #      - name: nrf.open5gs.org
@@ -347,6 +436,10 @@ scp:
 #    - tcp_nodelay : true
 #    - so_linger.l_onoff : false
 #
+#  sbi:
+#    client:
+#      no_tls: true
+#  nrf:
 #    sbi:
 #      addr: 127.0.0.10
 #      option:
@@ -363,46 +456,50 @@ scp:
 #        port: 7777
 
 #
-# parameter:
-#
 #  o Disable use of IPv4 addresses (only IPv6)
-#      no_ipv4: true
+#  parameter:
+#    no_ipv4: true
 #
 #  o Disable use of IPv6 addresses (only IPv4)
-#      no_ipv6: true
+#  parameter:
+#    no_ipv6: true
 #
 #  o Prefer IPv4 instead of IPv6 for estabishing new GTP connections.
-#      prefer_ipv4: true
+#  parameter:
+#    prefer_ipv4: true
 #
 parameter:
 
 #
-# max:
-#
-# o Maximum Number of UE
+#  o Maximum Number of UE
+#  max:
 #    ue: 1024
-# o Maximum Number of Peer(S1AP/NGAP, DIAMETER, GTP, PFCP or SBI)
+#
+#  o Maximum Number of Peer(S1AP/NGAP, DIAMETER, GTP, PFCP or SBI)
+#  max:
 #    peer: 64
 #
 max:
 
 #
-# time:
-#
 #  o NF Instance Heartbeat (Default : 0)
 #    NFs will not send heart-beat timer in NFProfile
 #    NRF will send heart-beat timer in NFProfile
+#    (Default values are used, so no configuration is required)
 #
 #  o NF Instance Heartbeat (20 seconds)
 #    NFs will send heart-beat timer (20 seconds) in NFProfile
 #    NRF can change heart-beat timer in NFProfile
 #
+#  time:
 #    nf_instance:
 #      heartbeat: 20
 #
 #  o Message Wait Duration (Default : 10,000 ms = 10 seconds)
+#    (Default values are used, so no configuration is required)
 #
 #  o Message Wait Duration (3000 ms)
+#  time:
 #    message:
 #        duration: 3000
 time:

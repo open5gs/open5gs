@@ -22,19 +22,30 @@ OpenAPI_imsi_range_t *OpenAPI_imsi_range_create(
 
 void OpenAPI_imsi_range_free(OpenAPI_imsi_range_t *imsi_range)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == imsi_range) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(imsi_range->start);
-    ogs_free(imsi_range->end);
-    ogs_free(imsi_range->pattern);
+    if (imsi_range->start) {
+        ogs_free(imsi_range->start);
+        imsi_range->start = NULL;
+    }
+    if (imsi_range->end) {
+        ogs_free(imsi_range->end);
+        imsi_range->end = NULL;
+    }
+    if (imsi_range->pattern) {
+        ogs_free(imsi_range->pattern);
+        imsi_range->pattern = NULL;
+    }
     ogs_free(imsi_range);
 }
 
 cJSON *OpenAPI_imsi_range_convertToJSON(OpenAPI_imsi_range_t *imsi_range)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (imsi_range == NULL) {
         ogs_error("OpenAPI_imsi_range_convertToJSON() failed [ImsiRange]");
@@ -70,37 +81,38 @@ end:
 OpenAPI_imsi_range_t *OpenAPI_imsi_range_parseFromJSON(cJSON *imsi_rangeJSON)
 {
     OpenAPI_imsi_range_t *imsi_range_local_var = NULL;
-    cJSON *start = cJSON_GetObjectItemCaseSensitive(imsi_rangeJSON, "start");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *start = NULL;
+    cJSON *end = NULL;
+    cJSON *pattern = NULL;
+    start = cJSON_GetObjectItemCaseSensitive(imsi_rangeJSON, "start");
     if (start) {
-    if (!cJSON_IsString(start)) {
+    if (!cJSON_IsString(start) && !cJSON_IsNull(start)) {
         ogs_error("OpenAPI_imsi_range_parseFromJSON() failed [start]");
         goto end;
     }
     }
 
-    cJSON *end = cJSON_GetObjectItemCaseSensitive(imsi_rangeJSON, "end");
-
+    end = cJSON_GetObjectItemCaseSensitive(imsi_rangeJSON, "end");
     if (end) {
-    if (!cJSON_IsString(end)) {
+    if (!cJSON_IsString(end) && !cJSON_IsNull(end)) {
         ogs_error("OpenAPI_imsi_range_parseFromJSON() failed [end]");
         goto end;
     }
     }
 
-    cJSON *pattern = cJSON_GetObjectItemCaseSensitive(imsi_rangeJSON, "pattern");
-
+    pattern = cJSON_GetObjectItemCaseSensitive(imsi_rangeJSON, "pattern");
     if (pattern) {
-    if (!cJSON_IsString(pattern)) {
+    if (!cJSON_IsString(pattern) && !cJSON_IsNull(pattern)) {
         ogs_error("OpenAPI_imsi_range_parseFromJSON() failed [pattern]");
         goto end;
     }
     }
 
     imsi_range_local_var = OpenAPI_imsi_range_create (
-        start ? ogs_strdup(start->valuestring) : NULL,
-        end ? ogs_strdup(end->valuestring) : NULL,
-        pattern ? ogs_strdup(pattern->valuestring) : NULL
+        start && !cJSON_IsNull(start) ? ogs_strdup(start->valuestring) : NULL,
+        end && !cJSON_IsNull(end) ? ogs_strdup(end->valuestring) : NULL,
+        pattern && !cJSON_IsNull(pattern) ? ogs_strdup(pattern->valuestring) : NULL
     );
 
     return imsi_range_local_var;

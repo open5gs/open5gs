@@ -1,7 +1,7 @@
 /*
  * ue_context_create_error.h
  *
- * 
+ * Data within a failure response for creating a UE context
  */
 
 #ifndef _OpenAPI_ue_context_create_error_H_

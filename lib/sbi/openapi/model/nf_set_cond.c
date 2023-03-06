@@ -18,17 +18,22 @@ OpenAPI_nf_set_cond_t *OpenAPI_nf_set_cond_create(
 
 void OpenAPI_nf_set_cond_free(OpenAPI_nf_set_cond_t *nf_set_cond)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == nf_set_cond) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(nf_set_cond->nf_set_id);
+    if (nf_set_cond->nf_set_id) {
+        ogs_free(nf_set_cond->nf_set_id);
+        nf_set_cond->nf_set_id = NULL;
+    }
     ogs_free(nf_set_cond);
 }
 
 cJSON *OpenAPI_nf_set_cond_convertToJSON(OpenAPI_nf_set_cond_t *nf_set_cond)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (nf_set_cond == NULL) {
         ogs_error("OpenAPI_nf_set_cond_convertToJSON() failed [NfSetCond]");
@@ -36,6 +41,10 @@ cJSON *OpenAPI_nf_set_cond_convertToJSON(OpenAPI_nf_set_cond_t *nf_set_cond)
     }
 
     item = cJSON_CreateObject();
+    if (!nf_set_cond->nf_set_id) {
+        ogs_error("OpenAPI_nf_set_cond_convertToJSON() failed [nf_set_id]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "nfSetId", nf_set_cond->nf_set_id) == NULL) {
         ogs_error("OpenAPI_nf_set_cond_convertToJSON() failed [nf_set_id]");
         goto end;
@@ -48,12 +57,13 @@ end:
 OpenAPI_nf_set_cond_t *OpenAPI_nf_set_cond_parseFromJSON(cJSON *nf_set_condJSON)
 {
     OpenAPI_nf_set_cond_t *nf_set_cond_local_var = NULL;
-    cJSON *nf_set_id = cJSON_GetObjectItemCaseSensitive(nf_set_condJSON, "nfSetId");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *nf_set_id = NULL;
+    nf_set_id = cJSON_GetObjectItemCaseSensitive(nf_set_condJSON, "nfSetId");
     if (!nf_set_id) {
         ogs_error("OpenAPI_nf_set_cond_parseFromJSON() failed [nf_set_id]");
         goto end;
     }
-
     if (!cJSON_IsString(nf_set_id)) {
         ogs_error("OpenAPI_nf_set_cond_parseFromJSON() failed [nf_set_id]");
         goto end;

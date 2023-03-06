@@ -13,6 +13,7 @@
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
 #include "af_routing_requirement.h"
+#include "alternative_service_requirements_data.h"
 #include "flow_status.h"
 #include "media_sub_component.h"
 #include "media_type.h"
@@ -35,6 +36,7 @@ typedef struct OpenAPI_media_component_s {
     bool is_dis_ue_notif;
     int dis_ue_notif;
     OpenAPI_list_t *alt_ser_reqs;
+    OpenAPI_list_t *alt_ser_reqs_data;
     bool is_cont_ver;
     int cont_ver;
     OpenAPI_list_t *codecs;
@@ -72,6 +74,8 @@ typedef struct OpenAPI_media_component_s {
     struct OpenAPI_tsn_qos_container_s *tsn_qos;
     struct OpenAPI_tscai_input_container_s *tscai_input_dl;
     struct OpenAPI_tscai_input_container_s *tscai_input_ul;
+    bool is_tscai_time_dom;
+    int tscai_time_dom;
 } OpenAPI_media_component_t;
 
 OpenAPI_media_component_t *OpenAPI_media_component_create(
@@ -81,6 +85,7 @@ OpenAPI_media_component_t *OpenAPI_media_component_create(
     bool is_dis_ue_notif,
     int dis_ue_notif,
     OpenAPI_list_t *alt_ser_reqs,
+    OpenAPI_list_t *alt_ser_reqs_data,
     bool is_cont_ver,
     int cont_ver,
     OpenAPI_list_t *codecs,
@@ -117,7 +122,9 @@ OpenAPI_media_component_t *OpenAPI_media_component_create(
     int sharing_key_ul,
     OpenAPI_tsn_qos_container_t *tsn_qos,
     OpenAPI_tscai_input_container_t *tscai_input_dl,
-    OpenAPI_tscai_input_container_t *tscai_input_ul
+    OpenAPI_tscai_input_container_t *tscai_input_ul,
+    bool is_tscai_time_dom,
+    int tscai_time_dom
 );
 void OpenAPI_media_component_free(OpenAPI_media_component_t *media_component);
 OpenAPI_media_component_t *OpenAPI_media_component_parseFromJSON(cJSON *media_componentJSON);

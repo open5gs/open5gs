@@ -1,7 +1,7 @@
 /*
  * point_uncertainty_ellipse.h
  *
- * 
+ * Ellipsoid point with uncertainty ellipse.
  */
 
 #ifndef _OpenAPI_point_uncertainty_ellipse_H_
@@ -14,7 +14,6 @@
 #include "../include/binary.h"
 #include "gad_shape.h"
 #include "geographical_coordinates.h"
-#include "point_uncertainty_ellipse_all_of.h"
 #include "supported_gad_shapes.h"
 #include "uncertainty_ellipse.h"
 

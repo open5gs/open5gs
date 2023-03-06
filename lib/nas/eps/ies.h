@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -28,8 +28,8 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2022-01-22 09:24:28.366939 by acetcom
- * from 24301-g40.docx
+ * Created on: 2023-03-02 22:57:51.844510 by acetcom
+ * from 24301-h90.docx
  ******************************************************************************/
 
 #if !defined(OGS_NAS_INSIDE) && !defined(OGS_NAS_COMPILATION)
@@ -118,10 +118,17 @@ int ogs_nas_eps_decode_ue_status(ogs_nas_ue_status_t *ue_status, ogs_pkbuf_t *pk
 int ogs_nas_eps_decode_additional_information_requested(ogs_nas_additional_information_requested_t *additional_information_requested, ogs_pkbuf_t *pkbuf);
 int ogs_nas_eps_decode_ciphering_key_data(ogs_nas_ciphering_key_data_t *ciphering_key_data, ogs_pkbuf_t *pkbuf);
 int ogs_nas_eps_decode_n1_ue_network_capability(ogs_nas_n1_ue_network_capability_t *n1_ue_network_capability, ogs_pkbuf_t *pkbuf);
+int ogs_nas_eps_decode_ue_radio_capability_id_availability(ogs_nas_ue_radio_capability_id_availability_t *ue_radio_capability_id_availability, ogs_pkbuf_t *pkbuf);
 int ogs_nas_eps_decode_ue_radio_capability_id_request(ogs_nas_ue_radio_capability_id_request_t *ue_radio_capability_id_request, ogs_pkbuf_t *pkbuf);
 int ogs_nas_eps_decode_daylight_saving_time(ogs_nas_daylight_saving_time_t *daylight_saving_time, ogs_pkbuf_t *pkbuf);
 int ogs_nas_eps_decode_ue_radio_capability_id(ogs_nas_ue_radio_capability_id_t *ue_radio_capability_id, ogs_pkbuf_t *pkbuf);
 int ogs_nas_eps_decode_ue_radio_capability_id_deletion_indication(ogs_nas_ue_radio_capability_id_deletion_indication_t *ue_radio_capability_id_deletion_indication, ogs_pkbuf_t *pkbuf);
+int ogs_nas_eps_decode_wus_assistance_information(ogs_nas_wus_assistance_information_t *wus_assistance_information, ogs_pkbuf_t *pkbuf);
+int ogs_nas_eps_decode_nb_s1_drx_parameter(ogs_nas_nb_s1_drx_parameter_t *nb_s1_drx_parameter, ogs_pkbuf_t *pkbuf);
+int ogs_nas_eps_decode_imsi_offset(ogs_nas_imsi_offset_t *imsi_offset, ogs_pkbuf_t *pkbuf);
+int ogs_nas_eps_decode_ue_request_type(ogs_nas_ue_request_type_t *ue_request_type, ogs_pkbuf_t *pkbuf);
+int ogs_nas_eps_decode_paging_restriction(ogs_nas_paging_restriction_t *paging_restriction, ogs_pkbuf_t *pkbuf);
+int ogs_nas_eps_decode_eps_additional_request_result(ogs_nas_eps_additional_request_result_t *eps_additional_request_result, ogs_pkbuf_t *pkbuf);
 int ogs_nas_eps_decode_detach_type(ogs_nas_detach_type_t *detach_type, ogs_pkbuf_t *pkbuf);
 int ogs_nas_eps_decode_drx_parameter(ogs_nas_drx_parameter_t *drx_parameter, ogs_pkbuf_t *pkbuf);
 int ogs_nas_eps_decode_emm_cause(ogs_nas_emm_cause_t *emm_cause, ogs_pkbuf_t *pkbuf);
@@ -226,10 +233,17 @@ int ogs_nas_eps_encode_ue_status(ogs_pkbuf_t *pkbuf, ogs_nas_ue_status_t *ue_sta
 int ogs_nas_eps_encode_additional_information_requested(ogs_pkbuf_t *pkbuf, ogs_nas_additional_information_requested_t *additional_information_requested);
 int ogs_nas_eps_encode_ciphering_key_data(ogs_pkbuf_t *pkbuf, ogs_nas_ciphering_key_data_t *ciphering_key_data);
 int ogs_nas_eps_encode_n1_ue_network_capability(ogs_pkbuf_t *pkbuf, ogs_nas_n1_ue_network_capability_t *n1_ue_network_capability);
+int ogs_nas_eps_encode_ue_radio_capability_id_availability(ogs_pkbuf_t *pkbuf, ogs_nas_ue_radio_capability_id_availability_t *ue_radio_capability_id_availability);
 int ogs_nas_eps_encode_ue_radio_capability_id_request(ogs_pkbuf_t *pkbuf, ogs_nas_ue_radio_capability_id_request_t *ue_radio_capability_id_request);
 int ogs_nas_eps_encode_daylight_saving_time(ogs_pkbuf_t *pkbuf, ogs_nas_daylight_saving_time_t *daylight_saving_time);
 int ogs_nas_eps_encode_ue_radio_capability_id(ogs_pkbuf_t *pkbuf, ogs_nas_ue_radio_capability_id_t *ue_radio_capability_id);
 int ogs_nas_eps_encode_ue_radio_capability_id_deletion_indication(ogs_pkbuf_t *pkbuf, ogs_nas_ue_radio_capability_id_deletion_indication_t *ue_radio_capability_id_deletion_indication);
+int ogs_nas_eps_encode_wus_assistance_information(ogs_pkbuf_t *pkbuf, ogs_nas_wus_assistance_information_t *wus_assistance_information);
+int ogs_nas_eps_encode_nb_s1_drx_parameter(ogs_pkbuf_t *pkbuf, ogs_nas_nb_s1_drx_parameter_t *nb_s1_drx_parameter);
+int ogs_nas_eps_encode_imsi_offset(ogs_pkbuf_t *pkbuf, ogs_nas_imsi_offset_t *imsi_offset);
+int ogs_nas_eps_encode_ue_request_type(ogs_pkbuf_t *pkbuf, ogs_nas_ue_request_type_t *ue_request_type);
+int ogs_nas_eps_encode_paging_restriction(ogs_pkbuf_t *pkbuf, ogs_nas_paging_restriction_t *paging_restriction);
+int ogs_nas_eps_encode_eps_additional_request_result(ogs_pkbuf_t *pkbuf, ogs_nas_eps_additional_request_result_t *eps_additional_request_result);
 int ogs_nas_eps_encode_detach_type(ogs_pkbuf_t *pkbuf, ogs_nas_detach_type_t *detach_type);
 int ogs_nas_eps_encode_drx_parameter(ogs_pkbuf_t *pkbuf, ogs_nas_drx_parameter_t *drx_parameter);
 int ogs_nas_eps_encode_emm_cause(ogs_pkbuf_t *pkbuf, ogs_nas_emm_cause_t *emm_cause);

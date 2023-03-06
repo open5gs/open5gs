@@ -1,7 +1,7 @@
 /*
  * upf_cond.h
  *
- * Subscription to a set of NF Instances (UPFs), able to serve a certain service area (i.e. SMF serving area or TAI list)
+ * Subscription to a set of NF Instances (UPFs), able to serve a certain service area (i.e. SMF serving area or TAI list) 
  */
 
 #ifndef _OpenAPI_upf_cond_H_

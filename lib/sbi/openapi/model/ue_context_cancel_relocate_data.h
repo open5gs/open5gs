@@ -1,7 +1,7 @@
 /*
  * ue_context_cancel_relocate_data.h
  *
- * 
+ * Data structure used for cancellation of UE Context Relocation
  */
 
 #ifndef _OpenAPI_ue_context_cancel_relocate_data_H_

@@ -7,7 +7,9 @@
 OpenAPI_user_location_t *OpenAPI_user_location_create(
     OpenAPI_eutra_location_t *eutra_location,
     OpenAPI_nr_location_t *nr_location,
-    OpenAPI_n3ga_location_t *n3ga_location
+    OpenAPI_n3ga_location_t *n3ga_location,
+    OpenAPI_utra_location_t *utra_location,
+    OpenAPI_gera_location_t *gera_location
 )
 {
     OpenAPI_user_location_t *user_location_local_var = ogs_malloc(sizeof(OpenAPI_user_location_t));
@@ -16,25 +18,46 @@ OpenAPI_user_location_t *OpenAPI_user_location_create(
     user_location_local_var->eutra_location = eutra_location;
     user_location_local_var->nr_location = nr_location;
     user_location_local_var->n3ga_location = n3ga_location;
+    user_location_local_var->utra_location = utra_location;
+    user_location_local_var->gera_location = gera_location;
 
     return user_location_local_var;
 }
 
 void OpenAPI_user_location_free(OpenAPI_user_location_t *user_location)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == user_location) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_eutra_location_free(user_location->eutra_location);
-    OpenAPI_nr_location_free(user_location->nr_location);
-    OpenAPI_n3ga_location_free(user_location->n3ga_location);
+    if (user_location->eutra_location) {
+        OpenAPI_eutra_location_free(user_location->eutra_location);
+        user_location->eutra_location = NULL;
+    }
+    if (user_location->nr_location) {
+        OpenAPI_nr_location_free(user_location->nr_location);
+        user_location->nr_location = NULL;
+    }
+    if (user_location->n3ga_location) {
+        OpenAPI_n3ga_location_free(user_location->n3ga_location);
+        user_location->n3ga_location = NULL;
+    }
+    if (user_location->utra_location) {
+        OpenAPI_utra_location_free(user_location->utra_location);
+        user_location->utra_location = NULL;
+    }
+    if (user_location->gera_location) {
+        OpenAPI_gera_location_free(user_location->gera_location);
+        user_location->gera_location = NULL;
+    }
     ogs_free(user_location);
 }
 
 cJSON *OpenAPI_user_location_convertToJSON(OpenAPI_user_location_t *user_location)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (user_location == NULL) {
         ogs_error("OpenAPI_user_location_convertToJSON() failed [UserLocation]");
@@ -81,6 +104,32 @@ cJSON *OpenAPI_user_location_convertToJSON(OpenAPI_user_location_t *user_locatio
     }
     }
 
+    if (user_location->utra_location) {
+    cJSON *utra_location_local_JSON = OpenAPI_utra_location_convertToJSON(user_location->utra_location);
+    if (utra_location_local_JSON == NULL) {
+        ogs_error("OpenAPI_user_location_convertToJSON() failed [utra_location]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "utraLocation", utra_location_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_user_location_convertToJSON() failed [utra_location]");
+        goto end;
+    }
+    }
+
+    if (user_location->gera_location) {
+    cJSON *gera_location_local_JSON = OpenAPI_gera_location_convertToJSON(user_location->gera_location);
+    if (gera_location_local_JSON == NULL) {
+        ogs_error("OpenAPI_user_location_convertToJSON() failed [gera_location]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "geraLocation", gera_location_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_user_location_convertToJSON() failed [gera_location]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -88,35 +137,72 @@ end:
 OpenAPI_user_location_t *OpenAPI_user_location_parseFromJSON(cJSON *user_locationJSON)
 {
     OpenAPI_user_location_t *user_location_local_var = NULL;
-    cJSON *eutra_location = cJSON_GetObjectItemCaseSensitive(user_locationJSON, "eutraLocation");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *eutra_location = NULL;
     OpenAPI_eutra_location_t *eutra_location_local_nonprim = NULL;
+    cJSON *nr_location = NULL;
+    OpenAPI_nr_location_t *nr_location_local_nonprim = NULL;
+    cJSON *n3ga_location = NULL;
+    OpenAPI_n3ga_location_t *n3ga_location_local_nonprim = NULL;
+    cJSON *utra_location = NULL;
+    OpenAPI_utra_location_t *utra_location_local_nonprim = NULL;
+    cJSON *gera_location = NULL;
+    OpenAPI_gera_location_t *gera_location_local_nonprim = NULL;
+    eutra_location = cJSON_GetObjectItemCaseSensitive(user_locationJSON, "eutraLocation");
     if (eutra_location) {
     eutra_location_local_nonprim = OpenAPI_eutra_location_parseFromJSON(eutra_location);
     }
 
-    cJSON *nr_location = cJSON_GetObjectItemCaseSensitive(user_locationJSON, "nrLocation");
-
-    OpenAPI_nr_location_t *nr_location_local_nonprim = NULL;
+    nr_location = cJSON_GetObjectItemCaseSensitive(user_locationJSON, "nrLocation");
     if (nr_location) {
     nr_location_local_nonprim = OpenAPI_nr_location_parseFromJSON(nr_location);
     }
 
-    cJSON *n3ga_location = cJSON_GetObjectItemCaseSensitive(user_locationJSON, "n3gaLocation");
-
-    OpenAPI_n3ga_location_t *n3ga_location_local_nonprim = NULL;
+    n3ga_location = cJSON_GetObjectItemCaseSensitive(user_locationJSON, "n3gaLocation");
     if (n3ga_location) {
     n3ga_location_local_nonprim = OpenAPI_n3ga_location_parseFromJSON(n3ga_location);
+    }
+
+    utra_location = cJSON_GetObjectItemCaseSensitive(user_locationJSON, "utraLocation");
+    if (utra_location) {
+    utra_location_local_nonprim = OpenAPI_utra_location_parseFromJSON(utra_location);
+    }
+
+    gera_location = cJSON_GetObjectItemCaseSensitive(user_locationJSON, "geraLocation");
+    if (gera_location) {
+    gera_location_local_nonprim = OpenAPI_gera_location_parseFromJSON(gera_location);
     }
 
     user_location_local_var = OpenAPI_user_location_create (
         eutra_location ? eutra_location_local_nonprim : NULL,
         nr_location ? nr_location_local_nonprim : NULL,
-        n3ga_location ? n3ga_location_local_nonprim : NULL
+        n3ga_location ? n3ga_location_local_nonprim : NULL,
+        utra_location ? utra_location_local_nonprim : NULL,
+        gera_location ? gera_location_local_nonprim : NULL
     );
 
     return user_location_local_var;
 end:
+    if (eutra_location_local_nonprim) {
+        OpenAPI_eutra_location_free(eutra_location_local_nonprim);
+        eutra_location_local_nonprim = NULL;
+    }
+    if (nr_location_local_nonprim) {
+        OpenAPI_nr_location_free(nr_location_local_nonprim);
+        nr_location_local_nonprim = NULL;
+    }
+    if (n3ga_location_local_nonprim) {
+        OpenAPI_n3ga_location_free(n3ga_location_local_nonprim);
+        n3ga_location_local_nonprim = NULL;
+    }
+    if (utra_location_local_nonprim) {
+        OpenAPI_utra_location_free(utra_location_local_nonprim);
+        utra_location_local_nonprim = NULL;
+    }
+    if (gera_location_local_nonprim) {
+        OpenAPI_gera_location_free(gera_location_local_nonprim);
+        gera_location_local_nonprim = NULL;
+    }
     return NULL;
 }
 

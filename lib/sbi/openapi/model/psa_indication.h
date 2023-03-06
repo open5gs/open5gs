@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_psa_indication_NULL = 0, OpenAPI_psa_indication_PSA_INSERTED, OpenAPI_psa_indication_PSA_REMOVED } OpenAPI_psa_indication_e;
+typedef enum { OpenAPI_psa_indication_NULL = 0, OpenAPI_psa_indication_PSA_INSERTED, OpenAPI_psa_indication_PSA_REMOVED, OpenAPI_psa_indication_PSA_INSERTED_ONLY, OpenAPI_psa_indication_PSA_REMOVED_ONLY } OpenAPI_psa_indication_e;
 
 char* OpenAPI_psa_indication_ToString(OpenAPI_psa_indication_e psa_indication);
 

@@ -1,7 +1,7 @@
 /*
  * eap_session.h
  *
- * 
+ * Contains information related to the EAP session.
  */
 
 #ifndef _OpenAPI_eap_session_H_
@@ -14,6 +14,7 @@
 #include "../include/binary.h"
 #include "auth_result.h"
 #include "links_value_schema.h"
+#include "server_addressing_info.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,6 +28,8 @@ typedef struct OpenAPI_eap_session_s {
     OpenAPI_auth_result_e auth_result;
     char *supi;
     char *supported_features;
+    OpenAPI_list_t *pvs_info;
+    char *msk;
 } OpenAPI_eap_session_t;
 
 OpenAPI_eap_session_t *OpenAPI_eap_session_create(
@@ -35,7 +38,9 @@ OpenAPI_eap_session_t *OpenAPI_eap_session_create(
     OpenAPI_list_t* _links,
     OpenAPI_auth_result_e auth_result,
     char *supi,
-    char *supported_features
+    char *supported_features,
+    OpenAPI_list_t *pvs_info,
+    char *msk
 );
 void OpenAPI_eap_session_free(OpenAPI_eap_session_t *eap_session);
 OpenAPI_eap_session_t *OpenAPI_eap_session_parseFromJSON(cJSON *eap_sessionJSON);

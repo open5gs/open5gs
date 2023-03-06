@@ -1,7 +1,7 @@
 /*
  * confirmation_data.h
  *
- * 
+ * Contains the result of the authentication.
  */
 
 #ifndef _OpenAPI_confirmation_data_H_

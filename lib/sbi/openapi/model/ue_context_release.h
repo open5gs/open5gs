@@ -1,7 +1,7 @@
 /*
  * ue_context_release.h
  *
- * 
+ * Data within a Release UE Context request
  */
 
 #ifndef _OpenAPI_ue_context_release_H_

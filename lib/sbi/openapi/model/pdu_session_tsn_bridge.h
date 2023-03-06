@@ -1,7 +1,7 @@
 /*
  * pdu_session_tsn_bridge.h
  *
- * Contains the new 5GS Bridge information and may contain the DS-TT port and/or NW-TT port management information.
+ * Contains the new TSC user plane node information and may contain the DS-TT port and/or NW-TT port management information.
  */
 
 #ifndef _OpenAPI_pdu_session_tsn_bridge_H_
@@ -14,6 +14,7 @@
 #include "../include/binary.h"
 #include "bridge_management_container.h"
 #include "port_management_container.h"
+#include "snssai.h"
 #include "tsn_bridge_info.h"
 
 #ifdef __cplusplus
@@ -26,13 +27,23 @@ typedef struct OpenAPI_pdu_session_tsn_bridge_s {
     struct OpenAPI_bridge_management_container_s *tsn_bridge_man_cont;
     struct OpenAPI_port_management_container_s *tsn_port_man_cont_dstt;
     OpenAPI_list_t *tsn_port_man_cont_nwtts;
+    char *ue_ipv4_addr;
+    char *dnn;
+    struct OpenAPI_snssai_s *snssai;
+    char *ip_domain;
+    char *ue_ipv6_addr_prefix;
 } OpenAPI_pdu_session_tsn_bridge_t;
 
 OpenAPI_pdu_session_tsn_bridge_t *OpenAPI_pdu_session_tsn_bridge_create(
     OpenAPI_tsn_bridge_info_t *tsn_bridge_info,
     OpenAPI_bridge_management_container_t *tsn_bridge_man_cont,
     OpenAPI_port_management_container_t *tsn_port_man_cont_dstt,
-    OpenAPI_list_t *tsn_port_man_cont_nwtts
+    OpenAPI_list_t *tsn_port_man_cont_nwtts,
+    char *ue_ipv4_addr,
+    char *dnn,
+    OpenAPI_snssai_t *snssai,
+    char *ip_domain,
+    char *ue_ipv6_addr_prefix
 );
 void OpenAPI_pdu_session_tsn_bridge_free(OpenAPI_pdu_session_tsn_bridge_t *pdu_session_tsn_bridge);
 OpenAPI_pdu_session_tsn_bridge_t *OpenAPI_pdu_session_tsn_bridge_parseFromJSON(cJSON *pdu_session_tsn_bridgeJSON);

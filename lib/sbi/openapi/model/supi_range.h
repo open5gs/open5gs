@@ -1,7 +1,7 @@
 /*
  * supi_range.h
  *
- * A range of SUPIs (subscriber identities), either based on a numeric range, or based on regular-expression matching
+ * A range of SUPIs (subscriber identities), either based on a numeric range, or based on regular-expression matching 
  */
 
 #ifndef _OpenAPI_supi_range_H_

@@ -1,7 +1,7 @@
 /*
  * twap_id.h
  *
- * 
+ * Contain the TWAP Identifier as defined in clause 4.2.8.5.3 of 3GPP TS 23.501 or the WLAN location information as defined in clause 4.5.7.2.8 of 3GPP TS 23.402. 
  */
 
 #ifndef _OpenAPI_twap_id_H_
@@ -21,13 +21,13 @@ typedef struct OpenAPI_twap_id_s OpenAPI_twap_id_t;
 typedef struct OpenAPI_twap_id_s {
     char *ss_id;
     char *bss_id;
-    char civic_address;
+    char *civic_address;
 } OpenAPI_twap_id_t;
 
 OpenAPI_twap_id_t *OpenAPI_twap_id_create(
     char *ss_id,
     char *bss_id,
-    char civic_address
+    char *civic_address
 );
 void OpenAPI_twap_id_free(OpenAPI_twap_id_t *twap_id);
 OpenAPI_twap_id_t *OpenAPI_twap_id_parseFromJSON(cJSON *twap_idJSON);

@@ -196,6 +196,9 @@ void smf_pfcp_close(void)
     ogs_list_for_each(&ogs_pfcp_self()->pfcp_peer_list, pfcp_node)
         pfcp_node_fsm_fini(pfcp_node);
 
+    ogs_freeaddrinfo(ogs_pfcp_self()->pfcp_advertise);
+    ogs_freeaddrinfo(ogs_pfcp_self()->pfcp_advertise6);
+
     ogs_socknode_remove_all(&ogs_pfcp_self()->pfcp_list);
     ogs_socknode_remove_all(&ogs_pfcp_self()->pfcp_list6);
 }
@@ -230,10 +233,11 @@ static void sess_5gc_timeout(ogs_pfcp_xact_t *xact, void *data)
         ogs_assert(strerror);
 
         ogs_error("%s", strerror);
-        ogs_assert(stream);
-        smf_sbi_send_sm_context_update_error(stream,
-                OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT,
-                strerror, NULL, NULL, NULL);
+        if (stream) {
+            smf_sbi_send_sm_context_update_error(stream,
+                    OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT,
+                    strerror, NULL, NULL, NULL);
+        }
         ogs_free(strerror);
         break;
     case OGS_PFCP_SESSION_DELETION_REQUEST_TYPE:

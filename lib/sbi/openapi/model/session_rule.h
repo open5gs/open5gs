@@ -1,7 +1,7 @@
 /*
  * session_rule.h
  *
- * 
+ * Contains session level policy information.
  */
 
 #ifndef _OpenAPI_session_rule_H_

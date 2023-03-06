@@ -1,7 +1,7 @@
 /*
  * rg_authentication_info.h
  *
- * 
+ * Contains the UE id (i.e. SUCI) and the authenticated indication.
  */
 
 #ifndef _OpenAPI_rg_authentication_info_H_

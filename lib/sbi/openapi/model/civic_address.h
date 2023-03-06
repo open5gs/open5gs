@@ -1,7 +1,7 @@
 /*
  * civic_address.h
  *
- * 
+ * Indicates a Civic address.
  */
 
 #ifndef _OpenAPI_civic_address_H_

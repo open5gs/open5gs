@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "am_influ_data.h"
 #include "bdt_policy_data.h"
 #include "iptv_config_data.h"
 #include "pfd_change_notification.h"
@@ -28,6 +29,7 @@ typedef struct OpenAPI_application_data_change_notif_s {
     struct OpenAPI_bdt_policy_data_s *bdt_policy_data;
     char *res_uri;
     struct OpenAPI_service_parameter_data_s *ser_param_data;
+    struct OpenAPI_am_influ_data_s *am_influ_data;
 } OpenAPI_application_data_change_notif_t;
 
 OpenAPI_application_data_change_notif_t *OpenAPI_application_data_change_notif_create(
@@ -35,7 +37,8 @@ OpenAPI_application_data_change_notif_t *OpenAPI_application_data_change_notif_c
     OpenAPI_pfd_change_notification_t *pfd_data,
     OpenAPI_bdt_policy_data_t *bdt_policy_data,
     char *res_uri,
-    OpenAPI_service_parameter_data_t *ser_param_data
+    OpenAPI_service_parameter_data_t *ser_param_data,
+    OpenAPI_am_influ_data_t *am_influ_data
 );
 void OpenAPI_application_data_change_notif_free(OpenAPI_application_data_change_notif_t *application_data_change_notif);
 OpenAPI_application_data_change_notif_t *OpenAPI_application_data_change_notif_parseFromJSON(cJSON *application_data_change_notifJSON);

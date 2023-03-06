@@ -1,7 +1,7 @@
 /*
  * qos_flow_profile.h
  *
- * 
+ * QoS flow profile
  */
 
 #ifndef _OpenAPI_qos_flow_profile_H_

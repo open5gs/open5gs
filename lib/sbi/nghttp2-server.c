@@ -119,7 +119,8 @@ static void server_final(void)
 
 #ifndef OPENSSL_NO_NEXTPROTONEG
 static int next_proto_cb(SSL *ssl, const unsigned char **data,
-                         unsigned int *len, void *arg) {
+                         unsigned int *len, void *arg)
+{
     static unsigned char next_proto_list[256];
     (void)ssl;
     (void)arg;
@@ -136,7 +137,8 @@ static int next_proto_cb(SSL *ssl, const unsigned char **data,
 #if OPENSSL_VERSION_NUMBER >= 0x10002000L
 static int alpn_select_proto_cb(SSL *ssl, const unsigned char **out,
                                 unsigned char *outlen, const unsigned char *in,
-                                unsigned int inlen, void *arg) {
+                                unsigned int inlen, void *arg)
+{
     int rv;
     (void)ssl;
     (void)arg;
@@ -150,18 +152,75 @@ static int alpn_select_proto_cb(SSL *ssl, const unsigned char **out,
 }
 #endif /* OPENSSL_VERSION_NUMBER >= 0x10002000L */
 
-static SSL_CTX *create_ssl_ctx(const char *key_file, const char *cert_file) {
+static int ssl_ctx_set_proto_versions(SSL_CTX *ssl_ctx, int min, int max)
+{
+#if OPENSSL_VERSION_NUMBER >= 0x1010000fL
+  if (SSL_CTX_set_min_proto_version(ssl_ctx, min) != 1 ||
+      SSL_CTX_set_max_proto_version(ssl_ctx, max) != 1) {
+    return -1;
+  }
+  return 0;
+#else /* !(OPENSSL_VERSION_NUMBER >= 0x1010000fL) */
+  long int opts = 0;
+
+  // TODO We depends on the ordering of protocol version macro in
+  // OpenSSL.
+  if (min > TLS1_VERSION) {
+    opts |= SSL_OP_NO_TLSv1;
+  }
+  if (min > TLS1_1_VERSION) {
+    opts |= SSL_OP_NO_TLSv1_1;
+  }
+  if (min > TLS1_2_VERSION) {
+    opts |= SSL_OP_NO_TLSv1_2;
+  }
+
+  if (max < TLS1_2_VERSION) {
+    opts |= SSL_OP_NO_TLSv1_2;
+  }
+  if (max < TLS1_1_VERSION) {
+    opts |= SSL_OP_NO_TLSv1_1;
+  }
+
+  SSL_CTX_set_options(ssl_ctx, opts);
+
+  return 0;
+#endif /* OPENSSL_VERSION_NUMBER >= 0x1010000fL */
+}
+
+static SSL_CTX *create_ssl_ctx(const char *key_file, const char *cert_file)
+{
     SSL_CTX *ssl_ctx;
+    uint64_t ssl_opts;
+
+    ogs_assert(key_file);
+    ogs_assert(cert_file);
 
     ssl_ctx = SSL_CTX_new(TLS_server_method());
     if (!ssl_ctx) {
         ogs_error("Could not create SSL/TLS context: %s", ERR_error_string(ERR_get_error(), NULL));
         return NULL;
     }
-    SSL_CTX_set_options(ssl_ctx,
-                          SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 |
-                          SSL_OP_NO_COMPRESSION |
-                          SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION);
+
+    ssl_opts = (SSL_OP_ALL & ~SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS) |
+                  SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_COMPRESSION |
+                  SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION |
+                  SSL_OP_SINGLE_ECDH_USE | SSL_OP_SINGLE_DH_USE |
+                  SSL_OP_CIPHER_SERVER_PREFERENCE
+#if OPENSSL_VERSION_NUMBER >= 0x10101000L
+                  // The reason for disabling built-in anti-replay in
+                  // OpenSSL is that it only works if client gets back
+                  // to the same server.  The freshness check
+                  // described in
+                  // https://tools.ietf.org/html/rfc8446#section-8.3
+                  // is still performed.
+                  | SSL_OP_NO_ANTI_REPLAY
+#endif /* OPENSSL_VERSION_NUMBER >= 0x10101000L */
+        ;
+
+
+    SSL_CTX_set_options(ssl_ctx, ssl_opts);
+
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
     if (SSL_CTX_set1_curves_list(ssl_ctx, "P-256") != 1) {
         ogs_error("SSL_CTX_set1_curves_list failed: %s", ERR_error_string(ERR_get_error(), NULL));
@@ -169,12 +228,48 @@ static SSL_CTX *create_ssl_ctx(const char *key_file, const char *cert_file) {
     }
 #endif /* !(OPENSSL_VERSION_NUMBER >= 0x30000000L) */
 
+    SSL_CTX_set_mode(ssl_ctx, SSL_MODE_AUTO_RETRY);
+    SSL_CTX_set_mode(ssl_ctx, SSL_MODE_RELEASE_BUFFERS);
+
+    if (SSL_CTX_set_default_verify_paths(ssl_ctx) != 1) {
+        ogs_warn("Could not load system trusted ca certificates: %s",
+                ERR_error_string(ERR_get_error(), NULL));
+    }
+
+#define OGS_TLS_MIN_VERSION TLS1_VERSION
+#ifdef TLS1_3_VERSION
+#define OGS_TLS_MAX_VERSION TLS1_3_VERSION
+#else  /* !TLS1_3_VERSION */
+#define OGS_TLS_MAX_VERSION TLS1_2_VERSION
+#endif /* TLS1_3_VERSION */
+    if (ssl_ctx_set_proto_versions(
+                ssl_ctx, OGS_TLS_MIN_VERSION, OGS_TLS_MAX_VERSION) != 0) {
+        ogs_error("Could not set TLS versions [%d:%d]",
+                    OGS_TLS_MIN_VERSION, OGS_TLS_MAX_VERSION);
+        return NULL;
+    }
+
+#define DEFAULT_CIPHER_LIST \
+    "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-" \
+    "AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-" \
+    "POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-" \
+    "AES256-GCM-SHA384"
+    if (SSL_CTX_set_cipher_list(ssl_ctx, DEFAULT_CIPHER_LIST) == 0) {
+        ogs_error("%s", ERR_error_string(ERR_get_error(), NULL));
+        return NULL;
+    }
+
     if (SSL_CTX_use_PrivateKey_file(ssl_ctx, key_file, SSL_FILETYPE_PEM) != 1) {
         ogs_error("Could not read private key file - key_file=%s", key_file);
         return NULL;
     }
     if (SSL_CTX_use_certificate_chain_file(ssl_ctx, cert_file) != 1) {
         ogs_error("Could not read certificate file - cert_file=%s ", cert_file);
+        return NULL;
+    }
+    if (SSL_CTX_check_private_key(ssl_ctx) != 1) {
+        ogs_error("SSL_CTX_check_private_key failed: %s",
+                ERR_error_string(ERR_get_error(), NULL));
         return NULL;
     }
 
@@ -189,6 +284,22 @@ static SSL_CTX *create_ssl_ctx(const char *key_file, const char *cert_file) {
     return ssl_ctx;
 }
 
+static int verify_callback(int preverify_ok, X509_STORE_CTX *ctx)
+{
+    if (!preverify_ok) {
+        int err = X509_STORE_CTX_get_error(ctx);
+        int depth = X509_STORE_CTX_get_error_depth(ctx);
+        if (err == X509_V_ERR_CERT_HAS_EXPIRED && depth == 0) {
+            ogs_error("The client certificate has expired, but is accepted by "
+                        "configuration");
+            return 1;
+        }
+        ogs_error("client certificate verify error:num=%d:%s:depth=%d",
+                err, X509_verify_cert_error_string(err), depth);
+    }
+    return preverify_ok;
+}
+
 static int server_start(ogs_sbi_server_t *server,
         int (*cb)(ogs_sbi_request_t *request, void *data))
 {
@@ -201,21 +312,67 @@ static int server_start(ogs_sbi_server_t *server,
     ogs_assert(addr);
 
     /* Create SSL CTX */
-    if (ogs_app_tls_server_enabled() == true) {
-        ogs_assert(ogs_sbi_self()->tls.server.key);
-        ogs_assert(ogs_sbi_self()->tls.server.cert);
+    if (ogs_app()->sbi.server.no_tls == false) {
+
         server->ssl_ctx = create_ssl_ctx(
-                    ogs_sbi_self()->tls.server.key,
-                    ogs_sbi_self()->tls.server.cert);
+                    ogs_app()->sbi.server.key,
+                    ogs_app()->sbi.server.cert);
         if (!server->ssl_ctx) {
             ogs_error("Cannot create SSL CTX");
             return OGS_ERROR;
+        }
+
+        if (ogs_app()->sbi.server.no_verify == false) {
+            if (ogs_app()->sbi.server.cacert) {
+                STACK_OF(X509_NAME) *cert_names = NULL;
+
+                if (SSL_CTX_load_verify_locations(server->ssl_ctx,
+                        ogs_app()->sbi.server.cacert, NULL) != 1) {
+                    ogs_error("Could not load trusted ca certificates "
+                            "from %s:%s", ogs_app()->sbi.server.cacert,
+                            ERR_error_string(ERR_get_error(), NULL));
+
+                    if (server->ssl_ctx)
+                        SSL_CTX_free(server->ssl_ctx);
+
+                    return OGS_ERROR;
+                }
+
+                /*
+                 * It is heard that SSL_CTX_load_verify_locations() may leave
+                 * error even though it returns success. See
+                 * http://forum.nginx.org/read.php?29,242540
+                 */
+                cert_names = SSL_load_client_CA_file(
+                        ogs_app()->sbi.server.cacert);
+                if (!cert_names) {
+                    ogs_error("Could not load ca certificates from %s:%s",
+                        ogs_app()->sbi.server.cacert,
+                        ERR_error_string(ERR_get_error(), NULL));
+
+                    if (server->ssl_ctx)
+                        SSL_CTX_free(server->ssl_ctx);
+
+                    return OGS_ERROR;
+                }
+                SSL_CTX_set_client_CA_list(server->ssl_ctx, cert_names);
+            }
+
+            SSL_CTX_set_verify(
+                    server->ssl_ctx,
+                    SSL_VERIFY_PEER | SSL_VERIFY_CLIENT_ONCE |
+                    SSL_VERIFY_FAIL_IF_NO_PEER_CERT,
+                    verify_callback);
         }
     }
 
     sock = ogs_tcp_server(addr, server->node.option);
     if (!sock) {
         ogs_error("Cannot start SBI server");
+
+        if (server->ssl_ctx)
+            SSL_CTX_free(server->ssl_ctx);
+
         return OGS_ERROR;
     }
 
@@ -406,7 +563,7 @@ static bool server_send_rspmem_persistent(
     stream = ogs_pool_cycle(&stream_pool, stream);
     if (!stream) {
         ogs_error("stream has already been removed");
-        return false;
+        return true;
     }
 
     sbi_sess = stream->session;

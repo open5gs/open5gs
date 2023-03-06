@@ -1,7 +1,7 @@
 /*
  * transfer_mo_data_req_data.h
  *
- * 
+ * Data within Transfer MO Data Request
  */
 
 #ifndef _OpenAPI_transfer_mo_data_req_data_H_

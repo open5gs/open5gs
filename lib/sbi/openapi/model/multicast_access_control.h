@@ -1,7 +1,7 @@
 /*
  * multicast_access_control.h
  *
- * 
+ * Represents multicast address access control information.
  */
 
 #ifndef _OpenAPI_multicast_access_control_H_

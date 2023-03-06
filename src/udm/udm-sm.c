@@ -399,8 +399,38 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
             break;
 
         case OGS_TIMER_SBI_CLIENT_WAIT:
-            sbi_xact = e->h.sbi.data;
-            ogs_assert(sbi_xact);
+            /*
+             * ogs_pollset_poll() receives the time of the expiration
+             * of next timer as an argument. If this timeout is
+             * in very near future (1 millisecond), and if there are
+             * multiple events that need to be processed by ogs_pollset_poll(),
+             * these could take more than 1 millisecond for processing,
+             * resulting in the timer already passed the expiration.
+             *
+             * In case that another NF is under heavy load and responds
+             * to an SBI request with some delay of a few seconds,
+             * it can happen that ogs_pollset_poll() adds SBI responses
+             * to the event list for further processing,
+             * then ogs_timer_mgr_expire() is called which will add
+             * an additional event for timer expiration. When all events are
+             * processed one-by-one, the SBI xact would get deleted twice
+             * in a row, resulting in a crash.
+             *
+             * 1. ogs_pollset_poll()
+             *    message was received and put into an event list,
+             * 2. ogs_timer_mgr_expire()
+             *    add an additional event for timer expiration
+             * 3. message event is processed. (free SBI xact)
+             * 4. timer expiration event is processed. (double-free SBI xact)
+             *
+             * To avoid double-free SBI xact,
+             * we need to check ogs_sbi_xact_cycle()
+             */
+            sbi_xact = ogs_sbi_xact_cycle(e->h.sbi.data);
+            if (!sbi_xact) {
+                ogs_error("SBI transaction has already been removed");
+                break;
+            }
 
             stream = sbi_xact->assoc_stream;
             ogs_assert(stream);

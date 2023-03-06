@@ -1,7 +1,7 @@
 /*
  * usage_mon_level.h
  *
- * 
+ * Represents the usage monitoring level.
  */
 
 #ifndef _OpenAPI_usage_mon_level_H_

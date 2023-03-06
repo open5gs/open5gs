@@ -1,7 +1,7 @@
 /*
  * report_item.h
  *
- * 
+ * indicates performed modivications.
  */
 
 #ifndef _OpenAPI_report_item_H_
@@ -20,10 +20,12 @@ extern "C" {
 typedef struct OpenAPI_report_item_s OpenAPI_report_item_t;
 typedef struct OpenAPI_report_item_s {
     char *path;
+    char *reason;
 } OpenAPI_report_item_t;
 
 OpenAPI_report_item_t *OpenAPI_report_item_create(
-    char *path
+    char *path,
+    char *reason
 );
 void OpenAPI_report_item_free(OpenAPI_report_item_t *report_item);
 OpenAPI_report_item_t *OpenAPI_report_item_parseFromJSON(cJSON *report_itemJSON);

@@ -1,7 +1,7 @@
 /*
  * qos_characteristics.h
  *
- * 
+ * Contains QoS characteristics for a non-standardized or a non-configured 5QI.
  */
 
 #ifndef _OpenAPI_qos_characteristics_H_

@@ -20,18 +20,26 @@ OpenAPI_deregistration_info_t *OpenAPI_deregistration_info_create(
 
 void OpenAPI_deregistration_info_free(OpenAPI_deregistration_info_t *deregistration_info)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == deregistration_info) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(deregistration_info->supi);
-    ogs_free(deregistration_info->supported_features);
+    if (deregistration_info->supi) {
+        ogs_free(deregistration_info->supi);
+        deregistration_info->supi = NULL;
+    }
+    if (deregistration_info->supported_features) {
+        ogs_free(deregistration_info->supported_features);
+        deregistration_info->supported_features = NULL;
+    }
     ogs_free(deregistration_info);
 }
 
 cJSON *OpenAPI_deregistration_info_convertToJSON(OpenAPI_deregistration_info_t *deregistration_info)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (deregistration_info == NULL) {
         ogs_error("OpenAPI_deregistration_info_convertToJSON() failed [DeregistrationInfo]");
@@ -39,6 +47,10 @@ cJSON *OpenAPI_deregistration_info_convertToJSON(OpenAPI_deregistration_info_t *
     }
 
     item = cJSON_CreateObject();
+    if (!deregistration_info->supi) {
+        ogs_error("OpenAPI_deregistration_info_convertToJSON() failed [supi]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "supi", deregistration_info->supi) == NULL) {
         ogs_error("OpenAPI_deregistration_info_convertToJSON() failed [supi]");
         goto end;
@@ -58,21 +70,22 @@ end:
 OpenAPI_deregistration_info_t *OpenAPI_deregistration_info_parseFromJSON(cJSON *deregistration_infoJSON)
 {
     OpenAPI_deregistration_info_t *deregistration_info_local_var = NULL;
-    cJSON *supi = cJSON_GetObjectItemCaseSensitive(deregistration_infoJSON, "supi");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *supi = NULL;
+    cJSON *supported_features = NULL;
+    supi = cJSON_GetObjectItemCaseSensitive(deregistration_infoJSON, "supi");
     if (!supi) {
         ogs_error("OpenAPI_deregistration_info_parseFromJSON() failed [supi]");
         goto end;
     }
-
     if (!cJSON_IsString(supi)) {
         ogs_error("OpenAPI_deregistration_info_parseFromJSON() failed [supi]");
         goto end;
     }
 
-    cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(deregistration_infoJSON, "supportedFeatures");
-
+    supported_features = cJSON_GetObjectItemCaseSensitive(deregistration_infoJSON, "supportedFeatures");
     if (supported_features) {
-    if (!cJSON_IsString(supported_features)) {
+    if (!cJSON_IsString(supported_features) && !cJSON_IsNull(supported_features)) {
         ogs_error("OpenAPI_deregistration_info_parseFromJSON() failed [supported_features]");
         goto end;
     }
@@ -80,7 +93,7 @@ OpenAPI_deregistration_info_t *OpenAPI_deregistration_info_parseFromJSON(cJSON *
 
     deregistration_info_local_var = OpenAPI_deregistration_info_create (
         ogs_strdup(supi->valuestring),
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL
+        supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL
     );
 
     return deregistration_info_local_var;

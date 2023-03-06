@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+# Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
 
 # This file is part of Open5GS.
 
@@ -60,7 +60,7 @@ def write_file(f, string):
 def output_header_to_file(f):
     now = datetime.datetime.now()
     f.write("""/*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -368,33 +368,33 @@ msg_list["Echo Request"]["table"] = 8
 msg_list["Echo Response"]["table"] = 9
 msg_list["Create Session Request"]["table"] = 10
 msg_list["Create Session Response"]["table"] = 15
-msg_list["Create Bearer Request"]["table"] = 20
-msg_list["Create Bearer Response"]["table"] = 24
-msg_list["Bearer Resource Command"]["table"] = 27
-msg_list["Bearer Resource Failure Indication"]["table"] = 29
-msg_list["Modify Bearer Request"]["table"] = 31
-msg_list["Modify Bearer Response"]["table"] = 35
-msg_list["Delete Session Request"]["table"] = 40
-msg_list["Delete Bearer Request"]["table"] = 42
-msg_list["Delete Session Response"]["table"] = 46
-msg_list["Delete Bearer Response"]["table"] = 49
-msg_list["Downlink Data Notification"]["table"] = 52
-msg_list["Downlink Data Notification Acknowledge"]["table"] = 55
-msg_list["Downlink Data Notification Failure Indication"]["table"] = 56
-msg_list["Delete Indirect Data Forwarding Tunnel Request"]["table"] = 57
-msg_list["Delete Indirect Data Forwarding Tunnel Response"]["table"] = 58
-msg_list["Modify Bearer Command"]["table"] = 59
-msg_list["Modify Bearer Failure Indication"]["table"] = 62
-msg_list["Update Bearer Request"]["table"] = 64
-msg_list["Update Bearer Response"]["table"] = 68
-msg_list["Delete Bearer Command"]["table"] = 71
-msg_list["Delete Bearer Failure Indication"]["table"] = 74
-msg_list["Create Indirect Data Forwarding Tunnel Request"]["table"] = 77
-msg_list["Create Indirect Data Forwarding Tunnel Response"]["table"] = 79
-msg_list["Release Access Bearers Request"]["table"] = 81
-msg_list["Release Access Bearers Response"]["table"] = 82
-msg_list["Modify Access Bearers Request"]["table"] = 86
-msg_list["Modify Access Bearers Response"]["table"] = 89
+msg_list["Create Bearer Request"]["table"] = 21
+msg_list["Create Bearer Response"]["table"] = 26
+msg_list["Bearer Resource Command"]["table"] = 29
+msg_list["Bearer Resource Failure Indication"]["table"] = 31
+msg_list["Modify Bearer Request"]["table"] = 33
+msg_list["Modify Bearer Response"]["table"] = 37
+msg_list["Delete Session Request"]["table"] = 43
+msg_list["Delete Bearer Request"]["table"] = 45
+msg_list["Delete Session Response"]["table"] = 50
+msg_list["Delete Bearer Response"]["table"] = 53
+msg_list["Downlink Data Notification"]["table"] = 56
+msg_list["Downlink Data Notification Acknowledge"]["table"] = 59
+msg_list["Downlink Data Notification Failure Indication"]["table"] = 60
+msg_list["Delete Indirect Data Forwarding Tunnel Request"]["table"] = 61
+msg_list["Delete Indirect Data Forwarding Tunnel Response"]["table"] = 62
+msg_list["Modify Bearer Command"]["table"] = 63
+msg_list["Modify Bearer Failure Indication"]["table"] = 66
+msg_list["Update Bearer Request"]["table"] = 68
+msg_list["Update Bearer Response"]["table"] = 73
+msg_list["Delete Bearer Command"]["table"] = 76
+msg_list["Delete Bearer Failure Indication"]["table"] = 79
+msg_list["Create Indirect Data Forwarding Tunnel Request"]["table"] = 82
+msg_list["Create Indirect Data Forwarding Tunnel Response"]["table"] = 84
+msg_list["Release Access Bearers Request"]["table"] = 86
+msg_list["Release Access Bearers Response"]["table"] = 87
+msg_list["Modify Access Bearers Request"]["table"] = 91
+msg_list["Modify Access Bearers Response"]["table"] = 94
 
 for key in msg_list.keys():
     if "table" in msg_list[key].keys():
@@ -525,6 +525,8 @@ for k, v in group_list.items():
         v["index"] = "1"
     if v_lower(k) == "remote_ue_context":
         v["index"] = "2"
+    if v_lower(k) == "pgw_change_info":
+        v["index"] = "3"
 
 tmp = [(k, v["index"]) for k, v in group_list.items()]
 sorted_group_list = sorted(tmp, key=lambda tup: int(tup[1]))
@@ -702,7 +704,10 @@ f.write("""int ogs_gtp2_parse_msg(ogs_gtp2_message_t *gtp2_message, ogs_pkbuf_t 
     else
         size = OGS_GTPV2C_HEADER_LEN-OGS_GTP2_TEID_LEN;
 
-    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+        ogs_error("ogs_pkbuf_pull() failed [len:%d]", pkbuf->len);
+        return OGS_ERROR;
+    }
     memcpy(&gtp2_message->h, pkbuf->data - size, size);
 
     if (h->teid_presence)

@@ -20,24 +20,32 @@ OpenAPI_pp5g_vn_group_profile_data_t *OpenAPI_pp5g_vn_group_profile_data_create(
 
 void OpenAPI_pp5g_vn_group_profile_data_free(OpenAPI_pp5g_vn_group_profile_data_t *pp5g_vn_group_profile_data)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == pp5g_vn_group_profile_data) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_list_for_each(pp5g_vn_group_profile_data->allowed_mtc_providers, node) {
-        OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
-        ogs_free(localKeyValue->key);
-        ogs_free(localKeyValue->value);
-        ogs_free(localKeyValue);
+    if (pp5g_vn_group_profile_data->allowed_mtc_providers) {
+        OpenAPI_list_for_each(pp5g_vn_group_profile_data->allowed_mtc_providers, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            ogs_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(pp5g_vn_group_profile_data->allowed_mtc_providers);
+        pp5g_vn_group_profile_data->allowed_mtc_providers = NULL;
     }
-    OpenAPI_list_free(pp5g_vn_group_profile_data->allowed_mtc_providers);
-    ogs_free(pp5g_vn_group_profile_data->supported_features);
+    if (pp5g_vn_group_profile_data->supported_features) {
+        ogs_free(pp5g_vn_group_profile_data->supported_features);
+        pp5g_vn_group_profile_data->supported_features = NULL;
+    }
     ogs_free(pp5g_vn_group_profile_data);
 }
 
 cJSON *OpenAPI_pp5g_vn_group_profile_data_convertToJSON(OpenAPI_pp5g_vn_group_profile_data_t *pp5g_vn_group_profile_data)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (pp5g_vn_group_profile_data == NULL) {
         ogs_error("OpenAPI_pp5g_vn_group_profile_data_convertToJSON() failed [Pp5gVnGroupProfileData]");
@@ -52,12 +60,19 @@ cJSON *OpenAPI_pp5g_vn_group_profile_data_convertToJSON(OpenAPI_pp5g_vn_group_pr
         goto end;
     }
     cJSON *localMapObject = allowed_mtc_providers;
-    OpenAPI_lnode_t *allowed_mtc_providers_node;
     if (pp5g_vn_group_profile_data->allowed_mtc_providers) {
-        OpenAPI_list_for_each(pp5g_vn_group_profile_data->allowed_mtc_providers, allowed_mtc_providers_node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)allowed_mtc_providers_node->data;
+        OpenAPI_list_for_each(pp5g_vn_group_profile_data->allowed_mtc_providers, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            cJSON *itemLocal = localKeyValue->value ?
+                OpenAPI_allowed_mtc_provider_info_convertToJSON(localKeyValue->value) :
+                cJSON_CreateNull();
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_pp5g_vn_group_profile_data_convertToJSON() failed [inner]");
+                goto end;
             }
+            cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
         }
+    }
     }
 
     if (pp5g_vn_group_profile_data->supported_features) {
@@ -74,27 +89,41 @@ end:
 OpenAPI_pp5g_vn_group_profile_data_t *OpenAPI_pp5g_vn_group_profile_data_parseFromJSON(cJSON *pp5g_vn_group_profile_dataJSON)
 {
     OpenAPI_pp5g_vn_group_profile_data_t *pp5g_vn_group_profile_data_local_var = NULL;
-    cJSON *allowed_mtc_providers = cJSON_GetObjectItemCaseSensitive(pp5g_vn_group_profile_dataJSON, "allowedMtcProviders");
-
-    OpenAPI_list_t *allowed_mtc_providersList;
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *allowed_mtc_providers = NULL;
+    OpenAPI_list_t *allowed_mtc_providersList = NULL;
+    cJSON *supported_features = NULL;
+    allowed_mtc_providers = cJSON_GetObjectItemCaseSensitive(pp5g_vn_group_profile_dataJSON, "allowedMtcProviders");
     if (allowed_mtc_providers) {
-    cJSON *allowed_mtc_providers_local_map;
-    if (!cJSON_IsObject(allowed_mtc_providers)) {
-        ogs_error("OpenAPI_pp5g_vn_group_profile_data_parseFromJSON() failed [allowed_mtc_providers]");
-        goto end;
-    }
-    allowed_mtc_providersList = OpenAPI_list_create();
-    OpenAPI_map_t *localMapKeyPair = NULL;
-    cJSON_ArrayForEach(allowed_mtc_providers_local_map, allowed_mtc_providers) {
-        cJSON *localMapObject = allowed_mtc_providers_local_map;
-        OpenAPI_list_add(allowed_mtc_providersList , localMapKeyPair);
-    }
+        cJSON *allowed_mtc_providers_local_map = NULL;
+        if (!cJSON_IsObject(allowed_mtc_providers) && !cJSON_IsNull(allowed_mtc_providers)) {
+            ogs_error("OpenAPI_pp5g_vn_group_profile_data_parseFromJSON() failed [allowed_mtc_providers]");
+            goto end;
+        }
+        if (cJSON_IsObject(allowed_mtc_providers)) {
+            allowed_mtc_providersList = OpenAPI_list_create();
+            OpenAPI_map_t *localMapKeyPair = NULL;
+            cJSON_ArrayForEach(allowed_mtc_providers_local_map, allowed_mtc_providers) {
+                cJSON *localMapObject = allowed_mtc_providers_local_map;
+                double *localDouble = NULL;
+                int *localInt = NULL;
+                if (cJSON_IsObject(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(
+                        ogs_strdup(localMapObject->string), OpenAPI_allowed_mtc_provider_info_parseFromJSON(localMapObject));
+                } else if (cJSON_IsNull(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
+                } else {
+                    ogs_error("OpenAPI_pp5g_vn_group_profile_data_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                OpenAPI_list_add(allowed_mtc_providersList, localMapKeyPair);
+            }
+        }
     }
 
-    cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(pp5g_vn_group_profile_dataJSON, "supportedFeatures");
-
+    supported_features = cJSON_GetObjectItemCaseSensitive(pp5g_vn_group_profile_dataJSON, "supportedFeatures");
     if (supported_features) {
-    if (!cJSON_IsString(supported_features)) {
+    if (!cJSON_IsString(supported_features) && !cJSON_IsNull(supported_features)) {
         ogs_error("OpenAPI_pp5g_vn_group_profile_data_parseFromJSON() failed [supported_features]");
         goto end;
     }
@@ -102,11 +131,21 @@ OpenAPI_pp5g_vn_group_profile_data_t *OpenAPI_pp5g_vn_group_profile_data_parseFr
 
     pp5g_vn_group_profile_data_local_var = OpenAPI_pp5g_vn_group_profile_data_create (
         allowed_mtc_providers ? allowed_mtc_providersList : NULL,
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL
+        supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL
     );
 
     return pp5g_vn_group_profile_data_local_var;
 end:
+    if (allowed_mtc_providersList) {
+        OpenAPI_list_for_each(allowed_mtc_providersList, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            ogs_free(localKeyValue->key);
+            ogs_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(allowed_mtc_providersList);
+        allowed_mtc_providersList = NULL;
+    }
     return NULL;
 }
 

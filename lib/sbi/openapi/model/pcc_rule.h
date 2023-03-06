@@ -1,7 +1,7 @@
 /*
  * pcc_rule.h
  *
- * 
+ * Contains a PCC rule information.
  */
 
 #ifndef _OpenAPI_pcc_rule_H_
@@ -26,7 +26,7 @@ typedef struct OpenAPI_pcc_rule_s OpenAPI_pcc_rule_t;
 typedef struct OpenAPI_pcc_rule_s {
     OpenAPI_list_t *flow_infos;
     char *app_id;
-    char app_descriptor;
+    char *app_descriptor;
     bool is_cont_ver;
     int cont_ver;
     char *pcc_rule_id;
@@ -35,6 +35,8 @@ typedef struct OpenAPI_pcc_rule_s {
     OpenAPI_af_sig_protocol_e af_sig_protocol;
     bool is_app_reloc;
     int app_reloc;
+    bool is_eas_redis_ind;
+    int eas_redis_ind;
     OpenAPI_list_t *ref_qos_data;
     OpenAPI_list_t *ref_alt_qos_params;
     OpenAPI_list_t *ref_tc_data;
@@ -48,16 +50,20 @@ typedef struct OpenAPI_pcc_rule_s {
     int addr_preser_ind;
     struct OpenAPI_tscai_input_container_s *tscai_input_dl;
     struct OpenAPI_tscai_input_container_s *tscai_input_ul;
+    bool is_tscai_time_dom;
+    int tscai_time_dom;
     struct OpenAPI_downlink_data_notification_control_s *dd_notif_ctrl;
     struct OpenAPI_downlink_data_notification_control_rm_s *dd_notif_ctrl2;
     bool is_dis_ue_notif;
     int dis_ue_notif;
+    bool is_pack_filt_all_prec;
+    int pack_filt_all_prec;
 } OpenAPI_pcc_rule_t;
 
 OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_create(
     OpenAPI_list_t *flow_infos,
     char *app_id,
-    char app_descriptor,
+    char *app_descriptor,
     bool is_cont_ver,
     int cont_ver,
     char *pcc_rule_id,
@@ -66,6 +72,8 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_create(
     OpenAPI_af_sig_protocol_e af_sig_protocol,
     bool is_app_reloc,
     int app_reloc,
+    bool is_eas_redis_ind,
+    int eas_redis_ind,
     OpenAPI_list_t *ref_qos_data,
     OpenAPI_list_t *ref_alt_qos_params,
     OpenAPI_list_t *ref_tc_data,
@@ -79,10 +87,14 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_create(
     int addr_preser_ind,
     OpenAPI_tscai_input_container_t *tscai_input_dl,
     OpenAPI_tscai_input_container_t *tscai_input_ul,
+    bool is_tscai_time_dom,
+    int tscai_time_dom,
     OpenAPI_downlink_data_notification_control_t *dd_notif_ctrl,
     OpenAPI_downlink_data_notification_control_rm_t *dd_notif_ctrl2,
     bool is_dis_ue_notif,
-    int dis_ue_notif
+    int dis_ue_notif,
+    bool is_pack_filt_all_prec,
+    int pack_filt_all_prec
 );
 void OpenAPI_pcc_rule_free(OpenAPI_pcc_rule_t *pcc_rule);
 OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON);

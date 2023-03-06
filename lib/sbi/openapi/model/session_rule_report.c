@@ -24,21 +24,29 @@ OpenAPI_session_rule_report_t *OpenAPI_session_rule_report_create(
 
 void OpenAPI_session_rule_report_free(OpenAPI_session_rule_report_t *session_rule_report)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == session_rule_report) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_list_for_each(session_rule_report->rule_ids, node) {
-        ogs_free(node->data);
+    if (session_rule_report->rule_ids) {
+        OpenAPI_list_for_each(session_rule_report->rule_ids, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(session_rule_report->rule_ids);
+        session_rule_report->rule_ids = NULL;
     }
-    OpenAPI_list_free(session_rule_report->rule_ids);
-    OpenAPI_list_free(session_rule_report->policy_dec_failure_reports);
+    if (session_rule_report->policy_dec_failure_reports) {
+        OpenAPI_list_free(session_rule_report->policy_dec_failure_reports);
+        session_rule_report->policy_dec_failure_reports = NULL;
+    }
     ogs_free(session_rule_report);
 }
 
 cJSON *OpenAPI_session_rule_report_convertToJSON(OpenAPI_session_rule_report_t *session_rule_report)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (session_rule_report == NULL) {
         ogs_error("OpenAPI_session_rule_report_convertToJSON() failed [SessionRuleReport]");
@@ -46,41 +54,46 @@ cJSON *OpenAPI_session_rule_report_convertToJSON(OpenAPI_session_rule_report_t *
     }
 
     item = cJSON_CreateObject();
-    cJSON *rule_ids = cJSON_AddArrayToObject(item, "ruleIds");
-    if (rule_ids == NULL) {
+    if (!session_rule_report->rule_ids) {
+        ogs_error("OpenAPI_session_rule_report_convertToJSON() failed [rule_ids]");
+        return NULL;
+    }
+    cJSON *rule_idsList = cJSON_AddArrayToObject(item, "ruleIds");
+    if (rule_idsList == NULL) {
         ogs_error("OpenAPI_session_rule_report_convertToJSON() failed [rule_ids]");
         goto end;
     }
-
-    OpenAPI_lnode_t *rule_ids_node;
-    OpenAPI_list_for_each(session_rule_report->rule_ids, rule_ids_node)  {
-    if (cJSON_AddStringToObject(rule_ids, "", (char*)rule_ids_node->data) == NULL) {
-        ogs_error("OpenAPI_session_rule_report_convertToJSON() failed [rule_ids]");
-        goto end;
+    OpenAPI_list_for_each(session_rule_report->rule_ids, node) {
+        if (cJSON_AddStringToObject(rule_idsList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_session_rule_report_convertToJSON() failed [rule_ids]");
+            goto end;
+        }
     }
-                    }
 
+    if (session_rule_report->rule_status == OpenAPI_rule_status_NULL) {
+        ogs_error("OpenAPI_session_rule_report_convertToJSON() failed [rule_status]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "ruleStatus", OpenAPI_rule_status_ToString(session_rule_report->rule_status)) == NULL) {
         ogs_error("OpenAPI_session_rule_report_convertToJSON() failed [rule_status]");
         goto end;
     }
 
-    if (session_rule_report->sess_rule_failure_code) {
+    if (session_rule_report->sess_rule_failure_code != OpenAPI_session_rule_failure_code_NULL) {
     if (cJSON_AddStringToObject(item, "sessRuleFailureCode", OpenAPI_session_rule_failure_code_ToString(session_rule_report->sess_rule_failure_code)) == NULL) {
         ogs_error("OpenAPI_session_rule_report_convertToJSON() failed [sess_rule_failure_code]");
         goto end;
     }
     }
 
-    if (session_rule_report->policy_dec_failure_reports) {
-    cJSON *policy_dec_failure_reports = cJSON_AddArrayToObject(item, "policyDecFailureReports");
-    if (policy_dec_failure_reports == NULL) {
+    if (session_rule_report->policy_dec_failure_reports != OpenAPI_policy_decision_failure_code_NULL) {
+    cJSON *policy_dec_failure_reportsList = cJSON_AddArrayToObject(item, "policyDecFailureReports");
+    if (policy_dec_failure_reportsList == NULL) {
         ogs_error("OpenAPI_session_rule_report_convertToJSON() failed [policy_dec_failure_reports]");
         goto end;
     }
-    OpenAPI_lnode_t *policy_dec_failure_reports_node;
-    OpenAPI_list_for_each(session_rule_report->policy_dec_failure_reports, policy_dec_failure_reports_node) {
-        if (cJSON_AddStringToObject(policy_dec_failure_reports, "", OpenAPI_policy_decision_failure_code_ToString((intptr_t)policy_dec_failure_reports_node->data)) == NULL) {
+    OpenAPI_list_for_each(session_rule_report->policy_dec_failure_reports, node) {
+        if (cJSON_AddStringToObject(policy_dec_failure_reportsList, "", OpenAPI_policy_decision_failure_code_ToString((intptr_t)node->data)) == NULL) {
             ogs_error("OpenAPI_session_rule_report_convertToJSON() failed [policy_dec_failure_reports]");
             goto end;
         }
@@ -94,44 +107,50 @@ end:
 OpenAPI_session_rule_report_t *OpenAPI_session_rule_report_parseFromJSON(cJSON *session_rule_reportJSON)
 {
     OpenAPI_session_rule_report_t *session_rule_report_local_var = NULL;
-    cJSON *rule_ids = cJSON_GetObjectItemCaseSensitive(session_rule_reportJSON, "ruleIds");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *rule_ids = NULL;
+    OpenAPI_list_t *rule_idsList = NULL;
+    cJSON *rule_status = NULL;
+    OpenAPI_rule_status_e rule_statusVariable = 0;
+    cJSON *sess_rule_failure_code = NULL;
+    OpenAPI_session_rule_failure_code_e sess_rule_failure_codeVariable = 0;
+    cJSON *policy_dec_failure_reports = NULL;
+    OpenAPI_list_t *policy_dec_failure_reportsList = NULL;
+    rule_ids = cJSON_GetObjectItemCaseSensitive(session_rule_reportJSON, "ruleIds");
     if (!rule_ids) {
         ogs_error("OpenAPI_session_rule_report_parseFromJSON() failed [rule_ids]");
         goto end;
     }
+        cJSON *rule_ids_local = NULL;
+        if (!cJSON_IsArray(rule_ids)) {
+            ogs_error("OpenAPI_session_rule_report_parseFromJSON() failed [rule_ids]");
+            goto end;
+        }
 
-    OpenAPI_list_t *rule_idsList;
-    cJSON *rule_ids_local;
-    if (!cJSON_IsArray(rule_ids)) {
-        ogs_error("OpenAPI_session_rule_report_parseFromJSON() failed [rule_ids]");
-        goto end;
-    }
-    rule_idsList = OpenAPI_list_create();
+        rule_idsList = OpenAPI_list_create();
 
-    cJSON_ArrayForEach(rule_ids_local, rule_ids) {
-    if (!cJSON_IsString(rule_ids_local)) {
-        ogs_error("OpenAPI_session_rule_report_parseFromJSON() failed [rule_ids]");
-        goto end;
-    }
-    OpenAPI_list_add(rule_idsList , ogs_strdup(rule_ids_local->valuestring));
-    }
+        cJSON_ArrayForEach(rule_ids_local, rule_ids) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(rule_ids_local)) {
+                ogs_error("OpenAPI_session_rule_report_parseFromJSON() failed [rule_ids]");
+                goto end;
+            }
+            OpenAPI_list_add(rule_idsList, ogs_strdup(rule_ids_local->valuestring));
+        }
 
-    cJSON *rule_status = cJSON_GetObjectItemCaseSensitive(session_rule_reportJSON, "ruleStatus");
+    rule_status = cJSON_GetObjectItemCaseSensitive(session_rule_reportJSON, "ruleStatus");
     if (!rule_status) {
         ogs_error("OpenAPI_session_rule_report_parseFromJSON() failed [rule_status]");
         goto end;
     }
-
-    OpenAPI_rule_status_e rule_statusVariable;
     if (!cJSON_IsString(rule_status)) {
         ogs_error("OpenAPI_session_rule_report_parseFromJSON() failed [rule_status]");
         goto end;
     }
     rule_statusVariable = OpenAPI_rule_status_FromString(rule_status->valuestring);
 
-    cJSON *sess_rule_failure_code = cJSON_GetObjectItemCaseSensitive(session_rule_reportJSON, "sessRuleFailureCode");
-
-    OpenAPI_session_rule_failure_code_e sess_rule_failure_codeVariable;
+    sess_rule_failure_code = cJSON_GetObjectItemCaseSensitive(session_rule_reportJSON, "sessRuleFailureCode");
     if (sess_rule_failure_code) {
     if (!cJSON_IsString(sess_rule_failure_code)) {
         ogs_error("OpenAPI_session_rule_report_parseFromJSON() failed [sess_rule_failure_code]");
@@ -140,26 +159,23 @@ OpenAPI_session_rule_report_t *OpenAPI_session_rule_report_parseFromJSON(cJSON *
     sess_rule_failure_codeVariable = OpenAPI_session_rule_failure_code_FromString(sess_rule_failure_code->valuestring);
     }
 
-    cJSON *policy_dec_failure_reports = cJSON_GetObjectItemCaseSensitive(session_rule_reportJSON, "policyDecFailureReports");
-
-    OpenAPI_list_t *policy_dec_failure_reportsList;
+    policy_dec_failure_reports = cJSON_GetObjectItemCaseSensitive(session_rule_reportJSON, "policyDecFailureReports");
     if (policy_dec_failure_reports) {
-    cJSON *policy_dec_failure_reports_local_nonprimitive;
-    if (!cJSON_IsArray(policy_dec_failure_reports)) {
-        ogs_error("OpenAPI_session_rule_report_parseFromJSON() failed [policy_dec_failure_reports]");
-        goto end;
-    }
-
-    policy_dec_failure_reportsList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(policy_dec_failure_reports_local_nonprimitive, policy_dec_failure_reports ) {
-        if (!cJSON_IsString(policy_dec_failure_reports_local_nonprimitive)){
+        cJSON *policy_dec_failure_reports_local = NULL;
+        if (!cJSON_IsArray(policy_dec_failure_reports)) {
             ogs_error("OpenAPI_session_rule_report_parseFromJSON() failed [policy_dec_failure_reports]");
             goto end;
         }
 
-        OpenAPI_list_add(policy_dec_failure_reportsList, (void *)OpenAPI_policy_decision_failure_code_FromString(policy_dec_failure_reports_local_nonprimitive->valuestring));
-    }
+        policy_dec_failure_reportsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(policy_dec_failure_reports_local, policy_dec_failure_reports) {
+            if (!cJSON_IsString(policy_dec_failure_reports_local)) {
+                ogs_error("OpenAPI_session_rule_report_parseFromJSON() failed [policy_dec_failure_reports]");
+                goto end;
+            }
+            OpenAPI_list_add(policy_dec_failure_reportsList, (void *)OpenAPI_policy_decision_failure_code_FromString(policy_dec_failure_reports_local->valuestring));
+        }
     }
 
     session_rule_report_local_var = OpenAPI_session_rule_report_create (
@@ -171,6 +187,17 @@ OpenAPI_session_rule_report_t *OpenAPI_session_rule_report_parseFromJSON(cJSON *
 
     return session_rule_report_local_var;
 end:
+    if (rule_idsList) {
+        OpenAPI_list_for_each(rule_idsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(rule_idsList);
+        rule_idsList = NULL;
+    }
+    if (policy_dec_failure_reportsList) {
+        OpenAPI_list_free(policy_dec_failure_reportsList);
+        policy_dec_failure_reportsList = NULL;
+    }
     return NULL;
 }
 

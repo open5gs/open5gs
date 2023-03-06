@@ -1,7 +1,7 @@
 /*
  * pdu_session_create_data.h
  *
- * 
+ * Data within Create Request
  */
 
 #ifndef _OpenAPI_pdu_session_create_data_H_
@@ -18,16 +18,20 @@
 #include "eps_interworking_indication.h"
 #include "guami.h"
 #include "max_integrity_protected_data_rate.h"
+#include "pcf_ue_callback_info.h"
 #include "plmn_id_nid.h"
 #include "presence_state.h"
 #include "rat_type.h"
+#include "redundant_pdu_session_information.h"
 #include "ref_to_binary_data.h"
 #include "request_type.h"
 #include "roaming_charging_profile.h"
+#include "satellite_backhaul_category.h"
 #include "secondary_rat_usage_info.h"
 #include "small_data_rate_status.h"
 #include "snssai.h"
 #include "tunnel_info.h"
+#include "up_cnx_state.h"
 #include "up_security_info.h"
 #include "user_location.h"
 #include "vplmn_qos.h"
@@ -47,12 +51,13 @@ typedef struct OpenAPI_pdu_session_create_data_s {
     char *dnn;
     char *selected_dnn;
     struct OpenAPI_snssai_s *s_nssai;
+    struct OpenAPI_snssai_s *hplmn_snssai;
     char *vsmf_id;
     char *ismf_id;
     struct OpenAPI_plmn_id_nid_s *serving_network;
     OpenAPI_request_type_e request_type;
     OpenAPI_list_t *eps_bearer_id;
-    char pgw_s8c_fteid;
+    char *pgw_s8c_fteid;
     char *vsmf_pdu_session_uri;
     char *ismf_pdu_session_uri;
     struct OpenAPI_tunnel_info_s *vcn_tunnel_info;
@@ -80,6 +85,8 @@ typedef struct OpenAPI_pdu_session_create_data_s {
     int always_on_requested;
     char *udm_group_id;
     char *routing_indicator;
+    bool is_h_nw_pub_key_id;
+    int h_nw_pub_key_id;
     OpenAPI_eps_interworking_indication_e eps_interworking_ind;
     char *v_smf_service_instance_id;
     char *i_smf_service_instance_id;
@@ -112,6 +119,18 @@ typedef struct OpenAPI_pdu_session_create_data_s {
     int dl_serving_plmn_rate_ctl;
     struct OpenAPI_up_security_info_s *up_security_info;
     struct OpenAPI_vplmn_qos_s *vplmn_qos;
+    char *old_sm_context_ref;
+    struct OpenAPI_redundant_pdu_session_information_s *redundant_pdu_session_info;
+    char *old_pdu_session_ref;
+    bool is_sm_policy_notify_ind;
+    int sm_policy_notify_ind;
+    struct OpenAPI_pcf_ue_callback_info_s *pcf_ue_callback_info;
+    OpenAPI_satellite_backhaul_category_e satellite_backhaul_cat;
+    bool is_upip_supported;
+    int upip_supported;
+    OpenAPI_up_cnx_state_e up_cnx_state;
+    bool is_disaster_roaming_ind;
+    int disaster_roaming_ind;
 } OpenAPI_pdu_session_create_data_t;
 
 OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_create(
@@ -124,12 +143,13 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_create(
     char *dnn,
     char *selected_dnn,
     OpenAPI_snssai_t *s_nssai,
+    OpenAPI_snssai_t *hplmn_snssai,
     char *vsmf_id,
     char *ismf_id,
     OpenAPI_plmn_id_nid_t *serving_network,
     OpenAPI_request_type_e request_type,
     OpenAPI_list_t *eps_bearer_id,
-    char pgw_s8c_fteid,
+    char *pgw_s8c_fteid,
     char *vsmf_pdu_session_uri,
     char *ismf_pdu_session_uri,
     OpenAPI_tunnel_info_t *vcn_tunnel_info,
@@ -157,6 +177,8 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_create(
     int always_on_requested,
     char *udm_group_id,
     char *routing_indicator,
+    bool is_h_nw_pub_key_id,
+    int h_nw_pub_key_id,
     OpenAPI_eps_interworking_indication_e eps_interworking_ind,
     char *v_smf_service_instance_id,
     char *i_smf_service_instance_id,
@@ -188,7 +210,19 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_create(
     bool is_dl_serving_plmn_rate_ctl,
     int dl_serving_plmn_rate_ctl,
     OpenAPI_up_security_info_t *up_security_info,
-    OpenAPI_vplmn_qos_t *vplmn_qos
+    OpenAPI_vplmn_qos_t *vplmn_qos,
+    char *old_sm_context_ref,
+    OpenAPI_redundant_pdu_session_information_t *redundant_pdu_session_info,
+    char *old_pdu_session_ref,
+    bool is_sm_policy_notify_ind,
+    int sm_policy_notify_ind,
+    OpenAPI_pcf_ue_callback_info_t *pcf_ue_callback_info,
+    OpenAPI_satellite_backhaul_category_e satellite_backhaul_cat,
+    bool is_upip_supported,
+    int upip_supported,
+    OpenAPI_up_cnx_state_e up_cnx_state,
+    bool is_disaster_roaming_ind,
+    int disaster_roaming_ind
 );
 void OpenAPI_pdu_session_create_data_free(OpenAPI_pdu_session_create_data_t *pdu_session_create_data);
 OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_parseFromJSON(cJSON *pdu_session_create_dataJSON);

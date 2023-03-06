@@ -1,7 +1,7 @@
 /*
  * mapping_of_snssai.h
  *
- * 
+ * Contains the mapping of S-NSSAI in the serving network and the value of the home network
  */
 
 #ifndef _OpenAPI_mapping_of_snssai_H_

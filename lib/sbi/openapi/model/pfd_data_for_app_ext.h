@@ -1,7 +1,7 @@
 /*
  * pfd_data_for_app_ext.h
  *
- * 
+ * Represents the PFDs and related data for the application.
  */
 
 #ifndef _OpenAPI_pfd_data_for_app_ext_H_
@@ -13,8 +13,6 @@
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
 #include "pfd_content.h"
-#include "pfd_data_for_app.h"
-#include "pfd_data_for_app_ext_all_of.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,13 +24,19 @@ typedef struct OpenAPI_pfd_data_for_app_ext_s {
     OpenAPI_list_t *pfds;
     char *caching_time;
     char *supp_feat;
+    OpenAPI_list_t *reset_ids;
+    bool is_allowed_delay;
+    int allowed_delay;
 } OpenAPI_pfd_data_for_app_ext_t;
 
 OpenAPI_pfd_data_for_app_ext_t *OpenAPI_pfd_data_for_app_ext_create(
     char *application_id,
     OpenAPI_list_t *pfds,
     char *caching_time,
-    char *supp_feat
+    char *supp_feat,
+    OpenAPI_list_t *reset_ids,
+    bool is_allowed_delay,
+    int allowed_delay
 );
 void OpenAPI_pfd_data_for_app_ext_free(OpenAPI_pfd_data_for_app_ext_t *pfd_data_for_app_ext);
 OpenAPI_pfd_data_for_app_ext_t *OpenAPI_pfd_data_for_app_ext_parseFromJSON(cJSON *pfd_data_for_app_extJSON);

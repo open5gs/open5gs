@@ -1,7 +1,7 @@
 /*
  * sm_policy_context_data.h
  *
- * 
+ * Contains the parameters used to create an Individual SM policy resource.
  */
 
 #ifndef _OpenAPI_sm_policy_context_data_H_
@@ -17,13 +17,17 @@
 #include "access_type.h"
 #include "additional_access_info.h"
 #include "ambr.h"
-#include "atsss_capability.h"
 #include "dnn_selection_mode.h"
 #include "ma_pdu_indication.h"
+#include "npcf_atsss_capability.h"
+#include "nwdaf_data.h"
+#include "pcf_ue_callback_info.h"
 #include "pdu_session_type.h"
 #include "plmn_id_nid.h"
 #include "qos_flow_usage.h"
 #include "rat_type.h"
+#include "satellite_backhaul_category.h"
+#include "server_addressing_info.h"
 #include "serving_nf_identity.h"
 #include "snssai.h"
 #include "subscribed_default_qos.h"
@@ -82,9 +86,15 @@ typedef struct OpenAPI_sm_policy_context_data_s {
     char *smf_id;
     char *recovery_time;
     OpenAPI_ma_pdu_indication_e ma_pdu_ind;
-    struct OpenAPI_atsss_capability_s *atsss_capab;
+    OpenAPI_npcf_atsss_capability_e atsss_capab;
     OpenAPI_list_t *ipv4_frame_route_list;
     OpenAPI_list_t *ipv6_frame_route_list;
+    OpenAPI_satellite_backhaul_category_e sat_backhaul_category;
+    struct OpenAPI_pcf_ue_callback_info_s *pcf_ue_info;
+    OpenAPI_list_t *pvs_info;
+    bool is_onboard_ind;
+    int onboard_ind;
+    OpenAPI_list_t *nwdaf_datas;
 } OpenAPI_sm_policy_context_data_t;
 
 OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_create(
@@ -133,9 +143,15 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_create(
     char *smf_id,
     char *recovery_time,
     OpenAPI_ma_pdu_indication_e ma_pdu_ind,
-    OpenAPI_atsss_capability_t *atsss_capab,
+    OpenAPI_npcf_atsss_capability_e atsss_capab,
     OpenAPI_list_t *ipv4_frame_route_list,
-    OpenAPI_list_t *ipv6_frame_route_list
+    OpenAPI_list_t *ipv6_frame_route_list,
+    OpenAPI_satellite_backhaul_category_e sat_backhaul_category,
+    OpenAPI_pcf_ue_callback_info_t *pcf_ue_info,
+    OpenAPI_list_t *pvs_info,
+    bool is_onboard_ind,
+    int onboard_ind,
+    OpenAPI_list_t *nwdaf_datas
 );
 void OpenAPI_sm_policy_context_data_free(OpenAPI_sm_policy_context_data_t *sm_policy_context_data);
 OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(cJSON *sm_policy_context_dataJSON);

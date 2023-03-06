@@ -20,21 +20,29 @@ OpenAPI_qos_flow_tunnel_t *OpenAPI_qos_flow_tunnel_create(
 
 void OpenAPI_qos_flow_tunnel_free(OpenAPI_qos_flow_tunnel_t *qos_flow_tunnel)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == qos_flow_tunnel) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_list_for_each(qos_flow_tunnel->qfi_list, node) {
-        ogs_free(node->data);
+    if (qos_flow_tunnel->qfi_list) {
+        OpenAPI_list_for_each(qos_flow_tunnel->qfi_list, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(qos_flow_tunnel->qfi_list);
+        qos_flow_tunnel->qfi_list = NULL;
     }
-    OpenAPI_list_free(qos_flow_tunnel->qfi_list);
-    OpenAPI_tunnel_info_free(qos_flow_tunnel->tunnel_info);
+    if (qos_flow_tunnel->tunnel_info) {
+        OpenAPI_tunnel_info_free(qos_flow_tunnel->tunnel_info);
+        qos_flow_tunnel->tunnel_info = NULL;
+    }
     ogs_free(qos_flow_tunnel);
 }
 
 cJSON *OpenAPI_qos_flow_tunnel_convertToJSON(OpenAPI_qos_flow_tunnel_t *qos_flow_tunnel)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (qos_flow_tunnel == NULL) {
         ogs_error("OpenAPI_qos_flow_tunnel_convertToJSON() failed [QosFlowTunnel]");
@@ -42,20 +50,26 @@ cJSON *OpenAPI_qos_flow_tunnel_convertToJSON(OpenAPI_qos_flow_tunnel_t *qos_flow
     }
 
     item = cJSON_CreateObject();
-    cJSON *qfi_list = cJSON_AddArrayToObject(item, "qfiList");
-    if (qfi_list == NULL) {
+    if (!qos_flow_tunnel->qfi_list) {
+        ogs_error("OpenAPI_qos_flow_tunnel_convertToJSON() failed [qfi_list]");
+        return NULL;
+    }
+    cJSON *qfi_listList = cJSON_AddArrayToObject(item, "qfiList");
+    if (qfi_listList == NULL) {
         ogs_error("OpenAPI_qos_flow_tunnel_convertToJSON() failed [qfi_list]");
         goto end;
     }
-
-    OpenAPI_lnode_t *qfi_list_node;
-    OpenAPI_list_for_each(qos_flow_tunnel->qfi_list, qfi_list_node)  {
-    if (cJSON_AddNumberToObject(qfi_list, "", *(double *)qfi_list_node->data) == NULL) {
-        ogs_error("OpenAPI_qos_flow_tunnel_convertToJSON() failed [qfi_list]");
-        goto end;
+    OpenAPI_list_for_each(qos_flow_tunnel->qfi_list, node) {
+        if (cJSON_AddNumberToObject(qfi_listList, "", (uintptr_t)node->data) == NULL) {
+            ogs_error("OpenAPI_qos_flow_tunnel_convertToJSON() failed [qfi_list]");
+            goto end;
+        }
     }
-                    }
 
+    if (!qos_flow_tunnel->tunnel_info) {
+        ogs_error("OpenAPI_qos_flow_tunnel_convertToJSON() failed [tunnel_info]");
+        return NULL;
+    }
     cJSON *tunnel_info_local_JSON = OpenAPI_tunnel_info_convertToJSON(qos_flow_tunnel->tunnel_info);
     if (tunnel_info_local_JSON == NULL) {
         ogs_error("OpenAPI_qos_flow_tunnel_convertToJSON() failed [tunnel_info]");
@@ -74,35 +88,45 @@ end:
 OpenAPI_qos_flow_tunnel_t *OpenAPI_qos_flow_tunnel_parseFromJSON(cJSON *qos_flow_tunnelJSON)
 {
     OpenAPI_qos_flow_tunnel_t *qos_flow_tunnel_local_var = NULL;
-    cJSON *qfi_list = cJSON_GetObjectItemCaseSensitive(qos_flow_tunnelJSON, "qfiList");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *qfi_list = NULL;
+    OpenAPI_list_t *qfi_listList = NULL;
+    cJSON *tunnel_info = NULL;
+    OpenAPI_tunnel_info_t *tunnel_info_local_nonprim = NULL;
+    qfi_list = cJSON_GetObjectItemCaseSensitive(qos_flow_tunnelJSON, "qfiList");
     if (!qfi_list) {
         ogs_error("OpenAPI_qos_flow_tunnel_parseFromJSON() failed [qfi_list]");
         goto end;
     }
+        cJSON *qfi_list_local = NULL;
+        if (!cJSON_IsArray(qfi_list)) {
+            ogs_error("OpenAPI_qos_flow_tunnel_parseFromJSON() failed [qfi_list]");
+            goto end;
+        }
 
-    OpenAPI_list_t *qfi_listList;
-    cJSON *qfi_list_local;
-    if (!cJSON_IsArray(qfi_list)) {
-        ogs_error("OpenAPI_qos_flow_tunnel_parseFromJSON() failed [qfi_list]");
-        goto end;
-    }
-    qfi_listList = OpenAPI_list_create();
+        qfi_listList = OpenAPI_list_create();
 
-    cJSON_ArrayForEach(qfi_list_local, qfi_list) {
-    if (!cJSON_IsNumber(qfi_list_local)) {
-        ogs_error("OpenAPI_qos_flow_tunnel_parseFromJSON() failed [qfi_list]");
-        goto end;
-    }
-    OpenAPI_list_add(qfi_listList , &qfi_list_local->valuedouble);
-    }
+        cJSON_ArrayForEach(qfi_list_local, qfi_list) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsNumber(qfi_list_local)) {
+                ogs_error("OpenAPI_qos_flow_tunnel_parseFromJSON() failed [qfi_list]");
+                goto end;
+            }
+            localDouble = (double *)ogs_calloc(1, sizeof(double));
+            if (!localDouble) {
+                ogs_error("OpenAPI_qos_flow_tunnel_parseFromJSON() failed [qfi_list]");
+                goto end;
+            }
+            *localDouble = qfi_list_local->valuedouble;
+            OpenAPI_list_add(qfi_listList, localDouble);
+        }
 
-    cJSON *tunnel_info = cJSON_GetObjectItemCaseSensitive(qos_flow_tunnelJSON, "tunnelInfo");
+    tunnel_info = cJSON_GetObjectItemCaseSensitive(qos_flow_tunnelJSON, "tunnelInfo");
     if (!tunnel_info) {
         ogs_error("OpenAPI_qos_flow_tunnel_parseFromJSON() failed [tunnel_info]");
         goto end;
     }
-
-    OpenAPI_tunnel_info_t *tunnel_info_local_nonprim = NULL;
     tunnel_info_local_nonprim = OpenAPI_tunnel_info_parseFromJSON(tunnel_info);
 
     qos_flow_tunnel_local_var = OpenAPI_qos_flow_tunnel_create (
@@ -112,6 +136,17 @@ OpenAPI_qos_flow_tunnel_t *OpenAPI_qos_flow_tunnel_parseFromJSON(cJSON *qos_flow
 
     return qos_flow_tunnel_local_var;
 end:
+    if (qfi_listList) {
+        OpenAPI_list_for_each(qfi_listList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(qfi_listList);
+        qfi_listList = NULL;
+    }
+    if (tunnel_info_local_nonprim) {
+        OpenAPI_tunnel_info_free(tunnel_info_local_nonprim);
+        tunnel_info_local_nonprim = NULL;
+    }
     return NULL;
 }
 

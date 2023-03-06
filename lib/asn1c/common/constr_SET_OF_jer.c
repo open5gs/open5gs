@@ -86,7 +86,7 @@ SET_OF_encode_jer(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
 
         if(mname) {
             if(!xcan) ASN__TEXT_INDENT(1, ilevel);
-            ASN__CALLBACK3("\"", 1, mname, mlen, "\"", 1);
+            ASN__CALLBACK3("\"", 1, mname, mlen, "\": ", 3);
         }
 
         if(!xcan && specs->as_XMLValueList == 1)

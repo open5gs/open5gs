@@ -1,7 +1,7 @@
 /*
  * flow_information.h
  *
- * 
+ * Contains the flow information.
  */
 
 #ifndef _OpenAPI_flow_information_H_

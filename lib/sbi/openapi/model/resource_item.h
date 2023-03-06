@@ -1,7 +1,7 @@
 /*
  * resource_item.h
  *
- * Identifies a subscription to policy data change notification when the change occurs in a fragment (subset of resource data) of a given resource.
+ * Identifies a subscription to policy data change notification when the change occurs in a fragment (subset of resource data) of a given resource. 
  */
 
 #ifndef _OpenAPI_resource_item_H_

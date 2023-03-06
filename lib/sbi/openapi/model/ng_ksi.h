@@ -1,7 +1,7 @@
 /*
  * ng_ksi.h
  *
- * 
+ * Represents the ngKSI
  */
 
 #ifndef _OpenAPI_ng_ksi_H_

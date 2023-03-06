@@ -20,27 +20,35 @@ OpenAPI_am_policy_data_t *OpenAPI_am_policy_data_create(
 
 void OpenAPI_am_policy_data_free(OpenAPI_am_policy_data_t *am_policy_data)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == am_policy_data) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_list_for_each(am_policy_data->pra_infos, node) {
-        OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
-        ogs_free(localKeyValue->key);
-        OpenAPI_presence_info_free(localKeyValue->value);
-        ogs_free(localKeyValue);
+    if (am_policy_data->pra_infos) {
+        OpenAPI_list_for_each(am_policy_data->pra_infos, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_presence_info_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(am_policy_data->pra_infos);
+        am_policy_data->pra_infos = NULL;
     }
-    OpenAPI_list_free(am_policy_data->pra_infos);
-    OpenAPI_list_for_each(am_policy_data->subsc_cats, node) {
-        ogs_free(node->data);
+    if (am_policy_data->subsc_cats) {
+        OpenAPI_list_for_each(am_policy_data->subsc_cats, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(am_policy_data->subsc_cats);
+        am_policy_data->subsc_cats = NULL;
     }
-    OpenAPI_list_free(am_policy_data->subsc_cats);
     ogs_free(am_policy_data);
 }
 
 cJSON *OpenAPI_am_policy_data_convertToJSON(OpenAPI_am_policy_data_t *am_policy_data)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (am_policy_data == NULL) {
         ogs_error("OpenAPI_am_policy_data_convertToJSON() failed [AmPolicyData]");
@@ -55,36 +63,33 @@ cJSON *OpenAPI_am_policy_data_convertToJSON(OpenAPI_am_policy_data_t *am_policy_
         goto end;
     }
     cJSON *localMapObject = pra_infos;
-    OpenAPI_lnode_t *pra_infos_node;
     if (am_policy_data->pra_infos) {
-        OpenAPI_list_for_each(am_policy_data->pra_infos, pra_infos_node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)pra_infos_node->data;
-        cJSON *itemLocal = localKeyValue->value ?
-            OpenAPI_presence_info_convertToJSON(localKeyValue->value) :
-            cJSON_CreateNull();
-        if (itemLocal == NULL) {
-            ogs_error("OpenAPI_am_policy_data_convertToJSON() failed [pra_infos]");
-            goto end;
-        }
-        cJSON_AddItemToObject(pra_infos, localKeyValue->key, itemLocal);
+        OpenAPI_list_for_each(am_policy_data->pra_infos, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            cJSON *itemLocal = localKeyValue->value ?
+                OpenAPI_presence_info_convertToJSON(localKeyValue->value) :
+                cJSON_CreateNull();
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_am_policy_data_convertToJSON() failed [inner]");
+                goto end;
             }
+            cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
         }
+    }
     }
 
     if (am_policy_data->subsc_cats) {
-    cJSON *subsc_cats = cJSON_AddArrayToObject(item, "subscCats");
-    if (subsc_cats == NULL) {
+    cJSON *subsc_catsList = cJSON_AddArrayToObject(item, "subscCats");
+    if (subsc_catsList == NULL) {
         ogs_error("OpenAPI_am_policy_data_convertToJSON() failed [subsc_cats]");
         goto end;
     }
-
-    OpenAPI_lnode_t *subsc_cats_node;
-    OpenAPI_list_for_each(am_policy_data->subsc_cats, subsc_cats_node)  {
-    if (cJSON_AddStringToObject(subsc_cats, "", (char*)subsc_cats_node->data) == NULL) {
-        ogs_error("OpenAPI_am_policy_data_convertToJSON() failed [subsc_cats]");
-        goto end;
+    OpenAPI_list_for_each(am_policy_data->subsc_cats, node) {
+        if (cJSON_AddStringToObject(subsc_catsList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_am_policy_data_convertToJSON() failed [subsc_cats]");
+            goto end;
+        }
     }
-                    }
     }
 
 end:
@@ -94,50 +99,56 @@ end:
 OpenAPI_am_policy_data_t *OpenAPI_am_policy_data_parseFromJSON(cJSON *am_policy_dataJSON)
 {
     OpenAPI_am_policy_data_t *am_policy_data_local_var = NULL;
-    cJSON *pra_infos = cJSON_GetObjectItemCaseSensitive(am_policy_dataJSON, "praInfos");
-
-    OpenAPI_list_t *pra_infosList;
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *pra_infos = NULL;
+    OpenAPI_list_t *pra_infosList = NULL;
+    cJSON *subsc_cats = NULL;
+    OpenAPI_list_t *subsc_catsList = NULL;
+    pra_infos = cJSON_GetObjectItemCaseSensitive(am_policy_dataJSON, "praInfos");
     if (pra_infos) {
-    cJSON *pra_infos_local_map;
-    if (!cJSON_IsObject(pra_infos)) {
-        ogs_error("OpenAPI_am_policy_data_parseFromJSON() failed [pra_infos]");
-        goto end;
-    }
-    pra_infosList = OpenAPI_list_create();
-    OpenAPI_map_t *localMapKeyPair = NULL;
-    cJSON_ArrayForEach(pra_infos_local_map, pra_infos) {
-        cJSON *localMapObject = pra_infos_local_map;
-        if (cJSON_IsObject(pra_infos_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(
-                ogs_strdup(localMapObject->string), OpenAPI_presence_info_parseFromJSON(localMapObject));
-        } else if (cJSON_IsNull(pra_infos_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
-        } else {
+        cJSON *pra_infos_local_map = NULL;
+        if (!cJSON_IsObject(pra_infos) && !cJSON_IsNull(pra_infos)) {
             ogs_error("OpenAPI_am_policy_data_parseFromJSON() failed [pra_infos]");
             goto end;
         }
-        OpenAPI_list_add(pra_infosList , localMapKeyPair);
-    }
+        if (cJSON_IsObject(pra_infos)) {
+            pra_infosList = OpenAPI_list_create();
+            OpenAPI_map_t *localMapKeyPair = NULL;
+            cJSON_ArrayForEach(pra_infos_local_map, pra_infos) {
+                cJSON *localMapObject = pra_infos_local_map;
+                if (cJSON_IsObject(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(
+                        ogs_strdup(localMapObject->string), OpenAPI_presence_info_parseFromJSON(localMapObject));
+                } else if (cJSON_IsNull(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
+                } else {
+                    ogs_error("OpenAPI_am_policy_data_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                OpenAPI_list_add(pra_infosList, localMapKeyPair);
+            }
+        }
     }
 
-    cJSON *subsc_cats = cJSON_GetObjectItemCaseSensitive(am_policy_dataJSON, "subscCats");
-
-    OpenAPI_list_t *subsc_catsList;
+    subsc_cats = cJSON_GetObjectItemCaseSensitive(am_policy_dataJSON, "subscCats");
     if (subsc_cats) {
-    cJSON *subsc_cats_local;
-    if (!cJSON_IsArray(subsc_cats)) {
-        ogs_error("OpenAPI_am_policy_data_parseFromJSON() failed [subsc_cats]");
-        goto end;
-    }
-    subsc_catsList = OpenAPI_list_create();
+        cJSON *subsc_cats_local = NULL;
+        if (!cJSON_IsArray(subsc_cats)) {
+            ogs_error("OpenAPI_am_policy_data_parseFromJSON() failed [subsc_cats]");
+            goto end;
+        }
 
-    cJSON_ArrayForEach(subsc_cats_local, subsc_cats) {
-    if (!cJSON_IsString(subsc_cats_local)) {
-        ogs_error("OpenAPI_am_policy_data_parseFromJSON() failed [subsc_cats]");
-        goto end;
-    }
-    OpenAPI_list_add(subsc_catsList , ogs_strdup(subsc_cats_local->valuestring));
-    }
+        subsc_catsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(subsc_cats_local, subsc_cats) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(subsc_cats_local)) {
+                ogs_error("OpenAPI_am_policy_data_parseFromJSON() failed [subsc_cats]");
+                goto end;
+            }
+            OpenAPI_list_add(subsc_catsList, ogs_strdup(subsc_cats_local->valuestring));
+        }
     }
 
     am_policy_data_local_var = OpenAPI_am_policy_data_create (
@@ -147,6 +158,23 @@ OpenAPI_am_policy_data_t *OpenAPI_am_policy_data_parseFromJSON(cJSON *am_policy_
 
     return am_policy_data_local_var;
 end:
+    if (pra_infosList) {
+        OpenAPI_list_for_each(pra_infosList, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_presence_info_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(pra_infosList);
+        pra_infosList = NULL;
+    }
+    if (subsc_catsList) {
+        OpenAPI_list_for_each(subsc_catsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(subsc_catsList);
+        subsc_catsList = NULL;
+    }
     return NULL;
 }
 

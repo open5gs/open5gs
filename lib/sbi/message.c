@@ -821,21 +821,10 @@ int ogs_sbi_parse_request(
             message->http.content_type = ogs_hash_this_val(hi);
         } else if (!ogs_strcasecmp(ogs_hash_this_key(hi), OGS_SBI_ACCEPT)) {
             message->http.accept = ogs_hash_this_val(hi);
-        } else if (!ogs_strcasecmp(ogs_hash_this_key(hi), OGS_SBI_USER_AGENT)) {
-            char *v = ogs_hash_this_val(hi);
-            if (v)
-                message->http.requester_nf_type =
-                    OpenAPI_nf_type_FromString(v);
         } else if (!ogs_strcasecmp(ogs_hash_this_key(hi),
                     OGS_SBI_CUSTOM_CALLBACK)) {
             message->http.custom.callback = ogs_hash_this_val(hi);
         }
-    }
-
-    if (!message->http.requester_nf_type) {
-        ogs_error("No User-Agent in HTTP2 Header");
-        ogs_sbi_message_free(message);
-        return OGS_ERROR;
     }
 
     if (parse_content(message, &request->http) != OGS_OK) {
@@ -1263,29 +1252,41 @@ static int parse_json(ogs_sbi_message_t *message,
 
             SWITCH(message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
-                message->NFProfile =
-                    OpenAPI_nf_profile_parseFromJSON(item);
-                if (!message->NFProfile) {
-                    rv = OGS_ERROR;
-                    ogs_error("JSON parse error");
+                if (message->res_status < 300) {
+                    message->NFProfile =
+                        OpenAPI_nf_profile_parseFromJSON(item);
+                    if (!message->NFProfile) {
+                        rv = OGS_ERROR;
+                        ogs_error("JSON parse error");
+                    }
+                } else {
+                    ogs_error("HTTP ERROR Status : %d", message->res_status);
                 }
                 break;
 
             CASE(OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS)
-                message->SubscriptionData =
-                    OpenAPI_subscription_data_parseFromJSON(item);
-                if (!message->SubscriptionData) {
-                    rv = OGS_ERROR;
-                    ogs_error("JSON parse error");
+                if (message->res_status < 300) {
+                    message->SubscriptionData =
+                        OpenAPI_subscription_data_parseFromJSON(item);
+                    if (!message->SubscriptionData) {
+                        rv = OGS_ERROR;
+                        ogs_error("JSON parse error");
+                    }
+                } else {
+                    ogs_error("HTTP ERROR Status : %d", message->res_status);
                 }
                 break;
 
             CASE(OGS_SBI_RESOURCE_NAME_NF_STATUS_NOTIFY)
-                message->NotificationData =
-                    OpenAPI_notification_data_parseFromJSON(item);
-                if (!message->NotificationData) {
-                    rv = OGS_ERROR;
-                    ogs_error("JSON parse error");
+                if (message->res_status < 300) {
+                    message->NotificationData =
+                        OpenAPI_notification_data_parseFromJSON(item);
+                    if (!message->NotificationData) {
+                        rv = OGS_ERROR;
+                        ogs_error("JSON parse error");
+                    }
+                } else {
+                    ogs_error("HTTP ERROR Status : %d", message->res_status);
                 }
                 break;
 
@@ -1299,11 +1300,15 @@ static int parse_json(ogs_sbi_message_t *message,
         CASE(OGS_SBI_SERVICE_NAME_NNRF_DISC)
             SWITCH(message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
-                message->SearchResult =
-                    OpenAPI_search_result_parseFromJSON(item);
-                if (!message->SearchResult) {
-                    rv = OGS_ERROR;
-                    ogs_error("JSON parse error");
+                if (message->res_status < 300) {
+                    message->SearchResult =
+                        OpenAPI_search_result_parseFromJSON(item);
+                    if (!message->SearchResult) {
+                        rv = OGS_ERROR;
+                        ogs_error("JSON parse error");
+                    }
+                } else {
+                    ogs_error("HTTP ERROR Status : %d", message->res_status);
                 }
                 break;
 
@@ -1400,10 +1405,14 @@ static int parse_json(ogs_sbi_message_t *message,
                 break;
 
             CASE(OGS_SBI_RESOURCE_NAME_AUTH_EVENTS)
-                message->AuthEvent = OpenAPI_auth_event_parseFromJSON(item);
-                if (!message->AuthEvent) {
-                    rv = OGS_ERROR;
-                    ogs_error("JSON parse error");
+                if (message->res_status < 300) {
+                    message->AuthEvent = OpenAPI_auth_event_parseFromJSON(item);
+                    if (!message->AuthEvent) {
+                        rv = OGS_ERROR;
+                        ogs_error("JSON parse error");
+                    }
+                } else {
+                    ogs_error("HTTP ERROR Status : %d", message->res_status);
                 }
                 break;
 
@@ -1421,7 +1430,8 @@ static int parse_json(ogs_sbi_message_t *message,
                 CASE(OGS_SBI_RESOURCE_NAME_AMF_3GPP_ACCESS)
 
                     SWITCH(message->h.method)
-                        CASE(OGS_SBI_HTTP_METHOD_PUT)
+                    CASE(OGS_SBI_HTTP_METHOD_PUT)
+                        if (message->res_status < 300) {
                             message->Amf3GppAccessRegistration =
                                 OpenAPI_amf3_gpp_access_registration_parseFromJSON(
                                         item);
@@ -1429,8 +1439,13 @@ static int parse_json(ogs_sbi_message_t *message,
                                 rv = OGS_ERROR;
                                 ogs_error("JSON parse error");
                             }
-                            break;
-                        CASE(OGS_SBI_HTTP_METHOD_PATCH)
+                        } else {
+                            ogs_error("HTTP ERROR Status : %d",
+                                    message->res_status);
+                        }
+                        break;
+                    CASE(OGS_SBI_HTTP_METHOD_PATCH)
+                        if (message->res_status < 300) {
                             message->Amf3GppAccessRegistrationModification =
                                 OpenAPI_amf3_gpp_access_registration_modification_parseFromJSON(
                                         item);
@@ -1438,11 +1453,15 @@ static int parse_json(ogs_sbi_message_t *message,
                                 rv = OGS_ERROR;
                                 ogs_error("JSON parse error");
                             }
-                            break;
-                        DEFAULT
-                            rv = OGS_ERROR;
-                            ogs_error("Unknown method [%s]", message->h.method);
-                        END
+                        } else {
+                            ogs_error("HTTP ERROR Status : %d",
+                                    message->res_status);
+                        }
+                        break;
+                    DEFAULT
+                        rv = OGS_ERROR;
+                        ogs_error("Unknown method [%s]", message->h.method);
+                    END
                     break;
                 DEFAULT
                     rv = OGS_ERROR;
@@ -1461,57 +1480,80 @@ static int parse_json(ogs_sbi_message_t *message,
         CASE(OGS_SBI_SERVICE_NAME_NUDM_SDM)
             SWITCH(message->h.resource.component[1])
             CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
-                message->AccessAndMobilitySubscriptionData =
-                    OpenAPI_access_and_mobility_subscription_data_parseFromJSON(
-                            item);
-                if (!message->AccessAndMobilitySubscriptionData) {
-                    rv = OGS_ERROR;
-                    ogs_error("JSON parse error");
+                if (message->res_status < 300) {
+                    message->AccessAndMobilitySubscriptionData =
+                        OpenAPI_access_and_mobility_subscription_data_parseFromJSON(
+                                item);
+                    if (!message->AccessAndMobilitySubscriptionData) {
+                        rv = OGS_ERROR;
+                        ogs_error("JSON parse error");
+                    }
+                } else {
+                    ogs_error("HTTP ERROR Status : %d", message->res_status);
                 }
                 break;
 
             CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA)
-                message->SmfSelectionSubscriptionData =
-                    OpenAPI_smf_selection_subscription_data_parseFromJSON(item);
-                if (!message->SmfSelectionSubscriptionData) {
-                    rv = OGS_ERROR;
-                    ogs_error("JSON parse error");
+                if (message->res_status < 300) {
+                    message->SmfSelectionSubscriptionData =
+                        OpenAPI_smf_selection_subscription_data_parseFromJSON(
+                                item);
+                    if (!message->SmfSelectionSubscriptionData) {
+                        rv = OGS_ERROR;
+                        ogs_error("JSON parse error");
+                    }
+                } else {
+                    ogs_error("HTTP ERROR Status : %d", message->res_status);
                 }
                 break;
 
             CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA)
-                message->UeContextInSmfData =
-                    OpenAPI_ue_context_in_smf_data_parseFromJSON(item);
-                if (!message->UeContextInSmfData) {
-                    rv = OGS_ERROR;
-                    ogs_error("JSON parse error");
+                if (message->res_status < 300) {
+                    message->UeContextInSmfData =
+                        OpenAPI_ue_context_in_smf_data_parseFromJSON(item);
+                    if (!message->UeContextInSmfData) {
+                        rv = OGS_ERROR;
+                        ogs_error("JSON parse error");
+                    }
+                } else {
+                    ogs_error("HTTP ERROR Status : %d", message->res_status);
                 }
                 break;
 
             CASE(OGS_SBI_RESOURCE_NAME_SM_DATA)
-                if (item) {
-                    OpenAPI_session_management_subscription_data_t *smsub_item = NULL;
-                    cJSON *smsubJSON = NULL;
-                    message->SessionManagementSubscriptionDataList = OpenAPI_list_create();
-                    cJSON_ArrayForEach(smsubJSON, item) {
-                        if (!cJSON_IsObject(smsubJSON)) {
-                            rv = OGS_ERROR;
-                            ogs_error("Unknown JSON");
-                            goto cleanup;
-                        }
+                if (message->res_status < 300) {
+                    if (item) {
+                        OpenAPI_session_management_subscription_data_t
+                            *smsub_item = NULL;
+                        cJSON *smsubJSON = NULL;
+                        message->SessionManagementSubscriptionDataList =
+                            OpenAPI_list_create();
+                        cJSON_ArrayForEach(smsubJSON, item) {
+                            if (!cJSON_IsObject(smsubJSON)) {
+                                rv = OGS_ERROR;
+                                ogs_error("Unknown JSON");
+                                goto cleanup;
+                            }
 
-                        smsub_item = OpenAPI_session_management_subscription_data_parseFromJSON(smsubJSON);
-                        OpenAPI_list_add(message->SessionManagementSubscriptionDataList, smsub_item);
+                            smsub_item = OpenAPI_session_management_subscription_data_parseFromJSON(smsubJSON);
+                            OpenAPI_list_add(message->SessionManagementSubscriptionDataList, smsub_item);
+                        }
                     }
+                } else {
+                    ogs_error("HTTP ERROR Status : %d", message->res_status);
                 }
                 break;
 
             CASE(OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS)
-                message->SDMSubscription =
-                    OpenAPI_sdm_subscription_parseFromJSON(item);
-                if (!message->SDMSubscription) {
-                    rv = OGS_ERROR;
-                    ogs_error("JSON parse error");
+                if (message->res_status < 300) {
+                    message->SDMSubscription =
+                        OpenAPI_sdm_subscription_parseFromJSON(item);
+                    if (!message->SDMSubscription) {
+                        rv = OGS_ERROR;
+                        ogs_error("JSON parse error");
+                    }
+                } else {
+                    ogs_error("HTTP ERROR Status : %d", message->res_status);
                 }
                 break;
 
@@ -1539,11 +1581,16 @@ static int parse_json(ogs_sbi_message_t *message,
                         }
                         break;
                     CASE(OGS_SBI_RESOURCE_NAME_AUTHENTICATION_STATUS)
-                        message->AuthEvent =
-                            OpenAPI_auth_event_parseFromJSON(item);
-                        if (!message->AuthEvent) {
-                            rv = OGS_ERROR;
-                            ogs_error("JSON parse error");
+                        if (message->res_status < 300) {
+                            message->AuthEvent =
+                                OpenAPI_auth_event_parseFromJSON(item);
+                            if (!message->AuthEvent) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
+                        } else {
+                            ogs_error("HTTP ERROR Status : %d",
+                                    message->res_status);
                         }
                         break;
                     DEFAULT
@@ -1554,12 +1601,17 @@ static int parse_json(ogs_sbi_message_t *message,
                     break;
 
                 CASE(OGS_SBI_RESOURCE_NAME_CONTEXT_DATA)
-                    message->Amf3GppAccessRegistration =
-                        OpenAPI_amf3_gpp_access_registration_parseFromJSON(
-                                item);
-                    if (!message->Amf3GppAccessRegistration) {
-                        rv = OGS_ERROR;
-                        ogs_error("JSON parse error");
+                    if (message->res_status < 300) {
+                        message->Amf3GppAccessRegistration =
+                            OpenAPI_amf3_gpp_access_registration_parseFromJSON(
+                                    item);
+                        if (!message->Amf3GppAccessRegistration) {
+                            rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
+                        }
+                    } else {
+                        ogs_error("HTTP ERROR Status : %d",
+                                message->res_status);
                     }
                     break;
 
@@ -1568,48 +1620,69 @@ static int parse_json(ogs_sbi_message_t *message,
                     CASE(OGS_SBI_RESOURCE_NAME_PROVISIONED_DATA)
                         SWITCH(message->h.resource.component[4])
                         CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
-                            message->AccessAndMobilitySubscriptionData =
-                                OpenAPI_access_and_mobility_subscription_data_parseFromJSON(item);
-                            if (!message->AccessAndMobilitySubscriptionData) {
-                                rv = OGS_ERROR;
-                                ogs_error("JSON parse error");
+                            if (message->res_status < 300) {
+                                message->AccessAndMobilitySubscriptionData =
+                                    OpenAPI_access_and_mobility_subscription_data_parseFromJSON(item);
+                                if (!message->
+                                        AccessAndMobilitySubscriptionData) {
+                                    rv = OGS_ERROR;
+                                    ogs_error("JSON parse error");
+                                }
+                            } else {
+                                ogs_error("HTTP ERROR Status : %d",
+                                        message->res_status);
                             }
                             break;
 
                         CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECTION_SUBSCRIPTION_DATA)
-                            message->SmfSelectionSubscriptionData =
-                                OpenAPI_smf_selection_subscription_data_parseFromJSON(item);
-                            if (!message->SmfSelectionSubscriptionData) {
-                                rv = OGS_ERROR;
-                                ogs_error("JSON parse error");
+                            if (message->res_status < 300) {
+                                message->SmfSelectionSubscriptionData =
+                                    OpenAPI_smf_selection_subscription_data_parseFromJSON(item);
+                                if (!message->SmfSelectionSubscriptionData) {
+                                    rv = OGS_ERROR;
+                                    ogs_error("JSON parse error");
+                                }
+                            } else {
+                                ogs_error("HTTP ERROR Status : %d",
+                                        message->res_status);
                             }
                             break;
 
                         CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA)
-                            message->UeContextInSmfData =
-                                OpenAPI_ue_context_in_smf_data_parseFromJSON(
-                                        item);
-                            if (!message->UeContextInSmfData) {
-                                rv = OGS_ERROR;
-                                ogs_error("JSON parse error");
+                            if (message->res_status < 300) {
+                                message->UeContextInSmfData =
+                                    OpenAPI_ue_context_in_smf_data_parseFromJSON(
+                                            item);
+                                if (!message->UeContextInSmfData) {
+                                    rv = OGS_ERROR;
+                                    ogs_error("JSON parse error");
+                                }
+                            } else {
+                                ogs_error("HTTP ERROR Status : %d",
+                                        message->res_status);
                             }
                             break;
 
                         CASE(OGS_SBI_RESOURCE_NAME_SM_DATA)
-                            if (item) {
-                                OpenAPI_session_management_subscription_data_t *smsub_item = NULL;
-                                cJSON *smsubJSON = NULL;
-                                message->SessionManagementSubscriptionDataList = OpenAPI_list_create();
-                                cJSON_ArrayForEach(smsubJSON, item) {
-                                    if (!cJSON_IsObject(smsubJSON)) {
-                                        rv = OGS_ERROR;
-                                        ogs_error("Unknown JSON");
-                                        goto cleanup;
-                                    }
+                            if (message->res_status < 300) {
+                                if (item) {
+                                    OpenAPI_session_management_subscription_data_t *smsub_item = NULL;
+                                    cJSON *smsubJSON = NULL;
+                                    message->SessionManagementSubscriptionDataList = OpenAPI_list_create();
+                                    cJSON_ArrayForEach(smsubJSON, item) {
+                                        if (!cJSON_IsObject(smsubJSON)) {
+                                            rv = OGS_ERROR;
+                                            ogs_error("Unknown JSON");
+                                            goto cleanup;
+                                        }
 
-                                    smsub_item = OpenAPI_session_management_subscription_data_parseFromJSON(smsubJSON);
-                                    OpenAPI_list_add(message->SessionManagementSubscriptionDataList, smsub_item);
+                                        smsub_item = OpenAPI_session_management_subscription_data_parseFromJSON(smsubJSON);
+                                        OpenAPI_list_add(message->SessionManagementSubscriptionDataList, smsub_item);
+                                    }
                                 }
+                            } else {
+                                ogs_error("HTTP ERROR Status : %d",
+                                        message->res_status);
                             }
                             break;
 
@@ -1633,22 +1706,30 @@ static int parse_json(ogs_sbi_message_t *message,
                 CASE(OGS_SBI_RESOURCE_NAME_UES)
                     SWITCH(message->h.resource.component[3])
                     CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
-
-                        message->AmPolicyData =
-                            OpenAPI_am_policy_data_parseFromJSON(item);
-                        if (!message->AmPolicyData) {
-                            rv = OGS_ERROR;
-                            ogs_error("JSON parse error");
+                        if (message->res_status < 300) {
+                            message->AmPolicyData =
+                                OpenAPI_am_policy_data_parseFromJSON(item);
+                            if (!message->AmPolicyData) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
+                        } else {
+                            ogs_error("HTTP ERROR Status : %d",
+                                    message->res_status);
                         }
                         break;
 
                     CASE(OGS_SBI_RESOURCE_NAME_SM_DATA)
-
-                        message->SmPolicyData =
-                            OpenAPI_sm_policy_data_parseFromJSON(item);
-                        if (!message->SmPolicyData) {
-                            rv = OGS_ERROR;
-                            ogs_error("JSON parse error");
+                        if (message->res_status < 300) {
+                            message->SmPolicyData =
+                                OpenAPI_sm_policy_data_parseFromJSON(item);
+                            if (!message->SmPolicyData) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
+                        } else {
+                            ogs_error("HTTP ERROR Status : %d",
+                                    message->res_status);
                         }
                         break;
 
@@ -1999,11 +2080,16 @@ static int parse_json(ogs_sbi_message_t *message,
                     } else {
                         SWITCH(message->h.method)
                         CASE(OGS_SBI_HTTP_METHOD_PATCH)
-                            message->AppSessionContextUpdateDataPatch =
-                                OpenAPI_app_session_context_update_data_patch_parseFromJSON(item);
-                            if (!message->AppSessionContextUpdateDataPatch) {
-                                rv = OGS_ERROR;
-                                ogs_error("JSON parse error");
+                            if (message->res_status < 300) {
+                                message->AppSessionContextUpdateDataPatch =
+                                    OpenAPI_app_session_context_update_data_patch_parseFromJSON(item);
+                                if (!message->AppSessionContextUpdateDataPatch) {
+                                    rv = OGS_ERROR;
+                                    ogs_error("JSON parse error");
+                                }
+                            } else {
+                                ogs_error("HTTP ERROR Status : %d",
+                                        message->res_status);
                             }
                             break;
                         DEFAULT
@@ -2041,29 +2127,42 @@ static int parse_json(ogs_sbi_message_t *message,
         CASE(OGS_SBI_SERVICE_NAME_NAMF_CALLBACK)
             SWITCH(message->h.resource.component[1])
             CASE(OGS_SBI_RESOURCE_NAME_SM_CONTEXT_STATUS)
-                message->SmContextStatusNotification =
-                    OpenAPI_sm_context_status_notification_parseFromJSON(item);
-                if (!message->SmContextStatusNotification) {
-                    rv = OGS_ERROR;
-                    ogs_error("JSON parse error");
+                if (message->res_status < 300) {
+                    message->SmContextStatusNotification =
+                        OpenAPI_sm_context_status_notification_parseFromJSON(
+                                item);
+                    if (!message->SmContextStatusNotification) {
+                        rv = OGS_ERROR;
+                        ogs_error("JSON parse error");
+                    }
+                } else {
+                    ogs_error("HTTP ERROR Status : %d", message->res_status);
                 }
                 break;
 
             CASE(OGS_SBI_RESOURCE_NAME_DEREG_NOTIFY)
-                message->DeregistrationData =
-                    OpenAPI_deregistration_data_parseFromJSON(item);
-                if (!message->DeregistrationData) {
-                    rv = OGS_ERROR;
-                    ogs_error("JSON parse error");
+                if (message->res_status < 300) {
+                    message->DeregistrationData =
+                        OpenAPI_deregistration_data_parseFromJSON(item);
+                    if (!message->DeregistrationData) {
+                        rv = OGS_ERROR;
+                        ogs_error("JSON parse error");
+                    }
+                } else {
+                    ogs_error("HTTP ERROR Status : %d", message->res_status);
                 }
                 break;
 
             CASE(OGS_SBI_RESOURCE_NAME_SDMSUBSCRIPTION_NOTIFY)
-                message->ModificationNotification =
-                    OpenAPI_modification_notification_parseFromJSON(item);
-                if (!message->ModificationNotification) {
-                    rv = OGS_ERROR;
-                    ogs_error("JSON parse error");
+                if (message->res_status < 300) {
+                    message->ModificationNotification =
+                        OpenAPI_modification_notification_parseFromJSON(item);
+                    if (!message->ModificationNotification) {
+                        rv = OGS_ERROR;
+                        ogs_error("JSON parse error");
+                    }
+                } else {
+                    ogs_error("HTTP ERROR Status : %d", message->res_status);
                 }
                 break;
 
@@ -2077,31 +2176,45 @@ static int parse_json(ogs_sbi_message_t *message,
         CASE(OGS_SBI_SERVICE_NAME_NSMF_CALLBACK)
             SWITCH(message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_N1_N2_FAILURE_NOTIFY)
-                message->N1N2MsgTxfrFailureNotification =
-                    OpenAPI_n1_n2_msg_txfr_failure_notification_parseFromJSON(
-                            item);
-                if (!message->N1N2MsgTxfrFailureNotification) {
-                    rv = OGS_ERROR;
-                    ogs_error("JSON parse error");
+                if (message->res_status < 300) {
+                    message->N1N2MsgTxfrFailureNotification =
+                        OpenAPI_n1_n2_msg_txfr_failure_notification_parseFromJSON(
+                                item);
+                    if (!message->N1N2MsgTxfrFailureNotification) {
+                        rv = OGS_ERROR;
+                        ogs_error("JSON parse error");
+                    }
+                } else {
+                    ogs_error("HTTP ERROR Status : %d", message->res_status);
                 }
                 break;
 
             CASE(OGS_SBI_RESOURCE_NAME_SM_POLICY_NOTIFY)
                 SWITCH(message->h.resource.component[2])
                 CASE(OGS_SBI_RESOURCE_NAME_UPDATE)
-                    message->SmPolicyNotification =
-                        OpenAPI_sm_policy_notification_parseFromJSON(item);
-                    if (!message->SmPolicyNotification) {
-                        rv = OGS_ERROR;
-                        ogs_error("JSON parse error");
+                    if (message->res_status < 300) {
+                        message->SmPolicyNotification =
+                            OpenAPI_sm_policy_notification_parseFromJSON(item);
+                        if (!message->SmPolicyNotification) {
+                            rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
+                        }
+                    } else {
+                        ogs_error("HTTP ERROR Status : %d",
+                                message->res_status);
                     }
                     break;
                 CASE(OGS_SBI_RESOURCE_NAME_TERMINATE)
-                    message->TerminationNotification =
-                        OpenAPI_termination_notification_parseFromJSON(item);
-                    if (!message->TerminationNotification) {
-                        rv = OGS_ERROR;
-                        ogs_error("JSON parse error");
+                    if (message->res_status < 300) {
+                        message->TerminationNotification =
+                            OpenAPI_termination_notification_parseFromJSON(item);
+                        if (!message->TerminationNotification) {
+                            rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
+                        }
+                    } else {
+                        ogs_error("HTTP ERROR Status : %d",
+                                message->res_status);
                     }
                     break;
 

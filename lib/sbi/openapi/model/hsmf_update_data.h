@@ -1,7 +1,7 @@
 /*
  * hsmf_update_data.h
  *
- * 
+ * Data within Update Request towards H-SMF, or from I-SMF to SMF
  */
 
 #ifndef _OpenAPI_hsmf_update_data_H_
@@ -17,9 +17,11 @@
 #include "eps_interworking_indication.h"
 #include "guami.h"
 #include "ma_release_indication.h"
+#include "max_integrity_protected_data_rate.h"
 #include "mo_exp_data_counter.h"
 #include "n4_information.h"
 #include "ng_ap_cause.h"
+#include "pcf_ue_callback_info.h"
 #include "pdu_session_notify_item.h"
 #include "plmn_id_nid.h"
 #include "presence_state.h"
@@ -30,12 +32,14 @@
 #include "ref_to_binary_data.h"
 #include "request_indication.h"
 #include "roaming_charging_profile.h"
+#include "satellite_backhaul_category.h"
 #include "secondary_rat_usage_info.h"
 #include "secondary_rat_usage_report.h"
 #include "security_result.h"
 #include "tunnel_info.h"
 #include "ulcl_bp_information.h"
 #include "unavailable_access_indication.h"
+#include "up_cnx_state.h"
 #include "up_security_info.h"
 #include "user_location.h"
 #include "vplmn_qos.h"
@@ -45,6 +49,11 @@ extern "C" {
 #endif
 
 typedef struct OpenAPI_hsmf_update_data_s OpenAPI_hsmf_update_data_t;
+typedef enum { OpenAPI_hsmf_update_data_SMPOLICYNOTIFYIND_NULL = 0, OpenAPI_hsmf_update_data_SMPOLICYNOTIFYIND__true } OpenAPI_hsmf_update_data_sm_policy_notify_ind_e;
+
+char* OpenAPI_hsmf_update_data_sm_policy_notify_ind_ToString(OpenAPI_hsmf_update_data_sm_policy_notify_ind_e sm_policy_notify_ind);
+
+OpenAPI_hsmf_update_data_sm_policy_notify_ind_e OpenAPI_hsmf_update_data_sm_policy_notify_ind_FromString(char* sm_policy_notify_ind);
 typedef struct OpenAPI_hsmf_update_data_s {
     OpenAPI_request_indication_e request_indication;
     char *pei;
@@ -111,6 +120,13 @@ typedef struct OpenAPI_hsmf_update_data_s {
     struct OpenAPI_up_security_info_s *up_security_info;
     char *amf_nf_id;
     struct OpenAPI_guami_s *guami;
+    OpenAPI_list_t *secondary_rat_usage_data_report_container;
+    OpenAPI_hsmf_update_data_sm_policy_notify_ind_e sm_policy_notify_ind;
+    struct OpenAPI_pcf_ue_callback_info_s *pcf_ue_callback_info;
+    OpenAPI_satellite_backhaul_category_e satellite_backhaul_cat;
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_ul;
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dl;
+    OpenAPI_up_cnx_state_e up_cnx_state;
 } OpenAPI_hsmf_update_data_t;
 
 OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_create(
@@ -178,7 +194,14 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_create(
     OpenAPI_security_result_t *security_result,
     OpenAPI_up_security_info_t *up_security_info,
     char *amf_nf_id,
-    OpenAPI_guami_t *guami
+    OpenAPI_guami_t *guami,
+    OpenAPI_list_t *secondary_rat_usage_data_report_container,
+    OpenAPI_hsmf_update_data_sm_policy_notify_ind_e sm_policy_notify_ind,
+    OpenAPI_pcf_ue_callback_info_t *pcf_ue_callback_info,
+    OpenAPI_satellite_backhaul_category_e satellite_backhaul_cat,
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_ul,
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dl,
+    OpenAPI_up_cnx_state_e up_cnx_state
 );
 void OpenAPI_hsmf_update_data_free(OpenAPI_hsmf_update_data_t *hsmf_update_data);
 OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_parseFromJSON(cJSON *hsmf_update_dataJSON);

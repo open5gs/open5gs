@@ -13,15 +13,20 @@ extern "C" {
 
 struct asn_TYPE_descriptor_s;	/* Forward declaration */
 
-/* Flags used by the jer_encode() and (*jer_type_encoder_f), defined below */
+/* Flags used by the jer_encode() and (*jer_type_encoder_f), defined below
+ *
+ * This isn't actually used, it might be used in the future to support
+ * both normal JSON and prettified JSON output or removed.
+ * It came from XER
+ */
 enum jer_encoder_flags_e {
 	/* Mode of encoding */
-	JER_F_BASIC	= 0x01,	/* BASIC-JER (pretty-printing) */
+	JER_F	= 0x01,	/* JER (pretty-printing) */
 };
 
 /*
  * The JER encoder of any type. May be invoked by the application.
- * Produces CANONICAL-JER and BASIC-JER depending on the (jer_flags).
+ * Produces JER output.
  */
 asn_enc_rval_t jer_encode(const struct asn_TYPE_descriptor_s *type_descriptor,
                           const void *struct_ptr, /* Structure to be encoded */
@@ -30,7 +35,7 @@ asn_enc_rval_t jer_encode(const struct asn_TYPE_descriptor_s *type_descriptor,
 );
 
 /*
- * The variant of the above function which dumps the BASIC-JER (JER_F_BASIC)
+ * The variant of the above function which dumps the JER
  * output into the chosen file pointer.
  * RETURN VALUES:
  * 	 0: The structure is printed.
@@ -42,9 +47,9 @@ int jer_fprint(FILE *stream, const struct asn_TYPE_descriptor_s *td,
 
 /*
  * A helper function that uses JER encoding/decoding to verify that:
- * - Both structures encode into the same BASIC JER.
+ * - Both structures encode into the same JER.
  * - Both resulting JER byte streams can be decoded back.
- * - Both decoded structures encode into the same BASIC JER (round-trip).
+ * - Both decoded structures encode into the same JER (round-trip).
  * All of this verifies equivalence between structures and a round-trip.
  * ARGUMENTS:
  *  (opt_debug_stream)  - If specified, prints ongoing details.

@@ -82,49 +82,78 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_create(
 
 void OpenAPI_sm_policy_dnn_data_free(OpenAPI_sm_policy_dnn_data_t *sm_policy_dnn_data)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == sm_policy_dnn_data) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(sm_policy_dnn_data->dnn);
-    OpenAPI_list_for_each(sm_policy_dnn_data->allowed_services, node) {
-        ogs_free(node->data);
+    if (sm_policy_dnn_data->dnn) {
+        ogs_free(sm_policy_dnn_data->dnn);
+        sm_policy_dnn_data->dnn = NULL;
     }
-    OpenAPI_list_free(sm_policy_dnn_data->allowed_services);
-    OpenAPI_list_for_each(sm_policy_dnn_data->subsc_cats, node) {
-        ogs_free(node->data);
+    if (sm_policy_dnn_data->allowed_services) {
+        OpenAPI_list_for_each(sm_policy_dnn_data->allowed_services, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(sm_policy_dnn_data->allowed_services);
+        sm_policy_dnn_data->allowed_services = NULL;
     }
-    OpenAPI_list_free(sm_policy_dnn_data->subsc_cats);
-    ogs_free(sm_policy_dnn_data->gbr_ul);
-    ogs_free(sm_policy_dnn_data->gbr_dl);
-    OpenAPI_charging_information_free(sm_policy_dnn_data->chf_info);
-    OpenAPI_list_for_each(sm_policy_dnn_data->ref_um_data_limit_ids, node) {
-        OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
-        ogs_free(localKeyValue->key);
-        OpenAPI_limit_id_to_monitoring_key_free(localKeyValue->value);
-        ogs_free(localKeyValue);
+    if (sm_policy_dnn_data->subsc_cats) {
+        OpenAPI_list_for_each(sm_policy_dnn_data->subsc_cats, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(sm_policy_dnn_data->subsc_cats);
+        sm_policy_dnn_data->subsc_cats = NULL;
     }
-    OpenAPI_list_free(sm_policy_dnn_data->ref_um_data_limit_ids);
-    OpenAPI_list_for_each(sm_policy_dnn_data->pra_infos, node) {
-        OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
-        ogs_free(localKeyValue->key);
-        OpenAPI_presence_info_free(localKeyValue->value);
-        ogs_free(localKeyValue);
+    if (sm_policy_dnn_data->gbr_ul) {
+        ogs_free(sm_policy_dnn_data->gbr_ul);
+        sm_policy_dnn_data->gbr_ul = NULL;
     }
-    OpenAPI_list_free(sm_policy_dnn_data->pra_infos);
-    OpenAPI_list_for_each(sm_policy_dnn_data->bdt_ref_ids, node) {
-        OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
-        ogs_free(localKeyValue->key);
-        ogs_free(localKeyValue->value);
-        ogs_free(localKeyValue);
+    if (sm_policy_dnn_data->gbr_dl) {
+        ogs_free(sm_policy_dnn_data->gbr_dl);
+        sm_policy_dnn_data->gbr_dl = NULL;
     }
-    OpenAPI_list_free(sm_policy_dnn_data->bdt_ref_ids);
+    if (sm_policy_dnn_data->chf_info) {
+        OpenAPI_charging_information_free(sm_policy_dnn_data->chf_info);
+        sm_policy_dnn_data->chf_info = NULL;
+    }
+    if (sm_policy_dnn_data->ref_um_data_limit_ids) {
+        OpenAPI_list_for_each(sm_policy_dnn_data->ref_um_data_limit_ids, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_limit_id_to_monitoring_key_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(sm_policy_dnn_data->ref_um_data_limit_ids);
+        sm_policy_dnn_data->ref_um_data_limit_ids = NULL;
+    }
+    if (sm_policy_dnn_data->pra_infos) {
+        OpenAPI_list_for_each(sm_policy_dnn_data->pra_infos, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_presence_info_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(sm_policy_dnn_data->pra_infos);
+        sm_policy_dnn_data->pra_infos = NULL;
+    }
+    if (sm_policy_dnn_data->bdt_ref_ids) {
+        OpenAPI_list_for_each(sm_policy_dnn_data->bdt_ref_ids, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            ogs_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(sm_policy_dnn_data->bdt_ref_ids);
+        sm_policy_dnn_data->bdt_ref_ids = NULL;
+    }
     ogs_free(sm_policy_dnn_data);
 }
 
 cJSON *OpenAPI_sm_policy_dnn_data_convertToJSON(OpenAPI_sm_policy_dnn_data_t *sm_policy_dnn_data)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (sm_policy_dnn_data == NULL) {
         ogs_error("OpenAPI_sm_policy_dnn_data_convertToJSON() failed [SmPolicyDnnData]");
@@ -132,41 +161,41 @@ cJSON *OpenAPI_sm_policy_dnn_data_convertToJSON(OpenAPI_sm_policy_dnn_data_t *sm
     }
 
     item = cJSON_CreateObject();
+    if (!sm_policy_dnn_data->dnn) {
+        ogs_error("OpenAPI_sm_policy_dnn_data_convertToJSON() failed [dnn]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "dnn", sm_policy_dnn_data->dnn) == NULL) {
         ogs_error("OpenAPI_sm_policy_dnn_data_convertToJSON() failed [dnn]");
         goto end;
     }
 
     if (sm_policy_dnn_data->allowed_services) {
-    cJSON *allowed_services = cJSON_AddArrayToObject(item, "allowedServices");
-    if (allowed_services == NULL) {
+    cJSON *allowed_servicesList = cJSON_AddArrayToObject(item, "allowedServices");
+    if (allowed_servicesList == NULL) {
         ogs_error("OpenAPI_sm_policy_dnn_data_convertToJSON() failed [allowed_services]");
         goto end;
     }
-
-    OpenAPI_lnode_t *allowed_services_node;
-    OpenAPI_list_for_each(sm_policy_dnn_data->allowed_services, allowed_services_node)  {
-    if (cJSON_AddStringToObject(allowed_services, "", (char*)allowed_services_node->data) == NULL) {
-        ogs_error("OpenAPI_sm_policy_dnn_data_convertToJSON() failed [allowed_services]");
-        goto end;
+    OpenAPI_list_for_each(sm_policy_dnn_data->allowed_services, node) {
+        if (cJSON_AddStringToObject(allowed_servicesList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_sm_policy_dnn_data_convertToJSON() failed [allowed_services]");
+            goto end;
+        }
     }
-                    }
     }
 
     if (sm_policy_dnn_data->subsc_cats) {
-    cJSON *subsc_cats = cJSON_AddArrayToObject(item, "subscCats");
-    if (subsc_cats == NULL) {
+    cJSON *subsc_catsList = cJSON_AddArrayToObject(item, "subscCats");
+    if (subsc_catsList == NULL) {
         ogs_error("OpenAPI_sm_policy_dnn_data_convertToJSON() failed [subsc_cats]");
         goto end;
     }
-
-    OpenAPI_lnode_t *subsc_cats_node;
-    OpenAPI_list_for_each(sm_policy_dnn_data->subsc_cats, subsc_cats_node)  {
-    if (cJSON_AddStringToObject(subsc_cats, "", (char*)subsc_cats_node->data) == NULL) {
-        ogs_error("OpenAPI_sm_policy_dnn_data_convertToJSON() failed [subsc_cats]");
-        goto end;
+    OpenAPI_list_for_each(sm_policy_dnn_data->subsc_cats, node) {
+        if (cJSON_AddStringToObject(subsc_catsList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_sm_policy_dnn_data_convertToJSON() failed [subsc_cats]");
+            goto end;
+        }
     }
-                    }
     }
 
     if (sm_policy_dnn_data->gbr_ul) {
@@ -245,20 +274,19 @@ cJSON *OpenAPI_sm_policy_dnn_data_convertToJSON(OpenAPI_sm_policy_dnn_data_t *sm
         goto end;
     }
     cJSON *localMapObject = ref_um_data_limit_ids;
-    OpenAPI_lnode_t *ref_um_data_limit_ids_node;
     if (sm_policy_dnn_data->ref_um_data_limit_ids) {
-        OpenAPI_list_for_each(sm_policy_dnn_data->ref_um_data_limit_ids, ref_um_data_limit_ids_node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)ref_um_data_limit_ids_node->data;
-        cJSON *itemLocal = localKeyValue->value ?
-            OpenAPI_limit_id_to_monitoring_key_convertToJSON(localKeyValue->value) :
-            cJSON_CreateNull();
-        if (itemLocal == NULL) {
-            ogs_error("OpenAPI_sm_policy_dnn_data_convertToJSON() failed [ref_um_data_limit_ids]");
-            goto end;
-        }
-        cJSON_AddItemToObject(ref_um_data_limit_ids, localKeyValue->key, itemLocal);
+        OpenAPI_list_for_each(sm_policy_dnn_data->ref_um_data_limit_ids, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            cJSON *itemLocal = localKeyValue->value ?
+                OpenAPI_limit_id_to_monitoring_key_convertToJSON(localKeyValue->value) :
+                cJSON_CreateNull();
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_sm_policy_dnn_data_convertToJSON() failed [inner]");
+                goto end;
             }
+            cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
         }
+    }
     }
 
     if (sm_policy_dnn_data->is_mps_priority) {
@@ -303,20 +331,19 @@ cJSON *OpenAPI_sm_policy_dnn_data_convertToJSON(OpenAPI_sm_policy_dnn_data_t *sm
         goto end;
     }
     cJSON *localMapObject = pra_infos;
-    OpenAPI_lnode_t *pra_infos_node;
     if (sm_policy_dnn_data->pra_infos) {
-        OpenAPI_list_for_each(sm_policy_dnn_data->pra_infos, pra_infos_node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)pra_infos_node->data;
-        cJSON *itemLocal = localKeyValue->value ?
-            OpenAPI_presence_info_convertToJSON(localKeyValue->value) :
-            cJSON_CreateNull();
-        if (itemLocal == NULL) {
-            ogs_error("OpenAPI_sm_policy_dnn_data_convertToJSON() failed [pra_infos]");
-            goto end;
-        }
-        cJSON_AddItemToObject(pra_infos, localKeyValue->key, itemLocal);
+        OpenAPI_list_for_each(sm_policy_dnn_data->pra_infos, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            cJSON *itemLocal = localKeyValue->value ?
+                OpenAPI_presence_info_convertToJSON(localKeyValue->value) :
+                cJSON_CreateNull();
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_sm_policy_dnn_data_convertToJSON() failed [inner]");
+                goto end;
             }
+            cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
         }
+    }
     }
 
     if (sm_policy_dnn_data->bdt_ref_ids) {
@@ -326,12 +353,15 @@ cJSON *OpenAPI_sm_policy_dnn_data_convertToJSON(OpenAPI_sm_policy_dnn_data_t *sm
         goto end;
     }
     cJSON *localMapObject = bdt_ref_ids;
-    OpenAPI_lnode_t *bdt_ref_ids_node;
     if (sm_policy_dnn_data->bdt_ref_ids) {
-        OpenAPI_list_for_each(sm_policy_dnn_data->bdt_ref_ids, bdt_ref_ids_node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)bdt_ref_ids_node->data;
+        OpenAPI_list_for_each(sm_policy_dnn_data->bdt_ref_ids, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (cJSON_AddStringToObject(localMapObject, localKeyValue->key, (char*)localKeyValue->value) == NULL) {
+                ogs_error("OpenAPI_sm_policy_dnn_data_convertToJSON() failed [inner]");
+                goto end;
             }
         }
+    }
     }
 
     if (sm_policy_dnn_data->is_loc_rout_not_allowed) {
@@ -348,77 +378,103 @@ end:
 OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_parseFromJSON(cJSON *sm_policy_dnn_dataJSON)
 {
     OpenAPI_sm_policy_dnn_data_t *sm_policy_dnn_data_local_var = NULL;
-    cJSON *dnn = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "dnn");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *dnn = NULL;
+    cJSON *allowed_services = NULL;
+    OpenAPI_list_t *allowed_servicesList = NULL;
+    cJSON *subsc_cats = NULL;
+    OpenAPI_list_t *subsc_catsList = NULL;
+    cJSON *gbr_ul = NULL;
+    cJSON *gbr_dl = NULL;
+    cJSON *adc_support = NULL;
+    cJSON *subsc_spending_limits = NULL;
+    cJSON *ipv4_index = NULL;
+    cJSON *ipv6_index = NULL;
+    cJSON *offline = NULL;
+    cJSON *online = NULL;
+    cJSON *chf_info = NULL;
+    OpenAPI_charging_information_t *chf_info_local_nonprim = NULL;
+    cJSON *ref_um_data_limit_ids = NULL;
+    OpenAPI_list_t *ref_um_data_limit_idsList = NULL;
+    cJSON *mps_priority = NULL;
+    cJSON *mcs_priority = NULL;
+    cJSON *ims_signalling_prio = NULL;
+    cJSON *mps_priority_level = NULL;
+    cJSON *mcs_priority_level = NULL;
+    cJSON *pra_infos = NULL;
+    OpenAPI_list_t *pra_infosList = NULL;
+    cJSON *bdt_ref_ids = NULL;
+    OpenAPI_list_t *bdt_ref_idsList = NULL;
+    cJSON *loc_rout_not_allowed = NULL;
+    dnn = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "dnn");
     if (!dnn) {
         ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [dnn]");
         goto end;
     }
-
     if (!cJSON_IsString(dnn)) {
         ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [dnn]");
         goto end;
     }
 
-    cJSON *allowed_services = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "allowedServices");
-
-    OpenAPI_list_t *allowed_servicesList;
+    allowed_services = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "allowedServices");
     if (allowed_services) {
-    cJSON *allowed_services_local;
-    if (!cJSON_IsArray(allowed_services)) {
-        ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [allowed_services]");
-        goto end;
-    }
-    allowed_servicesList = OpenAPI_list_create();
+        cJSON *allowed_services_local = NULL;
+        if (!cJSON_IsArray(allowed_services)) {
+            ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [allowed_services]");
+            goto end;
+        }
 
-    cJSON_ArrayForEach(allowed_services_local, allowed_services) {
-    if (!cJSON_IsString(allowed_services_local)) {
-        ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [allowed_services]");
-        goto end;
-    }
-    OpenAPI_list_add(allowed_servicesList , ogs_strdup(allowed_services_local->valuestring));
-    }
+        allowed_servicesList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(allowed_services_local, allowed_services) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(allowed_services_local)) {
+                ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [allowed_services]");
+                goto end;
+            }
+            OpenAPI_list_add(allowed_servicesList, ogs_strdup(allowed_services_local->valuestring));
+        }
     }
 
-    cJSON *subsc_cats = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "subscCats");
-
-    OpenAPI_list_t *subsc_catsList;
+    subsc_cats = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "subscCats");
     if (subsc_cats) {
-    cJSON *subsc_cats_local;
-    if (!cJSON_IsArray(subsc_cats)) {
-        ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [subsc_cats]");
-        goto end;
-    }
-    subsc_catsList = OpenAPI_list_create();
+        cJSON *subsc_cats_local = NULL;
+        if (!cJSON_IsArray(subsc_cats)) {
+            ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [subsc_cats]");
+            goto end;
+        }
 
-    cJSON_ArrayForEach(subsc_cats_local, subsc_cats) {
-    if (!cJSON_IsString(subsc_cats_local)) {
-        ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [subsc_cats]");
-        goto end;
-    }
-    OpenAPI_list_add(subsc_catsList , ogs_strdup(subsc_cats_local->valuestring));
-    }
+        subsc_catsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(subsc_cats_local, subsc_cats) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(subsc_cats_local)) {
+                ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [subsc_cats]");
+                goto end;
+            }
+            OpenAPI_list_add(subsc_catsList, ogs_strdup(subsc_cats_local->valuestring));
+        }
     }
 
-    cJSON *gbr_ul = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "gbrUl");
-
+    gbr_ul = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "gbrUl");
     if (gbr_ul) {
-    if (!cJSON_IsString(gbr_ul)) {
+    if (!cJSON_IsString(gbr_ul) && !cJSON_IsNull(gbr_ul)) {
         ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [gbr_ul]");
         goto end;
     }
     }
 
-    cJSON *gbr_dl = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "gbrDl");
-
+    gbr_dl = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "gbrDl");
     if (gbr_dl) {
-    if (!cJSON_IsString(gbr_dl)) {
+    if (!cJSON_IsString(gbr_dl) && !cJSON_IsNull(gbr_dl)) {
         ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [gbr_dl]");
         goto end;
     }
     }
 
-    cJSON *adc_support = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "adcSupport");
-
+    adc_support = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "adcSupport");
     if (adc_support) {
     if (!cJSON_IsBool(adc_support)) {
         ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [adc_support]");
@@ -426,8 +482,7 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_parseFromJSON(cJSON *sm
     }
     }
 
-    cJSON *subsc_spending_limits = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "subscSpendingLimits");
-
+    subsc_spending_limits = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "subscSpendingLimits");
     if (subsc_spending_limits) {
     if (!cJSON_IsBool(subsc_spending_limits)) {
         ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [subsc_spending_limits]");
@@ -435,8 +490,7 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_parseFromJSON(cJSON *sm
     }
     }
 
-    cJSON *ipv4_index = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "ipv4Index");
-
+    ipv4_index = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "ipv4Index");
     if (ipv4_index) {
     if (!cJSON_IsNumber(ipv4_index)) {
         ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [ipv4_index]");
@@ -444,8 +498,7 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_parseFromJSON(cJSON *sm
     }
     }
 
-    cJSON *ipv6_index = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "ipv6Index");
-
+    ipv6_index = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "ipv6Index");
     if (ipv6_index) {
     if (!cJSON_IsNumber(ipv6_index)) {
         ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [ipv6_index]");
@@ -453,8 +506,7 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_parseFromJSON(cJSON *sm
     }
     }
 
-    cJSON *offline = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "offline");
-
+    offline = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "offline");
     if (offline) {
     if (!cJSON_IsBool(offline)) {
         ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [offline]");
@@ -462,8 +514,7 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_parseFromJSON(cJSON *sm
     }
     }
 
-    cJSON *online = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "online");
-
+    online = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "online");
     if (online) {
     if (!cJSON_IsBool(online)) {
         ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [online]");
@@ -471,41 +522,38 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_parseFromJSON(cJSON *sm
     }
     }
 
-    cJSON *chf_info = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "chfInfo");
-
-    OpenAPI_charging_information_t *chf_info_local_nonprim = NULL;
+    chf_info = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "chfInfo");
     if (chf_info) {
     chf_info_local_nonprim = OpenAPI_charging_information_parseFromJSON(chf_info);
     }
 
-    cJSON *ref_um_data_limit_ids = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "refUmDataLimitIds");
-
-    OpenAPI_list_t *ref_um_data_limit_idsList;
+    ref_um_data_limit_ids = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "refUmDataLimitIds");
     if (ref_um_data_limit_ids) {
-    cJSON *ref_um_data_limit_ids_local_map;
-    if (!cJSON_IsObject(ref_um_data_limit_ids)) {
-        ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [ref_um_data_limit_ids]");
-        goto end;
-    }
-    ref_um_data_limit_idsList = OpenAPI_list_create();
-    OpenAPI_map_t *localMapKeyPair = NULL;
-    cJSON_ArrayForEach(ref_um_data_limit_ids_local_map, ref_um_data_limit_ids) {
-        cJSON *localMapObject = ref_um_data_limit_ids_local_map;
-        if (cJSON_IsObject(ref_um_data_limit_ids_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(
-                ogs_strdup(localMapObject->string), OpenAPI_limit_id_to_monitoring_key_parseFromJSON(localMapObject));
-        } else if (cJSON_IsNull(ref_um_data_limit_ids_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
-        } else {
+        cJSON *ref_um_data_limit_ids_local_map = NULL;
+        if (!cJSON_IsObject(ref_um_data_limit_ids) && !cJSON_IsNull(ref_um_data_limit_ids)) {
             ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [ref_um_data_limit_ids]");
             goto end;
         }
-        OpenAPI_list_add(ref_um_data_limit_idsList , localMapKeyPair);
-    }
+        if (cJSON_IsObject(ref_um_data_limit_ids)) {
+            ref_um_data_limit_idsList = OpenAPI_list_create();
+            OpenAPI_map_t *localMapKeyPair = NULL;
+            cJSON_ArrayForEach(ref_um_data_limit_ids_local_map, ref_um_data_limit_ids) {
+                cJSON *localMapObject = ref_um_data_limit_ids_local_map;
+                if (cJSON_IsObject(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(
+                        ogs_strdup(localMapObject->string), OpenAPI_limit_id_to_monitoring_key_parseFromJSON(localMapObject));
+                } else if (cJSON_IsNull(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
+                } else {
+                    ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                OpenAPI_list_add(ref_um_data_limit_idsList, localMapKeyPair);
+            }
+        }
     }
 
-    cJSON *mps_priority = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "mpsPriority");
-
+    mps_priority = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "mpsPriority");
     if (mps_priority) {
     if (!cJSON_IsBool(mps_priority)) {
         ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [mps_priority]");
@@ -513,8 +561,7 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_parseFromJSON(cJSON *sm
     }
     }
 
-    cJSON *mcs_priority = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "mcsPriority");
-
+    mcs_priority = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "mcsPriority");
     if (mcs_priority) {
     if (!cJSON_IsBool(mcs_priority)) {
         ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [mcs_priority]");
@@ -522,8 +569,7 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_parseFromJSON(cJSON *sm
     }
     }
 
-    cJSON *ims_signalling_prio = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "imsSignallingPrio");
-
+    ims_signalling_prio = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "imsSignallingPrio");
     if (ims_signalling_prio) {
     if (!cJSON_IsBool(ims_signalling_prio)) {
         ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [ims_signalling_prio]");
@@ -531,8 +577,7 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_parseFromJSON(cJSON *sm
     }
     }
 
-    cJSON *mps_priority_level = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "mpsPriorityLevel");
-
+    mps_priority_level = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "mpsPriorityLevel");
     if (mps_priority_level) {
     if (!cJSON_IsNumber(mps_priority_level)) {
         ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [mps_priority_level]");
@@ -540,8 +585,7 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_parseFromJSON(cJSON *sm
     }
     }
 
-    cJSON *mcs_priority_level = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "mcsPriorityLevel");
-
+    mcs_priority_level = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "mcsPriorityLevel");
     if (mcs_priority_level) {
     if (!cJSON_IsNumber(mcs_priority_level)) {
         ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [mcs_priority_level]");
@@ -549,51 +593,57 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_parseFromJSON(cJSON *sm
     }
     }
 
-    cJSON *pra_infos = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "praInfos");
-
-    OpenAPI_list_t *pra_infosList;
+    pra_infos = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "praInfos");
     if (pra_infos) {
-    cJSON *pra_infos_local_map;
-    if (!cJSON_IsObject(pra_infos)) {
-        ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [pra_infos]");
-        goto end;
-    }
-    pra_infosList = OpenAPI_list_create();
-    OpenAPI_map_t *localMapKeyPair = NULL;
-    cJSON_ArrayForEach(pra_infos_local_map, pra_infos) {
-        cJSON *localMapObject = pra_infos_local_map;
-        if (cJSON_IsObject(pra_infos_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(
-                ogs_strdup(localMapObject->string), OpenAPI_presence_info_parseFromJSON(localMapObject));
-        } else if (cJSON_IsNull(pra_infos_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
-        } else {
+        cJSON *pra_infos_local_map = NULL;
+        if (!cJSON_IsObject(pra_infos) && !cJSON_IsNull(pra_infos)) {
             ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [pra_infos]");
             goto end;
         }
-        OpenAPI_list_add(pra_infosList , localMapKeyPair);
-    }
+        if (cJSON_IsObject(pra_infos)) {
+            pra_infosList = OpenAPI_list_create();
+            OpenAPI_map_t *localMapKeyPair = NULL;
+            cJSON_ArrayForEach(pra_infos_local_map, pra_infos) {
+                cJSON *localMapObject = pra_infos_local_map;
+                if (cJSON_IsObject(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(
+                        ogs_strdup(localMapObject->string), OpenAPI_presence_info_parseFromJSON(localMapObject));
+                } else if (cJSON_IsNull(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
+                } else {
+                    ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                OpenAPI_list_add(pra_infosList, localMapKeyPair);
+            }
+        }
     }
 
-    cJSON *bdt_ref_ids = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "bdtRefIds");
-
-    OpenAPI_list_t *bdt_ref_idsList;
+    bdt_ref_ids = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "bdtRefIds");
     if (bdt_ref_ids) {
-    cJSON *bdt_ref_ids_local_map;
-    if (!cJSON_IsObject(bdt_ref_ids)) {
-        ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [bdt_ref_ids]");
-        goto end;
-    }
-    bdt_ref_idsList = OpenAPI_list_create();
-    OpenAPI_map_t *localMapKeyPair = NULL;
-    cJSON_ArrayForEach(bdt_ref_ids_local_map, bdt_ref_ids) {
-        cJSON *localMapObject = bdt_ref_ids_local_map;
-        OpenAPI_list_add(bdt_ref_idsList , localMapKeyPair);
-    }
+        cJSON *bdt_ref_ids_local_map = NULL;
+        if (!cJSON_IsObject(bdt_ref_ids) && !cJSON_IsNull(bdt_ref_ids)) {
+            ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [bdt_ref_ids]");
+            goto end;
+        }
+        if (cJSON_IsObject(bdt_ref_ids)) {
+            bdt_ref_idsList = OpenAPI_list_create();
+            OpenAPI_map_t *localMapKeyPair = NULL;
+            cJSON_ArrayForEach(bdt_ref_ids_local_map, bdt_ref_ids) {
+                cJSON *localMapObject = bdt_ref_ids_local_map;
+                double *localDouble = NULL;
+                int *localInt = NULL;
+                if (!cJSON_IsString(localMapObject)) {
+                    ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), ogs_strdup(localMapObject->valuestring));
+                OpenAPI_list_add(bdt_ref_idsList, localMapKeyPair);
+            }
+        }
     }
 
-    cJSON *loc_rout_not_allowed = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "locRoutNotAllowed");
-
+    loc_rout_not_allowed = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "locRoutNotAllowed");
     if (loc_rout_not_allowed) {
     if (!cJSON_IsBool(loc_rout_not_allowed)) {
         ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [loc_rout_not_allowed]");
@@ -605,8 +655,8 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_parseFromJSON(cJSON *sm
         ogs_strdup(dnn->valuestring),
         allowed_services ? allowed_servicesList : NULL,
         subsc_cats ? subsc_catsList : NULL,
-        gbr_ul ? ogs_strdup(gbr_ul->valuestring) : NULL,
-        gbr_dl ? ogs_strdup(gbr_dl->valuestring) : NULL,
+        gbr_ul && !cJSON_IsNull(gbr_ul) ? ogs_strdup(gbr_ul->valuestring) : NULL,
+        gbr_dl && !cJSON_IsNull(gbr_dl) ? ogs_strdup(gbr_dl->valuestring) : NULL,
         adc_support ? true : false,
         adc_support ? adc_support->valueint : 0,
         subsc_spending_limits ? true : false,
@@ -639,6 +689,54 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_parseFromJSON(cJSON *sm
 
     return sm_policy_dnn_data_local_var;
 end:
+    if (allowed_servicesList) {
+        OpenAPI_list_for_each(allowed_servicesList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(allowed_servicesList);
+        allowed_servicesList = NULL;
+    }
+    if (subsc_catsList) {
+        OpenAPI_list_for_each(subsc_catsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(subsc_catsList);
+        subsc_catsList = NULL;
+    }
+    if (chf_info_local_nonprim) {
+        OpenAPI_charging_information_free(chf_info_local_nonprim);
+        chf_info_local_nonprim = NULL;
+    }
+    if (ref_um_data_limit_idsList) {
+        OpenAPI_list_for_each(ref_um_data_limit_idsList, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_limit_id_to_monitoring_key_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(ref_um_data_limit_idsList);
+        ref_um_data_limit_idsList = NULL;
+    }
+    if (pra_infosList) {
+        OpenAPI_list_for_each(pra_infosList, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_presence_info_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(pra_infosList);
+        pra_infosList = NULL;
+    }
+    if (bdt_ref_idsList) {
+        OpenAPI_list_for_each(bdt_ref_idsList, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            ogs_free(localKeyValue->key);
+            ogs_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(bdt_ref_idsList);
+        bdt_ref_idsList = NULL;
+    }
     return NULL;
 }
 

@@ -1,7 +1,7 @@
 /*
  * periodicity.h
  *
- * 
+ * Represents the time period.
  */
 
 #ifndef _OpenAPI_periodicity_H_

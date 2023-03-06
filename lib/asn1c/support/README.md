@@ -1,26 +1,16 @@
 Use mounse07410(vlm_master) git's fork for asn1c
 
-commit 24247e2813a7510ebabe6a9b6b6b29fffa0eb27b (HEAD -> vlm_master, origin/vlm_master, origin/HEAD)
-Author: Pau Espin Pedrol <pespin@sysmocom.de>
-Date:   Fri Jul 15 17:43:08 2022 +0200
+commit ebed802c88b3049cfe67326e4df780cefc6da49e (HEAD -> vlm_master, origin/vlm_master, origin/HEAD)
+Author: Leith Bade <leith@swiftnav.com>
+Date:   Mon Nov 14 20:28:25 2022 +1100
 
-    aper: Rework aper_get_length to gain lb & ub information
-
-    This should help aper_put_length() to take proper decisions on the way
-    to encode the length, since the range alone is not enough.
-    A contraint of lb=1 ub=65536 would yield a range=65536, but according to
-    ITU-T X.691 11.9 it shouldn't be encoded using nsnnwn since that only
-    applies in case ub<65536.
-    As a result, it would end up encoding/decoding it using 2 bytes while it
-    should use only 1.
-
-    Related: https://github.com/mouse07410/asn1c/issues/94
+    Check SEQUENCE field constraint check result instead of returning
 
 ===========================================
 user@host ~/Documents/git/my$ \
     git clone https://github.com/mouse07410/asn1c.git
 user@host ~/Documents/git/my$ \
-    git checkout git checkout 24247e2813a7510ebabe6a9b6b6b29fffa0eb27b
+    git checkout ebed802c88b3049cfe67326e4df780cefc6da49e
 
 OR
 
@@ -30,10 +20,15 @@ user@host ~/Documents/git/my$ \
 user@host Documents/git/my/asn1c$ \
     autoreconf -fi;./configure;make -j4
 
-Modify 36413-g40.txt to 36413-g40.asn
+Modify 36413-h30.txt to 36413-h30.asn
 ===========================================
-user@host ~/documents/git/open5gs/lib/asn1c/support/s1ap-r16.7.0$ \
-    diff 36413-g70.txt 36413-g70.asn
+user@host ~/documents/git/open5gs/lib/asn1c/support/s1ap-r17.3.0$ \
+    diff 36413-h30.txt 36413-h30.asn
+
+Modify 38413-h30.txt to 38413-h30.asn
+===========================================
+user@host ~/documents/git/open5gs/lib/asn1c/support/ngap-r17.3.0$ \
+    diff 38413-h30.txt 38413-h30.asn
 
 ASN.1 encoder/decoder
 ===========================================
@@ -41,13 +36,13 @@ user@host ~/documents/git/open5gs/lib/asn1c/s1ap$ \
     ASN1C_PREFIX=S1AP_ ../../../../my/asn1c/asn1c/asn1c -pdu=all \
     -fcompound-names -findirect-choice -fno-include-deps \
     -no-gen-BER -no-gen-XER -no-gen-OER -no-gen-UPER \
-    ../support/s1ap-r16.7.0/36413-g70.asn
+    ../support/s1ap-r17.3.0/36413-h30.asn
 
 user@host ~/Documents/git/open5gs/lib/asn1c/ngap$ \
     ASN1C_PREFIX=NGAP_ ../../../../my/asn1c/asn1c/asn1c -pdu=all \
     -fcompound-names -findirect-choice -fno-include-deps \
     -no-gen-BER -no-gen-XER -no-gen-OER -no-gen-UPER \
-    ../support/ngap-r16.7.0/38413-g70.asn
+    ../support/ngap-r17.3.0/38413-h30.asn
 
 Fix NGAP_RANNodeNameUTF8String.c (Issues #994 - APC_EXTENSIBLE)
 ===============================================================
@@ -87,24 +82,28 @@ index 1df33a4d..a74f97ea 100644
  };
  #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 
-Fix NGAP_ProtocolExtensionField.c
-===========================================
-diff --git a/lib/asn1c/ngap/NGAP_ProtocolExtensionField.c b/lib/asn1c/ngap/NGAP_ProtocolExtensionField.c
-index 4a23d705..3afbede8 100644
---- a/lib/asn1c/ngap/NGAP_ProtocolExtensionField.c
-+++ b/lib/asn1c/ngap/NGAP_ProtocolExtensionField.c
-@@ -48809,11 +48809,7 @@ static asn_TYPE_member_t asn_MBR_NGAP_extensionValue_648[] = {
-                        0,
- #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
- #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-+#if 0 /* modified by acetcom */
-                        &asn_PER_memb_NGAP_OCTET_STRING_CONTAINING_PDUSessionResourceReleaseResponseTransfer__constr_43,
-+#else
-+            0,
-+#endif
- #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
-                        memb_NGAP_OCTET_STRING_CONTAINING_PDUSessionResourceReleaseResponseTransfer__constraint_648
-                },
+Check ExtIEs in ProtocolExtensionContainer
+==========================================
+diff --git a/src/smf/ngap-build.c b/src/smf/ngap-build.c
+index 9554be276..051cb6e8a 100644
+--- a/src/smf/ngap-build.c
++++ b/src/smf/ngap-build.c
+@@ -180,13 +180,13 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
+
+             if (smf_self()->security_indication.
+                     maximum_integrity_protected_data_rate_downlink) {
+-                NGAP_ProtocolExtensionContainer_9625P229_t *extContainer = NULL;
++                NGAP_ProtocolExtensionContainer_11905P297_t *extContainer = NULL;
+                 NGAP_SecurityIndication_ExtIEs_t *extIe = NULL;
+                 NGAP_MaximumIntegrityProtectedDataRate_t
+                     *MaximumIntegrityProtectedDataRate = NULL;
+
+                 extContainer = CALLOC(1,
+-                        sizeof(NGAP_ProtocolExtensionContainer_9625P229_t));
++                        sizeof(NGAP_ProtocolExtensionContainer_11905P297_t));
+                 ogs_assert(extContainer);
+                 SecurityIndication->iE_Extensions =
+                     (struct NGAP_ProtocolExtensionContainer *)extContainer;
 
 Check common file
 ===========================================

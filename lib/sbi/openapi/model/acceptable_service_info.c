@@ -22,25 +22,36 @@ OpenAPI_acceptable_service_info_t *OpenAPI_acceptable_service_info_create(
 
 void OpenAPI_acceptable_service_info_free(OpenAPI_acceptable_service_info_t *acceptable_service_info)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == acceptable_service_info) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_list_for_each(acceptable_service_info->acc_bw_med_comps, node) {
-        OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
-        ogs_free(localKeyValue->key);
-        OpenAPI_media_component_free(localKeyValue->value);
-        ogs_free(localKeyValue);
+    if (acceptable_service_info->acc_bw_med_comps) {
+        OpenAPI_list_for_each(acceptable_service_info->acc_bw_med_comps, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_media_component_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(acceptable_service_info->acc_bw_med_comps);
+        acceptable_service_info->acc_bw_med_comps = NULL;
     }
-    OpenAPI_list_free(acceptable_service_info->acc_bw_med_comps);
-    ogs_free(acceptable_service_info->mar_bw_ul);
-    ogs_free(acceptable_service_info->mar_bw_dl);
+    if (acceptable_service_info->mar_bw_ul) {
+        ogs_free(acceptable_service_info->mar_bw_ul);
+        acceptable_service_info->mar_bw_ul = NULL;
+    }
+    if (acceptable_service_info->mar_bw_dl) {
+        ogs_free(acceptable_service_info->mar_bw_dl);
+        acceptable_service_info->mar_bw_dl = NULL;
+    }
     ogs_free(acceptable_service_info);
 }
 
 cJSON *OpenAPI_acceptable_service_info_convertToJSON(OpenAPI_acceptable_service_info_t *acceptable_service_info)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (acceptable_service_info == NULL) {
         ogs_error("OpenAPI_acceptable_service_info_convertToJSON() failed [AcceptableServiceInfo]");
@@ -55,20 +66,19 @@ cJSON *OpenAPI_acceptable_service_info_convertToJSON(OpenAPI_acceptable_service_
         goto end;
     }
     cJSON *localMapObject = acc_bw_med_comps;
-    OpenAPI_lnode_t *acc_bw_med_comps_node;
     if (acceptable_service_info->acc_bw_med_comps) {
-        OpenAPI_list_for_each(acceptable_service_info->acc_bw_med_comps, acc_bw_med_comps_node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)acc_bw_med_comps_node->data;
-        cJSON *itemLocal = localKeyValue->value ?
-            OpenAPI_media_component_convertToJSON(localKeyValue->value) :
-            cJSON_CreateNull();
-        if (itemLocal == NULL) {
-            ogs_error("OpenAPI_acceptable_service_info_convertToJSON() failed [acc_bw_med_comps]");
-            goto end;
-        }
-        cJSON_AddItemToObject(acc_bw_med_comps, localKeyValue->key, itemLocal);
+        OpenAPI_list_for_each(acceptable_service_info->acc_bw_med_comps, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            cJSON *itemLocal = localKeyValue->value ?
+                OpenAPI_media_component_convertToJSON(localKeyValue->value) :
+                cJSON_CreateNull();
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_acceptable_service_info_convertToJSON() failed [inner]");
+                goto end;
             }
+            cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
         }
+    }
     }
 
     if (acceptable_service_info->mar_bw_ul) {
@@ -92,45 +102,48 @@ end:
 OpenAPI_acceptable_service_info_t *OpenAPI_acceptable_service_info_parseFromJSON(cJSON *acceptable_service_infoJSON)
 {
     OpenAPI_acceptable_service_info_t *acceptable_service_info_local_var = NULL;
-    cJSON *acc_bw_med_comps = cJSON_GetObjectItemCaseSensitive(acceptable_service_infoJSON, "accBwMedComps");
-
-    OpenAPI_list_t *acc_bw_med_compsList;
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *acc_bw_med_comps = NULL;
+    OpenAPI_list_t *acc_bw_med_compsList = NULL;
+    cJSON *mar_bw_ul = NULL;
+    cJSON *mar_bw_dl = NULL;
+    acc_bw_med_comps = cJSON_GetObjectItemCaseSensitive(acceptable_service_infoJSON, "accBwMedComps");
     if (acc_bw_med_comps) {
-    cJSON *acc_bw_med_comps_local_map;
-    if (!cJSON_IsObject(acc_bw_med_comps)) {
-        ogs_error("OpenAPI_acceptable_service_info_parseFromJSON() failed [acc_bw_med_comps]");
-        goto end;
-    }
-    acc_bw_med_compsList = OpenAPI_list_create();
-    OpenAPI_map_t *localMapKeyPair = NULL;
-    cJSON_ArrayForEach(acc_bw_med_comps_local_map, acc_bw_med_comps) {
-        cJSON *localMapObject = acc_bw_med_comps_local_map;
-        if (cJSON_IsObject(acc_bw_med_comps_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(
-                ogs_strdup(localMapObject->string), OpenAPI_media_component_parseFromJSON(localMapObject));
-        } else if (cJSON_IsNull(acc_bw_med_comps_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
-        } else {
+        cJSON *acc_bw_med_comps_local_map = NULL;
+        if (!cJSON_IsObject(acc_bw_med_comps) && !cJSON_IsNull(acc_bw_med_comps)) {
             ogs_error("OpenAPI_acceptable_service_info_parseFromJSON() failed [acc_bw_med_comps]");
             goto end;
         }
-        OpenAPI_list_add(acc_bw_med_compsList , localMapKeyPair);
-    }
+        if (cJSON_IsObject(acc_bw_med_comps)) {
+            acc_bw_med_compsList = OpenAPI_list_create();
+            OpenAPI_map_t *localMapKeyPair = NULL;
+            cJSON_ArrayForEach(acc_bw_med_comps_local_map, acc_bw_med_comps) {
+                cJSON *localMapObject = acc_bw_med_comps_local_map;
+                if (cJSON_IsObject(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(
+                        ogs_strdup(localMapObject->string), OpenAPI_media_component_parseFromJSON(localMapObject));
+                } else if (cJSON_IsNull(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
+                } else {
+                    ogs_error("OpenAPI_acceptable_service_info_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                OpenAPI_list_add(acc_bw_med_compsList, localMapKeyPair);
+            }
+        }
     }
 
-    cJSON *mar_bw_ul = cJSON_GetObjectItemCaseSensitive(acceptable_service_infoJSON, "marBwUl");
-
+    mar_bw_ul = cJSON_GetObjectItemCaseSensitive(acceptable_service_infoJSON, "marBwUl");
     if (mar_bw_ul) {
-    if (!cJSON_IsString(mar_bw_ul)) {
+    if (!cJSON_IsString(mar_bw_ul) && !cJSON_IsNull(mar_bw_ul)) {
         ogs_error("OpenAPI_acceptable_service_info_parseFromJSON() failed [mar_bw_ul]");
         goto end;
     }
     }
 
-    cJSON *mar_bw_dl = cJSON_GetObjectItemCaseSensitive(acceptable_service_infoJSON, "marBwDl");
-
+    mar_bw_dl = cJSON_GetObjectItemCaseSensitive(acceptable_service_infoJSON, "marBwDl");
     if (mar_bw_dl) {
-    if (!cJSON_IsString(mar_bw_dl)) {
+    if (!cJSON_IsString(mar_bw_dl) && !cJSON_IsNull(mar_bw_dl)) {
         ogs_error("OpenAPI_acceptable_service_info_parseFromJSON() failed [mar_bw_dl]");
         goto end;
     }
@@ -138,12 +151,22 @@ OpenAPI_acceptable_service_info_t *OpenAPI_acceptable_service_info_parseFromJSON
 
     acceptable_service_info_local_var = OpenAPI_acceptable_service_info_create (
         acc_bw_med_comps ? acc_bw_med_compsList : NULL,
-        mar_bw_ul ? ogs_strdup(mar_bw_ul->valuestring) : NULL,
-        mar_bw_dl ? ogs_strdup(mar_bw_dl->valuestring) : NULL
+        mar_bw_ul && !cJSON_IsNull(mar_bw_ul) ? ogs_strdup(mar_bw_ul->valuestring) : NULL,
+        mar_bw_dl && !cJSON_IsNull(mar_bw_dl) ? ogs_strdup(mar_bw_dl->valuestring) : NULL
     );
 
     return acceptable_service_info_local_var;
 end:
+    if (acc_bw_med_compsList) {
+        OpenAPI_list_for_each(acc_bw_med_compsList, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_media_component_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(acc_bw_med_compsList);
+        acc_bw_med_compsList = NULL;
+    }
     return NULL;
 }
 

@@ -6,7 +6,7 @@
 
 char* OpenAPI_termination_cause_ToString(OpenAPI_termination_cause_e termination_cause)
 {
-    const char *termination_causeArray[] =  { "NULL", "ALL_SDF_DEACTIVATION", "PDU_SESSION_TERMINATION", "PS_TO_CS_HO" };
+    const char *termination_causeArray[] =  { "NULL", "ALL_SDF_DEACTIVATION", "PDU_SESSION_TERMINATION", "PS_TO_CS_HO", "INSUFFICIENT_SERVER_RESOURCES", "INSUFFICIENT_QOS_FLOW_RESOURCES", "SPONSORED_DATA_CONNECTIVITY_DISALLOWED" };
     size_t sizeofArray = sizeof(termination_causeArray) / sizeof(termination_causeArray[0]);
     if (termination_cause < sizeofArray)
         return (char *)termination_causeArray[termination_cause];
@@ -17,7 +17,7 @@ char* OpenAPI_termination_cause_ToString(OpenAPI_termination_cause_e termination
 OpenAPI_termination_cause_e OpenAPI_termination_cause_FromString(char* termination_cause)
 {
     int stringToReturn = 0;
-    const char *termination_causeArray[] =  { "NULL", "ALL_SDF_DEACTIVATION", "PDU_SESSION_TERMINATION", "PS_TO_CS_HO" };
+    const char *termination_causeArray[] =  { "NULL", "ALL_SDF_DEACTIVATION", "PDU_SESSION_TERMINATION", "PS_TO_CS_HO", "INSUFFICIENT_SERVER_RESOURCES", "INSUFFICIENT_QOS_FLOW_RESOURCES", "SPONSORED_DATA_CONNECTIVITY_DISALLOWED" };
     size_t sizeofArray = sizeof(termination_causeArray) / sizeof(termination_causeArray[0]);
     while (stringToReturn < sizeofArray) {
         if (strcmp(termination_cause, termination_causeArray[stringToReturn]) == 0) {

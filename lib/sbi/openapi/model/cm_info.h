@@ -1,7 +1,7 @@
 /*
  * cm_info.h
  *
- * 
+ * Represents the connection management state of a UE for an access type
  */
 
 #ifndef _OpenAPI_cm_info_H_

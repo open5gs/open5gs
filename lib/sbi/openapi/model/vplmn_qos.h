@@ -1,7 +1,7 @@
 /*
  * vplmn_qos.h
  *
- * 
+ * VPLMN QoS
  */
 
 #ifndef _OpenAPI_vplmn_qos_H_

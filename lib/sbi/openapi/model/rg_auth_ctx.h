@@ -1,7 +1,7 @@
 /*
  * rg_auth_ctx.h
  *
- * 
+ * Contains the UE id (i.e. SUPI) and the authentication indication.
  */
 
 #ifndef _OpenAPI_rg_auth_ctx_H_

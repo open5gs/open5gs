@@ -1,7 +1,7 @@
 /*
  * ran_nas_rel_cause.h
  *
- * 
+ * Contains the RAN/NAS release cause.
  */
 
 #ifndef _OpenAPI_ran_nas_rel_cause_H_

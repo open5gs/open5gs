@@ -1,7 +1,7 @@
 /*
  * qos_monitoring_info.h
  *
- * 
+ * QoS Monitoring Information
  */
 
 #ifndef _OpenAPI_qos_monitoring_info_H_

@@ -1,7 +1,7 @@
 /*
  * geographical_coordinates.h
  *
- * 
+ * Geographical coordinates.
  */
 
 #ifndef _OpenAPI_geographical_coordinates_H_

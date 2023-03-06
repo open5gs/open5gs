@@ -59,7 +59,7 @@ aper_get_nslength(asn_per_data_t *pd) {
 	if(per_get_few_bits(pd, 1) == 0) {
 		length = per_get_few_bits(pd, 6) + 1;
 		if(length <= 0) return -1;
-		ASN_DEBUG("l=%ld", length);
+		ASN_DEBUG("l=%zd", length);
 		return length;
 	} else {
 		int repeat;

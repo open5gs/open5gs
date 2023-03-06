@@ -1,7 +1,7 @@
 /*
  * plmn_id_1.h
  *
- * 
+ * When PlmnId needs to be converted to string (e.g. when used in maps as key), the string  shall be composed of three digits \&quot;mcc\&quot; followed by \&quot;-\&quot; and two or three digits \&quot;mnc\&quot;. 
  */
 
 #ifndef _OpenAPI_plmn_id_1_H_

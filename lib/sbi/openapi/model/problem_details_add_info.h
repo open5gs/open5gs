@@ -1,7 +1,7 @@
 /*
  * problem_details_add_info.h
  *
- * 
+ * Problem Details Additional Information
  */
 
 #ifndef _OpenAPI_problem_details_add_info_H_

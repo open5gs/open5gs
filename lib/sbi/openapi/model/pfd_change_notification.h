@@ -1,7 +1,7 @@
 /*
  * pfd_change_notification.h
  *
- * 
+ * Represents information related to a notification of PFD change.
  */
 
 #ifndef _OpenAPI_pfd_change_notification_H_

@@ -30,4 +30,10 @@ ies.append({ "iei" : "6F", "value" : "UE additional security capability", "type"
 ies.append({ "iei" : "6D", "value" : "UE status", "type" : "UE status", "reference" : "9.9.3.54", "presence" : "O", "format" : "TLV", "length" : "3"})
 ies.append({ "iei" : "17", "value" : "Additional information requested", "type" : "Additional information requested", "reference" : "9.9.3.55", "presence" : "O", "format" : "TV", "length" : "2"})
 ies.append({ "iei" : "32", "value" : "N1 UE network capability", "type" : "N1 UE network capability", "reference" : "9.9.3.57", "presence" : "O", "format" : "TLV", "length" : "3-15"})
+ies.append({ "iei" : "34", "value" : "UE radio capability ID availability", "type" : "UE radio capability ID availability", "reference" : "9.9.3.58", "presence" : "O", "format" : "TLV", "length" : "3"})
+ies.append({ "iei" : "35", "value" : "Requested WUS assistance information", "type" : "WUS assistance information", "reference" : "9.9.3.62", "presence" : "O", "format" : "TLV", "length" : "3-n"})
+ies.append({ "iei" : "36", "value" : "DRX parameter in NB-S1 mode", "type" : "NB-S1 DRX parameter", "reference" : "9.9.3.63", "presence" : "O", "format" : "TLV", "length" : "3"})
+ies.append({ "iei" : "38", "value" : "Requested IMSI offset", "type" : "IMSI offset", "reference" : "9.9.3.64", "presence" : "O", "format" : "TLV", "length" : "4"})
+ies.append({ "iei" : "29", "value" : "UE request type", "type" : "UE request type", "reference" : "9.9.3.65", "presence" : "O", "format" : "TLV", "length" : "3"})
+ies.append({ "iei" : "28", "value" : "Paging restriction", "type" : "Paging restriction", "reference" : "9.9.3.66", "presence" : "O", "format" : "TLV", "length" : "3-5"})
 msg_list[key]["ies"] = ies

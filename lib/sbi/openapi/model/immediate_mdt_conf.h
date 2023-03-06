@@ -1,7 +1,7 @@
 /*
  * immediate_mdt_conf.h
  *
- * 
+ * Immediate MDT Configuration
  */
 
 #ifndef _OpenAPI_immediate_mdt_conf_H_

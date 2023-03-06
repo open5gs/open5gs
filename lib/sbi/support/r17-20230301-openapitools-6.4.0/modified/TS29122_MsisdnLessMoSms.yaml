@@ -1,0 +1,102 @@
+openapi: 3.0.0
+info:
+  title: 3gpp-msisdn-less-mo-sms
+  version: 1.2.0
+  description: |
+    API for MSISDN-less Mobile Originated SMS.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 29.122 V17.6.0 T8 reference point for Northbound APIs
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.122/'
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+servers:
+  - url: '{apiRoot}'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122.
+paths:
+  /:
+    post:
+      summary: Deliver a received MSIDN-less MO SMS from the SCEF to the SCS/AS.
+      operationId: DeliverMSISDNlessMOSMSNotification
+      tags:
+        - MSISDN-less MO SMS Notification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MsisdnLessMoSmsNotification'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MsisdnLessMoSmsNotificationReply'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+  schemas: 
+    MsisdnLessMoSmsNotification:
+      description: Represents a MSISDN-less MO SMS notification.
+      type: object
+      properties:
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        sms:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Bytes'
+        externalId:
+          type: string
+          description: External identifier has the form username@realm.
+        applicationPort:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Port'
+      required:
+        - supportedFeatures
+        - sms
+        - externalId
+        - applicationPort
+    MsisdnLessMoSmsNotificationReply:
+      description: Represents a reply to a MSISDN-less MO SMS notification.
+      type: object
+      properties:
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - supportedFeatures
