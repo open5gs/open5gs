@@ -106,4 +106,3 @@ void smf_timeout_pfcp_no_smr(void *data)
 {
     timer_send_event(SMF_TIMEOUT_PFCP_SMR, data);
 }
->>>>>>> c1cbcf8d6 ([smf][sgwc] hook-up pfcp timeout functions (#71))
