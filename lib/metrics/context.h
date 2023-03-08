@@ -35,6 +35,13 @@ typedef enum ogs_metrics_metric_type_s  {
     OGS_METRICS_METRIC_TYPE_GAUGE,
 } ogs_metrics_metric_type_t;
 
+typedef struct ogs_metrics_context_s {
+    ogs_list_t  server_list;
+    ogs_list_t  spec_list;
+
+    uint16_t    metrics_port;
+} ogs_metrics_context_t;
+
 typedef struct ogs_metrics_context_s ogs_metrics_context_t;
 void ogs_metrics_context_init(void);
 void ogs_metrics_context_open(ogs_metrics_context_t *ctx);
@@ -43,12 +50,18 @@ void ogs_metrics_context_final(void);
 ogs_metrics_context_t *ogs_metrics_self(void);
 int ogs_metrics_context_parse_config(const char *local);
 
+void ogs_metrics_server_init(ogs_metrics_context_t *ctx);
+void ogs_metrics_server_open(ogs_metrics_context_t *ctx);
+void ogs_metrics_server_close(ogs_metrics_context_t *ctx);
+void ogs_metrics_server_final(ogs_metrics_context_t *ctx);
 ogs_metrics_server_t *ogs_metrics_server_add(
         ogs_sockaddr_t *addr, ogs_sockopt_t *option);
 void ogs_metrics_server_remove(ogs_metrics_server_t *server);
 void ogs_metrics_server_remove_all(void);
 
 typedef struct ogs_metrics_spec_s ogs_metrics_spec_t;
+void ogs_metrics_spec_init(ogs_metrics_context_t *ctx); 
+void ogs_metrics_spec_final(ogs_metrics_context_t *ctx);
 ogs_metrics_spec_t *ogs_metrics_spec_new(
         ogs_metrics_context_t *ctx, ogs_metrics_metric_type_t type,
         const char *name, const char *description,
