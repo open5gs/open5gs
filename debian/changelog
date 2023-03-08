@@ -2,7 +2,31 @@ open5gs (2.6.1) unstable; urgency=medium
 
   * Upgrade to Release-17
 
- -- Sukchan Lee <acetcom@gmail.com>  Wed, 08 Mar 2023 22:48:13 +0900
+ -- Sukchan Lee <acetcom@gmail.com>  Thu, 09 Mar 2023 00:07:51 +0900
+
+open5gs (2.6.1~kinetic) kinetic; urgency=medium
+
+  * Upgrade to Release-17
+
+ -- Sukchan Lee <acetcom@gmail.com>  Thu, 09 Mar 2023 00:06:21 +0900
+
+open5gs (2.6.1~jammy) jammy; urgency=medium
+
+  * Upgrade to Release-17
+
+ -- Sukchan Lee <acetcom@gmail.com>  Thu, 09 Mar 2023 00:04:28 +0900
+
+open5gs (2.6.1~focal) focal; urgency=medium
+
+  * Upgrade to Release-17
+
+ -- Sukchan Lee <acetcom@gmail.com>  Thu, 09 Mar 2023 00:02:41 +0900
+
+open5gs (2.6.1~bionic) bionic; urgency=medium
+
+  * Upgrade to Release-17
+
+ -- Sukchan Lee <acetcom@gmail.com>  Thu, 09 Mar 2023 00:00:38 +0900
 
 open5gs (2.5.6) unstable; urgency=medium
 
