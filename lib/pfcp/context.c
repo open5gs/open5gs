@@ -331,6 +331,43 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                 NULL, self.pfcp_port, NULL);
                         ogs_assert(rv == OGS_OK);
                     }
+                } else if (!strcmp(local_key, "cdr")) {
+                    ogs_yaml_iter_t cdr_iter;
+                    ogs_yaml_iter_recurse(&local_iter, &cdr_iter);
+
+                    while (ogs_yaml_iter_next(&cdr_iter)) {
+                        const char *cdr_key = ogs_yaml_iter_key(&cdr_iter);
+                        ogs_assert(cdr_key);
+
+                        if (!strcmp(cdr_key, "enabled")) {
+                            bool enabled = false;
+                            const char *cdr_enabled = ogs_yaml_iter_value(&cdr_iter);
+
+                            if (!strcmp("True", cdr_enabled) || 
+                                !strcmp("true", cdr_enabled)) {
+                                ogs_info("EIR functionality has been enabled");
+                                enabled = true;
+                            }
+                            else {
+                                enabled = false;
+                            }
+                            self.cdr.enabled = enabled;
+                        } else if (!strcmp(cdr_key, "period_sec")) {
+                            int period_min = -1;
+                            const char *period_min_str = ogs_yaml_iter_value(&cdr_iter);
+                            if (period_min_str)
+                                period_min = atoi(period_min_str);
+
+                            if (0 < period_min) {
+                                self.cdr.period_sec = (unsigned)period_min;
+                            }
+                        } else if (!strcmp(cdr_key, "sgw_name")) {
+                            const char *cdr_sgw_name = ogs_yaml_iter_value(&cdr_iter);
+
+                            if (cdr_sgw_name)
+                                strncpy(self.cdr.sgw_name, cdr_sgw_name, OGS_SGW_NAME_MAX_LEN - 1);
+                        }
+                    }
                 } else if (!strcmp(local_key, "subnet")) {
                     ogs_yaml_iter_t subnet_array, subnet_iter;
                     ogs_yaml_iter_recurse(&local_iter, &subnet_array);

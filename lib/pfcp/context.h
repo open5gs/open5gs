@@ -38,8 +38,15 @@ extern "C" {
 
 #define OGS_MAX_NUM_OF_DEV      16
 #define OGS_MAX_NUM_OF_SUBNET   16
+#define OGS_SGW_NAME_MAX_LEN    16
 
 typedef struct ogs_pfcp_node_s ogs_pfcp_node_t;
+
+typedef struct {
+    bool enabled;
+    unsigned period_sec;
+    char sgw_name[OGS_SGW_NAME_MAX_LEN];
+} ogs_cdr_t;
 
 typedef struct ogs_pfcp_context_s {
     uint32_t        pfcp_port;      /* PFCP local port */
@@ -72,6 +79,8 @@ typedef struct ogs_pfcp_context_s {
     ogs_hash_t      *object_teid_hash; /* hash table for PFCP OBJ(TEID) */
     ogs_hash_t      *far_f_teid_hash;  /* hash table for FAR(TEID+ADDR) */
     ogs_hash_t      *far_teid_hash; /* hash table for FAR(TEID) */
+
+    ogs_cdr_t cdr;
 } ogs_pfcp_context_t;
 
 #define OGS_SETUP_PFCP_NODE(__cTX, __pNODE) \

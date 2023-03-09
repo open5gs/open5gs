@@ -82,6 +82,10 @@ sgwc:
       - addr: 127.0.0.3
     pfcp:
       - addr: 127.0.0.3
+    cdr:
+      enabled: True
+      period_sec: 1800
+      sgw_name: SGW-01
 
 #
 #  <PFCP Client>>
