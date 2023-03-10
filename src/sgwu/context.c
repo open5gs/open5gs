@@ -171,7 +171,8 @@ int sgwu_sess_remove(sgwu_sess_t *sess)
 {
     ogs_assert(sess);
 
-    sgwu_sess_urr_acc_remove_all(sess);
+    // todo fix the fatal relting to this
+    // sgwu_sess_urr_acc_remove_all(sess);
 
     ogs_list_remove(&self.sess_list, sess);
     ogs_pfcp_sess_clear(&sess->pfcp);
