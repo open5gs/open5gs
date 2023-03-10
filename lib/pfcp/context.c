@@ -351,21 +351,21 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                             else {
                                 enabled = false;
                             }
-                            self.cdr.enabled = enabled;
+                            self.usageLoggerState.enabled = enabled;
                         } else if (!strcmp(cdr_key, "period_sec")) {
-                            int period_min = -1;
-                            const char *period_min_str = ogs_yaml_iter_value(&cdr_iter);
-                            if (period_min_str)
-                                period_min = atoi(period_min_str);
+                            int period_sec = -1;
+                            const char *period_sec_str = ogs_yaml_iter_value(&cdr_iter);
+                            if (period_sec_str)
+                                period_sec = atoi(period_sec_str);
 
-                            if (0 < period_min) {
-                                self.cdr.period_sec = (unsigned)period_min;
+                            if (0 < period_sec) {
+                                self.usageLoggerState.file_period_sec = (unsigned)period_sec;
                             }
                         } else if (!strcmp(cdr_key, "sgw_name")) {
                             const char *cdr_sgw_name = ogs_yaml_iter_value(&cdr_iter);
 
                             if (cdr_sgw_name)
-                                strncpy(self.cdr.sgw_name, cdr_sgw_name, OGS_SGW_NAME_MAX_LEN - 1);
+                                strncpy(self.usageLoggerState.origin, cdr_sgw_name, OGS_SGW_NAME_MAX_LEN - 1);
                         }
                     }
                 } else if (!strcmp(local_key, "subnet")) {

@@ -135,29 +135,21 @@ ogs_pkbuf_t *sgwu_sxa_build_session_modification_response(uint8_t type,
 ogs_pkbuf_t *sgwu_sxa_build_session_deletion_response(uint8_t type,
         sgwu_sess_t *sess)
 {
-    ogs_pfcp_message_t *pfcp_message = NULL;
-    ogs_pfcp_session_deletion_response_t *rsp = NULL;
-    ogs_pkbuf_t *pkbuf = NULL;
-
+    ogs_pfcp_urr_t *urr = NULL;
+    ogs_pfcp_user_plane_report_t report;
+    size_t num_of_reports = 0;
     ogs_debug("Session Deletion Response");
 
-    pfcp_message = ogs_calloc(1, sizeof(*pfcp_message));
-    if (!pfcp_message) {
-        ogs_error("ogs_calloc() failed");
-        return NULL;
+    memset(&report, 0, sizeof(report));
+    ogs_list_for_each(&sess->pfcp.urr_list, urr) {
+        ogs_assert(num_of_reports < OGS_ARRAY_SIZE(report.usage_report));
+        sgwu_sess_urr_acc_fill_usage_report(sess, urr, &report, num_of_reports);
+        report.usage_report[num_of_reports].rep_trigger.termination_report = 1;
+        num_of_reports++;
+        sgwu_sess_urr_acc_snapshot(sess, urr);
     }
+    report.num_of_usage_report = num_of_reports;
 
-    rsp = &pfcp_message->pfcp_session_deletion_response;
-
-    /* Cause */
-    rsp->cause.presence = 1;
-    rsp->cause.u8 = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
-
-    pfcp_message->h.type = type;
-    pkbuf = ogs_pfcp_build_msg(pfcp_message);
-    ogs_expect(pkbuf);
-
-    ogs_free(pfcp_message);
-
-    return pkbuf;
+    return ogs_pfcp_build_session_deletion_response(type, OGS_PFCP_CAUSE_REQUEST_ACCEPTED,
+                                                    &report);
 }

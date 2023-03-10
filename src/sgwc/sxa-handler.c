@@ -20,6 +20,7 @@
 #include "pfcp-path.h"
 #include "gtp-path.h"
 #include "sxa-handler.h"
+#include "usage_logger.h"
 
 static uint8_t gtp_cause_from_pfcp(uint8_t pfcp_cause)
 {
@@ -1487,6 +1488,51 @@ void sgwc_sxa_handle_session_report_request(
                     OGS_PFCP_MODIFY_ERROR_INDICATION));
         }
 
+    } else if (report_type.usage_report) {
+        int i = 0;
+        for (i = 0; i < OGS_ARRAY_SIZE(pfcp_req->usage_report); i++) {
+            ogs_pfcp_tlv_usage_report_session_report_request_t *use_rep =
+                &pfcp_req->usage_report[i];
+            ogs_pfcp_volume_measurement_t volume;
+            UsageLoggerData usageLoggerData = {0};
+
+
+            if (0 == use_rep->presence) {
+                /* We have reached the end of the usage_report list */
+                break;
+            }
+            if (0 == use_rep->urr_id.presence) {
+                ogs_error("Usage report URR has no ID field!");
+                continue;
+            }
+            if (0 == use_rep->volume_measurement.presence) {
+                ogs_error("No volume measurements in usage report!");
+                continue;
+            }
+
+            ogs_pfcp_parse_volume_measurement(&volume, &use_rep->volume_measurement);
+            if (0 == volume.ulvol) {
+                ogs_error("URR did not contain uplink volume measurement!");
+                continue;
+            } 
+            if (0 == volume.dlvol) {
+                ogs_error("URR did not contain downlink volume measurement!");
+                continue;
+            }
+
+            strncpy(usageLoggerData.imsi, sgwc_ue->imsi_bcd, IMSI_STR_MAX_LEN);
+            strncpy(usageLoggerData.apn, sess->session.name, APN_STR_MAX_LEN);
+            usageLoggerData.qci = sess->session.qos.arp.priority_level;
+            usageLoggerData.octets_in = volume.uplink_volume;
+            usageLoggerData.octets_out = volume.downlink_volume;
+
+            time_t current_epoch_sec = time(NULL);
+            bool log_res = log_usage_data(&ogs_pfcp_self()->usageLoggerState, current_epoch_sec, usageLoggerData);
+
+            if (!log_res) {
+                ogs_info("Failed to log to file %s", ogs_pfcp_self()->usageLoggerState.filename);
+            }
+        }
     } else {
         ogs_error("Not supported Report Type[%d]", report_type.value);
     }
