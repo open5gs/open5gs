@@ -1142,6 +1142,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
                 OGS_FSM_TRAN(s, gmm_state_exception);
+                break;
             }
 
             OGS_FSM_TRAN(s, gmm_state_registered);
