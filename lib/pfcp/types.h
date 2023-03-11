@@ -284,13 +284,84 @@ ED8(uint8_t rds:1;,
     union {
         struct {
 /*
+ * 10/8 DNSTS N4
+ *   UP function support DNS Traffic Steering based on
+ *   FQDN in the DNS Query message (see
+ *   clause 5.33.4)
+ * 10/7 IPREP N4
+ *   UP function supports IP Address and Port number
+ *   replacement (see clause 5.33.3).
+ * 10/6 RESPS Sxb, N4
+ *   UP function supports Restoration of PFCP Sessions
+ *   associated with one or more PGW-C/SMF FQ-
+ *   CSID(s), Group Id(s) or CP IP address(es) (see
+ *   clause 5.22.4)
+ * 10/5 UPBER N4
+ *   UP function supports the uplink packets buffering
+ *   during EAS relocation.
+ * 10/4 L2TP Sxb, N4
+ *   UP function supports the L2TP feature as described
+ *   in clause 5.31.
+ * 10/3 NSPOC Sxa, Sxb, N4
+ *   UP function supports notifying start of Pause of
+ *   Charging via user plane.
+ * 10/2 QUASF Sxb, Sxc, N4
+ *   The UP function supports being provisioned in a
+ *   URR with an Exempted Application ID for Quota
+ *   Action or an Exempted SDF Filter for Quota Action
+ *   which is to be used when the quota is exhausted.
+ *   See also clauses 5.2.2.2.1 and 5.2.2.3.1.
  * 10/1 RTTWP N4
  *   UPF support of RTT measurements towards the UE Without PMF.
  */
-ED2(uint8_t reserved:7;,
+ED8(uint8_t dnsts:1;,
+    uint8_t iprep:1;,
+    uint8_t resps:1;,
+    uint8_t upber:1;,
+    uint8_t l2tp:1;,
+    uint8_t nspoc:1;,
+    uint8_t quasf:1;,
     uint8_t rttwp:1;)
         };
         uint8_t octet10;
+    };
+    union {
+        struct {
+
+/*
+ * 11/6 UPIDP N4
+ *   UP function supports User Plane Inactivity Detection
+ *   and reporting per PDR feature as specified in
+ *   clause 5.11.3.
+ * 11/5 RATP Sxb, N4
+ *   UP function supports Redirection Address Types set
+ *   to "Port", "IPv4 address and Port", "IPv6 address
+ *   and Port", or "IPv4 and IPv6 addresses and Port".
+ * 11/4 EPPPI N4
+ *   UP function supports Enhanced Provisioning of
+ *   Paging Policy Indicator feature as specified in
+ *   clause 5.36.2.
+ * 11/3 PSUPRM N4, N4mb
+ *   UP function supports Per Slice UP Resource
+ *   Management (see clause 5.35).3GPP TS 29.244 version 17.7.1 Release 17
+ * 11/2 MBSN4 N4
+ *   UPF supports sending MBS multicast session data
+ *   to associated PDU sessions using 5GC individual
+ *   delivery.
+ * 11/1 DRQOS N4
+ *   UP function supports Direct Reporting of QoS
+ *   monitoring events to Local NEF or AF (see
+ *   clause 5.33.5).
+ */
+ED7(uint8_t spare:2;,
+    uint8_t upidp:1;,
+    uint8_t ratp:1;,
+    uint8_t epppi:1;,
+    uint8_t psuprm:1;,
+    uint8_t mbsn4:1;,
+    uint8_t drqos:1;)
+        };
+        uint8_t octet11;
     };
 } __attribute__ ((packed)) ogs_pfcp_up_function_features_t;
 
@@ -331,7 +402,16 @@ ED2(uint8_t reserved:7;,
  * DL packet for downlink data delivery status notification if the DL Buffering
  * Duration or DL Buffering Suggested Packet Count is exceeded or
  * it is discarded directly. See clause 5.2.3.1.
- * Bit 4 to 8 – Spare, for future use and seto to "0".
+ *
+ * Bit 4 - FSSM (Forward packets to lower layer SSM): when set to "1",
+ * this indicates a request to the MB-UPF to forward MBS session data
+ * towards a low layer SSM address allocated by the MB-UPF
+ * using multicast transport.
+ * Bit 5 – MBSU (Forward and replicate MBS data using Unicast transport):
+ * when set to "1", this indicates a request to forward and replicate
+ * MBS session data towards multiple remote GTP-U peers using unicast transport.
+ * Bit 6 to 8 – Spare, for future use and seto to "0".
+
  *
  * One and only one of the DROP, FORW, BUFF, IPMA and IPMD flags shall be
  * set to "1".
@@ -341,6 +421,10 @@ ED2(uint8_t reserved:7;,
  * The DFRN flag may only be set if the FORW flag is set.
  * The EDRT flag may be set if the FORW flag is set.
  * The DDPN flag may be set with any of the DROP and BUFF flags.
+ *
+ * Both the MBSU flag and the FSSM flag may be set
+ * (to require the MB-UPF to forward MBS session data
+ * using both multicast and unicast transports).
  */
 #define OGS_PFCP_APPLY_ACTION_DROP                          (1<<8)
 #define OGS_PFCP_APPLY_ACTION_FORW                          (1<<9)
@@ -353,6 +437,8 @@ ED2(uint8_t reserved:7;,
 #define OGS_PFCP_APPLY_ACTION_EDRT                          (1<<0)
 #define OGS_PFCP_APPLY_ACTION_BDPN                          (1<<1)
 #define OGS_PFCP_APPLY_ACTION_DDPN                          (1<<2)
+#define OGS_PFCP_APPLY_ACTION_FSSM                          (1<<3)
+#define OGS_PFCP_APPLY_ACTION_MBSU                          (1<<4)
 typedef uint16_t  ogs_pfcp_apply_action_t;
 
 
@@ -361,7 +447,6 @@ typedef uint16_t  ogs_pfcp_apply_action_t;
 typedef struct ogs_pfcp_cp_function_features_s {
     union {
         struct {
-
 /*
  * 5/8 UIAUR Sxb, N4
  *   CP function supports the UE IP Address Usage Reporting feature,
@@ -396,6 +481,26 @@ ED8(uint8_t uiaur:1;,
     uint8_t load:1;)
         };
         uint8_t octet5;
+    };
+    union {
+        struct {
+
+/*
+ * 6/2 RPGUR Sxa, Sxb, N4, N4mb
+ *   CP function supports the Peer GTP-U Entity Restart
+ *   Reporting as specified in clause 20.3.4a of
+ *   3GPP TS 23.007 [24] and in clause 5.5 of 3GPP TS 23.527 [40].
+ * 6/1 PSUCC Sxb, Sxc, N4, N4mb
+ *   CP function supports PFCP session establishment
+ *   or modification with Partial Success, i.e. with UP
+ *   function reporting rules that cannot be activated.
+ *   See clause 5.2.9.
+ */
+ED3(uint8_t spare:6;,
+    uint8_t rpgur:1;,
+    uint8_t psucc:1;)
+        };
+        uint8_t octet6;
     };
 } __attribute__ ((packed)) ogs_pfcp_cp_function_features_t;
 
@@ -659,7 +764,10 @@ ED8(uint8_t     stag:1;,
     uint8_t     udp4:1;,
     uint8_t     gtpu6:1;,
     uint8_t     gtpu4:1;)
-    uint8_t     spare;
+ED4(uint8_t     spare:5;,
+    uint8_t     ssm_c_teid:1;,
+    uint8_t     n6:1;,
+    uint8_t     n19:1;)
     uint32_t    teid;
     union {
         uint32_t addr;
@@ -913,7 +1021,8 @@ ED8(uint8_t quota_validity_time:1;,
     };
     union {
         struct {
-ED2(uint8_t spare:7;,
+ED3(uint8_t spare:6;,
+    uint8_t user_plane_inactivity_timer:1;,
     uint8_t report_the_end_marker_reception:1;)
         };
         uint8_t reptri_7;
@@ -932,14 +1041,25 @@ ED2(uint8_t spare:7;,
  *           this indicates an Error Indication Report.
  * - Bit 4 – UPIR (User Plane Inactivity Report): when set to 1,
  *           this indicates a User Plane Inactivity Report.
- * - Bit 5 to 8 – Spare, for future use and set to 0.
+ * - Bit 5 – TMIR (TSC Management Information Report): when set to "1",
+ *           this indicates a TSC Management Information Report.
+ * - Bit 6 – Session Report (SESR): when set to "1",
+ *           this indicates a Session Report.
+ * - Bit 7 – UISR (UP Initiated Session Request): when set to "1",
+ *           this indicates it is a UP function initiated request
+ *           for a reason which is indicated by the PFCPSRReq-Flags,
+ *           for the PFCP session.
+ * - Bit 8 – Spare, for future use and set to "0".
  *
  * At least one bit shall be set to 1. Several bits may be set to 1.
  */
 typedef struct ogs_pfcp_report_type_s {
     union {
         struct {
-ED5(uint8_t     spare:4;,
+ED8(uint8_t     spare:1;,
+    uint8_t     up_initiated_session_request:1;,
+    uint8_t     session_report:1;,
+    uint8_t     tsc_management_information_report:1;,
     uint8_t     user_plane_inactivity_report:1;,
     uint8_t     error_indication_report:1;,
     uint8_t     usage_report:1;,
@@ -949,6 +1069,9 @@ ED5(uint8_t     spare:4;,
     };
 } __attribute__ ((packed)) ogs_pfcp_report_type_t;
 
+/*
+ * 8.2.27 Downlink Data Service Information
+ */
 typedef struct ogs_pfcp_downlink_data_service_information_s {
     struct {
 ED3(uint8_t     spare:6;,
@@ -980,13 +1103,30 @@ ED3(uint8_t     spare:6;,
  * - Bit 3 – QAURR (Query All URRs): if this bit is set to 1, it indicates
  *   that the UP function shall return immediate usage report(s)
  *   for all the URRs previously provisioned for this PFCP session.
- * - Bit 4 to 8 – Spare, for future use, shall be set to 0 by the sender and
- *   discarded by the receiver.
+ * - Bit 4 - SUMPC (Stop of Usage Measurement to Pause Charging):
+ *   if this bit is set to "1", it indicates that the UP function
+ *   shall stop the usage measurement for all URRs
+ *   with the "ASPOC" flag set to "1".
+ * - Bit 5 - RUMUC (Resume of Usage Measurement to Un-pause of Charging):
+ *   if this bit is set to "1", it indicates that the UP function
+ *   shall resume the usage measurement for all URRs
+ *   with the "ASPOC" flag set to "1".
+ * - Bit 6 - DETEID (Delete All DL N3mb and/or N19mb F-TEIDs):
+ *   if this bit is set to "1", it indicates that the MB-UPF
+ *   shall delete all NG-RAN N3mb DL F-TEIDs
+ *   and all UPF N19mb DL F-TEIDs which were provisioned
+ *   in Add MBS Unicast Parameters IEs for the MBS session
+ *   (see clause 5.34.2.4).
+ * - Bit 7 to 8 – Spare, for future use, shall be set to "0" by the sender
+ *   and discarded by the receiver.
  */
 typedef struct ogs_pfcp_smreq_flags_s {
     union {
         struct {
-ED4(uint8_t     spare:5;,
+ED7(uint8_t     spare:2;,
+    uint8_t     delete_all_dl_n3mb_and_or_n19mb_f_teids:1;,
+    uint8_t     resume_of_usage_measurement_to_un_pause_of_charging:1;,
+    uint8_t     stop_of_usage_measurement_to_pause_charging:1;,
     uint8_t     query_all_urrs:1;,
     uint8_t     send_end_marker_packets:1;,
     uint8_t     drop_buffered_packets:1;)
@@ -1049,7 +1189,8 @@ ED8(uint8_t event_threshold:1;,
     };
     union {
         struct {
-ED6(uint8_t spare:3;,
+ED7(uint8_t spare:2;,
+    uint8_t user_plane_inactivity_timer:1;,
     uint8_t report_the_end_marker_reception:1;,
     uint8_t quota_validity_time:1;,
     uint8_t ip_multicast_join_leave:1;,
@@ -1407,27 +1548,27 @@ int16_t ogs_pfcp_parse_volume_measurement(
  *
  * The following flags are coded within Octet 5:
  *
- * -Bit 1 – IMSIF: If this bit is set to "1",
- *  then the Length of IMSI and IMSI fields shall be present,
- *  otherwise these fields shall not be present.
- * -Bit 2 – IMEIF: If this bit is set to "1",
- *  then the Length of IMEI and IMEI fields shall be present,
- *  otherwise these fields shall not be present.
- * -Bit 3 – MSISDNF: If this bit is set to "1",
- *  then the Length of MSISDN and MSISDN fields shall be present,
- *  otherwise these fields shall not be present.
- * -Bit 4 – NAIF: If this bit is set to "1",
- *  then the Length of NAI and NAI fields shall be present,
- *  otherwise these fields shall not be present.
- * -Bit 5 – SUPIF: If this bit is set to "1",
- *  then the Length of SUPI and SUPI fields shall be present,
- *  otherwise these fields shall not be present.
- * -Bit 6 – GPSIF: If this bit is set to "1",
- *  then the Length of GPSI and GPSI fields shall be present,
- *  otherwise these fields shall not be present.
- * -Bit 7 – PEIF: If this bit is set to "1",
- *  then the Length of PEI and PEI fields shall be present,
- *  otherwise these fields shall not be present.
+ * - Bit 1 – IMSIF: If this bit is set to "1",
+ *   then the Length of IMSI and IMSI fields shall be present,
+ *   otherwise these fields shall not be present.
+ * - Bit 2 – IMEIF: If this bit is set to "1",
+ *   then the Length of IMEI and IMEI fields shall be present,
+ *   otherwise these fields shall not be present.
+ * - Bit 3 – MSISDNF: If this bit is set to "1",
+ *   then the Length of MSISDN and MSISDN fields shall be present,
+ *   otherwise these fields shall not be present.
+ * - Bit 4 – NAIF: If this bit is set to "1",
+ *   then the Length of NAI and NAI fields shall be present,
+ *   otherwise these fields shall not be present.
+ * - Bit 5 – SUPIF: If this bit is set to "1",
+ *   then the Length of SUPI and SUPI fields shall be present,
+ *   otherwise these fields shall not be present.
+ * - Bit 6 – GPSIF: If this bit is set to "1",
+ *   then the Length of GPSI and GPSI fields shall be present,
+ *   otherwise these fields shall not be present.
+ * - Bit 7 – PEIF: If this bit is set to "1",
+ *   then the Length of PEI and PEI fields shall be present,
+ *   otherwise these fields shall not be present.
  * - Bit 8: Spare, for future use and set to "0".
  *
  * One or more flags may be set to "1".

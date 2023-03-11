@@ -198,7 +198,7 @@ ogs_pkbuf_t *testemm_build_attach_request(
     if (test_ue->attach_request_param.additional_update_type) {
         attach_request->presencemask |=
             OGS_NAS_EPS_ATTACH_REQUEST_ADDITIONAL_UPDATE_TYPE_PRESENT;
-        additional_update_type->autv = 1;
+        additional_update_type->additional_update_type_value = 1;
     }
 
     if (test_ue->attach_request_param.ue_usage_setting) {
@@ -734,7 +734,7 @@ ogs_pkbuf_t *testemm_build_tau_request(
     if (test_ue->tau_request_param.additional_update_type) {
         tau_request->presencemask |=
             OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_ADDITIONAL_UPDATE_TYPE_PRESENT;
-        additional_update_type->autv = 1;
+        additional_update_type->additional_update_type_value = 1;
     }
 
     if (test_ue->tau_request_param.ue_usage_setting) {
