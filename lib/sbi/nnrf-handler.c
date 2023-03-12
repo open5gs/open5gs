@@ -535,12 +535,44 @@ void ogs_nnrf_nfm_handle_nf_status_subscribe(
         return;
     }
 
-    if (!SubscriptionData->subscription_id) {
-        ogs_error("No SubscriptionId");
+    if (recvmsg->http.location) {
+        int rv;
+        ogs_sbi_message_t message;
+        ogs_sbi_header_t header;
+
+        memset(&header, 0, sizeof(header));
+        header.uri = recvmsg->http.location;
+
+        rv = ogs_sbi_parse_header(&message, &header);
+        if (rv != OGS_OK) {
+            ogs_error("Cannot parse http.location [%s]",
+                recvmsg->http.location);
+            return;
+        }
+
+        if (!message.h.resource.component[1]) {
+            ogs_error("No Subscription ID [%s]", recvmsg->http.location);
+            ogs_sbi_header_free(&header);
+            return;
+        }
+
+        ogs_sbi_subscription_data_set_id(
+                subscription_data, message.h.resource.component[1]);
+
+        ogs_sbi_header_free(&header);
+
+    } else if (SubscriptionData->subscription_id) {
+        /*
+         * For compatibility with v2.5.x and lower versions
+         *
+         * Deprecated : It will be removed soon.
+         */
+        ogs_sbi_subscription_data_set_id(
+            subscription_data, SubscriptionData->subscription_id);
+    } else {
+        ogs_error("No Subscription ID");
         return;
     }
-    ogs_sbi_subscription_data_set_id(
-        subscription_data, SubscriptionData->subscription_id);
 
     /* SBI Features */
     if (SubscriptionData->nrf_supported_features) {

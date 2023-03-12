@@ -188,6 +188,9 @@ bool nrf_nnrf_handle_nf_status_subscribe(
     OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
     ogs_sockaddr_t *addr = NULL;
 
+    ogs_sbi_server_t *server = NULL;
+    ogs_sbi_header_t header;
+
     ogs_uuid_t uuid;
     char id[OGS_UUID_FORMATTED_LENGTH + 1];
 
@@ -321,12 +324,27 @@ bool nrf_nnrf_handle_nf_status_subscribe(
             SubscriptionData->validity_time,
             subscription_data->time.validity_duration);
 
-    recvmsg->http.location = recvmsg->h.uri;
+    /* Location */
+    server = ogs_sbi_server_from_stream(stream);
+    ogs_assert(server);
+
+    memset(&header, 0, sizeof(header));
+    header.service.name = (char *)OGS_SBI_SERVICE_NAME_NNRF_NFM;
+    header.api.version = (char *)OGS_SBI_API_V1;
+    header.resource.component[0] =
+        (char *)OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS;
+    header.resource.component[1] = subscription_data->id;
+
+    recvmsg->http.location = ogs_sbi_server_uri(server, &header);
+
     status = OGS_SBI_HTTP_STATUS_CREATED;
 
     response = ogs_sbi_build_response(recvmsg, status);
     ogs_assert(response);
     ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+    if (recvmsg->http.location)
+        ogs_free(recvmsg->http.location);
 
     return true;
 }
