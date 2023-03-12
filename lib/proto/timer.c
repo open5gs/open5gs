@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -29,6 +29,8 @@ const char *OGS_TIMER_NAME_NF_INSTANCE_VALIDITY =
     "OGS_TIMER_NF_INSTANCE_VALIDITY";
 const char *OGS_TIMER_NAME_SUBSCRIPTION_VALIDITY =
     "OGS_TIMER_SUBSCRIPTION_VALIDITY";
+const char *OGS_TIMER_NAME_SUBSCRIPTION_PATCH =
+    "OGS_TIMER_SUBSCRIPTION_PATCH";
 const char *OGS_TIMER_NAME_SBI_CLIENT_WAIT =
     "OGS_TIMER_SBI_CLIENT_WAIT";
 
@@ -45,6 +47,8 @@ const char *ogs_timer_get_name(int timer_id)
         return OGS_TIMER_NAME_NF_INSTANCE_VALIDITY;
     case OGS_TIMER_SUBSCRIPTION_VALIDITY:
         return OGS_TIMER_NAME_SUBSCRIPTION_VALIDITY;
+    case OGS_TIMER_SUBSCRIPTION_PATCH:
+        return OGS_TIMER_NAME_SUBSCRIPTION_PATCH;
     case OGS_TIMER_SBI_CLIENT_WAIT:
         return OGS_TIMER_NAME_SBI_CLIENT_WAIT;
     case OGS_TIMER_DBI_POLL_CHANGE_STREAM:

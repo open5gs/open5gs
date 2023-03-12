@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -36,6 +36,8 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_update(void);
 ogs_sbi_request_t *ogs_nnrf_nfm_build_de_register(void);
 
 ogs_sbi_request_t *ogs_nnrf_nfm_build_status_subscribe(
+        ogs_sbi_subscription_data_t *subscription_data);
+ogs_sbi_request_t *ogs_nnrf_nfm_build_status_update(
         ogs_sbi_subscription_data_t *subscription_data);
 ogs_sbi_request_t *ogs_nnrf_nfm_build_status_unsubscribe(
         ogs_sbi_subscription_data_t *subscription_data);

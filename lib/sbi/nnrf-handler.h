@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -30,6 +30,9 @@ void ogs_nnrf_nfm_handle_nf_profile(
         ogs_sbi_nf_instance_t *nf_instance, OpenAPI_nf_profile_t *NFProfile);
 
 void ogs_nnrf_nfm_handle_nf_status_subscribe(
+        ogs_sbi_subscription_data_t *subscription_data,
+        ogs_sbi_message_t *recvmsg);
+void ogs_nnrf_nfm_handle_nf_status_update(
         ogs_sbi_subscription_data_t *subscription_data,
         ogs_sbi_message_t *recvmsg);
 bool ogs_nnrf_nfm_handle_nf_status_notify(

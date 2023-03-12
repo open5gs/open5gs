@@ -166,6 +166,10 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
                     nrf_nnrf_handle_nf_status_subscribe(stream, &message);
                     break;
 
+                CASE(OGS_SBI_HTTP_METHOD_PATCH)
+                    nrf_nnrf_handle_nf_status_update(stream, &message);
+                    break;
+
                 CASE(OGS_SBI_HTTP_METHOD_DELETE)
                     nrf_nnrf_handle_nf_status_unsubscribe(stream, &message);
                     break;
@@ -254,7 +258,7 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
             subscription_data = e->subscription_data;
             ogs_assert(subscription_data);
 
-            ogs_info("[%s] Subscription validity expired",
+            ogs_error("[%s] Subscription validity expired",
                     subscription_data->id);
             ogs_sbi_subscription_data_remove(subscription_data);
             break;

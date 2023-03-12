@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -142,6 +142,10 @@ extern "C" {
                                                     "network-slice-information"
 
 #define OGS_SBI_RESOURCE_NAME_PCF_BINDINGS          "pcfBindings"
+
+#define OGS_SBI_PATCH_PATH_NF_STATUS                "/nfStatus"
+#define OGS_SBI_PATCH_PATH_LOAD                     "/load"
+#define OGS_SBI_PATCH_PATH_VALIDITY_TIME            "/validityTime"
 
 
 #define OGS_SBI_FEATURES_IS_SET(__fEATURES, __n) \
