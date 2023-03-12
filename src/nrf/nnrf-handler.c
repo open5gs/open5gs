@@ -197,8 +197,19 @@ bool nrf_nnrf_handle_nf_status_subscribe(
     ogs_assert(stream);
     ogs_assert(recvmsg);
 
+    if (recvmsg->h.resource.component[1]) {
+        ogs_error("Invalid POST Format [%s]",
+                recvmsg->h.resource.component[1]);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "Invalid POST Format",
+                recvmsg->h.resource.component[1]));
+        return false;
+    }
+
     SubscriptionData = recvmsg->SubscriptionData;
     if (!SubscriptionData) {
+        ogs_error("No SubscriptionData");
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 recvmsg, "No SubscriptionData", NULL));
@@ -206,6 +217,7 @@ bool nrf_nnrf_handle_nf_status_subscribe(
     }
 
     if (!SubscriptionData->nf_status_notification_uri) {
+        ogs_error("No nfStatusNotificationUri");
         ogs_assert(true ==
             ogs_sbi_server_send_error(
                 stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
