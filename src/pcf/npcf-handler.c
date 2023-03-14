@@ -314,7 +314,7 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
     if (SmPolicyContextData->ipv6_frame_route_list) {
         OpenAPI_lnode_t *node = NULL;
 
-        OpenAPI_clear_and_free_string_list(sess->ipv4_frame_route_list);
+        OpenAPI_clear_and_free_string_list(sess->ipv6_frame_route_list);
         sess->ipv6_frame_route_list = OpenAPI_list_create();
         OpenAPI_list_for_each(SmPolicyContextData->ipv6_frame_route_list, node) {
             if (!node->data)
