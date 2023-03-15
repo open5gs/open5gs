@@ -140,6 +140,10 @@ OpenAPI_ue_mobility_t *OpenAPI_ue_mobility_parseFromJSON(cJSON *ue_mobilityJSON)
     recurring_time = cJSON_GetObjectItemCaseSensitive(ue_mobilityJSON, "recurringTime");
     if (recurring_time) {
     recurring_time_local_nonprim = OpenAPI_scheduled_communication_time_1_parseFromJSON(recurring_time);
+    if (!recurring_time_local_nonprim) {
+        ogs_error("OpenAPI_scheduled_communication_time_1_parseFromJSON failed [recurring_time]");
+        goto end;
+    }
     }
 
     duration = cJSON_GetObjectItemCaseSensitive(ue_mobilityJSON, "duration");
@@ -176,7 +180,6 @@ OpenAPI_ue_mobility_t *OpenAPI_ue_mobility_parseFromJSON(cJSON *ue_mobilityJSON)
             OpenAPI_location_info_t *loc_infosItem = OpenAPI_location_info_parseFromJSON(loc_infos_local);
             if (!loc_infosItem) {
                 ogs_error("No loc_infosItem");
-                OpenAPI_list_free(loc_infosList);
                 goto end;
             }
             OpenAPI_list_add(loc_infosList, loc_infosItem);

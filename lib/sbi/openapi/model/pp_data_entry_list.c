@@ -102,7 +102,6 @@ OpenAPI_pp_data_entry_list_t *OpenAPI_pp_data_entry_list_parseFromJSON(cJSON *pp
             OpenAPI_pp_data_entry_t *pp_data_entry_listItem = OpenAPI_pp_data_entry_parseFromJSON(pp_data_entry_list_local);
             if (!pp_data_entry_listItem) {
                 ogs_error("No pp_data_entry_listItem");
-                OpenAPI_list_free(pp_data_entry_listList);
                 goto end;
             }
             OpenAPI_list_add(pp_data_entry_listList, pp_data_entry_listItem);

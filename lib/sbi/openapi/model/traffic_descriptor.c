@@ -116,6 +116,10 @@ OpenAPI_traffic_descriptor_t *OpenAPI_traffic_descriptor_parseFromJSON(cJSON *tr
     s_nssai = cJSON_GetObjectItemCaseSensitive(traffic_descriptorJSON, "sNssai");
     if (s_nssai) {
     s_nssai_local_nonprim = OpenAPI_snssai_parseFromJSON(s_nssai);
+    if (!s_nssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [s_nssai]");
+        goto end;
+    }
     }
 
     ddd_traffic_descriptor_list = cJSON_GetObjectItemCaseSensitive(traffic_descriptorJSON, "dddTrafficDescriptorList");
@@ -136,7 +140,6 @@ OpenAPI_traffic_descriptor_t *OpenAPI_traffic_descriptor_parseFromJSON(cJSON *tr
             OpenAPI_ddd_traffic_descriptor_t *ddd_traffic_descriptor_listItem = OpenAPI_ddd_traffic_descriptor_parseFromJSON(ddd_traffic_descriptor_list_local);
             if (!ddd_traffic_descriptor_listItem) {
                 ogs_error("No ddd_traffic_descriptor_listItem");
-                OpenAPI_list_free(ddd_traffic_descriptor_listList);
                 goto end;
             }
             OpenAPI_list_add(ddd_traffic_descriptor_listList, ddd_traffic_descriptor_listItem);

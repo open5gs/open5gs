@@ -175,6 +175,10 @@ OpenAPI_wlan_per_ts_performance_info_t *OpenAPI_wlan_per_ts_performance_info_par
     traffic_info = cJSON_GetObjectItemCaseSensitive(wlan_per_ts_performance_infoJSON, "trafficInfo");
     if (traffic_info) {
     traffic_info_local_nonprim = OpenAPI_traffic_information_parseFromJSON(traffic_info);
+    if (!traffic_info_local_nonprim) {
+        ogs_error("OpenAPI_traffic_information_parseFromJSON failed [traffic_info]");
+        goto end;
+    }
     }
 
     number_of_ues = cJSON_GetObjectItemCaseSensitive(wlan_per_ts_performance_infoJSON, "numberOfUes");

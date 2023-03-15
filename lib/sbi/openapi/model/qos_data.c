@@ -363,6 +363,10 @@ OpenAPI_qos_data_t *OpenAPI_qos_data_parseFromJSON(cJSON *qos_dataJSON)
     arp = cJSON_GetObjectItemCaseSensitive(qos_dataJSON, "arp");
     if (arp) {
     arp_local_nonprim = OpenAPI_arp_parseFromJSON(arp);
+    if (!arp_local_nonprim) {
+        ogs_error("OpenAPI_arp_parseFromJSON failed [arp]");
+        goto end;
+    }
     }
 
     qnc = cJSON_GetObjectItemCaseSensitive(qos_dataJSON, "qnc");

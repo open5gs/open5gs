@@ -145,7 +145,6 @@ OpenAPI_datalink_reporting_configuration_1_t *OpenAPI_datalink_reporting_configu
             OpenAPI_ddd_traffic_descriptor_1_t *ddd_traffic_desItem = OpenAPI_ddd_traffic_descriptor_1_parseFromJSON(ddd_traffic_des_local);
             if (!ddd_traffic_desItem) {
                 ogs_error("No ddd_traffic_desItem");
-                OpenAPI_list_free(ddd_traffic_desList);
                 goto end;
             }
             OpenAPI_list_add(ddd_traffic_desList, ddd_traffic_desItem);
@@ -163,6 +162,10 @@ OpenAPI_datalink_reporting_configuration_1_t *OpenAPI_datalink_reporting_configu
     slice = cJSON_GetObjectItemCaseSensitive(datalink_reporting_configuration_1JSON, "slice");
     if (slice) {
     slice_local_nonprim = OpenAPI_snssai_parseFromJSON(slice);
+    if (!slice_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [slice]");
+        goto end;
+    }
     }
 
     ddd_status_list = cJSON_GetObjectItemCaseSensitive(datalink_reporting_configuration_1JSON, "dddStatusList");

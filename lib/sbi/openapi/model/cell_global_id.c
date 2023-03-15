@@ -104,6 +104,10 @@ OpenAPI_cell_global_id_t *OpenAPI_cell_global_id_parseFromJSON(cJSON *cell_globa
         goto end;
     }
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
+    if (!plmn_id_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [plmn_id]");
+        goto end;
+    }
 
     lac = cJSON_GetObjectItemCaseSensitive(cell_global_idJSON, "lac");
     if (!lac) {

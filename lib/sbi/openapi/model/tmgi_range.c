@@ -138,6 +138,10 @@ OpenAPI_tmgi_range_t *OpenAPI_tmgi_range_parseFromJSON(cJSON *tmgi_rangeJSON)
         goto end;
     }
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
+    if (!plmn_id_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [plmn_id]");
+        goto end;
+    }
 
     nid = cJSON_GetObjectItemCaseSensitive(tmgi_rangeJSON, "nid");
     if (nid) {

@@ -115,7 +115,6 @@ OpenAPI_mbs_service_area_t *OpenAPI_mbs_service_area_parseFromJSON(cJSON *mbs_se
             OpenAPI_ncgi_tai_t *ncgi_listItem = OpenAPI_ncgi_tai_parseFromJSON(ncgi_list_local);
             if (!ncgi_listItem) {
                 ogs_error("No ncgi_listItem");
-                OpenAPI_list_free(ncgi_listList);
                 goto end;
             }
             OpenAPI_list_add(ncgi_listList, ncgi_listItem);
@@ -140,7 +139,6 @@ OpenAPI_mbs_service_area_t *OpenAPI_mbs_service_area_parseFromJSON(cJSON *mbs_se
             OpenAPI_tai_t *tai_listItem = OpenAPI_tai_parseFromJSON(tai_list_local);
             if (!tai_listItem) {
                 ogs_error("No tai_listItem");
-                OpenAPI_list_free(tai_listList);
                 goto end;
             }
             OpenAPI_list_add(tai_listList, tai_listItem);

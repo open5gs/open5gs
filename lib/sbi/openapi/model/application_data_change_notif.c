@@ -167,16 +167,28 @@ OpenAPI_application_data_change_notif_t *OpenAPI_application_data_change_notif_p
     iptv_config_data = cJSON_GetObjectItemCaseSensitive(application_data_change_notifJSON, "iptvConfigData");
     if (iptv_config_data) {
     iptv_config_data_local_nonprim = OpenAPI_iptv_config_data_parseFromJSON(iptv_config_data);
+    if (!iptv_config_data_local_nonprim) {
+        ogs_error("OpenAPI_iptv_config_data_parseFromJSON failed [iptv_config_data]");
+        goto end;
+    }
     }
 
     pfd_data = cJSON_GetObjectItemCaseSensitive(application_data_change_notifJSON, "pfdData");
     if (pfd_data) {
     pfd_data_local_nonprim = OpenAPI_pfd_change_notification_parseFromJSON(pfd_data);
+    if (!pfd_data_local_nonprim) {
+        ogs_error("OpenAPI_pfd_change_notification_parseFromJSON failed [pfd_data]");
+        goto end;
+    }
     }
 
     bdt_policy_data = cJSON_GetObjectItemCaseSensitive(application_data_change_notifJSON, "bdtPolicyData");
     if (bdt_policy_data) {
     bdt_policy_data_local_nonprim = OpenAPI_bdt_policy_data_parseFromJSON(bdt_policy_data);
+    if (!bdt_policy_data_local_nonprim) {
+        ogs_error("OpenAPI_bdt_policy_data_parseFromJSON failed [bdt_policy_data]");
+        goto end;
+    }
     }
 
     res_uri = cJSON_GetObjectItemCaseSensitive(application_data_change_notifJSON, "resUri");
@@ -192,11 +204,19 @@ OpenAPI_application_data_change_notif_t *OpenAPI_application_data_change_notif_p
     ser_param_data = cJSON_GetObjectItemCaseSensitive(application_data_change_notifJSON, "serParamData");
     if (ser_param_data) {
     ser_param_data_local_nonprim = OpenAPI_service_parameter_data_parseFromJSON(ser_param_data);
+    if (!ser_param_data_local_nonprim) {
+        ogs_error("OpenAPI_service_parameter_data_parseFromJSON failed [ser_param_data]");
+        goto end;
+    }
     }
 
     am_influ_data = cJSON_GetObjectItemCaseSensitive(application_data_change_notifJSON, "amInfluData");
     if (am_influ_data) {
     am_influ_data_local_nonprim = OpenAPI_am_influ_data_parseFromJSON(am_influ_data);
+    if (!am_influ_data_local_nonprim) {
+        ogs_error("OpenAPI_am_influ_data_parseFromJSON failed [am_influ_data]");
+        goto end;
+    }
     }
 
     application_data_change_notif_local_var = OpenAPI_application_data_change_notif_create (

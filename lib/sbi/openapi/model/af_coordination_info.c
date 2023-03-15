@@ -154,7 +154,6 @@ OpenAPI_af_coordination_info_t *OpenAPI_af_coordination_info_parseFromJSON(cJSON
             OpenAPI_notification_info_t *notification_info_listItem = OpenAPI_notification_info_parseFromJSON(notification_info_list_local);
             if (!notification_info_listItem) {
                 ogs_error("No notification_info_listItem");
-                OpenAPI_list_free(notification_info_listList);
                 goto end;
             }
             OpenAPI_list_add(notification_info_listList, notification_info_listItem);

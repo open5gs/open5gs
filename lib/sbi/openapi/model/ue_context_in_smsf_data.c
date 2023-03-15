@@ -88,11 +88,19 @@ OpenAPI_ue_context_in_smsf_data_t *OpenAPI_ue_context_in_smsf_data_parseFromJSON
     smsf_info3_gpp_access = cJSON_GetObjectItemCaseSensitive(ue_context_in_smsf_dataJSON, "smsfInfo3GppAccess");
     if (smsf_info3_gpp_access) {
     smsf_info3_gpp_access_local_nonprim = OpenAPI_smsf_info_parseFromJSON(smsf_info3_gpp_access);
+    if (!smsf_info3_gpp_access_local_nonprim) {
+        ogs_error("OpenAPI_smsf_info_parseFromJSON failed [smsf_info3_gpp_access]");
+        goto end;
+    }
     }
 
     smsf_info_non3_gpp_access = cJSON_GetObjectItemCaseSensitive(ue_context_in_smsf_dataJSON, "smsfInfoNon3GppAccess");
     if (smsf_info_non3_gpp_access) {
     smsf_info_non3_gpp_access_local_nonprim = OpenAPI_smsf_info_parseFromJSON(smsf_info_non3_gpp_access);
+    if (!smsf_info_non3_gpp_access_local_nonprim) {
+        ogs_error("OpenAPI_smsf_info_parseFromJSON failed [smsf_info_non3_gpp_access]");
+        goto end;
+    }
     }
 
     ue_context_in_smsf_data_local_var = OpenAPI_ue_context_in_smsf_data_create (

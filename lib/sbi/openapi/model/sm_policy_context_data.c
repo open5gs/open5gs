@@ -813,11 +813,19 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
     acc_net_ch_id = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "accNetChId");
     if (acc_net_ch_id) {
     acc_net_ch_id_local_nonprim = OpenAPI_acc_net_ch_id_parseFromJSON(acc_net_ch_id);
+    if (!acc_net_ch_id_local_nonprim) {
+        ogs_error("OpenAPI_acc_net_ch_id_parseFromJSON failed [acc_net_ch_id]");
+        goto end;
+    }
     }
 
     charg_entity_addr = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "chargEntityAddr");
     if (charg_entity_addr) {
     charg_entity_addr_local_nonprim = OpenAPI_acc_net_charging_address_parseFromJSON(charg_entity_addr);
+    if (!charg_entity_addr_local_nonprim) {
+        ogs_error("OpenAPI_acc_net_charging_address_parseFromJSON failed [charg_entity_addr]");
+        goto end;
+    }
     }
 
     gpsi = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "gpsi");
@@ -946,16 +954,28 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
     add_access_info = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "addAccessInfo");
     if (add_access_info) {
     add_access_info_local_nonprim = OpenAPI_additional_access_info_parseFromJSON(add_access_info);
+    if (!add_access_info_local_nonprim) {
+        ogs_error("OpenAPI_additional_access_info_parseFromJSON failed [add_access_info]");
+        goto end;
+    }
     }
 
     serving_network = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "servingNetwork");
     if (serving_network) {
     serving_network_local_nonprim = OpenAPI_plmn_id_nid_parseFromJSON(serving_network);
+    if (!serving_network_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_nid_parseFromJSON failed [serving_network]");
+        goto end;
+    }
     }
 
     user_location_info = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "userLocationInfo");
     if (user_location_info) {
     user_location_info_local_nonprim = OpenAPI_user_location_parseFromJSON(user_location_info);
+    if (!user_location_info_local_nonprim) {
+        ogs_error("OpenAPI_user_location_parseFromJSON failed [user_location_info]");
+        goto end;
+    }
     }
 
     ue_time_zone = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "ueTimeZone");
@@ -1001,6 +1021,10 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
     subs_sess_ambr = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "subsSessAmbr");
     if (subs_sess_ambr) {
     subs_sess_ambr_local_nonprim = OpenAPI_ambr_parseFromJSON(subs_sess_ambr);
+    if (!subs_sess_ambr_local_nonprim) {
+        ogs_error("OpenAPI_ambr_parseFromJSON failed [subs_sess_ambr]");
+        goto end;
+    }
     }
 
     auth_prof_index = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "authProfIndex");
@@ -1014,11 +1038,19 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
     subs_def_qos = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "subsDefQos");
     if (subs_def_qos) {
     subs_def_qos_local_nonprim = OpenAPI_subscribed_default_qos_parseFromJSON(subs_def_qos);
+    if (!subs_def_qos_local_nonprim) {
+        ogs_error("OpenAPI_subscribed_default_qos_parseFromJSON failed [subs_def_qos]");
+        goto end;
+    }
     }
 
     vplmn_qos = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "vplmnQos");
     if (vplmn_qos) {
     vplmn_qos_local_nonprim = OpenAPI_vplmn_qos_parseFromJSON(vplmn_qos);
+    if (!vplmn_qos_local_nonprim) {
+        ogs_error("OpenAPI_vplmn_qos_parseFromJSON failed [vplmn_qos]");
+        goto end;
+    }
     }
 
     num_of_pack_filter = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "numOfPackFilter");
@@ -1064,6 +1096,10 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
     trace_req = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "traceReq");
     if (trace_req) {
     trace_req_local_nonprim = OpenAPI_trace_data_parseFromJSON(trace_req);
+    if (!trace_req_local_nonprim) {
+        ogs_error("OpenAPI_trace_data_parseFromJSON failed [trace_req]");
+        goto end;
+    }
     }
 
     slice_info = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "sliceInfo");
@@ -1072,6 +1108,10 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
         goto end;
     }
     slice_info_local_nonprim = OpenAPI_snssai_parseFromJSON(slice_info);
+    if (!slice_info_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [slice_info]");
+        goto end;
+    }
 
     qos_flow_usage = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "qosFlowUsage");
     if (qos_flow_usage) {
@@ -1085,6 +1125,10 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
     serv_nf_id = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "servNfId");
     if (serv_nf_id) {
     serv_nf_id_local_nonprim = OpenAPI_serving_nf_identity_parseFromJSON(serv_nf_id);
+    if (!serv_nf_id_local_nonprim) {
+        ogs_error("OpenAPI_serving_nf_identity_parseFromJSON failed [serv_nf_id]");
+        goto end;
+    }
     }
 
     supp_feat = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "suppFeat");
@@ -1183,6 +1227,10 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
     pcf_ue_info = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "pcfUeInfo");
     if (pcf_ue_info) {
     pcf_ue_info_local_nonprim = OpenAPI_pcf_ue_callback_info_parseFromJSON(pcf_ue_info);
+    if (!pcf_ue_info_local_nonprim) {
+        ogs_error("OpenAPI_pcf_ue_callback_info_parseFromJSON failed [pcf_ue_info]");
+        goto end;
+    }
     }
 
     pvs_info = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "pvsInfo");
@@ -1203,7 +1251,6 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
             OpenAPI_server_addressing_info_t *pvs_infoItem = OpenAPI_server_addressing_info_parseFromJSON(pvs_info_local);
             if (!pvs_infoItem) {
                 ogs_error("No pvs_infoItem");
-                OpenAPI_list_free(pvs_infoList);
                 goto end;
             }
             OpenAPI_list_add(pvs_infoList, pvs_infoItem);
@@ -1236,7 +1283,6 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
             OpenAPI_nwdaf_data_t *nwdaf_datasItem = OpenAPI_nwdaf_data_parseFromJSON(nwdaf_datas_local);
             if (!nwdaf_datasItem) {
                 ogs_error("No nwdaf_datasItem");
-                OpenAPI_list_free(nwdaf_datasList);
                 goto end;
             }
             OpenAPI_list_add(nwdaf_datasList, nwdaf_datasItem);

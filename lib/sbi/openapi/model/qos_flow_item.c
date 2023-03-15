@@ -145,6 +145,10 @@ OpenAPI_qos_flow_item_t *OpenAPI_qos_flow_item_parseFromJSON(cJSON *qos_flow_ite
     ng_ap_cause = cJSON_GetObjectItemCaseSensitive(qos_flow_itemJSON, "ngApCause");
     if (ng_ap_cause) {
     ng_ap_cause_local_nonprim = OpenAPI_ng_ap_cause_parseFromJSON(ng_ap_cause);
+    if (!ng_ap_cause_local_nonprim) {
+        ogs_error("OpenAPI_ng_ap_cause_parseFromJSON failed [ng_ap_cause]");
+        goto end;
+    }
     }
 
     qos_flow_item_local_var = OpenAPI_qos_flow_item_create (

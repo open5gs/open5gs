@@ -81,6 +81,10 @@ OpenAPI_addr_fqdn_t *OpenAPI_addr_fqdn_parseFromJSON(cJSON *addr_fqdnJSON)
     ip_addr = cJSON_GetObjectItemCaseSensitive(addr_fqdnJSON, "ipAddr");
     if (ip_addr) {
     ip_addr_local_nonprim = OpenAPI_ip_addr_parseFromJSON(ip_addr);
+    if (!ip_addr_local_nonprim) {
+        ogs_error("OpenAPI_ip_addr_parseFromJSON failed [ip_addr]");
+        goto end;
+    }
     }
 
     fqdn = cJSON_GetObjectItemCaseSensitive(addr_fqdnJSON, "fqdn");

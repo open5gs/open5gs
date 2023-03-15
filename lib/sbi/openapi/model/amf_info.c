@@ -286,7 +286,6 @@ OpenAPI_amf_info_t *OpenAPI_amf_info_parseFromJSON(cJSON *amf_infoJSON)
             OpenAPI_guami_t *guami_listItem = OpenAPI_guami_parseFromJSON(guami_list_local);
             if (!guami_listItem) {
                 ogs_error("No guami_listItem");
-                OpenAPI_list_free(guami_listList);
                 goto end;
             }
             OpenAPI_list_add(guami_listList, guami_listItem);
@@ -310,7 +309,6 @@ OpenAPI_amf_info_t *OpenAPI_amf_info_parseFromJSON(cJSON *amf_infoJSON)
             OpenAPI_tai_t *tai_listItem = OpenAPI_tai_parseFromJSON(tai_list_local);
             if (!tai_listItem) {
                 ogs_error("No tai_listItem");
-                OpenAPI_list_free(tai_listList);
                 goto end;
             }
             OpenAPI_list_add(tai_listList, tai_listItem);
@@ -335,7 +333,6 @@ OpenAPI_amf_info_t *OpenAPI_amf_info_parseFromJSON(cJSON *amf_infoJSON)
             OpenAPI_tai_range_t *tai_range_listItem = OpenAPI_tai_range_parseFromJSON(tai_range_list_local);
             if (!tai_range_listItem) {
                 ogs_error("No tai_range_listItem");
-                OpenAPI_list_free(tai_range_listList);
                 goto end;
             }
             OpenAPI_list_add(tai_range_listList, tai_range_listItem);
@@ -360,7 +357,6 @@ OpenAPI_amf_info_t *OpenAPI_amf_info_parseFromJSON(cJSON *amf_infoJSON)
             OpenAPI_guami_t *backup_info_amf_failureItem = OpenAPI_guami_parseFromJSON(backup_info_amf_failure_local);
             if (!backup_info_amf_failureItem) {
                 ogs_error("No backup_info_amf_failureItem");
-                OpenAPI_list_free(backup_info_amf_failureList);
                 goto end;
             }
             OpenAPI_list_add(backup_info_amf_failureList, backup_info_amf_failureItem);
@@ -385,7 +381,6 @@ OpenAPI_amf_info_t *OpenAPI_amf_info_parseFromJSON(cJSON *amf_infoJSON)
             OpenAPI_guami_t *backup_info_amf_removalItem = OpenAPI_guami_parseFromJSON(backup_info_amf_removal_local);
             if (!backup_info_amf_removalItem) {
                 ogs_error("No backup_info_amf_removalItem");
-                OpenAPI_list_free(backup_info_amf_removalList);
                 goto end;
             }
             OpenAPI_list_add(backup_info_amf_removalList, backup_info_amf_removalItem);
@@ -395,6 +390,10 @@ OpenAPI_amf_info_t *OpenAPI_amf_info_parseFromJSON(cJSON *amf_infoJSON)
     n2_interface_amf_info = cJSON_GetObjectItemCaseSensitive(amf_infoJSON, "n2InterfaceAmfInfo");
     if (n2_interface_amf_info) {
     n2_interface_amf_info_local_nonprim = OpenAPI_n2_interface_amf_info_parseFromJSON(n2_interface_amf_info);
+    if (!n2_interface_amf_info_local_nonprim) {
+        ogs_error("OpenAPI_n2_interface_amf_info_parseFromJSON failed [n2_interface_amf_info]");
+        goto end;
+    }
     }
 
     amf_onboarding_capability = cJSON_GetObjectItemCaseSensitive(amf_infoJSON, "amfOnboardingCapability");

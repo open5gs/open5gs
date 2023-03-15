@@ -227,6 +227,10 @@ OpenAPI_pfd_content_t *OpenAPI_pfd_content_parseFromJSON(cJSON *pfd_contentJSON)
     dn_protocol = cJSON_GetObjectItemCaseSensitive(pfd_contentJSON, "dnProtocol");
     if (dn_protocol) {
     dn_protocol_local_nonprim = OpenAPI_domain_name_protocol_parseFromJSON(dn_protocol);
+    if (!dn_protocol_local_nonprim) {
+        ogs_error("OpenAPI_domain_name_protocol_parseFromJSON failed [dn_protocol]");
+        goto end;
+    }
     }
 
     pfd_content_local_var = OpenAPI_pfd_content_create (

@@ -276,7 +276,6 @@ OpenAPI_nef_cond_t *OpenAPI_nef_cond_parseFromJSON(cJSON *nef_condJSON)
             OpenAPI_snssai_t *snssai_listItem = OpenAPI_snssai_parseFromJSON(snssai_list_local);
             if (!snssai_listItem) {
                 ogs_error("No snssai_listItem");
-                OpenAPI_list_free(snssai_listList);
                 goto end;
             }
             OpenAPI_list_add(snssai_listList, snssai_listItem);
@@ -286,6 +285,10 @@ OpenAPI_nef_cond_t *OpenAPI_nef_cond_parseFromJSON(cJSON *nef_condJSON)
     pfd_data = cJSON_GetObjectItemCaseSensitive(nef_condJSON, "pfdData");
     if (pfd_data) {
     pfd_data_local_nonprim = OpenAPI_pfd_data_parseFromJSON(pfd_data);
+    if (!pfd_data_local_nonprim) {
+        ogs_error("OpenAPI_pfd_data_parseFromJSON failed [pfd_data]");
+        goto end;
+    }
     }
 
     gpsi_ranges = cJSON_GetObjectItemCaseSensitive(nef_condJSON, "gpsiRanges");
@@ -306,7 +309,6 @@ OpenAPI_nef_cond_t *OpenAPI_nef_cond_parseFromJSON(cJSON *nef_condJSON)
             OpenAPI_identity_range_t *gpsi_rangesItem = OpenAPI_identity_range_parseFromJSON(gpsi_ranges_local);
             if (!gpsi_rangesItem) {
                 ogs_error("No gpsi_rangesItem");
-                OpenAPI_list_free(gpsi_rangesList);
                 goto end;
             }
             OpenAPI_list_add(gpsi_rangesList, gpsi_rangesItem);
@@ -331,7 +333,6 @@ OpenAPI_nef_cond_t *OpenAPI_nef_cond_parseFromJSON(cJSON *nef_condJSON)
             OpenAPI_identity_range_t *external_group_identifiers_rangesItem = OpenAPI_identity_range_parseFromJSON(external_group_identifiers_ranges_local);
             if (!external_group_identifiers_rangesItem) {
                 ogs_error("No external_group_identifiers_rangesItem");
-                OpenAPI_list_free(external_group_identifiers_rangesList);
                 goto end;
             }
             OpenAPI_list_add(external_group_identifiers_rangesList, external_group_identifiers_rangesItem);

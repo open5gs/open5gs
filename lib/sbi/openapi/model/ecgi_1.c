@@ -102,6 +102,10 @@ OpenAPI_ecgi_1_t *OpenAPI_ecgi_1_parseFromJSON(cJSON *ecgi_1JSON)
         goto end;
     }
     plmn_id_local_nonprim = OpenAPI_plmn_id_1_parseFromJSON(plmn_id);
+    if (!plmn_id_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_1_parseFromJSON failed [plmn_id]");
+        goto end;
+    }
 
     eutra_cell_id = cJSON_GetObjectItemCaseSensitive(ecgi_1JSON, "eutraCellId");
     if (!eutra_cell_id) {

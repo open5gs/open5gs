@@ -244,6 +244,10 @@ OpenAPI_iptv_config_data_t *OpenAPI_iptv_config_data_parseFromJSON(cJSON *iptv_c
     snssai = cJSON_GetObjectItemCaseSensitive(iptv_config_dataJSON, "snssai");
     if (snssai) {
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
     }
 
     af_app_id = cJSON_GetObjectItemCaseSensitive(iptv_config_dataJSON, "afAppId");

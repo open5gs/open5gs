@@ -123,16 +123,28 @@ OpenAPI_amf_event_area_t *OpenAPI_amf_event_area_parseFromJSON(cJSON *amf_event_
     presence_info = cJSON_GetObjectItemCaseSensitive(amf_event_areaJSON, "presenceInfo");
     if (presence_info) {
     presence_info_local_nonprim = OpenAPI_presence_info_parseFromJSON(presence_info);
+    if (!presence_info_local_nonprim) {
+        ogs_error("OpenAPI_presence_info_parseFromJSON failed [presence_info]");
+        goto end;
+    }
     }
 
     ladn_info = cJSON_GetObjectItemCaseSensitive(amf_event_areaJSON, "ladnInfo");
     if (ladn_info) {
     ladn_info_local_nonprim = OpenAPI_ladn_info_parseFromJSON(ladn_info);
+    if (!ladn_info_local_nonprim) {
+        ogs_error("OpenAPI_ladn_info_parseFromJSON failed [ladn_info]");
+        goto end;
+    }
     }
 
     s_nssai = cJSON_GetObjectItemCaseSensitive(amf_event_areaJSON, "sNssai");
     if (s_nssai) {
     s_nssai_local_nonprim = OpenAPI_snssai_parseFromJSON(s_nssai);
+    if (!s_nssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [s_nssai]");
+        goto end;
+    }
     }
 
     nsi_id = cJSON_GetObjectItemCaseSensitive(amf_event_areaJSON, "nsiId");

@@ -209,7 +209,6 @@ OpenAPI_partial_success_report_t *OpenAPI_partial_success_report_parseFromJSON(c
             OpenAPI_rule_report_t *rule_reportsItem = OpenAPI_rule_report_parseFromJSON(rule_reports_local);
             if (!rule_reportsItem) {
                 ogs_error("No rule_reportsItem");
-                OpenAPI_list_free(rule_reportsList);
                 goto end;
             }
             OpenAPI_list_add(rule_reportsList, rule_reportsItem);
@@ -234,7 +233,6 @@ OpenAPI_partial_success_report_t *OpenAPI_partial_success_report_parseFromJSON(c
             OpenAPI_session_rule_report_t *sess_rule_reportsItem = OpenAPI_session_rule_report_parseFromJSON(sess_rule_reports_local);
             if (!sess_rule_reportsItem) {
                 ogs_error("No sess_rule_reportsItem");
-                OpenAPI_list_free(sess_rule_reportsList);
                 goto end;
             }
             OpenAPI_list_add(sess_rule_reportsList, sess_rule_reportsItem);
@@ -244,6 +242,10 @@ OpenAPI_partial_success_report_t *OpenAPI_partial_success_report_parseFromJSON(c
     ue_camping_rep = cJSON_GetObjectItemCaseSensitive(partial_success_reportJSON, "ueCampingRep");
     if (ue_camping_rep) {
     ue_camping_rep_local_nonprim = OpenAPI_ue_camping_rep_parseFromJSON(ue_camping_rep);
+    if (!ue_camping_rep_local_nonprim) {
+        ogs_error("OpenAPI_ue_camping_rep_parseFromJSON failed [ue_camping_rep]");
+        goto end;
+    }
     }
 
     policy_dec_failure_reports = cJSON_GetObjectItemCaseSensitive(partial_success_reportJSON, "policyDecFailureReports");
@@ -283,7 +285,6 @@ OpenAPI_partial_success_report_t *OpenAPI_partial_success_report_parseFromJSON(c
             OpenAPI_invalid_param_t *invalid_policy_decsItem = OpenAPI_invalid_param_parseFromJSON(invalid_policy_decs_local);
             if (!invalid_policy_decsItem) {
                 ogs_error("No invalid_policy_decsItem");
-                OpenAPI_list_free(invalid_policy_decsList);
                 goto end;
             }
             OpenAPI_list_add(invalid_policy_decsList, invalid_policy_decsItem);

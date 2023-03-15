@@ -108,6 +108,10 @@ OpenAPI_prose_subscription_data_t *OpenAPI_prose_subscription_data_parseFromJSON
     prose_service_auth = cJSON_GetObjectItemCaseSensitive(prose_subscription_dataJSON, "proseServiceAuth");
     if (prose_service_auth) {
     prose_service_auth_local_nonprim = OpenAPI_prose_service_auth_parseFromJSON(prose_service_auth);
+    if (!prose_service_auth_local_nonprim) {
+        ogs_error("OpenAPI_prose_service_auth_parseFromJSON failed [prose_service_auth]");
+        goto end;
+    }
     }
 
     nr_ue_pc5_ambr = cJSON_GetObjectItemCaseSensitive(prose_subscription_dataJSON, "nrUePc5Ambr");
@@ -136,7 +140,6 @@ OpenAPI_prose_subscription_data_t *OpenAPI_prose_subscription_data_parseFromJSON
             OpenAPI_pro_se_allowed_plmn_t *prose_allowed_plmnItem = OpenAPI_pro_se_allowed_plmn_parseFromJSON(prose_allowed_plmn_local);
             if (!prose_allowed_plmnItem) {
                 ogs_error("No prose_allowed_plmnItem");
-                OpenAPI_list_free(prose_allowed_plmnList);
                 goto end;
             }
             OpenAPI_list_add(prose_allowed_plmnList, prose_allowed_plmnItem);

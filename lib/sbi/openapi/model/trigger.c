@@ -169,6 +169,10 @@ OpenAPI_trigger_t *OpenAPI_trigger_parseFromJSON(cJSON *triggerJSON)
         goto end;
     }
     trigger_type_local_nonprim = OpenAPI_trigger_type_parseFromJSON(trigger_type);
+    if (!trigger_type_local_nonprim) {
+        ogs_error("OpenAPI_trigger_type_parseFromJSON failed [trigger_type]");
+        goto end;
+    }
 
     trigger_category = cJSON_GetObjectItemCaseSensitive(triggerJSON, "triggerCategory");
     if (!trigger_category) {
@@ -176,6 +180,10 @@ OpenAPI_trigger_t *OpenAPI_trigger_parseFromJSON(cJSON *triggerJSON)
         goto end;
     }
     trigger_category_local_nonprim = OpenAPI_trigger_category_parseFromJSON(trigger_category);
+    if (!trigger_category_local_nonprim) {
+        ogs_error("OpenAPI_trigger_category_parseFromJSON failed [trigger_category]");
+        goto end;
+    }
 
     time_limit = cJSON_GetObjectItemCaseSensitive(triggerJSON, "timeLimit");
     if (time_limit) {

@@ -199,7 +199,6 @@ OpenAPI_sepp_info_t *OpenAPI_sepp_info_parseFromJSON(cJSON *sepp_infoJSON)
             OpenAPI_plmn_id_t *remote_plmn_listItem = OpenAPI_plmn_id_parseFromJSON(remote_plmn_list_local);
             if (!remote_plmn_listItem) {
                 ogs_error("No remote_plmn_listItem");
-                OpenAPI_list_free(remote_plmn_listList);
                 goto end;
             }
             OpenAPI_list_add(remote_plmn_listList, remote_plmn_listItem);
@@ -224,7 +223,6 @@ OpenAPI_sepp_info_t *OpenAPI_sepp_info_parseFromJSON(cJSON *sepp_infoJSON)
             OpenAPI_plmn_id_nid_t *remote_snpn_listItem = OpenAPI_plmn_id_nid_parseFromJSON(remote_snpn_list_local);
             if (!remote_snpn_listItem) {
                 ogs_error("No remote_snpn_listItem");
-                OpenAPI_list_free(remote_snpn_listList);
                 goto end;
             }
             OpenAPI_list_add(remote_snpn_listList, remote_snpn_listItem);

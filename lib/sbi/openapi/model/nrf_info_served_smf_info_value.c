@@ -295,7 +295,6 @@ OpenAPI_nrf_info_served_smf_info_value_t *OpenAPI_nrf_info_served_smf_info_value
             OpenAPI_snssai_smf_info_item_t *s_nssai_smf_info_listItem = OpenAPI_snssai_smf_info_item_parseFromJSON(s_nssai_smf_info_list_local);
             if (!s_nssai_smf_info_listItem) {
                 ogs_error("No s_nssai_smf_info_listItem");
-                OpenAPI_list_free(s_nssai_smf_info_listList);
                 goto end;
             }
             OpenAPI_list_add(s_nssai_smf_info_listList, s_nssai_smf_info_listItem);
@@ -319,7 +318,6 @@ OpenAPI_nrf_info_served_smf_info_value_t *OpenAPI_nrf_info_served_smf_info_value
             OpenAPI_tai_t *tai_listItem = OpenAPI_tai_parseFromJSON(tai_list_local);
             if (!tai_listItem) {
                 ogs_error("No tai_listItem");
-                OpenAPI_list_free(tai_listList);
                 goto end;
             }
             OpenAPI_list_add(tai_listList, tai_listItem);
@@ -344,7 +342,6 @@ OpenAPI_nrf_info_served_smf_info_value_t *OpenAPI_nrf_info_served_smf_info_value
             OpenAPI_tai_range_t *tai_range_listItem = OpenAPI_tai_range_parseFromJSON(tai_range_list_local);
             if (!tai_range_listItem) {
                 ogs_error("No tai_range_listItem");
-                OpenAPI_list_free(tai_range_listList);
                 goto end;
             }
             OpenAPI_list_add(tai_range_listList, tai_range_listItem);
@@ -377,7 +374,6 @@ OpenAPI_nrf_info_served_smf_info_value_t *OpenAPI_nrf_info_served_smf_info_value
             OpenAPI_ip_addr_t *pgw_ip_addr_listItem = OpenAPI_ip_addr_parseFromJSON(pgw_ip_addr_list_local);
             if (!pgw_ip_addr_listItem) {
                 ogs_error("No pgw_ip_addr_listItem");
-                OpenAPI_list_free(pgw_ip_addr_listList);
                 goto end;
             }
             OpenAPI_list_add(pgw_ip_addr_listList, pgw_ip_addr_listItem);

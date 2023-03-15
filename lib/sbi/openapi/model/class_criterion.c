@@ -103,6 +103,10 @@ OpenAPI_class_criterion_t *OpenAPI_class_criterion_parseFromJSON(cJSON *class_cr
         goto end;
     }
     disper_class_local_nonprim = OpenAPI_dispersion_class_parseFromJSON(disper_class);
+    if (!disper_class_local_nonprim) {
+        ogs_error("OpenAPI_dispersion_class_parseFromJSON failed [disper_class]");
+        goto end;
+    }
 
     class_threshold = cJSON_GetObjectItemCaseSensitive(class_criterionJSON, "classThreshold");
     if (!class_threshold) {
@@ -120,6 +124,10 @@ OpenAPI_class_criterion_t *OpenAPI_class_criterion_parseFromJSON(cJSON *class_cr
         goto end;
     }
     thres_match_local_nonprim = OpenAPI_matching_direction_parseFromJSON(thres_match);
+    if (!thres_match_local_nonprim) {
+        ogs_error("OpenAPI_matching_direction_parseFromJSON failed [thres_match]");
+        goto end;
+    }
 
     class_criterion_local_var = OpenAPI_class_criterion_create (
         disper_class_local_nonprim,

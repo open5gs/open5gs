@@ -99,6 +99,10 @@ OpenAPI_snssai_route_selection_descriptor_t *OpenAPI_snssai_route_selection_desc
         goto end;
     }
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
 
     dnn_route_sel_descs = cJSON_GetObjectItemCaseSensitive(snssai_route_selection_descriptorJSON, "dnnRouteSelDescs");
     if (dnn_route_sel_descs) {
@@ -118,7 +122,6 @@ OpenAPI_snssai_route_selection_descriptor_t *OpenAPI_snssai_route_selection_desc
             OpenAPI_dnn_route_selection_descriptor_t *dnn_route_sel_descsItem = OpenAPI_dnn_route_selection_descriptor_parseFromJSON(dnn_route_sel_descs_local);
             if (!dnn_route_sel_descsItem) {
                 ogs_error("No dnn_route_sel_descsItem");
-                OpenAPI_list_free(dnn_route_sel_descsList);
                 goto end;
             }
             OpenAPI_list_add(dnn_route_sel_descsList, dnn_route_sel_descsItem);

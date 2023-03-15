@@ -112,6 +112,10 @@ OpenAPI_ellipsoid_arc_all_of_t *OpenAPI_ellipsoid_arc_all_of_parseFromJSON(cJSON
         goto end;
     }
     point_local_nonprim = OpenAPI_geographical_coordinates_parseFromJSON(point);
+    if (!point_local_nonprim) {
+        ogs_error("OpenAPI_geographical_coordinates_parseFromJSON failed [point]");
+        goto end;
+    }
 
     inner_radius = cJSON_GetObjectItemCaseSensitive(ellipsoid_arc_all_ofJSON, "innerRadius");
     if (!inner_radius) {

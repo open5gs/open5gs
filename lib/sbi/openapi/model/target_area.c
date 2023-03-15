@@ -127,7 +127,6 @@ OpenAPI_target_area_t *OpenAPI_target_area_parseFromJSON(cJSON *target_areaJSON)
             OpenAPI_tai_t *ta_listItem = OpenAPI_tai_parseFromJSON(ta_list_local);
             if (!ta_listItem) {
                 ogs_error("No ta_listItem");
-                OpenAPI_list_free(ta_listList);
                 goto end;
             }
             OpenAPI_list_add(ta_listList, ta_listItem);
@@ -152,7 +151,6 @@ OpenAPI_target_area_t *OpenAPI_target_area_parseFromJSON(cJSON *target_areaJSON)
             OpenAPI_tai_range_t *tai_range_listItem = OpenAPI_tai_range_parseFromJSON(tai_range_list_local);
             if (!tai_range_listItem) {
                 ogs_error("No tai_range_listItem");
-                OpenAPI_list_free(tai_range_listList);
                 goto end;
             }
             OpenAPI_list_add(tai_range_listList, tai_range_listItem);

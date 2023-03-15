@@ -99,6 +99,10 @@ OpenAPI_steering_info_t *OpenAPI_steering_info_parseFromJSON(cJSON *steering_inf
         goto end;
     }
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
+    if (!plmn_id_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [plmn_id]");
+        goto end;
+    }
 
     access_tech_list = cJSON_GetObjectItemCaseSensitive(steering_infoJSON, "accessTechList");
     if (access_tech_list) {
@@ -118,7 +122,6 @@ OpenAPI_steering_info_t *OpenAPI_steering_info_parseFromJSON(cJSON *steering_inf
             OpenAPI_access_tech_t *access_tech_listItem = OpenAPI_access_tech_parseFromJSON(access_tech_list_local);
             if (!access_tech_listItem) {
                 ogs_error("No access_tech_listItem");
-                OpenAPI_list_free(access_tech_listList);
                 goto end;
             }
             OpenAPI_list_add(access_tech_listList, access_tech_listItem);

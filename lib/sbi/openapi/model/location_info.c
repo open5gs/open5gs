@@ -96,6 +96,10 @@ OpenAPI_location_info_t *OpenAPI_location_info_parseFromJSON(cJSON *location_inf
         goto end;
     }
     loc_local_nonprim = OpenAPI_user_location_parseFromJSON(loc);
+    if (!loc_local_nonprim) {
+        ogs_error("OpenAPI_user_location_parseFromJSON failed [loc]");
+        goto end;
+    }
 
     ratio = cJSON_GetObjectItemCaseSensitive(location_infoJSON, "ratio");
     if (ratio) {

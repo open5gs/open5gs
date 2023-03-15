@@ -97,6 +97,10 @@ OpenAPI_nsi_id_info_t *OpenAPI_nsi_id_info_parseFromJSON(cJSON *nsi_id_infoJSON)
         goto end;
     }
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
 
     nsi_ids = cJSON_GetObjectItemCaseSensitive(nsi_id_infoJSON, "nsiIds");
     if (nsi_ids) {

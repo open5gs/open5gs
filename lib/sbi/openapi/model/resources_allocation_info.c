@@ -122,7 +122,6 @@ OpenAPI_resources_allocation_info_t *OpenAPI_resources_allocation_info_parseFrom
             OpenAPI_flows_t *flowsItem = OpenAPI_flows_parseFromJSON(flows_local);
             if (!flowsItem) {
                 ogs_error("No flowsItem");
-                OpenAPI_list_free(flowsList);
                 goto end;
             }
             OpenAPI_list_add(flowsList, flowsItem);

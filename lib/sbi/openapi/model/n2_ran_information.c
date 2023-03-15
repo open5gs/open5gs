@@ -72,6 +72,10 @@ OpenAPI_n2_ran_information_t *OpenAPI_n2_ran_information_parseFromJSON(cJSON *n2
         goto end;
     }
     n2_info_content_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(n2_info_content);
+    if (!n2_info_content_local_nonprim) {
+        ogs_error("OpenAPI_n2_info_content_parseFromJSON failed [n2_info_content]");
+        goto end;
+    }
 
     n2_ran_information_local_var = OpenAPI_n2_ran_information_create (
         n2_info_content_local_nonprim

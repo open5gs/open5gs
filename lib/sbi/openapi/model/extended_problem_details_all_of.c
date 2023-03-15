@@ -67,6 +67,10 @@ OpenAPI_extended_problem_details_all_of_t *OpenAPI_extended_problem_details_all_
     acceptable_serv_info = cJSON_GetObjectItemCaseSensitive(extended_problem_details_all_ofJSON, "acceptableServInfo");
     if (acceptable_serv_info) {
     acceptable_serv_info_local_nonprim = OpenAPI_acceptable_service_info_parseFromJSON(acceptable_serv_info);
+    if (!acceptable_serv_info_local_nonprim) {
+        ogs_error("OpenAPI_acceptable_service_info_parseFromJSON failed [acceptable_serv_info]");
+        goto end;
+    }
     }
 
     extended_problem_details_all_of_local_var = OpenAPI_extended_problem_details_all_of_create (

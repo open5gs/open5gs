@@ -90,6 +90,10 @@ OpenAPI_ebi_arp_mapping_t *OpenAPI_ebi_arp_mapping_parseFromJSON(cJSON *ebi_arp_
         goto end;
     }
     arp_local_nonprim = OpenAPI_arp_parseFromJSON(arp);
+    if (!arp_local_nonprim) {
+        ogs_error("OpenAPI_arp_parseFromJSON failed [arp]");
+        goto end;
+    }
 
     ebi_arp_mapping_local_var = OpenAPI_ebi_arp_mapping_create (
         

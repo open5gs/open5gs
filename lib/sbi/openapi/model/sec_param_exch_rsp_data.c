@@ -178,6 +178,10 @@ OpenAPI_sec_param_exch_rsp_data_t *OpenAPI_sec_param_exch_rsp_data_parseFromJSON
     sel_protection_policy_info = cJSON_GetObjectItemCaseSensitive(sec_param_exch_rsp_dataJSON, "selProtectionPolicyInfo");
     if (sel_protection_policy_info) {
     sel_protection_policy_info_local_nonprim = OpenAPI_protection_policy_parseFromJSON(sel_protection_policy_info);
+    if (!sel_protection_policy_info_local_nonprim) {
+        ogs_error("OpenAPI_protection_policy_parseFromJSON failed [sel_protection_policy_info]");
+        goto end;
+    }
     }
 
     ipx_provider_sec_info_list = cJSON_GetObjectItemCaseSensitive(sec_param_exch_rsp_dataJSON, "ipxProviderSecInfoList");
@@ -198,7 +202,6 @@ OpenAPI_sec_param_exch_rsp_data_t *OpenAPI_sec_param_exch_rsp_data_parseFromJSON
             OpenAPI_ipx_provider_sec_info_t *ipx_provider_sec_info_listItem = OpenAPI_ipx_provider_sec_info_parseFromJSON(ipx_provider_sec_info_list_local);
             if (!ipx_provider_sec_info_listItem) {
                 ogs_error("No ipx_provider_sec_info_listItem");
-                OpenAPI_list_free(ipx_provider_sec_info_listList);
                 goto end;
             }
             OpenAPI_list_add(ipx_provider_sec_info_listList, ipx_provider_sec_info_listItem);

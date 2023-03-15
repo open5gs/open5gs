@@ -202,6 +202,10 @@ OpenAPI_ue_context_created_data_t *OpenAPI_ue_context_created_data_parseFromJSON
         goto end;
     }
     ue_context_local_nonprim = OpenAPI_ue_context_parseFromJSON(ue_context);
+    if (!ue_context_local_nonprim) {
+        ogs_error("OpenAPI_ue_context_parseFromJSON failed [ue_context]");
+        goto end;
+    }
 
     target_to_source_data = cJSON_GetObjectItemCaseSensitive(ue_context_created_dataJSON, "targetToSourceData");
     if (!target_to_source_data) {
@@ -209,6 +213,10 @@ OpenAPI_ue_context_created_data_t *OpenAPI_ue_context_created_data_parseFromJSON
         goto end;
     }
     target_to_source_data_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(target_to_source_data);
+    if (!target_to_source_data_local_nonprim) {
+        ogs_error("OpenAPI_n2_info_content_parseFromJSON failed [target_to_source_data]");
+        goto end;
+    }
 
     pdu_session_list = cJSON_GetObjectItemCaseSensitive(ue_context_created_dataJSON, "pduSessionList");
     if (!pdu_session_list) {
@@ -231,7 +239,6 @@ OpenAPI_ue_context_created_data_t *OpenAPI_ue_context_created_data_parseFromJSON
             OpenAPI_n2_sm_information_t *pdu_session_listItem = OpenAPI_n2_sm_information_parseFromJSON(pdu_session_list_local);
             if (!pdu_session_listItem) {
                 ogs_error("No pdu_session_listItem");
-                OpenAPI_list_free(pdu_session_listList);
                 goto end;
             }
             OpenAPI_list_add(pdu_session_listList, pdu_session_listItem);
@@ -255,7 +262,6 @@ OpenAPI_ue_context_created_data_t *OpenAPI_ue_context_created_data_parseFromJSON
             OpenAPI_n2_sm_information_t *failed_session_listItem = OpenAPI_n2_sm_information_parseFromJSON(failed_session_list_local);
             if (!failed_session_listItem) {
                 ogs_error("No failed_session_listItem");
-                OpenAPI_list_free(failed_session_listList);
                 goto end;
             }
             OpenAPI_list_add(failed_session_listList, failed_session_listItem);

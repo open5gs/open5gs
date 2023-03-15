@@ -101,6 +101,10 @@ OpenAPI_n2_info_notify_request_t *OpenAPI_n2_info_notify_request_parseFromJSON(c
     json_data = cJSON_GetObjectItemCaseSensitive(n2_info_notify_requestJSON, "jsonData");
     if (json_data) {
     json_data_local_nonprim = OpenAPI_n2_information_notification_parseFromJSON(json_data);
+    if (!json_data_local_nonprim) {
+        ogs_error("OpenAPI_n2_information_notification_parseFromJSON failed [json_data]");
+        goto end;
+    }
     }
 
     binary_data_n1_message = cJSON_GetObjectItemCaseSensitive(n2_info_notify_requestJSON, "binaryDataN1Message");

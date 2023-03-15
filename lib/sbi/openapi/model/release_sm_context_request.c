@@ -84,6 +84,10 @@ OpenAPI_release_sm_context_request_t *OpenAPI_release_sm_context_request_parseFr
     json_data = cJSON_GetObjectItemCaseSensitive(release_sm_context_requestJSON, "jsonData");
     if (json_data) {
     json_data_local_nonprim = OpenAPI_sm_context_release_data_parseFromJSON(json_data);
+    if (!json_data_local_nonprim) {
+        ogs_error("OpenAPI_sm_context_release_data_parseFromJSON failed [json_data]");
+        goto end;
+    }
     }
 
     binary_data_n2_sm_information = cJSON_GetObjectItemCaseSensitive(release_sm_context_requestJSON, "binaryDataN2SmInformation");

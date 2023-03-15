@@ -201,6 +201,10 @@ OpenAPI_am_requested_value_rep_t *OpenAPI_am_requested_value_rep_parseFromJSON(c
     user_loc = cJSON_GetObjectItemCaseSensitive(am_requested_value_repJSON, "userLoc");
     if (user_loc) {
     user_loc_local_nonprim = OpenAPI_user_location_parseFromJSON(user_loc);
+    if (!user_loc_local_nonprim) {
+        ogs_error("OpenAPI_user_location_parseFromJSON failed [user_loc]");
+        goto end;
+    }
     }
 
     pra_statuses = cJSON_GetObjectItemCaseSensitive(am_requested_value_repJSON, "praStatuses");
@@ -285,7 +289,6 @@ OpenAPI_am_requested_value_rep_t *OpenAPI_am_requested_value_rep_parseFromJSON(c
             OpenAPI_snssai_t *allowed_snssaisItem = OpenAPI_snssai_parseFromJSON(allowed_snssais_local);
             if (!allowed_snssaisItem) {
                 ogs_error("No allowed_snssaisItem");
-                OpenAPI_list_free(allowed_snssaisList);
                 goto end;
             }
             OpenAPI_list_add(allowed_snssaisList, allowed_snssaisItem);
@@ -310,7 +313,6 @@ OpenAPI_am_requested_value_rep_t *OpenAPI_am_requested_value_rep_parseFromJSON(c
             OpenAPI_snssai_t *n3g_allowed_snssaisItem = OpenAPI_snssai_parseFromJSON(n3g_allowed_snssais_local);
             if (!n3g_allowed_snssaisItem) {
                 ogs_error("No n3g_allowed_snssaisItem");
-                OpenAPI_list_free(n3g_allowed_snssaisList);
                 goto end;
             }
             OpenAPI_list_add(n3g_allowed_snssaisList, n3g_allowed_snssaisItem);

@@ -109,16 +109,28 @@ OpenAPI_app_session_context_t *OpenAPI_app_session_context_parseFromJSON(cJSON *
     asc_req_data = cJSON_GetObjectItemCaseSensitive(app_session_contextJSON, "ascReqData");
     if (asc_req_data) {
     asc_req_data_local_nonprim = OpenAPI_app_session_context_req_data_parseFromJSON(asc_req_data);
+    if (!asc_req_data_local_nonprim) {
+        ogs_error("OpenAPI_app_session_context_req_data_parseFromJSON failed [asc_req_data]");
+        goto end;
+    }
     }
 
     asc_resp_data = cJSON_GetObjectItemCaseSensitive(app_session_contextJSON, "ascRespData");
     if (asc_resp_data) {
     asc_resp_data_local_nonprim = OpenAPI_app_session_context_resp_data_parseFromJSON(asc_resp_data);
+    if (!asc_resp_data_local_nonprim) {
+        ogs_error("OpenAPI_app_session_context_resp_data_parseFromJSON failed [asc_resp_data]");
+        goto end;
+    }
     }
 
     evs_notif = cJSON_GetObjectItemCaseSensitive(app_session_contextJSON, "evsNotif");
     if (evs_notif) {
     evs_notif_local_nonprim = OpenAPI_events_notification_parseFromJSON(evs_notif);
+    if (!evs_notif_local_nonprim) {
+        ogs_error("OpenAPI_events_notification_parseFromJSON failed [evs_notif]");
+        goto end;
+    }
     }
 
     app_session_context_local_var = OpenAPI_app_session_context_create (

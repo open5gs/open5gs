@@ -496,6 +496,10 @@ OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_parseFromJSON(cJSON *im
     area_scope = cJSON_GetObjectItemCaseSensitive(immediate_mdt_confJSON, "areaScope");
     if (area_scope) {
     area_scope_local_nonprim = OpenAPI_area_scope_parseFromJSON(area_scope);
+    if (!area_scope_local_nonprim) {
+        ogs_error("OpenAPI_area_scope_parseFromJSON failed [area_scope]");
+        goto end;
+    }
     }
 
     positioning_method = cJSON_GetObjectItemCaseSensitive(immediate_mdt_confJSON, "positioningMethod");
@@ -544,7 +548,6 @@ OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_parseFromJSON(cJSON *im
             OpenAPI_plmn_id_t *mdt_allowed_plmn_id_listItem = OpenAPI_plmn_id_parseFromJSON(mdt_allowed_plmn_id_list_local);
             if (!mdt_allowed_plmn_id_listItem) {
                 ogs_error("No mdt_allowed_plmn_id_listItem");
-                OpenAPI_list_free(mdt_allowed_plmn_id_listList);
                 goto end;
             }
             OpenAPI_list_add(mdt_allowed_plmn_id_listList, mdt_allowed_plmn_id_listItem);

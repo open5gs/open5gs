@@ -95,6 +95,10 @@ OpenAPI_point_t *OpenAPI_point_parseFromJSON(cJSON *pointJSON)
         goto end;
     }
     shape_local_nonprim = OpenAPI_supported_gad_shapes_parseFromJSON(shape);
+    if (!shape_local_nonprim) {
+        ogs_error("OpenAPI_supported_gad_shapes_parseFromJSON failed [shape]");
+        goto end;
+    }
 
     point = cJSON_GetObjectItemCaseSensitive(pointJSON, "point");
     if (!point) {
@@ -102,6 +106,10 @@ OpenAPI_point_t *OpenAPI_point_parseFromJSON(cJSON *pointJSON)
         goto end;
     }
     point_local_nonprim = OpenAPI_geographical_coordinates_parseFromJSON(point);
+    if (!point_local_nonprim) {
+        ogs_error("OpenAPI_geographical_coordinates_parseFromJSON failed [point]");
+        goto end;
+    }
 
     point_local_var = OpenAPI_point_create (
         shape_local_nonprim,

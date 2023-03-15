@@ -180,7 +180,6 @@ OpenAPI_ue_initiated_resource_request_t *OpenAPI_ue_initiated_resource_request_p
             OpenAPI_packet_filter_info_t *pack_filt_infoItem = OpenAPI_packet_filter_info_parseFromJSON(pack_filt_info_local);
             if (!pack_filt_infoItem) {
                 ogs_error("No pack_filt_infoItem");
-                OpenAPI_list_free(pack_filt_infoList);
                 goto end;
             }
             OpenAPI_list_add(pack_filt_infoList, pack_filt_infoItem);
@@ -189,6 +188,10 @@ OpenAPI_ue_initiated_resource_request_t *OpenAPI_ue_initiated_resource_request_p
     req_qos = cJSON_GetObjectItemCaseSensitive(ue_initiated_resource_requestJSON, "reqQos");
     if (req_qos) {
     req_qos_local_nonprim = OpenAPI_requested_qos_parseFromJSON(req_qos);
+    if (!req_qos_local_nonprim) {
+        ogs_error("OpenAPI_requested_qos_parseFromJSON failed [req_qos]");
+        goto end;
+    }
     }
 
     ue_initiated_resource_request_local_var = OpenAPI_ue_initiated_resource_request_create (

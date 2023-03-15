@@ -105,6 +105,10 @@ OpenAPI_exception_t *OpenAPI_exception_parseFromJSON(cJSON *exceptionJSON)
         goto end;
     }
     excep_id_local_nonprim = OpenAPI_exception_id_parseFromJSON(excep_id);
+    if (!excep_id_local_nonprim) {
+        ogs_error("OpenAPI_exception_id_parseFromJSON failed [excep_id]");
+        goto end;
+    }
 
     excep_level = cJSON_GetObjectItemCaseSensitive(exceptionJSON, "excepLevel");
     if (excep_level) {
@@ -117,6 +121,10 @@ OpenAPI_exception_t *OpenAPI_exception_parseFromJSON(cJSON *exceptionJSON)
     excep_trend = cJSON_GetObjectItemCaseSensitive(exceptionJSON, "excepTrend");
     if (excep_trend) {
     excep_trend_local_nonprim = OpenAPI_exception_trend_parseFromJSON(excep_trend);
+    if (!excep_trend_local_nonprim) {
+        ogs_error("OpenAPI_exception_trend_parseFromJSON failed [excep_trend]");
+        goto end;
+    }
     }
 
     exception_local_var = OpenAPI_exception_create (

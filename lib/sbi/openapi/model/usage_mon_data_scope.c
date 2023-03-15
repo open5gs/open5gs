@@ -97,6 +97,10 @@ OpenAPI_usage_mon_data_scope_t *OpenAPI_usage_mon_data_scope_parseFromJSON(cJSON
         goto end;
     }
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
 
     dnn = cJSON_GetObjectItemCaseSensitive(usage_mon_data_scopeJSON, "dnn");
     if (dnn) {

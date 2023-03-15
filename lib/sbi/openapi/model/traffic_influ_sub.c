@@ -253,7 +253,6 @@ OpenAPI_traffic_influ_sub_t *OpenAPI_traffic_influ_sub_parseFromJSON(cJSON *traf
             OpenAPI_snssai_t *snssaisItem = OpenAPI_snssai_parseFromJSON(snssais_local);
             if (!snssaisItem) {
                 ogs_error("No snssaisItem");
-                OpenAPI_list_free(snssaisList);
                 goto end;
             }
             OpenAPI_list_add(snssaisList, snssaisItem);

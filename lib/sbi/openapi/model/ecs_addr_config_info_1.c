@@ -88,11 +88,19 @@ OpenAPI_ecs_addr_config_info_1_t *OpenAPI_ecs_addr_config_info_1_parseFromJSON(c
     ecs_server_addr = cJSON_GetObjectItemCaseSensitive(ecs_addr_config_info_1JSON, "ecsServerAddr");
     if (ecs_server_addr) {
     ecs_server_addr_local_nonprim = OpenAPI_ecs_server_addr_parseFromJSON(ecs_server_addr);
+    if (!ecs_server_addr_local_nonprim) {
+        ogs_error("OpenAPI_ecs_server_addr_parseFromJSON failed [ecs_server_addr]");
+        goto end;
+    }
     }
 
     spatial_validity_cond = cJSON_GetObjectItemCaseSensitive(ecs_addr_config_info_1JSON, "spatialValidityCond");
     if (spatial_validity_cond) {
     spatial_validity_cond_local_nonprim = OpenAPI_spatial_validity_cond_1_parseFromJSON(spatial_validity_cond);
+    if (!spatial_validity_cond_local_nonprim) {
+        ogs_error("OpenAPI_spatial_validity_cond_1_parseFromJSON failed [spatial_validity_cond]");
+        goto end;
+    }
     }
 
     ecs_addr_config_info_1_local_var = OpenAPI_ecs_addr_config_info_1_create (

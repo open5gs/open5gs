@@ -313,6 +313,10 @@ OpenAPI_data_filter_t *OpenAPI_data_filter_parseFromJSON(cJSON *data_filterJSON)
         goto end;
     }
     data_ind_local_nonprim = OpenAPI_data_ind_parseFromJSON(data_ind);
+    if (!data_ind_local_nonprim) {
+        ogs_error("OpenAPI_data_ind_parseFromJSON failed [data_ind]");
+        goto end;
+    }
 
     dnns = cJSON_GetObjectItemCaseSensitive(data_filterJSON, "dnns");
     if (dnns) {
@@ -353,7 +357,6 @@ OpenAPI_data_filter_t *OpenAPI_data_filter_parseFromJSON(cJSON *data_filterJSON)
             OpenAPI_snssai_t *snssaisItem = OpenAPI_snssai_parseFromJSON(snssais_local);
             if (!snssaisItem) {
                 ogs_error("No snssaisItem");
-                OpenAPI_list_free(snssaisList);
                 goto end;
             }
             OpenAPI_list_add(snssaisList, snssaisItem);
@@ -512,7 +515,6 @@ OpenAPI_data_filter_t *OpenAPI_data_filter_parseFromJSON(cJSON *data_filterJSON)
             OpenAPI_dnn_snssai_information_t *dnn_snssai_infosItem = OpenAPI_dnn_snssai_information_parseFromJSON(dnn_snssai_infos_local);
             if (!dnn_snssai_infosItem) {
                 ogs_error("No dnn_snssai_infosItem");
-                OpenAPI_list_free(dnn_snssai_infosList);
                 goto end;
             }
             OpenAPI_list_add(dnn_snssai_infosList, dnn_snssai_infosItem);

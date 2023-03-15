@@ -105,6 +105,10 @@ OpenAPI_n2_information_transfer_rsp_data_t *OpenAPI_n2_information_transfer_rsp_
     pws_rsp_data = cJSON_GetObjectItemCaseSensitive(n2_information_transfer_rsp_dataJSON, "pwsRspData");
     if (pws_rsp_data) {
     pws_rsp_data_local_nonprim = OpenAPI_pws_response_data_parseFromJSON(pws_rsp_data);
+    if (!pws_rsp_data_local_nonprim) {
+        ogs_error("OpenAPI_pws_response_data_parseFromJSON failed [pws_rsp_data]");
+        goto end;
+    }
     }
 
     supported_features = cJSON_GetObjectItemCaseSensitive(n2_information_transfer_rsp_dataJSON, "supportedFeatures");

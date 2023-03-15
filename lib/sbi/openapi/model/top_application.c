@@ -101,6 +101,10 @@ OpenAPI_top_application_t *OpenAPI_top_application_parseFromJSON(cJSON *top_appl
     ip_traffic_filter = cJSON_GetObjectItemCaseSensitive(top_applicationJSON, "ipTrafficFilter");
     if (ip_traffic_filter) {
     ip_traffic_filter_local_nonprim = OpenAPI_flow_info_parseFromJSON(ip_traffic_filter);
+    if (!ip_traffic_filter_local_nonprim) {
+        ogs_error("OpenAPI_flow_info_parseFromJSON failed [ip_traffic_filter]");
+        goto end;
+    }
     }
 
     ratio = cJSON_GetObjectItemCaseSensitive(top_applicationJSON, "ratio");

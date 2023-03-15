@@ -298,6 +298,10 @@ OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_parseFromJSON(cJSON *vsmf
         goto end;
     }
     error_local_nonprim = OpenAPI_ext_problem_details_parseFromJSON(error);
+    if (!error_local_nonprim) {
+        ogs_error("OpenAPI_ext_problem_details_parseFromJSON failed [error]");
+        goto end;
+    }
 
     pti = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "pti");
     if (pti) {
@@ -318,11 +322,19 @@ OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_parseFromJSON(cJSON *vsmf
     n1_sm_info_from_ue = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "n1SmInfoFromUe");
     if (n1_sm_info_from_ue) {
     n1_sm_info_from_ue_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(n1_sm_info_from_ue);
+    if (!n1_sm_info_from_ue_local_nonprim) {
+        ogs_error("OpenAPI_ref_to_binary_data_parseFromJSON failed [n1_sm_info_from_ue]");
+        goto end;
+    }
     }
 
     unknown_n1_sm_info = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "unknownN1SmInfo");
     if (unknown_n1_sm_info) {
     unknown_n1_sm_info_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(unknown_n1_sm_info);
+    if (!unknown_n1_sm_info_local_nonprim) {
+        ogs_error("OpenAPI_ref_to_binary_data_parseFromJSON failed [unknown_n1_sm_info]");
+        goto end;
+    }
     }
 
     failed_to_assign_ebi_list = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "failedToAssignEbiList");
@@ -343,7 +355,6 @@ OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_parseFromJSON(cJSON *vsmf
             OpenAPI_arp_t *failed_to_assign_ebi_listItem = OpenAPI_arp_parseFromJSON(failed_to_assign_ebi_list_local);
             if (!failed_to_assign_ebi_listItem) {
                 ogs_error("No failed_to_assign_ebi_listItem");
-                OpenAPI_list_free(failed_to_assign_ebi_listList);
                 goto end;
             }
             OpenAPI_list_add(failed_to_assign_ebi_listList, failed_to_assign_ebi_listItem);
@@ -353,6 +364,10 @@ OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_parseFromJSON(cJSON *vsmf
     ng_ap_cause = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "ngApCause");
     if (ng_ap_cause) {
     ng_ap_cause_local_nonprim = OpenAPI_ng_ap_cause_parseFromJSON(ng_ap_cause);
+    if (!ng_ap_cause_local_nonprim) {
+        ogs_error("OpenAPI_ng_ap_cause_parseFromJSON failed [ng_ap_cause]");
+        goto end;
+    }
     }
 
     _5g_mm_cause_value = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "5gMmCauseValue");
@@ -374,21 +389,37 @@ OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_parseFromJSON(cJSON *vsmf
     n4_info = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "n4Info");
     if (n4_info) {
     n4_info_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info);
+    if (!n4_info_local_nonprim) {
+        ogs_error("OpenAPI_n4_information_parseFromJSON failed [n4_info]");
+        goto end;
+    }
     }
 
     n4_info_ext1 = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "n4InfoExt1");
     if (n4_info_ext1) {
     n4_info_ext1_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info_ext1);
+    if (!n4_info_ext1_local_nonprim) {
+        ogs_error("OpenAPI_n4_information_parseFromJSON failed [n4_info_ext1]");
+        goto end;
+    }
     }
 
     n4_info_ext2 = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "n4InfoExt2");
     if (n4_info_ext2) {
     n4_info_ext2_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info_ext2);
+    if (!n4_info_ext2_local_nonprim) {
+        ogs_error("OpenAPI_n4_information_parseFromJSON failed [n4_info_ext2]");
+        goto end;
+    }
     }
 
     n4_info_ext3 = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "n4InfoExt3");
     if (n4_info_ext3) {
     n4_info_ext3_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info_ext3);
+    if (!n4_info_ext3_local_nonprim) {
+        ogs_error("OpenAPI_n4_information_parseFromJSON failed [n4_info_ext3]");
+        goto end;
+    }
     }
 
     vsmf_update_error_local_var = OpenAPI_vsmf_update_error_create (

@@ -102,6 +102,10 @@ OpenAPI_ncgi_1_t *OpenAPI_ncgi_1_parseFromJSON(cJSON *ncgi_1JSON)
         goto end;
     }
     plmn_id_local_nonprim = OpenAPI_plmn_id_1_parseFromJSON(plmn_id);
+    if (!plmn_id_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_1_parseFromJSON failed [plmn_id]");
+        goto end;
+    }
 
     nr_cell_id = cJSON_GetObjectItemCaseSensitive(ncgi_1JSON, "nrCellId");
     if (!nr_cell_id) {

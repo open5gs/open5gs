@@ -567,6 +567,10 @@ OpenAPI_event_notification_t *OpenAPI_event_notification_parseFromJSON(cJSON *ev
         goto end;
     }
     event_local_nonprim = OpenAPI_nwdaf_event_parseFromJSON(event);
+    if (!event_local_nonprim) {
+        ogs_error("OpenAPI_nwdaf_event_parseFromJSON failed [event]");
+        goto end;
+    }
 
     start = cJSON_GetObjectItemCaseSensitive(event_notificationJSON, "start");
     if (start) {
@@ -595,6 +599,10 @@ OpenAPI_event_notification_t *OpenAPI_event_notification_parseFromJSON(cJSON *ev
     fail_notify_code = cJSON_GetObjectItemCaseSensitive(event_notificationJSON, "failNotifyCode");
     if (fail_notify_code) {
     fail_notify_code_local_nonprim = OpenAPI_nwdaf_failure_code_parseFromJSON(fail_notify_code);
+    if (!fail_notify_code_local_nonprim) {
+        ogs_error("OpenAPI_nwdaf_failure_code_parseFromJSON failed [fail_notify_code]");
+        goto end;
+    }
     }
 
     rv_wait_time = cJSON_GetObjectItemCaseSensitive(event_notificationJSON, "rvWaitTime");
@@ -608,6 +616,10 @@ OpenAPI_event_notification_t *OpenAPI_event_notification_parseFromJSON(cJSON *ev
     ana_meta_info = cJSON_GetObjectItemCaseSensitive(event_notificationJSON, "anaMetaInfo");
     if (ana_meta_info) {
     ana_meta_info_local_nonprim = OpenAPI_analytics_metadata_info_parseFromJSON(ana_meta_info);
+    if (!ana_meta_info_local_nonprim) {
+        ogs_error("OpenAPI_analytics_metadata_info_parseFromJSON failed [ana_meta_info]");
+        goto end;
+    }
     }
 
     nf_load_level_infos = cJSON_GetObjectItemCaseSensitive(event_notificationJSON, "nfLoadLevelInfos");
@@ -628,7 +640,6 @@ OpenAPI_event_notification_t *OpenAPI_event_notification_parseFromJSON(cJSON *ev
             OpenAPI_nf_load_level_information_t *nf_load_level_infosItem = OpenAPI_nf_load_level_information_parseFromJSON(nf_load_level_infos_local);
             if (!nf_load_level_infosItem) {
                 ogs_error("No nf_load_level_infosItem");
-                OpenAPI_list_free(nf_load_level_infosList);
                 goto end;
             }
             OpenAPI_list_add(nf_load_level_infosList, nf_load_level_infosItem);
@@ -653,7 +664,6 @@ OpenAPI_event_notification_t *OpenAPI_event_notification_parseFromJSON(cJSON *ev
             OpenAPI_nsi_load_level_info_t *nsi_load_level_infosItem = OpenAPI_nsi_load_level_info_parseFromJSON(nsi_load_level_infos_local);
             if (!nsi_load_level_infosItem) {
                 ogs_error("No nsi_load_level_infosItem");
-                OpenAPI_list_free(nsi_load_level_infosList);
                 goto end;
             }
             OpenAPI_list_add(nsi_load_level_infosList, nsi_load_level_infosItem);
@@ -663,6 +673,10 @@ OpenAPI_event_notification_t *OpenAPI_event_notification_parseFromJSON(cJSON *ev
     slice_load_level_info = cJSON_GetObjectItemCaseSensitive(event_notificationJSON, "sliceLoadLevelInfo");
     if (slice_load_level_info) {
     slice_load_level_info_local_nonprim = OpenAPI_slice_load_level_information_parseFromJSON(slice_load_level_info);
+    if (!slice_load_level_info_local_nonprim) {
+        ogs_error("OpenAPI_slice_load_level_information_parseFromJSON failed [slice_load_level_info]");
+        goto end;
+    }
     }
 
     svc_exps = cJSON_GetObjectItemCaseSensitive(event_notificationJSON, "svcExps");
@@ -683,7 +697,6 @@ OpenAPI_event_notification_t *OpenAPI_event_notification_parseFromJSON(cJSON *ev
             OpenAPI_service_experience_info_t *svc_expsItem = OpenAPI_service_experience_info_parseFromJSON(svc_exps_local);
             if (!svc_expsItem) {
                 ogs_error("No svc_expsItem");
-                OpenAPI_list_free(svc_expsList);
                 goto end;
             }
             OpenAPI_list_add(svc_expsList, svc_expsItem);
@@ -708,7 +721,6 @@ OpenAPI_event_notification_t *OpenAPI_event_notification_parseFromJSON(cJSON *ev
             OpenAPI_qos_sustainability_info_t *qos_sustain_infosItem = OpenAPI_qos_sustainability_info_parseFromJSON(qos_sustain_infos_local);
             if (!qos_sustain_infosItem) {
                 ogs_error("No qos_sustain_infosItem");
-                OpenAPI_list_free(qos_sustain_infosList);
                 goto end;
             }
             OpenAPI_list_add(qos_sustain_infosList, qos_sustain_infosItem);
@@ -733,7 +745,6 @@ OpenAPI_event_notification_t *OpenAPI_event_notification_parseFromJSON(cJSON *ev
             OpenAPI_ue_communication_t *ue_commsItem = OpenAPI_ue_communication_parseFromJSON(ue_comms_local);
             if (!ue_commsItem) {
                 ogs_error("No ue_commsItem");
-                OpenAPI_list_free(ue_commsList);
                 goto end;
             }
             OpenAPI_list_add(ue_commsList, ue_commsItem);
@@ -758,7 +769,6 @@ OpenAPI_event_notification_t *OpenAPI_event_notification_parseFromJSON(cJSON *ev
             OpenAPI_ue_mobility_t *ue_mobsItem = OpenAPI_ue_mobility_parseFromJSON(ue_mobs_local);
             if (!ue_mobsItem) {
                 ogs_error("No ue_mobsItem");
-                OpenAPI_list_free(ue_mobsList);
                 goto end;
             }
             OpenAPI_list_add(ue_mobsList, ue_mobsItem);
@@ -783,7 +793,6 @@ OpenAPI_event_notification_t *OpenAPI_event_notification_parseFromJSON(cJSON *ev
             OpenAPI_user_data_congestion_info_t *user_data_cong_infosItem = OpenAPI_user_data_congestion_info_parseFromJSON(user_data_cong_infos_local);
             if (!user_data_cong_infosItem) {
                 ogs_error("No user_data_cong_infosItem");
-                OpenAPI_list_free(user_data_cong_infosList);
                 goto end;
             }
             OpenAPI_list_add(user_data_cong_infosList, user_data_cong_infosItem);
@@ -808,7 +817,6 @@ OpenAPI_event_notification_t *OpenAPI_event_notification_parseFromJSON(cJSON *ev
             OpenAPI_abnormal_behaviour_t *abnor_behavrsItem = OpenAPI_abnormal_behaviour_parseFromJSON(abnor_behavrs_local);
             if (!abnor_behavrsItem) {
                 ogs_error("No abnor_behavrsItem");
-                OpenAPI_list_free(abnor_behavrsList);
                 goto end;
             }
             OpenAPI_list_add(abnor_behavrsList, abnor_behavrsItem);
@@ -833,7 +841,6 @@ OpenAPI_event_notification_t *OpenAPI_event_notification_parseFromJSON(cJSON *ev
             OpenAPI_network_perf_info_t *nw_perfsItem = OpenAPI_network_perf_info_parseFromJSON(nw_perfs_local);
             if (!nw_perfsItem) {
                 ogs_error("No nw_perfsItem");
-                OpenAPI_list_free(nw_perfsList);
                 goto end;
             }
             OpenAPI_list_add(nw_perfsList, nw_perfsItem);
@@ -858,7 +865,6 @@ OpenAPI_event_notification_t *OpenAPI_event_notification_parseFromJSON(cJSON *ev
             OpenAPI_dn_perf_info_t *dn_perf_infosItem = OpenAPI_dn_perf_info_parseFromJSON(dn_perf_infos_local);
             if (!dn_perf_infosItem) {
                 ogs_error("No dn_perf_infosItem");
-                OpenAPI_list_free(dn_perf_infosList);
                 goto end;
             }
             OpenAPI_list_add(dn_perf_infosList, dn_perf_infosItem);
@@ -883,7 +889,6 @@ OpenAPI_event_notification_t *OpenAPI_event_notification_parseFromJSON(cJSON *ev
             OpenAPI_dispersion_info_t *disper_infosItem = OpenAPI_dispersion_info_parseFromJSON(disper_infos_local);
             if (!disper_infosItem) {
                 ogs_error("No disper_infosItem");
-                OpenAPI_list_free(disper_infosList);
                 goto end;
             }
             OpenAPI_list_add(disper_infosList, disper_infosItem);
@@ -908,7 +913,6 @@ OpenAPI_event_notification_t *OpenAPI_event_notification_parseFromJSON(cJSON *ev
             OpenAPI_redundant_transmission_exp_info_t *red_trans_infosItem = OpenAPI_redundant_transmission_exp_info_parseFromJSON(red_trans_infos_local);
             if (!red_trans_infosItem) {
                 ogs_error("No red_trans_infosItem");
-                OpenAPI_list_free(red_trans_infosList);
                 goto end;
             }
             OpenAPI_list_add(red_trans_infosList, red_trans_infosItem);
@@ -933,7 +937,6 @@ OpenAPI_event_notification_t *OpenAPI_event_notification_parseFromJSON(cJSON *ev
             OpenAPI_wlan_performance_info_t *wlan_infosItem = OpenAPI_wlan_performance_info_parseFromJSON(wlan_infos_local);
             if (!wlan_infosItem) {
                 ogs_error("No wlan_infosItem");
-                OpenAPI_list_free(wlan_infosList);
                 goto end;
             }
             OpenAPI_list_add(wlan_infosList, wlan_infosItem);
@@ -958,7 +961,6 @@ OpenAPI_event_notification_t *OpenAPI_event_notification_parseFromJSON(cJSON *ev
             OpenAPI_smcce_info_t *smcc_expsItem = OpenAPI_smcce_info_parseFromJSON(smcc_exps_local);
             if (!smcc_expsItem) {
                 ogs_error("No smcc_expsItem");
-                OpenAPI_list_free(smcc_expsList);
                 goto end;
             }
             OpenAPI_list_add(smcc_expsList, smcc_expsItem);

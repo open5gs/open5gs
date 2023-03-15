@@ -98,6 +98,10 @@ OpenAPI_pcf_selection_assistance_info_1_t *OpenAPI_pcf_selection_assistance_info
         goto end;
     }
     single_nssai_local_nonprim = OpenAPI_snssai_parseFromJSON(single_nssai);
+    if (!single_nssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [single_nssai]");
+        goto end;
+    }
 
     pcf_selection_assistance_info_1_local_var = OpenAPI_pcf_selection_assistance_info_1_create (
         ogs_strdup(dnn->valuestring),

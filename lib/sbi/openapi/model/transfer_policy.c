@@ -142,6 +142,10 @@ OpenAPI_transfer_policy_t *OpenAPI_transfer_policy_parseFromJSON(cJSON *transfer
         goto end;
     }
     rec_time_int_local_nonprim = OpenAPI_time_window_parseFromJSON(rec_time_int);
+    if (!rec_time_int_local_nonprim) {
+        ogs_error("OpenAPI_time_window_parseFromJSON failed [rec_time_int]");
+        goto end;
+    }
 
     trans_policy_id = cJSON_GetObjectItemCaseSensitive(transfer_policyJSON, "transPolicyId");
     if (!trans_policy_id) {

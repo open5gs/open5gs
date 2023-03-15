@@ -145,6 +145,10 @@ OpenAPI_bsf_event_notification_t *OpenAPI_bsf_event_notification_parseFromJSON(c
     pcf_for_ue_info = cJSON_GetObjectItemCaseSensitive(bsf_event_notificationJSON, "pcfForUeInfo");
     if (pcf_for_ue_info) {
     pcf_for_ue_info_local_nonprim = OpenAPI_pcf_for_ue_info_parseFromJSON(pcf_for_ue_info);
+    if (!pcf_for_ue_info_local_nonprim) {
+        ogs_error("OpenAPI_pcf_for_ue_info_parseFromJSON failed [pcf_for_ue_info]");
+        goto end;
+    }
     }
 
     pcf_for_pdu_sess_infos = cJSON_GetObjectItemCaseSensitive(bsf_event_notificationJSON, "pcfForPduSessInfos");
@@ -165,7 +169,6 @@ OpenAPI_bsf_event_notification_t *OpenAPI_bsf_event_notification_parseFromJSON(c
             OpenAPI_pcf_for_pdu_session_info_t *pcf_for_pdu_sess_infosItem = OpenAPI_pcf_for_pdu_session_info_parseFromJSON(pcf_for_pdu_sess_infos_local);
             if (!pcf_for_pdu_sess_infosItem) {
                 ogs_error("No pcf_for_pdu_sess_infosItem");
-                OpenAPI_list_free(pcf_for_pdu_sess_infosList);
                 goto end;
             }
             OpenAPI_list_add(pcf_for_pdu_sess_infosList, pcf_for_pdu_sess_infosItem);
@@ -190,7 +193,6 @@ OpenAPI_bsf_event_notification_t *OpenAPI_bsf_event_notification_parseFromJSON(c
             OpenAPI_snssai_dnn_pair_t *match_snssai_dnnsItem = OpenAPI_snssai_dnn_pair_parseFromJSON(match_snssai_dnns_local);
             if (!match_snssai_dnnsItem) {
                 ogs_error("No match_snssai_dnnsItem");
-                OpenAPI_list_free(match_snssai_dnnsList);
                 goto end;
             }
             OpenAPI_list_add(match_snssai_dnnsList, match_snssai_dnnsItem);

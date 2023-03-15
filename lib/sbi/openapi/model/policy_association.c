@@ -345,6 +345,10 @@ OpenAPI_policy_association_t *OpenAPI_policy_association_parseFromJSON(cJSON *po
     request = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "request");
     if (request) {
     request_local_nonprim = OpenAPI_policy_association_request_parseFromJSON(request);
+    if (!request_local_nonprim) {
+        ogs_error("OpenAPI_policy_association_request_parseFromJSON failed [request]");
+        goto end;
+    }
     }
 
     triggers = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "triggers");
@@ -369,11 +373,19 @@ OpenAPI_policy_association_t *OpenAPI_policy_association_parseFromJSON(cJSON *po
     serv_area_res = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "servAreaRes");
     if (serv_area_res) {
     serv_area_res_local_nonprim = OpenAPI_service_area_restriction_parseFromJSON(serv_area_res);
+    if (!serv_area_res_local_nonprim) {
+        ogs_error("OpenAPI_service_area_restriction_parseFromJSON failed [serv_area_res]");
+        goto end;
+    }
     }
 
     wl_serv_area_res = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "wlServAreaRes");
     if (wl_serv_area_res) {
     wl_serv_area_res_local_nonprim = OpenAPI_wireline_service_area_restriction_parseFromJSON(wl_serv_area_res);
+    if (!wl_serv_area_res_local_nonprim) {
+        ogs_error("OpenAPI_wireline_service_area_restriction_parseFromJSON failed [wl_serv_area_res]");
+        goto end;
+    }
     }
 
     rfsp = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "rfsp");
@@ -395,11 +407,19 @@ OpenAPI_policy_association_t *OpenAPI_policy_association_parseFromJSON(cJSON *po
     smf_sel_info = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "smfSelInfo");
     if (smf_sel_info) {
     smf_sel_info_local_nonprim = OpenAPI_smf_selection_data_parseFromJSON(smf_sel_info);
+    if (!smf_sel_info_local_nonprim) {
+        ogs_error("OpenAPI_smf_selection_data_parseFromJSON failed [smf_sel_info]");
+        goto end;
+    }
     }
 
     ue_ambr = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "ueAmbr");
     if (ue_ambr) {
     ue_ambr_local_nonprim = OpenAPI_ambr_parseFromJSON(ue_ambr);
+    if (!ue_ambr_local_nonprim) {
+        ogs_error("OpenAPI_ambr_parseFromJSON failed [ue_ambr]");
+        goto end;
+    }
     }
 
     ue_slice_mbrs = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "ueSliceMbrs");
@@ -420,7 +440,6 @@ OpenAPI_policy_association_t *OpenAPI_policy_association_parseFromJSON(cJSON *po
             OpenAPI_ue_slice_mbr_t *ue_slice_mbrsItem = OpenAPI_ue_slice_mbr_parseFromJSON(ue_slice_mbrs_local);
             if (!ue_slice_mbrsItem) {
                 ogs_error("No ue_slice_mbrsItem");
-                OpenAPI_list_free(ue_slice_mbrsList);
                 goto end;
             }
             OpenAPI_list_add(ue_slice_mbrsList, ue_slice_mbrsItem);
@@ -466,6 +485,10 @@ OpenAPI_policy_association_t *OpenAPI_policy_association_parseFromJSON(cJSON *po
     pcf_ue_info = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "pcfUeInfo");
     if (pcf_ue_info) {
     pcf_ue_info_local_nonprim = OpenAPI_pcf_ue_callback_info_parseFromJSON(pcf_ue_info);
+    if (!pcf_ue_info_local_nonprim) {
+        ogs_error("OpenAPI_pcf_ue_callback_info_parseFromJSON failed [pcf_ue_info]");
+        goto end;
+    }
     }
 
     match_pdus = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "matchPdus");
@@ -486,7 +509,6 @@ OpenAPI_policy_association_t *OpenAPI_policy_association_parseFromJSON(cJSON *po
             OpenAPI_pdu_session_info_t *match_pdusItem = OpenAPI_pdu_session_info_parseFromJSON(match_pdus_local);
             if (!match_pdusItem) {
                 ogs_error("No match_pdusItem");
-                OpenAPI_list_free(match_pdusList);
                 goto end;
             }
             OpenAPI_list_add(match_pdusList, match_pdusItem);
@@ -496,6 +518,10 @@ OpenAPI_policy_association_t *OpenAPI_policy_association_parseFromJSON(cJSON *po
     as_time_dis_param = cJSON_GetObjectItemCaseSensitive(policy_associationJSON, "asTimeDisParam");
     if (as_time_dis_param) {
     as_time_dis_param_local_nonprim = OpenAPI_as_time_distribution_param_parseFromJSON(as_time_dis_param);
+    if (!as_time_dis_param_local_nonprim) {
+        ogs_error("OpenAPI_as_time_distribution_param_parseFromJSON failed [as_time_dis_param]");
+        goto end;
+    }
     }
 
     policy_association_local_var = OpenAPI_policy_association_create (

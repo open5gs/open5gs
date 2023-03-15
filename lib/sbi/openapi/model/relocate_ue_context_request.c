@@ -373,6 +373,10 @@ OpenAPI_relocate_ue_context_request_t *OpenAPI_relocate_ue_context_request_parse
     json_data = cJSON_GetObjectItemCaseSensitive(relocate_ue_context_requestJSON, "jsonData");
     if (json_data) {
     json_data_local_nonprim = OpenAPI_ue_context_relocate_data_parseFromJSON(json_data);
+    if (!json_data_local_nonprim) {
+        ogs_error("OpenAPI_ue_context_relocate_data_parseFromJSON failed [json_data]");
+        goto end;
+    }
     }
 
     binary_data_forward_relocation_request = cJSON_GetObjectItemCaseSensitive(relocate_ue_context_requestJSON, "binaryDataForwardRelocationRequest");

@@ -108,7 +108,6 @@ OpenAPI_mbs_subscription_data_t *OpenAPI_mbs_subscription_data_parseFromJSON(cJS
             OpenAPI_mbs_session_id_t *mbs_session_id_listItem = OpenAPI_mbs_session_id_parseFromJSON(mbs_session_id_list_local);
             if (!mbs_session_id_listItem) {
                 ogs_error("No mbs_session_id_listItem");
-                OpenAPI_list_free(mbs_session_id_listList);
                 goto end;
             }
             OpenAPI_list_add(mbs_session_id_listList, mbs_session_id_listItem);

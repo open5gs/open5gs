@@ -95,6 +95,10 @@ OpenAPI_eas_ip_replacement_info_t *OpenAPI_eas_ip_replacement_info_parseFromJSON
         goto end;
     }
     source_local_nonprim = OpenAPI_eas_server_address_parseFromJSON(source);
+    if (!source_local_nonprim) {
+        ogs_error("OpenAPI_eas_server_address_parseFromJSON failed [source]");
+        goto end;
+    }
 
     target = cJSON_GetObjectItemCaseSensitive(eas_ip_replacement_infoJSON, "target");
     if (!target) {
@@ -102,6 +106,10 @@ OpenAPI_eas_ip_replacement_info_t *OpenAPI_eas_ip_replacement_info_parseFromJSON
         goto end;
     }
     target_local_nonprim = OpenAPI_eas_server_address_parseFromJSON(target);
+    if (!target_local_nonprim) {
+        ogs_error("OpenAPI_eas_server_address_parseFromJSON failed [target]");
+        goto end;
+    }
 
     eas_ip_replacement_info_local_var = OpenAPI_eas_ip_replacement_info_create (
         source_local_nonprim,

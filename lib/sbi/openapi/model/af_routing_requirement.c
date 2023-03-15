@@ -264,7 +264,6 @@ OpenAPI_af_routing_requirement_t *OpenAPI_af_routing_requirement_parseFromJSON(c
             OpenAPI_route_to_location_t *route_to_locsItem = OpenAPI_route_to_location_parseFromJSON(route_to_locs_local);
             if (!route_to_locsItem) {
                 ogs_error("No route_to_locsItem");
-                OpenAPI_list_free(route_to_locsList);
                 goto end;
             }
             OpenAPI_list_add(route_to_locsList, route_to_locsItem);
@@ -274,6 +273,10 @@ OpenAPI_af_routing_requirement_t *OpenAPI_af_routing_requirement_parseFromJSON(c
     sp_val = cJSON_GetObjectItemCaseSensitive(af_routing_requirementJSON, "spVal");
     if (sp_val) {
     sp_val_local_nonprim = OpenAPI_spatial_validity_parseFromJSON(sp_val);
+    if (!sp_val_local_nonprim) {
+        ogs_error("OpenAPI_spatial_validity_parseFromJSON failed [sp_val]");
+        goto end;
+    }
     }
 
     temp_vals = cJSON_GetObjectItemCaseSensitive(af_routing_requirementJSON, "tempVals");
@@ -294,7 +297,6 @@ OpenAPI_af_routing_requirement_t *OpenAPI_af_routing_requirement_parseFromJSON(c
             OpenAPI_temporal_validity_t *temp_valsItem = OpenAPI_temporal_validity_parseFromJSON(temp_vals_local);
             if (!temp_valsItem) {
                 ogs_error("No temp_valsItem");
-                OpenAPI_list_free(temp_valsList);
                 goto end;
             }
             OpenAPI_list_add(temp_valsList, temp_valsItem);
@@ -304,6 +306,10 @@ OpenAPI_af_routing_requirement_t *OpenAPI_af_routing_requirement_parseFromJSON(c
     up_path_chg_sub = cJSON_GetObjectItemCaseSensitive(af_routing_requirementJSON, "upPathChgSub");
     if (up_path_chg_sub) {
     up_path_chg_sub_local_nonprim = OpenAPI_up_path_chg_event_parseFromJSON(up_path_chg_sub);
+    if (!up_path_chg_sub_local_nonprim) {
+        ogs_error("OpenAPI_up_path_chg_event_parseFromJSON failed [up_path_chg_sub]");
+        goto end;
+    }
     }
 
     addr_preser_ind = cJSON_GetObjectItemCaseSensitive(af_routing_requirementJSON, "addrPreserInd");
@@ -348,7 +354,6 @@ OpenAPI_af_routing_requirement_t *OpenAPI_af_routing_requirement_parseFromJSON(c
             OpenAPI_eas_ip_replacement_info_t *eas_ip_replace_infosItem = OpenAPI_eas_ip_replacement_info_parseFromJSON(eas_ip_replace_infos_local);
             if (!eas_ip_replace_infosItem) {
                 ogs_error("No eas_ip_replace_infosItem");
-                OpenAPI_list_free(eas_ip_replace_infosList);
                 goto end;
             }
             OpenAPI_list_add(eas_ip_replace_infosList, eas_ip_replace_infosItem);

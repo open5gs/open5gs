@@ -114,7 +114,6 @@ OpenAPI_dnn_smf_info_item_t *OpenAPI_dnn_smf_info_item_parseFromJSON(cJSON *dnn_
             OpenAPI_dnn_smf_info_item_dnai_list_inner_t *dnai_listItem = OpenAPI_dnn_smf_info_item_dnai_list_inner_parseFromJSON(dnai_list_local);
             if (!dnai_listItem) {
                 ogs_error("No dnai_listItem");
-                OpenAPI_list_free(dnai_listList);
                 goto end;
             }
             OpenAPI_list_add(dnai_listList, dnai_listItem);

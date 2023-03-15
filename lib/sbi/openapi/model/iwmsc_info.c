@@ -156,7 +156,6 @@ OpenAPI_iwmsc_info_t *OpenAPI_iwmsc_info_parseFromJSON(cJSON *iwmsc_infoJSON)
             OpenAPI_identity_range_t *msisdn_rangesItem = OpenAPI_identity_range_parseFromJSON(msisdn_ranges_local);
             if (!msisdn_rangesItem) {
                 ogs_error("No msisdn_rangesItem");
-                OpenAPI_list_free(msisdn_rangesList);
                 goto end;
             }
             OpenAPI_list_add(msisdn_rangesList, msisdn_rangesItem);
@@ -181,7 +180,6 @@ OpenAPI_iwmsc_info_t *OpenAPI_iwmsc_info_parseFromJSON(cJSON *iwmsc_infoJSON)
             OpenAPI_supi_range_t *supi_rangesItem = OpenAPI_supi_range_parseFromJSON(supi_ranges_local);
             if (!supi_rangesItem) {
                 ogs_error("No supi_rangesItem");
-                OpenAPI_list_free(supi_rangesList);
                 goto end;
             }
             OpenAPI_list_add(supi_rangesList, supi_rangesItem);
@@ -206,7 +204,6 @@ OpenAPI_iwmsc_info_t *OpenAPI_iwmsc_info_parseFromJSON(cJSON *iwmsc_infoJSON)
             OpenAPI_tai_range_t *tai_range_listItem = OpenAPI_tai_range_parseFromJSON(tai_range_list_local);
             if (!tai_range_listItem) {
                 ogs_error("No tai_range_listItem");
-                OpenAPI_list_free(tai_range_listList);
                 goto end;
             }
             OpenAPI_list_add(tai_range_listList, tai_range_listItem);

@@ -152,21 +152,37 @@ OpenAPI_routing_info_sm_response_t *OpenAPI_routing_info_sm_response_parseFromJS
     smsf3_gpp = cJSON_GetObjectItemCaseSensitive(routing_info_sm_responseJSON, "smsf3Gpp");
     if (smsf3_gpp) {
     smsf3_gpp_local_nonprim = OpenAPI_smsf_registration_parseFromJSON(smsf3_gpp);
+    if (!smsf3_gpp_local_nonprim) {
+        ogs_error("OpenAPI_smsf_registration_parseFromJSON failed [smsf3_gpp]");
+        goto end;
+    }
     }
 
     smsf_non3_gpp = cJSON_GetObjectItemCaseSensitive(routing_info_sm_responseJSON, "smsfNon3Gpp");
     if (smsf_non3_gpp) {
     smsf_non3_gpp_local_nonprim = OpenAPI_smsf_registration_parseFromJSON(smsf_non3_gpp);
+    if (!smsf_non3_gpp_local_nonprim) {
+        ogs_error("OpenAPI_smsf_registration_parseFromJSON failed [smsf_non3_gpp]");
+        goto end;
+    }
     }
 
     ip_sm_gw = cJSON_GetObjectItemCaseSensitive(routing_info_sm_responseJSON, "ipSmGw");
     if (ip_sm_gw) {
     ip_sm_gw_local_nonprim = OpenAPI_ip_sm_gw_info_parseFromJSON(ip_sm_gw);
+    if (!ip_sm_gw_local_nonprim) {
+        ogs_error("OpenAPI_ip_sm_gw_info_parseFromJSON failed [ip_sm_gw]");
+        goto end;
+    }
     }
 
     sms_router = cJSON_GetObjectItemCaseSensitive(routing_info_sm_responseJSON, "smsRouter");
     if (sms_router) {
     sms_router_local_nonprim = OpenAPI_sms_router_info_parseFromJSON(sms_router);
+    if (!sms_router_local_nonprim) {
+        ogs_error("OpenAPI_sms_router_info_parseFromJSON failed [sms_router]");
+        goto end;
+    }
     }
 
     routing_info_sm_response_local_var = OpenAPI_routing_info_sm_response_create (

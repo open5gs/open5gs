@@ -108,7 +108,6 @@ OpenAPI_ddn_failure_subs_t *OpenAPI_ddn_failure_subs_parseFromJSON(cJSON *ddn_fa
             OpenAPI_ddn_failure_sub_info_t *ddn_failure_subs_info_listItem = OpenAPI_ddn_failure_sub_info_parseFromJSON(ddn_failure_subs_info_list_local);
             if (!ddn_failure_subs_info_listItem) {
                 ogs_error("No ddn_failure_subs_info_listItem");
-                OpenAPI_list_free(ddn_failure_subs_info_listList);
                 goto end;
             }
             OpenAPI_list_add(ddn_failure_subs_info_listList, ddn_failure_subs_info_listItem);

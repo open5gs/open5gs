@@ -149,7 +149,6 @@ OpenAPI_pcf_for_ue_info_t *OpenAPI_pcf_for_ue_info_parseFromJSON(cJSON *pcf_for_
             OpenAPI_ip_end_point_t *pcf_ip_end_pointsItem = OpenAPI_ip_end_point_parseFromJSON(pcf_ip_end_points_local);
             if (!pcf_ip_end_pointsItem) {
                 ogs_error("No pcf_ip_end_pointsItem");
-                OpenAPI_list_free(pcf_ip_end_pointsList);
                 goto end;
             }
             OpenAPI_list_add(pcf_ip_end_pointsList, pcf_ip_end_pointsItem);

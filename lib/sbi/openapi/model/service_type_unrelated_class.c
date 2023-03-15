@@ -174,7 +174,6 @@ OpenAPI_service_type_unrelated_class_t *OpenAPI_service_type_unrelated_class_par
             OpenAPI_geographic_area_t *allowed_geographic_areaItem = OpenAPI_geographic_area_parseFromJSON(allowed_geographic_area_local);
             if (!allowed_geographic_areaItem) {
                 ogs_error("No allowed_geographic_areaItem");
-                OpenAPI_list_free(allowed_geographic_areaList);
                 goto end;
             }
             OpenAPI_list_add(allowed_geographic_areaList, allowed_geographic_areaItem);
@@ -202,6 +201,10 @@ OpenAPI_service_type_unrelated_class_t *OpenAPI_service_type_unrelated_class_par
     valid_time_period = cJSON_GetObjectItemCaseSensitive(service_type_unrelated_classJSON, "validTimePeriod");
     if (valid_time_period) {
     valid_time_period_local_nonprim = OpenAPI_valid_time_period_parseFromJSON(valid_time_period);
+    if (!valid_time_period_local_nonprim) {
+        ogs_error("OpenAPI_valid_time_period_parseFromJSON failed [valid_time_period]");
+        goto end;
+    }
     }
 
     code_word_list = cJSON_GetObjectItemCaseSensitive(service_type_unrelated_classJSON, "codeWordList");

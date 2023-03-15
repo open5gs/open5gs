@@ -537,7 +537,6 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
             OpenAPI_flow_information_t *flow_infosItem = OpenAPI_flow_information_parseFromJSON(flow_infos_local);
             if (!flow_infosItem) {
                 ogs_error("No flow_infosItem");
-                OpenAPI_list_free(flow_infosList);
                 goto end;
             }
             OpenAPI_list_add(flow_infosList, flow_infosItem);
@@ -798,11 +797,19 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
     tscai_input_dl = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "tscaiInputDl");
     if (tscai_input_dl) {
     tscai_input_dl_local_nonprim = OpenAPI_tscai_input_container_parseFromJSON(tscai_input_dl);
+    if (!tscai_input_dl_local_nonprim) {
+        ogs_error("OpenAPI_tscai_input_container_parseFromJSON failed [tscai_input_dl]");
+        goto end;
+    }
     }
 
     tscai_input_ul = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "tscaiInputUl");
     if (tscai_input_ul) {
     tscai_input_ul_local_nonprim = OpenAPI_tscai_input_container_parseFromJSON(tscai_input_ul);
+    if (!tscai_input_ul_local_nonprim) {
+        ogs_error("OpenAPI_tscai_input_container_parseFromJSON failed [tscai_input_ul]");
+        goto end;
+    }
     }
 
     tscai_time_dom = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "tscaiTimeDom");
@@ -816,11 +823,19 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
     dd_notif_ctrl = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "ddNotifCtrl");
     if (dd_notif_ctrl) {
     dd_notif_ctrl_local_nonprim = OpenAPI_downlink_data_notification_control_parseFromJSON(dd_notif_ctrl);
+    if (!dd_notif_ctrl_local_nonprim) {
+        ogs_error("OpenAPI_downlink_data_notification_control_parseFromJSON failed [dd_notif_ctrl]");
+        goto end;
+    }
     }
 
     dd_notif_ctrl2 = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "ddNotifCtrl2");
     if (dd_notif_ctrl2) {
     dd_notif_ctrl2_local_nonprim = OpenAPI_downlink_data_notification_control_rm_parseFromJSON(dd_notif_ctrl2);
+    if (!dd_notif_ctrl2_local_nonprim) {
+        ogs_error("OpenAPI_downlink_data_notification_control_rm_parseFromJSON failed [dd_notif_ctrl2]");
+        goto end;
+    }
     }
 
     dis_ue_notif = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "disUeNotif");

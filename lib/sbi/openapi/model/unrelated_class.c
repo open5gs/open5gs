@@ -120,10 +120,18 @@ OpenAPI_unrelated_class_t *OpenAPI_unrelated_class_parseFromJSON(cJSON *unrelate
         goto end;
     }
     default_unrelated_class_local_nonprim = OpenAPI_default_unrelated_class_parseFromJSON(default_unrelated_class);
+    if (!default_unrelated_class_local_nonprim) {
+        ogs_error("OpenAPI_default_unrelated_class_parseFromJSON failed [default_unrelated_class]");
+        goto end;
+    }
 
     external_unrelated_class = cJSON_GetObjectItemCaseSensitive(unrelated_classJSON, "externalUnrelatedClass");
     if (external_unrelated_class) {
     external_unrelated_class_local_nonprim = OpenAPI_external_unrelated_class_parseFromJSON(external_unrelated_class);
+    if (!external_unrelated_class_local_nonprim) {
+        ogs_error("OpenAPI_external_unrelated_class_parseFromJSON failed [external_unrelated_class]");
+        goto end;
+    }
     }
 
     service_type_unrelated_classes = cJSON_GetObjectItemCaseSensitive(unrelated_classJSON, "serviceTypeUnrelatedClasses");
@@ -144,7 +152,6 @@ OpenAPI_unrelated_class_t *OpenAPI_unrelated_class_parseFromJSON(cJSON *unrelate
             OpenAPI_service_type_unrelated_class_t *service_type_unrelated_classesItem = OpenAPI_service_type_unrelated_class_parseFromJSON(service_type_unrelated_classes_local);
             if (!service_type_unrelated_classesItem) {
                 ogs_error("No service_type_unrelated_classesItem");
-                OpenAPI_list_free(service_type_unrelated_classesList);
                 goto end;
             }
             OpenAPI_list_add(service_type_unrelated_classesList, service_type_unrelated_classesItem);

@@ -88,11 +88,19 @@ OpenAPI_ip_sm_gw_info_t *OpenAPI_ip_sm_gw_info_parseFromJSON(cJSON *ip_sm_gw_inf
     ip_sm_gw_registration = cJSON_GetObjectItemCaseSensitive(ip_sm_gw_infoJSON, "ipSmGwRegistration");
     if (ip_sm_gw_registration) {
     ip_sm_gw_registration_local_nonprim = OpenAPI_ip_sm_gw_registration_parseFromJSON(ip_sm_gw_registration);
+    if (!ip_sm_gw_registration_local_nonprim) {
+        ogs_error("OpenAPI_ip_sm_gw_registration_parseFromJSON failed [ip_sm_gw_registration]");
+        goto end;
+    }
     }
 
     ip_sm_gw_guidance = cJSON_GetObjectItemCaseSensitive(ip_sm_gw_infoJSON, "ipSmGwGuidance");
     if (ip_sm_gw_guidance) {
     ip_sm_gw_guidance_local_nonprim = OpenAPI_ip_sm_gw_guidance_parseFromJSON(ip_sm_gw_guidance);
+    if (!ip_sm_gw_guidance_local_nonprim) {
+        ogs_error("OpenAPI_ip_sm_gw_guidance_parseFromJSON failed [ip_sm_gw_guidance]");
+        goto end;
+    }
     }
 
     ip_sm_gw_info_local_var = OpenAPI_ip_sm_gw_info_create (

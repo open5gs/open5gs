@@ -183,7 +183,6 @@ OpenAPI_bsf_notification_t *OpenAPI_bsf_notification_parseFromJSON(cJSON *bsf_no
             OpenAPI_bsf_event_notification_t *event_notifsItem = OpenAPI_bsf_event_notification_parseFromJSON(event_notifs_local);
             if (!event_notifsItem) {
                 ogs_error("No event_notifsItem");
-                OpenAPI_list_free(event_notifsList);
                 goto end;
             }
             OpenAPI_list_add(event_notifsList, event_notifsItem);

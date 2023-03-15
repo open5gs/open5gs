@@ -93,7 +93,6 @@ OpenAPI_nidd_authorization_info_t *OpenAPI_nidd_authorization_info_parseFromJSON
             OpenAPI_authorization_info_t *nidd_authorization_listItem = OpenAPI_authorization_info_parseFromJSON(nidd_authorization_list_local);
             if (!nidd_authorization_listItem) {
                 ogs_error("No nidd_authorization_listItem");
-                OpenAPI_list_free(nidd_authorization_listList);
                 goto end;
             }
             OpenAPI_list_add(nidd_authorization_listList, nidd_authorization_listItem);

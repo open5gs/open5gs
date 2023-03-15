@@ -88,6 +88,10 @@ OpenAPI_pdu_session_info_t *OpenAPI_pdu_session_info_parseFromJSON(cJSON *pdu_se
         goto end;
     }
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
 
     dnn = cJSON_GetObjectItemCaseSensitive(pdu_session_infoJSON, "dnn");
     if (!dnn) {

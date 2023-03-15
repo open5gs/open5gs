@@ -288,11 +288,19 @@ OpenAPI_ue_communication_t *OpenAPI_ue_communication_parseFromJSON(cJSON *ue_com
     recurring_time = cJSON_GetObjectItemCaseSensitive(ue_communicationJSON, "recurringTime");
     if (recurring_time) {
     recurring_time_local_nonprim = OpenAPI_scheduled_communication_time_1_parseFromJSON(recurring_time);
+    if (!recurring_time_local_nonprim) {
+        ogs_error("OpenAPI_scheduled_communication_time_1_parseFromJSON failed [recurring_time]");
+        goto end;
+    }
     }
 
     traf_char = cJSON_GetObjectItemCaseSensitive(ue_communicationJSON, "trafChar");
     if (traf_char) {
     traf_char_local_nonprim = OpenAPI_traffic_characterization_parseFromJSON(traf_char);
+    if (!traf_char_local_nonprim) {
+        ogs_error("OpenAPI_traffic_characterization_parseFromJSON failed [traf_char]");
+        goto end;
+    }
     }
 
     ratio = cJSON_GetObjectItemCaseSensitive(ue_communicationJSON, "ratio");
@@ -322,11 +330,19 @@ OpenAPI_ue_communication_t *OpenAPI_ue_communication_parseFromJSON(cJSON *ue_com
     ana_of_app_list = cJSON_GetObjectItemCaseSensitive(ue_communicationJSON, "anaOfAppList");
     if (ana_of_app_list) {
     ana_of_app_list_local_nonprim = OpenAPI_app_list_for_ue_comm_parseFromJSON(ana_of_app_list);
+    if (!ana_of_app_list_local_nonprim) {
+        ogs_error("OpenAPI_app_list_for_ue_comm_parseFromJSON failed [ana_of_app_list]");
+        goto end;
+    }
     }
 
     sess_inact_timer = cJSON_GetObjectItemCaseSensitive(ue_communicationJSON, "sessInactTimer");
     if (sess_inact_timer) {
     sess_inact_timer_local_nonprim = OpenAPI_sess_inact_timer_for_ue_comm_parseFromJSON(sess_inact_timer);
+    if (!sess_inact_timer_local_nonprim) {
+        ogs_error("OpenAPI_sess_inact_timer_for_ue_comm_parseFromJSON failed [sess_inact_timer]");
+        goto end;
+    }
     }
 
     ue_communication_local_var = OpenAPI_ue_communication_create (

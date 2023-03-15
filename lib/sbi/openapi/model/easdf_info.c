@@ -142,7 +142,6 @@ OpenAPI_easdf_info_t *OpenAPI_easdf_info_parseFromJSON(cJSON *easdf_infoJSON)
             OpenAPI_snssai_easdf_info_item_t *s_nssai_easdf_info_listItem = OpenAPI_snssai_easdf_info_item_parseFromJSON(s_nssai_easdf_info_list_local);
             if (!s_nssai_easdf_info_listItem) {
                 ogs_error("No s_nssai_easdf_info_listItem");
-                OpenAPI_list_free(s_nssai_easdf_info_listList);
                 goto end;
             }
             OpenAPI_list_add(s_nssai_easdf_info_listList, s_nssai_easdf_info_listItem);
@@ -167,7 +166,6 @@ OpenAPI_easdf_info_t *OpenAPI_easdf_info_parseFromJSON(cJSON *easdf_infoJSON)
             OpenAPI_ip_addr_t *easdf_n6_ip_address_listItem = OpenAPI_ip_addr_parseFromJSON(easdf_n6_ip_address_list_local);
             if (!easdf_n6_ip_address_listItem) {
                 ogs_error("No easdf_n6_ip_address_listItem");
-                OpenAPI_list_free(easdf_n6_ip_address_listList);
                 goto end;
             }
             OpenAPI_list_add(easdf_n6_ip_address_listList, easdf_n6_ip_address_listItem);
@@ -192,7 +190,6 @@ OpenAPI_easdf_info_t *OpenAPI_easdf_info_parseFromJSON(cJSON *easdf_infoJSON)
             OpenAPI_ip_addr_t *upf_n6_ip_address_listItem = OpenAPI_ip_addr_parseFromJSON(upf_n6_ip_address_list_local);
             if (!upf_n6_ip_address_listItem) {
                 ogs_error("No upf_n6_ip_address_listItem");
-                OpenAPI_list_free(upf_n6_ip_address_listList);
                 goto end;
             }
             OpenAPI_list_add(upf_n6_ip_address_listList, upf_n6_ip_address_listItem);

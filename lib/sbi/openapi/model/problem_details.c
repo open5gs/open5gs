@@ -288,7 +288,6 @@ OpenAPI_problem_details_t *OpenAPI_problem_details_parseFromJSON(cJSON *problem_
             OpenAPI_invalid_param_t *invalid_paramsItem = OpenAPI_invalid_param_parseFromJSON(invalid_params_local);
             if (!invalid_paramsItem) {
                 ogs_error("No invalid_paramsItem");
-                OpenAPI_list_free(invalid_paramsList);
                 goto end;
             }
             OpenAPI_list_add(invalid_paramsList, invalid_paramsItem);
@@ -306,11 +305,19 @@ OpenAPI_problem_details_t *OpenAPI_problem_details_parseFromJSON(cJSON *problem_
     access_token_error = cJSON_GetObjectItemCaseSensitive(problem_detailsJSON, "accessTokenError");
     if (access_token_error) {
     access_token_error_local_nonprim = OpenAPI_access_token_err_parseFromJSON(access_token_error);
+    if (!access_token_error_local_nonprim) {
+        ogs_error("OpenAPI_access_token_err_parseFromJSON failed [access_token_error]");
+        goto end;
+    }
     }
 
     access_token_request = cJSON_GetObjectItemCaseSensitive(problem_detailsJSON, "accessTokenRequest");
     if (access_token_request) {
     access_token_request_local_nonprim = OpenAPI_access_token_req_parseFromJSON(access_token_request);
+    if (!access_token_request_local_nonprim) {
+        ogs_error("OpenAPI_access_token_req_parseFromJSON failed [access_token_request]");
+        goto end;
+    }
     }
 
     nrf_id = cJSON_GetObjectItemCaseSensitive(problem_detailsJSON, "nrfId");

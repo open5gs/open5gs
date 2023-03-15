@@ -234,6 +234,10 @@ OpenAPI_n3ga_location_t *OpenAPI_n3ga_location_parseFromJSON(cJSON *n3ga_locatio
     n3gpp_tai = cJSON_GetObjectItemCaseSensitive(n3ga_locationJSON, "n3gppTai");
     if (n3gpp_tai) {
     n3gpp_tai_local_nonprim = OpenAPI_tai_parseFromJSON(n3gpp_tai);
+    if (!n3gpp_tai_local_nonprim) {
+        ogs_error("OpenAPI_tai_parseFromJSON failed [n3gpp_tai]");
+        goto end;
+    }
     }
 
     n3_iwf_id = cJSON_GetObjectItemCaseSensitive(n3ga_locationJSON, "n3IwfId");
@@ -280,16 +284,28 @@ OpenAPI_n3ga_location_t *OpenAPI_n3ga_location_parseFromJSON(cJSON *n3ga_locatio
     tnap_id = cJSON_GetObjectItemCaseSensitive(n3ga_locationJSON, "tnapId");
     if (tnap_id) {
     tnap_id_local_nonprim = OpenAPI_tnap_id_parseFromJSON(tnap_id);
+    if (!tnap_id_local_nonprim) {
+        ogs_error("OpenAPI_tnap_id_parseFromJSON failed [tnap_id]");
+        goto end;
+    }
     }
 
     twap_id = cJSON_GetObjectItemCaseSensitive(n3ga_locationJSON, "twapId");
     if (twap_id) {
     twap_id_local_nonprim = OpenAPI_twap_id_parseFromJSON(twap_id);
+    if (!twap_id_local_nonprim) {
+        ogs_error("OpenAPI_twap_id_parseFromJSON failed [twap_id]");
+        goto end;
+    }
     }
 
     hfc_node_id = cJSON_GetObjectItemCaseSensitive(n3ga_locationJSON, "hfcNodeId");
     if (hfc_node_id) {
     hfc_node_id_local_nonprim = OpenAPI_hfc_node_id_parseFromJSON(hfc_node_id);
+    if (!hfc_node_id_local_nonprim) {
+        ogs_error("OpenAPI_hfc_node_id_parseFromJSON failed [hfc_node_id]");
+        goto end;
+    }
     }
 
     gli = cJSON_GetObjectItemCaseSensitive(n3ga_locationJSON, "gli");

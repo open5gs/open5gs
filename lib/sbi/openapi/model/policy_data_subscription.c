@@ -266,7 +266,6 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_parseFromJS
             OpenAPI_resource_item_t *mon_res_itemsItem = OpenAPI_resource_item_parseFromJSON(mon_res_items_local);
             if (!mon_res_itemsItem) {
                 ogs_error("No mon_res_itemsItem");
-                OpenAPI_list_free(mon_res_itemsList);
                 goto end;
             }
             OpenAPI_list_add(mon_res_itemsList, mon_res_itemsItem);
@@ -291,7 +290,6 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_parseFromJS
             OpenAPI_resource_item_t *excluded_res_itemsItem = OpenAPI_resource_item_parseFromJSON(excluded_res_items_local);
             if (!excluded_res_itemsItem) {
                 ogs_error("No excluded_res_itemsItem");
-                OpenAPI_list_free(excluded_res_itemsList);
                 goto end;
             }
             OpenAPI_list_add(excluded_res_itemsList, excluded_res_itemsItem);

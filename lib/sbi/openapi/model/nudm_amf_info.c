@@ -109,6 +109,10 @@ OpenAPI_nudm_amf_info_t *OpenAPI_nudm_amf_info_parseFromJSON(cJSON *nudm_amf_inf
         goto end;
     }
     guami_local_nonprim = OpenAPI_guami_parseFromJSON(guami);
+    if (!guami_local_nonprim) {
+        ogs_error("OpenAPI_guami_parseFromJSON failed [guami]");
+        goto end;
+    }
 
     access_type = cJSON_GetObjectItemCaseSensitive(nudm_amf_infoJSON, "accessType");
     if (access_type) {

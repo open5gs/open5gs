@@ -81,6 +81,10 @@ OpenAPI_trace_data_response_t *OpenAPI_trace_data_response_parseFromJSON(cJSON *
     trace_data = cJSON_GetObjectItemCaseSensitive(trace_data_responseJSON, "traceData");
     if (trace_data) {
     trace_data_local_nonprim = OpenAPI_trace_data_parseFromJSON(trace_data);
+    if (!trace_data_local_nonprim) {
+        ogs_error("OpenAPI_trace_data_parseFromJSON failed [trace_data]");
+        goto end;
+    }
     }
 
     shared_trace_data_id = cJSON_GetObjectItemCaseSensitive(trace_data_responseJSON, "sharedTraceDataId");

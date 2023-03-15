@@ -141,6 +141,10 @@ OpenAPI_amf_subscription_info_t *OpenAPI_amf_subscription_info_parseFromJSON(cJS
     context_info = cJSON_GetObjectItemCaseSensitive(amf_subscription_infoJSON, "contextInfo");
     if (context_info) {
     context_info_local_nonprim = OpenAPI_context_info_parseFromJSON(context_info);
+    if (!context_info_local_nonprim) {
+        ogs_error("OpenAPI_context_info_parseFromJSON failed [context_info]");
+        goto end;
+    }
     }
 
     amf_subscription_info_local_var = OpenAPI_amf_subscription_info_create (

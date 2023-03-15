@@ -107,6 +107,10 @@ OpenAPI_route_to_location_t *OpenAPI_route_to_location_parseFromJSON(cJSON *rout
     route_info = cJSON_GetObjectItemCaseSensitive(route_to_locationJSON, "routeInfo");
     if (route_info) {
     route_info_local_nonprim = OpenAPI_route_information_parseFromJSON(route_info);
+    if (!route_info_local_nonprim) {
+        ogs_error("OpenAPI_route_information_parseFromJSON failed [route_info]");
+        goto end;
+    }
     }
 
     route_prof_id = cJSON_GetObjectItemCaseSensitive(route_to_locationJSON, "routeProfId");

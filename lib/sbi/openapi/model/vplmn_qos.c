@@ -164,11 +164,19 @@ OpenAPI_vplmn_qos_t *OpenAPI_vplmn_qos_parseFromJSON(cJSON *vplmn_qosJSON)
     arp = cJSON_GetObjectItemCaseSensitive(vplmn_qosJSON, "arp");
     if (arp) {
     arp_local_nonprim = OpenAPI_arp_parseFromJSON(arp);
+    if (!arp_local_nonprim) {
+        ogs_error("OpenAPI_arp_parseFromJSON failed [arp]");
+        goto end;
+    }
     }
 
     session_ambr = cJSON_GetObjectItemCaseSensitive(vplmn_qosJSON, "sessionAmbr");
     if (session_ambr) {
     session_ambr_local_nonprim = OpenAPI_ambr_parseFromJSON(session_ambr);
+    if (!session_ambr_local_nonprim) {
+        ogs_error("OpenAPI_ambr_parseFromJSON failed [session_ambr]");
+        goto end;
+    }
     }
 
     max_fbr_dl = cJSON_GetObjectItemCaseSensitive(vplmn_qosJSON, "maxFbrDl");

@@ -171,7 +171,6 @@ OpenAPI_ue_context_in_smf_data_t *OpenAPI_ue_context_in_smf_data_parseFromJSON(c
             OpenAPI_pgw_info_t *pgw_infoItem = OpenAPI_pgw_info_parseFromJSON(pgw_info_local);
             if (!pgw_infoItem) {
                 ogs_error("No pgw_infoItem");
-                OpenAPI_list_free(pgw_infoList);
                 goto end;
             }
             OpenAPI_list_add(pgw_infoList, pgw_infoItem);
@@ -181,6 +180,10 @@ OpenAPI_ue_context_in_smf_data_t *OpenAPI_ue_context_in_smf_data_parseFromJSON(c
     emergency_info = cJSON_GetObjectItemCaseSensitive(ue_context_in_smf_dataJSON, "emergencyInfo");
     if (emergency_info) {
     emergency_info_local_nonprim = OpenAPI_emergency_info_parseFromJSON(emergency_info);
+    if (!emergency_info_local_nonprim) {
+        ogs_error("OpenAPI_emergency_info_parseFromJSON failed [emergency_info]");
+        goto end;
+    }
     }
 
     ue_context_in_smf_data_local_var = OpenAPI_ue_context_in_smf_data_create (

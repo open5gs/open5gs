@@ -121,6 +121,10 @@ OpenAPI_circumstance_description_t *OpenAPI_circumstance_description_parseFromJS
     loc_area = cJSON_GetObjectItemCaseSensitive(circumstance_descriptionJSON, "locArea");
     if (loc_area) {
     loc_area_local_nonprim = OpenAPI_network_area_info_parseFromJSON(loc_area);
+    if (!loc_area_local_nonprim) {
+        ogs_error("OpenAPI_network_area_info_parseFromJSON failed [loc_area]");
+        goto end;
+    }
     }
 
     vol = cJSON_GetObjectItemCaseSensitive(circumstance_descriptionJSON, "vol");

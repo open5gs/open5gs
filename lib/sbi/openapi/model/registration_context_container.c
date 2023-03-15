@@ -445,6 +445,10 @@ OpenAPI_registration_context_container_t *OpenAPI_registration_context_container
         goto end;
     }
     ue_context_local_nonprim = OpenAPI_ue_context_parseFromJSON(ue_context);
+    if (!ue_context_local_nonprim) {
+        ogs_error("OpenAPI_ue_context_parseFromJSON failed [ue_context]");
+        goto end;
+    }
 
     local_time_zone = cJSON_GetObjectItemCaseSensitive(registration_context_containerJSON, "localTimeZone");
     if (local_time_zone) {
@@ -481,6 +485,10 @@ OpenAPI_registration_context_container_t *OpenAPI_registration_context_container
         goto end;
     }
     ran_node_id_local_nonprim = OpenAPI_global_ran_node_id_parseFromJSON(ran_node_id);
+    if (!ran_node_id_local_nonprim) {
+        ogs_error("OpenAPI_global_ran_node_id_parseFromJSON failed [ran_node_id]");
+        goto end;
+    }
 
     initial_amf_name = cJSON_GetObjectItemCaseSensitive(registration_context_containerJSON, "initialAmfName");
     if (!initial_amf_name) {
@@ -498,6 +506,10 @@ OpenAPI_registration_context_container_t *OpenAPI_registration_context_container
         goto end;
     }
     user_location_local_nonprim = OpenAPI_user_location_parseFromJSON(user_location);
+    if (!user_location_local_nonprim) {
+        ogs_error("OpenAPI_user_location_parseFromJSON failed [user_location]");
+        goto end;
+    }
 
     rrc_est_cause = cJSON_GetObjectItemCaseSensitive(registration_context_containerJSON, "rrcEstCause");
     if (rrc_est_cause) {
@@ -542,6 +554,10 @@ OpenAPI_registration_context_container_t *OpenAPI_registration_context_container
     allowed_nssai = cJSON_GetObjectItemCaseSensitive(registration_context_containerJSON, "allowedNssai");
     if (allowed_nssai) {
     allowed_nssai_local_nonprim = OpenAPI_allowed_nssai_parseFromJSON(allowed_nssai);
+    if (!allowed_nssai_local_nonprim) {
+        ogs_error("OpenAPI_allowed_nssai_parseFromJSON failed [allowed_nssai]");
+        goto end;
+    }
     }
 
     configured_nssai = cJSON_GetObjectItemCaseSensitive(registration_context_containerJSON, "configuredNssai");
@@ -562,7 +578,6 @@ OpenAPI_registration_context_container_t *OpenAPI_registration_context_container
             OpenAPI_configured_snssai_t *configured_nssaiItem = OpenAPI_configured_snssai_parseFromJSON(configured_nssai_local);
             if (!configured_nssaiItem) {
                 ogs_error("No configured_nssaiItem");
-                OpenAPI_list_free(configured_nssaiList);
                 goto end;
             }
             OpenAPI_list_add(configured_nssaiList, configured_nssaiItem);
@@ -587,7 +602,6 @@ OpenAPI_registration_context_container_t *OpenAPI_registration_context_container
             OpenAPI_snssai_t *rejected_nssai_in_plmnItem = OpenAPI_snssai_parseFromJSON(rejected_nssai_in_plmn_local);
             if (!rejected_nssai_in_plmnItem) {
                 ogs_error("No rejected_nssai_in_plmnItem");
-                OpenAPI_list_free(rejected_nssai_in_plmnList);
                 goto end;
             }
             OpenAPI_list_add(rejected_nssai_in_plmnList, rejected_nssai_in_plmnItem);
@@ -612,7 +626,6 @@ OpenAPI_registration_context_container_t *OpenAPI_registration_context_container
             OpenAPI_snssai_t *rejected_nssai_in_taItem = OpenAPI_snssai_parseFromJSON(rejected_nssai_in_ta_local);
             if (!rejected_nssai_in_taItem) {
                 ogs_error("No rejected_nssai_in_taItem");
-                OpenAPI_list_free(rejected_nssai_in_taList);
                 goto end;
             }
             OpenAPI_list_add(rejected_nssai_in_taList, rejected_nssai_in_taItem);
@@ -622,6 +635,10 @@ OpenAPI_registration_context_container_t *OpenAPI_registration_context_container
     selected_plmn_id = cJSON_GetObjectItemCaseSensitive(registration_context_containerJSON, "selectedPlmnId");
     if (selected_plmn_id) {
     selected_plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(selected_plmn_id);
+    if (!selected_plmn_id_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [selected_plmn_id]");
+        goto end;
+    }
     }
 
     iab_node_ind = cJSON_GetObjectItemCaseSensitive(registration_context_containerJSON, "iabNodeInd");
@@ -635,11 +652,19 @@ OpenAPI_registration_context_container_t *OpenAPI_registration_context_container
     ce_mode_b_ind = cJSON_GetObjectItemCaseSensitive(registration_context_containerJSON, "ceModeBInd");
     if (ce_mode_b_ind) {
     ce_mode_b_ind_local_nonprim = OpenAPI_ce_mode_b_ind_parseFromJSON(ce_mode_b_ind);
+    if (!ce_mode_b_ind_local_nonprim) {
+        ogs_error("OpenAPI_ce_mode_b_ind_parseFromJSON failed [ce_mode_b_ind]");
+        goto end;
+    }
     }
 
     lte_m_ind = cJSON_GetObjectItemCaseSensitive(registration_context_containerJSON, "lteMInd");
     if (lte_m_ind) {
     lte_m_ind_local_nonprim = OpenAPI_lte_m_ind_parseFromJSON(lte_m_ind);
+    if (!lte_m_ind_local_nonprim) {
+        ogs_error("OpenAPI_lte_m_ind_parseFromJSON failed [lte_m_ind]");
+        goto end;
+    }
     }
 
     authenticated_ind = cJSON_GetObjectItemCaseSensitive(registration_context_containerJSON, "authenticatedInd");
@@ -653,6 +678,10 @@ OpenAPI_registration_context_container_t *OpenAPI_registration_context_container
     npn_access_info = cJSON_GetObjectItemCaseSensitive(registration_context_containerJSON, "npnAccessInfo");
     if (npn_access_info) {
     npn_access_info_local_nonprim = OpenAPI_npn_access_info_parseFromJSON(npn_access_info);
+    if (!npn_access_info_local_nonprim) {
+        ogs_error("OpenAPI_npn_access_info_parseFromJSON failed [npn_access_info]");
+        goto end;
+    }
     }
 
     registration_context_container_local_var = OpenAPI_registration_context_container_create (

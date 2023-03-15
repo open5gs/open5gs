@@ -272,6 +272,10 @@ OpenAPI_nsi_load_level_info_t *OpenAPI_nsi_load_level_info_parseFromJSON(cJSON *
         goto end;
     }
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
 
     nsi_id = cJSON_GetObjectItemCaseSensitive(nsi_load_level_infoJSON, "nsiId");
     if (nsi_id) {
@@ -284,6 +288,10 @@ OpenAPI_nsi_load_level_info_t *OpenAPI_nsi_load_level_info_parseFromJSON(cJSON *
     res_usage = cJSON_GetObjectItemCaseSensitive(nsi_load_level_infoJSON, "resUsage");
     if (res_usage) {
     res_usage_local_nonprim = OpenAPI_resource_usage_parseFromJSON(res_usage);
+    if (!res_usage_local_nonprim) {
+        ogs_error("OpenAPI_resource_usage_parseFromJSON failed [res_usage]");
+        goto end;
+    }
     }
 
     num_of_exceed_load_level_thr = cJSON_GetObjectItemCaseSensitive(nsi_load_level_infoJSON, "numOfExceedLoadLevelThr");
@@ -305,11 +313,19 @@ OpenAPI_nsi_load_level_info_t *OpenAPI_nsi_load_level_info_parseFromJSON(cJSON *
     network_area = cJSON_GetObjectItemCaseSensitive(nsi_load_level_infoJSON, "networkArea");
     if (network_area) {
     network_area_local_nonprim = OpenAPI_network_area_info_parseFromJSON(network_area);
+    if (!network_area_local_nonprim) {
+        ogs_error("OpenAPI_network_area_info_parseFromJSON failed [network_area]");
+        goto end;
+    }
     }
 
     time_period = cJSON_GetObjectItemCaseSensitive(nsi_load_level_infoJSON, "timePeriod");
     if (time_period) {
     time_period_local_nonprim = OpenAPI_time_window_parseFromJSON(time_period);
+    if (!time_period_local_nonprim) {
+        ogs_error("OpenAPI_time_window_parseFromJSON failed [time_period]");
+        goto end;
+    }
     }
 
     res_usg_thr_cross_time_period = cJSON_GetObjectItemCaseSensitive(nsi_load_level_infoJSON, "resUsgThrCrossTimePeriod");
@@ -330,7 +346,6 @@ OpenAPI_nsi_load_level_info_t *OpenAPI_nsi_load_level_info_parseFromJSON(cJSON *
             OpenAPI_time_window_t *res_usg_thr_cross_time_periodItem = OpenAPI_time_window_parseFromJSON(res_usg_thr_cross_time_period_local);
             if (!res_usg_thr_cross_time_periodItem) {
                 ogs_error("No res_usg_thr_cross_time_periodItem");
-                OpenAPI_list_free(res_usg_thr_cross_time_periodList);
                 goto end;
             }
             OpenAPI_list_add(res_usg_thr_cross_time_periodList, res_usg_thr_cross_time_periodItem);
@@ -340,11 +355,19 @@ OpenAPI_nsi_load_level_info_t *OpenAPI_nsi_load_level_info_parseFromJSON(cJSON *
     num_of_ues = cJSON_GetObjectItemCaseSensitive(nsi_load_level_infoJSON, "numOfUes");
     if (num_of_ues) {
     num_of_ues_local_nonprim = OpenAPI_number_average_parseFromJSON(num_of_ues);
+    if (!num_of_ues_local_nonprim) {
+        ogs_error("OpenAPI_number_average_parseFromJSON failed [num_of_ues]");
+        goto end;
+    }
     }
 
     num_of_pdu_sess = cJSON_GetObjectItemCaseSensitive(nsi_load_level_infoJSON, "numOfPduSess");
     if (num_of_pdu_sess) {
     num_of_pdu_sess_local_nonprim = OpenAPI_number_average_parseFromJSON(num_of_pdu_sess);
+    if (!num_of_pdu_sess_local_nonprim) {
+        ogs_error("OpenAPI_number_average_parseFromJSON failed [num_of_pdu_sess]");
+        goto end;
+    }
     }
 
     confidence = cJSON_GetObjectItemCaseSensitive(nsi_load_level_infoJSON, "confidence");

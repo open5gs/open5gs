@@ -249,7 +249,6 @@ OpenAPI_nrf_info_served_lmf_info_value_t *OpenAPI_nrf_info_served_lmf_info_value
             OpenAPI_external_client_type_t *serving_client_typesItem = OpenAPI_external_client_type_parseFromJSON(serving_client_types_local);
             if (!serving_client_typesItem) {
                 ogs_error("No serving_client_typesItem");
-                OpenAPI_list_free(serving_client_typesList);
                 goto end;
             }
             OpenAPI_list_add(serving_client_typesList, serving_client_typesItem);
@@ -339,7 +338,6 @@ OpenAPI_nrf_info_served_lmf_info_value_t *OpenAPI_nrf_info_served_lmf_info_value
             OpenAPI_tai_t *tai_listItem = OpenAPI_tai_parseFromJSON(tai_list_local);
             if (!tai_listItem) {
                 ogs_error("No tai_listItem");
-                OpenAPI_list_free(tai_listList);
                 goto end;
             }
             OpenAPI_list_add(tai_listList, tai_listItem);
@@ -364,7 +362,6 @@ OpenAPI_nrf_info_served_lmf_info_value_t *OpenAPI_nrf_info_served_lmf_info_value
             OpenAPI_tai_range_t *tai_range_listItem = OpenAPI_tai_range_parseFromJSON(tai_range_list_local);
             if (!tai_range_listItem) {
                 ogs_error("No tai_range_listItem");
-                OpenAPI_list_free(tai_range_listList);
                 goto end;
             }
             OpenAPI_list_add(tai_range_listList, tai_range_listItem);
@@ -389,7 +386,6 @@ OpenAPI_nrf_info_served_lmf_info_value_t *OpenAPI_nrf_info_served_lmf_info_value
             OpenAPI_supported_gad_shapes_t *supported_gad_shapesItem = OpenAPI_supported_gad_shapes_parseFromJSON(supported_gad_shapes_local);
             if (!supported_gad_shapesItem) {
                 ogs_error("No supported_gad_shapesItem");
-                OpenAPI_list_free(supported_gad_shapesList);
                 goto end;
             }
             OpenAPI_list_add(supported_gad_shapesList, supported_gad_shapesItem);
