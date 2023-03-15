@@ -55,13 +55,21 @@ void mme_state_final(ogs_fsm_t *s, mme_event_t *e)
 static bool is_messgae_dup(uint8_t *buf, size_t buf_sz) {
     bool is_dup = true;
     redisReply *reply = NULL;
-    int expire_time_sec = 3; // todo load from config
-    redisContext *c = redisConnect("127.0.0.1", 6379); // todo load from config
+    redisContext *c = redisConnect(
+        mme_self()->redis_config.address,
+        mme_self()->redis_config.port
+    );
 
     if (c != NULL && c->err) {
-        ogs_fatal("Hiredis connection failed : %s", c->errstr);
-    } else {
-        // todo handle error
+        /* If we cannot connect to redis 
+         * we don't want to cripple the system */
+        ogs_fatal("%s - Redis config {address: '%s', port: %i, expire_time_sec: %i}",
+            c->errstr,
+            mme_self()->redis_config.address,
+            mme_self()->redis_config.port,
+            mme_self()->redis_config.expire_time_sec
+        );
+        return false;
     }
 
     /* Have we seen this exact message recently? */
@@ -80,7 +88,7 @@ static bool is_messgae_dup(uint8_t *buf, size_t buf_sz) {
     /* Tell redis to remember this message for 3 seconds */
     reply = redisCommand(c, "INCR %b", buf, buf_sz);
     freeReplyObject(reply);
-    reply = redisCommand(c, "EXPIRE %b %i", buf, buf_sz, expire_time_sec);
+    reply = redisCommand(c, "EXPIRE %b %i", buf, buf_sz, mme_self()->redis_config.expire_time_sec);
     freeReplyObject(reply);
 
     redisFree(c);
