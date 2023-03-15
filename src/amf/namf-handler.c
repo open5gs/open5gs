@@ -909,22 +909,31 @@ int amf_namf_callback_handle_sdm_data_change_notify(
     }
 
     if (amf_ue) {
-        if (amf_ue_is_rat_restricted(amf_ue)) {
-            /*
-             * - AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED
-             * 1. UDM_UECM_DeregistrationNotification
-             * 2. Deregistration request
-             * 3. UDM_SDM_Unsubscribe
-             * 4. UDM_UECM_Deregisration
-             * 5. PDU session release request
-             * 6. PDUSessionResourceReleaseCommand +
-             *    PDU session release command
-             * 7. PDUSessionResourceReleaseResponse
-             * 8. AM_Policy_Association_Termination
-             * 9.  Deregistration accept
-             * 10. Signalling Connecion Release
-             */
-            if (CM_CONNECTED(amf_ue)) {
+        ran_ue_t *ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+        if ((!ran_ue) || (amf_ue_is_rat_restricted(amf_ue))) {
+
+            if (!ran_ue) {
+                ogs_error("NG context has already been removed");
+                /* ran_ue is required for amf_ue_is_rat_restricted() */
+
+                ogs_error("Not implemented : Use Implicit De-registration");
+                state = AMF_NETWORK_INITIATED_IMPLICIT_DE_REGISTERED;
+            }
+            else {
+                /*
+                * - AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED
+                * 1. UDM_UECM_DeregistrationNotification
+                * 2. Deregistration request
+                * 3. UDM_SDM_Unsubscribe
+                * 4. UDM_UECM_Deregistration
+                * 5. PDU session release request
+                * 6. PDUSessionResourceReleaseCommand +
+                *    PDU session release command
+                * 7. PDUSessionResourceReleaseResponse
+                * 8. AM_Policy_Association_Termination
+                * 9.  Deregistration accept
+                * 10. Signalling Connection Release
+                */
                 r = nas_5gs_send_de_registration_request(
                         amf_ue,
                         OpenAPI_deregistration_reason_REREGISTRATION_REQUIRED, 0);
@@ -932,15 +941,6 @@ int amf_namf_callback_handle_sdm_data_change_notify(
                 ogs_assert(r != OGS_ERROR);
 
                 state = AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED;
-
-            } else if (CM_IDLE(amf_ue)) {
-                ogs_error("Not implemented : Use Implicit De-registration");
-
-                state = AMF_NETWORK_INITIATED_IMPLICIT_DE_REGISTERED;
-
-            } else {
-                ogs_fatal("Invalid State");
-                ogs_assert_if_reached();
             }
 
             if (UDM_SDM_SUBSCRIBED(amf_ue)) {
