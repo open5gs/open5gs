@@ -391,7 +391,6 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_parseFromJSON(cJSON *upf_infoJSON)
             OpenAPI_snssai_upf_info_item_t *s_nssai_upf_info_listItem = OpenAPI_snssai_upf_info_item_parseFromJSON(s_nssai_upf_info_list_local);
             if (!s_nssai_upf_info_listItem) {
                 ogs_error("No s_nssai_upf_info_listItem");
-                OpenAPI_list_free(s_nssai_upf_info_listList);
                 goto end;
             }
             OpenAPI_list_add(s_nssai_upf_info_listList, s_nssai_upf_info_listItem);
