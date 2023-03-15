@@ -79,7 +79,7 @@ libmme_sources = files('''
     metrics.c
 '''.split())
 
-libhiredis = cc.find_library('hiredis', dirs: '/usr/local/lib/', required: true)
+libhiredis_dep = cc.find_library('hiredis', dirs: '/usr/local/lib/', required: true)
 libhiredis_inc = include_directories('/usr/local/include/hiredis')
 
 libmme = static_library('mme',
@@ -90,10 +90,9 @@ libmme = static_library('mme',
                     libnas_eps_dep,
                     libdiameter_s6a_dep,
                     libdiameter_s13_dep,
-                    libgtp_dep, libhiredis],
+                    libgtp_dep],
     include_directories : libhiredis_inc,
-    install : false
-)
+    install : false)
 
 libmme_dep = declare_dependency(
     link_with : libmme,
@@ -104,9 +103,7 @@ libmme_dep = declare_dependency(
                     libdiameter_s6a_dep,
                     libdiameter_s13_dep,
                     libgtp_dep,
-                    libhiredis],
-    include_directories : libhiredis_inc,
-)
+                    libhiredis_dep])
 
 mme_sources = files('''
     app-init.c
@@ -117,6 +114,6 @@ executable('open5gs-mmed',
     sources : mme_sources,
     c_args : '-DDEFAULT_CONFIG_FILENAME="@0@/mme.yaml"'.format(open5gs_sysconfdir),
     include_directories : srcinc,
-    dependencies : [libmme_dep, libhiredis],
+    dependencies : libmme_dep,
     install_rpath : libdir,
     install : true)
