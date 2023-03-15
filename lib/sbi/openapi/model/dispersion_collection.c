@@ -246,11 +246,19 @@ OpenAPI_dispersion_collection_t *OpenAPI_dispersion_collection_parseFromJSON(cJS
     ue_loc = cJSON_GetObjectItemCaseSensitive(dispersion_collectionJSON, "ueLoc");
     if (ue_loc) {
     ue_loc_local_nonprim = OpenAPI_user_location_parseFromJSON(ue_loc);
+    if (!ue_loc_local_nonprim) {
+        ogs_error("OpenAPI_user_location_parseFromJSON failed [ue_loc]");
+        goto end;
+    }
     }
 
     snssai = cJSON_GetObjectItemCaseSensitive(dispersion_collectionJSON, "snssai");
     if (snssai) {
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
     }
 
     supis = cJSON_GetObjectItemCaseSensitive(dispersion_collectionJSON, "supis");
@@ -313,7 +321,6 @@ OpenAPI_dispersion_collection_t *OpenAPI_dispersion_collection_parseFromJSON(cJS
             OpenAPI_application_volume_t *app_volumesItem = OpenAPI_application_volume_parseFromJSON(app_volumes_local);
             if (!app_volumesItem) {
                 ogs_error("No app_volumesItem");
-                OpenAPI_list_free(app_volumesList);
                 goto end;
             }
             OpenAPI_list_add(app_volumesList, app_volumesItem);
@@ -331,6 +338,10 @@ OpenAPI_dispersion_collection_t *OpenAPI_dispersion_collection_parseFromJSON(cJS
     disper_class = cJSON_GetObjectItemCaseSensitive(dispersion_collectionJSON, "disperClass");
     if (disper_class) {
     disper_class_local_nonprim = OpenAPI_dispersion_class_parseFromJSON(disper_class);
+    if (!disper_class_local_nonprim) {
+        ogs_error("OpenAPI_dispersion_class_parseFromJSON failed [disper_class]");
+        goto end;
+    }
     }
 
     usage_rank = cJSON_GetObjectItemCaseSensitive(dispersion_collectionJSON, "usageRank");

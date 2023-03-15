@@ -134,7 +134,6 @@ OpenAPI_spatial_validity_cond_t *OpenAPI_spatial_validity_cond_parseFromJSON(cJS
             OpenAPI_tai_t *tracking_area_listItem = OpenAPI_tai_parseFromJSON(tracking_area_list_local);
             if (!tracking_area_listItem) {
                 ogs_error("No tracking_area_listItem");
-                OpenAPI_list_free(tracking_area_listList);
                 goto end;
             }
             OpenAPI_list_add(tracking_area_listList, tracking_area_listItem);
@@ -165,6 +164,10 @@ OpenAPI_spatial_validity_cond_t *OpenAPI_spatial_validity_cond_parseFromJSON(cJS
     geographical_service_area = cJSON_GetObjectItemCaseSensitive(spatial_validity_condJSON, "geographicalServiceArea");
     if (geographical_service_area) {
     geographical_service_area_local_nonprim = OpenAPI_geo_service_area_parseFromJSON(geographical_service_area);
+    if (!geographical_service_area_local_nonprim) {
+        ogs_error("OpenAPI_geo_service_area_parseFromJSON failed [geographical_service_area]");
+        goto end;
+    }
     }
 
     spatial_validity_cond_local_var = OpenAPI_spatial_validity_cond_create (

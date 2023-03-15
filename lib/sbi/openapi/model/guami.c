@@ -88,6 +88,10 @@ OpenAPI_guami_t *OpenAPI_guami_parseFromJSON(cJSON *guamiJSON)
         goto end;
     }
     plmn_id_local_nonprim = OpenAPI_plmn_id_nid_parseFromJSON(plmn_id);
+    if (!plmn_id_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_nid_parseFromJSON failed [plmn_id]");
+        goto end;
+    }
 
     amf_id = cJSON_GetObjectItemCaseSensitive(guamiJSON, "amfId");
     if (!amf_id) {

@@ -99,6 +99,10 @@ OpenAPI_n1_n2_msg_txfr_err_detail_t *OpenAPI_n1_n2_msg_txfr_err_detail_parseFrom
     highest_prio_arp = cJSON_GetObjectItemCaseSensitive(n1_n2_msg_txfr_err_detailJSON, "highestPrioArp");
     if (highest_prio_arp) {
     highest_prio_arp_local_nonprim = OpenAPI_arp_parseFromJSON(highest_prio_arp);
+    if (!highest_prio_arp_local_nonprim) {
+        ogs_error("OpenAPI_arp_parseFromJSON failed [highest_prio_arp]");
+        goto end;
+    }
     }
 
     max_waiting_time = cJSON_GetObjectItemCaseSensitive(n1_n2_msg_txfr_err_detailJSON, "maxWaitingTime");

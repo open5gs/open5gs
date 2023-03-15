@@ -117,6 +117,10 @@ OpenAPI_service_area_coverage_info_t *OpenAPI_service_area_coverage_info_parseFr
     serving_network = cJSON_GetObjectItemCaseSensitive(service_area_coverage_infoJSON, "servingNetwork");
     if (serving_network) {
     serving_network_local_nonprim = OpenAPI_plmn_id_nid_1_parseFromJSON(serving_network);
+    if (!serving_network_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_nid_1_parseFromJSON failed [serving_network]");
+        goto end;
+    }
     }
 
     service_area_coverage_info_local_var = OpenAPI_service_area_coverage_info_create (

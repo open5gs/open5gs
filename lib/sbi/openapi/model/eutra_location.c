@@ -215,6 +215,10 @@ OpenAPI_eutra_location_t *OpenAPI_eutra_location_parseFromJSON(cJSON *eutra_loca
         goto end;
     }
     tai_local_nonprim = OpenAPI_tai_parseFromJSON(tai);
+    if (!tai_local_nonprim) {
+        ogs_error("OpenAPI_tai_parseFromJSON failed [tai]");
+        goto end;
+    }
 
     ignore_tai = cJSON_GetObjectItemCaseSensitive(eutra_locationJSON, "ignoreTai");
     if (ignore_tai) {
@@ -230,6 +234,10 @@ OpenAPI_eutra_location_t *OpenAPI_eutra_location_parseFromJSON(cJSON *eutra_loca
         goto end;
     }
     ecgi_local_nonprim = OpenAPI_ecgi_parseFromJSON(ecgi);
+    if (!ecgi_local_nonprim) {
+        ogs_error("OpenAPI_ecgi_parseFromJSON failed [ecgi]");
+        goto end;
+    }
 
     ignore_ecgi = cJSON_GetObjectItemCaseSensitive(eutra_locationJSON, "ignoreEcgi");
     if (ignore_ecgi) {
@@ -274,11 +282,19 @@ OpenAPI_eutra_location_t *OpenAPI_eutra_location_parseFromJSON(cJSON *eutra_loca
     global_ngenb_id = cJSON_GetObjectItemCaseSensitive(eutra_locationJSON, "globalNgenbId");
     if (global_ngenb_id) {
     global_ngenb_id_local_nonprim = OpenAPI_global_ran_node_id_parseFromJSON(global_ngenb_id);
+    if (!global_ngenb_id_local_nonprim) {
+        ogs_error("OpenAPI_global_ran_node_id_parseFromJSON failed [global_ngenb_id]");
+        goto end;
+    }
     }
 
     global_enb_id = cJSON_GetObjectItemCaseSensitive(eutra_locationJSON, "globalENbId");
     if (global_enb_id) {
     global_enb_id_local_nonprim = OpenAPI_global_ran_node_id_parseFromJSON(global_enb_id);
+    if (!global_enb_id_local_nonprim) {
+        ogs_error("OpenAPI_global_ran_node_id_parseFromJSON failed [global_enb_id]");
+        goto end;
+    }
     }
 
     eutra_location_local_var = OpenAPI_eutra_location_create (

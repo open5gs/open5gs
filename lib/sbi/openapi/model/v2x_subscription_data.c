@@ -116,11 +116,19 @@ OpenAPI_v2x_subscription_data_t *OpenAPI_v2x_subscription_data_parseFromJSON(cJS
     nr_v2x_services_auth = cJSON_GetObjectItemCaseSensitive(v2x_subscription_dataJSON, "nrV2xServicesAuth");
     if (nr_v2x_services_auth) {
     nr_v2x_services_auth_local_nonprim = OpenAPI_nr_v2x_auth_parseFromJSON(nr_v2x_services_auth);
+    if (!nr_v2x_services_auth_local_nonprim) {
+        ogs_error("OpenAPI_nr_v2x_auth_parseFromJSON failed [nr_v2x_services_auth]");
+        goto end;
+    }
     }
 
     lte_v2x_services_auth = cJSON_GetObjectItemCaseSensitive(v2x_subscription_dataJSON, "lteV2xServicesAuth");
     if (lte_v2x_services_auth) {
     lte_v2x_services_auth_local_nonprim = OpenAPI_lte_v2x_auth_parseFromJSON(lte_v2x_services_auth);
+    if (!lte_v2x_services_auth_local_nonprim) {
+        ogs_error("OpenAPI_lte_v2x_auth_parseFromJSON failed [lte_v2x_services_auth]");
+        goto end;
+    }
     }
 
     nr_ue_pc5_ambr = cJSON_GetObjectItemCaseSensitive(v2x_subscription_dataJSON, "nrUePc5Ambr");

@@ -99,6 +99,10 @@ OpenAPI_retainability_threshold_t *OpenAPI_retainability_threshold_parseFromJSON
     rel_time_unit = cJSON_GetObjectItemCaseSensitive(retainability_thresholdJSON, "relTimeUnit");
     if (rel_time_unit) {
     rel_time_unit_local_nonprim = OpenAPI_time_unit_parseFromJSON(rel_time_unit);
+    if (!rel_time_unit_local_nonprim) {
+        ogs_error("OpenAPI_time_unit_parseFromJSON failed [rel_time_unit]");
+        goto end;
+    }
     }
 
     rel_flow_ratio = cJSON_GetObjectItemCaseSensitive(retainability_thresholdJSON, "relFlowRatio");

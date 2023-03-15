@@ -182,6 +182,10 @@ OpenAPI_reporting_information_t *OpenAPI_reporting_information_parseFromJSON(cJS
     notif_method = cJSON_GetObjectItemCaseSensitive(reporting_informationJSON, "notifMethod");
     if (notif_method) {
     notif_method_local_nonprim = OpenAPI_notification_method_1_parseFromJSON(notif_method);
+    if (!notif_method_local_nonprim) {
+        ogs_error("OpenAPI_notification_method_1_parseFromJSON failed [notif_method]");
+        goto end;
+    }
     }
 
     max_report_nbr = cJSON_GetObjectItemCaseSensitive(reporting_informationJSON, "maxReportNbr");

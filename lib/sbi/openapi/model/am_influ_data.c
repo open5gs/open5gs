@@ -358,7 +358,6 @@ OpenAPI_am_influ_data_t *OpenAPI_am_influ_data_parseFromJSON(cJSON *am_influ_dat
             OpenAPI_dnn_snssai_information_t *dnn_snssai_infosItem = OpenAPI_dnn_snssai_information_parseFromJSON(dnn_snssai_infos_local);
             if (!dnn_snssai_infosItem) {
                 ogs_error("No dnn_snssai_infosItem");
-                OpenAPI_list_free(dnn_snssai_infosList);
                 goto end;
             }
             OpenAPI_list_add(dnn_snssai_infosList, dnn_snssai_infosItem);
@@ -415,7 +414,6 @@ OpenAPI_am_influ_data_t *OpenAPI_am_influ_data_parseFromJSON(cJSON *am_influ_dat
             OpenAPI_am_influ_event_t *ev_subsItem = OpenAPI_am_influ_event_parseFromJSON(ev_subs_local);
             if (!ev_subsItem) {
                 ogs_error("No ev_subsItem");
-                OpenAPI_list_free(ev_subsList);
                 goto end;
             }
             OpenAPI_list_add(ev_subsList, ev_subsItem);
@@ -485,7 +483,6 @@ OpenAPI_am_influ_data_t *OpenAPI_am_influ_data_parseFromJSON(cJSON *am_influ_dat
             OpenAPI_service_area_coverage_info_t *cov_reqItem = OpenAPI_service_area_coverage_info_parseFromJSON(cov_req_local);
             if (!cov_reqItem) {
                 ogs_error("No cov_reqItem");
-                OpenAPI_list_free(cov_reqList);
                 goto end;
             }
             OpenAPI_list_add(cov_reqList, cov_reqItem);

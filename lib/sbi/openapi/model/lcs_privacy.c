@@ -123,6 +123,10 @@ OpenAPI_lcs_privacy_t *OpenAPI_lcs_privacy_parseFromJSON(cJSON *lcs_privacyJSON)
     lpi = cJSON_GetObjectItemCaseSensitive(lcs_privacyJSON, "lpi");
     if (lpi) {
     lpi_local_nonprim = OpenAPI_lpi_parseFromJSON(lpi);
+    if (!lpi_local_nonprim) {
+        ogs_error("OpenAPI_lpi_parseFromJSON failed [lpi]");
+        goto end;
+    }
     }
 
     mtc_provider_information = cJSON_GetObjectItemCaseSensitive(lcs_privacyJSON, "mtcProviderInformation");

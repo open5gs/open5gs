@@ -221,6 +221,10 @@ OpenAPI_pp_data_t *OpenAPI_pp_data_parseFromJSON(cJSON *pp_dataJSON)
     communication_characteristics = cJSON_GetObjectItemCaseSensitive(pp_dataJSON, "communicationCharacteristics");
     if (communication_characteristics) {
     communication_characteristics_local_nonprim = OpenAPI_communication_characteristics_parseFromJSON(communication_characteristics);
+    if (!communication_characteristics_local_nonprim) {
+        ogs_error("OpenAPI_communication_characteristics_parseFromJSON failed [communication_characteristics]");
+        goto end;
+    }
     }
 
     supported_features = cJSON_GetObjectItemCaseSensitive(pp_dataJSON, "supportedFeatures");
@@ -234,16 +238,28 @@ OpenAPI_pp_data_t *OpenAPI_pp_data_parseFromJSON(cJSON *pp_dataJSON)
     expected_ue_behaviour_parameters = cJSON_GetObjectItemCaseSensitive(pp_dataJSON, "expectedUeBehaviourParameters");
     if (expected_ue_behaviour_parameters) {
     expected_ue_behaviour_parameters_local_nonprim = OpenAPI_expected_ue_behaviour_parseFromJSON(expected_ue_behaviour_parameters);
+    if (!expected_ue_behaviour_parameters_local_nonprim) {
+        ogs_error("OpenAPI_expected_ue_behaviour_parseFromJSON failed [expected_ue_behaviour_parameters]");
+        goto end;
+    }
     }
 
     ec_restriction = cJSON_GetObjectItemCaseSensitive(pp_dataJSON, "ecRestriction");
     if (ec_restriction) {
     ec_restriction_local_nonprim = OpenAPI_ec_restriction_parseFromJSON(ec_restriction);
+    if (!ec_restriction_local_nonprim) {
+        ogs_error("OpenAPI_ec_restriction_parseFromJSON failed [ec_restriction]");
+        goto end;
+    }
     }
 
     acs_info = cJSON_GetObjectItemCaseSensitive(pp_dataJSON, "acsInfo");
     if (acs_info) {
     acs_info_local_nonprim = OpenAPI_acs_info_rm_parseFromJSON(acs_info);
+    if (!acs_info_local_nonprim) {
+        ogs_error("OpenAPI_acs_info_rm_parseFromJSON failed [acs_info]");
+        goto end;
+    }
     }
 
     stn_sr = cJSON_GetObjectItemCaseSensitive(pp_dataJSON, "stnSr");
@@ -257,16 +273,28 @@ OpenAPI_pp_data_t *OpenAPI_pp_data_parseFromJSON(cJSON *pp_dataJSON)
     lcs_privacy = cJSON_GetObjectItemCaseSensitive(pp_dataJSON, "lcsPrivacy");
     if (lcs_privacy) {
     lcs_privacy_local_nonprim = OpenAPI_lcs_privacy_parseFromJSON(lcs_privacy);
+    if (!lcs_privacy_local_nonprim) {
+        ogs_error("OpenAPI_lcs_privacy_parseFromJSON failed [lcs_privacy]");
+        goto end;
+    }
     }
 
     sor_info = cJSON_GetObjectItemCaseSensitive(pp_dataJSON, "sorInfo");
     if (sor_info) {
     sor_info_local_nonprim = OpenAPI_sor_info_parseFromJSON(sor_info);
+    if (!sor_info_local_nonprim) {
+        ogs_error("OpenAPI_sor_info_parseFromJSON failed [sor_info]");
+        goto end;
+    }
     }
 
     _5mbs_authorization_info = cJSON_GetObjectItemCaseSensitive(pp_dataJSON, "5mbsAuthorizationInfo");
     if (_5mbs_authorization_info) {
     _5mbs_authorization_info_local_nonprim = OpenAPI_model_5_mbs_authorization_info_parseFromJSON(_5mbs_authorization_info);
+    if (!_5mbs_authorization_info_local_nonprim) {
+        ogs_error("OpenAPI_model_5_mbs_authorization_info_parseFromJSON failed [_5mbs_authorization_info]");
+        goto end;
+    }
     }
 
     pp_data_local_var = OpenAPI_pp_data_create (

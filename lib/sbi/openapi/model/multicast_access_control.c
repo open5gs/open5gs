@@ -160,6 +160,10 @@ OpenAPI_multicast_access_control_t *OpenAPI_multicast_access_control_parseFromJS
         goto end;
     }
     acc_status_local_nonprim = OpenAPI_access_right_status_parseFromJSON(acc_status);
+    if (!acc_status_local_nonprim) {
+        ogs_error("OpenAPI_access_right_status_parseFromJSON failed [acc_status]");
+        goto end;
+    }
 
     multicast_access_control_local_var = OpenAPI_multicast_access_control_create (
         src_ipv4_addr && !cJSON_IsNull(src_ipv4_addr) ? ogs_strdup(src_ipv4_addr->valuestring) : NULL,

@@ -89,6 +89,10 @@ OpenAPI_smsc_data_t *OpenAPI_smsc_data_parseFromJSON(cJSON *smsc_dataJSON)
     smsc_diameter_address = cJSON_GetObjectItemCaseSensitive(smsc_dataJSON, "smscDiameterAddress");
     if (smsc_diameter_address) {
     smsc_diameter_address_local_nonprim = OpenAPI_network_node_diameter_address_1_parseFromJSON(smsc_diameter_address);
+    if (!smsc_diameter_address_local_nonprim) {
+        ogs_error("OpenAPI_network_node_diameter_address_1_parseFromJSON failed [smsc_diameter_address]");
+        goto end;
+    }
     }
 
     smsc_data_local_var = OpenAPI_smsc_data_create (

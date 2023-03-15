@@ -339,6 +339,10 @@ OpenAPI_n2_info_notify_handover_complete_200_response_t *OpenAPI_n2_info_notify_
     json_data = cJSON_GetObjectItemCaseSensitive(n2_info_notify_handover_complete_200_responseJSON, "jsonData");
     if (json_data) {
     json_data_local_nonprim = OpenAPI_n2_info_notification_rsp_data_parseFromJSON(json_data);
+    if (!json_data_local_nonprim) {
+        ogs_error("OpenAPI_n2_info_notification_rsp_data_parseFromJSON failed [json_data]");
+        goto end;
+    }
     }
 
     binary_data_n2_information_ext1 = cJSON_GetObjectItemCaseSensitive(n2_info_notify_handover_complete_200_responseJSON, "binaryDataN2InformationExt1");

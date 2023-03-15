@@ -149,20 +149,36 @@ OpenAPI_ue_context_transfer_rsp_data_t *OpenAPI_ue_context_transfer_rsp_data_par
         goto end;
     }
     ue_context_local_nonprim = OpenAPI_ue_context_parseFromJSON(ue_context);
+    if (!ue_context_local_nonprim) {
+        ogs_error("OpenAPI_ue_context_parseFromJSON failed [ue_context]");
+        goto end;
+    }
 
     ue_radio_capability = cJSON_GetObjectItemCaseSensitive(ue_context_transfer_rsp_dataJSON, "ueRadioCapability");
     if (ue_radio_capability) {
     ue_radio_capability_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(ue_radio_capability);
+    if (!ue_radio_capability_local_nonprim) {
+        ogs_error("OpenAPI_n2_info_content_parseFromJSON failed [ue_radio_capability]");
+        goto end;
+    }
     }
 
     ue_radio_capability_for_paging = cJSON_GetObjectItemCaseSensitive(ue_context_transfer_rsp_dataJSON, "ueRadioCapabilityForPaging");
     if (ue_radio_capability_for_paging) {
     ue_radio_capability_for_paging_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(ue_radio_capability_for_paging);
+    if (!ue_radio_capability_for_paging_local_nonprim) {
+        ogs_error("OpenAPI_n2_info_content_parseFromJSON failed [ue_radio_capability_for_paging]");
+        goto end;
+    }
     }
 
     ue_nbiot_radio_capability = cJSON_GetObjectItemCaseSensitive(ue_context_transfer_rsp_dataJSON, "ueNbiotRadioCapability");
     if (ue_nbiot_radio_capability) {
     ue_nbiot_radio_capability_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(ue_nbiot_radio_capability);
+    if (!ue_nbiot_radio_capability_local_nonprim) {
+        ogs_error("OpenAPI_n2_info_content_parseFromJSON failed [ue_nbiot_radio_capability]");
+        goto end;
+    }
     }
 
     supported_features = cJSON_GetObjectItemCaseSensitive(ue_context_transfer_rsp_dataJSON, "supportedFeatures");

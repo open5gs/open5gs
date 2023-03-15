@@ -112,6 +112,10 @@ OpenAPI_smcce_info_t *OpenAPI_smcce_info_parseFromJSON(cJSON *smcce_infoJSON)
     snssai = cJSON_GetObjectItemCaseSensitive(smcce_infoJSON, "snssai");
     if (snssai) {
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
     }
 
     smcce_ue_list = cJSON_GetObjectItemCaseSensitive(smcce_infoJSON, "smcceUeList");
@@ -120,6 +124,10 @@ OpenAPI_smcce_info_t *OpenAPI_smcce_info_parseFromJSON(cJSON *smcce_infoJSON)
         goto end;
     }
     smcce_ue_list_local_nonprim = OpenAPI_smcce_ue_list_parseFromJSON(smcce_ue_list);
+    if (!smcce_ue_list_local_nonprim) {
+        ogs_error("OpenAPI_smcce_ue_list_parseFromJSON failed [smcce_ue_list]");
+        goto end;
+    }
 
     smcce_info_local_var = OpenAPI_smcce_info_create (
         dnn && !cJSON_IsNull(dnn) ? ogs_strdup(dnn->valuestring) : NULL,

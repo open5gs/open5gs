@@ -108,6 +108,10 @@ OpenAPI_mbs_session_t *OpenAPI_mbs_session_parseFromJSON(cJSON *mbs_sessionJSON)
         goto end;
     }
     mbs_session_id_local_nonprim = OpenAPI_mbs_session_id_parseFromJSON(mbs_session_id);
+    if (!mbs_session_id_local_nonprim) {
+        ogs_error("OpenAPI_mbs_session_id_parseFromJSON failed [mbs_session_id]");
+        goto end;
+    }
 
     mbs_area_sessions = cJSON_GetObjectItemCaseSensitive(mbs_sessionJSON, "mbsAreaSessions");
     if (mbs_area_sessions) {

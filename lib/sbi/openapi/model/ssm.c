@@ -95,6 +95,10 @@ OpenAPI_ssm_t *OpenAPI_ssm_parseFromJSON(cJSON *ssmJSON)
         goto end;
     }
     source_ip_addr_local_nonprim = OpenAPI_ip_addr_parseFromJSON(source_ip_addr);
+    if (!source_ip_addr_local_nonprim) {
+        ogs_error("OpenAPI_ip_addr_parseFromJSON failed [source_ip_addr]");
+        goto end;
+    }
 
     dest_ip_addr = cJSON_GetObjectItemCaseSensitive(ssmJSON, "destIpAddr");
     if (!dest_ip_addr) {
@@ -102,6 +106,10 @@ OpenAPI_ssm_t *OpenAPI_ssm_parseFromJSON(cJSON *ssmJSON)
         goto end;
     }
     dest_ip_addr_local_nonprim = OpenAPI_ip_addr_parseFromJSON(dest_ip_addr);
+    if (!dest_ip_addr_local_nonprim) {
+        ogs_error("OpenAPI_ip_addr_parseFromJSON failed [dest_ip_addr]");
+        goto end;
+    }
 
     ssm_local_var = OpenAPI_ssm_create (
         source_ip_addr_local_nonprim,

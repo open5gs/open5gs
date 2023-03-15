@@ -79,6 +79,10 @@ OpenAPI_ue_in_area_filter_t *OpenAPI_ue_in_area_filter_parseFromJSON(cJSON *ue_i
     ue_type = cJSON_GetObjectItemCaseSensitive(ue_in_area_filterJSON, "ueType");
     if (ue_type) {
     ue_type_local_nonprim = OpenAPI_ue_type_parseFromJSON(ue_type);
+    if (!ue_type_local_nonprim) {
+        ogs_error("OpenAPI_ue_type_parseFromJSON failed [ue_type]");
+        goto end;
+    }
     }
 
     aerial_srv_dnn_ind = cJSON_GetObjectItemCaseSensitive(ue_in_area_filterJSON, "aerialSrvDnnInd");

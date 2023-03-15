@@ -80,6 +80,10 @@ OpenAPI_eas_server_address_t *OpenAPI_eas_server_address_parseFromJSON(cJSON *ea
         goto end;
     }
     ip_local_nonprim = OpenAPI_ip_addr_parseFromJSON(ip);
+    if (!ip_local_nonprim) {
+        ogs_error("OpenAPI_ip_addr_parseFromJSON failed [ip]");
+        goto end;
+    }
 
     port = cJSON_GetObjectItemCaseSensitive(eas_server_addressJSON, "port");
     if (!port) {

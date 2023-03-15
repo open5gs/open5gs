@@ -81,6 +81,10 @@ OpenAPI_gba_authentication_info_result_t *OpenAPI_gba_authentication_info_result
     _3g_aka_av = cJSON_GetObjectItemCaseSensitive(gba_authentication_info_resultJSON, "3gAkaAv");
     if (_3g_aka_av) {
     _3g_aka_av_local_nonprim = OpenAPI_model_3_g_aka_av_parseFromJSON(_3g_aka_av);
+    if (!_3g_aka_av_local_nonprim) {
+        ogs_error("OpenAPI_model_3_g_aka_av_parseFromJSON failed [_3g_aka_av]");
+        goto end;
+    }
     }
 
     supported_features = cJSON_GetObjectItemCaseSensitive(gba_authentication_info_resultJSON, "supportedFeatures");

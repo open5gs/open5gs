@@ -385,7 +385,6 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_p
             OpenAPI_allowed_nssai_t *allowed_nssai_listItem = OpenAPI_allowed_nssai_parseFromJSON(allowed_nssai_list_local);
             if (!allowed_nssai_listItem) {
                 ogs_error("No allowed_nssai_listItem");
-                OpenAPI_list_free(allowed_nssai_listList);
                 goto end;
             }
             OpenAPI_list_add(allowed_nssai_listList, allowed_nssai_listItem);
@@ -410,7 +409,6 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_p
             OpenAPI_configured_snssai_t *configured_nssaiItem = OpenAPI_configured_snssai_parseFromJSON(configured_nssai_local);
             if (!configured_nssaiItem) {
                 ogs_error("No configured_nssaiItem");
-                OpenAPI_list_free(configured_nssaiList);
                 goto end;
             }
             OpenAPI_list_add(configured_nssaiList, configured_nssaiItem);
@@ -464,7 +462,6 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_p
             OpenAPI_snssai_t *rejected_nssai_in_plmnItem = OpenAPI_snssai_parseFromJSON(rejected_nssai_in_plmn_local);
             if (!rejected_nssai_in_plmnItem) {
                 ogs_error("No rejected_nssai_in_plmnItem");
-                OpenAPI_list_free(rejected_nssai_in_plmnList);
                 goto end;
             }
             OpenAPI_list_add(rejected_nssai_in_plmnList, rejected_nssai_in_plmnItem);
@@ -489,7 +486,6 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_p
             OpenAPI_snssai_t *rejected_nssai_in_taItem = OpenAPI_snssai_parseFromJSON(rejected_nssai_in_ta_local);
             if (!rejected_nssai_in_taItem) {
                 ogs_error("No rejected_nssai_in_taItem");
-                OpenAPI_list_free(rejected_nssai_in_taList);
                 goto end;
             }
             OpenAPI_list_add(rejected_nssai_in_taList, rejected_nssai_in_taItem);
@@ -499,6 +495,10 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_p
     nsi_information = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "nsiInformation");
     if (nsi_information) {
     nsi_information_local_nonprim = OpenAPI_nsi_information_parseFromJSON(nsi_information);
+    if (!nsi_information_local_nonprim) {
+        ogs_error("OpenAPI_nsi_information_parseFromJSON failed [nsi_information]");
+        goto end;
+    }
     }
 
     supported_features = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "supportedFeatures");
@@ -589,7 +589,6 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_p
             OpenAPI_snssai_t *target_nssaiItem = OpenAPI_snssai_parseFromJSON(target_nssai_local);
             if (!target_nssaiItem) {
                 ogs_error("No target_nssaiItem");
-                OpenAPI_list_free(target_nssaiList);
                 goto end;
             }
             OpenAPI_list_add(target_nssaiList, target_nssaiItem);
@@ -614,7 +613,6 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_p
             OpenAPI_nsag_info_t *nsag_infosItem = OpenAPI_nsag_info_parseFromJSON(nsag_infos_local);
             if (!nsag_infosItem) {
                 ogs_error("No nsag_infosItem");
-                OpenAPI_list_free(nsag_infosList);
                 goto end;
             }
             OpenAPI_list_add(nsag_infosList, nsag_infosItem);

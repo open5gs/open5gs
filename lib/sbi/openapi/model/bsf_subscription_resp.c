@@ -321,6 +321,10 @@ OpenAPI_bsf_subscription_resp_t *OpenAPI_bsf_subscription_resp_parseFromJSON(cJS
     snssai_dnn_pairs = cJSON_GetObjectItemCaseSensitive(bsf_subscription_respJSON, "snssaiDnnPairs");
     if (snssai_dnn_pairs) {
     snssai_dnn_pairs_local_nonprim = OpenAPI_snssai_dnn_pair_parseFromJSON(snssai_dnn_pairs);
+    if (!snssai_dnn_pairs_local_nonprim) {
+        ogs_error("OpenAPI_snssai_dnn_pair_parseFromJSON failed [snssai_dnn_pairs]");
+        goto end;
+    }
     }
 
     add_snssai_dnn_pairs = cJSON_GetObjectItemCaseSensitive(bsf_subscription_respJSON, "addSnssaiDnnPairs");
@@ -341,7 +345,6 @@ OpenAPI_bsf_subscription_resp_t *OpenAPI_bsf_subscription_resp_parseFromJSON(cJS
             OpenAPI_snssai_dnn_pair_t *add_snssai_dnn_pairsItem = OpenAPI_snssai_dnn_pair_parseFromJSON(add_snssai_dnn_pairs_local);
             if (!add_snssai_dnn_pairsItem) {
                 ogs_error("No add_snssai_dnn_pairsItem");
-                OpenAPI_list_free(add_snssai_dnn_pairsList);
                 goto end;
             }
             OpenAPI_list_add(add_snssai_dnn_pairsList, add_snssai_dnn_pairsItem);
@@ -402,7 +405,6 @@ OpenAPI_bsf_subscription_resp_t *OpenAPI_bsf_subscription_resp_parseFromJSON(cJS
             OpenAPI_bsf_event_notification_t *event_notifsItem = OpenAPI_bsf_event_notification_parseFromJSON(event_notifs_local);
             if (!event_notifsItem) {
                 ogs_error("No event_notifsItem");
-                OpenAPI_list_free(event_notifsList);
                 goto end;
             }
             OpenAPI_list_add(event_notifsList, event_notifsItem);

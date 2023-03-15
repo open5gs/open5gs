@@ -191,6 +191,10 @@ OpenAPI_authorized_default_qos_t *OpenAPI_authorized_default_qos_parseFromJSON(c
     arp = cJSON_GetObjectItemCaseSensitive(authorized_default_qosJSON, "arp");
     if (arp) {
     arp_local_nonprim = OpenAPI_arp_parseFromJSON(arp);
+    if (!arp_local_nonprim) {
+        ogs_error("OpenAPI_arp_parseFromJSON failed [arp]");
+        goto end;
+    }
     }
 
     priority_level = cJSON_GetObjectItemCaseSensitive(authorized_default_qosJSON, "priorityLevel");

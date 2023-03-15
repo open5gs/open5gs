@@ -115,7 +115,6 @@ OpenAPI_plmn_oauth2_t *OpenAPI_plmn_oauth2_parseFromJSON(cJSON *plmn_oauth2JSON)
             OpenAPI_plmn_id_t *oauth2_required_plmn_id_listItem = OpenAPI_plmn_id_parseFromJSON(oauth2_required_plmn_id_list_local);
             if (!oauth2_required_plmn_id_listItem) {
                 ogs_error("No oauth2_required_plmn_id_listItem");
-                OpenAPI_list_free(oauth2_required_plmn_id_listList);
                 goto end;
             }
             OpenAPI_list_add(oauth2_required_plmn_id_listList, oauth2_required_plmn_id_listItem);
@@ -140,7 +139,6 @@ OpenAPI_plmn_oauth2_t *OpenAPI_plmn_oauth2_parseFromJSON(cJSON *plmn_oauth2JSON)
             OpenAPI_plmn_id_t *oauth2_not_required_plmn_id_listItem = OpenAPI_plmn_id_parseFromJSON(oauth2_not_required_plmn_id_list_local);
             if (!oauth2_not_required_plmn_id_listItem) {
                 ogs_error("No oauth2_not_required_plmn_id_listItem");
-                OpenAPI_list_free(oauth2_not_required_plmn_id_listList);
                 goto end;
             }
             OpenAPI_list_add(oauth2_not_required_plmn_id_listList, oauth2_not_required_plmn_id_listItem);

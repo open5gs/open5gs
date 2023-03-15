@@ -156,7 +156,6 @@ OpenAPI_confirmation_data_response_t *OpenAPI_confirmation_data_response_parseFr
             OpenAPI_server_addressing_info_t *pvs_infoItem = OpenAPI_server_addressing_info_parseFromJSON(pvs_info_local);
             if (!pvs_infoItem) {
                 ogs_error("No pvs_infoItem");
-                OpenAPI_list_free(pvs_infoList);
                 goto end;
             }
             OpenAPI_list_add(pvs_infoList, pvs_infoItem);

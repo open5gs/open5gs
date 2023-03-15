@@ -118,6 +118,10 @@ OpenAPI_ue_context_transfer_200_response_t *OpenAPI_ue_context_transfer_200_resp
     json_data = cJSON_GetObjectItemCaseSensitive(ue_context_transfer_200_responseJSON, "jsonData");
     if (json_data) {
     json_data_local_nonprim = OpenAPI_ue_context_transfer_rsp_data_parseFromJSON(json_data);
+    if (!json_data_local_nonprim) {
+        ogs_error("OpenAPI_ue_context_transfer_rsp_data_parseFromJSON failed [json_data]");
+        goto end;
+    }
     }
 
     binary_data_n2_information = cJSON_GetObjectItemCaseSensitive(ue_context_transfer_200_responseJSON, "binaryDataN2Information");

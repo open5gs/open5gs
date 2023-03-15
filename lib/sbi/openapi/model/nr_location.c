@@ -182,6 +182,10 @@ OpenAPI_nr_location_t *OpenAPI_nr_location_parseFromJSON(cJSON *nr_locationJSON)
         goto end;
     }
     tai_local_nonprim = OpenAPI_tai_parseFromJSON(tai);
+    if (!tai_local_nonprim) {
+        ogs_error("OpenAPI_tai_parseFromJSON failed [tai]");
+        goto end;
+    }
 
     ncgi = cJSON_GetObjectItemCaseSensitive(nr_locationJSON, "ncgi");
     if (!ncgi) {
@@ -189,6 +193,10 @@ OpenAPI_nr_location_t *OpenAPI_nr_location_parseFromJSON(cJSON *nr_locationJSON)
         goto end;
     }
     ncgi_local_nonprim = OpenAPI_ncgi_parseFromJSON(ncgi);
+    if (!ncgi_local_nonprim) {
+        ogs_error("OpenAPI_ncgi_parseFromJSON failed [ncgi]");
+        goto end;
+    }
 
     ignore_ncgi = cJSON_GetObjectItemCaseSensitive(nr_locationJSON, "ignoreNcgi");
     if (ignore_ncgi) {
@@ -233,6 +241,10 @@ OpenAPI_nr_location_t *OpenAPI_nr_location_parseFromJSON(cJSON *nr_locationJSON)
     global_gnb_id = cJSON_GetObjectItemCaseSensitive(nr_locationJSON, "globalGnbId");
     if (global_gnb_id) {
     global_gnb_id_local_nonprim = OpenAPI_global_ran_node_id_parseFromJSON(global_gnb_id);
+    if (!global_gnb_id_local_nonprim) {
+        ogs_error("OpenAPI_global_ran_node_id_parseFromJSON failed [global_gnb_id]");
+        goto end;
+    }
     }
 
     nr_location_local_var = OpenAPI_nr_location_create (

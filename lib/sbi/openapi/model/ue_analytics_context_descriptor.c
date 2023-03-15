@@ -119,7 +119,6 @@ OpenAPI_ue_analytics_context_descriptor_t *OpenAPI_ue_analytics_context_descript
             OpenAPI_nwdaf_event_t *ana_typesItem = OpenAPI_nwdaf_event_parseFromJSON(ana_types_local);
             if (!ana_typesItem) {
                 ogs_error("No ana_typesItem");
-                OpenAPI_list_free(ana_typesList);
                 goto end;
             }
             OpenAPI_list_add(ana_typesList, ana_typesItem);

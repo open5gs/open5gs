@@ -93,7 +93,6 @@ OpenAPI_query_param_combination_t *OpenAPI_query_param_combination_parseFromJSON
             OpenAPI_query_parameter_t *query_paramsItem = OpenAPI_query_parameter_parseFromJSON(query_params_local);
             if (!query_paramsItem) {
                 ogs_error("No query_paramsItem");
-                OpenAPI_list_free(query_paramsList);
                 goto end;
             }
             OpenAPI_list_add(query_paramsList, query_paramsItem);

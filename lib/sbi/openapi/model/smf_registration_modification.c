@@ -115,6 +115,10 @@ OpenAPI_smf_registration_modification_t *OpenAPI_smf_registration_modification_p
     pgw_fqdn = cJSON_GetObjectItemCaseSensitive(smf_registration_modificationJSON, "pgwFqdn");
     if (pgw_fqdn) {
     pgw_fqdn_local_nonprim = OpenAPI_fqdn_rm_parseFromJSON(pgw_fqdn);
+    if (!pgw_fqdn_local_nonprim) {
+        ogs_error("OpenAPI_fqdn_rm_parseFromJSON failed [pgw_fqdn]");
+        goto end;
+    }
     }
 
     smf_registration_modification_local_var = OpenAPI_smf_registration_modification_create (

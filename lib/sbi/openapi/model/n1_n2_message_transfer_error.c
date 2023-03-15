@@ -93,10 +93,18 @@ OpenAPI_n1_n2_message_transfer_error_t *OpenAPI_n1_n2_message_transfer_error_par
         goto end;
     }
     error_local_nonprim = OpenAPI_problem_details_parseFromJSON(error);
+    if (!error_local_nonprim) {
+        ogs_error("OpenAPI_problem_details_parseFromJSON failed [error]");
+        goto end;
+    }
 
     err_info = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_errorJSON, "errInfo");
     if (err_info) {
     err_info_local_nonprim = OpenAPI_n1_n2_msg_txfr_err_detail_parseFromJSON(err_info);
+    if (!err_info_local_nonprim) {
+        ogs_error("OpenAPI_n1_n2_msg_txfr_err_detail_parseFromJSON failed [err_info]");
+        goto end;
+    }
     }
 
     n1_n2_message_transfer_error_local_var = OpenAPI_n1_n2_message_transfer_error_create (

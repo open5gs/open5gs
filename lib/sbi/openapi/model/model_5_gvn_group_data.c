@@ -233,6 +233,10 @@ OpenAPI_model_5_gvn_group_data_t *OpenAPI_model_5_gvn_group_data_parseFromJSON(c
         goto end;
     }
     s_nssai_local_nonprim = OpenAPI_snssai_parseFromJSON(s_nssai);
+    if (!s_nssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [s_nssai]");
+        goto end;
+    }
 
     pdu_session_types = cJSON_GetObjectItemCaseSensitive(model_5_gvn_group_dataJSON, "pduSessionTypes");
     if (pdu_session_types) {
@@ -271,7 +275,6 @@ OpenAPI_model_5_gvn_group_data_t *OpenAPI_model_5_gvn_group_data_parseFromJSON(c
             OpenAPI_app_descriptor_t *app_descriptorsItem = OpenAPI_app_descriptor_parseFromJSON(app_descriptors_local);
             if (!app_descriptorsItem) {
                 ogs_error("No app_descriptorsItem");
-                OpenAPI_list_free(app_descriptorsList);
                 goto end;
             }
             OpenAPI_list_add(app_descriptorsList, app_descriptorsItem);
@@ -297,6 +300,10 @@ OpenAPI_model_5_gvn_group_data_t *OpenAPI_model_5_gvn_group_data_parseFromJSON(c
     dn_aaa_address = cJSON_GetObjectItemCaseSensitive(model_5_gvn_group_dataJSON, "dnAaaAddress");
     if (dn_aaa_address) {
     dn_aaa_address_local_nonprim = OpenAPI_ip_address_1_parseFromJSON(dn_aaa_address);
+    if (!dn_aaa_address_local_nonprim) {
+        ogs_error("OpenAPI_ip_address_1_parseFromJSON failed [dn_aaa_address]");
+        goto end;
+    }
     }
 
     additional_dn_aaa_addresses = cJSON_GetObjectItemCaseSensitive(model_5_gvn_group_dataJSON, "additionalDnAaaAddresses");
@@ -317,7 +324,6 @@ OpenAPI_model_5_gvn_group_data_t *OpenAPI_model_5_gvn_group_data_parseFromJSON(c
             OpenAPI_ip_address_1_t *additional_dn_aaa_addressesItem = OpenAPI_ip_address_1_parseFromJSON(additional_dn_aaa_addresses_local);
             if (!additional_dn_aaa_addressesItem) {
                 ogs_error("No additional_dn_aaa_addressesItem");
-                OpenAPI_list_free(additional_dn_aaa_addressesList);
                 goto end;
             }
             OpenAPI_list_add(additional_dn_aaa_addressesList, additional_dn_aaa_addressesItem);

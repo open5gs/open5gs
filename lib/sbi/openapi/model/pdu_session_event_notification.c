@@ -209,6 +209,10 @@ OpenAPI_pdu_session_event_notification_t *OpenAPI_pdu_session_event_notification
         goto end;
     }
     ev_notif_local_nonprim = OpenAPI_af_event_notification_parseFromJSON(ev_notif);
+    if (!ev_notif_local_nonprim) {
+        ogs_error("OpenAPI_af_event_notification_parseFromJSON failed [ev_notif]");
+        goto end;
+    }
 
     supi = cJSON_GetObjectItemCaseSensitive(pdu_session_event_notificationJSON, "supi");
     if (supi) {
@@ -254,6 +258,10 @@ OpenAPI_pdu_session_event_notification_t *OpenAPI_pdu_session_event_notification
     pcf_info = cJSON_GetObjectItemCaseSensitive(pdu_session_event_notificationJSON, "pcfInfo");
     if (pcf_info) {
     pcf_info_local_nonprim = OpenAPI_pcf_addressing_info_parseFromJSON(pcf_info);
+    if (!pcf_info_local_nonprim) {
+        ogs_error("OpenAPI_pcf_addressing_info_parseFromJSON failed [pcf_info]");
+        goto end;
+    }
     }
 
     dnn = cJSON_GetObjectItemCaseSensitive(pdu_session_event_notificationJSON, "dnn");
@@ -267,6 +275,10 @@ OpenAPI_pdu_session_event_notification_t *OpenAPI_pdu_session_event_notification
     snssai = cJSON_GetObjectItemCaseSensitive(pdu_session_event_notificationJSON, "snssai");
     if (snssai) {
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
     }
 
     gpsi = cJSON_GetObjectItemCaseSensitive(pdu_session_event_notificationJSON, "gpsi");

@@ -145,6 +145,10 @@ OpenAPI_seaf_data_t *OpenAPI_seaf_data_parseFromJSON(cJSON *seaf_dataJSON)
         goto end;
     }
     ng_ksi_local_nonprim = OpenAPI_ng_ksi_parseFromJSON(ng_ksi);
+    if (!ng_ksi_local_nonprim) {
+        ogs_error("OpenAPI_ng_ksi_parseFromJSON failed [ng_ksi]");
+        goto end;
+    }
 
     key_amf = cJSON_GetObjectItemCaseSensitive(seaf_dataJSON, "keyAmf");
     if (!key_amf) {
@@ -152,6 +156,10 @@ OpenAPI_seaf_data_t *OpenAPI_seaf_data_parseFromJSON(cJSON *seaf_dataJSON)
         goto end;
     }
     key_amf_local_nonprim = OpenAPI_key_amf_parseFromJSON(key_amf);
+    if (!key_amf_local_nonprim) {
+        ogs_error("OpenAPI_key_amf_parseFromJSON failed [key_amf]");
+        goto end;
+    }
 
     nh = cJSON_GetObjectItemCaseSensitive(seaf_dataJSON, "nh");
     if (nh) {

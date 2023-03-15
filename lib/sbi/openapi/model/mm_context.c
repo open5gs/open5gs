@@ -494,11 +494,19 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
     nas_security_mode = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "nasSecurityMode");
     if (nas_security_mode) {
     nas_security_mode_local_nonprim = OpenAPI_nas_security_mode_parseFromJSON(nas_security_mode);
+    if (!nas_security_mode_local_nonprim) {
+        ogs_error("OpenAPI_nas_security_mode_parseFromJSON failed [nas_security_mode]");
+        goto end;
+    }
     }
 
     eps_nas_security_mode = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "epsNasSecurityMode");
     if (eps_nas_security_mode) {
     eps_nas_security_mode_local_nonprim = OpenAPI_eps_nas_security_mode_parseFromJSON(eps_nas_security_mode);
+    if (!eps_nas_security_mode_local_nonprim) {
+        ogs_error("OpenAPI_eps_nas_security_mode_parseFromJSON failed [eps_nas_security_mode]");
+        goto end;
+    }
     }
 
     nas_downlink_count = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "nasDownlinkCount");
@@ -551,7 +559,6 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
             OpenAPI_snssai_t *allowed_nssaiItem = OpenAPI_snssai_parseFromJSON(allowed_nssai_local);
             if (!allowed_nssaiItem) {
                 ogs_error("No allowed_nssaiItem");
-                OpenAPI_list_free(allowed_nssaiList);
                 goto end;
             }
             OpenAPI_list_add(allowed_nssaiList, allowed_nssaiItem);
@@ -576,7 +583,6 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
             OpenAPI_nssai_mapping_t *nssai_mapping_listItem = OpenAPI_nssai_mapping_parseFromJSON(nssai_mapping_list_local);
             if (!nssai_mapping_listItem) {
                 ogs_error("No nssai_mapping_listItem");
-                OpenAPI_list_free(nssai_mapping_listList);
                 goto end;
             }
             OpenAPI_list_add(nssai_mapping_listList, nssai_mapping_listItem);
@@ -601,7 +607,6 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
             OpenAPI_snssai_t *allowed_home_nssaiItem = OpenAPI_snssai_parseFromJSON(allowed_home_nssai_local);
             if (!allowed_home_nssaiItem) {
                 ogs_error("No allowed_home_nssaiItem");
-                OpenAPI_list_free(allowed_home_nssaiList);
                 goto end;
             }
             OpenAPI_list_add(allowed_home_nssaiList, allowed_home_nssaiItem);
@@ -632,11 +637,19 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
     expected_u_ebehavior = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "expectedUEbehavior");
     if (expected_u_ebehavior) {
     expected_u_ebehavior_local_nonprim = OpenAPI_expected_ue_behavior_parseFromJSON(expected_u_ebehavior);
+    if (!expected_u_ebehavior_local_nonprim) {
+        ogs_error("OpenAPI_expected_ue_behavior_parseFromJSON failed [expected_u_ebehavior]");
+        goto end;
+    }
     }
 
     ue_differentiation_info = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "ueDifferentiationInfo");
     if (ue_differentiation_info) {
     ue_differentiation_info_local_nonprim = OpenAPI_ue_differentiation_info_parseFromJSON(ue_differentiation_info);
+    if (!ue_differentiation_info_local_nonprim) {
+        ogs_error("OpenAPI_ue_differentiation_info_parseFromJSON failed [ue_differentiation_info]");
+        goto end;
+    }
     }
 
     plmn_assi_ue_radio_cap_id = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "plmnAssiUeRadioCapId");
@@ -666,16 +679,28 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
     n3_iwf_id = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "n3IwfId");
     if (n3_iwf_id) {
     n3_iwf_id_local_nonprim = OpenAPI_global_ran_node_id_parseFromJSON(n3_iwf_id);
+    if (!n3_iwf_id_local_nonprim) {
+        ogs_error("OpenAPI_global_ran_node_id_parseFromJSON failed [n3_iwf_id]");
+        goto end;
+    }
     }
 
     wagf_id = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "wagfId");
     if (wagf_id) {
     wagf_id_local_nonprim = OpenAPI_global_ran_node_id_parseFromJSON(wagf_id);
+    if (!wagf_id_local_nonprim) {
+        ogs_error("OpenAPI_global_ran_node_id_parseFromJSON failed [wagf_id]");
+        goto end;
+    }
     }
 
     tngf_id = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "tngfId");
     if (tngf_id) {
     tngf_id_local_nonprim = OpenAPI_global_ran_node_id_parseFromJSON(tngf_id);
+    if (!tngf_id_local_nonprim) {
+        ogs_error("OpenAPI_global_ran_node_id_parseFromJSON failed [tngf_id]");
+        goto end;
+    }
     }
 
     an_n2_ap_id = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "anN2ApId");
@@ -704,7 +729,6 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
             OpenAPI_nssaa_status_t *nssaa_status_listItem = OpenAPI_nssaa_status_parseFromJSON(nssaa_status_list_local);
             if (!nssaa_status_listItem) {
                 ogs_error("No nssaa_status_listItem");
-                OpenAPI_list_free(nssaa_status_listList);
                 goto end;
             }
             OpenAPI_list_add(nssaa_status_listList, nssaa_status_listItem);
@@ -729,7 +753,6 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
             OpenAPI_nssai_mapping_t *pending_nssai_mapping_listItem = OpenAPI_nssai_mapping_parseFromJSON(pending_nssai_mapping_list_local);
             if (!pending_nssai_mapping_listItem) {
                 ogs_error("No pending_nssai_mapping_listItem");
-                OpenAPI_list_free(pending_nssai_mapping_listList);
                 goto end;
             }
             OpenAPI_list_add(pending_nssai_mapping_listList, pending_nssai_mapping_listItem);

@@ -236,7 +236,6 @@ OpenAPI_update_nwdaf_registration_200_response_t *OpenAPI_update_nwdaf_registrat
             OpenAPI_event_id_t *analytics_idsItem = OpenAPI_event_id_parseFromJSON(analytics_ids_local);
             if (!analytics_idsItem) {
                 ogs_error("No analytics_idsItem");
-                OpenAPI_list_free(analytics_idsList);
                 goto end;
             }
             OpenAPI_list_add(analytics_idsList, analytics_idsItem);
@@ -261,6 +260,10 @@ OpenAPI_update_nwdaf_registration_200_response_t *OpenAPI_update_nwdaf_registrat
     context_info = cJSON_GetObjectItemCaseSensitive(update_nwdaf_registration_200_responseJSON, "contextInfo");
     if (context_info) {
     context_info_local_nonprim = OpenAPI_context_info_parseFromJSON(context_info);
+    if (!context_info_local_nonprim) {
+        ogs_error("OpenAPI_context_info_parseFromJSON failed [context_info]");
+        goto end;
+    }
     }
 
     supported_features = cJSON_GetObjectItemCaseSensitive(update_nwdaf_registration_200_responseJSON, "supportedFeatures");
@@ -313,7 +316,6 @@ OpenAPI_update_nwdaf_registration_200_response_t *OpenAPI_update_nwdaf_registrat
             OpenAPI_report_item_t *reportItem = OpenAPI_report_item_parseFromJSON(report_local);
             if (!reportItem) {
                 ogs_error("No reportItem");
-                OpenAPI_list_free(reportList);
                 goto end;
             }
             OpenAPI_list_add(reportList, reportItem);

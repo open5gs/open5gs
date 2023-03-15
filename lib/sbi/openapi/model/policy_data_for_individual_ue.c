@@ -181,16 +181,28 @@ OpenAPI_policy_data_for_individual_ue_t *OpenAPI_policy_data_for_individual_ue_p
     ue_policy_data_set = cJSON_GetObjectItemCaseSensitive(policy_data_for_individual_ueJSON, "uePolicyDataSet");
     if (ue_policy_data_set) {
     ue_policy_data_set_local_nonprim = OpenAPI_ue_policy_set_parseFromJSON(ue_policy_data_set);
+    if (!ue_policy_data_set_local_nonprim) {
+        ogs_error("OpenAPI_ue_policy_set_parseFromJSON failed [ue_policy_data_set]");
+        goto end;
+    }
     }
 
     sm_policy_data_set = cJSON_GetObjectItemCaseSensitive(policy_data_for_individual_ueJSON, "smPolicyDataSet");
     if (sm_policy_data_set) {
     sm_policy_data_set_local_nonprim = OpenAPI_sm_policy_data_parseFromJSON(sm_policy_data_set);
+    if (!sm_policy_data_set_local_nonprim) {
+        ogs_error("OpenAPI_sm_policy_data_parseFromJSON failed [sm_policy_data_set]");
+        goto end;
+    }
     }
 
     am_policy_data_set = cJSON_GetObjectItemCaseSensitive(policy_data_for_individual_ueJSON, "amPolicyDataSet");
     if (am_policy_data_set) {
     am_policy_data_set_local_nonprim = OpenAPI_am_policy_data_parseFromJSON(am_policy_data_set);
+    if (!am_policy_data_set_local_nonprim) {
+        ogs_error("OpenAPI_am_policy_data_parseFromJSON failed [am_policy_data_set]");
+        goto end;
+    }
     }
 
     um_data = cJSON_GetObjectItemCaseSensitive(policy_data_for_individual_ueJSON, "umData");

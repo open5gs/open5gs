@@ -218,15 +218,27 @@ OpenAPI_pdu_session_tsn_bridge_t *OpenAPI_pdu_session_tsn_bridge_parseFromJSON(c
         goto end;
     }
     tsn_bridge_info_local_nonprim = OpenAPI_tsn_bridge_info_parseFromJSON(tsn_bridge_info);
+    if (!tsn_bridge_info_local_nonprim) {
+        ogs_error("OpenAPI_tsn_bridge_info_parseFromJSON failed [tsn_bridge_info]");
+        goto end;
+    }
 
     tsn_bridge_man_cont = cJSON_GetObjectItemCaseSensitive(pdu_session_tsn_bridgeJSON, "tsnBridgeManCont");
     if (tsn_bridge_man_cont) {
     tsn_bridge_man_cont_local_nonprim = OpenAPI_bridge_management_container_parseFromJSON(tsn_bridge_man_cont);
+    if (!tsn_bridge_man_cont_local_nonprim) {
+        ogs_error("OpenAPI_bridge_management_container_parseFromJSON failed [tsn_bridge_man_cont]");
+        goto end;
+    }
     }
 
     tsn_port_man_cont_dstt = cJSON_GetObjectItemCaseSensitive(pdu_session_tsn_bridgeJSON, "tsnPortManContDstt");
     if (tsn_port_man_cont_dstt) {
     tsn_port_man_cont_dstt_local_nonprim = OpenAPI_port_management_container_parseFromJSON(tsn_port_man_cont_dstt);
+    if (!tsn_port_man_cont_dstt_local_nonprim) {
+        ogs_error("OpenAPI_port_management_container_parseFromJSON failed [tsn_port_man_cont_dstt]");
+        goto end;
+    }
     }
 
     tsn_port_man_cont_nwtts = cJSON_GetObjectItemCaseSensitive(pdu_session_tsn_bridgeJSON, "tsnPortManContNwtts");
@@ -247,7 +259,6 @@ OpenAPI_pdu_session_tsn_bridge_t *OpenAPI_pdu_session_tsn_bridge_parseFromJSON(c
             OpenAPI_port_management_container_t *tsn_port_man_cont_nwttsItem = OpenAPI_port_management_container_parseFromJSON(tsn_port_man_cont_nwtts_local);
             if (!tsn_port_man_cont_nwttsItem) {
                 ogs_error("No tsn_port_man_cont_nwttsItem");
-                OpenAPI_list_free(tsn_port_man_cont_nwttsList);
                 goto end;
             }
             OpenAPI_list_add(tsn_port_man_cont_nwttsList, tsn_port_man_cont_nwttsItem);
@@ -273,6 +284,10 @@ OpenAPI_pdu_session_tsn_bridge_t *OpenAPI_pdu_session_tsn_bridge_parseFromJSON(c
     snssai = cJSON_GetObjectItemCaseSensitive(pdu_session_tsn_bridgeJSON, "snssai");
     if (snssai) {
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
     }
 
     ip_domain = cJSON_GetObjectItemCaseSensitive(pdu_session_tsn_bridgeJSON, "ipDomain");

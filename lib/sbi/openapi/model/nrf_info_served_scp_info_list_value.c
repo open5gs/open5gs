@@ -511,7 +511,6 @@ OpenAPI_nrf_info_served_scp_info_list_value_t *OpenAPI_nrf_info_served_scp_info_
             OpenAPI_ipv4_address_range_t *ipv4_addr_rangesItem = OpenAPI_ipv4_address_range_parseFromJSON(ipv4_addr_ranges_local);
             if (!ipv4_addr_rangesItem) {
                 ogs_error("No ipv4_addr_rangesItem");
-                OpenAPI_list_free(ipv4_addr_rangesList);
                 goto end;
             }
             OpenAPI_list_add(ipv4_addr_rangesList, ipv4_addr_rangesItem);
@@ -536,7 +535,6 @@ OpenAPI_nrf_info_served_scp_info_list_value_t *OpenAPI_nrf_info_served_scp_info_
             OpenAPI_ipv6_prefix_range_t *ipv6_prefix_rangesItem = OpenAPI_ipv6_prefix_range_parseFromJSON(ipv6_prefix_ranges_local);
             if (!ipv6_prefix_rangesItem) {
                 ogs_error("No ipv6_prefix_rangesItem");
-                OpenAPI_list_free(ipv6_prefix_rangesList);
                 goto end;
             }
             OpenAPI_list_add(ipv6_prefix_rangesList, ipv6_prefix_rangesItem);
@@ -582,7 +580,6 @@ OpenAPI_nrf_info_served_scp_info_list_value_t *OpenAPI_nrf_info_served_scp_info_
             OpenAPI_plmn_id_t *remote_plmn_listItem = OpenAPI_plmn_id_parseFromJSON(remote_plmn_list_local);
             if (!remote_plmn_listItem) {
                 ogs_error("No remote_plmn_listItem");
-                OpenAPI_list_free(remote_plmn_listList);
                 goto end;
             }
             OpenAPI_list_add(remote_plmn_listList, remote_plmn_listItem);
@@ -607,7 +604,6 @@ OpenAPI_nrf_info_served_scp_info_list_value_t *OpenAPI_nrf_info_served_scp_info_
             OpenAPI_plmn_id_nid_t *remote_snpn_listItem = OpenAPI_plmn_id_nid_parseFromJSON(remote_snpn_list_local);
             if (!remote_snpn_listItem) {
                 ogs_error("No remote_snpn_listItem");
-                OpenAPI_list_free(remote_snpn_listList);
                 goto end;
             }
             OpenAPI_list_add(remote_snpn_listList, remote_snpn_listItem);

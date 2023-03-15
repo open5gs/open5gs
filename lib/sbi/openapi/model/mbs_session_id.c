@@ -102,11 +102,19 @@ OpenAPI_mbs_session_id_t *OpenAPI_mbs_session_id_parseFromJSON(cJSON *mbs_sessio
     tmgi = cJSON_GetObjectItemCaseSensitive(mbs_session_idJSON, "tmgi");
     if (tmgi) {
     tmgi_local_nonprim = OpenAPI_tmgi_parseFromJSON(tmgi);
+    if (!tmgi_local_nonprim) {
+        ogs_error("OpenAPI_tmgi_parseFromJSON failed [tmgi]");
+        goto end;
+    }
     }
 
     ssm = cJSON_GetObjectItemCaseSensitive(mbs_session_idJSON, "ssm");
     if (ssm) {
     ssm_local_nonprim = OpenAPI_ssm_parseFromJSON(ssm);
+    if (!ssm_local_nonprim) {
+        ogs_error("OpenAPI_ssm_parseFromJSON failed [ssm]");
+        goto end;
+    }
     }
 
     nid = cJSON_GetObjectItemCaseSensitive(mbs_session_idJSON, "nid");

@@ -95,6 +95,10 @@ OpenAPI_assign_ebi_error_t *OpenAPI_assign_ebi_error_parseFromJSON(cJSON *assign
         goto end;
     }
     error_local_nonprim = OpenAPI_problem_details_parseFromJSON(error);
+    if (!error_local_nonprim) {
+        ogs_error("OpenAPI_problem_details_parseFromJSON failed [error]");
+        goto end;
+    }
 
     failure_details = cJSON_GetObjectItemCaseSensitive(assign_ebi_errorJSON, "failureDetails");
     if (!failure_details) {
@@ -102,6 +106,10 @@ OpenAPI_assign_ebi_error_t *OpenAPI_assign_ebi_error_parseFromJSON(cJSON *assign
         goto end;
     }
     failure_details_local_nonprim = OpenAPI_assign_ebi_failed_parseFromJSON(failure_details);
+    if (!failure_details_local_nonprim) {
+        ogs_error("OpenAPI_assign_ebi_failed_parseFromJSON failed [failure_details]");
+        goto end;
+    }
 
     assign_ebi_error_local_var = OpenAPI_assign_ebi_error_create (
         error_local_nonprim,

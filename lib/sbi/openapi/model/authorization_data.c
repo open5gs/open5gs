@@ -186,7 +186,6 @@ OpenAPI_authorization_data_t *OpenAPI_authorization_data_parseFromJSON(cJSON *au
             OpenAPI_user_identifier_t *authorization_dataItem = OpenAPI_user_identifier_parseFromJSON(authorization_data_local);
             if (!authorization_dataItem) {
                 ogs_error("No authorization_dataItem");
-                OpenAPI_list_free(authorization_dataList);
                 goto end;
             }
             OpenAPI_list_add(authorization_dataList, authorization_dataItem);
@@ -231,7 +230,6 @@ OpenAPI_authorization_data_t *OpenAPI_authorization_data_parseFromJSON(cJSON *au
             OpenAPI_snssai_t *allowed_snssai_listItem = OpenAPI_snssai_parseFromJSON(allowed_snssai_list_local);
             if (!allowed_snssai_listItem) {
                 ogs_error("No allowed_snssai_listItem");
-                OpenAPI_list_free(allowed_snssai_listList);
                 goto end;
             }
             OpenAPI_list_add(allowed_snssai_listList, allowed_snssai_listItem);
@@ -256,7 +254,6 @@ OpenAPI_authorization_data_t *OpenAPI_authorization_data_parseFromJSON(cJSON *au
             OpenAPI_mtc_provider_t *allowed_mtc_providersItem = OpenAPI_mtc_provider_parseFromJSON(allowed_mtc_providers_local);
             if (!allowed_mtc_providersItem) {
                 ogs_error("No allowed_mtc_providersItem");
-                OpenAPI_list_free(allowed_mtc_providersList);
                 goto end;
             }
             OpenAPI_list_add(allowed_mtc_providersList, allowed_mtc_providersItem);

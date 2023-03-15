@@ -256,6 +256,10 @@ OpenAPI_data_restoration_notification_t *OpenAPI_data_restoration_notification_p
     plmn_id = cJSON_GetObjectItemCaseSensitive(data_restoration_notificationJSON, "plmnId");
     if (plmn_id) {
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
+    if (!plmn_id_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [plmn_id]");
+        goto end;
+    }
     }
 
     supi_ranges = cJSON_GetObjectItemCaseSensitive(data_restoration_notificationJSON, "supiRanges");
@@ -276,7 +280,6 @@ OpenAPI_data_restoration_notification_t *OpenAPI_data_restoration_notification_p
             OpenAPI_supi_range_t *supi_rangesItem = OpenAPI_supi_range_parseFromJSON(supi_ranges_local);
             if (!supi_rangesItem) {
                 ogs_error("No supi_rangesItem");
-                OpenAPI_list_free(supi_rangesList);
                 goto end;
             }
             OpenAPI_list_add(supi_rangesList, supi_rangesItem);
@@ -301,7 +304,6 @@ OpenAPI_data_restoration_notification_t *OpenAPI_data_restoration_notification_p
             OpenAPI_identity_range_t *gpsi_rangesItem = OpenAPI_identity_range_parseFromJSON(gpsi_ranges_local);
             if (!gpsi_rangesItem) {
                 ogs_error("No gpsi_rangesItem");
-                OpenAPI_list_free(gpsi_rangesList);
                 goto end;
             }
             OpenAPI_list_add(gpsi_rangesList, gpsi_rangesItem);
@@ -347,7 +349,6 @@ OpenAPI_data_restoration_notification_t *OpenAPI_data_restoration_notification_p
             OpenAPI_snssai_t *s_nssai_listItem = OpenAPI_snssai_parseFromJSON(s_nssai_list_local);
             if (!s_nssai_listItem) {
                 ogs_error("No s_nssai_listItem");
-                OpenAPI_list_free(s_nssai_listList);
                 goto end;
             }
             OpenAPI_list_add(s_nssai_listList, s_nssai_listItem);

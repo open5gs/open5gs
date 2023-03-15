@@ -72,6 +72,10 @@ OpenAPI_ue_context_relocated_data_t *OpenAPI_ue_context_relocated_data_parseFrom
         goto end;
     }
     ue_context_local_nonprim = OpenAPI_ue_context_parseFromJSON(ue_context);
+    if (!ue_context_local_nonprim) {
+        ogs_error("OpenAPI_ue_context_parseFromJSON failed [ue_context]");
+        goto end;
+    }
 
     ue_context_relocated_data_local_var = OpenAPI_ue_context_relocated_data_create (
         ue_context_local_nonprim

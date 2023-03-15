@@ -280,6 +280,10 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_parse
     sequence_number = cJSON_GetObjectItemCaseSensitive(authentication_subscriptionJSON, "sequenceNumber");
     if (sequence_number) {
     sequence_number_local_nonprim = OpenAPI_sequence_number_parseFromJSON(sequence_number);
+    if (!sequence_number_local_nonprim) {
+        ogs_error("OpenAPI_sequence_number_parseFromJSON failed [sequence_number]");
+        goto end;
+    }
     }
 
     authentication_management_field = cJSON_GetObjectItemCaseSensitive(authentication_subscriptionJSON, "authenticationManagementField");

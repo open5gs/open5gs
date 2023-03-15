@@ -183,11 +183,19 @@ OpenAPI_hss_authentication_info_request_t *OpenAPI_hss_authentication_info_reque
     serving_network_id = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_requestJSON, "servingNetworkId");
     if (serving_network_id) {
     serving_network_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(serving_network_id);
+    if (!serving_network_id_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [serving_network_id]");
+        goto end;
+    }
     }
 
     resynchronization_info = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_requestJSON, "resynchronizationInfo");
     if (resynchronization_info) {
     resynchronization_info_local_nonprim = OpenAPI_resynchronization_info_parseFromJSON(resynchronization_info);
+    if (!resynchronization_info_local_nonprim) {
+        ogs_error("OpenAPI_resynchronization_info_parseFromJSON failed [resynchronization_info]");
+        goto end;
+    }
     }
 
     an_id = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_requestJSON, "anId");

@@ -93,7 +93,6 @@ OpenAPI_service_specific_authorization_info_t *OpenAPI_service_specific_authoriz
             OpenAPI_authorization_info_t *service_specific_authorization_listItem = OpenAPI_authorization_info_parseFromJSON(service_specific_authorization_list_local);
             if (!service_specific_authorization_listItem) {
                 ogs_error("No service_specific_authorization_listItem");
-                OpenAPI_list_free(service_specific_authorization_listList);
                 goto end;
             }
             OpenAPI_list_add(service_specific_authorization_listList, service_specific_authorization_listItem);

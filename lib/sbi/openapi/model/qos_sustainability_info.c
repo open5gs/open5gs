@@ -163,6 +163,10 @@ OpenAPI_qos_sustainability_info_t *OpenAPI_qos_sustainability_info_parseFromJSON
     area_info = cJSON_GetObjectItemCaseSensitive(qos_sustainability_infoJSON, "areaInfo");
     if (area_info) {
     area_info_local_nonprim = OpenAPI_network_area_info_parseFromJSON(area_info);
+    if (!area_info_local_nonprim) {
+        ogs_error("OpenAPI_network_area_info_parseFromJSON failed [area_info]");
+        goto end;
+    }
     }
 
     start_ts = cJSON_GetObjectItemCaseSensitive(qos_sustainability_infoJSON, "startTs");
@@ -184,6 +188,10 @@ OpenAPI_qos_sustainability_info_t *OpenAPI_qos_sustainability_info_parseFromJSON
     qos_flow_ret_thd = cJSON_GetObjectItemCaseSensitive(qos_sustainability_infoJSON, "qosFlowRetThd");
     if (qos_flow_ret_thd) {
     qos_flow_ret_thd_local_nonprim = OpenAPI_retainability_threshold_parseFromJSON(qos_flow_ret_thd);
+    if (!qos_flow_ret_thd_local_nonprim) {
+        ogs_error("OpenAPI_retainability_threshold_parseFromJSON failed [qos_flow_ret_thd]");
+        goto end;
+    }
     }
 
     ran_ue_throu_thd = cJSON_GetObjectItemCaseSensitive(qos_sustainability_infoJSON, "ranUeThrouThd");
@@ -197,6 +205,10 @@ OpenAPI_qos_sustainability_info_t *OpenAPI_qos_sustainability_info_parseFromJSON
     snssai = cJSON_GetObjectItemCaseSensitive(qos_sustainability_infoJSON, "snssai");
     if (snssai) {
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
     }
 
     confidence = cJSON_GetObjectItemCaseSensitive(qos_sustainability_infoJSON, "confidence");

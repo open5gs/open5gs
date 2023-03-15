@@ -110,6 +110,10 @@ OpenAPI_redundant_transmission_exp_info_t *OpenAPI_redundant_transmission_exp_in
     spatial_valid_con = cJSON_GetObjectItemCaseSensitive(redundant_transmission_exp_infoJSON, "spatialValidCon");
     if (spatial_valid_con) {
     spatial_valid_con_local_nonprim = OpenAPI_network_area_info_parseFromJSON(spatial_valid_con);
+    if (!spatial_valid_con_local_nonprim) {
+        ogs_error("OpenAPI_network_area_info_parseFromJSON failed [spatial_valid_con]");
+        goto end;
+    }
     }
 
     dnn = cJSON_GetObjectItemCaseSensitive(redundant_transmission_exp_infoJSON, "dnn");
@@ -141,7 +145,6 @@ OpenAPI_redundant_transmission_exp_info_t *OpenAPI_redundant_transmission_exp_in
             OpenAPI_redundant_transmission_exp_per_ts_t *red_trans_expsItem = OpenAPI_redundant_transmission_exp_per_ts_parseFromJSON(red_trans_exps_local);
             if (!red_trans_expsItem) {
                 ogs_error("No red_trans_expsItem");
-                OpenAPI_list_free(red_trans_expsList);
                 goto end;
             }
             OpenAPI_list_add(red_trans_expsList, red_trans_expsItem);

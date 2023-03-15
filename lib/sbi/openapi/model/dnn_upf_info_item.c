@@ -314,7 +314,6 @@ OpenAPI_dnn_upf_info_item_t *OpenAPI_dnn_upf_info_item_parseFromJSON(cJSON *dnn_
             OpenAPI_ipv4_address_range_t *ipv4_address_rangesItem = OpenAPI_ipv4_address_range_parseFromJSON(ipv4_address_ranges_local);
             if (!ipv4_address_rangesItem) {
                 ogs_error("No ipv4_address_rangesItem");
-                OpenAPI_list_free(ipv4_address_rangesList);
                 goto end;
             }
             OpenAPI_list_add(ipv4_address_rangesList, ipv4_address_rangesItem);
@@ -339,7 +338,6 @@ OpenAPI_dnn_upf_info_item_t *OpenAPI_dnn_upf_info_item_parseFromJSON(cJSON *dnn_
             OpenAPI_ipv6_prefix_range_t *ipv6_prefix_rangesItem = OpenAPI_ipv6_prefix_range_parseFromJSON(ipv6_prefix_ranges_local);
             if (!ipv6_prefix_rangesItem) {
                 ogs_error("No ipv6_prefix_rangesItem");
-                OpenAPI_list_free(ipv6_prefix_rangesList);
                 goto end;
             }
             OpenAPI_list_add(ipv6_prefix_rangesList, ipv6_prefix_rangesItem);
@@ -364,7 +362,6 @@ OpenAPI_dnn_upf_info_item_t *OpenAPI_dnn_upf_info_item_parseFromJSON(cJSON *dnn_
             OpenAPI_ip_index_t *ipv4_index_listItem = OpenAPI_ip_index_parseFromJSON(ipv4_index_list_local);
             if (!ipv4_index_listItem) {
                 ogs_error("No ipv4_index_listItem");
-                OpenAPI_list_free(ipv4_index_listList);
                 goto end;
             }
             OpenAPI_list_add(ipv4_index_listList, ipv4_index_listItem);
@@ -389,7 +386,6 @@ OpenAPI_dnn_upf_info_item_t *OpenAPI_dnn_upf_info_item_parseFromJSON(cJSON *dnn_
             OpenAPI_ip_index_t *ipv6_index_listItem = OpenAPI_ip_index_parseFromJSON(ipv6_index_list_local);
             if (!ipv6_index_listItem) {
                 ogs_error("No ipv6_index_listItem");
-                OpenAPI_list_free(ipv6_index_listList);
                 goto end;
             }
             OpenAPI_list_add(ipv6_index_listList, ipv6_index_listItem);

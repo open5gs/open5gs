@@ -114,15 +114,27 @@ OpenAPI_ue_context_create_error_t *OpenAPI_ue_context_create_error_parseFromJSON
         goto end;
     }
     error_local_nonprim = OpenAPI_problem_details_parseFromJSON(error);
+    if (!error_local_nonprim) {
+        ogs_error("OpenAPI_problem_details_parseFromJSON failed [error]");
+        goto end;
+    }
 
     ngap_cause = cJSON_GetObjectItemCaseSensitive(ue_context_create_errorJSON, "ngapCause");
     if (ngap_cause) {
     ngap_cause_local_nonprim = OpenAPI_ng_ap_cause_parseFromJSON(ngap_cause);
+    if (!ngap_cause_local_nonprim) {
+        ogs_error("OpenAPI_ng_ap_cause_parseFromJSON failed [ngap_cause]");
+        goto end;
+    }
     }
 
     target_to_source_failure_data = cJSON_GetObjectItemCaseSensitive(ue_context_create_errorJSON, "targetToSourceFailureData");
     if (target_to_source_failure_data) {
     target_to_source_failure_data_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(target_to_source_failure_data);
+    if (!target_to_source_failure_data_local_nonprim) {
+        ogs_error("OpenAPI_n2_info_content_parseFromJSON failed [target_to_source_failure_data]");
+        goto end;
+    }
     }
 
     ue_context_create_error_local_var = OpenAPI_ue_context_create_error_create (

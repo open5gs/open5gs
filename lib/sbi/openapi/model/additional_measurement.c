@@ -184,6 +184,10 @@ OpenAPI_additional_measurement_t *OpenAPI_additional_measurement_parseFromJSON(c
     unexp_loc = cJSON_GetObjectItemCaseSensitive(additional_measurementJSON, "unexpLoc");
     if (unexp_loc) {
     unexp_loc_local_nonprim = OpenAPI_network_area_info_parseFromJSON(unexp_loc);
+    if (!unexp_loc_local_nonprim) {
+        ogs_error("OpenAPI_network_area_info_parseFromJSON failed [unexp_loc]");
+        goto end;
+    }
     }
 
     unexp_flow_teps = cJSON_GetObjectItemCaseSensitive(additional_measurementJSON, "unexpFlowTeps");
@@ -204,7 +208,6 @@ OpenAPI_additional_measurement_t *OpenAPI_additional_measurement_parseFromJSON(c
             OpenAPI_ip_eth_flow_description_t *unexp_flow_tepsItem = OpenAPI_ip_eth_flow_description_parseFromJSON(unexp_flow_teps_local);
             if (!unexp_flow_tepsItem) {
                 ogs_error("No unexp_flow_tepsItem");
-                OpenAPI_list_free(unexp_flow_tepsList);
                 goto end;
             }
             OpenAPI_list_add(unexp_flow_tepsList, unexp_flow_tepsItem);
@@ -230,11 +233,19 @@ OpenAPI_additional_measurement_t *OpenAPI_additional_measurement_parseFromJSON(c
     ddos_attack = cJSON_GetObjectItemCaseSensitive(additional_measurementJSON, "ddosAttack");
     if (ddos_attack) {
     ddos_attack_local_nonprim = OpenAPI_address_list_parseFromJSON(ddos_attack);
+    if (!ddos_attack_local_nonprim) {
+        ogs_error("OpenAPI_address_list_parseFromJSON failed [ddos_attack]");
+        goto end;
+    }
     }
 
     wrg_dest = cJSON_GetObjectItemCaseSensitive(additional_measurementJSON, "wrgDest");
     if (wrg_dest) {
     wrg_dest_local_nonprim = OpenAPI_address_list_parseFromJSON(wrg_dest);
+    if (!wrg_dest_local_nonprim) {
+        ogs_error("OpenAPI_address_list_parseFromJSON failed [wrg_dest]");
+        goto end;
+    }
     }
 
     circums = cJSON_GetObjectItemCaseSensitive(additional_measurementJSON, "circums");
@@ -255,7 +266,6 @@ OpenAPI_additional_measurement_t *OpenAPI_additional_measurement_parseFromJSON(c
             OpenAPI_circumstance_description_t *circumsItem = OpenAPI_circumstance_description_parseFromJSON(circums_local);
             if (!circumsItem) {
                 ogs_error("No circumsItem");
-                OpenAPI_list_free(circumsList);
                 goto end;
             }
             OpenAPI_list_add(circumsList, circumsItem);

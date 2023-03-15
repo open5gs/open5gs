@@ -93,7 +93,6 @@ OpenAPI_hss_subscription_info_t *OpenAPI_hss_subscription_info_parseFromJSON(cJS
             OpenAPI_hss_subscription_item_t *hss_subscription_listItem = OpenAPI_hss_subscription_item_parseFromJSON(hss_subscription_list_local);
             if (!hss_subscription_listItem) {
                 ogs_error("No hss_subscription_listItem");
-                OpenAPI_list_free(hss_subscription_listList);
                 goto end;
             }
             OpenAPI_list_add(hss_subscription_listList, hss_subscription_listItem);

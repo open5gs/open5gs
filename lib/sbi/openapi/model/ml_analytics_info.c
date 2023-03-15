@@ -142,7 +142,6 @@ OpenAPI_ml_analytics_info_t *OpenAPI_ml_analytics_info_parseFromJSON(cJSON *ml_a
             OpenAPI_nwdaf_event_t *ml_analytics_idsItem = OpenAPI_nwdaf_event_parseFromJSON(ml_analytics_ids_local);
             if (!ml_analytics_idsItem) {
                 ogs_error("No ml_analytics_idsItem");
-                OpenAPI_list_free(ml_analytics_idsList);
                 goto end;
             }
             OpenAPI_list_add(ml_analytics_idsList, ml_analytics_idsItem);
@@ -167,7 +166,6 @@ OpenAPI_ml_analytics_info_t *OpenAPI_ml_analytics_info_parseFromJSON(cJSON *ml_a
             OpenAPI_snssai_t *snssai_listItem = OpenAPI_snssai_parseFromJSON(snssai_list_local);
             if (!snssai_listItem) {
                 ogs_error("No snssai_listItem");
-                OpenAPI_list_free(snssai_listList);
                 goto end;
             }
             OpenAPI_list_add(snssai_listList, snssai_listItem);
@@ -192,7 +190,6 @@ OpenAPI_ml_analytics_info_t *OpenAPI_ml_analytics_info_parseFromJSON(cJSON *ml_a
             OpenAPI_tai_t *tracking_area_listItem = OpenAPI_tai_parseFromJSON(tracking_area_list_local);
             if (!tracking_area_listItem) {
                 ogs_error("No tracking_area_listItem");
-                OpenAPI_list_free(tracking_area_listList);
                 goto end;
             }
             OpenAPI_list_add(tracking_area_listList, tracking_area_listItem);

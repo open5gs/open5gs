@@ -294,7 +294,6 @@ OpenAPI_traffic_descriptor_components_t *OpenAPI_traffic_descriptor_components_p
             OpenAPI_eth_flow_description_t *eth_flow_descsItem = OpenAPI_eth_flow_description_parseFromJSON(eth_flow_descs_local);
             if (!eth_flow_descsItem) {
                 ogs_error("No eth_flow_descsItem");
-                OpenAPI_list_free(eth_flow_descsList);
                 goto end;
             }
             OpenAPI_list_add(eth_flow_descsList, eth_flow_descsItem);
@@ -340,7 +339,6 @@ OpenAPI_traffic_descriptor_components_t *OpenAPI_traffic_descriptor_components_p
             OpenAPI_connection_capabilities_t *conn_capsItem = OpenAPI_connection_capabilities_parseFromJSON(conn_caps_local);
             if (!conn_capsItem) {
                 ogs_error("No conn_capsItem");
-                OpenAPI_list_free(conn_capsList);
                 goto end;
             }
             OpenAPI_list_add(conn_capsList, conn_capsItem);

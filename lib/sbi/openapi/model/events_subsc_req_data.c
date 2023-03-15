@@ -244,7 +244,6 @@ OpenAPI_events_subsc_req_data_t *OpenAPI_events_subsc_req_data_parseFromJSON(cJS
             OpenAPI_af_event_subscription_t *eventsItem = OpenAPI_af_event_subscription_parseFromJSON(events_local);
             if (!eventsItem) {
                 ogs_error("No eventsItem");
-                OpenAPI_list_free(eventsList);
                 goto end;
             }
             OpenAPI_list_add(eventsList, eventsItem);
@@ -280,6 +279,10 @@ OpenAPI_events_subsc_req_data_t *OpenAPI_events_subsc_req_data_parseFromJSON(cJS
     qos_mon = cJSON_GetObjectItemCaseSensitive(events_subsc_req_dataJSON, "qosMon");
     if (qos_mon) {
     qos_mon_local_nonprim = OpenAPI_qos_monitoring_information_parseFromJSON(qos_mon);
+    if (!qos_mon_local_nonprim) {
+        ogs_error("OpenAPI_qos_monitoring_information_parseFromJSON failed [qos_mon]");
+        goto end;
+    }
     }
 
     req_anis = cJSON_GetObjectItemCaseSensitive(events_subsc_req_dataJSON, "reqAnis");
@@ -304,6 +307,10 @@ OpenAPI_events_subsc_req_data_t *OpenAPI_events_subsc_req_data_parseFromJSON(cJS
     usg_thres = cJSON_GetObjectItemCaseSensitive(events_subsc_req_dataJSON, "usgThres");
     if (usg_thres) {
     usg_thres_local_nonprim = OpenAPI_usage_threshold_parseFromJSON(usg_thres);
+    if (!usg_thres_local_nonprim) {
+        ogs_error("OpenAPI_usage_threshold_parseFromJSON failed [usg_thres]");
+        goto end;
+    }
     }
 
     notif_corre_id = cJSON_GetObjectItemCaseSensitive(events_subsc_req_dataJSON, "notifCorreId");

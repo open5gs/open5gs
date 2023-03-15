@@ -96,6 +96,10 @@ OpenAPI_network_perf_requirement_t *OpenAPI_network_perf_requirement_parseFromJS
         goto end;
     }
     nw_perf_type_local_nonprim = OpenAPI_network_perf_type_parseFromJSON(nw_perf_type);
+    if (!nw_perf_type_local_nonprim) {
+        ogs_error("OpenAPI_network_perf_type_parseFromJSON failed [nw_perf_type]");
+        goto end;
+    }
 
     relative_ratio = cJSON_GetObjectItemCaseSensitive(network_perf_requirementJSON, "relativeRatio");
     if (relative_ratio) {

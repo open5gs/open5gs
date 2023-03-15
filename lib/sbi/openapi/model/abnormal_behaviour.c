@@ -198,6 +198,10 @@ OpenAPI_abnormal_behaviour_t *OpenAPI_abnormal_behaviour_parseFromJSON(cJSON *ab
         goto end;
     }
     excep_local_nonprim = OpenAPI_exception_parseFromJSON(excep);
+    if (!excep_local_nonprim) {
+        ogs_error("OpenAPI_exception_parseFromJSON failed [excep]");
+        goto end;
+    }
 
     dnn = cJSON_GetObjectItemCaseSensitive(abnormal_behaviourJSON, "dnn");
     if (dnn) {
@@ -210,6 +214,10 @@ OpenAPI_abnormal_behaviour_t *OpenAPI_abnormal_behaviour_parseFromJSON(cJSON *ab
     snssai = cJSON_GetObjectItemCaseSensitive(abnormal_behaviourJSON, "snssai");
     if (snssai) {
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
     }
 
     ratio = cJSON_GetObjectItemCaseSensitive(abnormal_behaviourJSON, "ratio");
@@ -231,6 +239,10 @@ OpenAPI_abnormal_behaviour_t *OpenAPI_abnormal_behaviour_parseFromJSON(cJSON *ab
     addt_meas_info = cJSON_GetObjectItemCaseSensitive(abnormal_behaviourJSON, "addtMeasInfo");
     if (addt_meas_info) {
     addt_meas_info_local_nonprim = OpenAPI_additional_measurement_parseFromJSON(addt_meas_info);
+    if (!addt_meas_info_local_nonprim) {
+        ogs_error("OpenAPI_additional_measurement_parseFromJSON failed [addt_meas_info]");
+        goto end;
+    }
     }
 
     abnormal_behaviour_local_var = OpenAPI_abnormal_behaviour_create (

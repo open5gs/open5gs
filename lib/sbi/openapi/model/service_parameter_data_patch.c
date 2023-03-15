@@ -261,7 +261,6 @@ OpenAPI_service_parameter_data_patch_t *OpenAPI_service_parameter_data_patch_par
             OpenAPI_ursp_rule_request_t *ursp_influenceItem = OpenAPI_ursp_rule_request_parseFromJSON(ursp_influence_local);
             if (!ursp_influenceItem) {
                 ogs_error("No ursp_influenceItem");
-                OpenAPI_list_free(ursp_influenceList);
                 goto end;
             }
             OpenAPI_list_add(ursp_influenceList, ursp_influenceItem);
@@ -286,7 +285,6 @@ OpenAPI_service_parameter_data_patch_t *OpenAPI_service_parameter_data_patch_par
             OpenAPI_event_t *delivery_eventsItem = OpenAPI_event_parseFromJSON(delivery_events_local);
             if (!delivery_eventsItem) {
                 ogs_error("No delivery_eventsItem");
-                OpenAPI_list_free(delivery_eventsList);
                 goto end;
             }
             OpenAPI_list_add(delivery_eventsList, delivery_eventsItem);

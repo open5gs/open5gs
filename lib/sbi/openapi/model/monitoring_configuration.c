@@ -342,6 +342,10 @@ OpenAPI_monitoring_configuration_t *OpenAPI_monitoring_configuration_parseFromJS
         goto end;
     }
     event_type_local_nonprim = OpenAPI_event_type_parseFromJSON(event_type);
+    if (!event_type_local_nonprim) {
+        ogs_error("OpenAPI_event_type_parseFromJSON failed [event_type]");
+        goto end;
+    }
 
     immediate_flag = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "immediateFlag");
     if (immediate_flag) {
@@ -354,21 +358,37 @@ OpenAPI_monitoring_configuration_t *OpenAPI_monitoring_configuration_parseFromJS
     location_reporting_configuration = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "locationReportingConfiguration");
     if (location_reporting_configuration) {
     location_reporting_configuration_local_nonprim = OpenAPI_location_reporting_configuration_parseFromJSON(location_reporting_configuration);
+    if (!location_reporting_configuration_local_nonprim) {
+        ogs_error("OpenAPI_location_reporting_configuration_parseFromJSON failed [location_reporting_configuration]");
+        goto end;
+    }
     }
 
     association_type = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "associationType");
     if (association_type) {
     association_type_local_nonprim = OpenAPI_association_type_parseFromJSON(association_type);
+    if (!association_type_local_nonprim) {
+        ogs_error("OpenAPI_association_type_parseFromJSON failed [association_type]");
+        goto end;
+    }
     }
 
     datalink_report_cfg = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "datalinkReportCfg");
     if (datalink_report_cfg) {
     datalink_report_cfg_local_nonprim = OpenAPI_datalink_reporting_configuration_parseFromJSON(datalink_report_cfg);
+    if (!datalink_report_cfg_local_nonprim) {
+        ogs_error("OpenAPI_datalink_reporting_configuration_parseFromJSON failed [datalink_report_cfg]");
+        goto end;
+    }
     }
 
     loss_connectivity_cfg = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "lossConnectivityCfg");
     if (loss_connectivity_cfg) {
     loss_connectivity_cfg_local_nonprim = OpenAPI_loss_connectivity_cfg_parseFromJSON(loss_connectivity_cfg);
+    if (!loss_connectivity_cfg_local_nonprim) {
+        ogs_error("OpenAPI_loss_connectivity_cfg_parseFromJSON failed [loss_connectivity_cfg]");
+        goto end;
+    }
     }
 
     maximum_latency = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "maximumLatency");
@@ -406,16 +426,28 @@ OpenAPI_monitoring_configuration_t *OpenAPI_monitoring_configuration_parseFromJS
     single_nssai = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "singleNssai");
     if (single_nssai) {
     single_nssai_local_nonprim = OpenAPI_snssai_parseFromJSON(single_nssai);
+    if (!single_nssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [single_nssai]");
+        goto end;
+    }
     }
 
     pdu_session_status_cfg = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "pduSessionStatusCfg");
     if (pdu_session_status_cfg) {
     pdu_session_status_cfg_local_nonprim = OpenAPI_pdu_session_status_cfg_parseFromJSON(pdu_session_status_cfg);
+    if (!pdu_session_status_cfg_local_nonprim) {
+        ogs_error("OpenAPI_pdu_session_status_cfg_parseFromJSON failed [pdu_session_status_cfg]");
+        goto end;
+    }
     }
 
     reachability_for_sms_cfg = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "reachabilityForSmsCfg");
     if (reachability_for_sms_cfg) {
     reachability_for_sms_cfg_local_nonprim = OpenAPI_reachability_for_sms_configuration_parseFromJSON(reachability_for_sms_cfg);
+    if (!reachability_for_sms_cfg_local_nonprim) {
+        ogs_error("OpenAPI_reachability_for_sms_configuration_parseFromJSON failed [reachability_for_sms_cfg]");
+        goto end;
+    }
     }
 
     mtc_provider_information = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "mtcProviderInformation");
@@ -437,6 +469,10 @@ OpenAPI_monitoring_configuration_t *OpenAPI_monitoring_configuration_parseFromJS
     reachability_for_data_cfg = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "reachabilityForDataCfg");
     if (reachability_for_data_cfg) {
     reachability_for_data_cfg_local_nonprim = OpenAPI_reachability_for_data_configuration_parseFromJSON(reachability_for_data_cfg);
+    if (!reachability_for_data_cfg_local_nonprim) {
+        ogs_error("OpenAPI_reachability_for_data_configuration_parseFromJSON failed [reachability_for_data_cfg]");
+        goto end;
+    }
     }
 
     idle_status_ind = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "idleStatusInd");

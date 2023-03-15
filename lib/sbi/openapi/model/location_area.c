@@ -157,7 +157,6 @@ OpenAPI_location_area_t *OpenAPI_location_area_parseFromJSON(cJSON *location_are
             OpenAPI_geographic_area_t *geographic_areasItem = OpenAPI_geographic_area_parseFromJSON(geographic_areas_local);
             if (!geographic_areasItem) {
                 ogs_error("No geographic_areasItem");
-                OpenAPI_list_free(geographic_areasList);
                 goto end;
             }
             OpenAPI_list_add(geographic_areasList, geographic_areasItem);
@@ -182,7 +181,6 @@ OpenAPI_location_area_t *OpenAPI_location_area_parseFromJSON(cJSON *location_are
             OpenAPI_civic_address_t *civic_addressesItem = OpenAPI_civic_address_parseFromJSON(civic_addresses_local);
             if (!civic_addressesItem) {
                 ogs_error("No civic_addressesItem");
-                OpenAPI_list_free(civic_addressesList);
                 goto end;
             }
             OpenAPI_list_add(civic_addressesList, civic_addressesItem);
@@ -192,11 +190,19 @@ OpenAPI_location_area_t *OpenAPI_location_area_parseFromJSON(cJSON *location_are
     nw_area_info = cJSON_GetObjectItemCaseSensitive(location_areaJSON, "nwAreaInfo");
     if (nw_area_info) {
     nw_area_info_local_nonprim = OpenAPI_network_area_info_1_parseFromJSON(nw_area_info);
+    if (!nw_area_info_local_nonprim) {
+        ogs_error("OpenAPI_network_area_info_1_parseFromJSON failed [nw_area_info]");
+        goto end;
+    }
     }
 
     umt_time = cJSON_GetObjectItemCaseSensitive(location_areaJSON, "umtTime");
     if (umt_time) {
     umt_time_local_nonprim = OpenAPI_umt_time_parseFromJSON(umt_time);
+    if (!umt_time_local_nonprim) {
+        ogs_error("OpenAPI_umt_time_parseFromJSON failed [umt_time]");
+        goto end;
+    }
     }
 
     location_area_local_var = OpenAPI_location_area_create (

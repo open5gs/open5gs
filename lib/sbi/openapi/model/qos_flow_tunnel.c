@@ -128,6 +128,10 @@ OpenAPI_qos_flow_tunnel_t *OpenAPI_qos_flow_tunnel_parseFromJSON(cJSON *qos_flow
         goto end;
     }
     tunnel_info_local_nonprim = OpenAPI_tunnel_info_parseFromJSON(tunnel_info);
+    if (!tunnel_info_local_nonprim) {
+        ogs_error("OpenAPI_tunnel_info_parseFromJSON failed [tunnel_info]");
+        goto end;
+    }
 
     qos_flow_tunnel_local_var = OpenAPI_qos_flow_tunnel_create (
         qfi_listList,

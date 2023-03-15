@@ -1597,6 +1597,10 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
     sub_ue_ambr = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "subUeAmbr");
     if (sub_ue_ambr) {
     sub_ue_ambr_local_nonprim = OpenAPI_ambr_parseFromJSON(sub_ue_ambr);
+    if (!sub_ue_ambr_local_nonprim) {
+        ogs_error("OpenAPI_ambr_parseFromJSON failed [sub_ue_ambr]");
+        goto end;
+    }
     }
 
     sub_ue_slice_mbr_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "subUeSliceMbrList");
@@ -1636,6 +1640,10 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
     seaf_data = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "seafData");
     if (seaf_data) {
     seaf_data_local_nonprim = OpenAPI_seaf_data_parseFromJSON(seaf_data);
+    if (!seaf_data_local_nonprim) {
+        ogs_error("OpenAPI_seaf_data_parseFromJSON failed [seaf_data]");
+        goto end;
+    }
     }
 
     _5g_mm_capability = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "5gMmCapability");
@@ -1794,7 +1802,6 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
             OpenAPI_area_t *forbidden_area_listItem = OpenAPI_area_parseFromJSON(forbidden_area_list_local);
             if (!forbidden_area_listItem) {
                 ogs_error("No forbidden_area_listItem");
-                OpenAPI_list_free(forbidden_area_listList);
                 goto end;
             }
             OpenAPI_list_add(forbidden_area_listList, forbidden_area_listItem);
@@ -1804,6 +1811,10 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
     service_area_restriction = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "serviceAreaRestriction");
     if (service_area_restriction) {
     service_area_restriction_local_nonprim = OpenAPI_service_area_restriction_parseFromJSON(service_area_restriction);
+    if (!service_area_restriction_local_nonprim) {
+        ogs_error("OpenAPI_service_area_restriction_parseFromJSON failed [service_area_restriction]");
+        goto end;
+    }
     }
 
     restricted_core_nw_type_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "restrictedCoreNwTypeList");
@@ -1843,7 +1854,6 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
             OpenAPI_ext_amf_event_subscription_t *event_subscription_listItem = OpenAPI_ext_amf_event_subscription_parseFromJSON(event_subscription_list_local);
             if (!event_subscription_listItem) {
                 ogs_error("No event_subscription_listItem");
-                OpenAPI_list_free(event_subscription_listList);
                 goto end;
             }
             OpenAPI_list_add(event_subscription_listList, event_subscription_listItem);
@@ -1868,7 +1878,6 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
             OpenAPI_mm_context_t *mm_context_listItem = OpenAPI_mm_context_parseFromJSON(mm_context_list_local);
             if (!mm_context_listItem) {
                 ogs_error("No mm_context_listItem");
-                OpenAPI_list_free(mm_context_listList);
                 goto end;
             }
             OpenAPI_list_add(mm_context_listList, mm_context_listItem);
@@ -1893,7 +1902,6 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
             OpenAPI_pdu_session_context_t *session_context_listItem = OpenAPI_pdu_session_context_parseFromJSON(session_context_list_local);
             if (!session_context_listItem) {
                 ogs_error("No session_context_listItem");
-                OpenAPI_list_free(session_context_listList);
                 goto end;
             }
             OpenAPI_list_add(session_context_listList, session_context_listItem);
@@ -1903,11 +1911,19 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
     eps_interworking_info = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "epsInterworkingInfo");
     if (eps_interworking_info) {
     eps_interworking_info_local_nonprim = OpenAPI_eps_interworking_info_parseFromJSON(eps_interworking_info);
+    if (!eps_interworking_info_local_nonprim) {
+        ogs_error("OpenAPI_eps_interworking_info_parseFromJSON failed [eps_interworking_info]");
+        goto end;
+    }
     }
 
     trace_data = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "traceData");
     if (trace_data) {
     trace_data_local_nonprim = OpenAPI_trace_data_parseFromJSON(trace_data);
+    if (!trace_data_local_nonprim) {
+        ogs_error("OpenAPI_trace_data_parseFromJSON failed [trace_data]");
+        goto end;
+    }
     }
 
     service_gap_expiry_time = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "serviceGapExpiryTime");
@@ -1981,7 +1997,6 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
             OpenAPI_small_data_rate_status_info_t *small_data_rate_status_infosItem = OpenAPI_small_data_rate_status_info_parseFromJSON(small_data_rate_status_infos_local);
             if (!small_data_rate_status_infosItem) {
                 ogs_error("No small_data_rate_status_infosItem");
-                OpenAPI_list_free(small_data_rate_status_infosList);
                 goto end;
             }
             OpenAPI_list_add(small_data_rate_status_infosList, small_data_rate_status_infosItem);
@@ -2029,6 +2044,10 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
     v2x_context = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "v2xContext");
     if (v2x_context) {
     v2x_context_local_nonprim = OpenAPI_v2x_context_parseFromJSON(v2x_context);
+    if (!v2x_context_local_nonprim) {
+        ogs_error("OpenAPI_v2x_context_parseFromJSON failed [v2x_context]");
+        goto end;
+    }
     }
 
     lte_cat_m_ind = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "lteCatMInd");
@@ -2050,11 +2069,19 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
     mo_exp_data_counter = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "moExpDataCounter");
     if (mo_exp_data_counter) {
     mo_exp_data_counter_local_nonprim = OpenAPI_mo_exp_data_counter_parseFromJSON(mo_exp_data_counter);
+    if (!mo_exp_data_counter_local_nonprim) {
+        ogs_error("OpenAPI_mo_exp_data_counter_parseFromJSON failed [mo_exp_data_counter]");
+        goto end;
+    }
     }
 
     cag_data = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "cagData");
     if (cag_data) {
     cag_data_local_nonprim = OpenAPI_cag_data_parseFromJSON(cag_data);
+    if (!cag_data_local_nonprim) {
+        ogs_error("OpenAPI_cag_data_parseFromJSON failed [cag_data]");
+        goto end;
+    }
     }
 
     management_mdt_ind = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "managementMdtInd");
@@ -2068,11 +2095,19 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
     immediate_mdt_conf = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "immediateMdtConf");
     if (immediate_mdt_conf) {
     immediate_mdt_conf_local_nonprim = OpenAPI_immediate_mdt_conf_parseFromJSON(immediate_mdt_conf);
+    if (!immediate_mdt_conf_local_nonprim) {
+        ogs_error("OpenAPI_immediate_mdt_conf_parseFromJSON failed [immediate_mdt_conf]");
+        goto end;
+    }
     }
 
     ec_restriction_data_wb = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "ecRestrictionDataWb");
     if (ec_restriction_data_wb) {
     ec_restriction_data_wb_local_nonprim = OpenAPI_ec_restriction_data_wb_parseFromJSON(ec_restriction_data_wb);
+    if (!ec_restriction_data_wb_local_nonprim) {
+        ogs_error("OpenAPI_ec_restriction_data_wb_parseFromJSON failed [ec_restriction_data_wb]");
+        goto end;
+    }
     }
 
     ec_restriction_data_nb = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "ecRestrictionDataNb");
@@ -2094,6 +2129,10 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
     prose_context = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "proseContext");
     if (prose_context) {
     prose_context_local_nonprim = OpenAPI_prose_context_parseFromJSON(prose_context);
+    if (!prose_context_local_nonprim) {
+        ogs_error("OpenAPI_prose_context_parseFromJSON failed [prose_context]");
+        goto end;
+    }
     }
 
     analytics_subscription_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "analyticsSubscriptionList");
@@ -2114,7 +2153,6 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
             OpenAPI_analytics_subscription_t *analytics_subscription_listItem = OpenAPI_analytics_subscription_parseFromJSON(analytics_subscription_list_local);
             if (!analytics_subscription_listItem) {
                 ogs_error("No analytics_subscription_listItem");
-                OpenAPI_list_free(analytics_subscription_listList);
                 goto end;
             }
             OpenAPI_list_add(analytics_subscription_listList, analytics_subscription_listItem);
@@ -2140,6 +2178,10 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
     used_service_area_restriction = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "usedServiceAreaRestriction");
     if (used_service_area_restriction) {
     used_service_area_restriction_local_nonprim = OpenAPI_service_area_restriction_parseFromJSON(used_service_area_restriction);
+    if (!used_service_area_restriction_local_nonprim) {
+        ogs_error("OpenAPI_service_area_restriction_parseFromJSON failed [used_service_area_restriction]");
+        goto end;
+    }
     }
 
     pra_in_am_policy = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "praInAmPolicy");
@@ -2197,6 +2239,10 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
     updp_subscription_data = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "updpSubscriptionData");
     if (updp_subscription_data) {
     updp_subscription_data_local_nonprim = OpenAPI_updp_subscription_data_parseFromJSON(updp_subscription_data);
+    if (!updp_subscription_data_local_nonprim) {
+        ogs_error("OpenAPI_updp_subscription_data_parseFromJSON failed [updp_subscription_data]");
+        goto end;
+    }
     }
 
     sm_policy_notify_pdu_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "smPolicyNotifyPduList");
@@ -2217,7 +2263,6 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
             OpenAPI_pdu_session_info_t *sm_policy_notify_pdu_listItem = OpenAPI_pdu_session_info_parseFromJSON(sm_policy_notify_pdu_list_local);
             if (!sm_policy_notify_pdu_listItem) {
                 ogs_error("No sm_policy_notify_pdu_listItem");
-                OpenAPI_list_free(sm_policy_notify_pdu_listList);
                 goto end;
             }
             OpenAPI_list_add(sm_policy_notify_pdu_listList, sm_policy_notify_pdu_listItem);
@@ -2227,6 +2272,10 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
     pcf_ue_callback_info = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "pcfUeCallbackInfo");
     if (pcf_ue_callback_info) {
     pcf_ue_callback_info_local_nonprim = OpenAPI_pcf_ue_callback_info_parseFromJSON(pcf_ue_callback_info);
+    if (!pcf_ue_callback_info_local_nonprim) {
+        ogs_error("OpenAPI_pcf_ue_callback_info_parseFromJSON failed [pcf_ue_callback_info]");
+        goto end;
+    }
     }
 
     ue_positioning_cap = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "uePositioningCap");
@@ -2264,6 +2313,10 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
     smf_sel_info = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "smfSelInfo");
     if (smf_sel_info) {
     smf_sel_info_local_nonprim = OpenAPI_smf_selection_data_parseFromJSON(smf_sel_info);
+    if (!smf_sel_info_local_nonprim) {
+        ogs_error("OpenAPI_smf_selection_data_parseFromJSON failed [smf_sel_info]");
+        goto end;
+    }
     }
 
     pcf_ue_slice_mbr_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "pcfUeSliceMbrList");
@@ -2327,6 +2380,10 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
     disaster_plmn = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "disasterPlmn");
     if (disaster_plmn) {
     disaster_plmn_local_nonprim = OpenAPI_plmn_id_parseFromJSON(disaster_plmn);
+    if (!disaster_plmn_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [disaster_plmn]");
+        goto end;
+    }
     }
 
     ue_context_local_var = OpenAPI_ue_context_create (

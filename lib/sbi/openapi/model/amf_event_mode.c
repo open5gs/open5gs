@@ -155,6 +155,10 @@ OpenAPI_amf_event_mode_t *OpenAPI_amf_event_mode_parseFromJSON(cJSON *amf_event_
         goto end;
     }
     trigger_local_nonprim = OpenAPI_amf_event_trigger_parseFromJSON(trigger);
+    if (!trigger_local_nonprim) {
+        ogs_error("OpenAPI_amf_event_trigger_parseFromJSON failed [trigger]");
+        goto end;
+    }
 
     max_reports = cJSON_GetObjectItemCaseSensitive(amf_event_modeJSON, "maxReports");
     if (max_reports) {

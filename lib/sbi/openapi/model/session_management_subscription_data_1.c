@@ -325,6 +325,10 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
         goto end;
     }
     single_nssai_local_nonprim = OpenAPI_snssai_parseFromJSON(single_nssai);
+    if (!single_nssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [single_nssai]");
+        goto end;
+    }
 
     dnn_configurations = cJSON_GetObjectItemCaseSensitive(session_management_subscription_data_1JSON, "dnnConfigurations");
     if (dnn_configurations) {
@@ -417,6 +421,10 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
     trace_data = cJSON_GetObjectItemCaseSensitive(session_management_subscription_data_1JSON, "traceData");
     if (trace_data) {
     trace_data_local_nonprim = OpenAPI_trace_data_parseFromJSON(trace_data);
+    if (!trace_data_local_nonprim) {
+        ogs_error("OpenAPI_trace_data_parseFromJSON failed [trace_data]");
+        goto end;
+    }
     }
 
     shared_trace_data_id = cJSON_GetObjectItemCaseSensitive(session_management_subscription_data_1JSON, "sharedTraceDataId");

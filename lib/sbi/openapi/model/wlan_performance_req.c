@@ -180,11 +180,19 @@ OpenAPI_wlan_performance_req_t *OpenAPI_wlan_performance_req_parseFromJSON(cJSON
     wlan_order_criter = cJSON_GetObjectItemCaseSensitive(wlan_performance_reqJSON, "wlanOrderCriter");
     if (wlan_order_criter) {
     wlan_order_criter_local_nonprim = OpenAPI_wlan_ordering_criterion_parseFromJSON(wlan_order_criter);
+    if (!wlan_order_criter_local_nonprim) {
+        ogs_error("OpenAPI_wlan_ordering_criterion_parseFromJSON failed [wlan_order_criter]");
+        goto end;
+    }
     }
 
     order = cJSON_GetObjectItemCaseSensitive(wlan_performance_reqJSON, "order");
     if (order) {
     order_local_nonprim = OpenAPI_matching_direction_parseFromJSON(order);
+    if (!order_local_nonprim) {
+        ogs_error("OpenAPI_matching_direction_parseFromJSON failed [order]");
+        goto end;
+    }
     }
 
     wlan_performance_req_local_var = OpenAPI_wlan_performance_req_create (

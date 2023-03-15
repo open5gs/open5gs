@@ -88,11 +88,19 @@ OpenAPI_redundant_transmission_exp_req_t *OpenAPI_redundant_transmission_exp_req
     red_t_order_criter = cJSON_GetObjectItemCaseSensitive(redundant_transmission_exp_reqJSON, "redTOrderCriter");
     if (red_t_order_criter) {
     red_t_order_criter_local_nonprim = OpenAPI_red_trans_exp_ordering_criterion_parseFromJSON(red_t_order_criter);
+    if (!red_t_order_criter_local_nonprim) {
+        ogs_error("OpenAPI_red_trans_exp_ordering_criterion_parseFromJSON failed [red_t_order_criter]");
+        goto end;
+    }
     }
 
     order = cJSON_GetObjectItemCaseSensitive(redundant_transmission_exp_reqJSON, "order");
     if (order) {
     order_local_nonprim = OpenAPI_matching_direction_parseFromJSON(order);
+    if (!order_local_nonprim) {
+        ogs_error("OpenAPI_matching_direction_parseFromJSON failed [order]");
+        goto end;
+    }
     }
 
     redundant_transmission_exp_req_local_var = OpenAPI_redundant_transmission_exp_req_create (

@@ -88,7 +88,6 @@ OpenAPI_model_5_mbs_authorization_info_t *OpenAPI_model_5_mbs_authorization_info
             OpenAPI_mbs_session_id_t *_5mbs_session_idsItem = OpenAPI_mbs_session_id_parseFromJSON(_5mbs_session_ids_local);
             if (!_5mbs_session_idsItem) {
                 ogs_error("No _5mbs_session_idsItem");
-                OpenAPI_list_free(_5mbs_session_idsList);
                 goto end;
             }
             OpenAPI_list_add(_5mbs_session_idsList, _5mbs_session_idsItem);

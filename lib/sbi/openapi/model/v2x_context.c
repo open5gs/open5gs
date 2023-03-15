@@ -137,11 +137,19 @@ OpenAPI_v2x_context_t *OpenAPI_v2x_context_parseFromJSON(cJSON *v2x_contextJSON)
     nr_v2x_services_auth = cJSON_GetObjectItemCaseSensitive(v2x_contextJSON, "nrV2xServicesAuth");
     if (nr_v2x_services_auth) {
     nr_v2x_services_auth_local_nonprim = OpenAPI_nr_v2x_auth_parseFromJSON(nr_v2x_services_auth);
+    if (!nr_v2x_services_auth_local_nonprim) {
+        ogs_error("OpenAPI_nr_v2x_auth_parseFromJSON failed [nr_v2x_services_auth]");
+        goto end;
+    }
     }
 
     lte_v2x_services_auth = cJSON_GetObjectItemCaseSensitive(v2x_contextJSON, "lteV2xServicesAuth");
     if (lte_v2x_services_auth) {
     lte_v2x_services_auth_local_nonprim = OpenAPI_lte_v2x_auth_parseFromJSON(lte_v2x_services_auth);
+    if (!lte_v2x_services_auth_local_nonprim) {
+        ogs_error("OpenAPI_lte_v2x_auth_parseFromJSON failed [lte_v2x_services_auth]");
+        goto end;
+    }
     }
 
     nr_ue_sidelink_ambr = cJSON_GetObjectItemCaseSensitive(v2x_contextJSON, "nrUeSidelinkAmbr");
@@ -163,6 +171,10 @@ OpenAPI_v2x_context_t *OpenAPI_v2x_context_parseFromJSON(cJSON *v2x_contextJSON)
     pc5_qo_s_para = cJSON_GetObjectItemCaseSensitive(v2x_contextJSON, "pc5QoSPara");
     if (pc5_qo_s_para) {
     pc5_qo_s_para_local_nonprim = OpenAPI_pc5_qo_s_para_parseFromJSON(pc5_qo_s_para);
+    if (!pc5_qo_s_para_local_nonprim) {
+        ogs_error("OpenAPI_pc5_qo_s_para_parseFromJSON failed [pc5_qo_s_para]");
+        goto end;
+    }
     }
 
     v2x_context_local_var = OpenAPI_v2x_context_create (

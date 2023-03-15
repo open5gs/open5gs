@@ -84,6 +84,10 @@ OpenAPI_ue_context_transfer_request_t *OpenAPI_ue_context_transfer_request_parse
     json_data = cJSON_GetObjectItemCaseSensitive(ue_context_transfer_requestJSON, "jsonData");
     if (json_data) {
     json_data_local_nonprim = OpenAPI_ue_context_transfer_req_data_parseFromJSON(json_data);
+    if (!json_data_local_nonprim) {
+        ogs_error("OpenAPI_ue_context_transfer_req_data_parseFromJSON failed [json_data]");
+        goto end;
+    }
     }
 
     binary_data_n1_message = cJSON_GetObjectItemCaseSensitive(ue_context_transfer_requestJSON, "binaryDataN1Message");

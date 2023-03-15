@@ -135,6 +135,10 @@ OpenAPI_update_pdu_session_200_response_t *OpenAPI_update_pdu_session_200_respon
     json_data = cJSON_GetObjectItemCaseSensitive(update_pdu_session_200_responseJSON, "jsonData");
     if (json_data) {
     json_data_local_nonprim = OpenAPI_hsmf_updated_data_parseFromJSON(json_data);
+    if (!json_data_local_nonprim) {
+        ogs_error("OpenAPI_hsmf_updated_data_parseFromJSON failed [json_data]");
+        goto end;
+    }
     }
 
     binary_data_n1_sm_info_to_ue = cJSON_GetObjectItemCaseSensitive(update_pdu_session_200_responseJSON, "binaryDataN1SmInfoToUe");

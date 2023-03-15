@@ -152,6 +152,10 @@ OpenAPI_dn_perf_info_t *OpenAPI_dn_perf_info_parseFromJSON(cJSON *dn_perf_infoJS
     snssai = cJSON_GetObjectItemCaseSensitive(dn_perf_infoJSON, "snssai");
     if (snssai) {
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
     }
 
     dn_perf = cJSON_GetObjectItemCaseSensitive(dn_perf_infoJSON, "dnPerf");
@@ -175,7 +179,6 @@ OpenAPI_dn_perf_info_t *OpenAPI_dn_perf_info_parseFromJSON(cJSON *dn_perf_infoJS
             OpenAPI_dn_perf_t *dn_perfItem = OpenAPI_dn_perf_parseFromJSON(dn_perf_local);
             if (!dn_perfItem) {
                 ogs_error("No dn_perfItem");
-                OpenAPI_list_free(dn_perfList);
                 goto end;
             }
             OpenAPI_list_add(dn_perfList, dn_perfItem);

@@ -193,36 +193,64 @@ OpenAPI_registration_data_sets_t *OpenAPI_registration_data_sets_parseFromJSON(c
     amf3_gpp = cJSON_GetObjectItemCaseSensitive(registration_data_setsJSON, "amf3Gpp");
     if (amf3_gpp) {
     amf3_gpp_local_nonprim = OpenAPI_amf3_gpp_access_registration_parseFromJSON(amf3_gpp);
+    if (!amf3_gpp_local_nonprim) {
+        ogs_error("OpenAPI_amf3_gpp_access_registration_parseFromJSON failed [amf3_gpp]");
+        goto end;
+    }
     }
 
     amf_non3_gpp = cJSON_GetObjectItemCaseSensitive(registration_data_setsJSON, "amfNon3Gpp");
     if (amf_non3_gpp) {
     amf_non3_gpp_local_nonprim = OpenAPI_amf_non3_gpp_access_registration_parseFromJSON(amf_non3_gpp);
+    if (!amf_non3_gpp_local_nonprim) {
+        ogs_error("OpenAPI_amf_non3_gpp_access_registration_parseFromJSON failed [amf_non3_gpp]");
+        goto end;
+    }
     }
 
     smf_registration = cJSON_GetObjectItemCaseSensitive(registration_data_setsJSON, "smfRegistration");
     if (smf_registration) {
     smf_registration_local_nonprim = OpenAPI_smf_registration_info_parseFromJSON(smf_registration);
+    if (!smf_registration_local_nonprim) {
+        ogs_error("OpenAPI_smf_registration_info_parseFromJSON failed [smf_registration]");
+        goto end;
+    }
     }
 
     smsf3_gpp = cJSON_GetObjectItemCaseSensitive(registration_data_setsJSON, "smsf3Gpp");
     if (smsf3_gpp) {
     smsf3_gpp_local_nonprim = OpenAPI_smsf_registration_parseFromJSON(smsf3_gpp);
+    if (!smsf3_gpp_local_nonprim) {
+        ogs_error("OpenAPI_smsf_registration_parseFromJSON failed [smsf3_gpp]");
+        goto end;
+    }
     }
 
     smsf_non3_gpp = cJSON_GetObjectItemCaseSensitive(registration_data_setsJSON, "smsfNon3Gpp");
     if (smsf_non3_gpp) {
     smsf_non3_gpp_local_nonprim = OpenAPI_smsf_registration_parseFromJSON(smsf_non3_gpp);
+    if (!smsf_non3_gpp_local_nonprim) {
+        ogs_error("OpenAPI_smsf_registration_parseFromJSON failed [smsf_non3_gpp]");
+        goto end;
+    }
     }
 
     ip_sm_gw = cJSON_GetObjectItemCaseSensitive(registration_data_setsJSON, "ipSmGw");
     if (ip_sm_gw) {
     ip_sm_gw_local_nonprim = OpenAPI_ip_sm_gw_registration_parseFromJSON(ip_sm_gw);
+    if (!ip_sm_gw_local_nonprim) {
+        ogs_error("OpenAPI_ip_sm_gw_registration_parseFromJSON failed [ip_sm_gw]");
+        goto end;
+    }
     }
 
     nwdaf_registration = cJSON_GetObjectItemCaseSensitive(registration_data_setsJSON, "nwdafRegistration");
     if (nwdaf_registration) {
     nwdaf_registration_local_nonprim = OpenAPI_nwdaf_registration_info_parseFromJSON(nwdaf_registration);
+    if (!nwdaf_registration_local_nonprim) {
+        ogs_error("OpenAPI_nwdaf_registration_info_parseFromJSON failed [nwdaf_registration]");
+        goto end;
+    }
     }
 
     registration_data_sets_local_var = OpenAPI_registration_data_sets_create (

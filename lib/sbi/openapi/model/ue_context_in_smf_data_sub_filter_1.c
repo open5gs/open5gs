@@ -146,7 +146,6 @@ OpenAPI_ue_context_in_smf_data_sub_filter_1_t *OpenAPI_ue_context_in_smf_data_su
             OpenAPI_snssai_t *snssai_listItem = OpenAPI_snssai_parseFromJSON(snssai_list_local);
             if (!snssai_listItem) {
                 ogs_error("No snssai_listItem");
-                OpenAPI_list_free(snssai_listList);
                 goto end;
             }
             OpenAPI_list_add(snssai_listList, snssai_listItem);

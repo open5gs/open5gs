@@ -423,6 +423,10 @@ OpenAPI_ee_subscription_ext_t *OpenAPI_ee_subscription_ext_parseFromJSON(cJSON *
     reporting_options = cJSON_GetObjectItemCaseSensitive(ee_subscription_extJSON, "reportingOptions");
     if (reporting_options) {
     reporting_options_local_nonprim = OpenAPI_reporting_options_1_parseFromJSON(reporting_options);
+    if (!reporting_options_local_nonprim) {
+        ogs_error("OpenAPI_reporting_options_1_parseFromJSON failed [reporting_options]");
+        goto end;
+    }
     }
 
     supported_features = cJSON_GetObjectItemCaseSensitive(ee_subscription_extJSON, "supportedFeatures");
@@ -444,6 +448,10 @@ OpenAPI_ee_subscription_ext_t *OpenAPI_ee_subscription_ext_parseFromJSON(cJSON *
     context_info = cJSON_GetObjectItemCaseSensitive(ee_subscription_extJSON, "contextInfo");
     if (context_info) {
     context_info_local_nonprim = OpenAPI_context_info_parseFromJSON(context_info);
+    if (!context_info_local_nonprim) {
+        ogs_error("OpenAPI_context_info_parseFromJSON failed [context_info]");
+        goto end;
+    }
     }
 
     epc_applied_ind = cJSON_GetObjectItemCaseSensitive(ee_subscription_extJSON, "epcAppliedInd");
@@ -562,7 +570,6 @@ OpenAPI_ee_subscription_ext_t *OpenAPI_ee_subscription_ext_parseFromJSON(cJSON *
             OpenAPI_amf_subscription_info_t *amf_subscription_info_listItem = OpenAPI_amf_subscription_info_parseFromJSON(amf_subscription_info_list_local);
             if (!amf_subscription_info_listItem) {
                 ogs_error("No amf_subscription_info_listItem");
-                OpenAPI_list_free(amf_subscription_info_listList);
                 goto end;
             }
             OpenAPI_list_add(amf_subscription_info_listList, amf_subscription_info_listItem);
@@ -572,11 +579,19 @@ OpenAPI_ee_subscription_ext_t *OpenAPI_ee_subscription_ext_parseFromJSON(cJSON *
     smf_subscription_info = cJSON_GetObjectItemCaseSensitive(ee_subscription_extJSON, "smfSubscriptionInfo");
     if (smf_subscription_info) {
     smf_subscription_info_local_nonprim = OpenAPI_smf_subscription_info_parseFromJSON(smf_subscription_info);
+    if (!smf_subscription_info_local_nonprim) {
+        ogs_error("OpenAPI_smf_subscription_info_parseFromJSON failed [smf_subscription_info]");
+        goto end;
+    }
     }
 
     hss_subscription_info = cJSON_GetObjectItemCaseSensitive(ee_subscription_extJSON, "hssSubscriptionInfo");
     if (hss_subscription_info) {
     hss_subscription_info_local_nonprim = OpenAPI_hss_subscription_info_parseFromJSON(hss_subscription_info);
+    if (!hss_subscription_info_local_nonprim) {
+        ogs_error("OpenAPI_hss_subscription_info_parseFromJSON failed [hss_subscription_info]");
+        goto end;
+    }
     }
 
     ee_subscription_ext_local_var = OpenAPI_ee_subscription_ext_create (

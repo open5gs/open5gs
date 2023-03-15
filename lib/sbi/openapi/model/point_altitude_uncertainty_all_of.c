@@ -119,6 +119,10 @@ OpenAPI_point_altitude_uncertainty_all_of_t *OpenAPI_point_altitude_uncertainty_
         goto end;
     }
     point_local_nonprim = OpenAPI_geographical_coordinates_parseFromJSON(point);
+    if (!point_local_nonprim) {
+        ogs_error("OpenAPI_geographical_coordinates_parseFromJSON failed [point]");
+        goto end;
+    }
 
     altitude = cJSON_GetObjectItemCaseSensitive(point_altitude_uncertainty_all_ofJSON, "altitude");
     if (!altitude) {
@@ -136,6 +140,10 @@ OpenAPI_point_altitude_uncertainty_all_of_t *OpenAPI_point_altitude_uncertainty_
         goto end;
     }
     uncertainty_ellipse_local_nonprim = OpenAPI_uncertainty_ellipse_parseFromJSON(uncertainty_ellipse);
+    if (!uncertainty_ellipse_local_nonprim) {
+        ogs_error("OpenAPI_uncertainty_ellipse_parseFromJSON failed [uncertainty_ellipse]");
+        goto end;
+    }
 
     uncertainty_altitude = cJSON_GetObjectItemCaseSensitive(point_altitude_uncertainty_all_ofJSON, "uncertaintyAltitude");
     if (!uncertainty_altitude) {

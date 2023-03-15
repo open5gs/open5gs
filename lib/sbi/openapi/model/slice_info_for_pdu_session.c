@@ -106,6 +106,10 @@ OpenAPI_slice_info_for_pdu_session_t *OpenAPI_slice_info_for_pdu_session_parseFr
         goto end;
     }
     s_nssai_local_nonprim = OpenAPI_snssai_parseFromJSON(s_nssai);
+    if (!s_nssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [s_nssai]");
+        goto end;
+    }
 
     roaming_indication = cJSON_GetObjectItemCaseSensitive(slice_info_for_pdu_sessionJSON, "roamingIndication");
     if (!roaming_indication) {
@@ -121,6 +125,10 @@ OpenAPI_slice_info_for_pdu_session_t *OpenAPI_slice_info_for_pdu_session_parseFr
     home_snssai = cJSON_GetObjectItemCaseSensitive(slice_info_for_pdu_sessionJSON, "homeSnssai");
     if (home_snssai) {
     home_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(home_snssai);
+    if (!home_snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [home_snssai]");
+        goto end;
+    }
     }
 
     slice_info_for_pdu_session_local_var = OpenAPI_slice_info_for_pdu_session_create (

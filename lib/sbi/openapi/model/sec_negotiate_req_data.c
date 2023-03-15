@@ -289,7 +289,6 @@ OpenAPI_sec_negotiate_req_data_t *OpenAPI_sec_negotiate_req_data_parseFromJSON(c
             OpenAPI_plmn_id_t *plmn_id_listItem = OpenAPI_plmn_id_parseFromJSON(plmn_id_list_local);
             if (!plmn_id_listItem) {
                 ogs_error("No plmn_id_listItem");
-                OpenAPI_list_free(plmn_id_listList);
                 goto end;
             }
             OpenAPI_list_add(plmn_id_listList, plmn_id_listItem);
@@ -314,7 +313,6 @@ OpenAPI_sec_negotiate_req_data_t *OpenAPI_sec_negotiate_req_data_parseFromJSON(c
             OpenAPI_plmn_id_nid_t *snpn_id_listItem = OpenAPI_plmn_id_nid_parseFromJSON(snpn_id_list_local);
             if (!snpn_id_listItem) {
                 ogs_error("No snpn_id_listItem");
-                OpenAPI_list_free(snpn_id_listList);
                 goto end;
             }
             OpenAPI_list_add(snpn_id_listList, snpn_id_listItem);
@@ -324,11 +322,19 @@ OpenAPI_sec_negotiate_req_data_t *OpenAPI_sec_negotiate_req_data_parseFromJSON(c
     target_plmn_id = cJSON_GetObjectItemCaseSensitive(sec_negotiate_req_dataJSON, "targetPlmnId");
     if (target_plmn_id) {
     target_plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(target_plmn_id);
+    if (!target_plmn_id_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [target_plmn_id]");
+        goto end;
+    }
     }
 
     target_snpn_id = cJSON_GetObjectItemCaseSensitive(sec_negotiate_req_dataJSON, "targetSnpnId");
     if (target_snpn_id) {
     target_snpn_id_local_nonprim = OpenAPI_plmn_id_nid_parseFromJSON(target_snpn_id);
+    if (!target_snpn_id_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_nid_parseFromJSON failed [target_snpn_id]");
+        goto end;
+    }
     }
 
     intended_usage_purpose = cJSON_GetObjectItemCaseSensitive(sec_negotiate_req_dataJSON, "intendedUsagePurpose");
@@ -349,7 +355,6 @@ OpenAPI_sec_negotiate_req_data_t *OpenAPI_sec_negotiate_req_data_parseFromJSON(c
             OpenAPI_intended_n32_purpose_t *intended_usage_purposeItem = OpenAPI_intended_n32_purpose_parseFromJSON(intended_usage_purpose_local);
             if (!intended_usage_purposeItem) {
                 ogs_error("No intended_usage_purposeItem");
-                OpenAPI_list_free(intended_usage_purposeList);
                 goto end;
             }
             OpenAPI_list_add(intended_usage_purposeList, intended_usage_purposeItem);

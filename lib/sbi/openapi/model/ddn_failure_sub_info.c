@@ -114,7 +114,6 @@ OpenAPI_ddn_failure_sub_info_t *OpenAPI_ddn_failure_sub_info_parseFromJSON(cJSON
             OpenAPI_ddd_traffic_descriptor_t *ddd_traffic_descriptor_listItem = OpenAPI_ddd_traffic_descriptor_parseFromJSON(ddd_traffic_descriptor_list_local);
             if (!ddd_traffic_descriptor_listItem) {
                 ogs_error("No ddd_traffic_descriptor_listItem");
-                OpenAPI_list_free(ddd_traffic_descriptor_listList);
                 goto end;
             }
             OpenAPI_list_add(ddd_traffic_descriptor_listList, ddd_traffic_descriptor_listItem);

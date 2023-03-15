@@ -337,16 +337,28 @@ OpenAPI_shared_data_t *OpenAPI_shared_data_parseFromJSON(cJSON *shared_dataJSON)
     shared_am_data = cJSON_GetObjectItemCaseSensitive(shared_dataJSON, "sharedAmData");
     if (shared_am_data) {
     shared_am_data_local_nonprim = OpenAPI_access_and_mobility_subscription_data_parseFromJSON(shared_am_data);
+    if (!shared_am_data_local_nonprim) {
+        ogs_error("OpenAPI_access_and_mobility_subscription_data_parseFromJSON failed [shared_am_data]");
+        goto end;
+    }
     }
 
     shared_sms_subs_data = cJSON_GetObjectItemCaseSensitive(shared_dataJSON, "sharedSmsSubsData");
     if (shared_sms_subs_data) {
     shared_sms_subs_data_local_nonprim = OpenAPI_sms_subscription_data_parseFromJSON(shared_sms_subs_data);
+    if (!shared_sms_subs_data_local_nonprim) {
+        ogs_error("OpenAPI_sms_subscription_data_parseFromJSON failed [shared_sms_subs_data]");
+        goto end;
+    }
     }
 
     shared_sms_mng_subs_data = cJSON_GetObjectItemCaseSensitive(shared_dataJSON, "sharedSmsMngSubsData");
     if (shared_sms_mng_subs_data) {
     shared_sms_mng_subs_data_local_nonprim = OpenAPI_sms_management_subscription_data_parseFromJSON(shared_sms_mng_subs_data);
+    if (!shared_sms_mng_subs_data_local_nonprim) {
+        ogs_error("OpenAPI_sms_management_subscription_data_parseFromJSON failed [shared_sms_mng_subs_data]");
+        goto end;
+    }
     }
 
     shared_dnn_configurations = cJSON_GetObjectItemCaseSensitive(shared_dataJSON, "sharedDnnConfigurations");
@@ -378,6 +390,10 @@ OpenAPI_shared_data_t *OpenAPI_shared_data_parseFromJSON(cJSON *shared_dataJSON)
     shared_trace_data = cJSON_GetObjectItemCaseSensitive(shared_dataJSON, "sharedTraceData");
     if (shared_trace_data) {
     shared_trace_data_local_nonprim = OpenAPI_trace_data_parseFromJSON(shared_trace_data);
+    if (!shared_trace_data_local_nonprim) {
+        ogs_error("OpenAPI_trace_data_parseFromJSON failed [shared_trace_data]");
+        goto end;
+    }
     }
 
     shared_snssai_infos = cJSON_GetObjectItemCaseSensitive(shared_dataJSON, "sharedSnssaiInfos");
@@ -457,11 +473,19 @@ OpenAPI_shared_data_t *OpenAPI_shared_data_parseFromJSON(cJSON *shared_dataJSON)
     shared_sm_subs_data = cJSON_GetObjectItemCaseSensitive(shared_dataJSON, "sharedSmSubsData");
     if (shared_sm_subs_data) {
     shared_sm_subs_data_local_nonprim = OpenAPI_session_management_subscription_data_parseFromJSON(shared_sm_subs_data);
+    if (!shared_sm_subs_data_local_nonprim) {
+        ogs_error("OpenAPI_session_management_subscription_data_parseFromJSON failed [shared_sm_subs_data]");
+        goto end;
+    }
     }
 
     shared_ecs_addr_config_info = cJSON_GetObjectItemCaseSensitive(shared_dataJSON, "sharedEcsAddrConfigInfo");
     if (shared_ecs_addr_config_info) {
     shared_ecs_addr_config_info_local_nonprim = OpenAPI_ecs_addr_config_info_parseFromJSON(shared_ecs_addr_config_info);
+    if (!shared_ecs_addr_config_info_local_nonprim) {
+        ogs_error("OpenAPI_ecs_addr_config_info_parseFromJSON failed [shared_ecs_addr_config_info]");
+        goto end;
+    }
     }
 
     shared_data_local_var = OpenAPI_shared_data_create (

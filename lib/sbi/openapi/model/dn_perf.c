@@ -167,11 +167,19 @@ OpenAPI_dn_perf_t *OpenAPI_dn_perf_parseFromJSON(cJSON *dn_perfJSON)
     app_server_ins_addr = cJSON_GetObjectItemCaseSensitive(dn_perfJSON, "appServerInsAddr");
     if (app_server_ins_addr) {
     app_server_ins_addr_local_nonprim = OpenAPI_addr_fqdn_parseFromJSON(app_server_ins_addr);
+    if (!app_server_ins_addr_local_nonprim) {
+        ogs_error("OpenAPI_addr_fqdn_parseFromJSON failed [app_server_ins_addr]");
+        goto end;
+    }
     }
 
     upf_info = cJSON_GetObjectItemCaseSensitive(dn_perfJSON, "upfInfo");
     if (upf_info) {
     upf_info_local_nonprim = OpenAPI_upf_information_parseFromJSON(upf_info);
+    if (!upf_info_local_nonprim) {
+        ogs_error("OpenAPI_upf_information_parseFromJSON failed [upf_info]");
+        goto end;
+    }
     }
 
     dnai = cJSON_GetObjectItemCaseSensitive(dn_perfJSON, "dnai");
@@ -188,15 +196,27 @@ OpenAPI_dn_perf_t *OpenAPI_dn_perf_parseFromJSON(cJSON *dn_perfJSON)
         goto end;
     }
     perf_data_local_nonprim = OpenAPI_perf_data_parseFromJSON(perf_data);
+    if (!perf_data_local_nonprim) {
+        ogs_error("OpenAPI_perf_data_parseFromJSON failed [perf_data]");
+        goto end;
+    }
 
     spatial_valid_con = cJSON_GetObjectItemCaseSensitive(dn_perfJSON, "spatialValidCon");
     if (spatial_valid_con) {
     spatial_valid_con_local_nonprim = OpenAPI_network_area_info_parseFromJSON(spatial_valid_con);
+    if (!spatial_valid_con_local_nonprim) {
+        ogs_error("OpenAPI_network_area_info_parseFromJSON failed [spatial_valid_con]");
+        goto end;
+    }
     }
 
     temporal_valid_con = cJSON_GetObjectItemCaseSensitive(dn_perfJSON, "temporalValidCon");
     if (temporal_valid_con) {
     temporal_valid_con_local_nonprim = OpenAPI_time_window_parseFromJSON(temporal_valid_con);
+    if (!temporal_valid_con_local_nonprim) {
+        ogs_error("OpenAPI_time_window_parseFromJSON failed [temporal_valid_con]");
+        goto end;
+    }
     }
 
     dn_perf_local_var = OpenAPI_dn_perf_create (

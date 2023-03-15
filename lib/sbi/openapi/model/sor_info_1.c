@@ -171,6 +171,10 @@ OpenAPI_sor_info_1_t *OpenAPI_sor_info_1_parseFromJSON(cJSON *sor_info_1JSON)
     steering_container = cJSON_GetObjectItemCaseSensitive(sor_info_1JSON, "steeringContainer");
     if (steering_container) {
     steering_container_local_nonprim = OpenAPI_steering_container_parseFromJSON(steering_container);
+    if (!steering_container_local_nonprim) {
+        ogs_error("OpenAPI_steering_container_parseFromJSON failed [steering_container]");
+        goto end;
+    }
     }
 
     ack_ind = cJSON_GetObjectItemCaseSensitive(sor_info_1JSON, "ackInd");

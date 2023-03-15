@@ -204,7 +204,6 @@ OpenAPI_nssai_1_t *OpenAPI_nssai_1_parseFromJSON(cJSON *nssai_1JSON)
             OpenAPI_snssai_t *default_single_nssaisItem = OpenAPI_snssai_parseFromJSON(default_single_nssais_local);
             if (!default_single_nssaisItem) {
                 ogs_error("No default_single_nssaisItem");
-                OpenAPI_list_free(default_single_nssaisList);
                 goto end;
             }
             OpenAPI_list_add(default_single_nssaisList, default_single_nssaisItem);
@@ -228,7 +227,6 @@ OpenAPI_nssai_1_t *OpenAPI_nssai_1_parseFromJSON(cJSON *nssai_1JSON)
             OpenAPI_snssai_t *single_nssaisItem = OpenAPI_snssai_parseFromJSON(single_nssais_local);
             if (!single_nssaisItem) {
                 ogs_error("No single_nssaisItem");
-                OpenAPI_list_free(single_nssaisList);
                 goto end;
             }
             OpenAPI_list_add(single_nssaisList, single_nssaisItem);

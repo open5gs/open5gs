@@ -151,26 +151,46 @@ OpenAPI_user_location_t *OpenAPI_user_location_parseFromJSON(cJSON *user_locatio
     eutra_location = cJSON_GetObjectItemCaseSensitive(user_locationJSON, "eutraLocation");
     if (eutra_location) {
     eutra_location_local_nonprim = OpenAPI_eutra_location_parseFromJSON(eutra_location);
+    if (!eutra_location_local_nonprim) {
+        ogs_error("OpenAPI_eutra_location_parseFromJSON failed [eutra_location]");
+        goto end;
+    }
     }
 
     nr_location = cJSON_GetObjectItemCaseSensitive(user_locationJSON, "nrLocation");
     if (nr_location) {
     nr_location_local_nonprim = OpenAPI_nr_location_parseFromJSON(nr_location);
+    if (!nr_location_local_nonprim) {
+        ogs_error("OpenAPI_nr_location_parseFromJSON failed [nr_location]");
+        goto end;
+    }
     }
 
     n3ga_location = cJSON_GetObjectItemCaseSensitive(user_locationJSON, "n3gaLocation");
     if (n3ga_location) {
     n3ga_location_local_nonprim = OpenAPI_n3ga_location_parseFromJSON(n3ga_location);
+    if (!n3ga_location_local_nonprim) {
+        ogs_error("OpenAPI_n3ga_location_parseFromJSON failed [n3ga_location]");
+        goto end;
+    }
     }
 
     utra_location = cJSON_GetObjectItemCaseSensitive(user_locationJSON, "utraLocation");
     if (utra_location) {
     utra_location_local_nonprim = OpenAPI_utra_location_parseFromJSON(utra_location);
+    if (!utra_location_local_nonprim) {
+        ogs_error("OpenAPI_utra_location_parseFromJSON failed [utra_location]");
+        goto end;
+    }
     }
 
     gera_location = cJSON_GetObjectItemCaseSensitive(user_locationJSON, "geraLocation");
     if (gera_location) {
     gera_location_local_nonprim = OpenAPI_gera_location_parseFromJSON(gera_location);
+    if (!gera_location_local_nonprim) {
+        ogs_error("OpenAPI_gera_location_parseFromJSON failed [gera_location]");
+        goto end;
+    }
     }
 
     user_location_local_var = OpenAPI_user_location_create (

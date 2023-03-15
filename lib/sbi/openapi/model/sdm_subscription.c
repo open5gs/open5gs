@@ -420,6 +420,10 @@ OpenAPI_sdm_subscription_t *OpenAPI_sdm_subscription_parseFromJSON(cJSON *sdm_su
     single_nssai = cJSON_GetObjectItemCaseSensitive(sdm_subscriptionJSON, "singleNssai");
     if (single_nssai) {
     single_nssai_local_nonprim = OpenAPI_snssai_parseFromJSON(single_nssai);
+    if (!single_nssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [single_nssai]");
+        goto end;
+    }
     }
 
     dnn = cJSON_GetObjectItemCaseSensitive(sdm_subscriptionJSON, "dnn");
@@ -441,6 +445,10 @@ OpenAPI_sdm_subscription_t *OpenAPI_sdm_subscription_parseFromJSON(cJSON *sdm_su
     plmn_id = cJSON_GetObjectItemCaseSensitive(sdm_subscriptionJSON, "plmnId");
     if (plmn_id) {
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
+    if (!plmn_id_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [plmn_id]");
+        goto end;
+    }
     }
 
     immediate_report = cJSON_GetObjectItemCaseSensitive(sdm_subscriptionJSON, "immediateReport");
@@ -454,6 +462,10 @@ OpenAPI_sdm_subscription_t *OpenAPI_sdm_subscription_parseFromJSON(cJSON *sdm_su
     report = cJSON_GetObjectItemCaseSensitive(sdm_subscriptionJSON, "report");
     if (report) {
     report_local_nonprim = OpenAPI_immediate_report_parseFromJSON(report);
+    if (!report_local_nonprim) {
+        ogs_error("OpenAPI_immediate_report_parseFromJSON failed [report]");
+        goto end;
+    }
     }
 
     supported_features = cJSON_GetObjectItemCaseSensitive(sdm_subscriptionJSON, "supportedFeatures");
@@ -467,6 +479,10 @@ OpenAPI_sdm_subscription_t *OpenAPI_sdm_subscription_parseFromJSON(cJSON *sdm_su
     context_info = cJSON_GetObjectItemCaseSensitive(sdm_subscriptionJSON, "contextInfo");
     if (context_info) {
     context_info_local_nonprim = OpenAPI_context_info_parseFromJSON(context_info);
+    if (!context_info_local_nonprim) {
+        ogs_error("OpenAPI_context_info_parseFromJSON failed [context_info]");
+        goto end;
+    }
     }
 
     nf_change_filter = cJSON_GetObjectItemCaseSensitive(sdm_subscriptionJSON, "nfChangeFilter");
@@ -509,6 +525,10 @@ OpenAPI_sdm_subscription_t *OpenAPI_sdm_subscription_parseFromJSON(cJSON *sdm_su
     ue_con_smf_data_sub_filter = cJSON_GetObjectItemCaseSensitive(sdm_subscriptionJSON, "ueConSmfDataSubFilter");
     if (ue_con_smf_data_sub_filter) {
     ue_con_smf_data_sub_filter_local_nonprim = OpenAPI_ue_context_in_smf_data_sub_filter_parseFromJSON(ue_con_smf_data_sub_filter);
+    if (!ue_con_smf_data_sub_filter_local_nonprim) {
+        ogs_error("OpenAPI_ue_context_in_smf_data_sub_filter_parseFromJSON failed [ue_con_smf_data_sub_filter]");
+        goto end;
+    }
     }
 
     sdm_subscription_local_var = OpenAPI_sdm_subscription_create (

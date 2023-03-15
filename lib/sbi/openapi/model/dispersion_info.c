@@ -160,7 +160,6 @@ OpenAPI_dispersion_info_t *OpenAPI_dispersion_info_parseFromJSON(cJSON *dispersi
             OpenAPI_dispersion_collection_t *disper_collectsItem = OpenAPI_dispersion_collection_parseFromJSON(disper_collects_local);
             if (!disper_collectsItem) {
                 ogs_error("No disper_collectsItem");
-                OpenAPI_list_free(disper_collectsList);
                 goto end;
             }
             OpenAPI_list_add(disper_collectsList, disper_collectsItem);
@@ -172,6 +171,10 @@ OpenAPI_dispersion_info_t *OpenAPI_dispersion_info_parseFromJSON(cJSON *dispersi
         goto end;
     }
     disper_type_local_nonprim = OpenAPI_dispersion_type_parseFromJSON(disper_type);
+    if (!disper_type_local_nonprim) {
+        ogs_error("OpenAPI_dispersion_type_parseFromJSON failed [disper_type]");
+        goto end;
+    }
 
     dispersion_info_local_var = OpenAPI_dispersion_info_create (
         ogs_strdup(ts_start->valuestring),

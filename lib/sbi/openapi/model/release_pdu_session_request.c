@@ -118,6 +118,10 @@ OpenAPI_release_pdu_session_request_t *OpenAPI_release_pdu_session_request_parse
     json_data = cJSON_GetObjectItemCaseSensitive(release_pdu_session_requestJSON, "jsonData");
     if (json_data) {
     json_data_local_nonprim = OpenAPI_release_data_parseFromJSON(json_data);
+    if (!json_data_local_nonprim) {
+        ogs_error("OpenAPI_release_data_parseFromJSON failed [json_data]");
+        goto end;
+    }
     }
 
     binary_data_n4_information = cJSON_GetObjectItemCaseSensitive(release_pdu_session_requestJSON, "binaryDataN4Information");

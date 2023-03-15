@@ -163,7 +163,6 @@ OpenAPI_qos_monitoring_report_t *OpenAPI_qos_monitoring_report_parseFromJSON(cJS
             OpenAPI_flows_t *flowsItem = OpenAPI_flows_parseFromJSON(flows_local);
             if (!flowsItem) {
                 ogs_error("No flowsItem");
-                OpenAPI_list_free(flowsList);
                 goto end;
             }
             OpenAPI_list_add(flowsList, flowsItem);

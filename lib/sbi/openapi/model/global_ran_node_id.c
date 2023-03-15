@@ -177,6 +177,10 @@ OpenAPI_global_ran_node_id_t *OpenAPI_global_ran_node_id_parseFromJSON(cJSON *gl
         goto end;
     }
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
+    if (!plmn_id_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [plmn_id]");
+        goto end;
+    }
 
     n3_iwf_id = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "n3IwfId");
     if (n3_iwf_id) {
@@ -189,6 +193,10 @@ OpenAPI_global_ran_node_id_t *OpenAPI_global_ran_node_id_parseFromJSON(cJSON *gl
     g_nb_id = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "gNbId");
     if (g_nb_id) {
     g_nb_id_local_nonprim = OpenAPI_gnb_id_parseFromJSON(g_nb_id);
+    if (!g_nb_id_local_nonprim) {
+        ogs_error("OpenAPI_gnb_id_parseFromJSON failed [g_nb_id]");
+        goto end;
+    }
     }
 
     nge_nb_id = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "ngeNbId");

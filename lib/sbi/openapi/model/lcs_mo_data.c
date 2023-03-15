@@ -112,6 +112,10 @@ OpenAPI_lcs_mo_data_t *OpenAPI_lcs_mo_data_parseFromJSON(cJSON *lcs_mo_dataJSON)
     mo_assistance_data_types = cJSON_GetObjectItemCaseSensitive(lcs_mo_dataJSON, "moAssistanceDataTypes");
     if (mo_assistance_data_types) {
     mo_assistance_data_types_local_nonprim = OpenAPI_lcs_broadcast_assistance_types_data_parseFromJSON(mo_assistance_data_types);
+    if (!mo_assistance_data_types_local_nonprim) {
+        ogs_error("OpenAPI_lcs_broadcast_assistance_types_data_parseFromJSON failed [mo_assistance_data_types]");
+        goto end;
+    }
     }
 
     lcs_mo_data_local_var = OpenAPI_lcs_mo_data_create (

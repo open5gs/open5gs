@@ -176,6 +176,10 @@ OpenAPI_pro_se_authentication_ctx_t *OpenAPI_pro_se_authentication_ctx_parseFrom
         goto end;
     }
     pro_se_auth_data_local_nonprim = OpenAPI_pro_se_auth_data_parseFromJSON(pro_se_auth_data);
+    if (!pro_se_auth_data_local_nonprim) {
+        ogs_error("OpenAPI_pro_se_auth_data_parseFromJSON failed [pro_se_auth_data]");
+        goto end;
+    }
 
     supported_features = cJSON_GetObjectItemCaseSensitive(pro_se_authentication_ctxJSON, "supportedFeatures");
     if (supported_features) {

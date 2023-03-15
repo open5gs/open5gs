@@ -155,6 +155,10 @@ OpenAPI_app_list_for_ue_comm_t *OpenAPI_app_list_for_ue_comm_parseFromJSON(cJSON
     spatial_validity = cJSON_GetObjectItemCaseSensitive(app_list_for_ue_commJSON, "spatialValidity");
     if (spatial_validity) {
     spatial_validity_local_nonprim = OpenAPI_network_area_info_parseFromJSON(spatial_validity);
+    if (!spatial_validity_local_nonprim) {
+        ogs_error("OpenAPI_network_area_info_parseFromJSON failed [spatial_validity]");
+        goto end;
+    }
     }
 
     app_list_for_ue_comm_local_var = OpenAPI_app_list_for_ue_comm_create (

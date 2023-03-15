@@ -111,6 +111,10 @@ OpenAPI_small_data_rate_status_info_t *OpenAPI_small_data_rate_status_info_parse
         goto end;
     }
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
 
     dnn = cJSON_GetObjectItemCaseSensitive(small_data_rate_status_infoJSON, "Dnn");
     if (!dnn) {
@@ -128,6 +132,10 @@ OpenAPI_small_data_rate_status_info_t *OpenAPI_small_data_rate_status_info_parse
         goto end;
     }
     small_data_rate_status_local_nonprim = OpenAPI_small_data_rate_status_parseFromJSON(small_data_rate_status);
+    if (!small_data_rate_status_local_nonprim) {
+        ogs_error("OpenAPI_small_data_rate_status_parseFromJSON failed [small_data_rate_status]");
+        goto end;
+    }
 
     small_data_rate_status_info_local_var = OpenAPI_small_data_rate_status_info_create (
         snssai_local_nonprim,

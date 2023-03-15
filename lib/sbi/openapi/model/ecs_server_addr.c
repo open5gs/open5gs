@@ -173,7 +173,6 @@ OpenAPI_ecs_server_addr_t *OpenAPI_ecs_server_addr_parseFromJSON(cJSON *ecs_serv
             OpenAPI_ip_addr_t *ecs_ip_address_listItem = OpenAPI_ip_addr_parseFromJSON(ecs_ip_address_list_local);
             if (!ecs_ip_address_listItem) {
                 ogs_error("No ecs_ip_address_listItem");
-                OpenAPI_list_free(ecs_ip_address_listList);
                 goto end;
             }
             OpenAPI_list_add(ecs_ip_address_listList, ecs_ip_address_listItem);
