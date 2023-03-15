@@ -2684,7 +2684,11 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON)
 
     upf_info = cJSON_GetObjectItemCaseSensitive(nf_profileJSON, "upfInfo");
     if (upf_info) {
-    upf_info_local_nonprim = OpenAPI_upf_info_parseFromJSON(upf_info);
+        upf_info_local_nonprim = OpenAPI_upf_info_parseFromJSON(upf_info);
+        if (!upf_info_local_nonprim) {
+            ogs_error("OpenAPI_nf_profile_parseFromJSON() failed [upf_info]");
+            goto end;
+        }
     }
 
     upf_info_list = cJSON_GetObjectItemCaseSensitive(nf_profileJSON, "upfInfoList");
