@@ -83,7 +83,7 @@ extern "C" {
 #define OGS_MAX_FQDN_LEN                256
 
 #define OGS_MAX_NUM_OF_SERVED_GUAMI     8
-#define OGS_MAX_NUM_OF_SERVED_TAI       16
+#define OGS_MAX_NUM_OF_SERVED_TAI       OGS_MAX_NUM_OF_TAI
 #define OGS_MAX_NUM_OF_ALGORITHM        8
 
 #define OGS_MAX_NUM_OF_BPLMN            6
