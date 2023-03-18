@@ -47,18 +47,18 @@ typedef uint32_t amf_m_tmsi_t;
 
 typedef struct amf_context_s {
     /* Served GUAMI */
-    uint8_t num_of_served_guami;
+    int num_of_served_guami;
     ogs_guami_t served_guami[OGS_MAX_NUM_OF_SERVED_GUAMI];
 
     /* Served TAI */
-    uint8_t num_of_served_tai;
+    int num_of_served_tai;
     struct {
         ogs_5gs_tai0_list_t list0;
         ogs_5gs_tai2_list_t list2;
     } served_tai[OGS_MAX_NUM_OF_SERVED_TAI];
 
     /* PLMN Support */
-    uint8_t num_of_plmn_support;
+    int num_of_plmn_support;
     struct {
         ogs_plmn_id_t plmn_id;
         int num_of_s_nssai;
@@ -70,14 +70,14 @@ typedef struct amf_context_s {
      * #define NAS_SECURITY_ALGORITHMS_128_EEA1    1
      * #define NAS_SECURITY_ALGORITHMS_128_EEA2    2
      * #define NAS_SECURITY_ALGORITHMS_128_EEA3    3 */
-    uint8_t         num_of_ciphering_order;
+    int             num_of_ciphering_order;
     uint8_t         ciphering_order[OGS_MAX_NUM_OF_ALGORITHM];
     /* defined in 'nas_ies.h'
      * #define NAS_SECURITY_ALGORITHMS_EIA0        0
      * #define NAS_SECURITY_ALGORITHMS_128_EIA1    1
      * #define NAS_SECURITY_ALGORITHMS_128_EIA1    2
      * #define NAS_SECURITY_ALGORITHMS_128_EIA3    3 */
-    uint8_t         num_of_integrity_order;
+    int             num_of_integrity_order;
     uint8_t         integrity_order[OGS_MAX_NUM_OF_ALGORITHM];
 
     /* Network Name */    
@@ -129,16 +129,16 @@ typedef struct amf_gnb_s {
         bool ng_setup_success;  /* gNB NGAP Setup complete successfuly */
     } state;
 
-    uint16_t        max_num_of_ostreams;/* SCTP Max num of outbound streams */
+    int             max_num_of_ostreams;/* SCTP Max num of outbound streams */
     uint16_t        ostream_id;         /* gnb_ostream_id generator */
 
-    uint8_t         num_of_supported_ta_list;
+    int             num_of_supported_ta_list;
     struct {
         ogs_uint24_t tac;
-        uint8_t num_of_bplmn_list;
+        int num_of_bplmn_list;
         struct {
             ogs_plmn_id_t plmn_id;
-            uint8_t num_of_s_nssai;
+            int num_of_s_nssai;
             ogs_s_nssai_t s_nssai[OGS_MAX_NUM_OF_SLICE];
         } bplmn_list[OGS_MAX_NUM_OF_BPLMN];
     } supported_ta_list[OGS_MAX_NUM_OF_TAI];
