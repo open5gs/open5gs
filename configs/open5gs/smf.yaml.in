@@ -501,7 +501,7 @@ sbi:
 #          - plmn_id:
 #              mcc: 999
 #              mnc: 70
-#            range:
+#            tac:
 #              - 1-9
 #      - s_nssai:
 #          - sst: 2
@@ -517,7 +517,7 @@ sbi:
 #          - plmn_id:
 #              mcc: 999
 #              mnc: 70
-#            range:
+#            tac:
 #              - 10-20
 #              - 30-40
 #
@@ -562,13 +562,13 @@ sbi:
 #          - plmn_id:
 #              mcc: 999
 #              mnc: 70
-#            range:
+#            tac:
 #              - 100-200
 #              - 300-400
 #          - plmn_id:
 #              mcc: 999
 #              mnc: 70
-#            range:
+#            tac:
 #              - 500-600
 #              - 700-800
 #              - 900-1000

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -54,6 +54,7 @@ typedef struct amf_context_s {
     int num_of_served_tai;
     struct {
         ogs_5gs_tai0_list_t list0;
+        ogs_5gs_tai1_list_t list1;
         ogs_5gs_tai2_list_t list2;
     } served_tai[OGS_MAX_NUM_OF_SERVED_TAI];
 

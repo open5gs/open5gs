@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -339,6 +339,22 @@ typedef struct ogs_5gs_tai0_list_s {
     } __attribute__ ((packed)) tai[OGS_MAX_NUM_OF_TAI];
 } __attribute__ ((packed)) ogs_5gs_tai0_list_t;
 
+typedef struct ogs_5gs_tai1_list_s {
+    struct {
+    ED3(uint8_t spare:1;,
+        uint8_t type:2;,
+        uint8_t num:5;)
+        /*
+         * Do not change 'ogs_plmn_id_t' to 'ogs_nas_plmn_id_t'.
+         * Use 'ogs_plmn_id_t' for easy implementation.
+         * ogs_nas_tai_list_build() changes to NAS format(ogs_nas_plmn_id_t)
+         * and is sent to the UE.
+         */
+        ogs_plmn_id_t plmn_id;
+        ogs_uint24_t tac;
+    } __attribute__ ((packed)) tai[OGS_MAX_NUM_OF_TAI];
+} __attribute__ ((packed)) ogs_5gs_tai1_list_t;
+
 typedef struct ogs_5gs_tai2_list_s {
 ED3(uint8_t spare:1;,
     uint8_t type:2;,
@@ -360,7 +376,9 @@ typedef struct ogs_nas_5gs_tracking_area_identity_list_s {
 
 int ogs_nas_5gs_tai_list_build(
         ogs_nas_5gs_tracking_area_identity_list_t *target,
-        ogs_5gs_tai0_list_t *source0, ogs_5gs_tai2_list_t *source2);
+        ogs_5gs_tai0_list_t *source0,
+        ogs_5gs_tai1_list_t *source1,
+        ogs_5gs_tai2_list_t *source2);
 
 /* 9.11.3.9A 5GS update type
  * O TLV 3 */

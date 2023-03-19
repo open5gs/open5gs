@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -728,22 +728,24 @@ int mme_context_parse_config()
                             YAML_SEQUENCE_NODE);
                 } else if (!strcmp(mme_key, "tai")) {
                     int num_of_list0 = 0;
+                    int num_of_list1 = 0;
                     ogs_eps_tai0_list_t *list0 = NULL;
+                    ogs_eps_tai1_list_t *list1 = NULL;
                     ogs_eps_tai2_list_t *list2 = NULL;
 
                     ogs_assert(self.num_of_served_tai <
                             OGS_MAX_NUM_OF_SERVED_TAI);
                     list0 = &self.served_tai[self.num_of_served_tai].list0;
-                    ogs_assert(list0);
+                    list1 = &self.served_tai[self.num_of_served_tai].list1;
                     list2 = &self.served_tai[self.num_of_served_tai].list2;
-                    ogs_assert(list2);
 
                     ogs_yaml_iter_t tai_array, tai_iter;
                     ogs_yaml_iter_recurse(&mme_iter, &tai_array);
                     do {
                         const char *mcc = NULL, *mnc = NULL;
-                        uint16_t tac[OGS_MAX_NUM_OF_TAI];
                         int num_of_tac = 0;
+                        uint16_t start[OGS_MAX_NUM_OF_TAI];
+                        uint16_t end[OGS_MAX_NUM_OF_TAI];
 
                         if (ogs_yaml_iter_type(&tai_array) ==
                                 YAML_MAPPING_NODE) {
@@ -784,23 +786,56 @@ int mme_context_parse_config()
                                 ogs_yaml_iter_t tac_iter;
                                 ogs_yaml_iter_recurse(&tai_iter, &tac_iter);
                                 ogs_assert(ogs_yaml_iter_type(&tac_iter) !=
-                                    YAML_MAPPING_NODE);
-
+                                            YAML_MAPPING_NODE);
                                 do {
-                                    const char *v = NULL;
+                                    char *v = NULL;
+                                    char *low = NULL, *high = NULL;
 
-                                    ogs_assert(num_of_tac <
-                                            OGS_MAX_NUM_OF_TAI);
                                     if (ogs_yaml_iter_type(&tac_iter) ==
                                             YAML_SEQUENCE_NODE) {
                                         if (!ogs_yaml_iter_next(&tac_iter))
                                             break;
                                     }
 
-                                    v = ogs_yaml_iter_value(&tac_iter);
+                                    v = (char *)ogs_yaml_iter_value(
+                                                &tac_iter);
                                     if (v) {
-                                        tac[num_of_tac] = atoi(v);
-                                        num_of_tac++;
+                                        low = strsep(&v, "-");
+                                        if (low && strlen(low) == 0)
+                                            low = NULL;
+
+                                        high = v;
+                                        if (high && strlen(high) == 0)
+                                            high = NULL;
+
+                                        if (low) {
+                                            ogs_assert(num_of_tac <
+                                                OGS_MAX_NUM_OF_TAI);
+                                            start[num_of_tac] = atoi(low);
+                                            if (high) {
+                                                end[num_of_tac] = atoi(high);
+                                                if (end[num_of_tac] <
+                                                    start[num_of_tac])
+                                                    ogs_error(
+                                                        "Invalid TAI range: "
+                                                        "LOW:%s,HIGH:%s",
+                                                            low, high);
+                                                else if (
+                                                    (end[num_of_tac]-
+                                                    start[num_of_tac]+1) >
+                                                        OGS_MAX_NUM_OF_TAI)
+                                                    ogs_error(
+                                                        "Overflow TAI range: "
+                                                        "LOW:%s,HIGH:%s",
+                                                            low, high);
+                                                else
+                                                    num_of_tac++;
+                                            } else {
+                                                end[num_of_tac] =
+                                                    start[num_of_tac];
+                                                num_of_tac++;
+                                            }
+                                        }
                                     }
                                 } while (
                                     ogs_yaml_iter_type(&tac_iter) ==
@@ -810,30 +845,60 @@ int mme_context_parse_config()
                         }
 
                         if (mcc && mnc && num_of_tac) {
-                            if (num_of_tac == 1) {
+                            if (num_of_tac == 1 && start[0] == end[0]) {
+                                ogs_assert(list2->num < OGS_MAX_NUM_OF_TAI);
+
+                                list2->type = OGS_TAI2_TYPE;
+
                                 ogs_plmn_id_build(
                                     &list2->tai[list2->num].plmn_id,
                                     atoi(mcc), atoi(mnc), strlen(mnc));
-                                list2->tai[list2->num].tac = tac[0];
+                                list2->tai[list2->num].tac = start[0];
 
                                 list2->num++;
-                                if (list2->num > 1)
-                                    list2->type = OGS_TAI2_TYPE;
-                                else
-                                    list2->type = OGS_TAI1_TYPE;
-                            } else if (num_of_tac > 1) {
-                                int i;
-                                ogs_plmn_id_build(
-                                    &list0->tai[num_of_list0].plmn_id,
-                                    atoi(mcc), atoi(mnc), strlen(mnc));
-                                for (i = 0; i < num_of_tac; i++) {
-                                    list0->tai[num_of_list0].tac[i] = tac[i];
+
+                            } else {
+                                int tac, count = 0;
+                                for (tac = 0; tac < num_of_tac; tac++) {
+                                    ogs_assert(end[tac] >= start[tac]);
+                                    if (start[tac] == end[tac]) {
+                                        ogs_assert(num_of_list0 <
+                                                OGS_MAX_NUM_OF_TAI);
+
+                                        list0->tai[num_of_list0].type =
+                                            OGS_TAI0_TYPE;
+
+                                        ogs_plmn_id_build(
+                                            &list0->tai[num_of_list0].plmn_id,
+                                            atoi(mcc), atoi(mnc), strlen(mnc));
+                                        list0->tai[num_of_list0].
+                                            tac[count] = start[tac];
+
+                                        list0->tai[num_of_list0].num =
+                                            ++count;
+
+                                    } else if (start[tac] < end[tac]) {
+                                        ogs_assert(num_of_list1 <
+                                                OGS_MAX_NUM_OF_TAI);
+
+                                        list1->tai[num_of_list1].type =
+                                            OGS_TAI1_TYPE;
+
+                                        ogs_plmn_id_build(
+                                            &list1->tai[num_of_list1].plmn_id,
+                                            atoi(mcc), atoi(mnc), strlen(mnc));
+                                        list1->tai[num_of_list1].tac =
+                                            start[tac];
+
+                                        list1->tai[num_of_list1].num =
+                                            end[tac]-start[tac]+1;
+
+                                        num_of_list1++;
+                                    }
                                 }
 
-                                list0->tai[num_of_list0].num = num_of_tac;
-                                list0->tai[num_of_list0].type = OGS_TAI0_TYPE;
-
-                                num_of_list0++;
+                                if (count)
+                                    num_of_list0++;
                             }
                         } else {
                             ogs_warn("Ignore tai : mcc(%p), mnc(%p), "
@@ -842,7 +907,7 @@ int mme_context_parse_config()
                     } while (ogs_yaml_iter_type(&tai_array) ==
                             YAML_SEQUENCE_NODE);
 
-                    if (list2->num || num_of_list0) {
+                    if (list2->num || num_of_list1 || num_of_list0) {
                         self.num_of_served_tai++;
                     }
                 } else if (!strcmp(mme_key, "security")) {
@@ -3560,13 +3625,12 @@ int mme_find_served_tai(ogs_eps_tai_t *tai)
 
     for (i = 0; i < self.num_of_served_tai; i++) {
         ogs_eps_tai0_list_t *list0 = &self.served_tai[i].list0;
-        ogs_assert(list0);
+        ogs_eps_tai1_list_t *list1 = &self.served_tai[i].list1;
         ogs_eps_tai2_list_t *list2 = &self.served_tai[i].list2;
-        ogs_assert(list2);
 
         for (j = 0; list0->tai[j].num; j++) {
             ogs_assert(list0->tai[j].type == OGS_TAI0_TYPE);
-            ogs_assert(list0->tai[j].num < OGS_MAX_NUM_OF_TAI);
+            ogs_assert(list0->tai[j].num <= OGS_MAX_NUM_OF_TAI);
 
             for (k = 0; k < list0->tai[j].num; k++) {
                 if (memcmp(&list0->tai[j].plmn_id,
@@ -3577,10 +3641,18 @@ int mme_find_served_tai(ogs_eps_tai_t *tai)
             }
         }
 
+        for (j = 0; list1->tai[j].num; j++) {
+            ogs_assert(list1->tai[j].type == OGS_TAI1_TYPE);
+            ogs_assert(list1->tai[j].num <= OGS_MAX_NUM_OF_TAI);
+
+            if (list1->tai[j].tac <= tai->tac &&
+                tai->tac < (list1->tai[j].tac+list1->tai[j].num))
+                return i;
+        }
+
         if (list2->num) {
-            ogs_assert(list2->type == OGS_TAI1_TYPE ||
-                        list2->type == OGS_TAI2_TYPE);
-            ogs_assert(list2->num < OGS_MAX_NUM_OF_TAI);
+            ogs_assert(list2->type == OGS_TAI2_TYPE);
+            ogs_assert(list2->num <= OGS_MAX_NUM_OF_TAI);
 
             for (j = 0; j < list2->num; j++) {
                 if (memcmp(&list2->tai[j].plmn_id,
