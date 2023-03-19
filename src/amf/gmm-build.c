@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -101,6 +101,7 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
     ogs_assert(OGS_OK ==
         ogs_nas_5gs_tai_list_build(&registration_accept->tai_list,
             &amf_self()->served_tai[served_tai_index].list0,
+            &amf_self()->served_tai[served_tai_index].list1,
             &amf_self()->served_tai[served_tai_index].list2));
 
     /* Set Allowed NSSAI */
