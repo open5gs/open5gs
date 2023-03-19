@@ -2,7 +2,7 @@ name: Mark stale issues and pull requests
 
 on:
   schedule:
-  - cron: '30 13 * * *'
+  - cron: '30 22 * * *'
 
 jobs:
   stale:
@@ -15,9 +15,8 @@ jobs:
     steps:
     - uses: actions/stale@v5
       with:
-        # DEBUG Only at first...
-        debug-only: true
-        operations-per-run: 50
+        debug-only: false
+        operations-per-run: 500
         enable-statistics: true
         remove-stale-when-updated: true
         exempt-issue-labels: 'status:accepted,status:blocked,status:more-info-needed,status:milestone-required,Help Wanted'
