@@ -38,7 +38,7 @@ static int amf_metrics_init_spec(ogs_metrics_context_t *ctx,
 {
     unsigned int i;
     for (i = 0; i < len; i++) {
-        dst[i] = ogs_metrics_spec_new_ex(ctx, src[i].type,
+        dst[i] = ogs_metrics_spec_new(ctx, src[i].type,
                 src[i].name, src[i].description,
                 src[i].initial_val, src[i].num_labels, src[i].labels,
                 &src[i].histogram_params);

@@ -91,10 +91,6 @@ void ogs_metrics_spec_final(ogs_metrics_context_t *ctx);
 ogs_metrics_spec_t *ogs_metrics_spec_new(
         ogs_metrics_context_t *ctx, ogs_metrics_metric_type_t type,
         const char *name, const char *description,
-        int initial_val, unsigned int num_labels, const char **labels);
-ogs_metrics_spec_t *ogs_metrics_spec_new_ex(
-        ogs_metrics_context_t *ctx, ogs_metrics_metric_type_t type,
-        const char *name, const char *description,
         int initial_val, unsigned int num_labels, const char ** labels,
         ogs_metrics_histogram_params_t *histogram_params);
 void ogs_metrics_spec_free(ogs_metrics_spec_t *spec);
