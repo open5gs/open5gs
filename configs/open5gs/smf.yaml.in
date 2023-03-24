@@ -771,15 +771,10 @@ scp:
 #
 #  <UPF Selection>
 #
-#  o Round-Robin
-#    (note that round robin can be disabled for a particular node
-#     by setting flag 'rr' to 0)
-#
 #  upf:
 #    pfcp:
 #      - addr: 127.0.0.7
 #      - addr: 127.0.0.12
-#        rr: 0
 #      - addr: 127.0.0.19
 #
 #  o UPF selection by eNodeB TAC
