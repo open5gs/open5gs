@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=0.10.1
+version=0.10.2
 
 display_help() {
     echo "open5gs-dbctl: Open5GS Database Configuration Tool ($version)"
@@ -58,58 +58,69 @@ if [ "$1" = "add" ]; then
         KI=$3
         OPC=$4
 
-        mongo --eval "db.subscribers.update( { \"imsi\" : \"$IMSI\" }, 
-            { \$setOnInsert: 
-                { 
-                    \"imsi\" : \"$IMSI\", 
-                    \"subscribed_rau_tau_timer\" : NumberInt(12), 
-                    \"network_access_mode\" : NumberInt(0), 
-                    \"subscriber_status\" : NumberInt(0), 
-                    \"access_restriction_data\" : NumberInt(32), 
-                    \"slice\" : 
-                    [{ 
-                        \"sst\" : NumberInt(1), 
-                        \"default_indicator\" : true, 
-                        \"_id\" : new ObjectId(), 
-                        \"session\" : 
-                        [{ 
-                            \"name\" : \"internet\", 
-                            \"type\" : NumberInt(3), 
-                            \"_id\" : new ObjectId(), 
-                            \"pcc_rule\" : [], 
-                            \"ambr\" : 
-                            { 
-                                \"uplink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) }, 
-                                \"downlink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) }, 
-                            }, 
-                            \"qos\" : 
-                            { 
-                                \"index\" : NumberInt(9), 
-                                \"arp\" : 
-                                { 
-                                    \"priority_level\" : NumberInt(8), 
-                                    \"pre_emption_capability\" : NumberInt(1), 
-                                    \"pre_emption_vulnerability\" : NumberInt(1), 
-                                }, 
-                            }, 
-                        }], 
-                    }], 
-                    \"ambr\" : 
-                    { 
-                        \"uplink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3),}, 
-                        \"downlink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) }, 
-                    },  
-                    \"security\" : 
-                    { 
-                        \"k\" : \"$KI\", 
-                        \"amf\" : \"8000\", 
-                        \"op\" : null, 
-                        \"opc\" : \"$OPC\" 
-                    }, 
-                    \"__v\" : 0
-                },  
-            },
-            upsert=true);" $DB_URI
+        mongosh --eval "db.subscribers.insertOne( 
+            {
+                \"_id\": new ObjectId(),
+                \"schema_version\": NumberInt(1),
+                \"imsi\": \"$IMSI\",
+                \"msisdn\": [],
+                \"imeisv\": [],
+                \"mme_host\": [],
+                \"mm_realm\": [],
+                \"purge_flag\": [],
+                \"slice\":[
+                {
+                    \"sst\": NumberInt(1),
+                    \"default_indicator\": true, 
+                    \"session\": [
+                    {
+                        \"name\" : \"internet\",
+                        \"type\" : NumberInt(3),
+                        \"qos\" : 
+                        { \"index\": NumberInt(9), 
+                            \"arp\": 
+                            {
+                                \"priority_level\" : NumberInt(8),
+                                \"pre_emption_capability\": NumberInt(1),
+                                \"pre_emption_vulnerability\": NumberInt(2)
+                            }
+                        },
+                        \"ambr\": 
+                        {
+                            \"downlink\": 
+                            {
+                                \"value\": NumberInt(1000000000),
+                                \"unit\": NumberInt(0)
+                            },
+                            \"uplink\":
+                            {
+                                \"value\": NumberInt(1000000000),
+                                \"unit\": NumberInt(0)
+                            }
+                        },
+                        \"pcc_rule\": [],
+                        \"_id\": new ObjectId(),
+                    }],
+                    \"_id\": new ObjectId(),
+                }], 
+                \"security\": 
+                {
+                    \"k\" : \"$KI\",
+                    \"op\" : null,
+                    \"opc\" : \"$OPC\",
+                    \"amf\" : \"8000\",
+                },
+                \"ambr\" : 
+                {
+                    \"downlink\" : { \"value\": NumberInt(1000000000), \"unit\": NumberInt(0)},
+                    \"uplink\" : { \"value\": NumberInt(1000000000), \"unit\": NumberInt(0)}
+                },
+                \"access_restriction_data\": 32,
+                \"network_access_mode\": 0,
+                \"subscribed_rau_tau_timer\": 12,
+                \"__v\": 0
+            }
+            );" $DB_URI
         exit $?
     fi
 
@@ -119,62 +130,73 @@ if [ "$1" = "add" ]; then
         KI=$4
         OPC=$5
 
-        mongo --eval "db.subscribers.update( { \"imsi\" : \"$IMSI\" }, 
-            { \$setOnInsert: 
-                { 
-                    \"imsi\" : \"$IMSI\", 
-                    \"subscribed_rau_tau_timer\" : NumberInt(12), 
-                    \"network_access_mode\" : NumberInt(0), 
-                    \"subscriber_status\" : NumberInt(0), 
-                    \"access_restriction_data\" : NumberInt(32), 
-                    \"slice\" : 
-                    [{ 
-                        \"sst\" : NumberInt(1), 
-                        \"default_indicator\" : true, 
-                        \"_id\" : new ObjectId(), 
-                        \"session\" : 
-                        [{ 
-                            \"name\" : \"internet\", 
-                            \"type\" : NumberInt(3), 
-                            \"_id\" : new ObjectId(), 
-                            \"pcc_rule\" : [],
-                            \"ue\" : 
+        mongosh --eval "db.subscribers.insertOne( 
+            {
+                \"_id\": new ObjectId(),
+                \"schema_version\": NumberInt(1),
+                \"imsi\": \"$IMSI\",
+                \"msisdn\": [],
+                \"imeisv\": [],
+                \"mme_host\": [],
+                \"mm_realm\": [],
+                \"purge_flag\": [],
+                \"slice\":[
+                {
+                    \"sst\": NumberInt(1),
+                    \"default_indicator\": true, 
+                    \"session\": [
+                    {
+                        \"name\" : \"internet\",
+                        \"type\" : NumberInt(3),
+                        \"qos\" : 
+                        { \"index\": NumberInt(9), 
+                            \"arp\": 
                             {
-                                \"addr\" : \"$IP\",
+                                \"priority_level\" : NumberInt(8),
+                                \"pre_emption_capability\": NumberInt(1),
+                                \"pre_emption_vulnerability\": NumberInt(2)
+                            }
+                        },
+                        \"ambr\": 
+                        {
+                            \"downlink\": 
+                            {
+                                \"value\": NumberInt(1000000000),
+                                \"unit\": NumberInt(0)
                             },
-                            \"ambr\" : 
-                            { 
-                                \"uplink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) }, 
-                                \"downlink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) }, 
-                            }, 
-                            \"qos\" : 
-                            { 
-                                \"index\" : NumberInt(9), 
-                                \"arp\" : 
-                                { 
-                                    \"priority_level\" : NumberInt(8), 
-                                    \"pre_emption_capability\" : NumberInt(1), 
-                                    \"pre_emption_vulnerability\" : NumberInt(1), 
-                                }, 
-                            }, 
-                        }], 
-                    }], 
-                    \"ambr\" : 
-                    { 
-                        \"uplink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3),}, 
-                        \"downlink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) }, 
-                    },  
-                    \"security\" : 
-                    { 
-                        \"k\" : \"$KI\", 
-                        \"amf\" : \"8000\", 
-                        \"op\" : null, 
-                        \"opc\" : \"$OPC\" 
-                    }, 
-                    \"__v\" : 0
-                },  
-            },
-            upsert=true);" $DB_URI
+                            \"uplink\":
+                            {
+                                \"value\": NumberInt(1000000000),
+                                \"unit\": NumberInt(0)
+                            }
+                        },
+                        \"ue\": 
+                        { 
+                            \"addr\": \"$IP\"
+                        },
+                        \"pcc_rule\": [],
+                        \"_id\": new ObjectId(),
+                    }],
+                    \"_id\": new ObjectId(),
+                }], 
+                \"security\": 
+                {
+                    \"k\" : \"$KI\",
+                    \"op\" : null,
+                    \"opc\" : \"$OPC\",
+                    \"amf\" : \"8000\",
+                },
+                \"ambr\" : 
+                {
+                    \"downlink\" : { \"value\": NumberInt(1000000000), \"unit\": NumberInt(0)},
+                    \"uplink\" : { \"value\": NumberInt(1000000000), \"unit\": NumberInt(0)}
+                },
+                \"access_restriction_data\": 32,
+                \"network_access_mode\": 0,
+                \"subscribed_rau_tau_timer\": 12,
+                \"__v\": 0
+            }
+            );" $DB_URI
         exit $?
     fi
 
@@ -188,98 +210,124 @@ if [ "$1" = "addT1" ]; then
         KI=$3
         OPC=$4
 
-        mongo --eval "db.subscribers.update( { \"imsi\" : \"$IMSI\" }, 
-            { \$setOnInsert: 
-                { 
-                    \"imsi\" : \"$IMSI\", 
-                    \"subscribed_rau_tau_timer\" : NumberInt(12), 
-                    \"network_access_mode\" : NumberInt(0), 
-                    \"subscriber_status\" : NumberInt(0), 
-                    \"access_restriction_data\" : NumberInt(32), 
-                    \"slice\" : 
-                    [{ 
-                        \"sst\" : NumberInt(1), 
-                        \"default_indicator\" : true, 
-                        \"_id\" : new ObjectId(), 
-                        \"session\" : 
-                        [{ 
-                            \"name\" : \"internet\", 
-                            \"type\" : NumberInt(3), 
-                            \"_id\" : new ObjectId(), 
-                            \"pcc_rule\" : [], 
-                            \"ambr\" : 
-                            { 
-                                \"uplink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) }, 
-                                \"downlink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) }, 
-                            }, 
-                            \"qos\" : 
-                            { 
-                                \"index\" : NumberInt(9), 
-                                \"arp\" : 
-                                { 
-                                    \"priority_level\" : NumberInt(8), 
-                                    \"pre_emption_capability\" : NumberInt(1), 
-                                    \"pre_emption_vulnerability\" : NumberInt(1), 
-                                }, 
-                            }, 
-                        },{ 
-                            \"name\" : \"internet1\", 
-                            \"type\" : NumberInt(3), 
-                            \"_id\" : new ObjectId(), 
-                            \"pcc_rule\" : [], 
-                            \"ambr\" : 
-                            { 
-                                \"uplink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) }, 
-                                \"downlink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) }, 
-                            }, 
-                            \"qos\" : 
-                            { 
-                                \"index\" : NumberInt(9), 
-                                \"arp\" : 
-                                { 
-                                    \"priority_level\" : NumberInt(8), 
-                                    \"pre_emption_capability\" : NumberInt(1), 
-                                    \"pre_emption_vulnerability\" : NumberInt(1), 
-                                }, 
-                            }, 
-                        },{ 
-                            \"name\" : \"internet2\", 
-                            \"type\" : NumberInt(3), 
-                            \"_id\" : new ObjectId(), 
-                            \"pcc_rule\" : [], 
-                            \"ambr\" : 
-                            { 
-                                \"uplink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) }, 
-                                \"downlink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) }, 
-                            }, 
-                            \"qos\" : 
-                            { 
-                                \"index\" : NumberInt(9), 
-                                \"arp\" : 
-                                { 
-                                    \"priority_level\" : NumberInt(8), 
-                                    \"pre_emption_capability\" : NumberInt(1), 
-                                    \"pre_emption_vulnerability\" : NumberInt(1), 
-                                }, 
-                            }, 
-                        }], 
-                    }], 
-                    \"ambr\" : 
-                    { 
-                        \"uplink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3),}, 
-                        \"downlink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) }, 
-                    },  
-                    \"security\" : 
-                    { 
-                        \"k\" : \"$KI\", 
-                        \"amf\" : \"8000\", 
-                        \"op\" : null, 
-                        \"opc\" : \"$OPC\" 
-                    }, 
-                    \"__v\" : 0
-                },  
-            },
-            upsert=true);" $DB_URI
+        mongosh --eval "db.subscribers.insertOne( 
+            {
+                \"_id\": new ObjectId(),
+                \"schema_version\": NumberInt(1),
+                \"imsi\": \"$IMSI\",
+                \"msisdn\": [],
+                \"imeisv\": [],
+                \"mme_host\": [],
+                \"mm_realm\": [],
+                \"purge_flag\": [],
+                \"slice\":[
+                {
+                    \"sst\": NumberInt(1),
+                    \"default_indicator\": true, 
+                    \"session\": [
+                    {
+                        \"name\" : \"internet\",
+                        \"type\" : NumberInt(3),
+                        \"qos\" : 
+                        { \"index\": NumberInt(9), 
+                            \"arp\": 
+                            {
+                                \"priority_level\" : NumberInt(8),
+                                \"pre_emption_capability\": NumberInt(1),
+                                \"pre_emption_vulnerability\": NumberInt(2)
+                            }
+                        },
+                        \"ambr\": 
+                        {
+                            \"downlink\": 
+                            {
+                                \"value\": NumberInt(1000000000),
+                                \"unit\": NumberInt(0)
+                            },
+                            \"uplink\":
+                            {
+                                \"value\": NumberInt(1000000000),
+                                \"unit\": NumberInt(0)
+                            }
+                        },
+                        \"pcc_rule\": [],
+                        \"_id\": new ObjectId(),
+                    },{
+                        \"name\" : \"internet1\",
+                        \"type\" : NumberInt(3),
+                        \"qos\" : 
+                        { \"index\": NumberInt(9), 
+                            \"arp\": 
+                            {
+                                \"priority_level\" : NumberInt(8),
+                                \"pre_emption_capability\": NumberInt(1),
+                                \"pre_emption_vulnerability\": NumberInt(2)
+                            }
+                        },
+                        \"ambr\": 
+                        {
+                            \"downlink\": 
+                            {
+                                \"value\": NumberInt(1000000000),
+                                \"unit\": NumberInt(0)
+                            },
+                            \"uplink\":
+                            {
+                                \"value\": NumberInt(1000000000),
+                                \"unit\": NumberInt(0)
+                            }
+                        },
+                        \"pcc_rule\": [],
+                        \"_id\": new ObjectId(),
+                    },{
+                        \"name\" : \"internet2\",
+                        \"type\" : NumberInt(3),
+                        \"qos\" : 
+                        { \"index\": NumberInt(9), 
+                            \"arp\": 
+                            {
+                                \"priority_level\" : NumberInt(8),
+                                \"pre_emption_capability\": NumberInt(1),
+                                \"pre_emption_vulnerability\": NumberInt(2)
+                            }
+                        },
+                        \"ambr\": 
+                        {
+                            \"downlink\": 
+                            {
+                                \"value\": NumberInt(1000000000),
+                                \"unit\": NumberInt(0)
+                            },
+                            \"uplink\":
+                            {
+                                \"value\": NumberInt(1000000000),
+                                \"unit\": NumberInt(0)
+                            }
+                        },
+                        \"pcc_rule\": [],
+                        \"_id\": new ObjectId(),
+                    }
+                    ],
+                    \"_id\": new ObjectId(),
+                }], 
+                \"security\": 
+                {
+                    \"k\" : \"$KI\",
+                    \"op\" : null,
+                    \"opc\" : \"$OPC\",
+                    \"amf\" : \"8000\",
+                },
+                \"ambr\" : 
+                {
+                    \"downlink\" : { \"value\": NumberInt(1000000000), \"unit\": NumberInt(0)},
+                    \"uplink\" : { \"value\": NumberInt(1000000000), \"unit\": NumberInt(0)}
+                },
+                \"access_restriction_data\": 32,
+                \"network_access_mode\": 0,
+                \"subscribed_rau_tau_timer\": 12,
+                \"__v\": 0
+            }
+            );" $DB_URI
         exit $?
     fi
 
@@ -289,110 +337,136 @@ if [ "$1" = "addT1" ]; then
         KI=$4
         OPC=$5
 
-        mongo --eval "db.subscribers.update( { \"imsi\" : \"$IMSI\" }, 
-            { \$setOnInsert: 
-                { 
-                    \"imsi\" : \"$IMSI\", 
-                    \"subscribed_rau_tau_timer\" : NumberInt(12), 
-                    \"network_access_mode\" : NumberInt(0), 
-                    \"subscriber_status\" : NumberInt(0), 
-                    \"access_restriction_data\" : NumberInt(32), 
-                    \"slice\" : 
-                    [{ 
-                        \"sst\" : NumberInt(1), 
-                        \"default_indicator\" : true, 
-                        \"_id\" : new ObjectId(), 
-                        \"session\" : 
-                        [{ 
-                            \"name\" : \"internet\", 
-                            \"type\" : NumberInt(3), 
-                            \"_id\" : new ObjectId(), 
-                            \"pcc_rule\" : [],
-                            \"ue\" : 
+        mongosh --eval "db.subscribers.insertOne( 
+            {
+                \"_id\": new ObjectId(),
+                \"schema_version\": NumberInt(1),
+                \"imsi\": \"$IMSI\",
+                \"msisdn\": [],
+                \"imeisv\": [],
+                \"mme_host\": [],
+                \"mm_realm\": [],
+                \"purge_flag\": [],
+                \"slice\":[
+                {
+                    \"sst\": NumberInt(1),
+                    \"default_indicator\": true, 
+                    \"session\": [
+                    {
+                        \"name\" : \"internet\",
+                        \"type\" : NumberInt(3),
+                        \"qos\" : 
+                        { \"index\": NumberInt(9), 
+                            \"arp\": 
                             {
-                                \"addr\" : \"$IP\",
-                            },
-                            \"ambr\" : 
-                            { 
-                                \"uplink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) }, 
-                                \"downlink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) }, 
-                            }, 
-                            \"qos\" : 
-                            { 
-                                \"index\" : NumberInt(9), 
-                                \"arp\" : 
-                                { 
-                                    \"priority_level\" : NumberInt(8), 
-                                    \"pre_emption_capability\" : NumberInt(1), 
-                                    \"pre_emption_vulnerability\" : NumberInt(1), 
-                                }, 
-                            }, 
-                        },{ 
-                            \"name\" : \"internet1\", 
-                            \"type\" : NumberInt(3), 
-                            \"_id\" : new ObjectId(), 
-                            \"pcc_rule\" : [],
-                            \"ue\" : 
+                                \"priority_level\" : NumberInt(8),
+                                \"pre_emption_capability\": NumberInt(1),
+                                \"pre_emption_vulnerability\": NumberInt(2)
+                            }
+                        },
+                        \"ambr\": 
+                        {
+                            \"downlink\": 
                             {
-                                \"addr\" : \"$IP\",
+                                \"value\": NumberInt(1000000000),
+                                \"unit\": NumberInt(0)
                             },
-                            \"ambr\" : 
-                            { 
-                                \"uplink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) }, 
-                                \"downlink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) }, 
-                            }, 
-                            \"qos\" : 
-                            { 
-                                \"index\" : NumberInt(9), 
-                                \"arp\" : 
-                                { 
-                                    \"priority_level\" : NumberInt(8), 
-                                    \"pre_emption_capability\" : NumberInt(1), 
-                                    \"pre_emption_vulnerability\" : NumberInt(1), 
-                                }, 
-                            }, 
-                        },{ 
-                            \"name\" : \"internet2\", 
-                            \"type\" : NumberInt(3), 
-                            \"_id\" : new ObjectId(), 
-                            \"pcc_rule\" : [],
-                            \"ue\" : 
+                            \"uplink\":
                             {
-                                \"addr\" : \"$IP\",
+                                \"value\": NumberInt(1000000000),
+                                \"unit\": NumberInt(0)
+                            }
+                        },
+                        \"ue\": 
+                        { 
+                            \"addr\": \"$IP\"
+                        },
+                        \"pcc_rule\": [],
+                        \"_id\": new ObjectId(),
+                    },{
+                        \"name\" : \"internet1\",
+                        \"type\" : NumberInt(3),
+                        \"qos\" : 
+                        { \"index\": NumberInt(9), 
+                            \"arp\": 
+                            {
+                                \"priority_level\" : NumberInt(8),
+                                \"pre_emption_capability\": NumberInt(1),
+                                \"pre_emption_vulnerability\": NumberInt(2)
+                            }
+                        },
+                        \"ambr\": 
+                        {
+                            \"downlink\": 
+                            {
+                                \"value\": NumberInt(1000000000),
+                                \"unit\": NumberInt(0)
                             },
-                            \"ambr\" : 
-                            { 
-                                \"uplink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) }, 
-                                \"downlink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) }, 
-                            }, 
-                            \"qos\" : 
-                            { 
-                                \"index\" : NumberInt(9), 
-                                \"arp\" : 
-                                { 
-                                    \"priority_level\" : NumberInt(8), 
-                                    \"pre_emption_capability\" : NumberInt(1), 
-                                    \"pre_emption_vulnerability\" : NumberInt(1), 
-                                }, 
-                            }, 
-                        }], 
-                    }], 
-                    \"ambr\" : 
-                    { 
-                        \"uplink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3),}, 
-                        \"downlink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) }, 
-                    },  
-                    \"security\" : 
-                    { 
-                        \"k\" : \"$KI\", 
-                        \"amf\" : \"8000\", 
-                        \"op\" : null, 
-                        \"opc\" : \"$OPC\" 
-                    }, 
-                    \"__v\" : 0
-                },  
-            },
-            upsert=true);" $DB_URI
+                            \"uplink\":
+                            {
+                                \"value\": NumberInt(1000000000),
+                                \"unit\": NumberInt(0)
+                            }
+                        },
+                        \"ue\": 
+                        { 
+                            \"addr\": \"$IP\"
+                        },
+                        \"pcc_rule\": [],
+                        \"_id\": new ObjectId(),
+                    },{
+                        \"name\" : \"internet2\",
+                        \"type\" : NumberInt(3),
+                        \"qos\" : 
+                        { \"index\": NumberInt(9), 
+                            \"arp\": 
+                            {
+                                \"priority_level\" : NumberInt(8),
+                                \"pre_emption_capability\": NumberInt(1),
+                                \"pre_emption_vulnerability\": NumberInt(2)
+                            }
+                        },
+                        \"ambr\": 
+                        {
+                            \"downlink\": 
+                            {
+                                \"value\": NumberInt(1000000000),
+                                \"unit\": NumberInt(0)
+                            },
+                            \"uplink\":
+                            {
+                                \"value\": NumberInt(1000000000),
+                                \"unit\": NumberInt(0)
+                            }
+                        },
+                        \"ue\": 
+                        { 
+                            \"addr\": \"$IP\"
+                        },
+                        \"pcc_rule\": [],
+                        \"_id\": new ObjectId(),
+                    }
+                    ],
+                    \"_id\": new ObjectId(),
+                }], 
+                \"security\": 
+                {
+                    \"k\" : \"$KI\",
+                    \"op\" : null,
+                    \"opc\" : \"$OPC\",
+                    \"amf\" : \"8000\",
+                },
+                \"ambr\" : 
+                {
+                    \"downlink\" : { \"value\": NumberInt(1000000000), \"unit\": NumberInt(0)},
+                    \"uplink\" : { \"value\": NumberInt(1000000000), \"unit\": NumberInt(0)}
+                },
+                \"access_restriction_data\": 32,
+                \"network_access_mode\": 0,
+                \"subscribed_rau_tau_timer\": 12,
+                \"__v\": 0
+            }
+            );" $DB_URI
         exit $?
     fi
 
@@ -407,7 +481,7 @@ if [ "$1" = "remove" ]; then
     fi
 
     IMSI=$2 
-    mongo --eval "db.subscribers.remove({\"imsi\": \"$IMSI\"});" $DB_URI
+    mongosh --eval "db.subscribers.deleteOne({\"imsi\": \"$IMSI\"});" $DB_URI
     exit $?
 fi
 
@@ -417,7 +491,7 @@ if [ "$1" = "reset" ]; then
         exit 1
     fi
 
-    mongo --eval "db.subscribers.remove({});" $DB_URI
+    mongosh --eval "db.subscribers.deleteMany({});" $DB_URI
     exit $?
 fi
 
@@ -429,7 +503,7 @@ if [ "$1" = "static_ip" ]; then
     IMSI=$2 
     IP=$3
 
-    mongo --eval "db.subscribers.update({\"imsi\": \"$IMSI\"},{\$set: { \"slice.0.session.0.ue.addr\": \"$IP\" }});" $DB_URI
+    mongosh --eval "db.subscribers.updateOne({\"imsi\": \"$IMSI\"},{\$set: { \"slice.0.session.0.ue.addr\": \"$IP\" }});" $DB_URI
     exit $?
 fi
 
@@ -441,7 +515,7 @@ if [ "$1" = "static_ip6" ]; then
     IMSI=$2 
     IP=$3
 
-    mongo --eval "db.subscribers.update({\"imsi\": \"$IMSI\"},{\$set: { \"slice.0.session.0.ue.addr6\": \"$IP\" }});" $DB_URI
+    mongosh --eval "db.subscribers.updateOne({\"imsi\": \"$IMSI\"},{\$set: { \"slice.0.session.0.ue.addr6\": \"$IP\" }});" $DB_URI
     exit $?
 fi
 
@@ -453,7 +527,7 @@ if [ "$1" = "type" ]; then
     IMSI=$2 
     TYPE=$3
 
-    mongo --eval "db.subscribers.update({\"imsi\": \"$IMSI\"},{\$set: { \"slice.0.session.0.type\": NumberInt($TYPE) }});" $DB_URI
+    mongosh --eval "db.subscribers.updateOne({\"imsi\": \"$IMSI\"},{\$set: { \"slice.0.session.0.type\": NumberInt($TYPE) }});" $DB_URI
     exit $?
 fi
 
@@ -464,58 +538,69 @@ if [ "$1" = "add_ue_with_apn" ]; then
         OPC=$4
         APN=$5
 
-        mongo --eval "db.subscribers.update( { \"imsi\" : \"$IMSI\" }, 
-            { \$setOnInsert: 
-                { 
-                    \"imsi\" : \"$IMSI\", 
-                    \"subscribed_rau_tau_timer\" : NumberInt(12), 
-                    \"network_access_mode\" : NumberInt(0), 
-                    \"subscriber_status\" : NumberInt(0), 
-                    \"access_restriction_data\" : NumberInt(32), 
-                    \"slice\" : 
-                    [{ 
-                        \"sst\" : NumberInt(1), 
-                        \"default_indicator\" : true, 
-                        \"_id\" : new ObjectId(), 
-                        \"session\" : 
-                        [{ 
-                            \"name\" : \"$APN\", 
-                            \"type\" : NumberInt(3), 
-                            \"_id\" : new ObjectId(), 
-                            \"pcc_rule\" : [],
-                            \"ambr\" : 
-                            { 
-                                \"uplink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) }, 
-                                \"downlink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) }, 
-                            }, 
-                            \"qos\" : 
-                            { 
-                                \"index\" : NumberInt(9), 
-                                \"arp\" : 
-                                { 
-                                    \"priority_level\" : NumberInt(8), 
-                                    \"pre_emption_capability\" : NumberInt(1), 
-                                    \"pre_emption_vulnerability\" : NumberInt(1), 
-                                }, 
-                            }, 
-                        }], 
-                    }], 
-                    \"ambr\" : 
-                    { 
-                        \"uplink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3),}, 
-                        \"downlink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) }, 
-                    },  
-                    \"security\" : 
-                    { 
-                        \"k\" : \"$KI\", 
-                        \"amf\" : \"8000\", 
-                        \"op\" : null, 
-                        \"opc\" : \"$OPC\" 
-                    }, 
-                    \"__v\" : 0
-                },  
-            },
-            upsert=true);" $DB_URI
+        mongosh --eval "db.subscribers.insertOne( 
+            {
+                \"_id\": new ObjectId(),
+                \"schema_version\": NumberInt(1),
+                \"imsi\": \"$IMSI\",
+                \"msisdn\": [],
+                \"imeisv\": [],
+                \"mme_host\": [],
+                \"mm_realm\": [],
+                \"purge_flag\": [],
+                \"slice\":[
+                {
+                    \"sst\": NumberInt(1),
+                    \"default_indicator\": true, 
+                    \"session\": [
+                    {
+                        \"name\" : \"$APN\",
+                        \"type\" : NumberInt(3),
+                        \"qos\" : 
+                        { \"index\": NumberInt(9), 
+                            \"arp\": 
+                            {
+                                \"priority_level\" : NumberInt(8),
+                                \"pre_emption_capability\": NumberInt(1),
+                                \"pre_emption_vulnerability\": NumberInt(2)
+                            }
+                        },
+                        \"ambr\": 
+                        {
+                            \"downlink\": 
+                            {
+                                \"value\": NumberInt(1000000000),
+                                \"unit\": NumberInt(0)
+                            },
+                            \"uplink\":
+                            {
+                                \"value\": NumberInt(1000000000),
+                                \"unit\": NumberInt(0)
+                            }
+                        },
+                        \"pcc_rule\": [],
+                        \"_id\": new ObjectId(),
+                    }],
+                    \"_id\": new ObjectId(),
+                }], 
+                \"security\": 
+                {
+                    \"k\" : \"$KI\",
+                    \"op\" : null,
+                    \"opc\" : \"$OPC\",
+                    \"amf\" : \"8000\",
+                },
+                \"ambr\" : 
+                {
+                    \"downlink\" : { \"value\": NumberInt(1000000000), \"unit\": NumberInt(0)},
+                    \"uplink\" : { \"value\": NumberInt(1000000000), \"unit\": NumberInt(0)}
+                },
+                \"access_restriction_data\": 32,
+                \"network_access_mode\": 0,
+                \"subscribed_rau_tau_timer\": 12,
+                \"__v\": 0
+            }
+            );" $DB_URI
         exit $?
     fi
 
@@ -532,59 +617,70 @@ if [ "$1" = "add_ue_with_slice" ]; then
         SST=$6
         SD=$7
 
-        mongo --eval "db.subscribers.update( { \"imsi\" : \"$IMSI\" }, 
-            { \$setOnInsert: 
-                { 
-                    \"imsi\" : \"$IMSI\", 
-                    \"subscribed_rau_tau_timer\" : NumberInt(12), 
-                    \"network_access_mode\" : NumberInt(0), 
-                    \"subscriber_status\" : NumberInt(0), 
-                    \"access_restriction_data\" : NumberInt(32), 
-                    \"slice\" : 
-                    [{ 
-                        \"sst\" : NumberInt($SST), 
-                        \"sd\" : \"$SD\", 
-                        \"default_indicator\" : true, 
-                        \"_id\" : new ObjectId(), 
-                        \"session\" : 
-                        [{ 
-                            \"name\" : \"$APN\", 
-                            \"type\" : NumberInt(3), 
-                            \"_id\" : new ObjectId(), 
-                            \"pcc_rule\" : [],
-                            \"ambr\" : 
-                            { 
-                                \"uplink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) }, 
-                                \"downlink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) }, 
-                            }, 
-                            \"qos\" : 
-                            { 
-                                \"index\" : NumberInt(9), 
-                                \"arp\" : 
-                                { 
-                                    \"priority_level\" : NumberInt(8), 
-                                    \"pre_emption_capability\" : NumberInt(1), 
-                                    \"pre_emption_vulnerability\" : NumberInt(1), 
-                                }, 
-                            }, 
-                        }], 
-                    }], 
-                    \"ambr\" : 
-                    { 
-                        \"uplink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3),}, 
-                        \"downlink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) }, 
-                    },  
-                    \"security\" : 
-                    { 
-                        \"k\" : \"$KI\", 
-                        \"amf\" : \"8000\", 
-                        \"op\" : null, 
-                        \"opc\" : \"$OPC\" 
-                    }, 
-                    \"__v\" : 0
-                },  
-            },
-            upsert=true);" $DB_URI
+        mongosh --eval "db.subscribers.insertOne( 
+            {
+                \"_id\": new ObjectId(),
+                \"schema_version\": NumberInt(1),
+                \"imsi\": \"$IMSI\",
+                \"msisdn\": [],
+                \"imeisv\": [],
+                \"mme_host\": [],
+                \"mm_realm\": [],
+                \"purge_flag\": [],
+                \"slice\":[
+                {
+                    \"sst\": NumberInt($SST),
+                    \"sd\": \"$SD\",
+                    \"default_indicator\": true, 
+                    \"session\": [
+                    {
+                        \"name\" : \"$APN\",
+                        \"type\" : NumberInt(3),
+                        \"qos\" : 
+                        { \"index\": NumberInt(9), 
+                            \"arp\": 
+                            {
+                                \"priority_level\" : NumberInt(8),
+                                \"pre_emption_capability\": NumberInt(1),
+                                \"pre_emption_vulnerability\": NumberInt(2)
+                            }
+                        },
+                        \"ambr\": 
+                        {
+                            \"downlink\": 
+                            {
+                                \"value\": NumberInt(1000000000),
+                                \"unit\": NumberInt(0)
+                            },
+                            \"uplink\":
+                            {
+                                \"value\": NumberInt(1000000000),
+                                \"unit\": NumberInt(0)
+                            }
+                        },
+                        \"pcc_rule\": [],
+                        \"_id\": new ObjectId(),
+                    }],
+                    \"_id\": new ObjectId(),
+                }], 
+                \"security\": 
+                {
+                    \"k\" : \"$KI\",
+                    \"op\" : null,
+                    \"opc\" : \"$OPC\",
+                    \"amf\" : \"8000\",
+                },
+                \"ambr\" : 
+                {
+                    \"downlink\" : { \"value\": NumberInt(1000000000), \"unit\": NumberInt(0)},
+                    \"uplink\" : { \"value\": NumberInt(1000000000), \"unit\": NumberInt(0)}
+                },
+                \"access_restriction_data\": 32,
+                \"network_access_mode\": 0,
+                \"subscribed_rau_tau_timer\": 12,
+                \"__v\": 0
+            }
+            );" $DB_URI
         exit $?
     fi
 
@@ -598,7 +694,7 @@ if [ "$1" = "update_apn" ]; then
         APN=$3
         SLICE_NUM=$4
         
-        mongo --eval "db.subscribers.updateOne({ \"imsi\": \"$IMSI\"}, 
+        mongosh --eval "db.subscribers.updateOne({ \"imsi\": \"$IMSI\"}, 
             {\$push: { \"slice.$SLICE_NUM.session\":
                            {
                             \"name\" : \"$APN\", 
@@ -637,7 +733,7 @@ if [ "$1" = "update_slice" ]; then
         SST=$4
         SD=$5
         
-        mongo --eval "db.subscribers.updateOne({ \"imsi\": \"$IMSI\"}, 
+        mongosh --eval "db.subscribers.updateOne({ \"imsi\": \"$IMSI\"}, 
             {\$push: { \"slice\":
                            
                             { 
@@ -668,7 +764,6 @@ if [ "$1" = "update_slice" ]; then
                                 }, 
                              }]
                             }
-
                     }   
             });" $DB_URI
         exit $?
@@ -678,15 +773,15 @@ if [ "$1" = "update_slice" ]; then
     exit 1
 fi
 if [ "$1" = "showall" ]; then
-   mongo --eval "db.subscribers.find()" $DB_URI
+   mongosh --eval "db.subscribers.find()" $DB_URI
         exit $?
 fi
 if [ "$1" = "showpretty" ]; then
-   mongo --eval "db.subscribers.find().pretty()" $DB_URI
+   mongosh --eval "db.subscribers.find().pretty()" $DB_URI
         exit $?
 fi
 if [ "$1" = "showfiltered" ]; then
-   mongo --eval "db.subscribers.find({},{'_id':0,'imsi':1,'security.k':1, 'security.opc':1,'slice.session.name':1,'slice.session.ue.addr':1})" $DB_URI
+   mongosh --eval "db.subscribers.find({},{'_id':0,'imsi':1,'security.k':1, 'security.opc':1,'slice.session.name':1,'slice.session.ue.addr':1})" $DB_URI
         exit $?
 fi
 
