@@ -50,6 +50,13 @@ ogs_sbi_request_t *amf_npcf_am_policy_control_build_create(
     memset(&ueLocation, 0, sizeof(ueLocation));
     memset(&UeAmbr, 0, sizeof(UeAmbr));
 
+    ran_ue_t *ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+    if (!ran_ue) {
+        ogs_error("NG context has already been removed");
+        /* ran_ue is required for amf_ue_rat_type() */
+        goto end;
+    }
+
     server = ogs_list_first(&ogs_sbi_self()->server_list);
     if (!server) {
         ogs_error("No server");

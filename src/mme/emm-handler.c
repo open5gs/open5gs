@@ -56,7 +56,15 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
     ogs_assert(enb_ue);
 
     ogs_assert(esm_message_container);
-    ogs_assert(esm_message_container->length);
+    if (!esm_message_container->length) {
+        ogs_error("No ESM Message Container");
+        r = nas_eps_send_attach_reject(mme_ue,
+                OGS_NAS_EMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE,
+                OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return OGS_ERROR;
+    }
 
     ogs_assert(pkbuf);
     ogs_assert(pkbuf->data);
