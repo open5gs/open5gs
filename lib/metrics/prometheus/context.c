@@ -345,6 +345,9 @@ ogs_metrics_spec_t *ogs_metrics_spec_new(
     ogs_metrics_spec_t *spec;
     unsigned int i;
 
+    prom_histogram_buckets_t *buckets;
+    double *upper_bounds;
+
     ogs_assert(name);
     ogs_assert(description);
     ogs_assert(num_labels <= MAX_LABELS);
@@ -373,8 +376,8 @@ ogs_metrics_spec_t *ogs_metrics_spec_new(
         spec->prom = prom_gauge_new(spec->name, spec->description,
                                     spec->num_labels, (const char **)spec->labels);
         break;
-    case OGS_METRICS_METRIC_TYPE_HISTOGRAM: {
-        prom_histogram_buckets_t *buckets;
+    case OGS_METRICS_METRIC_TYPE_HISTOGRAM:
+        ogs_assert(histogram_params);
         switch (histogram_params->type) {
         case OGS_METRICS_HISTOGRAM_BUCKET_TYPE_EXPONENTIAL:
             buckets = prom_histogram_buckets_exponential(histogram_params->exp.start,
@@ -387,9 +390,6 @@ ogs_metrics_spec_t *ogs_metrics_spec_new(
             ogs_assert(buckets);
             break;
         case OGS_METRICS_HISTOGRAM_BUCKET_TYPE_VARIABLE:
-        {
-            double *upper_bounds;
-
             buckets = (prom_histogram_buckets_t *)prom_malloc(sizeof(prom_histogram_buckets_t));
             ogs_assert(buckets);
 
@@ -406,7 +406,6 @@ ogs_metrics_spec_t *ogs_metrics_spec_new(
             }
             buckets->upper_bounds = upper_bounds;
             break;
-        }
         default:
             ogs_assert_if_reached();
             break;
@@ -415,7 +414,6 @@ ogs_metrics_spec_t *ogs_metrics_spec_new(
                 buckets, spec->num_labels, (const char **)spec->labels);
         ogs_assert(spec->prom);
         break;
-    }
     default:
         ogs_assert_if_reached();
         break;
