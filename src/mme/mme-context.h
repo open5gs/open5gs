@@ -109,6 +109,14 @@ typedef struct mme_context_s {
         ogs_eps_tai2_list_t list2;
     } served_tai[OGS_MAX_NUM_OF_SERVED_TAI];
 
+    /* Access Control */
+    int             default_reject_cause;
+    int             num_of_access_control;
+    struct {
+        int reject_cause;
+        ogs_plmn_id_t plmn_id;
+    } access_control[OGS_MAX_NUM_OF_ACCESS_CONTROL];
+
     /* defined in 'nas_ies.h'
      * #define NAS_SECURITY_ALGORITHMS_EIA0        0
      * #define NAS_SECURITY_ALGORITHMS_128_EEA1    1
