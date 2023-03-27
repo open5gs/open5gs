@@ -500,6 +500,24 @@ bool smf_nsmf_handle_update_sm_context(
              * and initiates an N4 Session Modification procedure
              * to remove Tunnel Info of AN in the UPF.
              */
+            if (!sess->policy_association_id) {
+                OGS_FSM_TRAN(&sess->sm, smf_gsm_state_wait_5gc_n1_n2_release);
+                sess->pti = 0;
+                n1smbuf = gsm_build_pdu_session_release_command(sess,
+                    OGS_5GSM_CAUSE_REACTIVATION_REQUESTED);
+                ogs_assert(n1smbuf);
+
+                n2smbuf =
+                    ngap_build_pdu_session_resource_release_command_transfer(
+                        sess, SMF_NGAP_STATE_DELETE_TRIGGER_SMF_INITIATED,
+                        NGAP_Cause_PR_transport, NGAP_CauseNas_normal_release);
+                ogs_assert(n2smbuf);
+
+                smf_sbi_send_sm_context_update_error(stream,
+                    OGS_SBI_HTTP_STATUS_FORBIDDEN, "PDU_SESSION_ANCHOR_CHANGE",
+                    smf_ue->supi, n1smbuf, n2smbuf);
+                return true;
+            }
 
             memset(&sendmsg, 0, sizeof(sendmsg));
             sendmsg.SmContextUpdatedData = &SmContextUpdatedData;

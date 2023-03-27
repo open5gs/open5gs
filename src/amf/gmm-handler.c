@@ -718,6 +718,13 @@ ogs_nas_5gmm_cause_t gmm_handle_service_update(amf_ue_t *amf_ue,
                 if (SESSION_CONTEXT_IN_SMF(sess))
                     amf_sbi_send_release_session(
                         sess, AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT);
+            } else {
+                if (SESSION_CONTEXT_IN_SMF(sess) &&
+                        (service_request->presencemask &
+                        OGS_NAS_5GS_SERVICE_REQUEST_UPLINK_DATA_STATUS_PRESENT)
+                        == 0 && sess->paging.ongoing)
+                    amf_sbi_send_activating_session(
+                            sess, AMF_UPDATE_SM_CONTEXT_SERVICE_REQUEST);
             }
         }
     }
