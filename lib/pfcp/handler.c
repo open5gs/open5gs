@@ -26,6 +26,23 @@ bool ogs_pfcp_handle_heartbeat_request(
     int rv;
     ogs_assert(xact);
 
+    if (req->recovery_time_stamp.presence == 0) {
+        ogs_error("No Recovery Time Stamp");
+        return false;
+    }
+
+    if (node->remote_recovery == 0 ||
+        node->remote_recovery == req->recovery_time_stamp.u32) {
+    } else if (node->remote_recovery < req->recovery_time_stamp.u32) {
+        ogs_error("[In REQ] Remote PFCP restarted [%u<%u]",
+            node->remote_recovery, req->recovery_time_stamp.u32);
+    } else if (node->remote_recovery > req->recovery_time_stamp.u32) {
+        ogs_error("[In REQ] Invalid Recovery Time Stamp [%u>%u]",
+        node->remote_recovery, req->recovery_time_stamp.u32);
+    }
+
+    node->remote_recovery = req->recovery_time_stamp.u32;
+
     rv = ogs_pfcp_send_heartbeat_response(xact);
     if (rv != OGS_OK) {
         ogs_error("ogs_pfcp_send_heartbeat_response() failed");
@@ -41,6 +58,23 @@ bool ogs_pfcp_handle_heartbeat_response(
 {
     ogs_assert(xact);
     ogs_pfcp_xact_commit(xact);
+
+    if (rsp->recovery_time_stamp.presence == 0) {
+        ogs_error("No Recovery Time Stamp");
+        return false;
+    }
+
+    if (node->remote_recovery == 0 ||
+        node->remote_recovery == rsp->recovery_time_stamp.u32) {
+    } else if (node->remote_recovery < rsp->recovery_time_stamp.u32) {
+        ogs_error("[In RSP] Remote PFCP restarted [%u<%u]",
+            node->remote_recovery, rsp->recovery_time_stamp.u32);
+    } else if (node->remote_recovery > rsp->recovery_time_stamp.u32) {
+        ogs_error("[In RSP] Invalid Recovery Time Stamp [%u>%u]",
+        node->remote_recovery, rsp->recovery_time_stamp.u32);
+    }
+
+    node->remote_recovery = rsp->recovery_time_stamp.u32;
 
     ogs_timer_start(node->t_no_heartbeat,
             ogs_app()->time.message.pfcp.no_heartbeat_duration);
