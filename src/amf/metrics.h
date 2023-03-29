@@ -10,7 +10,6 @@ extern "C" {
 typedef enum amf_metric_type_global_s {
     AMF_METR_GLOB_GAUGE_RAN_UE,
     AMF_METR_GLOB_GAUGE_AMF_SESS,
-    AMF_METR_GLOB_GAUGE_GNB,
     AMF_METR_GLOB_CTR_RM_REG_INIT_REQ,
     AMF_METR_GLOB_CTR_RM_REG_INIT_SUCC,
     AMF_METR_GLOB_CTR_RM_REG_MOB_REQ,
@@ -64,6 +63,15 @@ typedef enum amf_metric_type_by_cause_s {
 
 void amf_metrics_inst_by_cause_add(
     uint8_t cause, amf_metric_type_by_cause_t t, int val);
+
+/* BY ADDR */
+typedef enum amf_metric_type_by_addr_s {
+    AMF_METR_GAUGE_GNB = 0,
+    _AMF_METR_BY_ADDR_MAX,
+} amf_metric_type_by_addr_t;
+
+void amf_metrics_inst_by_addr_add(
+    ogs_sockaddr_t *addr, amf_metric_type_by_addr_t t, int val);
 
 void amf_metrics_init(void);
 void amf_metrics_final(void);
