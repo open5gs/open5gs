@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -84,6 +84,7 @@ extern "C" {
 
 #define OGS_MAX_NUM_OF_SERVED_GUAMI     8
 #define OGS_MAX_NUM_OF_SERVED_TAI       OGS_MAX_NUM_OF_TAI
+#define OGS_MAX_NUM_OF_ACCESS_CONTROL   8
 #define OGS_MAX_NUM_OF_ALGORITHM        8
 
 #define OGS_MAX_NUM_OF_BPLMN            6
