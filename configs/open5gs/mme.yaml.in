@@ -269,6 +269,41 @@ logger:
 #          mnc: 09
 #        tac: [70, 80]
 #
+#
+#  <Access Control>
+#
+#  If access_control is not specified, then all networks are allowed
+#  If access_control is defined,
+#  no other networks are allowed  other than matching plmn_id.
+#
+#  default_reject_cause may be used to overwrite the default error cause #11
+#  for non matching plmn_id
+#
+#  for matching plmn_id with reject_cause defined,
+#  the MME rejects access with the reject_cause error cause
+#
+#  for matching plmn_id without reject_cause defined,
+#  the MME accepts the PLMN traffic
+#
+#  o The example below only accepts 002/02 and 999/70 PLMNs.
+#    001/01 is rejected with cause 15,
+#    and the rest of the PLMNs are rejected with default cause 13.
+#
+#  mme:
+#    access_control:
+#      - default_reject_cause: 13
+#      - plmn_id:
+#          reject_cause: 15
+#          mcc: 001
+#          mnc: 01
+#      - plmn_id:
+#          mcc: 002
+#          mnc: 02
+#      - plmn_id:
+#          mcc: 999
+#          mnc: 70
+#
+#
 #  <Network Name>
 #  mme:
 #    network_name:

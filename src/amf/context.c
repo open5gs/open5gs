@@ -755,6 +755,81 @@ int amf_context_parse_config(void)
                         }
                     } while (ogs_yaml_iter_type(&plmn_support_array) ==
                             YAML_SEQUENCE_NODE);
+                } else if (!strcmp(amf_key, "access_control")) {
+                    ogs_yaml_iter_t access_control_array, access_control_iter;
+                    ogs_yaml_iter_recurse(&amf_iter, &access_control_array);
+                    do {
+                        ogs_assert(self.num_of_access_control <
+                                OGS_MAX_NUM_OF_ACCESS_CONTROL);
+
+                        if (ogs_yaml_iter_type(&access_control_array) ==
+                                YAML_MAPPING_NODE) {
+                            memcpy(&access_control_iter, &access_control_array,
+                                    sizeof(ogs_yaml_iter_t));
+                        } else if (ogs_yaml_iter_type(&access_control_array) ==
+                            YAML_SEQUENCE_NODE) {
+                            if (!ogs_yaml_iter_next(&access_control_array))
+                                break;
+                            ogs_yaml_iter_recurse(&access_control_array,
+                                    &access_control_iter);
+                        } else if (ogs_yaml_iter_type(&access_control_array) ==
+                            YAML_SCALAR_NODE) {
+                            break;
+                        } else
+                            ogs_assert_if_reached();
+
+                        while (ogs_yaml_iter_next(&access_control_iter)) {
+                            const char *mnc = NULL, *mcc = NULL;
+                            int reject_cause = 0;
+                            const char *access_control_key =
+                                ogs_yaml_iter_key(&access_control_iter);
+                            ogs_assert(access_control_key);
+                            if (!strcmp(access_control_key,
+                                        "default_reject_cause")) {
+                                const char *v = ogs_yaml_iter_value(
+                                        &access_control_iter);
+                                if (v) self.default_reject_cause = atoi(v);
+                            } else if (!strcmp(access_control_key, "plmn_id")) {
+                                ogs_yaml_iter_t plmn_id_iter;
+
+                                ogs_yaml_iter_recurse(&access_control_iter,
+                                        &plmn_id_iter);
+                                while (ogs_yaml_iter_next(&plmn_id_iter)) {
+                                    const char *plmn_id_key =
+                                        ogs_yaml_iter_key(&plmn_id_iter);
+                                    ogs_assert(plmn_id_key);
+                                    if (!strcmp(plmn_id_key, "reject_cause")) {
+                                        const char *v = ogs_yaml_iter_value(
+                                                &plmn_id_iter);
+                                        if (v) reject_cause = atoi(v);
+                                    } else if (!strcmp(plmn_id_key, "mcc")) {
+                                        mcc = ogs_yaml_iter_value(
+                                                &plmn_id_iter);
+                                    } else if (!strcmp(plmn_id_key, "mnc")) {
+                                        mnc = ogs_yaml_iter_value(
+                                                &plmn_id_iter);
+                                    }
+                                }
+
+                                if (mcc && mnc) {
+                                    ogs_plmn_id_build(
+                                        &self.access_control[
+                                            self.num_of_access_control].
+                                                plmn_id,
+                                        atoi(mcc), atoi(mnc), strlen(mnc));
+                                    if (reject_cause)
+                                        self.access_control[
+                                            self.num_of_access_control].
+                                                reject_cause = reject_cause;
+                                    self.num_of_access_control++;
+                                }
+                            } else
+                                ogs_warn("unknown key `%s`",
+                                        access_control_key);
+                        }
+
+                    } while (ogs_yaml_iter_type(&access_control_array) ==
+                            YAML_SEQUENCE_NODE);
                 } else if (!strcmp(amf_key, "security")) {
                     ogs_yaml_iter_t security_iter;
                     ogs_yaml_iter_recurse(&amf_iter, &security_iter);
@@ -847,7 +922,8 @@ int amf_context_parse_config(void)
                             } while (
                                 ogs_yaml_iter_type(&ciphering_order_iter) ==
                                     YAML_SEQUENCE_NODE);
-                        }
+                        } else
+                            ogs_warn("unknown key `%s`", security_key);
                     }
                 } else if (!strcmp(amf_key, "network_name")) {
                     ogs_yaml_iter_t network_name_iter;
@@ -891,7 +967,8 @@ int amf_context_parse_config(void)
                             network_short_name->length = size*2+1;
                             network_short_name->coding_scheme = 1;
                             network_short_name->ext = 1;
-                        }
+                        } else
+                            ogs_warn("unknown key `%s`", network_name_key);
                     }
                 } else if (!strcmp(amf_key, "amf_name")) {
                     self.amf_name = ogs_yaml_iter_value(&amf_iter);

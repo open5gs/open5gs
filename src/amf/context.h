@@ -66,6 +66,14 @@ typedef struct amf_context_s {
         ogs_s_nssai_t s_nssai[OGS_MAX_NUM_OF_SLICE];
     } plmn_support[OGS_MAX_NUM_OF_PLMN];
 
+    /* Access Control */
+    int             default_reject_cause;
+    int             num_of_access_control;
+    struct {
+        int reject_cause;
+        ogs_plmn_id_t plmn_id;
+    } access_control[OGS_MAX_NUM_OF_ACCESS_CONTROL];
+
     /* defined in 'nas_ies.h'
      * #define NAS_SECURITY_ALGORITHMS_EIA0        0
      * #define NAS_SECURITY_ALGORITHMS_128_EEA1    1
