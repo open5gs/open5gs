@@ -792,9 +792,8 @@ if [ "$1" = "ambr_speed" ]; then
         DL_UNIT=$4
         UL_VALUE=$5
         UL_UNIT=$6
-      
         mongosh --eval "db.subscribers.updateOne({\"imsi\": \"$IMSI\"},
-            {\$set: { 
+            {\$set: {
                 \"ambr\" : {
                     \"downlink\" : {
                         \"value\" : NumberInt($DL_VALUE),
@@ -817,13 +816,10 @@ if [ "$1" = "ambr_speed" ]; then
                 }
                      }
             });" $DB_URI
-
-
         exit $?
     fi
     echo "open5gs-dbctl: incorrect number of args, format is \"open5gs-dbctl ambr_speed imsi dl_value dl_unit ul_value ul_unit dl is for download and ul is for upload and the  unit values are[0=bps 1=Kbps 2=Mbps 3=Gbps 4=Tbps ]\""
     exit 1
-
 fi
 
 
