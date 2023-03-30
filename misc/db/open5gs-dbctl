@@ -24,7 +24,7 @@ display_help() {
     echo "   showall: shows the list of subscriber in the db"
     echo "   showpretty: shows the list of subscriber in the db in a pretty json tree format"
     echo "   showfiltered: shows {imsi key opc apn ip} information of subscriber"
-    echo "   ambr_speed {imsi dl_value dl_unit ul_value ul_unit}: Change AMBR speed from a specific user and the  unit values are [0=bps 1=Kbps 2=Mbps 3=Gbps 4=Tbps ]"
+    echo "   ambr_speed {imsi dl_value dl_unit ul_value ul_unit}: Change AMBR speed from a specific user and the  unit values are \"[0=bps 1=Kbps 2=Mbps 3=Gbps 4=Tbps ]\""
 
 }
 
