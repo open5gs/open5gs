@@ -106,6 +106,7 @@ typedef struct ogs_pfcp_node_s {
     uint8_t         num_of_nr_cell_id;
 
     uint32_t        remote_recovery; /* UTC time */
+    bool            restoration_required;
 
     ogs_list_t      gtpu_resource_list; /* User Plane IP Resource Information */
 

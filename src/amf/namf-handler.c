@@ -498,11 +498,15 @@ int amf_namf_callback_handle_sm_context_status(
      * If NOTIFICATION comes after the CLIENT response is received,
      * sync is done. So, the session context can be removed.
      */
+    ogs_info("[%s:%d][%d:%d:%s] "
+            "/namf-callback/v1/{supi}/sm-context-status/{psi}",
+            amf_ue->supi, sess->psi,
+            sess->n1_released, sess->n2_released,
+            OpenAPI_resource_status_ToString(sess->resource_status));
+
     if (sess->n1_released == true &&
         sess->n2_released == true &&
         sess->resource_status == OpenAPI_resource_status_RELEASED) {
-
-        ogs_debug("[%s:%d] SM context remove", amf_ue->supi, sess->psi);
         amf_nsmf_pdusession_handle_release_sm_context(
                 sess, AMF_RELEASE_SM_CONTEXT_NO_STATE);
     }

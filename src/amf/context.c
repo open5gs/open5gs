@@ -1641,6 +1641,9 @@ void amf_ue_remove(amf_ue_t *amf_ue)
     ogs_timer_delete(amf_ue->implicit_deregistration.timer);
 
     /* Free SBI object memory */
+    if (ogs_list_count(&amf_ue->sbi.xact_list))
+        ogs_error("UE transaction [%d]",
+                ogs_list_count(&amf_ue->sbi.xact_list));
     ogs_sbi_object_free(&amf_ue->sbi);
 
     amf_ue_deassociate(amf_ue);
@@ -2079,6 +2082,9 @@ void amf_sess_remove(amf_sess_t *sess)
     ogs_list_remove(&sess->amf_ue->sess_list, sess);
 
     /* Free SBI object memory */
+    if (ogs_list_count(&sess->sbi.xact_list))
+        ogs_error("Session transaction [%d]",
+                ogs_list_count(&sess->sbi.xact_list));
     ogs_sbi_object_free(&sess->sbi);
 
     if (sess->sm_context_ref)

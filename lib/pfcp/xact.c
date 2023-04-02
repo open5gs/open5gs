@@ -39,7 +39,6 @@ static ogs_pfcp_xact_t *ogs_pfcp_xact_remote_create(
         ogs_pfcp_node_t *node, uint32_t sqn);
 static ogs_pfcp_xact_stage_t ogs_pfcp_xact_get_stage(
         uint8_t type, uint32_t xid);
-static int ogs_pfcp_xact_delete(ogs_pfcp_xact_t *xact);
 static int ogs_pfcp_xact_update_rx(ogs_pfcp_xact_t *xact, uint8_t type);
 
 static void response_timeout(void *data);
@@ -772,7 +771,7 @@ static ogs_pfcp_xact_stage_t ogs_pfcp_xact_get_stage(uint8_t type, uint32_t xid)
     return stage;
 }
 
-static int ogs_pfcp_xact_delete(ogs_pfcp_xact_t *xact)
+int ogs_pfcp_xact_delete(ogs_pfcp_xact_t *xact)
 {
     char buf[OGS_ADDRSTRLEN];
 

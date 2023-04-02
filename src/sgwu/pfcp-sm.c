@@ -182,6 +182,11 @@ void sgwu_pfcp_state_associated(ogs_fsm_t *s, sgwu_event_t *e)
                 ogs_app()->time.message.pfcp.no_heartbeat_duration);
         ogs_assert(OGS_OK ==
             ogs_pfcp_send_heartbeat_request(node, node_timeout));
+
+        if (node->restoration_required == true) {
+            node->restoration_required = false;
+            ogs_error("PFCP restoration");
+        }
         break;
     case OGS_FSM_EXIT_SIG:
         ogs_info("PFCP de-associated [%s]:%d",
