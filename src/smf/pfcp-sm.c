@@ -22,7 +22,7 @@
 
 #include "n4-handler.h"
 
-static void pfcp_restoration(ogs_pfcp_node_t *node);
+static void reselect_upf(ogs_pfcp_node_t *node);
 static void node_timeout(ogs_pfcp_xact_t *xact, void *data);
 
 void smf_pfcp_state_initial(ogs_fsm_t *s, smf_event_t *e)
@@ -192,7 +192,6 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
 
         if (node->restoration_required == true) {
             /* PFCP Restoration is being performed after PFCP association */
-            pfcp_restoration(node);
             node->restoration_required = false;
             ogs_error("PFCP restoration");
         }
@@ -245,7 +244,6 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
          * If the peer PFCP entity is performing the association,
          * Restoration can be performed immediately.
          */
-                    pfcp_restoration(node);
                     node->restoration_required = false;
                     ogs_error("PFCP restoration");
                 }
@@ -272,7 +270,6 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
          * If the peer PFCP entity is performing the association,
          * Restoration can be performed immediately.
          */
-                    pfcp_restoration(node);
                     node->restoration_required = false;
                     ogs_error("PFCP restoration");
                 }
@@ -412,12 +409,30 @@ void smf_pfcp_state_exception(ogs_fsm_t *s, smf_event_t *e)
     }
 }
 
-static void pfcp_restoration(ogs_pfcp_node_t *node)
+static void reselect_upf(ogs_pfcp_node_t *node)
 {
     int r;
     smf_ue_t *smf_ue = NULL, *next_ue = NULL;;
+    ogs_pfcp_node_t *iter = NULL;
 
     ogs_assert(node);
+
+    if (node->restoration_required == true) {
+        ogs_error("UPF has already been restarted");
+        return;
+    }
+
+    ogs_list_for_each(&ogs_pfcp_self()->pfcp_peer_list, iter) {
+        if (iter == node)
+            continue;
+        if (OGS_FSM_CHECK(&iter->sm, smf_pfcp_state_associated))
+            break;
+    }
+
+    if (iter == NULL) {
+        ogs_error("No UPF avaiable");
+        return;
+    }
 
     ogs_list_for_each_safe(&smf_self()->smf_ue_list, next_ue, smf_ue) {
         smf_sess_t *sess = NULL, *next_sess = NULL;;
@@ -476,9 +491,7 @@ static void node_timeout(ogs_pfcp_xact_t *xact, void *data)
      * We plan to do this again after testing with restoration first
      * in case peer PFCP restarts.
      */
-#if 0
-        pfcp_restoration(node);
-#endif
+        reselect_upf(data);
 
         e = smf_event_new(SMF_EVT_N4_NO_HEARTBEAT);
         e->pfcp_node = data;
