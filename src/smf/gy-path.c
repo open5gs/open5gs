@@ -566,7 +566,7 @@ void smf_gy_send_ccr(smf_sess_t *sess, void *xact,
     struct sess_state *sess_data = NULL, *svg;
     struct session *session = NULL;
     int new;
-    const char *service_context_id = "open5gs-smfd@open5gs.org";
+    const char *service_context_id = "32251@3gpp.org";
     uint32_t timestamp;
 
     ogs_assert(xact);
