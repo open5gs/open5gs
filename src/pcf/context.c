@@ -183,6 +183,9 @@ void pcf_ue_remove(pcf_ue_t *pcf_ue)
     ogs_fsm_fini(&pcf_ue->sm, &e);
 
     /* Free SBI object memory */
+    if (ogs_list_count(&pcf_ue->sbi.xact_list))
+        ogs_error("UE transaction [%d]",
+                ogs_list_count(&pcf_ue->sbi.xact_list));
     ogs_sbi_object_free(&pcf_ue->sbi);
 
     pcf_sess_remove_all(pcf_ue);
@@ -293,6 +296,9 @@ void pcf_sess_remove(pcf_sess_t *sess)
     ogs_fsm_fini(&sess->sm, &e);
 
     /* Free SBI object memory */
+    if (ogs_list_count(&sess->sbi.xact_list))
+        ogs_error("Session transaction [%d]",
+                ogs_list_count(&sess->sbi.xact_list));
     ogs_sbi_object_free(&sess->sbi);
 
     pcf_app_remove_all(sess);

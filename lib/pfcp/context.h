@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -55,7 +55,7 @@ typedef struct ogs_pfcp_context_s {
     ogs_sockaddr_t  *pfcp_addr;     /* PFCP IPv4 Address */
     ogs_sockaddr_t  *pfcp_addr6;    /* PFCP IPv6 Address */
 
-    uint32_t        pfcp_started;   /* UTC time when the PFCP entity started */
+    uint32_t        local_recovery; /* UTC time */
 
     /* CP Function Features */
     ogs_pfcp_cp_function_features_t cp_function_features;
@@ -105,8 +105,8 @@ typedef struct ogs_pfcp_node_s {
     uint64_t        nr_cell_id[OGS_MAX_NUM_OF_CELL_ID];
     uint8_t         num_of_nr_cell_id;
 
-    /* flag to enable/ disable full list RR for this node */
-    uint8_t         rr_enable;
+    uint32_t        remote_recovery; /* UTC time */
+    bool            restoration_required;
 
     ogs_list_t      gtpu_resource_list; /* User Plane IP Resource Information */
 

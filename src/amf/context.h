@@ -490,6 +490,19 @@ typedef struct amf_sess_s {
     bool n1_released;
     bool n2_released;
 
+    /*
+     * To check if Reactivation Request has been used.
+     *
+     * During the PFCP recovery process,
+     * when a Reactivation Request is sent to PDU session release command,
+     * the UE simultaneously sends PDU session release complete and
+     * PDU session establishment request.
+     *
+     * In this case, old_gsm_type is PDU session release command and
+     * current_gsm_type is PDU session establishment request.
+     */
+    uint8_t old_gsm_type, current_gsm_type;
+
     struct {
         ogs_pkbuf_t *pdu_session_resource_setup_request;
         ogs_pkbuf_t *pdu_session_resource_modification_command;
@@ -762,6 +775,7 @@ amf_sess_t *amf_sess_add(amf_ue_t *amf_ue, uint8_t psi);
         sbi_object = &sess->sbi; \
         ogs_assert(sbi_object); \
         \
+        ogs_error("AMF_SESS_CLEAR"); \
         if (ogs_list_count(&sbi_object->xact_list)) { \
             ogs_error("SBI running [%d]", \
                     ogs_list_count(&sbi_object->xact_list)); \

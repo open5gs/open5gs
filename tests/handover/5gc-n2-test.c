@@ -806,6 +806,9 @@ static void direct_complete_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap2, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /* Waiting for N4 */
+    ogs_msleep(100);
+
     /* Receive End Mark */
     recvbuf = test_gtpu_read(gtpu1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
@@ -922,6 +925,9 @@ static void direct_complete_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Waiting for N4 */
+    ogs_msleep(100);
 
     /* Receive End Mark */
     recvbuf = test_gtpu_read(gtpu2);
@@ -1838,6 +1844,9 @@ static void indirect_complete_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap2, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /* Waiting for N4 */
+    ogs_msleep(100);
+
     /* Receive End Mark */
     recvbuf = test_gtpu_read(gtpu1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
@@ -1982,6 +1991,9 @@ static void indirect_complete_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Waiting for N4 */
+    ogs_msleep(100);
 
     /* Receive End Mark */
     recvbuf = test_gtpu_read(gtpu2);
@@ -2487,6 +2499,9 @@ static void indirect_cancel_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap2, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Waiting for N4 */
+    ogs_msleep(100);
 
     /* Receive End Mark */
     recvbuf = test_gtpu_read(gtpu1);

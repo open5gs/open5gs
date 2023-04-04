@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -36,7 +36,7 @@ ogs_pkbuf_t *ogs_pfcp_build_heartbeat_request(uint8_t type)
     req = &pfcp_message->pfcp_heartbeat_request;
 
     req->recovery_time_stamp.presence = 1;
-    req->recovery_time_stamp.u32 = ogs_pfcp_self()->pfcp_started;
+    req->recovery_time_stamp.u32 = ogs_pfcp_self()->local_recovery;
 
     pfcp_message->h.type = type;
     pkbuf = ogs_pfcp_build_msg(pfcp_message);
@@ -64,7 +64,7 @@ ogs_pkbuf_t *ogs_pfcp_build_heartbeat_response(uint8_t type)
     rsp = &pfcp_message->pfcp_heartbeat_response;
 
     rsp->recovery_time_stamp.presence = 1;
-    rsp->recovery_time_stamp.u32 = ogs_pfcp_self()->pfcp_started;
+    rsp->recovery_time_stamp.u32 = ogs_pfcp_self()->local_recovery;
 
     pfcp_message->h.type = type;
     pkbuf = ogs_pfcp_build_msg(pfcp_message);
@@ -105,7 +105,7 @@ ogs_pkbuf_t *ogs_pfcp_cp_build_association_setup_request(uint8_t type)
     req->node_id.len = node_id_len;
 
     req->recovery_time_stamp.presence = 1;
-    req->recovery_time_stamp.u32 = ogs_pfcp_self()->pfcp_started;
+    req->recovery_time_stamp.u32 = ogs_pfcp_self()->local_recovery;
 
     req->cp_function_features.presence = 1;
     req->cp_function_features.u8 = ogs_pfcp_self()->cp_function_features.octet5;
@@ -153,7 +153,7 @@ ogs_pkbuf_t *ogs_pfcp_cp_build_association_setup_response(uint8_t type,
     rsp->cause.u8 = cause;
 
     rsp->recovery_time_stamp.presence = 1;
-    rsp->recovery_time_stamp.u32 = ogs_pfcp_self()->pfcp_started;
+    rsp->recovery_time_stamp.u32 = ogs_pfcp_self()->local_recovery;
 
     rsp->cp_function_features.presence = 1;
     rsp->cp_function_features.u8 = ogs_pfcp_self()->cp_function_features.octet5;
@@ -202,7 +202,7 @@ ogs_pkbuf_t *ogs_pfcp_up_build_association_setup_request(uint8_t type)
     req->node_id.len = node_id_len;
 
     req->recovery_time_stamp.presence = 1;
-    req->recovery_time_stamp.u32 = ogs_pfcp_self()->pfcp_started;
+    req->recovery_time_stamp.u32 = ogs_pfcp_self()->local_recovery;
 
     ogs_assert(ogs_pfcp_self()->up_function_features_len);
     req->up_function_features.presence = 1;
@@ -273,7 +273,7 @@ ogs_pkbuf_t *ogs_pfcp_up_build_association_setup_response(uint8_t type,
     rsp->cause.u8 = cause;
 
     rsp->recovery_time_stamp.presence = 1;
-    rsp->recovery_time_stamp.u32 = ogs_pfcp_self()->pfcp_started;
+    rsp->recovery_time_stamp.u32 = ogs_pfcp_self()->local_recovery;
 
     ogs_assert(ogs_pfcp_self()->up_function_features_len);
     rsp->up_function_features.presence = 1;

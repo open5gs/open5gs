@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -22,6 +22,7 @@
 
 #include "n4-handler.h"
 
+static void reselect_upf(ogs_pfcp_node_t *node);
 static void node_timeout(ogs_pfcp_xact_t *xact, void *data);
 
 void smf_pfcp_state_initial(ogs_fsm_t *s, smf_event_t *e)
@@ -126,6 +127,16 @@ void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e)
         ogs_assert(xact);
 
         switch (message->h.type) {
+        case OGS_PFCP_HEARTBEAT_REQUEST_TYPE:
+            ogs_expect(true ==
+                ogs_pfcp_handle_heartbeat_request(node, xact,
+                    &message->pfcp_heartbeat_request));
+            break;
+        case OGS_PFCP_HEARTBEAT_RESPONSE_TYPE:
+            ogs_expect(true ==
+                ogs_pfcp_handle_heartbeat_response(node, xact,
+                    &message->pfcp_heartbeat_response));
+            break;
         case OGS_PFCP_ASSOCIATION_SETUP_REQUEST_TYPE:
             ogs_pfcp_cp_handle_association_setup_request(node, xact,
                     &message->pfcp_association_setup_request);
@@ -176,6 +187,14 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
             OGS_PORT(&node->addr));
         ogs_timer_start(node->t_no_heartbeat,
                 ogs_app()->time.message.pfcp.no_heartbeat_duration);
+        ogs_assert(OGS_OK ==
+            ogs_pfcp_send_heartbeat_request(node, node_timeout));
+
+        if (node->restoration_required == true) {
+            /* PFCP Restoration is being performed after PFCP association */
+            node->restoration_required = false;
+            ogs_error("PFCP restoration");
+        }
         break;
     case OGS_FSM_EXIT_SIG:
         ogs_info("PFCP de-associated [%s]:%d",
@@ -204,14 +223,57 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
 
         switch (message->h.type) {
         case OGS_PFCP_HEARTBEAT_REQUEST_TYPE:
-            ogs_assert(true ==
+            ogs_expect(true ==
                 ogs_pfcp_handle_heartbeat_request(node, xact,
                     &message->pfcp_heartbeat_request));
+            if (node->restoration_required == true) {
+                if (node->t_association) {
+        /*
+         * node->t_association that the PFCP entity attempts an association.
+         *
+         * In this case, even if Remote PFCP entity is restarted,
+         * PFCP restoration must be performed after PFCP association.
+         *
+         * Otherwise, Session related PFCP cannot be initiated
+         * because the peer PFCP entity is in a de-associated state.
+         */
+                    OGS_FSM_TRAN(s, smf_pfcp_state_will_associate);
+                } else {
+
+        /*
+         * If the peer PFCP entity is performing the association,
+         * Restoration can be performed immediately.
+         */
+                    node->restoration_required = false;
+                    ogs_error("PFCP restoration");
+                }
+            }
             break;
         case OGS_PFCP_HEARTBEAT_RESPONSE_TYPE:
-            ogs_assert(true ==
+            ogs_expect(true ==
                 ogs_pfcp_handle_heartbeat_response(node, xact,
                     &message->pfcp_heartbeat_response));
+            if (node->restoration_required == true) {
+        /*
+         * node->t_association that the PFCP entity attempts an association.
+         *
+         * In this case, even if Remote PFCP entity is restarted,
+         * PFCP restoration must be performed after PFCP association.
+         *
+         * Otherwise, Session related PFCP cannot be initiated
+         * because the peer PFCP entity is in a de-associated state.
+         */
+                if (node->t_association) {
+                    OGS_FSM_TRAN(s, smf_pfcp_state_will_associate);
+                } else {
+        /*
+         * If the peer PFCP entity is performing the association,
+         * Restoration can be performed immediately.
+         */
+                    node->restoration_required = false;
+                    ogs_error("PFCP restoration");
+                }
+            }
             break;
         case OGS_PFCP_ASSOCIATION_SETUP_REQUEST_TYPE:
             ogs_warn("PFCP[REQ] has already been associated [%s]:%d",
@@ -347,34 +409,48 @@ void smf_pfcp_state_exception(ogs_fsm_t *s, smf_event_t *e)
     }
 }
 
-static void node_timeout(ogs_pfcp_xact_t *xact, void *data)
+static void reselect_upf(ogs_pfcp_node_t *node)
 {
-    int r, rv;
-
-    smf_event_t *e = NULL;
-    uint8_t type;
-    ogs_pfcp_node_t *node = NULL;
+    int r;
     smf_ue_t *smf_ue = NULL, *next_ue = NULL;;
+    ogs_pfcp_node_t *iter = NULL;
 
-    ogs_assert(xact);
-    type = xact->seq[0].type;
+    ogs_assert(node);
 
-    switch (type) {
-    case OGS_PFCP_HEARTBEAT_REQUEST_TYPE:
-        node = data;
-        ogs_assert(node);
+    if (node->restoration_required == true) {
+        ogs_error("UPF has already been restarted");
+        return;
+    }
 
-        ogs_list_for_each_safe(&smf_self()->smf_ue_list, next_ue, smf_ue) {
-            smf_sess_t *sess = NULL, *next_sess = NULL;;
-            ogs_assert(smf_ue);
+    ogs_list_for_each(&ogs_pfcp_self()->pfcp_peer_list, iter) {
+        if (iter == node)
+            continue;
+        if (OGS_FSM_CHECK(&iter->sm, smf_pfcp_state_associated))
+            break;
+    }
 
-            ogs_list_for_each_safe(&smf_ue->sess_list, next_sess, sess) {
-                ogs_assert(sess);
+    if (iter == NULL) {
+        ogs_error("No UPF avaiable");
+        return;
+    }
+
+    ogs_list_for_each_safe(&smf_self()->smf_ue_list, next_ue, smf_ue) {
+        smf_sess_t *sess = NULL, *next_sess = NULL;;
+        ogs_assert(smf_ue);
+
+        ogs_list_for_each_safe(&smf_ue->sess_list, next_sess, sess) {
+            ogs_assert(sess);
+            if (sess->epc) {
+                ogs_error("[%s:%s] EPC restoration is not implemented",
+                        smf_ue->imsi_bcd, sess->session.name);
+            } else {
                 ogs_assert(sess->sm_context_ref);
 
                 if (node == sess->pfcp_node) {
                     smf_npcf_smpolicycontrol_param_t param;
 
+                    ogs_info("[%s:%d] SMF-initiated Deletion",
+                            smf_ue->supi, sess->psi);
                     ogs_assert(sess->sm_context_ref);
                     memset(&param, 0, sizeof(param));
                     r = smf_sbi_discover_and_send(
@@ -387,6 +463,35 @@ static void node_timeout(ogs_pfcp_xact_t *xact, void *data)
                 }
             }
         }
+    }
+}
+
+static void node_timeout(ogs_pfcp_xact_t *xact, void *data)
+{
+    int rv;
+
+    smf_event_t *e = NULL;
+    uint8_t type;
+
+    ogs_assert(xact);
+    type = xact->seq[0].type;
+
+    switch (type) {
+    case OGS_PFCP_HEARTBEAT_REQUEST_TYPE:
+        ogs_assert(data);
+
+
+    /*
+     * The code below is not secure.
+     * Session does not differentiate between EPC and 5GC.
+     * And, it does not check whether there are other PFCP Nodes.
+     *
+     * So, UPF redundancy will be implemented later.
+     *
+     * We plan to do this again after testing with restoration first
+     * in case peer PFCP restarts.
+     */
+        reselect_upf(data);
 
         e = smf_event_new(SMF_EVT_N4_NO_HEARTBEAT);
         e->pfcp_node = data;

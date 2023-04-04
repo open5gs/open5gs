@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -24,7 +24,27 @@ bool ogs_pfcp_handle_heartbeat_request(
         ogs_pfcp_heartbeat_request_t *req)
 {
     int rv;
+    ogs_assert(node);
     ogs_assert(xact);
+    ogs_assert(req);
+
+    if (req->recovery_time_stamp.presence == 0) {
+        ogs_error("No Recovery Time Stamp");
+        return false;
+    }
+
+    if (node->remote_recovery == 0 ||
+        node->remote_recovery == req->recovery_time_stamp.u32) {
+    } else if (node->remote_recovery < req->recovery_time_stamp.u32) {
+        ogs_error("Remote PFCP restarted [%u<%u] in Heartbeat REQ",
+            node->remote_recovery, req->recovery_time_stamp.u32);
+        node->restoration_required = true;
+    } else if (node->remote_recovery > req->recovery_time_stamp.u32) {
+        ogs_error("Invalid Recovery Time Stamp [%u>%u] in Heartbeat REQ",
+        node->remote_recovery, req->recovery_time_stamp.u32);
+    }
+
+    node->remote_recovery = req->recovery_time_stamp.u32;
 
     rv = ogs_pfcp_send_heartbeat_response(xact);
     if (rv != OGS_OK) {
@@ -39,8 +59,29 @@ bool ogs_pfcp_handle_heartbeat_response(
         ogs_pfcp_node_t *node, ogs_pfcp_xact_t *xact,
         ogs_pfcp_heartbeat_response_t *rsp)
 {
+    ogs_assert(node);
     ogs_assert(xact);
+    ogs_assert(rsp);
+
     ogs_pfcp_xact_commit(xact);
+
+    if (rsp->recovery_time_stamp.presence == 0) {
+        ogs_error("No Recovery Time Stamp");
+        return false;
+    }
+
+    if (node->remote_recovery == 0 ||
+        node->remote_recovery == rsp->recovery_time_stamp.u32) {
+    } else if (node->remote_recovery < rsp->recovery_time_stamp.u32) {
+        ogs_error("Remote PFCP restarted [%u<%u] in Heartbeat RSP",
+            node->remote_recovery, rsp->recovery_time_stamp.u32);
+        node->restoration_required = true;
+    } else if (node->remote_recovery > rsp->recovery_time_stamp.u32) {
+        ogs_error("Invalid Recovery Time Stamp [%u>%u] in Heartbeat RSP",
+        node->remote_recovery, rsp->recovery_time_stamp.u32);
+    }
+
+    node->remote_recovery = rsp->recovery_time_stamp.u32;
 
     ogs_timer_start(node->t_no_heartbeat,
             ogs_app()->time.message.pfcp.no_heartbeat_duration);

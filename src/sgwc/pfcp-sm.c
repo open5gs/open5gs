@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -124,6 +124,16 @@ void sgwc_pfcp_state_will_associate(ogs_fsm_t *s, sgwc_event_t *e)
         ogs_assert(xact);
 
         switch (message->h.type) {
+        case OGS_PFCP_HEARTBEAT_REQUEST_TYPE:
+            ogs_expect(true ==
+                ogs_pfcp_handle_heartbeat_request(node, xact,
+                    &message->pfcp_heartbeat_request));
+            break;
+        case OGS_PFCP_HEARTBEAT_RESPONSE_TYPE:
+            ogs_expect(true ==
+                ogs_pfcp_handle_heartbeat_response(node, xact,
+                    &message->pfcp_heartbeat_response));
+            break;
         case OGS_PFCP_ASSOCIATION_SETUP_REQUEST_TYPE:
             ogs_pfcp_cp_handle_association_setup_request(node, xact,
                     &message->pfcp_association_setup_request);
@@ -174,6 +184,13 @@ void sgwc_pfcp_state_associated(ogs_fsm_t *s, sgwc_event_t *e)
             OGS_PORT(&node->addr));
         ogs_timer_start(node->t_no_heartbeat,
                 ogs_app()->time.message.pfcp.no_heartbeat_duration);
+        ogs_assert(OGS_OK ==
+            ogs_pfcp_send_heartbeat_request(node, node_timeout));
+
+        if (node->restoration_required == true) {
+            node->restoration_required = false;
+            ogs_error("PFCP restoration");
+        }
         break;
     case OGS_FSM_EXIT_SIG:
         ogs_info("PFCP de-associated [%s]:%d",
@@ -200,12 +217,12 @@ void sgwc_pfcp_state_associated(ogs_fsm_t *s, sgwc_event_t *e)
 
         switch (message->h.type) {
         case OGS_PFCP_HEARTBEAT_REQUEST_TYPE:
-            ogs_assert(true ==
+            ogs_expect(true ==
                 ogs_pfcp_handle_heartbeat_request(node, xact,
                     &message->pfcp_heartbeat_request));
             break;
         case OGS_PFCP_HEARTBEAT_RESPONSE_TYPE:
-            ogs_assert(true ==
+            ogs_expect(true ==
                 ogs_pfcp_handle_heartbeat_response(node, xact,
                     &message->pfcp_heartbeat_response));
             break;
