@@ -1021,7 +1021,7 @@ ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_find_by_service_type(
     return nf_instance;
 }
 
-bool ogs_sbi_nf_instance_maximum_number_is_reached()
+bool ogs_sbi_nf_instance_maximum_number_is_reached(void)
 {
     return nf_instance_pool.avail <= 0;
 }

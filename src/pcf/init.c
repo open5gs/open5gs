@@ -24,7 +24,7 @@ static ogs_thread_t *thread;
 static void pcf_main(void *data);
 static int initialized = 0;
 
-int pcf_initialize()
+int pcf_initialize(void)
 {
     int rv;
 

@@ -25,7 +25,7 @@ static void bsf_main(void *data);
 
 static int initialized = 0;
 
-int bsf_initialize()
+int bsf_initialize(void)
 {
     int rv;
 

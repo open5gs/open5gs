@@ -40,7 +40,7 @@ int ngap_open(void)
     return OGS_OK;
 }
 
-void ngap_close()
+void ngap_close(void)
 {
     ogs_socknode_remove_all(&amf_self()->ngap_list);
     ogs_socknode_remove_all(&amf_self()->ngap_list6);

@@ -57,7 +57,7 @@ void ogs_app_context_final(void)
     initialized = 0;
 }
 
-ogs_app_context_t *ogs_app()
+ogs_app_context_t *ogs_app(void)
 {
     return &self;
 }

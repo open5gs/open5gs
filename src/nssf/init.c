@@ -23,7 +23,7 @@ static ogs_thread_t *thread;
 static void nssf_main(void *data);
 static int initialized = 0;
 
-int nssf_initialize()
+int nssf_initialize(void)
 {
     int rv;
 

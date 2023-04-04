@@ -27,7 +27,7 @@ static void sgwc_main(void *data);
 
 static int initialized = 0;
 
-int sgwc_initialize()
+int sgwc_initialize(void)
 {
     int rv;
 

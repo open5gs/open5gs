@@ -48,7 +48,7 @@ int smf_ctf_config_init(smf_ctf_config_t *ctf_config)
 }
 
 /* Shall Gy session be used according to policy and state? 1: yes, 0: no, -1: reject */
-int smf_use_gy_iface()
+int smf_use_gy_iface(void)
 {
     switch (smf_self()->ctf_config.enabled) {
     case SMF_CTF_ENABLED_AUTO:
@@ -3107,7 +3107,7 @@ static void stats_remove_smf_session(smf_sess_t *sess)
     ogs_info("[Removed] Number of SMF-Sessions is now %d", num_of_smf_sess);
 }
 
-int get_sess_load()
+int get_sess_load(void)
 {
     return (((ogs_pool_size(&smf_sess_pool) -
             ogs_pool_avail(&smf_sess_pool)) * 100) /

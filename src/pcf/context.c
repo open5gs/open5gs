@@ -214,7 +214,7 @@ void pcf_ue_remove(pcf_ue_t *pcf_ue)
     ogs_pool_free(&pcf_ue_pool, pcf_ue);
 }
 
-void pcf_ue_remove_all()
+void pcf_ue_remove_all(void)
 {
     pcf_ue_t *pcf_ue = NULL, *next = NULL;;
 
@@ -595,7 +595,7 @@ pcf_app_t *pcf_app_find_by_app_session_id(char *app_session_id)
     return pcf_app_find(atoll(app_session_id));
 }
 
-int get_pcf_load()
+int get_pcf_load(void)
 {
     if (ogs_pool_avail(&pcf_ue_pool) / ogs_pool_size(&pcf_ue_pool) <
             ogs_pool_avail(&pcf_sess_pool) /
