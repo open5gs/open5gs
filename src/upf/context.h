@@ -122,6 +122,14 @@ typedef struct upf_sess_s {
 
     /* Accounting: */
     upf_sess_urr_acc_t urr_acc[OGS_MAX_NUM_OF_URR]; /* FIXME: This probably needs to be mved to a hashtable or alike */
+
+#define GTP_EXPOSE_AFTER_PKTS 100
+    struct {
+        uint8_t ul_pkts;
+        uint8_t dl_pkts;
+        uint32_t ul_vol;
+        uint32_t dl_vol;
+    } gtp_stats;
 } upf_sess_t;
 
 void upf_context_init(void);

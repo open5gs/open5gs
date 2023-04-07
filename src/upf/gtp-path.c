@@ -214,18 +214,17 @@ static void _gtpv1_tun_recv_common_cb(
     ogs_assert(true == ogs_pfcp_up_handle_pdr(
                 pdr, OGS_GTPU_MSGTYPE_GPDU, recvbuf, &report));
 
-    /*
-     * Issue #2210, Discussion #2208, #2209
-     *
-     * Metrics reduce data plane performance.
-     * It should not be used on the UPF/SGW-U data plane
-     * until this issue is resolved.
-     */
-#if 0
-    upf_metrics_inst_global_inc(UPF_METR_GLOB_CTR_GTP_OUTDATAPKTN3UPF);
-    upf_metrics_inst_by_qfi_add(pdr->qer->qfi,
-        UPF_METR_CTR_GTP_OUTDATAVOLUMEQOSLEVELN3UPF, recvbuf->len);
-#endif
+    sess->gtp_stats.dl_pkts++;
+    sess->gtp_stats.dl_vol += recvbuf->len;
+    if (sess->gtp_stats.dl_pkts >= GTP_EXPOSE_AFTER_PKTS) {
+        upf_metrics_inst_global_add(UPF_METR_GLOB_CTR_GTP_OUTDATAPKTN3UPF,
+                sess->gtp_stats.dl_pkts);
+        upf_metrics_inst_global_add(
+                UPF_METR_GLOB_CTR_GTP_OUTDATAVOLUMEQOSLEVELN3UPF,
+                sess->gtp_stats.dl_vol);
+        sess->gtp_stats.dl_pkts = 0;
+        sess->gtp_stats.dl_vol = 0;
+    }
 
     if (report.type.downlink_data_report) {
         ogs_assert(pdr->sess);
@@ -408,19 +407,6 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
         ip_h = (struct ip *)pkbuf->data;
         ogs_assert(ip_h);
 
-        /*
-         * Issue #2210, Discussion #2208, #2209
-         *
-         * Metrics reduce data plane performance.
-         * It should not be used on the UPF/SGW-U data plane
-         * until this issue is resolved.
-         */
-#if 0
-        upf_metrics_inst_global_inc(UPF_METR_GLOB_CTR_GTP_INDATAPKTN3UPF);
-        upf_metrics_inst_by_qfi_add(qfi,
-                UPF_METR_CTR_GTP_INDATAVOLUMEQOSLEVELN3UPF, pkbuf->len);
-#endif
-
         pfcp_object = ogs_pfcp_object_find_by_teid(teid);
         if (!pfcp_object) {
             /*
@@ -518,6 +504,18 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
         far = pdr->far;
         ogs_assert(far);
+
+        sess->gtp_stats.ul_pkts++;
+        sess->gtp_stats.ul_vol += pkbuf->len;
+        if (sess->gtp_stats.ul_pkts >= GTP_EXPOSE_AFTER_PKTS) {
+            upf_metrics_inst_global_add(UPF_METR_GLOB_CTR_GTP_INDATAPKTN3UPF,
+                    sess->gtp_stats.ul_pkts);
+            upf_metrics_inst_global_add(
+                    UPF_METR_GLOB_CTR_GTP_INDATAVOLUMEQOSLEVELN3UPF,
+                    sess->gtp_stats.ul_vol);
+            sess->gtp_stats.ul_pkts = 0;
+            sess->gtp_stats.ul_vol = 0;
+        }
 
         if (ip_h->ip_v == 4 && sess->ipv4) {
             src_addr = (void *)&ip_h->ip_src.s_addr;

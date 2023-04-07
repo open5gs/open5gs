@@ -14,6 +14,8 @@ typedef enum upf_metric_type_global_s {
     UPF_METR_GLOB_CTR_SM_N4SESSIONESTABREQ,
     UPF_METR_GLOB_CTR_SM_N4SESSIONREPORT,
     UPF_METR_GLOB_CTR_SM_N4SESSIONREPORTSUCC,
+    UPF_METR_GLOB_CTR_GTP_INDATAVOLUMEQOSLEVELN3UPF,
+    UPF_METR_GLOB_CTR_GTP_OUTDATAVOLUMEQOSLEVELN3UPF,
     UPF_METR_GLOB_GAUGE_UPF_SESSIONNBR,
     _UPF_METR_GLOB_MAX,
 } upf_metric_type_global_t;
@@ -30,16 +32,6 @@ static inline void upf_metrics_inst_global_inc(upf_metric_type_global_t t)
 { ogs_metrics_inst_inc(upf_metrics_inst_global[t]); }
 static inline void upf_metrics_inst_global_dec(upf_metric_type_global_t t)
 { ogs_metrics_inst_dec(upf_metrics_inst_global[t]); }
-
-/* BY QFI */
-typedef enum upf_metric_type_by_qfi_s {
-    UPF_METR_CTR_GTP_INDATAVOLUMEQOSLEVELN3UPF = 0,
-    UPF_METR_CTR_GTP_OUTDATAVOLUMEQOSLEVELN3UPF,
-    _UPF_METR_BY_QFI_MAX,
-} upf_metric_type_by_qfi_t;
-
-void upf_metrics_inst_by_qfi_add(
-    uint8_t qfi, upf_metric_type_by_qfi_t t, int val);
 
 /* BY CAUSE */
 typedef enum upf_metric_type_by_cause_s {
