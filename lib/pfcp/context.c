@@ -28,6 +28,7 @@ static OGS_POOL(ogs_pfcp_node_pool, ogs_pfcp_node_t);
 
 static OGS_POOL(ogs_pfcp_sess_pool, ogs_pfcp_sess_t);
 static OGS_POOL(ogs_pfcp_pdr_pool, ogs_pfcp_pdr_t);
+static OGS_POOL(ogs_pfcp_pdr_teid_pool, ogs_pool_id_t);
 static OGS_POOL(ogs_pfcp_far_pool, ogs_pfcp_far_t);
 static OGS_POOL(ogs_pfcp_urr_pool, ogs_pfcp_urr_t);
 static OGS_POOL(ogs_pfcp_qer_pool, ogs_pfcp_qer_t);
@@ -54,6 +55,9 @@ void ogs_pfcp_context_init(void)
 
     ogs_pool_init(&ogs_pfcp_pdr_pool,
             ogs_app()->pool.sess * OGS_MAX_NUM_OF_PDR);
+    ogs_pool_init(&ogs_pfcp_pdr_teid_pool,
+            ogs_app()->pool.sess * OGS_MAX_NUM_OF_PDR);
+    ogs_pool_random_id_generate(&ogs_pfcp_pdr_teid_pool);
     ogs_pool_init(&ogs_pfcp_far_pool,
             ogs_app()->pool.sess * OGS_MAX_NUM_OF_FAR);
     ogs_pool_init(&ogs_pfcp_urr_pool,
@@ -100,6 +104,7 @@ void ogs_pfcp_context_final(void)
 
     ogs_pool_final(&ogs_pfcp_sess_pool);
     ogs_pool_final(&ogs_pfcp_pdr_pool);
+    ogs_pool_final(&ogs_pfcp_pdr_teid_pool);
     ogs_pool_final(&ogs_pfcp_far_pool);
     ogs_pool_final(&ogs_pfcp_urr_pool);
     ogs_pool_final(&ogs_pfcp_qer_pool);
@@ -894,6 +899,16 @@ ogs_pfcp_pdr_t *ogs_pfcp_pdr_add(ogs_pfcp_sess_t *sess)
     }
     memset(pdr, 0, sizeof *pdr);
 
+    pdr->obj.type = OGS_PFCP_OBJ_PDR_TYPE;
+    pdr->src_if = OGS_PFCP_INTERFACE_UNKNOWN;
+
+    /* Set TEID */
+    ogs_pool_alloc(&ogs_pfcp_pdr_teid_pool, &pdr->teid_node);
+    ogs_assert(pdr->teid_node);
+
+    pdr->teid = *(pdr->teid_node);
+
+    /* Set PDR-ID */
     ogs_pool_alloc(&sess->pdr_id_pool, &pdr->id_node);
     if (pdr->id_node == NULL) {
         ogs_error("pdr_id_pool() failed");
@@ -901,16 +916,8 @@ ogs_pfcp_pdr_t *ogs_pfcp_pdr_add(ogs_pfcp_sess_t *sess)
         return NULL;
     }
 
-    pdr->obj.type = OGS_PFCP_OBJ_PDR_TYPE;
-
-    pdr->index = ogs_pool_index(&ogs_pfcp_pdr_pool, pdr);
-    ogs_assert(pdr->index > 0 &&
-            pdr->index <= ogs_app()->pool.sess * OGS_MAX_NUM_OF_PDR);
-
     pdr->id = *(pdr->id_node);
     ogs_assert(pdr->id > 0 && pdr->id <= OGS_MAX_NUM_OF_PDR);
-
-    pdr->src_if = OGS_PFCP_INTERFACE_UNKNOWN;
 
     pdr->sess = sess;
     ogs_list_add(&sess->pdr_list, pdr);
@@ -1107,6 +1114,7 @@ void ogs_pfcp_pdr_remove(ogs_pfcp_pdr_t *pdr)
         ogs_free(pdr->ipv6_framed_routes);
     }
 
+    ogs_pool_free(&ogs_pfcp_pdr_teid_pool, pdr->teid_node);
     ogs_pool_free(&ogs_pfcp_pdr_pool, pdr);
 }
 
@@ -1929,41 +1937,29 @@ ogs_pfcp_subnet_t *ogs_pfcp_find_subnet_by_dnn(int family, const char *dnn)
 
 void ogs_pfcp_pool_init(ogs_pfcp_sess_t *sess)
 {
-    int i;
-
     ogs_assert(sess);
 
     sess->obj.type = OGS_PFCP_OBJ_SESS_TYPE;
 
-    ogs_index_init(&sess->pdr_id_pool, OGS_MAX_NUM_OF_PDR);
-    ogs_index_init(&sess->far_id_pool, OGS_MAX_NUM_OF_FAR);
-    ogs_index_init(&sess->urr_id_pool, OGS_MAX_NUM_OF_URR);
-    ogs_index_init(&sess->qer_id_pool, OGS_MAX_NUM_OF_QER);
-    ogs_index_init(&sess->bar_id_pool, OGS_MAX_NUM_OF_BAR);
+    ogs_pool_init(&sess->pdr_id_pool, OGS_MAX_NUM_OF_PDR);
+    ogs_pool_init(&sess->far_id_pool, OGS_MAX_NUM_OF_FAR);
+    ogs_pool_init(&sess->urr_id_pool, OGS_MAX_NUM_OF_URR);
+    ogs_pool_init(&sess->qer_id_pool, OGS_MAX_NUM_OF_QER);
+    ogs_pool_init(&sess->bar_id_pool, OGS_MAX_NUM_OF_BAR);
 
-    for (i = 1; i <= OGS_MAX_NUM_OF_PDR; i++) {
-        sess->pdr_id_pool.array[i-1] = i;
-    }
-    for (i = 1; i <= OGS_MAX_NUM_OF_FAR; i++) {
-        sess->far_id_pool.array[i-1] = i;
-    }
-    for (i = 1; i <= OGS_MAX_NUM_OF_URR; i++) {
-        sess->urr_id_pool.array[i-1] = i;
-    }
-    for (i = 1; i <= OGS_MAX_NUM_OF_QER; i++) {
-        sess->qer_id_pool.array[i-1] = i;
-    }
-    for (i = 1; i <= OGS_MAX_NUM_OF_BAR; i++) {
-        sess->bar_id_pool.array[i-1] = i;
-    }
+    ogs_pool_sequence_id_generate(&sess->pdr_id_pool);
+    ogs_pool_sequence_id_generate(&sess->far_id_pool);
+    ogs_pool_sequence_id_generate(&sess->urr_id_pool);
+    ogs_pool_sequence_id_generate(&sess->qer_id_pool);
+    ogs_pool_sequence_id_generate(&sess->bar_id_pool);
 }
 void ogs_pfcp_pool_final(ogs_pfcp_sess_t *sess)
 {
     ogs_assert(sess);
 
-    ogs_index_final(&sess->pdr_id_pool);
-    ogs_index_final(&sess->far_id_pool);
-    ogs_index_final(&sess->urr_id_pool);
-    ogs_index_final(&sess->qer_id_pool);
-    ogs_index_final(&sess->bar_id_pool);
+    ogs_pool_final(&sess->pdr_id_pool);
+    ogs_pool_final(&sess->far_id_pool);
+    ogs_pool_final(&sess->urr_id_pool);
+    ogs_pool_final(&sess->qer_id_pool);
+    ogs_pool_final(&sess->bar_id_pool);
 }

@@ -197,10 +197,10 @@ void smf_bearer_binding(smf_sess_t *sess)
                                 &bearer->pgw_s5u_addr, &bearer->pgw_s5u_addr6);
                         if (resource->info.teidri)
                             bearer->pgw_s5u_teid = OGS_PFCP_GTPU_INDEX_TO_TEID(
-                                    ul_pdr->index, resource->info.teidri,
+                                    ul_pdr->teid, resource->info.teidri,
                                     resource->info.teid_range);
                         else
-                            bearer->pgw_s5u_teid = ul_pdr->index;
+                            bearer->pgw_s5u_teid = ul_pdr->teid;
                     } else {
                         if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
                             ogs_assert(OGS_OK ==
@@ -214,7 +214,7 @@ void smf_bearer_binding(smf_sess_t *sess)
                         else
                             ogs_assert_if_reached();
 
-                        bearer->pgw_s5u_teid = ul_pdr->index;
+                        bearer->pgw_s5u_teid = ul_pdr->teid;
                     }
 
                     ogs_assert(OGS_OK ==

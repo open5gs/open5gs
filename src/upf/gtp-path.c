@@ -684,7 +684,7 @@ int upf_gtp_init(void)
 
     config.cluster_2048_pool = ogs_app()->pool.packet;
 
-#if OGS_USE_TALLOC
+#if OGS_USE_TALLOC == 1
     /* allocate a talloc pool for GTP to ensure it doesn't have to go back
      * to the libc malloc all the time */
     packet_pool = talloc_pool(__ogs_talloc_core, 1000*1024);

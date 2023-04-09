@@ -29,6 +29,8 @@ static OGS_POOL(amf_ue_pool, amf_ue_t);
 static OGS_POOL(ran_ue_pool, ran_ue_t);
 static OGS_POOL(amf_sess_pool, amf_sess_t);
 
+static OGS_POOL(m_tmsi_pool, amf_m_tmsi_t);
+
 static int context_initialized = 0;
 
 static int num_of_ran_ue = 0;
@@ -60,7 +62,8 @@ void amf_context_init(void)
     ogs_pool_init(&amf_ue_pool, ogs_app()->max.ue);
     ogs_pool_init(&ran_ue_pool, ogs_app()->max.ue);
     ogs_pool_init(&amf_sess_pool, ogs_app()->pool.sess);
-    ogs_pool_init(&self.m_tmsi, ogs_app()->max.ue*2);
+    ogs_pool_init(&m_tmsi_pool, ogs_app()->max.ue*2);
+    ogs_pool_random_id_generate(&m_tmsi_pool);
 
     ogs_list_init(&self.gnb_list);
     ogs_list_init(&self.amf_ue_list);
@@ -98,7 +101,7 @@ void amf_context_final(void)
     ogs_assert(self.supi_hash);
     ogs_hash_destroy(self.supi_hash);
 
-    ogs_pool_final(&self.m_tmsi);
+    ogs_pool_final(&m_tmsi_pool);
     ogs_pool_final(&amf_sess_pool);
     ogs_pool_final(&amf_ue_pool);
     ogs_pool_final(&ran_ue_pool);
@@ -1697,11 +1700,6 @@ amf_ue_t *amf_ue_find_by_guti(ogs_nas_5gs_guti_t *guti)
             self.guti_ue_hash, guti, sizeof(ogs_nas_5gs_guti_t));
 }
 
-amf_ue_t *amf_ue_find_by_teid(uint32_t teid)
-{
-    return ogs_pool_find(&amf_ue_pool, teid);
-}
-
 amf_ue_t *amf_ue_find_by_suci(char *suci)
 {
     ogs_assert(suci);
@@ -2368,6 +2366,7 @@ ogs_s_nssai_t *amf_find_s_nssai(
     return NULL;
 }
 
+#if 0 /* DEPRECATED */
 int amf_m_tmsi_pool_generate(void)
 {
     int j;
@@ -2378,7 +2377,7 @@ int amf_m_tmsi_pool_generate(void)
         amf_m_tmsi_t *m_tmsi = NULL;
         int conflict = 0;
 
-        m_tmsi = &self.m_tmsi.array[index];
+        m_tmsi = &m_tmsi_pool.array[index];
         ogs_assert(m_tmsi);
         *m_tmsi = ogs_random32();
 
@@ -2387,10 +2386,10 @@ int amf_m_tmsi_pool_generate(void)
         *m_tmsi &= 0xff00ffff;
 
         for (j = 0; j < index; j++) {
-            if (*m_tmsi == self.m_tmsi.array[j]) {
+            if (*m_tmsi == m_tmsi_pool.array[j]) {
                 conflict = 1;
                 ogs_trace("[M-TMSI CONFLICT]  %d:0x%x == %d:0x%x",
-                        index, *m_tmsi, j, self.m_tmsi.array[j]);
+                        index, *m_tmsi, j, m_tmsi_pool.array[j]);
                 break;
             }
         }
@@ -2400,18 +2399,40 @@ int amf_m_tmsi_pool_generate(void)
 
         index++;
     }
-    self.m_tmsi.size = index;
+    m_tmsi_pool.size = index;
     ogs_trace("M-TMSI Pool generate...done");
 
     return OGS_OK;
 }
+#endif
 
 amf_m_tmsi_t *amf_m_tmsi_alloc(void)
 {
     amf_m_tmsi_t *m_tmsi = NULL;
 
-    ogs_pool_alloc(&self.m_tmsi, &m_tmsi);
+    ogs_pool_alloc(&m_tmsi_pool, &m_tmsi);
     ogs_assert(m_tmsi);
+
+    /* TS23.003
+     * 2.8.2.1.2 Mapping in the UE
+     *
+     * E-UTRAN <M-TMSI> maps as follows:
+     * - 6 bits of the E-UTRAN <M-TMSI> starting at bit 29 and down to bit 24
+     * are mapped into bit 29 and down to bit 24 of the GERAN/UTRAN <P-TMSI>;
+     * - 16 bits of the E-UTRAN <M-TMSI> starting at bit 15 and down to bit 0
+     * are mapped into bit 15 and down to bit 0 of the GERAN/UTRAN <P-TMSI>;
+     * - and the remaining 8 bits of the E-UTRAN <M-TMSI> are
+     * mapped into the 8 Most Significant Bits of the <P-TMSI signature> field.
+     *
+     * The UE shall fill the remaining 2 octets of the <P-TMSI signature>
+     * according to clauses 9.1.1, 9.4.1, 10.2.1, or 10.5.1
+     * of 3GPP TS.33.401 [89] , as appropriate, for RAU/Attach procedures
+     */
+
+    ogs_assert(*m_tmsi <= 0x003fffff);
+
+    *m_tmsi = ((*m_tmsi & 0xffff) | ((*m_tmsi & 0x003f0000) << 8));
+    *m_tmsi |= 0xc0000000;
 
     return m_tmsi;
 }
@@ -2419,7 +2440,7 @@ amf_m_tmsi_t *amf_m_tmsi_alloc(void)
 int amf_m_tmsi_free(amf_m_tmsi_t *m_tmsi)
 {
     ogs_assert(m_tmsi);
-    ogs_pool_free(&self.m_tmsi, m_tmsi);
+    ogs_pool_free(&m_tmsi_pool, m_tmsi);
 
     return OGS_OK;
 }

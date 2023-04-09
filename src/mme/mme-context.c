@@ -44,10 +44,13 @@ static OGS_POOL(mme_csmap_pool, mme_csmap_t);
 
 static OGS_POOL(mme_enb_pool, mme_enb_t);
 static OGS_POOL(mme_ue_pool, mme_ue_t);
+static OGS_POOL(mme_s11_teid_pool, ogs_pool_id_t);
 static OGS_POOL(enb_ue_pool, enb_ue_t);
 static OGS_POOL(sgw_ue_pool, sgw_ue_t);
 static OGS_POOL(mme_sess_pool, mme_sess_t);
 static OGS_POOL(mme_bearer_pool, mme_bearer_t);
+
+static OGS_POOL(m_tmsi_pool, mme_m_tmsi_t);
 
 static int context_initialized = 0;
 
@@ -100,11 +103,15 @@ void mme_context_init(void)
     ogs_pool_init(&mme_enb_pool, ogs_app()->max.peer*2);
 
     ogs_pool_init(&mme_ue_pool, ogs_app()->max.ue);
+    ogs_pool_init(&mme_s11_teid_pool, ogs_app()->max.ue);
+    ogs_pool_random_id_generate(&mme_s11_teid_pool);
+
     ogs_pool_init(&enb_ue_pool, ogs_app()->max.ue);
     ogs_pool_init(&sgw_ue_pool, ogs_app()->max.ue);
     ogs_pool_init(&mme_sess_pool, ogs_app()->pool.sess);
     ogs_pool_init(&mme_bearer_pool, ogs_app()->pool.bearer);
-    ogs_pool_init(&self.m_tmsi, ogs_app()->max.ue*2);
+    ogs_pool_init(&m_tmsi_pool, ogs_app()->max.ue*2);
+    ogs_pool_random_id_generate(&m_tmsi_pool);
 
     self.enb_addr_hash = ogs_hash_make();
     ogs_assert(self.enb_addr_hash);
@@ -114,6 +121,8 @@ void mme_context_init(void)
     ogs_assert(self.imsi_ue_hash);
     self.guti_ue_hash = ogs_hash_make();
     ogs_assert(self.guti_ue_hash);
+    self.mme_s11_teid_hash = ogs_hash_make();
+    ogs_assert(self.mme_s11_teid_hash);
 
     ogs_list_init(&self.mme_ue_list);
 
@@ -141,11 +150,14 @@ void mme_context_final(void)
     ogs_hash_destroy(self.imsi_ue_hash);
     ogs_assert(self.guti_ue_hash);
     ogs_hash_destroy(self.guti_ue_hash);
+    ogs_assert(self.mme_s11_teid_hash);
+    ogs_hash_destroy(self.mme_s11_teid_hash);
 
-    ogs_pool_final(&self.m_tmsi);
+    ogs_pool_final(&m_tmsi_pool);
     ogs_pool_final(&mme_bearer_pool);
     ogs_pool_final(&mme_sess_pool);
     ogs_pool_final(&mme_ue_pool);
+    ogs_pool_final(&mme_s11_teid_pool);
     ogs_pool_final(&enb_ue_pool);
     ogs_pool_final(&sgw_ue_pool);
 
@@ -2327,11 +2339,6 @@ void sgw_ue_switch_to_sgw(sgw_ue_t *sgw_ue, mme_sgw_t *new_sgw)
     sgw_ue->sgw = new_sgw;
 }
 
-sgw_ue_t *sgw_ue_find(uint32_t index)
-{
-    return ogs_pool_find(&sgw_ue_pool, index);
-}
-
 sgw_ue_t *sgw_ue_cycle(sgw_ue_t *sgw_ue)
 {
     return ogs_pool_cycle(&sgw_ue_pool, sgw_ue);
@@ -2564,9 +2571,14 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
 
     ogs_list_init(&mme_ue->sess_list);
 
-    mme_ue->mme_s11_teid = ogs_pool_index(&mme_ue_pool, mme_ue);
-    ogs_assert(mme_ue->mme_s11_teid > 0 &&
-            mme_ue->mme_s11_teid <= ogs_app()->max.ue);
+    /* Set MME-S11_TEID */
+    ogs_pool_alloc(&mme_s11_teid_pool, &mme_ue->mme_s11_teid_node);
+    ogs_assert(mme_ue->mme_s11_teid_node);
+
+    mme_ue->mme_s11_teid = *(mme_ue->mme_s11_teid_node);
+
+    ogs_hash_set(self.mme_s11_teid_hash,
+            &mme_ue->mme_s11_teid, sizeof(mme_ue->mme_s11_teid), mme_ue);
 
     /*
      * When used for the first time, if last node is set,
@@ -2608,6 +2620,9 @@ void mme_ue_remove(mme_ue_t *mme_ue)
     ogs_list_remove(&self.mme_ue_list, mme_ue);
 
     mme_ue_fsm_fini(mme_ue);
+
+    ogs_hash_set(self.mme_s11_teid_hash,
+            &mme_ue->mme_s11_teid, sizeof(mme_ue->mme_s11_teid), NULL);
 
     ogs_assert(mme_ue->sgw_ue);
     sgw_ue_remove(mme_ue->sgw_ue);
@@ -2654,6 +2669,7 @@ void mme_ue_remove(mme_ue_t *mme_ue)
 
     mme_ebi_pool_final(mme_ue);
 
+    ogs_pool_free(&mme_s11_teid_pool, mme_ue->mme_s11_teid_node);
     ogs_pool_free(&mme_ue_pool, mme_ue);
 
     ogs_info("[Removed] Number of MME-UEs is now %d",
@@ -2729,7 +2745,7 @@ mme_ue_t *mme_ue_find_by_guti(ogs_nas_eps_guti_t *guti)
 
 mme_ue_t *mme_ue_find_by_teid(uint32_t teid)
 {
-    return ogs_pool_find(&mme_ue_pool, teid);
+    return ogs_hash_get(self.mme_s11_teid_hash, &teid, sizeof(teid));
 }
 
 mme_ue_t *mme_ue_find_by_message(ogs_nas_eps_message_t *message)
@@ -3743,6 +3759,7 @@ int mme_find_served_tai(ogs_eps_tai_t *tai)
     return -1;
 }
 
+#if 0 /* DEPRECATED */
 int mme_m_tmsi_pool_generate(void)
 {
     int j;
@@ -3753,7 +3770,7 @@ int mme_m_tmsi_pool_generate(void)
         mme_m_tmsi_t *m_tmsi = NULL;
         int conflict = 0;
 
-        m_tmsi = &self.m_tmsi.array[index];
+        m_tmsi = &m_tmsi_pool.array[index];
         ogs_assert(m_tmsi);
         *m_tmsi = ogs_random32();
 
@@ -3762,10 +3779,10 @@ int mme_m_tmsi_pool_generate(void)
         *m_tmsi &= 0xff00ffff;
 
         for (j = 0; j < index; j++) {
-            if (*m_tmsi == self.m_tmsi.array[j]) {
+            if (*m_tmsi == m_tmsi_pool.array[j]) {
                 conflict = 1;
                 ogs_trace("[M-TMSI CONFLICT]  %d:0x%x == %d:0x%x",
-                        index, *m_tmsi, j, self.m_tmsi.array[j]);
+                        index, *m_tmsi, j, m_tmsi_pool.array[j]);
                 break;
             }
         }
@@ -3775,18 +3792,40 @@ int mme_m_tmsi_pool_generate(void)
 
         index++;
     }
-    self.m_tmsi.size = index;
+    m_tmsi_pool.size = index;
     ogs_trace("M-TMSI Pool generate...done");
 
     return OGS_OK;
 }
+#endif
 
 mme_m_tmsi_t *mme_m_tmsi_alloc(void)
 {
     mme_m_tmsi_t *m_tmsi = NULL;
 
-    ogs_pool_alloc(&self.m_tmsi, &m_tmsi);
+    ogs_pool_alloc(&m_tmsi_pool, &m_tmsi);
     ogs_assert(m_tmsi);
+
+    /* TS23.003
+     * 2.8.2.1.2 Mapping in the UE
+     *
+     * E-UTRAN <M-TMSI> maps as follows:
+     * - 6 bits of the E-UTRAN <M-TMSI> starting at bit 29 and down to bit 24
+     * are mapped into bit 29 and down to bit 24 of the GERAN/UTRAN <P-TMSI>;
+     * - 16 bits of the E-UTRAN <M-TMSI> starting at bit 15 and down to bit 0
+     * are mapped into bit 15 and down to bit 0 of the GERAN/UTRAN <P-TMSI>;
+     * - and the remaining 8 bits of the E-UTRAN <M-TMSI> are
+     * mapped into the 8 Most Significant Bits of the <P-TMSI signature> field.
+     *
+     * The UE shall fill the remaining 2 octets of the <P-TMSI signature>
+     * according to clauses 9.1.1, 9.4.1, 10.2.1, or 10.5.1
+     * of 3GPP TS.33.401 [89] , as appropriate, for RAU/Attach procedures
+     */
+
+    ogs_assert(*m_tmsi <= 0x003fffff);
+
+    *m_tmsi = ((*m_tmsi & 0xffff) | ((*m_tmsi & 0x003f0000) << 8));
+    *m_tmsi |= 0xc0000000;
 
     return m_tmsi;
 }
@@ -3794,7 +3833,7 @@ mme_m_tmsi_t *mme_m_tmsi_alloc(void)
 int mme_m_tmsi_free(mme_m_tmsi_t *m_tmsi)
 {
     ogs_assert(m_tmsi);
-    ogs_pool_free(&self.m_tmsi, m_tmsi);
+    ogs_pool_free(&m_tmsi_pool, m_tmsi);
 
     return OGS_OK;
 }
@@ -3805,7 +3844,7 @@ void mme_ebi_pool_init(mme_ue_t *mme_ue)
 
     ogs_assert(mme_ue);
 
-    ogs_index_init(&mme_ue->ebi_pool, MAX_EPS_BEARER_ID-MIN_EPS_BEARER_ID+1);
+    ogs_pool_init(&mme_ue->ebi_pool, MAX_EPS_BEARER_ID-MIN_EPS_BEARER_ID+1);
 
     for (i = MIN_EPS_BEARER_ID, index = 0;
             i <= MAX_EPS_BEARER_ID; i++, index++) {
@@ -3817,17 +3856,17 @@ void mme_ebi_pool_final(mme_ue_t *mme_ue)
 {
     ogs_assert(mme_ue);
 
-    ogs_index_final(&mme_ue->ebi_pool);
+    ogs_pool_final(&mme_ue->ebi_pool);
 }
 
 void mme_ebi_pool_clear(mme_ue_t *mme_ue)
 {
     ogs_assert(mme_ue);
 
-    ogs_free(mme_ue->ebi_pool.free);
-    ogs_free(mme_ue->ebi_pool.array);
-    ogs_free(mme_ue->ebi_pool.index);
+    /* Suppress log message (mme_ue->ebi_pool.avail != mme_ue->ebi_pool.size) */
+    mme_ue->ebi_pool.avail = mme_ue->ebi_pool.size;
 
+    mme_ebi_pool_final(mme_ue);
     mme_ebi_pool_init(mme_ue);
 }
 

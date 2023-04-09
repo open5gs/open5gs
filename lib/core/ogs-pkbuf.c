@@ -99,6 +99,7 @@ void ogs_pkbuf_init(void)
 {
 #if OGS_USE_TALLOC == 0
     ogs_pool_init(&pkbuf_pool, ogs_core()->pkbuf.pool);
+
 #endif
 }
 
@@ -219,7 +220,7 @@ void ogs_pkbuf_pool_destroy(ogs_pkbuf_pool_t *pool)
 ogs_pkbuf_t *ogs_pkbuf_alloc_debug(
         ogs_pkbuf_pool_t *pool, unsigned int size, const char *file_line)
 {
-#if OGS_USE_TALLOC
+#if OGS_USE_TALLOC == 1
     ogs_pkbuf_t *pkbuf = NULL;
 
     pkbuf = ogs_talloc_zero_size(pool, sizeof(*pkbuf) + size, file_line);
@@ -287,7 +288,7 @@ ogs_pkbuf_t *ogs_pkbuf_alloc_debug(
 
 void ogs_pkbuf_free(ogs_pkbuf_t *pkbuf)
 {
-#if OGS_USE_TALLOC
+#if OGS_USE_TALLOC == 1
     ogs_talloc_free(pkbuf, OGS_FILE_LINE);
 #else
     ogs_pkbuf_pool_t *pool = NULL;
@@ -315,7 +316,7 @@ void ogs_pkbuf_free(ogs_pkbuf_t *pkbuf)
 
 ogs_pkbuf_t *ogs_pkbuf_copy_debug(ogs_pkbuf_t *pkbuf, const char *file_line)
 {
-#if OGS_USE_TALLOC
+#if OGS_USE_TALLOC == 1
     ogs_pkbuf_t *newbuf;
 #else
     ogs_pkbuf_pool_t *pool = NULL;
@@ -331,7 +332,7 @@ ogs_pkbuf_t *ogs_pkbuf_copy_debug(ogs_pkbuf_t *pkbuf, const char *file_line)
         return NULL;
     }
 
-#if OGS_USE_TALLOC
+#if OGS_USE_TALLOC == 1
     newbuf = ogs_pkbuf_alloc_debug(NULL, size, file_line);
     if (!newbuf) {
         ogs_error("ogs_pkbuf_alloc() failed [size=%d]", size);

@@ -128,10 +128,10 @@ void sgwu_sxa_handle_session_establishment_request(
                             &resource->info, &pdr->f_teid, &pdr->f_teid_len));
                         if (resource->info.teidri)
                             pdr->f_teid.teid = OGS_PFCP_GTPU_INDEX_TO_TEID(
-                                    pdr->index, resource->info.teidri,
+                                    pdr->teid, resource->info.teidri,
                                     resource->info.teid_range);
                         else
-                            pdr->f_teid.teid = pdr->index;
+                            pdr->f_teid.teid = pdr->teid;
                     } else {
                         ogs_assert(
                             (ogs_gtp_self()->gtpu_addr && pdr->f_teid.ipv4) ||
@@ -143,7 +143,7 @@ void sgwu_sxa_handle_session_establishment_request(
                                 pdr->f_teid.ipv6 ?
                                     ogs_gtp_self()->gtpu_addr6 : NULL,
                                 &pdr->f_teid, &pdr->f_teid_len));
-                        pdr->f_teid.teid = pdr->index;
+                        pdr->f_teid.teid = pdr->teid;
                     }
                 }
             }
@@ -343,10 +343,10 @@ void sgwu_sxa_handle_session_modification_request(
                             &resource->info, &pdr->f_teid, &pdr->f_teid_len));
                         if (resource->info.teidri)
                             pdr->f_teid.teid = OGS_PFCP_GTPU_INDEX_TO_TEID(
-                                    pdr->index, resource->info.teidri,
+                                    pdr->teid, resource->info.teidri,
                                     resource->info.teid_range);
                         else
-                            pdr->f_teid.teid = pdr->index;
+                            pdr->f_teid.teid = pdr->teid;
                     } else {
                         ogs_assert(
                             (ogs_gtp_self()->gtpu_addr && pdr->f_teid.ipv4) ||
@@ -358,7 +358,7 @@ void sgwu_sxa_handle_session_modification_request(
                                 pdr->f_teid.ipv6 ?
                                     ogs_gtp_self()->gtpu_addr6 : NULL,
                                 &pdr->f_teid, &pdr->f_teid_len));
-                        pdr->f_teid.teid = pdr->index;
+                        pdr->f_teid.teid = pdr->teid;
                     }
                 }
             }

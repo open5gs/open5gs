@@ -61,9 +61,6 @@ int mme_initialize(void)
             ogs_app()->logger.domain, ogs_app()->logger.level);
     if (rv != OGS_OK) return rv;
 
-    rv = mme_m_tmsi_pool_generate();
-    if (rv != OGS_OK) return rv;
-
     ogs_metrics_context_open(ogs_metrics_self());
 
     rv = mme_fd_init();
