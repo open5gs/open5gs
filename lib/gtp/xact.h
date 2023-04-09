@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
  * Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
+ * Copyright (C) 2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -57,7 +58,7 @@ extern "C" {
  */
 typedef struct ogs_gtp_xact_s {
     ogs_lnode_t     node;           /**< A node of list */
-    ogs_index_t     index;
+    ogs_pool_id_t   index;
 
     uint8_t gtp_version;            /**< 1 or 2 */
 

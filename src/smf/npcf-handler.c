@@ -585,10 +585,10 @@ bool smf_npcf_smpolicycontrol_handle_create(
                 &sess->upf_n3_addr, &sess->upf_n3_addr6);
             if (resource->info.teidri)
                 sess->upf_n3_teid = OGS_PFCP_GTPU_INDEX_TO_TEID(
-                        ul_pdr->index, resource->info.teidri,
+                        ul_pdr->teid, resource->info.teidri,
                         resource->info.teid_range);
             else
-                sess->upf_n3_teid = ul_pdr->index;
+                sess->upf_n3_teid = ul_pdr->teid;
         } else {
             if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
                 ogs_assert(OGS_OK ==
@@ -601,7 +601,7 @@ bool smf_npcf_smpolicycontrol_handle_create(
             else
                 ogs_assert_if_reached();
 
-            sess->upf_n3_teid = ul_pdr->index;
+            sess->upf_n3_teid = ul_pdr->teid;
         }
 
         ogs_assert(OGS_OK ==
@@ -614,7 +614,7 @@ bool smf_npcf_smpolicycontrol_handle_create(
             ogs_pfcp_sockaddr_to_f_teid(
                 sess->upf_n3_addr, sess->upf_n3_addr6,
                 &cp2up_pdr->f_teid, &cp2up_pdr->f_teid_len));
-        cp2up_pdr->f_teid.teid = cp2up_pdr->index;
+        cp2up_pdr->f_teid.teid = cp2up_pdr->teid;
 
         ogs_assert(OGS_OK ==
             ogs_pfcp_sockaddr_to_f_teid(

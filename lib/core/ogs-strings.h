@@ -110,7 +110,7 @@ char *ogs_mstrcatf_debug(
     char *source, const char *file_line, const char *message, ...)
     OGS_GNUC_PRINTF(3, 4);
 
-#if OGS_USE_TALLOC
+#if OGS_USE_TALLOC == 1
 
 /*****************************************
  * Memory Pool - Use talloc library

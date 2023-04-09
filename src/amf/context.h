@@ -111,8 +111,6 @@ typedef struct amf_context_s {
     ogs_hash_t      *suci_hash;     /* hash table (SUCI) */
     ogs_hash_t      *supi_hash;     /* hash table (SUPI) */
 
-    OGS_POOL(m_tmsi, amf_m_tmsi_t); /* M-TMSI Pool */
-
     uint16_t        ngap_port;      /* Default NGAP Port */
 
     ogs_list_t      ngap_list;      /* AMF NGAP IPv4 Server List */
@@ -697,7 +695,6 @@ void amf_ue_fsm_init(amf_ue_t *amf_ue);
 void amf_ue_fsm_fini(amf_ue_t *amf_ue);
 
 amf_ue_t *amf_ue_find_by_guti(ogs_nas_5gs_guti_t *nas_guti);
-amf_ue_t *amf_ue_find_by_teid(uint32_t teid);
 amf_ue_t *amf_ue_find_by_suci(char *suci);
 amf_ue_t *amf_ue_find_by_supi(char *supi);
 
@@ -823,7 +820,6 @@ int amf_find_served_tai(ogs_5gs_tai_t *nr_tai);
 ogs_s_nssai_t *amf_find_s_nssai(
         ogs_plmn_id_t *served_plmn_id, ogs_s_nssai_t *s_nssai);
 
-int amf_m_tmsi_pool_generate(void);
 amf_m_tmsi_t *amf_m_tmsi_alloc(void);
 int amf_m_tmsi_free(amf_m_tmsi_t *tmsi);
 

@@ -35,7 +35,7 @@ typedef struct ogs_cluster_s {
     unsigned int reference_count;
 } ogs_cluster_t;
 
-#if OGS_USE_TALLOC
+#if OGS_USE_TALLOC == 1
 typedef void ogs_pkbuf_pool_t;
 #else
 typedef struct ogs_pkbuf_pool_s ogs_pkbuf_pool_t;

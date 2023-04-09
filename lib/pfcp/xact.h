@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -35,7 +35,7 @@ typedef struct ogs_pfcp_xact_s {
     ogs_lnode_t     lnode;          /**< A node of list */
     ogs_lnode_t     tmpnode;        /**< A node of temp-list */
 
-    ogs_index_t     index;
+    ogs_pool_id_t   index;
 
 #define OGS_PFCP_LOCAL_ORIGINATOR  0
 #define OGS_PFCP_REMOTE_ORIGINATOR 1

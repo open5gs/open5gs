@@ -137,7 +137,9 @@ typedef struct ogs_pfcp_bar_s ogs_pfcp_bar_t;
 
 typedef struct ogs_pfcp_pdr_s {
     ogs_pfcp_object_t       obj;
-    uint32_t                index;
+
+    ogs_pool_id_t           *teid_node;  /* A node of TEID */
+    ogs_pool_id_t           teid;
 
     ogs_lnode_t             to_create_node;
     ogs_lnode_t             to_modify_node;

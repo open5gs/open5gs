@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -48,14 +48,18 @@ extern int __upf_log_domain;
 struct upf_route_trie_node;
 
 typedef struct upf_context_s {
-    ogs_hash_t                 *seid_hash;     /* hash table (SEID) */
-    ogs_hash_t                 *f_seid_hash;   /* hash table (F-SEID) */
-    ogs_hash_t                 *ipv4_hash;     /* hash table (IPv4 Address) */
-    ogs_hash_t                 *ipv6_hash;     /* hash table (IPv6 Address) */
-    struct upf_route_trie_node *ipv4_framed_routes; /* IPv4 framed routes trie */
-    struct upf_route_trie_node *ipv6_framed_routes; /* IPv6 framed routes trie */
+    ogs_hash_t *upf_n4_seid_hash;   /* hash table (UPF-N4-SEID) */
+    ogs_hash_t *smf_n4_seid_hash;   /* hash table (SMF-N4-SEID) */
+    ogs_hash_t *smf_n4_f_seid_hash; /* hash table (SMF-N4-F-SEID) */
+    ogs_hash_t *ipv4_hash;  /* hash table (IPv4 Address) */
+    ogs_hash_t *ipv6_hash;  /* hash table (IPv6 Address) */
 
-    ogs_list_t                  sess_list;
+    /* IPv4 framed routes trie */
+    struct upf_route_trie_node *ipv4_framed_routes;
+    /* IPv6 framed routes trie */
+    struct upf_route_trie_node *ipv6_framed_routes;
+
+    ogs_list_t sess_list;
 } upf_context_t;
 
 /* trie mapping from IP framed routes to session. */
@@ -96,11 +100,11 @@ typedef struct upf_sess_urr_acc_s {
 #define UPF_SESS(pfcp_sess) ogs_container_of(pfcp_sess, upf_sess_t, pfcp)
 typedef struct upf_sess_s {
     ogs_lnode_t     lnode;
-    uint32_t        index;              /**< An index of this node */
+    ogs_pool_id_t   *upf_n4_seid_node;  /* A node of UPF-N4-SEID */
 
     ogs_pfcp_sess_t pfcp;
 
-    uint64_t        upf_n4_seid;        /* UPF SEID is dervied from INDEX */
+    uint64_t        upf_n4_seid;        /* UPF SEID is dervied from NODE */
     struct {
         uint64_t    seid;
         ogs_ip_t    ip;
@@ -131,7 +135,6 @@ upf_sess_t *upf_sess_add_by_message(ogs_pfcp_message_t *message);
 upf_sess_t *upf_sess_add(ogs_pfcp_f_seid_t *f_seid);
 int upf_sess_remove(upf_sess_t *sess);
 void upf_sess_remove_all(void);
-upf_sess_t *upf_sess_find(uint32_t index);
 upf_sess_t *upf_sess_find_by_smf_n4_seid(uint64_t seid);
 upf_sess_t *upf_sess_find_by_smf_n4_f_seid(ogs_pfcp_f_seid_t *f_seid);
 upf_sess_t *upf_sess_find_by_upf_n4_seid(uint64_t seid);
