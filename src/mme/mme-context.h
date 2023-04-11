@@ -87,6 +87,12 @@ typedef struct {
     uint16_t bcd_decimal;
 } emergency_number_list_item_t;
 
+typedef struct {
+    char address[16];
+    unsigned port;
+    unsigned expire_time_sec;
+} redis_config_t;
+
 typedef struct mme_context_s {
     const char          *diam_conf_path;  /* MME Diameter conf path */
     ogs_diam_config_t   *diam_config;     /* MME Diameter config */
@@ -175,6 +181,9 @@ typedef struct mme_context_s {
 
     /* Control EIR functionality */
     ogs_nas_eir_t eir;
+
+    /* Redis config */
+    redis_config_t redis_config;
 
     bool emergency_bearer_services;
     size_t num_emergency_number_list_items;

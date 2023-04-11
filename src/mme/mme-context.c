@@ -1558,17 +1558,28 @@ int mme_context_parse_config(void)
                     }
                     self.num_emergency_number_list_items = num_emergency_number_list_items;
                 } else if (!strcmp(mme_key, "emergency_bearer_services")) {
-                    bool *emergency_bearer_services = &self.emergency_bearer_services;
-                    const char *c_emergency_bearer_services = ogs_yaml_iter_value(&mme_iter);
+                } else if (!strcmp(mme_key, "redis")) {
+                    ogs_yaml_iter_t redis_iter;
+                    ogs_yaml_iter_recurse(&mme_iter, &redis_iter);
 
-                    if (!strcmp("True", c_emergency_bearer_services) || 
-                        !strcmp("true", c_emergency_bearer_services)) {
-                        ogs_info("Emergency bearer services have been enabled");
-                        *emergency_bearer_services = true;
-                    }
-                    else {
-                        ogs_info("Emergency bearer services have been disabled");
-                        *emergency_bearer_services = false;
+                    while (ogs_yaml_iter_next(&redis_iter)) {
+                        const char *eir_key = ogs_yaml_iter_key(&redis_iter);
+                        ogs_assert(eir_key);
+                        if (!strcmp(eir_key, "addr")) {
+                            const char *redis_addr = ogs_yaml_iter_value(&redis_iter);
+                            
+                            strncpy(self.redis_config.address, redis_addr, 16);
+                        } else if (!strcmp(eir_key, "port")) {
+                            const char *redis_port = ogs_yaml_iter_value(&redis_iter);
+
+                            if (redis_port)
+                                self.redis_config.port = atoi(redis_port);
+                        } else if (!strcmp(eir_key, "expire_time_sec")) {
+                            const char *redis_expire_time_sec = ogs_yaml_iter_value(&redis_iter);
+
+                            if (redis_expire_time_sec)
+                                self.redis_config.expire_time_sec = atoi(redis_expire_time_sec);
+                        }
                     }
                 } else
                     ogs_warn("unknown key `%s`", mme_key);
