@@ -23,7 +23,7 @@ static ogs_thread_t *thread;
 static void udr_main(void *data);
 static int initialized = 0;
 
-int udr_initialize()
+int udr_initialize(void)
 {
     int rv;
 

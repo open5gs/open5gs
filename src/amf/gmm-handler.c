@@ -1099,6 +1099,20 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
             }
         }
 
+        /*
+         * To check if Reactivation Request has been used.
+         *
+         * During the PFCP recovery process,
+         * when a Reactivation Request is sent to PDU session release command,
+         * the UE simultaneously sends PDU session release complete and
+         * PDU session establishment request.
+         *
+         * In this case, old_gsm_type is PDU session release command and
+         * current_gsm_type is PDU session establishment request.
+         */
+        sess->old_gsm_type = sess->current_gsm_type;
+        sess->current_gsm_type = gsm_header->message_type;
+
         if (sess->payload_container)
             ogs_pkbuf_free(sess->payload_container);
 

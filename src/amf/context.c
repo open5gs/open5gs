@@ -1203,7 +1203,7 @@ void amf_gnb_remove(amf_gnb_t *gnb)
             ogs_list_count(&self.gnb_list));
 }
 
-void amf_gnb_remove_all()
+void amf_gnb_remove_all(void)
 {
     amf_gnb_t *gnb = NULL, *next_gnb = NULL;
 
@@ -1641,6 +1641,9 @@ void amf_ue_remove(amf_ue_t *amf_ue)
     ogs_timer_delete(amf_ue->implicit_deregistration.timer);
 
     /* Free SBI object memory */
+    if (ogs_list_count(&amf_ue->sbi.xact_list))
+        ogs_error("UE transaction [%d]",
+                ogs_list_count(&amf_ue->sbi.xact_list));
     ogs_sbi_object_free(&amf_ue->sbi);
 
     amf_ue_deassociate(amf_ue);
@@ -1651,7 +1654,7 @@ void amf_ue_remove(amf_ue_t *amf_ue)
             ogs_list_count(&self.amf_ue_list));
 }
 
-void amf_ue_remove_all()
+void amf_ue_remove_all(void)
 {
     amf_ue_t *amf_ue = NULL, *next = NULL;;
 
@@ -2079,6 +2082,9 @@ void amf_sess_remove(amf_sess_t *sess)
     ogs_list_remove(&sess->amf_ue->sess_list, sess);
 
     /* Free SBI object memory */
+    if (ogs_list_count(&sess->sbi.xact_list))
+        ogs_error("Session transaction [%d]",
+                ogs_list_count(&sess->sbi.xact_list));
     ogs_sbi_object_free(&sess->sbi);
 
     if (sess->sm_context_ref)
@@ -2362,13 +2368,13 @@ ogs_s_nssai_t *amf_find_s_nssai(
     return NULL;
 }
 
-int amf_m_tmsi_pool_generate()
+int amf_m_tmsi_pool_generate(void)
 {
-    int i, j;
+    int j;
     int index = 0;
 
     ogs_trace("M-TMSI Pool try to generate...");
-    for (i = 0; index < ogs_app()->max.ue*2; i++) {
+    while (index < ogs_app()->max.ue*2) {
         amf_m_tmsi_t *m_tmsi = NULL;
         int conflict = 0;
 
@@ -2400,7 +2406,7 @@ int amf_m_tmsi_pool_generate()
     return OGS_OK;
 }
 
-amf_m_tmsi_t *amf_m_tmsi_alloc()
+amf_m_tmsi_t *amf_m_tmsi_alloc(void)
 {
     amf_m_tmsi_t *m_tmsi = NULL;
 
@@ -2482,7 +2488,7 @@ static void stats_remove_ran_ue(void)
     ogs_info("[Removed] Number of gNB-UEs is now %d", num_of_ran_ue);
 }
 
-int get_ran_ue_load()
+int get_ran_ue_load(void)
 {
     return (((ogs_pool_size(&ran_ue_pool) -
             ogs_pool_avail(&ran_ue_pool)) * 100) /

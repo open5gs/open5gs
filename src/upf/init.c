@@ -27,7 +27,7 @@ static void upf_main(void *data);
 
 static int initialized = 0;
 
-int upf_initialize()
+int upf_initialize(void)
 {
     int rv;
 

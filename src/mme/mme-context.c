@@ -63,7 +63,7 @@ static bool compare_ue_info(mme_sgw_t *node, enb_ue_t *enb_ue);
 static mme_sgw_t *selected_sgw_node(mme_sgw_t *current, enb_ue_t *enb_ue);
 static mme_sgw_t *changed_sgw_node(mme_sgw_t *current, enb_ue_t *enb_ue);
 
-void mme_context_init()
+void mme_context_init(void)
 {
     ogs_assert(context_initialized == 0);
 
@@ -120,7 +120,7 @@ void mme_context_init()
     context_initialized = 1;
 }
 
-void mme_context_final()
+void mme_context_final(void)
 {
     ogs_assert(context_initialized == 1);
 
@@ -270,7 +270,7 @@ static int mme_context_validation(void)
     return OGS_OK;
 }
 
-int mme_context_parse_config()
+int mme_context_parse_config(void)
 {
     int rv;
     yaml_document_t *document = NULL;
@@ -1812,7 +1812,7 @@ void mme_sgw_remove(mme_sgw_t *sgw)
     ogs_pool_free(&mme_sgw_pool, sgw);
 }
 
-void mme_sgw_remove_all()
+void mme_sgw_remove_all(void)
 {
     mme_sgw_t *sgw = NULL, *next_sgw = NULL;
 
@@ -1861,7 +1861,7 @@ void mme_pgw_remove(mme_pgw_t *pgw)
     ogs_pool_free(&mme_pgw_pool, pgw);
 }
 
-void mme_pgw_remove_all()
+void mme_pgw_remove_all(void)
 {
     mme_pgw_t *pgw = NULL, *next_pgw = NULL;
 
@@ -1930,7 +1930,7 @@ void mme_vlr_remove(mme_vlr_t *vlr)
     ogs_pool_free(&mme_vlr_pool, vlr);
 }
 
-void mme_vlr_remove_all()
+void mme_vlr_remove_all(void)
 {
     mme_vlr_t *vlr = NULL, *next_vlr = NULL;
 
@@ -2103,7 +2103,7 @@ int mme_enb_remove(mme_enb_t *enb)
     return OGS_OK;
 }
 
-int mme_enb_remove_all()
+int mme_enb_remove_all(void)
 {
     mme_enb_t *enb = NULL, *next_enb = NULL;
 
@@ -3743,13 +3743,13 @@ int mme_find_served_tai(ogs_eps_tai_t *tai)
     return -1;
 }
 
-int mme_m_tmsi_pool_generate()
+int mme_m_tmsi_pool_generate(void)
 {
-    int i, j;
+    int j;
     int index = 0;
 
     ogs_trace("M-TMSI Pool try to generate...");
-    for (i = 0; index < ogs_app()->max.ue*2; i++) {
+    while (index < ogs_app()->max.ue*2) {
         mme_m_tmsi_t *m_tmsi = NULL;
         int conflict = 0;
 
@@ -3781,7 +3781,7 @@ int mme_m_tmsi_pool_generate()
     return OGS_OK;
 }
 
-mme_m_tmsi_t *mme_m_tmsi_alloc()
+mme_m_tmsi_t *mme_m_tmsi_alloc(void)
 {
     mme_m_tmsi_t *m_tmsi = NULL;
 

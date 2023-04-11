@@ -176,7 +176,7 @@ int ogs_dbi_init(const char *db_uri)
     return OGS_OK;
 }
 
-void ogs_dbi_final()
+void ogs_dbi_final(void)
 {
     if (self.collection.subscriber) {
         mongoc_collection_destroy(self.collection.subscriber);

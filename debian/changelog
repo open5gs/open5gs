@@ -1,3 +1,33 @@
+open5gs (2.6.2) unstable; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 04 Apr 2023 22:02:19 +0900
+
+open5gs (2.6.2~kinetic) kinetic; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 04 Apr 2023 22:00:46 +0900
+
+open5gs (2.6.2~jammy) jammy; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 04 Apr 2023 21:59:16 +0900
+
+open5gs (2.6.2~focal) focal; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 04 Apr 2023 21:57:26 +0900
+
+open5gs (2.6.2~bionic) bionic; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 04 Apr 2023 21:54:48 +0900
+
 open5gs (2.6.1) unstable; urgency=medium
 
   * Upgrade to Release-17

@@ -237,7 +237,7 @@ int upf_sess_remove(upf_sess_t *sess)
 
 void upf_sess_remove_all(void)
 {
-    upf_sess_t *sess = NULL, *next = NULL;;
+    upf_sess_t *sess = NULL, *next = NULL;
 
     ogs_list_for_each_safe(&self.sess_list, next, sess) {
         upf_sess_remove(sess);

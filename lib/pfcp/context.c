@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -44,7 +44,7 @@ void ogs_pfcp_context_init(void)
     /* Initialize SMF context */
     memset(&self, 0, sizeof(ogs_pfcp_context_t));
 
-    self.pfcp_started = ogs_time_ntp32_now();
+    self.local_recovery = ogs_time_ntp32_now();
 
     ogs_log_install_domain(&__ogs_pfcp_domain, "pfcp", ogs_core()->log.level);
 
@@ -455,9 +455,6 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                         uint64_t nr_cell_id[OGS_MAX_NUM_OF_CELL_ID] = {0,};
                         int num_of_nr_cell_id = 0;
 
-                        /* full list RR enabled by default */
-                        uint8_t rr_enable = 1;
-
                         if (ogs_yaml_iter_type(&pfcp_array) ==
                                 YAML_MAPPING_NODE) {
                             memcpy(&pfcp_iter, &pfcp_array,
@@ -621,9 +618,6 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                 } while (
                                     ogs_yaml_iter_type(&nr_cell_id_iter) ==
                                         YAML_SEQUENCE_NODE);
-                            } else if (!strcmp(pfcp_key, "rr")) {
-                                const char *v = ogs_yaml_iter_value(&pfcp_iter);
-                                if (v) rr_enable = atoi(v);
                             } else
                                 ogs_warn("unknown key `%s`", pfcp_key);
                         }
@@ -664,7 +658,6 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                             memcpy(node->nr_cell_id, nr_cell_id,
                                     sizeof(node->nr_cell_id));
 
-                        node->rr_enable = rr_enable;
                     } while (ogs_yaml_iter_type(&pfcp_array) ==
                             YAML_SEQUENCE_NODE);
                 }

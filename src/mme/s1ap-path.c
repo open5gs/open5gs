@@ -41,7 +41,7 @@ int s1ap_open(void)
     return OGS_OK;
 }
 
-void s1ap_close()
+void s1ap_close(void)
 {
     ogs_socknode_remove_all(&mme_self()->s1ap_list);
     ogs_socknode_remove_all(&mme_self()->s1ap_list6);

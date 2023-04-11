@@ -189,7 +189,7 @@ int sgwu_sess_remove(sgwu_sess_t *sess)
 
 void sgwu_sess_remove_all(void)
 {
-    sgwu_sess_t *sess = NULL, *next = NULL;;
+    sgwu_sess_t *sess = NULL, *next = NULL;
 
     ogs_list_for_each_safe(&self.sess_list, next, sess) {
         sgwu_sess_remove(sess);
