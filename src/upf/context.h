@@ -118,6 +118,7 @@ typedef struct upf_sess_s {
 
     /* Accounting: */
     upf_sess_urr_acc_t urr_acc[OGS_MAX_NUM_OF_URR]; /* FIXME: This probably needs to be mved to a hashtable or alike */
+    char            *apn_dnn;            /* APN/DNN Item */
 } upf_sess_t;
 
 void upf_context_init(void);
