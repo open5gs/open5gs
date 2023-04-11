@@ -129,6 +129,10 @@ OpenAPI_sm_policy_snssai_data_t *OpenAPI_sm_policy_snssai_data_parseFromJSON(cJS
         goto end;
     }
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
 
     sm_policy_dnn_data = cJSON_GetObjectItemCaseSensitive(sm_policy_snssai_dataJSON, "smPolicyDnnData");
     if (sm_policy_dnn_data) {
@@ -159,6 +163,10 @@ OpenAPI_sm_policy_snssai_data_t *OpenAPI_sm_policy_snssai_data_parseFromJSON(cJS
     ue_slice_mbr = cJSON_GetObjectItemCaseSensitive(sm_policy_snssai_dataJSON, "ueSliceMbr");
     if (ue_slice_mbr) {
     ue_slice_mbr_local_nonprim = OpenAPI_slice_mbr_1_parseFromJSON(ue_slice_mbr);
+    if (!ue_slice_mbr_local_nonprim) {
+        ogs_error("OpenAPI_slice_mbr_1_parseFromJSON failed [ue_slice_mbr]");
+        goto end;
+    }
     }
 
     sm_policy_snssai_data_local_var = OpenAPI_sm_policy_snssai_data_create (

@@ -272,6 +272,10 @@ OpenAPI_release_data_t *OpenAPI_release_data_parseFromJSON(cJSON *release_dataJS
     ng_ap_cause = cJSON_GetObjectItemCaseSensitive(release_dataJSON, "ngApCause");
     if (ng_ap_cause) {
     ng_ap_cause_local_nonprim = OpenAPI_ng_ap_cause_parseFromJSON(ng_ap_cause);
+    if (!ng_ap_cause_local_nonprim) {
+        ogs_error("OpenAPI_ng_ap_cause_parseFromJSON failed [ng_ap_cause]");
+        goto end;
+    }
     }
 
     _5g_mm_cause_value = cJSON_GetObjectItemCaseSensitive(release_dataJSON, "5gMmCauseValue");
@@ -285,6 +289,10 @@ OpenAPI_release_data_t *OpenAPI_release_data_parseFromJSON(cJSON *release_dataJS
     ue_location = cJSON_GetObjectItemCaseSensitive(release_dataJSON, "ueLocation");
     if (ue_location) {
     ue_location_local_nonprim = OpenAPI_user_location_parseFromJSON(ue_location);
+    if (!ue_location_local_nonprim) {
+        ogs_error("OpenAPI_user_location_parseFromJSON failed [ue_location]");
+        goto end;
+    }
     }
 
     ue_time_zone = cJSON_GetObjectItemCaseSensitive(release_dataJSON, "ueTimeZone");
@@ -298,6 +306,10 @@ OpenAPI_release_data_t *OpenAPI_release_data_parseFromJSON(cJSON *release_dataJS
     add_ue_location = cJSON_GetObjectItemCaseSensitive(release_dataJSON, "addUeLocation");
     if (add_ue_location) {
     add_ue_location_local_nonprim = OpenAPI_user_location_parseFromJSON(add_ue_location);
+    if (!add_ue_location_local_nonprim) {
+        ogs_error("OpenAPI_user_location_parseFromJSON failed [add_ue_location]");
+        goto end;
+    }
     }
 
     secondary_rat_usage_report = cJSON_GetObjectItemCaseSensitive(release_dataJSON, "secondaryRatUsageReport");
@@ -318,7 +330,6 @@ OpenAPI_release_data_t *OpenAPI_release_data_parseFromJSON(cJSON *release_dataJS
             OpenAPI_secondary_rat_usage_report_t *secondary_rat_usage_reportItem = OpenAPI_secondary_rat_usage_report_parseFromJSON(secondary_rat_usage_report_local);
             if (!secondary_rat_usage_reportItem) {
                 ogs_error("No secondary_rat_usage_reportItem");
-                OpenAPI_list_free(secondary_rat_usage_reportList);
                 goto end;
             }
             OpenAPI_list_add(secondary_rat_usage_reportList, secondary_rat_usage_reportItem);
@@ -343,7 +354,6 @@ OpenAPI_release_data_t *OpenAPI_release_data_parseFromJSON(cJSON *release_dataJS
             OpenAPI_secondary_rat_usage_info_t *secondary_rat_usage_infoItem = OpenAPI_secondary_rat_usage_info_parseFromJSON(secondary_rat_usage_info_local);
             if (!secondary_rat_usage_infoItem) {
                 ogs_error("No secondary_rat_usage_infoItem");
-                OpenAPI_list_free(secondary_rat_usage_infoList);
                 goto end;
             }
             OpenAPI_list_add(secondary_rat_usage_infoList, secondary_rat_usage_infoItem);
@@ -353,16 +363,28 @@ OpenAPI_release_data_t *OpenAPI_release_data_parseFromJSON(cJSON *release_dataJS
     n4_info = cJSON_GetObjectItemCaseSensitive(release_dataJSON, "n4Info");
     if (n4_info) {
     n4_info_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info);
+    if (!n4_info_local_nonprim) {
+        ogs_error("OpenAPI_n4_information_parseFromJSON failed [n4_info]");
+        goto end;
+    }
     }
 
     n4_info_ext1 = cJSON_GetObjectItemCaseSensitive(release_dataJSON, "n4InfoExt1");
     if (n4_info_ext1) {
     n4_info_ext1_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info_ext1);
+    if (!n4_info_ext1_local_nonprim) {
+        ogs_error("OpenAPI_n4_information_parseFromJSON failed [n4_info_ext1]");
+        goto end;
+    }
     }
 
     n4_info_ext2 = cJSON_GetObjectItemCaseSensitive(release_dataJSON, "n4InfoExt2");
     if (n4_info_ext2) {
     n4_info_ext2_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info_ext2);
+    if (!n4_info_ext2_local_nonprim) {
+        ogs_error("OpenAPI_n4_information_parseFromJSON failed [n4_info_ext2]");
+        goto end;
+    }
     }
 
     release_data_local_var = OpenAPI_release_data_create (

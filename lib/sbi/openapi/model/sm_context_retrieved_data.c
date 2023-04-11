@@ -168,16 +168,28 @@ OpenAPI_sm_context_retrieved_data_t *OpenAPI_sm_context_retrieved_data_parseFrom
     sm_context = cJSON_GetObjectItemCaseSensitive(sm_context_retrieved_dataJSON, "smContext");
     if (sm_context) {
     sm_context_local_nonprim = OpenAPI_sm_context_parseFromJSON(sm_context);
+    if (!sm_context_local_nonprim) {
+        ogs_error("OpenAPI_sm_context_parseFromJSON failed [sm_context]");
+        goto end;
+    }
     }
 
     small_data_rate_status = cJSON_GetObjectItemCaseSensitive(sm_context_retrieved_dataJSON, "smallDataRateStatus");
     if (small_data_rate_status) {
     small_data_rate_status_local_nonprim = OpenAPI_small_data_rate_status_parseFromJSON(small_data_rate_status);
+    if (!small_data_rate_status_local_nonprim) {
+        ogs_error("OpenAPI_small_data_rate_status_parseFromJSON failed [small_data_rate_status]");
+        goto end;
+    }
     }
 
     apn_rate_status = cJSON_GetObjectItemCaseSensitive(sm_context_retrieved_dataJSON, "apnRateStatus");
     if (apn_rate_status) {
     apn_rate_status_local_nonprim = OpenAPI_apn_rate_status_parseFromJSON(apn_rate_status);
+    if (!apn_rate_status_local_nonprim) {
+        ogs_error("OpenAPI_apn_rate_status_parseFromJSON failed [apn_rate_status]");
+        goto end;
+    }
     }
 
     dl_data_waiting_ind = cJSON_GetObjectItemCaseSensitive(sm_context_retrieved_dataJSON, "dlDataWaitingInd");
@@ -191,6 +203,10 @@ OpenAPI_sm_context_retrieved_data_t *OpenAPI_sm_context_retrieved_data_parseFrom
     af_coordination_info = cJSON_GetObjectItemCaseSensitive(sm_context_retrieved_dataJSON, "afCoordinationInfo");
     if (af_coordination_info) {
     af_coordination_info_local_nonprim = OpenAPI_af_coordination_info_parseFromJSON(af_coordination_info);
+    if (!af_coordination_info_local_nonprim) {
+        ogs_error("OpenAPI_af_coordination_info_parseFromJSON failed [af_coordination_info]");
+        goto end;
+    }
     }
 
     sm_context_retrieved_data_local_var = OpenAPI_sm_context_retrieved_data_create (

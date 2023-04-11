@@ -92,6 +92,10 @@ OpenAPI_roaming_info_update_t *OpenAPI_roaming_info_update_parseFromJSON(cJSON *
         goto end;
     }
     serving_plmn_local_nonprim = OpenAPI_plmn_id_parseFromJSON(serving_plmn);
+    if (!serving_plmn_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [serving_plmn]");
+        goto end;
+    }
 
     roaming_info_update_local_var = OpenAPI_roaming_info_update_create (
         roaming ? true : false,

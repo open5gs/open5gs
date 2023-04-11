@@ -101,6 +101,10 @@ OpenAPI_update_sm_context_400_response_t *OpenAPI_update_sm_context_400_response
     json_data = cJSON_GetObjectItemCaseSensitive(update_sm_context_400_responseJSON, "jsonData");
     if (json_data) {
     json_data_local_nonprim = OpenAPI_sm_context_update_error_parseFromJSON(json_data);
+    if (!json_data_local_nonprim) {
+        ogs_error("OpenAPI_sm_context_update_error_parseFromJSON failed [json_data]");
+        goto end;
+    }
     }
 
     binary_data_n1_sm_message = cJSON_GetObjectItemCaseSensitive(update_sm_context_400_responseJSON, "binaryDataN1SmMessage");

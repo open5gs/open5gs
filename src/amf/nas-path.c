@@ -194,7 +194,27 @@ int nas_5gs_send_registration_reject(
         return OGS_NOTFOUND;
     }
 
-    amf_metrics_inst_by_cause_add(gmm_cause, AMF_METR_CTR_RM_REG_INITFAIL, 1);
+    switch (amf_ue->nas.registration.value) {
+    case OGS_NAS_5GS_REGISTRATION_TYPE_INITIAL:
+        amf_metrics_inst_by_cause_add(gmm_cause,
+                AMF_METR_CTR_RM_REG_INIT_FAIL, 1);
+        break;
+    case OGS_NAS_5GS_REGISTRATION_TYPE_MOBILITY_UPDATING:
+        amf_metrics_inst_by_cause_add(gmm_cause,
+                AMF_METR_CTR_RM_REG_MOB_FAIL, 1);
+        break;
+    case OGS_NAS_5GS_REGISTRATION_TYPE_PERIODIC_UPDATING:
+        amf_metrics_inst_by_cause_add(gmm_cause,
+                AMF_METR_CTR_RM_REG_PERIOD_FAIL, 1);
+        break;
+    case OGS_NAS_5GS_REGISTRATION_TYPE_EMERGENCY:
+        amf_metrics_inst_by_cause_add(gmm_cause,
+                AMF_METR_CTR_RM_REG_EMERG_FAIL, 1);
+        break;
+    default:
+        ogs_error("Unknown reg_type[%d]",
+                amf_ue->nas.registration.value);
+    }
 
     ogs_warn("[%s] Registration reject [%d]", amf_ue->suci, gmm_cause);
 
@@ -492,6 +512,8 @@ int nas_5gs_send_authentication_request(amf_ue_t *amf_ue)
     ogs_timer_start(amf_ue->t3560.timer,
             amf_timer_cfg(AMF_TIMER_T3560)->duration);
 
+    amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_AMF_AUTH_REQ);
+
     rv = nas_5gs_send_to_downlink_nas_transport(amf_ue, gmmbuf);
     ogs_expect(rv == OGS_OK);
 
@@ -513,8 +535,6 @@ int nas_5gs_send_authentication_reject(amf_ue_t *amf_ue)
         return OGS_NOTFOUND;
     }
 
-    amf_metrics_inst_by_cause_add(0, AMF_METR_CTR_RM_REG_INITFAIL, 1);
-
     ogs_warn("[%s] Authentication reject", amf_ue->suci);
 
     gmmbuf = gmm_build_authentication_reject();
@@ -522,6 +542,8 @@ int nas_5gs_send_authentication_reject(amf_ue_t *amf_ue)
         ogs_error("gmm_build_authentication_reject() failed");
         return OGS_ERROR;
     }
+
+    amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_AMF_AUTH_REJECT);
 
     rv = nas_5gs_send_to_downlink_nas_transport(amf_ue, gmmbuf);
     ogs_expect(rv == OGS_OK);
@@ -623,6 +645,8 @@ int nas_5gs_send_configuration_update_command(
                     amf_timer_cfg(AMF_TIMER_T3555)->duration);
         }
     }
+
+    amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_MM_CONF_UPDATE);
 
     rv = nas_5gs_send_to_downlink_nas_transport(amf_ue, gmmbuf);
     ogs_expect(rv == OGS_OK);

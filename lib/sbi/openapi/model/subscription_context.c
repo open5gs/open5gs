@@ -93,6 +93,10 @@ OpenAPI_subscription_context_t *OpenAPI_subscription_context_parseFromJSON(cJSON
     subscr_cond = cJSON_GetObjectItemCaseSensitive(subscription_contextJSON, "subscrCond");
     if (subscr_cond) {
     subscr_cond_local_nonprim = OpenAPI_subscr_cond_parseFromJSON(subscr_cond);
+    if (!subscr_cond_local_nonprim) {
+        ogs_error("OpenAPI_subscr_cond_parseFromJSON failed [subscr_cond]");
+        goto end;
+    }
     }
 
     subscription_context_local_var = OpenAPI_subscription_context_create (

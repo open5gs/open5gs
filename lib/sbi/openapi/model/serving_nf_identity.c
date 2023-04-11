@@ -131,16 +131,28 @@ OpenAPI_serving_nf_identity_t *OpenAPI_serving_nf_identity_parseFromJSON(cJSON *
     guami = cJSON_GetObjectItemCaseSensitive(serving_nf_identityJSON, "guami");
     if (guami) {
     guami_local_nonprim = OpenAPI_guami_parseFromJSON(guami);
+    if (!guami_local_nonprim) {
+        ogs_error("OpenAPI_guami_parseFromJSON failed [guami]");
+        goto end;
+    }
     }
 
     an_gw_addr = cJSON_GetObjectItemCaseSensitive(serving_nf_identityJSON, "anGwAddr");
     if (an_gw_addr) {
     an_gw_addr_local_nonprim = OpenAPI_an_gw_address_parseFromJSON(an_gw_addr);
+    if (!an_gw_addr_local_nonprim) {
+        ogs_error("OpenAPI_an_gw_address_parseFromJSON failed [an_gw_addr]");
+        goto end;
+    }
     }
 
     sgsn_addr = cJSON_GetObjectItemCaseSensitive(serving_nf_identityJSON, "sgsnAddr");
     if (sgsn_addr) {
     sgsn_addr_local_nonprim = OpenAPI_sgsn_address_parseFromJSON(sgsn_addr);
+    if (!sgsn_addr_local_nonprim) {
+        ogs_error("OpenAPI_sgsn_address_parseFromJSON failed [sgsn_addr]");
+        goto end;
+    }
     }
 
     serving_nf_identity_local_var = OpenAPI_serving_nf_identity_create (

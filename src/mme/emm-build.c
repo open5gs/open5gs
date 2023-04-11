@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -176,6 +176,7 @@ ogs_pkbuf_t *emm_build_attach_accept(
     ogs_assert(OGS_OK ==
         ogs_nas_tai_list_build(&attach_accept->tai_list,
             &mme_self()->served_tai[served_tai_index].list0,
+            &mme_self()->served_tai[served_tai_index].list1,
             &mme_self()->served_tai[served_tai_index].list2));
 
     attach_accept->esm_message_container.buffer = esmbuf->data;
@@ -585,6 +586,7 @@ ogs_pkbuf_t *emm_build_tau_accept(mme_ue_t *mme_ue)
     ogs_assert(OGS_OK ==
         ogs_nas_tai_list_build(&tau_accept->tai_list,
             &mme_self()->served_tai[served_tai_index].list0,
+            &mme_self()->served_tai[served_tai_index].list1,
             &mme_self()->served_tai[served_tai_index].list2));
 
     /* Set EPS bearer context status */

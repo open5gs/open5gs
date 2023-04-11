@@ -89,6 +89,10 @@ OpenAPI_ip_eth_flow_description_t *OpenAPI_ip_eth_flow_description_parseFromJSON
     eth_traffic_filter = cJSON_GetObjectItemCaseSensitive(ip_eth_flow_descriptionJSON, "ethTrafficFilter");
     if (eth_traffic_filter) {
     eth_traffic_filter_local_nonprim = OpenAPI_eth_flow_description_parseFromJSON(eth_traffic_filter);
+    if (!eth_traffic_filter_local_nonprim) {
+        ogs_error("OpenAPI_eth_flow_description_parseFromJSON failed [eth_traffic_filter]");
+        goto end;
+    }
     }
 
     ip_eth_flow_description_local_var = OpenAPI_ip_eth_flow_description_create (

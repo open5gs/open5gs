@@ -275,6 +275,10 @@ OpenAPI_bdt_data_t *OpenAPI_bdt_data_parseFromJSON(cJSON *bdt_dataJSON)
         goto end;
     }
     trans_policy_local_nonprim = OpenAPI_transfer_policy_parseFromJSON(trans_policy);
+    if (!trans_policy_local_nonprim) {
+        ogs_error("OpenAPI_transfer_policy_parseFromJSON failed [trans_policy]");
+        goto end;
+    }
 
     bdt_ref_id = cJSON_GetObjectItemCaseSensitive(bdt_dataJSON, "bdtRefId");
     if (bdt_ref_id) {
@@ -287,6 +291,10 @@ OpenAPI_bdt_data_t *OpenAPI_bdt_data_parseFromJSON(cJSON *bdt_dataJSON)
     nw_area_info = cJSON_GetObjectItemCaseSensitive(bdt_dataJSON, "nwAreaInfo");
     if (nw_area_info) {
     nw_area_info_local_nonprim = OpenAPI_network_area_info_2_parseFromJSON(nw_area_info);
+    if (!nw_area_info_local_nonprim) {
+        ogs_error("OpenAPI_network_area_info_2_parseFromJSON failed [nw_area_info]");
+        goto end;
+    }
     }
 
     num_of_ues = cJSON_GetObjectItemCaseSensitive(bdt_dataJSON, "numOfUes");
@@ -300,6 +308,10 @@ OpenAPI_bdt_data_t *OpenAPI_bdt_data_parseFromJSON(cJSON *bdt_dataJSON)
     vol_per_ue = cJSON_GetObjectItemCaseSensitive(bdt_dataJSON, "volPerUe");
     if (vol_per_ue) {
     vol_per_ue_local_nonprim = OpenAPI_usage_threshold_parseFromJSON(vol_per_ue);
+    if (!vol_per_ue_local_nonprim) {
+        ogs_error("OpenAPI_usage_threshold_parseFromJSON failed [vol_per_ue]");
+        goto end;
+    }
     }
 
     dnn = cJSON_GetObjectItemCaseSensitive(bdt_dataJSON, "dnn");
@@ -313,6 +325,10 @@ OpenAPI_bdt_data_t *OpenAPI_bdt_data_parseFromJSON(cJSON *bdt_dataJSON)
     snssai = cJSON_GetObjectItemCaseSensitive(bdt_dataJSON, "snssai");
     if (snssai) {
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
     }
 
     traffic_des = cJSON_GetObjectItemCaseSensitive(bdt_dataJSON, "trafficDes");
@@ -326,6 +342,10 @@ OpenAPI_bdt_data_t *OpenAPI_bdt_data_parseFromJSON(cJSON *bdt_dataJSON)
     bdtp_status = cJSON_GetObjectItemCaseSensitive(bdt_dataJSON, "bdtpStatus");
     if (bdtp_status) {
     bdtp_status_local_nonprim = OpenAPI_bdt_policy_status_parseFromJSON(bdtp_status);
+    if (!bdtp_status_local_nonprim) {
+        ogs_error("OpenAPI_bdt_policy_status_parseFromJSON failed [bdtp_status]");
+        goto end;
+    }
     }
 
     supp_feat = cJSON_GetObjectItemCaseSensitive(bdt_dataJSON, "suppFeat");

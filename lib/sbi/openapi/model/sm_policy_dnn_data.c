@@ -525,6 +525,10 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_parseFromJSON(cJSON *sm
     chf_info = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "chfInfo");
     if (chf_info) {
     chf_info_local_nonprim = OpenAPI_charging_information_parseFromJSON(chf_info);
+    if (!chf_info_local_nonprim) {
+        ogs_error("OpenAPI_charging_information_parseFromJSON failed [chf_info]");
+        goto end;
+    }
     }
 
     ref_um_data_limit_ids = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "refUmDataLimitIds");

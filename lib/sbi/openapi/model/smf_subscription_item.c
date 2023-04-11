@@ -119,6 +119,10 @@ OpenAPI_smf_subscription_item_t *OpenAPI_smf_subscription_item_parseFromJSON(cJS
     context_info = cJSON_GetObjectItemCaseSensitive(smf_subscription_itemJSON, "contextInfo");
     if (context_info) {
     context_info_local_nonprim = OpenAPI_context_info_parseFromJSON(context_info);
+    if (!context_info_local_nonprim) {
+        ogs_error("OpenAPI_context_info_parseFromJSON failed [context_info]");
+        goto end;
+    }
     }
 
     smf_subscription_item_local_var = OpenAPI_smf_subscription_item_create (

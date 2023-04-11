@@ -161,6 +161,10 @@ OpenAPI_pp_dl_packet_count_ext_t *OpenAPI_pp_dl_packet_count_ext_parseFromJSON(c
     single_nssai = cJSON_GetObjectItemCaseSensitive(pp_dl_packet_count_extJSON, "singleNssai");
     if (single_nssai) {
     single_nssai_local_nonprim = OpenAPI_snssai_parseFromJSON(single_nssai);
+    if (!single_nssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [single_nssai]");
+        goto end;
+    }
     }
 
     validity_time = cJSON_GetObjectItemCaseSensitive(pp_dl_packet_count_extJSON, "validityTime");

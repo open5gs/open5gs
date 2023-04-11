@@ -644,6 +644,10 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_parseFromJSON(cJSON *dnn_
         goto end;
     }
     pdu_session_types_local_nonprim = OpenAPI_pdu_session_types_parseFromJSON(pdu_session_types);
+    if (!pdu_session_types_local_nonprim) {
+        ogs_error("OpenAPI_pdu_session_types_parseFromJSON failed [pdu_session_types]");
+        goto end;
+    }
 
     ssc_modes = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "sscModes");
     if (!ssc_modes) {
@@ -651,6 +655,10 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_parseFromJSON(cJSON *dnn_
         goto end;
     }
     ssc_modes_local_nonprim = OpenAPI_ssc_modes_parseFromJSON(ssc_modes);
+    if (!ssc_modes_local_nonprim) {
+        ogs_error("OpenAPI_ssc_modes_parseFromJSON failed [ssc_modes]");
+        goto end;
+    }
 
     iwk_eps_ind = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "iwkEpsInd");
     if (iwk_eps_ind) {
@@ -663,11 +671,19 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_parseFromJSON(cJSON *dnn_
     _5g_qos_profile = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "5gQosProfile");
     if (_5g_qos_profile) {
     _5g_qos_profile_local_nonprim = OpenAPI_subscribed_default_qos_parseFromJSON(_5g_qos_profile);
+    if (!_5g_qos_profile_local_nonprim) {
+        ogs_error("OpenAPI_subscribed_default_qos_parseFromJSON failed [_5g_qos_profile]");
+        goto end;
+    }
     }
 
     session_ambr = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "sessionAmbr");
     if (session_ambr) {
     session_ambr_local_nonprim = OpenAPI_ambr_parseFromJSON(session_ambr);
+    if (!session_ambr_local_nonprim) {
+        ogs_error("OpenAPI_ambr_parseFromJSON failed [session_ambr]");
+        goto end;
+    }
     }
 
     _3gpp_charging_characteristics = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "3gppChargingCharacteristics");
@@ -696,7 +712,6 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_parseFromJSON(cJSON *dnn_
             OpenAPI_ip_address_t *static_ip_addressItem = OpenAPI_ip_address_parseFromJSON(static_ip_address_local);
             if (!static_ip_addressItem) {
                 ogs_error("No static_ip_addressItem");
-                OpenAPI_list_free(static_ip_addressList);
                 goto end;
             }
             OpenAPI_list_add(static_ip_addressList, static_ip_addressItem);
@@ -706,6 +721,10 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_parseFromJSON(cJSON *dnn_
     up_security = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "upSecurity");
     if (up_security) {
     up_security_local_nonprim = OpenAPI_up_security_parseFromJSON(up_security);
+    if (!up_security_local_nonprim) {
+        ogs_error("OpenAPI_up_security_parseFromJSON failed [up_security]");
+        goto end;
+    }
     }
 
     pdu_session_continuity_ind = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "pduSessionContinuityInd");
@@ -728,6 +747,10 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_parseFromJSON(cJSON *dnn_
     nidd_info = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "niddInfo");
     if (nidd_info) {
     nidd_info_local_nonprim = OpenAPI_nidd_information_parseFromJSON(nidd_info);
+    if (!nidd_info_local_nonprim) {
+        ogs_error("OpenAPI_nidd_information_parseFromJSON failed [nidd_info]");
+        goto end;
+    }
     }
 
     redundant_session_allowed = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "redundantSessionAllowed");
@@ -741,6 +764,10 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_parseFromJSON(cJSON *dnn_
     acs_info = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "acsInfo");
     if (acs_info) {
     acs_info_local_nonprim = OpenAPI_acs_info_parseFromJSON(acs_info);
+    if (!acs_info_local_nonprim) {
+        ogs_error("OpenAPI_acs_info_parseFromJSON failed [acs_info]");
+        goto end;
+    }
     }
 
     ipv4_frame_route_list = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "ipv4FrameRouteList");
@@ -761,7 +788,6 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_parseFromJSON(cJSON *dnn_
             OpenAPI_frame_route_info_t *ipv4_frame_route_listItem = OpenAPI_frame_route_info_parseFromJSON(ipv4_frame_route_list_local);
             if (!ipv4_frame_route_listItem) {
                 ogs_error("No ipv4_frame_route_listItem");
-                OpenAPI_list_free(ipv4_frame_route_listList);
                 goto end;
             }
             OpenAPI_list_add(ipv4_frame_route_listList, ipv4_frame_route_listItem);
@@ -786,7 +812,6 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_parseFromJSON(cJSON *dnn_
             OpenAPI_frame_route_info_t *ipv6_frame_route_listItem = OpenAPI_frame_route_info_parseFromJSON(ipv6_frame_route_list_local);
             if (!ipv6_frame_route_listItem) {
                 ogs_error("No ipv6_frame_route_listItem");
-                OpenAPI_list_free(ipv6_frame_route_listList);
                 goto end;
             }
             OpenAPI_list_add(ipv6_frame_route_listList, ipv6_frame_route_listItem);
@@ -828,6 +853,10 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_parseFromJSON(cJSON *dnn_
     dn_aaa_address = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "dnAaaAddress");
     if (dn_aaa_address) {
     dn_aaa_address_local_nonprim = OpenAPI_ip_address_parseFromJSON(dn_aaa_address);
+    if (!dn_aaa_address_local_nonprim) {
+        ogs_error("OpenAPI_ip_address_parseFromJSON failed [dn_aaa_address]");
+        goto end;
+    }
     }
 
     additional_dn_aaa_addresses = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "additionalDnAaaAddresses");
@@ -848,7 +877,6 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_parseFromJSON(cJSON *dnn_
             OpenAPI_ip_address_t *additional_dn_aaa_addressesItem = OpenAPI_ip_address_parseFromJSON(additional_dn_aaa_addresses_local);
             if (!additional_dn_aaa_addressesItem) {
                 ogs_error("No additional_dn_aaa_addressesItem");
-                OpenAPI_list_free(additional_dn_aaa_addressesList);
                 goto end;
             }
             OpenAPI_list_add(additional_dn_aaa_addressesList, additional_dn_aaa_addressesItem);
@@ -874,16 +902,28 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_parseFromJSON(cJSON *dnn_
     ipv4_index = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "ipv4Index");
     if (ipv4_index) {
     ipv4_index_local_nonprim = OpenAPI_ip_index_parseFromJSON(ipv4_index);
+    if (!ipv4_index_local_nonprim) {
+        ogs_error("OpenAPI_ip_index_parseFromJSON failed [ipv4_index]");
+        goto end;
+    }
     }
 
     ipv6_index = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "ipv6Index");
     if (ipv6_index) {
     ipv6_index_local_nonprim = OpenAPI_ip_index_parseFromJSON(ipv6_index);
+    if (!ipv6_index_local_nonprim) {
+        ogs_error("OpenAPI_ip_index_parseFromJSON failed [ipv6_index]");
+        goto end;
+    }
     }
 
     ecs_addr_config_info = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "ecsAddrConfigInfo");
     if (ecs_addr_config_info) {
     ecs_addr_config_info_local_nonprim = OpenAPI_ecs_addr_config_info_parseFromJSON(ecs_addr_config_info);
+    if (!ecs_addr_config_info_local_nonprim) {
+        ogs_error("OpenAPI_ecs_addr_config_info_parseFromJSON failed [ecs_addr_config_info]");
+        goto end;
+    }
     }
 
     additional_ecs_addr_config_infos = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "additionalEcsAddrConfigInfos");
@@ -904,7 +944,6 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_parseFromJSON(cJSON *dnn_
             OpenAPI_ecs_addr_config_info_t *additional_ecs_addr_config_infosItem = OpenAPI_ecs_addr_config_info_parseFromJSON(additional_ecs_addr_config_infos_local);
             if (!additional_ecs_addr_config_infosItem) {
                 ogs_error("No additional_ecs_addr_config_infosItem");
-                OpenAPI_list_free(additional_ecs_addr_config_infosList);
                 goto end;
             }
             OpenAPI_list_add(additional_ecs_addr_config_infosList, additional_ecs_addr_config_infosItem);

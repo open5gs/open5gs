@@ -94,6 +94,10 @@ OpenAPI_hss_authentication_info_result_t *OpenAPI_hss_authentication_info_result
         goto end;
     }
     hss_authentication_vectors_local_nonprim = OpenAPI_hss_authentication_vectors_parseFromJSON(hss_authentication_vectors);
+    if (!hss_authentication_vectors_local_nonprim) {
+        ogs_error("OpenAPI_hss_authentication_vectors_parseFromJSON failed [hss_authentication_vectors]");
+        goto end;
+    }
 
     hss_authentication_info_result_local_var = OpenAPI_hss_authentication_info_result_create (
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,

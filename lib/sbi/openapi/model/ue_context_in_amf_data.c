@@ -94,6 +94,10 @@ OpenAPI_ue_context_in_amf_data_t *OpenAPI_ue_context_in_amf_data_parseFromJSON(c
     eps_interworking_info = cJSON_GetObjectItemCaseSensitive(ue_context_in_amf_dataJSON, "epsInterworkingInfo");
     if (eps_interworking_info) {
     eps_interworking_info_local_nonprim = OpenAPI_eps_interworking_info_parseFromJSON(eps_interworking_info);
+    if (!eps_interworking_info_local_nonprim) {
+        ogs_error("OpenAPI_eps_interworking_info_parseFromJSON failed [eps_interworking_info]");
+        goto end;
+    }
     }
 
     amf_info = cJSON_GetObjectItemCaseSensitive(ue_context_in_amf_dataJSON, "amfInfo");
@@ -114,7 +118,6 @@ OpenAPI_ue_context_in_amf_data_t *OpenAPI_ue_context_in_amf_data_parseFromJSON(c
             OpenAPI_nudm_amf_info_t *amf_infoItem = OpenAPI_nudm_amf_info_parseFromJSON(amf_info_local);
             if (!amf_infoItem) {
                 ogs_error("No amf_infoItem");
-                OpenAPI_list_free(amf_infoList);
                 goto end;
             }
             OpenAPI_list_add(amf_infoList, amf_infoItem);

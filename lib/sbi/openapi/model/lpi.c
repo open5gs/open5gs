@@ -91,6 +91,10 @@ OpenAPI_lpi_t *OpenAPI_lpi_parseFromJSON(cJSON *lpiJSON)
     valid_time_period = cJSON_GetObjectItemCaseSensitive(lpiJSON, "validTimePeriod");
     if (valid_time_period) {
     valid_time_period_local_nonprim = OpenAPI_valid_time_period_parseFromJSON(valid_time_period);
+    if (!valid_time_period_local_nonprim) {
+        ogs_error("OpenAPI_valid_time_period_parseFromJSON failed [valid_time_period]");
+        goto end;
+    }
     }
 
     lpi_local_var = OpenAPI_lpi_create (

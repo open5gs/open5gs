@@ -170,10 +170,18 @@ OpenAPI_n4_information_t *OpenAPI_n4_information_parseFromJSON(cJSON *n4_informa
         goto end;
     }
     n4_message_payload_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(n4_message_payload);
+    if (!n4_message_payload_local_nonprim) {
+        ogs_error("OpenAPI_ref_to_binary_data_parseFromJSON failed [n4_message_payload]");
+        goto end;
+    }
 
     n4_dnai_info = cJSON_GetObjectItemCaseSensitive(n4_informationJSON, "n4DnaiInfo");
     if (n4_dnai_info) {
     n4_dnai_info_local_nonprim = OpenAPI_dnai_information_parseFromJSON(n4_dnai_info);
+    if (!n4_dnai_info_local_nonprim) {
+        ogs_error("OpenAPI_dnai_information_parseFromJSON failed [n4_dnai_info]");
+        goto end;
+    }
     }
 
     psa_upf_id = cJSON_GetObjectItemCaseSensitive(n4_informationJSON, "psaUpfId");

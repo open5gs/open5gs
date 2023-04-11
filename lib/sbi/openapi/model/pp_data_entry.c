@@ -190,6 +190,10 @@ OpenAPI_pp_data_entry_t *OpenAPI_pp_data_entry_parseFromJSON(cJSON *pp_data_entr
     communication_characteristics = cJSON_GetObjectItemCaseSensitive(pp_data_entryJSON, "communicationCharacteristics");
     if (communication_characteristics) {
     communication_characteristics_local_nonprim = OpenAPI_communication_characteristics_af_parseFromJSON(communication_characteristics);
+    if (!communication_characteristics_local_nonprim) {
+        ogs_error("OpenAPI_communication_characteristics_af_parseFromJSON failed [communication_characteristics]");
+        goto end;
+    }
     }
 
     reference_id = cJSON_GetObjectItemCaseSensitive(pp_data_entryJSON, "referenceId");
@@ -227,6 +231,10 @@ OpenAPI_pp_data_entry_t *OpenAPI_pp_data_entry_parseFromJSON(cJSON *pp_data_entr
     ecs_addr_config_info = cJSON_GetObjectItemCaseSensitive(pp_data_entryJSON, "ecsAddrConfigInfo");
     if (ecs_addr_config_info) {
     ecs_addr_config_info_local_nonprim = OpenAPI_ecs_addr_config_info_1_parseFromJSON(ecs_addr_config_info);
+    if (!ecs_addr_config_info_local_nonprim) {
+        ogs_error("OpenAPI_ecs_addr_config_info_1_parseFromJSON failed [ecs_addr_config_info]");
+        goto end;
+    }
     }
 
     additional_ecs_addr_config_infos = cJSON_GetObjectItemCaseSensitive(pp_data_entryJSON, "additionalEcsAddrConfigInfos");
@@ -247,7 +255,6 @@ OpenAPI_pp_data_entry_t *OpenAPI_pp_data_entry_parseFromJSON(cJSON *pp_data_entr
             OpenAPI_ecs_addr_config_info_1_t *additional_ecs_addr_config_infosItem = OpenAPI_ecs_addr_config_info_1_parseFromJSON(additional_ecs_addr_config_infos_local);
             if (!additional_ecs_addr_config_infosItem) {
                 ogs_error("No additional_ecs_addr_config_infosItem");
-                OpenAPI_list_free(additional_ecs_addr_config_infosList);
                 goto end;
             }
             OpenAPI_list_add(additional_ecs_addr_config_infosList, additional_ecs_addr_config_infosItem);
@@ -257,6 +264,10 @@ OpenAPI_pp_data_entry_t *OpenAPI_pp_data_entry_parseFromJSON(cJSON *pp_data_entr
     ec_restriction = cJSON_GetObjectItemCaseSensitive(pp_data_entryJSON, "ecRestriction");
     if (ec_restriction) {
     ec_restriction_local_nonprim = OpenAPI_ec_restriction_1_parseFromJSON(ec_restriction);
+    if (!ec_restriction_local_nonprim) {
+        ogs_error("OpenAPI_ec_restriction_1_parseFromJSON failed [ec_restriction]");
+        goto end;
+    }
     }
 
     pp_data_entry_local_var = OpenAPI_pp_data_entry_create (

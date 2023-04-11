@@ -150,15 +150,27 @@ OpenAPI_sm_context_update_error_t *OpenAPI_sm_context_update_error_parseFromJSON
         goto end;
     }
     error_local_nonprim = OpenAPI_ext_problem_details_parseFromJSON(error);
+    if (!error_local_nonprim) {
+        ogs_error("OpenAPI_ext_problem_details_parseFromJSON failed [error]");
+        goto end;
+    }
 
     n1_sm_msg = cJSON_GetObjectItemCaseSensitive(sm_context_update_errorJSON, "n1SmMsg");
     if (n1_sm_msg) {
     n1_sm_msg_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(n1_sm_msg);
+    if (!n1_sm_msg_local_nonprim) {
+        ogs_error("OpenAPI_ref_to_binary_data_parseFromJSON failed [n1_sm_msg]");
+        goto end;
+    }
     }
 
     n2_sm_info = cJSON_GetObjectItemCaseSensitive(sm_context_update_errorJSON, "n2SmInfo");
     if (n2_sm_info) {
     n2_sm_info_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(n2_sm_info);
+    if (!n2_sm_info_local_nonprim) {
+        ogs_error("OpenAPI_ref_to_binary_data_parseFromJSON failed [n2_sm_info]");
+        goto end;
+    }
     }
 
     n2_sm_info_type = cJSON_GetObjectItemCaseSensitive(sm_context_update_errorJSON, "n2SmInfoType");

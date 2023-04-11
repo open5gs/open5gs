@@ -185,7 +185,6 @@ OpenAPI_prev_sub_info_t *OpenAPI_prev_sub_info_parseFromJSON(cJSON *prev_sub_inf
             OpenAPI_nwdaf_event_t *nf_ana_eventsItem = OpenAPI_nwdaf_event_parseFromJSON(nf_ana_events_local);
             if (!nf_ana_eventsItem) {
                 ogs_error("No nf_ana_eventsItem");
-                OpenAPI_list_free(nf_ana_eventsList);
                 goto end;
             }
             OpenAPI_list_add(nf_ana_eventsList, nf_ana_eventsItem);
@@ -210,7 +209,6 @@ OpenAPI_prev_sub_info_t *OpenAPI_prev_sub_info_parseFromJSON(cJSON *prev_sub_inf
             OpenAPI_ue_analytics_context_descriptor_t *ue_ana_eventsItem = OpenAPI_ue_analytics_context_descriptor_parseFromJSON(ue_ana_events_local);
             if (!ue_ana_eventsItem) {
                 ogs_error("No ue_ana_eventsItem");
-                OpenAPI_list_free(ue_ana_eventsList);
                 goto end;
             }
             OpenAPI_list_add(ue_ana_eventsList, ue_ana_eventsItem);

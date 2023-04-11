@@ -269,6 +269,10 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_parseFromJSON(cJSON *
     resynchronization_info = cJSON_GetObjectItemCaseSensitive(authentication_infoJSON, "resynchronizationInfo");
     if (resynchronization_info) {
     resynchronization_info_local_nonprim = OpenAPI_resynchronization_info_parseFromJSON(resynchronization_info);
+    if (!resynchronization_info_local_nonprim) {
+        ogs_error("OpenAPI_resynchronization_info_parseFromJSON failed [resynchronization_info]");
+        goto end;
+    }
     }
 
     pei = cJSON_GetObjectItemCaseSensitive(authentication_infoJSON, "pei");
@@ -282,6 +286,10 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_parseFromJSON(cJSON *
     trace_data = cJSON_GetObjectItemCaseSensitive(authentication_infoJSON, "traceData");
     if (trace_data) {
     trace_data_local_nonprim = OpenAPI_trace_data_parseFromJSON(trace_data);
+    if (!trace_data_local_nonprim) {
+        ogs_error("OpenAPI_trace_data_parseFromJSON failed [trace_data]");
+        goto end;
+    }
     }
 
     udm_group_id = cJSON_GetObjectItemCaseSensitive(authentication_infoJSON, "udmGroupId");

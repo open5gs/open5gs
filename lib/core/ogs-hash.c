@@ -66,7 +66,7 @@ static ogs_hash_entry_t **alloc_array(ogs_hash_t *ht, unsigned int max)
     return ptr;
 }
 
-ogs_hash_t *ogs_hash_make()
+ogs_hash_t *ogs_hash_make(void)
 {
     ogs_hash_t *ht;
     ogs_time_t now = ogs_get_monotonic_time();

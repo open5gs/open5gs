@@ -168,11 +168,19 @@ OpenAPI_rat_freq_information_t *OpenAPI_rat_freq_information_parseFromJSON(cJSON
     svc_exp_threshold = cJSON_GetObjectItemCaseSensitive(rat_freq_informationJSON, "svcExpThreshold");
     if (svc_exp_threshold) {
     svc_exp_threshold_local_nonprim = OpenAPI_threshold_level_parseFromJSON(svc_exp_threshold);
+    if (!svc_exp_threshold_local_nonprim) {
+        ogs_error("OpenAPI_threshold_level_parseFromJSON failed [svc_exp_threshold]");
+        goto end;
+    }
     }
 
     matching_dir = cJSON_GetObjectItemCaseSensitive(rat_freq_informationJSON, "matchingDir");
     if (matching_dir) {
     matching_dir_local_nonprim = OpenAPI_matching_direction_parseFromJSON(matching_dir);
+    if (!matching_dir_local_nonprim) {
+        ogs_error("OpenAPI_matching_direction_parseFromJSON failed [matching_dir]");
+        goto end;
+    }
     }
 
     rat_freq_information_local_var = OpenAPI_rat_freq_information_create (

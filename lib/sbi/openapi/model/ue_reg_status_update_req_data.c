@@ -236,7 +236,6 @@ OpenAPI_ue_reg_status_update_req_data_t *OpenAPI_ue_reg_status_update_req_data_p
             OpenAPI_smf_change_info_t *smf_change_info_listItem = OpenAPI_smf_change_info_parseFromJSON(smf_change_info_list_local);
             if (!smf_change_info_listItem) {
                 ogs_error("No smf_change_info_listItem");
-                OpenAPI_list_free(smf_change_info_listList);
                 goto end;
             }
             OpenAPI_list_add(smf_change_info_listList, smf_change_info_listItem);
@@ -282,7 +281,6 @@ OpenAPI_ue_reg_status_update_req_data_t *OpenAPI_ue_reg_status_update_req_data_p
             OpenAPI_release_session_info_t *to_release_session_infoItem = OpenAPI_release_session_info_parseFromJSON(to_release_session_info_local);
             if (!to_release_session_infoItem) {
                 ogs_error("No to_release_session_infoItem");
-                OpenAPI_list_free(to_release_session_infoList);
                 goto end;
             }
             OpenAPI_list_add(to_release_session_infoList, to_release_session_infoItem);

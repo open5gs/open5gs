@@ -253,7 +253,6 @@ OpenAPI_sec_negotiate_rsp_data_t *OpenAPI_sec_negotiate_rsp_data_parseFromJSON(c
             OpenAPI_plmn_id_t *plmn_id_listItem = OpenAPI_plmn_id_parseFromJSON(plmn_id_list_local);
             if (!plmn_id_listItem) {
                 ogs_error("No plmn_id_listItem");
-                OpenAPI_list_free(plmn_id_listList);
                 goto end;
             }
             OpenAPI_list_add(plmn_id_listList, plmn_id_listItem);
@@ -278,7 +277,6 @@ OpenAPI_sec_negotiate_rsp_data_t *OpenAPI_sec_negotiate_rsp_data_parseFromJSON(c
             OpenAPI_plmn_id_nid_t *snpn_id_listItem = OpenAPI_plmn_id_nid_parseFromJSON(snpn_id_list_local);
             if (!snpn_id_listItem) {
                 ogs_error("No snpn_id_listItem");
-                OpenAPI_list_free(snpn_id_listList);
                 goto end;
             }
             OpenAPI_list_add(snpn_id_listList, snpn_id_listItem);
@@ -303,7 +301,6 @@ OpenAPI_sec_negotiate_rsp_data_t *OpenAPI_sec_negotiate_rsp_data_parseFromJSON(c
             OpenAPI_intended_n32_purpose_t *allowed_usage_purposeItem = OpenAPI_intended_n32_purpose_parseFromJSON(allowed_usage_purpose_local);
             if (!allowed_usage_purposeItem) {
                 ogs_error("No allowed_usage_purposeItem");
-                OpenAPI_list_free(allowed_usage_purposeList);
                 goto end;
             }
             OpenAPI_list_add(allowed_usage_purposeList, allowed_usage_purposeItem);
@@ -328,7 +325,6 @@ OpenAPI_sec_negotiate_rsp_data_t *OpenAPI_sec_negotiate_rsp_data_parseFromJSON(c
             OpenAPI_intended_n32_purpose_t *rejected_usage_purposeItem = OpenAPI_intended_n32_purpose_parseFromJSON(rejected_usage_purpose_local);
             if (!rejected_usage_purposeItem) {
                 ogs_error("No rejected_usage_purposeItem");
-                OpenAPI_list_free(rejected_usage_purposeList);
                 goto end;
             }
             OpenAPI_list_add(rejected_usage_purposeList, rejected_usage_purposeItem);

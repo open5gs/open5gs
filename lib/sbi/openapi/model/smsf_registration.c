@@ -289,6 +289,10 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_parseFromJSON(cJSON *smsf
         goto end;
     }
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
+    if (!plmn_id_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [plmn_id]");
+        goto end;
+    }
 
     smsf_map_address = cJSON_GetObjectItemCaseSensitive(smsf_registrationJSON, "smsfMAPAddress");
     if (smsf_map_address) {
@@ -301,6 +305,10 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_parseFromJSON(cJSON *smsf
     smsf_diameter_address = cJSON_GetObjectItemCaseSensitive(smsf_registrationJSON, "smsfDiameterAddress");
     if (smsf_diameter_address) {
     smsf_diameter_address_local_nonprim = OpenAPI_network_node_diameter_address_parseFromJSON(smsf_diameter_address);
+    if (!smsf_diameter_address_local_nonprim) {
+        ogs_error("OpenAPI_network_node_diameter_address_parseFromJSON failed [smsf_diameter_address]");
+        goto end;
+    }
     }
 
     registration_time = cJSON_GetObjectItemCaseSensitive(smsf_registrationJSON, "registrationTime");
@@ -314,6 +322,10 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_parseFromJSON(cJSON *smsf
     context_info = cJSON_GetObjectItemCaseSensitive(smsf_registrationJSON, "contextInfo");
     if (context_info) {
     context_info_local_nonprim = OpenAPI_context_info_parseFromJSON(context_info);
+    if (!context_info_local_nonprim) {
+        ogs_error("OpenAPI_context_info_parseFromJSON failed [context_info]");
+        goto end;
+    }
     }
 
     data_restoration_callback_uri = cJSON_GetObjectItemCaseSensitive(smsf_registrationJSON, "dataRestorationCallbackUri");

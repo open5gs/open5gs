@@ -178,6 +178,10 @@ OpenAPI_traffic_characterization_t *OpenAPI_traffic_characterization_parseFromJS
     snssai = cJSON_GetObjectItemCaseSensitive(traffic_characterizationJSON, "snssai");
     if (snssai) {
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
     }
 
     app_id = cJSON_GetObjectItemCaseSensitive(traffic_characterizationJSON, "appId");
@@ -206,7 +210,6 @@ OpenAPI_traffic_characterization_t *OpenAPI_traffic_characterization_parseFromJS
             OpenAPI_ip_eth_flow_description_t *f_descsItem = OpenAPI_ip_eth_flow_description_parseFromJSON(f_descs_local);
             if (!f_descsItem) {
                 ogs_error("No f_descsItem");
-                OpenAPI_list_free(f_descsList);
                 goto end;
             }
             OpenAPI_list_add(f_descsList, f_descsItem);

@@ -232,6 +232,10 @@ OpenAPI_event_reporting_requirement_t *OpenAPI_event_reporting_requirement_parse
     accuracy = cJSON_GetObjectItemCaseSensitive(event_reporting_requirementJSON, "accuracy");
     if (accuracy) {
     accuracy_local_nonprim = OpenAPI_accuracy_parseFromJSON(accuracy);
+    if (!accuracy_local_nonprim) {
+        ogs_error("OpenAPI_accuracy_parseFromJSON failed [accuracy]");
+        goto end;
+    }
     }
 
     acc_per_subset = cJSON_GetObjectItemCaseSensitive(event_reporting_requirementJSON, "accPerSubset");
@@ -252,7 +256,6 @@ OpenAPI_event_reporting_requirement_t *OpenAPI_event_reporting_requirement_parse
             OpenAPI_accuracy_t *acc_per_subsetItem = OpenAPI_accuracy_parseFromJSON(acc_per_subset_local);
             if (!acc_per_subsetItem) {
                 ogs_error("No acc_per_subsetItem");
-                OpenAPI_list_free(acc_per_subsetList);
                 goto end;
             }
             OpenAPI_list_add(acc_per_subsetList, acc_per_subsetItem);
@@ -333,7 +336,6 @@ OpenAPI_event_reporting_requirement_t *OpenAPI_event_reporting_requirement_parse
             OpenAPI_analytics_metadata_t *ana_metaItem = OpenAPI_analytics_metadata_parseFromJSON(ana_meta_local);
             if (!ana_metaItem) {
                 ogs_error("No ana_metaItem");
-                OpenAPI_list_free(ana_metaList);
                 goto end;
             }
             OpenAPI_list_add(ana_metaList, ana_metaItem);
@@ -343,6 +345,10 @@ OpenAPI_event_reporting_requirement_t *OpenAPI_event_reporting_requirement_parse
     ana_meta_ind = cJSON_GetObjectItemCaseSensitive(event_reporting_requirementJSON, "anaMetaInd");
     if (ana_meta_ind) {
     ana_meta_ind_local_nonprim = OpenAPI_analytics_metadata_indication_parseFromJSON(ana_meta_ind);
+    if (!ana_meta_ind_local_nonprim) {
+        ogs_error("OpenAPI_analytics_metadata_indication_parseFromJSON failed [ana_meta_ind]");
+        goto end;
+    }
     }
 
     event_reporting_requirement_local_var = OpenAPI_event_reporting_requirement_create (

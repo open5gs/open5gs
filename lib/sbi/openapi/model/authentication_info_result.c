@@ -192,6 +192,10 @@ OpenAPI_authentication_info_result_t *OpenAPI_authentication_info_result_parseFr
     authentication_vector = cJSON_GetObjectItemCaseSensitive(authentication_info_resultJSON, "authenticationVector");
     if (authentication_vector) {
     authentication_vector_local_nonprim = OpenAPI_authentication_vector_parseFromJSON(authentication_vector);
+    if (!authentication_vector_local_nonprim) {
+        ogs_error("OpenAPI_authentication_vector_parseFromJSON failed [authentication_vector]");
+        goto end;
+    }
     }
 
     supi = cJSON_GetObjectItemCaseSensitive(authentication_info_resultJSON, "supi");
@@ -244,7 +248,6 @@ OpenAPI_authentication_info_result_t *OpenAPI_authentication_info_result_parseFr
             OpenAPI_server_addressing_info_t *pvs_infoItem = OpenAPI_server_addressing_info_parseFromJSON(pvs_info_local);
             if (!pvs_infoItem) {
                 ogs_error("No pvs_infoItem");
-                OpenAPI_list_free(pvs_infoList);
                 goto end;
             }
             OpenAPI_list_add(pvs_infoList, pvs_infoItem);

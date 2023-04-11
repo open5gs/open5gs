@@ -80,6 +80,10 @@ OpenAPI_point_uncertainty_circle_all_of_t *OpenAPI_point_uncertainty_circle_all_
         goto end;
     }
     point_local_nonprim = OpenAPI_geographical_coordinates_parseFromJSON(point);
+    if (!point_local_nonprim) {
+        ogs_error("OpenAPI_geographical_coordinates_parseFromJSON failed [point]");
+        goto end;
+    }
 
     uncertainty = cJSON_GetObjectItemCaseSensitive(point_uncertainty_circle_all_ofJSON, "uncertainty");
     if (!uncertainty) {

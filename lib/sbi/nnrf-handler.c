@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -458,6 +458,68 @@ static void handle_smf_info(
     }
 }
 
+static void handle_validity_time(
+        ogs_sbi_subscription_data_t *subscription_data,
+        char *validity_time, const char *action)
+{
+    ogs_time_t time, validity, patch;
+
+    ogs_assert(validity_time);
+    ogs_assert(subscription_data);
+    ogs_assert(action);
+
+    if (ogs_sbi_time_from_string(&time, validity_time) == false) {
+        ogs_error("[%s] Subscription %s until %s [parser error]",
+                subscription_data->id, action, validity_time);
+        return;
+    }
+
+    validity = time - ogs_time_now();
+    if (validity < 0) {
+        ogs_error("[%s] Subscription %s until %s [validity:%d.%06d]",
+                subscription_data->id, action, validity_time,
+                (int)ogs_time_sec(validity), (int)ogs_time_usec(validity));
+        return;
+    }
+
+    /*
+     * Store subscription_data->time.validity_duration to derive NRF validity.
+     * It will be used in ogs_nnrf_nfm_build_status_update().
+     *
+     * So, you should not remove the following lines.
+     */
+    subscription_data->time.validity_duration = OGS_SBI_VALIDITY_SEC(validity);
+
+    if (!subscription_data->t_validity) {
+        subscription_data->t_validity =
+            ogs_timer_add(ogs_app()->timer_mgr,
+                ogs_timer_subscription_validity, subscription_data);
+        ogs_assert(subscription_data->t_validity);
+    }
+    ogs_timer_start(subscription_data->t_validity, validity);
+
+    /*
+     * PATCH request will be sent before VALIDITY is expired.
+     */
+#define PATCH_TIME_FROM_VALIDITY(x) ((x) / 2)
+    patch = PATCH_TIME_FROM_VALIDITY(validity);
+
+    if (!subscription_data->t_patch) {
+        subscription_data->t_patch =
+            ogs_timer_add(ogs_app()->timer_mgr,
+                ogs_timer_subscription_patch, subscription_data);
+        ogs_assert(subscription_data->t_patch);
+    }
+    ogs_timer_start(subscription_data->t_patch, patch);
+
+    ogs_info("[%s] Subscription %s until %s "
+            "[duration:%d,validity:%d.%06d,patch:%d.%06d]",
+            subscription_data->id, action, validity_time,
+            subscription_data->time.validity_duration,
+            (int)ogs_time_sec(validity), (int)ogs_time_usec(validity),
+            (int)ogs_time_sec(patch), (int)ogs_time_usec(patch));
+}
+
 void ogs_nnrf_nfm_handle_nf_status_subscribe(
         ogs_sbi_subscription_data_t *subscription_data,
         ogs_sbi_message_t *recvmsg)
@@ -473,12 +535,44 @@ void ogs_nnrf_nfm_handle_nf_status_subscribe(
         return;
     }
 
-    if (!SubscriptionData->subscription_id) {
-        ogs_error("No SubscriptionId");
+    if (recvmsg->http.location) {
+        int rv;
+        ogs_sbi_message_t message;
+        ogs_sbi_header_t header;
+
+        memset(&header, 0, sizeof(header));
+        header.uri = recvmsg->http.location;
+
+        rv = ogs_sbi_parse_header(&message, &header);
+        if (rv != OGS_OK) {
+            ogs_error("Cannot parse http.location [%s]",
+                recvmsg->http.location);
+            return;
+        }
+
+        if (!message.h.resource.component[1]) {
+            ogs_error("No Subscription ID [%s]", recvmsg->http.location);
+            ogs_sbi_header_free(&header);
+            return;
+        }
+
+        ogs_sbi_subscription_data_set_id(
+                subscription_data, message.h.resource.component[1]);
+
+        ogs_sbi_header_free(&header);
+
+    } else if (SubscriptionData->subscription_id) {
+        /*
+         * For compatibility with v2.5.x and lower versions
+         *
+         * Deprecated : It will be removed soon.
+         */
+        ogs_sbi_subscription_data_set_id(
+            subscription_data, SubscriptionData->subscription_id);
+    } else {
+        ogs_error("No Subscription ID");
         return;
     }
-    ogs_sbi_subscription_data_set_id(
-        subscription_data, SubscriptionData->subscription_id);
 
     /* SBI Features */
     if (SubscriptionData->nrf_supported_features) {
@@ -488,26 +582,31 @@ void ogs_nnrf_nfm_handle_nf_status_subscribe(
         subscription_data->nrf_supported_features = 0;
     }
 
-    if (SubscriptionData->validity_time) {
-#define VALIDITY_MINIMUM (10LL * OGS_USEC_PER_SEC) /* 10 seconds */
-        ogs_time_t time, duration;
-        if (ogs_sbi_time_from_string(
-                &time, SubscriptionData->validity_time) == true) {
-            duration = time - ogs_time_now();
-            if (duration < VALIDITY_MINIMUM) {
-                duration = VALIDITY_MINIMUM;
-                ogs_warn("[%s] Forced to %lld seconds", subscription_data->id,
-                        (long long)ogs_time_sec(VALIDITY_MINIMUM));
-            }
-            subscription_data->t_validity = ogs_timer_add(ogs_app()->timer_mgr,
-                ogs_timer_subscription_validity, subscription_data);
-            ogs_assert(subscription_data->t_validity);
-            ogs_timer_start(subscription_data->t_validity, duration);
-        } else {
-            ogs_error("Cannot parse validitiyTime [%s]",
-                    SubscriptionData->validity_time);
-        }
+    /* Subscription Validity Time */
+    if (SubscriptionData->validity_time)
+        handle_validity_time(
+                subscription_data, SubscriptionData->validity_time, "created");
+}
+
+void ogs_nnrf_nfm_handle_nf_status_update(
+        ogs_sbi_subscription_data_t *subscription_data,
+        ogs_sbi_message_t *recvmsg)
+{
+    OpenAPI_subscription_data_t *SubscriptionData = NULL;
+
+    ogs_assert(recvmsg);
+    ogs_assert(subscription_data);
+
+    SubscriptionData = recvmsg->SubscriptionData;
+    if (!SubscriptionData) {
+        ogs_error("No SubscriptionData");
+        return;
     }
+
+    /* Subscription Validity Time */
+    if (SubscriptionData->validity_time)
+        handle_validity_time(
+                subscription_data, SubscriptionData->validity_time, "updated");
 }
 
 bool ogs_nnrf_nfm_handle_nf_status_notify(
@@ -654,7 +753,8 @@ bool ogs_nnrf_nfm_handle_nf_status_notify(
                 ogs_sbi_nf_fsm_tran(
                         nf_instance, ogs_sbi_nf_state_de_registered);
             } else {
-                ogs_info("[%s] NF removed", nf_instance->id);
+                ogs_info("[%s:%d] NF removed",
+                        nf_instance->id, nf_instance->reference_count);
                 ogs_sbi_nf_fsm_fini((nf_instance));
                 ogs_sbi_nf_instance_remove(nf_instance);
             }

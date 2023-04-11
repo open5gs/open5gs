@@ -112,6 +112,10 @@ OpenAPI_n2_info_content_t *OpenAPI_n2_info_content_parseFromJSON(cJSON *n2_info_
         goto end;
     }
     ngap_data_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(ngap_data);
+    if (!ngap_data_local_nonprim) {
+        ogs_error("OpenAPI_ref_to_binary_data_parseFromJSON failed [ngap_data]");
+        goto end;
+    }
 
     n2_info_content_local_var = OpenAPI_n2_info_content_create (
         ngap_message_type ? true : false,

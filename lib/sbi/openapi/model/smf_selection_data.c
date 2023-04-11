@@ -184,11 +184,19 @@ OpenAPI_smf_selection_data_t *OpenAPI_smf_selection_data_parseFromJSON(cJSON *sm
     snssai = cJSON_GetObjectItemCaseSensitive(smf_selection_dataJSON, "snssai");
     if (snssai) {
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
     }
 
     mapping_snssai = cJSON_GetObjectItemCaseSensitive(smf_selection_dataJSON, "mappingSnssai");
     if (mapping_snssai) {
     mapping_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(mapping_snssai);
+    if (!mapping_snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [mapping_snssai]");
+        goto end;
+    }
     }
 
     dnn = cJSON_GetObjectItemCaseSensitive(smf_selection_dataJSON, "dnn");

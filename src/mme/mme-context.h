@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -67,12 +67,12 @@ typedef uint32_t mme_m_tmsi_t;
 typedef uint32_t mme_p_tmsi_t;
 
 typedef struct served_gummei_s {
-    uint32_t        num_of_plmn_id;
+    int             num_of_plmn_id;
     ogs_plmn_id_t   plmn_id[OGS_MAX_NUM_OF_PLMN];
 
-    uint32_t        num_of_mme_gid;
+    int             num_of_mme_gid;
     uint16_t        mme_gid[GRP_PER_MME];
-    uint32_t        num_of_mme_code;
+    int             num_of_mme_code;
     uint8_t         mme_code[CODE_PER_MME];
 } served_gummei_t;
 
@@ -110,29 +110,38 @@ typedef struct mme_context_s {
     ogs_list_t      csmap_list;     /* TAI-LAI Map List */
 
     /* Served GUMME */
-    uint8_t         max_num_of_served_gummei;
+    int             max_num_of_served_gummei;
     served_gummei_t served_gummei[MAX_NUM_OF_SERVED_GUMMEI];
 
     /* Served TAI */
-    uint8_t         num_of_served_tai;
+    int             num_of_served_tai;
     struct {
         ogs_eps_tai0_list_t list0;
+        ogs_eps_tai1_list_t list1;
         ogs_eps_tai2_list_t list2;
     } served_tai[OGS_MAX_NUM_OF_SERVED_TAI];
+
+    /* Access Control */
+    int             default_reject_cause;
+    int             num_of_access_control;
+    struct {
+        int reject_cause;
+        ogs_plmn_id_t plmn_id;
+    } access_control[OGS_MAX_NUM_OF_ACCESS_CONTROL];
 
     /* defined in 'nas_ies.h'
      * #define NAS_SECURITY_ALGORITHMS_EIA0        0
      * #define NAS_SECURITY_ALGORITHMS_128_EEA1    1
      * #define NAS_SECURITY_ALGORITHMS_128_EEA2    2
      * #define NAS_SECURITY_ALGORITHMS_128_EEA3    3 */
-    uint8_t         num_of_ciphering_order;
+    int             num_of_ciphering_order;
     uint8_t         ciphering_order[OGS_MAX_NUM_OF_ALGORITHM];
     /* defined in 'nas_ies.h'
      * #define NAS_SECURITY_ALGORITHMS_EIA0        0
      * #define NAS_SECURITY_ALGORITHMS_128_EIA1    1
      * #define NAS_SECURITY_ALGORITHMS_128_EIA1    2
      * #define NAS_SECURITY_ALGORITHMS_128_EIA3    3 */
-    uint8_t         num_of_integrity_order;
+    int             num_of_integrity_order;
     uint8_t         integrity_order[OGS_MAX_NUM_OF_ALGORITHM];
 
     /* Network Name */
@@ -176,9 +185,9 @@ typedef struct mme_sgw_s {
     ogs_gtp_node_t  gnode;
 
     uint16_t        tac[OGS_MAX_NUM_OF_TAI];
-    uint8_t         num_of_tac;
+    int             num_of_tac;
     uint32_t        e_cell_id[OGS_MAX_NUM_OF_CELL_ID];
-    uint8_t         num_of_e_cell_id;
+    int             num_of_e_cell_id;
 
     ogs_list_t      sgw_ue_list;
 } mme_sgw_t;
@@ -203,7 +212,7 @@ typedef struct mme_vlr_s {
 
     ogs_timer_t     *t_conn;     /* client timer to connect to server */
 
-    uint16_t        max_num_of_ostreams;/* SCTP Max num of outbound streams */
+    int             max_num_of_ostreams;/* SCTP Max num of outbound streams */
     uint16_t        ostream_id;     /* vlr_ostream_id generator */
 
     ogs_sockaddr_t  *sa_list;   /* VLR SGsAP Socket Address List */
@@ -235,10 +244,10 @@ typedef struct mme_enb_s {
         bool s1_setup_success;  /* eNB S1AP Setup complete successfuly */
     } state;
 
-    uint16_t        max_num_of_ostreams;/* SCTP Max num of outbound streams */
+    int             max_num_of_ostreams;/* SCTP Max num of outbound streams */
     uint16_t        ostream_id;         /* enb_ostream_id generator */
 
-    uint8_t         num_of_supported_ta_list;
+    int             num_of_supported_ta_list;
     ogs_eps_tai_t   supported_ta_list[OGS_MAX_NUM_OF_TAI*OGS_MAX_NUM_OF_BPLMN];
 
     ogs_pkbuf_t     *s1_reset_ack; /* Reset message */

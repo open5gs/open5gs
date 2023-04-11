@@ -168,6 +168,10 @@ OpenAPI_dispersion_requirement_t *OpenAPI_dispersion_requirement_parseFromJSON(c
         goto end;
     }
     disper_type_local_nonprim = OpenAPI_dispersion_type_parseFromJSON(disper_type);
+    if (!disper_type_local_nonprim) {
+        ogs_error("OpenAPI_dispersion_type_parseFromJSON failed [disper_type]");
+        goto end;
+    }
 
     class_criters = cJSON_GetObjectItemCaseSensitive(dispersion_requirementJSON, "classCriters");
     if (class_criters) {
@@ -187,7 +191,6 @@ OpenAPI_dispersion_requirement_t *OpenAPI_dispersion_requirement_parseFromJSON(c
             OpenAPI_class_criterion_t *class_critersItem = OpenAPI_class_criterion_parseFromJSON(class_criters_local);
             if (!class_critersItem) {
                 ogs_error("No class_critersItem");
-                OpenAPI_list_free(class_critersList);
                 goto end;
             }
             OpenAPI_list_add(class_critersList, class_critersItem);
@@ -212,7 +215,6 @@ OpenAPI_dispersion_requirement_t *OpenAPI_dispersion_requirement_parseFromJSON(c
             OpenAPI_ranking_criterion_t *rank_critersItem = OpenAPI_ranking_criterion_parseFromJSON(rank_criters_local);
             if (!rank_critersItem) {
                 ogs_error("No rank_critersItem");
-                OpenAPI_list_free(rank_critersList);
                 goto end;
             }
             OpenAPI_list_add(rank_critersList, rank_critersItem);
@@ -222,11 +224,19 @@ OpenAPI_dispersion_requirement_t *OpenAPI_dispersion_requirement_parseFromJSON(c
     disp_order_criter = cJSON_GetObjectItemCaseSensitive(dispersion_requirementJSON, "dispOrderCriter");
     if (disp_order_criter) {
     disp_order_criter_local_nonprim = OpenAPI_dispersion_ordering_criterion_parseFromJSON(disp_order_criter);
+    if (!disp_order_criter_local_nonprim) {
+        ogs_error("OpenAPI_dispersion_ordering_criterion_parseFromJSON failed [disp_order_criter]");
+        goto end;
+    }
     }
 
     order = cJSON_GetObjectItemCaseSensitive(dispersion_requirementJSON, "order");
     if (order) {
     order_local_nonprim = OpenAPI_matching_direction_parseFromJSON(order);
+    if (!order_local_nonprim) {
+        ogs_error("OpenAPI_matching_direction_parseFromJSON failed [order]");
+        goto end;
+    }
     }
 
     dispersion_requirement_local_var = OpenAPI_dispersion_requirement_create (

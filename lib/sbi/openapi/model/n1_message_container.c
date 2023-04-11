@@ -124,6 +124,10 @@ OpenAPI_n1_message_container_t *OpenAPI_n1_message_container_parseFromJSON(cJSON
         goto end;
     }
     n1_message_content_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(n1_message_content);
+    if (!n1_message_content_local_nonprim) {
+        ogs_error("OpenAPI_ref_to_binary_data_parseFromJSON failed [n1_message_content]");
+        goto end;
+    }
 
     nf_id = cJSON_GetObjectItemCaseSensitive(n1_message_containerJSON, "nfId");
     if (nf_id) {

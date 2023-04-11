@@ -539,6 +539,10 @@ OpenAPI_amf_non3_gpp_access_registration_t *OpenAPI_amf_non3_gpp_access_registra
         goto end;
     }
     guami_local_nonprim = OpenAPI_guami_parseFromJSON(guami);
+    if (!guami_local_nonprim) {
+        ogs_error("OpenAPI_guami_parseFromJSON failed [guami]");
+        goto end;
+    }
 
     backup_amf_info = cJSON_GetObjectItemCaseSensitive(amf_non3_gpp_access_registrationJSON, "backupAmfInfo");
     if (backup_amf_info) {
@@ -558,7 +562,6 @@ OpenAPI_amf_non3_gpp_access_registration_t *OpenAPI_amf_non3_gpp_access_registra
             OpenAPI_backup_amf_info_t *backup_amf_infoItem = OpenAPI_backup_amf_info_parseFromJSON(backup_amf_info_local);
             if (!backup_amf_infoItem) {
                 ogs_error("No backup_amf_infoItem");
-                OpenAPI_list_free(backup_amf_infoList);
                 goto end;
             }
             OpenAPI_list_add(backup_amf_infoList, backup_amf_infoItem);
@@ -603,11 +606,19 @@ OpenAPI_amf_non3_gpp_access_registration_t *OpenAPI_amf_non3_gpp_access_registra
     vgmlc_address = cJSON_GetObjectItemCaseSensitive(amf_non3_gpp_access_registrationJSON, "vgmlcAddress");
     if (vgmlc_address) {
     vgmlc_address_local_nonprim = OpenAPI_vgmlc_address_parseFromJSON(vgmlc_address);
+    if (!vgmlc_address_local_nonprim) {
+        ogs_error("OpenAPI_vgmlc_address_parseFromJSON failed [vgmlc_address]");
+        goto end;
+    }
     }
 
     context_info = cJSON_GetObjectItemCaseSensitive(amf_non3_gpp_access_registrationJSON, "contextInfo");
     if (context_info) {
     context_info_local_nonprim = OpenAPI_context_info_parseFromJSON(context_info);
+    if (!context_info_local_nonprim) {
+        ogs_error("OpenAPI_context_info_parseFromJSON failed [context_info]");
+        goto end;
+    }
     }
 
     no_ee_subscription_ind = cJSON_GetObjectItemCaseSensitive(amf_non3_gpp_access_registrationJSON, "noEeSubscriptionInd");

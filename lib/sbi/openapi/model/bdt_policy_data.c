@@ -198,6 +198,10 @@ OpenAPI_bdt_policy_data_t *OpenAPI_bdt_policy_data_parseFromJSON(cJSON *bdt_poli
     snssai = cJSON_GetObjectItemCaseSensitive(bdt_policy_dataJSON, "snssai");
     if (snssai) {
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
     }
 
     res_uri = cJSON_GetObjectItemCaseSensitive(bdt_policy_dataJSON, "resUri");

@@ -99,6 +99,10 @@ OpenAPI_no_profile_match_info_t *OpenAPI_no_profile_match_info_parseFromJSON(cJS
         goto end;
     }
     reason_local_nonprim = OpenAPI_no_profile_match_reason_parseFromJSON(reason);
+    if (!reason_local_nonprim) {
+        ogs_error("OpenAPI_no_profile_match_reason_parseFromJSON failed [reason]");
+        goto end;
+    }
 
     query_param_combination_list = cJSON_GetObjectItemCaseSensitive(no_profile_match_infoJSON, "queryParamCombinationList");
     if (query_param_combination_list) {
@@ -118,7 +122,6 @@ OpenAPI_no_profile_match_info_t *OpenAPI_no_profile_match_info_parseFromJSON(cJS
             OpenAPI_query_param_combination_t *query_param_combination_listItem = OpenAPI_query_param_combination_parseFromJSON(query_param_combination_list_local);
             if (!query_param_combination_listItem) {
                 ogs_error("No query_param_combination_listItem");
-                OpenAPI_list_free(query_param_combination_listList);
                 goto end;
             }
             OpenAPI_list_add(query_param_combination_listList, query_param_combination_listItem);

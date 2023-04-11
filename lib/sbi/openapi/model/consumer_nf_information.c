@@ -132,7 +132,6 @@ OpenAPI_consumer_nf_information_t *OpenAPI_consumer_nf_information_parseFromJSON
             OpenAPI_tai_t *tai_listItem = OpenAPI_tai_parseFromJSON(tai_list_local);
             if (!tai_listItem) {
                 ogs_error("No tai_listItem");
-                OpenAPI_list_free(tai_listList);
                 goto end;
             }
             OpenAPI_list_add(tai_listList, tai_listItem);

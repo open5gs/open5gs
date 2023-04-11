@@ -354,6 +354,10 @@ OpenAPI_ee_subscription_1_t *OpenAPI_ee_subscription_1_parseFromJSON(cJSON *ee_s
     reporting_options = cJSON_GetObjectItemCaseSensitive(ee_subscription_1JSON, "reportingOptions");
     if (reporting_options) {
     reporting_options_local_nonprim = OpenAPI_reporting_options_1_parseFromJSON(reporting_options);
+    if (!reporting_options_local_nonprim) {
+        ogs_error("OpenAPI_reporting_options_1_parseFromJSON failed [reporting_options]");
+        goto end;
+    }
     }
 
     supported_features = cJSON_GetObjectItemCaseSensitive(ee_subscription_1JSON, "supportedFeatures");
@@ -375,6 +379,10 @@ OpenAPI_ee_subscription_1_t *OpenAPI_ee_subscription_1_parseFromJSON(cJSON *ee_s
     context_info = cJSON_GetObjectItemCaseSensitive(ee_subscription_1JSON, "contextInfo");
     if (context_info) {
     context_info_local_nonprim = OpenAPI_context_info_parseFromJSON(context_info);
+    if (!context_info_local_nonprim) {
+        ogs_error("OpenAPI_context_info_parseFromJSON failed [context_info]");
+        goto end;
+    }
     }
 
     epc_applied_ind = cJSON_GetObjectItemCaseSensitive(ee_subscription_1JSON, "epcAppliedInd");

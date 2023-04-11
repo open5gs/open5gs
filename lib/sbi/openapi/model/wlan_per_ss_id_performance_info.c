@@ -119,7 +119,6 @@ OpenAPI_wlan_per_ss_id_performance_info_t *OpenAPI_wlan_per_ss_id_performance_in
             OpenAPI_wlan_per_ts_performance_info_t *wlan_per_ts_infosItem = OpenAPI_wlan_per_ts_performance_info_parseFromJSON(wlan_per_ts_infos_local);
             if (!wlan_per_ts_infosItem) {
                 ogs_error("No wlan_per_ts_infosItem");
-                OpenAPI_list_free(wlan_per_ts_infosList);
                 goto end;
             }
             OpenAPI_list_add(wlan_per_ts_infosList, wlan_per_ts_infosItem);

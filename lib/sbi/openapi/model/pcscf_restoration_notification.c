@@ -93,6 +93,10 @@ OpenAPI_pcscf_restoration_notification_t *OpenAPI_pcscf_restoration_notification
     failed_pcscf = cJSON_GetObjectItemCaseSensitive(pcscf_restoration_notificationJSON, "failedPcscf");
     if (failed_pcscf) {
     failed_pcscf_local_nonprim = OpenAPI_pcscf_address_parseFromJSON(failed_pcscf);
+    if (!failed_pcscf_local_nonprim) {
+        ogs_error("OpenAPI_pcscf_address_parseFromJSON failed [failed_pcscf]");
+        goto end;
+    }
     }
 
     pcscf_restoration_notification_local_var = OpenAPI_pcscf_restoration_notification_create (

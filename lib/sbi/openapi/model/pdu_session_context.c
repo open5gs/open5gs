@@ -618,6 +618,10 @@ OpenAPI_pdu_session_context_t *OpenAPI_pdu_session_context_parseFromJSON(cJSON *
         goto end;
     }
     s_nssai_local_nonprim = OpenAPI_snssai_parseFromJSON(s_nssai);
+    if (!s_nssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [s_nssai]");
+        goto end;
+    }
 
     dnn = cJSON_GetObjectItemCaseSensitive(pdu_session_contextJSON, "dnn");
     if (!dnn) {
@@ -675,7 +679,6 @@ OpenAPI_pdu_session_context_t *OpenAPI_pdu_session_context_parseFromJSON(cJSON *
             OpenAPI_ebi_arp_mapping_t *allocated_ebi_listItem = OpenAPI_ebi_arp_mapping_parseFromJSON(allocated_ebi_list_local);
             if (!allocated_ebi_listItem) {
                 ogs_error("No allocated_ebi_listItem");
-                OpenAPI_list_free(allocated_ebi_listList);
                 goto end;
             }
             OpenAPI_list_add(allocated_ebi_listList, allocated_ebi_listItem);
@@ -808,6 +811,10 @@ OpenAPI_pdu_session_context_t *OpenAPI_pdu_session_context_parseFromJSON(cJSON *
     cn_assisted_ran_para = cJSON_GetObjectItemCaseSensitive(pdu_session_contextJSON, "cnAssistedRanPara");
     if (cn_assisted_ran_para) {
     cn_assisted_ran_para_local_nonprim = OpenAPI_cn_assisted_ran_para_parseFromJSON(cn_assisted_ran_para);
+    if (!cn_assisted_ran_para_local_nonprim) {
+        ogs_error("OpenAPI_cn_assisted_ran_para_parseFromJSON failed [cn_assisted_ran_para]");
+        goto end;
+    }
     }
 
     nrf_management_uri = cJSON_GetObjectItemCaseSensitive(pdu_session_contextJSON, "nrfManagementUri");
@@ -861,6 +868,10 @@ OpenAPI_pdu_session_context_t *OpenAPI_pdu_session_context_parseFromJSON(cJSON *
     additional_snssai = cJSON_GetObjectItemCaseSensitive(pdu_session_contextJSON, "additionalSnssai");
     if (additional_snssai) {
     additional_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(additional_snssai);
+    if (!additional_snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [additional_snssai]");
+        goto end;
+    }
     }
 
     inter_plmn_api_root = cJSON_GetObjectItemCaseSensitive(pdu_session_contextJSON, "interPlmnApiRoot");
@@ -882,11 +893,19 @@ OpenAPI_pdu_session_context_t *OpenAPI_pdu_session_context_parseFromJSON(cJSON *
     pgw_ip_addr = cJSON_GetObjectItemCaseSensitive(pdu_session_contextJSON, "pgwIpAddr");
     if (pgw_ip_addr) {
     pgw_ip_addr_local_nonprim = OpenAPI_ip_address_parseFromJSON(pgw_ip_addr);
+    if (!pgw_ip_addr_local_nonprim) {
+        ogs_error("OpenAPI_ip_address_parseFromJSON failed [pgw_ip_addr]");
+        goto end;
+    }
     }
 
     plmn_id = cJSON_GetObjectItemCaseSensitive(pdu_session_contextJSON, "plmnId");
     if (plmn_id) {
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
+    if (!plmn_id_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [plmn_id]");
+        goto end;
+    }
     }
 
     anchor_smf_supported_features = cJSON_GetObjectItemCaseSensitive(pdu_session_contextJSON, "anchorSmfSupportedFeatures");

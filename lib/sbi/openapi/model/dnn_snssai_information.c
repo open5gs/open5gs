@@ -89,6 +89,10 @@ OpenAPI_dnn_snssai_information_t *OpenAPI_dnn_snssai_information_parseFromJSON(c
     snssai = cJSON_GetObjectItemCaseSensitive(dnn_snssai_informationJSON, "snssai");
     if (snssai) {
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
     }
 
     dnn_snssai_information_local_var = OpenAPI_dnn_snssai_information_create (

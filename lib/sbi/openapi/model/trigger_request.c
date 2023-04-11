@@ -93,6 +93,10 @@ OpenAPI_trigger_request_t *OpenAPI_trigger_request_parseFromJSON(cJSON *trigger_
     failed_pcscf = cJSON_GetObjectItemCaseSensitive(trigger_requestJSON, "failedPcscf");
     if (failed_pcscf) {
     failed_pcscf_local_nonprim = OpenAPI_pcscf_address_parseFromJSON(failed_pcscf);
+    if (!failed_pcscf_local_nonprim) {
+        ogs_error("OpenAPI_pcscf_address_parseFromJSON failed [failed_pcscf]");
+        goto end;
+    }
     }
 
     trigger_request_local_var = OpenAPI_trigger_request_create (

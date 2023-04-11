@@ -112,6 +112,10 @@ OpenAPI_additional_snssai_data_1_t *OpenAPI_additional_snssai_data_1_parseFromJS
     subscribed_ue_slice_mbr = cJSON_GetObjectItemCaseSensitive(additional_snssai_data_1JSON, "subscribedUeSliceMbr");
     if (subscribed_ue_slice_mbr) {
     subscribed_ue_slice_mbr_local_nonprim = OpenAPI_slice_mbr_rm_parseFromJSON(subscribed_ue_slice_mbr);
+    if (!subscribed_ue_slice_mbr_local_nonprim) {
+        ogs_error("OpenAPI_slice_mbr_rm_parseFromJSON failed [subscribed_ue_slice_mbr]");
+        goto end;
+    }
     }
 
     subscribed_ns_srg_list = cJSON_GetObjectItemCaseSensitive(additional_snssai_data_1JSON, "subscribedNsSrgList");

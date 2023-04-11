@@ -89,6 +89,10 @@ OpenAPI_local_origin_t *OpenAPI_local_origin_parseFromJSON(cJSON *local_originJS
     point = cJSON_GetObjectItemCaseSensitive(local_originJSON, "point");
     if (point) {
     point_local_nonprim = OpenAPI_geographical_coordinates_parseFromJSON(point);
+    if (!point_local_nonprim) {
+        ogs_error("OpenAPI_geographical_coordinates_parseFromJSON failed [point]");
+        goto end;
+    }
     }
 
     local_origin_local_var = OpenAPI_local_origin_create (

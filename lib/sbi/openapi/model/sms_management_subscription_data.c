@@ -255,6 +255,10 @@ OpenAPI_sms_management_subscription_data_t *OpenAPI_sms_management_subscription_
     trace_data = cJSON_GetObjectItemCaseSensitive(sms_management_subscription_dataJSON, "traceData");
     if (trace_data) {
     trace_data_local_nonprim = OpenAPI_trace_data_parseFromJSON(trace_data);
+    if (!trace_data_local_nonprim) {
+        ogs_error("OpenAPI_trace_data_parseFromJSON failed [trace_data]");
+        goto end;
+    }
     }
 
     sms_management_subscription_data_local_var = OpenAPI_sms_management_subscription_data_create (

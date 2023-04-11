@@ -23,7 +23,7 @@ static ogs_thread_t *thread;
 static void nrf_main(void *data);
 static int initialized = 0;
 
-int nrf_initialize()
+int nrf_initialize(void)
 {
     int rv;
 

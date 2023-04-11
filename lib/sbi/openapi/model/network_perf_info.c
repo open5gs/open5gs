@@ -124,11 +124,19 @@ OpenAPI_network_perf_info_t *OpenAPI_network_perf_info_parseFromJSON(cJSON *netw
     network_area = cJSON_GetObjectItemCaseSensitive(network_perf_infoJSON, "networkArea");
     if (network_area) {
     network_area_local_nonprim = OpenAPI_network_area_info_parseFromJSON(network_area);
+    if (!network_area_local_nonprim) {
+        ogs_error("OpenAPI_network_area_info_parseFromJSON failed [network_area]");
+        goto end;
+    }
     }
 
     nw_perf_type = cJSON_GetObjectItemCaseSensitive(network_perf_infoJSON, "nwPerfType");
     if (nw_perf_type) {
     nw_perf_type_local_nonprim = OpenAPI_network_perf_type_parseFromJSON(nw_perf_type);
+    if (!nw_perf_type_local_nonprim) {
+        ogs_error("OpenAPI_network_perf_type_parseFromJSON failed [nw_perf_type]");
+        goto end;
+    }
     }
 
     relative_ratio = cJSON_GetObjectItemCaseSensitive(network_perf_infoJSON, "relativeRatio");

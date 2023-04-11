@@ -615,6 +615,10 @@ OpenAPI_media_component_t *OpenAPI_media_component_parseFromJSON(cJSON *media_co
     af_rout_req = cJSON_GetObjectItemCaseSensitive(media_componentJSON, "afRoutReq");
     if (af_rout_req) {
     af_rout_req_local_nonprim = OpenAPI_af_routing_requirement_parseFromJSON(af_rout_req);
+    if (!af_rout_req_local_nonprim) {
+        ogs_error("OpenAPI_af_routing_requirement_parseFromJSON failed [af_rout_req]");
+        goto end;
+    }
     }
 
     qos_reference = cJSON_GetObjectItemCaseSensitive(media_componentJSON, "qosReference");
@@ -672,7 +676,6 @@ OpenAPI_media_component_t *OpenAPI_media_component_parseFromJSON(cJSON *media_co
             OpenAPI_alternative_service_requirements_data_t *alt_ser_reqs_dataItem = OpenAPI_alternative_service_requirements_data_parseFromJSON(alt_ser_reqs_data_local);
             if (!alt_ser_reqs_dataItem) {
                 ogs_error("No alt_ser_reqs_dataItem");
-                OpenAPI_list_free(alt_ser_reqs_dataList);
                 goto end;
             }
             OpenAPI_list_add(alt_ser_reqs_dataList, alt_ser_reqs_dataItem);
@@ -937,16 +940,28 @@ OpenAPI_media_component_t *OpenAPI_media_component_parseFromJSON(cJSON *media_co
     tsn_qos = cJSON_GetObjectItemCaseSensitive(media_componentJSON, "tsnQos");
     if (tsn_qos) {
     tsn_qos_local_nonprim = OpenAPI_tsn_qos_container_parseFromJSON(tsn_qos);
+    if (!tsn_qos_local_nonprim) {
+        ogs_error("OpenAPI_tsn_qos_container_parseFromJSON failed [tsn_qos]");
+        goto end;
+    }
     }
 
     tscai_input_dl = cJSON_GetObjectItemCaseSensitive(media_componentJSON, "tscaiInputDl");
     if (tscai_input_dl) {
     tscai_input_dl_local_nonprim = OpenAPI_tscai_input_container_parseFromJSON(tscai_input_dl);
+    if (!tscai_input_dl_local_nonprim) {
+        ogs_error("OpenAPI_tscai_input_container_parseFromJSON failed [tscai_input_dl]");
+        goto end;
+    }
     }
 
     tscai_input_ul = cJSON_GetObjectItemCaseSensitive(media_componentJSON, "tscaiInputUl");
     if (tscai_input_ul) {
     tscai_input_ul_local_nonprim = OpenAPI_tscai_input_container_parseFromJSON(tscai_input_ul);
+    if (!tscai_input_ul_local_nonprim) {
+        ogs_error("OpenAPI_tscai_input_container_parseFromJSON failed [tscai_input_ul]");
+        goto end;
+    }
     }
 
     tscai_time_dom = cJSON_GetObjectItemCaseSensitive(media_componentJSON, "tscaiTimeDom");

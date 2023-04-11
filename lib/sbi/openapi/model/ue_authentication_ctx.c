@@ -148,6 +148,10 @@ OpenAPI_ue_authentication_ctx_t *OpenAPI_ue_authentication_ctx_parseFromJSON(cJS
         goto end;
     }
     _5g_auth_data_local_nonprim = OpenAPI_ue_authentication_ctx_5g_auth_data_parseFromJSON(_5g_auth_data);
+    if (!_5g_auth_data_local_nonprim) {
+        ogs_error("OpenAPI_ue_authentication_ctx_5g_auth_data_parseFromJSON failed [_5g_auth_data]");
+        goto end;
+    }
 
     _links = cJSON_GetObjectItemCaseSensitive(ue_authentication_ctxJSON, "_links");
     if (!_links) {

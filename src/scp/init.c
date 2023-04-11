@@ -25,7 +25,7 @@ static void scp_main(void *data);
 
 static int initialized = 0;
 
-int scp_initialize()
+int scp_initialize(void)
 {
     int rv;
 

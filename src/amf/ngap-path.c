@@ -40,7 +40,7 @@ int ngap_open(void)
     return OGS_OK;
 }
 
-void ngap_close()
+void ngap_close(void)
 {
     ogs_socknode_remove_all(&amf_self()->ngap_list);
     ogs_socknode_remove_all(&amf_self()->ngap_list6);
@@ -448,6 +448,8 @@ int ngap_send_paging(amf_ue_t *amf_ue)
                         ogs_pkbuf_free(ngapbuf);
                         return OGS_ERROR;
                     }
+
+                    amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_MM_PAGING_5G_REQ);
 
                     rv = ngap_send_to_gnb(gnb, ngapbuf, NGAP_NON_UE_SIGNALLING);
                     if (rv != OGS_OK) {

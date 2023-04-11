@@ -121,6 +121,10 @@ OpenAPI_nf_instance_info_t *OpenAPI_nf_instance_info_parseFromJSON(cJSON *nf_ins
     preferred_search = cJSON_GetObjectItemCaseSensitive(nf_instance_infoJSON, "preferredSearch");
     if (preferred_search) {
     preferred_search_local_nonprim = OpenAPI_preferred_search_parseFromJSON(preferred_search);
+    if (!preferred_search_local_nonprim) {
+        ogs_error("OpenAPI_preferred_search_parseFromJSON failed [preferred_search]");
+        goto end;
+    }
     }
 
     nrf_altered_priorities = cJSON_GetObjectItemCaseSensitive(nf_instance_infoJSON, "nrfAlteredPriorities");

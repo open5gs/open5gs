@@ -183,6 +183,10 @@ OpenAPI_authorization_info_t *OpenAPI_authorization_info_parseFromJSON(cJSON *au
         goto end;
     }
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
 
     dnn = cJSON_GetObjectItemCaseSensitive(authorization_infoJSON, "dnn");
     if (!dnn) {
@@ -241,6 +245,10 @@ OpenAPI_authorization_info_t *OpenAPI_authorization_info_parseFromJSON(cJSON *au
     context_info = cJSON_GetObjectItemCaseSensitive(authorization_infoJSON, "contextInfo");
     if (context_info) {
     context_info_local_nonprim = OpenAPI_context_info_parseFromJSON(context_info);
+    if (!context_info_local_nonprim) {
+        ogs_error("OpenAPI_context_info_parseFromJSON failed [context_info]");
+        goto end;
+    }
     }
 
     authorization_info_local_var = OpenAPI_authorization_info_create (

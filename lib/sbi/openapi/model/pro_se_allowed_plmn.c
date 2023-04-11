@@ -94,6 +94,10 @@ OpenAPI_pro_se_allowed_plmn_t *OpenAPI_pro_se_allowed_plmn_parseFromJSON(cJSON *
         goto end;
     }
     visited_plmn_local_nonprim = OpenAPI_plmn_id_parseFromJSON(visited_plmn);
+    if (!visited_plmn_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [visited_plmn]");
+        goto end;
+    }
 
     prose_direct_allowed = cJSON_GetObjectItemCaseSensitive(pro_se_allowed_plmnJSON, "proseDirectAllowed");
     if (prose_direct_allowed) {

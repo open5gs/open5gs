@@ -254,6 +254,10 @@ OpenAPI_rule_report_t *OpenAPI_rule_report_parseFromJSON(cJSON *rule_reportJSON)
     fin_unit_act = cJSON_GetObjectItemCaseSensitive(rule_reportJSON, "finUnitAct");
     if (fin_unit_act) {
     fin_unit_act_local_nonprim = OpenAPI_final_unit_action_parseFromJSON(fin_unit_act);
+    if (!fin_unit_act_local_nonprim) {
+        ogs_error("OpenAPI_final_unit_action_parseFromJSON failed [fin_unit_act]");
+        goto end;
+    }
     }
 
     ran_nas_rel_causes = cJSON_GetObjectItemCaseSensitive(rule_reportJSON, "ranNasRelCauses");
@@ -274,7 +278,6 @@ OpenAPI_rule_report_t *OpenAPI_rule_report_parseFromJSON(cJSON *rule_reportJSON)
             OpenAPI_ran_nas_rel_cause_t *ran_nas_rel_causesItem = OpenAPI_ran_nas_rel_cause_parseFromJSON(ran_nas_rel_causes_local);
             if (!ran_nas_rel_causesItem) {
                 ogs_error("No ran_nas_rel_causesItem");
-                OpenAPI_list_free(ran_nas_rel_causesList);
                 goto end;
             }
             OpenAPI_list_add(ran_nas_rel_causesList, ran_nas_rel_causesItem);

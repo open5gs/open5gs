@@ -185,16 +185,28 @@ OpenAPI_ue_camping_rep_t *OpenAPI_ue_camping_rep_parseFromJSON(cJSON *ue_camping
     serv_nf_id = cJSON_GetObjectItemCaseSensitive(ue_camping_repJSON, "servNfId");
     if (serv_nf_id) {
     serv_nf_id_local_nonprim = OpenAPI_serving_nf_identity_parseFromJSON(serv_nf_id);
+    if (!serv_nf_id_local_nonprim) {
+        ogs_error("OpenAPI_serving_nf_identity_parseFromJSON failed [serv_nf_id]");
+        goto end;
+    }
     }
 
     serving_network = cJSON_GetObjectItemCaseSensitive(ue_camping_repJSON, "servingNetwork");
     if (serving_network) {
     serving_network_local_nonprim = OpenAPI_plmn_id_nid_parseFromJSON(serving_network);
+    if (!serving_network_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_nid_parseFromJSON failed [serving_network]");
+        goto end;
+    }
     }
 
     user_location_info = cJSON_GetObjectItemCaseSensitive(ue_camping_repJSON, "userLocationInfo");
     if (user_location_info) {
     user_location_info_local_nonprim = OpenAPI_user_location_parseFromJSON(user_location_info);
+    if (!user_location_info_local_nonprim) {
+        ogs_error("OpenAPI_user_location_parseFromJSON failed [user_location_info]");
+        goto end;
+    }
     }
 
     ue_time_zone = cJSON_GetObjectItemCaseSensitive(ue_camping_repJSON, "ueTimeZone");

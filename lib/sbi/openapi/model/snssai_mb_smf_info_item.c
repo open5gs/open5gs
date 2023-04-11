@@ -101,6 +101,10 @@ OpenAPI_snssai_mb_smf_info_item_t *OpenAPI_snssai_mb_smf_info_item_parseFromJSON
         goto end;
     }
     s_nssai_local_nonprim = OpenAPI_ext_snssai_parseFromJSON(s_nssai);
+    if (!s_nssai_local_nonprim) {
+        ogs_error("OpenAPI_ext_snssai_parseFromJSON failed [s_nssai]");
+        goto end;
+    }
 
     dnn_info_list = cJSON_GetObjectItemCaseSensitive(snssai_mb_smf_info_itemJSON, "dnnInfoList");
     if (!dnn_info_list) {
@@ -123,7 +127,6 @@ OpenAPI_snssai_mb_smf_info_item_t *OpenAPI_snssai_mb_smf_info_item_parseFromJSON
             OpenAPI_dnn_mb_smf_info_item_t *dnn_info_listItem = OpenAPI_dnn_mb_smf_info_item_parseFromJSON(dnn_info_list_local);
             if (!dnn_info_listItem) {
                 ogs_error("No dnn_info_listItem");
-                OpenAPI_list_free(dnn_info_listList);
                 goto end;
             }
             OpenAPI_list_add(dnn_info_listList, dnn_info_listItem);

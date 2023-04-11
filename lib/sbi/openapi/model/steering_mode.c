@@ -166,6 +166,10 @@ OpenAPI_steering_mode_t *OpenAPI_steering_mode_parseFromJSON(cJSON *steering_mod
     standby = cJSON_GetObjectItemCaseSensitive(steering_modeJSON, "standby");
     if (standby) {
     standby_local_nonprim = OpenAPI_access_type_rm_parseFromJSON(standby);
+    if (!standby_local_nonprim) {
+        ogs_error("OpenAPI_access_type_rm_parseFromJSON failed [standby]");
+        goto end;
+    }
     }
 
     _3g_load = cJSON_GetObjectItemCaseSensitive(steering_modeJSON, "3gLoad");
@@ -188,6 +192,10 @@ OpenAPI_steering_mode_t *OpenAPI_steering_mode_parseFromJSON(cJSON *steering_mod
     thres_value = cJSON_GetObjectItemCaseSensitive(steering_modeJSON, "thresValue");
     if (thres_value) {
     thres_value_local_nonprim = OpenAPI_threshold_value_parseFromJSON(thres_value);
+    if (!thres_value_local_nonprim) {
+        ogs_error("OpenAPI_threshold_value_parseFromJSON failed [thres_value]");
+        goto end;
+    }
     }
 
     steer_mode_ind = cJSON_GetObjectItemCaseSensitive(steering_modeJSON, "steerModeInd");

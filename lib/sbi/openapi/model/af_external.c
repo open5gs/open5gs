@@ -142,7 +142,6 @@ OpenAPI_af_external_t *OpenAPI_af_external_parseFromJSON(cJSON *af_externalJSON)
             OpenAPI_geographic_area_t *allowed_geographic_areaItem = OpenAPI_geographic_area_parseFromJSON(allowed_geographic_area_local);
             if (!allowed_geographic_areaItem) {
                 ogs_error("No allowed_geographic_areaItem");
-                OpenAPI_list_free(allowed_geographic_areaList);
                 goto end;
             }
             OpenAPI_list_add(allowed_geographic_areaList, allowed_geographic_areaItem);
@@ -161,6 +160,10 @@ OpenAPI_af_external_t *OpenAPI_af_external_parseFromJSON(cJSON *af_externalJSON)
     valid_time_period = cJSON_GetObjectItemCaseSensitive(af_externalJSON, "validTimePeriod");
     if (valid_time_period) {
     valid_time_period_local_nonprim = OpenAPI_valid_time_period_parseFromJSON(valid_time_period);
+    if (!valid_time_period_local_nonprim) {
+        ogs_error("OpenAPI_valid_time_period_parseFromJSON failed [valid_time_period]");
+        goto end;
+    }
     }
 
     af_external_local_var = OpenAPI_af_external_create (

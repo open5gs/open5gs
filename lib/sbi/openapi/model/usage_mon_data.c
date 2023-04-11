@@ -229,11 +229,19 @@ OpenAPI_usage_mon_data_t *OpenAPI_usage_mon_data_parseFromJSON(cJSON *usage_mon_
     um_level = cJSON_GetObjectItemCaseSensitive(usage_mon_dataJSON, "umLevel");
     if (um_level) {
     um_level_local_nonprim = OpenAPI_usage_mon_level_parseFromJSON(um_level);
+    if (!um_level_local_nonprim) {
+        ogs_error("OpenAPI_usage_mon_level_parseFromJSON failed [um_level]");
+        goto end;
+    }
     }
 
     allowed_usage = cJSON_GetObjectItemCaseSensitive(usage_mon_dataJSON, "allowedUsage");
     if (allowed_usage) {
     allowed_usage_local_nonprim = OpenAPI_usage_threshold_parseFromJSON(allowed_usage);
+    if (!allowed_usage_local_nonprim) {
+        ogs_error("OpenAPI_usage_threshold_parseFromJSON failed [allowed_usage]");
+        goto end;
+    }
     }
 
     reset_time = cJSON_GetObjectItemCaseSensitive(usage_mon_dataJSON, "resetTime");

@@ -115,7 +115,6 @@ OpenAPI_geo_service_area_1_t *OpenAPI_geo_service_area_1_parseFromJSON(cJSON *ge
             OpenAPI_geographic_area_t *geographic_area_listItem = OpenAPI_geographic_area_parseFromJSON(geographic_area_list_local);
             if (!geographic_area_listItem) {
                 ogs_error("No geographic_area_listItem");
-                OpenAPI_list_free(geographic_area_listList);
                 goto end;
             }
             OpenAPI_list_add(geographic_area_listList, geographic_area_listItem);
@@ -140,7 +139,6 @@ OpenAPI_geo_service_area_1_t *OpenAPI_geo_service_area_1_parseFromJSON(cJSON *ge
             OpenAPI_civic_address_t *civic_address_listItem = OpenAPI_civic_address_parseFromJSON(civic_address_list_local);
             if (!civic_address_listItem) {
                 ogs_error("No civic_address_listItem");
-                OpenAPI_list_free(civic_address_listList);
                 goto end;
             }
             OpenAPI_list_add(civic_address_listList, civic_address_listItem);

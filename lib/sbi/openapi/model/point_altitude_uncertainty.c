@@ -142,6 +142,10 @@ OpenAPI_point_altitude_uncertainty_t *OpenAPI_point_altitude_uncertainty_parseFr
         goto end;
     }
     shape_local_nonprim = OpenAPI_supported_gad_shapes_parseFromJSON(shape);
+    if (!shape_local_nonprim) {
+        ogs_error("OpenAPI_supported_gad_shapes_parseFromJSON failed [shape]");
+        goto end;
+    }
 
     point = cJSON_GetObjectItemCaseSensitive(point_altitude_uncertaintyJSON, "point");
     if (!point) {
@@ -149,6 +153,10 @@ OpenAPI_point_altitude_uncertainty_t *OpenAPI_point_altitude_uncertainty_parseFr
         goto end;
     }
     point_local_nonprim = OpenAPI_geographical_coordinates_parseFromJSON(point);
+    if (!point_local_nonprim) {
+        ogs_error("OpenAPI_geographical_coordinates_parseFromJSON failed [point]");
+        goto end;
+    }
 
     altitude = cJSON_GetObjectItemCaseSensitive(point_altitude_uncertaintyJSON, "altitude");
     if (!altitude) {
@@ -166,6 +174,10 @@ OpenAPI_point_altitude_uncertainty_t *OpenAPI_point_altitude_uncertainty_parseFr
         goto end;
     }
     uncertainty_ellipse_local_nonprim = OpenAPI_uncertainty_ellipse_parseFromJSON(uncertainty_ellipse);
+    if (!uncertainty_ellipse_local_nonprim) {
+        ogs_error("OpenAPI_uncertainty_ellipse_parseFromJSON failed [uncertainty_ellipse]");
+        goto end;
+    }
 
     uncertainty_altitude = cJSON_GetObjectItemCaseSensitive(point_altitude_uncertaintyJSON, "uncertaintyAltitude");
     if (!uncertainty_altitude) {

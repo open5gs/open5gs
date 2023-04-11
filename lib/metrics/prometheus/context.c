@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
+ * Copyright (C) 2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -23,15 +24,7 @@
 #include "prom.h"
 #include "microhttpd.h"
 
-#define DEFAULT_PROMETHEUS_HTTP_PORT       9090
 #define MAX_LABELS 8
-
-typedef struct ogs_metrics_context_s {
-    ogs_list_t  server_list;
-    ogs_list_t  spec_list;
-
-    uint16_t    metrics_port;
-} ogs_metrics_context_t;
 
 typedef struct ogs_metrics_server_s {
     ogs_socknode_t node;
@@ -58,243 +51,39 @@ typedef struct ogs_metrics_inst_s {
     char                    *label_values[MAX_LABELS];
 } ogs_metrics_inst_t;
 
-static ogs_metrics_context_t self;
-static int context_initialized = 0;
 static OGS_POOL(metrics_spec_pool, ogs_metrics_spec_t);
 static OGS_POOL(metrics_server_pool, ogs_metrics_server_t);
 
-void ogs_metrics_context_init(void)
+static int ogs_metrics_context_server_start(ogs_metrics_server_t *server);
+static int ogs_metrics_context_server_stop(ogs_metrics_server_t *server);
+
+void ogs_metrics_server_init(ogs_metrics_context_t *ctx)
 {
-    ogs_assert(context_initialized == 0);
-
-    ogs_log_install_domain(&__ogs_metrics_domain, "metrics", ogs_core()->log.level);
-
-    ogs_pool_init(&metrics_spec_pool, ogs_app()->metrics.max_specs);
-
-    /* Initialize METRICS context */
-    memset(&self, 0, sizeof(ogs_metrics_context_t));
-    ogs_list_init(&self.spec_list);
-    prom_collector_registry_default_init();
-
-    ogs_list_init(&self.server_list);
+    ogs_list_init(&ctx->server_list);
     ogs_pool_init(&metrics_server_pool, ogs_app()->pool.nf);
-
-    context_initialized = 1;
 }
 
-void ogs_metrics_context_final(void)
+void ogs_metrics_server_open(ogs_metrics_context_t *ctx)
 {
-    ogs_metrics_spec_t *spec = NULL, *next = NULL;
-    ogs_assert(context_initialized == 1);
+    ogs_metrics_server_t *server = NULL;
 
-    ogs_list_for_each_entry_safe(&self.spec_list, next, spec, entry) {
-        ogs_metrics_spec_free(spec);
-    }
-    prom_collector_registry_destroy(PROM_COLLECTOR_REGISTRY_DEFAULT);
+    ogs_list_for_each(&ctx->server_list, server)
+        ogs_metrics_context_server_start(server);
+}
 
+void ogs_metrics_server_close(ogs_metrics_context_t *ctx)
+{
+    ogs_metrics_server_t *server = NULL, *next = NULL;
+
+    ogs_list_for_each_safe(&ctx->server_list, next, server)
+        ogs_metrics_context_server_stop(server);
+}
+
+void ogs_metrics_server_final(ogs_metrics_context_t *ctx)
+{
     ogs_metrics_server_remove_all();
 
-    ogs_pool_final(&metrics_spec_pool);
     ogs_pool_final(&metrics_server_pool);
-
-    context_initialized = 0;
-}
-
-ogs_metrics_context_t *ogs_metrics_self(void)
-{
-    return &self;
-}
-
-static int ogs_metrics_context_prepare(void)
-{
-    self.metrics_port = DEFAULT_PROMETHEUS_HTTP_PORT;
-
-    return OGS_OK;
-}
-
-int ogs_metrics_context_parse_config(const char *local)
-{
-    int rv;
-    yaml_document_t *document = NULL;
-    ogs_yaml_iter_t root_iter;
-
-    document = ogs_app()->document;
-    ogs_assert(document);
-
-    rv = ogs_metrics_context_prepare();
-    if (rv != OGS_OK) return rv;
-
-    ogs_yaml_iter_init(&root_iter, document);
-    while (ogs_yaml_iter_next(&root_iter)) {
-        const char *root_key = ogs_yaml_iter_key(&root_iter);
-        ogs_assert(root_key);
-        if (local && !strcmp(root_key, local)) {
-            ogs_yaml_iter_t local_iter;
-            ogs_yaml_iter_recurse(&root_iter, &local_iter);
-            while (ogs_yaml_iter_next(&local_iter)) {
-                const char *local_key = ogs_yaml_iter_key(&local_iter);
-                ogs_assert(local_key);
-                if (!strcmp(local_key, "metrics")) {
-                    ogs_list_t list, list6;
-                    ogs_socknode_t *node = NULL, *node6 = NULL;
-
-                    ogs_yaml_iter_t metrics_array, metrics_iter;
-                    ogs_yaml_iter_recurse(&local_iter, &metrics_array);
-                    do {
-                        int i, family = AF_UNSPEC;
-                        int num = 0;
-                        const char *hostname[OGS_MAX_NUM_OF_HOSTNAME];
-
-                        uint16_t port = self.metrics_port;
-                        const char *dev = NULL;
-                        ogs_sockaddr_t *addr = NULL;
-
-                        ogs_sockopt_t option;
-                        bool is_option = false;
-
-                        if (ogs_yaml_iter_type(&metrics_array) ==
-                                YAML_MAPPING_NODE) {
-                            memcpy(&metrics_iter, &metrics_array,
-                                    sizeof(ogs_yaml_iter_t));
-                        } else if (ogs_yaml_iter_type(&metrics_array) ==
-                            YAML_SEQUENCE_NODE) {
-                            if (!ogs_yaml_iter_next(&metrics_array))
-                                break;
-                            ogs_yaml_iter_recurse(
-                                    &metrics_array, &metrics_iter);
-                        } else if (ogs_yaml_iter_type(&metrics_array) ==
-                            YAML_SCALAR_NODE) {
-                            break;
-                        } else
-                            ogs_assert_if_reached();
-
-                        while (ogs_yaml_iter_next(&metrics_iter)) {
-                            const char *metrics_key =
-                                ogs_yaml_iter_key(&metrics_iter);
-                            ogs_assert(metrics_key);
-                            if (!strcmp(metrics_key, "family")) {
-                                const char *v = ogs_yaml_iter_value(
-                                        &metrics_iter);
-                                if (v) family = atoi(v);
-                                if (family != AF_UNSPEC &&
-                                    family != AF_INET && family != AF_INET6) {
-                                    ogs_warn("Ignore family(%d) : "
-                                        "AF_UNSPEC(%d), "
-                                        "AF_INET(%d), AF_INET6(%d) ",
-                                        family, AF_UNSPEC, AF_INET, AF_INET6);
-                                    family = AF_UNSPEC;
-                                }
-                            } else if (!strcmp(metrics_key, "addr") ||
-                                    !strcmp(metrics_key, "name")) {
-                                ogs_yaml_iter_t hostname_iter;
-                                ogs_yaml_iter_recurse(&metrics_iter,
-                                        &hostname_iter);
-                                ogs_assert(ogs_yaml_iter_type(&hostname_iter) !=
-                                    YAML_MAPPING_NODE);
-
-                                do {
-                                    if (ogs_yaml_iter_type(&hostname_iter) ==
-                                            YAML_SEQUENCE_NODE) {
-                                        if (!ogs_yaml_iter_next(
-                                                    &hostname_iter))
-                                            break;
-                                    }
-
-                                    ogs_assert(num < OGS_MAX_NUM_OF_HOSTNAME);
-                                    hostname[num++] =
-                                        ogs_yaml_iter_value(&hostname_iter);
-                                } while (
-                                    ogs_yaml_iter_type(&hostname_iter) ==
-                                        YAML_SEQUENCE_NODE);
-                            } else if (!strcmp(metrics_key, "port")) {
-                                const char *v = ogs_yaml_iter_value(
-                                        &metrics_iter);
-                                if (v)
-                                    port = atoi(v);
-                            } else if (!strcmp(metrics_key, "dev")) {
-                                dev = ogs_yaml_iter_value(&metrics_iter);
-                            } else if (!strcmp(metrics_key, "option")) {
-                                rv = ogs_app_config_parse_sockopt(
-                                        &metrics_iter, &option);
-                                if (rv != OGS_OK) return rv;
-                                is_option = true;
-                            } else
-                                ogs_warn("unknown key `%s`", metrics_key);
-                        }
-
-                        addr = NULL;
-                        for (i = 0; i < num; i++) {
-                            rv = ogs_addaddrinfo(&addr,
-                                    family, hostname[i], port, 0);
-                            ogs_assert(rv == OGS_OK);
-                        }
-
-                        ogs_list_init(&list);
-                        ogs_list_init(&list6);
-
-                        if (addr) {
-                            if (ogs_app()->parameter.no_ipv4 == 0)
-                                ogs_socknode_add(
-                                    &list, AF_INET, addr, NULL);
-                            if (ogs_app()->parameter.no_ipv6 == 0)
-                                ogs_socknode_add(
-                                    &list6, AF_INET6, addr, NULL);
-                            ogs_freeaddrinfo(addr);
-                        }
-
-                        if (dev) {
-                            rv = ogs_socknode_probe(
-                                ogs_app()->parameter.no_ipv4 ? NULL : &list,
-                                ogs_app()->parameter.no_ipv6 ? NULL : &list6,
-                                dev, port, NULL);
-                            ogs_assert(rv == OGS_OK);
-                        }
-
-                        node = ogs_list_first(&list);
-                        if (node) {
-                            ogs_metrics_server_t *server =
-                                ogs_metrics_server_add(
-                                    node->addr, is_option ? &option : NULL);
-                            ogs_assert(server);
-                        }
-                        node6 = ogs_list_first(&list6);
-                        if (node6) {
-                            ogs_metrics_server_t *server =
-                                ogs_metrics_server_add(
-                                    node6->addr, is_option ? &option : NULL);
-                            ogs_assert(server);
-                        }
-
-                        ogs_socknode_remove_all(&list);
-                        ogs_socknode_remove_all(&list6);
-
-                    } while (ogs_yaml_iter_type(&metrics_array) ==
-                            YAML_SEQUENCE_NODE);
-
-                    if (ogs_list_first(&self.server_list) == 0) {
-                        ogs_list_init(&list);
-                        ogs_list_init(&list6);
-
-                        rv = ogs_socknode_probe(
-                            ogs_app()->parameter.no_ipv4 ? NULL : &list,
-                            ogs_app()->parameter.no_ipv6 ? NULL : &list6,
-                            NULL, self.metrics_port, NULL);
-                        ogs_assert(rv == OGS_OK);
-
-                        node = ogs_list_first(&list);
-                        if (node) ogs_metrics_server_add(node->addr, NULL);
-                        node6 = ogs_list_first(&list6);
-                        if (node6) ogs_metrics_server_add(node6->addr, NULL);
-
-                        ogs_socknode_remove_all(&list);
-                        ogs_socknode_remove_all(&list6);
-                    }
-                }
-            }
-        }
-    }
-
-    return OGS_OK;
 }
 
 ogs_metrics_server_t *ogs_metrics_server_add(
@@ -512,13 +301,6 @@ static int ogs_metrics_context_server_start(ogs_metrics_server_t *server)
 
     return OGS_OK;
 }
-void ogs_metrics_context_open(ogs_metrics_context_t *ctx)
-{
-    ogs_metrics_server_t *server = NULL;
-
-    ogs_list_for_each(&ctx->server_list, server)
-        ogs_metrics_context_server_start(server);
-}
 
 static int ogs_metrics_context_server_stop(ogs_metrics_server_t *server)
 {
@@ -533,21 +315,38 @@ static int ogs_metrics_context_server_stop(ogs_metrics_server_t *server)
     }
     return OGS_OK;
 }
-void ogs_metrics_context_close(ogs_metrics_context_t *ctx)
-{
-    ogs_metrics_server_t *server = NULL, *next = NULL;
 
-    ogs_list_for_each_safe(&ctx->server_list, next, server)
-        ogs_metrics_context_server_stop(server);
+void ogs_metrics_spec_init(ogs_metrics_context_t *ctx)
+{
+    ogs_list_init(&ctx->spec_list);
+    ogs_pool_init(&metrics_spec_pool, ogs_app()->metrics.max_specs);
+
+    prom_collector_registry_default_init();
+}
+
+void ogs_metrics_spec_final(ogs_metrics_context_t *ctx)
+{
+    ogs_metrics_spec_t *spec = NULL, *next = NULL;
+
+    ogs_list_for_each_entry_safe(&ctx->spec_list, next, spec, entry) {
+        ogs_metrics_spec_free(spec);
+    }
+    prom_collector_registry_destroy(PROM_COLLECTOR_REGISTRY_DEFAULT);
+
+    ogs_pool_final(&metrics_spec_pool);
 }
 
 ogs_metrics_spec_t *ogs_metrics_spec_new(
         ogs_metrics_context_t *ctx, ogs_metrics_metric_type_t type,
         const char *name, const char *description,
-        int initial_val, unsigned int num_labels, const char ** labels)
+        int initial_val, unsigned int num_labels, const char ** labels,
+        ogs_metrics_histogram_params_t *histogram_params)
 {
     ogs_metrics_spec_t *spec;
     unsigned int i;
+
+    prom_histogram_buckets_t *buckets;
+    double *upper_bounds;
 
     ogs_assert(name);
     ogs_assert(description);
@@ -576,6 +375,44 @@ ogs_metrics_spec_t *ogs_metrics_spec_new(
     case OGS_METRICS_METRIC_TYPE_GAUGE:
         spec->prom = prom_gauge_new(spec->name, spec->description,
                                     spec->num_labels, (const char **)spec->labels);
+        break;
+    case OGS_METRICS_METRIC_TYPE_HISTOGRAM:
+        ogs_assert(histogram_params);
+        switch (histogram_params->type) {
+        case OGS_METRICS_HISTOGRAM_BUCKET_TYPE_EXPONENTIAL:
+            buckets = prom_histogram_buckets_exponential(histogram_params->exp.start,
+                    histogram_params->exp.factor, histogram_params->count);
+            ogs_assert(buckets);
+            break;
+        case OGS_METRICS_HISTOGRAM_BUCKET_TYPE_LINEAR:
+            buckets = prom_histogram_buckets_linear(histogram_params->lin.start,
+                    histogram_params->lin.width, histogram_params->count);
+            ogs_assert(buckets);
+            break;
+        case OGS_METRICS_HISTOGRAM_BUCKET_TYPE_VARIABLE:
+            buckets = (prom_histogram_buckets_t *)prom_malloc(sizeof(prom_histogram_buckets_t));
+            ogs_assert(buckets);
+
+            ogs_assert(histogram_params->count <= OGS_METRICS_HIST_VAR_BUCKETS_MAX);
+            buckets->count = histogram_params->count;
+
+            upper_bounds = (double *)prom_malloc(
+                    sizeof(double) * histogram_params->count);
+            ogs_assert(upper_bounds);
+            for (i = 0; i < histogram_params->count; i++) {
+                upper_bounds[i] = histogram_params->var.buckets[i];
+                if (i > 0)
+                    ogs_assert(upper_bounds[i] > upper_bounds[i - 1]);
+            }
+            buckets->upper_bounds = upper_bounds;
+            break;
+        default:
+            ogs_assert_if_reached();
+            break;
+        }
+        spec->prom = prom_histogram_new(spec->name, spec->description,
+                buckets, spec->num_labels, (const char **)spec->labels);
+        ogs_assert(spec->prom);
         break;
     default:
         ogs_assert_if_reached();
@@ -681,6 +518,10 @@ void ogs_metrics_inst_add(ogs_metrics_inst_t *inst, int val)
             prom_gauge_add(inst->spec->prom, (double)val, (const char **)inst->label_values);
         else
             prom_gauge_sub(inst->spec->prom, (double)-1.0*(double)val, (const char **)inst->label_values);
+        break;
+    case OGS_METRICS_METRIC_TYPE_HISTOGRAM:
+        ogs_assert(val >= 0);
+        prom_histogram_observe(inst->spec->prom, (double)val, (const char **)inst->label_values);
         break;
     default:
         ogs_assert_if_reached();

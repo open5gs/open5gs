@@ -114,15 +114,27 @@ OpenAPI_send_mo_data_req_data_t *OpenAPI_send_mo_data_req_data_parseFromJSON(cJS
         goto end;
     }
     mo_data_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(mo_data);
+    if (!mo_data_local_nonprim) {
+        ogs_error("OpenAPI_ref_to_binary_data_parseFromJSON failed [mo_data]");
+        goto end;
+    }
 
     mo_exp_data_counter = cJSON_GetObjectItemCaseSensitive(send_mo_data_req_dataJSON, "moExpDataCounter");
     if (mo_exp_data_counter) {
     mo_exp_data_counter_local_nonprim = OpenAPI_mo_exp_data_counter_parseFromJSON(mo_exp_data_counter);
+    if (!mo_exp_data_counter_local_nonprim) {
+        ogs_error("OpenAPI_mo_exp_data_counter_parseFromJSON failed [mo_exp_data_counter]");
+        goto end;
+    }
     }
 
     ue_location = cJSON_GetObjectItemCaseSensitive(send_mo_data_req_dataJSON, "ueLocation");
     if (ue_location) {
     ue_location_local_nonprim = OpenAPI_user_location_parseFromJSON(ue_location);
+    if (!ue_location_local_nonprim) {
+        ogs_error("OpenAPI_user_location_parseFromJSON failed [ue_location]");
+        goto end;
+    }
     }
 
     send_mo_data_req_data_local_var = OpenAPI_send_mo_data_req_data_create (

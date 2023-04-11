@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -1021,7 +1021,7 @@ ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_find_by_service_type(
     return nf_instance;
 }
 
-bool ogs_sbi_nf_instance_maximum_number_is_reached()
+bool ogs_sbi_nf_instance_maximum_number_is_reached(void)
 {
     return nf_instance_pool.avail <= 0;
 }
@@ -1883,9 +1883,6 @@ ogs_sbi_subscription_data_t *ogs_sbi_subscription_data_add(void)
     ogs_assert(subscription_data);
     memset(subscription_data, 0, sizeof(ogs_sbi_subscription_data_t));
 
-    subscription_data->time.validity_duration =
-            ogs_app()->time.subscription.validity_duration;
-
     ogs_list_add(&ogs_sbi_self()->subscription_data_list, subscription_data);
 
     return subscription_data;
@@ -1922,6 +1919,9 @@ void ogs_sbi_subscription_data_remove(
 
     if (subscription_data->t_validity)
         ogs_timer_delete(subscription_data->t_validity);
+
+    if (subscription_data->t_patch)
+        ogs_timer_delete(subscription_data->t_patch);
 
     if (subscription_data->client)
         ogs_sbi_client_remove(subscription_data->client);

@@ -706,6 +706,10 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_parseFromJSON(cJSON *{{classname}
             {{^isEnum}}
                 {{#isModel}}
     {{{name}}}_local_nonprim = OpenAPI_{{complexType}}{{#isFreeFormObject}}object{{/isFreeFormObject}}_parseFromJSON({{{name}}});
+    if (!{{{name}}}_local_nonprim) {
+        ogs_error("OpenAPI_{{complexType}}{{#isFreeFormObject}}object{{/isFreeFormObject}}_parseFromJSON failed [{{{name}}}]");
+        goto end;
+    }
                 {{/isModel}}
                 {{^isModel}}
                     {{#isUuid}}
@@ -808,7 +812,6 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_parseFromJSON(cJSON *{{classname}
             OpenAPI_{{complexType}}_t *{{{name}}}Item = OpenAPI_{{complexType}}_parseFromJSON({{{name}}}_local);
             if (!{{{name}}}Item) {
                 ogs_error("No {{{name}}}Item");
-                OpenAPI_list_free({{{name}}}List);
                 goto end;
             }
             OpenAPI_list_add({{{name}}}List, {{{name}}}Item);

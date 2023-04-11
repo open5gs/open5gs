@@ -146,6 +146,10 @@ OpenAPI_model_5_gvn_group_configuration_t *OpenAPI_model_5_gvn_group_configurati
     _5g_vn_group_data = cJSON_GetObjectItemCaseSensitive(model_5_gvn_group_configurationJSON, "5gVnGroupData");
     if (_5g_vn_group_data) {
     _5g_vn_group_data_local_nonprim = OpenAPI_model_5_gvn_group_data_parseFromJSON(_5g_vn_group_data);
+    if (!_5g_vn_group_data_local_nonprim) {
+        ogs_error("OpenAPI_model_5_gvn_group_data_parseFromJSON failed [_5g_vn_group_data]");
+        goto end;
+    }
     }
 
     members = cJSON_GetObjectItemCaseSensitive(model_5_gvn_group_configurationJSON, "members");

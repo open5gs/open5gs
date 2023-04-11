@@ -71,7 +71,25 @@ if meson.version().version_compare('>=0.51.0')
     libmetrics_dependencies = libmetrics_dependencies + [libprom_dep, libmicrohttpd_dep]
     libmetrics_file_list = libmetrics_file_list + ' prometheus/context.c'
 else
-    libmetrics_file_list = libmetrics_file_list + ' void/context.c'
+    libprom_sources = files('''
+        void/context.c
+    '''.split())
+
+    libprom_inc = include_directories('.')
+
+    libprom = library('void_prom',
+        sources : libprom_sources,
+        version : libogslib_version,
+        include_directories : [libprom_inc, libinc],
+        dependencies : libapp_dep,
+        install : true)
+
+    libprom_dep = declare_dependency(
+        link_with : libprom,
+        include_directories : [libprom_inc, libinc],
+        dependencies : libapp_dep)
+
+    libmetrics_dependencies = libmetrics_dependencies + [libprom_dep]
 endif
 
 libmetrics_sources = files(libmetrics_file_list.split())

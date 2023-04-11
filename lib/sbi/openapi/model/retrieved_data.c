@@ -88,11 +88,19 @@ OpenAPI_retrieved_data_t *OpenAPI_retrieved_data_parseFromJSON(cJSON *retrieved_
     small_data_rate_status = cJSON_GetObjectItemCaseSensitive(retrieved_dataJSON, "smallDataRateStatus");
     if (small_data_rate_status) {
     small_data_rate_status_local_nonprim = OpenAPI_small_data_rate_status_parseFromJSON(small_data_rate_status);
+    if (!small_data_rate_status_local_nonprim) {
+        ogs_error("OpenAPI_small_data_rate_status_parseFromJSON failed [small_data_rate_status]");
+        goto end;
+    }
     }
 
     af_coordination_info = cJSON_GetObjectItemCaseSensitive(retrieved_dataJSON, "afCoordinationInfo");
     if (af_coordination_info) {
     af_coordination_info_local_nonprim = OpenAPI_af_coordination_info_parseFromJSON(af_coordination_info);
+    if (!af_coordination_info_local_nonprim) {
+        ogs_error("OpenAPI_af_coordination_info_parseFromJSON failed [af_coordination_info]");
+        goto end;
+    }
     }
 
     retrieved_data_local_var = OpenAPI_retrieved_data_create (

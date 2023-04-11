@@ -184,21 +184,37 @@ OpenAPI_utra_location_t *OpenAPI_utra_location_parseFromJSON(cJSON *utra_locatio
     cgi = cJSON_GetObjectItemCaseSensitive(utra_locationJSON, "cgi");
     if (cgi) {
     cgi_local_nonprim = OpenAPI_cell_global_id_parseFromJSON(cgi);
+    if (!cgi_local_nonprim) {
+        ogs_error("OpenAPI_cell_global_id_parseFromJSON failed [cgi]");
+        goto end;
+    }
     }
 
     sai = cJSON_GetObjectItemCaseSensitive(utra_locationJSON, "sai");
     if (sai) {
     sai_local_nonprim = OpenAPI_service_area_id_parseFromJSON(sai);
+    if (!sai_local_nonprim) {
+        ogs_error("OpenAPI_service_area_id_parseFromJSON failed [sai]");
+        goto end;
+    }
     }
 
     lai = cJSON_GetObjectItemCaseSensitive(utra_locationJSON, "lai");
     if (lai) {
     lai_local_nonprim = OpenAPI_location_area_id_parseFromJSON(lai);
+    if (!lai_local_nonprim) {
+        ogs_error("OpenAPI_location_area_id_parseFromJSON failed [lai]");
+        goto end;
+    }
     }
 
     rai = cJSON_GetObjectItemCaseSensitive(utra_locationJSON, "rai");
     if (rai) {
     rai_local_nonprim = OpenAPI_routing_area_id_parseFromJSON(rai);
+    if (!rai_local_nonprim) {
+        ogs_error("OpenAPI_routing_area_id_parseFromJSON failed [rai]");
+        goto end;
+    }
     }
 
     age_of_location_information = cJSON_GetObjectItemCaseSensitive(utra_locationJSON, "ageOfLocationInformation");

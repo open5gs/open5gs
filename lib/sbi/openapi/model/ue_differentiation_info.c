@@ -164,6 +164,10 @@ OpenAPI_ue_differentiation_info_t *OpenAPI_ue_differentiation_info_parseFromJSON
     scheduled_com_time = cJSON_GetObjectItemCaseSensitive(ue_differentiation_infoJSON, "scheduledComTime");
     if (scheduled_com_time) {
     scheduled_com_time_local_nonprim = OpenAPI_scheduled_communication_time_parseFromJSON(scheduled_com_time);
+    if (!scheduled_com_time_local_nonprim) {
+        ogs_error("OpenAPI_scheduled_communication_time_parseFromJSON failed [scheduled_com_time]");
+        goto end;
+    }
     }
 
     stationary_ind = cJSON_GetObjectItemCaseSensitive(ue_differentiation_infoJSON, "stationaryInd");
@@ -187,6 +191,10 @@ OpenAPI_ue_differentiation_info_t *OpenAPI_ue_differentiation_info_parseFromJSON
     battery_ind = cJSON_GetObjectItemCaseSensitive(ue_differentiation_infoJSON, "batteryInd");
     if (battery_ind) {
     battery_ind_local_nonprim = OpenAPI_battery_indication_parseFromJSON(battery_ind);
+    if (!battery_ind_local_nonprim) {
+        ogs_error("OpenAPI_battery_indication_parseFromJSON failed [battery_ind]");
+        goto end;
+    }
     }
 
     validity_time = cJSON_GetObjectItemCaseSensitive(ue_differentiation_infoJSON, "validityTime");

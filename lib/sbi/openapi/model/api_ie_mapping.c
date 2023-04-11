@@ -114,6 +114,10 @@ OpenAPI_api_ie_mapping_t *OpenAPI_api_ie_mapping_parseFromJSON(cJSON *api_ie_map
         goto end;
     }
     api_signature_local_nonprim = OpenAPI_api_signature_parseFromJSON(api_signature);
+    if (!api_signature_local_nonprim) {
+        ogs_error("OpenAPI_api_signature_parseFromJSON failed [api_signature]");
+        goto end;
+    }
 
     api_method = cJSON_GetObjectItemCaseSensitive(api_ie_mappingJSON, "apiMethod");
     if (!api_method) {
@@ -147,7 +151,6 @@ OpenAPI_api_ie_mapping_t *OpenAPI_api_ie_mapping_parseFromJSON(cJSON *api_ie_map
             OpenAPI_ie_info_t *ie_listItem = OpenAPI_ie_info_parseFromJSON(ie_list_local);
             if (!ie_listItem) {
                 ogs_error("No ie_listItem");
-                OpenAPI_list_free(ie_listList);
                 goto end;
             }
             OpenAPI_list_add(ie_listList, ie_listItem);

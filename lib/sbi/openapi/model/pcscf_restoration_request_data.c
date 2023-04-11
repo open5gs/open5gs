@@ -153,6 +153,10 @@ OpenAPI_pcscf_restoration_request_data_t *OpenAPI_pcscf_restoration_request_data
     slice_info = cJSON_GetObjectItemCaseSensitive(pcscf_restoration_request_dataJSON, "sliceInfo");
     if (slice_info) {
     slice_info_local_nonprim = OpenAPI_snssai_parseFromJSON(slice_info);
+    if (!slice_info_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [slice_info]");
+        goto end;
+    }
     }
 
     supi = cJSON_GetObjectItemCaseSensitive(pcscf_restoration_request_dataJSON, "supi");

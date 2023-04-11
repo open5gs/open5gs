@@ -194,6 +194,10 @@ OpenAPI_ip_sm_gw_registration_t *OpenAPI_ip_sm_gw_registration_parseFromJSON(cJS
     ip_sm_gw_diameter_address = cJSON_GetObjectItemCaseSensitive(ip_sm_gw_registrationJSON, "ipSmGwDiameterAddress");
     if (ip_sm_gw_diameter_address) {
     ip_sm_gw_diameter_address_local_nonprim = OpenAPI_network_node_diameter_address_parseFromJSON(ip_sm_gw_diameter_address);
+    if (!ip_sm_gw_diameter_address_local_nonprim) {
+        ogs_error("OpenAPI_network_node_diameter_address_parseFromJSON failed [ip_sm_gw_diameter_address]");
+        goto end;
+    }
     }
 
     ipsmgw_ipv4 = cJSON_GetObjectItemCaseSensitive(ip_sm_gw_registrationJSON, "ipsmgwIpv4");

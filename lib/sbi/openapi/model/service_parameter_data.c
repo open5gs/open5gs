@@ -437,6 +437,10 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
     snssai = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "snssai");
     if (snssai) {
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
     }
 
     inter_group_id = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "interGroupId");
@@ -553,7 +557,6 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
             OpenAPI_ursp_rule_request_t *ursp_guidanceItem = OpenAPI_ursp_rule_request_parseFromJSON(ursp_guidance_local);
             if (!ursp_guidanceItem) {
                 ogs_error("No ursp_guidanceItem");
-                OpenAPI_list_free(ursp_guidanceList);
                 goto end;
             }
             OpenAPI_list_add(ursp_guidanceList, ursp_guidanceItem);
@@ -578,7 +581,6 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
             OpenAPI_event_t *delivery_eventsItem = OpenAPI_event_parseFromJSON(delivery_events_local);
             if (!delivery_eventsItem) {
                 ogs_error("No delivery_eventsItem");
-                OpenAPI_list_free(delivery_eventsList);
                 goto end;
             }
             OpenAPI_list_add(delivery_eventsList, delivery_eventsItem);

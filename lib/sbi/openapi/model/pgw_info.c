@@ -180,11 +180,19 @@ OpenAPI_pgw_info_t *OpenAPI_pgw_info_parseFromJSON(cJSON *pgw_infoJSON)
     pgw_ip_addr = cJSON_GetObjectItemCaseSensitive(pgw_infoJSON, "pgwIpAddr");
     if (pgw_ip_addr) {
     pgw_ip_addr_local_nonprim = OpenAPI_ip_address_parseFromJSON(pgw_ip_addr);
+    if (!pgw_ip_addr_local_nonprim) {
+        ogs_error("OpenAPI_ip_address_parseFromJSON failed [pgw_ip_addr]");
+        goto end;
+    }
     }
 
     plmn_id = cJSON_GetObjectItemCaseSensitive(pgw_infoJSON, "plmnId");
     if (plmn_id) {
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
+    if (!plmn_id_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [plmn_id]");
+        goto end;
+    }
     }
 
     epdg_ind = cJSON_GetObjectItemCaseSensitive(pgw_infoJSON, "epdgInd");

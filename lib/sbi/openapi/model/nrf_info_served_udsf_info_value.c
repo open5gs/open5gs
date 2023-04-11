@@ -146,7 +146,6 @@ OpenAPI_nrf_info_served_udsf_info_value_t *OpenAPI_nrf_info_served_udsf_info_val
             OpenAPI_supi_range_t *supi_rangesItem = OpenAPI_supi_range_parseFromJSON(supi_ranges_local);
             if (!supi_rangesItem) {
                 ogs_error("No supi_rangesItem");
-                OpenAPI_list_free(supi_rangesList);
                 goto end;
             }
             OpenAPI_list_add(supi_rangesList, supi_rangesItem);

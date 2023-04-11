@@ -118,7 +118,6 @@ OpenAPI_network_slice_cond_t *OpenAPI_network_slice_cond_parseFromJSON(cJSON *ne
             OpenAPI_snssai_t *snssai_listItem = OpenAPI_snssai_parseFromJSON(snssai_list_local);
             if (!snssai_listItem) {
                 ogs_error("No snssai_listItem");
-                OpenAPI_list_free(snssai_listList);
                 goto end;
             }
             OpenAPI_list_add(snssai_listList, snssai_listItem);

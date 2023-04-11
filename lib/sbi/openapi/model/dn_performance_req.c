@@ -115,11 +115,19 @@ OpenAPI_dn_performance_req_t *OpenAPI_dn_performance_req_parseFromJSON(cJSON *dn
     dn_perf_order_criter = cJSON_GetObjectItemCaseSensitive(dn_performance_reqJSON, "dnPerfOrderCriter");
     if (dn_perf_order_criter) {
     dn_perf_order_criter_local_nonprim = OpenAPI_dn_perf_ordering_criterion_parseFromJSON(dn_perf_order_criter);
+    if (!dn_perf_order_criter_local_nonprim) {
+        ogs_error("OpenAPI_dn_perf_ordering_criterion_parseFromJSON failed [dn_perf_order_criter]");
+        goto end;
+    }
     }
 
     order = cJSON_GetObjectItemCaseSensitive(dn_performance_reqJSON, "order");
     if (order) {
     order_local_nonprim = OpenAPI_matching_direction_parseFromJSON(order);
+    if (!order_local_nonprim) {
+        ogs_error("OpenAPI_matching_direction_parseFromJSON failed [order]");
+        goto end;
+    }
     }
 
     report_thresholds = cJSON_GetObjectItemCaseSensitive(dn_performance_reqJSON, "reportThresholds");
@@ -140,7 +148,6 @@ OpenAPI_dn_performance_req_t *OpenAPI_dn_performance_req_parseFromJSON(cJSON *dn
             OpenAPI_threshold_level_t *report_thresholdsItem = OpenAPI_threshold_level_parseFromJSON(report_thresholds_local);
             if (!report_thresholdsItem) {
                 ogs_error("No report_thresholdsItem");
-                OpenAPI_list_free(report_thresholdsList);
                 goto end;
             }
             OpenAPI_list_add(report_thresholdsList, report_thresholdsItem);

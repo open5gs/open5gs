@@ -141,6 +141,10 @@ OpenAPI_exposure_data_change_notification_t *OpenAPI_exposure_data_change_notifi
     access_and_mobility_data = cJSON_GetObjectItemCaseSensitive(exposure_data_change_notificationJSON, "accessAndMobilityData");
     if (access_and_mobility_data) {
     access_and_mobility_data_local_nonprim = OpenAPI_access_and_mobility_data_parseFromJSON(access_and_mobility_data);
+    if (!access_and_mobility_data_local_nonprim) {
+        ogs_error("OpenAPI_access_and_mobility_data_parseFromJSON failed [access_and_mobility_data]");
+        goto end;
+    }
     }
 
     pdu_session_management_data = cJSON_GetObjectItemCaseSensitive(exposure_data_change_notificationJSON, "pduSessionManagementData");
@@ -161,7 +165,6 @@ OpenAPI_exposure_data_change_notification_t *OpenAPI_exposure_data_change_notifi
             OpenAPI_pdu_session_management_data_t *pdu_session_management_dataItem = OpenAPI_pdu_session_management_data_parseFromJSON(pdu_session_management_data_local);
             if (!pdu_session_management_dataItem) {
                 ogs_error("No pdu_session_management_dataItem");
-                OpenAPI_list_free(pdu_session_management_dataList);
                 goto end;
             }
             OpenAPI_list_add(pdu_session_management_dataList, pdu_session_management_dataItem);

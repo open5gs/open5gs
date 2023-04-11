@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2022-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -106,6 +106,29 @@ bool ogs_nnrf_nfm_send_nf_status_subscribe(
             ogs_strdup(subscr_cond_service_name);
 
     request = ogs_nnrf_nfm_build_status_subscribe(subscription_data);
+    if (!request) {
+        ogs_error("No Request");
+        return false;
+    }
+
+    rc = ogs_sbi_send_notification_request(
+            OGS_SBI_SERVICE_TYPE_NNRF_NFM, NULL, request, subscription_data);
+    ogs_expect(rc == true);
+
+    ogs_sbi_request_free(request);
+
+    return rc;
+}
+
+bool ogs_nnrf_nfm_send_nf_status_update(
+        ogs_sbi_subscription_data_t *subscription_data)
+{
+    bool rc;
+    ogs_sbi_request_t *request = NULL;
+
+    ogs_assert(subscription_data);
+
+    request = ogs_nnrf_nfm_build_status_update(subscription_data);
     if (!request) {
         ogs_error("No Request");
         return false;

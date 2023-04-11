@@ -39,7 +39,8 @@ static int mme_metrics_init_spec(ogs_metrics_context_t *ctx,
     for (i = 0; i < len; i++) {
         dst[i] = ogs_metrics_spec_new(ctx, src[i].type,
                 src[i].name, src[i].description,
-                src[i].initial_val, src[i].num_labels, src[i].labels);
+                src[i].initial_val, src[i].num_labels, src[i].labels,
+                NULL);
     }
     return OGS_OK;
 }

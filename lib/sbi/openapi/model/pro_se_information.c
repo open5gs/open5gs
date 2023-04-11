@@ -67,6 +67,10 @@ OpenAPI_pro_se_information_t *OpenAPI_pro_se_information_parseFromJSON(cJSON *pr
     n2_pc5_pro_se_pol = cJSON_GetObjectItemCaseSensitive(pro_se_informationJSON, "n2Pc5ProSePol");
     if (n2_pc5_pro_se_pol) {
     n2_pc5_pro_se_pol_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(n2_pc5_pro_se_pol);
+    if (!n2_pc5_pro_se_pol_local_nonprim) {
+        ogs_error("OpenAPI_n2_info_content_parseFromJSON failed [n2_pc5_pro_se_pol]");
+        goto end;
+    }
     }
 
     pro_se_information_local_var = OpenAPI_pro_se_information_create (

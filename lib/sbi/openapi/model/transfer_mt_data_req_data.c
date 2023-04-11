@@ -72,6 +72,10 @@ OpenAPI_transfer_mt_data_req_data_t *OpenAPI_transfer_mt_data_req_data_parseFrom
         goto end;
     }
     mt_data_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(mt_data);
+    if (!mt_data_local_nonprim) {
+        ogs_error("OpenAPI_ref_to_binary_data_parseFromJSON failed [mt_data]");
+        goto end;
+    }
 
     transfer_mt_data_req_data_local_var = OpenAPI_transfer_mt_data_req_data_create (
         mt_data_local_nonprim

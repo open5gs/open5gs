@@ -1,4 +1,4 @@
-# Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+# Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
 
 # This file is part of Open5GS.
 
@@ -16,7 +16,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 project('open5gs', 'c', 'cpp',
-    version : '2.6.0',
+    version : '2.6.2',
     license : 'AGPL-3.0-or-later',
     meson_version : '>= 0.43.0',
     default_options : [
@@ -25,7 +25,7 @@ project('open5gs', 'c', 'cpp',
     ],
 )
 
-libogslib_version = '2.6.0'
+libogslib_version = '2.6.2'
 
 prefix = get_option('prefix')
 bindir = join_paths(prefix, get_option('bindir'))

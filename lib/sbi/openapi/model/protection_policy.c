@@ -115,7 +115,6 @@ OpenAPI_protection_policy_t *OpenAPI_protection_policy_parseFromJSON(cJSON *prot
             OpenAPI_api_ie_mapping_t *api_ie_mapping_listItem = OpenAPI_api_ie_mapping_parseFromJSON(api_ie_mapping_list_local);
             if (!api_ie_mapping_listItem) {
                 ogs_error("No api_ie_mapping_listItem");
-                OpenAPI_list_free(api_ie_mapping_listList);
                 goto end;
             }
             OpenAPI_list_add(api_ie_mapping_listList, api_ie_mapping_listItem);

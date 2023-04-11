@@ -138,7 +138,6 @@ OpenAPI_sm_subs_data_t *OpenAPI_sm_subs_data_parseFromJSON(cJSON *sm_subs_dataJS
             OpenAPI_session_management_subscription_data_t *individual_sm_subs_dataItem = OpenAPI_session_management_subscription_data_parseFromJSON(individual_sm_subs_data_local);
             if (!individual_sm_subs_dataItem) {
                 ogs_error("No individual_sm_subs_dataItem");
-                OpenAPI_list_free(individual_sm_subs_dataList);
                 goto end;
             }
             OpenAPI_list_add(individual_sm_subs_dataList, individual_sm_subs_dataItem);

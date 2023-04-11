@@ -160,21 +160,37 @@ OpenAPI_n2_sm_information_t *OpenAPI_n2_sm_information_parseFromJSON(cJSON *n2_s
     n2_info_content = cJSON_GetObjectItemCaseSensitive(n2_sm_informationJSON, "n2InfoContent");
     if (n2_info_content) {
     n2_info_content_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(n2_info_content);
+    if (!n2_info_content_local_nonprim) {
+        ogs_error("OpenAPI_n2_info_content_parseFromJSON failed [n2_info_content]");
+        goto end;
+    }
     }
 
     s_nssai = cJSON_GetObjectItemCaseSensitive(n2_sm_informationJSON, "sNssai");
     if (s_nssai) {
     s_nssai_local_nonprim = OpenAPI_snssai_parseFromJSON(s_nssai);
+    if (!s_nssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [s_nssai]");
+        goto end;
+    }
     }
 
     home_plmn_snssai = cJSON_GetObjectItemCaseSensitive(n2_sm_informationJSON, "homePlmnSnssai");
     if (home_plmn_snssai) {
     home_plmn_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(home_plmn_snssai);
+    if (!home_plmn_snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [home_plmn_snssai]");
+        goto end;
+    }
     }
 
     iwk_snssai = cJSON_GetObjectItemCaseSensitive(n2_sm_informationJSON, "iwkSnssai");
     if (iwk_snssai) {
     iwk_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(iwk_snssai);
+    if (!iwk_snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [iwk_snssai]");
+        goto end;
+    }
     }
 
     subject_to_ho = cJSON_GetObjectItemCaseSensitive(n2_sm_informationJSON, "subjectToHo");

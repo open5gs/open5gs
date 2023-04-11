@@ -93,7 +93,6 @@ OpenAPI_nwdaf_registration_info_t *OpenAPI_nwdaf_registration_info_parseFromJSON
             OpenAPI_nwdaf_registration_t *nwdaf_registration_listItem = OpenAPI_nwdaf_registration_parseFromJSON(nwdaf_registration_list_local);
             if (!nwdaf_registration_listItem) {
                 ogs_error("No nwdaf_registration_listItem");
-                OpenAPI_list_free(nwdaf_registration_listList);
                 goto end;
             }
             OpenAPI_list_add(nwdaf_registration_listList, nwdaf_registration_listItem);

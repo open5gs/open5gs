@@ -52,6 +52,7 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
         (char *)OGS_SBI_RESOURCE_NAME_PCF_BINDINGS;
 
     memset(&PcfBinding, 0, sizeof(PcfBinding));
+    memset(&sNssai, 0, sizeof(sNssai));
 
     PcfBinding.supi = pcf_ue->supi;
     PcfBinding.gpsi = pcf_ue->gpsi;
@@ -135,7 +136,6 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
     else
         OpenAPI_list_free(PcfIpEndPointList);
 
-    memset(&sNssai, 0, sizeof(sNssai));
     sNssai.sst = sess->s_nssai.sst;
     sNssai.sd = ogs_s_nssai_sd_to_string(sess->s_nssai.sd);
     PcfBinding.snssai = &sNssai;

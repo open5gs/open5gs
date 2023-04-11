@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -1215,12 +1215,12 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_update(void)
     OpenAPI_patch_item_t StatusItem;
     OpenAPI_patch_item_t LoadItem;
 
-    memset(&StatusItem, 0, sizeof(StatusItem));
-    memset(&LoadItem, 0, sizeof(LoadItem));
-
     nf_instance = ogs_sbi_self()->nf_instance;
     ogs_assert(nf_instance);
     ogs_assert(nf_instance->id);
+
+    memset(&StatusItem, 0, sizeof(StatusItem));
+    memset(&LoadItem, 0, sizeof(LoadItem));
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_PATCH;
@@ -1239,7 +1239,7 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_update(void)
     }
 
     StatusItem.op = OpenAPI_patch_operation_replace;
-    StatusItem.path = (char *)"/nfStatus";
+    StatusItem.path = (char *)OGS_SBI_PATCH_PATH_NF_STATUS;
     StatusItem.value = OpenAPI_any_type_create_string(
         OpenAPI_nf_status_ToString(OpenAPI_nf_status_REGISTERED));
     if (!StatusItem.value) {
@@ -1250,7 +1250,7 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_update(void)
     OpenAPI_list_add(PatchItemList, &StatusItem);
 
     LoadItem.op = OpenAPI_patch_operation_replace;
-    LoadItem.path = (char *)"/load";
+    LoadItem.path = (char *)OGS_SBI_PATCH_PATH_LOAD;
     LoadItem.value = OpenAPI_any_type_create_number(nf_instance->load);
     if (!LoadItem.value) {
         ogs_error("No load item.value");
@@ -1384,6 +1384,71 @@ end:
             ogs_free(SubscriptionData->requester_features);
         ogs_free(SubscriptionData);
     }
+
+    return request;
+}
+
+ogs_sbi_request_t *ogs_nnrf_nfm_build_status_update(
+        ogs_sbi_subscription_data_t *subscription_data)
+{
+    ogs_sbi_message_t message;
+    ogs_sbi_request_t *request = NULL;
+
+    OpenAPI_list_t *PatchItemList = NULL;
+    OpenAPI_patch_item_t ValidityItem;
+    char *validity_time = NULL;
+
+    ogs_assert(subscription_data);
+    ogs_assert(subscription_data->id);
+
+    memset(&ValidityItem, 0, sizeof(ValidityItem));
+
+    memset(&message, 0, sizeof(message));
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_PATCH;
+    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NNRF_NFM;
+    message.h.api.version = (char *)OGS_SBI_API_V1;
+    message.h.resource.component[0] =
+        (char *)OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS;
+    message.h.resource.component[1] = subscription_data->id;
+
+    message.http.content_type = (char *)OGS_SBI_CONTENT_PATCH_TYPE;
+
+    PatchItemList = OpenAPI_list_create();
+    if (!PatchItemList) {
+        ogs_error("No PatchItemList");
+        goto end;
+    }
+
+    ogs_assert(subscription_data->time.validity_duration);
+    validity_time = ogs_sbi_localtime_string(
+            ogs_time_now() +
+            ogs_time_from_sec(subscription_data->time.validity_duration));
+    ogs_assert(validity_time);
+
+    ValidityItem.op = OpenAPI_patch_operation_replace;
+    ValidityItem.path = (char *)OGS_SBI_PATCH_PATH_VALIDITY_TIME;
+    ValidityItem.value = OpenAPI_any_type_create_string(validity_time);
+
+    if (!ValidityItem.value) {
+        ogs_error("No status item.value");
+        goto end;
+    }
+
+    OpenAPI_list_add(PatchItemList, &ValidityItem);
+
+    message.PatchItemList = PatchItemList;
+
+    request = ogs_sbi_build_request(&message);
+    ogs_expect(request);
+
+end:
+    if (ValidityItem.value)
+        OpenAPI_any_type_free(ValidityItem.value);
+    if (validity_time)
+        ogs_free(validity_time);
+
+    if (PatchItemList)
+        OpenAPI_list_free(PatchItemList);
 
     return request;
 }

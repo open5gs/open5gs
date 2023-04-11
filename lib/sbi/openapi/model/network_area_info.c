@@ -169,7 +169,6 @@ OpenAPI_network_area_info_t *OpenAPI_network_area_info_parseFromJSON(cJSON *netw
             OpenAPI_ecgi_t *ecgisItem = OpenAPI_ecgi_parseFromJSON(ecgis_local);
             if (!ecgisItem) {
                 ogs_error("No ecgisItem");
-                OpenAPI_list_free(ecgisList);
                 goto end;
             }
             OpenAPI_list_add(ecgisList, ecgisItem);
@@ -194,7 +193,6 @@ OpenAPI_network_area_info_t *OpenAPI_network_area_info_parseFromJSON(cJSON *netw
             OpenAPI_ncgi_t *ncgisItem = OpenAPI_ncgi_parseFromJSON(ncgis_local);
             if (!ncgisItem) {
                 ogs_error("No ncgisItem");
-                OpenAPI_list_free(ncgisList);
                 goto end;
             }
             OpenAPI_list_add(ncgisList, ncgisItem);
@@ -219,7 +217,6 @@ OpenAPI_network_area_info_t *OpenAPI_network_area_info_parseFromJSON(cJSON *netw
             OpenAPI_global_ran_node_id_t *g_ran_node_idsItem = OpenAPI_global_ran_node_id_parseFromJSON(g_ran_node_ids_local);
             if (!g_ran_node_idsItem) {
                 ogs_error("No g_ran_node_idsItem");
-                OpenAPI_list_free(g_ran_node_idsList);
                 goto end;
             }
             OpenAPI_list_add(g_ran_node_idsList, g_ran_node_idsItem);
@@ -244,7 +241,6 @@ OpenAPI_network_area_info_t *OpenAPI_network_area_info_parseFromJSON(cJSON *netw
             OpenAPI_tai_t *taisItem = OpenAPI_tai_parseFromJSON(tais_local);
             if (!taisItem) {
                 ogs_error("No taisItem");
-                OpenAPI_list_free(taisList);
                 goto end;
             }
             OpenAPI_list_add(taisList, taisItem);

@@ -104,6 +104,10 @@ OpenAPI_routing_area_id_t *OpenAPI_routing_area_id_parseFromJSON(cJSON *routing_
         goto end;
     }
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
+    if (!plmn_id_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [plmn_id]");
+        goto end;
+    }
 
     lac = cJSON_GetObjectItemCaseSensitive(routing_area_idJSON, "lac");
     if (!lac) {

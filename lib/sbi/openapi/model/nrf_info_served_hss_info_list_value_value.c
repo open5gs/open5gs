@@ -239,7 +239,6 @@ OpenAPI_nrf_info_served_hss_info_list_value_value_t *OpenAPI_nrf_info_served_hss
             OpenAPI_imsi_range_t *imsi_rangesItem = OpenAPI_imsi_range_parseFromJSON(imsi_ranges_local);
             if (!imsi_rangesItem) {
                 ogs_error("No imsi_rangesItem");
-                OpenAPI_list_free(imsi_rangesList);
                 goto end;
             }
             OpenAPI_list_add(imsi_rangesList, imsi_rangesItem);
@@ -264,7 +263,6 @@ OpenAPI_nrf_info_served_hss_info_list_value_value_t *OpenAPI_nrf_info_served_hss
             OpenAPI_identity_range_t *ims_private_identity_rangesItem = OpenAPI_identity_range_parseFromJSON(ims_private_identity_ranges_local);
             if (!ims_private_identity_rangesItem) {
                 ogs_error("No ims_private_identity_rangesItem");
-                OpenAPI_list_free(ims_private_identity_rangesList);
                 goto end;
             }
             OpenAPI_list_add(ims_private_identity_rangesList, ims_private_identity_rangesItem);
@@ -289,7 +287,6 @@ OpenAPI_nrf_info_served_hss_info_list_value_value_t *OpenAPI_nrf_info_served_hss
             OpenAPI_identity_range_t *ims_public_identity_rangesItem = OpenAPI_identity_range_parseFromJSON(ims_public_identity_ranges_local);
             if (!ims_public_identity_rangesItem) {
                 ogs_error("No ims_public_identity_rangesItem");
-                OpenAPI_list_free(ims_public_identity_rangesList);
                 goto end;
             }
             OpenAPI_list_add(ims_public_identity_rangesList, ims_public_identity_rangesItem);
@@ -314,7 +311,6 @@ OpenAPI_nrf_info_served_hss_info_list_value_value_t *OpenAPI_nrf_info_served_hss
             OpenAPI_identity_range_t *msisdn_rangesItem = OpenAPI_identity_range_parseFromJSON(msisdn_ranges_local);
             if (!msisdn_rangesItem) {
                 ogs_error("No msisdn_rangesItem");
-                OpenAPI_list_free(msisdn_rangesList);
                 goto end;
             }
             OpenAPI_list_add(msisdn_rangesList, msisdn_rangesItem);
@@ -339,7 +335,6 @@ OpenAPI_nrf_info_served_hss_info_list_value_value_t *OpenAPI_nrf_info_served_hss
             OpenAPI_identity_range_t *external_group_identifiers_rangesItem = OpenAPI_identity_range_parseFromJSON(external_group_identifiers_ranges_local);
             if (!external_group_identifiers_rangesItem) {
                 ogs_error("No external_group_identifiers_rangesItem");
-                OpenAPI_list_free(external_group_identifiers_rangesList);
                 goto end;
             }
             OpenAPI_list_add(external_group_identifiers_rangesList, external_group_identifiers_rangesItem);
@@ -349,6 +344,10 @@ OpenAPI_nrf_info_served_hss_info_list_value_value_t *OpenAPI_nrf_info_served_hss
     hss_diameter_address = cJSON_GetObjectItemCaseSensitive(nrf_info_served_hss_info_list_value_valueJSON, "hssDiameterAddress");
     if (hss_diameter_address) {
     hss_diameter_address_local_nonprim = OpenAPI_network_node_diameter_address_parseFromJSON(hss_diameter_address);
+    if (!hss_diameter_address_local_nonprim) {
+        ogs_error("OpenAPI_network_node_diameter_address_parseFromJSON failed [hss_diameter_address]");
+        goto end;
+    }
     }
 
     nrf_info_served_hss_info_list_value_value_local_var = OpenAPI_nrf_info_served_hss_info_list_value_value_create (

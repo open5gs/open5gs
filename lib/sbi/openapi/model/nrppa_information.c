@@ -112,6 +112,10 @@ OpenAPI_nrppa_information_t *OpenAPI_nrppa_information_parseFromJSON(cJSON *nrpp
         goto end;
     }
     nrppa_pdu_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(nrppa_pdu);
+    if (!nrppa_pdu_local_nonprim) {
+        ogs_error("OpenAPI_n2_info_content_parseFromJSON failed [nrppa_pdu]");
+        goto end;
+    }
 
     service_instance_id = cJSON_GetObjectItemCaseSensitive(nrppa_informationJSON, "serviceInstanceId");
     if (service_instance_id) {

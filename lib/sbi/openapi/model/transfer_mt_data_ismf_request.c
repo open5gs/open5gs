@@ -84,6 +84,10 @@ OpenAPI_transfer_mt_data_ismf_request_t *OpenAPI_transfer_mt_data_ismf_request_p
     json_data = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_ismf_requestJSON, "jsonData");
     if (json_data) {
     json_data_local_nonprim = OpenAPI_transfer_mt_data_req_data_parseFromJSON(json_data);
+    if (!json_data_local_nonprim) {
+        ogs_error("OpenAPI_transfer_mt_data_req_data_parseFromJSON failed [json_data]");
+        goto end;
+    }
     }
 
     binary_mt_data = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_ismf_requestJSON, "binaryMtData");

@@ -126,11 +126,19 @@ OpenAPI_location_reporting_configuration_1_t *OpenAPI_location_reporting_configu
     accuracy = cJSON_GetObjectItemCaseSensitive(location_reporting_configuration_1JSON, "accuracy");
     if (accuracy) {
     accuracy_local_nonprim = OpenAPI_location_accuracy_parseFromJSON(accuracy);
+    if (!accuracy_local_nonprim) {
+        ogs_error("OpenAPI_location_accuracy_parseFromJSON failed [accuracy]");
+        goto end;
+    }
     }
 
     n3gpp_accuracy = cJSON_GetObjectItemCaseSensitive(location_reporting_configuration_1JSON, "n3gppAccuracy");
     if (n3gpp_accuracy) {
     n3gpp_accuracy_local_nonprim = OpenAPI_location_accuracy_parseFromJSON(n3gpp_accuracy);
+    if (!n3gpp_accuracy_local_nonprim) {
+        ogs_error("OpenAPI_location_accuracy_parseFromJSON failed [n3gpp_accuracy]");
+        goto end;
+    }
     }
 
     location_reporting_configuration_1_local_var = OpenAPI_location_reporting_configuration_1_create (

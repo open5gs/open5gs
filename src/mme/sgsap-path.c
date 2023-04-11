@@ -24,7 +24,7 @@
 
 #include "sgsap-path.h"
 
-int sgsap_open()
+int sgsap_open(void)
 {
     mme_vlr_t *vlr = NULL;
 
@@ -40,7 +40,7 @@ int sgsap_open()
     return OGS_OK;
 }
 
-void sgsap_close()
+void sgsap_close(void)
 {
     mme_vlr_t *vlr = NULL;
 

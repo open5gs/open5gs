@@ -93,7 +93,6 @@ OpenAPI_mnpf_info_t *OpenAPI_mnpf_info_parseFromJSON(cJSON *mnpf_infoJSON)
             OpenAPI_identity_range_t *msisdn_rangesItem = OpenAPI_identity_range_parseFromJSON(msisdn_ranges_local);
             if (!msisdn_rangesItem) {
                 ogs_error("No msisdn_rangesItem");
-                OpenAPI_list_free(msisdn_rangesList);
                 goto end;
             }
             OpenAPI_list_add(msisdn_rangesList, msisdn_rangesItem);

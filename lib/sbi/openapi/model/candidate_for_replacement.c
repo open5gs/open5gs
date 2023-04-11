@@ -97,6 +97,10 @@ OpenAPI_candidate_for_replacement_t *OpenAPI_candidate_for_replacement_parseFrom
         goto end;
     }
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
 
     dnns = cJSON_GetObjectItemCaseSensitive(candidate_for_replacementJSON, "dnns");
     if (dnns) {

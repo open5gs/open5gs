@@ -67,6 +67,10 @@ OpenAPI_v2x_information_t *OpenAPI_v2x_information_parseFromJSON(cJSON *v2x_info
     n2_pc5_pol = cJSON_GetObjectItemCaseSensitive(v2x_informationJSON, "n2Pc5Pol");
     if (n2_pc5_pol) {
     n2_pc5_pol_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(n2_pc5_pol);
+    if (!n2_pc5_pol_local_nonprim) {
+        ogs_error("OpenAPI_n2_info_content_parseFromJSON failed [n2_pc5_pol]");
+        goto end;
+    }
     }
 
     v2x_information_local_var = OpenAPI_v2x_information_create (

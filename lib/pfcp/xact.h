@@ -140,6 +140,8 @@ int ogs_pfcp_xact_update_tx(ogs_pfcp_xact_t *xact,
 int ogs_pfcp_xact_commit(ogs_pfcp_xact_t *xact);
 void ogs_pfcp_xact_delayed_commit(ogs_pfcp_xact_t *xact, ogs_time_t duration);
 
+int ogs_pfcp_xact_delete(ogs_pfcp_xact_t *xact);
+
 int ogs_pfcp_xact_receive(ogs_pfcp_node_t *node,
         ogs_pfcp_header_t *h, ogs_pfcp_xact_t **xact);
 

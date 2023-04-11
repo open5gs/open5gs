@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -90,7 +90,7 @@ static void ogs_nas_eps_message_test2(abts_case *tc, void *data)
     tai0_list.tai[0].num = 1;
     ogs_plmn_id_build(&tai0_list.tai[0].plmn_id, 417, 99, 2);
     tai0_list.tai[0].tac[0] = 12345;
-    ogs_nas_tai_list_build(&attach_accept->tai_list, &tai0_list, &tai2_list);
+    ogs_nas_tai_list_build(&attach_accept->tai_list, &tai0_list, NULL, NULL);
 
     attach_accept->esm_message_container.length = sizeof(esm_buffer);
     attach_accept->esm_message_container.buffer = 

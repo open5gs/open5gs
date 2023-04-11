@@ -152,6 +152,10 @@ OpenAPI_redundant_transmission_exp_per_ts_t *OpenAPI_redundant_transmission_exp_
         goto end;
     }
     obsv_red_trans_exp_local_nonprim = OpenAPI_observed_redundant_trans_exp_parseFromJSON(obsv_red_trans_exp);
+    if (!obsv_red_trans_exp_local_nonprim) {
+        ogs_error("OpenAPI_observed_redundant_trans_exp_parseFromJSON failed [obsv_red_trans_exp]");
+        goto end;
+    }
 
     red_trans_status = cJSON_GetObjectItemCaseSensitive(redundant_transmission_exp_per_tsJSON, "redTransStatus");
     if (red_trans_status) {

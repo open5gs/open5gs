@@ -25,7 +25,7 @@ static void af_main(void *data);
 
 static int initialized = 0;
 
-int af_initialize()
+int af_initialize(void)
 {
     int rv;
 

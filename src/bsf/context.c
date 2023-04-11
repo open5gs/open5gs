@@ -341,7 +341,7 @@ bsf_sess_t *bsf_sess_find_by_ipv6prefix(char *ipv6prefix_string)
             &ipv6prefix, (ipv6prefix.len >> 3) + 1);
 }
 
-int get_sess_load()
+int get_sess_load(void)
 {
     return (((ogs_pool_size(&bsf_sess_pool) -
             ogs_pool_avail(&bsf_sess_pool)) * 100) /

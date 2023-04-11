@@ -348,34 +348,57 @@ sbi:
 #  <TAI>
 #
 #  o Multiple TAI
+#
+#  When multiple TAIs are configured as shown below,
+#  the Served TAI is determined by comparing UserLocationInformation
+#  of UplinkNASTransport sent from gNB.
+#
+#  For example, if the gNB sends TAC with 30 to the AMF,
+#  the fourth TAI (TAC: 20, 28, 29-32, 36-38, 40-42, 50, 60, 70, 70)
+#  is determined as the Served TAI. The result is transmitted to the gNB
+#  as a Tracking Area identity List in Registration Accept.
+#
 #  amf:
 #    tai:
 #      - plmn_id:
 #          mcc: 001
 #          mnc: 01
-#        tac: [1, 2, 3]
+#        tac: [1, 3, 5]
 #    tai:
 #      - plmn_id:
 #          mcc: 002
 #          mnc: 02
-#        tac: 4
+#        tac: [6-10, 15-18]
+#    tai:
 #      - plmn_id:
 #          mcc: 003
 #          mnc: 03
-#        tac: 5
-#    tai:
+#        tac: 20
 #      - plmn_id:
 #          mcc: 004
 #          mnc: 04
-#        tac: [6, 7]
+#        tac: 21
+#    tai:
 #      - plmn_id:
 #          mcc: 005
 #          mnc: 05
-#        tac: 8
+#        tac: [22, 28]
 #      - plmn_id:
 #          mcc: 006
 #          mnc: 06
-#        tac: [9, 10]
+#        tac: [30-32, 34, 36-38, 40-42, 44, 46, 48]
+#      - plmn_id:
+#          mcc: 007
+#          mnc: 07
+#        tac: 50
+#      - plmn_id:
+#          mcc: 008
+#          mnc: 08
+#        tac: 60
+#      - plmn_id:
+#          mcc: 009
+#          mnc: 09
+#        tac: [70, 80]
 #
 #  <PLMN Support>
 #
@@ -393,6 +416,41 @@ sbi:
 #          mnc: 70
 #        s_nssai:
 #          - sst: 1
+#
+#
+#  <Access Control>
+#
+#  If access_control is not specified, then all networks are allowed
+#  If access_control is defined,
+#  no other networks are allowed  other than matching plmn_id.
+#
+#  default_reject_cause may be used to overwrite the default error cause #11
+#  for non matching plmn_id
+#
+#  for matching plmn_id with reject_cause defined,
+#  the AMF rejects access with the reject_cause error cause
+#
+#  for matching plmn_id without reject_cause defined,
+#  the AMF accepts the PLMN traffic
+#
+#  o The example below only accepts 002/02 and 999/70 PLMNs.
+#    001/01 is rejected with cause 15,
+#    and the rest of the PLMNs are rejected with default cause 13.
+#
+#  amf:
+#    access_control:
+#      - default_reject_cause: 13
+#      - plmn_id:
+#          reject_cause: 15
+#          mcc: 001
+#          mnc: 01
+#      - plmn_id:
+#          mcc: 002
+#          mnc: 02
+#      - plmn_id:
+#          mcc: 999
+#          mnc: 70
+#
 #
 #  <Network Name>
 #

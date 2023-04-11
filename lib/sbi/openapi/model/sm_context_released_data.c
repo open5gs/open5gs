@@ -88,11 +88,19 @@ OpenAPI_sm_context_released_data_t *OpenAPI_sm_context_released_data_parseFromJS
     small_data_rate_status = cJSON_GetObjectItemCaseSensitive(sm_context_released_dataJSON, "smallDataRateStatus");
     if (small_data_rate_status) {
     small_data_rate_status_local_nonprim = OpenAPI_small_data_rate_status_parseFromJSON(small_data_rate_status);
+    if (!small_data_rate_status_local_nonprim) {
+        ogs_error("OpenAPI_small_data_rate_status_parseFromJSON failed [small_data_rate_status]");
+        goto end;
+    }
     }
 
     apn_rate_status = cJSON_GetObjectItemCaseSensitive(sm_context_released_dataJSON, "apnRateStatus");
     if (apn_rate_status) {
     apn_rate_status_local_nonprim = OpenAPI_apn_rate_status_parseFromJSON(apn_rate_status);
+    if (!apn_rate_status_local_nonprim) {
+        ogs_error("OpenAPI_apn_rate_status_parseFromJSON failed [apn_rate_status]");
+        goto end;
+    }
     }
 
     sm_context_released_data_local_var = OpenAPI_sm_context_released_data_create (

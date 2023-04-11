@@ -163,11 +163,19 @@ OpenAPI_communication_characteristics_t *OpenAPI_communication_characteristics_p
     pp_subs_reg_timer = cJSON_GetObjectItemCaseSensitive(communication_characteristicsJSON, "ppSubsRegTimer");
     if (pp_subs_reg_timer) {
     pp_subs_reg_timer_local_nonprim = OpenAPI_pp_subs_reg_timer_parseFromJSON(pp_subs_reg_timer);
+    if (!pp_subs_reg_timer_local_nonprim) {
+        ogs_error("OpenAPI_pp_subs_reg_timer_parseFromJSON failed [pp_subs_reg_timer]");
+        goto end;
+    }
     }
 
     pp_active_time = cJSON_GetObjectItemCaseSensitive(communication_characteristicsJSON, "ppActiveTime");
     if (pp_active_time) {
     pp_active_time_local_nonprim = OpenAPI_pp_active_time_parseFromJSON(pp_active_time);
+    if (!pp_active_time_local_nonprim) {
+        ogs_error("OpenAPI_pp_active_time_parseFromJSON failed [pp_active_time]");
+        goto end;
+    }
     }
 
     pp_dl_packet_count = cJSON_GetObjectItemCaseSensitive(communication_characteristicsJSON, "ppDlPacketCount");
@@ -181,16 +189,28 @@ OpenAPI_communication_characteristics_t *OpenAPI_communication_characteristics_p
     pp_dl_packet_count_ext = cJSON_GetObjectItemCaseSensitive(communication_characteristicsJSON, "ppDlPacketCountExt");
     if (pp_dl_packet_count_ext) {
     pp_dl_packet_count_ext_local_nonprim = OpenAPI_pp_dl_packet_count_ext_parseFromJSON(pp_dl_packet_count_ext);
+    if (!pp_dl_packet_count_ext_local_nonprim) {
+        ogs_error("OpenAPI_pp_dl_packet_count_ext_parseFromJSON failed [pp_dl_packet_count_ext]");
+        goto end;
+    }
     }
 
     pp_maximum_response_time = cJSON_GetObjectItemCaseSensitive(communication_characteristicsJSON, "ppMaximumResponseTime");
     if (pp_maximum_response_time) {
     pp_maximum_response_time_local_nonprim = OpenAPI_pp_maximum_response_time_parseFromJSON(pp_maximum_response_time);
+    if (!pp_maximum_response_time_local_nonprim) {
+        ogs_error("OpenAPI_pp_maximum_response_time_parseFromJSON failed [pp_maximum_response_time]");
+        goto end;
+    }
     }
 
     pp_maximum_latency = cJSON_GetObjectItemCaseSensitive(communication_characteristicsJSON, "ppMaximumLatency");
     if (pp_maximum_latency) {
     pp_maximum_latency_local_nonprim = OpenAPI_pp_maximum_latency_parseFromJSON(pp_maximum_latency);
+    if (!pp_maximum_latency_local_nonprim) {
+        ogs_error("OpenAPI_pp_maximum_latency_parseFromJSON failed [pp_maximum_latency]");
+        goto end;
+    }
     }
 
     communication_characteristics_local_var = OpenAPI_communication_characteristics_create (

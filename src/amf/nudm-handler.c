@@ -32,6 +32,14 @@ int amf_nudm_sdm_handle_provisioned(
 
     SWITCH(recvmsg->h.resource.component[1])
     CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
+
+        ran_ue_t *ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+        if (!ran_ue) {
+            /* ran_ue is required for amf_ue_is_rat_restricted() */
+            ogs_error("NG context has already been removed");
+            return OGS_ERROR;
+        }
+
         if (recvmsg->AccessAndMobilitySubscriptionData) {
             OpenAPI_list_t *gpsiList =
                 recvmsg->AccessAndMobilitySubscriptionData->gpsis;

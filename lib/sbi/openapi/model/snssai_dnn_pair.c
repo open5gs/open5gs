@@ -98,6 +98,10 @@ OpenAPI_snssai_dnn_pair_t *OpenAPI_snssai_dnn_pair_parseFromJSON(cJSON *snssai_d
         goto end;
     }
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
 
     snssai_dnn_pair_local_var = OpenAPI_snssai_dnn_pair_create (
         ogs_strdup(dnn->valuestring),

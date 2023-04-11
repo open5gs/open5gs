@@ -72,6 +72,10 @@ OpenAPI_model_5_g_ddnmf_info_t *OpenAPI_model_5_g_ddnmf_info_parseFromJSON(cJSON
         goto end;
     }
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
+    if (!plmn_id_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [plmn_id]");
+        goto end;
+    }
 
     model_5_g_ddnmf_info_local_var = OpenAPI_model_5_g_ddnmf_info_create (
         plmn_id_local_nonprim

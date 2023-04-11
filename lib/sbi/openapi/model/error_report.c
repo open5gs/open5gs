@@ -170,6 +170,10 @@ OpenAPI_error_report_t *OpenAPI_error_report_parseFromJSON(cJSON *error_reportJS
     error = cJSON_GetObjectItemCaseSensitive(error_reportJSON, "error");
     if (error) {
     error_local_nonprim = OpenAPI_problem_details_parseFromJSON(error);
+    if (!error_local_nonprim) {
+        ogs_error("OpenAPI_problem_details_parseFromJSON failed [error]");
+        goto end;
+    }
     }
 
     rule_reports = cJSON_GetObjectItemCaseSensitive(error_reportJSON, "ruleReports");
@@ -190,7 +194,6 @@ OpenAPI_error_report_t *OpenAPI_error_report_parseFromJSON(cJSON *error_reportJS
             OpenAPI_rule_report_t *rule_reportsItem = OpenAPI_rule_report_parseFromJSON(rule_reports_local);
             if (!rule_reportsItem) {
                 ogs_error("No rule_reportsItem");
-                OpenAPI_list_free(rule_reportsList);
                 goto end;
             }
             OpenAPI_list_add(rule_reportsList, rule_reportsItem);
@@ -215,7 +218,6 @@ OpenAPI_error_report_t *OpenAPI_error_report_parseFromJSON(cJSON *error_reportJS
             OpenAPI_session_rule_report_t *sess_rule_reportsItem = OpenAPI_session_rule_report_parseFromJSON(sess_rule_reports_local);
             if (!sess_rule_reportsItem) {
                 ogs_error("No sess_rule_reportsItem");
-                OpenAPI_list_free(sess_rule_reportsList);
                 goto end;
             }
             OpenAPI_list_add(sess_rule_reportsList, sess_rule_reportsItem);
@@ -259,7 +261,6 @@ OpenAPI_error_report_t *OpenAPI_error_report_parseFromJSON(cJSON *error_reportJS
             OpenAPI_invalid_param_t *invalid_policy_decsItem = OpenAPI_invalid_param_parseFromJSON(invalid_policy_decs_local);
             if (!invalid_policy_decsItem) {
                 ogs_error("No invalid_policy_decsItem");
-                OpenAPI_list_free(invalid_policy_decsList);
                 goto end;
             }
             OpenAPI_list_add(invalid_policy_decsList, invalid_policy_decsItem);

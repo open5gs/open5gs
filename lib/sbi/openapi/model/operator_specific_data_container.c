@@ -180,6 +180,10 @@ OpenAPI_operator_specific_data_container_t *OpenAPI_operator_specific_data_conta
         goto end;
     }
     value_local_nonprim = OpenAPI_operator_specific_data_container_value_parseFromJSON(value);
+    if (!value_local_nonprim) {
+        ogs_error("OpenAPI_operator_specific_data_container_value_parseFromJSON failed [value]");
+        goto end;
+    }
 
     supported_features = cJSON_GetObjectItemCaseSensitive(operator_specific_data_containerJSON, "supportedFeatures");
     if (supported_features) {

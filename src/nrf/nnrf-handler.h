@@ -34,6 +34,8 @@ bool nrf_nnrf_handle_nf_update(ogs_sbi_nf_instance_t *nf_instance,
 
 bool nrf_nnrf_handle_nf_status_subscribe(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
+bool nrf_nnrf_handle_nf_status_update(
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 bool nrf_nnrf_handle_nf_status_unsubscribe(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 

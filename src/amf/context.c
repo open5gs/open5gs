@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -433,22 +433,24 @@ int amf_context_parse_config(void)
                             YAML_SEQUENCE_NODE);
                 } else if (!strcmp(amf_key, "tai")) {
                     int num_of_list0 = 0;
+                    int num_of_list1 = 0;
                     ogs_5gs_tai0_list_t *list0 = NULL;
+                    ogs_5gs_tai1_list_t *list1 = NULL;
                     ogs_5gs_tai2_list_t *list2 = NULL;
 
                     ogs_assert(self.num_of_served_tai <
                             OGS_MAX_NUM_OF_SERVED_TAI);
                     list0 = &self.served_tai[self.num_of_served_tai].list0;
-                    ogs_assert(list0);
+                    list1 = &self.served_tai[self.num_of_served_tai].list1;
                     list2 = &self.served_tai[self.num_of_served_tai].list2;
-                    ogs_assert(list2);
 
                     ogs_yaml_iter_t tai_array, tai_iter;
                     ogs_yaml_iter_recurse(&amf_iter, &tai_array);
                     do {
                         const char *mcc = NULL, *mnc = NULL;
-                        ogs_uint24_t tac[OGS_MAX_NUM_OF_TAI];
                         int num_of_tac = 0;
+                        ogs_uint24_t start[OGS_MAX_NUM_OF_TAI];
+                        ogs_uint24_t end[OGS_MAX_NUM_OF_TAI];
 
                         if (ogs_yaml_iter_type(&tai_array) ==
                                 YAML_MAPPING_NODE) {
@@ -489,23 +491,56 @@ int amf_context_parse_config(void)
                                 ogs_yaml_iter_t tac_iter;
                                 ogs_yaml_iter_recurse(&tai_iter, &tac_iter);
                                 ogs_assert(ogs_yaml_iter_type(&tac_iter) !=
-                                    YAML_MAPPING_NODE);
-
+                                            YAML_MAPPING_NODE);
                                 do {
-                                    const char *v = NULL;
+                                    char *v = NULL;
+                                    char *low = NULL, *high = NULL;
 
-                                    ogs_assert(num_of_tac <
-                                            OGS_MAX_NUM_OF_TAI);
                                     if (ogs_yaml_iter_type(&tac_iter) ==
                                             YAML_SEQUENCE_NODE) {
                                         if (!ogs_yaml_iter_next(&tac_iter))
                                             break;
                                     }
 
-                                    v = ogs_yaml_iter_value(&tac_iter);
+                                    v = (char *)ogs_yaml_iter_value(
+                                                &tac_iter);
                                     if (v) {
-                                        tac[num_of_tac].v = atoi(v);
-                                        num_of_tac++;
+                                        low = strsep(&v, "-");
+                                        if (low && strlen(low) == 0)
+                                            low = NULL;
+
+                                        high = v;
+                                        if (high && strlen(high) == 0)
+                                            high = NULL;
+
+                                        if (low) {
+                                            ogs_assert(num_of_tac <
+                                                OGS_MAX_NUM_OF_TAI);
+                                            start[num_of_tac].v = atoi(low);
+                                            if (high) {
+                                                end[num_of_tac].v = atoi(high);
+                                                if (end[num_of_tac].v <
+                                                    start[num_of_tac].v)
+                                                    ogs_error(
+                                                        "Invalid TAI range: "
+                                                        "LOW:%s,HIGH:%s",
+                                                            low, high);
+                                                else if (
+                                                    (end[num_of_tac].v-
+                                                    start[num_of_tac].v+1) >
+                                                        OGS_MAX_NUM_OF_TAI)
+                                                    ogs_error(
+                                                        "Overflow TAI range: "
+                                                        "LOW:%s,HIGH:%s",
+                                                            low, high);
+                                                else
+                                                    num_of_tac++;
+                                            } else {
+                                                end[num_of_tac].v =
+                                                    start[num_of_tac].v;
+                                                num_of_tac++;
+                                            }
+                                        }
                                     }
                                 } while (
                                     ogs_yaml_iter_type(&tac_iter) ==
@@ -515,31 +550,60 @@ int amf_context_parse_config(void)
                         }
 
                         if (mcc && mnc && num_of_tac) {
-                            if (num_of_tac == 1) {
+                            if (num_of_tac == 1 && start[0].v == end[0].v) {
+                                ogs_assert(list2->num < OGS_MAX_NUM_OF_TAI);
+
+                                list2->type = OGS_TAI2_TYPE;
+
                                 ogs_plmn_id_build(
                                     &list2->tai[list2->num].plmn_id,
                                     atoi(mcc), atoi(mnc), strlen(mnc));
-                                list2->tai[list2->num].tac.v = tac[0].v;
+                                list2->tai[list2->num].tac.v = start[0].v;
 
                                 list2->num++;
-                                if (list2->num > 1)
-                                    list2->type = OGS_TAI2_TYPE;
-                                else
-                                    list2->type = OGS_TAI1_TYPE;
-                            } else if (num_of_tac > 1) {
-                                int i;
-                                ogs_plmn_id_build(
-                                    &list0->tai[num_of_list0].plmn_id,
-                                    atoi(mcc), atoi(mnc), strlen(mnc));
-                                for (i = 0; i < num_of_tac; i++) {
-                                    list0->tai[num_of_list0].tac[i].v =
-                                        tac[i].v;
+
+                            } else {
+                                int tac, count = 0;
+                                for (tac = 0; tac < num_of_tac; tac++) {
+                                    ogs_assert(end[tac].v >= start[tac].v);
+                                    if (start[tac].v == end[tac].v) {
+                                        ogs_assert(num_of_list0 <
+                                                OGS_MAX_NUM_OF_TAI);
+
+                                        list0->tai[num_of_list0].type =
+                                            OGS_TAI0_TYPE;
+
+                                        ogs_plmn_id_build(
+                                            &list0->tai[num_of_list0].plmn_id,
+                                            atoi(mcc), atoi(mnc), strlen(mnc));
+                                        list0->tai[num_of_list0].
+                                            tac[count].v = start[tac].v;
+
+                                        list0->tai[num_of_list0].num =
+                                            ++count;
+
+                                    } else if (start[tac].v < end[tac].v) {
+                                        ogs_assert(num_of_list1 <
+                                                OGS_MAX_NUM_OF_TAI);
+
+                                        list1->tai[num_of_list1].type =
+                                            OGS_TAI1_TYPE;
+
+                                        ogs_plmn_id_build(
+                                            &list1->tai[num_of_list1].plmn_id,
+                                            atoi(mcc), atoi(mnc), strlen(mnc));
+                                        list1->tai[num_of_list1].tac.v =
+                                            start[tac].v;
+
+                                        list1->tai[num_of_list1].num =
+                                            end[tac].v-start[tac].v+1;
+
+                                        num_of_list1++;
+                                    }
                                 }
 
-                                list0->tai[num_of_list0].num = num_of_tac;
-                                list0->tai[num_of_list0].type = OGS_TAI0_TYPE;
-
-                                num_of_list0++;
+                                if (count)
+                                    num_of_list0++;
                             }
                         } else {
                             ogs_warn("Ignore tai : mcc(%p), mnc(%p), "
@@ -548,7 +612,7 @@ int amf_context_parse_config(void)
                     } while (ogs_yaml_iter_type(&tai_array) ==
                             YAML_SEQUENCE_NODE);
 
-                    if (list2->num || num_of_list0) {
+                    if (list2->num || num_of_list1 || num_of_list0) {
                         self.num_of_served_tai++;
                     }
                 } else if (!strcmp(amf_key, "plmn_support")) {
@@ -691,6 +755,81 @@ int amf_context_parse_config(void)
                         }
                     } while (ogs_yaml_iter_type(&plmn_support_array) ==
                             YAML_SEQUENCE_NODE);
+                } else if (!strcmp(amf_key, "access_control")) {
+                    ogs_yaml_iter_t access_control_array, access_control_iter;
+                    ogs_yaml_iter_recurse(&amf_iter, &access_control_array);
+                    do {
+                        ogs_assert(self.num_of_access_control <
+                                OGS_MAX_NUM_OF_ACCESS_CONTROL);
+
+                        if (ogs_yaml_iter_type(&access_control_array) ==
+                                YAML_MAPPING_NODE) {
+                            memcpy(&access_control_iter, &access_control_array,
+                                    sizeof(ogs_yaml_iter_t));
+                        } else if (ogs_yaml_iter_type(&access_control_array) ==
+                            YAML_SEQUENCE_NODE) {
+                            if (!ogs_yaml_iter_next(&access_control_array))
+                                break;
+                            ogs_yaml_iter_recurse(&access_control_array,
+                                    &access_control_iter);
+                        } else if (ogs_yaml_iter_type(&access_control_array) ==
+                            YAML_SCALAR_NODE) {
+                            break;
+                        } else
+                            ogs_assert_if_reached();
+
+                        while (ogs_yaml_iter_next(&access_control_iter)) {
+                            const char *mnc = NULL, *mcc = NULL;
+                            int reject_cause = 0;
+                            const char *access_control_key =
+                                ogs_yaml_iter_key(&access_control_iter);
+                            ogs_assert(access_control_key);
+                            if (!strcmp(access_control_key,
+                                        "default_reject_cause")) {
+                                const char *v = ogs_yaml_iter_value(
+                                        &access_control_iter);
+                                if (v) self.default_reject_cause = atoi(v);
+                            } else if (!strcmp(access_control_key, "plmn_id")) {
+                                ogs_yaml_iter_t plmn_id_iter;
+
+                                ogs_yaml_iter_recurse(&access_control_iter,
+                                        &plmn_id_iter);
+                                while (ogs_yaml_iter_next(&plmn_id_iter)) {
+                                    const char *plmn_id_key =
+                                        ogs_yaml_iter_key(&plmn_id_iter);
+                                    ogs_assert(plmn_id_key);
+                                    if (!strcmp(plmn_id_key, "reject_cause")) {
+                                        const char *v = ogs_yaml_iter_value(
+                                                &plmn_id_iter);
+                                        if (v) reject_cause = atoi(v);
+                                    } else if (!strcmp(plmn_id_key, "mcc")) {
+                                        mcc = ogs_yaml_iter_value(
+                                                &plmn_id_iter);
+                                    } else if (!strcmp(plmn_id_key, "mnc")) {
+                                        mnc = ogs_yaml_iter_value(
+                                                &plmn_id_iter);
+                                    }
+                                }
+
+                                if (mcc && mnc) {
+                                    ogs_plmn_id_build(
+                                        &self.access_control[
+                                            self.num_of_access_control].
+                                                plmn_id,
+                                        atoi(mcc), atoi(mnc), strlen(mnc));
+                                    if (reject_cause)
+                                        self.access_control[
+                                            self.num_of_access_control].
+                                                reject_cause = reject_cause;
+                                    self.num_of_access_control++;
+                                }
+                            } else
+                                ogs_warn("unknown key `%s`",
+                                        access_control_key);
+                        }
+
+                    } while (ogs_yaml_iter_type(&access_control_array) ==
+                            YAML_SEQUENCE_NODE);
                 } else if (!strcmp(amf_key, "security")) {
                     ogs_yaml_iter_t security_iter;
                     ogs_yaml_iter_recurse(&amf_iter, &security_iter);
@@ -783,7 +922,8 @@ int amf_context_parse_config(void)
                             } while (
                                 ogs_yaml_iter_type(&ciphering_order_iter) ==
                                     YAML_SEQUENCE_NODE);
-                        }
+                        } else
+                            ogs_warn("unknown key `%s`", security_key);
                     }
                 } else if (!strcmp(amf_key, "network_name")) {
                     ogs_yaml_iter_t network_name_iter;
@@ -827,7 +967,8 @@ int amf_context_parse_config(void)
                             network_short_name->length = size*2+1;
                             network_short_name->coding_scheme = 1;
                             network_short_name->ext = 1;
-                        }
+                        } else
+                            ogs_warn("unknown key `%s`", network_name_key);
                     }
                 } else if (!strcmp(amf_key, "amf_name")) {
                     self.amf_name = ogs_yaml_iter_value(&amf_iter);
@@ -1062,7 +1203,7 @@ void amf_gnb_remove(amf_gnb_t *gnb)
             ogs_list_count(&self.gnb_list));
 }
 
-void amf_gnb_remove_all()
+void amf_gnb_remove_all(void)
 {
     amf_gnb_t *gnb = NULL, *next_gnb = NULL;
 
@@ -1500,6 +1641,9 @@ void amf_ue_remove(amf_ue_t *amf_ue)
     ogs_timer_delete(amf_ue->implicit_deregistration.timer);
 
     /* Free SBI object memory */
+    if (ogs_list_count(&amf_ue->sbi.xact_list))
+        ogs_error("UE transaction [%d]",
+                ogs_list_count(&amf_ue->sbi.xact_list));
     ogs_sbi_object_free(&amf_ue->sbi);
 
     amf_ue_deassociate(amf_ue);
@@ -1510,7 +1654,7 @@ void amf_ue_remove(amf_ue_t *amf_ue)
             ogs_list_count(&self.amf_ue_list));
 }
 
-void amf_ue_remove_all()
+void amf_ue_remove_all(void)
 {
     amf_ue_t *amf_ue = NULL, *next = NULL;;
 
@@ -1938,6 +2082,9 @@ void amf_sess_remove(amf_sess_t *sess)
     ogs_list_remove(&sess->amf_ue->sess_list, sess);
 
     /* Free SBI object memory */
+    if (ogs_list_count(&sess->sbi.xact_list))
+        ogs_error("Session transaction [%d]",
+                ogs_list_count(&sess->sbi.xact_list));
     ogs_sbi_object_free(&sess->sbi);
 
     if (sess->sm_context_ref)
@@ -2154,13 +2301,12 @@ int amf_find_served_tai(ogs_5gs_tai_t *nr_tai)
 
     for (i = 0; i < self.num_of_served_tai; i++) {
         ogs_5gs_tai0_list_t *list0 = &self.served_tai[i].list0;
-        ogs_assert(list0);
+        ogs_5gs_tai1_list_t *list1 = &self.served_tai[i].list1;
         ogs_5gs_tai2_list_t *list2 = &self.served_tai[i].list2;
-        ogs_assert(list2);
 
         for (j = 0; list0->tai[j].num; j++) {
             ogs_assert(list0->tai[j].type == OGS_TAI0_TYPE);
-            ogs_assert(list0->tai[j].num < OGS_MAX_NUM_OF_TAI);
+            ogs_assert(list0->tai[j].num <= OGS_MAX_NUM_OF_TAI);
 
             for (k = 0; k < list0->tai[j].num; k++) {
                 if (memcmp(&list0->tai[j].plmn_id,
@@ -2171,10 +2317,18 @@ int amf_find_served_tai(ogs_5gs_tai_t *nr_tai)
             }
         }
 
+        for (j = 0; list1->tai[j].num; j++) {
+            ogs_assert(list1->tai[j].type == OGS_TAI1_TYPE);
+            ogs_assert(list1->tai[j].num <= OGS_MAX_NUM_OF_TAI);
+
+            if (list1->tai[j].tac.v <= nr_tai->tac.v &&
+                nr_tai->tac.v < (list1->tai[j].tac.v+list1->tai[j].num))
+                return i;
+        }
+
         if (list2->num) {
-            ogs_assert(list2->type == OGS_TAI1_TYPE ||
-                        list2->type == OGS_TAI2_TYPE);
-            ogs_assert(list2->num < OGS_MAX_NUM_OF_TAI);
+            ogs_assert(list2->type == OGS_TAI2_TYPE);
+            ogs_assert(list2->num <= OGS_MAX_NUM_OF_TAI);
 
             for (j = 0; j < list2->num; j++) {
                 if (memcmp(&list2->tai[j].plmn_id,
@@ -2214,13 +2368,13 @@ ogs_s_nssai_t *amf_find_s_nssai(
     return NULL;
 }
 
-int amf_m_tmsi_pool_generate()
+int amf_m_tmsi_pool_generate(void)
 {
-    int i, j;
+    int j;
     int index = 0;
 
     ogs_trace("M-TMSI Pool try to generate...");
-    for (i = 0; index < ogs_app()->max.ue*2; i++) {
+    while (index < ogs_app()->max.ue*2) {
         amf_m_tmsi_t *m_tmsi = NULL;
         int conflict = 0;
 
@@ -2252,7 +2406,7 @@ int amf_m_tmsi_pool_generate()
     return OGS_OK;
 }
 
-amf_m_tmsi_t *amf_m_tmsi_alloc()
+amf_m_tmsi_t *amf_m_tmsi_alloc(void)
 {
     amf_m_tmsi_t *m_tmsi = NULL;
 
@@ -2334,7 +2488,7 @@ static void stats_remove_ran_ue(void)
     ogs_info("[Removed] Number of gNB-UEs is now %d", num_of_ran_ue);
 }
 
-int get_ran_ue_load()
+int get_ran_ue_load(void)
 {
     return (((ogs_pool_size(&ran_ue_pool) -
             ogs_pool_avail(&ran_ue_pool)) * 100) /

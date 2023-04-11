@@ -347,7 +347,7 @@ char *nssf_nsi_nrf_uri(nssf_nsi_t *nsi)
     return ogs_uridup(ogs_app()->sbi.server.no_tls == false, nsi->addr, &h);
 }
 
-int get_nsi_load()
+int get_nsi_load(void)
 {
     return (((ogs_pool_size(&nssf_nsi_pool) -
             ogs_pool_avail(&nssf_nsi_pool)) * 100) /

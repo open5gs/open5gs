@@ -84,6 +84,10 @@ OpenAPI_send_mo_data_request_t *OpenAPI_send_mo_data_request_parseFromJSON(cJSON
     json_data = cJSON_GetObjectItemCaseSensitive(send_mo_data_requestJSON, "jsonData");
     if (json_data) {
     json_data_local_nonprim = OpenAPI_send_mo_data_req_data_parseFromJSON(json_data);
+    if (!json_data_local_nonprim) {
+        ogs_error("OpenAPI_send_mo_data_req_data_parseFromJSON failed [json_data]");
+        goto end;
+    }
     }
 
     binary_mo_data = cJSON_GetObjectItemCaseSensitive(send_mo_data_requestJSON, "binaryMoData");

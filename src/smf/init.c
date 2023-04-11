@@ -29,7 +29,7 @@ static void smf_main(void *data);
 
 static int initialized = 0;
 
-int smf_initialize()
+int smf_initialize(void)
 {
     int rv;
 

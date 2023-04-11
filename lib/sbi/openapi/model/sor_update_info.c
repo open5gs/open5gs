@@ -86,6 +86,10 @@ OpenAPI_sor_update_info_t *OpenAPI_sor_update_info_parseFromJSON(cJSON *sor_upda
         goto end;
     }
     vplmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(vplmn_id);
+    if (!vplmn_id_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [vplmn_id]");
+        goto end;
+    }
 
     supported_features = cJSON_GetObjectItemCaseSensitive(sor_update_infoJSON, "supportedFeatures");
     if (supported_features) {

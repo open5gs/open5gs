@@ -277,7 +277,6 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_parseFromJSON(cJSON *pcf_infoJSON)
             OpenAPI_supi_range_t *supi_rangesItem = OpenAPI_supi_range_parseFromJSON(supi_ranges_local);
             if (!supi_rangesItem) {
                 ogs_error("No supi_rangesItem");
-                OpenAPI_list_free(supi_rangesList);
                 goto end;
             }
             OpenAPI_list_add(supi_rangesList, supi_rangesItem);
@@ -302,7 +301,6 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_parseFromJSON(cJSON *pcf_infoJSON)
             OpenAPI_identity_range_t *gpsi_rangesItem = OpenAPI_identity_range_parseFromJSON(gpsi_ranges_local);
             if (!gpsi_rangesItem) {
                 ogs_error("No gpsi_rangesItem");
-                OpenAPI_list_free(gpsi_rangesList);
                 goto end;
             }
             OpenAPI_list_add(gpsi_rangesList, gpsi_rangesItem);
@@ -344,11 +342,19 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_parseFromJSON(cJSON *pcf_infoJSON)
     prose_capability = cJSON_GetObjectItemCaseSensitive(pcf_infoJSON, "proseCapability");
     if (prose_capability) {
     prose_capability_local_nonprim = OpenAPI_pro_se_capability_parseFromJSON(prose_capability);
+    if (!prose_capability_local_nonprim) {
+        ogs_error("OpenAPI_pro_se_capability_parseFromJSON failed [prose_capability]");
+        goto end;
+    }
     }
 
     v2x_capability = cJSON_GetObjectItemCaseSensitive(pcf_infoJSON, "v2xCapability");
     if (v2x_capability) {
     v2x_capability_local_nonprim = OpenAPI_v2x_capability_parseFromJSON(v2x_capability);
+    if (!v2x_capability_local_nonprim) {
+        ogs_error("OpenAPI_v2x_capability_parseFromJSON failed [v2x_capability]");
+        goto end;
+    }
     }
 
     pcf_info_local_var = OpenAPI_pcf_info_create (

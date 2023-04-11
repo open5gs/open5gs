@@ -145,6 +145,10 @@ OpenAPI_sms_router_info_t *OpenAPI_sms_router_info_parseFromJSON(cJSON *sms_rout
     diameter_address = cJSON_GetObjectItemCaseSensitive(sms_router_infoJSON, "diameterAddress");
     if (diameter_address) {
     diameter_address_local_nonprim = OpenAPI_network_node_diameter_address_parseFromJSON(diameter_address);
+    if (!diameter_address_local_nonprim) {
+        ogs_error("OpenAPI_network_node_diameter_address_parseFromJSON failed [diameter_address]");
+        goto end;
+    }
     }
 
     map_address = cJSON_GetObjectItemCaseSensitive(sms_router_infoJSON, "mapAddress");

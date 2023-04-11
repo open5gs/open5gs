@@ -114,6 +114,10 @@ OpenAPI_ue_context_release_t *OpenAPI_ue_context_release_parseFromJSON(cJSON *ue
         goto end;
     }
     ngap_cause_local_nonprim = OpenAPI_ng_ap_cause_parseFromJSON(ngap_cause);
+    if (!ngap_cause_local_nonprim) {
+        ogs_error("OpenAPI_ng_ap_cause_parseFromJSON failed [ngap_cause]");
+        goto end;
+    }
 
     ue_context_release_local_var = OpenAPI_ue_context_release_create (
         supi && !cJSON_IsNull(supi) ? ogs_strdup(supi->valuestring) : NULL,

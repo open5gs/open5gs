@@ -120,6 +120,10 @@ OpenAPI_allowed_snssai_t *OpenAPI_allowed_snssai_parseFromJSON(cJSON *allowed_sn
         goto end;
     }
     allowed_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(allowed_snssai);
+    if (!allowed_snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [allowed_snssai]");
+        goto end;
+    }
 
     nsi_information_list = cJSON_GetObjectItemCaseSensitive(allowed_snssaiJSON, "nsiInformationList");
     if (nsi_information_list) {
@@ -139,7 +143,6 @@ OpenAPI_allowed_snssai_t *OpenAPI_allowed_snssai_parseFromJSON(cJSON *allowed_sn
             OpenAPI_nsi_information_t *nsi_information_listItem = OpenAPI_nsi_information_parseFromJSON(nsi_information_list_local);
             if (!nsi_information_listItem) {
                 ogs_error("No nsi_information_listItem");
-                OpenAPI_list_free(nsi_information_listList);
                 goto end;
             }
             OpenAPI_list_add(nsi_information_listList, nsi_information_listItem);
@@ -149,6 +152,10 @@ OpenAPI_allowed_snssai_t *OpenAPI_allowed_snssai_parseFromJSON(cJSON *allowed_sn
     mapped_home_snssai = cJSON_GetObjectItemCaseSensitive(allowed_snssaiJSON, "mappedHomeSnssai");
     if (mapped_home_snssai) {
     mapped_home_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(mapped_home_snssai);
+    if (!mapped_home_snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [mapped_home_snssai]");
+        goto end;
+    }
     }
 
     allowed_snssai_local_var = OpenAPI_allowed_snssai_create (

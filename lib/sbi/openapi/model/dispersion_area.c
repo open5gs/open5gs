@@ -154,7 +154,6 @@ OpenAPI_dispersion_area_t *OpenAPI_dispersion_area_parseFromJSON(cJSON *dispersi
             OpenAPI_tai_t *tai_listItem = OpenAPI_tai_parseFromJSON(tai_list_local);
             if (!tai_listItem) {
                 ogs_error("No tai_listItem");
-                OpenAPI_list_free(tai_listList);
                 goto end;
             }
             OpenAPI_list_add(tai_listList, tai_listItem);
@@ -179,7 +178,6 @@ OpenAPI_dispersion_area_t *OpenAPI_dispersion_area_parseFromJSON(cJSON *dispersi
             OpenAPI_ncgi_t *ncgi_listItem = OpenAPI_ncgi_parseFromJSON(ncgi_list_local);
             if (!ncgi_listItem) {
                 ogs_error("No ncgi_listItem");
-                OpenAPI_list_free(ncgi_listList);
                 goto end;
             }
             OpenAPI_list_add(ncgi_listList, ncgi_listItem);
@@ -204,7 +202,6 @@ OpenAPI_dispersion_area_t *OpenAPI_dispersion_area_parseFromJSON(cJSON *dispersi
             OpenAPI_ecgi_t *ecgi_listItem = OpenAPI_ecgi_parseFromJSON(ecgi_list_local);
             if (!ecgi_listItem) {
                 ogs_error("No ecgi_listItem");
-                OpenAPI_list_free(ecgi_listList);
                 goto end;
             }
             OpenAPI_list_add(ecgi_listList, ecgi_listItem);

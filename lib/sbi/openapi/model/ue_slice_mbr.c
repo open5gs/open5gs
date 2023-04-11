@@ -159,10 +159,18 @@ OpenAPI_ue_slice_mbr_t *OpenAPI_ue_slice_mbr_parseFromJSON(cJSON *ue_slice_mbrJS
         goto end;
     }
     serving_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(serving_snssai);
+    if (!serving_snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [serving_snssai]");
+        goto end;
+    }
 
     mapped_home_snssai = cJSON_GetObjectItemCaseSensitive(ue_slice_mbrJSON, "mappedHomeSnssai");
     if (mapped_home_snssai) {
     mapped_home_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(mapped_home_snssai);
+    if (!mapped_home_snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [mapped_home_snssai]");
+        goto end;
+    }
     }
 
     ue_slice_mbr_local_var = OpenAPI_ue_slice_mbr_create (

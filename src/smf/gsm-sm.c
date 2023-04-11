@@ -919,7 +919,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                     NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release);
                             ogs_assert(param.n2smbuf);
 
-                            param.skip_ind = false;
+                            param.skip_ind = true;
 
                             smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
                         } else {

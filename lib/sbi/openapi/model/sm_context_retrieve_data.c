@@ -136,6 +136,10 @@ OpenAPI_sm_context_retrieve_data_t *OpenAPI_sm_context_retrieve_data_parseFromJS
     target_mme_cap = cJSON_GetObjectItemCaseSensitive(sm_context_retrieve_dataJSON, "targetMmeCap");
     if (target_mme_cap) {
     target_mme_cap_local_nonprim = OpenAPI_mme_capabilities_parseFromJSON(target_mme_cap);
+    if (!target_mme_cap_local_nonprim) {
+        ogs_error("OpenAPI_mme_capabilities_parseFromJSON failed [target_mme_cap]");
+        goto end;
+    }
     }
 
     sm_context_type = cJSON_GetObjectItemCaseSensitive(sm_context_retrieve_dataJSON, "smContextType");
@@ -150,6 +154,10 @@ OpenAPI_sm_context_retrieve_data_t *OpenAPI_sm_context_retrieve_data_parseFromJS
     serving_network = cJSON_GetObjectItemCaseSensitive(sm_context_retrieve_dataJSON, "servingNetwork");
     if (serving_network) {
     serving_network_local_nonprim = OpenAPI_plmn_id_parseFromJSON(serving_network);
+    if (!serving_network_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [serving_network]");
+        goto end;
+    }
     }
 
     not_to_transfer_ebi_list = cJSON_GetObjectItemCaseSensitive(sm_context_retrieve_dataJSON, "notToTransferEbiList");

@@ -189,6 +189,10 @@ OpenAPI_prose_context_t *OpenAPI_prose_context_parseFromJSON(cJSON *prose_contex
     pc5_qo_s_para = cJSON_GetObjectItemCaseSensitive(prose_contextJSON, "pc5QoSPara");
     if (pc5_qo_s_para) {
     pc5_qo_s_para_local_nonprim = OpenAPI_pc5_qo_s_para_parseFromJSON(pc5_qo_s_para);
+    if (!pc5_qo_s_para_local_nonprim) {
+        ogs_error("OpenAPI_pc5_qo_s_para_parseFromJSON failed [pc5_qo_s_para]");
+        goto end;
+    }
     }
 
     prose_context_local_var = OpenAPI_prose_context_create (

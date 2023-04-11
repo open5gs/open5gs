@@ -140,6 +140,10 @@ OpenAPI_reporting_options_1_t *OpenAPI_reporting_options_1_parseFromJSON(cJSON *
     report_mode = cJSON_GetObjectItemCaseSensitive(reporting_options_1JSON, "reportMode");
     if (report_mode) {
     report_mode_local_nonprim = OpenAPI_event_report_mode_parseFromJSON(report_mode);
+    if (!report_mode_local_nonprim) {
+        ogs_error("OpenAPI_event_report_mode_parseFromJSON failed [report_mode]");
+        goto end;
+    }
     }
 
     max_num_of_reports = cJSON_GetObjectItemCaseSensitive(reporting_options_1JSON, "maxNumOfReports");

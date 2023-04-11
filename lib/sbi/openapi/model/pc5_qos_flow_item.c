@@ -97,6 +97,10 @@ OpenAPI_pc5_qos_flow_item_t *OpenAPI_pc5_qos_flow_item_parseFromJSON(cJSON *pc5_
     pc5_flow_bit_rates = cJSON_GetObjectItemCaseSensitive(pc5_qos_flow_itemJSON, "pc5FlowBitRates");
     if (pc5_flow_bit_rates) {
     pc5_flow_bit_rates_local_nonprim = OpenAPI_pc5_flow_bit_rates_parseFromJSON(pc5_flow_bit_rates);
+    if (!pc5_flow_bit_rates_local_nonprim) {
+        ogs_error("OpenAPI_pc5_flow_bit_rates_parseFromJSON failed [pc5_flow_bit_rates]");
+        goto end;
+    }
     }
 
     range = cJSON_GetObjectItemCaseSensitive(pc5_qos_flow_itemJSON, "range");

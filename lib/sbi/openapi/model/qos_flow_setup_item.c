@@ -176,6 +176,10 @@ OpenAPI_qos_flow_setup_item_t *OpenAPI_qos_flow_setup_item_parseFromJSON(cJSON *
     qos_flow_profile = cJSON_GetObjectItemCaseSensitive(qos_flow_setup_itemJSON, "qosFlowProfile");
     if (qos_flow_profile) {
     qos_flow_profile_local_nonprim = OpenAPI_qos_flow_profile_parseFromJSON(qos_flow_profile);
+    if (!qos_flow_profile_local_nonprim) {
+        ogs_error("OpenAPI_qos_flow_profile_parseFromJSON failed [qos_flow_profile]");
+        goto end;
+    }
     }
 
     associated_an_type = cJSON_GetObjectItemCaseSensitive(qos_flow_setup_itemJSON, "associatedAnType");

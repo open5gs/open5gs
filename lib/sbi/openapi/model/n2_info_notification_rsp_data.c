@@ -88,7 +88,6 @@ OpenAPI_n2_info_notification_rsp_data_t *OpenAPI_n2_info_notification_rsp_data_p
             OpenAPI_n2_sm_information_t *sec_rat_data_usage_listItem = OpenAPI_n2_sm_information_parseFromJSON(sec_rat_data_usage_list_local);
             if (!sec_rat_data_usage_listItem) {
                 ogs_error("No sec_rat_data_usage_listItem");
-                OpenAPI_list_free(sec_rat_data_usage_listList);
                 goto end;
             }
             OpenAPI_list_add(sec_rat_data_usage_listList, sec_rat_data_usage_listItem);

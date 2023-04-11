@@ -105,6 +105,10 @@ OpenAPI_gba_authentication_info_request_t *OpenAPI_gba_authentication_info_reque
     resynchronization_info = cJSON_GetObjectItemCaseSensitive(gba_authentication_info_requestJSON, "resynchronizationInfo");
     if (resynchronization_info) {
     resynchronization_info_local_nonprim = OpenAPI_resynchronization_info_1_parseFromJSON(resynchronization_info);
+    if (!resynchronization_info_local_nonprim) {
+        ogs_error("OpenAPI_resynchronization_info_1_parseFromJSON failed [resynchronization_info]");
+        goto end;
+    }
     }
 
     supported_features = cJSON_GetObjectItemCaseSensitive(gba_authentication_info_requestJSON, "supportedFeatures");

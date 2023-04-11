@@ -89,6 +89,10 @@ OpenAPI_sm_policy_notification_t *OpenAPI_sm_policy_notification_parseFromJSON(c
     sm_policy_decision = cJSON_GetObjectItemCaseSensitive(sm_policy_notificationJSON, "smPolicyDecision");
     if (sm_policy_decision) {
     sm_policy_decision_local_nonprim = OpenAPI_sm_policy_decision_parseFromJSON(sm_policy_decision);
+    if (!sm_policy_decision_local_nonprim) {
+        ogs_error("OpenAPI_sm_policy_decision_parseFromJSON failed [sm_policy_decision]");
+        goto end;
+    }
     }
 
     sm_policy_notification_local_var = OpenAPI_sm_policy_notification_create (

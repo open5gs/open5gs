@@ -156,6 +156,10 @@ OpenAPI_analytics_metadata_info_t *OpenAPI_analytics_metadata_info_parseFromJSON
     data_window = cJSON_GetObjectItemCaseSensitive(analytics_metadata_infoJSON, "dataWindow");
     if (data_window) {
     data_window_local_nonprim = OpenAPI_time_window_parseFromJSON(data_window);
+    if (!data_window_local_nonprim) {
+        ogs_error("OpenAPI_time_window_parseFromJSON failed [data_window]");
+        goto end;
+    }
     }
 
     data_stat_props = cJSON_GetObjectItemCaseSensitive(analytics_metadata_infoJSON, "dataStatProps");
@@ -176,7 +180,6 @@ OpenAPI_analytics_metadata_info_t *OpenAPI_analytics_metadata_info_parseFromJSON
             OpenAPI_dataset_statistical_property_t *data_stat_propsItem = OpenAPI_dataset_statistical_property_parseFromJSON(data_stat_props_local);
             if (!data_stat_propsItem) {
                 ogs_error("No data_stat_propsItem");
-                OpenAPI_list_free(data_stat_propsList);
                 goto end;
             }
             OpenAPI_list_add(data_stat_propsList, data_stat_propsItem);
@@ -186,11 +189,19 @@ OpenAPI_analytics_metadata_info_t *OpenAPI_analytics_metadata_info_parseFromJSON
     strategy = cJSON_GetObjectItemCaseSensitive(analytics_metadata_infoJSON, "strategy");
     if (strategy) {
     strategy_local_nonprim = OpenAPI_output_strategy_parseFromJSON(strategy);
+    if (!strategy_local_nonprim) {
+        ogs_error("OpenAPI_output_strategy_parseFromJSON failed [strategy]");
+        goto end;
+    }
     }
 
     accuracy = cJSON_GetObjectItemCaseSensitive(analytics_metadata_infoJSON, "accuracy");
     if (accuracy) {
     accuracy_local_nonprim = OpenAPI_accuracy_parseFromJSON(accuracy);
+    if (!accuracy_local_nonprim) {
+        ogs_error("OpenAPI_accuracy_parseFromJSON failed [accuracy]");
+        goto end;
+    }
     }
 
     analytics_metadata_info_local_var = OpenAPI_analytics_metadata_info_create (

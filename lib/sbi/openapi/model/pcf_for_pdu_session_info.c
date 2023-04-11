@@ -256,6 +256,10 @@ OpenAPI_pcf_for_pdu_session_info_t *OpenAPI_pcf_for_pdu_session_info_parseFromJS
         goto end;
     }
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
 
     pcf_fqdn = cJSON_GetObjectItemCaseSensitive(pcf_for_pdu_session_infoJSON, "pcfFqdn");
     if (pcf_fqdn) {
@@ -283,7 +287,6 @@ OpenAPI_pcf_for_pdu_session_info_t *OpenAPI_pcf_for_pdu_session_info_parseFromJS
             OpenAPI_ip_end_point_t *pcf_ip_end_pointsItem = OpenAPI_ip_end_point_parseFromJSON(pcf_ip_end_points_local);
             if (!pcf_ip_end_pointsItem) {
                 ogs_error("No pcf_ip_end_pointsItem");
-                OpenAPI_list_free(pcf_ip_end_pointsList);
                 goto end;
             }
             OpenAPI_list_add(pcf_ip_end_pointsList, pcf_ip_end_pointsItem);

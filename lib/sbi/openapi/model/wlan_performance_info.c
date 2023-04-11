@@ -96,6 +96,10 @@ OpenAPI_wlan_performance_info_t *OpenAPI_wlan_performance_info_parseFromJSON(cJS
     network_area = cJSON_GetObjectItemCaseSensitive(wlan_performance_infoJSON, "networkArea");
     if (network_area) {
     network_area_local_nonprim = OpenAPI_network_area_info_parseFromJSON(network_area);
+    if (!network_area_local_nonprim) {
+        ogs_error("OpenAPI_network_area_info_parseFromJSON failed [network_area]");
+        goto end;
+    }
     }
 
     wlan_per_ssid_infos = cJSON_GetObjectItemCaseSensitive(wlan_performance_infoJSON, "wlanPerSsidInfos");
@@ -119,7 +123,6 @@ OpenAPI_wlan_performance_info_t *OpenAPI_wlan_performance_info_parseFromJSON(cJS
             OpenAPI_wlan_per_ss_id_performance_info_t *wlan_per_ssid_infosItem = OpenAPI_wlan_per_ss_id_performance_info_parseFromJSON(wlan_per_ssid_infos_local);
             if (!wlan_per_ssid_infosItem) {
                 ogs_error("No wlan_per_ssid_infosItem");
-                OpenAPI_list_free(wlan_per_ssid_infosList);
                 goto end;
             }
             OpenAPI_list_add(wlan_per_ssid_infosList, wlan_per_ssid_infosItem);

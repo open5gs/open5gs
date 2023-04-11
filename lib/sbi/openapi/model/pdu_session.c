@@ -145,10 +145,18 @@ OpenAPI_pdu_session_t *OpenAPI_pdu_session_parseFromJSON(cJSON *pdu_sessionJSON)
         goto end;
     }
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
+    if (!plmn_id_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [plmn_id]");
+        goto end;
+    }
 
     single_nssai = cJSON_GetObjectItemCaseSensitive(pdu_sessionJSON, "singleNssai");
     if (single_nssai) {
     single_nssai_local_nonprim = OpenAPI_snssai_parseFromJSON(single_nssai);
+    if (!single_nssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [single_nssai]");
+        goto end;
+    }
     }
 
     pdu_session_local_var = OpenAPI_pdu_session_create (

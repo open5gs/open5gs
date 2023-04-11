@@ -72,6 +72,10 @@ OpenAPI_point_all_of_t *OpenAPI_point_all_of_parseFromJSON(cJSON *point_all_ofJS
         goto end;
     }
     point_local_nonprim = OpenAPI_geographical_coordinates_parseFromJSON(point);
+    if (!point_local_nonprim) {
+        ogs_error("OpenAPI_geographical_coordinates_parseFromJSON failed [point]");
+        goto end;
+    }
 
     point_all_of_local_var = OpenAPI_point_all_of_create (
         point_local_nonprim

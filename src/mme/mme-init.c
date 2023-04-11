@@ -36,7 +36,7 @@ static void mme_main(void *data);
 
 static int initialized = 0;
 
-int mme_initialize()
+int mme_initialize(void)
 {
     int rv;
 

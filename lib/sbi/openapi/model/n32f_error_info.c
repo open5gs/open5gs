@@ -187,7 +187,6 @@ OpenAPI_n32f_error_info_t *OpenAPI_n32f_error_info_parseFromJSON(cJSON *n32f_err
             OpenAPI_failed_modification_info_t *failed_modification_listItem = OpenAPI_failed_modification_info_parseFromJSON(failed_modification_list_local);
             if (!failed_modification_listItem) {
                 ogs_error("No failed_modification_listItem");
-                OpenAPI_list_free(failed_modification_listList);
                 goto end;
             }
             OpenAPI_list_add(failed_modification_listList, failed_modification_listItem);
@@ -212,7 +211,6 @@ OpenAPI_n32f_error_info_t *OpenAPI_n32f_error_info_parseFromJSON(cJSON *n32f_err
             OpenAPI_n32f_error_detail_t *error_details_listItem = OpenAPI_n32f_error_detail_parseFromJSON(error_details_list_local);
             if (!error_details_listItem) {
                 ogs_error("No error_details_listItem");
-                OpenAPI_list_free(error_details_listList);
                 goto end;
             }
             OpenAPI_list_add(error_details_listList, error_details_listItem);

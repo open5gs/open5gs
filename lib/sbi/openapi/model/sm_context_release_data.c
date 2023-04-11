@@ -211,6 +211,10 @@ OpenAPI_sm_context_release_data_t *OpenAPI_sm_context_release_data_parseFromJSON
     ng_ap_cause = cJSON_GetObjectItemCaseSensitive(sm_context_release_dataJSON, "ngApCause");
     if (ng_ap_cause) {
     ng_ap_cause_local_nonprim = OpenAPI_ng_ap_cause_parseFromJSON(ng_ap_cause);
+    if (!ng_ap_cause_local_nonprim) {
+        ogs_error("OpenAPI_ng_ap_cause_parseFromJSON failed [ng_ap_cause]");
+        goto end;
+    }
     }
 
     _5g_mm_cause_value = cJSON_GetObjectItemCaseSensitive(sm_context_release_dataJSON, "5gMmCauseValue");
@@ -224,6 +228,10 @@ OpenAPI_sm_context_release_data_t *OpenAPI_sm_context_release_data_parseFromJSON
     ue_location = cJSON_GetObjectItemCaseSensitive(sm_context_release_dataJSON, "ueLocation");
     if (ue_location) {
     ue_location_local_nonprim = OpenAPI_user_location_parseFromJSON(ue_location);
+    if (!ue_location_local_nonprim) {
+        ogs_error("OpenAPI_user_location_parseFromJSON failed [ue_location]");
+        goto end;
+    }
     }
 
     ue_time_zone = cJSON_GetObjectItemCaseSensitive(sm_context_release_dataJSON, "ueTimeZone");
@@ -237,6 +245,10 @@ OpenAPI_sm_context_release_data_t *OpenAPI_sm_context_release_data_parseFromJSON
     add_ue_location = cJSON_GetObjectItemCaseSensitive(sm_context_release_dataJSON, "addUeLocation");
     if (add_ue_location) {
     add_ue_location_local_nonprim = OpenAPI_user_location_parseFromJSON(add_ue_location);
+    if (!add_ue_location_local_nonprim) {
+        ogs_error("OpenAPI_user_location_parseFromJSON failed [add_ue_location]");
+        goto end;
+    }
     }
 
     vsmf_release_only = cJSON_GetObjectItemCaseSensitive(sm_context_release_dataJSON, "vsmfReleaseOnly");
@@ -250,6 +262,10 @@ OpenAPI_sm_context_release_data_t *OpenAPI_sm_context_release_data_parseFromJSON
     n2_sm_info = cJSON_GetObjectItemCaseSensitive(sm_context_release_dataJSON, "n2SmInfo");
     if (n2_sm_info) {
     n2_sm_info_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(n2_sm_info);
+    if (!n2_sm_info_local_nonprim) {
+        ogs_error("OpenAPI_ref_to_binary_data_parseFromJSON failed [n2_sm_info]");
+        goto end;
+    }
     }
 
     n2_sm_info_type = cJSON_GetObjectItemCaseSensitive(sm_context_release_dataJSON, "n2SmInfoType");

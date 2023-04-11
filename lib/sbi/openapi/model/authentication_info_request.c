@@ -192,6 +192,10 @@ OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_parse
     resynchronization_info = cJSON_GetObjectItemCaseSensitive(authentication_info_requestJSON, "resynchronizationInfo");
     if (resynchronization_info) {
     resynchronization_info_local_nonprim = OpenAPI_resynchronization_info_parseFromJSON(resynchronization_info);
+    if (!resynchronization_info_local_nonprim) {
+        ogs_error("OpenAPI_resynchronization_info_parseFromJSON failed [resynchronization_info]");
+        goto end;
+    }
     }
 
     ausf_instance_id = cJSON_GetObjectItemCaseSensitive(authentication_info_requestJSON, "ausfInstanceId");

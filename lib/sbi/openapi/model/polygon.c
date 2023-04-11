@@ -101,6 +101,10 @@ OpenAPI_polygon_t *OpenAPI_polygon_parseFromJSON(cJSON *polygonJSON)
         goto end;
     }
     shape_local_nonprim = OpenAPI_supported_gad_shapes_parseFromJSON(shape);
+    if (!shape_local_nonprim) {
+        ogs_error("OpenAPI_supported_gad_shapes_parseFromJSON failed [shape]");
+        goto end;
+    }
 
     point_list = cJSON_GetObjectItemCaseSensitive(polygonJSON, "pointList");
     if (!point_list) {
@@ -123,7 +127,6 @@ OpenAPI_polygon_t *OpenAPI_polygon_parseFromJSON(cJSON *polygonJSON)
             OpenAPI_geographical_coordinates_t *point_listItem = OpenAPI_geographical_coordinates_parseFromJSON(point_list_local);
             if (!point_listItem) {
                 ogs_error("No point_listItem");
-                OpenAPI_list_free(point_listList);
                 goto end;
             }
             OpenAPI_list_add(point_listList, point_listItem);

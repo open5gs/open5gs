@@ -34,6 +34,9 @@ ogs_sbi_request_t *pcf_nsmf_callback_build_smpolicycontrol_update(
     ogs_assert(sess->sm_policy_id);
     ogs_assert(sess->notification_uri);
 
+    memset(&SmPolicyNotification, 0, sizeof(SmPolicyNotification));
+    memset(&message, 0, sizeof(message));
+
     server = ogs_list_first(&ogs_sbi_self()->server_list);
     if (!server) {
         ogs_error("No server");
@@ -47,8 +50,6 @@ ogs_sbi_request_t *pcf_nsmf_callback_build_smpolicycontrol_update(
     header.resource.component[1] = sess->sm_policy_id;
     header.resource.component[2] = (char *)OGS_SBI_RESOURCE_NAME_UPDATE;
 
-    memset(&SmPolicyNotification, 0, sizeof(SmPolicyNotification));
-
     SmPolicyNotification.resource_uri = ogs_sbi_server_uri(server, &header);
     if (!SmPolicyNotification.resource_uri) {
         ogs_error("No resource_uri");
@@ -60,7 +61,6 @@ ogs_sbi_request_t *pcf_nsmf_callback_build_smpolicycontrol_update(
 
     SmPolicyNotification.sm_policy_decision = SmPolicyDecision;
 
-    memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
     message.h.uri = ogs_msprintf("%s/%s",
             sess->notification_uri, OGS_SBI_RESOURCE_NAME_UPDATE);

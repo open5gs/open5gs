@@ -33,7 +33,7 @@ void ogs_sctp_init(uint16_t port)
     usrsctp_sysctl_set_sctp_enable_sack_immediately(1);
 }
 
-void ogs_sctp_final()
+void ogs_sctp_final(void)
 {
     while (usrsctp_finish() != 0) {
         ogs_warn("try to finsih SCTP");

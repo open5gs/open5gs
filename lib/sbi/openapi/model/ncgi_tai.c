@@ -101,6 +101,10 @@ OpenAPI_ncgi_tai_t *OpenAPI_ncgi_tai_parseFromJSON(cJSON *ncgi_taiJSON)
         goto end;
     }
     tai_local_nonprim = OpenAPI_tai_parseFromJSON(tai);
+    if (!tai_local_nonprim) {
+        ogs_error("OpenAPI_tai_parseFromJSON failed [tai]");
+        goto end;
+    }
 
     cell_list = cJSON_GetObjectItemCaseSensitive(ncgi_taiJSON, "cellList");
     if (!cell_list) {
@@ -123,7 +127,6 @@ OpenAPI_ncgi_tai_t *OpenAPI_ncgi_tai_parseFromJSON(cJSON *ncgi_taiJSON)
             OpenAPI_ncgi_t *cell_listItem = OpenAPI_ncgi_parseFromJSON(cell_list_local);
             if (!cell_listItem) {
                 ogs_error("No cell_listItem");
-                OpenAPI_list_free(cell_listList);
                 goto end;
             }
             OpenAPI_list_add(cell_listList, cell_listItem);

@@ -307,11 +307,19 @@ OpenAPI_nrf_info_served_nef_info_value_t *OpenAPI_nrf_info_served_nef_info_value
     pfd_data = cJSON_GetObjectItemCaseSensitive(nrf_info_served_nef_info_valueJSON, "pfdData");
     if (pfd_data) {
     pfd_data_local_nonprim = OpenAPI_pfd_data_parseFromJSON(pfd_data);
+    if (!pfd_data_local_nonprim) {
+        ogs_error("OpenAPI_pfd_data_parseFromJSON failed [pfd_data]");
+        goto end;
+    }
     }
 
     af_ee_data = cJSON_GetObjectItemCaseSensitive(nrf_info_served_nef_info_valueJSON, "afEeData");
     if (af_ee_data) {
     af_ee_data_local_nonprim = OpenAPI_af_event_exposure_data_parseFromJSON(af_ee_data);
+    if (!af_ee_data_local_nonprim) {
+        ogs_error("OpenAPI_af_event_exposure_data_parseFromJSON failed [af_ee_data]");
+        goto end;
+    }
     }
 
     gpsi_ranges = cJSON_GetObjectItemCaseSensitive(nrf_info_served_nef_info_valueJSON, "gpsiRanges");
@@ -332,7 +340,6 @@ OpenAPI_nrf_info_served_nef_info_value_t *OpenAPI_nrf_info_served_nef_info_value
             OpenAPI_identity_range_t *gpsi_rangesItem = OpenAPI_identity_range_parseFromJSON(gpsi_ranges_local);
             if (!gpsi_rangesItem) {
                 ogs_error("No gpsi_rangesItem");
-                OpenAPI_list_free(gpsi_rangesList);
                 goto end;
             }
             OpenAPI_list_add(gpsi_rangesList, gpsi_rangesItem);
@@ -357,7 +364,6 @@ OpenAPI_nrf_info_served_nef_info_value_t *OpenAPI_nrf_info_served_nef_info_value
             OpenAPI_identity_range_t *external_group_identifiers_rangesItem = OpenAPI_identity_range_parseFromJSON(external_group_identifiers_ranges_local);
             if (!external_group_identifiers_rangesItem) {
                 ogs_error("No external_group_identifiers_rangesItem");
-                OpenAPI_list_free(external_group_identifiers_rangesList);
                 goto end;
             }
             OpenAPI_list_add(external_group_identifiers_rangesList, external_group_identifiers_rangesItem);
@@ -403,7 +409,6 @@ OpenAPI_nrf_info_served_nef_info_value_t *OpenAPI_nrf_info_served_nef_info_value
             OpenAPI_tai_t *tai_listItem = OpenAPI_tai_parseFromJSON(tai_list_local);
             if (!tai_listItem) {
                 ogs_error("No tai_listItem");
-                OpenAPI_list_free(tai_listList);
                 goto end;
             }
             OpenAPI_list_add(tai_listList, tai_listItem);
@@ -428,7 +433,6 @@ OpenAPI_nrf_info_served_nef_info_value_t *OpenAPI_nrf_info_served_nef_info_value
             OpenAPI_tai_range_t *tai_range_listItem = OpenAPI_tai_range_parseFromJSON(tai_range_list_local);
             if (!tai_range_listItem) {
                 ogs_error("No tai_range_listItem");
-                OpenAPI_list_free(tai_range_listList);
                 goto end;
             }
             OpenAPI_list_add(tai_range_listList, tai_range_listItem);
@@ -474,7 +478,6 @@ OpenAPI_nrf_info_served_nef_info_value_t *OpenAPI_nrf_info_served_nef_info_value
             OpenAPI_un_trust_af_info_t *un_trust_af_info_listItem = OpenAPI_un_trust_af_info_parseFromJSON(un_trust_af_info_list_local);
             if (!un_trust_af_info_listItem) {
                 ogs_error("No un_trust_af_info_listItem");
-                OpenAPI_list_free(un_trust_af_info_listList);
                 goto end;
             }
             OpenAPI_list_add(un_trust_af_info_listList, un_trust_af_info_listItem);

@@ -339,6 +339,10 @@ OpenAPI_create_ue_context_201_response_t *OpenAPI_create_ue_context_201_response
     json_data = cJSON_GetObjectItemCaseSensitive(create_ue_context_201_responseJSON, "jsonData");
     if (json_data) {
     json_data_local_nonprim = OpenAPI_ue_context_created_data_parseFromJSON(json_data);
+    if (!json_data_local_nonprim) {
+        ogs_error("OpenAPI_ue_context_created_data_parseFromJSON failed [json_data]");
+        goto end;
+    }
     }
 
     binary_data_n2_information = cJSON_GetObjectItemCaseSensitive(create_ue_context_201_responseJSON, "binaryDataN2Information");

@@ -231,7 +231,6 @@ OpenAPI_data_change_notify_t *OpenAPI_data_change_notify_parseFromJSON(cJSON *da
             OpenAPI_notify_item_t *notify_itemsItem = OpenAPI_notify_item_parseFromJSON(notify_items_local);
             if (!notify_itemsItem) {
                 ogs_error("No notify_itemsItem");
-                OpenAPI_list_free(notify_itemsList);
                 goto end;
             }
             OpenAPI_list_add(notify_itemsList, notify_itemsItem);
@@ -241,6 +240,10 @@ OpenAPI_data_change_notify_t *OpenAPI_data_change_notify_parseFromJSON(cJSON *da
     sdm_subscription = cJSON_GetObjectItemCaseSensitive(data_change_notifyJSON, "sdmSubscription");
     if (sdm_subscription) {
     sdm_subscription_local_nonprim = OpenAPI_sdm_subscription_1_parseFromJSON(sdm_subscription);
+    if (!sdm_subscription_local_nonprim) {
+        ogs_error("OpenAPI_sdm_subscription_1_parseFromJSON failed [sdm_subscription]");
+        goto end;
+    }
     }
 
     additional_sdm_subscriptions = cJSON_GetObjectItemCaseSensitive(data_change_notifyJSON, "additionalSdmSubscriptions");
@@ -261,7 +264,6 @@ OpenAPI_data_change_notify_t *OpenAPI_data_change_notify_parseFromJSON(cJSON *da
             OpenAPI_sdm_subscription_1_t *additional_sdm_subscriptionsItem = OpenAPI_sdm_subscription_1_parseFromJSON(additional_sdm_subscriptions_local);
             if (!additional_sdm_subscriptionsItem) {
                 ogs_error("No additional_sdm_subscriptionsItem");
-                OpenAPI_list_free(additional_sdm_subscriptionsList);
                 goto end;
             }
             OpenAPI_list_add(additional_sdm_subscriptionsList, additional_sdm_subscriptionsItem);
@@ -286,7 +288,6 @@ OpenAPI_data_change_notify_t *OpenAPI_data_change_notify_parseFromJSON(cJSON *da
             OpenAPI_subscription_data_subscriptions_t *subscription_data_subscriptionsItem = OpenAPI_subscription_data_subscriptions_parseFromJSON(subscription_data_subscriptions_local);
             if (!subscription_data_subscriptionsItem) {
                 ogs_error("No subscription_data_subscriptionsItem");
-                OpenAPI_list_free(subscription_data_subscriptionsList);
                 goto end;
             }
             OpenAPI_list_add(subscription_data_subscriptionsList, subscription_data_subscriptionsItem);

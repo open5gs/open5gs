@@ -115,7 +115,6 @@ OpenAPI_nssaaf_info_t *OpenAPI_nssaaf_info_parseFromJSON(cJSON *nssaaf_infoJSON)
             OpenAPI_supi_range_t *supi_rangesItem = OpenAPI_supi_range_parseFromJSON(supi_ranges_local);
             if (!supi_rangesItem) {
                 ogs_error("No supi_rangesItem");
-                OpenAPI_list_free(supi_rangesList);
                 goto end;
             }
             OpenAPI_list_add(supi_rangesList, supi_rangesItem);
@@ -140,7 +139,6 @@ OpenAPI_nssaaf_info_t *OpenAPI_nssaaf_info_parseFromJSON(cJSON *nssaaf_infoJSON)
             OpenAPI_internal_group_id_range_t *internal_group_identifiers_rangesItem = OpenAPI_internal_group_id_range_parseFromJSON(internal_group_identifiers_ranges_local);
             if (!internal_group_identifiers_rangesItem) {
                 ogs_error("No internal_group_identifiers_rangesItem");
-                OpenAPI_list_free(internal_group_identifiers_rangesList);
                 goto end;
             }
             OpenAPI_list_add(internal_group_identifiers_rangesList, internal_group_identifiers_rangesItem);

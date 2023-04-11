@@ -136,6 +136,10 @@ OpenAPI_amf_non3_gpp_access_registration_modification_t *OpenAPI_amf_non3_gpp_ac
         goto end;
     }
     guami_local_nonprim = OpenAPI_guami_parseFromJSON(guami);
+    if (!guami_local_nonprim) {
+        ogs_error("OpenAPI_guami_parseFromJSON failed [guami]");
+        goto end;
+    }
 
     purge_flag = cJSON_GetObjectItemCaseSensitive(amf_non3_gpp_access_registration_modificationJSON, "purgeFlag");
     if (purge_flag) {
@@ -180,7 +184,6 @@ OpenAPI_amf_non3_gpp_access_registration_modification_t *OpenAPI_amf_non3_gpp_ac
             OpenAPI_backup_amf_info_t *backup_amf_infoItem = OpenAPI_backup_amf_info_parseFromJSON(backup_amf_info_local);
             if (!backup_amf_infoItem) {
                 ogs_error("No backup_amf_infoItem");
-                OpenAPI_list_free(backup_amf_infoList);
                 goto end;
             }
             OpenAPI_list_add(backup_amf_infoList, backup_amf_infoItem);

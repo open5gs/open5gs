@@ -590,7 +590,6 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
             OpenAPI_ip_end_point_t *pcf_ip_end_pointsItem = OpenAPI_ip_end_point_parseFromJSON(pcf_ip_end_points_local);
             if (!pcf_ip_end_pointsItem) {
                 ogs_error("No pcf_ip_end_pointsItem");
-                OpenAPI_list_free(pcf_ip_end_pointsList);
                 goto end;
             }
             OpenAPI_list_add(pcf_ip_end_pointsList, pcf_ip_end_pointsItem);
@@ -639,7 +638,6 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
             OpenAPI_ip_end_point_t *pcf_sm_ip_end_pointsItem = OpenAPI_ip_end_point_parseFromJSON(pcf_sm_ip_end_points_local);
             if (!pcf_sm_ip_end_pointsItem) {
                 ogs_error("No pcf_sm_ip_end_pointsItem");
-                OpenAPI_list_free(pcf_sm_ip_end_pointsList);
                 goto end;
             }
             OpenAPI_list_add(pcf_sm_ip_end_pointsList, pcf_sm_ip_end_pointsItem);
@@ -652,6 +650,10 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
         goto end;
     }
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
 
     supp_feat = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "suppFeat");
     if (supp_feat) {
@@ -688,6 +690,10 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
     para_com = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "paraCom");
     if (para_com) {
     para_com_local_nonprim = OpenAPI_parameter_combination_parseFromJSON(para_com);
+    if (!para_com_local_nonprim) {
+        ogs_error("OpenAPI_parameter_combination_parseFromJSON failed [para_com]");
+        goto end;
+    }
     }
 
     bind_level = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "bindLevel");

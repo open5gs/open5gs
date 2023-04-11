@@ -98,6 +98,10 @@ OpenAPI_tmgi_t *OpenAPI_tmgi_parseFromJSON(cJSON *tmgiJSON)
         goto end;
     }
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
+    if (!plmn_id_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [plmn_id]");
+        goto end;
+    }
 
     tmgi_local_var = OpenAPI_tmgi_create (
         ogs_strdup(mbs_service_id->valuestring),

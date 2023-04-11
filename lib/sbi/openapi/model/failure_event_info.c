@@ -95,6 +95,10 @@ OpenAPI_failure_event_info_t *OpenAPI_failure_event_info_parseFromJSON(cJSON *fa
         goto end;
     }
     event_local_nonprim = OpenAPI_nwdaf_event_parseFromJSON(event);
+    if (!event_local_nonprim) {
+        ogs_error("OpenAPI_nwdaf_event_parseFromJSON failed [event]");
+        goto end;
+    }
 
     failure_code = cJSON_GetObjectItemCaseSensitive(failure_event_infoJSON, "failureCode");
     if (!failure_code) {
@@ -102,6 +106,10 @@ OpenAPI_failure_event_info_t *OpenAPI_failure_event_info_parseFromJSON(cJSON *fa
         goto end;
     }
     failure_code_local_nonprim = OpenAPI_nwdaf_failure_code_parseFromJSON(failure_code);
+    if (!failure_code_local_nonprim) {
+        ogs_error("OpenAPI_nwdaf_failure_code_parseFromJSON failed [failure_code]");
+        goto end;
+    }
 
     failure_event_info_local_var = OpenAPI_failure_event_info_create (
         event_local_nonprim,

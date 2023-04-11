@@ -398,6 +398,10 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
     location = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "location");
     if (location) {
     location_local_nonprim = OpenAPI_user_location_parseFromJSON(location);
+    if (!location_local_nonprim) {
+        ogs_error("OpenAPI_user_location_parseFromJSON failed [location]");
+        goto end;
+    }
     }
 
     location_ts = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "locationTs");
@@ -451,7 +455,6 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
             OpenAPI_rm_info_t *reg_statesItem = OpenAPI_rm_info_parseFromJSON(reg_states_local);
             if (!reg_statesItem) {
                 ogs_error("No reg_statesItem");
-                OpenAPI_list_free(reg_statesList);
                 goto end;
             }
             OpenAPI_list_add(reg_statesList, reg_statesItem);
@@ -484,7 +487,6 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
             OpenAPI_cm_info_t *conn_statesItem = OpenAPI_cm_info_parseFromJSON(conn_states_local);
             if (!conn_statesItem) {
                 ogs_error("No conn_statesItem");
-                OpenAPI_list_free(conn_statesList);
                 goto end;
             }
             OpenAPI_list_add(conn_statesList, conn_statesItem);
@@ -502,6 +504,10 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
     reachability_status = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "reachabilityStatus");
     if (reachability_status) {
     reachability_status_local_nonprim = OpenAPI_ue_reachability_parseFromJSON(reachability_status);
+    if (!reachability_status_local_nonprim) {
+        ogs_error("OpenAPI_ue_reachability_parseFromJSON failed [reachability_status]");
+        goto end;
+    }
     }
 
     reachability_status_ts = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "reachabilityStatusTs");
@@ -548,6 +554,10 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
     current_plmn = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "currentPlmn");
     if (current_plmn) {
     current_plmn_local_nonprim = OpenAPI_plmn_id_1_parseFromJSON(current_plmn);
+    if (!current_plmn_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_1_parseFromJSON failed [current_plmn]");
+        goto end;
+    }
     }
 
     current_plmn_ts = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "currentPlmnTs");

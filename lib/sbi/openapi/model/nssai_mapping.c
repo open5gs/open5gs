@@ -95,6 +95,10 @@ OpenAPI_nssai_mapping_t *OpenAPI_nssai_mapping_parseFromJSON(cJSON *nssai_mappin
         goto end;
     }
     mapped_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(mapped_snssai);
+    if (!mapped_snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [mapped_snssai]");
+        goto end;
+    }
 
     h_snssai = cJSON_GetObjectItemCaseSensitive(nssai_mappingJSON, "hSnssai");
     if (!h_snssai) {
@@ -102,6 +106,10 @@ OpenAPI_nssai_mapping_t *OpenAPI_nssai_mapping_parseFromJSON(cJSON *nssai_mappin
         goto end;
     }
     h_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(h_snssai);
+    if (!h_snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [h_snssai]");
+        goto end;
+    }
 
     nssai_mapping_local_var = OpenAPI_nssai_mapping_create (
         mapped_snssai_local_nonprim,

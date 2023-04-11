@@ -276,7 +276,6 @@ OpenAPI_nrf_info_served_nwdaf_info_value_t *OpenAPI_nrf_info_served_nwdaf_info_v
             OpenAPI_event_id_t *event_idsItem = OpenAPI_event_id_parseFromJSON(event_ids_local);
             if (!event_idsItem) {
                 ogs_error("No event_idsItem");
-                OpenAPI_list_free(event_idsList);
                 goto end;
             }
             OpenAPI_list_add(event_idsList, event_idsItem);
@@ -301,7 +300,6 @@ OpenAPI_nrf_info_served_nwdaf_info_value_t *OpenAPI_nrf_info_served_nwdaf_info_v
             OpenAPI_nwdaf_event_t *nwdaf_eventsItem = OpenAPI_nwdaf_event_parseFromJSON(nwdaf_events_local);
             if (!nwdaf_eventsItem) {
                 ogs_error("No nwdaf_eventsItem");
-                OpenAPI_list_free(nwdaf_eventsList);
                 goto end;
             }
             OpenAPI_list_add(nwdaf_eventsList, nwdaf_eventsItem);
@@ -326,7 +324,6 @@ OpenAPI_nrf_info_served_nwdaf_info_value_t *OpenAPI_nrf_info_served_nwdaf_info_v
             OpenAPI_tai_t *tai_listItem = OpenAPI_tai_parseFromJSON(tai_list_local);
             if (!tai_listItem) {
                 ogs_error("No tai_listItem");
-                OpenAPI_list_free(tai_listList);
                 goto end;
             }
             OpenAPI_list_add(tai_listList, tai_listItem);
@@ -351,7 +348,6 @@ OpenAPI_nrf_info_served_nwdaf_info_value_t *OpenAPI_nrf_info_served_nwdaf_info_v
             OpenAPI_tai_range_t *tai_range_listItem = OpenAPI_tai_range_parseFromJSON(tai_range_list_local);
             if (!tai_range_listItem) {
                 ogs_error("No tai_range_listItem");
-                OpenAPI_list_free(tai_range_listList);
                 goto end;
             }
             OpenAPI_list_add(tai_range_listList, tai_range_listItem);
@@ -361,6 +357,10 @@ OpenAPI_nrf_info_served_nwdaf_info_value_t *OpenAPI_nrf_info_served_nwdaf_info_v
     nwdaf_capability = cJSON_GetObjectItemCaseSensitive(nrf_info_served_nwdaf_info_valueJSON, "nwdafCapability");
     if (nwdaf_capability) {
     nwdaf_capability_local_nonprim = OpenAPI_nwdaf_capability_parseFromJSON(nwdaf_capability);
+    if (!nwdaf_capability_local_nonprim) {
+        ogs_error("OpenAPI_nwdaf_capability_parseFromJSON failed [nwdaf_capability]");
+        goto end;
+    }
     }
 
     analytics_delay = cJSON_GetObjectItemCaseSensitive(nrf_info_served_nwdaf_info_valueJSON, "analyticsDelay");
@@ -429,7 +429,6 @@ OpenAPI_nrf_info_served_nwdaf_info_value_t *OpenAPI_nrf_info_served_nwdaf_info_v
             OpenAPI_ml_analytics_info_t *ml_analytics_listItem = OpenAPI_ml_analytics_info_parseFromJSON(ml_analytics_list_local);
             if (!ml_analytics_listItem) {
                 ogs_error("No ml_analytics_listItem");
-                OpenAPI_list_free(ml_analytics_listList);
                 goto end;
             }
             OpenAPI_list_add(ml_analytics_listList, ml_analytics_listItem);

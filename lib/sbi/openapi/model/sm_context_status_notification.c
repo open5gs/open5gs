@@ -298,15 +298,27 @@ OpenAPI_sm_context_status_notification_t *OpenAPI_sm_context_status_notification
         goto end;
     }
     status_info_local_nonprim = OpenAPI_status_info_parseFromJSON(status_info);
+    if (!status_info_local_nonprim) {
+        ogs_error("OpenAPI_status_info_parseFromJSON failed [status_info]");
+        goto end;
+    }
 
     small_data_rate_status = cJSON_GetObjectItemCaseSensitive(sm_context_status_notificationJSON, "smallDataRateStatus");
     if (small_data_rate_status) {
     small_data_rate_status_local_nonprim = OpenAPI_small_data_rate_status_parseFromJSON(small_data_rate_status);
+    if (!small_data_rate_status_local_nonprim) {
+        ogs_error("OpenAPI_small_data_rate_status_parseFromJSON failed [small_data_rate_status]");
+        goto end;
+    }
     }
 
     apn_rate_status = cJSON_GetObjectItemCaseSensitive(sm_context_status_notificationJSON, "apnRateStatus");
     if (apn_rate_status) {
     apn_rate_status_local_nonprim = OpenAPI_apn_rate_status_parseFromJSON(apn_rate_status);
+    if (!apn_rate_status_local_nonprim) {
+        ogs_error("OpenAPI_apn_rate_status_parseFromJSON failed [apn_rate_status]");
+        goto end;
+    }
     }
 
     ddn_failure_status = cJSON_GetObjectItemCaseSensitive(sm_context_status_notificationJSON, "ddnFailureStatus");
@@ -397,6 +409,10 @@ OpenAPI_sm_context_status_notification_t *OpenAPI_sm_context_status_notification
     target_dnai_info = cJSON_GetObjectItemCaseSensitive(sm_context_status_notificationJSON, "targetDnaiInfo");
     if (target_dnai_info) {
     target_dnai_info_local_nonprim = OpenAPI_target_dnai_info_parseFromJSON(target_dnai_info);
+    if (!target_dnai_info_local_nonprim) {
+        ogs_error("OpenAPI_target_dnai_info_parseFromJSON failed [target_dnai_info]");
+        goto end;
+    }
     }
 
     old_pdu_session_ref = cJSON_GetObjectItemCaseSensitive(sm_context_status_notificationJSON, "oldPduSessionRef");

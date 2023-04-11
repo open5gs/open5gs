@@ -145,6 +145,10 @@ OpenAPI_hsmf_update_error_t *OpenAPI_hsmf_update_error_parseFromJSON(cJSON *hsmf
         goto end;
     }
     error_local_nonprim = OpenAPI_problem_details_parseFromJSON(error);
+    if (!error_local_nonprim) {
+        ogs_error("OpenAPI_problem_details_parseFromJSON failed [error]");
+        goto end;
+    }
 
     pti = cJSON_GetObjectItemCaseSensitive(hsmf_update_errorJSON, "pti");
     if (pti) {
@@ -165,6 +169,10 @@ OpenAPI_hsmf_update_error_t *OpenAPI_hsmf_update_error_parseFromJSON(cJSON *hsmf
     n1_sm_info_to_ue = cJSON_GetObjectItemCaseSensitive(hsmf_update_errorJSON, "n1SmInfoToUe");
     if (n1_sm_info_to_ue) {
     n1_sm_info_to_ue_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(n1_sm_info_to_ue);
+    if (!n1_sm_info_to_ue_local_nonprim) {
+        ogs_error("OpenAPI_ref_to_binary_data_parseFromJSON failed [n1_sm_info_to_ue]");
+        goto end;
+    }
     }
 
     back_off_timer = cJSON_GetObjectItemCaseSensitive(hsmf_update_errorJSON, "backOffTimer");

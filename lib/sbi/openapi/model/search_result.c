@@ -243,7 +243,6 @@ OpenAPI_search_result_t *OpenAPI_search_result_parseFromJSON(cJSON *search_resul
             OpenAPI_nf_profile_t *nf_instancesItem = OpenAPI_nf_profile_parseFromJSON(nf_instances_local);
             if (!nf_instancesItem) {
                 ogs_error("No nf_instancesItem");
-                OpenAPI_list_free(nf_instancesList);
                 goto end;
             }
             OpenAPI_list_add(nf_instancesList, nf_instancesItem);
@@ -268,6 +267,10 @@ OpenAPI_search_result_t *OpenAPI_search_result_parseFromJSON(cJSON *search_resul
     preferred_search = cJSON_GetObjectItemCaseSensitive(search_resultJSON, "preferredSearch");
     if (preferred_search) {
     preferred_search_local_nonprim = OpenAPI_preferred_search_parseFromJSON(preferred_search);
+    if (!preferred_search_local_nonprim) {
+        ogs_error("OpenAPI_preferred_search_parseFromJSON failed [preferred_search]");
+        goto end;
+    }
     }
 
     nrf_supported_features = cJSON_GetObjectItemCaseSensitive(search_resultJSON, "nrfSupportedFeatures");
@@ -315,6 +318,10 @@ OpenAPI_search_result_t *OpenAPI_search_result_parseFromJSON(cJSON *search_resul
     no_profile_match_info = cJSON_GetObjectItemCaseSensitive(search_resultJSON, "noProfileMatchInfo");
     if (no_profile_match_info) {
     no_profile_match_info_local_nonprim = OpenAPI_no_profile_match_info_parseFromJSON(no_profile_match_info);
+    if (!no_profile_match_info_local_nonprim) {
+        ogs_error("OpenAPI_no_profile_match_info_parseFromJSON failed [no_profile_match_info]");
+        goto end;
+    }
     }
 
     search_result_local_var = OpenAPI_search_result_create (

@@ -95,6 +95,10 @@ OpenAPI_sm_policy_control_t *OpenAPI_sm_policy_control_parseFromJSON(cJSON *sm_p
         goto end;
     }
     context_local_nonprim = OpenAPI_sm_policy_context_data_parseFromJSON(context);
+    if (!context_local_nonprim) {
+        ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON failed [context]");
+        goto end;
+    }
 
     policy = cJSON_GetObjectItemCaseSensitive(sm_policy_controlJSON, "policy");
     if (!policy) {
@@ -102,6 +106,10 @@ OpenAPI_sm_policy_control_t *OpenAPI_sm_policy_control_parseFromJSON(cJSON *sm_p
         goto end;
     }
     policy_local_nonprim = OpenAPI_sm_policy_decision_parseFromJSON(policy);
+    if (!policy_local_nonprim) {
+        ogs_error("OpenAPI_sm_policy_decision_parseFromJSON failed [policy]");
+        goto end;
+    }
 
     sm_policy_control_local_var = OpenAPI_sm_policy_control_create (
         context_local_nonprim,

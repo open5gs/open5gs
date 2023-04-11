@@ -93,6 +93,10 @@ OpenAPI__application_data_influence_data_subs_to_notify_post_request_inner_t *Op
     traffic_influ_data = cJSON_GetObjectItemCaseSensitive(_application_data_influence_data_subs_to_notify_post_request_innerJSON, "trafficInfluData");
     if (traffic_influ_data) {
     traffic_influ_data_local_nonprim = OpenAPI_traffic_influ_data_parseFromJSON(traffic_influ_data);
+    if (!traffic_influ_data_local_nonprim) {
+        ogs_error("OpenAPI_traffic_influ_data_parseFromJSON failed [traffic_influ_data]");
+        goto end;
+    }
     }
 
     _application_data_influence_data_subs_to_notify_post_request_inner_local_var = OpenAPI__application_data_influence_data_subs_to_notify_post_request_inner_create (

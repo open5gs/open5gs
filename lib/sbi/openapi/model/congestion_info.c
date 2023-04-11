@@ -184,6 +184,10 @@ OpenAPI_congestion_info_t *OpenAPI_congestion_info_parseFromJSON(cJSON *congesti
         goto end;
     }
     cong_type_local_nonprim = OpenAPI_congestion_type_parseFromJSON(cong_type);
+    if (!cong_type_local_nonprim) {
+        ogs_error("OpenAPI_congestion_type_parseFromJSON failed [cong_type]");
+        goto end;
+    }
 
     time_intev = cJSON_GetObjectItemCaseSensitive(congestion_infoJSON, "timeIntev");
     if (!time_intev) {
@@ -191,6 +195,10 @@ OpenAPI_congestion_info_t *OpenAPI_congestion_info_parseFromJSON(cJSON *congesti
         goto end;
     }
     time_intev_local_nonprim = OpenAPI_time_window_parseFromJSON(time_intev);
+    if (!time_intev_local_nonprim) {
+        ogs_error("OpenAPI_time_window_parseFromJSON failed [time_intev]");
+        goto end;
+    }
 
     nsi = cJSON_GetObjectItemCaseSensitive(congestion_infoJSON, "nsi");
     if (!nsi) {
@@ -198,6 +206,10 @@ OpenAPI_congestion_info_t *OpenAPI_congestion_info_parseFromJSON(cJSON *congesti
         goto end;
     }
     nsi_local_nonprim = OpenAPI_threshold_level_parseFromJSON(nsi);
+    if (!nsi_local_nonprim) {
+        ogs_error("OpenAPI_threshold_level_parseFromJSON failed [nsi]");
+        goto end;
+    }
 
     confidence = cJSON_GetObjectItemCaseSensitive(congestion_infoJSON, "confidence");
     if (confidence) {
@@ -225,7 +237,6 @@ OpenAPI_congestion_info_t *OpenAPI_congestion_info_parseFromJSON(cJSON *congesti
             OpenAPI_top_application_t *top_app_list_ulItem = OpenAPI_top_application_parseFromJSON(top_app_list_ul_local);
             if (!top_app_list_ulItem) {
                 ogs_error("No top_app_list_ulItem");
-                OpenAPI_list_free(top_app_list_ulList);
                 goto end;
             }
             OpenAPI_list_add(top_app_list_ulList, top_app_list_ulItem);
@@ -250,7 +261,6 @@ OpenAPI_congestion_info_t *OpenAPI_congestion_info_parseFromJSON(cJSON *congesti
             OpenAPI_top_application_t *top_app_list_dlItem = OpenAPI_top_application_parseFromJSON(top_app_list_dl_local);
             if (!top_app_list_dlItem) {
                 ogs_error("No top_app_list_dlItem");
-                OpenAPI_list_free(top_app_list_dlList);
                 goto end;
             }
             OpenAPI_list_add(top_app_list_dlList, top_app_list_dlItem);

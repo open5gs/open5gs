@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -34,11 +34,13 @@
 
 static int send_to_downlink_default(mme_ue_t *mme_ue);
 static int send_to_downlink_emergency(mme_ue_t *mme_ue);
+static uint8_t emm_cause_from_access_control(ogs_plmn_id_t *plmn_id);
 
 int emm_handle_attach_request(mme_ue_t *mme_ue,
         ogs_nas_eps_attach_request_t *attach_request, ogs_pkbuf_t *pkbuf)
 {
     int r;
+    uint8_t emm_cause;
     int served_tai_index = 0;
 
     ogs_nas_eps_mobile_identity_guti_t *eps_mobile_identity_guti = NULL;
@@ -59,7 +61,15 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
     ogs_assert(enb_ue);
 
     ogs_assert(esm_message_container);
-    ogs_assert(esm_message_container->length);
+    if (!esm_message_container->length) {
+        ogs_error("No ESM Message Container");
+        r = nas_eps_send_attach_reject(mme_ue,
+                OGS_NAS_EMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE,
+                OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return OGS_ERROR;
+    }
 
     ogs_assert(pkbuf);
     ogs_assert(pkbuf->data);
@@ -129,6 +139,26 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
     memcpy(&mme_ue->tai, &enb_ue->saved.tai, sizeof(ogs_eps_tai_t));
     memcpy(&mme_ue->e_cgi, &enb_ue->saved.e_cgi, sizeof(ogs_e_cgi_t));
     mme_ue->ue_location_timestamp = ogs_time_now();
+
+    /* Check PLMN-ID access control */
+    emm_cause = emm_cause_from_access_control(&mme_ue->tai.plmn_id);
+    if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
+        ogs_error("Rejected by PLMN-ID(in TAI) access control");
+        r = nas_eps_send_attach_reject(mme_ue,
+                emm_cause, OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return OGS_ERROR;
+    }
+    emm_cause = emm_cause_from_access_control(&mme_ue->e_cgi.plmn_id);
+    if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
+        ogs_error("Rejected by PLMN-ID(in CGI) access control");
+        r = nas_eps_send_attach_reject(mme_ue,
+                emm_cause, OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return OGS_ERROR;
+    }
 
     /* Check TAI */
     served_tai_index = mme_find_served_tai(&mme_ue->tai);
@@ -415,6 +445,7 @@ int emm_handle_tau_request(mme_ue_t *mme_ue,
 {
     int r;
     int served_tai_index = 0;
+    uint8_t emm_cause;
 
     ogs_nas_eps_mobile_identity_guti_t *eps_mobile_identity_guti = NULL;
     ogs_nas_eps_guti_t nas_guti;
@@ -480,6 +511,24 @@ int emm_handle_tau_request(mme_ue_t *mme_ue,
     memcpy(&mme_ue->tai, &enb_ue->saved.tai, sizeof(ogs_eps_tai_t));
     memcpy(&mme_ue->e_cgi, &enb_ue->saved.e_cgi, sizeof(ogs_e_cgi_t));
     mme_ue->ue_location_timestamp = ogs_time_now();
+
+    /* Check PLMN-ID access control */
+    emm_cause = emm_cause_from_access_control(&mme_ue->tai.plmn_id);
+    if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
+        ogs_error("Rejected by PLMN-ID(in TAI) access control");
+        r = nas_eps_send_tau_reject(mme_ue, emm_cause);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return OGS_ERROR;
+    }
+    emm_cause = emm_cause_from_access_control(&mme_ue->e_cgi.plmn_id);
+    if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
+        ogs_error("Rejected by PLMN-ID(in CGI) access control");
+        r = nas_eps_send_tau_reject(mme_ue, emm_cause);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return OGS_ERROR;
+    }
 
     /* Check TAI */
     served_tai_index = mme_find_served_tai(&mme_ue->tai);
@@ -555,6 +604,7 @@ int emm_handle_extended_service_request(mme_ue_t *mme_ue,
 {
     int r;
     int served_tai_index = 0;
+    uint8_t emm_cause;
 
     ogs_nas_service_type_t *service_type =
         &extended_service_request->service_type;
@@ -600,6 +650,24 @@ int emm_handle_extended_service_request(mme_ue_t *mme_ue,
     memcpy(&mme_ue->tai, &enb_ue->saved.tai, sizeof(ogs_eps_tai_t));
     memcpy(&mme_ue->e_cgi, &enb_ue->saved.e_cgi, sizeof(ogs_e_cgi_t));
     mme_ue->ue_location_timestamp = ogs_time_now();
+
+    /* Check PLMN-ID access control */
+    emm_cause = emm_cause_from_access_control(&mme_ue->tai.plmn_id);
+    if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
+        ogs_error("Rejected by PLMN-ID(in TAI) access control");
+        r = nas_eps_send_tau_reject(mme_ue, emm_cause);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return OGS_ERROR;
+    }
+    emm_cause = emm_cause_from_access_control(&mme_ue->e_cgi.plmn_id);
+    if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
+        ogs_error("Rejected by PLMN-ID(in CGI) access control");
+        r = nas_eps_send_tau_reject(mme_ue, emm_cause);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return OGS_ERROR;
+    }
 
     /* Check TAI */
     served_tai_index = mme_find_served_tai(&mme_ue->tai);
@@ -856,4 +924,30 @@ static int send_to_downlink_default(mme_ue_t *mme_ue) {
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
 
     return rv;
+}
+
+static uint8_t emm_cause_from_access_control(ogs_plmn_id_t *plmn_id)
+{
+    int i;
+
+    ogs_assert(plmn_id);
+
+    /* No Access Control */
+    if (mme_self()->num_of_access_control == 0)
+        return OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED;
+
+    for (i = 0; i < mme_self()->num_of_access_control; i++) {
+        if (memcmp(&mme_self()->access_control[i].plmn_id,
+                        plmn_id, OGS_PLMN_ID_LEN) == 0) {
+            if (mme_self()->access_control[i].reject_cause)
+                return mme_self()->access_control[i].reject_cause;
+            else
+                return OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED;
+        }
+    }
+
+    if (mme_self()->default_reject_cause)
+        return mme_self()->default_reject_cause;
+
+    return OGS_NAS_EMM_CAUSE_PLMN_NOT_ALLOWED;
 }

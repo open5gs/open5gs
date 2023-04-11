@@ -434,7 +434,6 @@ OpenAPI_subscr_cond_t *OpenAPI_subscr_cond_parseFromJSON(cJSON *subscr_condJSON)
             OpenAPI_guami_t *guami_listItem = OpenAPI_guami_parseFromJSON(guami_list_local);
             if (!guami_listItem) {
                 ogs_error("No guami_listItem");
-                OpenAPI_list_free(guami_listList);
                 goto end;
             }
             OpenAPI_list_add(guami_listList, guami_listItem);
@@ -459,7 +458,6 @@ OpenAPI_subscr_cond_t *OpenAPI_subscr_cond_parseFromJSON(cJSON *subscr_condJSON)
             OpenAPI_snssai_t *snssai_listItem = OpenAPI_snssai_parseFromJSON(snssai_list_local);
             if (!snssai_listItem) {
                 ogs_error("No snssai_listItem");
-                OpenAPI_list_free(snssai_listList);
                 goto end;
             }
             OpenAPI_list_add(snssai_listList, snssai_listItem);
@@ -550,7 +548,6 @@ OpenAPI_subscr_cond_t *OpenAPI_subscr_cond_parseFromJSON(cJSON *subscr_condJSON)
             OpenAPI_tai_t *tai_listItem = OpenAPI_tai_parseFromJSON(tai_list_local);
             if (!tai_listItem) {
                 ogs_error("No tai_listItem");
-                OpenAPI_list_free(tai_listList);
                 goto end;
             }
             OpenAPI_list_add(tai_listList, tai_listItem);

@@ -211,6 +211,10 @@ OpenAPI_expected_ue_behaviour_data_1_t *OpenAPI_expected_ue_behaviour_data_1_par
     scheduled_communication_time = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviour_data_1JSON, "scheduledCommunicationTime");
     if (scheduled_communication_time) {
     scheduled_communication_time_local_nonprim = OpenAPI_scheduled_communication_time_1_parseFromJSON(scheduled_communication_time);
+    if (!scheduled_communication_time_local_nonprim) {
+        ogs_error("OpenAPI_scheduled_communication_time_1_parseFromJSON failed [scheduled_communication_time]");
+        goto end;
+    }
     }
 
     scheduled_communication_type = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviour_data_1JSON, "scheduledCommunicationType");
@@ -240,7 +244,6 @@ OpenAPI_expected_ue_behaviour_data_1_t *OpenAPI_expected_ue_behaviour_data_1_par
             OpenAPI_location_area_1_t *expected_umtsItem = OpenAPI_location_area_1_parseFromJSON(expected_umts_local);
             if (!expected_umtsItem) {
                 ogs_error("No expected_umtsItem");
-                OpenAPI_list_free(expected_umtsList);
                 goto end;
             }
             OpenAPI_list_add(expected_umtsList, expected_umtsItem);
@@ -259,6 +262,10 @@ OpenAPI_expected_ue_behaviour_data_1_t *OpenAPI_expected_ue_behaviour_data_1_par
     battery_indication = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviour_data_1JSON, "batteryIndication");
     if (battery_indication) {
     battery_indication_local_nonprim = OpenAPI_battery_indication_parseFromJSON(battery_indication);
+    if (!battery_indication_local_nonprim) {
+        ogs_error("OpenAPI_battery_indication_parseFromJSON failed [battery_indication]");
+        goto end;
+    }
     }
 
     validity_time = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviour_data_1JSON, "validityTime");

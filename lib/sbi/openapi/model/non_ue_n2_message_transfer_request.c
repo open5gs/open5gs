@@ -84,6 +84,10 @@ OpenAPI_non_ue_n2_message_transfer_request_t *OpenAPI_non_ue_n2_message_transfer
     json_data = cJSON_GetObjectItemCaseSensitive(non_ue_n2_message_transfer_requestJSON, "jsonData");
     if (json_data) {
     json_data_local_nonprim = OpenAPI_n2_information_transfer_req_data_parseFromJSON(json_data);
+    if (!json_data_local_nonprim) {
+        ogs_error("OpenAPI_n2_information_transfer_req_data_parseFromJSON failed [json_data]");
+        goto end;
+    }
     }
 
     binary_data_n2_information = cJSON_GetObjectItemCaseSensitive(non_ue_n2_message_transfer_requestJSON, "binaryDataN2Information");

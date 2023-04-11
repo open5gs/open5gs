@@ -435,41 +435,73 @@ OpenAPI_policy_data_change_notification_t *OpenAPI_policy_data_change_notificati
     am_policy_data = cJSON_GetObjectItemCaseSensitive(policy_data_change_notificationJSON, "amPolicyData");
     if (am_policy_data) {
     am_policy_data_local_nonprim = OpenAPI_am_policy_data_parseFromJSON(am_policy_data);
+    if (!am_policy_data_local_nonprim) {
+        ogs_error("OpenAPI_am_policy_data_parseFromJSON failed [am_policy_data]");
+        goto end;
+    }
     }
 
     ue_policy_set = cJSON_GetObjectItemCaseSensitive(policy_data_change_notificationJSON, "uePolicySet");
     if (ue_policy_set) {
     ue_policy_set_local_nonprim = OpenAPI_ue_policy_set_parseFromJSON(ue_policy_set);
+    if (!ue_policy_set_local_nonprim) {
+        ogs_error("OpenAPI_ue_policy_set_parseFromJSON failed [ue_policy_set]");
+        goto end;
+    }
     }
 
     plmn_ue_policy_set = cJSON_GetObjectItemCaseSensitive(policy_data_change_notificationJSON, "plmnUePolicySet");
     if (plmn_ue_policy_set) {
     plmn_ue_policy_set_local_nonprim = OpenAPI_ue_policy_set_parseFromJSON(plmn_ue_policy_set);
+    if (!plmn_ue_policy_set_local_nonprim) {
+        ogs_error("OpenAPI_ue_policy_set_parseFromJSON failed [plmn_ue_policy_set]");
+        goto end;
+    }
     }
 
     sm_policy_data = cJSON_GetObjectItemCaseSensitive(policy_data_change_notificationJSON, "smPolicyData");
     if (sm_policy_data) {
     sm_policy_data_local_nonprim = OpenAPI_sm_policy_data_parseFromJSON(sm_policy_data);
+    if (!sm_policy_data_local_nonprim) {
+        ogs_error("OpenAPI_sm_policy_data_parseFromJSON failed [sm_policy_data]");
+        goto end;
+    }
     }
 
     usage_mon_data = cJSON_GetObjectItemCaseSensitive(policy_data_change_notificationJSON, "usageMonData");
     if (usage_mon_data) {
     usage_mon_data_local_nonprim = OpenAPI_usage_mon_data_parseFromJSON(usage_mon_data);
+    if (!usage_mon_data_local_nonprim) {
+        ogs_error("OpenAPI_usage_mon_data_parseFromJSON failed [usage_mon_data]");
+        goto end;
+    }
     }
 
     sponsor_connectivity_data = cJSON_GetObjectItemCaseSensitive(policy_data_change_notificationJSON, "SponsorConnectivityData");
     if (sponsor_connectivity_data) {
     sponsor_connectivity_data_local_nonprim = OpenAPI_sponsor_connectivity_data_parseFromJSON(sponsor_connectivity_data);
+    if (!sponsor_connectivity_data_local_nonprim) {
+        ogs_error("OpenAPI_sponsor_connectivity_data_parseFromJSON failed [sponsor_connectivity_data]");
+        goto end;
+    }
     }
 
     bdt_data = cJSON_GetObjectItemCaseSensitive(policy_data_change_notificationJSON, "bdtData");
     if (bdt_data) {
     bdt_data_local_nonprim = OpenAPI_bdt_data_parseFromJSON(bdt_data);
+    if (!bdt_data_local_nonprim) {
+        ogs_error("OpenAPI_bdt_data_parseFromJSON failed [bdt_data]");
+        goto end;
+    }
     }
 
     op_spec_data = cJSON_GetObjectItemCaseSensitive(policy_data_change_notificationJSON, "opSpecData");
     if (op_spec_data) {
     op_spec_data_local_nonprim = OpenAPI_operator_specific_data_container_parseFromJSON(op_spec_data);
+    if (!op_spec_data_local_nonprim) {
+        ogs_error("OpenAPI_operator_specific_data_container_parseFromJSON failed [op_spec_data]");
+        goto end;
+    }
     }
 
     op_spec_data_map = cJSON_GetObjectItemCaseSensitive(policy_data_change_notificationJSON, "opSpecDataMap");
@@ -533,6 +565,10 @@ OpenAPI_policy_data_change_notification_t *OpenAPI_policy_data_change_notificati
     plmn_id = cJSON_GetObjectItemCaseSensitive(policy_data_change_notificationJSON, "plmnId");
     if (plmn_id) {
     plmn_id_local_nonprim = OpenAPI_plmn_id_1_parseFromJSON(plmn_id);
+    if (!plmn_id_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_1_parseFromJSON failed [plmn_id]");
+        goto end;
+    }
     }
 
     del_resources = cJSON_GetObjectItemCaseSensitive(policy_data_change_notificationJSON, "delResources");
@@ -582,7 +618,6 @@ OpenAPI_policy_data_change_notification_t *OpenAPI_policy_data_change_notificati
             OpenAPI_notification_item_t *reported_fragmentsItem = OpenAPI_notification_item_parseFromJSON(reported_fragments_local);
             if (!reported_fragmentsItem) {
                 ogs_error("No reported_fragmentsItem");
-                OpenAPI_list_free(reported_fragmentsList);
                 goto end;
             }
             OpenAPI_list_add(reported_fragmentsList, reported_fragmentsItem);
@@ -592,11 +627,19 @@ OpenAPI_policy_data_change_notification_t *OpenAPI_policy_data_change_notificati
     slice_policy_data = cJSON_GetObjectItemCaseSensitive(policy_data_change_notificationJSON, "slicePolicyData");
     if (slice_policy_data) {
     slice_policy_data_local_nonprim = OpenAPI_slice_policy_data_parseFromJSON(slice_policy_data);
+    if (!slice_policy_data_local_nonprim) {
+        ogs_error("OpenAPI_slice_policy_data_parseFromJSON failed [slice_policy_data]");
+        goto end;
+    }
     }
 
     snssai = cJSON_GetObjectItemCaseSensitive(policy_data_change_notificationJSON, "snssai");
     if (snssai) {
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
     }
 
     policy_data_change_notification_local_var = OpenAPI_policy_data_change_notification_create (

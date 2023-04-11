@@ -146,11 +146,19 @@ OpenAPI_session_rule_t *OpenAPI_session_rule_parseFromJSON(cJSON *session_ruleJS
     auth_sess_ambr = cJSON_GetObjectItemCaseSensitive(session_ruleJSON, "authSessAmbr");
     if (auth_sess_ambr) {
     auth_sess_ambr_local_nonprim = OpenAPI_ambr_parseFromJSON(auth_sess_ambr);
+    if (!auth_sess_ambr_local_nonprim) {
+        ogs_error("OpenAPI_ambr_parseFromJSON failed [auth_sess_ambr]");
+        goto end;
+    }
     }
 
     auth_def_qos = cJSON_GetObjectItemCaseSensitive(session_ruleJSON, "authDefQos");
     if (auth_def_qos) {
     auth_def_qos_local_nonprim = OpenAPI_authorized_default_qos_parseFromJSON(auth_def_qos);
+    if (!auth_def_qos_local_nonprim) {
+        ogs_error("OpenAPI_authorized_default_qos_parseFromJSON failed [auth_def_qos]");
+        goto end;
+    }
     }
 
     sess_rule_id = cJSON_GetObjectItemCaseSensitive(session_ruleJSON, "sessRuleId");

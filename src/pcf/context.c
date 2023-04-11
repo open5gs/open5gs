@@ -183,6 +183,9 @@ void pcf_ue_remove(pcf_ue_t *pcf_ue)
     ogs_fsm_fini(&pcf_ue->sm, &e);
 
     /* Free SBI object memory */
+    if (ogs_list_count(&pcf_ue->sbi.xact_list))
+        ogs_error("UE transaction [%d]",
+                ogs_list_count(&pcf_ue->sbi.xact_list));
     ogs_sbi_object_free(&pcf_ue->sbi);
 
     pcf_sess_remove_all(pcf_ue);
@@ -211,7 +214,7 @@ void pcf_ue_remove(pcf_ue_t *pcf_ue)
     ogs_pool_free(&pcf_ue_pool, pcf_ue);
 }
 
-void pcf_ue_remove_all()
+void pcf_ue_remove_all(void)
 {
     pcf_ue_t *pcf_ue = NULL, *next = NULL;;
 
@@ -293,6 +296,9 @@ void pcf_sess_remove(pcf_sess_t *sess)
     ogs_fsm_fini(&sess->sm, &e);
 
     /* Free SBI object memory */
+    if (ogs_list_count(&sess->sbi.xact_list))
+        ogs_error("Session transaction [%d]",
+                ogs_list_count(&sess->sbi.xact_list));
     ogs_sbi_object_free(&sess->sbi);
 
     pcf_app_remove_all(sess);
@@ -589,7 +595,7 @@ pcf_app_t *pcf_app_find_by_app_session_id(char *app_session_id)
     return pcf_app_find(atoll(app_session_id));
 }
 
-int get_pcf_load()
+int get_pcf_load(void)
 {
     if (ogs_pool_avail(&pcf_ue_pool) / ogs_pool_size(&pcf_ue_pool) <
             ogs_pool_avail(&pcf_sess_pool) /

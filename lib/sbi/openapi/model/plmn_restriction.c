@@ -216,7 +216,6 @@ OpenAPI_plmn_restriction_t *OpenAPI_plmn_restriction_parseFromJSON(cJSON *plmn_r
             OpenAPI_area_t *forbidden_areasItem = OpenAPI_area_parseFromJSON(forbidden_areas_local);
             if (!forbidden_areasItem) {
                 ogs_error("No forbidden_areasItem");
-                OpenAPI_list_free(forbidden_areasList);
                 goto end;
             }
             OpenAPI_list_add(forbidden_areasList, forbidden_areasItem);
@@ -226,6 +225,10 @@ OpenAPI_plmn_restriction_t *OpenAPI_plmn_restriction_parseFromJSON(cJSON *plmn_r
     service_area_restriction = cJSON_GetObjectItemCaseSensitive(plmn_restrictionJSON, "serviceAreaRestriction");
     if (service_area_restriction) {
     service_area_restriction_local_nonprim = OpenAPI_service_area_restriction_parseFromJSON(service_area_restriction);
+    if (!service_area_restriction_local_nonprim) {
+        ogs_error("OpenAPI_service_area_restriction_parseFromJSON failed [service_area_restriction]");
+        goto end;
+    }
     }
 
     core_network_type_restrictions = cJSON_GetObjectItemCaseSensitive(plmn_restrictionJSON, "coreNetworkTypeRestrictions");

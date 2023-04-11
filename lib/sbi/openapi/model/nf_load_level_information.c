@@ -236,6 +236,10 @@ OpenAPI_nf_load_level_information_t *OpenAPI_nf_load_level_information_parseFrom
     nf_status = cJSON_GetObjectItemCaseSensitive(nf_load_level_informationJSON, "nfStatus");
     if (nf_status) {
     nf_status_local_nonprim = OpenAPI_nnwdaf_nf_status_parseFromJSON(nf_status);
+    if (!nf_status_local_nonprim) {
+        ogs_error("OpenAPI_nnwdaf_nf_status_parseFromJSON failed [nf_status]");
+        goto end;
+    }
     }
 
     nf_cpu_usage = cJSON_GetObjectItemCaseSensitive(nf_load_level_informationJSON, "nfCpuUsage");
@@ -289,6 +293,10 @@ OpenAPI_nf_load_level_information_t *OpenAPI_nf_load_level_information_parseFrom
     snssai = cJSON_GetObjectItemCaseSensitive(nf_load_level_informationJSON, "snssai");
     if (snssai) {
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
     }
 
     confidence = cJSON_GetObjectItemCaseSensitive(nf_load_level_informationJSON, "confidence");

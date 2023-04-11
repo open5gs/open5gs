@@ -478,7 +478,6 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_parseFr
             OpenAPI_amf_event_t *event_listItem = OpenAPI_amf_event_parseFromJSON(event_list_local);
             if (!event_listItem) {
                 ogs_error("No event_listItem");
-                OpenAPI_list_free(event_listList);
                 goto end;
             }
             OpenAPI_list_add(event_listList, event_listItem);
@@ -657,6 +656,10 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_parseFr
     options = cJSON_GetObjectItemCaseSensitive(ext_amf_event_subscriptionJSON, "options");
     if (options) {
     options_local_nonprim = OpenAPI_amf_event_mode_parseFromJSON(options);
+    if (!options_local_nonprim) {
+        ogs_error("OpenAPI_amf_event_mode_parseFromJSON failed [options]");
+        goto end;
+    }
     }
 
     source_nf_type = cJSON_GetObjectItemCaseSensitive(ext_amf_event_subscriptionJSON, "sourceNfType");

@@ -184,7 +184,6 @@ OpenAPI_chf_info_t *OpenAPI_chf_info_parseFromJSON(cJSON *chf_infoJSON)
             OpenAPI_supi_range_t *supi_range_listItem = OpenAPI_supi_range_parseFromJSON(supi_range_list_local);
             if (!supi_range_listItem) {
                 ogs_error("No supi_range_listItem");
-                OpenAPI_list_free(supi_range_listList);
                 goto end;
             }
             OpenAPI_list_add(supi_range_listList, supi_range_listItem);
@@ -209,7 +208,6 @@ OpenAPI_chf_info_t *OpenAPI_chf_info_parseFromJSON(cJSON *chf_infoJSON)
             OpenAPI_identity_range_t *gpsi_range_listItem = OpenAPI_identity_range_parseFromJSON(gpsi_range_list_local);
             if (!gpsi_range_listItem) {
                 ogs_error("No gpsi_range_listItem");
-                OpenAPI_list_free(gpsi_range_listList);
                 goto end;
             }
             OpenAPI_list_add(gpsi_range_listList, gpsi_range_listItem);
@@ -234,7 +232,6 @@ OpenAPI_chf_info_t *OpenAPI_chf_info_parseFromJSON(cJSON *chf_infoJSON)
             OpenAPI_plmn_range_t *plmn_range_listItem = OpenAPI_plmn_range_parseFromJSON(plmn_range_list_local);
             if (!plmn_range_listItem) {
                 ogs_error("No plmn_range_listItem");
-                OpenAPI_list_free(plmn_range_listList);
                 goto end;
             }
             OpenAPI_list_add(plmn_range_listList, plmn_range_listItem);

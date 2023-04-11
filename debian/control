@@ -36,7 +36,7 @@ Depends: ${shlibs:Depends},
          ${misc:Depends}
 Description: 5G Core and EPC (Shared Files)
  Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-16)
+ Packet Core, i.e. the core network of an NR/LTE network (Release-17)
  .
  This package contains some core libraries/plugins required by the other
  binary packages such as open5gs-{mme,sgwc,sgwu,amf,smf,upf,...}.
@@ -49,7 +49,7 @@ Depends: ${shlibs:Depends},
          open5gs-common (= ${binary:Version})
 Description: MME (Mobility Management Entity)
  Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-16)
+ Packet Core, i.e. the core network of an NR/LTE network (Release-17)
  .
  This package provides the MME (Mobility Management Engine), which
  terminates the S1 interfaces from the eNodeBs cells in the cellular
@@ -64,7 +64,7 @@ Depends: ${shlibs:Depends},
          open5gs-common (= ${binary:Version})
 Description: SGW-C (Serving Gateway - Control Plane)
  Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-16)
+ Packet Core, i.e. the core network of an NR/LTE network (Release-17)
  .
  This package provides the SGW-C (Serving Gateway - Control Plane)
  which is situated between the MME and PGW. It implements the S11 interface
@@ -78,7 +78,7 @@ Depends: ${shlibs:Depends},
          open5gs-common (= ${binary:Version})
 Description: SMF (Session Management Function)
  Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-16)
+ Packet Core, i.e. the core network of an NR/LTE network (Release-17)
  .
  This package provides the SMF (Session Management Function)
 
@@ -90,7 +90,7 @@ Depends: ${shlibs:Depends},
          open5gs-common (= ${binary:Version})
 Description: AMF (Access and Mobility Management Function)
  Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-16)
+ Packet Core, i.e. the core network of an NR/LTE network (Release-17)
  .
  This package provides the AMF (Access and Mobility Management Function)
 
@@ -102,7 +102,7 @@ Depends: ${shlibs:Depends},
          open5gs-common (= ${binary:Version})
 Description: SGW-U (Serving Gateway - User Plane)
  Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-16)
+ Packet Core, i.e. the core network of an NR/LTE network (Release-17)
  .
  This package provides the SGW-U (Serving Gateway - User Plane)
  which is situated between the eNB and UPF. It implements the S1U interface
@@ -117,7 +117,7 @@ Depends: ${shlibs:Depends},
          open5gs-common (= ${binary:Version})
 Description: UPF (User Plane Function)
  Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-16)
+ Packet Core, i.e. the core network of an NR/LTE network (Release-17)
  .
  This package provides the UPF (User Plane Function)
 
@@ -130,7 +130,7 @@ Depends: ${shlibs:Depends},
          open5gs-common (= ${binary:Version})
 Description: HSS (Home Subscriber Server)
  Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-16)
+ Packet Core, i.e. the core network of an NR/LTE network (Release-17)
  .
  This package provides the HSS (Home Subscriber Server) element of the
  EPC, i.e. the central database of mobile network subscribers, with
@@ -147,7 +147,7 @@ Depends: ${shlibs:Depends},
          open5gs-common (= ${binary:Version})
 Description: PCRF (Policy and Charging Rules Function)
  Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-16)
+ Packet Core, i.e. the core network of an NR/LTE network (Release-17)
  .
  This package contains the PCRF (Policy and Charging Rules Function),
  which controls the service quality (QoS) of individual connections and
@@ -162,7 +162,7 @@ Depends: ${shlibs:Depends},
          open5gs-common (= ${binary:Version})
 Description: NRF (Network Repository Function)
  Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-16)
+ Packet Core, i.e. the core network of an NR/LTE network (Release-17)
  .
  This package provides the NRF (Network Repository Function)
 
@@ -174,7 +174,7 @@ Depends: ${shlibs:Depends},
          open5gs-common (= ${binary:Version})
 Description: SCP (Network Repository Function)
  Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-16)
+ Packet Core, i.e. the core network of an NR/LTE network (Release-17)
  .
  This package provides the SCP (Service Communication Proxy)
 
@@ -186,7 +186,7 @@ Depends: ${shlibs:Depends},
          open5gs-common (= ${binary:Version})
 Description: AUSF (Authentication Server Function)
  Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-16)
+ Packet Core, i.e. the core network of an NR/LTE network (Release-17)
  .
  This package provides the AUSF (Authentication Server Function)
 
@@ -198,7 +198,7 @@ Depends: ${shlibs:Depends},
          open5gs-common (= ${binary:Version})
 Description: UDM (Unified Data Management)
  Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-16)
+ Packet Core, i.e. the core network of an NR/LTE network (Release-17)
  .
  This package provides the UDM (Unified Data Managemement)
 
@@ -210,7 +210,7 @@ Depends: ${shlibs:Depends},
          open5gs-common (= ${binary:Version})
 Description: PCF (Policy Control Function)
  Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-16)
+ Packet Core, i.e. the core network of an NR/LTE network (Release-17)
  .
  This package provides the PCF (Policy Control Function)
 
@@ -222,7 +222,7 @@ Depends: ${shlibs:Depends},
          open5gs-common (= ${binary:Version})
 Description: NSSF (Network Slice Selection Function)
  Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-16)
+ Packet Core, i.e. the core network of an NR/LTE network (Release-17)
  .
  This package provides the NSSF (Network Slice Selection Function)
 
@@ -234,7 +234,7 @@ Depends: ${shlibs:Depends},
          open5gs-common (= ${binary:Version})
 Description: BSF (Binding Support Function)
  Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-16)
+ Packet Core, i.e. the core network of an NR/LTE network (Release-17)
  .
  This package provides the BSF (Binding Support Function)
 
@@ -246,7 +246,7 @@ Depends: ${shlibs:Depends},
          open5gs-common (= ${binary:Version})
 Description: UDR (Unified Data Repository)
  Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-16)
+ Packet Core, i.e. the core network of an NR/LTE network (Release-17)
  .
  This package provides the UDR (Unified Data Repository)
 
@@ -273,7 +273,7 @@ Depends: ${misc:Depends},
          open5gs-udr (= ${binary:Version})
 Description: 5G Core and EPC (metapackage)
  Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-16)
+ Packet Core, i.e. the core network of an NR/LTE network (Release-17)
  .
  This is a metapackage that depends on all the open5gs parts.
 
@@ -284,6 +284,6 @@ Depends: ${misc:Depends},
          open5gs (= ${binary:Version})
 Description: Debug symbols for Open5GS
  Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-16)
+ Packet Core, i.e. the core network of an NR/LTE network (Release-17)
  .
  This package contains debug symbols for Open5GS.

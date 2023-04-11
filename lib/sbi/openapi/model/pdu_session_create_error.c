@@ -133,6 +133,10 @@ OpenAPI_pdu_session_create_error_t *OpenAPI_pdu_session_create_error_parseFromJS
         goto end;
     }
     error_local_nonprim = OpenAPI_problem_details_parseFromJSON(error);
+    if (!error_local_nonprim) {
+        ogs_error("OpenAPI_problem_details_parseFromJSON failed [error]");
+        goto end;
+    }
 
     n1sm_cause = cJSON_GetObjectItemCaseSensitive(pdu_session_create_errorJSON, "n1smCause");
     if (n1sm_cause) {
@@ -145,6 +149,10 @@ OpenAPI_pdu_session_create_error_t *OpenAPI_pdu_session_create_error_parseFromJS
     n1_sm_info_to_ue = cJSON_GetObjectItemCaseSensitive(pdu_session_create_errorJSON, "n1SmInfoToUe");
     if (n1_sm_info_to_ue) {
     n1_sm_info_to_ue_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(n1_sm_info_to_ue);
+    if (!n1_sm_info_to_ue_local_nonprim) {
+        ogs_error("OpenAPI_ref_to_binary_data_parseFromJSON failed [n1_sm_info_to_ue]");
+        goto end;
+    }
     }
 
     back_off_timer = cJSON_GetObjectItemCaseSensitive(pdu_session_create_errorJSON, "backOffTimer");

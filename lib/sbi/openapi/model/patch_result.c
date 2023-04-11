@@ -93,7 +93,6 @@ OpenAPI_patch_result_t *OpenAPI_patch_result_parseFromJSON(cJSON *patch_resultJS
             OpenAPI_report_item_t *reportItem = OpenAPI_report_item_parseFromJSON(report_local);
             if (!reportItem) {
                 ogs_error("No reportItem");
-                OpenAPI_list_free(reportList);
                 goto end;
             }
             OpenAPI_list_add(reportList, reportItem);

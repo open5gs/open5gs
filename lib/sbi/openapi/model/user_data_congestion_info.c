@@ -116,6 +116,10 @@ OpenAPI_user_data_congestion_info_t *OpenAPI_user_data_congestion_info_parseFrom
         goto end;
     }
     network_area_local_nonprim = OpenAPI_network_area_info_parseFromJSON(network_area);
+    if (!network_area_local_nonprim) {
+        ogs_error("OpenAPI_network_area_info_parseFromJSON failed [network_area]");
+        goto end;
+    }
 
     congestion_info = cJSON_GetObjectItemCaseSensitive(user_data_congestion_infoJSON, "congestionInfo");
     if (!congestion_info) {
@@ -123,10 +127,18 @@ OpenAPI_user_data_congestion_info_t *OpenAPI_user_data_congestion_info_parseFrom
         goto end;
     }
     congestion_info_local_nonprim = OpenAPI_congestion_info_parseFromJSON(congestion_info);
+    if (!congestion_info_local_nonprim) {
+        ogs_error("OpenAPI_congestion_info_parseFromJSON failed [congestion_info]");
+        goto end;
+    }
 
     snssai = cJSON_GetObjectItemCaseSensitive(user_data_congestion_infoJSON, "snssai");
     if (snssai) {
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
     }
 
     user_data_congestion_info_local_var = OpenAPI_user_data_congestion_info_create (

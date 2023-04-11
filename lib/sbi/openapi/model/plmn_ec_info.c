@@ -105,10 +105,18 @@ OpenAPI_plmn_ec_info_t *OpenAPI_plmn_ec_info_parseFromJSON(cJSON *plmn_ec_infoJS
         goto end;
     }
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
+    if (!plmn_id_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [plmn_id]");
+        goto end;
+    }
 
     ec_restriction_data_wb = cJSON_GetObjectItemCaseSensitive(plmn_ec_infoJSON, "ecRestrictionDataWb");
     if (ec_restriction_data_wb) {
     ec_restriction_data_wb_local_nonprim = OpenAPI_ec_restriction_data_wb_parseFromJSON(ec_restriction_data_wb);
+    if (!ec_restriction_data_wb_local_nonprim) {
+        ogs_error("OpenAPI_ec_restriction_data_wb_parseFromJSON failed [ec_restriction_data_wb]");
+        goto end;
+    }
     }
 
     ec_restriction_data_nb = cJSON_GetObjectItemCaseSensitive(plmn_ec_infoJSON, "ecRestrictionDataNb");

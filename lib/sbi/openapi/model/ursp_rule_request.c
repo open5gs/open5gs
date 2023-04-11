@@ -106,6 +106,10 @@ OpenAPI_ursp_rule_request_t *OpenAPI_ursp_rule_request_parseFromJSON(cJSON *ursp
     traffic_desc = cJSON_GetObjectItemCaseSensitive(ursp_rule_requestJSON, "trafficDesc");
     if (traffic_desc) {
     traffic_desc_local_nonprim = OpenAPI_traffic_descriptor_components_parseFromJSON(traffic_desc);
+    if (!traffic_desc_local_nonprim) {
+        ogs_error("OpenAPI_traffic_descriptor_components_parseFromJSON failed [traffic_desc]");
+        goto end;
+    }
     }
 
     relat_precedence = cJSON_GetObjectItemCaseSensitive(ursp_rule_requestJSON, "relatPrecedence");
@@ -134,7 +138,6 @@ OpenAPI_ursp_rule_request_t *OpenAPI_ursp_rule_request_parseFromJSON(cJSON *ursp
             OpenAPI_route_selection_parameter_set_t *route_sel_param_setsItem = OpenAPI_route_selection_parameter_set_parseFromJSON(route_sel_param_sets_local);
             if (!route_sel_param_setsItem) {
                 ogs_error("No route_sel_param_setsItem");
-                OpenAPI_list_free(route_sel_param_setsList);
                 goto end;
             }
             OpenAPI_list_add(route_sel_param_setsList, route_sel_param_setsItem);

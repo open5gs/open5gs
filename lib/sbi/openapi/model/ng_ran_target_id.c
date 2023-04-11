@@ -95,6 +95,10 @@ OpenAPI_ng_ran_target_id_t *OpenAPI_ng_ran_target_id_parseFromJSON(cJSON *ng_ran
         goto end;
     }
     ran_node_id_local_nonprim = OpenAPI_global_ran_node_id_parseFromJSON(ran_node_id);
+    if (!ran_node_id_local_nonprim) {
+        ogs_error("OpenAPI_global_ran_node_id_parseFromJSON failed [ran_node_id]");
+        goto end;
+    }
 
     tai = cJSON_GetObjectItemCaseSensitive(ng_ran_target_idJSON, "tai");
     if (!tai) {
@@ -102,6 +106,10 @@ OpenAPI_ng_ran_target_id_t *OpenAPI_ng_ran_target_id_parseFromJSON(cJSON *ng_ran
         goto end;
     }
     tai_local_nonprim = OpenAPI_tai_parseFromJSON(tai);
+    if (!tai_local_nonprim) {
+        ogs_error("OpenAPI_tai_parseFromJSON failed [tai]");
+        goto end;
+    }
 
     ng_ran_target_id_local_var = OpenAPI_ng_ran_target_id_create (
         ran_node_id_local_nonprim,

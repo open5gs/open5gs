@@ -84,6 +84,10 @@ OpenAPI_scp_domain_routing_info_notification_t *OpenAPI_scp_domain_routing_info_
         goto end;
     }
     routing_info_local_nonprim = OpenAPI_scp_domain_routing_information_parseFromJSON(routing_info);
+    if (!routing_info_local_nonprim) {
+        ogs_error("OpenAPI_scp_domain_routing_information_parseFromJSON failed [routing_info]");
+        goto end;
+    }
 
     local_ind = cJSON_GetObjectItemCaseSensitive(scp_domain_routing_info_notificationJSON, "localInd");
     if (local_ind) {

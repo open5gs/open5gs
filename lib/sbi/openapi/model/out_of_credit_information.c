@@ -99,6 +99,10 @@ OpenAPI_out_of_credit_information_t *OpenAPI_out_of_credit_information_parseFrom
         goto end;
     }
     fin_unit_act_local_nonprim = OpenAPI_final_unit_action_parseFromJSON(fin_unit_act);
+    if (!fin_unit_act_local_nonprim) {
+        ogs_error("OpenAPI_final_unit_action_parseFromJSON failed [fin_unit_act]");
+        goto end;
+    }
 
     flows = cJSON_GetObjectItemCaseSensitive(out_of_credit_informationJSON, "flows");
     if (flows) {
@@ -118,7 +122,6 @@ OpenAPI_out_of_credit_information_t *OpenAPI_out_of_credit_information_parseFrom
             OpenAPI_flows_t *flowsItem = OpenAPI_flows_parseFromJSON(flows_local);
             if (!flowsItem) {
                 ogs_error("No flowsItem");
-                OpenAPI_list_free(flowsList);
                 goto end;
             }
             OpenAPI_list_add(flowsList, flowsItem);

@@ -89,6 +89,10 @@ OpenAPI_upf_information_t *OpenAPI_upf_information_parseFromJSON(cJSON *upf_info
     upf_addr = cJSON_GetObjectItemCaseSensitive(upf_informationJSON, "upfAddr");
     if (upf_addr) {
     upf_addr_local_nonprim = OpenAPI_addr_fqdn_parseFromJSON(upf_addr);
+    if (!upf_addr_local_nonprim) {
+        ogs_error("OpenAPI_addr_fqdn_parseFromJSON failed [upf_addr]");
+        goto end;
+    }
     }
 
     upf_information_local_var = OpenAPI_upf_information_create (

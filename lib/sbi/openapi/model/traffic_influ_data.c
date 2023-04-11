@@ -555,7 +555,6 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
             OpenAPI_eth_flow_description_t *eth_traffic_filtersItem = OpenAPI_eth_flow_description_parseFromJSON(eth_traffic_filters_local);
             if (!eth_traffic_filtersItem) {
                 ogs_error("No eth_traffic_filtersItem");
-                OpenAPI_list_free(eth_traffic_filtersList);
                 goto end;
             }
             OpenAPI_list_add(eth_traffic_filtersList, eth_traffic_filtersItem);
@@ -565,6 +564,10 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
     snssai = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "snssai");
     if (snssai) {
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
     }
 
     inter_group_id = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "interGroupId");
@@ -601,7 +604,6 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
             OpenAPI_flow_info_t *traffic_filtersItem = OpenAPI_flow_info_parseFromJSON(traffic_filters_local);
             if (!traffic_filtersItem) {
                 ogs_error("No traffic_filtersItem");
-                OpenAPI_list_free(traffic_filtersList);
                 goto end;
             }
             OpenAPI_list_add(traffic_filtersList, traffic_filtersItem);
@@ -626,7 +628,6 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
             OpenAPI_route_to_location_t *traffic_routesItem = OpenAPI_route_to_location_parseFromJSON(traffic_routes_local);
             if (!traffic_routesItem) {
                 ogs_error("No traffic_routesItem");
-                OpenAPI_list_free(traffic_routesList);
                 goto end;
             }
             OpenAPI_list_add(traffic_routesList, traffic_routesItem);
@@ -675,7 +676,6 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
             OpenAPI_temporal_validity_t *temp_validitiesItem = OpenAPI_temporal_validity_parseFromJSON(temp_validities_local);
             if (!temp_validitiesItem) {
                 ogs_error("No temp_validitiesItem");
-                OpenAPI_list_free(temp_validitiesList);
                 goto end;
             }
             OpenAPI_list_add(temp_validitiesList, temp_validitiesItem);
@@ -685,6 +685,10 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
     nw_area_info = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "nwAreaInfo");
     if (nw_area_info) {
     nw_area_info_local_nonprim = OpenAPI_network_area_info_2_parseFromJSON(nw_area_info);
+    if (!nw_area_info_local_nonprim) {
+        ogs_error("OpenAPI_network_area_info_2_parseFromJSON failed [nw_area_info]");
+        goto end;
+    }
     }
 
     up_path_chg_notif_uri = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "upPathChgNotifUri");
@@ -734,7 +738,6 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
             OpenAPI_subscribed_event_t *subscribed_eventsItem = OpenAPI_subscribed_event_parseFromJSON(subscribed_events_local);
             if (!subscribed_eventsItem) {
                 ogs_error("No subscribed_eventsItem");
-                OpenAPI_list_free(subscribed_eventsList);
                 goto end;
             }
             OpenAPI_list_add(subscribed_eventsList, subscribed_eventsItem);

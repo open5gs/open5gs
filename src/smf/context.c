@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -48,7 +48,7 @@ int smf_ctf_config_init(smf_ctf_config_t *ctf_config)
 }
 
 /* Shall Gy session be used according to policy and state? 1: yes, 0: no, -1: reject */
-int smf_use_gy_iface()
+int smf_use_gy_iface(void)
 {
     switch (smf_self()->ctf_config.enabled) {
     case SMF_CTF_ENABLED_AUTO:
@@ -719,8 +719,6 @@ int smf_context_parse_config(void)
                                 do {
                                     const char *mcc = NULL, *mnc = NULL;
                                     int num_of_tac = 0;
-                                    ogs_uint24_t tac[OGS_MAX_NUM_OF_TAI];
-                                    int num_of_range = 0;
                                     ogs_uint24_t start[OGS_MAX_NUM_OF_TAI];
                                     ogs_uint24_t end[OGS_MAX_NUM_OF_TAI];
 
@@ -767,55 +765,25 @@ int smf_context_parse_config(void)
                                             }
                                         } else if (!strcmp(tai_key, "tac")) {
                                             ogs_yaml_iter_t tac_iter;
-                                            ogs_yaml_iter_recurse(
-                                                    &tai_iter, &tac_iter);
+                                            ogs_yaml_iter_recurse(&tai_iter,
+                                                    &tac_iter);
                                             ogs_assert(ogs_yaml_iter_type(
-                                                        &tac_iter) !=
-                                                        YAML_MAPPING_NODE);
-
-                                            do {
-                                                const char *v = NULL;
-
-                                                ogs_assert(num_of_tac <
-                                                        OGS_MAX_NUM_OF_TAI);
-                                                if (ogs_yaml_iter_type(
-                                                        &tac_iter) ==
-                                                        YAML_SEQUENCE_NODE) {
-                                                    if (!ogs_yaml_iter_next(
-                                                            &tac_iter))
-                                                        break;
-                                                }
-
-                                                v = ogs_yaml_iter_value(
-                                                        &tac_iter);
-                                                if (v) {
-                                                    tac[num_of_tac].v = atoi(v);
-                                                    num_of_tac++;
-                                                }
-                                            } while (
-                                                ogs_yaml_iter_type(&tac_iter) ==
-                                                    YAML_SEQUENCE_NODE);
-                                        } else if (!strcmp(tai_key, "range")) {
-                                            ogs_yaml_iter_t range_iter;
-                                            ogs_yaml_iter_recurse(
-                                                    &tai_iter, &range_iter);
-                                            ogs_assert(ogs_yaml_iter_type(
-                                                        &range_iter) !=
+                                                    &tac_iter) !=
                                                         YAML_MAPPING_NODE);
                                             do {
                                                 char *v = NULL;
                                                 char *low = NULL, *high = NULL;
 
                                                 if (ogs_yaml_iter_type(
-                                                        &range_iter) ==
+                                                        &tac_iter) ==
                                                         YAML_SEQUENCE_NODE) {
                                                     if (!ogs_yaml_iter_next(
-                                                                &range_iter))
+                                                                &tac_iter))
                                                         break;
                                                 }
 
                                                 v = (char *)ogs_yaml_iter_value(
-                                                            &range_iter);
+                                                            &tac_iter);
                                                 if (v) {
                                                     low = strsep(&v, "-");
                                                     if (low && strlen(low) == 0)
@@ -826,20 +794,36 @@ int smf_context_parse_config(void)
                                                             strlen(high) == 0)
                                                         high = NULL;
 
-                                                    if (low && high) {
-                                                        ogs_assert(
-                                                            num_of_range <
+                                                    if (low) {
+                                                        ogs_assert(num_of_tac <
                                                             OGS_MAX_NUM_OF_TAI);
-                                                        start[num_of_range].v =
+                                                        start[num_of_tac].v =
                                                             atoi(low);
-                                                        end[num_of_range].v =
-                                                            atoi(high);
-                                                        num_of_range++;
+                                                        if (high) {
+                                                            end[num_of_tac].v =
+                                                                atoi(high);
+                                                            if (end[num_of_tac].
+                                                                    v <
+                                                                start[
+                                                                    num_of_tac].
+                                                                    v)
+                                                                ogs_error(
+                                                                "Invalid TAI "
+                                                                "range: LOW:%s,"
+                                                                "HIGH:%s",
+                                                                    low, high);
+                                                            else
+                                                                num_of_tac++;
+                                                        } else {
+                                                            end[num_of_tac].v =
+                                                                start[
+                                                                num_of_tac].v;
+                                                            num_of_tac++;
+                                                        }
                                                     }
                                                 }
                                             } while (
-                                                ogs_yaml_iter_type(
-                                                    &range_iter) ==
+                                                ogs_yaml_iter_type(&tac_iter) ==
                                                     YAML_SEQUENCE_NODE);
 
                                         } else
@@ -847,47 +831,55 @@ int smf_context_parse_config(void)
                                                     tai_key);
                                     }
 
-                                    if (mcc && mnc) {
-                                        int i;
-
-                                        if (num_of_range) {
-                                            ogs_assert(num_of_nr_tai_range <
-                                                    OGS_MAX_NUM_OF_TAI);
-                                            ogs_plmn_id_build(
-                                                &smf_info->nr_tai_range
-                                                    [num_of_nr_tai_range].
-                                                        plmn_id,
-                                                atoi(mcc), atoi(mnc),
-                                                strlen(mnc));
-                                            for (i = 0; i < num_of_range; i++) {
-                                                smf_info->nr_tai_range
-                                                    [num_of_nr_tai_range].
-                                                        start[i].v = start[i].v;
-                                                smf_info->nr_tai_range
-                                                    [num_of_nr_tai_range].
-                                                        end[i].v = end[i].v;
-                                            }
-                                            smf_info->nr_tai_range
-                                                [num_of_nr_tai_range].
-                                                    num_of_tac_range =
-                                                        num_of_range;
-                                            num_of_nr_tai_range++;
-                                        } else if (num_of_tac) {
-                                            for (i = 0; i < num_of_tac; i++) {
+                                    if (mcc && mnc && num_of_tac) {
+                                        int tac, num_of_tac_range = 0;
+                                        for (tac = 0; tac < num_of_tac; tac++) {
+                                            ogs_assert(end[tac].v >=
+                                                    start[tac].v);
+                                            if (start[tac].v == end[tac].v) {
                                                 ogs_assert(num_of_nr_tai <
                                                         OGS_MAX_NUM_OF_TAI);
                                                 ogs_plmn_id_build(
-                                                        &smf_info->nr_tai
-                                                        [num_of_nr_tai].plmn_id,
+                                                    &smf_info->nr_tai[
+                                                        num_of_nr_tai].plmn_id,
                                                     atoi(mcc), atoi(mnc),
                                                     strlen(mnc));
                                                 smf_info->nr_tai[num_of_nr_tai].
-                                                    tac.v = tac[i].v;
+                                                    tac.v = start[tac].v;
                                                 num_of_nr_tai++;
+                                            } else if (start[tac].v <
+                                                    end[tac].v) {
+                                                ogs_assert(num_of_nr_tai_range <
+                                                        OGS_MAX_NUM_OF_TAI);
+                                                ogs_assert(num_of_tac_range <
+                                                        OGS_MAX_NUM_OF_TAI);
+                                                smf_info->nr_tai_range[
+                                                    num_of_nr_tai_range].
+                                                    start[num_of_tac_range].v =
+                                                        start[tac].v;
+                                                smf_info->nr_tai_range[
+                                                    num_of_nr_tai_range].
+                                                    end[num_of_tac_range].v =
+                                                    end[tac].v;
+                                                num_of_tac_range++;
                                             }
-                                        } else {
-                                            ogs_warn("No TAC info");
                                         }
+                                        if (num_of_tac_range) {
+                                            ogs_plmn_id_build(
+                                                &smf_info->nr_tai_range[
+                                                num_of_nr_tai_range].plmn_id,
+                                                atoi(mcc), atoi(mnc),
+                                                strlen(mnc));
+                                            smf_info->nr_tai_range[
+                                                num_of_nr_tai_range].
+                                                num_of_tac_range =
+                                                num_of_tac_range;
+                                            num_of_nr_tai_range++;
+                                        }
+                                    } else {
+                                        ogs_warn("Ignore tai : mcc(%p), "
+                                                "mnc(%p), num_of_tac(%d)",
+                                                mcc, mnc, num_of_tac);
                                     }
                                 } while (ogs_yaml_iter_type(&tai_array) ==
                                         YAML_SEQUENCE_NODE);
@@ -898,7 +890,6 @@ int smf_context_parse_config(void)
                             } else
                                 ogs_warn("unknown key `%s`", info_key);
                         }
-
                     } while (ogs_yaml_iter_type(&info_array) ==
                             YAML_SEQUENCE_NODE);
 
@@ -3116,7 +3107,7 @@ static void stats_remove_smf_session(smf_sess_t *sess)
     ogs_info("[Removed] Number of SMF-Sessions is now %d", num_of_smf_sess);
 }
 
-int get_sess_load()
+int get_sess_load(void)
 {
     return (((ogs_pool_size(&smf_sess_pool) -
             ogs_pool_avail(&smf_sess_pool)) * 100) /

@@ -764,6 +764,10 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
     user_loc = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "userLoc");
     if (user_loc) {
     user_loc_local_nonprim = OpenAPI_user_location_parseFromJSON(user_loc);
+    if (!user_loc_local_nonprim) {
+        ogs_error("OpenAPI_user_location_parseFromJSON failed [user_loc]");
+        goto end;
+    }
     }
 
     time_zone = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "timeZone");
@@ -777,6 +781,10 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
     serving_plmn = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "servingPlmn");
     if (serving_plmn) {
     serving_plmn_local_nonprim = OpenAPI_plmn_id_nid_parseFromJSON(serving_plmn);
+    if (!serving_plmn_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_nid_parseFromJSON failed [serving_plmn]");
+        goto end;
+    }
     }
 
     rat_type = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "ratType");
@@ -831,11 +839,19 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
     serv_area_res = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "servAreaRes");
     if (serv_area_res) {
     serv_area_res_local_nonprim = OpenAPI_service_area_restriction_parseFromJSON(serv_area_res);
+    if (!serv_area_res_local_nonprim) {
+        ogs_error("OpenAPI_service_area_restriction_parseFromJSON failed [serv_area_res]");
+        goto end;
+    }
     }
 
     wl_serv_area_res = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "wlServAreaRes");
     if (wl_serv_area_res) {
     wl_serv_area_res_local_nonprim = OpenAPI_wireline_service_area_restriction_parseFromJSON(wl_serv_area_res);
+    if (!wl_serv_area_res_local_nonprim) {
+        ogs_error("OpenAPI_wireline_service_area_restriction_parseFromJSON failed [wl_serv_area_res]");
+        goto end;
+    }
     }
 
     rfsp = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "rfsp");
@@ -849,6 +865,10 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
     ue_ambr = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "ueAmbr");
     if (ue_ambr) {
     ue_ambr_local_nonprim = OpenAPI_ambr_parseFromJSON(ue_ambr);
+    if (!ue_ambr_local_nonprim) {
+        ogs_error("OpenAPI_ambr_parseFromJSON failed [ue_ambr]");
+        goto end;
+    }
     }
 
     ue_slice_mbrs = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "ueSliceMbrs");
@@ -869,7 +889,6 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
             OpenAPI_ue_slice_mbr_t *ue_slice_mbrsItem = OpenAPI_ue_slice_mbr_parseFromJSON(ue_slice_mbrs_local);
             if (!ue_slice_mbrsItem) {
                 ogs_error("No ue_slice_mbrsItem");
-                OpenAPI_list_free(ue_slice_mbrsList);
                 goto end;
             }
             OpenAPI_list_add(ue_slice_mbrsList, ue_slice_mbrsItem);
@@ -894,7 +913,6 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
             OpenAPI_snssai_t *allowed_snssaisItem = OpenAPI_snssai_parseFromJSON(allowed_snssais_local);
             if (!allowed_snssaisItem) {
                 ogs_error("No allowed_snssaisItem");
-                OpenAPI_list_free(allowed_snssaisList);
                 goto end;
             }
             OpenAPI_list_add(allowed_snssaisList, allowed_snssaisItem);
@@ -919,7 +937,6 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
             OpenAPI_snssai_t *target_snssaisItem = OpenAPI_snssai_parseFromJSON(target_snssais_local);
             if (!target_snssaisItem) {
                 ogs_error("No target_snssaisItem");
-                OpenAPI_list_free(target_snssaisList);
                 goto end;
             }
             OpenAPI_list_add(target_snssaisList, target_snssaisItem);
@@ -944,7 +961,6 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
             OpenAPI_mapping_of_snssai_t *mapping_snssaisItem = OpenAPI_mapping_of_snssai_parseFromJSON(mapping_snssais_local);
             if (!mapping_snssaisItem) {
                 ogs_error("No mapping_snssaisItem");
-                OpenAPI_list_free(mapping_snssaisList);
                 goto end;
             }
             OpenAPI_list_add(mapping_snssaisList, mapping_snssaisItem);
@@ -969,7 +985,6 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
             OpenAPI_snssai_t *n3g_allowed_snssaisItem = OpenAPI_snssai_parseFromJSON(n3g_allowed_snssais_local);
             if (!n3g_allowed_snssaisItem) {
                 ogs_error("No n3g_allowed_snssaisItem");
-                OpenAPI_list_free(n3g_allowed_snssaisList);
                 goto end;
             }
             OpenAPI_list_add(n3g_allowed_snssaisList, n3g_allowed_snssaisItem);
@@ -979,6 +994,10 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
     guami = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "guami");
     if (guami) {
     guami_local_nonprim = OpenAPI_guami_parseFromJSON(guami);
+    if (!guami_local_nonprim) {
+        ogs_error("OpenAPI_guami_parseFromJSON failed [guami]");
+        goto end;
+    }
     }
 
     service_name = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "serviceName");
@@ -992,6 +1011,10 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
     trace_req = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "traceReq");
     if (trace_req) {
     trace_req_local_nonprim = OpenAPI_trace_data_parseFromJSON(trace_req);
+    if (!trace_req_local_nonprim) {
+        ogs_error("OpenAPI_trace_data_parseFromJSON failed [trace_req]");
+        goto end;
+    }
     }
 
     nwdaf_datas = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "nwdafDatas");
@@ -1012,7 +1035,6 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
             OpenAPI_nwdaf_data_t *nwdaf_datasItem = OpenAPI_nwdaf_data_parseFromJSON(nwdaf_datas_local);
             if (!nwdaf_datasItem) {
                 ogs_error("No nwdaf_datasItem");
-                OpenAPI_list_free(nwdaf_datasList);
                 goto end;
             }
             OpenAPI_list_add(nwdaf_datasList, nwdaf_datasItem);

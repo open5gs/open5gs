@@ -119,6 +119,10 @@ OpenAPI_eps_iwk_pgw_t *OpenAPI_eps_iwk_pgw_parseFromJSON(cJSON *eps_iwk_pgwJSON)
     plmn_id = cJSON_GetObjectItemCaseSensitive(eps_iwk_pgwJSON, "plmnId");
     if (plmn_id) {
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
+    if (!plmn_id_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [plmn_id]");
+        goto end;
+    }
     }
 
     eps_iwk_pgw_local_var = OpenAPI_eps_iwk_pgw_create (

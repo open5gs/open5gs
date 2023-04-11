@@ -115,6 +115,10 @@ OpenAPI_plmn_snssai_t *OpenAPI_plmn_snssai_parseFromJSON(cJSON *plmn_snssaiJSON)
         goto end;
     }
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
+    if (!plmn_id_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [plmn_id]");
+        goto end;
+    }
 
     s_nssai_list = cJSON_GetObjectItemCaseSensitive(plmn_snssaiJSON, "sNssaiList");
     if (!s_nssai_list) {
@@ -137,7 +141,6 @@ OpenAPI_plmn_snssai_t *OpenAPI_plmn_snssai_parseFromJSON(cJSON *plmn_snssaiJSON)
             OpenAPI_ext_snssai_t *s_nssai_listItem = OpenAPI_ext_snssai_parseFromJSON(s_nssai_list_local);
             if (!s_nssai_listItem) {
                 ogs_error("No s_nssai_listItem");
-                OpenAPI_list_free(s_nssai_listList);
                 goto end;
             }
             OpenAPI_list_add(s_nssai_listList, s_nssai_listItem);

@@ -90,6 +90,10 @@ OpenAPI_mbs_service_area_info_t *OpenAPI_mbs_service_area_info_parseFromJSON(cJS
         goto end;
     }
     mbs_service_area_local_nonprim = OpenAPI_mbs_service_area_parseFromJSON(mbs_service_area);
+    if (!mbs_service_area_local_nonprim) {
+        ogs_error("OpenAPI_mbs_service_area_parseFromJSON failed [mbs_service_area]");
+        goto end;
+    }
 
     mbs_service_area_info_local_var = OpenAPI_mbs_service_area_info_create (
         

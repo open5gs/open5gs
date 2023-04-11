@@ -176,6 +176,10 @@ OpenAPI_notification_data_t *OpenAPI_notification_data_parseFromJSON(cJSON *noti
     nf_profile = cJSON_GetObjectItemCaseSensitive(notification_dataJSON, "nfProfile");
     if (nf_profile) {
     nf_profile_local_nonprim = OpenAPI_nf_profile_parseFromJSON(nf_profile);
+    if (!nf_profile_local_nonprim) {
+        ogs_error("OpenAPI_nf_profile_parseFromJSON failed [nf_profile]");
+        goto end;
+    }
     }
 
     profile_changes = cJSON_GetObjectItemCaseSensitive(notification_dataJSON, "profileChanges");
@@ -196,7 +200,6 @@ OpenAPI_notification_data_t *OpenAPI_notification_data_parseFromJSON(cJSON *noti
             OpenAPI_change_item_t *profile_changesItem = OpenAPI_change_item_parseFromJSON(profile_changes_local);
             if (!profile_changesItem) {
                 ogs_error("No profile_changesItem");
-                OpenAPI_list_free(profile_changesList);
                 goto end;
             }
             OpenAPI_list_add(profile_changesList, profile_changesItem);
@@ -215,6 +218,10 @@ OpenAPI_notification_data_t *OpenAPI_notification_data_parseFromJSON(cJSON *noti
     subscription_context = cJSON_GetObjectItemCaseSensitive(notification_dataJSON, "subscriptionContext");
     if (subscription_context) {
     subscription_context_local_nonprim = OpenAPI_subscription_context_parseFromJSON(subscription_context);
+    if (!subscription_context_local_nonprim) {
+        ogs_error("OpenAPI_subscription_context_parseFromJSON failed [subscription_context]");
+        goto end;
+    }
     }
 
     notification_data_local_var = OpenAPI_notification_data_create (

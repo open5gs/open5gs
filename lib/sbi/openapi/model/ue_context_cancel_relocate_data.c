@@ -94,6 +94,10 @@ OpenAPI_ue_context_cancel_relocate_data_t *OpenAPI_ue_context_cancel_relocate_da
         goto end;
     }
     relocation_cancel_request_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(relocation_cancel_request);
+    if (!relocation_cancel_request_local_nonprim) {
+        ogs_error("OpenAPI_ref_to_binary_data_parseFromJSON failed [relocation_cancel_request]");
+        goto end;
+    }
 
     ue_context_cancel_relocate_data_local_var = OpenAPI_ue_context_cancel_relocate_data_create (
         supi && !cJSON_IsNull(supi) ? ogs_strdup(supi->valuestring) : NULL,

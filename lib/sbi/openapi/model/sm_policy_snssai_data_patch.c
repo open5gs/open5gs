@@ -108,6 +108,10 @@ OpenAPI_sm_policy_snssai_data_patch_t *OpenAPI_sm_policy_snssai_data_patch_parse
         goto end;
     }
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
 
     sm_policy_dnn_data = cJSON_GetObjectItemCaseSensitive(sm_policy_snssai_data_patchJSON, "smPolicyDnnData");
     if (sm_policy_dnn_data) {

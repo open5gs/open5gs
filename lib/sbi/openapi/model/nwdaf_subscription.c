@@ -98,6 +98,10 @@ OpenAPI_nwdaf_subscription_t *OpenAPI_nwdaf_subscription_parseFromJSON(cJSON *nw
         goto end;
     }
     nwdaf_events_subscription_local_nonprim = OpenAPI_nnwdaf_events_subscription_parseFromJSON(nwdaf_events_subscription);
+    if (!nwdaf_events_subscription_local_nonprim) {
+        ogs_error("OpenAPI_nnwdaf_events_subscription_parseFromJSON failed [nwdaf_events_subscription]");
+        goto end;
+    }
 
     nwdaf_subscription_local_var = OpenAPI_nwdaf_subscription_create (
         ogs_strdup(nwdaf_evt_subs_service_uri->valuestring),

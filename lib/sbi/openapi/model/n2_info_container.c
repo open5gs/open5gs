@@ -196,31 +196,55 @@ OpenAPI_n2_info_container_t *OpenAPI_n2_info_container_parseFromJSON(cJSON *n2_i
     sm_info = cJSON_GetObjectItemCaseSensitive(n2_info_containerJSON, "smInfo");
     if (sm_info) {
     sm_info_local_nonprim = OpenAPI_n2_sm_information_parseFromJSON(sm_info);
+    if (!sm_info_local_nonprim) {
+        ogs_error("OpenAPI_n2_sm_information_parseFromJSON failed [sm_info]");
+        goto end;
+    }
     }
 
     ran_info = cJSON_GetObjectItemCaseSensitive(n2_info_containerJSON, "ranInfo");
     if (ran_info) {
     ran_info_local_nonprim = OpenAPI_n2_ran_information_parseFromJSON(ran_info);
+    if (!ran_info_local_nonprim) {
+        ogs_error("OpenAPI_n2_ran_information_parseFromJSON failed [ran_info]");
+        goto end;
+    }
     }
 
     nrppa_info = cJSON_GetObjectItemCaseSensitive(n2_info_containerJSON, "nrppaInfo");
     if (nrppa_info) {
     nrppa_info_local_nonprim = OpenAPI_nrppa_information_parseFromJSON(nrppa_info);
+    if (!nrppa_info_local_nonprim) {
+        ogs_error("OpenAPI_nrppa_information_parseFromJSON failed [nrppa_info]");
+        goto end;
+    }
     }
 
     pws_info = cJSON_GetObjectItemCaseSensitive(n2_info_containerJSON, "pwsInfo");
     if (pws_info) {
     pws_info_local_nonprim = OpenAPI_pws_information_parseFromJSON(pws_info);
+    if (!pws_info_local_nonprim) {
+        ogs_error("OpenAPI_pws_information_parseFromJSON failed [pws_info]");
+        goto end;
+    }
     }
 
     v2x_info = cJSON_GetObjectItemCaseSensitive(n2_info_containerJSON, "v2xInfo");
     if (v2x_info) {
     v2x_info_local_nonprim = OpenAPI_v2x_information_parseFromJSON(v2x_info);
+    if (!v2x_info_local_nonprim) {
+        ogs_error("OpenAPI_v2x_information_parseFromJSON failed [v2x_info]");
+        goto end;
+    }
     }
 
     prose_info = cJSON_GetObjectItemCaseSensitive(n2_info_containerJSON, "proseInfo");
     if (prose_info) {
     prose_info_local_nonprim = OpenAPI_pro_se_information_parseFromJSON(prose_info);
+    if (!prose_info_local_nonprim) {
+        ogs_error("OpenAPI_pro_se_information_parseFromJSON failed [prose_info]");
+        goto end;
+    }
     }
 
     n2_info_container_local_var = OpenAPI_n2_info_container_create (

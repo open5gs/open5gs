@@ -137,7 +137,6 @@ OpenAPI_analytics_subscription_t *OpenAPI_analytics_subscription_parseFromJSON(c
             OpenAPI_nwdaf_subscription_t *nwdaf_subscription_listItem = OpenAPI_nwdaf_subscription_parseFromJSON(nwdaf_subscription_list_local);
             if (!nwdaf_subscription_listItem) {
                 ogs_error("No nwdaf_subscription_listItem");
-                OpenAPI_list_free(nwdaf_subscription_listList);
                 goto end;
             }
             OpenAPI_list_add(nwdaf_subscription_listList, nwdaf_subscription_listItem);

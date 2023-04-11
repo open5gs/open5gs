@@ -114,7 +114,6 @@ OpenAPI_nwdaf_data_t *OpenAPI_nwdaf_data_parseFromJSON(cJSON *nwdaf_dataJSON)
             OpenAPI_nwdaf_event_t *nwdaf_eventsItem = OpenAPI_nwdaf_event_parseFromJSON(nwdaf_events_local);
             if (!nwdaf_eventsItem) {
                 ogs_error("No nwdaf_eventsItem");
-                OpenAPI_list_free(nwdaf_eventsList);
                 goto end;
             }
             OpenAPI_list_add(nwdaf_eventsList, nwdaf_eventsItem);

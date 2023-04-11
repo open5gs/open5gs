@@ -104,6 +104,10 @@ OpenAPI_service_area_id_t *OpenAPI_service_area_id_parseFromJSON(cJSON *service_
         goto end;
     }
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
+    if (!plmn_id_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [plmn_id]");
+        goto end;
+    }
 
     lac = cJSON_GetObjectItemCaseSensitive(service_area_idJSON, "lac");
     if (!lac) {

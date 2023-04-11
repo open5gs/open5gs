@@ -197,7 +197,7 @@ void udm_ue_remove(udm_ue_t *udm_ue)
     ogs_pool_free(&udm_ue_pool, udm_ue);
 }
 
-void udm_ue_remove_all()
+void udm_ue_remove_all(void)
 {
     udm_ue_t *udm_ue = NULL, *next = NULL;;
 
@@ -237,7 +237,7 @@ udm_ue_t *udm_ue_cycle(udm_ue_t *udm_ue)
     return ogs_pool_cycle(&udm_ue_pool, udm_ue);
 }
 
-int get_ue_load()
+int get_ue_load(void)
 {
     return (((ogs_pool_size(&udm_ue_pool) -
             ogs_pool_avail(&udm_ue_pool)) * 100) /

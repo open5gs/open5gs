@@ -236,14 +236,19 @@ ED8(uint8_t create_session_request_message_forwarded_indication:1;,
     uint8_t _5g_srvcc_ho_indication:1;,
     uint8_t ethernet_pdn_support_indication:1;)
 
-ED8(uint8_t spare1:1;,
-    uint8_t spare2:1;,
-    uint8_t spare3:1;,
-    uint8_t spare4:1;,
+ED8(uint8_t notify_start_pause_of_charging_via_user_plane_support_indication:1;,
+    uint8_t pgw_redirection_due_to_mismatch_with_network_slice_subscribed_by_ue_support_indication:1;,
+    uint8_t restoration_of_pdn_connections_after_an_pgw_c_smf_change_support_indication:1;,
+    uint8_t pgw_change_indication:1;,
     uint8_t same_iwk_scef_selected_for_monitoring_event_indication:1;,
     uint8_t notify_source_enodeb_indication:1;,
     uint8_t indirect_data_forwarding_with_upf_indication:1;,
     uint8_t emergency_pdu_session_indication:1;)
+
+ED4(uint8_t spare1:5;,
+    uint8_t lte_m_satellite_access_indication:1;,
+    uint8_t satellite_rat_type_reporting_to_pgw_indication:1;,
+    uint8_t user_plane_integrity_protection_support_indication:1;)
 } __attribute__ ((packed)) ogs_gtp2_indication_t;
 
 /* 8.13 Protocol Configuration Options (PCO)

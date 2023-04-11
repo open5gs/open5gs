@@ -88,11 +88,19 @@ OpenAPI_bdt_data_patch_t *OpenAPI_bdt_data_patch_parseFromJSON(cJSON *bdt_data_p
     trans_policy = cJSON_GetObjectItemCaseSensitive(bdt_data_patchJSON, "transPolicy");
     if (trans_policy) {
     trans_policy_local_nonprim = OpenAPI_transfer_policy_parseFromJSON(trans_policy);
+    if (!trans_policy_local_nonprim) {
+        ogs_error("OpenAPI_transfer_policy_parseFromJSON failed [trans_policy]");
+        goto end;
+    }
     }
 
     bdtp_status = cJSON_GetObjectItemCaseSensitive(bdt_data_patchJSON, "bdtpStatus");
     if (bdtp_status) {
     bdtp_status_local_nonprim = OpenAPI_bdt_policy_status_parseFromJSON(bdtp_status);
+    if (!bdtp_status_local_nonprim) {
+        ogs_error("OpenAPI_bdt_policy_status_parseFromJSON failed [bdtp_status]");
+        goto end;
+    }
     }
 
     bdt_data_patch_local_var = OpenAPI_bdt_data_patch_create (

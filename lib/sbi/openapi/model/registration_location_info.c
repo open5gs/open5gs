@@ -159,16 +159,28 @@ OpenAPI_registration_location_info_t *OpenAPI_registration_location_info_parseFr
     guami = cJSON_GetObjectItemCaseSensitive(registration_location_infoJSON, "guami");
     if (guami) {
     guami_local_nonprim = OpenAPI_guami_parseFromJSON(guami);
+    if (!guami_local_nonprim) {
+        ogs_error("OpenAPI_guami_parseFromJSON failed [guami]");
+        goto end;
+    }
     }
 
     plmn_id = cJSON_GetObjectItemCaseSensitive(registration_location_infoJSON, "plmnId");
     if (plmn_id) {
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
+    if (!plmn_id_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [plmn_id]");
+        goto end;
+    }
     }
 
     vgmlc_address = cJSON_GetObjectItemCaseSensitive(registration_location_infoJSON, "vgmlcAddress");
     if (vgmlc_address) {
     vgmlc_address_local_nonprim = OpenAPI_vgmlc_address_parseFromJSON(vgmlc_address);
+    if (!vgmlc_address_local_nonprim) {
+        ogs_error("OpenAPI_vgmlc_address_parseFromJSON failed [vgmlc_address]");
+        goto end;
+    }
     }
 
     access_type_list = cJSON_GetObjectItemCaseSensitive(registration_location_infoJSON, "accessTypeList");

@@ -206,7 +206,6 @@ OpenAPI_application_data_subs_t *OpenAPI_application_data_subs_parseFromJSON(cJS
             OpenAPI_data_filter_t *data_filtersItem = OpenAPI_data_filter_parseFromJSON(data_filters_local);
             if (!data_filtersItem) {
                 ogs_error("No data_filtersItem");
-                OpenAPI_list_free(data_filtersList);
                 goto end;
             }
             OpenAPI_list_add(data_filtersList, data_filtersItem);
@@ -247,7 +246,6 @@ OpenAPI_application_data_subs_t *OpenAPI_application_data_subs_parseFromJSON(cJS
             OpenAPI_am_influ_data_t *am_influ_entriesItem = OpenAPI_am_influ_data_parseFromJSON(am_influ_entries_local);
             if (!am_influ_entriesItem) {
                 ogs_error("No am_influ_entriesItem");
-                OpenAPI_list_free(am_influ_entriesList);
                 goto end;
             }
             OpenAPI_list_add(am_influ_entriesList, am_influ_entriesItem);

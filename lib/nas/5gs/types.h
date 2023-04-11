@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -104,12 +104,30 @@ ED8(uint8_t radio_capability_signalling_optimization_capability:1;,
     uint8_t v2x_capability:1;,
     uint8_t up_ciot_5gs_optimization:1;,
     uint8_t srvcc_5g_capability:1;)
-ED5(uint8_t spare4:4;,
+ED8(uint8_t fiveg_prose_layer_2_ue_to_network_relay:1;,
+    uint8_t fiveg_prose_direct_communication:1;,
+    uint8_t fiveg_prose_direct_discovery:1;,
+    uint8_t extended_rejected_nssai_support:1;,
     uint8_t ethernet_header_compression_cp_ciot_5gs_optimization:1;,
     uint8_t multiple_user_plane_resource_support:1;,
     uint8_t wusa_information_reception_capability:1;,
     uint8_t closed_access_group_capability:1;)
-    uint8_t spare[10];
+ED8(uint8_t paging_restriction:1;,
+    uint8_t reject_paging_request:1;,
+    uint8_t paging_indication_for_voice_services:1;,
+    uint8_t n1_nas_signalling_connection_release:1;,
+    uint8_t nr_paging_subgroup_support_indication:1;,
+    uint8_t five_prose_layer_3_ue_to_network_remote:1;,
+    uint8_t five_prose_layer_2_ue_to_network_remote:1;,
+    uint8_t five_prose_layer_3_ue_to_network_relay:1;)
+ED7(uint8_t spare1:2;,
+    uint8_t nsag:1;,
+    uint8_t extended_cag_information_list_support:1;,
+    uint8_t sor_snpn_si:1;,
+    uint8_t event_notification:1;,
+    uint8_t minimization_of_service_interruption:1;,
+    uint8_t nssrg:1;)
+    uint8_t spare2[8];
 } __attribute__ ((packed)) ogs_nas_5gmm_capability_t;
 
 /* 9.11.3.2 5GMM cause
@@ -240,24 +258,38 @@ typedef struct ogs_nas_5gs_mobile_identity_s {
  * M LV 2 */
 typedef struct ogs_nas_5gs_network_feature_support_s {
     uint8_t length;
-ED6(uint8_t mpsi:1;,
-    uint8_t iwk_n26:1;,
-    uint8_t emf:2;,
-    uint8_t msc:2;,
-    uint8_t ims_vops_n3gpp:1;,
-    uint8_t ims_vops_3gpp:1;)
-ED3(uint8_t spare:6;,
-    uint8_t mcsi:1;,
-    uint8_t emcn :1;)
-    uint8_t spare2;
+ED6(uint8_t mps_indicator:1;,
+    uint8_t interworking_without_n26_interface_indicator:1;,
+    uint8_t emergency_services_fallback_indicator_for_3gpp_access:2;,
+    uint8_t emergency_service_support_indicator_for_3gpp_access:2;,
+    uint8_t ims_voice_over_ps_session_over_non_3gpp_access_indicator:1;,
+    uint8_t ims_voice_over_ps_session_over_3gpp_access_indicator:1;)
+ED7(uint8_t user_plane_ciot_5gs_optimization:1;,
+    uint8_t ip_header_compression_for_control_plane_ciot_5gs_optimization:1;,
+    uint8_t n3_data_transfer:1;,
+    uint8_t control_plane_ciot_5gs_optimization:1;,
+    uint8_t restriction_on_enhanced_coverage:2;,
+    uint8_t mcs_indicator:1;,
+    uint8_t emergency_service_support_for_non_3gpp_access_indicator:1;)
+ED8(uint8_t spare:1;,
+    uint8_t paging_restriction:1;,
+    uint8_t reject_paging_request:1;,
+    uint8_t paging_indication_for_voice_services:1;,
+    uint8_t n1_nas_signalling_connection_release:1;,
+    uint8_t ethernet_header_compression_for_control_plane_ciot_5gs_optimization:1;,
+    uint8_t atsss_support_indicator:1;,
+    uint8_t location_services_indicator_in_5gc:1;)
 } ogs_nas_5gs_network_feature_support_t;
 
 /* 9.11.3.6 5GS registration result
  * O TLV 3-5 */
 typedef struct ogs_nas_5gs_registration_result_s {
     uint8_t length;
-ED3(uint8_t spare:4;,
-    uint8_t sms_allowed:1;,
+ED6(uint8_t spare:1;,
+    uint8_t disaster_roaming_registration_result_value:1;,
+    uint8_t emergency_registered:1;,
+    uint8_t network_slice_specific_authentication_and_authorization_is_to_be_performed:1;,
+    uint8_t sms_over_nas_transport_allowed:1;,
     uint8_t value:3;)
 } ogs_nas_5gs_registration_result_t;
 
@@ -307,6 +339,22 @@ typedef struct ogs_5gs_tai0_list_s {
     } __attribute__ ((packed)) tai[OGS_MAX_NUM_OF_TAI];
 } __attribute__ ((packed)) ogs_5gs_tai0_list_t;
 
+typedef struct ogs_5gs_tai1_list_s {
+    struct {
+    ED3(uint8_t spare:1;,
+        uint8_t type:2;,
+        uint8_t num:5;)
+        /*
+         * Do not change 'ogs_plmn_id_t' to 'ogs_nas_plmn_id_t'.
+         * Use 'ogs_plmn_id_t' for easy implementation.
+         * ogs_nas_tai_list_build() changes to NAS format(ogs_nas_plmn_id_t)
+         * and is sent to the UE.
+         */
+        ogs_plmn_id_t plmn_id;
+        ogs_uint24_t tac;
+    } __attribute__ ((packed)) tai[OGS_MAX_NUM_OF_TAI];
+} __attribute__ ((packed)) ogs_5gs_tai1_list_t;
+
 typedef struct ogs_5gs_tai2_list_s {
 ED3(uint8_t spare:1;,
     uint8_t type:2;,
@@ -328,7 +376,9 @@ typedef struct ogs_nas_5gs_tracking_area_identity_list_s {
 
 int ogs_nas_5gs_tai_list_build(
         ogs_nas_5gs_tracking_area_identity_list_t *target,
-        ogs_5gs_tai0_list_t *source0, ogs_5gs_tai2_list_t *source2);
+        ogs_5gs_tai0_list_t *source0,
+        ogs_5gs_tai1_list_t *source1,
+        ogs_5gs_tai2_list_t *source2);
 
 /* 9.11.3.9A 5GS update type
  * O TLV 3 */
@@ -373,6 +423,7 @@ ED3(uint8_t spare:6;,
 typedef struct ogs_nas_allowed_pdu_session_status_s {
     uint8_t length;
     uint16_t psi;
+    uint8_t spare[30];
 } __attribute__ ((packed)) ogs_nas_allowed_pdu_session_status_t;
 
 /* 9.11.3.18 Configuration update indication
@@ -430,6 +481,7 @@ typedef struct ogs_nas_eps_nas_message_container_s {
 } ogs_nas_eps_nas_message_container_t;
 
 /* 9.11.3.25 EPS NAS security algorithms
+ * See subclause 9.9.3.23 in 3GPP TS 24.301 [15].
  * O TV 2 */
 typedef ogs_nas_security_algorithms_t ogs_nas_eps_nas_security_algorithms_t;
 
@@ -482,8 +534,8 @@ typedef struct ogs_nas_message_container_s {
 typedef struct ogs_nas_network_slicing_indication_s {
 ED4(uint8_t type:4;,
     uint8_t spare:2;,
-    uint8_t dcni:1;,
-    uint8_t nssci:1;)
+    uint8_t default_configured_nssai_indication:1;,
+    uint8_t network_slicing_subscription_change_indication:1;)
 }  __attribute__ ((packed)) ogs_nas_network_slicing_indication_t;
 
 /* 9.11.3.37 NSSAI
@@ -622,13 +674,14 @@ typedef struct ogs_nas_sor_transparent_container_s {
 } ogs_nas_sor_transparent_container_t;
 
 /* 9.11.3.48 S1 UE network capability
+ * See subclause 9.9.3.34 in 3GPP TS 24.301 [15].
  * O TLV 4-15 */
 typedef ogs_nas_ue_network_capability_t ogs_nas_s1_ue_network_capability_t;
 
-/* 9.9.3.36 UE security capability
- * M LV 3-6
- * 9.11.3.48A S1 UE security capability
- * O TLV 4-7 */
+/* 9.11.3.48A S1 UE security capability
+ * O TLV 4-7
+ * 9.9.3.36 UE security capability
+ * M LV 3-6 */
 typedef ogs_nas_ue_security_capability_t ogs_nas_s1_ue_security_capability_t;
 
 /* 9.11.3.55 UE usage setting
@@ -707,11 +760,7 @@ typedef struct ogs_nas_peips_assistance_information_s {
 
 /* 9.11.3.81 5GS additional request result
  * O TLV 3 */
-typedef struct ogs_nas_5gs_additional_request_result_s {
-    uint8_t length;
-ED2(uint8_t spare:6;,
-    uint8_t prd:2;)
-} __attribute__ ((packed)) ogs_nas_5gs_additional_request_result_t;
+typedef struct ogs_nas_additional_request_result_s ogs_nas_5gs_additional_request_result_t;
 
 /* 9.11.3.82 NSSRG information
  * O TLV-E 7-65538 */
@@ -759,16 +808,23 @@ typedef struct ogs_nas_nsag_information_s {
 /* 9.11.3.91 Priority indicator
  * O TV 1 */
 typedef struct ogs_nas_priority_indicator_s {
-    uint8_t type;
+ED3(uint8_t type:4;,
+    uint8_t spare:1;,
+    uint8_t mps_indicator:3;)
 } __attribute__ ((packed)) ogs_nas_priority_indicator_t;
 
 /* 9.11.4.1 5GSM capability
  * O TLV 3-15 */
 typedef struct ogs_nas_5gsm_capability_s {
     uint8_t length;
-ED3(uint8_t spare:6;,
-    uint8_t mh6_pdu:1;,
-    uint8_t rqos:1;)
+ED5(uint8_t transfer_of_port_management_information_containers:1;,
+    uint8_t supported_atsss_steering_functionalities_and_steering_modes:4;,
+    uint8_t ethernet_pdn_type_in_s1_mode:1;,
+    uint8_t multi_homed_ipv6_pdu_session:1;,
+    uint8_t reflective_QoS:1;)
+ED2(uint8_t spare1:7;,
+    uint8_t access_performance_measurements_per_qos_flow_rule:1;)
+    uint8_t spare2[11];
 } __attribute__ ((packed)) ogs_nas_5gsm_capability_t;
 
 /* 9.11.4.2 5GSM cause
@@ -827,16 +883,17 @@ typedef uint8_t ogs_nas_5gsm_cause_t;
  * O TLV 3 */
 typedef struct ogs_nas_5gsm_congestion_re_attempt_indicator_s {
     uint8_t length;
-ED2(uint8_t spare:7;,
-    uint8_t abo:1;)
+ED3(uint8_t spare:6;,
+    uint8_t current_access_type_back_off_timer:1;,
+    uint8_t all_plmns_back_off_timer:1;)
 } __attribute__ ((packed)) ogs_nas_5gsm_congestion_re_attempt_indicator_t;
 
 /* 9.11.4.3 Always-on PDU session indication
  * O TV 1 */
 typedef struct ogs_nas_always_on_pdu_session_indication_s {
 ED3(uint8_t type:4;,
-    uint8_t spare:1;,
-    uint8_t apsi:3;)
+    uint8_t spare:3;,
+    uint8_t always_on_pdu_session_indication:1;)
 } __attribute__ ((packed)) ogs_nas_always_on_pdu_session_indication_t;
 
 /* 9.11.4.4 Always-on PDU session requested
@@ -844,7 +901,7 @@ ED3(uint8_t type:4;,
 typedef struct ogs_nas_always_on_pdu_session_requested_s {
 ED3(uint8_t type:4;,
     uint8_t spare:3;,
-    uint8_t apsr:1;)
+    uint8_t always_on_pdu_session_requested:1;)
 } __attribute__ ((packed)) ogs_nas_always_on_pdu_session_requested_t;
 
 /* 9.11.4.5 Allowed SSC mode
@@ -1036,7 +1093,7 @@ ED3(uint8_t type:4;,
 typedef struct ogs_nas_5gsm_network_feature_support_s {
     uint8_t length;
 ED2(uint8_t spare1:7;,
-    uint8_t s1:1;)
+    uint8_t ethernet_pdn_type_in_s1_mode:1;)
     uint8_t spare2[12];
 } __attribute__ ((packed)) ogs_nas_5gsm_network_feature_support_t;
 

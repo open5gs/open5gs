@@ -342,6 +342,10 @@ OpenAPI_service_experience_info_t *OpenAPI_service_experience_info_parseFromJSON
         goto end;
     }
     svc_exprc_local_nonprim = OpenAPI_svc_experience_parseFromJSON(svc_exprc);
+    if (!svc_exprc_local_nonprim) {
+        ogs_error("OpenAPI_svc_experience_parseFromJSON failed [svc_exprc]");
+        goto end;
+    }
 
     svc_exprc_variance = cJSON_GetObjectItemCaseSensitive(service_experience_infoJSON, "svcExprcVariance");
     if (svc_exprc_variance) {
@@ -375,6 +379,10 @@ OpenAPI_service_experience_info_t *OpenAPI_service_experience_info_parseFromJSON
     snssai = cJSON_GetObjectItemCaseSensitive(service_experience_infoJSON, "snssai");
     if (snssai) {
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
     }
 
     app_id = cJSON_GetObjectItemCaseSensitive(service_experience_infoJSON, "appId");
@@ -388,6 +396,10 @@ OpenAPI_service_experience_info_t *OpenAPI_service_experience_info_parseFromJSON
     srv_expc_type = cJSON_GetObjectItemCaseSensitive(service_experience_infoJSON, "srvExpcType");
     if (srv_expc_type) {
     srv_expc_type_local_nonprim = OpenAPI_service_experience_type_parseFromJSON(srv_expc_type);
+    if (!srv_expc_type_local_nonprim) {
+        ogs_error("OpenAPI_service_experience_type_parseFromJSON failed [srv_expc_type]");
+        goto end;
+    }
     }
 
     ue_locs = cJSON_GetObjectItemCaseSensitive(service_experience_infoJSON, "ueLocs");
@@ -408,7 +420,6 @@ OpenAPI_service_experience_info_t *OpenAPI_service_experience_info_parseFromJSON
             OpenAPI_location_info_t *ue_locsItem = OpenAPI_location_info_parseFromJSON(ue_locs_local);
             if (!ue_locsItem) {
                 ogs_error("No ue_locsItem");
-                OpenAPI_list_free(ue_locsList);
                 goto end;
             }
             OpenAPI_list_add(ue_locsList, ue_locsItem);
@@ -418,6 +429,10 @@ OpenAPI_service_experience_info_t *OpenAPI_service_experience_info_parseFromJSON
     upf_info = cJSON_GetObjectItemCaseSensitive(service_experience_infoJSON, "upfInfo");
     if (upf_info) {
     upf_info_local_nonprim = OpenAPI_upf_information_parseFromJSON(upf_info);
+    if (!upf_info_local_nonprim) {
+        ogs_error("OpenAPI_upf_information_parseFromJSON failed [upf_info]");
+        goto end;
+    }
     }
 
     dnai = cJSON_GetObjectItemCaseSensitive(service_experience_infoJSON, "dnai");
@@ -431,6 +446,10 @@ OpenAPI_service_experience_info_t *OpenAPI_service_experience_info_parseFromJSON
     app_server_inst = cJSON_GetObjectItemCaseSensitive(service_experience_infoJSON, "appServerInst");
     if (app_server_inst) {
     app_server_inst_local_nonprim = OpenAPI_addr_fqdn_parseFromJSON(app_server_inst);
+    if (!app_server_inst_local_nonprim) {
+        ogs_error("OpenAPI_addr_fqdn_parseFromJSON failed [app_server_inst]");
+        goto end;
+    }
     }
 
     confidence = cJSON_GetObjectItemCaseSensitive(service_experience_infoJSON, "confidence");
@@ -452,6 +471,10 @@ OpenAPI_service_experience_info_t *OpenAPI_service_experience_info_parseFromJSON
     network_area = cJSON_GetObjectItemCaseSensitive(service_experience_infoJSON, "networkArea");
     if (network_area) {
     network_area_local_nonprim = OpenAPI_network_area_info_parseFromJSON(network_area);
+    if (!network_area_local_nonprim) {
+        ogs_error("OpenAPI_network_area_info_parseFromJSON failed [network_area]");
+        goto end;
+    }
     }
 
     nsi_id = cJSON_GetObjectItemCaseSensitive(service_experience_infoJSON, "nsiId");
@@ -473,6 +496,10 @@ OpenAPI_service_experience_info_t *OpenAPI_service_experience_info_parseFromJSON
     rat_freq = cJSON_GetObjectItemCaseSensitive(service_experience_infoJSON, "ratFreq");
     if (rat_freq) {
     rat_freq_local_nonprim = OpenAPI_rat_freq_information_parseFromJSON(rat_freq);
+    if (!rat_freq_local_nonprim) {
+        ogs_error("OpenAPI_rat_freq_information_parseFromJSON failed [rat_freq]");
+        goto end;
+    }
     }
 
     service_experience_info_local_var = OpenAPI_service_experience_info_create (

@@ -168,6 +168,10 @@ OpenAPI_flow_information_t *OpenAPI_flow_information_parseFromJSON(cJSON *flow_i
     eth_flow_description = cJSON_GetObjectItemCaseSensitive(flow_informationJSON, "ethFlowDescription");
     if (eth_flow_description) {
     eth_flow_description_local_nonprim = OpenAPI_eth_flow_description_parseFromJSON(eth_flow_description);
+    if (!eth_flow_description_local_nonprim) {
+        ogs_error("OpenAPI_eth_flow_description_parseFromJSON failed [eth_flow_description]");
+        goto end;
+    }
     }
 
     pack_filt_id = cJSON_GetObjectItemCaseSensitive(flow_informationJSON, "packFiltId");

@@ -88,11 +88,19 @@ OpenAPI_geographical_area_t *OpenAPI_geographical_area_parseFromJSON(cJSON *geog
     civic_address = cJSON_GetObjectItemCaseSensitive(geographical_areaJSON, "civicAddress");
     if (civic_address) {
     civic_address_local_nonprim = OpenAPI_civic_address_parseFromJSON(civic_address);
+    if (!civic_address_local_nonprim) {
+        ogs_error("OpenAPI_civic_address_parseFromJSON failed [civic_address]");
+        goto end;
+    }
     }
 
     shapes = cJSON_GetObjectItemCaseSensitive(geographical_areaJSON, "shapes");
     if (shapes) {
     shapes_local_nonprim = OpenAPI_geographic_area_parseFromJSON(shapes);
+    if (!shapes_local_nonprim) {
+        ogs_error("OpenAPI_geographic_area_parseFromJSON failed [shapes]");
+        goto end;
+    }
     }
 
     geographical_area_local_var = OpenAPI_geographical_area_create (

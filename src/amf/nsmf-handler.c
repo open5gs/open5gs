@@ -565,7 +565,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                  * 1. PDUSessionResourceReleaseResponse
                  * 2. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
                  */
-                ogs_debug("[%s:%d] Receive Update SM context(N2-RELEASED)",
+                ogs_info("[%s:%d] Receive Update SM context(N2-RELEASED)",
                         amf_ue->supi, sess->psi);
 
                 sess->n2_released = true;
@@ -577,7 +577,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                  * 2. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
                  */
 
-                ogs_debug("[%s:%d] Receive Update SM context(N1-RELEASED)",
+                ogs_info("[%s:%d] Receive Update SM context(N1-RELEASED)",
                         amf_ue->supi, sess->psi);
 
                 sess->n1_released = true;
@@ -729,11 +729,15 @@ int amf_nsmf_pdusession_handle_update_sm_context(
              * Remove 'amf_sess_t' context to call
              *   amf_nsmf_pdusession_handle_release_sm_context().
              */
+            ogs_info("[%s:%d:%d][%d:%d:%s] "
+                    "/nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify",
+                    amf_ue->supi, sess->psi, state,
+                    sess->n1_released, sess->n2_released,
+                    OpenAPI_resource_status_ToString(sess->resource_status));
+
             if (sess->n1_released == true &&
                 sess->n2_released == true &&
                 sess->resource_status == OpenAPI_resource_status_RELEASED) {
-
-                ogs_debug("[%s:%d] SM context remove", amf_ue->supi, sess->psi);
                 amf_nsmf_pdusession_handle_release_sm_context(
                         sess, AMF_RELEASE_SM_CONTEXT_NO_STATE);
             }
@@ -844,7 +848,37 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
     amf_ue = sess->amf_ue;
     ogs_assert(amf_ue);
 
-    amf_sess_remove(sess);
+    /*
+     * To check if Reactivation Request has been used.
+     *
+     * During the PFCP recovery process,
+     * when a Reactivation Request is sent to PDU session release command,
+     * the UE simultaneously sends PDU session release complete and
+     * PDU session establishment request.
+     *
+     * In this case, old_gsm_type is PDU session release command and
+     * current_gsm_type is PDU session establishment request.
+     */
+    if (sess->old_gsm_type == OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE &&
+        sess->current_gsm_type ==
+            OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST) {
+        ogs_error("[%s:%d] Do not remove Session due to Reactivation-requested",
+                amf_ue->supi, sess->psi);
+
+        /* Initialize the context instead of using amf_sess_remove() */
+
+        sess->old_gsm_type = 0;
+        sess->current_gsm_type = 0;
+
+        sess->n1_released = false;
+        sess->n2_released = false;
+        sess->resource_status = OpenAPI_resource_status_NULL;
+
+    } else {
+        ogs_info("[%s:%d] Release SM Context [state:%d]",
+                amf_ue->supi, sess->psi, state);
+        amf_sess_remove(sess);
+    }
 
     if (state == AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT) {
         /*

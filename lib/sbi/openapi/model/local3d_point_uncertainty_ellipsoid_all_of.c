@@ -126,6 +126,10 @@ OpenAPI_local3d_point_uncertainty_ellipsoid_all_of_t *OpenAPI_local3d_point_unce
         goto end;
     }
     local_origin_local_nonprim = OpenAPI_local_origin_parseFromJSON(local_origin);
+    if (!local_origin_local_nonprim) {
+        ogs_error("OpenAPI_local_origin_parseFromJSON failed [local_origin]");
+        goto end;
+    }
 
     point = cJSON_GetObjectItemCaseSensitive(local3d_point_uncertainty_ellipsoid_all_ofJSON, "point");
     if (!point) {
@@ -133,6 +137,10 @@ OpenAPI_local3d_point_uncertainty_ellipsoid_all_of_t *OpenAPI_local3d_point_unce
         goto end;
     }
     point_local_nonprim = OpenAPI_relative_cartesian_location_parseFromJSON(point);
+    if (!point_local_nonprim) {
+        ogs_error("OpenAPI_relative_cartesian_location_parseFromJSON failed [point]");
+        goto end;
+    }
 
     uncertainty_ellipsoid = cJSON_GetObjectItemCaseSensitive(local3d_point_uncertainty_ellipsoid_all_ofJSON, "uncertaintyEllipsoid");
     if (!uncertainty_ellipsoid) {
@@ -140,6 +148,10 @@ OpenAPI_local3d_point_uncertainty_ellipsoid_all_of_t *OpenAPI_local3d_point_unce
         goto end;
     }
     uncertainty_ellipsoid_local_nonprim = OpenAPI_uncertainty_ellipsoid_parseFromJSON(uncertainty_ellipsoid);
+    if (!uncertainty_ellipsoid_local_nonprim) {
+        ogs_error("OpenAPI_uncertainty_ellipsoid_parseFromJSON failed [uncertainty_ellipsoid]");
+        goto end;
+    }
 
     confidence = cJSON_GetObjectItemCaseSensitive(local3d_point_uncertainty_ellipsoid_all_ofJSON, "confidence");
     if (!confidence) {

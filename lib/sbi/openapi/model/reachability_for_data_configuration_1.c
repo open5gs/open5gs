@@ -84,6 +84,10 @@ OpenAPI_reachability_for_data_configuration_1_t *OpenAPI_reachability_for_data_c
         goto end;
     }
     report_cfg_local_nonprim = OpenAPI_reachability_for_data_report_config_parseFromJSON(report_cfg);
+    if (!report_cfg_local_nonprim) {
+        ogs_error("OpenAPI_reachability_for_data_report_config_parseFromJSON failed [report_cfg]");
+        goto end;
+    }
 
     min_interval = cJSON_GetObjectItemCaseSensitive(reachability_for_data_configuration_1JSON, "minInterval");
     if (min_interval) {

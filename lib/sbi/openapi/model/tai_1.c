@@ -102,6 +102,10 @@ OpenAPI_tai_1_t *OpenAPI_tai_1_parseFromJSON(cJSON *tai_1JSON)
         goto end;
     }
     plmn_id_local_nonprim = OpenAPI_plmn_id_1_parseFromJSON(plmn_id);
+    if (!plmn_id_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_1_parseFromJSON failed [plmn_id]");
+        goto end;
+    }
 
     tac = cJSON_GetObjectItemCaseSensitive(tai_1JSON, "tac");
     if (!tac) {

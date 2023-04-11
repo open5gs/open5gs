@@ -180,6 +180,10 @@ OpenAPI_pcf_mbs_binding_t *OpenAPI_pcf_mbs_binding_parseFromJSON(cJSON *pcf_mbs_
         goto end;
     }
     mbs_session_id_local_nonprim = OpenAPI_mbs_session_id_parseFromJSON(mbs_session_id);
+    if (!mbs_session_id_local_nonprim) {
+        ogs_error("OpenAPI_mbs_session_id_parseFromJSON failed [mbs_session_id]");
+        goto end;
+    }
 
     pcf_fqdn = cJSON_GetObjectItemCaseSensitive(pcf_mbs_bindingJSON, "pcfFqdn");
     if (pcf_fqdn) {
@@ -207,7 +211,6 @@ OpenAPI_pcf_mbs_binding_t *OpenAPI_pcf_mbs_binding_parseFromJSON(cJSON *pcf_mbs_
             OpenAPI_ip_end_point_t *pcf_ip_end_pointsItem = OpenAPI_ip_end_point_parseFromJSON(pcf_ip_end_points_local);
             if (!pcf_ip_end_pointsItem) {
                 ogs_error("No pcf_ip_end_pointsItem");
-                OpenAPI_list_free(pcf_ip_end_pointsList);
                 goto end;
             }
             OpenAPI_list_add(pcf_ip_end_pointsList, pcf_ip_end_pointsItem);

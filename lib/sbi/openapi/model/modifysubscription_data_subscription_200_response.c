@@ -260,7 +260,6 @@ OpenAPI_modifysubscription_data_subscription_200_response_t *OpenAPI_modifysubsc
             OpenAPI_report_item_t *reportItem = OpenAPI_report_item_parseFromJSON(report_local);
             if (!reportItem) {
                 ogs_error("No reportItem");
-                OpenAPI_list_free(reportList);
                 goto end;
             }
             OpenAPI_list_add(reportList, reportItem);
@@ -326,11 +325,19 @@ OpenAPI_modifysubscription_data_subscription_200_response_t *OpenAPI_modifysubsc
     sdm_subscription = cJSON_GetObjectItemCaseSensitive(modifysubscription_data_subscription_200_responseJSON, "sdmSubscription");
     if (sdm_subscription) {
     sdm_subscription_local_nonprim = OpenAPI_sdm_subscription_1_parseFromJSON(sdm_subscription);
+    if (!sdm_subscription_local_nonprim) {
+        ogs_error("OpenAPI_sdm_subscription_1_parseFromJSON failed [sdm_subscription]");
+        goto end;
+    }
     }
 
     hss_subscription_info = cJSON_GetObjectItemCaseSensitive(modifysubscription_data_subscription_200_responseJSON, "hssSubscriptionInfo");
     if (hss_subscription_info) {
     hss_subscription_info_local_nonprim = OpenAPI_hss_subscription_info_parseFromJSON(hss_subscription_info);
+    if (!hss_subscription_info_local_nonprim) {
+        ogs_error("OpenAPI_hss_subscription_info_parseFromJSON failed [hss_subscription_info]");
+        goto end;
+    }
     }
 
     subscription_id = cJSON_GetObjectItemCaseSensitive(modifysubscription_data_subscription_200_responseJSON, "subscriptionId");

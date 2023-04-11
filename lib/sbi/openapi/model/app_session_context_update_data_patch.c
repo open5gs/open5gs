@@ -67,6 +67,10 @@ OpenAPI_app_session_context_update_data_patch_t *OpenAPI_app_session_context_upd
     asc_req_data = cJSON_GetObjectItemCaseSensitive(app_session_context_update_data_patchJSON, "ascReqData");
     if (asc_req_data) {
     asc_req_data_local_nonprim = OpenAPI_app_session_context_update_data_parseFromJSON(asc_req_data);
+    if (!asc_req_data_local_nonprim) {
+        ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON failed [asc_req_data]");
+        goto end;
+    }
     }
 
     app_session_context_update_data_patch_local_var = OpenAPI_app_session_context_update_data_patch_create (

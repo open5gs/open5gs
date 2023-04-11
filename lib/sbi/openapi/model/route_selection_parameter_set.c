@@ -155,6 +155,10 @@ OpenAPI_route_selection_parameter_set_t *OpenAPI_route_selection_parameter_set_p
     snssai = cJSON_GetObjectItemCaseSensitive(route_selection_parameter_setJSON, "snssai");
     if (snssai) {
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
     }
 
     precedence = cJSON_GetObjectItemCaseSensitive(route_selection_parameter_setJSON, "precedence");
@@ -183,7 +187,6 @@ OpenAPI_route_selection_parameter_set_t *OpenAPI_route_selection_parameter_set_p
             OpenAPI_geographical_area_t *spatial_validity_areasItem = OpenAPI_geographical_area_parseFromJSON(spatial_validity_areas_local);
             if (!spatial_validity_areasItem) {
                 ogs_error("No spatial_validity_areasItem");
-                OpenAPI_list_free(spatial_validity_areasList);
                 goto end;
             }
             OpenAPI_list_add(spatial_validity_areasList, spatial_validity_areasItem);
@@ -208,7 +211,6 @@ OpenAPI_route_selection_parameter_set_t *OpenAPI_route_selection_parameter_set_p
             OpenAPI_tai_1_t *spatial_validity_taisItem = OpenAPI_tai_1_parseFromJSON(spatial_validity_tais_local);
             if (!spatial_validity_taisItem) {
                 ogs_error("No spatial_validity_taisItem");
-                OpenAPI_list_free(spatial_validity_taisList);
                 goto end;
             }
             OpenAPI_list_add(spatial_validity_taisList, spatial_validity_taisItem);

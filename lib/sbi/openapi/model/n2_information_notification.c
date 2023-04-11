@@ -266,6 +266,10 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_parse
     n2_info_container = cJSON_GetObjectItemCaseSensitive(n2_information_notificationJSON, "n2InfoContainer");
     if (n2_info_container) {
     n2_info_container_local_nonprim = OpenAPI_n2_info_container_parseFromJSON(n2_info_container);
+    if (!n2_info_container_local_nonprim) {
+        ogs_error("OpenAPI_n2_info_container_parseFromJSON failed [n2_info_container]");
+        goto end;
+    }
     }
 
     to_release_session_list = cJSON_GetObjectItemCaseSensitive(n2_information_notificationJSON, "toReleaseSessionList");
@@ -330,7 +334,6 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_parse
             OpenAPI_smf_change_info_t *smf_change_info_listItem = OpenAPI_smf_change_info_parseFromJSON(smf_change_info_list_local);
             if (!smf_change_info_listItem) {
                 ogs_error("No smf_change_info_listItem");
-                OpenAPI_list_free(smf_change_info_listList);
                 goto end;
             }
             OpenAPI_list_add(smf_change_info_listList, smf_change_info_listItem);
@@ -340,6 +343,10 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_parse
     ran_node_id = cJSON_GetObjectItemCaseSensitive(n2_information_notificationJSON, "ranNodeId");
     if (ran_node_id) {
     ran_node_id_local_nonprim = OpenAPI_global_ran_node_id_parseFromJSON(ran_node_id);
+    if (!ran_node_id_local_nonprim) {
+        ogs_error("OpenAPI_global_ran_node_id_parseFromJSON failed [ran_node_id]");
+        goto end;
+    }
     }
 
     initial_amf_name = cJSON_GetObjectItemCaseSensitive(n2_information_notificationJSON, "initialAmfName");
@@ -369,6 +376,10 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_parse
     guami = cJSON_GetObjectItemCaseSensitive(n2_information_notificationJSON, "guami");
     if (guami) {
     guami_local_nonprim = OpenAPI_guami_parseFromJSON(guami);
+    if (!guami_local_nonprim) {
+        ogs_error("OpenAPI_guami_parseFromJSON failed [guami]");
+        goto end;
+    }
     }
 
     notify_source_ng_ran = cJSON_GetObjectItemCaseSensitive(n2_information_notificationJSON, "notifySourceNgRan");

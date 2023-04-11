@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -695,12 +695,28 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     }
                     break;
 
+                CASE(OGS_SBI_HTTP_METHOD_PATCH)
+                    if (sbi_message.res_status == OGS_SBI_HTTP_STATUS_OK ||
+                        sbi_message.res_status ==
+                            OGS_SBI_HTTP_STATUS_NO_CONTENT) {
+                        ogs_nnrf_nfm_handle_nf_status_update(
+                                subscription_data, &sbi_message);
+                    } else {
+                        ogs_error("[%s] HTTP response error [%d]",
+                                subscription_data->id ?
+                                    subscription_data->id : "Unknown",
+                                sbi_message.res_status);
+                    }
+                    break;
+
                 CASE(OGS_SBI_HTTP_METHOD_DELETE)
                     if (sbi_message.res_status ==
                             OGS_SBI_HTTP_STATUS_NO_CONTENT) {
                         ogs_sbi_subscription_data_remove(subscription_data);
                     } else {
-                        ogs_error("HTTP response error : %d",
+                        ogs_error("[%s] HTTP response error [%d]",
+                                subscription_data->id ?
+                                    subscription_data->id : "Unknown",
                                 sbi_message.res_status);
                     }
                     break;
@@ -826,9 +842,20 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     subscription_data->subscr_cond.nf_type,
                     subscription_data->subscr_cond.service_name));
 
-            ogs_info("Subscription validity expired [%s]",
+            ogs_error("[%s] Subscription validity expired",
                 subscription_data->id);
             ogs_sbi_subscription_data_remove(subscription_data);
+            break;
+
+        case OGS_TIMER_SUBSCRIPTION_PATCH:
+            subscription_data = e->h.sbi.data;
+            ogs_assert(subscription_data);
+
+            ogs_assert(true ==
+                ogs_nnrf_nfm_send_nf_status_update(subscription_data));
+
+            ogs_info("[%s] Need to update Subscription",
+                    subscription_data->id);
             break;
 
         case OGS_TIMER_SBI_CLIENT_WAIT:
@@ -901,7 +928,12 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         }
 
         ogs_assert(sess);
-        ogs_assert(OGS_FSM_STATE(&sess->sm));
+        sess = smf_sess_cycle(sess);
+        if (!sess) {
+            ogs_error("Session has already been removed");
+            ogs_pkbuf_free(pkbuf);
+            break;
+        }
 
         e->nas.message = &nas_message;
         ogs_fsm_dispatch(&sess->sm, e);
@@ -919,7 +951,12 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         ogs_assert(e->ngap.type);
 
         ogs_assert(sess);
-        ogs_assert(OGS_FSM_STATE(&sess->sm));
+        sess = smf_sess_cycle(sess);
+        if (!sess) {
+            ogs_error("Session has already been removed");
+            ogs_pkbuf_free(pkbuf);
+            break;
+        }
 
         ogs_fsm_dispatch(&sess->sm, e);
 

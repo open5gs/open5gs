@@ -119,6 +119,10 @@ OpenAPI_pro_se_authentication_info_result_t *OpenAPI_pro_se_authentication_info_
     prose_authentication_vectors = cJSON_GetObjectItemCaseSensitive(pro_se_authentication_info_resultJSON, "proseAuthenticationVectors");
     if (prose_authentication_vectors) {
     prose_authentication_vectors_local_nonprim = OpenAPI_pro_se_authentication_vectors_parseFromJSON(prose_authentication_vectors);
+    if (!prose_authentication_vectors_local_nonprim) {
+        ogs_error("OpenAPI_pro_se_authentication_vectors_parseFromJSON failed [prose_authentication_vectors]");
+        goto end;
+    }
     }
 
     supi = cJSON_GetObjectItemCaseSensitive(pro_se_authentication_info_resultJSON, "supi");

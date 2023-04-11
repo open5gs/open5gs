@@ -428,6 +428,10 @@ OpenAPI_modify_200_response_t *OpenAPI_modify_200_response_parseFromJSON(cJSON *
     single_nssai = cJSON_GetObjectItemCaseSensitive(modify_200_responseJSON, "singleNssai");
     if (single_nssai) {
     single_nssai_local_nonprim = OpenAPI_snssai_parseFromJSON(single_nssai);
+    if (!single_nssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [single_nssai]");
+        goto end;
+    }
     }
 
     dnn = cJSON_GetObjectItemCaseSensitive(modify_200_responseJSON, "dnn");
@@ -449,6 +453,10 @@ OpenAPI_modify_200_response_t *OpenAPI_modify_200_response_parseFromJSON(cJSON *
     plmn_id = cJSON_GetObjectItemCaseSensitive(modify_200_responseJSON, "plmnId");
     if (plmn_id) {
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
+    if (!plmn_id_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [plmn_id]");
+        goto end;
+    }
     }
 
     immediate_report = cJSON_GetObjectItemCaseSensitive(modify_200_responseJSON, "immediateReport");
@@ -480,7 +488,6 @@ OpenAPI_modify_200_response_t *OpenAPI_modify_200_response_parseFromJSON(cJSON *
             OpenAPI_report_item_t *reportItem = OpenAPI_report_item_parseFromJSON(report_local);
             if (!reportItem) {
                 ogs_error("No reportItem");
-                OpenAPI_list_free(reportList);
                 goto end;
             }
             OpenAPI_list_add(reportList, reportItem);
@@ -497,6 +504,10 @@ OpenAPI_modify_200_response_t *OpenAPI_modify_200_response_parseFromJSON(cJSON *
     context_info = cJSON_GetObjectItemCaseSensitive(modify_200_responseJSON, "contextInfo");
     if (context_info) {
     context_info_local_nonprim = OpenAPI_context_info_parseFromJSON(context_info);
+    if (!context_info_local_nonprim) {
+        ogs_error("OpenAPI_context_info_parseFromJSON failed [context_info]");
+        goto end;
+    }
     }
 
     nf_change_filter = cJSON_GetObjectItemCaseSensitive(modify_200_responseJSON, "nfChangeFilter");
@@ -539,6 +550,10 @@ OpenAPI_modify_200_response_t *OpenAPI_modify_200_response_parseFromJSON(cJSON *
     ue_con_smf_data_sub_filter = cJSON_GetObjectItemCaseSensitive(modify_200_responseJSON, "ueConSmfDataSubFilter");
     if (ue_con_smf_data_sub_filter) {
     ue_con_smf_data_sub_filter_local_nonprim = OpenAPI_ue_context_in_smf_data_sub_filter_parseFromJSON(ue_con_smf_data_sub_filter);
+    if (!ue_con_smf_data_sub_filter_local_nonprim) {
+        ogs_error("OpenAPI_ue_context_in_smf_data_sub_filter_parseFromJSON failed [ue_con_smf_data_sub_filter]");
+        goto end;
+    }
     }
 
     modify_200_response_local_var = OpenAPI_modify_200_response_create (

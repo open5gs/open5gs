@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -33,6 +33,7 @@ extern const char *OGS_TIMER_NAME_NF_INSTANCE_HEARTBEAT_INTERVAL;
 extern const char *OGS_TIMER_NAME_NF_INSTANCE_NO_HEARTBEAT;
 extern const char *OGS_TIMER_NAME_NF_INSTANCE_VALIDITY;
 extern const char *OGS_TIMER_NAME_SUBSCRIPTION_VALIDITY;
+extern const char *OGS_TIMER_NAME_SUBSCRIPTION_PATCH;
 extern const char *OGS_TIMER_NAME_SBI_CLIENT_WAIT;
 
 /* forward declaration */
@@ -44,6 +45,7 @@ typedef enum {
     OGS_TIMER_NF_INSTANCE_NO_HEARTBEAT,
     OGS_TIMER_NF_INSTANCE_VALIDITY,
     OGS_TIMER_SUBSCRIPTION_VALIDITY,
+    OGS_TIMER_SUBSCRIPTION_PATCH,
     OGS_TIMER_SBI_CLIENT_WAIT,
 
     OGS_TIMER_DBI_POLL_CHANGE_STREAM,

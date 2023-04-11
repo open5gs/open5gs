@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -101,6 +101,7 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
     ogs_assert(OGS_OK ==
         ogs_nas_5gs_tai_list_build(&registration_accept->tai_list,
             &amf_self()->served_tai[served_tai_index].list0,
+            &amf_self()->served_tai[served_tai_index].list1,
             &amf_self()->served_tai[served_tai_index].list2));
 
     /* Set Allowed NSSAI */
@@ -125,7 +126,8 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
     registration_accept->presencemask |=
         OGS_NAS_5GS_REGISTRATION_ACCEPT_5GS_NETWORK_FEATURE_SUPPORT_PRESENT;
     network_feature_support->length = 2;
-    network_feature_support->ims_vops_3gpp = 1;
+    network_feature_support->
+        ims_voice_over_ps_session_over_3gpp_access_indicator = 1;
 
     /* Set T3512 */
     if (amf_self()->time.t3512.value) {

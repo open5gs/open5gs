@@ -193,6 +193,15 @@ int ogs_pfcp_send_heartbeat_response(ogs_pfcp_xact_t *xact)
     rv = ogs_pfcp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
 
+    /*
+     * Force delete the PFCP transaction to check the PFCP recovery timestamp.
+     *
+     * Otherwise, duplicated request (lib/pfcp/xact.c:384) prevents the message
+     * from being passed to the state machine, so the PFCP recovery timestamp
+     * cannot be delivered in the handler routine.
+     */
+    ogs_pfcp_xact_delete(xact);
+
     return rv;
 }
 

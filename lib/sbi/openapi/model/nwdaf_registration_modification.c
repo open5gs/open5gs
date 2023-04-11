@@ -150,7 +150,6 @@ OpenAPI_nwdaf_registration_modification_t *OpenAPI_nwdaf_registration_modificati
             OpenAPI_event_id_t *analytics_idsItem = OpenAPI_event_id_parseFromJSON(analytics_ids_local);
             if (!analytics_idsItem) {
                 ogs_error("No analytics_idsItem");
-                OpenAPI_list_free(analytics_idsList);
                 goto end;
             }
             OpenAPI_list_add(analytics_idsList, analytics_idsItem);

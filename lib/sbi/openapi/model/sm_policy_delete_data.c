@@ -208,6 +208,10 @@ OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_parseFromJSON(cJS
     user_location_info = cJSON_GetObjectItemCaseSensitive(sm_policy_delete_dataJSON, "userLocationInfo");
     if (user_location_info) {
     user_location_info_local_nonprim = OpenAPI_user_location_parseFromJSON(user_location_info);
+    if (!user_location_info_local_nonprim) {
+        ogs_error("OpenAPI_user_location_parseFromJSON failed [user_location_info]");
+        goto end;
+    }
     }
 
     ue_time_zone = cJSON_GetObjectItemCaseSensitive(sm_policy_delete_dataJSON, "ueTimeZone");
@@ -221,6 +225,10 @@ OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_parseFromJSON(cJS
     serving_network = cJSON_GetObjectItemCaseSensitive(sm_policy_delete_dataJSON, "servingNetwork");
     if (serving_network) {
     serving_network_local_nonprim = OpenAPI_plmn_id_nid_parseFromJSON(serving_network);
+    if (!serving_network_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_nid_parseFromJSON failed [serving_network]");
+        goto end;
+    }
     }
 
     user_location_info_time = cJSON_GetObjectItemCaseSensitive(sm_policy_delete_dataJSON, "userLocationInfoTime");
@@ -249,7 +257,6 @@ OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_parseFromJSON(cJS
             OpenAPI_ran_nas_rel_cause_t *ran_nas_rel_causesItem = OpenAPI_ran_nas_rel_cause_parseFromJSON(ran_nas_rel_causes_local);
             if (!ran_nas_rel_causesItem) {
                 ogs_error("No ran_nas_rel_causesItem");
-                OpenAPI_list_free(ran_nas_rel_causesList);
                 goto end;
             }
             OpenAPI_list_add(ran_nas_rel_causesList, ran_nas_rel_causesItem);
@@ -274,7 +281,6 @@ OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_parseFromJSON(cJS
             OpenAPI_accu_usage_report_t *accu_usage_reportsItem = OpenAPI_accu_usage_report_parseFromJSON(accu_usage_reports_local);
             if (!accu_usage_reportsItem) {
                 ogs_error("No accu_usage_reportsItem");
-                OpenAPI_list_free(accu_usage_reportsList);
                 goto end;
             }
             OpenAPI_list_add(accu_usage_reportsList, accu_usage_reportsItem);
@@ -308,7 +314,6 @@ OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_parseFromJSON(cJS
             OpenAPI_qos_monitoring_report_t *qos_mon_reportsItem = OpenAPI_qos_monitoring_report_parseFromJSON(qos_mon_reports_local);
             if (!qos_mon_reportsItem) {
                 ogs_error("No qos_mon_reportsItem");
-                OpenAPI_list_free(qos_mon_reportsList);
                 goto end;
             }
             OpenAPI_list_add(qos_mon_reportsList, qos_mon_reportsItem);

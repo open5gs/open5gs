@@ -213,7 +213,6 @@ OpenAPI_udr_info_t *OpenAPI_udr_info_parseFromJSON(cJSON *udr_infoJSON)
             OpenAPI_supi_range_t *supi_rangesItem = OpenAPI_supi_range_parseFromJSON(supi_ranges_local);
             if (!supi_rangesItem) {
                 ogs_error("No supi_rangesItem");
-                OpenAPI_list_free(supi_rangesList);
                 goto end;
             }
             OpenAPI_list_add(supi_rangesList, supi_rangesItem);
@@ -238,7 +237,6 @@ OpenAPI_udr_info_t *OpenAPI_udr_info_parseFromJSON(cJSON *udr_infoJSON)
             OpenAPI_identity_range_t *gpsi_rangesItem = OpenAPI_identity_range_parseFromJSON(gpsi_ranges_local);
             if (!gpsi_rangesItem) {
                 ogs_error("No gpsi_rangesItem");
-                OpenAPI_list_free(gpsi_rangesList);
                 goto end;
             }
             OpenAPI_list_add(gpsi_rangesList, gpsi_rangesItem);
@@ -263,7 +261,6 @@ OpenAPI_udr_info_t *OpenAPI_udr_info_parseFromJSON(cJSON *udr_infoJSON)
             OpenAPI_identity_range_t *external_group_identifiers_rangesItem = OpenAPI_identity_range_parseFromJSON(external_group_identifiers_ranges_local);
             if (!external_group_identifiers_rangesItem) {
                 ogs_error("No external_group_identifiers_rangesItem");
-                OpenAPI_list_free(external_group_identifiers_rangesList);
                 goto end;
             }
             OpenAPI_list_add(external_group_identifiers_rangesList, external_group_identifiers_rangesItem);
@@ -307,7 +304,6 @@ OpenAPI_udr_info_t *OpenAPI_udr_info_parseFromJSON(cJSON *udr_infoJSON)
             OpenAPI_shared_data_id_range_t *shared_data_id_rangesItem = OpenAPI_shared_data_id_range_parseFromJSON(shared_data_id_ranges_local);
             if (!shared_data_id_rangesItem) {
                 ogs_error("No shared_data_id_rangesItem");
-                OpenAPI_list_free(shared_data_id_rangesList);
                 goto end;
             }
             OpenAPI_list_add(shared_data_id_rangesList, shared_data_id_rangesItem);

@@ -119,6 +119,10 @@ OpenAPI_hss_subscription_item_t *OpenAPI_hss_subscription_item_parseFromJSON(cJS
     context_info = cJSON_GetObjectItemCaseSensitive(hss_subscription_itemJSON, "contextInfo");
     if (context_info) {
     context_info_local_nonprim = OpenAPI_context_info_parseFromJSON(context_info);
+    if (!context_info_local_nonprim) {
+        ogs_error("OpenAPI_context_info_parseFromJSON failed [context_info]");
+        goto end;
+    }
     }
 
     hss_subscription_item_local_var = OpenAPI_hss_subscription_item_create (

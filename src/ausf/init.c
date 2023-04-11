@@ -23,7 +23,7 @@ static ogs_thread_t *thread;
 static void ausf_main(void *data);
 static int initialized = 0;
 
-int ausf_initialize()
+int ausf_initialize(void)
 {
     int rv;
 
