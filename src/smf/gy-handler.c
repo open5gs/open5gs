@@ -197,10 +197,13 @@ void smf_gy_handle_cca_update_request(
 
     urr_update_time(sess, urr, gy_message);
     urr_update_volume(sess, urr, gy_message);
+    /* Associate accounting URR each direction PDR: */
     ogs_pfcp_pdr_associate_urr(bearer->ul_pdr, urr);
+    ogs_pfcp_pdr_associate_urr(bearer->dl_pdr, urr);
 
     if (urr->meas_method != prev_meas_method)
         modify_flags |= OGS_PFCP_MODIFY_URR_MEAS_METHOD;
+
     if (urr->rep_triggers.quota_validity_time != prev_rep_triggers.quota_validity_time ||
         urr->rep_triggers.time_quota != prev_rep_triggers.time_quota ||
         urr->rep_triggers.volume_quota != prev_rep_triggers.volume_quota ||
@@ -214,8 +217,7 @@ void smf_gy_handle_cca_update_request(
     if (urr->time_quota != prev_time_quota)
         modify_flags |= OGS_PFCP_MODIFY_URR_TIME_QUOTA;
 
-    if (urr->vol_quota.tovol != prev_vol_quota.tovol ||
-        urr->vol_quota.total_volume != prev_vol_quota.total_volume)
+    if (urr->vol_quota.tovol || urr->vol_quota.total_volume)
         modify_flags |= OGS_PFCP_MODIFY_URR_VOLUME_QUOTA;
 
     if (urr->time_threshold != prev_time_threshold)
