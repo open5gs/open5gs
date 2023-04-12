@@ -73,7 +73,7 @@ ogs_pkbuf_t *smf_n4_build_session_establishment_request(
             const char *dnn_temp = smf_self()->sgi_nwi;
             char dnn2_temp[100+1];
             req->create_pdr[i].pdi.network_instance.len = ogs_fqdn_build(
-            dnn2_temp, dnn_temp, strlen(dnn_temp));
+            dnn2_temp, (char *)dnn_temp, strlen(dnn_temp));
             req->create_pdr[i].pdi.network_instance.data = dnn2_temp;
         }
         i++;
@@ -87,7 +87,7 @@ ogs_pkbuf_t *smf_n4_build_session_establishment_request(
             const char *dnn_temp = smf_self()->sgi_nwi;
             char dnn2_temp[100+1];
             req->create_far[i].forwarding_parameters.network_instance.len = ogs_fqdn_build(
-            dnn2_temp, dnn_temp, strlen(dnn_temp));
+            dnn2_temp, (char *)dnn_temp, strlen(dnn_temp));
             req->create_far[i].forwarding_parameters.network_instance.data = dnn2_temp;
             req->create_far[i].forwarding_parameters.destination_interface.u8 = OGS_PFCP_INTERFACE_SGI_N6_LAN;
         } 
