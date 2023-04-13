@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=0.10.2
+version=0.10.3
 
 display_help() {
     echo "open5gs-dbctl: Open5GS Database Configuration Tool ($version)"
@@ -24,6 +24,7 @@ display_help() {
     echo "   showall: shows the list of subscriber in the db"
     echo "   showpretty: shows the list of subscriber in the db in a pretty json tree format"
     echo "   showfiltered: shows {imsi key opc apn ip} information of subscriber"
+    echo "   ambr_speed {imsi dl_value dl_unit ul_value ul_unit}: Change AMBR speed from a specific user and the  unit values are \"[0=bps 1=Kbps 2=Mbps 3=Gbps 4=Tbps ]\""
 
 
 }
@@ -784,5 +785,45 @@ if [ "$1" = "showfiltered" ]; then
    mongosh --eval "db.subscribers.find({},{'_id':0,'imsi':1,'security.k':1, 'security.opc':1,'slice.session.name':1,'slice.session.ue.addr':1})" $DB_URI
         exit $?
 fi
+
+if [ "$1" = "ambr_speed" ]; then
+    if [ "$#" -eq 6 ]; then
+        IMSI=$2
+        DL_VALUE=$3
+        DL_UNIT=$4
+        UL_VALUE=$5
+        UL_UNIT=$6
+        mongosh --eval "db.subscribers.updateOne({\"imsi\": \"$IMSI\"},
+            {\$set: { 
+                \"ambr\" : {
+                    \"downlink\" : {
+                        \"value\" : NumberInt($DL_VALUE),
+                        \"unit\"  : NumberInt($DL_UNIT)
+                    },
+                    \"uplink\" :{
+                        \"value\": NumberInt($UL_VALUE),
+                        \"unit\" : NumberInt($UL_UNIT)
+                    }
+                },
+                \"slice.0.session.0.ambr\": {
+                    \"downlink\" : {
+                        \"value\" : NumberInt($DL_VALUE),
+                        \"unit\"  : NumberInt($DL_UNIT)
+                    },
+                    \"uplink\" :{
+                        \"value\": NumberInt($UL_VALUE),
+                        \"unit\" : NumberInt($UL_UNIT)
+                    }
+                }
+                     }
+            });" $DB_URI
+
+
+        exit $?
+    fi
+    echo "open5gs-dbctl: incorrect number of args, format is \"open5gs-dbctl ambr_speed imsi dl_value dl_unit ul_value ul_unit dl is for download and ul is for upload and the  unit values are[0=bps 1=Kbps 2=Mbps 3=Gbps 4=Tbps ] \""
+    exit 1
+fi
+
 
 display_help
