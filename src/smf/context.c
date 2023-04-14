@@ -1751,8 +1751,10 @@ void smf_sess_remove(smf_sess_t *sess)
     if (sess->policy_association_id)
         ogs_free(sess->policy_association_id);
 
-    if (sess->session.name)
+    if (sess->session.name) {
         ogs_free(sess->session.name);
+	sess->session.name = NULL;
+    }
 
     if (sess->session.ipv4_framed_routes) {
         for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
@@ -1791,8 +1793,9 @@ void smf_sess_remove(smf_sess_t *sess)
 
     smf_bearer_remove_all(sess);
 
-    ogs_assert(sess->pfcp.bar);
-    ogs_pfcp_bar_delete(sess->pfcp.bar);
+    if (sess->pfcp.bar) {
+        ogs_pfcp_bar_delete(sess->pfcp.bar);
+    }
 
     smf_sess_delete_cp_up_data_forwarding(sess);
 
