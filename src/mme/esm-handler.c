@@ -44,18 +44,13 @@ int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
 
     ogs_assert(req);
 
-    if (!MME_UE_HAVE_IMSI(mme_ue)) {
+    if (false == MME_UE_HAVE_IMSI(mme_ue)) {
         ogs_error("MME UE does not contain IMSI!");
         return OGS_ERROR;
     }
 
-    if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
-        ogs_error("No Security Context : IMSI[%s]", mme_ue->imsi_bcd);
-        r = nas_eps_send_pdn_connectivity_reject(
-                sess, OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
-                create_action);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
+    if (false == SECURITY_CONTEXT_IS_VALID(mme_ue)) {
+        ogs_error("MME UE secirity context is invalid!");
         return OGS_ERROR;
     }
 

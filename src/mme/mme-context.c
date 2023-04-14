@@ -1558,6 +1558,18 @@ int mme_context_parse_config(void)
                     }
                     self.num_emergency_number_list_items = num_emergency_number_list_items;
                 } else if (!strcmp(mme_key, "emergency_bearer_services")) {
+                    bool *emergency_bearer_services = &self.emergency_bearer_services;
+                    const char *c_emergency_bearer_services = ogs_yaml_iter_value(&mme_iter);
+
+                    if (!strcmp("True", c_emergency_bearer_services) || 
+                        !strcmp("true", c_emergency_bearer_services)) {
+                        ogs_info("Emergency bearer services have been enabled");
+                        *emergency_bearer_services = true;
+                    }
+                    else {
+                        ogs_info("Emergency bearer services have been disabled");
+                        *emergency_bearer_services = false;
+                    }
                 } else if (!strcmp(mme_key, "redis")) {
                     ogs_yaml_iter_t redis_iter;
                     ogs_yaml_iter_recurse(&mme_iter, &redis_iter);

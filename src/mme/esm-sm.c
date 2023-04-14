@@ -412,7 +412,6 @@ void esm_state_pdn_will_disconnect(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("PDN Connectivity request");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
-
             rv = esm_handle_pdn_connectivity_request(
                     bearer, &message->esm.pdn_connectivity_request,
                     e->create_action);
