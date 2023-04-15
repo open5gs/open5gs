@@ -320,6 +320,7 @@ bool ogs_pfcp_up_handle_error_indication(
 
 ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
         ogs_pfcp_tlv_create_pdr_t *message,
+        ogs_pfcp_sereq_flags_t *sereq_flags,
         uint8_t *cause_value, uint8_t *offending_ie_value)
 {
     ogs_pfcp_pdr_t *pdr = NULL;
@@ -376,6 +377,18 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
             *offending_ie_value = OGS_PFCP_F_TEID_TYPE;
             return NULL;
         }
+
+        if (f_teid.ch == 0) {
+            if (sereq_flags && sereq_flags->restoration_indication == 1) {
+                f_teid.teid = be32toh(f_teid.teid);
+                if (ogs_pfcp_object_find_by_teid(f_teid.teid)) {
+                    ogs_error("TEID:%x had already been allocated", f_teid.teid);
+                    *cause_value = OGS_PFCP_CAUSE_INVALID_F_TEID_ALLOCATION_OPTION;
+                    *offending_ie_value = OGS_PFCP_F_TEID_TYPE;
+                    return NULL;
+                }
+            }
+        }
     }
 
     pdr->src_if = message->pdi.source_interface.u8;
@@ -398,7 +411,6 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
         if (sdf_filter.bid) {
             oppsite_direction_rule = ogs_pfcp_rule_find_by_sdf_filter_id(
                         sess, sdf_filter.sdf_filter_id);
-
         }
 
         if (!oppsite_direction_rule && !sdf_filter.fd) {

@@ -21,7 +21,7 @@
 #include "n4-build.h"
 
 ogs_pkbuf_t *smf_n4_build_session_establishment_request(
-        uint8_t type, smf_sess_t *sess)
+        uint8_t type, smf_sess_t *sess, ogs_pfcp_xact_t *xact)
 {
     ogs_pfcp_message_t *pfcp_message = NULL;
     ogs_pfcp_session_establishment_request_t *req = NULL;
@@ -46,6 +46,7 @@ ogs_pkbuf_t *smf_n4_build_session_establishment_request(
     ogs_assert(sess);
     smf_ue = sess->smf_ue;
     ogs_assert(smf_ue);
+    ogs_assert(xact);
 
     pfcp_message = ogs_calloc(1, sizeof(*pfcp_message));
     if (!pfcp_message) {
@@ -157,6 +158,16 @@ ogs_pkbuf_t *smf_n4_build_session_establishment_request(
         req->s_nssai.presence = 1;
         req->s_nssai.len = 4;
         req->s_nssai.data = &sess->s_nssai;
+    }
+
+    /* Restoration Indication */
+    if (xact->create_flags & OGS_PFCP_CREATE_RESTORATION_INDICATION) {
+        ogs_pfcp_sereq_flags_t sereq_flags;
+        sereq_flags.value = 0;
+
+        sereq_flags.restoration_indication = 1;
+        req->pfcpsereq_flags.presence = 1;
+        req->pfcpsereq_flags.u8 = sereq_flags.value;
     }
 
     pfcp_message->h.type = type;

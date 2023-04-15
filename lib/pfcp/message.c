@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by pfcp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2023-03-05 22:26:11.716006 by acetcom
+ * Created on: 2023-04-09 20:37:00.518388 by acetcom
  * from 29244-h71-modified.docx
  ******************************************************************************/
 
@@ -1546,10 +1546,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_cp_pfcp_entity_ip_address =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_pfcpsereq_flags =
 {
-    OGS_TLV_VAR_STR,
+    OGS_TLV_UINT8,
     "PFCPSEReq-Flags",
     OGS_PFCP_PFCPSEREQ_FLAGS_TYPE,
-    0,
+    1,
     0,
     sizeof(ogs_pfcp_tlv_pfcpsereq_flags_t),
     { NULL }

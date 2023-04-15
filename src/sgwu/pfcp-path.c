@@ -205,7 +205,6 @@ int sgwu_pfcp_send_session_modification_response(
     ogs_pfcp_header_t h;
 
     ogs_assert(xact);
-    ogs_assert(created_pdr);
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_SESSION_MODIFICATION_RESPONSE_TYPE;

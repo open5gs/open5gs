@@ -277,12 +277,9 @@ void sgwu_pfcp_state_associated(ogs_fsm_t *s, sgwu_event_t *e)
                     &message->pfcp_association_setup_response);
             break;
         case OGS_PFCP_SESSION_ESTABLISHMENT_REQUEST_TYPE:
-            if (message->h.seid_presence && message->h.seid == 0) {
-                ogs_expect(!sess);
-                sess = sgwu_sess_add_by_message(message);
-                if (sess)
-                    OGS_SETUP_PFCP_NODE(sess, node);
-            }
+            sess = sgwu_sess_add_by_message(message);
+            if (sess)
+                OGS_SETUP_PFCP_NODE(sess, node);
             sgwu_sxa_handle_session_establishment_request(
                 sess, xact, &message->pfcp_session_establishment_request);
             break;

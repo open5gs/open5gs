@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by pfcp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2023-03-05 22:26:11.698310 by acetcom
+ * Created on: 2023-04-09 20:37:00.506639 by acetcom
  * from 29244-h71-modified.docx
  ******************************************************************************/
 
@@ -903,7 +903,7 @@ typedef ogs_tlv_uint32_t ogs_pfcp_tlv_quota_validity_time_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_number_of_reports_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_pfcpasrsp_flags_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_cp_pfcp_entity_ip_address_t;
-typedef ogs_tlv_octet_t ogs_pfcp_tlv_pfcpsereq_flags_t;
+typedef ogs_tlv_uint8_t ogs_pfcp_tlv_pfcpsereq_flags_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_ip_multicast_address_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_source_ip_address_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_packet_rate_status_t;

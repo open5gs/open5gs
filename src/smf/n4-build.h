@@ -27,7 +27,7 @@ extern "C" {
 #endif
 
 ogs_pkbuf_t *smf_n4_build_session_establishment_request(
-        uint8_t type, smf_sess_t *sess);
+        uint8_t type, smf_sess_t *sess, ogs_pfcp_xact_t *xact);
 ogs_pkbuf_t *smf_n4_build_pdr_to_modify_list(
         uint8_t type, smf_sess_t *sess, ogs_pfcp_xact_t *xact);
 ogs_pkbuf_t *smf_n4_build_qos_flow_to_modify_list(

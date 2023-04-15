@@ -36,7 +36,7 @@ int smf_pfcp_send_modify_list(
         ogs_pfcp_xact_t *xact, ogs_time_t duration);
 
 int smf_5gc_pfcp_send_session_establishment_request(
-        smf_sess_t *sess, ogs_sbi_stream_t *stream);
+        smf_sess_t *sess, uint64_t flags);
 int smf_5gc_pfcp_send_all_pdr_modification_request(
         smf_sess_t *sess, ogs_sbi_stream_t *stream,
         uint64_t flags, ogs_time_t duration);
@@ -47,7 +47,7 @@ int smf_5gc_pfcp_send_session_deletion_request(
         smf_sess_t *sess, ogs_sbi_stream_t *stream, int trigger);
 
 int smf_epc_pfcp_send_session_establishment_request(
-        smf_sess_t *sess, void *gtp_xact);
+        smf_sess_t *sess, void *gtp_xact, uint64_t flags);
 int smf_epc_pfcp_send_all_pdr_modification_request(
         smf_sess_t *sess, void *gtp_xact, ogs_pkbuf_t *gtpbuf,
         uint64_t flags, uint8_t gtp_pti, uint8_t gtp_cause);

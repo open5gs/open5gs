@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -425,6 +425,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
         switch(pfcp_object->type) {
         case OGS_PFCP_OBJ_PDR_TYPE:
+            /* UPF does not use PDR TYPE */
+            ogs_assert_if_reached();
             pdr = (ogs_pfcp_pdr_t *)pfcp_object;
             ogs_assert(pdr);
             break;

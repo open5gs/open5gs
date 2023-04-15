@@ -446,17 +446,15 @@ bool ogs_pfcp_build_created_pdr(
 
     ogs_assert(pdr);
 
-    if (ogs_pfcp_self()->up_function_features.ftup) {
-        if (pdr->f_teid_len) {
-            memcpy(&pdrbuf[i].f_teid, &pdr->f_teid, pdr->f_teid_len);
-            pdrbuf[i].f_teid.teid = htobe32(pdr->f_teid.teid);
+    if (pdr->f_teid_len) {
+        memcpy(&pdrbuf[i].f_teid, &pdr->f_teid, pdr->f_teid_len);
+        pdrbuf[i].f_teid.teid = htobe32(pdr->f_teid.teid);
 
-            message->local_f_teid.presence = 1;
-            message->local_f_teid.data = &pdrbuf[i].f_teid;
-            message->local_f_teid.len = pdr->f_teid_len;
+        message->local_f_teid.presence = 1;
+        message->local_f_teid.data = &pdrbuf[i].f_teid;
+        message->local_f_teid.len = pdr->f_teid_len;
 
-            pdr_presence = true;
-        }
+        pdr_presence = true;
     }
 
     if (pdr_presence == true) {

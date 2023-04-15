@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -203,6 +203,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
             ogs_assert(pdr);
             break;
         case OGS_PFCP_OBJ_SESS_TYPE:
+            /* SGWU does not use SESS TYPE */
+            ogs_assert_if_reached();
             pfcp_sess = (ogs_pfcp_sess_t *)pfcp_object;
             ogs_assert(pfcp_sess);
 

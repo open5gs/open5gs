@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -234,6 +234,8 @@ void sgwc_s11_handle_create_session_request(
     sess = sgwc_sess_add(sgwc_ue, apn);
     ogs_assert(sess);
 
+    ogs_info("UE IMSI[%s] APN[%s]", sgwc_ue->imsi_bcd, sess->session.name);
+
     /* Set User Location Information */
     if (req->user_location_information.presence == 1) {
         decoded = ogs_gtp2_parse_uli(&uli, &req->user_location_information);
@@ -376,7 +378,8 @@ void sgwc_s11_handle_create_session_request(
         sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);
 
     ogs_assert(OGS_OK ==
-        sgwc_pfcp_send_session_establishment_request(sess, s11_xact, gtpbuf));
+        sgwc_pfcp_send_session_establishment_request(
+            sess, s11_xact, gtpbuf, 0));
 }
 
 void sgwc_s11_handle_modify_bearer_request(
