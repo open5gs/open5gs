@@ -27,19 +27,23 @@ static int context_initialized = 0;
 static OGS_POOL(ogs_pfcp_node_pool, ogs_pfcp_node_t);
 
 static OGS_POOL(ogs_pfcp_sess_pool, ogs_pfcp_sess_t);
-static OGS_POOL(ogs_pfcp_pdr_pool, ogs_pfcp_pdr_t);
-static OGS_POOL(ogs_pfcp_pdr_teid_pool, ogs_pool_id_t);
 static OGS_POOL(ogs_pfcp_far_pool, ogs_pfcp_far_t);
 static OGS_POOL(ogs_pfcp_urr_pool, ogs_pfcp_urr_t);
 static OGS_POOL(ogs_pfcp_qer_pool, ogs_pfcp_qer_t);
 static OGS_POOL(ogs_pfcp_bar_pool, ogs_pfcp_bar_t);
 
+static OGS_POOL(ogs_pfcp_pdr_pool, ogs_pfcp_pdr_t);
+static OGS_POOL(ogs_pfcp_pdr_teid_pool, ogs_pool_id_t);
+static ogs_pool_id_t *pdr_random_to_index;
+
+static OGS_POOL(ogs_pfcp_rule_pool, ogs_pfcp_rule_t);
+
 static OGS_POOL(ogs_pfcp_dev_pool, ogs_pfcp_dev_t);
 static OGS_POOL(ogs_pfcp_subnet_pool, ogs_pfcp_subnet_t);
-static OGS_POOL(ogs_pfcp_rule_pool, ogs_pfcp_rule_t);
 
 void ogs_pfcp_context_init(void)
 {
+    int i;
     ogs_assert(context_initialized == 0);
 
     /* Initialize SMF context */
@@ -53,11 +57,6 @@ void ogs_pfcp_context_init(void)
 
     ogs_pool_init(&ogs_pfcp_sess_pool, ogs_app()->pool.sess);
 
-    ogs_pool_init(&ogs_pfcp_pdr_pool,
-            ogs_app()->pool.sess * OGS_MAX_NUM_OF_PDR);
-    ogs_pool_init(&ogs_pfcp_pdr_teid_pool,
-            ogs_app()->pool.sess * OGS_MAX_NUM_OF_PDR);
-    ogs_pool_random_id_generate(&ogs_pfcp_pdr_teid_pool);
     ogs_pool_init(&ogs_pfcp_far_pool,
             ogs_app()->pool.sess * OGS_MAX_NUM_OF_FAR);
     ogs_pool_init(&ogs_pfcp_urr_pool,
@@ -66,6 +65,17 @@ void ogs_pfcp_context_init(void)
             ogs_app()->pool.sess * OGS_MAX_NUM_OF_QER);
     ogs_pool_init(&ogs_pfcp_bar_pool,
             ogs_app()->pool.sess * OGS_MAX_NUM_OF_BAR);
+
+    ogs_pool_init(&ogs_pfcp_pdr_pool,
+            ogs_app()->pool.sess * OGS_MAX_NUM_OF_PDR);
+    ogs_pool_init(&ogs_pfcp_pdr_teid_pool, ogs_pfcp_pdr_pool.size);
+    ogs_pool_random_id_generate(&ogs_pfcp_pdr_teid_pool);
+
+    pdr_random_to_index = ogs_calloc(
+            sizeof(ogs_pool_id_t), ogs_pfcp_pdr_pool.size);
+    ogs_assert(pdr_random_to_index);
+    for (i = 0; i < ogs_pfcp_pdr_pool.size; i++)
+        pdr_random_to_index[ogs_pfcp_pdr_teid_pool.array[i]] = i;
 
     ogs_pool_init(&ogs_pfcp_rule_pool,
             ogs_app()->pool.sess *
@@ -102,9 +112,11 @@ void ogs_pfcp_context_final(void)
     ogs_pool_final(&ogs_pfcp_subnet_pool);
     ogs_pool_final(&ogs_pfcp_rule_pool);
 
-    ogs_pool_final(&ogs_pfcp_sess_pool);
     ogs_pool_final(&ogs_pfcp_pdr_pool);
     ogs_pool_final(&ogs_pfcp_pdr_teid_pool);
+    ogs_free(pdr_random_to_index);
+
+    ogs_pool_final(&ogs_pfcp_sess_pool);
     ogs_pool_final(&ogs_pfcp_far_pool);
     ogs_pool_final(&ogs_pfcp_urr_pool);
     ogs_pool_final(&ogs_pfcp_qer_pool);
@@ -955,11 +967,87 @@ ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_or_add(
     return pdr;
 }
 
+void ogs_pfcp_pdr_swap_teid(ogs_pfcp_pdr_t *pdr)
+{
+    int i = 0;
+
+    ogs_assert(pdr);
+    ogs_assert(pdr->f_teid.teid > 0 &&
+            pdr->f_teid.teid <= ogs_pfcp_pdr_teid_pool.size);
+
+    /* Find out the Array Index for the restored TEID. */
+    i = pdr_random_to_index[pdr->f_teid.teid];
+    ogs_assert(i < ogs_pfcp_pdr_teid_pool.size);
+
+    ogs_assert(pdr->teid_node);
+    /*
+     * If SWAP has already done this, it will not try this again.
+     * This situation can occur when multiple PDRs are restored
+     * with the same TEID.
+     */
+    if (pdr->f_teid.teid == ogs_pfcp_pdr_teid_pool.array[i]) {
+        ogs_pfcp_pdr_teid_pool.array[i] = *(pdr->teid_node);
+        *(pdr->teid_node) = pdr->f_teid.teid;
+    }
+}
+
 void ogs_pfcp_object_teid_hash_set(
-        ogs_pfcp_object_type_e type, ogs_pfcp_pdr_t *pdr)
+        ogs_pfcp_object_type_e type, ogs_pfcp_pdr_t *pdr,
+        bool restoration_indication)
 {
     ogs_assert(type);
     ogs_assert(pdr);
+
+    if (ogs_pfcp_self()->up_function_features.ftup && pdr->f_teid.ch) {
+
+        ogs_pfcp_pdr_t *choosed_pdr = NULL;
+
+        if (pdr->f_teid.chid) {
+            choosed_pdr = ogs_pfcp_pdr_find_by_choose_id(
+                    pdr->sess, pdr->f_teid.choose_id);
+            if (!choosed_pdr) {
+                pdr->chid = true;
+                pdr->choose_id = pdr->f_teid.choose_id;
+            }
+        }
+
+        if (choosed_pdr) {
+            pdr->f_teid_len = choosed_pdr->f_teid_len;
+            memcpy(&pdr->f_teid, &choosed_pdr->f_teid, pdr->f_teid_len);
+
+        } else {
+            ogs_gtpu_resource_t *resource = NULL;
+            resource = ogs_pfcp_find_gtpu_resource(
+                    &ogs_gtp_self()->gtpu_resource_list,
+                    pdr->dnn, OGS_PFCP_INTERFACE_ACCESS);
+            if (resource) {
+                ogs_assert(
+                    (resource->info.v4 && pdr->f_teid.ipv4) ||
+                    (resource->info.v6 && pdr->f_teid.ipv6));
+                ogs_assert(OGS_OK ==
+                    ogs_pfcp_user_plane_ip_resource_info_to_f_teid(
+                    &resource->info, &pdr->f_teid, &pdr->f_teid_len));
+                if (resource->info.teidri)
+                    pdr->f_teid.teid = OGS_PFCP_GTPU_INDEX_TO_TEID(
+                            pdr->teid, resource->info.teidri,
+                            resource->info.teid_range);
+                else
+                    pdr->f_teid.teid = pdr->teid;
+            } else {
+                ogs_assert(
+                    (ogs_gtp_self()->gtpu_addr && pdr->f_teid.ipv4) ||
+                    (ogs_gtp_self()->gtpu_addr6 && pdr->f_teid.ipv6));
+                ogs_assert(OGS_OK ==
+                    ogs_pfcp_sockaddr_to_f_teid(
+                        pdr->f_teid.ipv4 ?
+                            ogs_gtp_self()->gtpu_addr : NULL,
+                        pdr->f_teid.ipv6 ?
+                            ogs_gtp_self()->gtpu_addr6 : NULL,
+                        &pdr->f_teid, &pdr->f_teid_len));
+                pdr->f_teid.teid = pdr->teid;
+            }
+        }
+    }
 
     if (pdr->hash.teid.len)
         ogs_hash_set(self.object_teid_hash,

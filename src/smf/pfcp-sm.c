@@ -22,6 +22,7 @@
 
 #include "n4-handler.h"
 
+static void pfcp_restoration(ogs_pfcp_node_t *node);
 static void reselect_upf(ogs_pfcp_node_t *node);
 static void node_timeout(ogs_pfcp_xact_t *xact, void *data);
 
@@ -191,7 +192,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
             ogs_pfcp_send_heartbeat_request(node, node_timeout));
 
         if (node->restoration_required == true) {
-            /* PFCP Restoration is being performed after PFCP association */
+            pfcp_restoration(node);
             node->restoration_required = false;
             ogs_error("PFCP restoration");
         }
@@ -244,6 +245,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
          * If the peer PFCP entity is performing the association,
          * Restoration can be performed immediately.
          */
+                    pfcp_restoration(node);
                     node->restoration_required = false;
                     ogs_error("PFCP restoration");
                 }
@@ -270,6 +272,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
          * If the peer PFCP entity is performing the association,
          * Restoration can be performed immediately.
          */
+                    pfcp_restoration(node);
                     node->restoration_required = false;
                     ogs_error("PFCP restoration");
                 }
@@ -409,10 +412,52 @@ void smf_pfcp_state_exception(ogs_fsm_t *s, smf_event_t *e)
     }
 }
 
+static void pfcp_restoration(ogs_pfcp_node_t *node)
+{
+    smf_ue_t *smf_ue = NULL;
+
+    char buf1[OGS_ADDRSTRLEN];
+    char buf2[OGS_ADDRSTRLEN];
+
+    ogs_list_for_each(&smf_self()->smf_ue_list, smf_ue) {
+        smf_sess_t *sess = NULL;
+        ogs_assert(smf_ue);
+
+        ogs_list_for_each(&smf_ue->sess_list, sess) {
+            ogs_assert(sess);
+
+            if (node == sess->pfcp_node) {
+                if (sess->epc) {
+                    ogs_info("UE IMSI[%s] APN[%s] IPv4[%s] IPv6[%s]",
+                        smf_ue->imsi_bcd, sess->session.name,
+                        sess->ipv4 ?
+                            OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
+                        sess->ipv6 ?
+                            OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
+                    ogs_assert(OGS_OK ==
+                        smf_epc_pfcp_send_session_establishment_request(
+                            sess, NULL,
+                            OGS_PFCP_CREATE_RESTORATION_INDICATION));
+                } else {
+                    ogs_info("UE SUPI[%s] DNN[%s] IPv4[%s] IPv6[%s]",
+                        smf_ue->supi, sess->session.name,
+                        sess->ipv4 ?
+                            OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
+                        sess->ipv6 ?
+                            OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
+                    ogs_assert(OGS_OK ==
+                            smf_5gc_pfcp_send_session_establishment_request(
+                                sess, OGS_PFCP_CREATE_RESTORATION_INDICATION));
+                }
+            }
+        }
+    }
+}
+
 static void reselect_upf(ogs_pfcp_node_t *node)
 {
     int r;
-    smf_ue_t *smf_ue = NULL, *next_ue = NULL;;
+    smf_ue_t *smf_ue = NULL;
     ogs_pfcp_node_t *iter = NULL;
 
     ogs_assert(node);
@@ -434,19 +479,18 @@ static void reselect_upf(ogs_pfcp_node_t *node)
         return;
     }
 
-    ogs_list_for_each_safe(&smf_self()->smf_ue_list, next_ue, smf_ue) {
-        smf_sess_t *sess = NULL, *next_sess = NULL;;
+    ogs_list_for_each(&smf_self()->smf_ue_list, smf_ue) {
+        smf_sess_t *sess = NULL;
         ogs_assert(smf_ue);
 
-        ogs_list_for_each_safe(&smf_ue->sess_list, next_sess, sess) {
+        ogs_list_for_each(&smf_ue->sess_list, sess) {
             ogs_assert(sess);
-            if (sess->epc) {
-                ogs_error("[%s:%s] EPC restoration is not implemented",
-                        smf_ue->imsi_bcd, sess->session.name);
-            } else {
-                ogs_assert(sess->sm_context_ref);
 
-                if (node == sess->pfcp_node) {
+            if (node == sess->pfcp_node) {
+                if (sess->epc) {
+                    ogs_error("[%s:%s] EPC restoration is not implemented",
+                            smf_ue->imsi_bcd, sess->session.name);
+                } else {
                     smf_npcf_smpolicycontrol_param_t param;
 
                     ogs_info("[%s:%d] SMF-initiated Deletion",
@@ -479,18 +523,6 @@ static void node_timeout(ogs_pfcp_xact_t *xact, void *data)
     switch (type) {
     case OGS_PFCP_HEARTBEAT_REQUEST_TYPE:
         ogs_assert(data);
-
-
-    /*
-     * The code below is not secure.
-     * Session does not differentiate between EPC and 5GC.
-     * And, it does not check whether there are other PFCP Nodes.
-     *
-     * So, UPF redundancy will be implemented later.
-     *
-     * We plan to do this again after testing with restoration first
-     * in case peer PFCP restarts.
-     */
         reselect_upf(data);
 
         e = smf_event_new(SMF_EVT_N4_NO_HEARTBEAT);

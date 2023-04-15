@@ -1651,6 +1651,28 @@ int16_t ogs_pfcp_build_user_id(
         ogs_tlv_octet_t *octet, ogs_pfcp_user_id_t *user_id,
         void *data, int data_len);
 
+/*
+ * 8.2.136 PFCPSEReq-Flags
+ *
+ * The following bits within Octet 5 shall indicate:
+ * - Bit 1 – RESTI (Restoration Indication): if this bit is set to "1",
+ *   it indicates to the UP function that the PFCP session to be established is
+ *   to restore an existing PFCP session.
+ * - Bit 2 – SUMPC (Stop of Usage Measurement to Pause Charging):
+ *   if this bit is set to "1", it indicates that the UP function shall
+ *   stop the usage measurement for all URRs with the "ASPOC" flag set to "1".
+ */
+typedef struct ogs_pfcp_sereq_flags_s {
+    union {
+        struct {
+ED3(uint8_t     spare:6;,
+    uint8_t     stop_of_usage_measurement_to_pause_charging:1;,
+    uint8_t     restoration_indication:1;)
+        };
+        uint8_t value;
+    };
+} __attribute__ ((packed)) ogs_pfcp_sereq_flags_t;
+
 #ifdef __cplusplus
 }
 #endif

@@ -2142,37 +2142,51 @@ void smf_sess_create_indirect_data_forwarding(smf_sess_t *sess)
             pdr->f_teid.choose_id = OGS_PFCP_INDIRECT_DATA_FORWARDING_CHOOSE_ID;
             pdr->f_teid_len = 2;
         } else {
-            ogs_gtpu_resource_t *resource = NULL;
+            /*
+             * CHOOSE_ID is set in INDIRECT so that all PDRs must be set
+             * to the same TEID.
+             *
+             * If sess->handover.upf_dl_teid is set in the PDR of
+             * the first QoS flow, the PDRs of the remaining QoS flows use
+             * the same TEID.
+             */
+            if (ogs_list_first(&sess->bearer_list) == qos_flow) {
+                ogs_gtpu_resource_t *resource = NULL;
 
-            if (sess->handover.upf_dl_addr)
-                ogs_freeaddrinfo(sess->handover.upf_dl_addr);
-            if (sess->handover.upf_dl_addr6)
-                ogs_freeaddrinfo(sess->handover.upf_dl_addr6);
+                if (sess->handover.upf_dl_addr)
+                    ogs_freeaddrinfo(sess->handover.upf_dl_addr);
+                if (sess->handover.upf_dl_addr6)
+                    ogs_freeaddrinfo(sess->handover.upf_dl_addr6);
 
-            resource = ogs_pfcp_find_gtpu_resource(
-                    &sess->pfcp_node->gtpu_resource_list,
-                    sess->session.name, OGS_PFCP_INTERFACE_ACCESS);
+                resource = ogs_pfcp_find_gtpu_resource(
+                        &sess->pfcp_node->gtpu_resource_list,
+                        sess->session.name, OGS_PFCP_INTERFACE_ACCESS);
 
-            if (resource) {
-                ogs_user_plane_ip_resource_info_to_sockaddr(&resource->info,
-                    &sess->handover.upf_dl_addr, &sess->handover.upf_dl_addr6);
-                if (resource->info.teidri)
-                    sess->handover.upf_dl_teid = OGS_PFCP_GTPU_INDEX_TO_TEID(
-                            pdr->teid, resource->info.teidri,
-                            resource->info.teid_range);
-                else
+                if (resource) {
+                    ogs_user_plane_ip_resource_info_to_sockaddr(&resource->info,
+                        &sess->handover.upf_dl_addr,
+                        &sess->handover.upf_dl_addr6);
+                    if (resource->info.teidri)
+                        sess->handover.upf_dl_teid =
+                            OGS_PFCP_GTPU_INDEX_TO_TEID(
+                                pdr->teid, resource->info.teidri,
+                                resource->info.teid_range);
+                    else
+                        sess->handover.upf_dl_teid = pdr->teid;
+                } else {
+                    if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
+                        ogs_assert(OGS_OK == ogs_copyaddrinfo(
+                            &sess->handover.upf_dl_addr,
+                            &sess->pfcp_node->addr));
+                    else if (sess->pfcp_node->addr.ogs_sa_family == AF_INET6)
+                        ogs_assert(OGS_OK == ogs_copyaddrinfo(
+                            &sess->handover.upf_dl_addr6,
+                            &sess->pfcp_node->addr));
+                    else
+                        ogs_assert_if_reached();
+
                     sess->handover.upf_dl_teid = pdr->teid;
-            } else {
-                if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
-                    ogs_assert(OGS_OK == ogs_copyaddrinfo(
-                        &sess->handover.upf_dl_addr, &sess->pfcp_node->addr));
-                else if (sess->pfcp_node->addr.ogs_sa_family == AF_INET6)
-                    ogs_assert(OGS_OK == ogs_copyaddrinfo(
-                        &sess->handover.upf_dl_addr6, &sess->pfcp_node->addr));
-                else
-                    ogs_assert_if_reached();
-
-                sess->handover.upf_dl_teid = pdr->teid;
+                }
             }
 
             ogs_assert(OGS_OK ==

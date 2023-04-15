@@ -255,7 +255,10 @@ sgwu_sess_t *sgwu_sess_add_by_message(ogs_pfcp_message_t *message)
     sess = sgwu_sess_find_by_sgwc_sxa_f_seid(f_seid);
     if (!sess) {
         sess = sgwu_sess_add(f_seid);
-        if (!sess) return NULL;
+        if (!sess) {
+            ogs_error("No Session Context");
+            return NULL;
+        }
     }
     ogs_assert(sess);
 
