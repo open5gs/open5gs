@@ -851,6 +851,11 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             }
             break;
 
+        case OGS_PFCP_SESSION_DELETION_RESPONSE_TYPE:
+            ogs_error("Session Released by Error Indication");
+            OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+            break;
+
         default:
             ogs_error("cannot handle PFCP message type[%d]",
                     pfcp_message->h.type);

@@ -499,7 +499,7 @@ int test_gtpu_send_error_indication(
         ogs_assert_if_reached();
     }
 
-    pkbuf = ogs_gtp2_build_error_indication(teid, node->addr);
+    pkbuf = ogs_gtp1_build_error_indication(teid, node->addr);
     ogs_assert(pkbuf);
 
     memset(&gtp_hdesc, 0, sizeof(gtp_hdesc));

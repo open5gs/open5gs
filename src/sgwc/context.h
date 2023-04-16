@@ -168,9 +168,6 @@ sgwc_bearer_t *sgwc_bearer_find_by_sess_ebi(
                                 sgwc_sess_t *sess, uint8_t ebi);
 sgwc_bearer_t *sgwc_bearer_find_by_ue_ebi(
                                 sgwc_ue_t *sgwc_ue, uint8_t ebi);
-sgwc_bearer_t *sgwc_bearer_find_by_error_indication_report(
-        sgwc_sess_t *sess,
-        ogs_pfcp_tlv_error_indication_report_t *error_indication_report);
 sgwc_bearer_t *sgwc_default_bearer_in_sess(sgwc_sess_t *sess);
 sgwc_bearer_t *sgwc_bearer_cycle(sgwc_bearer_t *bearer);
 
@@ -183,6 +180,8 @@ sgwc_tunnel_t *sgwc_tunnel_find_by_interface_type(
         sgwc_bearer_t *bearer, uint8_t interface_type);
 sgwc_tunnel_t *sgwc_tunnel_find_by_pdr_id(
         sgwc_sess_t *sess, ogs_pfcp_pdr_id_t pdr_id);
+sgwc_tunnel_t *sgwc_tunnel_find_by_far_id(
+        sgwc_sess_t *sess, ogs_pfcp_far_id_t far_id);
 sgwc_tunnel_t *sgwc_dl_tunnel_in_bearer(sgwc_bearer_t *bearer);
 sgwc_tunnel_t *sgwc_ul_tunnel_in_bearer(sgwc_bearer_t *bearer);
 

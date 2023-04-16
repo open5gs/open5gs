@@ -427,7 +427,11 @@ ogs_pfcp_far_t *ogs_pfcp_far_find_or_add(
         ogs_pfcp_sess_t *sess, ogs_pfcp_far_id_t id);
 
 void ogs_pfcp_far_f_teid_hash_set(ogs_pfcp_far_t *far);
-ogs_pfcp_far_t *ogs_pfcp_far_find_by_error_indication(ogs_pkbuf_t *pkbuf);
+ogs_pfcp_far_t *ogs_pfcp_far_find_by_gtpu_error_indication(
+        ogs_pkbuf_t *pkbuf);
+ogs_pfcp_far_t *ogs_pfcp_far_find_by_pfcp_session_report(
+        ogs_pfcp_sess_t *sess,
+        ogs_pfcp_tlv_error_indication_report_t *error_indication_report);
 
 void ogs_pfcp_far_teid_hash_set(ogs_pfcp_far_t *far);
 ogs_pfcp_far_t *ogs_pfcp_far_find_by_teid(uint32_t teid);

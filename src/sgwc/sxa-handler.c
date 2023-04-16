@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -1297,10 +1297,7 @@ void sgwc_sxa_handle_session_deletion_response(
 
     ogs_pfcp_xact_commit(pfcp_xact);
 
-    if (!gtp_message) {
-        ogs_error("No GTP Message");
-        goto cleanup;
-    }
+    if (!gtp_message) goto cleanup;
 
     if (gtp_message->h.type == OGS_GTP2_DELETE_SESSION_REQUEST_TYPE) {
         /*
@@ -1380,7 +1377,10 @@ void sgwc_sxa_handle_session_deletion_response(
     }
 
 cleanup:
-    sgwc_sess_remove(sess);
+    if (sgwc_sess_cycle(sess))
+        sgwc_sess_remove(sess);
+    else
+        ogs_error("Session has already been removed");
 }
 
 void sgwc_sxa_handle_session_report_request(
@@ -1390,6 +1390,7 @@ void sgwc_sxa_handle_session_report_request(
     sgwc_ue_t *sgwc_ue = NULL;
     sgwc_bearer_t *bearer = NULL;
     sgwc_tunnel_t *tunnel = NULL;
+    ogs_pfcp_far_t *far = NULL;
 
     ogs_pfcp_report_type_t report_type;
     uint8_t cause_value = 0;
@@ -1470,22 +1471,44 @@ void sgwc_sxa_handle_session_report_request(
         ogs_error("Cannot find the PDR-ID[%d]", pdr_id);
 
     } else if (report_type.error_indication_report) {
-        bearer = sgwc_bearer_find_by_error_indication_report(
-                sess, &pfcp_req->error_indication_report);
-
-        if (!bearer) return;
-
-        ogs_list_for_each(&sgwc_ue->sess_list, sess) {
-
-            ogs_assert(OGS_OK ==
-                sgwc_pfcp_send_session_modification_request(sess,
-                /* We only use the `assoc_xact` parameter temporarily here
-                 * to pass the `bearer` context. */
-                    (ogs_gtp_xact_t *)bearer,
-                    NULL,
-                    OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE|
-                    OGS_PFCP_MODIFY_ERROR_INDICATION));
-        }
+        far = ogs_pfcp_far_find_by_pfcp_session_report(
+                &sess->pfcp, &pfcp_req->error_indication_report);
+        if (far) {
+            tunnel = sgwc_tunnel_find_by_far_id(sess, far->id);
+            ogs_assert(tunnel);
+            bearer = tunnel->bearer;
+            ogs_assert(bearer);
+            if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) {
+                ogs_warn("[%s] Error Indication from eNB", sgwc_ue->imsi_bcd);
+                ogs_list_for_each(&sgwc_ue->sess_list, sess) {
+                    ogs_assert(OGS_OK ==
+                        sgwc_pfcp_send_session_modification_request(sess,
+                    /* We only use the `assoc_xact` parameter temporarily here
+                     * to pass the `bearer` context. */
+                            (ogs_gtp_xact_t *)bearer,
+                            NULL,
+                            OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE|
+                            OGS_PFCP_MODIFY_ERROR_INDICATION));
+                }
+            } else if (far->dst_if == OGS_PFCP_INTERFACE_CORE) {
+                if (sgwc_default_bearer_in_sess(sess) == bearer) {
+                    ogs_error("[%s] Error Indication(Default Bearer) from SMF",
+                                sgwc_ue->imsi_bcd);
+                    ogs_assert(OGS_OK ==
+                        sgwc_pfcp_send_session_deletion_request(
+                            sess, NULL, NULL));
+                } else {
+                    ogs_error("[%s] Error Indication(Dedicated Bearer) "
+                            "from SMF", sgwc_ue->imsi_bcd);
+                    ogs_assert(OGS_OK ==
+                        sgwc_pfcp_send_bearer_modification_request(
+                            bearer, NULL, NULL, OGS_PFCP_MODIFY_REMOVE));
+                }
+            } else {
+                ogs_error("Error Indication Ignored for Indirect Tunnel");
+            }
+        } else
+            ogs_error("Cannot find Session in Error Indication");
 
     } else {
         ogs_error("Not supported Report Type[%d]", report_type.value);
