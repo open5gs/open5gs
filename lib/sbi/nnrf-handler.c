@@ -289,15 +289,10 @@ static void handle_nf_service(
                 }
             }
 
-            if (addr || addr6) {
-                nf_service->addr[nf_service->num_of_addr].
-                    port = port;
-                nf_service->addr[nf_service->num_of_addr].
-                    ipv4 = addr;
-                nf_service->addr[nf_service->num_of_addr].
-                    ipv6 = addr6;
-                nf_service->num_of_addr++;
-            }
+            nf_service->addr[nf_service->num_of_addr].port = port;
+            nf_service->addr[nf_service->num_of_addr].ipv4 = addr;
+            nf_service->addr[nf_service->num_of_addr].ipv6 = addr6;
+            nf_service->num_of_addr++;
         }
     }
 

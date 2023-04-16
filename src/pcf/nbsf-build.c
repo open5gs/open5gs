@@ -88,13 +88,15 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
     for (i = 0; i < nf_service->num_of_addr; i++) {
         ogs_sockaddr_t *ipv4 = NULL;
         ogs_sockaddr_t *ipv6 = NULL;
+        int port = 0;
 
         OpenAPI_ip_end_point_t *IpEndPoint = NULL;
 
         ipv4 = nf_service->addr[i].ipv4;
         ipv6 = nf_service->addr[i].ipv6;
+        port = nf_service->addr[i].port;
 
-        if (ipv4 || ipv6) {
+        if (ipv4 || ipv6 || port) {
             IpEndPoint = ogs_calloc(1, sizeof(*IpEndPoint));
             if (!IpEndPoint) {
                 ogs_error("No IpEndPoint");
@@ -121,8 +123,8 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
                     goto end;
                 }
             }
-            IpEndPoint->is_port = true;
-            IpEndPoint->port = nf_service->addr[i].port;
+            IpEndPoint->is_port = port ? true : false;
+            IpEndPoint->port = port;
             OpenAPI_list_add(PcfIpEndPointList, IpEndPoint);
         }
     }
