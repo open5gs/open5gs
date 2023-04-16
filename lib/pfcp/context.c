@@ -1316,7 +1316,7 @@ void ogs_pfcp_far_f_teid_hash_set(ogs_pfcp_far_t *far)
             &far->hash.f_teid.key, far->hash.f_teid.len, far);
 }
 
-ogs_pfcp_far_t *ogs_pfcp_far_find_by_error_indication(ogs_pkbuf_t *pkbuf)
+ogs_pfcp_far_t *ogs_pfcp_far_find_by_gtpu_error_indication(ogs_pkbuf_t *pkbuf)
 {
     ogs_pfcp_far_hash_f_teid_t hashkey;
     int hashkey_len;
@@ -1376,6 +1376,61 @@ ogs_pfcp_far_t *ogs_pfcp_far_find_by_error_indication(ogs_pkbuf_t *pkbuf)
 
     return (ogs_pfcp_far_t *)ogs_hash_get(
             self.far_f_teid_hash, &hashkey, hashkey_len);
+}
+
+ogs_pfcp_far_t *ogs_pfcp_far_find_by_pfcp_session_report(
+        ogs_pfcp_sess_t *sess,
+        ogs_pfcp_tlv_error_indication_report_t *error_indication_report)
+{
+    ogs_pfcp_far_t *far = NULL;
+    ogs_pfcp_f_teid_t *remote_f_teid = NULL;
+
+    uint32_t teid;
+    uint16_t len;  /* OGS_IPV4_LEN or OGS_IPV6_LEN */
+    uint32_t addr[4];
+
+    ogs_assert(sess);
+    ogs_assert(error_indication_report);
+
+    if (error_indication_report->presence == 0) {
+        ogs_error("No Error Indication Report");
+        return NULL;
+    }
+
+    if (error_indication_report->remote_f_teid.presence == 0) {
+        ogs_error("No Remote F-TEID");
+        return NULL;
+    }
+
+    remote_f_teid = error_indication_report->remote_f_teid.data;
+    ogs_assert(remote_f_teid);
+
+    teid = be32toh(remote_f_teid->teid);
+    if (remote_f_teid->ipv4 && remote_f_teid->ipv6) {
+        ogs_error("User plane should not set both IPv4 and IPv6");
+        return NULL;
+    } else if (remote_f_teid->ipv4) {
+        len = OGS_IPV4_LEN;
+        memcpy(addr, &remote_f_teid->addr, len);
+    } else if (remote_f_teid->ipv6) {
+        len = OGS_IPV6_LEN;
+        memcpy(addr, remote_f_teid->addr6, len);
+    } else {
+        ogs_error("No IPv4 and IPv6");
+        return NULL;
+    }
+
+    ogs_list_for_each(&sess->far_list, far) {
+        if (teid == far->outer_header_creation.teid)
+            return far;
+    }
+
+    ogs_error("Cannot find the session context "
+            "[TEID:0x%x,LEN:%d,ADDR:%08x %08x %08x %08x]",
+            teid, len, be32toh(addr[0]), be32toh(addr[1]),
+            be32toh(addr[2]), be32toh(addr[3]));
+
+    return NULL;
 }
 
 void ogs_pfcp_far_teid_hash_set(ogs_pfcp_far_t *far)

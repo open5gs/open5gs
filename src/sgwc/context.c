@@ -610,71 +610,6 @@ sgwc_bearer_t *sgwc_bearer_find_by_ue_ebi(sgwc_ue_t *sgwc_ue, uint8_t ebi)
     return NULL;
 }
 
-sgwc_bearer_t *sgwc_bearer_find_by_error_indication_report(
-        sgwc_sess_t *sess,
-        ogs_pfcp_tlv_error_indication_report_t *error_indication_report)
-{
-    ogs_pfcp_f_teid_t *remote_f_teid = NULL;
-    sgwc_bearer_t *bearer = NULL;
-    sgwc_tunnel_t *tunnel = NULL;
-
-    uint32_t teid;
-    uint16_t len;  /* OGS_IPV4_LEN or OGS_IPV6_LEN */
-    uint32_t addr[4];
-
-    ogs_assert(sess);
-    ogs_assert(error_indication_report);
-
-    if (error_indication_report->presence == 0) {
-        ogs_error("No Error Indication Report");
-        return NULL;
-    }
-
-    if (error_indication_report->remote_f_teid.presence == 0) {
-        ogs_error("No Remote F-TEID");
-        return NULL;
-    }
-
-    remote_f_teid = error_indication_report->remote_f_teid.data;
-    ogs_assert(remote_f_teid);
-
-    teid = be32toh(remote_f_teid->teid);
-    if (remote_f_teid->ipv4 && remote_f_teid->ipv6) {
-        ogs_error("User plane should not set both IPv4 and IPv6");
-        return NULL;
-    } else if (remote_f_teid->ipv4) {
-        len = OGS_IPV4_LEN;
-        memcpy(addr, &remote_f_teid->addr, len);
-    } else if (remote_f_teid->ipv6) {
-        len = OGS_IPV6_LEN;
-        memcpy(addr, remote_f_teid->addr6, len);
-    } else {
-        ogs_error("No IPv4 and IPv6");
-        return NULL;
-    }
-
-    ogs_list_for_each(&sess->bearer_list, bearer) {
-        ogs_list_for_each(&bearer->tunnel_list, tunnel) {
-            if (teid == tunnel->remote_teid) {
-                if (len == OGS_IPV4_LEN && tunnel->remote_ip.ipv4 &&
-                    memcmp(addr, &tunnel->remote_ip.addr, len) == 0) {
-                    return bearer;
-                } else if (len == OGS_IPV6_LEN && tunnel->remote_ip.ipv6 &&
-                            memcmp(addr, tunnel->remote_ip.addr6, len) == 0) {
-                    return bearer;
-                }
-            }
-        }
-    }
-
-    ogs_error("Cannot find the bearer context "
-            "[TEID:%d,LEN:%d,ADDR:%08x %08x %08x %08x]",
-            teid, len, be32toh(addr[0]), be32toh(addr[1]),
-            be32toh(addr[2]), be32toh(addr[3]));
-
-    return NULL;
-}
-
 sgwc_bearer_t *sgwc_default_bearer_in_sess(sgwc_sess_t *sess)
 {
     ogs_assert(sess);
@@ -722,6 +657,7 @@ sgwc_tunnel_t *sgwc_tunnel_add(
         break;
     default:
         ogs_fatal("Invalid interface type = %d", interface_type);
+        ogs_assert_if_reached();
     }
 
     ogs_pool_alloc(&sgwc_tunnel_pool, &tunnel);
@@ -896,6 +832,28 @@ sgwc_tunnel_t *sgwc_tunnel_find_by_pdr_id(
             ogs_assert(pdr);
 
             if (pdr->id == pdr_id) return tunnel;
+        }
+    }
+
+    return NULL;
+}
+
+sgwc_tunnel_t *sgwc_tunnel_find_by_far_id(
+        sgwc_sess_t *sess, ogs_pfcp_far_id_t far_id)
+{
+    sgwc_bearer_t *bearer = NULL;
+    sgwc_tunnel_t *tunnel = NULL;
+
+    ogs_pfcp_far_t *far = NULL;
+
+    ogs_assert(sess);
+
+    ogs_list_for_each(&sess->bearer_list, bearer) {
+        ogs_list_for_each(&bearer->tunnel_list, tunnel) {
+            far = tunnel->far;
+            ogs_assert(far);
+
+            if (far->id == far_id) return tunnel;
         }
     }
 

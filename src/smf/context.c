@@ -1641,68 +1641,6 @@ void smf_sess_set_paging_n1n2message_location(
             sess);
 }
 
-smf_sess_t *smf_sess_find_by_error_indication_report(
-        smf_ue_t *smf_ue,
-        ogs_pfcp_tlv_error_indication_report_t *error_indication_report)
-{
-    smf_sess_t *sess = NULL;
-    ogs_pfcp_f_teid_t *remote_f_teid = NULL;
-
-    uint32_t teid;
-    uint16_t len;  /* OGS_IPV4_LEN or OGS_IPV6_LEN */
-    uint32_t addr[4];
-
-    ogs_assert(smf_ue);
-    ogs_assert(error_indication_report);
-
-    if (error_indication_report->presence == 0) {
-        ogs_error("No Error Indication Report");
-        return NULL;
-    }
-
-    if (error_indication_report->remote_f_teid.presence == 0) {
-        ogs_error("No Remote F-TEID");
-        return NULL;
-    }
-
-    remote_f_teid = error_indication_report->remote_f_teid.data;
-    ogs_assert(remote_f_teid);
-
-    teid = be32toh(remote_f_teid->teid);
-    if (remote_f_teid->ipv4 && remote_f_teid->ipv6) {
-        ogs_error("User plane should not set both IPv4 and IPv6");
-        return NULL;
-    } else if (remote_f_teid->ipv4) {
-        len = OGS_IPV4_LEN;
-        memcpy(addr, &remote_f_teid->addr, len);
-    } else if (remote_f_teid->ipv6) {
-        len = OGS_IPV6_LEN;
-        memcpy(addr, remote_f_teid->addr6, len);
-    } else {
-        ogs_error("No IPv4 and IPv6");
-        return NULL;
-    }
-
-    ogs_list_reverse_for_each(&smf_ue->sess_list, sess) {
-        if (teid == sess->gnb_n3_teid) {
-            if (len == OGS_IPV4_LEN && sess->gnb_n3_ip.ipv4 &&
-                memcmp(addr, &sess->gnb_n3_ip.addr, len) == 0) {
-                return sess;
-            } else if (len == OGS_IPV6_LEN && sess->gnb_n3_ip.ipv6 &&
-                        memcmp(addr, sess->gnb_n3_ip.addr6, len) == 0) {
-                return sess;
-            }
-        }
-    }
-
-    ogs_error("Cannot find the session context "
-            "[TEID:%d,LEN:%d,ADDR:%08x %08x %08x %08x]",
-            teid, len, be32toh(addr[0]), be32toh(addr[1]),
-            be32toh(addr[2]), be32toh(addr[3]));
-
-    return NULL;
-}
-
 void smf_sess_remove(smf_sess_t *sess)
 {
     int i;

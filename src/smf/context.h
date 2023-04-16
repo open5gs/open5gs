@@ -465,9 +465,6 @@ smf_sess_t *smf_sess_find_by_ipv4(uint32_t addr);
 smf_sess_t *smf_sess_find_by_ipv6(uint32_t *addr6);
 smf_sess_t *smf_sess_find_by_paging_n1n2message_location(
         char *n1n2message_location);
-smf_sess_t *smf_sess_find_by_error_indication_report(
-        smf_ue_t *smf_ue,
-        ogs_pfcp_tlv_error_indication_report_t *error_indication_report);
 
 void smf_sess_create_indirect_data_forwarding(smf_sess_t *sess);
 bool smf_sess_have_indirect_data_forwarding(smf_sess_t *sess);

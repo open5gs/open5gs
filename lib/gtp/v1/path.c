@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
  * Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
+ * Copyright (C) 2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -143,8 +144,7 @@ void ogs_gtp1_send_error_message(
     ogs_expect(rv == OGS_OK);
 }
 
-void ogs_gtp1_send_echo_request(
-        ogs_gtp_node_t *gnode)
+void ogs_gtp1_send_echo_request(ogs_gtp_node_t *gnode)
 {
     int rv;
     ogs_pkbuf_t *pkbuf = NULL;

@@ -1148,9 +1148,11 @@ void smf_n4_handle_session_report_request(
         smf_sess_t *sess, ogs_pfcp_xact_t *pfcp_xact,
         ogs_pfcp_session_report_request_t *pfcp_req)
 {
+    smf_ue_t *smf_ue = NULL;
     smf_bearer_t *qos_flow = NULL;
     smf_bearer_t *bearer = NULL;
     ogs_pfcp_pdr_t *pdr = NULL;
+    ogs_pfcp_far_t *far = NULL;
 
     ogs_pfcp_report_type_t report_type;
     uint8_t cause_value = 0;
@@ -1184,6 +1186,9 @@ void smf_n4_handle_session_report_request(
     }
 
     ogs_assert(sess);
+    smf_ue = sess->smf_ue;
+    ogs_assert(smf_ue);
+
     report_type.value = pfcp_req->report_type.u8;
 
     if (report_type.downlink_data_report) {
@@ -1270,21 +1275,10 @@ void smf_n4_handle_session_report_request(
     }
 
     if (report_type.error_indication_report) {
-        smf_ue_t *smf_ue = sess->smf_ue;
-        smf_sess_t *error_indication_session = NULL;
-        ogs_assert(smf_ue);
-
-        error_indication_session = smf_sess_find_by_error_indication_report(
-                smf_ue, &pfcp_req->error_indication_report);
-
-        if (error_indication_session) {
-            ogs_assert(OGS_OK ==
-                smf_5gc_pfcp_send_all_pdr_modification_request(
-                    error_indication_session, NULL,
-                    OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE|
-                    OGS_PFCP_MODIFY_ERROR_INDICATION,
-                    0));
-        }
+        far = ogs_pfcp_far_find_by_pfcp_session_report(
+                &sess->pfcp, &pfcp_req->error_indication_report);
+        if (!far)
+            ogs_error("Cannot find Session in Error Indication");
     }
 
     if (report_type.usage_report) {
@@ -1340,5 +1334,25 @@ void smf_n4_handle_session_report_request(
         ogs_assert(OGS_OK ==
             smf_pfcp_send_session_report_response(
                 pfcp_xact, sess, OGS_PFCP_CAUSE_SYSTEM_FAILURE));
+    }
+
+    /* Error Indication is handled last */
+    if (report_type.error_indication_report && far) {
+        if (sess->epc == true) {
+            ogs_error("[%s:%s] Error Indication from SGW-C",
+                smf_ue->imsi_bcd, sess->session.name);
+            ogs_assert(OGS_OK ==
+                smf_epc_pfcp_send_session_deletion_request(
+                    sess, NULL));
+        } else {
+            ogs_warn("[%s:%s] Error Indication from gNB",
+                smf_ue->supi, sess->session.name);
+            ogs_assert(OGS_OK ==
+                smf_5gc_pfcp_send_all_pdr_modification_request(
+                    sess, NULL,
+                    OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE|
+                    OGS_PFCP_MODIFY_ERROR_INDICATION,
+                    0));
+        }
     }
 }
