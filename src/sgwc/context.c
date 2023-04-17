@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -25,10 +25,14 @@ static sgwc_context_t self;
 
 int __sgwc_log_domain;
 
-static OGS_POOL(sgwc_ue_pool, sgwc_ue_t);
-static OGS_POOL(sgwc_sess_pool, sgwc_sess_t);
 static OGS_POOL(sgwc_bearer_pool, sgwc_bearer_t);
 static OGS_POOL(sgwc_tunnel_pool, sgwc_tunnel_t);
+
+static OGS_POOL(sgwc_ue_pool, sgwc_ue_t);
+static OGS_POOL(sgwc_s11_teid_pool, ogs_pool_id_t);
+
+static OGS_POOL(sgwc_sess_pool, sgwc_sess_t);
+static OGS_POOL(sgwc_sxa_seid_pool, ogs_pool_id_t);
 
 static int context_initialized = 0;
 
@@ -45,13 +49,23 @@ void sgwc_context_init(void)
 
     ogs_log_install_domain(&__sgwc_log_domain, "sgwc", ogs_core()->log.level);
 
-    ogs_pool_init(&sgwc_ue_pool, ogs_app()->max.ue);
-    ogs_pool_init(&sgwc_sess_pool, ogs_app()->pool.sess);
     ogs_pool_init(&sgwc_bearer_pool, ogs_app()->pool.bearer);
     ogs_pool_init(&sgwc_tunnel_pool, ogs_app()->pool.tunnel);
 
+    ogs_pool_init(&sgwc_ue_pool, ogs_app()->max.ue);
+    ogs_pool_init(&sgwc_s11_teid_pool, ogs_app()->max.ue);
+    ogs_pool_random_id_generate(&sgwc_s11_teid_pool);
+
+    ogs_pool_init(&sgwc_sess_pool, ogs_app()->pool.sess);
+    ogs_pool_init(&sgwc_sxa_seid_pool, ogs_app()->pool.sess);
+    ogs_pool_random_id_generate(&sgwc_sxa_seid_pool);
+
     self.imsi_ue_hash = ogs_hash_make();
     ogs_assert(self.imsi_ue_hash);
+    self.sgw_s11_teid_hash = ogs_hash_make();
+    ogs_assert(self.sgw_s11_teid_hash);
+    self.sgwc_sxa_seid_hash = ogs_hash_make();
+    ogs_assert(self.sgwc_sxa_seid_hash);
 
     ogs_list_init(&self.sgw_ue_list);
 
@@ -66,11 +80,19 @@ void sgwc_context_final(void)
 
     ogs_assert(self.imsi_ue_hash);
     ogs_hash_destroy(self.imsi_ue_hash);
+    ogs_assert(self.sgw_s11_teid_hash);
+    ogs_hash_destroy(self.sgw_s11_teid_hash);
+    ogs_assert(self.sgwc_sxa_seid_hash);
+    ogs_hash_destroy(self.sgwc_sxa_seid_hash);
 
     ogs_pool_final(&sgwc_tunnel_pool);
     ogs_pool_final(&sgwc_bearer_pool);
-    ogs_pool_final(&sgwc_sess_pool);
+
     ogs_pool_final(&sgwc_ue_pool);
+    ogs_pool_final(&sgwc_s11_teid_pool);
+
+    ogs_pool_final(&sgwc_sess_pool);
+    ogs_pool_final(&sgwc_sxa_seid_pool);
 
     ogs_gtp_node_remove_all(&self.mme_s11_list);
     ogs_gtp_node_remove_all(&self.pgw_s5c_list);
@@ -192,9 +214,14 @@ sgwc_ue_t *sgwc_ue_add(uint8_t *imsi, int imsi_len)
     ogs_assert(sgwc_ue);
     memset(sgwc_ue, 0, sizeof *sgwc_ue);
 
-    sgwc_ue->sgw_s11_teid = ogs_pool_index(&sgwc_ue_pool, sgwc_ue);
-    ogs_assert(sgwc_ue->sgw_s11_teid > 0 &&
-                sgwc_ue->sgw_s11_teid <= ogs_app()->max.ue);
+    /* Set SGW-S11-TEID */
+    ogs_pool_alloc(&sgwc_s11_teid_pool, &sgwc_ue->sgw_s11_teid_node);
+    ogs_assert(sgwc_ue->sgw_s11_teid_node);
+
+    sgwc_ue->sgw_s11_teid = *(sgwc_ue->sgw_s11_teid_node);
+
+    ogs_hash_set(self.sgw_s11_teid_hash,
+            &sgwc_ue->sgw_s11_teid, sizeof(sgwc_ue->sgw_s11_teid), sgwc_ue);
 
     /* Set IMSI */
     sgwc_ue->imsi_len = imsi_len;
@@ -219,10 +246,13 @@ int sgwc_ue_remove(sgwc_ue_t *sgwc_ue)
 
     ogs_list_remove(&self.sgw_ue_list, sgwc_ue);
 
+    ogs_hash_set(self.sgw_s11_teid_hash,
+            &sgwc_ue->sgw_s11_teid, sizeof(sgwc_ue->sgw_s11_teid), NULL);
     ogs_hash_set(self.imsi_ue_hash, sgwc_ue->imsi, sgwc_ue->imsi_len, NULL);
 
     sgwc_sess_remove_all(sgwc_ue);
 
+    ogs_pool_free(&sgwc_s11_teid_pool, sgwc_ue->sgw_s11_teid_node);
     ogs_pool_free(&sgwc_ue_pool, sgwc_ue);
 
     ogs_info("[Removed] Number of SGWC-UEs is now %d",
@@ -255,12 +285,12 @@ sgwc_ue_t *sgwc_ue_find_by_imsi(uint8_t *imsi, int imsi_len)
 {
     ogs_assert(imsi && imsi_len);
 
-    return (sgwc_ue_t *)ogs_hash_get(self.imsi_ue_hash, imsi, imsi_len);
+    return ogs_hash_get(self.imsi_ue_hash, imsi, imsi_len);
 }
 
 sgwc_ue_t *sgwc_ue_find_by_teid(uint32_t teid)
 {
-    return ogs_pool_find(&sgwc_ue_pool, teid);
+    return ogs_hash_get(self.sgw_s11_teid_hash, &teid, sizeof(teid));
 }
 
 sgwc_sess_t *sgwc_sess_add(sgwc_ue_t *sgwc_ue, char *apn)
@@ -279,12 +309,15 @@ sgwc_sess_t *sgwc_sess_add(sgwc_ue_t *sgwc_ue, char *apn)
 
     ogs_pfcp_pool_init(&sess->pfcp);
 
-    sess->index = ogs_pool_index(&sgwc_sess_pool, sess);
-    ogs_assert(sess->index > 0 && sess->index <= ogs_app()->pool.sess);
-
     /* Set TEID & SEID */
-    sess->sgw_s5c_teid = sess->index;
-    sess->sgwc_sxa_seid = sess->index;
+    ogs_pool_alloc(&sgwc_sxa_seid_pool, &sess->sgwc_sxa_seid_node);
+    ogs_assert(sess->sgwc_sxa_seid_node);
+
+    sess->sgw_s5c_teid = *(sess->sgwc_sxa_seid_node);
+    sess->sgwc_sxa_seid = *(sess->sgwc_sxa_seid_node);
+
+    ogs_hash_set(self.sgwc_sxa_seid_hash,
+            &sess->sgwc_sxa_seid, sizeof(sess->sgwc_sxa_seid), sess);
 
     /* Create BAR in PFCP Session */
     ogs_pfcp_bar_new(&sess->pfcp);
@@ -400,6 +433,9 @@ int sgwc_sess_remove(sgwc_sess_t *sess)
 
     ogs_list_remove(&sgwc_ue->sess_list, sess);
 
+    ogs_hash_set(self.sgwc_sxa_seid_hash, &sess->sgwc_sxa_seid,
+            sizeof(sess->sgwc_sxa_seid), NULL);
+
     sgwc_bearer_remove_all(sess);
 
     ogs_assert(sess->pfcp.bar);
@@ -410,6 +446,7 @@ int sgwc_sess_remove(sgwc_sess_t *sess)
     ogs_assert(sess->session.name);
     ogs_free(sess->session.name);
 
+    ogs_pool_free(&sgwc_sxa_seid_pool, sess->sgwc_sxa_seid_node);
     ogs_pool_free(&sgwc_sess_pool, sess);
 
     stats_remove_sgwc_session();
@@ -426,19 +463,14 @@ void sgwc_sess_remove_all(sgwc_ue_t *sgwc_ue)
         sgwc_sess_remove(sess);
 }
 
-sgwc_sess_t *sgwc_sess_find(uint32_t index)
-{
-    return ogs_pool_find(&sgwc_sess_pool, index);
-}
-
 sgwc_sess_t* sgwc_sess_find_by_teid(uint32_t teid)
 {
-    return ogs_pool_find(&sgwc_sess_pool, teid);
+    return sgwc_sess_find_by_seid(teid);
 }
 
 sgwc_sess_t *sgwc_sess_find_by_seid(uint64_t seid)
 {
-    return sgwc_sess_find(seid);
+    return ogs_hash_get(self.sgwc_sxa_seid_hash, &seid, sizeof(seid));
 }
 
 sgwc_sess_t* sgwc_sess_find_by_apn(sgwc_ue_t *sgwc_ue, char *apn)
@@ -578,71 +610,6 @@ sgwc_bearer_t *sgwc_bearer_find_by_ue_ebi(sgwc_ue_t *sgwc_ue, uint8_t ebi)
     return NULL;
 }
 
-sgwc_bearer_t *sgwc_bearer_find_by_error_indication_report(
-        sgwc_sess_t *sess,
-        ogs_pfcp_tlv_error_indication_report_t *error_indication_report)
-{
-    ogs_pfcp_f_teid_t *remote_f_teid = NULL;
-    sgwc_bearer_t *bearer = NULL;
-    sgwc_tunnel_t *tunnel = NULL;
-
-    uint32_t teid;
-    uint16_t len;  /* OGS_IPV4_LEN or OGS_IPV6_LEN */
-    uint32_t addr[4];
-
-    ogs_assert(sess);
-    ogs_assert(error_indication_report);
-
-    if (error_indication_report->presence == 0) {
-        ogs_error("No Error Indication Report");
-        return NULL;
-    }
-
-    if (error_indication_report->remote_f_teid.presence == 0) {
-        ogs_error("No Remote F-TEID");
-        return NULL;
-    }
-
-    remote_f_teid = error_indication_report->remote_f_teid.data;
-    ogs_assert(remote_f_teid);
-
-    teid = be32toh(remote_f_teid->teid);
-    if (remote_f_teid->ipv4 && remote_f_teid->ipv6) {
-        ogs_error("User plane should not set both IPv4 and IPv6");
-        return NULL;
-    } else if (remote_f_teid->ipv4) {
-        len = OGS_IPV4_LEN;
-        memcpy(addr, &remote_f_teid->addr, len);
-    } else if (remote_f_teid->ipv6) {
-        len = OGS_IPV6_LEN;
-        memcpy(addr, remote_f_teid->addr6, len);
-    } else {
-        ogs_error("No IPv4 and IPv6");
-        return NULL;
-    }
-
-    ogs_list_for_each(&sess->bearer_list, bearer) {
-        ogs_list_for_each(&bearer->tunnel_list, tunnel) {
-            if (teid == tunnel->remote_teid) {
-                if (len == OGS_IPV4_LEN && tunnel->remote_ip.ipv4 &&
-                    memcmp(addr, &tunnel->remote_ip.addr, len) == 0) {
-                    return bearer;
-                } else if (len == OGS_IPV6_LEN && tunnel->remote_ip.ipv6 &&
-                            memcmp(addr, tunnel->remote_ip.addr6, len) == 0) {
-                    return bearer;
-                }
-            }
-        }
-    }
-
-    ogs_error("Cannot find the bearer context "
-            "[TEID:%d,LEN:%d,ADDR:%08x %08x %08x %08x]",
-            teid, len, be32toh(addr[0]), be32toh(addr[1]),
-            be32toh(addr[2]), be32toh(addr[3]));
-
-    return NULL;
-}
-
 sgwc_bearer_t *sgwc_default_bearer_in_sess(sgwc_sess_t *sess)
 {
     ogs_assert(sess);
@@ -690,6 +657,7 @@ sgwc_tunnel_t *sgwc_tunnel_add(
         break;
     default:
         ogs_fatal("Invalid interface type = %d", interface_type);
+        ogs_assert_if_reached();
     }
 
     ogs_pool_alloc(&sgwc_tunnel_pool, &tunnel);
@@ -697,8 +665,6 @@ sgwc_tunnel_t *sgwc_tunnel_add(
     memset(tunnel, 0, sizeof *tunnel);
 
     tunnel->interface_type = interface_type;
-    tunnel->index = ogs_pool_index(&sgwc_tunnel_pool, tunnel);
-    ogs_assert(tunnel->index > 0 && tunnel->index <= ogs_app()->pool.tunnel);
 
     pdr = ogs_pfcp_pdr_add(&sess->pfcp);
     ogs_assert(pdr);
@@ -753,10 +719,10 @@ sgwc_tunnel_t *sgwc_tunnel_add(
                 &tunnel->local_addr, &tunnel->local_addr6);
             if (resource->info.teidri)
                 tunnel->local_teid = OGS_PFCP_GTPU_INDEX_TO_TEID(
-                        pdr->index, resource->info.teidri,
+                        pdr->teid, resource->info.teidri,
                         resource->info.teid_range);
             else
-                tunnel->local_teid = pdr->index;
+                tunnel->local_teid = pdr->teid;
         } else {
             if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
                 ogs_assert(OGS_OK ==
@@ -769,7 +735,7 @@ sgwc_tunnel_t *sgwc_tunnel_add(
             else
                 ogs_assert_if_reached();
 
-            tunnel->local_teid = pdr->index;
+            tunnel->local_teid = pdr->teid;
         }
 
         ogs_assert(OGS_OK ==
@@ -866,6 +832,28 @@ sgwc_tunnel_t *sgwc_tunnel_find_by_pdr_id(
             ogs_assert(pdr);
 
             if (pdr->id == pdr_id) return tunnel;
+        }
+    }
+
+    return NULL;
+}
+
+sgwc_tunnel_t *sgwc_tunnel_find_by_far_id(
+        sgwc_sess_t *sess, ogs_pfcp_far_id_t far_id)
+{
+    sgwc_bearer_t *bearer = NULL;
+    sgwc_tunnel_t *tunnel = NULL;
+
+    ogs_pfcp_far_t *far = NULL;
+
+    ogs_assert(sess);
+
+    ogs_list_for_each(&sess->bearer_list, bearer) {
+        ogs_list_for_each(&bearer->tunnel_list, tunnel) {
+            far = tunnel->far;
+            ogs_assert(far);
+
+            if (far->id == far_id) return tunnel;
         }
     }
 

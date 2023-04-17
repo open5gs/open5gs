@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -238,7 +238,8 @@ int sgwc_pfcp_send_bearer_to_modify_list(
 }
 
 int sgwc_pfcp_send_session_establishment_request(
-        sgwc_sess_t *sess, ogs_gtp_xact_t *gtp_xact, ogs_pkbuf_t *gtpbuf)
+        sgwc_sess_t *sess, ogs_gtp_xact_t *gtp_xact, ogs_pkbuf_t *gtpbuf,
+        uint64_t flags)
 {
     int rv;
     ogs_pkbuf_t *sxabuf = NULL;
@@ -262,9 +263,40 @@ int sgwc_pfcp_send_session_establishment_request(
         }
     }
     xact->local_seid = sess->sgwc_sxa_seid;
+    xact->create_flags = flags;
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_SESSION_ESTABLISHMENT_REQUEST_TYPE;
+
+/*
+ * 7.2.2.4.2 Conditions for Sending SEID=0 in PFCP Header
+ *
+ * If a peer's SEID is not available, the SEID field shall still be present
+ * in the header and its value shall be set to "0" in the following messages:
+ *
+ * - PFCP Session Establishment Request message on Sxa/Sxb/Sxc/N4;
+ *
+ * - If a node receives a message for which it has no session, i.e.
+ *   if SEID in the PFCP header is not known, it shall respond
+ *   with "Session context not found" cause in the corresponding
+ *   response message to the sender, the SEID used in the PFCP header
+ *   in the response message shall be then set to "0";
+ *
+ * - If a node receives a request message containing protocol error,
+ *   e.g. Mandatory IE missing, which requires the receiver
+ *   to reject the message as specified in clause 7.6, it shall reject
+ *   the request message. For the response message, the node should look up
+ *   the remote peer's SEID and accordingly set SEID in the PFCP header
+ *   and the message cause code. As an implementation option,
+ *   the node may not look up the remote peer's SEID and
+ *   set the PFCP header SEID to "0" in the response message.
+ *   However in this case, the cause value shall not be set
+ *   to "Session not found".
+ *
+ * - When the UP function sends PFCP Session Report Request message
+ *   over N4 towards another SMF or another PFCP entity in the SMF
+ *   as specified in clause 5.22.2 and clause 5.22.3.
+ */
     h.seid = sess->sgwu_sxa_seid;
 
     sxabuf = sgwc_sxa_build_session_establishment_request(h.type, sess);

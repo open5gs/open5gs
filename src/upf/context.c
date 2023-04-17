@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -25,6 +25,7 @@ static upf_context_t self;
 int __upf_log_domain;
 
 static OGS_POOL(upf_sess_pool, upf_sess_t);
+static OGS_POOL(upf_n4_seid_pool, ogs_pool_id_t);
 
 static int context_initialized = 0;
 
@@ -49,11 +50,15 @@ void upf_context_init(void)
 
     ogs_list_init(&self.sess_list);
     ogs_pool_init(&upf_sess_pool, ogs_app()->pool.sess);
+    ogs_pool_init(&upf_n4_seid_pool, ogs_app()->pool.sess);
+    ogs_pool_random_id_generate(&upf_n4_seid_pool);
 
-    self.seid_hash = ogs_hash_make();
-    ogs_assert(self.seid_hash);
-    self.f_seid_hash = ogs_hash_make();
-    ogs_assert(self.f_seid_hash);
+    self.upf_n4_seid_hash = ogs_hash_make();
+    ogs_assert(self.upf_n4_seid_hash);
+    self.smf_n4_seid_hash = ogs_hash_make();
+    ogs_assert(self.smf_n4_seid_hash);
+    self.smf_n4_f_seid_hash = ogs_hash_make();
+    ogs_assert(self.smf_n4_f_seid_hash);
     self.ipv4_hash = ogs_hash_make();
     ogs_assert(self.ipv4_hash);
     self.ipv6_hash = ogs_hash_make();
@@ -77,10 +82,12 @@ void upf_context_final(void)
 
     upf_sess_remove_all();
 
-    ogs_assert(self.seid_hash);
-    ogs_hash_destroy(self.seid_hash);
-    ogs_assert(self.f_seid_hash);
-    ogs_hash_destroy(self.f_seid_hash);
+    ogs_assert(self.upf_n4_seid_hash);
+    ogs_hash_destroy(self.upf_n4_seid_hash);
+    ogs_assert(self.smf_n4_seid_hash);
+    ogs_hash_destroy(self.smf_n4_seid_hash);
+    ogs_assert(self.smf_n4_f_seid_hash);
+    ogs_hash_destroy(self.smf_n4_f_seid_hash);
     ogs_assert(self.ipv4_hash);
     ogs_hash_destroy(self.ipv4_hash);
     ogs_assert(self.ipv6_hash);
@@ -90,6 +97,7 @@ void upf_context_final(void)
     free_upf_route_trie_node(self.ipv6_framed_routes);
 
     ogs_pool_final(&upf_sess_pool);
+    ogs_pool_final(&upf_n4_seid_pool);
 
     context_initialized = 0;
 }
@@ -171,10 +179,14 @@ upf_sess_t *upf_sess_add(ogs_pfcp_f_seid_t *cp_f_seid)
 
     ogs_pfcp_pool_init(&sess->pfcp);
 
-    sess->index = ogs_pool_index(&upf_sess_pool, sess);
-    ogs_assert(sess->index > 0 && sess->index <= ogs_app()->pool.sess);
+    /* Set UPF-N4-SEID */
+    ogs_pool_alloc(&upf_n4_seid_pool, &sess->upf_n4_seid_node);
+    ogs_assert(sess->upf_n4_seid_node);
 
-    sess->upf_n4_seid = sess->index;
+    sess->upf_n4_seid = *(sess->upf_n4_seid_node);
+
+    ogs_hash_set(self.upf_n4_seid_hash, &sess->upf_n4_seid,
+            sizeof(sess->upf_n4_seid), sess);
 
     /* Since F-SEID is composed of ogs_ip_t and uint64-seid,
      * all these values must be put into the structure-smf_n4_f_seid
@@ -183,9 +195,9 @@ upf_sess_t *upf_sess_add(ogs_pfcp_f_seid_t *cp_f_seid)
     ogs_assert(OGS_OK ==
             ogs_pfcp_f_seid_to_ip(cp_f_seid, &sess->smf_n4_f_seid.ip));
 
-    ogs_hash_set(self.f_seid_hash, &sess->smf_n4_f_seid,
+    ogs_hash_set(self.smf_n4_f_seid_hash, &sess->smf_n4_f_seid,
             sizeof(sess->smf_n4_f_seid), sess);
-    ogs_hash_set(self.seid_hash, &sess->smf_n4_f_seid.seid,
+    ogs_hash_set(self.smf_n4_seid_hash, &sess->smf_n4_f_seid.seid,
             sizeof(sess->smf_n4_f_seid.seid), sess);
 
     ogs_list_add(&self.sess_list, sess);
@@ -206,9 +218,12 @@ int upf_sess_remove(upf_sess_t *sess)
     ogs_list_remove(&self.sess_list, sess);
     ogs_pfcp_sess_clear(&sess->pfcp);
 
-    ogs_hash_set(self.seid_hash, &sess->smf_n4_f_seid.seid,
+    ogs_hash_set(self.upf_n4_seid_hash, &sess->upf_n4_seid,
+            sizeof(sess->upf_n4_seid), NULL);
+
+    ogs_hash_set(self.smf_n4_seid_hash, &sess->smf_n4_f_seid.seid,
             sizeof(sess->smf_n4_f_seid.seid), NULL);
-    ogs_hash_set(self.f_seid_hash, &sess->smf_n4_f_seid,
+    ogs_hash_set(self.smf_n4_f_seid_hash, &sess->smf_n4_f_seid,
             sizeof(sess->smf_n4_f_seid), NULL);
 
     if (sess->ipv4) {
@@ -226,6 +241,7 @@ int upf_sess_remove(upf_sess_t *sess)
 
     ogs_pfcp_pool_final(&sess->pfcp);
 
+    ogs_pool_free(&upf_n4_seid_pool, sess->upf_n4_seid_node);
     ogs_pool_free(&upf_sess_pool, sess);
     if (sess->apn_dnn)
         ogs_free(sess->apn_dnn);
@@ -246,14 +262,9 @@ void upf_sess_remove_all(void)
     }
 }
 
-upf_sess_t *upf_sess_find(uint32_t index)
-{
-    return ogs_pool_find(&upf_sess_pool, index);
-}
-
 upf_sess_t *upf_sess_find_by_smf_n4_seid(uint64_t seid)
 {
-    return (upf_sess_t *)ogs_hash_get(self.seid_hash, &seid, sizeof(seid));
+    return ogs_hash_get(self.smf_n4_seid_hash, &seid, sizeof(seid));
 }
 
 upf_sess_t *upf_sess_find_by_smf_n4_f_seid(ogs_pfcp_f_seid_t *f_seid)
@@ -267,12 +278,12 @@ upf_sess_t *upf_sess_find_by_smf_n4_f_seid(ogs_pfcp_f_seid_t *f_seid)
     ogs_assert(OGS_OK == ogs_pfcp_f_seid_to_ip(f_seid, &key.ip));
     key.seid = f_seid->seid;
 
-    return (upf_sess_t *)ogs_hash_get(self.f_seid_hash, &key, sizeof(key));
+    return ogs_hash_get(self.smf_n4_f_seid_hash, &key, sizeof(key));
 }
 
 upf_sess_t *upf_sess_find_by_upf_n4_seid(uint64_t seid)
 {
-    return upf_sess_find(seid);
+    return ogs_hash_get(self.upf_n4_seid_hash, &seid, sizeof(seid));
 }
 
 upf_sess_t *upf_sess_find_by_ipv4(uint32_t addr)
@@ -357,7 +368,10 @@ upf_sess_t *upf_sess_add_by_message(ogs_pfcp_message_t *message)
     sess = upf_sess_find_by_smf_n4_f_seid(f_seid);
     if (!sess) {
         sess = upf_sess_add(f_seid);
-        if (!sess) return NULL;
+        if (!sess) {
+            ogs_error("No Session Context");
+            return NULL;
+        }
     }
     ogs_assert(sess);
 

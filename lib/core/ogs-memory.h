@@ -58,7 +58,7 @@ void *ogs_realloc_debug(
         void *ptr, size_t size, const char *file_line);
 int ogs_free_debug(void *ptr);
 
-#if OGS_USE_TALLOC
+#if OGS_USE_TALLOC == 1
 
 /*****************************************
  * Memory Pool - Use talloc library

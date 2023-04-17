@@ -62,6 +62,7 @@ void smf_fd_final(void)
     }
 
     smf_gx_final();
+    smf_gy_final();
     smf_s6b_final();
 
     ogs_diam_final();

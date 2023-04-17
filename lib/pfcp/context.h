@@ -137,7 +137,9 @@ typedef struct ogs_pfcp_bar_s ogs_pfcp_bar_t;
 
 typedef struct ogs_pfcp_pdr_s {
     ogs_pfcp_object_t       obj;
-    uint32_t                index;
+
+    ogs_pool_id_t           *teid_node;  /* A node of TEID */
+    ogs_pool_id_t           teid;
 
     ogs_lnode_t             to_create_node;
     ogs_lnode_t             to_modify_node;
@@ -399,8 +401,11 @@ ogs_pfcp_pdr_t *ogs_pfcp_pdr_find(
 ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_or_add(
         ogs_pfcp_sess_t *sess, ogs_pfcp_pdr_id_t id);
 
+void ogs_pfcp_pdr_swap_teid(ogs_pfcp_pdr_t *pdr);
+
 void ogs_pfcp_object_teid_hash_set(
-        ogs_pfcp_object_type_e type, ogs_pfcp_pdr_t *pdr);
+        ogs_pfcp_object_type_e type, ogs_pfcp_pdr_t *pdr,
+        bool restoration_indication);
 ogs_pfcp_object_t *ogs_pfcp_object_find_by_teid(uint32_t teid);
 int ogs_pfcp_object_count_by_teid(ogs_pfcp_sess_t *sess, uint32_t teid);
 
@@ -422,7 +427,11 @@ ogs_pfcp_far_t *ogs_pfcp_far_find_or_add(
         ogs_pfcp_sess_t *sess, ogs_pfcp_far_id_t id);
 
 void ogs_pfcp_far_f_teid_hash_set(ogs_pfcp_far_t *far);
-ogs_pfcp_far_t *ogs_pfcp_far_find_by_error_indication(ogs_pkbuf_t *pkbuf);
+ogs_pfcp_far_t *ogs_pfcp_far_find_by_gtpu_error_indication(
+        ogs_pkbuf_t *pkbuf);
+ogs_pfcp_far_t *ogs_pfcp_far_find_by_pfcp_session_report(
+        ogs_pfcp_sess_t *sess,
+        ogs_pfcp_tlv_error_indication_report_t *error_indication_report);
 
 void ogs_pfcp_far_teid_hash_set(ogs_pfcp_far_t *far);
 ogs_pfcp_far_t *ogs_pfcp_far_find_by_teid(uint32_t teid);

@@ -46,9 +46,6 @@ int amf_initialize(void)
     rv = amf_context_nf_info();
     if (rv != OGS_OK) return rv;
 
-    rv = amf_m_tmsi_pool_generate();
-    if (rv != OGS_OK) return rv;
-
     rv = ogs_log_config_domain(
             ogs_app()->logger.domain, ogs_app()->logger.level);
     if (rv != OGS_OK) return rv;

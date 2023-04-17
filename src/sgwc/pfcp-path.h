@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -33,7 +33,8 @@ int sgwc_pfcp_send_bearer_to_modify_list(
         sgwc_sess_t *sess, ogs_pfcp_xact_t *xact);
 
 int sgwc_pfcp_send_session_establishment_request(
-        sgwc_sess_t *sess, ogs_gtp_xact_t *gtp_xact, ogs_pkbuf_t *gtpbuf);
+        sgwc_sess_t *sess, ogs_gtp_xact_t *gtp_xact, ogs_pkbuf_t *gtpbuf,
+        uint64_t flags);
 
 int sgwc_pfcp_send_session_modification_request(
         sgwc_sess_t *sess, ogs_gtp_xact_t *gtp_xact,

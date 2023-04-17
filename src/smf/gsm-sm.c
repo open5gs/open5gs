@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -452,7 +452,7 @@ test_can_proceed:
             OGS_FSM_TRAN(s, &smf_gsm_state_wait_pfcp_establishment);
             ogs_assert(OGS_OK ==
                 smf_epc_pfcp_send_session_establishment_request(
-                    sess, e->gtp_xact));
+                    sess, e->gtp_xact, 0));
         } else {
             /* FIXME: tear down Gx/Gy session
              * if its sm_data.*init_err == ER_DIAMETER_SUCCESS */
@@ -671,21 +671,28 @@ void smf_gsm_state_wait_pfcp_establishment(ogs_fsm_t *s, smf_event_t *e)
                     send_gtp_create_err_msg(sess, e->gtp_xact, gtp_cause);
                     return;
                 }
-                switch (gtp_xact->gtp_version) {
-                case 1:
-                    rv = smf_gtp1_send_create_pdp_context_response(sess, gtp_xact);
-                    break;
-                case 2:
-                    rv = smf_gtp2_send_create_session_response(sess, gtp_xact);
-                    break;
-                default:
-                    rv = OGS_ERROR;
-                    break;
-                }
-                /* If no CreatePDPCtxResp can be sent, then tear down the session: */
-                if (rv != OGS_OK) {
-                    OGS_FSM_TRAN(s, &smf_gsm_state_wait_pfcp_deletion);
-                    return;
+
+                gtp_xact = pfcp_xact->assoc_xact;
+                if (gtp_xact) {
+                    switch (gtp_xact->gtp_version) {
+                    case 1:
+                        rv = smf_gtp1_send_create_pdp_context_response(
+                                sess, gtp_xact);
+                        break;
+                    case 2:
+                        rv = smf_gtp2_send_create_session_response(
+                                sess, gtp_xact);
+                        break;
+                    default:
+                        rv = OGS_ERROR;
+                        break;
+                    }
+                    /* If no CreatePDPCtxResp can be sent,
+                     * then tear down the session: */
+                    if (rv != OGS_OK) {
+                        OGS_FSM_TRAN(s, &smf_gsm_state_wait_pfcp_deletion);
+                        return;
+                    }
                 }
 
                 if (sess->gtp_rat_type == OGS_GTP2_RAT_TYPE_WLAN) {
@@ -738,6 +745,9 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
     smf_ue_t *smf_ue = NULL;
     smf_sess_t *sess = NULL;
     ogs_pkbuf_t *pkbuf = NULL;
+
+    ogs_pfcp_xact_t *pfcp_xact = NULL;
+    ogs_pfcp_message_t *pfcp_message = NULL;
 
     ogs_nas_5gs_message_t *nas_message = NULL;
 
@@ -812,6 +822,43 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
         default:
             ogs_error("Not implemented(type:%d)", gtp2_message->h.type);
+        }
+        break;
+
+    case SMF_EVT_N4_MESSAGE:
+        pfcp_xact = e->pfcp_xact;
+        ogs_assert(pfcp_xact);
+        pfcp_message = e->pfcp_message;
+        ogs_assert(pfcp_message);
+
+        switch (pfcp_message->h.type) {
+        case OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE:
+            if ((pfcp_xact->create_flags &
+                        OGS_PFCP_CREATE_RESTORATION_INDICATION)) {
+                ogs_pfcp_session_establishment_response_t *rsp = NULL;
+                ogs_pfcp_f_seid_t *up_f_seid = NULL;
+
+                rsp = &pfcp_message->pfcp_session_establishment_response;
+                if (rsp->up_f_seid.presence == 0) {
+                    ogs_error("No UP F-SEID");
+                    break;
+                }
+                up_f_seid = rsp->up_f_seid.data;
+                ogs_assert(up_f_seid);
+                sess->upf_n4_seid = be64toh(up_f_seid->seid);
+            } else {
+                ogs_error("cannot handle PFCP Session Establishment Response");
+            }
+            break;
+
+        case OGS_PFCP_SESSION_DELETION_RESPONSE_TYPE:
+            ogs_error("Session Released by Error Indication");
+            OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+            break;
+
+        default:
+            ogs_error("cannot handle PFCP message type[%d]",
+                    pfcp_message->h.type);
         }
         break;
 
