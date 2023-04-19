@@ -79,8 +79,8 @@ libmme_sources = files('''
     metrics.c
 '''.split())
 
-libhiredis_dep = cc.find_library('hiredis', dirs: '/usr/local/lib/', required: true)
-libhiredis_inc = include_directories('/usr/local/include/hiredis')
+libhiredis_dep = cc.find_library('hiredis', dirs: '/usr/include/hiredis', required: true)
+libhiredis_inc = include_directories('/usr/include/hiredis')
 
 libmme = static_library('mme',
     sources : libmme_sources,
