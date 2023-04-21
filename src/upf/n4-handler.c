@@ -104,17 +104,24 @@ void upf_n4_handle_session_establishment_request(
     if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
         goto cleanup;
 
+    if (req->apn_dnn.presence) {
+        char apn_dnn[OGS_MAX_DNN_LEN+1];
+
+        ogs_assert(0 < ogs_fqdn_parse(apn_dnn, req->apn_dnn.data,
+                ogs_min(req->apn_dnn.len, OGS_MAX_DNN_LEN)));
+
+        if (sess->apn_dnn)
+            ogs_free(sess->apn_dnn);
+        sess->apn_dnn = ogs_strdup(apn_dnn);
+        ogs_assert(sess->apn_dnn);
+    }
+
     for (i = 0; i < OGS_MAX_NUM_OF_QER; i++) {
         if (ogs_pfcp_handle_create_qer(&sess->pfcp, &req->create_qer[i],
                     &cause_value, &offending_ie_value) == NULL)
             break;
-        if (req->apn_dnn.presence == 1) {
-            upf_metrics_inst_by_dnn_add(req->apn_dnn.data,
-                    UPF_METR_GAUGE_UPF_QOSFLOWS, 1);
-        } else {
-            upf_metrics_inst_by_dnn_add(NULL,
-                    UPF_METR_GAUGE_UPF_QOSFLOWS, 1);
-        }
+        upf_metrics_inst_by_dnn_add(sess->apn_dnn,
+                UPF_METR_GAUGE_UPF_QOSFLOWS, 1);
     }
     if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
         goto cleanup;
@@ -329,7 +336,7 @@ void upf_n4_handle_session_modification_request(
         if (ogs_pfcp_handle_create_qer(&sess->pfcp, &req->create_qer[i],
                     &cause_value, &offending_ie_value) == NULL)
             break;
-        upf_metrics_inst_by_dnn_add(NULL,
+        upf_metrics_inst_by_dnn_add(sess->apn_dnn,
                 UPF_METR_GAUGE_UPF_QOSFLOWS, 1);
     }
     if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
@@ -347,7 +354,7 @@ void upf_n4_handle_session_modification_request(
         if (ogs_pfcp_handle_remove_qer(&sess->pfcp, &req->remove_qer[i],
                 &cause_value, &offending_ie_value) == false)
             break;
-        upf_metrics_inst_by_dnn_add(NULL,
+        upf_metrics_inst_by_dnn_add(sess->apn_dnn,
                 UPF_METR_GAUGE_UPF_QOSFLOWS, -1);
     }
     if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
@@ -426,7 +433,7 @@ void upf_n4_handle_session_deletion_request(
 
     ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {
         ogs_list_for_each(&sess->pfcp.qer_list, qer) {
-            upf_metrics_inst_by_dnn_add(NULL,
+            upf_metrics_inst_by_dnn_add(sess->apn_dnn,
                     UPF_METR_GAUGE_UPF_QOSFLOWS, -1);
         }
         break;
