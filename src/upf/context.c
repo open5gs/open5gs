@@ -213,6 +213,21 @@ int upf_sess_remove(upf_sess_t *sess)
 {
     ogs_assert(sess);
 
+    if (sess->gtp_stats.dl_pkts > 0) {
+        upf_metrics_inst_global_add(UPF_METR_GLOB_CTR_GTP_OUTDATAPKTN3UPF,
+                sess->gtp_stats.dl_pkts);
+        upf_metrics_inst_global_add(
+                UPF_METR_GLOB_CTR_GTP_OUTDATAVOLUMEQOSLEVELN3UPF,
+                sess->gtp_stats.dl_vol);
+    }
+    if (sess->gtp_stats.ul_pkts > 0) {
+        upf_metrics_inst_global_add(UPF_METR_GLOB_CTR_GTP_INDATAPKTN3UPF,
+                sess->gtp_stats.ul_pkts);
+        upf_metrics_inst_global_add(
+                UPF_METR_GLOB_CTR_GTP_INDATAVOLUMEQOSLEVELN3UPF,
+                sess->gtp_stats.ul_vol);
+    }
+
     upf_sess_urr_acc_remove_all(sess);
 
     ogs_list_remove(&self.sess_list, sess);
