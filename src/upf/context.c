@@ -243,7 +243,8 @@ int upf_sess_remove(upf_sess_t *sess)
 
     ogs_pool_free(&upf_n4_seid_pool, sess->upf_n4_seid_node);
     ogs_pool_free(&upf_sess_pool, sess);
-
+    if (sess->apn_dnn)
+        ogs_free(sess->apn_dnn);
     upf_metrics_inst_global_dec(UPF_METR_GLOB_GAUGE_UPF_SESSIONNBR);
 
     ogs_info("[Removed] Number of UPF-sessions is now %d",
