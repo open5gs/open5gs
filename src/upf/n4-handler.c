@@ -436,7 +436,6 @@ void upf_n4_handle_session_deletion_request(
             upf_metrics_inst_by_dnn_add(sess->apn_dnn,
                     UPF_METR_GAUGE_UPF_QOSFLOWS, -1);
         }
-        break;
     }
     upf_sess_remove(sess);
 }

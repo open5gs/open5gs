@@ -286,7 +286,7 @@ void upf_metrics_inst_by_dnn_add(char *dnn,
     ogs_assert(dnn_key);
 
     if (dnn) {
-        strcpy(dnn_key->dnn, dnn);
+        ogs_cpystrn(dnn_key->dnn, dnn, ogs_min(strlen(dnn), OGS_MAX_DNN_LEN)+1);
     } else {
         dnn_key->dnn[0] = '\0';
     }
