@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -62,7 +62,7 @@ int gsm_handle_pdu_session_establishment_request(
 
     if (pdu_session_establishment_request->presencemask &
         OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT) {
-        OGS_NAS_STORE_DATA(&sess->nas.ue_pco,
+        OGS_NAS_STORE_DATA(&sess->nas.ue_epco,
             &pdu_session_establishment_request->
                 extended_protocol_configuration_options);
     }

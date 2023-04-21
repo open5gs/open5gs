@@ -80,6 +80,7 @@ extern "C" {
 #define OGS_MAX_DNN_LEN                 100
 #define OGS_MAX_APN_LEN                 OGS_MAX_DNN_LEN
 #define OGS_MAX_PCO_LEN                 251
+#define OGS_MAX_EPCO_LEN                65535
 #define OGS_MAX_FQDN_LEN                256
 
 #define OGS_MAX_NUM_OF_SERVED_GUAMI     8

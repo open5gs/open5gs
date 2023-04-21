@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -228,21 +228,20 @@ ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(
         apn_ambr_build(apn_ambr, session->ambr.downlink, session->ambr.uplink);
     }
 
-    if (sess->pgw_pco.presence && sess->pgw_pco.len && sess->pgw_pco.data) {
-        if (mme_ue->ue_network_capability.
-                extended_protocol_configuration_options) {
-            activate_default_eps_bearer_context_request->presencemask |=
-                OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
-            extended_protocol_configuration_options->length = sess->pgw_pco.len;
-            extended_protocol_configuration_options->buffer =
-                sess->pgw_pco.data;
-        } else {
-            activate_default_eps_bearer_context_request->presencemask |=
-                OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
-            protocol_configuration_options->length = sess->pgw_pco.len;
-            memcpy(protocol_configuration_options->buffer,
-                    sess->pgw_pco.data, protocol_configuration_options->length);
-        }
+    if (sess->pgw_epco.presence && sess->pgw_epco.len && sess->pgw_epco.data) {
+        activate_default_eps_bearer_context_request->presencemask |=
+            OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+        extended_protocol_configuration_options->length =
+            sess->pgw_epco.len;
+        extended_protocol_configuration_options->buffer =
+            sess->pgw_epco.data;
+    } else if (sess->pgw_pco.presence && sess->pgw_pco.len &&
+            sess->pgw_pco.data) {
+        activate_default_eps_bearer_context_request->presencemask |=
+            OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+        protocol_configuration_options->length = sess->pgw_pco.len;
+        memcpy(protocol_configuration_options->buffer,
+                sess->pgw_pco.data, protocol_configuration_options->length);
     }
 
     if (create_action == OGS_GTP_CREATE_IN_ATTACH_REQUEST)

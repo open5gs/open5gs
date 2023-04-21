@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -28,6 +28,8 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
     int rv;
     smf_bearer_t *bearer = NULL;
 
+    ogs_pkbuf_t *pkbuf = NULL;
+
     ogs_gtp2_message_t gtp_message;
     ogs_gtp2_create_session_response_t *rsp = NULL;
 
@@ -45,6 +47,8 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
     int len;
     uint8_t pco_buf[OGS_MAX_PCO_LEN];
     int16_t pco_len;
+    uint8_t *epco_buf = NULL;
+    int16_t epco_len;
 
     ogs_debug("[SMF] Create Session Response");
 
@@ -85,7 +89,7 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
             &smf_s5c_teid, &len);
     if (rv != OGS_OK) {
         ogs_error("ogs_gtp2_sockaddr_to_f_teid() failed");
-        return NULL;
+        goto cleanup;
     }
     rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
         presence = 1;
@@ -141,6 +145,19 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
         rsp->protocol_configuration_options.len = pco_len;
     }
 
+    /* ePCO */
+    if (sess->gtp.ue_epco.presence &&
+            sess->gtp.ue_epco.len && sess->gtp.ue_epco.data) {
+        epco_buf = ogs_calloc(OGS_MAX_EPCO_LEN, sizeof(uint8_t));
+        ogs_assert(epco_buf);
+        epco_len = smf_pco_build(
+                epco_buf, sess->gtp.ue_epco.data, sess->gtp.ue_epco.len);
+        ogs_assert(epco_len > 0);
+        rsp->extended_protocol_configuration_options.presence = 1;
+        rsp->extended_protocol_configuration_options.data = epco_buf;
+        rsp->extended_protocol_configuration_options.len = epco_len;
+    }
+
     i = 0;
     ogs_list_for_each(&sess->bearer_list, bearer) {
         ogs_assert(i < OGS_BEARER_PER_UE);
@@ -190,7 +207,7 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
             &pgw_s5u_teid[i], &pgw_s5u_len[i]);
         if (rv != OGS_OK) {
             ogs_error("ogs_gtp2_sockaddr_to_f_teid() failed");
-            return NULL;
+            goto cleanup;
         }
 
         switch (sess->gtp_rat_type) {
@@ -219,18 +236,28 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
     }
 
     gtp_message.h.type = type;
-    return ogs_gtp2_build_msg(&gtp_message);
+    pkbuf = ogs_gtp2_build_msg(&gtp_message);
+
+cleanup:
+    if (epco_buf)
+        ogs_free(epco_buf);
+
+    return pkbuf;
 }
 
 ogs_pkbuf_t *smf_s5c_build_delete_session_response(
         uint8_t type, smf_sess_t *sess)
 {
+    ogs_pkbuf_t *pkbuf = NULL;
+
     ogs_gtp2_message_t gtp_message;
     ogs_gtp2_delete_session_response_t *rsp = NULL;
 
     ogs_gtp2_cause_t cause;
     uint8_t pco_buf[OGS_MAX_PCO_LEN];
     int16_t pco_len;
+    uint8_t *epco_buf = NULL;
+    int16_t epco_len;
 
     /* prepare cause */
     memset(&cause, 0, sizeof(cause));
@@ -257,11 +284,30 @@ ogs_pkbuf_t *smf_s5c_build_delete_session_response(
         rsp->protocol_configuration_options.len = pco_len;
     }
 
+    /* ePCO */
+    if (sess->gtp.ue_epco.presence &&
+            sess->gtp.ue_epco.len && sess->gtp.ue_epco.data) {
+        epco_buf = ogs_calloc(OGS_MAX_EPCO_LEN, sizeof(uint8_t));
+        ogs_assert(epco_buf);
+        epco_len = smf_pco_build(
+                epco_buf, sess->gtp.ue_epco.data, sess->gtp.ue_epco.len);
+        ogs_assert(epco_len > 0);
+        rsp->extended_protocol_configuration_options.presence = 1;
+        rsp->extended_protocol_configuration_options.data = epco_buf;
+        rsp->extended_protocol_configuration_options.len = epco_len;
+    }
+
     /* Private Extension */
 
     /* build */
     gtp_message.h.type = type;
-    return ogs_gtp2_build_msg(&gtp_message);
+    pkbuf = ogs_gtp2_build_msg(&gtp_message);
+
+cleanup:
+    if (epco_buf)
+        ogs_free(epco_buf);
+
+    return pkbuf;
 }
 
 ogs_pkbuf_t *smf_s5c_build_modify_bearer_response(

@@ -2112,9 +2112,6 @@ void amf_sess_remove(amf_sess_t *sess)
     if (sess->nssf.nrf.client)
         ogs_sbi_client_remove(sess->nssf.nrf.client);
 
-    OGS_NAS_CLEAR_DATA(&sess->ue_pco);
-    OGS_TLV_CLEAR_DATA(&sess->pgw_pco);
-
     ogs_pool_free(&amf_sess_pool, sess);
 
     stats_remove_amf_session();

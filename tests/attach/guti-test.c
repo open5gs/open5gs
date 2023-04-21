@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -228,7 +228,7 @@ static void test1_func(abts_case *tc, void *data)
     memset(&sess->pdn_connectivity_param,
             0, sizeof(sess->pdn_connectivity_param));
     sess->pdn_connectivity_param.eit = 1;
-    sess->pdn_connectivity_param.pco = 1;
+    sess->pdn_connectivity_param.epco = 1;
     sess->pdn_connectivity_param.request_type =
         OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
     esmbuf = testesm_build_pdn_connectivity_request(sess, false);

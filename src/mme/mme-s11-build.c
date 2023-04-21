@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -253,7 +253,13 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
         req->aggregate_maximum_bit_rate.len = sizeof(ambr);
     }
 
-    if (sess->ue_pco.length && sess->ue_pco.buffer) {
+    if (sess->ue_epco.length && sess->ue_epco.buffer) {
+        req->extended_protocol_configuration_options.presence = 1;
+        req->extended_protocol_configuration_options.data =
+            sess->ue_epco.buffer;
+        req->extended_protocol_configuration_options.len =
+            sess->ue_epco.length;
+    } else if (sess->ue_pco.length && sess->ue_pco.buffer) {
         req->protocol_configuration_options.presence = 1;
         req->protocol_configuration_options.data = sess->ue_pco.buffer;
         req->protocol_configuration_options.len = sess->ue_pco.length;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -373,8 +373,13 @@ void mme_s11_handle_create_session_response(
                 rsp->pdn_address_allocation.len);
     }
 
+    /* ePCO */
+    if (rsp->extended_protocol_configuration_options.presence) {
+        OGS_TLV_STORE_DATA(&sess->pgw_epco,
+                &rsp->extended_protocol_configuration_options);
+
     /* PCO */
-    if (rsp->protocol_configuration_options.presence) {
+    } else if (rsp->protocol_configuration_options.presence) {
         OGS_TLV_STORE_DATA(&sess->pgw_pco,
                 &rsp->protocol_configuration_options);
     }
