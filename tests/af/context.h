@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -72,6 +72,7 @@ typedef struct af_sess_s {
         struct {
             ogs_sockaddr_t *addr;
             ogs_sockaddr_t *addr6;
+            bool is_port;
             int port;
         } ip[OGS_SBI_MAX_NUM_OF_IP_ADDRESS];
 

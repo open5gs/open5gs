@@ -83,7 +83,7 @@ void ogs_nnrf_nfm_handle_nf_profile(
         if (nf_instance->num_of_ipv4 < OGS_SBI_MAX_NUM_OF_IP_ADDRESS) {
 
             rv = ogs_getaddrinfo(&addr, AF_UNSPEC,
-                    node->data, ogs_sbi_self()->sbi_port, 0);
+                    node->data, ogs_sbi_client_default_port(), 0);
             if (rv != OGS_OK) continue;
 
             nf_instance->ipv4[nf_instance->num_of_ipv4] = addr;
@@ -101,7 +101,7 @@ void ogs_nnrf_nfm_handle_nf_profile(
         if (nf_instance->num_of_ipv6 < OGS_SBI_MAX_NUM_OF_IP_ADDRESS) {
 
             rv = ogs_getaddrinfo(&addr, AF_UNSPEC,
-                    node->data, ogs_sbi_self()->sbi_port, 0);
+                    node->data, ogs_sbi_client_default_port(), 0);
             if (rv != OGS_OK) continue;
 
             nf_instance->ipv6[nf_instance->num_of_ipv6] = addr;
@@ -257,18 +257,10 @@ static void handle_nf_service(
         }
 
         if (nf_service->num_of_addr < OGS_SBI_MAX_NUM_OF_IP_ADDRESS) {
-            if (!IpEndPoint->is_port) {
-                if (nf_service->scheme == OpenAPI_uri_scheme_http)
-                    port = OGS_SBI_HTTP_PORT;
-                else if (nf_service->scheme == OpenAPI_uri_scheme_https)
-                    port = OGS_SBI_HTTPS_PORT;
-                else {
-                    ogs_error("Invalid scheme [%d]", nf_service->scheme);
-                    continue;
-                }
-            } else {
+            if (!IpEndPoint->is_port)
+                port = ogs_sbi_client_default_port();
+            else
                 port = IpEndPoint->port;
-            }
 
             if (IpEndPoint->ipv4_address) {
                 rv = ogs_getaddrinfo(&addr, AF_UNSPEC,
@@ -290,6 +282,8 @@ static void handle_nf_service(
             }
 
             if (addr || addr6) {
+                nf_service->addr[nf_service->num_of_addr].
+                    is_port = IpEndPoint->is_port;
                 nf_service->addr[nf_service->num_of_addr].
                     port = port;
                 nf_service->addr[nf_service->num_of_addr].
