@@ -325,6 +325,7 @@ typedef struct smf_sess_s {
     struct {
         uint8_t version; /* GTPC version */
         ogs_tlv_octet_t ue_pco;
+        ogs_tlv_octet_t ue_epco;
         ogs_tlv_octet_t user_location_information;
         ogs_tlv_octet_t ue_timezone;
         ogs_tlv_octet_t charging_characteristics;
@@ -354,7 +355,7 @@ typedef struct smf_sess_s {
     } gy;
 
     struct {
-        ogs_nas_extended_protocol_configuration_options_t ue_pco;
+        ogs_nas_extended_protocol_configuration_options_t ue_epco;
     } nas; /* Saved from NAS-5GS */
 
     struct {

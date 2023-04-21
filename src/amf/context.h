@@ -648,15 +648,6 @@ typedef struct amf_sess_s {
     ogs_s_nssai_t mapped_hplmn;
     char *dnn;
 
-    /* Save Protocol Configuration Options from UE */
-    struct {
-        uint8_t length;
-        uint8_t *buffer;
-    } ue_pco; 
-
-    /* Save Protocol Configuration Options from PGW */
-    ogs_tlv_octet_t pgw_pco;
-
 } amf_sess_t;
 
 void amf_context_init(void);

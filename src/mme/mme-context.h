@@ -641,8 +641,17 @@ typedef struct mme_sess_s {
         uint8_t *buffer;
     } ue_pco;
 
+    /* Save Extended Protocol Configuration Options from UE */
+    struct {
+        uint16_t length;
+        uint8_t *buffer;
+    } ue_epco;
+
     /* Save Protocol Configuration Options from PGW */
     ogs_tlv_octet_t pgw_pco;
+
+    /* Save Extended Protocol Configuration Options from PGW */
+    ogs_tlv_octet_t pgw_epco;
 } mme_sess_t;
 
 #define MME_HAVE_ENB_S1U_PATH(__bEARER) \

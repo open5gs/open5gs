@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -347,8 +347,13 @@ uint8_t smf_s5c_handle_create_session_request(
         sess->session.ambr.uplink = be32toh(ambr->uplink) * 1000;
     }
 
+    /* ePCO */
+    if (req->extended_protocol_configuration_options.presence) {
+        OGS_TLV_STORE_DATA(&sess->gtp.ue_epco,
+                &req->extended_protocol_configuration_options);
+
     /* PCO */
-    if (req->protocol_configuration_options.presence) {
+    } else if (req->protocol_configuration_options.presence) {
         OGS_TLV_STORE_DATA(&sess->gtp.ue_pco,
                 &req->protocol_configuration_options);
     }
@@ -420,11 +425,22 @@ uint8_t smf_s5c_handle_delete_session_request(
         OGS_TLV_STORE_DATA(&sess->gtp.ue_pco,
                 &req->protocol_configuration_options);
     } else {
-        /* 
+        /*
          * Clear contents to reflect whether PCO IE was included or not as part
          * of session deletion procedure
          */
         OGS_TLV_CLEAR_DATA(&sess->gtp.ue_pco);
+    }
+
+    if (req->extended_protocol_configuration_options.presence) {
+        OGS_TLV_STORE_DATA(&sess->gtp.ue_epco,
+                &req->extended_protocol_configuration_options);
+    } else {
+        /*
+         * Clear contents to reflect whether PCO IE was included or not as part
+         * of session deletion procedure
+         */
+        OGS_TLV_CLEAR_DATA(&sess->gtp.ue_epco);
     }
 
     ogs_debug("    SGW_S5C_TEID[0x%x] SMF_N4_TEID[0x%x]",

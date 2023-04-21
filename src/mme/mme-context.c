@@ -3260,7 +3260,9 @@ void mme_sess_remove(mme_sess_t *sess)
     mme_bearer_remove_all(sess);
 
     OGS_NAS_CLEAR_DATA(&sess->ue_pco);
+    OGS_NAS_CLEAR_DATA(&sess->ue_epco);
     OGS_TLV_CLEAR_DATA(&sess->pgw_pco);
+    OGS_TLV_CLEAR_DATA(&sess->pgw_epco);
 
     ogs_pool_free(&mme_sess_pool, sess);
 
