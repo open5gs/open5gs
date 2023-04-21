@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -121,7 +121,7 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
                     goto end;
                 }
             }
-            IpEndPoint->is_port = true;
+            IpEndPoint->is_port = nf_service->addr[i].is_port;
             IpEndPoint->port = nf_service->addr[i].port;
             OpenAPI_list_add(PcfIpEndPointList, IpEndPoint);
         }

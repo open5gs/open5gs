@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -71,6 +71,7 @@ typedef struct bsf_sess_s {
     struct {
         char *addr;
         char *addr6;
+        bool is_port;
         int port;
     } pcf_ip[OGS_SBI_MAX_NUM_OF_IP_ADDRESS];
 

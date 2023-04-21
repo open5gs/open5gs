@@ -122,8 +122,6 @@ ogs_sbi_context_t *ogs_sbi_self(void)
 
 static int ogs_sbi_context_prepare(void)
 {
-    self.sbi_port = OGS_SBI_HTTP_PORT;
-
 #if ENABLE_ACCEPT_ENCODING
     self.content_encoding = "gzip";
 #endif
@@ -242,7 +240,7 @@ int ogs_sbi_context_parse_config(
                         int num_of_advertise = 0;
                         const char *advertise[OGS_MAX_NUM_OF_HOSTNAME];
 
-                        uint16_t port = self.sbi_port;
+                        uint16_t port = ogs_sbi_server_default_port();
                         const char *dev = NULL;
                         ogs_sockaddr_t *addr = NULL;
 
@@ -410,7 +408,7 @@ int ogs_sbi_context_parse_config(
                         rv = ogs_socknode_probe(
                             ogs_app()->parameter.no_ipv4 ? NULL : &list,
                             ogs_app()->parameter.no_ipv6 ? NULL : &list6,
-                            NULL, self.sbi_port, NULL);
+                            NULL, ogs_sbi_server_default_port(), NULL);
                         ogs_assert(rv == OGS_OK);
 
                         node = ogs_list_first(&list);
@@ -506,7 +504,7 @@ int ogs_sbi_context_parse_config(
                         int family = AF_UNSPEC;
                         int i, num = 0;
                         const char *hostname[OGS_MAX_NUM_OF_HOSTNAME];
-                        uint16_t port = self.sbi_port;
+                        uint16_t port = ogs_sbi_client_default_port();
 
                         if (ogs_yaml_iter_type(&sbi_array) ==
                                 YAML_MAPPING_NODE) {
@@ -583,10 +581,7 @@ int ogs_sbi_context_parse_config(
                         if (addr == NULL) continue;
 
                         client = ogs_sbi_client_add(
-                                    ogs_app()->sbi.client.no_tls == false ?
-                                        OpenAPI_uri_scheme_https :
-                                        OpenAPI_uri_scheme_http,
-                                    addr);
+                                    ogs_sbi_client_default_scheme(), addr);
                         ogs_assert(client);
                         OGS_SBI_SETUP_CLIENT(self.nrf_instance, client);
 
@@ -612,7 +607,7 @@ int ogs_sbi_context_parse_config(
                         int family = AF_UNSPEC;
                         int i, num = 0;
                         const char *hostname[OGS_MAX_NUM_OF_HOSTNAME];
-                        uint16_t port = self.sbi_port;
+                        uint16_t port = ogs_sbi_client_default_port();
 
                         if (ogs_yaml_iter_type(&sbi_array) ==
                                 YAML_MAPPING_NODE) {
@@ -689,10 +684,7 @@ int ogs_sbi_context_parse_config(
                         if (addr == NULL) continue;
 
                         client = ogs_sbi_client_add(
-                                    ogs_app()->sbi.client.no_tls == false ?
-                                        OpenAPI_uri_scheme_https :
-                                        OpenAPI_uri_scheme_http,
-                                    addr);
+                                    ogs_sbi_client_default_scheme(), addr);
                         ogs_assert(client);
                         OGS_SBI_SETUP_CLIENT(self.scp_instance, client);
 
@@ -1404,6 +1396,7 @@ ogs_sbi_nf_service_t *ogs_sbi_nf_service_build_default(
         }
 
         if (nf_service->num_of_addr < OGS_SBI_MAX_NUM_OF_IP_ADDRESS) {
+            bool is_port = true;
             int port = 0;
             ogs_sockaddr_t *addr = NULL;
             ogs_assert(OGS_OK == ogs_copyaddrinfo(&addr, advertise));
@@ -1411,11 +1404,12 @@ ogs_sbi_nf_service_t *ogs_sbi_nf_service_build_default(
 
             port = OGS_PORT(addr);
             if (nf_service->scheme == OpenAPI_uri_scheme_https) {
-                if (port == OGS_SBI_HTTPS_PORT) port = 0;
+                if (port == OGS_SBI_HTTPS_PORT) is_port = false;
             } else if (nf_service->scheme == OpenAPI_uri_scheme_http) {
-                if (port == OGS_SBI_HTTP_PORT) port = 0;
+                if (port == OGS_SBI_HTTP_PORT) is_port = false;
             }
 
+            nf_service->addr[nf_service->num_of_addr].is_port = is_port;
             nf_service->addr[nf_service->num_of_addr].port = port;
             if (addr->ogs_sa_family == AF_INET) {
                 nf_service->addr[nf_service->num_of_addr].ipv4 = addr;
@@ -1439,17 +1433,21 @@ ogs_sbi_nf_service_t *ogs_sbi_nf_service_build_default(
 }
 
 static ogs_sbi_client_t *find_client_by_fqdn(
-        OpenAPI_uri_scheme_e scheme, char *fqdn, int port)
+        OpenAPI_uri_scheme_e scheme, char *fqdn)
 {
     int rv;
     ogs_sockaddr_t *addr = NULL;
     ogs_sbi_client_t *client = NULL;
 
-    ogs_assert(scheme);
+    ogs_assert(scheme == OpenAPI_uri_scheme_https ||
+                scheme == OpenAPI_uri_scheme_http);
     ogs_assert(fqdn);
 
-    rv = ogs_getaddrinfo(&addr, AF_UNSPEC, fqdn,
-            port ? port : ogs_sbi_self()->sbi_port, 0);
+    rv = ogs_getaddrinfo(
+            &addr, AF_UNSPEC, fqdn,
+            scheme == OpenAPI_uri_scheme_https ?
+                OGS_SBI_HTTPS_PORT : OGS_SBI_HTTP_PORT,
+            0);
     if (rv != OGS_OK) {
         ogs_error("Invalid NFProfile.fqdn");
         return NULL;
@@ -1473,11 +1471,10 @@ static ogs_sbi_client_t *nf_instance_find_client(
     ogs_sockaddr_t *addr = NULL;
     OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
 
-    scheme = ogs_app()->sbi.client.no_tls == false ?
-                OpenAPI_uri_scheme_https : OpenAPI_uri_scheme_http;
+    scheme = ogs_sbi_client_default_scheme();
 
     if (nf_instance->fqdn)
-        client = find_client_by_fqdn(scheme, nf_instance->fqdn, 0);
+        client = find_client_by_fqdn(scheme, nf_instance->fqdn);
 
     if (!client) {
         /* At this point, CLIENT selection method is very simple. */
@@ -1504,7 +1501,7 @@ static void nf_service_associate_client(ogs_sbi_nf_service_t *nf_service)
     ogs_assert(nf_service->scheme);
 
     if (nf_service->fqdn)
-        client = find_client_by_fqdn(nf_service->scheme, nf_service->fqdn, 0);
+        client = find_client_by_fqdn(nf_service->scheme, nf_service->fqdn);
 
     if (!client) {
         /* At this point, CLIENT selection method is very simple. */
@@ -1620,9 +1617,28 @@ void ogs_sbi_client_associate(ogs_sbi_nf_instance_t *nf_instance)
     nf_service_associate_client_all(nf_instance);
 }
 
-OpenAPI_uri_scheme_e ogs_sbi_default_uri_scheme(void)
+OpenAPI_uri_scheme_e ogs_sbi_server_default_scheme(void)
 {
-    return OpenAPI_uri_scheme_http;
+    return ogs_app()->sbi.server.no_tls == false ?
+            OpenAPI_uri_scheme_https : OpenAPI_uri_scheme_http;
+}
+
+OpenAPI_uri_scheme_e ogs_sbi_client_default_scheme(void)
+{
+    return ogs_app()->sbi.client.no_tls == false ?
+            OpenAPI_uri_scheme_https : OpenAPI_uri_scheme_http;
+}
+
+int ogs_sbi_server_default_port(void)
+{
+    return ogs_app()->sbi.server.no_tls == false ?
+            OGS_SBI_HTTPS_PORT : OGS_SBI_HTTP_PORT;
+}
+
+int ogs_sbi_client_default_port(void)
+{
+    return ogs_app()->sbi.client.no_tls == false ?
+            OGS_SBI_HTTPS_PORT : OGS_SBI_HTTP_PORT;
 }
 
 ogs_sbi_client_t *ogs_sbi_client_find_by_service_name(

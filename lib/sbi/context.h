@@ -58,8 +58,6 @@ typedef struct ogs_sbi_context_s {
         uint8_t key[OGS_ECCKEY_LEN]; /* 32 bytes Private Key */
     } hnet[OGS_HOME_NETWORK_PKI_VALUE_MAX+1]; /* PKI Value : 1 ~ 254 */
 
-    uint16_t sbi_port;                      /* SBI local port */
-
     ogs_list_t server_list;
     ogs_list_t client_list;
 
@@ -218,6 +216,7 @@ typedef struct ogs_sbi_nf_service_s {
     struct {
         ogs_sockaddr_t *ipv4;
         ogs_sockaddr_t *ipv6;
+        bool is_port;
         int port;
     } addr[OGS_SBI_MAX_NUM_OF_IP_ADDRESS];
 
@@ -401,7 +400,10 @@ ogs_sbi_client_t *ogs_sbi_client_find_by_service_type(
 
 void ogs_sbi_client_associate(ogs_sbi_nf_instance_t *nf_instance);
 
-OpenAPI_uri_scheme_e ogs_sbi_default_uri_scheme(void);
+OpenAPI_uri_scheme_e ogs_sbi_server_default_scheme(void);
+OpenAPI_uri_scheme_e ogs_sbi_client_default_scheme(void);
+int ogs_sbi_server_default_port(void);
+int ogs_sbi_client_default_port(void);
 
 #define OGS_SBI_SETUP_NF_INSTANCE(__cTX, __nFInstance) \
     do { \
