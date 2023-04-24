@@ -76,13 +76,13 @@ static void recalculate_pool_size(void)
     self.pool.message = self.max.ue * POOL_NUM_PER_UE;
     self.pool.event = self.max.ue * POOL_NUM_PER_UE;
     self.pool.socket = self.max.ue * POOL_NUM_PER_UE;
-    self.pool.subscription = self.max.ue * POOL_NUM_PER_UE;
     self.pool.xact = self.max.ue * POOL_NUM_PER_UE;
     self.pool.stream = self.max.ue * POOL_NUM_PER_UE;
 
     self.pool.nf = self.max.peer;
 #define NF_SERVICE_PER_NF_INSTANCE 16
     self.pool.nf_service = self.pool.nf * NF_SERVICE_PER_NF_INSTANCE;
+    self.pool.subscription = self.pool.nf * NF_SERVICE_PER_NF_INSTANCE;
 
     self.pool.gtp_node = self.pool.nf;
     if (self.max.gtp_peer)
