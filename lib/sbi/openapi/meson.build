@@ -1371,6 +1371,9 @@ libsbi_openapi_sources = files('''
 
 libsbi_openapi_inc = include_directories('.')
 
+libssl_dep = dependency('libssl', required : true)
+libcrypto_dep = dependency('libcrypto', required : true)
+
 sbi_openapi_cc_flags = ['-DOGS_SBI_COMPILATION']
 
 if cc.get_id() == 'gcc' or cc.get_id() == 'clang'
@@ -1389,10 +1392,15 @@ libsbi_openapi = library('ogssbi-openapi',
     version : libogslib_version,
     c_args : sbi_openapi_cc_flags,
     include_directories : [libsbi_openapi_inc, libinc],
-    dependencies : libcore_dep,
+    dependencies : [libcore_dep,
+                    libssl_dep,
+                    libcrypto_dep],
     install : true)
 
 libsbi_openapi_dep = declare_dependency(
     link_with : libsbi_openapi,
     include_directories : [libsbi_openapi_inc, libinc],
-    dependencies : libcore_dep)
+    dependencies : [libcore_dep,
+                    libssl_dep,
+                    libcrypto_dep]
+    )
