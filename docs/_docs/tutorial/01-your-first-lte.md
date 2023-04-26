@@ -165,8 +165,8 @@ $ make test
 The Open5GS package is available on the recent versions of *Ubuntu*.
 ```bash
 # Install the MongoDB Packages
-$ wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
-$ echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+$ wget -qO - https://pgp.mongodb.com/server-6.0.asc | sudo apt-key add -
+$ echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-6.0.gpg] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
 $ sudo apt update
 $ sudo apt install mongodb-org
 
