@@ -1,6 +1,6 @@
 {
   "name": "open5gs",
-  "version": "2.6.1",
+  "version": "2.6.3",
   "description": "Open5gs",
   "main": "index.js",
   "repository": "https://github.com/open5gs/open5gs/webui",

@@ -1,3 +1,33 @@
+open5gs (2.6.3) unstable; urgency=medium
+
+  * PFCP restoration
+
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 26 Apr 2023 10:45:45 +0900
+
+open5gs (2.6.3~kinetic) kinetic; urgency=medium
+
+  * PFCP restoration
+
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 26 Apr 2023 10:43:45 +0900
+
+open5gs (2.6.3~jammy) jammy; urgency=medium
+
+  * PFCP restoration
+
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 26 Apr 2023 10:41:51 +0900
+
+open5gs (2.6.3~focal) focal; urgency=medium
+
+  * PFCP restoration
+
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 26 Apr 2023 10:39:56 +0900
+
+open5gs (2.6.3~bionic) bionic; urgency=medium
+
+  * PFCP restoration
+
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 26 Apr 2023 10:37:04 +0900
+
 open5gs (2.6.2) unstable; urgency=medium
 
   * Bug Fixed
