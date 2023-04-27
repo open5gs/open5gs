@@ -437,7 +437,7 @@ int nas_eps_send_detach_accept(mme_ue_t *mme_ue)
     ogs_debug("[%s] Detach accept", mme_ue->imsi_bcd);
 
     /* reply with detach accept */
-    if (mme_ue->nas_eps.detach.switch_off == 0) {
+    if (mme_ue->nas_eps.detach.switch_off == 1) {
         emmbuf = emm_build_detach_accept(mme_ue);
         if (!emmbuf) {
             ogs_error("emm_build_detach_accept() failed");
