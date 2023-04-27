@@ -3724,13 +3724,13 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
             char sos[] = "sos";
             sess = mme_sess_find_by_apn(mme_ue, sos);
             if (sess && create_action != OGS_GTP_CREATE_IN_ATTACH_REQUEST) {
-                ogs_assert(OGS_OK ==
-                    nas_eps_send_pdn_connectivity_reject(
-                        sess,
-                        OGS_NAS_ESM_CAUSE_MULTIPLE_PDN_CONNECTIONS_FOR_A_GIVEN_APN_NOT_ALLOWED,
-                        create_action));
-                ogs_warn("APN duplicated [%s]", sos);
-                return NULL;
+                /* Duplicate APNs are handled by SGW & PGW.
+                 * If the new Create Session Request received 
+                 * by the SGW collides with an existing active 
+                 * PDN connection context, this Create Session
+                 * Request shall be treated as a request for a
+                 * new session. */
+                ogs_warn("APN duplication detected [%s]", sos);
             }
         } else if (pdn_connectivity_request->presencemask &
             OGS_NAS_EPS_PDN_CONNECTIVITY_REQUEST_ACCESS_POINT_NAME_PRESENT) {
@@ -3738,15 +3738,14 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
             sess = mme_sess_find_by_apn(mme_ue,
                     pdn_connectivity_request->access_point_name.apn);
             if (sess && create_action != OGS_GTP_CREATE_IN_ATTACH_REQUEST) {
-                r = nas_eps_send_pdn_connectivity_reject(
-                        sess,
-                        OGS_NAS_ESM_CAUSE_MULTIPLE_PDN_CONNECTIONS_FOR_A_GIVEN_APN_NOT_ALLOWED,
-                        create_action);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-                ogs_warn("APN duplicated [%s]",
+                /* Duplicate APNs are handled by SGW & PGW.
+                 * If the new Create Session Request received 
+                 * by the SGW collides with an existing active 
+                 * PDN connection context, this Create Session
+                 * Request shall be treated as a request for a
+                 * new session. */
+                ogs_warn("APN duplication detected [%s]",
                     pdn_connectivity_request->access_point_name.apn);
-                return NULL;
             }
         } else {
             /* Default case, session assumed to be the first session in list */
