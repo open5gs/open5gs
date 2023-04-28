@@ -23,6 +23,7 @@ bool ogs_diam_app_connected(uint32_t app_id)
 {
     struct fd_list *li = NULL;
     struct fd_app *found = NULL;
+    bool relay = false;
 
     CHECK_POSIX( pthread_rwlock_rdlock(&fd_g_peers_rw) );
     for (li = fd_g_peers.next; li != &fd_g_peers; li = li->next) {
@@ -38,15 +39,16 @@ bool ogs_diam_app_connected(uint32_t app_id)
 
             /* Check if the remote peer advertised the message's appli */
             fd_app_check(&p->info.runtime.pir_apps, app_id, &found);
+            relay = 0 < p->info.runtime.pir_relay;
 
-            if (found) break;
+            if (found || relay) break;
         } else {
             ogs_debug("'%s' STATE[%d] is NOT open ", p->info.pi_diamid, state);
         }
     }
     CHECK_POSIX( pthread_rwlock_unlock(&fd_g_peers_rw) );
 
-    if (found)
+    if (found || relay)
         return true;
     else
         return false;
