@@ -237,7 +237,11 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(OGS_FSM_STATE(&enb->sm));
 
         rc = ogs_s1ap_decode(&s1ap_message, pkbuf);
-        bool is_dup = is_messgae_dup(pkbuf->data, pkbuf->len);
+
+        bool is_dup = false;
+        if (mme_self()->redis_config.enabled) {
+            is_dup = is_messgae_dup(pkbuf->data, pkbuf->len);
+        }
 
         /* If the message is a duplicate then
          * we pretend we never got a message */

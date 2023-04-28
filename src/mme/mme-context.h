@@ -88,6 +88,7 @@ typedef struct {
 } emergency_number_list_item_t;
 
 typedef struct {
+    bool enabled;
     char address[16];
     unsigned port;
     unsigned expire_time_sec;

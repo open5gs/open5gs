@@ -1575,18 +1575,29 @@ int mme_context_parse_config(void)
                     ogs_yaml_iter_recurse(&mme_iter, &redis_iter);
 
                     while (ogs_yaml_iter_next(&redis_iter)) {
-                        const char *eir_key = ogs_yaml_iter_key(&redis_iter);
-                        ogs_assert(eir_key);
-                        if (!strcmp(eir_key, "addr")) {
+                        const char *redis_key = ogs_yaml_iter_key(&redis_iter);
+                        ogs_assert(redis_key);
+                        if (!strcmp(redis_key, "addr")) {
                             const char *redis_addr = ogs_yaml_iter_value(&redis_iter);
                             
                             strncpy(self.redis_config.address, redis_addr, 16);
-                        } else if (!strcmp(eir_key, "port")) {
+                        } else if (!strcmp(redis_key, "enabled")) {
+                            const char *c_redis_enabled = ogs_yaml_iter_value(&redis_iter);
+
+                            if (!strcmp("True", c_redis_enabled) || 
+                                !strcmp("true", c_redis_enabled)) {
+                                ogs_info("Redis functionality has been enabled");
+                                self.redis_config.enabled = true;
+                            }
+                            else {
+                                self.redis_config.enabled = false;
+                            }
+                        } else if (!strcmp(redis_key, "port")) {
                             const char *redis_port = ogs_yaml_iter_value(&redis_iter);
 
                             if (redis_port)
                                 self.redis_config.port = atoi(redis_port);
-                        } else if (!strcmp(eir_key, "expire_time_sec")) {
+                        } else if (!strcmp(redis_key, "expire_time_sec")) {
                             const char *redis_expire_time_sec = ogs_yaml_iter_value(&redis_iter);
 
                             if (redis_expire_time_sec)

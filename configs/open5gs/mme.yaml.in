@@ -353,6 +353,7 @@ mme:
         services: [ MOUNTAIN_RESCUE, MARINE_GUARD, FIRE_BRIGADE, AMBULANCE, POLICE ]
         bcd: 115
     redis:
+      enabled: True
       addr: "127.0.0.1"
       port: 6379
       expire_time_sec: 3
