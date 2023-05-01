@@ -17,8 +17,8 @@ Import the public key used by the package management system.
 
 ```bash
 $ sudo apt update
-$ sudo apt install wget gnupg
-$ wget -qO - https://pgp.mongodb.com/server-6.0.asc | sudo apt-key add -
+$ sudo apt install gnupg
+$ curl -fsSL https://pgp.mongodb.com/server-6.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-6.0.gpg --dearmor
 ```
 
 Create the list file /etc/apt/sources.list.d/mongodb-org-6.0.list for your version of Ubuntu.
