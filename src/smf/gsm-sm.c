@@ -810,6 +810,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             }
             break;
         case OGS_GTP2_CREATE_SESSION_REQUEST_TYPE:
+            /* Clobber the old sess with this new one */
             gtp2_cause = smf_s5c_handle_create_session_request(sess,
                             e->gtp_xact,
                             &e->gtp2_message->create_session_request);

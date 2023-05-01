@@ -228,7 +228,7 @@ static void issues_1431_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
     ABTS_INT_EQUAL(tc,
-            S1AP_ProcedureCode_id_downlinkNASTransport,
+            S1AP_ProcedureCode_id_E_RABSetup,
             test_ue->s1ap_procedure_code);
 
     /* Just Delay */
