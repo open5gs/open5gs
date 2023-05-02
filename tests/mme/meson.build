@@ -1,4 +1,4 @@
-# Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+# Copyright (C) 2023 by Ryan Dimsey <ryan@omnitouch.com.au>
 
 # This file is part of Open5GS.
 
@@ -15,22 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-testinc = include_directories('.')
+testapp_mme_sources = files('''
+    abts-main.c
+    mme-s13-handler-test.c
+'''.split())
 
-subdir('core')
-subdir('crypt')
-subdir('sctp')
-subdir('unit')
-subdir('af')
-subdir('common')
-subdir('app')
-subdir('registration')
-subdir('vonr')
-subdir('slice')
-subdir('attach')
-subdir('volte')
-subdir('csfb')
-subdir('310014')
-subdir('handover')
-subdir('non3gpp')
-# subdir('mme') # Todo either delete or find a good way to implement these unit tests
+testapp_mme_exe = executable('mme',
+    sources : testapp_mme_sources,
+    c_args : testunit_core_cc_flags,
+    dependencies : [libtestapp_dep, libmme_dep])
+
+test('mme', testapp_mme_exe, is_parallel : false, suite: 'app')

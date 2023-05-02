@@ -124,7 +124,11 @@ int nas_eps_send_attach_accept(mme_ue_t *mme_ue)
 
     sess = mme_sess_first(mme_ue);
     ogs_assert(sess);
-    ogs_assert(mme_sess_next(sess) == NULL);
+    if (NULL != mme_sess_next(sess)) {
+        ogs_error("mme_sess_next(sess) was not NULL!");
+        return OGS_ERROR;
+    }
+
     bearer = mme_default_bearer_in_sess(sess);
     ogs_assert(bearer);
     ogs_assert(mme_bearer_next(bearer) == NULL);

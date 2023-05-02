@@ -24,6 +24,12 @@
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __emm_log_domain
 
+static ogs_nas_emergency_number_list_t parse_emergency_number_items_to_list(
+    emergency_number_list_item_t const * const emergency_number_list_items,
+    int num_emergency_number_list_items);
+
+static uint16_t u16_to_packed_bcd(uint16_t bcd_decimal);
+
 ogs_pkbuf_t *emm_build_attach_accept(
         mme_ue_t *mme_ue, ogs_pkbuf_t *esmbuf)
 {
@@ -91,28 +97,34 @@ ogs_pkbuf_t *emm_build_attach_accept(
         /* print warning if difference in requested/served EPS_ATTACH_TYPE */
         switch (mme_ue->nas_eps.attach.value){
             case OGS_NAS_ATTACH_TYPE_EPS_ATTACH:
-                ogs_warn("  Requested EPS_ATTACH_TYPE[1, EPS_ATTACH]");
+                ogs_warn("  Requested EPS_ATTACH_TYPE[%d, EPS_ATTACH]",
+                         OGS_NAS_ATTACH_TYPE_EPS_ATTACH);
                 break;
             case OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH:
-                ogs_warn("  Requested EPS_ATTACH_TYPE[2, "
-                            "COMBINED_EPS_IMSI_ATTACH]");
+                ogs_warn("  Requested EPS_ATTACH_TYPE[%d, "
+                            "COMBINED_EPS_IMSI_ATTACH]",
+                         OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH);
                 break;
             case OGS_NAS_ATTACH_TYPE_EPS_EMERGENCY_ATTACH:
-                ogs_warn("  Requested EPS_ATTACH_TYPE[3, "
-                            "EPS_EMERGENCY_ATTACH]");
+                ogs_warn("  Requested EPS_ATTACH_TYPE[%d, "
+                            "EPS_EMERGENCY_ATTACH]",
+                         OGS_NAS_ATTACH_TYPE_EPS_EMERGENCY_ATTACH);
                 break;
         }
         switch (eps_attach_result->result) {
             case OGS_NAS_ATTACH_TYPE_EPS_ATTACH:
-                ogs_warn("  Permitted EPS_ATTACH_TYPE[1, EPS_ATTACH]");
+                ogs_warn("  Permitted EPS_ATTACH_TYPE[%d, EPS_ATTACH]",
+                         OGS_NAS_ATTACH_TYPE_EPS_ATTACH);
                 break;
             case OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH:
-                ogs_warn("  Permitted EPS_ATTACH_TYPE[2, "
-                            "COMBINED_EPS_IMSI_ATTACH]");
+                ogs_warn("  Permitted EPS_ATTACH_TYPE[%d, "
+                            "COMBINED_EPS_IMSI_ATTACH]",
+                         OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH);
                 break;
             case OGS_NAS_ATTACH_TYPE_EPS_EMERGENCY_ATTACH:
-                ogs_warn("  Permitted EPS_ATTACH_TYPE[3, "
-                            "EPS_EMERGENCY_ATTACH]");
+                ogs_warn("  Permitted EPS_ATTACH_TYPE[%d, "
+                            "EPS_EMERGENCY_ATTACH]",
+                         OGS_NAS_ATTACH_TYPE_EPS_EMERGENCY_ATTACH);
                 break;
         }
 
@@ -127,13 +139,16 @@ ogs_pkbuf_t *emm_build_attach_accept(
     } else {
         switch (eps_attach_result->result) {
             case OGS_NAS_ATTACH_TYPE_EPS_ATTACH:
-                ogs_debug("    EPS_ATTACH_TYPE[1, EPS_ATTACH]");
+                ogs_debug("    Requested EPS_ATTACH_TYPE[%d, EPS_ATTACH]",
+                          OGS_NAS_ATTACH_TYPE_EPS_ATTACH);
                 break;
             case OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH:
-                ogs_debug("    EPS_ATTACH_TYPE[2, COMBINED_EPS_IMSI_ATTACH]");
+                ogs_debug("    Requested EPS_ATTACH_TYPE[%d, COMBINED_EPS_IMSI_ATTACH]",
+                          OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH);
                 break;
             case OGS_NAS_ATTACH_TYPE_EPS_EMERGENCY_ATTACH:
-                ogs_debug("    EPS_ATTACH_TYPE[3, EPS_EMERGENCY_ATTACH]");
+                ogs_debug("    Requested EPS_ATTACH_TYPE[%d, EPS_EMERGENCY_ATTACH]",
+                          OGS_NAS_ATTACH_TYPE_EPS_EMERGENCY_ATTACH);
                 break;
         }
     }
@@ -209,8 +224,16 @@ ogs_pkbuf_t *emm_build_attach_accept(
         eps_network_feature_support->length = 1;
     }
     eps_network_feature_support->ims_voice_over_ps_session_in_s1_mode = 1;
+    eps_network_feature_support->emergency_bearer_services_in_s1_mode = mme_self()->emergency_bearer_services;
     eps_network_feature_support->extended_protocol_configuration_options = 1;
 
+    if (OGS_NAS_ATTACH_TYPE_EPS_EMERGENCY_ATTACH == mme_ue->nas_eps.attach.value) {
+        attach_accept->presencemask |= 
+            OGS_NAS_EPS_ATTACH_ACCEPT_EMERGENCY_NUMBER_LIST_PRESENT;
+        attach_accept->emergency_number_list = parse_emergency_number_items_to_list(
+            mme_self()->emergency_number_list, mme_self()->num_emergency_number_list_items);
+    }
+    
     if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
         ogs_assert(mme_ue->csmap);
         ogs_assert(mme_ue->p_tmsi);
@@ -715,4 +738,76 @@ ogs_pkbuf_t *emm_build_downlink_nas_transport(
     memcpy(nas_message_container->buffer, buffer, length);
 
     return nas_eps_security_encode(mme_ue, &message);
+}
+
+static ogs_nas_emergency_number_list_t parse_emergency_number_items_to_list(emergency_number_list_item_t const * const emergency_number_list_items, int num_emergency_number_list_items) {
+    enum { DEFAULT_EMERGENCY_NUMBER_INFO_LENGTH = 3,
+           SERVICE_POLICE_BIT = 0,
+           SERVICE_AMBULANCE_BIT = 1,
+           SERVICE_FIRE_BRIGADE_BIT = 2,
+           SERVICE_MARINE_GUARD_BIT = 3,
+           SERVICE_MOUNTAIN_RESCUE_BIT = 4 };
+    
+    ogs_nas_emergency_number_list_t result = {0};
+
+    result.length = num_emergency_number_list_items * BYTES_IN_EMERGENCY_NUMBER_LIST_ITEM;
+    size_t bytesEncoded = 0;
+
+    for (int i = 0; i < num_emergency_number_list_items; ++i) {
+        emergency_number_list_item_t emergency_number = emergency_number_list_items[i];
+        
+        result.buffer[bytesEncoded] = DEFAULT_EMERGENCY_NUMBER_INFO_LENGTH;
+        bytesEncoded += 1;
+        
+        /* Service flags */
+        result.buffer[bytesEncoded] = (uint8_t)((emergency_number.service_police          << SERVICE_POLICE_BIT)       |
+                                                (emergency_number.service_ambulance       << SERVICE_AMBULANCE_BIT)    |
+                                                (emergency_number.service_fire_brigade    << SERVICE_FIRE_BRIGADE_BIT) |
+                                                (emergency_number.service_marine_guard    << SERVICE_MARINE_GUARD_BIT) |
+                                                (emergency_number.service_mountain_rescue << SERVICE_MOUNTAIN_RESCUE_BIT));
+        bytesEncoded += 1;
+
+        uint16_t encoded_bcd = u16_to_packed_bcd(emergency_number.bcd_decimal);
+
+        result.buffer[bytesEncoded] = (uint8_t)(encoded_bcd >> 8);
+        bytesEncoded += 1;
+
+        result.buffer[bytesEncoded] = (uint8_t)(encoded_bcd & 0x00FF);
+        bytesEncoded += 1;
+    }
+    ogs_assert(result.length == bytesEncoded);
+
+    return result;
+}
+
+/* For more information on Packed BCD see https://en.wikipedia.org/wiki/Binary-coded_decimal 
+ * NOTE: This function will only work on decimals with 3 or fewer character.
+ * E.g. 6 -> OK
+ *      69 -> OK
+ *      420 -> OK
+ *      1234 -> BAD */
+static uint16_t u16_to_packed_bcd(uint16_t bcd_decimal) {
+    enum { BITS_IN_NIBBLE = 4,
+           NIBBLES_IN_U16 = 4 };
+    uint16_t packed_bcd = 0;
+
+    /* This function loop converts a u16 from decimal representation into BCD representation 
+     * E.g. 123 in decimal will be 0x0123 in BCD */
+    for (int nibble_index = 0; nibble_index < NIBBLES_IN_U16; ++nibble_index) {
+        packed_bcd |= ((bcd_decimal % 10) << (BITS_IN_NIBBLE * nibble_index));
+        bcd_decimal /= 10;
+    }
+
+    /* The lower nibble of the rightmost byte is usually used as the sign flag. 
+     * So to get the packed BCD (using signed overpunch representation) we need 
+     * to shift everything over and add 0xF to the lowest nibble to incicate that
+     * this is an unsigned value. */
+    packed_bcd = (packed_bcd << BITS_IN_NIBBLE) | 0x000F;
+    
+    /* To deal with the difference in endianess we will swap the byte nibbles around.
+     * E.g. 0x1234 goes to 0x2143 */
+    packed_bcd = ((packed_bcd << BITS_IN_NIBBLE) & 0xF0F0) | 
+                 ((packed_bcd >> BITS_IN_NIBBLE) & 0x0F0F); 
+
+    return packed_bcd;
 }

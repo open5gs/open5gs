@@ -195,7 +195,7 @@ char *ogs_id_get_value(char *str);
 
 /************************************
  * TAI Structure                    */
-#define OGS_MAX_NUM_OF_TAI              16
+#define OGS_MAX_NUM_OF_TAI              128
 typedef struct ogs_eps_tai_s {
     ogs_plmn_id_t plmn_id;
     uint16_t tac;

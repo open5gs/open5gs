@@ -124,7 +124,10 @@ void mme_s11_handle_create_session_response(
         return;
     }
     source_ue = sgw_ue_cycle(mme_ue->sgw_ue);
-    ogs_assert(source_ue);
+    if (NULL == source_ue) {
+        ogs_error("Failed to get source UE when handling create session response!");
+        return;
+    }
 
     if (create_action == OGS_GTP_CREATE_IN_PATH_SWITCH_REQUEST) {
         target_ue = sgw_ue_cycle(source_ue->target_ue);

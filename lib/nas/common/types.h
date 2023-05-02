@@ -705,7 +705,7 @@ ED3(uint8_t type:4;,
  * O TLV 5-50 */
 #define OGS_NAS_MAX_EMERGENCY_NUMBER_LIST_LEN 48
 typedef struct ogs_nas_emergency_number_list_s {
-    uint16_t length;
+    uint8_t length;
     uint8_t buffer[OGS_NAS_MAX_EMERGENCY_NUMBER_LIST_LEN];
 } __attribute__ ((packed)) ogs_nas_emergency_number_list_t;
 
@@ -997,6 +997,14 @@ typedef struct ogs_nas_extended_quality_of_service_s {
         ogs_nas_bitrate_t downlink;
     } gbr;
 } __attribute__ ((packed)) ogs_nas_extended_quality_of_service_t;
+
+/* Used to control EIR functionality */
+typedef struct ogs_nas_eir_s {
+    bool enabled;
+    bool allow_whitelist;
+    bool allow_greylist;
+    bool allow_blacklist;
+} __attribute__ ((packed)) ogs_nas_eir_t;
 
 #ifdef __cplusplus
 }

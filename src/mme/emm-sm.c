@@ -402,12 +402,19 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                 OGS_FSM_TRAN(s, &emm_state_initial_context_setup);
 
             } else {
-                mme_gtp_send_delete_all_sessions(mme_ue,
-                    OGS_GTP_DELETE_SEND_AUTHENTICATION_REQUEST);
-
-                if (!MME_SESSION_RELEASE_PENDING(mme_ue) &&
-                    mme_ue_xact_count(mme_ue, OGS_GTP_LOCAL_ORIGINATOR) ==
-                        xact_count) {
+                if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
+                    if (0 == ogs_list_count(&mme_ue->sess_list)) {
+                        /* If the context has no sessions we continue the attach as normal */
+                        mme_s6a_send_air(mme_ue, NULL);
+                    } else {
+                        /* If sessions exist, delete them all and we will continue
+                         * the attach from the Delete-Session-Response */
+                        
+                        /* Force send the Delete-Session-Requests */
+                        mme_gtp_send_delete_all_sessions(mme_ue,
+                            OGS_GTP_DELETE_SEND_AUTHENTICATION_REQUEST);
+                    }
+                } else {
                     mme_s6a_send_air(mme_ue, NULL);
                 }
 
@@ -1089,7 +1096,15 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
             /* Create New GUTI */
             mme_ue_new_guti(mme_ue);
 
-            mme_s6a_send_ulr(mme_ue);
+            /* If EIR fucntionality is enabled we want
+             * to make sure the UE is valid before sending
+             * the Update Location Request to HSS */
+            if (mme_self()->eir.enabled) {
+                mme_s13_send_ecr(mme_ue);
+            }
+            else {
+                mme_s6a_send_ulr(mme_ue);
+            }
 
             if (mme_ue->next.m_tmsi) {
                 OGS_FSM_TRAN(s, &emm_state_initial_context_setup);
@@ -1209,7 +1224,7 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
 
 void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
 {
-    int r, rv, xact_count;
+    int r, rv;
     mme_ue_t *mme_ue = NULL;
     ogs_nas_eps_message_t *message = NULL;
     ogs_nas_security_header_type_t h;
@@ -1230,8 +1245,6 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
     case MME_EVENT_EMM_MESSAGE:
         message = e->nas_message;
         ogs_assert(message);
-
-        xact_count = mme_ue_xact_count(mme_ue, OGS_GTP_LOCAL_ORIGINATOR);
 
         if (message->emm.h.security_header_type
                 == OGS_NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE) {
@@ -1346,13 +1359,16 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
                 break;
             }
 
-            mme_gtp_send_delete_all_sessions(mme_ue,
-                OGS_GTP_DELETE_SEND_AUTHENTICATION_REQUEST);
-
-            if (!MME_SESSION_RELEASE_PENDING(mme_ue) &&
-                mme_ue_xact_count(mme_ue, OGS_GTP_LOCAL_ORIGINATOR) ==
-                    xact_count) {
+            if (0 == ogs_list_count(&mme_ue->sess_list)) {
+                /* If the context has no sessions we continue the attach as normal */
                 mme_s6a_send_air(mme_ue, NULL);
+            } else {
+                /* If sessions exist, delete them all and we will continue
+                 * the attach from the Delete-Session-Response */
+
+                /* Force send the Delete-Session-Requests */
+                mme_gtp_send_delete_all_sessions(mme_ue,
+                    OGS_GTP_DELETE_SEND_AUTHENTICATION_REQUEST);
             }
 
             OGS_FSM_TRAN(s, &emm_state_authentication);

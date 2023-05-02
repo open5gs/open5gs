@@ -32,6 +32,8 @@
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __emm_log_domain
 
+static int send_to_downlink_default(mme_ue_t *mme_ue);
+static int send_to_downlink_emergency(mme_ue_t *mme_ue);
 static uint8_t emm_cause_from_access_control(ogs_plmn_id_t *plmn_id);
 
 int emm_handle_attach_request(mme_ue_t *mme_ue,
@@ -89,13 +91,16 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
             mme_ue->nas_eps.attach.value);
     switch(mme_ue->nas_eps.attach.value){
         case OGS_NAS_ATTACH_TYPE_EPS_ATTACH:
-            ogs_debug("    Requested EPS_ATTACH_TYPE[1, EPS_ATTACH]");
+            ogs_debug("    Requested EPS_ATTACH_TYPE[%d, EPS_ATTACH]",
+                      OGS_NAS_ATTACH_TYPE_EPS_ATTACH);
             break;
         case OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH:
-            ogs_debug("    Requested EPS_ATTACH_TYPE[2, COMBINED_EPS_IMSI_ATTACH]");
+            ogs_debug("    Requested EPS_ATTACH_TYPE[%d, COMBINED_EPS_IMSI_ATTACH]",
+                      OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH);
             break;
         case OGS_NAS_ATTACH_TYPE_EPS_EMERGENCY_ATTACH:
-            ogs_debug("    Requested EPS_ATTACH_TYPE[3, EPS_EMERGENCY_ATTACH]");
+            ogs_debug("    Requested EPS_ATTACH_TYPE[%d, EPS_EMERGENCY_ATTACH]",
+                      OGS_NAS_ATTACH_TYPE_EPS_EMERGENCY_ATTACH);
             break;
         default:
             ogs_error("    Invalid Requested EPS_ATTACH_TYPE[%d]",
@@ -256,37 +261,10 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
 int emm_handle_attach_complete(
     mme_ue_t *mme_ue, ogs_nas_eps_attach_complete_t *attach_complete)
 {
-    int r, rv;
-    ogs_pkbuf_t *emmbuf = NULL;
-
-    ogs_nas_eps_message_t message;
-    ogs_nas_eps_emm_information_t *emm_information =
-        &message.emm.emm_information;
-    ogs_nas_time_zone_t *local_time_zone = &emm_information->local_time_zone;
-    ogs_nas_time_zone_and_time_t *universal_time_and_local_time_zone =
-        &emm_information->universal_time_and_local_time_zone;
-    ogs_nas_daylight_saving_time_t *network_daylight_saving_time = 
-        &emm_information->network_daylight_saving_time;
-
-    struct timeval tv;
-    struct tm gmt, local;
+    int rv;
 
     ogs_assert(mme_ue);
-
     ogs_info("    IMSI[%s]", mme_ue->imsi_bcd);
-
-    ogs_gettimeofday(&tv);
-    ogs_gmtime(tv.tv_sec, &gmt);
-    ogs_localtime(tv.tv_sec, &local);
-
-    ogs_info("    UTC [%04d-%02d-%02dT%02d:%02d:%02d] Timezone[%d]/DST[%d]",
-        gmt.tm_year+1900, gmt.tm_mon+1, gmt.tm_mday,
-        gmt.tm_hour, gmt.tm_min, gmt.tm_sec,
-        (int)gmt.tm_gmtoff, gmt.tm_isdst);
-    ogs_info("    LOCAL [%04d-%02d-%02dT%02d:%02d:%02d] Timezone[%d]/DST[%d]",
-        local.tm_year+1900, local.tm_mon+1, local.tm_mday,
-        local.tm_hour, local.tm_min, local.tm_sec,
-        (int)local.tm_gmtoff, local.tm_isdst);
 
     rv = nas_eps_send_emm_to_esm(
             mme_ue, &attach_complete->esm_message_container);
@@ -295,73 +273,13 @@ int emm_handle_attach_complete(
         return OGS_ERROR;
     }
 
-    memset(&message, 0, sizeof(message));
-    message.h.security_header_type = 
-       OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
-    message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
-
-    message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
-    message.emm.h.message_type = OGS_NAS_EPS_EMM_INFORMATION;
-
-    if (mme_self()->full_name.length) {
-        emm_information->presencemask |=
-            OGS_NAS_EPS_EMM_INFORMATION_FULL_NAME_FOR_NETWORK_PRESENT;
-        memcpy(&emm_information->full_name_for_network,
-            &mme_self()->full_name, sizeof(ogs_nas_network_name_t));
-    }
-
-    if (mme_self()->short_name.length) {
-        emm_information->presencemask |=
-            OGS_NAS_EPS_EMM_INFORMATION_SHORT_NAME_FOR_NETWORK_PRESENT;
-        memcpy(&emm_information->short_name_for_network,
-            &mme_self()->short_name, sizeof(ogs_nas_network_name_t));
-    }
-
-    emm_information->presencemask |=
-        OGS_NAS_EPS_EMM_INFORMATION_LOCAL_TIME_ZONE_PRESENT;
-
-    if (local.tm_gmtoff >= 0) {
-        *local_time_zone = OGS_NAS_TIME_TO_BCD(local.tm_gmtoff / 900);
+    if (OGS_NAS_ATTACH_TYPE_EPS_EMERGENCY_ATTACH == mme_ue->nas_eps.attach.value) {
+        rv = send_to_downlink_emergency(mme_ue);
     } else {
-        *local_time_zone = OGS_NAS_TIME_TO_BCD((-local.tm_gmtoff) / 900);
-        *local_time_zone |= 0x08;
-    }
-    ogs_debug("    Timezone:0x%x", *local_time_zone);
-
-    emm_information->presencemask |=
-        OGS_NAS_EPS_EMM_INFORMATION_UNIVERSAL_TIME_AND_LOCAL_TIME_ZONE_PRESENT;
-    universal_time_and_local_time_zone->year = 
-                OGS_NAS_TIME_TO_BCD(gmt.tm_year % 100);
-    universal_time_and_local_time_zone->mon =
-                OGS_NAS_TIME_TO_BCD(gmt.tm_mon+1);
-    universal_time_and_local_time_zone->mday = 
-                OGS_NAS_TIME_TO_BCD(gmt.tm_mday);
-    universal_time_and_local_time_zone->hour = 
-                OGS_NAS_TIME_TO_BCD(gmt.tm_hour);
-    universal_time_and_local_time_zone->min =
-                OGS_NAS_TIME_TO_BCD(gmt.tm_min);
-    universal_time_and_local_time_zone->sec =
-                OGS_NAS_TIME_TO_BCD(gmt.tm_sec);
-    universal_time_and_local_time_zone->timezone = *local_time_zone;
-
-    emm_information->presencemask |=
-        OGS_NAS_EPS_EMM_INFORMATION_NETWORK_DAYLIGHT_SAVING_TIME_PRESENT;
-    network_daylight_saving_time->length = 1;
-
-    emmbuf = nas_eps_security_encode(mme_ue, &message);
-    if (!emmbuf) {
-        ogs_error("nas_eps_security_encode() failed");
-        return OGS_ERROR;
+        rv = send_to_downlink_default(mme_ue);
     }
 
-    r = nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
-    ogs_expect(r == OGS_OK);
-    ogs_assert(r != OGS_ERROR);
-
-    ogs_debug("EMM information");
-    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
-
-    return r;
+    return rv;
 }
 
 int emm_handle_identity_response(
@@ -827,6 +745,185 @@ int emm_handle_security_mode_complete(mme_ue_t *mme_ue,
     }
 
     return OGS_OK;
+}
+
+static int send_to_downlink_emergency(mme_ue_t *mme_ue)
+{
+    int rv;
+    ogs_pkbuf_t *emmbuf = NULL;
+
+    ogs_debug("[%s] Attach accept emergency", mme_ue->imsi_bcd);
+
+    ogs_nas_eps_message_t message;
+    ogs_nas_eps_emm_information_t *emm_information =
+        &message.emm.emm_information;
+    ogs_nas_time_zone_t *local_time_zone = &emm_information->local_time_zone;
+    ogs_nas_time_zone_and_time_t *universal_time_and_local_time_zone =
+        &emm_information->universal_time_and_local_time_zone;
+
+    struct timeval tv;
+    struct tm gmt, local;
+
+    ogs_assert(mme_ue);
+
+    ogs_gettimeofday(&tv);
+    ogs_gmtime(tv.tv_sec, &gmt);
+    ogs_localtime(tv.tv_sec, &local);
+
+    ogs_info("    UTC [%04d-%02d-%02dT%02d:%02d:%02d] Timezone[%d]/DST[%d]",
+        gmt.tm_year+1900, gmt.tm_mon+1, gmt.tm_mday,
+        gmt.tm_hour, gmt.tm_min, gmt.tm_sec,
+        (int)gmt.tm_gmtoff, gmt.tm_isdst);
+    ogs_info("    LOCAL [%04d-%02d-%02dT%02d:%02d:%02d] Timezone[%d]/DST[%d]",
+        local.tm_year+1900, local.tm_mon+1, local.tm_mday,
+        local.tm_hour, local.tm_min, local.tm_sec,
+        (int)local.tm_gmtoff, local.tm_isdst);
+
+    memset(&message, 0, sizeof(message));
+    message.h.security_header_type = 
+    OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+    message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
+
+    message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.emm.h.message_type = OGS_NAS_EPS_EMM_INFORMATION;
+
+    if (local.tm_gmtoff >= 0) {
+        *local_time_zone = OGS_NAS_TIME_TO_BCD(local.tm_gmtoff / 900);
+    } else {
+        *local_time_zone = OGS_NAS_TIME_TO_BCD((-local.tm_gmtoff) / 900);
+        *local_time_zone |= 0x08;
+    }
+    ogs_debug("    Timezone:0x%x", *local_time_zone);
+
+    emm_information->presencemask |=
+        OGS_NAS_EPS_EMM_INFORMATION_UNIVERSAL_TIME_AND_LOCAL_TIME_ZONE_PRESENT;
+    universal_time_and_local_time_zone->year = 
+                OGS_NAS_TIME_TO_BCD(gmt.tm_year % 100);
+    universal_time_and_local_time_zone->mon =
+                OGS_NAS_TIME_TO_BCD(gmt.tm_mon+1);
+    universal_time_and_local_time_zone->mday = 
+                OGS_NAS_TIME_TO_BCD(gmt.tm_mday);
+    universal_time_and_local_time_zone->hour = 
+                OGS_NAS_TIME_TO_BCD(gmt.tm_hour);
+    universal_time_and_local_time_zone->min =
+                OGS_NAS_TIME_TO_BCD(gmt.tm_min);
+    universal_time_and_local_time_zone->sec =
+                OGS_NAS_TIME_TO_BCD(gmt.tm_sec);
+    universal_time_and_local_time_zone->timezone = *local_time_zone;
+
+    emmbuf = nas_eps_security_encode(mme_ue, &message);
+    if (NULL == emmbuf) {
+        return OGS_ERROR;
+    }
+
+    rv = nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
+    if (OGS_OK != rv) {
+        return rv;
+    }
+
+    ogs_debug("EMM information");
+    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+
+    return rv;
+}
+
+static int send_to_downlink_default(mme_ue_t *mme_ue) {
+    int rv;
+    ogs_pkbuf_t *emmbuf = NULL;
+
+    ogs_nas_eps_message_t message;
+    ogs_nas_eps_emm_information_t *emm_information =
+        &message.emm.emm_information;
+    ogs_nas_time_zone_t *local_time_zone = &emm_information->local_time_zone;
+    ogs_nas_time_zone_and_time_t *universal_time_and_local_time_zone =
+        &emm_information->universal_time_and_local_time_zone;
+    ogs_nas_daylight_saving_time_t *network_daylight_saving_time = 
+        &emm_information->network_daylight_saving_time;
+
+    struct timeval tv;
+    struct tm gmt, local;
+
+    ogs_gettimeofday(&tv);
+    ogs_gmtime(tv.tv_sec, &gmt);
+    ogs_localtime(tv.tv_sec, &local);
+
+    ogs_info("    UTC [%04d-%02d-%02dT%02d:%02d:%02d] Timezone[%d]/DST[%d]",
+        gmt.tm_year+1900, gmt.tm_mon+1, gmt.tm_mday,
+        gmt.tm_hour, gmt.tm_min, gmt.tm_sec,
+        (int)gmt.tm_gmtoff, gmt.tm_isdst);
+    ogs_info("    LOCAL [%04d-%02d-%02dT%02d:%02d:%02d] Timezone[%d]/DST[%d]",
+        local.tm_year+1900, local.tm_mon+1, local.tm_mday,
+        local.tm_hour, local.tm_min, local.tm_sec,
+        (int)local.tm_gmtoff, local.tm_isdst);
+
+
+    memset(&message, 0, sizeof(message));
+    message.h.security_header_type = 
+       OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+    message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
+
+    message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.emm.h.message_type = OGS_NAS_EPS_EMM_INFORMATION;
+
+    if (mme_self()->full_name.length) {
+        emm_information->presencemask |=
+            OGS_NAS_EPS_EMM_INFORMATION_FULL_NAME_FOR_NETWORK_PRESENT;
+        memcpy(&emm_information->full_name_for_network,
+            &mme_self()->full_name, sizeof(ogs_nas_network_name_t));
+    }
+
+    if (mme_self()->short_name.length) {
+        emm_information->presencemask |=
+            OGS_NAS_EPS_EMM_INFORMATION_SHORT_NAME_FOR_NETWORK_PRESENT;
+        memcpy(&emm_information->short_name_for_network,
+            &mme_self()->short_name, sizeof(ogs_nas_network_name_t));
+    }
+
+    emm_information->presencemask |=
+        OGS_NAS_EPS_EMM_INFORMATION_LOCAL_TIME_ZONE_PRESENT;
+
+    if (local.tm_gmtoff >= 0) {
+        *local_time_zone = OGS_NAS_TIME_TO_BCD(local.tm_gmtoff / 900);
+    } else {
+        *local_time_zone = OGS_NAS_TIME_TO_BCD((-local.tm_gmtoff) / 900);
+        *local_time_zone |= 0x08;
+    }
+    ogs_debug("    Timezone:0x%x", *local_time_zone);
+
+    emm_information->presencemask |=
+        OGS_NAS_EPS_EMM_INFORMATION_UNIVERSAL_TIME_AND_LOCAL_TIME_ZONE_PRESENT;
+    universal_time_and_local_time_zone->year = 
+                OGS_NAS_TIME_TO_BCD(gmt.tm_year % 100);
+    universal_time_and_local_time_zone->mon =
+                OGS_NAS_TIME_TO_BCD(gmt.tm_mon+1);
+    universal_time_and_local_time_zone->mday = 
+                OGS_NAS_TIME_TO_BCD(gmt.tm_mday);
+    universal_time_and_local_time_zone->hour = 
+                OGS_NAS_TIME_TO_BCD(gmt.tm_hour);
+    universal_time_and_local_time_zone->min =
+                OGS_NAS_TIME_TO_BCD(gmt.tm_min);
+    universal_time_and_local_time_zone->sec =
+                OGS_NAS_TIME_TO_BCD(gmt.tm_sec);
+    universal_time_and_local_time_zone->timezone = *local_time_zone;
+
+    emm_information->presencemask |=
+        OGS_NAS_EPS_EMM_INFORMATION_NETWORK_DAYLIGHT_SAVING_TIME_PRESENT;
+    network_daylight_saving_time->length = 1;
+
+    emmbuf = nas_eps_security_encode(mme_ue, &message);
+    if (NULL == emmbuf) {
+        return OGS_ERROR;
+    }
+
+    rv = nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
+    if (OGS_OK != rv) {
+        return rv;
+    }
+
+    ogs_debug("EMM information");
+    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+
+    return rv;
 }
 
 static uint8_t emm_cause_from_access_control(ogs_plmn_id_t *plmn_id)

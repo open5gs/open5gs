@@ -216,8 +216,12 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
     if (req->pdn_type.u8 == OGS_PDU_SESSION_TYPE_IPV4V6)
         indication.dual_address_bearer_flag = 1;
 
-    if (sess->request_type.value == OGS_NAS_EPS_REQUEST_TYPE_HANDOVER)
+    if (sess->request_type.value == OGS_NAS_EPS_REQUEST_TYPE_HANDOVER) {
         indication.handover_indication = 1;
+    }
+    else if (sess->request_type.value == OGS_NAS_EPS_REQUEST_TYPE_EMERGENCY) {
+        indication.emergency_pdu_session_indication = 1;
+    }
 
     if (create_action == OGS_GTP_CREATE_IN_PATH_SWITCH_REQUEST)
         indication.operation_indication = 1;
@@ -417,6 +421,14 @@ ogs_pkbuf_t *mme_s11_build_modify_bearer_request(
 
         if (sess->request_type.value == OGS_NAS_EPS_REQUEST_TYPE_HANDOVER) {
             indication.handover_indication = 1;
+            req->indication_flags.presence = 1;
+            req->indication_flags.data = &indication;
+            req->indication_flags.len = sizeof(ogs_gtp2_indication_t);
+            break;
+        }
+
+        if (sess->request_type.value == OGS_NAS_EPS_REQUEST_TYPE_EMERGENCY) {
+            indication.emergency_pdu_session_indication = 1;
             req->indication_flags.presence = 1;
             req->indication_flags.data = &indication;
             req->indication_flags.len = sizeof(ogs_gtp2_indication_t);

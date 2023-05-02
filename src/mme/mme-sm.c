@@ -32,7 +32,9 @@
 #include "mme-s11-handler.h"
 #include "mme-fd-path.h"
 #include "mme-s6a-handler.h"
+#include "mme-s13-handler.h"
 #include "mme-path.h"
+#include <hiredis.h>
 
 void mme_state_initial(ogs_fsm_t *s, mme_event_t *e)
 {
@@ -48,6 +50,50 @@ void mme_state_final(ogs_fsm_t *s, mme_event_t *e)
     mme_sm_debug(e);
 
     ogs_assert(s);
+}
+
+static bool is_messgae_dup(uint8_t *buf, size_t buf_sz) {
+    bool is_dup = true;
+    redisReply *reply = NULL;
+    redisContext *c = redisConnect(
+        mme_self()->redis_config.address,
+        mme_self()->redis_config.port
+    );
+
+    if (c != NULL && c->err) {
+        /* If we cannot connect to redis 
+         * we don't want to cripple the system */
+        ogs_fatal("%s - Redis config {address: '%s', port: %i, expire_time_sec: %i}",
+            c->errstr,
+            mme_self()->redis_config.address,
+            mme_self()->redis_config.port,
+            mme_self()->redis_config.expire_time_sec
+        );
+        return false;
+    }
+
+    /* Have we seen this exact message recently? */
+    reply = redisCommand(c, "GET %b", buf, buf_sz);
+
+    if (reply->type != REDIS_REPLY_NIL) {
+        ogs_debug("S1AP message was a duplicate");
+        is_dup = true;
+    }
+    else {
+        ogs_debug("S1AP message was not a duplicate");
+        is_dup = false;
+    }
+    freeReplyObject(reply);
+
+    /* Tell redis to remember this message for 3 seconds */
+    reply = redisCommand(c, "INCR %b", buf, buf_sz);
+    freeReplyObject(reply);
+    reply = redisCommand(c, "EXPIRE %b %i", buf, buf_sz, mme_self()->redis_config.expire_time_sec);
+    freeReplyObject(reply);
+
+    redisFree(c);
+
+    return is_dup;
 }
 
 void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
@@ -74,6 +120,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
     mme_sess_t *sess = NULL;
 
     ogs_diam_s6a_message_t *s6a_message = NULL;
+    ogs_diam_s13_message_t *s13_message = NULL;
     uint8_t emm_cause = 0;
 
     ogs_gtp_node_t *gnode = NULL;
@@ -190,17 +237,27 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(OGS_FSM_STATE(&enb->sm));
 
         rc = ogs_s1ap_decode(&s1ap_message, pkbuf);
-        if (rc == OGS_OK) {
-            e->enb = enb;
-            e->s1ap_message = &s1ap_message;
-            ogs_fsm_dispatch(&enb->sm, e);
-        } else {
-            ogs_warn("Cannot decode S1AP message");
-            r = s1ap_send_error_indication(
-                    enb, NULL, NULL, S1AP_Cause_PR_protocol,
-                    S1AP_CauseProtocol_abstract_syntax_error_falsely_constructed_message);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
+
+        bool is_dup = false;
+        if (mme_self()->redis_config.enabled) {
+            is_dup = is_messgae_dup(pkbuf->data, pkbuf->len);
+        }
+
+        /* If the message is a duplicate then
+         * we pretend we never got a message */
+        if (!is_dup) {
+            if (rc == OGS_OK) {
+                e->enb = enb;
+                e->s1ap_message = &s1ap_message;
+                ogs_fsm_dispatch(&enb->sm, e);
+            } else {
+                ogs_warn("Cannot decode S1AP message");
+                r = s1ap_send_error_indication(
+                        enb, NULL, NULL, S1AP_Cause_PR_protocol,
+                        S1AP_CauseProtocol_abstract_syntax_error_falsely_constructed_message);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+            }
         }
 
         ogs_s1ap_free(&s1ap_message);
@@ -471,7 +528,46 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_subscription_data_free(&s6a_message->ula_message.subscription_data);
         ogs_free(s6a_message);
         break;
+    case MME_EVENT_S13_MESSAGE:
+        mme_ue = e->mme_ue;
+        ogs_assert(mme_ue);
+        s13_message = e->s13_message;
+        ogs_assert(s13_message);
 
+        switch(s13_message->cmd_code) {
+            case OGS_DIAM_S13_CMD_CODE_ME_IDENTITY_CHECK:
+                emm_cause = mme_s13_handle_eca(mme_ue, s13_message);
+                if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
+                    ogs_info("[%s] Attach reject [OGS_NAS_EMM_CAUSE:%d]",
+                            mme_ue->imsi_bcd, emm_cause);
+                    enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+                    if (!enb_ue) {
+                        ogs_error("S13 context has already been removed");
+                        break;
+                    }
+                    ogs_assert(OGS_OK ==
+                        nas_eps_send_attach_reject(mme_ue, emm_cause,
+                            OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
+
+                    ogs_assert(OGS_OK ==
+                        s1ap_send_ue_context_release_command(enb_ue,
+                            S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                            S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
+                    break;
+                }
+                else {
+                    /* Now that the UE has been
+                     * validated we can send the 
+                     * Update Location Request to HSS */
+                    mme_s6a_send_ulr(mme_ue);
+                }
+                break;
+            default:
+                ogs_error("Invalid Type[%d]", s13_message->cmd_code);
+                break;
+        }
+        ogs_free(s13_message);
+        break;
     case MME_EVENT_S11_MESSAGE:
         pkbuf = e->pkbuf;
         ogs_assert(pkbuf);
