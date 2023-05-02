@@ -131,6 +131,11 @@ if build_tests
     subdir('tests')
 endif
 
+# Check if the 'fuzzing' option is defined
+if get_option('fuzzing')
+    subdir('tests/fuzzing')
+endif
+
 message('\n'.join([
   '',
   '        prefix:                       ' + prefix,
