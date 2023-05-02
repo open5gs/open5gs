@@ -32,14 +32,21 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
     if (Size < kMinInputLength || Size > kMaxInputLength) {
         return 1;
     }
-    initialize();
+
+    if (!initialized) {
+        initialize();
+        ogs_log_install_domain(&__ogs_gtp_domain, "gtp", OGS_LOG_NONE);
+        ogs_log_install_domain(&__ogs_tlv_domain, "tlv", OGS_LOG_NONE);
+    }
 
     int result;
     ogs_pkbuf_t *pkbuf;
     ogs_gtp2_create_session_request_t req;
 
-    memset(&req, 0, sizeof(req));
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    if (pkbuf == NULL) {
+        return 1;
+    }
 
     ogs_pkbuf_put_data(pkbuf, Data, Size);
 
@@ -47,6 +54,5 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
 
     ogs_pkbuf_free(pkbuf);
 
-    terminate();
     return 0;
 }

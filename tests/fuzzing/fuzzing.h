@@ -19,11 +19,7 @@
 #include "ogs-core.h"
 #include "core/abts.h"
 
-static void terminate(void)
-{
-    ogs_pkbuf_default_destroy();
-    ogs_core_terminate();
-}
+static int initialized = 0;
 
 void initialize(void) {
 
@@ -33,4 +29,6 @@ void initialize(void) {
 
     ogs_pkbuf_default_init(&config);
     ogs_pkbuf_default_create(&config);
+
+    initialized = 1;
 }

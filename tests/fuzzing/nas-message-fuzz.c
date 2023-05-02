@@ -32,20 +32,26 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
     if (Size < kMinInputLength || Size > kMaxInputLength) {
         return 1;
     }
-    initialize();
 
-    ogs_nas_eps_message_t message;
-    ogs_pkbuf_t *pkbuf;
+    if (!initialized) {
+        initialize();
+        ogs_log_install_domain(&__ogs_nas_domain, "nas", OGS_LOG_NONE);
+    }
+
     int result;
+    ogs_pkbuf_t *pkbuf;
+    ogs_nas_eps_message_t message;
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_assert(pkbuf);
+    if (pkbuf == NULL) {
+        return 1;
+    }
+
     ogs_pkbuf_put_data(pkbuf, Data, Size);
 
     result = ogs_nas_emm_decode(&message, pkbuf);
 
     ogs_pkbuf_free(pkbuf);
 
-    terminate();
     return result;
 }
