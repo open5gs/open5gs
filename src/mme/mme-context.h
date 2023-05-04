@@ -176,7 +176,13 @@ typedef struct mme_pgw_s {
     ogs_lnode_t     lnode;
 
     ogs_sockaddr_t  *sa_list;
-    const char      *apn;
+
+    const char      *apn[OGS_MAX_NUM_OF_APN];
+    uint8_t         num_of_apn;
+    uint16_t        tac[OGS_MAX_NUM_OF_TAI];
+    uint8_t         num_of_tac;
+    uint32_t        e_cell_id[OGS_MAX_NUM_OF_CELL_ID];
+    uint8_t         num_of_e_cell_id;
 } mme_pgw_t;
 
 #define MME_SGSAP_IS_CONNECTED(__mME) \
@@ -764,8 +770,8 @@ mme_sgw_t *mme_sgw_find_by_addr(ogs_sockaddr_t *addr);
 mme_pgw_t *mme_pgw_add(ogs_sockaddr_t *addr);
 void mme_pgw_remove(mme_pgw_t *pgw);
 void mme_pgw_remove_all(void);
-ogs_sockaddr_t *mme_pgw_addr_find_by_apn(
-        ogs_list_t *list, int family, char *apn);
+ogs_sockaddr_t *mme_pgw_addr_find_by_apn_enb(
+        ogs_list_t *list, int family, mme_sess_t *sess);
 
 mme_vlr_t *mme_vlr_add(ogs_sockaddr_t *sa_list, ogs_sockopt_t *option);
 void mme_vlr_remove(mme_vlr_t *vlr);
