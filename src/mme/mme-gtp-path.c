@@ -179,9 +179,9 @@ int mme_gtp_open(void)
 
     OGS_SETUP_GTPC_SERVER;
 
-    mme_self()->pgw_addr = mme_pgw_addr_find_by_apn(
+    mme_self()->pgw_addr = mme_pgw_addr_find_by_apn_enb(
             &mme_self()->pgw_list, AF_INET, NULL);
-    mme_self()->pgw_addr6 = mme_pgw_addr_find_by_apn(
+    mme_self()->pgw_addr6 = mme_pgw_addr_find_by_apn_enb(
             &mme_self()->pgw_list, AF_INET6, NULL);
     ogs_assert(mme_self()->pgw_addr || mme_self()->pgw_addr6);
 

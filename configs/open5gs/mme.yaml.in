@@ -450,6 +450,24 @@ sgwc:
 #      - addr: 127.0.0.4
 #      - addr: 127.0.0.5
 #        apn: volte
+#
+# o SMF selection by eNodeB TAC
+#   (either single TAC or multiple TACs, DECIMAL representation)
+#
+#   gtpc:
+#     - addr: 127.0.0.4
+#       tac: 26000
+#     - addr: 127.0.2.4
+#       tac: [25000, 27000, 28000]
+#
+# o SMF selection by e_cell_id(28bit)
+#   (either single or multiple e_cell_id, HEX representation)
+#
+#   gtpc:
+#     - addr: 127.0.0.4
+#       e_cell_id: abcde01
+#     - addr: 127.0.2.4
+#       e_cell_id: [12345, a9413, 98765]
 smf:
     gtpc:
       - addr:

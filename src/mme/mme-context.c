@@ -1628,8 +1628,13 @@ int mme_context_parse_config(void)
                         int family = AF_UNSPEC;
                         int i, num = 0;
                         const char *hostname[OGS_MAX_NUM_OF_HOSTNAME];
-                        const char *apn = NULL;
                         uint16_t port = ogs_gtp_self()->gtpc_port;
+                        const char *apn[OGS_MAX_NUM_OF_APN] = {NULL,};
+                        uint8_t num_of_apn = 0;
+                        uint16_t tac[OGS_MAX_NUM_OF_TAI] = {0,};
+                        uint8_t num_of_tac = 0;
+                        uint32_t e_cell_id[OGS_MAX_NUM_OF_CELL_ID] = {0,};
+                        uint8_t num_of_e_cell_id = 0;
 
                         if (ogs_yaml_iter_type(&gtpc_array) ==
                                 YAML_MAPPING_NODE) {
@@ -1686,7 +1691,82 @@ int mme_context_parse_config(void)
                                 const char *v = ogs_yaml_iter_value(&gtpc_iter);
                                 if (v) port = atoi(v);
                             } else if (!strcmp(gtpc_key, "apn")) {
-                                apn = ogs_yaml_iter_value(&gtpc_iter);
+                                ogs_yaml_iter_t apn_iter;
+                                ogs_yaml_iter_recurse(&gtpc_iter, &apn_iter);
+                                ogs_assert(ogs_yaml_iter_type(&apn_iter) !=
+                                    YAML_MAPPING_NODE);
+
+                                do {
+                                    const char *v = NULL;
+
+                                    ogs_assert(num_of_apn <
+                                            OGS_MAX_NUM_OF_APN);
+                                    if (ogs_yaml_iter_type(&apn_iter) ==
+                                            YAML_SEQUENCE_NODE) {
+                                        if (!ogs_yaml_iter_next(&apn_iter))
+                                            break;
+                                    }
+
+                                    v = ogs_yaml_iter_value(&apn_iter);
+                                    if (v) {
+                                        apn[num_of_apn] = v;
+                                        num_of_apn++;
+                                    }
+                                } while (
+                                    ogs_yaml_iter_type(&apn_iter) ==
+                                        YAML_SEQUENCE_NODE);
+                            } else if (!strcmp(gtpc_key, "tac")) {
+                                ogs_yaml_iter_t tac_iter;
+                                ogs_yaml_iter_recurse(&gtpc_iter, &tac_iter);
+                                ogs_assert(ogs_yaml_iter_type(&tac_iter) !=
+                                    YAML_MAPPING_NODE);
+
+                                do {
+                                    const char *v = NULL;
+
+                                    ogs_assert(num_of_tac <
+                                            OGS_MAX_NUM_OF_TAI);
+                                    if (ogs_yaml_iter_type(&tac_iter) ==
+                                            YAML_SEQUENCE_NODE) {
+                                        if (!ogs_yaml_iter_next(&tac_iter))
+                                            break;
+                                    }
+
+                                    v = ogs_yaml_iter_value(&tac_iter);
+                                    if (v) {
+                                        tac[num_of_tac] = atoi(v);
+                                        num_of_tac++;
+                                    }
+                                } while (
+                                    ogs_yaml_iter_type(&tac_iter) ==
+                                        YAML_SEQUENCE_NODE);
+                            } else if (!strcmp(gtpc_key, "e_cell_id")) {
+                                ogs_yaml_iter_t e_cell_id_iter;
+                                ogs_yaml_iter_recurse(&gtpc_iter,
+                                        &e_cell_id_iter);
+                                ogs_assert(ogs_yaml_iter_type(&e_cell_id_iter)
+                                        != YAML_MAPPING_NODE);
+
+                                do {
+                                    const char *v = NULL;
+
+                                    ogs_assert(num_of_e_cell_id <
+                                            OGS_MAX_NUM_OF_CELL_ID);
+                                    if (ogs_yaml_iter_type(&e_cell_id_iter) ==
+                                            YAML_SEQUENCE_NODE) {
+                                        if (!ogs_yaml_iter_next(
+                                                    &e_cell_id_iter))
+                                            break;
+                                    }
+                                    v = ogs_yaml_iter_value(&e_cell_id_iter);
+                                    if (v) {
+                                        e_cell_id[num_of_e_cell_id]
+                                            = ogs_uint64_from_string((char*)v);
+                                        num_of_e_cell_id++;
+                                    }
+                                } while (
+                                    ogs_yaml_iter_type(&e_cell_id_iter) ==
+                                        YAML_SEQUENCE_NODE);
                             } else
                                 ogs_warn("unknown key `%s`", gtpc_key);
                         }
@@ -1708,7 +1788,18 @@ int mme_context_parse_config(void)
                         pgw = mme_pgw_add(addr);
                         ogs_assert(pgw);
 
-                        pgw->apn = apn;
+                        pgw->num_of_apn = num_of_apn;
+                        if (num_of_apn != 0)
+                            memcpy(pgw->apn, apn, sizeof(pgw->apn));
+
+                        pgw->num_of_tac = num_of_tac;
+                        if (num_of_tac != 0)
+                            memcpy(pgw->tac, tac, sizeof(pgw->tac));
+
+                        pgw->num_of_e_cell_id = num_of_e_cell_id;
+                        if (num_of_e_cell_id != 0)
+                            memcpy(pgw->e_cell_id, e_cell_id,
+                                    sizeof(pgw->e_cell_id));
 
                     } while (ogs_yaml_iter_type(&gtpc_array) ==
                             YAML_SEQUENCE_NODE);
@@ -1881,8 +1972,33 @@ void mme_pgw_remove_all(void)
         mme_pgw_remove(pgw);
 }
 
-ogs_sockaddr_t *mme_pgw_addr_find_by_apn(
-        ogs_list_t *list, int family, char *apn)
+static bool compare_apn_enb_info(
+    mme_pgw_t *pgw, mme_sess_t *sess)
+{
+    mme_ue_t *mme_ue = NULL;
+    int i;
+
+    ogs_assert(pgw);
+    ogs_assert(sess);
+    ogs_assert(sess->session);
+    ogs_assert(sess->session->name);
+    mme_ue = sess->mme_ue;
+    ogs_assert(mme_ue);
+
+    for (i = 0; i < pgw->num_of_apn; i++)
+      if (!ogs_strcasecmp(pgw->apn[i], sess->session->name)) return true;
+
+    for (i = 0; i < pgw->num_of_e_cell_id; i++)
+      if (pgw->e_cell_id[i] == mme_ue->e_cgi.cell_id) return true;
+
+    for (i = 0; i < pgw->num_of_tac; i++)
+      if (pgw->tac[i] == mme_ue->tai.tac) return true;
+
+    return false;
+}
+
+ogs_sockaddr_t *mme_pgw_addr_find_by_apn_enb(
+    ogs_list_t *list, int family, mme_sess_t *sess)
 {
     mme_pgw_t *pgw = NULL;
     ogs_assert(list);
@@ -1893,7 +2009,7 @@ ogs_sockaddr_t *mme_pgw_addr_find_by_apn(
 
         while (addr) {
             if (addr->ogs_sa_family == family &&
-                (!apn || (pgw->apn && !ogs_strcasecmp(apn, pgw->apn)))) {
+                (!sess || compare_apn_enb_info(pgw, sess))) {
                 return addr;
             }
             addr = addr->next;
