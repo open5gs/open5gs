@@ -336,7 +336,7 @@ void mme_gtp_send_delete_all_sessions(mme_ue_t *mme_ue, int action)
         if (MME_HAVE_SGW_S1U_PATH(sess)) {
             mme_gtp_send_delete_session_request(sgw_ue, sess, action);
         } else {
-            mme_sess_remove(sess);
+            MME_SESS_CLEAR(sess);
         }
     }
 }

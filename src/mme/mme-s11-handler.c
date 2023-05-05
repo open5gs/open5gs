@@ -745,10 +745,7 @@ void mme_s11_handle_delete_session_response(
         ogs_assert_if_reached();
     }
 
-    if (mme_sess_count(mme_ue) == 1) /* Last Session */
-        CLEAR_SESSION_CONTEXT(mme_ue);
-
-    mme_sess_remove(sess);
+    MME_SESS_CLEAR(sess);
 }
 
 void mme_s11_handle_create_bearer_request(

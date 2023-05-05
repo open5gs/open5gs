@@ -3596,8 +3596,9 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
     pti = message->esm.h.procedure_transaction_identity;
     ebi = message->esm.h.eps_bearer_identity;
 
-    ogs_debug("mme_bearer_find_or_add_by_message() [PTI:%d, EBI:%d]",
-            pti, ebi);
+    ogs_debug("mme_bearer_find_or_add_by_message() : "
+            "ESM message type:%d, PTI:%d, EBI:%d",
+            message->esm.h.message_type, pti, ebi);
 
     if (ebi != OGS_NAS_EPS_BEARER_IDENTITY_UNASSIGNED) {
         bearer = mme_bearer_find_by_ue_ebi(mme_ue, ebi);
@@ -3736,7 +3737,11 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
     }
 
     bearer = mme_default_bearer_in_sess(sess);
-    ogs_assert(bearer);
+    if (!bearer) {
+        ogs_error("No Bearer(%d) : ESM message type:%d, PTI:%d, EBI:%d",
+                mme_sess_count(mme_ue), message->esm.h.message_type, pti, ebi);
+        ogs_assert_if_reached();
+    }
 
     return bearer;
 }
