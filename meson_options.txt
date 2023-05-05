@@ -1,0 +1,2 @@
+option('fuzzing', type: 'boolean', value: false, description: 'Enable fuzzing tests')
+option('lib_fuzzing_engine', type : 'string', value : '', description : 'Path to the libFuzzer engine library')
