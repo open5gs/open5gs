@@ -365,7 +365,6 @@ typedef struct smf_sess_s {
 
     /* Paging */
     struct {
-        bool ue_requested_pdu_session_establishment_done;
         char *n1n2message_location;
     } paging;
 

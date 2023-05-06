@@ -28,6 +28,8 @@
 #pragma GCC diagnostic ignored "-Wstrict-prototypes"
 #endif
 
+#define OGS_SBI_DISABLE_NETWORK_SERVICE_REQUEST_WHILE_ACTIVATING 1
+
 #include "model/nf_profile.h"
 #include "model/nf_group_cond.h"
 #include "model/smf_info.h"
