@@ -11,7 +11,8 @@ permalink: /support/
 
 Open5GS is licensed under a dual licensing model designed to meet the development and distribution needs of both commercial and open source projects.
 
-The commercial Open5GS license gives you the full rights to create and distribute software on your own terms without any open source license obligations. With the commercial license, you also have access to the official NeoPlane Support and close strategic relationship with [NeoPlane](https://neoplane.io) to make sure your development goals are met.
+The commercial Open5GS license gives you the full rights to create and distribute software on your own terms without any open source license obligations. You can grow with Open5GS by establishing a close strategic relationship with [NeoPlane](https://neoplane.io).
+
 
 Open5GS is also available under AGPL-3.0 open source licenses. The Open5GS open source licensing is ideal for use cases such as open source projects with open source distribution, student/academic purposes, hobby projects, internal research projects without external distribution, or other projects where all AGPL-3.0 obligations can be met.
 
