@@ -202,6 +202,14 @@ const char *labels_slice[] = {
         .num_labels = OGS_ARRAY_SIZE(labels_slice), \
         .labels = labels_slice, \
     },
+#define SMF_METR_BY_SLICE_CTR_ENTRY(_id, _name, _desc) \
+    [_id] = { \
+        .type = OGS_METRICS_METRIC_TYPE_COUNTER, \
+        .name = _name, \
+        .description = _desc, \
+        .num_labels = OGS_ARRAY_SIZE(labels_slice), \
+        .labels = labels_slice, \
+    },
 ogs_metrics_spec_t *smf_metrics_spec_by_slice[_SMF_METR_BY_SLICE_MAX];
 ogs_hash_t *metrics_hash_by_slice = NULL;   /* hash table for SLICE labels */
 smf_metrics_spec_def_t smf_metrics_spec_def_by_slice[_SMF_METR_BY_SLICE_MAX] = {
@@ -210,6 +218,14 @@ SMF_METR_BY_SLICE_GAUGE_ENTRY(
     SMF_METR_GAUGE_SM_SESSIONNBR,
     "fivegs_smffunction_sm_sessionnbr",
     "Active Sessions")
+SMF_METR_BY_SLICE_CTR_ENTRY(
+    SMF_METR_CTR_SM_PDUSESSIONCREATIONREQ,
+    "fivegs_smffunction_sm_pdusessioncreationreq",
+    "Number of PDU sessions requested to be created by the SMF")
+SMF_METR_BY_SLICE_CTR_ENTRY(
+    SMF_METR_CTR_SM_PDUSESSIONCREATIONSUCC,
+    "fivegs_smffunction_sm_pdusessioncreationsucc",
+    "Number of PDU sessions successfully created by the SMF")
 };
 void smf_metrics_init_by_slice(void);
 int smf_metrics_free_inst_by_slice(ogs_metrics_inst_t **inst);
@@ -411,11 +427,15 @@ SMF_METR_BY_CAUSE_CTR_ENTRY(
     SMF_METR_CTR_SM_N4SESSIONESTABFAIL,
     "fivegs_smffunction_sm_n4sessionestabfail",
     "Number of failed N4 session establishments evidented by SMF")
+SMF_METR_BY_CAUSE_CTR_ENTRY(
+    SMF_METR_CTR_SM_PDUSESSIONCREATIONFAIL,
+    "fivegs_smffunction_sm_pdusessioncreationfail",
+    "Number of PDU sessions failed to be created by the SMF")
 };
 void smf_metrics_init_by_cause(void);
 int smf_metrics_free_inst_by_cause(ogs_metrics_inst_t **inst);
 typedef struct smf_metric_key_by_cause_s {
-    uint8_t                     cause;
+    int                         cause;
     smf_metric_type_by_cause_t  t;
 } smf_metric_key_by_cause_t;
 
@@ -425,7 +445,7 @@ void smf_metrics_init_by_cause(void)
     ogs_assert(metrics_hash_by_cause);
 }
 
-void smf_metrics_inst_by_cause_add(uint8_t cause,
+void smf_metrics_inst_by_cause_add(int cause,
         smf_metric_type_by_cause_t t, int val)
 {
     ogs_metrics_inst_t *metrics = NULL;

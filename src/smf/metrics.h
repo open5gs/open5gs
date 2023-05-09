@@ -68,6 +68,8 @@ static inline void smf_metrics_inst_gtp_node_dec(
 /* BY SLICE */
 typedef enum smf_metric_type_by_slice_s {
     SMF_METR_GAUGE_SM_SESSIONNBR = 0,
+    SMF_METR_CTR_SM_PDUSESSIONCREATIONREQ,
+    SMF_METR_CTR_SM_PDUSESSIONCREATIONSUCC,
     _SMF_METR_BY_SLICE_MAX,
 } smf_metric_type_by_slice_t;
 
@@ -88,11 +90,12 @@ void smf_metrics_inst_by_5qi_add(
 /* BY CAUSE */
 typedef enum smf_metric_type_by_cause_s {
     SMF_METR_CTR_SM_N4SESSIONESTABFAIL = 0,
+    SMF_METR_CTR_SM_PDUSESSIONCREATIONFAIL,
     _SMF_METR_BY_CAUSE_MAX,
 } smf_metric_type_by_cause_t;
 
 void smf_metrics_inst_by_cause_add(
-    uint8_t cause, smf_metric_type_by_cause_t t, int val);
+    int cause, smf_metric_type_by_cause_t t, int val);
 void smf_metrics_init(void);
 void smf_metrics_final(void);
 
