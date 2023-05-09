@@ -216,6 +216,9 @@ void smf_sbi_send_sm_context_create_error(
     ogs_assert(response);
     ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
+    smf_metrics_inst_by_cause_add(problem.status,
+            SMF_METR_CTR_SM_PDUSESSIONCREATIONFAIL, 1);
+
     if (n1smbuf)
         ogs_pkbuf_free(n1smbuf);
 }

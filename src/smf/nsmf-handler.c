@@ -238,6 +238,8 @@ bool smf_nsmf_handle_create_sm_context(
 
     smf_metrics_inst_by_slice_add(&sess->plmn_id, &sess->s_nssai,
             SMF_METR_GAUGE_SM_SESSIONNBR, 1);
+    smf_metrics_inst_by_slice_add(&sess->plmn_id, &sess->s_nssai,
+            SMF_METR_CTR_SM_PDUSESSIONCREATIONREQ, 1);
 
     if (sess->sm_context_status_uri)
         ogs_free(sess->sm_context_status_uri);
