@@ -147,8 +147,20 @@ bool pcf_nudr_dr_handle_query_am_data(
 
         ogs_subscription_data_free(&subscription_data);
 
-        pcf_metrics_inst_by_plmn_add(&pcf_ue->guami.plmn_id,
-                PCF_METR_CTR_PA_POLICYAMASSOSUCC, 1);
+        OpenAPI_lnode_t *node = NULL;
+        OpenAPI_list_for_each(PolicyAssociation.request->allowed_snssais, node) {
+            struct OpenAPI_snssai_s *Snssai = node->data;
+            if (Snssai) {
+                ogs_s_nssai_t s_nssai;
+                s_nssai.sst = Snssai->sst;
+                s_nssai.sd = ogs_s_nssai_sd_from_string(Snssai->sd);
+
+                pcf_metrics_inst_by_slice_add(&pcf_ue->guami.plmn_id,
+                        &s_nssai, PCF_METR_CTR_PA_POLICYAMASSOSUCC, 1);
+            } else {
+                ogs_error("[%s] No Snssai", pcf_ue->supi);
+            }
+        }
 
         return true;
 

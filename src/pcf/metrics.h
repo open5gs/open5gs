@@ -24,19 +24,11 @@ static inline void pcf_metrics_inst_global_inc(pcf_metric_type_global_t t)
 static inline void pcf_metrics_inst_global_dec(pcf_metric_type_global_t t)
 { ogs_metrics_inst_dec(pcf_metrics_inst_global[t]); }
 
-/* BY_PLMN */
-typedef enum pcf_metric_type_by_plmn_s {
-    PCF_METR_CTR_PA_POLICYAMASSOREQ = 0,
-    PCF_METR_CTR_PA_POLICYAMASSOSUCC,
-    _PCF_METR_BY_PLMN_MAX,
-} pcf_metric_type_by_plmn_t;
-
-void pcf_metrics_inst_by_plmn_add(
-    ogs_plmn_id_t *plmn, pcf_metric_type_by_plmn_t t, int val);
-
 /* BY_SLICE */
 typedef enum pcf_metric_type_by_slice_s {
-    PCF_METR_CTR_PA_POLICYSMASSOREQ = 0,
+    PCF_METR_CTR_PA_POLICYAMASSOREQ = 0,
+    PCF_METR_CTR_PA_POLICYAMASSOSUCC,
+    PCF_METR_CTR_PA_POLICYSMASSOREQ,
     PCF_METR_CTR_PA_POLICYSMASSOSUCC,
     PCF_METR_GAUGE_PA_SESSIONNBR,
     _PCF_METR_BY_SLICE_MAX,
