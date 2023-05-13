@@ -133,6 +133,14 @@ cJSON *OpenAPI_ue_policy_set_convertToJSON(OpenAPI_ue_policy_set_t *ue_policy_se
     if (ue_policy_set->pra_infos) {
         OpenAPI_list_for_each(ue_policy_set->pra_infos, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_ue_policy_set_convertToJSON() failed [pra_infos]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_ue_policy_set_convertToJSON() failed [pra_infos]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_presence_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -169,6 +177,14 @@ cJSON *OpenAPI_ue_policy_set_convertToJSON(OpenAPI_ue_policy_set_t *ue_policy_se
     if (ue_policy_set->ue_policy_sections) {
         OpenAPI_list_for_each(ue_policy_set->ue_policy_sections, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_ue_policy_set_convertToJSON() failed [ue_policy_sections]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_ue_policy_set_convertToJSON() failed [ue_policy_sections]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_ue_policy_section_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -205,6 +221,14 @@ cJSON *OpenAPI_ue_policy_set_convertToJSON(OpenAPI_ue_policy_set_t *ue_policy_se
     if (ue_policy_set->allowed_route_sel_descs) {
         OpenAPI_list_for_each(ue_policy_set->allowed_route_sel_descs, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_ue_policy_set_convertToJSON() failed [allowed_route_sel_descs]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_ue_policy_set_convertToJSON() failed [allowed_route_sel_descs]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_plmn_route_selection_descriptor_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

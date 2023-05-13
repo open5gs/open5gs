@@ -56,7 +56,11 @@ cJSON *OpenAPI_smf_change_info_convertToJSON(OpenAPI_smf_change_info_t *smf_chan
         goto end;
     }
     OpenAPI_list_for_each(smf_change_info->pdu_session_id_list, node) {
-        if (cJSON_AddNumberToObject(pdu_session_id_listList, "", (uintptr_t)node->data) == NULL) {
+        if (node->data == NULL) {
+            ogs_error("OpenAPI_smf_change_info_convertToJSON() failed [pdu_session_id_list]");
+            goto end;
+        }
+        if (cJSON_AddNumberToObject(pdu_session_id_listList, "", *(double *)node->data) == NULL) {
             ogs_error("OpenAPI_smf_change_info_convertToJSON() failed [pdu_session_id_list]");
             goto end;
         }

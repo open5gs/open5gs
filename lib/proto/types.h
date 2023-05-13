@@ -795,6 +795,11 @@ typedef struct ogs_datum_s {
     unsigned int size;
 } ogs_datum_t;
 
+typedef struct ogs_port_s {
+    bool presence;
+    uint16_t port;
+} ogs_port_t;
+
 #ifdef __cplusplus
 }
 #endif

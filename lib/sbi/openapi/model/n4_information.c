@@ -128,7 +128,11 @@ cJSON *OpenAPI_n4_information_convertToJSON(OpenAPI_n4_information_t *n4_informa
         goto end;
     }
     OpenAPI_list_for_each(n4_information->n9_ul_pdr_id_list, node) {
-        if (cJSON_AddNumberToObject(n9_ul_pdr_id_listList, "", (uintptr_t)node->data) == NULL) {
+        if (node->data == NULL) {
+            ogs_error("OpenAPI_n4_information_convertToJSON() failed [n9_ul_pdr_id_list]");
+            goto end;
+        }
+        if (cJSON_AddNumberToObject(n9_ul_pdr_id_listList, "", *(double *)node->data) == NULL) {
             ogs_error("OpenAPI_n4_information_convertToJSON() failed [n9_ul_pdr_id_list]");
             goto end;
         }

@@ -239,3 +239,16 @@ uint64_t ogs_uint64_from_string(char *str)
 
     return x;
 }
+
+double *ogs_alloc_double(double value)
+{
+    double *mem = (double *)ogs_calloc(1, sizeof(double));
+    if (!mem) {
+        ogs_error("No memory");
+        return NULL;
+    }
+
+    *mem = value;
+
+    return mem;
+}

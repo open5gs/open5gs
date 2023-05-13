@@ -55,6 +55,8 @@ char *ogs_uint64_to_string(uint64_t x);
 ogs_uint24_t ogs_uint24_from_string(char *str);
 uint64_t ogs_uint64_from_string(char *str);
 
+double *ogs_alloc_double(double value);
+
 #ifdef __cplusplus
 }
 #endif

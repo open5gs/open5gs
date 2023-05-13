@@ -69,6 +69,14 @@ cJSON *OpenAPI_acceptable_service_info_convertToJSON(OpenAPI_acceptable_service_
     if (acceptable_service_info->acc_bw_med_comps) {
         OpenAPI_list_for_each(acceptable_service_info->acc_bw_med_comps, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_acceptable_service_info_convertToJSON() failed [acc_bw_med_comps]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_acceptable_service_info_convertToJSON() failed [acc_bw_med_comps]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_media_component_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

@@ -855,7 +855,11 @@ cJSON *OpenAPI_sm_context_create_data_convertToJSON(OpenAPI_sm_context_create_da
         goto end;
     }
     OpenAPI_list_for_each(sm_context_create_data->pdu_sessions_activate_list, node) {
-        if (cJSON_AddNumberToObject(pdu_sessions_activate_listList, "", (uintptr_t)node->data) == NULL) {
+        if (node->data == NULL) {
+            ogs_error("OpenAPI_sm_context_create_data_convertToJSON() failed [pdu_sessions_activate_list]");
+            goto end;
+        }
+        if (cJSON_AddNumberToObject(pdu_sessions_activate_listList, "", *(double *)node->data) == NULL) {
             ogs_error("OpenAPI_sm_context_create_data_convertToJSON() failed [pdu_sessions_activate_list]");
             goto end;
         }
@@ -1304,6 +1308,14 @@ cJSON *OpenAPI_sm_context_create_data_convertToJSON(OpenAPI_sm_context_create_da
     if (sm_context_create_data->nrf_oauth2_required) {
         OpenAPI_list_for_each(sm_context_create_data->nrf_oauth2_required, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_sm_context_create_data_convertToJSON() failed [nrf_oauth2_required]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_sm_context_create_data_convertToJSON() failed [nrf_oauth2_required]");
+                goto end;
+            }
             if (cJSON_AddBoolToObject(localMapObject, localKeyValue->key, (uintptr_t)localKeyValue->value) == NULL) {
                 ogs_error("OpenAPI_sm_context_create_data_convertToJSON() failed [inner]");
                 goto end;

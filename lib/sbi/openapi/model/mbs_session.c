@@ -78,6 +78,14 @@ cJSON *OpenAPI_mbs_session_convertToJSON(OpenAPI_mbs_session_t *mbs_session)
     if (mbs_session->mbs_area_sessions) {
         OpenAPI_list_for_each(mbs_session->mbs_area_sessions, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_mbs_session_convertToJSON() failed [mbs_area_sessions]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_mbs_session_convertToJSON() failed [mbs_area_sessions]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_mbs_service_area_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

@@ -110,7 +110,11 @@ cJSON *OpenAPI_rule_report_convertToJSON(OpenAPI_rule_report_t *rule_report)
         goto end;
     }
     OpenAPI_list_for_each(rule_report->cont_vers, node) {
-        if (cJSON_AddNumberToObject(cont_versList, "", (uintptr_t)node->data) == NULL) {
+        if (node->data == NULL) {
+            ogs_error("OpenAPI_rule_report_convertToJSON() failed [cont_vers]");
+            goto end;
+        }
+        if (cJSON_AddNumberToObject(cont_versList, "", *(double *)node->data) == NULL) {
             ogs_error("OpenAPI_rule_report_convertToJSON() failed [cont_vers]");
             goto end;
         }

@@ -1028,6 +1028,14 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->udr_info_list) {
         OpenAPI_list_for_each(nf_profile->udr_info_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [udr_info_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [udr_info_list]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_udr_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -1063,6 +1071,14 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->udm_info_list) {
         OpenAPI_list_for_each(nf_profile->udm_info_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [udm_info_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [udm_info_list]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_udm_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -1098,6 +1114,14 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->ausf_info_list) {
         OpenAPI_list_for_each(nf_profile->ausf_info_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [ausf_info_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [ausf_info_list]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_ausf_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -1133,6 +1157,14 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->amf_info_list) {
         OpenAPI_list_for_each(nf_profile->amf_info_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [amf_info_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [amf_info_list]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_amf_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -1168,6 +1200,14 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->smf_info_list) {
         OpenAPI_list_for_each(nf_profile->smf_info_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [smf_info_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [smf_info_list]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_smf_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -1203,6 +1243,14 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->upf_info_list) {
         OpenAPI_list_for_each(nf_profile->upf_info_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [upf_info_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [upf_info_list]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_upf_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -1238,6 +1286,14 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->pcf_info_list) {
         OpenAPI_list_for_each(nf_profile->pcf_info_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [pcf_info_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [pcf_info_list]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_pcf_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -1273,6 +1329,14 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->bsf_info_list) {
         OpenAPI_list_for_each(nf_profile->bsf_info_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [bsf_info_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [bsf_info_list]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_bsf_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -1308,6 +1372,14 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->chf_info_list) {
         OpenAPI_list_for_each(nf_profile->chf_info_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [chf_info_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [chf_info_list]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_chf_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -1369,6 +1441,14 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->udsf_info_list) {
         OpenAPI_list_for_each(nf_profile->udsf_info_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [udsf_info_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [udsf_info_list]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_udsf_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -1404,6 +1484,14 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->nwdaf_info_list) {
         OpenAPI_list_for_each(nf_profile->nwdaf_info_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [nwdaf_info_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [nwdaf_info_list]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_nwdaf_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -1426,6 +1514,14 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->pcscf_info_list) {
         OpenAPI_list_for_each(nf_profile->pcscf_info_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [pcscf_info_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [pcscf_info_list]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_pcscf_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -1448,6 +1544,14 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->hss_info_list) {
         OpenAPI_list_for_each(nf_profile->hss_info_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [hss_info_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [hss_info_list]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_hss_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -1513,6 +1617,14 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->nf_service_list) {
         OpenAPI_list_for_each(nf_profile->nf_service_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [nf_service_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [nf_service_list]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_nf_service_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -1633,6 +1745,14 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->nf_set_recovery_time_list) {
         OpenAPI_list_for_each(nf_profile->nf_set_recovery_time_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [nf_set_recovery_time_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [nf_set_recovery_time_list]");
+                goto end;
+            }
         }
     }
     }
@@ -1647,6 +1767,14 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->service_set_recovery_time_list) {
         OpenAPI_list_for_each(nf_profile->service_set_recovery_time_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [service_set_recovery_time_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [service_set_recovery_time_list]");
+                goto end;
+            }
         }
     }
     }
@@ -1708,6 +1836,14 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->supported_vendor_specific_features) {
         OpenAPI_list_for_each(nf_profile->supported_vendor_specific_features, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [supported_vendor_specific_features]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [supported_vendor_specific_features]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_vendor_specific_feature_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -1730,6 +1866,14 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->aanf_info_list) {
         OpenAPI_list_for_each(nf_profile->aanf_info_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [aanf_info_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [aanf_info_list]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_aanf_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -1778,6 +1922,14 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->easdf_info_list) {
         OpenAPI_list_for_each(nf_profile->easdf_info_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [easdf_info_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [easdf_info_list]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_easdf_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -1813,6 +1965,14 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->nsacf_info_list) {
         OpenAPI_list_for_each(nf_profile->nsacf_info_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [nsacf_info_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [nsacf_info_list]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_nsacf_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -1835,6 +1995,14 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->mb_smf_info_list) {
         OpenAPI_list_for_each(nf_profile->mb_smf_info_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [mb_smf_info_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [mb_smf_info_list]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_mb_smf_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -1857,6 +2025,14 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->tsctsf_info_list) {
         OpenAPI_list_for_each(nf_profile->tsctsf_info_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [tsctsf_info_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [tsctsf_info_list]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_tsctsf_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -1879,6 +2055,14 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->mb_upf_info_list) {
         OpenAPI_list_for_each(nf_profile->mb_upf_info_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [mb_upf_info_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_nf_profile_convertToJSON() failed [mb_upf_info_list]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_mb_upf_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

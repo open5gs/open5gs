@@ -74,7 +74,11 @@ cJSON *OpenAPI_suci_info_convertToJSON(OpenAPI_suci_info_t *suci_info)
         goto end;
     }
     OpenAPI_list_for_each(suci_info->h_nw_pub_key_ids, node) {
-        if (cJSON_AddNumberToObject(h_nw_pub_key_idsList, "", (uintptr_t)node->data) == NULL) {
+        if (node->data == NULL) {
+            ogs_error("OpenAPI_suci_info_convertToJSON() failed [h_nw_pub_key_ids]");
+            goto end;
+        }
+        if (cJSON_AddNumberToObject(h_nw_pub_key_idsList, "", *(double *)node->data) == NULL) {
             ogs_error("OpenAPI_suci_info_convertToJSON() failed [h_nw_pub_key_ids]");
             goto end;
         }

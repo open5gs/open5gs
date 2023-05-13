@@ -85,7 +85,19 @@ cJSON *OpenAPI_sequence_number_convertToJSON(OpenAPI_sequence_number_t *sequence
     if (sequence_number->last_indexes) {
         OpenAPI_list_for_each(sequence_number->last_indexes, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
-            if (cJSON_AddNumberToObject(localMapObject, localKeyValue->key, (uintptr_t)localKeyValue->value) == NULL) {
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_sequence_number_convertToJSON() failed [last_indexes]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_sequence_number_convertToJSON() failed [last_indexes]");
+                goto end;
+            }
+            if (localKeyValue->value == NULL) {
+                ogs_error("OpenAPI_sequence_number_convertToJSON() failed [inner]");
+                goto end;
+            }
+            if (cJSON_AddNumberToObject(localMapObject, localKeyValue->key, *(double *)localKeyValue->value) == NULL) {
                 ogs_error("OpenAPI_sequence_number_convertToJSON() failed [inner]");
                 goto end;
             }

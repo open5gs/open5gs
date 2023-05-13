@@ -111,6 +111,14 @@ cJSON *OpenAPI_nsi_information_convertToJSON(OpenAPI_nsi_information_t *nsi_info
     if (nsi_information->nrf_oauth2_required) {
         OpenAPI_list_for_each(nsi_information->nrf_oauth2_required, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_nsi_information_convertToJSON() failed [nrf_oauth2_required]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_nsi_information_convertToJSON() failed [nrf_oauth2_required]");
+                goto end;
+            }
             if (cJSON_AddBoolToObject(localMapObject, localKeyValue->key, (uintptr_t)localKeyValue->value) == NULL) {
                 ogs_error("OpenAPI_nsi_information_convertToJSON() failed [inner]");
                 goto end;

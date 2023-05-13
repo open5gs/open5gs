@@ -72,6 +72,14 @@ cJSON *OpenAPI_sm_policy_dnn_data_patch_convertToJSON(OpenAPI_sm_policy_dnn_data
     if (sm_policy_dnn_data_patch->bdt_ref_ids) {
         OpenAPI_list_for_each(sm_policy_dnn_data_patch->bdt_ref_ids, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_sm_policy_dnn_data_patch_convertToJSON() failed [bdt_ref_ids]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_sm_policy_dnn_data_patch_convertToJSON() failed [bdt_ref_ids]");
+                goto end;
+            }
             if (cJSON_AddStringToObject(localMapObject, localKeyValue->key, (char*)localKeyValue->value) == NULL) {
                 ogs_error("OpenAPI_sm_policy_dnn_data_patch_convertToJSON() failed [inner]");
                 goto end;

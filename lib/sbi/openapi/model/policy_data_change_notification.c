@@ -275,6 +275,14 @@ cJSON *OpenAPI_policy_data_change_notification_convertToJSON(OpenAPI_policy_data
     if (policy_data_change_notification->op_spec_data_map) {
         OpenAPI_list_for_each(policy_data_change_notification->op_spec_data_map, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_policy_data_change_notification_convertToJSON() failed [op_spec_data_map]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_policy_data_change_notification_convertToJSON() failed [op_spec_data_map]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_operator_specific_data_container_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

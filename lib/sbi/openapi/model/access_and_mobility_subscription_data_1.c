@@ -400,6 +400,14 @@ cJSON *OpenAPI_access_and_mobility_subscription_data_1_convertToJSON(OpenAPI_acc
     if (access_and_mobility_subscription_data_1->shared_vn_group_data_ids) {
         OpenAPI_list_for_each(access_and_mobility_subscription_data_1->shared_vn_group_data_ids, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_access_and_mobility_subscription_data_1_convertToJSON() failed [shared_vn_group_data_ids]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_access_and_mobility_subscription_data_1_convertToJSON() failed [shared_vn_group_data_ids]");
+                goto end;
+            }
             if (cJSON_AddStringToObject(localMapObject, localKeyValue->key, (char*)localKeyValue->value) == NULL) {
                 ogs_error("OpenAPI_access_and_mobility_subscription_data_1_convertToJSON() failed [inner]");
                 goto end;
@@ -834,6 +842,14 @@ cJSON *OpenAPI_access_and_mobility_subscription_data_1_convertToJSON(OpenAPI_acc
     if (access_and_mobility_subscription_data_1->adjacent_plmn_restrictions) {
         OpenAPI_list_for_each(access_and_mobility_subscription_data_1->adjacent_plmn_restrictions, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_access_and_mobility_subscription_data_1_convertToJSON() failed [adjacent_plmn_restrictions]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_access_and_mobility_subscription_data_1_convertToJSON() failed [adjacent_plmn_restrictions]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_plmn_restriction_1_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

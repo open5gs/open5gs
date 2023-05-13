@@ -69,6 +69,14 @@ cJSON *OpenAPI_sm_policy_data_patch_convertToJSON(OpenAPI_sm_policy_data_patch_t
     if (sm_policy_data_patch->um_data) {
         OpenAPI_list_for_each(sm_policy_data_patch->um_data, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_sm_policy_data_patch_convertToJSON() failed [um_data]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_sm_policy_data_patch_convertToJSON() failed [um_data]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_usage_mon_data_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -91,6 +99,14 @@ cJSON *OpenAPI_sm_policy_data_patch_convertToJSON(OpenAPI_sm_policy_data_patch_t
     if (sm_policy_data_patch->sm_policy_snssai_data) {
         OpenAPI_list_for_each(sm_policy_data_patch->sm_policy_snssai_data, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_sm_policy_data_patch_convertToJSON() failed [sm_policy_snssai_data]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_sm_policy_data_patch_convertToJSON() failed [sm_policy_snssai_data]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_sm_policy_snssai_data_patch_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

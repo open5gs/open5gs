@@ -62,7 +62,11 @@ cJSON *OpenAPI_flows_convertToJSON(OpenAPI_flows_t *flows)
         goto end;
     }
     OpenAPI_list_for_each(flows->cont_vers, node) {
-        if (cJSON_AddNumberToObject(cont_versList, "", (uintptr_t)node->data) == NULL) {
+        if (node->data == NULL) {
+            ogs_error("OpenAPI_flows_convertToJSON() failed [cont_vers]");
+            goto end;
+        }
+        if (cJSON_AddNumberToObject(cont_versList, "", *(double *)node->data) == NULL) {
             ogs_error("OpenAPI_flows_convertToJSON() failed [cont_vers]");
             goto end;
         }
@@ -76,7 +80,11 @@ cJSON *OpenAPI_flows_convertToJSON(OpenAPI_flows_t *flows)
         goto end;
     }
     OpenAPI_list_for_each(flows->f_nums, node) {
-        if (cJSON_AddNumberToObject(f_numsList, "", (uintptr_t)node->data) == NULL) {
+        if (node->data == NULL) {
+            ogs_error("OpenAPI_flows_convertToJSON() failed [f_nums]");
+            goto end;
+        }
+        if (cJSON_AddNumberToObject(f_numsList, "", *(double *)node->data) == NULL) {
             ogs_error("OpenAPI_flows_convertToJSON() failed [f_nums]");
             goto end;
         }

@@ -89,7 +89,19 @@ cJSON *OpenAPI_nf_instance_info_convertToJSON(OpenAPI_nf_instance_info_t *nf_ins
     if (nf_instance_info->nrf_altered_priorities) {
         OpenAPI_list_for_each(nf_instance_info->nrf_altered_priorities, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
-            if (cJSON_AddNumberToObject(localMapObject, localKeyValue->key, (uintptr_t)localKeyValue->value) == NULL) {
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_nf_instance_info_convertToJSON() failed [nrf_altered_priorities]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_nf_instance_info_convertToJSON() failed [nrf_altered_priorities]");
+                goto end;
+            }
+            if (localKeyValue->value == NULL) {
+                ogs_error("OpenAPI_nf_instance_info_convertToJSON() failed [inner]");
+                goto end;
+            }
+            if (cJSON_AddNumberToObject(localMapObject, localKeyValue->key, *(double *)localKeyValue->value) == NULL) {
                 ogs_error("OpenAPI_nf_instance_info_convertToJSON() failed [inner]");
                 goto end;
             }

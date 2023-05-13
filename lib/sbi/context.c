@@ -1259,6 +1259,11 @@ static void smf_info_free(ogs_sbi_smf_info_t *smf_info)
     ogs_pool_free(&smf_info_pool, smf_info);
 }
 
+static void scp_info_free(ogs_sbi_scp_info_t *scp_info)
+{
+    scp_info->num_of_domain = 0;
+}
+
 void ogs_sbi_nf_info_remove(ogs_list_t *list, ogs_sbi_nf_info_t *nf_info)
 {
     ogs_assert(list);
@@ -1272,6 +1277,9 @@ void ogs_sbi_nf_info_remove(ogs_list_t *list, ogs_sbi_nf_info_t *nf_info)
         break;
     case OpenAPI_nf_type_SMF:
         smf_info_free(&nf_info->smf);
+        break;
+    case OpenAPI_nf_type_SCP:
+        scp_info_free(&nf_info->scp);
         break;
     default:
         ogs_fatal("Not implemented NF-type[%s]",

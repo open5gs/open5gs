@@ -126,6 +126,14 @@ cJSON *OpenAPI_policy_data_for_individual_ue_convertToJSON(OpenAPI_policy_data_f
     if (policy_data_for_individual_ue->um_data) {
         OpenAPI_list_for_each(policy_data_for_individual_ue->um_data, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_policy_data_for_individual_ue_convertToJSON() failed [um_data]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_policy_data_for_individual_ue_convertToJSON() failed [um_data]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_usage_mon_data_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -148,6 +156,14 @@ cJSON *OpenAPI_policy_data_for_individual_ue_convertToJSON(OpenAPI_policy_data_f
     if (policy_data_for_individual_ue->operator_specific_data_set) {
         OpenAPI_list_for_each(policy_data_for_individual_ue->operator_specific_data_set, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_policy_data_for_individual_ue_convertToJSON() failed [operator_specific_data_set]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_policy_data_for_individual_ue_convertToJSON() failed [operator_specific_data_set]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_operator_specific_data_container_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

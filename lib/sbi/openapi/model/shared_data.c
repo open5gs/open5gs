@@ -182,6 +182,14 @@ cJSON *OpenAPI_shared_data_convertToJSON(OpenAPI_shared_data_t *shared_data)
     if (shared_data->shared_dnn_configurations) {
         OpenAPI_list_for_each(shared_data->shared_dnn_configurations, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_shared_data_convertToJSON() failed [shared_dnn_configurations]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_shared_data_convertToJSON() failed [shared_dnn_configurations]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_dnn_configuration_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -217,6 +225,14 @@ cJSON *OpenAPI_shared_data_convertToJSON(OpenAPI_shared_data_t *shared_data)
     if (shared_data->shared_snssai_infos) {
         OpenAPI_list_for_each(shared_data->shared_snssai_infos, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_shared_data_convertToJSON() failed [shared_snssai_infos]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_shared_data_convertToJSON() failed [shared_snssai_infos]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_snssai_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -239,6 +255,14 @@ cJSON *OpenAPI_shared_data_convertToJSON(OpenAPI_shared_data_t *shared_data)
     if (shared_data->shared_vn_group_datas) {
         OpenAPI_list_for_each(shared_data->shared_vn_group_datas, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_shared_data_convertToJSON() failed [shared_vn_group_datas]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_shared_data_convertToJSON() failed [shared_vn_group_datas]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_vn_group_data_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -261,6 +285,14 @@ cJSON *OpenAPI_shared_data_convertToJSON(OpenAPI_shared_data_t *shared_data)
     if (shared_data->treatment_instructions) {
         OpenAPI_list_for_each(shared_data->treatment_instructions, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_shared_data_convertToJSON() failed [treatment_instructions]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_shared_data_convertToJSON() failed [treatment_instructions]");
+                goto end;
+            }
             if (cJSON_AddStringToObject(localMapObject, localKeyValue->key, OpenAPI_shared_data_treatment_instruction_ToString((intptr_t)localKeyValue->value)) == NULL) {
                 ogs_error("OpenAPI_shared_data_convertToJSON() failed [treatment_instructions]");
                 goto end;

@@ -24,8 +24,10 @@ static OpenAPI_nf_service_t *build_nf_service(
 static void free_nf_service(OpenAPI_nf_service_t *NFService);
 static OpenAPI_smf_info_t *build_smf_info(ogs_sbi_nf_info_t *nf_info);
 static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info);
+static OpenAPI_scp_info_t *build_scp_info(ogs_sbi_nf_info_t *nf_info);
 static void free_smf_info(OpenAPI_smf_info_t *SmfInfo);
 static void free_amf_info(OpenAPI_amf_info_t *AmfInfo);
+static void free_scp_info(OpenAPI_scp_info_t *ScpInfo);
 
 ogs_sbi_request_t *ogs_nnrf_nfm_build_register(void)
 {
@@ -87,11 +89,11 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
     OpenAPI_map_t *NFServiceMap = NULL;
     OpenAPI_list_t *InfoList = NULL;
     OpenAPI_map_t *InfoMap = NULL;
-    OpenAPI_smf_info_t *SmfInfo = NULL;
     int InfoMapKey;
 
     OpenAPI_lnode_t *node = NULL;
 
+    OpenAPI_smf_info_t *SmfInfo = NULL;
     OpenAPI_amf_info_t *AmfInfo = NULL;
 
     int i = 0;
@@ -297,6 +299,14 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
 
             OpenAPI_list_add(InfoList, InfoMap);
 
+        } else if (nf_info->nf_type == OpenAPI_nf_type_SCP) {
+
+            /* SCP info will be skipped here first and dealt with below. */
+
+        } else if (nf_info->nf_type == OpenAPI_nf_type_SEPP) {
+
+            /* SEPP info will be skipped here first and dealt with below. */
+
         } else {
             ogs_fatal("Not implemented NF-type[%s]",
                     OpenAPI_nf_type_ToString(nf_info->nf_type));
@@ -334,6 +344,14 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
         }
     } else
         OpenAPI_list_free(InfoList);
+
+    /* There can only be one SCP info, not multiple. */
+    nf_info = ogs_sbi_nf_info_find(
+            &nf_instance->nf_info_list, OpenAPI_nf_type_SCP);
+    if (nf_info) {
+        NFProfile->scp_info = build_scp_info(nf_info);
+        ogs_assert(NFProfile->scp_info);
+    }
 
     return NFProfile;
 }
@@ -411,6 +429,9 @@ void ogs_nnrf_nfm_free_nf_profile(OpenAPI_nf_profile_t *NFProfile)
 
     if (NFProfile->amf_info)
         free_amf_info(NFProfile->amf_info);
+
+    if (NFProfile->scp_info)
+        free_scp_info(NFProfile->scp_info);
 
     ogs_free(NFProfile);
 }
@@ -1041,6 +1062,130 @@ static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info)
     return AmfInfo;
 }
 
+static OpenAPI_scp_info_t *build_scp_info(ogs_sbi_nf_info_t *nf_info)
+{
+    int i;
+    OpenAPI_scp_info_t *ScpInfo = NULL;
+    OpenAPI_list_t *PortList = NULL;
+    OpenAPI_map_t *PortMap = NULL;
+
+    OpenAPI_list_t *DomainInfoList = NULL;
+    OpenAPI_map_t *DomainInfoMap = NULL;
+    OpenAPI_scp_domain_info_t *DomainInfo = NULL;
+
+    ogs_assert(nf_info);
+
+    ScpInfo = ogs_calloc(1, sizeof(*ScpInfo));
+    if (!ScpInfo) {
+        ogs_error("No ScpInfo");
+        return NULL;
+    }
+
+    PortList = OpenAPI_list_create();
+    if (!PortList) {
+        ogs_error("No PortList");
+        free_scp_info(ScpInfo);
+        return NULL;
+    }
+
+    if (nf_info->scp.http.presence) {
+        PortMap = OpenAPI_map_create(
+                    (char *)"http", ogs_alloc_double(nf_info->scp.http.port));
+        if (!PortMap) {
+            ogs_error("No PortMap");
+            free_scp_info(ScpInfo);
+            return NULL;
+        }
+        OpenAPI_list_add(PortList, PortMap);
+    }
+    if (nf_info->scp.https.presence) {
+        PortMap = OpenAPI_map_create(
+                    (char *)"https", ogs_alloc_double(nf_info->scp.https.port));
+        if (!PortMap) {
+            ogs_error("No PortMap");
+            free_scp_info(ScpInfo);
+            return NULL;
+        }
+        OpenAPI_list_add(PortList, PortMap);
+    }
+
+    if (PortList->count)
+        ScpInfo->scp_ports = PortList;
+    else
+        OpenAPI_list_free(PortList);
+
+    DomainInfoList = OpenAPI_list_create();
+    if (!DomainInfoList) {
+        ogs_error("No DomainInfoList");
+        free_scp_info(ScpInfo);
+        return NULL;
+    }
+    for (i = 0; i < nf_info->scp.num_of_domain; i++) {
+        ogs_assert(nf_info->scp.domain[i].name);
+
+        DomainInfo = ogs_calloc(1, sizeof(*DomainInfo));
+        if (!DomainInfo) {
+            ogs_error("No DomainInfo");
+            free_scp_info(ScpInfo);
+            return NULL;
+        }
+
+        DomainInfo->scp_fqdn = nf_info->scp.domain[i].fqdn;
+
+        PortList = OpenAPI_list_create();
+        if (!PortList) {
+            ogs_error("No PortList");
+            free_scp_info(ScpInfo);
+            return NULL;
+        }
+
+        if (nf_info->scp.domain[i].http.presence) {
+            PortMap = OpenAPI_map_create(
+                        (char *)"http",
+                        ogs_alloc_double(nf_info->scp.domain[i].http.port));
+            if (!PortMap) {
+                ogs_error("No PortMap");
+                free_scp_info(ScpInfo);
+                return NULL;
+            }
+            OpenAPI_list_add(PortList, PortMap);
+        }
+        if (nf_info->scp.domain[i].https.presence) {
+            PortMap = OpenAPI_map_create(
+                        (char *)"https",
+                        ogs_alloc_double(nf_info->scp.domain[i].https.port));
+            if (!PortMap) {
+                ogs_error("No PortMap");
+                free_scp_info(ScpInfo);
+                return NULL;
+            }
+            OpenAPI_list_add(PortList, PortMap);
+        }
+
+        if (PortList->count)
+            DomainInfo->scp_ports = PortList;
+        else
+            OpenAPI_list_free(PortList);
+
+        DomainInfoMap = OpenAPI_map_create(
+                    nf_info->scp.domain[i].name, DomainInfo);
+        if (!DomainInfoMap) {
+            ogs_error("No PortMap");
+            free_scp_info(ScpInfo);
+            return NULL;
+        }
+
+        OpenAPI_list_add(DomainInfoList, DomainInfoMap);
+    }
+
+    if (DomainInfoList->count)
+        ScpInfo->scp_domain_info_list = DomainInfoList;
+    else
+        OpenAPI_list_free(DomainInfoList);
+
+    return ScpInfo;
+}
+
 static void free_smf_info(OpenAPI_smf_info_t *SmfInfo)
 {
     OpenAPI_list_t *sNssaiSmfInfoList = NULL;
@@ -1202,6 +1347,48 @@ static void free_amf_info(OpenAPI_amf_info_t *AmfInfo)
     OpenAPI_list_free(TaiRangeList);
 
     ogs_free(AmfInfo);
+}
+
+static void free_scp_info(OpenAPI_scp_info_t *ScpInfo)
+{
+    OpenAPI_map_t *PortMap = NULL;
+    OpenAPI_lnode_t *node = NULL, *node2 = NULL;
+
+    OpenAPI_map_t *DomainInfoMap = NULL;
+    OpenAPI_scp_domain_info_t *DomainInfo = NULL;
+
+    ogs_assert(ScpInfo);
+
+    OpenAPI_list_for_each(ScpInfo->scp_ports, node) {
+        PortMap = node->data;
+        if (PortMap) {
+            ogs_free(PortMap->value);
+            OpenAPI_map_free(PortMap);
+        }
+    }
+    OpenAPI_list_free(ScpInfo->scp_ports);
+
+    OpenAPI_list_for_each(ScpInfo->scp_domain_info_list, node) {
+        DomainInfoMap = node->data;
+        if (DomainInfoMap) {
+            DomainInfo = DomainInfoMap->value;
+            if (DomainInfo) {
+                OpenAPI_list_for_each(DomainInfo->scp_ports, node2) {
+                    PortMap = node2->data;
+                    if (PortMap) {
+                        ogs_free(PortMap->value);
+                        OpenAPI_map_free(PortMap);
+                    }
+                }
+                OpenAPI_list_free(DomainInfo->scp_ports);
+                ogs_free(DomainInfo);
+            }
+            OpenAPI_map_free(DomainInfoMap);
+        }
+    }
+    OpenAPI_list_free(ScpInfo->scp_domain_info_list);
+
+    ogs_free(ScpInfo);
 }
 
 ogs_sbi_request_t *ogs_nnrf_nfm_build_update(void)

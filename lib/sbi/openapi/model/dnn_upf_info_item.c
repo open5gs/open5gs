@@ -215,6 +215,14 @@ cJSON *OpenAPI_dnn_upf_info_item_convertToJSON(OpenAPI_dnn_upf_info_item_t *dnn_
     if (dnn_upf_info_item->dnai_nw_instance_list) {
         OpenAPI_list_for_each(dnn_upf_info_item->dnai_nw_instance_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_dnn_upf_info_item_convertToJSON() failed [dnai_nw_instance_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_dnn_upf_info_item_convertToJSON() failed [dnai_nw_instance_list]");
+                goto end;
+            }
             if (cJSON_AddStringToObject(localMapObject, localKeyValue->key, (char*)localKeyValue->value) == NULL) {
                 ogs_error("OpenAPI_dnn_upf_info_item_convertToJSON() failed [inner]");
                 goto end;

@@ -178,6 +178,51 @@ sbi:
 #          l_onoff: true
 #          l_linger: 10
 #
+#  <SCP Information>
+#
+#  o SCP port number(s) WITHOUT SCP Domain
+#    - If no SCP port information is present in ScpInfo or
+#      in ScpDomainInfo for a specific SCP domain,
+#      the HTTP client shall use the default HTTP port number,
+#      i.e. TCP port 80 for "http" URIs or TCP port 443
+#      for "https" URIs as specified in IETF RFC 7540 [9]
+#      when sending a request to the SCP within the specific SCP domain.
+#  scp:
+#    info:
+#      port:
+#        http: 7777
+#        https: 8888
+#
+#  o SCP port number(s) WITH SCP Domain
+#    - If this attribute is present,
+#      it has precedence over the scpPorts attribute of ScpInfo.
+#  scp:
+#    info:
+#      domain:
+#        - name: SCP_Domain_1
+#          fqdn: scp.localdomain
+#          port:
+#            http: 7777
+#            https: 8888
+#
+#  o Complex Example
+#  scp:
+#    info:
+#      port:
+#        http: 7777
+#        https: 8888
+#      domain:
+#        - name: SCP_Domain_1
+#          fqdn: scp.hplmndomain
+#          port:
+#            http: 3333
+#            https: 4444
+#        - name: SCP_Domain_2
+#          fqdn: scp.vplmndomain
+#          port:
+#            http: 5555
+#            https: 6666
+#
 #  <For Indirect Communication with Delegated Discovery>
 #
 #  o (Default) If you do not set Delegated Discovery as shown below,

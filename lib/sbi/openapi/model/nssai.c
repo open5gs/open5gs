@@ -139,6 +139,14 @@ cJSON *OpenAPI_nssai_convertToJSON(OpenAPI_nssai_t *nssai)
     if (nssai->additional_snssai_data) {
         OpenAPI_list_for_each(nssai->additional_snssai_data, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_nssai_convertToJSON() failed [additional_snssai_data]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_nssai_convertToJSON() failed [additional_snssai_data]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_additional_snssai_data_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

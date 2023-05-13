@@ -346,6 +346,14 @@ cJSON *OpenAPI_policy_association_update_request_convertToJSON(OpenAPI_policy_as
     if (policy_association_update_request->pra_statuses) {
         OpenAPI_list_for_each(policy_association_update_request->pra_statuses, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_policy_association_update_request_convertToJSON() failed [pra_statuses]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_policy_association_update_request_convertToJSON() failed [pra_statuses]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_presence_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

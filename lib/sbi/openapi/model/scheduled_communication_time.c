@@ -63,7 +63,11 @@ cJSON *OpenAPI_scheduled_communication_time_convertToJSON(OpenAPI_scheduled_comm
         goto end;
     }
     OpenAPI_list_for_each(scheduled_communication_time->days_of_week, node) {
-        if (cJSON_AddNumberToObject(days_of_weekList, "", (uintptr_t)node->data) == NULL) {
+        if (node->data == NULL) {
+            ogs_error("OpenAPI_scheduled_communication_time_convertToJSON() failed [days_of_week]");
+            goto end;
+        }
+        if (cJSON_AddNumberToObject(days_of_weekList, "", *(double *)node->data) == NULL) {
             ogs_error("OpenAPI_scheduled_communication_time_convertToJSON() failed [days_of_week]");
             goto end;
         }

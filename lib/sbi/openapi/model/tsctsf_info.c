@@ -93,6 +93,14 @@ cJSON *OpenAPI_tsctsf_info_convertToJSON(OpenAPI_tsctsf_info_t *tsctsf_info)
     if (tsctsf_info->s_nssai_info_list) {
         OpenAPI_list_for_each(tsctsf_info->s_nssai_info_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_tsctsf_info_convertToJSON() failed [s_nssai_info_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_tsctsf_info_convertToJSON() failed [s_nssai_info_list]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_snssai_tsctsf_info_item_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

@@ -102,6 +102,14 @@ cJSON *OpenAPI_traffic_descriptor_components_convertToJSON(OpenAPI_traffic_descr
     if (traffic_descriptor_components->app_descs) {
         OpenAPI_list_for_each(traffic_descriptor_components->app_descs, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_traffic_descriptor_components_convertToJSON() failed [app_descs]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_traffic_descriptor_components_convertToJSON() failed [app_descs]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_app_descriptor_1_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

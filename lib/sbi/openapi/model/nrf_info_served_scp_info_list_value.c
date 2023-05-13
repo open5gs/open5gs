@@ -155,6 +155,14 @@ cJSON *OpenAPI_nrf_info_served_scp_info_list_value_convertToJSON(OpenAPI_nrf_inf
     if (nrf_info_served_scp_info_list_value->scp_domain_info_list) {
         OpenAPI_list_for_each(nrf_info_served_scp_info_list_value->scp_domain_info_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_nrf_info_served_scp_info_list_value_convertToJSON() failed [scp_domain_info_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_nrf_info_served_scp_info_list_value_convertToJSON() failed [scp_domain_info_list]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_scp_domain_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -184,7 +192,19 @@ cJSON *OpenAPI_nrf_info_served_scp_info_list_value_convertToJSON(OpenAPI_nrf_inf
     if (nrf_info_served_scp_info_list_value->scp_ports) {
         OpenAPI_list_for_each(nrf_info_served_scp_info_list_value->scp_ports, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
-            if (cJSON_AddNumberToObject(localMapObject, localKeyValue->key, (uintptr_t)localKeyValue->value) == NULL) {
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_nrf_info_served_scp_info_list_value_convertToJSON() failed [scp_ports]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_nrf_info_served_scp_info_list_value_convertToJSON() failed [scp_ports]");
+                goto end;
+            }
+            if (localKeyValue->value == NULL) {
+                ogs_error("OpenAPI_nrf_info_served_scp_info_list_value_convertToJSON() failed [inner]");
+                goto end;
+            }
+            if (cJSON_AddNumberToObject(localMapObject, localKeyValue->key, *(double *)localKeyValue->value) == NULL) {
                 ogs_error("OpenAPI_nrf_info_served_scp_info_list_value_convertToJSON() failed [inner]");
                 goto end;
             }

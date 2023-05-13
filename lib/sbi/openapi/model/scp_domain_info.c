@@ -108,7 +108,19 @@ cJSON *OpenAPI_scp_domain_info_convertToJSON(OpenAPI_scp_domain_info_t *scp_doma
     if (scp_domain_info->scp_ports) {
         OpenAPI_list_for_each(scp_domain_info->scp_ports, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
-            if (cJSON_AddNumberToObject(localMapObject, localKeyValue->key, (uintptr_t)localKeyValue->value) == NULL) {
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_scp_domain_info_convertToJSON() failed [scp_ports]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_scp_domain_info_convertToJSON() failed [scp_ports]");
+                goto end;
+            }
+            if (localKeyValue->value == NULL) {
+                ogs_error("OpenAPI_scp_domain_info_convertToJSON() failed [inner]");
+                goto end;
+            }
+            if (cJSON_AddNumberToObject(localMapObject, localKeyValue->key, *(double *)localKeyValue->value) == NULL) {
                 ogs_error("OpenAPI_scp_domain_info_convertToJSON() failed [inner]");
                 goto end;
             }

@@ -94,7 +94,11 @@ cJSON *OpenAPI_qos_monitoring_report_convertToJSON(OpenAPI_qos_monitoring_report
         goto end;
     }
     OpenAPI_list_for_each(qos_monitoring_report->ul_delays, node) {
-        if (cJSON_AddNumberToObject(ul_delaysList, "", (uintptr_t)node->data) == NULL) {
+        if (node->data == NULL) {
+            ogs_error("OpenAPI_qos_monitoring_report_convertToJSON() failed [ul_delays]");
+            goto end;
+        }
+        if (cJSON_AddNumberToObject(ul_delaysList, "", *(double *)node->data) == NULL) {
             ogs_error("OpenAPI_qos_monitoring_report_convertToJSON() failed [ul_delays]");
             goto end;
         }
@@ -108,7 +112,11 @@ cJSON *OpenAPI_qos_monitoring_report_convertToJSON(OpenAPI_qos_monitoring_report
         goto end;
     }
     OpenAPI_list_for_each(qos_monitoring_report->dl_delays, node) {
-        if (cJSON_AddNumberToObject(dl_delaysList, "", (uintptr_t)node->data) == NULL) {
+        if (node->data == NULL) {
+            ogs_error("OpenAPI_qos_monitoring_report_convertToJSON() failed [dl_delays]");
+            goto end;
+        }
+        if (cJSON_AddNumberToObject(dl_delaysList, "", *(double *)node->data) == NULL) {
             ogs_error("OpenAPI_qos_monitoring_report_convertToJSON() failed [dl_delays]");
             goto end;
         }
@@ -122,7 +130,11 @@ cJSON *OpenAPI_qos_monitoring_report_convertToJSON(OpenAPI_qos_monitoring_report
         goto end;
     }
     OpenAPI_list_for_each(qos_monitoring_report->rt_delays, node) {
-        if (cJSON_AddNumberToObject(rt_delaysList, "", (uintptr_t)node->data) == NULL) {
+        if (node->data == NULL) {
+            ogs_error("OpenAPI_qos_monitoring_report_convertToJSON() failed [rt_delays]");
+            goto end;
+        }
+        if (cJSON_AddNumberToObject(rt_delaysList, "", *(double *)node->data) == NULL) {
             ogs_error("OpenAPI_qos_monitoring_report_convertToJSON() failed [rt_delays]");
             goto end;
         }

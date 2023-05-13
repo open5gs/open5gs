@@ -487,7 +487,11 @@ cJSON *OpenAPI_{{classname}}_convertToJSON(OpenAPI_{{classname}}_t *{{classname}
         }
                         {{/isByteArray}}
                         {{#isNumeric}}
-        if (cJSON_AddNumberToObject({{{name}}}List, "", (uintptr_t)node->data) == NULL) {
+        if (node->data == NULL) {
+            ogs_error("OpenAPI_{{classname}}_convertToJSON() failed [{{{name}}}]");
+            goto end;
+        }
+        if (cJSON_AddNumberToObject({{{name}}}List, "", *(double *)node->data) == NULL) {
             ogs_error("OpenAPI_{{classname}}_convertToJSON() failed [{{{name}}}]");
             goto end;
         }
@@ -521,6 +525,14 @@ cJSON *OpenAPI_{{classname}}_convertToJSON(OpenAPI_{{classname}}_t *{{classname}
     if ({{{classname}}}->{{{name}}}) {
         OpenAPI_list_for_each({{{classname}}}->{{{name}}}, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_{{classname}}_convertToJSON() failed [{{{name}}}]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_{{classname}}_convertToJSON() failed [{{{name}}}]");
+                goto end;
+            }
             {{#isEnum}}
             if (cJSON_AddStringToObject(localMapObject, localKeyValue->key, OpenAPI_{{{complexType}}}_ToString((intptr_t)localKeyValue->value)) == NULL) {
                 ogs_error("OpenAPI_{{classname}}_convertToJSON() failed [{{{name}}}]");
@@ -543,7 +555,11 @@ cJSON *OpenAPI_{{classname}}_convertToJSON(OpenAPI_{{classname}}_t *{{classname}
             }
                         {{/isByteArray}}
                         {{#isNumeric}}
-            if (cJSON_AddNumberToObject(localMapObject, localKeyValue->key, (uintptr_t)localKeyValue->value) == NULL) {
+            if (localKeyValue->value == NULL) {
+                ogs_error("OpenAPI_{{classname}}_convertToJSON() failed [{{{name}}}]");
+                goto end;
+            }
+            if (cJSON_AddNumberToObject(localMapObject, localKeyValue->key, *(double *)localKeyValue->value) == NULL) {
                 ogs_error("OpenAPI_{{classname}}_convertToJSON() failed [{{{name}}}]");
                 goto end;
             }

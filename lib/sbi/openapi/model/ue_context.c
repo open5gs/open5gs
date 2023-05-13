@@ -649,6 +649,14 @@ cJSON *OpenAPI_ue_context_convertToJSON(OpenAPI_ue_context_t *ue_context)
     if (ue_context->sub_ue_slice_mbr_list) {
         OpenAPI_list_for_each(ue_context->sub_ue_slice_mbr_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_ue_context_convertToJSON() failed [sub_ue_slice_mbr_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_ue_context_convertToJSON() failed [sub_ue_slice_mbr_list]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_slice_mbr_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -1162,6 +1170,14 @@ cJSON *OpenAPI_ue_context_convertToJSON(OpenAPI_ue_context_t *ue_context)
     if (ue_context->pra_in_am_policy) {
         OpenAPI_list_for_each(ue_context->pra_in_am_policy, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_ue_context_convertToJSON() failed [pra_in_am_policy]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_ue_context_convertToJSON() failed [pra_in_am_policy]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_presence_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -1184,6 +1200,14 @@ cJSON *OpenAPI_ue_context_convertToJSON(OpenAPI_ue_context_t *ue_context)
     if (ue_context->pra_in_ue_policy) {
         OpenAPI_list_for_each(ue_context->pra_in_ue_policy, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_ue_context_convertToJSON() failed [pra_in_ue_policy]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_ue_context_convertToJSON() failed [pra_in_ue_policy]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_presence_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -1289,6 +1313,14 @@ cJSON *OpenAPI_ue_context_convertToJSON(OpenAPI_ue_context_t *ue_context)
     if (ue_context->pcf_ue_slice_mbr_list) {
         OpenAPI_list_for_each(ue_context->pcf_ue_slice_mbr_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_ue_context_convertToJSON() failed [pcf_ue_slice_mbr_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_ue_context_convertToJSON() failed [pcf_ue_slice_mbr_list]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_slice_mbr_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

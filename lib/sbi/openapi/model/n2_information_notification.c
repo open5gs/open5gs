@@ -136,7 +136,11 @@ cJSON *OpenAPI_n2_information_notification_convertToJSON(OpenAPI_n2_information_
         goto end;
     }
     OpenAPI_list_for_each(n2_information_notification->to_release_session_list, node) {
-        if (cJSON_AddNumberToObject(to_release_session_listList, "", (uintptr_t)node->data) == NULL) {
+        if (node->data == NULL) {
+            ogs_error("OpenAPI_n2_information_notification_convertToJSON() failed [to_release_session_list]");
+            goto end;
+        }
+        if (cJSON_AddNumberToObject(to_release_session_listList, "", *(double *)node->data) == NULL) {
             ogs_error("OpenAPI_n2_information_notification_convertToJSON() failed [to_release_session_list]");
             goto end;
         }

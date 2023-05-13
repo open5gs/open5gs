@@ -111,6 +111,14 @@ cJSON *OpenAPI_ee_profile_data_convertToJSON(OpenAPI_ee_profile_data_t *ee_profi
     if (ee_profile_data->allowed_mtc_provider) {
         OpenAPI_list_for_each(ee_profile_data->allowed_mtc_provider, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_ee_profile_data_convertToJSON() failed [allowed_mtc_provider]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_ee_profile_data_convertToJSON() failed [allowed_mtc_provider]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_mtc_provider_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

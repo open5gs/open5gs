@@ -106,6 +106,14 @@ cJSON *OpenAPI_am_requested_value_rep_convertToJSON(OpenAPI_am_requested_value_r
     if (am_requested_value_rep->pra_statuses) {
         OpenAPI_list_for_each(am_requested_value_rep->pra_statuses, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_am_requested_value_rep_convertToJSON() failed [pra_statuses]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_am_requested_value_rep_convertToJSON() failed [pra_statuses]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_presence_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

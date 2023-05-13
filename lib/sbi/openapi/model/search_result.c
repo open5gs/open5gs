@@ -161,6 +161,14 @@ cJSON *OpenAPI_search_result_convertToJSON(OpenAPI_search_result_t *search_resul
     if (search_result->nf_instance_list) {
         OpenAPI_list_for_each(search_result->nf_instance_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_search_result_convertToJSON() failed [nf_instance_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_search_result_convertToJSON() failed [nf_instance_list]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_nf_instance_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

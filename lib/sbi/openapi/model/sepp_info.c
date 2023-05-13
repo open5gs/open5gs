@@ -88,7 +88,19 @@ cJSON *OpenAPI_sepp_info_convertToJSON(OpenAPI_sepp_info_t *sepp_info)
     if (sepp_info->sepp_ports) {
         OpenAPI_list_for_each(sepp_info->sepp_ports, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
-            if (cJSON_AddNumberToObject(localMapObject, localKeyValue->key, (uintptr_t)localKeyValue->value) == NULL) {
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_sepp_info_convertToJSON() failed [sepp_ports]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_sepp_info_convertToJSON() failed [sepp_ports]");
+                goto end;
+            }
+            if (localKeyValue->value == NULL) {
+                ogs_error("OpenAPI_sepp_info_convertToJSON() failed [inner]");
+                goto end;
+            }
+            if (cJSON_AddNumberToObject(localMapObject, localKeyValue->key, *(double *)localKeyValue->value) == NULL) {
                 ogs_error("OpenAPI_sepp_info_convertToJSON() failed [inner]");
                 goto end;
             }

@@ -56,6 +56,14 @@ cJSON *OpenAPI_uc_subscription_data_convertToJSON(OpenAPI_uc_subscription_data_t
     if (uc_subscription_data->user_consent_per_purpose_list) {
         OpenAPI_list_for_each(uc_subscription_data->user_consent_per_purpose_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_uc_subscription_data_convertToJSON() failed [user_consent_per_purpose_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_uc_subscription_data_convertToJSON() failed [user_consent_per_purpose_list]");
+                goto end;
+            }
             if (cJSON_AddStringToObject(localMapObject, localKeyValue->key, OpenAPI_user_consent_ToString((intptr_t)localKeyValue->value)) == NULL) {
                 ogs_error("OpenAPI_uc_subscription_data_convertToJSON() failed [user_consent_per_purpose_list]");
                 goto end;
