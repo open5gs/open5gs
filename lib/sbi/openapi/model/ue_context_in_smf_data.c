@@ -72,6 +72,14 @@ cJSON *OpenAPI_ue_context_in_smf_data_convertToJSON(OpenAPI_ue_context_in_smf_da
     if (ue_context_in_smf_data->pdu_sessions) {
         OpenAPI_list_for_each(ue_context_in_smf_data->pdu_sessions, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_ue_context_in_smf_data_convertToJSON() failed [pdu_sessions]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_ue_context_in_smf_data_convertToJSON() failed [pdu_sessions]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_pdu_session_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

@@ -440,6 +440,14 @@ cJSON *OpenAPI_nf_service_convertToJSON(OpenAPI_nf_service_t *nf_service)
     if (nf_service->allowed_operations_per_nf_type) {
         OpenAPI_list_for_each(nf_service->allowed_operations_per_nf_type, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_nf_service_convertToJSON() failed [allowed_operations_per_nf_type]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_nf_service_convertToJSON() failed [allowed_operations_per_nf_type]");
+                goto end;
+            }
         }
     }
     }
@@ -454,6 +462,14 @@ cJSON *OpenAPI_nf_service_convertToJSON(OpenAPI_nf_service_t *nf_service)
     if (nf_service->allowed_operations_per_nf_instance) {
         OpenAPI_list_for_each(nf_service->allowed_operations_per_nf_instance, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_nf_service_convertToJSON() failed [allowed_operations_per_nf_instance]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_nf_service_convertToJSON() failed [allowed_operations_per_nf_instance]");
+                goto end;
+            }
         }
     }
     }
@@ -563,6 +579,14 @@ cJSON *OpenAPI_nf_service_convertToJSON(OpenAPI_nf_service_t *nf_service)
     if (nf_service->supported_vendor_specific_features) {
         OpenAPI_list_for_each(nf_service->supported_vendor_specific_features, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_nf_service_convertToJSON() failed [supported_vendor_specific_features]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_nf_service_convertToJSON() failed [supported_vendor_specific_features]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_vendor_specific_feature_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

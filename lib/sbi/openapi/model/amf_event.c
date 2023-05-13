@@ -272,6 +272,14 @@ cJSON *OpenAPI_amf_event_convertToJSON(OpenAPI_amf_event_t *amf_event)
     if (amf_event->presence_info_list) {
         OpenAPI_list_for_each(amf_event->presence_info_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_amf_event_convertToJSON() failed [presence_info_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_amf_event_convertToJSON() failed [presence_info_list]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_presence_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

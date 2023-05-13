@@ -160,6 +160,14 @@ cJSON *OpenAPI_iptv_config_data_convertToJSON(OpenAPI_iptv_config_data_t *iptv_c
     if (iptv_config_data->multi_acc_ctrls) {
         OpenAPI_list_for_each(iptv_config_data->multi_acc_ctrls, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_iptv_config_data_convertToJSON() failed [multi_acc_ctrls]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_iptv_config_data_convertToJSON() failed [multi_acc_ctrls]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_multicast_access_control_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

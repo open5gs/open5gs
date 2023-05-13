@@ -63,6 +63,14 @@ cJSON *OpenAPI_pp5g_vn_group_profile_data_convertToJSON(OpenAPI_pp5g_vn_group_pr
     if (pp5g_vn_group_profile_data->allowed_mtc_providers) {
         OpenAPI_list_for_each(pp5g_vn_group_profile_data->allowed_mtc_providers, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_pp5g_vn_group_profile_data_convertToJSON() failed [allowed_mtc_providers]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_pp5g_vn_group_profile_data_convertToJSON() failed [allowed_mtc_providers]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_allowed_mtc_provider_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

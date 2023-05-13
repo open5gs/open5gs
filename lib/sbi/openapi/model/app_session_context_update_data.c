@@ -215,6 +215,14 @@ cJSON *OpenAPI_app_session_context_update_data_convertToJSON(OpenAPI_app_session
     if (app_session_context_update_data->med_components) {
         OpenAPI_list_for_each(app_session_context_update_data->med_components, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_app_session_context_update_data_convertToJSON() failed [med_components]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_app_session_context_update_data_convertToJSON() failed [med_components]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_media_component_rm_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

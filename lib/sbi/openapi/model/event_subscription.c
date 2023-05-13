@@ -585,7 +585,11 @@ cJSON *OpenAPI_event_subscription_convertToJSON(OpenAPI_event_subscription_t *ev
         goto end;
     }
     OpenAPI_list_for_each(event_subscription->nsi_level_thrds, node) {
-        if (cJSON_AddNumberToObject(nsi_level_thrdsList, "", (uintptr_t)node->data) == NULL) {
+        if (node->data == NULL) {
+            ogs_error("OpenAPI_event_subscription_convertToJSON() failed [nsi_level_thrds]");
+            goto end;
+        }
+        if (cJSON_AddNumberToObject(nsi_level_thrdsList, "", *(double *)node->data) == NULL) {
             ogs_error("OpenAPI_event_subscription_convertToJSON() failed [nsi_level_thrds]");
             goto end;
         }

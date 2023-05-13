@@ -123,6 +123,14 @@ cJSON *OpenAPI_amf_event_subscription_add_info_convertToJSON(OpenAPI_amf_event_s
     if (amf_event_subscription_add_info->aoi_state_list) {
         OpenAPI_list_for_each(amf_event_subscription_add_info->aoi_state_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_amf_event_subscription_add_info_convertToJSON() failed [aoi_state_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_amf_event_subscription_add_info_convertToJSON() failed [aoi_state_list]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_area_of_interest_event_state_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

@@ -82,6 +82,14 @@ cJSON *OpenAPI_smf_selection_subscription_data_convertToJSON(OpenAPI_smf_selecti
     if (smf_selection_subscription_data->subscribed_snssai_infos) {
         OpenAPI_list_for_each(smf_selection_subscription_data->subscribed_snssai_infos, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_smf_selection_subscription_data_convertToJSON() failed [subscribed_snssai_infos]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_smf_selection_subscription_data_convertToJSON() failed [subscribed_snssai_infos]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_snssai_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

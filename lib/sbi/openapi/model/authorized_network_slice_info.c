@@ -288,6 +288,14 @@ cJSON *OpenAPI_authorized_network_slice_info_convertToJSON(OpenAPI_authorized_ne
     if (authorized_network_slice_info->nrf_oauth2_required) {
         OpenAPI_list_for_each(authorized_network_slice_info->nrf_oauth2_required, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_authorized_network_slice_info_convertToJSON() failed [nrf_oauth2_required]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_authorized_network_slice_info_convertToJSON() failed [nrf_oauth2_required]");
+                goto end;
+            }
             if (cJSON_AddBoolToObject(localMapObject, localKeyValue->key, (uintptr_t)localKeyValue->value) == NULL) {
                 ogs_error("OpenAPI_authorized_network_slice_info_convertToJSON() failed [inner]");
                 goto end;

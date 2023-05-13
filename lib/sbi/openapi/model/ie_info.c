@@ -116,6 +116,14 @@ cJSON *OpenAPI_ie_info_convertToJSON(OpenAPI_ie_info_t *ie_info)
     if (ie_info->is_modifiable_by_ipx) {
         OpenAPI_list_for_each(ie_info->is_modifiable_by_ipx, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_ie_info_convertToJSON() failed [is_modifiable_by_ipx]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_ie_info_convertToJSON() failed [is_modifiable_by_ipx]");
+                goto end;
+            }
             if (cJSON_AddBoolToObject(localMapObject, localKeyValue->key, (uintptr_t)localKeyValue->value) == NULL) {
                 ogs_error("OpenAPI_ie_info_convertToJSON() failed [inner]");
                 goto end;

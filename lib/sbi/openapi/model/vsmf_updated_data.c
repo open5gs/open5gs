@@ -332,7 +332,11 @@ cJSON *OpenAPI_vsmf_updated_data_convertToJSON(OpenAPI_vsmf_updated_data_t *vsmf
         goto end;
     }
     OpenAPI_list_for_each(vsmf_updated_data->released_ebi_list, node) {
-        if (cJSON_AddNumberToObject(released_ebi_listList, "", (uintptr_t)node->data) == NULL) {
+        if (node->data == NULL) {
+            ogs_error("OpenAPI_vsmf_updated_data_convertToJSON() failed [released_ebi_list]");
+            goto end;
+        }
+        if (cJSON_AddNumberToObject(released_ebi_listList, "", *(double *)node->data) == NULL) {
             ogs_error("OpenAPI_vsmf_updated_data_convertToJSON() failed [released_ebi_list]");
             goto end;
         }

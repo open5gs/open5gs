@@ -81,7 +81,11 @@ cJSON *OpenAPI_nsag_info_convertToJSON(OpenAPI_nsag_info_t *nsag_info)
         goto end;
     }
     OpenAPI_list_for_each(nsag_info->nsag_ids, node) {
-        if (cJSON_AddNumberToObject(nsag_idsList, "", (uintptr_t)node->data) == NULL) {
+        if (node->data == NULL) {
+            ogs_error("OpenAPI_nsag_info_convertToJSON() failed [nsag_ids]");
+            goto end;
+        }
+        if (cJSON_AddNumberToObject(nsag_idsList, "", *(double *)node->data) == NULL) {
             ogs_error("OpenAPI_nsag_info_convertToJSON() failed [nsag_ids]");
             goto end;
         }

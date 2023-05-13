@@ -277,6 +277,14 @@ cJSON *OpenAPI_sm_policy_dnn_data_convertToJSON(OpenAPI_sm_policy_dnn_data_t *sm
     if (sm_policy_dnn_data->ref_um_data_limit_ids) {
         OpenAPI_list_for_each(sm_policy_dnn_data->ref_um_data_limit_ids, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_sm_policy_dnn_data_convertToJSON() failed [ref_um_data_limit_ids]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_sm_policy_dnn_data_convertToJSON() failed [ref_um_data_limit_ids]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_limit_id_to_monitoring_key_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -334,6 +342,14 @@ cJSON *OpenAPI_sm_policy_dnn_data_convertToJSON(OpenAPI_sm_policy_dnn_data_t *sm
     if (sm_policy_dnn_data->pra_infos) {
         OpenAPI_list_for_each(sm_policy_dnn_data->pra_infos, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_sm_policy_dnn_data_convertToJSON() failed [pra_infos]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_sm_policy_dnn_data_convertToJSON() failed [pra_infos]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_presence_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
@@ -356,6 +372,14 @@ cJSON *OpenAPI_sm_policy_dnn_data_convertToJSON(OpenAPI_sm_policy_dnn_data_t *sm
     if (sm_policy_dnn_data->bdt_ref_ids) {
         OpenAPI_list_for_each(sm_policy_dnn_data->bdt_ref_ids, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_sm_policy_dnn_data_convertToJSON() failed [bdt_ref_ids]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_sm_policy_dnn_data_convertToJSON() failed [bdt_ref_ids]");
+                goto end;
+            }
             if (cJSON_AddStringToObject(localMapObject, localKeyValue->key, (char*)localKeyValue->value) == NULL) {
                 ogs_error("OpenAPI_sm_policy_dnn_data_convertToJSON() failed [inner]");
                 goto end;

@@ -642,7 +642,11 @@ cJSON *OpenAPI_sm_context_update_data_convertToJSON(OpenAPI_sm_context_update_da
         goto end;
     }
     OpenAPI_list_for_each(sm_context_update_data->revoke_ebi_list, node) {
-        if (cJSON_AddNumberToObject(revoke_ebi_listList, "", (uintptr_t)node->data) == NULL) {
+        if (node->data == NULL) {
+            ogs_error("OpenAPI_sm_context_update_data_convertToJSON() failed [revoke_ebi_list]");
+            goto end;
+        }
+        if (cJSON_AddNumberToObject(revoke_ebi_listList, "", *(double *)node->data) == NULL) {
             ogs_error("OpenAPI_sm_context_update_data_convertToJSON() failed [revoke_ebi_list]");
             goto end;
         }

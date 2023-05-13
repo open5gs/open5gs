@@ -57,6 +57,14 @@ cJSON *OpenAPI_eps_interworking_info_convertToJSON(OpenAPI_eps_interworking_info
     if (eps_interworking_info->eps_iwk_pgws) {
         OpenAPI_list_for_each(eps_interworking_info->eps_iwk_pgws, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_eps_interworking_info_convertToJSON() failed [eps_iwk_pgws]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_eps_interworking_info_convertToJSON() failed [eps_iwk_pgws]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_eps_iwk_pgw_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

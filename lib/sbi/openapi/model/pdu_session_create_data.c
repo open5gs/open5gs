@@ -527,7 +527,11 @@ cJSON *OpenAPI_pdu_session_create_data_convertToJSON(OpenAPI_pdu_session_create_
         goto end;
     }
     OpenAPI_list_for_each(pdu_session_create_data->eps_bearer_id, node) {
-        if (cJSON_AddNumberToObject(eps_bearer_idList, "", (uintptr_t)node->data) == NULL) {
+        if (node->data == NULL) {
+            ogs_error("OpenAPI_pdu_session_create_data_convertToJSON() failed [eps_bearer_id]");
+            goto end;
+        }
+        if (cJSON_AddNumberToObject(eps_bearer_idList, "", *(double *)node->data) == NULL) {
             ogs_error("OpenAPI_pdu_session_create_data_convertToJSON() failed [eps_bearer_id]");
             goto end;
         }

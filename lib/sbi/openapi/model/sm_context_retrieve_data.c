@@ -102,7 +102,11 @@ cJSON *OpenAPI_sm_context_retrieve_data_convertToJSON(OpenAPI_sm_context_retriev
         goto end;
     }
     OpenAPI_list_for_each(sm_context_retrieve_data->not_to_transfer_ebi_list, node) {
-        if (cJSON_AddNumberToObject(not_to_transfer_ebi_listList, "", (uintptr_t)node->data) == NULL) {
+        if (node->data == NULL) {
+            ogs_error("OpenAPI_sm_context_retrieve_data_convertToJSON() failed [not_to_transfer_ebi_list]");
+            goto end;
+        }
+        if (cJSON_AddNumberToObject(not_to_transfer_ebi_listList, "", *(double *)node->data) == NULL) {
             ogs_error("OpenAPI_sm_context_retrieve_data_convertToJSON() failed [not_to_transfer_ebi_list]");
             goto end;
         }

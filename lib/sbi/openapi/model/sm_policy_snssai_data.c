@@ -84,6 +84,14 @@ cJSON *OpenAPI_sm_policy_snssai_data_convertToJSON(OpenAPI_sm_policy_snssai_data
     if (sm_policy_snssai_data->sm_policy_dnn_data) {
         OpenAPI_list_for_each(sm_policy_snssai_data->sm_policy_dnn_data, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_sm_policy_snssai_data_convertToJSON() failed [sm_policy_dnn_data]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_sm_policy_snssai_data_convertToJSON() failed [sm_policy_dnn_data]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_sm_policy_dnn_data_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

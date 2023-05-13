@@ -60,6 +60,14 @@ cJSON *OpenAPI_scp_domain_routing_information_convertToJSON(OpenAPI_scp_domain_r
     if (scp_domain_routing_information->scp_domain_list) {
         OpenAPI_list_for_each(scp_domain_routing_information->scp_domain_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_scp_domain_routing_information_convertToJSON() failed [scp_domain_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_scp_domain_routing_information_convertToJSON() failed [scp_domain_list]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_scp_domain_connectivity_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

@@ -60,7 +60,11 @@ cJSON *OpenAPI_qos_flow_tunnel_convertToJSON(OpenAPI_qos_flow_tunnel_t *qos_flow
         goto end;
     }
     OpenAPI_list_for_each(qos_flow_tunnel->qfi_list, node) {
-        if (cJSON_AddNumberToObject(qfi_listList, "", (uintptr_t)node->data) == NULL) {
+        if (node->data == NULL) {
+            ogs_error("OpenAPI_qos_flow_tunnel_convertToJSON() failed [qfi_list]");
+            goto end;
+        }
+        if (cJSON_AddNumberToObject(qfi_listList, "", *(double *)node->data) == NULL) {
             ogs_error("OpenAPI_qos_flow_tunnel_convertToJSON() failed [qfi_list]");
             goto end;
         }

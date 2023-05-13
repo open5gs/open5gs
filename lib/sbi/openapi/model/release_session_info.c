@@ -56,7 +56,11 @@ cJSON *OpenAPI_release_session_info_convertToJSON(OpenAPI_release_session_info_t
         goto end;
     }
     OpenAPI_list_for_each(release_session_info->release_session_list, node) {
-        if (cJSON_AddNumberToObject(release_session_listList, "", (uintptr_t)node->data) == NULL) {
+        if (node->data == NULL) {
+            ogs_error("OpenAPI_release_session_info_convertToJSON() failed [release_session_list]");
+            goto end;
+        }
+        if (cJSON_AddNumberToObject(release_session_listList, "", *(double *)node->data) == NULL) {
             ogs_error("OpenAPI_release_session_info_convertToJSON() failed [release_session_list]");
             goto end;
         }

@@ -126,6 +126,14 @@ cJSON *OpenAPI_area_scope_convertToJSON(OpenAPI_area_scope_t *area_scope)
     if (area_scope->tac_info_per_plmn) {
         OpenAPI_list_for_each(area_scope->tac_info_per_plmn, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_area_scope_convertToJSON() failed [tac_info_per_plmn]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_area_scope_convertToJSON() failed [tac_info_per_plmn]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_tac_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

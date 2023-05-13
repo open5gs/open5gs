@@ -100,6 +100,146 @@ int scp_context_parse_config(void)
                     /* handle config in sbi library */
                 } else if (!strcmp(scp_key, "discovery")) {
                     /* handle config in sbi library */
+                } else if (!strcmp(scp_key, "info")) {
+                    ogs_sbi_nf_instance_t *nf_instance = NULL;
+                    ogs_sbi_nf_info_t *nf_info = NULL;
+                    ogs_sbi_scp_info_t *scp_info = NULL;
+
+                    ogs_yaml_iter_t info_iter;
+                    ogs_yaml_iter_recurse(&scp_iter, &info_iter);
+
+                    nf_instance = ogs_sbi_self()->nf_instance;
+                    ogs_assert(nf_instance);
+
+                    nf_info = ogs_sbi_nf_info_add(
+                                &nf_instance->nf_info_list,
+                                    OpenAPI_nf_type_SCP);
+                    ogs_assert(nf_info);
+
+                    scp_info = &nf_info->scp;
+
+                    while (ogs_yaml_iter_next(&info_iter)) {
+                        const char *info_key =
+                            ogs_yaml_iter_key(&info_iter);
+                        ogs_assert(info_key);
+                        if (!strcmp(info_key, "domain")) {
+                            ogs_yaml_iter_t domain_array, domain_iter;
+                            ogs_yaml_iter_recurse(&info_iter, &domain_array);
+
+                            do {
+                                if (ogs_yaml_iter_type(&domain_array) ==
+                                        YAML_MAPPING_NODE) {
+                                    memcpy(&domain_iter, &domain_array,
+                                            sizeof(ogs_yaml_iter_t));
+                                } else if (ogs_yaml_iter_type(&domain_array) ==
+                                            YAML_SEQUENCE_NODE) {
+                                    if (!ogs_yaml_iter_next(&domain_array))
+                                        break;
+                                    ogs_yaml_iter_recurse(&domain_array,
+                                            &domain_iter);
+                                } else if (ogs_yaml_iter_type(&domain_array) ==
+                                            YAML_SCALAR_NODE) {
+                                    break;
+                                } else
+                                    ogs_assert_if_reached();
+
+                                while (ogs_yaml_iter_next(&domain_iter)) {
+                                    const char *domain_key =
+                                        ogs_yaml_iter_key(&domain_iter);
+                                    ogs_assert(domain_key);
+                                    if (!strcmp(domain_key, "port")) {
+                                        ogs_yaml_iter_t port_iter;
+                                        ogs_yaml_iter_recurse(&domain_iter,
+                                                &port_iter);
+                                        while (ogs_yaml_iter_next(&port_iter)) {
+                                            const char *port_key =
+                                                ogs_yaml_iter_key(&port_iter);
+                                            ogs_assert(port_key);
+                                            if (!strcmp(port_key, "http")) {
+                                                const char *v =
+                                                    ogs_yaml_iter_value(
+                                                            &port_iter);
+                                                if (v) {
+                                                    scp_info->domain[
+                                                        scp_info->
+                                                            num_of_domain].
+                                                            http.presence =
+                                                                true;
+                                                    scp_info->domain[
+                                                        scp_info->
+                                                            num_of_domain].
+                                                            http.port = atoi(v);
+                                                }
+                                            } else if (!strcmp(port_key,
+                                                        "https")) {
+                                                const char *v =
+                                                    ogs_yaml_iter_value(
+                                                            &port_iter);
+                                                if (v) {
+                                                    scp_info->domain[
+                                                        scp_info->
+                                                            num_of_domain].
+                                                            https.presence =
+                                                                true;
+                                                    scp_info->domain[
+                                                        scp_info->
+                                                            num_of_domain].
+                                                            https.port =
+                                                                atoi(v);
+                                                }
+                                            } else
+                                                ogs_warn("unknown key `%s`",
+                                                        port_key);
+                                        }
+                                    } else if (!strcmp(domain_key, "name")) {
+                                        scp_info->domain[
+                                            scp_info->num_of_domain].
+                                            name = (char *)ogs_yaml_iter_value(
+                                                    &domain_iter);
+                                    } else if (!strcmp(domain_key, "fqdn")) {
+                                        scp_info->domain[
+                                            scp_info->num_of_domain].
+                                            fqdn = (char *)ogs_yaml_iter_value(
+                                                    &domain_iter);
+                                    } else
+                                        ogs_warn("unknown key `%s`",
+                                                domain_key);
+                                }
+
+                                if (scp_info->domain[
+                                        scp_info->num_of_domain].name)
+                                    scp_info->num_of_domain++;
+
+                            } while (ogs_yaml_iter_type(&domain_array) ==
+                                    YAML_SEQUENCE_NODE);
+
+                        } else if (!strcmp(info_key, "port")) {
+                            ogs_yaml_iter_t port_iter;
+                            ogs_yaml_iter_recurse(&info_iter, &port_iter);
+                            while (ogs_yaml_iter_next(&port_iter)) {
+                                const char *port_key =
+                                    ogs_yaml_iter_key(&port_iter);
+                                ogs_assert(port_key);
+                                if (!strcmp(port_key, "http")) {
+                                    const char *v =
+                                        ogs_yaml_iter_value(&port_iter);
+                                    if (v) {
+                                        scp_info->http.presence = true;
+                                        scp_info->http.port = atoi(v);
+                                    }
+                                } else if (!strcmp(port_key, "https")) {
+                                    const char *v =
+                                        ogs_yaml_iter_value(&port_iter);
+                                    if (v) {
+                                        scp_info->https.presence = true;
+                                        scp_info->https.port = atoi(v);
+                                    }
+                                } else
+                                    ogs_warn("unknown key `%s`", port_key);
+                            }
+                        } else
+                            ogs_warn("unknown key `%s`", info_key);
+                    }
                 } else
                     ogs_warn("unknown key `%s`", scp_key);
             }

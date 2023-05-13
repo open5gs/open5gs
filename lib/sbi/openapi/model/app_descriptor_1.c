@@ -75,6 +75,14 @@ cJSON *OpenAPI_app_descriptor_1_convertToJSON(OpenAPI_app_descriptor_1_t *app_de
     if (app_descriptor_1->app_ids) {
         OpenAPI_list_for_each(app_descriptor_1->app_ids, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_app_descriptor_1_convertToJSON() failed [app_ids]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_app_descriptor_1_convertToJSON() failed [app_ids]");
+                goto end;
+            }
             if (cJSON_AddStringToObject(localMapObject, localKeyValue->key, (char*)localKeyValue->value) == NULL) {
                 ogs_error("OpenAPI_app_descriptor_1_convertToJSON() failed [inner]");
                 goto end;

@@ -126,6 +126,14 @@ cJSON *OpenAPI_identity_data_convertToJSON(OpenAPI_identity_data_t *identity_dat
     if (identity_data->application_port_ids) {
         OpenAPI_list_for_each(identity_data->application_port_ids, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_identity_data_convertToJSON() failed [application_port_ids]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_identity_data_convertToJSON() failed [application_port_ids]");
+                goto end;
+            }
             if (cJSON_AddStringToObject(localMapObject, localKeyValue->key, (char*)localKeyValue->value) == NULL) {
                 ogs_error("OpenAPI_identity_data_convertToJSON() failed [inner]");
                 goto end;

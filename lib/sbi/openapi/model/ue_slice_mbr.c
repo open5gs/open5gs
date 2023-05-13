@@ -72,6 +72,14 @@ cJSON *OpenAPI_ue_slice_mbr_convertToJSON(OpenAPI_ue_slice_mbr_t *ue_slice_mbr)
     if (ue_slice_mbr->slice_mbr) {
         OpenAPI_list_for_each(ue_slice_mbr->slice_mbr, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_ue_slice_mbr_convertToJSON() failed [slice_mbr]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_ue_slice_mbr_convertToJSON() failed [slice_mbr]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_slice_mbr_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

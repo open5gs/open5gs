@@ -119,7 +119,11 @@ cJSON *OpenAPI_assigned_ebi_data_convertToJSON(OpenAPI_assigned_ebi_data_t *assi
         goto end;
     }
     OpenAPI_list_for_each(assigned_ebi_data->released_ebi_list, node) {
-        if (cJSON_AddNumberToObject(released_ebi_listList, "", (uintptr_t)node->data) == NULL) {
+        if (node->data == NULL) {
+            ogs_error("OpenAPI_assigned_ebi_data_convertToJSON() failed [released_ebi_list]");
+            goto end;
+        }
+        if (cJSON_AddNumberToObject(released_ebi_listList, "", *(double *)node->data) == NULL) {
             ogs_error("OpenAPI_assigned_ebi_data_convertToJSON() failed [released_ebi_list]");
             goto end;
         }
@@ -133,7 +137,11 @@ cJSON *OpenAPI_assigned_ebi_data_convertToJSON(OpenAPI_assigned_ebi_data_t *assi
         goto end;
     }
     OpenAPI_list_for_each(assigned_ebi_data->modified_ebi_list, node) {
-        if (cJSON_AddNumberToObject(modified_ebi_listList, "", (uintptr_t)node->data) == NULL) {
+        if (node->data == NULL) {
+            ogs_error("OpenAPI_assigned_ebi_data_convertToJSON() failed [modified_ebi_list]");
+            goto end;
+        }
+        if (cJSON_AddNumberToObject(modified_ebi_listList, "", *(double *)node->data) == NULL) {
             ogs_error("OpenAPI_assigned_ebi_data_convertToJSON() failed [modified_ebi_list]");
             goto end;
         }

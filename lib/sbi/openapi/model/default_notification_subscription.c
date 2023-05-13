@@ -163,6 +163,14 @@ cJSON *OpenAPI_default_notification_subscription_convertToJSON(OpenAPI_default_n
     if (default_notification_subscription->service_info_list) {
         OpenAPI_list_for_each(default_notification_subscription->service_info_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_default_notification_subscription_convertToJSON() failed [service_info_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_default_notification_subscription_convertToJSON() failed [service_info_list]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_def_sub_service_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

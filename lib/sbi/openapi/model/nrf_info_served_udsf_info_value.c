@@ -95,6 +95,14 @@ cJSON *OpenAPI_nrf_info_served_udsf_info_value_convertToJSON(OpenAPI_nrf_info_se
     if (nrf_info_served_udsf_info_value->storage_id_ranges) {
         OpenAPI_list_for_each(nrf_info_served_udsf_info_value->storage_id_ranges, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_nrf_info_served_udsf_info_value_convertToJSON() failed [storage_id_ranges]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_nrf_info_served_udsf_info_value_convertToJSON() failed [storage_id_ranges]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_identity_range_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

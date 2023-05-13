@@ -66,6 +66,14 @@ cJSON *OpenAPI_cag_data_convertToJSON(OpenAPI_cag_data_t *cag_data)
     if (cag_data->cag_infos) {
         OpenAPI_list_for_each(cag_data->cag_infos, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_cag_data_convertToJSON() failed [cag_infos]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_cag_data_convertToJSON() failed [cag_infos]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_cag_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

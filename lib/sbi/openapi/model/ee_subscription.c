@@ -157,6 +157,14 @@ cJSON *OpenAPI_ee_subscription_convertToJSON(OpenAPI_ee_subscription_t *ee_subsc
     if (ee_subscription->monitoring_configurations) {
         OpenAPI_list_for_each(ee_subscription->monitoring_configurations, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_ee_subscription_convertToJSON() failed [monitoring_configurations]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_ee_subscription_convertToJSON() failed [monitoring_configurations]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_monitoring_configuration_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

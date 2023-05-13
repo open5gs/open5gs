@@ -93,7 +93,11 @@ cJSON *OpenAPI_ue_reg_status_update_req_data_convertToJSON(OpenAPI_ue_reg_status
         goto end;
     }
     OpenAPI_list_for_each(ue_reg_status_update_req_data->to_release_session_list, node) {
-        if (cJSON_AddNumberToObject(to_release_session_listList, "", (uintptr_t)node->data) == NULL) {
+        if (node->data == NULL) {
+            ogs_error("OpenAPI_ue_reg_status_update_req_data_convertToJSON() failed [to_release_session_list]");
+            goto end;
+        }
+        if (cJSON_AddNumberToObject(to_release_session_listList, "", *(double *)node->data) == NULL) {
             ogs_error("OpenAPI_ue_reg_status_update_req_data_convertToJSON() failed [to_release_session_list]");
             goto end;
         }

@@ -60,6 +60,14 @@ cJSON *OpenAPI_spatial_validity_convertToJSON(OpenAPI_spatial_validity_t *spatia
     if (spatial_validity->presence_info_list) {
         OpenAPI_list_for_each(spatial_validity->presence_info_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_spatial_validity_convertToJSON() failed [presence_info_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_spatial_validity_convertToJSON() failed [presence_info_list]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_presence_info_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

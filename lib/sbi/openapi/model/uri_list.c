@@ -61,6 +61,14 @@ cJSON *OpenAPI_uri_list_convertToJSON(OpenAPI_uri_list_t *uri_list)
     if (uri_list->_links) {
         OpenAPI_list_for_each(uri_list->_links, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_uri_list_convertToJSON() failed [_links]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_uri_list_convertToJSON() failed [_links]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_links_value_schema_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

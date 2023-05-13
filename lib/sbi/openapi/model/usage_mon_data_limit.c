@@ -102,6 +102,14 @@ cJSON *OpenAPI_usage_mon_data_limit_convertToJSON(OpenAPI_usage_mon_data_limit_t
     if (usage_mon_data_limit->scopes) {
         OpenAPI_list_for_each(usage_mon_data_limit->scopes, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_usage_mon_data_limit_convertToJSON() failed [scopes]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_usage_mon_data_limit_convertToJSON() failed [scopes]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_usage_mon_data_scope_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();

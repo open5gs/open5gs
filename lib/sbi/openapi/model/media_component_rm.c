@@ -404,6 +404,14 @@ cJSON *OpenAPI_media_component_rm_convertToJSON(OpenAPI_media_component_rm_t *me
     if (media_component_rm->med_sub_comps) {
         OpenAPI_list_for_each(media_component_rm->med_sub_comps, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [med_sub_comps]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [med_sub_comps]");
+                goto end;
+            }
             cJSON *itemLocal = localKeyValue->value ?
                 OpenAPI_media_sub_component_rm_convertToJSON(localKeyValue->value) :
                 cJSON_CreateNull();
