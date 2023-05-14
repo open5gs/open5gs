@@ -336,7 +336,7 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_update(amf_ue_t *amf_ue,
 {
     amf_sess_t *sess = NULL;
     uint16_t psimask;
-    int i = 0;
+    int i = 0, served_tai_index = 0;
 
     ogs_nas_5gs_tracking_area_identity_t *last_visited_registered_tai = NULL;
     ogs_nas_uplink_data_status_t *uplink_data_status = NULL;
@@ -355,6 +355,14 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_update(amf_ue_t *amf_ue,
     ogs_assert(pdu_session_status);
     update_type = &registration_request->update_type;
     ogs_assert(update_type);
+
+    served_tai_index = amf_find_served_tai(&amf_ue->nr_tai);
+    if (served_tai_index < 0) {
+        ogs_error("Cannot find Served TAI[PLMN_ID:%06x,TAC:%d]",
+            ogs_plmn_id_hexdump(&amf_ue->nr_tai.plmn_id), amf_ue->nr_tai.tac.v);
+        return OGS_5GMM_CAUSE_TRACKING_AREA_NOT_ALLOWED;
+    }
+    ogs_debug("    SERVED_TAI_INDEX[%d]", served_tai_index);
 
     if (registration_request->presencemask &
         OGS_NAS_5GS_REGISTRATION_REQUEST_NAS_MESSAGE_CONTAINER_PRESENT) {
