@@ -3956,6 +3956,9 @@ mme_m_tmsi_t *mme_m_tmsi_alloc(void)
 int mme_m_tmsi_free(mme_m_tmsi_t *m_tmsi)
 {
     ogs_assert(m_tmsi);
+
+    /* Restore M-TMSI by Issue #2307 */
+    *m_tmsi &= 0x003fffff;
     ogs_pool_free(&m_tmsi_pool, m_tmsi);
 
     return OGS_OK;
