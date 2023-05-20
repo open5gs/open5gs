@@ -42,6 +42,7 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
     amf_ue = sess->amf_ue;
     ogs_assert(amf_ue);
     ogs_assert(amf_ue->nas.access_type);
+    ogs_assert(ran_ue_cycle(amf_ue->ran_ue));
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
@@ -55,13 +56,6 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
     memset(&hplmnSnssai, 0, sizeof(hplmnSnssai));
     memset(&header, 0, sizeof(header));
     memset(&ueLocation, 0, sizeof(ueLocation));
-
-    ran_ue_t *ran_ue = ran_ue_cycle(amf_ue->ran_ue);
-    if (!ran_ue) {
-        /* ran_ue is required for amf_ue_rat_type() */
-        ogs_error("NG context has already been removed");
-        goto end;
-    }
 
     SmContextCreateData.serving_nf_id =
         NF_INSTANCE_ID(ogs_sbi_self()->nf_instance);

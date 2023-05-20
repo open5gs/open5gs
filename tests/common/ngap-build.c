@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -2594,4 +2594,46 @@ static ogs_pkbuf_t *testngap_build_handover_request_ack_transfer(
 
     return ogs_asn_encode(
             &asn_DEF_NGAP_HandoverRequestAcknowledgeTransfer, &message);
+}
+
+#define TEST_NGAP_MAX_MESSAGE 64
+
+ogs_pkbuf_t *test_ngap_build_amf_configuration_ack(int i)
+{
+    ogs_pkbuf_t *pkbuf = NULL;
+    const char *payload[TEST_NGAP_MAX_MESSAGE] = {
+        "2000 000f000002000a40 0200010055400200 01",
+        "",
+        "",
+
+        "",
+        "",
+        "",
+
+        "",
+        "",
+        "",
+
+    };
+    uint16_t len[TEST_NGAP_MAX_MESSAGE] = {
+        19,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+    };
+    char hexbuf[OGS_HUGE_LEN];
+
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_assert(pkbuf);
+    ogs_pkbuf_put_data(pkbuf,
+        ogs_hex_from_string(payload[i], hexbuf, sizeof(hexbuf)), len[i]);
+
+    return pkbuf;
 }

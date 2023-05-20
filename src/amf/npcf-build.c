@@ -38,6 +38,7 @@ ogs_sbi_request_t *amf_npcf_am_policy_control_build_create(
 
     ogs_assert(amf_ue);
     ogs_assert(amf_ue->supi);
+    ogs_assert(ran_ue_cycle(amf_ue->ran_ue));
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
@@ -49,13 +50,6 @@ ogs_sbi_request_t *amf_npcf_am_policy_control_build_create(
     memset(&PolicyAssociationRequest, 0, sizeof(PolicyAssociationRequest));
     memset(&ueLocation, 0, sizeof(ueLocation));
     memset(&UeAmbr, 0, sizeof(UeAmbr));
-
-    ran_ue_t *ran_ue = ran_ue_cycle(amf_ue->ran_ue);
-    if (!ran_ue) {
-        ogs_error("NG context has already been removed");
-        /* ran_ue is required for amf_ue_rat_type() */
-        goto end;
-    }
 
     server = ogs_list_first(&ogs_sbi_self()->server_list);
     if (!server) {

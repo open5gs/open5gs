@@ -239,23 +239,29 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                             AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT) &&
                         AMF_SESSION_SYNC_DONE(amf_ue,
                             AMF_UPDATE_SM_CONTEXT_REGISTRATION_REQUEST)) {
+                        ran_ue_t *ran_ue = ran_ue_cycle(amf_ue->ran_ue);
 
-                        if (!PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
-                            r = amf_ue_sbi_discover_and_send(
-                                    OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
-                                    NULL,
-                                    amf_npcf_am_policy_control_build_create,
-                                    amf_ue, 0, NULL);
-                            ogs_expect(r == OGS_OK);
-                            ogs_assert(r != OGS_ERROR);
+                        if (ran_ue) {
+                            if (!PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
+                                r = amf_ue_sbi_discover_and_send(
+                                        OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
+                                        NULL,
+                                        amf_npcf_am_policy_control_build_create,
+                                        amf_ue, 0, NULL);
+                                ogs_expect(r == OGS_OK);
+                                ogs_assert(r != OGS_ERROR);
+                            } else {
+                                CLEAR_AMF_UE_TIMER(amf_ue->t3550);
+                                r = nas_5gs_send_registration_accept(amf_ue);
+                                ogs_expect(r == OGS_OK);
+                                ogs_assert(r != OGS_ERROR);
+
+                                AMF_UE_CLEAR_N2_TRANSFER(amf_ue,
+                                        pdu_session_resource_setup_request);
+                            }
                         } else {
-                            CLEAR_AMF_UE_TIMER(amf_ue->t3550);
-                            r = nas_5gs_send_registration_accept(amf_ue);
-                            ogs_expect(r == OGS_OK);
-                            ogs_assert(r != OGS_ERROR);
-
-                            AMF_UE_CLEAR_N2_TRANSFER(
-                                    amf_ue, pdu_session_resource_setup_request);
+                            ogs_warn("[%s] RAN-NG Context has already "
+                                    "been removed", amf_ue->supi);
                         }
                     }
                 } else if (state == AMF_UPDATE_SM_CONTEXT_SERVICE_REQUEST) {
@@ -584,6 +590,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
 
             } else if (state ==
                     AMF_UPDATE_SM_CONTEXT_DUPLICATED_PDU_SESSION_ID) {
+                ran_ue_t *ran_ue = ran_ue_cycle(amf_ue->ran_ue);
                 /*
                  * 1. PDU session establishment request
                  *    (Duplicated PDU Session ID)
@@ -594,12 +601,17 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 ogs_warn("[%s:%d] Receive Update SM context"
                         "(DUPLICATED_PDU_SESSION_ID)", amf_ue->supi, sess->psi);
 
-                r = amf_sess_sbi_discover_and_send(
-                        OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
-                        amf_nsmf_pdusession_build_create_sm_context,
-                        sess, AMF_CREATE_SM_CONTEXT_NO_STATE, NULL);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
+                if (ran_ue) {
+                    r = amf_sess_sbi_discover_and_send(
+                            OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                            amf_nsmf_pdusession_build_create_sm_context,
+                            sess, AMF_CREATE_SM_CONTEXT_NO_STATE, NULL);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+                } else {
+                    ogs_warn("[%s] RAN-NG Context has already been removed",
+                            amf_ue->supi);
+                }
 
             } else if (state == AMF_UPDATE_SM_CONTEXT_PATH_SWITCH_REQUEST) {
 
@@ -890,19 +902,25 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
                 amf_ue, AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT) &&
             AMF_SESSION_SYNC_DONE(
                 amf_ue, AMF_UPDATE_SM_CONTEXT_REGISTRATION_REQUEST)) {
+            ran_ue_t *ran_ue = ran_ue_cycle(amf_ue->ran_ue);
 
-            if (!PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
-                r = amf_ue_sbi_discover_and_send(
-                        OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,
-                        amf_npcf_am_policy_control_build_create,
-                        amf_ue, 0, NULL);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
+            if (ran_ue) {
+                if (!PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
+                    r = amf_ue_sbi_discover_and_send(
+                            OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,
+                            amf_npcf_am_policy_control_build_create,
+                            amf_ue, 0, NULL);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+                } else {
+                    CLEAR_AMF_UE_TIMER(amf_ue->t3550);
+                    r = nas_5gs_send_registration_accept(amf_ue);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+                }
             } else {
-                CLEAR_AMF_UE_TIMER(amf_ue->t3550);
-                r = nas_5gs_send_registration_accept(amf_ue);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
+                ogs_warn("[%s] RAN-NG Context has already been removed",
+                        amf_ue->supi);
             }
         }
 
