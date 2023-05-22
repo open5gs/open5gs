@@ -34,6 +34,7 @@ int amf_nnssf_nsselection_handle_get(
     OpenAPI_nsi_information_t *NsiInformation = NULL;
 
     amf_ue_t *amf_ue = NULL;
+    ran_ue_t *ran_ue = NULL;
 
     ogs_assert(sess);
     amf_ue = sess->amf_ue;
@@ -41,6 +42,12 @@ int amf_nnssf_nsselection_handle_get(
     ogs_assert(recvmsg);
 
     ogs_assert(!SESSION_CONTEXT_IN_SMF(sess));
+
+    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+    if (!ran_ue) {
+        ogs_error("NG context has already been removed");
+        return OGS_ERROR;
+    }
 
     if (recvmsg->res_status != OGS_SBI_HTTP_STATUS_OK) {
         ogs_error("[%s] HTTP response error [%d]",

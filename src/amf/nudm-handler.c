@@ -26,19 +26,20 @@ int amf_nudm_sdm_handle_provisioned(
         amf_ue_t *amf_ue, int state, ogs_sbi_message_t *recvmsg)
 {
     int i, r;
+    ran_ue_t *ran_ue = NULL;
 
     ogs_assert(amf_ue);
     ogs_assert(recvmsg);
 
+    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+    if (!ran_ue) {
+        /* ran_ue is required for amf_ue_is_rat_restricted() */
+        ogs_error("NG context has already been removed");
+        return OGS_ERROR;
+    }
+
     SWITCH(recvmsg->h.resource.component[1])
     CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
-
-        ran_ue_t *ran_ue = ran_ue_cycle(amf_ue->ran_ue);
-        if (!ran_ue) {
-            /* ran_ue is required for amf_ue_is_rat_restricted() */
-            ogs_error("NG context has already been removed");
-            return OGS_ERROR;
-        }
 
         if (recvmsg->AccessAndMobilitySubscriptionData) {
             OpenAPI_list_t *gpsiList =
@@ -242,7 +243,6 @@ int amf_nudm_sdm_handle_provisioned(
         break;
 
     CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA)
-
         if (amf_ue->data_change_subscription_id) {
             /* we already have a SDM subscription to UDM; continue without
              * subscribing again */
