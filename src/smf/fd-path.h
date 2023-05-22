@@ -46,7 +46,7 @@ void smf_gy_send_ccr(smf_sess_t *sess, void *xact,
 void smf_s6b_send_aar(smf_sess_t *sess, ogs_gtp_xact_t *xact);
 void smf_s6b_send_str(smf_sess_t *sess, ogs_gtp_xact_t *xact, uint32_t cause);
 
-void smf_fd_msg_avp_add_3gpp_uli(smf_sess_t *sess, struct avp *avp);
+void smf_fd_msg_avp_add_3gpp_uli(smf_sess_t *sess, struct msg *req);
 
 #ifdef __cplusplus
 }

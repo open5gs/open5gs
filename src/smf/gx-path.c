@@ -499,7 +499,7 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_assert(ret == 0);
 
         /* 3GPP-User-Location-Info, 3GPP TS 29.061 16.4.7.2 22 */
-        smf_fd_msg_avp_add_3gpp_uli(sess, avpch1);
+        smf_fd_msg_avp_add_3gpp_uli(sess, req);
 
         /* Set 3GPP-MS-Timezone */
         if (sess->gtp.ue_timezone.presence &&
