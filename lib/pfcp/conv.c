@@ -152,11 +152,13 @@ int ogs_pfcp_f_seid_to_sockaddr(
     return OGS_OK;
 }
 
-int ogs_pfcp_sockaddr_to_f_seid(
-    ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6,
-    ogs_pfcp_f_seid_t *f_seid, int *len)
+int ogs_pfcp_sockaddr_to_f_seid(ogs_pfcp_f_seid_t *f_seid, int *len)
 {
     const int hdr_len = 9;
+    ogs_sockaddr_t *advertise = ogs_pfcp_self()->pfcp_advertise;
+    ogs_sockaddr_t *advertise6 = ogs_pfcp_self()->pfcp_advertise6;
+    ogs_sockaddr_t *addr = advertise ? advertise : ogs_pfcp_self()->pfcp_addr;
+    ogs_sockaddr_t *addr6 = advertise6 ? advertise6 : ogs_pfcp_self()->pfcp_addr6;
 
     ogs_assert(f_seid);
 
