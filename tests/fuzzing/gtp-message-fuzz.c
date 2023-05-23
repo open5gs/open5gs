@@ -27,7 +27,7 @@
 #define kMaxInputLength 1024
 
 extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) 
-{ /* open5gs/tests/unit/gtp-message-test.c */
+{ /* open5gs/tests/non3gpp/gtp-path.c */
 
     if (Size < kMinInputLength || Size > kMaxInputLength) {
         return 1;
@@ -39,18 +39,16 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
         ogs_log_install_domain(&__ogs_tlv_domain, "tlv", OGS_LOG_NONE);
     }
 
-    int result;
     ogs_pkbuf_t *pkbuf;
-    ogs_gtp2_create_session_request_t req;
-
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+
     if (pkbuf == NULL) {
         return 1;
     }
-
     ogs_pkbuf_put_data(pkbuf, Data, Size);
 
-    ogs_tlv_parse_msg(&req, &ogs_gtp2_tlv_desc_create_session_request, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+    ogs_gtp2_message_t gtp_message;
+    ogs_gtp2_parse_msg(&gtp_message, pkbuf);
 
     ogs_pkbuf_free(pkbuf);
 
