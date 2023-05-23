@@ -319,7 +319,7 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                             if (ogs_app()->parameter.no_ipv6 == 0 &&
                                 !self.pfcp_advertise6) {
                                 ogs_copyaddrinfo(&self.pfcp_advertise6, addr);
-                                ogs_filteraddrinfo(&self.pfcp_advertise6, AF_INET);
+                                ogs_filteraddrinfo(&self.pfcp_advertise6, AF_INET6);
                             }
                             ogs_freeaddrinfo(addr);
                         }
