@@ -595,7 +595,7 @@ pcf_app_t *pcf_app_find_by_app_session_id(char *app_session_id)
     return pcf_app_find(atoll(app_session_id));
 }
 
-int get_pcf_load(void)
+int pcf_instance_get_load(void)
 {
     return (((ogs_pool_size(&pcf_ue_pool) -
             ogs_pool_avail(&pcf_ue_pool)) * 100) /

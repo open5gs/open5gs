@@ -2509,7 +2509,7 @@ static void stats_remove_ran_ue(void)
     ogs_info("[Removed] Number of gNB-UEs is now %d", num_of_ran_ue);
 }
 
-int get_ran_ue_load(void)
+int amf_instance_get_load(void)
 {
     return (((ogs_pool_size(&ran_ue_pool) -
             ogs_pool_avail(&ran_ue_pool)) * 100) /

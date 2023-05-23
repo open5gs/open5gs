@@ -526,7 +526,7 @@ int smf_maximum_integrity_protected_data_rate_uplink_value2enum(
         const char *value);
 int smf_maximum_integrity_protected_data_rate_downlink_value2enum(
         const char *value);
-int get_sess_load(void);
+int smf_instance_get_load(void);
 
 #ifdef __cplusplus
 }
