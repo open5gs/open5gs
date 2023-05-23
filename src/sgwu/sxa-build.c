@@ -58,9 +58,7 @@ ogs_pkbuf_t *sgwu_sxa_build_session_establishment_response(uint8_t type,
     rsp->cause.u8 = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 
     /* F-SEID */
-    rv = ogs_pfcp_sockaddr_to_f_seid(
-            ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
-            &f_seid, &len);
+    rv = ogs_pfcp_sockaddr_to_f_seid(&f_seid, &len);
     if (rv != OGS_OK) {
         ogs_error("ogs_pfcp_sockaddr_to_f_seid() failed");
         ogs_free(pfcp_message);
