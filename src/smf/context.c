@@ -3059,7 +3059,7 @@ static void stats_remove_smf_session(smf_sess_t *sess)
     ogs_info("[Removed] Number of SMF-Sessions is now %d", num_of_smf_sess);
 }
 
-int get_sess_load(void)
+int smf_instance_get_load(void)
 {
     return (((ogs_pool_size(&smf_sess_pool) -
             ogs_pool_avail(&smf_sess_pool)) * 100) /

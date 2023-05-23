@@ -577,7 +577,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             ogs_assert(nf_instance);
             ogs_assert(OGS_FSM_STATE(&nf_instance->sm));
 
-            ogs_sbi_self()->nf_instance->load = get_pcf_load();
+            ogs_sbi_self()->nf_instance->load = pcf_instance_get_load();
 
             ogs_fsm_dispatch(&nf_instance->sm, e);
             if (OGS_FSM_CHECK(&nf_instance->sm, ogs_sbi_nf_state_exception))
