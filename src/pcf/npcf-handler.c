@@ -29,14 +29,13 @@ bool pcf_npcf_am_policy_contrtol_handle_create(pcf_ue_t *pcf_ue,
 
     OpenAPI_policy_association_request_t *PolicyAssociationRequest = NULL;
     OpenAPI_guami_t *Guami = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     uint64_t supported_features = 0;
 
     ogs_sbi_client_t *client = NULL;
     OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
     ogs_sockaddr_t *addr = NULL;
-
-    pcf_metrics_inst_by_plmn_add(NULL, PCF_METR_CTR_PA_POLICYAMASSOREQ, 1);
 
     ogs_assert(pcf_ue);
     ogs_assert(stream);
@@ -141,8 +140,19 @@ bool pcf_npcf_am_policy_contrtol_handle_create(pcf_ue_t *pcf_ue,
         ogs_sbi_parse_guami(&pcf_ue->guami, PolicyAssociationRequest->guami);
     }
 
-    pcf_metrics_inst_by_plmn_add(&pcf_ue->guami.plmn_id,
-            PCF_METR_CTR_PA_POLICYAMASSOREQ, 1);
+    OpenAPI_list_for_each(PolicyAssociationRequest->allowed_snssais, node) {
+        struct OpenAPI_snssai_s *Snssai = node->data;
+        if (Snssai) {
+            ogs_s_nssai_t s_nssai;
+            s_nssai.sst = Snssai->sst;
+            s_nssai.sd = ogs_s_nssai_sd_from_string(Snssai->sd);
+
+            pcf_metrics_inst_by_slice_add(&pcf_ue->guami.plmn_id,
+                    &s_nssai, PCF_METR_CTR_PA_POLICYAMASSOREQ, 1);
+        } else {
+            ogs_error("[%s] No Snssai", pcf_ue->supi);
+        }
+    }
 
     if (PolicyAssociationRequest->rat_type)
         pcf_ue->rat_type = PolicyAssociationRequest->rat_type;
@@ -179,8 +189,6 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
     ogs_sbi_client_t *client = NULL;
     OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
     ogs_sockaddr_t *addr = NULL;
-
-    pcf_metrics_inst_by_slice_add(NULL, NULL, PCF_METR_CTR_PA_POLICYSMASSOREQ, 1);
 
     ogs_assert(sess);
     pcf_ue = sess->pcf_ue;

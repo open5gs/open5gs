@@ -63,87 +63,6 @@ int pcf_metrics_free_inst_global(void)
     return pcf_metrics_free_inst(pcf_metrics_inst_global, _PCF_METR_GLOB_MAX);
 }
 
-/* BY_PLMN */
-const char *labels_plmn[] = {
-    "plmnid"
-};
-#define PCF_METR_BY_PLMN_CTR_ENTRY(_id, _name, _desc) \
-    [_id] = { \
-        .type = OGS_METRICS_METRIC_TYPE_COUNTER, \
-        .name = _name, \
-        .description = _desc, \
-        .num_labels = OGS_ARRAY_SIZE(labels_plmn), \
-        .labels = labels_plmn, \
-    },
-ogs_metrics_spec_t *pcf_metrics_spec_by_plmn[_PCF_METR_BY_PLMN_MAX];
-ogs_hash_t *metrics_hash_by_plmn = NULL;   /* hash table for PLMN label */
-pcf_metrics_spec_def_t pcf_metrics_spec_def_by_plmn[_PCF_METR_BY_PLMN_MAX] = {
-/* Counters: */
-PCF_METR_BY_PLMN_CTR_ENTRY(
-    PCF_METR_CTR_PA_POLICYAMASSOREQ,
-    "fivegs_pcffunction_pa_policyamassoreq",
-    "Number of AM policy association requests")
-PCF_METR_BY_PLMN_CTR_ENTRY(
-    PCF_METR_CTR_PA_POLICYAMASSOSUCC,
-    "fivegs_pcffunction_pa_policyamassosucc",
-    "Number of successful AM policy associations")
-};
-void pcf_metrics_init_by_plmn(void);
-int pcf_metrics_free_inst_by_plmn(ogs_metrics_inst_t **inst);
-typedef struct pcf_metric_key_by_plmn_s {
-    ogs_plmn_id_t               plmn_id;
-    pcf_metric_type_by_plmn_t   t;
-} pcf_metric_key_by_plmn_t;
-
-void pcf_metrics_init_by_plmn(void)
-{
-    metrics_hash_by_plmn = ogs_hash_make();
-    ogs_assert(metrics_hash_by_plmn);
-}
-void pcf_metrics_inst_by_plmn_add(ogs_plmn_id_t *plmn,
-        pcf_metric_type_by_plmn_t t, int val)
-{
-    ogs_metrics_inst_t *metrics = NULL;
-    pcf_metric_key_by_plmn_t *plmn_key;
-
-    plmn_key = ogs_calloc(1, sizeof(*plmn_key));
-    ogs_assert(plmn_key);
-
-    if (plmn) {
-        plmn_key->plmn_id = *plmn;
-    }
-
-    plmn_key->t = t;
-
-    metrics = ogs_hash_get(metrics_hash_by_plmn,
-            plmn_key, sizeof(*plmn_key));
-
-    if (!metrics) {
-        char plmn_id[OGS_PLMNIDSTRLEN] = "";
-
-        if (plmn) {
-            ogs_plmn_id_to_string(plmn, plmn_id);
-        }
-
-        metrics = ogs_metrics_inst_new(pcf_metrics_spec_by_plmn[t],
-                pcf_metrics_spec_def_by_plmn->num_labels,
-                (const char *[]){ plmn_id });
-
-        ogs_assert(metrics);
-        ogs_hash_set(metrics_hash_by_plmn,
-                plmn_key, sizeof(*plmn_key), metrics);
-    } else {
-        ogs_free(plmn_key);
-    }
-
-    ogs_metrics_inst_add(metrics, val);
-}
-
-int pcf_metrics_free_inst_by_plmn(ogs_metrics_inst_t **inst)
-{
-    return pcf_metrics_free_inst(inst, _PCF_METR_BY_PLMN_MAX);
-}
-
 /* BY_SLICE */
 const char *labels_slice[] = {
     "plmnid",
@@ -170,6 +89,14 @@ ogs_metrics_spec_t *pcf_metrics_spec_by_slice[_PCF_METR_BY_SLICE_MAX];
 ogs_hash_t *metrics_hash_by_slice = NULL;   /* hash table for SLICE labels */
 pcf_metrics_spec_def_t pcf_metrics_spec_def_by_slice[_PCF_METR_BY_SLICE_MAX] = {
 /* Counters: */
+PCF_METR_BY_SLICE_CTR_ENTRY(
+    PCF_METR_CTR_PA_POLICYAMASSOREQ,
+    "fivegs_pcffunction_pa_policyamassoreq",
+    "Number of AM policy association requests")
+PCF_METR_BY_SLICE_CTR_ENTRY(
+    PCF_METR_CTR_PA_POLICYAMASSOSUCC,
+    "fivegs_pcffunction_pa_policyamassosucc",
+    "Number of successful AM policy associations")
 PCF_METR_BY_SLICE_CTR_ENTRY(
     PCF_METR_CTR_PA_POLICYSMASSOREQ,
     "fivegs_pcffunction_pa_policysmassoreq",
@@ -266,13 +193,10 @@ void pcf_metrics_init(void)
 
     pcf_metrics_init_spec(ctx, pcf_metrics_spec_global,
             pcf_metrics_spec_def_global, _PCF_METR_GLOB_MAX);
-    pcf_metrics_init_spec(ctx, pcf_metrics_spec_by_plmn,
-            pcf_metrics_spec_def_by_plmn, _PCF_METR_BY_PLMN_MAX);
     pcf_metrics_init_spec(ctx, pcf_metrics_spec_by_slice,
             pcf_metrics_spec_def_by_slice, _PCF_METR_BY_SLICE_MAX);
 
     pcf_metrics_init_inst_global();
-    pcf_metrics_init_by_plmn();
     pcf_metrics_init_by_slice();
 }
 
@@ -294,21 +218,6 @@ void pcf_metrics_final(void)
             //ogs_free(val);
         }
         ogs_hash_destroy(metrics_hash_by_slice);
-    }
-    if (metrics_hash_by_plmn) {
-        for (hi = ogs_hash_first(metrics_hash_by_plmn); hi; hi = ogs_hash_next(hi)) {
-            pcf_metric_key_by_plmn_t *key =
-                (pcf_metric_key_by_plmn_t *)ogs_hash_this_key(hi);
-            //void *val = ogs_hash_this_val(hi);
-
-            ogs_hash_set(metrics_hash_by_plmn, key, sizeof(*key), NULL);
-
-            ogs_free(key);
-            /* don't free val (metric ifself) -
-             * it will be free'd by ogs_metrics_context_final() */
-            //ogs_free(val);
-        }
-        ogs_hash_destroy(metrics_hash_by_plmn);
     }
 
     ogs_metrics_context_final();
