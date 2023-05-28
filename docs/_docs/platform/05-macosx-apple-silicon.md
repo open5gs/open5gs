@@ -95,8 +95,9 @@ $ brew install mongo-c-driver gnutls libgcrypt libidn libyaml libmicrohttpd nght
 
 Configure Homebrew PATH
 ```bash
-$ export PATH="/opt/homebrew/opt/bison/bin:/opt/homebrew/bin:$PATH"
-$ export PKG_CONFIG_PATH="/opt/homebrew/opt/openssl@1.1/lib/pkgconfig:$PKG_CONFIG_PATH"
+$ export PATH="/opt/homebrew/opt/curl/bin:/opt/homebrew/opt/bison/bin:/opt/homebrew/bin:$PATH"
+$ export PKG_CONFIG_PATH="/opt/homebrew/opt/curl/lib/pkgconfig:$PKG_CONFIG_PATH"
+$ export PKG_CONFIG_PATH="/opt/homebrew/opt/openssl/lib/pkgconfig:$PKG_CONFIG_PATH"
 $ export LIBRARY_PATH=/opt/homebrew/lib
 $ export C_INCLUDE_PATH=/opt/homebrew/include
 $ export CPLUS_INCLUDE_PATH=/opt/homebrew/include
