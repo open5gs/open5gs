@@ -28,14 +28,6 @@
 extern "C" {
 #endif
 
-#if OGS_USE_TALLOC == 1
-#define ogs_pool_create ogs_malloc
-#define ogs_pool_destroy ogs_free
-#else
-#define ogs_pool_create malloc
-#define ogs_pool_destroy free
-#endif
-
 typedef uint32_t ogs_pool_id_t;
 
 #define OGS_POOL(pool, type) \
@@ -46,14 +38,18 @@ typedef uint32_t ogs_pool_id_t;
         type **free, *array, **index; \
     } pool
 
+/*
+ * ogs_pool_init() shall be used in the initialization routine.
+ * Otherwise, memory will be fragment since this function uses system malloc()
+ */
 #define ogs_pool_init(pool, _size) do { \
     int i; \
     (pool)->name = #pool; \
-    (pool)->free = ogs_pool_create(sizeof(*(pool)->free) * _size); \
+    (pool)->free = malloc(sizeof(*(pool)->free) * _size); \
     ogs_assert((pool)->free); \
-    (pool)->array = ogs_pool_create(sizeof(*(pool)->array) * _size); \
+    (pool)->array = malloc(sizeof(*(pool)->array) * _size); \
     ogs_assert((pool)->array); \
-    (pool)->index = ogs_pool_create(sizeof(*(pool)->index) * _size); \
+    (pool)->index = malloc(sizeof(*(pool)->index) * _size); \
     ogs_assert((pool)->index); \
     (pool)->size = (pool)->avail = _size; \
     (pool)->head = (pool)->tail = 0; \
@@ -63,13 +59,55 @@ typedef uint32_t ogs_pool_id_t;
     } \
 } while (0)
 
+/*
+ * ogs_pool_final() shall be used in the finalization routine.
+ * Otherwise, memory will be fragment since this function uses system free()
+ */
 #define ogs_pool_final(pool) do { \
     if (((pool)->size != (pool)->avail)) \
         ogs_error("%d in '%s[%d]' were not released.", \
                 (pool)->size - (pool)->avail, (pool)->name, (pool)->size); \
-    ogs_pool_destroy((pool)->free); \
-    ogs_pool_destroy((pool)->array); \
-    ogs_pool_destroy((pool)->index); \
+    free((pool)->free); \
+    free((pool)->array); \
+    free((pool)->index); \
+} while (0)
+
+/*
+ * COMPARED WITH ogs_pool_init()
+ *
+ * ogs_pool_create() could be called while the process is running,
+ * so this function should use ogs_malloc() instead of system malloc()
+ */
+#define ogs_pool_create(pool, _size) do { \
+    int i; \
+    (pool)->name = #pool; \
+    (pool)->free = ogs_malloc(sizeof(*(pool)->free) * _size); \
+    ogs_assert((pool)->free); \
+    (pool)->array = ogs_malloc(sizeof(*(pool)->array) * _size); \
+    ogs_assert((pool)->array); \
+    (pool)->index = ogs_malloc(sizeof(*(pool)->index) * _size); \
+    ogs_assert((pool)->index); \
+    (pool)->size = (pool)->avail = _size; \
+    (pool)->head = (pool)->tail = 0; \
+    for (i = 0; i < _size; i++) { \
+        (pool)->free[i] = &((pool)->array[i]); \
+        (pool)->index[i] = NULL; \
+    } \
+} while (0)
+
+/*
+ * COMPARED WITH ogs_pool_final()
+ *
+ * ogs_pool_destroy() could be called while the process is running,
+ * so this function should use ogs_free() instead of system free()
+ */
+#define ogs_pool_destroy(pool) do { \
+    if (((pool)->size != (pool)->avail)) \
+        ogs_error("%d in '%s[%d]' were not released.", \
+                (pool)->size - (pool)->avail, (pool)->name, (pool)->size); \
+    ogs_free((pool)->free); \
+    ogs_free((pool)->array); \
+    ogs_free((pool)->index); \
 } while (0)
 
 #define ogs_pool_index(pool, node) (((node) - (pool)->array)+1)

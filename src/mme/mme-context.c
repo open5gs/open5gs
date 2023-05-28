@@ -3970,7 +3970,7 @@ void mme_ebi_pool_init(mme_ue_t *mme_ue)
 
     ogs_assert(mme_ue);
 
-    ogs_pool_init(&mme_ue->ebi_pool, MAX_EPS_BEARER_ID-MIN_EPS_BEARER_ID+1);
+    ogs_pool_create(&mme_ue->ebi_pool, MAX_EPS_BEARER_ID-MIN_EPS_BEARER_ID+1);
 
     for (i = MIN_EPS_BEARER_ID, index = 0;
             i <= MAX_EPS_BEARER_ID; i++, index++) {
@@ -3982,7 +3982,7 @@ void mme_ebi_pool_final(mme_ue_t *mme_ue)
 {
     ogs_assert(mme_ue);
 
-    ogs_pool_final(&mme_ue->ebi_pool);
+    ogs_pool_destroy(&mme_ue->ebi_pool);
 }
 
 void mme_ebi_pool_clear(mme_ue_t *mme_ue)
