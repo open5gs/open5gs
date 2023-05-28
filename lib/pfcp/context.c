@@ -2084,11 +2084,11 @@ void ogs_pfcp_pool_init(ogs_pfcp_sess_t *sess)
 
     sess->obj.type = OGS_PFCP_OBJ_SESS_TYPE;
 
-    ogs_pool_init(&sess->pdr_id_pool, OGS_MAX_NUM_OF_PDR);
-    ogs_pool_init(&sess->far_id_pool, OGS_MAX_NUM_OF_FAR);
-    ogs_pool_init(&sess->urr_id_pool, OGS_MAX_NUM_OF_URR);
-    ogs_pool_init(&sess->qer_id_pool, OGS_MAX_NUM_OF_QER);
-    ogs_pool_init(&sess->bar_id_pool, OGS_MAX_NUM_OF_BAR);
+    ogs_pool_create(&sess->pdr_id_pool, OGS_MAX_NUM_OF_PDR);
+    ogs_pool_create(&sess->far_id_pool, OGS_MAX_NUM_OF_FAR);
+    ogs_pool_create(&sess->urr_id_pool, OGS_MAX_NUM_OF_URR);
+    ogs_pool_create(&sess->qer_id_pool, OGS_MAX_NUM_OF_QER);
+    ogs_pool_create(&sess->bar_id_pool, OGS_MAX_NUM_OF_BAR);
 
     ogs_pool_sequence_id_generate(&sess->pdr_id_pool);
     ogs_pool_sequence_id_generate(&sess->far_id_pool);
@@ -2100,9 +2100,9 @@ void ogs_pfcp_pool_final(ogs_pfcp_sess_t *sess)
 {
     ogs_assert(sess);
 
-    ogs_pool_final(&sess->pdr_id_pool);
-    ogs_pool_final(&sess->far_id_pool);
-    ogs_pool_final(&sess->urr_id_pool);
-    ogs_pool_final(&sess->qer_id_pool);
-    ogs_pool_final(&sess->bar_id_pool);
+    ogs_pool_destroy(&sess->pdr_id_pool);
+    ogs_pool_destroy(&sess->far_id_pool);
+    ogs_pool_destroy(&sess->urr_id_pool);
+    ogs_pool_destroy(&sess->qer_id_pool);
+    ogs_pool_destroy(&sess->bar_id_pool);
 }

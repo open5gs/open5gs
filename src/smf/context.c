@@ -3003,7 +3003,7 @@ void smf_qfi_pool_init(smf_sess_t *sess)
 {
     ogs_assert(sess);
 
-    ogs_pool_init(&sess->qfi_pool, OGS_MAX_QOS_FLOW_ID);
+    ogs_pool_create(&sess->qfi_pool, OGS_MAX_QOS_FLOW_ID);
     ogs_pool_sequence_id_generate(&sess->qfi_pool);
 }
 
@@ -3011,14 +3011,14 @@ void smf_qfi_pool_final(smf_sess_t *sess)
 {
     ogs_assert(sess);
 
-    ogs_pool_final(&sess->qfi_pool);
+    ogs_pool_destroy(&sess->qfi_pool);
 }
 
 void smf_pf_identifier_pool_init(smf_bearer_t *bearer)
 {
     ogs_assert(bearer);
 
-    ogs_pool_init(&bearer->pf_identifier_pool, OGS_MAX_NUM_OF_FLOW_IN_BEARER);
+    ogs_pool_create(&bearer->pf_identifier_pool, OGS_MAX_NUM_OF_FLOW_IN_BEARER);
     ogs_pool_sequence_id_generate(&bearer->pf_identifier_pool);
 }
 
@@ -3026,14 +3026,14 @@ void smf_pf_identifier_pool_final(smf_bearer_t *bearer)
 {
     ogs_assert(bearer);
 
-    ogs_pool_final(&bearer->pf_identifier_pool);
+    ogs_pool_destroy(&bearer->pf_identifier_pool);
 }
 
 void smf_pf_precedence_pool_init(smf_sess_t *sess)
 {
     ogs_assert(sess);
 
-    ogs_pool_init(&sess->pf_precedence_pool,
+    ogs_pool_create(&sess->pf_precedence_pool,
             OGS_MAX_NUM_OF_BEARER * OGS_MAX_NUM_OF_FLOW_IN_BEARER);
     ogs_pool_sequence_id_generate(&sess->pf_precedence_pool);
 }
@@ -3042,7 +3042,7 @@ void smf_pf_precedence_pool_final(smf_sess_t *sess)
 {
     ogs_assert(sess);
 
-    ogs_pool_final(&sess->pf_precedence_pool);
+    ogs_pool_destroy(&sess->pf_precedence_pool);
 }
 
 static void stats_add_smf_session(void)
