@@ -275,7 +275,7 @@ void smf_metrics_inst_by_slice_add(ogs_plmn_id_t *plmn,
         }
 
         if (snssai) {
-            s_nssai = ogs_sbi_s_nssai_to_string_plain(snssai);
+            s_nssai = ogs_sbi_s_nssai_to_string(snssai);
         } else {
             s_nssai = ogs_strdup("");
         }
@@ -377,7 +377,7 @@ void smf_metrics_inst_by_5qi_add(ogs_plmn_id_t *plmn,
         }
 
         if (snssai) {
-            s_nssai = ogs_sbi_s_nssai_to_string_plain(snssai);
+            s_nssai = ogs_sbi_s_nssai_to_string(snssai);
         } else {
             s_nssai = ogs_strdup("");
         }

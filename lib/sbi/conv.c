@@ -772,7 +772,7 @@ int ogs_sbi_rfc7231_string(char *date_str, ogs_time_t time)
     return OGS_OK;
 }
 
-char *ogs_sbi_s_nssai_to_string(ogs_s_nssai_t *s_nssai)
+char *ogs_sbi_s_nssai_to_json(ogs_s_nssai_t *s_nssai)
 {
     cJSON *item = NULL;
     OpenAPI_snssai_t sNSSAI;
@@ -798,7 +798,7 @@ char *ogs_sbi_s_nssai_to_string(ogs_s_nssai_t *s_nssai)
     return v;
 }
 
-bool ogs_sbi_s_nssai_from_string(ogs_s_nssai_t *s_nssai, char *str)
+bool ogs_sbi_s_nssai_from_json(ogs_s_nssai_t *s_nssai, char *str)
 {
     bool rc = false;
 
@@ -819,6 +819,70 @@ bool ogs_sbi_s_nssai_from_string(ogs_s_nssai_t *s_nssai, char *str)
         }
         cJSON_Delete(item);
     }
+
+    return rc;
+}
+
+char *ogs_sbi_s_nssai_to_string(ogs_s_nssai_t *s_nssai)
+{
+    ogs_assert(s_nssai);
+
+    if (s_nssai->sd.v != OGS_S_NSSAI_NO_SD_VALUE) {
+        return ogs_msprintf("%d-%06x", s_nssai->sst, s_nssai->sd.v);
+    } else {
+        return ogs_msprintf("%d", s_nssai->sst);
+    }
+}
+
+bool ogs_sbi_s_nssai_from_string(ogs_s_nssai_t *s_nssai, char *str)
+{
+    bool rc = false;
+    char *token, *p, *tofree;
+    char *sst = NULL;
+    char *sd = NULL;
+
+    ogs_assert(s_nssai);
+    ogs_assert(str);
+
+    tofree = p = ogs_strdup(str);
+    if (!p) {
+        ogs_error("ogs_strdup[%s] failed", str);
+        goto cleanup;
+    }
+
+    token = strsep(&p, "-");
+    if (!token) {
+        ogs_error("strsep[%s] failed", str);
+        goto cleanup;
+    }
+
+    sst = ogs_strdup(token);
+    if (!sst) {
+        ogs_error("ogs_strdup[%s:%s] failed", str, token);
+        goto cleanup;
+    }
+
+    s_nssai->sst = atoi(sst);
+    s_nssai->sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+
+    if (p) {
+        sd = ogs_strdup(p);
+        if (!sd) {
+            ogs_error("ogs_strdup[%s:%s] failed", str, token);
+            goto cleanup;
+        }
+        s_nssai->sd = ogs_uint24_from_string(sd);
+    }
+
+    rc = true;
+
+cleanup:
+    if (tofree)
+        ogs_free(tofree);
+    if (sst)
+        ogs_free(sst);
+    if (sd)
+        ogs_free(sd);
 
     return rc;
 }
@@ -1256,18 +1320,4 @@ void ogs_sbi_free_qos_data(OpenAPI_qos_data_t *QosData)
     if (QosData->gbr_dl) ogs_free(QosData->gbr_dl);
 
     ogs_free(QosData);
-}
-
-char *ogs_sbi_s_nssai_to_string_plain(ogs_s_nssai_t *s_nssai)
-{
-    ogs_assert(s_nssai);
-    if (s_nssai->sd.v !=
-            OGS_S_NSSAI_NO_SD_VALUE) {
-        return ogs_msprintf("%d%06x",
-            s_nssai->sst,
-            s_nssai->sd.v);
-    } else {
-        return ogs_msprintf("%d",
-            s_nssai->sst);
-    }
 }
