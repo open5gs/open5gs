@@ -475,9 +475,9 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
         }
     }
     if (message->param.single_nssai_presence) {
-        char *v = ogs_sbi_s_nssai_to_string(&message->param.s_nssai);
+        char *v = ogs_sbi_s_nssai_to_json(&message->param.s_nssai);
         if (!v) {
-            ogs_error("ogs_sbi_s_nssai_to_string() failed");
+            ogs_error("ogs_sbi_s_nssai_to_json() failed");
             ogs_sbi_request_free(request);
             return NULL;
         }
@@ -485,9 +485,9 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
         ogs_free(v);
     }
     if (message->param.snssai_presence) {
-        char *v = ogs_sbi_s_nssai_to_string(&message->param.s_nssai);
+        char *v = ogs_sbi_s_nssai_to_json(&message->param.s_nssai);
         if (!v) {
-            ogs_error("ogs_sbi_s_nssai_to_string() failed");
+            ogs_error("ogs_sbi_s_nssai_to_json() failed");
             ogs_sbi_request_free(request);
             return NULL;
         }
@@ -748,16 +748,14 @@ int ogs_sbi_parse_request(
         } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_SINGLE_NSSAI)) {
             char *v = ogs_hash_this_val(hi);
             if (v) {
-                bool rc = ogs_sbi_s_nssai_from_string(
-                        &message->param.s_nssai, v);
+                bool rc = ogs_sbi_s_nssai_from_json(&message->param.s_nssai, v);
                 if (rc == true)
                     message->param.single_nssai_presence = true;
             }
         } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_SNSSAI)) {
             char *v = ogs_hash_this_val(hi);
             if (v) {
-                bool rc = ogs_sbi_s_nssai_from_string(
-                        &message->param.s_nssai, v);
+                bool rc = ogs_sbi_s_nssai_from_json(&message->param.s_nssai, v);
                 if (rc == true)
                     message->param.snssai_presence = true;
             }

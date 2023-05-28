@@ -63,6 +63,9 @@ bool ogs_sbi_time_from_string(ogs_time_t *time, char *str);
 #define OGS_SBI_RFC7231_DATE_LEN (34)
 int ogs_sbi_rfc7231_string(char *date_str, ogs_time_t time);
 
+char *ogs_sbi_s_nssai_to_json(ogs_s_nssai_t *s_nssai);
+bool ogs_sbi_s_nssai_from_json(ogs_s_nssai_t *s_nssai, char *str);
+
 char *ogs_sbi_s_nssai_to_string(ogs_s_nssai_t *s_nssai);
 bool ogs_sbi_s_nssai_from_string(ogs_s_nssai_t *s_nssai, char *str);
 
@@ -91,7 +94,6 @@ OpenAPI_pcc_rule_t *ogs_sbi_build_pcc_rule(
 void ogs_sbi_free_pcc_rule(OpenAPI_pcc_rule_t *PccRule);
 OpenAPI_qos_data_t *ogs_sbi_build_qos_data(ogs_pcc_rule_t *pcc_rule);
 void ogs_sbi_free_qos_data(OpenAPI_qos_data_t *QosData);
-char *ogs_sbi_s_nssai_to_string_plain(ogs_s_nssai_t *s_nssai);
 
 #ifdef __cplusplus
 }
