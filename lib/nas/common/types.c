@@ -436,7 +436,7 @@ void ogs_nas_bitrate_from_uint64(ogs_nas_bitrate_t *nas, uint64_t bitrate)
 
     for (nas->unit = OGS_NAS_BR_UNIT_1K;
             nas->unit < OGS_NAS_BR_UNIT_256P; nas->unit++) {
-        if ((bitrate >> 2) == 0) {
+        if (bitrate <= 0xFFFFUL) {
             break;
         }
         bitrate >>= 2;
