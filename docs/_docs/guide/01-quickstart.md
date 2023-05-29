@@ -68,7 +68,7 @@ With the exception of the SMF and UPF, all config files for the 5G SA core funct
 
 **Note:** Package managers can be used to install Open5GS in *Debian/Ubuntu and openSUSE* environments (for major and minor builds). *CentOS, Fedora, and Mac OSX* require you to [build with source code]({{ site.url }}{{ site.baseurl }}/docs/guide/02-building-open5gs-from-sources).
 {: .notice--warning}
-**Note:** Nighly builds are offered by [Osmocom](https://osmocom.org) on [OBS](https://build.opensuse.org/package/show/network:osmocom:nightly/open5gs). Scroll down to use a nightly build package.
+**Note:** Nighly builds are offered by [Osmocom](https://osmocom.org) on [OBS](https://obs.osmocom.org/package/show/osmocom:nightly/open5gs). Scroll down to use a nightly build package.
 {: .notice--warning}
 
 #### Getting MongoDB
