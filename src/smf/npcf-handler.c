@@ -499,6 +499,7 @@ bool smf_npcf_smpolicycontrol_handle_create(
         for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
             const char *route = sess->session.ipv4_framed_routes[i];
             if (!route) break;
+
             if (!dl_pdr->ipv4_framed_routes) {
                 dl_pdr->ipv4_framed_routes =
                     ogs_calloc(OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI,
@@ -506,6 +507,14 @@ bool smf_npcf_smpolicycontrol_handle_create(
                 ogs_assert(dl_pdr->ipv4_framed_routes);
             }
             dl_pdr->ipv4_framed_routes[i] = ogs_strdup(route);
+
+            if (!ul_pdr->ipv4_framed_routes) {
+                ul_pdr->ipv4_framed_routes =
+                    ogs_calloc(OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI,
+                               sizeof(ul_pdr->ipv4_framed_routes[0]));
+                ogs_assert(ul_pdr->ipv4_framed_routes);
+            }
+            ul_pdr->ipv4_framed_routes[i] = ogs_strdup(route);
         }
     }
 
@@ -515,6 +524,7 @@ bool smf_npcf_smpolicycontrol_handle_create(
         for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
             const char *route = sess->session.ipv6_framed_routes[i];
             if (!route) break;
+
             if (!dl_pdr->ipv6_framed_routes) {
                 dl_pdr->ipv6_framed_routes =
                     ogs_calloc(OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI,
@@ -522,6 +532,14 @@ bool smf_npcf_smpolicycontrol_handle_create(
                 ogs_assert(dl_pdr->ipv6_framed_routes);
             }
             dl_pdr->ipv6_framed_routes[i] = ogs_strdup(route);
+
+            if (!ul_pdr->ipv6_framed_routes) {
+                ul_pdr->ipv6_framed_routes =
+                    ogs_calloc(OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI,
+                               sizeof(ul_pdr->ipv6_framed_routes[0]));
+                ogs_assert(ul_pdr->ipv6_framed_routes);
+            }
+            ul_pdr->ipv6_framed_routes[i] = ogs_strdup(route);
         }
     }
 
