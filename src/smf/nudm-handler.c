@@ -25,6 +25,7 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
 {
     int r;
     char *strerror = NULL;
+    uint8_t cause_value = 0;
     smf_ue_t *smf_ue = NULL;
     ogs_pkbuf_t *n1smbuf = NULL;
 
@@ -306,7 +307,26 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
     }
 
     /* Set UE IP Address to the Default DL PDR */
-    ogs_assert(OGS_PFCP_CAUSE_REQUEST_ACCEPTED == smf_sess_set_ue_ip(sess));
+    cause_value = smf_sess_set_ue_ip(sess);
+
+    if (cause_value == OGS_PFCP_CAUSE_NO_RESOURCES_AVAILABLE) {
+        strerror = ogs_msprintf("[%s:%d] No IP addresses available",
+                smf_ue->supi, sess->psi);
+        ogs_assert(strerror);
+
+        n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
+            OGS_5GSM_CAUSE_INSUFFICIENT_RESOURCES_FOR_SPECIFIC_SLICE_AND_DNN);
+        ogs_assert(n1smbuf);
+
+        ogs_warn("%s", strerror);
+        smf_sbi_send_sm_context_create_error(stream,
+                OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, strerror, NULL, n1smbuf);
+        ogs_free(strerror);
+
+        return false;
+    }
+
+    ogs_assert(cause_value == OGS_PFCP_CAUSE_REQUEST_ACCEPTED);
 
     /*********************************************************************
      * Send HTTP_STATUS_CREATED(/nsmf-pdusession/v1/sm-context) to the AMF
