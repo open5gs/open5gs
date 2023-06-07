@@ -822,6 +822,7 @@ void amf_clear_subscribed_info(amf_ue_t *amf_ue);
 bool amf_update_allowed_nssai(amf_ue_t *amf_ue);
 bool amf_ue_is_rat_restricted(amf_ue_t *amf_ue);
 int amf_instance_get_load(void);
+void amf_ue_enter_idle(amf_ue_t *amf_ue);
 
 #ifdef __cplusplus
 }

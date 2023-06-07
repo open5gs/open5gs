@@ -658,6 +658,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
 
                     if (ran_ue) {
                         ogs_debug("    SUPI[%s]", amf_ue->supi);
+                        amf_ue_enter_idle(amf_ue);
                         ran_ue_remove(ran_ue);
                     } else {
                         ogs_warn("[%s] RAN-NG Context has already been removed",
@@ -676,6 +677,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                         ogs_assert(gnb);
 
                         ogs_debug("    SUPI[%s]", amf_ue->supi);
+                        amf_ue_enter_idle(amf_ue);
                         ran_ue_remove(ran_ue);
 
                         if (ogs_list_count(&gnb->ran_ue_list) == 0) {
@@ -702,6 +704,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                         ogs_assert(gnb);
 
                         ogs_debug("    SUPI[%s]", amf_ue->supi);
+                        amf_ue_enter_idle(amf_ue);
                         ran_ue_remove(ran_ue);
 
                         ogs_list_for_each(&gnb->ran_ue_list, iter) {
