@@ -130,7 +130,7 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_assert(ret == 0);
         ogs_assert(new == 0);
 
-        ogs_debug("    Found GX Session-Id: [%s]", sess->gx_sid);
+        ogs_debug("    Found Gx Session-Id: [%s]", sess->gx_sid);
 
         /* Add Session-Id to the message */
         ret = ogs_diam_message_session_id_set(req, (os0_t)sess->gx_sid, sidlen);
