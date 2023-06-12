@@ -512,7 +512,7 @@ static void fill_service_information_ccr(smf_sess_t *sess,
     }
 
     /* 3GPP-User-Location-Info, 3GPP TS 29.061 16.4.7.2 22 */
-    smf_fd_msg_avp_add_3gpp_uli(sess, req);
+    smf_fd_msg_avp_add_3gpp_uli(sess, (struct msg *)avpch1);
 
     if (sess->smf_ue->imeisv_len > 0) {
         /* User-Equipment-Info, 3GPP TS 32.299 7.1.17 */
