@@ -1490,6 +1490,8 @@ smf_sess_t *smf_sess_add_by_sbi_message(ogs_sbi_message_t *message)
     if (sess) {
         ogs_warn("OLD Session Will Release [SUPI:%s,PDU Session identity:%d]",
                 SmContextCreateData->supi, SmContextCreateData->pdu_session_id);
+        smf_metrics_inst_by_slice_add(&sess->plmn_id, &sess->s_nssai,
+                SMF_METR_GAUGE_SM_SESSIONNBR, -1);
         smf_sess_remove(sess);
     }
 
