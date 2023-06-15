@@ -679,11 +679,11 @@ bool smf_nsmf_handle_update_sm_context(
                     "No PolicyAssociationId", NULL, NULL, NULL);
         }
     } else if (SmContextUpdateData->serving_nf_id) {
-        if (sess->serving_nf_id) {
-            ogs_free(sess->serving_nf_id);
-        }
         ogs_debug("Old serving_nf_id: %s, new serving_nf_id: %s",
             sess->serving_nf_id, SmContextUpdateData->serving_nf_id);
+
+        if (sess->serving_nf_id)
+            ogs_free(sess->serving_nf_id);
         sess->serving_nf_id = ogs_strdup(SmContextUpdateData->serving_nf_id);
         ogs_assert(sess->serving_nf_id);
 
