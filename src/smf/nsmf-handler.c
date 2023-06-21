@@ -661,19 +661,19 @@ bool smf_nsmf_handle_update_sm_context(
         }
     } else if (SmContextUpdateData->is_release == true &&
                 SmContextUpdateData->release == true) {
-        if (sess->policy_association_id) {
-            if (sess->ngap_state.pdu_session_resource_release ==
-                    SMF_NGAP_STATE_DELETE_TRIGGER_UE_REQUESTED) {
+        if (sess->ngap_state.pdu_session_resource_release ==
+                SMF_NGAP_STATE_DELETE_TRIGGER_UE_REQUESTED) {
 
-                /* PCF session context has already been removed */
-                memset(&sendmsg, 0, sizeof(sendmsg));
+            /* PCF session context has already been removed */
+            memset(&sendmsg, 0, sizeof(sendmsg));
 
-                response = ogs_sbi_build_response(
-                    &sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
-                ogs_assert(response);
-                ogs_assert(true ==
-                        ogs_sbi_server_send_response(stream, response));
-            } else {
+            response = ogs_sbi_build_response(
+                &sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+            ogs_assert(response);
+            ogs_assert(true ==
+                    ogs_sbi_server_send_response(stream, response));
+        } else {
+            if (sess->policy_association_id) {
                 smf_npcf_smpolicycontrol_param_t param;
 
                 memset(&param, 0, sizeof(param));
@@ -689,12 +689,12 @@ bool smf_nsmf_handle_update_sm_context(
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
 
+            } else {
+                ogs_error("No PolicyAssociationId");
+                smf_sbi_send_sm_context_update_error(
+                        stream, OGS_SBI_HTTP_STATUS_NOT_FOUND,
+                        "No PolicyAssociationId", NULL, NULL, NULL);
             }
-        } else {
-            ogs_error("No PolicyAssociationId");
-            smf_sbi_send_sm_context_update_error(
-                    stream, OGS_SBI_HTTP_STATUS_NOT_FOUND,
-                    "No PolicyAssociationId", NULL, NULL, NULL);
         }
     } else if (SmContextUpdateData->serving_nf_id) {
         ogs_debug("Old serving_nf_id: %s, new serving_nf_id: %s",
