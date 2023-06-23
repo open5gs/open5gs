@@ -1195,10 +1195,10 @@ ogs_sbi_nf_service_t *ogs_sbi_nf_service_find_by_id(
     ogs_list_for_each(&nf_instance->nf_service_list, nf_service) {
         ogs_assert(nf_service->id);
         if (strcmp(nf_service->id, id) == 0)
-            break;
+            return nf_service;
     }
 
-    return nf_service;
+    return NULL;
 }
 
 ogs_sbi_nf_service_t *ogs_sbi_nf_service_find_by_name(
