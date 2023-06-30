@@ -14,6 +14,7 @@ If you have tested radio hardware from a vendor not listed with Open5GS, please 
  * Airspan AirSpeed 2900
  * Airspan AirStrand 2200
  * ASKEY SCE2200 5G SUB-6 SMALL CELL
+ * BTI Wireless nCELL-F2240 5G NR Femtocell (n78)
  * CableFree Small Cell Outdoor radios (5G n77, n78 and other bands)
  * CableFree Small Cell Indoor radios (5G n77, n78 and other bands)
  * CableFree Macro (BBU+RRH) radios (4G and 5G, various bands)
