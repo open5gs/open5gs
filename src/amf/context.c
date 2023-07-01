@@ -2187,7 +2187,6 @@ void amf_sbi_select_nf(
 
             if ((nf_instance->nf_type == OpenAPI_nf_type_SMF) &&
                 (ogs_list_count(&nf_instance->nf_info_list) > 0)) {
-                bool match = false;
 
                 ogs_list_for_each(&nf_instance->nf_info_list, nf_info) {
                     if (nf_info->nf_type != nf_instance->nf_type)
@@ -2195,11 +2194,10 @@ void amf_sbi_select_nf(
                     if (check_smf_info(nf_info, sess) == false)
                         continue;
 
-                    match = true;
                     break;
                 }
 
-                if (!match)
+                if (!nf_info)
                     continue;
             }
 
