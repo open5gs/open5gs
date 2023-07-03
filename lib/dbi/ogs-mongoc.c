@@ -35,17 +35,17 @@ ogs_mongoc_mongoc_client_get_server_status (mongoc_client_t *client, /* IN */
                                  bson_t *reply,                   /* OUT */
                                  bson_error_t *error)             /* OUT */
 {
-   bson_t cmd = BSON_INITIALIZER;
-   bool ret = false;
+    bson_t cmd = BSON_INITIALIZER;
+    bool ret = false;
 
-   BSON_ASSERT (client);
+    BSON_ASSERT (client);
 
-   BSON_APPEND_INT32 (&cmd, "ping", 1);
-   ret = mongoc_client_command_simple (
-      client, "admin", &cmd, read_prefs, reply, error);
-   bson_destroy (&cmd);
+    BSON_APPEND_INT32 (&cmd, "ping", 1);
+    ret = mongoc_client_command_simple (
+        client, "admin", &cmd, read_prefs, reply, error);
+    bson_destroy (&cmd);
 
-   return ret;
+    return ret;
 }
 
 static char *masked_db_uri(const char *db_uri)
