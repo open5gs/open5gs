@@ -92,27 +92,29 @@ mme_metrics_spec_def_t mme_metrics_spec_def_local[_MME_METR_LOCAL_MAX] = {
 
 void mme_metrics_connected_enb_inc(char *ip_address)
 {
-    if (mme_metrics_inst_local) {
+    if ((NULL != mme_metrics_inst_local) &&
+        (NULL != ip_address)) {
         // Increment the base counter (AKA "total")
         ogs_metrics_inst_inc(mme_metrics_inst_local);
 
         // Set connected IP to 1
         ogs_metrics_inst_set_with_label(mme_metrics_inst_local, ip_address, 1);
     } else {
-        ogs_error("Failed to change eNB metrics as instance doesn't exist");
+        ogs_error("Failed to change eNB metrics as instance or ip address doesn't exist");
     }
 }
 
 void mme_metrics_connected_enb_dec(char *ip_address)
 {
-    if (mme_metrics_inst_local) {
+    if ((NULL != mme_metrics_inst_local) &&
+        (NULL != ip_address)) {
         // Decrement the base counter (AKA "total")
         ogs_metrics_inst_dec(mme_metrics_inst_local);
 
         // Set connected IP to 0
         ogs_metrics_inst_set_with_label(mme_metrics_inst_local, ip_address, 0);
     } else {
-        ogs_error("Failed to change eNB metrics as instance doesn't exist");
+        ogs_error("Failed to change eNB metrics as instance or ip address doesn't exist");
     }
 }
 
