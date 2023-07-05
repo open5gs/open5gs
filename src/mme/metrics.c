@@ -60,12 +60,8 @@ mme_metrics_spec_def_t mme_metrics_spec_def_global[_MME_METR_GLOB_MAX] = {
     .name = "mme_session",
     .description = "MME Sessions",
 },
-[MME_METR_GLOB_GAUGE_ENB] = {
-    .type = OGS_METRICS_METRIC_TYPE_GAUGE,
-    .name = "enb",
-    .description = "eNodeBs",
-},
 };
+
 int mme_metrics_init_inst_global(void)
 {
     return mme_metrics_init_inst(mme_metrics_inst_global, mme_metrics_spec_global,
@@ -76,6 +72,67 @@ int mme_metrics_free_inst_global(void)
     return mme_metrics_free_inst(mme_metrics_inst_global, _MME_METR_GLOB_MAX);
 }
 
+/* LOCAL */
+const char *labels_enb[] = {
+    "connected"
+};
+
+ogs_metrics_inst_t *mme_metrics_inst_local = NULL;
+ogs_metrics_spec_t *mme_metrics_spec_local[_MME_METR_LOCAL_MAX];
+mme_metrics_spec_def_t mme_metrics_spec_def_local[_MME_METR_LOCAL_MAX] = {
+/* Gauges: */
+[MME_METR_LOCAL_GAUGE_ENB] = {
+        .type = OGS_METRICS_METRIC_TYPE_GAUGE,
+        .name = "enb",
+        .description = "Status and IP address of eNBs that have connected to this MME",
+        .num_labels = OGS_ARRAY_SIZE(labels_enb),
+        .labels = labels_enb,
+},
+};
+
+void mme_metrics_connected_enb_inc(char *ip_address)
+{
+    if (mme_metrics_inst_local) {
+        // Increment the base counter (AKA "total")
+        ogs_metrics_inst_inc(mme_metrics_inst_local);
+
+        // Set connected IP to 1
+        ogs_metrics_inst_set_with_label(mme_metrics_inst_local, ip_address, 1);
+    } else {
+        ogs_error("Failed to change eNB metrics as instance doesn't exist");
+    }
+}
+
+void mme_metrics_connected_enb_dec(char *ip_address)
+{
+    if (mme_metrics_inst_local) {
+        // Decrement the base counter (AKA "total")
+        ogs_metrics_inst_dec(mme_metrics_inst_local);
+
+        // Set connected IP to 0
+        ogs_metrics_inst_set_with_label(mme_metrics_inst_local, ip_address, 0);
+    } else {
+        ogs_error("Failed to change eNB metrics as instance doesn't exist");
+    }
+}
+
+int mme_metrics_init_inst_local(void)
+{
+    /* To get around a quirk of the prometheus lib we
+     * pass in the key we want as first gauge key/val
+     * pair instead of passing in the lables which seems
+     * to be what its expecting. */
+    const char *total_gauge_key[] = { "total" };
+    mme_metrics_inst_local = ogs_metrics_inst_new(mme_metrics_spec_local[MME_METR_LOCAL_GAUGE_ENB], 1, total_gauge_key);
+
+    return OGS_OK;
+}
+
+int mme_metrics_free_inst_local(void)
+{
+    return mme_metrics_free_inst(&mme_metrics_inst_local, _MME_METR_LOCAL_MAX);
+}
+
 void mme_metrics_init(void)
 {
     ogs_metrics_context_t *ctx = ogs_metrics_self();
@@ -84,7 +141,11 @@ void mme_metrics_init(void)
     mme_metrics_init_spec(ctx, mme_metrics_spec_global, mme_metrics_spec_def_global,
             _MME_METR_GLOB_MAX);
 
+    mme_metrics_init_spec(ctx, mme_metrics_spec_local,
+            mme_metrics_spec_def_local, _MME_METR_LOCAL_MAX);
+
     mme_metrics_init_inst_global();
+    mme_metrics_init_inst_local();
 }
 
 void mme_metrics_final(void)

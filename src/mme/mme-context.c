@@ -2240,7 +2240,10 @@ mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
     ogs_fsm_init(&enb->sm, s1ap_state_initial, s1ap_state_final, &e);
 
     ogs_list_add(&self.enb_list, enb);
-    mme_metrics_inst_global_inc(MME_METR_GLOB_GAUGE_ENB);
+
+    char buf[OGS_ADDRSTRLEN];
+    OGS_ADDR(addr, buf);
+    mme_metrics_connected_enb_inc(buf);
 
     ogs_info("[Added] Number of eNBs is now %d",
             ogs_list_count(&self.enb_list));
@@ -2272,10 +2275,13 @@ int mme_enb_remove(mme_enb_t *enb)
      * ogs_sctp_flush_and_destroy will clear this buffer
      */
 
+    char buf[OGS_ADDRSTRLEN];
+    OGS_ADDR(enb->sctp.addr, buf);
+    mme_metrics_connected_enb_dec(buf);
+
     ogs_sctp_flush_and_destroy(&enb->sctp);
 
     ogs_pool_free(&mme_enb_pool, enb);
-    mme_metrics_inst_global_dec(MME_METR_GLOB_GAUGE_ENB);
     ogs_info("[Removed] Number of eNBs is now %d",
             ogs_list_count(&self.enb_list));
 

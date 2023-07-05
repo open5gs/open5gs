@@ -491,6 +491,19 @@ void ogs_metrics_inst_set(ogs_metrics_inst_t *inst, int val)
     }
 }
 
+void ogs_metrics_inst_set_with_label(ogs_metrics_inst_t *inst, char *label, int val)
+{
+    switch (inst->spec->type) {
+    case OGS_METRICS_METRIC_TYPE_GAUGE:
+        ogs_info("doing the deed with (%s) and %i", label, val);
+        prom_gauge_set(inst->spec->prom, (double)val, (const char **)&label);
+        break;
+    default:
+        ogs_assert_if_reached();
+        break;
+    }
+}
+
 void ogs_metrics_inst_reset(ogs_metrics_inst_t *inst)
 {
     switch (inst->spec->type) {
