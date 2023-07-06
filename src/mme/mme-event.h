@@ -50,6 +50,8 @@ typedef enum {
     MME_EVENT_SGSAP_LO_SCTP_COMM_UP,
     MME_EVENT_SGSAP_LO_CONNREFUSED,
 
+    MME_EVENT_GN_MESSAGE,
+
     MAX_NUM_OF_MME_EVENT,
 
 } mme_event_e;

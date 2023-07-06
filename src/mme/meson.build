@@ -34,6 +34,8 @@ libmme_sources = files('''
     emm-build.h
     esm-handler.h
     esm-build.h
+    mme-gn-build.h
+    mme-gn-handler.h
     mme-gtp-path.h
     mme-s11-build.h
     mme-s11-handler.h
@@ -68,6 +70,8 @@ libmme_sources = files('''
     esm-sm.c
     esm-handler.c
     esm-build.c
+    mme-gn-build.c
+    mme-gn-handler.c
     mme-gtp-path.c
     mme-s11-build.c
     mme-s11-handler.c

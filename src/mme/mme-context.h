@@ -49,6 +49,7 @@ extern int __esm_log_domain;
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __mme_log_domain
 
+typedef struct mme_sgsn_s mme_sgsn_t;
 typedef struct mme_sgw_s mme_sgw_t;
 typedef struct mme_pgw_s mme_pgw_t;
 typedef struct mme_vlr_s mme_vlr_t;
@@ -85,8 +86,10 @@ typedef struct mme_context_s {
     ogs_list_t      s1ap_list;      /* MME S1AP IPv4 Server List */
     ogs_list_t      s1ap_list6;     /* MME S1AP IPv6 Server List */
 
-    ogs_list_t      sgw_list;       /* SGW GTPC Client List */
+    ogs_list_t      sgw_list;       /* SGW GTPv2C Client List */
     mme_sgw_t       *sgw;           /* Iterator for SGW round-robin */
+
+    ogs_list_t      sgsn_list;       /* SGW GTPv1C Client List */
 
     ogs_list_t      pgw_list;       /* PGW GTPC Client List */
     ogs_sockaddr_t  *pgw_addr;      /* First IPv4 Address Selected */
@@ -160,6 +163,18 @@ typedef struct mme_context_s {
         } t3402, t3412, t3423;
     } time;
 } mme_context_t;
+
+typedef struct mme_sgsn_route_s {
+    ogs_list_t    list;       /* listed in mme_sgsn_t->route_list */
+    ogs_nas_rai_t rai;
+    uint16_t cell_id;
+} mme_sgsn_route_t;
+
+typedef struct mme_sgsn_s {
+    ogs_gtp_node_t  gnode;
+    ogs_list_t      route_list; /* list of mme_sgsn_route_t */
+    bool            default_route; /* use this SGSN as default route */
+} mme_sgsn_t;
 
 typedef struct mme_sgw_s {
     ogs_gtp_node_t  gnode;
@@ -775,6 +790,13 @@ void mme_context_final(void);
 mme_context_t *mme_self(void);
 
 int mme_context_parse_config(void);
+
+mme_sgsn_t *mme_sgsn_add(ogs_sockaddr_t *addr);
+void mme_sgsn_remove(mme_sgsn_t *sgsn);
+void mme_sgsn_remove_all(void);
+mme_sgsn_t *mme_sgsn_find_by_addr(ogs_sockaddr_t *addr);
+mme_sgsn_t *mme_sgsn_find_by_routing_address(const ogs_nas_rai_t *rai, uint16_t cell_id);
+mme_sgsn_t *mme_sgsn_find_by_default_routing_address(void);
 
 mme_sgw_t *mme_sgw_add(ogs_sockaddr_t *addr);
 void mme_sgw_remove(mme_sgw_t *sgw);

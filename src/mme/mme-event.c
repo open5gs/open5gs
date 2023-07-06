@@ -97,6 +97,8 @@ const char *mme_event_get_name(mme_event_t *e)
     case MME_EVENT_SGSAP_LO_CONNREFUSED:
         return "MME_EVENT_SGSAP_LO_CONNREFUSED";
 
+    case MME_EVENT_GN_MESSAGE:
+        return "MME_EVENT_GN_MESSAGE";
     default:
        break;
     }
