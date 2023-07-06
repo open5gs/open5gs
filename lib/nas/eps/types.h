@@ -56,6 +56,14 @@ typedef struct ogs_nas_location_area_identification_s {
 
 typedef ogs_nas_location_area_identification_t ogs_nas_lai_t;
 
+/* 3GPP TS 24.008 10.5.5.15 Routing area identification */
+typedef struct ogs_nas_routing_area_identification_s {
+    ogs_nas_location_area_identification_t lai;
+    uint8_t rac;
+} __attribute__ ((packed)) ogs_nas_routing_area_identification_t;
+
+typedef ogs_nas_routing_area_identification_t ogs_nas_rai_t;
+
 /* 9.9.2.3 Mobile identity
  * See subclause 10.5.1.4 in 3GPP TS 24.008 [13].
  * O TLV 7-10 */
