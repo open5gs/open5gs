@@ -33,7 +33,7 @@ $ brew install mongodb-community
 
 Run MongoDB server.
 ```bash
-$ mongod --config /usr/local/etc/mongod.conf
+$ mongod --config /opt/homebrew/etc/mongod.conf
 ```
 
 **Tip:** MongoDB is persistent after rebooting with the following commands:
