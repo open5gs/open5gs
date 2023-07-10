@@ -402,6 +402,36 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
         }
         break;
 
+    case OpenAPI_ngap_ie_type_NULL:
+        /*
+         * No n2InfoContainer. According to TS23.502, this means that SMF has
+         * encountered an error and is rejecting the session.
+         *
+         * TS23.502
+         * 6.3.1.7 4.3.2.2 UE Requested PDU Session Establishment
+         * p100
+         * 11.  ...
+         * If the PDU session establishment failed anywhere between step 5
+         * and step 11, then the Namf_Communication_N1N2MessageTransfer
+         * request shall include the N1 SM container with a PDU Session
+         * Establishment Reject message ...
+         */
+        if (!n1buf) {
+            ogs_error("[%s] No N1 SM Content", amf_ue->supi);
+            return OGS_ERROR;
+        }
+
+        ogs_warn("[%d:%d] PDU session establishment reject",
+                sess->psi, sess->pti);
+
+        r = nas_5gs_send_gsm_reject(sess,
+                OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, n1buf);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+
+        amf_sess_remove(sess);
+        break;
+
     default:
         ogs_error("Not implemented ngapIeType[%d]", ngapIeType);
         ogs_assert_if_reached();
