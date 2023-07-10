@@ -129,6 +129,9 @@ void s1ap_state_operational(ogs_fsm_t *s, mme_event_t *e)
             case S1AP_ProcedureCode_id_NASNonDeliveryIndication:
                 /* TODO */
                 break;
+            case S1AP_ProcedureCode_id_eNBDirectInformationTransfer:
+                s1ap_handle_enb_direct_information_transfer(enb, pdu);
+                break;
             case S1AP_ProcedureCode_id_E_RABModificationIndication:
                 s1ap_handle_e_rab_modification_indication(enb, pdu);
                 break;

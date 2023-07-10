@@ -59,6 +59,9 @@ void s1ap_handle_e_rab_modification_indication(
 void s1ap_handle_path_switch_request(
         mme_enb_t *enb, ogs_s1ap_message_t *message);
 
+void s1ap_handle_enb_direct_information_transfer(
+        mme_enb_t *enb, ogs_s1ap_message_t *message);
+
 void s1ap_handle_handover_required(
         mme_enb_t *enb, ogs_s1ap_message_t *message);
 void s1ap_handle_handover_request_ack(
