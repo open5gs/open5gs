@@ -73,6 +73,7 @@ void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e)
     ogs_pfcp_message_t *message = NULL;
 
     ogs_sockaddr_t *addr = NULL;
+    smf_sess_t *sess;
 
     ogs_assert(s);
     ogs_assert(e);
@@ -114,6 +115,15 @@ void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e)
                 ogs_app()->time.message.pfcp.association_interval);
 
             ogs_pfcp_cp_send_association_setup_request(node, node_timeout);
+            break;
+        case SMF_TIMER_PFCP_NO_ESTABLISHMENT_RESPONSE:
+            sess = e->sess;
+            sess = smf_sess_cycle(sess);
+            if (!sess) {
+                ogs_warn("Session has already been removed");
+                break;
+            }
+            ogs_fsm_dispatch(&sess->sm, e);
             break;
         default:
             ogs_error("Unknown timer[%s:%d]",
@@ -372,6 +382,15 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
 
             ogs_assert(OGS_OK ==
                 ogs_pfcp_send_heartbeat_request(node, node_timeout));
+            break;
+        case SMF_TIMER_PFCP_NO_ESTABLISHMENT_RESPONSE:
+            sess = e->sess;
+            sess = smf_sess_cycle(sess);
+            if (!sess) {
+                ogs_warn("Session has already been removed");
+                break;
+            }
+            ogs_fsm_dispatch(&sess->sm, e);
             break;
         default:
             ogs_error("Unknown timer[%s:%d]",

@@ -629,6 +629,9 @@ void smf_gsm_state_wait_pfcp_establishment(ogs_fsm_t *s, smf_event_t *e)
     ogs_assert(sess);
 
     switch (e->h.id) {
+    case OGS_FSM_ENTRY_SIG:
+        break;
+
     case SMF_EVT_N4_MESSAGE:
         pfcp_xact = e->pfcp_xact;
         ogs_assert(pfcp_xact);
@@ -717,6 +720,24 @@ void smf_gsm_state_wait_pfcp_establishment(ogs_fsm_t *s, smf_event_t *e)
             ogs_error("cannot handle PFCP message type[%d]",
                     pfcp_message->h.type);
         }
+        break;
+
+    case SMF_EVT_N4_TIMER:
+        switch (e->h.timer_id) {
+        case SMF_TIMER_PFCP_NO_ESTABLISHMENT_RESPONSE:
+            OGS_FSM_TRAN(s, smf_gsm_state_5gc_n1_n2_reject);
+            break;
+        default:
+            ogs_error("Unknown timer[%s:%d]",
+                    ogs_timer_get_name(e->h.timer_id), e->h.timer_id);
+        }
+        break;
+
+    case OGS_FSM_EXIT_SIG:
+        break;
+
+    default:
+        ogs_error("Unknown event [%s]", smf_event_get_name(e));
     }
 }
 
@@ -1190,6 +1211,17 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_error("Unknown message[%d]", e->ngap.type);
         }
         break;
+
+        case SMF_EVT_N4_TIMER:
+            switch (e->h.timer_id) {
+            case SMF_TIMER_PFCP_NO_ESTABLISHMENT_RESPONSE:
+                OGS_FSM_TRAN(s, smf_gsm_state_5gc_n1_n2_reject);
+                break;
+            default:
+                ogs_error("Unknown timer[%s:%d]",
+                        ogs_timer_get_name(e->h.timer_id), e->h.timer_id);
+            }
+            break;
 
     default:
         ogs_error("Unknown event [%s]", smf_event_get_name(e));
