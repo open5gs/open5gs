@@ -1823,6 +1823,105 @@ void s1ap_handle_e_rab_modification_indication(
     }
 }
 
+void s1ap_handle_enb_direct_information_transfer(
+        mme_enb_t *enb, ogs_s1ap_message_t *message)
+{
+    S1AP_InitiatingMessage_t *initiatingMessage = NULL;
+    S1AP_ENBDirectInformationTransfer_t *ENBDirectInformationTransfer = NULL;
+
+    S1AP_ENBDirectInformationTransferIEs_t *ie = NULL;
+    S1AP_Inter_SystemInformationTransferType_t *Inter_SystemInformationTransferType = NULL;
+
+    S1AP_RIMTransfer_t *RIMTransfer = NULL;
+    S1AP_RIMInformation_t *RIMInformation = NULL;
+    S1AP_RIMRoutingAddress_t *RIMRoutingAddress = NULL;
+    struct S1AP_GERAN_Cell_ID *geran_cell_id = NULL;
+    ogs_plmn_id_t plmn_id;
+    ogs_nas_rai_t rai;
+    uint16_t cell_id;
+    unsigned int i;
+    mme_sgsn_t *sgsn = NULL;
+
+    ogs_assert(enb);
+    ogs_assert(message);
+    initiatingMessage = message->choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
+    ENBDirectInformationTransfer = &initiatingMessage->value.choice.ENBDirectInformationTransfer;
+    ogs_assert(ENBDirectInformationTransfer);
+
+    ogs_info("Rx eNB DIRECT INFORMATION TRANSFER");
+
+    for (i = 0; i < ENBDirectInformationTransfer->protocolIEs.list.count; i++) {
+        ie = ENBDirectInformationTransfer->protocolIEs.list.array[i];
+        switch (ie->id) {
+        case S1AP_ProtocolIE_ID_id_Inter_SystemInformationTransferTypeEDT:
+            Inter_SystemInformationTransferType = &ie->value.choice.Inter_SystemInformationTransferType;
+            break;
+        default:
+            break;
+        }
+    }
+
+    RIMTransfer = Inter_SystemInformationTransferType->choice.rIMTransfer;
+
+    RIMInformation = &RIMTransfer->rIMInformation;
+    RIMRoutingAddress = RIMTransfer->rIMRoutingAddress; /* optional */
+
+    if (!RIMRoutingAddress) {
+        ogs_warn("Rx eNB DIRECT INFORMATION TRANSFER without RIM Routing Address IE!");
+        goto forward_to_default_sgsn;
+    }
+
+    switch (RIMRoutingAddress->present) {
+    case S1AP_RIMRoutingAddress_PR_gERAN_Cell_ID:
+        geran_cell_id = RIMRoutingAddress->choice.gERAN_Cell_ID;
+        ogs_assert(geran_cell_id);
+        memcpy(&plmn_id, geran_cell_id->lAI.pLMNidentity.buf, sizeof(plmn_id));
+        ogs_nas_from_plmn_id(&rai.lai.nas_plmn_id, &plmn_id);
+        memcpy(&rai.lai.lac, geran_cell_id->lAI.lAC.buf, sizeof(uint16_t));
+        rai.lai.lac = be16toh(rai.lai.lac);
+        rai.rac = *geran_cell_id->rAC.buf;
+        memcpy(&cell_id, geran_cell_id->cI.buf, sizeof(uint16_t));
+        cell_id = be16toh(cell_id);
+            ogs_info("    RAI[MCC:%u MNC:%u LAC:%u RAC:%u] CI[%u]",
+                      ogs_plmn_id_mcc(&plmn_id), ogs_plmn_id_mnc(&plmn_id),
+                      rai.lai.lac, rai.rac, cell_id);
+        sgsn = mme_sgsn_find_by_routing_address(&rai, cell_id);
+        if (sgsn) {
+            mme_gtp1_send_ran_information_relay(
+                sgsn, RIMInformation->buf, RIMInformation->size,
+            &rai, cell_id);
+        } else {
+            ogs_warn("No SGSN to forward RIM message! RAI[MCC:%u MNC:%u LAC:%u RAC:%u] CI[%u]",
+                      ogs_plmn_id_mcc(&plmn_id), ogs_plmn_id_mnc(&plmn_id),
+                      rai.lai.lac, rai.rac, cell_id);
+        }
+        break;
+    case S1AP_RIMRoutingAddress_PR_targetRNC_ID:
+        ogs_warn("Rx empty RIM Routing Address 'RNC_ID' not implemented!");
+        break;
+    case S1AP_RIMRoutingAddress_PR_eHRPD_Sector_ID:
+        ogs_warn("Rx empty RIM Routing Address 'eHRPD_Sector_ID' not implemented!");
+        break;
+    case S1AP_RIMRoutingAddress_PR_NOTHING:
+        ogs_warn("Rx empty RIM Routing Address!");
+        goto forward_to_default_sgsn;
+    default:
+        ogs_warn("Rx unknown RIM Routing Address type %u!", RIMRoutingAddress->present);
+        break;
+    }
+
+    return;
+
+forward_to_default_sgsn:
+    sgsn = mme_sgsn_find_by_default_routing_address();
+    if (!sgsn)
+        return;
+    mme_gtp1_send_ran_information_relay(
+        sgsn, RIMInformation->buf, RIMInformation->size,
+        NULL, 0);
+}
+
 void s1ap_handle_path_switch_request(
         mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
