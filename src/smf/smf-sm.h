@@ -40,6 +40,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e);
 void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e);
 void smf_gsm_state_wait_epc_auth_release(ogs_fsm_t *s, smf_event_t *e);
 void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e);
+void smf_gsm_state_5gc_n1_n2_reject(ogs_fsm_t *s, smf_event_t *e);
 void smf_gsm_state_session_will_release(ogs_fsm_t *s, smf_event_t *e);
 void smf_gsm_state_exception(ogs_fsm_t *s, smf_event_t *e);
 

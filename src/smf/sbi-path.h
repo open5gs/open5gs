@@ -43,6 +43,8 @@ int smf_sbi_discover_and_send(
 
 void smf_namf_comm_send_n1_n2_message_transfer(
         smf_sess_t *sess, smf_n1_n2_message_transfer_param_t *param);
+void smf_namf_comm_send_n1_n2_pdu_establishment_reject(
+        smf_sess_t *sess);
 
 void smf_sbi_send_sm_context_create_error(
         ogs_sbi_stream_t *stream,
