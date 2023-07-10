@@ -18,6 +18,7 @@
  */
 
 #include "ogs-app.h"
+#include <mongoc/mongoc.h>
 
 static ogs_app_context_t self;
 

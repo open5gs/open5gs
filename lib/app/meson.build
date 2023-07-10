@@ -30,6 +30,7 @@ libapp_sources = files('''
 '''.split())
 
 yaml_dep = dependency('yaml-0.1')
+libmongoc_dep = dependency('libmongoc-1.0')
 
 libapp_inc = include_directories('.')
 
@@ -38,11 +39,11 @@ libapp = library('ogsapp',
     version : libogslib_version,
     c_args : '-DOGS_APP_COMPILATION',
     include_directories : [libapp_inc, libinc],
-    dependencies : [libcore_dep, yaml_dep],
+    dependencies : [libcore_dep, yaml_dep, libmongoc_dep],
     install : true)
 
 libapp_dep = declare_dependency(
     link_with : libapp,
     include_directories : [libapp_inc, libinc],
-    dependencies : [libcore_dep, yaml_dep],
+    dependencies : [libcore_dep, yaml_dep, libmongoc_dep],
 )
