@@ -142,13 +142,13 @@ ogs_pkbuf_t *s1ap_build_setup_failure(
     S1AP_TimeToWait_t *TimeToWait = NULL;
 
     ogs_debug("S1SetupFailure");
-    
+
     ogs_debug("    Group[%d] Cause[%d] TimeToWait[%ld]",
             group, (int)cause, time_to_wait);
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_unsuccessfulOutcome;
-    pdu.choice.unsuccessfulOutcome = 
+    pdu.choice.unsuccessfulOutcome =
         CALLOC(1, sizeof(S1AP_UnsuccessfulOutcome_t));
 
     unsuccessfulOutcome = pdu.choice.unsuccessfulOutcome;
@@ -240,7 +240,7 @@ ogs_pkbuf_t *s1ap_build_downlink_nas_transport(
 
     ie = CALLOC(1, sizeof(S1AP_DownlinkNASTransport_IEs_t));
     ASN_SEQUENCE_ADD(&DownlinkNASTransport->protocolIEs, ie);
-    
+
     ie->id = S1AP_ProtocolIE_ID_id_NAS_PDU;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present = S1AP_DownlinkNASTransport_IEs__value_PR_NAS_PDU;
@@ -355,10 +355,10 @@ ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
         (long long)mme_ue->ambr.downlink, (long long)mme_ue->ambr.uplink);
 
     asn_uint642INTEGER(
-            &UEAggregateMaximumBitrate->uEaggregateMaximumBitRateUL, 
+            &UEAggregateMaximumBitrate->uEaggregateMaximumBitRateUL,
             mme_ue->ambr.uplink);
     asn_uint642INTEGER(
-            &UEAggregateMaximumBitrate->uEaggregateMaximumBitRateDL, 
+            &UEAggregateMaximumBitrate->uEaggregateMaximumBitRateDL,
             mme_ue->ambr.downlink);
 
     ogs_list_for_each(&mme_ue->sess_list, sess) {
@@ -447,7 +447,7 @@ ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
                     (long long)bearer->qos.gbr.downlink,
                     (long long)bearer->qos.gbr.uplink);
 
-                gbrQosInformation = 
+                gbrQosInformation =
                         CALLOC(1, sizeof(struct S1AP_GBR_QosInformation));
                 asn_uint642INTEGER(&gbrQosInformation->e_RAB_MaximumBitrateDL,
                         bearer->qos.mbr.downlink);
@@ -541,7 +541,7 @@ ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
     SecurityKey = &ie->value.choice.SecurityKey;
 
     SecurityKey->size = OGS_SHA256_DIGEST_SIZE;
-    SecurityKey->buf = 
+    SecurityKey->buf =
         CALLOC(SecurityKey->size, sizeof(uint8_t));
     SecurityKey->bits_unused = 0;
     memcpy(SecurityKey->buf, mme_ue->kenb, SecurityKey->size);
@@ -791,11 +791,11 @@ ogs_pkbuf_t *s1ap_build_ue_context_modification_request(mme_ue_t *mme_ue)
         UESecurityCapabilities = &ie->value.choice.UESecurityCapabilities;
 
         UESecurityCapabilities->encryptionAlgorithms.size = 2;
-        UESecurityCapabilities->encryptionAlgorithms.buf = 
-            CALLOC(UESecurityCapabilities->encryptionAlgorithms.size, 
+        UESecurityCapabilities->encryptionAlgorithms.buf =
+            CALLOC(UESecurityCapabilities->encryptionAlgorithms.size,
                         sizeof(uint8_t));
         UESecurityCapabilities->encryptionAlgorithms.bits_unused = 0;
-        UESecurityCapabilities->encryptionAlgorithms.buf[0] = 
+        UESecurityCapabilities->encryptionAlgorithms.buf[0] =
             (mme_ue->ue_network_capability.eea << 1);
 
         UESecurityCapabilities->integrityProtectionAlgorithms.size = 2;
@@ -817,7 +817,7 @@ ogs_pkbuf_t *s1ap_build_ue_context_modification_request(mme_ue_t *mme_ue)
         SecurityKey = &ie->value.choice.SecurityKey;
 
         SecurityKey->size = OGS_SHA256_DIGEST_SIZE;
-        SecurityKey->buf = 
+        SecurityKey->buf =
             CALLOC(SecurityKey->size, sizeof(uint8_t));
         SecurityKey->bits_unused = 0;
         memcpy(SecurityKey->buf, mme_ue->kenb, SecurityKey->size);
@@ -883,11 +883,11 @@ ogs_pkbuf_t *s1ap_build_ue_context_release_command(
         UE_S1AP_IDs->choice.mME_UE_S1AP_ID = enb_ue->mme_ue_s1ap_id;
     } else {
         UE_S1AP_IDs->present = S1AP_UE_S1AP_IDs_PR_uE_S1AP_ID_pair;
-        UE_S1AP_IDs->choice.uE_S1AP_ID_pair = 
+        UE_S1AP_IDs->choice.uE_S1AP_ID_pair =
             CALLOC(1, sizeof(S1AP_UE_S1AP_ID_pair_t));
-        UE_S1AP_IDs->choice.uE_S1AP_ID_pair->mME_UE_S1AP_ID = 
+        UE_S1AP_IDs->choice.uE_S1AP_ID_pair->mME_UE_S1AP_ID =
             enb_ue->mme_ue_s1ap_id;
-        UE_S1AP_IDs->choice.uE_S1AP_ID_pair->eNB_UE_S1AP_ID = 
+        UE_S1AP_IDs->choice.uE_S1AP_ID_pair->eNB_UE_S1AP_ID =
             enb_ue->enb_ue_s1ap_id;
     }
 
@@ -1138,7 +1138,7 @@ ogs_pkbuf_t *s1ap_build_e_rab_modify_request(
         ogs_assert(bearer->qos.gbr.downlink);
         ogs_assert(bearer->qos.gbr.uplink);
 
-        gbrQosInformation = 
+        gbrQosInformation =
                 CALLOC(1, sizeof(S1AP_GBR_QosInformation_t));
         asn_uint642INTEGER(&gbrQosInformation->e_RAB_MaximumBitrateDL,
                 bearer->qos.mbr.downlink);
@@ -1161,7 +1161,7 @@ ogs_pkbuf_t *s1ap_build_e_rab_modify_request(
 }
 
 ogs_pkbuf_t *s1ap_build_e_rab_release_command(
-        mme_bearer_t *bearer, ogs_pkbuf_t *esmbuf, 
+        mme_bearer_t *bearer, ogs_pkbuf_t *esmbuf,
         S1AP_Cause_PR group, long cause)
 {
     S1AP_S1AP_PDU_t pdu;
@@ -1461,7 +1461,7 @@ ogs_pkbuf_t *s1ap_build_paging(
 
     /* Set UE Identity Index value : IMSI mod 4096 */
     UEIdentityIndexValue->size = 2;
-    UEIdentityIndexValue->buf = 
+    UEIdentityIndexValue->buf =
         CALLOC(UEIdentityIndexValue->size, sizeof(uint8_t));
 
     /* Conver string to value */
@@ -1671,7 +1671,7 @@ ogs_pkbuf_t *s1ap_build_path_switch_ack(
 
     SecurityContext->nextHopChainingCount = mme_ue->nhcc;
     SecurityContext->nextHopParameter.size = OGS_SHA256_DIGEST_SIZE;
-    SecurityContext->nextHopParameter.buf = 
+    SecurityContext->nextHopParameter.buf =
         CALLOC(SecurityContext->nextHopParameter.size,
         sizeof(uint8_t));
     SecurityContext->nextHopParameter.bits_unused = 0;
@@ -1698,7 +1698,7 @@ ogs_pkbuf_t *s1ap_build_path_switch_failure(
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_unsuccessfulOutcome;
-    pdu.choice.unsuccessfulOutcome = 
+    pdu.choice.unsuccessfulOutcome =
         CALLOC(1, sizeof(S1AP_UnsuccessfulOutcome_t));
 
     unsuccessfulOutcome = pdu.choice.unsuccessfulOutcome;
@@ -1940,7 +1940,7 @@ ogs_pkbuf_t *s1ap_build_handover_preparation_failure(
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_unsuccessfulOutcome;
-    pdu.choice.unsuccessfulOutcome = 
+    pdu.choice.unsuccessfulOutcome =
         CALLOC(1, sizeof(S1AP_UnsuccessfulOutcome_t));
 
     unsuccessfulOutcome = pdu.choice.unsuccessfulOutcome;
@@ -2128,10 +2128,10 @@ ogs_pkbuf_t *s1ap_build_handover_request(
     Cause->choice.radioNetwork = cause->choice.radioNetwork;
 
     asn_uint642INTEGER(
-            &UEAggregateMaximumBitrate->uEaggregateMaximumBitRateUL, 
+            &UEAggregateMaximumBitrate->uEaggregateMaximumBitRateUL,
             mme_ue->ambr.uplink);
     asn_uint642INTEGER(
-            &UEAggregateMaximumBitrate->uEaggregateMaximumBitRateDL, 
+            &UEAggregateMaximumBitrate->uEaggregateMaximumBitRateDL,
             mme_ue->ambr.downlink);
 
     ogs_list_for_each(&mme_ue->sess_list, sess) {
@@ -2170,7 +2170,7 @@ ogs_pkbuf_t *s1ap_build_handover_request(
                 ogs_assert(bearer->qos.gbr.downlink);
                 ogs_assert(bearer->qos.gbr.uplink);
 
-                gbrQosInformation = 
+                gbrQosInformation =
                         CALLOC(1, sizeof(struct S1AP_GBR_QosInformation));
                 asn_uint642INTEGER(&gbrQosInformation->e_RAB_MaximumBitrateDL,
                         bearer->qos.mbr.downlink);
@@ -2199,11 +2199,11 @@ ogs_pkbuf_t *s1ap_build_handover_request(
             Source_ToTarget_TransparentContainer);
 
     UESecurityCapabilities->encryptionAlgorithms.size = 2;
-    UESecurityCapabilities->encryptionAlgorithms.buf = 
-        CALLOC(UESecurityCapabilities->encryptionAlgorithms.size, 
+    UESecurityCapabilities->encryptionAlgorithms.buf =
+        CALLOC(UESecurityCapabilities->encryptionAlgorithms.size,
                     sizeof(uint8_t));
     UESecurityCapabilities->encryptionAlgorithms.bits_unused = 0;
-    UESecurityCapabilities->encryptionAlgorithms.buf[0] = 
+    UESecurityCapabilities->encryptionAlgorithms.buf[0] =
         (mme_ue->ue_network_capability.eea << 1);
 
     UESecurityCapabilities->integrityProtectionAlgorithms.size = 2;
@@ -2216,7 +2216,7 @@ ogs_pkbuf_t *s1ap_build_handover_request(
 
     SecurityContext->nextHopChainingCount = mme_ue->nhcc;
     SecurityContext->nextHopParameter.size = OGS_SHA256_DIGEST_SIZE;
-    SecurityContext->nextHopParameter.buf = 
+    SecurityContext->nextHopParameter.buf =
         CALLOC(SecurityContext->nextHopParameter.size,
         sizeof(uint8_t));
     SecurityContext->nextHopParameter.bits_unused = 0;
@@ -2327,7 +2327,7 @@ ogs_pkbuf_t *s1ap_build_mme_status_transfer(
     target_ue = enb_ue_cycle(target_ue);
     ogs_assert(target_ue);
     ogs_assert(enb_statustransfer_transparentContainer);
-    
+
     ogs_debug("MMEStatusTransfer");
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
@@ -2433,7 +2433,7 @@ ogs_pkbuf_t *s1ap_build_write_replace_warning_request(sbc_pws_data_t *sbc_pws)
     MessageIdentifier = &ie->value.choice.MessageIdentifier;
 
     MessageIdentifier->size = (16 / 8);
-    MessageIdentifier->buf = 
+    MessageIdentifier->buf =
         CALLOC(MessageIdentifier->size, sizeof(uint8_t));
     MessageIdentifier->bits_unused = 0;
     MessageIdentifier->buf[0] = (sbc_pws->message_id >> 8) & 0xFF;
@@ -2450,7 +2450,7 @@ ogs_pkbuf_t *s1ap_build_write_replace_warning_request(sbc_pws_data_t *sbc_pws)
     SerialNumber = &ie->value.choice.SerialNumber;
 
     SerialNumber->size = (16 / 8);
-    SerialNumber->buf = 
+    SerialNumber->buf =
         CALLOC(SerialNumber->size, sizeof(uint8_t));
     SerialNumber->bits_unused = 0;
     SerialNumber->buf[0] = (sbc_pws->serial_number >> 8) & 0xFF;
@@ -2499,7 +2499,7 @@ ogs_pkbuf_t *s1ap_build_write_replace_warning_request(sbc_pws_data_t *sbc_pws)
     DataCodingScheme = &ie->value.choice.DataCodingScheme;
 
     DataCodingScheme->size = (8 / 8);
-    DataCodingScheme->buf = 
+    DataCodingScheme->buf =
         CALLOC(DataCodingScheme->size, sizeof(uint8_t));
     DataCodingScheme->bits_unused = 0;
     DataCodingScheme->buf[0] = sbc_pws->data_coding_scheme & 0xFF;
@@ -2515,7 +2515,7 @@ ogs_pkbuf_t *s1ap_build_write_replace_warning_request(sbc_pws_data_t *sbc_pws)
     WarningMessageContents = &ie->value.choice.WarningMessageContents;
 
     WarningMessageContents->size = sbc_pws->message_length;;
-    WarningMessageContents->buf = 
+    WarningMessageContents->buf =
         CALLOC(WarningMessageContents->size, sizeof(uint8_t));
     memcpy(WarningMessageContents->buf,
             sbc_pws->message_contents, WarningMessageContents->size);
@@ -2567,7 +2567,7 @@ ogs_pkbuf_t *s1ap_build_kill_request(sbc_pws_data_t *sbc_pws)
     MessageIdentifier = &ie->value.choice.MessageIdentifier;
 
     MessageIdentifier->size = (16 / 8);
-    MessageIdentifier->buf = 
+    MessageIdentifier->buf =
         CALLOC(MessageIdentifier->size, sizeof(uint8_t));
     MessageIdentifier->bits_unused = 0;
     MessageIdentifier->buf[0] = (sbc_pws->message_id >> 8) & 0xFF;
@@ -2583,7 +2583,7 @@ ogs_pkbuf_t *s1ap_build_kill_request(sbc_pws_data_t *sbc_pws)
     SerialNumber = &ie->value.choice.SerialNumber;
 
     SerialNumber->size = (16 / 8);
-    SerialNumber->buf = 
+    SerialNumber->buf =
         CALLOC(SerialNumber->size, sizeof(uint8_t));
     SerialNumber->bits_unused = 0;
     SerialNumber->buf[0] = (sbc_pws->serial_number >> 8) & 0xFF;
@@ -2592,7 +2592,7 @@ ogs_pkbuf_t *s1ap_build_kill_request(sbc_pws_data_t *sbc_pws)
     /* TODO: optional Warning Area List */
 
     ogs_debug("    Message[%02x,%02x] Serial[%02x,%02x]",
-            MessageIdentifier->buf[0], MessageIdentifier->buf[1], 
+            MessageIdentifier->buf[0], MessageIdentifier->buf[1],
             SerialNumber->buf[0], SerialNumber->buf[1]);
 
     return ogs_s1ap_encode(&pdu);
