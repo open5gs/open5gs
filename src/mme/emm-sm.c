@@ -1089,7 +1089,15 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
             /* Create New GUTI */
             mme_ue_new_guti(mme_ue);
 
-            mme_s6a_send_ulr(mme_ue);
+            /* If EIR fucntionality is enabled we want
+             * to make sure the UE is valid before sending
+             * the Update Location Request to HSS */
+            if (mme_self()->eir.enabled) {
+                mme_s13_send_ecr(mme_ue);
+            }
+            else {
+                mme_s6a_send_ulr(mme_ue);
+            }
 
             if (mme_ue->next.m_tmsi) {
                 OGS_FSM_TRAN(s, &emm_state_initial_context_setup);

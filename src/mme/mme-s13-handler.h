@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2023 by Ryan Dimsey <ryan@omnitouch.com.au>
  *
  * This file is part of Open5GS.
  *
@@ -17,8 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef MME_FD_PATH_H
-#define MME_FD_PATH_H
+#ifndef MME_S13_HANDLER_H
+#define MME_S13_HANDLER_H
 
 #include "mme-context.h"
 
@@ -26,24 +26,16 @@
 extern "C" {
 #endif
 
-int mme_fd_init(void);
-void mme_fd_final(void);
+uint8_t mme_s13_handle_eca(
+        mme_ue_t *mme_ue, ogs_diam_s13_message_t *s13_message);
 
-/* MME Sends Authentication Information Request to HSS */
-void mme_s6a_send_air(mme_ue_t *mme_ue,
-    ogs_nas_authentication_failure_parameter_t
-        *authentication_failure_parameter);
-/* MME Sends Update Location Request to HSS */
-void mme_s6a_send_ulr(mme_ue_t *mme_ue);
-/* MME Sends Purge UE Request to HSS */
-void mme_s6a_send_pur(mme_ue_t *mme_ue);
-
-/* MME Sends ME Identity Check Request to EIR */
-void mme_s13_send_ecr(mme_ue_t *mme_ue);
+/* The following have been exposed for testing purposes and
+ * should ever be called in practice */
+uint8_t validate_s13_message(ogs_diam_s13_message_t *s13_message);
+uint8_t validate_eca(ogs_diam_s13_eca_message_t eca_message, ogs_nas_eir_t eir_config);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* MME_FD_PATH_H */
-
+#endif /* MME_S13_HANDLER_H */

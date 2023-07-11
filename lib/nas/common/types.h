@@ -998,6 +998,14 @@ typedef struct ogs_nas_extended_quality_of_service_s {
     } gbr;
 } __attribute__ ((packed)) ogs_nas_extended_quality_of_service_t;
 
+/* Used to control EIR functionality */
+typedef struct ogs_nas_eir_s {
+    bool enabled;
+    bool allow_whitelist;
+    bool allow_greylist;
+    bool allow_blacklist;
+} __attribute__ ((packed)) ogs_nas_eir_t;
+
 #ifdef __cplusplus
 }
 #endif
