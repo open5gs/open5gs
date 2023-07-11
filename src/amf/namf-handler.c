@@ -24,6 +24,17 @@
 #include "ngap-path.h"
 #include "sbi-path.h"
 
+int amf_namf_comm_map_message_class_to_container_type(int clazz){
+    switch(clazz){
+        case OpenAPI_n1_message_class_LPP:
+            return OGS_NAS_PAYLOAD_CONTAINER_LPP;
+        case OpenAPI_n1_message_class_SMS:
+            return OGS_NAS_PAYLOAD_CONTAINER_SMS;
+        default:
+            return -1;
+    }
+}
+
 int amf_namf_comm_handle_n1_n2_message_transfer(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
@@ -399,6 +410,24 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
         } else {
             ogs_fatal("[%s] Invalid AMF-UE state", amf_ue->supi);
             ogs_assert_if_reached();
+        }
+        break;
+
+    case OpenAPI_ngap_ie_type_NULL:
+        if(n1MessageContainer){
+            ran_ue_t *ran_ue = NULL;
+            int messageClass = amf_namf_comm_map_message_class_to_container_type(n1MessageContainer->n1_message_class);
+            if(messageClass != -1){
+                gmmbuf = gmm_build_dl_nas_transport(sess, messageClass, n1buf, 0, 0);
+                ogs_assert(gmmbuf);
+
+                ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+                ngapbuf = ngap_build_downlink_nas_transport(ran_ue,gmmbuf,false,false);
+                ogs_assert(ngapbuf);
+
+                if (nas_5gs_send_to_gnb(amf_ue, ngapbuf) != OGS_OK)
+                    ogs_error("nas_5gs_send_to_gnb() failed");
+            }
         }
         break;
 
