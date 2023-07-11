@@ -940,15 +940,12 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     CASE(OGS_SBI_RESOURCE_NAME_DELETE)
                         if (sbi_message->res_status !=
                                 OGS_SBI_HTTP_STATUS_NO_CONTENT) {
-                            strerror = ogs_msprintf(
-                                    "[%s:%d] HTTP response error [%d]",
+                            ogs_error("[%s:%d] HTTP response error [%d]",
                                     smf_ue->supi, sess->psi,
                                     sbi_message->res_status);
-                            ogs_assert(strerror);
-                            ogs_error("%s", strerror);
-                            ogs_free(strerror);
-                            OGS_FSM_TRAN(s, smf_gsm_state_exception);
-                            break;
+                            /* In spite of error from PCF, continue with
+                               session teardown, so as to not leave stale
+                               sessions. */
                         }
 
                         if (state == OGS_PFCP_DELETE_TRIGGER_SMF_INITIATED) {
