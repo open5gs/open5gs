@@ -1644,32 +1644,6 @@ void ngap_handle_ue_context_release_action(ran_ue_t *ran_ue)
          * to prevent retransmission of NAS messages.
          */
         CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
-
-        /*
-         * TS 24.501
-         * 5.3.7 Handling of the periodic registration update timer and
-         *
-         * Start AMF_TIMER_MOBILE_REACHABLE
-         * mobile reachable timer
-         * The network supervises the periodic registration update procedure
-         * of the UE by means of the mobile reachable timer.
-         * If the UE is not registered for emergency services,
-         * the mobile reachable timer shall be longer than the value of timer
-         * T3512. In this case, by default, the mobile reachable timer is
-         * 4 minutes greater than the value of timer T3512.
-         * The mobile reachable timer shall be reset and started with the
-         * value as indicated above, when the AMF releases the NAS signalling
-         * connection for the UE.
-         *
-         * TODO: If the UE is registered for emergency services, the AMF shall
-         * set the mobile reachable timer with a value equal to timer T3512.
-         */
-        if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered) &&
-            ran_ue->ue_ctx_rel_action == NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK) {
-
-            ogs_timer_start(amf_ue->mobile_reachable.timer,
-                    ogs_time_from_sec(amf_self()->time.t3512.value + 240));
-        }
     }
 
     switch (ran_ue->ue_ctx_rel_action) {
