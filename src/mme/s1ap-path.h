@@ -64,6 +64,9 @@ int s1ap_send_mme_configuration_transfer(
         mme_enb_t *target_enb,
         S1AP_SONConfigurationTransfer_t *SONConfigurationTransfer);
 
+int s1ap_send_mme_direct_information_transfer(
+        mme_enb_t *target_enb, const uint8_t *buf, size_t buf_len);
+
 int s1ap_send_e_rab_modification_confirm(mme_ue_t *mme_ue);
 
 int s1ap_send_path_switch_ack(
