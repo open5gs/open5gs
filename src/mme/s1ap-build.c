@@ -1559,6 +1559,60 @@ ogs_pkbuf_t *s1ap_build_mme_configuration_transfer(
     return ogs_s1ap_encode(&pdu);
 }
 
+/* 3GPP TS 36.413 8.14 MME Direct Information Transfer */
+ogs_pkbuf_t *s1ap_build_direct_information_transfer(const uint8_t *buf, size_t buf_len)
+{
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_InitiatingMessage_t *initiatingMessage = NULL;
+    S1AP_MMEDirectInformationTransfer_t *MMEDirectInformationTransfer = NULL;
+
+    S1AP_MMEDirectInformationTransferIEs_t *ie = NULL;
+    S1AP_Inter_SystemInformationTransferType_t *Inter_SystemInformationTransferType = NULL;
+    S1AP_RIMTransfer_t *rIMTransfer = NULL;
+
+    ogs_assert(buf);
+    ogs_assert(buf_len > 0);
+
+    ogs_debug("MMEDirectInformationTransfer");
+
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode =
+        S1AP_ProcedureCode_id_MMEDirectInformationTransfer;
+    initiatingMessage->criticality = S1AP_Criticality_ignore;
+    initiatingMessage->value.present =
+        S1AP_InitiatingMessage__value_PR_MMEDirectInformationTransfer;
+
+    MMEDirectInformationTransfer =
+        &initiatingMessage->value.choice.MMEDirectInformationTransfer;
+
+    ie = CALLOC(1, sizeof(S1AP_MMEDirectInformationTransferIEs_t));
+    ASN_SEQUENCE_ADD(&MMEDirectInformationTransfer->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_Inter_SystemInformationTransferTypeMDT;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present =
+        S1AP_MMEDirectInformationTransferIEs__value_PR_Inter_SystemInformationTransferType;
+
+    Inter_SystemInformationTransferType = &ie->value.choice.Inter_SystemInformationTransferType;
+    Inter_SystemInformationTransferType->present = S1AP_Inter_SystemInformationTransferType_PR_rIMTransfer;
+
+    Inter_SystemInformationTransferType->choice.rIMTransfer = CALLOC(1, sizeof(S1AP_RIMTransfer_t));
+    rIMTransfer = Inter_SystemInformationTransferType->choice.rIMTransfer;
+
+    rIMTransfer->rIMInformation.size = buf_len;
+    rIMTransfer->rIMInformation.buf = CALLOC(buf_len, sizeof(uint8_t));
+    memcpy(rIMTransfer->rIMInformation.buf, buf, buf_len);
+
+	/* "The RIM Routing Address IE shall not be present since the eNB is the final destination node": */
+    rIMTransfer->rIMRoutingAddress = NULL;
+
+    return ogs_s1ap_encode(&pdu);
+}
+
 ogs_pkbuf_t *s1ap_build_path_switch_ack(
         mme_ue_t *mme_ue, bool e_rab_to_switched_in_uplink_list)
 {

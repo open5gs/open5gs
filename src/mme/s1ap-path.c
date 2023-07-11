@@ -489,6 +489,31 @@ int s1ap_send_mme_configuration_transfer(
     return rv;
 }
 
+int s1ap_send_mme_direct_information_transfer(
+        mme_enb_t *target_enb, const uint8_t *buf, size_t buf_len)
+{
+    int rv;
+    ogs_pkbuf_t *s1apbuf = NULL;
+
+    ogs_debug("Tx MME Direct Information Transfer");
+
+    if (!mme_enb_cycle(target_enb)) {
+        ogs_error("eNB has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    s1apbuf = s1ap_build_direct_information_transfer(buf, buf_len);
+    if (!s1apbuf) {
+        ogs_error("s1ap_build_direct_information_transfer() failed");
+        return OGS_ERROR;
+    }
+
+    rv = s1ap_send_to_enb(target_enb, s1apbuf, S1AP_NON_UE_SIGNALLING);
+    ogs_expect(rv == OGS_OK);
+
+    return rv;
+}
+
 int s1ap_send_e_rab_modification_confirm(mme_ue_t *mme_ue)
 {
     int rv;
