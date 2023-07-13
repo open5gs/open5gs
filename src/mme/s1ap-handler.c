@@ -2331,6 +2331,74 @@ void s1ap_handle_enb_configuration_transfer(
     }
 }
 
+static void s1ap_handle_handover_required_intralte(enb_ue_t *source_ue,
+                S1AP_Cause_t *Cause, S1AP_TargetID_t *TargetID,
+                S1AP_Source_ToTarget_TransparentContainer_t *Source_ToTarget_TransparentContainer)
+{
+    mme_enb_t *target_enb = NULL;
+    uint32_t target_enb_id = 0;
+    mme_ue_t *mme_ue = NULL;
+    int r;
+
+    ogs_assert(source_ue);
+    ogs_assert(Cause);
+    ogs_assert(TargetID);
+    ogs_assert(Source_ToTarget_TransparentContainer);
+
+    switch (TargetID->present) {
+    case S1AP_TargetID_PR_targeteNB_ID:
+        ogs_s1ap_ENB_ID_to_uint32(
+            &TargetID->choice.targeteNB_ID->global_ENB_ID.eNB_ID,
+            &target_enb_id);
+        break;
+    default:
+        ogs_error("Not implemented(%d)", TargetID->present);
+        r = s1ap_send_handover_preparation_failure(source_ue,
+                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
+    target_enb = mme_enb_find_by_enb_id(target_enb_id);
+    if (target_enb == NULL) {
+        ogs_error("Handover required : cannot find target eNB-id[0x%x]",
+                    target_enb_id);
+        r = s1ap_send_handover_preparation_failure(source_ue,
+                S1AP_Cause_PR_radioNetwork,
+                S1AP_CauseRadioNetwork_unknown_targetID);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
+    mme_ue = source_ue->mme_ue;
+    if (!mme_ue) {
+        ogs_error("No UE(mme-ue) context");
+        return;
+    }
+
+    if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
+        ogs_error("No Security Context");
+        r = s1ap_send_handover_preparation_failure(source_ue,
+                S1AP_Cause_PR_nas, S1AP_CauseNas_authentication_failure);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
+    source_ue->handover_type = S1AP_HandoverType_intralte;
+
+    mme_ue->nhcc++;
+    ogs_kdf_nh_enb(mme_ue->kasme, mme_ue->nh, mme_ue->nh);
+
+    r = s1ap_send_handover_request(
+            source_ue, target_enb, &source_ue->handover_type, Cause,
+            Source_ToTarget_TransparentContainer);
+    ogs_expect(r == OGS_OK);
+    ogs_assert(r != OGS_ERROR);
+}
+
 void s1ap_handle_handover_required(mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
     char buf[OGS_ADDRSTRLEN];
@@ -2358,9 +2426,6 @@ void s1ap_handle_handover_required(mme_enb_t *enb, ogs_s1ap_message_t *message)
     ogs_assert(HandoverRequired);
 
     enb_ue_t *source_ue = NULL;
-    mme_ue_t *mme_ue = NULL;
-    mme_enb_t *target_enb = NULL;
-    uint32_t target_enb_id = 0;
 
     ogs_debug("HandoverRequired");
     for (i = 0; i < HandoverRequired->protocolIEs.list.count; i++) {
@@ -2462,58 +2527,24 @@ void s1ap_handle_handover_required(mme_enb_t *enb, ogs_s1ap_message_t *message)
         return;
     }
 
-    switch (TargetID->present) {
-    case S1AP_TargetID_PR_targeteNB_ID:
-        ogs_s1ap_ENB_ID_to_uint32(
-            &TargetID->choice.targeteNB_ID->global_ENB_ID.eNB_ID,
-            &target_enb_id);
+    switch (*HandoverType) {
+    case S1AP_HandoverType_intralte:
+        s1ap_handle_handover_required_intralte(source_ue, Cause, TargetID, Source_ToTarget_TransparentContainer);
         break;
-    default:
-        ogs_error("Not implemented(%d)", TargetID->present);
+    case S1AP_HandoverType_ltetoutran:
+    case S1AP_HandoverType_ltetogeran:
+    case S1AP_HandoverType_utrantolte:
+    case S1AP_HandoverType_gerantolte:
+    case S1AP_HandoverType_eps_to_5gs:
+    case S1AP_HandoverType_fivegs_to_eps:
+    default: /* Enumeration is extensible */
+        ogs_error("Rx Handover Required HandoverType=%ld not implemented!", *HandoverType);
         r = s1ap_send_handover_preparation_failure(source_ue,
                 S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
-        return;
+        break;
     }
-
-    target_enb = mme_enb_find_by_enb_id(target_enb_id);
-    if (target_enb == NULL) {
-        ogs_error("Handover required : cannot find target eNB-id[0x%x]",
-                    target_enb_id);
-        r = s1ap_send_handover_preparation_failure(source_ue,
-                S1AP_Cause_PR_radioNetwork,
-                S1AP_CauseRadioNetwork_unknown_targetID);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
-    }
-
-    mme_ue = source_ue->mme_ue;
-    if (!mme_ue) {
-        ogs_error("No UE(mme-ue) context");
-        return;
-    }
-
-    if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
-        ogs_error("No Security Context");
-        r = s1ap_send_handover_preparation_failure(source_ue,
-                S1AP_Cause_PR_nas, S1AP_CauseNas_authentication_failure);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
-    }
-
-    source_ue->handover_type = *HandoverType;
-
-    mme_ue->nhcc++;
-    ogs_kdf_nh_enb(mme_ue->kasme, mme_ue->nh, mme_ue->nh);
-
-    r = s1ap_send_handover_request(
-            source_ue, target_enb, HandoverType, Cause,
-            Source_ToTarget_TransparentContainer);
-    ogs_expect(r == OGS_OK);
-    ogs_assert(r != OGS_ERROR);
 }
 
 void s1ap_handle_handover_request_ack(
