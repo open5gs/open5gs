@@ -935,6 +935,10 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 } else {
                     SWITCH(sbi_message->h.resource.component[2])
                     CASE(OGS_SBI_RESOURCE_NAME_DELETE)
+                        if (sess->policy_association_id)
+                            ogs_free(sess->policy_association_id);
+                        sess->policy_association_id = NULL;
+
                         if (sbi_message->res_status !=
                                 OGS_SBI_HTTP_STATUS_NO_CONTENT) {
                             strerror = ogs_msprintf(
@@ -949,26 +953,52 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         }
 
                         if (state == OGS_PFCP_DELETE_TRIGGER_SMF_INITIATED) {
-                            OGS_FSM_TRAN(&sess->sm, smf_gsm_state_wait_5gc_n1_n2_release);
+                            if (sess->up_cnx_state != OpenAPI_up_cnx_state_DEACTIVATED) {
+                                OGS_FSM_TRAN(&sess->sm, smf_gsm_state_wait_5gc_n1_n2_release);
 
-                            smf_n1_n2_message_transfer_param_t param;
+                                smf_n1_n2_message_transfer_param_t param;
 
-                            memset(&param, 0, sizeof(param));
-                            param.state = SMF_NETWORK_REQUESTED_PDU_SESSION_RELEASE;
-                            sess->pti = OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
-                            param.n1smbuf = gsm_build_pdu_session_release_command(
-                                sess, OGS_5GSM_CAUSE_REACTIVATION_REQUESTED);
-                            ogs_assert(param.n1smbuf);
+                                memset(&param, 0, sizeof(param));
+                                param.state = SMF_NETWORK_REQUESTED_PDU_SESSION_RELEASE;
+                                sess->pti = OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
+                                param.n1smbuf = gsm_build_pdu_session_release_command(
+                                    sess, OGS_5GSM_CAUSE_REACTIVATION_REQUESTED);
+                                ogs_assert(param.n1smbuf);
 
-                            param.n2smbuf =
-                                ngap_build_pdu_session_resource_release_command_transfer(
-                                    sess, SMF_NGAP_STATE_DELETE_TRIGGER_SMF_INITIATED,
-                                    NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release);
-                            ogs_assert(param.n2smbuf);
+                                param.n2smbuf =
+                                    ngap_build_pdu_session_resource_release_command_transfer(
+                                        sess, SMF_NGAP_STATE_DELETE_TRIGGER_SMF_INITIATED,
+                                        NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release);
+                                ogs_assert(param.n2smbuf);
 
-                            param.skip_ind = true;
+                                param.skip_ind = true;
 
-                            smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
+                                smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
+                            } else {
+                                /*
+                                * UPF HA – release/establish new PDU session in CM_IDLE
+                                * 1. UPF down,
+                                *    OGS_PFCP_DELETE_TRIGGER_SMF_INITIATED,
+                                *    up_cnx_state_DEACTIVATED:
+                                *    namf_Comm_N1N2MessageTransfer(PDU_RES_SETUP_REQ)
+                                * 2. Nsmf_PDUSession_UpdateSMContext(ACTIVATING),
+                                *    no policy association:
+                                *    403 Forbidden(PDU_RES_REL_CMD, DEACTIVATED)
+                                * 3. PDU session release
+                                * 4. PDU session establishment
+                                */
+                                smf_n1_n2_message_transfer_param_t param;
+
+                                memset(&param, 0, sizeof(param));
+                                param.state = SMF_NETWORK_TRIGGERED_SERVICE_REQUEST;
+                                param.n2smbuf =
+                                    ngap_build_pdu_session_resource_setup_request_transfer(sess);
+                                ogs_assert(param.n2smbuf);
+
+                                param.n1n2_failure_txf_notif_uri = true;
+
+                                smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
+                            }
                         } else {
                             OGS_FSM_TRAN(&sess->sm,
                                     &smf_gsm_state_wait_pfcp_deletion);

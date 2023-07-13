@@ -195,6 +195,7 @@ ogs_pkbuf_t *gmm_build_service_accept(amf_ue_t *amf_ue)
     ogs_nas_5gs_service_accept_t *service_accept = &message.gmm.service_accept;
     ogs_nas_pdu_session_status_t *pdu_session_status = NULL;
     ogs_nas_pdu_session_reactivation_result_t *pdu_session_reactivation_result;
+    char src_buffer[15 * (sizeof(uint8_t) + sizeof(ogs_nas_5gmm_cause_t))] = { 0 };
 
     ogs_assert(amf_ue);
 
@@ -231,6 +232,32 @@ ogs_pkbuf_t *gmm_build_service_accept(amf_ue_t *amf_ue)
             get_pdu_session_reactivation_result(amf_ue);
         ogs_debug("[%s]    PDU Session Reactivation Result : %04x",
                 amf_ue->supi, pdu_session_reactivation_result->psi);
+    }
+
+    if (amf_ue->nas.present.pdu_session_reactivation_result_error_cause) {
+        service_accept->presencemask |=
+            OGS_NAS_5GS_SERVICE_ACCEPT_PDU_SESSION_REACTIVATION_RESULT_ERROR_CAUSE_PRESENT;
+        amf_sess_t *sess = NULL;
+        ogs_nas_5gmm_cause_t gmm_cause =
+                OGS_5GMM_CAUSE_INSUFFICIENT_USER_PLANE_RESOURCES_FOR_THE_PDU_SESSION;
+        ogs_list_for_each(&amf_ue->sess_list, sess) {
+            if (SESSION_CONTEXT_IN_SMF(sess) && sess->paging.ongoing &&
+                    sizeof(src_buffer) >=
+                    (service_accept->pdu_session_reactivation_result_error_cause.length +
+                    sizeof(sess->psi) + sizeof(ogs_nas_5gmm_cause_t))) {
+                memcpy(src_buffer +
+                        service_accept->pdu_session_reactivation_result_error_cause.length,
+                        &sess->psi, sizeof(sess->psi));
+                service_accept->pdu_session_reactivation_result_error_cause.length +=
+                        sizeof(sess->psi);
+                memcpy(src_buffer +
+                        service_accept->pdu_session_reactivation_result_error_cause.length,
+                        &gmm_cause, sizeof(ogs_nas_5gmm_cause_t));
+                service_accept->pdu_session_reactivation_result_error_cause.length +=
+                        sizeof(ogs_nas_5gmm_cause_t);
+            }
+        }
+        service_accept->pdu_session_reactivation_result_error_cause.buffer = src_buffer;
     }
 
     return nas_5gs_security_encode(amf_ue, &message);

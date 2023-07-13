@@ -336,6 +336,9 @@ void smf_sbi_send_sm_context_update_error(
     }
 
     if (n2smbuf) {
+        SmContextUpdateError.up_cnx_state = OpenAPI_up_cnx_state_DEACTIVATED;
+        SmContextUpdateError.n2_sm_info_type =
+            OpenAPI_n2_sm_info_type_PDU_RES_REL_CMD;
         SmContextUpdateError.n2_sm_info = &n2SmInfo;
         n2SmInfo.content_id = (char *)OGS_SBI_CONTENT_NGAP_SM_ID;
         sendmsg.part[sendmsg.num_of_part].content_id =

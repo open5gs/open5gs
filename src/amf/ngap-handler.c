@@ -959,22 +959,24 @@ void ngap_handle_initial_context_setup_response(
                 amf_ue->supi, sess->psi, ran_ue->psimask.activated);
         ran_ue->psimask.activated |= ((1 << sess->psi));
         ogs_debug("    NEW ACTIVATED[0x%x]", ran_ue->psimask.activated);
+        if (!amf_ue->nas.present.pdu_session_reactivation_result_error_cause) {
+            memset(&param, 0, sizeof(param));
+            param.n2smbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+            ogs_assert(param.n2smbuf);
+            param.n2SmInfoType = OpenAPI_n2_sm_info_type_PDU_RES_SETUP_RSP;
+            ogs_pkbuf_put_data(param.n2smbuf, transfer->buf, transfer->size);
 
-        memset(&param, 0, sizeof(param));
-        param.n2smbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-        ogs_assert(param.n2smbuf);
-        param.n2SmInfoType = OpenAPI_n2_sm_info_type_PDU_RES_SETUP_RSP;
-        ogs_pkbuf_put_data(param.n2smbuf, transfer->buf, transfer->size);
+            r = amf_sess_sbi_discover_and_send(
+                    OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                    amf_nsmf_pdusession_build_update_sm_context,
+                    sess, AMF_UPDATE_SM_CONTEXT_ACTIVATED, &param);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
 
-        r = amf_sess_sbi_discover_and_send(
-                OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
-                amf_nsmf_pdusession_build_update_sm_context,
-                sess, AMF_UPDATE_SM_CONTEXT_ACTIVATED, &param);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-
-        ogs_pkbuf_free(param.n2smbuf);
+            ogs_pkbuf_free(param.n2smbuf);
+        }
     }
+    amf_ue->nas.present.pdu_session_reactivation_result_error_cause = 0;
 
     /*
      * TS24.501
@@ -1004,8 +1006,16 @@ void ngap_handle_initial_context_setup_response(
 
             switch (sess->gsm_message.type) {
             case OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND:
-                r = nas_send_pdu_session_modification_command(sess,
+            case OGS_NAS_5GS_PDU_SESSION_RELEASE_REQUEST:
+                if (sess->gsm_message.type ==
+                        OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND) {
+                    r = nas_send_pdu_session_modification_command(sess,
                             sess->gsm_message.n1buf, sess->gsm_message.n2buf);
+                } else {
+                    AMF_SESS_CLEAR_PAGING_INFO(sess);
+                    r = nas_send_pdu_session_release_command(sess,
+                            sess->gsm_message.n1buf, sess->gsm_message.n2buf);
+                }
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
 

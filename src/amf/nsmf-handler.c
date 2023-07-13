@@ -759,10 +759,8 @@ int amf_nsmf_pdusession_handle_update_sm_context(
         OpenAPI_ref_to_binary_data_t *n1SmMsg = NULL;
         ogs_pkbuf_t *n1smbuf = NULL;
 
-#if 0 /* Is it needed? */
         OpenAPI_ref_to_binary_data_t *n2SmInfo = NULL;
         ogs_pkbuf_t *n2smbuf = NULL;
-#endif
 
         amf_ue = sess->amf_ue;
         ogs_assert(amf_ue);
@@ -787,6 +785,74 @@ int amf_nsmf_pdusession_handle_update_sm_context(
             ogs_assert(r != OGS_ERROR);
 
             return OGS_ERROR;
+        }
+        if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_FORBIDDEN &&
+                SmContextUpdateError->up_cnx_state ==
+                OpenAPI_up_cnx_state_DEACTIVATED) {
+            /*
+            * UPF HA – release/establish new PDU session in CM_IDLE
+            * 1. namf_Comm_N1N2MessageTransfer(PDU_RES_SETUP_REQ):
+            *    Paging
+            * 2. Service Request:
+            *    Nsmf_PDUSession_UpdateSMContext(ACTIVATING)
+            * 3. 403 Forbidden(PDU_RES_REL_CMD, DEACTIVATED):
+            *    Service Accept(PDU session reactivation result
+            *    error cause: PSI, Cause =
+            *    insufficient user-plane resources for the PDU session)
+            * 4. InitialContextSetupResponse
+            *    PDU Session Release Command(Reactivation requested)
+            * 5. PDU Session Release Complete
+            *    Nsmf_PDUSession_UpdateSMContext(PDU Session Release Complete)
+            * 6. PDU session establishment
+            */
+            amf_ue->nas.present.pdu_session_reactivation_result_error_cause = 1;
+            n1SmMsg = SmContextUpdateError->n1_sm_msg;
+            if (n1SmMsg && n1SmMsg->content_id) {
+                n1smbuf = ogs_sbi_find_part_by_content_id(
+                        recvmsg, n1SmMsg->content_id);
+                if (n1smbuf) {
+                    /*
+                    * NOTE : The pkbuf created in the SBI message will be removed
+                    *        from ogs_sbi_message_free(), so it must be copied.
+                    */
+                    n1smbuf = ogs_pkbuf_copy(n1smbuf);
+                    ogs_assert(n1smbuf);
+                } else {
+                    ogs_error("[%d:%d] No N1 SM Content [%s]",
+                        sess->psi, sess->pti, n1SmMsg->content_id);
+                    return OGS_ERROR;
+                }
+            }
+            n2SmInfo = SmContextUpdateError->n2_sm_info;
+            if (!n2SmInfo || !n2SmInfo->content_id) {
+                ogs_error("[%d:%d] No N2 SM Message", sess->psi, sess->pti);
+                return OGS_ERROR;
+            }
+            n2smbuf = ogs_sbi_find_part_by_content_id(
+                    recvmsg, n2SmInfo->content_id);
+            if (n2smbuf) {
+                /*
+                * NOTE : The pkbuf created in the SBI message will be removed
+                *        from ogs_sbi_message_free(), so it must be copied.
+                */
+                n2smbuf = ogs_pkbuf_copy(n2smbuf);
+                ogs_assert(n2smbuf);
+            } else {
+                ogs_error("[%d:%d] No N2 SM Content [%s]",
+                        sess->psi, sess->pti, n2SmInfo->content_id);
+                return OGS_ERROR;
+            }
+            /* Store 5GSM Message */
+            AMF_SESS_STORE_5GSM_MESSAGE(sess,
+                    OGS_NAS_5GS_PDU_SESSION_RELEASE_REQUEST,
+                    n1smbuf, n2smbuf);
+            if (AMF_SESSION_SYNC_DONE(amf_ue, state)) {
+                r = nas_5gs_send_service_accept(amf_ue);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+            }
+
+            return OGS_OK;
         }
 
         n1SmMsg = SmContextUpdateError->n1_sm_msg;

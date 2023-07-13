@@ -230,10 +230,11 @@ struct amf_ue_s {
         ogs_nas_de_registration_type_t de_registration;
 
         struct {
-        ED4(uint8_t uplink_data_status:1;,
+        ED5(uint8_t uplink_data_status:1;,
             uint8_t pdu_session_status:1;,
             uint8_t allowed_pdu_session_status:1;,
-            uint8_t reserved:5;)
+            uint8_t pdu_session_reactivation_result_error_cause:1;,
+            uint8_t reserved:4;)
         } present;
 
     } __attribute__ ((packed)) nas;
