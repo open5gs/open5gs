@@ -88,15 +88,19 @@ ogs_gtp_xact_t *ogs_gtp1_xact_local_create(ogs_gtp_node_t *gnode,
     xact->cb = cb;
     xact->data = data;
 
-    xact->tm_response = ogs_timer_add(
-            ogs_app()->timer_mgr, response_timeout, xact);
-    ogs_assert(xact->tm_response);
-    xact->response_rcount = ogs_app()->time.message.gtp.n3_response_rcount,
+    /* 7.6 "The T3-RESPONSE timer shall be started when a signalling request
+     * message (for which a response has been defined) is sent." */
+    if (hdesc->type != OGS_GTP1_RAN_INFORMATION_RELAY_TYPE) {
+        xact->tm_response = ogs_timer_add(
+                ogs_app()->timer_mgr, response_timeout, xact);
+        ogs_assert(xact->tm_response);
+        xact->response_rcount = ogs_app()->time.message.gtp.n3_response_rcount;
+    }
 
     xact->tm_holding = ogs_timer_add(
             ogs_app()->timer_mgr, holding_timeout, xact);
     ogs_assert(xact->tm_holding);
-    xact->holding_rcount = ogs_app()->time.message.gtp.n3_holding_rcount,
+    xact->holding_rcount = ogs_app()->time.message.gtp.n3_holding_rcount;
 
     ogs_list_add(&xact->gnode->local_list, xact);
 
@@ -987,6 +991,7 @@ static ogs_gtp_xact_stage_t ogs_gtp1_xact_get_stage(uint8_t type, uint32_t xid)
     case OGS_GTP1_FORWARD_RELOCATION_REQUEST_TYPE:
     case OGS_GTP1_RELOCATION_CANCEL_REQUEST_TYPE:
     case OGS_GTP1_UE_REGISTRATION_QUERY_REQUEST_TYPE:
+    case OGS_GTP1_RAN_INFORMATION_RELAY_TYPE:
         stage = GTP_XACT_INITIAL_STAGE;
         break;
     case OGS_GTP1_ECHO_RESPONSE_TYPE:
