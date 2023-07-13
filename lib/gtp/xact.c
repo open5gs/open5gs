@@ -98,8 +98,7 @@ ogs_gtp_xact_t *ogs_gtp1_xact_local_create(ogs_gtp_node_t *gnode,
     ogs_assert(xact->tm_holding);
     xact->holding_rcount = ogs_app()->time.message.gtp.n3_holding_rcount,
 
-    ogs_list_add(xact->org == OGS_GTP_LOCAL_ORIGINATOR ?
-            &xact->gnode->local_list : &xact->gnode->remote_list, xact);
+    ogs_list_add(&xact->gnode->local_list, xact);
 
     rv = ogs_gtp1_xact_update_tx(xact, hdesc, pkbuf);
     if (rv != OGS_OK) {
@@ -108,9 +107,8 @@ ogs_gtp_xact_t *ogs_gtp1_xact_local_create(ogs_gtp_node_t *gnode,
         return NULL;
     }
 
-    ogs_debug("[%d] %s Create  peer [%s]:%d",
+    ogs_debug("[%d] LOCAL Create  peer [%s]:%d",
             xact->xid,
-            xact->org == OGS_GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
             OGS_ADDR(&gnode->addr, buf),
             OGS_PORT(&gnode->addr));
 
@@ -156,8 +154,7 @@ ogs_gtp_xact_t *ogs_gtp_xact_local_create(ogs_gtp_node_t *gnode,
     ogs_assert(xact->tm_holding);
     xact->holding_rcount = ogs_app()->time.message.gtp.n3_holding_rcount,
 
-    ogs_list_add(xact->org == OGS_GTP_LOCAL_ORIGINATOR ?
-            &xact->gnode->local_list : &xact->gnode->remote_list, xact);
+    ogs_list_add(&xact->gnode->local_list, xact);
 
     rv = ogs_gtp_xact_update_tx(xact, hdesc, pkbuf);
     if (rv != OGS_OK) {
@@ -166,9 +163,8 @@ ogs_gtp_xact_t *ogs_gtp_xact_local_create(ogs_gtp_node_t *gnode,
         return NULL;
     }
 
-    ogs_debug("[%d] %s Create  peer [%s]:%d",
+    ogs_debug("[%d] LOCAL Create  peer [%s]:%d",
             xact->xid,
-            xact->org == OGS_GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
             OGS_ADDR(&gnode->addr, buf),
             OGS_PORT(&gnode->addr));
 
@@ -203,12 +199,10 @@ static ogs_gtp_xact_t *ogs_gtp_xact_remote_create(ogs_gtp_node_t *gnode, uint8_t
     ogs_assert(xact->tm_holding);
     xact->holding_rcount = ogs_app()->time.message.gtp.n3_holding_rcount,
 
-    ogs_list_add(xact->org == OGS_GTP_LOCAL_ORIGINATOR ?
-            &xact->gnode->local_list : &xact->gnode->remote_list, xact);
+    ogs_list_add(&xact->gnode->remote_list, xact);
 
-    ogs_debug("[%d] %s Create  peer [%s]:%d",
+    ogs_debug("[%d] REMOTE Create  peer [%s]:%d",
             xact->xid,
-            xact->org == OGS_GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
             OGS_ADDR(&gnode->addr, buf),
             OGS_PORT(&gnode->addr));
 
