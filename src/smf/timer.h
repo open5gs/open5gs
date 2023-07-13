@@ -32,6 +32,9 @@ typedef enum {
 
     SMF_TIMER_PFCP_ASSOCIATION,
     SMF_TIMER_PFCP_NO_HEARTBEAT,
+    SMF_TIMEOUT_PFCP_SER,
+    SMF_TIMEOUT_PFCP_SDR,
+    SMF_TIMEOUT_PFCP_SMR,
 
     MAX_NUM_OF_SMF_TIMER,
 
@@ -41,6 +44,10 @@ const char *smf_timer_get_name(int timer_id);
 
 void smf_timer_pfcp_association(void *data);
 void smf_timer_pfcp_no_heartbeat(void *data);
+
+void smf_timeout_pfcp_no_ser(void *data);
+void smf_timeout_pfcp_no_sdr(void *data);
+void smf_timeout_pfcp_no_smr(void *data);
 
 #ifdef __cplusplus
 }

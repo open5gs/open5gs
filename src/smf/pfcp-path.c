@@ -281,19 +281,23 @@ static void sess_5gc_timeout(ogs_pfcp_xact_t *xact, void *data)
 static void sess_epc_timeout(ogs_pfcp_xact_t *xact, void *data)
 {
     uint8_t type;
+    smf_sess_t *sess;
 
     ogs_assert(xact);
     type = xact->seq[0].type;
 
+    sess = data;
+    sess->timeout_xact = xact;
+
     switch (type) {
     case OGS_PFCP_SESSION_ESTABLISHMENT_REQUEST_TYPE:
-        ogs_warn("No PFCP session establishment response");
+        smf_timeout_pfcp_no_ser(data);
         break;
     case OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE:
-        ogs_error("No PFCP session modification response");
+        smf_timeout_pfcp_no_smr(data);
         break;
     case OGS_PFCP_SESSION_DELETION_REQUEST_TYPE:
-        ogs_error("No PFCP session deletion response");
+        smf_timeout_pfcp_no_sdr(data);
         break;
     default:
         ogs_error("Not implemented [type:%d]", type);
@@ -310,7 +314,7 @@ static void bearer_epc_timeout(ogs_pfcp_xact_t *xact, void *data)
 
     switch (type) {
     case OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE:
-        ogs_error("No PFCP session modification response");
+        smf_timeout_pfcp_no_smr(data);
         break;
     default:
         ogs_error("Not implemented [type:%d]", type);

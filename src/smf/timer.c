@@ -62,6 +62,14 @@ static void timer_send_event(int timer_id, void *data)
         e->h.timer_id = timer_id;
         e->pfcp_node = data;
         break;
+    case SMF_TIMEOUT_PFCP_SER:
+    case SMF_TIMEOUT_PFCP_SDR:
+    case SMF_TIMEOUT_PFCP_SMR:
+        e = smf_event_new(SMF_EVT_PFCP_TIMEOUT);
+        ogs_assert(e);
+        e->h.timer_id = timer_id;
+        e->sess = data;
+        break;
     default:
         ogs_fatal("Unknown timer id[%d]", timer_id);
         ogs_assert_if_reached();
@@ -84,4 +92,19 @@ void smf_timer_pfcp_association(void *data)
 void smf_timer_pfcp_no_heartbeat(void *data)
 {
     timer_send_event(SMF_TIMER_PFCP_NO_HEARTBEAT, data);
+}
+
+void smf_timeout_pfcp_no_ser(void *data)
+{
+    timer_send_event(SMF_TIMEOUT_PFCP_SER, data);
+}
+
+void smf_timeout_pfcp_no_sdr(void *data)
+{
+    timer_send_event(SMF_TIMEOUT_PFCP_SDR, data);
+}
+
+void smf_timeout_pfcp_no_smr(void *data)
+{
+    timer_send_event(SMF_TIMEOUT_PFCP_SMR, data);
 }

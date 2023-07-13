@@ -640,6 +640,8 @@ void smf_gsm_state_wait_pfcp_establishment(ogs_fsm_t *s, smf_event_t *e)
     ogs_pfcp_message_t *pfcp_message = NULL;
     int rv;
 
+    ogs_gtp_xact_t *gtp_xact = NULL;
+
     ogs_assert(s);
     ogs_assert(e);
 
@@ -734,6 +736,29 @@ void smf_gsm_state_wait_pfcp_establishment(ogs_fsm_t *s, smf_event_t *e)
         default:
             ogs_error("cannot handle PFCP message type[%d]",
                     pfcp_message->h.type);
+        }
+        break;
+
+    case SMF_EVT_PFCP_TIMEOUT:
+        switch(e->h.timer_id) {
+        case SMF_TIMEOUT_PFCP_SER:
+            ogs_error("PFCP timeout waiting for Session Establishment Response");
+
+            gtp_xact = (ogs_gtp_xact_t *) sess->timeout_xact->assoc_xact;            
+
+            switch (gtp_xact->gtp_version) {
+                case 1:
+                    gtp_cause = OGS_GTP1_CAUSE_NETWORK_FAILURE;
+                    break;
+                case 2:
+                    gtp_cause = OGS_GTP2_CAUSE_REMOTE_PEER_NOT_RESPONDING;
+                    break;
+            }
+            send_gtp_create_err_msg(sess, gtp_xact, gtp_cause);
+            break;
+
+        default:
+            ogs_error("Unknown SMF_EVT_PFCP_TIMEOUT timer id [%d]", e->h.timer_id);
         }
     }
 }
@@ -1342,6 +1367,30 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
             ogs_error("cannot handle PFCP message type[%d]",
                     pfcp_message->h.type);
         }
+        break;
+
+    case SMF_EVT_PFCP_TIMEOUT:
+        switch(e->h.timer_id) {
+        case SMF_TIMEOUT_PFCP_SDR:
+            ogs_error("PFCP timeout waiting for Session Deletion Response");
+
+            gtp_xact = (ogs_gtp_xact_t *) sess->timeout_xact->assoc_xact;
+
+            switch (gtp_xact->gtp_version) {
+                case 1:
+                    gtp_cause = OGS_GTP1_CAUSE_NETWORK_FAILURE;
+                    break;
+                case 2:
+                    gtp_cause = OGS_GTP2_CAUSE_REMOTE_PEER_NOT_RESPONDING;
+                    break;
+            }
+            send_gtp_delete_err_msg(sess, gtp_xact, gtp_cause);
+            break;
+
+        default:
+            ogs_error("Unknown SMF_EVT_PFCP_TIMEOUT timer id [%d]", e->h.timer_id);
+        }
+        break;
     }
 }
 
