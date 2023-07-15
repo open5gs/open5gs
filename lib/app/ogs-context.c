@@ -352,12 +352,8 @@ int ogs_app_context_parse_config(void)
                         ogs_yaml_iter_bool(&parameter_iter);
                 } else if (!strcmp(parameter_key,
                             "use_mongodb_change_stream")) {
-#if MONGOC_MAJOR_VERSION >= 1 && MONGOC_MINOR_VERSION >= 9
                     self.use_mongodb_change_stream = 
                         ogs_yaml_iter_bool(&parameter_iter);
-#else
-                    self.use_mongodb_change_stream = false;
-#endif
                 } else
                     ogs_warn("unknown key `%s`", parameter_key);
             }
