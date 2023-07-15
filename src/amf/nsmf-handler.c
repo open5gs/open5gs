@@ -152,8 +152,9 @@ int amf_nsmf_pdusession_handle_create_sm_context(
                  * NOTE : The pkbuf created in the SBI message will be removed
                  *        from ogs_sbi_message_free(), so it must be copied.
                  */
-                ogs_warn("[%d:%d] PDU session establishment reject",
+                ogs_error("[%d:%d] PDU session establishment reject",
                         sess->psi, sess->pti);
+
                 n1smbuf = ogs_pkbuf_copy(n1smbuf);
                 ogs_assert(n1smbuf);
                 r = nas_5gs_send_gsm_reject(sess,
@@ -161,6 +162,7 @@ int amf_nsmf_pdusession_handle_create_sm_context(
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
 
+                amf_sess_remove(sess);
                 return OGS_ERROR;
             }
         }
@@ -808,6 +810,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
 
+                amf_sess_remove(sess);
                 return OGS_ERROR;
             }
         }

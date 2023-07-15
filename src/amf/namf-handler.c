@@ -421,7 +421,7 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
             return OGS_ERROR;
         }
 
-        ogs_warn("[%d:%d] PDU session establishment reject",
+        ogs_error("[%d:%d] PDU session establishment reject",
                 sess->psi, sess->pti);
 
         r = nas_5gs_send_gsm_reject(sess,

@@ -643,35 +643,35 @@ bool smf_nsmf_handle_update_sm_context(
         }
     } else if (SmContextUpdateData->is_release == true &&
                 SmContextUpdateData->release == true) {
-        if (sess->policy_association_id) {
-            if (sess->ngap_state.pdu_session_resource_release ==
-                    SMF_NGAP_STATE_DELETE_TRIGGER_UE_REQUESTED) {
 
-                /* PCF session context has already been removed */
-                memset(&sendmsg, 0, sizeof(sendmsg));
+        /* First of all, it checks for REL_DUE_TO_DUPLICATE_SESSION_ID */
+        if (sess->ngap_state.pdu_session_resource_release ==
+                SMF_NGAP_STATE_DELETE_TRIGGER_UE_REQUESTED) {
 
-                response = ogs_sbi_build_response(
-                    &sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
-                ogs_assert(response);
-                ogs_assert(true ==
-                        ogs_sbi_server_send_response(stream, response));
-            } else {
-                smf_npcf_smpolicycontrol_param_t param;
+            /* PCF session context has already been removed */
+            memset(&sendmsg, 0, sizeof(sendmsg));
 
-                memset(&param, 0, sizeof(param));
+            response = ogs_sbi_build_response(
+                &sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+            ogs_assert(response);
+            ogs_assert(true ==
+                    ogs_sbi_server_send_response(stream, response));
 
-                param.ue_location = true;
-                param.ue_timezone = true;
+        } else if (sess->policy_association_id) {
+            smf_npcf_smpolicycontrol_param_t param;
 
-                r = smf_sbi_discover_and_send(
-                        OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL, NULL,
-                        smf_npcf_smpolicycontrol_build_delete,
-                        sess, stream,
-                        OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT, &param);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
+            memset(&param, 0, sizeof(param));
 
-            }
+            param.ue_location = true;
+            param.ue_timezone = true;
+
+            r = smf_sbi_discover_and_send(
+                    OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL, NULL,
+                    smf_npcf_smpolicycontrol_build_delete,
+                    sess, stream,
+                    OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT, &param);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
         } else {
             ogs_error("No PolicyAssociationId");
             smf_sbi_send_sm_context_update_error(

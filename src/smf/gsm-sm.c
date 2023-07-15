@@ -938,6 +938,10 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 } else {
                     SWITCH(sbi_message->h.resource.component[2])
                     CASE(OGS_SBI_RESOURCE_NAME_DELETE)
+                        if (sess->policy_association_id)
+                            ogs_free(sess->policy_association_id);
+                        sess->policy_association_id = NULL;
+
                         if (sbi_message->res_status !=
                                 OGS_SBI_HTTP_STATUS_NO_CONTENT) {
                             ogs_error("[%s:%d] HTTP response error [%d]",
