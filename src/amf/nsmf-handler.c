@@ -162,7 +162,6 @@ int amf_nsmf_pdusession_handle_create_sm_context(
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
 
-                amf_sess_remove(sess);
                 return OGS_ERROR;
             }
         }
@@ -810,7 +809,6 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
 
-                amf_sess_remove(sess);
                 return OGS_ERROR;
             }
         }
