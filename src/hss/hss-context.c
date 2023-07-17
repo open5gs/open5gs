@@ -1199,7 +1199,7 @@ int hss_handle_change_event(const bson_t *document)
     bool send_idr_flag = false;
     uint32_t subdatamask = 0;
 
-    char *imsi_bcd;
+    char *imsi_bcd = NULL;
 
 #if BSON_MAJOR_VERSION >= 1 && BSON_MINOR_VERSION >= 7
     char *as_json = bson_as_relaxed_extended_json(document, NULL);

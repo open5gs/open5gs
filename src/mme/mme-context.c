@@ -1649,7 +1649,7 @@ int mme_context_parse_config(void)
                         ogs_yaml_iter_recurse(&sgsn_iter, &routes_array);
                         do {
                             ogs_nas_rai_t rai;
-                            uint16_t cell_id;
+                            uint16_t cell_id = 0;
                             bool rai_parsed = false, cell_id_parsed = false;
                             bool default_route = false;
                             mme_sgsn_route_t *sgsn_rt = NULL;
