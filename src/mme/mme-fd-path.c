@@ -2193,6 +2193,7 @@ int mme_fd_init(void)
     ogs_assert(ret == 0);
 
     /* Specific handler for Cancel-Location-Request */
+    memset(&data, 0, sizeof(data));
     data.command = ogs_diam_s6a_cmd_clr;
     ret = fd_disp_register(mme_ogs_diam_s6a_clr_cb, DISP_HOW_CC, &data, NULL,
                 &hdl_s6a_clr);
