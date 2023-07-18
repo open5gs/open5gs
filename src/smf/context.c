@@ -1557,7 +1557,6 @@ uint8_t smf_sess_set_ue_ip(smf_sess_t *sess)
                 sess->session.name, (uint8_t *)&sess->session.ue_ip.addr);
         if (!sess->ipv4) {
             ogs_error("ogs_pfcp_ue_ip_alloc() failed[%d]", cause_value);
-            ogs_assert(cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED);
             return cause_value;
         }
         sess->session.paa.addr = sess->ipv4->addr[0];
@@ -1568,7 +1567,6 @@ uint8_t smf_sess_set_ue_ip(smf_sess_t *sess)
                 sess->session.name, sess->session.ue_ip.addr6);
         if (!sess->ipv6) {
             ogs_error("ogs_pfcp_ue_ip_alloc() failed[%d]", cause_value);
-            ogs_assert(cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED);
             return cause_value;
         }
 
@@ -1584,7 +1582,6 @@ uint8_t smf_sess_set_ue_ip(smf_sess_t *sess)
                 sess->session.name, (uint8_t *)&sess->session.ue_ip.addr);
         if (!sess->ipv4) {
             ogs_error("ogs_pfcp_ue_ip_alloc() failed[%d]", cause_value);
-            ogs_assert(cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED);
             return cause_value;
         }
         sess->ipv6 = ogs_pfcp_ue_ip_alloc(&cause_value, AF_INET6,
