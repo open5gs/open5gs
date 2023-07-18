@@ -17,6 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <cstdint>
+
 #include <tins/arp.h>
 #include <tins/ethernetII.h>
 #include <tins/hw_address.h>
