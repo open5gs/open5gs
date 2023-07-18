@@ -664,6 +664,37 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                         ogs_warn("[%s] RAN-NG Context has already been removed",
                                 amf_ue->supi);
                     }
+
+        /*
+         * When AMF release the NAS signalling connection,
+         * ran_ue context is removed by ran_ue_remove() and
+         * amf_ue/ran_ue is de-associated by amf_ue_deassociate().
+         *
+         * In this case, implicit deregistration is attempted
+         * by the mobile reachable timer according to the standard document,
+         * and amf_ue will be removed by amf_ue_remove().
+         *
+         * TS 24.501
+         * 5.3.7 Handling of the periodic registration update timer and
+         *
+         * Start AMF_TIMER_MOBILE_REACHABLE
+         * mobile reachable timer
+         * The network supervises the periodic registration update procedure
+         * of the UE by means of the mobile reachable timer.
+         * If the UE is not registered for emergency services,
+         * the mobile reachable timer shall be longer than the value of timer
+         * T3512. In this case, by default, the mobile reachable timer is
+         * 4 minutes greater than the value of timer T3512.
+         * The mobile reachable timer shall be reset and started with the
+         * value as indicated above, when the AMF releases the NAS signalling
+         * connection for the UE.
+         *
+         * TODO: If the UE is registered for emergency services, the AMF shall
+         * set the mobile reachable timer with a value equal to timer T3512.
+         */
+                    ogs_timer_start(amf_ue->mobile_reachable.timer,
+                            ogs_time_from_sec(
+                                amf_self()->time.t3512.value + 240));
                 }
 
             } else if (state == AMF_REMOVE_S1_CONTEXT_BY_RESET_ALL) {
@@ -689,6 +720,37 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                         ogs_warn("[%s] RAN-NG Context has already been removed",
                                 amf_ue->supi);
                     }
+
+        /*
+         * When AMF release the NAS signalling connection,
+         * ran_ue context is removed by ran_ue_remove() and
+         * amf_ue/ran_ue is de-associated by amf_ue_deassociate().
+         *
+         * In this case, implicit deregistration is attempted
+         * by the mobile reachable timer according to the standard document,
+         * and amf_ue will be removed by amf_ue_remove().
+         *
+         * TS 24.501
+         * 5.3.7 Handling of the periodic registration update timer and
+         *
+         * Start AMF_TIMER_MOBILE_REACHABLE
+         * mobile reachable timer
+         * The network supervises the periodic registration update procedure
+         * of the UE by means of the mobile reachable timer.
+         * If the UE is not registered for emergency services,
+         * the mobile reachable timer shall be longer than the value of timer
+         * T3512. In this case, by default, the mobile reachable timer is
+         * 4 minutes greater than the value of timer T3512.
+         * The mobile reachable timer shall be reset and started with the
+         * value as indicated above, when the AMF releases the NAS signalling
+         * connection for the UE.
+         *
+         * TODO: If the UE is registered for emergency services, the AMF shall
+         * set the mobile reachable timer with a value equal to timer T3512.
+         */
+                    ogs_timer_start(amf_ue->mobile_reachable.timer,
+                            ogs_time_from_sec(
+                                amf_self()->time.t3512.value + 240));
                 }
 
             } else if (state == AMF_REMOVE_S1_CONTEXT_BY_RESET_PARTIAL) {
@@ -730,6 +792,36 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                         ogs_warn("[%s] RAN-NG Context has already been removed",
                                 amf_ue->supi);
                     }
+        /*
+         * When AMF release the NAS signalling connection,
+         * ran_ue context is removed by ran_ue_remove() and
+         * amf_ue/ran_ue is de-associated by amf_ue_deassociate().
+         *
+         * In this case, implicit deregistration is attempted
+         * by the mobile reachable timer according to the standard document,
+         * and amf_ue will be removed by amf_ue_remove().
+         *
+         * TS 24.501
+         * 5.3.7 Handling of the periodic registration update timer and
+         *
+         * Start AMF_TIMER_MOBILE_REACHABLE
+         * mobile reachable timer
+         * The network supervises the periodic registration update procedure
+         * of the UE by means of the mobile reachable timer.
+         * If the UE is not registered for emergency services,
+         * the mobile reachable timer shall be longer than the value of timer
+         * T3512. In this case, by default, the mobile reachable timer is
+         * 4 minutes greater than the value of timer T3512.
+         * The mobile reachable timer shall be reset and started with the
+         * value as indicated above, when the AMF releases the NAS signalling
+         * connection for the UE.
+         *
+         * TODO: If the UE is registered for emergency services, the AMF shall
+         * set the mobile reachable timer with a value equal to timer T3512.
+         */
+                    ogs_timer_start(amf_ue->mobile_reachable.timer,
+                            ogs_time_from_sec(
+                                amf_self()->time.t3512.value + 240));
                 }
             } else {
                 ogs_error("Invalid STATE[%d]", state);

@@ -1644,8 +1644,31 @@ void ngap_handle_ue_context_release_action(ran_ue_t *ran_ue)
          * to prevent retransmission of NAS messages.
          */
         CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
+    }
+
+    switch (ran_ue->ue_ctx_rel_action) {
+    case NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE:
+        ogs_debug("    Action: NG context remove");
+        ran_ue_remove(ran_ue);
+        break;
+    case NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK:
+        ogs_debug("    Action: NG normal release");
+        ran_ue_remove(ran_ue);
+        if (!amf_ue) {
+            ogs_error("No UE(amf-ue) Context");
+            return;
+        }
+        amf_ue_deassociate(amf_ue);
 
         /*
+         * When AMF release the NAS signalling connection,
+         * ran_ue context is removed by ran_ue_remove() and
+         * amf_ue/ran_ue is de-associated by amf_ue_deassociate().
+         *
+         * In this case, implicit deregistration is attempted
+         * by the mobile reachable timer according to the standard document,
+         * and amf_ue will be removed by amf_ue_remove().
+         *
          * TS 24.501
          * 5.3.7 Handling of the periodic registration update timer and
          *
@@ -1664,28 +1687,11 @@ void ngap_handle_ue_context_release_action(ran_ue_t *ran_ue)
          * TODO: If the UE is registered for emergency services, the AMF shall
          * set the mobile reachable timer with a value equal to timer T3512.
          */
-        if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered) &&
-            ran_ue->ue_ctx_rel_action == NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK) {
+        ogs_timer_start(amf_ue->mobile_reachable.timer,
+                ogs_time_from_sec(amf_self()->time.t3512.value + 240));
 
-            ogs_timer_start(amf_ue->mobile_reachable.timer,
-                    ogs_time_from_sec(amf_self()->time.t3512.value + 240));
-        }
-    }
+        break;
 
-    switch (ran_ue->ue_ctx_rel_action) {
-    case NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE:
-        ogs_debug("    Action: NG context remove");
-        ran_ue_remove(ran_ue);
-        break;
-    case NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK:
-        ogs_debug("    Action: NG normal release");
-        ran_ue_remove(ran_ue);
-        if (!amf_ue) {
-            ogs_error("No UE(amf-ue) Context");
-            return;
-        }
-        amf_ue_deassociate(amf_ue);
-        break;
     case NGAP_UE_CTX_REL_UE_CONTEXT_REMOVE:
         ogs_debug("    Action: UE context remove");
         ran_ue_remove(ran_ue);
