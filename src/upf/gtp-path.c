@@ -123,7 +123,9 @@ static void _gtpv1_tun_recv_common_cb(
         uint8_t size;
 
         if (eth_type == ETHERTYPE_ARP) {
-            if (is_arp_req(recvbuf->data, recvbuf->len)) {
+            if (is_arp_req(recvbuf->data, recvbuf->len) &&
+                    upf_sess_find_by_ipv4(
+                        arp_parse_target_addr(recvbuf->data, recvbuf->len))) {
                 replybuf = ogs_pkbuf_alloc(packet_pool, OGS_MAX_PKT_LEN);
                 ogs_assert(replybuf);
                 ogs_pkbuf_reserve(replybuf, OGS_TUN_MAX_HEADROOM);
