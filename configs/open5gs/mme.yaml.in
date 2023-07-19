@@ -475,9 +475,9 @@ smf:
         - ::1
 
 #
-# <GTP-C Client>
+# <GTPv1C Client>
 #
-#  o Specify SGSN addresses the GTP-C must connect to
+#  o Specify SGSN addresses the GTPv1C must connect to
 #
 #  o One SGSN is defined.
 #    If prefer_ipv4 is not true, [fd69:f21d:873c:fa::2] is selected.
@@ -513,15 +513,13 @@ smf:
 #          rac: 187
 #        ci: 1223
 #    - name: sgsn3.open5gs.org
-#      routes:
-#       - default: true
+#      default_route: true
 #
-#sgsn:
-#  - gtpc:
-#      addr:
-#        - 127.0.0.3
-#    routes:
-#      - default: true
+sgsn:
+  - gtpc:
+      addr:
+        - 127.0.0.3
+    default_route: true
 
 #
 #  o Disable use of IPv4 addresses (only IPv6)
