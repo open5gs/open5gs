@@ -516,12 +516,12 @@ smf:
 #      routes:
 #       - default: true
 #
-sgsn:
-  - gtpc:
-      addr:
-        - 127.0.0.3
-    routes:
-      - default: true
+#sgsn:
+#  - gtpc:
+#      addr:
+#        - 127.0.0.3
+#    routes:
+#      - default: true
 
 #
 #  o Disable use of IPv4 addresses (only IPv6)
