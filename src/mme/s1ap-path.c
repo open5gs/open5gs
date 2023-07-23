@@ -419,8 +419,6 @@ int s1ap_send_paging(mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain)
         return OGS_NOTFOUND;
     }
 
-    ogs_assert(ogs_timer_running(mme_ue->t_implicit_detach.timer) == false);
-
     /* Find enB with matched TAI */
     ogs_list_for_each(&mme_self()->enb_list, enb) {
         for (i = 0; i < enb->num_of_supported_ta_list; i++) {

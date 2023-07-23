@@ -387,55 +387,19 @@ void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 
         if (ECM_IDLE(mme_ue)) {
             if (CS_CALL_SERVICE_INDICATOR(mme_ue)) {
-                if (ogs_timer_running(mme_ue->t_implicit_detach.timer)) {
-                    /*
-                    * TS 24.301 5.3.7
-                    * If ISR is not activated, the network behaviour upon
-                    * expiry of the mobile reachable timer is network dependent,
-                    * but typically the network stops sending paging messages to
-                    * the UE on the first expiry, and may take other appropriate
-                    * actions
-                    */
-                    ogs_debug("[%s] Paging stopped: Mobile Reachable timeout",
-                        mme_ue->imsi_bcd);
-
-                    ogs_assert(OGS_OK ==
-                        sgsap_send_paging_reject(
-                            mme_ue, SGSAP_SGS_CAUSE_UE_UNREACHABLE));
-                    MME_CLEAR_PAGING_INFO(mme_ue);
-                } else {
-                    /* UE will respond Extended Service Request in PS CNDomain*/
-                    MME_STORE_PAGING_INFO(mme_ue,
-                        MME_PAGING_TYPE_CS_CALL_SERVICE, NULL);
-                    r = s1ap_send_paging(mme_ue, S1AP_CNDomain_cs);
-                    ogs_expect(r == OGS_OK);
-                    ogs_assert(r != OGS_ERROR);
-                }
+                /* UE will respond Extended Service Request in PS CNDomain*/
+                MME_STORE_PAGING_INFO(mme_ue,
+                    MME_PAGING_TYPE_CS_CALL_SERVICE, NULL);
+                r = s1ap_send_paging(mme_ue, S1AP_CNDomain_cs);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
             } else if (SMS_SERVICE_INDICATOR(mme_ue)) {
-                if (ogs_timer_running(mme_ue->t_implicit_detach.timer)) {
-                    /*
-                    * TS 24.301 5.3.7
-                    * If ISR is not activated, the network behaviour upon
-                    * expiry of the mobile reachable timer is network dependent,
-                    * but typically the network stops sending paging messages to
-                    * the UE on the first expiry, and may take other appropriate
-                    * actions
-                    */
-                    ogs_debug("[%s] Paging stopped: Mobile Reachable timer expiry",
-                        mme_ue->imsi_bcd);
-
-                    ogs_assert(OGS_OK ==
-                        sgsap_send_paging_reject(
-                            mme_ue, SGSAP_SGS_CAUSE_UE_UNREACHABLE));
-                    MME_CLEAR_PAGING_INFO(mme_ue);
-                } else {
-                    /* UE will respond Service Request in PS CNDomain*/
-                    MME_STORE_PAGING_INFO(mme_ue,
-                        MME_PAGING_TYPE_SMS_SERVICE, NULL);
-                    r = s1ap_send_paging(mme_ue, S1AP_CNDomain_ps);
-                    ogs_expect(r == OGS_OK);
-                    ogs_assert(r != OGS_ERROR);
-                }
+                /* UE will respond Service Request in PS CNDomain*/
+                MME_STORE_PAGING_INFO(mme_ue,
+                    MME_PAGING_TYPE_SMS_SERVICE, NULL);
+                r = s1ap_send_paging(mme_ue, S1AP_CNDomain_ps);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
             } else
                 goto paging_reject;
 

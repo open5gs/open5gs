@@ -58,8 +58,6 @@ void ogs_timer_start_debug(
     ogs_timer_stop_debug(timer, OGS_FILE_LINE)
 void ogs_timer_stop_debug(ogs_timer_t *timer, const char *file_line);
 
-bool ogs_timer_running(ogs_timer_t *timer);
-
 ogs_time_t ogs_timer_mgr_next(ogs_timer_mgr_t *manager);
 void ogs_timer_mgr_expire(ogs_timer_mgr_t *manager);
 

@@ -422,9 +422,6 @@ int ngap_send_paging(amf_ue_t *amf_ue)
         return OGS_NOTFOUND;
     }
 
-    ogs_assert(ogs_timer_running(
-                amf_ue->implicit_deregistration.timer) == false);
-
     ogs_list_for_each(&amf_self()->gnb_list, gnb) {
         for (i = 0; i < gnb->num_of_supported_ta_list; i++) {
             for (j = 0; j < gnb->supported_ta_list[i].num_of_bplmn_list; j++) {

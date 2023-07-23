@@ -159,12 +159,6 @@ void ogs_timer_stop_debug(ogs_timer_t *timer, const char *file_line)
     ogs_rbtree_delete(&manager->tree, timer);
 }
 
-bool ogs_timer_running(ogs_timer_t *timer)
-{
-    ogs_assert(timer);
-    return timer->running;
-}
-
 ogs_time_t ogs_timer_mgr_next(ogs_timer_mgr_t *manager)
 {
     ogs_time_t current;
