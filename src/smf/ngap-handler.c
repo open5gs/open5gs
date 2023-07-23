@@ -58,7 +58,7 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
         ogs_error("[%s:%d] Cannot decode NGAP message",
                 smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                 "No N2 SM Info Type", smf_ue->supi, NULL, NULL);
         goto cleanup;
     }
@@ -76,7 +76,7 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
             smf_ue->supi, sess->psi,
             uPTransportLayerInformation->present);
         smf_sbi_send_sm_context_update_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                 "Unknown NGAP_UPTransportLayerInformation.present",
                 smf_ue->supi, NULL, NULL);
         goto cleanup;
@@ -86,7 +86,7 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
     if (!gTPTunnel) {
         ogs_error("[%s:%d] No GTPTunnel", smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                 "No GTPTunnel", smf_ue->supi, NULL, NULL);
         goto cleanup;
     }
@@ -96,7 +96,7 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
     if (rv != OGS_OK) {
         ogs_error("[%s:%d] No transportLayerAddress", smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                 "No transportLayerAddress", smf_ue->supi, NULL, NULL);
         goto cleanup;
     }
@@ -138,7 +138,7 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
             } else {
                 ogs_error("[%s:%d] No QoS flow", smf_ue->supi, sess->psi);
                 smf_sbi_send_sm_context_update_error(stream,
-                        OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                         "No QoS flow", smf_ue->supi, NULL, NULL);
                 goto cleanup;
             }
@@ -197,7 +197,7 @@ int ngap_handle_pdu_session_resource_setup_unsuccessful_transfer(
         ogs_error("[%s:%d] Cannot decode NGAP message",
                 smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                 "No N2 SM Info Type", smf_ue->supi, NULL, NULL);
         goto cleanup;
     }
@@ -297,7 +297,7 @@ int ngap_handle_pdu_session_resource_modify_response_transfer(
         ogs_error("[%s:%d] Cannot decode NGAP message",
                 smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                 "No N2 SM Info Type", smf_ue->supi, NULL, NULL);
         goto cleanup;
     }
@@ -349,7 +349,7 @@ int ngap_handle_pdu_session_resource_modify_response_transfer(
     if (ogs_list_count(&sess->qos_flow_to_modify_list) == 0) {
         ogs_error("[%s:%d] No QoS flow", smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                 "No QoS flow", smf_ue->supi, NULL, NULL);
         goto cleanup;
     }
@@ -401,7 +401,7 @@ int ngap_handle_path_switch_request_transfer(
         ogs_error("[%s:%d] Cannot decode NGAP message",
                 smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                 "No N2 SM Info Type", smf_ue->supi, NULL, NULL);
         goto cleanup;
     }
@@ -415,7 +415,7 @@ int ngap_handle_path_switch_request_transfer(
             "[%s:%d] Unknown dL_NGU_UP_TNLInformation->present [%d]",
             smf_ue->supi, sess->psi, dL_NGU_UP_TNLInformation->present);
         smf_sbi_send_sm_context_update_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                 "Unknown dL_NGU_UP_TNLInformation->present",
                 smf_ue->supi, NULL, NULL);
         goto cleanup;
@@ -425,7 +425,7 @@ int ngap_handle_path_switch_request_transfer(
     if (!gTPTunnel) {
         ogs_error("[%s:%d] No GTPTunnel", smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                 "No GTPTunnel", smf_ue->supi, NULL, NULL);
         goto cleanup;
     }
@@ -435,7 +435,7 @@ int ngap_handle_path_switch_request_transfer(
     if (rv != OGS_OK) {
         ogs_error("[%s:%d] No transportLayerAddress", smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                 "No transportLayerAddress", smf_ue->supi, NULL, NULL);
         goto cleanup;
     }
@@ -475,7 +475,7 @@ int ngap_handle_path_switch_request_transfer(
             } else {
                 ogs_error("[%s:%d] No QoS flow", smf_ue->supi, sess->psi);
                 smf_sbi_send_sm_context_update_error(stream,
-                        OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                         "No QoS flow", smf_ue->supi, NULL, NULL);
                 goto cleanup;
             }
@@ -529,7 +529,7 @@ int ngap_handle_handover_required_transfer(
         ogs_error("[%s:%d] Cannot decode NGAP message",
                 smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                 "No N2 SM Info Type", smf_ue->supi, NULL, NULL);
         goto cleanup;
     }
@@ -581,7 +581,7 @@ int ngap_handle_handover_request_ack(
         ogs_error("[%s:%d] Cannot decode NGAP message",
                 smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                 "No N2 SM Info Type", smf_ue->supi, NULL, NULL);
         goto cleanup;
     }
@@ -595,7 +595,7 @@ int ngap_handle_handover_request_ack(
             "[%s:%d] Unknown dL_NGU_UP_TNLInformation->present [%d]",
             smf_ue->supi, sess->psi, dL_NGU_UP_TNLInformation->present);
         smf_sbi_send_sm_context_update_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                 "Unknown dL_NGU_UP_TNLInformation->present",
                 smf_ue->supi, NULL, NULL);
         goto cleanup;
@@ -605,7 +605,7 @@ int ngap_handle_handover_request_ack(
     if (!gTPTunnel) {
         ogs_error("[%s:%d] No GTPTunnel", smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                 "No GTPTunnel", smf_ue->supi, NULL, NULL);
         goto cleanup;
     }
@@ -615,7 +615,7 @@ int ngap_handle_handover_request_ack(
     if (rv != OGS_OK) {
         ogs_error("[%s:%d] No transportLayerAddress", smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                 "No transportLayerAddress", smf_ue->supi, NULL, NULL);
         goto cleanup;
     }
@@ -639,7 +639,7 @@ int ngap_handle_handover_request_ack(
             } else {
                 ogs_error("[%s:%d] No QoS flow", smf_ue->supi, sess->psi);
                 smf_sbi_send_sm_context_update_error(stream,
-                        OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                         "No QoS flow", smf_ue->supi, NULL, NULL);
                 goto cleanup;
             }
@@ -654,7 +654,7 @@ int ngap_handle_handover_request_ack(
                 "[%s:%d] Unknown dLForwardingUP_TNLInformation->present [%d]",
                 smf_ue->supi, sess->psi, dL_NGU_UP_TNLInformation->present);
             smf_sbi_send_sm_context_update_error(stream,
-                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                     "Unknown dLForwardingUP_TNLInformation->present",
                     smf_ue->supi, NULL, NULL);
             goto cleanup;
@@ -664,7 +664,7 @@ int ngap_handle_handover_request_ack(
         if (!gTPTunnel) {
             ogs_error("[%s:%d] No GTPTunnel", smf_ue->supi, sess->psi);
             smf_sbi_send_sm_context_update_error(stream,
-                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                     "No GTPTunnel", smf_ue->supi, NULL, NULL);
             goto cleanup;
         }
@@ -675,7 +675,7 @@ int ngap_handle_handover_request_ack(
             ogs_error("[%s:%d] No transportLayerAddress",
                     smf_ue->supi, sess->psi);
             smf_sbi_send_sm_context_update_error(stream,
-                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                     "No transportLayerAddress", smf_ue->supi, NULL, NULL);
             goto cleanup;
         }

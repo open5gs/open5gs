@@ -96,7 +96,8 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
 
         ogs_warn("%s", strerror);
         smf_sbi_send_sm_context_create_error(stream,
-                OGS_SBI_HTTP_STATUS_NOT_FOUND, strerror, NULL, n1smbuf);
+                OGS_SBI_HTTP_STATUS_NOT_FOUND, OGS_SBI_APP_ERRNO_NULL,
+                strerror, NULL, n1smbuf);
         ogs_free(strerror);
 
         return false;
@@ -320,7 +321,8 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
 
         ogs_warn("%s", strerror);
         smf_sbi_send_sm_context_create_error(stream,
-                OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, strerror, NULL, n1smbuf);
+                OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                OGS_SBI_APP_ERRNO_NULL, strerror, NULL, n1smbuf);
         ogs_free(strerror);
 
         return false;

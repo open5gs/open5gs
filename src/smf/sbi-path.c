@@ -191,7 +191,8 @@ void smf_namf_comm_send_n1_n2_pdu_establishment_reject(
 
 void smf_sbi_send_sm_context_create_error(
         ogs_sbi_stream_t *stream,
-        int status, const char *title, const char *detail,
+        int status, ogs_sbi_app_errno_e err,
+        const char *title, const char *detail,
         ogs_pkbuf_t *n1smbuf)
 {
     ogs_sbi_message_t sendmsg;
@@ -210,6 +211,7 @@ void smf_sbi_send_sm_context_create_error(
     }
     problem.title = (char*)title;
     problem.detail = (char*)detail;
+    problem.cause = (char*)ogs_sbi_app_strerror(err);
 
     memset(&sendmsg, 0, sizeof(sendmsg));
     sendmsg.SmContextCreateError = &SmContextCreateError;
@@ -311,7 +313,8 @@ void smf_sbi_send_sm_context_updated_data(
 
 void smf_sbi_send_sm_context_update_error(
         ogs_sbi_stream_t *stream,
-        int status, const char *title, const char *detail,
+        int status, ogs_sbi_app_errno_e err,
+        const char *title, const char *detail,
         ogs_pkbuf_t *n1smbuf, ogs_pkbuf_t *n2smbuf)
 {
     ogs_sbi_message_t sendmsg;
@@ -331,6 +334,7 @@ void smf_sbi_send_sm_context_update_error(
     }
     problem.title = (char*)title;
     problem.detail = (char*)detail;
+    problem.cause = (char*)ogs_sbi_app_strerror(err);
 
     memset(&sendmsg, 0, sizeof(sendmsg));
     sendmsg.SmContextUpdateError = &SmContextUpdateError;

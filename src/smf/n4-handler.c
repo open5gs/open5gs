@@ -359,7 +359,8 @@ void smf_5gc_n4_handle_session_modification_response(
                 "PFCP Cause [%d] : Not Accepted", rsp->cause.u8);
         if (stream)
             smf_sbi_send_sm_context_update_error(
-                    stream, status, strerror, NULL, NULL, NULL);
+                    stream, status, OGS_SBI_APP_ERRNO_NULL,
+                    strerror, NULL, NULL, NULL);
         ogs_error("%s", strerror);
         ogs_free(strerror);
         return;
@@ -370,7 +371,8 @@ void smf_5gc_n4_handle_session_modification_response(
     if (sess->upf_n3_addr == NULL && sess->upf_n3_addr6 == NULL) {
         if (stream)
             smf_sbi_send_sm_context_update_error(
-                    stream, status, "No UP F_TEID", NULL, NULL, NULL);
+                    stream, status, OGS_SBI_APP_ERRNO_NULL,
+                    "No UP F_TEID", NULL, NULL, NULL);
         return;
     }
 
@@ -695,7 +697,8 @@ int smf_5gc_n4_handle_session_deletion_response(
             trigger == OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT) {
             ogs_assert(stream);
             smf_sbi_send_sm_context_update_error(
-                stream, status, strerror, NULL, NULL, NULL);
+                stream, status, OGS_SBI_APP_ERRNO_NULL,
+                strerror, NULL, NULL, NULL);
         } else if (trigger == OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT) {
             ogs_assert(stream);
             ogs_assert(true ==

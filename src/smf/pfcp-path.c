@@ -249,7 +249,7 @@ static void sess_5gc_timeout(ogs_pfcp_xact_t *xact, void *data)
         ogs_error("%s", strerror);
         if (stream) {
             smf_sbi_send_sm_context_update_error(stream,
-                    OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT,
+                    OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, OGS_SBI_APP_ERRNO_NULL,
                     strerror, NULL, NULL, NULL);
         }
         ogs_free(strerror);

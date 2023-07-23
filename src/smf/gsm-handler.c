@@ -488,7 +488,7 @@ int gsm_handle_pdu_session_modification_request(
         ogs_assert(n1smbuf);
 
         smf_sbi_send_sm_context_update_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                 strerror, smf_ue->supi, n1smbuf, NULL);
         ogs_free(strerror);
 

@@ -55,7 +55,7 @@ bool smf_nsmf_handle_create_sm_context(
         ogs_error("[%s:%d] No SmContextCreateData",
                 smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_create_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                 "No SmContextCreateData", smf_ue->supi, NULL);
         return false;
     }
@@ -64,7 +64,7 @@ bool smf_nsmf_handle_create_sm_context(
     if (!n1SmMsg || !n1SmMsg->content_id) {
         ogs_error("[%s:%d] No n1SmMsg", smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_create_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                 "No n1SmMsg", smf_ue->supi, NULL);
         return false;
     }
@@ -74,7 +74,7 @@ bool smf_nsmf_handle_create_sm_context(
         ogs_error("[%s:%d] No N1 SM Content [%s]",
                 smf_ue->supi, sess->psi, n1SmMsg->content_id);
         smf_sbi_send_sm_context_create_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                 "No N1 SM Content", smf_ue->supi, NULL);
         return false;
     }
@@ -86,7 +86,7 @@ bool smf_nsmf_handle_create_sm_context(
     if (sess->pti == OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED) {
         ogs_error("[%s:%d] No PTI", smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_create_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                 "No PTI", smf_ue->supi, NULL);
         return false;
 
@@ -98,7 +98,7 @@ bool smf_nsmf_handle_create_sm_context(
         n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
             OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION);
         smf_sbi_send_sm_context_create_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                 "No sNssai", smf_ue->supi, n1smbuf);
         return false;
     }
@@ -110,7 +110,7 @@ bool smf_nsmf_handle_create_sm_context(
         n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
             OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION);
         smf_sbi_send_sm_context_create_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                 "No servingNetwork", smf_ue->supi, n1smbuf);
         return false;
     }
@@ -121,7 +121,7 @@ bool smf_nsmf_handle_create_sm_context(
         n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
             OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION);
         smf_sbi_send_sm_context_create_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                 "No UeLocation", smf_ue->supi, n1smbuf);
         return false;
     }
@@ -135,7 +135,7 @@ bool smf_nsmf_handle_create_sm_context(
         n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
             OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION);
         smf_sbi_send_sm_context_create_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                 "No UeLocation", smf_ue->supi, n1smbuf);
         return false;
     }
@@ -146,7 +146,7 @@ bool smf_nsmf_handle_create_sm_context(
         n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
             OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION);
         smf_sbi_send_sm_context_create_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                 "No SmContextStatusNotification", smf_ue->supi, n1smbuf);
         return false;
     }
@@ -160,7 +160,8 @@ bool smf_nsmf_handle_create_sm_context(
         n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
             OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION);
         smf_sbi_send_sm_context_create_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST, "Invalid URI",
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
+                "Invalid URI",
                 SmContextCreateData->sm_context_status_uri, n1smbuf);
         return false;
     }
@@ -315,7 +316,7 @@ bool smf_nsmf_handle_update_sm_context(
         ogs_error("[%s:%d] No SmContextUpdateData",
                 smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                 "No SmContextUpdateData", smf_ue->supi, NULL, NULL);
         return false;
     }
@@ -347,7 +348,7 @@ bool smf_nsmf_handle_update_sm_context(
         if (!n1SmMsg || !n1SmMsg->content_id) {
             ogs_error("[%s:%d] No n1SmMsg", smf_ue->supi, sess->psi);
             smf_sbi_send_sm_context_update_error(stream,
-                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                     "No n1SmMsg", smf_ue->supi, NULL, NULL);
             return false;
         }
@@ -357,7 +358,7 @@ bool smf_nsmf_handle_update_sm_context(
             ogs_error("[%s:%d] No N1 SM Content [%s]",
                     smf_ue->supi, sess->psi, n1SmMsg->content_id);
             smf_sbi_send_sm_context_update_error(stream,
-                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                     "No N1 SM Content", smf_ue->supi, NULL, NULL);
             return false;
         }
@@ -386,7 +387,7 @@ bool smf_nsmf_handle_update_sm_context(
         if (!SmContextUpdateData->n2_sm_info_type) {
             ogs_error("[%s:%d] No n2SmInfoType", smf_ue->supi, sess->psi);
             smf_sbi_send_sm_context_update_error(stream,
-                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                     "No n2SmInfoType", smf_ue->supi, NULL, NULL);
             return false;
         }
@@ -396,7 +397,7 @@ bool smf_nsmf_handle_update_sm_context(
             ogs_error("[%s:%d] No N2SmInfo.content_id",
                     smf_ue->supi, sess->psi);
             smf_sbi_send_sm_context_update_error(stream,
-                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                     "No n2SmInfo.content_id", smf_ue->supi, NULL, NULL);
             return false;
         }
@@ -405,7 +406,7 @@ bool smf_nsmf_handle_update_sm_context(
         if (!n2smbuf) {
             ogs_error("[%s:%d] No N2 SM Content", smf_ue->supi, sess->psi);
             smf_sbi_send_sm_context_update_error(stream,
-                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                     "No N2 SM Content", smf_ue->supi, NULL, NULL);
             return false;
         }
@@ -540,7 +541,8 @@ bool smf_nsmf_handle_update_sm_context(
 
             ogs_error("%s", strerror);
             smf_sbi_send_sm_context_update_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST, strerror, NULL, NULL, NULL);
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
+                strerror, NULL, NULL, NULL);
             ogs_free(strerror);
 
             return false;
@@ -597,8 +599,8 @@ bool smf_nsmf_handle_update_sm_context(
                 ogs_assert(strerror);
 
                 ogs_error("%s", strerror);
-                smf_sbi_send_sm_context_update_error(
-                        stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                smf_sbi_send_sm_context_update_error(stream,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                         strerror, NULL, NULL, NULL);
                 ogs_free(strerror);
 
@@ -636,7 +638,8 @@ bool smf_nsmf_handle_update_sm_context(
 
             ogs_error("%s", strerror);
             smf_sbi_send_sm_context_update_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST, strerror, NULL, NULL, NULL);
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
+                strerror, NULL, NULL, NULL);
             ogs_free(strerror);
 
             return false;
@@ -674,8 +677,8 @@ bool smf_nsmf_handle_update_sm_context(
             ogs_assert(r != OGS_ERROR);
         } else {
             ogs_error("No PolicyAssociationId");
-            smf_sbi_send_sm_context_update_error(
-                    stream, OGS_SBI_HTTP_STATUS_NOT_FOUND,
+            smf_sbi_send_sm_context_update_error(stream,
+                    OGS_SBI_HTTP_STATUS_NOT_FOUND, OGS_SBI_APP_ERRNO_NULL,
                     "No PolicyAssociationId", NULL, NULL, NULL);
         }
     } else if (SmContextUpdateData->serving_nf_id) {
@@ -695,7 +698,7 @@ bool smf_nsmf_handle_update_sm_context(
     } else {
         ogs_error("[%s:%d] No UpdateData", smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                 "No UpdateData", smf_ue->supi, NULL, NULL);
         return false;
     }
