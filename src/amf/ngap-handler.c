@@ -1019,6 +1019,22 @@ void ngap_handle_initial_context_setup_response(
                 AMF_SESS_CLEAR_5GSM_MESSAGE(sess);
 
                 break;
+            case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMMAND:
+                r = nas_send_pdu_session_release_command(sess,
+                            sess->gsm_message.n1buf, sess->gsm_message.n2buf);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+
+                /* n1buf is de-allocated
+                 * in gmm_build_dl_nas_transport() */
+                sess->gsm_message.n1buf = NULL;
+                /* n2buf is de-allocated
+                 * in ngap_build_pdu_session_resource_modify_request() */
+                sess->gsm_message.n2buf = NULL;
+
+                AMF_SESS_CLEAR_5GSM_MESSAGE(sess);
+
+                break;
             default:
                 ogs_fatal("Unknown GSM Message Type[%d]",
                         sess->gsm_message.type);

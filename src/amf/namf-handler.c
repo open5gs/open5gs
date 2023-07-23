@@ -368,18 +368,53 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
         }
 
         if (CM_IDLE(amf_ue)) {
-            if (n1buf)
-                ogs_pkbuf_free(n1buf);
-            if (n2buf)
-                ogs_pkbuf_free(n2buf);
-
             if (N1N2MessageTransferReqData->is_skip_ind == true &&
                 N1N2MessageTransferReqData->skip_ind == true) {
+
+                if (n1buf)
+                    ogs_pkbuf_free(n1buf);
+                if (n2buf)
+                    ogs_pkbuf_free(n2buf);
+
                 N1N2MessageTransferRspData.cause =
                     OpenAPI_n1_n2_message_transfer_cause_N1_MSG_NOT_TRANSFERRED;
+
             } else {
-                ogs_fatal("[%s] No skipInd", amf_ue->supi);
-                ogs_assert_if_reached();
+                ogs_sbi_server_t *server = NULL;
+                ogs_sbi_header_t header;
+
+                status = OGS_SBI_HTTP_STATUS_ACCEPTED;
+                N1N2MessageTransferRspData.cause =
+                    OpenAPI_n1_n2_message_transfer_cause_ATTEMPTING_TO_REACH_UE;
+
+                /* Location */
+                server = ogs_sbi_server_from_stream(stream);
+                ogs_assert(server);
+
+                memset(&header, 0, sizeof(header));
+                header.service.name = (char *)OGS_SBI_SERVICE_NAME_NAMF_COMM;
+                header.api.version = (char *)OGS_SBI_API_V1;
+                header.resource.component[0] =
+                    (char *)OGS_SBI_RESOURCE_NAME_UE_CONTEXTS;
+                header.resource.component[1] = amf_ue->supi;
+                header.resource.component[2] =
+                    (char *)OGS_SBI_RESOURCE_NAME_N1_N2_MESSAGES;
+                header.resource.component[3] = sess->sm_context_ref;
+
+                sendmsg.http.location = ogs_sbi_server_uri(server, &header);
+
+                /* Store Paging Info */
+                AMF_SESS_STORE_PAGING_INFO(
+                        sess, sendmsg.http.location, NULL);
+
+                /* Store 5GSM Message */
+                AMF_SESS_STORE_5GSM_MESSAGE(sess,
+                        OGS_NAS_5GS_PDU_SESSION_RELEASE_COMMAND,
+                        n1buf, n2buf);
+
+                r = ngap_send_paging(amf_ue);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
             }
 
         } else if (CM_CONNECTED(amf_ue)) {
