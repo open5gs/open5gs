@@ -315,7 +315,9 @@ void smf_sbi_send_sm_context_update_error(
         ogs_sbi_stream_t *stream,
         int status, ogs_sbi_app_errno_e err,
         const char *title, const char *detail,
-        ogs_pkbuf_t *n1smbuf, ogs_pkbuf_t *n2smbuf)
+        ogs_pkbuf_t *n1smbuf, ogs_pkbuf_t *n2smbuf,
+        OpenAPI_n2_sm_info_type_e n2_sm_info_type,
+        OpenAPI_up_cnx_state_e up_cnx_state)
 {
     ogs_sbi_message_t sendmsg;
     ogs_sbi_response_t *response = NULL;
@@ -363,6 +365,9 @@ void smf_sbi_send_sm_context_update_error(
         sendmsg.part[sendmsg.num_of_part].pkbuf = n2smbuf;
         sendmsg.num_of_part++;
     }
+
+    SmContextUpdateError.n2_sm_info_type = n2_sm_info_type;
+    SmContextUpdateError.up_cnx_state = up_cnx_state;
 
     response = ogs_sbi_build_response(&sendmsg, problem.status);
     ogs_assert(response);

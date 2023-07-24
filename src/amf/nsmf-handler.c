@@ -849,6 +849,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
         }
     } else {
         OpenAPI_sm_context_update_error_t *SmContextUpdateError = NULL;
+        OpenAPI_ext_problem_details_t *ProblemDetails = NULL;
         OpenAPI_ref_to_binary_data_t *n1SmMsg = NULL;
         ogs_pkbuf_t *n1smbuf = NULL;
 
@@ -871,8 +872,10 @@ int amf_nsmf_pdusession_handle_update_sm_context(
 
             return OGS_ERROR;
         }
-        if (!SmContextUpdateError->error) {
-            ogs_error("[%d:%d] No Error [%d]",
+
+        ProblemDetails = SmContextUpdateError->error;
+        if (!ProblemDetails) {
+            ogs_error("[%d:%d] No ProblemDetails [%d]",
                     sess->psi, sess->pti, recvmsg->res_status);
             r = ngap_send_error_indication2(amf_ue,
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
@@ -880,6 +883,24 @@ int amf_nsmf_pdusession_handle_update_sm_context(
             ogs_assert(r != OGS_ERROR);
 
             return OGS_ERROR;
+        }
+
+        if (state == AMF_UPDATE_SM_CONTEXT_SERVICE_REQUEST) {
+
+            ogs_error("Service-Request: ACTIVATING FAILED [%d:%s:%s]",
+                    recvmsg->res_status,
+                    OpenAPI_up_cnx_state_ToString(
+                        SmContextUpdateError->up_cnx_state),
+                    ProblemDetails->cause ?  ProblemDetails->cause : "Unknown");
+
+            if (AMF_SESSION_SYNC_DONE(amf_ue,
+                        AMF_UPDATE_SM_CONTEXT_SERVICE_REQUEST)) {
+                r = nas_5gs_send_service_accept(amf_ue);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+            }
+
+            return OGS_OK;
         }
 
         n1SmMsg = SmContextUpdateError->n1_sm_msg;
@@ -891,8 +912,8 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                  * NOTE : The pkbuf created in the SBI message will be removed
                  *        from ogs_sbi_message_free(), so it must be copied.
                  */
-                ogs_error("[%d:%d] PDU session establishment reject",
-                        sess->psi, sess->pti);
+                ogs_error("[%d:%d] PDU session establishment reject [state:%d]",
+                        sess->psi, sess->pti, state);
 
                 n1smbuf = ogs_pkbuf_copy(n1smbuf);
                 ogs_assert(n1smbuf);
@@ -931,7 +952,8 @@ int amf_nsmf_pdusession_handle_update_sm_context(
         }
 #endif
 
-        ogs_error("[%d:%d] Error Indication", sess->psi, sess->pti);
+        ogs_error("[%d:%d] Error Indication [state:%d]",
+                sess->psi, sess->pti, state);
 
         r = ngap_send_error_indication2(amf_ue,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
