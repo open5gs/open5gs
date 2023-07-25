@@ -508,11 +508,10 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         if (!sbi_message.h.resource.component[1]) {
                             ogs_error("No smContextRef [%s]",
                                     sbi_message.h.resource.component[1]);
-                            smf_sbi_send_sm_context_update_error(stream,
-                                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                            smf_sbi_send_sm_context_update_error_log(
+                                    stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                                     "No smContextRef",
-                                    sbi_message.h.resource.component[1],
-                                    NULL, NULL);
+                                    sbi_message.h.resource.component[1]);
                             break;
                         }
 
@@ -521,9 +520,9 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
                         if (!sess) {
                             ogs_warn("Not found [%s]", sbi_message.h.uri);
-                            smf_sbi_send_sm_context_update_error(stream,
-                                    OGS_SBI_HTTP_STATUS_NOT_FOUND, "Not found",
-                                    sbi_message.h.uri, NULL, NULL);
+                            smf_sbi_send_sm_context_update_error_log(
+                                    stream, OGS_SBI_HTTP_STATUS_NOT_FOUND,
+                                    "Not found", sbi_message.h.uri);
                         }
                         break;
 

@@ -248,9 +248,8 @@ static void sess_5gc_timeout(ogs_pfcp_xact_t *xact, void *data)
 
         ogs_error("%s", strerror);
         if (stream) {
-            smf_sbi_send_sm_context_update_error(stream,
-                    OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT,
-                    strerror, NULL, NULL, NULL);
+            smf_sbi_send_sm_context_update_error_log(
+                stream, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, strerror, NULL);
         }
         ogs_free(strerror);
         break;

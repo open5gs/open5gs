@@ -970,7 +970,26 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                     NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release);
                             ogs_assert(param.n2smbuf);
 
-                            param.skip_ind = true;
+    /*
+     * Skip_ind is not used when changing the PDU Session Anchor.
+     * param.skip_ind = false;
+     *
+     * TS23.502
+     * 4.3.4 PDU Session Release
+     * 4.3.4.2 UE or network requested PDU Session Release for Non-Roaming
+     * and Roaming with Local Breakout
+     *
+     * 3b. ...
+     *
+     * The "skip indicator" tells the AMF whether it may skip sending
+     * the N1 SM container to the UE (e.g. when the UE is in CM-IDLE state).
+     * SMF includes the "skip indicator"
+     * in the Namf_Communication_N1N2MessageTransfer
+     * except when the procedure is triggered to change PDU Session Anchor
+     * of a PDU Session with SSC mode 2.
+     *
+     * Related Issue #2396
+     */
 
                             smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
                         } else {
@@ -1588,6 +1607,21 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
         ogs_assert(e->ngap.type);
 
         switch (e->ngap.type) {
+        case OpenAPI_n2_sm_info_type_PDU_RES_SETUP_RSP:
+            /*
+             * In case of PDU Session Anchor change, when removing the session,
+             * it cannot be activated because there is no UPF.
+             *
+             * 1. InitialContextSetupResponse
+             * 2. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
+             * 3. PFCP Session Modifcation Request (Apply: FORWARD)
+             * 4. No UPF, so we cannot do PFCP Session Modifcation Response
+             *
+             * At this point, we just reply HTTP_STATUS_NO_CONTENT to the AMF.
+             */
+            ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
+            break;
+
         case OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP:
             ngap_state = sess->ngap_state.pdu_session_resource_release;
 
