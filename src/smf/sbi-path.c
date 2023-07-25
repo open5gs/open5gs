@@ -211,7 +211,8 @@ void smf_sbi_send_sm_context_create_error(
     }
     problem.title = (char*)title;
     problem.detail = (char*)detail;
-    problem.cause = (char*)ogs_sbi_app_strerror(err);
+    if (err > OGS_SBI_APP_ERRNO_NULL && err < OGS_SBI_MAX_NUM_OF_APP_ERRNO)
+        problem.cause = (char*)ogs_sbi_app_strerror(err);
 
     memset(&sendmsg, 0, sizeof(sendmsg));
     sendmsg.SmContextCreateError = &SmContextCreateError;
@@ -336,7 +337,8 @@ void smf_sbi_send_sm_context_update_error(
     }
     problem.title = (char*)title;
     problem.detail = (char*)detail;
-    problem.cause = (char*)ogs_sbi_app_strerror(err);
+    if (err > OGS_SBI_APP_ERRNO_NULL && err < OGS_SBI_MAX_NUM_OF_APP_ERRNO)
+        problem.cause = (char*)ogs_sbi_app_strerror(err);
 
     memset(&sendmsg, 0, sizeof(sendmsg));
     sendmsg.SmContextUpdateError = &SmContextUpdateError;
