@@ -886,7 +886,29 @@ int amf_nsmf_pdusession_handle_update_sm_context(
         }
 
         if (state == AMF_UPDATE_SM_CONTEXT_SERVICE_REQUEST) {
-
+            /*
+             * In a situation where the UPF is changed through High Availability
+             * it is implemented to send the Service-Accept to the UE
+             * even if reactivation for user-resource fails.
+             *
+             * This is because it cannot be predicted whether a UE will
+             * retransmit or leave it as it is, depending on the manufacturer,
+             * in case of including reactivation error IE
+             * such as Insufficient Resource.
+             *
+             * TS24.501
+             * 5.6 5GMM connection management procedures
+             * 5.6.1 Service request procedure
+             * 5.6.1.4 Service request procedure accepted by the network
+             * 5.6.1.4.1 UE is not using 5GS services
+             *           with control plane CIoT 5GS optimization
+             *
+             * NOTE 1: It is up to UE implementation when to re-send a request
+             * for user-plane re-establishment for the associated PDU session
+             * after receiving a PDU session reactivation result error cause IE
+             * with a 5GMM cause set to #92 "insufficient user-plane resources
+             * for the PDU session".
+             */
             ogs_error("Service-Request: ACTIVATING FAILED [%d:%s:%s]",
                     recvmsg->res_status,
                     OpenAPI_up_cnx_state_ToString(
