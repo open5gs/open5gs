@@ -465,9 +465,8 @@ bool smf_nsmf_handle_update_sm_context(
             OpenAPI_sm_context_updated_data_t SmContextUpdatedData;
             OpenAPI_ref_to_binary_data_t n2SmInfo;
 
+            if (!OGS_FSM_CHECK(&sess->sm, smf_gsm_state_operational)) {
             /*
-             * TODO :
-             *
              * TS29.502 5.2.2.3.2.2
              * Activation of User Plane connectivity of PDU session
              *
@@ -493,16 +492,13 @@ bool smf_nsmf_handle_update_sm_context(
              * TS23.502 4.2.3
              * Service Request Procedures
              *
-             * 8a. If the SMF find the PDU Session is activated
-             * when receiving the Nsmf_PDUSession_UpdateSMContext Request
-             * in step 4 with Operation Type set to "UP activate"
-             * to indicate establishment of User Plane resources
-             * for the PDU Session(s), it deletes the AN Tunnel Info
-             * and initiates an N4 Session Modification procedure
-             * to remove Tunnel Info of AN in the UPF.
+             * 11. ...
+             * If the SMF decided to change the PSA UPF for the requested
+             * PDU Session as described in step 5b. In this case, after sending
+             * Nsmf_PDUSession_UpdateSMContext Response, the SMF triggers
+             * another procedure to instruct UE to re-establish the PDU Session
+             * as described in clause 4.3.5.1 for SSC mode 2.
              */
-
-            if (!OGS_FSM_CHECK(&sess->sm, smf_gsm_state_operational)) {
                 ogs_error("[%s:%d] Service-Request: ACTIVATING FAILED",
                         smf_ue->supi, sess->psi);
 
