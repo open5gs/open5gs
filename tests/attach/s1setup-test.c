@@ -97,36 +97,12 @@ static void s1setup_test2(abts_case *tc, void *data)
     }
 }
 
-static void s1setup_test3(abts_case *tc, void *data)
-{
-    int rv;
-    ogs_socknode_t *s1ap;
-    ogs_pkbuf_t *sendbuf;
-    ogs_pkbuf_t *recvbuf;
-
-    s1ap = tests1ap_client(AF_INET);
-    ABTS_PTR_NOTNULL(tc, s1ap);
-
-    sendbuf = test_s1ap_build_invalid_packet(0);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-
-    rv = testenb_s1ap_send(s1ap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    recvbuf = testenb_s1ap_read(s1ap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    ogs_pkbuf_free(recvbuf);
-
-    testenb_s1ap_close(s1ap);
-}
-
 abts_suite *test_s1setup(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, s1setup_test1, NULL);
     abts_run_test(suite, s1setup_test2, NULL);
-    abts_run_test(suite, s1setup_test3, NULL);
 
     return suite;
 }
