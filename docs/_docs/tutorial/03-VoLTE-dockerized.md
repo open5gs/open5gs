@@ -55,8 +55,8 @@ git clone https://github.com/herlesupreeth/docker_open5gs
 cd docker_open5gs/base
 docker build --no-cache --force-rm -t docker_open5gs .
 
-cd ../kamailio_base
-docker build --no-cache --force-rm -t open5gs_kamailio .
+cd ../ims_base
+docker build --no-cache --force-rm -t docker_kamailio .
 ```
 
 #### 3. Configuring your setup
@@ -99,7 +99,7 @@ Under `sgwu` section in docker compose file (`docker-compose.yaml`, `nsa-deploy.
 ```
 cd docker_open5gs
 source .env
-docker-compose build --no-cache
+docker compose build --no-cache
 ```
 
 #### 5. (Optional) Run srsENB in a separate container
@@ -111,15 +111,15 @@ srsENB separately.
 ```
 cd docker_open5gs
 source .env
-docker-compose -f srsenb.yaml build --no-cache
-docker-compose -f srsenb.yaml up
+docker compose -f srsenb.yaml build --no-cache
+docker compose -f srsenb.yaml up
 ```
 
 #### 6. Configuration and register two UE
 
 If there is a need to change the Core Network component configuration files
 found under their respective folder, make sure to re-compile images using
-`docker-compose build` again.
+`docker compose build` again.
 {: .notice--warning}
 
 Open (http://<DOCKER_HOST_IP>:3000) in a web browser, where <DOCKER_HOST_IP> is
