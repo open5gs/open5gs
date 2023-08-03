@@ -510,6 +510,8 @@ static void reselect_upf(ogs_pfcp_node_t *node)
                     ogs_error("[%s:%s] EPC restoration is not implemented",
                             smf_ue->imsi_bcd, sess->session.name);
                 } else {
+                    if (!sess->policy_association_id) return;
+
                     smf_npcf_smpolicycontrol_param_t param;
 
                     ogs_info("[%s:%d] SMF-initiated Deletion",
