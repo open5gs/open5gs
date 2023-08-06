@@ -39,8 +39,8 @@ $ diff -u hosts /etc/hosts
 --- hosts	2023-07-09 17:26:50.775626909 +0900
 +++ /etc/hosts	2023-07-09 17:27:14.941277632 +0900
 @@ -1,6 +1,13 @@
- 127.0.0.1	localhost
- 127.0.1.1	open5gs
+127.0.0.1	localhost
+127.0.1.1	open5gs
 
 +127.0.3.10	nrf.5gc.mnc001.mcc001.3gppnetwork.org
 +127.0.3.11	ausf.5gc.mnc001.mcc001.3gppnetwork.org
@@ -49,9 +49,9 @@ $ diff -u hosts /etc/hosts
 +127.0.1.15	sepp1.localdomain
 +127.0.2.15	sepp2.localdomain
 +
- # The following lines are desirable for IPv6 capable hosts
- ::1     ip6-localhost ip6-loopback
- fe00::0 ip6-localnet
+# The following lines are desirable for IPv6 capable hosts
+::1     ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
 ```
 
 Note that we are using 5gc.mnc010.mcc001.3gppnetwork.org for our home network domain for NRF, AUSF and UDM. However, SEPP can be routed without following this home network domain rule, so sepp.localdomain is used for convenience.
@@ -89,33 +89,36 @@ We plan to use 001-01 for the Home PLMN and 999-70 for the Visited PLMN. To do s
 Note that visited NRF can use IP address, but home NRF should follow TS23.003(28.3.2.3.2 Format of NRF FQDN) for routing.
 
 - Create h-nrf.yaml for Home PLMN
+
 ```
 $ cp install/etc/open5gs/nrf.yaml install/etc/open5gs/h-nrf.yaml
 ```
 
 - Update h-nrf.yaml
+
 ```diff
 $ diff -u install/etc/open5gs/nrf.yaml install/etc/open5gs/h-nrf.yaml
 --- install/etc/open5gs/nrf.yaml	2023-08-06 22:46:02.263941577 +0900
 +++ install/etc/open5gs/h-nrf.yaml	2023-08-06 23:08:22.562644531 +0900
 @@ -9,11 +9,10 @@
- nrf:
-     serving:  # 5G roaming requires PLMN in NRF
-       - plmn_id:
+nrf:
+    serving:  # 5G roaming requires PLMN in NRF
+      - plmn_id:
 -          mcc: 999
 -          mnc: 70
 +          mcc: 001
 +          mnc: 01
-     sbi:
+    sbi:
 -      - address: 127.0.0.10
 -        port: 7777
 +      - address:  nrf.5gc.mnc001.mcc001.3gppnetwork.org
 
- ################################################################################
- # SBI Server
+################################################################################
+# SBI Server
 ```
 
 - Run vNRF and hNRF
+
 ```
 $ ./install/bin/open5gs-nrfd
 $ sudo ./install/bin/open5gs-nrfd -c ./install/etc/open5gs/h-nrf.yaml
@@ -129,31 +132,56 @@ Note that Home NRF requires root privileges as it uses reserved ports such as ht
 SCPs do not have to use FQDNs.
 
 - Create h-scp.yaml for Home PLMN
+
 ```
 $ cp install/etc/open5gs/scp.yaml install/etc/open5gs/h-scp.yaml
 ```
 
 - Update h-scp.yaml
+
 ```diff
 $ diff -u install/etc/open5gs/scp.yaml install/etc/open5gs/h-scp.yaml
 --- install/etc/open5gs/scp.yaml	2023-08-06 22:46:02.279940823 +0900
 +++ install/etc/open5gs/h-scp.yaml	2023-08-06 23:11:29.727177201 +0900
 @@ -8,10 +8,10 @@
 
- scp:
-     sbi:
+scp:
+    sbi:
 -      - address: 127.0.1.10
 +      - address: 127.0.2.10
-         port: 7777
-     nrf:
+        port: 7777
+    nrf:
 -      - uri: http://127.0.0.10:7777
 +      - uri: http://nrf.5gc.mnc001.mcc001.3gppnetwork.org
 
- ################################################################################
- # SCP Info
+################################################################################
+# SCP Info
+```
+
+- Update scp.yaml
+
+The V-PLMN SCP needs TLS information to contact SEPP. The SCP can learn about SEPP during the discovery process, so we need to enable TLS on the client in the `defconfig` method.
+
+```diff
+diff -u install/etc/open5gs/scp.yaml.old install/etc/open5gs/scp.yaml
+--- install/etc/open5gs/scp.yaml.old	2023-08-06 23:45:34.184505318 +0900
++++ install/etc/open5gs/scp.yaml	2023-08-06 23:45:38.216322924 +0900
+@@ -7,6 +7,11 @@
+#    peer: 64
+
+scp:
++    defconfig:
++      tls:
++        client:
++          scheme: https
++          cacert: /home/acetcom/Documents/git/open5gs/build/configs/open5gs/tls/ca.crt
+    sbi:
+      - address: 127.0.1.10
+        port: 7777
 ```
 
 - Run vSCP and hSCP
+
 ```
 $ ./install/bin/open5gs-scpd
 $ ./install/bin/open5gs-scpd -c ./install/etc/open5gs/h-scp.yaml
@@ -164,6 +192,7 @@ $ ./install/bin/open5gs-scpd -c ./install/etc/open5gs/h-scp.yaml
 SEPP can be run without changing the configuration file. And SEPP uses HTTPS scheme with TLS in default setting. Please refer to the configuration file(sepp1.yaml/sepp2.yaml) for more details.
 
 - Run vSEPP and hSEPP
+
 ```
 $ ./install/bin/open5gs-seppd -c ./install/etc/open5gs/sepp1.yaml
 $ ./install/bin/open5gs-seppd -c ./install/etc/open5gs/sepp2.yaml
@@ -174,6 +203,7 @@ $ ./install/bin/open5gs-seppd -c ./install/etc/open5gs/sepp2.yaml
 Home UDR can use IP address, but Home AUSF and Home UDM shall use FQDN.
 
 - Create h-udr.yaml, h-ausf.yaml and h-udm.yaml for Home PLMN
+
 ```
 $ cp install/etc/open5gs/udr.yaml install/etc/open5gs/h-udr.yaml
 $ cp install/etc/open5gs/ausf.yaml install/etc/open5gs/h-ausf.yaml
@@ -181,69 +211,72 @@ $ cp install/etc/open5gs/udm.yaml install/etc/open5gs/h-udm.yaml
 ```
 
 - Update h-udr.yaml
+
 ```diff
 $ diff -u install/etc/open5gs/udr.yaml install/etc/open5gs/h-udr.yaml
 --- install/etc/open5gs/udr.yaml	2023-08-06 22:46:02.363936865 +0900
 +++ install/etc/open5gs/h-udr.yaml	2023-08-06 23:26:45.195462712 +0900
 @@ -9,12 +9,12 @@
 
- udr:
-     sbi:
+udr:
+    sbi:
 -      - address: 127.0.0.20
 +      - address: 127.0.3.20
-         port: 7777
- #    nrf:
- #      - uri: http://127.0.0.10:7777
-     scp:
+        port: 7777
+#    nrf:
+#      - uri: http://127.0.0.10:7777
+    scp:
 -      - uri: http://127.0.1.10:7777
 +      - uri: http://127.0.2.10:7777
 
- ################################################################################
- # SBI Server
+################################################################################
+# SBI Server
 ```
 
 - Update h-ausf.yaml
+
 ```diff
 $ diff -u install/etc/open5gs/ausf.yaml install/etc/open5gs/h-ausf.yaml
 --- install/etc/open5gs/ausf.yaml	2023-08-06 22:46:02.327938562 +0900
 +++ install/etc/open5gs/h-ausf.yaml	2023-08-06 23:27:08.614413521 +0900
 @@ -8,12 +8,11 @@
 
- ausf:
-     sbi:
+ausf:
+    sbi:
 -      - address: 127.0.0.11
 -        port: 7777
 +      - address: ausf.5gc.mnc001.mcc001.3gppnetwork.org
- #    nrf:
- #      - uri: http://127.0.0.10:7777
-     scp:
+#    nrf:
+#      - uri: http://127.0.0.10:7777
+    scp:
 -      - uri: http://127.0.1.10:7777
 +      - uri: http://127.0.2.10:7777
 
- ################################################################################
- # SBI Server
+################################################################################
+# SBI Server
 ```
 
 - Update h-udm.yaml
+
 ```diff
 diff -u install/etc/open5gs/udm.yaml install/etc/open5gs/h-udm.yaml
 --- install/etc/open5gs/udm.yaml	2023-08-06 22:46:02.347937619 +0900
 +++ install/etc/open5gs/h-udm.yaml	2023-08-06 23:27:25.177671001 +0900
 @@ -27,12 +27,11 @@
-         scheme: 2
-         key: /home/acetcom/Documents/git/open5gs/install/etc/open5gs/hnet/secp256r1-6.key
-     sbi:
+        scheme: 2
+        key: /home/acetcom/Documents/git/open5gs/install/etc/open5gs/hnet/secp256r1-6.key
+    sbi:
 -      - address: 127.0.0.12
 -        port: 7777
 +      - address: udm.5gc.mnc001.mcc001.3gppnetwork.org
- #    nrf:
- #      - uri: http://127.0.0.10:7777
-     scp:
+#    nrf:
+#      - uri: http://127.0.0.10:7777
+    scp:
 -      - uri: http://127.0.1.10:7777
 +      - uri: http://127.0.2.10:7777
 
- #
- ################################################################################
+#
+################################################################################
 ```
 
 ```
