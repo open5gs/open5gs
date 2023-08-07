@@ -21,7 +21,7 @@ Let's start the explanation assuming that the connection test of the UE to this 
 
 #### Build & Install
 
-We'll start with the 'roaming-tier2' branch from now on.
+We'll start with the `roaming-tier2` branch from now on.
 ```
 $ git clone https://github.com/open5gs/open5gs
 $ cd open5gs
@@ -32,7 +32,7 @@ $ ninja -C build install
 
 #### Configure FQDN to DNS
 
-For routing to Home PLMN, H-PLMN NRF, AUSF and UDM address should be used in FQDN. Today we are going to experiment on one host, so please edit the /etc/hosts file as follows.
+For routing to Home PLMN, NRF, AUSF and UDM address in H-PLMN shall use FQDN format, so please edit the /etc/hosts file as follows.
 
 ```diff
 $ diff -u hosts /etc/hosts
@@ -54,11 +54,11 @@ $ diff -u hosts /etc/hosts
 fe00::0 ip6-localnet
 ```
 
-Note that we are using 5gc.mnc010.mcc001.3gppnetwork.org for our home network domain for NRF, AUSF and UDM. However, SEPP can be routed without following this home network domain rule, so sepp.localdomain is used for convenience.
+Note that we are using 5gc.mnc010.mcc001.3gppnetwork.org for our home network domain for NRF, AUSF and UDM. However, SEPP can be routed without following this home network domain naming, so sepp.localdomain is used for convenience.
 
 #### Running V-PLMN 5G Core and H-PLMN 5G Core in the Single Host
 
-H-PLMN 5G Core requires root privileges as it uses reserved ports such as http (80) or https (443).
+H-PLMN 5G Core requires root privileges as it uses reserved ports such as http(80) or https(443).
 
 ```
 $ sudo ./build/tests/app/5gc -c ./build/configs/examples/roaming-lbo-hplmn.yaml
@@ -160,7 +160,11 @@ scp:
 
 - Update scp.yaml
 
-The V-PLMN SCP needs TLS information to contact SEPP. The SCP can learn about SEPP during the discovery process, so we need to enable TLS on the client in the `defconfig` method.
+The V-PLMN SCP needs TLS information to connect SEPP.
+
+To connect SCP and NRF, the user directly specifies the client connection information in the configuration file. On the other hand, SEPP connection information can identify NF profile through NRF discovery function.
+
+TLS information for connecting SCP and NRF can be set directly by the user in the configuration file, but not in SEPP. Therefore, in order for SCP to connect to SEPP by TLS authentication, the default configuration method as shown below should be used.
 
 ```diff
 diff -u install/etc/open5gs/scp.yaml.old install/etc/open5gs/scp.yaml
@@ -196,6 +200,11 @@ SEPP can be run without changing the configuration file. And SEPP uses HTTPS sch
 ```
 $ ./install/bin/open5gs-seppd -c ./install/etc/open5gs/sepp1.yaml
 $ ./install/bin/open5gs-seppd -c ./install/etc/open5gs/sepp2.yaml
+```
+
+As shown below, you can confirm that the SEPP n32c interface is connected.
+```
+INFO: [sepp1.localdomain] SEPP established (../src/sepp/handshake-sm.c:297)
 ```
 
 #### hAUSF, hUDM and hUDR
@@ -289,7 +298,7 @@ Like hNRF, hAUSF and hUDM also require root privileges.
 
 #### Run all NFs in Visited PLMN
 
-Since NFs in the Visited PLMN can use IP addresses, we will use the default configuration.
+Since NFs in the V-PLMN can use IP addresses, we will use the default configuration.
 
 ```
 $ ./install/bin/open5gs-amfd
@@ -304,7 +313,6 @@ $ ./install/bin/open5gs-udrd -l udr.log
 ```
 
 Since AUSF/UDM/UDR runs on Home PLMN, the log location is re-configured with the -l option to avoid log conflicts.
-
 
 #### Test Roaming
 Performs a test of UE access while roaming subscribed to H-PLMN.
