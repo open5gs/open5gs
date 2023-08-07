@@ -230,6 +230,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
     ogs_assert(InitialUEMessage);
 
     ogs_info("InitialUEMessage");
+    MME_UE_LIST_CHECK;
 
     for (i = 0; i < InitialUEMessage->protocolIEs.list.count; i++) {
         ie = InitialUEMessage->protocolIEs.list.array[i];
@@ -345,6 +346,16 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
                 CLEAR_MME_UE_TIMER(mme_ue->t_mobile_reachable);
             }
         }
+    } else {
+        ogs_error("Known UE ENB_UE_S1AP_ID[%d] [%p:%p]",
+                (int)*ENB_UE_S1AP_ID, enb_ue, enb_ue->mme_ue);
+        if (enb_ue->mme_ue)
+            ogs_error("    S_TMSI[G:%d,C:%d,M_TMSI:0x%x] IMSI:[%s]",
+                enb_ue->mme_ue->current.guti.mme_gid,
+                enb_ue->mme_ue->current.guti.mme_code,
+                enb_ue->mme_ue->current.guti.m_tmsi,
+                MME_UE_HAVE_IMSI(enb_ue->mme_ue)
+                ? enb_ue->mme_ue->imsi_bcd : "Unknown");
     }
 
     if (!NAS_PDU) {
@@ -436,6 +447,7 @@ void s1ap_handle_uplink_nas_transport(
     ogs_assert(UplinkNASTransport);
 
     ogs_debug("UplinkNASTransport");
+    MME_UE_LIST_CHECK;
 
     for (i = 0; i < UplinkNASTransport->protocolIEs.list.count; i++) {
         ie = UplinkNASTransport->protocolIEs.list.array[i];
@@ -600,6 +612,7 @@ void s1ap_handle_ue_capability_info_indication(
     ogs_assert(UECapabilityInfoIndication);
 
     ogs_debug("UECapabilityInfoIndication");
+    MME_UE_LIST_CHECK;
 
     for (i = 0; i < UECapabilityInfoIndication->protocolIEs.list.count; i++) {
         ie = UECapabilityInfoIndication->protocolIEs.list.array[i];
@@ -698,6 +711,7 @@ void s1ap_handle_initial_context_setup_response(
     ogs_assert(InitialContextSetupResponse);
 
     ogs_debug("InitialContextSetupResponse");
+    MME_UE_LIST_CHECK;
 
     for (i = 0; i < InitialContextSetupResponse->protocolIEs.list.count; i++) {
         ie = InitialContextSetupResponse->protocolIEs.list.array[i];
@@ -1797,6 +1811,7 @@ void s1ap_handle_e_rab_modification_indication(
     ogs_assert(E_RABModificationIndication);
 
     ogs_info("E_RABModificationIndication");
+    MME_UE_LIST_CHECK;
 
     for (i = 0; i < E_RABModificationIndication->protocolIEs.list.count; i++) {
         ie = E_RABModificationIndication->protocolIEs.list.array[i];

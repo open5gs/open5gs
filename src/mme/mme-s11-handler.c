@@ -103,6 +103,7 @@ void mme_s11_handle_create_session_response(
     ogs_assert(rsp);
 
     ogs_debug("Create Session Response");
+    MME_UE_LIST_CHECK;
 
     /********************
      * Check Transaction
@@ -461,6 +462,7 @@ void mme_s11_handle_modify_bearer_response(
     ogs_assert(rsp);
 
     ogs_debug("Modify Bearer Response");
+    MME_UE_LIST_CHECK;
 
     /********************
      * Check Transaction
@@ -572,6 +574,7 @@ void mme_s11_handle_delete_session_response(
     ogs_assert(rsp);
 
     ogs_debug("Delete Session Response");
+    MME_UE_LIST_CHECK;
 
     /********************
      * Check Transaction
@@ -1224,6 +1227,7 @@ void mme_s11_handle_release_access_bearers_response(
     ogs_assert(rsp);
 
     ogs_debug("Release Access Bearers Response");
+    MME_UE_LIST_CHECK;
 
     /********************
      * Check Transaction

@@ -54,6 +54,8 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
 
     char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
 
+    MME_UE_LIST_CHECK;
+
     ogs_assert(mme_ue);
     enb_ue = enb_ue_cycle(mme_ue->enb_ue);
     ogs_assert(enb_ue);
@@ -274,6 +276,7 @@ int emm_handle_attach_complete(
     ogs_assert(mme_ue);
 
     ogs_info("    IMSI[%s]", mme_ue->imsi_bcd);
+    MME_UE_LIST_CHECK;
 
     ogs_gettimeofday(&tv);
     ogs_gmtime(tv.tv_sec, &gmt);
@@ -787,6 +790,7 @@ int emm_handle_security_mode_complete(mme_ue_t *mme_ue,
     ogs_nas_mobile_identity_t *imeisv = &security_mode_complete->imeisv;
 
     ogs_assert(mme_ue);
+    MME_UE_LIST_CHECK;
 
     if (security_mode_complete->presencemask &
         OGS_NAS_EPS_SECURITY_MODE_COMMAND_IMEISV_REQUEST_PRESENT) {

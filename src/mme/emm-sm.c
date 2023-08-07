@@ -849,6 +849,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
                         authentication_response_parameter;
 
             ogs_debug("Authentication response");
+            MME_UE_LIST_CHECK;
             ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
 
             CLEAR_MME_UE_TIMER(mme_ue->t3460);

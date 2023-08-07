@@ -148,6 +148,44 @@ typedef struct mme_context_s {
     /* Generator for unique identification */
     uint32_t        mme_ue_s1ap_id;         /* mme_ue_s1ap_id generator */
 
+#define MME_UE_LIST_CHECK \
+    if (ogs_log_get_domain_level(OGS_LOG_DOMAIN) >= OGS_LOG_TRACE) { \
+        mme_ue_t *mme_ue = NULL; \
+        sgw_ue_t *sgw_ue = NULL; \
+        enb_ue_t *enb_ue = NULL; \
+        mme_sess_t *sess = NULL; \
+        mme_bearer_t *bearer = NULL; \
+        ogs_list_for_each(&mme_self()->mme_ue_list, mme_ue) { \
+            ogs_trace("MME_UE(%p) [%s] MME_S11_TEID[%d]", \
+                    mme_ue, mme_ue->imsi_bcd, mme_ue->mme_s11_teid); \
+            if (mme_ue->sgw_ue) { \
+                sgw_ue = mme_ue->sgw_ue; \
+                ogs_trace("SGW_UE(%p) MME_UE(%p) SGW_S11_TEID[%d]", \
+                        sgw_ue, mme_ue, sgw_ue->sgw_s11_teid); \
+            } \
+            if (mme_ue->enb_ue) { \
+                enb_ue = mme_ue->enb_ue; \
+                ogs_trace("ENB_UE(%p) MME_UE(%p) " \
+                    "[ENB_UE_S1AP_ID:%d MME_UE_S1AP_ID:%d]", \
+                    enb_ue, enb_ue->mme_ue, \
+                    enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id); \
+            } \
+            ogs_list_for_each(&mme_ue->sess_list, sess) { \
+                ogs_trace("SESS(%p) [%s:%d]", sess, \
+                        sess->session ? sess->session->name : "Unknown", \
+                        sess->pti); \
+                ogs_assert(sess->mme_ue == mme_ue); \
+                ogs_list_for_each(&sess->bearer_list, bearer) { \
+                    ogs_trace("BEARER(%p) [%d] " \
+                            "ENB_S1U_TEID[%d] SGW_S1U_TEID[%d]", \
+                            bearer, bearer->ebi, \
+                            bearer->enb_s1u_teid, bearer->sgw_s1u_teid); \
+                    ogs_assert(bearer->sess == sess); \
+                    ogs_assert(bearer->mme_ue == mme_ue); \
+                } \
+            } \
+        } \
+    }
     ogs_list_t      mme_ue_list;
 
     ogs_hash_t *enb_addr_hash;  /* hash table for ENB Address */

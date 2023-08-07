@@ -36,6 +36,8 @@ int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
     mme_sess_t *sess = NULL;
     uint8_t security_protected_required = 0;
 
+    MME_UE_LIST_CHECK;
+
     ogs_assert(bearer);
     sess = bearer->sess;
     ogs_assert(sess);
@@ -182,6 +184,8 @@ int esm_handle_information_response(mme_sess_t *sess,
     ogs_assert(mme_ue);
 
     ogs_assert(rsp);
+
+    MME_UE_LIST_CHECK;
 
     if (rsp->presencemask &
             OGS_NAS_EPS_ESM_INFORMATION_RESPONSE_ACCESS_POINT_NAME_PRESENT) {
