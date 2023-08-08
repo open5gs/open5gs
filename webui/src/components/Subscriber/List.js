@@ -36,8 +36,15 @@ const propTypes = {
 }
 
 const List = ({ subscribers, deletedImsi, onView, onEdit, onDelete, search }) => {
+  function pred(s){
+    if ((s.msisdn && s.msisdn[0] && s.msisdn[0].indexOf(search) !== -1) || 
+      (s.msisdn && s.msisdn[1] && s.msisdn[1].indexOf(search) !== -1) ||
+      (s.imsi.indexOf(search) !== -1)){
+      return true;
+    }
+  }
   const subscriberList = subscribers
-    .filter(s => s.imsi.indexOf(search) !== -1)
+    .filter(pred)
     .sort( 
       (a,b) => {
         if(a.imsi > b.imsi) return 1;
