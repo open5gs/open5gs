@@ -422,7 +422,6 @@ void upf_n4_handle_session_deletion_request(
         upf_sess_t *sess, ogs_pfcp_xact_t *xact,
         ogs_pfcp_session_deletion_request_t *req)
 {
-    ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_qer_t *qer = NULL;
 
     ogs_assert(xact);
@@ -439,11 +438,9 @@ void upf_n4_handle_session_deletion_request(
     }
     upf_pfcp_send_session_deletion_response(xact, sess);
 
-    ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {
-        ogs_list_for_each(&sess->pfcp.qer_list, qer) {
-            upf_metrics_inst_by_dnn_add(sess->apn_dnn,
-                    UPF_METR_GAUGE_UPF_QOSFLOWS, -1);
-        }
+    ogs_list_for_each(&sess->pfcp.qer_list, qer) {
+        upf_metrics_inst_by_dnn_add(sess->apn_dnn,
+                UPF_METR_GAUGE_UPF_QOSFLOWS, -1);
     }
     upf_sess_remove(sess);
 }
