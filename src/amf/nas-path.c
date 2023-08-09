@@ -218,7 +218,7 @@ int nas_5gs_send_registration_reject(
 
     ogs_warn("[%s] Registration reject [%d]", amf_ue->suci, gmm_cause);
 
-    gmmbuf = gmm_build_registration_reject(gmm_cause);
+    gmmbuf = gmm_build_registration_reject(amf_ue, gmm_cause);
     if (!gmmbuf) {
         ogs_error("gmm_build_registration_reject() failed");
         return OGS_ERROR;

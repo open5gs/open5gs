@@ -1116,7 +1116,11 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
 
                     if (amf_update_allowed_nssai(amf_ue) == false) {
                         ogs_error("No Allowed-NSSAI");
-
+                        r = nas_5gs_send_gmm_reject(
+                                amf_ue,
+                                OGS_5GMM_CAUSE_NO_NETWORK_SLICES_AVAILABLE);
+                        ogs_expect(r == OGS_OK);
+                        ogs_assert(r != OGS_ERROR);
                         OGS_FSM_TRAN(s, gmm_state_exception);
                         break;
                     }
@@ -1906,10 +1910,6 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                 if (rv != OGS_OK) {
                     ogs_error("[%s] amf_nudm_sdm_handle_provisioned(%s) failed",
                             amf_ue->supi, sbi_message->h.resource.component[1]);
-                    r = nas_5gs_send_gmm_reject(
-                            amf_ue, OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
-                    ogs_expect(r == OGS_OK);
-                    ogs_assert(r != OGS_ERROR);
                     OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
                     break;
                 }
@@ -2292,6 +2292,12 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
 
                     if (amf_update_allowed_nssai(amf_ue) == false) {
                         ogs_error("No Allowed-NSSAI");
+                        r = nas_5gs_send_gmm_reject(
+                                amf_ue,
+                                OGS_5GMM_CAUSE_NO_NETWORK_SLICES_AVAILABLE);
+                        ogs_expect(r == OGS_OK);
+                        ogs_assert(r != OGS_ERROR);
+                        OGS_FSM_TRAN(s, gmm_state_exception);
                         break;
                     }
 
