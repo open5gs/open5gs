@@ -713,13 +713,19 @@ bool smf_npcf_smpolicycontrol_handle_terminate_notify(
 
     ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
 
-    memset(&param, 0, sizeof(param));
-    r = smf_sbi_discover_and_send(
-            OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL, NULL,
-            smf_npcf_smpolicycontrol_build_delete,
-            sess, NULL, OGS_PFCP_DELETE_TRIGGER_PCF_INITIATED, &param);
-    ogs_expect(r == OGS_OK);
-    ogs_assert(r != OGS_ERROR);
+    if (sess->policy_association_id) {
+        memset(&param, 0, sizeof(param));
+        r = smf_sbi_discover_and_send(
+                OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL, NULL,
+                smf_npcf_smpolicycontrol_build_delete,
+                sess, NULL, OGS_PFCP_DELETE_TRIGGER_PCF_INITIATED, &param);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+    } else {
+        ogs_error("[%s:%d] No PolicyAssociationId. Forcibly remove SESSION",
+                smf_ue->supi, sess->psi);
+        SMF_SESS_CLEAR(sess);
+    }
 
     return true;
 }

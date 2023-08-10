@@ -138,8 +138,10 @@ typedef struct smf_ue_s {
     do { \
         smf_ue_t *smf_ue = NULL; \
         ogs_assert(__sESS); \
-        smf_ue = __sESS->smf_ue; \
+        smf_ue = (__sESS)->smf_ue; \
         ogs_assert(smf_ue); \
+        smf_metrics_inst_by_slice_add(&(__sESS)->plmn_id, \
+                &(__sESS)->s_nssai, SMF_METR_GAUGE_SM_SESSIONNBR, -1); \
         if (SMF_UE_IS_LAST_SESSION(smf_ue)) \
             smf_ue_remove(smf_ue); \
         else \

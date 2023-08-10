@@ -682,10 +682,12 @@ bool smf_nsmf_handle_update_sm_context(
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
         } else {
-            ogs_error("No PolicyAssociationId");
+            ogs_error("[%s:%d] No PolicyAssociationId. Forcibly remove SESSION",
+                    smf_ue->supi, sess->psi);
             smf_sbi_send_sm_context_update_error_log(
                     stream, OGS_SBI_HTTP_STATUS_NOT_FOUND,
                     "No PolicyAssociationId", NULL);
+            SMF_SESS_CLEAR(sess);
         }
     } else if (SmContextUpdateData->serving_nf_id) {
         ogs_debug("Old serving_nf_id: %s, new serving_nf_id: %s",
@@ -717,12 +719,15 @@ bool smf_nsmf_handle_release_sm_context(
 {
     int r;
     smf_npcf_smpolicycontrol_param_t param;
+    smf_ue_t *smf_ue = NULL;
 
     OpenAPI_sm_context_release_data_t *SmContextReleaseData = NULL;
 
     ogs_assert(stream);
     ogs_assert(message);
     ogs_assert(sess);
+    smf_ue = sess->smf_ue;
+    ogs_assert(smf_ue);
 
     memset(&param, 0, sizeof(param));
 
@@ -774,11 +779,13 @@ bool smf_nsmf_handle_release_sm_context(
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
     } else {
-        ogs_error("No PolicyAssociationId");
+        ogs_error("[%s:%d] No PolicyAssociationId. Forcibly remove SESSION",
+                smf_ue->supi, sess->psi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(
                 stream, OGS_SBI_HTTP_STATUS_NOT_FOUND,
                 NULL, "No PolicyAssociationId", NULL));
+        SMF_SESS_CLEAR(sess);
     }
 
     return true;

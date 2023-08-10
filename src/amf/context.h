@@ -761,7 +761,7 @@ amf_sess_t *amf_sess_add(amf_ue_t *amf_ue, uint8_t psi);
     do { \
         ogs_sbi_object_t *sbi_object = NULL; \
         ogs_assert(__sESS); \
-        sbi_object = &sess->sbi; \
+        sbi_object = &(__sESS)->sbi; \
         ogs_assert(sbi_object); \
         \
         ogs_error("AMF_SESS_CLEAR"); \

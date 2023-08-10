@@ -677,14 +677,14 @@ struct mme_ue_s {
     do { \
         mme_ue_t *mme_ue = NULL; \
         ogs_assert(__sESS); \
-        mme_ue = __sESS->mme_ue; \
+        mme_ue = (__sESS)->mme_ue; \
         ogs_assert(mme_ue); \
         ogs_info("Removed Session: UE IMSI:[%s] APN:[%s]", \
                 mme_ue->imsi_bcd, \
-                sess->session ? sess->session->name : "Unknown"); \
+                (__sESS)->session ? (__sESS)->session->name : "Unknown"); \
         if (mme_sess_count(mme_ue) == 1) /* Last Session */ \
             CLEAR_SESSION_CONTEXT(mme_ue); \
-        mme_sess_remove(sess); \
+        mme_sess_remove(__sESS); \
     } while(0)
 
 #define ACTIVE_EPS_BEARERS_IS_AVAIABLE(__mME) \

@@ -499,30 +499,36 @@ static void reselect_upf(ogs_pfcp_node_t *node)
     }
 
     ogs_list_for_each(&smf_self()->smf_ue_list, smf_ue) {
-        smf_sess_t *sess = NULL;
-        ogs_assert(smf_ue);
+        smf_sess_t *sess = NULL, *next_sess = NULL;
 
-        ogs_list_for_each(&smf_ue->sess_list, sess) {
-            ogs_assert(sess);
+        ogs_list_for_each_safe(&smf_ue->sess_list, next_sess, sess) {
 
             if (node == sess->pfcp_node) {
                 if (sess->epc) {
                     ogs_error("[%s:%s] EPC restoration is not implemented",
                             smf_ue->imsi_bcd, sess->session.name);
                 } else {
-                    smf_npcf_smpolicycontrol_param_t param;
+                    if (sess->policy_association_id) {
+                        smf_npcf_smpolicycontrol_param_t param;
 
-                    ogs_info("[%s:%d] SMF-initiated Deletion",
-                            smf_ue->supi, sess->psi);
-                    ogs_assert(sess->sm_context_ref);
-                    memset(&param, 0, sizeof(param));
-                    r = smf_sbi_discover_and_send(
-                            OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL, NULL,
-                            smf_npcf_smpolicycontrol_build_delete,
-                            sess, NULL, OGS_PFCP_DELETE_TRIGGER_SMF_INITIATED,
-                            &param);
-                    ogs_expect(r == OGS_OK);
-                    ogs_assert(r != OGS_ERROR);
+                        ogs_info("[%s:%d] SMF-initiated Deletion",
+                                smf_ue->supi, sess->psi);
+                        ogs_assert(sess->sm_context_ref);
+                        memset(&param, 0, sizeof(param));
+                        r = smf_sbi_discover_and_send(
+                                OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL, NULL,
+                                smf_npcf_smpolicycontrol_build_delete,
+                                sess, NULL,
+                                OGS_PFCP_DELETE_TRIGGER_SMF_INITIATED,
+                                &param);
+                        ogs_expect(r == OGS_OK);
+                        ogs_assert(r != OGS_ERROR);
+                    } else {
+                        ogs_error("[%s:%d] No PolicyAssociationId. "
+                                "Forcibly remove SESSION",
+                                smf_ue->supi, sess->psi);
+                        SMF_SESS_CLEAR(sess);
+                    }
                 }
             }
         }
