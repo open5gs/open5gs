@@ -22,6 +22,36 @@
 #include "sbi-path.h"
 #include "nas-path.h"
 
+static bool maximum_number_of_gnbs_is_reached(void)
+{
+    amf_gnb_t *gnb = NULL, *next_gnb = NULL;
+    int number_of_gnbs_online = 0;
+
+    ogs_list_for_each_safe(&amf_self()->gnb_list, next_gnb, gnb) {
+        if (gnb->state.ng_setup_success) {
+            number_of_gnbs_online++;
+        }
+    }
+
+    return number_of_gnbs_online >= ogs_app()->max.peer;
+}
+
+static bool gnb_plmn_id_is_foreign(amf_gnb_t *gnb)
+{
+    int i, j;
+
+    for (i = 0; i < gnb->num_of_supported_ta_list; i++) {
+        for (j = 0; j < gnb->supported_ta_list[i].num_of_bplmn_list; j++) {
+            if (memcmp(&gnb->plmn_id,
+                        &gnb->supported_ta_list[i].bplmn_list[j].plmn_id,
+                        OGS_PLMN_ID_LEN) == 0)
+                return false;
+        }
+    }
+
+    return true;
+}
+
 static bool served_tai_is_found(amf_gnb_t *gnb)
 {
     int i, j;
@@ -81,20 +111,6 @@ static bool s_nssai_is_found(amf_gnb_t *gnb)
     }
 
     return false;
-}
-
-static bool maximum_number_of_gnbs_is_reached(void)
-{
-    amf_gnb_t *gnb = NULL, *next_gnb = NULL;
-    int number_of_gnbs_online = 0;
-
-    ogs_list_for_each_safe(&amf_self()->gnb_list, next_gnb, gnb) {
-        if (gnb->state.ng_setup_success) {
-            number_of_gnbs_online++;
-        }
-    }
-
-    return number_of_gnbs_online >= ogs_app()->max.peer;
 }
 
 void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
@@ -177,6 +193,11 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
 
     ogs_ngap_GNB_ID_to_uint32(&globalGNB_ID->gNB_ID, &gnb_id);
     ogs_debug("    IP[%s] GNB_ID[0x%x]", OGS_ADDR(gnb->sctp.addr, buf), gnb_id);
+
+    memcpy(&gnb->plmn_id,
+            globalGNB_ID->pLMNIdentity.buf, sizeof(gnb->plmn_id));
+    ogs_debug("    PLMN_ID[MCC:%d MNC:%d]",
+            ogs_plmn_id_mcc(&gnb->plmn_id), ogs_plmn_id_mnc(&gnb->plmn_id));
 
     if (PagingDRX)
         ogs_debug("    PagingDRX[%ld]", *PagingDRX);
@@ -290,6 +311,18 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
         ogs_warn("    Maximum number of gNBs reached");
         group = NGAP_Cause_PR_misc;
         cause = NGAP_CauseMisc_control_processing_overload;
+
+        r = ngap_send_ng_setup_failure(gnb, group, cause);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
+    if (gnb_plmn_id_is_foreign(gnb)) {
+        ogs_warn("NG-Setup failure:");
+        ogs_warn("    globalGNB_ID PLMN-ID is foreign");
+        group = NGAP_Cause_PR_protocol;
+        cause = NGAP_CauseProtocol_message_not_compatible_with_receiver_state;
 
         r = ngap_send_ng_setup_failure(gnb, group, cause);
         ogs_expect(r == OGS_OK);

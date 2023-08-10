@@ -277,6 +277,7 @@ typedef struct mme_enb_s {
     ogs_fsm_t       sm;         /* A state machine */
 
     uint32_t        enb_id;     /* eNB_ID received from eNB */
+    ogs_plmn_id_t   plmn_id;    /* eNB PLMN-ID received from eNB */
     ogs_sctp_sock_t sctp;       /* SCTP socket */
 
     struct {
