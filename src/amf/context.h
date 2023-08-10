@@ -130,6 +130,7 @@ typedef struct amf_gnb_s {
     ogs_fsm_t       sm;         /* A state machine */
 
     uint32_t        gnb_id;     /* gNB_ID received from gNB */
+    ogs_plmn_id_t   plmn_id;    /* gNB PLMN-ID received from gNB */
     ogs_sctp_sock_t sctp;       /* SCTP socket */
 
     struct {

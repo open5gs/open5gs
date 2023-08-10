@@ -34,6 +34,33 @@
 #include "mme-path.h"
 #include "mme-sm.h"
 
+static bool maximum_number_of_enbs_is_reached(void)
+{
+    mme_enb_t *enb = NULL, *next_enb = NULL;
+    int number_of_enbs_online = 0;
+
+    ogs_list_for_each_safe(&mme_self()->enb_list, next_enb, enb) {
+        if (enb->state.s1_setup_success) {
+            number_of_enbs_online++;
+        }
+    }
+
+    return number_of_enbs_online >= ogs_app()->max.peer;
+}
+
+static bool enb_plmn_id_is_foreign(mme_enb_t *enb)
+{
+    int i;
+
+    for (i = 0; i < enb->num_of_supported_ta_list; i++) {
+        if (memcmp(&enb->plmn_id, &enb->supported_ta_list[i].plmn_id,
+                    OGS_PLMN_ID_LEN) == 0)
+            return false;
+    }
+
+    return true;
+}
+
 static bool served_tai_is_found(mme_enb_t *enb)
 {
     int i;
@@ -49,20 +76,6 @@ static bool served_tai_is_found(mme_enb_t *enb)
     }
 
     return false;
-}
-
-static bool maximum_number_of_enbs_is_reached(void)
-{
-    mme_enb_t *enb = NULL, *next_enb = NULL;
-    int number_of_enbs_online = 0;
-
-    ogs_list_for_each_safe(&mme_self()->enb_list, next_enb, enb) {
-        if (enb->state.s1_setup_success) {
-            number_of_enbs_online++;
-        }
-    }
-
-    return number_of_enbs_online >= ogs_app()->max.peer;
 }
 
 void s1ap_handle_s1_setup_request(mme_enb_t *enb, ogs_s1ap_message_t *message)
@@ -110,17 +123,41 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, ogs_s1ap_message_t *message)
         }
     }
 
-    ogs_assert(Global_ENB_ID);
+    if (!Global_ENB_ID) {
+        ogs_error("No Global_ENB_ID");
+        group = S1AP_Cause_PR_misc;
+        cause = S1AP_CauseProtocol_semantic_error;
+
+        r = s1ap_send_s1_setup_failure(enb, group, cause);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
+    if (!SupportedTAs) {
+        ogs_error("No SupportedTAs");
+        group = S1AP_Cause_PR_misc;
+        cause = S1AP_CauseProtocol_semantic_error;
+
+        r = s1ap_send_s1_setup_failure(enb, group, cause);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
 
     ogs_s1ap_ENB_ID_to_uint32(&Global_ENB_ID->eNB_ID, &enb_id);
     ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->sctp.addr, buf), enb_id);
 
+    mme_enb_set_enb_id(enb, enb_id);
+
+    memcpy(&enb->plmn_id,
+            Global_ENB_ID->pLMNidentity.buf, sizeof(enb->plmn_id));
+    ogs_debug("    PLMN_ID[MCC:%d MNC:%d]",
+            ogs_plmn_id_mcc(&enb->plmn_id), ogs_plmn_id_mnc(&enb->plmn_id));
+
     if (PagingDRX)
         ogs_debug("    PagingDRX[%ld]", *PagingDRX);
 
-    mme_enb_set_enb_id(enb, enb_id);
-
-    ogs_assert(SupportedTAs);
     /* Parse Supported TA */
     enb->num_of_supported_ta_list = 0;
     for (i = 0; i < SupportedTAs->list.count; i++) {
@@ -169,11 +206,11 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, ogs_s1ap_message_t *message)
         return;
     }
 
-    if (enb->num_of_supported_ta_list == 0) {
+    if (enb_plmn_id_is_foreign(enb)) {
         ogs_warn("S1-Setup failure:");
-        ogs_warn("    No supported TA exist in S1-Setup request");
+        ogs_warn("    Global-ENB-ID PLMN-ID is foreign");
         group = S1AP_Cause_PR_misc;
-        cause = S1AP_CauseMisc_unspecified;
+        cause = S1AP_CauseProtocol_semantic_error;
 
         r = s1ap_send_s1_setup_failure(enb, group, cause);
         ogs_expect(r == OGS_OK);
