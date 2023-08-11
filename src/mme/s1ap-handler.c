@@ -206,11 +206,21 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, ogs_s1ap_message_t *message)
         return;
     }
 
+    /*
+     * TS36.413
+     * Section 8.7.3.4 Abnormal Conditions
+     *
+     * If the eNB initiates the procedure by sending a S1 SETUP REQUEST
+     * message including the PLMN Identity IEs and none of the PLMNs
+     * provided by the eNB is identified by the MME, then the MME shall
+     * reject the eNB S1 Setup Request procedure with the appropriate cause
+     * value, e.g., “Unknown PLMN”.
+     */
     if (enb_plmn_id_is_foreign(enb)) {
         ogs_warn("S1-Setup failure:");
         ogs_warn("    Global-ENB-ID PLMN-ID is foreign");
         group = S1AP_Cause_PR_misc;
-        cause = S1AP_CauseProtocol_semantic_error;
+        cause = S1AP_CauseMisc_unknown_PLMN;
 
         r = s1ap_send_s1_setup_failure(enb, group, cause);
         ogs_expect(r == OGS_OK);

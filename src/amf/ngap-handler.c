@@ -318,23 +318,19 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
         return;
     }
 
+    /*
+     * TS38.413
+     * Section 8.7.1.4 Abnormal Conditions
+     *
+     * If the AMF does not identify any of the PLMNs/SNPNs indicated
+     * in the NG SETUP REQUEST message, it shall reject the NG Setup
+     * procedure with an appropriate cause value.
+     */
     if (gnb_plmn_id_is_foreign(gnb)) {
         ogs_warn("NG-Setup failure:");
         ogs_warn("    globalGNB_ID PLMN-ID is foreign");
-        group = NGAP_Cause_PR_protocol;
-        cause = NGAP_CauseProtocol_message_not_compatible_with_receiver_state;
-
-        r = ngap_send_ng_setup_failure(gnb, group, cause);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
-    }
-
-    if (gnb->num_of_supported_ta_list == 0) {
-        ogs_warn("NG-Setup failure:");
-        ogs_warn("    No supported TA exist in NG-Setup request");
-        group = NGAP_Cause_PR_protocol;
-        cause = NGAP_CauseProtocol_message_not_compatible_with_receiver_state;
+        group = NGAP_Cause_PR_misc;
+        cause = NGAP_CauseMisc_unknown_PLMN_or_SNPN;
 
         r = ngap_send_ng_setup_failure(gnb, group, cause);
         ogs_expect(r == OGS_OK);
