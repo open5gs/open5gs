@@ -424,7 +424,7 @@ int ogs_dbi_subscription_data(char *supi,
                     }
 
                     for (n = 0; n < unit; n++)
-                        subscription_data->ambr.downlink *= 1024;
+                        subscription_data->ambr.downlink *= 1000;
                 } else if (!strcmp(child1_key, "uplink") &&
                         BSON_ITER_HOLDS_DOCUMENT(&child1_iter)) {
                     uint8_t unit = 0;
@@ -444,7 +444,7 @@ int ogs_dbi_subscription_data(char *supi,
                     }
 
                     for (n = 0; n < unit; n++)
-                        subscription_data->ambr.uplink *= 1024;
+                        subscription_data->ambr.uplink *= 1000;
                 }
 
             }
@@ -593,7 +593,7 @@ int ogs_dbi_subscription_data(char *supi,
                                             }
 
                                             for (n = 0; n < unit; n++)
-                                                session->ambr.downlink *= 1024;
+                                                session->ambr.downlink *= 1000;
                                         } else if (!strcmp(child5_key,
                                                     "uplink") &&
                                                 BSON_ITER_HOLDS_DOCUMENT(
@@ -624,7 +624,7 @@ int ogs_dbi_subscription_data(char *supi,
                                             }
 
                                             for (n = 0; n < unit; n++)
-                                                session->ambr.uplink *= 1024;
+                                                session->ambr.uplink *= 1000;
                                         }
                                     }
                                 } else if (!strcmp(child4_key, "smf") &&

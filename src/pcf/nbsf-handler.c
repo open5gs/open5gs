@@ -178,10 +178,10 @@ bool pcf_nbsf_management_handle_register(
                     sess->subscribed_sess_ambr->uplink);
             subscribed_sess_ambr.downlink = ogs_sbi_bitrate_from_string(
                     sess->subscribed_sess_ambr->downlink);
-            if (((subscribed_sess_ambr.uplink / 1024) !=
-                 (session->ambr.uplink / 1024)) ||
-                ((subscribed_sess_ambr.downlink / 1024) !=
-                 (session->ambr.downlink / 1024))) {
+            if (((subscribed_sess_ambr.uplink / 1000) !=
+                 (session->ambr.uplink / 1000)) ||
+                ((subscribed_sess_ambr.downlink / 1000) !=
+                 (session->ambr.downlink / 1000))) {
 
                 OpenAPI_list_add(PolicyCtrlReqTriggers,
                     (void *)OpenAPI_policy_control_request_trigger_SE_AMBR_CH);

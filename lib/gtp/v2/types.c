@@ -127,14 +127,14 @@ uint64_t ogs_gtp2_qos_to_kbps(uint8_t br, uint8_t extended, uint8_t extended2)
      * giving a range of 1600 Mbps to 10 Gbps Mbps in 100 Mbps increaments.
      */
     if (extended2 >= 0b00000001 && extended2 <= 0b00111101) {
-        return 256*1024 + extended2 * 4*1024;
+        return 256*1000 + extended2 * 4*1000;
     } else if (extended2 >= 0b00111110 && extended2 <= 0b10100001) {
-        return 500*1024 + (extended2 - 0b00111101) * 10*1024;
+        return 500*1000 + (extended2 - 0b00111101) * 10*1000;
     } else if (extended2 >= 0b10100010 && extended2 <= 0b11110110) {
-        return 1500*1024 + (extended2 - 0b10100001) * 100*1024;
+        return 1500*1000 + (extended2 - 0b10100001) * 100*1000;
     } else if (extended2 > 0b11110110) {
         ogs_error("Protocol Error : extended2[%x]", extended2);
-        return 10*1000*1024; /* 10*1000 Mbps */
+        return 10*1000*1000; /* 10*1000 Mbps */
 
     /*
      * Octet 8
@@ -155,12 +155,12 @@ uint64_t ogs_gtp2_qos_to_kbps(uint8_t br, uint8_t extended, uint8_t extended2)
     } else if (extended >= 0b00000001 && extended <= 0b01001010) {
         return 8600 + extended * 100;
     } else if (extended >= 0b01001011 && extended <= 0b10111010) {
-        return 16*1024 + (extended - 0b01001010) * 1*1024;
+        return 16*1000 + (extended - 0b01001010) * 1*1000;
     } else if (extended >= 0b10111011 && extended <= 0b11111010) {
-        return 128*1024 + (extended - 0b10111010) * 2*1024;
+        return 128*1000 + (extended - 0b10111010) * 2*1000;
     } else if (extended > 0b11111010) {
         ogs_error("Protocol Error : extended[%x]", extended);
-        return 256*1024; /* 256 Mbps */
+        return 256*1000; /* 256 Mbps */
 
     /*
      * Octet 4

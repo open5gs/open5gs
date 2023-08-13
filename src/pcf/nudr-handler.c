@@ -98,10 +98,10 @@ bool pcf_nudr_dr_handle_query_am_data(
                 subscribed_ue_ambr.downlink = ogs_sbi_bitrate_from_string(
                         pcf_ue->subscribed_ue_ambr->downlink);
 
-                if (((subscribed_ue_ambr.uplink / 1024) !=
-                     (subscription_data.ambr.uplink / 1024)) ||
-                    ((subscribed_ue_ambr.downlink / 1024) !=
-                     (subscription_data.ambr.downlink / 1024))) {
+                if (((subscribed_ue_ambr.uplink / 1000) !=
+                     (subscription_data.ambr.uplink / 1000)) ||
+                    ((subscribed_ue_ambr.downlink / 1000) !=
+                     (subscription_data.ambr.downlink / 1000))) {
 
                     OpenAPI_list_add(TriggerList,
                             (void *)OpenAPI_request_trigger_UE_AMBR_CH);

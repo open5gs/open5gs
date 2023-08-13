@@ -114,31 +114,31 @@ static uint8_t nas_ambr_from_kbps(
         length = ogs_max(length, 2);
     }
     /* Set to 16000 Kbps */
-    else if (input > 16000 && input < (17*1024)) {
+    else if (input > 16000 && input < (17*1000)) {
         *br = 0b11111110;
         *extended = 0b01001010;
         length = ogs_max(length, 2);
     }
     /* giving a range of 17 Mbps to 128 Mbps in 1 Mbps increments. */
-    else if (input >= (17*1024) && input <= (128*1024)) {
+    else if (input >= (17*1000) && input <= (128*1000)) {
         *br = 0b11111110;
-        *extended = ((input - (16*1024)) / (1*1024)) + 0b01001010;
+        *extended = ((input - (16*1000)) / (1*1000)) + 0b01001010;
         length = ogs_max(length, 2);
     }
     /* Set to 128 Mbps */
-    else if (input > (128*1024) && input < (130*1024)) {
+    else if (input > (128*1000) && input < (130*1000)) {
         *br = 0b11111110;
         *extended = 0b10111010;
         length = ogs_max(length, 2);
     }
     /* giving a range of 130 Mbps to 256 Mbps in 2 Mbps increments. */
-    else if (input >= (130*1024) && input <= (256*1024)) {
+    else if (input >= (130*1000) && input <= (256*1000)) {
         *br = 0b11111110;
-        *extended = ((input - (128*1024)) / (2*1024)) + 0b10111010;
+        *extended = ((input - (128*1000)) / (2*1000)) + 0b10111010;
         length = ogs_max(length, 2);
     }
     /* Set to 256 Mbps */
-    else if (input > (1*256*1024) && input < (2*256*1024)) {
+    else if (input > (1*256*1000) && input < (2*256*1000)) {
         *br = 0b11111110;
         *extended = 0b11111010;
         length = ogs_max(length, 2);
@@ -157,14 +157,14 @@ static uint8_t nas_ambr_from_kbps(
      */
 
     /* giving a range of values from 260M to 500M in 4M increments */
-    else if (input >= (2*256*1024) && input <= (255*256*1024)) {
+    else if (input >= (2*256*1000) && input <= (255*256*1000)) {
         *br = 0b11111110;
         *extended = 0b11111010;
-        *extended2 = (input - (1*256*1024)) / (256*1024);
+        *extended2 = (input - (1*256*1000)) / (256*1000);
         length = ogs_max(length, 3);
     }
     /* if the sending entity want to indicate BR higher than 65280M */
-    else if (input > (255*256*1024)) {
+    else if (input > (255*256*1000)) {
         *br = 0b11111110;
         *extended = 0b11111010;
         *extended2 = 0b11111110;
@@ -262,31 +262,31 @@ static uint8_t nas_qos_from_kbps(
         length = ogs_max(length, 2);
     }
     /* Set to 16000 Kbps */
-    else if (input > 16000 && input < (17*1024)) {
+    else if (input > 16000 && input < (17*1000)) {
         *br = 0b11111110;
         *extended = 0b01001010;
         length = ogs_max(length, 2);
     }
     /* giving a range of 17 Mbps to 128 Mbps in 1 Mbps increments. */
-    else if (input >= (17*1024) && input <= (128*1024)) {
+    else if (input >= (17*1000) && input <= (128*1000)) {
         *br = 0b11111110;
-        *extended = ((input - (16*1024)) / (1*1024)) + 0b01001010;
+        *extended = ((input - (16*1000)) / (1*1000)) + 0b01001010;
         length = ogs_max(length, 2);
     }
     /* Set to 128 Mbps */
-    else if (input > (128*1024) && input < (130*1024)) {
+    else if (input > (128*1000) && input < (130*1000)) {
         *br = 0b11111110;
         *extended = 0b10111010;
         length = ogs_max(length, 2);
     }
     /* giving a range of 130 Mbps to 256 Mbps in 2 Mbps increments. */
-    else if (input >= (130*1024) && input <= (256*1024)) {
+    else if (input >= (130*1000) && input <= (256*1000)) {
         *br = 0b11111110;
-        *extended = ((input - (128*1024)) / (2*1024)) + 0b10111010;
+        *extended = ((input - (128*1000)) / (2*1000)) + 0b10111010;
         length = ogs_max(length, 2);
     }
     /* Set to 256 Mbps */
-    else if (input > (256*1024) && input < (260*1024)) {
+    else if (input > (256*1000) && input < (260*1000)) {
         *br = 0b11111110;
         *extended = 0b11111010;
         length = ogs_max(length, 2);
@@ -310,42 +310,42 @@ static uint8_t nas_qos_from_kbps(
      */
 
     /* giving a range of values from 260M to 500M in 4M increments */
-    else if (input >= (260*1024) && input <= (500*1024)) {
+    else if (input >= (260*1000) && input <= (500*1000)) {
         *br = 0b11111110;
         *extended = 0b11111010;
-        *extended2 = (input - (256*1024)) / (4*1024);
+        *extended2 = (input - (256*1000)) / (4*1000);
         length = ogs_max(length, 3);
     }
     /* if a range of values from 500M to 510M */
-    else if (input > (500*1024) && input < (510*1024)) {
+    else if (input > (500*1000) && input < (510*1000)) {
         *br = 0b11111110;
         *extended = 0b11111010;
         *extended2 = 0b00111101;
         length = ogs_max(length, 3);
     }
     /* giving a range of values from 510M to 1500M in 10M increments */
-    else if (input >= (510*1024) && input <= (1500*1024)) {
+    else if (input >= (510*1000) && input <= (1500*1000)) {
         *br = 0b11111110;
         *extended = 0b11111010;
-        *extended2 = (input - (500*1024)) / (10*1024) + 0b00111101;
+        *extended2 = (input - (500*1000)) / (10*1000) + 0b00111101;
         length = ogs_max(length, 3);
     }
     /* if a range of values from 1500M to 1600M */
-    else if (input > (1500*1024) && input < (1600*1024)) {
+    else if (input > (1500*1000) && input < (1600*1000)) {
         *br = 0b11111110;
         *extended = 0b11111010;
         *extended2 = 0b10100001;
         length = ogs_max(length, 3);
     }
     /* giving a range of values from 1600M to 10000M in 100M increments */
-    else if (input >= (1600*1024) && input <= (10*1000*1024)) {
+    else if (input >= (1600*1000) && input <= (10*1000*1000)) {
         *br = 0b11111110;
         *extended = 0b11111010;
-        *extended2 = (input - (1500*1024)) / (100*1024) + 0b10100001;
+        *extended2 = (input - (1500*1000)) / (100*1000) + 0b10100001;
         length = ogs_max(length, 3);
     }
     /* if the sending entity want to indicate BR higher than 10000Mbps */
-    else if (input > (10*1000*1024)) {
+    else if (input > (10*1000*1000)) {
         *br = 0b11111110;
         *extended = 0b11111010;
         *extended2 = 0b11110110;
@@ -361,8 +361,8 @@ void apn_ambr_build(
 {
     uint8_t length = 0;
 
-    dl_apn_ambr = dl_apn_ambr / 1024; /* Kbps */
-    ul_apn_ambr = ul_apn_ambr / 1024; /* Kbps */
+    dl_apn_ambr = dl_apn_ambr / 1000; /* Kbps */
+    ul_apn_ambr = ul_apn_ambr / 1000; /* Kbps */
 
     memset(apn_aggregate_maximum_bit_rate, 0,
         sizeof(ogs_nas_apn_aggregate_maximum_bit_rate_t));
@@ -387,10 +387,10 @@ void eps_qos_build(ogs_nas_eps_quality_of_service_t *eps_qos, uint8_t qci,
 {
     uint8_t length = 0;
 
-    dl_mbr = dl_mbr / 1024; /* Kbps */
-    ul_mbr = ul_mbr / 1024; /* Kbps */
-    dl_gbr = dl_gbr / 1024; /* Kbps */
-    ul_gbr = ul_gbr / 1024; /* Kbps */
+    dl_mbr = dl_mbr / 1000; /* Kbps */
+    ul_mbr = ul_mbr / 1000; /* Kbps */
+    dl_gbr = dl_gbr / 1000; /* Kbps */
+    ul_gbr = ul_gbr / 1000; /* Kbps */
 
     memset(eps_qos, 0, sizeof(ogs_nas_eps_quality_of_service_t));
 

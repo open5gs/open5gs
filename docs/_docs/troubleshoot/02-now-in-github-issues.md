@@ -168,8 +168,8 @@ $ mongosh
     "__v" : 0,
     "access_restriction_data" : 32,
     "ambr" : {
-        "downlink" : NumberLong(1024000),
-        "uplink" : NumberLong(1024000)
+        "downlink" : NumberLong(1000000),
+        "uplink" : NumberLong(1000000)
     },
     "network_access_mode" : 2,
     "pdn" : [
@@ -178,8 +178,8 @@ $ mongosh
             "_id" : ObjectId("609715fd455bcd38c884ce85"),
             "pcc_rule" : [ ],
             "ambr" : {
-                "downlink" : NumberLong(1024000),
-                "uplink" : NumberLong(1024000)
+                "downlink" : NumberLong(1000000),
+                "uplink" : NumberLong(1000000)
             },
             "qos" : {
                 "qci" : 9,

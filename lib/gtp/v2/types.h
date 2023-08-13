@@ -302,7 +302,7 @@ typedef struct ogs_gtp2_flow_qos_s {
 } __attribute__ ((packed)) ogs_gtp2_flow_qos_t;
 
 #define ogs_gtp2_qos_to_bps(br, extended, extended2) \
-    ogs_gtp2_qos_to_kbps(br, extended, extended2) * 1024;
+    ogs_gtp2_qos_to_kbps(br, extended, extended2) * 1000;
 
 uint64_t ogs_gtp2_qos_to_kbps(uint8_t br, uint8_t extended, uint8_t extended2);
 
