@@ -172,13 +172,18 @@ static int amf_context_validation(void)
     }
 
     if (self.num_of_ciphering_order == 0) {
-        ogs_error("no amf.security.ciphering_order in '%s'",
+        ogs_error("No amf.security.ciphering_order in '%s'",
                 ogs_app()->file);
         return OGS_ERROR;
     }
     if (ogs_nas_gprs_timer_from_sec(&gprs_timer, self.time.t3502.value) !=
         OGS_OK) {
         ogs_error("Not support GPRS Timer 2 [%d]", (int)self.time.t3502.value);
+        return OGS_ERROR;
+    }
+    if (!self.time.t3512.value) {
+        ogs_error("No amf.time.t3512.value in '%s'",
+                ogs_app()->file);
         return OGS_ERROR;
     }
     if (ogs_nas_gprs_timer_3_from_sec(&gprs_timer, self.time.t3512.value) !=
@@ -1024,6 +1029,8 @@ int amf_context_parse_config(void)
                         } else
                             ogs_warn("unknown key `%s`", t3512_key);
                     }
+                } else if (!strcmp(time_key, "t3412")) {
+                    /* handle config in mme */
                 } else if (!strcmp(time_key, "nf_instance")) {
                     /* handle config in app library */
                 } else if (!strcmp(time_key, "subscription")) {

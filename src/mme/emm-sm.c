@@ -191,10 +191,58 @@ void emm_state_registered(ogs_fsm_t *s, mme_event_t *e)
         case MME_TIMER_MOBILE_REACHABLE:
             ogs_info("[%s] Mobile Reachable timer expired", mme_ue->imsi_bcd);
             CLEAR_MME_UE_TIMER(mme_ue->t_mobile_reachable);
-            /* TS 24.301 5.3.5
-             * Upon expiry of the mobile reachable timer the network shall
-             * start the implicit detach timer.
-             */
+        /*
+         * TS 24.301
+         * Section 5.3.5
+         * Handling of the periodic tracking area update timer and
+         * mobile reachable timer (S1 mode only)
+         *
+         * The periodic tracking area updating procedure is used to
+         * periodically notify the availability of the UE to the network.
+         * The procedure is controlled in the UE by timer T3412.
+         * The value of timer T3412 is sent by the network to the UE
+         * in the ATTACH ACCEPT message and can be sent in the TRACKING AREA
+         * UPDATE ACCEPT message. The UE shall apply this value in all tracking
+         * areas of the list of tracking areas assigned to the UE
+         * until a new value is received.
+         *
+         * If timer T3412 received by the UE in an ATTACH ACCEPT or TRACKING
+         * AREA UPDATE ACCEPT message contains an indication that the timer is
+         * deactivated or the timer value is zero, then timer T3412 is
+         * deactivated and the UE shall not perform the periodic tracking area
+         * updating procedure.
+         *
+         * Timer T3412 is reset and started with its initial value,
+         * when the UE changes from EMM-CONNECTED to EMM-IDLE mode.
+         *
+         * Timer T3412 is stopped when the UE enters EMM-CONNECTED mode or
+         * the EMM-DEREGISTERED state. If the UE is attached for emergency
+         * bearer services, and timer T3412 expires, the UE shall not initiate
+         * a periodic tracking area updating procedure, but shall locally detach
+         * from the network. When the UE is camping on a suitable cell, it may
+         * re-attach to regain normal service.
+         *
+         * When a UE is not attached for emergency bearer services, and timer
+         * T3412 expires, the periodic tracking area updating procedure shall
+         * be started and the timer shall be set to its initial value
+         * for the next start.
+         *
+         * If the UE is not attached for emergency bearer services, the mobile
+         * reachable timer shall be longer than T3412. In this case, by default,
+         * the mobile reachable timer is 4 minutes greater than timer T3412.
+         *
+         * Upon expiry of the mobile reachable timer the network shall start
+         * the implicit detach timer. The value of the implicit detach timer is
+         * network dependent. If ISR is activated, the default value of
+         * the implicit detach timer is 4 minutes greater than timer T3423.
+         * If the implicit detach timer expires before the UE contacts
+         * the network, the network shall implicitly detach the UE. If the MME
+         * includes timer T3346 in the TRACKING AREA UPDATE REJECT message or
+         * the SERVICE REJECT message and timer T3346 is greater than timer
+         * T3412, the MME sets the mobile reachable timer and the implicit
+         * detach timer such that the sum of the timer values is greater than
+         * timer T3346.
+         */
             ogs_debug("[%s] Starting Implicit Detach timer",
                 mme_ue->imsi_bcd);
             ogs_timer_start(mme_ue->t_implicit_detach.timer,

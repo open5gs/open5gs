@@ -193,6 +193,9 @@ static int mme_context_prepare(void)
     self.diam_config->cnf_port = DIAMETER_PORT;
     self.diam_config->cnf_port_tls = DIAMETER_SECURE_PORT;
 
+    /* Set the default T3412 to 9 minutes for backward compatibility. */
+    self.time.t3412.value = 540;
+
     return OGS_OK;
 }
 
@@ -267,13 +270,18 @@ static int mme_context_validation(void)
         return OGS_ERROR;
     }
     if (self.num_of_ciphering_order == 0) {
-        ogs_error("no mme.security.ciphering_order in '%s'",
+        ogs_error("No mme.security.ciphering_order in '%s'",
                 ogs_app()->file);
         return OGS_ERROR;
     }
     if (ogs_nas_gprs_timer_from_sec(&gprs_timer, self.time.t3402.value) !=
         OGS_OK) {
         ogs_error("Not support GPRS Timer [%d]", (int)self.time.t3402.value);
+        return OGS_ERROR;
+    }
+    if (!self.time.t3412.value) {
+        ogs_error("No mme.time.t3412.value in '%s'",
+                ogs_app()->file);
         return OGS_ERROR;
     }
     if (ogs_nas_gprs_timer_from_sec(&gprs_timer, self.time.t3412.value) !=

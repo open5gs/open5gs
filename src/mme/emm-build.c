@@ -138,15 +138,11 @@ ogs_pkbuf_t *emm_build_attach_accept(
         }
     }
 
-    /* Set T3412 */
-    t3412_value->unit = OGS_NAS_GPRS_TIMER_UNIT_MULTIPLES_OF_DECI_HH;
-    t3412_value->value = 9;
-
-    if (mme_self()->time.t3412.value) {
-        rv = ogs_nas_gprs_timer_from_sec(
-                t3412_value, mme_self()->time.t3412.value);
-        ogs_assert(rv == OGS_OK);
-    }
+    /* Set T3412 : Mandatory in Open5GS */
+    ogs_assert(mme_self()->time.t3412.value);
+    rv = ogs_nas_gprs_timer_from_sec(
+            t3412_value, mme_self()->time.t3412.value);
+    ogs_assert(rv == OGS_OK);
 
     ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
             ogs_plmn_id_hexdump(&mme_ue->tai.plmn_id),

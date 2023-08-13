@@ -255,5 +255,7 @@ udr:
         port: 7777
 
 time:
+  t3412:
+    value: 540     # 9 mintues * 60 = 540 seconds
   t3512:
     value: 540     # 9 mintues * 60 = 540 seconds

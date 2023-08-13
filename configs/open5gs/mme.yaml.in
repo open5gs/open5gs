@@ -581,3 +581,5 @@ usrsctp:
 #    t3423:
 #      value: 720  # 12 minutes * 60 = 720 seconds
 time:
+  t3412:
+    value: 540     # 9 mintues * 60 = 540 seconds

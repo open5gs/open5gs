@@ -97,11 +97,11 @@ int ogs_nas_gprs_timer_from_sec(
             gprs_timer->unit = OGS_NAS_GPRS_TIMER_UNIT_MULTIPLES_OF_1_MM;
             gprs_timer->value = timer_value;
         } else {
-            if (timer_value%10 != 0) {
-                ogs_error("Not multiples of decihours(= 10 minutes)");
+            if (timer_value%6 != 0) {
+                ogs_error("Not multiples of decihours(= 6 minutes)");
                 return OGS_ERROR;
             }
-            timer_value /= 10; /* multiples of decihours = 10 minutes */
+            timer_value /= 6; /* multiples of decihours = 6 minutes */
             if (timer_value <= 31) {
                 gprs_timer->unit = OGS_NAS_GPRS_TIMER_UNIT_MULTIPLES_OF_DECI_HH;
                 gprs_timer->value = timer_value;
