@@ -226,7 +226,7 @@ done:
                     }
 
                     for (n = 0; n < unit; n++)
-                        session->ambr.downlink *= 1024;
+                        session->ambr.downlink *= 1000;
                 } else if (!strcmp(child5_key, "uplink") &&
                         BSON_ITER_HOLDS_DOCUMENT(&child5_iter)) {
                     uint8_t unit = 0;
@@ -246,7 +246,7 @@ done:
                     }
 
                     for (n = 0; n < unit; n++)
-                        session->ambr.uplink *= 1024;
+                        session->ambr.uplink *= 1000;
                 }
 
             }
@@ -332,7 +332,7 @@ done:
                                         }
 
                                         for (n = 0; n < unit; n++)
-                                            pcc_rule->qos.mbr.downlink *= 1024;
+                                            pcc_rule->qos.mbr.downlink *= 1000;
 
                                     } else if (!strcmp(child8_key, "uplink") &&
                                         BSON_ITER_HOLDS_DOCUMENT(
@@ -361,7 +361,7 @@ done:
                                         }
 
                                         for (n = 0; n < unit; n++)
-                                            pcc_rule->qos.mbr.uplink *= 1024;
+                                            pcc_rule->qos.mbr.uplink *= 1000;
                                     }
                                 }
                             } else if (!strcmp(child7_key, "gbr") &&
@@ -397,7 +397,7 @@ done:
                                         }
 
                                         for (n = 0; n < unit; n++)
-                                            pcc_rule->qos.gbr.downlink *= 1024;
+                                            pcc_rule->qos.gbr.downlink *= 1000;
 
                                     } else if (!strcmp(child8_key, "uplink") &&
                                         BSON_ITER_HOLDS_DOCUMENT(
@@ -426,7 +426,7 @@ done:
                                         }
 
                                         for (n = 0; n < unit; n++)
-                                            pcc_rule->qos.gbr.uplink *= 1024;
+                                            pcc_rule->qos.gbr.uplink *= 1000;
                                     }
                                 }
                             }

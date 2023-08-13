@@ -242,7 +242,7 @@ ogs_pkbuf_t *testgsm_build_pdu_session_modification_request(
                 sizeof(qos_flow_description[0].param[num_of_param].br);
             ogs_nas_bitrate_from_uint64(
                     &qos_flow_description[0].param[num_of_param].br,
-                    32*1024);
+                    32*1000);
             num_of_param++;
             qos_flow_description[0].param[num_of_param].identifier =
                 OGS_NAX_QOS_FLOW_PARAMETER_ID_GFBR_DOWNLINK;
@@ -250,7 +250,7 @@ ogs_pkbuf_t *testgsm_build_pdu_session_modification_request(
                 sizeof(qos_flow_description[0].param[num_of_param].br);
             ogs_nas_bitrate_from_uint64(
                     &qos_flow_description[0].param[num_of_param].br,
-                    48*1024);
+                    48*1000);
             num_of_param++;
             qos_flow_description[0].param[num_of_param].identifier =
                 OGS_NAX_QOS_FLOW_PARAMETER_ID_MFBR_UPLINK;
@@ -258,7 +258,7 @@ ogs_pkbuf_t *testgsm_build_pdu_session_modification_request(
                 sizeof(qos_flow_description[0].param[num_of_param].br);
             ogs_nas_bitrate_from_uint64(
                     &qos_flow_description[0].param[num_of_param].br,
-                    16*1024);
+                    16*1000);
             num_of_param++;
             qos_flow_description[0].param[num_of_param].identifier =
                 OGS_NAX_QOS_FLOW_PARAMETER_ID_MFBR_DOWNLINK;
@@ -266,7 +266,7 @@ ogs_pkbuf_t *testgsm_build_pdu_session_modification_request(
                 sizeof(qos_flow_description[0].param[num_of_param].br);
             ogs_nas_bitrate_from_uint64(
                     &qos_flow_description[0].param[num_of_param].br,
-                    64*1024);
+                    64*1000);
             num_of_param++;
         }
 
