@@ -294,6 +294,30 @@ bool udr_nudr_dr_handle_subscription_context(
                 return false;
             }
 
+            if (Amf3GppAccessRegistration->pei) {
+                char *type = NULL, *value = NULL;
+                char *pei = NULL;
+
+                pei = ogs_strdup(Amf3GppAccessRegistration->pei);
+                ogs_assert(pei);
+
+                type = ogs_id_get_type(pei);
+                ogs_assert(type);
+                value = ogs_id_get_value(pei);
+                ogs_assert(value);
+
+                if (strcmp(type, "imeisv") == 0) {
+                    ogs_assert(OGS_OK == ogs_dbi_update_imeisv(supi, value));
+                } else {
+                    ogs_fatal("Unknown Type = %s", type);
+                    ogs_assert_if_reached();
+                }
+
+                ogs_free(pei);
+                ogs_free(type);
+                ogs_free(value);
+            }
+
             memset(&sendmsg, 0, sizeof(sendmsg));
 
             response = ogs_sbi_build_response(

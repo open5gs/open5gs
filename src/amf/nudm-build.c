@@ -75,6 +75,7 @@ ogs_sbi_request_t *amf_nudm_uecm_build_registration(
         ogs_error("No rat_type");
         goto end;
     }
+    Amf3GppAccessRegistration.pei = amf_ue->pei;
 
     message.Amf3GppAccessRegistration = &Amf3GppAccessRegistration;
 

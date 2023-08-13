@@ -373,19 +373,19 @@ static void ogs_nas_eps_message_test9(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 31, gprs_timer.value);
     rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 60*32);
     ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
-    rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 60*10*4);
+    rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 60*6*8);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_UNIT_MULTIPLES_OF_DECI_HH,
             gprs_timer.unit);
-    ABTS_INT_EQUAL(tc, 4, gprs_timer.value);
-    rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 60*10*4+1);
+    ABTS_INT_EQUAL(tc, 8, gprs_timer.value);
+    rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 60*6*8+1);
     ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
-    rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 60*10*31);
+    rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 60*6*31);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_UNIT_MULTIPLES_OF_DECI_HH,
             gprs_timer.unit);
     ABTS_INT_EQUAL(tc, 31, gprs_timer.value);
-    rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 60*10*32);
+    rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 60*6*32);
     ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
 
     rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 1);
