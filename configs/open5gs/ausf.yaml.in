@@ -1,3 +1,4 @@
+trace_uri: http://localhost:4318/v1/traces
 logger:
   file:
     path: @localstatedir@/log/open5gs/ausf.log
