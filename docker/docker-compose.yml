@@ -11,6 +11,14 @@ services:
       - mongodb:/data/db
       - ../docs/assets/webui/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
 
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: open5gs-jaeger
+    ports:
+      - "16686:16686"
+      - "14268:14268"
+      - "4318:4318"
+
   webui:
     build:
       context: ../
@@ -53,6 +61,7 @@ services:
     depends_on:
       - mongodb
       - build
+      - jaeger
     cap_add:
       - NET_ADMIN
     devices:
@@ -69,8 +78,10 @@ services:
     depends_on:
       - mongodb
       - build
+      - jaeger
     environment:
       - DB_URI=mongodb://mongodb/open5gs
+      - TRACE_URI=http://jaeger:4318/v1/traces
       - WAIT_HOSTS=mongodb:27017
     cap_add:
       - NET_ADMIN
@@ -92,8 +103,10 @@ services:
     depends_on:
       - mongodb
       - base
+      - jaeger
     environment:
       - DB_URI=mongodb://mongodb/open5gs
+      - TRACE_URI=http://jaeger:4318/v1/traces
       - DISPLAY=$DISPLAY
     # - DISPLAY=host.docker.internal:0
     cap_add:
