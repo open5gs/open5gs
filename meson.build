@@ -18,7 +18,7 @@
 project('open5gs', 'c', 'cpp',
     version : '2.7.6',
     license : 'AGPL-3.0-or-later',
-    meson_version : '>= 0.43.0',
+    meson_version : '>= 0.55.0',
     default_options : [
         'warning_level=1',
         'c_std=gnu89',
@@ -36,6 +36,7 @@ localstatedir = join_paths(prefix, get_option('localstatedir'))
 open5gs_build_dir = meson.current_build_dir()
 
 cc = meson.get_compiler('c')
+cpp = meson.get_compiler('cpp')
 host_system = host_machine.system()
 
 git = find_program('git', required: false)
@@ -61,18 +62,14 @@ meson.add_install_script(python3_exe, '-c',
 
 # Compiler flags
 if cc.get_id() == 'gcc' or cc.get_id() == 'clang'
-    possible_cc_flags = [
+    possible_cc_cpp_flags = [
         '-Wextra',
         '-Wlogical-op',
         '-Werror=pointer-arith',
         '-Werror=init-self',
         '-Wfloat-equal',
         '-Wsuggest-attribute=noreturn',
-        '-Werror=missing-prototypes',
-        '-Werror=missing-declarations',
-        '-Werror=implicit-function-declaration',
         '-Werror=return-type',
-        '-Werror=incompatible-pointer-types',
         '-Werror=format=2',
         '-Wstrict-prototypes',
         '-Wredundant-decls',
@@ -101,25 +98,47 @@ if cc.get_id() == 'gcc' or cc.get_id() == 'clang'
     ]
 
     if cc.get_id() == 'clang'
-        possible_cc_flags += [
+        possible_cc_cpp_flags += [
             '-Wno-typedef-redefinition',
             '-Wno-gnu-variable-sized-type-not-at-end',
         ]
     endif
 
     if get_option('buildtype') != 'debug'
-        possible_cc_flags += [
+        possible_cc_cpp_flags += [
             '-ffunction-sections',
             '-fdata-sections',
         ]
     endif
+
+    possible_cc_flags = possible_cc_cpp_flags
+    possible_cpp_flags = possible_cc_cpp_flags
+
+    ##
+    ## end of common C/C++ compiler flags
+    ##
+
+    possible_cc_flags += [
+        '-Werror=missing-prototypes',
+        '-Werror=missing-declarations',
+        '-Werror=implicit-function-declaration',
+        '-Werror=incompatible-pointer-types'
+    ]
+    possible_cpp_flags += [
+        '-fpermissive'
+    ]
 else
     possible_cc_flags = []
+    possible_cpp_flags = []
 endif
 
 add_project_arguments(
     cc.get_supported_arguments(possible_cc_flags),
     language : 'c')
+
+add_project_arguments(
+    cpp.get_supported_arguments(possible_cpp_flags),
+    language : 'cpp')
 
 subdir('configs')
 subdir('lib')

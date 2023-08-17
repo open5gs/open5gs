@@ -1,0 +1,8 @@
+[wrap-git]
+directory = opentelemetry-cpp
+url = https://github.com/open-telemetry/opentelemetry-cpp.git
+revision = v1.10.0
+clone-recursive = true
+
+[provide]
+dependency_names = libopentelemetry-cpp

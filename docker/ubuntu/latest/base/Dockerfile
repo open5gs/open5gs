@@ -12,6 +12,7 @@ RUN apt-get update && \
         python3-setuptools \
         python3-wheel \
         ninja-build \
+        protobuf-compiler \
         build-essential \
         flex \
         bison \
@@ -30,6 +31,7 @@ RUN apt-get update && \
         libnghttp2-dev \
         libtins-dev \
         libtalloc-dev \
+        libprotoc-dev \
         iproute2 \
         ca-certificates \
         netbase \
