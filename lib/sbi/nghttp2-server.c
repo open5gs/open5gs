@@ -592,7 +592,13 @@ static bool server_send_rspmem_persistent(
 
     i = 0;
 
-    ogs_assert(strlen(status_string[response->status]) == 3);
+    if (strlen(status_string[response->status]) != 3) {
+        ogs_fatal("response status [%d]", response->status);
+        ogs_fatal("status string [%s]", status_string[response->status]);
+        ogs_assert_if_reached();
+        return false;
+    }
+
     add_header(&nva[i++], ":status", status_string[response->status]);
 
     ogs_snprintf(srv_version, sizeof(srv_version),

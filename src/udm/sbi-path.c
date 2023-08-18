@@ -53,6 +53,7 @@ int udm_sbi_open(void)
         ogs_sbi_nf_service_add_version(
                     service, OGS_SBI_API_V1, OGS_SBI_API_V1_0_0, NULL);
         ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_AMF);
+        ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_SMF);
     }
 
     if (ogs_sbi_nf_service_is_available(OGS_SBI_SERVICE_NAME_NUDM_SDM)) {
@@ -93,29 +94,26 @@ bool udm_sbi_send_request(
     return ogs_sbi_send_request_to_nf_instance(nf_instance, xact);
 }
 
-int udm_sbi_discover_and_send(
+static int udm_sbi_discover_and_send(
+        ogs_sbi_object_t *sbi_object,
         ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
-        ogs_sbi_request_t *(*build)(udm_ue_t *udm_ue, void *data),
-        udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, void *data)
+        ogs_sbi_build_f build,
+        void *context, ogs_sbi_stream_t *stream, void *data)
 {
     ogs_sbi_xact_t *xact = NULL;
     int r;
 
     ogs_assert(service_type);
-    ogs_assert(udm_ue);
+    ogs_assert(sbi_object);
     ogs_assert(stream);
     ogs_assert(build);
 
     xact = ogs_sbi_xact_add(
-            &udm_ue->sbi, service_type, discovery_option,
-            (ogs_sbi_build_f)build, udm_ue, data);
+            sbi_object, service_type, discovery_option,
+            (ogs_sbi_build_f)build, context, data);
     if (!xact) {
         ogs_error("udm_sbi_discover_and_send() failed");
-        ogs_assert(true ==
-            ogs_sbi_server_send_error(stream,
-                OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
-                "Cannot discover", udm_ue->suci));
         return OGS_ERROR;
     }
 
@@ -125,10 +123,52 @@ int udm_sbi_discover_and_send(
     if (r != OGS_OK) {
         ogs_error("udm_sbi_discover_and_send() failed");
         ogs_sbi_xact_remove(xact);
+        return r;
+    }
+
+    return OGS_OK;
+}
+
+int udm_ue_sbi_discover_and_send(
+        ogs_sbi_service_type_e service_type,
+        ogs_sbi_discovery_option_t *discovery_option,
+        ogs_sbi_request_t *(*build)(udm_ue_t *udm_ue, void *data),
+        udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, void *data)
+{
+    int r;
+
+    r = udm_sbi_discover_and_send(
+                &udm_ue->sbi, service_type, discovery_option,
+                (ogs_sbi_build_f)build, udm_ue, stream, data);
+    if (r != OGS_OK) {
+        ogs_error("udm_ue_sbi_discover_and_send() failed");
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
                 "Cannot discover", udm_ue->suci));
+        return r;
+    }
+
+    return OGS_OK;
+}
+
+int udm_sess_sbi_discover_and_send(
+        ogs_sbi_service_type_e service_type,
+        ogs_sbi_discovery_option_t *discovery_option,
+        ogs_sbi_request_t *(*build)(udm_sess_t *sess, void *data),
+        udm_sess_t *sess, ogs_sbi_stream_t *stream, void *data)
+{
+    int r;
+
+    r = udm_sbi_discover_and_send(
+                &sess->sbi, service_type, discovery_option,
+                (ogs_sbi_build_f)build, sess, stream, data);
+    if (r != OGS_OK) {
+        ogs_error("udm_sess_sbi_discover_and_send() failed");
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream,
+                OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
+                "Cannot discover", NULL));
         return r;
     }
 

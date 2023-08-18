@@ -102,6 +102,7 @@ extern "C" {
 #define OGS_SBI_RESOURCE_NAME_AUTH_EVENTS           "auth-events"
 #define OGS_SBI_RESOURCE_NAME_REGISTRATIONS         "registrations"
 #define OGS_SBI_RESOURCE_NAME_AMF_3GPP_ACCESS       "amf-3gpp-access"
+#define OGS_SBI_RESOURCE_NAME_SMF_REGISTRATIONS     "smf-registrations"
 
 #define OGS_SBI_RESOURCE_NAME_SUBSCRIPTION_DATA     "subscription-data"
 #define OGS_SBI_RESOURCE_NAME_AUTHENTICATION_DATA   "authentication-data"
@@ -509,6 +510,7 @@ typedef struct ogs_sbi_message_s {
     OpenAPI_deregistration_data_t *DeregistrationData;
     OpenAPI_sdm_subscription_t *SDMSubscription;
     OpenAPI_modification_notification_t *ModificationNotification;
+    OpenAPI_smf_registration_t *SmfRegistration;
 
     ogs_sbi_links_t *links;
 

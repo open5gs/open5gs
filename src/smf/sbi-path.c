@@ -67,6 +67,8 @@ int smf_sbi_open(void)
             OpenAPI_nf_type_PCF, OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL);
     ogs_sbi_subscription_spec_add(
             OpenAPI_nf_type_UDM, OGS_SBI_SERVICE_NAME_NUDM_SDM);
+    ogs_sbi_subscription_spec_add(
+            OpenAPI_nf_type_UDM, OGS_SBI_SERVICE_NAME_NUDM_UECM);
 
     if (ogs_sbi_server_start_all(ogs_sbi_server_handler) != OGS_OK)
         return OGS_ERROR;
@@ -109,10 +111,11 @@ int smf_sbi_discover_and_send(
             (ogs_sbi_build_f)build, sess, data);
     if (!xact) {
         ogs_error("smf_sbi_discover_and_send() failed");
-        ogs_assert(true ==
-            ogs_sbi_server_send_error(stream,
-                OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
-                "Cannot discover", smf_ue->supi));
+        if (stream)
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream,
+                    OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
+                    "Cannot discover", smf_ue->supi));
         return OGS_ERROR;
     }
 
