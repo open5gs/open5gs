@@ -380,6 +380,11 @@ typedef struct smf_sess_s {
         int pdu_session_resource_release;
     } ngap_state;
 
+#define SMF_UECM_STATE_NONE                                     0
+#define SMF_UECM_STATE_REGISTERED                               1
+#define SMF_UECM_STATE_DEREGISTERED_BY_AMF                      2
+#define SMF_UECM_STATE_DEREGISTERED_BY_N1_N2_RELEASE            3
+
     /* Handover */
     struct {
         bool prepared;

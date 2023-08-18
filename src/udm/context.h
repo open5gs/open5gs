@@ -70,6 +70,22 @@ struct udm_ue_s {
 
     OpenAPI_auth_type_e auth_type;
     OpenAPI_rat_type_e rat_type;
+
+    ogs_list_t sess_list;
+};
+
+struct udm_sess_s {
+    ogs_sbi_object_t sbi;
+    ogs_fsm_t sm;
+
+    uint8_t psi; /* PDU Session Identity */
+
+    OpenAPI_smf_registration_t *smf_registration;
+
+    char *smf_instance_id;
+
+    /* Related Context */
+    udm_ue_t *udm_ue;
 };
 
 void udm_context_init(void);
@@ -86,7 +102,14 @@ udm_ue_t *udm_ue_find_by_supi(char *supi);
 udm_ue_t *udm_ue_find_by_suci_or_supi(char *suci_or_supi);
 udm_ue_t *udm_ue_find_by_ctx_id(char *ctx_id);
 
+udm_sess_t *udm_sess_add(udm_ue_t *udm_ue, uint8_t psi);
+void udm_sess_remove(udm_sess_t *sess);
+void udm_sess_remove_all(udm_ue_t *udm_ue);
+udm_sess_t *udm_sess_find_by_psi(udm_ue_t *udm_ue, uint8_t psi);
+
 udm_ue_t *udm_ue_cycle(udm_ue_t *udm_ue);
+udm_sess_t *udm_sess_cycle(udm_sess_t *sess);
+
 int get_ue_load(void);
 
 #ifdef __cplusplus

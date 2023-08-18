@@ -791,9 +791,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 ogs_error("Session has already been removed");
                 break;
             }
-            smf_ue = sess->smf_ue;
-            ogs_assert(smf_ue);
-            smf_ue = smf_ue_cycle(smf_ue);
+            smf_ue = smf_ue_cycle(sess->smf_ue);
             ogs_assert(smf_ue);
             ogs_assert(OGS_FSM_STATE(&sess->sm));
 
@@ -801,6 +799,88 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             e->h.sbi.message = &sbi_message;
 
             ogs_fsm_dispatch(&sess->sm, e);
+            break;
+
+        CASE(OGS_SBI_SERVICE_NAME_NUDM_UECM)
+            int state = 0;
+            bool unknown_res_status = false;
+
+            sbi_xact = e->h.sbi.data;
+            ogs_assert(sbi_xact);
+
+            sbi_xact = ogs_sbi_xact_cycle(sbi_xact);
+            if (!sbi_xact) {
+                /* CLIENT_WAIT timer could remove SBI transaction
+                 * before receiving SBI message */
+                ogs_error("SBI transaction has already been removed");
+                break;
+            }
+
+            sess = (smf_sess_t *)sbi_xact->sbi_object;
+            ogs_assert(sess);
+
+            stream = sbi_xact->assoc_stream;
+            state = sbi_xact->state;
+            ogs_assert(state);
+
+            ogs_sbi_xact_remove(sbi_xact);
+
+            sess = smf_sess_cycle(sess);
+            if (!sess) {
+                ogs_error("Session has already been removed");
+                break;
+            }
+            smf_ue = smf_ue_cycle(sess->smf_ue);
+            ogs_assert(smf_ue);
+
+            if (state == SMF_UECM_STATE_REGISTERED) {
+                /* SMF Registration */
+                if (sbi_message.res_status != OGS_SBI_HTTP_STATUS_OK &&
+                    sbi_message.res_status != OGS_SBI_HTTP_STATUS_CREATED)
+                    unknown_res_status = true;
+            } else if (state == SMF_UECM_STATE_DEREGISTERED_BY_AMF ||
+                        state == SMF_UECM_STATE_DEREGISTERED_BY_N1_N2_RELEASE) {
+                /* SMF Deregistration */
+                if (sbi_message.res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT)
+                    unknown_res_status = true;
+            } else {
+                ogs_fatal("Unknown state [%d]", state);
+                ogs_assert_if_reached();
+            }
+
+            if (unknown_res_status == true) {
+                char *strerror = ogs_msprintf(
+                    "[%s:%d] HTTP response error [%d] state [%d]",
+                    smf_ue->supi, sess->psi, sbi_message.res_status, state);
+                ogs_assert(strerror);
+
+                ogs_error("%s", strerror);
+                if (stream)
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                            NULL, strerror, NULL));
+                ogs_free(strerror);
+
+                OGS_FSM_TRAN(s, smf_gsm_state_exception);
+                break;
+            }
+
+            if (state == SMF_UECM_STATE_REGISTERED) {
+                /* SMF Registration */
+                ogs_assert(stream);
+                ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
+            } else if (state == SMF_UECM_STATE_DEREGISTERED_BY_AMF) {
+                /* SMF Deregistration */
+                ogs_assert(stream);
+                ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
+                SMF_SESS_CLEAR(sess);
+            } else if (state == SMF_UECM_STATE_DEREGISTERED_BY_N1_N2_RELEASE) {
+                /* SMF Deregistration */
+                ogs_assert(true == smf_sbi_send_sm_context_status_notify(sess));
+                SMF_SESS_CLEAR(sess);
+            }
+
             break;
 
         DEFAULT

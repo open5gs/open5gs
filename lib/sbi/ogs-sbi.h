@@ -46,6 +46,7 @@
 #include "model/auth_event.h"
 #include "model/amf3_gpp_access_registration.h"
 #include "model/amf3_gpp_access_registration_modification.h"
+#include "model/smf_registration.h"
 #include "model/access_and_mobility_subscription_data.h"
 #include "model/smf_selection_subscription_data.h"
 #include "model/ue_context_in_smf_data.h"

@@ -107,6 +107,8 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
     if (message->Amf3GppAccessRegistrationModification)
         OpenAPI_amf3_gpp_access_registration_modification_free(
                 message->Amf3GppAccessRegistrationModification);
+    if (message->SmfRegistration)
+        OpenAPI_smf_registration_free(message->SmfRegistration);
     if (message->AccessAndMobilitySubscriptionData)
         OpenAPI_access_and_mobility_subscription_data_free(
                 message->AccessAndMobilitySubscriptionData);
@@ -1053,6 +1055,9 @@ static char *build_json(ogs_sbi_message_t *message)
         item = OpenAPI_amf3_gpp_access_registration_modification_convertToJSON(
                 message->Amf3GppAccessRegistrationModification);
         ogs_assert(item);
+    } else if (message->SmfRegistration) {
+        item = OpenAPI_smf_registration_convertToJSON(message->SmfRegistration);
+        ogs_assert(item);
     } else if (message->AccessAndMobilitySubscriptionData) {
         item = OpenAPI_access_and_mobility_subscription_data_convertToJSON(
                 message->AccessAndMobilitySubscriptionData);
@@ -1357,8 +1362,6 @@ static int parse_json(ogs_sbi_message_t *message,
                         }
                     }
                     break;
-                CASE(OGS_SBI_HTTP_METHOD_DELETE)
-                    break;
                 DEFAULT
                     rv = OGS_ERROR;
                     ogs_error("Unknown method [%s]", message->h.method);
@@ -1426,7 +1429,6 @@ static int parse_json(ogs_sbi_message_t *message,
             CASE(OGS_SBI_RESOURCE_NAME_REGISTRATIONS)
                 SWITCH(message->h.resource.component[2])
                 CASE(OGS_SBI_RESOURCE_NAME_AMF_3GPP_ACCESS)
-
                     SWITCH(message->h.method)
                     CASE(OGS_SBI_HTTP_METHOD_PUT)
                         if (message->res_status < 300) {
@@ -1461,6 +1463,21 @@ static int parse_json(ogs_sbi_message_t *message,
                         ogs_error("Unknown method [%s]", message->h.method);
                     END
                     break;
+
+                CASE(OGS_SBI_RESOURCE_NAME_SMF_REGISTRATIONS)
+                    if (message->res_status < 300) {
+                        message->SmfRegistration =
+                            OpenAPI_smf_registration_parseFromJSON(item);
+                        if (!message->SmfRegistration) {
+                            rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
+                        }
+                    } else {
+                        ogs_error("HTTP ERROR Status : %d",
+                                message->res_status);
+                    }
+                    break;
+
                 DEFAULT
                     rv = OGS_ERROR;
                     ogs_error("Unknown resource name [%s]",
@@ -1599,18 +1616,39 @@ static int parse_json(ogs_sbi_message_t *message,
                     break;
 
                 CASE(OGS_SBI_RESOURCE_NAME_CONTEXT_DATA)
-                    if (message->res_status < 300) {
-                        message->Amf3GppAccessRegistration =
-                            OpenAPI_amf3_gpp_access_registration_parseFromJSON(
-                                    item);
-                        if (!message->Amf3GppAccessRegistration) {
-                            rv = OGS_ERROR;
-                            ogs_error("JSON parse error");
+                    SWITCH(message->h.resource.component[3])
+                    CASE(OGS_SBI_RESOURCE_NAME_AMF_3GPP_ACCESS)
+                        if (message->res_status < 300) {
+                            message->Amf3GppAccessRegistration =
+                                OpenAPI_amf3_gpp_access_registration_parseFromJSON(
+                                        item);
+                            if (!message->Amf3GppAccessRegistration) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
+                        } else {
+                            ogs_error("HTTP ERROR Status : %d",
+                                    message->res_status);
                         }
-                    } else {
-                        ogs_error("HTTP ERROR Status : %d",
-                                message->res_status);
-                    }
+                        break;
+                    CASE(OGS_SBI_RESOURCE_NAME_SMF_REGISTRATIONS)
+                        if (message->res_status < 300) {
+                            message->SmfRegistration =
+                                OpenAPI_smf_registration_parseFromJSON(item);
+                            if (!message->SmfRegistration) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
+                        } else {
+                            ogs_error("HTTP ERROR Status : %d",
+                                    message->res_status);
+                        }
+                        break;
+                    DEFAULT
+                        rv = OGS_ERROR;
+                        ogs_error("Unknown resource name [%s]",
+                                message->h.resource.component[3]);
+                    END
                     break;
 
                 DEFAULT
@@ -1897,33 +1935,22 @@ static int parse_json(ogs_sbi_message_t *message,
         CASE(OGS_SBI_SERVICE_NAME_NPCF_AM_POLICY_CONTROL)
             SWITCH(message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_POLICIES)
-                SWITCH(message->h.method)
-                CASE(OGS_SBI_HTTP_METHOD_POST)
-                    if (message->res_status == 0) {
-                        message->PolicyAssociationRequest =
-                            OpenAPI_policy_association_request_parseFromJSON(
-                                    item);
-                        if (!message->PolicyAssociationRequest) {
-                            rv = OGS_ERROR;
-                            ogs_error("JSON parse error");
-                        }
-                    } else if (message->res_status ==
-                            OGS_SBI_HTTP_STATUS_CREATED) {
-                        message->PolicyAssociation =
-                            OpenAPI_policy_association_parseFromJSON(item);
-                        if (!message->PolicyAssociation) {
-                            rv = OGS_ERROR;
-                            ogs_error("JSON parse error");
-                        }
+                if (message->res_status == 0) {
+                    message->PolicyAssociationRequest =
+                        OpenAPI_policy_association_request_parseFromJSON(item);
+                    if (!message->PolicyAssociationRequest) {
+                        rv = OGS_ERROR;
+                        ogs_error("JSON parse error");
                     }
-                    break;
-                CASE(OGS_SBI_HTTP_METHOD_DELETE)
-                    /* Nothing */
-                    break;
-                DEFAULT
-                    rv = OGS_ERROR;
-                    ogs_error("Unknown method [%s]", message->h.method);
-                END
+                } else if (message->res_status ==
+                        OGS_SBI_HTTP_STATUS_CREATED) {
+                    message->PolicyAssociation =
+                        OpenAPI_policy_association_parseFromJSON(item);
+                    if (!message->PolicyAssociation) {
+                        rv = OGS_ERROR;
+                        ogs_error("JSON parse error");
+                    }
+                }
                 break;
             DEFAULT
                 rv = OGS_ERROR;
@@ -2005,23 +2032,14 @@ static int parse_json(ogs_sbi_message_t *message,
             SWITCH(message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_PCF_BINDINGS)
                 if (message->h.resource.component[1]) {
-                    SWITCH(message->h.method)
-                    CASE(OGS_SBI_HTTP_METHOD_PATCH)
-                        if (message->res_status == OGS_SBI_HTTP_STATUS_OK) {
-                            message->PcfBinding =
-                                OpenAPI_pcf_binding_parseFromJSON(item);
-                            if (!message->PcfBinding) {
-                                rv = OGS_ERROR;
-                                ogs_error("JSON parse error");
-                            }
+                    if (message->res_status == OGS_SBI_HTTP_STATUS_OK) {
+                        message->PcfBinding =
+                            OpenAPI_pcf_binding_parseFromJSON(item);
+                        if (!message->PcfBinding) {
+                            rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
                         }
-                        break;
-                    CASE(OGS_SBI_HTTP_METHOD_DELETE)
-                        break;
-                    DEFAULT
-                        rv = OGS_ERROR;
-                        ogs_error("Unknown method [%s]", message->h.method);
-                    END
+                    }
                     break;
                 } else {
                     SWITCH(message->h.method)

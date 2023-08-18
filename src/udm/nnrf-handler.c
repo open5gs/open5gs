@@ -28,6 +28,9 @@ void udm_nnrf_handle_nf_discover(
     ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
     ogs_sbi_discovery_option_t *discovery_option = NULL;
 
+    udm_ue_t *udm_ue = NULL;
+    udm_sess_t *sess = NULL;
+
     OpenAPI_nf_type_e target_nf_type = OpenAPI_nf_type_NULL;
     OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
     OpenAPI_search_result_t *SearchResult = NULL;
@@ -51,12 +54,28 @@ void udm_nnrf_handle_nf_discover(
         return;
     }
 
+    if (sbi_object->type == OGS_SBI_OBJ_UE_TYPE) {
+        udm_ue = (udm_ue_t *)sbi_object;
+        ogs_assert(udm_ue);
+    } else if (sbi_object->type == OGS_SBI_OBJ_SESS_TYPE) {
+        sess = (udm_sess_t *)sbi_object;
+        ogs_assert(sess);
+        udm_ue = sess->udm_ue;
+        ogs_assert(udm_ue);
+    } else {
+        ogs_fatal("(NF discover) Not implemented [%s:%d]",
+            ogs_sbi_service_type_to_name(service_type), sbi_object->type);
+        ogs_assert_if_reached();
+    }
+
     ogs_nnrf_disc_handle_nf_discover_search_result(SearchResult);
 
     nf_instance = ogs_sbi_nf_instance_find_by_discovery_param(
                     target_nf_type, requester_nf_type, discovery_option);
     if (!nf_instance) {
-        ogs_error("(NF discover) No [%s:%s]",
+        ogs_error("[%s:%d] (NF discover) No [%s:%s]",
+                    udm_ue ? udm_ue->supi : "Unknown",
+                    sess ? sess->psi : 0,
                     ogs_sbi_service_type_to_name(service_type),
                     OpenAPI_nf_type_ToString(requester_nf_type));
         return;
