@@ -840,9 +840,10 @@ f.write("""ogs_pfcp_message_t *ogs_pfcp_parse_msg(ogs_pkbuf_t *pkbuf)
 for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
         f.write("        case OGS_%s_TYPE:\n" % v_upper(k))
-        f.write("            rv = ogs_tlv_parse_msg(&pfcp_message->%s,\n" % v_lower(k))
-        f.write("                    &ogs_pfcp_msg_desc_%s, pkbuf, OGS_TLV_MODE_T2_L2);\n" % v_lower(k))
-        f.write("            ogs_expect(rv == OGS_OK);\n")
+        if k != "PFCP Session Deletion Request" and k != "PFCP Version Not Supported Response":
+            f.write("            rv = ogs_tlv_parse_msg(&pfcp_message->%s,\n" % v_lower(k))
+            f.write("                    &ogs_pfcp_msg_desc_%s, pkbuf, OGS_TLV_MODE_T2_L2);\n" % v_lower(k))
+            f.write("            ogs_expect(rv == OGS_OK);\n")
         f.write("            break;\n")
 f.write("""        default:
             ogs_warn("Not implemented(type:%d)", pfcp_message->h.type);

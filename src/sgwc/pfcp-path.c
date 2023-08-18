@@ -105,7 +105,12 @@ static void pfcp_recv_cb(short when, ogs_socket_t fd, void *data)
     node = ogs_pfcp_node_find(&ogs_pfcp_self()->pfcp_peer_list, &from);
     if (!node) {
         node = ogs_pfcp_node_add(&ogs_pfcp_self()->pfcp_peer_list, &from);
-        ogs_assert(node);
+        if (!node) {
+            ogs_error("No memory: ogs_pfcp_node_add() failed");
+            ogs_pkbuf_free(e->pkbuf);
+            ogs_event_free(e);
+            return;
+        }
 
         node->sock = data;
         pfcp_node_fsm_init(node, false);

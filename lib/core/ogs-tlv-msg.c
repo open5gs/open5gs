@@ -750,7 +750,10 @@ int ogs_tlv_parse_msg(void *msg, ogs_tlv_desc_t *desc, ogs_pkbuf_t *pkbuf,
     ogs_assert(pkbuf);
 
     ogs_assert(desc->ctype == OGS_TLV_MESSAGE);
-    ogs_assert(desc->child_descs[0]);
+    if (!desc->child_descs[0]) {
+        ogs_fatal("No Child Descs in [%s]", desc->name);
+        ogs_assert_if_reached();
+    }
 
     root = ogs_tlv_parse_block(pkbuf->len, pkbuf->data, mode);
     if (root == NULL) {
