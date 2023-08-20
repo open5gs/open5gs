@@ -912,6 +912,32 @@ static void recv_handler(short when, ogs_socket_t fd, void *data)
             ogs_error("nghttp2_session_mem_recv() failed (%d:%s)",
                         (int)readlen, nghttp2_strerror((int)readlen));
             session_remove(sbi_sess);
+        } else {
+            /*
+             * Issues #2385
+             *
+             * Nokia AMF is sending GOAWAY because it didn't get
+             * ACK SETTINGS packet for the SETTINGS it set,
+             * this is according to http2 RFC, all settings must be
+             * ACK or connection will be dropped.
+             *
+             * Open5GS is not ACKing pure settings packets,
+             * looks like it is waiting for a header
+             * like POST/GET first to trigger
+             * sending settings ACK and then headers reply.
+             */
+
+            /*
+             * [SOLVED]
+             *
+             * Whether or not to send a Setting ACK is determined
+             * by the nghttp2 library. Therefore, when nghttp2 informs us
+             * that it want to send an SETTING frame with ACK
+             * by nghttp2_session_want_write(), we need to call session_send()
+             * directly to send it.
+             */
+            if (nghttp2_session_want_write(sbi_sess->session))
+                session_send(sbi_sess);
         }
     } else {
         if (n < 0) {
@@ -1040,40 +1066,15 @@ static int on_frame_recv(nghttp2_session *session,
     ogs_assert(session);
     ogs_assert(frame);
 
-    stream = nghttp2_session_get_stream_user_data(session, frame->hd.stream_id);
-    if (!stream) {
-        if (frame->hd.type == NGHTTP2_SETTINGS) {
-            sbi_sess->settings.max_concurrent_streams =
-                nghttp2_session_get_remote_settings(
-                    session, NGHTTP2_SETTINGS_MAX_CONCURRENT_STREAMS);
-            sbi_sess->settings.enable_push =
-                nghttp2_session_get_remote_settings(
-                    session, NGHTTP2_SETTINGS_ENABLE_PUSH);
-            ogs_debug("MAX_CONCURRENT_STREAMS = %d",
-                sbi_sess->settings.max_concurrent_streams);
-            ogs_debug("ENABLE_PUSH = %s",
-                sbi_sess->settings.enable_push ? "TRUE" : "false");
-
-        } else if (frame->hd.type == NGHTTP2_GOAWAY) {
-            rv = nghttp2_submit_goaway(
-                 session, NGHTTP2_FLAG_NONE, sbi_sess->last_stream_id,
-                 NGHTTP2_NO_ERROR, NULL, 0);
-            if (rv != 0) {
-                ogs_error("nghttp2_submit_goaway() failed (%d:%s)",
-                            rv, nghttp2_strerror(rv));
-                return OGS_ERROR;
-            }
-
-            session_send(sbi_sess);
-        }
-        return 0;
-    }
-
-    request = stream->request;
-    ogs_assert(request);
-
     switch (frame->hd.type) {
     case NGHTTP2_HEADERS:
+        stream = nghttp2_session_get_stream_user_data(
+                session, frame->hd.stream_id);
+        if (!stream) return 0;
+
+        request = stream->request;
+        ogs_assert(request);
+
         if (frame->headers.cat == NGHTTP2_HCAT_REQUEST) {
             const char *expect100 =
                 ogs_sbi_header_get(request->http.headers, OGS_SBI_EXPECT);
@@ -1096,6 +1097,13 @@ static int on_frame_recv(nghttp2_session *session,
         OGS_GNUC_FALLTHROUGH;
 
     case NGHTTP2_DATA:
+        stream = nghttp2_session_get_stream_user_data(
+                session, frame->hd.stream_id);
+        if (!stream) return 0;
+
+        request = stream->request;
+        ogs_assert(request);
+
         /* HEADERS or DATA frame with +END_STREAM flag */
         if (frame->hd.flags & NGHTTP2_FLAG_END_STREAM) {
             ogs_log_level_e level = OGS_LOG_DEBUG;
@@ -1126,8 +1134,66 @@ static int on_frame_recv(nghttp2_session *session,
 
                 return 0;
             }
-            break;
+        } else {
+            /* TODO : Need to implement the timeouf of reading STREAM */
         }
+        break;
+    case NGHTTP2_SETTINGS:
+        ogs_debug("FLAGS(0x%x) [%s]",
+                frame->hd.flags,
+                frame->hd.flags & NGHTTP2_FLAG_ACK ? "ACK" : "NO-ACK");
+
+        if ((frame->hd.flags & NGHTTP2_FLAG_ACK) == 0) {
+            sbi_sess->settings.max_concurrent_streams =
+                nghttp2_session_get_remote_settings(
+                    session, NGHTTP2_SETTINGS_MAX_CONCURRENT_STREAMS);
+            sbi_sess->settings.enable_push =
+                nghttp2_session_get_remote_settings(
+                    session, NGHTTP2_SETTINGS_ENABLE_PUSH);
+            ogs_debug("MAX_CONCURRENT_STREAMS = %d",
+                sbi_sess->settings.max_concurrent_streams);
+            ogs_debug("ENABLE_PUSH = %s",
+                sbi_sess->settings.enable_push ? "TRUE" : "false");
+
+            return 0;
+        }
+
+        /*
+         * TODO:
+         *
+         * if Setting ACK received, need to stop Timer.
+         * Otherwise, we need to send NGHTTP2_GOAWAY
+         */
+        break;
+    case NGHTTP2_GOAWAY:
+#if 0 /* It is not neeed in other nghttp2 example */
+        rv = nghttp2_submit_goaway(
+             session, NGHTTP2_FLAG_NONE, sbi_sess->last_stream_id,
+             NGHTTP2_NO_ERROR, NULL, 0);
+        if (rv != 0) {
+            ogs_error("nghttp2_submit_goaway() failed (%d:%s)",
+                        rv, nghttp2_strerror(rv));
+            return OGS_ERROR;
+        }
+
+        session_send(sbi_sess);
+#endif
+        ogs_info("GOAWAY received: last-stream-id=%d",
+                frame->goaway.last_stream_id);
+        ogs_info("error_code=%d", frame->goaway.error_code);
+        break;
+    case NGHTTP2_RST_STREAM:
+        ogs_info("RST_STREAM received: stream_id=%d", frame->hd.stream_id);
+        break;
+    case NGHTTP2_PING:
+        if (frame->hd.flags & NGHTTP2_FLAG_ACK)
+            ogs_info("PING ACK received");
+        break;
+    case NGHTTP2_PUSH_PROMISE:
+        ogs_info("PUSH_PROMISE recieved: stream_id=%d", frame->hd.stream_id);
+        ogs_info("promised_stream_id=%d",
+                frame->push_promise.promised_stream_id);
+        break;
     default:
         break;
     }
