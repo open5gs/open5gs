@@ -73,20 +73,6 @@ static void _gtpv1v2_c_recv_cb(short when, ogs_socket_t fd, void *data)
 
     ogs_pkbuf_trim(pkbuf, size);
 
-    gtp_ver = ((ogs_gtp2_header_t *)pkbuf->data)->version;
-    switch (gtp_ver) {
-    case 1:
-        e = smf_event_new(SMF_EVT_GN_MESSAGE);
-        break;
-    case 2:
-        e = smf_event_new(SMF_EVT_S5C_MESSAGE);
-        break;
-    default:
-        ogs_warn("Rx unexpected GTP version %u", gtp_ver);
-        ogs_pkbuf_free(pkbuf);
-        return;
-    }
-
     gnode = ogs_gtp_node_find_by_addr(&smf_self()->sgw_s5c_list, &from);
     if (!gnode) {
         gnode = ogs_gtp_node_add_by_addr(&smf_self()->sgw_s5c_list, &from);
@@ -99,6 +85,20 @@ static void _gtpv1v2_c_recv_cb(short when, ogs_socket_t fd, void *data)
         gnode->sock = data;
         smf_gtp_node_new(gnode);
         smf_metrics_inst_global_inc(SMF_METR_GLOB_GAUGE_GTP_PEERS_ACTIVE);
+    }
+
+    gtp_ver = ((ogs_gtp2_header_t *)pkbuf->data)->version;
+    switch (gtp_ver) {
+    case 1:
+        e = smf_event_new(SMF_EVT_GN_MESSAGE);
+        break;
+    case 2:
+        e = smf_event_new(SMF_EVT_S5C_MESSAGE);
+        break;
+    default:
+        ogs_warn("Rx unexpected GTP version %u", gtp_ver);
+        ogs_pkbuf_free(pkbuf);
+        return;
     }
     ogs_assert(e);
     e->gnode = gnode->data_ptr; /* smf_gtp_node_t */
