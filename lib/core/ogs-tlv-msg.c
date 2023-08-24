@@ -689,7 +689,6 @@ static int tlv_parse_compound(void *msg, ogs_tlv_desc_t *parent_desc,
             }
             if (j == next_desc->length) {
                 ogs_fatal("Multiple of the same type TLV need more room");
-                ogs_assert_if_reached();
                 tlv = tlv->next;
                 continue;
             }
