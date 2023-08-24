@@ -1043,9 +1043,14 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
             } else {
-                ogs_error("[%s:%d] No PolicyAssociationId",
-                        smf_ue->supi, sess->psi);
-                OGS_FSM_TRAN(s, smf_gsm_state_exception);
+                ogs_warn("[%s:%d] No PolicyAssociationId. "
+                        "Forcibly remove SESSION", smf_ue->supi, sess->psi);
+                r = smf_sbi_discover_and_send(
+                        OGS_SBI_SERVICE_TYPE_NUDM_UECM, NULL,
+                        smf_nudm_uecm_build_deregistration, sess, stream,
+                        SMF_UECM_STATE_DEREGISTERED_BY_AMF, NULL);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
             }
             break;
 
@@ -1515,6 +1520,9 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
             SWITCH(sbi_message->h.resource.component[2])
             CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
                 smf_nsmf_handle_update_sm_context(sess, stream, sbi_message);
+                break;
+            CASE(OGS_SBI_RESOURCE_NAME_RELEASE)
+                smf_nsmf_handle_release_sm_context(sess, stream, sbi_message);
                 break;
             DEFAULT
                 ogs_error("Invalid resource name [%s]",

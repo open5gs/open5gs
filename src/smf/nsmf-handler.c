@@ -682,12 +682,14 @@ bool smf_nsmf_handle_update_sm_context(
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
         } else {
-            ogs_error("[%s:%d] No PolicyAssociationId. Forcibly remove SESSION",
+            ogs_warn("[%s:%d] No PolicyAssociationId. Forcibly remove SESSION",
                     smf_ue->supi, sess->psi);
-            smf_sbi_send_sm_context_update_error_log(
-                    stream, OGS_SBI_HTTP_STATUS_NOT_FOUND,
-                    "No PolicyAssociationId", NULL);
-            SMF_SESS_CLEAR(sess);
+            r = smf_sbi_discover_and_send(
+                    OGS_SBI_SERVICE_TYPE_NUDM_UECM, NULL,
+                    smf_nudm_uecm_build_deregistration, sess, stream,
+                    SMF_UECM_STATE_DEREGISTERED_BY_AMF, NULL);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
         }
     } else if (SmContextUpdateData->serving_nf_id) {
         ogs_debug("Old serving_nf_id: %s, new serving_nf_id: %s",
@@ -779,13 +781,14 @@ bool smf_nsmf_handle_release_sm_context(
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
     } else {
-        ogs_error("[%s:%d] No PolicyAssociationId. Forcibly remove SESSION",
+        ogs_warn("[%s:%d] No PolicyAssociationId. Forcibly remove SESSION",
                 smf_ue->supi, sess->psi);
-        ogs_assert(true ==
-            ogs_sbi_server_send_error(
-                stream, OGS_SBI_HTTP_STATUS_NOT_FOUND,
-                NULL, "No PolicyAssociationId", NULL));
-        SMF_SESS_CLEAR(sess);
+        r = smf_sbi_discover_and_send(
+                OGS_SBI_SERVICE_TYPE_NUDM_UECM, NULL,
+                smf_nudm_uecm_build_deregistration, sess, stream,
+                SMF_UECM_STATE_DEREGISTERED_BY_AMF, NULL);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
     }
 
     return true;
