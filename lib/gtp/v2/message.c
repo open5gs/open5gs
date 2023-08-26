@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by gtp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2023-03-05 11:59:11.018342 by acetcom
+ * Created on: 2023-08-26 16:22:05.130327 by acetcom
  * from 29274-h70.docx
  ******************************************************************************/
 
@@ -2983,9 +2983,6 @@ int ogs_gtp2_parse_msg(ogs_gtp2_message_t *gtp2_message, ogs_pkbuf_t *pkbuf)
                 &ogs_gtp2_tlv_desc_create_indirect_data_forwarding_tunnel_response, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
     case OGS_GTP2_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
-        rv = ogs_tlv_parse_msg(&gtp2_message->delete_indirect_data_forwarding_tunnel_request,
-                &ogs_gtp2_tlv_desc_delete_indirect_data_forwarding_tunnel_request, pkbuf, OGS_TLV_MODE_T1_L2_I1);
-        break;
     case OGS_GTP2_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
         rv = ogs_tlv_parse_msg(&gtp2_message->delete_indirect_data_forwarding_tunnel_response,
                 &ogs_gtp2_tlv_desc_delete_indirect_data_forwarding_tunnel_response, pkbuf, OGS_TLV_MODE_T1_L2_I1);

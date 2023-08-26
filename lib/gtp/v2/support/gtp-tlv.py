@@ -723,9 +723,10 @@ f.write("""int ogs_gtp2_parse_msg(ogs_gtp2_message_t *gtp2_message, ogs_pkbuf_t 
 for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
         f.write("    case OGS_GTP2_%s_TYPE:\n" % v_upper(k))
-        f.write("        rv = ogs_tlv_parse_msg(&gtp2_message->%s,\n" % v_lower(k))
-        f.write("                &ogs_gtp2_tlv_desc_%s, pkbuf, OGS_TLV_MODE_T1_L2_I1);\n" % v_lower(k))
-        f.write("        break;\n")
+        if k != "Delete Indirect Data Forwarding Tunnel Request":
+            f.write("        rv = ogs_tlv_parse_msg(&gtp2_message->%s,\n" % v_lower(k))
+            f.write("                &ogs_gtp2_tlv_desc_%s, pkbuf, OGS_TLV_MODE_T1_L2_I1);\n" % v_lower(k))
+            f.write("        break;\n")
 f.write("""    default:
         ogs_warn("Not implemented(type:%d)", gtp2_message->h.type);
         break;

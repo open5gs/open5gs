@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
  * Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
+ * Copyright (C) 2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -21,7 +22,7 @@
 /*******************************************************************************
  * This file had been created by gtp1-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2023-03-05 12:29:34.542862 by acetcom
+ * Created on: 2023-08-26 16:26:00.627882 by acetcom
  * from 29060-h40.docx
  ******************************************************************************/
 
@@ -2313,9 +2314,6 @@ int ogs_gtp1_parse_msg(ogs_gtp1_message_t *gtp1_message, ogs_pkbuf_t *pkbuf)
 
     switch(gtp1_message->h.type) {
     case OGS_GTP1_ECHO_REQUEST_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp1_message->echo_request,
-                &ogs_gtp1_tlv_desc_echo_request, pkbuf, OGS_TLV_MODE_T1_L2);
-        break;
     case OGS_GTP1_ECHO_RESPONSE_TYPE:
         rv = ogs_tlv_parse_msg_desc(&gtp1_message->echo_response,
                 &ogs_gtp1_tlv_desc_echo_response, pkbuf, OGS_TLV_MODE_T1_L2);
@@ -2425,9 +2423,6 @@ int ogs_gtp1_parse_msg(ogs_gtp1_message_t *gtp1_message, ogs_pkbuf_t *pkbuf)
                 &ogs_gtp1_tlv_desc_forward_relocation_response, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_FORWARD_RELOCATION_COMPLETE_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp1_message->forward_relocation_complete,
-                &ogs_gtp1_tlv_desc_forward_relocation_complete, pkbuf, OGS_TLV_MODE_T1_L2);
-        break;
     case OGS_GTP1_RELOCATION_CANCEL_REQUEST_TYPE:
         rv = ogs_tlv_parse_msg_desc(&gtp1_message->relocation_cancel_request,
                 &ogs_gtp1_tlv_desc_relocation_cancel_request, pkbuf, OGS_TLV_MODE_T1_L2);
