@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
  * Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
+ * Copyright (C) 2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -21,7 +22,7 @@
 /*******************************************************************************
  * This file had been created by gtp1-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2023-03-05 12:29:34.536821 by acetcom
+ * Created on: 2023-08-26 16:26:00.621752 by acetcom
  * from 29060-h40.docx
  ******************************************************************************/
 

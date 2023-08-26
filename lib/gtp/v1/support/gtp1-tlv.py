@@ -635,9 +635,10 @@ f.write("""int ogs_gtp1_parse_msg(ogs_gtp1_message_t *gtp1_message, ogs_pkbuf_t 
 for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
         f.write("    case OGS_GTP1_%s_TYPE:\n" % v_upper(k))
-        f.write("        rv = ogs_tlv_parse_msg_desc(&gtp1_message->%s,\n" % v_lower(k))
-        f.write("                &ogs_gtp1_tlv_desc_%s, pkbuf, OGS_TLV_MODE_T1_L2);\n" % v_lower(k))
-        f.write("        break;\n")
+        if k != "Echo Request" and k != "Forward Relocation Complete":
+            f.write("        rv = ogs_tlv_parse_msg_desc(&gtp1_message->%s,\n" % v_lower(k))
+            f.write("                &ogs_gtp1_tlv_desc_%s, pkbuf, OGS_TLV_MODE_T1_L2);\n" % v_lower(k))
+            f.write("        break;\n")
 f.write("""    default:
         ogs_warn("Not implemented(type:%d)", gtp1_message->h.type);
         break;
