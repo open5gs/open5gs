@@ -726,7 +726,7 @@ for (k, v) in sorted_msg_list:
         if k != "Delete Indirect Data Forwarding Tunnel Request":
             f.write("        rv = ogs_tlv_parse_msg(&gtp2_message->%s,\n" % v_lower(k))
             f.write("                &ogs_gtp2_tlv_desc_%s, pkbuf, OGS_TLV_MODE_T1_L2_I1);\n" % v_lower(k))
-            f.write("        break;\n")
+        f.write("        break;\n")
 f.write("""    default:
         ogs_warn("Not implemented(type:%d)", gtp2_message->h.type);
         break;
