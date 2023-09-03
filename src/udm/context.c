@@ -132,7 +132,10 @@ udm_ue_t *udm_ue_add(char *suci)
     ogs_assert(suci);
 
     ogs_pool_alloc(&udm_ue_pool, &udm_ue);
-    ogs_assert(udm_ue);
+    if (!udm_ue) {
+        ogs_error("No memory pool [%s]", suci);
+        return NULL;
+    }
     memset(udm_ue, 0, sizeof *udm_ue);
 
     /* SBI Type */
@@ -140,14 +143,30 @@ udm_ue_t *udm_ue_add(char *suci)
 
     udm_ue->ctx_id = ogs_msprintf("%d",
             (int)ogs_pool_index(&udm_ue_pool, udm_ue));
-    ogs_assert(udm_ue->ctx_id);
+    if (!udm_ue->ctx_id) {
+        ogs_error("No memory for udm_ue->ctx_id [%s]", suci);
+        ogs_pool_free(&udm_ue_pool, udm_ue);
+        return NULL;
+    }
 
     udm_ue->suci = ogs_strdup(suci);
-    ogs_assert(udm_ue->suci);
-    ogs_hash_set(self.suci_hash, udm_ue->suci, strlen(udm_ue->suci), udm_ue);
+    if (!udm_ue->suci) {
+        ogs_error("No memory for udm_ue->suci [%s]", suci);
+        ogs_free(udm_ue->ctx_id);
+        ogs_pool_free(&udm_ue_pool, udm_ue);
+        return NULL;
+    }
 
     udm_ue->supi = ogs_supi_from_supi_or_suci(udm_ue->suci);
-    ogs_assert(udm_ue->supi);
+    if (!udm_ue->supi) {
+        ogs_error("No memory for udm_ue->supi [%s]", suci);
+        ogs_free(udm_ue->suci);
+        ogs_free(udm_ue->ctx_id);
+        ogs_pool_free(&udm_ue_pool, udm_ue);
+        return NULL;
+    }
+
+    ogs_hash_set(self.suci_hash, udm_ue->suci, strlen(udm_ue->suci), udm_ue);
     ogs_hash_set(self.supi_hash, udm_ue->supi, strlen(udm_ue->supi), udm_ue);
 
     memset(&e, 0, sizeof(e));

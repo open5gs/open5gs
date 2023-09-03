@@ -163,7 +163,15 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
                         message.h.resource.component[0]);
                 if (!udm_ue) {
                     udm_ue = udm_ue_add(message.h.resource.component[0]);
-                    ogs_assert(udm_ue);
+                    if (!udm_ue) {
+                        ogs_error("Invalid Request [%s]",
+                                message.h.resource.component[0]);
+                        ogs_assert(true ==
+                            ogs_sbi_server_send_error(stream,
+                                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                                &message, NULL, NULL));
+                        break;
+                    }
                 }
             }
 
