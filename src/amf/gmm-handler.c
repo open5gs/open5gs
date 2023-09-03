@@ -137,7 +137,12 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_request(amf_ue_t *amf_ue,
     case OGS_NAS_5GS_MOBILE_IDENTITY_SUCI:
         mobile_identity_suci =
             (ogs_nas_5gs_mobile_identity_suci_t *)mobile_identity->buffer;
-
+        if (mobile_identity_suci->h.supi_format !=
+                OGS_NAS_5GS_SUPI_FORMAT_IMSI) {
+            ogs_error("Not implemented SUPI format [%d]",
+                mobile_identity_suci->h.supi_format);
+            return OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE;
+        }
         if (mobile_identity_suci->protection_scheme_id !=
                 OGS_PROTECTION_SCHEME_NULL &&
             mobile_identity_suci->protection_scheme_id !=
@@ -902,6 +907,12 @@ int gmm_handle_identity_response(amf_ue_t *amf_ue,
     if (mobile_identity_header->type == OGS_NAS_5GS_MOBILE_IDENTITY_SUCI) {
         mobile_identity_suci =
             (ogs_nas_5gs_mobile_identity_suci_t *)mobile_identity->buffer;
+        if (mobile_identity_suci->h.supi_format !=
+                OGS_NAS_5GS_SUPI_FORMAT_IMSI) {
+            ogs_error("Not implemented SUPI format [%d]",
+                mobile_identity_suci->h.supi_format);
+            return OGS_ERROR;
+        }
         if (mobile_identity_suci->protection_scheme_id !=
                 OGS_PROTECTION_SCHEME_NULL &&
             mobile_identity_suci->protection_scheme_id !=
