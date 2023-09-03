@@ -1757,6 +1757,12 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
             mobile_identity_suci =
                 (ogs_nas_5gs_mobile_identity_suci_t *)mobile_identity->buffer;
 
+            if (mobile_identity_suci->h.supi_format !=
+                    OGS_NAS_5GS_SUPI_FORMAT_IMSI) {
+                ogs_error("Not implemented SUPI format [%d]",
+                    mobile_identity_suci->h.supi_format);
+                return NULL;
+            }
             if (mobile_identity_suci->protection_scheme_id !=
                     OGS_PROTECTION_SCHEME_NULL &&
                 mobile_identity_suci->protection_scheme_id !=
