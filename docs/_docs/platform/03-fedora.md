@@ -120,6 +120,7 @@ $ cd ../
 [Node.js](https://nodejs.org/) is required to build WebUI of Open5GS
 
 ```bash
+$ sudo dnf install https://rpm.nodesource.com/pub_20.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm -y
 $ sudo dnf -y install nodejs
 ```
 

@@ -238,11 +238,16 @@ to support IPv6.  This is done by setting the `diable_ipv6` option for
 `ogstun` to 0 (false):
 
 ```bash
+$ sysctl -n net.ipv6.conf.lo.disable_ipv6
+1
 $ sysctl -n net.ipv6.conf.ogstun.disable_ipv6
 1
 
+$ sudo sysctl -w net.ipv6.conf.lo.disable_ipv6=0
 $ sudo sysctl -w net.ipv6.conf.ogstun.disable_ipv6=0
 
+$ sysctl -n net.ipv6.conf.lo.disable_ipv6
+0
 $ sysctl -n net.ipv6.conf.ogstun.disable_ipv6
 0
 ```
