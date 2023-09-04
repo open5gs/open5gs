@@ -14,7 +14,7 @@ display_help() {
     echo "   reset: WIPES OUT the database and restores it to an empty default"
     echo "   static_ip {imsi ip4}: adds a static IP assignment to an already-existing user"
     echo "   static_ip6 {imsi ip6}: adds a static IPv6 assignment to an already-existing user"
-    echo "   type {imsi type}: changes the PDN-Type of the first PDN: 0 = IPv4, 1 = IPv6, 2 = IPv4v6, 3 = v4 OR v6"
+    echo "   type {imsi type}: changes the PDN-Type of the first PDN: 1 = IPv4, 2 = IPv6, 3 = IPv4v6"
     echo "   help: displays this message and exits"
     echo "   default values are as follows: APN \"internet\", dl_bw/ul_bw 1 Gbps, PGW address is 127.0.0.3, IPv4 only"
     echo "   add_ue_with_apn {imsi key opc apn}: adds a user to the database with a specific apn,"
