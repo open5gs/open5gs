@@ -535,9 +535,7 @@ int test_gtpu_send_indirect_data_forwarding(
         ext_hdesc.qos_flow_identifier = bearer->qfi;
 
     } else if (bearer->ebi) {
-
-        ogs_fatal("Not implmented EPC Indirect Tunnel");
-        ogs_assert_if_reached();
+        gtp_hdesc.teid = bearer->handover.ul_teid;
 
     } else {
         ogs_fatal("No QFI[%d] and EBI[%d]", bearer->qfi, bearer->ebi);

@@ -477,6 +477,13 @@ typedef struct test_bearer_s {
 
     uint32_t        sgw_s1u_teid;   /* SGW-S1U TEID */
     ogs_ip_t        sgw_s1u_ip;     /* SGW-S1U IPv4/IPv6 */
+    struct {
+        /* Indirect Forwarding */
+        uint32_t dl_teid;
+        ogs_ip_t dl_ip;
+        uint32_t ul_teid;
+        ogs_ip_t ul_ip;
+    } handover;
 
     uint32_t        enb_s1u_teid;   /* eNB-S1U TEID */
     ogs_sockaddr_t  *enb_s1u_addr;  /* eNB-S1U IPv4 */

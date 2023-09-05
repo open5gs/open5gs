@@ -27,7 +27,7 @@ static void run(int argc, const char *const argv[],
     bool user_config;
 
     /* '-f sample-XXXX.conf -e error' is always added */
-    const char *argv_out[argc+4], *new_argv[argc+4];
+    const char *argv_out[argc+5], *new_argv[argc+5];
     int argc_out;
 
     char conf_file[OGS_MAX_FILEPATH_LEN];

@@ -127,7 +127,8 @@ static int test_context_validation(void)
 
     if (test_self()->nr_served_tai[index].list2.num) {
         memcpy(&test_self()->nr_tai,
-            &test_self()->nr_served_tai[index].list2.tai[0], sizeof(ogs_5gs_tai_t));
+            &test_self()->nr_served_tai[index].list2.tai[0],
+            sizeof(ogs_5gs_tai_t));
     } else if (test_self()->nr_served_tai[index].list1.tai[0].num) {
         test_self()->nr_tai.tac =
             test_self()->nr_served_tai[index].list1.tai[0].tac;

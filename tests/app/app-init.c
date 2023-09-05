@@ -42,7 +42,7 @@ int app_initialize(const char *const argv[])
     bool user_config = false;
     int i = 0;
 
-    for (i = 0; argv[i]; i++) {
+    for (i = 0; argv[i] && i < OGS_ARG_MAX-3; i++) {
         if (strcmp("-c", argv[i]) == 0) {
             user_config = true;
         }

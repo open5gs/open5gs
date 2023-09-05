@@ -111,7 +111,7 @@ int main(int argc, const char *const argv[])
         bool enable_debug;
         bool enable_trace;
     } optarg;
-    const char *argv_out[argc];
+    const char *argv_out[argc+1];
 
     memset(&optarg, 0, sizeof(optarg));
 
