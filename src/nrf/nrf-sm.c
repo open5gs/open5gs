@@ -164,7 +164,6 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
                                     nrf_nf_state_exception)) {
                             ogs_error("[%s] State machine exception",
                                     nf_instance->id);
-                            ogs_sbi_message_free(&message);
 
                             nrf_nf_fsm_fini(nf_instance);
                             ogs_sbi_nf_instance_remove(nf_instance);
