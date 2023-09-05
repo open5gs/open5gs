@@ -72,7 +72,7 @@ void ogs_pfcp_context_init(void)
     ogs_pool_random_id_generate(&ogs_pfcp_pdr_teid_pool);
 
     pdr_random_to_index = ogs_calloc(
-            sizeof(ogs_pool_id_t), ogs_pfcp_pdr_pool.size);
+            sizeof(ogs_pool_id_t), ogs_pfcp_pdr_pool.size+1);
     ogs_assert(pdr_random_to_index);
     for (i = 0; i < ogs_pfcp_pdr_pool.size; i++)
         pdr_random_to_index[ogs_pfcp_pdr_teid_pool.array[i]] = i;
