@@ -1018,8 +1018,10 @@ smf_ue_t *smf_ue_add_by_supi(char *supi)
 
     ogs_assert(supi);
 
-    if ((smf_ue = smf_ue_add()) == NULL)
+    if ((smf_ue = smf_ue_add()) == NULL) {
+        ogs_error("smf_ue_add_by_supi() failed");
         return NULL;
+    }
 
     smf_ue->supi = ogs_strdup(supi);
     ogs_assert(smf_ue->supi);
@@ -1467,7 +1469,10 @@ smf_sess_t *smf_sess_add_by_sbi_message(ogs_sbi_message_t *message)
 
     ogs_assert(message);
     SmContextCreateData = message->SmContextCreateData;
-    ogs_assert(SmContextCreateData);
+    if (!SmContextCreateData) {
+        ogs_error("No SmContextCreateData");
+        return NULL;
+    }
 
     if (!SmContextCreateData->supi) {
         ogs_error("No SUPI");
@@ -1482,8 +1487,10 @@ smf_sess_t *smf_sess_add_by_sbi_message(ogs_sbi_message_t *message)
     smf_ue = smf_ue_find_by_supi(SmContextCreateData->supi);
     if (!smf_ue) {
         smf_ue = smf_ue_add_by_supi(SmContextCreateData->supi);
-        if (!smf_ue)
+        if (!smf_ue) {
+            ogs_error("smf_ue_add_by_supi() failed");
             return NULL;
+        }
     }
 
     sess = smf_sess_find_by_psi(smf_ue, SmContextCreateData->pdu_session_id);
