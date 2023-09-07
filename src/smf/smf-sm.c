@@ -528,7 +528,15 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
                     DEFAULT
                         sess = smf_sess_add_by_sbi_message(&sbi_message);
-                        ogs_assert(sess);
+                        if (!sess) {
+                            ogs_error("smf_sess_add_by_sbi_message() failed");
+                            smf_sbi_send_sm_context_create_error(stream,
+                                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                                    OGS_SBI_APP_ERRNO_NULL,
+                                    "smf_sess_add_by_sbi_message() failed",
+                                    NULL, NULL);
+                            break;
+                        }
 
                         smf_metrics_inst_by_slice_add(NULL, NULL,
                                 SMF_METR_CTR_SM_PDUSESSIONCREATIONREQ, 1);
