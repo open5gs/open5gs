@@ -53,20 +53,43 @@ extern "C" {
 typedef struct ogs_gtp2_extension_header_s {
 #define OGS_GTP2_EXTENSION_HEADER_TYPE_UDP_PORT 0x40
 #define OGS_GTP2_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER 0x85
+#define OGS_GTP2_EXTENSION_HEADER_TYPE_PDCP_NUMBER 0xc0
 #define OGS_GTP2_EXTENSION_HEADER_TYPE_NO_MORE_EXTENSION_HEADERS 0x0
     uint16_t sequence_number;
     uint8_t n_pdu_number;
-    uint8_t type;
-    uint8_t len;
+    struct {
+        uint8_t type;
+        uint8_t len;
+        union {
+            struct {
 #define OGS_GTP2_EXTENSION_HEADER_PDU_TYPE_DL_PDU_SESSION_INFORMATION 0
 #define OGS_GTP2_EXTENSION_HEADER_PDU_TYPE_UL_PDU_SESSION_INFORMATION 1
-    ED2(uint8_t pdu_type:4;,
-        uint8_t spare1:4;);
-    ED3(uint8_t paging_policy_presence:1;,
-        uint8_t reflective_qos_indicator:1;,
-        uint8_t qos_flow_identifier:6;);
-    uint8_t next_type;
+            ED2(uint8_t pdu_type:4;,
+                uint8_t spare1:4;);
+            ED3(uint8_t paging_policy_presence:1;,
+                uint8_t reflective_qos_indicator:1;,
+                uint8_t qos_flow_identifier:6;);
+            };
+            uint16_t udp_port;
+            uint16_t pdcp_number;
+        };
+#define OGS_GTP2_NUM_OF_EXTENSION_HEADER 8
+    } __attribute__ ((packed)) array[OGS_GTP2_NUM_OF_EXTENSION_HEADER];
 } __attribute__ ((packed)) ogs_gtp2_extension_header_t;
+
+typedef struct ogs_gtp2_header_desc_s {
+    /* GTP Header */
+    uint8_t type;
+    uint8_t flags;
+    uint32_t teid;
+
+    /* GTP Extension Header */
+    uint8_t qos_flow_identifier;
+    uint8_t pdu_type;
+    ogs_port_t udp;
+    bool pdcp_number_presence;
+    uint16_t pdcp_number;
+} ogs_gtp2_header_desc_t;
 
 /* 8.4 Cause */
 #define OGS_GTP2_CAUSE_UNDEFINED_VALUE 0

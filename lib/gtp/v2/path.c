@@ -21,22 +21,62 @@
 
 int ogs_gtp2_send_user_plane(
         ogs_gtp_node_t *gnode,
-        ogs_gtp2_header_t *gtp_hdesc, ogs_gtp2_extension_header_t *ext_hdesc,
+        ogs_gtp2_header_desc_t *header_desc,
         ogs_pkbuf_t *pkbuf)
 {
     char buf[OGS_ADDRSTRLEN];
-    int rv;
+    int rv, i;
 
-    ogs_gtp2_fill_header(gtp_hdesc, ext_hdesc, pkbuf);
+    ogs_gtp2_header_t gtp_hdesc;
+    ogs_gtp2_extension_header_t ext_hdesc;
+
+    ogs_assert(header_desc);
+
+    memset(&gtp_hdesc, 0, sizeof(gtp_hdesc));
+    memset(&ext_hdesc, 0, sizeof(ext_hdesc));
+
+    gtp_hdesc.flags = header_desc->flags;
+    gtp_hdesc.type = header_desc->type;
+    gtp_hdesc.teid = header_desc->teid;
+
+    i = 0;
+
+    if (header_desc->qos_flow_identifier) {
+        ext_hdesc.array[i].type =
+            OGS_GTP2_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER;
+        ext_hdesc.array[i].len = 1;
+        ext_hdesc.array[i].pdu_type = header_desc->pdu_type;
+        ext_hdesc.array[i].qos_flow_identifier =
+            header_desc->qos_flow_identifier;
+        i++;
+    }
+
+    if (header_desc->udp.presence == true) {
+        ext_hdesc.array[i].type = OGS_GTP2_EXTENSION_HEADER_TYPE_UDP_PORT;
+        ext_hdesc.array[i].len = 1;
+        ext_hdesc.array[i].udp_port = htobe16(header_desc->udp.port);
+        i++;
+    }
+
+    if (header_desc->pdcp_number_presence == true) {
+        ext_hdesc.array[i].type = OGS_GTP2_EXTENSION_HEADER_TYPE_PDCP_NUMBER;
+        ext_hdesc.array[i].len = 1;
+        ext_hdesc.array[i].pdcp_number = htobe16(header_desc->pdcp_number);
+        i++;
+    }
+
+    ogs_gtp2_fill_header(&gtp_hdesc, &ext_hdesc, pkbuf);
 
     ogs_trace("SEND GTP-U[%d] to Peer[%s] : TEID[0x%x]",
-            gtp_hdesc->type, OGS_ADDR(&gnode->addr, buf), gtp_hdesc->teid);
+            header_desc->type,
+            OGS_ADDR(&gnode->addr, buf), header_desc->teid);
 
     rv = ogs_gtp_sendto(gnode, pkbuf);
     if (rv != OGS_OK) {
         if (ogs_socket_errno != OGS_EAGAIN) {
             ogs_error("SEND GTP-U[%d] to Peer[%s] : TEID[0x%x]",
-                gtp_hdesc->type, OGS_ADDR(&gnode->addr, buf), gtp_hdesc->teid);
+                header_desc->type,
+                OGS_ADDR(&gnode->addr, buf), header_desc->teid);
         }
     }
 
@@ -270,6 +310,7 @@ void ogs_gtp1_send_error_indication(
 
     ogs_gtp2_header_t gtp_hdesc;
     ogs_gtp2_extension_header_t ext_hdesc;
+    int i;
 
     ogs_assert(sock);
     ogs_assert(to);
@@ -285,8 +326,20 @@ void ogs_gtp1_send_error_indication(
 
     gtp_hdesc.type = OGS_GTPU_MSGTYPE_ERR_IND;
     gtp_hdesc.flags = OGS_GTPU_FLAGS_S|OGS_GTPU_FLAGS_E;
-    ext_hdesc.type = OGS_GTP2_EXTENSION_HEADER_TYPE_UDP_PORT;
-    ext_hdesc.qos_flow_identifier = qfi;
+
+    i = 0;
+    if (qfi) {
+        ext_hdesc.array[i].type =
+            OGS_GTP2_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER;
+        ext_hdesc.array[i].len = 1;
+        ext_hdesc.array[i].pdu_type =
+            OGS_GTP2_EXTENSION_HEADER_PDU_TYPE_DL_PDU_SESSION_INFORMATION;
+        ext_hdesc.array[i].qos_flow_identifier = qfi;
+        i++;
+    }
+    ext_hdesc.array[i].type = OGS_GTP2_EXTENSION_HEADER_TYPE_UDP_PORT;
+    ext_hdesc.array[i].len = 1;
+    ext_hdesc.array[i].udp_port = 0;
 
     ogs_gtp2_fill_header(&gtp_hdesc, &ext_hdesc, pkbuf);
 

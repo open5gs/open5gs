@@ -122,9 +122,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     ogs_sockaddr_t from;
 
     ogs_gtp2_header_t *gtp_h = NULL;
-
-    uint32_t teid;
-    uint8_t qfi;
+    ogs_gtp2_header_desc_t header_desc;
 
     ogs_assert(fd != INVALID_SOCKET);
 
@@ -151,7 +149,13 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
         goto cleanup;
     }
 
-    if (gtp_h->type == OGS_GTPU_MSGTYPE_ECHO_REQ) {
+    len = ogs_gtpu_parse_header(&header_desc, pkbuf);
+    if (len < 0) {
+        ogs_error("[DROP] Cannot decode GTPU packet");
+        ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
+        goto cleanup;
+    }
+    if (header_desc.type == OGS_GTPU_MSGTYPE_ECHO_REQ) {
         ogs_pkbuf_t *echo_rsp;
 
         ogs_debug("[RECV] Echo Request from [%s]", OGS_ADDR(&from, buf));
@@ -172,58 +176,27 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
         }
         goto cleanup;
     }
-
-    teid = be32toh(gtp_h->teid);
+    if (header_desc.type != OGS_GTPU_MSGTYPE_END_MARKER &&
+        pkbuf->len <= len) {
+        ogs_error("[DROP] Small GTPU packet(type:%d len:%d)",
+                header_desc.type, len);
+        ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
+        goto cleanup;
+    }
 
     ogs_debug("[RECV] GPU-U Type [%d] from [%s] : TEID[0x%x]",
-            gtp_h->type, OGS_ADDR(&from, buf), teid);
-
-    qfi = 0;
-    if (gtp_h->flags & OGS_GTPU_FLAGS_E) {
-        /*
-         * TS29.281
-         * 5.2.1 General format of the GTP-U Extension Header
-         * Figure 5.2.1-3: Definition of Extension Header Type
-         *
-         * Note 4 : For a GTP-PDU with several Extension Headers, the PDU
-         *          Session Container should be the first Extension Header
-         */
-        ogs_gtp2_extension_header_t *extension_header =
-            (ogs_gtp2_extension_header_t *)(pkbuf->data + OGS_GTPV1U_HEADER_LEN);
-        ogs_assert(extension_header);
-        if (extension_header->type ==
-                OGS_GTP2_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER) {
-            if (extension_header->pdu_type ==
-                OGS_GTP2_EXTENSION_HEADER_PDU_TYPE_UL_PDU_SESSION_INFORMATION) {
-                    ogs_debug("   QFI [0x%x]",
-                            extension_header->qos_flow_identifier);
-                    qfi = extension_header->qos_flow_identifier;
-            }
-        }
-    }
+            header_desc.type, OGS_ADDR(&from, buf), header_desc.teid);
 
     /* Remove GTP header and send packets to TUN interface */
-    len = ogs_gtpu_header_len(pkbuf);
-    if (len < 0) {
-        ogs_error("[DROP] Cannot decode GTPU packet");
-        ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
-        goto cleanup;
-    }
-    if (gtp_h->type != OGS_GTPU_MSGTYPE_END_MARKER &&
-        pkbuf->len <= len) {
-        ogs_error("[DROP] Small GTPU packet(type:%d len:%d)", gtp_h->type, len);
-        ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
-        goto cleanup;
-    }
     ogs_assert(ogs_pkbuf_pull(pkbuf, len));
 
-    if (gtp_h->type == OGS_GTPU_MSGTYPE_GPDU) {
+    if (header_desc.type == OGS_GTPU_MSGTYPE_GPDU) {
         smf_sess_t *sess = NULL;
         ogs_pfcp_far_t *far = NULL;
 
-        far = ogs_pfcp_far_find_by_teid(teid);
+        far = ogs_pfcp_far_find_by_teid(header_desc.teid);
         if (!far) {
-            ogs_error("No FAR for TEID [%d]", teid);
+            ogs_error("No FAR for TEID [%d]", header_desc.teid);
             goto cleanup;
         }
 
@@ -232,8 +205,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
             goto cleanup;
         }
 
-        if (qfi) {
-            ogs_error("QFI[%d] Found", qfi);
+        if (header_desc.qos_flow_identifier) {
+            ogs_error("QFI[%d] Found", header_desc.qos_flow_identifier);
             goto cleanup;
         }
 
@@ -247,7 +220,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
             send_router_advertisement(sess, ip6_h->ip6_src.s6_addr);
         }
     } else {
-        ogs_error("[DROP] Invalid GTPU Type [%d]", gtp_h->type);
+        ogs_error("[DROP] Invalid GTPU Type [%d]", header_desc.type);
         ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
     }
 
@@ -718,20 +691,18 @@ static void send_router_advertisement(smf_sess_t *sess, uint8_t *ip6_dst)
 
     ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {
         if (pdr->src_if == OGS_PFCP_INTERFACE_CP_FUNCTION && pdr->gnode) {
-            ogs_gtp2_header_t gtp_hdesc;
-            ogs_gtp2_extension_header_t ext_hdesc;
+            ogs_gtp2_header_desc_t header_desc;
             ogs_pkbuf_t *newbuf = NULL;
 
-            memset(&gtp_hdesc, 0, sizeof(gtp_hdesc));
-            memset(&ext_hdesc, 0, sizeof(ext_hdesc));
+            memset(&header_desc, 0, sizeof(header_desc));
 
-            gtp_hdesc.type = OGS_GTPU_MSGTYPE_GPDU;
-            gtp_hdesc.teid = pdr->f_teid.teid;
+            header_desc.type = OGS_GTPU_MSGTYPE_GPDU;
+            header_desc.teid = pdr->f_teid.teid;
 
             newbuf = ogs_pkbuf_copy(pkbuf);
             ogs_assert(newbuf);
 
-            ogs_gtp2_send_user_plane(pdr->gnode, &gtp_hdesc, &ext_hdesc, newbuf);
+            ogs_gtp2_send_user_plane(pdr->gnode, &header_desc, newbuf);
 
             ogs_debug("      Send Router Advertisement");
             break;

@@ -61,7 +61,8 @@ ogs_pkbuf_t *test_gtpu_read(ogs_socknode_t *node)
     ogs_sockaddr_t from;
     ogs_pkbuf_t *recvbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(recvbuf);
-    ogs_pkbuf_put(recvbuf, OGS_MAX_SDU_LEN);
+    ogs_pkbuf_reserve(recvbuf, 4); /* For additional extension header */
+    ogs_pkbuf_put(recvbuf, OGS_MAX_SDU_LEN-4);
 
     ogs_assert(node);
     ogs_assert(node->sock);
@@ -149,7 +150,7 @@ void testgtpu_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
 found:
     ogs_assert(sess);
 
-    ip6_h = pkbuf->data + ogs_gtpu_header_len(pkbuf);
+    ip6_h = pkbuf->data + ogs_gtpu_parse_header(NULL, pkbuf);
     ogs_assert(ip6_h);
     if (ip6_h->ip6_nxt == IPPROTO_ICMPV6) {
         struct nd_router_advert *advert_h = (struct nd_router_advert *)
@@ -172,14 +173,12 @@ found:
 
 int test_gtpu_send(
         ogs_socknode_t *node, test_bearer_t *bearer,
-        ogs_gtp2_header_t *gtp_hdesc, ogs_gtp2_extension_header_t *ext_hdesc,
-        ogs_pkbuf_t *pkbuf)
+        ogs_gtp2_header_desc_t *header_desc, ogs_pkbuf_t *pkbuf)
 {
     ogs_gtp_node_t gnode;
     test_sess_t *sess = NULL;
 
-    ogs_assert(gtp_hdesc);
-    ogs_assert(ext_hdesc);
+    ogs_assert(header_desc);
     ogs_assert(pkbuf);
 
     ogs_assert(bearer);
@@ -221,10 +220,7 @@ int test_gtpu_send(
         ogs_assert_if_reached();
     }
 
-    ext_hdesc->pdu_type =
-        OGS_GTP2_EXTENSION_HEADER_PDU_TYPE_UL_PDU_SESSION_INFORMATION;
-
-    return ogs_gtp2_send_user_plane(&gnode, gtp_hdesc, ext_hdesc, pkbuf);
+    return ogs_gtp2_send_user_plane(&gnode, header_desc, pkbuf);
 }
 
 int test_gtpu_send_ping(
@@ -233,8 +229,7 @@ int test_gtpu_send_ping(
     int rv;
     test_sess_t *sess = NULL;
 
-    ogs_gtp2_header_t gtp_hdesc;
-    ogs_gtp2_extension_header_t ext_hdesc;
+    ogs_gtp2_header_desc_t header_desc;
 
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_ipsubnet_t dst_ipsub;
@@ -322,32 +317,31 @@ int test_gtpu_send_ping(
         ogs_assert_if_reached();
     }
 
-    memset(&gtp_hdesc, 0, sizeof(gtp_hdesc));
-    memset(&ext_hdesc, 0, sizeof(ext_hdesc));
+    memset(&header_desc, 0, sizeof(header_desc));
 
-    gtp_hdesc.type = OGS_GTPU_MSGTYPE_GPDU;
+    header_desc.type = OGS_GTPU_MSGTYPE_GPDU;
 
     if (bearer->qfi) {
-        gtp_hdesc.teid = sess->upf_n3_teid;
-        ext_hdesc.qos_flow_identifier = bearer->qfi;
-
+        header_desc.teid = sess->upf_n3_teid;
+        header_desc.pdu_type =
+            OGS_GTP2_EXTENSION_HEADER_PDU_TYPE_UL_PDU_SESSION_INFORMATION;
+        header_desc.qos_flow_identifier = bearer->qfi;
     } else if (bearer->ebi) {
-        gtp_hdesc.teid = bearer->sgw_s1u_teid;
+        header_desc.teid = bearer->sgw_s1u_teid;
 
     } else {
         ogs_fatal("No QFI[%d] and EBI[%d]", bearer->qfi, bearer->ebi);
         ogs_assert_if_reached();
     }
 
-    return test_gtpu_send(node, bearer, &gtp_hdesc, &ext_hdesc, pkbuf);
+    return test_gtpu_send(node, bearer, &header_desc, pkbuf);
 }
 
 int test_gtpu_send_slacc_rs(ogs_socknode_t *node, test_bearer_t *bearer)
 {
     test_sess_t *sess = NULL;
 
-    ogs_gtp2_header_t gtp_hdesc;
-    ogs_gtp2_extension_header_t ext_hdesc;
+    ogs_gtp2_header_desc_t header_desc;
 
     ogs_pkbuf_t *pkbuf = NULL;
     struct ip6_hdr *ip6_h = NULL;
@@ -383,30 +377,30 @@ int test_gtpu_send_slacc_rs(ogs_socknode_t *node, test_bearer_t *bearer)
 
     ogs_pkbuf_trim(pkbuf, payload_len);
 
-    memset(&gtp_hdesc, 0, sizeof(gtp_hdesc));
-    memset(&ext_hdesc, 0, sizeof(ext_hdesc));
+    memset(&header_desc, 0, sizeof(header_desc));
 
-    gtp_hdesc.type = OGS_GTPU_MSGTYPE_GPDU;
-    gtp_hdesc.flags = OGS_GTPU_FLAGS_S;
+    header_desc.type = OGS_GTPU_MSGTYPE_GPDU;
+    header_desc.flags = OGS_GTPU_FLAGS_S;
 
     if (bearer->qfi) {
-        gtp_hdesc.teid = sess->upf_n3_teid;
-
 /*
  * Discussion #1506
  * Router Soliciation should include QFI in 5G Core
  */
-        ext_hdesc.qos_flow_identifier = bearer->qfi;
+        header_desc.teid = sess->upf_n3_teid;
+        header_desc.pdu_type =
+            OGS_GTP2_EXTENSION_HEADER_PDU_TYPE_UL_PDU_SESSION_INFORMATION;
+        header_desc.qos_flow_identifier = bearer->qfi;
 
     } else if (bearer->ebi) {
-        gtp_hdesc.teid = bearer->sgw_s1u_teid;
+        header_desc.teid = bearer->sgw_s1u_teid;
 
     } else {
         ogs_fatal("No QFI[%d] and EBI[%d]", bearer->qfi, bearer->ebi);
         ogs_assert_if_reached();
     }
 
-    return test_gtpu_send(node, bearer, &gtp_hdesc, &ext_hdesc, pkbuf);
+    return test_gtpu_send(node, bearer, &header_desc, pkbuf);
 }
 
 int test_gtpu_send_slacc_rs_with_unspecified_source_address(
@@ -414,8 +408,7 @@ int test_gtpu_send_slacc_rs_with_unspecified_source_address(
 {
     test_sess_t *sess = NULL;
 
-    ogs_gtp2_header_t gtp_hdesc;
-    ogs_gtp2_extension_header_t ext_hdesc;
+    ogs_gtp2_header_desc_t header_desc;
 
     ogs_pkbuf_t *pkbuf = NULL;
     struct ip6_hdr *ip6_h = NULL;
@@ -444,30 +437,31 @@ int test_gtpu_send_slacc_rs_with_unspecified_source_address(
 
     ogs_pkbuf_trim(pkbuf, payload_len);
 
-    memset(&gtp_hdesc, 0, sizeof(gtp_hdesc));
-    memset(&ext_hdesc, 0, sizeof(ext_hdesc));
+    memset(&header_desc, 0, sizeof(header_desc));
 
-    gtp_hdesc.type = OGS_GTPU_MSGTYPE_GPDU;
-    gtp_hdesc.flags = OGS_GTPU_FLAGS_S;
+    header_desc.type = OGS_GTPU_MSGTYPE_GPDU;
+    header_desc.flags = OGS_GTPU_FLAGS_S;
 
     if (bearer->qfi) {
-        gtp_hdesc.teid = sess->upf_n3_teid;
-
+        header_desc.teid = sess->upf_n3_teid;
 /*
  * Discussion #1506
  * Router Soliciation should include QFI in 5G Core
  */
-        ext_hdesc.qos_flow_identifier = bearer->qfi;
+        header_desc.teid = sess->upf_n3_teid;
+        header_desc.pdu_type =
+            OGS_GTP2_EXTENSION_HEADER_PDU_TYPE_UL_PDU_SESSION_INFORMATION;
+        header_desc.qos_flow_identifier = bearer->qfi;
 
     } else if (bearer->ebi) {
-        gtp_hdesc.teid = bearer->sgw_s1u_teid;
+        header_desc.teid = bearer->sgw_s1u_teid;
 
     } else {
         ogs_fatal("No QFI[%d] and EBI[%d]", bearer->qfi, bearer->ebi);
         ogs_assert_if_reached();
     }
 
-    return test_gtpu_send(node, bearer, &gtp_hdesc, &ext_hdesc, pkbuf);
+    return test_gtpu_send(node, bearer, &header_desc, pkbuf);
 }
 
 
@@ -477,8 +471,7 @@ int test_gtpu_send_error_indication(
     test_sess_t *sess = NULL;
     uint32_t teid = 0;
 
-    ogs_gtp2_header_t gtp_hdesc;
-    ogs_gtp2_extension_header_t ext_hdesc;
+    ogs_gtp2_header_desc_t header_desc;
 
     ogs_pkbuf_t *pkbuf = NULL;
 
@@ -486,9 +479,19 @@ int test_gtpu_send_error_indication(
     sess = bearer->sess;
     ogs_assert(sess);
 
+    memset(&header_desc, 0, sizeof(header_desc));
+
+    header_desc.type = OGS_GTPU_MSGTYPE_ERR_IND;
+    header_desc.flags = OGS_GTPU_FLAGS_S|OGS_GTPU_FLAGS_E;
+    header_desc.udp.presence = true;
+    header_desc.udp.port = 0;
+
     if (bearer->qfi) {
         /* 5GC */
         teid = sess->gnb_n3_teid;
+        header_desc.pdu_type =
+            OGS_GTP2_EXTENSION_HEADER_PDU_TYPE_UL_PDU_SESSION_INFORMATION;
+        header_desc.qos_flow_identifier = bearer->qfi;
 
     } else if (bearer->ebi) {
         /* EPC */
@@ -502,14 +505,7 @@ int test_gtpu_send_error_indication(
     pkbuf = ogs_gtp1_build_error_indication(teid, node->addr);
     ogs_assert(pkbuf);
 
-    memset(&gtp_hdesc, 0, sizeof(gtp_hdesc));
-    memset(&ext_hdesc, 0, sizeof(ext_hdesc));
-
-    gtp_hdesc.type = OGS_GTPU_MSGTYPE_ERR_IND;
-    gtp_hdesc.flags = OGS_GTPU_FLAGS_S|OGS_GTPU_FLAGS_E;
-    ext_hdesc.type = OGS_GTP2_EXTENSION_HEADER_TYPE_UDP_PORT;
-
-    return test_gtpu_send(node, bearer, &gtp_hdesc, &ext_hdesc, pkbuf);
+    return test_gtpu_send(node, bearer, &header_desc, pkbuf);
 }
 
 int test_gtpu_send_indirect_data_forwarding(
@@ -517,30 +513,33 @@ int test_gtpu_send_indirect_data_forwarding(
 {
     test_sess_t *sess = NULL;
 
-    ogs_gtp2_header_t gtp_hdesc;
-    ogs_gtp2_extension_header_t ext_hdesc;
+    ogs_gtp2_header_desc_t header_desc;
 
     ogs_assert(bearer);
     sess = bearer->sess;
     ogs_assert(sess);
     ogs_assert(pkbuf);
 
-    memset(&gtp_hdesc, 0, sizeof(gtp_hdesc));
-    memset(&ext_hdesc, 0, sizeof(ext_hdesc));
+    memset(&header_desc, 0, sizeof(header_desc));
 
-    gtp_hdesc.type = OGS_GTPU_MSGTYPE_GPDU;
+    header_desc.type = OGS_GTPU_MSGTYPE_GPDU;
 
     if (bearer->qfi) {
-        gtp_hdesc.teid = sess->handover.upf_dl_teid;
-        ext_hdesc.qos_flow_identifier = bearer->qfi;
+        header_desc.teid = sess->handover.upf_dl_teid;
+        header_desc.pdu_type =
+            OGS_GTP2_EXTENSION_HEADER_PDU_TYPE_UL_PDU_SESSION_INFORMATION;
+        header_desc.qos_flow_identifier = bearer->qfi;
 
     } else if (bearer->ebi) {
-        gtp_hdesc.teid = bearer->handover.ul_teid;
+        header_desc.teid = bearer->handover.ul_teid;
 
     } else {
         ogs_fatal("No QFI[%d] and EBI[%d]", bearer->qfi, bearer->ebi);
         ogs_assert_if_reached();
     }
 
-    return test_gtpu_send(node, bearer, &gtp_hdesc, &ext_hdesc, pkbuf);
+    header_desc.pdcp_number_presence = true;
+    header_desc.pdcp_number = 0x4567;
+
+    return test_gtpu_send(node, bearer, &header_desc, pkbuf);
 }
