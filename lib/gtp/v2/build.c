@@ -72,7 +72,11 @@ ogs_pkbuf_t *ogs_gtp1_build_error_indication(
         ogs_error("ogs_pkbuf_alloc() failed");
         return NULL;
     }
-    ogs_pkbuf_reserve(pkbuf, OGS_GTPV1U_5GC_HEADER_LEN);
+    ogs_pkbuf_reserve(pkbuf,
+            OGS_GTPV1U_HEADER_LEN + /* 8 bytes */
+            4 + /* Seq Number(2) + N PDU Number(1) + Ext Header Type(1) */
+            4 + /* If 5GC, QFI Extension Header(4) */
+            4); /* UDP Port Extension Header(4) */
 
     /*
      * 8.3 Tunnel Endpoint Identifier Data I
@@ -118,9 +122,9 @@ void ogs_gtp2_fill_header(
         ogs_pkbuf_t *pkbuf)
 {
     ogs_gtp2_header_t *gtp_h = NULL;
-    ogs_gtp2_extension_header_t *ext_h = NULL;
     uint8_t flags;
     uint8_t gtp_hlen = 0;
+    int i;
 
     ogs_assert(gtp_hdesc);
     ogs_assert(ext_hdesc);
@@ -129,13 +133,22 @@ void ogs_gtp2_fill_header(
     /* Processing GTP Flags */
     flags = gtp_hdesc->flags;
     flags |= OGS_GTPU_FLAGS_V | OGS_GTPU_FLAGS_PT;
-    if (ext_hdesc->qos_flow_identifier) flags |= OGS_GTPU_FLAGS_E;
+    if (ext_hdesc->array[0].type && ext_hdesc->array[0].len)
+        flags |= OGS_GTPU_FLAGS_E;
 
     /* Define GTP Header Size */
-    if (flags & OGS_GTPU_FLAGS_E)
-        gtp_hlen = OGS_GTPV1U_HEADER_LEN+8;
-    else if (flags & (OGS_GTPU_FLAGS_S|OGS_GTPU_FLAGS_PN))
-        gtp_hlen = OGS_GTPV1U_HEADER_LEN+4;
+    if (flags & OGS_GTPU_FLAGS_E) {
+
+        gtp_hlen = OGS_GTPV1U_HEADER_LEN+OGS_GTPV1U_EXTENSION_HEADER_LEN;
+
+        i = 0;
+        while(ext_hdesc->array[i].len) {
+            gtp_hlen += (ext_hdesc->array[i].len*4);
+            i++;
+        }
+
+    } else if (flags & (OGS_GTPU_FLAGS_S|OGS_GTPU_FLAGS_PN))
+        gtp_hlen = OGS_GTPV1U_HEADER_LEN+OGS_GTPV1U_EXTENSION_HEADER_LEN;
     else
         gtp_hlen = OGS_GTPV1U_HEADER_LEN;
 
@@ -179,24 +192,30 @@ void ogs_gtp2_fill_header(
 
     /* Fill Extention Header */
     if (gtp_h->flags & OGS_GTPU_FLAGS_E) {
-        ext_h = (ogs_gtp2_extension_header_t *)
-            (pkbuf->data + OGS_GTPV1U_HEADER_LEN);
+        uint8_t *ext_h = (uint8_t *)(pkbuf->data +
+                    OGS_GTPV1U_HEADER_LEN + OGS_GTPV1U_EXTENSION_HEADER_LEN);
         ogs_assert(ext_h);
 
-        if (ext_hdesc->qos_flow_identifier) {
-            /* 5G Core */
-            ext_h->type = OGS_GTP2_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER;
-            ext_h->len = 1;
-            ext_h->pdu_type = ext_hdesc->pdu_type;
-            ext_h->qos_flow_identifier = ext_hdesc->qos_flow_identifier;
-            ext_h->next_type =
-                OGS_GTP2_EXTENSION_HEADER_TYPE_NO_MORE_EXTENSION_HEADERS;
-        } else {
-            /* EPC */
-            ext_h->type = ext_hdesc->type;
-            ext_h->len = 1;
-            ext_h->next_type =
-                OGS_GTP2_EXTENSION_HEADER_TYPE_NO_MORE_EXTENSION_HEADERS;
+        /* Copy Header Type */
+        *(ext_h-1) = ext_hdesc->array[0].type;
+
+        i = 0;
+        while (i < OGS_GTP2_NUM_OF_EXTENSION_HEADER &&
+                (ext_h - pkbuf->data) < gtp_hlen) {
+            int len = ext_hdesc->array[i].len*4;
+
+            /* Copy Header Content */
+            memcpy(ext_h, &ext_hdesc->array[i].len, len-1);
+
+            /* Check if Next Header is Available */
+            if (ext_hdesc->array[i+1].len)
+                ext_h[len-1] = ext_hdesc->array[i+1].type;
+            else
+                ext_h[len-1] =
+                    OGS_GTP2_EXTENSION_HEADER_TYPE_NO_MORE_EXTENSION_HEADERS;
+
+            ext_h += len;
+            i++;
         }
     }
 }
