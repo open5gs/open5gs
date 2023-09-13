@@ -40,6 +40,8 @@
 #include "crypt/ogs-kdf.h"
 #include "crypt/ogs-base64.h"
 
+#include "crypt/openssl/snow3g.h"
+
 #undef OGS_CRYPT_INSIDE
 
 #ifdef __cplusplus

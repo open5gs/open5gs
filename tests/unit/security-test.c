@@ -186,11 +186,20 @@ static void security_test5(abts_case *tc, void *data)
     uint8_t tmp[SECURITY_TEST5_LEN];
     ogs_pkbuf_t *pkbuf = NULL;
 
+#if 0 /* Issue #2581 : snow_3g_f8 have memory problem */
     snow_3g_f8(
         ogs_hex_from_string(_ck, ck, sizeof(ck)),
         0x72a4f20f, 0x0c, 1,
         ogs_hex_from_string(_plain, plain, sizeof(plain)),
         SECURITY_TEST5_BIT_LEN);
+#else
+    SNOW_CTX ctx;
+
+    ogs_hex_from_string(_plain, plain, sizeof(plain));
+    SNOW_init(0x72a4f20f, 0x0c, 1,
+        ogs_hex_from_string(_ck, ck, sizeof(ck)), &ctx);
+    SNOW(SECURITY_TEST5_LEN, plain, plain, &ctx);
+#endif
     ABTS_TRUE(tc, memcmp(plain, 
         ogs_hex_from_string(_cipher, tmp, sizeof(tmp)),
         SECURITY_TEST5_LEN) == 0);

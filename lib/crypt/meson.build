@@ -47,6 +47,9 @@ libcrypt_sources = files('''
 
     curve25519-donna.c
     ecc.c
+
+    openssl/snow3g.h
+    openssl/snow_core.c
 '''.split())
 
 libcrypt_inc = include_directories('.')
