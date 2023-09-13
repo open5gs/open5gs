@@ -76,6 +76,7 @@ void ogs_nas_encrypt(uint8_t algorithm_identity,
         uint8_t direction, ogs_pkbuf_t *pkbuf)
 {
     uint8_t ivec[16];
+    SNOW_CTX ctx;
 
     ogs_assert(knas_enc);
     ogs_assert(bearer <= 0x1f);
@@ -86,8 +87,13 @@ void ogs_nas_encrypt(uint8_t algorithm_identity,
 
     switch (algorithm_identity) {
     case OGS_NAS_SECURITY_ALGORITHMS_128_EEA1:
+#if 0 /* Issue #2581 : snow_3g_f8 have memory problem */
         snow_3g_f8(knas_enc, count, bearer, direction, 
                 pkbuf->data, (pkbuf->len << 3));
+#else
+        SNOW_init(count, bearer, direction, (const char *)knas_enc, &ctx);
+        SNOW(pkbuf->len, pkbuf->data, pkbuf->data, &ctx);
+#endif
         break;
     case OGS_NAS_SECURITY_ALGORITHMS_128_EEA2:
         count = htonl(count);
