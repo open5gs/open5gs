@@ -54,6 +54,8 @@
 
 #if 0 /* modified by acetcom */
 #include <openssl/opensslconf.h>
+#else
+#include "core/ogs-core.h"
 #endif
 
 #ifdef OPENSSL_NO_SNOW3G
