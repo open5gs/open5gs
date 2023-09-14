@@ -73,6 +73,10 @@ typedef struct ogs_gtp2_extension_header_s {
             uint16_t udp_port;
             uint16_t pdcp_number;
         };
+
+/* sizeof(extension_header.array[i]) */
+#define OGS_GTP2_MAX_EXTENSION_HEADER_LEN 4
+
 #define OGS_GTP2_NUM_OF_EXTENSION_HEADER 8
     } __attribute__ ((packed)) array[OGS_GTP2_NUM_OF_EXTENSION_HEADER];
 } __attribute__ ((packed)) ogs_gtp2_extension_header_t;

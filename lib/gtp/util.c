@@ -76,6 +76,12 @@ int ogs_gtpu_parse_header(
                 ogs_error("No length in the Extension header");
                 return -1;
             }
+
+            if (((*ext_h) * 4) > OGS_GTP2_MAX_EXTENSION_HEADER_LEN) {
+                ogs_error("Overflow length : %d", (*ext_h));
+                return -1;
+            }
+
             if (pkbuf->len < len) {
                 ogs_error("the length of the packet is insufficient[%d:%d]",
                         pkbuf->len, len);
