@@ -3250,6 +3250,13 @@ mme_ue_t *mme_ue_find_by_message(ogs_nas_eps_message_t *message)
 
         switch(eps_mobile_identity->imsi.type) {
         case OGS_NAS_EPS_MOBILE_IDENTITY_IMSI:
+            if (sizeof(ogs_nas_mobile_identity_imsi_t) !=
+                    eps_mobile_identity->length) {
+                ogs_error("mobile_identity length (%d != %d)",
+                        (int)sizeof(ogs_nas_mobile_identity_imsi_t),
+                        eps_mobile_identity->length);
+                return NULL;
+            }
             ogs_nas_eps_imsi_to_bcd(
                 &eps_mobile_identity->imsi, eps_mobile_identity->length,
                 imsi_bcd);
