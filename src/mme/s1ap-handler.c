@@ -246,6 +246,129 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, ogs_s1ap_message_t *message)
     ogs_assert(r != OGS_ERROR);
 }
 
+void s1ap_handle_enb_configuration_update(
+        mme_enb_t *enb, ogs_s1ap_message_t *message)
+{
+    int i, j, r;
+
+    S1AP_InitiatingMessage_t *initiatingMessage = NULL;
+    S1AP_ENBConfigurationUpdate_t *ENBConfigurationUpdate = NULL;
+
+    S1AP_ENBConfigurationUpdateIEs_t *ie = NULL;
+    S1AP_SupportedTAs_t *SupportedTAs = NULL;
+    S1AP_PagingDRX_t *PagingDRX = NULL;
+
+    ogs_assert(enb);
+    ogs_assert(enb->sctp.sock);
+
+    ogs_assert(message);
+    initiatingMessage = message->choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
+    ENBConfigurationUpdate =
+        &initiatingMessage->value.choice.ENBConfigurationUpdate;
+    ogs_assert(ENBConfigurationUpdate);
+
+    ogs_debug("ENBConfigurationUpdate");
+
+    for (i = 0; i < ENBConfigurationUpdate->protocolIEs.list.count; i++) {
+        ie = ENBConfigurationUpdate->protocolIEs.list.array[i];
+        switch (ie->id) {
+        case S1AP_ProtocolIE_ID_id_SupportedTAs:
+            SupportedTAs = &ie->value.choice.SupportedTAs;
+            break;
+        case S1AP_ProtocolIE_ID_id_DefaultPagingDRX:
+            PagingDRX = &ie->value.choice.PagingDRX;
+            break;
+        default:
+            break;
+        }
+    }
+
+    /* Parse Supported TA */
+    if (SupportedTAs) {
+        S1AP_Cause_PR group = S1AP_Cause_PR_NOTHING;
+        long cause = 0;
+
+        enb->num_of_supported_ta_list = 0;
+        for (i = 0; i < SupportedTAs->list.count; i++) {
+            S1AP_SupportedTAs_Item_t *SupportedTAs_Item = NULL;
+            S1AP_TAC_t *tAC = NULL;
+
+            SupportedTAs_Item =
+                (S1AP_SupportedTAs_Item_t *)SupportedTAs->list.array[i];
+            ogs_assert(SupportedTAs_Item);
+            tAC = &SupportedTAs_Item->tAC;
+            ogs_assert(tAC);
+
+            for (j = 0; j < SupportedTAs_Item->broadcastPLMNs.list.count; j++) {
+                S1AP_PLMNidentity_t *pLMNidentity = NULL;
+                pLMNidentity = (S1AP_PLMNidentity_t *)
+                    SupportedTAs_Item->broadcastPLMNs.list.array[j];
+                ogs_assert(pLMNidentity);
+
+                memcpy(&enb->supported_ta_list[
+                        enb->num_of_supported_ta_list].tac,
+                        tAC->buf, sizeof(uint16_t));
+                enb->supported_ta_list[enb->num_of_supported_ta_list].tac =
+                    be16toh(enb->supported_ta_list
+                            [enb->num_of_supported_ta_list].tac);
+                memcpy(&enb->supported_ta_list
+                            [enb->num_of_supported_ta_list].plmn_id,
+                        pLMNidentity->buf, sizeof(ogs_plmn_id_t));
+                ogs_debug("    PLMN_ID[MCC:%d MNC:%d] TAC[%d]",
+                    ogs_plmn_id_mcc(&enb->supported_ta_list
+                        [enb->num_of_supported_ta_list].plmn_id),
+                    ogs_plmn_id_mnc(&enb->supported_ta_list
+                        [enb->num_of_supported_ta_list].plmn_id),
+                    enb->supported_ta_list[enb->num_of_supported_ta_list].tac);
+                enb->num_of_supported_ta_list++;
+            }
+        }
+
+        /*
+         * TS36.413
+         * Section 8.7.3.4 Abnormal Conditions
+         *
+         * If the eNB initiates the procedure by sending a S1 SETUP REQUEST
+         * message including the PLMN Identity IEs and none of the PLMNs
+         * provided by the eNB is identified by the MME, then the MME shall
+         * reject the eNB S1 Setup Request procedure with the appropriate cause
+         * value, e.g., “Unknown PLMN”.
+         */
+        if (enb_plmn_id_is_foreign(enb)) {
+            ogs_warn("S1-Setup failure:");
+            ogs_warn("    Global-ENB-ID PLMN-ID is foreign");
+            group = S1AP_Cause_PR_misc;
+            cause = S1AP_CauseMisc_unknown_PLMN;
+
+            r = s1ap_send_enb_configuration_update_failure(enb, group, cause);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+            return;
+        }
+
+        if (!served_tai_is_found(enb)) {
+            ogs_warn("S1-Setup failure:");
+            ogs_warn("    Cannot find Served TAI. "
+                    "Check 'mme.tai' configuration");
+            group = S1AP_Cause_PR_misc;
+            cause = S1AP_CauseMisc_unknown_PLMN;
+
+            r = s1ap_send_enb_configuration_update_failure(enb, group, cause);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+            return;
+        }
+    }
+
+    if (PagingDRX)
+        ogs_debug("    PagingDRX[%ld]", *PagingDRX);
+
+    r = s1ap_send_enb_configuration_update_ack(enb);
+    ogs_expect(r == OGS_OK);
+    ogs_assert(r != OGS_ERROR);
+}
+
 void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
     int i, r;

@@ -67,6 +67,7 @@ ogs_pkbuf_t *test_s1ap_build_handover_failure(test_ue_t *test_ue,
         S1AP_Cause_PR group, long cause);
 
 ogs_pkbuf_t *test_s1ap_build_enb_configuration_transfer(int i);
+ogs_pkbuf_t *test_s1ap_build_enb_configuration_update(int i);
 
 ogs_pkbuf_t *test_s1ap_build_malformed_s1_setup_request(int i);
 ogs_pkbuf_t *test_s1ap_build_malformed_enb_status_transfer(int i);

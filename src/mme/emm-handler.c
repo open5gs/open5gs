@@ -217,8 +217,13 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
 
     switch (eps_mobile_identity->imsi.type) {
     case OGS_NAS_EPS_MOBILE_IDENTITY_IMSI:
-        ogs_assert(sizeof(ogs_nas_mobile_identity_imsi_t) ==
-                eps_mobile_identity->length);
+        if (sizeof(ogs_nas_mobile_identity_imsi_t) !=
+                eps_mobile_identity->length) {
+            ogs_error("mobile_identity length (%d != %d)",
+                    (int)sizeof(ogs_nas_mobile_identity_imsi_t),
+                    eps_mobile_identity->length);
+            return OGS_ERROR;
+        }
         memcpy(&mme_ue->nas_mobile_identity_imsi, 
             &eps_mobile_identity->imsi, eps_mobile_identity->length);
         ogs_nas_eps_imsi_to_bcd(
