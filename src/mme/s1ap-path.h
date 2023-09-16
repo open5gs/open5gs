@@ -52,6 +52,10 @@ int s1ap_send_s1_setup_response(mme_enb_t *enb);
 int s1ap_send_s1_setup_failure(
         mme_enb_t *enb, S1AP_Cause_PR group, long cause);
 
+int s1ap_send_enb_configuration_update_ack(mme_enb_t *enb);
+int s1ap_send_enb_configuration_update_failure(
+        mme_enb_t *enb, S1AP_Cause_PR group, long cause);
+
 int s1ap_send_initial_context_setup_request(mme_ue_t *mme_ue);
 int s1ap_send_ue_context_modification_request(mme_ue_t *mme_ue);
 int s1ap_send_ue_context_release_command(

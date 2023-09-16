@@ -97,12 +97,60 @@ static void s1setup_test2(abts_case *tc, void *data)
     }
 }
 
+static void s1setup_test3(abts_case *tc, void *data)
+{
+    int rv;
+    ogs_socknode_t *node[NUM_OF_TEST_ENB];
+    ogs_pkbuf_t *sendbuf;
+    ogs_pkbuf_t *recvbuf;
+    ogs_s1ap_message_t message;
+    int i;
+
+    i = 0;
+    node[i] = tests1ap_client(AF_INET);
+    ABTS_PTR_NOTNULL(tc, node[i]);
+
+    sendbuf = test_s1ap_build_s1_setup_request(
+            S1AP_ENB_ID_PR_macroENB_ID, 0x54f64+i);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+
+    rv = testenb_s1ap_send(node[i], sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    recvbuf = testenb_s1ap_read(node[i]);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+
+    rv = ogs_s1ap_decode(&message, recvbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    ogs_s1ap_free(&message);
+    ogs_pkbuf_free(recvbuf);
+
+    sendbuf = test_s1ap_build_enb_configuration_update(0);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+
+    rv = testenb_s1ap_send(node[i], sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    recvbuf = testenb_s1ap_read(node[i]);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+
+    rv = ogs_s1ap_decode(&message, recvbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    ogs_s1ap_free(&message);
+    ogs_pkbuf_free(recvbuf);
+
+    testenb_s1ap_close(node[i]);
+}
+
 abts_suite *test_s1setup(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, s1setup_test1, NULL);
     abts_run_test(suite, s1setup_test2, NULL);
+    abts_run_test(suite, s1setup_test3, NULL);
 
     return suite;
 }

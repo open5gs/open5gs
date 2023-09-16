@@ -2041,6 +2041,48 @@ ogs_pkbuf_t *test_s1ap_build_enb_configuration_transfer(int i)
     return pkbuf;
 }
 
+ogs_pkbuf_t *test_s1ap_build_enb_configuration_update(int i)
+{
+    ogs_pkbuf_t *pkbuf = NULL;
+    const char *payload[TEST_S1AP_MAX_MESSAGE] = {
+        "001d002a0000"
+        "04003c4003000031 0040000700000040 34f2990089400140 0124400c00004ced"
+        "a80000004034f299",
+        "",
+        "",
+
+        "",
+        "",
+        "",
+
+        "",
+        "",
+        "",
+
+    };
+    uint16_t len[TEST_S1AP_MAX_MESSAGE] = {
+        46,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+    };
+    char hexbuf[OGS_HUGE_LEN];
+
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_assert(pkbuf);
+    ogs_pkbuf_put_data(pkbuf,
+        ogs_hex_from_string(payload[i], hexbuf, sizeof(hexbuf)), len[i]);
+
+    return pkbuf;
+}
+
 ogs_pkbuf_t *test_s1ap_build_malformed_s1_setup_request(int i)
 {
     ogs_pkbuf_t *pkbuf = NULL;

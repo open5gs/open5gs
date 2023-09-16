@@ -87,6 +87,9 @@ void s1ap_state_operational(ogs_fsm_t *s, mme_event_t *e)
             case S1AP_ProcedureCode_id_S1Setup :
                 s1ap_handle_s1_setup_request(enb, pdu);
                 break;
+            case S1AP_ProcedureCode_id_ENBConfigurationUpdate:
+                s1ap_handle_enb_configuration_update(enb, pdu);
+                break;
             case S1AP_ProcedureCode_id_initialUEMessage :
                 s1ap_handle_initial_ue_message(enb, pdu);
                 break;

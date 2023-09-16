@@ -188,6 +188,88 @@ ogs_pkbuf_t *s1ap_build_setup_failure(
     return ogs_s1ap_encode(&pdu);
 }
 
+ogs_pkbuf_t *s1ap_build_enb_configuration_update_ack(void)
+{
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_SuccessfulOutcome_t *successfulOutcome = NULL;
+
+    ogs_debug("ENBConfigurationUpdateAcknowledge");
+
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_S1AP_PDU_PR_successfulOutcome;
+    pdu.choice.successfulOutcome = CALLOC(1, sizeof(S1AP_SuccessfulOutcome_t));
+
+    successfulOutcome = pdu.choice.successfulOutcome;
+    successfulOutcome->procedureCode =
+        S1AP_ProcedureCode_id_ENBConfigurationUpdate;
+    successfulOutcome->criticality = S1AP_Criticality_reject;
+    successfulOutcome->value.present =
+        S1AP_SuccessfulOutcome__value_PR_ENBConfigurationUpdateAcknowledge;
+
+    return ogs_s1ap_encode(&pdu);
+}
+
+ogs_pkbuf_t *s1ap_build_enb_configuration_update_failure(
+    S1AP_Cause_PR group, long cause, long time_to_wait)
+{
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_UnsuccessfulOutcome_t *unsuccessfulOutcome = NULL;
+    S1AP_ENBConfigurationUpdateFailure_t *ENBConfigurationUpdateFailure = NULL;
+
+    S1AP_ENBConfigurationUpdateFailureIEs_t *ie = NULL;
+    S1AP_Cause_t *Cause = NULL;
+    S1AP_TimeToWait_t *TimeToWait = NULL;
+
+    ogs_debug("ENBConfigurationUpdateFailure");
+
+    ogs_debug("    Group[%d] Cause[%d] TimeToWait[%ld]",
+            group, (int)cause, time_to_wait);
+
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_S1AP_PDU_PR_unsuccessfulOutcome;
+    pdu.choice.unsuccessfulOutcome =
+        CALLOC(1, sizeof(S1AP_UnsuccessfulOutcome_t));
+
+    unsuccessfulOutcome = pdu.choice.unsuccessfulOutcome;
+    unsuccessfulOutcome->procedureCode =
+        S1AP_ProcedureCode_id_ENBConfigurationUpdate;
+    unsuccessfulOutcome->criticality = S1AP_Criticality_reject;
+    unsuccessfulOutcome->value.present =
+        S1AP_UnsuccessfulOutcome__value_PR_ENBConfigurationUpdateFailure;
+
+    ENBConfigurationUpdateFailure =
+        &unsuccessfulOutcome->value.choice.ENBConfigurationUpdateFailure;
+
+    ie = CALLOC(1, sizeof(S1AP_ENBConfigurationUpdateFailureIEs_t));
+    ASN_SEQUENCE_ADD(&ENBConfigurationUpdateFailure->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_Cause;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present = S1AP_ENBConfigurationUpdateFailureIEs__value_PR_Cause;
+
+    Cause = &ie->value.choice.Cause;
+
+    if (time_to_wait > -1) {
+        ie = CALLOC(1, sizeof(S1AP_ENBConfigurationUpdateFailureIEs_t));
+        ASN_SEQUENCE_ADD(&ENBConfigurationUpdateFailure->protocolIEs, ie);
+
+        ie->id = S1AP_ProtocolIE_ID_id_TimeToWait;
+        ie->criticality = S1AP_Criticality_ignore;
+        ie->value.present =
+            S1AP_ENBConfigurationUpdateFailureIEs__value_PR_TimeToWait;
+
+        TimeToWait = &ie->value.choice.TimeToWait;
+    }
+
+    Cause->present = group;
+    Cause->choice.radioNetwork = cause;
+
+    if (TimeToWait)
+        *TimeToWait = time_to_wait;
+
+    return ogs_s1ap_encode(&pdu);
+}
+
 ogs_pkbuf_t *s1ap_build_downlink_nas_transport(
     enb_ue_t *enb_ue, ogs_pkbuf_t *emmbuf)
 {

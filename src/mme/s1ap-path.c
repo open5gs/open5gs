@@ -309,6 +309,56 @@ int s1ap_send_s1_setup_failure(
     return rv;
 }
 
+int s1ap_send_enb_configuration_update_ack(mme_enb_t *enb)
+{
+    int rv;
+    ogs_pkbuf_t *s1ap_buffer;
+
+    ogs_debug("ENBConfigurationUpdateAcknowledge");
+
+    if (!mme_enb_cycle(enb)) {
+        ogs_error("eNB has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    s1ap_buffer = s1ap_build_enb_configuration_update_ack();
+    if (!s1ap_buffer) {
+        ogs_error("s1ap_build_setup_rsp() failed");
+        return OGS_ERROR;
+    }
+
+    rv = s1ap_send_to_enb(enb, s1ap_buffer, S1AP_NON_UE_SIGNALLING);
+    ogs_expect(rv == OGS_OK);
+
+    return rv;
+}
+
+int s1ap_send_enb_configuration_update_failure(
+        mme_enb_t *enb, S1AP_Cause_PR group, long cause)
+{
+    int rv;
+    ogs_pkbuf_t *s1ap_buffer;
+
+    ogs_debug("ENBConfigurationUpdateFailure");
+
+    if (!mme_enb_cycle(enb)) {
+        ogs_error("eNB has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    s1ap_buffer = s1ap_build_enb_configuration_update_failure(
+            group, cause, S1AP_TimeToWait_v10s);
+    if (!s1ap_buffer) {
+        ogs_error("s1ap_build_setup_failure() failed");
+        return OGS_ERROR;
+    }
+
+    rv = s1ap_send_to_enb(enb, s1ap_buffer, S1AP_NON_UE_SIGNALLING);
+    ogs_expect(rv == OGS_OK);
+
+    return rv;
+}
+
 int s1ap_send_initial_context_setup_request(mme_ue_t *mme_ue)
 {
     int rv;
