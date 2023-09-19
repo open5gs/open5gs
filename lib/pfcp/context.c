@@ -1951,16 +1951,8 @@ ogs_pfcp_ue_ip_t *ogs_pfcp_ue_ip_alloc(
         subnet = ogs_pfcp_find_subnet(family);
 
     if (subnet == NULL) {
-        ogs_error("CHECK CONFIGURATION: Cannot find subnet [family:%d, dnn:%s]",
-                    family, dnn ? dnn : "No DNN");
-        ogs_error("Please add FALLBACK subnet as below.");
-        ogs_error("    subnet:");
-        if (family == AF_INET)
-            ogs_error("     - addr: 10.50.0.1/16");
-        else if (family == AF_INET6)
-            ogs_error("     - addr: 2001:db8:abcd::1/48");
-
-        *cause_value = OGS_PFCP_CAUSE_SYSTEM_FAILURE;
+        ogs_error("All IP addresses in all subnets are occupied");
+        *cause_value = OGS_PFCP_CAUSE_NO_RESOURCES_AVAILABLE;
         return NULL;
     }
 
@@ -2121,7 +2113,8 @@ ogs_pfcp_subnet_t *ogs_pfcp_find_subnet(int family)
 
     ogs_list_for_each(&self.subnet_list, subnet) {
         if ((subnet->family == AF_UNSPEC || subnet->family == family) &&
-            (strlen(subnet->dnn) == 0))
+            (strlen(subnet->dnn) == 0) &&
+            subnet->pool.avail)
             break;
     }
 
@@ -2138,7 +2131,8 @@ ogs_pfcp_subnet_t *ogs_pfcp_find_subnet_by_dnn(int family, const char *dnn)
     ogs_list_for_each(&self.subnet_list, subnet) {
         if ((subnet->family == AF_UNSPEC || subnet->family == family) &&
             (strlen(subnet->dnn) == 0 ||
-                (strlen(subnet->dnn) && ogs_strcasecmp(subnet->dnn, dnn) == 0)))
+                (strlen(subnet->dnn) && ogs_strcasecmp(subnet->dnn, dnn) == 0)) &&
+            subnet->pool.avail)
             break;
     }
 
