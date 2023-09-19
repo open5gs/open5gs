@@ -253,6 +253,7 @@ print_status "Build the Open5GS WebUI..."
 exec_cmd "cd ./${PACKAGE}-${VERSION}/webui && npm clean-install && npm run build"
 
 print_status "Install the Open5GS WebUI..."
+exec_cmd "mkdir -p /usr/lib/node_modules"
 exec_cmd "mv ./${PACKAGE}-${VERSION}/webui /usr/lib/node_modules/${PACKAGE}"
 exec_cmd_nobail "chown -R open5gs:open5gs /usr/lib/node_modules/${PACKAGE}"
 
