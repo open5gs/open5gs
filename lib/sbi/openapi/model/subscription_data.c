@@ -498,7 +498,17 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
                 ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [req_notif_events]");
                 goto end;
             }
-            OpenAPI_list_add(req_notif_eventsList, (void *)OpenAPI_notification_event_type_FromString(req_notif_events_local->valuestring));
+
+            OpenAPI_notification_event_type_e event = OpenAPI_notification_event_type_FromString(
+                    req_notif_events_local->valuestring);
+
+            if (event == OpenAPI_notification_event_type_NULL) {
+                ogs_warn("OpenAPI_subscription_data_parseFromJSON() arbitrary events in [req_notif_events] "
+                         "are not supported. Ignoring event `%s` and proceeding processing request...",
+                         req_notif_events_local->valuestring);
+            } else {
+                OpenAPI_list_add(req_notif_eventsList, (void *) event);
+            }
         }
     }
 
