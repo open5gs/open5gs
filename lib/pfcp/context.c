@@ -143,6 +143,62 @@ static int ogs_pfcp_context_prepare(void)
     return OGS_OK;
 }
 
+static int ogs_pfcp_check_subnet_overlapping(void)
+{
+    ogs_pfcp_subnet_t *subnet = NULL;
+    ogs_pfcp_subnet_t *next_subnet = NULL;
+    char buf1[OGS_ADDRSTRLEN];
+    char buf2[OGS_ADDRSTRLEN];
+    int rv = OGS_OK;
+
+    ogs_list_for_each(&self.subnet_list, subnet){
+        for (next_subnet = ogs_list_next(subnet); (next_subnet);
+                next_subnet = ogs_list_next(next_subnet)) {
+            if (strcmp(subnet->dnn, next_subnet->dnn) == 0 &&
+                subnet->gw.family == next_subnet->gw.family) {
+                uint32_t *addr1 = subnet->sub.sub;
+                uint32_t *addr2 = next_subnet->sub.sub;
+                uint32_t mask[4];
+                int i;
+                /* Get smaller subnet mask for IPv4 or IPv6 */
+                for (i = 0; i < 4 ; i++) {
+                    mask[i] = (subnet->sub.mask[i] & next_subnet->sub.mask[i]);
+                }
+                /* Compare masked subnets if they overlap */
+                if (subnet->gw.family == AF_INET) {
+                    if ((addr1[0] & mask[0]) == (addr2[0] & mask[0])) {
+                        ogs_error("Overlapping subnets in SMF configuration file: %s/%d and %s/%d",
+                                OGS_INET_NTOP(&subnet->gw.sub[0], buf1),
+                                subnet->prefixlen,
+                                OGS_INET_NTOP(&next_subnet->gw.sub[0], buf2),
+                                next_subnet->prefixlen);
+                        rv = OGS_ERROR;
+                    }
+                } else if (subnet->gw.family == AF_INET6) {
+                    if (((addr1[0] & mask[0]) == (addr2[0] & mask[0])) &&
+                        ((addr1[1] & mask[1]) == (addr2[1] & mask[1])) &&
+                        ((addr1[2] & mask[2]) == (addr2[2] & mask[2])) &&
+                        ((addr1[3] & mask[3]) == (addr2[3] & mask[3]))) {
+                        ogs_error("Overlapping subnets in SMF configuration file: %s/%d and %s/%d",
+                                OGS_INET6_NTOP(&subnet->gw.sub[0], buf1),
+                                subnet->prefixlen,
+                                OGS_INET6_NTOP(&next_subnet->gw.sub[0], buf2),
+                                next_subnet->prefixlen);
+                        rv = OGS_ERROR;
+                    }
+                } else {
+                    ogs_error("Invalid family in subnet configuration [%d]",
+                            subnet->gw.family);
+                    rv = OGS_ERROR;
+                    ogs_assert_if_reached();
+                }
+            }
+        }
+    }
+
+    return rv;
+}
+
 static int ogs_pfcp_context_validation(const char *local)
 {
     if (ogs_list_first(&self.pfcp_list) == NULL &&
@@ -150,6 +206,9 @@ static int ogs_pfcp_context_validation(const char *local)
         ogs_error("No %s.pfcp: in '%s'", local, ogs_app()->file);
         return OGS_ERROR;
     }
+    if (ogs_pfcp_check_subnet_overlapping() != OGS_OK)
+        return OGS_ERROR;
+
     return OGS_OK;
 }
 
