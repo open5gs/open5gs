@@ -1,0 +1,4 @@
+ 0x000000000000000e (SONAME)             Library soname: [libogsdiameter-s6b.so.2]
+ogs_diam_s6b_application B 8
+ogs_diam_s6b_init T 1ec
+ogs_diam_s6b_mip6_feature_vector B 8

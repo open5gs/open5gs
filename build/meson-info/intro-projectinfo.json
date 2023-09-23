@@ -1,0 +1,1 @@
+{"version": "2.6.4", "descriptive_name": "open5gs", "subproject_dir": "subprojects", "subprojects": [{"name": "prometheus-client-c", "version": "undefined", "descriptive_name": "prometheus-client-c"}, {"name": "freeDiameter", "version": "1.5.0", "descriptive_name": "freediameter"}]}

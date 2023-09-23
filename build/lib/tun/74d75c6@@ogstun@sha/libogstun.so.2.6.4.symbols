@@ -1,0 +1,5 @@
+ 0x000000000000000e (SONAME)             Library soname: [libogstun.so.2]
+ogs_tun_open T 1f7
+ogs_tun_read T 1b8
+ogs_tun_set_ip T 1b
+ogs_tun_write T 152

@@ -25,24 +25,41 @@ int __nrf_log_domain;
 
 static int context_initialized = 0;
 
+/******************************************************************
+ * Functionality: Initialize the NRF (Network Function Repository) context.
+ * Input: None
+ * Input Type: N/A (No inputs required)
+ * Output: None
+ * Output Type: N/A (No output)
+ ********************************************************************/
+
+
 void nrf_context_init(void)
 {
-    ogs_assert(context_initialized == 0);
+    ogs_assert(context_initialized == 0);    // Ensure that the context is not already initialized.
 
     /* Initialize NRF context */
+    // Set all the memory for the NRF context to zero
     memset(&self, 0, sizeof(nrf_context_t));
-
+    // Install the NRF log domain with the name "nrf" and the log level from ogs_core.
     ogs_log_install_domain(&__nrf_log_domain, "nrf", ogs_core()->log.level);
-
+    // Mark the context as initialized.
     context_initialized = 1;
 }
-
+/******************************************************************
+ * Functionality: Finalize the NRF (Network Function Repository) context.
+ * Input: None
+ * Input Type: N/A (No inputs required)
+ * Output: None
+ * Output Type: N/A (No output)
+ ********************************************************************/
 void nrf_context_final(void)
 {
+    //Declare pointerss for iterating through NF instances.
     ogs_sbi_nf_instance_t *nf_instance = NULL, *next_nf_instance = NULL;
-
+    // Ensure that the context is initialized before finalization.
     ogs_assert(context_initialized == 1);
-
+    // repaet through the NF instances in the list.
     ogs_list_for_each_safe(
             &ogs_sbi_self()->nf_instance_list, next_nf_instance, nf_instance) {
         if (NF_INSTANCE_TYPE_IS_NRF(nf_instance))
@@ -50,7 +67,7 @@ void nrf_context_final(void)
         if (OGS_FSM_STATE(&nf_instance->sm))
             nrf_nf_fsm_fini(nf_instance);
     }
-
+    // Mark the context as uninitialized.
     context_initialized = 0;
 }
 
@@ -58,6 +75,20 @@ nrf_context_t *nrf_self(void)
 {
     return &self;
 }
+
+
+
+
+/******************************************************************
+ * Functionality: Prepare the NRF (Network Function Repository) context.
+ * Input: None
+ * Input Type: N/A (No inputs required)
+ * Output: Return status (OGS_OK if successful)
+ * Output Type: int (Integer representing the return status)
+ ********************************************************************/
+
+
+
 
 static int nrf_context_prepare(void)
 {
@@ -69,10 +100,34 @@ static int nrf_context_prepare(void)
     return OGS_OK;
 }
 
+
+/******************************************************************
+ * Functionality: Validate the NRF (Network Function Repository) context.
+ * Input: None
+ * Input Type: N/A (No inputs required)
+ * Output: Return status (OGS_OK indicating successful validation)
+ * Output Type: int (Integer representing the return status)
+ ********************************************************************/
+
+
+
 static int nrf_context_validation(void)
 {
     return OGS_OK;
 }
+
+
+
+
+/******************************************************************
+ * Functionality: Parse and configure the NRF (Network Function Repository) context from a configuration document.
+ * Input: None
+ * Input Type: N/A (No inputs required)
+ * Output: Return status (an integer indicating success or failure)
+ * Output Type: int (Integer representing the return status)
+ ********************************************************************/
+
+
 
 int nrf_context_parse_config(void)
 {

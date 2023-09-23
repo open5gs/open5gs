@@ -1,0 +1,961 @@
+{
+  "objects": [
+    {
+      "jsonFile": "codemodel-v2-0f5e6538c5ad617a0979.json",
+      "kind": "codemodel",
+      "configurations": [
+        {
+          "directories": [
+            {
+              "build": ".",
+              "childIndexes": [
+                1
+              ],
+              "hasInstallRule": true,
+              "minimumCMakeVersion": {
+                "string": "3.14.5"
+              },
+              "projectIndex": 0,
+              "source": "."
+            },
+            {
+              "build": "prom",
+              "hasInstallRule": true,
+              "minimumCMakeVersion": {
+                "string": "3.14.5"
+              },
+              "parentIndex": 0,
+              "projectIndex": 1,
+              "source": "prom",
+              "targetIndexes": [
+                0
+              ]
+            }
+          ],
+          "name": "",
+          "projects": [
+            {
+              "childIndexes": [
+                1
+              ],
+              "directoryIndexes": [
+                0
+              ],
+              "name": "prometheus-client-c"
+            },
+            {
+              "directoryIndexes": [
+                1
+              ],
+              "name": "libprom",
+              "parentIndex": 0,
+              "targetIndexes": [
+                0
+              ]
+            }
+          ],
+          "targets": [
+            {
+              "directoryIndex": 1,
+              "id": "prom::@fe1444634e76fa3c3a03",
+              "jsonFile": "target-prom-2181b88e90eea8048209.json",
+              "name": "prom",
+              "projectIndex": 1,
+              "artifacts": [
+                {
+                  "path": "prom/libprom.so"
+                }
+              ],
+              "compileGroups": [
+                {
+                  "compileCommandFragments": [
+                    {
+                      "fragment": "-fPIC  "
+                    },
+                    {
+                      "fragment": "-Werror"
+                    },
+                    {
+                      "fragment": "-Wuninitialized"
+                    },
+                    {
+                      "fragment": "-Wall"
+                    },
+                    {
+                      "fragment": "-Wno-unused-label"
+                    },
+                    {
+                      "fragment": "-std=gnu11"
+                    },
+                    {
+                      "fragment": "-std=gnu11"
+                    }
+                  ],
+                  "defines": [
+                    {
+                      "define": "prom_EXPORTS"
+                    }
+                  ],
+                  "includes": [
+                    {
+                      "path": "/home/izi-tel/open5gs/subprojects/prometheus-client-c/prom/include"
+                    },
+                    {
+                      "path": "/home/izi-tel/open5gs/subprojects/prometheus-client-c/prom/src"
+                    }
+                  ],
+                  "language": "C",
+                  "sourceIndexes": [
+                    14,
+                    15,
+                    19,
+                    20,
+                    21,
+                    22,
+                    23,
+                    27,
+                    30,
+                    31,
+                    35,
+                    36,
+                    42,
+                    45,
+                    48,
+                    53,
+                    54
+                  ]
+                }
+              ],
+              "install": {
+                "destinations": [
+                  {
+                    "path": "lib/x86_64-linux-gnu"
+                  },
+                  {
+                    "path": "lib/x86_64-linux-gnu"
+                  }
+                ],
+                "prefix": {
+                  "path": "/home/izi-tel/open5gs/install"
+                }
+              },
+              "link": {
+                "commandFragments": [
+                  {
+                    "fragment": "",
+                    "role": "flags"
+                  },
+                  {
+                    "fragment": "-lpthread",
+                    "role": "libraries"
+                  }
+                ],
+                "language": "C"
+              },
+              "nameOnDisk": "libprom.so",
+              "paths": {
+                "build": "prom",
+                "source": "prom"
+              },
+              "sourceGroups": [
+                {
+                  "name": "Header Files",
+                  "sourceIndexes": [
+                    0,
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10,
+                    11,
+                    12,
+                    13,
+                    16,
+                    17,
+                    18,
+                    24,
+                    25,
+                    26,
+                    28,
+                    29,
+                    32,
+                    33,
+                    34,
+                    37,
+                    38,
+                    39,
+                    40,
+                    41,
+                    43,
+                    44,
+                    46,
+                    47,
+                    49,
+                    50,
+                    51,
+                    52,
+                    55,
+                    56
+                  ]
+                },
+                {
+                  "name": "Source Files",
+                  "sourceIndexes": [
+                    14,
+                    15,
+                    19,
+                    20,
+                    21,
+                    22,
+                    23,
+                    27,
+                    30,
+                    31,
+                    35,
+                    36,
+                    42,
+                    45,
+                    48,
+                    53,
+                    54
+                  ]
+                }
+              ],
+              "sources": [
+                {
+                  "path": "prom/include/prom_alloc.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "path": "prom/include/prom_collector.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "path": "prom/include/prom_collector_registry.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "path": "prom/include/prom_counter.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "path": "prom/include/prom_gauge.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "path": "prom/include/prom_histogram.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "path": "prom/include/prom_histogram_buckets.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "path": "prom/include/prom_linked_list.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "path": "prom/include/prom_map.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "path": "prom/include/prom_metric.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "path": "prom/include/prom_metric_sample.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "path": "prom/include/prom_metric_sample_histogram.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "path": "prom/include/prom.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "path": "prom/src/prom_assert.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "compileGroupIndex": 0,
+                  "path": "prom/src/prom_collector.c",
+                  "sourceGroupIndex": 1
+                },
+                {
+                  "compileGroupIndex": 0,
+                  "path": "prom/src/prom_collector_registry.c",
+                  "sourceGroupIndex": 1
+                },
+                {
+                  "path": "prom/src/prom_collector_registry_i.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "path": "prom/src/prom_collector_registry_t.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "path": "prom/src/prom_collector_t.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "compileGroupIndex": 0,
+                  "path": "prom/src/prom_counter.c",
+                  "sourceGroupIndex": 1
+                },
+                {
+                  "compileGroupIndex": 0,
+                  "path": "prom/src/prom_gauge.c",
+                  "sourceGroupIndex": 1
+                },
+                {
+                  "compileGroupIndex": 0,
+                  "path": "prom/src/prom_histogram.c",
+                  "sourceGroupIndex": 1
+                },
+                {
+                  "compileGroupIndex": 0,
+                  "path": "prom/src/prom_histogram_buckets.c",
+                  "sourceGroupIndex": 1
+                },
+                {
+                  "compileGroupIndex": 0,
+                  "path": "prom/src/prom_linked_list.c",
+                  "sourceGroupIndex": 1
+                },
+                {
+                  "path": "prom/src/prom_linked_list_i.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "path": "prom/src/prom_linked_list_t.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "path": "prom/src/prom_log.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "compileGroupIndex": 0,
+                  "path": "prom/src/prom_map.c",
+                  "sourceGroupIndex": 1
+                },
+                {
+                  "path": "prom/src/prom_map_i.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "path": "prom/src/prom_map_t.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "compileGroupIndex": 0,
+                  "path": "prom/src/prom_metric.c",
+                  "sourceGroupIndex": 1
+                },
+                {
+                  "compileGroupIndex": 0,
+                  "path": "prom/src/prom_metric_formatter.c",
+                  "sourceGroupIndex": 1
+                },
+                {
+                  "path": "prom/src/prom_metric_formatter_i.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "path": "prom/src/prom_metric_formatter_t.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "path": "prom/src/prom_metric_i.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "compileGroupIndex": 0,
+                  "path": "prom/src/prom_metric_sample.c",
+                  "sourceGroupIndex": 1
+                },
+                {
+                  "compileGroupIndex": 0,
+                  "path": "prom/src/prom_metric_sample_histogram.c",
+                  "sourceGroupIndex": 1
+                },
+                {
+                  "path": "prom/src/prom_metric_sample_histogram_i.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "path": "prom/src/prom_metric_sample_histogram_t.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "path": "prom/src/prom_metric_sample_i.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "path": "prom/src/prom_metric_sample_t.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "path": "prom/src/prom_metric_t.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "compileGroupIndex": 0,
+                  "path": "prom/src/prom_process_fds.c",
+                  "sourceGroupIndex": 1
+                },
+                {
+                  "path": "prom/src/prom_process_fds_i.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "path": "prom/src/prom_process_fds_t.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "compileGroupIndex": 0,
+                  "path": "prom/src/prom_process_limits.c",
+                  "sourceGroupIndex": 1
+                },
+                {
+                  "path": "prom/src/prom_process_limits_i.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "path": "prom/src/prom_process_limits_t.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "compileGroupIndex": 0,
+                  "path": "prom/src/prom_process_stat.c",
+                  "sourceGroupIndex": 1
+                },
+                {
+                  "path": "prom/src/prom_process_stat_i.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "path": "prom/src/prom_process_stat_t.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "path": "prom/src/prom_procfs_i.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "path": "prom/src/prom_procfs_t.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "compileGroupIndex": 0,
+                  "path": "prom/src/prom_procfs.c",
+                  "sourceGroupIndex": 1
+                },
+                {
+                  "compileGroupIndex": 0,
+                  "path": "prom/src/prom_string_builder.c",
+                  "sourceGroupIndex": 1
+                },
+                {
+                  "path": "prom/src/prom_string_builder_i.h",
+                  "sourceGroupIndex": 0
+                },
+                {
+                  "path": "prom/src/prom_string_builder_t.h",
+                  "sourceGroupIndex": 0
+                }
+              ],
+              "type": "SHARED_LIBRARY"
+            }
+          ]
+        }
+      ],
+      "paths": {
+        "build": "/home/izi-tel/open5gs/build/subprojects/prometheus-client-c/__CMake_build",
+        "source": "/home/izi-tel/open5gs/subprojects/prometheus-client-c"
+      }
+    },
+    {
+      "jsonFile": "cmakeFiles-v1-44322ef0e08f6b2c6362.json",
+      "kind": "cmakeFiles",
+      "inputs": [
+        {
+          "path": "CMakeLists.txt"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CMakeDetermineSystem.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CMakeSystem.cmake.in"
+        },
+        {
+          "isGenerated": true,
+          "path": "/home/izi-tel/open5gs/build/subprojects/prometheus-client-c/__CMake_build/CMakeFiles/3.16.3/CMakeSystem.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CMakeNinjaFindMake.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CMakeSystemSpecificInitialize.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CMakeDetermineCCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CMakeDetermineCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CMakeDetermineCompilerId.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CMakeCompilerIdDetection.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/ADSP-DetermineCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/ARMCC-DetermineCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/ARMClang-DetermineCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/AppleClang-DetermineCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/Clang-DetermineCompilerInternal.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/Borland-DetermineCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/Bruce-C-DetermineCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/Clang-DetermineCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/Clang-DetermineCompilerInternal.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/Compaq-C-DetermineCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/Cray-DetermineCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/Embarcadero-DetermineCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/Fujitsu-DetermineCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/GHS-DetermineCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/GNU-C-DetermineCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/HP-C-DetermineCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/IAR-DetermineCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/Intel-DetermineCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/MSVC-DetermineCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/NVIDIA-DetermineCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/OpenWatcom-DetermineCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/PGI-DetermineCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/PathScale-DetermineCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/SCO-DetermineCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/SDCC-C-DetermineCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/SunPro-C-DetermineCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/TI-DetermineCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/TinyCC-C-DetermineCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/VisualAge-C-DetermineCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/IBMCPP-C-DetermineVersionInternal.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/Watcom-DetermineCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/XL-C-DetermineCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/IBMCPP-C-DetermineVersionInternal.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/XLClang-C-DetermineCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/zOS-C-DetermineCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/IBMCPP-C-DetermineVersionInternal.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CMakeFindBinUtils.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/GNU-FindBinUtils.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CMakeCCompiler.cmake.in"
+        },
+        {
+          "isGenerated": true,
+          "path": "/home/izi-tel/open5gs/build/subprojects/prometheus-client-c/__CMake_build/CMakeFiles/3.16.3/CMakeCCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CMakeSystemSpecificInformation.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CMakeGenericSystem.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CMakeInitializeConfigs.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Platform/Linux.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Platform/UnixPaths.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CMakeCInformation.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CMakeLanguageInformation.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/GNU-C.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/GNU.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Compiler/CMakeCommonCompilerMacros.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Internal/CMakeCheckCompilerFlag.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CMakeCheckCompilerFlagCommonPatterns.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Platform/Linux-GNU-C.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Platform/Linux-GNU.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CMakeCommonLanguageInclude.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CMakeTestCCompiler.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CMakeTestCompilerCommon.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CMakeDetermineCompilerABI.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CMakeParseImplicitIncludeInfo.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CMakeParseImplicitLinkInfo.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CMakeTestCompilerCommon.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CMakeCCompilerABI.c"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CMakeDetermineCompileFeatures.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/Internal/FeatureTesting.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CMakeCCompiler.cmake.in"
+        },
+        {
+          "isGenerated": true,
+          "path": "/home/izi-tel/open5gs/build/subprojects/prometheus-client-c/__CMake_build/CMakeFiles/3.16.3/CMakeCCompiler.cmake"
+        },
+        {
+          "isExternal": true,
+          "path": "/usr/lib/python3/dist-packages/mesonbuild/cmake/data/preload.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CheckCSourceCompiles.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CheckLibraryExists.cmake"
+        },
+        {
+          "path": "prom/CMakeLists.txt"
+        },
+        {
+          "isExternal": true,
+          "path": "/usr/lib/python3/dist-packages/mesonbuild/cmake/data/preload.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/FindThreads.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CheckLibraryExists.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CheckIncludeFile.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CheckCSourceCompiles.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CheckIncludeFile.c.in"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CheckFunctionExists.c"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CheckFunctionExists.c"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/FindPackageHandleStandardArgs.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/FindPackageMessage.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CPack.cmake"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/CPackComponent.cmake"
+        },
+        {
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Templates/CPackConfig.cmake.in"
+        },
+        {
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Templates/CPackConfig.cmake.in"
+        },
+        {
+          "isCMake": true,
+          "isExternal": true,
+          "path": "/usr/share/cmake-3.16/Modules/GNUInstallDirs.cmake"
+        }
+      ],
+      "paths": {
+        "build": "/home/izi-tel/open5gs/build/subprojects/prometheus-client-c/__CMake_build",
+        "source": "/home/izi-tel/open5gs/subprojects/prometheus-client-c"
+      }
+    }
+  ]
+}

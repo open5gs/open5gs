@@ -1,0 +1,86 @@
+project('prometheus-client-c', 'c')
+ctgt_run_script = find_program(
+  ['/usr/lib/python3/dist-packages/mesonbuild/cmake/data/run_ctgt.py'],
+  required : true
+)
+cm_prom_dir = include_directories('prom/src', 'prom/include', '../../../subprojects/prometheus-client-c', '.')
+cm_prom_sys = include_directories(is_system : true)
+cm_prom_inc = [cm_prom_dir, cm_prom_sys]
+cm_prom_src = files(
+  'prom/src/prom_collector.c',
+  'prom/src/prom_collector_registry.c',
+  'prom/src/prom_counter.c',
+  'prom/src/prom_gauge.c',
+  'prom/src/prom_histogram.c',
+  'prom/src/prom_histogram_buckets.c',
+  'prom/src/prom_linked_list.c',
+  'prom/src/prom_map.c',
+  'prom/src/prom_metric.c',
+  'prom/src/prom_metric_formatter.c',
+  'prom/src/prom_metric_sample.c',
+  'prom/src/prom_metric_sample_histogram.c',
+  'prom/src/prom_process_fds.c',
+  'prom/src/prom_process_limits.c',
+  'prom/src/prom_process_stat.c',
+  'prom/src/prom_procfs.c',
+  'prom/src/prom_string_builder.c',
+  'prom/include/prom_alloc.h',
+  'prom/include/prom_collector.h',
+  'prom/include/prom_collector_registry.h',
+  'prom/include/prom_counter.h',
+  'prom/include/prom_gauge.h',
+  'prom/include/prom_histogram.h',
+  'prom/include/prom_histogram_buckets.h',
+  'prom/include/prom_linked_list.h',
+  'prom/include/prom_map.h',
+  'prom/include/prom_metric.h',
+  'prom/include/prom_metric_sample.h',
+  'prom/include/prom_metric_sample_histogram.h',
+  'prom/include/prom.h',
+  'prom/src/prom_assert.h',
+  'prom/src/prom_collector_registry_i.h',
+  'prom/src/prom_collector_registry_t.h',
+  'prom/src/prom_collector_t.h',
+  'prom/src/prom_linked_list_i.h',
+  'prom/src/prom_linked_list_t.h',
+  'prom/src/prom_log.h',
+  'prom/src/prom_map_i.h',
+  'prom/src/prom_map_t.h',
+  'prom/src/prom_metric_formatter_i.h',
+  'prom/src/prom_metric_formatter_t.h',
+  'prom/src/prom_metric_i.h',
+  'prom/src/prom_metric_sample_histogram_i.h',
+  'prom/src/prom_metric_sample_histogram_t.h',
+  'prom/src/prom_metric_sample_i.h',
+  'prom/src/prom_metric_sample_t.h',
+  'prom/src/prom_metric_t.h',
+  'prom/src/prom_process_fds_i.h',
+  'prom/src/prom_process_fds_t.h',
+  'prom/src/prom_process_limits_i.h',
+  'prom/src/prom_process_limits_t.h',
+  'prom/src/prom_process_stat_i.h',
+  'prom/src/prom_process_stat_t.h',
+  'prom/src/prom_procfs_i.h',
+  'prom/src/prom_procfs_t.h',
+  'prom/src/prom_string_builder_i.h',
+  'prom/src/prom_string_builder_t.h'
+)
+cm_prom = shared_library(
+  'cm_prom',
+  [cm_prom_src],
+  build_by_default : false,
+  link_args : ['-lpthread'],
+  link_with : [],
+  include_directories : cm_prom_inc,
+  install : true,
+  install_dir : 'lib/x86_64-linux-gnu',
+  override_options : ['c_std=gnu11', 'c_std=gnu11'],
+  objects : [],
+  c_args : ['-Wuninitialized', '-Wno-unused-label', '-Dprom_EXPORTS']
+)
+cm_prom_dep = declare_dependency(
+link_args : ['-lpthread'],
+  link_with : cm_prom,
+  compile_args : ['-Werror', '-Wuninitialized', '-Wall', '-Wno-unused-label', '-std=gnu11'],
+  include_directories : cm_prom_inc
+)

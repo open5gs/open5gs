@@ -1,0 +1,18 @@
+ 0x000000000000000e (SONAME)             Library soname: [libogsapp.so.2]
+ogs_app T 11
+ogs_app_config_parse_sockopt T 891
+ogs_app_config_read T 703
+ogs_app_context_final T fa
+ogs_app_context_init T 9d
+ogs_app_context_parse_config T 1d20
+__ogs_app_domain B 4
+ogs_app_initialize T 6b5
+ogs_app_setup_log T 2b
+ogs_app_terminate T 1a
+ogs_yaml_iter_bool T 7a
+ogs_yaml_iter_init T 1d4
+ogs_yaml_iter_key T 49c
+ogs_yaml_iter_next T 1f8
+ogs_yaml_iter_recurse T 4fb
+ogs_yaml_iter_type T ee
+ogs_yaml_iter_value T 4c5

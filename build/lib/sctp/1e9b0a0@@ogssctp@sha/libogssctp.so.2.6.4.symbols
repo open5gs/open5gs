@@ -1,0 +1,19 @@
+ 0x000000000000000e (SONAME)             Library soname: [libogssctp.so.2]
+ogs_sctp_client T 5f4
+ogs_sctp_connect T 1e6
+__ogs_sctp_domain B 4
+ogs_sctp_final T b
+ogs_sctp_flush_and_destroy T 21e
+ogs_sctp_init T 11
+ogs_sctp_initmsg T 370
+ogs_sctp_nodelay T 134
+ogs_sctp_peer_addr_params T 2e6
+ogs_sctp_recvdata T 13d
+ogs_sctp_recvmsg T 22f
+ogs_sctp_rto_info T 2d1
+ogs_sctp_senddata T 1c3
+ogs_sctp_sendmsg T fc
+ogs_sctp_server T 6f8
+ogs_sctp_socket T b9
+ogs_sctp_so_linger T 8e
+ogs_sctp_write_to_buffer T 221

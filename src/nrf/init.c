@@ -23,13 +23,22 @@ static ogs_thread_t *thread;
 static void nrf_main(void *data);
 static int initialized = 0;
 
+/******************************************************************
+ * Functionality: Initialize the NRF (Network Function Repository) system.
+ * Input: None
+ * Input Type: N/A (No inputs required)
+ * Output: Return status (an integer indicating success or failure)
+ * Output Type: int (Integer representing the return status)
+ ********************************************************************/
+
+
 int nrf_initialize(void)
 {
     int rv;
-
+    // Initialize the SBI (Service Bus Interface) context for NRF.
     ogs_sbi_context_init(OpenAPI_nf_type_NRF);
+    // Initialize the NRF context.
     nrf_context_init();
-
     rv = ogs_sbi_context_parse_config("nrf", NULL, "scp");
     if (rv != OGS_OK) return rv;
 
@@ -51,7 +60,19 @@ int nrf_initialize(void)
     return OGS_OK;
 }
 
-static ogs_timer_t *t_termination_holding = NULL;
+static ogs_timer_t *t_termination_holding = NULL; // creates a variable with type of ogs_timer_t for usage in event_termination
+
+
+
+
+
+     /******************************************************************
+         * this function is for ending a Daemon(background process) , wait up to 300 seconds (starts a timer), sends termination to pollset
+         * input
+         * input type : void
+         * output
+         * output type
+        ********************************************************************/
 
 static void event_termination(void)
 {
@@ -61,7 +82,7 @@ static void event_termination(void)
 
     /* Start holding timer */
     t_termination_holding = ogs_timer_add(ogs_app()->timer_mgr, NULL, NULL);
-    ogs_assert(t_termination_holding);
+    ogs_assert(t_termination_holding); // is a check for making sure that termamation timer has a valid value
 #define TERMINATION_HOLDING_TIME ogs_time_from_msec(300)
     ogs_timer_start(t_termination_holding, TERMINATION_HOLDING_TIME);
 
@@ -70,8 +91,19 @@ static void event_termination(void)
     ogs_pollset_notify(ogs_app()->pollset);
 }
 
+
+        /******************************************************************
+         * functionality: Terminate the NRF (Network Function Repository) system.
+         * input : None 
+         * input type : N/A (No inputs required)
+         * output: None
+         * output type: N/A (No output)
+        ********************************************************************/
+
+
 void nrf_terminate(void)
 {
+        // Check if the NRF system has been initialized; if not, do nothing and return.
     if (!initialized) return;
 
     /* Daemon terminating */
@@ -85,14 +117,26 @@ void nrf_terminate(void)
     ogs_sbi_context_final();
 }
 
+/******************************************************************
+ * Functionality: Main loop of the NRF (Network Function Repository) system.
+ * Input: data (Unused parameter, can be NULL)
+ * Input Type: void* (Pointer to any data, but unused in this function)
+ * Output: None
+ * Output Type: N/A (No output)
+ ********************************************************************/
+
+
+
 static void nrf_main(void *data)
 {
+        // Initialize the NRF state machine.
     ogs_fsm_t nrf_sm;
     int rv;
 
     ogs_fsm_init(&nrf_sm, nrf_state_initial, nrf_state_final, 0);
 
     for ( ;; ) {
+                // Poll for events in the application's pollset, considering timers.
         ogs_pollset_poll(ogs_app()->pollset,
                 ogs_timer_mgr_next(ogs_app()->timer_mgr));
 
@@ -107,10 +151,18 @@ static void nrf_main(void *data)
          * because 'if rv == OGS_DONE' statement is exiting and
          * not calling ogs_timer_mgr_expire().
          */
+
+        /******************************************************************
+         * functionality
+         * input
+         * input type
+         * output
+         * output type
+        ********************************************************************/
         ogs_timer_mgr_expire(ogs_app()->timer_mgr);
 
         for ( ;; ) {
-            nrf_event_t *e = NULL;
+            nrf_event_t *e = NULL;  //jyfuyfh
 
             rv = ogs_queue_trypop(ogs_app()->queue, (void**)&e);
             ogs_assert(rv != OGS_ERROR);

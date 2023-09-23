@@ -1,0 +1,12 @@
+ 0x000000000000000e (SONAME)             Library soname: [libogss1ap.so.2]
+ogs_s1ap_buffer_to_OCTET_STRING T 67
+ogs_s1ap_build_error_indication T 373
+ogs_s1ap_build_part_of_s1_interface T 351
+ogs_s1ap_build_s1_reset T 278
+ogs_s1ap_build_s1_reset_ack T 62f
+ogs_s1ap_decode T 263
+__ogs_s1ap_domain B 4
+ogs_s1ap_ENB_ID_to_uint32 T 2ca
+ogs_s1ap_encode T 122
+ogs_s1ap_free T 8f
+ogs_s1ap_uint32_to_ENB_ID T 2d7

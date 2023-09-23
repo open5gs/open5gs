@@ -1,0 +1,19 @@
+ 0x000000000000000e (SONAME)             Library soname: [libogsasn1c-util.so.2]
+ogs_asn_BIT_STRING_to_ip T 3d3
+ogs_asn_BIT_STRING_to_uint32 T 10c
+ogs_asn_buffer_to_BIT_STRING T 74
+ogs_asn_buffer_to_OCTET_STRING T 67
+ogs_asn_copy_ie T 35e
+ogs_asn_decode T 32d
+ogs_asn_encode T 250
+ogs_asn_free T f8
+ogs_asn_ip_to_BIT_STRING T 41a
+ogs_asn_OCTET_STRING_to_uint16 T 103
+ogs_asn_OCTET_STRING_to_uint24 T 132
+ogs_asn_OCTET_STRING_to_uint32 T 130
+ogs_asn_OCTET_STRING_to_uint8 T e7
+ogs_asn_uint16_to_OCTET_STRING T cc
+ogs_asn_uint24_to_OCTET_STRING T ed
+ogs_asn_uint32_to_BIT_STRING T 139
+ogs_asn_uint32_to_OCTET_STRING T f0
+ogs_asn_uint8_to_OCTET_STRING T b4

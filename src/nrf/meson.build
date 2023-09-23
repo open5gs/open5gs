@@ -15,6 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+
+
+
+#*********************************************
+#   a build configuration for a project that includes NRF (Network Function Repository) components within an Open5GS project. 
+#   It specifies the source files, libraries, and dependencies required to build the project. 
+#*********************************************/
+
 libnrf_sources = files('''
     context.c
     event.c

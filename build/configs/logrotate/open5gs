@@ -1,0 +1,14 @@
+/home/izi-tel/open5gs/install/var/log/open5gs/*.log {
+    daily
+    sharedscripts
+    missingok
+    compress
+    rotate 14
+    create 640 open5gs open5gs
+
+    postrotate
+        for i in nrfd scpd pcrfd hssd ausfd udmd udrd upfd sgwcd sgwud smfd mmed amfd; do
+            systemctl reload open5gs-$i
+        done
+    endscript
+}

@@ -20,17 +20,39 @@
 #include "event.h"
 #include "context.h"
 
+/******************************************************************
+ * Functionality: Create a new NRF event with a specified ID.
+ * This function is used to create a new NRF event with a specified event ID.
+ * Events are typically used to represent actions, signals, or messages that trigger specific behaviors or processing within the NRF system.
+ * 
+ * Input: id (Event ID)
+ * Input Type: int (Integer representing the event ID)
+ * Output: Pointer to the new NRF event
+ * Output Type: nrf_event_t* (Pointer to the NRF event structure)
+ ********************************************************************/
+
+
 nrf_event_t *nrf_event_new(int id)
 {
     nrf_event_t *e = NULL;
-
+    // Allocate memory for the NRF event based on its ID and size.
     e = ogs_event_size(id, sizeof(nrf_event_t));
     ogs_assert(e);
-
+    // Set the event ID in the NRF event structure.
     e->h.id = id;
 
     return e;
 }
+
+
+/******************************************************************
+ * Functionality: Get the name associated with an NRF event.
+ * Input: Pointer to an NRF event (e)
+ * Input Type: nrf_event_t* (Pointer to an NRF event structure)
+ * Output: Event name (const char*)
+ * Output Type: const char* (Pointer to a constant character string)
+ ********************************************************************/
+
 
 const char *nrf_event_get_name(nrf_event_t *e)
 {
@@ -47,7 +69,7 @@ const char *nrf_event_get_name(nrf_event_t *e)
         return OGS_EVENT_NAME_SBI_SERVER;
     case OGS_EVENT_SBI_CLIENT:
         return OGS_EVENT_NAME_SBI_CLIENT;
-    case OGS_EVENT_SBI_TIMER:
+    case OGS_EVENT_SBI_TIMER:s
         return OGS_EVENT_NAME_SBI_TIMER;
 
     default: 

@@ -116,11 +116,11 @@ int main(int argc, const char *const argv[])
     memset(&optarg, 0, sizeof(optarg));
 
     ogs_getopt_init(&options, (char**)argv);
-    while ((opt = ogs_getopt(&options, "vhDc:l:e:m:dt")) != -1) {
-        switch (opt) {
+    while ((opt = ogs_getopt(&, "vhDc:l:e:m:dt")) != -1) {
+        switch (opt) {options
         case 'v':
             show_version();
-            return OGS_OK;
+                                     return OGS_OK;
         case 'h':
             show_help(argv[0]);
             return OGS_OK;
@@ -227,4 +227,3 @@ int main(int argc, const char *const argv[])
 
     return OGS_OK;
 }
-

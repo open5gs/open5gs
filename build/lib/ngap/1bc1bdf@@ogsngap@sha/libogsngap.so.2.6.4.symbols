@@ -1,0 +1,21 @@
+ 0x000000000000000e (SONAME)             Library soname: [libogsngap.so.2]
+ogs_ngap_5gs_tai_to_ASN T 129
+ogs_ngap_AMFPointer_to_uint8 T 16e
+ogs_ngap_AMFRegionID_to_uint8 T 169
+ogs_ngap_AMFSetID_to_uint16 T 18a
+ogs_ngap_ASN_to_5gs_tai T 119
+ogs_ngap_ASN_to_nr_cgi T 122
+ogs_ngap_build_error_indication T 37c
+ogs_ngap_build_ng_reset T 278
+ogs_ngap_build_ng_reset_ack T 45f
+ogs_ngap_build_part_of_ng_interface T 2e6
+ogs_ngap_decode T 263
+__ogs_ngap_domain B 4
+ogs_ngap_encode T 122
+ogs_ngap_free T 8f
+ogs_ngap_GNB_ID_to_uint32 T fa
+ogs_ngap_nr_cgi_to_ASN T 15f
+ogs_ngap_uint16_to_AMFSetID T e2
+ogs_ngap_uint32_to_GNB_ID T a3
+ogs_ngap_uint8_to_AMFPointer T c8
+ogs_ngap_uint8_to_AMFRegionID T ba

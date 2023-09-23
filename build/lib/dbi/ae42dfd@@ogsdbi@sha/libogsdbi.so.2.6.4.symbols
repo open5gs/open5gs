@@ -1,0 +1,20 @@
+ 0x000000000000000e (SONAME)             Library soname: [libogsdbi.so.2]
+ogs_dbi_auth_info T 856
+ogs_dbi_collection_watch_init T 295
+__ogs_dbi_domain B 4
+ogs_dbi_final T 46
+ogs_dbi_ims_data T 791
+ogs_dbi_increment_sqn T 4a0
+ogs_dbi_init T 159
+ogs_dbi_msisdn_data T 75d
+ogs_dbi_poll_change_stream T 18d
+ogs_dbi_process_change_stream T 14d
+ogs_dbi_session_data T 21fc
+ogs_dbi_subscription_data T 223b
+ogs_dbi_update_imeisv T 3db
+ogs_dbi_update_mme T 485
+ogs_dbi_update_sqn T 384
+ogs_mongoc T 11
+ogs_mongoc_final T 9b
+ogs_mongoc_init T 456
+ogs_timer_dbi_poll_change_stream T 24

@@ -19,6 +19,30 @@
 
 #include "nnrf-build.h"
 
+
+
+
+/******************************************************************
+ * Functionality: Build an SBI request for NF status notification.
+ * 
+ * Input:
+ *   - subscription_data (ogs_sbi_subscription_data_t*): Information about the subscription.
+ *   - event (OpenAPI_notification_event_type_e): The type of notification event.
+ *   - nf_instance (ogs_sbi_nf_instance_t*): Information about the NF instance.
+ * 
+ * Input Type:
+ *   - subscription_data: Pointer to ogs_sbi_subscription_data_t
+ *   - event: Enum (OpenAPI_notification_event_type_e)
+ *   - nf_instance: Pointer to ogs_sbi_nf_instance_t
+ * 
+ * Output:
+ *   - request (ogs_sbi_request_t*): Pointer to the constructed SBI request.
+ * 
+ * Output Type:
+ *   - request: Pointer to ogs_sbi_request_t
+ ********************************************************************/
+
+
 ogs_sbi_request_t *nrf_nnrf_nfm_build_nf_status_notify(
         ogs_sbi_subscription_data_t *subscription_data,
         OpenAPI_notification_event_type_e event,

@@ -1,0 +1,12 @@
+ 0x000000000000000e (SONAME)             Library soname: [libogsnas-common.so.2]
+apn_ambr_build T 114
+eps_qos_build T 251
+ogs_nas_bitrate_from_uint64 T 147
+ogs_nas_bitrate_to_uint64 T 4d9
+__ogs_nas_domain B 4
+ogs_nas_encrypt T 484
+ogs_nas_gprs_timer_3_from_sec T 5b3
+ogs_nas_gprs_timer_from_sec T 33e
+ogs_nas_imeisv_bcd_to_buffer T 31
+ogs_nas_imeisv_to_bcd T 264
+ogs_nas_mac_calculate T 554

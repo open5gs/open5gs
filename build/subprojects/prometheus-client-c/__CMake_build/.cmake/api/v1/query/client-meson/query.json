@@ -1,0 +1,18 @@
+{
+  "requests": [
+    {
+      "kind": "codemodel",
+      "version": {
+        "major": 2,
+        "minor": 0
+      }
+    },
+    {
+      "kind": "cmakeFiles",
+      "version": {
+        "major": 1,
+        "minor": 0
+      }
+    }
+  ]
+}

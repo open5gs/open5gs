@@ -1,0 +1,18 @@
+[Unit]
+Description=Open5GS NSSF Daemon
+After=network-online.target
+
+[Service]
+Type=simple
+
+User=open5gs
+Group=open5gs
+
+Restart=always
+ExecStart=/home/izi-tel/open5gs/install/bin/open5gs-nssfd -c /home/izi-tel/open5gs/install/etc/open5gs/nssf.yaml
+RestartSec=2
+RestartPreventExitStatus=1
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target

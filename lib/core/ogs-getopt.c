@@ -77,7 +77,7 @@ ogs_getopt_is_longopt(const char *arg)
 {
     return arg != 0 && arg[0] == '-' && arg[1] == '-' && arg[2] != '\0';
 }
-
+/* Transfer arg of non option to end of code*/
 static void ogs_getopt_permute(ogs_getopt_t *options, int index)
 {
     char *nonoption = options->argv[index];

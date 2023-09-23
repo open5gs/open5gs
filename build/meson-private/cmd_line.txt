@@ -1,0 +1,5 @@
+[options]
+prefix = /home/izi-tel/open5gs/install
+
+[properties]
+

@@ -22,62 +22,124 @@
 #include "sbi-path.h"
 #include "nnrf-handler.h"
 
+/******************************************************************
+ * Functionality: Initialize the FSM (Finite State Machine) for an NRF Network Function instance.
+ * Input: Pointer to an NRF Network Function instance (nf_instance)
+ * Input Type: ogs_sbi_nf_instance_t* (Pointer to an NRF Network Function instance)
+ * Output: None
+ * Output Type: N/A (No explicit output)
+ ********************************************************************/
+
+
 void nrf_nf_fsm_init(ogs_sbi_nf_instance_t *nf_instance)
 {
     nrf_event_t e;
-
+    // Ensure that the NF instance pointer is not NULL.
     ogs_assert(nf_instance);
+    // Initialize an NRF event structure (e) and set nf_instance as a member.
     memset(&e, 0, sizeof(e));
     e.nf_instance = nf_instance;
-
+    // Initialize the FSM for the NF instance with appropriate state functions and the event (e).
     ogs_fsm_init(&nf_instance->sm,
         nrf_nf_state_initial, nrf_nf_state_final, &e);
 }
 
+/******************************************************************
+ * Functionality: Finalize the FSM (Finite State Machine) for an NRF Network Function instance.
+ * Input: Pointer to an NRF Network Function instance (nf_instance)
+ * Input Type: ogs_sbi_nf_instance_t* (Pointer to an NRF Network Function instance)
+ * Output: None
+ * Output Type: N/A (No explicit output)
+ ********************************************************************/
+
+
 void nrf_nf_fsm_fini(ogs_sbi_nf_instance_t *nf_instance)
 {
+    
     nrf_event_t e;
-
+    // Ensure that the NF instance pointer is not NULL.
     ogs_assert(nf_instance);
+    // Initialize an NRF event structure (e) and set nf_instance as a member.
     memset(&e, 0, sizeof(e));
     e.nf_instance = nf_instance;
-
+    // Finalize the FSM for the NF instance with the event (e).
     ogs_fsm_fini(&nf_instance->sm, &e);
 }
+
+
+
+/******************************************************************
+ * Functionality: Initial state for the NRF Network Function instance FSM.
+ * Input: Pointer to the FSM (s), Pointer to an NRF event (e)
+ * Input Type: ogs_fsm_t* (Pointer to the FSM), nrf_event_t* (Pointer to an NRF event)
+ * Output: None
+ * Output Type: N/A (No explicit output)
+ ********************************************************************/
+
 
 void nrf_nf_state_initial(ogs_fsm_t *s, nrf_event_t *e)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
-
+    // Ensure that both the FSM pointer (s) and the event pointer (e) are not NULL.
     ogs_assert(s);
     ogs_assert(e);
-
+    // Perform debugging or logging related to the NRF event (e).
     nrf_sm_debug(e);
-
+    // Get the NRF Network Function instance from the event.
     nf_instance = e->nf_instance;
     ogs_assert(nf_instance);
+
+
+    // Add a timer to check for heartbeat (no heartbeat) for the NF instance.
 
     nf_instance->t_no_heartbeat = ogs_timer_add(ogs_app()->timer_mgr,
             nrf_timer_nf_instance_no_heartbeat, nf_instance);
     ogs_assert(nf_instance->t_no_heartbeat);
-
+    // Transition the FSM to the "nrf_nf_state_will_register" state.
     OGS_FSM_TRAN(s, &nrf_nf_state_will_register);
 }
+
+/******************************************************************
+ * Functionality: Final state for the NRF Network Function instance FSM.
+ * Input: Pointer to the FSM (s), Pointer to an NRF event (e)
+ * Input Type: ogs_fsm_t* (Pointer to the FSM), nrf_event_t* (Pointer to an NRF event)
+ * Output: None
+ * Output Type: N/A (No explicit output)
+ ********************************************************************/
+
+
 
 void nrf_nf_state_final(ogs_fsm_t *s, nrf_event_t *e)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
-
+    // Ensure that both the FSM pointer (s) and the event pointer (e) are not NULL.
     ogs_assert(s);
     ogs_assert(e);
-
+    // Perform debugging or logging related to the NRF event (e).
     nrf_sm_debug(e);
-
+    // Get the NRF Network Function instance from the event.
     nf_instance = e->nf_instance;
     ogs_assert(nf_instance);
-
+    // Delete the timer associated with the NF instance.
     ogs_timer_delete(nf_instance->t_no_heartbeat);
 }
+
+
+
+
+/******************************************************************
+ * Functionality: State for the NRF Network Function instance FSM when it is about to register.
+ * Input: Pointer to the FSM (s), Pointer to an NRF event (e)
+ * Input Type: ogs_fsm_t* (Pointer to the FSM), nrf_event_t* (Pointer to an NRF event)
+ * Output: None
+ * Output Type: N/A (No explicit output)
+ ********************************************************************/
+
+
+
+
+
+
 
 void nrf_nf_state_will_register(ogs_fsm_t *s, nrf_event_t *e)
 {

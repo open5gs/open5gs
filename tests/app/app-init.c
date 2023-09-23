@@ -41,13 +41,14 @@ int app_initialize(const char *const argv[])
     const char *argv_out[OGS_ARG_MAX];
     bool user_config = false;
     int i = 0;
-
+// checks if user entered -c or not?
     for (i = 0; argv[i] && i < OGS_ARG_MAX-3; i++) {
         if (strcmp("-c", argv[i]) == 0) {
             user_config = true;
         }
         argv_out[i] = argv[i];
     }
+    // 
     argv_out[i] = NULL;
 
     if (!user_config) {
