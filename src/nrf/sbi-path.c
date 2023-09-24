@@ -121,16 +121,14 @@ bool nrf_nnrf_nfm_send_nf_status_notify_all(
             strcmp(subscription_data->req_nf_instance_id, nf_instance->id) == 0)
             continue;
 
-        if (subscription_data->subscr_cond.nf_type &&
-            subscription_data->subscr_cond.nf_type != nf_instance->nf_type)
-            continue;
+    /* Issue #2630 : The format of subscrCond is invalid. Must be 'oneOf'. */
+        if (subscription_data->subscr_cond.nf_type) {
 
-        if (subscription_data->req_nf_type &&
-            ogs_sbi_nf_instance_is_allowed_nf_type(
-                nf_instance, subscription_data->req_nf_type) == false)
-            continue;
+            if (subscription_data->subscr_cond.nf_type != nf_instance->nf_type)
+                continue;
 
-        if (subscription_data->subscr_cond.service_name) {
+        } else if (subscription_data->subscr_cond.service_name) {
+
             ogs_sbi_nf_service_t *nf_service =
                 ogs_sbi_nf_service_find_by_name(nf_instance,
                     subscription_data->subscr_cond.service_name);
@@ -141,6 +139,11 @@ bool nrf_nnrf_nfm_send_nf_status_notify_all(
                     nf_service, subscription_data->req_nf_type) == false)
                 continue;
         }
+
+        if (subscription_data->req_nf_type &&
+            ogs_sbi_nf_instance_is_allowed_nf_type(
+                nf_instance, subscription_data->req_nf_type) == false)
+            continue;
 
         rc = nrf_nnrf_nfm_send_nf_status_notify(
                 subscription_data, event, nf_instance);

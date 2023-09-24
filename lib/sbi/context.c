@@ -1861,15 +1861,21 @@ ogs_sbi_subscription_spec_t *ogs_sbi_subscription_spec_add(
 {
     ogs_sbi_subscription_spec_t *subscription_spec = NULL;
 
-    ogs_assert(nf_type);
+    /* Issue #2630 : The format of subscrCond is invalid. Must be 'oneOf'. */
+    ogs_assert(!nf_type || !service_name);
 
     ogs_pool_alloc(&subscription_spec_pool, &subscription_spec);
     ogs_assert(subscription_spec);
     memset(subscription_spec, 0, sizeof(ogs_sbi_subscription_spec_t));
 
-    subscription_spec->subscr_cond.nf_type = nf_type;
-    if (service_name)
+    if (nf_type)
+        subscription_spec->subscr_cond.nf_type = nf_type;
+    else if (service_name)
         subscription_spec->subscr_cond.service_name = ogs_strdup(service_name);
+    else {
+        ogs_fatal("SubscrCond must be 'oneOf'.");
+        ogs_assert_if_reached();
+    }
 
     ogs_list_add(&ogs_sbi_self()->subscription_spec_list, subscription_spec);
 
