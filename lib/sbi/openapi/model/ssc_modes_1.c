@@ -100,11 +100,17 @@ OpenAPI_ssc_modes_1_t *OpenAPI_ssc_modes_1_parseFromJSON(cJSON *ssc_modes_1JSON)
         allowed_ssc_modesList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(allowed_ssc_modes_local, allowed_ssc_modes) {
+            OpenAPI_ssc_mode_e localEnum = OpenAPI_ssc_mode_NULL;
             if (!cJSON_IsString(allowed_ssc_modes_local)) {
                 ogs_error("OpenAPI_ssc_modes_1_parseFromJSON() failed [allowed_ssc_modes]");
                 goto end;
             }
-            OpenAPI_list_add(allowed_ssc_modesList, (void *)OpenAPI_ssc_mode_FromString(allowed_ssc_modes_local->valuestring));
+            localEnum = OpenAPI_ssc_mode_FromString(allowed_ssc_modes_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_ssc_mode_FromString(allowed_ssc_modes_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(allowed_ssc_modesList, (void *)localEnum);
         }
     }
 

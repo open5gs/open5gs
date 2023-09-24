@@ -179,11 +179,17 @@ OpenAPI_datalink_reporting_configuration_1_t *OpenAPI_datalink_reporting_configu
         ddd_status_listList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(ddd_status_list_local, ddd_status_list) {
+            OpenAPI_dl_data_delivery_status_e localEnum = OpenAPI_dl_data_delivery_status_NULL;
             if (!cJSON_IsString(ddd_status_list_local)) {
                 ogs_error("OpenAPI_datalink_reporting_configuration_1_parseFromJSON() failed [ddd_status_list]");
                 goto end;
             }
-            OpenAPI_list_add(ddd_status_listList, (void *)OpenAPI_dl_data_delivery_status_FromString(ddd_status_list_local->valuestring));
+            localEnum = OpenAPI_dl_data_delivery_status_FromString(ddd_status_list_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_dl_data_delivery_status_FromString(ddd_status_list_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(ddd_status_listList, (void *)localEnum);
         }
     }
 

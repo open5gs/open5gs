@@ -403,11 +403,17 @@ OpenAPI_nrf_info_served_nwdaf_info_value_t *OpenAPI_nrf_info_served_nwdaf_info_v
         serving_nf_type_listList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(serving_nf_type_list_local, serving_nf_type_list) {
+            OpenAPI_nf_type_e localEnum = OpenAPI_nf_type_NULL;
             if (!cJSON_IsString(serving_nf_type_list_local)) {
                 ogs_error("OpenAPI_nrf_info_served_nwdaf_info_value_parseFromJSON() failed [serving_nf_type_list]");
                 goto end;
             }
-            OpenAPI_list_add(serving_nf_type_listList, (void *)OpenAPI_nf_type_FromString(serving_nf_type_list_local->valuestring));
+            localEnum = OpenAPI_nf_type_FromString(serving_nf_type_list_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_nf_type_FromString(serving_nf_type_list_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(serving_nf_type_listList, (void *)localEnum);
         }
     }
 

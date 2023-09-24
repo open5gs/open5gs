@@ -274,11 +274,17 @@ OpenAPI_nrf_info_served_lmf_info_value_t *OpenAPI_nrf_info_served_lmf_info_value
         serving_access_typesList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(serving_access_types_local, serving_access_types) {
+            OpenAPI_access_type_e localEnum = OpenAPI_access_type_NULL;
             if (!cJSON_IsString(serving_access_types_local)) {
                 ogs_error("OpenAPI_nrf_info_served_lmf_info_value_parseFromJSON() failed [serving_access_types]");
                 goto end;
             }
-            OpenAPI_list_add(serving_access_typesList, (void *)OpenAPI_access_type_FromString(serving_access_types_local->valuestring));
+            localEnum = OpenAPI_access_type_FromString(serving_access_types_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_access_type_FromString(serving_access_types_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(serving_access_typesList, (void *)localEnum);
         }
     }
 
@@ -293,11 +299,17 @@ OpenAPI_nrf_info_served_lmf_info_value_t *OpenAPI_nrf_info_served_lmf_info_value
         serving_an_node_typesList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(serving_an_node_types_local, serving_an_node_types) {
+            OpenAPI_an_node_type_e localEnum = OpenAPI_an_node_type_NULL;
             if (!cJSON_IsString(serving_an_node_types_local)) {
                 ogs_error("OpenAPI_nrf_info_served_lmf_info_value_parseFromJSON() failed [serving_an_node_types]");
                 goto end;
             }
-            OpenAPI_list_add(serving_an_node_typesList, (void *)OpenAPI_an_node_type_FromString(serving_an_node_types_local->valuestring));
+            localEnum = OpenAPI_an_node_type_FromString(serving_an_node_types_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_an_node_type_FromString(serving_an_node_types_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(serving_an_node_typesList, (void *)localEnum);
         }
     }
 
@@ -312,11 +324,17 @@ OpenAPI_nrf_info_served_lmf_info_value_t *OpenAPI_nrf_info_served_lmf_info_value
         serving_rat_typesList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(serving_rat_types_local, serving_rat_types) {
+            OpenAPI_rat_type_e localEnum = OpenAPI_rat_type_NULL;
             if (!cJSON_IsString(serving_rat_types_local)) {
                 ogs_error("OpenAPI_nrf_info_served_lmf_info_value_parseFromJSON() failed [serving_rat_types]");
                 goto end;
             }
-            OpenAPI_list_add(serving_rat_typesList, (void *)OpenAPI_rat_type_FromString(serving_rat_types_local->valuestring));
+            localEnum = OpenAPI_rat_type_FromString(serving_rat_types_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_rat_type_FromString(serving_rat_types_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(serving_rat_typesList, (void *)localEnum);
         }
     }
 

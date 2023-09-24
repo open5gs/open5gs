@@ -126,11 +126,17 @@ OpenAPI_scp_domain_cond_t *OpenAPI_scp_domain_cond_parseFromJSON(cJSON *scp_doma
         nf_type_listList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(nf_type_list_local, nf_type_list) {
+            OpenAPI_nf_type_e localEnum = OpenAPI_nf_type_NULL;
             if (!cJSON_IsString(nf_type_list_local)) {
                 ogs_error("OpenAPI_scp_domain_cond_parseFromJSON() failed [nf_type_list]");
                 goto end;
             }
-            OpenAPI_list_add(nf_type_listList, (void *)OpenAPI_nf_type_FromString(nf_type_list_local->valuestring));
+            localEnum = OpenAPI_nf_type_FromString(nf_type_list_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_nf_type_FromString(nf_type_list_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(nf_type_listList, (void *)localEnum);
         }
     }
 

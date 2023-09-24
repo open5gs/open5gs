@@ -278,11 +278,17 @@ OpenAPI_nrf_info_served_udr_info_value_t *OpenAPI_nrf_info_served_udr_info_value
         supported_data_setsList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(supported_data_sets_local, supported_data_sets) {
+            OpenAPI_data_set_id_e localEnum = OpenAPI_data_set_id_NULL;
             if (!cJSON_IsString(supported_data_sets_local)) {
                 ogs_error("OpenAPI_nrf_info_served_udr_info_value_parseFromJSON() failed [supported_data_sets]");
                 goto end;
             }
-            OpenAPI_list_add(supported_data_setsList, (void *)OpenAPI_data_set_id_FromString(supported_data_sets_local->valuestring));
+            localEnum = OpenAPI_data_set_id_FromString(supported_data_sets_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_data_set_id_FromString(supported_data_sets_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(supported_data_setsList, (void *)localEnum);
         }
     }
 

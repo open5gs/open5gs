@@ -231,11 +231,17 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_parseFromJSON(cJSON *
         req_qos_mon_paramsList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(req_qos_mon_params_local, req_qos_mon_params) {
+            OpenAPI_requested_qos_monitoring_parameter_e localEnum = OpenAPI_requested_qos_monitoring_parameter_NULL;
             if (!cJSON_IsString(req_qos_mon_params_local)) {
                 ogs_error("OpenAPI_qos_monitoring_data_parseFromJSON() failed [req_qos_mon_params]");
                 goto end;
             }
-            OpenAPI_list_add(req_qos_mon_paramsList, (void *)OpenAPI_requested_qos_monitoring_parameter_FromString(req_qos_mon_params_local->valuestring));
+            localEnum = OpenAPI_requested_qos_monitoring_parameter_FromString(req_qos_mon_params_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_requested_qos_monitoring_parameter_FromString(req_qos_mon_params_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(req_qos_mon_paramsList, (void *)localEnum);
         }
 
     rep_freqs = cJSON_GetObjectItemCaseSensitive(qos_monitoring_dataJSON, "repFreqs");
@@ -252,11 +258,17 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_parseFromJSON(cJSON *
         rep_freqsList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(rep_freqs_local, rep_freqs) {
+            OpenAPI_reporting_frequency_e localEnum = OpenAPI_reporting_frequency_NULL;
             if (!cJSON_IsString(rep_freqs_local)) {
                 ogs_error("OpenAPI_qos_monitoring_data_parseFromJSON() failed [rep_freqs]");
                 goto end;
             }
-            OpenAPI_list_add(rep_freqsList, (void *)OpenAPI_reporting_frequency_FromString(rep_freqs_local->valuestring));
+            localEnum = OpenAPI_reporting_frequency_FromString(rep_freqs_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_reporting_frequency_FromString(rep_freqs_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(rep_freqsList, (void *)localEnum);
         }
 
     rep_thresh_dl = cJSON_GetObjectItemCaseSensitive(qos_monitoring_dataJSON, "repThreshDl");

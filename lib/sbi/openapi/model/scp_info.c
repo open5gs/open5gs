@@ -650,11 +650,17 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
         scp_capabilitiesList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(scp_capabilities_local, scp_capabilities) {
+            OpenAPI_scp_capability_e localEnum = OpenAPI_scp_capability_NULL;
             if (!cJSON_IsString(scp_capabilities_local)) {
                 ogs_error("OpenAPI_scp_info_parseFromJSON() failed [scp_capabilities]");
                 goto end;
             }
-            OpenAPI_list_add(scp_capabilitiesList, (void *)OpenAPI_scp_capability_FromString(scp_capabilities_local->valuestring));
+            localEnum = OpenAPI_scp_capability_FromString(scp_capabilities_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_scp_capability_FromString(scp_capabilities_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(scp_capabilitiesList, (void *)localEnum);
         }
     }
 

@@ -494,11 +494,17 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
         req_notif_eventsList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(req_notif_events_local, req_notif_events) {
+            OpenAPI_notification_event_type_e localEnum = OpenAPI_notification_event_type_NULL;
             if (!cJSON_IsString(req_notif_events_local)) {
                 ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [req_notif_events]");
                 goto end;
             }
-            OpenAPI_list_add(req_notif_eventsList, (void *)OpenAPI_notification_event_type_FromString(req_notif_events_local->valuestring));
+            localEnum = OpenAPI_notification_event_type_FromString(req_notif_events_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_notification_event_type_FromString(req_notif_events_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(req_notif_eventsList, (void *)localEnum);
         }
     }
 

@@ -190,11 +190,17 @@ OpenAPI_plmn_restriction_t *OpenAPI_plmn_restriction_parseFromJSON(cJSON *plmn_r
         rat_restrictionsList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(rat_restrictions_local, rat_restrictions) {
+            OpenAPI_rat_type_e localEnum = OpenAPI_rat_type_NULL;
             if (!cJSON_IsString(rat_restrictions_local)) {
                 ogs_error("OpenAPI_plmn_restriction_parseFromJSON() failed [rat_restrictions]");
                 goto end;
             }
-            OpenAPI_list_add(rat_restrictionsList, (void *)OpenAPI_rat_type_FromString(rat_restrictions_local->valuestring));
+            localEnum = OpenAPI_rat_type_FromString(rat_restrictions_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_rat_type_FromString(rat_restrictions_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(rat_restrictionsList, (void *)localEnum);
         }
     }
 
@@ -242,11 +248,17 @@ OpenAPI_plmn_restriction_t *OpenAPI_plmn_restriction_parseFromJSON(cJSON *plmn_r
         core_network_type_restrictionsList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(core_network_type_restrictions_local, core_network_type_restrictions) {
+            OpenAPI_core_network_type_e localEnum = OpenAPI_core_network_type_NULL;
             if (!cJSON_IsString(core_network_type_restrictions_local)) {
                 ogs_error("OpenAPI_plmn_restriction_parseFromJSON() failed [core_network_type_restrictions]");
                 goto end;
             }
-            OpenAPI_list_add(core_network_type_restrictionsList, (void *)OpenAPI_core_network_type_FromString(core_network_type_restrictions_local->valuestring));
+            localEnum = OpenAPI_core_network_type_FromString(core_network_type_restrictions_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_core_network_type_FromString(core_network_type_restrictions_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(core_network_type_restrictionsList, (void *)localEnum);
         }
     }
 
@@ -261,11 +273,17 @@ OpenAPI_plmn_restriction_t *OpenAPI_plmn_restriction_parseFromJSON(cJSON *plmn_r
         primary_rat_restrictionsList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(primary_rat_restrictions_local, primary_rat_restrictions) {
+            OpenAPI_rat_type_e localEnum = OpenAPI_rat_type_NULL;
             if (!cJSON_IsString(primary_rat_restrictions_local)) {
                 ogs_error("OpenAPI_plmn_restriction_parseFromJSON() failed [primary_rat_restrictions]");
                 goto end;
             }
-            OpenAPI_list_add(primary_rat_restrictionsList, (void *)OpenAPI_rat_type_FromString(primary_rat_restrictions_local->valuestring));
+            localEnum = OpenAPI_rat_type_FromString(primary_rat_restrictions_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_rat_type_FromString(primary_rat_restrictions_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(primary_rat_restrictionsList, (void *)localEnum);
         }
     }
 
@@ -280,11 +298,17 @@ OpenAPI_plmn_restriction_t *OpenAPI_plmn_restriction_parseFromJSON(cJSON *plmn_r
         secondary_rat_restrictionsList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(secondary_rat_restrictions_local, secondary_rat_restrictions) {
+            OpenAPI_rat_type_e localEnum = OpenAPI_rat_type_NULL;
             if (!cJSON_IsString(secondary_rat_restrictions_local)) {
                 ogs_error("OpenAPI_plmn_restriction_parseFromJSON() failed [secondary_rat_restrictions]");
                 goto end;
             }
-            OpenAPI_list_add(secondary_rat_restrictionsList, (void *)OpenAPI_rat_type_FromString(secondary_rat_restrictions_local->valuestring));
+            localEnum = OpenAPI_rat_type_FromString(secondary_rat_restrictions_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_rat_type_FromString(secondary_rat_restrictions_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(secondary_rat_restrictionsList, (void *)localEnum);
         }
     }
 

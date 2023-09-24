@@ -1746,11 +1746,17 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         am_policy_req_trigger_listList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(am_policy_req_trigger_list_local, am_policy_req_trigger_list) {
+            OpenAPI_policy_req_trigger_e localEnum = OpenAPI_policy_req_trigger_NULL;
             if (!cJSON_IsString(am_policy_req_trigger_list_local)) {
                 ogs_error("OpenAPI_ue_context_parseFromJSON() failed [am_policy_req_trigger_list]");
                 goto end;
             }
-            OpenAPI_list_add(am_policy_req_trigger_listList, (void *)OpenAPI_policy_req_trigger_FromString(am_policy_req_trigger_list_local->valuestring));
+            localEnum = OpenAPI_policy_req_trigger_FromString(am_policy_req_trigger_list_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_policy_req_trigger_FromString(am_policy_req_trigger_list_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(am_policy_req_trigger_listList, (void *)localEnum);
         }
     }
 
@@ -1773,11 +1779,17 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ue_policy_req_trigger_listList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(ue_policy_req_trigger_list_local, ue_policy_req_trigger_list) {
+            OpenAPI_policy_req_trigger_e localEnum = OpenAPI_policy_req_trigger_NULL;
             if (!cJSON_IsString(ue_policy_req_trigger_list_local)) {
                 ogs_error("OpenAPI_ue_context_parseFromJSON() failed [ue_policy_req_trigger_list]");
                 goto end;
             }
-            OpenAPI_list_add(ue_policy_req_trigger_listList, (void *)OpenAPI_policy_req_trigger_FromString(ue_policy_req_trigger_list_local->valuestring));
+            localEnum = OpenAPI_policy_req_trigger_FromString(ue_policy_req_trigger_list_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_policy_req_trigger_FromString(ue_policy_req_trigger_list_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(ue_policy_req_trigger_listList, (void *)localEnum);
         }
     }
 
@@ -1808,11 +1820,17 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         restricted_rat_listList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(restricted_rat_list_local, restricted_rat_list) {
+            OpenAPI_rat_type_e localEnum = OpenAPI_rat_type_NULL;
             if (!cJSON_IsString(restricted_rat_list_local)) {
                 ogs_error("OpenAPI_ue_context_parseFromJSON() failed [restricted_rat_list]");
                 goto end;
             }
-            OpenAPI_list_add(restricted_rat_listList, (void *)OpenAPI_rat_type_FromString(restricted_rat_list_local->valuestring));
+            localEnum = OpenAPI_rat_type_FromString(restricted_rat_list_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_rat_type_FromString(restricted_rat_list_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(restricted_rat_listList, (void *)localEnum);
         }
     }
 
@@ -1860,11 +1878,17 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         restricted_core_nw_type_listList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(restricted_core_nw_type_list_local, restricted_core_nw_type_list) {
+            OpenAPI_core_network_type_e localEnum = OpenAPI_core_network_type_NULL;
             if (!cJSON_IsString(restricted_core_nw_type_list_local)) {
                 ogs_error("OpenAPI_ue_context_parseFromJSON() failed [restricted_core_nw_type_list]");
                 goto end;
             }
-            OpenAPI_list_add(restricted_core_nw_type_listList, (void *)OpenAPI_core_network_type_FromString(restricted_core_nw_type_list_local->valuestring));
+            localEnum = OpenAPI_core_network_type_FromString(restricted_core_nw_type_list_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_core_network_type_FromString(restricted_core_nw_type_list_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(restricted_core_nw_type_listList, (void *)localEnum);
         }
     }
 
@@ -2046,11 +2070,17 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         restricted_primary_rat_listList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(restricted_primary_rat_list_local, restricted_primary_rat_list) {
+            OpenAPI_rat_type_e localEnum = OpenAPI_rat_type_NULL;
             if (!cJSON_IsString(restricted_primary_rat_list_local)) {
                 ogs_error("OpenAPI_ue_context_parseFromJSON() failed [restricted_primary_rat_list]");
                 goto end;
             }
-            OpenAPI_list_add(restricted_primary_rat_listList, (void *)OpenAPI_rat_type_FromString(restricted_primary_rat_list_local->valuestring));
+            localEnum = OpenAPI_rat_type_FromString(restricted_primary_rat_list_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_rat_type_FromString(restricted_primary_rat_list_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(restricted_primary_rat_listList, (void *)localEnum);
         }
     }
 
@@ -2065,11 +2095,17 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         restricted_secondary_rat_listList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(restricted_secondary_rat_list_local, restricted_secondary_rat_list) {
+            OpenAPI_rat_type_e localEnum = OpenAPI_rat_type_NULL;
             if (!cJSON_IsString(restricted_secondary_rat_list_local)) {
                 ogs_error("OpenAPI_ue_context_parseFromJSON() failed [restricted_secondary_rat_list]");
                 goto end;
             }
-            OpenAPI_list_add(restricted_secondary_rat_listList, (void *)OpenAPI_rat_type_FromString(restricted_secondary_rat_list_local->valuestring));
+            localEnum = OpenAPI_rat_type_FromString(restricted_secondary_rat_list_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_rat_type_FromString(restricted_secondary_rat_list_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(restricted_secondary_rat_listList, (void *)localEnum);
         }
     }
 

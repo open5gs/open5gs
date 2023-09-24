@@ -250,11 +250,17 @@ OpenAPI_nef_cond_t *OpenAPI_nef_cond_parseFromJSON(cJSON *nef_condJSON)
         af_eventsList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(af_events_local, af_events) {
+            OpenAPI_af_event_e localEnum = OpenAPI_af_event_NULL;
             if (!cJSON_IsString(af_events_local)) {
                 ogs_error("OpenAPI_nef_cond_parseFromJSON() failed [af_events]");
                 goto end;
             }
-            OpenAPI_list_add(af_eventsList, (void *)OpenAPI_af_event_FromString(af_events_local->valuestring));
+            localEnum = OpenAPI_af_event_FromString(af_events_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_af_event_FromString(af_events_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(af_eventsList, (void *)localEnum);
         }
     }
 

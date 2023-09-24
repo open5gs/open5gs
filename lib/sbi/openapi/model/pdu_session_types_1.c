@@ -96,11 +96,17 @@ OpenAPI_pdu_session_types_1_t *OpenAPI_pdu_session_types_1_parseFromJSON(cJSON *
         allowed_session_typesList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(allowed_session_types_local, allowed_session_types) {
+            OpenAPI_pdu_session_type_e localEnum = OpenAPI_pdu_session_type_NULL;
             if (!cJSON_IsString(allowed_session_types_local)) {
                 ogs_error("OpenAPI_pdu_session_types_1_parseFromJSON() failed [allowed_session_types]");
                 goto end;
             }
-            OpenAPI_list_add(allowed_session_typesList, (void *)OpenAPI_pdu_session_type_FromString(allowed_session_types_local->valuestring));
+            localEnum = OpenAPI_pdu_session_type_FromString(allowed_session_types_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_pdu_session_type_FromString(allowed_session_types_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(allowed_session_typesList, (void *)localEnum);
         }
     }
 

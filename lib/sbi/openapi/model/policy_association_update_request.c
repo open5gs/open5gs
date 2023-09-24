@@ -645,11 +645,17 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
         triggersList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(triggers_local, triggers) {
+            OpenAPI_request_trigger_e localEnum = OpenAPI_request_trigger_NULL;
             if (!cJSON_IsString(triggers_local)) {
                 ogs_error("OpenAPI_policy_association_update_request_parseFromJSON() failed [triggers]");
                 goto end;
             }
-            OpenAPI_list_add(triggersList, (void *)OpenAPI_request_trigger_FromString(triggers_local->valuestring));
+            localEnum = OpenAPI_request_trigger_FromString(triggers_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_request_trigger_FromString(triggers_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(triggersList, (void *)localEnum);
         }
     }
 
@@ -839,11 +845,17 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
         access_typesList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(access_types_local, access_types) {
+            OpenAPI_access_type_e localEnum = OpenAPI_access_type_NULL;
             if (!cJSON_IsString(access_types_local)) {
                 ogs_error("OpenAPI_policy_association_update_request_parseFromJSON() failed [access_types]");
                 goto end;
             }
-            OpenAPI_list_add(access_typesList, (void *)OpenAPI_access_type_FromString(access_types_local->valuestring));
+            localEnum = OpenAPI_access_type_FromString(access_types_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_access_type_FromString(access_types_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(access_typesList, (void *)localEnum);
         }
     }
 
@@ -858,11 +870,17 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
         rat_typesList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(rat_types_local, rat_types) {
+            OpenAPI_rat_type_e localEnum = OpenAPI_rat_type_NULL;
             if (!cJSON_IsString(rat_types_local)) {
                 ogs_error("OpenAPI_policy_association_update_request_parseFromJSON() failed [rat_types]");
                 goto end;
             }
-            OpenAPI_list_add(rat_typesList, (void *)OpenAPI_rat_type_FromString(rat_types_local->valuestring));
+            localEnum = OpenAPI_rat_type_FromString(rat_types_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_rat_type_FromString(rat_types_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(rat_typesList, (void *)localEnum);
         }
     }
 

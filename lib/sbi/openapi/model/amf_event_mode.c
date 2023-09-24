@@ -203,11 +203,17 @@ OpenAPI_amf_event_mode_t *OpenAPI_amf_event_mode_parseFromJSON(cJSON *amf_event_
         partitioning_criteriaList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(partitioning_criteria_local, partitioning_criteria) {
+            OpenAPI_partitioning_criteria_e localEnum = OpenAPI_partitioning_criteria_NULL;
             if (!cJSON_IsString(partitioning_criteria_local)) {
                 ogs_error("OpenAPI_amf_event_mode_parseFromJSON() failed [partitioning_criteria]");
                 goto end;
             }
-            OpenAPI_list_add(partitioning_criteriaList, (void *)OpenAPI_partitioning_criteria_FromString(partitioning_criteria_local->valuestring));
+            localEnum = OpenAPI_partitioning_criteria_FromString(partitioning_criteria_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_partitioning_criteria_FromString(partitioning_criteria_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(partitioning_criteriaList, (void *)localEnum);
         }
     }
 
