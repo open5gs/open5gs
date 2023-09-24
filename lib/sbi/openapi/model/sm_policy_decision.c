@@ -1091,11 +1091,17 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_parseFromJSON(cJSON *sm
         policy_ctrl_req_triggersList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(policy_ctrl_req_triggers_local, policy_ctrl_req_triggers) {
+            OpenAPI_policy_control_request_trigger_e localEnum = OpenAPI_policy_control_request_trigger_NULL;
             if (!cJSON_IsString(policy_ctrl_req_triggers_local)) {
                 ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed [policy_ctrl_req_triggers]");
                 goto end;
             }
-            OpenAPI_list_add(policy_ctrl_req_triggersList, (void *)OpenAPI_policy_control_request_trigger_FromString(policy_ctrl_req_triggers_local->valuestring));
+            localEnum = OpenAPI_policy_control_request_trigger_FromString(policy_ctrl_req_triggers_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_policy_control_request_trigger_FromString(policy_ctrl_req_triggers_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(policy_ctrl_req_triggersList, (void *)localEnum);
         }
     }
 

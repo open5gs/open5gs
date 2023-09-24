@@ -1188,11 +1188,17 @@ OpenAPI_event_subscription_t *OpenAPI_event_subscription_parseFromJSON(cJSON *ev
         nf_typesList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(nf_types_local, nf_types) {
+            OpenAPI_nf_type_e localEnum = OpenAPI_nf_type_NULL;
             if (!cJSON_IsString(nf_types_local)) {
                 ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [nf_types]");
                 goto end;
             }
-            OpenAPI_list_add(nf_typesList, (void *)OpenAPI_nf_type_FromString(nf_types_local->valuestring));
+            localEnum = OpenAPI_nf_type_FromString(nf_types_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_nf_type_FromString(nf_types_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(nf_typesList, (void *)localEnum);
         }
     }
 

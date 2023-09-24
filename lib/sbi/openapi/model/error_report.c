@@ -235,11 +235,17 @@ OpenAPI_error_report_t *OpenAPI_error_report_parseFromJSON(cJSON *error_reportJS
         pol_dec_failure_reportsList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(pol_dec_failure_reports_local, pol_dec_failure_reports) {
+            OpenAPI_policy_decision_failure_code_e localEnum = OpenAPI_policy_decision_failure_code_NULL;
             if (!cJSON_IsString(pol_dec_failure_reports_local)) {
                 ogs_error("OpenAPI_error_report_parseFromJSON() failed [pol_dec_failure_reports]");
                 goto end;
             }
-            OpenAPI_list_add(pol_dec_failure_reportsList, (void *)OpenAPI_policy_decision_failure_code_FromString(pol_dec_failure_reports_local->valuestring));
+            localEnum = OpenAPI_policy_decision_failure_code_FromString(pol_dec_failure_reports_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_policy_decision_failure_code_FromString(pol_dec_failure_reports_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(pol_dec_failure_reportsList, (void *)localEnum);
         }
     }
 

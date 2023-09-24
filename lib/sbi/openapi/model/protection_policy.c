@@ -131,11 +131,17 @@ OpenAPI_protection_policy_t *OpenAPI_protection_policy_parseFromJSON(cJSON *prot
         data_type_enc_policyList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(data_type_enc_policy_local, data_type_enc_policy) {
+            OpenAPI_ie_type_e localEnum = OpenAPI_ie_type_NULL;
             if (!cJSON_IsString(data_type_enc_policy_local)) {
                 ogs_error("OpenAPI_protection_policy_parseFromJSON() failed [data_type_enc_policy]");
                 goto end;
             }
-            OpenAPI_list_add(data_type_enc_policyList, (void *)OpenAPI_ie_type_FromString(data_type_enc_policy_local->valuestring));
+            localEnum = OpenAPI_ie_type_FromString(data_type_enc_policy_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_ie_type_FromString(data_type_enc_policy_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(data_type_enc_policyList, (void *)localEnum);
         }
     }
 

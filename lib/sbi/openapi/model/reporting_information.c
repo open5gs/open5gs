@@ -231,11 +231,17 @@ OpenAPI_reporting_information_t *OpenAPI_reporting_information_parseFromJSON(cJS
         partition_criteriaList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(partition_criteria_local, partition_criteria) {
+            OpenAPI_partitioning_criteria_e localEnum = OpenAPI_partitioning_criteria_NULL;
             if (!cJSON_IsString(partition_criteria_local)) {
                 ogs_error("OpenAPI_reporting_information_parseFromJSON() failed [partition_criteria]");
                 goto end;
             }
-            OpenAPI_list_add(partition_criteriaList, (void *)OpenAPI_partitioning_criteria_FromString(partition_criteria_local->valuestring));
+            localEnum = OpenAPI_partitioning_criteria_FromString(partition_criteria_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_partitioning_criteria_FromString(partition_criteria_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(partition_criteriaList, (void *)localEnum);
         }
     }
 

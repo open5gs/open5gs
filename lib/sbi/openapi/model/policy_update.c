@@ -350,11 +350,17 @@ OpenAPI_policy_update_t *OpenAPI_policy_update_parseFromJSON(cJSON *policy_updat
         triggersList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(triggers_local, triggers) {
+            OpenAPI_request_trigger_e localEnum = OpenAPI_request_trigger_NULL;
             if (!cJSON_IsString(triggers_local)) {
                 ogs_error("OpenAPI_policy_update_parseFromJSON() failed [triggers]");
                 goto end;
             }
-            OpenAPI_list_add(triggersList, (void *)OpenAPI_request_trigger_FromString(triggers_local->valuestring));
+            localEnum = OpenAPI_request_trigger_FromString(triggers_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_request_trigger_FromString(triggers_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(triggersList, (void *)localEnum);
         }
     }
 

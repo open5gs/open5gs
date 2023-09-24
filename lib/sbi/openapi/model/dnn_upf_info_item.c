@@ -296,11 +296,17 @@ OpenAPI_dnn_upf_info_item_t *OpenAPI_dnn_upf_info_item_parseFromJSON(cJSON *dnn_
         pdu_session_typesList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(pdu_session_types_local, pdu_session_types) {
+            OpenAPI_pdu_session_type_e localEnum = OpenAPI_pdu_session_type_NULL;
             if (!cJSON_IsString(pdu_session_types_local)) {
                 ogs_error("OpenAPI_dnn_upf_info_item_parseFromJSON() failed [pdu_session_types]");
                 goto end;
             }
-            OpenAPI_list_add(pdu_session_typesList, (void *)OpenAPI_pdu_session_type_FromString(pdu_session_types_local->valuestring));
+            localEnum = OpenAPI_pdu_session_type_FromString(pdu_session_types_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_pdu_session_type_FromString(pdu_session_types_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(pdu_session_typesList, (void *)localEnum);
         }
     }
 

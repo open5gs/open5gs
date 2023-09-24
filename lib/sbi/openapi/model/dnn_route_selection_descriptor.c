@@ -136,11 +136,17 @@ OpenAPI_dnn_route_selection_descriptor_t *OpenAPI_dnn_route_selection_descriptor
         ssc_modesList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(ssc_modes_local, ssc_modes) {
+            OpenAPI_ssc_mode_e localEnum = OpenAPI_ssc_mode_NULL;
             if (!cJSON_IsString(ssc_modes_local)) {
                 ogs_error("OpenAPI_dnn_route_selection_descriptor_parseFromJSON() failed [ssc_modes]");
                 goto end;
             }
-            OpenAPI_list_add(ssc_modesList, (void *)OpenAPI_ssc_mode_FromString(ssc_modes_local->valuestring));
+            localEnum = OpenAPI_ssc_mode_FromString(ssc_modes_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_ssc_mode_FromString(ssc_modes_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(ssc_modesList, (void *)localEnum);
         }
     }
 
@@ -155,11 +161,17 @@ OpenAPI_dnn_route_selection_descriptor_t *OpenAPI_dnn_route_selection_descriptor
         pdu_sess_typesList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(pdu_sess_types_local, pdu_sess_types) {
+            OpenAPI_pdu_session_type_e localEnum = OpenAPI_pdu_session_type_NULL;
             if (!cJSON_IsString(pdu_sess_types_local)) {
                 ogs_error("OpenAPI_dnn_route_selection_descriptor_parseFromJSON() failed [pdu_sess_types]");
                 goto end;
             }
-            OpenAPI_list_add(pdu_sess_typesList, (void *)OpenAPI_pdu_session_type_FromString(pdu_sess_types_local->valuestring));
+            localEnum = OpenAPI_pdu_session_type_FromString(pdu_sess_types_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_pdu_session_type_FromString(pdu_sess_types_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(pdu_sess_typesList, (void *)localEnum);
         }
     }
 

@@ -273,11 +273,17 @@ OpenAPI_bsf_subscription_resp_t *OpenAPI_bsf_subscription_resp_parseFromJSON(cJS
         eventsList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(events_local, events) {
+            OpenAPI_bsf_event_e localEnum = OpenAPI_bsf_event_NULL;
             if (!cJSON_IsString(events_local)) {
                 ogs_error("OpenAPI_bsf_subscription_resp_parseFromJSON() failed [events]");
                 goto end;
             }
-            OpenAPI_list_add(eventsList, (void *)OpenAPI_bsf_event_FromString(events_local->valuestring));
+            localEnum = OpenAPI_bsf_event_FromString(events_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_bsf_event_FromString(events_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(eventsList, (void *)localEnum);
         }
 
     notif_uri = cJSON_GetObjectItemCaseSensitive(bsf_subscription_respJSON, "notifUri");

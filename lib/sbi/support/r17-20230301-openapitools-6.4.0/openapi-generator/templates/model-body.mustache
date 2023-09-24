@@ -766,11 +766,17 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_parseFromJSON(cJSON *{{classname}
 
         cJSON_ArrayForEach({{{name}}}_local, {{{name}}}) {
             {{#isEnum}}
+            OpenAPI_{{{complexType}}}_e localEnum = OpenAPI_{{{complexType}}}_NULL;
             if (!cJSON_IsString({{{name}}}_local)) {
                 ogs_error("OpenAPI_{{classname}}_parseFromJSON() failed [{{{name}}}]");
                 goto end;
             }
-            OpenAPI_list_add({{{name}}}List, (void *)OpenAPI_{{{complexType}}}_FromString({{{name}}}_local->valuestring));
+            localEnum = OpenAPI_{{{complexType}}}_FromString({{{name}}}_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_{{{complexType}}}_FromString({{{name}}}_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add({{{name}}}List, (void *)localEnum);
             {{/isEnum}}
             {{^isEnum}}
                 {{#isPrimitiveType}}

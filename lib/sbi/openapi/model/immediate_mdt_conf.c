@@ -361,11 +361,17 @@ OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_parseFromJSON(cJSON *im
         measurement_lte_listList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(measurement_lte_list_local, measurement_lte_list) {
+            OpenAPI_measurement_lte_for_mdt_e localEnum = OpenAPI_measurement_lte_for_mdt_NULL;
             if (!cJSON_IsString(measurement_lte_list_local)) {
                 ogs_error("OpenAPI_immediate_mdt_conf_parseFromJSON() failed [measurement_lte_list]");
                 goto end;
             }
-            OpenAPI_list_add(measurement_lte_listList, (void *)OpenAPI_measurement_lte_for_mdt_FromString(measurement_lte_list_local->valuestring));
+            localEnum = OpenAPI_measurement_lte_for_mdt_FromString(measurement_lte_list_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_measurement_lte_for_mdt_FromString(measurement_lte_list_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(measurement_lte_listList, (void *)localEnum);
         }
     }
 
@@ -380,11 +386,17 @@ OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_parseFromJSON(cJSON *im
         measurement_nr_listList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(measurement_nr_list_local, measurement_nr_list) {
+            OpenAPI_measurement_nr_for_mdt_e localEnum = OpenAPI_measurement_nr_for_mdt_NULL;
             if (!cJSON_IsString(measurement_nr_list_local)) {
                 ogs_error("OpenAPI_immediate_mdt_conf_parseFromJSON() failed [measurement_nr_list]");
                 goto end;
             }
-            OpenAPI_list_add(measurement_nr_listList, (void *)OpenAPI_measurement_nr_for_mdt_FromString(measurement_nr_list_local->valuestring));
+            localEnum = OpenAPI_measurement_nr_for_mdt_FromString(measurement_nr_list_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_measurement_nr_for_mdt_FromString(measurement_nr_list_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(measurement_nr_listList, (void *)localEnum);
         }
     }
 
@@ -399,11 +411,17 @@ OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_parseFromJSON(cJSON *im
         reporting_trigger_listList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(reporting_trigger_list_local, reporting_trigger_list) {
+            OpenAPI_reporting_trigger_e localEnum = OpenAPI_reporting_trigger_NULL;
             if (!cJSON_IsString(reporting_trigger_list_local)) {
                 ogs_error("OpenAPI_immediate_mdt_conf_parseFromJSON() failed [reporting_trigger_list]");
                 goto end;
             }
-            OpenAPI_list_add(reporting_trigger_listList, (void *)OpenAPI_reporting_trigger_FromString(reporting_trigger_list_local->valuestring));
+            localEnum = OpenAPI_reporting_trigger_FromString(reporting_trigger_list_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_reporting_trigger_FromString(reporting_trigger_list_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(reporting_trigger_listList, (void *)localEnum);
         }
     }
 
@@ -522,11 +540,17 @@ OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_parseFromJSON(cJSON *im
         add_positioning_method_listList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(add_positioning_method_list_local, add_positioning_method_list) {
+            OpenAPI_positioning_method_mdt_e localEnum = OpenAPI_positioning_method_mdt_NULL;
             if (!cJSON_IsString(add_positioning_method_list_local)) {
                 ogs_error("OpenAPI_immediate_mdt_conf_parseFromJSON() failed [add_positioning_method_list]");
                 goto end;
             }
-            OpenAPI_list_add(add_positioning_method_listList, (void *)OpenAPI_positioning_method_mdt_FromString(add_positioning_method_list_local->valuestring));
+            localEnum = OpenAPI_positioning_method_mdt_FromString(add_positioning_method_list_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_positioning_method_mdt_FromString(add_positioning_method_list_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(add_positioning_method_listList, (void *)localEnum);
         }
     }
 
@@ -565,11 +589,17 @@ OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_parseFromJSON(cJSON *im
         sensor_measurement_listList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(sensor_measurement_list_local, sensor_measurement_list) {
+            OpenAPI_sensor_measurement_e localEnum = OpenAPI_sensor_measurement_NULL;
             if (!cJSON_IsString(sensor_measurement_list_local)) {
                 ogs_error("OpenAPI_immediate_mdt_conf_parseFromJSON() failed [sensor_measurement_list]");
                 goto end;
             }
-            OpenAPI_list_add(sensor_measurement_listList, (void *)OpenAPI_sensor_measurement_FromString(sensor_measurement_list_local->valuestring));
+            localEnum = OpenAPI_sensor_measurement_FromString(sensor_measurement_list_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_sensor_measurement_FromString(sensor_measurement_list_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(sensor_measurement_listList, (void *)localEnum);
         }
     }
 

@@ -256,11 +256,17 @@ OpenAPI_sec_negotiate_req_data_t *OpenAPI_sec_negotiate_req_data_parseFromJSON(c
         supported_sec_capability_listList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(supported_sec_capability_list_local, supported_sec_capability_list) {
+            OpenAPI_security_capability_e localEnum = OpenAPI_security_capability_NULL;
             if (!cJSON_IsString(supported_sec_capability_list_local)) {
                 ogs_error("OpenAPI_sec_negotiate_req_data_parseFromJSON() failed [supported_sec_capability_list]");
                 goto end;
             }
-            OpenAPI_list_add(supported_sec_capability_listList, (void *)OpenAPI_security_capability_FromString(supported_sec_capability_list_local->valuestring));
+            localEnum = OpenAPI_security_capability_FromString(supported_sec_capability_list_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_security_capability_FromString(supported_sec_capability_list_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(supported_sec_capability_listList, (void *)localEnum);
         }
 
     _3_gpp_sbi_target_api_root_supported = cJSON_GetObjectItemCaseSensitive(sec_negotiate_req_dataJSON, "3GppSbiTargetApiRootSupported");
