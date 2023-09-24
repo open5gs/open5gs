@@ -1295,8 +1295,12 @@ static int on_header(nghttp2_session *session, const nghttp2_frame *frame,
 
         j = 0;
         while(params[j].key && params[j].val) {
-            ogs_sbi_header_set(request->http.params,
-                    params[j].key, params[j].val);
+            if (strlen(params[j].key))
+                ogs_sbi_header_set(request->http.params,
+                        params[j].key, params[j].val);
+            else
+                ogs_warn("No KEY in Query-Parms");
+
             j++;
         }
 
