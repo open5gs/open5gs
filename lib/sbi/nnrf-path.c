@@ -94,16 +94,25 @@ bool ogs_nnrf_nfm_send_nf_status_subscribe(
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_subscription_data_t *subscription_data = NULL;
 
+    /* Issue #2630 : The format of subscrCond is invalid. Must be 'oneOf'. */
+    ogs_assert(!subscr_cond_nf_type || !subscr_cond_service_name);
+
     subscription_data = ogs_sbi_subscription_data_add();
     ogs_assert(subscription_data);
 
     subscription_data->req_nf_type = req_nf_type;
     if (req_nf_instance_id)
         subscription_data->req_nf_instance_id = ogs_strdup(req_nf_instance_id);
-    subscription_data->subscr_cond.nf_type = subscr_cond_nf_type;
-    if (subscr_cond_service_name)
+
+    if (subscr_cond_nf_type)
+        subscription_data->subscr_cond.nf_type = subscr_cond_nf_type;
+    else if (subscr_cond_service_name)
         subscription_data->subscr_cond.service_name =
             ogs_strdup(subscr_cond_service_name);
+    else {
+        ogs_fatal("SubscrCond must be 'oneOf'.");
+        ogs_assert_if_reached();
+    }
 
     request = ogs_nnrf_nfm_build_status_subscribe(subscription_data);
     if (!request) {

@@ -38,7 +38,7 @@ int af_sbi_open(void)
 
     /* Setup Subscription-Data */
     ogs_sbi_subscription_spec_add(
-            OpenAPI_nf_type_BSF, OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT);
+            OpenAPI_nf_type_NULL, OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT);
 
     if (ogs_sbi_server_start_all(ogs_sbi_server_handler) != OGS_OK)
         return OGS_ERROR;

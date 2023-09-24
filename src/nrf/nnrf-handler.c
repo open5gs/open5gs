@@ -268,7 +268,7 @@ bool nrf_nnrf_handle_nf_status_subscribe(
         if (!subscription_data->req_nf_instance_id) {
             ogs_error("ogs_strdup() failed");
             ogs_sbi_subscription_data_remove(subscription_data);
-            return NULL;
+            return false;
         }
     }
 
@@ -281,7 +281,7 @@ bool nrf_nnrf_handle_nf_status_subscribe(
     if (!SubscriptionData->subscription_id) {
         ogs_error("ogs_strdup() failed");
         ogs_sbi_subscription_data_remove(subscription_data);
-        return NULL;
+        return false;
     }
 
     if (SubscriptionData->requester_features) {
@@ -302,15 +302,29 @@ bool nrf_nnrf_handle_nf_status_subscribe(
     if (!SubscriptionData->nrf_supported_features) {
         ogs_error("ogs_strdup() failed");
         ogs_sbi_subscription_data_remove(subscription_data);
-        return NULL;
+        return false;
     }
 
     SubscrCond = SubscriptionData->subscr_cond;
     if (SubscrCond) {
-        subscription_data->subscr_cond.nf_type = SubscrCond->nf_type;
-        if (SubscrCond->service_name)
+
+    /* Issue #2630 : The format of subscrCond is invalid. Must be 'oneOf'. */
+        if (SubscrCond->nf_type && SubscrCond->service_name) {
+            ogs_error("SubscrCond must be 'oneOf'");
+            ogs_sbi_subscription_data_remove(subscription_data);
+            return false;
+        }
+
+        if (SubscrCond->nf_type)
+            subscription_data->subscr_cond.nf_type = SubscrCond->nf_type;
+        else if (SubscrCond->service_name)
             subscription_data->subscr_cond.service_name =
                 ogs_strdup(SubscrCond->service_name);
+        else {
+            ogs_error("No SubscrCond");
+            ogs_sbi_subscription_data_remove(subscription_data);
+            return false;
+        }
     }
 
     subscription_data->notification_uri =
