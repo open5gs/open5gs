@@ -129,7 +129,6 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
                     if (!ausf_ue) {
                         ausf_ue = ausf_ue_add(
                                 message.AuthenticationInfo->supi_or_suci);
-                        ogs_assert(ausf_ue);
                     }
                 }
                 break;
