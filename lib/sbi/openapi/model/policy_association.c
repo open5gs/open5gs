@@ -377,10 +377,11 @@ OpenAPI_policy_association_t *OpenAPI_policy_association_parseFromJSON(cJSON *po
             }
             localEnum = OpenAPI_request_trigger_FromString(triggers_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_request_trigger_FromString(triggers_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"triggers\" is not supported. Ignoring it ...",
+                         triggers_local->valuestring);
+            } else {
+                OpenAPI_list_add(triggersList, (void *)localEnum);
             }
-            OpenAPI_list_add(triggersList, (void *)localEnum);
         }
     }
 

@@ -1133,10 +1133,11 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
             }
             localEnum = OpenAPI_policy_control_request_trigger_FromString(rep_policy_ctrl_req_triggers_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_policy_control_request_trigger_FromString(rep_policy_ctrl_req_triggers_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"rep_policy_ctrl_req_triggers\" is not supported. Ignoring it ...",
+                         rep_policy_ctrl_req_triggers_local->valuestring);
+            } else {
+                OpenAPI_list_add(rep_policy_ctrl_req_triggersList, (void *)localEnum);
             }
-            OpenAPI_list_add(rep_policy_ctrl_req_triggersList, (void *)localEnum);
         }
     }
 
@@ -1699,10 +1700,11 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
             }
             localEnum = OpenAPI_policy_decision_failure_code_FromString(policy_dec_failure_reports_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_policy_decision_failure_code_FromString(policy_dec_failure_reports_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"policy_dec_failure_reports\" is not supported. Ignoring it ...",
+                         policy_dec_failure_reports_local->valuestring);
+            } else {
+                OpenAPI_list_add(policy_dec_failure_reportsList, (void *)localEnum);
             }
-            OpenAPI_list_add(policy_dec_failure_reportsList, (void *)localEnum);
         }
     }
 
@@ -1780,10 +1782,11 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
             }
             localEnum = OpenAPI_dl_data_delivery_status_FromString(types_of_notif_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_dl_data_delivery_status_FromString(types_of_notif_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"types_of_notif\" is not supported. Ignoring it ...",
+                         types_of_notif_local->valuestring);
+            } else {
+                OpenAPI_list_add(types_of_notifList, (void *)localEnum);
             }
-            OpenAPI_list_add(types_of_notifList, (void *)localEnum);
         }
     }
 

@@ -204,10 +204,11 @@ OpenAPI_registration_location_info_t *OpenAPI_registration_location_info_parseFr
             }
             localEnum = OpenAPI_access_type_FromString(access_type_list_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_access_type_FromString(access_type_list_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"access_type_list\" is not supported. Ignoring it ...",
+                         access_type_list_local->valuestring);
+            } else {
+                OpenAPI_list_add(access_type_listList, (void *)localEnum);
             }
-            OpenAPI_list_add(access_type_listList, (void *)localEnum);
         }
 
     registration_location_info_local_var = OpenAPI_registration_location_info_create (

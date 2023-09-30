@@ -117,10 +117,11 @@ OpenAPI_pro_se_allowed_plmn_t *OpenAPI_pro_se_allowed_plmn_parseFromJSON(cJSON *
             }
             localEnum = OpenAPI_prose_direct_allowed_FromString(prose_direct_allowed_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_prose_direct_allowed_FromString(prose_direct_allowed_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"prose_direct_allowed\" is not supported. Ignoring it ...",
+                         prose_direct_allowed_local->valuestring);
+            } else {
+                OpenAPI_list_add(prose_direct_allowedList, (void *)localEnum);
             }
-            OpenAPI_list_add(prose_direct_allowedList, (void *)localEnum);
         }
     }
 

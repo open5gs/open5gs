@@ -410,10 +410,11 @@ OpenAPI_nrf_info_served_nwdaf_info_value_t *OpenAPI_nrf_info_served_nwdaf_info_v
             }
             localEnum = OpenAPI_nf_type_FromString(serving_nf_type_list_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_nf_type_FromString(serving_nf_type_list_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"serving_nf_type_list\" is not supported. Ignoring it ...",
+                         serving_nf_type_list_local->valuestring);
+            } else {
+                OpenAPI_list_add(serving_nf_type_listList, (void *)localEnum);
             }
-            OpenAPI_list_add(serving_nf_type_listList, (void *)localEnum);
         }
     }
 

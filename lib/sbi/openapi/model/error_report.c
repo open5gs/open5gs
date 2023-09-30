@@ -242,10 +242,11 @@ OpenAPI_error_report_t *OpenAPI_error_report_parseFromJSON(cJSON *error_reportJS
             }
             localEnum = OpenAPI_policy_decision_failure_code_FromString(pol_dec_failure_reports_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_policy_decision_failure_code_FromString(pol_dec_failure_reports_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"pol_dec_failure_reports\" is not supported. Ignoring it ...",
+                         pol_dec_failure_reports_local->valuestring);
+            } else {
+                OpenAPI_list_add(pol_dec_failure_reportsList, (void *)localEnum);
             }
-            OpenAPI_list_add(pol_dec_failure_reportsList, (void *)localEnum);
         }
     }
 

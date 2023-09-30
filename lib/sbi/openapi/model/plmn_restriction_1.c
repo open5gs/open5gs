@@ -197,10 +197,11 @@ OpenAPI_plmn_restriction_1_t *OpenAPI_plmn_restriction_1_parseFromJSON(cJSON *pl
             }
             localEnum = OpenAPI_rat_type_FromString(rat_restrictions_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_rat_type_FromString(rat_restrictions_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"rat_restrictions\" is not supported. Ignoring it ...",
+                         rat_restrictions_local->valuestring);
+            } else {
+                OpenAPI_list_add(rat_restrictionsList, (void *)localEnum);
             }
-            OpenAPI_list_add(rat_restrictionsList, (void *)localEnum);
         }
     }
 
@@ -255,10 +256,11 @@ OpenAPI_plmn_restriction_1_t *OpenAPI_plmn_restriction_1_parseFromJSON(cJSON *pl
             }
             localEnum = OpenAPI_core_network_type_FromString(core_network_type_restrictions_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_core_network_type_FromString(core_network_type_restrictions_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"core_network_type_restrictions\" is not supported. Ignoring it ...",
+                         core_network_type_restrictions_local->valuestring);
+            } else {
+                OpenAPI_list_add(core_network_type_restrictionsList, (void *)localEnum);
             }
-            OpenAPI_list_add(core_network_type_restrictionsList, (void *)localEnum);
         }
     }
 
@@ -280,10 +282,11 @@ OpenAPI_plmn_restriction_1_t *OpenAPI_plmn_restriction_1_parseFromJSON(cJSON *pl
             }
             localEnum = OpenAPI_rat_type_FromString(primary_rat_restrictions_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_rat_type_FromString(primary_rat_restrictions_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"primary_rat_restrictions\" is not supported. Ignoring it ...",
+                         primary_rat_restrictions_local->valuestring);
+            } else {
+                OpenAPI_list_add(primary_rat_restrictionsList, (void *)localEnum);
             }
-            OpenAPI_list_add(primary_rat_restrictionsList, (void *)localEnum);
         }
     }
 
@@ -305,10 +308,11 @@ OpenAPI_plmn_restriction_1_t *OpenAPI_plmn_restriction_1_parseFromJSON(cJSON *pl
             }
             localEnum = OpenAPI_rat_type_FromString(secondary_rat_restrictions_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_rat_type_FromString(secondary_rat_restrictions_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"secondary_rat_restrictions\" is not supported. Ignoring it ...",
+                         secondary_rat_restrictions_local->valuestring);
+            } else {
+                OpenAPI_list_add(secondary_rat_restrictionsList, (void *)localEnum);
             }
-            OpenAPI_list_add(secondary_rat_restrictionsList, (void *)localEnum);
         }
     }
 

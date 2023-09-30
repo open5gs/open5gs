@@ -398,10 +398,11 @@ OpenAPI_nrf_info_served_smf_info_value_t *OpenAPI_nrf_info_served_smf_info_value
             }
             localEnum = OpenAPI_access_type_FromString(access_type_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_access_type_FromString(access_type_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"access_type\" is not supported. Ignoring it ...",
+                         access_type_local->valuestring);
+            } else {
+                OpenAPI_list_add(access_typeList, (void *)localEnum);
             }
-            OpenAPI_list_add(access_typeList, (void *)localEnum);
         }
     }
 

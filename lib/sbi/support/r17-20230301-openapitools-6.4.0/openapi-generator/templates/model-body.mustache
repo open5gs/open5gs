@@ -773,10 +773,11 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_parseFromJSON(cJSON *{{classname}
             }
             localEnum = OpenAPI_{{{complexType}}}_FromString({{{name}}}_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_{{{complexType}}}_FromString({{{name}}}_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"{{{name}}}\" is not supported. Ignoring it ...",
+                         {{{name}}}_local->valuestring);
+            } else {
+                OpenAPI_list_add({{{name}}}List, (void *)localEnum);
             }
-            OpenAPI_list_add({{{name}}}List, (void *)localEnum);
             {{/isEnum}}
             {{^isEnum}}
                 {{#isPrimitiveType}}

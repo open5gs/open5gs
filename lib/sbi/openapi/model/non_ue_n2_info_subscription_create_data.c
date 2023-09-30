@@ -191,10 +191,11 @@ OpenAPI_non_ue_n2_info_subscription_create_data_t *OpenAPI_non_ue_n2_info_subscr
             }
             localEnum = OpenAPI_access_type_FromString(an_type_list_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_access_type_FromString(an_type_list_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"an_type_list\" is not supported. Ignoring it ...",
+                         an_type_list_local->valuestring);
+            } else {
+                OpenAPI_list_add(an_type_listList, (void *)localEnum);
             }
-            OpenAPI_list_add(an_type_listList, (void *)localEnum);
         }
     }
 

@@ -138,10 +138,11 @@ OpenAPI_requested_rule_data_t *OpenAPI_requested_rule_data_parseFromJSON(cJSON *
             }
             localEnum = OpenAPI_requested_rule_data_type_FromString(req_data_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_requested_rule_data_type_FromString(req_data_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"req_data\" is not supported. Ignoring it ...",
+                         req_data_local->valuestring);
+            } else {
+                OpenAPI_list_add(req_dataList, (void *)localEnum);
             }
-            OpenAPI_list_add(req_dataList, (void *)localEnum);
         }
 
     requested_rule_data_local_var = OpenAPI_requested_rule_data_create (

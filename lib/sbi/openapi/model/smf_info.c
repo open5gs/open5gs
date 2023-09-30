@@ -398,10 +398,11 @@ OpenAPI_smf_info_t *OpenAPI_smf_info_parseFromJSON(cJSON *smf_infoJSON)
             }
             localEnum = OpenAPI_access_type_FromString(access_type_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_access_type_FromString(access_type_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"access_type\" is not supported. Ignoring it ...",
+                         access_type_local->valuestring);
+            } else {
+                OpenAPI_list_add(access_typeList, (void *)localEnum);
             }
-            OpenAPI_list_add(access_typeList, (void *)localEnum);
         }
     }
 

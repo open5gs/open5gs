@@ -285,10 +285,11 @@ OpenAPI_udr_info_t *OpenAPI_udr_info_parseFromJSON(cJSON *udr_infoJSON)
             }
             localEnum = OpenAPI_data_set_id_FromString(supported_data_sets_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_data_set_id_FromString(supported_data_sets_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"supported_data_sets\" is not supported. Ignoring it ...",
+                         supported_data_sets_local->valuestring);
+            } else {
+                OpenAPI_list_add(supported_data_setsList, (void *)localEnum);
             }
-            OpenAPI_list_add(supported_data_setsList, (void *)localEnum);
         }
     }
 

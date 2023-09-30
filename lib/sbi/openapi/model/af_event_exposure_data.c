@@ -138,10 +138,11 @@ OpenAPI_af_event_exposure_data_t *OpenAPI_af_event_exposure_data_parseFromJSON(c
             }
             localEnum = OpenAPI_af_event_FromString(af_events_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_af_event_FromString(af_events_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"af_events\" is not supported. Ignoring it ...",
+                         af_events_local->valuestring);
+            } else {
+                OpenAPI_list_add(af_eventsList, (void *)localEnum);
             }
-            OpenAPI_list_add(af_eventsList, (void *)localEnum);
         }
 
     af_ids = cJSON_GetObjectItemCaseSensitive(af_event_exposure_dataJSON, "afIds");

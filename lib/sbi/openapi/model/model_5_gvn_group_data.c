@@ -256,10 +256,11 @@ OpenAPI_model_5_gvn_group_data_t *OpenAPI_model_5_gvn_group_data_parseFromJSON(c
             }
             localEnum = OpenAPI_pdu_session_type_FromString(pdu_session_types_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_pdu_session_type_FromString(pdu_session_types_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"pdu_session_types\" is not supported. Ignoring it ...",
+                         pdu_session_types_local->valuestring);
+            } else {
+                OpenAPI_list_add(pdu_session_typesList, (void *)localEnum);
             }
-            OpenAPI_list_add(pdu_session_typesList, (void *)localEnum);
         }
     }
 

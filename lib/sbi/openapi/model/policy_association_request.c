@@ -752,10 +752,11 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
             }
             localEnum = OpenAPI_access_type_FromString(access_types_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_access_type_FromString(access_types_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"access_types\" is not supported. Ignoring it ...",
+                         access_types_local->valuestring);
+            } else {
+                OpenAPI_list_add(access_typesList, (void *)localEnum);
             }
-            OpenAPI_list_add(access_typesList, (void *)localEnum);
         }
     }
 
@@ -820,10 +821,11 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
             }
             localEnum = OpenAPI_rat_type_FromString(rat_types_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_rat_type_FromString(rat_types_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"rat_types\" is not supported. Ignoring it ...",
+                         rat_types_local->valuestring);
+            } else {
+                OpenAPI_list_add(rat_typesList, (void *)localEnum);
             }
-            OpenAPI_list_add(rat_typesList, (void *)localEnum);
         }
     }
 
