@@ -88,18 +88,40 @@ You can see the sample traffic.  -- [[5g-roaming-lbo.pcapng]]({{ site.url }}{{ s
 ### VM and Subscriber Information
 
 Each VMs are as follows.
-| VM # | Hostname | PLMN-ID | IP address | N32-c | N32-f |
-| --- | --- | --- | --- | --- | --- |
-| VM1 | sepp1.localdomain | MCC: 999, MNC: 70 | 10.10.1.5/16 | 10.10.1.251/16 | 10.10.1.252/16 |
-| VM2 | sepp2.localdomain | MCC: 001, MNC: 01 | 10.10.2.5/16 | 10.10.2.251/16 | 10.10.2.252/16 |
-| VM3 | sepp3.localdomain | MCC: 315, MNC: 010 | 10.10.3.5/16 | 10.10.3.251/16 | 10.10.3.252/16 |
 
-Subscriber Information (other information is the same) is as follows.
-| UE # | IMSI | DNN | DN | Tunnel Interface of DN |
-| --- | --- | --- | --- | --- |
-| UE0 | 999700000000001 | internet | 10.45.0.0/16 | ogstun |
-| UE1 | 001010000000001 | internet | 10.46.0.0/16 | ogstun2 |
-| UE2 | 315010000000001 | internet | 10.47.0.0/16 | ogstun3 |
+- VM1
+```
+Hostname: sepp1.localdomain
+PLMN-ID: MNC(999), MNC(70)
+IP Address: 10.10.1.5
+N32-c: 10.10.1.251
+N32-c: 10.10.1.252
+```
+
+- VM2
+```
+Hostname: sepp2.localdomain
+PLMN-ID: MNC(001), MNC(01)
+IP Address: 10.10.2.5
+N32-c: 10.10.2.251
+N32-c: 10.10.2.252
+```
+
+- VM3
+```
+Hostname: sepp3.localdomain
+PLMN-ID: MNC(003), MNC(03)
+IP Address: 10.10.3.5
+N32-c: 10.10.3.251
+N32-c: 10.10.3.252
+```
+
+- Subscriber
+```
+imsi-999700000000001
+imsi-001010000000001
+imsi-315010000000001
+```
 
 ### Setting for VM1
 
@@ -125,6 +147,7 @@ Subscriber Information (other information is the same) is as follows.
 NRF shall follow TS23.003(28.3.2.3.2 Format of NRF FQDN) for routing.
 
 - Update nrf.yaml
+
 ```diff
 $ diff --git a/configs/open5gs/nrf.yaml.in b/configs/open5gs/nrf.yaml.in
 index 3996b2bd9..e57f286b7 100644
@@ -143,6 +166,7 @@ index 3996b2bd9..e57f286b7 100644
 ```
 
 - Update scp.yaml
+
 ```diff
 $ diff --git a/configs/open5gs/scp.yaml.in b/configs/open5gs/scp.yaml.in
 index 9be6cdc93..eee7d3e3f 100644
@@ -160,6 +184,7 @@ index 9be6cdc93..eee7d3e3f 100644
 ```
 
 - Update nssf.yaml
+
 ```diff
 $ diff --git a/configs/open5gs/nssf.yaml.in b/configs/open5gs/nssf.yaml.in
 index d01645b2c..7d89cffef 100644
@@ -222,10 +247,10 @@ AMF and UPF must use external IP addresses such as 10.10.1.x for communication b
 
 ```diff
 $ diff --git a/configs/open5gs/amf.yaml.in b/configs/open5gs/amf.yaml.in
-index 938917e32..2db1558e4 100644
+index 938917e32..11a19c808 100644
 --- a/configs/open5gs/amf.yaml.in
 +++ b/configs/open5gs/amf.yaml.in
-@@ -18,7 +18,7 @@ amf:
+@@ -18,11 +18,21 @@ amf:
            - uri: http://127.0.0.200:7777
      ngap:
        server:
@@ -234,6 +259,20 @@ index 938917e32..2db1558e4 100644
      metrics:
        server:
          - address: 127.0.0.5
+           port: 9090
++    access_control:
++      - plmn_id:
++          mcc: 999
++          mnc: 70
++      - plmn_id:
++          mcc: 001
++          mnc: 01
++      - plmn_id:
++          mcc: 315
++          mnc: 010
+     guami:
+       - plmn_id:
+           mcc: 999
 ```
 
 - Update upf.yaml
@@ -342,13 +381,20 @@ $ sudo ./install/bin/open5gs-udrd
 NRF shall follow TS23.003(28.3.2.3.2 Format of NRF FQDN) for routing.
 
 - Update nrf.yaml
+
 ```diff
 $ diff --git a/configs/open5gs/nrf.yaml.in b/configs/open5gs/nrf.yaml.in
-index 3996b2bd9..e57f286b7 100644
+index 3996b2bd9..ab708abd8 100644
 --- a/configs/open5gs/nrf.yaml.in
 +++ b/configs/open5gs/nrf.yaml.in
-@@ -13,8 +13,7 @@ nrf:
-           mnc: 70
+@@ -9,12 +9,11 @@ max:
+ nrf:
+     serving:  # 5G roaming requires PLMN in NRF
+       - plmn_id:
+-          mcc: 999
+-          mnc: 70
++          mcc: 001
++          mnc: 01
      sbi:
        server:
 -        - address: 127.0.0.10
@@ -360,6 +406,7 @@ index 3996b2bd9..e57f286b7 100644
 ```
 
 - Update scp.yaml
+
 ```diff
 $ diff --git a/configs/open5gs/scp.yaml.in b/configs/open5gs/scp.yaml.in
 index 9be6cdc93..eee7d3e3f 100644
@@ -377,6 +424,7 @@ index 9be6cdc93..eee7d3e3f 100644
 ```
 
 - Update nssf.yaml
+
 ```diff
 $ diff --git a/configs/open5gs/nssf.yaml.in b/configs/open5gs/nssf.yaml.in
 index d01645b2c..7d89cffef 100644
@@ -439,10 +487,10 @@ AMF and UPF must use external IP addresses such as 10.10.2.x for communication b
 
 ```diff
 $ diff --git a/configs/open5gs/amf.yaml.in b/configs/open5gs/amf.yaml.in
-index 938917e32..2db1558e4 100644
+index 938917e32..2f7822b46 100644
 --- a/configs/open5gs/amf.yaml.in
 +++ b/configs/open5gs/amf.yaml.in
-@@ -18,7 +18,7 @@ amf:
+@@ -18,27 +18,37 @@ amf:
            - uri: http://127.0.0.200:7777
      ngap:
        server:
@@ -451,6 +499,41 @@ index 938917e32..2db1558e4 100644
      metrics:
        server:
          - address: 127.0.0.5
+           port: 9090
+-    guami:
++    access_control:
+       - plmn_id:
+           mcc: 999
+           mnc: 70
++      - plmn_id:
++          mcc: 001
++          mnc: 01
++      - plmn_id:
++          mcc: 315
++          mnc: 010
++    guami:
++      - plmn_id:
++          mcc: 001
++          mnc: 01
+         amf_id:
+           region: 2
+           set: 1
+     tai:
+       - plmn_id:
+-          mcc: 999
+-          mnc: 70
++          mcc: 001
++          mnc: 01
+         tac: 1
+     plmn_support:
+       - plmn_id:
+-          mcc: 999
+-          mnc: 70
++          mcc: 001
++          mnc: 01
+         s_nssai:
+           - sst: 1
+     security:
 ```
 
 - Update upf.yaml
@@ -559,13 +642,20 @@ $ sudo ./install/bin/open5gs-udrd
 NRF shall follow TS23.003(28.3.2.3.2 Format of NRF FQDN) for routing.
 
 - Update nrf.yaml
+
 ```diff
 $ diff --git a/configs/open5gs/nrf.yaml.in b/configs/open5gs/nrf.yaml.in
-index 3996b2bd9..e57f286b7 100644
+index 3996b2bd9..ab708abd8 100644
 --- a/configs/open5gs/nrf.yaml.in
 +++ b/configs/open5gs/nrf.yaml.in
-@@ -13,8 +13,7 @@ nrf:
-           mnc: 70
+@@ -9,12 +9,11 @@ max:
+ nrf:
+     serving:  # 5G roaming requires PLMN in NRF
+       - plmn_id:
+-          mcc: 999
+-          mnc: 70
++          mcc: 315
++          mnc: 010
      sbi:
        server:
 -        - address: 127.0.0.10
@@ -577,6 +667,7 @@ index 3996b2bd9..e57f286b7 100644
 ```
 
 - Update scp.yaml
+
 ```diff
 $ diff --git a/configs/open5gs/scp.yaml.in b/configs/open5gs/scp.yaml.in
 index 9be6cdc93..eee7d3e3f 100644
@@ -594,6 +685,7 @@ index 9be6cdc93..eee7d3e3f 100644
 ```
 
 - Update nssf.yaml
+
 ```diff
 $ diff --git a/configs/open5gs/nssf.yaml.in b/configs/open5gs/nssf.yaml.in
 index d01645b2c..7d89cffef 100644
@@ -656,10 +748,10 @@ AMF and UPF must use external IP addresses such as 10.10.3.x for communication b
 
 ```diff
 $ diff --git a/configs/open5gs/amf.yaml.in b/configs/open5gs/amf.yaml.in
-index 938917e32..2db1558e4 100644
+index 938917e32..383489d13 100644
 --- a/configs/open5gs/amf.yaml.in
 +++ b/configs/open5gs/amf.yaml.in
-@@ -18,7 +18,7 @@ amf:
+@@ -18,27 +18,37 @@ amf:
            - uri: http://127.0.0.200:7777
      ngap:
        server:
@@ -668,6 +760,41 @@ index 938917e32..2db1558e4 100644
      metrics:
        server:
          - address: 127.0.0.5
+           port: 9090
+-    guami:
++    access_control:
+       - plmn_id:
+           mcc: 999
+           mnc: 70
++      - plmn_id:
++          mcc: 001
++          mnc: 01
++      - plmn_id:
++          mcc: 315
++          mnc: 010
++    guami:
++      - plmn_id:
++          mcc: 315
++          mnc: 010
+         amf_id:
+           region: 2
+           set: 1
+     tai:
+       - plmn_id:
+-          mcc: 999
+-          mnc: 70
++          mcc: 315
++          mnc: 010
+         tac: 1
+     plmn_support:
+       - plmn_id:
+-          mcc: 999
+-          mnc: 70
++          mcc: 315
++          mnc: 010
+         s_nssai:
+           - sst: 1
+     security:
 ```
 
 - Update upf.yaml
@@ -805,6 +932,7 @@ $ diff -u sepp.yaml.old sepp.yaml
 ```
 
 Add client TLS verification to N32 interface
+
 ```diff
 $ diff -u sepp.yaml.old sepp.yaml
 --- sepp.yaml.old	2023-10-02 18:44:56.011099652 +0900
