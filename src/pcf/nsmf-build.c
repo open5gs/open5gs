@@ -90,17 +90,34 @@ ogs_sbi_request_t *pcf_nsmf_callback_build_smpolicycontrol_terminate(
     ogs_sbi_message_t message;
     ogs_sbi_header_t header;
     ogs_sbi_request_t *request = NULL;
+    OpenAPI_termination_notification_t TerminationNotification;
+    ogs_sbi_server_t *server = NULL;
 
     ogs_assert(sess);
     ogs_assert(sess->sm_policy_id);
     ogs_assert(sess->notification_uri);
+
+    memset(&TerminationNotification, 0, sizeof(TerminationNotification));
+
+    server = ogs_list_first(&ogs_sbi_self()->server_list);
+    if (!server) {
+        ogs_error("No server");
+        goto end;
+    }
 
     memset(&header, 0, sizeof(header));
     header.service.name = (char *)OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL;
     header.api.version = (char *)OGS_SBI_API_V1;
     header.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_SM_POLICIES;
     header.resource.component[1] = sess->sm_policy_id;
-    header.resource.component[2] = (char *)OGS_SBI_RESOURCE_NAME_UPDATE;
+
+    TerminationNotification.resource_uri = ogs_sbi_server_uri(server, &header);
+    if (!TerminationNotification.resource_uri) {
+        ogs_error("No resource_uri");
+        goto end;
+    }
+
+    TerminationNotification.cause = OpenAPI_sm_policy_association_release_cause_UNSPECIFIED;
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
@@ -111,10 +128,14 @@ ogs_sbi_request_t *pcf_nsmf_callback_build_smpolicycontrol_terminate(
         goto end;
     }
 
+    message.TerminationNotification = &TerminationNotification;
+
     request = ogs_sbi_build_request(&message);
     ogs_assert(request);
 
 end:
+    if (TerminationNotification.resource_uri)
+        ogs_free(TerminationNotification.resource_uri);
 
     if (message.h.uri)
         ogs_free(message.h.uri);

@@ -718,7 +718,7 @@ bool smf_npcf_smpolicycontrol_handle_terminate_notify(
         r = smf_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL, NULL,
                 smf_npcf_smpolicycontrol_build_delete,
-                sess, NULL, OGS_PFCP_DELETE_TRIGGER_PCF_INITIATED, &param);
+                sess, stream, OGS_PFCP_DELETE_TRIGGER_PCF_INITIATED, &param);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
     } else {
