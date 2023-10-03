@@ -7,7 +7,7 @@
   "author": "Open5gs Group",
   "license": "AGPL-3.0",
   "dependencies": {
-    "axios": "^1.4.0",
+    "axios": "^0.27.2",
     "babel-plugin-polished": "^1.1.0",
     "babel-plugin-styled-components": "^2.0.7",
     "body-parser": "^1.20.2",
@@ -37,7 +37,7 @@
     "react-event-listener": "^0.5.9",
     "react-icons": "^2.2.5",
     "react-jsonschema-form": "^0.50.1",
-    "react-notification-system": "^0.4.0",
+    "react-notification-system": "^0.2.17",
     "react-onclickoutside": "^6.13.0",
     "react-redux": "^5.1.2",
     "react-transition-group": "^1.1.3",
