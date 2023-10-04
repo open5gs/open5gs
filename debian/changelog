@@ -1,32 +1,32 @@
-open5gs (2.6.5) unstable; urgency=medium
+open5gs (2.6.6) unstable; urgency=medium
 
-  * Bug Fixes
+  * Ubuntu 23.04(lunar) Release
 
- -- Sukchan Lee <acetcom@gmail.com>  Mon, 02 Oct 2023 19:59:36 +0900
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 04 Oct 2023 20:50:52 +0900
 
-open5gs (2.6.5~lunar) lunar; urgency=medium
+open5gs (2.6.6~kinetic) kinetic; urgency=medium
 
-  * Bug Fixes
+  * Ubuntu 23.04(lunar) Release
 
- -- Sukchan Lee <acetcom@gmail.com>  Mon, 02 Oct 2023 19:56:38 +0900
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 04 Oct 2023 20:49:04 +0900
 
-open5gs (2.6.5~jammy) jammy; urgency=medium
+open5gs (2.6.6~jammy) jammy; urgency=medium
 
-  * Bug Fixes
+  * Ubuntu 23.04(lunar) Release
 
- -- Sukchan Lee <acetcom@gmail.com>  Mon, 02 Oct 2023 19:53:19 +0900
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 04 Oct 2023 20:47:26 +0900
 
-open5gs (2.6.5~focal) focal; urgency=medium
+open5gs (2.6.6~focal) focal; urgency=medium
 
-  * Bug Fixes
+  * Ubuntu 23.04(lunar) Release
 
- -- Sukchan Lee <acetcom@gmail.com>  Mon, 02 Oct 2023 19:51:35 +0900
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 04 Oct 2023 20:45:45 +0900
 
-open5gs (2.6.5~bionic) bionic; urgency=medium
+open5gs (2.6.6~bionic) bionic; urgency=medium
 
-  * Bug Fixes
+  * Ubuntu 23.04(lunar) Release
 
- -- Sukchan Lee <acetcom@gmail.com>  Mon, 02 Oct 2023 19:48:37 +0900
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 04 Oct 2023 20:43:30 +0900
 
 open5gs (2.6.4) unstable; urgency=medium
 
