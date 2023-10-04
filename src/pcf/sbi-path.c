@@ -348,31 +348,6 @@ bool pcf_sbi_send_smpolicycontrol_delete_notify(
     return rc;
 }
 
-bool pcf_sbi_send_smpolicycontrol_terminate_notify(pcf_sess_t *sess)
-{
-    bool rc;
-    ogs_sbi_request_t *request = NULL;
-    ogs_sbi_client_t *client = NULL;
-
-    ogs_assert(sess);
-    client = sess->nsmf.client;
-    ogs_assert(client);
-
-    request = pcf_nsmf_callback_build_smpolicycontrol_terminate(sess, NULL);
-    if (!request) {
-        ogs_error("pcf_nsmf_callback_build_smpolicycontrol_terminate() failed");
-        return false;
-    }
-
-    rc = ogs_sbi_send_request_to_client(
-            client, client_notify_cb, request, NULL);
-    ogs_expect(rc == true);
-
-    ogs_sbi_request_free(request);
-
-    return rc;
-}
-
 bool pcf_sbi_send_policyauthorization_terminate_notify(pcf_app_t *app)
 {
     bool rc;

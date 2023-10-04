@@ -28,8 +28,6 @@ extern "C" {
 
 ogs_sbi_request_t *pcf_nsmf_callback_build_smpolicycontrol_update(
         pcf_sess_t *sess, void *data);
-ogs_sbi_request_t *pcf_nsmf_callback_build_smpolicycontrol_terminate(
-        pcf_sess_t *sess, void *data);
 
 #ifdef __cplusplus
 }
