@@ -5,6 +5,7 @@
 #include "communication_characteristics_af.h"
 
 OpenAPI_communication_characteristics_af_t *OpenAPI_communication_characteristics_af_create(
+    bool is_pp_dl_packet_count_null,
     bool is_pp_dl_packet_count,
     int pp_dl_packet_count,
     bool is_maximum_response_time,
@@ -16,6 +17,7 @@ OpenAPI_communication_characteristics_af_t *OpenAPI_communication_characteristic
     OpenAPI_communication_characteristics_af_t *communication_characteristics_af_local_var = ogs_malloc(sizeof(OpenAPI_communication_characteristics_af_t));
     ogs_assert(communication_characteristics_af_local_var);
 
+    communication_characteristics_af_local_var->is_pp_dl_packet_count_null = is_pp_dl_packet_count_null;
     communication_characteristics_af_local_var->is_pp_dl_packet_count = is_pp_dl_packet_count;
     communication_characteristics_af_local_var->pp_dl_packet_count = pp_dl_packet_count;
     communication_characteristics_af_local_var->is_maximum_response_time = is_maximum_response_time;
@@ -52,6 +54,11 @@ cJSON *OpenAPI_communication_characteristics_af_convertToJSON(OpenAPI_communicat
         ogs_error("OpenAPI_communication_characteristics_af_convertToJSON() failed [pp_dl_packet_count]");
         goto end;
     }
+    } else if (communication_characteristics_af->is_pp_dl_packet_count_null) {
+        if (cJSON_AddNullToObject(item, "ppDlPacketCount") == NULL) {
+            ogs_error("OpenAPI_communication_characteristics_af_convertToJSON() failed [pp_dl_packet_count]");
+            goto end;
+        }
     }
 
     if (communication_characteristics_af->is_maximum_response_time) {
@@ -81,9 +88,11 @@ OpenAPI_communication_characteristics_af_t *OpenAPI_communication_characteristic
     cJSON *maximum_latency = NULL;
     pp_dl_packet_count = cJSON_GetObjectItemCaseSensitive(communication_characteristics_afJSON, "ppDlPacketCount");
     if (pp_dl_packet_count) {
+    if (!cJSON_IsNull(pp_dl_packet_count)) {
     if (!cJSON_IsNumber(pp_dl_packet_count)) {
         ogs_error("OpenAPI_communication_characteristics_af_parseFromJSON() failed [pp_dl_packet_count]");
         goto end;
+    }
     }
     }
 
@@ -104,6 +113,7 @@ OpenAPI_communication_characteristics_af_t *OpenAPI_communication_characteristic
     }
 
     communication_characteristics_af_local_var = OpenAPI_communication_characteristics_af_create (
+        pp_dl_packet_count && cJSON_IsNull(pp_dl_packet_count) ? true : false,
         pp_dl_packet_count ? true : false,
         pp_dl_packet_count ? pp_dl_packet_count->valuedouble : 0,
         maximum_response_time ? true : false,

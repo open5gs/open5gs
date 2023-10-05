@@ -6,9 +6,11 @@
 
 OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_data_create(
     char *af_app_id,
+    bool is_af_rout_req_null,
     OpenAPI_af_routing_requirement_rm_t *af_rout_req,
     char *asp_id,
     char *bdt_ref_id,
+    bool is_ev_subsc_null,
     OpenAPI_events_subsc_req_data_rm_t *ev_subsc,
     char *mcptt_id,
     char *mc_video_id,
@@ -31,9 +33,11 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
     ogs_assert(app_session_context_update_data_local_var);
 
     app_session_context_update_data_local_var->af_app_id = af_app_id;
+    app_session_context_update_data_local_var->is_af_rout_req_null = is_af_rout_req_null;
     app_session_context_update_data_local_var->af_rout_req = af_rout_req;
     app_session_context_update_data_local_var->asp_id = asp_id;
     app_session_context_update_data_local_var->bdt_ref_id = bdt_ref_id;
+    app_session_context_update_data_local_var->is_ev_subsc_null = is_ev_subsc_null;
     app_session_context_update_data_local_var->ev_subsc = ev_subsc;
     app_session_context_update_data_local_var->mcptt_id = mcptt_id;
     app_session_context_update_data_local_var->mc_video_id = mc_video_id;
@@ -162,6 +166,11 @@ cJSON *OpenAPI_app_session_context_update_data_convertToJSON(OpenAPI_app_session
         ogs_error("OpenAPI_app_session_context_update_data_convertToJSON() failed [af_rout_req]");
         goto end;
     }
+    } else if (app_session_context_update_data->is_af_rout_req_null) {
+        if (cJSON_AddNullToObject(item, "afRoutReq") == NULL) {
+            ogs_error("OpenAPI_app_session_context_update_data_convertToJSON() failed [af_rout_req]");
+            goto end;
+        }
     }
 
     if (app_session_context_update_data->asp_id) {
@@ -189,6 +198,11 @@ cJSON *OpenAPI_app_session_context_update_data_convertToJSON(OpenAPI_app_session
         ogs_error("OpenAPI_app_session_context_update_data_convertToJSON() failed [ev_subsc]");
         goto end;
     }
+    } else if (app_session_context_update_data->is_ev_subsc_null) {
+        if (cJSON_AddNullToObject(item, "evSubsc") == NULL) {
+            ogs_error("OpenAPI_app_session_context_update_data_convertToJSON() failed [ev_subsc]");
+            goto end;
+        }
     }
 
     if (app_session_context_update_data->mcptt_id) {
@@ -396,10 +410,12 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
 
     af_rout_req = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "afRoutReq");
     if (af_rout_req) {
+    if (!cJSON_IsNull(af_rout_req)) {
     af_rout_req_local_nonprim = OpenAPI_af_routing_requirement_rm_parseFromJSON(af_rout_req);
     if (!af_rout_req_local_nonprim) {
         ogs_error("OpenAPI_af_routing_requirement_rm_parseFromJSON failed [af_rout_req]");
         goto end;
+    }
     }
     }
 
@@ -421,10 +437,12 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
 
     ev_subsc = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "evSubsc");
     if (ev_subsc) {
+    if (!cJSON_IsNull(ev_subsc)) {
     ev_subsc_local_nonprim = OpenAPI_events_subsc_req_data_rm_parseFromJSON(ev_subsc);
     if (!ev_subsc_local_nonprim) {
         ogs_error("OpenAPI_events_subsc_req_data_rm_parseFromJSON failed [ev_subsc]");
         goto end;
+    }
     }
     }
 
@@ -592,9 +610,11 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
 
     app_session_context_update_data_local_var = OpenAPI_app_session_context_update_data_create (
         af_app_id && !cJSON_IsNull(af_app_id) ? ogs_strdup(af_app_id->valuestring) : NULL,
+        af_rout_req && cJSON_IsNull(af_rout_req) ? true : false,
         af_rout_req ? af_rout_req_local_nonprim : NULL,
         asp_id && !cJSON_IsNull(asp_id) ? ogs_strdup(asp_id->valuestring) : NULL,
         bdt_ref_id && !cJSON_IsNull(bdt_ref_id) ? ogs_strdup(bdt_ref_id->valuestring) : NULL,
+        ev_subsc && cJSON_IsNull(ev_subsc) ? true : false,
         ev_subsc ? ev_subsc_local_nonprim : NULL,
         mcptt_id && !cJSON_IsNull(mcptt_id) ? ogs_strdup(mcptt_id->valuestring) : NULL,
         mc_video_id && !cJSON_IsNull(mc_video_id) ? ogs_strdup(mc_video_id->valuestring) : NULL,

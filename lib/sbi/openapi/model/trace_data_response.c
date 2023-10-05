@@ -5,6 +5,7 @@
 #include "trace_data_response.h"
 
 OpenAPI_trace_data_response_t *OpenAPI_trace_data_response_create(
+    bool is_trace_data_null,
     OpenAPI_trace_data_t *trace_data,
     char *shared_trace_data_id
 )
@@ -12,6 +13,7 @@ OpenAPI_trace_data_response_t *OpenAPI_trace_data_response_create(
     OpenAPI_trace_data_response_t *trace_data_response_local_var = ogs_malloc(sizeof(OpenAPI_trace_data_response_t));
     ogs_assert(trace_data_response_local_var);
 
+    trace_data_response_local_var->is_trace_data_null = is_trace_data_null;
     trace_data_response_local_var->trace_data = trace_data;
     trace_data_response_local_var->shared_trace_data_id = shared_trace_data_id;
 
@@ -58,6 +60,11 @@ cJSON *OpenAPI_trace_data_response_convertToJSON(OpenAPI_trace_data_response_t *
         ogs_error("OpenAPI_trace_data_response_convertToJSON() failed [trace_data]");
         goto end;
     }
+    } else if (trace_data_response->is_trace_data_null) {
+        if (cJSON_AddNullToObject(item, "traceData") == NULL) {
+            ogs_error("OpenAPI_trace_data_response_convertToJSON() failed [trace_data]");
+            goto end;
+        }
     }
 
     if (trace_data_response->shared_trace_data_id) {
@@ -80,10 +87,12 @@ OpenAPI_trace_data_response_t *OpenAPI_trace_data_response_parseFromJSON(cJSON *
     cJSON *shared_trace_data_id = NULL;
     trace_data = cJSON_GetObjectItemCaseSensitive(trace_data_responseJSON, "traceData");
     if (trace_data) {
+    if (!cJSON_IsNull(trace_data)) {
     trace_data_local_nonprim = OpenAPI_trace_data_parseFromJSON(trace_data);
     if (!trace_data_local_nonprim) {
         ogs_error("OpenAPI_trace_data_parseFromJSON failed [trace_data]");
         goto end;
+    }
     }
     }
 
@@ -96,6 +105,7 @@ OpenAPI_trace_data_response_t *OpenAPI_trace_data_response_parseFromJSON(cJSON *
     }
 
     trace_data_response_local_var = OpenAPI_trace_data_response_create (
+        trace_data && cJSON_IsNull(trace_data) ? true : false,
         trace_data ? trace_data_local_nonprim : NULL,
         shared_trace_data_id && !cJSON_IsNull(shared_trace_data_id) ? ogs_strdup(shared_trace_data_id->valuestring) : NULL
     );

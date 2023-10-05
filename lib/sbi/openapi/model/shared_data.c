@@ -10,11 +10,13 @@ OpenAPI_shared_data_t *OpenAPI_shared_data_create(
     OpenAPI_sms_subscription_data_t *shared_sms_subs_data,
     OpenAPI_sms_management_subscription_data_t *shared_sms_mng_subs_data,
     OpenAPI_list_t* shared_dnn_configurations,
+    bool is_shared_trace_data_null,
     OpenAPI_trace_data_t *shared_trace_data,
     OpenAPI_list_t* shared_snssai_infos,
     OpenAPI_list_t* shared_vn_group_datas,
     OpenAPI_list_t* treatment_instructions,
     OpenAPI_session_management_subscription_data_t *shared_sm_subs_data,
+    bool is_shared_ecs_addr_config_info_null,
     OpenAPI_ecs_addr_config_info_t *shared_ecs_addr_config_info
 )
 {
@@ -26,11 +28,13 @@ OpenAPI_shared_data_t *OpenAPI_shared_data_create(
     shared_data_local_var->shared_sms_subs_data = shared_sms_subs_data;
     shared_data_local_var->shared_sms_mng_subs_data = shared_sms_mng_subs_data;
     shared_data_local_var->shared_dnn_configurations = shared_dnn_configurations;
+    shared_data_local_var->is_shared_trace_data_null = is_shared_trace_data_null;
     shared_data_local_var->shared_trace_data = shared_trace_data;
     shared_data_local_var->shared_snssai_infos = shared_snssai_infos;
     shared_data_local_var->shared_vn_group_datas = shared_vn_group_datas;
     shared_data_local_var->treatment_instructions = treatment_instructions;
     shared_data_local_var->shared_sm_subs_data = shared_sm_subs_data;
+    shared_data_local_var->is_shared_ecs_addr_config_info_null = is_shared_ecs_addr_config_info_null;
     shared_data_local_var->shared_ecs_addr_config_info = shared_ecs_addr_config_info;
 
     return shared_data_local_var;
@@ -213,6 +217,11 @@ cJSON *OpenAPI_shared_data_convertToJSON(OpenAPI_shared_data_t *shared_data)
         ogs_error("OpenAPI_shared_data_convertToJSON() failed [shared_trace_data]");
         goto end;
     }
+    } else if (shared_data->is_shared_trace_data_null) {
+        if (cJSON_AddNullToObject(item, "sharedTraceData") == NULL) {
+            ogs_error("OpenAPI_shared_data_convertToJSON() failed [shared_trace_data]");
+            goto end;
+        }
     }
 
     if (shared_data->shared_snssai_infos) {
@@ -325,6 +334,11 @@ cJSON *OpenAPI_shared_data_convertToJSON(OpenAPI_shared_data_t *shared_data)
         ogs_error("OpenAPI_shared_data_convertToJSON() failed [shared_ecs_addr_config_info]");
         goto end;
     }
+    } else if (shared_data->is_shared_ecs_addr_config_info_null) {
+        if (cJSON_AddNullToObject(item, "sharedEcsAddrConfigInfo") == NULL) {
+            ogs_error("OpenAPI_shared_data_convertToJSON() failed [shared_ecs_addr_config_info]");
+            goto end;
+        }
     }
 
 end:
@@ -421,10 +435,12 @@ OpenAPI_shared_data_t *OpenAPI_shared_data_parseFromJSON(cJSON *shared_dataJSON)
 
     shared_trace_data = cJSON_GetObjectItemCaseSensitive(shared_dataJSON, "sharedTraceData");
     if (shared_trace_data) {
+    if (!cJSON_IsNull(shared_trace_data)) {
     shared_trace_data_local_nonprim = OpenAPI_trace_data_parseFromJSON(shared_trace_data);
     if (!shared_trace_data_local_nonprim) {
         ogs_error("OpenAPI_trace_data_parseFromJSON failed [shared_trace_data]");
         goto end;
+    }
     }
     }
 
@@ -513,10 +529,12 @@ OpenAPI_shared_data_t *OpenAPI_shared_data_parseFromJSON(cJSON *shared_dataJSON)
 
     shared_ecs_addr_config_info = cJSON_GetObjectItemCaseSensitive(shared_dataJSON, "sharedEcsAddrConfigInfo");
     if (shared_ecs_addr_config_info) {
+    if (!cJSON_IsNull(shared_ecs_addr_config_info)) {
     shared_ecs_addr_config_info_local_nonprim = OpenAPI_ecs_addr_config_info_parseFromJSON(shared_ecs_addr_config_info);
     if (!shared_ecs_addr_config_info_local_nonprim) {
         ogs_error("OpenAPI_ecs_addr_config_info_parseFromJSON failed [shared_ecs_addr_config_info]");
         goto end;
+    }
     }
     }
 
@@ -526,11 +544,13 @@ OpenAPI_shared_data_t *OpenAPI_shared_data_parseFromJSON(cJSON *shared_dataJSON)
         shared_sms_subs_data ? shared_sms_subs_data_local_nonprim : NULL,
         shared_sms_mng_subs_data ? shared_sms_mng_subs_data_local_nonprim : NULL,
         shared_dnn_configurations ? shared_dnn_configurationsList : NULL,
+        shared_trace_data && cJSON_IsNull(shared_trace_data) ? true : false,
         shared_trace_data ? shared_trace_data_local_nonprim : NULL,
         shared_snssai_infos ? shared_snssai_infosList : NULL,
         shared_vn_group_datas ? shared_vn_group_datasList : NULL,
         treatment_instructions ? treatment_instructionsList : NULL,
         shared_sm_subs_data ? shared_sm_subs_data_local_nonprim : NULL,
+        shared_ecs_addr_config_info && cJSON_IsNull(shared_ecs_addr_config_info) ? true : false,
         shared_ecs_addr_config_info ? shared_ecs_addr_config_info_local_nonprim : NULL
     );
 

@@ -33,11 +33,16 @@ typedef struct OpenAPI_traffic_control_data_s {
     OpenAPI_list_t *add_redirect_info;
     bool is_mute_notif;
     int mute_notif;
+    bool is_traffic_steering_pol_id_dl_null;
     char *traffic_steering_pol_id_dl;
+    bool is_traffic_steering_pol_id_ul_null;
     char *traffic_steering_pol_id_ul;
+    bool is_route_to_locs_null;
     OpenAPI_list_t *route_to_locs;
+    bool is_max_allowed_up_lat_null;
     bool is_max_allowed_up_lat;
     int max_allowed_up_lat;
+    bool is_eas_ip_replace_infos_null;
     OpenAPI_list_t *eas_ip_replace_infos;
     bool is_traff_corre_ind;
     int traff_corre_ind;
@@ -45,6 +50,7 @@ typedef struct OpenAPI_traffic_control_data_s {
     int sim_conn_ind;
     bool is_sim_conn_term;
     int sim_conn_term;
+    bool is_up_path_chg_event_null;
     struct OpenAPI_up_path_chg_event_s *up_path_chg_event;
     OpenAPI_steering_functionality_e steer_fun;
     struct OpenAPI_steering_mode_s *steer_mode_dl;
@@ -59,11 +65,16 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_create(
     OpenAPI_list_t *add_redirect_info,
     bool is_mute_notif,
     int mute_notif,
+    bool is_traffic_steering_pol_id_dl_null,
     char *traffic_steering_pol_id_dl,
+    bool is_traffic_steering_pol_id_ul_null,
     char *traffic_steering_pol_id_ul,
+    bool is_route_to_locs_null,
     OpenAPI_list_t *route_to_locs,
+    bool is_max_allowed_up_lat_null,
     bool is_max_allowed_up_lat,
     int max_allowed_up_lat,
+    bool is_eas_ip_replace_infos_null,
     OpenAPI_list_t *eas_ip_replace_infos,
     bool is_traff_corre_ind,
     int traff_corre_ind,
@@ -71,6 +82,7 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_create(
     int sim_conn_ind,
     bool is_sim_conn_term,
     int sim_conn_term,
+    bool is_up_path_chg_event_null,
     OpenAPI_up_path_chg_event_t *up_path_chg_event,
     OpenAPI_steering_functionality_e steer_fun,
     OpenAPI_steering_mode_t *steer_mode_dl,

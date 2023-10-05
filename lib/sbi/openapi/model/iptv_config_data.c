@@ -6,6 +6,7 @@
 
 OpenAPI_iptv_config_data_t *OpenAPI_iptv_config_data_create(
     char *supi,
+    bool is_inter_group_id_null,
     OpenAPI_any_type_t *inter_group_id,
     char *dnn,
     OpenAPI_snssai_t *snssai,
@@ -20,6 +21,7 @@ OpenAPI_iptv_config_data_t *OpenAPI_iptv_config_data_create(
     ogs_assert(iptv_config_data_local_var);
 
     iptv_config_data_local_var->supi = supi;
+    iptv_config_data_local_var->is_inter_group_id_null = is_inter_group_id_null;
     iptv_config_data_local_var->inter_group_id = inter_group_id;
     iptv_config_data_local_var->dnn = dnn;
     iptv_config_data_local_var->snssai = snssai;
@@ -116,6 +118,11 @@ cJSON *OpenAPI_iptv_config_data_convertToJSON(OpenAPI_iptv_config_data_t *iptv_c
         ogs_error("OpenAPI_iptv_config_data_convertToJSON() failed [inter_group_id]");
         goto end;
     }
+    } else if (iptv_config_data->is_inter_group_id_null) {
+        if (cJSON_AddNullToObject(item, "interGroupId") == NULL) {
+            ogs_error("OpenAPI_iptv_config_data_convertToJSON() failed [inter_group_id]");
+            goto end;
+        }
     }
 
     if (iptv_config_data->dnn) {
@@ -238,7 +245,9 @@ OpenAPI_iptv_config_data_t *OpenAPI_iptv_config_data_parseFromJSON(cJSON *iptv_c
 
     inter_group_id = cJSON_GetObjectItemCaseSensitive(iptv_config_dataJSON, "interGroupId");
     if (inter_group_id) {
+    if (!cJSON_IsNull(inter_group_id)) {
     inter_group_id_local_object = OpenAPI_any_type_parseFromJSON(inter_group_id);
+    }
     }
 
     dnn = cJSON_GetObjectItemCaseSensitive(iptv_config_dataJSON, "dnn");
@@ -335,6 +344,7 @@ OpenAPI_iptv_config_data_t *OpenAPI_iptv_config_data_parseFromJSON(cJSON *iptv_c
 
     iptv_config_data_local_var = OpenAPI_iptv_config_data_create (
         supi && !cJSON_IsNull(supi) ? ogs_strdup(supi->valuestring) : NULL,
+        inter_group_id && cJSON_IsNull(inter_group_id) ? true : false,
         inter_group_id ? inter_group_id_local_object : NULL,
         dnn && !cJSON_IsNull(dnn) ? ogs_strdup(dnn->valuestring) : NULL,
         snssai ? snssai_local_nonprim : NULL,

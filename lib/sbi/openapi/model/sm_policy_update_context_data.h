@@ -96,6 +96,7 @@ typedef struct OpenAPI_sm_policy_update_context_data_s {
     OpenAPI_qos_flow_usage_e qos_flow_usage;
     OpenAPI_credit_management_status_e credit_manage_status;
     struct OpenAPI_serving_nf_identity_s *serv_nf_id;
+    bool is_trace_req_null;
     struct OpenAPI_trace_data_s *trace_req;
     OpenAPI_ma_pdu_indication_e ma_pdu_ind;
     OpenAPI_npcf_atsss_capability_e atsss_capab;
@@ -111,7 +112,9 @@ typedef struct OpenAPI_sm_policy_update_context_data_s {
     OpenAPI_list_t *types_of_notif;
     OpenAPI_list_t *inter_grp_ids;
     OpenAPI_satellite_backhaul_category_e sat_backhaul_category;
+    bool is_pcf_ue_info_null;
     struct OpenAPI_pcf_ue_callback_info_s *pcf_ue_info;
+    bool is_nwdaf_datas_null;
     OpenAPI_list_t *nwdaf_datas;
     bool is_an_gw_status;
     int an_gw_status;
@@ -160,6 +163,7 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_c
     OpenAPI_qos_flow_usage_e qos_flow_usage,
     OpenAPI_credit_management_status_e credit_manage_status,
     OpenAPI_serving_nf_identity_t *serv_nf_id,
+    bool is_trace_req_null,
     OpenAPI_trace_data_t *trace_req,
     OpenAPI_ma_pdu_indication_e ma_pdu_ind,
     OpenAPI_npcf_atsss_capability_e atsss_capab,
@@ -175,7 +179,9 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_c
     OpenAPI_list_t *types_of_notif,
     OpenAPI_list_t *inter_grp_ids,
     OpenAPI_satellite_backhaul_category_e sat_backhaul_category,
+    bool is_pcf_ue_info_null,
     OpenAPI_pcf_ue_callback_info_t *pcf_ue_info,
+    bool is_nwdaf_datas_null,
     OpenAPI_list_t *nwdaf_datas,
     bool is_an_gw_status,
     int an_gw_status

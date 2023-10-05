@@ -7,19 +7,28 @@
 OpenAPI_af_routing_requirement_rm_t *OpenAPI_af_routing_requirement_rm_create(
     bool is_app_reloc,
     int app_reloc,
+    bool is_route_to_locs_null,
     OpenAPI_list_t *route_to_locs,
+    bool is_sp_val_null,
     OpenAPI_spatial_validity_rm_t *sp_val,
+    bool is_temp_vals_null,
     OpenAPI_list_t *temp_vals,
+    bool is_up_path_chg_sub_null,
     OpenAPI_up_path_chg_event_t *up_path_chg_sub,
+    bool is_addr_preser_ind_null,
     bool is_addr_preser_ind,
     int addr_preser_ind,
+    bool is_sim_conn_ind_null,
     bool is_sim_conn_ind,
     int sim_conn_ind,
+    bool is_sim_conn_term_null,
     bool is_sim_conn_term,
     int sim_conn_term,
+    bool is_eas_ip_replace_infos_null,
     OpenAPI_list_t *eas_ip_replace_infos,
     bool is_eas_redis_ind,
     int eas_redis_ind,
+    bool is_max_allowed_up_lat_null,
     bool is_max_allowed_up_lat,
     int max_allowed_up_lat
 )
@@ -29,19 +38,28 @@ OpenAPI_af_routing_requirement_rm_t *OpenAPI_af_routing_requirement_rm_create(
 
     af_routing_requirement_rm_local_var->is_app_reloc = is_app_reloc;
     af_routing_requirement_rm_local_var->app_reloc = app_reloc;
+    af_routing_requirement_rm_local_var->is_route_to_locs_null = is_route_to_locs_null;
     af_routing_requirement_rm_local_var->route_to_locs = route_to_locs;
+    af_routing_requirement_rm_local_var->is_sp_val_null = is_sp_val_null;
     af_routing_requirement_rm_local_var->sp_val = sp_val;
+    af_routing_requirement_rm_local_var->is_temp_vals_null = is_temp_vals_null;
     af_routing_requirement_rm_local_var->temp_vals = temp_vals;
+    af_routing_requirement_rm_local_var->is_up_path_chg_sub_null = is_up_path_chg_sub_null;
     af_routing_requirement_rm_local_var->up_path_chg_sub = up_path_chg_sub;
+    af_routing_requirement_rm_local_var->is_addr_preser_ind_null = is_addr_preser_ind_null;
     af_routing_requirement_rm_local_var->is_addr_preser_ind = is_addr_preser_ind;
     af_routing_requirement_rm_local_var->addr_preser_ind = addr_preser_ind;
+    af_routing_requirement_rm_local_var->is_sim_conn_ind_null = is_sim_conn_ind_null;
     af_routing_requirement_rm_local_var->is_sim_conn_ind = is_sim_conn_ind;
     af_routing_requirement_rm_local_var->sim_conn_ind = sim_conn_ind;
+    af_routing_requirement_rm_local_var->is_sim_conn_term_null = is_sim_conn_term_null;
     af_routing_requirement_rm_local_var->is_sim_conn_term = is_sim_conn_term;
     af_routing_requirement_rm_local_var->sim_conn_term = sim_conn_term;
+    af_routing_requirement_rm_local_var->is_eas_ip_replace_infos_null = is_eas_ip_replace_infos_null;
     af_routing_requirement_rm_local_var->eas_ip_replace_infos = eas_ip_replace_infos;
     af_routing_requirement_rm_local_var->is_eas_redis_ind = is_eas_redis_ind;
     af_routing_requirement_rm_local_var->eas_redis_ind = eas_redis_ind;
+    af_routing_requirement_rm_local_var->is_max_allowed_up_lat_null = is_max_allowed_up_lat_null;
     af_routing_requirement_rm_local_var->is_max_allowed_up_lat = is_max_allowed_up_lat;
     af_routing_requirement_rm_local_var->max_allowed_up_lat = max_allowed_up_lat;
 
@@ -119,6 +137,11 @@ cJSON *OpenAPI_af_routing_requirement_rm_convertToJSON(OpenAPI_af_routing_requir
         }
         cJSON_AddItemToArray(route_to_locsList, itemLocal);
     }
+    } else if (af_routing_requirement_rm->is_route_to_locs_null) {
+        if (cJSON_AddNullToObject(item, "routeToLocs") == NULL) {
+            ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [route_to_locs]");
+            goto end;
+        }
     }
 
     if (af_routing_requirement_rm->sp_val) {
@@ -132,6 +155,11 @@ cJSON *OpenAPI_af_routing_requirement_rm_convertToJSON(OpenAPI_af_routing_requir
         ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [sp_val]");
         goto end;
     }
+    } else if (af_routing_requirement_rm->is_sp_val_null) {
+        if (cJSON_AddNullToObject(item, "spVal") == NULL) {
+            ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [sp_val]");
+            goto end;
+        }
     }
 
     if (af_routing_requirement_rm->temp_vals) {
@@ -148,6 +176,11 @@ cJSON *OpenAPI_af_routing_requirement_rm_convertToJSON(OpenAPI_af_routing_requir
         }
         cJSON_AddItemToArray(temp_valsList, itemLocal);
     }
+    } else if (af_routing_requirement_rm->is_temp_vals_null) {
+        if (cJSON_AddNullToObject(item, "tempVals") == NULL) {
+            ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [temp_vals]");
+            goto end;
+        }
     }
 
     if (af_routing_requirement_rm->up_path_chg_sub) {
@@ -161,6 +194,11 @@ cJSON *OpenAPI_af_routing_requirement_rm_convertToJSON(OpenAPI_af_routing_requir
         ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [up_path_chg_sub]");
         goto end;
     }
+    } else if (af_routing_requirement_rm->is_up_path_chg_sub_null) {
+        if (cJSON_AddNullToObject(item, "upPathChgSub") == NULL) {
+            ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [up_path_chg_sub]");
+            goto end;
+        }
     }
 
     if (af_routing_requirement_rm->is_addr_preser_ind) {
@@ -168,6 +206,11 @@ cJSON *OpenAPI_af_routing_requirement_rm_convertToJSON(OpenAPI_af_routing_requir
         ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [addr_preser_ind]");
         goto end;
     }
+    } else if (af_routing_requirement_rm->is_addr_preser_ind_null) {
+        if (cJSON_AddNullToObject(item, "addrPreserInd") == NULL) {
+            ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [addr_preser_ind]");
+            goto end;
+        }
     }
 
     if (af_routing_requirement_rm->is_sim_conn_ind) {
@@ -175,6 +218,11 @@ cJSON *OpenAPI_af_routing_requirement_rm_convertToJSON(OpenAPI_af_routing_requir
         ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [sim_conn_ind]");
         goto end;
     }
+    } else if (af_routing_requirement_rm->is_sim_conn_ind_null) {
+        if (cJSON_AddNullToObject(item, "simConnInd") == NULL) {
+            ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [sim_conn_ind]");
+            goto end;
+        }
     }
 
     if (af_routing_requirement_rm->is_sim_conn_term) {
@@ -182,6 +230,11 @@ cJSON *OpenAPI_af_routing_requirement_rm_convertToJSON(OpenAPI_af_routing_requir
         ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [sim_conn_term]");
         goto end;
     }
+    } else if (af_routing_requirement_rm->is_sim_conn_term_null) {
+        if (cJSON_AddNullToObject(item, "simConnTerm") == NULL) {
+            ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [sim_conn_term]");
+            goto end;
+        }
     }
 
     if (af_routing_requirement_rm->eas_ip_replace_infos) {
@@ -198,6 +251,11 @@ cJSON *OpenAPI_af_routing_requirement_rm_convertToJSON(OpenAPI_af_routing_requir
         }
         cJSON_AddItemToArray(eas_ip_replace_infosList, itemLocal);
     }
+    } else if (af_routing_requirement_rm->is_eas_ip_replace_infos_null) {
+        if (cJSON_AddNullToObject(item, "easIpReplaceInfos") == NULL) {
+            ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [eas_ip_replace_infos]");
+            goto end;
+        }
     }
 
     if (af_routing_requirement_rm->is_eas_redis_ind) {
@@ -212,6 +270,11 @@ cJSON *OpenAPI_af_routing_requirement_rm_convertToJSON(OpenAPI_af_routing_requir
         ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [max_allowed_up_lat]");
         goto end;
     }
+    } else if (af_routing_requirement_rm->is_max_allowed_up_lat_null) {
+        if (cJSON_AddNullToObject(item, "maxAllowedUpLat") == NULL) {
+            ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [max_allowed_up_lat]");
+            goto end;
+        }
     }
 
 end:
@@ -248,6 +311,7 @@ OpenAPI_af_routing_requirement_rm_t *OpenAPI_af_routing_requirement_rm_parseFrom
 
     route_to_locs = cJSON_GetObjectItemCaseSensitive(af_routing_requirement_rmJSON, "routeToLocs");
     if (route_to_locs) {
+    if (!cJSON_IsNull(route_to_locs)) {
         cJSON *route_to_locs_local = NULL;
         if (!cJSON_IsArray(route_to_locs)) {
             ogs_error("OpenAPI_af_routing_requirement_rm_parseFromJSON() failed [route_to_locs]");
@@ -269,18 +333,22 @@ OpenAPI_af_routing_requirement_rm_t *OpenAPI_af_routing_requirement_rm_parseFrom
             OpenAPI_list_add(route_to_locsList, route_to_locsItem);
         }
     }
+    }
 
     sp_val = cJSON_GetObjectItemCaseSensitive(af_routing_requirement_rmJSON, "spVal");
     if (sp_val) {
+    if (!cJSON_IsNull(sp_val)) {
     sp_val_local_nonprim = OpenAPI_spatial_validity_rm_parseFromJSON(sp_val);
     if (!sp_val_local_nonprim) {
         ogs_error("OpenAPI_spatial_validity_rm_parseFromJSON failed [sp_val]");
         goto end;
     }
     }
+    }
 
     temp_vals = cJSON_GetObjectItemCaseSensitive(af_routing_requirement_rmJSON, "tempVals");
     if (temp_vals) {
+    if (!cJSON_IsNull(temp_vals)) {
         cJSON *temp_vals_local = NULL;
         if (!cJSON_IsArray(temp_vals)) {
             ogs_error("OpenAPI_af_routing_requirement_rm_parseFromJSON() failed [temp_vals]");
@@ -302,42 +370,52 @@ OpenAPI_af_routing_requirement_rm_t *OpenAPI_af_routing_requirement_rm_parseFrom
             OpenAPI_list_add(temp_valsList, temp_valsItem);
         }
     }
+    }
 
     up_path_chg_sub = cJSON_GetObjectItemCaseSensitive(af_routing_requirement_rmJSON, "upPathChgSub");
     if (up_path_chg_sub) {
+    if (!cJSON_IsNull(up_path_chg_sub)) {
     up_path_chg_sub_local_nonprim = OpenAPI_up_path_chg_event_parseFromJSON(up_path_chg_sub);
     if (!up_path_chg_sub_local_nonprim) {
         ogs_error("OpenAPI_up_path_chg_event_parseFromJSON failed [up_path_chg_sub]");
         goto end;
     }
     }
+    }
 
     addr_preser_ind = cJSON_GetObjectItemCaseSensitive(af_routing_requirement_rmJSON, "addrPreserInd");
     if (addr_preser_ind) {
+    if (!cJSON_IsNull(addr_preser_ind)) {
     if (!cJSON_IsBool(addr_preser_ind)) {
         ogs_error("OpenAPI_af_routing_requirement_rm_parseFromJSON() failed [addr_preser_ind]");
         goto end;
     }
     }
+    }
 
     sim_conn_ind = cJSON_GetObjectItemCaseSensitive(af_routing_requirement_rmJSON, "simConnInd");
     if (sim_conn_ind) {
+    if (!cJSON_IsNull(sim_conn_ind)) {
     if (!cJSON_IsBool(sim_conn_ind)) {
         ogs_error("OpenAPI_af_routing_requirement_rm_parseFromJSON() failed [sim_conn_ind]");
         goto end;
     }
     }
+    }
 
     sim_conn_term = cJSON_GetObjectItemCaseSensitive(af_routing_requirement_rmJSON, "simConnTerm");
     if (sim_conn_term) {
+    if (!cJSON_IsNull(sim_conn_term)) {
     if (!cJSON_IsNumber(sim_conn_term)) {
         ogs_error("OpenAPI_af_routing_requirement_rm_parseFromJSON() failed [sim_conn_term]");
         goto end;
     }
     }
+    }
 
     eas_ip_replace_infos = cJSON_GetObjectItemCaseSensitive(af_routing_requirement_rmJSON, "easIpReplaceInfos");
     if (eas_ip_replace_infos) {
+    if (!cJSON_IsNull(eas_ip_replace_infos)) {
         cJSON *eas_ip_replace_infos_local = NULL;
         if (!cJSON_IsArray(eas_ip_replace_infos)) {
             ogs_error("OpenAPI_af_routing_requirement_rm_parseFromJSON() failed [eas_ip_replace_infos]");
@@ -359,6 +437,7 @@ OpenAPI_af_routing_requirement_rm_t *OpenAPI_af_routing_requirement_rm_parseFrom
             OpenAPI_list_add(eas_ip_replace_infosList, eas_ip_replace_infosItem);
         }
     }
+    }
 
     eas_redis_ind = cJSON_GetObjectItemCaseSensitive(af_routing_requirement_rmJSON, "easRedisInd");
     if (eas_redis_ind) {
@@ -370,28 +449,39 @@ OpenAPI_af_routing_requirement_rm_t *OpenAPI_af_routing_requirement_rm_parseFrom
 
     max_allowed_up_lat = cJSON_GetObjectItemCaseSensitive(af_routing_requirement_rmJSON, "maxAllowedUpLat");
     if (max_allowed_up_lat) {
+    if (!cJSON_IsNull(max_allowed_up_lat)) {
     if (!cJSON_IsNumber(max_allowed_up_lat)) {
         ogs_error("OpenAPI_af_routing_requirement_rm_parseFromJSON() failed [max_allowed_up_lat]");
         goto end;
+    }
     }
     }
 
     af_routing_requirement_rm_local_var = OpenAPI_af_routing_requirement_rm_create (
         app_reloc ? true : false,
         app_reloc ? app_reloc->valueint : 0,
+        route_to_locs && cJSON_IsNull(route_to_locs) ? true : false,
         route_to_locs ? route_to_locsList : NULL,
+        sp_val && cJSON_IsNull(sp_val) ? true : false,
         sp_val ? sp_val_local_nonprim : NULL,
+        temp_vals && cJSON_IsNull(temp_vals) ? true : false,
         temp_vals ? temp_valsList : NULL,
+        up_path_chg_sub && cJSON_IsNull(up_path_chg_sub) ? true : false,
         up_path_chg_sub ? up_path_chg_sub_local_nonprim : NULL,
+        addr_preser_ind && cJSON_IsNull(addr_preser_ind) ? true : false,
         addr_preser_ind ? true : false,
         addr_preser_ind ? addr_preser_ind->valueint : 0,
+        sim_conn_ind && cJSON_IsNull(sim_conn_ind) ? true : false,
         sim_conn_ind ? true : false,
         sim_conn_ind ? sim_conn_ind->valueint : 0,
+        sim_conn_term && cJSON_IsNull(sim_conn_term) ? true : false,
         sim_conn_term ? true : false,
         sim_conn_term ? sim_conn_term->valuedouble : 0,
+        eas_ip_replace_infos && cJSON_IsNull(eas_ip_replace_infos) ? true : false,
         eas_ip_replace_infos ? eas_ip_replace_infosList : NULL,
         eas_redis_ind ? true : false,
         eas_redis_ind ? eas_redis_ind->valueint : 0,
+        max_allowed_up_lat && cJSON_IsNull(max_allowed_up_lat) ? true : false,
         max_allowed_up_lat ? true : false,
         max_allowed_up_lat ? max_allowed_up_lat->valuedouble : 0
     );

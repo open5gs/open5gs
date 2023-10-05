@@ -22,6 +22,7 @@ extern "C" {
 
 typedef struct OpenAPI_eap_session_s OpenAPI_eap_session_t;
 typedef struct OpenAPI_eap_session_s {
+    bool is_eap_payload_null;
     char *eap_payload;
     char *k_seaf;
     OpenAPI_list_t* _links;
@@ -33,6 +34,7 @@ typedef struct OpenAPI_eap_session_s {
 } OpenAPI_eap_session_t;
 
 OpenAPI_eap_session_t *OpenAPI_eap_session_create(
+    bool is_eap_payload_null,
     char *eap_payload,
     char *k_seaf,
     OpenAPI_list_t* _links,

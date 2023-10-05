@@ -82,6 +82,7 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_create(
     char *ismf_pdu_session_uri,
     char *ismf_id,
     char *i_smf_service_instance_id,
+    bool is_dl_serving_plmn_rate_ctl_null,
     bool is_dl_serving_plmn_rate_ctl,
     int dl_serving_plmn_rate_ctl,
     OpenAPI_list_t *dnai_list,
@@ -95,6 +96,7 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_create(
     OpenAPI_guami_t *guami,
     OpenAPI_list_t *secondary_rat_usage_data_report_container,
     OpenAPI_hsmf_update_data_sm_policy_notify_ind_e sm_policy_notify_ind,
+    bool is_pcf_ue_callback_info_null,
     OpenAPI_pcf_ue_callback_info_t *pcf_ue_callback_info,
     OpenAPI_satellite_backhaul_category_e satellite_backhaul_cat,
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_ul,
@@ -159,6 +161,7 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_create(
     hsmf_update_data_local_var->ismf_pdu_session_uri = ismf_pdu_session_uri;
     hsmf_update_data_local_var->ismf_id = ismf_id;
     hsmf_update_data_local_var->i_smf_service_instance_id = i_smf_service_instance_id;
+    hsmf_update_data_local_var->is_dl_serving_plmn_rate_ctl_null = is_dl_serving_plmn_rate_ctl_null;
     hsmf_update_data_local_var->is_dl_serving_plmn_rate_ctl = is_dl_serving_plmn_rate_ctl;
     hsmf_update_data_local_var->dl_serving_plmn_rate_ctl = dl_serving_plmn_rate_ctl;
     hsmf_update_data_local_var->dnai_list = dnai_list;
@@ -172,6 +175,7 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_create(
     hsmf_update_data_local_var->guami = guami;
     hsmf_update_data_local_var->secondary_rat_usage_data_report_container = secondary_rat_usage_data_report_container;
     hsmf_update_data_local_var->sm_policy_notify_ind = sm_policy_notify_ind;
+    hsmf_update_data_local_var->is_pcf_ue_callback_info_null = is_pcf_ue_callback_info_null;
     hsmf_update_data_local_var->pcf_ue_callback_info = pcf_ue_callback_info;
     hsmf_update_data_local_var->satellite_backhaul_cat = satellite_backhaul_cat;
     hsmf_update_data_local_var->max_integrity_protected_data_rate_ul = max_integrity_protected_data_rate_ul;
@@ -875,6 +879,11 @@ cJSON *OpenAPI_hsmf_update_data_convertToJSON(OpenAPI_hsmf_update_data_t *hsmf_u
         ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [dl_serving_plmn_rate_ctl]");
         goto end;
     }
+    } else if (hsmf_update_data->is_dl_serving_plmn_rate_ctl_null) {
+        if (cJSON_AddNullToObject(item, "dlServingPlmnRateCtl") == NULL) {
+            ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [dl_serving_plmn_rate_ctl]");
+            goto end;
+        }
     }
 
     if (hsmf_update_data->dnai_list) {
@@ -1015,6 +1024,11 @@ cJSON *OpenAPI_hsmf_update_data_convertToJSON(OpenAPI_hsmf_update_data_t *hsmf_u
         ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [pcf_ue_callback_info]");
         goto end;
     }
+    } else if (hsmf_update_data->is_pcf_ue_callback_info_null) {
+        if (cJSON_AddNullToObject(item, "pcfUeCallbackInfo") == NULL) {
+            ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [pcf_ue_callback_info]");
+            goto end;
+        }
     }
 
     if (hsmf_update_data->satellite_backhaul_cat != OpenAPI_satellite_backhaul_category_NULL) {
@@ -1688,9 +1702,11 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_parseFromJSON(cJSON *hsmf_u
 
     dl_serving_plmn_rate_ctl = cJSON_GetObjectItemCaseSensitive(hsmf_update_dataJSON, "dlServingPlmnRateCtl");
     if (dl_serving_plmn_rate_ctl) {
+    if (!cJSON_IsNull(dl_serving_plmn_rate_ctl)) {
     if (!cJSON_IsNumber(dl_serving_plmn_rate_ctl)) {
         ogs_error("OpenAPI_hsmf_update_data_parseFromJSON() failed [dl_serving_plmn_rate_ctl]");
         goto end;
+    }
     }
     }
 
@@ -1817,10 +1833,12 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_parseFromJSON(cJSON *hsmf_u
 
     pcf_ue_callback_info = cJSON_GetObjectItemCaseSensitive(hsmf_update_dataJSON, "pcfUeCallbackInfo");
     if (pcf_ue_callback_info) {
+    if (!cJSON_IsNull(pcf_ue_callback_info)) {
     pcf_ue_callback_info_local_nonprim = OpenAPI_pcf_ue_callback_info_parseFromJSON(pcf_ue_callback_info);
     if (!pcf_ue_callback_info_local_nonprim) {
         ogs_error("OpenAPI_pcf_ue_callback_info_parseFromJSON failed [pcf_ue_callback_info]");
         goto end;
+    }
     }
     }
 
@@ -1915,6 +1933,7 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_parseFromJSON(cJSON *hsmf_u
         ismf_pdu_session_uri && !cJSON_IsNull(ismf_pdu_session_uri) ? ogs_strdup(ismf_pdu_session_uri->valuestring) : NULL,
         ismf_id && !cJSON_IsNull(ismf_id) ? ogs_strdup(ismf_id->valuestring) : NULL,
         i_smf_service_instance_id && !cJSON_IsNull(i_smf_service_instance_id) ? ogs_strdup(i_smf_service_instance_id->valuestring) : NULL,
+        dl_serving_plmn_rate_ctl && cJSON_IsNull(dl_serving_plmn_rate_ctl) ? true : false,
         dl_serving_plmn_rate_ctl ? true : false,
         dl_serving_plmn_rate_ctl ? dl_serving_plmn_rate_ctl->valuedouble : 0,
         dnai_list ? dnai_listList : NULL,
@@ -1928,6 +1947,7 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_parseFromJSON(cJSON *hsmf_u
         guami ? guami_local_nonprim : NULL,
         secondary_rat_usage_data_report_container ? secondary_rat_usage_data_report_containerList : NULL,
         sm_policy_notify_ind ? sm_policy_notify_indVariable : 0,
+        pcf_ue_callback_info && cJSON_IsNull(pcf_ue_callback_info) ? true : false,
         pcf_ue_callback_info ? pcf_ue_callback_info_local_nonprim : NULL,
         satellite_backhaul_cat ? satellite_backhaul_catVariable : 0,
         max_integrity_protected_data_rate_ul ? max_integrity_protected_data_rate_ulVariable : 0,

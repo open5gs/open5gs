@@ -21,12 +21,14 @@ extern "C" {
 
 typedef struct OpenAPI_arp_s OpenAPI_arp_t;
 typedef struct OpenAPI_arp_s {
+    bool is_priority_level_null;
     int priority_level;
     OpenAPI_preemption_capability_e preempt_cap;
     OpenAPI_preemption_vulnerability_e preempt_vuln;
 } OpenAPI_arp_t;
 
 OpenAPI_arp_t *OpenAPI_arp_create(
+    bool is_priority_level_null,
     int priority_level,
     OpenAPI_preemption_capability_e preempt_cap,
     OpenAPI_preemption_vulnerability_e preempt_vuln

@@ -6,7 +6,9 @@
 
 OpenAPI_route_to_location_t *OpenAPI_route_to_location_create(
     char *dnai,
+    bool is_route_info_null,
     OpenAPI_route_information_t *route_info,
+    bool is_route_prof_id_null,
     char *route_prof_id
 )
 {
@@ -14,7 +16,9 @@ OpenAPI_route_to_location_t *OpenAPI_route_to_location_create(
     ogs_assert(route_to_location_local_var);
 
     route_to_location_local_var->dnai = dnai;
+    route_to_location_local_var->is_route_info_null = is_route_info_null;
     route_to_location_local_var->route_info = route_info;
+    route_to_location_local_var->is_route_prof_id_null = is_route_prof_id_null;
     route_to_location_local_var->route_prof_id = route_prof_id;
 
     return route_to_location_local_var;
@@ -73,6 +77,11 @@ cJSON *OpenAPI_route_to_location_convertToJSON(OpenAPI_route_to_location_t *rout
         ogs_error("OpenAPI_route_to_location_convertToJSON() failed [route_info]");
         goto end;
     }
+    } else if (route_to_location->is_route_info_null) {
+        if (cJSON_AddNullToObject(item, "routeInfo") == NULL) {
+            ogs_error("OpenAPI_route_to_location_convertToJSON() failed [route_info]");
+            goto end;
+        }
     }
 
     if (route_to_location->route_prof_id) {
@@ -80,6 +89,11 @@ cJSON *OpenAPI_route_to_location_convertToJSON(OpenAPI_route_to_location_t *rout
         ogs_error("OpenAPI_route_to_location_convertToJSON() failed [route_prof_id]");
         goto end;
     }
+    } else if (route_to_location->is_route_prof_id_null) {
+        if (cJSON_AddNullToObject(item, "routeProfId") == NULL) {
+            ogs_error("OpenAPI_route_to_location_convertToJSON() failed [route_prof_id]");
+            goto end;
+        }
     }
 
 end:
@@ -106,24 +120,30 @@ OpenAPI_route_to_location_t *OpenAPI_route_to_location_parseFromJSON(cJSON *rout
 
     route_info = cJSON_GetObjectItemCaseSensitive(route_to_locationJSON, "routeInfo");
     if (route_info) {
+    if (!cJSON_IsNull(route_info)) {
     route_info_local_nonprim = OpenAPI_route_information_parseFromJSON(route_info);
     if (!route_info_local_nonprim) {
         ogs_error("OpenAPI_route_information_parseFromJSON failed [route_info]");
         goto end;
     }
     }
+    }
 
     route_prof_id = cJSON_GetObjectItemCaseSensitive(route_to_locationJSON, "routeProfId");
     if (route_prof_id) {
+    if (!cJSON_IsNull(route_prof_id)) {
     if (!cJSON_IsString(route_prof_id) && !cJSON_IsNull(route_prof_id)) {
         ogs_error("OpenAPI_route_to_location_parseFromJSON() failed [route_prof_id]");
         goto end;
     }
     }
+    }
 
     route_to_location_local_var = OpenAPI_route_to_location_create (
         ogs_strdup(dnai->valuestring),
+        route_info && cJSON_IsNull(route_info) ? true : false,
         route_info ? route_info_local_nonprim : NULL,
+        route_prof_id && cJSON_IsNull(route_prof_id) ? true : false,
         route_prof_id && !cJSON_IsNull(route_prof_id) ? ogs_strdup(route_prof_id->valuestring) : NULL
     );
 

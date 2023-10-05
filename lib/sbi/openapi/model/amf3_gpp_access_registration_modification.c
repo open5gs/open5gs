@@ -12,6 +12,7 @@ OpenAPI_amf3_gpp_access_registration_modification_t *OpenAPI_amf3_gpp_access_reg
     OpenAPI_ims_vo_ps_e ims_vo_ps,
     OpenAPI_list_t *backup_amf_info,
     OpenAPI_eps_interworking_info_t *eps_interworking_info,
+    bool is_ue_srvcc_capability_null,
     bool is_ue_srvcc_capability,
     int ue_srvcc_capability,
     bool is_ue_mint_capability,
@@ -28,6 +29,7 @@ OpenAPI_amf3_gpp_access_registration_modification_t *OpenAPI_amf3_gpp_access_reg
     amf3_gpp_access_registration_modification_local_var->ims_vo_ps = ims_vo_ps;
     amf3_gpp_access_registration_modification_local_var->backup_amf_info = backup_amf_info;
     amf3_gpp_access_registration_modification_local_var->eps_interworking_info = eps_interworking_info;
+    amf3_gpp_access_registration_modification_local_var->is_ue_srvcc_capability_null = is_ue_srvcc_capability_null;
     amf3_gpp_access_registration_modification_local_var->is_ue_srvcc_capability = is_ue_srvcc_capability;
     amf3_gpp_access_registration_modification_local_var->ue_srvcc_capability = ue_srvcc_capability;
     amf3_gpp_access_registration_modification_local_var->is_ue_mint_capability = is_ue_mint_capability;
@@ -146,6 +148,11 @@ cJSON *OpenAPI_amf3_gpp_access_registration_modification_convertToJSON(OpenAPI_a
         ogs_error("OpenAPI_amf3_gpp_access_registration_modification_convertToJSON() failed [ue_srvcc_capability]");
         goto end;
     }
+    } else if (amf3_gpp_access_registration_modification->is_ue_srvcc_capability_null) {
+        if (cJSON_AddNullToObject(item, "ueSrvccCapability") == NULL) {
+            ogs_error("OpenAPI_amf3_gpp_access_registration_modification_convertToJSON() failed [ue_srvcc_capability]");
+            goto end;
+        }
     }
 
     if (amf3_gpp_access_registration_modification->is_ue_mint_capability) {
@@ -246,9 +253,11 @@ OpenAPI_amf3_gpp_access_registration_modification_t *OpenAPI_amf3_gpp_access_reg
 
     ue_srvcc_capability = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registration_modificationJSON, "ueSrvccCapability");
     if (ue_srvcc_capability) {
+    if (!cJSON_IsNull(ue_srvcc_capability)) {
     if (!cJSON_IsBool(ue_srvcc_capability)) {
         ogs_error("OpenAPI_amf3_gpp_access_registration_modification_parseFromJSON() failed [ue_srvcc_capability]");
         goto end;
+    }
     }
     }
 
@@ -268,6 +277,7 @@ OpenAPI_amf3_gpp_access_registration_modification_t *OpenAPI_amf3_gpp_access_reg
         ims_vo_ps ? ims_vo_psVariable : 0,
         backup_amf_info ? backup_amf_infoList : NULL,
         eps_interworking_info ? eps_interworking_info_local_nonprim : NULL,
+        ue_srvcc_capability && cJSON_IsNull(ue_srvcc_capability) ? true : false,
         ue_srvcc_capability ? true : false,
         ue_srvcc_capability ? ue_srvcc_capability->valueint : 0,
         ue_mint_capability ? true : false,

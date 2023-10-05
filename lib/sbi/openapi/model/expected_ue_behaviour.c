@@ -8,12 +8,15 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_create(
     char *af_instance_id,
     int reference_id,
     OpenAPI_stationary_indication_rm_t *stationary_indication,
+    bool is_communication_duration_time_null,
     bool is_communication_duration_time,
     int communication_duration_time,
     OpenAPI_scheduled_communication_type_rm_t *scheduled_communication_type,
+    bool is_periodic_time_null,
     bool is_periodic_time,
     int periodic_time,
     OpenAPI_scheduled_communication_time_rm_t *scheduled_communication_time,
+    bool is_expected_umts_null,
     OpenAPI_list_t *expected_umts,
     OpenAPI_traffic_profile_rm_t *traffic_profile,
     OpenAPI_battery_indication_rm_t *battery_indication,
@@ -27,12 +30,15 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_create(
     expected_ue_behaviour_local_var->af_instance_id = af_instance_id;
     expected_ue_behaviour_local_var->reference_id = reference_id;
     expected_ue_behaviour_local_var->stationary_indication = stationary_indication;
+    expected_ue_behaviour_local_var->is_communication_duration_time_null = is_communication_duration_time_null;
     expected_ue_behaviour_local_var->is_communication_duration_time = is_communication_duration_time;
     expected_ue_behaviour_local_var->communication_duration_time = communication_duration_time;
     expected_ue_behaviour_local_var->scheduled_communication_type = scheduled_communication_type;
+    expected_ue_behaviour_local_var->is_periodic_time_null = is_periodic_time_null;
     expected_ue_behaviour_local_var->is_periodic_time = is_periodic_time;
     expected_ue_behaviour_local_var->periodic_time = periodic_time;
     expected_ue_behaviour_local_var->scheduled_communication_time = scheduled_communication_time;
+    expected_ue_behaviour_local_var->is_expected_umts_null = is_expected_umts_null;
     expected_ue_behaviour_local_var->expected_umts = expected_umts;
     expected_ue_behaviour_local_var->traffic_profile = traffic_profile;
     expected_ue_behaviour_local_var->battery_indication = battery_indication;
@@ -134,6 +140,11 @@ cJSON *OpenAPI_expected_ue_behaviour_convertToJSON(OpenAPI_expected_ue_behaviour
         ogs_error("OpenAPI_expected_ue_behaviour_convertToJSON() failed [communication_duration_time]");
         goto end;
     }
+    } else if (expected_ue_behaviour->is_communication_duration_time_null) {
+        if (cJSON_AddNullToObject(item, "communicationDurationTime") == NULL) {
+            ogs_error("OpenAPI_expected_ue_behaviour_convertToJSON() failed [communication_duration_time]");
+            goto end;
+        }
     }
 
     if (expected_ue_behaviour->scheduled_communication_type) {
@@ -154,6 +165,11 @@ cJSON *OpenAPI_expected_ue_behaviour_convertToJSON(OpenAPI_expected_ue_behaviour
         ogs_error("OpenAPI_expected_ue_behaviour_convertToJSON() failed [periodic_time]");
         goto end;
     }
+    } else if (expected_ue_behaviour->is_periodic_time_null) {
+        if (cJSON_AddNullToObject(item, "periodicTime") == NULL) {
+            ogs_error("OpenAPI_expected_ue_behaviour_convertToJSON() failed [periodic_time]");
+            goto end;
+        }
     }
 
     if (expected_ue_behaviour->scheduled_communication_time) {
@@ -183,6 +199,11 @@ cJSON *OpenAPI_expected_ue_behaviour_convertToJSON(OpenAPI_expected_ue_behaviour
         }
         cJSON_AddItemToArray(expected_umtsList, itemLocal);
     }
+    } else if (expected_ue_behaviour->is_expected_umts_null) {
+        if (cJSON_AddNullToObject(item, "expectedUmts") == NULL) {
+            ogs_error("OpenAPI_expected_ue_behaviour_convertToJSON() failed [expected_umts]");
+            goto end;
+        }
     }
 
     if (expected_ue_behaviour->traffic_profile) {
@@ -282,9 +303,11 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_parseFromJSON(cJS
 
     communication_duration_time = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviourJSON, "communicationDurationTime");
     if (communication_duration_time) {
+    if (!cJSON_IsNull(communication_duration_time)) {
     if (!cJSON_IsNumber(communication_duration_time)) {
         ogs_error("OpenAPI_expected_ue_behaviour_parseFromJSON() failed [communication_duration_time]");
         goto end;
+    }
     }
     }
 
@@ -299,9 +322,11 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_parseFromJSON(cJS
 
     periodic_time = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviourJSON, "periodicTime");
     if (periodic_time) {
+    if (!cJSON_IsNull(periodic_time)) {
     if (!cJSON_IsNumber(periodic_time)) {
         ogs_error("OpenAPI_expected_ue_behaviour_parseFromJSON() failed [periodic_time]");
         goto end;
+    }
     }
     }
 
@@ -316,6 +341,7 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_parseFromJSON(cJS
 
     expected_umts = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviourJSON, "expectedUmts");
     if (expected_umts) {
+    if (!cJSON_IsNull(expected_umts)) {
         cJSON *expected_umts_local = NULL;
         if (!cJSON_IsArray(expected_umts)) {
             ogs_error("OpenAPI_expected_ue_behaviour_parseFromJSON() failed [expected_umts]");
@@ -336,6 +362,7 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_parseFromJSON(cJS
             }
             OpenAPI_list_add(expected_umtsList, expected_umtsItem);
         }
+    }
     }
 
     traffic_profile = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviourJSON, "trafficProfile");
@@ -377,12 +404,15 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_parseFromJSON(cJS
         
         reference_id->valuedouble,
         stationary_indication ? stationary_indication_local_nonprim : NULL,
+        communication_duration_time && cJSON_IsNull(communication_duration_time) ? true : false,
         communication_duration_time ? true : false,
         communication_duration_time ? communication_duration_time->valuedouble : 0,
         scheduled_communication_type ? scheduled_communication_type_local_nonprim : NULL,
+        periodic_time && cJSON_IsNull(periodic_time) ? true : false,
         periodic_time ? true : false,
         periodic_time ? periodic_time->valuedouble : 0,
         scheduled_communication_time ? scheduled_communication_time_local_nonprim : NULL,
+        expected_umts && cJSON_IsNull(expected_umts) ? true : false,
         expected_umts ? expected_umtsList : NULL,
         traffic_profile ? traffic_profile_local_nonprim : NULL,
         battery_indication ? battery_indication_local_nonprim : NULL,

@@ -15,6 +15,7 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_create(
     int traff_corre_ind,
     char *valid_start_time,
     char *valid_end_time,
+    bool is_temp_validities_null,
     OpenAPI_list_t *temp_validities,
     OpenAPI_network_area_info_2_t *nw_area_info,
     char *up_path_chg_notif_uri,
@@ -23,10 +24,12 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_create(
     int af_ack_ind,
     bool is_addr_preser_ind,
     int addr_preser_ind,
+    bool is_max_allowed_up_lat_null,
     bool is_max_allowed_up_lat,
     int max_allowed_up_lat,
     bool is_sim_conn_ind,
     int sim_conn_ind,
+    bool is_sim_conn_term_null,
     bool is_sim_conn_term,
     int sim_conn_term
 )
@@ -44,6 +47,7 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_create(
     traffic_influ_data_patch_local_var->traff_corre_ind = traff_corre_ind;
     traffic_influ_data_patch_local_var->valid_start_time = valid_start_time;
     traffic_influ_data_patch_local_var->valid_end_time = valid_end_time;
+    traffic_influ_data_patch_local_var->is_temp_validities_null = is_temp_validities_null;
     traffic_influ_data_patch_local_var->temp_validities = temp_validities;
     traffic_influ_data_patch_local_var->nw_area_info = nw_area_info;
     traffic_influ_data_patch_local_var->up_path_chg_notif_uri = up_path_chg_notif_uri;
@@ -52,10 +56,12 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_create(
     traffic_influ_data_patch_local_var->af_ack_ind = af_ack_ind;
     traffic_influ_data_patch_local_var->is_addr_preser_ind = is_addr_preser_ind;
     traffic_influ_data_patch_local_var->addr_preser_ind = addr_preser_ind;
+    traffic_influ_data_patch_local_var->is_max_allowed_up_lat_null = is_max_allowed_up_lat_null;
     traffic_influ_data_patch_local_var->is_max_allowed_up_lat = is_max_allowed_up_lat;
     traffic_influ_data_patch_local_var->max_allowed_up_lat = max_allowed_up_lat;
     traffic_influ_data_patch_local_var->is_sim_conn_ind = is_sim_conn_ind;
     traffic_influ_data_patch_local_var->sim_conn_ind = sim_conn_ind;
+    traffic_influ_data_patch_local_var->is_sim_conn_term_null = is_sim_conn_term_null;
     traffic_influ_data_patch_local_var->is_sim_conn_term = is_sim_conn_term;
     traffic_influ_data_patch_local_var->sim_conn_term = sim_conn_term;
 
@@ -235,6 +241,11 @@ cJSON *OpenAPI_traffic_influ_data_patch_convertToJSON(OpenAPI_traffic_influ_data
         }
         cJSON_AddItemToArray(temp_validitiesList, itemLocal);
     }
+    } else if (traffic_influ_data_patch->is_temp_validities_null) {
+        if (cJSON_AddNullToObject(item, "tempValidities") == NULL) {
+            ogs_error("OpenAPI_traffic_influ_data_patch_convertToJSON() failed [temp_validities]");
+            goto end;
+        }
     }
 
     if (traffic_influ_data_patch->nw_area_info) {
@@ -290,6 +301,11 @@ cJSON *OpenAPI_traffic_influ_data_patch_convertToJSON(OpenAPI_traffic_influ_data
         ogs_error("OpenAPI_traffic_influ_data_patch_convertToJSON() failed [max_allowed_up_lat]");
         goto end;
     }
+    } else if (traffic_influ_data_patch->is_max_allowed_up_lat_null) {
+        if (cJSON_AddNullToObject(item, "maxAllowedUpLat") == NULL) {
+            ogs_error("OpenAPI_traffic_influ_data_patch_convertToJSON() failed [max_allowed_up_lat]");
+            goto end;
+        }
     }
 
     if (traffic_influ_data_patch->is_sim_conn_ind) {
@@ -304,6 +320,11 @@ cJSON *OpenAPI_traffic_influ_data_patch_convertToJSON(OpenAPI_traffic_influ_data
         ogs_error("OpenAPI_traffic_influ_data_patch_convertToJSON() failed [sim_conn_term]");
         goto end;
     }
+    } else if (traffic_influ_data_patch->is_sim_conn_term_null) {
+        if (cJSON_AddNullToObject(item, "simConnTerm") == NULL) {
+            ogs_error("OpenAPI_traffic_influ_data_patch_convertToJSON() failed [sim_conn_term]");
+            goto end;
+        }
     }
 
 end:
@@ -451,6 +472,7 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_parseFromJS
 
     temp_validities = cJSON_GetObjectItemCaseSensitive(traffic_influ_data_patchJSON, "tempValidities");
     if (temp_validities) {
+    if (!cJSON_IsNull(temp_validities)) {
         cJSON *temp_validities_local = NULL;
         if (!cJSON_IsArray(temp_validities)) {
             ogs_error("OpenAPI_traffic_influ_data_patch_parseFromJSON() failed [temp_validities]");
@@ -471,6 +493,7 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_parseFromJS
             }
             OpenAPI_list_add(temp_validitiesList, temp_validitiesItem);
         }
+    }
     }
 
     nw_area_info = cJSON_GetObjectItemCaseSensitive(traffic_influ_data_patchJSON, "nwAreaInfo");
@@ -529,9 +552,11 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_parseFromJS
 
     max_allowed_up_lat = cJSON_GetObjectItemCaseSensitive(traffic_influ_data_patchJSON, "maxAllowedUpLat");
     if (max_allowed_up_lat) {
+    if (!cJSON_IsNull(max_allowed_up_lat)) {
     if (!cJSON_IsNumber(max_allowed_up_lat)) {
         ogs_error("OpenAPI_traffic_influ_data_patch_parseFromJSON() failed [max_allowed_up_lat]");
         goto end;
+    }
     }
     }
 
@@ -545,9 +570,11 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_parseFromJS
 
     sim_conn_term = cJSON_GetObjectItemCaseSensitive(traffic_influ_data_patchJSON, "simConnTerm");
     if (sim_conn_term) {
+    if (!cJSON_IsNull(sim_conn_term)) {
     if (!cJSON_IsNumber(sim_conn_term)) {
         ogs_error("OpenAPI_traffic_influ_data_patch_parseFromJSON() failed [sim_conn_term]");
         goto end;
+    }
     }
     }
 
@@ -562,6 +589,7 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_parseFromJS
         traff_corre_ind ? traff_corre_ind->valueint : 0,
         valid_start_time && !cJSON_IsNull(valid_start_time) ? ogs_strdup(valid_start_time->valuestring) : NULL,
         valid_end_time && !cJSON_IsNull(valid_end_time) ? ogs_strdup(valid_end_time->valuestring) : NULL,
+        temp_validities && cJSON_IsNull(temp_validities) ? true : false,
         temp_validities ? temp_validitiesList : NULL,
         nw_area_info ? nw_area_info_local_nonprim : NULL,
         up_path_chg_notif_uri && !cJSON_IsNull(up_path_chg_notif_uri) ? ogs_strdup(up_path_chg_notif_uri->valuestring) : NULL,
@@ -570,10 +598,12 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_parseFromJS
         af_ack_ind ? af_ack_ind->valueint : 0,
         addr_preser_ind ? true : false,
         addr_preser_ind ? addr_preser_ind->valueint : 0,
+        max_allowed_up_lat && cJSON_IsNull(max_allowed_up_lat) ? true : false,
         max_allowed_up_lat ? true : false,
         max_allowed_up_lat ? max_allowed_up_lat->valuedouble : 0,
         sim_conn_ind ? true : false,
         sim_conn_ind ? sim_conn_ind->valueint : 0,
+        sim_conn_term && cJSON_IsNull(sim_conn_term) ? true : false,
         sim_conn_term ? true : false,
         sim_conn_term ? sim_conn_term->valuedouble : 0
     );

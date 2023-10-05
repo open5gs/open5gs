@@ -63,6 +63,7 @@ typedef struct OpenAPI_dnn_configuration_s {
     char *iptv_acc_ctrl_info;
     struct OpenAPI_ip_index_s *ipv4_index;
     struct OpenAPI_ip_index_s *ipv6_index;
+    bool is_ecs_addr_config_info_null;
     struct OpenAPI_ecs_addr_config_info_s *ecs_addr_config_info;
     OpenAPI_list_t *additional_ecs_addr_config_infos;
     char *shared_ecs_addr_config_info;
@@ -108,6 +109,7 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_create(
     char *iptv_acc_ctrl_info,
     OpenAPI_ip_index_t *ipv4_index,
     OpenAPI_ip_index_t *ipv6_index,
+    bool is_ecs_addr_config_info_null,
     OpenAPI_ecs_addr_config_info_t *ecs_addr_config_info,
     OpenAPI_list_t *additional_ecs_addr_config_infos,
     char *shared_ecs_addr_config_info,

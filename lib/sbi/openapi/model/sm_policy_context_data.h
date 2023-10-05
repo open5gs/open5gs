@@ -78,6 +78,7 @@ typedef struct OpenAPI_sm_policy_context_data_s {
     int _3gpp_ps_data_off_status;
     bool is_ref_qos_indication;
     int ref_qos_indication;
+    bool is_trace_req_null;
     struct OpenAPI_trace_data_s *trace_req;
     struct OpenAPI_snssai_s *slice_info;
     OpenAPI_qos_flow_usage_e qos_flow_usage;
@@ -90,6 +91,7 @@ typedef struct OpenAPI_sm_policy_context_data_s {
     OpenAPI_list_t *ipv4_frame_route_list;
     OpenAPI_list_t *ipv6_frame_route_list;
     OpenAPI_satellite_backhaul_category_e sat_backhaul_category;
+    bool is_pcf_ue_info_null;
     struct OpenAPI_pcf_ue_callback_info_s *pcf_ue_info;
     OpenAPI_list_t *pvs_info;
     bool is_onboard_ind;
@@ -135,6 +137,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_create(
     int _3gpp_ps_data_off_status,
     bool is_ref_qos_indication,
     int ref_qos_indication,
+    bool is_trace_req_null,
     OpenAPI_trace_data_t *trace_req,
     OpenAPI_snssai_t *slice_info,
     OpenAPI_qos_flow_usage_e qos_flow_usage,
@@ -147,6 +150,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_create(
     OpenAPI_list_t *ipv4_frame_route_list,
     OpenAPI_list_t *ipv6_frame_route_list,
     OpenAPI_satellite_backhaul_category_e sat_backhaul_category,
+    bool is_pcf_ue_info_null,
     OpenAPI_pcf_ue_callback_info_t *pcf_ue_info,
     OpenAPI_list_t *pvs_info,
     bool is_onboard_ind,

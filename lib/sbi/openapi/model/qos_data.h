@@ -23,29 +23,39 @@ typedef struct OpenAPI_qos_data_s {
     char *qos_id;
     bool is__5qi;
     int _5qi;
+    bool is_maxbr_ul_null;
     char *maxbr_ul;
+    bool is_maxbr_dl_null;
     char *maxbr_dl;
+    bool is_gbr_ul_null;
     char *gbr_ul;
+    bool is_gbr_dl_null;
     char *gbr_dl;
     struct OpenAPI_arp_s *arp;
     bool is_qnc;
     int qnc;
+    bool is_priority_level_null;
     bool is_priority_level;
     int priority_level;
+    bool is_aver_window_null;
     bool is_aver_window;
     int aver_window;
+    bool is_max_data_burst_vol_null;
     bool is_max_data_burst_vol;
     int max_data_burst_vol;
     bool is_reflective_qos;
     int reflective_qos;
     char *sharing_key_dl;
     char *sharing_key_ul;
+    bool is_max_packet_loss_rate_dl_null;
     bool is_max_packet_loss_rate_dl;
     int max_packet_loss_rate_dl;
+    bool is_max_packet_loss_rate_ul_null;
     bool is_max_packet_loss_rate_ul;
     int max_packet_loss_rate_ul;
     bool is_def_qos_flow_indication;
     int def_qos_flow_indication;
+    bool is_ext_max_data_burst_vol_null;
     bool is_ext_max_data_burst_vol;
     int ext_max_data_burst_vol;
     bool is_packet_delay_budget;
@@ -57,29 +67,39 @@ OpenAPI_qos_data_t *OpenAPI_qos_data_create(
     char *qos_id,
     bool is__5qi,
     int _5qi,
+    bool is_maxbr_ul_null,
     char *maxbr_ul,
+    bool is_maxbr_dl_null,
     char *maxbr_dl,
+    bool is_gbr_ul_null,
     char *gbr_ul,
+    bool is_gbr_dl_null,
     char *gbr_dl,
     OpenAPI_arp_t *arp,
     bool is_qnc,
     int qnc,
+    bool is_priority_level_null,
     bool is_priority_level,
     int priority_level,
+    bool is_aver_window_null,
     bool is_aver_window,
     int aver_window,
+    bool is_max_data_burst_vol_null,
     bool is_max_data_burst_vol,
     int max_data_burst_vol,
     bool is_reflective_qos,
     int reflective_qos,
     char *sharing_key_dl,
     char *sharing_key_ul,
+    bool is_max_packet_loss_rate_dl_null,
     bool is_max_packet_loss_rate_dl,
     int max_packet_loss_rate_dl,
+    bool is_max_packet_loss_rate_ul_null,
     bool is_max_packet_loss_rate_ul,
     int max_packet_loss_rate_ul,
     bool is_def_qos_flow_indication,
     int def_qos_flow_indication,
+    bool is_ext_max_data_burst_vol_null,
     bool is_ext_max_data_burst_vol,
     int ext_max_data_burst_vol,
     bool is_packet_delay_budget,

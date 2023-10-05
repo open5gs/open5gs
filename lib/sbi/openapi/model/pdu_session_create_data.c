@@ -87,6 +87,7 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_create(
     char *old_pdu_session_ref,
     bool is_sm_policy_notify_ind,
     int sm_policy_notify_ind,
+    bool is_pcf_ue_callback_info_null,
     OpenAPI_pcf_ue_callback_info_t *pcf_ue_callback_info,
     OpenAPI_satellite_backhaul_category_e satellite_backhaul_cat,
     bool is_upip_supported,
@@ -181,6 +182,7 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_create(
     pdu_session_create_data_local_var->old_pdu_session_ref = old_pdu_session_ref;
     pdu_session_create_data_local_var->is_sm_policy_notify_ind = is_sm_policy_notify_ind;
     pdu_session_create_data_local_var->sm_policy_notify_ind = sm_policy_notify_ind;
+    pdu_session_create_data_local_var->is_pcf_ue_callback_info_null = is_pcf_ue_callback_info_null;
     pdu_session_create_data_local_var->pcf_ue_callback_info = pcf_ue_callback_info;
     pdu_session_create_data_local_var->satellite_backhaul_cat = satellite_backhaul_cat;
     pdu_session_create_data_local_var->is_upip_supported = is_upip_supported;
@@ -1049,6 +1051,11 @@ cJSON *OpenAPI_pdu_session_create_data_convertToJSON(OpenAPI_pdu_session_create_
         ogs_error("OpenAPI_pdu_session_create_data_convertToJSON() failed [pcf_ue_callback_info]");
         goto end;
     }
+    } else if (pdu_session_create_data->is_pcf_ue_callback_info_null) {
+        if (cJSON_AddNullToObject(item, "pcfUeCallbackInfo") == NULL) {
+            ogs_error("OpenAPI_pdu_session_create_data_convertToJSON() failed [pcf_ue_callback_info]");
+            goto end;
+        }
     }
 
     if (pdu_session_create_data->satellite_backhaul_cat != OpenAPI_satellite_backhaul_category_NULL) {
@@ -1829,10 +1836,12 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_parseFromJSON
 
     pcf_ue_callback_info = cJSON_GetObjectItemCaseSensitive(pdu_session_create_dataJSON, "pcfUeCallbackInfo");
     if (pcf_ue_callback_info) {
+    if (!cJSON_IsNull(pcf_ue_callback_info)) {
     pcf_ue_callback_info_local_nonprim = OpenAPI_pcf_ue_callback_info_parseFromJSON(pcf_ue_callback_info);
     if (!pcf_ue_callback_info_local_nonprim) {
         ogs_error("OpenAPI_pcf_ue_callback_info_parseFromJSON failed [pcf_ue_callback_info]");
         goto end;
+    }
     }
     }
 
@@ -1953,6 +1962,7 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_parseFromJSON
         old_pdu_session_ref && !cJSON_IsNull(old_pdu_session_ref) ? ogs_strdup(old_pdu_session_ref->valuestring) : NULL,
         sm_policy_notify_ind ? true : false,
         sm_policy_notify_ind ? sm_policy_notify_ind->valueint : 0,
+        pcf_ue_callback_info && cJSON_IsNull(pcf_ue_callback_info) ? true : false,
         pcf_ue_callback_info ? pcf_ue_callback_info_local_nonprim : NULL,
         satellite_backhaul_cat ? satellite_backhaul_catVariable : 0,
         upip_supported ? true : false,

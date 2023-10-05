@@ -10,6 +10,7 @@ OpenAPI_af_routing_requirement_t *OpenAPI_af_routing_requirement_create(
     OpenAPI_list_t *route_to_locs,
     OpenAPI_spatial_validity_t *sp_val,
     OpenAPI_list_t *temp_vals,
+    bool is_up_path_chg_sub_null,
     OpenAPI_up_path_chg_event_t *up_path_chg_sub,
     bool is_addr_preser_ind,
     int addr_preser_ind,
@@ -32,6 +33,7 @@ OpenAPI_af_routing_requirement_t *OpenAPI_af_routing_requirement_create(
     af_routing_requirement_local_var->route_to_locs = route_to_locs;
     af_routing_requirement_local_var->sp_val = sp_val;
     af_routing_requirement_local_var->temp_vals = temp_vals;
+    af_routing_requirement_local_var->is_up_path_chg_sub_null = is_up_path_chg_sub_null;
     af_routing_requirement_local_var->up_path_chg_sub = up_path_chg_sub;
     af_routing_requirement_local_var->is_addr_preser_ind = is_addr_preser_ind;
     af_routing_requirement_local_var->addr_preser_ind = addr_preser_ind;
@@ -161,6 +163,11 @@ cJSON *OpenAPI_af_routing_requirement_convertToJSON(OpenAPI_af_routing_requireme
         ogs_error("OpenAPI_af_routing_requirement_convertToJSON() failed [up_path_chg_sub]");
         goto end;
     }
+    } else if (af_routing_requirement->is_up_path_chg_sub_null) {
+        if (cJSON_AddNullToObject(item, "upPathChgSub") == NULL) {
+            ogs_error("OpenAPI_af_routing_requirement_convertToJSON() failed [up_path_chg_sub]");
+            goto end;
+        }
     }
 
     if (af_routing_requirement->is_addr_preser_ind) {
@@ -305,10 +312,12 @@ OpenAPI_af_routing_requirement_t *OpenAPI_af_routing_requirement_parseFromJSON(c
 
     up_path_chg_sub = cJSON_GetObjectItemCaseSensitive(af_routing_requirementJSON, "upPathChgSub");
     if (up_path_chg_sub) {
+    if (!cJSON_IsNull(up_path_chg_sub)) {
     up_path_chg_sub_local_nonprim = OpenAPI_up_path_chg_event_parseFromJSON(up_path_chg_sub);
     if (!up_path_chg_sub_local_nonprim) {
         ogs_error("OpenAPI_up_path_chg_event_parseFromJSON failed [up_path_chg_sub]");
         goto end;
+    }
     }
     }
 
@@ -382,6 +391,7 @@ OpenAPI_af_routing_requirement_t *OpenAPI_af_routing_requirement_parseFromJSON(c
         route_to_locs ? route_to_locsList : NULL,
         sp_val ? sp_val_local_nonprim : NULL,
         temp_vals ? temp_valsList : NULL,
+        up_path_chg_sub && cJSON_IsNull(up_path_chg_sub) ? true : false,
         up_path_chg_sub ? up_path_chg_sub_local_nonprim : NULL,
         addr_preser_ind ? true : false,
         addr_preser_ind ? addr_preser_ind->valueint : 0,

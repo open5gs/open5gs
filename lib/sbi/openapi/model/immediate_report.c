@@ -12,6 +12,7 @@ OpenAPI_immediate_report_t *OpenAPI_immediate_report_create(
     OpenAPI_ue_context_in_smsf_data_t *uec_smsf_data,
     OpenAPI_sms_subscription_data_t *sms_subs_data,
     OpenAPI_sm_subs_data_t *sm_data,
+    bool is_trace_data_null,
     OpenAPI_trace_data_t *trace_data,
     OpenAPI_sms_management_subscription_data_t *sms_mng_data,
     OpenAPI_lcs_privacy_data_t *lcs_privacy_data,
@@ -33,6 +34,7 @@ OpenAPI_immediate_report_t *OpenAPI_immediate_report_create(
     immediate_report_local_var->uec_smsf_data = uec_smsf_data;
     immediate_report_local_var->sms_subs_data = sms_subs_data;
     immediate_report_local_var->sm_data = sm_data;
+    immediate_report_local_var->is_trace_data_null = is_trace_data_null;
     immediate_report_local_var->trace_data = trace_data;
     immediate_report_local_var->sms_mng_data = sms_mng_data;
     immediate_report_local_var->lcs_privacy_data = lcs_privacy_data;
@@ -233,6 +235,11 @@ cJSON *OpenAPI_immediate_report_convertToJSON(OpenAPI_immediate_report_t *immedi
         ogs_error("OpenAPI_immediate_report_convertToJSON() failed [trace_data]");
         goto end;
     }
+    } else if (immediate_report->is_trace_data_null) {
+        if (cJSON_AddNullToObject(item, "traceData") == NULL) {
+            ogs_error("OpenAPI_immediate_report_convertToJSON() failed [trace_data]");
+            goto end;
+        }
     }
 
     if (immediate_report->sms_mng_data) {
@@ -444,10 +451,12 @@ OpenAPI_immediate_report_t *OpenAPI_immediate_report_parseFromJSON(cJSON *immedi
 
     trace_data = cJSON_GetObjectItemCaseSensitive(immediate_reportJSON, "traceData");
     if (trace_data) {
+    if (!cJSON_IsNull(trace_data)) {
     trace_data_local_nonprim = OpenAPI_trace_data_parseFromJSON(trace_data);
     if (!trace_data_local_nonprim) {
         ogs_error("OpenAPI_trace_data_parseFromJSON failed [trace_data]");
         goto end;
+    }
     }
     }
 
@@ -531,6 +540,7 @@ OpenAPI_immediate_report_t *OpenAPI_immediate_report_parseFromJSON(cJSON *immedi
         uec_smsf_data ? uec_smsf_data_local_nonprim : NULL,
         sms_subs_data ? sms_subs_data_local_nonprim : NULL,
         sm_data ? sm_data_local_nonprim : NULL,
+        trace_data && cJSON_IsNull(trace_data) ? true : false,
         trace_data ? trace_data_local_nonprim : NULL,
         sms_mng_data ? sms_mng_data_local_nonprim : NULL,
         lcs_privacy_data ? lcs_privacy_data_local_nonprim : NULL,

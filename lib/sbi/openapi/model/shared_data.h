@@ -34,11 +34,13 @@ typedef struct OpenAPI_shared_data_s {
     struct OpenAPI_sms_subscription_data_s *shared_sms_subs_data;
     struct OpenAPI_sms_management_subscription_data_s *shared_sms_mng_subs_data;
     OpenAPI_list_t* shared_dnn_configurations;
+    bool is_shared_trace_data_null;
     struct OpenAPI_trace_data_s *shared_trace_data;
     OpenAPI_list_t* shared_snssai_infos;
     OpenAPI_list_t* shared_vn_group_datas;
     OpenAPI_list_t* treatment_instructions;
     struct OpenAPI_session_management_subscription_data_s *shared_sm_subs_data;
+    bool is_shared_ecs_addr_config_info_null;
     struct OpenAPI_ecs_addr_config_info_s *shared_ecs_addr_config_info;
 } OpenAPI_shared_data_t;
 
@@ -48,11 +50,13 @@ OpenAPI_shared_data_t *OpenAPI_shared_data_create(
     OpenAPI_sms_subscription_data_t *shared_sms_subs_data,
     OpenAPI_sms_management_subscription_data_t *shared_sms_mng_subs_data,
     OpenAPI_list_t* shared_dnn_configurations,
+    bool is_shared_trace_data_null,
     OpenAPI_trace_data_t *shared_trace_data,
     OpenAPI_list_t* shared_snssai_infos,
     OpenAPI_list_t* shared_vn_group_datas,
     OpenAPI_list_t* treatment_instructions,
     OpenAPI_session_management_subscription_data_t *shared_sm_subs_data,
+    bool is_shared_ecs_addr_config_info_null,
     OpenAPI_ecs_addr_config_info_t *shared_ecs_addr_config_info
 );
 void OpenAPI_shared_data_free(OpenAPI_shared_data_t *shared_data);

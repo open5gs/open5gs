@@ -5,11 +5,13 @@
 #include "pro_se_eap_session.h"
 
 OpenAPI_pro_se_eap_session_t *OpenAPI_pro_se_eap_session_create(
+    bool is_eap_payload_null,
     char *eap_payload,
     char *knr_pro_se,
     OpenAPI_list_t* _links,
     OpenAPI_auth_result_e auth_result,
     char *supported_features,
+    bool is_nonce2_null,
     char *nonce2,
     char *_5g_pruk_id
 )
@@ -17,11 +19,13 @@ OpenAPI_pro_se_eap_session_t *OpenAPI_pro_se_eap_session_create(
     OpenAPI_pro_se_eap_session_t *pro_se_eap_session_local_var = ogs_malloc(sizeof(OpenAPI_pro_se_eap_session_t));
     ogs_assert(pro_se_eap_session_local_var);
 
+    pro_se_eap_session_local_var->is_eap_payload_null = is_eap_payload_null;
     pro_se_eap_session_local_var->eap_payload = eap_payload;
     pro_se_eap_session_local_var->knr_pro_se = knr_pro_se;
     pro_se_eap_session_local_var->_links = _links;
     pro_se_eap_session_local_var->auth_result = auth_result;
     pro_se_eap_session_local_var->supported_features = supported_features;
+    pro_se_eap_session_local_var->is_nonce2_null = is_nonce2_null;
     pro_se_eap_session_local_var->nonce2 = nonce2;
     pro_se_eap_session_local_var->_5g_pruk_id = _5g_pruk_id;
 
@@ -144,6 +148,11 @@ cJSON *OpenAPI_pro_se_eap_session_convertToJSON(OpenAPI_pro_se_eap_session_t *pr
         ogs_error("OpenAPI_pro_se_eap_session_convertToJSON() failed [nonce2]");
         goto end;
     }
+    } else if (pro_se_eap_session->is_nonce2_null) {
+        if (cJSON_AddNullToObject(item, "nonce2") == NULL) {
+            ogs_error("OpenAPI_pro_se_eap_session_convertToJSON() failed [nonce2]");
+            goto end;
+        }
     }
 
     if (pro_se_eap_session->_5g_pruk_id) {
@@ -233,9 +242,11 @@ OpenAPI_pro_se_eap_session_t *OpenAPI_pro_se_eap_session_parseFromJSON(cJSON *pr
 
     nonce2 = cJSON_GetObjectItemCaseSensitive(pro_se_eap_sessionJSON, "nonce2");
     if (nonce2) {
+    if (!cJSON_IsNull(nonce2)) {
     if (!cJSON_IsString(nonce2) && !cJSON_IsNull(nonce2)) {
         ogs_error("OpenAPI_pro_se_eap_session_parseFromJSON() failed [nonce2]");
         goto end;
+    }
     }
     }
 
@@ -248,11 +259,13 @@ OpenAPI_pro_se_eap_session_t *OpenAPI_pro_se_eap_session_parseFromJSON(cJSON *pr
     }
 
     pro_se_eap_session_local_var = OpenAPI_pro_se_eap_session_create (
+        eap_payload && cJSON_IsNull(eap_payload) ? true : false,
         ogs_strdup(eap_payload->valuestring),
         knr_pro_se && !cJSON_IsNull(knr_pro_se) ? ogs_strdup(knr_pro_se->valuestring) : NULL,
         _links ? _linksList : NULL,
         auth_result ? auth_resultVariable : 0,
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
+        nonce2 && cJSON_IsNull(nonce2) ? true : false,
         nonce2 && !cJSON_IsNull(nonce2) ? ogs_strdup(nonce2->valuestring) : NULL,
         _5g_pruk_id && !cJSON_IsNull(_5g_pruk_id) ? ogs_strdup(_5g_pruk_id->valuestring) : NULL
     );
