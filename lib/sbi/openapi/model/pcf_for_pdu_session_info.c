@@ -9,6 +9,7 @@ OpenAPI_pcf_for_pdu_session_info_t *OpenAPI_pcf_for_pdu_session_info_create(
     OpenAPI_snssai_t *snssai,
     char *pcf_fqdn,
     OpenAPI_list_t *pcf_ip_end_points,
+    bool is_ipv4_addr_null,
     char *ipv4_addr,
     char *ip_domain,
     OpenAPI_list_t *ipv6_prefixes,
@@ -25,6 +26,7 @@ OpenAPI_pcf_for_pdu_session_info_t *OpenAPI_pcf_for_pdu_session_info_create(
     pcf_for_pdu_session_info_local_var->snssai = snssai;
     pcf_for_pdu_session_info_local_var->pcf_fqdn = pcf_fqdn;
     pcf_for_pdu_session_info_local_var->pcf_ip_end_points = pcf_ip_end_points;
+    pcf_for_pdu_session_info_local_var->is_ipv4_addr_null = is_ipv4_addr_null;
     pcf_for_pdu_session_info_local_var->ipv4_addr = ipv4_addr;
     pcf_for_pdu_session_info_local_var->ip_domain = ip_domain;
     pcf_for_pdu_session_info_local_var->ipv6_prefixes = ipv6_prefixes;
@@ -158,6 +160,11 @@ cJSON *OpenAPI_pcf_for_pdu_session_info_convertToJSON(OpenAPI_pcf_for_pdu_sessio
         ogs_error("OpenAPI_pcf_for_pdu_session_info_convertToJSON() failed [ipv4_addr]");
         goto end;
     }
+    } else if (pcf_for_pdu_session_info->is_ipv4_addr_null) {
+        if (cJSON_AddNullToObject(item, "ipv4Addr") == NULL) {
+            ogs_error("OpenAPI_pcf_for_pdu_session_info_convertToJSON() failed [ipv4_addr]");
+            goto end;
+        }
     }
 
     if (pcf_for_pdu_session_info->ip_domain) {
@@ -295,9 +302,11 @@ OpenAPI_pcf_for_pdu_session_info_t *OpenAPI_pcf_for_pdu_session_info_parseFromJS
 
     ipv4_addr = cJSON_GetObjectItemCaseSensitive(pcf_for_pdu_session_infoJSON, "ipv4Addr");
     if (ipv4_addr) {
+    if (!cJSON_IsNull(ipv4_addr)) {
     if (!cJSON_IsString(ipv4_addr) && !cJSON_IsNull(ipv4_addr)) {
         ogs_error("OpenAPI_pcf_for_pdu_session_info_parseFromJSON() failed [ipv4_addr]");
         goto end;
+    }
     }
     }
 
@@ -381,6 +390,7 @@ OpenAPI_pcf_for_pdu_session_info_t *OpenAPI_pcf_for_pdu_session_info_parseFromJS
         snssai_local_nonprim,
         pcf_fqdn && !cJSON_IsNull(pcf_fqdn) ? ogs_strdup(pcf_fqdn->valuestring) : NULL,
         pcf_ip_end_points ? pcf_ip_end_pointsList : NULL,
+        ipv4_addr && cJSON_IsNull(ipv4_addr) ? true : false,
         ipv4_addr && !cJSON_IsNull(ipv4_addr) ? ogs_strdup(ipv4_addr->valuestring) : NULL,
         ip_domain && !cJSON_IsNull(ip_domain) ? ogs_strdup(ip_domain->valuestring) : NULL,
         ipv6_prefixes ? ipv6_prefixesList : NULL,

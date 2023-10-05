@@ -50,13 +50,16 @@ typedef struct OpenAPI_access_and_mobility_subscription_data_1_s {
     OpenAPI_list_t *internal_group_ids;
     OpenAPI_list_t* shared_vn_group_data_ids;
     struct OpenAPI_ambr_rm_s *subscribed_ue_ambr;
+    bool is_nssai_null;
     struct OpenAPI_nssai_1_s *nssai;
     OpenAPI_set_t *rat_restrictions;
     OpenAPI_list_t *forbidden_areas;
     struct OpenAPI_service_area_restriction_1_s *service_area_restriction;
     OpenAPI_list_t *core_network_type_restrictions;
+    bool is_rfsp_index_null;
     bool is_rfsp_index;
     int rfsp_index;
+    bool is_subs_reg_timer_null;
     bool is_subs_reg_timer;
     int subs_reg_timer;
     bool is_ue_usage_type;
@@ -65,6 +68,7 @@ typedef struct OpenAPI_access_and_mobility_subscription_data_1_s {
     int mps_priority;
     bool is_mcs_priority;
     int mcs_priority;
+    bool is_active_time_null;
     bool is_active_time;
     int active_time;
     struct OpenAPI_sor_info_1_s *sor_info;
@@ -84,6 +88,7 @@ typedef struct OpenAPI_access_and_mobility_subscription_data_1_s {
     int service_gap_time;
     OpenAPI_mdt_user_consent_e mdt_user_consent;
     struct OpenAPI_mdt_configuration_1_s *mdt_configuration;
+    bool is_trace_data_null;
     struct OpenAPI_trace_data_s *trace_data;
     struct OpenAPI_cag_data_1_s *cag_data;
     char *stn_sr;
@@ -120,13 +125,16 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
     OpenAPI_list_t *internal_group_ids,
     OpenAPI_list_t* shared_vn_group_data_ids,
     OpenAPI_ambr_rm_t *subscribed_ue_ambr,
+    bool is_nssai_null,
     OpenAPI_nssai_1_t *nssai,
     OpenAPI_set_t *rat_restrictions,
     OpenAPI_list_t *forbidden_areas,
     OpenAPI_service_area_restriction_1_t *service_area_restriction,
     OpenAPI_list_t *core_network_type_restrictions,
+    bool is_rfsp_index_null,
     bool is_rfsp_index,
     int rfsp_index,
+    bool is_subs_reg_timer_null,
     bool is_subs_reg_timer,
     int subs_reg_timer,
     bool is_ue_usage_type,
@@ -135,6 +143,7 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
     int mps_priority,
     bool is_mcs_priority,
     int mcs_priority,
+    bool is_active_time_null,
     bool is_active_time,
     int active_time,
     OpenAPI_sor_info_1_t *sor_info,
@@ -154,6 +163,7 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
     int service_gap_time,
     OpenAPI_mdt_user_consent_e mdt_user_consent,
     OpenAPI_mdt_configuration_1_t *mdt_configuration,
+    bool is_trace_data_null,
     OpenAPI_trace_data_t *trace_data,
     OpenAPI_cag_data_1_t *cag_data,
     char *stn_sr,

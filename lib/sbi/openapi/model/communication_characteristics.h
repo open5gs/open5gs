@@ -24,22 +24,34 @@ extern "C" {
 
 typedef struct OpenAPI_communication_characteristics_s OpenAPI_communication_characteristics_t;
 typedef struct OpenAPI_communication_characteristics_s {
+    bool is_pp_subs_reg_timer_null;
     struct OpenAPI_pp_subs_reg_timer_s *pp_subs_reg_timer;
+    bool is_pp_active_time_null;
     struct OpenAPI_pp_active_time_s *pp_active_time;
+    bool is_pp_dl_packet_count_null;
     bool is_pp_dl_packet_count;
     int pp_dl_packet_count;
+    bool is_pp_dl_packet_count_ext_null;
     struct OpenAPI_pp_dl_packet_count_ext_s *pp_dl_packet_count_ext;
+    bool is_pp_maximum_response_time_null;
     struct OpenAPI_pp_maximum_response_time_s *pp_maximum_response_time;
+    bool is_pp_maximum_latency_null;
     struct OpenAPI_pp_maximum_latency_s *pp_maximum_latency;
 } OpenAPI_communication_characteristics_t;
 
 OpenAPI_communication_characteristics_t *OpenAPI_communication_characteristics_create(
+    bool is_pp_subs_reg_timer_null,
     OpenAPI_pp_subs_reg_timer_t *pp_subs_reg_timer,
+    bool is_pp_active_time_null,
     OpenAPI_pp_active_time_t *pp_active_time,
+    bool is_pp_dl_packet_count_null,
     bool is_pp_dl_packet_count,
     int pp_dl_packet_count,
+    bool is_pp_dl_packet_count_ext_null,
     OpenAPI_pp_dl_packet_count_ext_t *pp_dl_packet_count_ext,
+    bool is_pp_maximum_response_time_null,
     OpenAPI_pp_maximum_response_time_t *pp_maximum_response_time,
+    bool is_pp_maximum_latency_null,
     OpenAPI_pp_maximum_latency_t *pp_maximum_latency
 );
 void OpenAPI_communication_characteristics_free(OpenAPI_communication_characteristics_t *communication_characteristics);

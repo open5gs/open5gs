@@ -53,6 +53,7 @@ typedef struct OpenAPI_sm_context_update_data_s {
     char *serving_nf_id;
     struct OpenAPI_guami_s *guami;
     struct OpenAPI_plmn_id_nid_s *serving_network;
+    bool is_backup_amf_info_null;
     OpenAPI_list_t *backup_amf_info;
     OpenAPI_access_type_e an_type;
     OpenAPI_access_type_e additional_an_type;
@@ -91,6 +92,7 @@ typedef struct OpenAPI_sm_context_update_data_s {
     bool is__5g_mm_cause_value;
     int _5g_mm_cause_value;
     struct OpenAPI_snssai_s *s_nssai;
+    bool is_trace_data_null;
     struct OpenAPI_trace_data_s *trace_data;
     OpenAPI_eps_interworking_indication_e eps_interworking_ind;
     bool is_an_type_can_be_changed;
@@ -114,6 +116,7 @@ typedef struct OpenAPI_sm_context_update_data_s {
     int skip_n2_pdu_session_res_rel_ind;
     OpenAPI_list_t *secondary_rat_usage_data_report_container;
     OpenAPI_sm_context_update_data_sm_policy_notify_ind_e sm_policy_notify_ind;
+    bool is_pcf_ue_callback_info_null;
     struct OpenAPI_pcf_ue_callback_info_s *pcf_ue_callback_info;
     OpenAPI_satellite_backhaul_category_e satellite_backhaul_cat;
 } OpenAPI_sm_context_update_data_t;
@@ -123,6 +126,7 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
     char *serving_nf_id,
     OpenAPI_guami_t *guami,
     OpenAPI_plmn_id_nid_t *serving_network,
+    bool is_backup_amf_info_null,
     OpenAPI_list_t *backup_amf_info,
     OpenAPI_access_type_e an_type,
     OpenAPI_access_type_e additional_an_type,
@@ -161,6 +165,7 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
     bool is__5g_mm_cause_value,
     int _5g_mm_cause_value,
     OpenAPI_snssai_t *s_nssai,
+    bool is_trace_data_null,
     OpenAPI_trace_data_t *trace_data,
     OpenAPI_eps_interworking_indication_e eps_interworking_ind,
     bool is_an_type_can_be_changed,
@@ -184,6 +189,7 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
     int skip_n2_pdu_session_res_rel_ind,
     OpenAPI_list_t *secondary_rat_usage_data_report_container,
     OpenAPI_sm_context_update_data_sm_policy_notify_ind_e sm_policy_notify_ind,
+    bool is_pcf_ue_callback_info_null,
     OpenAPI_pcf_ue_callback_info_t *pcf_ue_callback_info,
     OpenAPI_satellite_backhaul_category_e satellite_backhaul_cat
 );

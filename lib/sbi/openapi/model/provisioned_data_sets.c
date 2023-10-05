@@ -9,6 +9,7 @@ OpenAPI_provisioned_data_sets_t *OpenAPI_provisioned_data_sets_create(
     OpenAPI_smf_selection_subscription_data_t *smf_sel_data,
     OpenAPI_sms_subscription_data_t *sms_subs_data,
     OpenAPI_sm_subs_data_t *sm_data,
+    bool is_trace_data_null,
     OpenAPI_trace_data_t *trace_data,
     OpenAPI_sms_management_subscription_data_t *sms_mng_data,
     OpenAPI_lcs_privacy_data_t *lcs_privacy_data,
@@ -30,6 +31,7 @@ OpenAPI_provisioned_data_sets_t *OpenAPI_provisioned_data_sets_create(
     provisioned_data_sets_local_var->smf_sel_data = smf_sel_data;
     provisioned_data_sets_local_var->sms_subs_data = sms_subs_data;
     provisioned_data_sets_local_var->sm_data = sm_data;
+    provisioned_data_sets_local_var->is_trace_data_null = is_trace_data_null;
     provisioned_data_sets_local_var->trace_data = trace_data;
     provisioned_data_sets_local_var->sms_mng_data = sms_mng_data;
     provisioned_data_sets_local_var->lcs_privacy_data = lcs_privacy_data;
@@ -194,6 +196,11 @@ cJSON *OpenAPI_provisioned_data_sets_convertToJSON(OpenAPI_provisioned_data_sets
         ogs_error("OpenAPI_provisioned_data_sets_convertToJSON() failed [trace_data]");
         goto end;
     }
+    } else if (provisioned_data_sets->is_trace_data_null) {
+        if (cJSON_AddNullToObject(item, "traceData") == NULL) {
+            ogs_error("OpenAPI_provisioned_data_sets_convertToJSON() failed [trace_data]");
+            goto end;
+        }
     }
 
     if (provisioned_data_sets->sms_mng_data) {
@@ -417,10 +424,12 @@ OpenAPI_provisioned_data_sets_t *OpenAPI_provisioned_data_sets_parseFromJSON(cJS
 
     trace_data = cJSON_GetObjectItemCaseSensitive(provisioned_data_setsJSON, "traceData");
     if (trace_data) {
+    if (!cJSON_IsNull(trace_data)) {
     trace_data_local_nonprim = OpenAPI_trace_data_parseFromJSON(trace_data);
     if (!trace_data_local_nonprim) {
         ogs_error("OpenAPI_trace_data_parseFromJSON failed [trace_data]");
         goto end;
+    }
     }
     }
 
@@ -528,6 +537,7 @@ OpenAPI_provisioned_data_sets_t *OpenAPI_provisioned_data_sets_parseFromJSON(cJS
         smf_sel_data ? smf_sel_data_local_nonprim : NULL,
         sms_subs_data ? sms_subs_data_local_nonprim : NULL,
         sm_data ? sm_data_local_nonprim : NULL,
+        trace_data && cJSON_IsNull(trace_data) ? true : false,
         trace_data ? trace_data_local_nonprim : NULL,
         sms_mng_data ? sms_mng_data_local_nonprim : NULL,
         lcs_privacy_data ? lcs_privacy_data_local_nonprim : NULL,

@@ -11,6 +11,7 @@ OpenAPI_steering_mode_t *OpenAPI_steering_mode_create(
     bool is__3g_load,
     int _3g_load,
     OpenAPI_access_type_e prio_acc,
+    bool is_thres_value_null,
     OpenAPI_threshold_value_t *thres_value,
     OpenAPI_steer_mode_indicator_e steer_mode_ind
 )
@@ -24,6 +25,7 @@ OpenAPI_steering_mode_t *OpenAPI_steering_mode_create(
     steering_mode_local_var->is__3g_load = is__3g_load;
     steering_mode_local_var->_3g_load = _3g_load;
     steering_mode_local_var->prio_acc = prio_acc;
+    steering_mode_local_var->is_thres_value_null = is_thres_value_null;
     steering_mode_local_var->thres_value = thres_value;
     steering_mode_local_var->steer_mode_ind = steer_mode_ind;
 
@@ -113,6 +115,11 @@ cJSON *OpenAPI_steering_mode_convertToJSON(OpenAPI_steering_mode_t *steering_mod
         ogs_error("OpenAPI_steering_mode_convertToJSON() failed [thres_value]");
         goto end;
     }
+    } else if (steering_mode->is_thres_value_null) {
+        if (cJSON_AddNullToObject(item, "thresValue") == NULL) {
+            ogs_error("OpenAPI_steering_mode_convertToJSON() failed [thres_value]");
+            goto end;
+        }
     }
 
     if (steering_mode->steer_mode_ind != OpenAPI_steer_mode_indicator_NULL) {
@@ -191,10 +198,12 @@ OpenAPI_steering_mode_t *OpenAPI_steering_mode_parseFromJSON(cJSON *steering_mod
 
     thres_value = cJSON_GetObjectItemCaseSensitive(steering_modeJSON, "thresValue");
     if (thres_value) {
+    if (!cJSON_IsNull(thres_value)) {
     thres_value_local_nonprim = OpenAPI_threshold_value_parseFromJSON(thres_value);
     if (!thres_value_local_nonprim) {
         ogs_error("OpenAPI_threshold_value_parseFromJSON failed [thres_value]");
         goto end;
+    }
     }
     }
 
@@ -214,6 +223,7 @@ OpenAPI_steering_mode_t *OpenAPI_steering_mode_parseFromJSON(cJSON *steering_mod
         _3g_load ? true : false,
         _3g_load ? _3g_load->valuedouble : 0,
         prio_acc ? prio_accVariable : 0,
+        thres_value && cJSON_IsNull(thres_value) ? true : false,
         thres_value ? thres_value_local_nonprim : NULL,
         steer_mode_ind ? steer_mode_indVariable : 0
     );

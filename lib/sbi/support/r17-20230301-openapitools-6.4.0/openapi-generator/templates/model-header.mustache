@@ -48,6 +48,9 @@ OpenAPI_{{classVarName}}_{{name}}_e OpenAPI_{{classVarName}}_{{name}}_FromString
 {{/vars}}
 typedef struct OpenAPI_{{classname}}_s {
 {{#vars}}
+    {{#isNullable}}
+    bool is_{{name}}_null;
+    {{/isNullable}}
     {{^isContainer}}
         {{^isPrimitiveType}}
             {{#isEnum}}
@@ -121,6 +124,9 @@ typedef struct OpenAPI_{{classname}}_s {
 
 OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_create(
 {{#vars}}
+    {{#isNullable}}
+    bool is_{{name}}_null,
+    {{/isNullable}}
     {{^isContainer}}
         {{^isPrimitiveType}}
             {{#isEnum}}

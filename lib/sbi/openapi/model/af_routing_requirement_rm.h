@@ -26,19 +26,28 @@ typedef struct OpenAPI_af_routing_requirement_rm_s OpenAPI_af_routing_requiremen
 typedef struct OpenAPI_af_routing_requirement_rm_s {
     bool is_app_reloc;
     int app_reloc;
+    bool is_route_to_locs_null;
     OpenAPI_list_t *route_to_locs;
+    bool is_sp_val_null;
     struct OpenAPI_spatial_validity_rm_s *sp_val;
+    bool is_temp_vals_null;
     OpenAPI_list_t *temp_vals;
+    bool is_up_path_chg_sub_null;
     struct OpenAPI_up_path_chg_event_s *up_path_chg_sub;
+    bool is_addr_preser_ind_null;
     bool is_addr_preser_ind;
     int addr_preser_ind;
+    bool is_sim_conn_ind_null;
     bool is_sim_conn_ind;
     int sim_conn_ind;
+    bool is_sim_conn_term_null;
     bool is_sim_conn_term;
     int sim_conn_term;
+    bool is_eas_ip_replace_infos_null;
     OpenAPI_list_t *eas_ip_replace_infos;
     bool is_eas_redis_ind;
     int eas_redis_ind;
+    bool is_max_allowed_up_lat_null;
     bool is_max_allowed_up_lat;
     int max_allowed_up_lat;
 } OpenAPI_af_routing_requirement_rm_t;
@@ -46,19 +55,28 @@ typedef struct OpenAPI_af_routing_requirement_rm_s {
 OpenAPI_af_routing_requirement_rm_t *OpenAPI_af_routing_requirement_rm_create(
     bool is_app_reloc,
     int app_reloc,
+    bool is_route_to_locs_null,
     OpenAPI_list_t *route_to_locs,
+    bool is_sp_val_null,
     OpenAPI_spatial_validity_rm_t *sp_val,
+    bool is_temp_vals_null,
     OpenAPI_list_t *temp_vals,
+    bool is_up_path_chg_sub_null,
     OpenAPI_up_path_chg_event_t *up_path_chg_sub,
+    bool is_addr_preser_ind_null,
     bool is_addr_preser_ind,
     int addr_preser_ind,
+    bool is_sim_conn_ind_null,
     bool is_sim_conn_ind,
     int sim_conn_ind,
+    bool is_sim_conn_term_null,
     bool is_sim_conn_term,
     int sim_conn_term,
+    bool is_eas_ip_replace_infos_null,
     OpenAPI_list_t *eas_ip_replace_infos,
     bool is_eas_redis_ind,
     int eas_redis_ind,
+    bool is_max_allowed_up_lat_null,
     bool is_max_allowed_up_lat,
     int max_allowed_up_lat
 );

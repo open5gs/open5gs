@@ -21,21 +21,25 @@ extern "C" {
 
 typedef struct OpenAPI_pro_se_eap_session_s OpenAPI_pro_se_eap_session_t;
 typedef struct OpenAPI_pro_se_eap_session_s {
+    bool is_eap_payload_null;
     char *eap_payload;
     char *knr_pro_se;
     OpenAPI_list_t* _links;
     OpenAPI_auth_result_e auth_result;
     char *supported_features;
+    bool is_nonce2_null;
     char *nonce2;
     char *_5g_pruk_id;
 } OpenAPI_pro_se_eap_session_t;
 
 OpenAPI_pro_se_eap_session_t *OpenAPI_pro_se_eap_session_create(
+    bool is_eap_payload_null,
     char *eap_payload,
     char *knr_pro_se,
     OpenAPI_list_t* _links,
     OpenAPI_auth_result_e auth_result,
     char *supported_features,
+    bool is_nonce2_null,
     char *nonce2,
     char *_5g_pruk_id
 );

@@ -19,23 +19,31 @@ extern "C" {
 
 typedef struct OpenAPI_usage_threshold_rm_s OpenAPI_usage_threshold_rm_t;
 typedef struct OpenAPI_usage_threshold_rm_s {
+    bool is_duration_null;
     bool is_duration;
     int duration;
+    bool is_total_volume_null;
     bool is_total_volume;
     long total_volume;
+    bool is_downlink_volume_null;
     bool is_downlink_volume;
     long downlink_volume;
+    bool is_uplink_volume_null;
     bool is_uplink_volume;
     long uplink_volume;
 } OpenAPI_usage_threshold_rm_t;
 
 OpenAPI_usage_threshold_rm_t *OpenAPI_usage_threshold_rm_create(
+    bool is_duration_null,
     bool is_duration,
     int duration,
+    bool is_total_volume_null,
     bool is_total_volume,
     long total_volume,
+    bool is_downlink_volume_null,
     bool is_downlink_volume,
     long downlink_volume,
+    bool is_uplink_volume_null,
     bool is_uplink_volume,
     long uplink_volume
 );

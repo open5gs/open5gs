@@ -6,48 +6,72 @@
 
 OpenAPI_media_component_rm_t *OpenAPI_media_component_rm_create(
     char *af_app_id,
+    bool is_af_rout_req_null,
     OpenAPI_af_routing_requirement_rm_t *af_rout_req,
+    bool is_qos_reference_null,
     char *qos_reference,
+    bool is_alt_ser_reqs_null,
     OpenAPI_list_t *alt_ser_reqs,
+    bool is_alt_ser_reqs_data_null,
     OpenAPI_list_t *alt_ser_reqs_data,
     bool is_dis_ue_notif,
     int dis_ue_notif,
     bool is_cont_ver,
     int cont_ver,
     OpenAPI_list_t *codecs,
+    bool is_des_max_latency_null,
     bool is_des_max_latency,
     float des_max_latency,
+    bool is_des_max_loss_null,
     bool is_des_max_loss,
     float des_max_loss,
+    bool is_flus_id_null,
     char *flus_id,
     OpenAPI_flow_status_e f_status,
+    bool is_mar_bw_dl_null,
     char *mar_bw_dl,
+    bool is_mar_bw_ul_null,
     char *mar_bw_ul,
+    bool is_max_packet_loss_rate_dl_null,
     bool is_max_packet_loss_rate_dl,
     int max_packet_loss_rate_dl,
+    bool is_max_packet_loss_rate_ul_null,
     bool is_max_packet_loss_rate_ul,
     int max_packet_loss_rate_ul,
+    bool is_max_supp_bw_dl_null,
     char *max_supp_bw_dl,
+    bool is_max_supp_bw_ul_null,
     char *max_supp_bw_ul,
     int med_comp_n,
     OpenAPI_list_t* med_sub_comps,
     OpenAPI_media_type_e med_type,
+    bool is_min_des_bw_dl_null,
     char *min_des_bw_dl,
+    bool is_min_des_bw_ul_null,
     char *min_des_bw_ul,
+    bool is_mir_bw_dl_null,
     char *mir_bw_dl,
+    bool is_mir_bw_ul_null,
     char *mir_bw_ul,
     OpenAPI_preemption_capability_rm_t *preempt_cap,
     OpenAPI_preemption_vulnerability_rm_t *preempt_vuln,
     OpenAPI_priority_sharing_indicator_e prio_sharing_ind,
     OpenAPI_reserv_priority_e res_prio,
+    bool is_rr_bw_null,
     char *rr_bw,
+    bool is_rs_bw_null,
     char *rs_bw,
+    bool is_sharing_key_dl_null,
     bool is_sharing_key_dl,
     int sharing_key_dl,
+    bool is_sharing_key_ul_null,
     bool is_sharing_key_ul,
     int sharing_key_ul,
+    bool is_tsn_qos_null,
     OpenAPI_tsn_qos_container_rm_t *tsn_qos,
+    bool is_tscai_input_dl_null,
     OpenAPI_tscai_input_container_t *tscai_input_dl,
+    bool is_tscai_input_ul_null,
     OpenAPI_tscai_input_container_t *tscai_input_ul,
     bool is_tscai_time_dom,
     int tscai_time_dom
@@ -57,48 +81,72 @@ OpenAPI_media_component_rm_t *OpenAPI_media_component_rm_create(
     ogs_assert(media_component_rm_local_var);
 
     media_component_rm_local_var->af_app_id = af_app_id;
+    media_component_rm_local_var->is_af_rout_req_null = is_af_rout_req_null;
     media_component_rm_local_var->af_rout_req = af_rout_req;
+    media_component_rm_local_var->is_qos_reference_null = is_qos_reference_null;
     media_component_rm_local_var->qos_reference = qos_reference;
+    media_component_rm_local_var->is_alt_ser_reqs_null = is_alt_ser_reqs_null;
     media_component_rm_local_var->alt_ser_reqs = alt_ser_reqs;
+    media_component_rm_local_var->is_alt_ser_reqs_data_null = is_alt_ser_reqs_data_null;
     media_component_rm_local_var->alt_ser_reqs_data = alt_ser_reqs_data;
     media_component_rm_local_var->is_dis_ue_notif = is_dis_ue_notif;
     media_component_rm_local_var->dis_ue_notif = dis_ue_notif;
     media_component_rm_local_var->is_cont_ver = is_cont_ver;
     media_component_rm_local_var->cont_ver = cont_ver;
     media_component_rm_local_var->codecs = codecs;
+    media_component_rm_local_var->is_des_max_latency_null = is_des_max_latency_null;
     media_component_rm_local_var->is_des_max_latency = is_des_max_latency;
     media_component_rm_local_var->des_max_latency = des_max_latency;
+    media_component_rm_local_var->is_des_max_loss_null = is_des_max_loss_null;
     media_component_rm_local_var->is_des_max_loss = is_des_max_loss;
     media_component_rm_local_var->des_max_loss = des_max_loss;
+    media_component_rm_local_var->is_flus_id_null = is_flus_id_null;
     media_component_rm_local_var->flus_id = flus_id;
     media_component_rm_local_var->f_status = f_status;
+    media_component_rm_local_var->is_mar_bw_dl_null = is_mar_bw_dl_null;
     media_component_rm_local_var->mar_bw_dl = mar_bw_dl;
+    media_component_rm_local_var->is_mar_bw_ul_null = is_mar_bw_ul_null;
     media_component_rm_local_var->mar_bw_ul = mar_bw_ul;
+    media_component_rm_local_var->is_max_packet_loss_rate_dl_null = is_max_packet_loss_rate_dl_null;
     media_component_rm_local_var->is_max_packet_loss_rate_dl = is_max_packet_loss_rate_dl;
     media_component_rm_local_var->max_packet_loss_rate_dl = max_packet_loss_rate_dl;
+    media_component_rm_local_var->is_max_packet_loss_rate_ul_null = is_max_packet_loss_rate_ul_null;
     media_component_rm_local_var->is_max_packet_loss_rate_ul = is_max_packet_loss_rate_ul;
     media_component_rm_local_var->max_packet_loss_rate_ul = max_packet_loss_rate_ul;
+    media_component_rm_local_var->is_max_supp_bw_dl_null = is_max_supp_bw_dl_null;
     media_component_rm_local_var->max_supp_bw_dl = max_supp_bw_dl;
+    media_component_rm_local_var->is_max_supp_bw_ul_null = is_max_supp_bw_ul_null;
     media_component_rm_local_var->max_supp_bw_ul = max_supp_bw_ul;
     media_component_rm_local_var->med_comp_n = med_comp_n;
     media_component_rm_local_var->med_sub_comps = med_sub_comps;
     media_component_rm_local_var->med_type = med_type;
+    media_component_rm_local_var->is_min_des_bw_dl_null = is_min_des_bw_dl_null;
     media_component_rm_local_var->min_des_bw_dl = min_des_bw_dl;
+    media_component_rm_local_var->is_min_des_bw_ul_null = is_min_des_bw_ul_null;
     media_component_rm_local_var->min_des_bw_ul = min_des_bw_ul;
+    media_component_rm_local_var->is_mir_bw_dl_null = is_mir_bw_dl_null;
     media_component_rm_local_var->mir_bw_dl = mir_bw_dl;
+    media_component_rm_local_var->is_mir_bw_ul_null = is_mir_bw_ul_null;
     media_component_rm_local_var->mir_bw_ul = mir_bw_ul;
     media_component_rm_local_var->preempt_cap = preempt_cap;
     media_component_rm_local_var->preempt_vuln = preempt_vuln;
     media_component_rm_local_var->prio_sharing_ind = prio_sharing_ind;
     media_component_rm_local_var->res_prio = res_prio;
+    media_component_rm_local_var->is_rr_bw_null = is_rr_bw_null;
     media_component_rm_local_var->rr_bw = rr_bw;
+    media_component_rm_local_var->is_rs_bw_null = is_rs_bw_null;
     media_component_rm_local_var->rs_bw = rs_bw;
+    media_component_rm_local_var->is_sharing_key_dl_null = is_sharing_key_dl_null;
     media_component_rm_local_var->is_sharing_key_dl = is_sharing_key_dl;
     media_component_rm_local_var->sharing_key_dl = sharing_key_dl;
+    media_component_rm_local_var->is_sharing_key_ul_null = is_sharing_key_ul_null;
     media_component_rm_local_var->is_sharing_key_ul = is_sharing_key_ul;
     media_component_rm_local_var->sharing_key_ul = sharing_key_ul;
+    media_component_rm_local_var->is_tsn_qos_null = is_tsn_qos_null;
     media_component_rm_local_var->tsn_qos = tsn_qos;
+    media_component_rm_local_var->is_tscai_input_dl_null = is_tscai_input_dl_null;
     media_component_rm_local_var->tscai_input_dl = tscai_input_dl;
+    media_component_rm_local_var->is_tscai_input_ul_null = is_tscai_input_ul_null;
     media_component_rm_local_var->tscai_input_ul = tscai_input_ul;
     media_component_rm_local_var->is_tscai_time_dom = is_tscai_time_dom;
     media_component_rm_local_var->tscai_time_dom = tscai_time_dom;
@@ -252,6 +300,11 @@ cJSON *OpenAPI_media_component_rm_convertToJSON(OpenAPI_media_component_rm_t *me
         ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [af_rout_req]");
         goto end;
     }
+    } else if (media_component_rm->is_af_rout_req_null) {
+        if (cJSON_AddNullToObject(item, "afRoutReq") == NULL) {
+            ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [af_rout_req]");
+            goto end;
+        }
     }
 
     if (media_component_rm->qos_reference) {
@@ -259,6 +312,11 @@ cJSON *OpenAPI_media_component_rm_convertToJSON(OpenAPI_media_component_rm_t *me
         ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [qos_reference]");
         goto end;
     }
+    } else if (media_component_rm->is_qos_reference_null) {
+        if (cJSON_AddNullToObject(item, "qosReference") == NULL) {
+            ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [qos_reference]");
+            goto end;
+        }
     }
 
     if (media_component_rm->alt_ser_reqs) {
@@ -273,6 +331,11 @@ cJSON *OpenAPI_media_component_rm_convertToJSON(OpenAPI_media_component_rm_t *me
             goto end;
         }
     }
+    } else if (media_component_rm->is_alt_ser_reqs_null) {
+        if (cJSON_AddNullToObject(item, "altSerReqs") == NULL) {
+            ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [alt_ser_reqs]");
+            goto end;
+        }
     }
 
     if (media_component_rm->alt_ser_reqs_data) {
@@ -289,6 +352,11 @@ cJSON *OpenAPI_media_component_rm_convertToJSON(OpenAPI_media_component_rm_t *me
         }
         cJSON_AddItemToArray(alt_ser_reqs_dataList, itemLocal);
     }
+    } else if (media_component_rm->is_alt_ser_reqs_data_null) {
+        if (cJSON_AddNullToObject(item, "altSerReqsData") == NULL) {
+            ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [alt_ser_reqs_data]");
+            goto end;
+        }
     }
 
     if (media_component_rm->is_dis_ue_notif) {
@@ -324,6 +392,11 @@ cJSON *OpenAPI_media_component_rm_convertToJSON(OpenAPI_media_component_rm_t *me
         ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [des_max_latency]");
         goto end;
     }
+    } else if (media_component_rm->is_des_max_latency_null) {
+        if (cJSON_AddNullToObject(item, "desMaxLatency") == NULL) {
+            ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [des_max_latency]");
+            goto end;
+        }
     }
 
     if (media_component_rm->is_des_max_loss) {
@@ -331,6 +404,11 @@ cJSON *OpenAPI_media_component_rm_convertToJSON(OpenAPI_media_component_rm_t *me
         ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [des_max_loss]");
         goto end;
     }
+    } else if (media_component_rm->is_des_max_loss_null) {
+        if (cJSON_AddNullToObject(item, "desMaxLoss") == NULL) {
+            ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [des_max_loss]");
+            goto end;
+        }
     }
 
     if (media_component_rm->flus_id) {
@@ -338,6 +416,11 @@ cJSON *OpenAPI_media_component_rm_convertToJSON(OpenAPI_media_component_rm_t *me
         ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [flus_id]");
         goto end;
     }
+    } else if (media_component_rm->is_flus_id_null) {
+        if (cJSON_AddNullToObject(item, "flusId") == NULL) {
+            ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [flus_id]");
+            goto end;
+        }
     }
 
     if (media_component_rm->f_status != OpenAPI_flow_status_NULL) {
@@ -352,6 +435,11 @@ cJSON *OpenAPI_media_component_rm_convertToJSON(OpenAPI_media_component_rm_t *me
         ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [mar_bw_dl]");
         goto end;
     }
+    } else if (media_component_rm->is_mar_bw_dl_null) {
+        if (cJSON_AddNullToObject(item, "marBwDl") == NULL) {
+            ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [mar_bw_dl]");
+            goto end;
+        }
     }
 
     if (media_component_rm->mar_bw_ul) {
@@ -359,6 +447,11 @@ cJSON *OpenAPI_media_component_rm_convertToJSON(OpenAPI_media_component_rm_t *me
         ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [mar_bw_ul]");
         goto end;
     }
+    } else if (media_component_rm->is_mar_bw_ul_null) {
+        if (cJSON_AddNullToObject(item, "marBwUl") == NULL) {
+            ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [mar_bw_ul]");
+            goto end;
+        }
     }
 
     if (media_component_rm->is_max_packet_loss_rate_dl) {
@@ -366,6 +459,11 @@ cJSON *OpenAPI_media_component_rm_convertToJSON(OpenAPI_media_component_rm_t *me
         ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [max_packet_loss_rate_dl]");
         goto end;
     }
+    } else if (media_component_rm->is_max_packet_loss_rate_dl_null) {
+        if (cJSON_AddNullToObject(item, "maxPacketLossRateDl") == NULL) {
+            ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [max_packet_loss_rate_dl]");
+            goto end;
+        }
     }
 
     if (media_component_rm->is_max_packet_loss_rate_ul) {
@@ -373,6 +471,11 @@ cJSON *OpenAPI_media_component_rm_convertToJSON(OpenAPI_media_component_rm_t *me
         ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [max_packet_loss_rate_ul]");
         goto end;
     }
+    } else if (media_component_rm->is_max_packet_loss_rate_ul_null) {
+        if (cJSON_AddNullToObject(item, "maxPacketLossRateUl") == NULL) {
+            ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [max_packet_loss_rate_ul]");
+            goto end;
+        }
     }
 
     if (media_component_rm->max_supp_bw_dl) {
@@ -380,6 +483,11 @@ cJSON *OpenAPI_media_component_rm_convertToJSON(OpenAPI_media_component_rm_t *me
         ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [max_supp_bw_dl]");
         goto end;
     }
+    } else if (media_component_rm->is_max_supp_bw_dl_null) {
+        if (cJSON_AddNullToObject(item, "maxSuppBwDl") == NULL) {
+            ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [max_supp_bw_dl]");
+            goto end;
+        }
     }
 
     if (media_component_rm->max_supp_bw_ul) {
@@ -387,6 +495,11 @@ cJSON *OpenAPI_media_component_rm_convertToJSON(OpenAPI_media_component_rm_t *me
         ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [max_supp_bw_ul]");
         goto end;
     }
+    } else if (media_component_rm->is_max_supp_bw_ul_null) {
+        if (cJSON_AddNullToObject(item, "maxSuppBwUl") == NULL) {
+            ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [max_supp_bw_ul]");
+            goto end;
+        }
     }
 
     if (cJSON_AddNumberToObject(item, "medCompN", media_component_rm->med_comp_n) == NULL) {
@@ -436,6 +549,11 @@ cJSON *OpenAPI_media_component_rm_convertToJSON(OpenAPI_media_component_rm_t *me
         ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [min_des_bw_dl]");
         goto end;
     }
+    } else if (media_component_rm->is_min_des_bw_dl_null) {
+        if (cJSON_AddNullToObject(item, "minDesBwDl") == NULL) {
+            ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [min_des_bw_dl]");
+            goto end;
+        }
     }
 
     if (media_component_rm->min_des_bw_ul) {
@@ -443,6 +561,11 @@ cJSON *OpenAPI_media_component_rm_convertToJSON(OpenAPI_media_component_rm_t *me
         ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [min_des_bw_ul]");
         goto end;
     }
+    } else if (media_component_rm->is_min_des_bw_ul_null) {
+        if (cJSON_AddNullToObject(item, "minDesBwUl") == NULL) {
+            ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [min_des_bw_ul]");
+            goto end;
+        }
     }
 
     if (media_component_rm->mir_bw_dl) {
@@ -450,6 +573,11 @@ cJSON *OpenAPI_media_component_rm_convertToJSON(OpenAPI_media_component_rm_t *me
         ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [mir_bw_dl]");
         goto end;
     }
+    } else if (media_component_rm->is_mir_bw_dl_null) {
+        if (cJSON_AddNullToObject(item, "mirBwDl") == NULL) {
+            ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [mir_bw_dl]");
+            goto end;
+        }
     }
 
     if (media_component_rm->mir_bw_ul) {
@@ -457,6 +585,11 @@ cJSON *OpenAPI_media_component_rm_convertToJSON(OpenAPI_media_component_rm_t *me
         ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [mir_bw_ul]");
         goto end;
     }
+    } else if (media_component_rm->is_mir_bw_ul_null) {
+        if (cJSON_AddNullToObject(item, "mirBwUl") == NULL) {
+            ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [mir_bw_ul]");
+            goto end;
+        }
     }
 
     if (media_component_rm->preempt_cap) {
@@ -504,6 +637,11 @@ cJSON *OpenAPI_media_component_rm_convertToJSON(OpenAPI_media_component_rm_t *me
         ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [rr_bw]");
         goto end;
     }
+    } else if (media_component_rm->is_rr_bw_null) {
+        if (cJSON_AddNullToObject(item, "rrBw") == NULL) {
+            ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [rr_bw]");
+            goto end;
+        }
     }
 
     if (media_component_rm->rs_bw) {
@@ -511,6 +649,11 @@ cJSON *OpenAPI_media_component_rm_convertToJSON(OpenAPI_media_component_rm_t *me
         ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [rs_bw]");
         goto end;
     }
+    } else if (media_component_rm->is_rs_bw_null) {
+        if (cJSON_AddNullToObject(item, "rsBw") == NULL) {
+            ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [rs_bw]");
+            goto end;
+        }
     }
 
     if (media_component_rm->is_sharing_key_dl) {
@@ -518,6 +661,11 @@ cJSON *OpenAPI_media_component_rm_convertToJSON(OpenAPI_media_component_rm_t *me
         ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [sharing_key_dl]");
         goto end;
     }
+    } else if (media_component_rm->is_sharing_key_dl_null) {
+        if (cJSON_AddNullToObject(item, "sharingKeyDl") == NULL) {
+            ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [sharing_key_dl]");
+            goto end;
+        }
     }
 
     if (media_component_rm->is_sharing_key_ul) {
@@ -525,6 +673,11 @@ cJSON *OpenAPI_media_component_rm_convertToJSON(OpenAPI_media_component_rm_t *me
         ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [sharing_key_ul]");
         goto end;
     }
+    } else if (media_component_rm->is_sharing_key_ul_null) {
+        if (cJSON_AddNullToObject(item, "sharingKeyUl") == NULL) {
+            ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [sharing_key_ul]");
+            goto end;
+        }
     }
 
     if (media_component_rm->tsn_qos) {
@@ -538,6 +691,11 @@ cJSON *OpenAPI_media_component_rm_convertToJSON(OpenAPI_media_component_rm_t *me
         ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [tsn_qos]");
         goto end;
     }
+    } else if (media_component_rm->is_tsn_qos_null) {
+        if (cJSON_AddNullToObject(item, "tsnQos") == NULL) {
+            ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [tsn_qos]");
+            goto end;
+        }
     }
 
     if (media_component_rm->tscai_input_dl) {
@@ -551,6 +709,11 @@ cJSON *OpenAPI_media_component_rm_convertToJSON(OpenAPI_media_component_rm_t *me
         ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [tscai_input_dl]");
         goto end;
     }
+    } else if (media_component_rm->is_tscai_input_dl_null) {
+        if (cJSON_AddNullToObject(item, "tscaiInputDl") == NULL) {
+            ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [tscai_input_dl]");
+            goto end;
+        }
     }
 
     if (media_component_rm->tscai_input_ul) {
@@ -564,6 +727,11 @@ cJSON *OpenAPI_media_component_rm_convertToJSON(OpenAPI_media_component_rm_t *me
         ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [tscai_input_ul]");
         goto end;
     }
+    } else if (media_component_rm->is_tscai_input_ul_null) {
+        if (cJSON_AddNullToObject(item, "tscaiInputUl") == NULL) {
+            ogs_error("OpenAPI_media_component_rm_convertToJSON() failed [tscai_input_ul]");
+            goto end;
+        }
     }
 
     if (media_component_rm->is_tscai_time_dom) {
@@ -642,23 +810,28 @@ OpenAPI_media_component_rm_t *OpenAPI_media_component_rm_parseFromJSON(cJSON *me
 
     af_rout_req = cJSON_GetObjectItemCaseSensitive(media_component_rmJSON, "afRoutReq");
     if (af_rout_req) {
+    if (!cJSON_IsNull(af_rout_req)) {
     af_rout_req_local_nonprim = OpenAPI_af_routing_requirement_rm_parseFromJSON(af_rout_req);
     if (!af_rout_req_local_nonprim) {
         ogs_error("OpenAPI_af_routing_requirement_rm_parseFromJSON failed [af_rout_req]");
         goto end;
     }
     }
+    }
 
     qos_reference = cJSON_GetObjectItemCaseSensitive(media_component_rmJSON, "qosReference");
     if (qos_reference) {
+    if (!cJSON_IsNull(qos_reference)) {
     if (!cJSON_IsString(qos_reference) && !cJSON_IsNull(qos_reference)) {
         ogs_error("OpenAPI_media_component_rm_parseFromJSON() failed [qos_reference]");
         goto end;
     }
     }
+    }
 
     alt_ser_reqs = cJSON_GetObjectItemCaseSensitive(media_component_rmJSON, "altSerReqs");
     if (alt_ser_reqs) {
+    if (!cJSON_IsNull(alt_ser_reqs)) {
         cJSON *alt_ser_reqs_local = NULL;
         if (!cJSON_IsArray(alt_ser_reqs)) {
             ogs_error("OpenAPI_media_component_rm_parseFromJSON() failed [alt_ser_reqs]");
@@ -677,9 +850,11 @@ OpenAPI_media_component_rm_t *OpenAPI_media_component_rm_parseFromJSON(cJSON *me
             OpenAPI_list_add(alt_ser_reqsList, ogs_strdup(alt_ser_reqs_local->valuestring));
         }
     }
+    }
 
     alt_ser_reqs_data = cJSON_GetObjectItemCaseSensitive(media_component_rmJSON, "altSerReqsData");
     if (alt_ser_reqs_data) {
+    if (!cJSON_IsNull(alt_ser_reqs_data)) {
         cJSON *alt_ser_reqs_data_local = NULL;
         if (!cJSON_IsArray(alt_ser_reqs_data)) {
             ogs_error("OpenAPI_media_component_rm_parseFromJSON() failed [alt_ser_reqs_data]");
@@ -700,6 +875,7 @@ OpenAPI_media_component_rm_t *OpenAPI_media_component_rm_parseFromJSON(cJSON *me
             }
             OpenAPI_list_add(alt_ser_reqs_dataList, alt_ser_reqs_dataItem);
         }
+    }
     }
 
     dis_ue_notif = cJSON_GetObjectItemCaseSensitive(media_component_rmJSON, "disUeNotif");
@@ -741,25 +917,31 @@ OpenAPI_media_component_rm_t *OpenAPI_media_component_rm_parseFromJSON(cJSON *me
 
     des_max_latency = cJSON_GetObjectItemCaseSensitive(media_component_rmJSON, "desMaxLatency");
     if (des_max_latency) {
+    if (!cJSON_IsNull(des_max_latency)) {
     if (!cJSON_IsNumber(des_max_latency)) {
         ogs_error("OpenAPI_media_component_rm_parseFromJSON() failed [des_max_latency]");
         goto end;
     }
     }
+    }
 
     des_max_loss = cJSON_GetObjectItemCaseSensitive(media_component_rmJSON, "desMaxLoss");
     if (des_max_loss) {
+    if (!cJSON_IsNull(des_max_loss)) {
     if (!cJSON_IsNumber(des_max_loss)) {
         ogs_error("OpenAPI_media_component_rm_parseFromJSON() failed [des_max_loss]");
         goto end;
     }
     }
+    }
 
     flus_id = cJSON_GetObjectItemCaseSensitive(media_component_rmJSON, "flusId");
     if (flus_id) {
+    if (!cJSON_IsNull(flus_id)) {
     if (!cJSON_IsString(flus_id) && !cJSON_IsNull(flus_id)) {
         ogs_error("OpenAPI_media_component_rm_parseFromJSON() failed [flus_id]");
         goto end;
+    }
     }
     }
 
@@ -774,49 +956,61 @@ OpenAPI_media_component_rm_t *OpenAPI_media_component_rm_parseFromJSON(cJSON *me
 
     mar_bw_dl = cJSON_GetObjectItemCaseSensitive(media_component_rmJSON, "marBwDl");
     if (mar_bw_dl) {
+    if (!cJSON_IsNull(mar_bw_dl)) {
     if (!cJSON_IsString(mar_bw_dl) && !cJSON_IsNull(mar_bw_dl)) {
         ogs_error("OpenAPI_media_component_rm_parseFromJSON() failed [mar_bw_dl]");
         goto end;
     }
     }
+    }
 
     mar_bw_ul = cJSON_GetObjectItemCaseSensitive(media_component_rmJSON, "marBwUl");
     if (mar_bw_ul) {
+    if (!cJSON_IsNull(mar_bw_ul)) {
     if (!cJSON_IsString(mar_bw_ul) && !cJSON_IsNull(mar_bw_ul)) {
         ogs_error("OpenAPI_media_component_rm_parseFromJSON() failed [mar_bw_ul]");
         goto end;
     }
     }
+    }
 
     max_packet_loss_rate_dl = cJSON_GetObjectItemCaseSensitive(media_component_rmJSON, "maxPacketLossRateDl");
     if (max_packet_loss_rate_dl) {
+    if (!cJSON_IsNull(max_packet_loss_rate_dl)) {
     if (!cJSON_IsNumber(max_packet_loss_rate_dl)) {
         ogs_error("OpenAPI_media_component_rm_parseFromJSON() failed [max_packet_loss_rate_dl]");
         goto end;
     }
     }
+    }
 
     max_packet_loss_rate_ul = cJSON_GetObjectItemCaseSensitive(media_component_rmJSON, "maxPacketLossRateUl");
     if (max_packet_loss_rate_ul) {
+    if (!cJSON_IsNull(max_packet_loss_rate_ul)) {
     if (!cJSON_IsNumber(max_packet_loss_rate_ul)) {
         ogs_error("OpenAPI_media_component_rm_parseFromJSON() failed [max_packet_loss_rate_ul]");
         goto end;
     }
     }
+    }
 
     max_supp_bw_dl = cJSON_GetObjectItemCaseSensitive(media_component_rmJSON, "maxSuppBwDl");
     if (max_supp_bw_dl) {
+    if (!cJSON_IsNull(max_supp_bw_dl)) {
     if (!cJSON_IsString(max_supp_bw_dl) && !cJSON_IsNull(max_supp_bw_dl)) {
         ogs_error("OpenAPI_media_component_rm_parseFromJSON() failed [max_supp_bw_dl]");
         goto end;
     }
     }
+    }
 
     max_supp_bw_ul = cJSON_GetObjectItemCaseSensitive(media_component_rmJSON, "maxSuppBwUl");
     if (max_supp_bw_ul) {
+    if (!cJSON_IsNull(max_supp_bw_ul)) {
     if (!cJSON_IsString(max_supp_bw_ul) && !cJSON_IsNull(max_supp_bw_ul)) {
         ogs_error("OpenAPI_media_component_rm_parseFromJSON() failed [max_supp_bw_ul]");
         goto end;
+    }
     }
     }
 
@@ -867,33 +1061,41 @@ OpenAPI_media_component_rm_t *OpenAPI_media_component_rm_parseFromJSON(cJSON *me
 
     min_des_bw_dl = cJSON_GetObjectItemCaseSensitive(media_component_rmJSON, "minDesBwDl");
     if (min_des_bw_dl) {
+    if (!cJSON_IsNull(min_des_bw_dl)) {
     if (!cJSON_IsString(min_des_bw_dl) && !cJSON_IsNull(min_des_bw_dl)) {
         ogs_error("OpenAPI_media_component_rm_parseFromJSON() failed [min_des_bw_dl]");
         goto end;
     }
     }
+    }
 
     min_des_bw_ul = cJSON_GetObjectItemCaseSensitive(media_component_rmJSON, "minDesBwUl");
     if (min_des_bw_ul) {
+    if (!cJSON_IsNull(min_des_bw_ul)) {
     if (!cJSON_IsString(min_des_bw_ul) && !cJSON_IsNull(min_des_bw_ul)) {
         ogs_error("OpenAPI_media_component_rm_parseFromJSON() failed [min_des_bw_ul]");
         goto end;
     }
     }
+    }
 
     mir_bw_dl = cJSON_GetObjectItemCaseSensitive(media_component_rmJSON, "mirBwDl");
     if (mir_bw_dl) {
+    if (!cJSON_IsNull(mir_bw_dl)) {
     if (!cJSON_IsString(mir_bw_dl) && !cJSON_IsNull(mir_bw_dl)) {
         ogs_error("OpenAPI_media_component_rm_parseFromJSON() failed [mir_bw_dl]");
         goto end;
     }
     }
+    }
 
     mir_bw_ul = cJSON_GetObjectItemCaseSensitive(media_component_rmJSON, "mirBwUl");
     if (mir_bw_ul) {
+    if (!cJSON_IsNull(mir_bw_ul)) {
     if (!cJSON_IsString(mir_bw_ul) && !cJSON_IsNull(mir_bw_ul)) {
         ogs_error("OpenAPI_media_component_rm_parseFromJSON() failed [mir_bw_ul]");
         goto end;
+    }
     }
     }
 
@@ -935,60 +1137,74 @@ OpenAPI_media_component_rm_t *OpenAPI_media_component_rm_parseFromJSON(cJSON *me
 
     rr_bw = cJSON_GetObjectItemCaseSensitive(media_component_rmJSON, "rrBw");
     if (rr_bw) {
+    if (!cJSON_IsNull(rr_bw)) {
     if (!cJSON_IsString(rr_bw) && !cJSON_IsNull(rr_bw)) {
         ogs_error("OpenAPI_media_component_rm_parseFromJSON() failed [rr_bw]");
         goto end;
     }
     }
+    }
 
     rs_bw = cJSON_GetObjectItemCaseSensitive(media_component_rmJSON, "rsBw");
     if (rs_bw) {
+    if (!cJSON_IsNull(rs_bw)) {
     if (!cJSON_IsString(rs_bw) && !cJSON_IsNull(rs_bw)) {
         ogs_error("OpenAPI_media_component_rm_parseFromJSON() failed [rs_bw]");
         goto end;
     }
     }
+    }
 
     sharing_key_dl = cJSON_GetObjectItemCaseSensitive(media_component_rmJSON, "sharingKeyDl");
     if (sharing_key_dl) {
+    if (!cJSON_IsNull(sharing_key_dl)) {
     if (!cJSON_IsNumber(sharing_key_dl)) {
         ogs_error("OpenAPI_media_component_rm_parseFromJSON() failed [sharing_key_dl]");
         goto end;
     }
     }
+    }
 
     sharing_key_ul = cJSON_GetObjectItemCaseSensitive(media_component_rmJSON, "sharingKeyUl");
     if (sharing_key_ul) {
+    if (!cJSON_IsNull(sharing_key_ul)) {
     if (!cJSON_IsNumber(sharing_key_ul)) {
         ogs_error("OpenAPI_media_component_rm_parseFromJSON() failed [sharing_key_ul]");
         goto end;
     }
     }
+    }
 
     tsn_qos = cJSON_GetObjectItemCaseSensitive(media_component_rmJSON, "tsnQos");
     if (tsn_qos) {
+    if (!cJSON_IsNull(tsn_qos)) {
     tsn_qos_local_nonprim = OpenAPI_tsn_qos_container_rm_parseFromJSON(tsn_qos);
     if (!tsn_qos_local_nonprim) {
         ogs_error("OpenAPI_tsn_qos_container_rm_parseFromJSON failed [tsn_qos]");
         goto end;
     }
     }
+    }
 
     tscai_input_dl = cJSON_GetObjectItemCaseSensitive(media_component_rmJSON, "tscaiInputDl");
     if (tscai_input_dl) {
+    if (!cJSON_IsNull(tscai_input_dl)) {
     tscai_input_dl_local_nonprim = OpenAPI_tscai_input_container_parseFromJSON(tscai_input_dl);
     if (!tscai_input_dl_local_nonprim) {
         ogs_error("OpenAPI_tscai_input_container_parseFromJSON failed [tscai_input_dl]");
         goto end;
     }
     }
+    }
 
     tscai_input_ul = cJSON_GetObjectItemCaseSensitive(media_component_rmJSON, "tscaiInputUl");
     if (tscai_input_ul) {
+    if (!cJSON_IsNull(tscai_input_ul)) {
     tscai_input_ul_local_nonprim = OpenAPI_tscai_input_container_parseFromJSON(tscai_input_ul);
     if (!tscai_input_ul_local_nonprim) {
         ogs_error("OpenAPI_tscai_input_container_parseFromJSON failed [tscai_input_ul]");
         goto end;
+    }
     }
     }
 
@@ -1002,49 +1218,73 @@ OpenAPI_media_component_rm_t *OpenAPI_media_component_rm_parseFromJSON(cJSON *me
 
     media_component_rm_local_var = OpenAPI_media_component_rm_create (
         af_app_id && !cJSON_IsNull(af_app_id) ? ogs_strdup(af_app_id->valuestring) : NULL,
+        af_rout_req && cJSON_IsNull(af_rout_req) ? true : false,
         af_rout_req ? af_rout_req_local_nonprim : NULL,
+        qos_reference && cJSON_IsNull(qos_reference) ? true : false,
         qos_reference && !cJSON_IsNull(qos_reference) ? ogs_strdup(qos_reference->valuestring) : NULL,
+        alt_ser_reqs && cJSON_IsNull(alt_ser_reqs) ? true : false,
         alt_ser_reqs ? alt_ser_reqsList : NULL,
+        alt_ser_reqs_data && cJSON_IsNull(alt_ser_reqs_data) ? true : false,
         alt_ser_reqs_data ? alt_ser_reqs_dataList : NULL,
         dis_ue_notif ? true : false,
         dis_ue_notif ? dis_ue_notif->valueint : 0,
         cont_ver ? true : false,
         cont_ver ? cont_ver->valuedouble : 0,
         codecs ? codecsList : NULL,
+        des_max_latency && cJSON_IsNull(des_max_latency) ? true : false,
         des_max_latency ? true : false,
         des_max_latency ? des_max_latency->valuedouble : 0,
+        des_max_loss && cJSON_IsNull(des_max_loss) ? true : false,
         des_max_loss ? true : false,
         des_max_loss ? des_max_loss->valuedouble : 0,
+        flus_id && cJSON_IsNull(flus_id) ? true : false,
         flus_id && !cJSON_IsNull(flus_id) ? ogs_strdup(flus_id->valuestring) : NULL,
         f_status ? f_statusVariable : 0,
+        mar_bw_dl && cJSON_IsNull(mar_bw_dl) ? true : false,
         mar_bw_dl && !cJSON_IsNull(mar_bw_dl) ? ogs_strdup(mar_bw_dl->valuestring) : NULL,
+        mar_bw_ul && cJSON_IsNull(mar_bw_ul) ? true : false,
         mar_bw_ul && !cJSON_IsNull(mar_bw_ul) ? ogs_strdup(mar_bw_ul->valuestring) : NULL,
+        max_packet_loss_rate_dl && cJSON_IsNull(max_packet_loss_rate_dl) ? true : false,
         max_packet_loss_rate_dl ? true : false,
         max_packet_loss_rate_dl ? max_packet_loss_rate_dl->valuedouble : 0,
+        max_packet_loss_rate_ul && cJSON_IsNull(max_packet_loss_rate_ul) ? true : false,
         max_packet_loss_rate_ul ? true : false,
         max_packet_loss_rate_ul ? max_packet_loss_rate_ul->valuedouble : 0,
+        max_supp_bw_dl && cJSON_IsNull(max_supp_bw_dl) ? true : false,
         max_supp_bw_dl && !cJSON_IsNull(max_supp_bw_dl) ? ogs_strdup(max_supp_bw_dl->valuestring) : NULL,
+        max_supp_bw_ul && cJSON_IsNull(max_supp_bw_ul) ? true : false,
         max_supp_bw_ul && !cJSON_IsNull(max_supp_bw_ul) ? ogs_strdup(max_supp_bw_ul->valuestring) : NULL,
         
         med_comp_n->valuedouble,
         med_sub_comps ? med_sub_compsList : NULL,
         med_type ? med_typeVariable : 0,
+        min_des_bw_dl && cJSON_IsNull(min_des_bw_dl) ? true : false,
         min_des_bw_dl && !cJSON_IsNull(min_des_bw_dl) ? ogs_strdup(min_des_bw_dl->valuestring) : NULL,
+        min_des_bw_ul && cJSON_IsNull(min_des_bw_ul) ? true : false,
         min_des_bw_ul && !cJSON_IsNull(min_des_bw_ul) ? ogs_strdup(min_des_bw_ul->valuestring) : NULL,
+        mir_bw_dl && cJSON_IsNull(mir_bw_dl) ? true : false,
         mir_bw_dl && !cJSON_IsNull(mir_bw_dl) ? ogs_strdup(mir_bw_dl->valuestring) : NULL,
+        mir_bw_ul && cJSON_IsNull(mir_bw_ul) ? true : false,
         mir_bw_ul && !cJSON_IsNull(mir_bw_ul) ? ogs_strdup(mir_bw_ul->valuestring) : NULL,
         preempt_cap ? preempt_cap_local_nonprim : NULL,
         preempt_vuln ? preempt_vuln_local_nonprim : NULL,
         prio_sharing_ind ? prio_sharing_indVariable : 0,
         res_prio ? res_prioVariable : 0,
+        rr_bw && cJSON_IsNull(rr_bw) ? true : false,
         rr_bw && !cJSON_IsNull(rr_bw) ? ogs_strdup(rr_bw->valuestring) : NULL,
+        rs_bw && cJSON_IsNull(rs_bw) ? true : false,
         rs_bw && !cJSON_IsNull(rs_bw) ? ogs_strdup(rs_bw->valuestring) : NULL,
+        sharing_key_dl && cJSON_IsNull(sharing_key_dl) ? true : false,
         sharing_key_dl ? true : false,
         sharing_key_dl ? sharing_key_dl->valuedouble : 0,
+        sharing_key_ul && cJSON_IsNull(sharing_key_ul) ? true : false,
         sharing_key_ul ? true : false,
         sharing_key_ul ? sharing_key_ul->valuedouble : 0,
+        tsn_qos && cJSON_IsNull(tsn_qos) ? true : false,
         tsn_qos ? tsn_qos_local_nonprim : NULL,
+        tscai_input_dl && cJSON_IsNull(tscai_input_dl) ? true : false,
         tscai_input_dl ? tscai_input_dl_local_nonprim : NULL,
+        tscai_input_ul && cJSON_IsNull(tscai_input_ul) ? true : false,
         tscai_input_ul ? tscai_input_ul_local_nonprim : NULL,
         tscai_time_dom ? true : false,
         tscai_time_dom ? tscai_time_dom->valuedouble : 0

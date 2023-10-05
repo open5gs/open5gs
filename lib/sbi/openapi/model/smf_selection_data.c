@@ -7,6 +7,7 @@
 OpenAPI_smf_selection_data_t *OpenAPI_smf_selection_data_create(
     bool is_unsupp_dnn,
     int unsupp_dnn,
+    bool is_candidates_null,
     OpenAPI_list_t* candidates,
     OpenAPI_snssai_t *snssai,
     OpenAPI_snssai_t *mapping_snssai,
@@ -18,6 +19,7 @@ OpenAPI_smf_selection_data_t *OpenAPI_smf_selection_data_create(
 
     smf_selection_data_local_var->is_unsupp_dnn = is_unsupp_dnn;
     smf_selection_data_local_var->unsupp_dnn = unsupp_dnn;
+    smf_selection_data_local_var->is_candidates_null = is_candidates_null;
     smf_selection_data_local_var->candidates = candidates;
     smf_selection_data_local_var->snssai = snssai;
     smf_selection_data_local_var->mapping_snssai = mapping_snssai;
@@ -104,6 +106,11 @@ cJSON *OpenAPI_smf_selection_data_convertToJSON(OpenAPI_smf_selection_data_t *sm
             cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
         }
     }
+    } else if (smf_selection_data->is_candidates_null) {
+        if (cJSON_AddNullToObject(item, "candidates") == NULL) {
+            ogs_error("OpenAPI_smf_selection_data_convertToJSON() failed [candidates]");
+            goto end;
+        }
     }
 
     if (smf_selection_data->snssai) {
@@ -165,6 +172,7 @@ OpenAPI_smf_selection_data_t *OpenAPI_smf_selection_data_parseFromJSON(cJSON *sm
 
     candidates = cJSON_GetObjectItemCaseSensitive(smf_selection_dataJSON, "candidates");
     if (candidates) {
+    if (!cJSON_IsNull(candidates)) {
         cJSON *candidates_local_map = NULL;
         if (!cJSON_IsObject(candidates) && !cJSON_IsNull(candidates)) {
             ogs_error("OpenAPI_smf_selection_data_parseFromJSON() failed [candidates]");
@@ -187,6 +195,7 @@ OpenAPI_smf_selection_data_t *OpenAPI_smf_selection_data_parseFromJSON(cJSON *sm
                 OpenAPI_list_add(candidatesList, localMapKeyPair);
             }
         }
+    }
     }
 
     snssai = cJSON_GetObjectItemCaseSensitive(smf_selection_dataJSON, "snssai");
@@ -218,6 +227,7 @@ OpenAPI_smf_selection_data_t *OpenAPI_smf_selection_data_parseFromJSON(cJSON *sm
     smf_selection_data_local_var = OpenAPI_smf_selection_data_create (
         unsupp_dnn ? true : false,
         unsupp_dnn ? unsupp_dnn->valueint : 0,
+        candidates && cJSON_IsNull(candidates) ? true : false,
         candidates ? candidatesList : NULL,
         snssai ? snssai_local_nonprim : NULL,
         mapping_snssai ? mapping_snssai_local_nonprim : NULL,

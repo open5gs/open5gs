@@ -23,6 +23,7 @@ extern "C" {
 typedef struct OpenAPI_iptv_config_data_s OpenAPI_iptv_config_data_t;
 typedef struct OpenAPI_iptv_config_data_s {
     char *supi;
+    bool is_inter_group_id_null;
     OpenAPI_any_type_t *inter_group_id;
     char *dnn;
     struct OpenAPI_snssai_s *snssai;
@@ -35,6 +36,7 @@ typedef struct OpenAPI_iptv_config_data_s {
 
 OpenAPI_iptv_config_data_t *OpenAPI_iptv_config_data_create(
     char *supi,
+    bool is_inter_group_id_null,
     OpenAPI_any_type_t *inter_group_id,
     char *dnn,
     OpenAPI_snssai_t *snssai,

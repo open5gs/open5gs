@@ -5,6 +5,7 @@
 #include "sm_policy_data_patch.h"
 
 OpenAPI_sm_policy_data_patch_t *OpenAPI_sm_policy_data_patch_create(
+    bool is_um_data_null,
     OpenAPI_list_t* um_data,
     OpenAPI_list_t* sm_policy_snssai_data
 )
@@ -12,6 +13,7 @@ OpenAPI_sm_policy_data_patch_t *OpenAPI_sm_policy_data_patch_create(
     OpenAPI_sm_policy_data_patch_t *sm_policy_data_patch_local_var = ogs_malloc(sizeof(OpenAPI_sm_policy_data_patch_t));
     ogs_assert(sm_policy_data_patch_local_var);
 
+    sm_policy_data_patch_local_var->is_um_data_null = is_um_data_null;
     sm_policy_data_patch_local_var->um_data = um_data;
     sm_policy_data_patch_local_var->sm_policy_snssai_data = sm_policy_snssai_data;
 
@@ -87,6 +89,11 @@ cJSON *OpenAPI_sm_policy_data_patch_convertToJSON(OpenAPI_sm_policy_data_patch_t
             cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
         }
     }
+    } else if (sm_policy_data_patch->is_um_data_null) {
+        if (cJSON_AddNullToObject(item, "umData") == NULL) {
+            ogs_error("OpenAPI_sm_policy_data_patch_convertToJSON() failed [um_data]");
+            goto end;
+        }
     }
 
     if (sm_policy_data_patch->sm_policy_snssai_data) {
@@ -133,6 +140,7 @@ OpenAPI_sm_policy_data_patch_t *OpenAPI_sm_policy_data_patch_parseFromJSON(cJSON
     OpenAPI_list_t *sm_policy_snssai_dataList = NULL;
     um_data = cJSON_GetObjectItemCaseSensitive(sm_policy_data_patchJSON, "umData");
     if (um_data) {
+    if (!cJSON_IsNull(um_data)) {
         cJSON *um_data_local_map = NULL;
         if (!cJSON_IsObject(um_data) && !cJSON_IsNull(um_data)) {
             ogs_error("OpenAPI_sm_policy_data_patch_parseFromJSON() failed [um_data]");
@@ -155,6 +163,7 @@ OpenAPI_sm_policy_data_patch_t *OpenAPI_sm_policy_data_patch_parseFromJSON(cJSON
                 OpenAPI_list_add(um_dataList, localMapKeyPair);
             }
         }
+    }
     }
 
     sm_policy_snssai_data = cJSON_GetObjectItemCaseSensitive(sm_policy_data_patchJSON, "smPolicySnssaiData");
@@ -184,6 +193,7 @@ OpenAPI_sm_policy_data_patch_t *OpenAPI_sm_policy_data_patch_parseFromJSON(cJSON
     }
 
     sm_policy_data_patch_local_var = OpenAPI_sm_policy_data_patch_create (
+        um_data && cJSON_IsNull(um_data) ? true : false,
         um_data ? um_dataList : NULL,
         sm_policy_snssai_data ? sm_policy_snssai_dataList : NULL
     );

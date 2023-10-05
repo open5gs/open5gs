@@ -5,28 +5,34 @@
 #include "pp_data_entry.h"
 
 OpenAPI_pp_data_entry_t *OpenAPI_pp_data_entry_create(
+    bool is_communication_characteristics_null,
     OpenAPI_communication_characteristics_af_t *communication_characteristics,
     bool is_reference_id,
     int reference_id,
     char *validity_time,
     char *mtc_provider_information,
     char *supported_features,
+    bool is_ecs_addr_config_info_null,
     OpenAPI_ecs_addr_config_info_1_t *ecs_addr_config_info,
     OpenAPI_list_t *additional_ecs_addr_config_infos,
+    bool is_ec_restriction_null,
     OpenAPI_ec_restriction_1_t *ec_restriction
 )
 {
     OpenAPI_pp_data_entry_t *pp_data_entry_local_var = ogs_malloc(sizeof(OpenAPI_pp_data_entry_t));
     ogs_assert(pp_data_entry_local_var);
 
+    pp_data_entry_local_var->is_communication_characteristics_null = is_communication_characteristics_null;
     pp_data_entry_local_var->communication_characteristics = communication_characteristics;
     pp_data_entry_local_var->is_reference_id = is_reference_id;
     pp_data_entry_local_var->reference_id = reference_id;
     pp_data_entry_local_var->validity_time = validity_time;
     pp_data_entry_local_var->mtc_provider_information = mtc_provider_information;
     pp_data_entry_local_var->supported_features = supported_features;
+    pp_data_entry_local_var->is_ecs_addr_config_info_null = is_ecs_addr_config_info_null;
     pp_data_entry_local_var->ecs_addr_config_info = ecs_addr_config_info;
     pp_data_entry_local_var->additional_ecs_addr_config_infos = additional_ecs_addr_config_infos;
+    pp_data_entry_local_var->is_ec_restriction_null = is_ec_restriction_null;
     pp_data_entry_local_var->ec_restriction = ec_restriction;
 
     return pp_data_entry_local_var;
@@ -95,6 +101,11 @@ cJSON *OpenAPI_pp_data_entry_convertToJSON(OpenAPI_pp_data_entry_t *pp_data_entr
         ogs_error("OpenAPI_pp_data_entry_convertToJSON() failed [communication_characteristics]");
         goto end;
     }
+    } else if (pp_data_entry->is_communication_characteristics_null) {
+        if (cJSON_AddNullToObject(item, "communicationCharacteristics") == NULL) {
+            ogs_error("OpenAPI_pp_data_entry_convertToJSON() failed [communication_characteristics]");
+            goto end;
+        }
     }
 
     if (pp_data_entry->is_reference_id) {
@@ -136,6 +147,11 @@ cJSON *OpenAPI_pp_data_entry_convertToJSON(OpenAPI_pp_data_entry_t *pp_data_entr
         ogs_error("OpenAPI_pp_data_entry_convertToJSON() failed [ecs_addr_config_info]");
         goto end;
     }
+    } else if (pp_data_entry->is_ecs_addr_config_info_null) {
+        if (cJSON_AddNullToObject(item, "ecsAddrConfigInfo") == NULL) {
+            ogs_error("OpenAPI_pp_data_entry_convertToJSON() failed [ecs_addr_config_info]");
+            goto end;
+        }
     }
 
     if (pp_data_entry->additional_ecs_addr_config_infos) {
@@ -165,6 +181,11 @@ cJSON *OpenAPI_pp_data_entry_convertToJSON(OpenAPI_pp_data_entry_t *pp_data_entr
         ogs_error("OpenAPI_pp_data_entry_convertToJSON() failed [ec_restriction]");
         goto end;
     }
+    } else if (pp_data_entry->is_ec_restriction_null) {
+        if (cJSON_AddNullToObject(item, "ecRestriction") == NULL) {
+            ogs_error("OpenAPI_pp_data_entry_convertToJSON() failed [ec_restriction]");
+            goto end;
+        }
     }
 
 end:
@@ -189,10 +210,12 @@ OpenAPI_pp_data_entry_t *OpenAPI_pp_data_entry_parseFromJSON(cJSON *pp_data_entr
     OpenAPI_ec_restriction_1_t *ec_restriction_local_nonprim = NULL;
     communication_characteristics = cJSON_GetObjectItemCaseSensitive(pp_data_entryJSON, "communicationCharacteristics");
     if (communication_characteristics) {
+    if (!cJSON_IsNull(communication_characteristics)) {
     communication_characteristics_local_nonprim = OpenAPI_communication_characteristics_af_parseFromJSON(communication_characteristics);
     if (!communication_characteristics_local_nonprim) {
         ogs_error("OpenAPI_communication_characteristics_af_parseFromJSON failed [communication_characteristics]");
         goto end;
+    }
     }
     }
 
@@ -230,10 +253,12 @@ OpenAPI_pp_data_entry_t *OpenAPI_pp_data_entry_parseFromJSON(cJSON *pp_data_entr
 
     ecs_addr_config_info = cJSON_GetObjectItemCaseSensitive(pp_data_entryJSON, "ecsAddrConfigInfo");
     if (ecs_addr_config_info) {
+    if (!cJSON_IsNull(ecs_addr_config_info)) {
     ecs_addr_config_info_local_nonprim = OpenAPI_ecs_addr_config_info_1_parseFromJSON(ecs_addr_config_info);
     if (!ecs_addr_config_info_local_nonprim) {
         ogs_error("OpenAPI_ecs_addr_config_info_1_parseFromJSON failed [ecs_addr_config_info]");
         goto end;
+    }
     }
     }
 
@@ -263,22 +288,27 @@ OpenAPI_pp_data_entry_t *OpenAPI_pp_data_entry_parseFromJSON(cJSON *pp_data_entr
 
     ec_restriction = cJSON_GetObjectItemCaseSensitive(pp_data_entryJSON, "ecRestriction");
     if (ec_restriction) {
+    if (!cJSON_IsNull(ec_restriction)) {
     ec_restriction_local_nonprim = OpenAPI_ec_restriction_1_parseFromJSON(ec_restriction);
     if (!ec_restriction_local_nonprim) {
         ogs_error("OpenAPI_ec_restriction_1_parseFromJSON failed [ec_restriction]");
         goto end;
     }
     }
+    }
 
     pp_data_entry_local_var = OpenAPI_pp_data_entry_create (
+        communication_characteristics && cJSON_IsNull(communication_characteristics) ? true : false,
         communication_characteristics ? communication_characteristics_local_nonprim : NULL,
         reference_id ? true : false,
         reference_id ? reference_id->valuedouble : 0,
         validity_time && !cJSON_IsNull(validity_time) ? ogs_strdup(validity_time->valuestring) : NULL,
         mtc_provider_information && !cJSON_IsNull(mtc_provider_information) ? ogs_strdup(mtc_provider_information->valuestring) : NULL,
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
+        ecs_addr_config_info && cJSON_IsNull(ecs_addr_config_info) ? true : false,
         ecs_addr_config_info ? ecs_addr_config_info_local_nonprim : NULL,
         additional_ecs_addr_config_infos ? additional_ecs_addr_config_infosList : NULL,
+        ec_restriction && cJSON_IsNull(ec_restriction) ? true : false,
         ec_restriction ? ec_restriction_local_nonprim : NULL
     );
 

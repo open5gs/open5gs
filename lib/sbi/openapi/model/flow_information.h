@@ -26,8 +26,11 @@ typedef struct OpenAPI_flow_information_s {
     char *pack_filt_id;
     bool is_packet_filter_usage;
     int packet_filter_usage;
+    bool is_tos_traffic_class_null;
     char *tos_traffic_class;
+    bool is_spi_null;
     char *spi;
+    bool is_flow_label_null;
     char *flow_label;
     OpenAPI_flow_direction_e flow_direction;
 } OpenAPI_flow_information_t;
@@ -38,8 +41,11 @@ OpenAPI_flow_information_t *OpenAPI_flow_information_create(
     char *pack_filt_id,
     bool is_packet_filter_usage,
     int packet_filter_usage,
+    bool is_tos_traffic_class_null,
     char *tos_traffic_class,
+    bool is_spi_null,
     char *spi,
+    bool is_flow_label_null,
     char *flow_label,
     OpenAPI_flow_direction_e flow_direction
 );

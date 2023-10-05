@@ -20,11 +20,13 @@ extern "C" {
 
 typedef struct OpenAPI_trace_data_response_s OpenAPI_trace_data_response_t;
 typedef struct OpenAPI_trace_data_response_s {
+    bool is_trace_data_null;
     struct OpenAPI_trace_data_s *trace_data;
     char *shared_trace_data_id;
 } OpenAPI_trace_data_response_t;
 
 OpenAPI_trace_data_response_t *OpenAPI_trace_data_response_create(
+    bool is_trace_data_null,
     OpenAPI_trace_data_t *trace_data,
     char *shared_trace_data_id
 );

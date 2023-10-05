@@ -109,6 +109,7 @@ typedef struct OpenAPI_hsmf_update_data_s {
     char *ismf_pdu_session_uri;
     char *ismf_id;
     char *i_smf_service_instance_id;
+    bool is_dl_serving_plmn_rate_ctl_null;
     bool is_dl_serving_plmn_rate_ctl;
     int dl_serving_plmn_rate_ctl;
     OpenAPI_list_t *dnai_list;
@@ -122,6 +123,7 @@ typedef struct OpenAPI_hsmf_update_data_s {
     struct OpenAPI_guami_s *guami;
     OpenAPI_list_t *secondary_rat_usage_data_report_container;
     OpenAPI_hsmf_update_data_sm_policy_notify_ind_e sm_policy_notify_ind;
+    bool is_pcf_ue_callback_info_null;
     struct OpenAPI_pcf_ue_callback_info_s *pcf_ue_callback_info;
     OpenAPI_satellite_backhaul_category_e satellite_backhaul_cat;
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_ul;
@@ -184,6 +186,7 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_create(
     char *ismf_pdu_session_uri,
     char *ismf_id,
     char *i_smf_service_instance_id,
+    bool is_dl_serving_plmn_rate_ctl_null,
     bool is_dl_serving_plmn_rate_ctl,
     int dl_serving_plmn_rate_ctl,
     OpenAPI_list_t *dnai_list,
@@ -197,6 +200,7 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_create(
     OpenAPI_guami_t *guami,
     OpenAPI_list_t *secondary_rat_usage_data_report_container,
     OpenAPI_hsmf_update_data_sm_policy_notify_ind_e sm_policy_notify_ind,
+    bool is_pcf_ue_callback_info_null,
     OpenAPI_pcf_ue_callback_info_t *pcf_ue_callback_info,
     OpenAPI_satellite_backhaul_category_e satellite_backhaul_cat,
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_ul,

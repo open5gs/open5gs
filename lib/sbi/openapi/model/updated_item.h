@@ -21,11 +21,13 @@ extern "C" {
 typedef struct OpenAPI_updated_item_s OpenAPI_updated_item_t;
 typedef struct OpenAPI_updated_item_s {
     char *item;
+    bool is_value_null;
     OpenAPI_any_type_t *value;
 } OpenAPI_updated_item_t;
 
 OpenAPI_updated_item_t *OpenAPI_updated_item_create(
     char *item,
+    bool is_value_null,
     OpenAPI_any_type_t *value
 );
 void OpenAPI_updated_item_free(OpenAPI_updated_item_t *updated_item);
