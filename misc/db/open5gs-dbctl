@@ -55,11 +55,11 @@ fi
 
 if [ "$1" = "add" ]; then
     if [ "$#" -eq 4 ]; then
-        IMSI=$2 
+        IMSI=$2
         KI=$3
         OPC=$4
 
-        mongosh --eval "db.subscribers.insertOne( 
+        mongosh --eval "db.subscribers.insertOne(
             {
                 \"_id\": new ObjectId(),
                 \"schema_version\": NumberInt(1),
@@ -72,23 +72,23 @@ if [ "$1" = "add" ]; then
                 \"slice\":[
                 {
                     \"sst\": NumberInt(1),
-                    \"default_indicator\": true, 
+                    \"default_indicator\": true,
                     \"session\": [
                     {
                         \"name\" : \"internet\",
                         \"type\" : NumberInt(3),
-                        \"qos\" : 
-                        { \"index\": NumberInt(9), 
-                            \"arp\": 
+                        \"qos\" :
+                        { \"index\": NumberInt(9),
+                            \"arp\":
                             {
                                 \"priority_level\" : NumberInt(8),
                                 \"pre_emption_capability\": NumberInt(1),
                                 \"pre_emption_vulnerability\": NumberInt(2)
                             }
                         },
-                        \"ambr\": 
+                        \"ambr\":
                         {
-                            \"downlink\": 
+                            \"downlink\":
                             {
                                 \"value\": NumberInt(1000000000),
                                 \"unit\": NumberInt(0)
@@ -103,15 +103,15 @@ if [ "$1" = "add" ]; then
                         \"_id\": new ObjectId(),
                     }],
                     \"_id\": new ObjectId(),
-                }], 
-                \"security\": 
+                }],
+                \"security\":
                 {
                     \"k\" : \"$KI\",
                     \"op\" : null,
                     \"opc\" : \"$OPC\",
                     \"amf\" : \"8000\",
                 },
-                \"ambr\" : 
+                \"ambr\" :
                 {
                     \"downlink\" : { \"value\": NumberInt(1000000000), \"unit\": NumberInt(0)},
                     \"uplink\" : { \"value\": NumberInt(1000000000), \"unit\": NumberInt(0)}
@@ -126,12 +126,12 @@ if [ "$1" = "add" ]; then
     fi
 
     if [ "$#" -eq 5 ]; then
-        IMSI=$2 
+        IMSI=$2
         IP=$3
         KI=$4
         OPC=$5
 
-        mongosh --eval "db.subscribers.insertOne( 
+        mongosh --eval "db.subscribers.insertOne(
             {
                 \"_id\": new ObjectId(),
                 \"schema_version\": NumberInt(1),
@@ -144,23 +144,23 @@ if [ "$1" = "add" ]; then
                 \"slice\":[
                 {
                     \"sst\": NumberInt(1),
-                    \"default_indicator\": true, 
+                    \"default_indicator\": true,
                     \"session\": [
                     {
                         \"name\" : \"internet\",
                         \"type\" : NumberInt(3),
-                        \"qos\" : 
-                        { \"index\": NumberInt(9), 
-                            \"arp\": 
+                        \"qos\" :
+                        { \"index\": NumberInt(9),
+                            \"arp\":
                             {
                                 \"priority_level\" : NumberInt(8),
                                 \"pre_emption_capability\": NumberInt(1),
                                 \"pre_emption_vulnerability\": NumberInt(2)
                             }
                         },
-                        \"ambr\": 
+                        \"ambr\":
                         {
-                            \"downlink\": 
+                            \"downlink\":
                             {
                                 \"value\": NumberInt(1000000000),
                                 \"unit\": NumberInt(0)
@@ -171,23 +171,23 @@ if [ "$1" = "add" ]; then
                                 \"unit\": NumberInt(0)
                             }
                         },
-                        \"ue\": 
-                        { 
+                        \"ue\":
+                        {
                             \"addr\": \"$IP\"
                         },
                         \"pcc_rule\": [],
                         \"_id\": new ObjectId(),
                     }],
                     \"_id\": new ObjectId(),
-                }], 
-                \"security\": 
+                }],
+                \"security\":
                 {
                     \"k\" : \"$KI\",
                     \"op\" : null,
                     \"opc\" : \"$OPC\",
                     \"amf\" : \"8000\",
                 },
-                \"ambr\" : 
+                \"ambr\" :
                 {
                     \"downlink\" : { \"value\": NumberInt(1000000000), \"unit\": NumberInt(0)},
                     \"uplink\" : { \"value\": NumberInt(1000000000), \"unit\": NumberInt(0)}
@@ -207,11 +207,11 @@ fi
 
 if [ "$1" = "addT1" ]; then
     if [ "$#" -eq 4 ]; then
-        IMSI=$2 
+        IMSI=$2
         KI=$3
         OPC=$4
 
-        mongosh --eval "db.subscribers.insertOne( 
+        mongosh --eval "db.subscribers.insertOne(
             {
                 \"_id\": new ObjectId(),
                 \"schema_version\": NumberInt(1),
@@ -224,23 +224,23 @@ if [ "$1" = "addT1" ]; then
                 \"slice\":[
                 {
                     \"sst\": NumberInt(1),
-                    \"default_indicator\": true, 
+                    \"default_indicator\": true,
                     \"session\": [
                     {
                         \"name\" : \"internet\",
                         \"type\" : NumberInt(3),
-                        \"qos\" : 
-                        { \"index\": NumberInt(9), 
-                            \"arp\": 
+                        \"qos\" :
+                        { \"index\": NumberInt(9),
+                            \"arp\":
                             {
                                 \"priority_level\" : NumberInt(8),
                                 \"pre_emption_capability\": NumberInt(1),
                                 \"pre_emption_vulnerability\": NumberInt(2)
                             }
                         },
-                        \"ambr\": 
+                        \"ambr\":
                         {
-                            \"downlink\": 
+                            \"downlink\":
                             {
                                 \"value\": NumberInt(1000000000),
                                 \"unit\": NumberInt(0)
@@ -256,18 +256,18 @@ if [ "$1" = "addT1" ]; then
                     },{
                         \"name\" : \"internet1\",
                         \"type\" : NumberInt(3),
-                        \"qos\" : 
-                        { \"index\": NumberInt(9), 
-                            \"arp\": 
+                        \"qos\" :
+                        { \"index\": NumberInt(9),
+                            \"arp\":
                             {
                                 \"priority_level\" : NumberInt(8),
                                 \"pre_emption_capability\": NumberInt(1),
                                 \"pre_emption_vulnerability\": NumberInt(2)
                             }
                         },
-                        \"ambr\": 
+                        \"ambr\":
                         {
-                            \"downlink\": 
+                            \"downlink\":
                             {
                                 \"value\": NumberInt(1000000000),
                                 \"unit\": NumberInt(0)
@@ -283,18 +283,18 @@ if [ "$1" = "addT1" ]; then
                     },{
                         \"name\" : \"internet2\",
                         \"type\" : NumberInt(3),
-                        \"qos\" : 
-                        { \"index\": NumberInt(9), 
-                            \"arp\": 
+                        \"qos\" :
+                        { \"index\": NumberInt(9),
+                            \"arp\":
                             {
                                 \"priority_level\" : NumberInt(8),
                                 \"pre_emption_capability\": NumberInt(1),
                                 \"pre_emption_vulnerability\": NumberInt(2)
                             }
                         },
-                        \"ambr\": 
+                        \"ambr\":
                         {
-                            \"downlink\": 
+                            \"downlink\":
                             {
                                 \"value\": NumberInt(1000000000),
                                 \"unit\": NumberInt(0)
@@ -310,15 +310,15 @@ if [ "$1" = "addT1" ]; then
                     }
                     ],
                     \"_id\": new ObjectId(),
-                }], 
-                \"security\": 
+                }],
+                \"security\":
                 {
                     \"k\" : \"$KI\",
                     \"op\" : null,
                     \"opc\" : \"$OPC\",
                     \"amf\" : \"8000\",
                 },
-                \"ambr\" : 
+                \"ambr\" :
                 {
                     \"downlink\" : { \"value\": NumberInt(1000000000), \"unit\": NumberInt(0)},
                     \"uplink\" : { \"value\": NumberInt(1000000000), \"unit\": NumberInt(0)}
@@ -333,12 +333,12 @@ if [ "$1" = "addT1" ]; then
     fi
 
     if [ "$#" -eq 5 ]; then
-        IMSI=$2 
+        IMSI=$2
         IP=$3
         KI=$4
         OPC=$5
 
-        mongosh --eval "db.subscribers.insertOne( 
+        mongosh --eval "db.subscribers.insertOne(
             {
                 \"_id\": new ObjectId(),
                 \"schema_version\": NumberInt(1),
@@ -351,23 +351,23 @@ if [ "$1" = "addT1" ]; then
                 \"slice\":[
                 {
                     \"sst\": NumberInt(1),
-                    \"default_indicator\": true, 
+                    \"default_indicator\": true,
                     \"session\": [
                     {
                         \"name\" : \"internet\",
                         \"type\" : NumberInt(3),
-                        \"qos\" : 
-                        { \"index\": NumberInt(9), 
-                            \"arp\": 
+                        \"qos\" :
+                        { \"index\": NumberInt(9),
+                            \"arp\":
                             {
                                 \"priority_level\" : NumberInt(8),
                                 \"pre_emption_capability\": NumberInt(1),
                                 \"pre_emption_vulnerability\": NumberInt(2)
                             }
                         },
-                        \"ambr\": 
+                        \"ambr\":
                         {
-                            \"downlink\": 
+                            \"downlink\":
                             {
                                 \"value\": NumberInt(1000000000),
                                 \"unit\": NumberInt(0)
@@ -378,8 +378,8 @@ if [ "$1" = "addT1" ]; then
                                 \"unit\": NumberInt(0)
                             }
                         },
-                        \"ue\": 
-                        { 
+                        \"ue\":
+                        {
                             \"addr\": \"$IP\"
                         },
                         \"pcc_rule\": [],
@@ -387,18 +387,18 @@ if [ "$1" = "addT1" ]; then
                     },{
                         \"name\" : \"internet1\",
                         \"type\" : NumberInt(3),
-                        \"qos\" : 
-                        { \"index\": NumberInt(9), 
-                            \"arp\": 
+                        \"qos\" :
+                        { \"index\": NumberInt(9),
+                            \"arp\":
                             {
                                 \"priority_level\" : NumberInt(8),
                                 \"pre_emption_capability\": NumberInt(1),
                                 \"pre_emption_vulnerability\": NumberInt(2)
                             }
                         },
-                        \"ambr\": 
+                        \"ambr\":
                         {
-                            \"downlink\": 
+                            \"downlink\":
                             {
                                 \"value\": NumberInt(1000000000),
                                 \"unit\": NumberInt(0)
@@ -409,8 +409,8 @@ if [ "$1" = "addT1" ]; then
                                 \"unit\": NumberInt(0)
                             }
                         },
-                        \"ue\": 
-                        { 
+                        \"ue\":
+                        {
                             \"addr\": \"$IP\"
                         },
                         \"pcc_rule\": [],
@@ -418,18 +418,18 @@ if [ "$1" = "addT1" ]; then
                     },{
                         \"name\" : \"internet2\",
                         \"type\" : NumberInt(3),
-                        \"qos\" : 
-                        { \"index\": NumberInt(9), 
-                            \"arp\": 
+                        \"qos\" :
+                        { \"index\": NumberInt(9),
+                            \"arp\":
                             {
                                 \"priority_level\" : NumberInt(8),
                                 \"pre_emption_capability\": NumberInt(1),
                                 \"pre_emption_vulnerability\": NumberInt(2)
                             }
                         },
-                        \"ambr\": 
+                        \"ambr\":
                         {
-                            \"downlink\": 
+                            \"downlink\":
                             {
                                 \"value\": NumberInt(1000000000),
                                 \"unit\": NumberInt(0)
@@ -440,8 +440,8 @@ if [ "$1" = "addT1" ]; then
                                 \"unit\": NumberInt(0)
                             }
                         },
-                        \"ue\": 
-                        { 
+                        \"ue\":
+                        {
                             \"addr\": \"$IP\"
                         },
                         \"pcc_rule\": [],
@@ -449,15 +449,15 @@ if [ "$1" = "addT1" ]; then
                     }
                     ],
                     \"_id\": new ObjectId(),
-                }], 
-                \"security\": 
+                }],
+                \"security\":
                 {
                     \"k\" : \"$KI\",
                     \"op\" : null,
                     \"opc\" : \"$OPC\",
                     \"amf\" : \"8000\",
                 },
-                \"ambr\" : 
+                \"ambr\" :
                 {
                     \"downlink\" : { \"value\": NumberInt(1000000000), \"unit\": NumberInt(0)},
                     \"uplink\" : { \"value\": NumberInt(1000000000), \"unit\": NumberInt(0)}
@@ -481,7 +481,7 @@ if [ "$1" = "remove" ]; then
         exit 1
     fi
 
-    IMSI=$2 
+    IMSI=$2
     mongosh --eval "db.subscribers.deleteOne({\"imsi\": \"$IMSI\"});" $DB_URI
     exit $?
 fi
@@ -501,7 +501,7 @@ if [ "$1" = "static_ip" ]; then
         echo "open5gs-dbctl: incorrect number of args, format is \"open5gs-dbctl static_ip imsi ip\""
         exit 1
     fi
-    IMSI=$2 
+    IMSI=$2
     IP=$3
 
     mongosh --eval "db.subscribers.updateOne({\"imsi\": \"$IMSI\"},{\$set: { \"slice.0.session.0.ue.addr\": \"$IP\" }});" $DB_URI
@@ -513,7 +513,7 @@ if [ "$1" = "static_ip6" ]; then
         echo "open5gs-dbctl: incorrect number of args, format is \"open5gs-dbctl static_ip6 imsi ip\""
         exit 1
     fi
-    IMSI=$2 
+    IMSI=$2
     IP=$3
 
     mongosh --eval "db.subscribers.updateOne({\"imsi\": \"$IMSI\"},{\$set: { \"slice.0.session.0.ue.addr6\": \"$IP\" }});" $DB_URI
@@ -525,7 +525,7 @@ if [ "$1" = "type" ]; then
         echo "open5gs-dbctl: incorrect number of args, format is \"open5gs-dbctl type imsi type\""
         exit 1
     fi
-    IMSI=$2 
+    IMSI=$2
     TYPE=$3
 
     mongosh --eval "db.subscribers.updateOne({\"imsi\": \"$IMSI\"},{\$set: { \"slice.0.session.0.type\": NumberInt($TYPE) }});" $DB_URI
@@ -534,12 +534,12 @@ fi
 
 if [ "$1" = "add_ue_with_apn" ]; then
     if [ "$#" -eq 5 ]; then
-        IMSI=$2 
+        IMSI=$2
         KI=$3
         OPC=$4
         APN=$5
 
-        mongosh --eval "db.subscribers.insertOne( 
+        mongosh --eval "db.subscribers.insertOne(
             {
                 \"_id\": new ObjectId(),
                 \"schema_version\": NumberInt(1),
@@ -552,23 +552,23 @@ if [ "$1" = "add_ue_with_apn" ]; then
                 \"slice\":[
                 {
                     \"sst\": NumberInt(1),
-                    \"default_indicator\": true, 
+                    \"default_indicator\": true,
                     \"session\": [
                     {
                         \"name\" : \"$APN\",
                         \"type\" : NumberInt(3),
-                        \"qos\" : 
-                        { \"index\": NumberInt(9), 
-                            \"arp\": 
+                        \"qos\" :
+                        { \"index\": NumberInt(9),
+                            \"arp\":
                             {
                                 \"priority_level\" : NumberInt(8),
                                 \"pre_emption_capability\": NumberInt(1),
                                 \"pre_emption_vulnerability\": NumberInt(2)
                             }
                         },
-                        \"ambr\": 
+                        \"ambr\":
                         {
-                            \"downlink\": 
+                            \"downlink\":
                             {
                                 \"value\": NumberInt(1000000000),
                                 \"unit\": NumberInt(0)
@@ -583,15 +583,15 @@ if [ "$1" = "add_ue_with_apn" ]; then
                         \"_id\": new ObjectId(),
                     }],
                     \"_id\": new ObjectId(),
-                }], 
-                \"security\": 
+                }],
+                \"security\":
                 {
                     \"k\" : \"$KI\",
                     \"op\" : null,
                     \"opc\" : \"$OPC\",
                     \"amf\" : \"8000\",
                 },
-                \"ambr\" : 
+                \"ambr\" :
                 {
                     \"downlink\" : { \"value\": NumberInt(1000000000), \"unit\": NumberInt(0)},
                     \"uplink\" : { \"value\": NumberInt(1000000000), \"unit\": NumberInt(0)}
@@ -611,14 +611,14 @@ fi
 
 if [ "$1" = "add_ue_with_slice" ]; then
     if [ "$#" -eq 7 ]; then
-        IMSI=$2 
+        IMSI=$2
         KI=$3
         OPC=$4
         APN=$5
         SST=$6
         SD=$7
 
-        mongosh --eval "db.subscribers.insertOne( 
+        mongosh --eval "db.subscribers.insertOne(
             {
                 \"_id\": new ObjectId(),
                 \"schema_version\": NumberInt(1),
@@ -632,23 +632,23 @@ if [ "$1" = "add_ue_with_slice" ]; then
                 {
                     \"sst\": NumberInt($SST),
                     \"sd\": \"$SD\",
-                    \"default_indicator\": true, 
+                    \"default_indicator\": true,
                     \"session\": [
                     {
                         \"name\" : \"$APN\",
                         \"type\" : NumberInt(3),
-                        \"qos\" : 
-                        { \"index\": NumberInt(9), 
-                            \"arp\": 
+                        \"qos\" :
+                        { \"index\": NumberInt(9),
+                            \"arp\":
                             {
                                 \"priority_level\" : NumberInt(8),
                                 \"pre_emption_capability\": NumberInt(1),
                                 \"pre_emption_vulnerability\": NumberInt(2)
                             }
                         },
-                        \"ambr\": 
+                        \"ambr\":
                         {
-                            \"downlink\": 
+                            \"downlink\":
                             {
                                 \"value\": NumberInt(1000000000),
                                 \"unit\": NumberInt(0)
@@ -663,15 +663,15 @@ if [ "$1" = "add_ue_with_slice" ]; then
                         \"_id\": new ObjectId(),
                     }],
                     \"_id\": new ObjectId(),
-                }], 
-                \"security\": 
+                }],
+                \"security\":
                 {
                     \"k\" : \"$KI\",
                     \"op\" : null,
                     \"opc\" : \"$OPC\",
                     \"amf\" : \"8000\",
                 },
-                \"ambr\" : 
+                \"ambr\" :
                 {
                     \"downlink\" : { \"value\": NumberInt(1000000000), \"unit\": NumberInt(0)},
                     \"uplink\" : { \"value\": NumberInt(1000000000), \"unit\": NumberInt(0)}
@@ -691,34 +691,34 @@ fi
 
 if [ "$1" = "update_apn" ]; then
     if [ "$#" -eq 4 ]; then
-        IMSI=$2 
+        IMSI=$2
         APN=$3
         SLICE_NUM=$4
-        
-        mongosh --eval "db.subscribers.updateOne({ \"imsi\": \"$IMSI\"}, 
+
+        mongosh --eval "db.subscribers.updateOne({ \"imsi\": \"$IMSI\"},
             {\$push: { \"slice.$SLICE_NUM.session\":
                            {
-                            \"name\" : \"$APN\", 
-                            \"type\" : NumberInt(3), 
-                            \"_id\" : new ObjectId(), 
+                            \"name\" : \"$APN\",
+                            \"type\" : NumberInt(3),
+                            \"_id\" : new ObjectId(),
                             \"pcc_rule\" : [],
-                            \"ambr\" : 
-                            { 
-                                \"uplink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) }, 
-                                \"downlink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) }, 
-                            }, 
-                            \"qos\" : 
-                            { 
-                                \"index\" : NumberInt(9), 
-                                \"arp\" : 
-                                { 
-                                    \"priority_level\" : NumberInt(8), 
-                                    \"pre_emption_capability\" : NumberInt(1), 
-                                    \"pre_emption_vulnerability\" : NumberInt(1), 
-                                }, 
-                            }, 
+                            \"ambr\" :
+                            {
+                                \"uplink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) },
+                                \"downlink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) },
+                            },
+                            \"qos\" :
+                            {
+                                \"index\" : NumberInt(9),
+                                \"arp\" :
+                                {
+                                    \"priority_level\" : NumberInt(8),
+                                    \"pre_emption_capability\" : NumberInt(1),
+                                    \"pre_emption_vulnerability\" : NumberInt(1),
+                                },
+                            },
                            }
-                    }   
+                    }
             });" $DB_URI
         exit $?
     fi
@@ -729,43 +729,43 @@ fi
 
 if [ "$1" = "update_slice" ]; then
     if [ "$#" -eq 5 ]; then
-        IMSI=$2 
+        IMSI=$2
         APN=$3
         SST=$4
         SD=$5
-        
-        mongosh --eval "db.subscribers.updateOne({ \"imsi\": \"$IMSI\"}, 
+
+        mongosh --eval "db.subscribers.updateOne({ \"imsi\": \"$IMSI\"},
             {\$push: { \"slice\":
-                           
-                            { 
-                            \"sst\" : NumberInt($SST), 
-                            \"sd\" : \"$SD\", 
-                            \"default_indicator\" : false, 
-                            \"_id\" : new ObjectId(), 
-                            \"session\" : 
-                            [{ 
-                                \"name\" : \"$APN\", 
-                                \"type\" : NumberInt(3), 
-                                \"_id\" : new ObjectId(), 
+
+                            {
+                            \"sst\" : NumberInt($SST),
+                            \"sd\" : \"$SD\",
+                            \"default_indicator\" : false,
+                            \"_id\" : new ObjectId(),
+                            \"session\" :
+                            [{
+                                \"name\" : \"$APN\",
+                                \"type\" : NumberInt(3),
+                                \"_id\" : new ObjectId(),
                                 \"pcc_rule\" : [],
-                                \"ambr\" : 
-                                { 
-                                    \"uplink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) }, 
-                                    \"downlink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) }, 
-                                }, 
-                                \"qos\" : 
-                                { 
-                                    \"index\" : NumberInt(9), 
-                                    \"arp\" : 
-                                    { 
-                                        \"priority_level\" : NumberInt(8), 
-                                        \"pre_emption_capability\" : NumberInt(1), 
-                                        \"pre_emption_vulnerability\" : NumberInt(1), 
-                                    }, 
-                                }, 
+                                \"ambr\" :
+                                {
+                                    \"uplink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) },
+                                    \"downlink\" : { \"value\": NumberInt(1), \"unit\" : NumberInt(3) },
+                                },
+                                \"qos\" :
+                                {
+                                    \"index\" : NumberInt(9),
+                                    \"arp\" :
+                                    {
+                                        \"priority_level\" : NumberInt(8),
+                                        \"pre_emption_capability\" : NumberInt(1),
+                                        \"pre_emption_vulnerability\" : NumberInt(1),
+                                    },
+                                },
                              }]
                             }
-                    }   
+                    }
             });" $DB_URI
         exit $?
     fi
@@ -794,7 +794,7 @@ if [ "$1" = "ambr_speed" ]; then
         UL_VALUE=$5
         UL_UNIT=$6
         mongosh --eval "db.subscribers.updateOne({\"imsi\": \"$IMSI\"},
-            {\$set: { 
+            {\$set: {
                 \"ambr\" : {
                     \"downlink\" : {
                         \"value\" : NumberInt($DL_VALUE),
