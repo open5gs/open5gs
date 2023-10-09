@@ -1174,7 +1174,7 @@ static int on_frame_recv(nghttp2_session *session,
                 ogs_assert(true ==
                     ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, NULL,
-                        "server callback error", NULL));
+                        "server callback error", NULL, NULL));
 
                 return 0;
             }

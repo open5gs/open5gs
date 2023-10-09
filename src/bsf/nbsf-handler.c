@@ -303,7 +303,8 @@ cleanup:
     ogs_assert(status);
     ogs_error("%s", strerror);
     ogs_assert(true ==
-        ogs_sbi_server_send_error(stream, status, recvmsg, strerror, NULL));
+        ogs_sbi_server_send_error(stream, status, recvmsg, strerror, NULL,
+                NULL));
     ogs_free(strerror);
 
     return false;

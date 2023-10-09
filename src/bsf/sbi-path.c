@@ -96,7 +96,7 @@ int bsf_sbi_discover_and_send(
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
-                "Cannot discover", sess->dnn));
+                "Cannot discover", sess->dnn, NULL));
         return OGS_ERROR;
     }
 
@@ -109,7 +109,7 @@ int bsf_sbi_discover_and_send(
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
-                "Cannot discover", sess->dnn));
+                "Cannot discover", sess->dnn, NULL));
         return r;
     }
 
