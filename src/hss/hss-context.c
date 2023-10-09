@@ -184,7 +184,7 @@ int hss_context_parse_config(void)
                 const char *hss_key = ogs_yaml_iter_key(&hss_iter);
                 ogs_assert(hss_key);
                 if (!strcmp(hss_key, "freeDiameter")) {
-                    yaml_node_t *node = 
+                    yaml_node_t *node =
                         yaml_document_get_node(document, hss_iter.pair->value);
                     ogs_assert(node);
                     if (node->type == YAML_SCALAR_NODE) {
@@ -197,10 +197,10 @@ int hss_context_parse_config(void)
                             const char *fd_key = ogs_yaml_iter_key(&fd_iter);
                             ogs_assert(fd_key);
                             if (!strcmp(fd_key, "identity")) {
-                                self.diam_config->cnf_diamid = 
+                                self.diam_config->cnf_diamid =
                                     ogs_yaml_iter_value(&fd_iter);
                             } else if (!strcmp(fd_key, "realm")) {
-                                self.diam_config->cnf_diamrlm = 
+                                self.diam_config->cnf_diamrlm =
                                     ogs_yaml_iter_value(&fd_iter);
                             } else if (!strcmp(fd_key, "port")) {
                                 const char *v = ogs_yaml_iter_value(&fd_iter);
@@ -209,7 +209,7 @@ int hss_context_parse_config(void)
                                 const char *v = ogs_yaml_iter_value(&fd_iter);
                                 if (v) self.diam_config->cnf_port_tls = atoi(v);
                             } else if (!strcmp(fd_key, "listen_on")) {
-                                self.diam_config->cnf_addr = 
+                                self.diam_config->cnf_addr =
                                     ogs_yaml_iter_value(&fd_iter);
                             } else if (!strcmp(fd_key, "no_fwd")) {
                                 self.diam_config->cnf_flags.no_fwd =
@@ -327,7 +327,7 @@ int hss_context_parse_config(void)
                         }
                     }
                 } else if (!strcmp(hss_key, "sms_over_ims")) {
-                            self.sms_over_ims = 
+                            self.sms_over_ims =
                                 ogs_yaml_iter_value(&hss_iter);
                 } else
                     ogs_warn("unknown key `%s`", hss_key);
@@ -979,185 +979,185 @@ char *hss_cx_download_user_data(
         }
 
         if(self.sms_over_ims) {
-            user_data = ogs_mstrcatf(user_data, "%s", 
-                        ogs_diam_cx_xml_ifc_s); 
+            user_data = ogs_mstrcatf(user_data, "%s",
+                        ogs_diam_cx_xml_ifc_s);
             ogs_assert(user_data);
 
-              user_data = ogs_mstrcatf(user_data, "%s%s%s", 
+              user_data = ogs_mstrcatf(user_data, "%s%s%s",
                           ogs_diam_cx_xml_priority_s,
-                          "2", 
-                          ogs_diam_cx_xml_priority_e); 
+                          "2",
+                          ogs_diam_cx_xml_priority_e);
               ogs_assert(user_data);
 
-              user_data = ogs_mstrcatf(user_data, "%s", 
-                          ogs_diam_cx_xml_tp_s); 
+              user_data = ogs_mstrcatf(user_data, "%s",
+                          ogs_diam_cx_xml_tp_s);
               ogs_assert(user_data);
 
-                user_data = ogs_mstrcatf(user_data, "%s%s%s", 
-                            ogs_diam_cx_xml_cnf_s, 
-                            "1", 
-                            ogs_diam_cx_xml_cnf_e); 
+                user_data = ogs_mstrcatf(user_data, "%s%s%s",
+                            ogs_diam_cx_xml_cnf_s,
+                            "1",
+                            ogs_diam_cx_xml_cnf_e);
                 ogs_assert(user_data);
 
-                user_data = ogs_mstrcatf(user_data, "%s", 
-                            ogs_diam_cx_xml_spt_s); 
+                user_data = ogs_mstrcatf(user_data, "%s",
+                            ogs_diam_cx_xml_spt_s);
                 ogs_assert(user_data);
 
-                  user_data = ogs_mstrcatf(user_data, "%s%s%s", 
-                              ogs_diam_cx_xml_condition_negated_s, 
-                              "0", 
-                              ogs_diam_cx_xml_condition_negated_e); 
+                  user_data = ogs_mstrcatf(user_data, "%s%s%s",
+                              ogs_diam_cx_xml_condition_negated_s,
+                              "0",
+                              ogs_diam_cx_xml_condition_negated_e);
                   ogs_assert(user_data);
 
-                  user_data = ogs_mstrcatf(user_data, "%s%s%s", 
-                              ogs_diam_cx_xml_group_s, 
-                              "1", 
-                              ogs_diam_cx_xml_group_e); 
+                  user_data = ogs_mstrcatf(user_data, "%s%s%s",
+                              ogs_diam_cx_xml_group_s,
+                              "1",
+                              ogs_diam_cx_xml_group_e);
                   ogs_assert(user_data);
 
-                  user_data = ogs_mstrcatf(user_data, "%s%s%s", 
-                              ogs_diam_cx_xml_method_s, 
-                              "MESSAGE", 
-                              ogs_diam_cx_xml_method_e); 
+                  user_data = ogs_mstrcatf(user_data, "%s%s%s",
+                              ogs_diam_cx_xml_method_s,
+                              "MESSAGE",
+                              ogs_diam_cx_xml_method_e);
                   ogs_assert(user_data);
 
-                  user_data = ogs_mstrcatf(user_data, "%s", 
-                              ogs_diam_cx_xml_extension_s); 
+                  user_data = ogs_mstrcatf(user_data, "%s",
+                              ogs_diam_cx_xml_extension_s);
                   ogs_assert(user_data);
 
-                    user_data = ogs_mstrcatf(user_data, "%s%s%s", 
-                                ogs_diam_cx_xml_registration_type_s, 
-                                "0", 
-                                ogs_diam_cx_xml_registration_type_e); 
+                    user_data = ogs_mstrcatf(user_data, "%s%s%s",
+                                ogs_diam_cx_xml_registration_type_s,
+                                "0",
+                                ogs_diam_cx_xml_registration_type_e);
                     ogs_assert(user_data);
 
-                  user_data = ogs_mstrcatf(user_data, "%s", 
-                              ogs_diam_cx_xml_extension_e); 
+                  user_data = ogs_mstrcatf(user_data, "%s",
+                              ogs_diam_cx_xml_extension_e);
                   ogs_assert(user_data);
 
-                user_data = ogs_mstrcatf(user_data, "%s", 
-                            ogs_diam_cx_xml_spt_e); 
+                user_data = ogs_mstrcatf(user_data, "%s",
+                            ogs_diam_cx_xml_spt_e);
                 ogs_assert(user_data);
 
-                user_data = ogs_mstrcatf(user_data, "%s", 
-                            ogs_diam_cx_xml_spt_s); 
+                user_data = ogs_mstrcatf(user_data, "%s",
+                            ogs_diam_cx_xml_spt_s);
                 ogs_assert(user_data);
 
-                  user_data = ogs_mstrcatf(user_data, "%s%s%s", 
-                              ogs_diam_cx_xml_condition_negated_s, 
-                              "0", 
-                              ogs_diam_cx_xml_condition_negated_e); 
+                  user_data = ogs_mstrcatf(user_data, "%s%s%s",
+                              ogs_diam_cx_xml_condition_negated_s,
+                              "0",
+                              ogs_diam_cx_xml_condition_negated_e);
                   ogs_assert(user_data);
 
-                  user_data = ogs_mstrcatf(user_data, "%s%s%s", 
-                              ogs_diam_cx_xml_group_s, 
-                              "2", 
-                              ogs_diam_cx_xml_group_e); 
+                  user_data = ogs_mstrcatf(user_data, "%s%s%s",
+                              ogs_diam_cx_xml_group_s,
+                              "2",
+                              ogs_diam_cx_xml_group_e);
                   ogs_assert(user_data);
 
-                  user_data = ogs_mstrcatf(user_data, "%s", 
-                              ogs_diam_cx_xml_sip_hdr_s); 
+                  user_data = ogs_mstrcatf(user_data, "%s",
+                              ogs_diam_cx_xml_sip_hdr_s);
                   ogs_assert(user_data);
 
-                    user_data = ogs_mstrcatf(user_data, "%s%s%s", 
-                                ogs_diam_cx_xml_header_s, 
-                                "Content-Type", 
-                                ogs_diam_cx_xml_header_e); 
+                    user_data = ogs_mstrcatf(user_data, "%s%s%s",
+                                ogs_diam_cx_xml_header_s,
+                                "Content-Type",
+                                ogs_diam_cx_xml_header_e);
                     ogs_assert(user_data);
 
-                    user_data = ogs_mstrcatf(user_data, "%s%s%s", 
-                                ogs_diam_cx_xml_content_s, 
-                                "application/vnd.3gpp.sms", 
-                                ogs_diam_cx_xml_content_e); 
+                    user_data = ogs_mstrcatf(user_data, "%s%s%s",
+                                ogs_diam_cx_xml_content_s,
+                                "application/vnd.3gpp.sms",
+                                ogs_diam_cx_xml_content_e);
                     ogs_assert(user_data);
 
-                  user_data = ogs_mstrcatf(user_data, "%s", 
-                              ogs_diam_cx_xml_sip_hdr_e); 
+                  user_data = ogs_mstrcatf(user_data, "%s",
+                              ogs_diam_cx_xml_sip_hdr_e);
                   ogs_assert(user_data);
 
-                  user_data = ogs_mstrcatf(user_data, "%s", 
-                              ogs_diam_cx_xml_extension_s); 
+                  user_data = ogs_mstrcatf(user_data, "%s",
+                              ogs_diam_cx_xml_extension_s);
                   ogs_assert(user_data);
 
-                    user_data = ogs_mstrcatf(user_data, "%s%s%s", 
-                                ogs_diam_cx_xml_registration_type_s, 
-                                "0", 
-                                ogs_diam_cx_xml_registration_type_e); 
+                    user_data = ogs_mstrcatf(user_data, "%s%s%s",
+                                ogs_diam_cx_xml_registration_type_s,
+                                "0",
+                                ogs_diam_cx_xml_registration_type_e);
                     ogs_assert(user_data);
 
-                  user_data = ogs_mstrcatf(user_data, "%s", 
-                              ogs_diam_cx_xml_extension_e); 
+                  user_data = ogs_mstrcatf(user_data, "%s",
+                              ogs_diam_cx_xml_extension_e);
                   ogs_assert(user_data);
 
-                user_data = ogs_mstrcatf(user_data, "%s", 
-                            ogs_diam_cx_xml_spt_e); 
+                user_data = ogs_mstrcatf(user_data, "%s",
+                            ogs_diam_cx_xml_spt_e);
                 ogs_assert(user_data);
 
-                user_data = ogs_mstrcatf(user_data, "%s", 
-                            ogs_diam_cx_xml_spt_s); 
+                user_data = ogs_mstrcatf(user_data, "%s",
+                            ogs_diam_cx_xml_spt_s);
                 ogs_assert(user_data);
 
-                  user_data = ogs_mstrcatf(user_data, "%s%s%s", 
-                              ogs_diam_cx_xml_condition_negated_s, 
-                              "0", 
-                              ogs_diam_cx_xml_condition_negated_e); 
+                  user_data = ogs_mstrcatf(user_data, "%s%s%s",
+                              ogs_diam_cx_xml_condition_negated_s,
+                              "0",
+                              ogs_diam_cx_xml_condition_negated_e);
                   ogs_assert(user_data);
 
-                  user_data = ogs_mstrcatf(user_data, "%s%s%s", 
-                              ogs_diam_cx_xml_group_s, 
-                              "3", 
-                              ogs_diam_cx_xml_group_e); 
+                  user_data = ogs_mstrcatf(user_data, "%s%s%s",
+                              ogs_diam_cx_xml_group_s,
+                              "3",
+                              ogs_diam_cx_xml_group_e);
                   ogs_assert(user_data);
 
-                  user_data = ogs_mstrcatf(user_data, "%s%s%s", 
-                              ogs_diam_cx_xml_session_case_s, 
-                              "0", 
-                              ogs_diam_cx_xml_session_case_e); 
+                  user_data = ogs_mstrcatf(user_data, "%s%s%s",
+                              ogs_diam_cx_xml_session_case_s,
+                              "0",
+                              ogs_diam_cx_xml_session_case_e);
                   ogs_assert(user_data);
 
-                  user_data = ogs_mstrcatf(user_data, "%s", 
-                              ogs_diam_cx_xml_extension_s); 
+                  user_data = ogs_mstrcatf(user_data, "%s",
+                              ogs_diam_cx_xml_extension_s);
                   ogs_assert(user_data);
 
-                    user_data = ogs_mstrcatf(user_data, "%s%s%s", 
-                                ogs_diam_cx_xml_registration_type_s, 
-                                "0", 
-                                ogs_diam_cx_xml_registration_type_e); 
+                    user_data = ogs_mstrcatf(user_data, "%s%s%s",
+                                ogs_diam_cx_xml_registration_type_s,
+                                "0",
+                                ogs_diam_cx_xml_registration_type_e);
                     ogs_assert(user_data);
 
-                  user_data = ogs_mstrcatf(user_data, "%s", 
-                              ogs_diam_cx_xml_extension_e); 
+                  user_data = ogs_mstrcatf(user_data, "%s",
+                              ogs_diam_cx_xml_extension_e);
                   ogs_assert(user_data);
 
-                user_data = ogs_mstrcatf(user_data, "%s", 
-                            ogs_diam_cx_xml_spt_e); 
+                user_data = ogs_mstrcatf(user_data, "%s",
+                            ogs_diam_cx_xml_spt_e);
                 ogs_assert(user_data);
 
-              user_data = ogs_mstrcatf(user_data, "%s", 
-                          ogs_diam_cx_xml_tp_e); 
+              user_data = ogs_mstrcatf(user_data, "%s",
+                          ogs_diam_cx_xml_tp_e);
               ogs_assert(user_data);
 
-              user_data = ogs_mstrcatf(user_data, "%s", 
-                          ogs_diam_cx_xml_app_server_s); 
+              user_data = ogs_mstrcatf(user_data, "%s",
+                          ogs_diam_cx_xml_app_server_s);
               ogs_assert(user_data);
 
-                user_data = ogs_mstrcatf(user_data, "%s%s%s", 
-                            ogs_diam_cx_xml_server_name_s, 
-                            self.sms_over_ims, 
-                            ogs_diam_cx_xml_server_name_e); 
+                user_data = ogs_mstrcatf(user_data, "%s%s%s",
+                            ogs_diam_cx_xml_server_name_s,
+                            self.sms_over_ims,
+                            ogs_diam_cx_xml_server_name_e);
                 ogs_assert(user_data);
 
-                user_data = ogs_mstrcatf(user_data, "%s%s%s", 
-                            ogs_diam_cx_xml_default_handling_s, 
+                user_data = ogs_mstrcatf(user_data, "%s%s%s",
+                            ogs_diam_cx_xml_default_handling_s,
                             "0",
-                            ogs_diam_cx_xml_default_handling_e); 
+                            ogs_diam_cx_xml_default_handling_e);
                 ogs_assert(user_data);
 
-              user_data = ogs_mstrcatf(user_data, "%s", 
-                          ogs_diam_cx_xml_app_server_e); 
+              user_data = ogs_mstrcatf(user_data, "%s",
+                          ogs_diam_cx_xml_app_server_e);
               ogs_assert(user_data);
 
-            user_data = ogs_mstrcatf(user_data, "%s", 
+            user_data = ogs_mstrcatf(user_data, "%s",
                         ogs_diam_cx_xml_ifc_e);
             ogs_assert(user_data);
         }
@@ -1215,7 +1215,7 @@ int hss_handle_change_event(const bson_t *document)
         bson_iter_recurse(&iter, &child1_iter);
         while (bson_iter_next(&child1_iter)) {
             const char *key = bson_iter_key(&child1_iter);
-            if (!strcmp(key, "imsi") && 
+            if (!strcmp(key, "imsi") &&
                     BSON_ITER_HOLDS_UTF8(&child1_iter)) {
                 utf8 = (char *)bson_iter_utf8(&child1_iter, &length);
                 imsi_bcd = ogs_strndup(utf8,
@@ -1234,44 +1234,44 @@ int hss_handle_change_event(const bson_t *document)
         bson_iter_recurse(&iter, &child1_iter);
         while (bson_iter_next(&child1_iter)) {
             const char *key = bson_iter_key(&child1_iter);
-            if (!strcmp(key, "updatedFields") && 
+            if (!strcmp(key, "updatedFields") &&
                     BSON_ITER_HOLDS_DOCUMENT(&child1_iter)) {
                 bson_iter_recurse(&child1_iter, &child2_iter);
                 while (bson_iter_next(&child2_iter)) {
                     const char *child2_key = bson_iter_key(&child2_iter);
-                    if (!strcmp(child2_key, 
-                            "request_cancel_location") && 
+                    if (!strcmp(child2_key,
+                            "request_cancel_location") &&
                             BSON_ITER_HOLDS_BOOL(&child2_iter)) {
                         send_clr_flag = (char *)bson_iter_bool(&child2_iter);
-                    } else if (!strncmp(child2_key, 
+                    } else if (!strncmp(child2_key,
                             "access_restriction_data",
                             strlen("access_restriction_data"))) {
                         send_idr_flag = true;
                         subdatamask = (subdatamask | OGS_DIAM_S6A_SUBDATA_ARD);
-                    } else if (!strncmp(child2_key, 
-                            "subscriber_status", 
+                    } else if (!strncmp(child2_key,
+                            "subscriber_status",
                             strlen("subscriber_status"))) {
                         send_idr_flag = true;
-                        subdatamask = (subdatamask | 
+                        subdatamask = (subdatamask |
                             OGS_DIAM_S6A_SUBDATA_SUB_STATUS);
-                    } else if (!strncmp(child2_key, 
+                    } else if (!strncmp(child2_key,
                             "network_access_mode",
                             strlen("network_access_mode"))) {
                         send_idr_flag = true;
                         subdatamask = (subdatamask | OGS_DIAM_S6A_SUBDATA_NAM);
                     } else if (!strncmp(child2_key, "ambr", strlen("ambr"))) {
                         send_idr_flag = true;
-                        subdatamask = (subdatamask | 
+                        subdatamask = (subdatamask |
                             OGS_DIAM_S6A_SUBDATA_UEAMBR);
-                    } else if (!strncmp(child2_key, 
+                    } else if (!strncmp(child2_key,
                             "subscribed_rau_tau_timer",
                             strlen("subscribed_rau_tau_timer"))) {
                         send_idr_flag = true;
-                        subdatamask = (subdatamask | 
+                        subdatamask = (subdatamask |
                             OGS_DIAM_S6A_SUBDATA_RAU_TAU_TIMER);
                     } else if (!strncmp(child2_key, "slice", strlen("slice"))) {
                         send_idr_flag = true;
-                        subdatamask = (subdatamask | 
+                        subdatamask = (subdatamask |
                             OGS_DIAM_S6A_SUBDATA_APN_CONFIG);
                     }
                 }
