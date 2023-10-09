@@ -685,6 +685,16 @@ typedef struct ogs_subscription_data_s {
 #define OGS_SUBSCRIBER_STATUS_SERVICE_GRANTED                   0
 #define OGS_SUBSCRIBER_STATUS_OPERATOR_DETERMINED_BARRING       1
     uint32_t                subscriber_status;
+#define OGS_OP_DET_BARRING_ALL_PS_BARRED                                            (1<<0)
+#define OGS_OP_DET_BARRING_ROAM_ACC_HPLMN_AP_BARRED                                 (1<<1)
+#define OGS_OP_DET_BARRING_ROAM_ACC_VPLMN_AP_BARRED                                 (1<<2)
+#define OGS_OP_DET_BARRING_ALL_OUT_CALLS                                            (1<<3)
+#define OGS_OP_DET_BARRING_ALL_OUT_INT_CALLS                                        (1<<4)
+#define OGS_OP_DET_BARRING_ALL_OUT_INT_CALLS_EXCL_HPLMN_COUNTRY                     (1<<5)
+#define OGS_OP_DET_BARRING_ALL_OUT_INTERZONE_CALLS                                  (1<<6)
+#define OGS_OP_DET_BARRING_ALL_OUT_INTERZONE_CALLS_EXCL_HPLMN_COUNTRY               (1<<7)
+#define OGS_OPD_ETEBARRING_OUT_INT_CALLS_EXCL_EXCL_HPLMN_COUNTRY_AND_INTERZONE_CALLS (1<<8)
+    uint32_t operator_determined_barring; /* 3GPP TS 29.272 7.3.30 */
 #define OGS_NETWORK_ACCESS_MODE_PACKET_AND_CIRCUIT              0
 #define OGS_NETWORK_ACCESS_MODE_RESERVED                        1
 #define OGS_NETWORK_ACCESS_MODE_ONLY_PACKET                     2

@@ -393,6 +393,10 @@ int ogs_dbi_subscription_data(char *supi,
             BSON_ITER_HOLDS_INT32(&iter)) {
             subscription_data->subscriber_status =
                 bson_iter_int32(&iter);
+        } else if (!strcmp(key, "operator_determined_barring") &&
+            BSON_ITER_HOLDS_INT32(&iter)) {
+            subscription_data->operator_determined_barring =
+                bson_iter_int32(&iter);
         } else if (!strcmp(key, "network_access_mode") &&
             BSON_ITER_HOLDS_INT32(&iter)) {
             subscription_data->network_access_mode =

@@ -175,6 +175,8 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
   const purge_flag = (subscriber || {}).purge_flag;
   const security = ((subscriber || {}).security || {});
   const ambr = ((subscriber || {}).ambr || {});
+  const subscriber_status = (subscriber || {}).subscriber_status;
+  const operator_determined_barring = (subscriber || {}).operator_determined_barring;
   const slice_list = ((subscriber || {}).slice || []);
 
   return (
@@ -257,6 +259,23 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
                           <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>SQN</span>
                         </div>
                       }
+                    </div>
+                  </div>
+                </div>
+                <div className="sectioncolumn">
+                  <div className="body">
+                    <div className="left">
+                      <SecurityIcon/>
+                    </div>
+                    <div className="right">
+                      <div className="data">
+                        {subscriber_status == 0 ? ( "SERVICE_GRANTED (0)" ) : ( "OPERATOR_DETERMINED_BARRING (1)" )}
+                        <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>Subscriber Status (TS 29.272 7.3.29)</span>
+                      </div>
+                      <div className="data">
+                        {operator_determined_barring}
+                        <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>Operator Determined Barring (TS 29.272 7.3.30)</span>
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -119,6 +119,7 @@ extern struct dict_object *ogs_diam_s6a_xres;
 extern struct dict_object *ogs_diam_s6a_autn;
 extern struct dict_object *ogs_diam_s6a_kasme;
 extern struct dict_object *ogs_diam_s6a_subscriber_status;
+extern struct dict_object *ogs_diam_s6a_operator_determined_barring;
 extern struct dict_object *ogs_diam_s6a_ambr;
 extern struct dict_object *ogs_diam_s6a_network_access_mode;
 extern struct dict_object *ogs_diam_s6a_access_restriction_data;

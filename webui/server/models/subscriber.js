@@ -91,6 +91,10 @@ const Subscriber = new Schema({
     $type: Number,
     default: 0  // Service Granted
   },
+  operator_determined_barring: {
+    $type: Number,
+    default: 0 // No barring
+  },
   network_access_mode: {
     $type: Number,
     default: 0 // Packet and Circuit

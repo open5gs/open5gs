@@ -39,6 +39,7 @@ sub_data = {
   "subscribed_rau_tau_timer": 12,
   "network_access_mode": 0,
   "subscriber_status": 0,
+  "operator_determined_barring": 0,
   "access_restriction_data": 32,
   "slice" : slice_data,
   "ambr": {"uplink": {"value": 1, "unit": 3}, "downlink": {"value": 1, "unit": 3}},
