@@ -54,6 +54,7 @@ struct dict_object *ogs_diam_s6a_xres = NULL;
 struct dict_object *ogs_diam_s6a_autn = NULL;
 struct dict_object *ogs_diam_s6a_kasme = NULL;
 struct dict_object *ogs_diam_s6a_subscriber_status = NULL;
+struct dict_object *ogs_diam_s6a_operator_determined_barring = NULL;
 struct dict_object *ogs_diam_s6a_ambr = NULL;
 struct dict_object *ogs_diam_s6a_network_access_mode = NULL;
 struct dict_object *ogs_diam_s6a_access_restriction_data = NULL;
@@ -151,6 +152,7 @@ int ogs_diam_s6a_init(void)
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Served-Party-IP-Address", &ogs_diam_s6a_served_party_ip_address);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Subscription-Data", &ogs_diam_s6a_subscription_data);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Subscriber-Status", &ogs_diam_s6a_subscriber_status);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Operator-Determined-Barring", &ogs_diam_s6a_operator_determined_barring);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Network-Access-Mode", &ogs_diam_s6a_network_access_mode);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Access-Restriction-Data", &ogs_diam_s6a_access_restriction_data);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Subscribed-Periodic-RAU-TAU-Timer", &ogs_diam_s6a_subscribed_rau_tau_timer);

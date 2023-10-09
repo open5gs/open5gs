@@ -1255,6 +1255,12 @@ int hss_handle_change_event(const bson_t *document)
                         subdatamask = (subdatamask |
                             OGS_DIAM_S6A_SUBDATA_SUB_STATUS);
                     } else if (!strncmp(child2_key,
+                            "operator_determined_barring",
+                            strlen("operator_determined_barring"))) {
+                        send_idr_flag = true;
+                        subdatamask = (subdatamask |
+                            OGS_DIAM_S6A_SUBDATA_SUB_STATUS);
+                    } else if (!strncmp(child2_key,
                             "network_access_mode",
                             strlen("network_access_mode"))) {
                         send_idr_flag = true;

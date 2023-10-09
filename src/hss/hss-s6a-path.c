@@ -303,7 +303,7 @@ static int hss_s6a_avp_add_subscription_data(
 
     struct avp *avp_msisdn, *avp_a_msisdn;
     struct avp *avp_access_restriction_data;
-    struct avp *avp_subscriber_status, *avp_network_access_mode;
+    struct avp *avp_subscriber_status, *avp_operator_determined_barring, *avp_network_access_mode;
     struct avp *avp_ambr, *avp_max_bandwidth_ul, *avp_max_bandwidth_dl;
     struct avp *avp_rau_tau_timer;
 
@@ -373,6 +373,17 @@ static int hss_s6a_avp_add_subscription_data(
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_subscriber_status);
         ogs_assert(ret == 0);
+
+        if (subscription_data->subscriber_status == OGS_SUBSCRIBER_STATUS_OPERATOR_DETERMINED_BARRING) {
+            ret = fd_msg_avp_new(
+                    ogs_diam_s6a_operator_determined_barring, 0, &avp_operator_determined_barring);
+            ogs_assert(ret == 0);
+            val.i32 = subscription_data->operator_determined_barring;
+            ret = fd_msg_avp_setvalue(avp_operator_determined_barring, &val);
+            ogs_assert(ret == 0);
+            ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_operator_determined_barring);
+            ogs_assert(ret == 0);
+        }
     }
 
     if (subdatamask & OGS_DIAM_S6A_SUBDATA_NAM) {
