@@ -154,7 +154,7 @@ void sepp_handshake_state_will_establish(ogs_fsm_t *s, sepp_event_t *e)
                             ogs_sbi_server_send_error(stream,
                                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                                 message, "PRINS is not supported",
-                                sepp_node->receiver));
+                                sepp_node->receiver, NULL));
 
                     } else if (sepp_node->negotiated_security_scheme ==
                             OpenAPI_security_capability_NONE) {
@@ -341,7 +341,7 @@ void sepp_handshake_state_established(ogs_fsm_t *s, sepp_event_t *e)
                             ogs_sbi_server_send_error(stream,
                                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                                 message, "PRINS is not supported",
-                                sepp_node->receiver));
+                                sepp_node->receiver, NULL));
 
                     } else if (sepp_node->negotiated_security_scheme ==
                             OpenAPI_security_capability_NONE) {
@@ -483,7 +483,7 @@ void sepp_handshake_state_terminated(ogs_fsm_t *s, sepp_event_t *e)
                             ogs_sbi_server_send_error(stream,
                                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                                 message, "PRINS is not supported",
-                                sepp_node->receiver));
+                                sepp_node->receiver, NULL));
 
                     } else if (sepp_node->negotiated_security_scheme ==
                             OpenAPI_security_capability_NONE) {

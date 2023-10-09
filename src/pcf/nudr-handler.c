@@ -174,7 +174,8 @@ cleanup:
     ogs_assert(status);
     ogs_error("%s", strerror);
     ogs_assert(true ==
-        ogs_sbi_server_send_error(stream, status, recvmsg, strerror, NULL));
+        ogs_sbi_server_send_error(stream, status, recvmsg, strerror,
+                NULL, NULL));
     ogs_free(strerror);
 
     ogs_subscription_data_free(&subscription_data);
@@ -249,10 +250,22 @@ bool pcf_nudr_dr_handle_query_sm_data(
 
 cleanup:
     ogs_assert(strerror);
-    ogs_assert(status);
+    status = OGS_SBI_HTTP_STATUS_FORBIDDEN;
     ogs_error("%s", strerror);
+    /*
+     * TS29.512
+     * 4.2.2.2 SM Policy Association establishment 
+     *
+     * If the PCF, based on local configuration and/or operator
+     * policies, denies the creation of the Individual SM Policy
+     * resource, the PCF may reject the request and include in
+     * an HTTP "403 Forbidden" response message the "cause"
+     * attribute of the ProblemDetails data structure set to
+     * "POLICY_CONTEXT_DENIED".
+     */
     ogs_assert(true ==
-        ogs_sbi_server_send_error(stream, status, recvmsg, strerror, NULL));
+        ogs_sbi_server_send_error(stream, status, recvmsg, strerror,
+                NULL, "POLICY_CONTEXT_DENIED"));
     ogs_free(strerror);
 
     return false;

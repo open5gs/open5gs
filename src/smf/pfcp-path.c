@@ -283,7 +283,8 @@ static void sess_5gc_timeout(ogs_pfcp_xact_t *xact, void *data)
             ogs_assert(stream);
             ogs_assert(true ==
                 ogs_sbi_server_send_error(stream,
-                    OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL, strerror, NULL));
+                    OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL, strerror,
+                    NULL, NULL));
         } else {
             ogs_fatal("Unknown trigger [%d]", trigger);
             ogs_assert_if_reached();
