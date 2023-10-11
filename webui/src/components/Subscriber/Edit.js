@@ -672,7 +672,7 @@ class Edit extends Component {
   }
 
   getStateFromProps(props) {
-    const { 
+    const {
       action,
       profiles,
       width,
@@ -741,7 +741,7 @@ class Edit extends Component {
 
   getFormDataFromProfile(profile) {
     let formData;
-    
+
     formData = Object.assign({}, this.props.profiles.filter(p => p._id === profile)[0]);
     formData = Object.assign(formData, { profile });
 
@@ -807,7 +807,7 @@ class Edit extends Component {
     } = this.state;
 
     return (
-      <Form 
+      <Form
         visible={isLoading ? false : visible}
         title={(action === 'update') ? 'Edit Subscriber' : 'Create Subscriber'}
         schema={this.state.schema}
