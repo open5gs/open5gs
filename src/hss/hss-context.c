@@ -1259,7 +1259,7 @@ int hss_handle_change_event(const bson_t *document)
                             strlen("operator_determined_barring"))) {
                         send_idr_flag = true;
                         subdatamask = (subdatamask |
-                            OGS_DIAM_S6A_SUBDATA_SUB_STATUS);
+                            OGS_DIAM_S6A_SUBDATA_OP_DET_BARRING);
                     } else if (!strncmp(child2_key,
                             "network_access_mode",
                             strlen("network_access_mode"))) {
