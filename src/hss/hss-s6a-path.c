@@ -364,7 +364,7 @@ static int hss_s6a_avp_add_subscription_data(
         }
     }
 
-    if (subdatamask & OGS_DIAM_S6A_SUBDATA_SUB_STATUS) {
+    if (subdatamask & (OGS_DIAM_S6A_SUBDATA_SUB_STATUS | OGS_DIAM_S6A_SUBDATA_OP_DET_BARRING)) {
         ret = fd_msg_avp_new(
                 ogs_diam_s6a_subscriber_status, 0, &avp_subscriber_status);
         ogs_assert(ret == 0);
@@ -1354,6 +1354,17 @@ int hss_s6a_send_idr(char *imsi_bcd, uint32_t idr_flags, uint32_t subdatamask)
     if (subscription_data.purge_flag) {
         ogs_error("    [%s] UE Purged at MME.  Cannot send IDR.", imsi_bcd);
         return OGS_ERROR;
+    }
+
+    /* Avoid sending IDR if only Operator-Determined-Barring field changed and
+     * Subscriber-Status is SERVICE_GRANTED, since then the field has no
+     * meaning and won't be sent through the wire, so nothing really changes
+     * from the PoV of the peer. */
+    if (subdatamask == OGS_DIAM_S6A_SUBDATA_OP_DET_BARRING &&
+        subscription_data.subscriber_status == OGS_SUBSCRIBER_STATUS_SERVICE_GRANTED) {
+        ogs_debug("    [%s] Skip sending IDR: Only Operator-Determined-Barring changed while"
+                 " Subscriber-Status is SERVICE_GRANTED.", imsi_bcd);
+        return OGS_OK;
     }
 
     /* Create the random value to store with the session */
