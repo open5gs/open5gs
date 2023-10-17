@@ -660,7 +660,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
             }
 
             if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
-                ogs_warn("No Security Context : IMSI[%s]", mme_ue->imsi_bcd);
+                ogs_error("No Security Context : IMSI[%s]", mme_ue->imsi_bcd);
                 r = nas_eps_send_service_reject(mme_ue,
                     OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                 ogs_expect(r == OGS_OK);
@@ -787,7 +787,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
             }
 
             if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
-                ogs_warn("No Security Context : IMSI[%s]", mme_ue->imsi_bcd);
+                ogs_error("No Security Context : IMSI[%s]", mme_ue->imsi_bcd);
                 ogs_assert(OGS_OK ==
                     nas_eps_send_service_reject(mme_ue,
                     OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
@@ -1002,7 +1002,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
             }
 
             if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
-                ogs_warn("No Security Context : IMSI[%s]", mme_ue->imsi_bcd);
+                ogs_error("No Security Context : IMSI[%s]", mme_ue->imsi_bcd);
                 ogs_assert(OGS_OK ==
                     nas_eps_send_service_reject(mme_ue,
                     OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
@@ -1123,7 +1123,7 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
             }
 
             if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
-                ogs_warn("[%s] No Security Context", mme_ue->imsi_bcd);
+                ogs_error("[%s] No Security Context", mme_ue->imsi_bcd);
                 break;
             }
 
@@ -1202,7 +1202,7 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
             }
 
             if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
-                ogs_warn("No Security Context : IMSI[%s]", mme_ue->imsi_bcd);
+                ogs_error("No Security Context : IMSI[%s]", mme_ue->imsi_bcd);
                 ogs_assert(OGS_OK ==
                     nas_eps_send_service_reject(mme_ue,
                     OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
@@ -1320,7 +1320,7 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
             }
 
             if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
-                ogs_warn("[%s] No Security Context", mme_ue->imsi_bcd);
+                ogs_error("[%s] No Security Context", mme_ue->imsi_bcd);
                 break;
             }
 
@@ -1372,7 +1372,7 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
             }
 
             if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
-                ogs_warn("[%s] No Security Context", mme_ue->imsi_bcd);
+                ogs_error("[%s] No Security Context", mme_ue->imsi_bcd);
                 break;
             }
 
@@ -1433,7 +1433,7 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
             }
 
             if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
-                ogs_warn("No Security Context : IMSI[%s]", mme_ue->imsi_bcd);
+                ogs_error("No Security Context : IMSI[%s]", mme_ue->imsi_bcd);
                 ogs_assert(OGS_OK ==
                     nas_eps_send_service_reject(mme_ue,
                     OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
