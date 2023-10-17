@@ -278,6 +278,8 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
     int i;
     ogs_sbi_request_t *request = NULL;
     OpenAPI_nf_type_e nf_type = OpenAPI_nf_type_NULL;
+    OpenAPI_guami_t *TargetGuami;
+    cJSON *guamiJSON = NULL;
     char sender_timestamp[OGS_SBI_RFC7231_DATE_LEN];
     char *max_rsp_time = NULL;
 
@@ -384,6 +386,31 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
             ogs_sbi_header_set(request->http.params,
                     OGS_SBI_PARAM_REQUESTER_NF_INSTANCE_ID,
                     discovery_option->requester_nf_instance_id);
+        }
+        if (discovery_option->target_guami) {
+            TargetGuami = ogs_sbi_build_guami(discovery_option->target_guami);
+            ogs_assert(TargetGuami);
+
+            guamiJSON = OpenAPI_guami_convertToJSON(TargetGuami);
+            ogs_sbi_free_guami(TargetGuami);
+
+            if (!guamiJSON) {
+                ogs_error("OpenAPI_guami_convertToJSON() failed");
+                ogs_sbi_request_free(request);
+                return NULL;
+            }
+
+            char *guami = cJSON_Print(guamiJSON);
+            if (!guami) {
+                ogs_error("cJSON_Print() failed");
+                ogs_sbi_request_free(request);
+                cJSON_Delete(guamiJSON);
+                return NULL;
+            }
+
+            ogs_sbi_header_set(request->http.params, OGS_SBI_PARAM_GUAMI, guami);
+            ogs_free(guami);
+            cJSON_Delete(guamiJSON);
         }
         if (ogs_sbi_self()->discovery_config.no_service_names == false &&
             discovery_option->num_of_service_names) {
@@ -2682,6 +2709,8 @@ void ogs_sbi_discovery_option_free(
         ogs_free(discovery_option->target_nf_instance_id);
     if (discovery_option->requester_nf_instance_id)
         ogs_free(discovery_option->requester_nf_instance_id);
+    if (discovery_option->target_guami)
+        ogs_free(discovery_option->target_guami);
 
     for (i = 0; i < discovery_option->num_of_service_names; i++)
         ogs_free(discovery_option->service_names[i]);
