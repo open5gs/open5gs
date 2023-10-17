@@ -21,6 +21,7 @@
 #define GMM_HANDLER_H
 
 #include "context.h"
+#include "namf-handler.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -179,6 +179,21 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                                 "Invalid HTTP method", sbi_message.h.method));
                     END
                     break;
+                CASE(OGS_SBI_RESOURCE_NAME_TRANSFER)
+                    SWITCH(sbi_message.h.method)
+                    CASE(OGS_SBI_HTTP_METHOD_POST)
+                        amf_namf_comm_handle_ue_context_transfer_request(
+                                stream, &sbi_message);
+                        break;
+                    DEFAULT
+                        ogs_error("Invalid HTTP method [%s]",
+                                sbi_message.h.method);
+                        ogs_assert(true ==
+                            ogs_sbi_server_send_error(stream,
+                                OGS_SBI_HTTP_STATUS_FORBIDDEN, &sbi_message,
+                                "Invalid HTTP method", sbi_message.h.method));
+                    END
+                    break;
 
                 DEFAULT
                     ogs_error("Invalid resource name [%s]",
@@ -375,6 +390,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NUDM_UECM)
         CASE(OGS_SBI_SERVICE_NAME_NUDM_SDM)
         CASE(OGS_SBI_SERVICE_NAME_NPCF_AM_POLICY_CONTROL)
+        CASE(OGS_SBI_SERVICE_NAME_NAMF_COMM)
             sbi_xact = e->h.sbi.data;
             ogs_assert(sbi_xact);
 

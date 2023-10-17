@@ -88,6 +88,8 @@ extern "C" {
 #define OGS_MAX_NUM_OF_ACCESS_CONTROL   8
 #define OGS_MAX_NUM_OF_ALGORITHM        8
 
+#define OGS_MAX_GUTI_LEN                28
+
 #define OGS_MAX_NUM_OF_BPLMN            6
 
 #define OGS_NEXT_ID(__id, __min, __max) \
@@ -186,10 +188,11 @@ ogs_amf_id_t *ogs_amf_id_build(ogs_amf_id_t *amf_id,
 #define OGS_PROTECTION_SCHEME_PROFILE_B 2
 
 /************************************
- * SUPI/GPSI                       */
+ * SUPI/GPSI/GUTI                   */
 #define OGS_ID_SUPI_TYPE_IMSI "imsi"
 #define OGS_ID_GPSI_TYPE_MSISDN "msisdn"
 #define OGS_ID_SUPI_TYPE_IMEISV "imeisv"
+#define OGS_ID_5G_GUTI_TYPE "5g-guti"
 char *ogs_id_get_type(char *str);
 char *ogs_id_get_value(char *str);
 

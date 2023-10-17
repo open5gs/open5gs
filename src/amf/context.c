@@ -40,6 +40,7 @@ static void stats_add_ran_ue(void);
 static void stats_remove_ran_ue(void);
 static void stats_add_amf_session(void);
 static void stats_remove_amf_session(void);
+static bool amf_namf_comm_parse_guti(ogs_nas_5gs_guti_t *guti, char *ue_context_id);
 
 void amf_context_init(void)
 {
@@ -1900,6 +1901,105 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
         break;
     default:
         break;
+    }
+
+    return amf_ue;
+}
+
+static bool amf_namf_comm_parse_guti(ogs_nas_5gs_guti_t *guti, char *ue_context_id)
+{
+#define MIN_LENGTH_OF_MNC 2
+#define MAX_LENGTH_OF_MNC 3
+#define LENGTH_OF_MCC 3
+#define LENGTH_OF_AMF_ID 6
+#define LENGTH_OF_TMSI 8
+
+    char amf_id_string[LENGTH_OF_AMF_ID + 1];
+    char tmsi_string[LENGTH_OF_TMSI + 1];
+    char mcc_string[LENGTH_OF_MCC + 1];
+    char mnc_string[MAX_LENGTH_OF_MNC + 1];
+    OpenAPI_plmn_id_t Plmn_id;
+    ogs_plmn_id_t plmn_id;
+
+    /* TS29.518 6.1.3.2.2 Guti pattern (27 or 28 characters):
+    "5g-guti-[0-9]{5,6}[0-9a-fA-F]{14}" */
+
+    short index = 8; /* start parsing guti after "5g-guti-" */
+
+    strncpy(mcc_string, &ue_context_id[index], LENGTH_OF_MCC);
+    mcc_string[LENGTH_OF_MCC] = '\0';
+    index += LENGTH_OF_MCC;
+
+    if (strlen(ue_context_id) == OGS_MAX_GUTI_LEN - 1) {
+        /* mnc is 2 characters long */
+        mnc_string[MIN_LENGTH_OF_MNC] = '\0';
+        strncpy(mnc_string, &ue_context_id[index], MIN_LENGTH_OF_MNC);
+        index += MIN_LENGTH_OF_MNC;
+    } else if (strlen(ue_context_id) == OGS_MAX_GUTI_LEN) {
+        /* mnc is 3 characters long */
+        mnc_string[MAX_LENGTH_OF_MNC] = '\0';
+        strncpy(mnc_string, &ue_context_id[index], MAX_LENGTH_OF_MNC);
+        index += MAX_LENGTH_OF_MNC;
+    } else {
+        ogs_error("Invalid Ue context id");
+        return false;
+    }
+
+    strncpy(amf_id_string, &ue_context_id[index], LENGTH_OF_AMF_ID);
+    amf_id_string[LENGTH_OF_AMF_ID] = '\0';
+    index += LENGTH_OF_AMF_ID;
+
+    strncpy(tmsi_string, &ue_context_id[index], LENGTH_OF_TMSI);
+    tmsi_string[LENGTH_OF_TMSI] = '\0';
+
+    memset(&Plmn_id, 0, sizeof(Plmn_id));
+    Plmn_id.mcc = mcc_string;
+    Plmn_id.mnc = mnc_string;
+
+    memset(&plmn_id, 0, sizeof(plmn_id));
+    ogs_sbi_parse_plmn_id(&plmn_id, &Plmn_id);
+    ogs_nas_from_plmn_id(&guti->nas_plmn_id, &plmn_id);
+    ogs_amf_id_from_string(&guti->amf_id, amf_id_string);
+
+    guti->m_tmsi = (u_int32_t)strtol(tmsi_string, NULL, 16);
+    return true;
+}
+
+amf_ue_t *amf_ue_find_by_ue_context_id(char *ue_context_id)
+{
+    amf_ue_t *amf_ue = NULL;
+
+    ogs_assert(ue_context_id);
+
+    if (strncmp(ue_context_id, OGS_ID_SUPI_TYPE_IMSI,
+            strlen(OGS_ID_SUPI_TYPE_IMSI)) == 0) {
+
+        amf_ue = amf_ue_find_by_supi(ue_context_id);
+        if (!amf_ue) {
+            ogs_info("[%s] Unknown UE by SUPI", ue_context_id);
+            return NULL;
+        }
+
+    } else if (strncmp(ue_context_id, OGS_ID_5G_GUTI_TYPE,
+            strlen(OGS_ID_5G_GUTI_TYPE)) == 0) {
+
+        ogs_nas_5gs_guti_t guti;
+        memset(&guti, 0, sizeof(guti));
+
+        if (amf_namf_comm_parse_guti(&guti, ue_context_id) == false) {
+            ogs_error("amf_namf_comm_parse_guti() failed");
+            return NULL;
+        }
+
+        amf_ue = amf_ue_find_by_guti(&guti);
+        if (!amf_ue) {
+            ogs_info("[%s] Unknown UE by GUTI", ue_context_id);
+            return NULL;
+        }
+
+    } else {
+        ogs_error("Unsupported UE context ID type");
+        return NULL;
     }
 
     return amf_ue;

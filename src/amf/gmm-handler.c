@@ -1473,6 +1473,238 @@ static ogs_nas_5gmm_cause_t gmm_handle_nas_message_container(
     return gmm_cause;
 }
 
+static ogs_nas_5gmm_capability_t
+        amf_namf_comm_base64_decode_5gmm_capability(char *encoded)
+{
+    ogs_nas_5gmm_capability_t gmm_capability;
+    char *gmm_capability_octets_string = NULL;
+    uint8_t gmm_capability_iei = 0;
+
+    memset(&gmm_capability, 0, sizeof(gmm_capability));
+    gmm_capability_octets_string =
+            (char*) ogs_calloc(sizeof(gmm_capability) + 1, sizeof(char));
+    ogs_assert(gmm_capability_octets_string);
+
+    int len = ogs_base64_decode(gmm_capability_octets_string, encoded);
+
+    if (len == 0)
+        ogs_error("Gmm capability not decoded");
+
+    ogs_assert(sizeof(gmm_capability_octets_string) <=
+            sizeof(gmm_capability) + 1);
+
+    gmm_capability_iei = // not copied anywhere for now
+            gmm_capability_octets_string[0];
+    if (gmm_capability_iei !=
+            OGS_NAS_5GS_REGISTRATION_REQUEST_5GMM_CAPABILITY_TYPE) {
+        ogs_error("Type of 5GMM capability IEI is incorrect");
+    }
+    memcpy(&gmm_capability,
+            gmm_capability_octets_string + 1,
+            sizeof(gmm_capability));
+    if (gmm_capability_octets_string) {
+        ogs_free(gmm_capability_octets_string);
+    }
+
+    return gmm_capability;
+}
+
+static ogs_nas_ue_security_capability_t
+        amf_namf_comm_base64_decode_ue_security_capability(char *encoded)
+{
+    ogs_nas_ue_security_capability_t ue_security_capability;
+    char *ue_security_capability_octets_string = NULL;
+    uint8_t ue_security_capability_iei = 0;
+
+    memset(&ue_security_capability, 0, sizeof(ue_security_capability));
+    ue_security_capability_octets_string =
+            (char*) ogs_calloc(sizeof(ue_security_capability), sizeof(char));
+    ogs_assert(ue_security_capability_octets_string);
+
+    ogs_base64_decode(ue_security_capability_octets_string, encoded);
+
+    ogs_assert(sizeof(ue_security_capability_octets_string) <=
+            sizeof(ogs_nas_ue_security_capability_t) + 1);
+
+    ue_security_capability_iei = // not copied anywhere for now
+            ue_security_capability_octets_string[0];
+    if (ue_security_capability_iei !=
+            OGS_NAS_5GS_REGISTRATION_REQUEST_UE_SECURITY_CAPABILITY_TYPE) {
+        ogs_error("UE security capability IEI is incorrect");
+    }
+
+    memcpy(&ue_security_capability, ue_security_capability_octets_string + 1,
+            sizeof(ue_security_capability));
+
+    if (ue_security_capability_octets_string) {
+        ogs_free(ue_security_capability_octets_string);
+    }
+
+    return ue_security_capability;
+}
+
+static void amf_namf_comm_decode_ue_mm_context_list(
+            amf_ue_t *amf_ue, OpenAPI_list_t *MmContextList) {
+
+    OpenAPI_lnode_t *node = NULL;
+
+    OpenAPI_list_for_each(MmContextList, node) {
+
+        OpenAPI_mm_context_t *MmContext = NULL;
+        OpenAPI_list_t *AllowedNssaiList = NULL;
+        OpenAPI_lnode_t *node1 = NULL;
+        OpenAPI_list_t *NssaiMappingList = NULL;
+        int num_of_s_nssai = 0;
+        int num_of_nssai_mapping = 0;
+
+        MmContext = node->data;
+
+        AllowedNssaiList = MmContext->allowed_nssai;
+        NssaiMappingList = MmContext->nssai_mapping_list;
+
+        OpenAPI_list_for_each(AllowedNssaiList, node1) {
+            OpenAPI_snssai_t *AllowedNssai = node1->data;
+
+            ogs_assert(num_of_s_nssai < OGS_MAX_NUM_OF_SLICE);
+
+            amf_ue->allowed_nssai.s_nssai[num_of_s_nssai].sst =
+                    (uint8_t)AllowedNssai->sst;
+            amf_ue->allowed_nssai.s_nssai[num_of_s_nssai].sd =
+                    ogs_s_nssai_sd_from_string(AllowedNssai->sd);
+
+            num_of_s_nssai++;
+            amf_ue->allowed_nssai.num_of_s_nssai = num_of_s_nssai;
+        }
+
+        OpenAPI_list_for_each(NssaiMappingList, node1) {
+            OpenAPI_nssai_mapping_t *NssaiMapping = node1->data;
+            OpenAPI_snssai_t *HSnssai = NssaiMapping->h_snssai;
+
+            ogs_assert(num_of_nssai_mapping < OGS_MAX_NUM_OF_SLICE);
+
+            amf_ue->allowed_nssai.s_nssai[num_of_nssai_mapping].
+                    mapped_hplmn_sst = HSnssai->sst;
+            amf_ue->allowed_nssai.s_nssai[num_of_nssai_mapping].
+                    mapped_hplmn_sd = ogs_s_nssai_sd_from_string(HSnssai->sd);
+
+            num_of_nssai_mapping++;
+        }
+
+        if (MmContext->ue_security_capability) {
+            amf_ue->ue_security_capability =
+                    amf_namf_comm_base64_decode_ue_security_capability(
+                    MmContext->ue_security_capability);
+        }
+    }
+}
+
+static void amf_namf_comm_decode_ue_session_context_list(
+            amf_ue_t *amf_ue, OpenAPI_list_t *SessionContextList)
+{
+    OpenAPI_lnode_t *node = NULL;
+
+    OpenAPI_list_for_each(SessionContextList, node) {
+        OpenAPI_pdu_session_context_t *PduSessionContext;
+        PduSessionContext = node->data;
+        amf_sess_t *sess = NULL;
+
+        sess = amf_sess_add(amf_ue, PduSessionContext->pdu_session_id);
+        ogs_assert(sess);
+
+        sess->sm_context_ref = PduSessionContext->sm_context_ref;
+
+        if (PduSessionContext->s_nssai) {
+            memset(&sess->s_nssai, 0, sizeof(sess->s_nssai));
+
+            sess->s_nssai.sst = PduSessionContext->s_nssai->sst;
+            sess->s_nssai.sd = ogs_s_nssai_sd_from_string(
+                    PduSessionContext->s_nssai->sd);
+        }
+
+        if (PduSessionContext->dnn)
+            sess->dnn = ogs_strdup(PduSessionContext->dnn);
+        if (PduSessionContext->access_type)
+            amf_ue->nas.access_type = (int)PduSessionContext->access_type;
+    }
+}
+
+int amf_namf_comm_handle_ue_context_transfer_response(
+        ogs_sbi_message_t *recvmsg, amf_ue_t *amf_ue)
+{
+    OpenAPI_ue_context_t *UeContext = NULL;
+
+    if (!recvmsg->UeContextTransferRspData) {
+        ogs_error("No UeContextTransferRspData");
+        return OGS_ERROR;
+    }
+
+    if (!recvmsg->UeContextTransferRspData->ue_context) {
+        ogs_error("No UE context");
+        return OGS_ERROR;
+    }
+
+    UeContext = recvmsg->UeContextTransferRspData->ue_context;
+
+    if (UeContext->supi) {
+        amf_ue_set_supi(amf_ue, UeContext->supi);
+        if (!UeContext->supi_unauth_ind){
+            amf_ue->auth_result = OpenAPI_auth_result_AUTHENTICATION_SUCCESS;
+        }
+    }
+
+    if (UeContext->pei) {
+        if (amf_ue->pei)
+            ogs_free(amf_ue->pei);
+        amf_ue->pei = ogs_strdup(UeContext->pei);
+    }
+
+    if (UeContext->sub_ue_ambr) {
+        amf_ue->ue_ambr.downlink =
+            ogs_sbi_bitrate_from_string(UeContext->sub_ue_ambr->downlink);
+        amf_ue->ue_ambr.uplink =
+            ogs_sbi_bitrate_from_string(UeContext->sub_ue_ambr->uplink);
+    }
+
+    if (UeContext->seaf_data) {
+        if (UeContext->seaf_data->ng_ksi->tsc != OpenAPI_sc_type_NULL) {
+            amf_ue->nas.ue.tsc =
+                (UeContext->seaf_data->ng_ksi->tsc == OpenAPI_sc_type_NATIVE) ? 0 : 1;
+            amf_ue->nas.ue.ksi = (uint8_t)UeContext->seaf_data->ng_ksi->ksi;
+
+            ogs_ascii_to_hex(
+                UeContext->seaf_data->key_amf->key_val,
+                strlen(UeContext->seaf_data->key_amf->key_val),
+                amf_ue->kamf,
+                sizeof(amf_ue->kamf));
+        }
+    }
+
+    if (UeContext->_5g_mm_capability) {
+        ogs_nas_5gmm_capability_t gmm_capability;
+
+        gmm_capability = amf_namf_comm_base64_decode_5gmm_capability(
+                    UeContext->_5g_mm_capability);
+        amf_ue->gmm_capability.lte_positioning_protocol_capability =
+                (bool)gmm_capability.lte_positioning_protocol_capability;
+        amf_ue->gmm_capability.ho_attach = (bool)gmm_capability.ho_attach;
+        amf_ue->gmm_capability.s1_mode = (bool)gmm_capability.s1_mode;
+    }
+
+    /* TODO UeContext->pcfId */
+    /* TODO UeContext->pcfAmPolicyUri */
+    /* TODO UeContext->pcfUePolicyUri */
+
+    if (UeContext->mm_context_list)
+        amf_namf_comm_decode_ue_mm_context_list(amf_ue, UeContext->mm_context_list);
+
+    if (UeContext->session_context_list)
+        amf_namf_comm_decode_ue_session_context_list(amf_ue, UeContext->session_context_list);
+
+    /* TODO ueRadioCapability */
+
+    return OGS_OK;
+}
+
 static uint8_t gmm_cause_from_access_control(ogs_plmn_id_t *plmn_id)
 {
     int i;
