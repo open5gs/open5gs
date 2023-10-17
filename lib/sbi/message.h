@@ -124,6 +124,7 @@ extern "C" {
 
 #define OGS_SBI_RESOURCE_NAME_UE_CONTEXTS           "ue-contexts"
 #define OGS_SBI_RESOURCE_NAME_N1_N2_MESSAGES        "n1-n2-messages"
+#define OGS_SBI_RESOURCE_NAME_TRANSFER              "transfer"
 
 #define OGS_SBI_RESOURCE_NAME_SM_CONTEXT_STATUS     "sm-context-status"
 #define OGS_SBI_RESOURCE_NAME_AM_POLICY_NOTIFY      "am-policy-notify"
@@ -514,6 +515,8 @@ typedef struct ogs_sbi_message_s {
     OpenAPI_sdm_subscription_t *SDMSubscription;
     OpenAPI_modification_notification_t *ModificationNotification;
     OpenAPI_smf_registration_t *SmfRegistration;
+    OpenAPI_ue_context_transfer_req_data_t *UeContextTransferReqData;
+    OpenAPI_ue_context_transfer_rsp_data_t *UeContextTransferRspData;
 
     ogs_sbi_links_t *links;
 

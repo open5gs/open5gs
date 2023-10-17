@@ -185,6 +185,10 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
         OpenAPI_sdm_subscription_free(message->SDMSubscription);
     if (message->ModificationNotification)
         OpenAPI_modification_notification_free(message->ModificationNotification);
+    if (message->UeContextTransferReqData)
+        OpenAPI_ue_context_transfer_req_data_free(message->UeContextTransferReqData);
+    if (message->UeContextTransferRspData)
+        OpenAPI_ue_context_transfer_rsp_data_free(message->UeContextTransferRspData);
 
     /* HTTP Part */
     for (i = 0; i < message->num_of_part; i++) {
@@ -1219,6 +1223,14 @@ static char *build_json(ogs_sbi_message_t *message)
         item = OpenAPI_modification_notification_convertToJSON(
             message->ModificationNotification);
         ogs_assert(item);
+    } else if (message->UeContextTransferReqData) {
+        item = OpenAPI_ue_context_transfer_req_data_convertToJSON(
+                message->UeContextTransferReqData);
+        ogs_assert(item);
+    } else if (message->UeContextTransferRspData) {
+        item = OpenAPI_ue_context_transfer_rsp_data_convertToJSON(
+                message->UeContextTransferRspData);
+        ogs_assert(item);
     }
 
     if (item) {
@@ -1943,6 +1955,27 @@ static int parse_json(ogs_sbi_message_t *message,
                             rv = OGS_ERROR;
                             ogs_error("JSON parse error");
                         }
+                    }
+                    break;
+
+                CASE(OGS_SBI_RESOURCE_NAME_TRANSFER)
+                    if (message->res_status == 0) {
+                        message->UeContextTransferReqData =
+                            OpenAPI_ue_context_transfer_req_data_parseFromJSON(item);
+                        if (!message->UeContextTransferReqData) {
+                            rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
+                        }
+                    } else if (message->res_status == OGS_SBI_HTTP_STATUS_OK) {
+                        message->UeContextTransferRspData =
+                            OpenAPI_ue_context_transfer_rsp_data_parseFromJSON(item);
+                        if (!message->UeContextTransferRspData) {
+                            rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
+                        }
+                    } else {
+                        ogs_error("HTTP ERROR Status : %d",
+                            message->res_status);
                     }
                     break;
 
