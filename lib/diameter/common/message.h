@@ -40,6 +40,7 @@ extern "C" {
 #define OGS_DIAM_AUTHORIZATION_REJECTED             5003
 #define OGS_DIAM_MISSING_AVP                        5004
 #define OGS_DIAM_INVALID_AVP_VALUE                  5005
+#define OGS_DIAM_USER_UNKNOWN                       5030
 
 extern struct dict_object *ogs_diam_session_id;
 extern struct dict_object *ogs_diam_termination_cause;

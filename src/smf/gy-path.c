@@ -110,7 +110,16 @@ static void fill_multiple_services_credit_control_ccr(smf_sess_t *sess,
 
         /* CC-Time, RFC4006 8.21 */
         /* CC-Money, RFC4006 8.22. Not used in 3GPP. */
+
         /* CC-Total-Octets, RFC4006 8.23 */
+        ret = fd_msg_avp_new(ogs_diam_gy_cc_total_octets, 0, &avpch2);
+        ogs_assert(ret == 0);
+        val.u64 = 1000000;
+        ret = fd_msg_avp_setvalue (avpch2, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
+        ogs_assert(ret == 0);
+
         /* CC-Input-Octets, RFC4006 8.24 */
         /* CC-Output-Octets, RFC4006 8.25 */
         /* CC-Service-Specific-Units, RFC4006 8.26 */
@@ -118,6 +127,8 @@ static void fill_multiple_services_credit_control_ccr(smf_sess_t *sess,
         ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
         ogs_assert(ret == 0);
     }
+
+   if (cc_request_type != OGS_DIAM_GY_CC_REQUEST_TYPE_INITIAL_REQUEST) {
 
     /* Used-Service-Unit, RFC4006 8.18 */
     ret = fd_msg_avp_new(ogs_diam_gy_used_service_unit, 0, &avpch1);
@@ -182,6 +193,7 @@ static void fill_multiple_services_credit_control_ccr(smf_sess_t *sess,
 
     ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
     ogs_assert(ret == 0);
+     //bypass USU if we are in CCR INITIAL
 
     /* Service-Identifier, RFC4006 8.28. Not used in Gy. */
     /* Rating-Group */
@@ -296,7 +308,7 @@ static void fill_multiple_services_credit_control_ccr(smf_sess_t *sess,
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
     ogs_assert(ret == 0);
-
+    }
     /* Multiple Services AVP add to req: */
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
@@ -306,6 +318,7 @@ static void fill_multiple_services_credit_control_ccr(smf_sess_t *sess,
 static void fill_service_information_ccr(smf_sess_t *sess,
                                          uint32_t cc_request_type, struct msg *req)
 {
+
     int ret;
     union avp_value val;
     struct avp *avp;
@@ -558,6 +571,7 @@ static void fill_service_information_ccr(smf_sess_t *sess,
 void smf_gy_send_ccr(smf_sess_t *sess, void *xact,
         uint32_t cc_request_type)
 {
+
     int ret;
     smf_ue_t *smf_ue = NULL;
 
@@ -599,7 +613,6 @@ void smf_gy_send_ccr(smf_sess_t *sess, void *xact,
         ogs_assert(new == 0);
 
         ogs_debug("    Found Gy Session-Id: [%s]", sess->gy_sid);
-
         /* Add Session-Id to the message */
         ret = ogs_diam_message_session_id_set(req, (os0_t)sess->gy_sid, sidlen);
         ogs_assert(ret == 0);
@@ -630,12 +643,10 @@ void smf_gy_send_ccr(smf_sess_t *sess, void *xact,
         ogs_assert(sess_data);
 
         ogs_debug("    Allocate new Gy session: [%s]", sess_data->gy_sid);
-
         /* Save Session-Id to SMF Session Context */
         sess->gy_sid = (char *)sess_data->gy_sid;
     } else
         ogs_debug("    Retrieve Gy session: [%s]", sess_data->gy_sid);
-
     /*
      * 8.2.  CC-Request-Number AVP
      *
@@ -669,6 +680,7 @@ void smf_gy_send_ccr(smf_sess_t *sess, void *xact,
         sess_data->xact_data[req_slot].pfcp = false;
     sess_data->xact_data[req_slot].cc_req_no = sess_data->cc_request_number;
     sess_data->xact_data[req_slot].ptr = xact;
+
 
     /* Origin-Host & Origin-Realm */
     ret = fd_msg_add_origin(req, 0);
@@ -719,6 +731,8 @@ void smf_gy_send_ccr(smf_sess_t *sess, void *xact,
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
+
+
 
     /* Set the Destination-Host AVP */
     if (sess_data->peer_host) {
@@ -880,6 +894,7 @@ void smf_gy_send_ccr(smf_sess_t *sess, void *xact,
     /* Send the request */
     ret = fd_msg_send(&req, smf_gy_cca_cb, svg);
     ogs_assert(ret == 0);
+
 
     /* Increment the counter */
     ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
