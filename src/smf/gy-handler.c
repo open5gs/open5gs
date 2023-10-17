@@ -160,7 +160,6 @@ void smf_gy_handle_cca_update_request(
     ogs_pfcp_measurement_method_t prev_meas_method;
     ogs_pfcp_reporting_triggers_t prev_rep_triggers;
     ogs_pfcp_quota_validity_time_t prev_quota_validity_time;
-    ogs_pfcp_volume_quota_t prev_vol_quota;
     ogs_pfcp_time_quota_t prev_time_quota;
     ogs_pfcp_volume_threshold_t prev_vol_threshold;
     ogs_pfcp_time_threshold_t prev_time_threshold;
@@ -190,7 +189,6 @@ void smf_gy_handle_cca_update_request(
     prev_meas_method = urr->meas_method;
     prev_rep_triggers = urr->rep_triggers;
     prev_quota_validity_time = urr->quota_validity_time;
-    prev_vol_quota = urr->vol_quota;
     prev_time_quota = urr->time_quota;
     prev_vol_threshold = urr->vol_threshold;
     prev_time_threshold = urr->time_threshold;
