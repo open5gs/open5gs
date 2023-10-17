@@ -1674,7 +1674,7 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
             }
 
             if (!SECURITY_CONTEXT_IS_VALID(amf_ue)) {
-                ogs_warn("[%s] No Security Context", amf_ue->supi);
+                ogs_error("[%s] No Security Context", amf_ue->supi);
                 break;
             }
 
